@@ -222,7 +222,7 @@ function add_image_inside_meteor_select(img_path, all_frames_ids, meteor_id) {
 
    // Scrolln top
    var $frame = $('.select_frame[data-rel='+meteor_id+']');
-   var scroll_to = meteor_id-4;
+   var scroll_to = meteor_id+1;
 
    // Cur has changed
    $('.select_frame').removeClass('cur');
@@ -241,10 +241,7 @@ function add_image_inside_meteor_select(img_path, all_frames_ids, meteor_id) {
 
    // Scroll to frame -1 on top if it exists
    if($('.select_frame[data-rel="'+scroll_to+'"]').length==0) {
-      scroll_to-= 1;
-      while($('.select_frame[data-rel="'+scroll_to+'"]').length==0 && scroll_to>=0) {
-         scroll_to-= 1;
-      }
+      scroll_to = 0;
    }
    $('#frame_select_mod').scrollTo($('.select_frame[data-rel="'+scroll_to+'"]'), 150 );
 
