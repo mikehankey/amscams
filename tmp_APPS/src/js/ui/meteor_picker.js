@@ -202,27 +202,27 @@ function add_image_inside_meteor_select(img_path, all_frames_ids, meteor_id) {
    // Remove Previous Circles
    $('.circl').remove();
 
+
+   // Add Image to Cropped selector
    $('#cropped_frame_selector').css('background-image','url('+img_path+')');
-
-
-   // Add image 
+ 
+   // Get Height to init the UI (if needed)
    var height = $('#select_meteor_modal').outerHeight() - $('#select_meteor_modal .modal-header').outerHeight() - $("#thumb_browwser").outerHeight() - $('#below_cfs').outerHeight();
    
    // 16/9 format
    $('#cropped_frame_selector').css('height',parseInt(height) - 30)
    $('#cropped_frame_selector').css('width', parseInt((parseInt(height)-30)*16/9));   
- 
+   
+   // Update Title
    $('#sel_frame_id, .sel_frame_id').text(' - #' +  meteor_id);   
-
 
    // Add Cur to image chooser
    $('.select_frame').removeClass('cur');
    $('.select_frame[data-rel="'+meteor_id+'"]').addClass('cur');
 
-
    // Scrolln top
    var $frame = $('.select_frame[data-rel='+meteor_id+']');
-   var scroll_to = parseInt(meteor_id)+1;
+   var scroll_to = parseInt(meteor_id);
 
    // Cur has changed
    $('.select_frame').removeClass('cur');
@@ -315,8 +315,6 @@ function add_image_inside_meteor_select(img_path, all_frames_ids, meteor_id) {
       var parentOffset = $(this).offset(); 
       var relX = e.pageX - parentOffset.left - select_border_size;
       var relY = e.pageY - parentOffset.top - select_border_size;
-
-
  
       // Convert into HD_x & HD_y
       // from x,y
