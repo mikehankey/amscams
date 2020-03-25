@@ -241,7 +241,7 @@ function add_image_inside_meteor_select(img_path, all_frames_ids, meteor_id) {
    // Add circles for 3 frames before and 3 frames after
    meteor_id = parseInt(meteor_id);
 
-   
+   console.log("METEOR ID", meteor_id);
 
 
    // Scroll to frame -1 on top if it exists
