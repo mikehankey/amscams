@@ -86,7 +86,7 @@
       position: absolute;
       bottom: 1px;
       right: 2px;
-      padding: 0 2px;
+      padding: 0 4px;
       color: rgba(255,255,255,.6);
       background: rgba(0,0,0,.5);
       font-size: .7rem;
@@ -281,6 +281,7 @@
       position: absolute;
       left: .2rem;
       font-size: .58rem;
+      
    }
 
    &:hover {
@@ -333,8 +334,8 @@
 
       &.exists {
          span {
-            background-color:orange;
-            color:#000;
+            background-color: rgba(255, 165, 0, 0.65);
+            color: #ffffff;
          }
 
       }
