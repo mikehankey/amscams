@@ -5,7 +5,7 @@ var circle_radius = 40;
 
 // Modal for selector
 function addPickerModalTemplate(all_cropped_frames) {
-   var c; d-flex justify-content-left position-relative
+   var c;  
 
    if($('#select_meteor_modal').length==0) {
       c ='  <div id="select_meteor_modal" class="modal fade" tabindex="-1" style="padding-right: 0!important; width: 100vw; height: 100vh;">\
