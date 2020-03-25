@@ -490,9 +490,13 @@ function setup_manual_reduc1() {
  
       if(frames_jobs.length!=0) {
 
-         // Update the temporary form and submit it (POST)
-         $('#post_form input[name=data]').val(JSON.stringify(frames_jobs))
+        
+         // Add the cropped video path as a ref to the reduction 
+         frames_jobs['det'] = cropped_video;
          
+         // Update the temporary form and submit it (POST)
+         $('#post_form input[name=data]').val(JSON.stringify(frames_jobs));
+
          // POST ASYNC 
          var formData = $("#post_form").serialize();
          var URL = $("#post_form").attr("action");
