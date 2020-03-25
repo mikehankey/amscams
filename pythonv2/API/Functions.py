@@ -27,7 +27,7 @@ DETECTION_TO_CONF = PATH_ACCESS_LOGS + os.sep + "toConf.log"
 EXTRA_CODE_IN_TOKEN = '4llskYR0cks'
 ACCESS_GRANTED_DURATION = 1 # In hours
 
-AUTHORIZED_FUNCTIONS = ['login','tasks','delete','confirm']
+AUTHORIZED_FUNCTIONS = ['login','tasks','delete','confirm','frames']
 
 # MAIN API CONTROLLER
 def api_controller(form):
@@ -62,6 +62,10 @@ def api_controller(form):
       if(api_function=='delete'):
          # Doesnt work yet
          print(delete_detection(form))
+
+      elif(api_function=='frames'):
+         print(data)
+         sys.exit(0)
 
       elif(api_function=='tasks'):
          data_to_del  = form.getvalue('data[toDel]')
