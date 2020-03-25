@@ -19,7 +19,7 @@ function addPickerModalTemplate(all_cropped_frames) {
                            <div class="d-flex justify-content-left mr-2 ml-2 mb-2" id="frame_select_mod">\
                               <div id="cropped_frame_select" class="d-flex justify-content-left position-relative">\
                                  <div id="clip" class="" style=" width: 100%;height: 2px;border-radius: 1px;background: #000;position: absolute;top: 0;">\
-                                    <div class="clip_length" style=" height: 2px; background: #000; width: 600px; margin-left:calc((200px + .24rem) * 5) "></div>\
+                                    <div class="clip_length mt-1" style=" height: 2px; background: green; width: 600px; margin-left:calc((200px + .24rem) * 5) "></div>\
                                  </div>\
                                  <div class="ffs mt-1">\
                                  </div>\
