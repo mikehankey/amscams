@@ -406,6 +406,7 @@
    background: green; 
 
    &::before { 
+      content:"|";
       display:block;
       height: 4px;
       width: 1px;
@@ -413,6 +414,7 @@
    }
 
    &::after { 
+      content:"|";
       display:block;
       height: 4px;
       width: 1px;
