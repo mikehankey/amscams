@@ -312,8 +312,7 @@
 
 #cropped_frame_select, .cropped_frame_select {
    white-space: nowrap; 
-   a {
-      border-bottom:3px solid rgba(0,0,0,1);
+   a { 
       display: inline-block;
       margin: .25rem .12rem;
       
@@ -328,8 +327,8 @@
       }
 
       &.cur {
-         border-bottom:2px solid rgba(255, 229, 46, 1)!important;
-         box-shadow: 0 0 4px yellow;
+ 
+         border: 2px solid yellow!important;
       }
 
       &.exists {
@@ -354,7 +353,7 @@
 
 
    &.cur {
-      border-bottom:2px solid rgba(255, 229, 46, 1)
+      border:2px solid rgba(255, 229, 46, 1)
    }
    
 }
