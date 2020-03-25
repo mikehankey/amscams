@@ -222,7 +222,7 @@ function add_image_inside_meteor_select(img_path, all_frames_ids, meteor_id) {
 
    // Scrolln top
    var $frame = $('.select_frame[data-rel='+meteor_id+']');
-   var scroll_to = meteor_id+1;
+   var scroll_to = parseInt(meteor_id)+1;
 
    // Cur has changed
    $('.select_frame').removeClass('cur');
