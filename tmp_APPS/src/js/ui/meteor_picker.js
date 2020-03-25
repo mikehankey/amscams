@@ -6,21 +6,14 @@ var thumb_width = 200;  // See px css
 var margin_thumb= 0.24 // See rem css
 
 // Set up green line for clip lenght (start/end are frame ids)
-function setClipLength(from,to) {
-   // width: 600px; margin-left:calc((200px + .24rem) * 5) 
+function setClipLength(from,to) { 
 
    // Start:
    var marg = "calc(("+thumb_width+"px + "+margin_thumb+"rem) * "+ from +") ";
    // End:
-   var l = (to-from)
-   var c = l*thumb_width;
-   
-   var width = "width: calc("+c+" * "+margin_thumb+"rem )";
-
+   var width = "calc(("+thumb_width+"px + "+margin_thumb+"rem) * "+ (to-from) +") ";
+ 
    $('.clip_length').css('margin-left',marg).css('width',width);
-
-   
-
 
 }
 
@@ -68,9 +61,11 @@ function addPickerModalTemplate(all_cropped_frames) {
     } 
 
 
-   // If the frames aren't on top the of the modal, we add them
+   // If the frames aren't on top the of the modal, we add them (INIT)
    if($('#cropped_frame_select a').length == 0 ) { 
- 
+  
+      // We need the min & max cropped to set the clip length
+      var all_cropped_frames_ids = [];
 
       // Get the images from all_cropped_frames and add them
       $.each(all_cropped_frames, function(i,v) {
@@ -83,14 +78,20 @@ function addPickerModalTemplate(all_cropped_frames) {
          if(res!= false) {
             data = '<i class="pos">x:'+ res['org_x'] + ' y:'+ res['org_y'] +'</i>';
             _class = "exists"
+            all_cropped_frames_ids.push(i)
          }
   
          $('<a class="select_frame select_frame_btn '+_class+'" data-rel="'+i+'"><span>#'+i+'  &bull; '+data+'</span><img src="'+  v  +'"></a>').appendTo($('#cropped_frame_select div.ffs'));
 
       });
+
+
+      // We set the initial clip length
+      setClipLength(Math.min(all_cropped_frames_ids),Math.max(all_cropped_frames_ids));
  
    }  
    
+
 
 
    
