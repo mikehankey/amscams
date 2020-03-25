@@ -1,5 +1,5 @@
 // Extract Frames from the Video
-async function extractFramesFromVideo(videoUrl,firstframe, how_many_frames, fps=25) {
+async function extractFramesFromVideo(videoUrl, fps=25) {
    return new Promise(async (resolve) => {
  
      // fully download it first (no buffering):
@@ -63,7 +63,13 @@ async function extractFramesFromVideo(videoUrl,firstframe, how_many_frames, fps=
 
  // Get the frames and build the related table
  async function asyncCall(first_frame, how_many_frames) {  
-   croppedFrames = await extractFramesFromVideo(cropped_video,first_frame, how_many_frames); 
+
+   console.log("first_frame ", first_frame);
+   console.log("how_many_frames ", how_many_frames)
+
+
+
+   croppedFrames = await extractFramesFromVideo(cropped_video); 
    
    var i; //, frame_c = 0;
    
@@ -99,7 +105,7 @@ async function extractFramesFromVideo(videoUrl,firstframe, how_many_frames, fps=
 
       first_frame+=1; // To get the "REAL first frame"
       
-      // What's the first frame we want to get?
+      // Get the Frames
       asyncCall(first_frame, how_many_frames)
    }
  })
