@@ -133,7 +133,8 @@ function addCircleRepair(_x,_y,fn,after_of_before) {
    if(after_of_before=='b') {
       $cir.css('border-color','rgba(255, 0, 0, .3)');
    } else if(after_of_before =='x') {
-      $cir.css('border-color','rgba(255, 229, 46, .3)');
+      // Current
+      $cir.css('border-color','rgba(255, 229, 46, .12)');
    } else if(after_of_before == 'na' || after_of_before == 'nb') {
       $cir.css('border-color','rgba(25, 86, 189,.4)'); // Done
    } else {
@@ -196,9 +197,7 @@ function get_new_pos(frame_id) {
 
 // Add Image Inside Picker
 function add_image_inside_meteor_select(img_path, all_frames_ids, meteor_id) { 
- 
-
-   console.log("ADD IMAGE " + meteor_id);
+  
 
    // Remove Previous Circles
    $('.circl').remove();
@@ -248,6 +247,9 @@ function add_image_inside_meteor_select(img_path, all_frames_ids, meteor_id) {
       }
    }
    $('#frame_select_mod').scrollTo($('.select_frame[data-rel="'+scroll_to+'"]'), 150 );
+
+   console.log("SCROLL TO ");
+   console.log(scroll_to);
 
 
    // Add circles for 3 frames before and 3 frames after
