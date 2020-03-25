@@ -241,14 +241,14 @@ function add_image_inside_meteor_select(img_path, all_frames_ids, meteor_id) {
    // Add circles for 3 frames before and 3 frames after
    meteor_id = parseInt(meteor_id);
 
-   console.log("METEOR ID", meteor_id);
+   // console.log("METEOR ID", meteor_id);
 
 
    // Scroll to frame -1 on top if it exists
    if($('.select_frame[data-rel="'+meteor_id+'"]').length==0) {
       scroll_to = all_frames_ids[0];
    }
-   console.log("TO SCROLL ", scroll_to);
+   // console.log("TO SCROLL ", scroll_to);
    $('#frame_select_mod').scrollTo($('.select_frame[data-rel="'+scroll_to+'"]'), 150 );
  
 
@@ -489,25 +489,24 @@ function setup_manual_reduc1() {
       }
  
       if(frames_jobs.length!=0) {
+
          // Update the temporary form and submit it (POST)
          $('#post_form input[name=data]').val(JSON.stringify(frames_jobs))
-         //$('#post_form').submit();
-      
-         // POST ASYNC
-         //var formData = $("#myform").serialize();  //or
-         var formData = $("#post_form").serializeArray();
+         
+         // POST ASYNC 
+         var formData = $("#post_form").serialize();
          var URL = $("#post_form").attr("action");
          $.post(URL,
             formData,
             function(data, textStatus, jqXHR)  {
                //data: Data from server.    
-               console.log("data from server ")
-               console.log(data);
+               // console.log("data from server ")
+               // console.log(data);
 
 
             }).fail(function(jqXHR, textStatus, errorThrown) 
             {
-               console.log("FAIL")
+               // console.log("FAIL")
             });
                
       } else {
