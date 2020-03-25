@@ -209,8 +209,22 @@ function get_new_pos(frame_id) {
 function add_frame_inside_meteor_select(img_path,   meteor_id) { 
 
    console.log("add_frame_inside_meteor_select");
+ 
+   // Add Image to Cropped selector
+   $('#cropped_frame_selector').css('background-image','url('+img_path+')');
 
-
+      // Add Image to Cropped selector
+      $('#cropped_frame_selector').css('background-image','url('+img_path+')');
+ 
+      // Get Height to init the UI (if needed)
+      var height = $('#select_meteor_modal').outerHeight() - $('#select_meteor_modal .modal-header').outerHeight() - $("#thumb_browwser").outerHeight() - $('#below_cfs').outerHeight();
+      
+      // 16/9 format
+      $('#cropped_frame_selector').css('height',parseInt(height) - 30)
+      $('#cropped_frame_selector').css('width', parseInt((parseInt(height)-30)*16/9));   
+      
+      // Update Title
+      $('#sel_frame_id, .sel_frame_id').text(' - #' +  meteor_id);   
 
    /*
 
@@ -218,18 +232,7 @@ function add_frame_inside_meteor_select(img_path,   meteor_id) {
    $('.circl').remove();
 
 
-   // Add Image to Cropped selector
-   $('#cropped_frame_selector').css('background-image','url('+img_path+')');
- 
-   // Get Height to init the UI (if needed)
-   var height = $('#select_meteor_modal').outerHeight() - $('#select_meteor_modal .modal-header').outerHeight() - $("#thumb_browwser").outerHeight() - $('#below_cfs').outerHeight();
-   
-   // 16/9 format
-   $('#cropped_frame_selector').css('height',parseInt(height) - 30)
-   $('#cropped_frame_selector').css('width', parseInt((parseInt(height)-30)*16/9));   
-   
-   // Update Title
-   $('#sel_frame_id, .sel_frame_id').text(' - #' +  meteor_id);   
+
 
    // Add Cur to image chooser
    $('.select_frame').removeClass('cur');
