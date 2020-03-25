@@ -241,12 +241,10 @@ function add_image_inside_meteor_select(img_path, all_frames_ids, meteor_id) {
 
    // Scroll to frame -1 on top if it exists
    if($('.select_frame[data-rel="'+scroll_to+'"]').length==0) {
-      scroll_to = 0;
+      scroll_to = all_frames_ids[0];
    }
    $('#frame_select_mod').scrollTo($('.select_frame[data-rel="'+scroll_to+'"]'), 150 );
-
-   console.log("SCROLL TO ");
-   console.log(scroll_to);
+ 
 
 
    // Add circles for 3 frames before and 3 frames after
