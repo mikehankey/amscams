@@ -21,7 +21,7 @@ function addPickerModalTemplate(all_cropped_frames) {
                                  <div id="clip_length" class="mr-2 ml-2" style=" width: 100vw;height: 2px;border-radius: 1px;background: green;position: absolute;top: 0;">\
                                     <div class="bef" style=" height: 2px; background: #000; width: 600px; "></div>\
                                  </div>\
-                                 <div>\
+                                 <div class="ffs">\
                                  </div>\
                               </div>\
                            </div>\
@@ -63,7 +63,7 @@ function addPickerModalTemplate(all_cropped_frames) {
             _class = "exists"
          }
   
-         $('<a class="select_frame select_frame_btn '+_class+'" data-rel="'+i+'"><span>#'+i+'  &bull; '+data+'</span><img src="'+  v  +'"></a>').appendTo($('#cropped_frame_select div'));
+         $('<a class="select_frame select_frame_btn '+_class+'" data-rel="'+i+'"><span>#'+i+'  &bull; '+data+'</span><img src="'+  v  +'"></a>').appendTo($('#cropped_frame_select div.ffs'));
 
       });
  
