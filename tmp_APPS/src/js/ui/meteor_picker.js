@@ -493,8 +493,26 @@ function setup_manual_reduc1() {
  
       if(frames_jobs.length!=0) {
          // Update the temporary form and submit it (POST)
-         $('#post_form input[name=data]').val(JSON.stringify(frames_jobs))
-         $('#post_form').submit();
+         //$('#post_form input[name=data]').val(JSON.stringify(frames_jobs))
+         //$('#post_form').submit();
+      
+         // POST ASYNC
+         //var formData = $("#myform").serialize();  //or
+         var formData = $("#post_form").serializeArray();
+         var URL = $("#post_form").attr("action");
+         $.post(URL,
+            formData,
+            function(data, textStatus, jqXHR)  {
+               //data: Data from server.    
+               console.log("data from server ")
+               console.log(data);
+
+
+            }).fail(function(jqXHR, textStatus, errorThrown) 
+            {
+               console.log("FAIL")
+            });
+               
       } else {
          bootbox.alert({
             message: "Error: nothing to update!",
