@@ -5,7 +5,7 @@ var circle_radius = 40;
 
 // Modal for selector
 function addPickerModalTemplate(all_cropped_frames) {
-   var c; 
+   var c; d-flex justify-content-left position-relative
 
    if($('#select_meteor_modal').length==0) {
       c ='  <div id="select_meteor_modal" class="modal fade" tabindex="-1" style="padding-right: 0!important; width: 100vw; height: 100vh;">\
@@ -17,7 +17,10 @@ function addPickerModalTemplate(all_cropped_frames) {
                         </div>\
                         <div id="thumb_browwser" class="d-flex flex-wrap">\
                            <div class="d-flex justify-content-left mr-2 ml-2 mb-2" id="frame_select_mod">\
-                              <div id="cropped_frame_select" class="d-flex justify-content-left">\
+                              <div id="cropped_frame_select" class="d-flex justify-content-left position-relative">\
+                                 <div id="clip_length" class="mr-2 ml-2" style=" width: 100vw;height: 2px;border-radius: 1px;background: green;position: absolute;top: 0;">\
+                                    <div class="bef" style=" height: 2px; background: #000; width: 600px; "></div>\
+                                 </div>\
                                  <div>\
                                  </div>\
                               </div>\
