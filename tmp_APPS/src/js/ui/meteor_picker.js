@@ -247,7 +247,9 @@ function add_frame_inside_meteor_select(img_path, meteor_id) {
    $('.circl').remove();
 
    // Is the current frame in the JSON?
-   res = get_data_from_json(meteor_id)
+   // WARNING HERE WE PASS METEOR_ID 
+   // SINCE THE FRAME1 = FRAME0 in the JSON
+   res = get_data_from_json(parseInt(meteor_id)-1)
    if(res != false) {
       xy = convert_to_local(parseInt(res['org_x']),parseInt(res['org_y'])); 
       addCircleRepair(xy[0]/factor,xy[1]/factor,meteor_id,'x'); 
