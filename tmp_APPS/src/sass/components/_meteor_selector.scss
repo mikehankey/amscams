@@ -312,29 +312,29 @@
 #cropped_frame_select, .cropped_frame_select {
    white-space: nowrap; 
    a {
-      border:3px solid rgba(0,0,0,1);
+      border-bottom:3px solid rgba(0,0,0,1);
       display: inline-block;
-      margin:.25rem;
+      margin:.25rem 0;
       
       img {
          display: inline-block;
          box-shadow:none;
-         max-width: 200px;
+         width: 200px;
          max-height: 200px;
          width: auto;
       }
 
       &.done{
-         border:3px solid #1956bd
+         border-bottom:3px solid #1956bd
       }
 
       &.cur {
-         border:2px solid rgba(255, 229, 46, 1)!important;
-         box-shadow: 0 0 10px yellow;
+         border-bottom:2px solid rgba(255, 229, 46, 1)!important;
+         box-shadow: 0 0 4px yellow;
       }
 
       &.exists {
-         border: 3px solid orange;
+         border-bottom: 3px solid orange;
       }
    }
 
@@ -351,7 +351,7 @@
 
 
    &.cur {
-      border:2px solid rgba(255, 229, 46, 1)
+      border-bottom:2px solid rgba(255, 229, 46, 1)
    }
    
 }
