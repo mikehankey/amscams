@@ -66,9 +66,7 @@ async function extractFramesFromVideo(videoUrl, fps=25) {
 
    console.log("first_frame ", first_frame);
    console.log("how_many_frames ", how_many_frames)
-
-
-
+ 
    croppedFrames = await extractFramesFromVideo(cropped_video); 
    
    var i; //, frame_c = 0;
@@ -88,6 +86,11 @@ async function extractFramesFromVideo(videoUrl, fps=25) {
 
    // Setup Meteor Picker (Manual Reduce1) 
    // ONLY WHEN FRAMES ARE LOADED (!) 
+
+   console.log("SETUP MANUAL CROP WITH CROPPED FRAMES");
+   console.log(croppedFrames);
+
+
    setup_manual_reduc1(croppedFrames);
  }
 

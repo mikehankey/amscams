@@ -46,6 +46,8 @@ function addPickerModalTemplate(all_cropped_frames) {
    // If the frames aren't on top the of the modal, we add them
    if($('#cropped_frame_select a').length == 0 ) { 
 
+      console.log("ADDING THE FRAMES ON THE MODAL");
+
       // Get the images from all_cropped_frames and add them
       $.each(all_cropped_frames, function(i,v) {
          // <i class="pos">x:'+org_x + ' y:'+org_y+'</i>
@@ -427,17 +429,38 @@ function open_meteor_picker(meteor_id, img_path,all_frames_ids ) {
  **/
 
 function setup_manual_reduc1(all_cropped_frames) { 
-   var all_frames_ids = [];
-
+  
     // Only for loggedin
    if(test_logged_in()==null) {
+      bootbox.alert({
+         message: "Error: you have been logged out.<br>Please, log back in.",
+         className: 'rubberBand animated error',
+         centerVertical: true 
+      })
       return false;
    }
 
 
    // Add modal Template 
+   console.log('addPickerModalTemplate')
    addPickerModalTemplate(all_cropped_frames); 
 
+      // Click on selector (thumb)
+      $('.wi a').click(function(e) { 
+         var $tr = $(this).closest('tr'); 
+   
+         e.stopPropagation();
+   
+         // Get meteor id
+         var meteor_id = $tr.attr('id');
+         meteor_id = meteor_id.split('_')[1];
+    
+         open_meteor_picker(meteor_id,$tr.find('img').attr('src'),all_frames_ids);
+   
+   
+         return false;
+      });
+   
 
    return false;
 
@@ -450,21 +473,6 @@ function setup_manual_reduc1(all_cropped_frames) {
   
   
 
-   // Click on selector (thumb)
-   $('.wi a').click(function(e) { 
-      var $tr = $(this).closest('tr'); 
-
-      e.stopPropagation();
-
-      // Get meteor id
-      var meteor_id = $tr.attr('id');
-      meteor_id = meteor_id.split('_')[1];
- 
-      open_meteor_picker(meteor_id,$tr.find('img').attr('src'),all_frames_ids);
-
-
-      return false;
-   });
 
 
    // Click on "Big" button 
