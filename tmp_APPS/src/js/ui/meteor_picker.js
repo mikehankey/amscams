@@ -207,18 +207,16 @@ function get_new_pos(frame_id) {
 
 // Add Image Inside Picker
 function add_frame_inside_meteor_select(img_path, meteor_id) { 
-
-   console.log("add_frame_inside_meteor_select");
-
+ 
    // Scrolln top
    var $frame = $('.select_frame[data-rel='+meteor_id+']');
    var scroll_to = parseInt(meteor_id);
+   var height, factor;
 
    // Cur has changed
    $('.select_frame').removeClass('cur');
    $frame.addClass('cur');
-   
-
+  
    // Add Image to Cropped selector
    $('#cropped_frame_selector').css('background-image','url('+img_path+')');
 
@@ -226,7 +224,7 @@ function add_frame_inside_meteor_select(img_path, meteor_id) {
    $('#cropped_frame_selector').css('background-image','url('+img_path+')');
 
    // Get Height to init the UI (if needed)
-   var height = $('#select_meteor_modal').outerHeight() - $('#select_meteor_modal .modal-header').outerHeight() - $("#thumb_browwser").outerHeight() - $('#below_cfs').outerHeight();
+   height = $('#select_meteor_modal').outerHeight() - $('#select_meteor_modal .modal-header').outerHeight() - $("#thumb_browwser").outerHeight() - $('#below_cfs').outerHeight();
    
    // 16/9 format
    $('#cropped_frame_selector').css('height',parseInt(height) - 30)
@@ -237,15 +235,31 @@ function add_frame_inside_meteor_select(img_path, meteor_id) {
  
    // Scroll to frame -1 on top if it exists
    if($('.select_frame[data-rel="'+meteor_id+'"]').length==0) {
-      scroll_to = 0;
+      $('#frame_select_mod').scrollTo($('.select_frame[data-rel=0]'), 150 );
+   } else {
+      $('#frame_select_mod').scrollTo($('.select_frame[data-rel="'+scroll_to+'"]'), 150 );
    }
-   // console.log("TO SCROLL ", scroll_to);
-   $('#frame_select_mod').scrollTo($('.select_frame[data-rel="'+scroll_to+'"]'), 150 );
+   
+   factor  = w / $('#cropped_frame_selector').width();  // Same for W & H!!
+
+
+   // Remove All Circles
+   $('.circl').remove();
+
+   // Is the current frame in the JSON?
+   res = get_data_from_json(meteor_id)
+   if(res != false) {
+      xy = convert_to_local(parseInt(res[0]),parseInt(res[1])); 
+      addCircleRepair(xy[0]/factor,xy[1]/factor,meteor_id,'x'); 
+   }
+
+
+   
 
    /*
 
    // Remove All Circles
-   $('.circl').remove();
+  
 
 
 
@@ -270,7 +284,7 @@ function add_frame_inside_meteor_select(img_path, meteor_id) {
       'background-image':'url('+$($frame.find('img')).attr('src')+')'
    }); 
 
-   var factor  = w / $('#cropped_frame_selector').width();  // Same for W & H!!
+   
 
    // Add circles for 3 frames before and 3 frames after
    meteor_id = parseInt(meteor_id);

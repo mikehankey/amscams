@@ -330,6 +330,7 @@
 
       &.cur {
          border:2px solid rgba(255, 229, 46, 1)!important;
+         box-shadow: 0 0 10px yellow;
       }
 
       &.exists {
