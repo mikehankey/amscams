@@ -340,8 +340,8 @@ function add_image_inside_meteor_select(img_path, all_frames_ids, meteor_id) {
       // Add info to frames_jobs
       frames_jobs.push({
          'fn': cur_fr_id,
-         'x': realX,
-         'y': realY 
+         'x': Math.round(realX),
+         'y': Math.round(realY)
       });
       
       // Add info to frame scroller

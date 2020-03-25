@@ -63,8 +63,10 @@ def api_controller(form):
          # Doesnt work yet
          print(delete_detection(form))
 
+      # Update Frames for a given detection
       elif(api_function=='frames'):
          frames_data  = form.getvalue('data')
+         print(frames_data)
          sys.exit(0)
 
       elif(api_function=='tasks'):
