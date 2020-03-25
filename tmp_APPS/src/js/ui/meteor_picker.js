@@ -416,8 +416,12 @@ function open_meteor_picker(meteor_id, img_path,all_frames_ids ) {
  * MAIN SETUP
  **/
 
-function setup_manual_reduc1() { 
+function setup_manual_reduc1(all_cropped_frames) { 
    var all_frames_ids = [];
+
+
+   console.log("IN SETUPMANUL RED");
+   console.log(all_cropped_frames);
 
    // Only for loggedin
    if(test_logged_in()==null) {
