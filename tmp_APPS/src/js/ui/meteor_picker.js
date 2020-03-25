@@ -50,14 +50,16 @@ function addPickerModalTemplate(all_cropped_frames) {
       // Get the images from all_cropped_frames and add them
       $.each(all_cropped_frames, function(i,v) {
 
-         var data = "", class="";
+         var data = "";
+         var _class="";
          // Is the frame already in the json?
          res = get_data_from_json(i)
          if(res!= false) {
             data = '<i class="pos">x:'+ res['org_x'] + ' y:'+ res['org_y'] +'</i>';
+            _class = "done"
          }
   
-         $('<a class="select_frame select_frame_btn done" data-rel="'+i+'"><span>#'+i+'  &bull; '+data+'</span><img src="'+  v  +'"></a>').appendTo($('#cropped_frame_select div'));
+         $('<a class="select_frame select_frame_btn '+_class+'" data-rel="'+i+'"><span>#'+i+'  &bull; '+data+'</span><img src="'+  v  +'"></a>').appendTo($('#cropped_frame_select div'));
 
       });
 
