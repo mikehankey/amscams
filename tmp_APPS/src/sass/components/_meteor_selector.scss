@@ -332,7 +332,7 @@
          border: 2px solid yellow!important;
       }
 
-      &.exists {
+      &.exists, &.updated {
          opacity: 1;
 
          span {
@@ -403,5 +403,24 @@
    .clip_length {
       height: 2px; 
       background: green; 
+   
+      &::before { 
+         display:block;
+         height: 4px;
+         width: 1px;
+         background-color: green; 
+      }
+   
+      &::after { 
+         display:block;
+         height: 4px;
+         width: 1px;
+         background-color: green; 
+      }
    }
+
+
+
+
+
 }
