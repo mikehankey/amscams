@@ -52,7 +52,7 @@ function addPickerModalTemplate(all_cropped_frames) {
 
          var data = "";
          var _class="";
-         
+
          // Is the frame already in the json?
          res = get_data_from_json(i)
          if(res!= false) {
@@ -63,18 +63,7 @@ function addPickerModalTemplate(all_cropped_frames) {
          $('<a class="select_frame select_frame_btn '+_class+'" data-rel="'+i+'"><span>#'+i+'  &bull; '+data+'</span><img src="'+  v  +'"></a>').appendTo($('#cropped_frame_select div'));
 
       });
-
-      /*
-      // Get the images from the reduc table and display them in cropped_frame_select
-      $.each(all_frames_ids, function(i,v) {
-         
-         // Get the original X and Y for the given frame (if any)
-         var org_x  = $('tr#fr_' + v).attr('data-org-x');
-         var org_y  = $('tr#fr_' + v).attr('data-org-y');
  
-         $('<a class="select_frame select_frame_btn" data-rel="'+v+'"><span>#'+v+'  &bull; <i class="pos">x:'+org_x + ' y:'+org_y+'</i></span><img src="'+ $('#thb_'+v).find('img').attr('src') +'"></a>').appendTo($('#cropped_frame_select div'));
-      });
-      */
    }  
    
 
