@@ -1,64 +1,3 @@
-
-
-
-
-/*
-function  setup_manual_reduc1() { 
-   var all_frames_ids = [];
-
-   // Only for loggedin
-   if(test_logged_in()==null) {
-      return false;
-   }
-
-   // Get all the frame ids
-   $('#reduc-tab table tbody tr').each(function() {
-       var id = $(this).attr('id');
-       id = id.split('_');
-       all_frames_ids.push(parseInt(id[1]));
-   });
-
-   // Click on "Big" button 
-   $('.reduc1').click(function(e) { 
-
-      // Find first id in the table
-      var $tr = $('#reduc-tab table tbody tr');
-      var color = $tr.find('img').css('border-color');
- 
-       
-      $tr = $($tr[0]); 
-      var meteor_id = $tr.attr('id');
-      meteor_id = meteor_id.split('_')[1];
-
-      // Then Do the all thing to open the meteor picker 
-      open_meteor_picker(all_frames_ids,meteor_id,color,$tr.find('img').attr('src'));
-
-      return false;
-   });
- 
-
-   // Click on selector (thumb)
-   $('.wi a').click(function(e) { 
-      var $tr = $(this).closest('tr'); 
-      var color = $tr.find('img').css('border-color');
-  
-
-      e.stopPropagation();
-
-      // Get meteor id
-      var meteor_id = $tr.attr('id');
-      meteor_id = meteor_id.split('_')[1];
- 
-      open_meteor_picker(all_frames_ids,meteor_id,color,$tr.find('img').attr('src'));
-
-      return false;
-   });
-}
-*/
-
-
-
-
 // Select a meteor (next/prev arrows)
 function meteor_select(dir,all_frames_ids) {
    var next_id;
@@ -81,4 +20,23 @@ function meteor_select(dir,all_frames_ids) {
 
    // Open the next or previous one
    $('#reduc-tab table tbody tr#fr_' + all_frames_ids[next_id] + " a").click();
+
+}
+
+
+
+// Test if a frame is on the json and return the related data
+function get_data_from_json(frame_id) {
+   
+   if(typeof json_data != 'undefined' && typeof json_data['frames'] != 'undefined') {
+
+      for(var i=0; i< json_data['frames'].length; i++) {
+         if(json_data['frames'][i]['fn']==frame_id) {
+            return {'org_x': json_data['frames'][i]['fn']['x'], 'org_y':  json_data['frames'][i]['fn']['y']}
+         }
+      }
+   }
+
+   return false;
+ 
 }

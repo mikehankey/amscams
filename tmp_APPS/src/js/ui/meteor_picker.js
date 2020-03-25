@@ -45,13 +45,21 @@ function addPickerModalTemplate(all_cropped_frames) {
 
    // If the frames aren't on top the of the modal, we add them
    if($('#cropped_frame_select a').length == 0 ) { 
-
-      console.log("ADDING THE FRAMES ON THE MODAL");
+ 
 
       // Get the images from all_cropped_frames and add them
       $.each(all_cropped_frames, function(i,v) {
-         // <i class="pos">x:'+org_x + ' y:'+org_y+'</i>
-         $('<a class="select_frame select_frame_btn" data-rel="'+i+'"><span>#'+i+'  &bull; </span><img src="'+  v  +'"></a>').appendTo($('#cropped_frame_select div'));
+
+         var data = "";
+         // Is the frame already in the json?
+         res = get_data_from_json(i)
+         if(res!= false) {
+            data = '<i class="pos">x:'+ res['org_x'] + ' y:'+ res['org_y'] +'</i>';
+
+         }
+
+
+         $('<a class="select_frame select_frame_btn" data-rel="'+i+'"><span>#'+i+'  &bull; </span><img src="'+  v  +'">'+data+'</a>').appendTo($('#cropped_frame_select div'));
 
       });
 
@@ -441,25 +449,13 @@ function setup_manual_reduc1(all_cropped_frames) {
    }
 
 
-   // Add modal Template 
-   console.log('addPickerModalTemplate')
+   // Add modal Template  
    addPickerModalTemplate(all_cropped_frames); 
 
-      // Click on selector (thumb)
-      $('.wi a').click(function(e) { 
-         var $tr = $(this).closest('tr'); 
+   // Show it (temp)
+   $('#select_meteor_modal').modal('show');
    
-         e.stopPropagation();
-   
-         // Get meteor id
-         var meteor_id = $tr.attr('id');
-         meteor_id = meteor_id.split('_')[1];
-    
-         open_meteor_picker(meteor_id,$tr.find('img').attr('src'),all_frames_ids);
-   
-   
-         return false;
-      });
+
    
 
    return false;
@@ -472,7 +468,21 @@ function setup_manual_reduc1(all_cropped_frames) {
    });
   
   
+ // Click on selector (thumb)
+ $('.wi a').click(function(e) { 
+   var $tr = $(this).closest('tr'); 
 
+   e.stopPropagation();
+
+   // Get meteor id
+   var meteor_id = $tr.attr('id');
+   meteor_id = meteor_id.split('_')[1];
+
+   open_meteor_picker(meteor_id,$tr.find('img').attr('src'),all_frames_ids);
+
+
+   return false;
+});
 
 
    // Click on "Big" button 
@@ -548,4 +558,29 @@ function setup_manual_reduc1(all_cropped_frames) {
       load_done_button($(this));  
    })
 
+}
+
+
+// Select a meteor (next/prev arrows)
+function meteor_select(dir,all_frames_ids) {
+   var next_id;
+   var cur_id = parseInt($('#sel_frame_id').text());
+   var cur_index = all_frames_ids.indexOf(cur_id); 
+
+   if(dir=="prev") {
+       if(cur_index==0) {
+           next_id = all_frames_ids.length-1;
+       } else {
+           next_id = cur_index - 1;
+       }
+   } else {
+       if(cur_index==all_frames_ids.length-1) {
+           next_id = 0;
+       } else {
+           next_id = cur_index + 1;
+       }
+   }  
+
+   // Open the next or previous one
+   $('#reduc-tab table tbody tr#fr_' + all_frames_ids[next_id] + " a").click();
 }
