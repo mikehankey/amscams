@@ -249,7 +249,7 @@ function add_frame_inside_meteor_select(img_path, meteor_id) {
    // Is the current frame in the JSON?
    res = get_data_from_json(meteor_id)
    if(res != false) {
-      xy = convert_to_local(parseInt(res[0]),parseInt(res[1])); 
+      xy = convert_to_local(parseInt(res['org_x']),parseInt(res['org_y'])); 
       addCircleRepair(xy[0]/factor,xy[1]/factor,meteor_id,'x'); 
    }
 
