@@ -206,10 +206,12 @@ function get_new_pos(frame_id) {
 
 
 // Add Image Inside Picker
-function add_image_inside_meteor_select(img_path, all_frames_ids, meteor_id) { 
-  
+function add_frame_inside_meteor_select(img_path,   meteor_id) { 
 
-   // Remove Previous Circles
+   console.log("add_frame_inside_meteor_select");
+
+
+   // Remove All Circles
    $('.circl').remove();
 
 
@@ -381,42 +383,35 @@ function add_image_inside_meteor_select(img_path, all_frames_ids, meteor_id) {
  
 }
 
-
-// Update Modal Template
-// MAke one frame active
-function updateModalTemplate(meteor_id,img_path,all_frames_ids) {
  
+
+// Open the Modal with a given meteor
+function open_meteor_picker(meteor_id, img_path) {
 
    // Show Modal if necessary
    if($('#select_meteor_modal').hasClass('show')) { 
-      add_image_inside_meteor_select(img_path, all_frames_ids,meteor_id);
+      add_frame_inside_meteor_select(img_path, meteor_id);
       $('#select_meteor_modal').css('padding-right',0);
       $('body').css('padding',0);
    } else {
-      // When the modal already exists 
       
+      // When the modal already exists 
       $('#select_meteor_modal').on('shown.bs.modal', function () {
-         add_image_inside_meteor_select(img_path, all_frames_ids,meteor_id);
+         add_frame_inside_meteor_select(img_path, meteor_id);
          $('#select_meteor_modal').css('padding-right',0);
          $('body').css('padding',0); // Because we don't want slidebars on body
       }).modal('show');
+
    }  
 
-
+   // Click from Top of the modal
    $('.select_frame').unbind('click').click(function() {
       var $t = $(this);
       var MID = $t.attr('data-rel');
       var img_path = $('#thb_' + MID + " img").attr('src');
       $('#cropped_frame_selector').css('background-image','url(none)').css('border','2px solid #ffe52e');
-      add_image_inside_meteor_select(img_path,all_frames_ids,MID)
+      add_image_inside_meteor_select(img_path,MID)
    });
-
-}
-
-
-// Open the Modal with a given meteor
-function open_meteor_picker(meteor_id, img_path,all_frames_ids ) {
-   updateModalTemplate(meteor_id,img_path,all_frames_ids);
    return false; 
 } 
 
@@ -437,19 +432,24 @@ function setup_manual_reduc1(all_cropped_frames) {
       })
       return false;
    }
-
-
+ 
    // Add modal Template  
    addPickerModalTemplate(all_cropped_frames); 
-
-   // Show it (temp)
-   $('#select_meteor_modal').modal('show');
    
-
+   // Click on a thumb in the reduc table
+   $('.wi a').click(function(e) { 
+      var $tr = $(this).closest('tr'); 
    
+      // Get meteor id
+      var meteor_id = $tr.attr('id');
+      meteor_id = meteor_id.split('_')[1];
+   
+      open_meteor_picker(meteor_id,$tr.find('img').attr('src'));
+      return false;
+   });
 
-   return false;
 
+   /*
    // Get all the frame ids
    $('#reduc-tab table tbody tr').each(function() {
       var id = $(this).attr('id');
@@ -547,7 +547,7 @@ function setup_manual_reduc1(all_cropped_frames) {
 
       load_done_button($(this));  
    })
-
+   */
 }
 
 

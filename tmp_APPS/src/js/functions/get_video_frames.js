@@ -85,12 +85,7 @@ async function extractFramesFromVideo(videoUrl, fps=25) {
    load_done_button($(".fr_only")); 
 
    // Setup Meteor Picker (Manual Reduce1) 
-   // ONLY WHEN FRAMES ARE LOADED (!) 
-
-   console.log("SETUP MANUAL CROP WITH CROPPED FRAMES");
-   console.log(croppedFrames);
-
-
+   // ONLY WHEN FRAMES ARE LOADED (!)  
    setup_manual_reduc1(croppedFrames);
  }
 
