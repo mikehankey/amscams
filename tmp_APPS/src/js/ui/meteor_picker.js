@@ -490,7 +490,7 @@ function setup_manual_reduc1() {
  
       if(frames_jobs.length!=0) {
          // Update the temporary form and submit it (POST)
-         //$('#post_form input[name=data]').val(JSON.stringify(frames_jobs))
+         $('#post_form input[name=data]').val(JSON.stringify(frames_jobs))
          //$('#post_form').submit();
       
          // POST ASYNC
