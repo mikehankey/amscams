@@ -91,8 +91,7 @@ async function extractFramesFromVideo(videoUrl, fps=25) {
    setup_manual_reduc1(croppedFrames);
  }
 
-
-
+ 
 
  // When we have a cropped video, we get the frames from and update the 
  $(function() {  

@@ -4,7 +4,7 @@ var frames_done=[];  // Just for the frames done
 var circle_radius = 40;
 
 // Modal for selector
-function addPickerModalTemplate(all_frames_ids) {
+function addPickerModalTemplate(all_cropped_frames) {
    var c; 
 
    if($('#select_meteor_modal').length==0) {
@@ -45,6 +45,15 @@ function addPickerModalTemplate(all_frames_ids) {
 
    // If the frames aren't on top the of the modal, we add them
    if($('#cropped_frame_select a').length == 0 ) { 
+
+      // Get the images from all_cropped_frames and add them
+      $.each(all_cropped_frames, function(i,v) {
+         // <i class="pos">x:'+org_x + ' y:'+org_y+'</i>
+         $('<a class="select_frame select_frame_btn" data-rel="'+i+'"><span>#'+i+'  &bull; </span><img src="'+  v  +'"></a>').appendTo($('#cropped_frame_select div'));
+
+      });
+
+      /*
       // Get the images from the reduc table and display them in cropped_frame_select
       $.each(all_frames_ids, function(i,v) {
          
@@ -54,6 +63,7 @@ function addPickerModalTemplate(all_frames_ids) {
  
          $('<a class="select_frame select_frame_btn" data-rel="'+v+'"><span>#'+v+'  &bull; <i class="pos">x:'+org_x + ' y:'+org_y+'</i></span><img src="'+ $('#thb_'+v).find('img').attr('src') +'"></a>').appendTo($('#cropped_frame_select div'));
       });
+      */
    }  
    
 
@@ -419,14 +429,17 @@ function open_meteor_picker(meteor_id, img_path,all_frames_ids ) {
 function setup_manual_reduc1(all_cropped_frames) { 
    var all_frames_ids = [];
 
-
-   console.log("IN SETUPMANUL RED");
-   console.log(all_cropped_frames);
-
-   // Only for loggedin
+    // Only for loggedin
    if(test_logged_in()==null) {
       return false;
    }
+
+
+   // Add modal Template 
+   addPickerModalTemplate(all_cropped_frames); 
+
+
+   return false;
 
    // Get all the frame ids
    $('#reduc-tab table tbody tr').each(function() {
@@ -435,8 +448,7 @@ function setup_manual_reduc1(all_cropped_frames) {
       all_frames_ids.push(parseInt(id[1]));
    });
   
-   // Add modal Template 
-   addPickerModalTemplate(all_frames_ids); 
+  
 
    // Click on selector (thumb)
    $('.wi a').click(function(e) { 
