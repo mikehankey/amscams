@@ -206,25 +206,41 @@ function get_new_pos(frame_id) {
 
 
 // Add Image Inside Picker
-function add_frame_inside_meteor_select(img_path,   meteor_id) { 
+function add_frame_inside_meteor_select(img_path, meteor_id) { 
 
    console.log("add_frame_inside_meteor_select");
- 
+
+   // Scrolln top
+   var $frame = $('.select_frame[data-rel='+meteor_id+']');
+   var scroll_to = parseInt(meteor_id);
+
+   // Cur has changed
+   $('.select_frame').removeClass('cur');
+   $frame.addClass('cur');
+   
+
    // Add Image to Cropped selector
    $('#cropped_frame_selector').css('background-image','url('+img_path+')');
 
-      // Add Image to Cropped selector
-      $('#cropped_frame_selector').css('background-image','url('+img_path+')');
+   // Add Image to Cropped selector
+   $('#cropped_frame_selector').css('background-image','url('+img_path+')');
+
+   // Get Height to init the UI (if needed)
+   var height = $('#select_meteor_modal').outerHeight() - $('#select_meteor_modal .modal-header').outerHeight() - $("#thumb_browwser").outerHeight() - $('#below_cfs').outerHeight();
+   
+   // 16/9 format
+   $('#cropped_frame_selector').css('height',parseInt(height) - 30)
+   $('#cropped_frame_selector').css('width', parseInt((parseInt(height)-30)*16/9));   
+   
+   // Update Title
+   $('#sel_frame_id, .sel_frame_id').text(' - #' +  meteor_id);   
  
-      // Get Height to init the UI (if needed)
-      var height = $('#select_meteor_modal').outerHeight() - $('#select_meteor_modal .modal-header').outerHeight() - $("#thumb_browwser").outerHeight() - $('#below_cfs').outerHeight();
-      
-      // 16/9 format
-      $('#cropped_frame_selector').css('height',parseInt(height) - 30)
-      $('#cropped_frame_selector').css('width', parseInt((parseInt(height)-30)*16/9));   
-      
-      // Update Title
-      $('#sel_frame_id, .sel_frame_id').text(' - #' +  meteor_id);   
+   // Scroll to frame -1 on top if it exists
+   if($('.select_frame[data-rel="'+meteor_id+'"]').length==0) {
+      scroll_to = 0;
+   }
+   // console.log("TO SCROLL ", scroll_to);
+   $('#frame_select_mod').scrollTo($('.select_frame[data-rel="'+scroll_to+'"]'), 150 );
 
    /*
 
@@ -262,12 +278,7 @@ function add_frame_inside_meteor_select(img_path,   meteor_id) {
    // console.log("METEOR ID", meteor_id);
 
 
-   // Scroll to frame -1 on top if it exists
-   if($('.select_frame[data-rel="'+meteor_id+'"]').length==0) {
-      scroll_to = all_frames_ids[0];
-   }
-   // console.log("TO SCROLL ", scroll_to);
-   $('#frame_select_mod').scrollTo($('.select_frame[data-rel="'+scroll_to+'"]'), 150 );
+   
  
 
 
