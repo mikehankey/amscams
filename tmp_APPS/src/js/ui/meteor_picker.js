@@ -211,6 +211,9 @@ function add_frame_inside_meteor_select(img_path,   meteor_id) {
    console.log("add_frame_inside_meteor_select");
 
 
+
+   /*
+
    // Remove All Circles
    $('.circl').remove();
 
@@ -378,7 +381,7 @@ function add_frame_inside_meteor_select(img_path,   meteor_id) {
 
   });
  
- 
+ */
    return false;
  
 }
@@ -407,10 +410,9 @@ function open_meteor_picker(meteor_id, img_path) {
    // Click from Top of the modal
    $('.select_frame').unbind('click').click(function() {
       var $t = $(this);
-      var MID = $t.attr('data-rel');
-      var img_path = $('#thb_' + MID + " img").attr('src');
+      var img_path = $t.find('img').attr('src');
       $('#cropped_frame_selector').css('background-image','url(none)').css('border','2px solid #ffe52e');
-      add_image_inside_meteor_select(img_path,MID)
+      add_frame_inside_meteor_select(img_path,$t.attr('data-rel'));
    });
    return false; 
 } 
