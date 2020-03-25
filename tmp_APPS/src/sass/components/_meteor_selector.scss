@@ -404,20 +404,29 @@
 .clip_length {
    height: 2px; 
    background: green; 
+   position: relative;
 
    &::before { 
-      content:"|";
-      display:block;
-      height: 4px;
-      width: 1px;
-      background-color: green; 
+      content: "|";
+      display: block;
+      height: 12px;
+      width: 2px;
+      background-color: green;
+      position: absolute;
+      top: -4px;
+      left:0;
+      color:transparent
    }
 
    &::after { 
-      content:"|";
-      display:block;
-      height: 4px;
-      width: 1px;
-      background-color: green; 
+      content: "|";
+      display: block;
+      height: 12px;
+      width: 2px;
+      background-color: green;
+      position: absolute;
+      top: -4px;
+      right:0;
+      color:transparent
    }
 } 
