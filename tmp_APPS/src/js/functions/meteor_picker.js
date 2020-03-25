@@ -32,7 +32,7 @@ function get_data_from_json(frame_id) {
 
       for(var i=0; i< json_data['frames'].length; i++) {
          if(json_data['frames'][i]['fn']==frame_id) {
-            return {'org_x': json_data['frames'][i]['fn']['x'], 'org_y':  json_data['frames'][i]['fn']['y']}
+            return {'org_x': json_data['frames'][i]['x'], 'org_y':  json_data['frames'][i]['y']}
          }
       }
    }

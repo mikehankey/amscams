@@ -59,7 +59,7 @@ function addPickerModalTemplate(all_cropped_frames) {
          }
 
 
-         $('<a class="select_frame select_frame_btn" data-rel="'+i+'"><span>#'+i+'  &bull; </span><img src="'+  v  +'">'+data+'</a>').appendTo($('#cropped_frame_select div'));
+         $('<a class="select_frame select_frame_btn" data-rel="'+i+'"><span>#'+i+'  &bull; '+data+'</span><img src="'+  v  +'"></a>').appendTo($('#cropped_frame_select div'));
 
       });
 
