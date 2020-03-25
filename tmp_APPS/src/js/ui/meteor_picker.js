@@ -481,7 +481,7 @@ function setup_manual_reduc1() {
 
          $('<form id="post_form" action="'+API_URL+'" method="post">\
             <input type="hidden" name="data" />\
-            <input type="hidden" name="function" value="tasks" />\
+            <input type="hidden" name="function" value="tasks_frame" />\
             <input type="hidden" name="tok" value="'+vtl+'" />\
             <input type="hidden" name="usr" value="'+usr[0]+'" />\
             <input type="hidden" name="st" value="'+stID+'"/>\
