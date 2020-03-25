@@ -243,6 +243,7 @@ function add_image_inside_meteor_select(img_path, all_frames_ids, meteor_id) {
    if($('.select_frame[data-rel="'+scroll_to+'"]').length==0) {
       scroll_to = all_frames_ids[0];
    }
+   console.log("TO SCROLL ", scroll_to);
    $('#frame_select_mod').scrollTo($('.select_frame[data-rel="'+scroll_to+'"]'), 150 );
  
 
