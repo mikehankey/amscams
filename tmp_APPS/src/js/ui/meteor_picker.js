@@ -238,19 +238,20 @@ function add_image_inside_meteor_select(img_path, all_frames_ids, meteor_id) {
 
    var factor  = w / $('#cropped_frame_selector').width();  // Same for W & H!!
 
+   // Add circles for 3 frames before and 3 frames after
+   meteor_id = parseInt(meteor_id);
+
+   
+
 
    // Scroll to frame -1 on top if it exists
-   if($('.select_frame[data-rel="'+scroll_to+'"]').length==0) {
+   if($('.select_frame[data-rel="'+meteor_id+'"]').length==0) {
       scroll_to = all_frames_ids[0];
    }
    console.log("TO SCROLL ", scroll_to);
    $('#frame_select_mod').scrollTo($('.select_frame[data-rel="'+scroll_to+'"]'), 150 );
  
 
-
-   // Add circles for 3 frames before and 3 frames after
-   meteor_id = parseInt(meteor_id);
-  
 
    // We get the 3 frames before if they exists
    if(all_frames_ids.indexOf((meteor_id-1))>=0) {
