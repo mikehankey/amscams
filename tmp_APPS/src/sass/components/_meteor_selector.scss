@@ -331,12 +331,14 @@
       &.cur {
          border:2px solid rgba(255, 229, 46, 1)!important;
       }
+
+      &.exits {
+         border-color: 3px solid orange;
+      }
    }
 
 
-   &.done {
-      border-color: orange;
-   }
+   
 }
 
 #cropped_frame_selector {
