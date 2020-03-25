@@ -91,6 +91,12 @@
       background: rgba(0,0,0,.5);
       font-size: .7rem;
     } 
+
+    &.done {
+       span {
+          color:orange;
+       }
+    }
 }
 
 .ccur {
@@ -325,6 +331,11 @@
       &.cur {
          border:2px solid rgba(255, 229, 46, 1)!important;
       }
+   }
+
+
+   &.done {
+      border-color: orange;
    }
 }
 
