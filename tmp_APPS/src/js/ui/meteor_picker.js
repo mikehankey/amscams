@@ -112,13 +112,13 @@ function go_to_next(next_id) {
    // we get the related src path
 
    if($next_frame.length != 0) {
-      add_image_inside_meteor_select($next_frame.find('img').attr('src'), parseInt(next_id))
+      add_frame_inside_meteor_select($next_frame.find('img').attr('src'), parseInt(next_id))
    } else {
       // We select the first one 
       var next_id = parseInt($($('#cropped_frame_select .select_frame').get(0)).attr('data-rel'));
       $next_frame = $('.select_frame[data-rel='+next_id+']');
  
-      add_image_inside_meteor_select($next_frame.find('img').attr('src'),next_id);
+      add_frame_inside_meteor_select($next_frame.find('img').attr('src'),next_id);
    }
 
 }
