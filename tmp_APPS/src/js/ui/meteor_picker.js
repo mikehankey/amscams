@@ -283,6 +283,7 @@ function select_meteor_pos(factor) {
 
          $('.select_frame.exists').removeClass('exists').find('span').html();
          for(var i = first_frame; i == last_frame; i++) {
+            console.log("ADD CLASS EXISTS TO ", i);
             $('.select_frame[data-rel='+i+']').addClass('exists');
          }
 
