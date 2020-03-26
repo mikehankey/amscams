@@ -1,6 +1,6 @@
 var frames_jobs=[];           // All the info for the frames updated/created
 var select_border_size = 2;   // See css 
-var frames_done=[];           // Just for the frames # of the frames updated/created
+var frames_done=[];           // Just for the frames # of the frames updated/created 
 var circle_radius = 40;       // See css
 var thumb_width = 200;        // See px css
 var margin_thumb= 0.24        // See rem css
@@ -31,16 +31,16 @@ function setClipLength(from,to) {
 // Find & Setup new clip length
 // Based on new onces and the original in the JSON
 function getNewClipLengthAndUpdate() {
+
    // We get the min/max from frames_done
    var _min = Math.min.apply(Math,frames_done);
    var _max = Math.max.apply(Math,frames_done);
 
+   // And from all_cropped_frames_ids
    _min = Math.min(_min,Math.min.apply(Math,all_cropped_frames_ids));
    _max = Math.max(_max,Math.max.apply(Math,all_cropped_frames_ids));
 
-   setClipLength(_min,_max);
-   
-   
+   setClipLength(_min,_max); 
 }
 
 
@@ -262,12 +262,8 @@ function select_meteor_pos(factor) {
       
       // Cur frame
       var cur_fr_id = $('#cropped_frame_select .cur').attr('data-rel');
-
       var new_first_frame = parseInt(cur_fr_id)-1;
-
-      
-      // Test how many frames remain if we delete everything before
-      console.log("TEST ", (last_frame-new_first_frame));
+  
 
       // => it means cur_fr_id == FIRST FRAME!
       if((last_frame-new_first_frame)<=1) {
@@ -278,7 +274,15 @@ function select_meteor_pos(factor) {
          })
          return false;
       } else {
+         
+         // We need to remove all the data from frames_done and frames_jobs for the remove frames
+         // ie the frames from first_frame to new_first_frame
+         first_frame  = new_first_frame;
 
+         $('.select_frame.exists').removeClass('exists');
+         for(var i = first_frame; i = last_frame; i++) {
+            $('.select_frame[data-rel='+i+']').addClass('exists');
+         }
 
 
       }
@@ -303,14 +307,7 @@ function select_meteor_pos(factor) {
       // Transform values
       if(!$(this).hasClass('done')) {
           $(this).addClass('done');
-      } else {
-         /*
-          $('#lh').css('top',relY);
-          $('#lv').css('left',relX); 
-         */
-      }
-   
-      
+      }  
    
       // Add current frame to frame_done if not already there
       if($.inArray(cur_fr_id, frames_done )==-1) {
@@ -339,15 +336,7 @@ function select_meteor_pos(factor) {
       
       var parentOffset = $(this).offset(); 
       var relX = e.pageX - parentOffset.left - select_border_size;
-      var relY = e.pageY - parentOffset.top - select_border_size;
-   
-      // Cross
-      /*
-      if(!$(this).hasClass('done')) {
-          $('#lh').css('top',relY-2);
-          $('#lv').css('left',relX-2); 
-      }
-      */
+      var relY = e.pageY - parentOffset.top - select_border_size; 
 
       add_mouse_pos(parseInt(relX*factor),parseInt(relY*factor),factor);
    
