@@ -347,6 +347,8 @@ function add_frame_inside_meteor_select(img_path, meteor_id) {
    // Is the CURRENT frame in the JSON?
    // WARNING HERE WE PASS METEOR_ID 
    
+   console.log("TEST CIRCLE FOR CUR ", meteor_id)
+
    // Do we have a "new pos"
    test_new_pos = get_new_pos(meteor_id);
    if(test_new_pos != false) {
@@ -378,9 +380,7 @@ function add_frame_inside_meteor_select(img_path, meteor_id) {
             addCircleRepair(xy[0]/factor,xy[1]/factor,i,'b'); 
          }
       }
-
-
-   
+ 
    }
 
    // Do we have next frames in JSON?
