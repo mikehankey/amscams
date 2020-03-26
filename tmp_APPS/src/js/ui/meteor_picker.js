@@ -256,14 +256,10 @@ function get_new_pos(frame_id) {
 
 // Delete all frames before one
 function delete_before() {
-
-
-
-
+ 
    // Delete BEFOPRE
    $('#delete_b_cur').unbind('click').click(function(e) {
-      console.log("delete_before");
-      
+   
       // Cur frame
       var cur_fr_id = $('#cropped_frame_select .cur').attr('data-rel');
       var new_first_frame = parseInt(cur_fr_id)-1;
@@ -286,6 +282,7 @@ function delete_before() {
          $('.select_frame.exists').each(function(i,v) {
             var id = parseInt($(v).attr('data-rel'));
             if(id<first_frame) { 
+               console.log("REMOVE POS FOR ", id)
                $('.select_frame[data-rel='+id+']').removeClass('exists').end().find('.pos').remove();
             }
          });
@@ -322,7 +319,7 @@ function delete_after() {
          // UI (remove pos & class exists)
          $('.select_frame.exists').each(function(i,v) {
             var id = parseInt($(v).attr('data-rel'));
-            if(id>=last_frame) { 
+            if(id>last_frame) { 
                $('.select_frame[data-rel='+id+']').removeClass('exists').end().find('.pos').remove();
             }
          });
