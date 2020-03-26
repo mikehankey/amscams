@@ -104,7 +104,7 @@ function addPickerModalTemplate(all_cropped_frames) {
 
 
 // Go to Next Frame
-function go_to_next(next_id , all_frames_ids) {
+function go_to_next(next_id) {
  
    // Does the next frame exist?
    var $next_frame = $('.select_frame[data-rel='+next_id+']');
@@ -112,13 +112,13 @@ function go_to_next(next_id , all_frames_ids) {
    // we get the related src path
 
    if($next_frame.length != 0) {
-      add_image_inside_meteor_select($next_frame.find('img').attr('src'), all_frames_ids, parseInt(next_id))
+      add_image_inside_meteor_select($next_frame.find('img').attr('src'), parseInt(next_id))
    } else {
       // We select the first one 
       var next_id = parseInt($($('#cropped_frame_select .select_frame').get(0)).attr('data-rel'));
       $next_frame = $('.select_frame[data-rel='+next_id+']');
  
-      add_image_inside_meteor_select($next_frame.find('img').attr('src'),all_frames_ids ,next_id);
+      add_image_inside_meteor_select($next_frame.find('img').attr('src'),next_id);
    }
 
 }
@@ -230,9 +230,71 @@ function get_new_pos(frame_id) {
    } else {
       return false;
    }
-
+ 
 
 }
+
+
+// Select meteor position (ui)
+function select_meteor_pos() {
+   $("#cropped_frame_selector").unbind('click').click(function(e){
+     
+      var parentOffset = $(this).offset(); 
+      var relX = e.pageX - parentOffset.left - select_border_size;
+      var relY = e.pageY - parentOffset.top - select_border_size;
+   
+      // Convert into HD_x & HD_y
+      // from x,y
+      var realX = relX*factor+x;
+      var realY = relY*factor+y;
+   
+      // Transform values
+      if(!$(this).hasClass('done')) {
+          $(this).addClass('done');
+      } else {
+          $('#lh').css('top',relY);
+          $('#lv').css('left',relX); 
+      }
+   
+      cur_fr_id = $('#cropped_frame_select .cur').attr('data-rel');
+   
+      // Add current frame to frame_done if not already there
+      if($.inArray(cur_fr_id, frames_done )==-1) {
+         frames_done.push(parseInt(cur_fr_id));  // We push an int so we can get the min
+         $('#fr_cnt').html(parseInt($('#fr_cnt').html())+1);
+      }
+   
+      // Add info to frames_jobs
+      frames_jobs.push({
+         'fn': cur_fr_id,
+         'x': Math.round(realX),
+         'y': Math.round(realY)
+      });
+      
+      // Add info to frame scroller
+      $('#cropped_frame_select .cur').addClass('done').find('.pos').html('<br>x:' + parseInt(realX) + ' y:'  + parseInt(realY));
+      
+      // Go to next frame
+      go_to_next(parseInt(cur_fr_id)+1);
+      
+   }).unbind('mousemove').mousemove(function(e) {
+      
+      var parentOffset = $(this).offset(); 
+      var relX = e.pageX - parentOffset.left - select_border_size;
+      var relY = e.pageY - parentOffset.top - select_border_size;
+   
+      // Cross
+      if(!$(this).hasClass('done')) {
+          $('#lh').css('top',relY-2);
+          $('#lv').css('left',relX-2); 
+      }
+   
+      add_mouse_pos(parseInt(relX*factor),parseInt(relY*factor),factor);
+   
+   });
+   
+}
+
 
 
 // Add Image Inside Picker
@@ -302,11 +364,7 @@ function add_frame_inside_meteor_select(img_path, meteor_id) {
 
    // Do we have next frames in JSON?
    for(var i = (meteor_id+1); i <= meteor_id + 3 ; i++) { 
-      res = get_data_from_json(parseInt(i));
-
-      console.log("TEST CIRcles AFTER " , i);
-      console.log(res);
-
+      res = get_data_from_json(parseInt(i)); 
 
       if(res != false) {
          xy = convert_to_local(parseInt(res['org_x']),parseInt(res['org_y'])); 
