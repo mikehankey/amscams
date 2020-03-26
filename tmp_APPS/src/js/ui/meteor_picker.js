@@ -373,6 +373,10 @@ function add_frame_inside_meteor_select(img_path, meteor_id) {
    }    
 
 
+   // GO!
+   select_meteor_pos();
+
+
    /*
 
       if(all_frames_ids.indexOf(i) >= 0 ) { 
