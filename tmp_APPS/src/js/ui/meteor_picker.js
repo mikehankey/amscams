@@ -6,6 +6,9 @@ var thumb_width = 200;  // See px css
 var margin_thumb= 0.24 // See rem css
 var FPS = 25;
 
+// We need the min & max cropped to set the clip length
+var all_cropped_frames_ids = []; // FROM THE JSON
+
 // Set up green line for clip lenght (start/end are frame ids)
 function setClipLength(from,to) { 
    to = to +1; // Because UI / CSS
@@ -19,6 +22,22 @@ function setClipLength(from,to) {
    // Update length_info
    $('#length_info').html('- duration: ' + (to-from) + " frames (" +  ((to-from)  /  FPS).toFixed(2) + "s)");
 
+}
+
+
+// Find & Setup new clip length
+// Based on new onces and the original in the JSON
+function getNewClipLengthAndUpdate() {
+   // We get the min/max from frames_done
+   var _min = Math.min.apply(Math,frames_done);
+   var _max = Math.max.apply(Math,frames_done);
+
+   _min = Math.min(_min,Math.min.apply(Math,all_cropped_frames_ids));
+   _max = Math.max(_max,Math.max.apply(Math,all_cropped_frames_ids));
+
+   setClipLength(_min,_max);
+   
+   
 }
 
 
@@ -67,10 +86,7 @@ function addPickerModalTemplate(all_cropped_frames) {
 
    // If the frames aren't on top the of the modal, we add them (INIT)
    if($('#cropped_frame_select a').length == 0 ) { 
-  
-      // We need the min & max cropped to set the clip length
-      var all_cropped_frames_ids = [];
-
+   
       // Get the images from all_cropped_frames and add them
       $.each(all_cropped_frames, function(i,v) {
 
@@ -213,8 +229,7 @@ function convert_to_local(_x,_y) {
 
 
 
-// Return x & y or false
-// for a given frame id in frames_jobs
+// Return x & y or false  for a given frame id in frames_jobs
 function get_new_pos(frame_id) {
    var t = false, res=[];
    
@@ -272,6 +287,10 @@ function select_meteor_pos(factor) {
          'y': Math.round(realY)
       });
       
+
+      // Update Clip length
+      getNewClipLengthAndUpdate();
+
       // Add info to frame scroller
       $('.select_frame[data-rel='+cur_fr_id+']').addClass('done').find('span').html('#'+cur_fr_id+'  &bull;<br>x:' + parseInt(realX) + ' y:'  + parseInt(realY));
       
@@ -346,9 +365,7 @@ function add_frame_inside_meteor_select(img_path, meteor_id) {
 
    // Is the CURRENT frame in the JSON?
    // WARNING HERE WE PASS METEOR_ID 
-   
-   console.log("TEST CIRCLE FOR CUR ", meteor_id)
-
+    
    // Do we have a "new pos"
    test_new_pos = get_new_pos(meteor_id);
    if(test_new_pos != false) {
