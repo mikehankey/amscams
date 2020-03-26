@@ -279,8 +279,10 @@ function select_meteor_pos(factor) {
       if(!$(this).hasClass('done')) {
           $(this).addClass('done');
       } else {
+         /*
           $('#lh').css('top',relY);
           $('#lv').css('left',relX); 
+         */
       }
    
       cur_fr_id = $('#cropped_frame_select .cur').attr('data-rel');
@@ -315,11 +317,13 @@ function select_meteor_pos(factor) {
       var relY = e.pageY - parentOffset.top - select_border_size;
    
       // Cross
+      /*
       if(!$(this).hasClass('done')) {
           $('#lh').css('top',relY-2);
           $('#lv').css('left',relX-2); 
       }
-   
+      */
+
       add_mouse_pos(parseInt(relX*factor),parseInt(relY*factor),factor);
    
    });
