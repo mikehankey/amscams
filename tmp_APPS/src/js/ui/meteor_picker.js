@@ -346,11 +346,19 @@ function add_frame_inside_meteor_select(img_path, meteor_id) {
 
    // Is the CURRENT frame in the JSON?
    // WARNING HERE WE PASS METEOR_ID 
-   // SINCE THE FRAME1 = FRAME0 in the JSON
-   res = get_data_from_json(meteor_id)
-   if(res != false) {
-      xy = convert_to_local(parseInt(res['org_x']),parseInt(res['org_y'])); 
+   
+   // Do we have a "new pos"
+   test_new_pos = get_new_pos(meteor_id);
+   if(test_new_pos != false) {
+      xy = convert_to_local(parseInt(test_new_pos[0]),parseInt(test_new_pos[1])); 
       addCircleRepair(xy[0]/factor,xy[1]/factor,meteor_id,'x'); 
+   } else {
+      // Of something in the initial JSON?
+      res = get_data_from_json(meteor_id)
+      if(res != false) {
+         xy = convert_to_local(parseInt(res['org_x']),parseInt(res['org_y'])); 
+         addCircleRepair(xy[0]/factor,xy[1]/factor,meteor_id,'x'); 
+      }
    }
 
    // Do we have previous frames in the JSON?
@@ -377,10 +385,7 @@ function add_frame_inside_meteor_select(img_path, meteor_id) {
 
    // Do we have next frames in JSON?
    for(var i = (meteor_id+1); i <= meteor_id + 3 ; i++) { 
-      
-
-      console.log("TEST ", i, " after");
-
+        
       test_new_pos = get_new_pos(i);
       if(test_new_pos != false) {
             xy = convert_to_local(parseInt(test_new_pos[0]),parseInt(test_new_pos[1])); 
