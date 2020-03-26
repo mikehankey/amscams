@@ -261,7 +261,7 @@ function add_frame_inside_meteor_select(img_path, meteor_id) {
    $('#cropped_frame_selector').css('width', parseInt((parseInt(height)-30)*16/9));   
    
    // Update Title
-   $('#sel_frame_id, .sel_frame_id').text(' - Frame #' +  meteor_id);   
+   $('#sel_frame_id, .sel_frame_id').text(' - frame #' +  meteor_id);   
  
    // Scroll to frame -1 on top if it exists
    if($('.select_frame[data-rel="'+meteor_id+'"]').length==0) {
@@ -289,7 +289,7 @@ function add_frame_inside_meteor_select(img_path, meteor_id) {
 
    // Do we have previous frames in the JSON?
    for(var i = meteor_id-1; i >= meteor_id - 3 ; i--) {  
-      res = get_data_from_json(parseInt(i))
+      res = get_data_from_json(parseInt(i));
       if(res != false) {
          xy = convert_to_local(parseInt(res['org_x']),parseInt(res['org_y'])); 
          addCircleRepair(xy[0]/factor,xy[1]/factor,i,'b'); 
@@ -299,7 +299,12 @@ function add_frame_inside_meteor_select(img_path, meteor_id) {
 
    // Do we have next frames in JSON?
    for(var i = meteor_id+1; i <= meteor_id + 3 ; i++) { 
-      res = get_data_from_json(parseInt(i))
+      res = get_data_from_json(parseInt(i));
+
+      console.log("TEST CIRcles AFTER " , i);
+      console.log(res);
+
+
       if(res != false) {
          xy = convert_to_local(parseInt(res['org_x']),parseInt(res['org_y'])); 
          addCircleRepair(xy[0]/factor,xy[1]/factor,i,'a'); 
