@@ -237,6 +237,7 @@ function get_new_pos(frame_id) {
 
 // Select meteor position (ui)
 function select_meteor_pos(factor) {
+
    $("#cropped_frame_selector").unbind('click').click(function(e){
      
       var parentOffset = $(this).offset(); 
@@ -272,7 +273,7 @@ function select_meteor_pos(factor) {
       });
       
       // Add info to frame scroller
-      $('#cropped_frame_select .cur').addClass('done').find('.pos').html('<br>x:' + parseInt(realX) + ' y:'  + parseInt(realY));
+      $('.select_frame[data-rel='+cur_fr_id+']').addClass('done').find('span').html('#'+cur_fr_id+'  &bull;<br>x:' + parseInt(realX) + ' y:'  + parseInt(realY));
       
       // Go to next frame
       go_to_next(parseInt(cur_fr_id)+1);
