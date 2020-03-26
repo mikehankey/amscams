@@ -73,8 +73,7 @@ function addPickerModalTemplate(all_cropped_frames) {
                         <div id="below_cfs" class="d-flex justify-content-between  m-2">\
                            <div class="alert p-1 pl-1 pr-2 mb-0"><span id="fr_cnt">0</span> Frames done</div>\
                            <div class="d-flex justify-content-center text-center">\
-                              <div class="alert alert-info mb-0 p-1 pr-1 pl-2">Select the <strong>POSITION</strong> on the meteor on each frame.</div>\
-                              <button id="delete_cur" class="btn btn-secondary">Delete</button>\
+                              <button id="delete_cur" class="btn btn-danger">Delete</button>\
                            </div>\
                            <button id="create_all" class="btn btn-primary">Create All</button>\
                         </div>\
