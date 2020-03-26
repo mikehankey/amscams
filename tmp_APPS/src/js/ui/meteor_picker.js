@@ -256,9 +256,14 @@ function get_new_pos(frame_id) {
 
 // Delete all frames before one
 function delete_before() {
+
+
+
+
    // Delete BEFOPRE
    $('#delete_b_cur').unbind('click').click(function(e) {
-         
+      console.log("delete_before");
+      
       // Cur frame
       var cur_fr_id = $('#cropped_frame_select .cur').attr('data-rel');
       var new_first_frame = parseInt(cur_fr_id)-1;
@@ -275,7 +280,7 @@ function delete_before() {
          
          // We need to remove all the data from frames_done and frames_jobs for the remove frames
          // ie the frames from first_frame to new_first_frame
-         first_frame  = new_first_frame;
+         first_frame  = new_first_frame+1;
 
          // UI (remove pos & class exists)
          $('.select_frame.exists').each(function(i,v) {
@@ -312,7 +317,7 @@ function delete_after() {
          
          // We need to remove all the data from frames_done and frames_jobs for the remove frames
          // ie the frames from first_frame to new_first_frame
-         last_frame  = new_last_frame;
+         last_frame  = new_last_frame-1;
 
          // UI (remove pos & class exists)
          $('.select_frame.exists').each(function(i,v) {
