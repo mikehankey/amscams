@@ -254,16 +254,15 @@ function get_new_pos(frame_id) {
 }
 
 
-// Select meteor position (ui)
-function select_meteor_pos(factor) {
-
+// Delete all frames before one
+function delete_before() {
    // Delete BEFOPRE
    $('#delete_b_cur').unbind('click').click(function(e) {
-      
+         
       // Cur frame
       var cur_fr_id = $('#cropped_frame_select .cur').attr('data-rel');
       var new_first_frame = parseInt(cur_fr_id)-1;
-   
+
       // => it means cur_fr_id == FIRST FRAME! 
       if((last_frame-new_first_frame)<=1) {
          bootbox.alert({
@@ -286,12 +285,53 @@ function select_meteor_pos(factor) {
             }
          });
 
-         
+         setClipLength(first_frame,last_frame)
       }
-      
-
-
    });
+}
+
+
+// Delete all frames after one
+function delete_after() {
+   // Delete BEFOPRE
+   $('#delete_a_cur').unbind('click').click(function(e) {
+         
+      // Cur frame
+      var cur_fr_id = $('#cropped_frame_select .cur').attr('data-rel');
+      var new_last_frame = parseInt(cur_fr_id)+1;
+
+      // => it means cur_fr_id == FIRST FRAME! 
+      if((new_last_frame-first_frame)<=1) {
+         bootbox.alert({
+            message: "Error: you need at least 2 frames for the detection",
+            className: 'rubberBand animated error',
+            centerVertical: true 
+         })
+         return false;
+      } else {
+         
+         // We need to remove all the data from frames_done and frames_jobs for the remove frames
+         // ie the frames from first_frame to new_first_frame
+         last_frame  = new_last_frame;
+
+         // UI (remove pos & class exists)
+         $('.select_frame.exists').each(function(i,v) {
+            var id = parseInt($(v).attr('data-rel'));
+            if(id>=last_frame) { 
+               $('.select_frame[data-rel='+id+']').removeClass('exists').end().find('.pos').remove();
+            }
+         });
+
+         setClipLength(first_frame,last_frame)
+      }
+   });
+}
+
+// Select meteor position (ui)
+function select_meteor_pos(factor) {
+
+   delete_before();
+   delete_after();
 
    // Select Meteor
    $("#cropped_frame_selector").unbind('click').click(function(e){
