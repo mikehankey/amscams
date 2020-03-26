@@ -264,7 +264,7 @@ function select_meteor_pos(factor) {
       var cur_fr_id = $('#cropped_frame_select .cur').attr('data-rel');
 
       // => it means cur_fr_id == FIRST FRAME!
-      console.log("HOW MANY FRAMES LEFT IF WE DO IT " , (cur_fr_id-last_frame));
+      console.log("HOW MANY FRAMES LEFT IF WE DO IT " , (last_frame-cur_fr_id));
 
       // Test how many frames remain if we delete everything before
 
