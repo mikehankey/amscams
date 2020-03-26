@@ -4,6 +4,7 @@ var frames_done=[];  // Just for the frames done
 var circle_radius = 40; // See css
 var thumb_width = 200;  // See px css
 var margin_thumb= 0.24 // See rem css
+var FPS = 25;
 
 // Set up green line for clip lenght (start/end are frame ids)
 function setClipLength(from,to) { 
@@ -14,6 +15,9 @@ function setClipLength(from,to) {
    var width = "calc(("+thumb_width+"px + "+margin_thumb+"rem) * "+ (to-from) +") ";
  
    $('.clip_length').css('margin-left',marg).css('width',width);
+
+   // Update length_info
+   $('#length_info').html('duration: ' + (to-from) + " frames (" +  (to-from)  *  FPS + "s)");
 
 }
 
@@ -27,8 +31,8 @@ function addPickerModalTemplate(all_cropped_frames) {
                   <div class="modal-dialog  modal-lg modal-dialog-centered box" style="width: 100vw;max-width: 100%;margin: 0; padding: 0;">\
                      <div class="modal-content" style="height: 100vh;">\
                         <div class="modal-header p-0 pt-1" style="border:none!important">\
-                           <h5 class="ml-1 pt-1 mb-0">Select Meteor Position  <span id="sel_frame_id"></span></h5>\
-                           <button  class="btn btn-secondary btn-sm mr-1"  data-dismiss="modal">&times; Close</button>\
+                           <h5 class="ml-1 pt-1 mb-0">Select Meteor Position  <span id="sel_frame_id"></span> <span id="length_info"></span></h5>\
+                           <button  class="btn btn-secondary btn-sm mr-1" data-dismiss="modal">&times; Close</button>\
                         </div>\
                         <div id="thumb_browwser" class="d-flex flex-wrap">\
                            <div class="d-flex justify-content-left mr-2 ml-2 mb-2" id="frame_select_mod">\
