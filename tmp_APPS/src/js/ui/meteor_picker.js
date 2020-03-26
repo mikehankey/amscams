@@ -280,13 +280,8 @@ function select_meteor_pos(factor) {
 
          // UI (remove pos & class exists)
          $('.select_frame.exists').each(function(i,v) {
-
-            console.log("DOESNT EXIST ANYMORE  " , parseInt($(v).attr('data-rel')) , " ?");
-            console.log("< ", first_frame + " ? ");
-             
-            if(parseInt($(v).attr('data-rel'))<first_frame) {
-               console.log("YES");
-               $('.select_frame.exists').removeClass('exists').end().find('.pos').remove();
+            if(parseInt($(v).attr('data-rel'))<first_frame) { 
+               $('.select_frame[data-rel='+v+']').removeClass('exists').end().find('.pos').remove();
             }
          });
 
