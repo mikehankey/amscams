@@ -1,5 +1,5 @@
 var frames_jobs=[];  // All the info for the frames done
-var select_border_size = 2; // See css **
+var select_border_size = 2; // See css 
 var frames_done=[];  // Just for the frames done
 var circle_radius = 40; // See css
 var thumb_width = 200;  // See px css
@@ -51,7 +51,7 @@ function addPickerModalTemplate(all_cropped_frames) {
                      <div class="modal-content" style="height: 100vh;">\
                         <div class="modal-header p-0 pt-1" style="border:none!important">\
                            <h5 class="ml-1 pt-1 mb-0">Select Meteor Position  <span id="sel_frame_id"></span> <span id="length_info"></span></h5>\
-                           <button  class="btn btn-secondary btn-sm mr-1" data-dismiss="modal">&times; Close</button>\
+                           <button  class="btn mr-1" data-dismiss="modal">&times;</button>\
                         </div>\
                         <div id="thumb_browwser" class="d-flex flex-wrap">\
                            <div class="d-flex justify-content-left mr-2 ml-2 mb-2" id="frame_select_mod">\
@@ -73,7 +73,9 @@ function addPickerModalTemplate(all_cropped_frames) {
                         <div id="below_cfs" class="d-flex justify-content-between  m-2">\
                            <div class="alert p-1 pl-1 pr-2 mb-0"><span id="fr_cnt">0</span> Frames done</div>\
                            <div class="d-flex justify-content-center text-center">\
+                              <button id="delete_b_cur" class="btn btn-danger">Delete all frames before</button>\
                               <button id="delete_cur" class="btn btn-danger">Delete</button>\
+                              <button id="delete_a_cur" class="btn btn-danger">Delete all frames after</button>\
                            </div>\
                            <button id="create_all" class="btn btn-primary">Create All</button>\
                         </div>\
@@ -253,6 +255,16 @@ function get_new_pos(frame_id) {
 // Select meteor position (ui)
 function select_meteor_pos(factor) {
 
+   // Delete data
+   $('#delete_cur').unbind('click').click(function() {
+      var cur_fr_id = $('#cropped_frame_select .cur').attr('data-rel');
+      frames_jobs 
+      frames_done
+      return false;
+   });
+
+
+   // Select Meteor
    $("#cropped_frame_selector").unbind('click').click(function(e){
      
       var parentOffset = $(this).offset(); 
