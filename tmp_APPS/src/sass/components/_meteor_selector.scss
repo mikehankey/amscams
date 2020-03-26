@@ -387,6 +387,8 @@
       width: 40px;
       margin-top: 9px;
       text-shadow: 2px 1px rgba(0,0,0,1);
+      position: absolute;
+      top:-18px;
    }
 }
 
@@ -433,10 +435,12 @@
 
 #length_info {
    color:#029c02;
+   font-size: 1rem;
 }
 
 
 // Title
 #sel_frame_id {
    color:rgb(255, 229, 46);
+   font-size: 1rem;
 }

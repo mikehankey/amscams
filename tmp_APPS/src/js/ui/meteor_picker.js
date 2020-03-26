@@ -1,10 +1,11 @@
-var frames_jobs=[];  // All the info for the frames done
-var select_border_size = 2; // See css 
-var frames_done=[];  // Just for the frames done
-var circle_radius = 40; // See css
-var thumb_width = 200;  // See px css
-var margin_thumb= 0.24 // See rem css
-var FPS = 25;
+var frames_jobs=[];           // All the info for the frames updated/created
+var select_border_size = 2;   // See css 
+var frames_done=[];           // Just for the frames # of the frames updated/created
+var circle_radius = 40;       // See css
+var thumb_width = 200;        // See px css
+var margin_thumb= 0.24        // See rem css
+var FPS = 25;                 // For duration
+var first_frame, last_frame;  // To send to the API
 
 // We need the min & max cropped to set the clip length
 var all_cropped_frames_ids = []; // FROM THE JSON
@@ -22,6 +23,8 @@ function setClipLength(from,to) {
    // Update length_info
    $('#length_info').html('- duration: ' + (to-from) + " frames (" +  ((to-from)  /  FPS).toFixed(2) + "s)");
 
+   first_frame = from;
+   last_frame = to;
 }
 
 
@@ -254,14 +257,19 @@ function get_new_pos(frame_id) {
 // Select meteor position (ui)
 function select_meteor_pos(factor) {
 
-   // Delete data
-   $('#delete_cur').unbind('click').click(function() {
+   // Delete BEFOPRE
+   $('#delete_b_cur').unbind('click').click(function(e) {
+      
+      // Cur frame
       var cur_fr_id = $('#cropped_frame_select .cur').attr('data-rel');
-      frames_jobs 
-      frames_done
-      return false;
-   });
 
+      // => it means cur_fr_id == FIRST FRAME!
+      console.log("HOW MANY FRAMES LEFT IF WE DO IT " , (cur_fr_id-last_frame));
+
+      // Test how many frames remain if we delete everything before
+
+
+   });
 
    // Select Meteor
    $("#cropped_frame_selector").unbind('click').click(function(e){
@@ -269,6 +277,7 @@ function select_meteor_pos(factor) {
       var parentOffset = $(this).offset(); 
       var relX = e.pageX - parentOffset.left - select_border_size;
       var relY = e.pageY - parentOffset.top - select_border_size;
+      var cur_fr_id = $('#cropped_frame_select .cur').attr('data-rel');
    
       // Convert into HD_x & HD_y
       // from x,y
@@ -285,7 +294,7 @@ function select_meteor_pos(factor) {
          */
       }
    
-      cur_fr_id = $('#cropped_frame_select .cur').attr('data-rel');
+      
    
       // Add current frame to frame_done if not already there
       if($.inArray(cur_fr_id, frames_done )==-1) {
