@@ -17,7 +17,7 @@ function setClipLength(from,to) {
    $('.clip_length').css('margin-left',marg).css('width',width);
 
    // Update length_info
-   $('#length_info').html('duration: ' + (to-from) + " frames (" +  (to-from)  *  FPS + "s)");
+   $('#length_info').html('duration: ' + (to-from) + " frames (" +  ((to-from)  /  FPS).toFixed(2) + "s)");
 
 }
 
