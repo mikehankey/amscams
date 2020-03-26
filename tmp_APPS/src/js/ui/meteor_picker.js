@@ -265,7 +265,9 @@ function select_meteor_pos(factor) {
       var new_first_frame = parseInt(cur_fr_id);
    
       // => it means cur_fr_id == FIRST FRAME!
-      if((last_frame-new_first_frame-1)<=1) {
+      console.log("TEST ", last_frame + " - " +  new_first_frame  )
+      console.log("TEST ", (last_frame-new_first_frame));
+      if((last_frame-new_first_frame)<=1) {
          bootbox.alert({
             message: "Error: you need at least 2 frames for the detection",
             className: 'rubberBand animated error',
