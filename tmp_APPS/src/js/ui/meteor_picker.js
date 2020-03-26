@@ -265,7 +265,7 @@ function select_meteor_pos(factor) {
       var new_first_frame = parseInt(cur_fr_id);
    
       // => it means cur_fr_id == FIRST FRAME!
-      if((last_frame-new_first_frame)<=1) {
+      if((last_frame-new_first_frame-1)<=1) {
          bootbox.alert({
             message: "Error: you need at least 2 frames for the detection",
             className: 'rubberBand animated error',
@@ -280,7 +280,7 @@ function select_meteor_pos(factor) {
 
          // UI (remove pos & class exists)
          $('.select_frame.exists').each(function(i,v) {
-            if(parseInt(v.attr('data-rel'))<first_frame) {
+            if(parseInt($(v).attr('data-rel'))<first_frame) {
                $('.select_frame.exists').removeClass('exists').end().find('.pos').remove();
             }
          });
