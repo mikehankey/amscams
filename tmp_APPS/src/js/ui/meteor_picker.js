@@ -292,7 +292,7 @@ function select_meteor_pos(factor) {
       getNewClipLengthAndUpdate();
 
       // Add info to frame scroller
-      $('.select_frame[data-rel='+cur_fr_id+']').addClass('done').find('span').html('#'+cur_fr_id+'  &bull;<br>x:' + parseInt(realX) + ' y:'  + parseInt(realY));
+      $('.select_frame[data-rel='+cur_fr_id+']').addClass('done').addClass('updated').find('span').html('#'+cur_fr_id+'  &bull;<br>x:' + parseInt(realX) + ' y:'  + parseInt(realY));
       
       // Go to next frame
       go_to_next(parseInt(cur_fr_id)+1);
