@@ -264,9 +264,7 @@ function select_meteor_pos(factor) {
       var cur_fr_id = $('#cropped_frame_select .cur').attr('data-rel');
       var new_first_frame = parseInt(cur_fr_id)-1;
    
-      // => it means cur_fr_id == FIRST FRAME!
-      console.log("TEST ", last_frame + " - " +  new_first_frame  )
-      console.log("TEST ", (last_frame-new_first_frame));
+      // => it means cur_fr_id == FIRST FRAME! 
       if((last_frame-new_first_frame)<=1) {
          bootbox.alert({
             message: "Error: you need at least 2 frames for the detection",
@@ -282,7 +280,12 @@ function select_meteor_pos(factor) {
 
          // UI (remove pos & class exists)
          $('.select_frame.exists').each(function(i,v) {
+
+            console.log("DOESNT EXIST ANYMORE  " , parseInt($(v).attr('data-rel')) , " ?");
+            console.log("< ", first_frame + " ? ");
+             
             if(parseInt($(v).attr('data-rel'))<first_frame) {
+               console.log("YES");
                $('.select_frame.exists').removeClass('exists').end().find('.pos').remove();
             }
          });
