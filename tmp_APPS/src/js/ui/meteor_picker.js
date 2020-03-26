@@ -236,7 +236,7 @@ function get_new_pos(frame_id) {
 
 
 // Select meteor position (ui)
-function select_meteor_pos() {
+function select_meteor_pos(factor) {
    $("#cropped_frame_selector").unbind('click').click(function(e){
      
       var parentOffset = $(this).offset(); 
@@ -374,7 +374,7 @@ function add_frame_inside_meteor_select(img_path, meteor_id) {
 
 
    // GO!
-   select_meteor_pos();
+   select_meteor_pos(factor);
 
 
    /*
