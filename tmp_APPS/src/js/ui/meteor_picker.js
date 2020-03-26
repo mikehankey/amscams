@@ -261,7 +261,7 @@ function add_frame_inside_meteor_select(img_path, meteor_id) {
    $('#cropped_frame_selector').css('width', parseInt((parseInt(height)-30)*16/9));   
    
    // Update Title
-   $('#sel_frame_id, .sel_frame_id').text(' - Frame#' +  meteor_id);   
+   $('#sel_frame_id, .sel_frame_id').text(' - Frame #' +  meteor_id);   
  
    // Scroll to frame -1 on top if it exists
    if($('.select_frame[data-rel="'+meteor_id+'"]').length==0) {
@@ -278,7 +278,7 @@ function add_frame_inside_meteor_select(img_path, meteor_id) {
    // Remove All Circles
    $('.circl').remove();
 
-   // Is the current frame in the JSON?
+   // Is the CURRENT frame in the JSON?
    // WARNING HERE WE PASS METEOR_ID 
    // SINCE THE FRAME1 = FRAME0 in the JSON
    res = get_data_from_json(parseInt(meteor_id))
@@ -286,6 +286,47 @@ function add_frame_inside_meteor_select(img_path, meteor_id) {
       xy = convert_to_local(parseInt(res['org_x']),parseInt(res['org_y'])); 
       addCircleRepair(xy[0]/factor,xy[1]/factor,meteor_id,'x'); 
    }
+
+   // Do we have previous frames in the JSON?
+   for(var i = meteor_id-1; i >= meteor_id - 3 ; i--) {  
+
+      res = get_data_from_json(parseInt(meteor_id))
+      if(res != false) {
+         xy = convert_to_local(parseInt(res['org_x']),parseInt(res['org_y'])); 
+         addCircleRepair(xy[0]/factor,xy[1]/factor,i,'b'); 
+      }
+   
+   }
+
+   // Do we have next frames in JSON?
+   for(var i = meteor_id+1; i <= meteor_id + 3 ; i++) { 
+      res = get_data_from_json(parseInt(meteor_id))
+      if(res != false) {
+         xy = convert_to_local(parseInt(res['org_x']),parseInt(res['org_y'])); 
+         addCircleRepair(xy[0]/factor,xy[1]/factor,i,'a'); 
+      }
+   }    
+
+
+   /*
+
+      if(all_frames_ids.indexOf(i) >= 0 ) { 
+         // already updated?
+         test_new_pos = get_new_pos(i);
+          if(test_new_pos != false) {
+             xy = convert_to_local(parseInt(test_new_pos[0]),parseInt(test_new_pos[1])); 
+
+             add_debug('YY # ' + i + " => " + parseInt(xy[0]/factor) + " , " + parseInt(xy[1]/factor));
+
+
+             addCircleRepair(xy[0]/factor,xy[1]/factor,i,'nb'); 
+          } else {
+            xy = convert_to_local(parseInt($('#fr_'+i).attr('data-org-x')),parseInt($('#fr_'+i).attr('data-org-y'))); 
+            addCircleRepair(xy[0]/factor,xy[1]/factor,i,'b'); 
+          }
+      }
+   } 
+   */
 
 
    
