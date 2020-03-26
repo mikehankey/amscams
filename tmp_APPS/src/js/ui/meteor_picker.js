@@ -281,8 +281,8 @@ function select_meteor_pos(factor) {
          console.log("NEW FIRST FRAME ", first_frame);
          console.log("LAST FRAME ", last_frame);
 
-         $('.select_frame.exists').removeClass('exists');
-         for(var i = first_frame; i = last_frame; i++) {
+         $('.select_frame.exists').removeClass('exists').find('span').html();
+         for(var i = first_frame; i == last_frame; i++) {
             $('.select_frame[data-rel='+i+']').addClass('exists');
          }
 
