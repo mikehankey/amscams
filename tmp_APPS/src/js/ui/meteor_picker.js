@@ -17,7 +17,7 @@ function setClipLength(from,to) {
    $('.clip_length').css('margin-left',marg).css('width',width);
 
    // Update length_info
-   $('#length_info').html('duration: ' + (to-from) + " frames (" +  ((to-from)  /  FPS).toFixed(2) + "s)");
+   $('#length_info').html('- duration: ' + (to-from) + " frames (" +  ((to-from)  /  FPS).toFixed(2) + "s)");
 
 }
 
@@ -261,7 +261,7 @@ function add_frame_inside_meteor_select(img_path, meteor_id) {
    $('#cropped_frame_selector').css('width', parseInt((parseInt(height)-30)*16/9));   
    
    // Update Title
-   $('#sel_frame_id, .sel_frame_id').text(' - #' +  meteor_id);   
+   $('#sel_frame_id, .sel_frame_id').text(' - Frame#' +  meteor_id);   
  
    // Scroll to frame -1 on top if it exists
    if($('.select_frame[data-rel="'+meteor_id+'"]').length==0) {
