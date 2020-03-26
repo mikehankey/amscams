@@ -262,8 +262,10 @@ function add_frame_inside_meteor_select(img_path, meteor_id) {
    // Scroll to frame -1 on top if it exists
    if($('.select_frame[data-rel="'+meteor_id+'"]').length==0) {
       $('#frame_select_mod').scrollTo($('.select_frame[data-rel=0]'), 150 );
+   } else if($('.select_frame[data-rel="'+(scroll_to-4)+'"]').length>0) {
+      $('#frame_select_mod').scrollTo($('.select_frame[data-rel="'+(scroll_to-4)+'"]'), 150 );
    } else {
-      $('#frame_select_mod').scrollTo($('.select_frame[data-rel="'+scroll_to+'"]'), 150 );
+      $('#frame_select_mod').scrollTo($('.select_frame[data-rel="'+(scroll_to )+'"]'), 150 ); 
    }
    
    factor  = w / $('#cropped_frame_selector').width();  // Same for W & H!!
