@@ -262,7 +262,7 @@ function select_meteor_pos(factor) {
       
       // Cur frame
       var cur_fr_id = $('#cropped_frame_select .cur').attr('data-rel');
-      var new_first_frame = parseInt(cur_fr_id)-1;
+      var new_first_frame = parseInt(cur_fr_id);
    
       // => it means cur_fr_id == FIRST FRAME!
       if((last_frame-new_first_frame)<=1) {
@@ -278,16 +278,14 @@ function select_meteor_pos(factor) {
          // ie the frames from first_frame to new_first_frame
          first_frame  = new_first_frame;
 
-         console.log("NEW FIRST FRAME ", first_frame);
-         console.log("LAST FRAME ", last_frame);
+         // UI (remove pos & class exists)
+         $('.select_frame.exists').each(function(i,v) {
+            if(parseInt(v.attr('data-rel'))<first_frame) {
+               $('.select_frame.exists').removeClass('exists').end().find('.pos').remove();
+            }
+         });
 
-         $('.select_frame.exists').removeClass('exists').find('span').html();
-         for(var i = first_frame; i == last_frame; i++) {
-            console.log("ADD CLASS EXISTS TO ", i);
-            $('.select_frame[data-rel='+i+']').addClass('exists');
-         }
-
-
+         
       }
       
 
