@@ -263,8 +263,7 @@ function select_meteor_pos(factor) {
       // Cur frame
       var cur_fr_id = $('#cropped_frame_select .cur').attr('data-rel');
       var new_first_frame = parseInt(cur_fr_id)-1;
-  
-
+   
       // => it means cur_fr_id == FIRST FRAME!
       if((last_frame-new_first_frame)<=1) {
          bootbox.alert({
@@ -278,6 +277,9 @@ function select_meteor_pos(factor) {
          // We need to remove all the data from frames_done and frames_jobs for the remove frames
          // ie the frames from first_frame to new_first_frame
          first_frame  = new_first_frame;
+
+         console.log("NEW FIRST FRAME ", first_frame);
+         console.log("LAST FRAME ", last_frame);
 
          $('.select_frame.exists').removeClass('exists');
          for(var i = first_frame; i = last_frame; i++) {
