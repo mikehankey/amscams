@@ -263,10 +263,25 @@ function select_meteor_pos(factor) {
       // Cur frame
       var cur_fr_id = $('#cropped_frame_select .cur').attr('data-rel');
 
-      // => it means cur_fr_id == FIRST FRAME!
-      console.log("HOW MANY FRAMES LEFT IF WE DO IT " , (last_frame-cur_fr_id));
+      console.log("HOW MANY FRAMES LEFT IF WE DO IT " , (last_frame-cur_fr_id-1));
 
       // Test how many frames remain if we delete everything before
+
+
+      // => it means cur_fr_id == FIRST FRAME!
+      if((last_frame-cur_fr_id-1)<=1) {
+         bootbox.alert({
+            message: "Error: you need at least 2 frames for the detection",
+            className: 'rubberBand animated error',
+            centerVertical: true 
+         })
+         return false;
+      } else {
+
+
+
+      }
+      
 
 
    });
