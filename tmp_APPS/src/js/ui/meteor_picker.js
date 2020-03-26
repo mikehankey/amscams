@@ -289,8 +289,7 @@ function add_frame_inside_meteor_select(img_path, meteor_id) {
 
    // Do we have previous frames in the JSON?
    for(var i = meteor_id-1; i >= meteor_id - 3 ; i--) {  
-
-      res = get_data_from_json(parseInt(meteor_id))
+      res = get_data_from_json(parseInt(i))
       if(res != false) {
          xy = convert_to_local(parseInt(res['org_x']),parseInt(res['org_y'])); 
          addCircleRepair(xy[0]/factor,xy[1]/factor,i,'b'); 
@@ -300,7 +299,7 @@ function add_frame_inside_meteor_select(img_path, meteor_id) {
 
    // Do we have next frames in JSON?
    for(var i = meteor_id+1; i <= meteor_id + 3 ; i++) { 
-      res = get_data_from_json(parseInt(meteor_id))
+      res = get_data_from_json(parseInt(i))
       if(res != false) {
          xy = convert_to_local(parseInt(res['org_x']),parseInt(res['org_y'])); 
          addCircleRepair(xy[0]/factor,xy[1]/factor,i,'a'); 
