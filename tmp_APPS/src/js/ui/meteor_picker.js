@@ -378,6 +378,9 @@ function add_frame_inside_meteor_select(img_path, meteor_id) {
    // Do we have next frames in JSON?
    for(var i = (meteor_id+1); i <= meteor_id + 3 ; i++) { 
       
+
+      console.log("TEST ", i, " after");
+
       test_new_pos = get_new_pos(i);
       if(test_new_pos != false) {
             xy = convert_to_local(parseInt(test_new_pos[0]),parseInt(test_new_pos[1])); 
