@@ -24,7 +24,7 @@ function setClipLength(from,to) {
    $('#length_info').html('- duration: ' + (to-from) + " frames (" +  ((to-from)  /  FPS).toFixed(2) + "s)");
 
    first_frame = from;
-   last_frame = to;
+   last_frame = to-1; // Because UI / CSS
 }
 
 
@@ -263,13 +263,14 @@ function select_meteor_pos(factor) {
       // Cur frame
       var cur_fr_id = $('#cropped_frame_select .cur').attr('data-rel');
 
-      console.log("HOW MANY FRAMES LEFT IF WE DO IT " , (last_frame-cur_fr_id-1));
+      var new_first_frame = parseInt(cur_fr_id)-1;
 
+      
       // Test how many frames remain if we delete everything before
-
+      console.log("TEST ", (last_frame-new_first_frame));
 
       // => it means cur_fr_id == FIRST FRAME!
-      if((last_frame-cur_fr_id-1)<=1) {
+      if((last_frame-new_first_frame)<=1) {
          bootbox.alert({
             message: "Error: you need at least 2 frames for the detection",
             className: 'rubberBand animated error',
