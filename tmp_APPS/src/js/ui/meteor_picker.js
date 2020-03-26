@@ -262,7 +262,7 @@ function select_meteor_pos(factor) {
       
       // Cur frame
       var cur_fr_id = $('#cropped_frame_select .cur').attr('data-rel');
-      var new_first_frame = parseInt(cur_fr_id);
+      var new_first_frame = parseInt(cur_fr_id)-1;
    
       // => it means cur_fr_id == FIRST FRAME!
       console.log("TEST ", last_frame + " - " +  new_first_frame  )
