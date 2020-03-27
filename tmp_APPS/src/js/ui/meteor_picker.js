@@ -107,6 +107,8 @@ function addPickerModalTemplate(all_cropped_frames) {
 
       // We set the initial clip length 
       var v = get_min_max_from_json();
+      console.log("INIT CLICP LENGTH ");
+      console.log(v);
       setClipLength(v['min'],v['max']);
  
    }   
