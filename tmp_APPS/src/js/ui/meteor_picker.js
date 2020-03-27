@@ -69,8 +69,6 @@ function addPickerModalTemplate(all_cropped_frames) {
                         </div>\
                         <div id="cropped_frame_selector_hoder" class="mr-3 ml-3">\
                               <div id="cropped_frame_selector" class="cur">\
-                                 <div id="lh"></div>\
-                                 <div id="lv"></div> \
                               </div>\
                         </div>\
                         <div id="below_cfs" class="d-flex justify-content-between  m-2">\
