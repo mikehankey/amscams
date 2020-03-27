@@ -341,10 +341,11 @@ function reset_frame() {
          var res;
          
          if( json_data != "undefined" && json_data != "" && json_data['frames']!=='undefined') {
+            
             // Does the cur_fr_id exists in the original JSON?
             for(var i=0; i<=json_data['frames'].length; i++) {
 
-               if(json_data['frames'][i]['fn']==cur_fr_id) {
+               if(typeof json_data[i]['fn']!=='undefined' && json_data['frames'][i]['fn']==cur_fr_id) {
                   found = true;
                   res = json_data['frames'][i];
                   break;
@@ -353,6 +354,7 @@ function reset_frame() {
             }
 
             if(found) {
+               var update = false;
 
                // We re-update tmp_JSON_Frames
                for(var i=0; i<= tmp_JSON_Frames.length; i++) {
@@ -361,16 +363,23 @@ function reset_frame() {
                      tmp_JSON_Frames[i]['x'] = res['x'];
                      tmp_JSON_Frames[i]['y'] = res['y'];
 
+                     updated = true;
+
                      // And we re-click to the select to update everything
                      $('.select_frame[data-rel='+cur_fr_id+']').click();
 
                      // Update Clip length
                      getNewClipLengthAndUpdate();
-
-
+ 
                      break;
                   }
                }
+
+
+               // It is hasn't been updated, it means the initial frame has been remove from tmp_JSON_Frames
+               // So we need to put it back
+               tmp_JSON_Frames.push({'fn': parseInt(cur_fr_id),'x':res['x'],'y':res['y']});
+
 
 
             } else {
