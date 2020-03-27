@@ -95,7 +95,7 @@ function addPickerModalTemplate(all_cropped_frames) {
          // Is the frame already in the json?
          res = get_data_from_json(i)
          if(res!= false) {
-            data = '<i class="pos">x:'+ res['org_x'] + ' y:'+ res['org_y'] +'</i>';
+            data = '<i class="pos">x:'+ res['x'] + ' y:'+ res['y'] +'</i>';
             _class = "exists"
             all_cropped_frames_ids.push(i)
          }
@@ -105,11 +105,8 @@ function addPickerModalTemplate(all_cropped_frames) {
       });
 
 
-      // We set the initial clip length 
-      console.log()
-      var v = get_min_max_from_json();
-      console.log("INIT CLIP LENGTH ");
-      console.log(v);
+      // We set the initial clip length  
+      var v = get_min_max_from_json(); 
       setClipLength(v['min'],v['max']);
  
    }   
