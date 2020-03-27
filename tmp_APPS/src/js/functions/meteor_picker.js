@@ -28,15 +28,11 @@ function meteor_select(dir,all_frames_ids) {
 // Test if a frame is on the json and return the related data
 function get_data_from_json(frame_id) {
    
-   if(typeof tmp_JSON_Frames != 'undefined' && typeof tmp_JSON_Frames['frames'] != 'undefined') {
-
-      for(var i=0; i< tmp_JSON_Frames.length; i++) {
-         if(tmp_JSON_Frames[i]['fn']==frame_id) {
-            return {'x': tmp_JSON_Frames[i]['x'], 'y':  tmp_JSON_Frames[i]['y']}
-         }
+   for(var i=0; i< tmp_JSON_Frames.length; i++) {
+      if(tmp_JSON_Frames[i]['fn']==frame_id) {
+         return {'x': tmp_JSON_Frames[i]['x'], 'y':  tmp_JSON_Frames[i]['y']}
       }
-   }
-
+   } 
    return false;
 }
 
