@@ -345,7 +345,7 @@ function reset_frame() {
             // Does the cur_fr_id exists in the original JSON?
             for(var i=0; i<=json_data['frames'].length; i++) {
 
-               if(typeof json_data['frames'][i]['fn']!=='undefined' && json_data['frames'][i]['fn']==cur_fr_id) {
+               if(typeof json_data['frames'][i]!=='undefined' && typeof json_data['frames'][i]['fn']!=='undefined' && json_data['frames'][i]['fn']==cur_fr_id) {
                   found = true;
                   res = json_data['frames'][i];
                   break;
