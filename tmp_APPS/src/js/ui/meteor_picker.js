@@ -377,6 +377,7 @@ function reset_frame() {
  
                      break;
                   }
+               }
             
             } else {
                      bootbox.alert({
