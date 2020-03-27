@@ -54,7 +54,7 @@ function addPickerModalTemplate(all_cropped_frames) {
                      <div class="modal-content" style="height: 100vh;">\
                         <div class="modal-header p-0 pt-1" style="border:none!important">\
                            <h5 class="ml-1 pt-1 mb-0">Select Meteor Position  <span id="sel_frame_id"></span> <span id="length_info"></span></h5>\
-                           <button  class="btn mr-1" data-dismiss="modal">&times;</button>\
+                           <button  class=" close pt-3 pr-2 mr-1" data-dismiss="modal">&times;</button>\
                         </div>\
                         <div id="thumb_browwser" class="d-flex flex-wrap">\
                            <div class="d-flex justify-content-left mr-2 ml-2 mb-2" id="frame_select_mod">\
@@ -419,8 +419,11 @@ function add_all_circles(meteor_id, factor) {
       }
    }
 
+
+   HOW_MANY_AFTER_AND_BEFORE = 1;
+
    // Do we have previous frames in the JSON?
-   for(var i = (meteor_id-1); i >= meteor_id - 3 ; i--) {
+   for(var i = (meteor_id-1); i >= meteor_id - HOW_MANY_AFTER_AND_BEFORE ; i--) {
       
       // First we test if we have a new position  
       test_new_pos = get_new_pos(i);
@@ -440,7 +443,7 @@ function add_all_circles(meteor_id, factor) {
    }
 
    // Do we have next frames in JSON?
-   for(var i = (meteor_id+1); i <= meteor_id + 3 ; i++) { 
+   for(var i = (meteor_id+1); i <= meteor_id + HOW_MANY_AFTER_AND_BEFORE ; i++) { 
       
       test_new_pos = get_new_pos(i);
       if(test_new_pos != false) {
