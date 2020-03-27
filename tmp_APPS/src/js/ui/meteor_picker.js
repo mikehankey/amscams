@@ -378,7 +378,7 @@ function reset_frame() {
                      break;
                   }
             
-            else {
+            } else {
                      bootbox.alert({
                         message: "Error: this frame wasn't in the original JSON. You cannot reset it.",
                         className: 'rubberBand animated error',
