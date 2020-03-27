@@ -356,8 +356,8 @@ function reset_frame() {
 
                // We re-update tmp_JSON_Frames
                for(var i=0; i<= tmp_JSON_Frames.length; i++) {
-                  if(tmp_JSON_Frames[i]['fn']==cur_fr_id) {
-                     console.log(i);
+                  if(typeof tmp_JSON_Frames[i]['fn']!=='undefined' && tmp_JSON_Frames[i]['fn']==cur_fr_id) {
+                
                      tmp_JSON_Frames[i]['x'] = res['x'];
                      tmp_JSON_Frames[i]['y'] = res['y'];
 
