@@ -254,6 +254,8 @@ function get_new_pos(frame_id) {
 }
 
 
+
+
 // Delete all frames before one
 function delete_before() {
  
@@ -284,6 +286,7 @@ function delete_before() {
             if(id<first_frame) {  
                $('.select_frame[data-rel='+id+']').removeClass('exists');
                $('.select_frame[data-rel='+id+']').find('.pos').remove();
+               delete_frame_from_json(id);
             }
          });
 
@@ -322,6 +325,7 @@ function delete_after() {
             if(id>last_frame) { 
                $('.select_frame[data-rel='+id+']').removeClass('exists');
                $('.select_frame[data-rel='+id+']').find('.pos').remove();
+               delete_frame_from_json(id);
             }
          });
 

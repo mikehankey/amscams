@@ -38,5 +38,27 @@ function get_data_from_json(frame_id) {
    }
 
    return false;
- 
+}
+
+
+
+// Delete a frame from the json 
+// Warning: it's temporary as we don't save it 
+// It is used to show the circles that correspond to the 
+// data that will be send to the API
+function delete_frame_from_json(frame_id) {
+
+   var new_json_frames = [];
+
+   for(var i=0; i< json_data['frames'].length; i++) {
+      if(json_data['frames'][i]['fn']!==frame_id) {
+         new_json_frames.push(json_data);
+      }
+   } 
+
+   console.log("NEW JSON FRAMES AFTER DELETION ");
+   console.log(new_json_frames);
+
+   json_data['frames'] = new_json_frames;
+   
 }
