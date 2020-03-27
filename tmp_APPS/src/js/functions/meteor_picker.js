@@ -52,7 +52,7 @@ function delete_frame_from_json(frame_id) {
 
    for(var i=0; i< json_data['frames'].length; i++) {
       if(json_data['frames'][i]['fn']!==frame_id) {
-         new_json_frames.push(json_data);
+         new_json_frames.push(json_data['frames'][i]);
       }
    } 
 
