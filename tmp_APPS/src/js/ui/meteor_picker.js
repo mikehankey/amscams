@@ -106,7 +106,8 @@ function addPickerModalTemplate(all_cropped_frames) {
 
 
       // We set the initial clip length 
-      setClipLength( Math.min.apply(Math,all_cropped_frames_ids), Math.max.apply(Math,all_cropped_frames_ids));
+      var v = get_min_max_from_json();
+      setClipLength(v['min'],v['max']);
  
    }   
 }
