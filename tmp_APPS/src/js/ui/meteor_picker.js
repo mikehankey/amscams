@@ -8,7 +8,7 @@ var FPS = 25;                 // For duration
 var first_frame, last_frame;  // To send to the API
 
 
-var tmp_JSON_Frames; // Copy of the original JSON used to store all the updates
+var tmp_JSON_Frames = []; // Copy of the original JSON used to store all the updates
 
 // We need the min & max cropped to set the clip length
 var all_cropped_frames_ids = []; // FROM THE JSON
