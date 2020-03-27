@@ -111,12 +111,7 @@ function addPickerModalTemplate(all_cropped_frames) {
       // We set the initial clip length 
       setClipLength( Math.min.apply(Math,all_cropped_frames_ids), Math.max.apply(Math,all_cropped_frames_ids));
  
-   }  
-   
-
-
-
-   
+   }   
 }
 
 
@@ -288,7 +283,10 @@ function delete_before() {
             }
          });
 
-         setClipLength(first_frame,last_frame)
+         setClipLength(first_frame,last_frame);
+
+         // Update the circles on the current view
+         $('select_frame[data-rel='+cur_fr_id+'] ').click();
       }
    });
 }
@@ -327,7 +325,11 @@ function delete_after() {
             }
          });
 
-         setClipLength(first_frame,last_frame)
+         setClipLength(first_frame,last_frame);
+
+         // Update the circles on the current view
+         $('select_frame[data-rel='+cur_fr_id+'] ').click();
+
       }
    });
 }
@@ -501,7 +503,6 @@ function add_frame_inside_meteor_select(img_path, meteor_id) {
    factor  = w / $('#cropped_frame_selector').width();  // Same for W & H!!
  
    // Add circles on the selector
-   console.log("ADD CIRCLES FOR ", meteor_id);
    add_all_circles(meteor_id,factor);
 
    // GO!
