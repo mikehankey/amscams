@@ -393,6 +393,71 @@ function select_meteor_pos(factor) {
 
 
 
+
+// Add circles (after, before & current)
+// for a given frame 
+function add_all_circles(meteor_id, factor) {
+   // Remove All Circles
+   $('.circl').remove();
+
+   // Is the CURRENT frame in the JSON?
+   // WARNING HERE WE PASS METEOR_ID 
+   
+   // Do we have a "new pos"
+   test_new_pos = get_new_pos(meteor_id);
+   if(test_new_pos != false) {
+      xy = convert_to_local(parseInt(test_new_pos[0]),parseInt(test_new_pos[1])); 
+      addCircleRepair(xy[0]/factor,xy[1]/factor,meteor_id,'x'); 
+   } else {
+      // Of something in the initial JSON?
+      res = get_data_from_json(meteor_id)
+      if(res != false) {
+         xy = convert_to_local(parseInt(res['org_x']),parseInt(res['org_y'])); 
+         addCircleRepair(xy[0]/factor,xy[1]/factor,meteor_id,'x'); 
+      }
+   }
+
+   // Do we have previous frames in the JSON?
+   for(var i = (meteor_id-1); i >= meteor_id - 3 ; i--) {
+      
+      // First we test if we have a new position  
+      test_new_pos = get_new_pos(i);
+      if(test_new_pos != false) {
+            xy = convert_to_local(parseInt(test_new_pos[0]),parseInt(test_new_pos[1])); 
+            addCircleRepair(xy[0]/factor,xy[1]/factor,i,'nb'); 
+      } else {
+         
+         // or an old one...
+         res = get_data_from_json(parseInt(i));
+         if(res != false) {
+            xy = convert_to_local(parseInt(res['org_x']),parseInt(res['org_y'])); 
+            addCircleRepair(xy[0]/factor,xy[1]/factor,i,'b'); 
+         }
+      }
+
+   }
+
+   // Do we have next frames in JSON?
+   for(var i = (meteor_id+1); i <= meteor_id + 3 ; i++) { 
+      
+      test_new_pos = get_new_pos(i);
+      if(test_new_pos != false) {
+            xy = convert_to_local(parseInt(test_new_pos[0]),parseInt(test_new_pos[1])); 
+            addCircleRepair(xy[0]/factor,xy[1]/factor,i,'nb'); 
+      } else {
+      
+         res = get_data_from_json(parseInt(i)); 
+
+         if(res != false) {
+            xy = convert_to_local(parseInt(res['org_x']),parseInt(res['org_y'])); 
+            addCircleRepair(xy[0]/factor,xy[1]/factor,i,'a'); 
+         }
+      }
+   }    
+}
+
+
+
 // Add Image Inside Picker
 function add_frame_inside_meteor_select(img_path, meteor_id) { 
  
@@ -436,64 +501,8 @@ function add_frame_inside_meteor_select(img_path, meteor_id) {
    factor  = w / $('#cropped_frame_selector').width();  // Same for W & H!!
 
 
-   // Remove All Circles
-   $('.circl').remove();
-
-   // Is the CURRENT frame in the JSON?
-   // WARNING HERE WE PASS METEOR_ID 
-    
-   // Do we have a "new pos"
-   test_new_pos = get_new_pos(meteor_id);
-   if(test_new_pos != false) {
-      xy = convert_to_local(parseInt(test_new_pos[0]),parseInt(test_new_pos[1])); 
-      addCircleRepair(xy[0]/factor,xy[1]/factor,meteor_id,'x'); 
-   } else {
-      // Of something in the initial JSON?
-      res = get_data_from_json(meteor_id)
-      if(res != false) {
-         xy = convert_to_local(parseInt(res['org_x']),parseInt(res['org_y'])); 
-         addCircleRepair(xy[0]/factor,xy[1]/factor,meteor_id,'x'); 
-      }
-   }
-
-   // Do we have previous frames in the JSON?
-   for(var i = (meteor_id-1); i >= meteor_id - 3 ; i--) {
-      
-      // First we test if we have a new position  
-      test_new_pos = get_new_pos(i);
-      if(test_new_pos != false) {
-            xy = convert_to_local(parseInt(test_new_pos[0]),parseInt(test_new_pos[1])); 
-             addCircleRepair(xy[0]/factor,xy[1]/factor,i,'nb'); 
-      } else {
-         
-         // or an old one...
-         res = get_data_from_json(parseInt(i));
-         if(res != false) {
-            xy = convert_to_local(parseInt(res['org_x']),parseInt(res['org_y'])); 
-            addCircleRepair(xy[0]/factor,xy[1]/factor,i,'b'); 
-         }
-      }
- 
-   }
-
-   // Do we have next frames in JSON?
-   for(var i = (meteor_id+1); i <= meteor_id + 3 ; i++) { 
-        
-      test_new_pos = get_new_pos(i);
-      if(test_new_pos != false) {
-            xy = convert_to_local(parseInt(test_new_pos[0]),parseInt(test_new_pos[1])); 
-             addCircleRepair(xy[0]/factor,xy[1]/factor,i,'nb'); 
-      } else {
-      
-         res = get_data_from_json(parseInt(i)); 
-
-         if(res != false) {
-            xy = convert_to_local(parseInt(res['org_x']),parseInt(res['org_y'])); 
-            addCircleRepair(xy[0]/factor,xy[1]/factor,i,'a'); 
-         }
-      }
-   }    
-
+   // Add circles on the selector
+   add_all_circles(meteor_id,factor);
 
    // GO!
    select_meteor_pos(factor);

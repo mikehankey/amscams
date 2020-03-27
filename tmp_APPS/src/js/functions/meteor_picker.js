@@ -54,10 +54,7 @@ function delete_frame_from_json(frame_id) {
       if(json_data['frames'][i]['fn']!==frame_id) {
          new_json_frames.push(json_data['frames'][i]);
       }
-   } 
-
-   console.log("NEW JSON FRAMES AFTER DELETION ");
-   console.log(new_json_frames);
+   }  
 
    json_data['frames'] = new_json_frames;
    
