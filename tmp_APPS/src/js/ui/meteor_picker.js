@@ -377,22 +377,23 @@ function reset_frame() {
  
                      break;
                   }
-               }
-
-
-               // It is hasn't been updated, it means the initial frame has been remove from tmp_JSON_Frames
-               // So we need to put it back
-               tmp_JSON_Frames.push({'fn': parseInt(cur_fr_id),'x':res['x'],'y':res['y']});
-
-
-
-            } else {
-               bootbox.alert({
-                  message: "Error: this frame wasn't in the original JSON. You cannot reset it.",
-                  className: 'rubberBand animated error',
-                  centerVertical: true 
-               })
+            
+            else {
+                     bootbox.alert({
+                        message: "Error: this frame wasn't in the original JSON. You cannot reset it.",
+                        className: 'rubberBand animated error',
+                        centerVertical: true 
+                     })
             }
+
+
+            // It is hasn't been updated, it means the initial frame has been remove from tmp_JSON_Frames
+            // So we need to put it back
+            tmp_JSON_Frames.push({'fn': parseInt(cur_fr_id),'x':res['x'],'y':res['y']});
+
+
+
+            
 
          }
 
