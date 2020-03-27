@@ -72,7 +72,7 @@ function addPickerModalTemplate(all_cropped_frames) {
                            <div class="alert p-1 pl-1 pr-2 mb-0"> Cur Frame# <span id="sel_frame_id"></span> </div>\
                            <div class="d-flex justify-content-center text-center">\
                               <button id="delete_b_cur" class="btn btn-danger"><i class="icon-circle-left"></i> Delete all frames before</button>\
-                              <button id="delete_b_cur" class="btn btn-seconday mr-4 ml-4">Reset</button>\
+                              <button id="reset_cur" class="btn btn-secondary mr-4 ml-4">Reset</button>\
                               <button id="delete_a_cur" class="btn btn-danger">Delete all frames after <i class="icon-circle-right"></i></button>\
                            </div>\
                            <button id="create_all" class="btn btn-primary">Create All</button>\
