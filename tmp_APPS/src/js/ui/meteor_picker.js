@@ -404,6 +404,10 @@ function add_all_circles(meteor_id, factor) {
    
    // Do we have a "new pos"
    test_new_pos = get_new_pos(meteor_id);
+
+   console.log("For ", meteor_id , " test_new_pos:");
+   console.log(test_new_pos);
+
    if(test_new_pos != false) {
       xy = convert_to_local(parseInt(test_new_pos[0]),parseInt(test_new_pos[1])); 
       addCircleRepair(xy[0]/factor,xy[1]/factor,meteor_id,'x'); 
