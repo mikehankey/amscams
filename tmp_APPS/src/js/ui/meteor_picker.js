@@ -422,12 +422,10 @@ function add_all_circles(meteor_id, factor) {
       
       // First we test if we have a new position  
       test_new_pos = get_new_pos(i);
-
-
-
+ 
       if(test_new_pos != false) {
             xy = convert_to_local(parseInt(test_new_pos[0]),parseInt(test_new_pos[1])); 
-            addCircleRepair(xy[0]/factor,xy[1]/factor,i,'nb'); 
+            addCircleRepair(xy[0]/factor,xy[1]/factor,i,'b'); 
       }  
 
    }
@@ -438,7 +436,7 @@ function add_all_circles(meteor_id, factor) {
       test_new_pos = get_new_pos(i);
       if(test_new_pos != false) {
             xy = convert_to_local(parseInt(test_new_pos[0]),parseInt(test_new_pos[1])); 
-            addCircleRepair(xy[0]/factor,xy[1]/factor,i,'nb'); 
+            addCircleRepair(xy[0]/factor,xy[1]/factor,i,'a'); 
       }  
    }    
 }
