@@ -106,8 +106,9 @@ function addPickerModalTemplate(all_cropped_frames) {
 
 
       // We set the initial clip length 
+      console.log()
       var v = get_min_max_from_json();
-      console.log("INIT CLICP LENGTH ");
+      console.log("INIT CLIP LENGTH ");
       console.log(v);
       setClipLength(v['min'],v['max']);
  
@@ -748,14 +749,15 @@ function setup_manual_reduc1(all_cropped_frames) {
       return false;
    }
  
-   // Add modal Template  
-   addPickerModalTemplate(all_cropped_frames); 
-
-   // We copy the original frames from the json 
    
+   // We copy the original frames from the json 
    $.each(json_data['frames'], function(i,v) {
       tmp_JSON_Frames.push({'fn':v['fn'],'x':v['x'],'y':v['y']});
    });
+
+   // Add modal Template  
+   addPickerModalTemplate(all_cropped_frames); 
+
  
    
    // Click on a thumb in the reduc table
