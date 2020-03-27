@@ -320,7 +320,8 @@ function delete_after() {
          $('.select_frame.exists').each(function(i,v) {
             var id = parseInt($(v).attr('data-rel'));
             if(id>last_frame) { 
-               $('.select_frame[data-rel='+id+']').removeClass('exists').end().find('.pos').remove();
+               $('.select_frame[data-rel='+id+']').removeClass('exists');
+               $('.select_frame[data-rel='+id+']').find('.pos').remove();
             }
          });
 
