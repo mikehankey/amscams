@@ -71,9 +71,9 @@ function addPickerModalTemplate(all_cropped_frames) {
                         <div id="below_cfs" class="d-flex justify-content-between  m-2">\
                            <div class="alert p-1 pl-1 pr-2 mb-0"> Cur Frame# <span id="sel_frame_id"></span> </div>\
                            <div class="d-flex justify-content-center text-center">\
-                              <button id="delete_b_cur" class="btn btn-danger">Mark Meteor Start <i class="icon-circle-right"></i></button>\
+                              <button id="delete_b_cur" class="btn btn-info"><i class="icon-circle-right"></i> Mark Meteor Start </button>\
                               <button id="reset_cur" class="btn btn-secondary mr-4 ml-4">Reset</button>\
-                              <button id="delete_a_cur" class="btn btn-danger">Mark Meteor End <i class="icon-circle-left"></i> </button>\
+                              <button id="delete_a_cur" class="btn btn-info">Mark Meteor End <i class="icon-circle-left"></i> </button>\
                            </div>\
                            <button id="create_all" class="btn btn-primary">Create All</button>\
                         </div>\
@@ -788,6 +788,16 @@ function setup_manual_reduc1(all_cropped_frames) {
   
     // Only for loggedin
    if(test_logged_in()==null) { 
+
+      $('.wi a, .reduc1 ').unbind('click').click(function() {
+         bootbox.alert({
+            message: "Please, log in.",
+            className: 'rubberBand animated error',
+            centerVertical: true 
+         })
+      });
+
+
       return false;
    }
  

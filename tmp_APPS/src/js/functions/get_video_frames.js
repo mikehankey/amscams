@@ -64,8 +64,7 @@ async function extractFramesFromVideo(videoUrl, fps=25) {
  // Get the frames and build the related table
  async function asyncCall(first_frame, how_many_frames) {  
 
-   console.log("first_frame ", first_frame);
-   console.log("how_many_frames ", how_many_frames)
+ 
  
    croppedFrames = await extractFramesFromVideo(cropped_video); 
    
