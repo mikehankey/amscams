@@ -499,9 +499,9 @@ function add_frame_inside_meteor_select(img_path, meteor_id) {
    }
    
    factor  = w / $('#cropped_frame_selector').width();  // Same for W & H!!
-
-
+ 
    // Add circles on the selector
+   console.log("ADD CIRCLES FOR ", meteor_id);
    add_all_circles(meteor_id,factor);
 
    // GO!
