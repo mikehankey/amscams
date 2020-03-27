@@ -362,7 +362,7 @@ function reset_frame() {
                   console.log("IN THE LOOP");
                   console.log(tmp_JSON_Frames[i]);
 
-                  if(typeof tmp_JSON_Frames[i]['fn']!=='undefined' && tmp_JSON_Frames[i]['fn']==cur_fr_id) {
+                  if(typeof tmp_JSON_Frames[i]!=='undefined' && typeof tmp_JSON_Frames[i]['fn']!=='undefined' && tmp_JSON_Frames[i]['fn']==cur_fr_id) {
                 
                      tmp_JSON_Frames[i]['x'] = res['x'];
                      tmp_JSON_Frames[i]['y'] = res['y'];
