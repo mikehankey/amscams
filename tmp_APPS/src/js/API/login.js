@@ -51,8 +51,8 @@ function add_login_stuff() {
          $(confButton).html('<i>&#x2714</i> Confirm').addClass('m-1 confSingle').removeClass('conf').appendTo($('.confb'));
 
 
-         $('<div id="fixTools" class="d-flex justify-content-center pb-1 mb-2"></div>').appendTo($('#tool_box'));
-         $('<a class="reduc1 col btn btn-success btn-sm ml-1 fr_only" title="Pick Meteor Position"><i class="icon-image"></i> Meteor Picker</a>').addClass('m-1 d-block w-100').appendTo($('#fixTools'));
+         $('<div id="fixTools" class="p-2"></div>').appendTo($('#tool_box'));
+         $('<a class="reduc1 col btn btn-success btn-sm mb-2 fr_only" title="Pick Meteor Position"><i class="icon-image"></i> Meteor Picker</a>').addClass('m-1 d-block w-100').appendTo($('#fixTools'));
       }
       
  
