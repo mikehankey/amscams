@@ -286,7 +286,7 @@ function delete_before() {
          setClipLength(first_frame,last_frame);
 
          // Update the circles on the current view
-         $('select_frame[data-rel='+cur_fr_id+'] ').click();
+         $('.select_frame[data-rel='+cur_fr_id+'] ').click();
       }
    });
 }
@@ -328,7 +328,7 @@ function delete_after() {
          setClipLength(first_frame,last_frame);
 
          // Update the circles on the current view
-         $('select_frame[data-rel='+cur_fr_id+'] ').click();
+         $('.select_frame[data-rel='+cur_fr_id+'] ').click();
 
       }
    });
