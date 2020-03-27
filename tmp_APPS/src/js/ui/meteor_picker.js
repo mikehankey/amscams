@@ -363,7 +363,7 @@ function select_meteor_pos(factor) {
    
       // Add info to tmp_JSON_Frames (or update it if it exits)
       update_tmp_JSON_frames({
-         'fn': cur_fr_id,
+         'fn': parseInt(cur_fr_id),
          'x': Math.round(realX),
          'y': Math.round(realY)
       }); 
