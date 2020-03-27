@@ -50,7 +50,7 @@ function addPickerModalTemplate(all_cropped_frames) {
                   <div class="modal-dialog  modal-lg modal-dialog-centered box" style="width: 100vw;max-width: 100%;margin: 0; padding: 0;">\
                      <div class="modal-content" style="height: 100vh;">\
                         <div class="modal-header p-0 pt-1" style="border:none!important">\
-                           <h5 class="ml-1 pt-1 mb-0">Select Meteor Position  <span id="sel_frame_id"></span> <span id="length_info"></span></h5>\
+                           <h5 class="ml-1 pt-1 mb-0">Select Meteor Position <span id="length_info"></span></h5>\
                            <button  class=" close pt-3 pr-2 mr-1" data-dismiss="modal">&times;</button>\
                         </div>\
                         <div id="thumb_browwser" class="d-flex flex-wrap">\
@@ -69,7 +69,7 @@ function addPickerModalTemplate(all_cropped_frames) {
                               </div>\
                         </div>\
                         <div id="below_cfs" class="d-flex justify-content-between  m-2">\
-                           <div class="alert p-1 pl-1 pr-2 mb-0"><span id="fr_cnt">0</span> Frames done</div>\
+                           <div class="alert p-1 pl-1 pr-2 mb-0"> Cur Frame# <span id="sel_frame_id"></span> </div>\
                            <div class="d-flex justify-content-center text-center">\
                               <button id="delete_b_cur" class="btn btn-danger mr-2"><i class="icon-circle-left"></i> Delete all frames before</button>\
                               <button id="delete_a_cur" class="btn btn-danger ml-2">Delete all frames after <i class="icon-circle-right"></i></button>\
@@ -497,7 +497,7 @@ function add_frame_inside_meteor_select(img_path, meteor_id) {
    $('#cropped_frame_selector').css('width', parseInt((parseInt(height)-30)*16/9));   
    
    // Update Title
-   $('#sel_frame_id, .sel_frame_id').text(' - frame #' +  meteor_id);   
+   $('#sel_frame_id, .sel_frame_id').html(meteor_id);   
  
    // Scroll to frame -1 on top if it exists
    if($('.select_frame[data-rel="'+meteor_id+'"]').length==0) {
