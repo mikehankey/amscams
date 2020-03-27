@@ -450,3 +450,16 @@
 #confdel {
    border-bottom:1px solid rgba(255,255,255,.3)
 }
+
+.delSingle, .confSingle, .btn-mx {
+   font-size: 1rem;
+   max-width: 5rem;
+
+   // Icon
+   i {
+      font-size: 1.5rem;
+      vertical-align: text-top;
+      padding: .4rem 0;
+   }
+
+}
