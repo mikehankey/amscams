@@ -7,6 +7,9 @@ var margin_thumb= 0.24        // See rem css
 var FPS = 25;                 // For duration
 var first_frame, last_frame;  // To send to the API
 
+
+var tmp_JSON; // Copy of the original JSON used to store all the updates
+
 // We need the min & max cropped to set the clip length
 var all_cropped_frames_ids = []; // FROM THE JSON
 
@@ -733,19 +736,18 @@ function open_meteor_picker(meteor_id, img_path) {
 function setup_manual_reduc1(all_cropped_frames) { 
   
     // Only for loggedin
-   if(test_logged_in()==null) {
-      /*
-      bootbox.alert({
-         message: "Error: you have been logged out.<br>Please, log back in.",
-         className: 'rubberBand animated error',
-         centerVertical: true 
-      })
-      */
+   if(test_logged_in()==null) { 
       return false;
    }
  
    // Add modal Template  
    addPickerModalTemplate(all_cropped_frames); 
+
+   // We copy the original frames from the json 
+   tmp_JSON_Frames = json_data['frames'];
+
+   console.log(tmp_JSON_Frames);
+   return false;
    
    // Click on a thumb in the reduc table
    $('.wi a').click(function(e) { 
