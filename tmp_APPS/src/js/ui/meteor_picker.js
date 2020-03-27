@@ -407,20 +407,12 @@ function add_all_circles(meteor_id, factor) {
    // Do we have a "new pos"
    test_new_pos = get_new_pos(meteor_id);
 
-   console.log("For CUR ", meteor_id , " test_new_pos:");
-   console.log(test_new_pos);
-
+    
+   // current Pos
    if(test_new_pos != false) {
       xy = convert_to_local(parseInt(test_new_pos[0]),parseInt(test_new_pos[1])); 
       addCircleRepair(xy[0]/factor,xy[1]/factor,meteor_id,'x'); 
-   } else {
-      // Of something in the initial JSON?
-      res = get_data_from_json(meteor_id)
-      if(res != false) {
-         xy = convert_to_local(parseInt(res['x']),parseInt(res['y'])); 
-         addCircleRepair(xy[0]/factor,xy[1]/factor,meteor_id,'x'); 
-      }
-   }
+   }  
 
 
    HOW_MANY_AFTER_AND_BEFORE = 1;
@@ -436,15 +428,7 @@ function add_all_circles(meteor_id, factor) {
       if(test_new_pos != false) {
             xy = convert_to_local(parseInt(test_new_pos[0]),parseInt(test_new_pos[1])); 
             addCircleRepair(xy[0]/factor,xy[1]/factor,i,'nb'); 
-      } else {
-         
-         // or an old one...
-         res = get_data_from_json(parseInt(i));
-         if(res != false) {
-            xy = convert_to_local(parseInt(res['x']),parseInt(res['y'])); 
-            addCircleRepair(xy[0]/factor,xy[1]/factor,i,'b'); 
-         }
-      }
+      }  
 
    }
 
@@ -455,15 +439,7 @@ function add_all_circles(meteor_id, factor) {
       if(test_new_pos != false) {
             xy = convert_to_local(parseInt(test_new_pos[0]),parseInt(test_new_pos[1])); 
             addCircleRepair(xy[0]/factor,xy[1]/factor,i,'nb'); 
-      } else {
-      
-         res = get_data_from_json(parseInt(i)); 
-
-         if(res != false) {
-            xy = convert_to_local(parseInt(res['x']),parseInt(res['y'])); 
-            addCircleRepair(xy[0]/factor,xy[1]/factor,i,'a'); 
-         }
-      }
+      }  
    }    
 }
 
