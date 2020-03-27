@@ -8,7 +8,7 @@ var FPS = 25;                 // For duration
 var first_frame, last_frame;  // To send to the API
 
 
-var tmp_JSON; // Copy of the original JSON used to store all the updates
+var tmp_JSON_Frames; // Copy of the original JSON used to store all the updates
 
 // We need the min & max cropped to set the clip length
 var all_cropped_frames_ids = []; // FROM THE JSON
@@ -744,9 +744,9 @@ function setup_manual_reduc1(all_cropped_frames) {
    addPickerModalTemplate(all_cropped_frames); 
 
    // We copy the original frames from the json 
-   tmp_JSON_Frames = json_data['frames'];
-   $.each(tmp_JSON_Frames, function(i,v) {
-      tmp_JSON_Frames[i] = {'fn':v['fn'],'x':v['x'],'y':v['y']};
+   
+   $.each(json_data['frames'], function(i,v) {
+      tmp_JSON_Frames.push({'fn':v['fn'],'x':v['x'],'y':v['y']});
    });
 
    console.log(tmp_JSON_Frames);
