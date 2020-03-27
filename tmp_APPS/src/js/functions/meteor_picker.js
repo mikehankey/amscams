@@ -57,6 +57,7 @@ function delete_frame_from_json(frame_id) {
 }
 
 
+// Get min/max frame id from Tmp JSON
 function get_min_max_from_json() {
    var arFn = [];
    
@@ -66,3 +67,25 @@ function get_min_max_from_json() {
 
    return {'min':Math.min.apply(Math,arFn), 'max':Math.max.apply(Math,arFn)};
 }
+
+
+// Update or add a frame to  update_tmp_JSON_frames
+function  update_tmp_JSON_frames(data) {
+   var updated = false;
+
+   // Is the frame already exists in tmp_JSON_Frames(?)
+   for(var i=0; i< tmp_JSON_Frames.length; i++) {
+      if(tmp_JSON_Frames[i]['fn']== data['fn']) {
+         tmp_JSON_Frames[i]['x'] = data['x'];
+         tmp_JSON_Frames[i]['y'] = data['y'];
+         updated = true;
+         break;
+      } 
+   }   
+
+   if(!updated) {
+      tmp_JSON_Frames.push(data);
+   }
+
+
+} 
