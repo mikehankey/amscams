@@ -227,7 +227,7 @@ function convert_to_local(_x,_y) {
 function get_new_pos(frame_id) {
    var t = false, res=[];
    
-   $(frames_jobs).each(function(i,v) {
+   $(tmp_JSON_Frames).each(function(i,v) {
       if(v['fn']==frame_id) {
          t = true;
          res = [v['x'],v['y']];
