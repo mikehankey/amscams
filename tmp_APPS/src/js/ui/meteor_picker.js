@@ -275,13 +275,13 @@ function delete_before() {
          $('.select_frame.exists').each(function(i,v) {
             var id = parseInt($(v).attr('data-rel'));
             if(id<first_frame) {  
-               $('.select_frame[data-rel='+id+']').removeClass('exists');
+               $('.select_frame[data-rel='+id+']').removeClass('exists').removeClass('updated').removeClass('done');
                $('.select_frame[data-rel='+id+']').find('.pos').remove();
                delete_frame_from_json(id);
             }
          });
 
-         setClipLength(first_frame,last_frame);
+         getNewClipLengthAndUpdate();
 
          // Update the circles on the current view
          $('.select_frame[data-rel='+cur_fr_id+'] ').click();
@@ -317,13 +317,13 @@ function delete_after() {
          $('.select_frame.exists').each(function(i,v) {
             var id = parseInt($(v).attr('data-rel'));
             if(id>last_frame) { 
-               $('.select_frame[data-rel='+id+']').removeClass('exists');
+               $('.select_frame[data-rel='+id+']').removeClass('exists').removeClass('updated').removeClass('done');
                $('.select_frame[data-rel='+id+']').find('.pos').remove();
                delete_frame_from_json(id);
             }
          });
 
-         setClipLength(first_frame,last_frame);
+         getNewClipLengthAndUpdate();
 
          // Update the circles on the current view
          $('.select_frame[data-rel='+cur_fr_id+'] ').click();

@@ -45,7 +45,7 @@ function get_data_from_json(frame_id) {
 function delete_frame_from_json(frame_id) {
  
    for(var i=0; i< tmp_JSON_Frames.length; i++) {
-      if(tmp_JSON_Frames[i]['fn']!==frame_id) {
+      if(tmp_JSON_Frames[i]['fn']==frame_id) {
          tmp_JSON_Frames.splice(i, 1);
          break;
       }
