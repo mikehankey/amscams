@@ -745,6 +745,9 @@ function setup_manual_reduc1(all_cropped_frames) {
 
    // We copy the original frames from the json 
    tmp_JSON_Frames = json_data['frames'];
+   $.each(tmp_JSON_Frames, function(i,v) {
+      tmp_JSON_Frames[i] = {'fn':v['fn'],'x':v['x'],'y':v['y']};
+   });
 
    console.log(tmp_JSON_Frames);
    return false;
