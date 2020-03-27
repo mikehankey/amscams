@@ -290,7 +290,6 @@ function delete_before() {
    });
 }
 
-
 // Delete all frames after one
 function delete_after() {
    // Delete BEFOPRE
@@ -333,11 +332,66 @@ function delete_after() {
    });
 }
 
+// Reset Current frame (if it's possible)...
+function reset_frame() {
+      // Delete BEFOPRE
+      $('#reset_cur').unbind('click').click(function(e) {
+         var cur_fr_id = $('#cropped_frame_select .cur').attr('data-rel');
+         var found = false;
+         var res;
+         
+         if( json_data != "undefined" && json_data != "" && json_data['frames']!=='undefined') {
+            // Does the cur_fr_id exists in the original JSON?
+            for(var i=0; i<=json_data['frames'].length; i++) {
+               if(json_data['frames'][i]['fn']==cur_fr_id) {
+                  found = true;
+                  res = json_data['frames'][i];
+                  break;
+               }
+            }
+
+            if(found) {
+
+               // We re-update tmp_JSON_Frames
+               for(var i=0; i<=tmp_JSON_Frames.length; i++) {
+                  if(tmp_JSON_Frames][i]['fn']==cur_fr_id) {
+                     tmp_JSON_Frames][i]['x'] = res['x'];
+                     tmp_JSON_Frames][i]['y'] = res['y'];
+
+                     // And we re-click to the select to update everything
+                     $('.select_frame[data-rel='+cur_fr_id+']').click();
+
+                     // Update Clip length
+                     getNewClipLengthAndUpdate();
+
+
+                     break;
+                  }
+               }
+
+
+            } else {
+               bootbox.alert({
+                  message: "Error: this frame wasn't in the original JSON. You cannot reset it.",
+                  className: 'rubberBand animated error',
+                  centerVertical: true 
+               })
+            }
+
+         }
+
+
+      });
+   
+}
+
+
 // Select meteor position (ui)
 function select_meteor_pos(factor) {
 
    delete_before();
    delete_after();
+   reset_frame();
 
    // Select Meteor
    $("#cropped_frame_selector").unbind('click').click(function(e){
@@ -797,6 +851,7 @@ function setup_manual_reduc1(all_cropped_frames) {
             {
                // console.log("FAIL")
             });
+               
                
       } else {
          bootbox.alert({
