@@ -47,16 +47,22 @@ function get_data_from_json(frame_id) {
 // It is used to show the circles that correspond to the 
 // data that will be send to the API
 function delete_frame_from_json(frame_id) {
-
-  
+ 
    for(var i=0; i< tmp_JSON_Frames.length; i++) {
       if(tmp_JSON_Frames[i]['fn']!==frame_id) {
          tmp_JSON_Frames.splice(i, 1);
          break;
       }
-   }  
- 
-   console.log("NEW tmp_JSON_Frames AFTER DELETEION OF ", frame_id)
-   console.log(tmp_JSON_Frames);
+   }   
+}
+
+
+function get_min_max_from_json() {
+   var arFn = [];
    
+   for(var i=0; i< tmp_JSON_Frames.length; i++) {
+      arFn.push(tmp_JSON_Frames[i]['fn']); 
+   }   
+
+   return {'min':Math.min.apply(Math,arFn), 'max':Math.max.apply(Math,arFn)};
 }

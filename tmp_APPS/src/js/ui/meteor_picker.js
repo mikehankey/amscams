@@ -36,14 +36,8 @@ function setClipLength(from,to) {
 function getNewClipLengthAndUpdate() {
 
    // We get the min/max from frames_done
-   var _min = Math.min.apply(Math,frames_done);
-   var _max = Math.max.apply(Math,frames_done);
-
-   // And from all_cropped_frames_ids
-   _min = Math.min(_min,Math.min.apply(Math,all_cropped_frames_ids));
-   _max = Math.max(_max,Math.max.apply(Math,all_cropped_frames_ids));
-
-   setClipLength(_min,_max); 
+   var r = get_min_max_from_json();
+   setClipLength(r['min'],r['max']); 
 }
 
 
@@ -727,7 +721,7 @@ function open_meteor_picker(meteor_id, img_path) {
       $('#cropped_frame_selector').css('background-image','url(none)').css('border','2px solid #ffe52e');
       add_frame_inside_meteor_select(img_path,$t.attr('data-rel'));
    });
-   
+
    return false; 
 } 
 
