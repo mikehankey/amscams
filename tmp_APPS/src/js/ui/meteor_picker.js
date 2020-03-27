@@ -701,11 +701,14 @@ function add_frame_inside_meteor_select(img_path, meteor_id) {
 // Open the Modal with a given meteor
 function open_meteor_picker(meteor_id, img_path) {
 
-   // Show Modal if necessary
+   
    if($('#select_meteor_modal').hasClass('show')) { 
+ 
+      // Show Modal if necessary
       add_frame_inside_meteor_select(img_path, meteor_id);
       $('#select_meteor_modal').css('padding-right',0);
       $('body').css('padding',0);
+   
    } else {
       
       // When the modal already exists 
@@ -724,6 +727,7 @@ function open_meteor_picker(meteor_id, img_path) {
       $('#cropped_frame_selector').css('background-image','url(none)').css('border','2px solid #ffe52e');
       add_frame_inside_meteor_select(img_path,$t.attr('data-rel'));
    });
+   
    return false; 
 } 
 
@@ -748,9 +752,7 @@ function setup_manual_reduc1(all_cropped_frames) {
    $.each(json_data['frames'], function(i,v) {
       tmp_JSON_Frames.push({'fn':v['fn'],'x':v['x'],'y':v['y']});
    });
-
-   console.log(tmp_JSON_Frames);
-   return false;
+ 
    
    // Click on a thumb in the reduc table
    $('.wi a').click(function(e) { 

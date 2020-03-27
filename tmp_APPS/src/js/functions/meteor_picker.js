@@ -48,19 +48,15 @@ function get_data_from_json(frame_id) {
 // data that will be send to the API
 function delete_frame_from_json(frame_id) {
 
-   console.log("DELETE FROM JSON ", frame_id);
-
-   var new_json_frames = [];
-
-   for(var i=0; i< json_data['frames'].length; i++) {
-      if(json_data['frames'][i]['fn']!==frame_id) {
-         new_json_frames.push(json_data['frames'][i]);
+  
+   for(var i=0; i< tmp_JSON_Frames.length; i++) {
+      if(tmp_JSON_Frames[i]['fn']!==frame_id) {
+         tmp_JSON_Frames.splice(i, 1);
+         break;
       }
    }  
-
-   json_data['frames'] = new_json_frames;
-
-
-   console.log(json_data);
+ 
+   console.log("NEW tmp_JSON_Frames AFTER DELETEION OF ", frame_id)
+   console.log(tmp_JSON_Frames);
    
 }
