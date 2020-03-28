@@ -277,16 +277,23 @@ def get_day_files(day, cams_id, json_conf, sun=None,in_hour=None,detect=None):
 
 def get_day_stats(day, day_dir, json_conf):
    proc_dir = json_conf['site']['proc_dir']
-   failed_dir = day_dir + "/failed/*trim*.mp4"
+   data_dir = day_dir + "/data/*.json"
    meteor_dir = "/mnt/ams2/meteors/" + day + "/*.json"
    pending_dir = "/mnt/ams2/SD/proc2/" + day + "/*trim*.mp4"
    data_dir = "/mnt/ams2/SD/proc2/" + day + "/data/*-meteor.json"
    min_file_dir = "/mnt/ams2/SD/proc2/" + day + "/*.mp4"
-   failed_files = glob.glob(failed_dir)
+   failed_files = glob.glob(data_dir)
    tmp_meteor_files = glob.glob(meteor_dir)
    tmp_meteor_files2 = glob.glob(data_dir)
    meteor_files = []
    umeteor_files = {}
+   temp = []
+   for f in failed_files:
+      if "many" in f:
+         temp.append(f)
+      if "nometeor" in f:
+         temp.append(f)
+   failed_files = temp
    for tmp in tmp_meteor_files2 :
       mf = tmp.split("/")[-1]
       el = mf.split("-trim")
@@ -304,6 +311,7 @@ def get_day_stats(day, day_dir, json_conf):
          #meteor_files.append(mfr)
          umeteor_files[mfr] = 1
    for key in umeteor_files:
+      print(key)
       meteor_files.append(key)
    pending_files = glob.glob(pending_dir)
    min_files = glob.glob(min_file_dir)

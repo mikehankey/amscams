@@ -57,7 +57,11 @@ def fix_missing_stacks(day):
    if running > 2:
       print("ALREADY RUNNING:", running)
       exit()
-   files = sorted(glob.glob("/mnt/ams2/SD/proc2/" + day + "/*.mp4" ), reverse=True)
+   afiles = sorted(glob.glob("/mnt/ams2/SD/proc2/" + day + "/*.mp4" ), reverse=True)
+   files = []
+   for ff in afiles:
+      if "-crop" not in ff:
+         files.append(ff)
    missing = 0
    found = 0
    for file in files:
@@ -225,11 +229,14 @@ def scan_and_stack_fast(file, day = 0, vals = []):
          print(fc)
          break
 
-
       if day == 1:
          small_frame = cv2.resize(frame, (0,0),fx=.5, fy=.5)
       else:
-         small_frame = cv2.resize(frame, (0,0),fx=.5, fy=.5)
+         try:
+            small_frame = cv2.resize(frame, (0,0),fx=.5, fy=.5)
+         except:
+            print("Bad video file:", file)
+            exit()
 
 
       if day != 1:

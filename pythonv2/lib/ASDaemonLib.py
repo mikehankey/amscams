@@ -203,30 +203,62 @@ def build_meteor_file_index(year=None):
    return(all_meteors)
  
 def arc_check(year=None, cmd_mode=0) :
+   refits = []
+   bad_frames = []
    if year == None:
       jf = "/mnt/ams2/SD/proc2/json/all_meteors.json"
    else:
       jf = "/mnt/ams2/SD/proc2/json/all_meteors-" + year + ".json"
-   if cfe(jf) == 1:
+   #if cfe(jf) == 1 :
+   if False:
       print("Load:", jf)
       all_meteors = load_json_file(jf)
    else:
       print("Build MI:", year)
       all_meteors = build_meteor_file_index(year)
    print("done")
+
    for m in all_meteors:
-      arc_file = get_arc(m) 
+      arc_file,ad = get_arc(m) 
       if arc_file is not None:
          all_meteors[m]['arc_file'] = arc_file
-      print(m, arc_file)
+         if ad is not None :
+            if "frames" in ad:
+               if len(ad['frames']) < 3:
+                  bad_frames.append(arc_file)
+            else:
+               bad_frames.append(arc_file)
+            if "calib" in ad:
+               if "total_res_px" in ad['calib']['device']:
+                  print(m, arc_file,ad['calib']['device']['total_res_px'])
+               else:
+                  print("REFIT NEEDED:")
+                  refits.append(arc_file)
+            else:
+               print("NO calib!", arc_file)
+               exit()
+         else:
+            print("BAD ARC JSON!?", arc_file)
+            exit()
+   print("REFITS:", refits)
+   for fi in refits:
+      os.system("./flex-detect.py faf " + fi)
+   print("BAD FRAMES:", bad_frames)
+   for fi in bad_frames:
+      os.system("./flex-detect.py fam " + fi)
    save_json_file(jf, all_meteors)
 
 def get_arc(m):
    js = load_json_file(m)
+   if js == 0:
+      print("BAD JS:", m)
+      exit()
    if "archive_file" in js:
       if js['archive_file'] != "":
-         return(js['archive_file'])
-   return(None)
+         if cfe(js['archive_file']) == 1:
+            ad = load_json_file(js['archive_file'])
+            return(js['archive_file'],ad)
+   return(None,None)
  
 def day_or_night(capture_date, json_conf):
 

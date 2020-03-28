@@ -331,8 +331,41 @@ def setup_vpn():
    os.system("sudo apt-get install openvpn")
    os.system("wget " + url + " -O /etc/openvpn/as6vpn.ovpn")
    os.system("wget " + pass_file + " -O /etc/openvpn/as6vpn.txt")
-   
 
+def main_menu():
+   print("""
+AllSkyCams.com (ASC) software installer. 
+
+Use this application to setup a new AllSkyCams.com PC or update an existing one. 
+Select the approrptiate actions.
+
+Post Installer -- various utilities to 'complete' the install after the main install is complete 
+1) Clone ASC software -- only run this after the initial prequist installs have run. 
+2) Setup network interface -- Sets IP address for 2nd ethernet card
+3) Configure Apache -- Makes required conf changes to apache and setups doc roots and content symlinks 
+4) Format Data Drive -- Formats the data drive for a new system. Dangerous! Only run for new installs.
+5) Setup Data Dirs -- Makes the required directories inside the data drive 
+6) Setup ASC Config File -- Updates values in the as6.json file
+7) Setup VPN -- Sets up the configuration for remote access support VPN. (requires admin access for key setup)
+8) Fix Perms -- Fixes perms to ams on all needed directories. 
+9) Setup Wasabi -- Installs S3FS software, wasbi config and archive directories (requires admin access for key setup)
+10) Update git repo -- Updates git repo
+11) Update crontabs -- Installs / Updates the crontabs 
+
+Main Installer 
+12) Install ALL pre-requists -- This will run or re-run the entire pre-requist install list
+13) Install / Re-install astrometry.net software -- installs astrometry.net if therre has been a problem, with initial install. 
+14) Install / Re-install opencv software -- re-installs openCV (if customizations are desired or there is a problem on the host system). 
+15) Run tests -- This checks that all pre-requist software is installed and all setup and config files and directories exist
+
+
+16) Exit 
+   """)      
+
+   func = input(" Enter the function you want to run:")
+
+
+main_menu()
 #get_repos()
 #setup_network_interface()
 
@@ -342,6 +375,6 @@ def setup_vpn():
 #setup_as6_conf()
 
 #setup_dirs()
-setup_vpn()
-os.system("sudo chown -R ams:ams /mnt/ams2")
-os.system("sudo chown -R ams:ams /home/ams")
+#setup_vpn()
+#os.system("sudo chown -R ams:ams /mnt/ams2")
+#os.system("sudo chown -R ams:ams /home/ams")
