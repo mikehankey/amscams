@@ -85,7 +85,7 @@ function send_API_task(jsonData,$toDel,$toConf,callback) {
 }
 
 
-
+// Big yellow button on bottom of daily report
 function update_all() {
 
    // Send a list of task to the API
@@ -97,6 +97,12 @@ function update_all() {
       $('.prevproc.toDel').each(function() {
          var $t = $(this);
          var path = $t.find('a.T>img').attr('src');
+
+
+         // Here we get only the file name 
+         // as all the should be in the filename (+ station ID that is passed to the API)
+         path = path.replace(/^.*[\\\/]/, '')
+ 
          toDel.push(path);
          $toDel.push($t);
          toDelB = true;
@@ -115,6 +121,9 @@ function update_all() {
       $('.prevproc.toConf').each(function() {
          var $t = $(this);
          var path = $t.find('a.T>img').attr('src'); 
+         // Here we get only the file name 
+         // as all the should be in the filename (+ station ID that is passed to the API)
+         path = path.replace(/^.*[\\\/]/, '')
          toConf.push(path);
          $toConf.push($t);
          toDelC = true;

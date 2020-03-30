@@ -16,7 +16,7 @@ function setup_single_delete_buttons()  {
             }
          },
          callback: function (result) {
-            if(result) {   send_API_task({'toDel':cropped_video},'','', function(){});
+            if(result) { send_API_task({'toDel':cropped_video},'','', function(){});
             }
          }
       });

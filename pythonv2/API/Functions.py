@@ -85,15 +85,17 @@ def api_controller(form):
 
 
 # ADD A TASK TO DELETE A DETECTION that will be read later by a cron
+# This function is used on the daily report + obs_report 
+# to delete and/or confirm several detections 
 def add_tasks(data_to_del,data_to_conf,usr,st,_date):
    
    # We can pass either strings or arrays
    if( isinstance(data_to_del, str)):
-      data_to_del = [data_to_del]
+      all_data_to_del =  data_to_del 
  
    # We can pass either strings or arrays
    if( isinstance(data_to_conf, str)):
-      data_to_conf = [data_to_conf]
+      all_data_to_conf =  data_to_conf
 
    conf_ct = 0
    del_ct = 0 
@@ -105,18 +107,17 @@ def add_tasks(data_to_del,data_to_conf,usr,st,_date):
       all_data_to_del = []
 
    try:
-      data_to_conf = data_to_conf.split(',')
-      conf_ct = len(data_to_conf)
+      all_data_to_del = data_to_conf.split(',')
+      conf_ct = len(all_data_to_del)
    except:
-      data_to_conf = []   
+      all_data_to_del = []   
        
 
    with open(API_TASK_FILE, 'a+') as f:
  
-      print("SEI")
-
       for data in all_data_to_del:
          f.write(usr+'|'+st+'|DELETE'+'|'+data+'|'+_date.strftime("%Y-%m-%d %H:%M")+'\n')
+            
       for data in all_data_to_del:
          f.write(usr+'|'+st+'|CONF'+'|'+data+'|'+_date.strftime("%Y-%m-%d %H:%M")+'\n')
 
