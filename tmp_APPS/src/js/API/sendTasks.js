@@ -64,6 +64,10 @@ function send_API_task(jsonData,$toDel,$toConf,callback) {
                centerVertical: true,
                backdrop: true
             });
+            
+
+            // Not sure why but the "OK" button is disabled (!)
+            
 
             // We add a cookie so we know the page has been updated
             createCookie(PAGE_MODIFIED,window.location.href,1/24);
@@ -79,7 +83,7 @@ function send_API_task(jsonData,$toDel,$toConf,callback) {
       error:function() { 
          
          $('body').removeClass('wait');
-         
+
          bootbox.alert({
             message: "Impossible to reach the API. Please, try again later or refresh the page and log back in",
             className: 'rubberBand animated error',
