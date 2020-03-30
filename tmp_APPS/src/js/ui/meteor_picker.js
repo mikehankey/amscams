@@ -460,7 +460,6 @@ function select_meteor_pos(factor) {
    
    });
    
-
    // Click on "Create All"
    $('#create_all').unbind('click').click(function() {
       alert("CREATE ALL TEST");
