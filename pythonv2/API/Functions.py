@@ -112,10 +112,7 @@ def add_tasks(data_to_del,data_to_conf,usr,st,_date):
        
 
    with open(API_TASK_FILE, 'a+') as f:
-
-      #CHMOD 
-      os.chmod(API_TASK_FILE, '0766')
-      
+ 
       print("SEI")
 
       for data in all_data_to_del:
