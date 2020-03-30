@@ -87,28 +87,13 @@ def api_controller(form):
 # ADD A TASK TO DELETE A DETECTION that will be read later by a cron
 def add_tasks(data_to_del,data_to_conf,usr,st,_date):
    
-   print("ADD TASKS - API FUNCTIONS  ")
-   print("<br>")
-   print("DATA TO DEL")
-   
-   print("<br>")
-   print(data_to_del)
-   print("DATA TO CONF")
-   
-   print("<br>")
-   print(data_to_conf)
-   print("USR ")
-   
-   print("<br>")
-   print(usr)
-   print("STATION")
-   
-   print("<br>")
-   print(st)
-   print("_date")
-   
-   print("<br>")
-   print(_date)
+   # We can pass either strings or arrays
+   if( isinstance(data_to_del, str)):
+      data_to_del = [data_to_del]
+
+   # We can pass either strings or arrays
+   if( isinstance(data_to_conf, str)):
+      data_to_conf = [data_to_conf]
 
    conf_ct = 0
    del_ct = 0 
