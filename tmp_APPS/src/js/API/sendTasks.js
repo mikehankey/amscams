@@ -167,10 +167,10 @@ function update_all() {
          });
       } 
    })
-}
-
+} 
 
 
 $(function() {
+   // Setup big yellow button on daily report
    update_all();
 })
