@@ -2,6 +2,11 @@ function setup_single_delete_buttons()  {
  
   $('.delSingle').click(function() {
 
+      // Video Path
+      var video_API_path = cropped_video.replace(/^.*[\\\/]/, '');
+      video_API_path = video_API_path.replace('-prev-crop.jpg','');
+
+
       bootbox.confirm({
          message: "You are about to delete this detection.<br/>Please, confirm.",
          centerVertical: true,
@@ -16,7 +21,7 @@ function setup_single_delete_buttons()  {
             }
          },
          callback: function (result) {
-            if(result) { send_API_task({'toDel':cropped_video},'','', function(){});
+            if(result) { send_API_task({'toDel':video_API_path},'','', function(){});
             }
          }
       });
@@ -30,9 +35,11 @@ function setup_single_delete_buttons()  {
 // AND WE KNOW IT'S UNIQUE FOR THE DETECTION
 function setup_single_conf_buttons() {
    $('.confSingle').click(function() {
+         var video_API_path = cropped_video.replace(/^.*[\\\/]/, '');
+         video_API_path = video_API_path.replace('-prev-crop.jpg','');
          loading_button($(this));
          $(this).attr('disabled','disabled');
-         send_API_task({'toConf':cropped_video},'','', function() { $('.confSingle').attr('data-init','<i>✔</i> Confirmed'); 
+         send_API_task({'toConf':video_API_path},'','', function() { $('.confSingle').attr('data-init','<i>✔</i> Confirmed'); 
          load_done_button($('.confSingle'));
          });
       return false;

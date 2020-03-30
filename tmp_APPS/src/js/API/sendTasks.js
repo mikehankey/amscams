@@ -111,7 +111,8 @@ function update_all() {
          // Here we get only the file name 
          // as all the should be in the filename (+ station ID that is passed to the API)
          // We also remove -prev-crop.jpg
-         path = path.replace(/^.*[\\\/]/, '').replace('-prev-crop.jpg','');
+         path = path.replace(/^.*[\\\/]/, '')
+         path = path.replace('-prev-crop.jpg','');
  
          toDel.push(path);
          $toDel.push($t);
@@ -134,7 +135,8 @@ function update_all() {
          // Here we get only the file name 
          // as all the should be in the filename (+ station ID that is passed to the API)
          // We also remove -prev-crop.jpg
-         path = path.replace(/^.*[\\\/]/, '').replace('-prev-crop.jpg','');
+         path = path.replace(/^.*[\\\/]/, '')
+         path = path.replace('-prev-crop.jpg','');
          toConf.push(path);
          $toConf.push($t);
          toDelC = true;
