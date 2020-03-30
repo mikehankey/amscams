@@ -17,7 +17,7 @@ from API_Functions import *
 
 JSON_USER_PWD = '/home/ams/amscams/pythonv2/API/user_password.json' 
 JSON_MANAGER_PWD = '/home/ams/amscams/pythonv2/API/manager_password.json' 
-API_TASK_FILE ='/home/ams/amscams/pythonv2/API/task.txt' 
+API_TASK_FILE ='/home/ams/amscams/pythonv2/API/tasks.json' 
 PATH_ACCESS_LOGS = '/home/ams/amscams/pythonv2/API'
 ACCESS_FILE = PATH_ACCESS_LOGS + os.sep + "access.log"
 
@@ -110,10 +110,10 @@ def add_tasks(data_to_del,data_to_conf,usr,st,_date):
       conf_ct = len(data_to_conf)
    except:
       data_to_conf = []   
-      
-   print("BEFORE PRINT IN FILE")
+       
 
-   with open(API_TASK_FILE, 'w+') as f:
+   with open(API_TASK_FILE, 'a+') as f:
+      
       #CHMOD 
       os.chmod(API_TASK_FILE, stat.S_IWOTH)
       
