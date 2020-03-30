@@ -29,10 +29,12 @@ function send_API_task(jsonData,$toDel,$toConf,callback) {
                centerVertical: true 
             });
 
+            // Login out if it's a login error
             if(typeof data.log !== 'undefined' && data.log==1) {
                logout();
                loggedin();
             }
+
          }  else {
 
             // We grey out the related detections on the page
@@ -52,12 +54,12 @@ function send_API_task(jsonData,$toDel,$toConf,callback) {
             // Update main button
             $('#del_text').text('');
             $('#conf_text').text('');
-
-
+ 
             bootbox.alert({
                message: data.msg,
                className: 'rubberBand animated',
-               centerVertical: true 
+               centerVertical: true,
+               backdrop: true
             });
 
             // We add a cookie so we know the page has been updated
@@ -97,7 +99,6 @@ function update_all() {
       $('.prevproc.toDel').each(function() {
          var $t = $(this);
          var path = $t.find('a.T>img').attr('src');
-
 
          // Here we get only the file name 
          // as all the should be in the filename (+ station ID that is passed to the API)
@@ -146,6 +147,7 @@ function update_all() {
          bootbox.confirm({
             message: msg + ".<br/>Please, confirm.",
             centerVertical: true,
+            backdrop: true,
             buttons: {
                cancel: {
                   label: 'No',
@@ -157,12 +159,9 @@ function update_all() {
                }
             },
             callback: function (result) {
-               if(result) {
-                  console.log("SENDING TO TASKS");
-                  console.log(toDel.toString());
-                  console.log(toConf.toString());
+               if(result==true) { 
                   send_API_task({'toDel':toDel.toString(),'toConf':toConf.toString()},$toDel,$toConf, function() {});
-               }
+               } 
             }
          });
       } 
