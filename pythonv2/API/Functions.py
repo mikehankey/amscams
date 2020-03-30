@@ -90,7 +90,7 @@ def add_tasks(data_to_del,data_to_conf,usr,st,_date):
    # We can pass either strings or arrays
    if( isinstance(data_to_del, str)):
       data_to_del = [data_to_del]
-
+ 
    # We can pass either strings or arrays
    if( isinstance(data_to_conf, str)):
       data_to_conf = [data_to_conf]
