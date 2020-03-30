@@ -13,11 +13,14 @@ function send_API_task(jsonData,$toDel,$toConf,callback) {
    var usr = getUserInfo();
    usr = usr.split('|');
 
+   $('body').addClass('wait');
+
    $.ajax({ 
       url:   API_URL ,
       data: {'function':'tasks',  'tok':test_logged_in(), 'data': jsonData, 'usr':usr[0], 'st':stID}, 
       format: 'json', 
       success: function(data) { 
+         $('body').removeClass('wait');
          data = jQuery.parseJSON(data); 
 
          if(typeof data.error !== 'undefined') {
@@ -74,6 +77,9 @@ function send_API_task(jsonData,$toDel,$toConf,callback) {
            
       }, 
       error:function() { 
+         
+         $('body').removeClass('wait');
+         
          bootbox.alert({
             message: "Impossible to reach the API. Please, try again later or refresh the page and log back in",
             className: 'rubberBand animated error',

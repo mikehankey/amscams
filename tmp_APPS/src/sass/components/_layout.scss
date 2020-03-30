@@ -5,6 +5,10 @@ body {
    &.d {
       background-color:#282828;
    }
+
+   &.wait {
+      cursor: wait;
+   }
 }
 
 
