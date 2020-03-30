@@ -3,7 +3,6 @@
 import os
 import cgi 
 import sys
-import stat
 import cgitb
 import string
 import random
@@ -113,9 +112,9 @@ def add_tasks(data_to_del,data_to_conf,usr,st,_date):
        
 
    with open(API_TASK_FILE, 'a+') as f:
-      
+
       #CHMOD 
-      os.chmod(API_TASK_FILE, stat.S_IWOTH)
+      os.chmod(API_TASK_FILE, 0766)
       
       print("SEI")
 
