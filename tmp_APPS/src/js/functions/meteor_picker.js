@@ -85,3 +85,70 @@ function  update_tmp_JSON_frames(data) {
 
 
 } 
+
+
+
+// Send Tasks to API (from obs_report)
+function sendTaksToAPI() {
+   
+}
+
+   /*
+
+
+   // Click on "SEND TO API" (Yellow button) 
+   $('#create_all').unbind('click').click(function() {
+      var vtl = test_logged_in();
+      var usr = getUserInfo();
+      usr = usr.split('|');
+
+      loading_button($(this)); 
+
+      if($("#post_form").length==0) { 
+
+         $('<form id="post_form" action="'+API_URL+'" method="post">\
+            <input type="hidden" name="data" />\
+            <input type="hidden" name="function" value="frames" />\
+            <input type="hidden" name="tok" value="'+vtl+'" />\
+            <input type="hidden" name="usr" value="'+usr[0]+'" />\
+            <input type="hidden" name="st" value="'+stID+'"/>\
+         </form>').appendTo($('body')); 
+      }
+ 
+      if(frames_jobs.length!=0) {
+
+        
+         // Add the cropped video path as a ref to the reduction 
+         frames_jobs['det'] = cropped_video;
+         
+         // Update the temporary form and submit it (POST)
+         $('#post_form input[name=data]').val(JSON.stringify(frames_jobs));
+
+         // POST ASYNC 
+         var formData = $("#post_form").serialize();
+         var URL = $("#post_form").attr("action");
+         $.post(URL,
+            formData,
+            function(data, textStatus, jqXHR)  {
+               //data: Data from server.    
+               // console.log("data from server ")
+               // console.log(data);
+
+
+            }).fail(function(jqXHR, textStatus, errorThrown) 
+            {
+               // console.log("FAIL")
+            });
+               
+               
+      } else {
+         bootbox.alert({
+            message: "Error: nothing to update!",
+            className: 'rubberBand animated error',
+            centerVertical: true 
+         })
+      }
+
+      load_done_button($(this));  
+   })
+   */

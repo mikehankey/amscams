@@ -809,7 +809,6 @@ function setup_manual_reduc1(all_cropped_frames) {
 
    // Add modal Template  
    addPickerModalTemplate(all_cropped_frames); 
-
  
    
    // Click on a thumb in the reduc table
@@ -831,65 +830,11 @@ function setup_manual_reduc1(all_cropped_frames) {
    });
 
 
-   /*
-
-
-   // Click on "SEND TO API" (Yellow button) 
+   // Click on "Create All"
    $('#create_all').unbind('click').click(function() {
-      var vtl = test_logged_in();
-      var usr = getUserInfo();
-      usr = usr.split('|');
+      alert("CREATE ALL TEST");
+   });
 
-      loading_button($(this)); 
-
-      if($("#post_form").length==0) { 
-
-         $('<form id="post_form" action="'+API_URL+'" method="post">\
-            <input type="hidden" name="data" />\
-            <input type="hidden" name="function" value="frames" />\
-            <input type="hidden" name="tok" value="'+vtl+'" />\
-            <input type="hidden" name="usr" value="'+usr[0]+'" />\
-            <input type="hidden" name="st" value="'+stID+'"/>\
-         </form>').appendTo($('body')); 
-      }
- 
-      if(frames_jobs.length!=0) {
-
-        
-         // Add the cropped video path as a ref to the reduction 
-         frames_jobs['det'] = cropped_video;
-         
-         // Update the temporary form and submit it (POST)
-         $('#post_form input[name=data]').val(JSON.stringify(frames_jobs));
-
-         // POST ASYNC 
-         var formData = $("#post_form").serialize();
-         var URL = $("#post_form").attr("action");
-         $.post(URL,
-            formData,
-            function(data, textStatus, jqXHR)  {
-               //data: Data from server.    
-               // console.log("data from server ")
-               // console.log(data);
-
-
-            }).fail(function(jqXHR, textStatus, errorThrown) 
-            {
-               // console.log("FAIL")
-            });
-               
-               
-      } else {
-         bootbox.alert({
-            message: "Error: nothing to update!",
-            className: 'rubberBand animated error',
-            centerVertical: true 
-         })
-      }
-
-      load_done_button($(this));  
-   })
-   */
 }
 
 
