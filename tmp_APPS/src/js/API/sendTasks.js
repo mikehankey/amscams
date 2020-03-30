@@ -158,6 +158,9 @@ function update_all() {
             },
             callback: function (result) {
                if(result) {
+                  console.log("SENDING TO TASKS");
+                  console.log(toDel.toString());
+                  console.log(toConf.toString());
                   send_API_task({'toDel':toDel.toString(),'toConf':toConf.toString()},$toDel,$toConf);
                }
             }
