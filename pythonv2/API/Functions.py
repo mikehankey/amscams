@@ -3,6 +3,7 @@
 import os
 import cgi 
 import sys
+import stats
 import cgitb
 import string
 import random
@@ -109,8 +110,15 @@ def add_tasks(data_to_del,data_to_conf,usr,st,_date):
       conf_ct = len(data_to_conf)
    except:
       data_to_conf = []   
+      
+   print("BEFORE PRINT IN FILE")
 
    with open(API_TASK_FILE, 'w+') as f:
+      #CHMOD 
+      os.chmod(API_TASK_FILE, stat.S_IWOTH)
+      
+      print("SEI")
+
       for data in all_data_to_del:
          f.write(usr+'|'+st+'|DELETE'+'|'+data+'|'+_date.strftime("%Y-%m-%d %H:%M")+'\n')
       for data in all_data_to_del:
