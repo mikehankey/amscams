@@ -65,9 +65,7 @@ function send_API_task(jsonData,$toDel,$toConf,callback) {
                backdrop: true
             });
             
-
-            // Not sure why but the "OK" button is disabled (!)
-            
+ 
 
             // We add a cookie so we know the page has been updated
             createCookie(PAGE_MODIFIED,window.location.href,1/24);
@@ -112,7 +110,8 @@ function update_all() {
 
          // Here we get only the file name 
          // as all the should be in the filename (+ station ID that is passed to the API)
-         path = path.replace(/^.*[\\\/]/, '')
+         // We also remove -prev-crop.jpg
+         path = path.replace(/^.*[\\\/]/, '').replace('-prev-crop.jpg','');
  
          toDel.push(path);
          $toDel.push($t);
@@ -134,7 +133,8 @@ function update_all() {
          var path = $t.find('a.T>img').attr('src'); 
          // Here we get only the file name 
          // as all the should be in the filename (+ station ID that is passed to the API)
-         path = path.replace(/^.*[\\\/]/, '')
+         // We also remove -prev-crop.jpg
+         path = path.replace(/^.*[\\\/]/, '').replace('-prev-crop.jpg','');
          toConf.push(path);
          $toConf.push($t);
          toDelC = true;

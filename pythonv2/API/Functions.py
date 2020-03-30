@@ -117,14 +117,18 @@ def add_tasks(data_to_del,data_to_conf,usr,st,_date):
  
       for data in all_data_to_del:
          f.write(usr+'|'+st+'|DELETE'+'|'+data+'|'+_date.strftime("%Y-%m-%d %H:%M")+'\n')
-            
+
       for data in all_data_to_del:
          f.write(usr+'|'+st+'|CONF'+'|'+data+'|'+_date.strftime("%Y-%m-%d %H:%M")+'\n')
 
    f.close()
 
    # Build message for JS
-   msg = 'New tasks are now pending:<br/>'
+   if(del_ct>1 or conf_ct>1):
+      msg = '<b>New tasks are now pending:</b><br/>'
+   else:
+      msg = '<b>A new task is now pending:</b><br/>'
+
    if(del_ct!=0):
       msg += " deletion of " + str(del_ct) + " detection "
       if(conf_ct != 0) :
