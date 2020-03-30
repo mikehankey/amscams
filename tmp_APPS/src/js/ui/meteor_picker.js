@@ -460,6 +460,15 @@ function select_meteor_pos(factor) {
    
    });
    
+
+
+   
+
+   // Click on "Create All"
+   $('#create_all').unbind('click').click(function() {
+      alert("CREATE ALL TEST");
+   });
+
 }
 
 
@@ -827,12 +836,6 @@ function setup_manual_reduc1(all_cropped_frames) {
    // Click on "Big" button 
    $('.reduc1').click(function(e) 
       { $('.wi a')[0].click();
-   });
-
-
-   // Click on "Create All"
-   $('#create_all').unbind('click').click(function() {
-      alert("CREATE ALL TEST");
    });
 
 }
