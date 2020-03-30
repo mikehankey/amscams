@@ -462,7 +462,11 @@ function select_meteor_pos(factor) {
    
    // Click on "Create All"
    $('#create_all').unbind('click').click(function() {
-      alert("CREATE ALL TEST");
+      $('body').addClass('wait');
+      if(tmp_JSON_Frames.length!=0) {
+
+         $('body').removeClass('wait');
+      }
    });
 
 }
