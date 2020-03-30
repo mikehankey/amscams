@@ -161,7 +161,7 @@ function update_all() {
                   console.log("SENDING TO TASKS");
                   console.log(toDel.toString());
                   console.log(toConf.toString());
-                  send_API_task({'toDel':toDel.toString(),'toConf':toConf.toString()},$toDel,$toConf);
+                  send_API_task({'toDel':toDel.toString(),'toConf':toConf.toString()},$toDel,$toConf, function() {});
                }
             }
          });
