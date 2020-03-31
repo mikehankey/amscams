@@ -14,15 +14,16 @@ from os import environ
 from API_Tools import *
 from API_Functions import *
 
-JSON_USER_PWD = '/home/ams/amscams/pythonv2/API/user_password.json' 
-JSON_MANAGER_PWD = '/home/ams/amscams/pythonv2/API/manager_password.json' 
-API_TASK_FILE ='/home/ams/amscams/pythonv2/API/tasks' 
-PATH_ACCESS_LOGS = '/home/ams/amscams/pythonv2/API'
-ACCESS_FILE = PATH_ACCESS_LOGS + os.sep + "access.log"
+LOCAL_PATH = '/mnt/archive.allsky.tv/APPS/API'
 
-DETECTION_TO_DEL = PATH_ACCESS_LOGS + os.sep + "toDel.log" 
-DETECTION_TO_CONF = PATH_ACCESS_LOGS + os.sep + "toConf.log" 
 
+JSON_USER_PWD = LOCAL_PATH + '/user_password.json' 
+JSON_MANAGER_PWD = LOCAL_PATH + '/manager_password.json' 
+API_TASK_FILE = LOCAL_PATH + '/tasks' 
+ 
+
+PATH_ACCESS_LOGS = LOCAL_PATH
+ACCESS_FILE = PATH_ACCESS_LOGS + os.sep + "access.log" 
 
 EXTRA_CODE_IN_TOKEN = '4llskYR0cks'
 ACCESS_GRANTED_DURATION = 1 # In hours
