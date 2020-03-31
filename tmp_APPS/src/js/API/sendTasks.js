@@ -10,14 +10,26 @@ function greyOut($el,msg) {
 
 function send_API_frame_task(frameData,callback) {
    var usr = getUserInfo();
+   var frame_data_to_send = '';
    usr = usr.split('|');
    $('body').addClass('wait');
+    
 
- 
+   // Get current detection 
+   var video_API_path = cropped_video.replace(/^.*[\\\/]/, '');
+   video_API_path = video_API_path.replace('-prev-crop.jpg','');
+   video_API_path = video_API_path.replace('-HD-cropped.mp4','');
+
+   // To limit the banwidth we're sending an array [fn,x,y] to the API
+   // instead of a JSON 
+   console.log("CREATE JSON")
+   $.each(frameData,function(i,v) {
+      console.log(v);
+   });
    
    $.ajax({ 
       url:   API_URL ,
-      data: {'function':'update_frames',  'tok':test_logged_in(), 'data': JSON.stringify(frameData), 'usr':usr[0], 'st':stID}, 
+      data: {'function':'update_frames',  'tok':test_logged_in(), 'data': JSON.stringify(frameData), 'file':video_API_path, 'usr':usr[0], 'st':stID}, 
       format: 'json', 
       success: function(data) { 
          $('body').removeClass('wait');

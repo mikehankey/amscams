@@ -67,7 +67,8 @@ def api_controller(form):
       elif(api_function=='update_frames'):
  
          frames_data  = form.getvalue('data')
-         print(add_frame_task(frames_data,user,st,datetime.now()))
+         detection    = form.getvalue('file')
+         print(add_frame_task(detection,frames_data,user,st,datetime.now()))
 
       # Conf or Delete Detection(s)
       elif(api_function=='tasks'):
@@ -83,10 +84,10 @@ def api_controller(form):
 
 
 # ADD TASK FOR NEW METEOR POS IN FRAMES
-def add_frame_task(frame_data,usr,st,_date):
+def add_frame_task(detection,frame_data,usr,st,_date):
 
    with open(API_TASK_FILE, 'a+') as f:
-      f.write(usr+'|'+st+'|FRAME'+'|'+frame_data+'|'+_date.strftime("%Y-%m-%d %H:%M")+'\n')
+      f.write(usr+'|'+st+'|FRAME'+'|'detection+'|'+frame_data+'|'+_date.strftime("%Y-%m-%d %H:%M")+'\n')
 
    f.close()       
 

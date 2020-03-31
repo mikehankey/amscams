@@ -87,11 +87,7 @@ function  update_tmp_JSON_frames(data) {
 } 
 
 
-
-// Send Tasks to API (from obs_report)
-function sendTaksToAPI() {
-   
-}
+ 
 
    /*
 
