@@ -14,12 +14,10 @@ from os import environ
 from API_Tools import *
 from API_Functions import *
 
-LOCAL_PATH = '/mnt/archive.allsky.tv/APPS/API'
-
-
+LOCAL_PATH = '/mnt/archive.allsky.tv/APPS/API' 
 JSON_USER_PWD = LOCAL_PATH + '/user_password.json' 
 JSON_MANAGER_PWD = LOCAL_PATH + '/manager_password.json' 
-API_TASK_FILE = LOCAL_PATH + '/tasks' 
+API_TASK_FILE = LOCAL_PATH + '/tasks.txt' 
  
 
 PATH_ACCESS_LOGS = LOCAL_PATH

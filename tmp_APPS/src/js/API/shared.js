@@ -1,5 +1,6 @@
 var STATION = "AMS7";
-var API_URL = "https://sleaziest-somali-2255.dataplicity.io/pycgi/webUI.py?cmd=API";
+var API_URL = "http://archive.allsky.tv/APPS/API/";
+ 
   
 function setup_action() {
    setup_login();
