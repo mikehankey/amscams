@@ -86,9 +86,7 @@ def api_controller(form):
 def add_frame_task(frame_data,usr,st,_date):
 
    with open(API_TASK_FILE, 'a+') as f:
- 
-      for data in all_data_to_del:
-         f.write(usr+'|'+st+'|FRAME'+'|'+frame_data+'|'+_date.strftime("%Y-%m-%d %H:%M")+'\n')
+      f.write(usr+'|'+st+'|FRAME'+'|'+frame_data+'|'+_date.strftime("%Y-%m-%d %H:%M")+'\n')
 
    f.close()       
 
