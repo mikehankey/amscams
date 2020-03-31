@@ -45,7 +45,7 @@ function add_login_stuff() {
       // On Obs Page
 
       // DELETE / CONF
-      if($('#tool_box .del').length==0 && $('#fixTools').length==0) { 
+      if($('#tool_box .del').length==0 && $('#fixTools .reduce1').length==0) { 
          $('<div id="confdel" class="d-flex justify-content-center pb-1 mb-2"><div class="delb text-center mr-2 ml-2"></div><div class="confb text-center  mr-2 ml-2"></div></div>').appendTo($('#tool_box'));
          $(delButton).html('<i class="icon-delete"></i> Delete').addClass('m-1 delSingle').removeClass('del').appendTo($('.delb'));
          $(confButton).html('<i>&#x2714</i> Confirm').addClass('m-1 confSingle').removeClass('conf').appendTo($('.confb'));
