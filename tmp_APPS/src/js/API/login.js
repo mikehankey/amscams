@@ -200,7 +200,7 @@ function setup_login() {
 
             e.stopImmediatePropagation();
 
-            loading_button($t);
+            $t.loading_button();
             $.ajax({ 
                url:   API_URL ,
                data: _data, 

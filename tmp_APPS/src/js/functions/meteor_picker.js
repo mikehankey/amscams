@@ -98,8 +98,7 @@ function  update_tmp_JSON_frames(data) {
       var usr = getUserInfo();
       usr = usr.split('|');
 
-      loading_button($(this)); 
-
+     
       if($("#post_form").length==0) { 
 
          $('<form id="post_form" action="'+API_URL+'" method="post">\

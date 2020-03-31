@@ -38,7 +38,7 @@ function setup_single_conf_buttons() {
          var video_API_path = cropped_video.replace(/^.*[\\\/]/, '');
          video_API_path = video_API_path.replace('-prev-crop.jpg','');
          video_API_path = video_API_path.replace('-HD-cropped.mp4','');
-         loading_button($(this));
+         $(this).loading_button();
          $(this).attr('disabled','disabled');
          send_API_task({'toConf':video_API_path},'','', function() { $('.confSingle').attr('data-init','<i>✔</i> Confirmed'); 
          $('.confSingle').load_done_button();
