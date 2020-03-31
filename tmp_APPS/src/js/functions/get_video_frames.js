@@ -82,6 +82,7 @@ async function extractFramesFromVideo(videoUrl, fps=25) {
 
    $("#play_anim_tv").load_done_button();
    $(".fr_only").each(function() {
+      console.log($(this));
       $(this).load_done_button();
    });
    // Setup Meteor Picker (Manual Reduce1) 
