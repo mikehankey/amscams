@@ -113,9 +113,9 @@ def add_tasks(data_to_del,data_to_conf,usr,st,_date):
       all_data_to_conf = []   
        
 
-   print("ADD TASKS")
-   print(all_data_to_del) 
-   print(all_data_to_conf)
+   #print("ADD TASKS")
+   #print(all_data_to_del) 
+   #print(all_data_to_conf)
 
    with open(API_TASK_FILE, 'a+') as f:
  
