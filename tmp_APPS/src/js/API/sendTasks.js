@@ -24,9 +24,13 @@ function send_API_frame_task(frameData,callback) {
    // instead of a JSON 
    console.log("CREATE JSON")
    $.each(frameData,function(i,v) {
-      console.log(v);
+      frame_data_to_send.push([v['fn'],v['x'],v['y']])
    });
    
+   console.log("FRAME DATE TO SEND")
+   console.log(frame_data_to_send)
+
+
    $.ajax({ 
       url:   API_URL ,
       data: {'function':'update_frames',  'tok':test_logged_in(), 'data': JSON.stringify(frameData), 'file':video_API_path, 'usr':usr[0], 'st':stID}, 
