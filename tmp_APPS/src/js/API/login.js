@@ -52,8 +52,8 @@ function add_login_stuff() {
 
 
          $('<div id="fixTools" class="pt-2 mb-2"><h2>Fix Tools</h2><div class="meteorpick text-center mr-2 ml-2"></div><div class="roipick text-center  mr-2 ml-2"></div></div>').appendTo($('#tool_box'));
-         $('<a class="reduc1 col btn btn-success btn-sm mb-2 fr_only" title="Pick Meteor Position"><i class="icon-image"></i> Meteor Picker</a>').appendTo($('.meteorpick'));
-         $('<a class="reduc1 col btn btn-success btn-sm mb-2 fr_only" title="Define Region of Interest"><i class="icon-image"></i> ROI Cropper</a>').appendTo($('.roipick'));
+         $('<a class="col btn btn-success btn-sm mb-2 fr_only" title="Pick Meteor Position"><i class="icon-image"></i> Meteor Picker</a>').appendTo($('.meteorpick'));
+         $('<a class="col btn btn-success btn-sm mb-2 fr_only" title="Define Region of Interest"><i class="icon-full-screen"></i> ROI Cropper</a>').appendTo($('.roipick'));
       }
       
  
