@@ -14,14 +14,17 @@ from os import environ
 from API_Tools import *
 from API_Functions import *
 
-LOCAL_PATH = '/mnt/archive.allsky.tv/APPS/API' 
+LOCAL_PATH = '/home/ams/amscams/pythonv2/' # '/mnt/archive.allsky.tv/APPS/API'
+
+
 JSON_USER_PWD = LOCAL_PATH + '/user_password.json' 
 JSON_MANAGER_PWD = LOCAL_PATH + '/manager_password.json' 
-API_TASK_FILE = LOCAL_PATH + '/tasks.txt' 
+API_TASK_FILE = LOCAL_PATH + '.tasks' 
  
 
 PATH_ACCESS_LOGS = LOCAL_PATH
-ACCESS_FILE = PATH_ACCESS_LOGS + os.sep + "access.log" 
+ACCESS_FILE = PATH_ACCESS_LOGS + os.sep + "access.log"
+ 
 
 EXTRA_CODE_IN_TOKEN = '4llskYR0cks'
 ACCESS_GRANTED_DURATION = 1 # In hours

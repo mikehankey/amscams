@@ -1,5 +1,5 @@
 var STATION = "AMS7";
-var API_URL = "http://archive.allsky.tv/APPS/API/";
+var API_URL = "http://archive.allsky.tv/APPS/API";
  
   
 function setup_action() {
