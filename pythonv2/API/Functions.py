@@ -65,12 +65,9 @@ def api_controller(form):
 
       # Update Frames for a given detection
       elif(api_function=='update_frames'):
-
-         print("API UPDATE FRAMES") 
-
+ 
          frames_data  = form.getvalue('data')
-         print(frames_data)
-         sys.exit(0)
+         print(add_frame_task(frames_data,user,st,datetime.now()))
 
       # Conf or Delete Detection(s)
       elif(api_function=='tasks'):
@@ -82,9 +79,23 @@ def api_controller(form):
          else:
             print(add_tasks(data_to_del,data_to_conf,user,st,datetime.now()))
 
+
+
+
+# ADD TASK FOR NEW METEOR POS IN FRAMES
+def add_frame_task(frame_data,user,usr,st,_date):
+
+   with open(API_TASK_FILE, 'a+') as f:
  
-          
-          
+      for data in all_data_to_del:
+         f.write(usr+'|'+st+'|FRAME'+'|'+frame_data+'|'+_date.strftime("%Y-%m-%d %H:%M")+'\n')
+
+   f.close()       
+
+   msg = '<b>A new task is now pending:</b><br/>Frames Updates'
+
+ 
+   return json.dumps({'msg': msg})
 
 
 # ADD A TASK TO DELETE A DETECTION that will be read later by a cron

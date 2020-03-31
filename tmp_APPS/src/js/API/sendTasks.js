@@ -13,9 +13,7 @@ function send_API_frame_task(frameData,callback) {
    usr = usr.split('|');
    $('body').addClass('wait');
 
-
-   console.log("In send_API_frame_task");
-   console.log( JSON.stringify(frameData));
+ 
    
    $.ajax({ 
       url:   API_URL ,
