@@ -144,7 +144,6 @@ function  update_tmp_JSON_frames(data) {
             centerVertical: true 
          })
       }
-
-      load_done_button($(this));  
+ 
    })
    */

@@ -8,11 +8,16 @@ function loading_button($btn) {
 
 }
 
-function load_done_button($btn) {
-   $btn.html($btn.attr('data-init')); 
-   $btn.attr('data-init','');
-   $btn.removeAttr('disabled').removeClass('disabled');
-}
+ 
+
+
+jQuery.fn.extend({
+   load_done_button: function() {
+      $(this).html($btn.attr('data-init')); 
+      $(this).attr('data-init','');
+      $(this).removeAttr('disabled').removeClass('disabled');
+   } 
+ });
 
 
 function hide_bottom_action() {

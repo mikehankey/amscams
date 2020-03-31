@@ -80,8 +80,8 @@ async function extractFramesFromVideo(videoUrl, fps=25) {
    // We enable the frame by frame animation when it's loaded
    $('#play_anim_tv').removeClass('disabled');
 
-   load_done_button($("#play_anim_tv"));
-   load_done_button($(".fr_only")); 
+   $("#play_anim_tv").load_done_button();
+   $(".fr_only").load_done_button();
 
    // Setup Meteor Picker (Manual Reduce1) 
    // ONLY WHEN FRAMES ARE LOADED (!)  

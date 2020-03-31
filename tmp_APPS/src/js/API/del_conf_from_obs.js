@@ -41,7 +41,7 @@ function setup_single_conf_buttons() {
          loading_button($(this));
          $(this).attr('disabled','disabled');
          send_API_task({'toConf':video_API_path},'','', function() { $('.confSingle').attr('data-init','<i>✔</i> Confirmed'); 
-         load_done_button($('.confSingle'));
+         $('.confSingle').load_done_button();
          });
       return false;
    });

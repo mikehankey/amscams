@@ -53,7 +53,7 @@ function add_login_stuff() {
 
          $('<div id="fixTools" class="pt-2 mb-2"><h2>Fix Tools</h2><div class="meteorpick text-center mr-2 ml-2"></div><div class="roipick text-center  mr-2 ml-2"></div></div>').appendTo($('#tool_box'));
          $('<a class="reduce1 col btn btn-success btn-sm mb-2 fr_only" title="Pick Meteor Position"><i class="icon-image"></i> Meteor Picker</a>').appendTo($('.meteorpick'));
-         $('<a class="col btn btn-success btn-sm mb-2 fr_only" title="Define Region of Interest"><i class="icon-full-screen"></i> ROI Cropper</a>').appendTo($('.roipick'));
+         $('<a class="roicropper col btn btn-success btn-sm mb-2 fr_only" title="Define Region of Interest"><i class="icon-full-screen"></i> ROI Cropper</a>').appendTo($('.roipick'));
       }
       
  
@@ -209,7 +209,7 @@ function setup_login() {
                success: function(data) { 
                   data = jQuery.parseJSON(data);  
                      
-                  load_done_button($t);
+                  $t.load_done_button();
 
                   if(typeof data.error !== 'undefined') {
                      // WRONG!
@@ -238,7 +238,7 @@ function setup_login() {
                   } 
                }, 
                error:function() { 
-                  load_done_button($t);
+                  $t..load_done_button();
                   $('#login_modal').modal('hide');
                   bootbox.alert({
                      message: "Impossible to reach the API. Please, try again later.",
