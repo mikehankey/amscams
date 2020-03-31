@@ -10,7 +10,7 @@ function greyOut($el,msg) {
 
 function send_API_frame_task(frameData,callback) {
    var usr = getUserInfo();
-   var frame_data_to_send = '';
+   var frame_data_to_send = [];
    usr = usr.split('|');
    $('body').addClass('wait');
     
