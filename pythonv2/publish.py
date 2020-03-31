@@ -224,7 +224,7 @@ def make_event_station_report(json_file):
    #http://archive.allsky.tv/AMS7/METEOR/2019/12/24/2019_12_24_06_09_13_000_010042-trim0167.json
    #>
    #http://archive.allsky.tv/AMS7/DETECTS/PREVIEW/2019/2019_12_24/2019_12_24_06_09_13_000_010042-trim0167-prev-full.jpg
-   full_cropped = PATH_TO_CLOUD + os.sep + analysed_name['station_id']  + os.sep +  "DETECT"  + os.sep + "PREVIEW" + analysed_name['year'] + json_file.replace('.json','-prev-full.jpg')
+   full_cropped = ARCHIVE_URL + os.sep + analysed_name['station_id']  + os.sep +  "DETECT"  + os.sep + "PREVIEW" + analysed_name['year'] + json_file.replace('.json','-prev-full.jpg')
    template = template.replace("{CROPPED_FULL}",full_cropped)
 
    
