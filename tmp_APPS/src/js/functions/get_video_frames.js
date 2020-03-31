@@ -81,8 +81,9 @@ async function extractFramesFromVideo(videoUrl, fps=25) {
    $('#play_anim_tv').removeClass('disabled');
 
    $("#play_anim_tv").load_done_button();
-   $(".fr_only").load_done_button();
-
+   $(".fr_only").each(function() {
+      $(this).load_done_button();
+   });
    // Setup Meteor Picker (Manual Reduce1) 
    // ONLY WHEN FRAMES ARE LOADED (!)  
    setup_manual_reduc1(croppedFrames);
