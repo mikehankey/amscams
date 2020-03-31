@@ -89,12 +89,9 @@ def add_frame_task(detection,frame_data,usr,st,_date):
    with open(API_TASK_FILE, 'a+') as f:
       f.write(usr+'|'+st+'|FRAME'+'|'detection+'|'+frame_data+'|'+_date.strftime("%Y-%m-%d %H:%M")+'\n')
 
-   f.close()       
-
-   msg = '<b>A new task is now pending:</b><br/>Frames Updates'
-
+   f.close()        
  
-   return json.dumps({'msg': msg})
+   return json.dumps({'msg': '<b>A new task is now pending:</b><br/>Frames Updates'})
 
 
 # ADD A TASK TO DELETE A DETECTION that will be read later by a cron
