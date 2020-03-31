@@ -107,18 +107,22 @@ def add_tasks(data_to_del,data_to_conf,usr,st,_date):
       all_data_to_del = []
 
    try:
-      all_data_to_del = data_to_conf.split(',')
-      conf_ct = len(all_data_to_del)
+      all_data_to_conf = data_to_conf.split(',')
+      conf_ct = len(all_data_to_conf)
    except:
-      all_data_to_del = []   
+      all_data_to_conf = []   
        
+
+   print("ADD TASKS")
+   print(all_data_to_del) 
+   print(all_data_to_conf)
 
    with open(API_TASK_FILE, 'a+') as f:
  
       for data in all_data_to_del:
          f.write(usr+'|'+st+'|DELETE'+'|'+data+'|'+_date.strftime("%Y-%m-%d %H:%M")+'\n')
 
-      for data in all_data_to_del:
+      for data in all_data_to_conf:
          f.write(usr+'|'+st+'|CONF'+'|'+data+'|'+_date.strftime("%Y-%m-%d %H:%M")+'\n')
 
    f.close()
