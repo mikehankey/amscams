@@ -812,6 +812,7 @@ function setup_manual_reduc1(all_cropped_frames) {
          })
       });
 
+      $('.fr_only').remove();
 
       return false;
    }
