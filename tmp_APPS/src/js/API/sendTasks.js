@@ -15,7 +15,7 @@ function send_API_frame_task(frameData,callback) {
    
    $.ajax({ 
       url:   API_URL ,
-      data: {'function':'update_frames',  'tok':test_logged_in(), 'data': jsonData, 'usr':usr[0], 'st':stID}, 
+      data: {'function':'update_frames',  'tok':test_logged_in(), 'data': frameData, 'usr':usr[0], 'st':stID}, 
       format: 'json', 
       success: function(data) { 
          $('body').removeClass('wait');
