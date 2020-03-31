@@ -128,7 +128,7 @@ def make_event_station_report(json_file):
    else:
       cropped_sd_full_path = sd_video_full_path.replace('-SD','-SD-cropped')
       if(cfe(cropped_sd_full_path)==1):
-         real_cropped = cropped_sd_full_path.replace(PATH_TO_CLOUD,ARCHIVE_URL))
+         real_cropped = cropped_sd_full_path.replace(PATH_TO_CLOUD,ARCHIVE_URL)
          template = template.replace('{CROPPED_VIDEO}', real_cropped)
          we_have_a_cropped = True
 
