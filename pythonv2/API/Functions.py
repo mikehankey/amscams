@@ -16,7 +16,7 @@ from API_Functions import *
 
 JSON_USER_PWD = '/home/ams/amscams/pythonv2/API/user_password.json' 
 JSON_MANAGER_PWD = '/home/ams/amscams/pythonv2/API/manager_password.json' 
-API_TASK_FILE ='/home/ams/amscams/pythonv2/API/tasks.json' 
+API_TASK_FILE ='/home/ams/amscams/pythonv2/API/tasks' 
 PATH_ACCESS_LOGS = '/home/ams/amscams/pythonv2/API'
 ACCESS_FILE = PATH_ACCESS_LOGS + os.sep + "access.log"
 
