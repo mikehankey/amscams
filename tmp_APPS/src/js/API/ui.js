@@ -13,7 +13,7 @@ function loading_button($btn) {
 
 jQuery.fn.extend({
    load_done_button: function() {
-      $(this).html($btn.attr('data-init')); 
+      $(this).html($(this).attr('data-init')); 
       $(this).attr('data-init','');
       $(this).removeAttr('disabled').removeClass('disabled');
    } 
