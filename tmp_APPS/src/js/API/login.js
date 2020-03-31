@@ -238,7 +238,7 @@ function setup_login() {
                   } 
                }, 
                error:function() { 
-                  $t..load_done_button();
+                  $t.load_done_button();
                   $('#login_modal').modal('hide');
                   bootbox.alert({
                      message: "Impossible to reach the API. Please, try again later.",
