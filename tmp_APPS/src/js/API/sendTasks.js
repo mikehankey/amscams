@@ -27,12 +27,12 @@ function send_API_frame_task(frameData,callback) {
    });
    
    console.log("FRAME DATA TO SEND ");
-   console.log(frame_data_to_send);
+   console.log(frame_data_to_send.toString());
 
 
    $.ajax({ 
       url:   API_URL ,
-      data: {'function':'update_frames',  'tok':test_logged_in(), 'data': frame_data_to_send, 'file':video_API_path, 'usr':usr[0], 'st':stID}, 
+      data: {'function':'update_frames',  'tok':test_logged_in(), 'data': frame_data_to_send.toString(), 'file':video_API_path, 'usr':usr[0], 'st':stID}, 
       format: 'json', 
       success: function(data) { 
          $('body').removeClass('wait');
