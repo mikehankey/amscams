@@ -55,10 +55,10 @@ function add_login_stuff() {
                <h2>Fix Tools</h2>\
                <div class="row">\
                   <div class="meteorpick text-center col">\
-                     <a class="reduc1 btn btn-success btn-sm mb-2 fr_only" title="Pick Meteor Position"><i class="icon-image"></i> Meteor Picker</a>\
+                     <a class="reduc1 btn btn-success  mb-2 fr_only" title="Pick Meteor Position"><i class="icon-image"></i> Meteor Picker</a>\
                   </div>\
                   <div class="roipick text-center col">\
-                     <a class="roicropper btn btn-success btn-sm mb-2 fr_only" title="Define Region of Interest"><i class="icon-full-screen"></i> ROI Cropper</a>\
+                     <a class="roicropper btn btn-success mb-2 fr_only" title="Define Region of Interest"><i class="icon-full-screen"></i> ROI Cropper</a>\
                   </div>\
                </div>\
             </div>').appendTo($('#tool_box'));
