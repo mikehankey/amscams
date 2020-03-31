@@ -8,6 +8,72 @@ function greyOut($el,msg) {
 
 
 
+function send_API_frame_task(frameData,callback) {
+   var usr = getUserInfo();
+   usr = usr.split('|');
+   $('body').addClass('wait');
+   
+   $.ajax({ 
+      url:   API_URL ,
+      data: {'function':'update_frames',  'tok':test_logged_in(), 'data': jsonData, 'usr':usr[0], 'st':stID}, 
+      format: 'json', 
+      success: function(data) { 
+         $('body').removeClass('wait');
+         data = jQuery.parseJSON(data); 
+
+         if(typeof data.error !== 'undefined') {
+
+            // WRONG!
+            bootbox.alert({
+               message: data.error,
+               className: 'rubberBand animated error',
+               centerVertical: true 
+            });
+
+            // Login out if it's a login error
+            if(typeof data.log !== 'undefined' && data.log==1) {
+               logout();
+               loggedin();
+            }
+
+         }  else {
+
+             
+            bootbox.alert({
+               message: data.msg,
+               className: 'rubberBand animated',
+               centerVertical: true,
+               backdrop: true
+            }); 
+
+            // We add a cookie so we know the page has been updated
+            createCookie(PAGE_MODIFIED,window.location.href,1/24);
+          
+         } 
+       
+         callback();
+
+         return true;
+           
+      }, 
+      error:function() { 
+         
+         $('body').removeClass('wait');
+
+         bootbox.alert({
+            message: "Impossible to reach the API. Please, try again later or refresh the page and log back in",
+            className: 'rubberBand animated error',
+            centerVertical: true 
+         });
+         
+         callback();
+         return false;
+      }
+   }); 
+
+}
+
+
 function send_API_task(jsonData,$toDel,$toConf,callback) {
  
    var usr = getUserInfo();

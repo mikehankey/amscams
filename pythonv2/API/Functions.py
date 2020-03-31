@@ -27,7 +27,7 @@ DETECTION_TO_CONF = PATH_ACCESS_LOGS + os.sep + "toConf.log"
 EXTRA_CODE_IN_TOKEN = '4llskYR0cks'
 ACCESS_GRANTED_DURATION = 1 # In hours
 
-AUTHORIZED_FUNCTIONS = ['login','tasks','delete','confirm','frames']
+AUTHORIZED_FUNCTIONS = ['login','tasks','delete','confirm','update_frames']
 
 # MAIN API CONTROLLER
 def api_controller(form):
@@ -64,11 +64,12 @@ def api_controller(form):
          print(delete_detection(form))
 
       # Update Frames for a given detection
-      elif(api_function=='frames'):
+      elif(api_function=='update_frames'):
          frames_data  = form.getvalue('data')
          print(frames_data)
          sys.exit(0)
 
+      # Conf or Delete Detection(s)
       elif(api_function=='tasks'):
          data_to_del  = form.getvalue('data[toDel]')
          data_to_conf = form.getvalue('data[toConf]')
@@ -78,8 +79,7 @@ def api_controller(form):
          else:
             print(add_tasks(data_to_del,data_to_conf,user,st,datetime.now()))
 
-            #if(data_to_conf is None):
-            #   add_tasks_to_conf(data_to_conf,usr,st,datetime.now())
+ 
           
           
 

@@ -462,10 +462,16 @@ function select_meteor_pos(factor) {
    
    // Click on "Create All"
    $('#create_all').unbind('click').click(function() {
-      $('body').addClass('wait');
+   
       if(tmp_JSON_Frames.length!=0) {
-
-         $('body').removeClass('wait');
+         // We send the new frames data to the API
+         send_API_frame_task(tmp_JSON_Frames,function() {});
+      } else {
+         bootbox.alert({
+            message: "Nothing to send to the API.",
+            className: 'rubberBand animated error',
+            centerVertical: true 
+         })
       }
    });
 
