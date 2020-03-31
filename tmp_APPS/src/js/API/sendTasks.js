@@ -26,6 +26,8 @@ function send_API_frame_task(frameData,callback) {
       frame_data_to_send.push([v['fn'],v['x'],v['y']])
    });
    
+   console.log("FRAME DATA TO SEND ");
+   console.log(frame_data_to_send);
 
 
    $.ajax({ 
