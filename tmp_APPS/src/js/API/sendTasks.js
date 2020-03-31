@@ -15,11 +15,11 @@ function send_API_frame_task(frameData,callback) {
 
 
    console.log("In send_API_frame_task");
-   console.log(frameData);
+   console.log( JSON.stringify(frameData));
    
    $.ajax({ 
       url:   API_URL ,
-      data: {'function':'update_frames',  'tok':test_logged_in(), 'data': frameData, 'usr':usr[0], 'st':stID}, 
+      data: {'function':'update_frames',  'tok':test_logged_in(), 'data': JSON.stringify(frameData), 'usr':usr[0], 'st':stID}, 
       format: 'json', 
       success: function(data) { 
          $('body').removeClass('wait');

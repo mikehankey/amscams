@@ -66,8 +66,7 @@ def api_controller(form):
       # Update Frames for a given detection
       elif(api_function=='update_frames'):
 
-         print("API UPDATE FRAMES")
-         print(form.getvalue('data'))
+         print("API UPDATE FRAMES") 
 
          frames_data  = form.getvalue('data')
          print(frames_data)
