@@ -83,7 +83,7 @@ def api_controller(form):
 
 
 # ADD TASK FOR NEW METEOR POS IN FRAMES
-def add_frame_task(frame_data,user,usr,st,_date):
+def add_frame_task(frame_data,usr,st,_date):
 
    with open(API_TASK_FILE, 'a+') as f:
  
