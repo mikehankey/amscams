@@ -11,8 +11,7 @@ import json
 from datetime import datetime, timedelta
 from os import environ 
 
-from API_Tools import *
-from API_Functions import *
+from API_Tools import * 
 
 LOCAL_PATH = '/home/ams/amscams/pythonv2/' # '/mnt/archive.allsky.tv/APPS/API'
 
