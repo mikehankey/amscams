@@ -190,12 +190,16 @@
   display: block;
   width: 95%; 
 }
- 
-
+  
 /* Add Animation - Zoom in the Modal */
 .modal-content {
   animation-name: zoom;
   animation-duration: 0.6s;
+}
+
+#img_fv {
+   max-height: 100vh;
+   width: auto;
 }
 
 @keyframes zoom {
@@ -227,3 +231,29 @@
     width: 100%;
   }
 }
+
+
+
+/* Graphs */
+.graph_container {
+   margin: 0 auto;
+   max-width: 1100px;
+   padding: 0 1rem;
+}
+
+.graph_container img {
+   max-width: 100%;
+   display: block;
+   cursor: pointer;
+}
+
+@media screen and (min-width: 600px) {
+   .grid {
+     display: flex;
+     flex-wrap: wrap;
+     flex-direction: row;
+   }
+   .cell {
+     width: 33.3%;
+   }
+ }
