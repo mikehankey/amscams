@@ -29,7 +29,7 @@ def format_drive():
       confirm = input("are you sure you ant to run this command? (last chance to quit.)")
       if confirm == "YES":
          print("Formatting drive...")
-         #os.system(cmd)
+         os.system(cmd)
          output = subprocess.check_output("blkid | grep " + drive , shell=True).decode("utf-8")
          if drive in output:
             print("Drive added.")
