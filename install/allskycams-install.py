@@ -362,19 +362,27 @@ Main Installer
 16) Exit 
    """)      
 
-   func = input(" Enter the function you want to run:")
-
+   func = int(input(" Enter the function you want to run:"))
+   if func == 1:
+      get_repos()
+   if func == 2:
+      setup_network_interface()
+   if func == 3:
+      config_apache()
+   if func == 4:
+      format_drive()
+   if func == 5:
+      print("setupdirs")
+      setup_dirs()
+   if func == 6:
+      setup_as6_conf()
+   if func == 7:
+      setup_vpn()
+   if func == 9:
+      os.system("./install-wasabi.py")
+   if func == 8:
+      os.system("sudo chown -R ams:ams /mnt/ams2")
+      os.system("sudo chown -R ams:ams /home/ams")
 
 main_menu()
-#get_repos()
-#setup_network_interface()
 
-#config_apache()
-
-#format_drive()
-#setup_as6_conf()
-
-#setup_dirs()
-#setup_vpn()
-#os.system("sudo chown -R ams:ams /mnt/ams2")
-#os.system("sudo chown -R ams:ams /home/ams")
