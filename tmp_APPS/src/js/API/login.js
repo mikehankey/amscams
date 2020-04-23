@@ -44,15 +44,25 @@ function add_login_stuff() {
    if($('#tool_box').length !=0 && $('#confdel').length == 0) {
       // On Obs Page
 
-      // DELETE
-      if($('#tool_box .del').length==0) { 
+      // DELETE / CONF
+      if($('#tool_box .del').length==0 && $('#fixTools .reduce1').length==0) { 
          $('<div id="confdel" class="d-flex justify-content-center pb-1 mb-2"><div class="delb text-center mr-2 ml-2"></div><div class="confb text-center  mr-2 ml-2"></div></div>').appendTo($('#tool_box'));
          $(delButton).html('<i class="icon-delete"></i> Delete').addClass('m-1 delSingle').removeClass('del').appendTo($('.delb'));
          $(confButton).html('<i>&#x2714</i> Confirm').addClass('m-1 confSingle').removeClass('conf').appendTo($('.confb'));
 
 
-         $('<div id="fixTools" class="p-2"></div>').appendTo($('#tool_box'));
-         $('<a class="reduc1 col btn btn-success btn-sm mb-2 fr_only" title="Pick Meteor Position"><i class="icon-image"></i> Meteor Picker</a>').addClass('m-1 d-block w-100').appendTo($('#fixTools'));
+         $('<div id="fixTools" class="pt-2 mb-2">\
+               <h2>Fix Tools</h2>\
+               <div class="d-flex justify-content-center mb-2">\
+                  <div class="meteorpick text-center">\
+                     <a class="reduc1 btn btn-success fr_only m-2" title="Pick Meteor Position"><i class="icon-image"></i> Meteor Picker</a>\
+                  </div>\
+                  <div class="roipick text-center">\
+                     <a class="roicropper btn btn-success fr_only m-2" title="Define Region of Interest"><i class="icon-full-screen"></i> ROI Cropper</a>\
+                  </div>\
+               </div>\
+            </div>').appendTo($('#tool_box'));
+ 
       }
       
  
@@ -61,10 +71,7 @@ function add_login_stuff() {
       $('#tool_box').parent().removeClass('d-none');
 
       // Setup Single Delete & Conf Buttons
-      //console.log("SETUP SING DEL BUT");
       setup_single_delete_buttons();
-      
-      //console.log("SETUP SING CONF BUT");
       setup_single_conf_buttons();
 
 
@@ -203,7 +210,7 @@ function setup_login() {
 
             e.stopImmediatePropagation();
 
-            loading_button($t);
+            $t.loading_button();
             $.ajax({ 
                url:   API_URL ,
                data: _data, 
@@ -211,7 +218,7 @@ function setup_login() {
                success: function(data) { 
                   data = jQuery.parseJSON(data);  
                      
-                  load_done_button($t);
+                  $t.load_done_button();
 
                   if(typeof data.error !== 'undefined') {
                      // WRONG!
@@ -240,7 +247,7 @@ function setup_login() {
                   } 
                }, 
                error:function() { 
-                  load_done_button($t);
+                  $t.load_done_button();
                   $('#login_modal').modal('hide');
                   bootbox.alert({
                      message: "Impossible to reach the API. Please, try again later.",

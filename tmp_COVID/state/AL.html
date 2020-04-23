@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html itemscope itemtype="http://schema.org/QAPage" class="html__responsive">
+<head data-live-domain="codeorigin.jquery.com">
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+	<title>COVID 19 - Maryland Stats</title>
+
+	<meta name="author" content="Mike Hankey">
+	<meta name="description" content="COVID 19 (Coronavirus) Stats for Maryland, USA">
+   <meta name="viewport" content="width=device-width">
+   
+   <script src="https://code.jquery.com/jquery-3.4.1.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
+   <script src="../dist/js/jquery.tablesorter.min.js"></script>
+   <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700&display=swap" rel="stylesheet"> 
+   <link href="../dist/css/m.css" rel="stylesheet">
+   <link href="../dist/css/tablesorter.css" rel="stylesheet">  
+ 
+
+</head>
+<body>
+   <h1>COVID 19 - US Stats</h1> 
+   <div id="bc">
+      <a href="index.html" class="s">USA</a>
+      <a>Maryland</a>
+   </div>
+
+   <div id="state" class="clearfix">
+      <div class="fl ff">
+            <img src="http://archive.allsky.tv/covid/flags/md.png"/>
+      </div>
+      <div class="fl">
+            <h3>Maryland <span>Population: <b>1,800,145</b></span></h3>
+            <dl> 
+            
+               <dt>Cases </dt>
+               <dd>1,800,456</dd>
+             
+               <dt>Deaths  </dt>
+               <dd>1,800,156</dd>
+            
+               <dt>Deaths per million </dt>
+               <dd>1,800,156</dd>
+             
+               <dt>Growth Rate</dt>
+               <dd>1456</dd>
+            
+               <dt>Mortality Rate</dt>
+               <dd>1456</dd>
+             
+               <dt>Last Update</dt>
+               <dd>2020/04/01</dd>
+            </dl>
+      </div>
+   </div>
+   <div id="graphs" class="clearfix">
+      <h3>Graphs</h3>
+      <div class="graph_container">
+            <div class="grid">
+              <div class="cell">
+                <img src="http://archive.allsky.tv/covid/plots/MD-cd.png" />
+              </div>
+              <div class="cell">
+                <img src="http://archive.allsky.tv/covid/plots/MD-cd.png" />
+              </div>
+              <div class="cell">
+                <img src="http://archive.allsky.tv/covid/plots/MD-cd.png" />
+              </div>
+              <div class="cell">
+                <img src="http://archive.allsky.tv/covid/plots/MD-cd.png" />
+              </div>
+              <div class="cell">
+                  <img src="http://archive.allsky.tv/covid/plots/MD-cd.png" />
+               </div>
+               <div class="cell">
+                  <img src="http://archive.allsky.tv/covid/plots/MD-cd.png" />
+               </div>
+            </div>
+          </div>
+   
+      </div>
+   </div>
+   <div id="table">
+      <table id="states" class="tablesorter ">
+            <thead>
+               <tr>
+                  <th>&nbsp;</th>
+                  <th>County</th>
+                  <th>Population</th>
+                  <th>Cases</th>
+                  <th>Deaths</th>
+                  <th>Cases per m</th>
+                  <th>Deaths per m</th>
+                  <th>Growth Rate</th>
+                  <th>Mortality Rate</th>
+               </tr>
+            </thead>
+            <tbody  class="list-of-states" >
+                  <tr data-county="AL">
+                     <td><span class="cl r"></span></td>
+                     <td>County1</td>
+                     <td>2,123,156</td>
+                     <td>813</td>
+                     <td>68</td>
+                     <td>0.3</td>
+                     <td>0.1</td>
+                     <td>25</td>
+                     <td>75</td>
+                  </tr>
+                  <tr data-county="MD">
+                        <td><span class="cl r"></span></td>
+                        <td>County2</td>
+                        <td>1,123,156</td>
+                        <td>1813</td>
+                        <td>168</td>
+                        <td>10.3</td>
+                        <td>10.1</td>
+                        <td>125</td>
+                        <td>175</td>
+                     </tr>
+            </tbody>
+      </table>
+   </div>
+   <div id="ft">
+         source: <a href="https://covidtracking.com/">Covid Tracking</a> - contact: mike.hankey[@]gmail.com
+   </div>
+   
+
+
+ 
+<div id="graph_img_viewer" class="modal">
+   <span class="close">&times;</span>
+   <img class="modal-content" id="img_fv">
+   <div id="caption"></div>
+</div>
+
+
+<script>
+
+
+  function open_modal() {
+     // Get the modal
+      var modal = document.getElementById("graph_img_viewer");
+
+      $('.cell img').click(function() {
+         modal.style.display = "block";
+         $('#img_fv').attr('src',$(this).attr('src'));
+      })
+ 
+      // Get the <span> element that closes the modal
+      var span = document.getElementsByClassName("close")[0];
+
+      // When the user clicks on <span> (x), close the modal
+      span.onclick = function() {
+         modal.style.display = "none";
+      }
+  }
+
+  $(function() {
+     
+     // Table sorter
+     $("table thead th:eq(0)").data("sorter", false);
+     $('table').tablesorter({
+        widgets        : ['zebra', 'columns'],
+        usNumberFormat : false,
+        sortReset      : true,
+        sortRestart    : true
+     });
+     
+     // Click on stats image
+     open_modal();
+
+  })
+   
+
+</script> 
+</body>
+</html>

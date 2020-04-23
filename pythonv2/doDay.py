@@ -403,8 +403,7 @@ def html_get_detects(day,tsid,event_files, events):
             # We get more info 
             #print("(BEFORE AN) EVENT ID IS:", event_id) 
             analysed_name = analyse_report_file(image_file)
-   
-
+    
             # Create CROPPED VIDEO
             cropped_video_file = ''
             if(jreport_path!=''): 
