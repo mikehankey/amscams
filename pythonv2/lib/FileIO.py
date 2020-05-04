@@ -190,6 +190,9 @@ def get_trims_for_file(video_file):
 def get_day_files(day, cams_id, json_conf, sun=None,in_hour=None,detect=None):
    file_info = {} 
    proc_dir = json_conf['site']['proc_dir']
+   if sun is None:
+      sun = "0"
+
    
    #Get all the JSON Files of the day
    [failed_files, meteor_files,pending_files,min_files] = get_day_stats(day, proc_dir + day + "/", json_conf)
@@ -214,7 +217,7 @@ def get_day_files(day, cams_id, json_conf, sun=None,in_hour=None,detect=None):
 
          else:
             
-            if sun is None:
+            if sun is None or sun == "0":
                if int(sun_el) < 0:
                   file_info[base_file] = base_info
             else:

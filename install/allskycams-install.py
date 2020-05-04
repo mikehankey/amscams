@@ -247,12 +247,12 @@ def setup_dirs():
       #if cfe("/mnt/archive.allsky.tv/", 1) == 0:
       #   os.makedirs("/mnt/archive.allsky.tv")
 
-      if cfe("/mnt/ams2/CAL/",1) == 0:
-         os.makedirs("/mnt/ams2/CAL")
-      if cfe("/mnt/ams2/CAL/hd_images",1) == 0:
-         os.makedirs("/mnt/ams2/CAL/hd_images")
-      if cfe("/mnt/ams2/CAL/freecal",1) == 0:
-         os.makedirs("/mnt/ams2/CAL/freecal")
+      if cfe("/mnt/ams2/cal/",1) == 0:
+         os.makedirs("/mnt/ams2/cal")
+      if cfe("/mnt/ams2/cal/hd_images",1) == 0:
+         os.makedirs("/mnt/ams2/cal/hd_images")
+      if cfe("/mnt/ams2/cal/freecal",1) == 0:
+         os.makedirs("/mnt/ams2/cal/freecal")
       if cfe("/mnt/ams2/meteors",1) == 0:
          os.makedirs("/mnt/ams2/meteors")
       if cfe("/mnt/ams2/latest",1) == 0:

@@ -10694,7 +10694,7 @@ def verify_meteors(day=None):
          if "trim" not in file:
             verify_meteor(file)
          else:
-            print("rm", file)
+            os.system("rm " + file)
    
 
 def verify_meteor(meteor_json_file):

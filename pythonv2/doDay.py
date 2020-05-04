@@ -21,7 +21,7 @@ This script is the work manager for each day.
 
 
 """
-
+from lib.UtilLib import convert_filename_to_date_cam
 import os
 import glob
 import sys
@@ -50,6 +50,8 @@ PATH_TO_CONF_JSON = "/home/ams/amscams/conf/as6.json"
 json_conf = load_json_file(PATH_TO_CONF_JSON)
 
 def analyse_report_file(file_name):
+   # I REALLY DO NOT LIKE THIS APPROACH. IT IS MUCH TOO CONFUSING. A FEW IFS IS ALL THAT IS NEEDED. 
+   # VERY HARD TO TRACK DOWN BUGS WITH THIS METHOD, CAUSES A LOT OF PROBLEMS
    matches = re.finditer(REGEX_REPORT, file_name, re.MULTILINE)
    res = {}
   
@@ -58,6 +60,19 @@ def analyse_report_file(file_name):
          if(match.group(groupNum) is not None):
             res[REGEX_GROUP_REPORT[groupNum]] = match.group(groupNum)
          groupNum = groupNum + 1
+
+   hd_datetime, hd_cam, hd_date, hd_y, hd_m, hd_d, hd_h, hd_M, hd_s,hd_ms = convert_filename_to_date_cam(file_name,1)
+   res = {}
+   res['name'] = file_name
+   res['year'] = hd_y 
+   res['month'] = hd_m
+   res['day'] = hd_d
+   res['hour'] = hd_h
+   res['min'] = hd_M
+   res['sec'] = hd_s
+   res['cam_id'] = hd_cam
+   #res['trim'] = trim_num 
+   res['ms'] = hd_ms 
 
    return res
 
@@ -183,9 +198,11 @@ def add_section(id,link_from_tab,tab_content,TAB, TAB_CONTENT, cur=False):
 
 
 def make_station_report(day, proc_info = ""):
+   
    template = get_template(STATION_REPORT_TEMPLATE) 
 
-   # print("PROC INFO:", proc_info)
+   print("STATION REPORT:", day)
+   print("PROC INFO:", proc_info)
    # MAKE STATION REPORT FOR CURRENT DAY
   
    station = json_conf['site']['ams_id']
@@ -343,7 +360,7 @@ def html_get_detects(day,tsid,event_files, events):
    if mid is not False: 
       if day in mid:
          for key in mid[day]:
-
+            print("KEY:", key)
             if "archive_file" in mid[day][key]:
                arc = 1
                arc_file = mid[day][key]['archive_file']
@@ -402,12 +419,18 @@ def html_get_detects(day,tsid,event_files, events):
 
             # We get more info 
             #print("(BEFORE AN) EVENT ID IS:", event_id) 
+            print("IMAGE FILE:", image_file)
             analysed_name = analyse_report_file(image_file)
+            print(analysed_name)
     
             # Create CROPPED VIDEO
             cropped_video_file = ''
             if(jreport_path!=''): 
+               # This is wrong and should not be pointing at archive.allsky.tv but rather the local meteor archive. 
+               # we do not create media or anything else inside the wasabi dir
                json_file = jreport_path.replace('.html',".json").replace(ARCHIVE_PATH,ARCHIVE_RELATIVE_PATH).replace('//','/')
+               json_file = json_file.replace("archive.allsky.tv", "ams2/meteor_archive")
+               print("JSON FILE IS:", json_file)
                cropped_video_file = create_cropped_video(json_file.replace('.json',"-HD.mp4"),json_file,json_file.replace('.json',"-HD-cropped.mp4"))
                if(cropped_video_file is False):
                   cropped_video_file = 'X'
@@ -498,6 +521,7 @@ def get_meteor_status(day):
    # filter out non-meteor or dupe meteor json files
    for df in dfiles:
       if "reduced" not in df and "manual" not in df and "stars" not in df:
+         print(df)
          detect_files.append(df)
 
    return(detect_files, arc_files)
