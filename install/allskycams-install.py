@@ -202,6 +202,7 @@ def setup_dirs():
    print("This should only be done after the data drive has been installed and formatted")
    do_dir = input("Do you want to create all of the data dirs? (Y) ")
    if do_dir == "Y":
+      print("MK1")
       if cfe("/mnt/ams2",1) == 0:
          os.makedirs("/mnt/ams2")
       if cfe("/mnt/ams2/SD",1) == 0:
@@ -242,8 +243,9 @@ def setup_dirs():
          os.makedirs("/mnt/ams2/meteor_archive/" + ams_id + "/DETECTS/PREVIEW")
       if cfe("/mnt/ams2/meteor_archive/" + ams_id + "/NOAA",1) == 0:
          os.makedirs("/mnt/ams2/meteor_archive/" + ams_id + "/NOAA")
-      if cfe("/mnt/archive.allsky.tv/", 1) == 0:
-         os.makedirs("/mnt/archive.allsky.tv")
+      print("MK2")
+      #if cfe("/mnt/archive.allsky.tv/", 1) == 0:
+      #   os.makedirs("/mnt/archive.allsky.tv")
 
       if cfe("/mnt/ams2/CAL/",1) == 0:
          os.makedirs("/mnt/ams2/CAL")
@@ -257,10 +259,11 @@ def setup_dirs():
          os.makedirs("/mnt/ams2/latest")
       if cfe("/home/ams/tmpvids",1) == 0:
          os.makedirs("/home/ams/tmpvids")
-      os.system("chown -R " + USER + ":" + GROUP  + " /mnt/ams2")
-      os.system("chown -R " + USER + ":" + GROUP  + " /home/ams/tmpvids")
-      os.system("chown -R " + USER + ":" + GROUP  + " /mnt/archive.allsky.tv")
-   
+      print("MK3")
+      #os.system("chown -R " + USER + ":" + GROUP  + " /mnt/ams2")
+      #os.system("chown -R " + USER + ":" + GROUP  + " /home/ams/tmpvids")
+      #os.system("chown -R " + USER + ":" + GROUP  + " /mnt/archive.allsky.tv")
+      print("Make index") 
       os.system("cd /home/ams/amscams/pythonv2; ./batchJobs.py fi")
       os.system("cd /home/ams/amscams/pythonv2; python3 Create_Archive_Index.py 2020 ")
 

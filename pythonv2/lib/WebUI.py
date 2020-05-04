@@ -2826,7 +2826,8 @@ def browse_day(day,cams_id,json_conf,form):
       else:
             sel=''
       print('<option value="'+ccam_id+'" '+sel+'>'+ccam_id+'</option>')
-   print("</select></h1>") 
+   print("</select>") 
+   print("<select id='sun' calss='cam_picker' data-url-param='sun' ><option value=0>SHOW NIGHT</option><option value=1>SHOW DAY</select></h1>")
    
    print("<div class='d-flex'><a class='btn btn-primary mr-3' href='/pycgi/webUI.py?cmd=video_tools' style='text-transform: initial;'><span class='icon-youtube'></span> Generate Timelapse Video</a><button class='btn btn-primary' id='play_anim_thumb' style='text-transform: initial;'><span class='icon-youtube'></span> Timelapse Preview</button></div></div>") 
   

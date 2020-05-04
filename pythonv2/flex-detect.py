@@ -1554,7 +1554,11 @@ def apply_calib(obj , frames=None , user_station = None):
 
    # find best free cal files
    best_cal_files = get_best_cal_file(obj['trim_clip'], user_station)
-   cal_params_file = best_cal_files[0][0]
+   if best_cal_files is not None : 
+      cal_params_file = best_cal_files[0][0]
+   else:
+      # use dummy cal file
+      cal_params_file = "/home/ams/amscams/conf/2019_07_28_02_49_48_000_010004-stacked-calparams.json"
    (cp_datetime, cam, sd_date, sd_y, sd_m, sd_d, sd_h, sd_M, sd_s) = convert_filename_to_date_cam(cal_params_file)
 
    # find last_best_calib
@@ -6141,7 +6145,7 @@ def batch_quickest_scan(cam=0):
 def upscale_sd_to_hd(video_file):
    new_video_file = video_file.replace(".mp4", "-HD-meteor.mp4")
    if cfe(new_video_file) == 0:
-      cmd = "/usr/bin/ffmpeg -i " + video_file + " -vf scale=1920:1080 " + new_video_file
+      cmd = "/usr/bin/ffmpeg -i -y " + video_file + " -vf scale=1920:1080 " + new_video_file
       os.system(cmd)
    return(new_video_file)
 
@@ -8760,7 +8764,7 @@ def debug2(video_file):
          print("TRY TO FIX!")
          new_video_file = video_file.replace(".mp4", "-HD-meteor.mp4")
          if cfe(new_video_file) == 0:
-            cmd = "/usr/bin/ffmpeg -i " + video_file + " -vf scale=1920:1080 " + new_video_file 
+            cmd = "/usr/bin/ffmpeg -i -y " + video_file + " -vf scale=1920:1080 " + new_video_file 
             os.system(cmd)
             del md['arc_fail']
             md['hd_trim'] = new_video_file
@@ -8802,7 +8806,7 @@ def debug2(video_file):
    if hd_good == 0:
       print("NO HD TRIM FILE FOUND. ")
       new_video_file = video_file.replace(".mp4", "-HD-meteor.mp4")
-      cmd = "/usr/bin/ffmpeg -i " + video_file + " -vf scale=1920:1080 " + new_video_file 
+      cmd = "/usr/bin/ffmpeg -i -y " + video_file + " -vf scale=1920:1080 " + new_video_file 
       os.system(cmd)
       md['hd_trim'] = new_video_file
       if "arc_fail" in md:
@@ -9143,7 +9147,7 @@ def obj_to_arc_meteor(meteor_file):
    (f_datetime_hd, cam, f_date_str_hd,fy,fm,fd, fh, fmin, fs) = convert_filename_to_date_cam(mj['hd_trim'])
    trim_num = int(mj['sd_trim'].split("-trim-")[1].replace(".mp4", ""))
    if ("-trim-") in mj['hd_trim']:
-      hd_trim_num = int(mj['hd_trim'].split("-trim-")[1].replace(".mp4", ""))
+      hd_trim_num = int(mj['hd_trim'].split("-trim-")[1].replace("-HD-meteor.mp4", ""))
    else:
       print("HD TRIM:", mj['hd_trim'])
       hd_trim_num = int(mj['hd_trim'].split("-trim")[1].replace(".mp4", ""))
@@ -10241,7 +10245,7 @@ def ffmpeg_trim_crop(video_file,start,end,x,y,w,h, notrim=0):
       crop_out_file = video_file.replace(".mp4", "-trim-" + str(start).zfill(4) + "-crop.mp4")
       #cmd = "/usr/bin/ffmpeg -y -i " + video_file + " -ss 00:00:" + str(start_sec) + " -t 00:00:" + str(dur) + " -c copy " + trim_out_file 
       
-      cmd = "/usr/bin/ffmpeg -i " + video_file + " -vf select='between(n\," + str(start) + "\," + str(end) + ")' -vsync 0 " + trim_out_file
+      cmd = "/usr/bin/ffmpeg -i -y " + video_file + " -vf select='between(n\," + str(start) + "\," + str(end) + ")' -vsync 0 " + trim_out_file
       print(cmd)
       if cfe(trim_out_file) == 0:
          os.system(cmd)
@@ -10489,7 +10493,7 @@ def detect_in_vals(vals_file):
 
 def preview_crop(video_file, x1,y1,x2,y2,frames=None,obj=None):
    temp_dir = "/mnt/ams2/temp/"
-   cmd = "/usr/bin/ffmpeg -i " + video_file + " -vf select='between(n\," + str(1) + "\," + str(2) + ")' -vsync 0 " + temp_dir + "frames%d.png > /dev/null"
+   cmd = "/usr/bin/ffmpeg -i -y " + video_file + " -vf select='between(n\," + str(1) + "\," + str(2) + ")' -vsync 0 " + temp_dir + "frames%d.png > /dev/null"
    os.system(cmd)
    img = cv2.imread(temp_dir + "frames1.png")
    
@@ -10678,13 +10682,19 @@ def verify_meteors(day=None):
             glob_dir = day + "/data/*maybe-meteors.json"
             files = glob.glob(glob_dir)
             for file in files:
-               verify_meteor(file)
+               if "trim" not in file:
+                  verify_meteor(file)
+               else: 
+                  print("SKIP:", file)
    else:
       glob_dir = "/mnt/ams2/SD/proc2/" + day + "/data/*maybe-meteors.json"
       print(glob_dir)
       files = glob.glob(glob_dir)
       for file in files:
-         verify_meteor(file)
+         if "trim" not in file:
+            verify_meteor(file)
+         else:
+            print("rm", file)
    
 
 def verify_meteor(meteor_json_file):
@@ -11136,7 +11146,7 @@ def extract_frames(video_file,start,end,outfile):
    temp_dir = "/home/ams/tmpvids/" + fn + "/" 
    if cfe(temp_dir, 1) == 0:
       os.makedirs(temp_dir)
-   cmd = "ffmpeg -i " + video_file + " -vf select='between(n\," + str(start) + "\," + str(end) + ")' -vsync 0 " + outfile + " > /dev/null"
+   cmd = "ffmpeg -i -y " + video_file + " -vf select='between(n\," + str(start) + "\," + str(end) + ")' -vsync 0 " + outfile + " > /dev/null"
    print(cmd)
    os.system(cmd)
 
@@ -11283,7 +11293,7 @@ def injest(video_file):
   
    # create SD downsample if it does not already exist 
    if cfe(sd_video_file) == 0:
-      cmd = "/usr/bin/ffmpeg -i " + video_file + " -vf scale=640:360 " + sd_video_file
+      cmd = "/usr/bin/ffmpeg -i -y " + video_file + " -vf scale=640:360 " + sd_video_file
       os.system(cmd)
 
    user_station = input("Enter the AMS station number associated with this clip AMSX  \n")
@@ -11406,13 +11416,13 @@ def injest(video_file):
          hd_source = source_file
          sd_source = ma_sd_file 
          if cfe(ma_sd_file) == 0:
-            cmd = "/usr/bin/ffmpeg -i " + hd_source + " -vf scale=640:360 " + ma_sd_file 
+            cmd = "/usr/bin/ffmpeg -i -y " + hd_source + " -vf scale=640:360 " + ma_sd_file 
             os.system(cmd)
       else:
          sd_source = source_file
          hd_source = ma_hd_file 
          if cfe(ma_hd_file) == 0:
-            cmd = "/usr/bin/ffmpeg -i " + hd_source + " -vf scale=640:360 " + ma_hd_file 
+            cmd = "/usr/bin/ffmpeg -i -y " + hd_source + " -vf scale=640:360 " + ma_hd_file 
             os.system(cmd)
 
       print("SOURCE JSON :", ma_json_file) 

@@ -150,7 +150,8 @@ def run_verify_meteors(day=None, cmd_mode=0):
          for day in proc_data:
             if proc_data[day]['mm_files'] >= 1:
                print("detect vals on this day: ", day)
-               os.system("./flex-detect.py vms " + day + " > /dev/null 2>&1 ")
+               os.system("./flex-detect.py vms " + day + "  ")
+               #os.system("./flex-detect.py vms " + day + " > /dev/null 2>&1 ")
    else:
       print("Vals detect is already running.")
 

@@ -62,11 +62,11 @@ def purge_sd_nighttime_files(sd_dir,json_conf):
    dc = 0 
    for day in days:
       if dc > 30:
-         print(day)
+         #print(day)
          files = glob.glob(sd_dir + day + "/*.mp4")
          for file in files:
             el = file.split("/")
-            print(file, len(el))
+            #print(file, len(el))
             #if len(el) != 9:
             #   continue
             (f_datetime, cam, f_date_str,fy,fm,fd, fh, fmin, fs) = convert_filename_to_date_cam(file)
@@ -201,7 +201,6 @@ def get_day_files(day, cams_id, json_conf, sun=None,in_hour=None,detect=None):
          fn = file.split("/")[-1]
          rt = fn.replace(".mp4", "")
          if rt in meteor_files:
-            #print(rt, meteor_files, "<BR>")
             base_info = "meteor"
          else:
             base_info = ""
@@ -211,7 +210,6 @@ def get_day_files(day, cams_id, json_conf, sun=None,in_hour=None,detect=None):
          sun_status,sun_az,sun_el = get_sun_info(f_date_str,json_conf)
          if in_hour is not None:
             if int(in_hour) == int(fh):
-               #print(sun,in_hour, fh, "<BR>")
                file_info[base_file] = base_info
 
          else:
@@ -237,7 +235,6 @@ def get_day_files(day, cams_id, json_conf, sun=None,in_hour=None,detect=None):
          fn = file.split("/")[-1]
          rt = fn.replace(".mp4", "")
          if rt in meteor_files:
-            print(rt, meteor_files, "<BR>")
             base_info = "meteor"
          else:
             base_info = ""
@@ -268,11 +265,6 @@ def get_day_files(day, cams_id, json_conf, sun=None,in_hour=None,detect=None):
          if cfe(d_file) == 1: 
             det += 1
             #file_info[base_file] = ""
-      print("TM:", tm)
-      print("MM:", mm)
-      print("NM:", nm)
-      print("MET:", nm)
-      print("DET:", det)
    return(file_info)
 
 def get_day_stats(day, day_dir, json_conf):
@@ -311,7 +303,6 @@ def get_day_stats(day, day_dir, json_conf):
          #meteor_files.append(mfr)
          umeteor_files[mfr] = 1
    for key in umeteor_files:
-      print(key)
       meteor_files.append(key)
    pending_files = glob.glob(pending_dir)
    min_files = glob.glob(min_file_dir)
