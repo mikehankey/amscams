@@ -64,8 +64,7 @@ async function extractFramesFromVideo(videoUrl, fps=25) {
  // Get the frames and build the related table
  async function asyncCall(first_frame, how_many_frames) {  
 
-   console.log("first_frame ", first_frame);
-   console.log("how_many_frames ", how_many_frames)
+ 
  
    croppedFrames = await extractFramesFromVideo(cropped_video); 
    
@@ -81,9 +80,11 @@ async function extractFramesFromVideo(videoUrl, fps=25) {
    // We enable the frame by frame animation when it's loaded
    $('#play_anim_tv').removeClass('disabled');
 
-   load_done_button($("#play_anim_tv"));
-   load_done_button($(".fr_only")); 
-
+   $("#play_anim_tv").load_done_button();
+   $(".fr_only").each(function() {
+      console.log($(this));
+      $(this).load_done_button();
+   });
    // Setup Meteor Picker (Manual Reduce1) 
    // ONLY WHEN FRAMES ARE LOADED (!)  
    setup_manual_reduc1(croppedFrames);
@@ -97,8 +98,11 @@ async function extractFramesFromVideo(videoUrl, fps=25) {
    if(typeof cropped_video !== 'undefined') {
   
       // Frame by frame animation holding
-      loading_button($("#play_anim_tv"));
-      loading_button($(".fr_only"));
+      $("#play_anim_tv").loading_button();
+      $(".fr_only").each(function() {
+         $(this).loading_button();
+      });
+      
 
       //first_frame+=1; // To get the "REAL first frame"
       

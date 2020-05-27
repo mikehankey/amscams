@@ -29,7 +29,7 @@ def format_drive():
       confirm = input("are you sure you ant to run this command? (last chance to quit.)")
       if confirm == "YES":
          print("Formatting drive...")
-         #os.system(cmd)
+         os.system(cmd)
          output = subprocess.check_output("blkid | grep " + drive , shell=True).decode("utf-8")
          if drive in output:
             print("Drive added.")
@@ -202,6 +202,7 @@ def setup_dirs():
    print("This should only be done after the data drive has been installed and formatted")
    do_dir = input("Do you want to create all of the data dirs? (Y) ")
    if do_dir == "Y":
+      print("MK1")
       if cfe("/mnt/ams2",1) == 0:
          os.makedirs("/mnt/ams2")
       if cfe("/mnt/ams2/SD",1) == 0:
@@ -242,25 +243,27 @@ def setup_dirs():
          os.makedirs("/mnt/ams2/meteor_archive/" + ams_id + "/DETECTS/PREVIEW")
       if cfe("/mnt/ams2/meteor_archive/" + ams_id + "/NOAA",1) == 0:
          os.makedirs("/mnt/ams2/meteor_archive/" + ams_id + "/NOAA")
-      if cfe("/mnt/archive.allsky.tv/", 1) == 0:
-         os.makedirs("/mnt/archive.allsky.tv")
+      print("MK2")
+      #if cfe("/mnt/archive.allsky.tv/", 1) == 0:
+      #   os.makedirs("/mnt/archive.allsky.tv")
 
-      if cfe("/mnt/ams2/CAL/",1) == 0:
-         os.makedirs("/mnt/ams2/CAL")
-      if cfe("/mnt/ams2/CAL/hd_images",1) == 0:
-         os.makedirs("/mnt/ams2/CAL/hd_images")
-      if cfe("/mnt/ams2/CAL/freecal",1) == 0:
-         os.makedirs("/mnt/ams2/CAL/freecal")
+      if cfe("/mnt/ams2/cal/",1) == 0:
+         os.makedirs("/mnt/ams2/cal")
+      if cfe("/mnt/ams2/cal/hd_images",1) == 0:
+         os.makedirs("/mnt/ams2/cal/hd_images")
+      if cfe("/mnt/ams2/cal/freecal",1) == 0:
+         os.makedirs("/mnt/ams2/cal/freecal")
       if cfe("/mnt/ams2/meteors",1) == 0:
          os.makedirs("/mnt/ams2/meteors")
       if cfe("/mnt/ams2/latest",1) == 0:
          os.makedirs("/mnt/ams2/latest")
       if cfe("/home/ams/tmpvids",1) == 0:
          os.makedirs("/home/ams/tmpvids")
-      os.system("chown -R " + USER + ":" + GROUP  + " /mnt/ams2")
-      os.system("chown -R " + USER + ":" + GROUP  + " /home/ams/tmpvids")
-      os.system("chown -R " + USER + ":" + GROUP  + " /mnt/archive.allsky.tv")
-   
+      print("MK3")
+      #os.system("chown -R " + USER + ":" + GROUP  + " /mnt/ams2")
+      #os.system("chown -R " + USER + ":" + GROUP  + " /home/ams/tmpvids")
+      #os.system("chown -R " + USER + ":" + GROUP  + " /mnt/archive.allsky.tv")
+      print("Make index") 
       os.system("cd /home/ams/amscams/pythonv2; ./batchJobs.py fi")
       os.system("cd /home/ams/amscams/pythonv2; python3 Create_Archive_Index.py 2020 ")
 
@@ -331,17 +334,58 @@ def setup_vpn():
    os.system("sudo apt-get install openvpn")
    os.system("wget " + url + " -O /etc/openvpn/as6vpn.ovpn")
    os.system("wget " + pass_file + " -O /etc/openvpn/as6vpn.txt")
-   
 
-#get_repos()
-#setup_network_interface()
+def main_menu():
+   print("""
+AllSkyCams.com (ASC) software installer. 
 
-#config_apache()
+Use this application to setup a new AllSkyCams.com PC or update an existing one. 
+Select the approrptiate actions.
 
-#format_drive()
-#setup_as6_conf()
+Post Installer -- various utilities to 'complete' the install after the main install is complete 
+1) Clone ASC software -- only run this after the initial prequist installs have run. 
+2) Setup network interface -- Sets IP address for 2nd ethernet card
+3) Configure Apache -- Makes required conf changes to apache and setups doc roots and content symlinks 
+4) Format Data Drive -- Formats the data drive for a new system. Dangerous! Only run for new installs.
+5) Setup Data Dirs -- Makes the required directories inside the data drive 
+6) Setup ASC Config File -- Updates values in the as6.json file
+7) Setup VPN -- Sets up the configuration for remote access support VPN. (requires admin access for key setup)
+8) Fix Perms -- Fixes perms to ams on all needed directories. 
+9) Setup Wasabi -- Installs S3FS software, wasbi config and archive directories (requires admin access for key setup)
+10) Update git repo -- Updates git repo
+11) Update crontabs -- Installs / Updates the crontabs 
 
-#setup_dirs()
-setup_vpn()
-os.system("sudo chown -R ams:ams /mnt/ams2")
-os.system("sudo chown -R ams:ams /home/ams")
+Main Installer 
+12) Install ALL pre-requists -- This will run or re-run the entire pre-requist install list
+13) Install / Re-install astrometry.net software -- installs astrometry.net if therre has been a problem, with initial install. 
+14) Install / Re-install opencv software -- re-installs openCV (if customizations are desired or there is a problem on the host system). 
+15) Run tests -- This checks that all pre-requist software is installed and all setup and config files and directories exist
+
+
+16) Exit 
+   """)      
+
+   func = int(input(" Enter the function you want to run:"))
+   if func == 1:
+      get_repos()
+   if func == 2:
+      setup_network_interface()
+   if func == 3:
+      config_apache()
+   if func == 4:
+      format_drive()
+   if func == 5:
+      print("setupdirs")
+      setup_dirs()
+   if func == 6:
+      setup_as6_conf()
+   if func == 7:
+      setup_vpn()
+   if func == 9:
+      os.system("./install-wasabi.py")
+   if func == 8:
+      os.system("sudo chown -R ams:ams /mnt/ams2")
+      os.system("sudo chown -R ams:ams /home/ams")
+
+main_menu()
+

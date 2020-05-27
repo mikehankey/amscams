@@ -62,11 +62,11 @@ def purge_sd_nighttime_files(sd_dir,json_conf):
    dc = 0 
    for day in days:
       if dc > 30:
-         print(day)
+         #print(day)
          files = glob.glob(sd_dir + day + "/*.mp4")
          for file in files:
             el = file.split("/")
-            print(file, len(el))
+            #print(file, len(el))
             #if len(el) != 9:
             #   continue
             (f_datetime, cam, f_date_str,fy,fm,fd, fh, fmin, fs) = convert_filename_to_date_cam(file)
@@ -190,6 +190,9 @@ def get_trims_for_file(video_file):
 def get_day_files(day, cams_id, json_conf, sun=None,in_hour=None,detect=None):
    file_info = {} 
    proc_dir = json_conf['site']['proc_dir']
+   if sun is None:
+      sun = "0"
+
    
    #Get all the JSON Files of the day
    [failed_files, meteor_files,pending_files,min_files] = get_day_stats(day, proc_dir + day + "/", json_conf)
@@ -201,7 +204,6 @@ def get_day_files(day, cams_id, json_conf, sun=None,in_hour=None,detect=None):
          fn = file.split("/")[-1]
          rt = fn.replace(".mp4", "")
          if rt in meteor_files:
-            #print(rt, meteor_files, "<BR>")
             base_info = "meteor"
          else:
             base_info = ""
@@ -211,12 +213,11 @@ def get_day_files(day, cams_id, json_conf, sun=None,in_hour=None,detect=None):
          sun_status,sun_az,sun_el = get_sun_info(f_date_str,json_conf)
          if in_hour is not None:
             if int(in_hour) == int(fh):
-               #print(sun,in_hour, fh, "<BR>")
                file_info[base_file] = base_info
 
          else:
             
-            if sun is None:
+            if sun is None or sun == "0":
                if int(sun_el) < 0:
                   file_info[base_file] = base_info
             else:
@@ -237,7 +238,6 @@ def get_day_files(day, cams_id, json_conf, sun=None,in_hour=None,detect=None):
          fn = file.split("/")[-1]
          rt = fn.replace(".mp4", "")
          if rt in meteor_files:
-            print(rt, meteor_files, "<BR>")
             base_info = "meteor"
          else:
             base_info = ""
@@ -268,25 +268,27 @@ def get_day_files(day, cams_id, json_conf, sun=None,in_hour=None,detect=None):
          if cfe(d_file) == 1: 
             det += 1
             #file_info[base_file] = ""
-      print("TM:", tm)
-      print("MM:", mm)
-      print("NM:", nm)
-      print("MET:", nm)
-      print("DET:", det)
    return(file_info)
 
 def get_day_stats(day, day_dir, json_conf):
    proc_dir = json_conf['site']['proc_dir']
-   failed_dir = day_dir + "/failed/*trim*.mp4"
+   data_dir = day_dir + "/data/*.json"
    meteor_dir = "/mnt/ams2/meteors/" + day + "/*.json"
    pending_dir = "/mnt/ams2/SD/proc2/" + day + "/*trim*.mp4"
    data_dir = "/mnt/ams2/SD/proc2/" + day + "/data/*-meteor.json"
    min_file_dir = "/mnt/ams2/SD/proc2/" + day + "/*.mp4"
-   failed_files = glob.glob(failed_dir)
+   failed_files = glob.glob(data_dir)
    tmp_meteor_files = glob.glob(meteor_dir)
    tmp_meteor_files2 = glob.glob(data_dir)
    meteor_files = []
    umeteor_files = {}
+   temp = []
+   for f in failed_files:
+      if "many" in f:
+         temp.append(f)
+      if "nometeor" in f:
+         temp.append(f)
+   failed_files = temp
    for tmp in tmp_meteor_files2 :
       mf = tmp.split("/")[-1]
       el = mf.split("-trim")

@@ -11,6 +11,8 @@ import time
 import json
 json_conf = load_json_file("../conf/as6.json")
 
+json_conf['site']['API_HOST'] = "35.165.208.121"
+
 API_HOST = "http://" + json_conf['site']['API_HOST']
 
 
@@ -44,7 +46,8 @@ except:
    hostname = socket.gethostname()
    url = API_HOST + "/vpnc/" + hostname 
    r = requests.get(url)
-   if "404" in r.text:
+   
+   if "404" in r.text or False:
       running = check_running()
       print ("running = ", running)
       if running > 0: 

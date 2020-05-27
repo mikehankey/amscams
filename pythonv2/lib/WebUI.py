@@ -918,7 +918,8 @@ def video_tools(json_conf,form):
      
    header_out = "<div class='h1_holder d-flex justify-content-between'>"      
    header_out += "<h1>"+str(vid_counter)+" videos found</h1>"
-   header_out += "<div class='d-flex'><button class='btn btn-primary mr-3' id='create_timelapse' style='text-transform: initial;'><span class='icon-youtube'></span> Generate Timelapse Video</button></div></div>"
+   header_out += "<div class='d-flex'><button class='btn btn-primary mr-3' id='create_timelapse' style='text-transform: initial;'></div>"
+   #<span class='icon-youtube'></span> Generate Timelapse Video</button></div></div>"
    
    #Get Default Parameters
    params = get_video_job_default_parameters()
@@ -2826,9 +2827,10 @@ def browse_day(day,cams_id,json_conf,form):
       else:
             sel=''
       print('<option value="'+ccam_id+'" '+sel+'>'+ccam_id+'</option>')
-   print("</select></h1>") 
+   print("</select>") 
+   print("<select id='sun' class='cam_picker' data-url-param='sun' ><option value='0' selected>Night</option><option value='1'>Day</select></h1>")
    
-   print("<div class='d-flex'><a class='btn btn-primary mr-3' href='/pycgi/webUI.py?cmd=video_tools' style='text-transform: initial;'><span class='icon-youtube'></span> Generate Timelapse Video</a><button class='btn btn-primary' id='play_anim_thumb' style='text-transform: initial;'><span class='icon-youtube'></span> Timelapse Preview</button></div></div>") 
+   print("<div class='d-flex'><!--<a class='btn btn-primary mr-3' href='/pycgi/webUI.py?cmd=video_tools' style='text-transform: initial;'><span class='icon-youtube'></span> Generate Timelapse Video</a>--><button class='btn btn-primary' id='play_anim_thumb' style='text-transform: initial;'><span class='icon-youtube'></span> Timelapse Preview</button></div></div>") 
   
    print("<div id='main_container' class='container-fluid h-100 mt-4 lg-l'>")
    print("<div class='gallery gal-resize row text-center text-lg-left '>")

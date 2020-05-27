@@ -57,7 +57,11 @@ def fix_missing_stacks(day):
    if running > 2:
       print("ALREADY RUNNING:", running)
       exit()
-   files = sorted(glob.glob("/mnt/ams2/SD/proc2/" + day + "/*.mp4" ), reverse=True)
+   afiles = sorted(glob.glob("/mnt/ams2/SD/proc2/" + day + "/*.mp4" ), reverse=True)
+   files = []
+   for ff in afiles:
+      if "-crop" not in ff:
+         files.append(ff)
    missing = 0
    found = 0
    for file in files:
@@ -180,9 +184,8 @@ def batch_ss(wildcard=None):
 #   frames,color_frames,sd_subframes,sum_vals,max_vals,pos_vals = load_frames_fast(video_file, json_conf, 0, 0, [], 1,resize, sun_status)
 
 
-def scan_and_stack_fast(file, day = 0, vals = []):
+def scan_and_stack_fast(file, sun_status = 0, vals = []):
    print("VALS:", vals)
-   day = int(day)
    fn = file.split("/")[-1]
    day = fn[0:10]
    proc_dir = "/mnt/ams2/SD/proc2/" + day + "/" 
@@ -225,14 +228,18 @@ def scan_and_stack_fast(file, day = 0, vals = []):
          print(fc)
          break
 
-
-      if day == 1:
-         small_frame = cv2.resize(frame, (0,0),fx=.5, fy=.5)
+      if sun_status == 1:
+       
+         yo = 1
       else:
-         small_frame = cv2.resize(frame, (0,0),fx=.5, fy=.5)
+         try:
+            small_frame = cv2.resize(frame, (0,0),fx=.5, fy=.5)
+         except:
+            print("Bad video file:", file)
+            exit()
 
 
-      if day != 1:
+      if sun_status != 1:
          gray = cv2.cvtColor(small_frame, cv2.COLOR_BGR2GRAY)
          if fc > 0:
             sub = cv2.subtract(gray, gray_frames[-1])
@@ -255,8 +262,11 @@ def scan_and_stack_fast(file, day = 0, vals = []):
             pos_vals.append((mx,my))
          gray_frames.append(gray)
 
-      if day == 1:
-         if fc % 10 == 1:
+      if int(sun_status) == 1:
+         if fc % 100 == 1:
+            print("DAY:", sun_status , fc)
+            print("Stacking frame", fc)
+            small_frame = cv2.resize(frame, (0,0),fx=.5, fy=.5)
             frame_pil = Image.fromarray(small_frame)
             if stacked_image is None:
                stacked_image = stack_stack(frame_pil, frame_pil)
