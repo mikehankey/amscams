@@ -449,6 +449,7 @@ def doHD(sd_video_file, json_conf):
          el = sd_video_file.split("-trim")
          min_file = el[0] + ".mp4"
          ttt = el[1].split(".")
+         o_trim_num = ttt[0]
          trim_num = int(ttt[0])
   
          start_frame = object['history'][0][0]
@@ -477,7 +478,7 @@ def doHD(sd_video_file, json_conf):
          #print("SS:", start_sec, frame_dur_sec) 
          frame_dur_sec = frame_dur_sec + 3
          #print(min_file,start_sec,frame_dur_sec)
-         hd_file, hd_trim,trim_time_offset, trim_dur = find_hd_file_new(min_file, trim_num, frame_dur_sec)
+         hd_file, hd_trim,trim_time_offset, trim_dur = find_hd_file_new(min_file, o_trim_num, frame_dur_sec)
 
          #print("HD:", hd_file, hd_trim)
          if hd_file == None or hd_file == 0:
@@ -492,7 +493,7 @@ def doHD(sd_video_file, json_conf):
          sd_box= (min_x,min_y,max_x,max_y)
          hd_box= (hd_min_x,hd_min_y,hd_max_x,hd_max_y)
          crop_out_file = crop_hd(hd_trim,hd_box)
-         #print("HD TRIM:", hd_trim)
+         print("HD TRIM:", hd_trim)
          return(hd_file,hd_trim,crop_out_file,hd_box,trim_time_offset, trim_dur)
    return(0,0,0,0,0,0)
 
@@ -523,7 +524,7 @@ def crop_hd(hd_file,box_str):
    crop = "crop=" + str(w) + ":" + str(h) + ":" + str(x) + ":" + str(y)
    print("CROP: ", crop)
    crop_out_file = hd_file.replace(".mp4", "-crop.mp4")
-   cmd = "/usr/bin/ffmpeg -y -i " + hd_file + " -filter:v \"" + crop + "\" " + crop_out_file + " >/dev/null 2>&1"
+   cmd = "/usr/bin/ffmpeg -i " + hd_file + " -filter:v \"" + crop + "\" " + crop_out_file + " >/dev/null 2>&1"
    print(cmd)
    os.system(cmd)
    return(crop_out_file)
@@ -578,13 +579,13 @@ def check_hd_motion(frames, trim_file):
             crop_out_file = trim_file.replace(".mp4", "-crop.mp4")
             scaled_out_file = trim_file.replace(".mp4", "-scaled.mp4")
             pip_out_file = trim_file.replace(".mp4", "-pip.mp4")
-            cmd = "ffmpeg -y -i " + trim_file + " -filter:v \"" + crop + "\" " + crop_out_file+ " >/dev/null 2>&1"
+            cmd = "ffmpeg -i " + trim_file + " -filter:v \"" + crop + "\" " + crop_out_file+ " >/dev/null 2>&1"
             os.system(cmd)
 
-            cmd = "ffmpeg -y -i " + trim_file + " -s 720x480 -c:a copy " + scaled_out_file
+            cmd = "ffmpeg -i " + trim_file + " -s 720x480 -c:a copy " + scaled_out_file
             os.system(cmd)
 
-            cmd = "/usr/bin/ffmpeg -y -i " + scaled_out_file + " -i " + crop_out_file + " -filter_complex \"[1]scale=iw/1:ih/1 [pip];[0][pip] overlay=main_w-overlay_w-10:main_h-overlay_h-10\" -profile:v main -level 3.1 -b:v 440k -ar 44100 -ab 128k -s 1920x1080 -vcodec h264 -acodec libfaac " + pip_out_file + " >/dev/null 2>&1"
+            cmd = "/usr/bin/ffmpeg -i " + scaled_out_file + " -i " + crop_out_file + " -filter_complex \"[1]scale=iw/1:ih/1 [pip];[0][pip] overlay=main_w-overlay_w-10:main_h-overlay_h-10\" -profile:v main -level 3.1 -b:v 440k -ar 44100 -ab 128k -s 1920x1080 -vcodec h264 -acodec libfaac " + pip_out_file + " >/dev/null 2>&1"
             os.system(cmd)
 
 
@@ -592,6 +593,8 @@ def check_hd_motion(frames, trim_file):
 
 
 def find_hd_file_new(sd_file, trim_num, dur = 5, trim_on =1):
+   o_trim_num = trim_num
+   trim_num = int(trim_num)
    print("FIND HD FILE NEW FOR :", sd_file)
 
    (sd_datetime, sd_cam, sd_date, sd_y, sd_m, sd_d, sd_h, sd_M, sd_s) = convert_filename_to_date_cam(sd_file)
@@ -632,7 +635,10 @@ def find_hd_file_new(sd_file, trim_num, dur = 5, trim_on =1):
    dur = int(dur) + 1 + 3
    print("UPSCALE FROM SD!", time_diff_sec, dur)
    time_diff_sec = time_diff_sec - 1
-   sd_trim = ffmpeg_trim(sd_file, str(time_diff_sec), str(dur), "-trim-" + str(trim_num) + "-SD-meteor")
+   if "passed" in sd_file:
+      sd_trim = ffmpeg_trim(sd_file, str(time_diff_sec), str(dur), "-trim" + str(o_trim_num) + "")
+   else:
+      sd_trim = ffmpeg_trim(sd_file, str(time_diff_sec), str(dur), "-trim-" + str(trim_num) + "-SD-meteor")
    hd_trim = upscale_sd_to_hd(sd_trim)
    if "-SD-meteor-HD-meteor" in hd_trim:
       orig_hd_trim = hd_trim
@@ -716,7 +722,7 @@ def ffmpeg_cat (file1, file2, outfile):
 def ffmpeg_trim (filename, trim_start_sec, dur_sec, out_file_suffix):
 
    outfile = filename.replace(".mp4", out_file_suffix + ".mp4")
-   cmd = "/usr/bin/ffmpeg -y -i " + filename + " -y -ss 00:00:" + str(trim_start_sec) + " -t 00:00:" + str(dur_sec) + " -c copy " + outfile+ " >/dev/null 2>&1"
+   cmd = "/usr/bin/ffmpeg -i " + filename + " -y -ss 00:00:" + str(trim_start_sec) + " -t 00:00:" + str(dur_sec) + " -c copy " + outfile+ " >/dev/null 2>&1"
    print (cmd)
    os.system(cmd)
    return(outfile)
@@ -798,7 +804,6 @@ def load_video_frames(trim_file, json_conf, limit=0, mask=0,crop=(),color=0, ski
             else:
                hd = 0
             masks = get_masks(cam, json_conf,hd)
-            print("GET MASKS HD:", hd, masks)
             frame = mask_frame(frame, [], masks, 5)
 
          if len(crop) == 4:

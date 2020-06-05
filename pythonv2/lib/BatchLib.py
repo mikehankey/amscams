@@ -383,6 +383,11 @@ def purge_trash(json_conf):
 
 
 def batch_doHD(json_conf):
+   from lib.UtilLib import check_running
+   running = check_running("batch_doHD")
+   if running > 2:
+      print("Already running.")
+      exit()
    proc_dir = json_conf['site']['proc_dir']
    all_days = get_days(json_conf)
    meteors = []
@@ -399,6 +404,7 @@ def batch_doHD(json_conf):
       base_meteor = base_meteor.replace("/passed", "")
       arc_meteor = "/mnt/ams2/meteors/" + base_meteor
       if cfe(arc_meteor) == 1:
+         print("DONE:", arc_meteor)
          done = 1
       else:
          cmd = "./detectMeteors.py doHD " + meteor

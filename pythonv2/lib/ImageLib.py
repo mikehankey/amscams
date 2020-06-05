@@ -173,7 +173,7 @@ def bigger_box(min_x,min_y,max_x,max_y,iw,ih,fac=5):
 def draw_stack(objects,stack_img,stack_file):
    if stack_img is None:
       return() 
-   ih,iw=stack_img.shape
+   ih,iw=stack_img.shape[:2]
    for obj in objects:
       hist = obj['history'] 
       (max_x,max_y,min_x,min_y) = find_min_max_dist(hist)
