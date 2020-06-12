@@ -525,6 +525,7 @@ def crop_hd(hd_file,box_str):
    print("CROP: ", crop)
    crop_out_file = hd_file.replace(".mp4", "-crop.mp4")
    cmd = "/usr/bin/ffmpeg -i " + hd_file + " -filter:v \"" + crop + "\" " + crop_out_file + " >/dev/null 2>&1"
+   cmd = "/usr/bin/ffmpeg -i " + hd_file + " -filter:v \"" + crop + "\" -y " + crop_out_file 
    print(cmd)
    os.system(cmd)
    return(crop_out_file)
