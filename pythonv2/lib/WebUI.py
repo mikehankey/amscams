@@ -419,6 +419,9 @@ def controller(json_conf):
       update_red_info_ajax(json_conf,form)
       exit()
 
+   if cmd == 'review_detects' or cmd == 'rd':
+      review_detects(json_conf,form)
+      exit()
 
    if cmd == 'clone_cal':
       clone_cal(json_conf,form)
@@ -757,6 +760,32 @@ def controller(json_conf):
      
    #cam_num = form.getvalue('cam_num')
    #day = form.getvalue('day')
+
+def review_detects(json_conf, form):
+   date = form.getvalue("date")
+   type = form.getvalue("type")
+   if date is None:
+      proc_file = "/mnt/ams2/SD/proc2/json/proc_stats.json";
+      js = load_json_file(proc_file) 
+      print("<TABLE border=1>")
+      print("<tr><td>Date</td><td>Video Files Processed</td><td>Stacked Images</td><td>Vals Files</td><td>Detect Files</td><td>Possible Meteors</td><td>Non-Meteors</td><td>Too Many Detects</td><td>Meteors</td></tr>")
+      for key in sorted(js.keys(), reverse=True):
+         rd = js[key]
+         print("<tr><td>{:s}</td><td>{:d}</td><td>{:d}</td><td><a href=webUI.py?cmd=rd&date={:s}&type=vals></a>{:d}</a></td><td><a href=webUI.py?cmd=rd&date={:s}&type=maybe-meteors>{:d}</a></td><td>{:d}</td><td>{:d}</td><td>{:d}</td><td>{:d}</td></tr>".format(key, rd['video_files'], rd['image_files'], key, rd['vals_files'], key, rd['detect_files'], rd['mm_files'], rd['nm_files'], rd['tm_files'], rd['m_files']))
+      print("</table>")
+   else:
+      detect_detail(date, type)
+
+def detect_detail(date, type):
+   data_wild = "/mnt/ams2/SD/proc2/" + date + "/data/*-" + type + "*.json"
+   files = glob.glob(data_wild)
+   for file in files:
+      vid = file.replace("-" + type + ".json", ".mp4")
+      vid = vid.replace("/data/", "/")
+      img = file.replace("-" + type + ".json", "")
+      img = img.replace("data", "images")
+      img += "-stacked-tn.png"
+      print("<img src={:s}><br>{:s}<br>{:s}<br>{:s}<br>".format(img,img,file, vid) )
 
 def asconf(json_conf, form):
    act = form.getvalue("act")
@@ -1928,6 +1957,7 @@ def get_mask_img(cams_id, json_conf):
 
    # first look for img, if made less than 24 hours ago use it, else make new one
    img_files = glob.glob(img_dir + cams_id + "-mask.jpg")
+   
    if len(img_files) == 0:
       print("no mask images exist. Is this a new install? Are cams attached?")
       exit()
@@ -1939,6 +1969,7 @@ def get_mask_img(cams_id, json_conf):
       frames = load_video_frames(files[0], json_conf, 10)
       img = frames[0]
    sd_h, sd_w = img.shape[:2]
+   print("<BR>SD W/H:", sd_w, sd_h, "<BR>")
    file = img_dir + cams_id + ".jpg"
    sfile = img_dir + cams_id + "-mask.jpg"
    #img = cv2.imread(file)

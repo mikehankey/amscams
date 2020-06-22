@@ -127,7 +127,7 @@ def make_crop_compo(meteor_file=None):
 
 def find_hd_file_best(sd_file, trim_num, dur = 25, trim_on =1):
    video_file = sd_file
-   print("FIND HD FILE NEW FOR :", sd_file)
+   #print("FIND HD FILE NEW FOR :", sd_file)
    hd_file = None
    (sd_datetime, sd_cam, sd_date, sd_y, sd_m, sd_d, sd_h, sd_M, sd_s) = convert_filename_to_date_cam(sd_file)
    day = sd_y + "_" + sd_m + "_" + sd_d
@@ -161,18 +161,18 @@ def find_hd_file_best(sd_file, trim_num, dur = 25, trim_on =1):
 
    if hd_file is not None:
       trim_adj = int(time_diff_sec * 25)
-      print("METEOR TIME:", meteor_datetime)
-      print("HD DATE TIME:", hd_datetime)
-      print("TIME DIFF SEC", time_diff_sec)
-      print("TRIM ADJ:", trim_adj)
-      print("HD FILE:", hd_file)
-      print("SD FILE:", video_file)
+      #print("METEOR TIME:", meteor_datetime)
+      #print("HD DATE TIME:", hd_datetime)
+      #print("TIME DIFF SEC", time_diff_sec)
+      #print("TRIM ADJ:", trim_adj)
+      #print("HD FILE:", hd_file)
+      #print("SD FILE:", video_file)
 
       hd_start = trim_adj 
       hd_end = trim_adj + dur 
 
       hd_trim , trim_start, trim_end = make_trim_clip(hd_file, hd_start, hd_end)
-      print("HD:", hd_trim, trim_adj, trim_adj+dur)
+      #print("HD:", hd_trim, trim_adj, trim_adj+dur)
       hd_proc_dir = "/mnt/ams2/SD/proc2/" + day + "/hd_save";
       if cfe(hd_proc_dir,1) == 0:
          os.makedirs(hd_proc_dir)
@@ -186,7 +186,7 @@ def find_hd_file_best(sd_file, trim_num, dur = 25, trim_on =1):
       hd_trim = None
 
    # No HD file was found. Trim out the SD Clip and then upscale it.
-   print("NO HD FILE FOUND.")
+   #print("NO HD FILE FOUND.")
    hd_trim = upscale_sd_to_hd(sd_file)
 
    #time_diff_sec = int(trim_num / 25)
@@ -1071,7 +1071,6 @@ def save_old_style_meteor_json(meteor_json_file, meteor_obj, trim_clip ):
 def detect_meteor_in_clip(trim_clip, frames = None, fn = 0, crop_x = 0, crop_y = 0, hd_in = 0):
    objects = {}
    print("DETECT METEORS IN VIDEO FILE:", trim_clip)
-   print("CROP X,Y:", hd_in, crop_x, crop_y)
    #if hd_in == 1:
    #   exit()
    if trim_clip is None: 
@@ -1125,7 +1124,7 @@ def detect_meteor_in_clip(trim_clip, frames = None, fn = 0, crop_x = 0, crop_y =
       min_val, max_val, min_loc, (mx,my)= cv2.minMaxLoc(image_diff)
       thresh = max_val - 10
       if thresh < 5:
-         thresh = 5 
+         thresh = 5
 
       cnts,rects = find_contours_in_frame(image_diff, thresh)
       icnts = []
@@ -1138,8 +1137,9 @@ def detect_meteor_in_clip(trim_clip, frames = None, fn = 0, crop_x = 0, crop_y =
                cx = int(mx) 
                cy = int(my) 
                cv2.circle(show_frame,(cx+crop_x,cy+crop_y), 10, (255,255,255), 1)
-               print("DETECT X,Y:", fn, crop_x, crop_y, cx,cy)
+               #print("DETECT X,Y:", fn, crop_x, crop_y, cx,cy)
                object, objects = find_object(objects, fn,cx+crop_x, cy+crop_y, w, h, intensity, hd, sd_multi, cnt_img)
+               #print("MIKE OBJECTS:", fn, cx,cy,w,h,intensity)
                #if len(objects[object]['ofns']) > 2:
                   #le_x, le_y = find_leading_edge(objects[object]['report']['x_dir_mod'], objects[object]['report']['y_dir_mod'],cx,cy,w,h,frame)
 
@@ -1389,7 +1389,6 @@ def find_best_cat_stars(cat_stars, ix,iy, frame, cp_file):
 
       dist = calc_dist((new_cat_x, new_cat_y), (ix,iy))
       if dist < min_dist and mag < 4:
-         #print("DIST:", dist, cat_star)
          min_dist = dist
          min_star = cat_star
    name,mag,ra,dec,new_cat_x,new_cat_y = min_star
@@ -1579,7 +1578,7 @@ def apply_calib(obj , frames=None , user_station = None):
          cal_params = load_json_file(cal_params_file)
    else:
       cal_params = load_json_file(cal_params_file)
-      print("USING LAST FREE CALIB!")
+      print("USING LAST FREE CALIB!", cal_params_file)
 
    cal_params['device_lat'] = json_conf['site']['device_lat']
    cal_params['device_lng'] = json_conf['site']['device_lng']
@@ -1596,7 +1595,10 @@ def apply_calib(obj , frames=None , user_station = None):
    cat_stars = flex_get_cat_stars(obj['trim_clip'], cal_params_file, json_conf, cal_params )
    #cat_image_stars = get_cat_image_stars(cat_stars, frame, cal_params_file)
    archive_file = obj['hd_trim']
-   image_stars = get_image_stars(archive_file,frame, show=1)
+   try: 
+      image_stars = get_image_stars(archive_file,frame, show=1)
+   except :
+      image_stars = []
    cat_image_stars = [] 
    calib_stars = [] 
    used_cat_stars = {}
@@ -1925,8 +1927,6 @@ def plot_points(frames):
    l_ys = []
    l_xs = []
  
-   print("MED X DIST:", med_x_dist)
-   print("MED Y DIST:", med_y_dist)
 
    ls_x = poly_x[0] 
    ls_y = int(f(ls_x))
@@ -1955,7 +1955,6 @@ def plot_points(frames):
       if i - 10 > 0:
          #med_y_dist = np.median(y_dists[i-10:i])
          med_y_dist = np.median(y_dists[i-10:i])
-         #print("* MED Y DIST:", med_y_dist)
 
       if last_x is not None:
          if abs(oy - last_y) > abs(med_y_dist) * 1:
@@ -1981,8 +1980,6 @@ def plot_points(frames):
          last_y = adj_y
       else:
          last_y = oy
-   print("LXS:", l_xs)
-   print("LyS:", l_ys)
    show = 0
    if show == 1:
       plt.plot(poly_x, poly_y, 'x')
@@ -3584,7 +3581,7 @@ def crop_hd(obj, frame):
    crop = "crop=" + str(w) + ":" + str(h) + ":" + str(hd_x) + ":" + str(hd_y)
    #print("CROP: ", crop)
    crop_out_file = hd_trim.replace(".mp4", "-crop.mp4")
-   cmd = "/usr/bin/ffmpeg -y -i " + hd_trim + " -filter:v \"" + crop + "\" " + crop_out_file + " >/dev/null 2>&1"
+   cmd = "/usr/bin/ffmpeg -i " + hd_trim + " -filter:v \"" + crop + "\" " + crop_out_file + " >/dev/null 2>&1"
    print(cmd)
    os.system(cmd)
    return(crop_out_file, (hd_x, hd_y, w, h))
@@ -3618,7 +3615,7 @@ def make_trim_clips(meteor_objects, video_file):
 
 def make_trim_clip(video_file, start, end):
    outfile = video_file.replace(".mp4", "-trim-" + str(start) + ".mp4")
-   cmd = "/usr/bin/ffmpeg -y -i " + video_file + " -vf select=\"between(n\," + str(start) + "\," + str(end) + "),setpts=PTS-STARTPTS\" " + outfile + " 2>&1 > /dev/null"
+   cmd = "/usr/bin/ffmpeg -i " + video_file + " -vf select=\"between(n\," + str(start) + "\," + str(end) + "),setpts=PTS-STARTPTS\" " + outfile + " 2>&1 > /dev/null"
    if cfe(outfile) == 0:   
       print(cmd)
       os.system(cmd)
@@ -3683,7 +3680,6 @@ def parse_file_data(input_file):
    except:
       good = fn.replace(".mp4", "")
       ddd = good.split("_")
-   print("DDD", input_file, ddd)
    Y = ddd[0]
    M = ddd[1]
    D = ddd[2]
@@ -3724,6 +3720,8 @@ def day_or_night(capture_date):
       sun_status = "night"
    else:
       sun_status = "day"
+   print("SUN AZ, ALT:", capture_date, sun_az, sun_alt)
+
    return(sun_status)
 
 
@@ -4167,7 +4165,6 @@ def find_contours_in_frame(frame, thresh=25 ):
             if max_val - avg_val > 5 and (x > 0 and y > 0):
                rects.append([x,y,x+w,y+h])
                contours.append([x,y,w,h])
-               print("CNT:", x,y,w,h)
 
    #rects = np.array(rects)
 
@@ -4526,10 +4523,6 @@ def remove_bad_frames_from_object(object,frames,subframes ):
          est_xs.append(est_x)
          est_ys.append(est_y)
 
-   print("XS:", object['oxs'])
-   print("YS:", object['oys'])
-   print("EXS:", est_xs)
-   print("EYS:", est_ys)
    object['est_xs'] = est_xs
    object['est_ys'] = est_ys
    show_frame = stacked_frame.copy()
@@ -4716,8 +4709,6 @@ def calc_point_res(object, frames):
       cc = cc + 1
    for ox,oy in zip(poly_x, poly_y):
       show_frame[oy,ox] = [255,0,0]
-   print("NEW YS:", new_ys)
-   print("NEW XS:", new_xs)
    plt.plot(poly_x, poly_y, 'x')
    plt.plot(new_xs, new_ys, 'x')
    ax = plt.gca()
@@ -4955,6 +4946,7 @@ def analyze_object(object, hd = 0, sd_multi = 1, final=0):
       deg_multi = 3 
       sd = 1
 
+
    bad_items = []
    perc_big = big_cnt_test(object, hd)
    if "ofns" not in object:
@@ -4972,13 +4964,16 @@ def analyze_object(object, hd = 0, sd_multi = 1, final=0):
          object['report']['meteor_yn'] = "no"
       return(object)
 
+   last_x = object['oxs'][-1]
+   last_y = object['oys'][-1]
+   last_fn = object['ofns'][-1]
 
    unq_perc = unq_points(object)
    if len(object['oxs']) >= 3 and unq_perc > .6:
       if len(object['oxs']) < 10:
-         print("START CALC LEG SEGS", object['oxs'])
+         #print("START CALC LEG SEGS", object['oxs'])
          object = calc_leg_segs(object)
-         print("END CALC LEG SEGS")
+         #print("END CALC LEG SEGS")
    else:
       object['report'] = {}
       object['report']['meteor_yn'] = "no"
@@ -5225,7 +5220,7 @@ def analyze_object(object, hd = 0, sd_multi = 1, final=0):
    object['report'] = {}
   
    if meteor_yn == "Y": 
-      print("CLASSIFY HD/SD (HD should be 0):", sd)
+      print("possible meteor found", last_fn, last_x, last_y)
 
 
       class_rpt = classify_object(object, sd)
@@ -5288,7 +5283,8 @@ def calc_obj_dist(obj1, obj2):
    min_dist = min(all_dist)
    return(min_dist) 
 
-def find_object(objects, fn, cnt_x, cnt_y, cnt_w, cnt_h, intensity=0, hd=0, sd_multi=1, cnt_img=None):
+def find_object(objects, fn, cnt_x, cnt_y, cnt_w, cnt_h, intensity=0, hd=0, sd_multi=1, cnt_img=None,classify=1):
+   print("Finding object in frame:", classify, fn, cnt_x, cnt_y, cnt_w, cnt_h)
    #if fn < 5:
    #   return(0, objects)
    if hd == 1:
@@ -5314,6 +5310,7 @@ def find_object(objects, fn, cnt_x, cnt_y, cnt_w, cnt_h, intensity=0, hd=0, sd_m
             lfn = int(ofns[-1] )
             dist = calc_obj_dist((cnt_x,cnt_y,cnt_w,cnt_h),(oxs[oi], oys[oi], ows[oi], ohs[oi]))
             last_frame_diff = fn - lfn 
+            print("DIST:", obj_dist_thresh, dist, last_frame_diff)
             if dist < obj_dist_thresh and last_frame_diff < 10:
                found = 1
                found_obj = obj
@@ -5337,18 +5334,22 @@ def find_object(objects, fn, cnt_x, cnt_y, cnt_w, cnt_h, intensity=0, hd=0, sd_m
       objects[obj_id]['oint'].append(intensity)
       found_obj = obj_id
    if found == 1:
-      if objects[found_obj]['report']['obj_class'] == "meteor":
-         # only add if the intensity is positive and the forward motion compared to the last highest FM is greater. 
-         fm_last = calc_dist((objects[found_obj]['oxs'][0],objects[found_obj]['oys'][0]), (objects[found_obj]['oxs'][-1],objects[found_obj]['oys'][-1]))
-         fm_this = calc_dist((objects[found_obj]['oxs'][0],objects[found_obj]['oys'][0]), (center_x, center_y))
-         fm = fm_this - fm_last
-         if intensity >= 0 and fm >= 0:
-            objects[found_obj]['ofns'].append(fn)
-            objects[found_obj]['oxs'].append(center_x)
-            objects[found_obj]['oys'].append(center_y)
-            objects[found_obj]['ows'].append(cnt_w)
-            objects[found_obj]['ohs'].append(cnt_h)
-            objects[found_obj]['oint'].append(intensity)
+      print("OBJECT IS FOUND!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+      print(objects[found_obj])
+      if "report" in objects[found_obj]:
+         if True:
+         #if objects[found_obj]['report']['obj_class'] == "meteor":
+            # only add if the intensity is positive and the forward motion compared to the last highest FM is greater. 
+            fm_last = calc_dist((objects[found_obj]['oxs'][0],objects[found_obj]['oys'][0]), (objects[found_obj]['oxs'][-1],objects[found_obj]['oys'][-1]))
+            fm_this = calc_dist((objects[found_obj]['oxs'][0],objects[found_obj]['oys'][0]), (center_x, center_y))
+            fm = fm_this - fm_last
+            if intensity >= 0 and fm >= 0:
+               objects[found_obj]['ofns'].append(fn)
+               objects[found_obj]['oxs'].append(center_x)
+               objects[found_obj]['oys'].append(center_y)
+               objects[found_obj]['ows'].append(cnt_w)
+               objects[found_obj]['ohs'].append(cnt_h)
+               objects[found_obj]['oint'].append(intensity)
 
       else:
          objects[found_obj]['ofns'].append(fn)
@@ -5359,13 +5360,15 @@ def find_object(objects, fn, cnt_x, cnt_y, cnt_w, cnt_h, intensity=0, hd=0, sd_m
          objects[found_obj]['oint'].append(intensity)
 
    unq_perc = unq_points(objects[found_obj])
-   objects[found_obj] = analyze_object(objects[found_obj], hd, sd_multi, 1)
+   if classify ==1 :
+      objects[found_obj] = analyze_object(objects[found_obj], hd, sd_multi, 1)
 
-   if objects[found_obj]['report']['meteor_yn'] == 'Y':
-      max_int = max(objects[found_obj]['oint'])
-      if max_int > 25000:
-         objects[found_obj]['report']['obj_class'] = "fireball"
+      if objects[found_obj]['report']['meteor_yn'] == 'Y':
+         max_int = max(objects[found_obj]['oint'])
+         if max_int > 25000:
+            objects[found_obj]['report']['obj_class'] = "fireball"
 
+   #print("OBJECT FOUND", found_obj)
    return(found_obj, objects)
 
 def clean_object(obj):
@@ -6143,9 +6146,10 @@ def batch_quickest_scan(cam=0):
          print("Skipping trim file:", file)
 
 def upscale_sd_to_hd(video_file):
+   print("UPSCALE SD TO HD")
    new_video_file = video_file.replace(".mp4", "-HD-meteor.mp4")
    if cfe(new_video_file) == 0:
-      cmd = "/usr/bin/ffmpeg -i -y " + video_file + " -vf scale=1920:1080 " + new_video_file
+      cmd = "/usr/bin/ffmpeg -i " + video_file + " -vf scale=1920:1080 " + new_video_file
       os.system(cmd)
    return(new_video_file)
 
@@ -6809,8 +6813,10 @@ def sync_hd_sd_frames(obj):
       #fp.write(orig_obj['trim_clip'] + "," + obj['hd_trim']+ "," + "SD & HD objects don't match\n")
       #fp.close()
       log_import_errors(orig_obj['trim_clip'], "Problem with sd and hd events don't match perfectly.")
-      show_objects(sd_objects, "SD")
-      show_objects(hd_objects, "HD")
+      debug = 0
+      if debug == 1:
+         show_objects(sd_objects, "SD")
+         show_objects(hd_objects, "HD")
       print("SD AND HD EVENTS DON'T LINE UP PERFECT! need to fix!", len(sd_objects), len(hd_objects))
       return(0)
 
@@ -6899,7 +6905,6 @@ def sync_hd_sd_frames(obj):
 
          print("HD FN", fn)
          hd_frame = new_hd_frames[fn]
-         print("DEBUG:", len(new_sd_frames), fn)
          cx1,cy1,cx2,cy2= bound_cnt(hd_x,hd_y,new_hd_frames[0].shape[1],new_hd_frames[0].shape[0], 20)
          hd_cnt = new_hd_frames[fn][cy1:cy2,cx1:cx2]
 
@@ -6976,8 +6981,8 @@ def show_objects(objects, desc):
    for obj in objects:
       print(desc, "Object: ", obj)
       print(desc, "FNS:", obj['ofns'])   
-      print(desc, "XS:", obj['oxs'])   
-      print(desc, "YS:", obj['oys'])   
+      print(desc, "SXS:", obj['oxs'])   
+      print(desc, "SYS:", obj['oys'])   
       print(desc, "WS:", obj['ows'])   
       print(desc, "HS:", obj['ohs'])   
       print(desc, "INTS:", obj['oint'])   
@@ -7665,7 +7670,6 @@ def check_event_for_motion(subframes, objects, fn):
       if len(cnts) > 0:
          for (i,c) in enumerate(cnts):
             x,y,w,h = cv2.boundingRect(cnts[i])
-            print("CNT:", fn, x,y,w,h)
             cnt_frames[fn]['xs'].append(x)
             cnt_frames[fn]['ys'].append(y)
             cnt_frames[fn]['ws'].append(w)
@@ -7701,6 +7705,7 @@ def stack_stack(pic1, pic2):
 def load_frames_fast(trim_file, json_conf, limit=0, mask=0,crop=(),color=0,resize=[]):
    print("TRIM FILE:", trim_file)
    (f_datetime, cam, f_date_str,fy,fm,fd, fh, fmin, fs) = convert_filename_to_date_cam(trim_file)
+   cam = cam.replace("-vals.json", "")
    cap = cv2.VideoCapture(trim_file)
    masks = None
    last_frame = None
@@ -7790,7 +7795,6 @@ def load_frames_fast(trim_file, json_conf, limit=0, mask=0,crop=(),color=0,resiz
                   x1 = iw -1
                if y1 > ih -1:
                   y1 = ih -1
-               #print("MIKE:", x1,y2,x2,y2)
                crop_frame = frame[y1:y2,x1:x2]
                frame = crop_frame
             if len(resize) == 2:
@@ -8764,7 +8768,7 @@ def debug2(video_file):
          print("TRY TO FIX!")
          new_video_file = video_file.replace(".mp4", "-HD-meteor.mp4")
          if cfe(new_video_file) == 0:
-            cmd = "/usr/bin/ffmpeg -i -y " + video_file + " -vf scale=1920:1080 " + new_video_file 
+            cmd = "/usr/bin/ffmpeg -i " + video_file + " -vf scale=1920:1080 " + new_video_file 
             os.system(cmd)
             del md['arc_fail']
             md['hd_trim'] = new_video_file
@@ -8806,7 +8810,7 @@ def debug2(video_file):
    if hd_good == 0:
       print("NO HD TRIM FILE FOUND. ")
       new_video_file = video_file.replace(".mp4", "-HD-meteor.mp4")
-      cmd = "/usr/bin/ffmpeg -i -y " + video_file + " -vf scale=1920:1080 " + new_video_file 
+      cmd = "/usr/bin/ffmpeg -i " + video_file + " -vf scale=1920:1080 " + new_video_file 
       os.system(cmd)
       md['hd_trim'] = new_video_file
       if "arc_fail" in md:
@@ -8988,7 +8992,6 @@ def debug2(video_file):
    hd_meteor['ofns'] = hd_fns
    print("NEW SD FNS:", sd_fns)
    print("NEW HD FNS:", hd_fns)
-   print("MIKE")
 
    syncd_sd_frames = sd_frames[sd_bs:sd_be]
    syncd_sd_color_frames = sd_color_frames[sd_bs:sd_be]
@@ -9147,7 +9150,10 @@ def obj_to_arc_meteor(meteor_file):
    (f_datetime_hd, cam, f_date_str_hd,fy,fm,fd, fh, fmin, fs) = convert_filename_to_date_cam(mj['hd_trim'])
    trim_num = int(mj['sd_trim'].split("-trim-")[1].replace(".mp4", ""))
    if ("-trim-") in mj['hd_trim']:
-      hd_trim_num = int(mj['hd_trim'].split("-trim-")[1].replace("-HD-meteor.mp4", ""))
+      
+      hd_trim_num = mj['hd_trim'].split("-trim-")[1].replace("-HD-meteor.mp4", "")
+      hd_trim_num = hd_trim_num.replace(".mp4", "")
+      hd_trim_num = int(hd_trim_num)
    else:
       print("HD TRIM:", mj['hd_trim'])
       hd_trim_num = int(mj['hd_trim'].split("-trim")[1].replace(".mp4", ""))
@@ -9293,7 +9299,6 @@ def save_archive_meteor(video_file, syncd_sd_frames,syncd_hd_frames,frame_data,n
 
 
 
-   print("FINAL OBJ MIKE:", hd_fast_meteor['ofns'])
 
    print("ARCHIVE BASE FILE:", archive_base_filename)
    print("ARCHIVE DATE:", archive_year,archive_mon,archive_day)
@@ -9451,7 +9456,6 @@ def find_crop_size(min_x,min_y,max_x,max_y):
       if w * 2 < mw and h * 2 < mh :
          best_w = mw
          best_h = mh
-         print("CROP AREA:", w, h, w* 2, h* 2, mw,mh)
 
 
 
@@ -9472,7 +9476,6 @@ def find_crop_size(min_x,min_y,max_x,max_y):
    cy1 = int(cy1) 
    cx2 = int(cx1 + best_w)
    cy2 = int(cy1 + best_h)
-   print(mid_x, mid_y, cx1,cy1,cx2,cy2)
    return(cx1,cy1,cx2,cy2,mid_x,mid_y)
 
 
@@ -10217,7 +10220,7 @@ def ffmpeg_crop(video_file,x,y,w,h, notrim=0):
 
    crop = "crop=" + str(w) + ":" + str(h) + ":" + str(x) + ":" + str(y)
    
-   cmd = "/usr/bin/ffmpeg -y -i " + video_file + " -filter:v \"" + crop + "\" " + crop_out_file
+   cmd = "/usr/bin/ffmpeg -i " + video_file + " -filter:v \"" + crop + "\" " + crop_out_file
    print(cmd)
    if cfe(crop_out_file) == 0:
       os.system(cmd)
@@ -10243,9 +10246,9 @@ def ffmpeg_trim_crop(video_file,start,end,x,y,w,h, notrim=0):
    if notrim == 0:
       trim_out_file = video_file.replace(".mp4", "-trim-" + str(start).zfill(4) + ".mp4")
       crop_out_file = video_file.replace(".mp4", "-trim-" + str(start).zfill(4) + "-crop.mp4")
-      #cmd = "/usr/bin/ffmpeg -y -i " + video_file + " -ss 00:00:" + str(start_sec) + " -t 00:00:" + str(dur) + " -c copy " + trim_out_file 
+      #cmd = "/usr/bin/ffmpeg -i " + video_file + " -ss 00:00:" + str(start_sec) + " -t 00:00:" + str(dur) + " -c copy " + trim_out_file 
       
-      cmd = "/usr/bin/ffmpeg -i -y " + video_file + " -vf select='between(n\," + str(start) + "\," + str(end) + ")' -vsync 0 " + trim_out_file
+      cmd = "/usr/bin/ffmpeg -i " + video_file + " -vf select='between(n\," + str(start) + "\," + str(end) + ")' -vsync 0 " + trim_out_file
       print(cmd)
       if cfe(trim_out_file) == 0:
          os.system(cmd)
@@ -10255,7 +10258,7 @@ def ffmpeg_trim_crop(video_file,start,end,x,y,w,h, notrim=0):
 
    crop = "crop=" + str(w) + ":" + str(h) + ":" + str(x) + ":" + str(y)
    
-   cmd = "/usr/bin/ffmpeg -y -i " + trim_out_file + " -filter:v \"" + crop + "\" " + crop_out_file
+   cmd = "/usr/bin/ffmpeg -i " + trim_out_file + " -filter:v \"" + crop + "\" " + crop_out_file
    print(cmd)
    if cfe(crop_out_file) == 0:
       os.system(cmd)
@@ -10359,10 +10362,25 @@ def get_roi(pos_vals=None, object=None, hdm_x=1, hdm_y=1):
 
    return(cx1,cy1,cx2,cy2,mid_x,mid_y)
 
+def check_pt_in_mask(masks, px,py):
+   for m in masks:
+      x1,y1,w,h = m.split(",")
+      x1 = int(x1)
+      y1 = int(y1)
+      w = int(w)
+      h = int(h)
+      x2 = x1 + w
+      y2 = y1 + h
+      if x1 <= px <= x2 and y1 <= py <= y2:
+         return(1)
+   return(0)
 
 def detect_in_vals(vals_file):
-   print("VALS:", vals_file)
+   print("DETECT IN VALS:", vals_file)
    (f_datetime, cam, f_date_str,fy,fm,fd, fh, fmin, fs) = convert_filename_to_date_cam(vals_file)
+   cam = cam.replace("-vals.json", "")
+
+   masks = get_masks(cam, json_conf,0)
    day = fy + "_" + fm + "_" + fd
    trim_too = 0
    if "mp4" in vals_file and "proc2" in vals_file:
@@ -10388,11 +10406,10 @@ def detect_in_vals(vals_file):
       print(vals_file + " is none.")
       return()
    for i in range(0,len(data['max_vals'])):
+      #print(i, cm)
       if "pos_vals" in data:
          if i < len(data['pos_vals']) :
-            #print(data['pos_vals'][i], vals_file)
             if isinstance(data['pos_vals'][i], int) is False:
-               #print(type(data['pos_vals'][i]))
                x,y = data['pos_vals'][i]
             else :
                x,y = 0,0
@@ -10400,7 +10417,6 @@ def detect_in_vals(vals_file):
             x,y = 0,0
       else:
          x,y = 0,0
-         #print ("NO POS VALS!")
       max_val = data['max_vals'][i]
       if max_val > 10:
          if last_i is not None and  last_i + 1 == i:
@@ -10409,8 +10425,7 @@ def detect_in_vals(vals_file):
             cm = 0
          data_x.append(x)
          data_y.append(y)
-         #print(i, x,y, max_val, cm)
-         object, objects = find_object(objects, i,x, y, 10, 10, max_val, 0, 0, None)
+         #object, objects = find_object(objects, i,x, y, 10, 10, max_val, 0, 0, None,0)
       else:
          if cm >= 3:
             e_end = i
@@ -10427,17 +10442,49 @@ def detect_in_vals(vals_file):
          cm = 0
       last_i = i
 
-   for ev in events:
-      print(ev)
 
+   print("End first vals profile", last_i )
+   print("EVENTS FOUND:", len(events))
+   for ev in events:
+      {'frames': [1, 8], 'pos_vals': [[504, 472], [564, 420], [538, 426], [654, 392], [548, 424], [682, 354], [134, 418]], 'max_vals': [14.0, 14.0, 13.0, 16.0, 12.0, 17.0, 12.0], 'sum_vals': [0.0, 0.0, 0.0, 255.0, 0.0, 510.0, 0.0]}
+      start_frame = ev['frames'][0]
+      ff = 0
+      for point in ev['pos_vals']:
+         px,py = point
+         max_val = ev['max_vals'][ff]
+         fn = start_frame + ff
+         ff += 1
+         #data_x.append(x)
+         #data_y.append(y)
+         masked = check_pt_in_mask(masks, px, py)
+         if masked == 0:
+            object, objects = find_object(objects, fn,px, py, 10, 10, max_val, 0, 0, None,0)
+         #else:
+         #   print("MASKED POINT!")
+
+      print(ev)
+   for obj in objects: 
+      print("ANALYZE:", obj)
+      objects[obj] = analyze_object(objects[obj], 0, 1, 1)
+   print("OBJECTS:")
+   bad_obj = []
+   for obj in objects:
+      if len(objects[obj]['oxs'] ) < 3:
+         bad_obj.append(obj)
+      else:
+         print(obj, objects[obj])
+   for obj in bad_obj:
+      del(objects[obj])
+   #if len(events) > 0:
+   #   exit()
    suspect_meteors = []
    clip_fns = []
    for obj in objects:
       if objects[obj]['report']['meteor_yn'] == "Y":
          clip_fns.append(min(objects[obj]['ofns']))
          clip_fns.append(max(objects[obj]['ofns']))
-         print(obj, objects[obj]['ofns'], objects[obj]['report']['meteor_yn'], objects[obj]['report']['bad_items']  )
-         print(objects[obj]['oxs'], objects[obj]['oys'])
+         #print(obj, objects[obj]['ofns'], objects[obj]['report']['meteor_yn'], objects[obj]['report']['bad_items']  )
+         #print(objects[obj]['oxs'], objects[obj]['oys'])
          suspect_meteors.append(objects[obj])
       # check here for files with no POS vals. If they have good cm events then pluck them out and detect video on them 
       #else:
@@ -10462,8 +10509,8 @@ def detect_in_vals(vals_file):
             start_fn, end_fn= buffered_start_end(start,end, 1499, 50)
             x,y,w,h = 0,0,0,0
             cx1,cy1,cx2,cy2,mid_x,mid_y = get_roi(None, objects[obj], hdm_x, hdm_y)
-            print("START:", start,end)
-            print("START FN:", start_fn,end_fn)
+            #print("START:", start,end)
+            #print("START FN:", start_fn,end_fn)
             #ffmpeg_trim_crop(video_file,start_fn,end_fn,cx1,cy1,cx2-cx1,cy2-cy1, 0)
 
       detect_info = {}
@@ -10493,7 +10540,7 @@ def detect_in_vals(vals_file):
 
 def preview_crop(video_file, x1,y1,x2,y2,frames=None,obj=None):
    temp_dir = "/mnt/ams2/temp/"
-   cmd = "/usr/bin/ffmpeg -i -y " + video_file + " -vf select='between(n\," + str(1) + "\," + str(2) + ")' -vsync 0 " + temp_dir + "frames%d.png > /dev/null"
+   cmd = "/usr/bin/ffmpeg -i " + video_file + " -vf select='between(n\," + str(1) + "\," + str(2) + ")' -vsync 0 " + temp_dir + "frames%d.png > /dev/null"
    os.system(cmd)
    img = cv2.imread(temp_dir + "frames1.png")
    
@@ -10678,11 +10725,14 @@ def verify_meteors(day=None):
       days = glob.glob("/mnt/ams2/SD/proc2/*")
       for day in days:
          if cfe(day, 1) == 1 and ("json" not in day and "2019" not in day and "meteors" not in day and "all" not in day and 'daytime' not in day):
-            print("VERIFY METEORS ON: ", day)
             glob_dir = day + "/data/*maybe-meteors.json"
             files = glob.glob(glob_dir)
             for file in files:
+               (f_datetime, cam_id, f_date_str,fy,fmin,fd,fh, fm, fs) = parse_file_data(file)
+               sun_status = day_or_night(f_datetime)
+
                if "trim" not in file:
+                  print("VERIFY:", sun_status, file)
                   verify_meteor(file)
                else: 
                   print("SKIP:", file)
@@ -10691,7 +10741,10 @@ def verify_meteors(day=None):
       print(glob_dir)
       files = glob.glob(glob_dir)
       for file in files:
+         (f_datetime, cam_id, f_date_str,fy,fmin,fd,fh, fm, fs) = parse_file_data(file)
+         sun_status = day_or_night(f_datetime)
          if "trim" not in file:
+            print(sun_status, file)
             verify_meteor(file)
          else:
             os.system("rm " + file)
@@ -10699,7 +10752,6 @@ def verify_meteors(day=None):
 
 def verify_meteor(meteor_json_file):
    # Call this on a detection file to verify the detection as a meteor and make / save the trim clips
-
    fail = 0
    if cfe(meteor_json_file) == 0:
       print("No file bro.")
@@ -10730,11 +10782,10 @@ def verify_meteor(meteor_json_file):
       exit()
 
    suspect_meteors = only_meteors(mj['objects'])
-   print("SUSPECT:", len(suspect_meteors))
+
    good_met = []
    if len(suspect_meteors) > 0:
       for maybe in suspect_meteors:
-         #print(maybe)
          if maybe['report']['classify']['meteor_yn'] == 'Y':
             meteor_report(maybe)
             good_met.append(maybe)
@@ -10743,13 +10794,10 @@ def verify_meteor(meteor_json_file):
             meteor_report(maybe)
            # return()
    suspect_meteors = good_met
-   print(video_file)
-   print("SUSPECT METEORS:", suspect_meteors)
    if len(suspect_meteors) == 0:
       print("No real meteors found here.")
       # mv the maybe file to detect so we don't try to check it again. 
       os.system("mv " + meteor_json_file + " " + detect_file)
-      print("mv " + meteor_json_file + " " + detect_file)
       return()
 
    if len(suspect_meteors) == 1:
@@ -10758,31 +10806,26 @@ def verify_meteor(meteor_json_file):
       #preview_crop(trim_file, cx1,cy1,cx2,cy2)
       trim_crop_file = trim_file.replace(".mp4", "-crop.mp4")
       sd_motion_objects,sd_meteor_frames = detect_meteor_in_clip(trim_crop_file, None, 0,cx1,cx2,0)
+      #MIKE
+      print(sd_motion_objects)
       sd_meteors = only_meteors(sd_motion_objects)
-
+      print(sd_meteors)
       if sd_meteors is None:
          print("No real meteors found here.")
 
          # mv the maybe file to detect so we don't try to check it again. 
          os.system("mv " + meteor_json_file + " " + detect_file)
-         print("mv " + meteor_json_file + " " + detect_file)
+         print("MIKE! mv " + meteor_json_file + " " + detect_file)
          return()
 
 
       # if we made it this far we have a possible meteor detect. 
-      print(suspect_meteors)
-      print("VID:", video_file) 
       hd_file, hd_trim,time_diff_sec, dur = find_hd_file_best(trim_file, start_fn, end_fn-start_fn, 1)
 
 
       hd_x1,hd_y1,hd_x2,hd_y2,hd_mid_x,hd_mid_y = get_roi(None, suspect_meteors[0], hdm_x, hdm_y)
       hd_prev_crop=[hd_x1,hd_y1,hd_x2,hd_y2,hd_mid_x,hd_mid_y]
 
-      print("HDMX", hdm_x, hdm_y)
-      print("SD:", cx1, cy1, cx2, cy2)
-      print("SD WH:", cx2-cx1, cy2-cy1)
-      print("HD:", hd_x1, hd_y1, hd_x2, hd_y2)
-      print("HD W/H:", hd_x2-hd_x1, hd_y2-hd_y1)
       #preview_crop(hd_trim, hd_x1,hd_y1,hd_x2,hd_y2)
 
 
@@ -10790,10 +10833,6 @@ def verify_meteor(meteor_json_file):
 
 
       trim_crop_file = trim_file.replace(".mp4", "-crop.mp4")
-      print(hd_trim)
-      print(hd_crop_file)
-      print(trim_file)
-      print(trim_crop_file)
 
 
       if sd_meteors is not None: 
@@ -10828,15 +10867,13 @@ def verify_meteor(meteor_json_file):
             os.system("cp " + trim_file + " " + proc_dir)
             os.system("cp " + trim_crop_file + " " + proc_dir)
             os.system("cp " + hd_file + " " + proc_dir)
-            print("Meteor was found.")
-            print("SD METEOR", sd_meteors)
             meteor_report(sd_meteors)
-            print("HD METEOR", hd_meteors)
             meteor_report(hd_meteors)
             meteor['hdm_x'] = hdm_x
             meteor['hdm_y'] = hdm_y
             save_json_file(meteor_file, meteor)
             os.system("mv " + meteor_json_file + " " + detect_file)
+            print("VERIFY METEOR.", meteor_file)
 
          else:
             print("Something wierd?", len(sd_meteors), len(hd_meteors))
@@ -10886,7 +10923,7 @@ def final_meteor_test(mj):
       sd_meteors = regroup_objs(mj['sd_meteors'])
       print(len(mj['sd_meteors']))
       print("MORE THAN 1 METEOR!")
-      exit()
+      mj['sd_meteors'] = sd_meteors
       return(0, good_sd_meteors, good_hd_meteors)
 
    if "hd_meteors" not in mj:
@@ -11146,7 +11183,7 @@ def extract_frames(video_file,start,end,outfile):
    temp_dir = "/home/ams/tmpvids/" + fn + "/" 
    if cfe(temp_dir, 1) == 0:
       os.makedirs(temp_dir)
-   cmd = "ffmpeg -i -y " + video_file + " -vf select='between(n\," + str(start) + "\," + str(end) + ")' -vsync 0 " + outfile + " > /dev/null"
+   cmd = "ffmpeg -i " + video_file + " -vf select='between(n\," + str(start) + "\," + str(end) + ")' -vsync 0 " + outfile + " > /dev/null"
    print(cmd)
    os.system(cmd)
 
@@ -11293,7 +11330,7 @@ def injest(video_file):
   
    # create SD downsample if it does not already exist 
    if cfe(sd_video_file) == 0:
-      cmd = "/usr/bin/ffmpeg -i -y " + video_file + " -vf scale=640:360 " + sd_video_file
+      cmd = "/usr/bin/ffmpeg -i " + video_file + " -vf scale=640:360 " + sd_video_file
       os.system(cmd)
 
    user_station = input("Enter the AMS station number associated with this clip AMSX  \n")
@@ -11416,13 +11453,13 @@ def injest(video_file):
          hd_source = source_file
          sd_source = ma_sd_file 
          if cfe(ma_sd_file) == 0:
-            cmd = "/usr/bin/ffmpeg -i -y " + hd_source + " -vf scale=640:360 " + ma_sd_file 
+            cmd = "/usr/bin/ffmpeg -i " + hd_source + " -vf scale=640:360 " + ma_sd_file 
             os.system(cmd)
       else:
          sd_source = source_file
          hd_source = ma_hd_file 
          if cfe(ma_hd_file) == 0:
-            cmd = "/usr/bin/ffmpeg -i -y " + hd_source + " -vf scale=640:360 " + ma_hd_file 
+            cmd = "/usr/bin/ffmpeg -i " + hd_source + " -vf scale=640:360 " + ma_hd_file 
             os.system(cmd)
 
       print("SOURCE JSON :", ma_json_file) 

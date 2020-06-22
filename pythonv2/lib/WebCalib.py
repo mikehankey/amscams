@@ -477,7 +477,11 @@ def find_stars_ajax(json_conf, stack_file, is_ajax = 1):
    #print("SHAPE:", iw,ih,best_thresh,"<BR>")
    _, star_bg = cv2.threshold(img, best_thresh, 255, cv2.THRESH_BINARY)
    thresh_obj = cv2.dilate(star_bg, None , iterations=10)
-   (_, cnts, xx) = cv2.findContours(thresh_obj.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+   rez = cv2.findContours(thresh_obj.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+   if len(rez) == 3:
+      (_, cnts, xx) =rez 
+   else:
+      (cnts,rects ) = rez
    cc = 0
    for (i,c) in enumerate(cnts):
       x,y,w,h = cv2.boundingRect(cnts[i])
@@ -3935,7 +3939,7 @@ def solve_field(json_conf, form):
    else:
       cmd = "cd /home/ams/amscams/pythonv2; ./plateSolve.py " + plate_file + " > /mnt/ams2/tmp/plt.txt 2>&1 &"
       #print(cmd)
-      # exit()
+      #exit()
       os.system(cmd)
 
    #plate_solve("/mnt/ams2/cal/tmp/" + new_fn, json_conf)

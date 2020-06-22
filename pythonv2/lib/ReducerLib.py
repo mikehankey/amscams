@@ -2225,8 +2225,6 @@ def find_dir_mod(mfd, mflag = 0):
    return(x_dir_mod, y_dir_mod)
 
 def best_fit_slope_and_intercept(xs,ys):
-    print("XS:", xs)
-    print("YS:", ys)
     if xs[0] - xs[-1] == 0 and ys[0] - ys[-1] == 0:
        return(1,1)
     xs = np.array(xs, dtype=np.float64)

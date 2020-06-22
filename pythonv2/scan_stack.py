@@ -122,7 +122,7 @@ def fix_missing_stacks(day):
 
 
 def batch_ss(wildcard=None):
-   running = check_running("scan_stack.py") 
+   running = check_running("scan_stack.py bs") 
    if running > 2:
       print("Running already.")
       exit()

@@ -46,7 +46,7 @@ def proc_index():
       past_day = datetime.now() - timedelta(hours=24*i)
       past_day = past_day.strftime("%Y_%m_%d")
       proc_stats[past_day] = get_proc_stats(past_day)
-      print(past_day, proc_stats[past_day])
+      #print(past_day, proc_stats[past_day])
    for day in proc_stats:
       print(day, proc_stats[day])
    save_json_file(proc_file, proc_stats) 
@@ -125,7 +125,7 @@ def run_vals_detect(day=None, cmd_mode=0):
       if cfe(proc_file) == 0:
          return()
       proc_data = load_json_file(proc_file)
-      for day in proc_data:
+      for day in sorted(proc_data, reverse=True):
          if True:
             print("Need to detect vals on this day!", day)
             if cmd_mode == 0:
@@ -147,13 +147,13 @@ def run_verify_meteors(day=None, cmd_mode=0):
          os.system(cmd)
       else:
          proc_data = load_json_file(proc_file)
-         for day in proc_data:
+         for day in sorted(proc_data, reverse=True):
             if proc_data[day]['mm_files'] >= 1:
                print("detect vals on this day: ", day)
                os.system("./flex-detect.py vms " + day + "  ")
                #os.system("./flex-detect.py vms " + day + " > /dev/null 2>&1 ")
    else:
-      print("Vals detect is already running.")
+      print("Verify Meteor is already running.")
 
 
 
