@@ -145,6 +145,11 @@ def batch_ss(wildcard=None):
       sun_status = day_or_night(f_date_str, json_conf)
       if sun_status == "day":
          sun_status = "1"
+         cmd = "mv " + file + " /mnt/ams2/SD/proc2/daytime/"
+         print("MOVE DAYTIME FILE!")
+         print(cmd)
+         os.system(cmd)
+         continue
       else:
          sun_status = "0"
       cur_time = int(time.time())
@@ -162,6 +167,7 @@ def batch_ss(wildcard=None):
             scan_and_stack_fast(file, sun_status)
          except:
             print("FAILED! File must be bad???", file)
+            exit()
 
       #running = check_running("scan_stack.py") 
       if False:
