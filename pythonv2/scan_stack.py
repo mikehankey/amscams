@@ -167,7 +167,9 @@ def batch_ss(wildcard=None):
             scan_and_stack_fast(file, sun_status)
          except:
             print("FAILED! File must be bad???", file)
-            exit()
+            cmd = "mv " + file + " /mnt/ams2/bad/"
+            os.system(cmd)
+            continue
 
       #running = check_running("scan_stack.py") 
       if False:
