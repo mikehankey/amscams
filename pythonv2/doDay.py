@@ -21,7 +21,7 @@ This script is the work manager for each day.
 
 
 """
-
+from lib.UtilLib import convert_filename_to_date_cam
 import os
 import glob
 import sys
@@ -31,20 +31,27 @@ import subprocess
 import random
 import requests
 
-
+from lib.Video_Tools import define_crop_video, crop_video_keep_meteor_centered
 from lib.FileIO import load_json_file, save_json_file, cfe
 from lib.UtilLib import check_running
+from lib.Video_Tools_Fundamentals import create_cropped_video 
 
 # REGEXP Used to get info from the paths
-REGEX_REPORT = r"(\d{4})_(\d{2})_(\d{2})_(\d{2})_(\d{2})_(\d{2})_(\d{3})_(\w{6})-trim(\d{4}|\d{3})-prev-crop.jpg"
+REGEX_REPORT = r"(\d{4})_(\d{2})_(\d{2})_(\d{2})_(\d{2})_(\d{2})_(\d{3})_(\w{6})-trim(\d{4}|\d{3}|\d{2}|\d{1})-prev-crop.jpg"
 REGEX_GROUP_REPORT = ["name","year","month","day","hour","min","sec","ms","cam_id","trim"]
  
+STATION_REPORT_TEMPLATE = "/home/ams/amscams/pythonv2/templates/allsky.tv.obs.html"
+
 # ARCHIVE PATH
 ARCHIVE_PATH = "http://archive.allsky.tv" 
-
-json_conf = load_json_file("../conf/as6.json")
+ARCHIVE_RELATIVE_PATH = "/mnt/archive.allsky.tv/"
+ 
+PATH_TO_CONF_JSON = "/home/ams/amscams/conf/as6.json" 
+json_conf = load_json_file(PATH_TO_CONF_JSON)
 
 def analyse_report_file(file_name):
+   # I REALLY DO NOT LIKE THIS APPROACH. IT IS MUCH TOO CONFUSING. A FEW IFS IS ALL THAT IS NEEDED. 
+   # VERY HARD TO TRACK DOWN BUGS WITH THIS METHOD, CAUSES A LOT OF PROBLEMS
    matches = re.finditer(REGEX_REPORT, file_name, re.MULTILINE)
    res = {}
   
@@ -53,6 +60,19 @@ def analyse_report_file(file_name):
          if(match.group(groupNum) is not None):
             res[REGEX_GROUP_REPORT[groupNum]] = match.group(groupNum)
          groupNum = groupNum + 1
+
+   hd_datetime, hd_cam, hd_date, hd_y, hd_m, hd_d, hd_h, hd_M, hd_s,hd_ms = convert_filename_to_date_cam(file_name,1)
+   res = {}
+   res['name'] = file_name
+   res['year'] = hd_y 
+   res['month'] = hd_m
+   res['day'] = hd_d
+   res['hour'] = hd_h
+   res['min'] = hd_M
+   res['sec'] = hd_s
+   res['cam_id'] = hd_cam
+   #res['trim'] = trim_num 
+   res['ms'] = hd_ms 
 
    return res
 
@@ -87,18 +107,24 @@ def run_df():
       #Filesystem                 Size  Used Avail Use% Mounted on
 
       for line in output.split("\n"):
-         file_system = line[0:20]
-         size = line[20:26]
-         used = line[27:38]
-         avail = line[38:44]
-         used_perc = line[44:49]
-         mount = line[49:].replace(" ", "")
-         if mount == "/" or mount == "/mnt/ams2" or mount == "/mnt/archive.allsky.tv":
-            df_data.append((file_system, size, used, avail, used_perc, mount))
-            used_perc = used_perc.replace(" ", "")
-            mounts[mount] = int(used_perc.replace("%", ""))
+         #line = line.replace("  ", " ")
+         temp = " ".join(line.split())
+         disk_data = temp.split(" ")
+         if len(disk_data) > 5:
+            file_system = disk_data[0]
+            size = disk_data[1]
+            used  = disk_data[2]
+            avail = disk_data[3]
+            used_perc = disk_data[4]
+            mount = disk_data[5]
+            print(mount, used_perc)
+            if mount == "/" or mount == "/mnt/ams2" or mount == "/mnt/archive.allsky.tv":
+               df_data.append((file_system, size, used, avail, used_perc, mount))
+               used_perc = used_perc.replace(" ", "")
+               mounts[mount] = int(used_perc.replace("%", ""))
    else:
       print("Failed du")
+
    return(df_data, mounts)
 
 def check_disk():
@@ -172,9 +198,11 @@ def add_section(id,link_from_tab,tab_content,TAB, TAB_CONTENT, cur=False):
 
 
 def make_station_report(day, proc_info = ""):
-   template = get_template("templates/allsky.tv.base.html") 
+   
+   template = get_template(STATION_REPORT_TEMPLATE) 
 
-   # print("PROC INFO:", proc_info)
+   print("STATION REPORT:", day)
+   print("PROC INFO:", proc_info)
    # MAKE STATION REPORT FOR CURRENT DAY
   
    station = json_conf['site']['ams_id']
@@ -198,15 +226,13 @@ def make_station_report(day, proc_info = ""):
 
    single_html, multi_html, info = html_get_detects(day, station, event_files, events)
  
-
-
+  
    detect_count = info['mc']
  
    show_date = day.replace("_", "/")
  
    TAB= ''
-   TAB_CONTENT = ''
-
+   TAB_CONTENT = '' 
 
    # LIVE VIEW
    live_view_html = ""
@@ -223,33 +249,70 @@ def make_station_report(day, proc_info = ""):
       TAB, TAB_CONTENT = add_section('live','Live View',live_view_html, TAB, TAB_CONTENT)
   
    # WEATHER SNAP SHOTS 
-   we_html = ""
+   all_weath_images = []
+   one_img_html = ""
+   #indicators = ""
+   carousel_items = ""
+   carousel = ""
    if len(data['files']) > 0:
-      for file in sorted(data['files'],reverse=True):
-         fn = file.replace("/mnt/archive.allsky.tv", "")
-         we_html += "<img src='" + fn + "' class='img-fluid weath'>"
+      ccc = 0
+      for ff in sorted(data['files'],reverse=True):
+         fn = ff.replace("/mnt/archive.allsky.tv", "")
+
+         if(ccc==0):
+            #indicators += '<li data-target="#carouselWInd" data-slide-to="0" class="active"></li>'
+            carousel_items +=  '<div class="carousel-item active"><img class="d-block w-100 weath" src="'+fn+'" alt="1"></div>'
+         else:
+            #indicators += '<li data-target="#carouselWInd" data-slide-to="'+str(ccc)+'"></li>'
+            carousel_items +=  '<div class="carousel-item"><img class="d-block w-100 weath" data-src="'+fn+'" alt="'+str(ccc)+'"></div>'
+
+         all_weath_images.append(fn) 
+         ccc+=1
+
+
+      
+      if(len(all_weath_images)>0): 
    
+            # Buid Carousel Here
+            carousel += '''
+            <div id="carouselWInd" class="tmpcarousel lazy slide"> 
+                  <div class="carousel-inner">
+                        '''+carousel_items+'''  
+                  </div>
+                  <a class="carousel-control-prev" href="#carouselWInd" role="button" data-slide="prev">
+                     <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                     <span class="sr-only">Previous</span>
+                  </a>
+                  <a class="carousel-control-next" href="#carouselWInd" role="button" data-slide="next">
+                     <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                     <span class="sr-only">Next</span>
+                  </a>
+               </div>'''
+
+ 
+
    # We only display something... if we have something to display
-   if(we_html!=''):
-      # We add the toolbar
-      we_html = '<div class="top_tool_bar"><a href="#" id="play_anim_thumb" class="btn btn-success"><span class="icon-youtube"></span> All Day Animation</a></div>' + we_html
-      TAB, TAB_CONTENT = add_section('weather','Weather Snap Shots',we_html, TAB, TAB_CONTENT)
-    
-
-
-   # Multi-station meteor  
+   if(carousel != ''):
+      # We add the toolbar & content
+      we_html = '<div class="top_tool_bar"><a href="#" id="play_anim_thumb" class="btn btn-success"><span class="icon-youtube"></span> All Day Animation</a></div>' + carousel 
+      # Add javascript for image rotation=>NO NEED ANYMORE = LAZY CAROUSEL
+      # we_html += "<script>var all_weather_img=['"+"','".join(all_weath_images)+"'], cur_weather_index=0</script>"
+      TAB, TAB_CONTENT = add_section('weather','Weather',we_html, TAB, TAB_CONTENT)
+     
    # Add specific tool bar for meteors
    # (delete all/confirm all)
-   multi_tb = '<div id="top_tool_bar"><div class="d-flex">'
-   multi_tb += '<div class="control-group"><div class="controls"><div class="input"><div id="lio_filters" class="btn-group" data-toggle="buttons-checkbox"><button class="btn btn-secondary active" id="lio_btn_all" aria-pressed="true">ALL</button><button class="btn btn-secondary" id="lio_btn_pnd"  aria-pressed="false">Pending ('+ str(info['pending_count']) +')</button><button class="btn btn-secondary" aria-pressed="false" id="lio_btn_arc">Archived ('+ str(info['arc_count']) +')</button></div></div></div></div>'
-   multi_tb += '<div class="control-group ml-3"><div class="controls"><div class="input"><div id="lio_sub_filters" class="btn-group" data-toggle="buttons-checkbox"><button class="btn btn-secondary active" id="lio_sub_btn_all" aria-pressed="true">ALL</button><button class="btn btn-secondary" id="lio_sub_btn_single"  aria-pressed="false">Single Station ('+ str(info['ss_count']) +')</button><button class="btn btn-secondary" aria-pressed="false" id="lio_sub_btn_multi">Multi-Stations ('+ str(info['ms_count']) +')</button></div></div></div></div>'
-   multi_tb += '<div class="lio ml-auto"><button id="conf_all" class="btn btn-success">Confirm All</button> <button id="del_all" class="btn btn-danger">Delete All</button> <button id="cancel_all" class="btn btn-secondary">Cancel</button></div></div></div>'
+   multi_html = multi_html + single_html
+   if(multi_html != '' ):
+      multi_tb = '<div id="top_tool_bar"><div class="d-flex">'
+      multi_tb += '<div class="control-group"><div class="m-0 p-0"><div class="input"><div id="lio_filters" class="btn-group" data-toggle="buttons-checkbox"><button class="btn btn-secondary active" id="lio_btn_all" aria-pressed="true">ALL</button><button class="btn btn-secondary" id="lio_btn_pnd"  aria-pressed="false">Pending ('+ str(info['pending_count']) +')</button><button class="btn btn-secondary" aria-pressed="false" id="lio_btn_arc">Archived ('+ str(info['arc_count']) +')</button></div></div></div></div>'
+      multi_tb += '<div class="control-group ml-3"><div class="m-0 p-0"><div class="input"><div id="lio_sub_filters" class="btn-group" data-toggle="buttons-checkbox"><button class="btn btn-secondary active" id="lio_sub_btn_all" aria-pressed="true">ALL</button><button class="btn btn-secondary" id="lio_sub_btn_single"  aria-pressed="false">Single Station ('+ str(info['ss_count']) +')</button><button class="btn btn-secondary" aria-pressed="false" id="lio_sub_btn_multi">Multi-Stations ('+ str(info['ms_count']) +')</button></div></div></div></div>'
+      multi_tb += '<div class="lio ml-auto"><button id="conf_all" class="btn btn-success">Confirm All</button> <button id="del_all" class="btn btn-danger">Delete All</button> <button id="cancel_all" class="btn btn-secondary">Cancel</button></div></div></div>'
 
-   TAB, TAB_CONTENT = add_section('multi',"Meteors (" + str(info['ms_count']+info['ss_count']) + ")",multi_tb +"<div class='d-flex align-content-start flex-wrap'>" + multi_html + single_html + "</div>", TAB, TAB_CONTENT, True) 
-  
+      TAB, TAB_CONTENT = add_section('multi',"Meteors (" + str(info['ms_count']+info['ss_count']) + ")",multi_tb +"<div class='d-flex align-content-start flex-wrap'>" + multi_html  + "</div>", TAB, TAB_CONTENT, True) 
+   else:
+      TAB, TAB_CONTENT = add_section('multi',"Meteors (0)","<div class='alert alert-danger'>No Meteor Found for this day</div>", TAB, TAB_CONTENT, True) 
+
    # Single-station meteor
-   #TAB, TAB_CONTENT = add_section('single',"Single Station Meteors (" + str(info['ss_count']) + ")","<div class='d-flex align-content-start flex-wrap'>" + single_html + "</div>", TAB, TAB_CONTENT) 
- 
    template = template.replace("{TABS}", TAB)
    template = template.replace("{TABS_CONTENT}", TAB_CONTENT)
  
@@ -258,7 +321,7 @@ def make_station_report(day, proc_info = ""):
       TAB, TAB_CONTENT = add_section('proc_info','Processing Info',proc_info, TAB, TAB_CONTENT) 
 
    template = template.replace("{RAND}",str(random.randint(0, 99999999)))
-
+   
    fpo = open(html_index, "w")
    fpo.write(template)
    fpo.close()
@@ -268,7 +331,6 @@ def make_station_report(day, proc_info = ""):
 
 def html_get_detects(day,tsid,event_files, events):
  
-
    year = day[0:4]
    month = day[5:7]
    d_day = day[8:]
@@ -294,97 +356,122 @@ def html_get_detects(day,tsid,event_files, events):
    single_html = ""
    multi_html = ""
    video_path = "" 
-
-
-   if day in mid:
-      for key in mid[day]:
-
-         if "archive_file" in mid[day][key]:
-            arc = 1
-            arc_file = mid[day][key]['archive_file']
-            style = "arc"
-            arc_count += 1 
-         else:
-            arc = 0
-            arc_file = "pending"
-            style = "pending"
-            pending_count += 1
-        
-         if key in event_files:
-            event_id = event_files[key]
-            event_info = events[event_id]
-          
-            style = "multi"
-            # look for the event solution dir
-            event_dir = "/mnt/archive.allsky.tv/EVENTS/" + year + "/" + day + "/" + event_id + "/"
-            event_vdir = "/EVENTS/" + year + "/" + day + "/" + event_id + "/"
-            event_file = event_dir + event_id + "-report.html"
-            event_vfile = event_vdir + event_id + "-report.html"
-         
-            if len(events[event_id]['solutions']) > 0 :
-               elink = "<a href=" + event_vfile + " class='T'>"
-               solved_count += 1  
-            else: 
-               elink = "<a class='T'>"
-               not_run += 1
-         else:
-            event_id = None
-            elink = "<a class='T'>"
-      
-         mfile = key.split("/")[-1]
-         prev_crop = mfile.replace(".json", "-prev-crop.jpg")
-         prev_full = mfile.replace(".json", "-prev-full.jpg")
-
-         image_file = prev_crop
-         if arc_file == "pending":
-            css_class = "prevproc pending"
-         else:
-            css_class = "prevproc arc"
-
-         if event_id is not None:
-            css_class += " multi"
-         else:
-            css_class += " single"
-            event_id = ""
-
-         # Video PATH (HD)
-         if(arc == 1):
-            video_path = ARCHIVE_PATH + os.sep + tsid + os.sep + 'METEOR' + os.sep + year + os.sep + month + os.sep + d_day + os.sep + image_file.replace('-prev-crop.jpg','-HD.mp4')
-         else:
-            video_path = ''    
-
-         # We get more info
-         #print("(BEFORE AN) EVENT ID IS:", event_id) 
-         analysed_name = analyse_report_file(image_file)
-        
-         #print("(AFTER AN) EVENT ID IS:", event_id) 
-    
-         if event_id is None or event_id == "none" or event_id == '':
-
-            # Get full version of the preview if video_path is empty
-            if(video_path==''):
-              full_path = ARCHIVE_PATH + was_vh_dir + image_file.replace('crop','full')
-              request = requests.get(full_path)
-              if request.status_code == 200:
-                  video_path = "<a href='"+full_path+"' class='img-link btn btn-secondary btn-sm'><span class='icon-eye'></span></a>"
  
-            single_html += "<div class='"+css_class+"'>" + elink +  "<img src='"+was_vh_dir + image_file+"' class='img-fluid'></a>"
-            single_html += "<div class='d-flex mb-2'><div class='mr-auto'><span>"+'<b>Cam#' + analysed_name['cam_id'] + '</b> '+ analysed_name['hour']+':'+analysed_name['min']+':'+analysed_name['sec']+'.'+analysed_name['ms'] + "</div>"
-            single_html += "<div>"+video_path+"</div></div></div>"
-            ss_count += 1 
+   if mid is not False: 
+      if day in mid:
+         for key in mid[day]:
+            print("KEY:", key)
+            if "archive_file" in mid[day][key]:
+               arc = 1
+               arc_file = mid[day][key]['archive_file']
+               style = "arc"
+               arc_count += 1 
+            else:
+               arc = 0
+               arc_file = "pending"
+               style = "pending"
+               pending_count += 1
+         
+            if key in event_files:
+               event_id = event_files[key]
+               event_info = events[event_id]
+            
+               style = "multi"
+               # look for the event solution dir
+               event_dir = "/mnt/archive.allsky.tv/EVENTS/" + year + "/" + day + "/" + event_id + "/"
+               event_vdir = "/EVENTS/" + year + "/" + day + "/" + event_id + "/"
+               event_file = event_dir + event_id + "-report.html"
+               event_vfile = event_vdir + event_id + "-report.html"
+            
+               if len(events[event_id]['solutions']) > 0 :
+                  elink = "<a href=" + event_vfile + " class='T'>"
+                  solved_count += 1  
+               else: 
+                  elink = "<a class='T cf'>"
+                  not_run += 1
+            else:
+               event_id = None
+               elink = "<a class='T cf'>"
+         
+            mfile = key.split("/")[-1]
+            prev_crop = mfile.replace(".json", "-prev-crop.jpg")
+            prev_full = mfile.replace(".json", "-prev-full.jpg")
+
+            image_file = prev_crop
+            if arc_file == "pending":
+               css_class = "prevproc pending"
+            else:
+               css_class = "prevproc arc"
+
+            if event_id is not None:
+               css_class += " multi"
+            else:
+               css_class += " single"
+               event_id = ""
+
+            # Video PATH (HD)
+            if(arc == 1):
+               video_path = ARCHIVE_PATH + os.sep + tsid + os.sep + 'METEOR' + os.sep + year + os.sep + month + os.sep + d_day + os.sep + image_file.replace('-prev-crop.jpg','-HD.mp4')
+               jreport_path = ARCHIVE_PATH + os.sep + tsid + os.sep + 'METEOR' + os.sep + year + os.sep + month + os.sep + d_day + os.sep + image_file.replace('-prev-crop.jpg','.html')
+            else:
+               video_path = ''
+               jreport_path = ''    
+
+            # We get more info 
+            #print("(BEFORE AN) EVENT ID IS:", event_id) 
+            print("IMAGE FILE:", image_file)
+            analysed_name = analyse_report_file(image_file)
+            print(analysed_name)
+    
+            # Create CROPPED VIDEO
+            cropped_video_file = ''
+            if(jreport_path!=''): 
+               # This is wrong and should not be pointing at archive.allsky.tv but rather the local meteor archive. 
+               # we do not create media or anything else inside the wasabi dir
+               json_file = jreport_path.replace('.html',".json").replace(ARCHIVE_PATH,ARCHIVE_RELATIVE_PATH).replace('//','/')
+               json_file = json_file.replace("archive.allsky.tv", "ams2/meteor_archive")
+               print("JSON FILE IS:", json_file)
+               cropped_video_file = create_cropped_video(json_file.replace('.json',"-HD.mp4"),json_file,json_file.replace('.json',"-HD-cropped.mp4"))
+               if(cropped_video_file is False):
+                  cropped_video_file = 'X'
+               else:
+                  cropped_video_file = cropped_video_file.replace(ARCHIVE_RELATIVE_PATH,ARCHIVE_PATH+os.sep)
+ 
+            if event_id is None or event_id == "none" or event_id == '': 
+  
+               # Get full version of the preview if video_path is empty
+               if(video_path==''):
+                  full_path = ARCHIVE_PATH + was_vh_dir + image_file.replace('crop','full')
+                  request = requests.get(full_path)
+                  if request.status_code == 200:
+                     video_path = "<a href='"+full_path+"' class='img-link btn btn-secondary btn-sm'><span class='icon-eye'></span></a>"
+               else:
+                  video_path = "<a href='"+video_path+"' class='img-link btn btn-secondary btn-sm'><span class='icon-eye'></span></a>"
+
+               if(jreport_path!=''):
+                  elink = "<a href=" + jreport_path + " class='T' data-src="+cropped_video_file+">"
+
+               single_html += "<div class='"+css_class+"'>" + elink +  "<img src='"+was_vh_dir + image_file+"' class='img-fluid'></a>"
+               single_html += "<div class='d-flex mb-2'><div class='mr-auto'><span>"+'<b>Cam#' + analysed_name['cam_id'] + '</b> '+ analysed_name['hour']+':'+analysed_name['min']+':'+analysed_name['sec']+'.'+analysed_name['ms'] + "</div>"
+               single_html += "<div class='position-relative'>"+video_path+"</div></div></div>"
+               ss_count += 1 
+            else:
+                
+
+               if(jreport_path!=''):
+                  elink = "<a href=" + jreport_path + " class='T'  data-src="+cropped_video_file+">"
+
+               multi_html += "<div class='"+css_class+"'>" + elink +  "<img src='"+was_vh_dir + image_file+"' class='img-fluid'></a>"
+               multi_html += "<div class='d-flex mb-1'><div class='mr-auto'><span>"+'<b>Cam#' + analysed_name['cam_id'] + '</b> '+ analysed_name['hour']+':'+analysed_name['min']+':'+analysed_name['sec']+'.'+analysed_name['ms'] + "<br><strong>Event Id</.strong> " + event_id+"</div>"
+               multi_html += "<div class='position-relative'><a href='"+video_path+"' class='vid-link btn btn-secondary btn-sm'><span class='icon-youtube'></span></a><span class='multi-b'>Multi</span></div></div></div>"
+               ms_count += 1
+
+            video_path = '' 
+            mc += 1
          else:
-
-            if(event_id !=''):
-               event_id = "</span><span><b>Event</b> #" + str(event_id)  
-
-            multi_html += "<div class='"+css_class+"'>" + elink +  "<img src='"+was_vh_dir + image_file+"' class='img-fluid'></a>"
-            multi_html += "<div class='d-flex mb-1'><div class='mr-auto'><span>"+'<b>Cam#' + analysed_name['cam_id'] + '</b> '+ analysed_name['hour']+':'+analysed_name['min']+':'+analysed_name['sec']+'.'+analysed_name['ms'] + event_id+"</div>"
-            multi_html += "<div><a href='"+video_path+"' class='vid-link btn btn-secondary btn-sm'><span class='icon-youtube'></span></a></div></div></div>"
-            ms_count += 1
-
-         video_path = ''
-         mc += 1
+            html += "No meteors detected."            
    else:
+   
       html += "No meteors detected."
 
 
@@ -426,8 +513,7 @@ def get_meteor_status(day):
    year, mon, dom = day.split("_")
    detect_dir = "/mnt/ams2/meteors/" + day + "/"
    arc_dir = "/mnt/ams2/meteor_archive/" + json_conf['site']['ams_id'] + "/METEOR/" + year + "/" + mon + "/" + dom + "/"
-
-   
+ 
    # get detect and arc files
    dfiles = glob.glob(detect_dir + "*trim*.json")
    arc_files = glob.glob(arc_dir + "*trim*.json")
@@ -435,18 +521,19 @@ def get_meteor_status(day):
    # filter out non-meteor or dupe meteor json files
    for df in dfiles:
       if "reduced" not in df and "manual" not in df and "stars" not in df:
+         print(df)
          detect_files.append(df)
 
    return(detect_files, arc_files)
    
 
 def do_all(day):
+  
    #os.system("git pull")
    proc_vids, proc_tn_imgs, day_vids,cams_queue,in_queue = get_processing_status(day)
    detect_files, arc_files = get_meteor_status(day)
 
-   time_check = check_time(day)
-
+   time_check = check_time(day) 
    # figure out how much of the day has completed processing
    rpt = """ 
       <dl class="row p-4">
@@ -469,18 +556,35 @@ def do_all(day):
 
    if len(cams_queue) < 10 and len(in_queue) < 10:
       proc_status = "up-to-date"
-
- 
+  
    # make the meteor detection index for today
-   #os.system("./autoCal.py meteor_index " + day)
+   os.system("/home/ams/amscams/pythonv2/autoCal.py meteor_index " + day)
+   print("AUTOCAL DONE")
 
    # make the detection preview images for the day
-   #os.system("./flex-detect.py bmpi " + day)
+   os.system("/home/ams/amscams/pythonv2/flex-detect.py bmpi " + day)
+   print("FLEXDETECT BMPI DONE")
 
    # make the detection preview images for the day
-   #os.system("./wasabi.py sa " + day)
-
+   os.system("/home/ams/amscams/pythonv2/wasabi.py sa " + day)
+   print("WASABI SA DONE")
+   
    make_station_report(day, rpt)
+   print("STATION DONE ")
+
+   # Make all the reports for the given day 
+   for f in arc_files: 
+      
+      # Create REPORT PAGE
+      ff = os.sep + f.replace(ARCHIVE_RELATIVE_PATH,'').replace('/mnt/ams2/meteor_archive/','')
+      ff = ff.replace('//','/')
+      cmd = "python3 /home/ams/amscams/pythonv2/publish.py event_station_report " +  ff
+      os.system(cmd)
+
+   print("DO ALL DAY DONE for " + day)
+     
+
+      
 
 def check_time(day):
    now = datetime.now() 
@@ -503,7 +607,7 @@ def check_time(day):
          lines.append(line)
       return (lines[-2] + " " + lines[-1])
       
-os.system("./wasabi.py mnt")
+os.system("/home/ams/amscams/pythonv2/wasabi.py mnt")
 cmd = sys.argv[1]
 
 if cmd == "ct":

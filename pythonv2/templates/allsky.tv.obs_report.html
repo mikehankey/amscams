@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="en-US">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="Cache-control" content="public, max-age=500, must-revalidate">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
+    <title>Meteor Observation Report {STATION_ID} Cam#{CAM_ID</title>
+    <link href="https://fonts.googleapis.com/css?family=Roboto+Condensed:400,700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/APPS/dist/css/allskytv.min.css?c={RAND}"/>
+</head>
+<body class="d">
+      <nav class="navbar navbar-expand-lg navbar-dark bg-dark flex-column flex-md-row"> 
+            <a class="navbar-brand clearfix" title="ALLSkyTV">  
+                <img id="logo_holder" src="/APPS/dist/img/allskytv.svg" width="200" height="70" alt="ALLSkyTV"/> 
+            </a> 
+            <ul class="navbar-nav ml-md-auto"></ul>
+            <a id="login" class="btn btn-primary d-inline-block mb-3 mb-md-0 ml-md-3">Login</a>
+      </nav>
+      <h1>Meteor Observation Report {STATION_ID} Cam#{CAM_ID} - <a href="{LINK_TO_DAILY_REPORT}">{DAY}</a> {TIME}</h1>
+      <div id="main_container" class="container-fluid d-flex h-100 mt-4 position-relative">
+        
+
+         <div class="h-100 flex-fixed-canvas">
+            <div class="position-relative" style="min-height:580px">
+                  <div style="position:absolute; top:0; left:0; width:960px; height:540px; z-index:1">
+                        {VIDEO}
+                  </div>
+               <div style="width:960px; height:540px;position:absolute; top:0; left:0;  z-index:99">
+                  <canvas id="canvas" width="960" height="540"></canvas>
+               </div>
+               
+            </div> 
+
+            <ul class="nav nav-tabs mt-3">
+               <li class="nav-item">
+                   <a class="nav-link active" id="reduc-tab-l" data-toggle="tab" href="#reduc-tab" role="tab" aria-controls="reduction" aria-selected="true">Reduction</a>
+               </li>
+               <li class="nav-item">
+                   <a class="nav-link" id="stars-tab-l" data-toggle="tab" href="#stars-tab" role="tab" aria-controls="stars" aria-selected="false"><span id="str_cnt"></span> Stars</a>
+               </li> 
+           </ul>
+           <div class="tab-content box"> 
+               <div class="tab-pane fade show active" id="reduc-tab" role="tabpanel" aria-labelledby="reduc-tab-l">
+                     <table class="table table-dark table-striped table-hover td-al-m mb-2 pr-5 mt-2">
+                        <thead>
+                           <tr>
+                              <th>#</th><th></th><th>Time</th><th>RA/Dec</th><th>Az/El</th><th>x/y</th><th>w/h</th>
+                           </tr>
+                        </thead>
+                     <tbody>
+                     </tbody>
+                     </table>
+                  </div>
+       
+      
+                 <div class="tab-pane fade" id="stars-tab" role="tabpanel" aria-labelledby="stars-tab-l">
+                     <table class="table table-dark table-striped table-hover td-al-m"><thead>
+                        <tr>
+                           <th>Name</th><th>mag</th><th>RA/Dec</th>
+                           <th>Star x/y <div class="star_sprite manual"></div></th>
+                           <th title="Catalog Undistorded">Cat. Dist.  x/y <div class="star_sprite distorded"></div></th>
+                           <th title="Catalog Distorded">Cat. x/y <div class="star_sprite undistorded"></div></th>
+                           <th title="Intensity">Intensity</th> 
+                        </tr>
+                     </thead>
+                     <tbody>
+                     </tbody>
+                     </table>
+      
+                     <dl class="row def br-t">
+                        <dt class="col-md-2">Star x/y <div class="star_sprite manual"></div></dt>
+                        <dd class="col-md-10">position of the star in the image</dd>
+                        <dt class="col-md-2">Cat. x/y <div class="star_sprite  distorded"></div></dt>
+                        <dd class="col-md-10">position of the catalog star AFTER lens distortion is applied</dd>
+                        <dt class="col-md-2">Cat. Dist x/y  <div class="star_sprite  undistorded"></div></dt>
+                        <dd class="col-md-10">position of the catalog star BEFORE lens distortion is applied.  </dd>
+                     </dl> 
+      
+                 </div> 
+            </div>
+         </div>
+      
+
+         <div class="flex-fixed-r-canvas h-100">
+            
+            <div class="box">
+               <h2>Meteor Info</h2>
+               <dl class="row mb-0 def w">
+                  {REPORT_DETAILS} 
+               </dl>
+            </div>
+
+            <div class="box">
+                  <div id="media_box" class="pt-2">
+                     <div class="d-flex mt-0 mb-0"> 
+                        {VIDEO_BTNS}
+                        <a id="show_json" class="col btn btn-secondary mt-0 mb-0 ml-1 d-block json_viewer" data_src="{JSON_FILE}"><i class="icon-file-text"></i> JSON Data</a>
+                     </div> 
+                  </div> 
+            </div>
+            
+
+            <div class="box d-none">
+               <div id="tool_box">
+                  <h2>Toolbox</h2>
+               </div>
+            </div>
+
+         </div>
+      
+      </div>
+      <div id="debug" style="display:none">
+         <div class="debug_h">Debug Info <a id="oc_debug">&times;</a></div>
+         <hr/>
+         <div class="in_deb">
+               <div id="mouse_pos"></div>
+               <hr/>
+               <div id="action"></div>
+               
+         </div>
+      </div>
+  
+
+      <script src="/APPS/dist/js/allskytv.min.js?c={RAND}"></script>  
+
+      <script src="/APPS/src/js/API/ui.js?c={RAND}"></script>
+      <script src="/APPS/src/js/API/shared.js?c={RAND}"></script>
+      <script src="/APPS/src/js/API/delete.js?c={RAND}"></script>
+      <script src="/APPS/src/js/API/confirm.js?c={RAND}"></script>
+      <script src="/APPS/src/js/API/login.js?c={RAND}"></script>
+      <script src="/APPS/src/js/API/shared.js?c={RAND}"></script>
+      <script src="/APPS/src/js/API/sendTasks.js?c={RAND}"></script>
+      <script src="/APPS/src/js/API/del_conf_from_obs.js?c={RAND}"></script>
+
+      <script src="/APPS/src/js/plugins/rainbowvis.js?c={RAND}"></script>
+      <script src="/APPS/src/js/plugins/json-viewer.js?c={RAND}"></script>
+      <script src="/APPS/src/js/plugins/fabric.js?c={RAND}"></script>
+
+      <script src="/APPS/src/js/functions/get_video_frames.js?c={RAND}"></script>
+
+      <script src="/APPS/src/js/ui/loader.js?c={RAND}"></script>
+      <script src="/APPS/src/js/ui/media_popup.js?c={RAND}"></script>
+      <script src="/APPS/src/js/ui/json_viewer.js?c={RAND}"></script>
+      <script src="/APPS/src/js/ui/video_player.js?c={RAND}"></script>
+      <script src="/APPS/src/js/ui/add_stars.js?c={RAND}"></script>
+      <script src="/APPS/src/js/ui/add_reductions.js?c={RAND}"></script>
+      <script src="/APPS/src/js/ui/frame_b_f_anim.js?c={RAND}"></script>
+ 
+      
+      <script src="/APPS/src/js/ui/debug.js?c={RAND}"></script>
+
+      <!-- MANUAL REDUCTION PICKER -->
+      <script src="/APPS/src/js/ui/meteor_picker.js?c={RAND}"></script>
+      <script src="/APPS/src/js/functions/meteor_picker.js?c={RAND}"></script>
+
+
+      <script>
+         // JSON FILE
+         var json_data = {JSON_DATA};
+         var cropped_video = "{CROPPED_VIDEO}";
+         var cropped_full = "{CROPPED_FULL}";
+         var first_frame = {FIRST_FRAME};
+         var how_many_frames = {HOW_MANY_FRAMES};
+         var STATION = "{STATION_ID}";
+         var stID='{STATION_ID}'; 
+
+         // Cropped Video Info
+         var x = {X};
+         var y = {Y};
+         var w = {W};
+         var h = {H};
+ 
+         var canvasFabric = new fabric.Canvas('canvas', {
+            hoverCursor: 'default',
+            selection: true,
+            width: 960,
+            height:540
+         });  
+
+         // Update the stars on canvas
+         $(function() {
+            loggedin();
+            update_stars_on_canvas_and_table(json_data,canvasFabric);
+            update_reduction_on_canvas_and_table(json_data,canvasFabric);
+            // Get Video Frames is automatically called based since there's a cropped video (see get_video_frames)
+         })
+         
+      </script>
+</body>    
+</html> 

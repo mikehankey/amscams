@@ -87,7 +87,7 @@ def angularSeparation(ra1,dec1, ra2,dec2):
    return math.degrees(math.acos(math.sin(dec1)*math.sin(dec2) + math.cos(dec1)*math.cos(dec2)*math.cos(ra2 - ra1)))
 
 
-def check_running(progname):
+def check_running(progname, sec_grep = None):
    cmd = "ps -aux |grep \"" + progname + "\" | grep -v grep |wc -l"
     
    output = subprocess.check_output(cmd, shell=True).decode("utf-8")
@@ -152,7 +152,7 @@ def find_slope(p1,p2):
       slope = 0
    return(slope)
 
-def convert_filename_to_date_cam(file):
+def convert_filename_to_date_cam(file, ms = 0):
    el = file.split("/")
    filename = el[-1]
    filename = filename.replace(".mp4" ,"")
@@ -166,7 +166,11 @@ def convert_filename_to_date_cam(file):
       fy,fm,fd,fh,fmin,fs,fms,cam = "1999", "01", "01", "00", "00", "00", "000", "010001"
    f_date_str = fy + "-" + fm + "-" + fd + " " + fh + ":" + fmin + ":" + fs
    f_datetime = datetime.datetime.strptime(f_date_str, "%Y-%m-%d %H:%M:%S")
-   return(f_datetime, cam, f_date_str,fy,fm,fd, fh, fmin, fs)
+   if ms == 1:
+      return(f_datetime, cam, f_date_str,fy,fm,fd, fh, fmin, fs,fms)
+
+   else:
+      return(f_datetime, cam, f_date_str,fy,fm,fd, fh, fmin, fs)
 
 def bound_leading_edge_cnt(x,y,img_w,img_h,x_dir_mod,y_dir_mod,sz=10):
    # left to right meteor, so only grab pixels to the right of the x

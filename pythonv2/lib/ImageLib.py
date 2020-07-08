@@ -1,16 +1,59 @@
 import os
+import json
 import cv2
 import glob
 import numpy as np
 from PIL import Image, ImageChops
 from PIL import ImageDraw
 from PIL import ImageFont
+import ephem
 
+#from lib.flexLib import day_or_night 
+
+#from lib.FileIO import load_json_file
 
 from lib.UtilLib import bound_cnt
-from lib.FileIO import cfe
+from lib.FileIO import cfe, convert_filename_to_date_cam
 #from lib.DetectLib import 
 from lib.MeteorTests import find_min_max_dist, max_xy
+
+
+
+
+def day_or_night(capture_date, json_conf):
+
+   device_lat = json_conf['site']['device_lat']
+   device_lng = json_conf['site']['device_lng']
+
+   obs = ephem.Observer()
+
+   obs.pressure = 0
+   obs.horizon = '-0:34'
+   obs.lat = device_lat
+   obs.lon = device_lng
+   obs.date = capture_date
+
+   sun = ephem.Sun()
+   sun.compute(obs)
+
+   (sun_alt, x,y) = str(sun.alt).split(":")
+
+   saz = str(sun.az)
+   (sun_az, x,y) = saz.split(":")
+   if int(sun_alt) < -1:
+      sun_status = "night"
+   else:
+      sun_status = "day"
+   return(sun_status)
+
+
+def load_json_file(json_file):
+   try:
+      with open(json_file, 'r' ) as infile:
+         json_data = json.load(infile)
+   except:
+      json_data = False
+   return json_data
 
 
 def upscale_to_hd(image, points):
@@ -130,7 +173,7 @@ def bigger_box(min_x,min_y,max_x,max_y,iw,ih,fac=5):
 def draw_stack(objects,stack_img,stack_file):
    if stack_img is None:
       return() 
-   ih,iw=stack_img.shape
+   ih,iw=stack_img.shape[:2]
    for obj in objects:
       hist = obj['history'] 
       (max_x,max_y,min_x,min_y) = find_min_max_dist(hist)
@@ -154,11 +197,17 @@ def stack_stack(pic1, pic2):
 
 def stack_glob(glob_dir, out_file):
    stacked_image = None
+   json_conf = load_json_file("../conf/as6.json")
    print("GLOBDIR: ", glob_dir)
    img_files = glob.glob(glob_dir)
    for file in img_files:
       print(file)
       img = cv2.imread(file, 0)
+      (f_datetime, cam, f_date_str,fy,fm,fd, fh, fmin, fs) = convert_filename_to_date_cam(file)
+      sun_status = day_or_night(f_date_str, json_conf)
+      if sun_status == 'day':
+         continue
+
       try:
          h,w = img.shape
       except:

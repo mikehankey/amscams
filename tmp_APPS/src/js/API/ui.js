@@ -1,12 +1,22 @@
-function loading_button($btn) {
-   var h=$btn.outerHeight(),w=$btn.width(),ih=$btn.innerHeight();
-   $btn.attr('data-init',$btn.text()).attr('style','height:'+h+'px!important;width:'+w+'px!important')
-   $btn.html('<img src="/APPS/dist/img/loader.svg" class="img-fluid" style="height:calc('+h+'px - 2*.25rem)"/>');
-}
+ 
 
-function load_done_button($btn) {
-   $btn.text($btn.attr('data-init')); 
-}
+
+jQuery.fn.extend({
+   loading_button:function() {
+      var $btn = $(this);
+      var h=$btn.outerHeight(),w=$btn.outerWidth();
+      if(typeof $btn.attr('data-init') == 'undefined' || $btn.attr('data-init') == '') {
+         $btn.attr('data-init',$btn.html()).attr('style','height:'+h+'px!important;width:'+w+'px!important')
+         $btn.html('<img src="/APPS/dist/img/loader.svg" class="img-fluid" style="height:calc('+h+'px - 2*.25rem)"/>');
+         $btn.attr('disabled','disabled').addClass('disabled');
+      }
+   },
+   load_done_button: function() {
+      $(this).html($(this).attr('data-init')); 
+      $(this).attr('data-init','');
+      $(this).removeAttr('disabled').removeClass('disabled');
+   } 
+ });
 
 
 function hide_bottom_action() {

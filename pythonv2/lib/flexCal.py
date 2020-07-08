@@ -4,6 +4,40 @@ from lib.CalibLib import distort_xy_new, find_image_stars, distort_xy_new, XYtoR
 from lib.UtilLib import calc_dist
 show = 0
 
+def get_image_stars(file,img=None, show=0):
+   stars = []
+   if img is None:
+      img = cv2.imread(file, 0)
+   avg = np.mean(img)
+   best_thresh = avg + 12
+   _, star_bg = cv2.threshold(img, best_thresh, 255, cv2.THRESH_BINARY)
+   thresh_obj = cv2.dilate(star_bg, None , iterations=4)
+   (_, cnts, xx) = cv2.findContours(thresh_obj.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+   cc = 0
+   for (i,c) in enumerate(cnts):
+      x,y,w,h = cv2.boundingRect(cnts[i])
+      px_val = int(img[y,x])
+      cnt_img = img[y:y+h,x:x+w]
+      cnt_img = cv2.GaussianBlur(cnt_img, (7, 7), 0)
+      max_px, avg_px, px_diff,max_loc = eval_cnt(cnt_img.copy())
+      name = "/mnt/ams2/tmp/cnt" + str(cc) + ".png"
+      #star_test = test_star(cnt_img)
+      x = x + int(w/2)
+      y = y + int(h/2)
+      if px_diff > 5 and w > 1 and h > 1 and w < 50 and h < 50:
+          stars.append((x,y,int(max_px)))
+          cv2.circle(img,(x,y), 5, (128,128,128), 1)
+
+      cc = cc + 1
+   #if show == 1:
+   #   cv2.imshow('pepe', img)
+   #   cv2.waitKey(1)
+
+   temp = sorted(stars, key=lambda x: x[2], reverse=True)
+   stars = temp[0:50]
+   return(stars)
+
+
 def reduce_fov_pos(this_poly, in_cal_params, cal_params_file, oimage, json_conf, cat_image_stars, min_run = 1, show=1):
    paired_stars = []
    for name,mag,ra,dec,new_cat_x,new_cat_y,ix,iy,intensity, px_dist,cp_file in cat_image_stars:

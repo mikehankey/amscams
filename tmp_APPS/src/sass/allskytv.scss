@@ -55,8 +55,22 @@
 @import "./components/cards";
 @import "./components/tabs";
 @import "./components/gallery";
+@import "./components/modals";
 @import "./components/bootbox";
 @import "./components/bottom_actions";
 @import "./components/anim_weather";
+@import "./components/canvas";
+@import "./components/tables";
+@import "./components/alerts";
+@import "./components/scrollbars";
+
+
+@import "./components/obs_report";
+@import "./components/video_player";
+@import "./components/star_sprite";
+@import "./components/meteor_selector";
+@import "./components/debug";
+
 
 @import "./plugins/popup";
+@import "./plugins/json_viewer";

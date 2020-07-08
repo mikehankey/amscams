@@ -25,6 +25,26 @@ import ephem
 
 from lib.VideoLib import get_masks
 
+def find_best_cat_stars(cat_stars, ix,iy, frame, cp_file):
+   cx1,cy1,cx2,cy2 = bound_cnt(ix,iy,frame.shape[1],frame.shape[0], 5)
+   intensity = int(np.sum(frame[cy1:cy2,cx1:cx2]))
+   min_dist = 999
+   min_star = None
+   for cat_star in cat_stars:
+      name,mag,ra,dec,new_cat_x,new_cat_y = cat_star
+
+      dist = calc_dist((new_cat_x, new_cat_y), (ix,iy))
+      if dist < min_dist and mag < 4:
+         #print("DIST:", dist, cat_star)
+         min_dist = dist
+         min_star = cat_star
+   name,mag,ra,dec,new_cat_x,new_cat_y = min_star
+   px_dist = 0
+   #cat_image_star = ((name.decode("unicode_escape"),mag,ra,dec,new_cat_x,new_cat_y,ix,iy,intensity,min_dist,cp_file))
+   cat_image_star = ((name,mag,ra,dec,new_cat_x,new_cat_y,ix,iy,intensity,min_dist,cp_file))
+   return(cat_image_star)
+
+
 def day_or_night(capture_date, json_conf):
 
    device_lat = json_conf['site']['device_lat']
@@ -531,6 +551,8 @@ def stack_stack(pic1, pic2):
 
 
 def stack_frames_fast(frames, skip = 1, resize=None, sun_status="night", sum_vals=[]):
+   if sum_vals is None:
+      sum_vals= [1] * len(frames)
    stacked_image = None
    fc = 0
    for frame in frames:

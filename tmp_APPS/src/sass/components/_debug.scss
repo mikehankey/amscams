@@ -1,0 +1,42 @@
+#debug {
+   height: 400px;
+   background: rgba(0,0,0,.4);
+   padding: 1rem;
+   position: fixed;
+   z-index: 999999;
+   left: 0;
+   bottom: 3rem;
+   border-radius: 0 5px 0 0;
+   color: #20ff5a;
+   font-size: .8rem;
+   transition: left .3s ease-in-out;
+   width: 350px;
+   left: -320px;
+   cursor: pointer;
+
+   &.open {
+      left:0;
+   }
+
+   hr {
+      border-color: rgba(255,255,255,.2);
+      margin: .4rem 0;
+   }
+
+   .in_deb {
+      padding-right: 30px;;
+   }
+
+   #oc_debug {
+      float: right;
+      font-size: 2rem;
+      margin-top: -1rem;
+      margin-right: -.4rem;
+   }
+   
+}
+
+#action {
+   height: 370px;
+   overflow: auto
+}

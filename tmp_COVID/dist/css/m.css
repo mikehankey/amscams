@@ -1,0 +1,259 @@
+
+   body {
+      margin:0;
+      font-family: 'Lato', sans-serif;
+   }
+
+   .clearfix::after {
+      content: "";
+      clear: both;
+      display: table;
+    }
+
+   #states {
+      margin:0 auto 2.5rem;
+      max-width: 1100px;
+   }
+
+   h1, h2 {
+      text-align: center;
+   }
+
+   h1 {
+      margin-bottom: 0;
+      margin-top: .5rem;
+   }
+   h2 {
+      margin-top: .35rem;
+      font-weight: normal;
+      font-size: 1rem;
+   }
+  svg {
+      display: block;
+      width: 100%;
+   }
+
+   #states *.on {
+      /*fill: #cc0000;*/
+      stroke: #000;
+   }
+
+   /* Circle is for DC */
+   #states tbody tr, path, circle {
+      cursor: pointer;
+   }
+
+   #us_map {
+      margin: 0 auto 1.5rem;
+      max-width: 800px; 
+   }
+
+    
+   #ft {
+      margin:0 auto 2rem;
+      color: dimgray;
+      text-align: center;
+   }
+
+   .cl {
+      display: block;
+      width: 1rem;
+      height: 1rem;
+      border-radius: 50%;
+      box-shadow: 0 1px 1px rgba(255,255,255,.8);
+   }
+
+   .o {
+      background-color:orange;
+      fill: orange;
+   }
+
+   .r{
+      background-color:#c00;
+      fill: #c00
+   }
+
+   .g{
+      background-color:#a9da82;
+      fill: #a9da82;
+   }
+
+
+   table tbody tr td:nth-child(2) {
+      font-weight: bold;
+   }
+
+
+   table tbody tr.on td:nth-child(2) {
+      color:#f00;
+   }
+
+
+   #bc {
+      text-align: center;
+      border-top: 1px solid rgba(0,0,0,0.15);
+      padding-top: 1rem;
+      max-width: 1100px;
+      margin: 1rem auto;
+   }
+
+   #bc a.s::after {
+      content: '>';
+      display: inline-block;
+      text-decoration: none;
+      color: #000;
+      padding-left: .5rem;
+   }
+
+   #plots_img {
+      width: 100%;
+      max-width: 1100px;
+      cursor: zoom-in;
+   } 
+   #state,  #graphs, #table {
+      max-width: 1100px;
+      margin: 1rem auto;
+      border-top: 1px solid rgba(0,0,0,0.15);
+      padding-top: 1rem; 
+   } 
+
+   #state h3, #graphs h3 {
+      margin-top:0;
+      display: block;
+      width: 100%;
+   } 
+   
+   #state span {
+      font-weight: normal;
+      font-size:1rem;
+      margin-left: 2rem;
+      display: block;
+      float: right;
+      text-align: right;
+   }
+   
+   .fl {
+      float: left; 
+   }
+
+   .fl img {
+      max-width: 154px;
+
+   }
+
+   .ff {
+      margin-right: 2rem;
+   }
+
+   dl {
+      display: block;
+      column-count: 2;   
+   }
+
+   dd {
+      float:left;
+      font-weight: bold;
+      margin-bottom: .2rem;
+     
+   }
+
+   dt {
+      margin-bottom: .2rem;
+      clear: both;
+      float:left; 
+      width: 150px;
+   }
+
+
+
+/* MODAL */ 
+
+
+
+.modal {
+  display: none; /* Hidden by default */
+  position: fixed; /* Stay in place */
+  z-index: 1; /* Sit on top */
+  padding-top: 1rem; /* Location of the box */ 
+  left: 0;
+  top: 0;
+  width: 100%; /* Full width */
+  height: 100%; /* Full height */
+  overflow: auto; /* Enable scroll if needed */
+  background-color: rgb(0,0,0); /* Fallback color */
+  background-color: rgba(0,0,0,0.9); /* Black w/ opacity */
+}
+
+/* Modal Content (Image) */
+.modal-content {
+  margin: auto;
+  display: block;
+  width: 95%; 
+}
+  
+/* Add Animation - Zoom in the Modal */
+.modal-content {
+  animation-name: zoom;
+  animation-duration: 0.6s;
+}
+
+#img_fv {
+   max-height: 100vh;
+   width: auto;
+}
+
+@keyframes zoom {
+  from {transform:scale(0)}
+  to {transform:scale(1)}
+}
+
+/* The Close Button */
+.close {
+  position: absolute;
+  top: 15px;
+  right: 35px;
+  color: #f1f1f1;
+  font-size: 40px;
+  font-weight: bold;
+  transition: 0.3s;
+}
+
+.close:hover,
+.close:focus {
+  color: #bbb;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+/* 100% Image Width on Smaller Screens */
+@media only screen and (max-width: 700px){
+  .modal-content {
+    width: 100%;
+  }
+}
+
+
+
+/* Graphs */
+.graph_container {
+   margin: 0 auto;
+   max-width: 1100px;
+   padding: 0 1rem;
+}
+
+.graph_container img {
+   max-width: 100%;
+   display: block;
+   cursor: pointer;
+}
+
+@media screen and (min-width: 600px) {
+   .grid {
+     display: flex;
+     flex-wrap: wrap;
+     flex-direction: row;
+   }
+   .cell {
+     width: 33.3%;
+   }
+ }

@@ -625,7 +625,10 @@ def reduce_object(object, sd_video_file, hd_file, hd_trim, hd_crop_file, hd_crop
    #   cal_param_file = find_best_cal_file(hd_datetime, hd_cam)
 
    print("HD TRIM REDUCE OBJECT: ", hd_trim)
-   el = hd_trim.split("-trim-")
+   if "-trim-" in hd_trim:
+      el = hd_trim.split("-trim-")
+   else:
+      el = hd_trim.split("-trim")
    min_file = el[0] + ".mp4"
 
    print(el[1])
@@ -637,7 +640,9 @@ def reduce_object(object, sd_video_file, hd_file, hd_trim, hd_crop_file, hd_crop
    meteor_frames = []
    #extra_sec = int(trim_num) / 25
    extra_sec = trim_time_offset
-   start_frame_time = hd_datetime + datetime.timedelta(0,extra_sec)
+   print("DATE:", hd_datetime)
+   print("EXTRA:", extra_sec)
+   start_frame_time = hd_datetime + datetime.timedelta(0,int(extra_sec))
    start_frame_str = start_frame_time.strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]
    start_frame_num = object['history'][0][0]
 

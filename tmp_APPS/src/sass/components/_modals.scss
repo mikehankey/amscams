@@ -1,0 +1,34 @@
+
+
+.modal-content {
+   background: #091b38;
+   color: #fff;
+}
+
+button.close {
+   color:#fff;
+   text-shadow: 0 1px 0 #000;
+}
+
+.json-document {
+   border: 1px solid rgba(255,255,255,.4);
+}
+
+.modal-title { 
+   color:#fff;
+}
+
+.modal-header {
+   border-bottom: 1px solid #3c3c3c;
+
+   .close {
+      color:#fff;
+      text-shadow: 0 1px 0 #000;
+   }
+}
+
+
+.modal-footer { 
+      border-top: 1px solid rgba(255,255,255,.4);
+      padding-top: .5rem!important;
+}

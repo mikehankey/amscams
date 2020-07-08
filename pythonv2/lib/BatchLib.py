@@ -383,6 +383,11 @@ def purge_trash(json_conf):
 
 
 def batch_doHD(json_conf):
+   from lib.UtilLib import check_running
+   running = check_running("batch_doHD")
+   if running > 2:
+      print("Already running.")
+      exit()
    proc_dir = json_conf['site']['proc_dir']
    all_days = get_days(json_conf)
    meteors = []
@@ -399,6 +404,7 @@ def batch_doHD(json_conf):
       base_meteor = base_meteor.replace("/passed", "")
       arc_meteor = "/mnt/ams2/meteors/" + base_meteor
       if cfe(arc_meteor) == 1:
+         print("DONE:", arc_meteor)
          done = 1
       else:
          cmd = "./detectMeteors.py doHD " + meteor
@@ -417,14 +423,16 @@ def purge_data(json_conf):
    
    try:
       cmd = "df -h | grep ams2"
-      output = subprocess.check_output(cmd, shell=True).decode("utf-8")
-      stuff = output.split(" ")
+      #output = subprocess.check_output(cmd, shell=True).decode("utf-8")
+      #stuff = output.split(" ")
+      stuff = []
       print(stuff)
       for st in stuff:
          if "%" in st:
             disk_perc = int(st.replace("%", ""))
    except:
       disk_perc = 81
+   disk_perc = 81
    if disk_perc > disk_thresh:
       print("DELETE some stuff...")
       # delete HD Daytime Files older than 1 day
@@ -493,8 +501,10 @@ def stack_day_cam_all(json_conf, glob_dir, cams_id ):
    print ("stacking failures")
    # stack failed captures
    img_dir = glob_dir + "/images/"
-   f_glob_dir = glob_dir + "/images/*" + cams_id + "*-stacked.png"
+   f_glob_dir = glob_dir + "/images/*" + cams_id + "*-stacked-tn.png"
    out_file = img_dir + cams_id + "-night-stack.png"
+
+
    stack_glob(f_glob_dir, out_file)
 
 
@@ -630,6 +640,8 @@ def make_file_index(json_conf ):
    json_file = data_dir + "main-index.json"
    if cfe(json_file) == 1:
       main_index = load_json_file(json_file)
+      if main_index == 0:
+         main_index = {}
    else:
       main_index = {}
 

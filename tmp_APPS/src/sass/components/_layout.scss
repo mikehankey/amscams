@@ -1,4 +1,37 @@
 body {
-   background-color: #eaeaea;
+   background-color: #eaeaea; 
+   position: relative;
+
+   &.d {
+      background-color:#282828;
+   }
+
+   &.wait {
+      cursor: wait;
+   }
+}
+
+
+// Report PAGE
+.container-fluid {
+   max-width: 1400px;
+
+   &.all-w {
+      max-width: 100%;
+   }
+}
+
+.flex-fixed-canvas {
+   flex: 0 0 960px;
+}
+
+.canvas-container {
+   position: relative;
+   background: #111;
+}
+
+.flex-fixed-r-canvas {
+   flex: 0 0 calc(1360px - 960px);
+   margin-left: 1rem;
    position: relative;
 }

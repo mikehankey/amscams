@@ -11,23 +11,24 @@ import json
 from datetime import datetime, timedelta
 from os import environ 
 
-from API_Tools import *
-from API_Functions import *
+from API_Tools import * 
 
-JSON_USER_PWD = '/home/ams/amscams/pythonv2/API/user_password.json' 
-JSON_MANAGER_PWD = '/home/ams/amscams/pythonv2/API/manager_password.json' 
-API_TASK_FILE ='/home/ams/amscams/pythonv2/API/task.txt' 
-PATH_ACCESS_LOGS = '/home/ams/amscams/pythonv2/API'
+LOCAL_PATH = '/home/ams/amscams/pythonv2/' # '/mnt/archive.allsky.tv/APPS/API'
+
+
+JSON_USER_PWD = LOCAL_PATH + '/user_password.json' 
+JSON_MANAGER_PWD = LOCAL_PATH + '/manager_password.json' 
+API_TASK_FILE = LOCAL_PATH + '.tasks' 
+ 
+
+PATH_ACCESS_LOGS = LOCAL_PATH
 ACCESS_FILE = PATH_ACCESS_LOGS + os.sep + "access.log"
-
-DETECTION_TO_DEL = PATH_ACCESS_LOGS + os.sep + "toDel.log" 
-DETECTION_TO_CONF = PATH_ACCESS_LOGS + os.sep + "toConf.log" 
-
+ 
 
 EXTRA_CODE_IN_TOKEN = '4llskYR0cks'
 ACCESS_GRANTED_DURATION = 1 # In hours
 
-AUTHORIZED_FUNCTIONS = ['login','tasks','delete','confirm']
+AUTHORIZED_FUNCTIONS = ['login','tasks','delete','confirm','update_frames']
 
 # MAIN API CONTROLLER
 def api_controller(form):
@@ -62,6 +63,15 @@ def api_controller(form):
       if(api_function=='delete'):
          # Doesnt work yet
          print(delete_detection(form))
+
+      # Update Frames for a given detection
+      elif(api_function=='update_frames'):
+ 
+         frames_data  = form.getvalue('data')
+         detection    = form.getvalue('file')
+         print(add_frame_task(detection,frames_data,user,st,datetime.now()))
+
+      # Conf or Delete Detection(s)
       elif(api_function=='tasks'):
          data_to_del  = form.getvalue('data[toDel]')
          data_to_conf = form.getvalue('data[toConf]')
@@ -71,34 +81,78 @@ def api_controller(form):
          else:
             print(add_tasks(data_to_del,data_to_conf,user,st,datetime.now()))
 
-            #if(data_to_conf is None):
-            #   add_tasks_to_conf(data_to_conf,usr,st,datetime.now())
-          
-          
+
+
+
+# ADD TASK FOR NEW METEOR POS IN FRAMES
+def add_frame_task(detection,frame_data,usr,st,_date):
+
+   with open(API_TASK_FILE, 'a+') as f:
+      f.write(usr+'|'+st+'|FRAME'+'|'+detection+'|'+frame_data+'|'+_date.strftime("%Y-%m-%d %H:%M")+'\n')
+
+   f.close()        
+ 
+   return json.dumps({'msg': '<b>A new task is now pending:</b><br/>Frames Updates'})
 
 
 # ADD A TASK TO DELETE A DETECTION that will be read later by a cron
-def  add_tasks(data_to_del,data_to_conf,usr,st,_date):
+# This function is used on the daily report + obs_report 
+# to delete and/or confirm several detections 
+def add_tasks(data_to_del,data_to_conf,usr,st,_date):
    
+   # We can pass either strings or arrays
+   if( isinstance(data_to_del, str)):
+      all_data_to_del =  data_to_del 
+ 
+   # We can pass either strings or arrays
+   if( isinstance(data_to_conf, str)):
+      all_data_to_conf =  data_to_conf
+
+   conf_ct = 0
+   del_ct = 0 
+
    try:
       all_data_to_del = data_to_del.split(',')
+      del_ct = len(all_data_to_del)
    except:
       all_data_to_del = []
 
    try:
-      data_to_conf = data_to_conf.split(',')
+      all_data_to_conf = data_to_conf.split(',')
+      conf_ct = len(all_data_to_conf)
    except:
-      data_to_conf = []   
+      all_data_to_conf = []   
+       
 
-   with open(API_TASK_FILE, 'w+') as f:
+   #print("ADD TASKS")
+   #print(all_data_to_del) 
+   #print(all_data_to_conf)
+
+   with open(API_TASK_FILE, 'a+') as f:
+ 
       for data in all_data_to_del:
          f.write(usr+'|'+st+'|DELETE'+'|'+data+'|'+_date.strftime("%Y-%m-%d %H:%M")+'\n')
-      for data in all_data_to_del:
+
+      for data in all_data_to_conf:
          f.write(usr+'|'+st+'|CONF'+'|'+data+'|'+_date.strftime("%Y-%m-%d %H:%M")+'\n')
 
    f.close()
 
-   return json.dumps({'msg':'The tasks are now pending.'})
+   # Build message for JS
+   if(del_ct>1 or conf_ct>1):
+      msg = '<b>New tasks are now pending:</b><br/>'
+   else:
+      msg = '<b>A new task is now pending:</b><br/>'
+
+   if(del_ct!=0):
+      msg += " deletion of " + str(del_ct) + " detection "
+      if(conf_ct != 0) :
+         msg += "and "
+   if(conf_ct != 0) :
+      msg += " confirmation of " + str(conf_ct) + " detection "
+
+
+   return json.dumps({'msg': msg})
 
 
 # LOGIN

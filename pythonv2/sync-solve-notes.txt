@@ -1,0 +1,135 @@
+Notes for pipeline detection, archiving, sync'ing and solving
+------------------------------ ------------------------------
+
+3/23 
+For pipeline processing tasks:
+
+Scan & Stack
+-------------
+./ASDaemon.py bs
+This needs to run all the time. If it is not running, it needs to start, if already running it will not duplicate. Initiate with cron.
+This process will take the mp4 files in /mnt/ams2/SD/
+   - sub-frame scan then for max vals and brightest pixel points (in subframe)
+   - will create thumbnail preview stack for that minute
+   - will create -vals.json file for that day
+   - moves original and creates new files in proc2/day/ dir (images/ data/)
+
+Run Values Detect
+-------------
+./ASDaemon.py rvd 
+This process will check all -vals files for suspect meteor detections.
+It should run at least 1x per hour. 
+The process will create various data/ files : -maybe-meteors.json, toomany.json, detect.json,
+All vals file should have at least 1 -detect.json after processing is completed. 
+This command will check all days in current proc2/ subdirs
+
+Run Verify Meteors
+------------------
+./ASDaemon.py rvms 
+This will check all of the maybe-meteors.json files for each day and clip the min files into trim files and then run full meteor detection on them. Detected meteors will be trimmed, linked to HD files, saved in meteor dir (with old json), and saved in meteor_arc dir. Arc cache will be created and the meteor will be added to a list for final tuning (astrometeric fitting) and cloud syncing. When the meteor finishes this process, it should be DONE 100%.
+
+Fix Days
+--------
+./ASDaemon.py fix_days
+This process will look for and correct any stacks that were erroneously not created in the main scan_stack process.
+
+Proc Index
+----------
+./ASDaemon.py proc_index
+This process will update the proc_stats for each day. These proc_stats are used to drive processing tasks. proc_index will recreate the file rom scratch. update_proc_stats will/should update just 1 day of the proc_index. update should be run after each major task (bs, rvd, rvms, fix_days) completes. 
+
+All of the above tasks should be:
+   - called by crontabs 
+   - or once implemented called by the ASDaemon process
+
+./ASDaemon.py bs # should run all the time, cron should be */5 min
+./ASDaemon.py fix_days # should run 4x per day */8 hours
+./ASDaemon.py rvms # should run at least once per 20 min */20 min
+./ASDaemon.py proc_index # should run 4x per day (or more when update is implemented)
+./ASDaemon.py rvd # should run at least once per 20 min
+
+# CRONS FOR PIPE LINE 
+*/15 * * * * cd /home/ams/amscams/pythonv2/; ./scan_stack.py bs
+15 */8 * * * cd /home/ams/amscams/pythonv2; ./ASDaemon.py fix_days 
+*/20 * * * * cd /home/ams/amscams/pythonv2; ./ASDaemon.py rvms 
+*/15 * * * * cd /home/ams/amscams/pythonv2; ./ASDaemon.py rvd 
+20 */8 * * * cd /home/ams/amscams/pythonv2; ./ASDaemon.py proc_index 
+
+
+# ulimately all tasks will be managed by ASDaemon and then that will be the only cron entry. 
+
+2/16 - Notes
+
+To make detection preview images
+./flex-detect.py bmpi 2019_12_24
+
+To sync detection preview images
+./wasabi.py sa 2019_12_29
+
+Station Meteor Index
+--------------------
+Stations must create the meteor_index file and copy it to wasabi at least 1x each day or after the night is processed or major changes made. Currently this is the entire index of all meteors gz. This needs to change to a yearly index, and then an index for each day. Once everything is running and in sync, only the today file and yesterday file will need to be sync'd every day.  
+./autoCal.py meteor_index (automatically zips and copies to wasabi)
+
+The meteor index needs to be copied from wasabi to the solving station by running:
+./autoCal.py cp_mi
+
+Run Detects (for one day)
+./autoCal.py run_detects 2019_01_01
+
+Run Detects for month
+./autoCal.py md 2010_01_01
+
+Run Detects for all of year * 
+./d.sh
+
+Run detects will create a detect file in the meteor archive dir for each station with that stations MS detects. 
+This file must be copied from the solving node to wasabi for each station and put in thier dir (requires special wasabi perms)
+
+Stations will copy the msd automatically once a day or by some command. 
+./wasabi.py cp_msd
+
+(currently has all MS events for entire archive). Need to break up to yearly, and then day-by-day
+
+Events
+Finally, to build the event list, run :
+./solve.py be /mnt/ams2/meteor_archive/AMS1/EVENTS/2019/2019-events.json
+
+This should be run by each station on their system after the ms_detects have sync'd. 
+
+Inside the EVENTS dir for each station will be all of the event solutions data for the events the station participated in. 
+
+Identified but unsolved events will have an empty directory created for them.  
+
+Once an event is starting the solve process, the obs info (solver input) will be saved in the event dir. This is also copy to wasabi in real time. This tells any other solving nodes, that this event is being worked on. 
+
+If another station has already solved the event, their event files will be copied to this station. 
+
+The solving node, is only responsible for colating the events and creating the ms_detect files. The stations themselves will then solve the events and propogate the data to wasabi and themselves. 
+
+The main master (across all networks), will copy unique events from the solving station, into the primary / public event wasabi dir. broken up like : /wasabi/events/YEAR/YYYY_MM_DD/EVENT_ID/ 
+
+* we want to avoid duplication of event data in wasabi, under the station and also at global level, but have to manage permissions on the global directory. So have to think about this... 
+
+
+Summary:
+- each station needs a cron for autoCal.py meteor_index at least 2x per day
+
+- the master solving node needs to run the detects for the day and copy the resulting ms_detects to wasabi
+
+- each station needs to copy the ms_detects (after it updates) to their station
+
+- each station needs to copy the meteor index from all other stations to it's own meteor archive.
+
+- each station should run ./solve.py be to build the event dir for their location
+   - when the station is done with night time processing, it should loop over the event dir and try to solve events that are ready to be solved but haven't started yet. 
+   - when the solve starts, they should write (somewhere) in wasabi, before they commit to an event they should scan their network partners wasabi events dir for the day to make sure the event is not already checked out or already solved. 
+   so it is like this:
+   for each event_dir in events for this day:
+      - see if any of my other partner stations have solved the event already or are currently working on it. 
+         - if it is solved, copy the solution to my folder
+      - if it is not solved and no-one is working on it, by virtue of a checkout / solve start file in the wasabi drive, then it is ok for me to solve. 
+      - make a start solve file in my local event dir and wasabi. start solve process. when solve completes, copy solution to my wasabi events dir. 
+   
+
+

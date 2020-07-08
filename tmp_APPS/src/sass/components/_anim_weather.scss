@@ -8,6 +8,12 @@
    left: 0;
 }
 
+.sm {
+   .to_anim {
+      width:550px;
+   }
+}
+
 #anim_holder {
    width: 1700px;
    height: auto;
@@ -16,6 +22,13 @@
    border: 2px solid #000;
    background: #222;
    min-height: 164px;
+
+
+   &.sm {
+      width:437px;
+      background:transparent;
+      border:none medium;
+   }
 
    .weath {
       position: absolute;
@@ -78,4 +91,16 @@ input[type="range"]{
    top:5px;
    background: #0c3867;
    background: linear-gradient(to right, #0c3867 1%, #0f4a88 70%);
+ }
+
+ 
+ // WEATHER CAROUSEL
+ .carousel-control-prev, .carousel-control-next {
+   width: 30px;
+   background: #203f5a;
+ }
+
+ .carousel-item.active {
+   width: calc(100% - 60px);
+   margin-left: 30px;
  }

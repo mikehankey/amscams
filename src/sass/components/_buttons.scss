@@ -125,7 +125,14 @@ table:hover .add_f {
     max-width: 64px;
 }
 
+#cropped_frame_select, .cropped_frame_select {
+   white-space: nowrap;
+}
 
-
+#frame_select_mod {
+   overflow: auto;
+   padding-bottom: .5rem;
+   max-height: 250px;
+}
 
 

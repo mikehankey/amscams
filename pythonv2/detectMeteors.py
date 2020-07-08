@@ -35,6 +35,7 @@ libs/UtilLib.py -- Holds various utlity functions
 
 def scan_dir(dir, show):
    files = glob.glob(dir + "*trim*.mp4")
+   print("GLOB:", dir)
    for file in files:
       print(file)
       scan_file(file, show)
@@ -43,6 +44,7 @@ def scan_file(video_file, show):
    (base_fn, base_dir, image_dir, data_dir,failed_dir,passed_dir) = setup_dirs(video_file)
    recheck = 0
    if "meteors" in video_file:
+      print("METEORS HERE.")
       recheck = 1
    (f_datetime, cam, f_date_str,fy,fm,fd, fh, fmin, fs) = convert_filename_to_date_cam(video_file)
    masks = get_masks(cam, json_conf,1)
@@ -68,7 +70,7 @@ def scan_file(video_file, show):
 
 
    if meteor_found == 1 and recheck == 0:
-      print("Meteor Test Passed.")
+      print("Original Meteor Test Passed. Complete process.")
       stack_file,stack_img = stack_frames(frames, video_file)
       draw_stack(objects,stack_img,stack_file)
       save_meteor(video_file,objects)
@@ -87,6 +89,8 @@ def scan_file(video_file, show):
    print(obj_report)
    if meteor_found == 1:
       print("Meteor Test Passed.")
+
+
    else:
       print("Meteor Test Failed.")
       if recheck == 1:
@@ -228,9 +232,14 @@ if __name__ == "__main__":
    json_conf = load_json_file("../conf/as6.json") 
    cmd = sys.argv[1]
    running = check_running("detectMeteors")
-   if running > 3 and cmd != 'doHD' and cmd != 'sf' and cmd != 'raj' and cmd != 'br' and cmd != 'reject' and cmd != 'fix_meteor_dir':
+   if running > 2 and cmd != 'doHD' and cmd != 'sf' and cmd != 'raj' and cmd != 'br' and cmd != 'reject' and cmd != 'fix_meteor_dir':
       print("running ", running)
       exit()
+   running = check_running("doHD")
+   if running > 3:
+      print("already running ", running)
+      #exit()
+   
    if len(sys.argv) >=3:
       video_file = sys.argv[2]
    if len(sys.argv) == 4:

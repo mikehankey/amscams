@@ -1,0 +1,463 @@
+ 
+
+.meteor_chooser {  
+    cursor: crosshair;
+    position: relative;
+    overflow: hidden;
+    margin: 0 auto;
+    background-color:#111;
+    background-repeat: no-repeat; 
+    background-size: cover;   
+}
+
+#lh, #org_lh {
+    position: absolute;
+    left: 0;
+    top:50%;
+    width: 100vw;
+    height: 1px;
+    background:rgba(255,255,255,.1);
+    box-shadow: 0 0 1px rgba(0,0,0,1);
+} 
+
+#lv,  #org_lv {
+    position: absolute;
+    top: 0;
+    left:50%;
+    width: 1px;
+    height: 100vh;
+    background:rgba(255,255,255,.1);
+    box-shadow: 0 0 1px rgba(0,0,0,1);
+}
+
+#org_lh, #org_lv {
+    background:rgba(255,255,255,.1);
+}
+
+ .done #lh,  .done #lv { 
+    background:rgba(255,0,0,.5);
+}
+
+
+.prev-th {
+    margin: 0 .2rem .2rem 0;
+    border-width:1px;
+    width: 66px;
+    border-style: solid;
+    cursor:pointer;
+    opacity: .6;
+
+    &:hover {
+        img {
+            border-color:rgba(255,255,255,.3)!important;
+        }
+    }
+
+    &.cur { 
+       opacity: 1;
+    }
+}
+
+
+.cross_holder {
+    position: absolute;
+    z-index: 3;
+
+    .cross {  
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        opacity: .5;
+        text-align: center;
+        color: rgba(255,255,255,.5);
+        padding-top: 10px;
+    }
+}
+
+
+
+// Frame numbers on selector
+.select_frame_btn {
+
+    position: relative;
+    display: block; 
+    
+    span {
+      position: absolute;
+      bottom: 1px;
+      right: 2px;
+      padding: 0 4px;
+      color: rgba(255,255,255,.6);
+      background: rgba(0,0,0,.5);
+      font-size: .7rem;
+    } 
+
+    &.done {
+       span {
+          color:orange;
+       }
+    }
+}
+
+.ccur {
+    .select_frame_btn { 
+        opacity: 1;
+    }
+}
+
+
+.select_info {
+    font-size: .9rem;
+    text-align: right;
+    color: rgba(255,255,255,.8);
+    line-height: 1.2;
+}
+ 
+
+// Frame Preview Zoom & Selector 
+#select_f_tools {
+   width: 310px;
+   border: 1px solid #333;
+   background-color: rgba(16, 38, 74,.5);
+   box-shadow: rgba(0, 0, 0, 0.3) 0px 0px 3px 3px;
+}
+
+.drag-h {
+    background: rgba(9,27,56,.8);
+    cursor:grab;
+    height:30px;
+    
+
+    small {
+        padding: 0 0 .3rem .5rem;
+        line-height: 20px;
+        margin-top: -.3rem;
+        display: block;
+        font-size:.95rem;
+    }
+}
+
+#select_preview {
+    border: 1px solid rgba(0,0,0,.2);
+}
+
+#selector {
+    cursor:grab;
+
+    &.ng {
+       cursor: default
+    }
+
+    &.pa {
+       position: absolute;
+    }
+}
+
+.drag-h {
+   padding-top: 9px!important;
+   border-bottom: 1px solid #333; 
+}
+
+
+#transp{
+    display: block;
+    margin: .5rem auto;
+} 
+
+.select_meteor {
+    cursor: pointer;
+
+    &.smi {
+        border-width: 1px;
+        border-style: solid;
+    }
+ 
+}
+
+
+
+// Multiple Mode
+#select_meteor_modal {
+
+    .update_meteor_thumb_pos_list {
+        display:none;
+    }
+
+
+    &.multiple-select {
+
+        .modal-dialog {
+            max-width: 1350px;
+        }
+
+        .modal-body {
+            -ms-flex-wrap: wrap !important;
+            flex-wrap: wrap !important;
+            -ms-flex-line-pack: stretch !important;
+            align-content: stretch !important;
+            display: -webkit-box !important;
+            display: -ms-flexbox !important;
+            display: flex !important;
+        }
+
+        .select_meteor_holder {
+         width: 85%;
+         position: relative;
+         overflow-x: hidden;
+        }
+
+        .update_meteor_thumb_pos_list {
+            display:block;
+            width: 14%;
+            margin-left: 1%;
+            background: rgba(0,0,0,0.3); 
+            display: flex;
+            flex-wrap: wrap;
+
+            .meteor_thumb_pos_list { 
+                overflow: auto;
+                max-height: 485px;
+                font-family: monospace;
+                width: 100%;
+
+                p {
+                    padding-left: 1rem;
+                    margin-bottom: .5rem;
+                    margin-left: 1.1rem;
+
+                    &.cur_m_s {
+                        margin-left:0;
+
+                        &:before  {
+                            content: "\e91f";
+                            display: inline-block;
+                            font-size: .5rem;
+                            font-family: 'icomoon';
+                            padding-right: .3rem;
+                            color: #39b9c7;
+                        }
+                    }
+                }
+            }
+        }
+
+        .mt-auto {
+            width: 100%;
+            text-align: right;
+        }
+
+        h5 {
+            border-bottom: 1px solid rgba(255,255,255,.3);
+            width: 100%;
+            padding-bottom: 1rem;
+        }
+
+        .update_meteor_thumb_pos_list_ins {
+            width: 100%;
+            padding: 1rem;
+        }
+    }
+
+}
+
+
+/************/
+// Manual Reduction step2
+.frame_selector {
+   display: block;
+   position: relative;
+   border:4px solid rgba(0,0,0,0);
+   margin: 0 auto .5rem;
+   cursor: pointer;
+   zoom: 1.5;
+
+   img {
+      max-width: 281px;
+      max-height: 300px;
+   }
+   
+   span {
+      top: 0;
+      position: absolute;
+      left: .2rem;
+      font-size: .58rem;
+      
+   }
+
+   &:hover {
+      span {
+         display:none;
+      }
+
+      border-color:#ffdd1e;
+   }
+ 
+}
+
+// Manual Reduction step3
+#frame_select_mod { 
+   overflow: auto;
+   padding-bottom: .2rem;
+   max-height: 250px;
+}
+
+// Manual Synchronization step2
+.frame_select_mod {
+   overflow: auto;
+   padding-bottom: 0;
+   max-height: 250px;
+   margin-bottom: 15px;
+   border: 1px solid rgba(255,255,255,.1);
+}
+
+#cropped_frame_select, .cropped_frame_select {
+   white-space: nowrap; 
+   a { 
+      display: inline-block;
+      margin: .25rem .12rem;
+      opacity: .5;
+      
+      img {
+         display: inline-block;
+         box-shadow:none;
+         width: 200px!important;  
+      }
+
+      &.done{
+         border-bottom:3px solid #1956bd
+      }
+
+      &.cur {
+ 
+         border: 2px solid yellow!important;
+      }
+
+      &.exists, &.updated {
+         opacity: 1;
+
+         span {
+            background-color: rgba(255, 165, 0, 0.65);
+            color: #ffffff;
+         }
+
+      }
+   }
+
+
+   
+}
+
+#cropped_frame_selector {
+   margin: 0 auto;
+   position: relative;
+   background-size: cover;
+   overflow: hidden;
+   cursor: crosshair;
+
+
+   &.cur {
+      border:2px solid rgba(255, 229, 46, 1)
+   }
+   
+}
+
+
+#thumb_browwser {
+   background: rgba(255,255,255,.1);
+    box-shadow: 0 -2px 2px inset rgba(0,0,0,.63);
+    margin: .5rem;
+}
+
+
+
+// Circles
+.circl {
+   position: absolute;
+   width: 40px;
+   height: 40px;
+   border:1px solid rgba(255,255,255,.3);
+   border-radius: 50%;
+
+   span { 
+      user-select: none;  
+      font-size: .8rem;
+      opacity: .3;
+      display: block;
+      text-align: center;
+      width: 40px;
+      margin-top: 9px;
+      text-shadow: 2px 1px rgba(0,0,0,1);
+      position: absolute;
+      top:-18px;
+   }
+}
+
+
+// Clip Length
+#clip { 
+   width: 100%;
+   height: 2px;
+   border-radius: 1px;
+   background: #000;
+   position: absolute;
+   top: 0; 
+}
+
+.clip_length {
+   height: 2px; 
+   background: green; 
+   position: relative;
+
+   &::before { 
+      content: "|";
+      display: block;
+      height: 12px;
+      width: 2px;
+      background-color: green;
+      position: absolute;
+      top: -4px;
+      left: -2px;
+      color:transparent
+   }
+
+   &::after { 
+      content: "|";
+      display: block;
+      height: 12px;
+      width: 2px;
+      background-color: green;
+      position: absolute;
+      top: -4px;
+      right: -3px;
+      color:transparent
+   }
+} 
+
+#length_info {
+   color:#029c02;
+   font-size: 1rem;
+}
+
+
+// Title
+#sel_frame_id {
+   color:rgb(255, 229, 46);
+   font-size: 1rem;
+}
+
+
+// Buttons 
+
+.delSingle, .confSingle, .btn-mx {
+   font-size: 1rem;
+   max-width: 5rem;
+
+   // Icon
+   i {
+      font-size: 1.5rem;
+      vertical-align: text-top;
+      padding: .4rem 0;
+      line-height: 1;
+   }
+
+}

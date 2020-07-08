@@ -5,14 +5,273 @@ import datetime
 import time
 import shutil
 import sys
+import cv2
+import numpy as np
 
 from lib.VIDEO_VARS import * 
 from os import listdir, remove
 from os.path import isfile, join, exists
 from shutil import copyfile
 from lib.FileIO import load_json_file
+from lib.VideoLib import ffmpeg_dump_frames 
 from pathlib import Path
+
+
+
+
+
+# WE NEED THE ORIGINAL SIZE!!!
+def definitive_crop_thumb(frame,x,y,dest,orgw,orgh,w,h, ft_factor = 20):
+
+   # Add bigger factor if fireball
+   FRAME_THUMB_W = int(HD_W/ft_factor)
+   FRAME_THUMB_H = int(HD_H/ft_factor) 
+
+   # It's HD
+   org_w_HD = HD_W
+   org_h_HD = HD_H 
+   
+   # Debug 
+   img = cv2.imread(frame)  
+
+   # Create empty image FRAME_THUMB_WxFRAME_THUMB_H in black so we don't have any issues while working on the edges of the original frame 
+   crop_img = np.zeros((FRAME_THUMB_H,FRAME_THUMB_W,3), np.uint8)
  
+   # Default values for the meteor to stay in the middle of the frame thumb
+   org_x = int(x - FRAME_THUMB_W/2)
+   org_w = int(FRAME_THUMB_W + org_x)
+
+   org_y = int(y  - FRAME_THUMB_H/2)
+   org_h = int(FRAME_THUMB_H + org_y)    
+
+   # Destination THUMB
+   thumb_dest_x = 0
+   thumb_dest_w = FRAME_THUMB_W
+   thumb_dest_y = 0
+   thumb_dest_h = FRAME_THUMB_H
+
+   # CHANGE VALUES IF THE METEOR IS ON THE EDGE(S)
+   # ON THE LEFT (VERIFIED)
+   if(org_x<=0):
+
+      # Part of the original image
+      org_x = 0
+
+      # Part of the thumb
+      thumb_dest_x = int(FRAME_THUMB_W/2-x)
+      thumb_dest_w = int(abs(thumb_dest_w - org_x))
+ 
+   # ON RIGHT (VERIFIED)
+   elif(org_x >= (org_w_HD-FRAME_THUMB_W)): 
+      
+      # Part of the original image
+      org_w = org_w_HD
+     
+      # Destination in thumb (img) 
+      thumb_dest_w =  HD_W - org_x
+  
+   # ON TOP (VERIFIED)
+   if(org_y<=0):
+ 
+      # Part of the original image
+      org_y = 0 
+
+      # Part of the thumb
+      thumb_dest_y = int(FRAME_THUMB_H/2-y)
+      thumb_dest_h = int(abs(thumb_dest_w - org_y))
+        
+   # ON BOTTOM
+   if(org_y >= (org_h_HD-FRAME_THUMB_H)):
+
+      # Part of the original image
+      org_h = org_h_HD
+
+      # Destination in thumb (img)
+      thumb_dest_h = HD_H -  org_y 
+     
+   crop_img[thumb_dest_y:thumb_dest_h,thumb_dest_x:thumb_dest_w] = img[org_y:org_h,org_x:org_w] 
+   cv2.imwrite(dest,crop_img)
+    
+   return dest
+
+# Cropp a video while keeping the meteor always
+# at the center of the frame
+def crop_video_keep_meteor_centered(json_file,video,w=FRAME_THUMB_W,h=FRAME_THUMB_H, ft_factor = 20):
+
+   folder_path = json_file.replace(os.path.basename(json_file),'')
+
+   # First we create all the FULL frames of the video:
+   img_out = folder_path + os.sep + "frames%05d.png" 
+   cmd = "ffmpeg -i " + video + " " + img_out 
+
+   try:
+      output = subprocess.check_output(cmd, shell=True).decode("utf-8")   
+      print("ffmpeg cmd successfull >> " +  output) 
+      print(folder_path + " > frames are ok")
+   except subprocess.CalledProcessError as e:
+      print("Command " + cmd + "  return on-zero exist status: " + str(e.returncode))
+      sys.exit(0)   
+
+   # We load the json file
+   data = load_json_file(json_file)
+
+   if(data is False):
+      print(json_file  + " not found")
+      sys.exit(0)
+
+   # We get the frame data
+   if('frames' in data):
+      # To store the cropped frames
+      cropped_frames = []       
+
+      # First index
+      first_index = int(data['frames'][1]['fn']) 
+      
+      # We crop all the HD frames that are in data['frames']
+      for i in range(1,first_index):
+         crop = definitive_crop_thumb(
+            folder_path + os.sep + "frames" + str(i).zfill(5) + ".png",
+            data['frames'][1]['x'],
+            data['frames'][1]['y'],
+            folder_path + os.sep + "frames" + str(i).zfill(5) +"X.png",
+            HD_W,
+            HD_H,
+            int(FRAME_THUMB_W),
+            int(FRAME_THUMB_H))
+         cropped_frames.append(crop.replace('//','/'))
+
+      for frame in data['frames']:
+         frame_index = int(frame['fn'])
+
+         # CHANGE THE CROP SIZE FOR FIREBALLS
+         crop = definitive_crop_thumb(
+            folder_path + os.sep + "frames" + str(frame_index).zfill(5) + ".png",
+            frame['x'],
+            frame['y'],
+            folder_path + os.sep + "frames" + str(frame_index).zfill(5) +"X.png",
+            HD_W,
+            HD_H,
+            int(FRAME_THUMB_W),
+            int(FRAME_THUMB_H)
+         )
+         cropped_frames.append(crop.replace('//','/'))
+      
+ 
+      # We cannot create the video with ffmpeg as the cmd is sometimes way too long
+      frame = cv2.imread(cropped_frames[0])
+      height, width, layers = frame.shape
+ 
+      fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+      video_name = video.replace('.mp4','-follow-cropped.mp4')
+      videoCC = cv2.VideoWriter(video_name, fourcc, 25, (width,height))
+   
+      for frame in cropped_frames:
+         f = cv2.imread(frame) 
+         videoCC.write(f)
+
+      videoCC.release()
+    
+      # We "fix" the mp4 (need for very small videos - no idea why)
+      fixmp4(video_name,False)
+
+      # Now we need to delete all the frames and framesX to clean the directory (all png images)
+      fileList = glob.glob(folder_path+'*.png')
+      for filePath in fileList:
+         try:
+            os.remove(filePath)
+         except:
+            print("Error while deleting file : ", filePath)
+ 
+       
+
+ 
+# Get All the Frames of a given video
+def get_frames_from_cropped_video(video,output_path):
+
+   img_out = output_path + os.sep + "frames%05d.png" 
+   cmd = "ffmpeg -i " + video + " " + img_out 
+
+   try:
+      output = subprocess.check_output(cmd, shell=True).decode("utf-8")   
+      print("ffmpeg cmd successfull >> " +  output) 
+      print(output_path + " > frames are ok")
+   except subprocess.CalledProcessError as e:
+      print("Command " + cmd + "  return on-zero exist status: " + str(e.returncode))
+      sys.exit(0)   
+ 
+
+ 
+# Create cropped Video from a video & a json
+# size_margin = margins - use bigger margins for fireballs
+def define_crop_video(json_file,video, size_margin=0):
+   # ex: /AMS7/METEOR/2019/12/24/2019_12_24_08_17_10_000_010041-trim1298-SD.mp4
+   #     /AMS7/METEOR/2019/12/24/2019_12_24_08_17_10_000_010041-trim1298.json
+   # output:
+   #     /AMS7/METEOR/2019/12/24/2019_12_24_08_17_10_000_010041-trim1298-SD-cropped.mp4
+   # or
+   #      /AMS7/METEOR/2019/12/24/2019_12_24_08_17_10_000_010041-trim1298-HD-cropped.mp4
+  
+   # Get the info from the json
+   data = load_json_file(json_file)
+    
+   all_x = []
+   all_y = []
+   n_size_margin = size_margin
+
+   print("SIZE MARGIN: " + str(size_margin))
+
+   # SD or HD?
+   if('SD' in video):
+      HD = False
+   else:
+      HD = True
+      n_size_margin = size_margin*2
+
+   # Get min x,y & w h
+   if(data is not False):
+      if('frames' in data):
+         for frame in data['frames']:
+            if('x' in frame):
+               all_x.append(int(frame['x']))
+            if('y' in frame):
+               all_y.append(int(frame['y']))  
+
+         x = min(all_x) - n_size_margin    
+         w = max(all_x) - x + n_size_margin      
+         y = min(all_y) - n_size_margin
+         h = max(all_y) - y + n_size_margin
+ 
+         print("X " + str(x))
+         print("W " + str(w))
+         print("y " + str(y))
+         print("h " + str(h))
+ 
+         # Create Output Name
+         output_file = video.replace('.mp4','-cropped.mp4')
+
+         print("**********BEFORE CROP VIDEO ***********************")
+
+         # Cropp the video
+         crop_video(video,w,h,x,y,output_file)
+
+         # Create all the frames as images
+         # all_frames = get_frames_from_cropped_video(output_file,json_file.replace(os.path.basename(json_file),''))
+
+         return output_file
+   else:
+      print(json_file +  ' not found or corrupted.')
+ 
+# Create Crop video
+def crop_video(mp4,w,h,x,y,output):
+   cmd = 'ffmpeg -y -i '+mp4+'  -filter:v "crop='+str(w)+':'+str(h)+':'+str(x)+':'+str(y)+'" '+ output
+
+   # Test if it's doable
+   try:
+      output = subprocess.check_output(cmd, shell=True).decode("utf-8")   
+      print("ffmpeg cmd successfull >> " +  output) 
+   except subprocess.CalledProcessError as e:
+      print("Command " + cmd + "  return on-zero exist status: " + str(e.returncode))
+      sys.exit(0)   
  
 
 # Fix a MP4 just copying it 

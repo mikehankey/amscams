@@ -1,0 +1,165 @@
+/* controls */
+.controls, .controls li, .other_controls li {
+	padding:0;
+	margin:0;
+}
+.controls {
+	display:none;
+	list-style-type:none;
+	overflow:hidden;
+   background:transparent;
+   width: 100%;
+   max-width: 410px;
+}
+.other_controls {
+   list-style-type: none;
+   overflow: hidden;
+   background: 0 0;
+   width: calc(100% - 316px);
+   text-align: right;
+   float: right;
+   margin-left: .1rem;
+
+   li {
+      margin-right:.3%;
+      display:inline-block;
+
+      .btn-sm {
+         max-width: 100%;
+      }
+   }
+}
+
+
+
+.video-controls-holder {
+   margin-top: -.38rem;
+    border-top: 1px solid rgba(255,255,255,.1);
+    background: #0f2437;
+
+    .rtp small {
+      color: #ccc;
+      padding: 0 0 0 .3rem;
+      margin-top: .3rem;
+    }
+}
+
+
+#video-controls, .other_controls {
+   display: block;
+   background-color: #0f2437;
+   padding: .5rem;
+   border-radius: .2rem;
+   overflow: hidden;
+   height: 50px; 
+
+   .btn-sm {
+      max-width: 2.8rem;
+   }
+}
+
+
+.other_controls .btn.btn-sm {
+
+}
+
+
+.controls li {
+	float:left;
+   width: 41px;
+	margin-left:0.5rem;
+}
+.controls li:first-child, .other_controls li:first-child {
+	margin-left:0;
+}
+.controls .progress {
+   width: 240px;
+   cursor: pointer;
+   margin-top: 7px;
+}
+
+.controls progress[value]::-webkit-progress-value {
+   background-color:#163f64;
+   border-radius: 2px;  
+ }
+
+
+.controls button {
+	width:100%;
+	text-align:center;
+	overflow:hidden;
+	white-space:nowrap;
+  	text-overflow:ellipsis;
+}
+.controls progress {
+	display:block;
+	width:100%;
+	height:20px;
+	height:1.25rem;
+	margin-top:2px;
+	margin-top:0.125rem;
+	border:1px solid #aaa;
+	overflow:hidden;
+	-moz-border-radius:5px;
+	-webkit-border-radius:5px;
+	border-radius:5px;
+}
+.controls progress span {
+	width:0%;
+	height:100%;
+	display:inline-block;
+	background-color:#2a84cd;	
+}
+
+/* fullscreen */
+html:-ms-fullscreen {
+	width:100%;
+}
+:-webkit-full-screen {
+	background-color:transparent;
+}
+/* hide controls on fullscreen with WebKit */
+figure[data-fullscreen=true] video::-webkit-media-controls {
+	display:none !important;
+}
+figure[data-fullscreen=true] {
+	max-width:100%;
+	width:100%;
+	margin:0;
+	padding:0;
+}
+figure[data-fullscreen=true] video {
+	height:auto;
+}
+figure[data-fullscreen=true] figcaption {
+	display:none;
+}
+figure[data-fullscreen=true] .controls {
+	position:absolute;
+	bottom:2%;
+	width:100%;
+	z-index:2147483647;
+}
+figure[data-fullscreen=true] .controls li {
+	width:5%;
+}
+figure[data-fullscreen=true] .controls .progress {
+	width:68%;
+}
+
+
+
+// Video over preview on daily report
+a.T {
+   position: relative;
+
+   video, #vvv {
+      top:0;
+      left:0;
+      position: absolute;
+   }
+
+   &.cf {
+      cursor: not-allowed;
+   }
+}

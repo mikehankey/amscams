@@ -35,15 +35,18 @@ def get_latest_pic(cam_num):
 
    print("rtsp://" + cam_ip + hd_url)
    cap = cv2.VideoCapture("rtsp://" + cam_ip + hd_url)
-
-
    cv2.setUseOptimized(True)
-
    _ , frame = cap.read()
-   #frame = cv2.resize(frame, (0,0), fx=1, fy=.75)
-
    print(outfile)
    cv2.imwrite(outfile, frame)  
+
+   outfile = sd_video_dir + "../latest/" + str(cams_id) + "-mask.jpg"
+   cap = cv2.VideoCapture("rtsp://" + cam_ip + sd_url)
+   cv2.setUseOptimized(True)
+   _ , frame = cap.read()
+   print(outfile)
+   cv2.imwrite(outfile, frame)  
+
 
 
 cam_num = sys.argv[1]

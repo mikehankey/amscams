@@ -1,0 +1,22 @@
+.star_sprite {
+   background-image: url(../img/star_sprite.png);
+   background-repeat: no-repeat;
+   display: inline-block;
+   width: 15px;
+   height: 15px;
+   vertical-align: middle;
+
+   &.distorded {
+      background-position: -10px -10px;
+   }
+   
+   &.undistorded { 
+      background-position: -45px -10px;
+   }
+   
+   &.manual { 
+      background-position: -80px -10px;
+   }
+   
+}
+

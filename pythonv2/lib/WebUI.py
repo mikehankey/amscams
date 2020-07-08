@@ -13,6 +13,7 @@ import re
 import datetime
 import time  
 from pathlib import Path
+from lib.MeteorReducePage import create_tab_and_content
 from lib.PwdProtect import login_page, check_pwd_ajax
 from lib.Pagination import get_pagination
 from lib.PrintUtils import get_meteor_date, get_date_from_file, get_meteor_time, get_custom_video_date_and_cam_id
@@ -418,6 +419,9 @@ def controller(json_conf):
       update_red_info_ajax(json_conf,form)
       exit()
 
+   if cmd == 'review_detects' or cmd == 'rd':
+      review_detects(json_conf,form)
+      exit()
 
    if cmd == 'clone_cal':
       clone_cal(json_conf,form)
@@ -690,6 +694,13 @@ def controller(json_conf):
    if cmd == 'calib_hd_cal_detail':
       extra_html = calib_hd_cal_detail(json_conf, form)
 
+
+   if cmd == 'trim_clip':
+      video_file = form.getvalue('video_file')
+      start = form.getvalue('start')
+      end = form.getvalue('end')
+      trim_clip(video_file,start,end)
+
    if cmd == 'examine_min':
       video_file = form.getvalue('video_file')
       examine_min(video_file,json_conf)
@@ -749,6 +760,32 @@ def controller(json_conf):
      
    #cam_num = form.getvalue('cam_num')
    #day = form.getvalue('day')
+
+def review_detects(json_conf, form):
+   date = form.getvalue("date")
+   type = form.getvalue("type")
+   if date is None:
+      proc_file = "/mnt/ams2/SD/proc2/json/proc_stats.json";
+      js = load_json_file(proc_file) 
+      print("<TABLE border=1>")
+      print("<tr><td>Date</td><td>Video Files Processed</td><td>Stacked Images</td><td>Vals Files</td><td>Detect Files</td><td>Possible Meteors</td><td>Non-Meteors</td><td>Too Many Detects</td><td>Meteors</td></tr>")
+      for key in sorted(js.keys(), reverse=True):
+         rd = js[key]
+         print("<tr><td>{:s}</td><td>{:d}</td><td>{:d}</td><td><a href=webUI.py?cmd=rd&date={:s}&type=vals></a>{:d}</a></td><td><a href=webUI.py?cmd=rd&date={:s}&type=maybe-meteors>{:d}</a></td><td>{:d}</td><td>{:d}</td><td>{:d}</td><td>{:d}</td></tr>".format(key, rd['video_files'], rd['image_files'], key, rd['vals_files'], key, rd['detect_files'], rd['mm_files'], rd['nm_files'], rd['tm_files'], rd['m_files']))
+      print("</table>")
+   else:
+      detect_detail(date, type)
+
+def detect_detail(date, type):
+   data_wild = "/mnt/ams2/SD/proc2/" + date + "/data/*-" + type + "*.json"
+   files = glob.glob(data_wild)
+   for file in files:
+      vid = file.replace("-" + type + ".json", ".mp4")
+      vid = vid.replace("/data/", "/")
+      img = file.replace("-" + type + ".json", "")
+      img = img.replace("data", "images")
+      img += "-stacked-tn.png"
+      print("<img src={:s}><br>{:s}<br>{:s}<br>{:s}<br>".format(img,img,file, vid) )
 
 def asconf(json_conf, form):
    act = form.getvalue("act")
@@ -910,7 +947,8 @@ def video_tools(json_conf,form):
      
    header_out = "<div class='h1_holder d-flex justify-content-between'>"      
    header_out += "<h1>"+str(vid_counter)+" videos found</h1>"
-   header_out += "<div class='d-flex'><button class='btn btn-primary mr-3' id='create_timelapse' style='text-transform: initial;'><span class='icon-youtube'></span> Generate Timelapse Video</button></div></div>"
+   header_out += "<div class='d-flex'><button class='btn btn-primary mr-3' id='create_timelapse' style='text-transform: initial;'></div>"
+   #<span class='icon-youtube'></span> Generate Timelapse Video</button></div></div>"
    
    #Get Default Parameters
    params = get_video_job_default_parameters()
@@ -1919,6 +1957,7 @@ def get_mask_img(cams_id, json_conf):
 
    # first look for img, if made less than 24 hours ago use it, else make new one
    img_files = glob.glob(img_dir + cams_id + "-mask.jpg")
+   
    if len(img_files) == 0:
       print("no mask images exist. Is this a new install? Are cams attached?")
       exit()
@@ -1930,6 +1969,7 @@ def get_mask_img(cams_id, json_conf):
       frames = load_video_frames(files[0], json_conf, 10)
       img = frames[0]
    sd_h, sd_w = img.shape[:2]
+   print("<BR>SD W/H:", sd_w, sd_h, "<BR>")
    file = img_dir + cams_id + ".jpg"
    sfile = img_dir + cams_id + "-mask.jpg"
    #img = cv2.imread(file)
@@ -2140,18 +2180,59 @@ def reset(video_file, type):
    cmd2 = "echo \"" + cmd + "\" >> /home/ams/amscams/pythonv2/tmp.txt"
    os.system(cmd2)
 
+def trim_clip(video_file, start, end):
+   print("trim clip")
+   outfile = video_file.replace(".mp4", "-trim" + str(start) + ".mp4")
+   cmd = "/usr/bin/ffmpeg -y -i " + video_file + " -vf select=\"between(n\," + str(start) + "\," + str(end) + "),setpts=PTS-STARTPTS\" " + outfile + " 2>&1 > /dev/null"
+   if cfe(outfile) == 0:
+      print(cmd)
+      os.system(cmd)
+   print("Trim clip made:", outfile)
+
+
 def examine_min(video_file,json_conf):
    failed_files, meteor_files, pending_files = get_trims_for_file(video_file)
    stack_file = stack_file_from_video(video_file)
    vals_file = stack_file.replace("-stacked.png", "-vals.json")
    vals_file = vals_file.replace("images", "data")
-   detect_file = stack_file.replace("-stacked.png", "-detect.json")
-   meteor_file = stack_file.replace("-stacked.png", "-meteor.json")
+   detect_file = vals_file.replace("-vals.json", "-detect.json")
+   meteor_file = vals_file.replace("-vals.json", "-meteor.json")
+   toomany_file = vals_file.replace("-vals.json", "-toomany.json")
 
+   detect_info = None
+   meteor_info = None
+   toomany = None
+   if cfe(meteor_file) == 1:
+      meteor_files = []
+      meteor_info = load_json_file(meteor_file)
+      meteor_files.append( meteor_info['hd_trim'])
+      meteor_files.append(meteor_info['sd_trim'])
+   elif cfe(toomany_file) == 1:
+      toomany = load_json_file(toomany_file)
+      for key in toomany:
+         print(key)
+
+
+   elif cfe(detect_file) == 1:
+      detect_info = load_json_file(detect_file)
+      detect_html = "Events<BR>"
+      ec = 1
+      for event in detect_info['events']:
+         detect_html += "Frames:" + str(event['frames'])  + "<BR>"
+         detect_html += "Sum Vals:" + str(event['sum_vals'])  + "<BR>"
+         detect_html += "Max Vals:" + str(event['max_vals'])  + "<BR>"
+         detect_html += "Pos:" + str(event['pos_vals'])  + "<BR>"
+         detect_html += str(ec) + "<BR>"
+         ec += 1
+      detect_html += "Objects<BR>"
+      for id in detect_info['objects']:
+         obj = detect_info['objects'][id]
+         detect_html += str(obj) + " " + "<BR>"
+
+
+   #print(detect_html)
    if cfe(vals_file) == 1:
       vals = load_json_file(vals_file)
-   else:
-      print(vals_file, "not found<HR>")
 
    next_stack_file = stack_file_from_video(video_file)
   
@@ -2177,20 +2258,23 @@ def examine_min(video_file,json_conf):
    print("<div class='box'><h2>Status</h2>")
    print("<div class='p-3'>")
  
-   if len(pending_files) > 0:
-      print("<p>Trim files for this clip are still pending processing. Please wait before manually processing this file.</p>")
-      print("<ul>")
-      for pending in pending_files:
-         print("<li><a href=" + pending + ">" + pending + "</a></li>")
-      print("</ul>")
+   #if len(pending_files) > 0:
+   #   print("<p>Trim files for this clip are still pending processing. Please wait before manually processing this file.</p>")
+   #   print("<ul>")
+   #   for pending in pending_files:
+   #      print("<li><a href=" + pending + ">" + pending + "</a></li>")
+   #   print("</ul>")
 
-   if len(meteor_files) > 0:
+   if len(meteor_files) > 0 or meteor_info is not None:
       print("<p class='text-center alert success'><b>Meteor DETECTED</b></p>")
       for meteor_file in meteor_files:
          meteor_stack = meteor_file.replace(".mp4", "-stacked.png")
-         print("<a href='" + meteor_file + "' class='mx-auto d-block'>")
-         print("<img src='" + meteor_stack + "' class='mx-auto d-block img-fluid'></a>")
-         print("<a class='btn btn-primary mx-auto d-block mt-1 mb-3' href='webUI.py?cmd=examine&video_file=" + meteor_file + "'>Examine</a>")
+         print("<a href='" + meteor_file + "' class='mx-auto d-block'>" + meteor_file + "</a><br>")
+         sfn = meteor_file.split("/")[-1]
+         mdir = meteor_file.replace(sfn, "")
+         meteor_stack = mdir + "images/" + sfn
+         #print("<img src='" + meteor_stack + "' class='mx-auto d-block img-fluid'></a>")
+         #print("<a class='btn btn-primary mx-auto d-block mt-1 mb-3' href='webUI.py?cmd=examine&video_file=" + meteor_file + "'>Examine</a>")
 
    if len(failed_files) > 0: 
       print("<p class='text-center alert error'><b>NON METEOR Detection</b></p>")
@@ -2207,11 +2291,70 @@ def examine_min(video_file,json_conf):
 
    print("</div>")
    print("</div>")
-   print("</div></div>")
+   print("</div>")
+   print("</div>")
+
+   object_html = ""
+
+   if detect_info is not None:
+      print(detect_info)
+   if meteor_info is not None:
+      #<th></th><th></th><th>#</th><th>Sum Val</th><th>Max Val</th><th>Max X,Y</th><th>CM</th><th></th><th></th><th></th><th colspan="4"></th>
+      meteor_html = """
+      <table border=1 class="table table-dark table-striped table-hover td-al-m mb-2 pr-5 mt-2">
+         <thead>
+            <tr>
+            </tr>
+         </thead>
+      """
+
+      meteor_html += "<tr><td COLSPAN=2>Meteor Info<BR></td></tr>"
+      meteor_html += "<tr><td>HD TRIM FILE: </td><td>" + meteor_info['hd_trim'] + "</td></tr>"
+      meteor_html += "<tr><td>SD TRIM FILE: </td><td>" + meteor_info['sd_trim'] + "</td></tr>"
+      meteor_html += "<tr><td colspan=2>HD OBJECTS:</td></tr>"
+      for key in meteor_info['hd_motion_objects']: 
+         obj = meteor_info['hd_motion_objects'][key]
+         if obj['report']['meteor_yn'] == "Y":
+            meteor_html += "<tr><td>Frames</td><td>" + str(obj['ofns']) + "</td></tr>"
+            meteor_html += "<tr><td>Xs</td><td>" + str(obj['oxs']) + "</td></tr>"
+            meteor_html += "<tr><td>Ys</td><td>" + str(obj['oys']) + "</td></tr>"
+            meteor_html += "<tr><td>Ws</td><td>" + str(obj['ows']) + "</td></tr>"
+            meteor_html += "<tr><td>Hs</td><td>" + str(obj['ohs']) + "</td></tr>"
+            meteor_html += "<tr><td>Intensity</td><td>" + str(obj['oint']) + "</td></tr>"
+            for key in obj['report']:
+               val = obj['report'][key]
+               if key != 'classify':
+                  meteor_html += "<tr><td>" + str(key) + "</td><td>" + str(val) + "</td></tr>"
+
+            meteor_html += "<tr><td colspan=2>Classify:</td></tr>"
+            for key in obj['report']['classify']:
+               val = obj['report']['classify'][key]
+               meteor_html += "<tr><td>" + str(key) + "</td><td>" + str(val) + "</td></tr>"
 
 
+      meteor_html += "SD OBJECTS:<BR>"
+      for key in meteor_info['motion_objects']:
+         obj = meteor_info['motion_objects'][key]
+         if obj['report']['meteor_yn'] == "Y":
+            meteor_html += key + str(obj['report']) + "<BR>"
+      object_html = meteor_html
+      meteor_html += "</table>"
+   if toomany is not None:
+      for key in toomany['objects']:
+         obj = toomany['objects'][key]
+         if "max_cm" in obj['report']:
+            if obj['report']['max_cm'] > 2:
+               object_html += key + " " + str(obj['report']['max_cm']) + " " + str( obj['ofns']) + " " + str(obj['report']['obj_class']) +  "<BR>"
+               #print(key)
 
-   out = ""
+
+   out = """
+      <table class="table table-dark table-striped table-hover td-al-m mb-2 pr-5 mt-2">
+         <thead>
+            <tr>
+               <th></th><th></th><th>#</th><th>Sum Val</th><th>Max Val</th><th>Max X,Y</th><th>CM</th><th></th><th></th><th></th><th colspan="4"></th>
+            </tr>
+   """
    last_i = None
    if cfe(vals_file) == 1:
       for i in range (0, len(vals['sum_vals'])):
@@ -2236,60 +2379,48 @@ def examine_min(video_file,json_conf):
             """.format(str(i), str(sum_val), str(max_val), str(mx), str(my), str(cm))
             last_i = i
 
-   obj_out = ""
-   print("""
-       <div id="main_container" class="container-fluid d-flex h-100 mt-4 position-relative"> 
-        <div class="h-100 flex-fixed-canvas">
+   out += """
+         </thead>
+         <tbody>
+         </tbody>
+      </table>
+   """
 
-            <ul class="nav nav-tabs mt-3">
-                <li class="nav-item">
-                    <a class="nav-link active" id="frames-tab-l" data-toggle="tab" href="#frames-tab" role="tab" aria-controls="frames" aria-selected="true">Frame Data</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" id="objs-tab-l" data-toggle="tab" href="#objs-tab" role="tab" aria-controls="objs" aria-selected="false"><span id="str_cnt"></span>Objects</a>
-                </li>
-            </ul>
+   print("<div style='width: 48%; margin: 0 auto; padding: 20px;'>")
 
+   tabs = "" 
+   tabs_content = "" 
+   frame_data_html=out
+   tabs1, tabs_content1 = create_tab_and_content( tabs   , tabs_content   ,'frame_data','FRAME DATA', frame_data_html , True)
 
-            <div class="tab-content box " > 
+   tabs = "" 
+   tabs_content = "" 
+   object_data = object_html 
+   tabs2, tabs_content2 = create_tab_and_content( tabs   , tabs_content   ,'object_data','OBJECT DATA', object_data)
 
-                <div class="tab-pane fade show active pr-3" id="frames-tab" role="tabpanel" aria-labelledby="frames-tab-l">
-                    
-   <table class="table table-dark table-striped table-hover td-al-m mb-2 pr-5" >
-      <thead>
-         <tr>
-            <th></th><th></th><th>#</th><th>Sum Val</th><th>Max Val</th><th>BP X,Y</th><th>CM</th><th colspan=4>
-         </tr>
-      </thead>
-   """ + out + """   
-   <tbody></tbody>
-   </table>
+   print("<ul class='nav nav-tabs mt-3'>")
+   print(tabs1)
+   print(tabs2)
+   print("</ul>")
 
-            </div>
+   print("<div class='tab-content box'>")
+   print(tabs_content1)
+   print(tabs_content2)
+   print("</div>")
 
+   #print("</div>")
+   print("</div>")
 
-                <div class="tab-pane fade show active pr-3" id="objs-tab" role="tabpanel" aria-labelledby="objs-tab-l">
-                    
-   <table class="table table-dark table-striped table-hover td-al-m mb-2 pr-5" >
-      <thead>
-         <tr>
-            <th></th><th></th><th>OBJ ID</th><th>FNs</th><th>X,Ys</th><th>Max Vals</th><th colspan=4>
-         </tr>
-      </thead>
-   """ + obj_out + """   
-   <tbody></tbody>
-   </table>
+   start = ""
+   end = ""
 
-            </div></div>
-
-   """)
-
-   print("""
-       </ul>
-       </div>
-       </div>
-   """)
-
+   print("<form>")
+   print("<input type=hidden name=cmd value='trim_clip'>") 
+   print("<input type=hidden name=video_file value='{:s}'>".format(video_file)) 
+   print("<input type=text name=start value='{:s}'>".format(start)) 
+   print("<input type=text name=end value='{:s}'>".format(end)) 
+   print("<input type=submit name=submit value='Trim Clip'> ")
+   print("</form>")
 
 
 #Delete multiple detections at once
@@ -2313,7 +2444,20 @@ def override_detect(video_file,jsid, json_conf):
     
    if jsid is not None:
       video_file = parse_jsid(jsid) 
-  
+
+   vfn = video_file.split("/")[-1]
+   el = vfn.split("-trim")
+   bs = el[0]
+   date = vfn[0:10]
+   json_data = None
+   proc_file = "/mnt/ams2/SD/proc2/" + date + "/data/" + bs + "-meteor.json"
+   non_proc_file = "/mnt/ams2/SD/proc2/" + date + "/data/" + bs + "-nonmeteor.json"
+   if cfe(proc_file) == 1:
+      cmd = "mv " + proc_file + " " + non_proc_file
+      print(cmd)
+   else:
+      print(proc_file + " Not found")
+
    base = video_file.replace(".mp4", "")
    el = base.split("/")
    base_dir = base.replace(el[-1], "")
@@ -2349,7 +2493,10 @@ def override_detect(video_file,jsid, json_conf):
       print(cmd, "<BR>")
       print(cmd2, "<BR>")
       print(cmd3, "<BR>")
-      
+     
+   if "archive_file" in json_data :
+      if json_data['archive_file'] is not "":
+         delete_multiple_archived_detection(json_data['archive_file'])
    
    if "passed" in base:
       new_dir = base_dir.replace("passed", "failed")
@@ -2688,7 +2835,8 @@ def browse_day(day,cams_id,json_conf,form):
    #cgitb.enable()
    sun = form.getvalue("sun")
    hour = form.getvalue("hour")
-   day_files = get_day_files(day,cams_id,json_conf, sun, hour)
+   detect = form.getvalue("detect")
+   day_files = get_day_files(day,cams_id,json_conf, sun, hour,detect)
  
    cc = 0
    all_files = []
@@ -2710,9 +2858,10 @@ def browse_day(day,cams_id,json_conf,form):
       else:
             sel=''
       print('<option value="'+ccam_id+'" '+sel+'>'+ccam_id+'</option>')
-   print("</select></h1>") 
+   print("</select>") 
+   print("<select id='sun' class='cam_picker' data-url-param='sun' ><option value='0' selected>Night</option><option value='1'>Day</select></h1>")
    
-   print("<div class='d-flex'><a class='btn btn-primary mr-3' href='/pycgi/webUI.py?cmd=video_tools' style='text-transform: initial;'><span class='icon-youtube'></span> Generate Timelapse Video</a><button class='btn btn-primary' id='play_anim_thumb' style='text-transform: initial;'><span class='icon-youtube'></span> Timelapse Preview</button></div></div>") 
+   print("<div class='d-flex'><!--<a class='btn btn-primary mr-3' href='/pycgi/webUI.py?cmd=video_tools' style='text-transform: initial;'><span class='icon-youtube'></span> Generate Timelapse Video</a>--><button class='btn btn-primary' id='play_anim_thumb' style='text-transform: initial;'><span class='icon-youtube'></span> Timelapse Preview</button></div></div>") 
   
    print("<div id='main_container' class='container-fluid h-100 mt-4 lg-l'>")
    print("<div class='gallery gal-resize row text-center text-lg-left '>")
@@ -2764,6 +2913,7 @@ def browse_detects(day,type,json_conf,form):
    
    proc_dir = json_conf['site']['proc_dir']
    failed_files, meteor_files, pending_files,min_files = get_day_stats(day,proc_dir + day + "/", json_conf)
+
    show_day = day.replace("_", "/")
 
    title = "<div class='h1_holder d-flex justify-content-between'>"

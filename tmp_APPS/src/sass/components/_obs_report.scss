@@ -1,0 +1,27 @@
+.box {
+   background: #0f2437;
+   padding: .5rem .65rem .8rem;
+   color: #fff;
+   color: rgba(255,255,255,0.88);
+   -webkit-box-shadow: 0 2px 5px #000;
+   box-shadow: 0 2px 5px #000;
+   margin-bottom: .8rem;
+
+   h2 {
+      font-size: 1rem;
+      text-transform: uppercase;
+      padding-bottom: .4rem;
+      border-bottom: 1px solid rgba(255,255,255,0.38);
+      margin-bottom: .5rem;
+   }
+
+}
+
+dl.def.w {
+   color: #ccc;
+   line-height: 1.5;
+}
+dl.def {
+   font-size: .95rem;
+   color: #a9a7a7;
+}

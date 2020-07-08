@@ -1,4 +1,4 @@
-.prevproc { 
+.prevproc, .report_t { 
 
    display: flex;
    flex-direction: column!important;
@@ -43,14 +43,14 @@
 
    &.multi {
       a.T {
-         border-color: #cc0000;
+         border-color: #4491e3;
          overflow: hidden;
 
 
          &:before {
             content: 'MULTI';
-            color: #cc0000;
-            background:#f3a5a5;
+            color: #ffffff;
+            background: #4491e3;
              
          }
       }
@@ -159,4 +159,56 @@
    a:hover:before {
       display: block;
    }
+}
+
+
+.report_t {
+   width: calc(100% - 2rem);
+   margin: .5rem 1rem 1rem;
+} 
+
+
+._h4_hold {
+   font-size: 1.1rem;
+   padding: 0.45rem 0.9rem;
+   font-weight: 700;
+   border-bottom: 1px solid rgba(0,0,0,0.12);
+   border-top: 1px solid rgba(255,255,255,1);
+   background-color: lightgrey;
+   width: 100%;
+
+    h4 {
+      font-size: 1.1rem;
+      padding: 0 0 0 .5rem;
+      font-weight: bold;
+    }
+}
+
+
+
+.down { 
+   background-color: rgba(255, 0, 0, .2);
+   width: .8rem;
+   height: .8rem;
+   border-radius: 50%;
+   box-shadow: 0 0 2px #c00, inset 0 0 8px red;
+   display: inline-block;
+   margin: 0 1rem 0 0;
+}
+
+.multi-b {
+   font-size: .8rem;
+   color: #fff;
+   background-color: #4491e3;
+   text-align: center;
+   border-radius: 10%;
+   font-weight: 700;
+   margin-top: .2rem;
+   text-transform: uppercase;
+   padding: .1rem .3rem;
+   box-shadow: inset 0 2px 5px rgba(0,0,0,.3);
+   text-shadow: 0 1px 1px rgba(0,0,0,.4);
+   position: absolute;
+    right: 2.4rem;
+    top: -.05rem;
 }
