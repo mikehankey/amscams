@@ -1,6 +1,7 @@
 #!/bin/sh
 sudo apt-get install libcfitsio-dev
 #sudo apt-get install libjpeg-dev
+sudo apt-get install -y swig
 
 # Set gcc6 as CC env var
 CC=/usr/bin/gcc-6
@@ -32,6 +33,9 @@ tar xf astrometry.net-latest.tar
 sudo pip install astropy
 
 cd astrometry.net-*
+wget http://35.165.208.121/plot-constellations.c
+cp plot-constellations.c blind
+cp plot-constellations.c astrometry/blind
 make
 make py
 make extra

@@ -6,7 +6,13 @@ import math
 import ephem
 import numpy as np
 
-
+def logger(prog_name, func_name, msg):
+   dt = datetime.datetime.strftime(datetime.datetime.now(), "%Y-%m-%d %H:%M:%S.%f")
+   date  = datetime.datetime.strftime(datetime.datetime.now(), "%Y-%m-%d")
+   logfile = "/mnt/ams2/logs/" + date + "-proc-log.txt"
+   logline = date + "|" + prog_name + "|" + func_name + "|" + msg + "\n"
+   log = open(logfile, "a")
+   log.write(logline)
 
 def best_fit_slope_and_intercept(xs,ys):
     xs = np.array(xs, dtype=np.float64)
