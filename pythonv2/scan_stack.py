@@ -60,7 +60,7 @@ def fix_missing_stacks(day):
    afiles = sorted(glob.glob("/mnt/ams2/SD/proc2/" + day + "/*.mp4" ), reverse=True)
    files = []
    for ff in afiles:
-      if "-crop" not in ff:
+      if "-crop" not in ff and "trim" not in ff:
          files.append(ff)
    missing = 0
    found = 0

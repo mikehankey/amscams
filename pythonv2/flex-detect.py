@@ -10310,10 +10310,11 @@ def batch_vals(day):
 
       (f_datetime, cam, f_date_str,fy,fm,fd, fh, fmin, fs) = convert_filename_to_date_cam(vf)
       mf = vf.replace("-vals.json", "-meteor.json")
+      nm = vf.replace("-vals.json", "-nometeor.json")
       df = vf.replace("-vals.json", "-detect.json")
       mmf = vf.replace("-vals.json", "-maybe-meteors.json")
       tf = vf.replace("-vals.json", "-toomany.json")
-      if cfe(mf) == 0 and cfe(df) == 0 and cfe(tf) == 0 and cfe(mmf) == 0:
+      if cfe(mf) == 0 and cfe(df) == 0 and cfe(tf) == 0 and cfe(mmf) == 0 and cfe(nm) == 0:
          sun_status = day_or_night(f_datetime)
          if sun_status == 'night':
             print("VF:", vf)
