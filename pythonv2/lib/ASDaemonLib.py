@@ -70,6 +70,7 @@ def get_proc_stats(day):
       if "-detect.json" in df:
          detect_files.append(df)
       if "-maybe-meteors.json" in df:
+         
          mm_files.append(df)
       if "-no-meteor.json" in df:
          nm_files.append(df)

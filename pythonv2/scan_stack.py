@@ -12,7 +12,7 @@ import os
 import cv2
 import glob
 
-from lib.UtilLib import calc_dist,find_angle, best_fit_slope_and_intercept, check_running
+from lib.UtilLib import calc_dist,find_angle, best_fit_slope_and_intercept, check_running, logger
 from lib.FileIO import load_json_file, save_json_file, cfe
 from lib.flexLib import load_frames_fast, stack_frames_fast, convert_filename_to_date_cam, day_or_night, stack_stack
 from lib.VIDEO_VARS import PREVIEW_W, PREVIEW_H, SD_W, SD_H
@@ -113,6 +113,7 @@ def fix_missing_stacks(day):
             sun_status = "1"
          else:
             sun_status = "0"
+         print("Missing:", file, sun_status )
          scan_and_stack_fast(file, sun_status, vals)
 
          missing += 1      
@@ -164,9 +165,13 @@ def batch_ss(wildcard=None):
          print("BAD SIZE!")
       else: 
          try:
+         #if True:
             scan_and_stack_fast(file, sun_status)
+         #else:
          except:
             print("FAILED! File must be bad???", file)
+            logger("scan_stack.py", "batch_ss / scan_and_stack_fast", "failed to scan and stack ")
+            #exit()
             cmd = "mv " + file + " /mnt/ams2/bad/"
             os.system(cmd)
             continue
@@ -182,9 +187,9 @@ def batch_ss(wildcard=None):
          if (tdiff > 3):
             cmd = "./scan_stack.py ss " + file + " " + sun_status + " &"
             print(cmd)
-            os.system("./scan_stack.py ss " + file + " " + sun_status + " &") 
+            #os.system("./scan_stack.py ss " + file + " " + sun_status + " &") 
             # exit()
-            #scan_and_stack(file, sun_status)
+            scan_and_stack(file, sun_status)
          else:
             print(tdiff)
 
@@ -211,6 +216,7 @@ def scan_and_stack_fast(file, sun_status = 0, vals = []):
 
    sum_vals = []
    max_vals = []
+   avg_max_vals = []
    pos_vals = []
    PREVIEW_W = 300
    PREVIEW_H = 169
@@ -244,7 +250,6 @@ def scan_and_stack_fast(file, sun_status = 0, vals = []):
             small_frame = cv2.resize(frame, (0,0),fx=.5, fy=.5)
          except:
             print("Bad video file:", file)
-            exit()
 
 
       if sun_status != 1:
@@ -267,6 +272,8 @@ def scan_and_stack_fast(file, sun_status = 0, vals = []):
             my = my * 2
             sum_vals.append(sum_val)
             max_vals.append(max_val)
+            if max_val > 1:
+               avg_max_vals.append(max_val)
             pos_vals.append((mx,my))
          gray_frames.append(gray)
 
@@ -285,11 +292,18 @@ def scan_and_stack_fast(file, sun_status = 0, vals = []):
          pos_vals.append((0,0))
       else:
          if max_val > 10 or fc < 10:
-            frame_pil = Image.fromarray(small_frame)
-            if stacked_image is None:
-               stacked_image = stack_stack(frame_pil, frame_pil)
+            avg_max = np.median(avg_max_vals)
+            if avg_max > 0:
+               diff = (max_val / avg_max) * 100
             else:
-               stacked_image = stack_stack(stacked_image, frame_pil)
+               diff = 0
+            if max_val > avg_max * 1.2 or fc <= 10:
+               #print("STAK THE FRAME", avg_max, max_val, diff, fc)
+               frame_pil = Image.fromarray(small_frame)
+               if stacked_image is None:
+                  stacked_image = stack_stack(frame_pil, frame_pil)
+               else:
+                  stacked_image = stack_stack(stacked_image, frame_pil)
 
       frames.append(frame)
       if fc % 100 == 1:
@@ -305,7 +319,10 @@ def scan_and_stack_fast(file, sun_status = 0, vals = []):
    vals['sum_vals'] = sum_vals
    vals['max_vals'] = max_vals
    vals['pos_vals'] = pos_vals
-
+   if cfe(stack_file) == 0:
+      logger("scan_stack.py", "scan_and_stack_fast", "Image file not made! " + stack_file + " " )
+      print("ERROR: Image file not made! " + stack_file)
+      time.sleep(10)
    save_json_file(json_file, vals)
    print("JSON FILE:", json_file)
    elapsed_time = time.time() - start_time
@@ -385,7 +402,8 @@ if sys.argv[1] == "bs":
       batch_ss()
 
 if sys.argv[1] == "ss":
-   scan_and_stack_fast(sys.argv[2], sys.argv[3])
+   #scan_and_stack_fast(sys.argv[2], sys.argv[3])
+   scan_and_stack(sys.argv[2], sys.argv[3])
 if sys.argv[1] == "fms":
    if len(sys.argv) < 3:
       now = datetime.now()

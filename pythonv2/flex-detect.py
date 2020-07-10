@@ -166,7 +166,7 @@ def find_hd_file_best(sd_file, trim_num, dur = 25, trim_on =1):
       dur = int(dur)
    else:
       print("NO HD FILES FOUND!")
-      exit()
+      #exit()
 
    if hd_file is not None:
       trim_adj = int(time_diff_sec * 25)
