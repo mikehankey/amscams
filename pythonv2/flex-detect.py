@@ -3,10 +3,10 @@
 import subprocess
 import copy
 from lib.VIDEO_VARS import PREVIEW_W, PREVIEW_H, SD_W, SD_H
-hdm_x = 1920 / SD_W
-hdm_y = 1080 / SD_H
+#hdm_x = 1920 / SD_W
+#hdm_y = 1080 / SD_H
 
-print(SD_W,SD_H)
+#print(SD_W,SD_H)
 
 from sklearn.cluster import DBSCAN
 from fitPairs import reduce_fit
@@ -916,8 +916,6 @@ def find_sun_alt(capture_date):
       sun_status = "night"
    else:
       sun_status = "day"
-   print("SUN AZ:", sun_az)
-   print("SUN ALT:", sun_alt)
    return(int(sun_alt))
 
 
@@ -3727,7 +3725,6 @@ def day_or_night(capture_date):
       sun_status = "night"
    else:
       sun_status = "day"
-   print("SUN AZ, ALT:", capture_date, sun_az, sun_alt)
 
    return(sun_status)
 
@@ -3748,21 +3745,25 @@ def convert_filename_to_date_cam(file):
 
 def ffprobe(video_file):
    default = [704,576]
-   cmd = "/usr/bin/ffprobe " + video_file + " > /tmp/ffprobe.txt 2>&1"
+   cmd = "/usr/bin/ffprobe " + video_file + " > /tmp/ffprobe69.txt 2>&1"
    output = subprocess.check_output(cmd, shell=True).decode("utf-8")
-   cmd = "grep Stream /tmp/ffprobe.txt "
-   try:
-      output = subprocess.check_output(cmd, shell=True).decode("utf-8")
+   #try:
+   #time.sleep(2)
+   output = None
+   if True:
+      fpp = open("/tmp/ffprobe69.txt", "r")
+      for line in fpp:
+         if "Stream" in line:
+            output = line
+      fpp.close() 
+      #print("OUTPUT: ", output)
+      if output is None:
+         print("FFPROBE PROBLEM:", video_file)
+         exit()
+
       el = output.split(",")
       dim = el[3].replace(" ", "")
-      #print(dim)
       w, h = dim.split("x") 
-   except:
-      print("FFPROBE FAILED!", video_file)
-      #exit()
-      return(default) 
-
-   print(w,h)
    return(w,h)
 
 def check_running_proc():
@@ -7720,7 +7721,6 @@ def load_frames_fast(trim_file, json_conf, limit=0, mask=0,crop=(),color=0,resiz
       masks = get_masks(cam, json_conf,0)
    if "crop" in trim_file:
       masks = None
-   print("MASKS:", trim_file, cam, masks)
 
    color_frames = []
    frames = []
@@ -10229,7 +10229,12 @@ def ffmpeg_trim_crop(video_file,start,end,x,y,w,h, notrim=0):
    """ Take in video filename start and end trim clip frame numbers and ROI 
        And then make a file -crop.mp4 with those params
    """
-   ffinfo = ffprobe(video_file)
+   if cfe(video_file) == 0:
+      print("VIDEO FILE DOESN'T EXIST!", video_file)
+      exit()
+   #ffinfo = ffprobe(video_file)
+   #if ffinfo[0] == 0:
+   #   return(0,0)
 
    # first trim the clip to a temp file
    if True:
@@ -10290,7 +10295,47 @@ def play_clip(video_file,cx1=0,cy1=0,cx2=0,cy2=0):
       cv2.imshow('pepe', frame)
       cv2.waitKey(0)
 
+def get_cam_sizes(day):
+   cam_size_info = {}
+   for cam in json_conf['cameras']:
+      w,h = 0,0
+      ip = json_conf['cameras'][cam]['ip']
+      sd_url  = json_conf['cameras'][cam]['sd_url']
+      cams_id = json_conf['cameras'][cam]['cams_id']
+      cam_files = glob.glob("/mnt/ams2/SD/proc2/" + day + "/*" + cams_id + "*.mp4")
+      #print("/mnt/ams2/SD/proc2/" + day + "/*" + cams_id + "*.mp4")
+      #print(cam_files)
+      for cam_file in cam_files:
+         #cam_file = cam_files[0]
+         try:
+            w,h = ffprobe(cam_file)
+            break 
+         except:
+            print("ffprobe failed:", cam_file)
+            continue
+         print(cams_id, w, h)
+      if w != 0:
+         json_conf['cameras'][cam]['dim'] = [int(w),int(h)]
+      
+         cam_size_info[cams_id] = [int(w),int(h)]
+   total_cams = len(json_conf['cameras'].keys())
+   total_cams_size = len(cam_size_info.keys())
+   save_json_file("../conf/as6.json", json_conf) 
+   print("TOTAL CAMS / SIZES:", total_cams, total_cams_size)
+   if total_cams > total_cams_size:
+      print("Problem getting cams sizes!")
+      exit()
+   return(cam_size_info)
+
+def clean_bad_vals(day):
+   cmd = "rm /mnt/ams2/SD/proc2/" + day + "/data/*trim*.json" 
+   os.system(cmd)
+   #exit()
+
 def batch_vals(day):
+   clean_bad_vals(day)
+   cam_size_info = get_cam_sizes(day)
+   #print(json_conf['cameras'])
    running = check_running(".py bv")
    print("RUNNING:", running)
    if running > 2:
@@ -10318,29 +10363,33 @@ def batch_vals(day):
          sun_status = day_or_night(f_datetime)
          if sun_status == 'night':
             print("VF:", vf)
-            detect_in_vals(vf)
+            detect_in_vals(vf, cam_size_info)
          else:
             print("Skip daytime file.")
-      else:
-         print("ALREADY DONE!", vf)
+            os.system("rm " + vf)
       if cfe(mf) == 1:
          meteors += 1
       if cfe(mmf) == 1:
+  
          maybe_meteors += 1
          maybe = load_json_file(mmf)
-         for id in maybe['objects']:
-            obj = maybe['objects'][id]
-            if obj['report']['meteor_yn'] == 'Y': 
-               print("REPORT CLASS METEOR:",  obj['report']['meteor_yn'] ,  obj['report']['classify']['meteor_yn'] )
+         if maybe != 0:
+            for id in maybe['objects']:
+               obj = maybe['objects'][id]
+               #if obj['report']['meteor_yn'] == 'Y': 
+               #   print("REPORT CLASS METEOR:",  obj['report']['meteor_yn'] ,  obj['report']['classify']['meteor_yn'] )
       if cfe(tf) == 1:
          too_many += 1
       if cfe(df) == 1:
          detects += 1
 
+   worked_files = meteors + maybe_meteors + too_many + detects
+   print("VALS/COMPLETED:", len(val_files)-1, worked_files)
    print("METEORS:", meteors)
    print("MAYBE METEORS:", maybe_meteors)
    print("TOO MANY:", too_many)
    print("DETECTS :", detects)
+   
 
 
 def get_roi(pos_vals=None, object=None, hdm_x=1, hdm_y=1):
@@ -10376,8 +10425,7 @@ def check_pt_in_mask(masks, px,py):
          return(1)
    return(0)
 
-def detect_in_vals(vals_file):
-   print("DETECT IN VALS:", vals_file)
+def detect_in_vals(vals_file, cam_size_info):
    (f_datetime, cam, f_date_str,fy,fm,fd, fh, fmin, fs) = convert_filename_to_date_cam(vals_file)
    cam = cam.replace("-vals.json", "")
 
@@ -10392,7 +10440,8 @@ def detect_in_vals(vals_file):
    video_file = vals_file.replace("-vals.json", ".mp4")
    video_file = video_file.replace("data/", "")
 
-   w,h = ffprobe(video_file)
+   #w,h = ffprobe(video_file)
+   w,h = cam_size_info[cam]
    hdm_x = 1920 / int(w)
    hdm_y = 1080 / int(h)
 
@@ -10405,6 +10454,7 @@ def detect_in_vals(vals_file):
    objects = {}
    if data is False:
       print(vals_file + " is none.")
+      os.system("rm " + vals_file)
       return()
    for i in range(0,len(data['max_vals'])):
       #print(i, cm)
@@ -10444,7 +10494,7 @@ def detect_in_vals(vals_file):
       last_i = i
 
 
-   print("End first vals profile", last_i )
+   #print("End first vals profile", last_i )
    print("EVENTS FOUND:", len(events))
    for ev in events:
       {'frames': [1, 8], 'pos_vals': [[504, 472], [564, 420], [538, 426], [654, 392], [548, 424], [682, 354], [134, 418]], 'max_vals': [14.0, 14.0, 13.0, 16.0, 12.0, 17.0, 12.0], 'sum_vals': [0.0, 0.0, 0.0, 255.0, 0.0, 510.0, 0.0]}
@@ -10463,17 +10513,15 @@ def detect_in_vals(vals_file):
          #else:
          #   print("MASKED POINT!")
 
-      print(ev)
+      #print(ev)
    for obj in objects: 
-      print("ANALYZE:", obj)
       objects[obj] = analyze_object(objects[obj], 0, 1, 1)
-   print("OBJECTS:")
    bad_obj = []
    for obj in objects:
       if len(objects[obj]['oxs'] ) < 3:
          bad_obj.append(obj)
-      else:
-         print(obj, objects[obj])
+      #else:
+      #   print(obj, objects[obj])
    for obj in bad_obj:
       del(objects[obj])
    #if len(events) > 0:
@@ -10746,7 +10794,13 @@ def verify_meteors(day=None):
             verify_meteor(file)
          else:
             os.system("rm " + file)
-   
+  
+def load_cam_sizes():
+   cam_size_info = {}
+   for cam in json_conf['cameras']: 
+      cams_id = json_conf['cameras'][cam]['cams_id']
+      cam_size_info[cams_id] = json_conf['cameras'][cam]['dim']
+   return(cam_size_info)
 
 def verify_meteor(meteor_json_file):
    # Call this on a detection file to verify the detection as a meteor and make / save the trim clips
@@ -10770,14 +10824,20 @@ def verify_meteor(meteor_json_file):
       video_file = meteor_json_file.replace("-toomany.json", ".mp4")
       video_file = video_file.replace("data/", "")
 
-   w,h = ffprobe(video_file)
+   cam_size_info = load_cam_sizes()
+
+   if w == 0:
+      #os.system("mv " + meteor_json_file + " " + detect_file)
+      print("BAD TRIM FILE!", video_file)
+      exit()
+      return()
    hdm_x = 1920 / int(w)
    hdm_y = 1080 / int(h)
 
    mj = load_json_file(meteor_json_file)
-   if mj == None:
+   if mj == None or mj == 0:
       print("No mj :", meteor_json_file)
-      exit()
+      return()
 
    suspect_meteors = only_meteors(mj['objects'])
 
@@ -10804,6 +10864,11 @@ def verify_meteor(meteor_json_file):
 
    if len(suspect_meteors) == 1:
       trim_file, start_fn,end_fn, cx1,cy1,cx2,cy2,mid_x,mid_y = get_vals_trim(video_file, suspect_meteors[0])
+      if trim_file == 0:
+         print("BAD TRIM FILE FOR :", video_file)
+         os.system("mv " + meteor_json_file + " " + detect_file)
+         print("MIKE! mv " + meteor_json_file + " " + detect_file)
+         exit()
       print("TF:", trim_file)
       sd_prev_crop=[cx1,cy1,cx2,cy2,mid_x,mid_y]
       #preview_crop(trim_file, cx1,cy1,cx2,cy2)
@@ -11646,6 +11711,9 @@ if cmd == "basic" :
 if cmd == "plot_vals" :
    plot_vals(sys.argv[2])
 if cmd == "detect_in_vals" or cmd == 'dv':
+   file = sys.argv[2].split("/")[-1]
+   day = file[0:10]
+   cam_size_info = get_cam_sizes(day)
    detect_in_vals(sys.argv[2])
 if cmd == "batch_vals" or cmd == 'bv':
    ### this will run detects on a specific day

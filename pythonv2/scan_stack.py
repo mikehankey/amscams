@@ -76,7 +76,7 @@ def fix_missing_stacks(day):
       vals_file = file_dir + "/data/" + vals_file_name
       if tday != day:
          print("This file is in the wrong day????", day, file_name)
-
+         exit()
          right_dir = "/mnt/ams2/SD/proc2/" + tday + "/"
          right_img_dir = "/mnt/ams2/SD/proc2/" + tday + "/images/"
          right_data_dir = "/mnt/ams2/SD/proc2/" + tday + "/day/"
@@ -114,7 +114,8 @@ def fix_missing_stacks(day):
          else:
             sun_status = "0"
          print("Missing:", file, sun_status )
-         scan_and_stack_fast(file, sun_status, vals)
+         os.system("mv " + file + " /mnt/ams2/SD")
+         #scan_and_stack_fast(file, sun_status, vals)
 
          missing += 1      
       else: 
@@ -144,7 +145,17 @@ def batch_ss(wildcard=None):
    for file in sorted(new_files, reverse=True):
       (f_datetime, cam, f_date_str,fy,fmin,fd, fh, fm, fs) = convert_filename_to_date_cam(file)
       sun_status = day_or_night(f_date_str, json_conf)
-      if sun_status == "day":
+      cur_time = int(time.time())
+      st = os.stat(file)
+      size = st.st_size
+      mtime = st.st_mtime
+      tdiff = cur_time - mtime
+      tdiff = tdiff / 60
+      if tdiff < 5:
+         print("File too recent!", file)
+         continue
+
+      if sun_status == "day" :
          sun_status = "1"
          cmd = "mv " + file + " /mnt/ams2/SD/proc2/daytime/"
          print("MOVE DAYTIME FILE!")
@@ -164,17 +175,17 @@ def batch_ss(wildcard=None):
       if size < 100:
          print("BAD SIZE!")
       else: 
-         try:
-         #if True:
+         #try:
+         if True:
             scan_and_stack_fast(file, sun_status)
          #else:
-         except:
-            print("FAILED! File must be bad???", file)
-            logger("scan_stack.py", "batch_ss / scan_and_stack_fast", "failed to scan and stack ")
+         #except:
+         #   print("FAILED! File must be bad???", file)
+         #   logger("scan_stack.py", "batch_ss / scan_and_stack_fast", "failed to scan and stack ")
             #exit()
-            cmd = "mv " + file + " /mnt/ams2/bad/"
-            os.system(cmd)
-            continue
+         #   cmd = "mv " + file + " /mnt/ams2/bad/"
+         #   os.system(cmd)
+         #   continue
 
       #running = check_running("scan_stack.py") 
       if False:
@@ -278,7 +289,7 @@ def scan_and_stack_fast(file, sun_status = 0, vals = []):
          gray_frames.append(gray)
 
       if int(sun_status) == 1:
-         if fc % 100 == 1:
+         if fc % 25 == 1:
             print("DAY:", sun_status , fc)
             print("Stacking frame", fc)
             small_frame = cv2.resize(frame, (0,0),fx=.5, fy=.5)
@@ -328,11 +339,17 @@ def scan_and_stack_fast(file, sun_status = 0, vals = []):
    elapsed_time = time.time() - start_time
    print(stack_file)
    os.system("mv " + file + " " + proc_dir)
+   
 
-   print(proc_dir + fn)
-   print(stack_file)
-   print(json_file)
+   print("mv " + file + " " + proc_dir)
+   print("PROC:", proc_dir + fn)
+   print("STACK FILE:", stack_file)
+   print("JSON FILE:", json_file)
    print("Elp:", elapsed_time)
+   if cfe(stack_file) == 0:
+      print("No stack file made!?")
+      logger("scan_stack.py", "scan_and_stack_fast", "Image file not made! " + stack_file + " " )
+      exit()
 
 
 def scan_and_stack(video_file, sun_status):

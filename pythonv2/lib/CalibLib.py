@@ -486,7 +486,6 @@ def calibrate_pic(cal_image_file, json_conf, show = 1):
    cams_id = cams_id.replace(".jpg", "")
    print("CAMS ID:", cams_id)
    masks = get_masks(cams_id, json_conf, hd = 1)
-   print("MASKS:", masks)
    cal_image_np = mask_frame(cal_image_np, [], masks)
    avg_px = np.mean(cal_image_np)
    print("AVG PX",avg_px)

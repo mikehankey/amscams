@@ -772,7 +772,6 @@ def get_masks(this_cams_id, json_conf, hd = 0):
             (mx, my, mw, mh) = mask_el
             masks[key] = str(mx) + "," + str(my) + "," + str(mw) + "," + str(mh)
             my_masks.append((masks[key]))
-   print("MASKS:", my_masks)
    return(my_masks)
 
 
