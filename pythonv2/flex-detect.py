@@ -3740,6 +3740,11 @@ def convert_filename_to_date_cam(file):
    fy,fm,fd,fh,fmin,fs,fms,cam = data[:8]
    f_date_str = fy + "-" + fm + "-" + fd + " " + fh + ":" + fmin + ":" + fs
    f_datetime = datetime.datetime.strptime(f_date_str, "%Y-%m-%d %H:%M:%S")
+   if "-" in cam:
+      cel = cam.split("-")
+      cam = cel[0]
+
+
    return(f_datetime, cam, f_date_str,fy,fm,fd, fh, fmin, fs)
 
 
@@ -10825,7 +10830,7 @@ def verify_meteor(meteor_json_file):
       video_file = video_file.replace("data/", "")
 
    cam_size_info = load_cam_sizes()
-
+   w,h = cam_size_info[cam]
    if w == 0:
       #os.system("mv " + meteor_json_file + " " + detect_file)
       print("BAD TRIM FILE!", video_file)
