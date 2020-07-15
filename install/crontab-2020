@@ -1,21 +1,23 @@
-*/5 * * * * cd /home/ams/amscams/python/; ./as6-latest.py > /dev/null
+*/15 * * * * cd /home/ams/amscams/python/; ./as6-latest.py > /dev/null
 5 * * * * cd /home/ams/amscams/pythonv2/; ./batchJobs.py fi > /tmp/pd.txt
-6 * * * * cd /home/ams/amscams/pythonv2/; ./batchJobs.py mi > /tmp/pd.txt
+#6 * * * * cd /home/ams/amscams/pythonv2/; ./batchJobs.py mi > /tmp/pd.txt
 10 */2 * * * cd /home/ams/amscams/pythonv2/; ./batchJobs.py sna 2 > /tmp/pd.txt
-#30 * * * * cd /home/ams/amscams/pythonv2/; ./batchJobs.py bmt > /tmp/bdhd.txt
+30 * * * * cd /home/ams/amscams/pythonv2/; ./batchJobs.py bmt > /tmp/bdhd.txt
 */5 * * * * cd /home/ams/amscams/pythonv2/; ./watch-dog.py > /tmp/wd.txt
 
-### reduce and sync  
+### reduce and sync
 30 */4 * * * cd /home/ams/amscams/pythonv2/; ./autoCal.py cal_index > /dev/null
 31 */4 * * * cd /home/ams/amscams/pythonv2/; ./autoCal.py meteor_index > /dev/null
 
-22 * * * * cd /home/ams/amscams/pythonv2/; python3 Create_Archive_Index.py 2020
 */10 * * * * cd /home/ams/amscams/pythonv2/; ./NOAA.py
+#*/15 * * * * cd /home/ams/amscams/pythonv2/; ./doDay.py batch 3
 10 */4 * * * cd /home/ams/amscams/pythonv2/; ./doDay.py cd
 
 
-*/15 * * * * cd /home/ams/amscams/pythonv2/; ./scan_stack.py bs
-15 */8 * * * cd /home/ams/amscams/pythonv2; ./ASDaemon.py fix_days 
-*/20 * * * * cd /home/ams/amscams/pythonv2; ./ASDaemon.py rvms 
-*/15 * * * * cd /home/ams/amscams/pythonv2; ./ASDaemon.py rvd 
+*/5 * * * * cd /home/ams/amscams/pythonv2/; ./scan_stack.py bs
+15 */8 * * * cd /home/ams/amscams/pythonv2; ./ASDaemon.py fix_days
+*/20 * * * * cd /home/ams/amscams/pythonv2; ./ASDaemon.py rvms
+*/15 * * * * cd /home/ams/amscams/pythonv2; ./ASDaemon.py rvd
 20 */8 * * * cd /home/ams/amscams/pythonv2; ./ASDaemon.py proc_index
+20 */2 * * * cd /home/ams/amscams/pythonv2; ./day_stack.py
+25 */8 * * * cd /home/ams/amscams/pythonv2; ./move_day_files.py
