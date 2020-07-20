@@ -10236,7 +10236,7 @@ def ffmpeg_trim_crop(video_file,start,end,x,y,w,h, notrim=0):
    """
    if cfe(video_file) == 0:
       print("VIDEO FILE DOESN'T EXIST!", video_file)
-      exit()
+      return(0,0)
    #ffinfo = ffprobe(video_file)
    #if ffinfo[0] == 0:
    #   return(0,0)
@@ -10770,6 +10770,28 @@ def get_hdm(frame):
    hdm_y = 1080 / frame.shape[0] 
    return(hdm_x, hdm_y)
 
+def verify_toomany_detects(day=None):
+   if day == None:
+      return("pass day!")
+   files = glob.glob("/mnt/ams2/SD/proc2/" + day + "/data/*toomany.json")
+   for file in files:
+      verify_toomany(file)
+     
+
+def verify_toomany(file):
+   js = load_json_file(file)
+   meteors = only_meteors(js['objects'])
+   if len(meteors) > 0:
+      print("Total Events: ", len(js['events']))
+      print("Total Objects: ", len(js['objects']))
+      print("Meteors: ", len(meteors))
+      js['maybe_meteors'] = meteors
+      save_json_file(file, js)
+      new_file = file.replace("toomany", "maybe-meteors")
+      save_json_file(new_file, js)
+      print("NEW:", new_file)
+
+
 def verify_meteors(day=None):
    print("Verify Meteors")
    if day == None:
@@ -10834,7 +10856,6 @@ def verify_meteor(meteor_json_file):
    if w == 0:
       #os.system("mv " + meteor_json_file + " " + detect_file)
       print("BAD TRIM FILE!", video_file)
-      exit()
       return()
    hdm_x = 1920 / int(w)
    hdm_y = 1080 / int(h)
@@ -11073,7 +11094,7 @@ def save_final_meteor(meteor_file):
    day = fy + "_" + fm + "_" + fd
    proc_dir = "/mnt/ams2/SD/proc2/" + day + "/hd_save/"
    if cfe(meteor_file) == 0:
-      print("This meteor file doesn't exist???")
+      print("This meteor file doesn't exist???", meteor_file)
       return() 
 
    mj = load_json_file(meteor_file)
@@ -11097,6 +11118,7 @@ def save_final_meteor(meteor_file):
       nometeor_file = meteor_file.replace("-meteor.json", "-nometeor.json")
       cmd = "mv " + meteor_file + " " + nometeor_file
       print("Some probs with this one:", meteor_file)
+      print("SD/HD Meteors:", len(good_sd_meteors), len(good_hd_meteors))
       os.system(cmd)
       return()
 
@@ -11732,6 +11754,10 @@ if cmd == "batch_vals" or cmd == 'bv':
    else:
       batch_vals(sys.argv[2])
 
+if cmd == "verify_tms" or cmd == 'vtms':
+   verify_toomany_detects(sys.argv[2])
+if cmd == "verify_tm" or cmd == 'vtm':
+   verify_toomany(sys.argv[2])
 
 if cmd == "verify_meteor" or cmd == 'vm':
    verify_meteor(sys.argv[2])

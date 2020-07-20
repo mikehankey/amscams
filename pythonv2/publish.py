@@ -21,10 +21,12 @@ from lib.Video_Tools_Fundamentals import get_ROI_from_arc_json
 from doDay import analyse_report_file
 
 REGEX_JSON_FROM_CLOUD = r"\/(\w*)\/METEOR\/(\d{4})\/(\d{2})\/(\d{2})\/\d{4}_\d{2}_\d{2}_(\d{2})_(\d{2})_(\d{2})_(\d{3})_(\w{6})-trim(\d{4}|\d{3}|\d{2}|\d{1}).json"
+REGEX_JSON_FROM_CLOUD2 = r"\/(\w*)\/METEOR\/(\d{4})\/(\d{2})\/(\d{2})\/\d{4}_\d{2}_\d{2}_(\d{2})_(\d{2})_(\d{2})_(\d{3})_(\w{6})-trim-(\d{4}|\d{3}|\d{2}|\d{1}).json"
 REGEX_GROUP_JSON_FROM_CLOUD = ["all_path","station_id","year","month","day","hour","min","sec","ms","cam_id","trim"]
  
 #PATH TO CLOUD ARCHIVES
 PATH_TO_CLOUD = "/mnt/archive.allsky.tv"
+#PATH_TO_CLOUD = "/mnt/ams2/meteor_archive"
 
 # TEMPLATES
 OBSERVER_REPORT_TEMPLATE = "/home/ams/amscams/pythonv2/templates/allsky.tv.obs_report.html"
@@ -36,10 +38,14 @@ ARCHIVE_URL= "http://archive.allsky.tv"
 
 # Analyse the json file names
 def analyse_event_json_file(file_name):
-   matches = re.finditer(REGEX_JSON_FROM_CLOUD, file_name, re.MULTILINE)
+   if "-trim-" in file_name:
+      matches = re.finditer(REGEX_JSON_FROM_CLOUD2, file_name, re.MULTILINE)
+   else:
+      matches = re.finditer(REGEX_JSON_FROM_CLOUD, file_name, re.MULTILINE)
    res = {}
-  
+   print("FILE NAMES:", file_name)  
    for matchNum, match in enumerate(matches, start=1):
+      print("MATCES:", match)  
       for groupNum in range(0, len(match.groups())): 
          if(match.group(groupNum) is not None):
             res[REGEX_GROUP_JSON_FROM_CLOUD[groupNum]] = match.group(groupNum)
