@@ -11104,9 +11104,11 @@ def save_final_meteor(meteor_file):
    good_sd_meteors = [] 
    good_hd_meteors = []
    for obj in mj['motion_objects']:
-      good_sd_meteors.append(mj['motion_objects'][obj])
+      if mj['motion_objects'][obj]['report']['meteor_yn'] == "Y":
+         good_sd_meteors.append(mj['motion_objects'][obj])
    for obj in mj['hd_motion_objects']:
-      good_hd_meteors.append(mj['hd_motion_objects'][obj])
+      if mj['hd_motion_objects'][obj]['report']['meteor_yn'] == "Y":
+         good_hd_meteors.append(mj['hd_motion_objects'][obj])
 
    status = 1
    #status, good_sd_meteors, good_hd_meteors = final_meteor_test(mj)
