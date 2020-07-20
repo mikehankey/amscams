@@ -9448,8 +9448,13 @@ def show_detection(buf_sd_frames, buf_hd_frames, buf_hd_sum_vals, frame_data):
 
 
 
-def find_crop_size(min_x,min_y,max_x,max_y):
-   sizes = [[1280,720],[1152,648],[1024,576],[869,504],[768,432], [640,360], [512, 288], [384, 216], [256, 144], [128,72]]
+def find_crop_size(min_x,min_y,max_x,max_y, hdm_x=1, hdm_y=1):
+   print("MIN/MAX XY:", min_x, min_y, max_x, max_y)
+   if hdm_x != 1:
+      sizes = [[1280,720],[1152,648],[1024,576],[869,504],[768,432], [640,360], [512, 288], [384, 216], [256, 144], [128,72]]
+   else:
+      sizes = [[704,576],[352, 237],[176,118]]
+   
    w = max_x - min_x 
    h = max_y - min_y
    mid_x = int(((min_x + max_x) / 2))
@@ -10300,7 +10305,11 @@ def play_clip(video_file,cx1=0,cy1=0,cx2=0,cy2=0):
       cv2.imshow('pepe', frame)
       cv2.waitKey(0)
 
-def get_cam_sizes(day):
+def get_cam_sizes(day=None):
+   if day is None:
+      now = datetime.datetime.now()
+      day = now.strftime("%Y_%m_%d")
+   
    cam_size_info = {}
    for cam in json_conf['cameras']:
       w,h = 0,0
@@ -10398,10 +10407,12 @@ def batch_vals(day):
 
 
 def get_roi(pos_vals=None, object=None, hdm_x=1, hdm_y=1):
+   print("HDM_X/HDM_Y", hdm_x, hdm_y)
    xs = []
    ys = []
    if pos_vals is not None:
       for x,y in ev['pos_vals']:
+         print("POS VALS:", x,y)
          xs.append(int(x*hdm_x))
          ys.append(int(y*hdm_y))
          fn += 1
@@ -10413,7 +10424,7 @@ def get_roi(pos_vals=None, object=None, hdm_x=1, hdm_y=1):
    max_x = max(xs)
    max_y = max(ys)
    min_y = min(ys)
-   cx1,cy1,cx2,cy2,mid_x,mid_y = find_crop_size(min_x, min_y, max_x,max_y)
+   cx1,cy1,cx2,cy2,mid_x,mid_y = find_crop_size(min_x, min_y, max_x,max_y, hdm_x, hdm_y)
 
    return(cx1,cy1,cx2,cy2,mid_x,mid_y)
 
@@ -10824,9 +10835,15 @@ def verify_meteors(day=None):
   
 def load_cam_sizes():
    cam_size_info = {}
+   global json_conf
    for cam in json_conf['cameras']: 
+      
       cams_id = json_conf['cameras'][cam]['cams_id']
-      cam_size_info[cams_id] = json_conf['cameras'][cam]['dim']
+      if "dim" not in json_conf['cameras'][cam]:
+         cam_size_info = get_cam_sizes()
+         json_conf = load_json_file('../conf/as6.json')
+      else:
+         cam_size_info[cams_id] = json_conf['cameras'][cam]['dim']
    return(cam_size_info)
 
 def verify_meteor(meteor_json_file):
@@ -10867,6 +10884,7 @@ def verify_meteor(meteor_json_file):
 
    suspect_meteors = only_meteors(mj['objects'])
 
+
    good_met = []
    if len(suspect_meteors) > 0:
       for maybe in suspect_meteors:
@@ -10878,6 +10896,8 @@ def verify_meteor(meteor_json_file):
             meteor_report(maybe)
            # return()
    suspect_meteors = good_met
+
+
    if len(suspect_meteors) == 0:
       print("No real meteors found here.")
       # mv the maybe file to detect so we don't try to check it again. 
@@ -10888,8 +10908,15 @@ def verify_meteor(meteor_json_file):
       print("SUSPECT METEORS!")
       print(suspect_meteors)
 
+
+
    if len(suspect_meteors) == 1:
       trim_file, start_fn,end_fn, cx1,cy1,cx2,cy2,mid_x,mid_y = get_vals_trim(video_file, suspect_meteors[0])
+
+      #print("CX1,2 CY1,2:", cx1, cx2, cy1, cy2)
+      #exit()
+
+
       if trim_file == 0:
          print("BAD TRIM FILE FOR :", video_file)
          os.system("mv " + meteor_json_file + " " + detect_file)
@@ -10904,6 +10931,9 @@ def verify_meteor(meteor_json_file):
       print(sd_motion_objects)
       sd_meteors = only_meteors(sd_motion_objects)
       print(sd_meteors)
+
+      #exit()
+
       if sd_meteors is None:
          print("No real meteors found here.")
 
@@ -10919,6 +10949,7 @@ def verify_meteor(meteor_json_file):
       print("HD FILE:", hd_trim)
 
       hd_x1,hd_y1,hd_x2,hd_y2,hd_mid_x,hd_mid_y = get_roi(None, suspect_meteors[0], hdm_x, hdm_y)
+
       hd_prev_crop=[hd_x1,hd_y1,hd_x2,hd_y2,hd_mid_x,hd_mid_y]
 
       #preview_crop(hd_trim, hd_x1,hd_y1,hd_x2,hd_y2)
@@ -11090,6 +11121,7 @@ def batch_save_final_meteor(day):
 
 
 def save_final_meteor(meteor_file):
+   print("Save final meteor:", meteor_file)
    (f_datetime, cam, f_date_str,fy,fm,fd, fh, fmin, fs) = convert_filename_to_date_cam(meteor_file)
    day = fy + "_" + fm + "_" + fd
    proc_dir = "/mnt/ams2/SD/proc2/" + day + "/hd_save/"
@@ -11104,6 +11136,7 @@ def save_final_meteor(meteor_file):
    good_sd_meteors = [] 
    good_hd_meteors = []
    for obj in mj['motion_objects']:
+      
       good_sd_meteors.append(mj['motion_objects'][obj])
    for obj in mj['hd_motion_objects']:
       good_hd_meteors.append(mj['hd_motion_objects'][obj])
@@ -11280,9 +11313,15 @@ def get_vals_trim(video_file, obj, hdm_x=1,hdm_y=1):
    start = obj['ofns'][0]
    end = obj['ofns'][-1]
    start_fn, end_fn= buffered_start_end(start,end, 1499, 50)
+   print("GET ROI:", hdm_x, hdm_y, obj)
    cx1,cy1,cx2,cy2,mid_x,mid_y = get_roi(None, obj, hdm_x, hdm_y)
    print("START FN:", video_file, start_fn,end_fn)
+   print("CX1 etc", cx1, cx2, cy1, cy2)
+   print("get_vals_trim end", video_file)
    trim_file, crop_file = ffmpeg_trim_crop(video_file,start_fn,end_fn,cx1,cy1,cx2-cx1,cy2-cy1, 0)
+
+   print("TRIM/CROP:", trim_file, crop_file)
+   #exit()
 
 
    return(trim_file, start_fn,end_fn, cx1,cy1,cx2,cy2,mid_x,mid_y)
