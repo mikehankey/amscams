@@ -21,3 +21,7 @@
 20 */8 * * * cd /home/ams/amscams/pythonv2; ./ASDaemon.py proc_index
 20 */2 * * * cd /home/ams/amscams/pythonv2; ./day_stack.py
 25 */8 * * * cd /home/ams/amscams/pythonv2; ./move_day_files.py
+
+#SENSE UP / AUTO CAL
+32 */3 * * * cd /home/ams/amscams/pythonv2; ./IMX291.py sense_all all > /dev/null 2>&1
+

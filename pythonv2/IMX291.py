@@ -102,6 +102,21 @@ def camera_settings():
    print ("\r\n")
    cam.close()
 
+def auto_settings(cam, cam_ip):
+   # check the day or night sun elevation 
+   # check settings for default overrides
+   # if it is daytime make sure DWDR = 1 , color = 1  
+   # if it is nighttime make sure DWDR = 0 , color = 0  (optional)
+
+   sun, az, alt  = day_or_night(datetime.now(), json_conf)
+   if int(alt) < -10:
+      # it is nighttime
+      set_daytime_settings(cam)
+   else:
+      set_nighttime_settings(cam)
+      # it is daytime
+
+
 def encoding_settings():
    sleep(2)
    enc_info[0]['MainFormat']['Video']['BitRate'] = BitrateRequired
@@ -174,3 +189,8 @@ if cmd == "sense_all":
 if cmd == "sense_up":
    cam = DVRIPCam(CameraIP,CameraUserName,CameraPassword)
    sense_up(cam, CameraIP)
+
+if cmd == "auto_settings":
+   cam = DVRIPCam(CameraIP,CameraUserName,CameraPassword)
+   auto_settings(cam, CameraIP)
+   
