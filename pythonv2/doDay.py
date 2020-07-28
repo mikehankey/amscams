@@ -154,6 +154,40 @@ def check_disk():
    # check SD dir  
    # if the disk usage is over 80% 
    # get folders in /proc2, delete the folders one at a time and re-check disk until disk <80% or max of 30 folders exist
+   proc2_files = glob.glob("/mnt/ams2/SD/proc2/*")
+   for file in proc2_files:
+      if "json" not in file and "daytime" not in file and "all" not in file:
+         if cfe(file, 1) == 1:
+            fn = file.split("/")[-1]
+            print("day dir:", fn)
+            dir_date = datetime.strptime(fn , "%Y_%m_%d")
+            elp = dir_date - datetime.now()
+            days_old = abs(elp.total_seconds()) / 86400
+            if days_old > 45:
+               print("This file is ", int(days_old), " days old.")
+               cmd = "rm -rf " + file
+               print(cmd)
+               os.system(cmd)
+
+
+   # purge out old files from daytime dir
+   print("Purge daytime files")
+   dayfiles = glob.glob("/mnt/ams2/SD/proc2/daytime/*")
+   daydirs = []
+   for df in dayfiles:
+      if "mp4" not in df : 
+         if cfe(df, 1) == 1:
+            fn = df.split("/")[-1]
+            print("day dir:", fn)
+            dir_date = datetime.strptime(fn , "%Y_%m_%d")
+            elp = dir_date - datetime.now()
+            days_old = abs(elp.total_seconds()) / 86400
+            if days_old > 7:
+               print("Delete daytime files that are older than 7 days. This on is ", days_old, " days old")
+               cmd = "rm -rf " + df
+               os.system(cmd)
+               print(cmd)
+   
 
    # remove trash and other tmp dirs
 
