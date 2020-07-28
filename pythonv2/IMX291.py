@@ -21,22 +21,24 @@ if cam.login():
 else:
     print ("Failure. Could not connect to camera!")
 
-sleep(2)
-print ("Current encoding settings:")
-#enc_info = cam.get_info("Simplify.Encode")
-cam_info = cam.get_info("Camera.ParamEx")
-print (cam_info)
-cam_info[0]['BroadTrends']['AutoGain'] = 1
-cam.set_info("Camera.ParamEx", cam_info)
-print ("\r\n")
-cam.close()
-exit()
-sleep(2)
-enc_info[0]['MainFormat']['Video']['BitRate'] = BitrateRequired
-cam.set_info("Simplify.Encode", enc_info)
-print ("Sent new bitrate settings\r\n")
-sleep(5)
-print ("New encoding settings:")
-print(cam.get_info("Simplify.Encode"))
-print(cam.get_info("Simplify.Encode"))
-sleep(5)
+def camera_settings():
+   sleep(2)
+   print ("Current encoding settings:")
+   #enc_info = cam.get_info("Simplify.Encode")
+   cam_info = cam.get_info("Camera.ParamEx")
+   print (cam_info)
+   cam_info[0]['BroadTrends']['AutoGain'] = 1
+   cam.set_info("Camera.ParamEx", cam_info)
+   print ("\r\n")
+   cam.close()
+
+def encoding_settings():
+   sleep(2)
+   enc_info[0]['MainFormat']['Video']['BitRate'] = BitrateRequired
+   cam.set_info("Simplify.Encode", enc_info)
+   print ("Sent new bitrate settings\r\n")
+   sleep(5)
+   print ("New encoding settings:")
+   print(cam.get_info("Simplify.Encode"))
+   print(cam.get_info("Simplify.Encode"))
+   sleep(5)
