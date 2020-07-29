@@ -131,6 +131,18 @@ def delete_multiple_archived_detection(detections):
          cmd = "mv " + det +  " " + TRASH_FOLDER  
          os.system(cmd) 
 
+      # Remove Crop
+      det = det.replace('-SD','-HD-crop')
+      if os.path.isfile(det):
+         cmd = "mv " + det +  " " + TRASH_FOLDER  
+         os.system(cmd) 
+
+      # Remove Thumb/Preview 
+      det = det.replace('-HD-crop','-HD-thumb')
+      if os.path.isfile(det):
+         cmd = "mv " + det +  " " + TRASH_FOLDER  
+         os.system(cmd) 
+
       # Update Index (?)
       write_month_index(int(analysed_name['month']),int(analysed_name['year']))
       write_year_index(int(analysed_name['year']))
