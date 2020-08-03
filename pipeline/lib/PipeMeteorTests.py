@@ -417,3 +417,48 @@ def meteor_direction_test(fxs,fys):
    else:
       perc = 0
    return(perc)
+
+def arc_seconds_to_degrees(arc_seconds):
+   # 1 arc second this many degrees
+   min_deg_conv = 0.00027777777
+   return(arc_seconds * min_deg_conv)
+
+def ang_dist_vel(xs=[], ys=[],azs=[],els=[], pixscale=155):
+   #px_dist = calc_dist((x[-1],y[-1]), (x[0],y[0]))
+
+   #angular_separation = np.sqrt((x[-1] - x[0])**2 + (y[-1] - y[0])**2)
+   #angular_separation_px = np.sqrt((x[-1] - x[0])**2 + (y[-1] - y[0])**2) / float(fns[-1] - fns[0])
+   #angular_velocity_px = angular_separation_px * 25
+
+   #angular_separation_deg = (angular_separation * px_scale) / 3600
+
+   # Convert to deg/sec
+   #scale = (config.fov_h/float(config.height) + config.fov_w/float(config.width))/2.0
+
+
+
+   # Formula for finding ang_dist and vel from px
+   print(xs,ys)
+   if len(xs) > 0:
+      px_dist = calc_dist((xs[0],ys[0]), (xs[-1], ys[-2]))
+      ang_dist = px_dist * pixscale
+      ang_dist = arc_seconds_to_degrees(ang_dist)
+      # to find angular velocity per second in degrees 
+      ang_vel = ang_dist / (len(xs) / 25)
+   # Formula for finding ang_dist and vel from az,el 
+   #if len(azs) > 0:
+   return(ang_dist, ang_vel)
+       
+def angularSeparation(ra1, dec1, ra2, dec2):
+    """ Calculates the angle between two points on a sphere. 
+    
+    Arguments:
+        dec1: [float] Declination 1 (radians).
+        ra1: [float] Right ascension 1 (radians).
+        dec2: [float] Declination 2 (radians).
+        ra2: [float] Right ascension 2 (radians).
+    Return:
+        [float] Angle between two coordinates (radians).
+    """
+
+    return np.arccos(np.sin(dec1)*np.sin(dec2) + np.cos(dec1)*np.cos(dec2)*np.cos(ra2 - ra1))

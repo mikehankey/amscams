@@ -373,6 +373,7 @@ def pin_point_stars(image, points):
       x2 = x + 15
       cnt_img = image[y1:y2,x1:x2]
       ch,cw = cnt_img.shape
+      #if True:
       try:
          max_pnt,max_val,min_val = cnt_max_px(cnt_img)
          mx,my = max_pnt
@@ -380,7 +381,13 @@ def pin_point_stars(image, points):
          my = my - 15
          x = x + mx
          y = y + my
-         star_points.append((x,y))
+
+         star_cnt_img = image[y-2:y+2,x-2:x+2]
+
+         #star_bg_int = np.median(star_cnt_img) * star_cnt_img.shape[0] * star_cnt_img.shape[1]
+         #star_int = int(np.sum(cnt_img) - star_bg_int)
+         star_int = int(np.sum(star_cnt_img) )
+         star_points.append((x,y,star_int))
       except:
          #print("PROB!", image.shape, x1,y1, x2,y2, "<BR>")
          missed_star = 1
@@ -573,7 +580,7 @@ def update_cat_stars(form):
       cat_dist = []
       used_cat_stars = {}
       used_star_pos = {}
-      for ix,iy in star_points:
+      for ix,iy,star_int in star_points:
          close_stars = find_close_stars((ix,iy), cat_stars) 
 
          if len(close_stars) == 1:
@@ -585,6 +592,7 @@ def update_cat_stars(form):
             new_star['ra'] = ra
             new_star['dec'] =  dec
             new_star['dist_px'] = cat_star_dist 
+            new_star['intensity'] = star_int
             cat_dist.append(cat_star_dist)
 
             # The image x,y of the star (CIRCLE)
@@ -601,7 +609,9 @@ def update_cat_stars(form):
             if this_rakey not in used_cat_stars:
                my_close_stars.append(new_star)
                used_cat_stars[this_rakey] = 1
-   
+  
+
+ 
       meteor_red['calib']['stars'] = my_close_stars
       meteor_red['calib']['device']['total_res_px'] = float(np.mean(cat_dist)) 
       meteor_red['calib']['device']['total_res_deg'] = (float(np.mean(cat_dist)) * float(meteor_red['calib']['device']['scale_px'])) / 3600

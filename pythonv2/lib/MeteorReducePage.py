@@ -42,13 +42,13 @@ def create_tab_and_content(extra_tabs,extra_content,id,name,html_content, active
 # cmd=reduce2
 # &video_file=[PATH]/[VIDEO_FILE].mp4 or JSON File
 def reduce_meteor2(json_conf,form):
-  
    # Debug
    cgitb.enable()
 
    HD = True
 
    # Build the page based on template  
+   print(PAGE_TEMPLATE)
    with open(PAGE_TEMPLATE, 'r') as file:
       template = file.read()
 

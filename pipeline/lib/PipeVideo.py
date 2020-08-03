@@ -10,9 +10,138 @@ import datetime
 import os
 import glob
 
-from lib.PipeImage import stack_frames_fast , stack_stack, mask_frame
-from lib.PipeUtil import cfe, save_json_file, convert_filename_to_date_cam, get_masks
+from lib.PipeImage import stack_frames_fast , stack_stack, mask_frame, stack_frames
+from lib.PipeUtil import cfe, save_json_file, convert_filename_to_date_cam, get_masks, load_json_file
 from lib.DEFAULTS import * 
+from lib.PipeMeteorTests import ang_dist_vel, angularSeparation
+
+def make_preview_videos(date, json_conf):
+
+   html_header = """
+
+      <style> 
+         #theater {
+            float: left;
+            padding: 20px;
+            margin: 10px;
+            background-color: #ccc;
+            text-align: center;
+
+          }
+
+      </style> 
+
+   """
+
+   row_html = """
+      <div id="theater">
+         <video id="video" src="VIDEO_FILE" controls="true"></video>
+         <label>
+         <br/>LABEL</label>
+      </div>
+
+
+   """
+
+   del_link = """
+      <span><a href=/pycgi/webUI.py?cmd=override_detect&jsid=FILE_KEY>DEL</a></span>
+   """
+   #20200728022632000010004-trim-0365 
+
+   html = ""
+
+   year, month, day = date.split("_")
+   disp_date = year + "/" + month + "/" + day
+   meteor_dir = METEOR_ARC_DIR + year + "/" + month + "/" + day + "/"
+   html_outfile = meteor_dir + "report.html"
+   print(meteor_dir)
+   if cfe(meteor_dir, 1) == 0:
+      return()
+   crop_files = glob.glob(meteor_dir + "*crop.mp4")
+   if len(crop_files) == 0:
+      return()
+   html_header += "<h1>" + str(len(crop_files)) + " Meteors for " + STATION_ID + " on " + disp_date + "</h1>"
+   
+   for file in crop_files:
+      print(file)
+      js_id = file.split("/")[-1]
+      js_id = js_id.replace(".mp4", "")
+      js_id = js_id.replace("_", "")
+      js_id = js_id.replace("-HD-crop", "")
+      this_del = del_link.replace("FILE_KEY", js_id)
+      thumb_file = file.replace(".mp4", "-thumb.mp4")
+ 
+      js_file = file.replace("-HD-crop.mp4", ".json")
+      if cfe(js_file) == 0:
+         print("DELETE THESE MATCHING FILES:", js_file)
+         continue
+      js = load_json_file(js_file)
+      xs, ys, azs, els, ras, decs, ints = flatten_frames(js['frames'])
+      if "ang_dist" not in js['report']:
+         ang_dist, ang_vel = ang_dist_vel(xs,ys)
+         ang_sep = angularSeparation(np.radians(ras[0]), np.radians(decs[0]), np.radians(ras[-1]), np.radians(decs[-1]))
+         ang_sep = np.degrees(ang_sep)
+         print("ANG:", ang_dist, ang_vel)
+         js['report']['ang_dist'] = ang_dist
+         js['report']['ang_vel'] = ang_vel
+         js['report']['ang_sep'] = ang_sep
+         print("SAVE JS:", js_file)
+         save_json_file(js_file, js)
+ 
+ 
+      if cfe(thumb_file) == 0:
+         make_preview_video(file, json_conf)
+      label = "Angular Vel / Dist: " + str(ang_vel)[0:4] + " / " + str(ang_dist)[0:4] + "<br> Angular Separation: " + str(ang_sep) + "<br>" + this_del
+      new_row = row_html.replace("VIDEO_FILE", thumb_file)
+      new_row = new_row.replace("LABEL", label)
+      html += new_row
+   out = open(html_outfile, "w")
+   out.write(html_header)
+   out.write(html)
+   out.close()
+   print(html)
+   print(html_outfile)
+
+def flatten_frames(frames):
+   xs = []
+   ys = []
+   azs = []
+   els = []
+   ras = []
+   decs = []
+   ints = []
+   for frame in frames:
+      xs.append(frame['x'])
+      ys.append(frame['y'])
+      azs.append(frame['az'])
+      els.append(frame['el'])
+      ras.append(frame['ra'])
+      decs.append(frame['dec'])
+      if "intensity" in frame:
+         ints.append(frame['intensity'])
+      else:
+         ints.append(0)
+   return(xs,ys,azs,els,ras, decs,ints)
+
+def make_preview_video(video_file, json_conf, width=THUMB_W, height=THUMB_H):
+   new_file = video_file.replace(".mp4", "-thumb.mp4")
+   cmd = "/usr/bin/ffmpeg -i " + video_file + " -vcodec libx264 -crf 30 -vf 'scale=" + str(width) + ":" + str(height) + "' -y " + new_file 
+   print(cmd)
+   os.system(cmd)
+   frames,color_frames,subframes,sum_vals,max_vals,pos_vals = load_frames_fast(video_file, json_conf, 0, 1, [], 1,[])
+   stack_image = stack_frames(color_frames)
+   new_stack = new_file.replace(".mp4", "-stacked.jpg")
+   img2 = cv2.resize(stack_image, (width,height))
+   cv2.imwrite(new_stack, img2)
+
+   # add stack to video: 
+   final_file = new_file.replace("-thumb", "-temp")
+   cmd = "/usr/bin/ffmpeg -loop 1 -framerate 25 -t 1 -i " + new_stack + " -i " + new_file + " -filter_complex '[0:0] [1:0] concat=n=2:v=1:a=0' " + final_file 
+   os.system(cmd)
+   cmd = "mv " + final_file + " " + new_file
+   os.system(cmd)
+   os.system("rm " + new_stack)
+       
 
 def find_hd_file(sd_file, sd_start_trim, sd_end_trim, trim_on =1):
    print("SD/HD: ", sd_file)

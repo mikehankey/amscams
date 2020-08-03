@@ -4,8 +4,50 @@
 
 """
 from PIL import ImageFont, ImageDraw, Image, ImageChops
+
 import numpy as np
 import cv2
+import os
+from lib.DEFAULTS import *
+from lib.PipeUtil import cfe
+import glob
+import cv2
+
+def quick_video_stack(video_file, count = 10):
+   frames = []
+   temp_dir = "/mnt/ams2/tmp/st/"
+   if cfe(temp_dir, 1) == 0:
+      os.makedirs(temp_dir)
+   cmd = "/usr/bin/ffmpeg -i " + video_file + " -vframes " + str(count) +  " " + temp_dir + "frames%03d.jpg > /dev/null 2>&1"
+   os.system(cmd)
+   files = glob.glob(temp_dir + "*.jpg")
+   for file in files:
+      frame = cv2.imread(file)
+      frames.append(frame)
+   stack_frame = stack_frames(frames)
+   os.system("rm " + temp_dir + "*")
+   return(stack_frame)
+  
+
+
+def stack_frames(frames, skip = 1, resize=None, sun_status="night"):
+
+
+   stacked_image = None
+   fc = 0
+   for frame in frames:
+      if True:
+         if resize is not None:
+            frame = cv2.resize(frame, (resize[0],resize[1]))
+         if fc % skip == 0:
+            frame_pil = Image.fromarray(frame)
+            if stacked_image is None:
+               stacked_image = stack_stack(frame_pil, frame_pil)
+            else:
+               stacked_image = stack_stack(stacked_image, frame_pil)
+      fc = fc + 1
+   return(np.asarray(stacked_image))
+
 
 def stack_frames_fast(frames, skip = 1, resize=None, sun_status="night", sum_vals=[]):
    if sum_vals is None:
@@ -79,3 +121,9 @@ def mask_frame(frame, mp, masks, size=3):
       frame[y1:y2,x1:x2] = px_val
    return(frame)
 
+
+def thumbnail(image_file, w, h):
+   thumb_file = image_file.replace(".png", "-tn.png")
+   img = cv2.imread(image_file)
+   thumb = cv2.resize(img, (w, h))
+   cv2.imwrite(thumb_file, thumb) 

@@ -91,6 +91,15 @@ def sense_up(cam, cam_ip):
    #print ("\r\n")
    cam.close()
 
+def test(cam, cam_ip):
+
+   #enc_info = cam.get_info("Simplify.Encode")
+   #test_info = cam.get_info("Camera.ParamEx")
+   #test_info = cam.get_info("NetWork.NetCommon")
+   test_info = cam.get_info("NetWork.NetCommon")
+   print (test_info)
+   cam.close()
+
 def camera_settings():
    sleep(2)
    print ("Current encoding settings:")
@@ -185,6 +194,14 @@ if cmd == "sense_all":
 
       print("Sense up ", CameraIP)
       sense_up(cam, CameraIP)
+
+if cmd == "test":
+   cam = DVRIPCam(CameraIP,CameraUserName,CameraPassword)
+   if cam.login():
+      print ("Success! Connected to " + CameraIP)
+   else:
+      print ("Failure. Could not connect to camera!")
+   test(cam, CameraIP)
 
 if cmd == "sense_up":
    cam = DVRIPCam(CameraIP,CameraUserName,CameraPassword)

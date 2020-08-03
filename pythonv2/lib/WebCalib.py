@@ -4387,6 +4387,8 @@ def free_cal(json_conf,form):
 
 
    user_stars_file = stack_file.replace("-stacked.png", "-user-stars.json")
+
+   print("user_stars_file:", user_stars_file)
    az_grid_file = stack_file.replace(".png", "-azgrid-half.png")
    az_grid_blend = stack_file.replace(".png", "-azgrid-half-blend.png")
 

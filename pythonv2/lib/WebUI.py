@@ -249,8 +249,6 @@ def parse_jsid(jsid):
    trim = jsid[24:]
    trim = trim.replace(".json", "")
    video_file = "/mnt/ams2/meteors/" + str(year) + "_" + str(month) + "_" + str(day) + "/"  + year + "_" + month + "_" + day + "_" + hour + "_" + min + "_" + sec + "_" + micro_sec + "_" + str(cam) + "-" + trim + ".mp4"
-   #print(video_file)
-   #print(year,month,day,hour,min,sec,micro_sec,cam,trim)
    return(video_file)
 
 def controller(json_conf): 
@@ -2163,19 +2161,14 @@ def reset(video_file, type):
    json_file = video_file.replace(".mp4", ".json")
    cmd = "mv " + video_file + " " + out_file
    mv_cmd = cmd
-   print(cmd)
    os.system(cmd)
    cmd = "rm " + stack_file 
    os.system(cmd)
    cmd = "rm " + json_file 
    os.system(cmd)
-   print("reset:", out_file)  
    cmd = "cd /home/ams/amscams/pythonv2/; ./detectMeteors.py sf " + out_file + " > tmp.txt"
    os.system(cmd)
    fp = open("/home/ams/amscams/pythonv2/tmp.txt", "r")
-   print("<PRE>")
-   for line in fp:
-      print(line)
    cmd2 = "echo \"" + mv_cmd + "\" >> /home/ams/amscams/pythonv2/tmp.txt"
    os.system(cmd2)
    cmd2 = "echo \"" + cmd + "\" >> /home/ams/amscams/pythonv2/tmp.txt"
@@ -2455,11 +2448,24 @@ def override_detect(video_file,jsid, json_conf):
    non_proc_file = "/mnt/ams2/SD/proc2/" + date + "/data/" + bs + "-nonmeteor.json"
    if cfe(proc_file) == 1:
       cmd = "mv " + proc_file + " " + non_proc_file
-      #print(cmd)
 
    base = video_file.replace(".mp4", "")
    el = base.split("/")
    base_dir = base.replace(el[-1], "")
+
+   if cfe(video_file) == 0:
+      fn = video_file.split("/")[-1]
+      fnbt = fn.split("-trim")
+      arc_wild = fnbt[0] + "*"
+      el = fn.split("_")
+      arc_dir = "/mnt/ams2/meteor_archive/" + json_conf['site']['ams_id'] + "/METEOR/" + el[0] + "/" + el[1] + "/" + el[2] + "/" 
+      pos_arc_files = glob.glob(arc_dir + arc_wild) 
+      print("ARC FILES LEFT:<BR>" )
+      for af in pos_arc_files:
+         cmd = "mv " + af + " /mnt/ams2/trash/"
+         print(cmd, "<BR>")
+         os.system(cmd)
+      exit()
  
    if "meteors" in base:
       new_dir = "/mnt/ams2/trash/"
@@ -2469,8 +2475,6 @@ def override_detect(video_file,jsid, json_conf):
          #print("No json data.")
          wild_card = proc_file.replace("-meteor.json", "")
          cmd = "mv " + wild_card + "* /mnt/ams2/trash/"
-         #print(cmd)
-         #exit()
       hd_trim = json_data['hd_trim']
       sd_video_file = json_data['sd_video_file']
       el = sd_video_file.split("/")
@@ -2537,13 +2541,13 @@ def override_detect(video_file,jsid, json_conf):
          hd_outfile = "/mnt/ams2/meteors/"+ hd_y + "_" + hd_m + "_" + hd_d + "/" +  hd_fn
          hd_outfile = hd_outfile.replace(".mp4", "-trim-" + str(hd_trim_num) + "-HD-meteor.mp4")
 
-      cmd = "/usr/bin/ffmpeg -i " + hd_file + " -ss 00:00:" + str(hd_trim_sec) + " -t 00:00:12 -c copy " + hd_outfile 
-      os.system(cmd)
+      #cmd = "/usr/bin/ffmpeg -i " + hd_file + " -ss 00:00:" + str(hd_trim_sec) + " -t 00:00:12 -c copy " + hd_outfile 
+      #os.system(cmd)
       #print("HD LINK:", hd_outfile)
       #print(cmd)
       
    resp = {}
-   resp['status'] = "reduction and cal params reset"
+   resp['status'] = "files deleted"
    print(json.dumps(resp))
       
 
