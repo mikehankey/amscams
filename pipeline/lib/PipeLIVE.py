@@ -18,6 +18,8 @@ def meteor_min_files(day, json_conf):
    hd_files = glob.glob("/mnt/ams2/HD/" + year + "_" + month + "_" + dom + "*")
 
    live_dir = ARC_DIR + "LIVE/" 
+   if cfe(live_dir, 1) == 0:
+      os.makedirs(live_dir)
    #print(meteor_dir)
    meteor_files = glob.glob(meteor_dir + "*.json")
    for meteor_file in meteor_files:

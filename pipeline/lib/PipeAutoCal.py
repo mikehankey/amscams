@@ -247,7 +247,7 @@ def cal_all(json_conf):
       autocal(file, json_conf, 1)
       #exit()
 
-def autocal(image_file, json_conf, show = 1):
+def autocal(image_file, json_conf, show = 0):
    '''
       Open the image and find stars in it. 
       If there are not enough stars move the image to the 'bad' dir and end. 
@@ -261,7 +261,9 @@ def autocal(image_file, json_conf, show = 1):
       Figure out the poly lens stuff later or can do manually. This is mostly for screening good images from sense up folder.
   
    '''
-
+   show = 0
+   print("SHOW:", show)
+   #exit()
 
    print(image_file)
    img = cv2.imread(image_file, 0)
@@ -272,20 +274,22 @@ def autocal(image_file, json_conf, show = 1):
    star_img = img.copy()
    img = mask_frame(img, [], masks, 5)
 
+   stars = get_image_stars(image_file, None, json_conf,0)
 
-   stars = get_image_stars(image_file, None, json_conf, 1)
-
+   print("TEST0", show)
    if show == 1:
       for star in stars:
          (x,y,sint) = star
          print(x,y,sint)
          #cv2.circle(star_img,(x,y), 10, (128,128,255), 1)
-         
+          
       show_image(star_img, 'pepe', 300)
    #exit()
 
+   print("TEST1")
 
    plate_image, star_points = make_plate_image(img.copy(), stars )
+   print("TEST2")
 
 
 
@@ -481,10 +485,14 @@ def get_image_stars(file=None,img=None,json_conf=None,show=0):
    _, star_bg = cv2.threshold(img, best_thresh, 255, cv2.THRESH_BINARY)
    thresh_obj = cv2.dilate(star_bg, None , iterations=4)
 
+   if show == 1:
+      show_image(thresh_obj, 'pepe', 0)
 
-   show_image(thresh_obj, 'pepe', 0)
-
-   (_, cnts, xx) = cv2.findContours(thresh_obj.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+   res = cv2.findContours(thresh_obj.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+   if len(res) == 3:
+      (_, cnts, xx) = res
+   else:
+      (cnts ,xx) = res
    cc = 0
    for (i,c) in enumerate(cnts):
 
@@ -525,8 +533,8 @@ def get_image_stars(file=None,img=None,json_conf=None,show=0):
           print("BADSTAR:", max_px, avg_px, max_int, avg_int, star_multi, star_int)
 
       cc = cc + 1
-
-   show_image(img, 'pepe', 0)
+   if show == 1:
+      show_image(img, 'pepe', 0)
    temp = sorted(stars, key=lambda x: x[2], reverse=True)
    stars = temp[0:50]
    return(stars)
@@ -559,6 +567,7 @@ def make_plate_image(image, file_stars):
    hd_stack_img = image
    hd_stack_img_an = hd_stack_img.copy()
    star_points = []
+   print("TEST")
    for file_star in file_stars:
       (ix,iy,bp) = file_star
          
@@ -820,7 +829,8 @@ def pair_stars(cal_params, cal_params_file, json_conf, cal_img=None):
          #pp_x = (x + int(max_loc[0]) )
          #pp_y = (y + int(max_loc[1]) )
          #cv2.circle(cal_img,(pp_x,pp_y), 7, (128,128,128), 1)
-      new_user_stars.append((pp_x,pp_y,star_int))
+
+         new_user_stars.append((pp_x,pp_y,star_int))
 
    cal_params['user_stars'] = new_user_stars   
    cal_params['stars'] = new_stars 
@@ -1539,7 +1549,7 @@ def reduce_fov_pos(this_poly, in_cal_params, cal_params_file, oimage, json_conf,
       return(show_res)
 
 
-def minimize_poly_params_fwd(cal_params_file, cal_params,json_conf,show=1):
+def minimize_poly_params_fwd(cal_params_file, cal_params,json_conf,show=0):
    global tries
    tries = 0 
    #cv2.namedWindow('pepe')
@@ -1646,7 +1656,7 @@ def minimize_poly_params_fwd(cal_params_file, cal_params,json_conf,show=1):
    save_json_file(cal_params_file, cal_params)
    return(1, cal_params)
 
-def reduce_fit(this_poly,field, cal_params, cal_params_file, fit_img, json_conf, show=1):
+def reduce_fit(this_poly,field, cal_params, cal_params_file, fit_img, json_conf, show=0):
    global tries
    pos_poly = 0 
    fov_poly = 0
@@ -1688,7 +1698,6 @@ def reduce_fit(this_poly,field, cal_params, cal_params_file, fit_img, json_conf,
    dec_center = float(cal_params['dec_center'])
 
    for star in (cal_params['cat_image_stars']):
-      print(len(star))
       if len(star) == 16:
          (dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,px_dist ) = star
       if len(star) == 17:
@@ -1763,8 +1772,9 @@ def reduce_fit(this_poly,field, cal_params, cal_params_file, fit_img, json_conf,
          else: 
             if tries % 1 == 0:
                cv2.imwrite("/mnt/ams2/fitmovies/fr" + str(cnp) + ".png", this_fit_img)
-   cv2.imshow('pepe', show_img)
-   cv2.waitKey(1)
+   if show == 1:
+      cv2.imshow('pepe', show_img)
+      cv2.waitKey(1)
 
 
    #print("Total Residual Error:", total_res )
