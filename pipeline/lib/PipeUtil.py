@@ -142,7 +142,6 @@ def save_json_file(json_file, json_data, compress=False):
    outfile.close()
 
 def get_masks(this_cams_id, json_conf, hd = 0):
-   print("GET MASK", this_cams_id)
    #hdm_x = 2.7272
    #hdm_y = 1.875
    my_masks = []
