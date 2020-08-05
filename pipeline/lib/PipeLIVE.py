@@ -4,13 +4,94 @@
 
 '''
 
+import random
 import os
 import glob
 from lib.DEFAULTS import *
 from lib.PipeUtil import convert_filename_to_date_cam, cfe, load_json_file, save_json_file
+import datetime
+from datetime import datetime as dt
 
 #/usr/bin/ffmpeg -i /mnt/ams2/HD/2020_07_30_23_57_23_000_010003.mp4 -vcodec libx264 -crf 30 -vf 'scale=1280:720' -y test.mp4
 
+def get_random_cam(json_conf):
+   cam_ids = []
+   for cam in json_conf['cameras']:
+      ci = json_conf['cameras'][cam]
+      cam_ids.append(ci['cams_id'])
+   rand_id = random.randint(0, len(cam_ids) - 1)
+   return(cam_ids[rand_id])
+
+def broadcast_minutes(json_conf):
+
+   cam_id = get_random_cam(json_conf)
+
+   LIVE_CLOUD_MIN_DIR = LIVE_MIN_DIR.replace("ams2/meteor_archive", "archive.allsky.tv")
+
+   if cfe(LIVE_MIN_DIR, 1) == 0:
+      os.makedirs(LIVE_MIN_DIR)
+
+   # copy the broadcast file!
+   #os.system("cp /mnt/archive.allsky.tv/LIVE/BROADCAST/broadcast.json ./broadcast.json") 
+   bc = load_json_file("./broadcast.json" )
+   for event in bc:
+      name = event['name']
+      start = event['start']
+      end = event['end']
+      start_time = dt.strptime(start, "%Y_%m_%d_%H_%M_%S") 
+      end_time = dt.strptime(end, "%Y_%m_%d_%H_%M_%S") 
+      now = dt.now()
+      if start_time <= now <= end_time:
+         print("The broadcast is running!")
+         this_event = event
+      else:
+         print("There is no broadcast!")
+         return()
+
+   for vp in this_event['video_providers']:
+      if vp['ams_id'] == STATION_ID:
+         upload_mins = vp['upload_minutes']
+
+   print("Upload these minutes from the last 2 hours (if not already done)!", upload_mins)
+   last_hour_dt = dt.now() - datetime.timedelta(hours=1)
+   last_hour_string = last_hour_dt.strftime("%Y_%m_%d_%H")
+   this_hour_string = now.strftime("%Y_%m_%d_%H")
+   print("Last 2 hours: ", this_hour_string, last_hour_string)
+   min_files = get_min_files(cam_id, this_hour_string, last_hour_string, upload_mins)
+
+   for file in min_files:
+      minify_file(file, LIVE_MIN_DIR)
+
+def minify_file(file, outdir):
+   fn = file.split("/")[-1]
+   outfile = outdir + fn
+   if cfe(outfile) == 0:
+      cmd = "/usr/bin/ffmpeg -i " + file + " -vcodec libx264 -crf 35 -vf 'scale=1280:720' -y " + outfile
+      print(cmd)
+      os.system(cmd)
+  
+
+        
+
+def get_min_files(cam_id, this_hour_string, last_hour_string, upload_mins):
+   bc_clips = []
+   files = glob.glob("/mnt/ams2/HD/" + this_hour_string + "*" + cam_id + "*.mp4")
+   for file in files:
+      if "trim" not in file:
+         el = file.split("_")
+         min = el[4]
+         if int(min) in upload_mins:
+            bc_clips.append(file)
+   files = glob.glob("/mnt/ams2/HD/" + last_hour_string + "*" + cam_id + "*.mp4")
+   for file in files:
+      if "trim" not in file:
+         el = file.split("_")
+         min = el[4]
+         if int(min) in upload_mins:
+      
+            bc_clips.append(file)
+
+   return(bc_clips)
 
 def meteor_min_files(day, json_conf):
    year, month, dom = day.split("_")
