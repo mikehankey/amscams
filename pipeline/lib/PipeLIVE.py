@@ -32,6 +32,8 @@ def broadcast_minutes(json_conf):
    cam_id = get_random_cam(json_conf)
 
    LIVE_CLOUD_MIN_DIR = LIVE_MIN_DIR.replace("ams2/meteor_archive", "archive.allsky.tv")
+   if cfe(LIVE_CLOUD_MIN_DIR, 1) == 0:
+      os.makedirs(LIVE_CLOUD_MIN_DIR)
 
    if cfe(LIVE_MIN_DIR, 1) == 0:
       os.makedirs(LIVE_MIN_DIR)
@@ -102,7 +104,7 @@ def minify_file(file, outdir, text):
    outfile = outdir + fn
    if cfe(outfile) == 0:
 
-         #/usr/bin/ffmpeg -i """ + file + """ -vcodec libx264 -crf 35 -vf drawtext="fontfile=/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf: text='""" + text + """': fontcolor=white: fontsize=24: box=1: boxcolor=black@0.5: boxborderw=5: x=(10): y=(h-text_h)-10" -vf "drawtext=expansion=strftime: basetime=$(date +%s -d'2013-12-01 12:00:00')000000: text='%H\\:%S\\:%S'" """ + outfile 
+         #/usr/bin/ffmpeg -i """ + file + """ -vcodec libx264 -crf 35 -vf 'scale=1280:720', drawtext="fontfile=/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf: text='""" + text + """': fontcolor=white: fontsize=24: box=1: boxcolor=black@0.5: boxborderw=5: x=(10): y=(h-text_h)-10" -vf "drawtext=expansion=strftime: basetime=$(date +%s -d'2013-12-01 12:00:00')000000: text='%H\\:%S\\:%S'" """ + outfile 
       #03\:05\:00\:00
       fn = file.split("/")[-1]
       el = fn.split("_")
@@ -116,7 +118,7 @@ def minify_file(file, outdir, text):
       text += " " + date_txt + "_" 
       timecode = h + "\\:" + m + "\\:" + s + "\\:00"
       cmd = """
-         /usr/bin/ffmpeg -i """ + file + """ -vcodec libx264 -crf 35 -vf "drawtext=fontfile='fontfile=/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf':text='""" + text + """ ':box=1: boxcolor=black@0.5: boxborderw=5:x=20:y=h-lh-1:fontsize=16:fontcolor=white:shadowcolor=black:shadowx=1:shadowy=1:timecode='""" + timecode + """':timecode_rate=25" """ + outfile 
+         /usr/bin/ffmpeg -i """ + file + """ -vcodec libx264 -crf 35 -vf "scale='1280:720', drawtext=fontfile='fontfile=/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf':text='""" + text + """ ':box=1: boxcolor=black@0.5: boxborderw=5:x=20:y=h-lh-1:fontsize=16:fontcolor=white:shadowcolor=black:shadowx=1:shadowy=1:timecode='""" + timecode + """':timecode_rate=25" """ + outfile 
 
 
       print(cmd)
