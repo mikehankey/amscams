@@ -3,7 +3,7 @@
 basic utility functions 
 
 '''
-
+import subprocess
 import math
 from pathlib import Path
 import datetime
@@ -278,3 +278,16 @@ def date_to_jd(year,month,day):
     jd = B + C + D + day + 1720994.5
 
     return jd
+
+def check_running(progname, sec_grep = None):
+   cmd = "ps -aux |grep \"" + progname + "\" | grep -v grep |wc -l"
+
+   output = subprocess.check_output(cmd, shell=True).decode("utf-8")
+   #print(cmd)
+   #print(output)
+   output = int(output.replace("\n", ""))
+   if int(output) > 0:
+      return(output)
+   else:
+      return(0)
+
