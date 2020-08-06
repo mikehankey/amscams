@@ -50,7 +50,19 @@ def broadcast_minutes(json_conf):
 
    for vp in this_event['video_providers']:
       if vp['ams_id'] == STATION_ID:
-         upload_mins = vp['upload_minutes']
+         bid = vp['bid']
+         operator = vp['operator']
+         location = vp['location']
+         text = operator + " " + location
+         vids_per_station = int(60 / len(this_event['video_providers']))
+         print("VIDS:", len(this_event['video_providers']), vids_per_station) 
+         min_start = bid * vids_per_station
+         min_end = min_start + vids_per_station
+         upload_mins = []
+         print(min_start, min_end)
+         for i in range(min_start, min_end):
+            if i < 60:
+               upload_mins.append(i)
 
    print("Upload these minutes from the last 2 hours (if not already done)!", upload_mins)
    last_hour_dt = dt.now() - datetime.timedelta(hours=1)
@@ -60,13 +72,44 @@ def broadcast_minutes(json_conf):
    min_files = get_min_files(cam_id, this_hour_string, last_hour_string, upload_mins)
 
    for file in min_files:
-      minify_file(file, LIVE_MIN_DIR)
+      fn = file.split("/")[-1]
+      el = fn.split("_") 
+      wild = el[0] + "_" + el[1] + "_" + el[2] + "_" + el[3] + "_" + el[4] + "*"
+      check = glob.glob(LIVE_MIN_DIR + wild)
+      #print(LIVE_MIN_DIR + wild, check)
+      if len(check) == 0:
+         minify_file(file, LIVE_MIN_DIR, text)
+      else:
+         print("We already made a file for this minute.")
+   rsync(LIVE_MIN_DIR + "*", LIVE_CLOUD_MIN_DIR )
+   
 
-def minify_file(file, outdir):
+def rsync(src, dest):
+   cmd = "/usr/bin/rsync -v " + src + " " + dest
+   print(cmd)
+
+def minify_file(file, outdir, text):
    fn = file.split("/")[-1]
    outfile = outdir + fn
    if cfe(outfile) == 0:
-      cmd = "/usr/bin/ffmpeg -i " + file + " -vcodec libx264 -crf 35 -vf 'scale=1280:720' -y " + outfile
+
+         #/usr/bin/ffmpeg -i """ + file + """ -vcodec libx264 -crf 35 -vf drawtext="fontfile=/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf: text='""" + text + """': fontcolor=white: fontsize=24: box=1: boxcolor=black@0.5: boxborderw=5: x=(10): y=(h-text_h)-10" -vf "drawtext=expansion=strftime: basetime=$(date +%s -d'2013-12-01 12:00:00')000000: text='%H\\:%S\\:%S'" """ + outfile 
+      #03\:05\:00\:00
+      fn = file.split("/")[-1]
+      el = fn.split("_")
+      y = el[0] 
+      mo = el[1] 
+      d = el[2] 
+      h = el[3] 
+      m = el[4] 
+      s = el[5] 
+      date_txt = "UTC " + y + "/" + mo + "/" + d
+      text += " " + date_txt + "_" 
+      timecode = h + "\\:" + m + "\\:" + s + "\\:00"
+      cmd = """
+         /usr/bin/ffmpeg -i """ + file + """ -vcodec libx264 -crf 35 -vf "drawtext=fontfile='fontfile=/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf':text='""" + text + """ ':box=1: boxcolor=black@0.5: boxborderw=5:x=20:y=h-lh-1:fontsize=16:fontcolor=white:shadowcolor=black:shadowx=1:shadowy=1:timecode='""" + timecode + """':timecode_rate=25" """ + outfile 
+
+
       print(cmd)
       os.system(cmd)
   
