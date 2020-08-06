@@ -8,7 +8,7 @@ import random
 import os
 import glob
 from lib.DEFAULTS import *
-from lib.PipeUtil import convert_filename_to_date_cam, cfe, load_json_file, save_json_file
+from lib.PipeUtil import convert_filename_to_date_cam, cfe, load_json_file, save_json_file, check_running
 import datetime
 from datetime import datetime as dt
 
@@ -23,6 +23,11 @@ def get_random_cam(json_conf):
    return(cam_ids[rand_id])
 
 def broadcast_minutes(json_conf):
+
+   running = check_running("Process.py bcm")
+   if running >= 2:
+      print("Already running.")
+      return()
 
    cam_id = get_random_cam(json_conf)
 
@@ -71,6 +76,7 @@ def broadcast_minutes(json_conf):
    print("Last 2 hours: ", this_hour_string, last_hour_string)
    min_files = get_min_files(cam_id, this_hour_string, last_hour_string, upload_mins)
 
+   new = 0
    for file in min_files:
       fn = file.split("/")[-1]
       el = fn.split("_") 
@@ -79,13 +85,15 @@ def broadcast_minutes(json_conf):
       #print(LIVE_MIN_DIR + wild, check)
       if len(check) == 0:
          minify_file(file, LIVE_MIN_DIR, text)
+         new = new + 1
       else:
          print("We already made a file for this minute.")
-   rsync(LIVE_MIN_DIR + "*", LIVE_CLOUD_MIN_DIR )
+   if new > 0:
+      rsync(LIVE_MIN_DIR + "*", LIVE_CLOUD_MIN_DIR )
    
 
 def rsync(src, dest):
-   cmd = "/usr/bin/rsync -v " + src + " " + dest
+   cmd = "/usr/bin/rsync -v --ignore-existing " + src + " " + dest
    print(cmd)
    os.system(cmd)
 
