@@ -87,6 +87,7 @@ def broadcast_minutes(json_conf):
 def rsync(src, dest):
    cmd = "/usr/bin/rsync -v " + src + " " + dest
    print(cmd)
+   os.system(cmd)
 
 def minify_file(file, outdir, text):
    fn = file.split("/")[-1]
