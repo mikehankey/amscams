@@ -57,6 +57,87 @@ show = 0
 
 ARCHIVE_DIR = "/mnt/ams2/meteor_archive/"
 
+def man_detect(trim_file):
+   objects, frames = detect_meteor_in_clip(trim_file)
+   stacked_sd_frame = stack_frames_fast_old(frames)
+   print(stacked_sd_frame)
+   
+   sd_h, sd_w = frames[0].shape[:2]
+
+   hdm_x = 1920 / sd_w
+   hdm_y = 1080 / sd_h 
+   meteors = only_meteors(objects)
+   #print(hd_meteors)
+   if len(meteors) == 1:
+      print("One meteor detected!") 
+      start_fn = meteors[0]['ofns'][0]
+      end_fn = meteors[0]['ofns'][-1]
+      ttt = trim_file.split("-trim")
+      trim_num = ttt[1].replace("-", "")
+      trim_num = trim_num.replace(".mp4", "")
+      print("TRIM:", trim_num)
+
+      hd_file, hd_trim,time_diff_sec, dur = find_hd_file_best(trim_file, int(trim_num) + start_fn, (end_fn-start_fn)+50, 1)
+      print("HD FILE:", hd_trim)
+
+      hd_x1,hd_y1,hd_x2,hd_y2,hd_mid_x,hd_mid_y = get_roi(None, meteors[0], hdm_x, hdm_y)
+
+      hd_prev_crop=[hd_x1,hd_y1,hd_x2,hd_y2,hd_mid_x,hd_mid_y]
+
+      #preview_crop(hd_trim, hd_x1,hd_y1,hd_x2,hd_y2)
+
+
+      hd_crop_file = ffmpeg_crop(hd_trim,hd_x1,hd_y1,hd_x2-hd_x1,hd_y2-hd_y1, 0)
+
+
+      trim_crop_file = trim_file.replace(".mp4", "-crop.mp4")
+
+      hd_objects, hd_frames = detect_meteor_in_clip(hd_trim)
+    
+      print(hd_objects)
+      stacked_hd_frame = stack_frames_fast_old(hd_frames )
+      hd_meteors = only_meteors(hd_objects)
+      print(hd_meteors)
+      hd_meteors[0]['hd_trim'] = hd_trim
+      calib,cal_params = apply_calib(hd_meteors[0], hd_frames)
+      print(calib)
+      exit()
+
+      save_old_and_new_meteor(trim_file, hd_trim, meteors, hd_objects, stacked_sd_frame, stacked_hd_frame)
+      print("SD:", trim_file)
+      print("HD:", hd_trim)
+
+def save_old_and_new_meteor(sd_trim, hd_trim, sd_objs,hd_objs, sd_stack, hd_stack, calib):
+   sd_fn = sd_trim.split("/")[-1]
+   hd_fn = hd_trim.split("/")[-1]
+   day = sd_fn[0:10]
+   mdir = "/mnt/ams2/meteors/" + day + "/"
+   arc_file = ""
+   js = {}
+   sd_file = mdir + sd_fn
+   hd_file = mdir + hd_fn
+   sd_stack_file = sd_file.replace(".mp4", "-stacked.png")
+   hd_stack_file = hd_file.replace(".mp4", "-stacked.png")
+   js['sd_video_file'] = sd_file
+   js['trim_clip'] = sd_file
+   js['hd_video_file'] = hd_file
+   js['hd_trim'] = hd_file
+   js['archive_file'] = arc_file
+   js['sd_objects'] = sd_objs
+   js['hd_objects'] = hd_objs 
+   js['hd_stack'] = hd_stack_file
+   js['sd_stack'] = sd_stack_file
+   old_meteor_json = sd_file.replace(".mp4" , ".json")
+   save_json_file(old_meteor_json, js)
+   os.system("cp " + sd_trim + " " + sd_file)
+   os.system("cp " + hd_trim + " " + hd_file)
+   cv2.imwrite(sd_stack_file, sd_stack)
+   cv2.imwrite(hd_stack_file, hd_stack)
+   print(old_meteor_json)
+
+   # now save the new
+   
+
 def fix_arc_meteor(arc_file):
    arc_data = load_json_file(arc_file)
    sd_vid = arc_data['info']['sd_vid']
@@ -170,12 +251,12 @@ def find_hd_file_best(sd_file, trim_num, dur = 25, trim_on =1):
 
    if hd_file is not None:
       trim_adj = int(time_diff_sec * 25)
-      #print("METEOR TIME:", meteor_datetime)
-      #print("HD DATE TIME:", hd_datetime)
-      #print("TIME DIFF SEC", time_diff_sec)
-      #print("TRIM ADJ:", trim_adj)
-      #print("HD FILE:", hd_file)
-      #print("SD FILE:", video_file)
+      print("METEOR TIME:", meteor_datetime)
+      print("HD DATE TIME:", hd_datetime)
+      print("TIME DIFF SEC", time_diff_sec)
+      print("TRIM ADJ:", trim_adj)
+      print("HD FILE:", hd_file)
+      print("SD FILE:", video_file)
 
       hd_start = trim_adj 
       hd_end = trim_adj + dur 
@@ -493,7 +574,7 @@ def finish_meteor(meteor_file):
 
 
       #arc_json_file = save_archive_meteor(video_file, syncd_sd_frames,syncd_hd_frames,frame_data,new_trim_num) 
-      #save_old_style_meteor_json(old_meteor_json_file, obj, trim_clip )
+      save_old_style_meteor_json(old_meteor_json_file, obj, trim_clip )
 
 def make_json_files(sd_meteor, hd_meteor):
    file = sd_meteor['trim_clip']
@@ -10941,6 +11022,7 @@ def verify_meteor(meteor_json_file):
       #print("CX1,2 CY1,2:", cx1, cx2, cy1, cy2)
       #exit()
 
+      print("MIKE TRIM FILE:", trim_file)
 
       if trim_file == 0:
          print("BAD TRIM FILE FOR :", video_file)
@@ -11166,10 +11248,10 @@ def save_final_meteor(meteor_file):
    for obj in mj['motion_objects']:
       if mj['motion_objects'][obj]['report']['meteor_yn'] == "Y":
          good_sd_meteors.append(mj['motion_objects'][obj])
+         print("OBJ:", obj, mj['motion_objects'][obj])
    for obj in mj['hd_motion_objects']:
       if mj['hd_motion_objects'][obj]['report']['meteor_yn'] == "Y":
          good_hd_meteors.append(mj['hd_motion_objects'][obj])
-
    status = 1
    #status, good_sd_meteors, good_hd_meteors = final_meteor_test(mj)
 
@@ -11216,6 +11298,8 @@ def save_final_meteor(meteor_file):
       cmd = "mv " + meteor_file + " " + nmf
       print(cmd)
       #os.system(cmd)
+      print("SD METEOR:", real_meteors)
+      print("HD METEOR:", hd_meteors)
       return()
 
    print("SD METEOR:", real_meteors)
@@ -11346,14 +11430,84 @@ def get_vals_trim(video_file, obj, hdm_x=1,hdm_y=1):
    cx1,cy1,cx2,cy2,mid_x,mid_y = get_roi(None, obj, hdm_x, hdm_y)
    print("START FN:", video_file, start_fn,end_fn)
    print("CX1 etc", cx1, cx2, cy1, cy2)
+   print("CROP:", cx1, cy1, cx2-cx1, cy2-cy1)
    print("get_vals_trim end", video_file)
-   trim_file, crop_file = ffmpeg_trim_crop(video_file,start_fn,end_fn,cx1,cy1,cx2-cx1,cy2-cy1, 0)
+   # override if the detection happened right at the start. 
+   # merge 10 seconds of previous file with current file
+   if start_fn == 0: 
+      print("MERGE!", video_file)
+      trim_file = merge_min_files(video_file, start_fn, end_fn, "before", cx1,cy1,cx2-cx1,cy2-cy1,0)
+   else:
+      trim_file, crop_file = ffmpeg_trim_crop(video_file,start_fn,end_fn,cx1,cy1,cx2-cx1,cy2-cy1, 0)
 
-   print("TRIM/CROP:", trim_file, crop_file)
-   #exit()
 
 
    return(trim_file, start_fn,end_fn, cx1,cy1,cx2,cy2,mid_x,mid_y)
+
+def merge_min_files(video_file, start_fn, end_fn, type, x,y,w,h, notrim=0):
+   if type == "before":
+      fn = video_file.split("/")[-1]
+      fdir = video_file.replace(fn, "")
+      el = fn.split("_")
+
+      # First get the previous file and clip it
+      y,m,d,h,mm,s,ms,cam = el[0], el[1],el[2],el[3],el[4],el[5],el[6],el[7]
+      cam = cam.replace(".mp4", "")
+      t_datestr = y + "_" + m + "_" + d + "_" + h + "_" + mm + "_" + s
+      t_datetime = datetime.datetime.strptime(t_datestr, "%Y_%m_%d_%H_%M_%S")
+      b_datetime = t_datetime - datetime.timedelta(minutes = 1)
+      print(t_datetime, b_datetime)
+      new_file_wild = fdir + b_datetime.strftime('%Y_%m_%d_%H_%M_') + "*" + cam + "*.mp4"
+      new_files = glob.glob(new_file_wild)
+      print("WILD:", new_file_wild, new_files)
+      
+      if len(new_files) > 1:
+         nn = [] 
+         for xx in new_files:
+            if "trim" not in xx:
+               nn.append(xx)
+         new_files = nn
+          
+      if len(new_files) == 1:
+         before_file = new_files[0]
+         # cut off last 100 frames from this file:
+         start = 1400
+         end = 1499
+         before_trim_out_file = before_file.replace(".mp4", "-trim-" + str(start) + ".mp4")
+         trim_out_file = video_file.replace(".mp4", "-trim-" + str(start_fn) + ".mp4")
+         cmd = "/usr/bin/ffmpeg -i " + before_file + " -vf select='between(n\," + str(start) + "\," + str(end) + ")' -vsync 0 " + before_trim_out_file
+         print(cmd)
+         os.system(cmd)
+      # now clip the current file
+         cmd = "/usr/bin/ffmpeg -i " + video_file + " -vf select='between(n\," + str(0) + "\," + str(end_fn) + ")' -vsync 0 " + trim_out_file
+         print(cmd)
+         os.system(cmd)
+      # now merge the two clips into 1
+      temp = fdir + fn
+      temp = temp.replace(".mp4", ".txt")
+      temp_out = fdir + fn
+      temp_out = temp_out.replace(".mp4", "-temp.mp4")
+      fp = open(temp, "w")
+      fp.write("file '" + before_trim_out_file + "'\n")
+      fp.write("file '" + trim_out_file + "'\n")
+      fp.close()
+      cmd = "/usr/bin/ffmpeg -f concat -safe 0 -i " +temp + " -c copy " + temp_out
+      os.system(cmd) 
+
+      # NOT NEEDED! now crop the newly merged trim
+      #crop_out_file = temp_out.replace(".mp4", "-crop.mp4")
+
+      #crop = "crop=" + str(w) + ":" + str(h) + ":" + str(x) + ":" + str(y)
+
+      #cmd = "/usr/bin/ffmpeg -i " + trim_out_file + " -filter:v \"" + crop + "\" " + crop_out_file
+      #os.system(cmd)
+      #print(cmd)
+
+      os.system("rm " + before_trim_out_file)
+      os.system("rm " + trim_out_file)
+      os.system("mv " + temp_out + " " + before_trim_out_file)
+
+      return(before_trim_out_file)
 
 
 def extract_frames(video_file,start,end,outfile):
@@ -11809,7 +11963,7 @@ if cmd == "detect_in_vals" or cmd == 'dv':
    file = sys.argv[2].split("/")[-1]
    day = file[0:10]
    cam_size_info = get_cam_sizes(day)
-   detect_in_vals(sys.argv[2])
+   detect_in_vals(sys.argv[2], cam_size_info)
 if cmd == "batch_vals" or cmd == 'bv':
    ### this will run detects on a specific day
    if len(sys.argv) < 3:
@@ -11851,4 +12005,5 @@ if cmd == "fc" or cmd == 'frame_composite':
    frame_composite(sys.argv[2])
 if cmd == "fam" or cmd == 'fix_arc_meteor':
    fix_arc_meteor(sys.argv[2])
-
+if cmd == "man" :
+   man_detect(sys.argv[2]) 

@@ -130,6 +130,7 @@ def make_six_image_comp(min_key, data,featured=0):
       pos["4"] = [360,720,0,640]
       pos["5"] = [360,720,640,1280]
       pos["6"] = [360,720,1280,1920]
+      pos["7"] = [360,720,1280,1920]
    if featured == 6:
       pos["1"] = [0,360,0,640]
       pos["2"] = [0,360,640,1280]
@@ -138,6 +139,7 @@ def make_six_image_comp(min_key, data,featured=0):
       # FEATURED HERE! 
       pos["5"] = [360,1080,0,1280]
       pos["6"] = [720,1080,1280,1920]
+      pos["7"] = [360,720,1280,1920]
    if featured == 5:
       pos["1"] = [0,360,0,640]
       pos["2"] = [0,360,640,1280]
@@ -146,6 +148,7 @@ def make_six_image_comp(min_key, data,featured=0):
       # FEATURED HERE! 
       pos["6"] = [360,1080,0,1280]
       pos["5"] = [720,1080,1280,1920]
+      pos["7"] = [360,720,1280,1920]
 
    date = min_key[0:10]
    blank_image = np.zeros((1080,1920,3),dtype=np.uint8)
