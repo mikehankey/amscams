@@ -6,37 +6,37 @@
    "video_providers" : [
       {
          "ams_id": "AMS1",
-         "bid": [0,1,2],
+         "bid": [0,2,4],
          "operator": "Mike Hankey",
          "location": "Monkton, MD USA"
       },
       {
          "ams_id": "AMS7",
-         "bid": [3,4,5],
+         "bid": [1,3,5],
          "operator": "Elizabeth Warner, University of MD",
          "location": "College Park, MD USA"
       },
       {
          "ams_id": "AMS15",
-         "bid": [6,7,8],
+         "bid": [6,8],
          "operator": "Peter Deterline",
          "location": "Douglassville, PA USA"
       },
       {
          "ams_id": "AMS9",
-         "bid": [5,6,7,8,9],
+         "bid": [7,8,9],
          "operator": "Ed Abel",
          "location": "Mathias, WV USA"
       },
       {
-         "ams_id": "AMS41",
+         "ams_id": "AMS42",
          "bid": [4],
          "operator": "Cedar Amateur Astronomers",
          "location": "Cedar Rapids, IA USA"
       },
       {
          "ams_id": "AMS48",
-         "bid": [6,7,8],
+         "bid": [7,8],
          "operator": "James Hannon",
          "location": "Otter Creek TWP, IA USA"
       },
