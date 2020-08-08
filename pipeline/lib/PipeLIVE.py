@@ -76,12 +76,13 @@ def broadcast_minutes(json_conf):
 
    print("Upload these minutes from the last 2 hours (if not already done)!", upload_mins)
    last_hour_dt = dt.now() - datetime.timedelta(hours=1)
-   last_hour_string = last_hour_dt.strftime("%Y_%m_%d_%H")
+   last_hour_string = last_hour_dt.strftime("%Y_%m_%d_%H_5")
    this_hour_string = now.strftime("%Y_%m_%d_%H")
    print("Last 2 hours: ", this_hour_string, last_hour_string)
    cam_id = None
    cam_id = get_random_cam(json_conf)
    min_files = get_min_files(cam_id, this_hour_string, last_hour_string, upload_mins)
+   print(min_files)
 
    new = 0
    for file in min_files:
@@ -143,7 +144,7 @@ def get_min_files(cam_id, this_hour_string, last_hour_string, upload_mins):
          min = el[4]
          if int(min) in upload_mins:
             bc_clips.append(file)
-   if False:
+   if True:
       files = glob.glob("/mnt/ams2/HD/" + last_hour_string + "*" + cam_id + "*.mp4")
       for file in files:
          if "trim" not in file:

@@ -12,19 +12,19 @@
       },
       {
          "ams_id": "AMS7",
-         "bid": [0,1,2],
+         "bid": [3,4,5],
          "operator": "Elizabeth Warner, University of MD",
          "location": "College Park, MD USA"
       },
       {
          "ams_id": "AMS15",
-         "bid": [0,1,2],
+         "bid": [6,7,8],
          "operator": "Peter Deterline",
          "location": "Douglassville, PA USA"
       },
       {
          "ams_id": "AMS9",
-         "bid": [0,1,2,3,4,5],
+         "bid": [5,6,7,8,9],
          "operator": "Ed Abel",
          "location": "Mathias, WV USA"
       },
