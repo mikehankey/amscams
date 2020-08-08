@@ -11,7 +11,7 @@ from lib.PipeUtil import convert_filename_to_date_cam, day_or_night , load_json_
 from lib.PipeVideo import scan_stack_file, make_preview_video, make_preview_videos
 from lib.PipeDetect import detect_in_vals 
 from lib.PipeSync import sync_day 
-from lib.PipeAutoCal import autocal , solve_field, cal_all, draw_star_image, freecal_copy, apply_calib
+from lib.PipeAutoCal import autocal , solve_field, cal_all, draw_star_image, freecal_copy, apply_calib, index_failed
 from lib.PipeReport import autocal_report
 from lib.PipeLIVE import meteor_min_files, broadcast_live_meteors, broadcast_minutes
 from lib.PipeTimeLapse import make_tl_for_cam, video_from_images, six_cam_video, timelapse_all
@@ -107,6 +107,11 @@ if __name__ == "__main__":
    # make the autocal report html
    if cmd == 'ac_rpt':
       autocal_report()
+ 
+   # index the failed calibs
+   if cmd == 'if':
+      index_failed(json_conf)
+
 
    # LIVE BUFFERED VIDEO COMMANDS
 

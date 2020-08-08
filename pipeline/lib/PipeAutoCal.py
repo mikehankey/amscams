@@ -19,6 +19,17 @@ import glob
 
 from PIL import ImageFont, ImageDraw, Image, ImageChops
 
+def index_failed(json_conf):
+   year = datetime.now().strftime("%Y")
+   failed_dir = ARC_DIR + "CAL/AUTOCAL/" + year + "/failed/"
+   files = glob.glob(failed_dir + "*.png")
+   for file in files:
+      stack_org = cv2.imread(file)
+      stack = cv2.cvtColor(stack_org, cv2.COLOR_BGR2GRAY)
+      stars = get_image_stars(file, stack_org.copy(), json_conf, 1)
+      print(file, len(stars))
+
+
 def apply_calib(meteor_file, json_conf):
    if "json" in meteor_file:
       hd_file = meteor_file.replace(".json", "-HD.mp4")
