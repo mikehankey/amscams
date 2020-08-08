@@ -6,7 +6,7 @@
    "video_providers" : [
       {
          "ams_id": "AMS1",
-         "bid": [0,2,4],
+         "bid": [0,4],
          "operator": "Mike Hankey",
          "location": "Monkton, MD USA"
       },
