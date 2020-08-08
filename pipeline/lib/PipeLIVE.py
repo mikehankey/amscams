@@ -25,7 +25,7 @@ def get_random_cam(json_conf):
 def broadcast_minutes(json_conf):
 
    running = check_running("Process.py bcm")
-   if running >= 2:
+   if running >= 3:
       print("Already running.")
       return()
 
