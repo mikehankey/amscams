@@ -3,7 +3,7 @@
    functions for enabling various forms of live streaming
 
 '''
-
+import time
 import random
 import os
 import glob
@@ -29,7 +29,6 @@ def broadcast_minutes(json_conf):
       print("Already running.")
       return()
 
-   cam_id = get_random_cam(json_conf)
 
    LIVE_CLOUD_MIN_DIR = LIVE_MIN_DIR.replace("ams2/meteor_archive", "archive.allsky.tv")
    if cfe(LIVE_CLOUD_MIN_DIR, 1) == 0:
@@ -80,6 +79,8 @@ def broadcast_minutes(json_conf):
    last_hour_string = last_hour_dt.strftime("%Y_%m_%d_%H")
    this_hour_string = now.strftime("%Y_%m_%d_%H")
    print("Last 2 hours: ", this_hour_string, last_hour_string)
+   cam_id = None
+   cam_id = get_random_cam(json_conf)
    min_files = get_min_files(cam_id, this_hour_string, last_hour_string, upload_mins)
 
    new = 0
@@ -104,6 +105,7 @@ def rsync(src, dest):
    os.system(cmd)
 
 def minify_file(file, outdir, text):
+   start_time = time.time()
    fn = file.split("/")[-1]
    outfile = outdir + fn
    if cfe(outfile) == 0:
@@ -122,12 +124,13 @@ def minify_file(file, outdir, text):
       text += " " + date_txt + "_" 
       timecode = h + "\\:" + m + "\\:" + s + "\\:00"
       cmd = """
-         /usr/bin/ffmpeg -i """ + file + """ -vcodec libx264 -crf 35 -vf "scale='1280:720', drawtext=fontfile='fontfile=/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf':text='""" + text + """ ':box=1: boxcolor=black@0.5: boxborderw=5:x=20:y=h-lh-1:fontsize=16:fontcolor=white:shadowcolor=black:shadowx=1:shadowy=1:timecode='""" + timecode + """':timecode_rate=25" """ + outfile 
+         /usr/bin/ffmpeg -i """ + file + """ -vcodec libx264 -crf 35 -vf "scale='1280:720', drawtext=fontfile='fontfile=/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf':text='""" + text + """ ':box=1: boxcolor=black@0.5: boxborderw=5:x=20:y=h-lh-1:fontsize=16:fontcolor=white:shadowcolor=black:shadowx=1:shadowy=1:timecode='""" + timecode + """':timecode_rate=25" """ + outfile  + " >/dev/null 2>&1"
 
 
       print(cmd)
       os.system(cmd)
-  
+   elapsed_time = time.time() - start_time 
+   print("TIME TO MINIFY FILE:", elapsed_time)
 
         
 
