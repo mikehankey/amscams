@@ -159,7 +159,7 @@ def check_disk():
       if "json" not in file and "daytime" not in file and "all" not in file:
          if cfe(file, 1) == 1:
             fn = file.split("/")[-1]
-            print("day dir:", fn)
+            #print("day dir:", fn)
             dir_date = datetime.strptime(fn , "%Y_%m_%d")
             elp = dir_date - datetime.now()
             days_old = abs(elp.total_seconds()) / 86400
@@ -187,8 +187,33 @@ def check_disk():
                cmd = "rm -rf " + df
                os.system(cmd)
                print(cmd)
-   
+  
+   # purge out old files from cache dir 
+   now = datetime.now()
+   this_year = now.strftime("%Y")
+   this_month = now.strftime("%m")
 
+   years = glob.glob("/mnt/ams2/CACHE/" + json_conf['site']['ams_id'] + "/*" )
+   for year in years:
+      ty = year.split("/")[-1]
+      if str(ty) != str(this_year) and int(this_month) > 1:
+         print("DELETE THIS YEAR DIR IT IS OLDER THAN 1 MONTH!", year)
+         cmd = "rm -rf " + year
+         print(cmd)
+         os.system(cmd)
+      else:
+         months = glob.glob(year + "/*")
+         for month in months:
+            tm = month.split("/")[-1]
+            if str(tm) != str(this_month) and int(this_month) - int(tm)  > 1:
+               print("DELETE THIS MONTH DIR IT IS OLDER THAN 1 MONTH", month)
+               cmd = "rm -rf " + month 
+               print(cmd)
+               os.system(cmd)
+            else:
+               print("KEEP THIS MONTH DIR IT IS OLDER THAN 1 MONTH", month)
+
+   print("THIS YEAR:", this_year)
    # remove trash and other tmp dirs
 
 def batch(num_days):
