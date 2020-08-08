@@ -13,7 +13,7 @@ from lib.PipeDetect import detect_in_vals
 from lib.PipeSync import sync_day 
 from lib.PipeAutoCal import autocal , solve_field, cal_all, draw_star_image, freecal_copy, apply_calib
 from lib.PipeReport import autocal_report
-from lib.PipeLIVE import meteor_min_files, broadcast_live_meteors
+from lib.PipeLIVE import meteor_min_files, broadcast_live_meteors, broadcast_minutes
 from lib.PipeTimeLapse import make_tl_for_cam, video_from_images, six_cam_video, timelapse_all
 
 '''
@@ -127,3 +127,5 @@ if __name__ == "__main__":
       video_from_images(sys.argv[2], sys.argv[3], json_conf)
    if cmd == 'scv':
       six_cam_video(sys.argv[2], json_conf)
+   if cmd == 'bcm':
+      broadcast_minutes(json_conf)
