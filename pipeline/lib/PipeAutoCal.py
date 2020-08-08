@@ -22,13 +22,84 @@ from PIL import ImageFont, ImageDraw, Image, ImageChops
 def index_failed(json_conf):
    year = datetime.now().strftime("%Y")
    failed_dir = ARC_DIR + "CAL/AUTOCAL/" + year + "/failed/"
+   bad_dir = ARC_DIR + "CAL/AUTOCAL/" + year + "/bad/"
    files = glob.glob(failed_dir + "*.png")
    for file in files:
+      good_stars = []
       stack_org = cv2.imread(file)
-      stack = cv2.cvtColor(stack_org, cv2.COLOR_BGR2GRAY)
-      stars = get_image_stars(file, stack_org.copy(), json_conf, 1)
+      stack = cv2.cvtColor(stack_org.copy(), cv2.COLOR_BGR2GRAY)
+      stars = get_image_stars(file, stack.copy(), json_conf, 0)
       print(file, len(stars))
+      stars = validate_stars(stars, stack)
+      for star in stars:
+         print(star)
+         x,y,i = star
+         x1 = x - 10
+         y1 = y - 10
+         x2 = x + 10
+         y2 = y + 10
+         if x1 < 10 or y1 < 10 or x2 > stack_org.shape[1] - 10 or y2 > stack_org.shape[0] - 10:
+            continue
+         
 
+         cv2.rectangle(stack_org, (x-10, y-10), (x+10, y+10), (200, 200, 200), 1)
+      show_image(stack_org, 'pepe', 0)
+      if len(stars) < 10:
+         cmd = "mv " + file + " " + bad_dir
+         print(cmd)
+         os.system(cmd)
+
+def validate_stars(stars, stack):
+   good_stars = []
+   if len(stars) >= 10:
+      for star in stars:
+         print(star)
+         x,y,i = star
+         x1 = x - 10
+         y1 = y - 10
+         x2 = x + 10
+         y2 = y + 10
+         if x1 < 10 or y1 < 10 or x2 > stack.shape[1] - 10 or y2 > stack.shape[0] - 10:
+            continue
+
+         cnt = stack[y1:y2,x1:x2]
+
+         status = star_cnt(cnt)
+         if status == 1:
+            good_stars.append(star)
+   return(good_stars)
+
+def star_cnt(simg):
+   status = 1
+   avg = np.median(simg) 
+   max_p = np.max(simg) 
+   pd = max_p - avg
+   best_thresh = avg + (pd /2)
+   _, star_bg = cv2.threshold(simg, best_thresh, 255, cv2.THRESH_BINARY)
+   #thresh_obj = cv2.dilate(star_bg, None , iterations=4)
+
+   res = cv2.findContours(star_bg.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+   if len(res) == 3:
+      (_, cnts, xx) = res
+   else:
+      (cnts ,xx) = res
+   cc = 0
+   for (i,c) in enumerate(cnts):
+      x,y,w,h = cv2.boundingRect(cnts[i])
+      cc += 1
+      print(cc, pd, x,y,w,h)
+
+   if cc != 1:
+      status = 0
+   if w > 6 or h > 6:
+      status = 0
+   if pd < 25 :
+      status = 0
+
+   #cv2.imshow('pepe', star_bg)
+   #cv2.waitKey(0)
+
+   return(status)
 
 def apply_calib(meteor_file, json_conf):
    if "json" in meteor_file:
@@ -243,7 +314,7 @@ def solve_field(image_file, image_stars=[], json_conf={}):
    
 def show_image(img, win, time=0):
    time = 300 
-   #time = 0
+   time = 0
    if img.shape[0] >= 1070:
       show_img = cv2.resize(img, (1280, 720))
    cv2.imshow(win, show_img)
@@ -272,7 +343,7 @@ def autocal(image_file, json_conf, show = 0):
       Figure out the poly lens stuff later or can do manually. This is mostly for screening good images from sense up folder.
   
    '''
-   show = 0
+   show = 1
    print("SHOW:", show)
    #exit()
 
@@ -404,6 +475,8 @@ def autocal(image_file, json_conf, show = 0):
    raf = cpf.replace("-calparams.json", "-grid.png")
    saf = cpf.replace("-calparams.json", "-stars.png")
 
+   cmd = "mv " + idir + plate_file + " " + sdir
+   os.system(cmd)
 
    cmd = "mv " + idir + pimf + " " + sdir
    os.system(cmd)
@@ -525,8 +598,8 @@ def get_image_stars(file=None,img=None,json_conf=None,show=0):
       max_px, avg_px, px_diff,max_loc,star_int = eval_cnt(cnt_img.copy(), avg)
       max_int = np.sum(cnt_img)
       avg_int = np.median(bg_cnt_img) * cnt_img.shape[0] * cnt_img.shape[1]
-#      star_int = max_int - avg_int 
       star_int = max_int 
+      star_int = max_int - avg_int 
       star_multi = max_int / avg_int
       print("STAR INT: ", star_int)
 
@@ -550,6 +623,9 @@ def get_image_stars(file=None,img=None,json_conf=None,show=0):
       show_image(img, 'pepe', 0)
    temp = sorted(stars, key=lambda x: x[2], reverse=True)
    stars = temp[0:50]
+
+   stars = validate_stars(stars, raw_img)
+
    return(stars)
 
 

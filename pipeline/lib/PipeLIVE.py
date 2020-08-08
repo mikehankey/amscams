@@ -61,15 +61,19 @@ def broadcast_minutes(json_conf):
          operator = vp['operator']
          location = vp['location']
          text = operator + " " + location
-         vids_per_station = int(60 / len(this_event['video_providers']))
-         print("VIDS:", len(this_event['video_providers']), vids_per_station) 
-         min_start = bid * vids_per_station
-         min_end = min_start + vids_per_station
          upload_mins = []
-         print(min_start, min_end)
-         for i in range(min_start, min_end):
-            if i < 60:
-               upload_mins.append(i)
+         for i in range(0,60):
+            match = 0
+            for b in bid:
+               print(i, b)
+               if i < 10:
+                  if i == b:
+                     upload_mins.append(i)
+               else:
+                  mm = str(i)[1]
+                  if str(b) == str(mm):
+                     upload_mins.append(i)
+
 
    print("Upload these minutes from the last 2 hours (if not already done)!", upload_mins)
    last_hour_dt = dt.now() - datetime.timedelta(hours=1)
@@ -136,14 +140,15 @@ def get_min_files(cam_id, this_hour_string, last_hour_string, upload_mins):
          min = el[4]
          if int(min) in upload_mins:
             bc_clips.append(file)
-   files = glob.glob("/mnt/ams2/HD/" + last_hour_string + "*" + cam_id + "*.mp4")
-   for file in files:
-      if "trim" not in file:
-         el = file.split("_")
-         min = el[4]
-         if int(min) in upload_mins:
+   if False:
+      files = glob.glob("/mnt/ams2/HD/" + last_hour_string + "*" + cam_id + "*.mp4")
+      for file in files:
+         if "trim" not in file:
+            el = file.split("_")
+            min = el[4]
+            if int(min) in upload_mins:
       
-            bc_clips.append(file)
+               bc_clips.append(file)
 
    return(bc_clips)
 
