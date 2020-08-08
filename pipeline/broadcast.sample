@@ -6,54 +6,54 @@
    "video_providers" : [
       {
          "ams_id": "AMS1",
-         "bid": [0,4],
+         "bid": [0],
          "operator": "Mike Hankey",
          "location": "Monkton, MD USA"
       },
       {
          "ams_id": "AMS7",
-         "bid": [1,3,5],
+         "bid": [1,2],
          "operator": "Elizabeth Warner, University of MD",
          "location": "College Park, MD USA"
       },
       {
          "ams_id": "AMS15",
-         "bid": [6,8],
+         "bid": [2],
          "operator": "Peter Deterline",
          "location": "Douglassville, PA USA"
       },
       {
          "ams_id": "AMS9",
-         "bid": [7,8,9],
+         "bid": [3,4],
          "operator": "Ed Abel",
          "location": "Mathias, WV USA"
       },
       {
          "ams_id": "AMS42",
-         "bid": [4],
+         "bid": [5],
          "operator": "Cedar Amateur Astronomers",
          "location": "Cedar Rapids, IA USA"
       },
       {
          "ams_id": "AMS48",
-         "bid": [7,8],
+         "bid": [6],
          "operator": "James Hannon",
          "location": "Otter Creek TWP, IA USA"
       },
       {
          "ams_id": "AMS8",
-         "bid": [9,0],
+         "bid": [7],
          "operator": "Kevin Palivec",
          "location": "Hawley TX, USA"
       },
       {
          "ams_id": "AMS2",
-         "bid": [7],
+         "bid": [8],
          "operator": "Robert Ward",
          "location": "Prescott, AZ USA"
       },
       {
-         "bid": [8],
+         "bid": [9],
          "ams_id": "AMS24",
          "operator": "Robert Lunsford, University of Arizona",
          "location": "El Cajo, CA USA"
