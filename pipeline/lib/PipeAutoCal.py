@@ -384,6 +384,7 @@ def autocal(image_file, json_conf, show = 0):
    
    draw_star_image(new_image_file, None, cal_params, 1) 
 
+   freecal_copy(cal_params_file, json_conf)
 
    cpf = cal_params_file.split("/")[-1]
    pimf = cpf.replace("-calparams.json", ".jpg")
@@ -414,6 +415,7 @@ def autocal(image_file, json_conf, show = 0):
    cmd = "mv " + tdir + saf + " " + sdir
    print(cmd)
    os.system(cmd)
+
 
 def cat_star_report(cat_image_stars, multi=2.5):
    #multi = 100
