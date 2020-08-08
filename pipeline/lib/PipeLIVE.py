@@ -24,6 +24,7 @@ def get_random_cam(json_conf):
 
 def broadcast_minutes(json_conf):
 
+
    running = check_running("Process.py bcm")
    if running >= 3:
       print("Already running.")
@@ -38,6 +39,7 @@ def broadcast_minutes(json_conf):
       os.makedirs(LIVE_MIN_DIR)
 
    # copy the broadcast file!
+   os.system("git pull")
    #os.system("cp /mnt/archive.allsky.tv/LIVE/BROADCAST/broadcast.json ./broadcast.json") 
    bc = load_json_file("./broadcast.json" )
    for event in bc:
