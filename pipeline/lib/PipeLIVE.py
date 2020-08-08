@@ -136,24 +136,31 @@ def minify_file(file, outdir, text):
         
 
 def get_min_files(cam_id, this_hour_string, last_hour_string, upload_mins):
+   now = dt.now()
    bc_clips = []
    files = glob.glob("/mnt/ams2/HD/" + this_hour_string + "*" + cam_id + "*.mp4")
-   for file in files:
-      if "trim" not in file:
+   for file in sorted(files):
+
+      (f_datetime, cam, f_date_str,fy,fm,fd, fh, fmin, fs) = convert_filename_to_date_cam(file)
+      elp = now - f_datetime
+      sec = elp.total_seconds()
+   
+      if "trim" not in file and sec > 120:
          el = file.split("_")
          min = el[4]
+         print(min, file)
          if int(min) in upload_mins:
             bc_clips.append(file)
    if True:
       files = glob.glob("/mnt/ams2/HD/" + last_hour_string + "*" + cam_id + "*.mp4")
-      for file in files:
+      for file in sorted(files):
+       
          if "trim" not in file:
             el = file.split("_")
             min = el[4]
+            print(min, file)
             if int(min) in upload_mins:
-      
                bc_clips.append(file)
-
    return(bc_clips)
 
 def meteor_min_files(day, json_conf):
