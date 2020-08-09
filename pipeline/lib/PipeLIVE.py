@@ -126,8 +126,10 @@ def minify_file(file, outdir, text):
       date_txt = "UTC " + y + "/" + mo + "/" + d
       text += " " + date_txt + "_" 
       timecode = h + "\\:" + m + "\\:" + s + "\\:00"
+      #timecode = h + "\\:" + m + "\\:" + s 
       cmd = """
-         /usr/bin/ffmpeg -i """ + file + """ -vcodec libx264 -crf 35 -vf "scale='1280:720', drawtext=fontfile='fontfile=/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf':text='""" + text + """ ':box=1: boxcolor=black@0.5: boxborderw=5:x=20:y=h-lh-1:fontsize=16:fontcolor=white:shadowcolor=black:shadowx=1:shadowy=1:timecode='""" + timecode + """':timecode_rate=25" """ + outfile  + " >/dev/null 2>&1"
+         /usr/bin/ffmpeg -i """ + file + """ -vcodec libx264 -crf 35 -vf "scale='1280:720', drawtext=fontfile='fontfile=/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf':text='""" + text + """ ':box=1: boxcolor=black@0.5: boxborderw=5:x=20:y=h-lh-1:fontsize=16:fontcolor=white:shadowcolor=black:shadowx=1:shadowy=1:timecode='""" + timecode + """':timecode_rate=25" """ + outfile  
+#+ " >/dev/null 2>&1"
 
 
       print(cmd)
@@ -164,6 +166,112 @@ def get_min_files(cam_id, this_hour_string, last_hour_string, upload_mins):
             if int(min) in upload_mins:
                bc_clips.append(file)
    return(bc_clips)
+
+def cat_videos(in_wild, outfile):
+
+   files = glob.glob(in_wild)
+   list_file = outfile.replace(".mp4", "-ALL.txt")
+   list = ""
+   for file in sorted(files):
+      if "ALL" not in file:
+         list += "file '" + file + "'\n"
+   fp = open(list_file, "w")
+   fp.write(list)
+   fp.close()
+   cmd = "/usr/bin/ffmpeg -f concat -safe 0 -i " +list_file + " -c copy -y " + outfile
+   print(cmd)
+   os.system(cmd)
+
+def purge_deleted_live_files (live_dir, live_cloud_dir, day):
+
+   cloud_files = glob.glob(live_cloud_dir + "*.mp4")
+   live_meteors = glob.glob(live_dir + day + "*.mp4")
+   meteor_dir = "/mnt/ams2/meteors/" + day + "/" 
+   print("METEOR DIR:", meteor_dir)
+   detected_meteors = glob.glob(meteor_dir + day + "*.mp4")
+   for lm in live_meteors:
+      fn = lm.split("/")[-1]
+      dmf = meteor_dir + fn
+      if dmf not in detected_meteors:
+         print("DELETE LIVE FILE (it doesn't exist in meteor dir:\n" )
+         print("LIVE FILE:", lm)
+         print("DETECT FILE:", dmf)
+         cloud_file = live_cloud_dir + fn
+         print("CLOUD FILE:", cloud_file)
+         cmd = "rm " + lm 
+         print(cmd)
+         os.system(cmd)
+         if cloud_file in cloud_files:
+            print("NEED TO DELETE THE CLOUD FILE!")
+            cmd = "rm " + cloud_file 
+            print(cmd)
+            os.system(cmd)
+         else:
+            print("FILE IS NOT ON CLOUD!")
+      else:
+         print("\nSTILL GOOD:", lm, "\n")
+
+def meteors_last_night(json_conf, day=None):
+   # sync best meteors within the last 48 hours to the LIVE meteor dir
+   station_id = json_conf['site']['ams_id']
+   if "extra_text" in json_conf['site']:
+      text = "AMSMeteors.org / " + json_conf['site']['extra_text']
+   else: 
+      text = "AMSmeters.org " 
+   best_meteors = []
+   LAST_NIGHT_DIR = ARC_DIR + "LIVE/METEORS_LAST_NIGHT/"
+   LIVE_METEOR_DIR = ARC_DIR + "LIVE/METEORS/"
+
+   LAST_NIGHT_CLOUD_DIR = LIVE_METEOR_DIR.replace("ams2/meteor_archive", "archive.allsky.tv")
+   LIVE_CLOUD_METEOR_DIR = LIVE_METEOR_DIR.replace("ams2/meteor_archive", "archive.allsky.tv")
+
+   if cfe(LAST_NIGHT_CLOUD_DIR,1) == 0:
+      os.makedirs(LAST_NIGHT_CLOUD_DIR)
+   if cfe(LIVE_CLOUD_METEOR_DIR,1) == 0:
+      os.makedirs(LIVE_CLOUD_METEOR_DIR)
+   
+
+   if cfe(LIVE_METEOR_DIR,1) == 0:
+      os.makedirs(LIVE_METEOR_DIR)
+   if cfe(LAST_NIGHT_DIR,1) == 0:
+      os.makedirs(LAST_NIGHT_DIR)
+   if day is None:
+      now = dt.now()
+      day = now.strftime("%Y_%m_%d")
+   else:   
+      now = datetime.strptime(day, "%Y_%m_%d")
+
+   yesterday = now - datetime.timedelta(days = 1) 
+   yest = yesterday.strftime("%Y_%m_%d")
+
+   mdir = "/mnt/ams2/meteors/" + day + "/"
+
+   purge_deleted_live_files (LIVE_METEOR_DIR, LIVE_CLOUD_METEOR_DIR, day)
+   purge_deleted_live_files (LIVE_METEOR_DIR, LIVE_CLOUD_METEOR_DIR, yest)
+
+   files = glob.glob(mdir + "*.json")
+   for file in sorted(files):
+      js = load_json_file(file)
+      if len(js['sd_objects'][0]['history']) > 5:
+         print(file)
+         best_meteors.append(js['hd_trim'])
+
+   mdir = "/mnt/ams2/meteors/" + yest + "/"
+   files = glob.glob(mdir + "*.json")
+   for file in sorted(files):
+      js = load_json_file(file)
+      if len(js['sd_objects'][0]['history']) > 5:
+         print(file)
+         best_meteors.append(js['hd_trim'])
+   for bm in best_meteors:
+      print(bm)
+      minify_file(bm, LIVE_METEOR_DIR, text)
+   cat_videos(LIVE_METEOR_DIR + day + "*", LAST_NIGHT_DIR + day + "-" + station_id  + ".mp4")
+   cat_videos(LIVE_METEOR_DIR + yest + "*", LAST_NIGHT_DIR + yest + "-" + station_id + ".mp4")
+
+   rsync(LIVE_METEOR_DIR + "*", LIVE_CLOUD_METEOR_DIR )
+
+   rsync(LAST_NIGHT_DIR + "*", LAST_NIGHT_CLOUD_DIR)
 
 def meteor_min_files(day, json_conf):
    year, month, dom = day.split("_")
