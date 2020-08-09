@@ -135,5 +135,8 @@ if __name__ == "__main__":
    if cmd == 'bcm':
       broadcast_minutes(json_conf)
    if cmd == 'mln':
-      meteors_last_night(json_conf)
+      if len(sys.argv) == 3:
+         meteors_last_night(json_conf, sys.argv[2])
+      else:
+         meteors_last_night(json_conf)
 

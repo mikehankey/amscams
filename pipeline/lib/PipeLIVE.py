@@ -239,7 +239,8 @@ def meteors_last_night(json_conf, day=None):
       now = dt.now()
       day = now.strftime("%Y_%m_%d")
    else:   
-      now = datetime.strptime(day, "%Y_%m_%d")
+      now = dt.strptime(day, "%Y_%m_%d")
+      day = now.strftime("%Y_%m_%d")
 
    yesterday = now - datetime.timedelta(days = 1) 
    yest = yesterday.strftime("%Y_%m_%d")
@@ -265,7 +266,10 @@ def meteors_last_night(json_conf, day=None):
          best_meteors.append(js['hd_trim'])
    for bm in best_meteors:
       print(bm)
-      minify_file(bm, LIVE_METEOR_DIR, text)
+      bmf = bm.split("/")[-1]
+      md = bmf[0:10]
+      hd_file = "/mnt/ams2/meteors/" + md + "/" + bmf
+      minify_file(hd_file, LIVE_METEOR_DIR, text)
    cat_videos(LIVE_METEOR_DIR + day + "*", LAST_NIGHT_DIR + day + "-" + station_id  + ".mp4")
    cat_videos(LIVE_METEOR_DIR + yest + "*", LAST_NIGHT_DIR + yest + "-" + station_id + ".mp4")
 
