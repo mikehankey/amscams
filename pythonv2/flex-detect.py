@@ -1621,6 +1621,9 @@ def apply_calib(obj , frames=None , user_station = None):
 
 
    if frames is None:
+      if 'hd_trim' not in obj:
+         print("ERROR:", obj)
+         exit()
       if obj['hd_trim'] != 0:
          if cfe(obj['hd_trim']) == 1:   
             hd_frames,hd_color_frames,hd_subframes,sum_vals,max_vals,pos_vals = load_frames_fast(obj['hd_trim'], json_conf, 5, 0, [], 0,[])
