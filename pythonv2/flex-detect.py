@@ -11132,8 +11132,8 @@ def verify_meteor(meteor_json_file):
          print("No meteors found.") 
          return()
 
-   print("Saving final meteor...", sd_meteors, hd_meteors)
-   save_final_meteor(meteor_file)
+      print("Saving final meteor...", sd_meteors, hd_meteors)
+      save_final_meteor(meteor_file)
 
 def regroup_objs(meteors):
      
