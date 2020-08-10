@@ -211,6 +211,31 @@ def purge_deleted_live_files (live_dir, live_cloud_dir, day):
       else:
          print("\nSTILL GOOD:", lm, "\n")
 
+def parse_hist(js):
+   hist = js['sd_objects'][0]['history']
+   fns = []
+   xs = []
+   ys = []
+   ws = []
+   hs = []
+   for row in hist:
+      fn,x,y,w,h,nn,no = row
+      fns.append(fn)
+      xs.append(x)
+      ys.append(y)
+      ws.append(w)
+      hs.append(h)
+
+   m = {}
+   m['fns'] = fns
+   m['xs'] = xs
+   m['ys'] = ys
+   m['ws'] = ws
+   m['hs'] = hs
+ 
+   return(m)      
+
+
 def meteors_last_night(json_conf, day=None):
    # sync best meteors within the last 48 hours to the LIVE meteor dir
    station_id = json_conf['site']['ams_id']
@@ -248,30 +273,35 @@ def meteors_last_night(json_conf, day=None):
    mdir = "/mnt/ams2/meteors/" + day + "/"
 
    purge_deleted_live_files (LIVE_METEOR_DIR, LIVE_CLOUD_METEOR_DIR, day)
-   purge_deleted_live_files (LIVE_METEOR_DIR, LIVE_CLOUD_METEOR_DIR, yest)
 
    files = glob.glob(mdir + "*.json")
+   meteor_data = []
    for file in sorted(files):
       js = load_json_file(file)
+      if 'sd_objects' not in js:
+         print("ER:", js)
+         continue
       if len(js['sd_objects'][0]['history']) > 5:
          print(file)
          best_meteors.append(js['hd_trim'])
+         sdf = file.replace(".json", ".mp4")
+         mm = parse_hist(js)
+         mm['hd_file'] = js['hd_trim']
+         mm['sd_file'] = sdf 
+         meteor_data.append(mm)
+   mdjsf = LIVE_METEOR_DIR + day + ".json"
+   save_json_file(mdjsf, meteor_data) 
+   meteor_data = []
 
-   mdir = "/mnt/ams2/meteors/" + yest + "/"
-   files = glob.glob(mdir + "*.json")
-   for file in sorted(files):
-      js = load_json_file(file)
-      if len(js['sd_objects'][0]['history']) > 5:
-         print(file)
-         best_meteors.append(js['hd_trim'])
    for bm in best_meteors:
       print(bm)
       bmf = bm.split("/")[-1]
       md = bmf[0:10]
       hd_file = "/mnt/ams2/meteors/" + md + "/" + bmf
       minify_file(hd_file, LIVE_METEOR_DIR, text)
-   cat_videos(LIVE_METEOR_DIR + day + "*", LAST_NIGHT_DIR + day + "-" + station_id  + ".mp4")
-   cat_videos(LIVE_METEOR_DIR + yest + "*", LAST_NIGHT_DIR + yest + "-" + station_id + ".mp4")
+   cat_videos(LIVE_METEOR_DIR + day + "*.mp4", LAST_NIGHT_DIR + day + "-" + station_id  + ".mp4")
+
+   os.system("rm " + LAST_NIGHT_DIR + "*.txt") 
 
    rsync(LIVE_METEOR_DIR + "*", LIVE_CLOUD_METEOR_DIR )
 
