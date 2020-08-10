@@ -1,8 +1,8 @@
 [
 {
    "name": "Perseids 2020",
-   "start": "2020_08_05_00_00_00",
-   "end": "2020_08_14_00_00_00",
+   "start": "2020_08_10_00_00_00",
+   "end": "2020_08_12_12_00_00",
    "video_providers" : [
       {
          "ams_id": "AMS1",
@@ -18,7 +18,7 @@
       },
       {
          "ams_id": "AMS15",
-         "bid": [2],
+         "bid": [5],
          "operator": "Peter Deterline",
          "location": "Douglassville, PA USA"
       },
@@ -30,33 +30,27 @@
       },
       {
          "ams_id": "AMS42",
-         "bid": [5],
+         "bid": [6],
          "operator": "Cedar Amateur Astronomers",
          "location": "Cedar Rapids, IA USA"
       },
       {
          "ams_id": "AMS48",
-         "bid": [6],
+         "bid": [7],
          "operator": "James Hannon",
          "location": "Otter Creek TWP, IA USA"
       },
       {
          "ams_id": "AMS8",
-         "bid": [7],
+         "bid": [8],
          "operator": "Kevin Palivec",
          "location": "Hawley TX, USA"
       },
       {
          "ams_id": "AMS2",
-         "bid": [8],
+         "bid": [9],
          "operator": "Robert Ward",
          "location": "Prescott, AZ USA"
-      },
-      {
-         "bid": [9],
-         "ams_id": "AMS24",
-         "operator": "Robert Lunsford, University of Arizona",
-         "location": "El Cajo, CA USA"
       }
 
    ],
@@ -67,6 +61,12 @@
          "ams_id": "AMS14",
          "operator": "Mel Helm",
          "location": "Auberry, CA USA"
+      }
+      {
+         "bid": [9],
+         "ams_id": "AMS24",
+         "operator": "Robert Lunsford, University of Arizona",
+         "location": "El Cajo, CA USA"
       }
    ]
 
