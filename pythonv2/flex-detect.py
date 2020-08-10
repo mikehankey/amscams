@@ -1433,7 +1433,7 @@ def format_calib(trim_clip, cal_params, cal_params_file):
    else:
       cal_params['total_res_px'] = 99
       calib['device']['total_res_px'] = 99
-      calib['device']['total_res_deg'] = (cal_params['total_res_px'] * calib['device']['scale_px']) / 3600
+      calib['device']['total_res_deg'] = (float(cal_params['total_res_px']) * float(calib['device']['scale_px'])) / 3600
 
    return(calib)
 
@@ -11124,13 +11124,12 @@ def verify_meteor(meteor_json_file):
             detect_file = detect_file.replace("-detect.json", "-nometeor.json")
             os.system("mv " + meteor_json_file + " " + detect_file)
             print("mv " + meteor_json_file + " " + detect_file)
-            return()
 
 
-            return()
+            continue
       else:
          print("No meteors found.") 
-         return()
+         continue
 
       print("Saving final meteor...", sd_meteors, hd_meteors)
       save_final_meteor(meteor_file)
@@ -11437,7 +11436,8 @@ def get_vals_trim(video_file, obj, hdm_x=1,hdm_y=1):
    print("get_vals_trim end", video_file)
    # override if the detection happened right at the start. 
    # merge 10 seconds of previous file with current file
-   if start_fn == 0: 
+   #if start_fn == 0: 
+   if False:
       print("MERGE!", video_file)
       trim_file = merge_min_files(video_file, start_fn, end_fn, "before", cx1,cy1,cx2-cx1,cy2-cy1,0)
    else:

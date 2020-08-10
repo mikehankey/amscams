@@ -12,7 +12,7 @@ from lib.PipeVideo import scan_stack_file, make_preview_video, make_preview_vide
 from lib.PipeDetect import detect_in_vals 
 from lib.PipeSync import sync_day 
 from lib.PipeAutoCal import autocal , solve_field, cal_all, draw_star_image, freecal_copy, apply_calib, index_failed
-from lib.PipeReport import autocal_report
+from lib.PipeReport import autocal_report, detect_report
 from lib.PipeLIVE import meteor_min_files, broadcast_live_meteors, broadcast_minutes, meteors_last_night
 from lib.PipeTimeLapse import make_tl_for_cam, video_from_images, six_cam_video, timelapse_all
 
@@ -140,3 +140,7 @@ if __name__ == "__main__":
       else:
          meteors_last_night(json_conf)
 
+
+   # REPORTS
+   if cmd == "detect_rpt":
+      detect_report(sys.argv[2], json_conf)
