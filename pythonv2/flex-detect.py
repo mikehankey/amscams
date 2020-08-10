@@ -11470,6 +11470,15 @@ def merge_min_files(video_file, start_fn, end_fn, type, x,y,w,h, notrim=0):
             if "trim" not in xx:
                nn.append(xx)
          new_files = nn
+
+      print("NEW FILES:", new_files)
+
+      if len(new_files) == 0:
+         trim_out_file = video_file.replace(".mp4", "-trim-" + str(start_fn) + ".mp4")
+         cmd = "/usr/bin/ffmpeg -i " + video_file + " -vf select='between(n\," + str(0) + "\," + str(end_fn) + ")' -vsync 0 " + trim_out_file
+         print(cmd)
+         os.system(cmd)
+         return(trim_out_file)
           
       if len(new_files) == 1:
          before_file = new_files[0]
