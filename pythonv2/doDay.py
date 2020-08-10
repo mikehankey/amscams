@@ -130,19 +130,25 @@ def run_df():
 def check_disk():
    df_data, mounts = run_df()
 
+   print(mounts)
+
+   del_needed = 0
    if "/mnt/archive.allsky.tv" not in mounts:
       print("Wasabi is not mounted! Mounting now.")
       os.system("./wasabi.py mnt")
-   if mounts["/mnt/ams2"] > 80:
-      print("Data volume /mnt/ams2 is greater than 80%!", mounts["/mnt/ams2"]) 
+   if "/mnt/ams2" in mounts:
+      if mounts["/mnt/ams2"] > 80:
+         print("Data volume /mnt/ams2 is greater than 80%!", mounts["/mnt/ams2"]) 
+         del_needed = 1
    if mounts["/"] > 80:
-      print("Root volume / is greater than 80%!", mounts["/mnt/ams2"]) 
+      print("Root volume / is greater than 80%!", mounts["/"]) 
+      del_needed = 1
 
    # first get the HD files and start deleting some of then (remove the last 12 hours) 
    # then check disk again if it is still over 80% delete some more. 
    # continue to do this until the disk is less than 80% or there are only a max of 2 days of HD files left
-   if mounts["/mnt/ams2"] > 80:
-      print("Data volume /mnt/ams2 is greater than 80%!", mounts["/mnt/ams2"]) 
+   if del_needed == 1:
+      print("Data volume /mnt/ams2 is greater than 80%!")
       hd_files = sorted(glob.glob("/mnt/ams2/HD/*.mp4"))
       print(len(hd_files), " HD FILES")
       del_count = int(len(hd_files) / 10)
@@ -175,7 +181,7 @@ def check_disk():
    dayfiles = glob.glob("/mnt/ams2/SD/proc2/daytime/*")
    daydirs = []
    for df in dayfiles:
-      if "mp4" not in df : 
+      if "mp4" not in df and "images" not in df and "passed" not in df and "data" not in df and "failed" not in df: 
          if cfe(df, 1) == 1:
             fn = df.split("/")[-1]
             print("day dir:", fn)
