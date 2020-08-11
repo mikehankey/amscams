@@ -103,7 +103,8 @@ def broadcast_minutes(json_conf):
    
 
 def rsync(src, dest):
-   cmd = "/usr/bin/rsync -v --ignore-existing " + src + " " + dest
+   #cmd = "/usr/bin/rsync -v --ignore-existing " + src + " " + dest
+   cmd = "/usr/bin/rsync -v --update " + src + " " + dest
    print(cmd)
    os.system(cmd)
 
@@ -282,10 +283,10 @@ def meteors_last_night(json_conf, day=None):
          print("ER:", js)
          continue
       if len(js['sd_objects'][0]['history']) > 5:
-         print(file)
-         best_meteors.append(js['hd_trim'])
          sdf = file.replace(".json", ".mp4")
          mm = parse_hist(js)
+         print("JS OBJS!", file, js['hd_trim'], mm)
+         best_meteors.append(js['hd_trim'])
          mm['hd_file'] = js['hd_trim']
          mm['sd_file'] = sdf 
          meteor_data.append(mm)
@@ -294,7 +295,7 @@ def meteors_last_night(json_conf, day=None):
    meteor_data = []
 
    for bm in best_meteors:
-      print(bm)
+      print("BEST:", bm)
       bmf = bm.split("/")[-1]
       md = bmf[0:10]
       hd_file = "/mnt/ams2/meteors/" + md + "/" + bmf
@@ -305,7 +306,7 @@ def meteors_last_night(json_conf, day=None):
 
    rsync(LIVE_METEOR_DIR + "*", LIVE_CLOUD_METEOR_DIR )
 
-   rsync(LAST_NIGHT_DIR + "*", LAST_NIGHT_CLOUD_DIR)
+   #rsync(LAST_NIGHT_DIR + "*", LAST_NIGHT_CLOUD_DIR)
 
 def meteor_min_files(day, json_conf):
    year, month, dom = day.split("_")
