@@ -52,6 +52,12 @@
          "operator": "Robert Ward",
          "location": "Prescott, AZ USA"
       }
+      {
+         "bid": [8,9],
+         "ams_id": "AMS24",
+         "operator": "Robert Lunsford, University of Arizona",
+         "location": "El Cajo, CA USA"
+      }
 
    ],
 
@@ -62,12 +68,6 @@
          "operator": "Mel Helm",
          "location": "Auberry, CA USA"
       },
-      {
-         "bid": [9],
-         "ams_id": "AMS24",
-         "operator": "Robert Lunsford, University of Arizona",
-         "location": "El Cajo, CA USA"
-      }
    ]
 
 
