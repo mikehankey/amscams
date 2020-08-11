@@ -13,12 +13,43 @@ import random
 import os
 import glob
 from lib.DEFAULTS import *
+from lib.PipeDetect import detect_in_vals
 from lib.PipeVideo import find_crop_size, ffprobe, load_frames_fast
-from lib.PipeUtil import convert_filename_to_date_cam, cfe, load_json_file, save_json_file, check_running
+from lib.PipeUtil import convert_filename_to_date_cam, cfe, load_json_file, save_json_file, check_running, calc_dist
+from lib.PipeMeteorTests import obj_cm, unq_points 
 import datetime
 from datetime import datetime as dt
 
 #/usr/bin/ffmpeg -i /mnt/ams2/HD/2020_07_30_23_57_23_000_010003.mp4 -vcodec libx264 -crf 30 -vf 'scale=1280:720' -y test.mp4
+
+def find_best_object(objects):
+   best_matches = []
+   ld = 0
+   for id in objects:
+      obj = objects[id]
+      uperc, upts = unq_points(objects[id])
+      cm = obj_cm(obj['ofns'])
+      el = (obj['ofns'][-1] - obj['ofns'][0]) + 1
+      if el > 0:
+         el_cm = el / cm 
+      dist = calc_dist((obj['oxs'][0],obj['oys'][0]), (obj['oxs'][-1],obj['oys'][-1]))
+      print("CM:", id, cm)
+      print("UP:", id, uperc, upts)
+      print("EL:", id, el)
+      print("ELCM:", id, el_cm)
+      print("Dist:", id, dist)
+      if dist > ld:
+         ld = dist
+         longest_id = id
+      print("")
+      if cm == el and cm == upts and el_cm == 1:
+         best_matches.append(obj)
+   if len(best_matches) == 1:
+      return(best_matches[0])
+   else:
+      # just return the longest
+      print("Couldn't find best obj:", len(best_matches))
+      return(objects[longest_id])
 
 def make_overlay(x1,y1,x2,y2,oh=720,ow=1280):
    x = x1
@@ -30,8 +61,7 @@ def make_overlay(x1,y1,x2,y2,oh=720,ow=1280):
    src = np.zeros((oh,ow,3),dtype=np.uint8)
 
 
-   cv2.rectangle(src, (x, y), (x+w, y+h), (255,255,255), 1, cv2.LINE_AA)
-   cv2.rectangle(src, (5, 5), (ow-5, oh-5), (255,255,255), 1, cv2.LINE_AA)
+   cv2.rectangle(src, (x, y), (x+w, y+h), (100,100,100), 1, cv2.LINE_AA)
 
    tmp = cv2.cvtColor(src, cv2.COLOR_BGR2GRAY)
    _,alpha = cv2.threshold(tmp,0,255,cv2.THRESH_BINARY)
@@ -121,6 +151,7 @@ def broadcast_minutes(json_conf):
       check = glob.glob(LIVE_MIN_DIR + wild)
       #print(LIVE_MIN_DIR + wild, check)
       if len(check) == 0:
+      #if True:
          minify_file(file, LIVE_MIN_DIR, text )
          new = new + 1
       else:
@@ -136,17 +167,19 @@ def rsync(src, dest):
    os.system(cmd)
 
 def minify_file(file, outdir, text, md=None):
+   print("MINIFY:", file)
    if md is not None:
-      hdm_x = int(md['sd_w']) / 1920
-      hdm_y = int(md['sd_h']) / 1080 
-      
-      crop_box = find_crop_size(min(md['xs'])*hdm_x,min(md['ys'])*hdm_y,max(md['xs'])*hdm_x,max(md['ys'])*hdm_y, hdm_x=hdm_x, hdm_y=hdm_y)
+      hdm_x = 1920 / int(md['sd_w']) 
+      hdm_y = 1080 / int(md['sd_h']) 
+      print("HDMX 1080:", hdm_x, hdm_y) 
+      crop_box = find_crop_size(min(md['xs'])*hdm_x,min(md['ys'])*hdm_y,max(md['xs'])*hdm_x,max(md['ys'])*hdm_y, hdm_x, hdm_y)
       print("ORIG:", md)
       print("CROP:", crop_box[0])
-      #hdmy = 720 / 1080
-      #hdmx = 1280 / 1920
-      hdmx = 1
-      hdmy = 1
+      hdmy = 720 / 1080
+      hdmx = 1280 / 1920
+      print("HDMX 720:", hdmx, hdmy) 
+      #hdmx = 1
+      #hdmy = 1
       cx1 = int(crop_box[0] * hdmx)
       cy1 = int(crop_box[1] * hdmy)
       cx2 = int(crop_box[2] * hdmx)
@@ -158,7 +191,6 @@ def minify_file(file, outdir, text, md=None):
       make_overlay(cx1,cy1,cx2,cy2)
  
 
-   exit()
    start_time = time.time()
    fn = file.split("/")[-1]
    outfile = outdir + fn
@@ -181,10 +213,17 @@ def minify_file(file, outdir, text, md=None):
       cmd = """
          /usr/bin/ffmpeg -i """ + file + """ -vcodec libx264 -crf 35 -vf "scale='1280:720', drawtext=fontfile='fontfile=/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf':text='""" + text + """ ':box=1: boxcolor=black@0.5: boxborderw=5:x=20:y=h-lh-1:fontsize=16:fontcolor=white:shadowcolor=black:shadowx=1:shadowy=1:timecode='""" + timecode + """':timecode_rate=25" """ + outfile  
 #+ " >/dev/null 2>&1"
-
-
       print(cmd)
       os.system(cmd)
+    
+      ## now add overlay
+      temp_outfile = outfile.replace(".mp4", "-temp.mp4")
+      cmd = """/usr/bin/ffmpeg -i """ + outfile + """ -i test.png -filter_complex "overlay=0:0" """ + temp_outfile 
+      os.system(cmd)
+      os.system("mv " + temp_outfile + " " + outfile)
+      print("TEST HERE:", outfile) 
+
+
    elapsed_time = time.time() - start_time 
    print("TIME TO MINIFY FILE:", elapsed_time)
 
@@ -341,21 +380,62 @@ def meteors_last_night(json_conf, day=None):
             sd_w = js['sd_w']
             sd_h = js['sd_h']
 
-      frames,color_frames,subframes,sum_vals,max_vals,pos_vals = load_frames_fast(sdv, json_conf, 0, 1, [], 1,[])
-      for frame in color_frames:
-         cv2.imshow('pepe', frame)
-         cv2.waitKey(0)
-      print(pos_vals)
-      exit()
+      if "vals_data" not in js:
+
+         frames,color_frames,subframes,sum_vals,max_vals,pos_vals = load_frames_fast(sdv, json_conf, 0, 1, [], 1,[])
+         vals_data = {}
+         vals_data['sum_vals'] = sum_vals
+         vals_data['max_vals'] = max_vals
+         vals_data['pos_vals'] = pos_vals
+
+         events, objects = detect_in_vals(file, None, vals_data)
+         vals_data['events'] = events
+         vals_data['objects'] = objects
+         js['vals_data'] = vals_data
+         save_json_file(file, js)
+      else:
+         vals_data = js['vals_data']
+
+      events = vals_data['events']
+      objects = vals_data['objects']
+
+      mm = {}
+      if len(objects) == 1:
+         for obj in objects:
+            print(obj, objects[obj]['report']['meteor'], objects[obj]['report']['non_meteor'], objects[obj]['report']['bad_items'])
+            fns = objects[obj]['ofns']
+            xs = objects[obj]['oxs']
+            ys = objects[obj]['oys']
+            mm['xs'] = xs
+            mm['ys'] = ys
+      elif len(objects) == 0:
+         print("NO OBJS!")
+         continue 
+      else:
+         print("MANY OBJS!")
+         best_obj = find_best_object(objects)
+         print("BEST:", best_obj)
+         fns = best_obj['ofns']
+         xs = best_obj['oxs']
+         ys = best_obj['oys']
+         mm['xs'] = xs
+         mm['ys'] = ys
+
+      max_x = max(mm['xs'])
+      min_x = min(mm['xs'])
+      max_y = max(mm['ys'])
+      min_y = min(mm['ys'])
+
 
            
           
       if 'sd_objects' not in js:
          print("ER:", js)
+         exit()
          continue
       if len(js['sd_objects'][0]['history']) > 5:
          sdf = file.replace(".json", ".mp4")
-         mm = parse_hist(js)
+         #mm = parse_hist(js)
          print("JS OBJS!", file, js['hd_trim'], mm)
          best_meteors.append(js['hd_trim'])
          hd_file = js['hd_trim']
@@ -367,6 +447,15 @@ def meteors_last_night(json_conf, day=None):
          meteor_data[hdf] = mm
    mdjsf = LIVE_METEOR_DIR + day + ".json"
    save_json_file(mdjsf, meteor_data) 
+      
+      #fc = 0
+      #for frame in color_frames:
+      #   if fc > 1:
+      #      cv2.rectangle(frame, (min_x, min_y), (max_x, max_y), (255,255,255), 1, cv2.LINE_AA)
+      #   cv2.imshow('pepe', frame)
+      #   cv2.waitKey(30)
+      #   fc += 1
+
 
    for bm in best_meteors:
       print("BEST:", bm)
@@ -376,7 +465,6 @@ def meteors_last_night(json_conf, day=None):
        
       minify_file(hd_file, LIVE_METEOR_DIR, text, meteor_data[bmf])
    cat_videos(LIVE_METEOR_DIR + day + "*.mp4", LAST_NIGHT_DIR + day + "-" + station_id  + ".mp4")
-
    os.system("rm " + LAST_NIGHT_DIR + "*.txt") 
 
    rsync(LIVE_METEOR_DIR + "*", LIVE_CLOUD_METEOR_DIR )

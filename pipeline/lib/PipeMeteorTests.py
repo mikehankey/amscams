@@ -185,8 +185,11 @@ def filter_bad_objects(objects):
         if obj['report']['non_meteor'] == 1:
            bad_objs.append(id)
 
-     elif len(obj['ofns']) < 3 :
+     elif len(obj['ofns']) < 2 :
         bad_objs.append(id)
+
+   print("BAD:", bad_objs)
+
    for id in bad_objs:
       del(objects[id])
    return(objects)

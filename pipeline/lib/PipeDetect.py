@@ -501,7 +501,7 @@ def find_object(objects, fn, cnt_x, cnt_y, cnt_w, cnt_h, intensity=0, hd=0, sd_m
 
 
 
-def detect_in_vals(vals_file, masks=None):
+def detect_in_vals(vals_file, masks=None, vals_data=None):
 
    (f_datetime, cam, f_date_str,fy,fmin,fd, fh, fm, fs) = convert_filename_to_date_cam(vals_file)
 
@@ -510,7 +510,10 @@ def detect_in_vals(vals_file, masks=None):
  
    video_file = vals_file.replace("-vals.json", ".mp4")
    video_file = video_file.replace("data/", "")
-   data = load_json_file(vals_file)
+   if vals_data is None:
+      data = load_json_file(vals_file)
+   else:
+      data = vals_data
    
    events = []
    data_x = []

@@ -46,10 +46,10 @@ def ffprobe(video_file):
 def find_crop_size(min_x,min_y,max_x,max_y, hdm_x=1, hdm_y=1):
    print("MIN/MAX XY:", min_x, min_y, max_x, max_y)
    if hdm_x != 1:
-      sizes = [[1280,720],[1152,648],[1024,576],[869,504],[768,432], [640,360], [512, 288], [384, 216], [256, 144], [128,72]]
+      sizes = [[1280,720],[1152,648],[1024,576],[869,504],[768,432], [640,360], [320, 180]]
    else:
       sizes = [[704,576],[352, 237],[176,118]]
-  
+
    w = max_x - min_x
    h = max_y - min_y
    mid_x = int(((min_x + max_x) / 2))
@@ -494,7 +494,7 @@ def load_frames_fast(trim_file, json_conf, limit=0, mask=0,crop=(),color=0,resiz
                   sum_val = 0
                   sum_vals.append(0)
                   max_vals.append(0)
-                  pos_vals.append(0)
+                  pos_vals.append((0,0))
 
             frames.append(frame)
             last_frame = frame
