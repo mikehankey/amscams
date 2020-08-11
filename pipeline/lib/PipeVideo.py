@@ -1,7 +1,7 @@
 '''
    Pipeline Video Functions
 '''
-
+import subprocess
 import cv2
 import numpy as np
 import time
@@ -14,6 +14,74 @@ from lib.PipeImage import stack_frames_fast , stack_stack, mask_frame, stack_fra
 from lib.PipeUtil import cfe, save_json_file, convert_filename_to_date_cam, get_masks, load_json_file
 from lib.DEFAULTS import * 
 from lib.PipeMeteorTests import ang_dist_vel, angularSeparation
+
+def ffprobe(video_file):
+   default = [704,576]
+   cmd = "/usr/bin/ffprobe " + video_file + " > /tmp/ffprobe72.txt 2>&1"
+   output = subprocess.check_output(cmd, shell=True).decode("utf-8")
+   #try:
+   #time.sleep(2)
+   output = None
+   if True:
+      fpp = open("/tmp/ffprobe72.txt", "r")
+      for line in fpp:
+         if "Stream" in line:
+            output = line
+      fpp.close()
+      #print("OUTPUT: ", output)
+      if output is None:
+         print("FFPROBE PROBLEM:", video_file)
+         exit()
+
+      el = output.split(",")
+      if "x" in el[3]:
+         dim = el[3].replace(" ", "")
+      elif "x" in el[2]:
+         dim = el[2].replace(" ", "")
+
+      w, h = dim.split("x")
+   return(w,h)
+
+
+def find_crop_size(min_x,min_y,max_x,max_y, hdm_x=1, hdm_y=1):
+   print("MIN/MAX XY:", min_x, min_y, max_x, max_y)
+   if hdm_x != 1:
+      sizes = [[1280,720],[1152,648],[1024,576],[869,504],[768,432], [640,360], [512, 288], [384, 216], [256, 144], [128,72]]
+   else:
+      sizes = [[704,576],[352, 237],[176,118]]
+  
+   w = max_x - min_x
+   h = max_y - min_y
+   mid_x = int(((min_x + max_x) / 2))
+   mid_y = int(((min_y + max_y) / 2))
+   best_w = 1919
+   best_h = 1079
+   for mw,mh in sizes:
+      if w * 2 < mw and h * 2 < mh :
+         best_w = mw
+         best_h = mh
+
+
+
+   if (best_w/2) + mid_x > 1920:
+      cx1 = mid_x + (best_w + mid_x ) - 1920
+      cx1 = 1919 - best_w
+   elif mid_x - (best_w/2) < 0:
+      cx1 = 0
+   else:
+      cx1 = int(mid_x - (best_w/2))
+   if (best_h/2) + mid_y > 1080:
+      cy1 = 1079 - best_h
+   elif mid_y - (best_h/2) < 0:
+      cy1 = 0
+   else:
+      cy1 = int(mid_y -  (best_h/ 2))
+   cx1 = int(cx1)
+   cy1 = int(cy1)
+   cx2 = int(cx1 + best_w)
+   cy2 = int(cy1 + best_h)
+   return(cx1,cy1,cx2,cy2,mid_x,mid_y)
+
 
 def make_preview_videos(date, json_conf):
 

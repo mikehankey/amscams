@@ -2,17 +2,44 @@
 
    functions for enabling various forms of live streaming
 
+
+
 '''
+import subprocess
+import numpy as np
+import cv2
 import time
 import random
 import os
 import glob
 from lib.DEFAULTS import *
+from lib.PipeVideo import find_crop_size, ffprobe, load_frames_fast
 from lib.PipeUtil import convert_filename_to_date_cam, cfe, load_json_file, save_json_file, check_running
 import datetime
 from datetime import datetime as dt
 
 #/usr/bin/ffmpeg -i /mnt/ams2/HD/2020_07_30_23_57_23_000_010003.mp4 -vcodec libx264 -crf 30 -vf 'scale=1280:720' -y test.mp4
+
+def make_overlay(x1,y1,x2,y2,oh=720,ow=1280):
+   x = x1
+   y = y1 
+   w = x2 - x1 
+   h = y2 - y1
+   print("xy:", x1,y1,x2,y2)
+   print("OV:", x,y,w,h)
+   src = np.zeros((oh,ow,3),dtype=np.uint8)
+
+
+   cv2.rectangle(src, (x, y), (x+w, y+h), (255,255,255), 1, cv2.LINE_AA)
+   cv2.rectangle(src, (5, 5), (ow-5, oh-5), (255,255,255), 1, cv2.LINE_AA)
+
+   tmp = cv2.cvtColor(src, cv2.COLOR_BGR2GRAY)
+   _,alpha = cv2.threshold(tmp,0,255,cv2.THRESH_BINARY)
+   b, g, r = cv2.split(src)
+   rgba = [b,g,r, alpha]
+   dst = cv2.merge(rgba,4)
+   cv2.imwrite("test.png", dst)
+ 
 
 def get_random_cam(json_conf):
    cam_ids = []
@@ -94,7 +121,7 @@ def broadcast_minutes(json_conf):
       check = glob.glob(LIVE_MIN_DIR + wild)
       #print(LIVE_MIN_DIR + wild, check)
       if len(check) == 0:
-         minify_file(file, LIVE_MIN_DIR, text)
+         minify_file(file, LIVE_MIN_DIR, text )
          new = new + 1
       else:
          print("We already made a file for this minute.")
@@ -108,7 +135,30 @@ def rsync(src, dest):
    print(cmd)
    os.system(cmd)
 
-def minify_file(file, outdir, text):
+def minify_file(file, outdir, text, md=None):
+   if md is not None:
+      hdm_x = int(md['sd_w']) / 1920
+      hdm_y = int(md['sd_h']) / 1080 
+      
+      crop_box = find_crop_size(min(md['xs'])*hdm_x,min(md['ys'])*hdm_y,max(md['xs'])*hdm_x,max(md['ys'])*hdm_y, hdm_x=hdm_x, hdm_y=hdm_y)
+      print("ORIG:", md)
+      print("CROP:", crop_box[0])
+      #hdmy = 720 / 1080
+      #hdmx = 1280 / 1920
+      hdmx = 1
+      hdmy = 1
+      cx1 = int(crop_box[0] * hdmx)
+      cy1 = int(crop_box[1] * hdmy)
+      cx2 = int(crop_box[2] * hdmx)
+      cy2 = int(crop_box[3] * hdmy)
+      mx = int(crop_box[4] * hdmx)
+      my = int(crop_box[5] * hdmy)
+      crop_box = [cx1,cy1,cx2,cy2,mx,my]
+      print("CROP:", crop_box, file)
+      make_overlay(cx1,cy1,cx2,cy2)
+ 
+
+   exit()
    start_time = time.time()
    fn = file.split("/")[-1]
    outfile = outdir + fn
@@ -238,6 +288,7 @@ def parse_hist(js):
 
 
 def meteors_last_night(json_conf, day=None):
+
    # sync best meteors within the last 48 hours to the LIVE meteor dir
    station_id = json_conf['site']['ams_id']
    if "extra_text" in json_conf['site']:
@@ -276,9 +327,26 @@ def meteors_last_night(json_conf, day=None):
    purge_deleted_live_files (LIVE_METEOR_DIR, LIVE_CLOUD_METEOR_DIR, day)
 
    files = glob.glob(mdir + "*.json")
-   meteor_data = []
+   meteor_data = {}
    for file in sorted(files):
       js = load_json_file(file)
+      sdv = file.replace(".json", ".mp4")
+      if cfe(sdv) == 1:
+         if "sd_w" not in js:
+            sd_w, sd_h = ffprobe(sdv)
+            js['sd_w'] = sd_w
+            js['sd_h'] = sd_h
+            save_json_file(file, js)
+         else:
+            sd_w = js['sd_w']
+            sd_h = js['sd_h']
+
+      frames,color_frames,subframes,sum_vals,max_vals,pos_vals = load_frames_fast(sdv, json_conf, 0, 1, [], 0,[])
+      print(pos_vals)
+      exit()
+
+           
+          
       if 'sd_objects' not in js:
          print("ER:", js)
          continue
@@ -287,19 +355,23 @@ def meteors_last_night(json_conf, day=None):
          mm = parse_hist(js)
          print("JS OBJS!", file, js['hd_trim'], mm)
          best_meteors.append(js['hd_trim'])
+         hd_file = js['hd_trim']
+         hdf = hd_file.split("/")[-1]
          mm['hd_file'] = js['hd_trim']
          mm['sd_file'] = sdf 
-         meteor_data.append(mm)
+         mm['sd_w'] = sd_w 
+         mm['sd_h'] = sd_h
+         meteor_data[hdf] = mm
    mdjsf = LIVE_METEOR_DIR + day + ".json"
    save_json_file(mdjsf, meteor_data) 
-   meteor_data = []
 
    for bm in best_meteors:
       print("BEST:", bm)
       bmf = bm.split("/")[-1]
       md = bmf[0:10]
       hd_file = "/mnt/ams2/meteors/" + md + "/" + bmf
-      minify_file(hd_file, LIVE_METEOR_DIR, text)
+       
+      minify_file(hd_file, LIVE_METEOR_DIR, text, meteor_data[bmf])
    cat_videos(LIVE_METEOR_DIR + day + "*.mp4", LAST_NIGHT_DIR + day + "-" + station_id  + ".mp4")
 
    os.system("rm " + LAST_NIGHT_DIR + "*.txt") 
