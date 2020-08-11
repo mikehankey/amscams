@@ -341,7 +341,10 @@ def meteors_last_night(json_conf, day=None):
             sd_w = js['sd_w']
             sd_h = js['sd_h']
 
-      frames,color_frames,subframes,sum_vals,max_vals,pos_vals = load_frames_fast(sdv, json_conf, 0, 1, [], 0,[])
+      frames,color_frames,subframes,sum_vals,max_vals,pos_vals = load_frames_fast(sdv, json_conf, 0, 1, [], 1,[])
+      for frame in color_frames:
+         cv2.imshow('pepe', frame)
+         cv2.waitKey(0)
       print(pos_vals)
       exit()
 
