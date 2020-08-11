@@ -13,6 +13,15 @@ import numpy as np
 import ephem
 import json
 
+def meteors_only(objects):
+   meteors = []
+   for id in objects:
+      print(objects[id])
+      if "report" in objects[id]:
+         if objects[id]['report']['meteor_yn'] == "Y":
+            meteors.append(objects[id])
+   return(meteors)
+
 
 def cnt_max_px(cnt_img):
    cnt_img = cv2.GaussianBlur(cnt_img, (7, 7), 0)

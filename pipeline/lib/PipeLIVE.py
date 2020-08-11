@@ -11,12 +11,13 @@ import cv2
 import time
 import random
 import os
+
 import glob
 from lib.DEFAULTS import *
-from lib.PipeDetect import detect_in_vals
+from lib.PipeDetect import detect_in_vals, detect_meteor_in_clip
 from lib.PipeVideo import find_crop_size, ffprobe, load_frames_fast
-from lib.PipeUtil import convert_filename_to_date_cam, cfe, load_json_file, save_json_file, check_running, calc_dist
-from lib.PipeMeteorTests import obj_cm, unq_points 
+from lib.PipeUtil import convert_filename_to_date_cam, cfe, load_json_file, save_json_file, check_running, calc_dist 
+from lib.PipeMeteorTests import * 
 import datetime
 from datetime import datetime as dt
 
@@ -380,7 +381,8 @@ def meteors_last_night(json_conf, day=None):
             sd_w = js['sd_w']
             sd_h = js['sd_h']
 
-      if "vals_data" not in js:
+      #if "vals_data" not in js:
+      if True:
 
          frames,color_frames,subframes,sum_vals,max_vals,pos_vals = load_frames_fast(sdv, json_conf, 0, 1, [], 1,[])
          vals_data = {}
@@ -389,6 +391,14 @@ def meteors_last_night(json_conf, day=None):
          vals_data['pos_vals'] = pos_vals
 
          events, objects = detect_in_vals(file, None, vals_data)
+         sd_objects, frames = detect_meteor_in_clip(sdv, frames, fn = 0, crop_x = 0, crop_y = 0, hd_in = 0)
+
+         sd_objects = test_meteors(sd_objects) 
+         if len(sd_objects) >= 1:
+            objects = sd_objects
+       
+
+
          vals_data['events'] = events
          vals_data['objects'] = objects
          js['vals_data'] = vals_data
@@ -402,7 +412,7 @@ def meteors_last_night(json_conf, day=None):
       mm = {}
       if len(objects) == 1:
          for obj in objects:
-            print(obj, objects[obj]['report']['meteor'], objects[obj]['report']['non_meteor'], objects[obj]['report']['bad_items'])
+            #print(obj, objects[obj]['report']['meteor'], objects[obj]['report']['non_meteor'], objects[obj]['report']['bad_items'])
             fns = objects[obj]['ofns']
             xs = objects[obj]['oxs']
             ys = objects[obj]['oys']
@@ -470,6 +480,52 @@ def meteors_last_night(json_conf, day=None):
    rsync(LIVE_METEOR_DIR + "*", LIVE_CLOUD_METEOR_DIR )
 
    #rsync(LAST_NIGHT_DIR + "*", LAST_NIGHT_CLOUD_DIR)
+
+def test_meteors(objs):
+
+   mobjs = {}
+
+   for id in objs:
+      obj = objs[id]
+
+      uperc, upts = unq_points(obj)
+      cm = obj_cm(obj['ofns'])
+      if cm < 3:
+         continue
+      el = (obj['ofns'][-1] - obj['ofns'][0]) + 1
+      if el > 0:
+         el_cm = el / cm
+      dist = calc_dist((obj['oxs'][0],obj['oys'][0]), (obj['oxs'][-1],obj['oys'][-1]))
+      if dist < 5:
+         continue
+      (i_max_times, i_pos_neg_perc, i_perc_val) = analyze_intensity(obj['oint'])
+      if i_max_times <= 1:
+         continue
+      if i_pos_neg_perc <= .75:
+         continue
+
+
+      res = meteor_direction_test(obj['oxs'], obj['oys'])
+      print(obj)
+      print("CM: ", cm)
+      print("EL: ", el)
+      print("EL_CM: ", el_cm)
+      print("DIST PX: ", dist)
+      print("Direction: ", res)
+      print("Intensity Min Max Peak:", i_max_times)
+      print("Intensity Pos/Nig Perc:" , i_pos_neg_perc)
+      print("Intensity Perc Val:", i_perc_val) 
+      obj['report'] = {}
+      obj['report']['meteor_yn'] = 'Y'
+      obj['report']['cm'] = cm
+      obj['report']['el'] = el
+      obj['report']['el_cm'] = el_cm
+      obj['report']['dist_px'] = dist
+      obj['report']['direction_test'] = res
+      obj['report']['int_min_max'] = i_max_times
+      obj['report']['int_pos_perc'] = i_pos_neg_perc
+      mobjs[id] = obj
+   return(mobjs)
 
 def meteor_min_files(day, json_conf):
    year, month, dom = day.split("_")

@@ -12,7 +12,7 @@ def analyze_intensity(ints):
    if len(neg_vals) > 0:
       pos_neg_perc = len(pos_vals) / (len(pos_vals) + len(neg_vals))
    else:
-      pos_neg_perc = 0
+      pos_neg_perc = 1
    if len(pos_vals) == 0:
       return(0, 1, [])
 
@@ -21,7 +21,10 @@ def analyze_intensity(ints):
    max_times = max_int / min_int
    perc_val = []
    for int_val in pos_vals:
-      mxt = max_int / int_val
+      if max_int > 0:
+         mxt = int_val / max_int
+      else:
+         mxt = 0
       perc_val.append(mxt)
    return(max_times, pos_neg_perc, perc_val)
 
@@ -167,7 +170,7 @@ def obj_cm(ofns):
    last_fn = None
    for fn in ofns:
       if last_fn is not None:
-         if last_fn + 1 == fn or last_fn + 2 == fn:
+         if int(last_fn) + 1 == int(fn) or int(last_fn) + 2 == int(fn):
             cm = cm + 1
             if cm > max_cm :
                max_cm = cm
