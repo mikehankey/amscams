@@ -10887,16 +10887,18 @@ def verify_toomany_detects(day=None):
 
 def verify_toomany(file):
    js = load_json_file(file)
-   meteors = only_meteors(js['objects'])
-   if len(meteors) > 0:
-      print("Total Events: ", len(js['events']))
-      print("Total Objects: ", len(js['objects']))
-      print("Meteors: ", len(meteors))
-      js['maybe_meteors'] = meteors
-      save_json_file(file, js)
-      new_file = file.replace("toomany", "maybe-meteors")
-      save_json_file(new_file, js)
-      print("NEW:", new_file)
+   if js != 0:
+
+      meteors = only_meteors(js['objects'])
+      if len(meteors) > 0:
+         print("Total Events: ", len(js['events']))
+         print("Total Objects: ", len(js['objects']))
+         print("Meteors: ", len(meteors))
+         js['maybe_meteors'] = meteors
+         save_json_file(file, js)
+         new_file = file.replace("toomany", "maybe-meteors")
+         save_json_file(new_file, js)
+         print("NEW:", new_file)
    else:
       print("No good meteors here.")
       df = file.replace("toomany", "detect")
