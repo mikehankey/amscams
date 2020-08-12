@@ -11363,8 +11363,8 @@ def save_final_meteor(meteor_file):
    hd_frames,hd_color_frames,hd_subframes,hd_sum_vals,hd_max_vals,hd_pos_vals = load_frames_fast(hd_trim, json_conf, 0, 0, [], 1,[])
    if len(hd_frames) == 0:
       print("NO HD FRAMES!", hd_trim)
-      exit()
-
+      hd_frames = sd_frames 
+      hd_color_frames = sd_color_frames 
    stacked_img = stack_frames_fast(sd_color_frames, 1, None, "night", None)
    hd_stacked_img = stack_frames_fast(hd_color_frames, 1, None, "night", None)
 
