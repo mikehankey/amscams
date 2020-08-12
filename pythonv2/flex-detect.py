@@ -227,7 +227,7 @@ def find_hd_file_best(sd_file, trim_num, dur = 25, trim_on =1):
    hd_files_time = []
    for hd_file in hd_files:
       el = hd_file.split("_")
-      if len(el) == 8 and "meteor" not in hd_file and "crop" not in hd_file and "trim" not in hd_file:
+      if len(el) == 8 and "meteor" not in hd_file and "crop" not in hd_file and "trim" not in hd_file and "TL" not in hd_file:
  
          hd_datetime, hd_cam, hd_date, hd_y, hd_m, hd_d, hd_h, hd_M, hd_s = convert_filename_to_date_cam(hd_file)
          time_diff = meteor_datetime - hd_datetime
