@@ -6,7 +6,7 @@
    "video_providers" : [
       {
          "ams_id": "AMS1",
-         "bid": [0,1],
+         "bid": [0],
          "operator": "Mike Hankey",
          "location": "Monkton, MD USA"
       },
@@ -53,7 +53,7 @@
          "location": "Prescott, AZ USA"
       },
       {
-         "bid": [8,9],
+         "bid": [8],
          "ams_id": "AMS24",
          "operator": "Robert Lunsford, University of Arizona",
          "location": "El Cajo, CA USA"
