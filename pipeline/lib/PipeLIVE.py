@@ -153,7 +153,7 @@ def broadcast_minutes(json_conf):
       #print(LIVE_MIN_DIR + wild, check)
       if len(check) == 0:
       #if True:
-         minify_file(file, LIVE_MIN_DIR, text )
+         minify_file(file, LIVE_MIN_DIR, text, None )
          new = new + 1
       else:
          print("We already made a file for this minute.")
@@ -167,7 +167,7 @@ def rsync(src, dest):
    print(cmd)
    os.system(cmd)
 
-def minify_file(file, outdir, text, md=None):
+def minify_file(file, outdir, text, md):
    print("MINIFY:", file)
    if md is not None:
       hdm_x = 1920 / int(md['sd_w']) 
@@ -212,17 +212,18 @@ def minify_file(file, outdir, text, md=None):
       timecode = h + "\\:" + m + "\\:" + s + "\\:00"
       #timecode = h + "\\:" + m + "\\:" + s 
       cmd = """
-         /usr/bin/ffmpeg -i """ + file + """ -vcodec libx264 -crf 35 -vf "scale='1280:720', drawtext=fontfile='fontfile=/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf':text='""" + text + """ ':box=1: boxcolor=black@0.5: boxborderw=5:x=20:y=h-lh-1:fontsize=16:fontcolor=white:shadowcolor=black:shadowx=1:shadowy=1:timecode='""" + timecode + """':timecode_rate=25" """ + outfile  
+      /usr/bin/ffmpeg -i """ + file + """ -vcodec libx264 -crf 35 -vf "scale='1280:720', drawtext=fontfile='fontfile=/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf':text='""" + text + """ ':box=1: boxcolor=black@0.5: boxborderw=5:x=20:y=h-lh-1:fontsize=16:fontcolor=white:shadowcolor=black:shadowx=1:shadowy=1:timecode='""" + timecode + """':timecode_rate=25" """ + outfile  
 #+ " >/dev/null 2>&1"
       print(cmd)
       os.system(cmd)
     
       ## now add overlay
-      temp_outfile = outfile.replace(".mp4", "-temp.mp4")
-      cmd = """/usr/bin/ffmpeg -i """ + outfile + """ -i test.png -filter_complex "overlay=0:0" """ + temp_outfile 
-      os.system(cmd)
-      os.system("mv " + temp_outfile + " " + outfile)
-      print("TEST HERE:", outfile) 
+      if md is not None:
+         temp_outfile = outfile.replace(".mp4", "-temp.mp4")
+         cmd = """/usr/bin/ffmpeg -i """ + outfile + """ -i test.png -filter_complex "overlay=0:0" """ + temp_outfile 
+         os.system(cmd)
+         os.system("mv " + temp_outfile + " " + outfile)
+         print("TEST HERE:", outfile) 
 
 
    elapsed_time = time.time() - start_time 
