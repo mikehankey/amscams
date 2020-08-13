@@ -4,13 +4,20 @@ from lib.Video_Title_cv import *
 
 if __name__ == "__main__":
  
-   _title = input("Enter the title of the video: ")
-   _credits = input("Enter the music credits:")
+   #_title = input("Enter the title of the video: ")
+   #_credits = input("Enter the music credits:")
    _color = (255,255,255,255) # Optional - it's white by default
    _with_line_animation = True # Optional - it's True by default
    _output_path = '/mnt/ams2/vid.mp4'
-   create_title_video(_title,_credits,_output_path,_color,_with_line_animation)
+   #create_title_video(_title,_credits,_output_path,_color,_with_line_animation)
 
+
+   _title = "Visit Allskycams.com"
+   _subtitle = "for more information about our all sky cameras"
+   _duration = 125 # In frames at 25fps
+   _output_path =  '/mnt/ams2/allskycams.mp4'
+
+   create_allskycams_video(_title,_subtitle,_duration,_output_path)
 
 # IF YOU WANT TO CREATE A TITLE VIDEO 
 # WITH
