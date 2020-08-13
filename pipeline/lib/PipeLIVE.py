@@ -413,7 +413,10 @@ def minify_file(file, outdir, text, md, sd_img = None, hd_img = None):
    crop_file = outfile.replace(".mp4", "-crop.mp4")
    if cfe(crop_file) == 0:
       crop_file = crop_video(file, hcx1, hcy1, hw, hh, crop_file)
-   stack_img_crop = stack_img[hcy1:hcy1+hh,hcx1:hcx1+hw]
+   try:
+      stack_img_crop = stack_img[hcy1:hcy1+hh,hcx1:hcx1+hw]
+   except:
+      print("NO HD FILE? STACK IS BAD", file)
 
 
    elapsed_time = time.time() - start_time 
@@ -567,7 +570,11 @@ def mln_final(day):
    for file in files:
       tnf = file.replace(".jpg", "-tn.jpg")
       if "-tn" not in file and cfe(tnf) == 0:
-         img = thumbnail(file, PREVIEW_W, PREVIEW_H,tnf)
+         try:
+            img = thumbnail(file, PREVIEW_W, PREVIEW_H,tnf)
+         except:
+            print("BAD FILE:", file)
+            continue
    files = glob.glob(LIVE_METEOR_DAY_DIR + day + "*-crop-tn.jpg")
    html = mk_css()
    html += swap_pic_to_vid()
