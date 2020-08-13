@@ -5,10 +5,10 @@ from lib.Video_Title_cv import *
 if __name__ == "__main__":
  
    _title = input("Enter the title of the video: ")
-   _credits = input("Enter the music credits (ex: Music by Naked Jungle - nakedjungle.bandcamp.com)")
+   _credits = input("Enter the music credits:")
    _color = (255,255,255,255) # Optional - it's white by default
    _with_line_animation = True # Optional - it's True by default
-
+   _output_path = '/mnt/ams2/vid.mp4'
    create_title_video(_title,_credits,_output_path,_color,_with_line_animation)
 
 
@@ -18,7 +18,7 @@ if __name__ == "__main__":
 # 2 - A sequence with Title and credits:
 _title = "BEST OF PERSEIDS 2020"
 _credits = "Music by Naked Jungle - nakedjungle.bandcamp.com"
-_output_path = '/mnt/ams2/vid.mp4'
+
 _color = (255,255,255,255) # Optional - it's white by default
 _with_line_animation = True # Optional - it's True by default
 
