@@ -417,6 +417,7 @@ def minify_file(file, outdir, text, md, sd_img = None, hd_img = None):
       stack_img_crop = stack_img[hcy1:hcy1+hh,hcx1:hcx1+hw]
    except:
       print("NO HD FILE? STACK IS BAD", file)
+      stack_img_crop = None
 
 
    elapsed_time = time.time() - start_time 
@@ -425,8 +426,9 @@ def minify_file(file, outdir, text, md, sd_img = None, hd_img = None):
    print("CROP FILE:", crop_file)
    stack_file = outfile.replace(".mp4", ".jpg")
    stack_crop_file = crop_file.replace(".mp4", ".jpg")
+   if stack_img_crop is not None:
+      cv2.imwrite(stack_crop_file, stack_img_crop)
    cv2.imwrite(stack_file, stack_img)
-   cv2.imwrite(stack_crop_file, stack_img_crop)
    print("STACK FILE:", stack_file)
    print("STACK CROP FILE:", stack_crop_file)
    return(outfile, crop_file,cropbox_1080, cropbox_720)
