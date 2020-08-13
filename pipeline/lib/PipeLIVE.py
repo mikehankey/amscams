@@ -791,7 +791,7 @@ def meteors_last_night(json_conf, day=None):
    os.system("rm " + LAST_NIGHT_DIR + "*.txt") 
    mln_final(day)
 
-   mln_sync(day, json_conf):
+   mln_sync(day, json_conf)
 
    exit()
 
