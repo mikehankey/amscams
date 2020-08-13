@@ -9,12 +9,16 @@ def analyze_intensity(ints):
          pos_vals.append(int_val)
       else:
          neg_vals.append(int_val)
+
+
    if len(neg_vals) > 0:
       pos_neg_perc = len(pos_vals) / (len(pos_vals) + len(neg_vals))
    else:
       pos_neg_perc = 1
    if len(pos_vals) == 0:
       return(0, 1, [])
+
+   print("POS/NEG:", len(pos_vals), len(neg_vals))
 
    max_int = max(pos_vals)
    min_int = min(pos_vals)
@@ -77,7 +81,7 @@ def meteor_dir_test(fxs,fys):
    if len(fxs) > 0: 
       perc = match / (len(fxs)*2)
    else:
-      perc = 0
+      perc = 1
    return(perc)
 
 def meteor_dir(fx,fy,lx,ly):
@@ -191,8 +195,6 @@ def filter_bad_objects(objects):
      elif len(obj['ofns']) < 2 :
         bad_objs.append(id)
 
-   print("BAD:", bad_objs)
-
    for id in bad_objs:
       del(objects[id])
    return(objects)
@@ -221,6 +223,7 @@ def unq_points(object):
       x = object['oxs'][i]
       y = object['oys'][i]
       key = str(x) + "." + str(y)
+      print("KEY:", key)
       if key not in points: 
          points[key] = 1
          unq_tot += 1
@@ -228,6 +231,7 @@ def unq_points(object):
       tot = tot + 1
 
    perc = unq_tot / tot
+   print("UNQ **********:", unq_tot, tot)
    return(perc, unq_tot)
 
 def big_cnt_test(object,hd=0):
@@ -444,7 +448,6 @@ def ang_dist_vel(xs=[], ys=[],azs=[],els=[], pixscale=155):
 
 
    # Formula for finding ang_dist and vel from px
-   print(xs,ys)
    if len(xs) > 0:
       px_dist = calc_dist((xs[0],ys[0]), (xs[-1], ys[-2]))
       ang_dist = px_dist * pixscale

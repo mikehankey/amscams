@@ -43,34 +43,33 @@ def ffprobe(video_file):
    return(w,h)
 
 
-def find_crop_size(min_x,min_y,max_x,max_y, hdm_x=1, hdm_y=1):
+def find_crop_size(min_x,min_y,max_x,max_y, img_w, img_h, hdm_x=1, hdm_y=1 ):
    print("MIN/MAX XY:", min_x, min_y, max_x, max_y)
-   if hdm_x != 1:
-      sizes = [[1280,720],[1152,648],[1024,576],[869,504],[768,432], [640,360], [320, 180]]
-   else:
-      sizes = [[704,576],[352, 237],[176,118]]
+   sizes = [[1280,720],[1152,648],[1024,576],[869,504],[768,432], [640,360], [320, 180]]
 
    w = max_x - min_x
    h = max_y - min_y
    mid_x = int(((min_x + max_x) / 2))
    mid_y = int(((min_y + max_y) / 2))
-   best_w = 1919
-   best_h = 1079
+
+   best_w = img_w 
+   best_h = img_h
    for mw,mh in sizes:
-      if w * 2 < mw and h * 2 < mh :
+      if w * 1.4 < mw and h * 1.4 < mh :
          best_w = mw
          best_h = mh
+   print("BEST CROP SIZE IS: ", best_w, best_h)
 
 
 
-   if (best_w/2) + mid_x > 1920:
-      cx1 = mid_x + (best_w + mid_x ) - 1920
-      cx1 = 1919 - best_w
+   if (best_w/2) + mid_x > img_w:
+      cx1 = mid_x + (best_w + mid_x ) - img_w 
+      cx1 = img_w - best_w
    elif mid_x - (best_w/2) < 0:
       cx1 = 0
    else:
       cx1 = int(mid_x - (best_w/2))
-   if (best_h/2) + mid_y > 1080:
+   if (best_h/2) + mid_y > img_h:
       cy1 = 1079 - best_h
    elif mid_y - (best_h/2) < 0:
       cy1 = 0
@@ -80,7 +79,31 @@ def find_crop_size(min_x,min_y,max_x,max_y, hdm_x=1, hdm_y=1):
    cy1 = int(cy1)
    cx2 = int(cx1 + best_w)
    cy2 = int(cy1 + best_h)
-   return(cx1,cy1,cx2,cy2,mid_x,mid_y)
+   cw = cx2 - cx1
+   ch = cy2 - cy1
+
+   if cx2 > img_w:
+      print("CROP OUTSIDE OF WIDTH:", cx2)
+      cx1 = img_w - cw
+      cx2 = cx1 + cw
+      print("FIXED :", cx1, cx2)
+
+   if cy2 > img_h:
+      cy1 = img_h - ch
+      cy2 = img_h + ch
+
+   if cx2 < 0 :
+      cx1 = 0 
+      cx2 = 0 + cw
+   if cy2 < 0 :
+      cy1 = 0 + ch
+      cy2 = 0 + ch
+   
+   scx1, scx2 = sorted([cx1, cx2], reverse=False)
+
+   scy1, scy2 = sorted([cy1, cy2], reverse=False)
+   print(scx1, scy1, scx2, scy1)
+   return(scx1,scy1,scx2,scy2,mid_x,mid_y)
 
 
 def make_preview_videos(date, json_conf):

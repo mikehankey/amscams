@@ -13,15 +13,79 @@ import random
 import os
 
 import glob
+from lib.PipeReport import mk_css 
 from lib.DEFAULTS import *
-from lib.PipeDetect import detect_in_vals, detect_meteor_in_clip
+from lib.PipeDetect import detect_in_vals, detect_meteor_in_clip, crop_video, analyze_object
 from lib.PipeVideo import find_crop_size, ffprobe, load_frames_fast
 from lib.PipeUtil import convert_filename_to_date_cam, cfe, load_json_file, save_json_file, check_running, calc_dist 
 from lib.PipeMeteorTests import * 
+from lib.PipeImage import stack_frames, thumbnail
 import datetime
 from datetime import datetime as dt
 
 #/usr/bin/ffmpeg -i /mnt/ams2/HD/2020_07_30_23_57_23_000_010003.mp4 -vcodec libx264 -crf 30 -vf 'scale=1280:720' -y test.mp4
+
+def pip_video(video_file, json_conf):
+   crop_file = video_file.replace(".mp4", "-crop.mp4")
+   js_file = video_file.replace(".mp4", ".json")
+   frames,color_frames,subframes,sum_vals,max_vals,pos_vals = load_frames_fast(video_file, json_conf, 0, 1, [], 1,[])
+   crop_frames,crop_color_frames,subframes,sum_vals,max_vals,pos_vals = load_frames_fast(crop_file, json_conf, 0, 1, [], 1,[])
+   js = load_json_file(js_file)
+   hcx1,hcy1,hcx2,hcy2 = js['cropbox_1080']
+   cx1,cy1,cx2,cy2 = js['cropbox_720']
+
+   # based on 720 location where should we put the PIP frame?
+   if cx1 < 1280 / 2:
+      hor = "left"
+   else:
+      hor = "right"
+   if cy1 < 720 / 2:
+      vert = "bottom"
+   else:
+      vert = "top"
+
+   print("HOR:", hor)
+   print("VERT:", vert)
+   if hor == "right":
+      pip_x1 = cx1 - int(crop_frames[0].shape[1] / 2)
+      pip_x2 = (pip_x1 + crop_frames[0].shape[1])
+   else:
+      pip_x1 = cx1 + int(crop_frames[0].shape[1] / 2)
+      pip_x2 = (pip_x1 + crop_frames[0].shape[1])
+
+   pip_y1 = cy2 + int(crop_frames[0].shape[0] / 3)
+   pip_y2 = (pip_y1 + crop_frames[0].shape[0]) 
+
+   if pip_x1 < 0:
+      print("ERROR X OUT ")
+
+      exit()
+
+   if pip_y2 >= 720:   
+      pip_y1 = int(cy2 - int(crop_frames[0].shape[0] * 2 ))
+      pip_y2 = int((pip_y1 + crop_frames[0].shape[0] ) )
+
+   if pip_y1 <= 0:   
+      pip_y1 = 0
+      pip_y2 = int((pip_y1 + crop_frames[0].shape[0] ) )
+
+   if pip_y2 - pip_y1 != crop_frames[0].shape[0]:
+      print("SHAPE PROBLEM")
+      time.sleep(500)
+   
+   fc = 0
+   for cframe in color_frames:
+      print("PIPY:", pip_y1, pip_y2)
+      print("PIPX:", pip_y1, pip_y2)
+      cframe[pip_y1:pip_y2,pip_x1:pip_x2] = crop_color_frames[fc]
+      #cv2.line(cframe, (pip_x1,pip_y1), (cx1,cy1), (100,100,100), 1)
+      #cv2.line(cframe, (pip_x2,pip_y2), (cx2,cy2), (100,100,100), 1)
+      cv2.rectangle(cframe, (pip_x1, pip_y1), (pip_x2, pip_y2), (125,125,125), 1, cv2.LINE_AA)
+      cv2.imshow('pepe', cframe)
+      cv2.waitKey(30)
+      fc += 1
+   print(js)
+
 
 def find_best_object(objects):
    best_matches = []
@@ -167,13 +231,46 @@ def rsync(src, dest):
    print(cmd)
    os.system(cmd)
 
-def minify_file(file, outdir, text, md):
+def minify_file(file, outdir, text, md, sd_img = None, hd_img = None):
+
    print("MINIFY:", file)
+   print(md)
+   stack_file = file.replace(".mp4", "-stacked.png")
+   stack_img = cv2.imread(stack_file)
+
    if md is not None:
       hdm_x = 1920 / int(md['sd_w']) 
       hdm_y = 1080 / int(md['sd_h']) 
       print("HDMX 1080:", hdm_x, hdm_y) 
-      crop_box = find_crop_size(min(md['xs'])*hdm_x,min(md['ys'])*hdm_y,max(md['xs'])*hdm_x,max(md['ys'])*hdm_y, hdm_x, hdm_y)
+      crop_box = find_crop_size(min(md['xs'])*hdm_x,min(md['ys'])*hdm_y,max(md['xs'])*hdm_x,max(md['ys'])*hdm_y, 1920, 1080, 1, 1)
+
+      sx1,sy1,sx2,sy2,smx,smy = crop_box
+      sx1,sy1,sx2,sy2 =  int(sx1),int(sy1),int(sx2),int(sy2)
+      cropbox_1080 = [sx1,sy1,sx2,sy2]
+      
+      print(sx1,sy1,sx2,sy2 )
+      #cv2.rectangle(hd_img, (sx1, sy1), (sx2, sy2), (255,255,255), 1, cv2.LINE_AA)
+      #cv2.imshow('pepe', hd_img)
+      #cv2.waitKey(0)
+
+
+      nw = (sx2 - sx1) * 2
+      nh = (sy2 - sy1) * 2
+      print("NEW W/H:", nw,nh)
+
+      hmx = int(int((sx1 + sx2) * hdm_x) / 2)
+      hmy = int(int((sy1 + sy2) * hdm_y) / 2)
+
+      hcx1 = sx1 
+      hcy1 = sy1
+      hcx2 = hcx1 + (sx2- sx1)
+      hcy2 = hcy1 + (sy2- sy1)
+
+
+      #cv2.rectangle(hd_img, (hcx1, hcy1), (hcx2, hcy2), (255,255,255), 1, cv2.LINE_AA)
+      #cv2.imshow('pepe', hd_img)
+      #cv2.waitKey(0)
+
       print("ORIG:", md)
       print("CROP:", crop_box[0])
       hdmy = 720 / 1080
@@ -188,6 +285,7 @@ def minify_file(file, outdir, text, md):
       mx = int(crop_box[4] * hdmx)
       my = int(crop_box[5] * hdmy)
       crop_box = [cx1,cy1,cx2,cy2,mx,my]
+      cropbox_720 = [cx1,cy1,cx2,cy2]
       print("CROP:", crop_box, file)
       make_overlay(cx1,cy1,cx2,cy2)
  
@@ -197,7 +295,6 @@ def minify_file(file, outdir, text, md):
    outfile = outdir + fn
    if cfe(outfile) == 0:
 
-         #/usr/bin/ffmpeg -i """ + file + """ -vcodec libx264 -crf 35 -vf 'scale=1280:720', drawtext="fontfile=/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf: text='""" + text + """': fontcolor=white: fontsize=24: box=1: boxcolor=black@0.5: boxborderw=5: x=(10): y=(h-text_h)-10" -vf "drawtext=expansion=strftime: basetime=$(date +%s -d'2013-12-01 12:00:00')000000: text='%H\\:%S\\:%S'" """ + outfile 
       #03\:05\:00\:00
       fn = file.split("/")[-1]
       el = fn.split("_")
@@ -214,8 +311,9 @@ def minify_file(file, outdir, text, md):
       cmd = """
       /usr/bin/ffmpeg -i """ + file + """ -vcodec libx264 -crf 35 -vf "scale='1280:720', drawtext=fontfile='fontfile=/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf':text='""" + text + """ ':box=1: boxcolor=black@0.5: boxborderw=5:x=20:y=h-lh-1:fontsize=16:fontcolor=white:shadowcolor=black:shadowx=1:shadowy=1:timecode='""" + timecode + """':timecode_rate=25" """ + outfile  
 #+ " >/dev/null 2>&1"
-      print(cmd)
-      os.system(cmd)
+      if cfe(outfile) == 0:
+         print(cmd)
+         os.system(cmd)
     
       ## now add overlay
       if md is not None:
@@ -224,10 +322,27 @@ def minify_file(file, outdir, text, md):
          os.system(cmd)
          os.system("mv " + temp_outfile + " " + outfile)
          print("TEST HERE:", outfile) 
+   
+   # NOW MAKE THE CROP HD VIDEO
+   hw = hcx2 - hcx1
+   hh = hcy2 - hcy1
+   crop_file = outfile.replace(".mp4", "-crop.mp4")
+   if cfe(crop_file) == 0:
+      crop_file = crop_video(file, hcx1, hcy1, hw, hh, crop_file)
+   stack_img_crop = stack_img[hcy1:hcy1+hh,hcx1:hcx1+hw]
 
 
    elapsed_time = time.time() - start_time 
    print("TIME TO MINIFY FILE:", elapsed_time)
+   print("MIN FILE:", outfile)
+   print("CROP FILE:", crop_file)
+   stack_file = outfile.replace(".mp4", ".jpg")
+   stack_crop_file = crop_file.replace(".mp4", ".jpg")
+   cv2.imwrite(stack_file, stack_img)
+   cv2.imwrite(stack_crop_file, stack_img_crop)
+   print("STACK FILE:", stack_file)
+   print("STACK CROP FILE:", stack_crop_file)
+   return(outfile, crop_file,cropbox_1080, cropbox_720)
 
         
 
@@ -260,12 +375,12 @@ def get_min_files(cam_id, this_hour_string, last_hour_string, upload_mins):
    return(bc_clips)
 
 def cat_videos(in_wild, outfile):
-
+   print("WILD:", in_wild)
    files = glob.glob(in_wild)
    list_file = outfile.replace(".mp4", "-ALL.txt")
    list = ""
    for file in sorted(files):
-      if "ALL" not in file:
+      if "ALL" not in file and "crop" not in file:
          list += "file '" + file + "'\n"
    fp = open(list_file, "w")
    fp.write(list)
@@ -273,6 +388,7 @@ def cat_videos(in_wild, outfile):
    cmd = "/usr/bin/ffmpeg -f concat -safe 0 -i " +list_file + " -c copy -y " + outfile
    print(cmd)
    os.system(cmd)
+   print("LIST:", list)
 
 def purge_deleted_live_files (live_dir, live_cloud_dir, day):
 
@@ -327,6 +443,71 @@ def parse_hist(js):
  
    return(m)      
 
+def det_table(files, type = "meteor"):
+   rpt = ""
+   for file in sorted(files):
+      vfn= file.split("/")[-1]
+      vfn= vfn.replace("-crop-tn.jpg", ".mp4")
+      img_url = file.split("/")[-1]
+      img_url2 = file.replace("-crop", "")
+      fn = vfn.split("-")[0]
+
+      rpt += "<div class='float_div' id='" + fn + "'>"
+      cvfn = vfn.replace(".mp4", "-crop.mp4")
+      link = "<a href=\"javascript:swap_pic_to_vid('" + fn + "', '" + cvfn + "')\">"
+      rpt += link + """
+         <img title="Meteor" src=\"""" + img_url + """\" onmouseover="this.src='""" + img_url2 + """'" onmouseout="this.src='""" + img_url + """'" /></a>
+      """
+      rpt += "<br><label style='text-align: center'>" + link + fn + "</a> <br>"
+      rpt += "</label></div>"
+
+      #rpt += "<div class='float_div'>"
+      #rpt += "<img src=" + img + ">"
+      #link = "<a href=" + mf + ">"
+      #rpt += "<br><label style='text-align: center'>" + link + fn + "</a> <br>"
+      #rpt += "</label></div>"
+
+   return(rpt)
+
+
+def mln_final(day):
+   LIVE_METEOR_DIR = ARC_DIR + "LIVE/METEORS/" 
+   LIVE_METEOR_DAY_DIR = ARC_DIR + "LIVE/METEORS/" + day + "/"
+   if cfe(LIVE_METEOR_DAY_DIR, 1) == 0:
+      os.makedirs(LIVE_METEOR_DAY_DIR)
+   cmd = "mv " + LIVE_METEOR_DIR + day + "*.* " + LIVE_METEOR_DAY_DIR
+   print(cmd)
+   os.system(cmd)
+
+   files = glob.glob(LIVE_METEOR_DAY_DIR + day + "*.jpg")
+   for file in files:
+      tnf = file.replace(".jpg", "-tn.jpg")
+      if "-tn" not in file and cfe(tnf) == 0:
+         img = thumbnail(file, PREVIEW_W, PREVIEW_H,tnf)
+   files = glob.glob(LIVE_METEOR_DAY_DIR + day + "*-crop-tn.jpg")
+   html = mk_css()
+   html += swap_pic_to_vid()
+   print("FILES:", files)
+   det_html = det_table(files)
+   html += det_html
+
+   out = open(LIVE_METEOR_DAY_DIR + day + "_report.html", "w")
+   out.write(html)
+   out.close()
+
+def swap_pic_to_vid():
+   js = """
+   <script>
+   function swap_pic_to_vid (div_id,vid_url) {
+      var container = document.getElementById(div_id);
+      content = " <video id='video' src='" + vid_url + "' autoplay controls='true'></video> "
+
+      container.innerHTML = content;
+   }
+   </script>
+
+   """
+   return(js)
 
 def meteors_last_night(json_conf, day=None):
 
@@ -339,6 +520,7 @@ def meteors_last_night(json_conf, day=None):
    best_meteors = []
    LAST_NIGHT_DIR = ARC_DIR + "LIVE/METEORS_LAST_NIGHT/"
    LIVE_METEOR_DIR = ARC_DIR + "LIVE/METEORS/"
+   FINAL_DIR = ARC_DIR + "LIVE/METEORS/" + day + "/"
 
    LAST_NIGHT_CLOUD_DIR = LIVE_METEOR_DIR.replace("ams2/meteor_archive", "archive.allsky.tv")
    LIVE_CLOUD_METEOR_DIR = LIVE_METEOR_DIR.replace("ams2/meteor_archive", "archive.allsky.tv")
@@ -369,9 +551,24 @@ def meteors_last_night(json_conf, day=None):
 
    files = glob.glob(mdir + "*.json")
    meteor_data = {}
+
+   # TESTING 1 FILE
+   #files = ['/mnt/ams2/meteors/2020_08_13/2020_08_13_07_26_25_000_010002-trim-0176.json']
+
    for file in sorted(files):
       js = load_json_file(file)
+      if "hd_trim" in js:
+         hd_file = js['hd_trim']
+      else:
+         print("JS ERR NO HD TRIM:", js)
+         continue
       sdv = file.replace(".json", ".mp4")
+      fn = hd_file.split("/")[-1]
+      if cfe(FINAL_DIR + fn) == 1:
+         print("SKIP DONE!", FINAL_DIR + fn)
+         continue
+      print("FINAL:", FINAL_DIR + fn)
+      print("SDV:", sdv)
       if cfe(sdv) == 1:
          if "sd_w" not in js:
             sd_w, sd_h = ffprobe(sdv)
@@ -386,15 +583,28 @@ def meteors_last_night(json_conf, day=None):
       if True:
 
          frames,color_frames,subframes,sum_vals,max_vals,pos_vals = load_frames_fast(sdv, json_conf, 0, 1, [], 1,[])
+         sd_frame = frames[0]
+         hd_frame = cv2.resize(sd_frame, (1920,1080)) 
          vals_data = {}
          vals_data['sum_vals'] = sum_vals
          vals_data['max_vals'] = max_vals
          vals_data['pos_vals'] = pos_vals
 
-         events, objects = detect_in_vals(file, None, vals_data)
+         print("DETECT IN VALS!")
+         events, objects, total_frames = detect_in_vals(file, None, vals_data)
+         print("DETECT IN CLIP!")
          sd_objects, frames = detect_meteor_in_clip(sdv, frames, fn = 0, crop_x = 0, crop_y = 0, hd_in = 0)
+         print("END DETECT IN CLIP!")
 
-         sd_objects = test_meteors(sd_objects) 
+         print("TEST METEORS!")
+         sd_meteors = {}
+         for id in sd_objects:
+            sd_objects[id] = analyze_object(sd_objects[id]) 
+            if sd_objects[id]['report']['meteor'] == 1:
+               print("METEOR FOUND:", sd_objects[id])
+               sd_meteors[id] = sd_objects[id]
+         sd_objects = sd_meteors
+
          if len(sd_objects) >= 1:
             objects = sd_objects
        
@@ -442,9 +652,11 @@ def meteors_last_night(json_conf, day=None):
           
       if 'sd_objects' not in js:
          print("ER:", js)
-         exit()
          continue
-      if len(js['sd_objects'][0]['history']) > 5:
+      print("JS:", js)
+      for id in js['vals_data']['objects']:
+         meteor_obj = js['vals_data']['objects'][id]
+      if len(meteor_obj['oxs']) >= 3:
          sdf = file.replace(".json", ".mp4")
          #mm = parse_hist(js)
          print("JS OBJS!", file, js['hd_trim'], mm)
@@ -456,27 +668,36 @@ def meteors_last_night(json_conf, day=None):
          mm['sd_w'] = sd_w 
          mm['sd_h'] = sd_h
          meteor_data[hdf] = mm
+         meteor_data['meteor_obj'] = meteor_obj
+         test = "TESTING"
+         hd_outfile, hd_cropfile, cropbox_1080,cropbox_720 = minify_file(mm['hd_file'], LIVE_METEOR_DIR, text, meteor_data[hdf], sd_frame, hd_frame)
+         mjf = hd_outfile.replace(".mp4", ".json")
+         meteor_obj['cropbox_1080'] = cropbox_1080
+         meteor_obj['cropbox_720'] = cropbox_720
+         meteor_obj['hd_file'] = js['hd_trim']
+         meteor_obj['sd_file'] = sdf 
+         meteor_obj['sd_w'] = sd_w 
+         meteor_obj['sd_h'] = sd_h
+         save_json_file(mjf, meteor_obj)
+         print(mjf)
+      print("END LOOP!", best_meteors)
+
    mdjsf = LIVE_METEOR_DIR + day + ".json"
    save_json_file(mdjsf, meteor_data) 
       
-      #fc = 0
-      #for frame in color_frames:
-      #   if fc > 1:
-      #      cv2.rectangle(frame, (min_x, min_y), (max_x, max_y), (255,255,255), 1, cv2.LINE_AA)
-      #   cv2.imshow('pepe', frame)
-      #   cv2.waitKey(30)
-      #   fc += 1
 
-
-   for bm in best_meteors:
-      print("BEST:", bm)
-      bmf = bm.split("/")[-1]
-      md = bmf[0:10]
-      hd_file = "/mnt/ams2/meteors/" + md + "/" + bmf
+   #for bm in best_meteors:
+   #   print("BEST:", bm)
+   #   bmf = bm.split("/")[-1]
+   #   md = bmf[0:10]
+   #   hd_file = "/mnt/ams2/meteors/" + md + "/" + bmf
        
-      minify_file(hd_file, LIVE_METEOR_DIR, text, meteor_data[bmf])
-   cat_videos(LIVE_METEOR_DIR + day + "*.mp4", LAST_NIGHT_DIR + day + "-" + station_id  + ".mp4")
+   #   minify_file(hd_file, LIVE_METEOR_DIR, text, meteor_data[bmf])
+
+   cat_videos(LIVE_METEOR_DIR + day + "/" + day + "*.mp4", LAST_NIGHT_DIR + day + "-" + station_id  + ".mp4")
    os.system("rm " + LAST_NIGHT_DIR + "*.txt") 
+   mln_final(day)
+   exit()
 
    rsync(LIVE_METEOR_DIR + "*", LIVE_CLOUD_METEOR_DIR )
 
