@@ -790,6 +790,9 @@ def meteors_last_night(json_conf, day=None):
    cat_videos(LIVE_METEOR_DIR + day + "/" + day + "*.mp4", LAST_NIGHT_DIR + day + "-" + station_id  + ".mp4")
    os.system("rm " + LAST_NIGHT_DIR + "*.txt") 
    mln_final(day)
+
+   mln_sync(day, json_conf):
+
    exit()
 
    rsync(LIVE_METEOR_DIR + "*", LIVE_CLOUD_METEOR_DIR )
