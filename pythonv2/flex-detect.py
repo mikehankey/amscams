@@ -227,7 +227,7 @@ def find_hd_file_best(sd_file, trim_num, dur = 25, trim_on =1):
    hd_files_time = []
    for hd_file in hd_files:
       el = hd_file.split("_")
-      if len(el) == 8 and "meteor" not in hd_file and "crop" not in hd_file and "trim" not in hd_file:
+      if len(el) == 8 and "meteor" not in hd_file and "crop" not in hd_file and "trim" not in hd_file and "TL" not in hd_file:
  
          hd_datetime, hd_cam, hd_date, hd_y, hd_m, hd_d, hd_h, hd_M, hd_s = convert_filename_to_date_cam(hd_file)
          time_diff = meteor_datetime - hd_datetime
@@ -10887,16 +10887,18 @@ def verify_toomany_detects(day=None):
 
 def verify_toomany(file):
    js = load_json_file(file)
-   meteors = only_meteors(js['objects'])
-   if len(meteors) > 0:
-      print("Total Events: ", len(js['events']))
-      print("Total Objects: ", len(js['objects']))
-      print("Meteors: ", len(meteors))
-      js['maybe_meteors'] = meteors
-      save_json_file(file, js)
-      new_file = file.replace("toomany", "maybe-meteors")
-      save_json_file(new_file, js)
-      print("NEW:", new_file)
+   if js != 0:
+
+      meteors = only_meteors(js['objects'])
+      if len(meteors) > 0:
+         print("Total Events: ", len(js['events']))
+         print("Total Objects: ", len(js['objects']))
+         print("Meteors: ", len(meteors))
+         js['maybe_meteors'] = meteors
+         save_json_file(file, js)
+         new_file = file.replace("toomany", "maybe-meteors")
+         save_json_file(new_file, js)
+         print("NEW:", new_file)
    else:
       print("No good meteors here.")
       df = file.replace("toomany", "detect")
@@ -11361,8 +11363,8 @@ def save_final_meteor(meteor_file):
    hd_frames,hd_color_frames,hd_subframes,hd_sum_vals,hd_max_vals,hd_pos_vals = load_frames_fast(hd_trim, json_conf, 0, 0, [], 1,[])
    if len(hd_frames) == 0:
       print("NO HD FRAMES!", hd_trim)
-      exit()
-
+      hd_frames = sd_frames 
+      hd_color_frames = sd_color_frames 
    stacked_img = stack_frames_fast(sd_color_frames, 1, None, "night", None)
    hd_stacked_img = stack_frames_fast(hd_color_frames, 1, None, "night", None)
 
