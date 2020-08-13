@@ -25,6 +25,56 @@ from datetime import datetime as dt
 
 #/usr/bin/ffmpeg -i /mnt/ams2/HD/2020_07_30_23_57_23_000_010003.mp4 -vcodec libx264 -crf 30 -vf 'scale=1280:720' -y test.mp4
 
+def resize_video(video_file, w, h):
+   new_video_file = video_file.replace(".mp4", "-tn.mp4")
+   if cfe(new_video_file) == 0:
+      cmd = "/usr/bin/ffmpeg -i " + video_file + " -vf scale=\"" + str(w) + ":" + str(h) + "\" " + new_video_file
+      os.system(cmd)
+   return(new_video_file)
+
+def mln_sync(day, json_conf):
+   # sync tn jpgs 
+   # sync full and crop mp4s 
+   CLOUD_METEOR_DIR = "/mnt/archive.allsky.tv/" + STATION_ID + "/LIVE/METEORS/" + day + "/" 
+   cfs = glob.glob(CLOUD_METEOR_DIR + "*")
+   cloud_files = {}
+   for cf in cfs:
+      fn = cf.split("/")[-1]
+      cloud_files[fn] = 1
+
+   tns = glob.glob(ARC_DIR + "LIVE/METEORS/" + day + "/*tn.jpg")
+   mp4s = glob.glob(ARC_DIR + "LIVE/METEORS/" + day + "/*.mp4")
+   if cfe(CLOUD_METEOR_DIR,1) == 0:
+      os.makedirs(CLOUD_METEOR_DIR)
+   for tn in tns:
+      fn = tn.split("/")[-1]
+      cf = CLOUD_METEOR_DIR + fn
+     
+      if fn not in cloud_files:
+         cmd = "cp " + tn + " " + cf
+         print(cmd)
+         os.system(cmd)
+      else:
+         print("already sync'd")
+
+   for mp4 in mp4s:
+      print(mp4)
+      fn = mp4.split("/")[-1]
+      cf = CLOUD_METEOR_DIR + fn
+      if "crop" not in fn: 
+         if fn not in cloud_files:
+            cmd = "cp " + mp4 + " " + cf
+            print(cmd)
+            os.system(cmd)
+      else:
+         if "-tn" not in fn:
+            tnf = mp4.replace(".mp4", "-tn.mp4")
+            if cfe(tnf) == 0:
+               resize_video(mp4, THUMB_W, THUMB_H)
+               exit()
+
+
+
 def pip_video(video_file, json_conf):
    crop_file = video_file.replace(".mp4", "-crop.mp4")
    js_file = video_file.replace(".mp4", ".json")
