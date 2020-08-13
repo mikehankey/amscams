@@ -261,6 +261,9 @@ def scan_and_stack_fast(file, sun_status = 0, vals = []):
             small_frame = cv2.resize(frame, (0,0),fx=.5, fy=.5)
          except:
             print("Bad video file:", file)
+            cmd = "rm " + file
+            #os.system(cmd)
+            return()
 
 
       if sun_status != 1:

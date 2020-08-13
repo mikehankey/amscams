@@ -80,9 +80,6 @@ def delete_old_detection(arc_file):
    min_cmd = "mv " + min_met + " " + min_nomet
    old_hd_cmd = "mv " + hd_wild + " /mnt/ams2/trash/"
    old_sd_cmd = "mv " + sd_wild + " /mnt/ams2/trash/"
-   print(min_cmd, "<BR>")
-   print(old_hd_cmd, "<BR>")
-   print(old_sd_cmd, "<BR>")
    os.system(min_cmd) 
 
    os.system(old_hd_cmd) 
@@ -131,9 +128,23 @@ def delete_multiple_archived_detection(detections):
          cmd = "mv " + det +  " " + TRASH_FOLDER  
          os.system(cmd) 
 
+      # Remove Crop
+      det = det.replace('-SD','-HD-crop')
+      if os.path.isfile(det):
+         cmd = "mv " + det +  " " + TRASH_FOLDER  
+         os.system(cmd) 
+
+      # Remove crop thumb preview
+      det = det.replace('-HD-crop','-HD-crop-thumb')
+      if os.path.isfile(det):
+         cmd = "mv " + det +  " " + TRASH_FOLDER  
+         os.system(cmd) 
+
+
+
       # Update Index (?)
-      write_month_index(int(analysed_name['month']),int(analysed_name['year']))
-      write_year_index(int(analysed_name['year']))
+      #write_month_index(int(analysed_name['month']),int(analysed_name['year']))
+      #write_year_index(int(analysed_name['year']))
 
 
 # Function that read a json file (detection)
@@ -302,7 +313,7 @@ def create_json_index_month(month,year):
          cur_day_data = {}
 
          for detection in sorted(glob.iglob(day + os.sep +  '*' + '.json', recursive=True), reverse=True):
-             
+            #print("DET:", detection)             
             mag,dur,red, res_error, ang_vel, point_score, sync, multi  = get_diag_fields(detection)
             det = os.path.basename(detection)
             det = os.path.splitext(det)[0]
@@ -429,11 +440,14 @@ def get_index(year):
 # Get index for a given month (and year)
 def get_monthly_index(month,year):
    index_file = METEOR_ARCHIVE + get_station_id()  + os.sep + METEOR + str(year) + os.sep + str(month).zfill(2) + os.sep + str(month).zfill(2) + '.json'
+   #print("INDEX FILE", index_file) 
+   #exit()
    if(cfe(index_file)):
       return load_json_file(index_file)
    else:
       test = create_json_index_month(month,year)
       if(test):
+        
          res = load_json_file(index_file)
          if(res):
             if('months' in res):
@@ -802,6 +816,7 @@ def get_html_detections(res,all_days_details,clear_cache,version,video_prev):
       # We add the missing info to detection['p']
       # so the name analyser will work
       det = name_analyser(detection['p'])
+      #print("DETECTION!:", det, detection)
       cur_date = get_datetime_from_analysedname(det) 
       
       if(prev_date is None):
@@ -1037,6 +1052,8 @@ def archive_listing(form):
     
    # Search the results through the monthly indexes
    res, total, all_days_details = get_results_from_date_from_monthly_index(criteria,start_datetime,end_datetime,int(nompp),cur_page)
+   #print(res)
+   #exit()
   
    # CREATE URL FOR THE PAGINATION
    pagination_url  = "/pycgi/webUI.py?cmd=archive_listing&meteor_per_page="+str(nompp)

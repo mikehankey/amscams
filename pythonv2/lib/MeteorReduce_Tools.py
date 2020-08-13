@@ -239,7 +239,6 @@ def update_eval_points(json_file):
 
 # Get intensity & update the json
 def update_intensity(json_file, json_data, hd_video_file): 
-    
    # Get Video frames 
    hd_frames = load_video_framesX(hd_video_file, 0,  1)
    

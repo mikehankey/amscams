@@ -1,0 +1,9 @@
+./Process.py mln 2020_08_09
+./Process.py mln 2020_08_08
+./Process.py mln 2020_08_07
+./Process.py mln 2020_08_06
+./Process.py mln 2020_08_05
+./Process.py mln 2020_08_04
+./Process.py mln 2020_08_03
+./Process.py mln 2020_08_02
+./Process.py mln 2020_08_01

@@ -25,17 +25,17 @@ export WCS_SLIB
 export WCSLIB_INC
 export WCS_LIB
 
-cd ~/allsky6-install
-wget http://astrometry.net/downloads/astrometry.net-latest.tar.gz
-gunzip astrometry.net-latest.tar.gz
-tar xf astrometry.net-latest.tar
+#cd ~/allsky6-install
+#wget http://astrometry.net/downloads/astrometry.net-latest.tar.gz
+#gunzip astrometry.net-latest.tar.gz
+#tar xf astrometry.net-latest.tar
 
 sudo pip install astropy
 
-cd astrometry.net-*
-wget http://35.165.208.121/plot-constellations.c
-cp plot-constellations.c blind
-cp plot-constellations.c astrometry/blind
+cd ~/astrometry.net-0.73/
+#wget http://35.165.208.121/plot-constellations.c
+#cp plot-constellations.c blind
+#cp plot-constellations.c astrometry/blind
 make
 make py
 make extra

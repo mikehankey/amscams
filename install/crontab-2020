@@ -21,3 +21,14 @@
 20 */8 * * * cd /home/ams/amscams/pythonv2; ./ASDaemon.py proc_index
 20 */2 * * * cd /home/ams/amscams/pythonv2; ./day_stack.py
 25 */8 * * * cd /home/ams/amscams/pythonv2; ./move_day_files.py
+
+#SENSE UP / AUTO CAL
+32 */3 * * * cd /home/ams/amscams/pythonv2; ./IMX291.py sense_all all > /dev/null 2>&1
+
+# New Pipe Line
+# Live Minute
+*/10 * * * * cd /home/ams/amscams/pipeline/; ./Process.py bcm
+# Morning report
+10 12 * * * cd /home/ams/amscams/pipeline/; ./Process.py detect_rpt
+# Meteors Last Night 
+30 12 * * * cd /home/ams/amscams/pipeline/; ./Process.py mln
