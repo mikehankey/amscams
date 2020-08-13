@@ -44,6 +44,10 @@ def mln_sync(day, json_conf):
 
    tns = glob.glob(ARC_DIR + "LIVE/METEORS/" + day + "/*tn.jpg")
    mp4s = glob.glob(ARC_DIR + "LIVE/METEORS/" + day + "/*.mp4")
+   jsons = glob.glob(ARC_DIR + "LIVE/METEORS/" + day + "/*.json")
+   htmls = glob.glob(ARC_DIR + "LIVE/METEORS/" + day + "/*.html")
+
+   # SYNC IMAGES
    if cfe(CLOUD_METEOR_DIR,1) == 0:
       os.makedirs(CLOUD_METEOR_DIR)
    for tn in tns:
@@ -57,21 +61,51 @@ def mln_sync(day, json_conf):
       else:
          print("already sync'd")
 
+   # SYNC MP4s 
    for mp4 in mp4s:
-      print(mp4)
       fn = mp4.split("/")[-1]
       cf = CLOUD_METEOR_DIR + fn
       if "crop" not in fn: 
          if fn not in cloud_files:
             cmd = "cp " + mp4 + " " + cf
-            print(cmd)
+            print("720:", cmd)
             os.system(cmd)
+         else: 
+            print("SYNC'D?", mp4, cf)
       else:
          if "-tn" not in fn:
             tnf = mp4.replace(".mp4", "-tn.mp4")
             if cfe(tnf) == 0:
+               print("RESIZE.")
                resize_video(mp4, THUMB_W, THUMB_H)
-               exit()
+            if fn not in cloud_files:
+               cf = CLOUD_METEOR_DIR + fn
+               cmd = "cp " + mp4 + " " + cf
+               print("PREVIEW", cmd)
+               os.system(cmd)
+   # JSON & HTML
+
+   for tn in jsons:
+      fn = tn.split("/")[-1]
+      cf = CLOUD_METEOR_DIR + fn
+     
+      if fn not in cloud_files:
+         cmd = "cp " + tn + " " + cf
+         print(cmd)
+         os.system(cmd)
+      else:
+         print("already sync'd")
+   for tn in htmls:
+      fn = tn.split("/")[-1]
+      cf = CLOUD_METEOR_DIR + fn
+     
+      if fn not in cloud_files:
+         cmd = "cp " + tn + " " + cf
+         print(cmd)
+         os.system(cmd)
+      else:
+         print("already sync'd")
+
 
 
 
