@@ -10,6 +10,27 @@ from lib.PipeUtil import cfe, load_json_file, save_json_file
 
 MLN_CACHE_DIR = "/mnt/ams2/MLN_CACHE/"
 
+def best_of():
+   days = [ '2020_08_10', '2020_08_11', '2020_08_12', '2020_08_13' ]
+   all_meteors = []
+   day_counter = {}
+   for day in days:
+      file = MLN_CACHE_DIR + day + "-all.json" 
+      day_data = load_json_file(file)
+      for data in day_data:
+         station = data['station']
+         if day not in day_counter:
+            day_counter[day] = {}
+         if station not in day_counter[day]:
+            day_counter[day][station] = 0
+         else:
+            day_counter[day][station] += 1
+         all_meteors.append(day_data)
+   print("TOTAL METEORS:", len(all_meteors))
+   for day in day_counter:
+      for station in day_counter[day]:
+         print(day, station, day_counter[day][station])
+
 def mln_report(day=None):
 
    #now = dt.strptime(day, "%Y_%m_%d")
@@ -17,7 +38,7 @@ def mln_report(day=None):
    all_meteors = []
    # yesterday = now - datetime.timedelta(days = 1)
    for station in stations:
-      station_dir = "/mnt/archive.allsky.tv/" + station + "/LIVE/METEORS/" 
+      station_dir = "/mnt/archive.allsky.tv/" + station + "/LIVE/METEORS/" + day + "/"
       data_file = station_dir + day + ".json"
       new_data_file = "/mnt/ams2/MLN_CACHE/" + day + "-" + station + ".json"
       cmd = "cp " + data_file + " " + new_data_file
@@ -31,15 +52,20 @@ def mln_report(day=None):
          for mm in meteors:
             meteor = meteors[mm]
             meteor['station'] = station
-            all_meteors.append(meteor)
+            print("METEOR:", meteor)
+            if "xs" in meteor:
+               all_meteors.append(meteor)
       else:
          no_data_stations.append(station)
    print("SAVE:", MLN_CACHE_DIR + day + "-all.json")
    save_json_file(MLN_CACHE_DIR + day + "-all.json", all_meteors)
 
+
+
 def mln_best(day, days_after = 1) :
    all_meteors = load_json_file(MLN_CACHE_DIR + day + "-all.json")
    all_sorted = sorted(all_meteors, key=lambda k: len(k['xs']), reverse=True)
+      
 
    html = "<h1>Meteors Last Night " + day + "</h1><ul>\n"
 

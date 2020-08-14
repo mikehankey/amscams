@@ -771,7 +771,8 @@ def swap_pic_to_vid():
    return(js)
 
 def meteors_last_night(json_conf, day=None):
-
+   sd_frame = None
+   hd_frame = None
    # sync best meteors within the last 48 hours to the LIVE meteor dir
    station_id = json_conf['site']['ams_id']
    if "extra_text" in json_conf['site']:
@@ -823,14 +824,13 @@ def meteors_last_night(json_conf, day=None):
          hd_file = js['hd_trim']
       else:
          print("JS ERR NO HD TRIM:", js)
-         continue
+         continue 
       sdv = file.replace(".json", ".mp4")
       fn = hd_file.split("/")[-1]
       if cfe(FINAL_DIR + fn) == 1:
          print("SKIP DONE!", FINAL_DIR + fn)
          continue
-      print("FINAL:", FINAL_DIR + fn)
-      print("SDV:", sdv)
+
       if cfe(sdv) == 1:
          if "sd_w" not in js:
             sd_w, sd_h = ffprobe(sdv)
@@ -841,8 +841,7 @@ def meteors_last_night(json_conf, day=None):
             sd_w = js['sd_w']
             sd_h = js['sd_h']
 
-      #if "vals_data" not in js:
-      if True:
+      if "vals_data" not in js:
 
          frames,color_frames,subframes,sum_vals,max_vals,pos_vals = load_frames_fast(sdv, json_conf, 0, 1, [], 1,[])
          sd_frame = frames[0]
@@ -914,8 +913,7 @@ def meteors_last_night(json_conf, day=None):
           
       if 'sd_objects' not in js:
          print("ER:", js)
-         continue
-      print("JS:", js)
+         exit 
       for id in js['vals_data']['objects']:
          meteor_obj = js['vals_data']['objects'][id]
       if len(meteor_obj['oxs']) >= 3:
@@ -930,7 +928,6 @@ def meteors_last_night(json_conf, day=None):
          mm['sd_w'] = sd_w 
          mm['sd_h'] = sd_h
          meteor_data[hdf] = mm
-         meteor_data['meteor_obj'] = meteor_obj
          test = "TESTING"
          hd_outfile, hd_cropfile, cropbox_1080,cropbox_720 = minify_file(mm['hd_file'], LIVE_METEOR_DIR, text, meteor_data[hdf], sd_frame, hd_frame)
          mjf = hd_outfile.replace(".mp4", ".json")
@@ -940,6 +937,7 @@ def meteors_last_night(json_conf, day=None):
          meteor_obj['sd_file'] = sdf 
          meteor_obj['sd_w'] = sd_w 
          meteor_obj['sd_h'] = sd_h
+         meteor_data[hdf]['meteor_obj'] = meteor_obj
          save_json_file(mjf, meteor_obj)
          print(mjf)
       print("END LOOP!", best_meteors)
@@ -959,15 +957,41 @@ def meteors_last_night(json_conf, day=None):
    cat_videos(LIVE_METEOR_DIR + day + "/" + day + "*.mp4", LAST_NIGHT_DIR + day + "-" + station_id  + ".mp4")
    os.system("rm " + LAST_NIGHT_DIR + "*.txt") 
    mln_final(day)
+   meteor_index(day)
    print("FINAL!")
 
    mln_sync(day, json_conf)
-
+   print("DONE MLN FOR", day)
    exit()
 
    rsync(LIVE_METEOR_DIR + "*", LIVE_CLOUD_METEOR_DIR )
 
    #rsync(LAST_NIGHT_DIR + "*", LAST_NIGHT_CLOUD_DIR)
+
+def meteor_index(day):
+   index = []
+   files = glob.glob(ARC_DIR + "LIVE/METEORS/" + day + "/*.json")
+   for file in files:
+      fn = file.split("/")[-1]
+      el = fn.split("_")
+      if len(el) > 3:
+         print(file)
+         js = load_json_file(file)
+         print(js)
+         meteor = {}
+         meteor['hd_file'] = js['hd_file'].split("/")[-1]
+         meteor['sd_file'] = js['sd_file'].split("/")[-1]
+         meteor['sd_w'] = js['sd_w']
+         meteor['sd_h'] = js['sd_h'] 
+         meteor['fns'] = js['ofns'] 
+         meteor['xs'] = js['oxs'] 
+         meteor['ys'] = js['oys'] 
+         meteor['ints'] = js['oint'] 
+         meteor['cropbox_1080'] = js['cropbox_1080'] 
+         meteor['cropbox_720'] = js['cropbox_720'] 
+         index.append(meteor)
+   save_json_file(ARC_DIR + "LIVE/METEORS/" + day + "/" + day + "-" + STATION_ID + "-METEORS.json", index)
+   print(ARC_DIR + "LIVE/METEORS/" + day + "/" + day + "-" + STATION_ID + "-METEORS.json" )
 
 def test_meteors(objs):
 
