@@ -32,25 +32,25 @@ def add_big_text(background,text,y,color,size, the_font=VIDEO_FONT_BOLD):
 
 # Create just a title splash screen with Main Title & Subtitle
 def create_simple_title_video(text,text2,output,title_color=(255,255,255,255), rect= True):
-    n_frame = []
+   n_frame = []
 
-    # TITLE OF THE VIDEO
-    title_duration = 95
-    
-    # Initial Position of the rectangle
-    rect_x_init = int(1280/2)  
-    rect_x = rect_x_init
-    rect_w = 0
-    rect_y = 327
-    rect_h = 1
-    fc = 0
-    rect_min_x = 250 
-    rect_anim_duration = int(title_duration/2)
+   # TITLE OF THE VIDEO
+   title_duration = 95
+   
+   # Initial Position of the rectangle
+   rect_x_init = int(1280/2)  
+   rect_x = rect_x_init
+   rect_w = 0
+   rect_y = 327
+   rect_h = 1
+   fc = 0
+   rect_min_x = 250 
+   rect_anim_duration = int(title_duration/2)
 
-    title_y = 250
-    title_size = 60
-    sub_title_y = 355
-    sub_title_zize = 32
+   title_y = 250
+   title_size = 60
+   sub_title_y = 355
+   sub_title_zize = 32
 
    # Title BG
    for x in range(0, title_duration):
