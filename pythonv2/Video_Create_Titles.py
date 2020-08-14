@@ -52,6 +52,7 @@ if __name__ == "__main__":
       #_output_path = '/mnt/ams2/title.mp4'  
       print("Creating the video...")
       create_simple_title_video(_title,_subtitle,_output_path)
+      os.system("clear")
       print("FILE CREATED: " + _output_path)
 
 
@@ -64,8 +65,8 @@ if __name__ == "__main__":
       #_output_path   =  '/mnt/ams2/allskycams.mp4'
       _output_path   = input("Destination: ")
       create_allskycams_video(_title,_subtitle,_duration,_output_path)
-      print("FILE CREATED: /mnt/ams2/allskycams.mp4")
-
+      os.system("clear")
+      print("FILE CREATED: " + _output_path)
    
    elif(cmd== 'operators'):
 
@@ -80,5 +81,5 @@ if __name__ == "__main__":
       _operator_font_size = 30 # Optional - it's 30 by default, it works well with <=12 operators (one per line)
 
       create_thank_operator_video(_operators, _duration, _output_path,_with_line_animation,_line_height,_operator_font_size)
-
- 
+      os.system("clear")
+       print("FILE CREATED: " + _output_path)
