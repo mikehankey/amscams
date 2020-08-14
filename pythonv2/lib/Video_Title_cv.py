@@ -32,7 +32,30 @@ def add_big_text(background,text,y,color,size, the_font=VIDEO_FONT_BOLD):
 
 # Create just a title splash screen with Main Title & Subtitle
 def create_simple_title_video(text,text2,output,title_color=(255,255,255,255), rect= True):
-   n_frame = []
+    # Get the original frames 
+    cap = cv2.VideoCapture(DEFAULT_TITLE)
+
+    frames = []
+    frame_count = 0
+    go = 1
+    while go == 1:
+        _ , frame = cap.read()
+      
+        if frame is not None: 
+            frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR) 
+            frames.append(frame) 
+            go == 0
+    
+    cap.release()
+   
+    new_frames = []
+
+    #AMS LOGO
+    anim_duration  = 85
+    end_fade_in_ams_logo = 65
+ 
+    fc = 0
+    transp = 0
 
    # TITLE OF THE VIDEO
    title_duration = 95
