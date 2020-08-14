@@ -32,7 +32,7 @@ def add_big_text(background,text,y,color,size, the_font=VIDEO_FONT_BOLD):
 
 # This function create a quick video (lenght of DEFAULT_TITLE ~ 3sec )
 # with the animated AMS logo and a custom text (ONE LINE TEXT ONLY)
-def create_title_video(text,text2,output,title_color=(255,255,255,255), rect= True):
+def create_title_video(text,text2,output,title_color=(255,255,255,255), logo=True, rect= True):
 
     # Get the original frames 
     cap = cv2.VideoCapture(DEFAULT_TITLE)
@@ -61,18 +61,19 @@ def create_title_video(text,text2,output,title_color=(255,255,255,255), rect= Tr
     transp = 0
 
     # Animation of the AMS LOGO
-    for frame in frames:
-        fc +=1
+    if(logo is True):
+      for frame in frames:
+         fc +=1
 
-        if(fc<anim_duration):
-            #Convert to proper colors
-            n_frame = frame
+         if(fc<anim_duration):
+               #Convert to proper colors
+               n_frame = frame
 
-            #Add Text 
-            transp  = int(fc*255/(anim_duration-end_fade_in_ams_logo))
-            n_frame = add_big_text(n_frame,"AMERICAN METEOR SOCIETY", 360, (transp,transp,transp,255), 25)
-            new_frames.append(n_frame)
-            fc += 1
+               #Add Text 
+               transp  = int(fc*255/(anim_duration-end_fade_in_ams_logo))
+               n_frame = add_big_text(n_frame,"AMERICAN METEOR SOCIETY", 360, (transp,transp,transp,255), 25)
+               new_frames.append(n_frame)
+               fc += 1
 
 
     # TITLE OF THE VIDEO
