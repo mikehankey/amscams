@@ -1,6 +1,9 @@
-import sys
+import sys, os
 from lib.Video_Title_cv import *   
 from datetime import datetime
+
+
+AMS_ALLSKY_INTRO = "/home/ams/amscams/dist/vids/AMS+ALLSKY.mp4"
 
 
 if __name__ == "__main__":
@@ -18,6 +21,12 @@ if __name__ == "__main__":
       _output_path = '/mnt/ams2/vid.mp4'
       print("Creating the video...")
       create_title_video(_title,_credits,_output_path,_color,_with_ams_logo_animation,_with_line_animation)
+
+      _add_intro =  input("Do you want to add the official intro before the title (y/n)?")
+      if(_add_intro== 'y'):
+         cmd = """/usr/bin/ffmpeg -f concat -safe 0 -i  /mnt/ams2/vid.mp4 -i """ + AMS_ALLSKY_INTRO +  """ -c copy """ + outfile 
+         
+
       print("FILE CREATED: /mnt/ams2/vid.mp4")
 
    elif(cmd=="title"):
