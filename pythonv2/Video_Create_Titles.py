@@ -26,11 +26,16 @@ if __name__ == "__main__":
 
       _add_intro =  input("Do you want to add the official intro before the title (y/n)?")
       if(_add_intro== 'y'):
-         cmd = """ffmpeg -i """ + AMS_ALLSKY_INTRO + """ -i """+ _output_path + """  \
-            -filter_complex "[1:v:0] [1:a:0] [2:v:0] [2:a:0] concat=n=2:v=1:a=1 [v] [a]" -map [v]  -map [a]  /mnt/ams2/intro.mp4 -y"""
-
-         print(cmd)
+         cmd = """ffmpeg -i """+AMS_ALLSKY_INTRO+""" -c copy -bsf:v h264_mp4toannexb -f mpegts /mnt/ams2/intermediate1.ts"""
          os.system(cmd)
+         cmd = """ffmpeg -i """+_output_path+""" -c copy -bsf:v h264_mp4toannexb -f mpegts /mnt/ams2/intermediate2.ts"""
+         os.system(cmd)         
+         cmd = """ffmpeg -i "concat:/mnt/ams2/intermediate1.ts|/mnt/ams2/intermediate2.ts" -c copy -bsf:a aac_adtstoasc /mnt/ams2/intro.mp4"""
+         os.system(cmd)  
+         cmd = """rm -f /mnt/ams2/*.ts"""
+         os.system(cmd)  
+
+        
          print("FILE CREATED: /mnt/ams2/intro.mp4")
       else:
          print("FILE CREATED: /mnt/ams2/vid.mp4")
