@@ -25,6 +25,7 @@ if __name__ == "__main__":
       _add_intro =  input("Do you want to add the official intro before the title (y/n)?")
       if(_add_intro== 'y'):
          cmd = """/usr/bin/ffmpeg -f concat -safe 0 -i """+_output_path+""" -i """ + AMS_ALLSKY_INTRO +  """ -c copy """ + '/mnt/ams2/intro.mp4'
+         print(cmd)
          os.system(cmd)
          print("FILE CREATED: /mnt/ams2/intro.mp4")
       else:
