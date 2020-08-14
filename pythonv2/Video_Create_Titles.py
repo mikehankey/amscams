@@ -73,8 +73,8 @@ if __name__ == "__main__":
       _operators = input("Enter each operator separated by a comma: ") 
       _operators = _operators.split(',')
       _duration = 125 # In frames at 25fps
-      #_output_path   = input("Destination: ")
-      _output_path =  '/mnt/ams2/operator_credits.mp4'
+      _output_path   = input("Destination: ")
+      #_output_path =  '/mnt/ams2/operator_credits.mp4'
       _with_line_animation = True # Optional - it's True by default
       _line_height = 45 # Optional - it's 45 by default, it works well with <=12 operators (one per line)
       _operator_font_size = 30 # Optional - it's 30 by default, it works well with <=12 operators (one per line)
