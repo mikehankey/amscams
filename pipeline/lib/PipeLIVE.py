@@ -23,7 +23,7 @@ from lib.PipeImage import stack_frames, thumbnail, stack_stack
 import datetime
 from datetime import datetime as dt
 from PIL import ImageFont, ImageDraw, Image, ImageChops
-
+SHOW = 0
 
 #/usr/bin/ffmpeg -i /mnt/ams2/HD/2020_07_30_23_57_23_000_010003.mp4 -vcodec libx264 -crf 30 -vf 'scale=1280:720' -y test.mp4
 
@@ -76,9 +76,10 @@ def super_stacks_many(days ):
       if int(d) < 10:
          d = d.replace("0")
       desc = et + " Perseid Meteor Shower - August " + str(d) + "th, 2020 "
-      cv2.putText(img, desc, (int(10), int(1070)),cv2.FONT_HERSHEY_SIMPLEX, .4, (255,255,255), 1)
-      cv2.imshow('pepe', img)
-      cv2.waitKey(0)
+      if SHOW == 1:
+         cv2.putText(img, desc, (int(10), int(1070)),cv2.FONT_HERSHEY_SIMPLEX, .4, (255,255,255), 1)
+         cv2.imshow('pepe', img)
+         cv2.waitKey(0)
 
    # write out html and 1 wide per day image
    ohtml = ""
@@ -101,8 +102,9 @@ def super_stacks_many(days ):
          x2 = x1 + THUMB_W
          cc += 1
          all_day_img[y1:y2,x1:x2] = si
-         cv2.imshow('pepe', all_day_img)
-         cv2.waitKey(0)
+         if SHOW == 1:
+            cv2.imshow('pepe', all_day_img)
+            cv2.waitKey(0)
       of = WORK_DIR + day + "-" + cam + "-meteors-allwide-tn.jpg"
       cv2.imwrite(of, all_day_img)
       print("WIDE:", of)
@@ -134,8 +136,9 @@ def super_stacks_many(days ):
          else:
             cc += 1
          all_day_img[y1:y2,x1:x2] = si
-         cv2.imshow('pepe', all_day_img)
-         cv2.waitKey(0)
+         if SHOW == 1:
+            cv2.imshow('pepe', all_day_img)
+            cv2.waitKey(0)
    
    WORK_DIR = ARC_DIR + "LIVE/METEORS/" 
    of = WORK_DIR + STATION_ID + "-ALL-METEORS-ALL-DAYS.jpg" 
@@ -328,8 +331,9 @@ def pip_video(video_file, json_conf):
       #cv2.line(cframe, (pip_x1,pip_y1), (cx1,cy1), (100,100,100), 1)
       #cv2.line(cframe, (pip_x2,pip_y2), (cx2,cy2), (100,100,100), 1)
       cv2.rectangle(cframe, (pip_x1, pip_y1), (pip_x2, pip_y2), (125,125,125), 1, cv2.LINE_AA)
-      cv2.imshow('pepe', cframe)
-      cv2.waitKey(30)
+      if SHOW == 1:
+         cv2.imshow('pepe', cframe)
+         cv2.waitKey(30)
       fc += 1
    print(js)
 
@@ -497,8 +501,6 @@ def minify_file(file, outdir, text, md, sd_img = None, hd_img = None):
       
       print(sx1,sy1,sx2,sy2 )
       #cv2.rectangle(hd_img, (sx1, sy1), (sx2, sy2), (255,255,255), 1, cv2.LINE_AA)
-      #cv2.imshow('pepe', hd_img)
-      #cv2.waitKey(0)
 
 
       nw = (sx2 - sx1) * 2
@@ -515,8 +517,6 @@ def minify_file(file, outdir, text, md, sd_img = None, hd_img = None):
 
 
       #cv2.rectangle(hd_img, (hcx1, hcy1), (hcx2, hcy2), (255,255,255), 1, cv2.LINE_AA)
-      #cv2.imshow('pepe', hd_img)
-      #cv2.waitKey(0)
 
       print("ORIG:", md)
       print("CROP:", crop_box[0])
