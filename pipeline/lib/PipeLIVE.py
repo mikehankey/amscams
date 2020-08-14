@@ -99,7 +99,8 @@ def mln_sync(day, json_conf):
       fn = tn.split("/")[-1]
       cf = CLOUD_METEOR_DIR + fn
      
-      if fn not in cloud_files:
+      #if fn not in cloud_files:
+      if True:
          cmd = "cp " + tn + " " + cf
          print(cmd)
          os.system(cmd)
