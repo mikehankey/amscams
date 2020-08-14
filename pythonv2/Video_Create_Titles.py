@@ -82,4 +82,4 @@ if __name__ == "__main__":
 
       create_thank_operator_video(_operators, _duration, _output_path,_with_line_animation,_line_height,_operator_font_size)
       os.system("clear")
-       print("FILE CREATED: " + _output_path)
+      print("FILE CREATED: " + _output_path)
