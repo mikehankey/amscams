@@ -3,7 +3,7 @@ from lib.Video_Title_cv import *
 from datetime import datetime
 
 
-AMS_ALLSKY_INTRO = "/home/ams/amscams/dist/vids/AMS+ALLSKY.mp4"
+AMS_ALLSKY_INTRO = "/home/ams/amscams/dist/vids/AMS_ALLSKY.mp4"
 
 
 if __name__ == "__main__":
@@ -19,14 +19,15 @@ if __name__ == "__main__":
       _with_ams_logo_animation   = False
       _with_line_animation       = True # Optional - it's True by default
       _output_path = '/mnt/ams2/vid.mp4'
+
+      
       print("Creating the video...")
       create_title_video(_title,_credits,_output_path,_color,_with_ams_logo_animation,_with_line_animation)
 
       _add_intro =  input("Do you want to add the official intro before the title (y/n)?")
       if(_add_intro== 'y'):
          cmd = """ffmpeg -i """+_output_path+""" -i """ + AMS_ALLSKY_INTRO +  """  \
-            -filter_complex '[0:1] [0:0] [1:1] [1:0] 
-            concat=n=2:v=1:a=1 [v] [a]' -map '[v]' -map '[a]' /mnt/ams2/intro.mp4"""
+            -filter_complex '[0:1] [0:0] [1:1] [1:0] concat=n=2:v=1:a=1 [v] [a]' -map '[v]' -map '[a]' /mnt/ams2/intro.mp4"""
 
          print(cmd)
          os.system(cmd)
