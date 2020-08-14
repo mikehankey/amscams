@@ -65,7 +65,6 @@ def mln_sync(day, json_conf):
    for mp4 in mp4s:
       fn = mp4.split("/")[-1]
       cf = CLOUD_METEOR_DIR + fn
-      print("MP4:", fn)
       if "crop-tn.mp4" in fn:
          if fn not in cloud_files:
             cmd = "cp " + mp4 + " " + cf
@@ -82,13 +81,13 @@ def mln_sync(day, json_conf):
       else:
          if "-tn" not in fn:
             tnf = mp4.replace(".mp4", "-tn.mp4")
+            tnfn = tnf.split("/")[-1]
             if cfe(tnf) == 0:
                print("RESIZE.")
                resize_video(mp4, THUMB_W, THUMB_H)
-            if tnf not in cloud_files:
+            if tnfn not in cloud_files:
                cf = CLOUD_METEOR_DIR + fn
                cmd = "cp " + mp4 + " " + cf
-               print("PREVIEW", cmd)
                os.system(cmd)
    # JSON & HTML
 
