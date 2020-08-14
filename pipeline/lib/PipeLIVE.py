@@ -27,10 +27,18 @@ SHOW = 0
 
 #/usr/bin/ffmpeg -i /mnt/ams2/HD/2020_07_30_23_57_23_000_010003.mp4 -vcodec libx264 -crf 30 -vf 'scale=1280:720' -y test.mp4
 
+def get_valid_cams(json_conf):
+   vcs = []
+   for cam in json_conf['cameras']:
+      cams_id = json_conf['cameras'][cam]['cams_id']
+      vcs.append(cams_id)
+   return(vcs)
+
 def super_stacks_many(days ):
    json_conf = load_json_file("../conf/as6.json")
    et = json_conf['site']['extra_text']
    all_stacks = []
+   valid_cams = get_valid_cams(json_conf)
    for day in days:
       WORK_DIR = ARC_DIR + "LIVE/METEORS/" + day + "/"
       ss = glob.glob (WORK_DIR + "*meteors.jpg")
@@ -45,6 +53,8 @@ def super_stacks_many(days ):
       xxx= ifn.split("-")
       day = xxx[0]
       cam = xxx[1]
+      if cam not in valid_cams:
+         continue
       if day not in shtml:
          shtml[day] = {} 
          shtml[day] = {} 
