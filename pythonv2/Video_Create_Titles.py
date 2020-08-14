@@ -61,7 +61,7 @@ if __name__ == "__main__":
       _title         = "Visit Allskycams.com"
       _subtitle      = "for more information about our all sky cameras"
       _duration      = input("Enter duration in seconds:")
-      _duration      = int(duration)*25 #In frames at 25fps
+      _duration      = int(_duration)*25 #In frames at 25fps
       #_output_path   =  '/mnt/ams2/allskycams.mp4'
       _output_path   = input("Destination: ")
       create_allskycams_video(_title,_subtitle,_duration,_output_path)
