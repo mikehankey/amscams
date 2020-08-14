@@ -28,7 +28,7 @@ if __name__ == "__main__":
       print("FILE CREATED: /mnt/ams2/allskycams.mp4")
 
    
-   else(cmd== 'operators'):
+   elif(cmd== 'operators'):
 
       # IF YOU WANT TO CREATE A VIDEO TO THANKS THE OPERATORS:
       _operators = ['Mike Hankey','Vincent Perlerin','Marcel Duchamp','The Beatles']
@@ -38,7 +38,7 @@ if __name__ == "__main__":
       _line_height = 45 # Optional - it's 45 by default, it works well with <=12 operators (one per line)
       _operator_font_size = 30 # Optional - it's 30 by default, it works well with <=12 operators (one per line)
 
-   create_thank_operator_video(_operators, _duration, _output_path,_with_line_animation,_line_height,_operator_font_size)
+      create_thank_operator_video(_operators, _duration, _output_path,_with_line_animation,_line_height,_operator_font_size)
 
    # # IF YOU WANT TO CREATE A "VISIT ALLSKYCAMS video"
    # _title = "Visit Allskycams.com"
