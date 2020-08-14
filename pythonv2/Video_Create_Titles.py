@@ -52,7 +52,7 @@ if __name__ == "__main__":
       #_output_path = '/mnt/ams2/title.mp4'  
       print("Creating the video...")
       create_simple_title_video(_title,_subtitle,_output_path)
-      print("FILE CREATED: /mnt/ams2/vid.mp4")
+      print("FILE CREATED: " + _output_path)
 
 
    elif(cmd=='allskycams'):

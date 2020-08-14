@@ -99,7 +99,7 @@ def create_simple_title_video(text,text2,output,title_color=(255,255,255,255), r
       new_frames.append(n_frame)
 
    make_movie_from_frames(new_frames, [0,len(new_frames) - 1], output, 1)
-   print('OUTPUT ' + output)
+   #print('OUTPUT ' + output)
 
 # This function create a quick video (lenght of DEFAULT_TITLE ~ 3sec )
 # with the animated AMS logo and a custom text (ONE LINE TEXT ONLY)
