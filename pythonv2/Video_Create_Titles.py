@@ -43,7 +43,8 @@ if __name__ == "__main__":
    elif(cmd== 'operators'):
 
       # IF YOU WANT TO CREATE A VIDEO TO THANKS THE OPERATORS:
-      _operators = ['Mike Hankey','Vincent Perlerin','Marcel Duchamp','The Beatles']
+      _operators = input("Enter each operator separated by a comma: ") 
+      _operators = _operators.split(',')
       _duration = 125 # In frames at 25fps
       _output_path =  '/mnt/ams2/operator_credits.mp4'
       _with_line_animation = True # Optional - it's True by default
