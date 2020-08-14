@@ -44,7 +44,7 @@ def create_simple_title_video(text,text2,output,title_color=(255,255,255,255), r
       if frame is not None: 
          frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR) 
          frames.append(frame) 
-         go == 0
+         go = 0
    
    cap.release()
 
