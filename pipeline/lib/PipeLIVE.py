@@ -65,6 +65,13 @@ def mln_sync(day, json_conf):
    for mp4 in mp4s:
       fn = mp4.split("/")[-1]
       cf = CLOUD_METEOR_DIR + fn
+      print("MP4:", fn)
+      if "crop-tn.mp4" in fn:
+         if fn not in cloud_files:
+            cmd = "cp " + mp4 + " " + cf
+            print(cmd)
+            os.system(cmd)
+
       if "crop" not in fn: 
          if fn not in cloud_files:
             cmd = "cp " + mp4 + " " + cf
@@ -78,7 +85,7 @@ def mln_sync(day, json_conf):
             if cfe(tnf) == 0:
                print("RESIZE.")
                resize_video(mp4, THUMB_W, THUMB_H)
-            if fn not in cloud_files:
+            if tnf not in cloud_files:
                cf = CLOUD_METEOR_DIR + fn
                cmd = "cp " + mp4 + " " + cf
                print("PREVIEW", cmd)
@@ -102,7 +109,7 @@ def mln_sync(day, json_conf):
       #if fn not in cloud_files:
       if True:
          cmd = "cp " + tn + " " + cf
-         print(cmd)
+         print("SYNC REPORT:", cmd)
          os.system(cmd)
       else:
          print("already sync'd")
@@ -494,9 +501,11 @@ def purge_deleted_live_files (live_dir, live_cloud_dir, day):
          print("DELETE LIVE FILE (it doesn't exist in meteor dir:\n" )
          print("LIVE FILE:", lm)
          print("DETECT FILE:", dmf)
-         cloud_file = live_cloud_dir + fn
          print("CLOUD FILE:", cloud_file)
-         cmd = "rm " + lm 
+         wild = lm.replace(".mp4", "*")
+         cmd = "rm " + wild
+         wild_fn = fn.replace(".mp4", "*")
+         cloud_file = live_cloud_dir + wild_fn
          print(cmd)
          os.system(cmd)
          if cloud_file in cloud_files:
@@ -539,12 +548,15 @@ def det_table(files, type = "meteor"):
       vfn= file.split("/")[-1]
       vfn= vfn.replace("-crop-tn.jpg", ".mp4")
       img_url = file.split("/")[-1]
-      img_url2 = file.replace("-crop", "")
+      img_url2 = img_url.replace("-crop", "")
+      print("FILE:", file)
+      print("URL:", img_url)
+      print("URL2:", img_url2)
       fn = vfn.split("-")[0]
 
-      rpt += "<div class='float_div' id='" + fn + "'>"
-      cvfn = fn.replace(".mp4", "-crop.mp4")
-      link = "<a href=\"javascript:swap_pic_to_vid('" + fn + "', '" + cvfn + "')\">"
+      rpt += "<div class='float_div' id='" + vfn + "'>"
+      cvfn = vfn.replace(".mp4", "-crop.mp4")
+      link = "<a href=\"javascript:swap_pic_to_vid('" + vfn + "', '" + cvfn + "')\">"
       rpt += link + """
          <img title="Meteor" src=\"""" + img_url + """\" onmouseover="this.src='""" + img_url2 + """'" onmouseout="this.src='""" + img_url + """'" /></a>
       """
@@ -624,6 +636,7 @@ def meteors_last_night(json_conf, day=None):
    if cfe(LIVE_CLOUD_METEOR_DIR,1) == 0:
       os.makedirs(LIVE_CLOUD_METEOR_DIR)
    
+   purge_deleted_live_files (LIVE_METEOR_DIR, LIVE_CLOUD_METEOR_DIR, day)
 
    if cfe(LIVE_METEOR_DIR,1) == 0:
       os.makedirs(LIVE_METEOR_DIR)
@@ -791,6 +804,7 @@ def meteors_last_night(json_conf, day=None):
    cat_videos(LIVE_METEOR_DIR + day + "/" + day + "*.mp4", LAST_NIGHT_DIR + day + "-" + station_id  + ".mp4")
    os.system("rm " + LAST_NIGHT_DIR + "*.txt") 
    mln_final(day)
+   print("FINAL!")
 
    mln_sync(day, json_conf)
 
