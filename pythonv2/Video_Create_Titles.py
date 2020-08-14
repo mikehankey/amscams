@@ -10,9 +10,13 @@ if __name__ == "__main__":
     
    if(len(sys.argv)>1):
       cmd = sys.argv[1] 
+      os.system("clear")
+   else:
+      print("SELECT AN OPTION: main_title, title, allskycams or operators")
+      sys.exit()
 
    if(cmd=="main_title"):
- 
+     
       _title         = input("Enter main title: ") or "BEST OF PERSEIDS " . str(datetime.now().year)
       _credits       = input("Enter subtitle: ")
       _output_path   = input("Destination: ")
@@ -41,7 +45,7 @@ if __name__ == "__main__":
        
 
    elif(cmd=="title"):
-
+      
       _title   = input("Enter main title: ") 
       _subtitle = input("Enter subtitle: ")
       _output_path   = input("Destination: ")
