@@ -542,7 +542,7 @@ def det_table(files, type = "meteor"):
       fn = vfn.split("-")[0]
 
       rpt += "<div class='float_div' id='" + fn + "'>"
-      cvfn = vfn.replace(".mp4", "-crop.mp4")
+      cvfn = fn.replace(".mp4", "-crop.mp4")
       link = "<a href=\"javascript:swap_pic_to_vid('" + fn + "', '" + cvfn + "')\">"
       rpt += link + """
          <img title="Meteor" src=\"""" + img_url + """\" onmouseover="this.src='""" + img_url2 + """'" onmouseout="this.src='""" + img_url + """'" /></a>
