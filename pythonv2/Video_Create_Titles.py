@@ -8,16 +8,25 @@ if __name__ == "__main__":
    if(len(sys.argv)>1):
       cmd = sys.argv[1] 
 
-   if(cmd=="title"):
+   if(cmd=="main_title"):
  
       _title   = input("Enter main title: ") or "BEST OF PERSEIDS " . str(datetime.now().year)
       _credits = input("Enter subtitle:")
       _color   = (255,255,255,255) # Optional - it's white by default
-      _with_ams_logo_animation = False
-      _with_line_animation = True # Optional - it's True by default
+      _with_ams_logo_animation   = False
+      _with_line_animation       = True # Optional - it's True by default
       _output_path = '/mnt/ams2/vid.mp4'
+      print("Creating the video...")
       create_title_video(_title,_credits,_output_path,_color,_with_ams_logo_animation,_with_line_animation)
       print("FILE CREATED: /mnt/ams2/vid.mp4")
+
+   elif(cmd=="title"):
+      _title   = input("Enter main title: ") 
+      _subtitle = input("Enter subtitle:")
+      _output_path = '/mnt/ams2/title.mp4'  
+      create_simple_title_video(_title,_subtitle,_output_path)
+      print("FILE CREATED: /mnt/ams2/vid.mp4")
+
 
    elif(cmd=='allskycams'):
 
