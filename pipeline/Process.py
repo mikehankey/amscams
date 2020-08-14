@@ -5,15 +5,16 @@ import sys
 import time
 from PIL import ImageFont, ImageDraw, Image, ImageChops
 
+from lib.PipeTrans import trans_test 
 from lib.PipeManager import mln_report, mln_best
 from lib.PipeFiles import get_pending_files
 from lib.PipeUtil import convert_filename_to_date_cam, day_or_night , load_json_file, save_json_file, cfe
-from lib.PipeVideo import scan_stack_file, make_preview_video, make_preview_videos
+from lib.PipeVideo import scan_stack_file, make_preview_video, make_preview_videos, load_frames_simple
 from lib.PipeDetect import detect_in_vals , obj_report, trim_events, detect_all
 from lib.PipeSync import sync_day 
 from lib.PipeAutoCal import autocal , solve_field, cal_all, draw_star_image, freecal_copy, apply_calib, index_failed
 from lib.PipeReport import autocal_report, detect_report
-from lib.PipeLIVE import meteor_min_files, broadcast_live_meteors, broadcast_minutes, meteors_last_night, mln_final, pip_video, mln_sync
+from lib.PipeLIVE import meteor_min_files, broadcast_live_meteors, broadcast_minutes, meteors_last_night, mln_final, pip_video, mln_sync, super_stacks
 from lib.PipeTimeLapse import make_tl_for_cam, video_from_images, six_cam_video, timelapse_all
 
 '''
@@ -177,3 +178,7 @@ if __name__ == "__main__":
       pip_video(sys.argv[2], json_conf)
    if cmd == "mln_sync":
       mln_sync(sys.argv[2], json_conf)
+   if cmd == "trans_test":
+      trans_test(sys.argv[2], sys.argv[3])
+   if cmd == "super_stack":
+      super_stacks(sys.argv[2])

@@ -19,11 +19,167 @@ from lib.PipeDetect import detect_in_vals, detect_meteor_in_clip, crop_video, an
 from lib.PipeVideo import find_crop_size, ffprobe, load_frames_fast
 from lib.PipeUtil import convert_filename_to_date_cam, cfe, load_json_file, save_json_file, check_running, calc_dist 
 from lib.PipeMeteorTests import * 
-from lib.PipeImage import stack_frames, thumbnail
+from lib.PipeImage import stack_frames, thumbnail, stack_stack
 import datetime
 from datetime import datetime as dt
+from PIL import ImageFont, ImageDraw, Image, ImageChops
+
 
 #/usr/bin/ffmpeg -i /mnt/ams2/HD/2020_07_30_23_57_23_000_010003.mp4 -vcodec libx264 -crf 30 -vf 'scale=1280:720' -y test.mp4
+
+def super_stacks_many(days ):
+   json_conf = load_json_file("../conf/as6.json")
+   et = json_conf['site']['extra_text']
+   all_stacks = []
+   for day in days:
+      WORK_DIR = ARC_DIR + "LIVE/METEORS/" + day + "/"
+      ss = glob.glob (WORK_DIR + "*meteors.jpg")
+      for s in ss: 
+         all_stacks.append(s)
+
+
+   shtml = {}
+   #"<h1>METEORS FOR " + STATION_ID + " ON " + day + "</h1>"
+   for stack in sorted(all_stacks):
+      ifn = stack.split("/")[-1]
+      xxx= ifn.split("-")
+      day = xxx[0]
+      cam = xxx[1]
+      if day not in shtml:
+         shtml[day] = {} 
+         shtml[day] = {} 
+      if cam not in shtml: 
+         ifn = stack.split("/")[-1]
+         ifn = ifn.replace(".jpg", "-tn.jpg")
+         print("IFN:", day, ifn)
+         shtml[day][cam] = "<img src=./" + day + "/" + ifn + ">"
+         print(shtml[day][cam])
+
+
+
+      img = cv2.imread(stack)
+
+      stack_tn = stack.replace(".jpg", "-tn.jpg")
+      stack_med = stack.replace(".jpg", "-720.jpg")
+      img_tn = cv2.resize(img, (THUMB_W,THUMB_H)) 
+      img_med = cv2.resize(img, (1280,720)) 
+
+      if cfe(stack_tn) == 0:
+         cv2.imwrite(stack_tn, img_tn) 
+      if cfe(stack_med) == 0:
+         cv2.imwrite(stack_med, img_med) 
+
+      fn = stack.split("/")[-1]
+      date = fn[0:10]
+      y,m,d = date.split("_")
+
+      if int(d) < 10:
+         d = d.replace("0")
+      desc = et + " Perseid Meteor Shower - August " + str(d) + "th, 2020 "
+      cv2.putText(img, desc, (int(10), int(1070)),cv2.FONT_HERSHEY_SIMPLEX, .4, (255,255,255), 1)
+      cv2.imshow('pepe', img)
+      cv2.waitKey(0)
+
+   # write out html and 1 wide per day image
+   ohtml = ""
+   TOTAL_CAMS = 6
+   TOTAL_DAYS = len(shtml.keys())
+   for day in sorted(shtml.keys()):
+      all_day_img = np.zeros((THUMB_H,THUMB_W*TOTAL_CAMS,3),dtype=np.uint8)
+      ohtml += "<h2>" + day + "</h2>\n"
+      ohtml += "<div>\n"
+      WORK_DIR = ARC_DIR + "LIVE/METEORS/" + day + "/"
+      cc = 0
+      for cam in sorted(shtml[day].keys()):
+         print(day, cam, shtml[day][cam])
+         ohtml += shtml[day][cam] + "/"
+         sf = WORK_DIR + day + "-" + cam + "-meteors-tn.jpg"
+         si = cv2.imread(sf)
+         y1 = 0
+         y2 = THUMB_H
+         x1 = THUMB_W * cc
+         x2 = x1 + THUMB_W
+         cc += 1
+         all_day_img[y1:y2,x1:x2] = si
+         cv2.imshow('pepe', all_day_img)
+         cv2.waitKey(0)
+      of = WORK_DIR + day + "-" + cam + "-meteors-allwide-tn.jpg"
+      cv2.imwrite(of, all_day_img)
+      print("WIDE:", of)
+
+      ohtml += "</div>\n"
+   fp = open(WORK_DIR + "../" + STATION_ID + "_METEORS.html", "w")
+   fp.write(ohtml)
+   fp.close()
+
+   # Combine all images across all days into 1 image
+   all_day_img = np.zeros((THUMB_H*TOTAL_DAYS,THUMB_W*TOTAL_CAMS,3),dtype=np.uint8)
+   cc = 0
+   rc = 0
+   for day in sorted(shtml.keys()):
+      WORK_DIR = ARC_DIR + "LIVE/METEORS/" + day + "/"
+      for cam in sorted(shtml[day].keys()):
+         sf = WORK_DIR + day + "-" + cam + "-meteors-tn.jpg"
+         print("SF:", sf)
+         si = cv2.imread(sf)
+
+
+         y1 = rc * THUMB_H
+         y2 = y1 + THUMB_H
+         x1 = THUMB_W * cc
+         x2 = x1 + THUMB_W
+         if cc == TOTAL_CAMS -1 :
+            cc = 0
+            rc += 1
+         else:
+            cc += 1
+         all_day_img[y1:y2,x1:x2] = si
+         cv2.imshow('pepe', all_day_img)
+         cv2.waitKey(0)
+   
+   WORK_DIR = ARC_DIR + "LIVE/METEORS/" 
+   of = WORK_DIR + STATION_ID + "-ALL-METEORS-ALL-DAYS.jpg" 
+   print(all_day_img.shape)
+   cv2.imwrite(of, all_day_img)
+   print(of)
+
+
+def super_stacks(day):
+   WORK_DIR = ARC_DIR + "LIVE/METEORS/" + day + "/"
+   sts = glob.glob(ARC_DIR + "LIVE/METEORS/" + day + "/*.jpg")
+   stacks = []
+   for st in sts:
+      if "-crop" not in st and "-tn" not in st:
+         stacks.append(st)  
+   stack_images = {}
+   for file in sorted(stacks):
+      (f_datetime, cam, f_date_str,fy,fm,fd, fh, fmin, fs) = convert_filename_to_date_cam(file)
+      of = WORK_DIR + day + "-" + cam + "-meteors.jpg"
+      if cfe(of) == 0:
+    
+         img = cv2.imread(file)
+         print(cam, img.shape)
+         if img.shape[0] != 1080:
+            print("RESIZE!")
+            img = cv2.resize(img, (1920,1080)) 
+            print(cam, img.shape)
+         frame_pil = Image.fromarray(img)
+
+
+         if cam not in stack_images: 
+            stack_images[cam] = stack_stack(frame_pil, frame_pil)
+         else:
+            stack_images[cam] = stack_stack(stack_images[cam], frame_pil)
+         if cam not in stack_images:
+            stack_images[cam] = stacked_image 
+
+   for cam in stack_images:
+      of = WORK_DIR + day + "-" + cam + "-meteors.jpg"
+      stack_images[cam].save(of)
+      print(of)
+
+   days = [ '2020_08_13', '2020_08_12', '2020_08_11', '2020_08_10']
+   super_stacks_many(days)
 
 def resize_video(video_file, w, h):
    new_video_file = video_file.replace(".mp4", "-tn.mp4")

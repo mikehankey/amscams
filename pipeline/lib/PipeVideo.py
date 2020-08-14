@@ -530,5 +530,23 @@ def load_frames_fast(trim_file, json_conf, limit=0, mask=0,crop=(),color=0,resiz
 
 #def find_hd_file():
 
+def load_frames_simple(trim_file):
+   cap = cv2.VideoCapture(trim_file)
+   frames = []
+   go = 1
+   frame_count = 0
+   while go == 1:
+      _ , frame = cap.read()
+      if frame is None:
+         if frame_count <= 5 :
+            cap.release()
+            return(frames)
+         else:
+            go = 0
+      frames.append(frame)
+      frame_count += 1
+
+   cap.release()
+   return(frames)
 
 #def trim_crop_video():
