@@ -29,7 +29,7 @@ if __name__ == "__main__":
       print("Creating the video...")
       create_title_video(_title,_credits,_output_path,_color,_with_ams_logo_animation,_with_line_animation)
       os.system("clear")
-      _add_intro =  input("Do you want to add the official intro before the title (y/n)?")
+      _add_intro =  'y'
       if(_add_intro== 'y'):
          cmd = """ffmpeg -y  -i """+AMS_ALLSKY_INTRO+""" -c copy -bsf:v h264_mp4toannexb -f mpegts /mnt/ams2/intermediate1.ts"""
          os.system(cmd)
