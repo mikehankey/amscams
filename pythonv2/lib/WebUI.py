@@ -766,13 +766,14 @@ def controller(json_conf):
    #cam_num = form.getvalue('cam_num')
    #day = form.getvalue('day')
 
-def admin_logger(json_conf, form):
+def admin_logger(form):
    hd_file = form.getvalue("hd_file")
-   sd_file = form.getvalue("sd_file")
+   #sd_file = form.getvalue("sd_file")
    issue = form.getvalue("issue")
-   note = form.getvalue("note")
-   line = hd_file + "," + sd_file + "," + issue + "," + note + "\n"
-   out = fp.open("/mnt/ams2/admin_logger/log.txt", "a")
+   #note = form.getvalue("note")
+   station = form.getvalue("station")
+   line = str(station) + "," + str(hd_file) + "," + str(issue) + "\n"
+   out = open("/mnt/ams2/admin_logger/log.txt", "a")
    out.write(line)
    out.close()
 
