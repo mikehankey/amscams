@@ -71,7 +71,7 @@ def fix_missing_images(day):
             print(img_tn)
          else:
             print("missing:", img_tn)
-            thumbnail(img_tn)
+            thumbnail(img_tn, THUMB_W, THUMB_H)
          if cfe(crop_img_tn) == 1:
             print(crop_img_tn)
          else:
