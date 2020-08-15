@@ -165,10 +165,13 @@ def super_stacks(day):
       if "-crop" not in st and "-tn" not in st:
          stacks.append(st)  
    stack_images = {}
+   sync_files = []
    for file in sorted(stacks):
       (f_datetime, cam, f_date_str,fy,fm,fd, fh, fmin, fs) = convert_filename_to_date_cam(file)
       of = WORK_DIR + day + "-" + cam + "-meteors.jpg"
-      if cfe(of) == 0:
+      sync_files.append(of) 
+      if True:
+      #if cfe(of) == 0:
          try: 
             img = cv2.imread(file)
             print(cam, img.shape)
@@ -192,9 +195,20 @@ def super_stacks(day):
       of = WORK_DIR + day + "-" + cam + "-meteors.jpg"
       stack_images[cam].save(of)
       print(of)
+  
+   # sync
+   sf = sync_files[0].split("/")[-1]
+   sdir = file.replace(sf, "")
 
-   days = [ '2020_08_13', '2020_08_12', '2020_08_11', '2020_08_10']
-   super_stacks_many(days)
+   for file in sync_files:
+      cloud_file = file.replace("ams2/meteor_archive", "archive.allsky.tv")
+      if cfe(cloud_file) == 0:
+         cmd = "cp " + file + " " + cloud_file
+         print(cmd)
+         os.system(cmd)
+
+   #days = [ '2020_08_13', '2020_08_12', '2020_08_11', '2020_08_10']
+   #super_stacks_many(days)
 
 def resize_video(video_file, w, h):
    new_video_file = video_file.replace(".mp4", "-tn.mp4")
@@ -766,6 +780,8 @@ def mln_final(day):
    files = glob.glob(LIVE_METEOR_DAY_DIR + day + "*-crop-tn.jpg")
    html = mk_css()
    html += swap_pic_to_vid()
+
+   html += swap_pic_to_vid()
    print("FILES:", files)
    det_html = det_table(files)
    html += det_html
@@ -779,7 +795,7 @@ def swap_pic_to_vid():
    <script>
    function swap_pic_to_vid (div_id,vid_url) {
       var container = document.getElementById(div_id);
-      content = " <video id='video' src='" + vid_url + "' autoplay controls='true'></video> "
+      content = " <video width='300' height='169'  id='video' src='" + vid_url + "' autoplay playsinline></video> <br><a href=''>" + 'back' + "</a>"
 
       container.innerHTML = content;
    }
