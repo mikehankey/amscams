@@ -34,6 +34,42 @@ def get_valid_cams(json_conf):
       vcs.append(cams_id)
    return(vcs)
 
+def fix_missing_images(day):
+   work_dir = ARC_DIR + "LIVE/METEORS/" + day + "/"
+   jsons = glob.glob(work_dir + "*.json")
+   for jsf in jsons:
+      fn = jsf.split("/")[-1]
+      ck = fn.split("_")
+      if len(ck) > 3:
+         print(jsf)
+         vid = jsf.replace(".json",".mp4")
+         crop_vid = jsf.replace(".json","-crop.mp4")
+         crop_img_tn = jsf.replace(".json","-crop-tn.jpg")
+         img_tn = jsf.replace(".json","-tn.jpg")
+         stack_img = jsf.replace(".json",".jpg")
+         if cfe(vid) == 1:
+            print(vid)
+         else:
+            print("missing:", vid)
+         
+         if cfe(crop_vid) == 1:
+            print(crop_vid)
+         else:
+            print("missing:", crop_vid)
+         if cfe(stack_img) == 1:
+            print(stack_img)
+         else:
+            print("missing:", stack_img)
+         if cfe(img_tn) == 1:
+            print(img_tn)
+         else:
+            print("missing:", img_tn)
+         if cfe(crop_img_tn) == 1:
+            print(crop_img_tn)
+         else:
+            print("missing:", crop_img_tn)
+   
+
 def super_stacks_many(days ):
    json_conf = load_json_file("../conf/as6.json")
    et = json_conf['site']['extra_text']
@@ -171,11 +207,11 @@ def super_stacks(day):
       of = WORK_DIR + day + "-" + cam + "-meteors.jpg"
       sync_files.append(of) 
       if True:
-      #if cfe(of) == 0:
          try: 
             img = cv2.imread(file)
             print(cam, img.shape)
          except:
+            print("COULD NOT READ THE STACK!", file)
             continue
          if img.shape[0] != 1080:
             print("RESIZE!")
@@ -191,10 +227,10 @@ def super_stacks(day):
          if cam not in stack_images:
             stack_images[cam] = stacked_image 
 
-   for cam in stack_images:
-      of = WORK_DIR + day + "-" + cam + "-meteors.jpg"
-      stack_images[cam].save(of)
-      print(of)
+         for cam in stack_images:
+            of = WORK_DIR + day + "-" + cam + "-meteors.jpg"
+            stack_images[cam].save(of)
+            print("SAVING:", of)
   
    # sync
    sf = sync_files[0].split("/")[-1]

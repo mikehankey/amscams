@@ -14,7 +14,7 @@ from lib.PipeDetect import detect_in_vals , obj_report, trim_events, detect_all
 from lib.PipeSync import sync_day 
 from lib.PipeAutoCal import autocal , solve_field, cal_all, draw_star_image, freecal_copy, apply_calib, index_failed
 from lib.PipeReport import autocal_report, detect_report
-from lib.PipeLIVE import meteor_min_files, broadcast_live_meteors, broadcast_minutes, meteors_last_night, mln_final, pip_video, mln_sync, super_stacks, meteor_index
+from lib.PipeLIVE import meteor_min_files, broadcast_live_meteors, broadcast_minutes, meteors_last_night, mln_final, pip_video, mln_sync, super_stacks, meteor_index, fix_missing_images
 from lib.PipeTimeLapse import make_tl_for_cam, video_from_images, six_cam_video, timelapse_all
 
 '''
@@ -188,3 +188,5 @@ if __name__ == "__main__":
       best_of()
    if cmd == "meteor_index":
       meteor_index(sys.argv[2])
+   if cmd == "fmi":
+      fix_missing_images(sys.argv[2])
