@@ -4,6 +4,7 @@
 
 """
 import os
+from lib.PipeTrans import vid_from_imgs
 from lib.DEFAULTS import *
 import glob
 from lib.PipeUtil import cfe, load_json_file, save_json_file
@@ -99,7 +100,58 @@ def best_of():
          exit()
    print ("/mnt/ams2/bestof.html")
    exit()
+    
+def super_stacks_to_video():
+   fps = 25
+   stack_dir = "/mnt/ams2/MLN_CACHE/super_stacks/"
+   os.system("rm tmp_vids/*")
+   stack_vids = []
+   for station in stations: 
+      print(station)
+      stacks = glob.glob(stack_dir + station + "*.jpg")
+      for stack in stacks:
+         vid_of = stack.replace(".jpg", ".mp4")
+         stack_vids.append(vid_of)
+         if cfe(vid_of) == 0:
+            ofn = vid_of.split("/")[-1]
+            print(stack) 
+            for i in range(0, fps):
+               counter = '{:03d}'.format(i) 
+               nf = stack.replace(".jpg", "-" + counter + ".jpg")
+               nfn = nf.split("/")[-1]
+               cmd = "cp " + stack + " tmp_vids/" +  nfn
+               print(cmd)
+               os.system(cmd)
+            #make FFMPEG
+            print("OUT:", vid_of)
+            vid_from_imgs("tmp_vids/", vid_of )
+            
+            os.system("rm tmp_vids/*")
+
+   cat_list = ""
+   for stack_vid in sorted(stack_vids):
+      cat_list += "file '" + stack_vid + "'\n"
+   fp = open("tmp_vids/cat_list.txt", "w")
+   fp.write(cat_list)
+   cmd = "/usr/bin/ffmpeg -re -f concat -safe 0 -i tmp_vids/cat_list.txt /mnt/ams2/MLN_CACHE/super_stacks/all_stations.mp4"
+   print(cmd)
+   os.system(cmd)
       
+ 
+def copy_super_stacks(day=None):
+   for station in stations:
+      station_dir = "/mnt/archive.allsky.tv/" + station + "/LIVE/METEORS/" + day + "/"
+
+      # get super stacks
+      super_files = glob.glob(station_dir + "*meteors.jpg")
+      super_dir = "/mnt/ams2/MLN_CACHE/super_stacks/"
+      for sf in super_files:
+         sfn = sf.split("/")[-1]
+         if cfe(super_dir + sfn) == 0:
+            cmd = "cp " + sf + " " + super_dir + station + "-" + sfn
+            print(cmd)
+            os.system(cmd)
+ 
 
 def mln_report(day=None):
 
@@ -114,8 +166,14 @@ def mln_report(day=None):
       cmd = "cp " + data_file + " " + new_data_file
 
       # get super stacks
-      super_stacks = glob.glob()
-
+      super_files = glob.glob(station_dir + "*meteors.jpg") 
+      super_dir = "/mnt/ams2/MLN_CACHE/super_stacks/"
+      for sf in super_files:
+         sfn = sf.split("/")[-1]
+         if cfe(super_dir + sfn) == 0:
+            cmd = "cp " + sf + " " + super_dir + station + "-" + sfn
+            os.system(cmd)
+      
       print(cmd)
       if cfe(data_file) == 1:
          if cfe(new_data_file) == 0 :

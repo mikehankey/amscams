@@ -6,7 +6,7 @@ import time
 from PIL import ImageFont, ImageDraw, Image, ImageChops
 
 from lib.PipeTrans import trans_test 
-from lib.PipeManager import mln_report, mln_best, best_of 
+from lib.PipeManager import mln_report, mln_best, best_of , copy_super_stacks, super_stacks_to_video
 from lib.PipeFiles import get_pending_files
 from lib.PipeUtil import convert_filename_to_date_cam, day_or_night , load_json_file, save_json_file, cfe
 from lib.PipeVideo import scan_stack_file, make_preview_video, make_preview_videos, load_frames_simple
@@ -190,3 +190,8 @@ if __name__ == "__main__":
       meteor_index(sys.argv[2])
    if cmd == "fmi":
       fix_missing_images(sys.argv[2])
+   if cmd == "cp_super":
+      copy_super_stacks(sys.argv[2])
+   if cmd == "ssv":
+      super_stacks_to_video()
+

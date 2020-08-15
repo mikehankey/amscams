@@ -19,7 +19,7 @@ from lib.PipeDetect import detect_in_vals, detect_meteor_in_clip, crop_video, an
 from lib.PipeVideo import find_crop_size, ffprobe, load_frames_fast
 from lib.PipeUtil import convert_filename_to_date_cam, cfe, load_json_file, save_json_file, check_running, calc_dist 
 from lib.PipeMeteorTests import * 
-from lib.PipeImage import stack_frames, thumbnail, stack_stack
+from lib.PipeImage import stack_frames, thumbnail, stack_stack, quick_video_stack
 import datetime
 from datetime import datetime as dt
 from PIL import ImageFont, ImageDraw, Image, ImageChops
@@ -44,6 +44,7 @@ def fix_missing_images(day):
          print(jsf)
          vid = jsf.replace(".json",".mp4")
          crop_vid = jsf.replace(".json","-crop.mp4")
+         crop_img = jsf.replace(".json","-crop.jpg")
          crop_img_tn = jsf.replace(".json","-crop-tn.jpg")
          img_tn = jsf.replace(".json","-tn.jpg")
          stack_img = jsf.replace(".json",".jpg")
@@ -51,7 +52,13 @@ def fix_missing_images(day):
             print(vid)
          else:
             print("missing:", vid)
-         
+        
+
+         if cfe(crop_img) == 1:
+            print(crop_img)
+         else:
+            print("missing:", crop_img)
+ 
          if cfe(crop_vid) == 1:
             print(crop_vid)
          else:
@@ -64,10 +71,16 @@ def fix_missing_images(day):
             print(img_tn)
          else:
             print("missing:", img_tn)
+            thumbnail(img_tn)
          if cfe(crop_img_tn) == 1:
             print(crop_img_tn)
          else:
             print("missing:", crop_img_tn)
+            print("TRY VIDEO STACK:", crop_vid)
+            crop_stack_img = quick_video_stack(crop_vid )
+            cv2.imwrite(crop_img, crop_stack_img)
+            thumbnail(crop_img, THUMB_W, THUMB_H)
+            exit()
    
 
 def super_stacks_many(days ):

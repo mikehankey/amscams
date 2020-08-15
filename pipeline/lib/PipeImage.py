@@ -144,7 +144,10 @@ def mask_frame(frame, mp, masks, size=3):
 
 def thumbnail(image_file, w, h, thumb_file=None):
    if thumb_file == None:
-      thumb_file = image_file.replace(".png", "-tn.png")
+      if "png" in image_file:
+         thumb_file = image_file.replace(".png", "-tn.png")
+      if "jpg" in image_file:
+         thumb_file = image_file.replace(".jpg", "-tn.jpg")
 
    img = cv2.imread(image_file)
    thumb = cv2.resize(img, (w, h))
