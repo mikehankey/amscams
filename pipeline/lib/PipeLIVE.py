@@ -169,9 +169,11 @@ def super_stacks(day):
       (f_datetime, cam, f_date_str,fy,fm,fd, fh, fmin, fs) = convert_filename_to_date_cam(file)
       of = WORK_DIR + day + "-" + cam + "-meteors.jpg"
       if cfe(of) == 0:
-    
-         img = cv2.imread(file)
-         print(cam, img.shape)
+         try: 
+            img = cv2.imread(file)
+            print(cam, img.shape)
+         except:
+            continue
          if img.shape[0] != 1080:
             print("RESIZE!")
             img = cv2.resize(img, (1920,1080)) 
@@ -202,6 +204,8 @@ def resize_video(video_file, w, h):
    return(new_video_file)
 
 def mln_sync(day, json_conf):
+
+
    # sync tn jpgs 
    # sync full and crop mp4s 
    CLOUD_METEOR_DIR = "/mnt/archive.allsky.tv/" + STATION_ID + "/LIVE/METEORS/" + day + "/" 
@@ -282,7 +286,11 @@ def mln_sync(day, json_conf):
       else:
          print("already sync'd")
 
+   cmd = "cp /mnt/ams2/meteor_archive/" + STATION_ID + "/LIVE/METEORS/" + STATION_ID + "*ALL* " + CLOUD_METEOR_DIR + "../"
+   os.system(cmd)
 
+   cmd = "cp /mnt/ams2/meteor_archive/" + STATION_ID + "/LIVE/METEORS/" + STATION_ID + "_METEORS.html " + CLOUD_METEOR_DIR + "../"
+   os.system(cmd)
 
 
 def pip_video(video_file, json_conf):
