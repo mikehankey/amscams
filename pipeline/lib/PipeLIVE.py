@@ -265,7 +265,7 @@ def super_stacks(day):
 def resize_video(video_file, w, h):
    new_video_file = video_file.replace(".mp4", "-tn.mp4")
    if cfe(new_video_file) == 0:
-      cmd = "/usr/bin/ffmpeg -i " + video_file + " -vf scale=\"" + str(w) + ":" + str(h) + "\" " + new_video_file
+      cmd = "/usr/bin/ffmpeg -i " + video_file + " -vf scale=\"" + str(w) + ":" + str(h) + "\" -y " + new_video_file
       os.system(cmd)
    return(new_video_file)
 
