@@ -252,6 +252,16 @@ def super_stacks(day):
       of = WORK_DIR + day + "-" + cam + "-meteors.jpg"
       stack_images[cam].save(of)
       print("SAVING:", of)
+      cv_img = np.array(stack_images[cam])
+      stack_tn = of.replace(".jpg", "-tn.jpg")
+      stack_med = of.replace(".jpg", "-720.jpg")
+      img_tn = cv2.resize(cv_img, (THUMB_W,THUMB_H))
+      img_med = cv2.resize(cv_img, (1280,720))
+      cv2.imwrite(stack_tn, img_tn)
+      cv2.imwrite(stack_med, img_med)
+      sync_files.append(of)
+      sync_files.append(stack_tn)
+      sync_files.append(stack_med)
   
    # sync
    if len(sync_files) == 0:
@@ -264,6 +274,7 @@ def super_stacks(day):
       cloud_file = file.replace("ams2/meteor_archive", "archive.allsky.tv")
       #if cfe(cloud_file) == 0:
       if True:
+         
          cmd = "cp " + file + " " + cloud_file
          print(cmd)
          os.system(cmd)
