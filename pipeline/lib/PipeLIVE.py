@@ -246,6 +246,9 @@ def super_stacks(day):
             print("SAVING:", of)
   
    # sync
+   if len(sf) == 0:
+      print("NO SYNC FILES!")
+      return()
    sf = sync_files[0].split("/")[-1]
    sdir = file.replace(sf, "")
 
@@ -734,10 +737,6 @@ def purge_deleted_live_files (live_dir, live_cloud_dir, day):
       fn = lm.split("/")[-1]
       dmf = meteor_dir + fn
       if dmf not in detected_meteors:
-         print("DELETE LIVE FILE (it doesn't exist in meteor dir:\n" )
-         print("LIVE FILE:", lm)
-         print("DETECT FILE:", dmf)
-         print("CLOUD FILE:", cloud_file)
          wild = lm.replace(".mp4", "*")
          cmd = "rm " + wild
          wild_fn = fn.replace(".mp4", "*")
@@ -1043,6 +1042,7 @@ def meteors_last_night(json_conf, day=None):
    meteor_index(day)
    print("FINAL!")
 
+   super_stacks(day)
    mln_sync(day, json_conf)
    print("DONE MLN FOR", day)
    exit()
