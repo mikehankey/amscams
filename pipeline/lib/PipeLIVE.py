@@ -211,7 +211,7 @@ def super_stacks(day):
    sts = glob.glob(ARC_DIR + "LIVE/METEORS/" + day + "/*.jpg")
    stacks = []
    for st in sts:
-      if "-crop" not in st and "-tn" not in st and "meteors.jpg" not in st:
+      if "-crop" not in st and "-tn" not in st and "meteors.jpg" not in st and "720" not in st:
          img = cv2.imread(st)
          sum = np.sum(img)
          avg = np.mean(img)
