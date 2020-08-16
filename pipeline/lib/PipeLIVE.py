@@ -916,7 +916,7 @@ def meteors_last_night(json_conf, day=None):
 
       if cfe(sdv) == 1:
          if "sd_w" not in js:
-            sd_w, sd_h = ffprobe(sdv)
+            sd_w, sd_h,tf = ffprobe(sdv)
             js['sd_w'] = sd_w
             js['sd_h'] = sd_h
             save_json_file(file, js)
