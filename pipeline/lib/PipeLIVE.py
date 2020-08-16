@@ -262,7 +262,8 @@ def super_stacks(day):
 
    for file in sync_files:
       cloud_file = file.replace("ams2/meteor_archive", "archive.allsky.tv")
-      if cfe(cloud_file) == 0:
+      #if cfe(cloud_file) == 0:
+      if True:
          cmd = "cp " + file + " " + cloud_file
          print(cmd)
          os.system(cmd)
