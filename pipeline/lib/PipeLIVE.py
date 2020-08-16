@@ -226,6 +226,7 @@ def super_stacks(day):
       of = WORK_DIR + day + "-" + cam + "-meteors.jpg"
       sync_files.append(of) 
       if True:
+      #if cfe(of) == 0:
          try: 
             img = cv2.imread(file)
             print(cam, img.shape)
@@ -245,6 +246,7 @@ def super_stacks(day):
             stack_images[cam] = stack_stack(stack_images[cam], frame_pil)
          if cam not in stack_images:
             stack_images[cam] = stacked_image 
+         
 
    for cam in stack_images:
       of = WORK_DIR + day + "-" + cam + "-meteors.jpg"
@@ -252,7 +254,7 @@ def super_stacks(day):
       print("SAVING:", of)
   
    # sync
-   if len(sf) == 0:
+   if len(sync_files) == 0:
       print("NO SYNC FILES!")
       return()
    sf = sync_files[0].split("/")[-1]
