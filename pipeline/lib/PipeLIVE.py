@@ -211,8 +211,14 @@ def super_stacks(day):
    sts = glob.glob(ARC_DIR + "LIVE/METEORS/" + day + "/*.jpg")
    stacks = []
    for st in sts:
-      if "-crop" not in st and "-tn" not in st:
-         stacks.append(st)  
+      if "-crop" not in st and "-tn" not in st and "meteors.jpg" not in st:
+         img = cv2.imread(st)
+         sum = np.sum(img)
+         avg = np.mean(img)
+         if avg > 90:
+            print("SUM/AVG", st, sum, avg)
+         else:
+            stacks.append(st)  
    stack_images = {}
    sync_files = []
    for file in sorted(stacks):
@@ -240,10 +246,10 @@ def super_stacks(day):
          if cam not in stack_images:
             stack_images[cam] = stacked_image 
 
-         for cam in stack_images:
-            of = WORK_DIR + day + "-" + cam + "-meteors.jpg"
-            stack_images[cam].save(of)
-            print("SAVING:", of)
+   for cam in stack_images:
+      of = WORK_DIR + day + "-" + cam + "-meteors.jpg"
+      stack_images[cam].save(of)
+      print("SAVING:", of)
   
    # sync
    if len(sf) == 0:
