@@ -734,10 +734,6 @@ def purge_deleted_live_files (live_dir, live_cloud_dir, day):
       fn = lm.split("/")[-1]
       dmf = meteor_dir + fn
       if dmf not in detected_meteors:
-         print("DELETE LIVE FILE (it doesn't exist in meteor dir:\n" )
-         print("LIVE FILE:", lm)
-         print("DETECT FILE:", dmf)
-         print("CLOUD FILE:", cloud_file)
          wild = lm.replace(".mp4", "*")
          cmd = "rm " + wild
          wild_fn = fn.replace(".mp4", "*")
