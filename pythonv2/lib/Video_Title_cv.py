@@ -316,3 +316,9 @@ def concat_videos_fade(video1,video2,output,_from,_to):
   
     output = subprocess.check_output(cmd, shell=True).decode("utf-8")     
     print(output) 
+
+
+# Resize a video
+def resize(video1,output,_width,_height):
+   cmd 'ffmpeg -i ' + video1 + ' -filter:v scale='+str(_width)+':-1 -c:a copy ' + output
+   os.system(cmd)  
