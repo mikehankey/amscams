@@ -638,7 +638,7 @@ def minify_file(file, outdir, text, md, sd_img = None, hd_img = None):
       crop_box = [cx1,cy1,cx2,cy2,mx,my]
       cropbox_720 = [cx1,cy1,cx2,cy2]
       print("CROP:", crop_box, file)
-      hack = 1
+      hack = 0
       if hack == 1:
          cx1 = 0
          cx2 = 640
