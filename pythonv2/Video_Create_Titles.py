@@ -1,6 +1,5 @@
 import sys, os
-from lib.Video_Title_cv import *   
-from datetime import datetime
+from lib.Video_Title_cv import *    
 
 
 AMS_ALLSKY_INTRO = "/home/ams/amscams/dist/vids/AMS_ALLSKY.mp4"
@@ -17,19 +16,23 @@ if __name__ == "__main__":
 
    if(cmd=="main_title"):
      
-      _title         = input("Enter main title: ") or "BEST OF PERSEIDS " . str(datetime.now().year)
+      _title         = input("Enter main title: ")  
       _credits       = input("Enter subtitle: ")
-      _output_path   = input("Destination: ")
+      _output_path   = input("Destination (ex: /mnt/ams2/test.mp4): ")
+      _size          = input("Type 1 for 1920x108 or 2 for 1280x720") or "1"
+
 
       _color   = (255,255,255,255) # Optional - it's white by default
       _with_ams_logo_animation   = False
       _with_line_animation       = True # Optional - it's True by default
-      #_output_path = '/mnt/ams2/vid.mp4'
+       
  
       print("Creating the video...")
       create_title_video(_title,_credits,_output_path,_color,_with_ams_logo_animation,_with_line_animation)
       os.system("clear")
+
       _add_intro =  'y'
+      
       if(_add_intro== 'y'):
          cmd = """ffmpeg -y  -i """+AMS_ALLSKY_INTRO+""" -c copy -bsf:v h264_mp4toannexb -f mpegts /mnt/ams2/intermediate1.ts"""
          os.system(cmd)
@@ -40,7 +43,15 @@ if __name__ == "__main__":
          cmd = """rm -f /mnt/ams2/*.ts"""
          os.system(cmd)  
 
-      resize(_output_path,_output_path+'720.mp4',1280)
+      if(_size=='2'):
+         # Get file name based on path
+         filename = os.path.splitext(_output_path)[0]+'1280.mp4'
+         resize(_output_path,filename,1280)
+         cmd = "rm -f " +_output_path
+         os.system(cmd)  
+         cmd = "mv " + filename +  " " + _output_path
+         os.system(cmd)  
+
       os.system("clear")
       print("FILE CREATED: " + _output_path)
        
