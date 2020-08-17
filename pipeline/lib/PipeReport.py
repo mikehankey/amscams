@@ -88,10 +88,11 @@ def detect_report(day, json_conf):
    rpt += "<h2>" + str(len(non_meteor_files)) + " Auto Rejected Meteor Detections</h2>"
    rpt += table
 
-   table = det_table(detect_files, "detect")
-   rpt += "<div style='clear: both'></div>"
-   rpt += "<h2>" + str(len(detect_files)) + " Non Meteor Detections</h2>"
-   rpt += table
+   if False:
+      table = det_table(detect_files, "detect")
+      rpt += "<div style='clear: both'></div>"
+      rpt += "<h2>" + str(len(detect_files)) + " Non Meteor Detections</h2>"
+      rpt += table
 
 
    out = open(data_dir + "report.html", "w")

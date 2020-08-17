@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-
+import numpy as np
 import sys
 import time
 from PIL import ImageFont, ImageDraw, Image, ImageChops
@@ -11,11 +11,11 @@ from lib.PipeManager import mln_report, mln_best, best_of , copy_super_stacks, s
 from lib.PipeFiles import get_pending_files
 from lib.PipeUtil import convert_filename_to_date_cam, day_or_night , load_json_file, save_json_file, cfe
 from lib.PipeVideo import scan_stack_file, make_preview_video, make_preview_videos, load_frames_simple, ffmpeg_cat 
-from lib.PipeDetect import detect_in_vals , obj_report, trim_events, detect_all, get_trim_num, trim_min_file
+from lib.PipeDetect import detect_in_vals , obj_report, trim_events, detect_all, get_trim_num, trim_min_file, detect_meteor_in_clip, analyze_object
 from lib.PipeSync import sync_day 
 from lib.PipeAutoCal import autocal , solve_field, cal_all, draw_star_image, freecal_copy, apply_calib, index_failed
 from lib.PipeReport import autocal_report, detect_report
-from lib.PipeLIVE import meteor_min_files, broadcast_live_meteors, broadcast_minutes, meteors_last_night, mln_final, pip_video, mln_sync, super_stacks, meteor_index, fix_missing_images, fflist, resize_video
+from lib.PipeLIVE import meteor_min_files, broadcast_live_meteors, broadcast_minutes, meteors_last_night, mln_final, pip_video, mln_sync, super_stacks, meteor_index, fix_missing_images, fflist, resize_video, minify_file
 from lib.PipeTimeLapse import make_tl_for_cam, video_from_images, six_cam_video, timelapse_all
 
 '''
@@ -76,7 +76,7 @@ if __name__ == "__main__":
    if cmd == 'dv':
       events, objects,total_frames, = detect_in_vals(sys.argv[2])
       print("EVENTS:", len(events))
-      trim_events(sys.argv[2], events, total_frames)
+      #trim_events(sys.argv[2], events, total_frames)
       
       print("\n\nOBJECTS:", len(objects))
       for o in objects:
@@ -208,7 +208,28 @@ if __name__ == "__main__":
       fflist(sys.argv[2], sys.argv[3])
    if cmd == "rv":
       resize_video(sys.argv[2], sys.argv[3], sys.argv[4])
+   if cmd == "minify":
+      LIVE_METEOR_DIR = "/mnt/ams2/nice/min/"
+      text = "James Hannon, Otter Creek TWP USA"
+      meteor_data = {}
+      meteor_data[sys.argv[2]] = {}
+      meteor_data[sys.argv[2]]['sd_w'] = "640"
+      meteor_data[sys.argv[2]]['sd_h'] = "360"
+      sd_frame = np.zeros((1080,1920,3),dtype=np.uint8)
+      hd_frame = np.zeros((1080,1920,3),dtype=np.uint8)
+      meteor_data[sys.argv[2]]['xs'] = [208, 219, 190, 173, 179, 172, 160, 177, 138, 176, 183, 170, 117, 111, 93, 83, 66, 61, 55, 49, 45, 137, 136, 252, 137, 225, 226, 136, 136, 231, 216, 252, 202, 231, 216, 197, 216]
+      meteor_data[sys.argv[2]]['ys'] = [450, 632, 650]
+      hd_outfile, hd_cropfile, cropbox_1080,cropbox_720 = minify_file(sys.argv[2], LIVE_METEOR_DIR, text, meteor_data[sys.argv[2]], sd_frame, hd_frame)
+      print(hd_outfile, hd_cropfile)
    if cmd == "trim":
-      trim_out_file = sys.argv[2].replace(".mp4", "-trim-" + sys.argv[3] + ".mp4"
+      trim_out_file = sys.argv[2].replace(".mp4", "-trim-" + sys.argv[3] + ".mp4")
       trim_min_file(sys.argv[2], trim_out_file, sys.argv[3], sys.argv[4])
+   if cmd == "dmic":
+      hd_objects, frames = detect_meteor_in_clip(sys.argv[2], None, 0, 0, 0, 0)
+      for obj in hd_objects:
+         hd_objects[obj] = analyze_object(hd_objects[obj])
+         if hd_objects[obj]['report']['meteor'] == 1:
+            print("METEOR:", hd_objects[obj])
+         else:
+            print("NON METEOR:",hd_objects[obj])
 

@@ -442,6 +442,8 @@ def scan_stack_file(file, vals = []):
    elapsed_time = time.time() - start_time
    #os.system("mv " + file + " " + proc_dir)
    print("saved.", json_file)
+   print("MIKE REMOVE EXIT!")
+   exit()
 
    if cfe(stack_file) == 0:
       print("No stack file made!?")

@@ -598,7 +598,7 @@ def minify_file(file, outdir, text, md, sd_img = None, hd_img = None):
       hdm_y = 1080 / int(md['sd_h']) 
       print("HDMX 1080:", hdm_x, hdm_y) 
       crop_box = find_crop_size(min(md['xs'])*hdm_x,min(md['ys'])*hdm_y,max(md['xs'])*hdm_x,max(md['ys'])*hdm_y, 1920, 1080, 1, 1)
-
+      print("CROP BOX:", crop_box) 
       sx1,sy1,sx2,sy2,smx,smy = crop_box
       sx1,sy1,sx2,sy2 =  int(sx1),int(sy1),int(sx2),int(sy2)
       cropbox_1080 = [sx1,sy1,sx2,sy2]
@@ -638,6 +638,12 @@ def minify_file(file, outdir, text, md, sd_img = None, hd_img = None):
       crop_box = [cx1,cy1,cx2,cy2,mx,my]
       cropbox_720 = [cx1,cy1,cx2,cy2]
       print("CROP:", crop_box, file)
+      hack = 1
+      if hack == 1:
+         cx1 = 0
+         cx2 = 640
+         cy1 = 240 
+         cy2 = 600
       make_overlay(cx1,cy1,cx2,cy2)
  
 
@@ -695,7 +701,8 @@ def minify_file(file, outdir, text, md, sd_img = None, hd_img = None):
    stack_crop_file = crop_file.replace(".mp4", ".jpg")
    if stack_img_crop is not None:
       cv2.imwrite(stack_crop_file, stack_img_crop)
-   cv2.imwrite(stack_file, stack_img)
+   if stack_img is not None:
+      cv2.imwrite(stack_file, stack_img)
    print("STACK FILE:", stack_file)
    print("STACK CROP FILE:", stack_crop_file)
    return(outfile, crop_file,cropbox_1080, cropbox_720)

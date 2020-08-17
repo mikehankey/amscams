@@ -599,7 +599,7 @@ def detect_in_vals(vals_file, masks=None, vals_data=None):
       data = load_json_file(vals_file)
    else:
       data = vals_data
-   
+   print("VALS DATA LOADED") 
    events = []
    data_x = []
    data_y = []
@@ -620,6 +620,7 @@ def detect_in_vals(vals_file, masks=None, vals_data=None):
          if masked == 0:
             data_x.append(x)
             data_y.append(y)
+            print("Finding obj.", i,x,y)
             object, objects = find_object(objects, i,x, y, SD_W, SD_H, max_val, 0, 0, None)
       else:
          if cm >= 3:
