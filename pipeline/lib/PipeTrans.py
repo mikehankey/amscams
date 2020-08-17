@@ -12,8 +12,40 @@
 from lib.PipeVideo import load_frames_simple
 import cv2
 import os
+
+def fade_into(clip1=None, clip2=None, fade_frames=25):
+   if "mp4" in clip1: 
+      cf1 = load_frames_simple(clip1)
+      img1 = cf1[-2]
+   else:
+      img1 = cv2.imread(clip1)
+   if "mp4" in clip2: 
+      cf2 = load_frames_simple(clip2)
+      img2 = cf2[0]
+   else:
+      img2 = cv2.imread(clip2)
+
+   img1 = cv2.resize(img1, (1280, 720))
+   img2 = cv2.resize(img2, (1280, 720))
+
+   for i in range(0,fade_frames):
+      if i == 0:
+         fadein = 1
+      else:
+         fadein = 1 - (i/fade_frames)
+      print(1-fadein, fadein)
+      blended = cv2.addWeighted(img1, fadein, img2, 1-fadein, 0)
+      counter = '{:03d}'.format(i) + ".jpg"
+      cv2.imwrite("tmp_vids/" + counter + ".jpg", blended)
+      cv2.imshow('pepe', blended)
+      cv2.waitKey(0)
+   of = clip1.split("/")[-1]
+   outfile = of.replace(".mp4", "-trans.mp4")
+   vid_from_imgs("tmp_vids/*.jpg", "/mnt/ams2/MLN_CACHE/FINAL/TRANS/" + outfile)
+
 def trans_test(clip1, clip2):
-   print("TEST")
+   fade_into(clip1, clip2)
+   exit()
    cf1 = load_frames_simple(clip1)
    cf2 = load_frames_simple(clip2)
    print(len(cf1))

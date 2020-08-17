@@ -33,12 +33,16 @@ def rotate_bound(image, angle):
     # perform the actual rotation and return the image
     return cv2.warpAffine(image, M, (nW, nH))
 
-def quick_video_stack(video_file, count = 10):
+def quick_video_stack(video_file, count = 0, save=1):
    frames = []
+   img_file = video_file.replace(".mp4",".jpg")
    temp_dir = "/mnt/ams2/tmp/st/"
    if cfe(temp_dir, 1) == 0:
       os.makedirs(temp_dir)
-   cmd = "/usr/bin/ffmpeg -i " + video_file + " -vframes " + str(count) +  " " + temp_dir + "frames%03d.jpg > /dev/null 2>&1"
+   if count == 0:
+      cmd = "/usr/bin/ffmpeg -i " + video_file + " " + temp_dir + "frames%03d.jpg > /dev/null 2>&1"
+   else:
+      cmd = "/usr/bin/ffmpeg -i " + video_file + " -vframes " + str(count) +  " " + temp_dir + "frames%03d.jpg > /dev/null 2>&1"
    os.system(cmd)
    files = glob.glob(temp_dir + "*.jpg")
    for file in files:
@@ -46,6 +50,8 @@ def quick_video_stack(video_file, count = 10):
       frames.append(frame)
    stack_frame = stack_frames(frames)
    os.system("rm " + temp_dir + "*")
+   if save == 1:
+      cv2.imwrite(img_file, stack_frame)
    return(stack_frame)
   
 

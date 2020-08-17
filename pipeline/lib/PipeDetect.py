@@ -685,7 +685,7 @@ def detect_all(vals_file):
    video_file = vals_file.replace("-vals.json", ".mp4") 
    video_file = video_file.replace("data/", "") 
    try:
-      w,h = ffprobe(video_file)
+      w,h,tf = ffprobe(video_file)
    except:
       print("BAD VIDEO FILE?!", video_file)
       return()

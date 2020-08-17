@@ -15,6 +15,20 @@ from lib.PipeUtil import cfe, save_json_file, convert_filename_to_date_cam, get_
 from lib.DEFAULTS import * 
 from lib.PipeMeteorTests import ang_dist_vel, angularSeparation
 
+def ffmpeg_cat(file1, file2, outfile=None):
+   list = "file '" + file1 + "'\n"
+   list += "file '" + file2 + "'\n"
+   outfile = file1.replace(".mp4", "-cat.mp4")
+
+   list_file = "tmp_vids/cat.txt"
+   fp = open(list_file, "w")
+   fp.write(list)
+   fp.close()
+   cmd = "/usr/bin/ffmpeg -f concat -safe 0 -i " +list_file + " -c copy -y " + outfile
+   print(cmd)
+   os.system(cmd)
+      
+
 def ffprobe(video_file):
    default = [704,576]
    cmd = "/usr/bin/ffprobe " + video_file + " > /tmp/ffprobe72.txt 2>&1"
@@ -25,10 +39,20 @@ def ffprobe(video_file):
    if True:
       fpp = open("/tmp/ffprobe72.txt", "r")
       for line in fpp:
+         if "Duration" in line:
+            el = line.split(",")
+            dur = el[0]
+            dur = dur.replace("Duration: ", "")
+            el = dur.split(":")
+            tsec = el[2]
+            total_frames = float(tsec) * 25
          if "Stream" in line:
             output = line
       fpp.close()
-      #print("OUTPUT: ", output)
+      print("OUTPUT: ", output)
+      print("TSEC:", dur)
+      print("DUR:", dur)
+      print("TF:", total_frames)
       if output is None:
          print("FFPROBE PROBLEM:", video_file)
          exit()
@@ -40,7 +64,7 @@ def ffprobe(video_file):
          dim = el[2].replace(" ", "")
 
       w, h = dim.split("x")
-   return(w,h)
+   return(w,h, total_frames)
 
 
 def find_crop_size(min_x,min_y,max_x,max_y, img_w, img_h, hdm_x=1, hdm_y=1 ):
@@ -543,7 +567,8 @@ def load_frames_simple(trim_file):
             return(frames)
          else:
             go = 0
-      frames.append(frame)
+      if frame is not None:
+         frames.append(frame)
       frame_count += 1
 
    cap.release()

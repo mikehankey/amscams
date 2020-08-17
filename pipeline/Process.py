@@ -5,16 +5,17 @@ import sys
 import time
 from PIL import ImageFont, ImageDraw, Image, ImageChops
 
+from lib.PipeImage import quick_video_stack
 from lib.PipeTrans import trans_test 
-from lib.PipeManager import mln_report, mln_best, best_of , copy_super_stacks, super_stacks_to_video
+from lib.PipeManager import mln_report, mln_best, best_of , copy_super_stacks, super_stacks_to_video, multi_station_meteors
 from lib.PipeFiles import get_pending_files
 from lib.PipeUtil import convert_filename_to_date_cam, day_or_night , load_json_file, save_json_file, cfe
-from lib.PipeVideo import scan_stack_file, make_preview_video, make_preview_videos, load_frames_simple
-from lib.PipeDetect import detect_in_vals , obj_report, trim_events, detect_all
+from lib.PipeVideo import scan_stack_file, make_preview_video, make_preview_videos, load_frames_simple, ffmpeg_cat, resize_video
+from lib.PipeDetect import detect_in_vals , obj_report, trim_events, detect_all, get_trim_num
 from lib.PipeSync import sync_day 
 from lib.PipeAutoCal import autocal , solve_field, cal_all, draw_star_image, freecal_copy, apply_calib, index_failed
 from lib.PipeReport import autocal_report, detect_report
-from lib.PipeLIVE import meteor_min_files, broadcast_live_meteors, broadcast_minutes, meteors_last_night, mln_final, pip_video, mln_sync, super_stacks, meteor_index, fix_missing_images
+from lib.PipeLIVE import meteor_min_files, broadcast_live_meteors, broadcast_minutes, meteors_last_night, mln_final, pip_video, mln_sync, super_stacks, meteor_index, fix_missing_images, fflist, resize_video
 from lib.PipeTimeLapse import make_tl_for_cam, video_from_images, six_cam_video, timelapse_all
 
 '''
@@ -34,11 +35,12 @@ json_conf = load_json_file(CONF_DIR +"/as6.json")
 if "process_day" in json_conf:
    proc_day = 1
 
-
+ 
 
 def scan_stack_pending(proc_day=0):
    proc_day = 0
    files = get_pending_files()
+   events = {}
    for file in files:
       (f_datetime, cam, f_date_str,fy,fmin,fd, fh, fm, fs) = convert_filename_to_date_cam(file)
       sun_status = day_or_night(f_date_str, json_conf)
@@ -173,7 +175,7 @@ if __name__ == "__main__":
    if cmd == "mln_best":
       mln_best(sys.argv[2])
 
-   # METEOR LAST NIGHT FUNCTIONS
+   # METEOR LAST NIGHT FUNCTIONS 
    if cmd == "mln_final":
       mln_final(sys.argv[2])
    if cmd == "pip":
@@ -190,8 +192,20 @@ if __name__ == "__main__":
       meteor_index(sys.argv[2])
    if cmd == "fmi":
       fix_missing_images(sys.argv[2])
+
+   # MANAGER / EDITOR FUNCTIONS
    if cmd == "cp_super":
       copy_super_stacks(sys.argv[2])
    if cmd == "ssv":
       super_stacks_to_video()
+   if cmd == "qvs":
+      quick_video_stack(sys.argv[2])
+   if cmd == "ffcat":
+      ffmpeg_cat(sys.argv[2], sys.argv[3])
+   if cmd == "msm":
+      multi_station_meteors(sys.argv[2])
+   if cmd == "fflist":
+      fflist(sys.argv[2], sys.argv[3])
+   if cmd == "rv":
+      resize_video(sys.argv[2], sys.argv[3], sys.argv[4])
 
