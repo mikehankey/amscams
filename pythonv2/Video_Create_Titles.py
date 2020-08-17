@@ -40,6 +40,7 @@ if __name__ == "__main__":
          cmd = """rm -f /mnt/ams2/*.ts"""
          os.system(cmd)  
 
+      resize(_output_path,_output_path+'720.mp4',1280)
       os.system("clear")
       print("FILE CREATED: " + _output_path)
        

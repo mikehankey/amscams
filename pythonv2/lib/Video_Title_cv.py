@@ -319,6 +319,6 @@ def concat_videos_fade(video1,video2,output,_from,_to):
 
 
 # Resize a video
-def resize(video1,output,_width,_height):
+def resize(video1,output,_width):
    cmd 'ffmpeg -i ' + video1 + ' -filter:v scale='+str(_width)+':-1 -c:a copy ' + output
    os.system(cmd)  
