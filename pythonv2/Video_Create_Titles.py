@@ -47,7 +47,7 @@ if __name__ == "__main__":
          # Get file name based on path
          filename = os.path.splitext(_output_path)[0]+'1280.mp4'
          resize(_output_path,filename,1280)
-         cmd = "rm -f " +_output_path
+         cmd = "rm -f " + _output_path
          os.system(cmd)  
          cmd = "mv " + filename +  " " + _output_path
          os.system(cmd)  
