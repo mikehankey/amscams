@@ -88,12 +88,12 @@ def super_stacks_many(days ):
    et = json_conf['site']['extra_text']
    all_stacks = []
    valid_cams = get_valid_cams(json_conf)
+   html = ""
    for day in days:
       WORK_DIR = ARC_DIR + "LIVE/METEORS/" + day + "/"
       ss = glob.glob (WORK_DIR + "*meteors.jpg")
       for s in ss: 
          all_stacks.append(s)
-
 
    shtml = {}
    #"<h1>METEORS FOR " + STATION_ID + " ON " + day + "</h1>"
@@ -729,6 +729,11 @@ def get_min_files(cam_id, this_hour_string, last_hour_string, upload_mins):
             if int(min) in upload_mins:
                bc_clips.append(file)
    return(bc_clips)
+
+def fflist(list_file, outfile):
+   cmd = "/usr/bin/ffmpeg -f concat -safe 0 -i " +list_file + " -c copy -y " + outfile
+   print(cmd)
+   os.system(cmd)
 
 def cat_videos(in_wild, outfile):
    print("WILD:", in_wild)

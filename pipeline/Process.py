@@ -10,7 +10,7 @@ from lib.PipeTrans import trans_test
 from lib.PipeManager import mln_report, mln_best, best_of , copy_super_stacks, super_stacks_to_video, multi_station_meteors
 from lib.PipeFiles import get_pending_files
 from lib.PipeUtil import convert_filename_to_date_cam, day_or_night , load_json_file, save_json_file, cfe
-from lib.PipeVideo import scan_stack_file, make_preview_video, make_preview_videos, load_frames_simple, ffmpeg_cat, resize_video
+from lib.PipeVideo import scan_stack_file, make_preview_video, make_preview_videos, load_frames_simple, ffmpeg_cat 
 from lib.PipeDetect import detect_in_vals , obj_report, trim_events, detect_all, get_trim_num
 from lib.PipeSync import sync_day 
 from lib.PipeAutoCal import autocal , solve_field, cal_all, draw_star_image, freecal_copy, apply_calib, index_failed
