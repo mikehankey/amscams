@@ -150,7 +150,7 @@ if __name__ == "__main__":
       if len(sys.argv) == 3:
          meteors_last_night(json_conf, sys.argv[2])
       else:
-         meteors_last_night(json_conf)
+         meteors_last_night(json_conf, None)
 
 
    # TIME LAPSE COMMANDS 

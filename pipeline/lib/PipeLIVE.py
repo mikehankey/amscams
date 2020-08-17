@@ -885,6 +885,9 @@ def swap_pic_to_vid():
    return(js)
 
 def meteors_last_night(json_conf, day=None):
+   if day == None:
+      now = dt.now()
+      day = now.strftime("%Y_%m_%d")
    sd_frame = None
    hd_frame = None
    # sync best meteors within the last 48 hours to the LIVE meteor dir
