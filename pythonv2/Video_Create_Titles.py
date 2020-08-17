@@ -19,7 +19,7 @@ if __name__ == "__main__":
       _title         = input("Enter main title: ")  
       _credits       = input("Enter subtitle: ")
       _output_path   = input("Destination (ex: /mnt/ams2/test.mp4): ")
-      _size          = input("Type 1 for 1920x108 or 2 for 1280x720") or "1"
+      _size          = input("Type 1 for 1920x108 or 2 for 1280x720: ") or "1"
 
 
       _color   = (255,255,255,255) # Optional - it's white by default
@@ -61,9 +61,19 @@ if __name__ == "__main__":
       _title   = input("Enter main title: ") 
       _subtitle = input("Enter subtitle: ")
       _output_path   = input("Destination: ")
-      #_output_path = '/mnt/ams2/title.mp4'  
+      _size          = input("Type 1 for 1920x108 or 2 for 1280x720: ") or "1"
       print("Creating the video...")
       create_simple_title_video(_title,_subtitle,_output_path)
+
+      if(_size=='2'):
+         # Get file name based on path
+         filename = os.path.splitext(_output_path)[0]+'1280.mp4'
+         resize(_output_path,filename,1280)
+         cmd = "rm -f " + _output_path
+         os.system(cmd)  
+         cmd = "mv " + filename +  " " + _output_path
+         os.system(cmd)  
+
       os.system("clear")
       print("FILE CREATED: " + _output_path)
 
@@ -74,9 +84,20 @@ if __name__ == "__main__":
       _subtitle      = "for more information about our all sky cameras"
       _duration      = input("Enter duration in seconds:")
       _duration      = int(_duration)*25 #In frames at 25fps
-      #_output_path   =  '/mnt/ams2/allskycams.mp4'
+      _size          = input("Type 1 for 1920x108 or 2 for 1280x720: ") or "1"
       _output_path   = input("Destination: ")
       create_allskycams_video(_title,_subtitle,_duration,_output_path)
+
+      if(_size=='2'):
+            # Get file name based on path
+            filename = os.path.splitext(_output_path)[0]+'1280.mp4'
+            resize(_output_path,filename,1280)
+            cmd = "rm -f " + _output_path
+            os.system(cmd)  
+            cmd = "mv " + filename +  " " + _output_path
+            os.system(cmd)  
+
+
       os.system("clear")
       print("FILE CREATED: " + _output_path)
    
@@ -87,11 +108,21 @@ if __name__ == "__main__":
       _operators = _operators.split(',')
       _duration = 125 # In frames at 25fps
       _output_path   = input("Destination: ")
-      #_output_path =  '/mnt/ams2/operator_credits.mp4'
+      _size          = input("Type 1 for 1920x108 or 2 for 1280x720: ") or "1"
       _with_line_animation = True # Optional - it's True by default
       _line_height = 45 # Optional - it's 45 by default, it works well with <=12 operators (one per line)
       _operator_font_size = 30 # Optional - it's 30 by default, it works well with <=12 operators (one per line)
 
       create_thank_operator_video(_operators, _duration, _output_path,_with_line_animation,_line_height,_operator_font_size)
+
+      if(_size=='2'):
+            # Get file name based on path
+            filename = os.path.splitext(_output_path)[0]+'1280.mp4'
+            resize(_output_path,filename,1280)
+            cmd = "rm -f " + _output_path
+            os.system(cmd)  
+            cmd = "mv " + filename +  " " + _output_path
+            os.system(cmd)  
+                  
       os.system("clear")
       print("FILE CREATED: " + _output_path)
