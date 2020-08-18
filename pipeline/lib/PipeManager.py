@@ -281,7 +281,7 @@ def det_table_all(urls , type='dur'):
    return(rpt)
 
 
-def best_of():
+def best_of(days):
    log = open("/mnt/ams2/admin_logger/log.txt")
    bad_files = {}
    for line in log:
@@ -291,7 +291,7 @@ def best_of():
          fln = fl.split("/")[-1] 
          bad_files[fln] = st
 
-   days = [ '2020_08_10', '2020_08_11', '2020_08_12', '2020_08_13' ]
+   #days = [ '2020_08_10', '2020_08_11', '2020_08_12', '2020_08_13' ]
    all_meteors = []
    day_counter = {}
    for day in days:
@@ -575,7 +575,10 @@ def mln_report(day=None):
    for station in stations:
       station_dir = "/mnt/archive.allsky.tv/" + station + "/LIVE/METEORS/" + day + "/"
       data_file = station_dir + day + "-" + station + "-METEORS.json"
-      new_data_file = "/mnt/ams2/MLN_CACHE/" + day + "-" + station + "-METEORS.json"
+      new_data_dir =  "/mnt/ams2/MLN_CACHE/DATA/" 
+      if cfe(new_data_dir,1) == 0:
+         os.makedirs(new_data_dir)
+      new_data_file = new_data_dir + day + "-" + station + "-METEORS.json"
       cmd = "cp " + data_file + " " + new_data_file
 
       # get super stacks
@@ -592,21 +595,52 @@ def mln_report(day=None):
          if cfe(new_data_file) == 0 :
             print(cmd)
             os.system(cmd) 
+         else:
+            print("We have no new data file?", new_data_file, data_file)
          print("LOAD:", new_data_file)
-         meteors = load_json_file (new_data_file)
-         print(station, " METEORS: ", len(meteors))
-         for meteor in meteors:
-            meteor['station'] = station
-            print("METEOR:", meteor)
-            if "xs" in meteor:
-               print("GOOD!")
-               all_meteors.append(meteor)
+         if cfe(new_data_file) == 1:
+            meteors = load_json_file (new_data_file)
+            print(station, " METEORS: ", len(meteors))
+            for meteor in meteors:
+               meteor['station'] = station
+               print("METEOR:", meteor)
+               if "xs" in meteor:
+                  print("GOOD!")
+                  all_meteors.append(meteor)
       else:
          no_data_stations.append(station)
    print("SAVE:", MLN_CACHE_DIR + day + "-all.json")
    save_json_file(MLN_CACHE_DIR + day + "-all.json", all_meteors)
+   ranked = []
+   for meteor in all_meteors:
+      if "hd_file" in meteor:
+         file = meteor['hd_file']
+         dur = len(meteor['xs'])
+         station = meteor['station']
+         fns = meteor['fns']
+         intensity = np.max(meteor['ints'])
+         day = file[0:10]
+         url = "http://archive.allsky.tv/" + station + "/LIVE/METEORS/" + day + "/" + file
 
+         ranked.append((station, url, dur, intensity,fns))
+         #mfiles.append(url)
+         #minfo.append(dur)
+      else:
+         print("*** BAD:", meteor)
+         exit()
 
+   head = mk_css()
+   head += swap_pic_to_vid()
+
+   temp = sorted(ranked, key=lambda x: x[2], reverse=True)
+
+   table = det_table_all(ranked)
+   year, mon, dom = day.split("_")
+   out = open("/mnt/archive.allsky.tv/LIVE/" + year + "/" + day + ".html", "w")
+   out.write(head)
+   out.write(table)
+   out.close()
+ 
 
 def mln_best(day, days_after = 1) :
    all_meteors = load_json_file(MLN_CACHE_DIR + day + "-all.json")

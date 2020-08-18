@@ -13,7 +13,7 @@ from lib.PipeVideo import load_frames_simple
 import cv2
 import os
 
-def fade_into(clip1=None, clip2=None, fade_frames=25):
+def fade_into(clip1=None, clip2=None, fade_frames=45):
    if "mp4" in clip1: 
       cf1 = load_frames_simple(clip1)
       img1 = cf1[-2]

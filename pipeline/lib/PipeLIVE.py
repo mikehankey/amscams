@@ -324,6 +324,7 @@ def mln_sync(day, json_conf):
    for mp4 in mp4s:
       fn = mp4.split("/")[-1]
       cf = CLOUD_METEOR_DIR + fn
+      # cropped MP4 previews
       if "crop-tn.mp4" in fn:
          if fn not in cloud_files:
             cmd = "cp " + mp4 + " " + cf
@@ -331,6 +332,7 @@ def mln_sync(day, json_conf):
             os.system(cmd)
 
       if "crop" not in fn: 
+      # 720p MP4 previews
          if fn not in cloud_files:
             cmd = "cp " + mp4 + " " + cf
             print("720:", cmd)
@@ -338,9 +340,11 @@ def mln_sync(day, json_conf):
          else: 
             print("SYNC'D?", mp4, cf)
       else:
+         # normal crop file?
          if "-tn" not in fn:
             tnf = mp4.replace(".mp4", "-tn.mp4")
             tnfn = tnf.split("/")[-1]
+            # make the tn if it doesn't exist
             if cfe(tnf) == 0:
                print("RESIZE.")
                resize_video(mp4, THUMB_W, THUMB_H)
