@@ -27,6 +27,50 @@ SHOW = 0
 
 #/usr/bin/ffmpeg -i /mnt/ams2/HD/2020_07_30_23_57_23_000_010003.mp4 -vcodec libx264 -crf 30 -vf 'scale=1280:720' -y test.mp4
 
+def fix_meteor_dir(day):
+   del_dir = "/mnt/ams2/DELETED/"
+   if cfe(del_dir, 1) == 0:
+      os.makedirs(del_dir)
+   print("Utility to fix meteors that were not completely deleted by the admin program!") 
+   jsons = glob.glob("/mnt/ams2/meteors/" + day + "/*.json")
+   all_files = glob.glob("/mnt/ams2/meteors/" + day + "/*")
+   good_roots = []
+   for json in jsons:
+      rf = json.split("/")[-1]
+      rf = rf.replace(".json", "")
+      good_roots.append(rf)
+      js = load_json_file(json)
+      if "hd_trim" in js:
+         rfhd = js['hd_trim'].split("/")[-1]
+         rfhd = rfhd.replace(".mp4", "")
+         good_roots.append(rfhd)
+
+   for file in good_roots:
+      print("GOOD ROOT:", file)
+
+   bad_roots = []
+   for file in all_files:
+
+      rf = file.split("/")[-1] 
+      el = rf.split(".")
+      rf = el[0]
+      rf = rf.replace(".png", "")
+      rf = rf.replace("-tn", "")
+      rf = rf.replace("-HD-METEOR", "")
+      rf = rf.replace("-stacked", "")
+      rf = rf.replace("-obj", "")
+      if rf in good_roots:
+         print("Good root file.",rf)
+      else:
+         bad_roots.append(rf)
+
+   for br in set(bad_roots):
+      print("BAD root file.", rf)
+      cmd = "mv /mnt/ams2/meteors/" + day + "/" + br + "* /mnt/ams2/DELETED/"  
+      print(cmd)
+      os.system(cmd)
+   
+
 def get_valid_cams(json_conf):
    vcs = []
    for cam in json_conf['cameras']:
@@ -89,7 +133,7 @@ def super_stacks_many(days ):
    all_stacks = []
    valid_cams = get_valid_cams(json_conf)
    html = ""
-   for day in days:
+   for day in sorted(days, reverse=True):
       WORK_DIR = ARC_DIR + "LIVE/METEORS/" + day + "/"
       ss = glob.glob (WORK_DIR + "*meteors.jpg")
       for s in ss: 
@@ -97,7 +141,7 @@ def super_stacks_many(days ):
 
    shtml = {}
    #"<h1>METEORS FOR " + STATION_ID + " ON " + day + "</h1>"
-   for stack in sorted(all_stacks):
+   for stack in sorted(all_stacks, reverse=True):
       ifn = stack.split("/")[-1]
       xxx= ifn.split("-")
       day = xxx[0]
@@ -111,7 +155,7 @@ def super_stacks_many(days ):
          ifn = stack.split("/")[-1]
          ifn = ifn.replace(".jpg", "-tn.jpg")
          print("IFN:", day, ifn)
-         shtml[day][cam] = "<img src=./" + day + "/" + ifn + ">"
+         shtml[day][cam] = "<a href=./" + day + "/" + day + "_report.html" + "><img src=./" + day + "/" + ifn + "></a>"
          print(shtml[day][cam])
 
 
@@ -144,7 +188,8 @@ def super_stacks_many(days ):
    ohtml = ""
    TOTAL_CAMS = 6
    TOTAL_DAYS = len(shtml.keys())
-   for day in sorted(shtml.keys()):
+   for day in sorted(shtml.keys(), reverse=True):
+      print("ALL DAY IMG:", day)
       all_day_img = np.zeros((THUMB_H,THUMB_W*TOTAL_CAMS,3),dtype=np.uint8)
       ohtml += "<h2>" + day + "</h2>\n"
       ohtml += "<div>\n"
@@ -161,9 +206,11 @@ def super_stacks_many(days ):
          x2 = x1 + THUMB_W
          cc += 1
          all_day_img[y1:y2,x1:x2] = si
+         desc = day
          if SHOW == 1:
             cv2.imshow('pepe', all_day_img)
             cv2.waitKey(0)
+      cv2.putText(all_day_img, desc, (int(x1+5), int(y1+15)),cv2.FONT_HERSHEY_SIMPLEX, .3, (255,255,255), 1)
       of = WORK_DIR + day + "-" + cam + "-meteors-allwide-tn.jpg"
       cv2.imwrite(of, all_day_img)
       print("WIDE:", of)
@@ -270,7 +317,7 @@ def super_stacks(day):
    sf = sync_files[0].split("/")[-1]
    sdir = file.replace(sf, "")
 
-   for file in sync_files:
+   for file in set(sync_files):
       cloud_file = file.replace("ams2/meteor_archive", "archive.allsky.tv")
       #if cfe(cloud_file) == 0:
       if True:
@@ -280,7 +327,6 @@ def super_stacks(day):
          os.system(cmd)
 
    #days = [ '2020_08_13', '2020_08_12', '2020_08_11', '2020_08_10']
-   #super_stacks_many(days)
 
 def resize_video(video_file, w, h):
    new_video_file = video_file.replace(".mp4", "-tn.mp4")
@@ -759,16 +805,31 @@ def cat_videos(in_wild, outfile):
    print("LIST:", list)
 
 def purge_deleted_live_files (live_dir, live_cloud_dir, day):
-
+   print("PURGE")
    cloud_files = glob.glob(live_cloud_dir + "*.mp4")
-   live_meteors = glob.glob(live_dir + day + "*.mp4")
+   live_meteors = glob.glob(live_dir + day + "/*.mp4")
+   temp = []
+      
+   for lm in live_meteors:
+      if "crop" in lm or "tn" in lm:
+         lm = lm.replace("-crop", "")
+         lm = lm.replace("-tn", "")
+      temp.append(lm)
+   live_meteors = set(temp)
    meteor_dir = "/mnt/ams2/meteors/" + day + "/" 
    print("METEOR DIR:", meteor_dir)
+   print("LIVE DIR:", live_dir + day + "/")
+   print("CLOUD DIR:", live_cloud_dir + day )
    detected_meteors = glob.glob(meteor_dir + day + "*.mp4")
+   print("DETECTED METEORS:", len(detected_meteors))
+   print("LIVE METEORS:", len(live_meteors))
+
    for lm in live_meteors:
+
       fn = lm.split("/")[-1]
       dmf = meteor_dir + fn
       if dmf not in detected_meteors:
+         print("LIVE METEOR FILE:", lm, " is no longer in detected meteors list!. It should be purged.")
          wild = lm.replace(".mp4", "*")
          cmd = "rm " + wild
          wild_fn = fn.replace(".mp4", "*")
@@ -780,11 +841,7 @@ def purge_deleted_live_files (live_dir, live_cloud_dir, day):
             cmd = "rm " + cloud_file 
             print(cmd)
             os.system(cmd)
-         else:
-            print("FILE IS NOT ON CLOUD!")
-      else:
-         print("\nSTILL GOOD:", lm, "\n")
-
+   exit()
 def parse_hist(js):
    hist = js['sd_objects'][0]['history']
    fns = []
@@ -860,6 +917,7 @@ def mln_final(day):
    files = glob.glob(LIVE_METEOR_DAY_DIR + day + "*-crop-tn.jpg")
    html = mk_css()
    html += swap_pic_to_vid()
+   print("REPORT FILES:", LIVE_METEOR_DAY_DIR + day + "*-crop-tn.jpg", len(files))
 
    html += swap_pic_to_vid()
    print("FILES:", files)
@@ -1078,11 +1136,19 @@ def meteors_last_night(json_conf, day=None):
    print("FINAL!")
 
    super_stacks(day)
+   files = glob.glob(ARC_DIR + "LIVE/METEORS/*")
+   days = []
+   for file in files:
+      if cfe(file, 1) == 1:
+         dayfn = file.split("/")[-1]
+         days.append(dayfn)
+   super_stacks_many(days)
+
    mln_sync(day, json_conf)
    print("DONE MLN FOR", day)
    exit()
 
-   rsync(LIVE_METEOR_DIR + "*", LIVE_CLOUD_METEOR_DIR )
+   #rsync(LIVE_METEOR_DIR + "*", LIVE_CLOUD_METEOR_DIR )
 
    #rsync(LAST_NIGHT_DIR + "*", LAST_NIGHT_CLOUD_DIR)
 
