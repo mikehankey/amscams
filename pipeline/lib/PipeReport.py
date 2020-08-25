@@ -100,9 +100,15 @@ def detect_report(day, json_conf):
    out.close()
    print(data_dir + "report.html")
 
-def autocal_report():
+
+def cal_status(json_conf, year = None):
+   arc_cal_dir = ARC_DIR + "CAL/" + year + "/" + type + "/" 
+   auto_cal_dir = arc_cal_dir + "AUTO_CAL/" + year + "/solved/"
+   free_cal_dir = "/mnt/ams2/cal/freecal/"
+
+def autocal_report(type="solved"):
    year = datetime.now().strftime("%Y")
-   cal_dir = ARC_DIR + "CAL/AUTOCAL/" + year + "/solved/" 
+   cal_dir = ARC_DIR + "CAL/AUTOCAL/" + year + "/" + type + "/" 
    outfile = cal_dir + "cal_report.html"
    out_head = """
       <style>
@@ -117,43 +123,61 @@ def autocal_report():
       </style>
    """
    output = {} 
-   cal_files = glob.glob(cal_dir + "*calparams.json")
+   if type == "solved":
+      cal_files = glob.glob(cal_dir + "*calparams.json")
+   else:
+      cal_files = glob.glob(cal_dir + "*.png")
    
    for cf in sorted(cal_files, reverse=True):
       (f_datetime, cam, f_date_str,y,m,d, h, mm, s) = convert_filename_to_date_cam(cf)
+      if "-tn" in cf :
+         continue
       if cam not in output:
          output[cam] = ""
       print(cf)
-      cp = load_json_file(cf)
+      if type=="solved":
+         cp = load_json_file(cf)
       
-      org = cf.replace("-calparams.json", ".png")
-      azgrid = cf.replace("-calparams.json", "-azgrid.png")
-      azgrid_tn = azgrid.replace(".png", "-tn.png")
-      grid = cf.replace("-calparams.json", "-grid.png")
-      grid_tn = grid.replace(".png", "-tn.png")
-      stars = cf.replace("-calparams.json", "-stars.png")
-      stars_tn = stars.replace(".png", "-tn.png")
+         org = cf.replace("-calparams.json", ".png")
+         azgrid = cf.replace("-calparams.json", "-azgrid.png")
+         azgrid_tn = azgrid.replace(".png", "-tn.png")
+         grid = cf.replace("-calparams.json", "-grid.png")
+         grid_tn = grid.replace(".png", "-tn.png")
+         stars = cf.replace("-calparams.json", "-stars.png")
+         stars_tn = stars.replace(".png", "-tn.png")
 
-      if cfe(azgrid_tn) == 0:
-         thumbnail(azgrid, MEDIUM_W, MEDIUM_H)
-         print(azgrid_tn)
-      if cfe(grid_tn) == 0:
-         thumbnail(grid, MEDIUM_W, MEDIUM_H)
-         print(grid_tn)
-      if cfe(stars_tn) == 0:
-         thumbnail(stars, MEDIUM_W, MEDIUM_H)
-         print(stars_tn)
 
-      output[cam] += "<div class='float_div'>"
-      output[cam] += "<img src=" + azgrid_tn + ">"
-      output[cam] += "<br><label style='text-align: center'>CAM: " + cam + " @ " + f_date_str + " <br>"  
-      output[cam] += "AZ/EL: " + str(cp['center_az'])[0:5] + " / " + str(cp['center_el'])[0:5] + "<BR>"
-      output[cam] += "Stars/Res: " + str(len(cp['cat_image_stars'])) + " / " + str(cp['total_res_deg'])[0:5] + "&deg; <BR>"
-      output[cam] += "<a href=" + azgrid + ">AZ Grid</a> - " 
-      output[cam] += "<a href=" + grid + ">RA Grid</a> - " 
-      output[cam] += "<a href=" + stars + ">Stars</a> - " 
-      output[cam] += "<a href=" + org + ">Original</a> " 
-      output[cam] += "</div>\n"
+      if type == 'solved':
+
+         if cfe(azgrid_tn) == 0:
+            thumbnail(azgrid, MEDIUM_W, MEDIUM_H)
+            print(azgrid_tn)
+         if cfe(grid_tn) == 0:
+            thumbnail(grid, MEDIUM_W, MEDIUM_H)
+            print(grid_tn)
+         if cfe(stars_tn) == 0:
+            thumbnail(stars, MEDIUM_W, MEDIUM_H)
+            print(stars_tn)
+
+         output[cam] += "<div class='float_div'>"
+         output[cam] += "<img src=" + azgrid_tn + ">"
+         output[cam] += "<br><label style='text-align: center'>CAM: " + cam + " @ " + f_date_str + " <br>"  
+         output[cam] += "AZ/EL: " + str(cp['center_az'])[0:5] + " / " + str(cp['center_el'])[0:5] + "<BR>"
+         output[cam] += "Stars/Res: " + str(len(cp['cat_image_stars'])) + " / " + str(cp['total_res_deg'])[0:5] + "&deg; <BR>"
+         output[cam] += "<a href=" + azgrid + ">AZ Grid</a> - " 
+         output[cam] += "<a href=" + grid + ">RA Grid</a> - " 
+         output[cam] += "<a href=" + stars + ">Stars</a> - " 
+         output[cam] += "<a href=" + org + ">Original</a> " 
+         output[cam] += "</div>\n"
+      else:
+         cf_tn = cf.replace(".png", "-tn.png")
+         if cfe(cf_tn) == 0:
+            thumbnail(cf, MEDIUM_W, MEDIUM_H)
+            print(cf_tn)
+         output[cam] += "<div class='float_div'>"
+         output[cam] += "<a href=" + cf + "><img src=" + cf_tn + "></a><br>"
+         output[cam] += "<a target=_blank href=/pycgi/webUI.py?cmd=free_cal&input_file=" + cf + ">Manual Calibration<br>"
+         output[cam] += "</div>\n"
 
       print(f_date_str, cam)
    fp = open(outfile, "w")
