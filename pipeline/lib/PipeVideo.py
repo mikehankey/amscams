@@ -68,7 +68,6 @@ def ffprobe(video_file):
 
 
 def find_crop_size(min_x,min_y,max_x,max_y, img_w, img_h, hdm_x=1, hdm_y=1 ):
-   print("MIN/MAX XY:", min_x, min_y, max_x, max_y)
    sizes = [[1280,720],[1152,648],[1024,576],[869,504],[768,432], [640,360], [320, 180]]
 
    w = max_x - min_x
@@ -240,7 +239,7 @@ def flatten_frames(frames):
 
 def make_preview_video(video_file, json_conf, width=THUMB_W, height=THUMB_H):
    new_file = video_file.replace(".mp4", "-thumb.mp4")
-   cmd = "/usr/bin/ffmpeg -i " + video_file + " -vcodec libx264 -crf 30 -vf 'scale=" + str(width) + ":" + str(height) + "' -y " + new_file 
+   cmd = "/usr/bin/ffmpeg -i " + video_file + " -vcodec libx264 -crf 30 -vf 'scale=" + str(width) + ":" + str(height) + "' -y " + new_file + " >/dev/null 2>&1"
    print(cmd)
    os.system(cmd)
    frames,color_frames,subframes,sum_vals,max_vals,pos_vals = load_frames_fast(video_file, json_conf, 0, 1, [], 1,[])
@@ -251,7 +250,7 @@ def make_preview_video(video_file, json_conf, width=THUMB_W, height=THUMB_H):
 
    # add stack to video: 
    final_file = new_file.replace("-thumb", "-temp")
-   cmd = "/usr/bin/ffmpeg -loop 1 -framerate 25 -t 1 -i " + new_stack + " -i " + new_file + " -filter_complex '[0:0] [1:0] concat=n=2:v=1:a=0' " + final_file 
+   cmd = "/usr/bin/ffmpeg -loop 1 -framerate 25 -t 1 -i " + new_stack + " -i " + new_file + " -filter_complex '[0:0] [1:0] concat=n=2:v=1:a=0' " + final_file + " >/dev/null 2>&1"
    os.system(cmd)
    cmd = "mv " + final_file + " " + new_file
    os.system(cmd)
@@ -509,7 +508,7 @@ def load_frames_fast(trim_file, json_conf, limit=0, mask=0,crop=(),color=0,resiz
                      hd = 1
                   else:
                      hd = 0
-                  masks = get_masks(cam, json_conf,hd)
+                  #masks = get_masks(cam, json_conf,hd)
                   frame = mask_frame(frame, [], masks, 5)
 
                if last_frame is not None:

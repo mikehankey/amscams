@@ -57,7 +57,7 @@ def video_from_images(date, wild, json_conf ):
    iwild = tl_dir + "*" + wild + "*.jpg"
 
    print(iwild)
-   cmd = "/usr/bin/ffmpeg -framerate 25 -pattern_type glob -i '" + iwild + "' -c:v libx264 -pix_fmt yuv420p -y " + tl_out
+   cmd = "/usr/bin/ffmpeg -framerate 25 -pattern_type glob -i '" + iwild + "' -c:v libx264 -pix_fmt yuv420p -y " + tl_out + " >/dev/null 2>&1"
    print(cmd)
    os.system(cmd)
    print(tl_out)

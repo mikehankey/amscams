@@ -13,10 +13,12 @@ import random
 import os
 
 import glob
+from lib.PipeTrans import vid_from_imgs
+from lib.PipeAutoCal import show_image
 from lib.PipeReport import mk_css 
 from lib.DEFAULTS import *
 from lib.PipeDetect import detect_in_vals, detect_meteor_in_clip, crop_video, analyze_object
-from lib.PipeVideo import find_crop_size, ffprobe, load_frames_fast
+from lib.PipeVideo import find_crop_size, ffprobe, load_frames_fast, load_frames_simple
 from lib.PipeUtil import convert_filename_to_date_cam, cfe, load_json_file, save_json_file, check_running, calc_dist 
 from lib.PipeMeteorTests import * 
 from lib.PipeImage import stack_frames, thumbnail, stack_stack, quick_video_stack
@@ -26,6 +28,380 @@ from PIL import ImageFont, ImageDraw, Image, ImageChops
 SHOW = 0
 
 #/usr/bin/ffmpeg -i /mnt/ams2/HD/2020_07_30_23_57_23_000_010003.mp4 -vcodec libx264 -crf 30 -vf 'scale=1280:720' -y test.mp4
+
+def sync_preview_meteors(day, json_conf):
+   year = day[0:4]
+   METEOR_DIR = "/mnt/ams2/meteors/" + day + "/"
+   CLOUD_PREV_DIR = CLOUD_DIR + "LIVE/PREVIEW/" + year + "/" + day + "/"
+   if cfe(CLOUD_PREV_DIR, 1) == 0:
+      os.makedirs(CLOUD_PREV_DIR)
+   local_prev_files = glob.glob(METEOR_DIR + "*preview.mp4")
+   cloud_temp = glob.glob(CLOUD_PREV_DIR + "*preview.mp4")
+   cloud_prev_files = []
+   for ct in cloud_temp:
+      fn, dir = fn_dir(ct)
+      cloud_prev_files.append(fn)
+   for lpf in local_prev_files:
+      fn, dir = fn_dir(lpf)
+      if "reduced" in lpf:
+         continue
+      if fn not in cloud_prev_files:
+         # copy the file:
+         cmd = "cp " + lpf + " " + CLOUD_PREV_DIR + fn
+         print(cmd)
+         os.system(cmd)
+      else:
+         print("DONE.")
+   # copy the report.html and meteor.info
+   cmd = "cp " + METEOR_DIR + day + "-" + STATION_ID + "-meteor.info " + CLOUD_PREV_DIR
+   os.system(cmd)
+   print(cmd)
+   cmd = "cp " + METEOR_DIR + day + "-" + STATION_ID + "-report.html " + CLOUD_PREV_DIR
+   os.system(cmd)
+   print(cmd)
+   
+
+def log_error(meteor_file, error):
+   print("ERROR:", error, meteor_file)
+   meteor_fn, meteor_dir = fn_dir(meteor_file)
+   err = open(meteor_dir + "errors.txt", "a")
+   err.write(meteor_file + "," + error + "\n")
+   err.close()
+
+def make_preview_meteors(day, json_conf):
+   meteor_info = []
+   meteor_dir = "/mnt/ams2/meteors/" + day + "/"
+   meteors = glob.glob(meteor_dir + "*.json")
+   for meteor in meteors:
+      meteor_fn, meteor_dir = fn_dir(meteor)
+      if "reduced" in meteor:
+         continue
+      mjs = load_json_file(meteor)
+      if "preview_file" not in mjs:
+         print("NOT DONE:", meteor)
+         status = make_preview_meteor(meteor, json_conf, mjs)
+      else:
+         print("Did this already:", mjs['preview_file'])
+         status = 1
+
+      if status == 1:
+         mjs = load_json_file(meteor)
+         mi = {}
+         mi['file'] = meteor_fn
+         pf,pd = fn_dir(mjs['preview_file'])
+         mi['preview_file'] = pf
+         hdf,hdd = fn_dir(mjs['hd_trim'])
+         mi['hd_trim'] = hdf
+         mi['meteor_start_time'] = ""
+         hd_meteor = analyze_object(mjs['hd_meteors'][0])
+         mi['ofns'] = mjs['hd_meteors'][0]['ofns']
+         mi['xs'] = mjs['hd_meteors'][0]['oxs']
+         mi['ys'] = mjs['hd_meteors'][0]['oys']
+         mi['ints'] = mjs['hd_meteors'][0]['oint']
+         meteor_info.append(mi)
+      else:
+         print("Problem with meteor:", meteor)
+   mif = meteor_dir + day + "-" + STATION_ID + "-" + "meteor.info"
+   save_json_file(mif, meteor_info)
+   print(mif)
+      
+
+
+   files = glob.glob(meteor_dir + "*-crop-tn.jpg")
+   html = mk_css()
+   html += swap_pic_to_vid()
+
+   html += swap_pic_to_vid()
+   det_html = det_table(files, "video")
+   html += det_html
+
+   out = open(meteor_dir + day + "-" + STATION_ID + "-report.html", "w")
+   out.write(html)
+   out.close()
+   print("REPORT:", meteor_dir + day + "-" + STATION_ID + "-report.html")
+   sync_preview_meteors(day, json_conf)
+   
+
+def fn_dir(file):
+   fn = file.split("/")[-1]
+   dir = file.replace(fn, "")
+   return(fn, dir)
+
+def make_preview_meteor(meteor_file, json_conf, mjs=None):
+   # pass in HD file to get meteor preview mp4 file, this contains the thumbnails for the 'full-stack', 'crop-stack', 'full-preview.mp4' and 'crop-preview.mp4' all inside 1 mp4 file.
+
+   # load json file
+   if mjs == None:
+      mjs = load_json_file(meteor_file)
+  
+   # setup file names 
+   vid_file = meteor_file.replace(".json",".mp4")
+   vid_file_720 = meteor_file.replace(".json","-720.mp4")
+   vid_file_1080 = meteor_file.replace(".json","-1080.mp4")
+   vid_file_tn = vid_file_1080.replace(".mp4","-tn.mp4")
+   crop_vid_file = vid_file.replace(".mp4", "-crop.mp4")
+   crop_vid_tn_file = vid_file.replace(".mp4", "-crop-tn.mp4")
+   stack_file = vid_file.replace(".mp4", ".jpg")
+   stack_file_tn = vid_file.replace(".mp4", "-tn.jpg")
+   crop_stack_file = vid_file.replace(".mp4", "-crop.jpg")
+   crop_stack_file_tn = vid_file.replace(".mp4", "-crop-tn.jpg")
+   preview_file = vid_file.replace(".mp4", "-preview.mp4")
+   if 'hd_trim' in mjs:
+      hd_trim = mjs['hd_trim']
+   if "vals_data" not in mjs:
+      frames,color_frames,subframes,sum_vals,max_vals,pos_vals = load_frames_fast(vid_file, json_conf, 0, 0, [], 1,[])
+      if len(frames) == 0:
+         print("There are no frames?")
+         log_error(meteor_file, "No SD frames found.")
+         exit()
+      sd_frame = frames[0]
+      hd_frame = cv2.resize(sd_frame, (1920,1080)) 
+      vals_data = {}
+      vals_data['sum_vals'] = sum_vals
+      vals_data['max_vals'] = max_vals
+      vals_data['pos_vals'] = pos_vals
+      
+      events, objects, total_frames = detect_in_vals(meteor_file, None, vals_data)
+      vals_data['events'] = events
+      vals_data['objects'] = objects 
+      mjs['vals_data'] = vals_data
+      save_json_file(meteor_file, mjs)
+   else:
+      print("VALS:", mjs['vals_data']['objects'])
+
+
+
+   if cfe(preview_file) == 1:
+      print("PREVIEW DONE ALREADY!")
+
+   # load hd and sd frames
+   hd_frames = load_frames_simple(hd_trim)
+   sd_frames = load_frames_simple(vid_file)
+   if hd_frames[0].shape[0] < 1080:
+      print("The HD FRAMES are not in 1080p. We must resize these.")
+      resize_video(vid_file, 1920, 1080, "-HD.mp4")
+      hd_trim = vid_file.replace(".mp4", "-HD.mp4")
+      mjs['hd_trim'] = hd_trim
+      hd_frames = load_frames_simple(hd_trim)
+
+   # define the cropboxes from prior SD detection info
+   crop_box = None
+   meteor_found = 0
+   if "cropbox_1080" not in mjs:
+      for id in mjs['vals_data']['objects']:
+         if mjs['vals_data']['objects'][id]['report']['meteor'] == 1:
+            md = mjs['vals_data']['objects'][id]
+            hdm_x = 1920 / sd_frames[0].shape[1]
+            hdm_y = 1080 / sd_frames[0].shape[0]
+            crop_box = find_crop_size(min(md['oxs'])*hdm_x,min(md['oys'])*hdm_y,max(md['oxs'])*hdm_x,max(md['oys'])*hdm_y, 1920, 1080, 1, 1)
+            mjs['cropbox_1080'] = crop_box
+            meteor_found = 1 
+   else:
+      crop_box = mjs['cropbox_1080']
+      meteor_found = 1 
+   if crop_box == None:
+      # This means we could not find a meteor in the vals data. Before quitting, lets try to detect in the sd frames
+      if True:
+         sd_objects, frames = detect_meteor_in_clip(vid_file, sd_frames, fn = 0, crop_x = 0, crop_y = 0, hd_in = 0)
+         print("END DETECT IN CLIP!")
+
+         print("TEST METEORS!")
+         sd_meteors = {}
+         for id in sd_objects:
+            sd_objects[id] = analyze_object(sd_objects[id])
+            if sd_objects[id]['report']['meteor'] == 1:
+               print("METEOR FOUND:", sd_objects[id])
+               sd_meteors[id] = sd_objects[id]
+         sd_objects = sd_meteors
+         print("SD OBJECTS = ", sd_objects)
+         for id in sd_objects:
+            if sd_objects[id]['report']['meteor'] == 1:
+               md = sd_objects[id]
+               sd_h, sd_w = sd_frames[0].shape[:2]
+               hdm_x = 1920 / sd_w
+               hdm_y = 1080 / sd_h
+               crop_box = find_crop_size(min(md['oxs'])*hdm_x,min(md['oys'])*hdm_y,max(md['oxs'])*hdm_x,max(md['oys'])*hdm_y, 1920, 1080, 1, 1)
+               mjs['cropbox_1080'] = crop_box
+               meteor_found = 1
+
+
+   if crop_box == None:
+      # if we still don't have a crop box by this point all hope is lost. error out.
+      print("No crop box?")
+      log_error(meteor_file, "No crop box found.")
+      return(0)
+   mjs['cropbox_1080'] = crop_box
+            
+   # make the crop video (main crop, tn crop) 
+   crop_vid_file_temp = crop_vid_file.replace(".mp4", "-temp2.mp4") 
+   crop_vid_tn_file_temp = crop_vid_tn_file.replace(".mp4", "-temp2.mp4") 
+   x1,y1,x2,y2,mx,my  = crop_box
+   crop_video(hd_trim, x1, y1, x2-x1, y2-y1, crop_out_file = crop_vid_file)
+
+   crop_frames,crop_color_frames,subframes,sum_vals,max_vals,pos_vals = load_frames_fast(crop_vid_file, json_conf, 0, 0, [], 1,[])
+
+   cmd = """ /usr/bin/ffmpeg -i """ + crop_vid_file + """ -vcodec libx264 -crf 35  -y """ + crop_vid_file_temp + " >/dev/null 2>&1"
+   os.system(cmd)
+   os.system("mv " + crop_vid_file_temp + " "  + crop_vid_file)
+
+
+   # run detection on hd frames
+   hd_meteors = []
+   #if "hd_objects" not in mjs['vals_data'] or True:
+   if True:
+      # get hd object data if it is not already in the json
+      hd_objects, crop_frames = detect_meteor_in_clip(crop_vid_file, crop_frames, fn = 0, crop_x = x1, crop_y = y1, hd_in = 0)
+      print("LEN HD OBJ:", len(hd_objects))
+      for id in hd_objects:
+         hd_objects[id] = analyze_object(hd_objects[id], 1)
+         if hd_objects[id]['report']['meteor'] == 1:
+            hd_meteors.append(hd_objects[id])
+
+      mjs['hd_objects'] = hd_objects
+      mjs['hd_meteors'] = hd_meteors
+   else:
+      hd_meteors = mjs['hd_meteors'] 
+      hd_objects = mjs['hd_objects'] 
+
+
+   if len(hd_meteors) == 0:
+      log_error(meteor_file, "No HD meteors found.")
+      # try detect on entire hd file
+      hd_objects, hd_frames = detect_meteor_in_clip(hd_trim, hd_frames, fn = 0, crop_x = 0, crop_y = 0, hd_in = 1)
+      print("LEN HD OBJ:", len(hd_objects))
+      for id in hd_objects:
+         hd_objects[id] = analyze_object(hd_objects[id], 1)
+         if hd_objects[id]['report']['non_meteor'] == 0:
+            print("OBJ FNS:", hd_objects[id]['ofns'])
+            print("OBJ xs:", hd_objects[id]['oxs'])
+            print("OBJ ys:", hd_objects[id]['oys'])
+         if hd_objects[id]['report']['meteor'] == 1:
+            hd_meteors.append(hd_objects[id])
+
+      if len(hd_meteors) == 0:
+         print("Did not find the meteor in the full HD frames either.")
+         return(0)
+      else:
+         fns = hd_meteors[0]['ofns']
+     
+   else:
+      fns = hd_meteors[0]['ofns']
+
+   # make trimed 1080p file
+   os.system("rm tmp_vids/*")
+   fc = 0
+
+   i = 11
+   for frame in hd_frames:
+      if int(fns[0]) -5 <= fc <= int(fns[-1]) + 5:
+         of = "tmp_vids/" + '{:03d}'.format(i) + ".jpg"
+         #cv2.rectangle(frame, (tx1, ty1), (tx2, ty2), (125,125,125), 1, cv2.LINE_AA)
+         cv2.imwrite(of, frame)
+         i += 1
+      fc += 1
+   vid_file_1080_temp = vid_file_1080.replace(".mp4", "-temp.mp4") 
+   vid_file_1080_temp2 = vid_file_1080.replace(".mp4", "-temp2.mp4") 
+   vid_from_imgs("tmp_vids/", vid_file_1080_temp)
+   print("EANAL")
+   cmd = """ /usr/bin/ffmpeg -i """ + vid_file_1080_temp + """ -vcodec libx264 -crf 35 -y """ + vid_file_1080_temp2 + " >/dev/null 2>&1"
+   os.system(cmd)
+   os.system("mv " + vid_file_1080_temp2 + " "  + vid_file_1080)
+   os.system("rm " + vid_file_1080_temp)
+
+   # now remake the crops and tns from the trimmed video
+   crop_video(vid_file_1080, x1, y1, x2-x1, y2-y1, crop_out_file = crop_vid_file)
+   resize_video(crop_vid_file, THUMB_W, THUMB_H)
+   resize_video(vid_file_1080, THUMB_W, THUMB_H)
+
+   if cfe(stack_file) == 1:
+      stack_img = cv2.imread(stack_file)
+      stack_img_tn = cv2.resize(stack_img, (THUMB_W,THUMB_H)) 
+      stack_img_med = cv2.resize(stack_img, (1280,720)) 
+   else:
+      stack_img = stack_frames(hd_frames)
+      stack_img_tn = cv2.resize(stack_img, (THUMB_W,THUMB_H)) 
+      cv2.imwrite(stack_file, stack_img)
+      cv2.imwrite(stack_file, stack_img_tn)
+  
+   if cfe(crop_stack_file) == 1 or True:
+      crop_stack_img = stack_frames(crop_color_frames)
+
+      crop_stack_img_tn = cv2.resize(crop_stack_img, (THUMB_W,THUMB_H)) 
+      cv2.imwrite(crop_stack_file, crop_stack_img)
+      cv2.imwrite(crop_stack_file_tn, crop_stack_img_tn)
+   else:
+      crop_stack_img_tn = cv2.imread(crop_stack_file_tn)
+
+
+   # resize / format / make the 720p, crop_vid and vid tn
+   
+   if cfe(vid_file_720) == 0:
+      cmd = """ /usr/bin/ffmpeg -i """ + vid_file_1080 + """ -vcodec libx264 -crf 35 -vf "scale='1280:720'"  -y """ + vid_file_720 + " >/dev/null 2>&1"
+      os.system(cmd)
+   if True:
+      print("Make video thumb video")
+      resize_video(vid_file_1080, THUMB_W, THUMB_H)
+
+
+   # 1st frame is full stack for 10 frames
+   # 2nd frame is crop stack for 10 frames
+   # 3rd sequence is tn'd full thumbs 
+   # 4th sequence is tn'd crop thumbs 
+   os.system("rm tmp_vids/*")
+
+   crop_tn_frames = load_frames_simple(crop_vid_tn_file)
+   vid_tn_frames = load_frames_simple(vid_file_tn)
+
+   hdmx_tn = THUMB_W / 1920
+   hdmy_tn = THUMB_H / 1080
+
+
+   for i in range(5,10):
+      of = "tmp_vids/" + '{:03d}'.format(i) + ".jpg"
+      cv2.imwrite(of, crop_stack_img_tn)
+ 
+   if False:
+
+      for i in range(0,5):
+         of = "tmp_vids/" + '{:03d}'.format(i) + ".jpg"
+         tx1 = int(x1 * hdmx_tn)
+         tx2 = int(x2 * hdmx_tn)
+         ty1 = int(y1 * hdmy_tn)
+         ty2 = int(y2 * hdmy_tn)
+         cv2.rectangle(stack_img_tn, (tx1, ty1), (tx2, ty2), (125,125,125), 1, cv2.LINE_AA)
+         cv2.imwrite(of, stack_img_tn)
+
+      fc = 0
+      for frame in vid_tn_frames:
+         of = "tmp_vids/" + '{:03d}'.format(i) + ".jpg"
+         cv2.rectangle(frame, (tx1, ty1), (tx2, ty2), (125,125,125), 1, cv2.LINE_AA)
+         cv2.imwrite(of, frame)
+         i += 1
+         fc += 1
+
+   fc = 0
+   for frame in crop_tn_frames:
+      of = "tmp_vids/" + '{:03d}'.format(i) + ".jpg"
+      cv2.imwrite(of, frame)
+      i += 1
+      fc += 1
+
+
+   preview_file_tmp = preview_file.replace(".mp4", "-temp.mp4") 
+   vid_from_imgs("tmp_vids/", preview_file_tmp)
+   print("PREVIEW:", preview_file_tmp)
+   print("MJ:", meteor_file)
+   cmd = """ /usr/bin/ffmpeg -i """ + preview_file_tmp + """ -vcodec libx264 -crf 39 -y """ + preview_file + " >/dev/null 2>&1"
+   os.system(cmd)
+   os.system("mv " + preview_file_tmp + " " + preview_file)
+   mjs['preview_file'] = preview_file
+   save_json_file(meteor_file, mjs)
+
+   return(1)
+
+
+
+
 
 def get_valid_cams(json_conf):
    vcs = []
@@ -282,10 +658,10 @@ def super_stacks(day):
    #days = [ '2020_08_13', '2020_08_12', '2020_08_11', '2020_08_10']
    #super_stacks_many(days)
 
-def resize_video(video_file, w, h):
-   new_video_file = video_file.replace(".mp4", "-tn.mp4")
+def resize_video(video_file, w, h, suf="-tn.mp4"):
+   new_video_file = video_file.replace(".mp4", suf)
    if cfe(new_video_file) == 0:
-      cmd = "/usr/bin/ffmpeg -i " + video_file + " -vf scale=\"" + str(w) + ":" + str(h) + "\" -y " + new_video_file
+      cmd = "/usr/bin/ffmpeg -i " + video_file + " -vf scale=\"" + str(w) + ":" + str(h) + "\" -y " + new_video_file + " > /dev/null 2>&1"
       os.system(cmd)
    return(new_video_file)
 
@@ -376,10 +752,11 @@ def mln_sync(day, json_conf):
       else:
          print("already sync'd")
 
-   cmd = "cp /mnt/ams2/meteor_archive/" + STATION_ID + "/LIVE/METEORS/" + STATION_ID + "*ALL* " + CLOUD_METEOR_DIR + "../"
+   # here we want to sync the report.html and the master station-day-meteors json and super stacks?
+   cmd = "cp /mnt/ams2/meteor_archive/" + STATION_ID + "/LIVE/METEORS/" + day + "/" + day + "-" + STATION_ID + "-METEORS.json " + CLOUD_METEOR_DIR + "../"
    os.system(cmd)
 
-   cmd = "cp /mnt/ams2/meteor_archive/" + STATION_ID + "/LIVE/METEORS/" + STATION_ID + "_METEORS.html " + CLOUD_METEOR_DIR + "../"
+   cmd = "cp /mnt/ams2/meteor_archive/" + STATION_ID + "/LIVE/METEORS/" + day + "/" + day + "-" + STATION_ID + "-report.html " + CLOUD_METEOR_DIR + "../"
    os.system(cmd)
 
 
@@ -670,7 +1047,7 @@ def minify_file(file, outdir, text, md, sd_img = None, hd_img = None):
       timecode = h + "\\:" + m + "\\:" + s + "\\:00"
       #timecode = h + "\\:" + m + "\\:" + s 
       cmd = """
-      /usr/bin/ffmpeg -i """ + file + """ -vcodec libx264 -crf 35 -vf "scale='1280:720', drawtext=fontfile='fontfile=/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf':text='""" + text + """ ':box=1: boxcolor=black@0.5: boxborderw=5:x=20:y=h-lh-1:fontsize=16:fontcolor=white:shadowcolor=black:shadowx=1:shadowy=1:timecode='""" + timecode + """':timecode_rate=25" """ + outfile  
+      /usr/bin/ffmpeg -i """ + file + """ -vcodec libx264 -crf 35 -vf "scale='1280:720', drawtext=fontfile='fontfile=/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf':text='""" + text + """ ':box=1: boxcolor=black@0.5: boxborderw=5:x=20:y=h-lh-1:fontsize=16:fontcolor=white:shadowcolor=black:shadowx=1:shadowy=1:timecode='""" + timecode + """':timecode_rate=25" """ + outfile  + " >/dev/null 2>&1"
 #+ " >/dev/null 2>&1"
       if cfe(outfile) == 0:
          print(cmd)
@@ -679,7 +1056,7 @@ def minify_file(file, outdir, text, md, sd_img = None, hd_img = None):
       ## now add overlay
       if md is not None:
          temp_outfile = outfile.replace(".mp4", "-temp.mp4")
-         cmd = """/usr/bin/ffmpeg -i """ + outfile + """ -i test.png -filter_complex "overlay=0:0" """ + temp_outfile 
+         cmd = """/usr/bin/ffmpeg -i """ + outfile + """ -i test.png -filter_complex "overlay=0:0" """ + temp_outfile + ">/dev/null 2>&1"
          os.system(cmd)
          os.system("mv " + temp_outfile + " " + outfile)
          print("TEST HERE:", outfile) 
@@ -742,7 +1119,7 @@ def get_min_files(cam_id, this_hour_string, last_hour_string, upload_mins):
    return(bc_clips)
 
 def fflist(list_file, outfile):
-   cmd = "/usr/bin/ffmpeg -f concat -safe 0 -i " +list_file + " -c copy -y " + outfile
+   cmd = "/usr/bin/ffmpeg -f concat -safe 0 -i " +list_file + " -c copy -y " + outfile + ">/dev/null 2>&1"
    print(cmd)
    os.system(cmd)
 
@@ -757,7 +1134,7 @@ def cat_videos(in_wild, outfile):
    fp = open(list_file, "w")
    fp.write(list)
    fp.close()
-   cmd = "/usr/bin/ffmpeg -f concat -safe 0 -i " +list_file + " -c copy -y " + outfile
+   cmd = "/usr/bin/ffmpeg -f concat -safe 0 -i " +list_file + " -c copy -y " + outfile + ">/dev/null 2>&1"
    print(cmd)
    os.system(cmd)
    print("LIST:", list)
@@ -818,19 +1195,24 @@ def det_table(files, type = "meteor"):
    for file in sorted(files):
       vfn= file.split("/")[-1]
       vfn= vfn.replace("-crop-tn.jpg", ".mp4")
+      vfn_720= vfn.replace(".mp4", "-720.mp4")
       img_url = file.split("/")[-1]
+      vid_url = img_url.replace("-crop-tn.jpg", "-preview.mp4")
       img_url2 = img_url.replace("-crop", "")
-      print("FILE:", file)
-      print("URL:", img_url)
-      print("URL2:", img_url2)
       fn = vfn.split("-")[0]
 
       rpt += "<div class='float_div' id='" + vfn + "'>"
       cvfn = vfn.replace(".mp4", "-crop.mp4")
       link = "<a href=\"javascript:swap_pic_to_vid('" + vfn + "', '" + cvfn + "')\">"
-      rpt += link + """
-         <img title="Meteor" src=\"""" + img_url + """\" onmouseover="this.src='""" + img_url2 + """'" onmouseout="this.src='""" + img_url + """'" /></a>
-      """
+      if type == "meteor":
+         rpt += link + """
+            <img title="Meteor" src=\"""" + img_url + """\" onmouseover="this.src='""" + img_url2 + """'" onmouseout="this.src='""" + img_url + """'" /></a>
+         """
+      if type == "video":
+         link = "<a href=" + vfn_720 + ">"
+         rpt +=  """
+            <video controls width='300' height='169'  id='video' src='""" + vid_url + """' playsinline></video>  
+         """
       rpt += "<br><label style='text-align: center'>" + link + fn + "</a> <br>"
       rpt += "</label></div>"
 
@@ -870,7 +1252,7 @@ def mln_final(day):
    det_html = det_table(files)
    html += det_html
 
-   out = open(LIVE_METEOR_DAY_DIR + day + "_report.html", "w")
+   out = open(LIVE_METEOR_DAY_DIR + day + "-" + STATION_ID + "-" + "-report.html", "w")
    out.write(html)
    out.close()
 
@@ -1190,7 +1572,7 @@ def meteor_min_files(day, json_conf):
       min_out_file = live_dir + hdf
       
       if cfe(min_out_file) == 0: 
-         cmd = "/usr/bin/ffmpeg -i " + hd_file + " -vcodec libx264 -crf 35 -vf 'scale=1280:720' -y " + min_out_file
+         cmd = "/usr/bin/ffmpeg -i " + hd_file + " -vcodec libx264 -crf 35 -vf 'scale=1280:720' -y " + min_out_file + ">/dev/null 2>&1"
          os.system(cmd)
          print(cmd)
 

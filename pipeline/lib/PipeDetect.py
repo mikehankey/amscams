@@ -35,49 +35,86 @@ def objects_to_clips(meteor_objects):
 
 
 def clean_bad_frames(object):
-   print("CLEAN:", object)
+   #print("CLEAN BEFORE:", object)
+   if len(object['ofns']) < 5:
+      return(object)
    bad_frames = {} 
    for i in range(0,len(object['ofns'])-1):
       last_i = len(object['ofns']) - 1 - i
-      if last_i < 3:
+      if i < 4:
          if object['report']['line_segments'][last_i] <= 0 :
             bad_frames[last_i] = 1
          if object['oint'][last_i] < 10:
             bad_frames[last_i] = 1
 
+   #print("BAD FRAMES:", bad_frames)
    # check for a gap at the from 
    first_frame_diff = object['ofns'][1] - object['ofns'][0]
-   if first_frame_diff > 1:
-      # REMOVE FIRST FRAME 
-      bf = 0
-      object['ofns'].pop(bf)
-      object['oxs'].pop(bf)
-      object['oys'].pop(bf)
-      object['ows'].pop(bf)
-      object['ohs'].pop(bf)
-      object['oint'].pop(bf)
-      object['report']['object_px_length'].pop(bf)
-      object['report']['line_segments'].pop(bf)
-      object['report']['x_segs'].pop(bf)
-      object['report']['ms'].pop(bf)
-      object['report']['bs'].pop(bf)
-
-   for bf in bad_frames:
-      print("BF:", bf)
-      
-      object['ofns'].pop(bf)
-      object['oxs'].pop(bf)
-      object['oys'].pop(bf)
-      object['ows'].pop(bf)
-      object['ohs'].pop(bf)
-      object['oint'].pop(bf)
-      object['report']['object_px_length'].pop(bf)
-      object['report']['line_segments'].pop(bf)
-      object['report']['x_segs'].pop(bf)
-      object['report']['ms'].pop(bf)
-      object['report']['bs'].pop(bf)
+   if False:
+      if first_frame_diff > 1:
+         # REMOVE FIRST FRAME 
+         bf = 0
+         object['ofns'].pop(bf)
+         object['oxs'].pop(bf)
+         object['oys'].pop(bf)
+         object['ows'].pop(bf)
+         object['ohs'].pop(bf)
+         object['oint'].pop(bf)
+         object['report']['object_px_length'].pop(bf)
+         object['report']['line_segments'].pop(bf)
+         object['report']['x_segs'].pop(bf)
+         object['report']['ms'].pop(bf)
+         object['report']['bs'].pop(bf)
 
 
+   no = {}
+   if len(bad_frames) == 0:
+      return(object)
+   if len(bad_frames) > 0:
+      no['ofns'] = []
+      no['oxs'] = []
+      no['oys'] = []
+      no['ows'] = []
+      no['ohs'] = []
+      no['oint'] = []
+      no['report'] = {}
+      no['report']['object_px_length'] = []
+      no['report']['line_segments'] = []
+      no['report']['x_segs'] = []
+      no['report']['ms'] = []
+      no['report']['bs'] = []
+   for i in range(0, len(object['ofns'])):
+      if i < min(bad_frames.keys()):
+         #print("ADD GOOD FRAME.", i, object['ofns'][i])
+         no['ofns'].append(object['ofns'][i])
+         no['oxs'].append(object['oxs'][i])
+         no['oys'].append(object['oys'][i])
+         no['ows'].append(object['ows'][i])
+         no['ohs'].append(object['ohs'][i])
+         no['oint'].append(object['oint'][i])
+         no['report']['object_px_length'].append(object['report']['object_px_length'][i])
+         no['report']['line_segments'].append(object['report']['line_segments'][i])
+         no['report']['x_segs'].append(object['report']['x_segs'][i])
+         no['report']['ms'].append(object['report']['ms'][i])
+         no['report']['bs'].append(object['report']['bs'][i])
+   if len(bad_frames) > 0:
+      o = object 
+      o['ofns'] =  no['ofns']
+      o['oxs'] =    no['oxs']
+      o['oys'] =   no['oys']
+      o['ows'] =   no['ows']
+      o['ohs'] =   no['ohs']
+      o['oint'] =  no['oint']
+      o['report']['object_px_length'] =      no['report']['object_px_length']
+      o['report']['line_segments'] =    no['report']['line_segments']
+      o['report']['x_segs'] =  no['report']['x_segs']
+      o['report']['ms'] =  no['report']['ms']
+      o['report']['bs'] =  no['report']['bs']
+      object = o
+
+
+   #print("CLEAN AFTER:", object)
+   #print("NEW OBJ :", no)
    return(object) 
 
 
@@ -103,6 +140,7 @@ def analyze_object(object, hd = 0, strict = 0):
       object['report']['meteor'] = 0
       object['report']['bad_items'] = []
 
+
    # basic initial tests for vals-detect/stict = 0, if these all pass the clip should be video detected
    object['report']['cm'] = obj_cm(object['ofns'])
    # consecutive motion filter 
@@ -117,6 +155,8 @@ def analyze_object(object, hd = 0, strict = 0):
    object['report']['object_px_length'], object['report']['line_segments'], object['report']['x_segs'], object['report']['ms'], object['report']['bs'] = calc_line_segments(object)
 
    object['report']['min_max_dist'] = calc_dist((min(object['oxs']), min(object['oys'])), (max(object['oxs']),max(object['oys']) ))
+
+   object = clean_bad_frames(object)
 
 
    # ANG DIST / VEL
@@ -144,12 +184,10 @@ def analyze_object(object, hd = 0, strict = 0):
          object['report']['bad_items'].append("bad ang sep: " + str(ang_dist))
 
    if object['report']['non_meteor'] == 1 :
-      print("NON METEOR!*****************************", strict)
-      print(object['ofns'], object['report']['bad_items'])
       return(object)
 
    if strict == 0:
-      print("INITIAL METEOR DETECTED!")
+      #print("INITIAL METEOR DETECTED!")
       if object['report']['non_meteor'] == 0 :
          object['report']['meteor'] = 1 
       return(object)
@@ -157,7 +195,6 @@ def analyze_object(object, hd = 0, strict = 0):
    print("************STRICT*************") 
 
    # more tests for video based detection 
-   object = clean_bad_frames(object)
 
    # big cnt perc test
    object['report']['big_perc'] = big_cnt_test(object, hd)
@@ -506,7 +543,7 @@ def analyze_object_old(object, hd = 0, sd_multi = 1, final=0):
 def find_object(objects, fn, cnt_x, cnt_y, cnt_w, cnt_h, intensity=0, hd=0, sd_multi=1, cnt_img=None ):
 
    if hd == 1:
-      obj_dist_thresh = 20
+      obj_dist_thresh = 100
    else:
       obj_dist_thresh = 10
 
@@ -599,7 +636,6 @@ def detect_in_vals(vals_file, masks=None, vals_data=None):
       data = load_json_file(vals_file)
    else:
       data = vals_data
-   print("VALS DATA LOADED") 
    events = []
    data_x = []
    data_y = []
@@ -620,7 +656,6 @@ def detect_in_vals(vals_file, masks=None, vals_data=None):
          if masked == 0:
             data_x.append(x)
             data_y.append(y)
-            print("Finding obj.", i,x,y)
             object, objects = find_object(objects, i,x, y, SD_W, SD_H, max_val, 0, 0, None)
       else:
          if cm >= 3:
@@ -1092,7 +1127,7 @@ def detect_meteor_in_clip(trim_clip, frames = None, fn = 0, crop_x = 0, crop_y =
       return(objects, []) 
 
    if frames is None :
-        
+      print("LOAD FRAMES FAST...")  
       frames,color_frames,subframes,sum_vals,max_vals,pos_vals = load_frames_fast(trim_clip, json_conf, 0, 1, [], 0,[])
    if len(frames) == 0:
       return(objects, []) 
@@ -1103,18 +1138,26 @@ def detect_meteor_in_clip(trim_clip, frames = None, fn = 0, crop_x = 0, crop_y =
    else:
       hd = 0
       sd_multi = 1920 / frames[0].shape[1]
-
-   image_acc = frames[0]
+   if len(frames[0].shape) == 3:
+      aframe = cv2.cvtColor(frames[0], cv2.COLOR_BGR2GRAY)
+      image_acc = aframe
+   else:
+      image_acc = frames[0]
    image_acc = np.float32(image_acc)
 
-   for i in range(0,len(frames)):
-      frame = frames[i]
-      blur_frame = cv2.GaussianBlur(frame, (7, 7), 0)
-      alpha = .5
-      hello = cv2.accumulateWeighted(blur_frame, image_acc, alpha)
+   #for i in range(0,len(frames)):
+   #   if len(frame.shape) == 3:
+   #      frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+   #   frame = frames[i]
+ 
+#      blur_frame = cv2.GaussianBlur(frame, (7, 7), 0)
+#      alpha = .5
+#      hello = cv2.accumulateWeighted(blur_frame, image_acc, alpha)
 
    # preload the bg
    for frame in frames:
+      if len(frame.shape) == 3:
+         frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
       frame = np.float32(frame)
       blur_frame = cv2.GaussianBlur(frame, (7, 7), 0)
       alpha = .5
@@ -1125,6 +1168,12 @@ def detect_meteor_in_clip(trim_clip, frames = None, fn = 0, crop_x = 0, crop_y =
 
 
    for frame in frames:
+      if len(frame.shape) == 3:
+         frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+      if len(frames[0].shape) == 3:
+         aframe = cv2.cvtColor(frames[0], cv2.COLOR_BGR2GRAY)
+      else:
+         aframe = frames[0].copy()
       show_frame = frame.copy()
       frame = np.float32(frame)
       blur_frame = cv2.GaussianBlur(frame, (7, 7), 0)
@@ -1148,7 +1197,7 @@ def detect_meteor_in_clip(trim_clip, frames = None, fn = 0, crop_x = 0, crop_y =
             px_diff = 0
             x,y,w,h = cnt
             if w > 1 and h > 1:
-               intensity,mx,my,cnt_img = compute_intensity(x,y,w,h,frame,frames[0])
+               intensity,mx,my,cnt_img = compute_intensity(x,y,w,h,frame,aframe)
                cx = int(mx) 
                cy = int(my) 
                cv2.circle(show_frame,(cx+crop_x,cy+crop_y), 10, (255,255,255), 1)
@@ -1157,11 +1206,11 @@ def detect_meteor_in_clip(trim_clip, frames = None, fn = 0, crop_x = 0, crop_y =
                objects[object]['trim_clip'] = trim_clip
                cv2.rectangle(show_frame, (x, y), (x+w, y+h), (255,255,255), 1, cv2.LINE_AA)
                #desc = str(fn) + " " + str(intensity) + " " + str(objects[object]['obj_id']) + " " + str(objects[object]['report']['obj_class']) #+ " " + str(objects[object]['report']['ang_vel'])
-               desc = str(fn) + " " + str(intensity) #+ " " + str(objects[object]['obj_id']) + " " + str(objects[object]['report']['obj_class']) #+ " " + str(objects[object]['report']['ang_vel'])
+               desc = str(fn) + " " + str(intensity) + " " + str(objects[object]['obj_id'])  
                cv2.putText(show_frame, desc,  (x,y), cv2.FONT_HERSHEY_SIMPLEX, .4, (255, 255, 255), 1)
       
       show_frame = cv2.convertScaleAbs(show_frame)
-      show = 0
+      show = 1
       if show == 1:
          cv2.imshow('Detect Meteor In Clip', show_frame)
          cv2.waitKey(90)

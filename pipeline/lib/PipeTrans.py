@@ -113,7 +113,7 @@ def slide_left(pic1, pic2, pref, start_count):
 
 def vid_from_imgs(TMP_DIR, outfile):
    cmd = """/usr/bin/ffmpeg -y -framerate 25 -pattern_type glob -i '""" + TMP_DIR + """*.jpg' \
-        -c:v libx264 -r 25 -pix_fmt yuv420p -y """ + outfile
+        -c:v libx264 -r 25 -pix_fmt yuv420p -y """ + outfile + " > /dev/null 2>&1"
    print(cmd)
    os.system(cmd)
 

@@ -1,5 +1,7 @@
 #!/usr/bin/python3
 
+from lib.DEFAULTS import *
+from lib.PipeUtil import convert_filename_to_date_cam
 import os
 #import math
 import cv2
@@ -74,6 +76,24 @@ def az_grid(cal_file,cal_params,cal_image,iw,ih,show =0):
          start_az = center_az - 80
          end_az = start_az + 160 
 
+   if cal_file is not None:
+      (f_datetime, cam, f_date_str,y,m,d, h, mm, s) = convert_filename_to_date_cam(cal_file)
+      cam = cam.replace(".jpg", "")
+      print("CAM:", cam)
+   else:
+      print("NO CAL FILE?")
+      return()
+ 
+
+   mcpf = "/mnt/ams2/meteor_archive/AMS1/CAL/AUTOCAL/2020/solved/multi_poly-" + STATION_ID + "-" + cam + ".info"
+   if cfe(mcpf) == 1:
+      mcp = load_json_file(mcpf)
+      cal_params['x_poly'] = mcp['x_poly']   
+      cal_params['y_poly'] = mcp['y_poly']   
+      print("USING MCP POLY VALS!")
+   else:
+      print("No MCP file.", mcpf)
+
    RA_center = float(cal_params['ra_center'])
    dec_center = float(cal_params['dec_center'])
    x_res = int(cal_params['imagew'])
@@ -90,10 +110,10 @@ def az_grid(cal_file,cal_params,cal_image,iw,ih,show =0):
    #   start_az = start_az - 360
 
    print("START AZ, END AZ", start_az, end_az)
-   for az in range(int(start_az),int(end_az)):
-      for el in range(int(start_el),int(end_el)+30):
-         if az % 10 == 0 and el % 10 == 0:
-            print("GRID AZ-EL POINTS:", az,el)
+   #for az in range(int(start_az),int(end_az)):
+      #for el in range(int(start_el),int(end_el)+30):
+         #if az % 10 == 0 and el % 10 == 0:
+         #   print("GRID AZ-EL POINTS:", az,el)
 
 
    for az in range(int(start_az),int(end_az)):
@@ -138,7 +158,7 @@ def az_grid(cal_file,cal_params,cal_image,iw,ih,show =0):
       az_grid_file_half = cal_file.replace("-stacked.png", "-azgrid-half.png")
       az_grid_half_blend = cal_file.replace("-stacked.png", "-azgrid-half-blend.png")
       half_stack_file = cal_file.replace("-stacked.png", "-stacked.png")
-
+   print(half_stack_file)
    half_stack_img = cv2.imread(half_stack_file)
    h,w,c = half_stack_img.shape 
    if w == 1920:
@@ -197,13 +217,17 @@ if __name__ == "__main__":
       cal_file = cal_param_file.replace("-calparams.json", ".jpg")
       if cfe(cal_file) == 0:
          cal_file = cal_file.replace(".jpg", "-stacked.png")
+         if cfe(cal_file) == 0:
+            cal_file = cal_file.replace("-stacked-stacked", "-stacked")
+            if cfe(cal_file) == 0:
+               cal_file = cal_file.replace("-stacked", "")
+               cal_file = None
+      print("GRID CAL IMG:", cal_file)
 
-
-
-      if "master" in cal_file:
-         cal_file = cal_file.replace("-master", "")
-
-      cal_image = cv2.imread(cal_file)
+      if cal_file is not None:
+         if "master" in cal_file:
+            cal_file = cal_file.replace("-master", "")
+         cal_image = cv2.imread(cal_file)
 
       ih = 1080
       iw = 1920

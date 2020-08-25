@@ -300,3 +300,11 @@ def check_running(progname, sec_grep = None):
    else:
       return(0)
 
+def find_angle(p1,p2):
+   myrad = math.atan2(p1[1]-p2[1],p1[0]-p2[0])
+   mydeg = math.degrees(myrad)
+   return(mydeg)
+
+
+def collinear(x1, y1, x2, y2, x3, y3): 
+   return ((y1 - y2) * (x1 - x3), (y1 - y3) * (x1 - x2));

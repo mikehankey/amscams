@@ -267,6 +267,7 @@ def det_table_all(urls , type='dur'):
       """
       mdate = id[0:20]
       rpt += "<br><label style='text-align: center'>" + link + mdate + "</a> " + str(dur) + " " + str(mag) + "<br>"
+      rpt += station
       rpt += del_link + "<br>"
 
       rpt += "</label></div>"
@@ -579,7 +580,10 @@ def mln_report(day=None):
       if cfe(new_data_dir,1) == 0:
          os.makedirs(new_data_dir)
       new_data_file = new_data_dir + day + "-" + station + "-METEORS.json"
+      
       cmd = "cp " + data_file + " " + new_data_file
+      print(cmd)
+      os.system(cmd)
 
       # get super stacks
       super_files = glob.glob(station_dir + "*meteors.jpg") 
