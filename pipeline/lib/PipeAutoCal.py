@@ -433,7 +433,6 @@ def deep_calib(cam, json_conf):
    """
 
    all_cal_files = deep_cal_report(cam, json_conf)
-   exit()
    year = datetime.now().strftime("%Y")
    print("DEEP CALIB")
    autocal_dir = "/mnt/ams2/meteor_archive/" + STATION_ID + "/CAL/AUTOCAL/" + year + "/solved/"
