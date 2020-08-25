@@ -35,7 +35,27 @@ json_conf = load_json_file(CONF_DIR +"/as6.json")
 if "process_day" in json_conf:
    proc_day = 1
 
- 
+help = """
+
+./Process.py is the main program for accessing functions in the allsky system. Many / most of these functions are called by cron jobs or other programs. 
+
+For reference, the following functions are available through this program. 
+
+Call / run like this:
+
+./Process FUNC_NAME ARGS
+
+DETECT FUNCTIONS
+
+LIVE FUNCTIONS
+
+PREVIEW METEOR FUNCTIONS
+
+MANAGER FUNCTIONS
+
+AUTOCAL FUNCTIONS
+
+""" 
 
 def scan_stack_pending(proc_day=0):
    proc_day = 0
@@ -137,6 +157,12 @@ if __name__ == "__main__":
    # index the failed calibs
    if cmd == 'if':
       index_failed(json_conf)
+
+   if cmd == "blind": 
+      if len(sys.argv) > 3:
+         blind_solve_meteors(sys.argv[2],json_conf ,sys.argv[3])
+      else:
+         blind_solve_meteors(sys.argv[2],json_conf )
 
 
    # LIVE BUFFERED VIDEO COMMANDS
@@ -249,8 +275,3 @@ if __name__ == "__main__":
       make_preview_meteors(sys.argv[2],json_conf )
    if cmd == "sync_previews":
       sync_preview_meteors(sys.argv[2],json_conf )
-   if cmd == "blind": 
-      if len(sys.argv) > 3:
-         blind_solve_meteors(sys.argv[2],json_conf ,sys.argv[3])
-      else:
-         blind_solve_meteors(sys.argv[2],json_conf )
