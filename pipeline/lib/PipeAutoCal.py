@@ -254,6 +254,9 @@ def minimize_fov(cal_file, cal_params, image_file,img,json_conf ):
    if len(img.shape) > 2:
       gray_img = cv2.cvtColor(img, cv2.cv2.COLOR_BGR2GRAY)
    cp = pair_stars(cal_params, image_file, json_conf, gray_img)
+   trash_stars, res_px,res_deg = cat_star_report(cp['cat_image_stars'], 4)
+   cp['total_res_px'] = res_px 
+   cp['total_res_deg'] = res_deg 
 
    return(cal_params)
 
@@ -360,7 +363,8 @@ def deep_cal_report(cam, json_conf):
          cat_match = 0
       #plot_cat_image_stars(gray_cal_img, cp, cal, json_conf)
       if cat_match < .5:
-         print("PROB:", cal)
+         print("PROB:", cal )
+         print("IMAGE STARS TO CAT STARS VERY LOW, COULD BE A BAD FILE.", len(cp['user_stars']), len(cp['cat_image_stars']), cat_match)
          exit()
 
       cal_img_file = cal.replace("-calparams.json", ".png")
@@ -392,7 +396,7 @@ def deep_cal_report(cam, json_conf):
       fov_done = 0
       if 'fov_fit' in cp:
          print("File FOV fitted ", cp['fov_fit'], " times")
-         if cp['fov_fit'] > 3:
+         if cp['fov_fit'] > 33:
             print("File already FOV fitted ", cp['fov_fit'], " times")
             fov_done = 1
       else:
@@ -504,7 +508,6 @@ def deep_calib(cam, json_conf):
    
             dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist,star_int = data
             cp = update_center_radec(cal_file,cp,json_conf)
-            print("ADD TO ALL STARS:", len(all_stars))
             all_stars.append((cal_fn, cp['center_az'], cp['center_el'], cp['ra_center'], cp['dec_center'], cp['position_angle'], cp['pixscale'], dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist,star_int))
             if SHOW == 1:
                cv2.rectangle(temp_img, (new_cat_x-2, new_cat_y-2), (new_cat_x + 2, new_cat_y + 2), (128, 128, 128), 1)
@@ -596,7 +599,7 @@ def get_stars_from_meteors(cam, mcp, star_db, json_conf):
                         if std_dist < 4 :
                            skip = 1
                         if "fov_fit" in cp:
-                           if cp['fov_fit'] > 2:
+                           if cp['fov_fit'] > 10:
                               skip = 1
                      if skip == 0:   
                         cal_files= get_cal_files(stack_file)
@@ -604,7 +607,7 @@ def get_stars_from_meteors(cam, mcp, star_db, json_conf):
                            cal_files = cal_files[0:5]
                         best_cal_file, cp = get_best_cal(stack_file, cal_files, stars, gray_cal_img, json_conf, mcp)
                         js['cp'] = cp
-                        if len(stars) > 10:
+                        if len(stars) > 5:
                            cp = minimize_fov(stack_file, cp, stack_file,cal_img,json_conf )
                         save_json_file(jsf, js)
               
@@ -632,7 +635,7 @@ def get_stars_from_meteors(cam, mcp, star_db, json_conf):
                   else:  
                      show_image(cal_img, 'pepe', 30)
                print("METEOR STARS END LOOP:", len(star_db['meteor_stars']))
-               if len(star_db['meteor_stars']) > 500:
+               if len(star_db['meteor_stars']) > 1000:
                   break
                  
 
@@ -880,7 +883,6 @@ def get_cal_files(meteor_file=None, cam=None):
       if meteor_file is not None:
          (c_datetime, ccam, c_date_str,cy,cm,cd, ch, cmm, cs) = convert_filename_to_date_cam(cpf)
          time_diff = f_datetime - c_datetime
-         print("CAL TIME DIFF:", time_diff, f_datetime, c_datetime)
          pos_files.append((cpf, abs(time_diff.total_seconds())))
       else:
          pos_files.append((cpf, 0))
@@ -1350,7 +1352,6 @@ def get_image_stars(file=None,img=None,json_conf=None,show=0):
 
       # look inside light polluted (huge) areas if they exist
       if (w > 100 and h > 100): 
-         print("HUGE!")
          area_x = x
          area_y = y
          huge.append((x,y,w,h))
