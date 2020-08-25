@@ -147,9 +147,8 @@ if __name__ == "__main__":
 
    # make the autocal report html
    if cmd == 'ac_rpt':
-      #autocal_report("solved")
-      #autocal_report("failed")
-      autocal_report("bad")
+      autocal_report("solved")
+      autocal_report("failed")
 
    if cmd == "deep_cal":
       deep_calib(sys.argv[2], json_conf)

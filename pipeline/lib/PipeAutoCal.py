@@ -33,6 +33,8 @@ def blind_solve_meteors(day,json_conf,cam=None):
       else:
          jsfs = glob.glob(md + "/*" + cam + "*.json")
       for jsf in jsfs:
+         if "reduced" in jsf:
+            continue
          print(jsf)
          try:
             js = load_json_file(jsf)
@@ -43,7 +45,12 @@ def blind_solve_meteors(day,json_conf,cam=None):
             if "hd_trim" in js:
                if js['hd_trim'] == 0 or js['hd_trim'] is None:
                   continue
+               fn, dir = fn_dir(js['hd_trim']) 
+               js['hd_trim'] = md + "/" + fn
                stack_file = js['hd_trim'].replace(".mp4", "-stacked.png")
+               if cfe(stack_file) == 0:
+                  print(stack_file, " not found")
+               
                if cfe(stack_file) == 1:
                   all_meteor_imgs.append(stack_file)
 
@@ -55,7 +62,7 @@ def blind_solve_meteors(day,json_conf,cam=None):
                      cv2.imshow('pepe', temp_img)
                      cv2.waitKey(30)
                   print("STARS:", len(stars))
-                  if len(stars) >= 15:
+                  if len(stars) >= CAL_STAR_LIMIT:
                      mfn, mdir = fn_dir(stack_file) 
                      year = mfn[0:4]
                      pos_files.append((stack_file, len(stars)))
@@ -89,8 +96,8 @@ def blind_solve_meteors(day,json_conf,cam=None):
    pos_files = sorted(pos_files, key=lambda x: x[1], reverse=True)
    for mfile, stars in pos_files:
       (f_datetime, mcam, f_date_str,y,m,d, h, mm, s) = convert_filename_to_date_cam(mfile)
-      if len(set(good_cals[mcam])) <= 3:
-         if stars > 15:
+      if len(set(good_cals[mcam])) <= 15:
+         if stars > CAL_STAR_LIMIT:
             cmd = "cp " + mfile + " /mnt/ams2/meteor_archive/" + STATION_ID + "/CAL/AUTOCAL/" + year + "/"  
             print("COPY A FILE FOR CALIB ", stars, cmd)
             os.system(cmd)
@@ -583,6 +590,7 @@ def star_cnt(simg):
    best_thresh = avg + (pd /2)
    _, star_bg = cv2.threshold(simg, best_thresh, 255, cv2.THRESH_BINARY)
    #thresh_obj = cv2.dilate(star_bg, None , iterations=4)
+   w = None
 
    res = cv2.findContours(star_bg.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
    if len(res) == 3:
@@ -593,6 +601,9 @@ def star_cnt(simg):
    for (i,c) in enumerate(cnts):
       x,y,w,h = cv2.boundingRect(cnts[i])
       cc += 1
+
+   if w == None:
+      return(0)  
 
    if cc != 1:
       status = 0
