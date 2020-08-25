@@ -269,7 +269,7 @@ class DVRIPCam(object):
 					return reply
 
 				progress = sentbytes/fsize*100
-				vprint(f"Uploaded {progress:.2f}%")
+				#vprint(f"Uploaded {progress:.2f}")
 		vprint("End of file")
 
 		pkt = struct.pack('BB2xIIxBHI',255, 0, self.session,
@@ -291,4 +291,4 @@ class DVRIPCam(object):
 				vprint("Upgrade successful")
 				self.socket.close()
 				return data
-			vprint(f"Upgraded {data['Ret']}%")
+			#vprint(f"Upgraded {data['Ret']}%")
