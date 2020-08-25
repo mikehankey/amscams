@@ -323,7 +323,6 @@ def deep_cal_report(cam, json_conf):
 
       cp['user_stars'] = get_image_stars(cal, gray_cal_img.copy(), json_conf, 0)
       before_std_dist, before_avg_dist = calc_starlist_res(cp['cat_image_stars'])
-      #plot_user_stars(gray_cal_img, cp, cal,json_conf,30)
       if mcp is not None:
          if mcp != 0:
             cp['x_poly'] = mcp['x_poly']
@@ -522,6 +521,7 @@ def deep_calib(cam, json_conf):
    star_db['meteor_stars'] = []
    # GET METEOR STARS
    star_db = get_stars_from_meteors(cam, mcp, star_db, json_conf)
+   print("DONE GET STARS FROM EMETORS")
    for star in star_db['meteor_stars']:
       all_stars.append(star)
 
@@ -631,12 +631,13 @@ def get_stars_from_meteors(cam, mcp, star_db, json_conf):
 
                   else:  
                      show_image(cal_img, 'pepe', 30)
-               print("METEOR STARS:", len(star_db['meteor_stars']))
+               print("METEOR STARS END LOOP:", len(star_db['meteor_stars']))
                if len(star_db['meteor_stars']) > 500:
                   break
                  
 
          star_db['processed_files'].append(jsf)
+   print("END GET METEOR STARS")
    return(star_db)
 
 def index_failed(json_conf):
@@ -946,12 +947,13 @@ def show_image(img, win, time=0):
       disp_img = cv2.resize(img, (1280, 720))
    else:
       disp_img = cv2.resize(img, (1280, 720))
-
-   try:
-      cv2.imshow(win, disp_img)
-      cv2.waitKey(time)  
-   except:
-      print("Bad image:", disp_img)
+ 
+   if SHOW == 1:
+      try:
+         cv2.imshow(win, disp_img)
+         cv2.waitKey(time)  
+      except:
+         print("Bad image:", disp_img)
 
 def cal_all(json_conf):
    year = datetime.now().strftime("%Y")
@@ -1348,6 +1350,7 @@ def get_image_stars(file=None,img=None,json_conf=None,show=0):
 
       # look inside light polluted (huge) areas if they exist
       if (w > 100 and h > 100): 
+         print("HUGE!")
          area_x = x
          area_y = y
          huge.append((x,y,w,h))
@@ -1430,11 +1433,6 @@ def get_image_stars(file=None,img=None,json_conf=None,show=0):
    stars = validate_stars(stars, raw_img)
    print("STARS AFTER VAL:", len(stars))
 
-   for x,y,sint in huge_stars:
-
-      cv2.circle(img, (int(x),int(y)), 5, (128,128,128), 1)
-   #cv2.imshow('pepe', img)
-   #cv2.waitKey(0)
    return(stars)
 
 
@@ -2927,7 +2925,7 @@ def fn_dir(file):
 
 
 
-def minimize_poly_multi_star(merged_stars, json_conf,orig_ra_center=0,orig_dec_center=0,cam_id=None,master_file=None,mcp=None,show=1):
+def minimize_poly_multi_star(merged_stars, json_conf,orig_ra_center=0,orig_dec_center=0,cam_id=None,master_file=None,mcp=None,show=0):
    if len(merged_stars) < 50:
       print("not enough stars to multi fit!")
       return(0,0,0)
@@ -2953,8 +2951,6 @@ def minimize_poly_multi_star(merged_stars, json_conf,orig_ra_center=0,orig_dec_c
 
       err_list.append(img_res)
       cv2.circle(img,(six,siy), 10, (255), 1)
-   #cv2.imshow("MIKE", img)
-   #exit()
    std_dist = np.mean(err_list)
    cal_params = {}
    print("MS LEN:", len(merged_stars))
@@ -2965,8 +2961,6 @@ def minimize_poly_multi_star(merged_stars, json_conf,orig_ra_center=0,orig_dec_c
    fit_img = np.zeros((1080,1920),dtype=np.uint8)
    fit_img = cv2.cvtColor(fit_img,cv2.COLOR_GRAY2RGB)
 
-   if SHOW == 1:
-      cv2.namedWindow(cam_id)
 
    # do x poly fwd
    if SHOW == 1:
