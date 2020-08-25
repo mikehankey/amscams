@@ -17,7 +17,7 @@ from lib.PipeAutoCal import autocal , solve_field, cal_all, draw_star_image, fre
 from lib.PipeReport import autocal_report, detect_report
 from lib.PipeLIVE import meteor_min_files, broadcast_live_meteors, broadcast_minutes, meteors_last_night, mln_final, pip_video, mln_sync, super_stacks, meteor_index, fix_missing_images, fflist, resize_video, minify_file, make_preview_meteor, make_preview_meteors, sync_preview_meteors
 from lib.PipeTimeLapse import make_tl_for_cam, video_from_images, six_cam_video, timelapse_all
-
+from lib.PipeMeteorDelete import delete_all_meteor_files
 '''
 
    Process.py - main pipeline processing script.
@@ -213,6 +213,8 @@ if __name__ == "__main__":
       fflist(sys.argv[2], sys.argv[3])
    if cmd == "rv":
       resize_video(sys.argv[2], sys.argv[3], sys.argv[4])
+   if cmd == "fmd":
+      fix_meteor_dir(sys.argv[2])
    if cmd == "minify":
       LIVE_METEOR_DIR = "/mnt/ams2/nice/min/"
       text = "James Hannon, Otter Creek TWP USA"
@@ -229,6 +231,8 @@ if __name__ == "__main__":
    if cmd == "trim":
       trim_out_file = sys.argv[2].replace(".mp4", "-trim-" + sys.argv[3] + ".mp4")
       trim_min_file(sys.argv[2], trim_out_file, sys.argv[3], sys.argv[4])
+   if cmd == "dmf":
+      delete_all_meteor_files(sys.argv[2])
    if cmd == "dmic":
       hd_objects, frames = detect_meteor_in_clip(sys.argv[2], None, 0, 0, 0, 0)
       for obj in hd_objects:
