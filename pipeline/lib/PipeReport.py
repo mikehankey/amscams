@@ -143,21 +143,16 @@ def autocal_report(type="solved"):
          azgrid_tn = azgrid.replace(".png", "-tn.png")
          grid = cf.replace("-calparams.json", "-grid.png")
          grid_tn = grid.replace(".png", "-tn.png")
-         stars = cf.replace("-calparams.json", "-stars.png")
-         stars_tn = stars.replace(".png", "-tn.png")
+         #stars = cf.replace("-calparams.json", "-stars.png")
+         #stars_tn = stars.replace(".png", "-tn.png")
 
 
       if type == 'solved':
 
-         if cfe(azgrid_tn) == 0:
-            thumbnail(azgrid, MEDIUM_W, MEDIUM_H)
-            print(azgrid_tn)
-         if cfe(grid_tn) == 0:
-            thumbnail(grid, MEDIUM_W, MEDIUM_H)
-            print(grid_tn)
-         if cfe(stars_tn) == 0:
-            thumbnail(stars, MEDIUM_W, MEDIUM_H)
-            print(stars_tn)
+         thumbnail(azgrid, MEDIUM_W, MEDIUM_H)
+         print(azgrid_tn)
+         thumbnail(grid, MEDIUM_W, MEDIUM_H)
+         print(grid_tn)
 
          output[cam] += "<div class='float_div'>"
          output[cam] += "<img src=" + azgrid_tn + ">"
@@ -166,7 +161,7 @@ def autocal_report(type="solved"):
          output[cam] += "Stars/Res: " + str(len(cp['cat_image_stars'])) + " / " + str(cp['total_res_deg'])[0:5] + "&deg; <BR>"
          output[cam] += "<a href=" + azgrid + ">AZ Grid</a> - " 
          output[cam] += "<a href=" + grid + ">RA Grid</a> - " 
-         output[cam] += "<a href=" + stars + ">Stars</a> - " 
+         #output[cam] += "<a href=" + stars + ">Stars</a> - " 
          output[cam] += "<a href=" + org + ">Original</a> " 
          output[cam] += "</div>\n"
       else:

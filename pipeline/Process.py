@@ -13,11 +13,14 @@ from lib.PipeUtil import convert_filename_to_date_cam, day_or_night , load_json_
 from lib.PipeVideo import scan_stack_file, make_preview_videos, load_frames_simple, ffmpeg_cat 
 from lib.PipeDetect import detect_in_vals , obj_report, trim_events, detect_all, get_trim_num, trim_min_file, detect_meteor_in_clip, analyze_object
 from lib.PipeSync import sync_day 
-from lib.PipeAutoCal import autocal , solve_field, cal_all, draw_star_image, freecal_copy, apply_calib, index_failed, deep_calib, blind_solve_meteors
+from lib.PipeAutoCal import autocal , solve_field, cal_all, draw_star_image, freecal_copy, apply_calib, index_failed, deep_calib, blind_solve_meteors, guess_cal
 from lib.PipeReport import autocal_report, detect_report
 from lib.PipeLIVE import meteor_min_files, broadcast_live_meteors, broadcast_minutes, meteors_last_night, mln_final, pip_video, mln_sync, super_stacks, meteor_index, fix_missing_images, fflist, resize_video, minify_file, make_preview_meteor, make_preview_meteors, sync_preview_meteors
 from lib.PipeTimeLapse import make_tl_for_cam, video_from_images, six_cam_video, timelapse_all
 from lib.PipeMeteorDelete import delete_all_meteor_files
+
+
+
 '''
 
    Process.py - main pipeline processing script.
@@ -162,6 +165,8 @@ if __name__ == "__main__":
          blind_solve_meteors(sys.argv[2],json_conf ,sys.argv[3])
       else:
          blind_solve_meteors(sys.argv[2],json_conf )
+   if cmd == "guess": 
+      guess_cal(sys.argv[2],json_conf)
 
 
    # LIVE BUFFERED VIDEO COMMANDS
@@ -274,3 +279,4 @@ if __name__ == "__main__":
       make_preview_meteors(sys.argv[2],json_conf )
    if cmd == "sync_previews":
       sync_preview_meteors(sys.argv[2],json_conf )
+   

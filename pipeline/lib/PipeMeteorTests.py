@@ -18,7 +18,6 @@ def analyze_intensity(ints):
    if len(pos_vals) == 0:
       return(0, 1, [])
 
-   print("POS/NEG:", len(pos_vals), len(neg_vals))
 
    max_int = max(pos_vals)
    min_int = min(pos_vals)
@@ -223,7 +222,6 @@ def unq_points(object):
       x = object['oxs'][i]
       y = object['oys'][i]
       key = str(x) + "." + str(y)
-      print("KEY:", key)
       if key not in points: 
          points[key] = 1
          unq_tot += 1
@@ -231,7 +229,6 @@ def unq_points(object):
       tot = tot + 1
 
    perc = unq_tot / tot
-   print("UNQ **********:", unq_tot, tot)
    return(perc, unq_tot)
 
 def big_cnt_test(object,hd=0):
@@ -366,6 +363,8 @@ def meteor_direction(fx,fy,lx,ly):
 def best_fit_slope_and_intercept(xs,ys):
     xs = np.array(xs, dtype=np.float64)
     ys = np.array(ys, dtype=np.float64)
+    if len(xs) < 3:
+       return(0,0)
     m = (((np.mean(xs)*np.mean(ys)) - np.mean(xs*ys)) /
          ((np.mean(xs)*np.mean(xs)) - np.mean(xs*xs)))
 
@@ -449,9 +448,12 @@ def ang_dist_vel(xs=[], ys=[],azs=[],els=[], pixscale=155):
 
    # Formula for finding ang_dist and vel from px
    if len(xs) > 0:
-      px_dist = calc_dist((xs[0],ys[0]), (xs[-1], ys[-2]))
+      px_dist = calc_dist((xs[0],ys[0]), (xs[-1], ys[-1]))
       ang_dist = px_dist * pixscale
+      #print("PIX DIST: ", px_dist)
+      #print("ANG DIST ARC SEC: ", ang_dist)
       ang_dist = arc_seconds_to_degrees(ang_dist)
+      #print("ANG DIST DEG: ", ang_dist)
       # to find angular velocity per second in degrees 
       ang_vel = ang_dist / (len(xs) / 25)
    # Formula for finding ang_dist and vel from az,el 

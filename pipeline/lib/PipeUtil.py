@@ -99,7 +99,7 @@ def day_or_night(capture_date, json_conf):
       sun_status = "day"
    return(sun_status)
 
-def convert_filename_to_date_cam(file):
+def convert_filename_to_date_cam_old(file):
    el = file.split("/")
    filename = el[-1]
    if "trim" in filename:
@@ -110,6 +110,10 @@ def convert_filename_to_date_cam(file):
    fy,fm,fd,fh,fmin,fs,fms,cam = data[:8]
    f_date_str = fy + "-" + fm + "-" + fd + " " + fh + ":" + fmin + ":" + fs
    f_datetime = datetime.datetime.strptime(f_date_str, "%Y-%m-%d %H:%M:%S")
+   cam = cam.replace(".png", "")
+   cam = cam.replace(".jpg", "")
+   cam = cam.replace(".json", "")
+   cam = cam.replace(".mp4", "")
    return(f_datetime, cam, f_date_str,fy,fm,fd, fh, fmin, fs)
 
 def make_meteor_dir(sd_video_file, json_conf):
@@ -186,6 +190,10 @@ def convert_filename_to_date_cam(file, ms = 0):
 
    #print("CAM:", cam)
    #exit()
+   cam = cam.replace(".png", "")
+   cam = cam.replace(".jpg", "")
+   cam = cam.replace(".json", "")
+   cam = cam.replace(".mp4", "")
 
    f_date_str = fy + "-" + fm + "-" + fd + " " + fh + ":" + fmin + ":" + fs
    f_datetime = datetime.datetime.strptime(f_date_str, "%Y-%m-%d %H:%M:%S")
