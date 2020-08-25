@@ -1351,7 +1351,6 @@ def get_image_stars(file=None,img=None,json_conf=None,show=0):
       if (w > 100 and h > 100): 
          area_x = x
          area_y = y
-         print("HUGE AREA!", w,h)
          huge.append((x,y,w,h))
          area = img[y:y+h, x:x+w]
          huge_avg = np.median(area) 
@@ -1376,7 +1375,6 @@ def get_image_stars(file=None,img=None,json_conf=None,show=0):
             px_val = int(img[y,x])
             cnt_img = raw_img[by1:by2,bx1:bx2]
             cnt_img = cv2.GaussianBlur(cnt_img, (7, 7), 0)
-            print("HUGE:", bx1, bx2, by1, by2)
 
             max_px, avg_px, px_diff,max_loc,star_int = eval_cnt(cnt_img.copy(), avg)
             max_int = np.sum(cnt_img)
@@ -1388,9 +1386,7 @@ def get_image_stars(file=None,img=None,json_conf=None,show=0):
             name = "/mnt/ams2/tmp/cnt" + str(cc) + ".png"
             hx = area_x + hx + int(hw/2)
             hy = area_y + hy + int(hh/2)
-            print("STAR:", hx, hy, star_int)
             if star_int > 100:
-               print("ADD STAR FROM HUGE AREA:", len(stars))
 
                stars.append((hx,hy,int(star_int)))
                huge_stars.append((hx,hy,int(star_int)))
@@ -1423,7 +1419,6 @@ def get_image_stars(file=None,img=None,json_conf=None,show=0):
       x = x + int(w/2)
       y = y + int(h/2)
       if star_int > 100:
-          print("ADD STAR:", len(stars))
           stars.append((x,y,int(star_int)))
 
       cc = cc + 1
