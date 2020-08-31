@@ -27,8 +27,8 @@
 
 # New Pipe Line
 # Live Minute
-*/10 * * * * cd /home/ams/amscams/pipeline/; ./Process.py bcm
+#*/10 * * * * cd /home/ams/amscams/pipeline/; ./Process.py bcm
 # Morning report
-10 12 * * * cd /home/ams/amscams/pipeline/; ./Process.py detect_rpt
+#10 12 * * * cd /home/ams/amscams/pipeline/; ./Process.py detect_rpt
 # Meteors Last Night 
-30 12 * * * cd /home/ams/amscams/pipeline/; ./Process.py mln
+#30 12 * * * cd /home/ams/amscams/pipeline/; ./Process.py mln

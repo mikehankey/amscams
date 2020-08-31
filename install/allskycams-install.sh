@@ -8,7 +8,6 @@ cd ~/allsky6-install
 apt-get --yes --allow-downgrades --allow-remove-essential --allow-change-held-packages update
 apt-get --yes --allow-downgrades --allow-remove-essential --allow-change-held-packages dist-upgrade
 
-
 #APT PRE-REQUISTES
 apt-get --yes --allow-downgrades --allow-remove-essential --allow-change-held-packages upgrade
 apt-get --yes --allow-downgrades --allow-remove-essential --allow-change-held-packages install python2.7-dev python3.5-dev
@@ -42,6 +41,11 @@ apt-get --yes --allow-downgrades --allow-remove-essential --allow-change-held-pa
 apt-get --yes --allow-downgrades --allow-remove-essential --allow-change-held-packages install ffmpeg
 apt-get --yes --allow-downgrades --allow-remove-essential --allow-change-held-packages install libwcs4
 apt-get --yes --allow-downgrades --allow-remove-essential --allow-change-held-packages install wcslib-dev
+apt-get --yes --allow-downgrades --allow-remove-essential --allow-change-held-packages install net-tools
+apt-get --yes --allow-downgrades --allow-remove-essential --allow-change-held-packages install xrdp 
+apt-get --yes --allow-downgrades --allow-remove-essential --allow-change-held-packages install openssh-server 
+apt-get --yes --allow-downgrades --allow-remove-essential --allow-change-held-packages install vlc 
+
 
 apt-get --yes --allow-downgrades --allow-remove-essential --allow-change-held-packages install libcairo2-dev libnetpbm10-dev netpbm \
                        libpng12-dev libjpeg-dev python-numpy \
@@ -61,6 +65,7 @@ mv /usr/local/bin/pip /usr/local/bin/pip3
 python get-pip.py
 
 #PIP INSTALLS
+pip3 install daemon
 pip3 install dropbox
 pip3 install pyephem
 pip3 install fitsio 

@@ -6,7 +6,7 @@ sudo apt-get install libgtk-3-dev
 sudo apt-get --yes --allow-downgrades --allow-remove-essential --allow-change-held-packages install libgtk-3-dev
 
 
-sudo apt-get --yes --allow-downgrades --allow-remove-essential --allow-change-held-packages install python3.6-dev
+sudo apt-get --yes --allow-downgrades --allow-remove-essential --allow-change-held-packages install python3-dev
 sudo apt-get --yes --allow-downgrades --allow-remove-essential --allow-change-held-packages install libopenblas-dev
 sudo apt-get --yes --allow-downgrades --allow-remove-essential --allow-change-held-packages install libvtk*
 sudo apt-get --yes --allow-downgrades --allow-remove-essential --allow-change-held-packages install libvtk6-dev
@@ -15,10 +15,10 @@ sudo apt-get --yes --allow-downgrades --allow-remove-essential --allow-change-he
 sudo apt-get --yes --allow-downgrades --allow-remove-essential --allow-change-held-packages install libgtk3.0-dev
 sudo apt-get --yes --allow-downgrades --allow-remove-essential --allow-change-held-packages install gtk+-3.0
 sudo apt-get --yes --allow-downgrades --allow-remove-essential --allow-change-held-packages install libgtk-3-dev
-<<<<<<< HEAD
-sudo apt-get --yes --allow-downgrades --allow-remove-essential --allow-change-held-packages install libv4l-devel
-=======
->>>>>>> fd67272194b9c6362888a8923c4b7d26be3e2b06
+#OLD
+#sudo apt-get --yes --allow-downgrades --allow-remove-essential --allow-change-held-packages install libv4l-devel
+sudo apt-get --yes --allow-downgrades --allow-remove-essential --allow-change-held-packages install libv4l-dev
+
 sudo apt-get --yes --allow-downgrades --allow-remove-essential --allow-change-held-packages install libv4l-dev
 sudo apt-get --yes --allow-downgrades --allow-remove-essential --allow-change-held-packages install libv4l-0
 sudo apt-get --yes --allow-downgrades --allow-remove-essential --allow-change-held-packages install libv4l*
@@ -30,9 +30,9 @@ sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-6 60 --slave /u
 
 
 # Install OPENCL run time
-#cd ~/allsky6-install/
-FILE=neo
-FILE=~/allsky6-install/neo
+cd ~ams/allsky6-install/
+#FILE=neo
+#FILE=~ams/allsky6-install/neo
 if [ -f "$FILE" ]; then
     echo "$FILE exist"
 else
@@ -50,24 +50,20 @@ else
 fi
 
 
-cd ~/allsky6-install
-FILE=~/allsky6-install/opencv
+cd ~ams/allsky6-install
+FILE=~ams/allsky6-install/opencv-3.4.11/
 if [ -f "$FILE" ]; then
     echo "$FILE exist"
 else
     echo "$FILE does not exist"
-    wget -O opencv.zip https://github.com/Itseez/opencv/archive/3.1.0.zip
+    wget -O opencv.zip https://github.com/opencv/opencv/archive/3.4.11.zip
     unzip opencv.zip
-    wget -O opencv_contrib.zip https://github.com/Itseez/opencv_contrib/archive/3.1.0.zip
-    wget -O opencv.zip https://github.com/Itseez/opencv/archive/3.4.9.zip
-    unzip opencv.zip
-    wget -O opencv_contrib.zip https://github.com/Itseez/opencv_contrib/archive/3.4.9.zip
+    wget -O opencv_contrib.zip https://github.com/Itseez/opencv_contrib/archive/3.4.11.zip
     unzip opencv_contrib.zip
 fi
 
 
-cd ~/opencv/
-cd ~/allsky6-install/opencv/
+cd ~ams/allsky6-install/opencv-3.4.11/
 mkdir build
 cd build
 make clean
