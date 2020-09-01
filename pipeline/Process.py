@@ -11,7 +11,7 @@ from lib.PipeManager import mln_report, mln_best, best_of , copy_super_stacks, s
 from lib.PipeFiles import get_pending_files
 from lib.PipeUtil import convert_filename_to_date_cam, day_or_night , load_json_file, save_json_file, cfe
 from lib.PipeVideo import scan_stack_file, make_preview_videos, load_frames_simple, ffmpeg_cat 
-from lib.PipeDetect import detect_in_vals , obj_report, trim_events, detect_all, get_trim_num, trim_min_file, detect_meteor_in_clip, analyze_object
+from lib.PipeDetect import detect_in_vals , obj_report, trim_events, detect_all, get_trim_num, trim_min_file, detect_meteor_in_clip, analyze_object, refine_meteor, refine_all_meteors
 from lib.PipeSync import sync_day 
 from lib.PipeAutoCal import autocal , solve_field, cal_all, draw_star_image, freecal_copy, apply_calib, index_failed, deep_calib, blind_solve_meteors, guess_cal
 from lib.PipeReport import autocal_report, detect_report
@@ -279,4 +279,8 @@ if __name__ == "__main__":
       make_preview_meteors(sys.argv[2],json_conf )
    if cmd == "sync_previews":
       sync_preview_meteors(sys.argv[2],json_conf )
+   if cmd == "refine":
+      refine_meteor(sys.argv[2],json_conf )
+   if cmd == "refine_all":
+      refine_all_meteors(sys.argv[2],json_conf )
    
