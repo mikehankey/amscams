@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 
 from lib.PipeUtil import check_running, load_json_file
-
+import os
 import time
 from datetime import datetime
 SNAP_DIR = "/mnt/ams2/SNAPS/"
@@ -40,9 +40,9 @@ def snap_runner():
             date_str = datetime.now().strftime("%Y_%m_%d_%H_%M_%S_000_")
             outfile = SNAP_DIR + date_str + cam + ".png"
             url = cams[cam]
-            cmd = "/usr/bin/ffmpeg -y -i " + url + " -f image2 -updatefirst 1 " + outfile + " >/dev/null 2>&1 &"
+            cmd = "/usr/bin/ffmpeg -y -i '" + url + "' -vframes 1 " + outfile + " >/dev/null 2>&1 &"
             print(cmd)
-            #os.system(cmd)
+            os.system(cmd)
       print("Cur sec:", sec, "Sleeping for ", sleep_time)
       time.sleep(sleep_time)
 
