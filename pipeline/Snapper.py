@@ -43,6 +43,7 @@ def snap_runner():
             cmd = "/usr/bin/ffmpeg -y -i '" + url + "' -vframes 1 " + outfile + " >/dev/null 2>&1 &"
             print(cmd)
             os.system(cmd)
+         time.sleep(20)
       print("Cur sec:", sec, "Sleeping for ", sleep_time)
       time.sleep(sleep_time)
 
