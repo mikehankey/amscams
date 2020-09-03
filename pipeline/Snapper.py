@@ -1,5 +1,12 @@
 #!/usr/bin/python3
+"""
+# CRONS
+0 * * * * cd /home/ams/amscams/pipeline/; ./Snapper.py > /dev/null 2>&1
+5 0 * * * cd /home/ams/amscams/pipeline/; ./Snapper.py tlm yest yest> /dev/null 2>&1
+20 */2 * * * cd /home/ams/amscams/pipeline/; ./Snapper.py pd > /dev/null 2>&1
 
+
+"""
 import cv2
 import numpy as np
 from lib.DEFAULTS import *
@@ -8,10 +15,31 @@ from lib.PipeUtil import check_running, load_json_file, cfe, save_json_file
 import os
 import time
 from datetime import datetime
+from datetime import date
+from datetime import timedelta
 SNAP_DIR = "/mnt/ams2/SNAPS/"
 import glob
 # script for grabbing snaps every 30 seconds
 json_conf = load_json_file("../conf/as6.json")
+
+def purge_files():
+   files = glob.glob(SNAP_DIR + "*")
+   for file in files:
+      if "comp" in file:
+         cmd = "rm " + file
+         print(cmd)
+         os.system(cmd)
+      else:
+         fn = file.split("/")[-1]
+         fnd = fn[0:13]
+         dir_date = datetime.strptime(fnd , "%Y_%m_%d_%H")
+         elp = dir_date - datetime.now()
+         days_old = abs(elp.total_seconds()) / 86400
+         if days_old > 1.5:
+            print("DAYS OLD:", days_old)
+            cmd = "rm " + file
+            print(cmd)
+            os.system(cmd)
 
 def images_to_video(wild, cam, outfile, type="jpg"):
    if cam is not None:
@@ -26,6 +54,8 @@ def images_to_video(wild, cam, outfile, type="jpg"):
 
 
 def multi_cam_tl(date, outfile):
+   print("DATE:", date)
+   print("OUTFILE:", outfile)
    mc_layout = {}
    lc = 1
    for cam_id in MULTI_CAM_LAYOUT:
@@ -37,6 +67,7 @@ def multi_cam_tl(date, outfile):
    tl_dir = "/mnt/ams2/SNAPS/"
    all_files = {}
    files = glob.glob(tl_dir + date + "*.png")
+   print("GLOB:", tl_dir + date + "*.png")
    for file in sorted(files):
       if "trim" in file or "comp" in file:
 
@@ -219,4 +250,11 @@ else:
    if sys.argv[1] == 'tlm':
       date = sys.argv[2]
       outfile = sys.argv[3]
+      if date == "yest":
+         today = datetime.today() 
+         yest = today - timedelta(days=1)
+         date = str(yest)[0:10].replace("-", "_")
+         outfile = "/mnt/ams2/SNAP_TL/" + date + ".mp4"
       multi_cam_tl(date, outfile)
+   if sys.argv[1] == 'pd':
+      purge_files()
