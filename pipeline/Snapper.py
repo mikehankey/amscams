@@ -13,15 +13,12 @@ import glob
 # script for grabbing snaps every 30 seconds
 json_conf = load_json_file("../conf/as6.json")
 
-def images_to_video(wild, cam, outfile):
-   print("WILD:", wild)
-   print("CAM:", cam)
-   print("OUT:", outfile)
+def images_to_video(wild, cam, outfile, type="jpg"):
    if cam is not None:
-      wild_str = wild + "*" + cam + ".png" 
+      wild_str = wild + "*" + cam + "." + type 
       cmd = "/usr/bin/ffmpeg -framerate 25 -pattern_type glob -i '" + wild_str + "' -c:v libx264 -pix_fmt yuv420p -y " + outfile + " >/dev/null 2>&1"
    else:
-      wild_str = wild + "*.png" 
+      wild_str = wild + "." + type
       cmd = "/usr/bin/ffmpeg -framerate 25 -pattern_type glob -i '" + wild_str + "' -c:v libx264 -pix_fmt yuv420p -y " + outfile + " >/dev/null 2>&1"
    print(cmd)
    os.system(cmd)
@@ -54,7 +51,6 @@ def multi_cam_tl(date, outfile):
          all_files[key][cam] = fn
 
 
-   print("VIDS:", len(all_files))
    #MULTI_CAM_LAYOUT
    #5 1 2
    #3 6 4
@@ -66,7 +62,6 @@ def multi_cam_tl(date, outfile):
          cam = fn[24:30]
          pos = str(mc_layout[cam])
          if key not in final_frames:
-            print("TC:", tc)
             if tc == 7:
                final_frames[key] = { "1": "", "2": "", "3": "", "4": "", "5": "", "6": "", "7": ""}
                final_frames[key][pos] = fn
@@ -80,15 +75,13 @@ def multi_cam_tl(date, outfile):
    mc = 0
    fc = 1
    for min_key in final_frames:
-      print("MC/FC", mc, fc)
       outfile = tl_dir + "comp_" + min_key + ".jpg"
       if True:
          make_multi_image_comp(min_key, final_frames[min_key], str(fc))
       else:
          print("skip.", min_key)
-      if mc % 10 == 0:
+      if mc % 600 == 0:
          fc += 1
-         print("NEXT FC", mc, fc)
       if fc > tc:
          fc = 1
       mc += 1
@@ -153,11 +146,8 @@ def make_multi_image_comp(min_key, data,featured=0):
       imgf =  tl_dir + data[key]
       if cfe(imgf) == 1:
          img = cv2.imread(imgf)
-         print(imgf, y1,y2,x1,x2)
          img_sm = cv2.resize(img, (w, h))
-         print(img_sm.shape)
       else:
-         print("NO FILE:", imgf)
          img_sm = np.zeros((h,w,3),dtype=np.uint8)
       #except:
       #try:
