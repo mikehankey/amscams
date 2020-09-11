@@ -73,7 +73,7 @@ def compute_intensity(x,y,w,h,frame, bg_frame):
 
    return(val,cx1+mx,cy1+my, cnt)
 
-def day_or_night(capture_date, json_conf):
+def day_or_night(capture_date, json_conf,extra=0):
 
    device_lat = json_conf['site']['device_lat']
    device_lng = json_conf['site']['device_lng']
@@ -97,7 +97,10 @@ def day_or_night(capture_date, json_conf):
       sun_status = "night"
    else:
       sun_status = "day"
-   return(sun_status)
+   if extra == 0:
+      return(sun_status)
+   else:
+      return(sun_status,sun_az,sun_alt)
 
 def convert_filename_to_date_cam_old(file):
    el = file.split("/")

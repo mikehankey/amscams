@@ -67,7 +67,6 @@ def make_roi_image(frame, thresh_frame, x1,y1,x2,y2):
 
 
 def get_leading_cnt(dom_dir, x_dir, y_dir, cnt_x, cnt_y, cnt_w, cnt_h):
-   print("DOM DIR:", dom_dir)
    if dom_dir == 'x':
       if x_dir == 'left_to_right':
          # we want the far right side of original cnt x+w
@@ -83,10 +82,8 @@ def get_leading_cnt(dom_dir, x_dir, y_dir, cnt_x, cnt_y, cnt_w, cnt_h):
 
       if y_dir == 'up_to_down':
          #pick bottom side
-         print(y_dir, "CNT W H:", cnt_w, cnt_h)
          ny = int(cnt_y) + int(cnt_h)
          if cnt_h > 4:
-            print(y_dir, "Bigger CNT W H:", cnt_w, cnt_h)
             ny -= int(cnt_h/4)
       elif y_dir == 'down_to_up':
          ny = int(cnt_h) 
@@ -140,27 +137,23 @@ def get_roi_cnts(meteor, image, median_image, ox,oy, dom_dir, x_dir, y_dir):
    h = 5
    for x,y,w,h in cnts:
       #lcx, lcy = get_leading_cnt(dom_dir, x_dir, y_dir, x, y, w, h)
-      print("CNTS:", x,y,w,h)
       shift_x = x - 50  
       shift_y = y - 50
       #cv2.circle(show_cnt_img,(lcx,lcy), 10, (255,255,255), 1)
-      cv2.rectangle(show_cnt_img, (x,y), (x+w, y+h), (100,0,0), 1, cv2.LINE_AA)
+      #cv2.rectangle(show_cnt_img, (x,y), (x+w, y+h), (100,0,0), 1, cv2.LINE_AA)
       #cv2.rectangle(show_cnt_img, (lcx-4,lcy-4), (lcx+4, lcx+4), (100,0,0), 1, cv2.LINE_AA)
 
    if len(cnts) > 0 :
-      print("SHIFT X / Y:", shift_x, shift_y)
 
       off_frame = check_off_frame(image, rx1+shift_x,ry1+shift_y,rx2+shift_x,ry2+shift_y)
       if off_frame == 0:
          new_cnt_img = thresh_img[ry1+shift_y:ry2+shift_y,rx1+shift_x:rx2+shift_x]
 
-         big_cnt = cv2.resize(show_cnt_img, (300, 300))
-         big_new_cnt = cv2.resize(new_cnt_img, (300, 300))
          # THIS SHOULD BE THE REFINED x,y inside the "crop" frame.
          new_cnt = [ ox+shift_x, oy+shift_y, w, h]
-         cv2.imshow('GET ROI CNTS', big_cnt)
-         cv2.imshow('NEW CENTERED CNTS', big_new_cnt)
-         cv2.waitKey(30)
+         #big_cnt = cv2.resize(show_cnt_img, (300, 300))
+         #big_new_cnt = cv2.resize(new_cnt_img, (300, 300))
+         #cv2.waitKey(30)
          return(new_cnt)
 
    return(None)
@@ -169,12 +162,9 @@ def get_roi_cnts(meteor, image, median_image, ox,oy, dom_dir, x_dir, y_dir):
 def check_off_frame(frame, x1,y1,x2,y2):
    h,w = frame.shape[:2]
    if x1 < 0 or y1 < 0 or x2 < 0 or y2 < 0:
-      print("FAIL CHECK FRAME:", x1,y1,x2,y2)
       return(1)
    if x1 > w or y1 > h or x2 > w or y2 > h:
-      print("FAIL CHECK FRAME:", x1,y1,x2,y2)
       return(1)
-   print("CHECK FRAME PASS:", x1,y1,x2,y2)
    return(0)
 
 def get_dist_info(crop_frames, ofns, oxs, oys):
@@ -264,7 +254,6 @@ def refine_meteor_points(meteor, crop_frames, json_conf):
          oy = oys[c]
          xd = ox - ex
          yd = oy - ey
-         print("have frame est diff: ",i, xd, yd)
          if xd > 200:
             #nxs.append(ex)
             nxs.append(ox)
@@ -278,71 +267,52 @@ def refine_meteor_points(meteor, crop_frames, json_conf):
          c += 1
          ic += 1
       else:
-         print("missing frame.", i)
          nxs.append(ex)
          nys.append(ey)
          ic += 1
       nfns.append(i)
       
 
-   print("OX:", oxs)
-   print("OY:", oys)
-   print("NFS:", nfns)
-   print("EX:", exs)
-   print("EY:", eys)
-   print("NX:", nxs)
-   print("NY:", nys)
-
-
    # now step through each frame and look for a cnt near the point.  
    # if you find one, update the shift_x, shift_y 
    new_cnts = []
+   past_cnts = []
    c = 0
    for i in range(nfns[0], nfns[-1]+1):
-      print("MIKE:", i)
       frame = crop_frames[i]
      
-      (show_frame, sub_frame, show_subframe, thresh_img, avg_val, max_val, thresh_val) = make_subframe(frame, median_frame)
+      (show_frame, sub_frame, show_subframe, thresh_img, avg_val, max_val, thresh_val) = make_subframe(frame, median_frame,2,past_cnts,dom_dir,x_dir,y_dir)
       off_frame = check_off_frame(frame, nxs[c]-cx1, nys[c]-cy1, 10, 10)
       if off_frame == 1:
          
          new_cnts.append(None)
          continue
       cnts = get_roi_cnts(meteor, frame, median_frame, nxs[c]-cx1, nys[c]-cy1, dom_dir, x_dir, y_dir)
-      print("NEW CNTS:", cnts)
       new_cnts.append(cnts)
       if cnts is not None:
-         print("UPDATED XYWH:", cnts) 
-         print("OLD NXYs:", nxs[c], nys[c]) 
          # update the final x,y for the 'leading edge' and blob center 
          # BLOB CENTER X,Y
          nxs[c] = cnts[0] + int(cnts[2]/2)
          nys[c] = cnts[1] + int(cnts[3]/2)
          # LEADING X,Y 
          lcx, lcy = get_leading_cnt(dom_dir, x_dir, y_dir, cnts[0], cnts[1], cnts[2], cnts[3])
+         past_cnts.append(cnts)
       else:
          lcy = None
          lcx = None
-      if lcy is not None:
-         cv2.circle(frame,(lcx, lcy), 2, (0,0,255), 1)
-      cv2.circle(frame,(nxs[c], nys[c]), 10, (255,255,255), 1)
-      cv2.imshow('final-check-new_cnts', frame)
-      cv2.waitKey(30)
+         past_cnts.append((nxs[c],nys[c],10,10))
+      #if lcy is not None:
+      #   cv2.circle(frame,(lcx, lcy), 2, (0,0,255), 1)
+      #cv2.circle(frame,(nxs[c], nys[c]), 10, (255,255,255), 1)
+      #cv2.imshow('final-check-new_cnts', frame)
+      #cv2.waitKey(30)
       c += 1
 
 
-   print(nfns)
-   print(nxs)
-   print(nys)
-   print(new_cnts)
    status, nfns, nxs, nys, new_cnts = check_last_frame(nfns, nxs, nys, new_cnts)
    status, nfns, nxs, nys, new_cnts = check_last_frame(nfns, nxs, nys, new_cnts)
    status, nfns, nxs, nys, new_cnts = check_last_frame(nfns, nxs, nys, new_cnts)
    status, nfns, nxs, nys, new_cnts = check_last_frame(nfns, nxs, nys, new_cnts)
-   print(nfns)
-   print(nxs)
-   print(nys)
-   print(new_cnts)
 
    # We should be almost done here just check to see how it looks and apply the leading x,y area?
    c = 0
@@ -359,7 +329,6 @@ def refine_meteor_points(meteor, crop_frames, json_conf):
          #cy = y - (sy -50)
          cx = x
          cy = y
-         print("SHIFT XY:", sx-50,sy-50)
       else:
          cx = x
          cy = y
@@ -368,23 +337,21 @@ def refine_meteor_points(meteor, crop_frames, json_conf):
       leading_xs.append(cx)
       leading_ys.append(cy)
       c += 1
-      cv2.rectangle(show_frame, (cx-2, cy-2), (cx+2, cy+2), (255,0,0), 1, cv2.LINE_AA) 
-      cv2.imshow('final final', show_frame)
-      cv2.waitKey(30)
+      #cv2.rectangle(show_frame, (cx-2, cy-2), (cx+2, cy+2), (255,0,0), 1, cv2.LINE_AA) 
+      #cv2.imshow('final final', show_frame)
+      #cv2.waitKey(30)
    return(nfns, nxs,nys,new_cnts)
 
 
 def check_last_frame(fns, xs, ys, new_cnts):
    lf = len(fns) - 1
    if new_cnts[lf] is None:
-      print("LAST FRAME IS BAD")
       fns.pop(lf)
       xs.pop(lf)
       ys.pop(lf)
       new_cnts.pop(lf)
       status = 0
    else:
-      print("LAST FRAME IS GOOD!")
       status = 1
    return(status, fns, xs, ys, new_cnts)
 
@@ -393,109 +360,83 @@ def block_past_cnts(img, cnts):
       img[y:y+h,x:x+w] = 0
    return(img)
 
-def refine_meteor_points_old(meteor, crop_frames, json_conf):
-   print("REFINE.")
-   lead_xs = []
-   lead_ys = []
-   oc = 0
-   fn = 0
-   last_roi_big_img = None
-   last_new_roi_big_img = None
 
-   # now make a median frame for subtracting. 
-   median_frame = cv2.convertScaleAbs(np.median(np.array(crop_frames), axis=0))
-   median_frame = cv2.GaussianBlur(median_frame, (7, 7), 0)
-   _, threshold = cv2.threshold(median_frame.copy(), 50, 255, cv2.THRESH_BINARY)
-   mask_cnts= get_contours_in_image(threshold)
-
-   (dom_dir, quad, ideal_pos, ideal_roi_big_img) = get_movement_info(meteor, 10, 10)
-
-   for frame in crop_frames:
-      (show_frame, sub_frame, show_subframe, thresh_img, avg_val, max_val, thresh_val) = make_subframe(frame, median_frame)
-      cnts= get_contours_in_image(thresh_img)
-      for tx,ty,th,tw in cnts:
-         cv2.rectangle(show_frame, (tx, ty), (tx+tw, ty+th), (255,0,0), 1, cv2.LINE_AA)
-      #cv2.imshow('SHOW FRAME ', show_frame)
-      #cv2.waitKey(90)
-      #cv2.imshow('THRESH IMG', thresh_img)
-      #cv2.waitKey(90)
-
-      if len(cnts) >= 1:
-
-
-         cnts,dom_dir,x_dir,y_dir = get_best_cnt(cnts, meteor)
-         print(cnts)
- 
-         cnx, cny, cnw, cnh = cnts[0]
-         center_x = cnx + int(cnw/2)
-         center_y = cny + int(cnh/2)
-         if frame.shape[0] == 180:
-            roi_x1,roi_y1,roi_x2,roi_y2 = bound_cnt(center_x, center_y,frame.shape[1],frame.shape[0], 10)
-         else:
-            roi_x1,roi_y1,roi_x2,roi_y2 = bound_cnt(center_x, center_y,frame.shape[1],frame.shape[0], 50)
-         print("CNT W/H:", cnw, cnh)
-        
-
-         marked_frame, roi_img,roi_big_img, roi_big_sub_img, roi_x_scale, roi_y_scale = make_roi_image(frame, thresh_img, roi_x1,roi_y1,roi_x2,roi_y2)
-         (dom_dir, quad, ideal_pos, ideal_roi_big_img) = get_movement_info(meteor, int(cnw*roi_x_scale), int(cnh*roi_y_scale))
-
-         aroi_x1, aroi_y1, aroi_x2, aroi_y2, shift_x, shift_y = align_images(thresh_img, ideal_roi_big_img, roi_x1,roi_y1,roi_x2,roi_y2)
-         #leading_x = int((aroi_x1 + aroi_x2) / 2)
-         #leading_y = int((aroi_y1 + aroi_y2) / 2)
-
-         leading_x = center_x + shift_x
-         leading_y = center_y + shift_y
-         lead_xs.append(leading_x)
-         lead_ys.append(leading_y)
-         aligned_marked_frame, aligned_roi_img,aligned_roi_big_img, aligned_roi_big_sub_img, roi_x_scale, roi_y_scale = make_roi_image(frame, thresh_img, aroi_x1,aroi_y1,aroi_x2,aroi_y2)
-
-         cv2.rectangle(marked_frame, (leading_x-1, leading_y-1), (leading_x+1, leading_y+1), (0,0,255), 1, cv2.LINE_AA)
-
-         show_roi_big_img = roi_big_img.copy()
-         show_roi_big_sub_img = roi_big_sub_img.copy()
-
-         print("ROI:", roi_x1, roi_y1, roi_x2, roi_y2)
-         cv2.rectangle(marked_frame, (roi_x1, roi_y1), (roi_x2, roi_y2), (255,0,0), 1, cv2.LINE_AA)
-         #cv2.rectangle(show_roi_big_img, (ix1, iy1), (ix2, iy2), (0,0,255), 1, cv2.LINE_AA)
-
-         cv2.line(show_roi_big_img, (0,150), (int(300),int(150)), (100,100,100), 1)
-         cv2.line(show_roi_big_img, (150,0), (int(150),int(300)), (100,100,100), 1)
-
-         cv2.line(show_roi_big_sub_img, (0,150), (int(300),int(150)), (100,100,100), 1)
-         cv2.line(show_roi_big_sub_img, (150,0), (int(150),int(300)), (100,100,100), 1)
-
-         cv2.line(ideal_roi_big_img, (0,150), (int(300),int(150)), (100,100,100), 1)
-         cv2.line(ideal_roi_big_img, (150,0), (int(150),int(300)), (100,100,100), 1)
-
-         cv2.line(aligned_roi_big_img, (0,150), (int(300),int(150)), (100,100,100), 1)
-         cv2.line(aligned_roi_big_img, (150,0), (int(150),int(300)), (100,100,100), 1)
-
-         #cv2.imshow('Orig ROI Image', show_roi_big_img)
-         #cv2.waitKey(10)
-         #cv2.imshow('Orig ROI Sub Frame', show_roi_big_sub_img)
-         #cv2.waitKey(10)
-         #cv2.imshow('Crop Image', marked_frame)
-         #cv2.waitKey(10)
-         #cv2.imshow('Crop Image CNT', show_frame)
-         #cv2.waitKey(10)
-         #cv2.imshow('Ideal ROI Position', ideal_roi_big_img)
-         #cv2.waitKey(10)
-         #cv2.imshow('Aligned ROI Image', aligned_roi_big_img)
-         #cv2.waitKey(30)
-         #cv2.imshow('Crop Frame', marked_frame)
-         #cv2.waitKey(30)
-   return(lead_xs, lead_ys)
-
-def make_subframe(frame, median_frame, thresh_div=2):
+def make_subframe(frame, median_frame, thresh_div=2, past_cnts=None,dom_dir=None,x_dir=None,y_dir=None):
    show_frame = frame.copy()
    show_frame = cv2.cvtColor(show_frame,cv2.COLOR_GRAY2BGR)
    subframe = cv2.subtract(frame, median_frame)
+   print("DOM:", dom_dir, x_dir, y_dir)
+   print("PAST CNT:", past_cnts)
+   if past_cnts is not None:
+      for cnt in past_cnts:
+         if cnt is not None:
+            x,y,w,h = cnt
+            if dom_dir is None:
+               subframe[y:y+h,x:x+w] = 0
+            else:
+               if dom_dir == "x":
+                  if x_dir == "right_to_left":
+                     subframe[0:subframe.shape[0],x:subframe.shape[1]] = 0
+                  else:
+                     print("XY CNT:", x,y,w,h)
+                     subframe[y:y+h,0:x] = 0
+   cv2.imshow("SUB", subframe)
+   cv2.waitKey(30)
+
    avg_val = np.mean(subframe)
    min_val, max_val, min_loc, (mx,my)= cv2.minMaxLoc(frame)
    thresh = max_val - int(max_val / thresh_div)
+   thresh = find_best_thresh(subframe, max_val)
    _, threshold = cv2.threshold(subframe.copy(), thresh, 255, cv2.THRESH_BINARY)
+
+   cnts = get_contours_in_image(threshold)
+   print("LEN CNTS:", len(cnts))
+   if len(cnts) == 0:
+      thresh = thresh - 10
+      _, threshold = cv2.threshold(subframe.copy(), thresh, 255, cv2.THRESH_BINARY)
+      cnts = get_contours_in_image(threshold)
+      print("NEW LEN CNTS:", len(cnts))
+   if len(cnts) > 1:
+      thresh = thresh + 10
+      _, threshold = cv2.threshold(subframe.copy(), thresh, 255, cv2.THRESH_BINARY)
+      cnts = get_contours_in_image(threshold)
+      print("NEW LEN CNTS:", len(cnts))
+
+
    show_subframe = cv2.cvtColor(subframe,cv2.COLOR_GRAY2BGR)
+
    return(show_frame, subframe, show_subframe, threshold, avg_val, max_val, threshold)
+
+def find_best_thresh(subframe, thresh):
+   tvals = []
+   tvals2 = []
+   last_cnts = None
+   # starting at max val lower thresh until there is more than 1 cnt, the step before this is the ideal thresh
+   for i in range(0, 50):
+      thresh = thresh - 5
+      _, threshold = cv2.threshold(subframe.copy(), thresh, 255, cv2.THRESH_BINARY)
+      cnts = get_contours_in_image(threshold)
+      last_thresh = thresh
+      last_cnts = len(cnts)
+      if len(cnts) <= 1:
+         tvals.append((thresh,len(cnts)))
+      elif len(cnts) == 2:
+         tvals2.append((thresh,len(cnts)))
+      #print("THRESH:", thresh, last_thresh, len(cnts), last_cnts)
+      if thresh < 5:
+         break
+   if len(tvals) > 0:
+      temp = sorted(tvals, key=lambda x: (x[0]), reverse=False)
+   elif len(tvals2) > 0:
+      temp = sorted(tvals2, key=lambda x: (x[0]), reverse=False)
+   else:
+      # NO BEST THRESH
+      return(20)
+
+   best_thresh = temp[0][0]
+   print("BEST THRESH!", best_thresh)
+   return(best_thresh)
+
 
 def refine_all_meteors(day, json_conf):
    mfs = glob.glob("/mnt/ams2/meteors/" + day + "/*.json")
@@ -531,7 +472,6 @@ def refine_meteor(meteor_file, json_conf):
    if True:
       crop_frames = []
       for hd_frame in hd_frames:
-         print("HD:", hd_frame.shape)
          cf = hd_frame[cy1:cy2,cx1:cx2]
          crop_frames.append(cf)
       SHOW = 0
@@ -549,11 +489,6 @@ def refine_meteor(meteor_file, json_conf):
       print("NO METEORS? MAYBE CROP LOCATION WAS BAD. TRY REFINDING IT. ")
       sd_frames,sd_color_frames,sd_subframes,sum_vals,max_vals,pos_vals = load_frames_fast(sd_trim, json_conf, 0, 1, [], 1,[])
       sd_objects, frames = detect_meteor_in_clip(sd_trim, sd_frames, 0, 0, 0, 0)
-      print("FRAMES:", len(sd_color_frames))
-      for frame in sd_frames:
-         cv2.imshow('pepe', frame)
-         cv2.waitKey(30)    
-      print("SD_OBJ:", sd_objects, sd_trim)
       return(None, None, None, None) 
       for id in hd_objects:
          print(hd_objects[id]['ofns'])
@@ -577,6 +512,8 @@ def refine_meteor(meteor_file, json_conf):
       print("OYS:", meteor['oys'][-1] - cy1)
 
       nfns, nxs, nys, new_cnts = refine_meteor_points(meteor, crop_frames, json_conf)
+
+
    print("REFINED METEOR:")
    print("NFNS:", nfns)
    print("NXS:", nxs)
@@ -585,21 +522,92 @@ def refine_meteor(meteor_file, json_conf):
    meteor['final'] = {}
    meteor['final']['fns'] = nfns
    for i in range(0, len(nfns)):
-      nxs[i] += cx1
-      nys[i] += cy1
-      new_cnts[i][0] += cx1
-      new_cnts[i][1] += cy1
+      if new_cnts[i] is not None:
+         new_cnts[i][0] + cx1
+         new_cnts[i][1] + cy1
+         nxs[i] += cx1
+         nys[i] += cy1
    meteor['final']['xs'] = nxs
    meteor['final']['ys'] = nys
    meteor['final']['cnts'] = new_cnts
+
+   dist_x, dist_y, med_x, med_y = get_dist_info(crop_frames, nfns, nxs, nys)
+   print("XD:", med_x, dist_x)
+   print("YD:", med_y, dist_y)
+
+   (dom_dir, quad, ideal_pos, ideal_roi_big_img) = get_movement_info(meteor, 10, 10)
+   dom_dir, x_dir, y_dir = get_move_info(meteor, 10, 10)
+
+   past_cnts = []
+   median_frame = cv2.convertScaleAbs(np.median(np.array(hd_frames), axis=0))
+   roi_size = 25 
+   for i in range(0, len(nfns)):
+      fn = nfns[i]
+      frame= hd_frames[fn]
+      x = nxs[i]
+      y = nys[i]
+      if new_cnts[i] is not None:
+         cnt_w = new_cnts[i][2]
+         cnt_h = new_cnts[i][3]
+      else:
+         cnt_w = 10
+         cnt_h = 10
+
+
+      rx1,ry1,rx2,ry2 = bound_cnt(x,y,frame.shape[1],frame.shape[0], roi_size)
+      r_w = rx2 - rx1
+      r_h = ry2 - ry1
+      scale_x = 300 / (rx2-rx1)
+      scale_y = 300 / (ry2-ry1)
+      if cnt_h > cnt_w:
+         line_w = int(int(cnt_w * scale_x) )
+      else:
+         line_w = int(int(cnt_h * scale_y) )
+      adj_x = int(int(cnt_w/ 4) * scale_x)
+      adj_y = int(int(cnt_h/ 4) * scale_y)
+
+      (dom_dir, quad, ideal_pos, ideal_roi_big_img) = get_movement_info(meteor, int(cnt_w*scale_x), int(cnt_h*scale_y)) 
+      # line should change based on x/y dir??
+      adj_y = 0
+      adj_x = 0
+      if x_dir == 'left_to_right':
+         # add the adj
+         line_start_x = 150 - int(adj_x)
+      else:
+         line_start_x = 150 + int(adj_x)
+      if y_dir == 'up_to_down':
+         # add the adj
+         line_start_y = 150 - int(adj_y)
+      else:
+         line_start_y = 150 + int(adj_y)
+   
+      line_w = 5
+      med_multi = get_med_multi(line_start_x, line_start_y, med_x,med_y, max(cnt_w, cnt_h))
+      
+      cv2.line(ideal_roi_big_img, (line_start_x,line_start_y), (line_start_x-int(med_x*3),line_start_y-int(med_y*3)), (255,255,255), line_w)
+      (show_frame, sub_frame, show_subframe, thresh_img, avg_val, max_val, thresh_val) = make_subframe(frame, median_frame,2,past_cnts,dom_dir,x_dir,y_dir)
+      aroi_x1, aroi_y1, aroi_x2, aroi_y2, shift_x, shift_y = align_images(thresh_img, ideal_roi_big_img, rx1,ry1,rx2,ry2,cnt_w,cnt_h,dom_dir,x_dir,y_dir)
+      if -10 <= shift_x < 10 and -10 <= shift_y <= 10:
+         print("ADJUST SHIFT", shift_x, shift_y)
+         nxs[i] = nxs[i] + shift_x
+         nys[i] = nys[i] + shift_y
+      if new_cnts[i] is not None:
+         past_cnts.append((new_cnts[i][0]+cx1,new_cnts[i][1]+cy1,new_cnts[i][2],new_cnts[i][3]))
+      else:
+         past_cnts.append((nxs[i],nys[i],10,10))
+   
+   meteor['final']['xs'] = nxs
+   meteor['final']['ys'] = nys
+
    make_roi_comp_img(hd_color_frames, meteor)
 
+def get_med_multi(line_start_x, line_start_y, med_x,med_y, max_size):
+   print("GET MED MULTI:")
 
 def make_roi_comp_img(frames, meteor):
 
    stack_img = stack_frames(frames)
-   cv2.imshow('ROI IMGS', stack_img)
-   cv2.waitKey(0)
+   stack_img.setflags(write=1) 
    fns = meteor['final']['fns']
    xs = meteor['final']['xs']
    ys = meteor['final']['ys']
@@ -608,38 +616,52 @@ def make_roi_comp_img(frames, meteor):
    # determine ROI big size based on number of frames
    tf = len(fns)
    roi_size = 25 
+   roi_big_size = 100 
+   i_per_row = int(1920 / roi_big_size)
+   i_per_row = i_per_row - 1
+   rows = int(tf / i_per_row)
+   rows += 1
+   comp_h = rows * roi_big_size
    rimgs = []
-   roi_row = np.zeros((100,1920,3),dtype=np.uint8)
+   roi_row = np.zeros((comp_h,1920,3),dtype=np.uint8)
+   rc = 0
+   ic = 0
    for i in range(fns[0], fns[-1]+1):
       frame = frames[i]
-      print(i)
+      y_start = rc * roi_big_size
       fn = fns[dc]
       x = xs[dc]
       y = ys[dc]
+      stack_img[y,x] = [0,0,255]
       rx1,ry1,rx2,ry2 = bound_cnt(x,y,frame.shape[1],frame.shape[0], roi_size)
       cnt = cnts[dc]
       rimg = frame[ry1:ry2,rx1:rx2]
-      sx = dc * 100
-      ex = (dc * 100) + 100
+      sx = ic * roi_big_size 
+      ex = (ic * roi_big_size) + roi_big_size
 
-      rimg_big = cv2.resize(rimg, (100, 100))
-      roi_scale_x = 100 / rimg.shape[1] 
-      roi_scale_y = 100 / rimg.shape[0] 
-      roi_row[0:100,sx:ex] = rimg_big
+      rimg_big = cv2.resize(rimg, (roi_big_size, roi_big_size))
+      roi_scale_x = roi_big_size / rimg.shape[1] 
+      roi_scale_y = roi_big_size / rimg.shape[0] 
+      print("IMG:", rimg_big.shape)
+      #roi_row[0:100,0:100] = rimg_big
+      cv2.line(rimg_big, (0,50), (100,50), (100,100,100), 1)
+      cv2.line(rimg_big, (50,0), (50,100), (100,100,100), 1)
+      roi_row[y_start:y_start+roi_big_size,sx:ex] = rimg_big
       
 
 
       rimgs.append(rimg_big)
-      cv2.imshow('ROI IMGS', frame)
-      cv2.waitKey(0)
-      cv2.imshow('ROI IMG', rimg_big)
-      cv2.waitKey(0)
-      cv2.imshow('ROI ROW', roi_row)
-      cv2.waitKey(0)
-      dc += 1
-   stack_img.setflags(write=1)
+      if ic >= i_per_row:
+         rc += 1
+         ic = 0
+      else:
+         ic += 1
 
-   stack_img[0:100,0:1920] = roi_row
+      dc += 1
+   fh = rows * roi_big_size
+   fy = 1080 - fh
+   fy2 = 1080
+   stack_img[fy:fy2,0:1920] = roi_row
    cv2.imshow('FINAL STACK', stack_img)
    cv2.waitKey(0)
    
@@ -698,7 +720,10 @@ def old_delete():
       fn += 1
    return(lxs, lys, intensity, max_pxs)
 
-def align_images(full_frame, ideal_roi, rx1,ry1,rx2,ry2):
+def align_images(full_frame, ideal_roi, rx1,ry1,rx2,ry2,orig_w,orig_h,dom_dir,x_dir,y_dir) :
+
+   orig_x = int((rx1 + rx2)/2)
+   orig_y = int((ry1 + ry2)/2)
 
    poly = np.zeros(shape=(2,), dtype=np.float64)
    shift_x = 0
@@ -706,8 +731,8 @@ def align_images(full_frame, ideal_roi, rx1,ry1,rx2,ry2):
 
 
 
-   ideal_roi[0:300,149:151] = 255
-   ideal_roi[149:151,0:300] = 255
+   #ideal_roi[0:300,149:151] = 255
+   #ideal_roi[149:151,0:300] = 255
    axis_reduce = 0
    if axis_reduce == 1:
    
@@ -739,7 +764,6 @@ def align_images(full_frame, ideal_roi, rx1,ry1,rx2,ry2):
             #cv2.imshow('sub', sub)
             #cv2.waitKey(30)
 
-   #print("BEST SHIFT:", best_shift_x, best_shift_y)
 
    #rx1 = rx1 + best_shift_x
    #ry1 = ry1 + best_shift_y
@@ -747,33 +771,45 @@ def align_images(full_frame, ideal_roi, rx1,ry1,rx2,ry2):
    #ry2 = ry2 + best_shift_y
    
    # REDUCE BOTH AXIS
-   res = scipy.optimize.minimize(reduce_align_roi_images, poly, args=(full_frame,ideal_roi,rx1,ry1,rx2,ry2), method='Nelder-Mead')
+   res = scipy.optimize.minimize(reduce_align_roi_images, poly, args=(full_frame,ideal_roi,rx1,ry1,rx2,ry2,orig_x,orig_y,orig_w,orig_h,dom_dir,x_dir,y_dir), method='Nelder-Mead')
    new_poly = res['x']
    shift_x = int(new_poly[0] * ((rx1+1)**2))
    shift_y = int(new_poly[1] * ((ry1+1)**2))
+   print("NEW SHIFT:", shift_x, shift_y)
 
    new_rx1 = rx1+shift_x
    new_ry1 = ry1+shift_y
    new_rx2 = rx2+shift_x
    new_ry2 = ry2+shift_y
 
-   cv2.rectangle(full_frame, (rx1, ry1), (rx2, ry2), (100,100,100), 1, cv2.LINE_AA)
-   cv2.rectangle(full_frame, (new_rx1, new_ry1), (new_rx2, new_ry2), (100,100,255), 1, cv2.LINE_AA)
-   cv2.imshow('pepe', full_frame)
-   cv2.waitKey(30)
+   #cv2.rectangle(full_frame, (rx1, ry1), (rx2, ry2), (100,100,100), 1, cv2.LINE_AA)
+   #cv2.rectangle(full_frame, (new_rx1, new_ry1), (new_rx2, new_ry2), (100,100,255), 1, cv2.LINE_AA)
+   #cv2.imshow('pepe', full_frame)
+   #cv2.waitKey(30)
 
 
-   print("SHIFT X,Y,", shift_x, shift_y)
-   print("ORG ROI,", rx1, ry1, rx2, ry2)
-   print("FINAL NEW ROI,", new_rx1, new_ry1, new_rx2, new_ry2)
 
 
 
    return(new_rx1,new_ry1,new_rx2,new_ry2, shift_x, shift_y)
 
 
+def get_leading_corner(x,y,w,h,dom_dir, x_dir, y_dir):
+   if x_dir == "right_to_left":
+      corner_x = x 
+   elif x_dir == "left_to_right":
+      corner_x = x + w
+   else:
+      corner_x = x + int(w/2)
+   if y_dir == "up_to_down":
+      corner_y = y + h 
+   elif y_dir == "down_to_up":
+      corner_y = y 
+   else:
+      corner_y = y + int(h/2)
+   return(corner_x, corner_y)
 
-def reduce_align_roi_images(poly, full_frame, ideal_roi, rx1,ry1,rx2,ry2):
+def reduce_align_roi_images(poly, full_frame, ideal_roi, rx1,ry1,rx2,ry2, x,y,w,h,dom_dir,x_dir,y_dir):
    #shift image per poly and then re-subtract to minimize alignment 
    show_img = np.zeros((300,900),dtype=np.uint8)
    shift_x = int(poly[0] * ((rx1+1)**2))
@@ -785,7 +821,13 @@ def reduce_align_roi_images(poly, full_frame, ideal_roi, rx1,ry1,rx2,ry2):
 
    mx = int((rx1+shift_x+rx2+shift_x)/2)
    my = int((ry1+shift_y+ry2+shift_y)/2)
-   center_dist_from_center = calc_dist((mx,my),(150,150))
+   corner_x, corner_y = get_leading_corner(x-rx1+shift_x,y-ry1+shift_y,w,h,dom_dir,x_dir,y_dir)
+   center_dist_from_center = calc_dist((mx-rx1,my-ry1),(25,25))
+   corner_dist_from_center = calc_dist((corner_x,corner_y),(25,25))
+
+   #print("CENTER:", mx-rx1, my-ry1, center_dist_from_center)
+   #print("CORNER:", corner_x, corner_y, corner_dist_from_center)
+
    if center_dist_from_center <= 0:
       center_dist_from_center = 1
 
@@ -797,21 +839,21 @@ def reduce_align_roi_images(poly, full_frame, ideal_roi, rx1,ry1,rx2,ry2):
       print("BOUNDS PROB x1", shift_x, shift_y)
       print("SF 1 X/Y", sf_x1, sf_y1)
       sf_x1 = 0
-      exit()
+      #exit()
    if sf_x2 >= full_frame.shape[1]:
-      print("BOUNDS PROB x2")
       sf_x1 = full_frame.shape[0] - (sf_x2 - sf_x1)
       sf_x2 = full_frame.shape[0]
-      exit()
+      print("BOUNDS PROB x2", sf_x1, sf_x2)
+      #exit()
    if sf_y1 <= 0:
       print("BOUNDS PROB y1")
       sf_y1 = 0
-      exit()
+      #exit()
    if sf_y2 >= full_frame.shape[0]:
       print("BOUNDS PROB y2", sf_y2, full_frame.shape)
       sf_y1 = full_frame.shape[0] - (sf_y2 - sf_y1)
       sf_y2 = full_frame.shape[0]
-      exit()
+      #exit()
    #cv2.imshow('pepe', full_frame)
    #cv2.waitKey(30)
  
@@ -824,14 +866,16 @@ def reduce_align_roi_images(poly, full_frame, ideal_roi, rx1,ry1,rx2,ry2):
    dif_val = org_roi_val - new_val
    sub_val = np.sum(sub) 
 
-   cv2.line(new_roi_big, (0,150), (int(300),int(150)), (100,100,100), 1)
-   cv2.line(new_roi_big, (150,0), (int(150),int(300)), (100,100,100), 1)
+   cv2.line(sub, (0,150), (int(300),int(150)), (100,100,100), 1)
+   cv2.line(sub, (150,0), (int(150),int(300)), (100,100,100), 1)
 
    show_img[0:300,0:300] = ideal_roi
    show_img[0:300,300:600] = new_roi_big
    show_img[0:300,600:900] = sub
+   if center_dist_from_center > 20:
+      center_dist_from_center = 999
 
-   score = sub_val 
+   score = sub_val + (center_dist_from_center**2)
    cv2.imshow('pepe', show_img)
    cv2.waitKey(100)
 
@@ -860,7 +904,6 @@ def get_move_info(meteor, cnt_w, cnt_h):
 
    qw = int(cnt_w/3)
    qh = int(cnt_h/3)
-   print("DOM, MX, MY:", dom_dir, x_dir, y_dir)
 
    return(dom_dir, x_dir, y_dir)
 
@@ -887,7 +930,6 @@ def get_movement_info(meteor, cnt_w, cnt_h):
 
    qw = int(cnt_w/3)
    qh = int(cnt_h/3)
-   print("DOM, MX, MY:", dom_dir, x_dir, y_dir) 
    if y_dir is None:
       # The meteor is moving perfectly horizontally
       ideal_y1 = 150 - qh
@@ -922,8 +964,9 @@ def get_movement_info(meteor, cnt_w, cnt_h):
    quad = [x_quad_loc, y_quad_loc]
 
    ideal_img = np.zeros((300,300),dtype=np.uint8)
-   ideal_img[ideal_y1:ideal_y2, ideal_x1:ideal_x2] = 255
-   print(ideal)
+   #ideal_img[ideal_y1:ideal_y2, ideal_x1:ideal_x2] = 255
+   #cv2.imshow("IDEAL", ideal_img)
+   #cv2.waitKey(0)
    return(dom_dir, quad, ideal, ideal_img)
 
 
@@ -1534,7 +1577,6 @@ def find_object(objects, fn, cnt_x, cnt_y, cnt_w, cnt_h, intensity=0, hd=0, sd_m
             dist = calc_obj_dist((cnt_x,cnt_y,cnt_w,cnt_h),(oxs[oi], oys[oi], ows[oi], ohs[oi]))
 
             last_frame_diff = fn - lfn
-            print("ID, DIST, LAST FRAME DIFF", obj, dist, last_frame_diff, obj_dist_thresh)
             if dist < obj_dist_thresh and last_frame_diff < 10:
                found = 1
                found_obj = obj
@@ -2165,7 +2207,6 @@ def detect_meteor_in_clip(trim_clip, frames = None, fn = 0, crop_x = 0, crop_y =
    fn = 0
    for frame in frames:
 
-      print("DET:", fn)
       if len(frame.shape) == 3:
          frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
       if fn == 0:
@@ -2197,8 +2238,8 @@ def detect_meteor_in_clip(trim_clip, frames = None, fn = 0, crop_x = 0, crop_y =
 
       if len(past_cnts) > 0:
          image_diff = msk_fr(past_cnts, image_diff)
-         cv2.imshow("ID", image_diff)
-         cv2.waitKey(30)
+         #cv2.imshow("ID", image_diff)
+         #cv2.waitKey(30)
       cnts,rects = find_contours_in_frame(image_diff, thresh)
       icnts = []
       if len(cnts) < 5 and fn > 0:
@@ -2212,7 +2253,6 @@ def detect_meteor_in_clip(trim_clip, frames = None, fn = 0, crop_x = 0, crop_y =
                cx = int(mx) 
                cy = int(my) 
                cv2.circle(show_frame,(cx+crop_x,cy+crop_y), 10, (255,255,255), 1)
-               print("OBJ:", fn, cx, cy)
                object, objects = find_object(objects, fn,cx+crop_x, cy+crop_y, w, h, intensity, hd, sd_multi, cnt_img)
 
                objects[object]['trim_clip'] = trim_clip
@@ -2247,7 +2287,6 @@ def get_contours_in_image(frame ):
       (cnts, xx) = cnt_res
    for (i,c) in enumerate(cnts):
       x,y,w,h = cv2.boundingRect(cnts[i])
-      print("CNT:", x,y,w,h)
       if w > 1 or h > 1:
          cont.append((x,y,w,h))
    return(cont)
@@ -2258,8 +2297,8 @@ def find_contours_in_frame(frame, thresh=25 ):
    _, threshold = cv2.threshold(frame.copy(), thresh, 255, cv2.THRESH_BINARY)
    thresh_obj = cv2.dilate(threshold.copy(), None , iterations=4)
    threshold = cv2.convertScaleAbs(thresh_obj)
-   cv2.imshow('THRE', threshold)
-   cv2.waitKey(30)
+   #cv2.imshow('THRE', threshold)
+   #cv2.waitKey(30)
    cnt_res = cv2.findContours(threshold.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
    if len(cnt_res) == 3:
       (_, cnts, xx) = cnt_res

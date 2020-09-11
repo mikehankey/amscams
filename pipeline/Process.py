@@ -5,6 +5,7 @@ import sys
 import time
 from PIL import ImageFont, ImageDraw, Image, ImageChops
 
+from lib.PipeWeather import detect_clouds , make_flat, track_clouds
 from lib.PipeImage import quick_video_stack
 from lib.PipeTrans import trans_test 
 from lib.PipeManager import mln_report, mln_best, best_of , copy_super_stacks, super_stacks_to_video, multi_station_meteors
@@ -283,4 +284,18 @@ if __name__ == "__main__":
       refine_meteor(sys.argv[2],json_conf )
    if cmd == "refine_all":
       refine_all_meteors(sys.argv[2],json_conf )
+   if cmd == "clouds":
+      detect_clouds(sys.argv[2],json_conf )
+   if cmd == "make_flat":
+      if len(sys.argv) > 3:
+         day = sys.argv[3]
+      else:
+         day = None
+      make_flat(sys.argv[2],day, json_conf )
+   if cmd == "track_clouds":
+      if len(sys.argv) > 3:
+         day = sys.argv[3]
+      else:
+         day = None
+      track_clouds(sys.argv[2],day, json_conf )
    
