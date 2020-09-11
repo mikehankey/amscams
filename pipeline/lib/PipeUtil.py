@@ -176,6 +176,7 @@ def get_masks(this_cams_id, json_conf, hd = 0):
    return(my_masks)
 
 def convert_filename_to_date_cam(file, ms = 0):
+   print("CONVERT:", file)
    el = file.split("/")
    filename = el[-1]
    filename = filename.replace(".mp4" ,"")

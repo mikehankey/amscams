@@ -17,7 +17,7 @@ from lib.PipeSync import sync_day
 from lib.PipeAutoCal import autocal , solve_field, cal_all, draw_star_image, freecal_copy, apply_calib, index_failed, deep_calib, blind_solve_meteors, guess_cal
 from lib.PipeReport import autocal_report, detect_report
 from lib.PipeLIVE import meteor_min_files, broadcast_live_meteors, broadcast_minutes, meteors_last_night, mln_final, pip_video, mln_sync, super_stacks, meteor_index, fix_missing_images, fflist, resize_video, minify_file, make_preview_meteor, make_preview_meteors, sync_preview_meteors
-from lib.PipeTimeLapse import make_tl_for_cam, video_from_images, six_cam_video, timelapse_all
+from lib.PipeTimeLapse import make_tl_for_cam, video_from_images, six_cam_video, timelapse_all, tn_tl6
 from lib.PipeMeteorDelete import delete_all_meteor_files
 
 
@@ -198,6 +198,8 @@ if __name__ == "__main__":
       video_from_images(sys.argv[2], sys.argv[3], json_conf)
    if cmd == 'scv':
       six_cam_video(sys.argv[2], json_conf)
+   if cmd == 'tntl':
+      tn_tl6(sys.argv[2],json_conf)
 
 
 
