@@ -51,10 +51,11 @@ def make_tl_for_cam(date,cam, json_conf):
    video_from_images(date, cam, json_conf)
 
 def video_from_images(date, wild, json_conf ):
+   TL_DIR = "/mnt/ams2/meteor_archive/" + STATION_ID + "/TL/PICS/"
    tl_dir = TL_DIR + date + "/"
    tl_out = tl_dir + "tl_" + date + "_" + wild + ".mp4"
 
-   iwild = tl_dir + "*" + wild + "*.jpg"
+   iwild = tl_dir + "*" + wild + "*.png"
 
    print(iwild)
    cmd = "/usr/bin/ffmpeg -framerate 25 -pattern_type glob -i '" + iwild + "' -c:v libx264 -pix_fmt yuv420p -y " + tl_out + " >/dev/null 2>&1"
