@@ -259,14 +259,14 @@ def reduce_shift(poly, this_image, last_image,area):
  
    cv2.rectangle(show_img, (int(x1), int(y1)), (int(x2) , int(y2) ), (255, 255, 255), 1)
    cv2.rectangle(show_img, (int(lx1), int(ly1)), (int(lx2) , int(ly2) ), (150, 150, 150), 1)
-   cv2.imshow('reduce full', show_img)
+   #cv2.imshow('reduce full', show_img)
    
-   cv2.imshow('reduce', this_area)
-   cv2.waitKey(0)
-   cv2.imshow('reduce', last_area)
-   cv2.waitKey(0)
-   cv2.imshow('reduce', area_diff)
-   cv2.waitKey(0)
+   #cv2.imshow('reduce', this_area)
+   #cv2.waitKey(0)
+   #cv2.imshow('reduce', last_area)
+   #cv2.waitKey(0)
+   #cv2.imshow('reduce', area_diff)
+   #cv2.waitKey(0)
    area_val = np.sum(area_diff)
    print("VAL:", shift_x, shift_y, area_val)
    return(area_val + ((shift_x**2) + (shift_y**2)))
@@ -333,8 +333,8 @@ def histogram(image):
 
 def gradient(image):
    lap_img = cv2.Laplacian(image,cv2.CV_64F)
-   cv2.imshow("Gradient", lap_img)
-   cv2.waitKey(0)
+   #cv2.imshow("Gradient", lap_img)
+   #cv2.waitKey(0)
 
 def make_flat(cam,day,json_conf):
 
@@ -375,14 +375,14 @@ def make_flat(cam,day,json_conf):
       median_mask = cv2.imread(mask_file)
       median_flat = cv2.imread(flat_file)
 
-   cv2.imshow('MASK', median_mask)
-   cv2.imshow('FLAT', median_flat)
-   cv2.waitKey(0)
+   #cv2.imshow('MASK', median_mask)
+   #cv2.imshow('FLAT', median_flat)
+   #cv2.waitKey(0)
    return(median_mask, median_flat)
 
 
 def track_clouds(cam, day, json_conf):
-   use_snaps = 1
+   use_snaps = 0
    SNAP_DIR = "/mnt/ams2/SNAPS/" 
    if day is None: 
       date = datetime.now().strftime("%Y_%m_%d")
@@ -407,6 +407,7 @@ def track_clouds(cam, day, json_conf):
    print(wild)
 
    if use_snaps == 0:
+      print(wild)
       files = glob.glob(wild)
       night_files = extract_night_images(cam, day)
       for nf in night_files:
@@ -417,7 +418,7 @@ def track_clouds(cam, day, json_conf):
       files = glob.glob(SNAP_DIR + day + "/*" + cam + "*1920x1080.jpg")
 
    #nrfiles = load_nexrad_files(day,files)
-   #exit()
+   exit()
 
 
 
@@ -589,8 +590,8 @@ def track_clouds(cam, day, json_conf):
                   show_img = cv2.addWeighted(show_img, .6, stack_img, .4, 0)
                print("STACK:", stack_file)
                comp_img = composite([show_img, orig_img, image_acc, color_thresh, color_thresh2 , hist_img], ["Mask/Flat Subtracted","Original", "Diff with Previous", "Color Thresh","Color Thresh 2", "Histogram"], text_desc )
-               cv2.imshow("COMP FINAL", comp_img)
-               cv2.waitKey(45)
+               #cv2.imshow("COMP FINAL", comp_img)
+               #cv2.waitKey(45)
                print("WRITE:", comp_img_file)
                cv2.imwrite(comp_img_file, comp_img)
             else:
