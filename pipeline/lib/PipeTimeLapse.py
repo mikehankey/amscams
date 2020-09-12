@@ -57,7 +57,7 @@ def tn_tl6(date,json_conf):
       row_pic = make_row_pic(matrix[key])
       cv2.imwrite("tmp_vids/" + key + ".jpg", row_pic)
       print(key)
-   iwild = "/home/ams/amscams/pipeline/tmp_vids/*"
+   iwild = "/home/ams/amscams/pipeline/tmp_vids/*.jpg"
    tl_out = date + "_row_tl.mp4"
    #cmd = "/usr/bin/ffmpeg -framerate 12 -pattern_type glob -i '" + iwild + "' -c:v libx264 -pix_fmt yuv420p -y " + tl_out + " >/dev/null 2>&1"
    cmd = "/usr/bin/ffmpeg -framerate 12 -pattern_type glob -i \"" + iwild + "\" -c:v libx264 -pix_fmt yuv420p -y " + tl_out 
