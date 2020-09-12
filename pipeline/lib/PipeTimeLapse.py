@@ -142,7 +142,7 @@ def make_row_pic(data, text):
       ic += 1
    #cv2.imshow('row', blank_image)
    #cv2.waitKey(30)
-   cv2.putText(blank_image, str(text),  (5,163), cv2.FONT_HERSHEY_SIMPLEX, .3, (25, 25, 25), 1)
+   cv2.putText(blank_image, str(text),  (7,165), cv2.FONT_HERSHEY_SIMPLEX, .3, (25, 25, 25), 1)
    cv2.putText(blank_image, str(text),  (6,164), cv2.FONT_HERSHEY_SIMPLEX, .3, (140, 140, 140), 1)
    return(blank_image)
 
