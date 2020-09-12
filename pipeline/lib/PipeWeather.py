@@ -337,7 +337,8 @@ def gradient(image):
    #cv2.waitKey(0)
 
 def make_flat(cam,day,json_conf):
-
+   if cfe(MASK_DIR, 1) == 0:
+      os.makedirs(MASK_DIR)
    mask_file = MASK_DIR + cam + "_mask.png"
    flat_file = MASK_DIR + cam + "_flat.png"
 

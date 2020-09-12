@@ -12,7 +12,23 @@ from lib.PipeAutoCal import fn_dir
 from lib.DEFAULTS import *
 import numpy as np
 
+def make_file_matrix(day,json_conf):
+   file_matrix = {}
+   #sec_bin = [0,30]
+   for hour in range (0, 24):
+      for min in range(0,60):
+         key = '{:02d}-{:02d}'.format(hour,min)
+         file_matrix[key] = {}
+         file_matrix[key]
+         for cam in sorted(json_conf['cameras'].keys()):
+            file_matrix[key][cam] = ""
+
+
+   return(file_matrix)
+
+
 def tn_tl6(date,json_conf):
+   TL_PIC_DIR = TL_IMAGE_DIR + date + "/"
    day_dir = "/mnt/ams2/SD/proc2/daytime/" + date + "/images/*.png"
    night_dir = "/mnt/ams2/SD/proc2/" + date + "/images/*.png"
    day_files = glob.glob(day_dir)
@@ -27,22 +43,30 @@ def tn_tl6(date,json_conf):
    for file in all_files:
       print(file)
 
-   matrix = {}
+   matrix = make_file_matrix(date,json_conf)
+   if cfe("tmp_vids", 1) == 0:
+      os.makedirs("tmp_vids")
+   if cfe(TL_VIDEO_DIR, 1) == 0:
+      os.makedirs(TL_VIDEO_DIR)
+   if cfe(TL_PIC_DIR, 1) == 0:
+      os.makedirs(TL_PIC_DIR)
 
    cam_id_info = {}
    default_cams = {}
+   last_best = {}
    for cam in sorted(json_conf['cameras'].keys()):
       cams_id = json_conf['cameras'][cam]['cams_id']
       cam_id_info[cams_id] = cam
       default_cams[cam] = ""
+      last_best[cam] = ""
 
    for file in sorted(all_files):
       if "night" in file:
          continue
       fn, dir = fn_dir(file)
       (sd_datetime, sd_cam, sd_date, sd_y, sd_m, sd_d, sd_h, sd_M, sd_s) = convert_filename_to_date_cam(file)
-      key = sd_h + "-" + sd_M
-      print("KEY", file, sd_datetime, key, file)
+      key = '{:02d}-{:02d}'.format(int(sd_h),int(sd_M))
+      print("KEY:", key, file, sd_datetime )
       if key not in matrix:
          matrix[key] = {}
          for cam in sorted(json_conf['cameras'].keys()):
@@ -51,21 +75,45 @@ def tn_tl6(date,json_conf):
       cid = cam_id_info[sd_cam]
       print("MATRIX:", key, cid, file)
       matrix[key][cid] = file
+
+   # fill in missing frames 
+   #for key in matrix:
+   #   for cid in matrix[key]:
+   #      if matrix[key][cid] == "":
+   #         if last_best[cid] != "":
+   #            matrix[key][cid] == last_best[cid]
+   #      else:
+   #         last_best[cid] = matrix[key][cid]
+
    save_json_file("test.json", matrix)
    #os.system("rm tmp_vids/*")
    for key in sorted(matrix.keys()):
-      row_pic = make_row_pic(matrix[key])
-      cv2.imwrite("tmp_vids/" + key + ".jpg", row_pic)
-      print(key)
-   iwild = "/home/ams/amscams/pipeline/tmp_vids/*.jpg"
-   tl_out = date + "_row_tl.mp4"
+      row_file = TL_PIC_DIR + key + "-row.jpg"
+      row_file_tmp = TL_PIC_DIR + key + "-row_t.jpg"
+      #if cfe(row_file) == 0:
+      if True:
+         row_pic = make_row_pic(matrix[key], LOCATION + " " + date + " " + key.replace("-", ":") + " UTC")
+         cv2.imwrite(row_file, row_pic)
+         cmd = "convert -quality 80 " + row_file + " " + row_file_tmp
+         os.system(cmd)
+         cmd = "mv " + row_file_tmp + " " + row_file
+         os.system(cmd)
+
+         print("MAKE ROW:", key)
+   iwild = TL_PIC_DIR + "*-row.jpg"
+   tl_out = TL_VIDEO_DIR + date + "_row_tl.mp4"
+   tl_out_lr = TL_VIDEO_DIR + date + "_row_tl_lr.mp4"
    #cmd = "/usr/bin/ffmpeg -framerate 12 -pattern_type glob -i '" + iwild + "' -c:v libx264 -pix_fmt yuv420p -y " + tl_out + " >/dev/null 2>&1"
    cmd = "/usr/bin/ffmpeg -framerate 12 -pattern_type glob -i \"" + iwild + "\" -c:v libx264 -pix_fmt yuv420p -y " + tl_out 
    print(cmd)
    os.system(cmd)
+   cmd = "/usr/bin/ffmpeg -i " + tl_out + " -vcodec libx264 -crf 30 -y " + tl_out_lr 
+   print(cmd)
+   os.system(cmd)
+   os.system("mv " + tl_out_lr + " " + tl_out)
       
 
-def make_row_pic(data):
+def make_row_pic(data, text):
    print(data)
    default_w = 300
    default_h = 168
@@ -76,6 +124,7 @@ def make_row_pic(data):
          img = cv2.imread(file)
       else:
          img = np.zeros((default_h,default_w,3),dtype=np.uint8)
+      print("IMG:", file)
       img = cv2.resize(img, (default_w, default_h))
       imgs.append(img)
    h,w = imgs[0].shape[:2]
@@ -93,6 +142,8 @@ def make_row_pic(data):
       ic += 1
    #cv2.imshow('row', blank_image)
    #cv2.waitKey(30)
+   cv2.putText(blank_image, str(text),  (5,163), cv2.FONT_HERSHEY_SIMPLEX, .3, (25, 25, 25), 1)
+   cv2.putText(blank_image, str(text),  (6,164), cv2.FONT_HERSHEY_SIMPLEX, .3, (140, 140, 140), 1)
    return(blank_image)
 
 def timelapse_all(date, json_conf):
