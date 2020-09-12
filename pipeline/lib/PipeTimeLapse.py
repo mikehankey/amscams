@@ -37,6 +37,8 @@ def tn_tl6(date,json_conf):
       default_cams[cam] = ""
 
    for file in sorted(all_files):
+      if "night" in file:
+         continue
       fn, dir = fn_dir(file)
       (sd_datetime, sd_cam, sd_date, sd_y, sd_m, sd_d, sd_h, sd_M, sd_s) = convert_filename_to_date_cam(file)
       key = sd_h + "-" + sd_M
@@ -50,7 +52,7 @@ def tn_tl6(date,json_conf):
       print("MATRIX:", key, cid, file)
       matrix[key][cid] = file
    save_json_file("test.json", matrix)
-   os.system("rm tmp_vids/*")
+   #os.system("rm tmp_vids/*")
    for key in sorted(matrix):
       row_pic = make_row_pic(matrix[key])
       cv2.imwrite("tmp_vids/" + key + ".jpg", row_pic)
