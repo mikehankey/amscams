@@ -10,10 +10,29 @@ import datetime
 import os
 import glob
 
+from lib.PipeAutoCal import fn_dir
 from lib.PipeImage import stack_frames_fast , stack_stack, mask_frame, stack_frames
 from lib.PipeUtil import cfe, save_json_file, convert_filename_to_date_cam, get_masks, load_json_file
 from lib.DEFAULTS import * 
 from lib.PipeMeteorTests import ang_dist_vel, angularSeparation
+
+def ffmpeg_cats(files, outfile=None):
+   print("FILES:", files)
+   files = sorted(files[2:])
+   list = ""
+   for file in files:
+      list += "file '" + file + "'\n"
+   list_file = "tmp_vids/cat.txt"
+   outfile = files[2].replace(".mp4", "") 
+   last_fn, ld = fn_dir(files[-1])
+   outfile = outfile + "__" + last_fn
+   fp = open(list_file, "w")
+   fp.write(list)
+   fp.close()
+   cmd = "/usr/bin/ffmpeg -f concat -safe 0 -i " +list_file + " -c copy -y " + outfile
+   print(cmd)
+   os.system(cmd)
+
 
 def ffmpeg_cat(file1, file2, outfile=None):
    list = "file '" + file1 + "'\n"
