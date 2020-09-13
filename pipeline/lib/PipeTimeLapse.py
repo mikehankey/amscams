@@ -159,7 +159,7 @@ def tn_tl6(date,json_conf):
          #os.system(cmd)
 
          print("MAKE ROW:", key)
-   iwild = TL_PIC_DIR + "*-row.jpg"
+   iwild = TL_PIC_DIR + "*-row.png"
    tl_out = TL_VIDEO_DIR + date + "_row_tl.mp4"
    tl_out_lr = TL_VIDEO_DIR + STATION_ID + "_" + date + "_row_tl_lr.mp4"
    #cmd = "/usr/bin/ffmpeg -framerate 12 -pattern_type glob -i '" + iwild + "' -c:v libx264 -pix_fmt yuv420p -y " + tl_out + " >/dev/null 2>&1"
