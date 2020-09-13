@@ -12,6 +12,57 @@ from lib.PipeAutoCal import fn_dir
 from lib.DEFAULTS import *
 import numpy as np
 
+def multi_cam_tl(date):
+   MA = "/mnt/ams2/meteor_archive/"
+   tmp_dir = "/home/ams/tmp_vids/" 
+   station_str = ""
+   for station in NETWORK_STATIONS:
+      video_file = MA + station + "/TL/VIDS/" + date + "_row_tl.mp4"
+      station_str += station
+      print(video_file)
+      tt = tmp_dir + station + "/"
+      if cfe(tt, 1) == 0:
+         os.makedirs(tt)
+         cmd = "/usr/bin/ffmpeg -i " + video_file + " " + tt + "frames%04d.png > /dev/null 2>&1"
+         print(cmd)
+         os.system(cmd)
+
+   TID = NETWORK_STATIONS[0]  
+   frames1 = glob.glob(tmp_dir + NETWORK_STATIONS[0] + "/*.png")
+   print("DIR:", tmp_dir + NETWORK_STATIONS[0] + "/*.png")
+   mc_out_dir = tmp_dir + "MC/"
+   final_out = "/mnt/ams2/meteor_archive/TL/" + date + "_" + station_str + ".mp4"
+   if cfe(mc_out_dir, 1) == 0:
+      os.makedirs(mc_out_dir)
+   for frame in sorted(frames1):
+      fn,dir = fn_dir(frame)
+      mc_img = make_multi_cam_frame(frame, TID)
+      cv2.imwrite(mc_out_dir + fn , mc_img)
+   iwild = mc_out_dir + "*.png"
+   cmd = "/usr/bin/ffmpeg -framerate 12 -pattern_type glob -i '" + iwild + "' -c:v libx264 -pix_fmt yuv420p -y " + final_out + " >/dev/null 2>&1"
+   print(cmd)
+   os.system(cmd)
+   print(final_out)
+      
+
+def make_multi_cam_frame(frame, TID):
+   mc_img = np.zeros((1080,1920,3),dtype=np.uint8)
+
+   rc = 0
+   for TS in NETWORK_STATIONS:
+      TF = frame.replace(TID, TS)
+      img = cv2.imread(TF)
+      img = cv2.resize(img, (1920, 180))
+      ih,iw = img.shape[:2]
+      y1 = (ih * rc)
+      y2 = (y1+ih)
+      mc_img[y1:y2,0:iw] = img
+      rc += 1      
+   #mc_img = cv2.resize(mc_img, (1280, 720))
+   cv2.imshow('MC', mc_img)
+   cv2.waitKey(30)   
+   return(mc_img)
+      
 def sync_tl_vids():
    CLOUD_TL_VIDEO_DIR = TL_VIDEO_DIR.replace("ams2/meteor_archive", "archive.allsky.tv")
    if cfe(CLOUD_TL_VIDEO_DIR, 1) == 0:
@@ -96,16 +147,16 @@ def tn_tl6(date,json_conf):
    save_json_file("test.json", matrix)
    #os.system("rm tmp_vids/*")
    for key in sorted(matrix.keys()):
-      row_file = TL_PIC_DIR + key + "-row.jpg"
-      row_file_tmp = TL_PIC_DIR + key + "-row_t.jpg"
+      row_file = TL_PIC_DIR + key + "-row.png"
+      row_file_tmp = TL_PIC_DIR + key + "-row_lr.jpg"
       #if cfe(row_file) == 0:
       if True:
          row_pic = make_row_pic(matrix[key], LOCATION + " " + date + " " + key.replace("-", ":") + " UTC")
          cv2.imwrite(row_file, row_pic)
          cmd = "convert -quality 80 " + row_file + " " + row_file_tmp
          os.system(cmd)
-         cmd = "mv " + row_file_tmp + " " + row_file
-         os.system(cmd)
+         #cmd = "mv " + row_file_tmp + " " + row_file
+         #os.system(cmd)
 
          print("MAKE ROW:", key)
    iwild = TL_PIC_DIR + "*-row.jpg"
