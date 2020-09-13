@@ -67,7 +67,7 @@ def sync_tl_vids():
    CLOUD_TL_VIDEO_DIR = TL_VIDEO_DIR.replace("ams2/meteor_archive", "archive.allsky.tv")
    if cfe(CLOUD_TL_VIDEO_DIR, 1) == 0:
       os.makedirs(CLOUD_TL_VIDEO_DIR)
-   cmd = "/usr/bin/rsync " + TL_VIDEO_DIR + "*.mp4 " + CLOUD_TL_VIDEO_DIR 
+   cmd = "/usr/bin/rsync -av " + TL_VIDEO_DIR + "*.mp4 " + CLOUD_TL_VIDEO_DIR 
    print(cmd)
    os.system(cmd)
 
@@ -166,10 +166,12 @@ def tn_tl6(date,json_conf):
    cmd = "/usr/bin/ffmpeg -framerate 12 -pattern_type glob -i \"" + iwild + "\" -c:v libx264 -pix_fmt yuv420p -y " + tl_out 
    print(cmd)
    os.system(cmd)
-   cmd = "/usr/bin/ffmpeg -i " + tl_out + " -vcodec libx264 -crf 30 -y " + tl_out_lr 
-   print(cmd)
-   os.system(cmd)
-   os.system("mv " + tl_out_lr + " " + tl_out)
+   #cmd = "/usr/bin/ffmpeg -i " + tl_out + " -vcodec libx264 -crf 30 -y " + tl_out_lr 
+   #print(cmd)
+   #os.system(cmd)
+   #os.system("mv " + tl_out_lr + " " + tl_out)
+
+   sync_tl_vids()
       
 
 def make_row_pic(data, text):
