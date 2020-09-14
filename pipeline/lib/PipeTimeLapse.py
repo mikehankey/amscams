@@ -13,24 +13,43 @@ from lib.DEFAULTS import *
 import numpy as np
 
 def multi_cam_tl(date):
-   MA = "/mnt/ams2/meteor_archive/"
+   ma_dir = "/mnt/ams2/meteor_archive/"
    tmp_dir = "/home/ams/tmp_vids/" 
+   # RSYNC NETWORK SITES
+   print(NETWORK_STATIONS)
+   for st in NETWORK_STATIONS:
+      if st == STATION_ID:
+         continue
+      arc_dir = "/mnt/archive.allsky.tv/" + st + "/TL/VIDS/" 
+      local_dir = "/mnt/ams2/meteor_archive/" + st + "/TL/VIDS/" 
+      if cfe(local_dir,1) == 0:
+         os.makedirs(local_dir)
+      cmd = "/usr/bin/rsync -av " + arc_dir + " " + local_dir
+      print(cmd)
+      os.system(cmd)
+   #exit()
+
    station_str = ""
+   os.system("rm -rf " + tmp_dir + "/*")
    for station in NETWORK_STATIONS:
-      video_file = MA + station + "/TL/VIDS/" + date + "_row_tl.mp4"
-      station_str += station
+      print("DOING STATION:", station)
+      video_file = ma_dir + station + "/TL/VIDS/" + date + "_row_tl.mp4"
       print(video_file)
+      if cfe(video_file) == 0:
+         print("NOT FOUND:", video_file)
+         exit()
+      station_str += station
       tt = tmp_dir + station + "/"
       if cfe(tt, 1) == 0:
          os.makedirs(tt)
-         cmd = "/usr/bin/ffmpeg -i " + video_file + " " + tt + "frames%04d.png > /dev/null 2>&1"
-         print(cmd)
-         os.system(cmd)
+      cmd = "/usr/bin/ffmpeg -i " + video_file + " " + tt + "frames%04d.png > /dev/null 2>&1"
+      print(cmd)
+      os.system(cmd)
 
    TID = NETWORK_STATIONS[0]  
    frames1 = glob.glob(tmp_dir + NETWORK_STATIONS[0] + "/*.png")
    print("DIR:", tmp_dir + NETWORK_STATIONS[0] + "/*.png")
-   mc_out_dir = tmp_dir + "MC/"
+   mc_out_dir = tmp_dir + "/MC/"
    final_out = "/mnt/ams2/meteor_archive/TL/" + date + "_" + station_str + ".mp4"
    if cfe(mc_out_dir, 1) == 0:
       os.makedirs(mc_out_dir)
@@ -59,8 +78,8 @@ def make_multi_cam_frame(frame, TID):
       mc_img[y1:y2,0:iw] = img
       rc += 1      
    #mc_img = cv2.resize(mc_img, (1280, 720))
-   cv2.imshow('MC', mc_img)
-   cv2.waitKey(30)   
+   #cv2.imshow('MC', mc_img)
+   #cv2.waitKey(30)   
    return(mc_img)
       
 def sync_tl_vids():
