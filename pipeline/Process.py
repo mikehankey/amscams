@@ -5,6 +5,8 @@ import sys
 import time
 from PIL import ImageFont, ImageDraw, Image, ImageChops
 
+from datetime import datetime
+
 from lib.PipeWeather import detect_clouds , make_flat, track_clouds
 from lib.PipeImage import quick_video_stack
 from lib.PipeTrans import trans_test 
@@ -199,7 +201,14 @@ if __name__ == "__main__":
    if cmd == 'scv':
       six_cam_video(sys.argv[2], json_conf)
    if cmd == 'tntl':
-      tn_tl6(sys.argv[2],json_conf)
+      if sys.argv[2] == 'today':
+         today = datetime.now().strftime("%Y_%m_%d")
+         tn_tl6(today,json_conf)
+      elif sys.argv[2] == 'yest':
+         yesterday = (datetime.now() - datetime.timedelta(days = 1)).strftime("%Y_%m_%d")
+         tn_tl6(yest,json_conf)
+      else:
+         tn_tl6(sys.argv[2],json_conf)
    if cmd == 'stlv':
       sync_tl_vids()
    if cmd == 'mctl':
