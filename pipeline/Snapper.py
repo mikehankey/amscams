@@ -11,7 +11,8 @@ import cv2
 import numpy as np
 from lib.DEFAULTS import *
 import sys
-from lib.PipeUtil import check_running, load_json_file, cfe, save_json_file
+from lib.PipeUtil import check_running, load_json_file, cfe, save_json_file 
+from lib.PipeAutoCal import fn_dir
 import os
 import time
 from datetime import datetime
@@ -21,6 +22,37 @@ SNAP_DIR = "/mnt/ams2/SNAPS/"
 import glob
 # script for grabbing snaps every 30 seconds
 json_conf = load_json_file("../conf/as6.json")
+
+def resize_files():
+   files = glob.glob("/mnt/ams2/SNAPS/*.png")
+   for file in sorted(files):
+      fn, dir = fn_dir(file)
+      date = fn[0:10]
+      print(date)
+      if cfe(dir + date,1) == 0:
+         os.makedirs(dir + date)
+      moutfile = dir + date + "/" + fn
+
+      outfile = moutfile.replace(".png", "-1920x1080.jpg")
+      cmd = "convert -quality 80 " + file + " " + outfile 
+      os.system(cmd)
+
+      #outfile = moutfile.replace(".png", "-1280x720.jpg")
+      #cmd = "convert -quality 80 -resize 1280x720 " + file + " " + outfile 
+      #os.system(cmd)
+
+      #outfile = moutfile.replace(".png", "-640x360.jpg")
+      #cmd = "convert -quality 80 -resize 640x360 " + file + " " + outfile 
+      #os.system(cmd)
+
+      #outfile = moutfile.replace(".png", "-360x180.jpg")
+      #cmd = "convert -quality 80 -resize 360x180 " + file + " " + outfile 
+      #os.system(cmd)
+      #os.system("rm " + file)
+      #print(outfile)
+
+   
+      
 
 def purge_files():
    files = glob.glob(SNAP_DIR + "*")
@@ -258,3 +290,5 @@ else:
       multi_cam_tl(date, outfile)
    if sys.argv[1] == 'pd':
       purge_files()
+   if sys.argv[1] == 'resize':
+      resize_files()
