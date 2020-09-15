@@ -1,7 +1,7 @@
 '''
    functions for making timelapse movies
 '''
-
+from datetime import datetime
 import glob
 import sys
 import os
@@ -125,8 +125,23 @@ def multi_cam_tl(date):
    cmd = "/usr/bin/ffmpeg -framerate 12 -pattern_type glob -i '" + iwild + "' -c:v libx264 -pix_fmt yuv420p -y " + final_out + " >/dev/null 2>&1"
    print(cmd)
    os.system(cmd)
-   print(final_out)
+   print("FINAL:", final_out)
+
+def make_tl_html():
+   print("MAKE HTML")
+   html = "<h1>Stacked Multi Camera Time Lapse for " + STATION_ID + "</h1>"      
+   html += "<p>Last updated:" + datetime.now().strftime("%Y_%m_%d") + "</p><ul>"
+   vids = glob.glob(TL_VIDEO_DIR + "*.mp4")
+   for vid in sorted(vids,reverse=True):
       
+      vid_fn, vdir = fn_dir(vid)
+      vid_desc = vid_fn[0:10]
+      html += "<li><a href=" + vid + ">" + vid_desc + "</a></li>"
+   html += "</ul>"
+   oo = open(TL_VIDEO_DIR + "index.html", "w")
+   oo.write(html)
+   oo.close()
+   print("saved:", TL_VIDEO_DIR + "index.html")
 
 def make_multi_cam_frame(frame, TID):
    mc_img = np.zeros((1080,1920,3),dtype=np.uint8)
@@ -230,6 +245,7 @@ def tn_tl6(date,json_conf):
    data_file = TL_VIDEO_DIR + date + "-minutes.json"
    save_json_file(data_file, matrix)
    #os.system("rm tmp_vids/*")
+   new = 0
    for key in sorted(matrix.keys()):
       row_file = TL_PIC_DIR + key + "-row.png"
       row_file_tmp = TL_PIC_DIR + key + "-row_lr.jpg"
@@ -241,21 +257,24 @@ def tn_tl6(date,json_conf):
          os.system(cmd)
          #cmd = "mv " + row_file_tmp + " " + row_file
          #os.system(cmd)
+         new += 1
 
          print("MAKE ROW:", key)
-   iwild = TL_PIC_DIR + "*-row.png"
-   tl_out = TL_VIDEO_DIR + date + "_row_tl.mp4"
-   tl_out_lr = TL_VIDEO_DIR + STATION_ID + "_" + date + "_row_tl_lr.mp4"
-   #cmd = "/usr/bin/ffmpeg -framerate 12 -pattern_type glob -i '" + iwild + "' -c:v libx264 -pix_fmt yuv420p -y " + tl_out + " >/dev/null 2>&1"
-   cmd = "/usr/bin/ffmpeg -framerate 12 -pattern_type glob -i \"" + iwild + "\" -c:v libx264 -pix_fmt yuv420p -y " + tl_out 
-   print(cmd)
-   os.system(cmd)
-   #cmd = "/usr/bin/ffmpeg -i " + tl_out + " -vcodec libx264 -crf 30 -y " + tl_out_lr 
-   #print(cmd)
-   #os.system(cmd)
-   #os.system("mv " + tl_out_lr + " " + tl_out)
+   if new > 0:
+      iwild = TL_PIC_DIR + "*-row.png"
+      tl_out = TL_VIDEO_DIR + date + "_row_tl.mp4"
+      tl_out_lr = TL_VIDEO_DIR + STATION_ID + "_" + date + "_row_tl_lr.mp4"
+      #cmd = "/usr/bin/ffmpeg -framerate 12 -pattern_type glob -i '" + iwild + "' -c:v libx264 -pix_fmt yuv420p -y " + tl_out + " >/dev/null 2>&1"
+      cmd = "/usr/bin/ffmpeg -framerate 12 -pattern_type glob -i \"" + iwild + "\" -c:v libx264 -pix_fmt yuv420p -y " + tl_out 
+      print(cmd)
+      os.system(cmd)
+      #cmd = "/usr/bin/ffmpeg -i " + tl_out + " -vcodec libx264 -crf 30 -y " + tl_out_lr 
+      # print(cmd)
+      #os.system(cmd)
+      #os.system("mv " + tl_out_lr + " " + tl_out)
+      sync_tl_vids()
+   make_tl_html()
 
-   sync_tl_vids()
       
 
 def make_row_pic(data, text):
