@@ -21,6 +21,15 @@ MLN_CACHE_DIR = "/mnt/ams2/MLN_CACHE/"
 
 #/mnt/ams2/meteor_archive/AMS2/LIVE/METEORS/2020_08_13/2020_08_13-AMS2-METEORS.json
 
+def proc_status():
+   sd_pending = glob.glob("/mnt/ams2/SD/*.mp4")
+   sd_day_pending = glob.glob("/mnt/ams2/SD/proc2/daytime/*.mp4")
+   print("Proc Status:")
+   print("Pending Files in SD queue:", len(sd_pending))
+   print("Pending Files in SD daytime queue:", len(sd_day_pending))
+   print("Time delay for main queue:", len(sd_pending) / 6)
+   print("Time delay for day queue:", len(sd_day_pending) / 6)
+
 def check_add_event(events, meteor):
    found = 0
    file = meteor['hd_file']

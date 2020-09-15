@@ -11,7 +11,7 @@ import datetime as dt
 from lib.PipeWeather import detect_clouds , make_flat, track_clouds
 from lib.PipeImage import quick_video_stack
 from lib.PipeTrans import trans_test 
-from lib.PipeManager import mln_report, mln_best, best_of , copy_super_stacks, super_stacks_to_video, multi_station_meteors
+from lib.PipeManager import mln_report, mln_best, best_of , copy_super_stacks, super_stacks_to_video, multi_station_meteors, proc_status
 from lib.PipeFiles import get_pending_files
 from lib.PipeUtil import convert_filename_to_date_cam, day_or_night , load_json_file, save_json_file, cfe
 from lib.PipeVideo import scan_stack_file, make_preview_videos, load_frames_simple, ffmpeg_cat , ffmpeg_cats
@@ -224,6 +224,9 @@ if __name__ == "__main__":
       detect_report(sys.argv[2], json_conf)
 
    # MANAGER FUNCTIONS 
+
+   if cmd == "proc_status":
+      proc_status()
    if cmd == "mln_rpt":
       mln_report(sys.argv[2])
    if cmd == "mln_best":

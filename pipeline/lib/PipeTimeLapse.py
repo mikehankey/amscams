@@ -12,17 +12,40 @@ from lib.PipeAutoCal import fn_dir
 from lib.DEFAULTS import *
 import numpy as np
 
-def check_for_missing(hd_wild, snap_wild = None, snap_wild2 = None, sd_night_wild= None, sd_day_wild = None, sd_day2_wild=None):
-   hd_missing = glob.glob(hd_wild)
-   snap_missing = glob.glob(snap_wild)
-   snap_missing2 = glob.glob(snap_wild2)
-   snap_missing2 = glob.glob(snap_wild2)
-   sd_night_missing = glob.glob(sd_night_wild)
-   sd_day_missing = glob.glob(sd_day_wild)
-   sd_day2_missing = glob.glob(sd_day2_wild)
+def check_for_missing(min_file,cams_id,json_conf):
+   cam_id_info, cam_num_info = load_cam_info(json_conf)
+   print("LOOK FOR:", min_file)
+   missing = []
+   date = min_file[0:10] 
+   hd_wild = "/mnt/ams2/HD/" + min_file + "*" + cams_id + "*.mp4"
+   snap_wild = "/mnt/ams2/SNAPS/" + date + "/" + min_file  + "*" + cams_id  + "*.jpg"
+   snap_wild2 = "/mnt/ams2/SNAPS/" + min_file  + "*" + cams_id + "*.png"
+   sd_night = "/mnt/ams2/SD/proc2/" + date + "/"  + "*" + cams_id + min_file + "*.mp4"
+   sd_day = "/mnt/ams2/SD/proc2/daytime/" + date + "/" + min_file  + "*" + cams_id + "*.mp4"
+   sd_day2 = "/mnt/ams2/SD/proc2/daytime/" + min_file  + "*" + cams_id + "*.mp4"
+
+   print(hd_wild)
+   print(snap_wild)
+   print(snap_wild2)
+   print(sd_night)
+   print(sd_day)
+   print(sd_day2)
+
+   for ff in glob.glob(hd_wild):
+      missing.append(ff)
+   for ff in glob.glob(snap_wild):
+      missing.append(ff)
+   for ff in glob.glob(snap_wild2):
+      missing.append(ff)
+   for ff in glob.glob(sd_night):
+      missing.append(ff)
+   for ff in glob.glob(sd_day):
+      missing.append(ff)
+   for ff in glob.glob(sd_day2):
+      missing.append(ff)
 
 
-   return(hd_missing, snap_missing, snap_missing2, sd_night_missing, sd_day_missing, sd_day2_missing)
+   return(missing)
 
 def load_cam_info(json_conf):
    cam_num_info = {} 
@@ -223,14 +246,12 @@ def tn_tl6(date,json_conf):
       fn, dir = fn_dir(file)
       (sd_datetime, sd_cam, sd_date, sd_y, sd_m, sd_d, sd_h, sd_M, sd_s) = convert_filename_to_date_cam(file)
       key = '{:02d}-{:02d}'.format(int(sd_h),int(sd_M))
-      print("KEY:", key, file, sd_datetime )
       if key not in matrix:
          matrix[key] = {}
          for cam in sorted(json_conf['cameras'].keys()):
             matrix[key][cam] = ""
  
       cid = cam_id_info[sd_cam]
-      print("MATRIX:", key, cid, file)
       matrix[key][cid] = file
 
    # fill in missing frames 
@@ -246,12 +267,23 @@ def tn_tl6(date,json_conf):
    save_json_file(data_file, matrix)
    #os.system("rm tmp_vids/*")
    new = 0
+   cam_id_info, cam_num_info = load_cam_info(json_conf)
    for key in sorted(matrix.keys()):
       row_file = TL_PIC_DIR + key + "-row.png"
       row_file_tmp = TL_PIC_DIR + key + "-row_lr.jpg"
-      if cfe(row_file) == 0:
+      redo = 0
+      if cfe(row_file) == 1:
+         fs = os.stat(row_file)
+         fsize = fs.st_size
+         if fsize < 4000:
+            redo = 1
+      if cfe(row_file) == 0 or redo == 1:
       #if True:
-         row_pic = make_row_pic(matrix[key], LOCATION + " " + date + " " + key.replace("-", ":") + " UTC")
+         if redo == 1:
+            print("REDO!")
+            h,m =key.split("-")
+            min_file = date + "_" + h + "_" + m
+         row_pic = make_row_pic(matrix[key], min_file, LOCATION + " " + date + " " + key.replace("-", ":") + " UTC", json_conf, cam_num_info)
          cv2.imwrite(row_file, row_pic)
          cmd = "convert -quality 80 " + row_file + " " + row_file_tmp
          os.system(cmd)
@@ -277,16 +309,22 @@ def tn_tl6(date,json_conf):
 
       
 
-def make_row_pic(data, text):
+def make_row_pic(data, min_file, text, json_conf, cam_num_info):
    print(data)
    default_w = 300
    default_h = 168
    imgs = [] 
    for cam in sorted(data.keys()):
       file = data[cam]
+      cams_id = cam_num_info[cam]
       if file != "":
          img = cv2.imread(file)
       else:
+         print("MF:", min_file, cams_id)
+         missing = check_for_missing(min_file, cams_id, json_conf)
+         print("MISSING :", missing)
+
+
          img = np.zeros((default_h,default_w,3),dtype=np.uint8)
       print("IMG:", file)
       img = cv2.resize(img, (default_w, default_h))
@@ -403,7 +441,6 @@ def six_cam_video(date, json_conf):
          fn = all_vids[day][cam_id]
          key = fn[0:16]
          cam = fn[24:30]
-         print("KEY:", fn, key, cam )
          pos = str(mc_layout[cam])
          if key not in final_frames:
             final_frames[key] = { "1": "", "2": "", "3": "", "4": "", "5": "", "6": "" }
