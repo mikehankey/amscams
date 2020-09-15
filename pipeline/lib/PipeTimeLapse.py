@@ -165,7 +165,7 @@ def multi_cam_tl(date):
    #exit()
 
    station_str = ""
-   #os.system("rm -rf " + tmp_dir + "/*")
+   os.system("rm -rf " + tmp_dir + "/*")
    for station in NETWORK_STATIONS:
       print("DOING STATION:", station)
       video_file = ma_dir + station + "/TL/VIDS/" + date + "_row_tl.mp4"
@@ -179,7 +179,7 @@ def multi_cam_tl(date):
          os.makedirs(tt)
       cmd = "/usr/bin/ffmpeg -i " + video_file + " " + tt + "frames%04d.png > /dev/null 2>&1"
       print(cmd)
-      #os.system(cmd)
+      os.system(cmd)
 
    TID = NETWORK_STATIONS[0]  
    frames1 = glob.glob(tmp_dir + NETWORK_STATIONS[0] + "/*.png")
