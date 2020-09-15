@@ -7,10 +7,54 @@ import sys
 import os
 from lib.PipeImage import  quick_video_stack, rotate_bound
 import cv2
-from lib.PipeUtil import cfe, save_json_file, convert_filename_to_date_cam
+from lib.PipeUtil import cfe, save_json_file, convert_filename_to_date_cam, load_json_file
 from lib.PipeAutoCal import fn_dir
 from lib.DEFAULTS import *
 import numpy as np
+
+def check_hd_for_missing(hd_wild, snap_wild = None, snap_wild2 = None, sd_wild = None, sd_day_wild = None):
+   print("HD_WILD:", hd_wild)
+   print("SNAP_WILD:", snap_wild)
+   print("SNAP_WILDw:", snap_wild)
+   hd_missing = glob.glob(hd_wild)
+   snap_missing = glob.glob(snap_wild)
+   snap_missing2 = glob.glob(snap_wild2)
+
+
+   return(hd_missing, snap_missing, snap_missing2)
+
+def load_cam_info(json_conf):
+   cam_num_info = {} 
+   cam_id_info = {} 
+   for cam in sorted(json_conf['cameras'].keys()):
+      cams_id = json_conf['cameras'][cam]['cams_id']
+      cam_id_info[cams_id] = cam
+      cam_num_info[cam] = cams_id
+   return(cam_id_info, cam_num_info)
+
+
+def audit_min(date, json_conf):
+   mm = 0
+   cam_id_info, cam_num_info = load_cam_info(json_conf)
+   # check the files that could be missig and why
+   data_file = TL_VIDEO_DIR + date + "-minutes.json"
+   minutes = load_json_file(data_file)
+   for hm in minutes:
+      for cam in minutes[hm]:
+         if minutes[hm][cam] == "":
+            print("Missing: ", mm, hm, cam) 
+            h,m = hm.split("-")
+            hd_wild = "/mnt/ams2/HD/" + date + "_" + h + "_" + m + "*" + cam_num_info[cam] + "*"
+            snap_wild = "/mnt/ams2/SNAPS/" + date + "/" + date + "_" + h + "_" + m + "*" + cam_num_info[cam] + "*"
+            snap_wild2 = "/mnt/ams2/SNAPS/" + date + "_" + h + "_" + m + "*" + cam_num_info[cam] + "*"
+            hd_missing, snap_missing, snap_missing2 = check_hd_for_missing(hd_wild,snap_wild,snap_wild2 ) 
+            if len(hd_missing) > 0:
+               print("Some HD files found.", hd_missing)
+            if len(hd_missing) > 0:
+               print("Some Snap files found.", snap_missing)
+            if len(snap_missing2) > 0:
+               print("Some Snap2 files found.", snap_missing2)
+            mm += 1
 
 def multi_cam_tl(date):
    ma_dir = "/mnt/ams2/meteor_archive/"
@@ -163,13 +207,14 @@ def tn_tl6(date,json_conf):
    #      else:
    #         last_best[cid] = matrix[key][cid]
 
-   save_json_file("test.json", matrix)
+   data_file = TL_VIDEO_DIR + date + "-minutes.json"
+   save_json_file(data_file, matrix)
    #os.system("rm tmp_vids/*")
    for key in sorted(matrix.keys()):
       row_file = TL_PIC_DIR + key + "-row.png"
       row_file_tmp = TL_PIC_DIR + key + "-row_lr.jpg"
-      #if cfe(row_file) == 0:
-      if True:
+      if cfe(row_file) == 0:
+      #if True:
          row_pic = make_row_pic(matrix[key], LOCATION + " " + date + " " + key.replace("-", ":") + " UTC")
          cv2.imwrite(row_file, row_pic)
          cmd = "convert -quality 80 " + row_file + " " + row_file_tmp
