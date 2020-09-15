@@ -193,9 +193,14 @@ def sync_tl_vids():
    os.system(cmd)
 
 def make_file_matrix(day,json_conf):
+   today = datetime.now().strftime("%Y_%m_%d")
+   if day == today:
+      last_hour =  int(datetime.now().strftime("%H")) + 1
+   else:
+      last_hour = 24
    file_matrix = {}
    #sec_bin = [0,30]
-   for hour in range (0, 24):
+   for hour in range (0, last_hour):
       for min in range(0,60):
          key = '{:02d}-{:02d}'.format(hour,min)
          file_matrix[key] = {}
@@ -281,9 +286,10 @@ def tn_tl6(date,json_conf):
       #if True:
          if redo == 1:
             print("REDO!")
-            h,m =key.split("-")
-            min_file = date + "_" + h + "_" + m
+         h,m =key.split("-")
+         min_file = date + "_" + h + "_" + m
          row_pic = make_row_pic(matrix[key], min_file, LOCATION + " " + date + " " + key.replace("-", ":") + " UTC", json_conf, cam_num_info)
+
          cv2.imwrite(row_file, row_pic)
          cmd = "convert -quality 80 " + row_file + " " + row_file_tmp
          os.system(cmd)
@@ -310,7 +316,6 @@ def tn_tl6(date,json_conf):
       
 
 def make_row_pic(data, min_file, text, json_conf, cam_num_info):
-   print(data)
    default_w = 300
    default_h = 168
    imgs = [] 
@@ -320,18 +325,17 @@ def make_row_pic(data, min_file, text, json_conf, cam_num_info):
       if file != "":
          img = cv2.imread(file)
       else:
-         print("MF:", min_file, cams_id)
+         print("MISSING DATA:", min_file, cams_id)
          missing = check_for_missing(min_file, cams_id, json_conf)
-         print("MISSING :", missing)
+         if len(missing) > 0:
+            print("FOUND:", missing)
 
 
          img = np.zeros((default_h,default_w,3),dtype=np.uint8)
-      print("IMG:", file)
       img = cv2.resize(img, (default_w, default_h))
       imgs.append(img)
    h,w = imgs[0].shape[:2]
    rw = w * len(data.keys())
-   print("RW:", rw)
    blank_image = np.zeros((h,rw,3),dtype=np.uint8)
    x = 0
    y = 0 
@@ -339,7 +343,6 @@ def make_row_pic(data, min_file, text, json_conf, cam_num_info):
    for img in imgs:
       x1 = x + (ic * w)
       x2 = x1 + w
-      print("XY:",ic,  y, y+h, x1, x2, w,h)
       blank_image[y:y+h,x1:x2] = img
       ic += 1
    #cv2.imshow('row', blank_image)
