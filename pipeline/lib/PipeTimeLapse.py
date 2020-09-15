@@ -23,6 +23,7 @@ def check_for_missing(min_file,cams_id,json_conf):
    sd_night = "/mnt/ams2/SD/proc2/" + date + "/"  + "*" + cams_id + min_file + "*.mp4"
    sd_day = "/mnt/ams2/SD/proc2/daytime/" + date + "/" + min_file  + "*" + cams_id + "*.mp4"
    sd_day2 = "/mnt/ams2/SD/proc2/daytime/" + min_file  + "*" + cams_id + "*.mp4"
+   sd_pending = "/mnt/ams2/SD/" + min_file  + "*" + cams_id + "*.mp4"
 
    print(hd_wild)
    print(snap_wild)
@@ -30,6 +31,7 @@ def check_for_missing(min_file,cams_id,json_conf):
    print(sd_night)
    print(sd_day)
    print(sd_day2)
+   print(sd_pending)
 
    for ff in glob.glob(hd_wild):
       missing.append(ff)
@@ -43,9 +45,44 @@ def check_for_missing(min_file,cams_id,json_conf):
       missing.append(ff)
    for ff in glob.glob(sd_day2):
       missing.append(ff)
+   for ff in glob.glob(sd_pending):
+      missing.append(ff)
+
+   # first check for pics
+   for ms in missing:
+      if "png" in ms or "jpg" in ms:
+         # score use this file
+         img = cv2.imread(ms)
+         img = cv2.resize(img, (THUMB_W, THUMB_H))
+         return(img)
+   # next check for vids
+   for ms in missing:
+      if "mp4" in ms:
+         fn, dir = fn_dir(ms)
+         mia_out = "/mnt/ams2/MIA/" + fn 
+         mia_out = mia_out.replace(".mp4", ".png")
+         if cfe(mia_out) == 1:
+            img = cv2.imread(mia_out)
+            if img.shape[0] != THUMB_H:
+               img = cv2.resize(img, (THUMB_W, THUMB_H))
+               cv2.imwrite(mia_out, img)
+            return(img)
+
+         cmd = "/usr/bin/ffmpeg -ss 00:00:01.00 -i " + ms + " -frames:v 1 " + mia_out 
+         print(cmd)
+         os.system(cmd)
+         img = cv2.imread(mia_out) 
+         print("READING:", mia_out)
+         try:
+            img = cv2.resize(img, (THUMB_W, THUMB_H))
+            return(img)
+         except:
+            print("BAD FILE:", mia_out, missing)
+            return(None)
 
 
-   return(missing)
+
+   return(None)
 
 def load_cam_info(json_conf):
    cam_num_info = {} 
@@ -326,12 +363,13 @@ def make_row_pic(data, min_file, text, json_conf, cam_num_info):
          img = cv2.imread(file)
       else:
          print("MISSING DATA:", min_file, cams_id)
-         missing = check_for_missing(min_file, cams_id, json_conf)
-         if len(missing) > 0:
-            print("FOUND:", missing)
-
-
-         img = np.zeros((default_h,default_w,3),dtype=np.uint8)
+         missing_img = check_for_missing(min_file, cams_id, json_conf)
+         if missing_img is not None:
+            print("FIXED MISSING DATA FOR MIN/CAM:", min_file, cam)
+            img = missing_img
+         else:
+            print("BAD NO DATA FOR MIN/CAM:", min_file, cam)
+            img = np.zeros((default_h,default_w,3),dtype=np.uint8)
       img = cv2.resize(img, (default_w, default_h))
       imgs.append(img)
    h,w = imgs[0].shape[:2]
