@@ -12,6 +12,17 @@ from lib.PipeAutoCal import fn_dir
 from lib.DEFAULTS import *
 import numpy as np
 
+def meteor_minutes(date):
+   files = glob.glob("/mnt/ams2/meteors/" + date + "/*.json")
+   meteors = {}
+   for file in files:
+      fn,dir = fn_dir(file)
+      (sd_datetime, sd_cam, sd_date, sd_y, sd_m, sd_d, sd_h, sd_M, sd_s) = convert_filename_to_date_cam(file)
+      key = '{:02d}-{:02d}'.format(sd_h,sd_m)
+      if key not in meteors:
+         meteors[key] = []
+      meteors[key].append((sd_cam, fn))
+
 def check_for_missing(min_file,cams_id,json_conf):
    cam_id_info, cam_num_info = load_cam_info(json_conf)
    print("LOOK FOR:", min_file)
@@ -150,11 +161,11 @@ def multi_cam_tl(date):
          os.makedirs(local_dir)
       cmd = "/usr/bin/rsync -av " + arc_dir + " " + local_dir
       print(cmd)
-      os.system(cmd)
+      #os.system(cmd)
    #exit()
 
    station_str = ""
-   os.system("rm -rf " + tmp_dir + "/*")
+   #os.system("rm -rf " + tmp_dir + "/*")
    for station in NETWORK_STATIONS:
       print("DOING STATION:", station)
       video_file = ma_dir + station + "/TL/VIDS/" + date + "_row_tl.mp4"
@@ -168,7 +179,7 @@ def multi_cam_tl(date):
          os.makedirs(tt)
       cmd = "/usr/bin/ffmpeg -i " + video_file + " " + tt + "frames%04d.png > /dev/null 2>&1"
       print(cmd)
-      os.system(cmd)
+      #os.system(cmd)
 
    TID = NETWORK_STATIONS[0]  
    frames1 = glob.glob(tmp_dir + NETWORK_STATIONS[0] + "/*.png")
@@ -179,6 +190,7 @@ def multi_cam_tl(date):
       os.makedirs(mc_out_dir)
    for frame in sorted(frames1):
       fn,dir = fn_dir(frame)
+      print("FILE:", frame)
       mc_img = make_multi_cam_frame(frame, TID)
       cv2.imwrite(mc_out_dir + fn , mc_img)
    iwild = mc_out_dir + "*.png"
@@ -209,8 +221,13 @@ def make_multi_cam_frame(frame, TID):
    rc = 0
    for TS in NETWORK_STATIONS:
       TF = frame.replace(TID, TS)
-      img = cv2.imread(TF)
-      img = cv2.resize(img, (1920, 180))
+      print("THIS FILE:", TF)
+      img = cv2.imread(TF) 
+      try:
+         img = cv2.resize(img, (1920, 180))
+      except:
+         img = np.zeros((180,1920,3),dtype=np.uint8)
+
       ih,iw = img.shape[:2]
       y1 = (ih * rc)
       y2 = (y1+ih)
@@ -250,6 +267,8 @@ def make_file_matrix(day,json_conf):
 
 
 def tn_tl6(date,json_conf):
+
+
    TL_PIC_DIR = TL_IMAGE_DIR + date + "/"
    day_dir = "/mnt/ams2/SD/proc2/daytime/" + date + "/images/*.png"
    night_dir = "/mnt/ams2/SD/proc2/" + date + "/images/*.png"
