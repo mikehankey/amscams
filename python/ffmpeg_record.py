@@ -58,7 +58,15 @@ def start_capture(cam_num):
 
 def stop_capture(cam_num):
    #print ("Stopping capture for ", cam_num)
-   cmd = "kill -9 `ps -aux | grep ffmpeg |grep -v grep| awk '{print $2}'`"
+   if cam_num != "all":
+      for cam in json_conf['cameras']:
+         camn = cam.replace("cam","")
+         if str(cam_num) == str(camn):
+            cam_ip = json_conf['cameras'][cam]['ip']
+            cmd = "kill -9 `ps -aux | grep ffmpeg | grep " + cam_ip + " |grep -v grep| awk '{print $2}'`"
+   else:
+      cmd = "kill -9 `ps -aux | grep ffmpeg |grep -v grep| awk '{print $2}'`"
+   print(cmd)
    output = subprocess.check_output(cmd, shell=True).decode("utf-8")
    print (output)
 
