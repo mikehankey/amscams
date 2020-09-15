@@ -6,6 +6,7 @@ import time
 from PIL import ImageFont, ImageDraw, Image, ImageChops
 
 from datetime import datetime
+import datetime as dt
 
 from lib.PipeWeather import detect_clouds , make_flat, track_clouds
 from lib.PipeImage import quick_video_stack
@@ -205,8 +206,8 @@ if __name__ == "__main__":
          today = datetime.now().strftime("%Y_%m_%d")
          tn_tl6(today,json_conf)
       elif sys.argv[2] == 'yest':
-         yesterday = (datetime.now() - datetime.timedelta(days = 1)).strftime("%Y_%m_%d")
-         tn_tl6(yest,json_conf)
+         yesterday = (datetime.now() - dt.timedelta(days = 1)).strftime("%Y_%m_%d")
+         tn_tl6(yesterday,json_conf)
       else:
          tn_tl6(sys.argv[2],json_conf)
    if cmd == 'stlv':
