@@ -1,3 +1,7 @@
+LOCATION = "Monkton, MD"
+
+NETWORK_STATIONS = ['AMS15', 'AMS1', 'AMS7', 'AMS9']
+
 AMS_HOME = "/home/ams/amscams"
 CONF_DIR = AMS_HOME + "/conf"
 STATION_ID = "AMS1"
@@ -45,4 +49,7 @@ TL_DIR = ARC_DIR + "TIME_LAPSE/"
 MULTI_CAM_LAYOUT = [ "010005", "010001", "010002", "010003", "010006", "010004"]
 
 
+MASK_DIR = "/mnt/ams2/meteor_archive/" + STATION_ID + "/CAL/MASKS/"
+TL_IMAGE_DIR = "/mnt/ams2/meteor_archive/" + STATION_ID + "/TL/PICS/"
+TL_VIDEO_DIR = "/mnt/ams2/meteor_archive/" + STATION_ID + "/TL/VIDS/"
 
