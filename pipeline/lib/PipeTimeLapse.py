@@ -12,16 +12,17 @@ from lib.PipeAutoCal import fn_dir
 from lib.DEFAULTS import *
 import numpy as np
 
-def check_hd_for_missing(hd_wild, snap_wild = None, snap_wild2 = None, sd_wild = None, sd_day_wild = None):
-   print("HD_WILD:", hd_wild)
-   print("SNAP_WILD:", snap_wild)
-   print("SNAP_WILDw:", snap_wild)
+def check_for_missing(hd_wild, snap_wild = None, snap_wild2 = None, sd_night_wild= None, sd_day_wild = None, sd_day2_wild=None):
    hd_missing = glob.glob(hd_wild)
    snap_missing = glob.glob(snap_wild)
    snap_missing2 = glob.glob(snap_wild2)
+   snap_missing2 = glob.glob(snap_wild2)
+   sd_night_missing = glob.glob(sd_night_wild)
+   sd_day_missing = glob.glob(sd_day_wild)
+   sd_day2_missing = glob.glob(sd_day2_wild)
 
 
-   return(hd_missing, snap_missing, snap_missing2)
+   return(hd_missing, snap_missing, snap_missing2, sd_night_missing, sd_day_missing, sd_day2_missing)
 
 def load_cam_info(json_conf):
    cam_num_info = {} 
@@ -46,15 +47,34 @@ def audit_min(date, json_conf):
             h,m = hm.split("-")
             hd_wild = "/mnt/ams2/HD/" + date + "_" + h + "_" + m + "*" + cam_num_info[cam] + "*"
             snap_wild = "/mnt/ams2/SNAPS/" + date + "/" + date + "_" + h + "_" + m + "*" + cam_num_info[cam] + "*"
+            sd_night = "/mnt/ams2/SD/proc2/" + date + "/" + date + "_" + h + "_" + m + "*" + cam_num_info[cam] + "*"
+            sd_day = "/mnt/ams2/SD/proc2/daytime/" + date + "/" + date + "_" + h + "_" + m + "*" + cam_num_info[cam] + "*"
+            sd_day2 = "/mnt/ams2/SD/proc2/daytime/" + date + "_" + h + "_" + m + "*" + cam_num_info[cam] + "*"
             snap_wild2 = "/mnt/ams2/SNAPS/" + date + "_" + h + "_" + m + "*" + cam_num_info[cam] + "*"
-            hd_missing, snap_missing, snap_missing2 = check_hd_for_missing(hd_wild,snap_wild,snap_wild2 ) 
+            hd_missing, snap_missing, snap_missing2, sd_night_missing, sd_day_missing, sd_day2_missing = check_for_missing(hd_wild,snap_wild,snap_wild2,sd_night,sd_day,sd_day2 ) 
+            fixed = []
             if len(hd_missing) > 0:
                print("Some HD files found.", hd_missing)
+               fixed = hd_missing
             if len(hd_missing) > 0:
                print("Some Snap files found.", snap_missing)
+               fixed = snap_missing
             if len(snap_missing2) > 0:
                print("Some Snap2 files found.", snap_missing2)
+               fixed = snap_missing2
+            if len(sd_night_missing) > 0:
+               print("Some SD NIght files found.", sd_night_missing)
+               fixed = sd_night_missing
+            if len(sd_day_missing) > 0:
+               print("Some SD DAY files found.", sd_day_missing)
+               fixed = sd_day_missing
+            if len(sd_day_missing) > 0:
+               print("Some SD DAY2 files found.", sd_day2_missing)
+               fixed = sd_day2_missing
+            if len(fixed) > 0: 
+               print("FIXED:", fixed)
             mm += 1
+ 
 
 def multi_cam_tl(date):
    ma_dir = "/mnt/ams2/meteor_archive/"
