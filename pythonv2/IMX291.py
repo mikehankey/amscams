@@ -92,7 +92,7 @@ def sense_up(cam, cam_ip):
    cam.close()
 
 def test(cam, cam_ip):
-
+   #https://github.com/NeiroNx/python-dvr
    #enc_info = cam.get_info("Simplify.Encode")
    #test_info = cam.get_info("Camera.ParamEx")
    #test_info = cam.get_info("NetWork.NetCommon")
