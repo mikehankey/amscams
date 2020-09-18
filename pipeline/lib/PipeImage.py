@@ -13,12 +13,36 @@ from lib.PipeUtil import cfe
 import glob
 import cv2
 
-def quick_video_stack(video_file, count = 10):
+def rotate_bound(image, angle):
+    # grab the dimensions of the image and then determine the
+    # center
+    (h, w) = image.shape[:2]
+    (cX, cY) = (w // 2, h // 2)
+    # grab the rotation matrix (applying the negative of the
+    # angle to rotate clockwise), then grab the sine and cosine
+    # (i.e., the rotation components of the matrix)
+    M = cv2.getRotationMatrix2D((cX, cY), -angle, 1.0)
+    cos = np.abs(M[0, 0])
+    sin = np.abs(M[0, 1])
+    # compute the new bounding dimensions of the image
+    nW = int((h * sin) + (w * cos))
+    nH = int((h * cos) + (w * sin))
+    # adjust the rotation matrix to take into account translation
+    M[0, 2] += (nW / 2) - cX
+    M[1, 2] += (nH / 2) - cY
+    # perform the actual rotation and return the image
+    return cv2.warpAffine(image, M, (nW, nH))
+
+def quick_video_stack(video_file, count = 0, save=1):
    frames = []
+   img_file = video_file.replace(".mp4",".jpg")
    temp_dir = "/mnt/ams2/tmp/st/"
    if cfe(temp_dir, 1) == 0:
       os.makedirs(temp_dir)
-   cmd = "/usr/bin/ffmpeg -i " + video_file + " -vframes " + str(count) +  " " + temp_dir + "frames%03d.jpg > /dev/null 2>&1"
+   if count == 0:
+      cmd = "/usr/bin/ffmpeg -i " + video_file + " " + temp_dir + "frames%03d.jpg > /dev/null 2>&1"
+   else:
+      cmd = "/usr/bin/ffmpeg -i " + video_file + " -vframes " + str(count) +  " " + temp_dir + "frames%03d.jpg > /dev/null 2>&1"
    os.system(cmd)
    files = glob.glob(temp_dir + "*.jpg")
    for file in files:
@@ -26,6 +50,8 @@ def quick_video_stack(video_file, count = 10):
       frames.append(frame)
    stack_frame = stack_frames(frames)
    os.system("rm " + temp_dir + "*")
+   if save == 1:
+      cv2.imwrite(img_file, stack_frame)
    return(stack_frame)
   
 
@@ -122,8 +148,13 @@ def mask_frame(frame, mp, masks, size=3):
    return(frame)
 
 
-def thumbnail(image_file, w, h):
-   thumb_file = image_file.replace(".png", "-tn.png")
+def thumbnail(image_file, w, h, thumb_file=None):
+   if thumb_file == None:
+      if "png" in image_file:
+         thumb_file = image_file.replace(".png", "-tn.png")
+      if "jpg" in image_file:
+         thumb_file = image_file.replace(".jpg", "-tn.jpg")
+
    img = cv2.imread(image_file)
    thumb = cv2.resize(img, (w, h))
    cv2.imwrite(thumb_file, thumb) 

@@ -38,7 +38,7 @@ def start_capture(cam_num):
    cams_id = json_conf['cameras'][cam_key]['cams_id']
    running = check_running(cam_num, "HD")
    if running == 0:
-      cmd = "/usr/bin/ffmpeg -i 'rtsp://" + cam_ip + hd_url + "' -rtsp_transport tcp -c copy -map 0 -f segment -strftime 1 -segment_time 60 -segment_format mp4 \"" + video_dir + "/HD/" + "%Y_%m_%d_%H_%M_%S_000_" + cams_id + ".mp4\" 2>&1 > /dev/null & "
+      cmd = "/usr/bin/ffmpeg -rtsp_transport tcp -i 'rtsp://" + cam_ip + hd_url + "' -rtsp_transport tcp -c copy -map 0 -f segment -strftime 1 -segment_time 60 -segment_format mp4 \"" + video_dir + "/HD/" + "%Y_%m_%d_%H_%M_%S_000_" + cams_id + ".mp4\" 2>&1 > /dev/null & "
       print(cmd)
    
       os.system(cmd)
@@ -48,7 +48,7 @@ def start_capture(cam_num):
 
    running = check_running(cam_num, "SD")
    if running == 0:
-      cmd = "/usr/bin/ffmpeg -i 'rtsp://" + cam_ip + sd_url + "' -rtsp_transport tcp -c copy -map 0 -f segment -strftime 1 -segment_time 60 -segment_format mp4 \"" + video_dir + "/SD/" + "%Y_%m_%d_%H_%M_%S_000_" + cams_id + ".mp4\" 2>&1 > /dev/null & "
+      cmd = "/usr/bin/ffmpeg -rtsp_transport tcp -i 'rtsp://" + cam_ip + sd_url + "' -c copy -map 0 -f segment -strftime 1 -segment_time 60 -segment_format mp4 \"" + video_dir + "/SD/" + "%Y_%m_%d_%H_%M_%S_000_" + cams_id + ".mp4\" 2>&1 > /dev/null & "
       print(cmd)
       os.system(cmd)
       time.sleep(2)
@@ -58,7 +58,15 @@ def start_capture(cam_num):
 
 def stop_capture(cam_num):
    #print ("Stopping capture for ", cam_num)
-   cmd = "kill -9 `ps -aux | grep ffmpeg |grep -v grep| awk '{print $2}'`"
+   if cam_num != "all":
+      for cam in json_conf['cameras']:
+         camn = cam.replace("cam","")
+         if str(cam_num) == str(camn):
+            cam_ip = json_conf['cameras'][cam]['ip']
+            cmd = "kill -9 `ps -aux | grep ffmpeg | grep " + cam_ip + " |grep -v grep| awk '{print $2}'`"
+   else:
+      cmd = "kill -9 `ps -aux | grep ffmpeg |grep -v grep| awk '{print $2}'`"
+   print(cmd)
    output = subprocess.check_output(cmd, shell=True).decode("utf-8")
    print (output)
 

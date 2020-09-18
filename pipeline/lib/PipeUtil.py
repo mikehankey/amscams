@@ -3,7 +3,7 @@
 basic utility functions 
 
 '''
-
+import subprocess
 import math
 from pathlib import Path
 import datetime
@@ -12,6 +12,15 @@ import cv2
 import numpy as np
 import ephem
 import json
+
+def meteors_only(objects):
+   meteors = []
+   for id in objects:
+      print(objects[id])
+      if "report" in objects[id]:
+         if objects[id]['report']['meteor_yn'] == "Y":
+            meteors.append(objects[id])
+   return(meteors)
 
 
 def cnt_max_px(cnt_img):
@@ -64,7 +73,7 @@ def compute_intensity(x,y,w,h,frame, bg_frame):
 
    return(val,cx1+mx,cy1+my, cnt)
 
-def day_or_night(capture_date, json_conf):
+def day_or_night(capture_date, json_conf,extra=0):
 
    device_lat = json_conf['site']['device_lat']
    device_lng = json_conf['site']['device_lng']
@@ -88,9 +97,12 @@ def day_or_night(capture_date, json_conf):
       sun_status = "night"
    else:
       sun_status = "day"
-   return(sun_status)
+   if extra == 0:
+      return(sun_status)
+   else:
+      return(sun_status,sun_az,sun_alt)
 
-def convert_filename_to_date_cam(file):
+def convert_filename_to_date_cam_old(file):
    el = file.split("/")
    filename = el[-1]
    if "trim" in filename:
@@ -101,6 +113,10 @@ def convert_filename_to_date_cam(file):
    fy,fm,fd,fh,fmin,fs,fms,cam = data[:8]
    f_date_str = fy + "-" + fm + "-" + fd + " " + fh + ":" + fmin + ":" + fs
    f_datetime = datetime.datetime.strptime(f_date_str, "%Y-%m-%d %H:%M:%S")
+   cam = cam.replace(".png", "")
+   cam = cam.replace(".jpg", "")
+   cam = cam.replace(".json", "")
+   cam = cam.replace(".mp4", "")
    return(f_datetime, cam, f_date_str,fy,fm,fd, fh, fmin, fs)
 
 def make_meteor_dir(sd_video_file, json_conf):
@@ -177,6 +193,10 @@ def convert_filename_to_date_cam(file, ms = 0):
 
    #print("CAM:", cam)
    #exit()
+   cam = cam.replace(".png", "")
+   cam = cam.replace(".jpg", "")
+   cam = cam.replace(".json", "")
+   cam = cam.replace(".mp4", "")
 
    f_date_str = fy + "-" + fm + "-" + fd + " " + fh + ":" + fmin + ":" + fs
    f_datetime = datetime.datetime.strptime(f_date_str, "%Y-%m-%d %H:%M:%S")
@@ -278,3 +298,24 @@ def date_to_jd(year,month,day):
     jd = B + C + D + day + 1720994.5
 
     return jd
+
+def check_running(progname, sec_grep = None):
+   cmd = "ps -aux |grep \"" + progname + "\" | grep -v grep |wc -l"
+
+   output = subprocess.check_output(cmd, shell=True).decode("utf-8")
+   #print(cmd)
+   #print(output)
+   output = int(output.replace("\n", ""))
+   if int(output) > 0:
+      return(output)
+   else:
+      return(0)
+
+def find_angle(p1,p2):
+   myrad = math.atan2(p1[1]-p2[1],p1[0]-p2[0])
+   mydeg = math.degrees(myrad)
+   return(mydeg)
+
+
+def collinear(x1, y1, x2, y2, x3, y3): 
+   return ((y1 - y2) * (x1 - x3), (y1 - y3) * (x1 - x2));

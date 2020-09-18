@@ -30,9 +30,80 @@ def add_big_text(background,text,y,color,size, the_font=VIDEO_FONT_BOLD):
     return  cv2.cvtColor(np.array(pil_im), cv2.COLOR_RGB2BGR)  
 
 
+# Create just a title splash screen with Main Title & Subtitle
+def create_simple_title_video(text,text2,output,title_color=(255,255,255,255), rect= True):
+   # Get the original frames 
+   cap = cv2.VideoCapture(DEFAULT_TITLE)
+
+   frames = []
+   frame_count = 0
+   go = 1
+   while go == 1:
+      _ , frame = cap.read()
+   
+      if frame is not None: 
+         frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR) 
+         frames.append(frame) 
+         go = 0
+   
+   cap.release()
+
+   new_frames = []
+
+   #AMS LOGO
+   anim_duration  = 85
+   end_fade_in_ams_logo = 65
+
+   fc = 0
+   transp = 0
+
+   # TITLE OF THE VIDEO
+   title_duration = 95
+   
+   # Initial Position of the rectangle
+   rect_x_init = int(1280/2)  
+   rect_x = rect_x_init
+   rect_w = 0
+   rect_y = 327
+   rect_h = 1
+   fc = 0
+   rect_min_x = 250 
+   rect_anim_duration = int(title_duration/2)
+
+   title_y = 250
+   title_size = 60
+   sub_title_y = 355
+   sub_title_zize = 32
+
+   # Title BG
+   for x in range(0, title_duration):
+
+      fc +=1
+
+      # Title
+      n_frame = add_big_text(frames[0],text,title_y, title_color, title_size)
+
+      #2nd ligne smaller
+      n_frame = add_big_text(n_frame,text2,sub_title_y, title_color, sub_title_zize,VIDEO_FONT)
+
+      #Rectangle 
+      if(rect is True):
+
+         if(rect_x > rect_min_x):
+               rect_x = int(rect_x - fc*(rect_x-rect_min_x)/rect_anim_duration)
+
+         rect_w = 1280-rect_x*2     
+
+         cv2.rectangle(n_frame, (rect_x, rect_y), (rect_x+rect_w, rect_y+rect_h),title_color, 1)
+      
+      new_frames.append(n_frame)
+
+   make_movie_from_frames(new_frames, [0,len(new_frames) - 1], output, 1)
+   #print('OUTPUT ' + output)
+
 # This function create a quick video (lenght of DEFAULT_TITLE ~ 3sec )
 # with the animated AMS logo and a custom text (ONE LINE TEXT ONLY)
-def create_title_video(text,text2,output,title_color=(255,255,255,255), rect= True):
+def create_title_video(text,text2,output,title_color=(255,255,255,255), logo=True, rect= True):
 
     # Get the original frames 
     cap = cv2.VideoCapture(DEFAULT_TITLE)
@@ -61,18 +132,19 @@ def create_title_video(text,text2,output,title_color=(255,255,255,255), rect= Tr
     transp = 0
 
     # Animation of the AMS LOGO
-    for frame in frames:
-        fc +=1
+    if(logo is True):
+      for frame in frames:
+         fc +=1
 
-        if(fc<anim_duration):
-            #Convert to proper colors
-            n_frame = frame
+         if(fc<anim_duration):
+               #Convert to proper colors
+               n_frame = frame
 
-            #Add Text 
-            transp  = int(fc*255/(anim_duration-end_fade_in_ams_logo))
-            n_frame = add_big_text(n_frame,"AMERICAN METEOR SOCIETY", 360, (transp,transp,transp,255), 25)
-            new_frames.append(n_frame)
-            fc += 1
+               #Add Text 
+               transp  = int(fc*255/(anim_duration-end_fade_in_ams_logo))
+               n_frame = add_big_text(n_frame,"AMERICAN METEOR SOCIETY", 360, (transp,transp,transp,255), 25)
+               new_frames.append(n_frame)
+               fc += 1
 
 
     # TITLE OF THE VIDEO
@@ -244,3 +316,10 @@ def concat_videos_fade(video1,video2,output,_from,_to):
   
     output = subprocess.check_output(cmd, shell=True).decode("utf-8")     
     print(output) 
+
+
+# Resize a video
+def resize(video1,output,_width):
+   cmd = 'ffmpeg -i ' + video1 + ' -filter:v scale='+str(_width)+':-1 -c:a copy ' + output
+   output = subprocess.check_output(cmd, shell=True).decode("utf-8")     
+   print(output)  

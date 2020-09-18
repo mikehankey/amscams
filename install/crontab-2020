@@ -25,3 +25,10 @@
 #SENSE UP / AUTO CAL
 32 */2 * * * cd /home/ams/amscams/pythonv2; ./IMX291.py sense_all all > /dev/null 2>&1
 
+# New Pipe Line
+# Live Minute
+#*/10 * * * * cd /home/ams/amscams/pipeline/; ./Process.py bcm
+# Morning report
+#10 12 * * * cd /home/ams/amscams/pipeline/; ./Process.py detect_rpt
+# Meteors Last Night 
+#30 12 * * * cd /home/ams/amscams/pipeline/; ./Process.py mln

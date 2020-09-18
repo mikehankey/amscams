@@ -326,14 +326,14 @@ def make_movie_from_frames(frames, fns, outfile , remaster = 0):
    last_frame = fns[-1]
 
    cc = 0
-   print("MM Start Trim Fn:", first_frame)
-   print("MM Last Trim Fn:", last_frame)
-   print("MM Total frames :", len(frames))
+   #print("MM Start Trim Fn:", first_frame)
+   #print("MM Last Trim Fn:", last_frame)
+   #print("MM Total frames :", len(frames))
 
    for frame in frames:
       filename = TMP_DIR + '{0:06d}'.format(cc) + ".png"
       if first_frame <= cc <= last_frame:
-         print(cc, first_frame, last_frame )
+         #print(cc, first_frame, last_frame )
          cv2.imwrite(filename, frame)
       cc = cc + 1
 
@@ -343,13 +343,11 @@ def make_movie_from_frames(frames, fns, outfile , remaster = 0):
    else:
       cmd = """/usr/bin/ffmpeg -y -framerate 25 -pattern_type glob -i '""" + TMP_DIR + """*.png' \
         -c:v libx264 -r 25 -pix_fmt yuv420p """ + outfile 
-   print(cmd)
+   #print(cmd)
    os.system(cmd)
 
-
-   
    os.system("rm -rf " + TMP_DIR )
-   print("rm -rf " + TMP_DIR )
+   #print("rm -rf " + TMP_DIR )
    return(start_buff, end_buff)
    
 

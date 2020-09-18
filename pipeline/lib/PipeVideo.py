@@ -1,7 +1,7 @@
 '''
    Pipeline Video Functions
 '''
-
+import subprocess
 import cv2
 import numpy as np
 import time
@@ -10,10 +10,143 @@ import datetime
 import os
 import glob
 
+from lib.PipeAutoCal import fn_dir
 from lib.PipeImage import stack_frames_fast , stack_stack, mask_frame, stack_frames
 from lib.PipeUtil import cfe, save_json_file, convert_filename_to_date_cam, get_masks, load_json_file
 from lib.DEFAULTS import * 
 from lib.PipeMeteorTests import ang_dist_vel, angularSeparation
+
+def ffmpeg_cats(files, outfile=None):
+   print("FILES:", files)
+   files = sorted(files[2:])
+   list = ""
+   for file in files:
+      list += "file '" + file + "'\n"
+   list_file = "tmp_vids/cat.txt"
+   outfile = files[2].replace(".mp4", "") 
+   last_fn, ld = fn_dir(files[-1])
+   outfile = outfile + "__" + last_fn
+   fp = open(list_file, "w")
+   fp.write(list)
+   fp.close()
+   cmd = "/usr/bin/ffmpeg -f concat -safe 0 -i " +list_file + " -c copy -y " + outfile
+   print(cmd)
+   os.system(cmd)
+
+
+def ffmpeg_cat(file1, file2, outfile=None):
+   list = "file '" + file1 + "'\n"
+   list += "file '" + file2 + "'\n"
+   outfile = file1.replace(".mp4", "-cat.mp4")
+
+   list_file = "tmp_vids/cat.txt"
+   fp = open(list_file, "w")
+   fp.write(list)
+   fp.close()
+   cmd = "/usr/bin/ffmpeg -f concat -safe 0 -i " +list_file + " -c copy -y " + outfile
+   print(cmd)
+   os.system(cmd)
+      
+
+def ffprobe(video_file):
+   default = [704,576]
+   cmd = "/usr/bin/ffprobe " + video_file + " > /tmp/ffprobe72.txt 2>&1"
+   output = subprocess.check_output(cmd, shell=True).decode("utf-8")
+   #try:
+   #time.sleep(2)
+   output = None
+   if True:
+      fpp = open("/tmp/ffprobe72.txt", "r")
+      for line in fpp:
+         if "Duration" in line:
+            el = line.split(",")
+            dur = el[0]
+            dur = dur.replace("Duration: ", "")
+            el = dur.split(":")
+            tsec = el[2]
+            total_frames = float(tsec) * 25
+         if "Stream" in line:
+            output = line
+      fpp.close()
+      print("OUTPUT: ", output)
+      print("TSEC:", dur)
+      print("DUR:", dur)
+      print("TF:", total_frames)
+      if output is None:
+         print("FFPROBE PROBLEM:", video_file)
+         exit()
+
+      el = output.split(",")
+      if "x" in el[3]:
+         dim = el[3].replace(" ", "")
+      elif "x" in el[2]:
+         dim = el[2].replace(" ", "")
+
+      w, h = dim.split("x")
+   return(w,h, total_frames)
+
+
+def find_crop_size(min_x,min_y,max_x,max_y, img_w, img_h, hdm_x=1, hdm_y=1 ):
+   sizes = [[1280,720],[1152,648],[1024,576],[869,504],[768,432], [640,360], [320, 180]]
+
+   w = max_x - min_x
+   h = max_y - min_y
+   mid_x = int(((min_x + max_x) / 2))
+   mid_y = int(((min_y + max_y) / 2))
+
+   best_w = img_w 
+   best_h = img_h
+   for mw,mh in sizes:
+      if w * 1.4 < mw and h * 1.4 < mh :
+         best_w = mw
+         best_h = mh
+   print("BEST CROP SIZE IS: ", best_w, best_h)
+
+
+
+   if (best_w/2) + mid_x > img_w:
+      cx1 = mid_x + (best_w + mid_x ) - img_w 
+      cx1 = img_w - best_w
+   elif mid_x - (best_w/2) < 0:
+      cx1 = 0
+   else:
+      cx1 = int(mid_x - (best_w/2))
+   if (best_h/2) + mid_y > img_h:
+      cy1 = 1079 - best_h
+   elif mid_y - (best_h/2) < 0:
+      cy1 = 0
+   else:
+      cy1 = int(mid_y -  (best_h/ 2))
+   cx1 = int(cx1)
+   cy1 = int(cy1)
+   cx2 = int(cx1 + best_w)
+   cy2 = int(cy1 + best_h)
+   cw = cx2 - cx1
+   ch = cy2 - cy1
+
+   if cx2 > img_w:
+      print("CROP OUTSIDE OF WIDTH:", cx2)
+      cx1 = img_w - cw
+      cx2 = cx1 + cw
+      print("FIXED :", cx1, cx2)
+
+   if cy2 > img_h:
+      cy1 = img_h - ch
+      cy2 = img_h + ch
+
+   if cx2 < 0 :
+      cx1 = 0 
+      cx2 = 0 + cw
+   if cy2 < 0 :
+      cy1 = 0 + ch
+      cy2 = 0 + ch
+   
+   scx1, scx2 = sorted([cx1, cx2], reverse=False)
+
+   scy1, scy2 = sorted([cy1, cy2], reverse=False)
+   print(scx1, scy1, scx2, scy1)
+   return(scx1,scy1,scx2,scy2,mid_x,mid_y)
+
 
 def make_preview_videos(date, json_conf):
 
@@ -125,7 +258,7 @@ def flatten_frames(frames):
 
 def make_preview_video(video_file, json_conf, width=THUMB_W, height=THUMB_H):
    new_file = video_file.replace(".mp4", "-thumb.mp4")
-   cmd = "/usr/bin/ffmpeg -i " + video_file + " -vcodec libx264 -crf 30 -vf 'scale=" + str(width) + ":" + str(height) + "' -y " + new_file 
+   cmd = "/usr/bin/ffmpeg -i " + video_file + " -vcodec libx264 -crf 30 -vf 'scale=" + str(width) + ":" + str(height) + "' -y " + new_file + " >/dev/null 2>&1"
    print(cmd)
    os.system(cmd)
    frames,color_frames,subframes,sum_vals,max_vals,pos_vals = load_frames_fast(video_file, json_conf, 0, 1, [], 1,[])
@@ -136,7 +269,7 @@ def make_preview_video(video_file, json_conf, width=THUMB_W, height=THUMB_H):
 
    # add stack to video: 
    final_file = new_file.replace("-thumb", "-temp")
-   cmd = "/usr/bin/ffmpeg -loop 1 -framerate 25 -t 1 -i " + new_stack + " -i " + new_file + " -filter_complex '[0:0] [1:0] concat=n=2:v=1:a=0' " + final_file 
+   cmd = "/usr/bin/ffmpeg -loop 1 -framerate 25 -t 1 -i " + new_stack + " -i " + new_file + " -filter_complex '[0:0] [1:0] concat=n=2:v=1:a=0' " + final_file + " >/dev/null 2>&1"
    os.system(cmd)
    cmd = "mv " + final_file + " " + new_file
    os.system(cmd)
@@ -327,6 +460,8 @@ def scan_stack_file(file, vals = []):
    elapsed_time = time.time() - start_time
    #os.system("mv " + file + " " + proc_dir)
    print("saved.", json_file)
+   print("MIKE REMOVE EXIT!")
+   exit()
 
    if cfe(stack_file) == 0:
       print("No stack file made!?")
@@ -392,7 +527,7 @@ def load_frames_fast(trim_file, json_conf, limit=0, mask=0,crop=(),color=0,resiz
                      hd = 1
                   else:
                      hd = 0
-                  masks = get_masks(cam, json_conf,hd)
+                  #masks = get_masks(cam, json_conf,hd)
                   frame = mask_frame(frame, [], masks, 5)
 
                if last_frame is not None:
@@ -426,7 +561,7 @@ def load_frames_fast(trim_file, json_conf, limit=0, mask=0,crop=(),color=0,resiz
                   sum_val = 0
                   sum_vals.append(0)
                   max_vals.append(0)
-                  pos_vals.append(0)
+                  pos_vals.append((0,0))
 
             frames.append(frame)
             last_frame = frame
@@ -439,5 +574,24 @@ def load_frames_fast(trim_file, json_conf, limit=0, mask=0,crop=(),color=0,resiz
 
 #def find_hd_file():
 
+def load_frames_simple(trim_file):
+   cap = cv2.VideoCapture(trim_file)
+   frames = []
+   go = 1
+   frame_count = 0
+   while go == 1:
+      _ , frame = cap.read()
+      if frame is None:
+         if frame_count <= 5 :
+            cap.release()
+            return(frames)
+         else:
+            go = 0
+      if frame is not None:
+         frames.append(frame)
+      frame_count += 1
+
+   cap.release()
+   return(frames)
 
 #def trim_crop_video():

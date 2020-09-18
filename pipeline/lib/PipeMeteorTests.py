@@ -9,19 +9,25 @@ def analyze_intensity(ints):
          pos_vals.append(int_val)
       else:
          neg_vals.append(int_val)
+
+
    if len(neg_vals) > 0:
       pos_neg_perc = len(pos_vals) / (len(pos_vals) + len(neg_vals))
    else:
-      pos_neg_perc = 0
+      pos_neg_perc = 1
    if len(pos_vals) == 0:
       return(0, 1, [])
+
 
    max_int = max(pos_vals)
    min_int = min(pos_vals)
    max_times = max_int / min_int
    perc_val = []
    for int_val in pos_vals:
-      mxt = max_int / int_val
+      if max_int > 0:
+         mxt = int_val / max_int
+      else:
+         mxt = 0
       perc_val.append(mxt)
    return(max_times, pos_neg_perc, perc_val)
 
@@ -74,7 +80,7 @@ def meteor_dir_test(fxs,fys):
    if len(fxs) > 0: 
       perc = match / (len(fxs)*2)
    else:
-      perc = 0
+      perc = 1
    return(perc)
 
 def meteor_dir(fx,fy,lx,ly):
@@ -167,7 +173,7 @@ def obj_cm(ofns):
    last_fn = None
    for fn in ofns:
       if last_fn is not None:
-         if last_fn + 1 == fn or last_fn + 2 == fn:
+         if int(last_fn) + 1 == int(fn) or int(last_fn) + 2 == int(fn):
             cm = cm + 1
             if cm > max_cm :
                max_cm = cm
@@ -185,8 +191,9 @@ def filter_bad_objects(objects):
         if obj['report']['non_meteor'] == 1:
            bad_objs.append(id)
 
-     elif len(obj['ofns']) < 3 :
+     elif len(obj['ofns']) < 2 :
         bad_objs.append(id)
+
    for id in bad_objs:
       del(objects[id])
    return(objects)
@@ -356,6 +363,8 @@ def meteor_direction(fx,fy,lx,ly):
 def best_fit_slope_and_intercept(xs,ys):
     xs = np.array(xs, dtype=np.float64)
     ys = np.array(ys, dtype=np.float64)
+    if len(xs) < 3:
+       return(0,0)
     m = (((np.mean(xs)*np.mean(ys)) - np.mean(xs*ys)) /
          ((np.mean(xs)*np.mean(xs)) - np.mean(xs*xs)))
 
@@ -438,11 +447,13 @@ def ang_dist_vel(xs=[], ys=[],azs=[],els=[], pixscale=155):
 
 
    # Formula for finding ang_dist and vel from px
-   print(xs,ys)
    if len(xs) > 0:
-      px_dist = calc_dist((xs[0],ys[0]), (xs[-1], ys[-2]))
+      px_dist = calc_dist((xs[0],ys[0]), (xs[-1], ys[-1]))
       ang_dist = px_dist * pixscale
+      #print("PIX DIST: ", px_dist)
+      #print("ANG DIST ARC SEC: ", ang_dist)
       ang_dist = arc_seconds_to_degrees(ang_dist)
+      #print("ANG DIST DEG: ", ang_dist)
       # to find angular velocity per second in degrees 
       ang_vel = ang_dist / (len(xs) / 25)
    # Formula for finding ang_dist and vel from az,el 
