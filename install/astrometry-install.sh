@@ -1,9 +1,5 @@
 #!/bin/sh
 
-#supt-get install libcfitsio-dev
-#sudo apt-get install libjpeg-dev
-#sudo pip install astropy
-#sudo apt-get install -y swig
 
 # Set gcc6 as CC env var
 CC=/usr/bin/gcc-6
