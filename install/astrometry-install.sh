@@ -1,7 +1,9 @@
 #!/bin/sh
-sudo apt-get install libcfitsio-dev
+
+#supt-get install libcfitsio-dev
 #sudo apt-get install libjpeg-dev
-sudo apt-get install -y swig
+#sudo pip install astropy
+#sudo apt-get install -y swig
 
 # Set gcc6 as CC env var
 CC=/usr/bin/gcc-6
@@ -25,17 +27,19 @@ export WCS_SLIB
 export WCSLIB_INC
 export WCS_LIB
 
-#cd ~/allsky6-install
+mkdir /home/ams/astrometry/
+cd /home/ams/astrometry/
+
 #wget http://astrometry.net/downloads/astrometry.net-latest.tar.gz
-#gunzip astrometry.net-latest.tar.gz
-#tar xf astrometry.net-latest.tar
+wget http://192.168.1.4/mnt/ams2/astrometry.net-mike.tar.gz
+gunzip astrometry.net-mike.tar.gz
+tar xf astrometry.net-mike.tar
 
-sudo pip install astropy
 
-cd ~/astrometry.net-0.73/
-#wget http://35.165.208.121/plot-constellations.c
-#cp plot-constellations.c blind
-#cp plot-constellations.c astrometry/blind
+cd /home/ams/astrometry/astrometry.net-0.73/
+wget http://archive.allsky.tv/APPS/INSTALL/plot-constellations.c
+cp plot-constellations.c blind
+cp plot-constellations.c astrometry/blind
 make
 make py
 make extra
@@ -50,4 +54,4 @@ sudo mv index-4117.fits /usr/local/astrometry/data
 wget http://broiler.astrometry.net/~dstn/4100/index-4118.fits
 sudo mv index-4118.fits /usr/local/astrometry/data
 wget http://broiler.astrometry.net/~dstn/4100/index-4119.fits
-sudo mv index-4119.fits /usr/local/astrometry/data
+sudo mv index-4119.fits /usr/local/astrometry/datado mv index-4119.fits /usr/local/astrometry/data
