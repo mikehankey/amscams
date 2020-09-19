@@ -2,7 +2,8 @@
 
 
 # Set gcc6 as CC env var
-CC=/usr/bin/gcc-6
+#CC=/usr/bin/gcc-6
+CC=/usr/bin/gcc
 export CC
 
 # MAKE SURE WE HAVE ALL PRE-REQS ELSE THIS WILL FAIL
