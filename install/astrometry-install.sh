@@ -43,15 +43,15 @@ cp plot-constellations.c astrometry/blind
 make
 make py
 make extra
-sudo make install
+make install
 
 #need these catalogs index-4116.fits  index-4117.fits  index-4118.fits  index-4119.fits
 
 wget http://broiler.astrometry.net/~dstn/4100/index-4116.fits
-sudo mv index-4116.fits /usr/local/astrometry/data
+mv index-4116.fits /usr/local/astrometry/data
 wget http://broiler.astrometry.net/~dstn/4100/index-4117.fits
-sudo mv index-4117.fits /usr/local/astrometry/data
+mv index-4117.fits /usr/local/astrometry/data
 wget http://broiler.astrometry.net/~dstn/4100/index-4118.fits
-sudo mv index-4118.fits /usr/local/astrometry/data
+mv index-4118.fits /usr/local/astrometry/data
 wget http://broiler.astrometry.net/~dstn/4100/index-4119.fits
-sudo mv index-4119.fits /usr/local/astrometry/datado mv index-4119.fits /usr/local/astrometry/data
+mv index-4119.fits /usr/local/astrometry/datado mv index-4119.fits /usr/local/astrometry/data
