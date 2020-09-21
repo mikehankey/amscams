@@ -113,10 +113,15 @@ def audit_min(date, json_conf):
    data = {}
    #minutes = load_json_file(data_file)
    hd_files = glob.glob("/mnt/ams2/HD/" + date + "*.mp4")
-   sd_files = glob.glob("/mnt/ams2/SD/" + date + "*.mp4")
-   sd_day_files = glob.glob("/mnt/ams2/SD/daytime/" + date + "/*.mp4")
+   sd_files = glob.glob("/mnt/ams2/SD/proc2/" + date + "/*.mp4")
+   sd_day_files = glob.glob("/mnt/ams2/SD/proc2/daytime/" + date + "/*.mp4")
    sd_queue_files = glob.glob("/mnt/ams2/SD/" + date + "*.mp4")
-   sd_day_queue_files = glob.glob("/mnt/ams2/SD/daytime/" + date + "*.mp4")
+   sd_day_queue_files = glob.glob("/mnt/ams2/SD/proc2/daytime/" + date + "*.mp4")
+   print("HD:", len(hd_files))
+   print("SD:", len(sd_files))
+   print("SDD:", len(sd_day_files))
+   print("SDQ:", len(sd_queue_files))
+   print("SDDQ:", len(sd_day_queue_files))
 
    for h in range(0,24):
       if h not in data:
@@ -137,14 +142,73 @@ def audit_min(date, json_conf):
    for file in sorted(hd_files):
       (sd_datetime, sd_cam, sd_date, sd_y, sd_m, sd_d, sd_h, sd_M, sd_s) = convert_filename_to_date_cam(file)
       if "trim" not in file:
-         print("HD FILE:", sd_h, sd_M, sd_cam, cam_id_info[sd_cam])
+         #print("HD FILE:", sd_h, sd_M, sd_cam, cam_id_info[sd_cam])
 
          cam_num = cam_id_info[sd_cam]
          sd_h = int(sd_h)
          sd_M = int(sd_M)
          data[sd_h][sd_M][cam_num]['hd_file'].append(file)
+   for file in sorted(sd_files):
+      (sd_datetime, sd_cam, sd_date, sd_y, sd_m, sd_d, sd_h, sd_M, sd_s) = convert_filename_to_date_cam(file)
+      if "trim" not in file:
+         print("SD FILE:", sd_h, sd_M, sd_cam, cam_id_info[sd_cam])
+         cam_num = cam_id_info[sd_cam]
+         sd_h = int(sd_h)
+         sd_M = int(sd_M)
+         data[sd_h][sd_M][cam_num]['sd_file'].append(file)
+   for file in sorted(sd_day_files):
+      (sd_datetime, sd_cam, sd_date, sd_y, sd_m, sd_d, sd_h, sd_M, sd_s) = convert_filename_to_date_cam(file)
+      if "trim" not in file:
+         print("SD FILE:", sd_h, sd_M, sd_cam, cam_id_info[sd_cam])
+         cam_num = cam_id_info[sd_cam]
+         sd_h = int(sd_h)
+         sd_M = int(sd_M)
+         data[sd_h][sd_M][cam_num]['sd_file'].append(file)
+   for file in sorted(sd_day_queue_files):
+      (sd_datetime, sd_cam, sd_date, sd_y, sd_m, sd_d, sd_h, sd_M, sd_s) = convert_filename_to_date_cam(file)
+      if "trim" not in file:
+         print("SD FILE:", sd_h, sd_M, sd_cam, cam_id_info[sd_cam])
+         cam_num = cam_id_info[sd_cam]
+         sd_h = int(sd_h)
+         sd_M = int(sd_M)
+         data[sd_h][sd_M][cam_num]['sd_file'].append(file)
+   for file in sorted(sd_queue_files):
+      (sd_datetime, sd_cam, sd_date, sd_y, sd_m, sd_d, sd_h, sd_M, sd_s) = convert_filename_to_date_cam(file)
+      if "trim" not in file:
+         print("SD FILE:", sd_h, sd_M, sd_cam, cam_id_info[sd_cam])
+         cam_num = cam_id_info[sd_cam]
+         sd_h = int(sd_h)
+         sd_M = int(sd_M)
+         data[sd_h][sd_M][cam_num]['sd_file'].append(file)
+
+
    save_json_file(data_file, data)
-   print(data_file)
+   html = ""
+   for hour in data:
+      if html != "":
+         html += str(hour) + "</table>"
+      html += str(hour) + "<table border=1>"
+      for min in data[hour]:
+         html += "<tr><td> " + str(hour) + ":" + str(min) + "</td>"
+         for cam in data[hour][min]:
+            
+            html += "<td>"
+            if len(data[hour][min][cam]['sd_file']) == 0:
+               html += "<font color=red>X</font> "
+            else:
+               html += "<font color=green>&check;</font> " #+ str(data[hour][min][cam]['sd_file'])
+            if len(data[hour][min][cam]['hd_file']) == 0:
+               html += "<font color=red>X</font>"
+            else:
+               html += "<font color=green>&check;</font> "
+            html += "</td>"
+         html += "</tr>"
+      html += "</table>"
+
+   html_file = data_file.replace(".json", ".html")
+   out = open(html_file, "w")
+   out.write(html)
+   print(html_file)
  
 
 def multi_cam_tl(date):
