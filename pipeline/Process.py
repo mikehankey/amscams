@@ -194,7 +194,15 @@ if __name__ == "__main__":
 
    # TIME LAPSE COMMANDS 
    if cmd == 'audit':
-      audit_min(sys.argv[2], json_conf)
+
+      today = datetime.now().strftime("%Y_%m_%d")
+      yesterday = (datetime.now() - dt.timedelta(days = 1)).strftime("%Y_%m_%d")
+      if sys.argv[2] == "today":
+         audit_min(today, json_conf)
+      elif sys.argv[2] == "yest":
+         audit_min(yesterday, json_conf)
+      else:
+         audit_min(sys.argv[2], json_conf)
    if cmd == 'tlc':
       make_tl_for_cam(sys.argv[2], sys.argv[3], json_conf)
    if cmd == 'tla':
