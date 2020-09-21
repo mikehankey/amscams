@@ -419,7 +419,9 @@ def make_tl_for_cam(date,cam, json_conf):
    print("TL:", cam, date)
    hd_dir = "/mnt/ams2/HD/"
    files = glob.glob(hd_dir + date + "*" + cam + "*.mp4")
+   print("WILD:", hd_dir + date + "*" + cam + "*.mp4")
    tl_dir = TL_DIR + date + "/"
+   print("FILES:", len(files))
    if cfe(tl_dir, 1) == 0:
       os.makedirs(tl_dir)
    for file in sorted(files):
@@ -448,11 +450,10 @@ def make_tl_for_cam(date,cam, json_conf):
    video_from_images(date, cam, json_conf)
 
 def video_from_images(date, wild, json_conf ):
-   TL_DIR = "/mnt/ams2/meteor_archive/" + STATION_ID + "/TL/PICS/"
-   tl_dir = TL_DIR + date + "/"
-   tl_out = tl_dir + "tl_" + date + "_" + wild + ".mp4"
+   TL_DIR = "/mnt/ams2/meteor_archive/" + STATION_ID + "/TL/VIDS/"
+   tl_out = TL_DIR + "tl_" + date + "_" + wild + ".mp4"
 
-   iwild = tl_dir + "*" + wild + "*.png"
+   iwild = TL_DIR + "*" + wild + "*.jpg"
 
    print(iwild)
    cmd = "/usr/bin/ffmpeg -framerate 25 -pattern_type glob -i '" + iwild + "' -c:v libx264 -pix_fmt yuv420p -y " + tl_out + " >/dev/null 2>&1"

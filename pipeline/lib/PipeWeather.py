@@ -27,6 +27,14 @@ from matplotlib.figure import Figure
 from lib.DEFAULTS import *
 print(TL_IMAGE_DIR)
 
+def solar_info(date, json_conf):
+   for i in range(0,24):
+      f_date_str = date + ' {:02d}:{:02d}:00'.format(i,0) 
+      sun_status, sun_az, sun_el = day_or_night(f_date_str, json_conf,1)
+      print(f_date_str, sun_status, sun_az, sun_el)
+
+
+
 def nexrad_time(nrf):
    fn, dir = fn_dir(nrf)
    el = fn.split("_")
