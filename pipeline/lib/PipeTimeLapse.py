@@ -1,6 +1,7 @@
 '''
    functions for making timelapse movies
 '''
+import datetime as dt
 from datetime import datetime
 import glob
 import sys
@@ -123,6 +124,15 @@ def audit_min(date, json_conf):
    print("SDQ:", len(sd_queue_files))
    print("SDDQ:", len(sd_day_queue_files))
 
+   today = datetime.now().strftime("%Y_%m_%d")
+   yesterday = (datetime.now() - dt.timedelta(days = 1)).strftime("%Y_%m_%d")
+   if today == date : 
+      limit_h = int(datetime.now().strftime("%H"))
+      limit_m = int(datetime.now().strftime("%M"))
+   else :
+      limit_h = 23
+      limit_m = 59
+
    for h in range(0,24):
       if h not in data:
          data[h] = {}
@@ -151,7 +161,6 @@ def audit_min(date, json_conf):
    for file in sorted(sd_files):
       (sd_datetime, sd_cam, sd_date, sd_y, sd_m, sd_d, sd_h, sd_M, sd_s) = convert_filename_to_date_cam(file)
       if "trim" not in file:
-         print("SD FILE:", sd_h, sd_M, sd_cam, cam_id_info[sd_cam])
          cam_num = cam_id_info[sd_cam]
          sd_h = int(sd_h)
          sd_M = int(sd_M)
@@ -159,7 +168,6 @@ def audit_min(date, json_conf):
    for file in sorted(sd_day_files):
       (sd_datetime, sd_cam, sd_date, sd_y, sd_m, sd_d, sd_h, sd_M, sd_s) = convert_filename_to_date_cam(file)
       if "trim" not in file:
-         print("SD FILE:", sd_h, sd_M, sd_cam, cam_id_info[sd_cam])
          cam_num = cam_id_info[sd_cam]
          sd_h = int(sd_h)
          sd_M = int(sd_M)
@@ -167,7 +175,6 @@ def audit_min(date, json_conf):
    for file in sorted(sd_day_queue_files):
       (sd_datetime, sd_cam, sd_date, sd_y, sd_m, sd_d, sd_h, sd_M, sd_s) = convert_filename_to_date_cam(file)
       if "trim" not in file:
-         print("SD FILE:", sd_h, sd_M, sd_cam, cam_id_info[sd_cam])
          cam_num = cam_id_info[sd_cam]
          sd_h = int(sd_h)
          sd_M = int(sd_M)
@@ -175,7 +182,6 @@ def audit_min(date, json_conf):
    for file in sorted(sd_queue_files):
       (sd_datetime, sd_cam, sd_date, sd_y, sd_m, sd_d, sd_h, sd_M, sd_s) = convert_filename_to_date_cam(file)
       if "trim" not in file:
-         print("SD FILE:", sd_h, sd_M, sd_cam, cam_id_info[sd_cam])
          cam_num = cam_id_info[sd_cam]
          sd_h = int(sd_h)
          sd_M = int(sd_M)
@@ -184,26 +190,29 @@ def audit_min(date, json_conf):
 
    save_json_file(data_file, data)
    html = ""
-   for hour in data:
-      if html != "":
-         html += str(hour) + "</table>"
-      html += str(hour) + "<table border=1>"
-      for min in data[hour]:
-         html += "<tr><td> " + str(hour) + ":" + str(min) + "</td>"
-         for cam in data[hour][min]:
+   for hour in sorted(data.keys(), reverse=True):
+      if hour <= limit_h:
+         if html != "":
+            html += str(hour) + "</table>"
+         html += str(hour) + "<table border=1>"
+         for min in sorted(data[hour].keys(), reverse=True):
+            if hour == limit_h and min >= limit_m:
+               continue
+            html += "<tr><td> " + str(hour) + ":" + str(min) + "</td>"
+            for cam in data[hour][min]:
             
-            html += "<td>"
-            if len(data[hour][min][cam]['sd_file']) == 0:
-               html += "<font color=red>X</font> "
-            else:
-               html += "<font color=green>&check;</font> " #+ str(data[hour][min][cam]['sd_file'])
-            if len(data[hour][min][cam]['hd_file']) == 0:
-               html += "<font color=red>X</font>"
-            else:
-               html += "<font color=green>&check;</font> "
-            html += "</td>"
-         html += "</tr>"
-      html += "</table>"
+               html += "<td>"
+               if len(data[hour][min][cam]['sd_file']) == 0:
+                  html += "<font color=red>X</font> "
+               else:
+                  html += "<font color=green>&check;</font> " #+ str(data[hour][min][cam]['sd_file'])
+               if len(data[hour][min][cam]['hd_file']) == 0:
+                  html += "<font color=red>X</font>"
+               else:
+                  html += "<font color=green>&check;</font> "
+               html += "</td>"
+            html += "</tr>"
+         html += "</table>"
 
    html_file = data_file.replace(".json", ".html")
    out = open(html_file, "w")
