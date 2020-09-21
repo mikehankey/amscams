@@ -8,7 +8,7 @@ from PIL import ImageFont, ImageDraw, Image, ImageChops
 from datetime import datetime
 import datetime as dt
 
-from lib.PipeWeather import detect_clouds , make_flat, track_clouds
+from lib.PipeWeather import detect_clouds , make_flat, track_clouds, solar_info
 from lib.PipeImage import quick_video_stack
 from lib.PipeTrans import trans_test 
 from lib.PipeManager import mln_report, mln_best, best_of , copy_super_stacks, super_stacks_to_video, multi_station_meteors, proc_status
@@ -321,4 +321,6 @@ if __name__ == "__main__":
       else:
          day = None
       track_clouds(sys.argv[2],day, json_conf )
+   if cmd == "solar":
+      solar_info(sys.argv[2], json_conf)
    
