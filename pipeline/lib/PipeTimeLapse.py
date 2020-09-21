@@ -109,42 +109,42 @@ def audit_min(date, json_conf):
    mm = 0
    cam_id_info, cam_num_info = load_cam_info(json_conf)
    # check the files that could be missig and why
-   data_file = TL_VIDEO_DIR + date + "-minutes.json"
-   minutes = load_json_file(data_file)
-   for hm in minutes:
-      for cam in minutes[hm]:
-         if minutes[hm][cam] == "":
-            print("Missing: ", mm, hm, cam) 
-            h,m = hm.split("-")
-            hd_wild = "/mnt/ams2/HD/" + date + "_" + h + "_" + m + "*" + cam_num_info[cam] + "*"
-            snap_wild = "/mnt/ams2/SNAPS/" + date + "/" + date + "_" + h + "_" + m + "*" + cam_num_info[cam] + "*"
-            sd_night = "/mnt/ams2/SD/proc2/" + date + "/" + date + "_" + h + "_" + m + "*" + cam_num_info[cam] + "*"
-            sd_day = "/mnt/ams2/SD/proc2/daytime/" + date + "/" + date + "_" + h + "_" + m + "*" + cam_num_info[cam] + "*"
-            sd_day2 = "/mnt/ams2/SD/proc2/daytime/" + date + "_" + h + "_" + m + "*" + cam_num_info[cam] + "*"
-            snap_wild2 = "/mnt/ams2/SNAPS/" + date + "_" + h + "_" + m + "*" + cam_num_info[cam] + "*"
-            hd_missing, snap_missing, snap_missing2, sd_night_missing, sd_day_missing, sd_day2_missing = check_for_missing(hd_wild,snap_wild,snap_wild2,sd_night,sd_day,sd_day2 ) 
-            fixed = []
-            if len(hd_missing) > 0:
-               print("Some HD files found.", hd_missing)
-               fixed = hd_missing
-            if len(hd_missing) > 0:
-               print("Some Snap files found.", snap_missing)
-               fixed = snap_missing
-            if len(snap_missing2) > 0:
-               print("Some Snap2 files found.", snap_missing2)
-               fixed = snap_missing2
-            if len(sd_night_missing) > 0:
-               print("Some SD NIght files found.", sd_night_missing)
-               fixed = sd_night_missing
-            if len(sd_day_missing) > 0:
-               print("Some SD DAY files found.", sd_day_missing)
-               fixed = sd_day_missing
-            if len(sd_day_missing) > 0:
-               print("Some SD DAY2 files found.", sd_day2_missing)
-               fixed = sd_day2_missing
-            if len(fixed) > 0: 
-               print("FIXED:", fixed)
-            mm += 1
+   data_file = TL_VIDEO_DIR + date + "-audit.json"
+   data = {}
+   #minutes = load_json_file(data_file)
+   hd_files = glob.glob("/mnt/ams2/HD/" + date + "*.mp4")
+   sd_files = glob.glob("/mnt/ams2/SD/" + date + "*.mp4")
+   sd_day_files = glob.glob("/mnt/ams2/SD/daytime/" + date + "/*.mp4")
+   sd_queue_files = glob.glob("/mnt/ams2/SD/" + date + "*.mp4")
+   sd_day_queue_files = glob.glob("/mnt/ams2/SD/daytime/" + date + "*.mp4")
+
+   for h in range(0,24):
+      if h not in data:
+         data[h] = {}
+      for m in range(0,60):
+         if m not in data[h]:
+            data[h][m] = {}
+         for cam in cam_num_info:
+            if cam not in data[h][m]:
+               data[h][m][cam] = {}
+               data[h][m][cam]['cam_num'] = cam
+               data[h][m][cam]['id'] = cam_num_info[cam]
+               data[h][m][cam]['sd_file'] = []
+               data[h][m][cam]['hd_file'] = []
+               data[h][m][cam]['meteors'] = []
+               data[h][m][cam]['weather'] = []
+
+   for file in sorted(hd_files):
+      (sd_datetime, sd_cam, sd_date, sd_y, sd_m, sd_d, sd_h, sd_M, sd_s) = convert_filename_to_date_cam(file)
+      if "trim" not in file:
+         print("HD FILE:", sd_h, sd_M, sd_cam, cam_id_info[sd_cam])
+
+         cam_num = cam_id_info[sd_cam]
+         sd_h = int(sd_h)
+         sd_M = int(sd_M)
+         data[sd_h][sd_M][cam_num]['hd_file'].append(file)
+   save_json_file(data_file, data)
+   print(data_file)
  
 
 def multi_cam_tl(date):
