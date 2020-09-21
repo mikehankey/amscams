@@ -210,4 +210,11 @@ if cmd == "sense_up":
 if cmd == "auto_settings":
    cam = DVRIPCam(CameraIP,CameraUserName,CameraPassword)
    auto_settings(cam, CameraIP)
+if cmd == "reboot":
+   cam = DVRIPCam(CameraIP,CameraUserName,CameraPassword)
+   if cam.login():
+      print ("Success! Connected to " + CameraIP)
+   else:
+      print ("Failure. Could not connect to camera!")
+   cam.reboot()
    

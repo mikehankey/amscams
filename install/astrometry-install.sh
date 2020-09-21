@@ -18,7 +18,8 @@ export NETPBM_INC
 export NETPBM_LIB
 
 WCS_SLIB="-Lwcs"
-WCSLIB_INC="-I/usr/local/include/wcslib-5.15"
+#WCSLIB_INC="-I/usr/local/include/wcslib-5.15"
+WCSLIB_INC="-I/usr/include/wcslib-5.15"
 WCL_LIB="-Lwcs"
 export WCS_SLIB
 export WCSLIB_INC
