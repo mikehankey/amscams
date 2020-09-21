@@ -8,7 +8,7 @@ import sys
 import os
 from lib.PipeImage import  quick_video_stack, rotate_bound
 import cv2
-from lib.PipeUtil import cfe, save_json_file, convert_filename_to_date_cam, load_json_file
+from lib.PipeUtil import cfe, save_json_file, convert_filename_to_date_cam, load_json_file, day_or_night
 from lib.PipeAutoCal import fn_dir
 from lib.DEFAULTS import *
 import numpy as np
@@ -66,6 +66,7 @@ def check_for_missing(min_file,cams_id,json_conf):
          # score use this file
          img = cv2.imread(ms)
          img = cv2.resize(img, (THUMB_W, THUMB_H))
+         print("FOUND!", ms)
          return(img)
    # next check for vids
    for ms in missing:
@@ -123,7 +124,7 @@ def audit_min(date, json_conf):
    print("SDD:", len(sd_day_files))
    print("SDQ:", len(sd_queue_files))
    print("SDDQ:", len(sd_day_queue_files))
-
+   total_cams = len(json_conf['cameras'].keys())
    today = datetime.now().strftime("%Y_%m_%d")
    yesterday = (datetime.now() - dt.timedelta(days = 1)).strftime("%Y_%m_%d")
    if today == date : 
@@ -141,6 +142,10 @@ def audit_min(date, json_conf):
             data[h][m] = {}
          for cam in cam_num_info:
             if cam not in data[h][m]:
+               f_date_str = date + " " + str(h) + ":" + str(m) + ":00" 
+               f_date_str = f_date_str.replace("_", "/")
+               sun_status, sun_az, sun_el = day_or_night(f_date_str, json_conf,1)
+               print("SUN", f_date_str, sun_status, sun_az, sun_el)
                data[h][m][cam] = {}
                data[h][m][cam]['cam_num'] = cam
                data[h][m][cam]['id'] = cam_num_info[cam]
@@ -148,6 +153,7 @@ def audit_min(date, json_conf):
                data[h][m][cam]['hd_file'] = []
                data[h][m][cam]['meteors'] = []
                data[h][m][cam]['weather'] = []
+               data[h][m][cam]['sun'] = [[sun_status, sun_az, sun_el]]
 
    for file in sorted(hd_files):
       (sd_datetime, sd_cam, sd_date, sd_y, sd_m, sd_d, sd_h, sd_M, sd_s) = convert_filename_to_date_cam(file)
@@ -190,15 +196,37 @@ def audit_min(date, json_conf):
 
    save_json_file(data_file, data)
    html = ""
+   # find uptime
+   updata = {}
+   uptime_percs = []
+   for hour in sorted(data.keys(), reverse=True):
+      if hour not in updata:
+         updata[hour] = {}
+         updata[hour]['tfiles'] = 0
+      if hour <= limit_h:
+         for min in sorted(data[hour].keys(), reverse=True):
+            if hour == limit_h and min >= limit_m:
+               continue
+            for cam in data[hour][min]:
+               tfiles = len(data[hour][min][cam]['sd_file']) + len(data[hour][min][cam]['hd_file'])
+               updata[hour]['tfiles'] += tfiles
+
    for hour in sorted(data.keys(), reverse=True):
       if hour <= limit_h:
          if html != "":
             html += str(hour) + "</table>"
-         html += str(hour) + "<table border=1>"
+         if hour == limit_h: 
+            tot_m = limit_m 
+         else:
+            tot_m = 60
+         uptime_perc = str((updata[hour]['tfiles'] / (tot_m*total_cams*2) * 100))[0:5]
+         uptime_percs.append((hour,uptime_perc)) 
+         html += " " + str(updata[hour]['tfiles']) + " files of " +  str(tot_m*total_cams*2) + " expected. " + uptime_perc + "% uptime <table border=1>"
          for min in sorted(data[hour].keys(), reverse=True):
             if hour == limit_h and min >= limit_m:
                continue
             html += "<tr><td> " + str(hour) + ":" + str(min) + "</td>"
+            html += "<td>" + str(data[hour][min][cam]['sun']) + "</td>"
             for cam in data[hour][min]:
             
                html += "<td>"
@@ -218,6 +246,14 @@ def audit_min(date, json_conf):
    out = open(html_file, "w")
    out.write(html)
    print(html_file)
+   cloud_dir = "/mnt/archive.allsky.tv/" + STATION_ID + "/LOGS/"  
+   if cfe(cloud_dir, 1) == 0:
+      os.makedirs(cloud_dir)
+   outfile = cloud_dir + date + "_" + STATION_ID + "_uptime.json"
+   up_data = {}
+   up_data['uptime'] = uptime_percs
+   save_json_file(outfile, up_data)
+   print("Saved:", outfile)
  
 
 def multi_cam_tl(date):
@@ -281,12 +317,17 @@ def make_tl_html():
       
       vid_fn, vdir = fn_dir(vid)
       vid_desc = vid_fn[0:10]
-      html += "<li><a href=" + vid + ">" + vid_desc + "</a></li>"
+      html += "<li><a href=" + vid_fn + ">" + vid_desc + "</a></li>"
    html += "</ul>"
    oo = open(TL_VIDEO_DIR + "index.html", "w")
    oo.write(html)
    oo.close()
    print("saved:", TL_VIDEO_DIR + "index.html")
+   TL_CLOUD_FILE = "/mnt/archive.allsky.tv/" + STATION_ID + "/TL/VIDS/index.html"
+   oo = open(TL_CLOUD_FILE, "w")
+   oo.write(html)
+   oo.close()
+   
 
 def make_multi_cam_frame(frame, TID):
    mc_img = np.zeros((1080,1920,3),dtype=np.uint8)

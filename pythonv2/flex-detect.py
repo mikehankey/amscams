@@ -8255,7 +8255,7 @@ def move_to_archive(json_file):
    os.system(cmd)
    cmd = "./MakeCache.py " + meteor_dir + json_file
    print(cmd)
-   os.system(cmd)
+   #os.system(cmd)
    return(meteor_dir)
 
 def spectra(hd_stack):
