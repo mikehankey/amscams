@@ -3,6 +3,8 @@
 basic utility functions 
 
 '''
+import os
+import time
 import subprocess
 import math
 from pathlib import Path
@@ -12,6 +14,42 @@ import cv2
 import numpy as np
 import ephem
 import json
+import glob
+
+
+def get_file_info(file):
+   cur_time = int(time.time())
+   st = os.stat(file)
+   size = st.st_size
+   mtime = st.st_mtime
+   tdiff = cur_time - mtime
+   tdiff = tdiff / 60
+   return(size, tdiff)
+
+
+def remove_corrupt_files(json_conf):
+   log = open("/mnt/ams2/logs/corrupt.txt", "a")
+
+   files = glob.glob("/mnt/ams2/SD/*.mp4")
+   for file in sorted(files):
+      size, tdiff = get_file_info(file)
+      if tdiff > 10 and size < 100:
+         print("CORRUPT:", tdiff, size, file)
+         cmd = "rm " + file
+         print(cmd)
+         os.system(cmd)
+         log.write(str(tdiff)+","+str(size)+str( file)+"\n")
+   # now HD
+   files = glob.glob("/mnt/ams2/HD/*.mp4")
+   for file in sorted(files):
+      size, tdiff = get_file_info(file)
+      if tdiff > 10 and size < 100:
+         print("CORRUPT:", tdiff, size, file)
+         cmd = "rm " + file
+         print(cmd)
+         os.system(cmd)
+         log.write(str(tdiff)+","+str(size)+str( file)+"\n")
+   log.close()
 
 def meteors_only(objects):
    meteors = []

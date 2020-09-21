@@ -13,7 +13,7 @@ from lib.PipeImage import quick_video_stack
 from lib.PipeTrans import trans_test 
 from lib.PipeManager import mln_report, mln_best, best_of , copy_super_stacks, super_stacks_to_video, multi_station_meteors, proc_status
 from lib.PipeFiles import get_pending_files
-from lib.PipeUtil import convert_filename_to_date_cam, day_or_night , load_json_file, save_json_file, cfe
+from lib.PipeUtil import convert_filename_to_date_cam, day_or_night , load_json_file, save_json_file, cfe, remove_corrupt_files
 from lib.PipeVideo import scan_stack_file, make_preview_videos, load_frames_simple, ffmpeg_cat , ffmpeg_cats
 from lib.PipeDetect import detect_in_vals , obj_report, trim_events, detect_all, get_trim_num, trim_min_file, detect_meteor_in_clip, analyze_object, refine_meteor, refine_all_meteors
 from lib.PipeSync import sync_day 
@@ -323,4 +323,6 @@ if __name__ == "__main__":
       track_clouds(sys.argv[2],day, json_conf )
    if cmd == "solar":
       solar_info(sys.argv[2], json_conf)
+   if cmd == "rm_corrupt":
+      remove_corrupt_files(json_conf)
    
