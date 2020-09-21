@@ -151,6 +151,7 @@ def audit_min(date, json_conf):
                data[h][m][cam]['id'] = cam_num_info[cam]
                data[h][m][cam]['sd_file'] = []
                data[h][m][cam]['hd_file'] = []
+               data[h][m][cam]['stack_file'] = []
                data[h][m][cam]['meteors'] = []
                data[h][m][cam]['weather'] = []
                data[h][m][cam]['sun'] = [[sun_status, sun_az, sun_el]]
@@ -165,18 +166,34 @@ def audit_min(date, json_conf):
          sd_M = int(sd_M)
          data[sd_h][sd_M][cam_num]['hd_file'].append(file)
    for file in sorted(sd_files):
+      fn, dir = fn_dir(file)
       (sd_datetime, sd_cam, sd_date, sd_y, sd_m, sd_d, sd_h, sd_M, sd_s) = convert_filename_to_date_cam(file)
       if "trim" not in file:
          cam_num = cam_id_info[sd_cam]
          sd_h = int(sd_h)
          sd_M = int(sd_M)
          data[sd_h][sd_M][cam_num]['sd_file'].append(file)
+         stack_file = dir + "images/" + fn
+         stack_file = stack_file.replace(".mp4", "-stacked-tn.png")
+         print("STACK:", stack_file)
+         if cfe(stack_file) == 1:
+            data[sd_h][sd_M][cam_num]['stack_file'].append(stack_file)
+         else:
+            print("STACK NOT FOUND!:", stack_file)
    for file in sorted(sd_day_files):
       (sd_datetime, sd_cam, sd_date, sd_y, sd_m, sd_d, sd_h, sd_M, sd_s) = convert_filename_to_date_cam(file)
+      fn, dir = fn_dir(file)
       if "trim" not in file:
          cam_num = cam_id_info[sd_cam]
          sd_h = int(sd_h)
          sd_M = int(sd_M)
+         stack_file = dir + "images/" + fn
+         stack_file = stack_file.replace(".mp4", "-stacked-tn.png")
+         print("DAY STACK:", stack_file)
+         if cfe(stack_file) == 1:
+            data[sd_h][sd_M][cam_num]['stack_file'].append(stack_file)
+         else:
+            print("DAY STACK NOT FOUND!:", stack_file)
          data[sd_h][sd_M][cam_num]['sd_file'].append(file)
    for file in sorted(sd_day_queue_files):
       (sd_datetime, sd_cam, sd_date, sd_y, sd_m, sd_d, sd_h, sd_M, sd_s) = convert_filename_to_date_cam(file)
@@ -234,10 +251,20 @@ def audit_min(date, json_conf):
                   html += "<font color=red>X</font> "
                else:
                   html += "<font color=green>&check;</font> " #+ str(data[hour][min][cam]['sd_file'])
-               if len(data[hour][min][cam]['hd_file']) == 0:
-                  html += "<font color=red>X</font>"
+               if len(data[hour][min][cam]['stack_file']) > 0:
+                  jpg = data[hour][min][cam]['stack_file'][0].replace(".png", ".jpg")
+                  if cfe(jpg) == 0:
+                     cmd = "convert -quality 80 " + data[hour][min][cam]['stack_file'][0] + " " + jpg 
+                     print(cmd)
+                     os.system(cmd)
+
+                  #html += "<img src=" + data[hour][min][cam]['stack_file'][0] + ">"
+                  html += "<img src=" + jpg + ">"
                else:
-                  html += "<font color=green>&check;</font> "
+                  if len(data[hour][min][cam]['hd_file']) == 0:
+                     html += "<font color=red>X</font>"
+                  else:
+                     html += "<font color=green>&check;</font> "
                html += "</td>"
             html += "</tr>"
          html += "</table>"
