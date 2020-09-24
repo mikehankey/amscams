@@ -10420,7 +10420,7 @@ def get_cam_sizes(day=None):
    print("TOTAL CAMS / SIZES:", total_cams, total_cams_size)
    if total_cams > total_cams_size:
       print("Problem getting cams sizes!")
-      exit()
+      #exit()
    return(cam_size_info)
 
 def clean_bad_vals(day):
