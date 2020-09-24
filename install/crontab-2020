@@ -25,7 +25,7 @@
 
 #SENSE UP / AUTO CAL
 32 */3 * * * cd /home/ams/amscams/pythonv2; ./IMX291.py sense_all all > /dev/null 2>&1
-
+20 12 * * * cd /home/ams/amscams/pipeline/; ./Process.py ca
 # New Pipe Line
 # Live Minute
 #*/10 * * * * cd /home/ams/amscams/pipeline/; ./Process.py bcm
