@@ -197,7 +197,8 @@ def get_day_files(day, cams_id, json_conf, sun=None,in_hour=None,detect=None):
    #Get all the JSON Files of the day
    [failed_files, meteor_files,pending_files,min_files] = get_day_stats(day, proc_dir + day + "/", json_conf)
    day_dir = proc_dir + day + "/" + "*" + cams_id + "*.mp4"
-   temp_files = glob.glob(day_dir)
+   #temp_files = glob.glob(day_dir)
+   temp_files = min_files
  
    for file in sorted(temp_files, reverse=True):
       if "trim" not in file and file != "/" and cams_id in file:
@@ -277,6 +278,7 @@ def get_day_stats(day, day_dir, json_conf):
    pending_dir = "/mnt/ams2/SD/proc2/" + day + "/*trim*.mp4"
    data_dir = "/mnt/ams2/SD/proc2/" + day + "/data/*-meteor.json"
    min_file_dir = "/mnt/ams2/SD/proc2/" + day + "/*.mp4"
+   min_file_day_dir = "/mnt/ams2/SD/proc2/daytime/" + day + "/*.mp4"
    failed_files = glob.glob(data_dir)
    tmp_meteor_files = glob.glob(meteor_dir)
    tmp_meteor_files2 = glob.glob(data_dir)
@@ -294,9 +296,9 @@ def get_day_stats(day, day_dir, json_conf):
       el = mf.split("-trim")
       mfr = el[0] 
       mfr = mfr.replace("-meteor.json", "")
-      if "reduced" not in tmp and "manual" not in tmp and "star" not in tmp:
+      #if "reduced" not in tmp and "manual" not in tmp and "star" not in tmp:
          #meteor_files.append(mfr)
-         umeteor_files[mfr] = 1
+      #   umeteor_files[mfr] = 1
    for tmp in tmp_meteor_files :
       mf = tmp.split("/")[-1]
       el = mf.split("-trim")
@@ -309,6 +311,9 @@ def get_day_stats(day, day_dir, json_conf):
       meteor_files.append(key)
    pending_files = glob.glob(pending_dir)
    min_files = glob.glob(min_file_dir)
+   min_day_files = glob.glob(min_file_day_dir)
+   for mf in min_day_files:
+      min_files.append(mf)
    detect_files = [failed_files, meteor_files,pending_files,min_files]
 
    return(detect_files)

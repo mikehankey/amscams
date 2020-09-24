@@ -259,7 +259,9 @@ def audit_min(date, json_conf):
                      os.system(cmd)
 
                   #html += "<img src=" + data[hour][min][cam]['stack_file'][0] + ">"
-                  html += "<img src=" + jpg + ">"
+                  url = jpg.replace("-stacked-tn.jpg", ".mp4")
+                  url = url.replace("images/", "")
+                  html += "<a href=" + url + "><img src=" + jpg + "></a>"
                else:
                   if len(data[hour][min][cam]['hd_file']) == 0:
                      html += "<font color=red>X</font>"

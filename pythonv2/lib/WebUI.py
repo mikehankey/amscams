@@ -2909,6 +2909,10 @@ def browse_day(day,cams_id,json_conf,form):
       video_file = base_file + ".mp4"
       stack_file = stack_file_from_video(video_file)
       stack_file_tn = stack_file.replace(".png", "-tn.png") 
+      jpg = stack_file_tn.replace(".png", ".jpg")
+      if cfe(jpg) == 1:
+         stack_file_tn = jpg
+
 
       if day_files[base_file] == 'meteor':
          htclass = "meteor"
