@@ -15,6 +15,7 @@
 
 
 */5 * * * * cd /home/ams/amscams/pythonv2/; ./scan_stack.py bs
+25 * * * * cd /home/ams/amscams/pythonv2; ./scan_stack fms
 15 */8 * * * cd /home/ams/amscams/pythonv2; ./ASDaemon.py fix_days
 */20 * * * * cd /home/ams/amscams/pythonv2; ./ASDaemon.py rvms
 */15 * * * * cd /home/ams/amscams/pythonv2; ./ASDaemon.py rvd
@@ -32,3 +33,9 @@
 #10 12 * * * cd /home/ams/amscams/pipeline/; ./Process.py detect_rpt
 # Meteors Last Night 
 #30 12 * * * cd /home/ams/amscams/pipeline/; ./Process.py mln
+
+# Audit and TN TL
+30 * * * * cd /home/ams/amscams/pipeline/; ./Process.py audit today
+30 1 * * * cd /home/ams/amscams/pipeline/; ./Process.py audit yest 
+58 */6 * * * cd /home/ams/amscams/pipeline/; ./Process.py tntl today
+38 5 * * * cd /home/ams/amscams/pipeline/; ./Process.py tntl yest
