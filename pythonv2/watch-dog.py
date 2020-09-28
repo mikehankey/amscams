@@ -196,10 +196,10 @@ cams_with_np = {}
 derrs = []
 #derrs = check_disk_space()
 #print (derrs)
-
+num_cams = len(json_conf['cameras'].keys()) + 1
 # Check Pings
 bad = 0
-for i in range (1,7):
+for i in range (1,num_cams):
    res = ping_cam(i)
    #print ("Cam " + str(i) + " " + str(res))
    cam = "cam" + str(i)
@@ -220,7 +220,7 @@ for i in range (1,7):
 
 # Check SD Streams
 stream_errors = 0
-for i in range (1,7):
+for i in range (1,num_cams):
    key = "cam" + str(i)
    cams_id = config['cameras'][key]['cams_id']
    res = check_stream(str(cams_id), "SD")
@@ -241,7 +241,7 @@ for i in range (1,7):
 
 
 # Check HD Streams
-for i in range (1,7):
+for i in range (1,num_cams):
    key = "cam" + str(i)
    res = check_stream(str(cams_id), "HD")
    if res == 0:
@@ -262,7 +262,7 @@ for i in range (1,7):
 
 
 # check ffmpeg process
-for i in range (1,7):
+for i in range (1,num_cams):
    hd_run = check_running(str(i), "HD", json_conf)
    sd_run = check_running(str(i), "SD", json_conf)
    if int(hd_run) == 0 or int(sd_run) == 0:
