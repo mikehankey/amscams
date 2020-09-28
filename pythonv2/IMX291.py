@@ -175,7 +175,7 @@ if cmd == "sense_up" or cmd == "sense_all":
    sun, az, alt  = day_or_night(datetime.now(), json_conf)
    if int(alt) >= -10:
       print("SUN:", sun, az, alt, "abort")
-      #exit()
+      exit()
 
 if len(sys.argv) > 1:
     CameraIP = str(sys.argv[2])
