@@ -53,6 +53,7 @@ def sense_up(cam, cam_ip):
 
 
    # set slow shutter on 
+   print(cam_info)
    cam_info[0]['EsShutter'] = '0x00000002'
    cam.set_info("Camera.Param", cam_info)
    print("Slow shutter on.")
@@ -174,7 +175,7 @@ if cmd == "sense_up" or cmd == "sense_all":
    sun, az, alt  = day_or_night(datetime.now(), json_conf)
    if int(alt) >= -10:
       print("SUN:", sun, az, alt, "abort")
-      exit()
+      #exit()
 
 if len(sys.argv) > 1:
     CameraIP = str(sys.argv[2])
@@ -205,6 +206,12 @@ if cmd == "test":
 
 if cmd == "sense_up":
    cam = DVRIPCam(CameraIP,CameraUserName,CameraPassword)
+   if cam.login():
+      print ("Success! Connected to " + CameraIP)
+   else:
+      print ("Failure. Could not connect to camera!")
+
+
    sense_up(cam, CameraIP)
 
 if cmd == "auto_settings":
