@@ -60,7 +60,11 @@ def day_stack(video_file, day):
    thumb_size = (306, 169)
    cmd = "rm /home/ams/tmp-stack/foo*"
    os.system(cmd)
-   cmd = "/usr/bin/ffmpeg -i " + video_file + " -vf fps=2 /home/ams/tmp-stack/foo-%03d.jpg > /dev/null 2>&1"
+   # stack 1 FPS
+   cmd = "/usr/bin/ffmpeg -i " + video_file + " -vf fps=1 /home/ams/tmp-stack/foo-%03d.jpg > /dev/null 2>&1"
+   # stack just 1 frame 
+   mia_out = "/home/ams/tmp-stack/foo-%03d.jpg"
+   cmd = "/usr/bin/ffmpeg -ss 00:00:01.00 -i " + video_file + " -frames:v 1 " + mia_out
    #print(cmd)
    os.system(cmd)
    files = glob.glob("/home/ams/tmp-stack/*.jpg")
