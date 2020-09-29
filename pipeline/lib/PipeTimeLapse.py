@@ -9,7 +9,7 @@ import os
 from lib.PipeImage import  quick_video_stack, rotate_bound
 import cv2
 from lib.PipeUtil import cfe, save_json_file, convert_filename_to_date_cam, load_json_file, day_or_night
-from lib.PipeAutoCal import fn_dir
+from lib.PipeAutoCal import fn_dir, get_cal_files
 from lib.DEFAULTS import *
 import numpy as np
 

@@ -50,7 +50,7 @@ def archive_snap_files():
 
 
 def purge_files():
-   files = glob.glob(SNAP_DIR + "*")
+   files = glob.glob(SNAP_DIR + "*.png")
    for file in files:
       if "comp" in file:
          cmd = "rm " + file
