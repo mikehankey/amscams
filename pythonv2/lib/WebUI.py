@@ -201,6 +201,8 @@ def get_template(json_conf, skin = "as6ams"  ):
    return(template) 
 
 def make_day_preview(day_dir, stats_data, json_conf):
+   THUMB_W = 320
+   THUMB_H = 180
    el = day_dir.split("/")
    day = el[-1]
    if day == "":
@@ -209,7 +211,12 @@ def make_day_preview(day_dir, stats_data, json_conf):
    html_out = ""
    #json_conf['cameras'] = sorted(json_conf['cameras'])
    #for cam in json_conf['cameras']:
-   for i in range(1,7):
+   total_cams = len(json_conf['cameras'].keys()) + 1
+   print("TOTAL CAMS:", total_cams)
+   if total_cams == 8:
+      THUMB_W = int(THUMB_W * .75)
+      THUMB_H = int(THUMB_H * .75)
+   for i in range(1,total_cams):
       #cam = i
       key = "cam" + str(i)
       cam = key
@@ -229,7 +236,7 @@ def make_day_preview(day_dir, stats_data, json_conf):
  
       html_out +=  "<div class='preview col-lg-2 col-md-3 '>"
       html_out +=  "<a class='mtt' href='webUI.py?cmd=browse_day&day=" + day_str + "&cams_id="+cams_id+"'  title='Browse all day'>"
-      html_out +=  "<img alt='" + day_str + "' class='img-fluid ns lz' src='" + obj_stack + "'>" 
+      html_out +=  "<img width=" + str(THUMB_W) + " height=" + str(THUMB_H) + " alt='" + day_str + "' class='img-fluid ns lz' src='" + obj_stack + "'>" 
       if(min_total==0):
             html_out +=  "</a><span class='pre-b'>Cam #"+ cams_id+" - <i>processing</i></span></div>"   
       else:
@@ -1910,7 +1917,8 @@ def live_view(json_conf):
    """)
  
    rand=time.time()
-   for cam_num in range(1,7):
+   total_cams = len(json_conf['cameras']) + 1
+   for cam_num in range(1,total_cams):
       cam_key = 'cam' + str(cam_num)
       cam_ip = json_conf['cameras'][cam_key]['ip']
       #sd_url = json_conf['cameras'][cam_key]['sd_url']
