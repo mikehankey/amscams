@@ -92,12 +92,26 @@ def sense_up(cam, cam_ip):
    #print ("\r\n")
    cam.close()
 
+def day_night_settings(cam, cam_ip, type):
+   if type == 'night':
+      cam_info = cam.get_info("Camera.ParamEx")
+      cam_info[0]['BroadTrends']['AutoGain'] = 0
+      cam.set_info("Camera.ParamEx", cam_info)
+      print("Set camera settings for night")
+
+   if type == 'day':
+      cam_info = cam.get_info("Camera.ParamEx")
+      cam_info[0]['BroadTrends']['AutoGain'] = 1
+      cam.set_info("Camera.ParamEx", cam_info)
+      print("Set camera settings for day")
+     
+
 def test(cam, cam_ip):
    #https://github.com/NeiroNx/python-dvr
    #enc_info = cam.get_info("Simplify.Encode")
-   #test_info = cam.get_info("Camera.ParamEx")
+   test_info = cam.get_info("Camera.ParamEx")
    #test_info = cam.get_info("NetWork.NetCommon")
-   test_info = cam.get_info("NetWork.NetCommon")
+   #test_info = cam.get_info("NetWork.NetCommon")
    print (test_info)
    cam.close()
 
@@ -180,6 +194,39 @@ if cmd == "sense_up" or cmd == "sense_all":
 if len(sys.argv) > 1:
     CameraIP = str(sys.argv[2])
 
+
+if cmd == "day_night_settings":
+   # switch camera settings back and forth from day to night (just WDR for now)  
+   new = 0
+   update = 0
+   sun, az, alt  = day_or_night(datetime.now(), json_conf)
+   if cfe("../conf/settings.json") == 0:
+      settings = {}
+      new = 1
+      update = 1
+      settings['current'] = sun
+   else:
+      settings = load_json_file("../conf/settings.json")
+      if settings['current'] != sun:
+         settings['current'] = sun
+         update = 1
+   if update == 1 or new == 1:
+      for camera in json_conf['cameras']:
+         CameraIP = json_conf['cameras'][camera]['ip']
+         CameraIP = json_conf['cameras'][camera]['ip']
+         cam = DVRIPCam(CameraIP,CameraUserName,CameraPassword)
+         if cam.login():
+            print ("Success! Connected to " + CameraIP)
+         else:
+            print ("Failure. Could not connect to camera!")
+
+         day_night_settings(cam, CameraIP, sun)
+         cam.close()
+         save_json_file("../conf/settings.json", settings)
+   else:
+      print("Settings are already set for ", sun)
+
+      
 
 
 
