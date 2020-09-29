@@ -20,7 +20,7 @@ from lib.PipeSync import sync_day
 from lib.PipeAutoCal import autocal , solve_field, cal_all, draw_star_image, freecal_copy, apply_calib, index_failed, deep_calib, deep_cal_report, blind_solve_meteors, guess_cal, flatten_image, project_many, project_snaps, review_cals, star_db_mag
 from lib.PipeReport import autocal_report, detect_report
 from lib.PipeLIVE import meteor_min_files, broadcast_live_meteors, broadcast_minutes, meteors_last_night, mln_final, pip_video, mln_sync, super_stacks, meteor_index, fix_missing_images, fflist, resize_video, minify_file, make_preview_meteor, make_preview_meteors, sync_preview_meteors
-from lib.PipeTimeLapse import make_tl_for_cam, video_from_images, six_cam_video, timelapse_all, tn_tl6, sync_tl_vids, multi_cam_tl, audit_min 
+from lib.PipeTimeLapse import make_tl_for_cam, video_from_images, six_cam_video, timelapse_all, tn_tl6, sync_tl_vids, multi_cam_tl, audit_min, purge_tl 
 from lib.PipeMeteorDelete import delete_all_meteor_files
 
 
@@ -350,4 +350,6 @@ if __name__ == "__main__":
       project_snaps(json_conf)
    if cmd == "starmag":
       star_db_mag(sys.argv[2], json_conf)
+   if cmd == "purge_tl":
+      purge_tl()
    
