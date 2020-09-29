@@ -380,7 +380,17 @@ def make_multi_cam_frame(frame, TID):
    #cv2.imshow('MC', mc_img)
    #cv2.waitKey(30)   
    return(mc_img)
-      
+    
+def purge_tl():
+   MIA_DIR = "/mnt/ams2/MIA/"
+   files = glob.glob(MIA_DIR + "*")
+   for file in files:
+      (sd_datetime, sd_cam, sd_date, sd_y, sd_m, sd_d, sd_h, sd_M, sd_s) = convert_filename_to_date_cam(file)
+      elp = sd_datetime - datetime.now()
+      days_old = abs(elp.total_seconds()) / 86400
+      print(file, days_old)
+
+
 def sync_tl_vids():
    CLOUD_TL_VIDEO_DIR = TL_VIDEO_DIR.replace("ams2/meteor_archive", "archive.allsky.tv")
    if cfe(CLOUD_TL_VIDEO_DIR, 1) == 0:
