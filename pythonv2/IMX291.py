@@ -107,6 +107,8 @@ def day_night_settings(cam, cam_ip, type):
      
 
 def test(cam, cam_ip):
+   sun, az, alt  = day_or_night(datetime.now(), json_conf)
+   print(sun, az,alt)
    #https://github.com/NeiroNx/python-dvr
    #enc_info = cam.get_info("Simplify.Encode")
    test_info = cam.get_info("Camera.ParamEx")
