@@ -80,12 +80,12 @@ def check_for_missing(min_file,cams_id,json_conf):
                img = cv2.resize(img, (THUMB_W, THUMB_H))
                cv2.imwrite(mia_out, img)
             return(img)
-
-         cmd = "/usr/bin/ffmpeg -ss 00:00:01.00 -i " + ms + " -frames:v 1 " + mia_out 
-         print(cmd)
-         os.system(cmd)
-         img = cv2.imread(mia_out) 
-         print("READING:", mia_out)
+         else:
+            cmd = "/usr/bin/ffmpeg -ss 00:00:01.00 -i " + ms + " -frames:v 1 -y " + mia_out 
+            print(cmd)
+            os.system(cmd)
+            img = cv2.imread(mia_out) 
+            print("READING:", mia_out)
          try:
             img = cv2.resize(img, (THUMB_W, THUMB_H))
             return(img)
@@ -510,6 +510,8 @@ def tn_tl6(date,json_conf):
       #os.system(cmd)
       #os.system("mv " + tl_out_lr + " " + tl_out)
       sync_tl_vids()
+   else:
+      print("No sync. nothing new?", new)
    make_tl_html()
 
       
