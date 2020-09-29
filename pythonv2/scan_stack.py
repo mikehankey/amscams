@@ -269,7 +269,8 @@ def scan_and_stack_fast(file, sun_status = 0, vals = []):
       if sun_status != 1:
          gray = cv2.cvtColor(small_frame, cv2.COLOR_BGR2GRAY)
          if fc > 0:
-            sub = cv2.subtract(gray, gray_frames[-1])
+            sub = cv2.subtract(gray, last_gray)
+                #gray_frames[-1])
          else:
             sub = cv2.subtract(gray, gray)
 
@@ -289,7 +290,7 @@ def scan_and_stack_fast(file, sun_status = 0, vals = []):
             if max_val > 1:
                avg_max_vals.append(max_val)
             pos_vals.append((mx,my))
-         gray_frames.append(gray)
+      #gray_frames.append(gray)
 
       if int(sun_status) == 1:
          if fc % 25 == 1:
@@ -318,8 +319,8 @@ def scan_and_stack_fast(file, sun_status = 0, vals = []):
                   stacked_image = stack_stack(frame_pil, frame_pil)
                else:
                   stacked_image = stack_stack(stacked_image, frame_pil)
-
-      frames.append(frame)
+      last_gray = gray
+      #frames.append(frame)
       if fc % 100 == 1:
          print(fc)
       fc += 1

@@ -196,10 +196,10 @@ cams_with_np = {}
 derrs = []
 #derrs = check_disk_space()
 #print (derrs)
-
+num_cams = len(json_conf['cameras'].keys()) + 1
 # Check Pings
 bad = 0
-for i in range (1,7):
+for i in range (1,num_cams):
    res = ping_cam(i)
    #print ("Cam " + str(i) + " " + str(res))
    cam = "cam" + str(i)
@@ -220,7 +220,7 @@ for i in range (1,7):
 
 # Check SD Streams
 stream_errors = 0
-for i in range (1,7):
+for i in range (1,num_cams):
    key = "cam" + str(i)
    cams_id = config['cameras'][key]['cams_id']
    res = check_stream(str(cams_id), "SD")
@@ -241,7 +241,7 @@ for i in range (1,7):
 
 
 # Check HD Streams
-for i in range (1,7):
+for i in range (1,num_cams):
    key = "cam" + str(i)
    res = check_stream(str(cams_id), "HD")
    if res == 0:
@@ -262,7 +262,7 @@ for i in range (1,7):
 
 
 # check ffmpeg process
-for i in range (1,7):
+for i in range (1,num_cams):
    hd_run = check_running(str(i), "HD", json_conf)
    sd_run = check_running(str(i), "SD", json_conf)
    if int(hd_run) == 0 or int(sd_run) == 0:
@@ -286,6 +286,7 @@ for error in errors:
 if stream_errors == 1:
    cur_time = int(time.time())
    for bad_cam in cams_with_err:
+      bad_key = "cam" + str(bad_cam)
       print("BAD:", bad_cam, cams_with_err[bad_cam])
       if bad_cam not in cams_with_np:
 
@@ -293,18 +294,17 @@ if stream_errors == 1:
          # if the cam has had 10 restarts since the last reboot reboot the cam for a maximum of 1x per hour
          os.system("../python/ffmpeg_record.py stop " + bad_cam)
          time.sleep(3)
-         if len(wd['cams'][key]['restarts']) > 5:
-            wd['cams'][bad_cam]['restarts'] = []
-            wd['cams'][bad_cam]['reboots'].append(cur_time)
-            print("REBOOTING CAM", key)
-            os.system("./IMX291.py reboot " + wd['cams'][bad_cam]['ip'])
-            log = open("/mnt/ams2/logs/cam_reboots.txt", a)
-            log.write(str(cur_time) + " reboot:", str(bad_cam) + wd['cams'][bad_cam]['ip'])
+         if len(wd['cams'][bad_key]['restarts']) > 5:
+            wd['cams'][bad_key]['restarts'] = []
+            wd['cams'][bad_key]['reboots'].append(cur_time)
+            print("REBOOTING CAM", bad_key)
+            os.system("./IMX291.py reboot " + wd['cams'][bad_key]['ip'])
+            log = open("/mnt/ams2/logs/cam_reboots.txt", "a")
+            log.write(str(cur_time) + " reboot:" + str(bad_cam) + wd['cams'][bad_key]['ip'])
             time.sleep(30)
          os.system("../python/ffmpeg_record.py start " + str(bad_cam))
-         key = "cam" + str(bad_cam)
-         wd['cams'][bad_cam]['restarts'].append(cur_time)
-         wd['cams'][bad_cam]['last_restart'] = cur_time
+         wd['cams'][bad_key]['restarts'].append(cur_time)
+         wd['cams'][bad_key]['last_restart'] = cur_time
       else: 
          print("This cam is down, no point in restarting.")
 
