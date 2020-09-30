@@ -1919,7 +1919,7 @@ def live_view(json_conf):
       img = "/mnt/ams2/latest/" + cams_id + ".jpg"
       
 
-      print('<div class="preview"><a class="mtt img-link-gal" href="'+img+'" title="Live View">')
+      print('<div class="preview reg-prev"><a class="mtt img-link-gal" href="'+img+'" title="Live View">')
       print('<img alt="'+cams_id+'" class="img-fluid ns lz" src="'+img+'?r=' + str(rand) + '"><span><b>Cam '+cams_id+' ('+cam_ip+')</span></b></a></div>')
 
    print("</div></div></div>")
