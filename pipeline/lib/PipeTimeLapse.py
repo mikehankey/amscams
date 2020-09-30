@@ -139,8 +139,8 @@ def cv_plot_img(data, plot_img, color=[100,100,100]):
          for xx in range(x1,x2+1):
             plot_img[yy,xx] = color
       x = x + 1
-   cv2.imshow('graph', plot_img)
-   cv2.waitKey(0)
+   #cv2.imshow('graph', plot_img)
+   #cv2.waitKey(0)
    return(plot_img)
 
 def plot_min_int(date, json_conf):
@@ -153,24 +153,37 @@ def plot_min_int(date, json_conf):
    data = load_json_file(data_file)
    sum_ints = {}
    avg_ints = {}
+   green_ints = {}
+   blue_ints = {}
+   red_ints = {}
    for cn in cam_num_info:
       sum_ints[cn] = []
       avg_ints[cn] = []
+      green_ints[cn] = []
+      blue_ints[cn] = []
+      red_ints[cn] = []
    for hour in data:
       for minute in data[hour]:
          for cam in data[hour][minute]:
             print("AVG INT:", hour, minute, cam, data[hour][minute][cam]['avg_int'])
             sum_ints[cam].append(data[hour][minute][cam]['sum_int'] / 100000)
             avg_ints[cam].append(data[hour][minute][cam]['avg_int'])
+            blue_ints[cam].append(data[hour][minute][cam]['color_int'][0])
+            green_ints[cam].append(data[hour][minute][cam]['color_int'][1])
+            red_ints[cam].append(data[hour][minute][cam]['color_int'][2])
    plot_img = None
    colors = [[0,0,200], [0,200,0], [200,0,0], [200,200,0],[0,200,200],[200,0,200], [200,200,200]]
    cc = 0
    for cam in sum_ints:
       xs = sum_ints[cam] 
       ys = avg_ints[cam]
+      greens = green_ints[cam]
+      reds  = red_ints[cam]
+      blues  = blue_ints[cam]
       # plt.plot(xs)
       #plt.plot(ys)
-      plot_img = cv_plot_img(ys, plot_img, colors[cc])
+      #plot_img = cv_plot_img(greens, plot_img, colors[cc])
+      plot_img = cv_plot_img(greens, plot_img, [50,100,50])
       cc += 1
    save_file = data_file.replace("-audit.json", "-intensity.png")
    #plt.savefig(save_file)
@@ -246,6 +259,7 @@ def audit_min(date, json_conf):
                      data[hs][ms][cam]['sun'] = [[sun_status, sun_az, sun_el]]
                      data[hs][ms][cam]['sum_int'] = 0
                      data[hs][ms][cam]['avg_int'] = 0
+                     data[hs][ms][cam]['color_int'] = []
                   else:
                      data[hs][ms][cam]['sd_file'] = []
                      data[hs][ms][cam]['hd_file'] = []
@@ -351,14 +365,19 @@ def audit_min(date, json_conf):
             stack_files = data[hs][ms][cam]['stack_file']
             sum_int = 0
             avg_int = 0
+            color_int = [0,0,0]
             if len(stack_files) > 0:
                stack_file = stack_files[0]
             if cfe(stack_file) == 1 and data[hs][ms][cam]['sum_int'] == 0:
                timg = cv2.imread(stack_file)
                sum_int = int(np.sum(timg))
                avg_int = int(np.mean(timg))
+               ci_b = int(np.mean(timg[0]))
+               ci_g = int(np.mean(timg[1]))
+               ci_r = int(np.mean(timg[2]))
                data[hs][ms][cam]['sum_int'] = sum_int
                data[hs][ms][cam]['avg_int'] = avg_int
+               data[hs][ms][cam]['color_int'] = [ci_b, ci_g, ci_r]
                print("INTS:", stack_file, sum_int, avg_int)
             #else:
             #   print("DID INTS.", hour, minute,  data[hour][minute][cam]['sum_int'],  data[hour][minute][cam]['avg_int'])
