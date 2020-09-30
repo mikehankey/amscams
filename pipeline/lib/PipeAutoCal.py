@@ -179,7 +179,10 @@ def flatten_image(file, json_conf,asimg=None,ascp=None,maps=None):
    cal_params['y_poly'] = mcp['y_poly']
    cal_params['x_poly_fwd'] = mcp['x_poly_fwd']
    cal_params['y_poly_fwd'] = mcp['y_poly_fwd']
+   if this_cam == '010004':
+      cal_params['pixscale'] = 158
 
+   #maps = {}
 
    if asimg is None or ascp is None:
       asimg, ascp = all_sky_image(file, cal_params.copy(), json_conf)
