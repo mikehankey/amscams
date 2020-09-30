@@ -496,11 +496,7 @@ def controller(json_conf):
       sd_vid = form.getvalue('sd_video_file')
       print(get_a_frame(fr_id,sd_vid))
       exit()
-
-
-
-
-
+ 
    if cmd == 'del_frame':
       del_frame(json_conf,form)
       exit()
@@ -550,9 +546,7 @@ def controller(json_conf):
    if cmd == 'save_add_stars_to_fit_pool':
       save_add_stars_to_fit_pool(json_conf,form)
       exit()
-
-
-   #print_css()
+ 
    jq = do_jquery()
    
    nav_html,bot_html = nav_links(json_conf,cmd)
@@ -591,6 +585,13 @@ def controller(json_conf):
    top = top.replace("{OP_STATE}", op_state)
    top = top.replace("{STATION_NAME}", station_name)
    top = top.replace("{JQ}", jq)
+
+   # ALLSKY6 of ALLSKY7?
+   # (this modify the css rules used on the pages)
+   if(allsky7 is not None):
+      top = top.replace("{AS_TYPE}", "allsky7")
+   else:
+      top = top.replace("{AS_TYPE}", "allsky6")
 
    if(top is not None):
       print(top)
