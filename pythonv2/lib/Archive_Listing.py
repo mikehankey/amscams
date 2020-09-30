@@ -820,7 +820,7 @@ def get_html_detections(res,all_days_details,clear_cache,version,video_prev):
       cur_date = get_datetime_from_analysedname(det) 
       
       if(prev_date is None):
-         res_html += '<div class="h2_holder d-flex justify-content-between mr-5 ml-5"><h2>'+cur_date.strftime("%Y/%m/%d")+" - %TOTAL%</h2></div>"
+         res_html += '<div class="h2_holder d-flex justify-content-between"><h2>'+cur_date.strftime("%Y/%m/%d")+" - %TOTAL%</h2></div>"
          res_html += '<div class="gallery gal-resize reg   text-center text-lg-left '+version+' mb-5">'
 
       elif(cur_date.month != prev_date.month or cur_date.day != prev_date.day or cur_date.year != prev_date.year):
