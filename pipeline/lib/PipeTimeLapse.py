@@ -77,18 +77,12 @@ def check_for_missing(min_file,cams_id,json_conf, missing = None):
       if "png" in ms or "jpg" in ms:
          # score use this file
          img = cv2.imread(ms)
-#<<<<<<< HEAD
-#         img = cv2.resize(img, (THUMB_W, THUMB_H))
-#         print("FOUND!", ms)
-#         return(img, missing)
-#=======
          try:
             img = cv2.resize(img, (THUMB_W, THUMB_H))
             print("FOUND!", ms)
             return(img)
          except:
             print("Bad pic image.")
-#>>>>>>> f4579d90aeb6fbb4df5bf4ec4c174c9b8408797f
    # next check for vids
    for ms in missing:
       if "mp4" in ms:
@@ -150,12 +144,12 @@ def plot_min_int(date, json_conf):
    for cam in sum_ints:
       xs = sum_ints[cam] 
       ys = avg_ints[cam]
-   plt.plot(xs)
-   plt.plot(ys)
+      # plt.plot(xs)
+      plt.plot(ys)
    save_file = data_file.replace("-audit.json", "-intensity.png")
    plt.savefig(save_file)
    print(save_file)
-   #plt.show()
+   plt.show()
 
 def audit_min(date, json_conf):
    mm = 0
