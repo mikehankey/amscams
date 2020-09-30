@@ -212,7 +212,7 @@ def make_day_preview(day_dir, stats_data, json_conf):
    #json_conf['cameras'] = sorted(json_conf['cameras'])
    #for cam in json_conf['cameras']:
    total_cams = len(json_conf['cameras'].keys()) + 1
- 
+
    for i in range(1,total_cams):
       #cam = i
       key = "cam" + str(i)
@@ -585,7 +585,8 @@ def controller(json_conf):
 
    # ALLSKY6 of ALLSKY7?
    # (this modify the css rules used on the pages)
-   allsky7 = True
+   allsky7 =  len(json_conf['cameras'].keys())  
+   print(allsky7)
    if(allsky7 is not None):
       top = top.replace("{AS_TYPE}", "allsky7")
    else:
