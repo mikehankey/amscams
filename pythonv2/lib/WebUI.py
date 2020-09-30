@@ -212,10 +212,7 @@ def make_day_preview(day_dir, stats_data, json_conf):
    #json_conf['cameras'] = sorted(json_conf['cameras'])
    #for cam in json_conf['cameras']:
    total_cams = len(json_conf['cameras'].keys()) + 1
-   print("TOTAL CAMS:", total_cams)
-   if total_cams == 8:
-      THUMB_W = int(THUMB_W * .75)
-      THUMB_H = int(THUMB_H * .75)
+ 
    for i in range(1,total_cams):
       #cam = i
       key = "cam" + str(i)
