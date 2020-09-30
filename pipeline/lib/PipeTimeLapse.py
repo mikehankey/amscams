@@ -25,6 +25,7 @@ def meteor_minutes(date):
       meteors[key].append((sd_cam, fn))
 
 def check_for_missing(min_file,cams_id,json_conf, missing = None):
+   # DONT USE THIS ANYMORE
    missing = None
    cam_id_info, cam_num_info = load_cam_info(json_conf)
    print("LOOK FOR:", min_file)
@@ -196,33 +197,53 @@ def audit_min(date, json_conf):
    if True:
       for h in range(0,24):
          hs = str(h)
-         if hs not in data:
+         if hs not in data :
             data[hs] = {}
-         for m in range(0,60):
-            ms = str(m)
-            if ms not in data[hs]:
-               data[hs][ms] = {}
-            for cam in cam_num_info:
-               if cam not in data[hs][ms]:
-                  f_date_str = date + " " + str(h) + ":" + str(m) + ":00" 
-                  f_date_str = f_date_str.replace("_", "/")
-                  sun_status, sun_az, sun_el = day_or_night(f_date_str, json_conf,1)
-                  print("SUN", f_date_str, sun_status, sun_az, sun_el)
-                  data[hs][ms][cam] = {}
-                  data[hs][ms][cam]['cam_num'] = cam
-                  data[hs][ms][cam]['id'] = cam_num_info[cam]
-                  data[hs][ms][cam]['sd_file'] = []
-                  data[hs][ms][cam]['hd_file'] = []
-                  data[hs][ms][cam]['snap_file'] = []
-                  data[hs][ms][cam]['stack_file'] = []
-                  data[hs][ms][cam]['meteors'] = []
-                  data[hs][ms][cam]['detects'] = []
-                  data[hs][ms][cam]['weather'] = []
-                  data[hs][ms][cam]['sun'] = [[sun_status, sun_az, sun_el]]
-                  if new == 1:
-                     data[hs][ms][cam]['sum_int'] = 0
-                     data[hs][ms][cam]['avg_int'] = 0
-
+         if h <= limit_h:
+            for m in range(0,60):
+               print("HM:", h, m)
+               ms = str(m)
+               if ms not in data[hs] :
+                  data[hs][ms] = {}
+               if h == limit_h:
+                  if m >= limit_m:
+                     continue
+                  for cam in cam_num_info:
+                     print(h, m, cam)
+                     if cam not in data[hs][ms]:
+                        f_date_str = date + " " + str(h) + ":" + str(m) + ":00" 
+                        f_date_str = f_date_str.replace("_", "/")
+                        sun_status, sun_az, sun_el = day_or_night(f_date_str, json_conf,1)
+                        #print("SUN", f_date_str, sun_status, sun_az, sun_el)
+                        data[hs][ms][cam] = {}
+                        data[hs][ms][cam]['cam_num'] = cam
+                        data[hs][ms][cam]['id'] = cam_num_info[cam]
+                        data[hs][ms][cam]['sd_file'] = []
+                        data[hs][ms][cam]['hd_file'] = []
+                        data[hs][ms][cam]['snap_file'] = []
+                        data[hs][ms][cam]['stack_file'] = []
+                        data[hs][ms][cam]['meteors'] = []
+                        data[hs][ms][cam]['detects'] = []
+                        data[hs][ms][cam]['weather'] = []
+                        data[hs][ms][cam]['sun'] = [[sun_status, sun_az, sun_el]]
+                        if new == 1:
+                           data[hs][ms][cam]['sum_int'] = 0
+                           data[hs][ms][cam]['avg_int'] = 0
+                  else:
+                     data[hs][ms][cam]['sd_file'] = []
+                     data[hs][ms][cam]['hd_file'] = []
+                     data[hs][ms][cam]['snap_file'] = []
+                     data[hs][ms][cam]['stack_file'] = []
+                     data[hs][ms][cam]['meteors'] = []
+                     data[hs][ms][cam]['detects'] = []
+                     data[hs][ms][cam]['weather'] = []
+            #print("DATA:", hs, ms)
+     
+   print("TEST:" )
+   for key in data:
+      for key2 in data[key]:
+         print(key, key2)
+   #exit()
    for file in sorted(hd_files):
       (sd_datetime, sd_cam, sd_date, sd_y, sd_m, sd_d, sd_h, sd_M, sd_s) = convert_filename_to_date_cam(file)
       if "trim" not in file:
@@ -231,7 +252,9 @@ def audit_min(date, json_conf):
          cam_num = cam_id_info[sd_cam]
          sd_h = str(int(sd_h))
          sd_M = str(int(sd_M))
+         print(file, cam_num, sd_h, sd_M)
          data[sd_h][sd_M][cam_num]['hd_file'].append(file)
+
    for file in sorted(sd_files):
       fn, dir = fn_dir(file)
       (sd_datetime, sd_cam, sd_date, sd_y, sd_m, sd_d, sd_h, sd_M, sd_s) = convert_filename_to_date_cam(file)
@@ -298,41 +321,56 @@ def audit_min(date, json_conf):
          sd_M = str(int(sd_M))
          data[sd_h][sd_M][cam_num]['detects'].append(file)
 
-   # update the intensity per minute
-   for hour in data:
-      for minute in data[hour]:
-         for cam in data[hour][minute]:
-            stack_files = data[hour][minute][cam]['stack_file']
+   # update the intensity per minute and make the row pic
+   TL_PIC_DIR = TL_IMAGE_DIR + date + "/"
+   for hour in range(0,24):
+       for minute in range(0,60):
+         key = '{:02d}-{:02d}'.format(int(hour),int(minute))
+         hs = str(hour)
+         ms = str(minute)
+
+         row_file = TL_PIC_DIR + key + "-row.png"
+         print("ROW:", row_file)
+         if cfe(row_file) == 0:
+            print("MAKE ROW!", data[hour][minute])
+            min_file = None
+            row_pic = make_row_pic(data[hs][ms], min_file, LOCATION + " " + date + " " + key.replace("-", ":") + " UTC", json_conf, cam_num_info)
+            cv2.imwrite(row_file, row_pic)
+
+         for cam in data[hs][ms]:
+            stack_files = data[hs][ms][cam]['stack_file']
             if len(stack_files) > 0:
                stack_file = stack_files[0]
-            if cfe(stack_file) == 1 and data[hour][minute][cam]['sum_int'] == 0:
+            if cfe(stack_file) == 1 and data[hs][ms][cam]['sum_int'] == 0:
                timg = cv2.imread(stack_file)
                sum_int = int(np.sum(timg))
                avg_int = int(np.mean(timg))
-               data[hour][minute][cam]['sum_int'] = sum_int
-               data[hour][minute][cam]['avg_int'] = avg_int
+               data[hs][ms][cam]['sum_int'] = sum_int
+               data[hs][ms][cam]['avg_int'] = avg_int
                print("INTS:", sum_int, avg_int)
-            else:
-               print("DID INTS.", hour, minute,  data[hour][minute][cam]['sum_int'],  data[hour][minute][cam]['avg_int'])
+            #else:
+            #   print("DID INTS.", hour, minute,  data[hour][minute][cam]['sum_int'],  data[hour][minute][cam]['avg_int'])
 
    save_json_file(data_file, data)
    html = ""
    # find uptime
    updata = {}
    uptime_percs = []
-   for hour in sorted(data.keys(), reverse=True):
+   for hour in range(0,24):
       if hour not in updata:
          updata[hour] = {}
          updata[hour]['tfiles'] = 0
       if int(hour) <= int(limit_h):
-         for min in sorted(data[hour].keys(), reverse=True):
+         for min in range(0,60):
             if hour == limit_h and min >= limit_m:
                continue
-            for cam in data[hour][min]:
-               tfiles = len(data[hour][min][cam]['sd_file']) + len(data[hour][min][cam]['hd_file'])
+            hs = str(hour)
+            ms = str(minute)
+            for cam in data[hs][ms]:
+               tfiles = len(data[hs][ms][cam]['sd_file']) + len(data[hs][ms][cam]['hd_file'])
                updata[hour]['tfiles'] += tfiles
 
-   for hour in sorted(data.keys(), reverse=True):
+   for hour in range(0,24):
       if int(hour) <= int(limit_h):
          if html != "":
             html += str(hour) + "</table>"
@@ -343,22 +381,24 @@ def audit_min(date, json_conf):
          uptime_perc = str((updata[hour]['tfiles'] / (tot_m*total_cams*2) * 100))[0:5]
          uptime_percs.append((hour,uptime_perc)) 
          html += " " + str(updata[hour]['tfiles']) + " files of " +  str(tot_m*total_cams*2) + " expected. " + uptime_perc + "% uptime <table border=1>"
-         for min in sorted(data[hour].keys(), reverse=True):
+         for min in range(0,60):
             if hour == limit_h and min >= limit_m:
                continue
             html += "<tr><td> " + str(hour) + ":" + str(min) + "</td>"
-            html += "<td>" + str(data[hour][min][cam]['sun']) + "</td>"
-            for cam in data[hour][min]:
+            html += "<td>" + str(data[hs][ms][cam]['sun']) + "</td>"
+            hs = str(hour)
+            ms = str(minute)
+            for cam in data[hs][ms]:
             
                html += "<td>"
-               if len(data[hour][min][cam]['sd_file']) == 0:
+               if len(data[hs][ms][cam]['sd_file']) == 0:
                   html += "<font color=red>X</font> "
                else:
                   html += "<font color=green>&check;</font> " #+ str(data[hour][min][cam]['sd_file'])
-               if len(data[hour][min][cam]['stack_file']) > 0:
-                  jpg = data[hour][min][cam]['stack_file'][0].replace(".png", ".jpg")
+               if len(data[hs][ms][cam]['stack_file']) > 0:
+                  jpg = data[hs][ms][cam]['stack_file'][0].replace(".png", ".jpg")
                   if cfe(jpg) == 0:
-                     cmd = "convert -quality 80 " + data[hour][min][cam]['stack_file'][0] + " " + jpg 
+                     cmd = "convert -quality 80 " + data[hs][ms][cam]['stack_file'][0] + " " + jpg 
                      print(cmd)
                      os.system(cmd)
 
@@ -367,7 +407,7 @@ def audit_min(date, json_conf):
                   url = url.replace("images/", "")
                   html += "<a href=" + url + "><img src=" + jpg + "></a>"
                else:
-                  if len(data[hour][min][cam]['hd_file']) == 0:
+                  if len(data[hs][ms][cam]['hd_file']) == 0:
                      html += "<font color=red>X</font>"
                   else:
                      html += "<font color=green>&check;</font> "
@@ -592,6 +632,8 @@ def tn_tl6(date,json_conf):
    #os.system("rm tmp_vids/*")
    new = 0
    cam_id_info, cam_num_info = load_cam_info(json_conf)
+
+
    for key in sorted(matrix.keys()):
       row_file = TL_PIC_DIR + key + "-row.png"
       row_file_tmp = TL_PIC_DIR + key + "-row_lr.jpg"
@@ -609,7 +651,6 @@ def tn_tl6(date,json_conf):
          min_file = date + "_" + h + "_" + m
          print(key, matrix[key])
          row_pic = make_row_pic(matrix[key], min_file, LOCATION + " " + date + " " + key.replace("-", ":") + " UTC", json_conf, cam_num_info)
-
          cv2.imwrite(row_file, row_pic)
          cmd = "convert -quality 80 " + row_file + " " + row_file_tmp
          os.system(cmd)
@@ -643,20 +684,19 @@ def make_row_pic(data, min_file, text, json_conf, cam_num_info):
    imgs = [] 
    missing = None
    for cam in sorted(data.keys()):
-      file = data[cam]
+      stack_files = data[cam]['stack_file']
+      if len(stack_files) > 0:
+         file = stack_files[0]
+      else:
+         file = ""
       cams_id = cam_num_info[cam]
       if file != "":
          img = cv2.imread(file)
       else:
          print("MISSING DATA:", min_file, cams_id)
-         missing_img, missing = check_for_missing(min_file, cams_id, json_conf, missing)
-         print("MISSING FILE LEN:", len(missing))
-         if missing_img is not None:
-            print("FIXED MISSING DATA FOR MIN/CAM:", min_file, cam)
-            img = missing_img
-         else:
-            print("BAD NO DATA FOR MIN/CAM:", min_file, cam)
-            img = np.zeros((default_h,default_w,3),dtype=np.uint8)
+         print ("Try a backup field?")
+         print("BAD NO DATA FOR MIN/CAM:", min_file, cam)
+         img = np.zeros((default_h,default_w,3),dtype=np.uint8)
       img = cv2.resize(img, (default_w, default_h))
       imgs.append(img)
    h,w = imgs[0].shape[:2]
