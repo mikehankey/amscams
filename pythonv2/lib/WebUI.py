@@ -586,8 +586,7 @@ def controller(json_conf):
    # ALLSKY6 of ALLSKY7?
    # (this modify the css rules used on the pages)
    allsky7 =  len(json_conf['cameras'].keys())  
-   print(allsky7)
-   if(allsky7 is not None):
+   if(allsky7 > 6):
       top = top.replace("{AS_TYPE}", "allsky7")
    else:
       top = top.replace("{AS_TYPE}", "allsky6")
@@ -3091,7 +3090,7 @@ def main_page(json_conf,form):
       if(pending_files>0):
             to_display  = to_display + " - " + str(pending_files) + " Files Pending</a>"
 
-      to_display  = to_display +"</div><div class='gallery gal-resize row text-center text-lg-left mb-5 mr-5 ml-5'>"
+      to_display  = to_display +"</div><div class='gallery gal-resize row text-center text-lg-left mb-5'>"
       to_display  = to_display + html_row
       to_display = to_display + "</div>"
       counter = counter + 1
