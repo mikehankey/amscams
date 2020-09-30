@@ -123,8 +123,8 @@ def load_cam_info(json_conf):
 
 def plot_min_int(date, json_conf):
    import matplotlib
+   matplotlib.use('Agg')
    import matplotlib.pyplot as plt
-   #matplotlib.use('TkAgg')
 
    cam_id_info, cam_num_info = load_cam_info(json_conf)
    data_file = TL_VIDEO_DIR + date + "-audit.json"
