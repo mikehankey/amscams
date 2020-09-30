@@ -122,6 +122,19 @@ def load_cam_info(json_conf):
       cam_num_info[cam] = cams_id
    return(cam_id_info, cam_num_info)
 
+def plot_img(data):
+   w = len(data)
+   plot_img = np.zeros((100,w,3),dtype=np.uint8)
+   x = 0
+   for val in data:
+      y1 = 0
+      y2 = val
+      x1 = x 
+      plot_img[y1:y2,x1] = [255,255,255]
+      x = x + 1
+   cv2.imshow('graph', plot_img)
+   cv2.waitKey(0)
+
 def plot_min_int(date, json_conf):
    import matplotlib
    matplotlib.use('Agg')
@@ -147,6 +160,7 @@ def plot_min_int(date, json_conf):
       ys = avg_ints[cam]
       # plt.plot(xs)
       plt.plot(ys)
+      plot_img(data)
    save_file = data_file.replace("-audit.json", "-intensity.png")
    plt.savefig(save_file)
    print(save_file)
