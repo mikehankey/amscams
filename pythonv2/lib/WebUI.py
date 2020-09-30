@@ -1904,7 +1904,7 @@ def live_view(json_conf):
    print("""<h1>Live</h1>
             <div class="container mt-3" style="max-width: 1500px;">
                   <p class="text-center"><b>Still pictures are updated in 5 minutes intervals. This page will automatically refresh in <span id="cntd">2:00</span>.</b></p>
-                  <div class="gallery gal-resize row text-center text-lg-left mb-4">
+                  <div class="gallery gal-resize reg row text-center text-lg-left mb-4">
    """)
  
    rand=time.time()
@@ -1919,7 +1919,7 @@ def live_view(json_conf):
       img = "/mnt/ams2/latest/" + cams_id + ".jpg"
       
 
-      print('<div class="preview col-lg-4 mb-4"><a class="mtt img-link-gal" href="'+img+'" title="Live View">')
+      print('<div class="preview"><a class="mtt img-link-gal" href="'+img+'" title="Live View">')
       print('<img alt="'+cams_id+'" class="img-fluid ns lz" src="'+img+'?r=' + str(rand) + '"><span><b>Cam '+cams_id+' ('+cam_ip+')</span></b></a></div>')
 
    print("</div></div></div>")
