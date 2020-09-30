@@ -1110,21 +1110,21 @@ def archive_listing(form):
       template = template.replace("{FOUND}", "")
    elif((len(res))!=total):
       if(criteria_text==''):
-         template = template.replace("{FOUND}", "<div style='background-color: transparent; line-height: 1rem; margin: 1rem auto;' class='alert alert-info page_h ml-3'>Displaying " + str(len(res)) + " out of " +  str(total)  + " detections. "+ found_text + "</div>")
+         template = template.replace("{FOUND}", "<div style='background-color: transparent; line-height: 1rem; margin: 1rem auto;' class='alert alert-info page_h'>Displaying " + str(len(res)) + " out of " +  str(total)  + " detections. "+ found_text + "</div>")
       else:
-         template = template.replace("{FOUND}", "<div style='background-color: transparent; line-height: 1rem; margin: 1rem auto;' class='alert alert-info page_h ml-3'>Displaying " + str(len(res)) + " out of " +  str(total)  + " detections. Filters: "+criteria_text+"  " + found_text + "</div>")
+         template = template.replace("{FOUND}", "<div style='background-color: transparent; line-height: 1rem; margin: 1rem auto;' class='alert alert-info page_h'>Displaying " + str(len(res)) + " out of " +  str(total)  + " detections. Filters: "+criteria_text+"  " + found_text + "</div>")
 
    elif(len(res)==1):
       if(criteria_text==''):
-         template = template.replace("{FOUND}", "<div style='background-color: transparent; line-height: 1rem; margin: 1rem auto;' class='alert alert-info page_h ml-3'>Displaying only 1 detection matching your criteria. "+ found_text + "</div>")
+         template = template.replace("{FOUND}", "<div style='background-color: transparent; line-height: 1rem; margin: 1rem auto;' class='alert alert-info page_h'>Displaying only 1 detection matching your criteria. "+ found_text + "</div>")
       else:
-         template = template.replace("{FOUND}", "<div style='background-color: transparent; line-height: 1rem; margin: 1rem auto;' class='alert alert-info page_h ml-3'>Displaying only 1 detection. Filters: "+criteria_text+"  " + found_text + "</div>")
+         template = template.replace("{FOUND}", "<div style='background-color: transparent; line-height: 1rem; margin: 1rem auto;' class='alert alert-info page_h'>Displaying only 1 detection. Filters: "+criteria_text+"  " + found_text + "</div>")
 
    else:
       if(criteria_text==''):
-         template = template.replace("{FOUND}", "<div style='background-color: transparent; line-height: 1rem; margin: 1rem auto;' class='alert alert-info page_h ml-3'>Displaying all " + str(len(res)) + " detections matching your criteria. "+ found_text + "</div>")
+         template = template.replace("{FOUND}", "<div style='background-color: transparent; line-height: 1rem; margin: 1rem auto;' class='alert alert-info page_h'>Displaying all " + str(len(res)) + " detections matching your criteria. "+ found_text + "</div>")
       else:
-         template = template.replace("{FOUND}", "<div style='background-color: transparent; line-height: 1rem; margin: 1rem auto;' class='alert alert-info page_h ml-3'>Displaying all " + str(len(res)) + " detections. Filters: "+criteria_text+"  " + found_text + "</div>")
+         template = template.replace("{FOUND}", "<div style='background-color: transparent; line-height: 1rem; margin: 1rem auto;' class='alert alert-info page_h'>Displaying all " + str(len(res)) + " detections. Filters: "+criteria_text+"  " + found_text + "</div>")
 
 
    # Display Template
