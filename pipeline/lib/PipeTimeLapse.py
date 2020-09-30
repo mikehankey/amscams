@@ -122,18 +122,26 @@ def load_cam_info(json_conf):
       cam_num_info[cam] = cams_id
    return(cam_id_info, cam_num_info)
 
-def plot_img(data):
+def cv_plot_img(data, plot_img, color=[100,100,100]):
    w = len(data)
-   plot_img = np.zeros((100,w,3),dtype=np.uint8)
+   print("DATA:", data)
+   if plot_img is None:
+      plot_img = np.zeros((256,w+1,3),dtype=np.uint8)
    x = 0
    for val in data:
-      y1 = 0
-      y2 = val
+      y2 = plot_img.shape[0] 
+      y1 = y2 - val
+      y2 = y1 + 1
       x1 = x 
-      plot_img[y1:y2,x1] = [255,255,255]
+      x2 = x+1 
+      #print(y1,y2,x1,x2)
+      for yy in range(y1,y2):
+         for xx in range(x1,x2+1):
+            plot_img[yy,xx] = color
       x = x + 1
    cv2.imshow('graph', plot_img)
    cv2.waitKey(0)
+   return(plot_img)
 
 def plot_min_int(date, json_conf):
    import matplotlib
@@ -151,20 +159,24 @@ def plot_min_int(date, json_conf):
    for hour in data:
       for minute in data[hour]:
          for cam in data[hour][minute]:
+            print("AVG INT:", hour, minute, cam, data[hour][minute][cam]['avg_int'])
             sum_ints[cam].append(data[hour][minute][cam]['sum_int'] / 100000)
             avg_ints[cam].append(data[hour][minute][cam]['avg_int'])
-   print(sum_ints)
-   print(avg_ints)
+   plot_img = None
+   colors = [[0,0,200], [0,200,0], [200,0,0], [200,200,0],[0,200,200],[200,0,200], [200,200,200]]
+   cc = 0
    for cam in sum_ints:
       xs = sum_ints[cam] 
       ys = avg_ints[cam]
       # plt.plot(xs)
-      plt.plot(ys)
-      plot_img(data)
+      #plt.plot(ys)
+      plot_img = cv_plot_img(ys, plot_img, colors[cc])
+      cc += 1
    save_file = data_file.replace("-audit.json", "-intensity.png")
-   plt.savefig(save_file)
+   #plt.savefig(save_file)
+   cv2.imwrite(save_file, plot_img)
    print(save_file)
-   plt.show()
+   #plt.show()
 
 def audit_min(date, json_conf):
    mm = 0
@@ -232,9 +244,8 @@ def audit_min(date, json_conf):
                      data[hs][ms][cam]['detects'] = []
                      data[hs][ms][cam]['weather'] = []
                      data[hs][ms][cam]['sun'] = [[sun_status, sun_az, sun_el]]
-                     if new == 1:
-                        data[hs][ms][cam]['sum_int'] = 0
-                        data[hs][ms][cam]['avg_int'] = 0
+                     data[hs][ms][cam]['sum_int'] = 0
+                     data[hs][ms][cam]['avg_int'] = 0
                   else:
                      data[hs][ms][cam]['sd_file'] = []
                      data[hs][ms][cam]['hd_file'] = []
@@ -338,6 +349,8 @@ def audit_min(date, json_conf):
 
          for cam in data[hs][ms]:
             stack_files = data[hs][ms][cam]['stack_file']
+            sum_int = 0
+            avg_int = 0
             if len(stack_files) > 0:
                stack_file = stack_files[0]
             if cfe(stack_file) == 1 and data[hs][ms][cam]['sum_int'] == 0:
@@ -346,7 +359,7 @@ def audit_min(date, json_conf):
                avg_int = int(np.mean(timg))
                data[hs][ms][cam]['sum_int'] = sum_int
                data[hs][ms][cam]['avg_int'] = avg_int
-               print("INTS:", sum_int, avg_int)
+               print("INTS:", stack_file, sum_int, avg_int)
             #else:
             #   print("DID INTS.", hour, minute,  data[hour][minute][cam]['sum_int'],  data[hour][minute][cam]['avg_int'])
 
