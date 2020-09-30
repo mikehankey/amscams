@@ -847,7 +847,7 @@ def custom_logos(json_conf,form):
    header_out += '</form></div></div>'
 
 
-   header_out += '<div class="gallery gal-resize row text-center text-lg-left mr-4 ml-4 mt-2">'
+   header_out += '<div class="gallery gal-resize reg row text-center text-lg-left mr-4 ml-4 mt-2">'
 
    #Get the existing logos
    all_logos = sorted(glob.glob(LOGOS_PATH + "*.*"), key=os.path.getmtime, reverse=True)
@@ -1757,7 +1757,7 @@ def meteors_new(json_conf,form):
                htclass = "norm"
                norm_cnt = norm_cnt + 1
 
-            html_out +=  "<div id='"+del_id+"' class='preview col-lg-2 col-md-3 select-to "+ htclass +"'>"
+            html_out +=  "<div id='"+del_id+"' class='preview select-to "+ htclass +"'>"
             html_out +=  "<a class='mtt' href='webUI.py?cmd=reduce&video_file=" + video_file + "' data-obj='"+stack_obj_img+"' title='Go to Info Page'>"
             html_out +=  "<img alt='"+desc+"' class='img-fluid ns lz' src='" + stack_file_tn + "'>"
             html_out +=  "<span>" + desc + "</span></a>"  
@@ -1796,7 +1796,7 @@ def meteors_new(json_conf,form):
 
    print(header_out+'</div></div>')
    print("<div id='main_container' class='container-fluid h-100 mt-4 lg-l'>")
-   print("<div class='gallery gal-resize row text-center text-lg-left'>")
+   print("<div class='gallery gal-resize reg row text-center text-lg-left'>")
    print("<div class='list-onl'>")
    print("<div class='filter-header d-flex flex-row-reverse '>")
    print('<button id="sel-all" title="Select All" class="btn btn-primary ml-3"><i class="icon-checkbox-checked"></i></button>')
