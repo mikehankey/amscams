@@ -13,7 +13,13 @@
 
     &.gal-resize {
         margin: 0 auto;
-        width:100%;
+        width:100%; 
+         display: flex;
+         flex-wrap: nowrap;
+         justify-content: space-evenly;
+         align-items: flex-start;
+         flex-direction: row;
+
 
         .h2_holder  {
             display: block!important;
@@ -25,6 +31,9 @@
         }
 
         .preview {
+
+            flex-grow: 1;
+            margin: .5rem;
   
             .btn-toolbar { 
                 opacity: 0;

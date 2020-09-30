@@ -231,7 +231,7 @@ def make_day_preview(day_dir, stats_data, json_conf):
 
       day=day.replace("_","")
  
-      html_out +=  "<div class='preview col-lg-2 col-md-3 '>"
+      html_out +=  "<div class='preview'>"
       html_out +=  "<a class='mtt' href='webUI.py?cmd=browse_day&day=" + day_str + "&cams_id="+cams_id+"'  title='Browse all day'>"
       html_out +=  "<img width=" + str(THUMB_W) + " height=" + str(THUMB_H) + " alt='" + day_str + "' class='img-fluid ns lz' src='" + obj_stack + "'>" 
       if(min_total==0):
@@ -3083,7 +3083,7 @@ def main_page(json_conf,form):
       html_row, day_x = make_day_preview(day_dir,stats_data[day], json_conf)
       day_str = day.replace("_", "/")
 
-      to_display  = to_display + "<div class='h2_holder  d-flex justify-content-between'>"
+      to_display  = to_display + "<div class='h2_holder d-flex justify-content-between'>"
       to_display  = to_display + "<h2>"+day_str+" - <a class='btn btn-primary' href=webUI.py?cmd=meteors&limit_day=" + day + ">" + str(meteor_files) + " Meteors </a></h2>"
       to_display  = to_display + "<p><a href=webUI.py?cmd=browse_detects&type=failed&day=" + day + ">" + str(failed_files) + " Non-Meteors </a>"
 
