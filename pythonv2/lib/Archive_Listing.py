@@ -737,7 +737,7 @@ def get_html_detection(det,detection,clear_cache,video_prev):
    path_to_vid = get_video(det['full_path'])       
 
    # Otherwise preview = preview (:)
-   res_html = '<div id="'+detection_id+'" class="preview col-lg-3 col-md-3 select-to mb-3'
+   res_html = '<div id="'+detection_id+'" class="preview select-to mb-3'
    
    if(detection['red']==1):
       res_html += ' reduced">'
@@ -820,16 +820,16 @@ def get_html_detections(res,all_days_details,clear_cache,version,video_prev):
       cur_date = get_datetime_from_analysedname(det) 
       
       if(prev_date is None):
-         res_html += '<div class="h2_holder d-flex justify-content-between mr-5 ml-5"><h2>'+cur_date.strftime("%Y/%m/%d")+" - %TOTAL%</h2></div>"
-         res_html += '<div class="gallery gal-resize row text-center text-lg-left '+version+' mb-5 mr-5 ml-5">'
+         res_html += '<div class="h2_holder d-flex justify-content-between"><h2>'+cur_date.strftime("%Y/%m/%d")+" - %TOTAL%</h2></div>"
+         res_html += '<div class="gallery gal-resize reg text-center text-lg-left '+version+' mb-5">'
 
       elif(cur_date.month != prev_date.month or cur_date.day != prev_date.day or cur_date.year != prev_date.year):
          if(cur_count>1):
             res_html = res_html.replace('%TOTAL%',str(cur_count)+ ' detections')
          else:
             res_html = res_html.replace('%TOTAL%',str(cur_count)+ ' detection only')
-         res_html +=  '</div><div class="h2_holder d-flex justify-content-between mr-5 ml-5"><h2>'+cur_date.strftime("%Y/%m/%d")+" - %TOTAL%</h2></div>"
-         res_html += '<div class="gallery gal-resize row text-center text-lg-left '+version+' mb-5 mr-5 ml-5">'
+         res_html +=  '</div><div class="h2_holder d-flex justify-content-between "><h2>'+cur_date.strftime("%Y/%m/%d")+" - %TOTAL%</h2></div>"
+         res_html += '<div class="gallery gal-resize reg text-center text-lg-left '+version+' mb-5">'
         
          cur_count = 0
 
@@ -1110,21 +1110,21 @@ def archive_listing(form):
       template = template.replace("{FOUND}", "")
    elif((len(res))!=total):
       if(criteria_text==''):
-         template = template.replace("{FOUND}", "<div style='background-color: transparent; line-height: 1rem; margin: 1rem 3rem;' class='alert alert-info page_h ml-3'>Displaying " + str(len(res)) + " out of " +  str(total)  + " detections. "+ found_text + "</div>")
+         template = template.replace("{FOUND}", "<div style='background-color: transparent; line-height: 1rem; margin: 1rem auto;' class='alert alert-info page_h'>Displaying " + str(len(res)) + " out of " +  str(total)  + " detections. "+ found_text + "</div>")
       else:
-         template = template.replace("{FOUND}", "<div style='background-color: transparent; line-height: 1rem; margin: 1rem 3rem;' class='alert alert-info page_h ml-3'>Displaying " + str(len(res)) + " out of " +  str(total)  + " detections. Filters: "+criteria_text+"  " + found_text + "</div>")
+         template = template.replace("{FOUND}", "<div style='background-color: transparent; line-height: 1rem; margin: 1rem auto;' class='alert alert-info page_h'>Displaying " + str(len(res)) + " out of " +  str(total)  + " detections. Filters: "+criteria_text+"  " + found_text + "</div>")
 
    elif(len(res)==1):
       if(criteria_text==''):
-         template = template.replace("{FOUND}", "<div style='background-color: transparent; line-height: 1rem; margin: 1rem 3rem;' class='alert alert-info page_h ml-3'>Displaying only 1 detection matching your criteria. "+ found_text + "</div>")
+         template = template.replace("{FOUND}", "<div style='background-color: transparent; line-height: 1rem; margin: 1rem auto;' class='alert alert-info page_h'>Displaying only 1 detection matching your criteria. "+ found_text + "</div>")
       else:
-         template = template.replace("{FOUND}", "<div style='background-color: transparent; line-height: 1rem; margin: 1rem 3rem;' class='alert alert-info page_h ml-3'>Displaying only 1 detection. Filters: "+criteria_text+"  " + found_text + "</div>")
+         template = template.replace("{FOUND}", "<div style='background-color: transparent; line-height: 1rem; margin: 1rem auto;' class='alert alert-info page_h'>Displaying only 1 detection. Filters: "+criteria_text+"  " + found_text + "</div>")
 
    else:
       if(criteria_text==''):
-         template = template.replace("{FOUND}", "<div style='background-color: transparent; line-height: 1rem; margin: 1rem 3rem;' class='alert alert-info page_h ml-3'>Displaying all " + str(len(res)) + " detections matching your criteria. "+ found_text + "</div>")
+         template = template.replace("{FOUND}", "<div style='background-color: transparent; line-height: 1rem; margin: 1rem auto;' class='alert alert-info page_h'>Displaying all " + str(len(res)) + " detections matching your criteria. "+ found_text + "</div>")
       else:
-         template = template.replace("{FOUND}", "<div style='background-color: transparent; line-height: 1rem; margin: 1rem 3rem;' class='alert alert-info page_h ml-3'>Displaying all " + str(len(res)) + " detections. Filters: "+criteria_text+"  " + found_text + "</div>")
+         template = template.replace("{FOUND}", "<div style='background-color: transparent; line-height: 1rem; margin: 1rem auto;' class='alert alert-info page_h'>Displaying all " + str(len(res)) + " detections. Filters: "+criteria_text+"  " + found_text + "</div>")
 
 
    # Display Template

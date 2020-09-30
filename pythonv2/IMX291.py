@@ -29,6 +29,19 @@ def get_cam_url(cam_ip):
          cams_id = json_conf['cameras'][as_cam]['cams_id'] 
    return(url, cams_id)
 
+def get_cam_passwd(ip):
+   json_conf = load_json_file("../conf/as6.json")
+   for cam in json_conf['cameras']:
+      cam_ip = json_conf['cameras'][cam]['ip']
+      sd_url = json_conf['cameras'][cam]['sd_url']
+      if ip == cam_ip:
+         el = sd_url.split("&")
+         for k in el:
+            if "password" in k:
+               el2 = k.split("=")
+               CameraPassword = el2[1]
+               print("PASS IS:", CameraPassword)
+   return(CameraPassword)
 
 def sense_up(cam, cam_ip):
    print("Sense up for : ", cam_ip)
@@ -196,6 +209,7 @@ if cmd == "sense_up" or cmd == "sense_all":
 if len(sys.argv) > 1:
     CameraIP = str(sys.argv[2])
 
+    CameraPassword = get_cam_passwd(CameraIP)
 
 if cmd == "day_night_settings":
    # switch camera settings back and forth from day to night (just WDR for now)  
@@ -216,6 +230,7 @@ if cmd == "day_night_settings":
       for camera in json_conf['cameras']:
          CameraIP = json_conf['cameras'][camera]['ip']
          CameraIP = json_conf['cameras'][camera]['ip']
+         CameraPassword = get_cam_passwd(CameraIP)
          cam = DVRIPCam(CameraIP,CameraUserName,CameraPassword)
          if cam.login():
             print ("Success! Connected to " + CameraIP)
@@ -235,6 +250,7 @@ if cmd == "day_night_settings":
 if cmd == "sense_all":
    for camera in json_conf['cameras']:
       CameraIP = json_conf['cameras'][camera]['ip']
+      CameraPassword = get_cam_passwd(CameraIP)
       cam = DVRIPCam(CameraIP,CameraUserName,CameraPassword)
       if cam.login():
          print ("Success! Connected to " + CameraIP)
@@ -272,5 +288,6 @@ if cmd == "reboot":
       print ("Success! Connected to " + CameraIP)
    else:
       print ("Failure. Could not connect to camera!")
+   print("REBOOTING CAM", CameraIP)
    cam.reboot()
    
