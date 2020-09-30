@@ -582,15 +582,7 @@ def controller(json_conf):
    top = top.replace("{OP_STATE}", op_state)
    top = top.replace("{STATION_NAME}", station_name)
    top = top.replace("{JQ}", jq)
-
-   # ALLSKY6 of ALLSKY7?
-   # (this modify the css rules used on the pages)
-   allsky7 =  len(json_conf['cameras'].keys())  
-   if(allsky7 > 6):
-      top = top.replace("{AS_TYPE}", "allsky7")
-   else:
-      top = top.replace("{AS_TYPE}", "allsky6")
-
+ 
    if(top is not None):
       print(top)
    extra_html = ""
