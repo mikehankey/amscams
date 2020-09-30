@@ -588,6 +588,7 @@ def controller(json_conf):
 
    # ALLSKY6 of ALLSKY7?
    # (this modify the css rules used on the pages)
+   allsky7 = True
    if(allsky7 is not None):
       top = top.replace("{AS_TYPE}", "allsky7")
    else:
