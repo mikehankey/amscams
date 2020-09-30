@@ -5,7 +5,7 @@ Autocal functions
 """
 import matplotlib
 import matplotlib.pyplot as plt
-matplotlib.use('TkAgg')
+#matplotlib.use('TkAgg')
 import time
 
 import pickle

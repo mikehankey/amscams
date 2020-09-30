@@ -65,9 +65,12 @@ def check_for_missing(min_file,cams_id,json_conf):
       if "png" in ms or "jpg" in ms:
          # score use this file
          img = cv2.imread(ms)
-         img = cv2.resize(img, (THUMB_W, THUMB_H))
-         print("FOUND!", ms)
-         return(img)
+         try:
+            img = cv2.resize(img, (THUMB_W, THUMB_H))
+            print("FOUND!", ms)
+            return(img)
+         except:
+            print("Bad pic image.")
    # next check for vids
    for ms in missing:
       if "mp4" in ms:
@@ -382,13 +385,19 @@ def make_multi_cam_frame(frame, TID):
    return(mc_img)
     
 def purge_tl():
+   # remove files older than 2 days from the MIA dir
+   # remove folders older than 3 days from the TL pic dir
    MIA_DIR = "/mnt/ams2/MIA/"
    files = glob.glob(MIA_DIR + "*")
    for file in files:
       (sd_datetime, sd_cam, sd_date, sd_y, sd_m, sd_d, sd_h, sd_M, sd_s) = convert_filename_to_date_cam(file)
       elp = sd_datetime - datetime.now()
       days_old = abs(elp.total_seconds()) / 86400
-      print(file, days_old)
+      if days_old > 2:
+         print(file, days_old)
+         cmd = "rm " + file
+         print(cmd)
+         os.system(cmd)
 
 
 def sync_tl_vids():
@@ -421,7 +430,7 @@ def make_file_matrix(day,json_conf):
 
 def tn_tl6(date,json_conf):
 
-
+   purge_tl()
    TL_PIC_DIR = TL_IMAGE_DIR + date + "/"
    day_dir = "/mnt/ams2/SD/proc2/daytime/" + date + "/images/*.png"
    night_dir = "/mnt/ams2/SD/proc2/" + date + "/images/*.png"
