@@ -2892,7 +2892,7 @@ def browse_day(day,cams_id,json_conf,form):
    print("<div class='d-flex'><!--<a class='btn btn-primary mr-3' href='/pycgi/webUI.py?cmd=video_tools' style='text-transform: initial;'><span class='icon-youtube'></span> Generate Timelapse Video</a>--><button class='btn btn-primary' id='play_anim_thumb' style='text-transform: initial;'><span class='icon-youtube'></span> Timelapse Preview</button></div></div>") 
   
    print("<div id='main_container' class='container-fluid h-100 mt-4 lg-l'>")
-   print("<div class='gallery gal-resize row text-center text-lg-left '>")
+   print("<div class='gallery gal-resize reg row text-center text-lg-left '>")
 
    #For timelapse anim
    print("<input type='hidden' name='cur_date' value='"+str(day)+"'/>")
@@ -2922,7 +2922,7 @@ def browse_day(day,cams_id,json_conf,form):
       el = base_file.split("/")
       base_js_name = el[-1].split('_')
 
-      html_out =  "<div class='preview col-lg-2 col-md-3 "+ htclass +"'>"
+      html_out =  "<div class='preview  "+ htclass +"'>"
       html_out +=  "<a class='mtt mb-3' href='webUI.py?cmd=examine_min&video_file=" + video_file + "&next_stack_file=" + next_stack_file  + "' title='Examine'>"
       html_out +=  "<img class='ns lz' src='" + stack_file_tn + "'>"
       html_out +=  "<span>"+base_js_name[0] +"/" +base_js_name[1]+"/" +base_js_name[2] + " " +  base_js_name[3]+ ":" +  base_js_name[4]+ ":" +  base_js_name[5] +"</span>"
