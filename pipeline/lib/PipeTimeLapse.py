@@ -553,14 +553,27 @@ def purge_tl():
    # remove folders older than 3 days from the TL pic dir
    MIA_DIR = "/mnt/ams2/MIA/"
    files = glob.glob(MIA_DIR + "*")
+   tl_pic_dirs = glob.glob(TL_IMAGE_DIR + "*")
+   for tld in tl_pic_dirs:
+      fn, dir = fn_dir(tld)
+      dir_date = datetime.strptime(fn, "%Y_%m_%d")
+      elp = dir_date - datetime.now()
+      days_old = abs(elp.total_seconds()) / 86400
+      print(fn, days_old)
+      if days_old > 3:
+         cmd = "rm -rf " + tld
+         print(cmd)
+         os.system(cmd)
+
+
    for file in files:
       (sd_datetime, sd_cam, sd_date, sd_y, sd_m, sd_d, sd_h, sd_M, sd_s) = convert_filename_to_date_cam(file)
       elp = sd_datetime - datetime.now()
       days_old = abs(elp.total_seconds()) / 86400
       if days_old > 2:
-         print(file, days_old)
+         #print(file, days_old)
          cmd = "rm " + file
-         print(cmd)
+         #print(cmd)
          os.system(cmd)
 
 
