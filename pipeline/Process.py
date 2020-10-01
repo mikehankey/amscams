@@ -17,8 +17,8 @@ from lib.PipeUtil import convert_filename_to_date_cam, day_or_night , load_json_
 from lib.PipeVideo import scan_stack_file, make_preview_videos, load_frames_simple, ffmpeg_cat , ffmpeg_cats
 from lib.PipeDetect import detect_in_vals , obj_report, trim_events, detect_all, get_trim_num, trim_min_file, detect_meteor_in_clip, analyze_object, refine_meteor, refine_all_meteors
 from lib.PipeSync import sync_day 
-from lib.PipeAutoCal import autocal , solve_field, cal_all, draw_star_image, freecal_copy, apply_calib, index_failed, deep_calib, deep_cal_report, blind_solve_meteors, guess_cal, flatten_image, project_many, project_snaps, review_cals, star_db_mag
-from lib.PipeReport import autocal_report, detect_report
+from lib.PipeAutoCal import autocal , solve_field, cal_all, draw_star_image, freecal_copy, apply_calib, index_failed, deep_calib, deep_cal_report, blind_solve_meteors, guess_cal, flatten_image, project_many, project_snaps, review_cals, star_db_mag, cal_report, review_all_cals, reverse_map
+from lib.PipeReport import autocal_report, detect_report 
 from lib.PipeLIVE import meteor_min_files, broadcast_live_meteors, broadcast_minutes, meteors_last_night, mln_final, pip_video, mln_sync, super_stacks, meteor_index, fix_missing_images, fflist, resize_video, minify_file, make_preview_meteor, make_preview_meteors, sync_preview_meteors
 from lib.PipeTimeLapse import make_tl_for_cam, video_from_images, six_cam_video, timelapse_all, tn_tl6, sync_tl_vids, multi_cam_tl, audit_min, purge_tl , plot_min_int
 from lib.PipeMeteorDelete import delete_all_meteor_files
@@ -134,7 +134,9 @@ if __name__ == "__main__":
   
    # review solved cal files
    if cmd == 'rc':
-      review_cals(json_conf)
+      review_cals(json_conf, sys.argv[2] )
+   if cmd == 'rac':
+      review_all_cals(json_conf)
 
    # auto calibrate one file
    if cmd == 'ac':
@@ -354,4 +356,8 @@ if __name__ == "__main__":
       purge_tl()
    if cmd == "plot_min_int":
       plot_min_int(sys.argv[2], json_conf)
+   if cmd == "cal_report":
+      cal_report(json_conf)
+   if cmd == "reverse_map":
+      reverse_map(json_conf)
    

@@ -182,6 +182,9 @@ def az_grid(cal_file,cal_params,cal_image,iw,ih,show =0):
    #print(az_grid_half_blend)
    cv2.imwrite(az_grid_file, cal_image)
    cv2.imwrite(az_grid_file_half, az_grid_half_img)
+   az_grid_file_tn = az_grid_file.replace(".png", "-tn.png")
+   az_grid_tn_img = cv2.resize(half_stack_img, (THUMB_W, THUMB_H))
+   cv2.imwrite(az_grid_file_tn, az_grid_tn_img)
    tr_grid_file = az_grid_file.replace(".png", "-t.png")
    #cmd = "/usr/bin/convert " + az_grid_file + " " + tr_grid_file
    #print(cmd)
