@@ -61,7 +61,7 @@ def star_db_mag(cam, json_conf):
 
 def project_snaps(json_conf):
    matrix = make_file_matrix("today", json_conf)
-   snaps = sorted(glob.glob("/mnt/ams2/snaps/*00_000*.png"))
+   snaps = sorted(glob.glob("/mnt/ams2/SNAPS/*00_000*.png"))
    maps = {}
    for snap in snaps:
       (f_datetime, this_cam, f_date_str,y,m,d, h, mm, s) = convert_filename_to_date_cam(snap)

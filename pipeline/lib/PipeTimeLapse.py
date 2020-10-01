@@ -203,6 +203,15 @@ def audit_min(date, json_conf):
       data = load_json_file(data_file)
       new = 0
    #minutes = load_json_file(data_file)
+   today = datetime.now().strftime("%Y_%m_%d")
+   if today == date :
+      limit_h = int(datetime.now().strftime("%H"))
+      limit_m = int(datetime.now().strftime("%M"))
+   else :
+      limit_h = 23
+      limit_m = 59
+
+
    hd_files = glob.glob("/mnt/ams2/HD/" + date + "*.mp4")
    sd_files = glob.glob("/mnt/ams2/SD/proc2/" + date + "/*.mp4")
    sd_day_files = glob.glob("/mnt/ams2/SD/proc2/daytime/" + date + "/*.mp4")
@@ -349,6 +358,13 @@ def audit_min(date, json_conf):
    TL_PIC_DIR = TL_IMAGE_DIR + date + "/"
    for hour in range(0,24):
        for minute in range(0,60):
+         if hour > limit_h:
+            print("HOUR HAS PAST!", hour )
+            continue
+         if hour == limit_h:
+            if minute >= limit_m:
+               print("MIN HAS PAST!", hour, minute)
+               continue
          key = '{:02d}-{:02d}'.format(int(hour),int(minute))
          hs = str(hour)
          ms = str(minute)
@@ -361,6 +377,7 @@ def audit_min(date, json_conf):
             fsize = fs.st_size
             if fsize < 4000:
                redo = 1
+               os.system("rm " + row_file)
 
 
          if cfe(row_file) == 0 or redo == 1:
@@ -476,6 +493,7 @@ def audit_min(date, json_conf):
    print(cmd)
    os.system(cmd)
    print(tl_out)
+   make_tl_html()
    #sync_tl_vids()
  
 
