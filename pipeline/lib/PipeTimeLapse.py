@@ -355,7 +355,15 @@ def audit_min(date, json_conf):
 
          row_file = TL_PIC_DIR + key + "-row.png"
          print("ROW:", row_file)
-         if cfe(row_file) == 0:
+         redo = 0
+         if cfe(row_file) == 1:
+            fs = os.stat(row_file)
+            fsize = fs.st_size
+            if fsize < 4000:
+               redo = 1
+
+
+         if cfe(row_file) == 0 or redo == 1:
             print("MAKE ROW!", data[hs][ms])
             min_file = None
             row_pic = make_row_pic(data[hs][ms], min_file, LOCATION + " " + date + " " + key.replace("-", ":") + " UTC", json_conf, cam_num_info)
