@@ -408,7 +408,7 @@ def flatten_image(file, json_conf,asimg=None,ascp=None,maps=None):
    return(asimg, ascp,maps)
 
 
-def guess_cal(cal_file, json_conf):
+def guess_cal(cal_file, json_conf, cal_params = None):
    print(cal_file)
    (f_datetime, this_cam, f_date_str,y,m,d, h, mm, s) = convert_filename_to_date_cam(cal_file)
    img = cv2.imread(cal_file)
@@ -423,9 +423,10 @@ def guess_cal(cal_file, json_conf):
    print("CAM:", this_cam)
    az_guess, el_guess, pix_guess, pos_ang_guess = get_cam_best_guess(this_cam, json_conf)
    cp_file = cal_file.replace(".png", "-calparams.json")
-   if False:
+   if cal_params is not None:
    #if cfe(cp_file) == 1:
       if az_guess == 0 and el_guess == 0:
+         cp_file = cp_file.replace("-src", "") 
          cp = load_json_file(cp_file)
          az_guess = cp['center_az']
          el_guess = cp['center_el']
@@ -521,7 +522,7 @@ def make_guess(az_guess, el_guess, pix_guess, pos_ang_guess, this_cam, cal_file,
    cal_params = update_center_radec(cal_file,temp_cal_params,json_conf)
 
    cp = pair_stars(temp_cal_params, cal_file, json_conf, gray_img)
-   cp2, bad_stars = eval_cal(cal_file,json_conf,temp_cal_params,gray_img)
+   cp2, bad_stars,marked_img = eval_cal(cal_file,json_conf,temp_cal_params,gray_img)
 
    for star in cp['cat_image_stars']:
       dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist,bp = star
@@ -1525,7 +1526,7 @@ def show_image(img, win, time=0):
       except:
          print("Bad image:", disp_img)
 
-def view_calib(cp_file,json_conf,nc,oimg):
+def view_calib(cp_file,json_conf,nc,oimg, show = 1):
    img = oimg.copy()
    tres = 0
    for star in nc['user_stars']:
@@ -1555,9 +1556,10 @@ def view_calib(cp_file,json_conf,nc,oimg):
    cv2.putText(img, "Match %:" + str(nc['match_perc']),  (25,175), cv2.FONT_HERSHEY_SIMPLEX, .8, (255, 255, 255), 1)
    cv2.putText(img, "POLY" +  str(nc['x_poly'][0]),  (25,200), cv2.FONT_HERSHEY_SIMPLEX, .8, (255, 255, 255), 1)
 
-   dimg = cv2.resize(img, (1280,720))
-   cv2.imshow('pepe', dimg)
-   cv2.waitKey(30)
+   if show == 1:
+      dimg = cv2.resize(img, (1280,720))
+      cv2.imshow('pepe', dimg)
+      cv2.waitKey(30)
    return(img)
 
 def get_default_calib(file, json_conf):
@@ -1922,6 +1924,10 @@ def cal_index(cam, json_conf):
          if "user_stars" not in cp:
             cp['user_stars'] = get_image_stars(img_file, None, json_conf,0)
          #print("CAL:", file, cp['center_az'], cp['center_el'], cp['position_angle'], cp['pixscale'], len(cp['user_stars']), len(cp['cat_image_stars']), cp['total_res_px'])
+         jpg_file = img_file.replace(".png", "-src.jpg")
+         if cfe(jpg_file) == 0:
+            cmd = "convert -quality 80 " + img_file + " " + jpg_file
+            os.system(cmd)
          ci_data.append((file, cp['center_az'], cp['center_el'], cp['position_angle'], cp['pixscale'], len(cp['user_stars']), len(cp['cat_image_stars']), cp['total_res_px']))
 
    temp = sorted(ci_data, key=lambda x: x[0], reverse=True)
@@ -3830,7 +3836,7 @@ def reduce_fov_pos(this_poly, az,el,pos,pixscale, x_poly, y_poly, cal_params_fil
    pos_poly = 0
    cat_stars = get_catalog_stars(temp_cal_params)
    print("REDUCE FOV POS - BEFORE EVAL")
-   temp_cal_params, bad_stars = eval_cal(cal_params_file, json_conf, temp_cal_params, oimage) 
+   temp_cal_params, bad_stars, marked_img = eval_cal(cal_params_file, json_conf, temp_cal_params, oimage) 
    print("REDUCE FOV POS - AFTER EVAL")
    #print("RES:", temp_cal_params['total_res_px'] , temp_cal_params['match_perc'])
    match_val = 1 - temp_cal_params['match_perc'] 
