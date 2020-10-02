@@ -1826,6 +1826,10 @@ def remove_bad_stars(cp, bad_stars):
    return(cp)
 
 def cal_index(cam, json_conf):
+   save_file = "/mnt/ams2/meteor_archive/" + STATION_ID + "/CAL/" + STATION_ID + "_" + cam + "_CAL_INDEX.json"
+   cloud_save_file = save_file.replace("ams2/meteor_archive", "archive.allsky.tv")
+   cfn, cdir = fn_dir(cloud_save_file)
+
    cal_files= get_cal_files(None, cam)
    ci_data = []
    for file,res in cal_files:
@@ -1844,6 +1848,10 @@ def cal_index(cam, json_conf):
    temp = sorted(ci_data, key=lambda x: x[0], reverse=True)
    for data in temp:
       print(data)
+   save_json_file(save_file, temp)
+   print(save_file)
+   if cfe(cdir, 1) == 1:
+      save_json_file(cloud_save_file, temp)
    return(temp)
 
 def get_med_cal(json_conf, cam, ci_data=None, this_date= None):
