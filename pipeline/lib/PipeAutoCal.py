@@ -66,6 +66,8 @@ def project_snaps(json_conf):
    maps = {}
    for snap in sorted(snaps):
       (f_datetime, this_cam, f_date_str,y,m,d, h, mm, s) = convert_filename_to_date_cam(snap)
+      make_gnome_map(snap, json_conf,None,None,None)
+      exit()
       key = h + "-" + mm
       if key in matrix:
          if "files" not in matrix[key]:
@@ -126,9 +128,9 @@ def project_many(files, json_conf,maps=None):
    return(asimg, ascp,maps)
 
 
-def all_sky_image(file, cal_params, json_conf,pxscale_div):
-   aw = 5000 
-   ah = 5000 
+def all_sky_image(file, cal_params, json_conf,pxscale_div,size=5000):
+   aw = size 
+   ah = size 
    asimg = np.zeros((ah,aw,3),dtype=np.uint8)
    cal_params['imagew'] = aw 
    cal_params['imageh'] = ah 
@@ -189,7 +191,84 @@ def reverse_map(json_conf):
       pickle.dump(reverse_map, handle, protocol=pickle.HIGHEST_PROTOCOL)
    save_json_file(rev_save_js, reverse_map)
    print(rev_save_js)
-      
+
+def make_gnome_map(file, json_conf,asimg=None,ascp=None,maps=None):
+   img = cv2.imread(file)
+   small_img = cv2.resize(img, (int(1920/2), int(1080/2)))
+   jd = datetime2JD(f_datetime, 0.0)
+   hour_angle = JD2HourAngle(jd)
+   dist_type = "radial"
+   save_dir = "/mnt/ams2/meteor_archive/CAL/REMAP/"
+   save_file = save_dir + "map_" + this_cam + ".pickle" 
+   as_save_file = save_dir + "asmap_" + this_cam + ".pickle" 
+
+   cal_files= get_cal_files(None, this_cam)
+   best_cal_file = cal_files[0][0]
+   cal_params = load_json_file(best_cal_file)
+
+   asimg, ascp = all_sky_image(file, cal_params.copy(), json_conf, 5, 1000)
+
+   med_cal = get_med_cal(json_conf, this_cam)
+   print("MEDCAL:", med_cal)
+   cal_params['center_az'] = med_cal[0]
+   cal_params['center_el'] = med_cal[1]
+   cal_params['position_angle'] = med_cal[2]
+   cal_params['pixscale'] = med_cal[3]
+
+   cal_params = update_center_radec(file,cal_params,json_conf)
+   year = datetime.now().strftime("%Y")
+   autocal_dir = "/mnt/ams2/meteor_archive/" + STATION_ID + "/CAL/AUTOCAL/" + year + "/solved/"
+   mcp_file = autocal_dir + "multi_poly-" + STATION_ID + "-" + this_cam + ".info"
+   mcp = load_json_file(mcp_file)
+   cal_params['x_poly'] = mcp['x_poly']
+   cal_params['y_poly'] = mcp['y_poly']
+   cal_params['x_poly_fwd'] = mcp['x_poly_fwd']
+   cal_params['y_poly_fwd'] = mcp['y_poly_fwd']
+
+   if True:
+      for ix in range(0,img.shape[1]):
+         for iy in range(0,img.shape[0]):
+            ix2 = ix * 2
+            iy2 = iy * 2
+            new_x, new_y, img_ra,img_dec, img_az, img_el = XYtoRADec(ix,iy,file,cal_params,json_conf )
+            new_x = int(new_x) 
+            new_y = int(new_y) 
+
+            # MAP PIXEL TO ALL SKY IMG
+            #as_az, as_el = radec_to_azel(img_ra,img_dec, f_date_str,json_conf)
+            #as_rah,as_dech = AzEltoRADec(cal_params['center_az'],cal_params['center_el'],archive_file,cal_params,json_conf)
+            #ra_data = np.ndarray
+            #dec_data = np.ndarray
+
+            ra_data = np.zeros(shape=(1,), dtype=np.float64)
+            dec_data = np.zeros(shape=(1,), dtype=np.float64)
+            ra_data[0] = img_ra
+            dec_data[0] = img_dec
+            degrees_per_pix = float(ascp['pixscale'])*0.000277778
+            px_per_degree = 1 / degrees_per_pix
+            #print("PX:", px_per_degree)
+
+            x_data, y_data = cyraDecToXY(ra_data, \
+               dec_data,
+               jd, json_conf['site']['device_lat'], json_conf['site']['device_lng'], asimg.shape[1], \
+               asimg.shape[0], hour_angle, float(ascp['ra_center']),  float(ascp['dec_center']), \
+               float(ascp['position_angle']), \
+               px_per_degree, \
+               ascp['x_poly'], ascp['y_poly'], \
+               dist_type, True, False, False)
+
+            #print("ASXY:", ix, iy, img_az, img_el, x_data[0], y_data[0])
+            asx = int(x_data[0])
+            asy = int(y_data[0])
+            asmap.append([asx,asy])
+            #remap.append([new_x,new_y])
+            if cc % 100000 == 0:
+               print("100k pixels done.", cc)
+            cc += 1
+
+
+
+
 
 def flatten_image(file, json_conf,asimg=None,ascp=None,maps=None):
 
