@@ -361,5 +361,7 @@ if __name__ == "__main__":
    if cmd == "reverse_map":
       reverse_map(json_conf)
    if cmd == "cal_index":
-      cal_index(sys.argv[2], json_conf)
+      for cam in json_conf['cameras']:
+         cams_id = json_conf['cameras'][cam]['cams_id']
+         cal_index(cams_id, json_conf)
    
