@@ -43,6 +43,78 @@ def sync_back_admin_cals():
    cmd = "/usr/bin/rsync -av " + bcc_dir + "*.json " + blc_dir
    os.system(cmd)
 
+
+   new_files = glob.glob(blc_dir + "*")
+   fc_dirs = None
+   for file in new_files:
+      rfn, dir = fn_dir(file)
+      rfn = rfn.replace("-calparams.json", "")
+      #print("RFN:", rfn, file)
+      cps, imgs, fc_dirs = find_fc_files(rfn, fc_dirs)
+      cp_file = cps[0]
+      src_img_file = imgs[0]
+      #print(file, cp_file, src_img_file)
+
+      # copy the new json from BEST dir to the cp file (with right/new name)
+      fc_d = "/mnt/ams2/cal/freecal/" + rfn + "/" 
+      cmd = "cp " + file + " " + fc_d
+      print(cmd)
+      os.system(cmd)
+
+      # open src image and resave as .png without -src.jpg (if it doesn't exist)
+      jpg_src = fc_d + rfn + "-src.jpg"
+      png_src = jpg_src.replace("-src.jpg", ".png")
+      cp_file = jpg_src.replace("-src.jpg", "-calparams.json")
+      if cfe(png_src) == 0 or cfe(jpg_src) == 0:
+         print("saving jpg and png src", jpg_src, png_src)
+         src_img = cv2.imread(src_img_file)
+         cv2.imwrite(png_src, src_img)
+         cv2.imwrite(jpg_src, src_img)
+
+      # remake azgrid open src image and resave as .png without -src.jpg (if it doesn't exist)
+      cmd = "./AzElGrid.py az_grid " + cp_file 
+      print(cmd)
+      os.system(cmd)
+
+      # save user_stars file
+      cp = load_json_file(cp_file)
+      us = cp['user_stars']
+      usf = cp_file.replace("-calparams.json", "-user-stars.json")
+      ddd= {}
+      ddd['user_stars'] = cp['user_stars'] 
+      save_json_file(usf, ddd)
+
+      # remove or rename (ra grid) old / stale files
+      old_files = glob.glob(fc_d + "*stacked*")
+      for of in old_files:
+         print("OF:", of)
+         cmd = "rm " + of
+         os.system(cmd)
+      print("DONE:", fc_d)
+      #exit()
+
+
+def find_fc_files(root_file, fcdirs = None):
+   # find free cal files matching a root file
+   fc_dir = "/mnt/ams2/cal/freecal/"
+   fcdirs = glob.glob(fc_dir + "*")
+   # first clean up any misnamed dirs
+   for fcd in fcdirs:
+      if "-" in fcd:
+         root_dir = fcd.split("-")[0]
+         cmd = "mv " + fcd + " " + root_dir
+         os.system(cmd)
+
+   fcdirs = glob.glob(fc_dir + "*")
+   cps = []
+   imgs = []
+   for fcd in fcdirs:
+      if root_file in fcd: 
+         if cfe(fcd, 1) == 1:
+            cps = glob.glob(fcd + "/*calparams.json")
+            imgs = glob.glob(fcd + "/*src.jpg")
+             
+   return(cps, imgs, fcdirs)
 def star_db_mag(cam, json_conf):
    year = datetime.now().strftime("%Y")
    autocal_dir = "/mnt/ams2/meteor_archive/" + STATION_ID + "/CAL/AUTOCAL/" + year + "/solved/"

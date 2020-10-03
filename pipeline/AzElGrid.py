@@ -81,11 +81,11 @@ def az_grid(cal_file,cal_params,cal_image,iw,ih,show =0):
       cam = cam.replace(".jpg", "")
       print("CAM:", cam)
    else:
-      print("NO CAL FILE?")
+      print("NO CAL FILE?", cal_file)
       return()
  
 
-   mcpf = "/mnt/ams2/meteor_archive/AMS1/CAL/AUTOCAL/2020/solved/multi_poly-" + STATION_ID + "-" + cam + ".info"
+   mcpf = "/mnt/ams2/meteor_archive/" + STATION_ID + "/CAL/AUTOCAL/2020/solved/multi_poly-" + STATION_ID + "-" + cam + ".info"
    if cfe(mcpf) == 1:
       mcp = load_json_file(mcpf)
       cal_params['x_poly'] = mcp['x_poly']   
@@ -217,7 +217,7 @@ if __name__ == "__main__":
 
    if cmd == 'az_grid':
 
-      cal_file = cal_param_file.replace("-calparams.json", ".jpg")
+      cal_file = cal_param_file.replace("-calparams.json", "-src.jpg")
       if cfe(cal_file) == 0:
          cal_file = cal_file.replace(".jpg", "-stacked.png")
          if cfe(cal_file) == 0:
