@@ -422,7 +422,8 @@ def guess_cal(cal_file, json_conf, cal_params = None):
    cv2.waitKey(30)
    print("CAM:", this_cam)
    az_guess, el_guess, pix_guess, pos_ang_guess = get_cam_best_guess(this_cam, json_conf)
-   cp_file = cal_file.replace(".png", "-calparams.json")
+   cp_file = cal_file.replace("-src.jpg", "-calparams.json")
+   print("CP FILE:", cp_file)
    if cal_params is not None:
    #if cfe(cp_file) == 1:
       if az_guess == 0 and el_guess == 0:
@@ -447,36 +448,42 @@ def guess_cal(cal_file, json_conf, cal_params = None):
    az_guess, el_guess, pix_guess, pos_ang_guess = float( az_guess), float(el_guess), float(pix_guess), float(pos_ang_guess)
    
    gimg, avg_res, last_cal = make_guess(az_guess, el_guess, pix_guess, pos_ang_guess, this_cam, cal_file, orig_img.copy(), gray_img, stars, json_conf)
+   ss = 1 
    while guessing == 0:
       print("RES:", avg_res)
-      print("Waiting for input.")
+      print("Waiting for input.", ss)
       #cv2.imshow('pepe', gimg)
       key = cv2.waitKey(0)
-      ss = 1 
+
+      if key == ord('+'):
+         ss = ss + .1
+         print("SS:", ss)
+      if key == ord('-'):
+         ss = ss - .1
+         print("SS:", ss)
       if key == ord('a'):
-         print("az - .5")
          az_guess = az_guess - ss
          gimg, avg_res, last_cal = make_guess(az_guess, el_guess, pix_guess, pos_ang_guess, this_cam, cal_file, orig_img.copy(), gray_img, stars, json_conf)
       if key == ord('f'):
-         print("az + .5")
          az_guess = az_guess + ss
          gimg, avg_res, last_cal = make_guess(az_guess, el_guess, pix_guess, pos_ang_guess, this_cam, cal_file, orig_img.copy(), gray_img, stars, json_conf)
       if key == ord('s'):
-         print("el - .5", el_guess, -.5, el_guess - .5)
          el_guess = el_guess - ss
          gimg, avg_res, last_cal = make_guess(az_guess, el_guess, pix_guess, pos_ang_guess, this_cam, cal_file, orig_img.copy(), gray_img, stars, json_conf)
       if key == ord('d'):
-         print("el + .5")
          el_guess = el_guess + ss 
          gimg, avg_res, last_cal = make_guess(az_guess, el_guess, pix_guess, pos_ang_guess, this_cam, cal_file, orig_img.copy(), gray_img, stars, json_conf)
-         print("NEW EL GUESS:", el_guess)
       if key == ord('o'):
-         print("pos - .5")
          pos_ang_guess = pos_ang_guess - ss 
          gimg, avg_res, last_cal = make_guess(az_guess, el_guess, pix_guess, pos_ang_guess, this_cam, cal_file, orig_img.copy(), gray_img, stars, json_conf)
       if key == ord('p'):
-         print("pos + .5")
          pos_ang_guess = pos_ang_guess + ss
+         gimg, avg_res, last_cal = make_guess(az_guess, el_guess, pix_guess, pos_ang_guess, this_cam, cal_file, orig_img.copy(), gray_img, stars, json_conf)
+      if key == ord('z'):
+         pix_guess = pix_guess - ss 
+         gimg, avg_res, last_cal = make_guess(az_guess, el_guess, pix_guess, pos_ang_guess, this_cam, cal_file, orig_img.copy(), gray_img, stars, json_conf)
+      if key == ord('x'):
+         pix_guess = pix_guess + ss
          gimg, avg_res, last_cal = make_guess(az_guess, el_guess, pix_guess, pos_ang_guess, this_cam, cal_file, orig_img.copy(), gray_img, stars, json_conf)
 
       if key == 27 or key == ord('q'):
@@ -485,14 +492,14 @@ def guess_cal(cal_file, json_conf, cal_params = None):
       if key == ord('m'):
          print("Minimize with these values!")
          guessing = 1
+         cp = minimize_fov(cal_file, last_cal, cal_file,orig_img.copy(),json_conf )
       print("Got input.")
       print("AZ:", az_guess)    
       print("EL:", el_guess)    
       print("POS:", pos_ang_guess)    
 
-   cp = minimize_fov(cal_file, last_cal, cal_file,orig_img.copy(),json_conf )
    save_yn = input("Enter Y to save: ") 
-   if save_yn == "Y" or save_yn == "y":
+   if save_yn == "Y" or save_yn == "y" or "y" in save_yn or "Y" in save_yn:
       last_cal['x_poly'] = cp['x_poly'].tolist()
       last_cal['y_poly'] = cp['y_poly'].tolist()
       last_cal['y_poly_fwd'] = cp['y_poly_fwd'].tolist()
@@ -500,6 +507,8 @@ def guess_cal(cal_file, json_conf, cal_params = None):
       save_json_file(cp_file, last_cal)
       print("saved:", cp_file)
       time.sleep(5)
+   else:
+      print("NOT SAVED!", save_yn)
    return(last_cal)
 
 def make_guess(az_guess, el_guess, pix_guess, pos_ang_guess, this_cam, cal_file, img, gray_img, stars, json_conf):
@@ -1464,7 +1473,7 @@ def get_cal_files(meteor_file=None, cam=None):
    
 
 def solve_field(image_file, image_stars=[], json_conf={}):
-
+   print("Solve field", image_file)
    ifn = image_file.split("/")[-1]
    idir = image_file.replace(ifn, "")
    idir += "temp/"
@@ -1472,6 +1481,7 @@ def solve_field(image_file, image_stars=[], json_conf={}):
       os.makedirs(idir)
 
    plate_file = idir + ifn
+   print("NEW PLATE FILE:", plate_file)
    wcs_file = plate_file.replace(".jpg", ".wcs")
    grid_file = plate_file.replace(".jpg", "-grid.png")
    wcs_info_file = plate_file.replace(".jpg", "-wcsinfo.txt")
@@ -1479,7 +1489,9 @@ def solve_field(image_file, image_stars=[], json_conf={}):
    astrout = plate_file.replace(".jpg", "-astrout.txt")
    star_data_file = plate_file.replace(".jpg", "-stars.txt")
 
+   print("SOLVED FILE:", solved_file)
    if len(image_stars) < 10:
+      print("not enough stars", len(image_stars) )
       return(0, {}, "")
 
    cmd = "mv " + image_file + " " + idir
@@ -1488,12 +1500,14 @@ def solve_field(image_file, image_stars=[], json_conf={}):
 
    # solve field
    cmd = "/usr/local/astrometry/bin/solve-field " + plate_file + " --crpix-center --cpulimit=30 --verbose --no-delete-temp --overwrite --width=" + str(HD_W) + " --height=" + str(HD_H) + " -d 1-40 --scale-units dw --scale-low 50 --scale-high 90 -S " + solved_file + " >" + astrout
+   print(cmd)
    astr = cmd
    if cfe(solved_file) == 0:
       os.system(cmd)
 
    if cfe(solved_file) == 1:
       # get WCS info
+      print("Solve passed.", solved_file)
       cmd = "/usr/bin/jpegtopnm " + plate_file + "|/usr/local/astrometry/bin/plot-constellations -w " + wcs_file + " -o " + grid_file + " -i - -N -C -G 600 > /dev/null 2>&1 "
       os.system(cmd)
 
@@ -1508,6 +1522,7 @@ def solve_field(image_file, image_stars=[], json_conf={}):
 
       return(1, cal_params, wcs_file) 
    else:
+      print("Solve failed.", solved_file)
       print(astr) 
       return(0, {}, "")
    
@@ -1765,7 +1780,7 @@ def eval_cal(cp_file,json_conf,nc=None,oimg=None, mask_img=None):
    if len(oimg.shape) == 3:
       gimg = cv2.cvtColor(oimg, cv2.COLOR_BGR2GRAY)
    else:
-      gimg = oimg
+      gimg = oimg.copy()
    if oimg is not None:
       img = oimg.copy()
    if nc is None:
@@ -1775,6 +1790,7 @@ def eval_cal(cp_file,json_conf,nc=None,oimg=None, mask_img=None):
    if oimg is None:
       print("OPEN OIMG")
       img = cv2.imread(img_file)
+      oimg = img.copy()
    if nc is None:
       print("NC IS NONE SO GETTING USER STARS...")
       nc['user_stars'] = get_image_stars(img_file, None, json_conf,0)
@@ -1782,6 +1798,7 @@ def eval_cal(cp_file,json_conf,nc=None,oimg=None, mask_img=None):
    elif "user_stars" not in nc:
       print("GETTING USER STARS.")
       nc['user_stars'] = get_image_stars(img_file, None, json_conf,0)
+
    print("UPDATING CENTER")
    nc = update_center_radec(cp_file,nc,json_conf)
    print("GETTING CATALOG STARS")
@@ -1790,7 +1807,10 @@ def eval_cal(cp_file,json_conf,nc=None,oimg=None, mask_img=None):
    nc = pair_stars(nc, cp_file, json_conf, gimg)
 
    print("AFTER PAIR:")
-   match_perc = len(nc['cat_image_stars']) / len(nc['user_stars']) 
+   if len(nc['user_stars']) > 0:
+      match_perc = len(nc['cat_image_stars']) / len(nc['user_stars']) 
+   else:
+      match_perc = 0
    nc['match_perc'] = match_perc
 
 
@@ -1906,24 +1926,33 @@ def remove_bad_stars(cp, bad_stars):
    cp['cat_image_stars'] = good_stars
    return(cp)
 
-def cal_index(cam, json_conf):
-   save_file = "/mnt/ams2/meteor_archive/" + STATION_ID + "/CAL/" + STATION_ID + "_" + cam + "_CAL_INDEX.json"
+def cal_index(cam, json_conf, r_station_id = None):
+   if r_station_id is None:
+      save_file = "/mnt/ams2/meteor_archive/" + STATION_ID + "/CAL/" + STATION_ID + "_" + cam + "_CAL_INDEX.json"
+   else:
+      save_file = "/mnt/ams2/meteor_archive/" + r_station_id + "/CAL/" + r_station_id + "_" + cam + "_CAL_INDEX.json"
+      r_cal_dir = "/mnt/ams2/meteor_archive/" + r_station_id + "/CAL/BEST/"
    cloud_save_file = save_file.replace("ams2/meteor_archive", "archive.allsky.tv")
    cfn, cdir = fn_dir(cloud_save_file)
-
-   cal_files= get_cal_files(None, cam)
+   if r_station_id is None:
+      cal_files= get_cal_files(None, cam)
+   else:
+      cal_files= glob.glob(r_cal_dir + "*" + cam + "*calparams.json")
    ci_data = []
-   for file,res in cal_files:
-      img_file = file.replace("-calparams.json", ".png")
+   for df in cal_files:
+      if len(df) == 2:
+         file, res = df
+      else:
+         file = df
+      img_file = file.replace("-calparams.json", "-src.jpg")
       if cfe(file) == 1 and cfe(img_file) == 1:
          cp = load_json_file(file)
          cmd = "./AzElGrid.py az_grid " + file
-         print(cmd)
          #os.system(cmd)
 
          if "user_stars" not in cp:
+            print("EVAL CAL: Get image stars", img_file)
             cp['user_stars'] = get_image_stars(img_file, None, json_conf,0)
-         #print("CAL:", file, cp['center_az'], cp['center_el'], cp['position_angle'], cp['pixscale'], len(cp['user_stars']), len(cp['cat_image_stars']), cp['total_res_px'])
          jpg_file = img_file.replace(".png", "-src.jpg")
          if cfe(jpg_file) == 0:
             cmd = "convert -quality 80 " + img_file + " " + jpg_file
@@ -1931,8 +1960,6 @@ def cal_index(cam, json_conf):
          ci_data.append((file, cp['center_az'], cp['center_el'], cp['position_angle'], cp['pixscale'], len(cp['user_stars']), len(cp['cat_image_stars']), cp['total_res_px']))
 
    temp = sorted(ci_data, key=lambda x: x[0], reverse=True)
-   for data in temp:
-      print(data)
    save_json_file(save_file, temp)
    print(save_file)
    if cfe(cdir, 1) == 1:
@@ -1943,7 +1970,6 @@ def get_med_cal(json_conf, cam, ci_data=None, this_date= None):
    year = datetime.now().strftime("%Y")
    ci_dir = ARC_DIR + "CAL/AUTOCAL/" + year + "/solved/"
    ci_file = ci_dir + "cal_index-" + cam + ".json" 
-   print(ci_file)
    if ci_data is None:
       data = load_json_file(ci_file)
       ci_data = data['ci_data']
@@ -2433,7 +2459,7 @@ def cat_star_report(cat_image_stars, multi=2.5):
          c_dist.append(cat_dist)
          m_dist.append(match_dist)
          clean_stars.append(star)
-   return(clean_stars, np.median(c_dist), np.median(m_dist))
+   return(clean_stars, np.mean(c_dist), np.mean(m_dist))
   
 def make_fit_image(image, cat_image_stars) :
    marked_img = image.copy()
@@ -2576,6 +2602,7 @@ def get_image_stars(file=None,img=None,json_conf=None,show=0):
    stars = []
    huge_stars = []
    if img is None:
+      print("Loading image:", file)
       img = cv2.imread(file, 0)
    if len(img.shape) > 2:
       img = cv2.cvtColor(img, cv2.cv2.COLOR_BGR2GRAY)
@@ -2585,7 +2612,8 @@ def get_image_stars(file=None,img=None,json_conf=None,show=0):
    masks = get_masks(cam, json_conf,1)
    img = mask_frame(img, [], masks, 5)
    show_pic = img.copy()
-
+   #cv2.imshow("TESTING", show_pic)
+   #cv2.waitKey(0)
    avg = np.median(img) 
    best_thresh = avg + 20
    _, star_bg = cv2.threshold(img, best_thresh, 255, cv2.THRESH_BINARY)
@@ -2602,80 +2630,35 @@ def get_image_stars(file=None,img=None,json_conf=None,show=0):
    for (i,c) in enumerate(cnts):
       x,y,w,h = cv2.boundingRect(cnts[i])
 
-      # look inside light polluted (huge) areas if they exist
-      if (w > 100 and h > 100): 
-         area_x = x
-         area_y = y
-         huge.append((x,y,w,h))
-         area = img[y:y+h, x:x+w]
-         huge_avg = np.median(area) 
-         best_huge_thresh = huge_avg + 40
-         _, huge_star_bg = cv2.threshold(area, best_huge_thresh, 255, cv2.THRESH_BINARY)
-         huge_thresh_obj = cv2.dilate(huge_star_bg, None , iterations=4)
-         hres = cv2.findContours(huge_thresh_obj.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-         if len(hres) == 3:
-            (_, hcnts, xx) = hres
-         else:
-            (hcnts ,xx) = hres
-         # get stars in the huge (light polluted area)
-         for (hi,hc) in enumerate(hcnts):
-            hx,hy,hw,hh = cv2.boundingRect(hcnts[hi])
-
-            bx = int(area_x+hx + (hw/2))
-            by = int(area_y+hy + (hh/2))
-            bx1,by1,bx2,by2= bound_cnt(bx,by,1920,1080,15)
-            bg_cnt_img = raw_img[by1:by2,bx1:bx2]
-
-
-            px_val = int(img[y,x])
-            cnt_img = raw_img[by1:by2,bx1:bx2]
-            cnt_img = cv2.GaussianBlur(cnt_img, (7, 7), 0)
-
-            max_px, avg_px, px_diff,max_loc,star_int = eval_cnt(cnt_img.copy(), avg)
-            max_int = np.sum(cnt_img)
-            avg_int = np.median(bg_cnt_img) * cnt_img.shape[0] * cnt_img.shape[1]
-            star_int = max_int
-            star_int = max_int - avg_int
-            star_multi = max_int / avg_int
-
-            name = "/mnt/ams2/tmp/cnt" + str(cc) + ".png"
-            hx = area_x + hx + int(hw/2)
-            hy = area_y + hy + int(hh/2)
-            if star_int > 100:
-
-               stars.append((hx,hy,int(star_int)))
-               huge_stars.append((hx,hy,int(star_int)))
-
-
-
-       
-
-
-      bx = int(x + (w/2))
-      by = int(y + (h/2))
-      bx1,by1,bx2,by2= bound_cnt(bx,by,1920,1080,15)
-      bg_cnt_img = raw_img[by1:by2,bx1:bx2]
-
 
       px_val = int(img[y,x])
       cnt_img = raw_img[y:y+h,x:x+w]
       cnt_img = cv2.GaussianBlur(cnt_img, (7, 7), 0)
 
       max_px, avg_px, px_diff,max_loc,star_int = eval_cnt(cnt_img.copy(), avg)
-      max_int = np.sum(cnt_img)
-      avg_int = np.median(bg_cnt_img) * cnt_img.shape[0] * cnt_img.shape[1]
-      star_int = max_int 
-      star_int = max_int - avg_int 
-      star_multi = max_int / avg_int
-      #print("STAR INT: ", star_int)
+      bx,by = max_loc
+      bx = bx + x
+      by = by + y
+      bx1,by1,bx2,by2= bound_cnt(bx,by,1920,1080,10)
+      new_cnt_img = raw_img[by1:by2,bx1:bx2]
+      print(bx1,bx2,by1,by2)
+      print(new_cnt_img.shape)
 
       name = "/mnt/ams2/tmp/cnt" + str(cc) + ".png"
       #star_test = test_star(cnt_img)
-      x = x + int(w/2)
-      y = y + int(h/2)
       if star_int > 100:
+          #cv2.rectangle(show_pic, (bx1, by1), (bx2, by2 ), (255, 255, 255), 1)
           stars.append((x,y,int(star_int)))
 
+          show_pic[950:980,0:100] = 0
+          cv2.putText(show_pic, str(star_int),  (int(10),int(980)), cv2.FONT_HERSHEY_SIMPLEX, .8, (255, 255, 255), 1)
+          bcnt = cv2.resize(new_cnt_img, (100,100))
+          show_pic[980:1080,0:100] = bcnt
+          dsp = cv2.resize(show_pic, (1280,720))
+          cv2.imshow('pepe', dsp)
+          cv2.waitKey(0)
+      else:
+          cv2.rectangle(show_pic, (bx1, by1), (bx2, by2 ), (150, 150, 150), 1)
       cc = cc + 1
 
    temp = sorted(stars, key=lambda x: x[2], reverse=True)
