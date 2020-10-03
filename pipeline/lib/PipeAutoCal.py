@@ -30,6 +30,19 @@ import glob
 from PIL import ImageFont, ImageDraw, Image, ImageChops
 tries = 0
 
+
+def sync_back_admin_cals():
+   cc_dir = "/mnt/archive.allsky.tv/" + STATION_ID + "/CAL/"
+   lc_dir = "/mnt/ams2/meteor_archive/" + STATION_ID + "/CAL/"
+
+   bcc_dir = "/mnt/archive.allsky.tv/" + STATION_ID + "/CAL/BEST/"
+   blc_dir = "/mnt/ams2/meteor_archive/" + STATION_ID + "/CAL/BEST/"
+
+   cmd = "/usr/bin/rsync -av " + cc_dir + "*.json " + lc_dir
+   os.system(cmd)
+   cmd = "/usr/bin/rsync -av " + bcc_dir + "*.json " + blc_dir
+   os.system(cmd)
+
 def star_db_mag(cam, json_conf):
    year = datetime.now().strftime("%Y")
    autocal_dir = "/mnt/ams2/meteor_archive/" + STATION_ID + "/CAL/AUTOCAL/" + year + "/solved/"

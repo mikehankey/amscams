@@ -66,7 +66,7 @@ def menu():
    if cmd == "2":
       remote_calibrate()
    if cmd == "3":
-      sync_back_cal()
+      sync_back_cals()
 
 
 
@@ -193,7 +193,7 @@ def remote_calibrate():
       cal_params = guess_cal(cal_image_file, r_json_conf, cal_params)
       save_json_file(cal_params_file, cal_params)
 
-def sync_back_cals(r_station_id, r_json_conf):
+def sync_back_cals():
 
    r_station_num = input("Enter station id number AMSX:")
    #remote_ip = input("Enter remote http IP for direct host access or blank to use cloud drive data")
@@ -207,11 +207,11 @@ def sync_back_cals(r_station_id, r_json_conf):
    cdir = CLOUD_ROOT + r_station_id + "/CAL/BEST/"
 
 
-   cmd = "/usr/bin/rsync " + ldir + "*.json" + " " + cdir
+   cmd = "/usr/bin/rsync -av " + ldir + "*.json" + " " + cdir
    print(cmd)
    os.system(cmd)
 
-   cmd = "/usr/bin/rsync " + l_ci_dir + "*.json" + " " + c_ci_dir
+   cmd = "/usr/bin/rsync -av " + l_ci_dir + "*.json" + " " + c_ci_dir
    print(cmd)
    os.system(cmd)
 
