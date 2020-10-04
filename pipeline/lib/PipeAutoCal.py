@@ -1728,14 +1728,14 @@ def optimize_matchs(cp_file,json_conf,nc,oimg):
          #nc = load_json_file(cp_file)
 
    # opt pos
-   s = -10 
-   e = +10 
+   s = -180 
+   e = +180
    opos = nc['position_angle']
    best_pos = nc['position_angle']
    best_res = nc['total_res_px']
    best_score = best_res / best_match_perc 
    for i in range (s,e):
-      a = i / 10 
+      a = i  
       nc['position_angle'] = opos + a
       cat_stars = get_catalog_stars(nc)
       nc = pair_stars(nc, cp_file, json_conf, oimg)
@@ -2159,7 +2159,7 @@ def review_cals(json_conf, cam=None):
       file = file.replace("-calparams.json", ".png")
       print(file)
       files.append(file)
-   ccc = input("continue")
+   #ccc = input("continue")
    cal_files = []
    for file in sorted(files, reverse=True):
       if "grid" not in file and "tn" not in file and "stars" not in file and "blend" not in file:
