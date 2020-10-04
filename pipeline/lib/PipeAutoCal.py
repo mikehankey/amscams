@@ -1691,7 +1691,7 @@ def optimize_matchs(cp_file,json_conf,nc,oimg):
    ores = nc['total_res_px']
    default_calib = get_default_calib(cp_file,json_conf)
    if default_calib is not None:
-      default_pos_diff = abs(default_calib[2] - opx )
+      default_pos_diff = abs(float(default_calib[2]) - float(opx) )
       if default_pos_diff > 20:
          nc['position_angle'] = default_calib[2] 
 
@@ -2146,6 +2146,8 @@ def review_cals(json_conf, cam=None):
    if cfe(mask_file) == 1:
       mask_img = cv2.imread(mask_file)
       mask_img = cv2.resize(mask_img, (1920,1080))
+   else:
+      mask_img = None
 
 
 
@@ -2229,9 +2231,8 @@ def review_cals(json_conf, cam=None):
             exit()
          cal_img = cv2.imread(file)
          #cal_img = cv2.cvtColor(cal_img, cv2.COLOR_BGR2GRAY)
-         print(cal_img.shape) 
-         print(mask_img.shape) 
-         cal_img = cv2.subtract(cal_img, mask_img)
+         if mask_img is not None:
+            cal_img = cv2.subtract(cal_img, mask_img)
          if cfe(cp_file) == 1:
             print("FILE:", file, cal_img.shape)
             cp, bad_stars, marked_img = eval_cal(cp_file,json_conf,cp,cal_img, mask_img)
