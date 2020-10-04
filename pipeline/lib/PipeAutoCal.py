@@ -2216,7 +2216,10 @@ def review_cals(json_conf, cam=None):
             cp['x_poly_fwd'] = mcp['x_poly_fwd']
             cp['y_poly_fwd'] = mcp['y_poly_fwd']
 
-         cp['user_stars'] = get_image_stars(file, None, json_conf,0)
+         if 'user_stars_v' not in cp:
+            cp['user_stars'] = get_image_stars(file, None, json_conf,0)
+            cp['user_stars_v'] = 1
+
          if cfe(file) == 0:
             print("WTF:", file)
             exit()
@@ -2266,7 +2269,7 @@ def review_cals(json_conf, cam=None):
             for st in bad_stars:
                print(st)
             #if False:
-            if 'fov_fit' in cp and (cp['total_res_px'] < 2.9 or cp['fov_fit'] > 5):
+            if 'fov_fit' in cp and (cp['total_res_px'] < 3 or cp['fov_fit'] > 3):
                print("SKIP REFIT!")
             else:
                start_res = cp['total_res_px']
@@ -3303,9 +3306,9 @@ def qc_stars(close_stars):
    for star in close_stars:
       dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist,bp = star
       res_diff = cat_dist - med_res 
-      cdist = calc_dist((six,siy),(1920,1080))
+      cdist = calc_dist((six,siy),(960,540))
       res_times = res_diff / med_res
-      if (res_times > 5) or (res_diff > 2 and bp < 0):
+      if (res_times > 2 and cdist < 400) or bp < 0 or (res_times > 4 and cdist >= 400):
          #print("BAD STAR:", dcname, str(med_res)[0:4], str(cat_dist)[0:4], str(res_diff)[0:4], str(res_times)[0:4], str(cdist)[0:4] , mag, bp)
          bad_stars.append(star)
       else:
