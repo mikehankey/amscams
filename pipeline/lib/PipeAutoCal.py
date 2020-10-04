@@ -2159,7 +2159,7 @@ def review_cals(json_conf, cam=None):
       file = file.replace("-calparams.json", ".png")
       print(file)
       files.append(file)
-   ccc = input("continue")
+   #ccc = input("continue")
    cal_files = []
    for file in sorted(files, reverse=True):
       if "grid" not in file and "tn" not in file and "stars" not in file and "blend" not in file:
@@ -2200,10 +2200,13 @@ def review_cals(json_conf, cam=None):
 
          cp_file = file.replace(".png", "-calparams.json")
          if cfe(file) == 0:
-            print("This cal file is bad and should be removed?", file)
-            log = open("/mnt/ams2/logs/badcal.txt", "a")
-            log.write(file)
-            log.close()
+            cp_file = cp_file.replace("-stacked", "")
+            cp_file = cp_file.replace("-stacked", "")
+            if cfe(file) == 0:
+               print("This cal file is bad and should be removed?", file)
+               log = open("/mnt/ams2/logs/badcal.txt", "a")
+               log.write(file)
+               log.close()
 
             continue 
          cp = load_json_file(cp_file)
