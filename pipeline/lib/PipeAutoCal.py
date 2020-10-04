@@ -1872,8 +1872,10 @@ def eval_cal(cp_file,json_conf,nc=None,oimg=None, mask_img=None):
       nc = load_json_file(cp_file)
 
    img_file = cp_file.replace("-calparams.json", ".png")
+   if cfe(img_file) == 0:
+      img_file = cp_file.replace("-calparams.json", "-src.jpg")
    if oimg is None:
-      print("OPEN OIMG")
+      print("OPEN OIMG", img_file)
       img = cv2.imread(img_file)
       oimg = img.copy()
    if nc is None:
@@ -1888,9 +1890,12 @@ def eval_cal(cp_file,json_conf,nc=None,oimg=None, mask_img=None):
    nc = update_center_radec(cp_file,nc,json_conf)
    print("GETTING CATALOG STARS")
    cat_stars = get_catalog_stars(nc)
+   if "user_stars" in nc:
+      if len(nc['user_stars'][0]) == 2:
+         print("GET STARS:", img_file)
+         nc['user_stars'] = get_image_stars(img_file, None, json_conf,0)
    print("PAIRING STARS")
    nc = pair_stars(nc, cp_file, json_conf, gimg)
-
    print("AFTER PAIR:")
    if len(nc['user_stars']) > 0:
       match_perc = len(nc['cat_image_stars']) / len(nc['user_stars']) 
@@ -1901,7 +1906,7 @@ def eval_cal(cp_file,json_conf,nc=None,oimg=None, mask_img=None):
 
    tres = 0
    bad_stars = []
-
+   print("CALC RES:")
    for star in nc['cat_image_stars']:
       dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist,star_int = star
       tres += cat_dist
@@ -1910,6 +1915,7 @@ def eval_cal(cp_file,json_conf,nc=None,oimg=None, mask_img=None):
    else:
       avg_res = tres / len(nc['cat_image_stars'])
 
+   print("BAD STARS:")
    for star in nc['cat_image_stars']:
       dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist,star_int = star
       if cat_dist > avg_res * 2:
@@ -1920,7 +1926,7 @@ def eval_cal(cp_file,json_conf,nc=None,oimg=None, mask_img=None):
    nc['total_res_px'] = avg_res
    nc['match_perc'] = match_perc
 
-
+   print("DONE EVAL")
    marked_img = view_calib(cp_file,json_conf,nc,oimg)
    return(nc, bad_stars, marked_img)
 
@@ -2204,7 +2210,6 @@ def review_cals(json_conf, cam=None):
                print(cp)
                continue
                #cv2.imshow("NO CAT STARS!", cal_img)
-               ##cv2.waitKey(0)
                #exit()
 
             #if abs(med_data[cam]['med_pa'] - cp['position_angle']) > 10 and cp['total_res_px'] > 20:
@@ -2682,6 +2687,42 @@ def check_close(point_list, x, y, max_dist):
          count += 1
    return(count)
 
+def find_stars_with_grid(image):
+   gsize = 100
+   height, width = image.shape[:2]
+   best_stars = []
+   for w in range(0,width):
+      for h in range(0,height):
+         if (w == 0 and h == 0) or (w % gsize == 0 and h % gsize == 0):
+            x1 = w
+            x2 = w + gsize
+            y1 = h
+            y2 = h + gsize
+            if x2 > 1920:
+               x2 = 1920
+            if y2 > 1080:
+               y2 = 1080
+            if x2 <= width and y2 <= height:
+               grid_img = image[y1:y2,x1:x2]
+               grid_val = np.mean(grid_img)
+               max_px, avg_px, px_diff,max_loc,grid_int = eval_cnt(grid_img.copy(), grid_val)
+               bx, by = max_loc
+               bx1 = bx - 5
+               by1 = by - 5
+               bx2 = bx + 5
+               by2 = by + 5
+               cv2.rectangle(grid_img, (bx1, by1), (bx2, by2 ), (255, 255, 255), 1)
+               #print("GRID:", px_diff, grid_int)
+               if 1000 < grid_int < 14000:
+                  best_stars.append((bx+x1,by+y1,grid_int))
+               #   cv2.imshow('pepe', grid_img)
+               #   cv2.waitKey(30)
+               #cv2.imshow('grid_img', grid_img)
+               #cv2.waitKey(45)
+   temp = sorted(best_stars, key=lambda x: x[2], reverse=True)
+   return(temp)
+
+
 def get_image_stars(file=None,img=None,json_conf=None,show=0):
 
    stars = []
@@ -2691,14 +2732,23 @@ def get_image_stars(file=None,img=None,json_conf=None,show=0):
       img = cv2.imread(file, 0)
    if len(img.shape) > 2:
       img = cv2.cvtColor(img, cv2.cv2.COLOR_BGR2GRAY)
+   show_pic = img.copy()
+   best_stars = find_stars_with_grid(img)
+
+   #for x,y,f in best_stars:
+   #   cv2.rectangle(show_pic, (x-5, y-5), (x+5, y+5), (255, 255, 255), 1)
+
+   #dsp = cv2.resize(show_pic, (1280,720))
+   #cv2.imshow('pepe', dsp)
+   return(best_stars)
+   #exit()
+
    raw_img = img.copy()
    (f_datetime, cam, f_date_str,y,m,d, h, mm, s) = convert_filename_to_date_cam(file)
    cam = cam.replace(".png", "")
    masks = get_masks(cam, json_conf,1)
    img = mask_frame(img, [], masks, 5)
-   show_pic = img.copy()
    #cv2.imshow("TESTING", show_pic)
-   #cv2.waitKey(0)
    avg = np.median(img) 
    best_thresh = avg + 20
    _, star_bg = cv2.threshold(img, best_thresh, 255, cv2.THRESH_BINARY)
@@ -2741,7 +2791,7 @@ def get_image_stars(file=None,img=None,json_conf=None,show=0):
           show_pic[980:1080,0:100] = bcnt
           dsp = cv2.resize(show_pic, (1280,720))
           cv2.imshow('pepe', dsp)
-          cv2.waitKey(0)
+          cv2.waitKey(40)
       else:
           cv2.rectangle(show_pic, (bx1, by1), (bx2, by2 ), (150, 150, 150), 1)
       cc = cc + 1
@@ -3298,7 +3348,7 @@ def get_catalog_stars(cal_params):
          name = cname
 
       ang_sep = angularSeparation(ra,dec,RA_center,dec_center)
-      if ang_sep < fov_radius and float(mag) < 4.25:
+      if ang_sep < fov_radius and float(mag) < 5:
          new_cat_x, new_cat_y = distort_xy(0,0,ra,dec,RA_center, dec_center, x_poly, y_poly, x_res, y_res, pos_angle_ref,F_scale)
 
          possible_stars = possible_stars + 1
@@ -4706,7 +4756,7 @@ def clean_pairs(merged_stars, cam_id = "", inc_limit = 5,first_run=1,show=0):
            np_ms = np.append(np_ms, [[ra,dec,six,siy,img_res]],axis=0 )
       else: 
          print("STAR MISSING SOME FIELDS!", star)
-         exit()
+         continue
 
    if SHOW == 1:
       simg = cv2.resize(img, (960,540))
@@ -4728,7 +4778,7 @@ def clean_pairs(merged_stars, cam_id = "", inc_limit = 5,first_run=1,show=0):
    if std_res < 1:
       std_res = 1
    if first_run == 1:
-      gsize = 200
+      gsize = 50
    else:
       gsize = 50
    for w in range(0,1920):
