@@ -2028,6 +2028,30 @@ def remove_bad_stars(cp, bad_stars):
 def freecal_index(cam, json_conf, r_station_id = None):
    print("Wait.")
 
+def get_cal_img(src_file):
+   rf = src_file.replace("-src.jpg", "")
+   img_file = None
+   test_file = rf + ".png"
+   if cfe(test_file) == 1:
+      img_file = test_file
+   test_file = rf + "-stacked.png"
+   if cfe(test_file) == 1:
+      img_file = test_file
+   test_file = rf + "-stacked.jpg"
+   if cfe(test_file) == 1:
+      img_file = test_file
+   test_file = rf + "-stacked-stacked.png"
+   if cfe(test_file) == 1:
+      img_file = test_file
+   test_file = rf + "-stacked-stacked.jpg"
+   if cfe(test_file) == 1:
+      img_file = test_file
+   if img_file is not None:
+      img = cv2.imread(img_file)
+      cv2.imwrite(src_file, img)      
+   else:
+      return(None)   
+
 def cal_index(cam, json_conf, r_station_id = None):
    if r_station_id is None:
       save_file = "/mnt/ams2/meteor_archive/" + STATION_ID + "/CAL/" + STATION_ID + "_" + cam + "_CAL_INDEX.json"
@@ -2050,6 +2074,7 @@ def cal_index(cam, json_conf, r_station_id = None):
       else:
          file = df
       img_file = file.replace("-calparams.json", "-src.jpg")
+      test_img = get_cal_img(img_file)
       if cfe(file) == 1 and cfe(img_file) == 1:
          cp = load_json_file(file)
          cmd = "./AzElGrid.py az_grid " + file
