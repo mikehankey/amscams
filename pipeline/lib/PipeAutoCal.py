@@ -2759,7 +2759,7 @@ def find_stars_with_grid(image):
             x2 = 1920
          if y2 > 1080:
             y2 = 1080 
-         print(x1, x2, y1,y2)
+         #print(x1, x2, y1,y2)
          if True:
             if x2 <= width and y2 <= height:
                grid_img = image[y1:y2,x1:x2]
