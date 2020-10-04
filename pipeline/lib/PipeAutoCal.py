@@ -1547,6 +1547,9 @@ def get_cal_files(meteor_file=None, cam=None):
             exit()
          if len(cp_files) == 0:
             print("CAL ERROR :", cd + "/" + root_file, cp_files)
+            cmd = "rm -rf " + cd
+            print(cmd)
+            os.system(cmd)
             exit()
  
       if meteor_file is not None:
@@ -2219,6 +2222,7 @@ def review_cals(json_conf, cam=None):
          if 'user_stars_v' not in cp:
             cp['user_stars'] = get_image_stars(file, None, json_conf,0)
             cp['user_stars_v'] = 1
+            save_json_file(cp_file, cp)
 
          if cfe(file) == 0:
             print("WTF:", file)
@@ -2742,17 +2746,21 @@ def find_stars_with_grid(image):
    gsize = 100
    height, width = image.shape[:2]
    best_stars = []
-   for w in range(0,width):
-      for h in range(0,height):
-         if (w == 0 and h == 0) or (w % gsize == 0 and h % gsize == 0):
-            x1 = w
-            x2 = w + gsize
-            y1 = h
-            y2 = h + gsize
-            if x2 > 1920:
-               x2 = 1920
-            if y2 > 1080:
-               y2 = 1080
+
+   sw = int(1920/100) + 1 
+   sh = int(1080/100) + 1 
+   for i in range(0,sw):
+      for j in range(0,sh):
+         x1 = i * gsize
+         y1 = j * gsize
+         x2 = x1 + gsize 
+         y2 = y1 + gsize 
+         if x2 > 1920:
+            x2 = 1920
+         if y2 > 1080:
+            y2 = 1080 
+         print(x1, x2, y1,y2)
+         if True:
             if x2 <= width and y2 <= height:
                grid_img = image[y1:y2,x1:x2]
                grid_val = np.mean(grid_img)
