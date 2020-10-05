@@ -57,8 +57,7 @@ wget https://bootstrap.pypa.io/get-pip.py
 python3 get-pip.py && \
 mv /usr/local/bin/pip /usr/local/bin/pip3
 
-pip3 install numpy daemon pyephem netifaces pathlib fitsio pyfits pillow numpy scipy pandas matplotlib requests scikit-image sklearn w
-and pytesseract pycrypto astropy sympy vtk
+pip3 install numpy daemon pyephem netifaces pathlib fitsio pyfits pillow numpy scipy pandas matplotlib requests scikit-image sklearn wand pytesseract pycrypto astropy sympy vtk ephem
 
 
 apt-get --yes --allow-downgrades --allow-remove-essential --allow-change-held-packages install libtbb2 \
@@ -134,4 +133,4 @@ run cd /home/ams/amscams && git pull
 ln -s /usr/include/wcslib-5.18 /usr/local/include/wcslib-5.15
 /home/ams/amscams/install/astrometry-install.sh
 #docker run -dit -P --name ubuntu-test -v ~/container-data:/data ubuntu
-
+cd /home/ams/amscams/install && ./install-wasabi.py
