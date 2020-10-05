@@ -1,3 +1,4 @@
+ <link rel="stylesheet" href="/pycgi/div_table.css"/>
 <div id="main_container" class="container-fluid d-flex h-100 mt-4 position-relative"> 
         <div class="h-100 flex-fixed-canvas">
             <div class="canvas-container">
@@ -12,13 +13,20 @@
             </div> 
              
             <div class="box">
-                <h2>Detection Info</h2>
+                <h2>Calibration Info</h2>
                 <dl class="row mb-0">
                     <dt class="col-6">Time</dt>   <dd class="col-6">{%METEOR_DATE%}</dd> 
+                    <dt class="col-6">Center AZ</dt>   <dd class="col-6">{%AZ%}</dd> 
+                    <dt class="col-6">Center EL</dt>   <dd class="col-6">{%EL%}</dd> 
+                    <dt class="col-6">Position Angle</dt>   <dd class="col-6">{%POS%}</dd> 
+                    <dt class="col-6">Pixel Scale</dt>   <dd class="col-6">{%PX%}</dd> 
+                    <dt class="col-6">Stars</dt>   <dd class="col-6">{%TSTARS%}</dd> 
+                    <dt class="col-6">Res PX</dt>   <dd class="col-6">{%RES_PX%}</dd> 
+                    <dt class="col-6">Res Deg</dt>   <dd class="col-6">{%RES_DEG%}</dd> 
                 </dl>
-                <div class="btn-holder row mt-1">
+                <!--<div class="btn-holder row mt-1">
                     <a id="show_grid" class="col btn btn-secondary mt-0 mb-0"><i class="icon-grid"></i> <span>Show AZ Grid</span></a>
-                </div>
+                </div>-->
             </div>
             
             <div class="box">
@@ -32,7 +40,8 @@
 
              
 
-            
+            <div class="box" id="star_panel"></div>
+           <!-- 
             <div class="box">
                 <h2>Calibration</h2>
                 <div class="p-3">
@@ -49,6 +58,10 @@
                     </div>
                 </div>
             </div>
-            
+            --> 
         </div>
+</div>
+<div class='divTable' style='border: 1px solid #000;' ><div class='divTableBody'>
+<div id="star_list"></div>
+</div>
 </div>

@@ -1541,30 +1541,36 @@ def calibration(json_conf,form):
    else:
       print("No calibrations have been completed yet.")
       exit()
-   
+
+   cia = []
+   for cf in sorted(ci, reverse=True):
+      cia.append(ci[cf])
+   cia = sorted(cia, key=lambda x: x['cam_id'], reverse=False)
+      
 
    print("<table class='table table-dark table-striped table-hover td-al-m m-auto table-fit'>")
    print("<thead><tr><th>&nbsp;</th><th>Date</th><th>Cam ID</th><th>Stars</th><th>Center AZ/EL</th><th>Pos Angle</th><th>Pixscale</th><th>Res Px</th><th>Res Deg</th></tr></thead>")
    print("<tbody>")
  
-   for cf in sorted(ci, reverse=True):
-      if 'cal_image_file' in ci[cf]:
-         link = "/pycgi/webUI.py?cmd=free_cal&input_file=" + ci[cf]['cal_image_file'] 
+   #for cf in sorted(ci, reverse=True):
+   for cf in cia:
+      if 'cal_image_file' in cf:
+         link = "/pycgi/webUI.py?cmd=free_cal&input_file=" + cf['cal_image_file'] 
       else:
          link = ""
-      if ci[cf]['total_res_deg'] > .5:
+      if cf['total_res_deg'] > .5:
          color = "lv1"; #style='color: #ff0000'"
-      elif .4 < ci[cf]['total_res_deg'] <= .5:
+      elif .4 < cf['total_res_deg'] <= .5:
          color = "lv2"; #"style='color: #FF4500'"
-      elif .3 < ci[cf]['total_res_deg'] <= .4:
+      elif .3 < cf['total_res_deg'] <= .4:
          color = "lv3"; #"style='color: #FFFF00'"
-      elif .2 < ci[cf]['total_res_deg'] <= .3:
+      elif .2 < cf['total_res_deg'] <= .3:
          color = "lv4"; #"style='color: #00FF00'"
-      elif .1 < ci[cf]['total_res_deg'] <= .2:
+      elif .1 < cf['total_res_deg'] <= .2:
          color = "lv5"; #"style='color: #00ffff'"
-      elif 0 < ci[cf]['total_res_deg'] <= .1:
+      elif 0 < cf['total_res_deg'] <= .1:
          color = "lv8"; #"style='color: #0000ff'"
-      elif ci[cf]['total_res_deg'] == 0:
+      elif cf['total_res_deg'] == 0:
          color = "lv7"; #"style='color: #ffffff'"
       else:
          color = "lv7"
@@ -1576,9 +1582,9 @@ def calibration(json_conf,form):
          show_row = 0
 
       if show_row == 1: 
-         print("<tr class='" + color + "'><td><div class='st'></div></td><td><a class='btn btn-primary' href='{:s}'>{:s}</a></td><td><b>{:s}</b></td><td>{:s}</td><td>{:s}/{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td></tr>".format( link, str(ci[cf]['cal_date']), \
-            str(ci[cf]['cam_id']), str(ci[cf]['total_stars']), str(ci[cf]['center_az']), str(ci[cf]['center_el']), str(ci[cf]['position_angle']), \
-            str(ci[cf]['pixscale']), str(ci[cf]['total_res_px']), str(ci[cf]['total_res_deg']) ))
+         print("<tr class='" + color + "'><td><div class='st'></div></td><td><a class='btn btn-primary' href='{:s}'>{:s}</a></td><td><b>{:s}</b></td><td>{:s}</td><td>{:s}/{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td></tr>".format( link, str(cf['cal_date']), \
+            str(cf['cam_id']), str(cf['total_stars']), str(cf['center_az'])[0:5], str(cf['center_el'])[0:5], str(cf['position_angle'])[0:5], \
+            str(cf['pixscale'])[0:5], str(cf['total_res_px'])[0:5], str(cf['total_res_deg'])[0:5] ))
 
    print("</tbody></table></div>")
 
