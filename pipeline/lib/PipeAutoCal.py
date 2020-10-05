@@ -498,7 +498,7 @@ def guess_cal(cal_file, json_conf, cal_params = None):
    (f_datetime, this_cam, f_date_str,y,m,d, h, mm, s) = convert_filename_to_date_cam(cal_file)
    img = cv2.imread(cal_file)
    orig_img = img.copy()
-   gray_img = cv2.cvtColor(img, cv2.cv2.COLOR_BGR2GRAY)
+   gray_img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
    stars = get_image_stars(cal_file, gray_img.copy(), json_conf, 0)
    for star in stars:
       x,y,intense = star
@@ -596,6 +596,22 @@ def guess_cal(cal_file, json_conf, cal_params = None):
       print("NOT SAVED!", save_yn)
    return(last_cal)
 
+def min_fov(cp_file, json_conf):
+   src_file = cp_file.replace("-calparams.json", "-src.jpg")
+   if cfe(src_file) == 0:
+      get_cal_img(src_file)
+   cal_img = cv2.imread(src_file)
+   gray_cal_img = cv2.cvtColor(cal_img, cv2.COLOR_BGR2GRAY)
+   cal_params = load_json_file(cp_file)
+   if "user_stars" not in cal_params:
+      cal_params['user_stars'] = get_image_stars(cp_file, gray_cal_img.copy(), json_conf, 0)
+   elif len(cal_params['user_stars'][0]) == 2:
+      cal_params['user_stars'] = get_image_stars(cp_file, gray_cal_img.copy(), json_conf, 0)
+   if "user_stars_v" not in cal_params:
+      cp['user_stars_v'] = 1
+   save_json_file(cp_file, cal_params)
+   cp = minimize_fov(cp_file, cal_params, cp_file ,cal_img,json_conf )
+
 def make_guess(az_guess, el_guess, pix_guess, pos_ang_guess, this_cam, cal_file, img, gray_img, stars, json_conf):
 
    temp_cal_params = {}
@@ -664,7 +680,7 @@ def blind_solve_meteors(day,json_conf,cam=None):
 
                   cal_img = cv2.imread(stack_file)
                   temp_img = cal_img.copy()
-                  gray_cal_img = cv2.cvtColor(cal_img, cv2.cv2.COLOR_BGR2GRAY)
+                  gray_cal_img = cv2.cvtColor(cal_img, cv2.COLOR_BGR2GRAY)
                   stars = get_image_stars(stack_file, gray_cal_img.copy(), json_conf, 0)
                   if SHOW == 1:
                      cv2.imshow('pepe', temp_img)
@@ -769,7 +785,7 @@ def minimize_fov(cal_file, cal_params, image_file,img,json_conf ):
    else:
       cal_params['fov_fit'] += 1 
    if len(img.shape) > 2:
-      gray_img = cv2.cvtColor(img, cv2.cv2.COLOR_BGR2GRAY)
+      gray_img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
    cp = pair_stars(cal_params, image_file, json_conf, gray_img)
    trash_stars, res_px,res_deg = cat_star_report(cp['cat_image_stars'], 4)
    print("TOTAL RES:", cal_params['position_angle'], res_px)
@@ -840,7 +856,7 @@ def deep_cal_report(cam, json_conf):
       if cfe(cal_img_file) == 0:
          continue
       cal_img = cv2.imread(cal_img_file)
-      gray_cal_img = cv2.cvtColor(cal_img, cv2.cv2.COLOR_BGR2GRAY)
+      gray_cal_img = cv2.cvtColor(cal_img, cv2.COLOR_BGR2GRAY)
 
       cp['user_stars'] = get_image_stars(cal, gray_cal_img.copy(), json_conf, 0)
       cp = pair_stars(cp, cal_file, json_conf, cal_img)
@@ -1017,7 +1033,7 @@ def deep_calib(cam, json_conf):
          
          cal_img = cv2.imread(cal_img_file)
          temp_img = cal_img.copy()
-         gray_cal_img = cv2.cvtColor(cal_img, cv2.cv2.COLOR_BGR2GRAY)
+         gray_cal_img = cv2.cvtColor(cal_img, cv2.COLOR_BGR2GRAY)
          stars = get_image_stars(cal_file, gray_cal_img.copy(), json_conf, 0)
          if len(stars) < 5:
             continue
@@ -1249,7 +1265,7 @@ def get_stars_from_meteors(cam, mcp, star_db, json_conf):
 
                   cal_img = cv2.imread(stack_file)
                   temp_img = cal_img.copy()
-                  gray_cal_img = cv2.cvtColor(cal_img, cv2.cv2.COLOR_BGR2GRAY)
+                  gray_cal_img = cv2.cvtColor(cal_img, cv2.COLOR_BGR2GRAY)
                   stars = get_image_stars(stack_file, gray_cal_img.copy(), json_conf, 0)
                   skip = 0 
                   if len(stars) > 10:
@@ -1950,11 +1966,11 @@ def eval_cal(cp_file,json_conf,nc=None,oimg=None, mask_img=None):
       img = cv2.imread(img_file)
       oimg = img.copy()
    if nc is None:
-   #   print("NC IS NONE SO GETTING USER STARS...")
+      print("NC IS NONE SO GETTING USER STARS...")
       nc['user_stars'] = get_image_stars(img_file, None, json_conf,0)
 
    elif "user_stars" not in nc:
-   #   print("GETTING USER STARS.")
+      print("GETTING USER STARS.")
       nc['user_stars'] = get_image_stars(img_file, None, json_conf,0)
 
    #print("UPDATING CENTER")
@@ -2853,7 +2869,7 @@ def get_image_stars(file=None,img=None,json_conf=None,show=0):
       print("Loading image:", file)
       img = cv2.imread(file, 0)
    if len(img.shape) > 2:
-      img = cv2.cvtColor(img, cv2.cv2.COLOR_BGR2GRAY)
+      img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
    show_pic = img.copy()
    best_stars = find_stars_with_grid(img)
 
@@ -2979,7 +2995,7 @@ def eval_cnt(cnt_img, avg_px=5 ):
 def make_plate_image(image, file_stars): 
    ih, iw = image.shape[:2]
    if len(image.shape) > 2:
-      image = cv2.cvtColor(image, cv2.cv2.COLOR_BGR2GRAY)
+      image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
       
 
    plate_image = np.zeros((ih,iw),dtype=np.uint8)
@@ -3217,7 +3233,7 @@ def pair_stars(cal_params, cal_params_file, json_conf, cal_img=None, show = 0):
       img_file = cal_params_file.replace("-calparams.json", ".jpg")
       cal_img = cv2.imread(img_file)
    if len(cal_img.shape) > 2:
-      cal_img = cv2.cvtColor(cal_img, cv2.cv2.COLOR_BGR2GRAY)
+      cal_img = cv2.cvtColor(cal_img, cv2.COLOR_BGR2GRAY)
 
    temp_img = cal_img.copy()
    ih, iw= cal_img.shape[:2]
@@ -4023,7 +4039,8 @@ def get_device_lat_lon(json_conf):
 
 def reduce_fov_pos(this_poly, az,el,pos,pixscale, x_poly, y_poly, cal_params_file, oimage, json_conf, paired_stars, user_stars, min_run = 1, show=0, field = None):
    global tries
-   #print("REDUCE FOV POS", tries)
+   #print("USER STARS:", user_stars, cal_params_file)
+   print("REDUCE FOV POS", tries)
    image = oimage.copy()
    image = cv2.resize(image, (1920,1080))
    #print("RUN:", az, el, pos, pixscale) 

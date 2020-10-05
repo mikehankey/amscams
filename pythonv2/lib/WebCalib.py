@@ -4316,7 +4316,6 @@ def free_cal(json_conf,form):
 
    input_file = form.getvalue("input_file")
    # if no input file is specified ask for one. 
-   #print(input_file)
    if cfe(input_file) == 0:
       
       auto_cal(json_conf,form)
@@ -4333,6 +4332,16 @@ def free_cal(json_conf,form):
       return()
 
    # test the input file, stack if video, check size and re-size, make half-stack, copy to work dir
+   elm = input_file.split("-")
+   rf = elm[0] 
+   cp_file = rf + "-calparams.json"
+   if cfe(cp_file) == 0:
+      cp_file = cp_file.replace("-calparams.json", "-stacked-calparams.json")
+   if cfe(cp_file) == 1:
+      cp = load_json_file(cp_file)
+   else:
+      print("NO CP:", cp_file)
+      exit()
 
    (f_datetime, cam_id, f_date_str,Y,M,D, H, MM, S) = better_parse_file_date(input_file)
    if ".png" in cam_id:
@@ -4390,11 +4399,10 @@ def free_cal(json_conf,form):
    #cv2.imwrite(stack_file, stack_img)
 
 
-   user_stars_file = stack_file.replace(".png", "-user-stars.json")
+   az_grid_file = rf + "-azgrid-half.png"
+   az_grid_blend = rf + "-azgrid-half-blend.png"
 
-   az_grid_file = stack_file.replace(".png", "-azgrid-half.png")
-   az_grid_blend = stack_file.replace(".png", "-azgrid-half-blend.png")
-
+   user_stars_file = rf + "-user-stars.json" 
 
    if cfe(user_stars_file) == 1:
       user_stars = load_json_file(user_stars_file)
@@ -4427,6 +4435,13 @@ def free_cal(json_conf,form):
 
    #get Meteor Date as title
    template = template.replace("{%METEOR_DATE%}", get_meteor_date(stack_file))
+   template = template.replace("{%AZ%}", str(cp['center_az'])[0:5])
+   template = template.replace("{%EL%}", str(cp['center_el'])[0:5])
+   template = template.replace("{%POS%}", str(cp['position_angle'])[0:5])
+   template = template.replace("{%PX%}", str(cp['pixscale'])[0:5])
+   template = template.replace("{%TSTARS%}", str(len(cp['cat_image_stars'])))
+   template = template.replace("{%RES_PX%}", str(cp['total_res_px'])[0:5])
+   template = template.replace("{%RES_DEG%}", str(cp['total_res_deg'])[0:5])
 
 
    js_html = """
@@ -4455,18 +4470,18 @@ def free_cal(json_conf,form):
       </div>
       <div style="float:left" id=info_panel>Info: </div>
       <div style="clear: both"></div>
-      <div id=star_panel> Stars: </div>
-      <div id=star_list>star_list: </div>
        <BR><BR>
    """
    #print(stack_file)
+      #<div id=star_panel> Stars: </div>
+      #<div id=star_list>star_list: </div>
 
    list_of_buttons = '<a class="btn btn-primary d-block" onclick="javascript:show_image(\''+half_stack_file+'\',1,1)">Show Image</a>'
    list_of_buttons += '<a class="btn btn-primary d-block mt-2" onclick="javascript:find_stars(\''+stack_file+'\')">Find Stars</a>'
-   list_of_buttons += '<a class="btn btn-primary d-block mt-2" onclick="javascript:make_plate(\''+stack_file+'\')">Make Plate</a>'
-   list_of_buttons += '<a class="btn btn-primary d-block mt-2" onclick="javascript:solve_field(\''+stack_file+'\')">Solve Field</a>'
+   #list_of_buttons += '<a class="btn btn-primary d-block mt-2" onclick="javascript:make_plate(\''+stack_file+'\')">Make Plate</a>'
+   #list_of_buttons += '<a class="btn btn-primary d-block mt-2" onclick="javascript:solve_field(\''+stack_file+'\')">Solve Field</a>'
    list_of_buttons += '<a class="btn btn-primary d-block mt-2" onclick="javascript:show_cat_stars(\''+stack_file+'\',\'\',\'pick\')">Show Catalog Stars</a>'
-   list_of_buttons += '<a class="btn btn-primary d-block mt-2" onclick="javascript:fit_field(\''+stack_file+'\')">Fit Field</a>'
+   #list_of_buttons += '<a class="btn btn-primary d-block mt-2" onclick="javascript:fit_field(\''+stack_file+'\')">Fit Field</a>'
    list_of_buttons += '<a class="btn btn-primary d-block mt-2" onclick="javascript:az_grid(\''+az_grid_blend+'\')">AZ Grid</a>'
    list_of_buttons += '<a class="btn btn-danger d-block mt-4"  onclick="javascript:delete_cal(\''+stack_file+'\')">Delete Calibration</a>'
  
@@ -4477,13 +4492,12 @@ def free_cal(json_conf,form):
    print(template)
    print(canvas_html)
 
-   extra_js = extra_js + """ 
-   """
+   extra_js = extra_js + """ """
+  
  
 
    print(js_html)
    print(extra_js)
-
 
 
 def default_cal_params(cal_params,json_conf):
