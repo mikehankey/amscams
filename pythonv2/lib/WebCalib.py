@@ -4268,7 +4268,7 @@ def auto_cal(json_conf,form):
    input_file = form.getvalue("input_file")
    cal_params_file = input_file.replace(".png", "-calparams.json")
    az_grid = input_file.replace(".png", "-azgrid-half.png")
-   if cfe(cal_params) == 1:
+   if cfe(cal_params_file) == 1:
       cal_params = load_json_file(cal_params_file)
    else:
       print("can't find cal file", cal_params_file)
@@ -4317,8 +4317,8 @@ def free_cal(json_conf,form):
    input_file = form.getvalue("input_file")
    # if no input file is specified ask for one. 
    if cfe(input_file) == 0:
-      
-      auto_cal(json_conf,form)
+      print("input file was not found .")
+      #auto_cal(json_conf,form)
       return()
    if input_file is None :
       print("To start the calibration process, goto the <a href=webUI.py>minute-by-minute view</a> for a stary night, click a thumb with nice stars and then click the 'Calibrate Star Field' button.<BR><BR> ")
@@ -4332,11 +4332,21 @@ def free_cal(json_conf,form):
       return()
 
    # test the input file, stack if video, check size and re-size, make half-stack, copy to work dir
-   elm = input_file.split("-")
-   rf = elm[0] 
-   cp_file = rf + "-calparams.json"
+   fn, dir = fn_dir(input_file)
+   cfs = glob.glob(dir + "/" + "*calparams.json")
+   if len(cfs) >= 1:
+      cp_file = cfs[0]
+   else:
+      print("NO CP:!", input_file)
+      exit()
+  
+   #print("IN FILE:", input_file)
+   #print("CP FILE:", cp_file)
    if cfe(cp_file) == 0:
       cp_file = cp_file.replace("-calparams.json", "-stacked-calparams.json")
+      if cfe(cp_file) == 0:
+         cp_file = cp_file.replace("-calparams.json", "-stacked-calparams.json")
+
    if cfe(cp_file) == 1:
       cp = load_json_file(cp_file)
    else:
@@ -4398,11 +4408,16 @@ def free_cal(json_conf,form):
    cv2.imwrite(half_stack_file, half_stack_img)
    #cv2.imwrite(stack_file, stack_img)
 
+   cfs = glob.glob(dir + "/" + "*azgrid-half.png")
+   print("AZ:", dir + "/" + "*azgrid-half.png")
+   if len(cfs) > 0:
+      az_grid_file = cfs[0]
+      az_grid_blend = az_grid_file.replace(".png", "-blend.png")
+   else:
+      az_grid_file = "none"
+      az_grid_blend = "none"
 
-   az_grid_file = rf + "-azgrid-half.png"
-   az_grid_blend = rf + "-azgrid-half-blend.png"
-
-   user_stars_file = rf + "-user-stars.json" 
+   user_stars_file = cp_file.replace("-calparams.json", "-user-stars.json" )
 
    if cfe(user_stars_file) == 1:
       user_stars = load_json_file(user_stars_file)
@@ -5104,4 +5119,10 @@ def div_table_vars():
    end_row = "</div>"
    end_cell= "</div>"
    return(start_table, start_row, start_cell, end_table, end_row, end_cell)
+
+
+def fn_dir(file):
+   fn = file.split("/")[-1]
+   dir = file.replace(fn, "")
+   return(fn, dir)
 
