@@ -4350,6 +4350,11 @@ def free_cal(json_conf,form):
       dr  = el[-1].replace(".mp4", "")
       sfn = el[-1].replace(".mp4", "-stacked.png")
       stack_file = "/mnt/ams2/cal/freecal/" + dr + "/" + sfn 
+      if cfe(stack_file) == 0:
+         sfn = el[-1].replace(".mp4", ".png")
+         stack_file = "/mnt/ams2/cal/freecal/" + dr + "/" + sfn 
+
+
 
       if cfe(stack_file) == 0:
          frames = load_video_frames(input_file, json_conf, 100)
@@ -4365,7 +4370,6 @@ def free_cal(json_conf,form):
    sfs = stack_img.shape
    sh,sw = sfs[0],sfs[1]
 
-
    if sw != 1920:
       #stack_img = adjustLevels(stack_img, 5,.98,255)
       half_stack_img = stack_img 
@@ -4379,16 +4383,15 @@ def free_cal(json_conf,form):
    ih = int(sh/2)
 
    half_stack_file = base_dir + "/" + base_file + "-half-stack.png"
-   stack_file = base_dir + "/" + base_file + "-stacked.png"
+   #stack_file = base_dir + "/" + base_file + "-stacked.png"
 
 
    cv2.imwrite(half_stack_file, half_stack_img)
-   cv2.imwrite(stack_file, stack_img)
+   #cv2.imwrite(stack_file, stack_img)
 
 
-   user_stars_file = stack_file.replace("-stacked.png", "-user-stars.json")
+   user_stars_file = stack_file.replace(".png", "-user-stars.json")
 
-   print("user_stars_file:", user_stars_file)
    az_grid_file = stack_file.replace(".png", "-azgrid-half.png")
    az_grid_blend = stack_file.replace(".png", "-azgrid-half-blend.png")
 
@@ -4401,7 +4404,14 @@ def free_cal(json_conf,form):
       extra_js = extra_js + "var stars = ["
 
       c = 0
-      for sx,sy in user_stars['user_stars']:
+      for sdata in user_stars['user_stars']:
+         if len(sdata) == 2:
+            sx,sy = sdata
+         elif len(sdata) == 3:
+            sx,sy,sf = sdata
+         else:
+            print("BAD:", sdata)
+            exit()
          if c > 0:
             extra_js = extra_js + ","
          extra_js=extra_js+ "[" + str(sx) + "," +str(sy) +"]" 
@@ -4661,7 +4671,8 @@ def show_cat_stars(json_conf,form):
       else: 
          cal_params['crop_box'] = meteor_red['crop_box']
    else:
-         cal_params['crop_box'] = (0,0,0,0)
+         if "crop_box" not in cal_params:
+            cal_params['crop_box'] = (0,0,0,0)
 
 
    #else:
