@@ -84,8 +84,15 @@ apt-get --yes --allow-downgrades --allow-remove-essential --allow-change-held-pa
 #   mkdir /TEMP/ && mkdir /TEMP/CV/; \
 #fi
 mkdir -p /TEMP/CV/ && mkdir -p /TEMP/AST/
-cd /TEMP/CV/ && wget -O opencv.zip http://192.168.1.4/mnt/ams2/opencv.zip && \
-wget -O opencv_contrib.zip http://192.168.1.4/mnt/ams2/opencv_contrib.zip && \
+
+# Use this if you have the opencv.tar on your network locally 
+#cd /TEMP/CV/ && wget -O opencv.zip http://192.168.1.4/mnt/ams2/opencv.zip && \
+#wget -O opencv_contrib.zip http://192.168.1.4/mnt/ams2/opencv_contrib.zip && \
+#/usr/bin/unzip opencv.zip && /usr/bin/unzip opencv_contrib.zip 
+
+# download opencv source
+cd /TEMP/CV/ && wget -O opencv.zip https://github.com/opencv/opencv/archive/3.4.11.zip \ 
+wget -O opencv_contrib.zip https://github.com/Itseez/opencv_contrib/archive/3.4.11.zip
 /usr/bin/unzip opencv.zip && /usr/bin/unzip opencv_contrib.zip 
 
 cd /TEMP/CV/opencv-3.4.11 && \

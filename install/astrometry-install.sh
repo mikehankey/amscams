@@ -19,7 +19,8 @@ export NETPBM_LIB
 
 WCS_SLIB="-Lwcs"
 #WCSLIB_INC="-I/usr/local/include/wcslib-5.15"
-WCSLIB_INC="-I/usr/include/wcslib-5.15"
+#WCSLIB_INC="-I/usr/include/wcslib-5.15"
+WCSLIB_INC="-I/usr/include/wcslib-7.1"
 WCL_LIB="-Lwcs"
 export WCS_SLIB
 export WCSLIB_INC
@@ -29,7 +30,9 @@ mkdir /home/ams/astrometry/
 cd /home/ams/astrometry/
 
 #wget http://astrometry.net/downloads/astrometry.net-latest.tar.gz
-wget http://192.168.1.4/mnt/ams2/astrometry.net-mike.tar.gz
+#wget http://192.168.1.4/mnt/ams2/astrometry.net-mike.tar.gz
+
+wget http://archive.allsky.tv/APPS/INSTALL/astrometry.net-mike.tar.gz
 gunzip astrometry.net-mike.tar.gz
 tar xf astrometry.net-mike.tar
 
@@ -52,4 +55,4 @@ mv index-4117.fits /usr/local/astrometry/data
 wget http://broiler.astrometry.net/~dstn/4100/index-4118.fits
 mv index-4118.fits /usr/local/astrometry/data
 wget http://broiler.astrometry.net/~dstn/4100/index-4119.fits
-mv index-4119.fits /usr/local/astrometry/datado mv index-4119.fits /usr/local/astrometry/data
+mv index-4119.fits /usr/local/astrometry/data mv index-4119.fits /usr/local/astrometry/data
