@@ -21,6 +21,14 @@ import cv2
 
 json_conf = load_json_file(AMS_HOME + "/conf/as6.json")
 
+def fireball(video_file, json_conf):
+   hd_frames,hd_color_frames,subframes,sum_vals,max_vals,pos_vals = load_frames_fast(video_file, json_conf, 0, 0, [], 1,[])
+   for frame in hd_frames:
+      sframe = cv2.resize(frame, (1280, 720))
+      cv2.imshow('pepe', sframe)
+      cv2.waitKey(0)
+   
+
 def frames_to_image(frames):
    h,w = frames[0].shape[:2]
    print(w,h)
