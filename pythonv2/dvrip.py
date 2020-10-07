@@ -191,6 +191,7 @@ class DVRIPCam(object):
 			ddd = json.loads(ndata) 
 			data = ddd 
 		except:
+			print(data)
 			print("data is dict not byte.")
 
 

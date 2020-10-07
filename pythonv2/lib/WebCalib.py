@@ -4268,7 +4268,7 @@ def auto_cal(json_conf,form):
    input_file = form.getvalue("input_file")
    cal_params_file = input_file.replace(".png", "-calparams.json")
    az_grid = input_file.replace(".png", "-azgrid-half.png")
-   if cfe(cal_params) == 1:
+   if cfe(cal_params_file) == 1:
       cal_params = load_json_file(cal_params_file)
    else:
       print("can't find cal file", cal_params_file)
@@ -4316,10 +4316,9 @@ def free_cal(json_conf,form):
 
    input_file = form.getvalue("input_file")
    # if no input file is specified ask for one. 
-   #print(input_file)
    if cfe(input_file) == 0:
-      
-      auto_cal(json_conf,form)
+      print("input file was not found .")
+      #auto_cal(json_conf,form)
       return()
    if input_file is None :
       print("To start the calibration process, goto the <a href=webUI.py>minute-by-minute view</a> for a stary night, click a thumb with nice stars and then click the 'Calibrate Star Field' button.<BR><BR> ")
@@ -4333,6 +4332,26 @@ def free_cal(json_conf,form):
       return()
 
    # test the input file, stack if video, check size and re-size, make half-stack, copy to work dir
+   fn, dir = fn_dir(input_file)
+   cfs = glob.glob(dir + "/" + "*calparams.json")
+   if len(cfs) >= 1:
+      cp_file = cfs[0]
+   else:
+      print("NO CP:!", input_file)
+      exit()
+  
+   #print("IN FILE:", input_file)
+   #print("CP FILE:", cp_file)
+   if cfe(cp_file) == 0:
+      cp_file = cp_file.replace("-calparams.json", "-stacked-calparams.json")
+      if cfe(cp_file) == 0:
+         cp_file = cp_file.replace("-calparams.json", "-stacked-calparams.json")
+
+   if cfe(cp_file) == 1:
+      cp = load_json_file(cp_file)
+   else:
+      print("NO CP:", cp_file)
+      exit()
 
    (f_datetime, cam_id, f_date_str,Y,M,D, H, MM, S) = better_parse_file_date(input_file)
    if ".png" in cam_id:
@@ -4350,6 +4369,11 @@ def free_cal(json_conf,form):
       dr  = el[-1].replace(".mp4", "")
       sfn = el[-1].replace(".mp4", "-stacked.png")
       stack_file = "/mnt/ams2/cal/freecal/" + dr + "/" + sfn 
+      if cfe(stack_file) == 0:
+         sfn = el[-1].replace(".mp4", ".png")
+         stack_file = "/mnt/ams2/cal/freecal/" + dr + "/" + sfn 
+
+
 
       if cfe(stack_file) == 0:
          frames = load_video_frames(input_file, json_conf, 100)
@@ -4365,7 +4389,6 @@ def free_cal(json_conf,form):
    sfs = stack_img.shape
    sh,sw = sfs[0],sfs[1]
 
-
    if sw != 1920:
       #stack_img = adjustLevels(stack_img, 5,.98,255)
       half_stack_img = stack_img 
@@ -4379,19 +4402,22 @@ def free_cal(json_conf,form):
    ih = int(sh/2)
 
    half_stack_file = base_dir + "/" + base_file + "-half-stack.png"
-   stack_file = base_dir + "/" + base_file + "-stacked.png"
+   #stack_file = base_dir + "/" + base_file + "-stacked.png"
 
 
    cv2.imwrite(half_stack_file, half_stack_img)
-   cv2.imwrite(stack_file, stack_img)
+   #cv2.imwrite(stack_file, stack_img)
 
+   cfs = glob.glob(dir + "/" + "*azgrid-half.png")
+   print("AZ:", dir + "/" + "*azgrid-half.png")
+   if len(cfs) > 0:
+      az_grid_file = cfs[0]
+      az_grid_blend = az_grid_file.replace(".png", "-blend.png")
+   else:
+      az_grid_file = "none"
+      az_grid_blend = "none"
 
-   user_stars_file = stack_file.replace("-stacked.png", "-user-stars.json")
-
-   print("user_stars_file:", user_stars_file)
-   az_grid_file = stack_file.replace(".png", "-azgrid-half.png")
-   az_grid_blend = stack_file.replace(".png", "-azgrid-half-blend.png")
-
+   user_stars_file = cp_file.replace("-calparams.json", "-user-stars.json" )
 
    if cfe(user_stars_file) == 1:
       user_stars = load_json_file(user_stars_file)
@@ -4401,7 +4427,14 @@ def free_cal(json_conf,form):
       extra_js = extra_js + "var stars = ["
 
       c = 0
-      for sx,sy in user_stars['user_stars']:
+      for sdata in user_stars['user_stars']:
+         if len(sdata) == 2:
+            sx,sy = sdata
+         elif len(sdata) == 3:
+            sx,sy,sf = sdata
+         else:
+            print("BAD:", sdata)
+            exit()
          if c > 0:
             extra_js = extra_js + ","
          extra_js=extra_js+ "[" + str(sx) + "," +str(sy) +"]" 
@@ -4417,6 +4450,13 @@ def free_cal(json_conf,form):
 
    #get Meteor Date as title
    template = template.replace("{%METEOR_DATE%}", get_meteor_date(stack_file))
+   template = template.replace("{%AZ%}", str(cp['center_az'])[0:5])
+   template = template.replace("{%EL%}", str(cp['center_el'])[0:5])
+   template = template.replace("{%POS%}", str(cp['position_angle'])[0:5])
+   template = template.replace("{%PX%}", str(cp['pixscale'])[0:5])
+   template = template.replace("{%TSTARS%}", str(len(cp['cat_image_stars'])))
+   template = template.replace("{%RES_PX%}", str(cp['total_res_px'])[0:5])
+   template = template.replace("{%RES_DEG%}", str(cp['total_res_deg'])[0:5])
 
 
    js_html = """
@@ -4445,18 +4485,18 @@ def free_cal(json_conf,form):
       </div>
       <div style="float:left" id=info_panel>Info: </div>
       <div style="clear: both"></div>
-      <div id=star_panel> Stars: </div>
-      <div id=star_list>star_list: </div>
        <BR><BR>
    """
    #print(stack_file)
+      #<div id=star_panel> Stars: </div>
+      #<div id=star_list>star_list: </div>
 
    list_of_buttons = '<a class="btn btn-primary d-block" onclick="javascript:show_image(\''+half_stack_file+'\',1,1)">Show Image</a>'
    list_of_buttons += '<a class="btn btn-primary d-block mt-2" onclick="javascript:find_stars(\''+stack_file+'\')">Find Stars</a>'
-   list_of_buttons += '<a class="btn btn-primary d-block mt-2" onclick="javascript:make_plate(\''+stack_file+'\')">Make Plate</a>'
-   list_of_buttons += '<a class="btn btn-primary d-block mt-2" onclick="javascript:solve_field(\''+stack_file+'\')">Solve Field</a>'
+   #list_of_buttons += '<a class="btn btn-primary d-block mt-2" onclick="javascript:make_plate(\''+stack_file+'\')">Make Plate</a>'
+   #list_of_buttons += '<a class="btn btn-primary d-block mt-2" onclick="javascript:solve_field(\''+stack_file+'\')">Solve Field</a>'
    list_of_buttons += '<a class="btn btn-primary d-block mt-2" onclick="javascript:show_cat_stars(\''+stack_file+'\',\'\',\'pick\')">Show Catalog Stars</a>'
-   list_of_buttons += '<a class="btn btn-primary d-block mt-2" onclick="javascript:fit_field(\''+stack_file+'\')">Fit Field</a>'
+   #list_of_buttons += '<a class="btn btn-primary d-block mt-2" onclick="javascript:fit_field(\''+stack_file+'\')">Fit Field</a>'
    list_of_buttons += '<a class="btn btn-primary d-block mt-2" onclick="javascript:az_grid(\''+az_grid_blend+'\')">AZ Grid</a>'
    list_of_buttons += '<a class="btn btn-danger d-block mt-4"  onclick="javascript:delete_cal(\''+stack_file+'\')">Delete Calibration</a>'
  
@@ -4467,13 +4507,12 @@ def free_cal(json_conf,form):
    print(template)
    print(canvas_html)
 
-   extra_js = extra_js + """ 
-   """
+   extra_js = extra_js + """ """
+  
  
 
    print(js_html)
    print(extra_js)
-
 
 
 def default_cal_params(cal_params,json_conf):
@@ -4661,7 +4700,8 @@ def show_cat_stars(json_conf,form):
       else: 
          cal_params['crop_box'] = meteor_red['crop_box']
    else:
-         cal_params['crop_box'] = (0,0,0,0)
+         if "crop_box" not in cal_params:
+            cal_params['crop_box'] = (0,0,0,0)
 
 
    #else:
@@ -5079,4 +5119,10 @@ def div_table_vars():
    end_row = "</div>"
    end_cell= "</div>"
    return(start_table, start_row, start_cell, end_table, end_row, end_cell)
+
+
+def fn_dir(file):
+   fn = file.split("/")[-1]
+   dir = file.replace(fn, "")
+   return(fn, dir)
 

@@ -5,6 +5,7 @@ function gallery_or_list() {
          loading({'container':'moncul'});
 
          $('.gallery').toggleClass('list');
+         $('body').toggleClass('list');
          if($('.gallery').hasClass('list')) {
             $t.find('i').removeClass().addClass('icon-gallery');
             // Add cookie for python

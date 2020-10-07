@@ -35,3 +35,5 @@ os.system("cd /home/ams/s3fs-fuse/; ./autogen.sh")
 os.system("cd /home/ams/s3fs-fuse/; ./configure --prefix=/usr --with-openssl")
 os.system("cd /home/ams/s3fs-fuse/; make")
 os.system("cd /home/ams/s3fs-fuse/; sudo make install")
+
+

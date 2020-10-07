@@ -50,7 +50,7 @@ def archive_snap_files():
 
 
 def purge_files():
-   files = glob.glob(SNAP_DIR + "*")
+   files = glob.glob(SNAP_DIR + "*.png")
    for file in files:
       if "comp" in file:
          cmd = "rm " + file
@@ -256,7 +256,8 @@ def snap_runner():
       if sec == 0 or sec == 30:
          for cam in cams:
             date_str = datetime.now().strftime("%Y_%m_%d_%H_%M_%S_000_")
-            outfile = SNAP_DIR + date_str + cam + ".png"
+            #cmd = "kill -9 `ps -aux | grep ffmpeg | grep SNAPS | grep " + cam_ip + " |grep -v grep| awk '{print $2}'`"
+            outfile = SNAP_DIR + date_str + cam + ".jpg"
             url = cams[cam]
             cmd = "/usr/bin/ffmpeg -y -i '" + url + "' -vframes 1 " + outfile + " >/dev/null 2>&1 &"
             print(cmd)
