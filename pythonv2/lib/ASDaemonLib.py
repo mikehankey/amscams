@@ -141,6 +141,7 @@ def run_vals_detect(day=None, cmd_mode=0):
 def run_verify_meteors(day=None, cmd_mode=0):
    proc_file = "/mnt/ams2/SD/proc2/json/proc_stats.json";
    running = check_running("flex-detect.py vms")
+   print("RUNNING:", running)
    if running == 0:
       if cmd_mode == 0:
          cmd = "./flex-detect.py vms " + day + " > /dev/null 2>&1 &"

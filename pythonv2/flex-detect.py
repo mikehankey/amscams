@@ -101,6 +101,7 @@ def man_detect(trim_file):
       hd_meteors[0]['hd_trim'] = hd_trim
       calib,cal_params = apply_calib(hd_meteors[0], hd_frames)
       print(calib)
+      print("BAD CALIB ERROR")
       exit()
 
       save_old_and_new_meteor(trim_file, hd_trim, meteors, hd_objects, stacked_sd_frame, stacked_hd_frame)
@@ -6165,6 +6166,7 @@ def fast_check_events(sum_vals, max_vals, subframes):
 
    for obj in objects:
       object = objects[obj] 
+      print("Analyzing object:", obj)
       objects[obj] = analyze_object_final(object, hd=0, sd_multi=1)
 
    pos_meteors = {}
@@ -10525,6 +10527,8 @@ def check_pt_in_mask(masks, px,py):
 
 def detect_in_vals(vals_file, cam_size_info):
    (f_datetime, cam, f_date_str,fy,fm,fd, fh, fmin, fs) = convert_filename_to_date_cam(vals_file)
+   sun_status = day_or_night(f_datetime)
+   print(sun_status)
    cam = cam.replace("-vals.json", "")
 
    masks = get_masks(cam, json_conf,0)
@@ -10608,6 +10612,7 @@ def detect_in_vals(vals_file, cam_size_info):
          masked = check_pt_in_mask(masks, px, py)
          if masked == 0:
             object, objects = find_object(objects, fn,px, py, 10, 10, max_val, 0, 0, None,0)
+            print("OBJ:", px, py, cam, object)
          #else:
          #   print("MASKED POINT!")
 
@@ -11288,7 +11293,7 @@ def save_final_meteor(meteor_file):
       trim_file = mj['sd_trim']
    sd_meteors = mj['sd_meteors']
    if "hd_meteors" not in mj:
-      print("No hd meteors...?", hd_trim)
+      print("BAD No hd meteors...?", hd_trim)
       exit()
    hd_meteors = mj['hd_meteors']
    real_meteors = []
@@ -11380,6 +11385,7 @@ def save_final_meteor(meteor_file):
       cx1,cy1,cx2,cy2,mid_x,mid_y = get_roi(None, real_meteors[0], 1, 1)
       mj['sd_prev_crop'] = [cx1,cy1,cx2,cy2,mid_x,mid_y]
       print(mj)
+      print("BAD ERROR")
       exit()
       #err = open("/mnt/ams2/SD/proc2/json/errors.txt", "a")
       #err.write(trim_file + " |Missing Prev Crop|\n")
