@@ -33,7 +33,146 @@ def solar_info(date, json_conf):
       sun_status, sun_az, sun_el = day_or_night(f_date_str, json_conf,1)
       print(f_date_str, sun_status, sun_az, sun_el)
 
+def multi_audit_tl(date, json_conf, outsize, outdir, frate, snaps_per_second):
+   for cam_num in range(1, len(json_conf['cameras'].keys()) + 1):
+      audit_tl(date, json_conf, str(cam_num),outsize, outdir, frate, snaps_per_second)
 
+def multi_cam_audit_tl(date, json_conf, outsize, outdir, frate, snaps_per_second):
+   ow, oh = outsize
+   layout = layout_template(json_conf)
+   snaps_per_second = int(snaps_per_second)
+   frate = int(frate)
+   dx_frames = int(frate / snaps_per_second)
+   print(layout)
+   afile = TL_DIR + "VIDS/" + date + "-audit.json"
+   ad = load_json_file(afile)
+   cache_dir = outdir + "CACHE/"
+   if cfe(cache_dir, 1) == 0:
+      os.makedirs(cache_dir)
+   os.system("rm " + cache_dir + "*")
+
+   list = ""
+   for hour in ad:
+      for min in ad[hour]:
+         comp = np.zeros((1080,1920,3),dtype=np.uint8)
+         hk =  '{:02d}'.format(int(hour))
+         mk =  '{:02d}'.format(int(min))
+         coutfile = cache_dir + hk + "-" + mk + ".jpg"
+         if cfe(coutfile) == 0:
+            for lcam in layout:
+               id = "cam" + str(lcam['position'])
+               print(ad[hour][min])
+               x1 = lcam['x1']
+               y1 = lcam['y1']
+               x2 = lcam['x2']
+               y2 = lcam['y2']
+               #   lcam = "cam" + str(id)
+               dw, dh = lcam['dim']
+
+               if len(ad[hour][min][id]['snap_file']) > 0:
+                  snap_file = ad[hour][min][id]['snap_file'][0] 
+                  snap = cv2.imread(snap_file)
+                  snap = cv2.resize(snap,(dw,dh))
+                  print(hour, min, snap_file)
+               else:
+                  snap = np.zeros((dh,dw,3),dtype=np.uint8)
+               comp[y1:y2,x1:x2] = snap
+         else:
+            comp = cv2.imread(coutfile)
+         dur = .04 * dx_frames
+         list += "file '" + coutfile + "'\n"
+         list += "duration " + str(dur) + "\n"
+         cv2.imwrite(coutfile, comp)
+         show = cv2.resize(comp,(1280,720))
+         cv2.imshow('pepe',show)
+         cv2.waitKey(30)
+   fp = open(cache_dir + "list.txt", "w")
+   fp.write(list)
+   fp.close()               
+   outfile = outdir + STATION_ID + "_" + date + "_multi.mp4"
+   cmd = "/usr/bin/ffmpeg -r " + str(frate) + " -f concat -safe 0 -i " + cache_dir + "list.txt -c:v libx264 -pix_fmt yuv420p -vf 'scale=" + ow + ":" + oh + "' " + outfile 
+   os.system(cmd)
+
+def audit_tl(date, json_conf, tcam=None,outsize=None, outdir=None, frate=None, snaps_per_second=None):
+   mc = input("Select Command: 1) Make 1 video for 1 cam 2) Make Multi-cam-video 3) Join 2 days together")
+   if outsize is None: 
+      tcam = input("Enter CAMS ID (1-7) or A for multi-cam video: ")
+      outsize = input("Output size: 1080, 720, 360: [360] ")
+      outdir = input("Output dir: starting with [/mnt/ams2/TL]: ")
+      frate = input("TL Frame Rate FPS (1-25):[25] ")
+      snaps_per_second = input("TL Snaps per second (relates to FPS) should be (1-25), but doesn't have to match FPS: ")
+
+   if tcam == "":
+      tcam = "1"
+   if outsize == "":
+      outsize = "360"
+   if snaps_per_second == "":
+      snaps_per_second = 2
+   if outsize == "":
+      outsize = "360"
+   if outdir == "":
+      outdir = "/mnt/ams2/TL/"
+   if frate == "":
+      frate = int(25)
+   if outsize == "1080":
+      ow = "1920"
+      oh = "1080"
+   if outsize == "720":
+      ow = "1280"
+      oh = "720"
+   if outsize == "360":
+      ow = "640"
+      oh = "360"
+   if outsize == "180":
+      ow = "320"
+      oh = "180"
+   if tcam == "A" or tcam == "a":
+      multi_audit_tl(date, json_conf, outsize, outdir, frate, snaps_per_second)
+      exit()
+      #multi_audit_tl(date, json_conf, )
+      #exit()
+   snaps_per_second = int(snaps_per_second)
+   frate = int(frate)
+   dx_frames = int(frate / snaps_per_second)
+
+   if mc == "2":
+      multi_cam_audit_tl(date, json_conf, (ow,oh), outdir, frate, snaps_per_second)
+      exit()
+
+   if dx_frames == 0:
+      dx_frames = 2 
+
+   tcam = "cam" + tcam
+   TL_DIR = "/mnt/ams2/meteor_archive/" + STATION_ID + "/TL/"
+   ROW_DIR = TL_DIR + "PICS/"
+   afile = TL_DIR + "VIDS/" + date + "-audit.json"
+   ad = load_json_file(afile)
+   list = ""
+   for hour in ad:
+      for min in ad[hour]:
+         hk =  '{:02d}'.format(int(hour))
+         mk =  '{:02d}'.format(int(min))
+         #print(cam , ad[hour][min][tcam])
+         #for cam in ad[hour][min]:
+         row_file = ROW_DIR + date + "/" + str(hk) + "-" + str(mk) + "-row.png" 
+         if cfe(row_file) == 0:
+            print("NO ROW:", row_file)
+            #exit()
+         print(hour, min, tcam , ad[hour][min][tcam]['snap_file'])
+         dur = .04 * dx_frames
+         if len(ad[hour][min][tcam]['snap_file']) > 0:
+            list += "file '" + ad[hour][min][tcam]['snap_file'][0] + "'\n"
+            list += "duration " + str(dur) + "\n"
+   if cfe(outdir,1) == 0:
+      os.makedirs(outdir)
+   fp = open(outdir + "list.txt", "w")
+   fp.write(list)
+   fp.close()               
+   outfile = outdir + STATION_ID + "_" + date + "_" + tcam + ".mp4"
+   cmd = "/usr/bin/ffmpeg -r " + str(frate) + " -f concat -safe 0 -i " + outdir + "list.txt -c:v libx264 -pix_fmt yuv420p -vf 'scale=" + ow + ":" + oh + "' " + outfile 
+   os.system(cmd)
+   print(cmd)
+            
 
 def nexrad_time(nrf):
    fn, dir = fn_dir(nrf)
@@ -886,4 +1025,111 @@ def video_from_images(wild, outfile):
    outfile_lr = outfile.replace(".mp4", "-lr.mp4")
    cmd = "/usr/bin/ffmpeg -i " + outfile + " -vcodec libx264 -crf 30 -y " + outfile_lr
    os.system(cmd)
+
+def layout_template(json_conf):
+   layout6 = [
+      {
+         "position": 5,
+         "x1": 0,
+         "y1": 0,
+         "x2": 640,
+         "y2": 360,
+         "dim": [640,360]
+      },
+      {
+         "position": 1,
+         "x1": 640,
+         "y1": 0,
+         "x2": 1280,
+         "y2": 360,
+         "dim": [640,360]
+      },
+      {
+         "position": 2,
+         "x1": 1280,
+         "y1": 0,
+         "x2" : 1920,
+         "y2": 360,
+         "dim": [640,360]
+      },
+      {
+         "position": 3,
+         "x1": 0,
+         "y1": 360,
+         "x2": 640,
+         "y2": 720,
+         "dim": [640,360]
+      },
+      {
+         "position": 6,
+         "x1": 640,
+         "y1": 360,
+         "x2": 1280,
+         "y2": 720,
+         "dim": [640,360]
+      },
+      {
+         "position": 4,
+         "x1": 1280,
+         "y1": 360,
+         "x2": 1920,
+         "y2": 720,
+         "dim": [640,360]
+      },
+   ]
+
+   # position 4 is featured
+   layout6f = [
+      {
+         "position": 5,
+         "x1": 0,
+         "y1": 0,
+         "x2": 640,
+         "y2": 360,
+         "dim": [640,360]
+      },
+      {
+         "position": 1,
+         "x1": 640,
+         "y1": 0,
+         "x2": 1280,
+         "y2": 360,
+         "dim": [640,360]
+      },
+      {
+         "position": 2,
+         "x1": 1280,
+         "y1": 0,
+         "x2" : 1920,
+         "y2": 360,
+         "dim": [640,360]
+      },
+      {
+         "position": 4,
+         "x1": 0,
+         "y1": 360,
+         "x2": 1280,
+         "y2": 1080,
+         "dim": [1280,720]
+      },
+      {
+         "position": 3,
+         "x1": 1280,
+         "y1": 360,
+         "x2": 1920,
+         "y2": 720,
+         "dim": [640,360]
+      },
+      {
+         "position": 6,
+         "x1": 1280,
+         "y1": 720,
+         "x2": 1920,
+         "y2": 1080,
+         "dim": [640,360]
+      },
+   ]
+   return(layout6f)
+
+
 
