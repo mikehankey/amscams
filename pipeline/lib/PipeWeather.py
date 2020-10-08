@@ -46,10 +46,10 @@ def multi_cam_audit_tl(date, json_conf, outsize, outdir, frate, snaps_per_second
    print(layout)
    afile = TL_DIR + "VIDS/" + date + "-audit.json"
    ad = load_json_file(afile)
-   cache_dir = outdir + "CACHE/"
+   cache_dir = outdir + "CACHE/" + date + "/"
    if cfe(cache_dir, 1) == 0:
       os.makedirs(cache_dir)
-   os.system("rm " + cache_dir + "*")
+   #os.system("rm " + cache_dir + "*")
 
    list = ""
    for hour in ad:
@@ -71,8 +71,17 @@ def multi_cam_audit_tl(date, json_conf, outsize, outdir, frate, snaps_per_second
 
                if len(ad[hour][min][id]['snap_file']) > 0:
                   snap_file = ad[hour][min][id]['snap_file'][0] 
-                  snap = cv2.imread(snap_file)
-                  snap = cv2.resize(snap,(dw,dh))
+                  if cfe(snap_file) == 1:
+                     try:
+                        snap = cv2.imread(snap_file)
+                     except:
+                        snap = np.zeros((dh,dw,3),dtype=np.uint8)
+                  else: 
+                     snap = np.zeros((dh,dw,3),dtype=np.uint8)
+                  try:
+                     snap = cv2.resize(snap,(dw,dh))
+                  except:
+                     snap = np.zeros((dh,dw,3),dtype=np.uint8)
                   print(hour, min, snap_file)
                else:
                   snap = np.zeros((dh,dw,3),dtype=np.uint8)
@@ -83,15 +92,16 @@ def multi_cam_audit_tl(date, json_conf, outsize, outdir, frate, snaps_per_second
          list += "file '" + coutfile + "'\n"
          list += "duration " + str(dur) + "\n"
          cv2.imwrite(coutfile, comp)
-         show = cv2.resize(comp,(1280,720))
-         cv2.imshow('pepe',show)
-         cv2.waitKey(30)
+         #show = cv2.resize(comp,(1280,720))
+         #cv2.imshow('pepe',show)
+         #cv2.waitKey(30)
    fp = open(cache_dir + "list.txt", "w")
    fp.write(list)
    fp.close()               
    outfile = outdir + STATION_ID + "_" + date + "_multi.mp4"
    cmd = "/usr/bin/ffmpeg -r " + str(frate) + " -f concat -safe 0 -i " + cache_dir + "list.txt -c:v libx264 -pix_fmt yuv420p -vf 'scale=" + ow + ":" + oh + "' " + outfile 
    os.system(cmd)
+   print(outfile)
 
 def audit_tl(date, json_conf, tcam=None,outsize=None, outdir=None, frate=None, snaps_per_second=None):
    mc = input("Select Command: 1) Make 1 video for 1 cam 2) Make Multi-cam-video 3) Join 2 days together")
