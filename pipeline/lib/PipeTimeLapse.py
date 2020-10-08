@@ -191,6 +191,59 @@ def plot_min_int(date, json_conf):
    print(save_file)
    #plt.show()
 
+def layout_template(date, json_conf):
+   layout = [
+      {
+         "position": 1, 
+         "x1": 0, 
+         "y1": 0, 
+         "x2": 640, 
+         "y2": 360, 
+         "dim": [640,360] 
+      },
+      {
+         "position": 2, 
+         "x1": 640, 
+         "y1": 0, 
+         "x2": 1280, 
+         "y2": 360, 
+         "dim": [640,360] 
+      },
+      {
+         "position": 3, 
+         "x1": 1280, 
+         "y1": 0, 
+         "x2" : 1920, 
+         "y2": 360, 
+         "dim": [640,360] 
+      },
+      {
+         "position": 4, 
+         "x1": 0, 
+         "y1": 360, 
+         "x2": 640, 
+         "y2": 720, 
+         "dim": [640,360] 
+      },
+      {
+         "position": 5, 
+         "x1": 640, 
+         "y1": 360, 
+         "x2": 1280, 
+         "y2": 720, 
+         "dim": [640,360] 
+      },
+      {
+         "position": 6, 
+         "x1": 1280, 
+         "y1": 360, 
+         "x2": 1920, 
+         "y2": 720, 
+         "dim": [640,360] 
+      },
+   ]
+   return(layout)
+
 def audit_min(date, json_conf):
    mm = 0
    cam_id_info, cam_num_info = load_cam_info(json_conf)

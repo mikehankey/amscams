@@ -8,7 +8,7 @@ from PIL import ImageFont, ImageDraw, Image, ImageChops
 from datetime import datetime
 import datetime as dt
 
-from lib.PipeWeather import detect_clouds , make_flat, track_clouds, solar_info
+from lib.PipeWeather import detect_clouds , make_flat, track_clouds, solar_info, audit_tl
 from lib.PipeImage import quick_video_stack
 from lib.PipeTrans import trans_test 
 from lib.PipeManager import mln_report, mln_best, best_of , copy_super_stacks, super_stacks_to_video, multi_station_meteors, proc_status
@@ -371,4 +371,6 @@ if __name__ == "__main__":
       min_fov(sys.argv[2], json_conf)
    if cmd == "fireball":
       fireball(sys.argv[2], json_conf)
+   if cmd == "audit_tl":
+      audit_tl(sys.argv[2], json_conf)
    
