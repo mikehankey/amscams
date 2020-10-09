@@ -298,7 +298,7 @@ if stream_errors == 1:
             wd['cams'][bad_key]['restarts'] = []
             wd['cams'][bad_key]['reboots'].append(cur_time)
             print("REBOOTING CAM", bad_key)
-            os.system("./IMX291.py reboot " + wd['cams'][bad_key]['ip'])
+            os.system("./IMX291.py reboot " + wd['cams'][bad_key]['ip'] + "&")
             log = open("/mnt/ams2/logs/cam_reboots.txt", "a")
             log.write(str(cur_time) + " reboot:" + str(bad_cam) + wd['cams'][bad_key]['ip'])
             time.sleep(30)
