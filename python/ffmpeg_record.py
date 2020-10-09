@@ -102,7 +102,7 @@ except:
 
 
 if (cmd == "stop"):
-   if cam_num is not "all":
+   if cam_num != "all":
       stop_capture(cam_num)
    else:
       stop_capture("1")
