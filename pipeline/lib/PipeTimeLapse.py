@@ -8,6 +8,7 @@ import sys
 import os
 from lib.PipeImage import  quick_video_stack, rotate_bound
 import cv2
+from lib.PipeWeather import detect_aurora
 from lib.PipeUtil import cfe, save_json_file, convert_filename_to_date_cam, load_json_file, day_or_night
 from lib.PipeAutoCal import fn_dir, get_cal_files
 from lib.DEFAULTS import *
@@ -448,13 +449,15 @@ def audit_min(date, json_conf):
             color_int = [0,0,0]
             if len(stack_files) > 0:
                stack_file = stack_files[0]
-            if cfe(stack_file) == 1 and data[hs][ms][cam]['sum_int'] == 0:
+            if (cfe(stack_file) == 1 and data[hs][ms][cam]['sum_int'] == 0) or "aurora" not in data[hs][ms][cam]:
                timg = cv2.imread(stack_file)
+               au,hist_img,marked_img = detect_aurora(stack_file)
                sum_int = int(np.sum(timg))
                avg_int = int(np.mean(timg))
                ci_b = int(np.mean(timg[0]))
                ci_g = int(np.mean(timg[1]))
                ci_r = int(np.mean(timg[2]))
+               data[hs][ms][cam]['aurora'] = au
                data[hs][ms][cam]['sum_int'] = sum_int
                data[hs][ms][cam]['avg_int'] = avg_int
                data[hs][ms][cam]['color_int'] = [ci_b, ci_g, ci_r]

@@ -27,6 +27,76 @@ from matplotlib.figure import Figure
 from lib.DEFAULTS import *
 print(TL_IMAGE_DIR)
 
+def batch_aurora(json_conf):
+   files = glob.glob("au/*.jpg")
+   for f in files:
+      aur = detect_aurora(f)
+      if aur['detected'] == 1:
+         print("AURORA DETECTED.")
+
+
+def detect_aurora(img_file=None):
+#   img_file = "aurora.jpg"
+   detect = 0
+   img = cv2.imread(img_file)
+   #cv2.imshow('pepe', img)
+   #cv2.waitKey(0)
+   matched = color_thresh_new(img, (60,80,70), (200,250,200))
+   #cv2.imshow('pepe', matched)
+   #cv2.waitKey(0)
+   (hist_img, dom_color, hist_data) = histogram(img)
+   #cv2.imshow('pepe', hist_img)
+   #cv2.waitKey(0)
+   cnt_res = cv2.findContours(matched, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+   if len(cnt_res) == 3:
+      (_, cnts, xx) = cnt_res
+   elif len(cnt_res) == 2:
+      (cnts, xx) = cnt_res
+   aprox = []
+   detected = 0
+   perimeter = 0,
+   for cnt in cnts:
+      max_area = cv2.contourArea(cnt)
+
+      perimeter = cv2.arcLength(cnt,True)
+      epsilon = 0.01*cv2.arcLength(cnt,True)
+      approx = cv2.approxPolyDP(cnt,epsilon,True)
+      if max_area > 100:
+         cv2.drawContours(img, [approx], -1, (0, 0, 255), 3)
+         aprox.append(approx)
+         if dom_color == 'g':
+            detected = 1
+         print("PERM/AREA:", perimeter, max_area) 
+   if detected == 1:
+      cv2.imshow('pepe', img)
+      cv2.waitKey(30)
+      aur = {
+         "detected": detected,
+         "approx": aprox,
+         "perm": perimeter,
+         "area": max_area,
+         "dom_color": dom_color,
+         "hist_data": hist_data
+      }
+   else:
+      aur = {
+         "detected": 0,
+         "hist_data": hist_data
+      }
+   return(aur, hist_img,img)
+
+
+def color_thresh_new(image, low=[60,0,0], high=[255,200,200]):
+   gsize = 100
+   height,width = image.shape[:2]
+
+   low_color_bound = np.array(low ,  dtype=np.uint8, ndmin=1)
+   high_color_bound = np.array(high ,  dtype=np.uint8, ndmin=1)
+   matched = cv2.inRange(image,low_color_bound, high_color_bound)
+   return(matched)
+
+
+
 def solar_info(date, json_conf):
    for i in range(0,24):
       f_date_str = date + ' {:02d}:{:02d}:00'.format(i,0) 
@@ -475,7 +545,7 @@ def histogram(image):
    cv2.putText(img, str(text2),  (40,30), cv2.FONT_HERSHEY_SIMPLEX, .4, (0, 0, 0), 1) 
    cv2.putText(img, str(text3),  (40,50), cv2.FONT_HERSHEY_SIMPLEX, .4, (0, 0, 0), 1) 
 
-   return(img, dom_color, green_blue_perc, red_blue_perc)
+   return(img, dom_color, hist_data)
    #plt.show()
 
 def gradient(image):
@@ -847,7 +917,7 @@ def get_color_thresh(image, t1,t2,t3,t4,t5,t6):
    #cv2.waitKey(0)
    return(image_bound)
 
-def color_thresh(image):
+def color_thresh(image, low=[60,0,0], high=[255,200,200]):
    gsize = 100
    height,width = image.shape[:2]
 
@@ -872,10 +942,10 @@ def color_thresh(image):
             x2 = w + gsize
             y1 = h
             y2 = h + gsize
-            if x2 > 1920:
-               x2 = 1920
-            if y2 > 1080:
-               y2 = 1080
+            if x2 > width:
+               x2 = width 
+            if y2 > height:
+               y2 = height 
             if x2 <= width and y2 <= height:
                grid_img = image[y1:y2,x1:x2]
                grid_val = np.mean(grid_img)
