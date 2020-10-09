@@ -504,7 +504,7 @@ def audit_min(date, json_conf):
             hs = str(s_hour)
             ms = str(s_min)
 
-            html += "<td>" + str(data[hs][ms][cam]['sun']) + "</td>"
+            html += "<td>" + str(data[hs][ms][cam]['sun']) + "</td><td>" 
             for cam in data[hs][ms]:
             
                html += "<td>"
@@ -522,7 +522,7 @@ def audit_min(date, json_conf):
                   #html += "<img src=" + data[hour][min][cam]['stack_file'][0] + ">"
                   url = jpg.replace("-stacked-tn.jpg", ".mp4")
                   url = url.replace("images/", "")
-                  html += "<a href=" + url + "><img src=" + jpg + "></a>"
+                  html += "<a href=" + url + "><img src=" + jpg + "></a><br>" + str(data[hs][ms][cam]['color_int'])
                else:
                   if len(data[hs][ms][cam]['hd_file']) == 0:
                      html += "<font color=red>X</font>"
