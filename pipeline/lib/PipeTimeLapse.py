@@ -267,17 +267,20 @@ def audit_min(date, json_conf):
       limit_h = 23
       limit_m = 59
 
-
+   print("Loading files.")
    hd_files = glob.glob("/mnt/ams2/HD/" + date + "*.mp4")
    sd_files = glob.glob("/mnt/ams2/SD/proc2/" + date + "/*.mp4")
    sd_day_files = glob.glob("/mnt/ams2/SD/proc2/daytime/" + date + "/*.mp4")
    sd_queue_files = glob.glob("/mnt/ams2/SD/" + date + "*.mp4")
    sd_day_queue_files = glob.glob("/mnt/ams2/SD/proc2/daytime/" + date + "*.mp4")
    # will need to fix later.
+   print("Loading snap files.")
    snap_files= glob.glob("/mnt/ams2/SNAPS/" + date + "*.png")
+   print("Loading Meteor files.")
    mfiles = glob.glob("/mnt/ams2/meteors/" + date + "/*.json")
    detect_files = glob.glob("/mnt/ams2/SD/proc2/" + date + "/hd_save/*.mp4")
    meteor_files = []
+   print("Loading meteor files.")
    for mf in mfiles:
       if "reduced" not in mf and "stars" not in mf and "man" not in mf:
          meteor_files.append(mf)
@@ -294,6 +297,7 @@ def audit_min(date, json_conf):
 
    if True:
       for h in range(0,24):
+         print("Hour:", h)
          hs = str(h)
          if hs not in data :
             data[hs] = {}
@@ -341,7 +345,7 @@ def audit_min(date, json_conf):
          cam_num = cam_id_info[sd_cam]
          sd_h = str(int(sd_h))
          sd_M = str(int(sd_M))
-         print(file, cam_num, sd_h, sd_M, data[sd_h][sd_M])
+         #print(file, cam_num, sd_h, sd_M, data[sd_h][sd_M])
          data[sd_h][sd_M][cam_num]['hd_file'].append(file)
 
    for file in sorted(sd_files):
@@ -354,11 +358,11 @@ def audit_min(date, json_conf):
          data[sd_h][sd_M][cam_num]['sd_file'].append(file)
          stack_file = dir + "images/" + fn
          stack_file = stack_file.replace(".mp4", "-stacked-tn.png")
-         print("STACK:", stack_file)
+         #print("STACK:", stack_file)
          if cfe(stack_file) == 1:
             data[sd_h][sd_M][cam_num]['stack_file'].append(stack_file)
-         else:
-            print("STACK NOT FOUND!:", stack_file)
+         #else:
+         #   print("STACK NOT FOUND!:", stack_file)
    for file in sorted(sd_day_files):
       (sd_datetime, sd_cam, sd_date, sd_y, sd_m, sd_d, sd_h, sd_M, sd_s) = convert_filename_to_date_cam(file)
       fn, dir = fn_dir(file)
@@ -368,11 +372,11 @@ def audit_min(date, json_conf):
          sd_M = str(int(sd_M))
          stack_file = dir + "images/" + fn
          stack_file = stack_file.replace(".mp4", "-stacked-tn.png")
-         print("DAY STACK:", stack_file)
+         #print("DAY STACK:", stack_file)
          if cfe(stack_file) == 1:
             data[sd_h][sd_M][cam_num]['stack_file'].append(stack_file)
-         else:
-            print("DAY STACK NOT FOUND!:", stack_file)
+         #else:
+         #   print("DAY STACK NOT FOUND!:", stack_file)
          data[sd_h][sd_M][cam_num]['sd_file'].append(file)
    for file in sorted(sd_day_queue_files):
       (sd_datetime, sd_cam, sd_date, sd_y, sd_m, sd_d, sd_h, sd_M, sd_s) = convert_filename_to_date_cam(file)
@@ -415,11 +419,11 @@ def audit_min(date, json_conf):
    for hour in range(0,24):
        for minute in range(0,60):
          if hour > limit_h:
-            print("HOUR HAS PAST!", hour )
+            #print("HOUR HAS PAST!", hour )
             continue
          if hour == limit_h:
             if minute >= limit_m:
-               print("MIN HAS PAST!", hour, minute)
+               #print("MIN HAS PAST!", hour, minute)
                continue
          key = '{:02d}-{:02d}'.format(int(hour),int(minute))
          hs = str(hour)
@@ -461,7 +465,7 @@ def audit_min(date, json_conf):
                data[hs][ms][cam]['sum_int'] = sum_int
                data[hs][ms][cam]['avg_int'] = avg_int
                data[hs][ms][cam]['color_int'] = [ci_b, ci_g, ci_r]
-               print("INTS:", stack_file, sum_int, avg_int)
+               #print("INTS:", stack_file, sum_int, avg_int)
             #else:
             #   print("DID INTS.", hour, minute,  data[hour][minute][cam]['sum_int'],  data[hour][minute][cam]['avg_int'])
 
