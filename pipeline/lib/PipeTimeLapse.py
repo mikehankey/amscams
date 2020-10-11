@@ -256,6 +256,7 @@ def audit_min(date, json_conf):
       data = {}
       new = 1
    else: 
+      print(data_file)
       data = load_json_file(data_file)
       new = 0
    #minutes = load_json_file(data_file)
@@ -321,7 +322,7 @@ def audit_min(date, json_conf):
                      data[hs][ms][cam]['meteors'] = []
                      data[hs][ms][cam]['detects'] = []
                      data[hs][ms][cam]['weather'] = []
-                     data[hs][ms][cam]['sun'] = [[sun_status, sun_az, sun_el]]
+                     data[hs][ms][cam]['sun'] = [sun_status, sun_az, sun_el]
                      data[hs][ms][cam]['sum_int'] = 0
                      data[hs][ms][cam]['avg_int'] = 0
                      data[hs][ms][cam]['color_int'] = []
@@ -449,9 +450,27 @@ def audit_min(date, json_conf):
             color_int = [0,0,0]
             if len(stack_files) > 0:
                stack_file = stack_files[0]
-            if (cfe(stack_file) == 1 and data[hs][ms][cam]['sum_int'] == 0) or "aurora" not in data[hs][ms][cam]:
+            #if (cfe(stack_file) == 1 and data[hs][ms][cam]['sum_int'] == 0) or "aurora" not in data[hs][ms][cam]:
+            if True:
                timg = cv2.imread(stack_file)
-               au,hist_img,marked_img = detect_aurora(stack_file)
+               if data[hs][ms][cam]['sun'][0] == 'night':
+                  au,hist_img,marked_img = detect_aurora(stack_file)
+
+                  if au['detected'] == 1:
+                     print("AU:", au)
+                     print("AUSTACK:", stack_file)
+                     au_file = stack_file.replace("-stacked-tn.png", "-au-tn.jpg")
+                     #html += "<img src=" + au_file + "><br>"
+                     print("AU FILE:", au_file)
+                     if cfe(au_file) == 0:
+                        cv2.imwrite(au_file, marked_img)
+                        print("AU:", au_file)
+                     else:
+                        print("AU FILE EXISTS.", au_file)
+                     #exit()
+
+               else:
+                   au = { "detected": 0}
                sum_int = int(np.sum(timg))
                avg_int = int(np.mean(timg))
                ci_b = int(np.mean(timg[0]))

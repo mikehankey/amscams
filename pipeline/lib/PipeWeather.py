@@ -33,6 +33,68 @@ def batch_aurora(json_conf):
       aur = detect_aurora(f)
       if aur['detected'] == 1:
          print("AURORA DETECTED.")
+def aurora_report(date, json_conf):
+   cam_nums = json_conf['cameras'].keys()
+   afile = TL_DIR + "VIDS/" + date + "-audit.json"
+   ad = load_json_file(afile)
+   outdir = TL_DIR + "AURORA/" + date + "/" 
+   cache_dir = TL_DIR + "CACHE/" + date + "/"
+   ROW_DIR = TL_DIR + "PICS/" + date + "/"
+   if cfe(outdir,1) == 0:
+      os.makedirs(outdir)
+   if cfe(cache_dir,1) == 0:
+      os.makedirs(cache_dir)
+   list = ""
+   html = ""
+   for hour in ad:
+      for min in ad[hour]:
+         comp = np.zeros((1080,1920,3),dtype=np.uint8)
+         hk =  '{:02d}'.format(int(hour))
+         mk =  '{:02d}'.format(int(min))
+         coutfile = ROW_DIR + hk + "-" + mk + "-row.png"
+         for cam_num in cam_nums:
+            adata = ad[hour][min][cam_num]
+            if "aurora" in adata:
+               aud = adata['aurora']
+               if aud['detected'] == 1 and adata['sun'][0] == 'night':
+                  row_file = ROW_DIR + "/" + str(hk) + "-" + str(mk) + "-row.png" 
+                  if cfe(row_file) == 1:
+                     print(row_file, hour, min, cam_num, aud, adata['sun'])
+                     html += "<img src='" + row_file + "'><br>"
+                     html += hk + ":" + mk + " " + cam_num + " " +  str(aud) + str(adata['sun'])
+                     dur = 1 
+                     list += "file '" + coutfile + "'\n"
+                     list += "duration " + str(dur) + "\n"
+                  else:
+                     print("NO ROW!", row_file)
+         #print(coutfile)
+         #if cfe(coutfile) == 0:
+         #   for lcam in layout:
+         #      id = "cam" + str(lcam['position'])
+         #      print(ad[hour][min])
+   #exit()
+   print(outdir)
+   print(cache_dir)
+   list_file = outdir + date + "_AURORA_list.txt" 
+   outfile = outdir + date + "_" + STATION_ID + "_AURORA_list.mp4" 
+   if cfe(outdir, 1) == 0:
+      os.makedirs(outdir)
+   fp = open(list_file, "w")
+   fp.write(list)
+   fp.close()
+   html_file = list_file.replace("_list.txt", ".html")
+   fp = open(html_file, "w")
+   fp.write(html)
+   fp.close()
+   frate = 25
+   row = cv2.imread(row_file)
+   oh, ow = row.shape[:2]
+
+   cmd = "/usr/bin/ffmpeg -r " + str(frate) + " -f concat -safe 0 -i " + list_file + " -c:v libx264 -pix_fmt yuv420p -vf 'scale=" + str(ow) + ":" + str(oh) + "' -y " + outfile 
+   os.system(cmd)
+   print(outfile)
+   print(list_file)
+   print(html_file)
 
 
 def detect_aurora(img_file=None):
@@ -63,18 +125,18 @@ def detect_aurora(img_file=None):
       approx = cv2.approxPolyDP(cnt,epsilon,True)
       if max_area > 100:
          cv2.drawContours(img, [approx], -1, (0, 0, 255), 3)
-         aprox.append(approx)
+         aprox.append(approx.tolist())
          if dom_color == 'g':
             detected = 1
          print("PERM/AREA:", perimeter, max_area) 
    if detected == 1:
-      cv2.imshow('pepe', img)
-      cv2.waitKey(30)
+      #cv2.imshow('pepe', img)
+      #cv2.waitKey(30)
       aur = {
          "detected": detected,
          "approx": aprox,
-         "perm": perimeter,
-         "area": max_area,
+         "perm": float(perimeter),
+         "area": float(max_area),
          "dom_color": dom_color,
          "hist_data": hist_data
       }

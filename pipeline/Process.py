@@ -8,7 +8,7 @@ from PIL import ImageFont, ImageDraw, Image, ImageChops
 from datetime import datetime
 import datetime as dt
 
-from lib.PipeWeather import detect_clouds , make_flat, track_clouds, solar_info, audit_tl, detect_aurora, batch_aurora
+from lib.PipeWeather import detect_clouds , make_flat, track_clouds, solar_info, audit_tl, detect_aurora, batch_aurora, aurora_report
 from lib.PipeImage import quick_video_stack
 from lib.PipeTrans import trans_test 
 from lib.PipeManager import mln_report, mln_best, best_of , copy_super_stacks, super_stacks_to_video, multi_station_meteors, proc_status
@@ -377,4 +377,6 @@ if __name__ == "__main__":
       detect_aurora(sys.argv[2] )
    if cmd == "ba":
       batch_aurora(sys.argv[2] )
+   if cmd == "ar":
+      aurora_report(sys.argv[2] ,json_conf)
    
