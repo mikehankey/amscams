@@ -231,26 +231,6 @@ def unq_points(object):
    perc = unq_tot / tot
    return(perc, unq_tot)
 
-def big_cnt_test(object,hd=0):
-   sizes = []
-   big = 0
-   sz_thresh = 20
-   if hd == 1:
-      sz_thresh = 40
-
-   for i in range(0, len(object['ofns'])):
-      w = object['ows'][i]
-      h = object['ohs'][i]
-      if w > sz_thresh:
-         big += 1
-      if h > sz_thresh:
-         big += 1
-      sizes.append(w)
-      sizes.append(h)
-   tot = len(sizes)
-   if len(sizes) > 0:
-      perc_big = big / len(sizes)
-   return(perc_big)
 
 def calc_line_segments(xobj):
    dist_from_start = []
@@ -450,10 +430,7 @@ def ang_dist_vel(xs=[], ys=[],azs=[],els=[], pixscale=155):
    if len(xs) > 0:
       px_dist = calc_dist((xs[0],ys[0]), (xs[-1], ys[-1]))
       ang_dist = px_dist * pixscale
-      #print("PIX DIST: ", px_dist)
-      #print("ANG DIST ARC SEC: ", ang_dist)
       ang_dist = arc_seconds_to_degrees(ang_dist)
-      #print("ANG DIST DEG: ", ang_dist)
       # to find angular velocity per second in degrees 
       ang_vel = ang_dist / (len(xs) / 25)
    # Formula for finding ang_dist and vel from az,el 

@@ -161,6 +161,7 @@ def check_disk():
    # if the disk usage is over 80% 
    # get folders in /proc2, delete the folders one at a time and re-check disk until disk <80% or max of 30 folders exist
    proc2_files = glob.glob("/mnt/ams2/SD/proc2/*")
+   ntfs = []
    for file in proc2_files:
       if "json" not in file and "daytime" not in file and "all" not in file:
          if cfe(file, 1) == 1:
@@ -174,6 +175,50 @@ def check_disk():
                cmd = "rm -rf " + file
                print(cmd)
                os.system(cmd)
+            if days_old > 7:
+               # delete non trim hd files
+               ntf = glob.glob(file + "/hd_save/*.mp4")
+               for nt in ntf:
+                  if "trim" not in nt:
+                     ntfs.append(nt)
+               # delete data files 
+               data_files = file + "/data/*.json"
+               cmd = "rm " + data_files
+               print(cmd)
+               os.system(cmd)
+
+   print("NTFS:")
+   for ntf in ntfs:
+      print("NTF:", ntf)
+      cmd = "rm  " + ntf
+      os.system(cmd)
+
+   # Cache files > 14 days gone.
+   now = datetime.now()
+   this_year = now.strftime("%Y")
+   this_month = now.strftime("%m")
+   cache_dir = "/mnt/ams2/CACHE/" + json_conf['site']['ams_id'] + "/" 
+   years = glob.glob(cache_dir + "*")
+   for y in years:
+      mon_dirs = glob.glob(y + "/*") 
+      for md in mon_dirs:
+         print(md)
+         day_dirs = glob.glob(md + "/*") 
+         for dd in day_dirs:
+            cy = dd.split("/")[-3]
+            cm = dd.split("/")[-2]
+            cd = dd.split("/")[-1]
+            cdate = cy + "_" + cm + "_" + cd
+            dir_date = datetime.strptime(cdate , "%Y_%m_%d")
+            elp = dir_date - datetime.now()
+            days_old = abs(elp.total_seconds()) / 86400
+            if days_old > 15:
+               cmd = "rm -rf " + dd
+               print(cmd)
+               os.system(cmd)
+               print(dd, days_old)
+   exit()
+
 
 
    # purge out old files from daytime dir
