@@ -338,7 +338,8 @@ def audit_min(date, json_conf):
                      data[hs][ms][cam]['meteors'] = []
                      data[hs][ms][cam]['detects'] = []
                      data[hs][ms][cam]['weather'] = []
-     
+    
+   print("Looping HD Files")
    for file in sorted(hd_files):
       (sd_datetime, sd_cam, sd_date, sd_y, sd_m, sd_d, sd_h, sd_M, sd_s) = convert_filename_to_date_cam(file)
       if "trim" not in file:
@@ -349,6 +350,7 @@ def audit_min(date, json_conf):
          #print(file, cam_num, sd_h, sd_M, data[sd_h][sd_M])
          data[sd_h][sd_M][cam_num]['hd_file'].append(file)
 
+   print("Looping SD Files")
    for file in sorted(sd_files):
       fn, dir = fn_dir(file)
       (sd_datetime, sd_cam, sd_date, sd_y, sd_m, sd_d, sd_h, sd_M, sd_s) = convert_filename_to_date_cam(file)
@@ -364,6 +366,9 @@ def audit_min(date, json_conf):
             data[sd_h][sd_M][cam_num]['stack_file'].append(stack_file)
          #else:
          #   print("STACK NOT FOUND!:", stack_file)
+
+
+   print("Looping SD DAY Files")
    for file in sorted(sd_day_files):
       (sd_datetime, sd_cam, sd_date, sd_y, sd_m, sd_d, sd_h, sd_M, sd_s) = convert_filename_to_date_cam(file)
       fn, dir = fn_dir(file)
@@ -379,6 +384,7 @@ def audit_min(date, json_conf):
          #else:
          #   print("DAY STACK NOT FOUND!:", stack_file)
          data[sd_h][sd_M][cam_num]['sd_file'].append(file)
+   print("Looping SD DAY QUEUE Files")
    for file in sorted(sd_day_queue_files):
       (sd_datetime, sd_cam, sd_date, sd_y, sd_m, sd_d, sd_h, sd_M, sd_s) = convert_filename_to_date_cam(file)
       if "trim" not in file:
