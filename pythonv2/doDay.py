@@ -118,7 +118,7 @@ def run_df():
             used_perc = disk_data[4]
             mount = disk_data[5]
             print(mount, used_perc)
-            if mount == "/" or mount == "/mnt/ams2" or mount == "/mnt/archive.allsky.tv":
+            if mount == "/" or mount == "/mnt/ams2" or mount == "/mnt/archive.allsky.tv" or mount == "/home":
                df_data.append((file_system, size, used, avail, used_perc, mount))
                used_perc = used_perc.replace(" ", "")
                mounts[mount] = int(used_perc.replace("%", ""))
@@ -129,16 +129,20 @@ def run_df():
 
 def check_disk():
    df_data, mounts = run_df()
-
+   if "data_dir" in json_conf:
+      data_dir = json_conf['data_dir']
+   else:
+      data_dir = "/mnt/ams2"
    print(mounts)
-
+   print(data_dir)
+   print(mounts[data_dir])
    del_needed = 0
    if "/mnt/archive.allsky.tv" not in mounts:
       print("Wasabi is not mounted! Mounting now.")
       os.system("./wasabi.py mnt")
-   if "/mnt/ams2" in mounts:
-      if mounts["/mnt/ams2"] > 80:
-         print("Data volume /mnt/ams2 is greater than 80%!", mounts["/mnt/ams2"]) 
+   if data_dir in mounts:
+      if mounts[data_dir] > 80:
+         print("Data volume /mnt/ams2 is greater than 80%!", mounts[data_dir]) 
          del_needed = 1
    if mounts["/"] > 80:
       print("Root volume / is greater than 80%!", mounts["/"]) 
