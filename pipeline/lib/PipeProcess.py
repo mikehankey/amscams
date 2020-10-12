@@ -1,10 +1,14 @@
 from datetime import datetime
 from lib.PipeUtil import cfe, save_json_file, convert_filename_to_date_cam, load_json_file, day_or_night   , get_file_info
-from lib.PipeUtil import day_or_night
+from lib.PipeUtil import day_or_night, check_running
 import datetime as dt
 import os
 
 def run_jobs(json_conf):
+   running = check_running("Process.py run_jobs")
+   if running >= 3:
+      print("Already running.")
+      return()
    today = datetime.now().strftime("%Y_%m_%d")
    yest = (datetime.now() - dt.timedelta(days = 1)).strftime("%Y_%m_%d")
    sun, az, alt = day_or_night(datetime.now(), json_conf, 1)
