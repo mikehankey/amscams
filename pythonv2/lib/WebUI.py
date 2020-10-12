@@ -2930,6 +2930,9 @@ def browse_day(day,cams_id,json_conf,form):
 
       html_out =  "<div class='preview  "+ htclass +"'>"
       html_out +=  "<a class='mtt mb-3' href='webUI.py?cmd=examine_min&video_file=" + video_file + "&next_stack_file=" + next_stack_file  + "' title='Examine'>"
+      jpg = stack_file.replace(".png", "jpg")
+      if cfe(jpg) == 1:
+         stack_file_tn = jpg
       html_out +=  "<img class='ns lz' src='" + stack_file_tn + "'>"
       html_out +=  "<span>"+base_js_name[0] +"/" +base_js_name[1]+"/" +base_js_name[2] + " " +  base_js_name[3]+ ":" +  base_js_name[4]+ ":" +  base_js_name[5] +"</span>"
       html_out +=  "</a></div>"

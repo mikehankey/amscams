@@ -219,7 +219,7 @@ def scan_and_stack_fast(file, sun_status = 0, vals = []):
       os.makedirs(proc_img_dir)
    if cfe(proc_data_dir, 1) == 0:
       os.makedirs(proc_data_dir)
-   stack_file = proc_img_dir + fn.replace(".mp4", "-stacked-tn.png")
+   stack_file = proc_img_dir + fn.replace(".mp4", "-stacked-tn.jpg")
    json_file = proc_data_dir + fn.replace(".mp4", "-vals.json")
 
 
