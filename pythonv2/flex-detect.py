@@ -10440,24 +10440,27 @@ def batch_vals(day):
       print("already running")
       exit()
    data_dir = "/mnt/ams2/SD/proc2/" + day + "/data/"
-   temp = glob.glob(data_dir + "*-vals.json")
+   temp = glob.glob(data_dir + "*.json")
    val_files = []
+   all = {}
    for tem in temp:
-      if "crop" not in tem:
+      if "crop" not in tem and "-vals" in tem:
          val_files.append(tem)
+      all[tem] = 1
    meteors = 0
    maybe_meteors = 0
    too_many = 0
    detects = 0
-   for vf in val_files:
-
+   vc = 0
+   for vf in sorted(val_files, reverse=True):
       (f_datetime, cam, f_date_str,fy,fm,fd, fh, fmin, fs) = convert_filename_to_date_cam(vf)
       mf = vf.replace("-vals.json", "-meteor.json")
       nm = vf.replace("-vals.json", "-nometeor.json")
       df = vf.replace("-vals.json", "-detect.json")
       mmf = vf.replace("-vals.json", "-maybe-meteors.json")
       tf = vf.replace("-vals.json", "-toomany.json")
-      if cfe(mf) == 0 and cfe(df) == 0 and cfe(tf) == 0 and cfe(mmf) == 0 and cfe(nm) == 0:
+      if mf not in all and df not in all and tf not in all and mmf not in all and nm not in all:
+      #if cfe(mf) == 0 and cfe(df) == 0 and cfe(tf) == 0 and cfe(mmf) == 0 and cfe(nm) == 0:
          sun_status = day_or_night(f_datetime)
          if sun_status == 'night':
             print("VF:", vf)
@@ -10465,21 +10468,26 @@ def batch_vals(day):
          else:
             print("Skip daytime file.")
             os.system("rm " + vf)
-      if cfe(mf) == 1:
+      else:
+         if vc % 100 == 0:
+            print(vc, "ALREADY DONE:")
+
+      if mf in all:
          meteors += 1
-      if cfe(mmf) == 1:
+      if mmf in all :
   
          maybe_meteors += 1
-         maybe = load_json_file(mmf)
-         if maybe != 0:
-            for id in maybe['objects']:
-               obj = maybe['objects'][id]
+         #maybe = load_json_file(mmf)
+         #if maybe != 0:
+         #   for id in maybe['objects']:
+         #      obj = maybe['objects'][id]
                #if obj['report']['meteor_yn'] == 'Y': 
                #   print("REPORT CLASS METEOR:",  obj['report']['meteor_yn'] ,  obj['report']['classify']['meteor_yn'] )
-      if cfe(tf) == 1:
+      if tf in all == 1:
          too_many += 1
-      if cfe(df) == 1:
+      if df in all == 1:
          detects += 1
+      vc += 1
 
    worked_files = meteors + maybe_meteors + too_many + detects
    print("VALS/COMPLETED:", len(val_files)-1, worked_files)
