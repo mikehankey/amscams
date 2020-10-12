@@ -4,7 +4,7 @@ import numpy as np
 import sys
 import time
 from PIL import ImageFont, ImageDraw, Image, ImageChops
-
+from lib.PipeProcess import run_jobs
 from datetime import datetime
 import datetime as dt
 
@@ -379,4 +379,6 @@ if __name__ == "__main__":
       batch_aurora(sys.argv[2] )
    if cmd == "ar":
       aurora_report(sys.argv[2] ,json_conf)
+   if cmd == "run_jobs":
+      run_jobs(json_conf)
    

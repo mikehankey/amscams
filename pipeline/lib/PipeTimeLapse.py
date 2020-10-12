@@ -567,7 +567,10 @@ def audit_min(date, json_conf):
    print(html_file)
    cloud_dir = "/mnt/archive.allsky.tv/" + STATION_ID + "/LOGS/"  
    if cfe(cloud_dir, 1) == 0:
-      os.makedirs(cloud_dir)
+      try:
+         os.makedirs(cloud_dir)
+      except:
+         print("Perms?") 
    outfile = cloud_dir + date + "_" + STATION_ID + "_uptime.json"
    up_data = {}
    up_data['uptime'] = uptime_percs

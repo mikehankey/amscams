@@ -582,7 +582,7 @@ def sum_hist(data):
    
 
 def histogram(image):
-   fig = plt.figure()
+   #fig = plt.figure()
    color = ('b', 'g', 'r')
    hist_data = {}
    dom_val = 0
@@ -593,16 +593,16 @@ def histogram(image):
       if hist_data[col] > dom_val:
          dom_val = hist_data[col]
          dom_color = col
-      plt.plot(histr,color = col)
-      plt.xlim([0,256])
-   fig.canvas.draw()
-   img = np.fromstring(fig.canvas.tostring_rgb(), dtype=np.uint8, sep='')
-   img  = img.reshape(fig.canvas.get_width_height()[::-1] + (3,))
+   #   plt.plot(histr,color = col)
+   #   plt.xlim([0,256])
+   #fig.canvas.draw()
+   #img = np.fromstring(fig.canvas.tostring_rgb(), dtype=np.uint8, sep='')
+   #img  = img.reshape(fig.canvas.get_width_height()[::-1] + (3,))
 
    # img is rgb, convert to opencv's default bgr
-   img = cv2.cvtColor(img,cv2.COLOR_RGB2BGR)
+   #img = cv2.cvtColor(img,cv2.COLOR_RGB2BGR)
 
-   
+   img = None 
 
    # blue as % of green and red
    green_blue_perc = hist_data['g'] / hist_data['b']
@@ -613,9 +613,9 @@ def histogram(image):
    text3 = "Red/Blue Perc:" + str(red_blue_perc)[0:4]
 
    
-   cv2.putText(img, str(text1),  (40,10), cv2.FONT_HERSHEY_SIMPLEX, .4, (0, 0, 0), 1) 
-   cv2.putText(img, str(text2),  (40,30), cv2.FONT_HERSHEY_SIMPLEX, .4, (0, 0, 0), 1) 
-   cv2.putText(img, str(text3),  (40,50), cv2.FONT_HERSHEY_SIMPLEX, .4, (0, 0, 0), 1) 
+   #cv2.putText(img, str(text1),  (40,10), cv2.FONT_HERSHEY_SIMPLEX, .4, (0, 0, 0), 1) 
+   #cv2.putText(img, str(text2),  (40,30), cv2.FONT_HERSHEY_SIMPLEX, .4, (0, 0, 0), 1) 
+   #cv2.putText(img, str(text3),  (40,50), cv2.FONT_HERSHEY_SIMPLEX, .4, (0, 0, 0), 1) 
 
    return(img, dom_color, hist_data)
    #plt.show()

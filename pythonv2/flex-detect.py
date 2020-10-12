@@ -10877,6 +10877,7 @@ def get_hdm(frame):
    return(hdm_x, hdm_y)
 
 def verify_toomany_detects(day=None):
+   print("Verify too many.")
    if day == None:
       return("pass day!")
    files = glob.glob("/mnt/ams2/SD/proc2/" + day + "/data/*toomany.json")
@@ -10941,6 +10942,7 @@ def verify_meteors(day=None):
                   print("SKIP:", file)
    else:
       # include the too many meteor files
+      print("Verify Meteors.")
       os.system("./flex-detect.py vtms " + day)
       glob_dir = "/mnt/ams2/SD/proc2/" + day + "/data/*maybe-meteors.json"
       print(glob_dir)

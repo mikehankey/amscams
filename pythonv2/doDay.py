@@ -186,12 +186,14 @@ def check_disk():
                   if "trim" not in nt:
                      ntfs.append(nt)
                # delete data files 
-               data_files = file + "/data/*.json"
-               cmd = "rm " + data_files
-               print(cmd)
-               os.system(cmd)
+               data_dir = file + "/data/"
+               if cfe(data_dir, 1) == 1:
+                  data_files = file + "/data/*.json"
+                  cmd = "rm -rf " + data_dir
+                  print(cmd)
+                  os.system(cmd)
 
-   print("NTFS:")
+   print("Non Trim Saved HD Min Files:")
    for ntf in ntfs:
       print("NTF:", ntf)
       cmd = "rm  " + ntf
