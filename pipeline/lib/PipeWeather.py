@@ -318,7 +318,8 @@ def aurora_report(date, json_conf):
    fp.close()
    ow = 640
    oh = 360
-   cmd = "/usr/bin/ffmpeg -re -f concat -safe 0 -i " + list_file + "' -y " + out_file
+   cmd = "/usr/bin/ffmpeg -re -f concat -safe 0 -i " + list_file + " -y " + out_file
+   print(cmd)
    os.system(cmd)
    of2 = out_file.replace(".mp4", "-2.mp4")
    cmd = "/usr/bin/ffmpeg -i " + out_file + " -vf scale=" + str(ow) + ":" + str(oh) + " -aspect:v 640:360 -y " + of2 
