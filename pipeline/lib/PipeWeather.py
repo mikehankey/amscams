@@ -29,13 +29,16 @@ from matplotlib.figure import Figure
 from lib.DEFAULTS import *
 print(TL_IMAGE_DIR)
 
-def tl_list(wild_dir, cam, fps = 25, json_conf=None):
+def tl_list(wild_dir, cam, fps = 25, json_conf=None, auonly = 1):
     files = glob.glob(wild_dir + "*" + cam + "*.jpg")
     list = ""
     dur = 1/ int(fps)
     for file in files: 
-       list += "file '" + file + "'\n"
-       list += "duration " + str(dur) + "\n"
+       if auonly == 1 and "-tl.jpg" in file:
+          foo = 1
+       else:
+          list += "file '" + file + "'\n"
+          list += "duration " + str(dur) + "\n"
 
     list_file = wild_dir + "/" + cam + "_list.txt"
     out_file = wild_dir + "/" + cam + ".mp4"
@@ -151,6 +154,15 @@ def aurora_stack_vid(video, json_conf):
    AS_DIR = TL_DIR + "AURORA/STACKS/" + date + "/" 
    if cfe(AS_DIR, 1) == 0:
       os.makedirs(AS_DIR)
+
+   root = video.replace(".mp4", "")
+   rfn, dir = fn_dir(root)
+   done_files = glob.glob(AS_DIR + rfn + "*.jpg")
+   print("CHECK:", AS_DIR + rfn + "*.jpg")
+   if len(done_files) > 5:
+      print("ALREADY DONE.")
+      return()
+
    sd_frames = load_frames_simple(video)
    fc = 0
    vid_fn = video.split("/")[-1]
@@ -287,7 +299,33 @@ def aurora_report(date, json_conf):
    print(outfile)
    print(list_file)
    print(html_file)
-
+   all_list = ""
+   for cam_num in json_conf['cameras']:
+      cams_id = json_conf['cameras'][cam_num]['cams_id']
+      cmd = "./Process.py tl_list /mnt/ams2/meteor_archive/" + STATION_ID + "/TL/AURORA/STACKS/" + date + "/ " + cams_id + " 25"
+      os.system(cmd)
+      print(cmd)
+      coutfile = "/mnt/ams2/meteor_archive/" + STATION_ID + "/TL/AURORA/STACKS/" + date + "/" + cams_id + ".mp4"
+      if cfe(coutfile) == 1:
+         all_list += "file '" + coutfile + "'\n"
+   out_dir = "/mnt/ams2/meteor_archive/" + STATION_ID + "/TL/AURORA/VIDS/" 
+   if cfe(out_dir, 1) == 0:
+      os.makedirs(out_dir)
+   out_file = out_dir + "AURORA_" + STATION_ID + "_" + date + ".mp4"
+   list_file = out_dir + "AURORA_" + STATION_ID + "_" + date + ".txt"
+   fp = open(list_file, "w")
+   fp.write(all_list)
+   fp.close()
+   ow = 640
+   oh = 360
+   cmd = "/usr/bin/ffmpeg -re -f concat -safe 0 -i " + list_file + "' -y " + out_file
+   os.system(cmd)
+   of2 = out_file.replace(".mp4", "-2.mp4")
+   cmd = "/usr/bin/ffmpeg -i " + out_file + " -vf scale=" + str(ow) + ":" + str(oh) + " -aspect:v 640:360 -y " + of2 
+   print(cmd)
+   os.system(cmd)
+   print(out_file)
+   os.system("mv " + of2 + " " + out_file)
 
 def detect_aurora(img_file=None):
 #   img_file = "aurora.jpg"
