@@ -29,6 +29,36 @@ from matplotlib.figure import Figure
 from lib.DEFAULTS import *
 print(TL_IMAGE_DIR)
 
+def hourly_stacks(date, json_conf):
+   hour_data = {}
+   night_stack_dir = "/mnt/ams2/meteor_archive/" + STATION_ID + "/STACKS/" + date + "/"
+   if cfe(night_stack_dir, 1) == 0:
+      os.makedirs(night_stack_dir)
+   work_dir = "/mnt/ams2/SD/proc2/" + date + "/images/"
+   for cam_num in json_conf['cameras']:
+      cams_id = json_conf['cameras'][cam_num]['cams_id']
+      if cams_id not in hour_data:
+         hour_data[cams_id] = {}
+      wild = work_dir + "*" + cams_id + "*-tn*"
+      files = glob.glob(wild)
+      for file in sorted(files):
+         (f_datetime, cam, f_date_str,fy,fm,fd, fh, fmin, fs) = convert_filename_to_date_cam(file)
+         if fh not in hour_data[cam]:
+            hour_data[cam][fh] = {} 
+            hour_data[cam][fh]['files'] = []
+         hour_data[cam][fh]['files'].append(file)
+   for cam in hour_data:
+      for hour in hour_data[cam]:
+         images = []
+         files = hour_data[cam][hour]['files']
+         for file in files:
+            im = cv2.imread(file)
+            images.append(im)
+         hour_stack_image = stack_frames(images)
+         hour_stack_file = night_stack_dir + fy + "_" + fm + "_" + fd + "_" + fh + "_" + cam + ".jpg"
+         cv2.imwrite(hour_stack_file, hour_stack_image)
+         print(hour_stack_file)
+
 def tl_list(wild_dir, cam, fps = 25, json_conf=None, auonly = 1):
     files = glob.glob(wild_dir + "*" + cam + "*.jpg")
     list = ""
