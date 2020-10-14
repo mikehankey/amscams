@@ -9264,6 +9264,10 @@ def obj_to_arc_meteor(meteor_file):
    print(mj['hd_trim'])
    hd_meteor = None
    sd_meteor = None
+   if len(mj['hd_meteors']) == 1 and len(mj['sd_meteors']) == 0:
+      mj['sd_meteors'] = mj['hd_meteors']
+   if len(mj['hd_meteors']) == 0 and len(mj['sd_meteors']) == 1:
+      mj['hd_meteors'] = mj['sd_meteors']
    for key in mj['hd_meteors']:
       print(key)
       hd_meteor = key
@@ -9277,6 +9281,10 @@ def obj_to_arc_meteor(meteor_file):
       print("HD:", hd_meteor) 
       print("SD:", sd_meteor) 
       hd_meteor = sd_meteor
+   #print("MJ", mj)
+   for key in mj:
+      print(key, mj[key])
+   #if "sd_trim" not in mj:
    sd_meteor['sd_trim'] = mj['sd_trim']
    calib,cal_params = apply_calib(hd_meteor)
 
@@ -11261,7 +11269,6 @@ def save_final_meteor(meteor_file):
    mj = load_json_file(meteor_file)
    print(mj['motion_objects'])
    print(mj['hd_motion_objects'])
-  
    good_sd_meteors = [] 
    good_hd_meteors = []
    for obj in mj['motion_objects']:
@@ -11272,11 +11279,7 @@ def save_final_meteor(meteor_file):
       if mj['hd_motion_objects'][obj]['report']['meteor_yn'] == "Y":
          good_hd_meteors.append(mj['hd_motion_objects'][obj])
    status = 1
-   #status, good_sd_meteors, good_hd_meteors = final_meteor_test(mj)
 
-   print(status)
-   print(good_sd_meteors)
-   print(good_hd_meteors)
    if len(good_sd_meteors) != 1 and len(good_hd_meteors) != 1:
       nometeor_file = meteor_file.replace("-meteor.json", "-nometeor.json")
       cmd = "mv " + meteor_file + " " + nometeor_file
@@ -11312,17 +11315,30 @@ def save_final_meteor(meteor_file):
       if meteor['report']['meteor_yn'] == 'Y' or len(meteor['report']['bad_items']) < 3:
          real_meteors.append(meteor)
    if len(real_meteors) == 0:
+      for meteor in hd_meteors:
+         print(meteor)
+         if meteor['report']['meteor_yn'] == 'Y' or len(meteor['report']['bad_items']) < 3:
+            real_meteors.append(meteor)
+
+   
+
+   if len(real_meteors) == 0:
       print("No real meteors here. WTF!? MV meteor.json file to -nometeor.json")
+      for obj in mj['motion_objects']:
+         print("METEOR?", mj['motion_objects'][obj])
       nmf = meteor_file.replace("-meteor.json", "-nometeor.json")
       cmd = "mv " + meteor_file + " " + nmf
       print(cmd)
       #os.system(cmd)
-      print("SD METEOR:", real_meteors)
-      print("HD METEOR:", hd_meteors)
       return()
 
    print("SD METEOR:", real_meteors)
    print("HD METEOR:", hd_meteors)
+   if len(sd_meteors) == 0 and len(hd_meteors) >= 1:
+      sd_meteors = hd_meteors
+      
+   if len(hd_meteors) == 0 and len(sd_meteors) >= 1:
+      hd_meteors = sd_meteors
 
    # if we made it this far we have a real meteor so lets finish it up. 
    if len(hd_meteors) > 0 : 

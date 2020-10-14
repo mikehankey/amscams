@@ -188,8 +188,17 @@ def fireball(video_file, json_conf):
       y = best_meteor['oys'][i]
       w = best_meteor['ows'][i]
       h = best_meteor['ohs'][i]
+      cx = x + int(w/2)
+      cy = y + int(h/2)
+      lim = 50
+      if w > lim:
+         lim = w + 10
+      if h > lim:
+         lim = h + 10
+      rx1,ry1,rx2,ry2 = bound_cnt(cx, cy,1920,1080, lim)
       
       cv2.rectangle(img, (x, y), (x+w, y+h), (255,0,0), 1, cv2.LINE_AA)
+      cv2.rectangle(img, (rx1, ry1), (rx2, ry2), (128,0,0), 1, cv2.LINE_AA)
 
       sframe = cv2.resize(img, (1280, 720))
       desc = "Frame:" + str(fn)
