@@ -10,6 +10,7 @@ from datetime import datetime as dt
 import datetime
 #import math
 import os
+from lib.PipeAutoCal import fn_dir
 from lib.PipeVideo import ffmpeg_splice, find_hd_file, load_frames_fast, find_crop_size, ffprobe
 from lib.PipeUtil import load_json_file, save_json_file, cfe, get_masks, convert_filename_to_date_cam, buffered_start_end, get_masks, compute_intensity , bound_cnt
 from lib.DEFAULTS import *
@@ -86,9 +87,128 @@ def best_thresh(img, thresh, i=0):
          thresh = 200
    return(thresh)
 
+def verify_meteor(meteor_file, json_conf):
+   fn, dir = fn_dir(meteor_file)
+   base = fn.split("-")[0]
+   day = fn[0:10]
+   sd_dir = "/mnt/ams2/SD/proc2/" + day + "/" 
+   files = glob.glob(sd_dir + base + "*trim*.mp4")
+   print(files)
+   media = {}
+   for file in files:
+      w,h,frames = ffprobe(file)
+      media[file] = (w,h,frames)
+
+   meteors = {}
+   SD = 0
+   sd_stack_img = None
+   hd_stack_img = None
+   sd_images = {}
+   hd_images = {}
+   for file in media:
+      if "crop" not in file and "HD" not in file:
+         print(file, media[file])
+         best_meteor,sd_stack_img = fireball(file, json_conf)
+         if best_meteor is not None:
+            sd_images[file] = sd_stack_img
+            meteors[file] = best_meteor
+            SD = 1
+   if len(meteors) == 0:
+      print("Sorry we found no meteors here.")
+      return(None)
+
+   # if we made it this far we have at least found the meteor in one file
+   # lets check the HD files to see if we have a meteor there too
+   HD = 0
+   for file in media:
+      if "HD" in file and "crop" not in file:
+         best_meteor = fireball(file, json_conf)
+         if best_meteor is not None:
+            best_meteor, hd_stack_img = fireball(file, json_conf)
+            if best_meteor is not None:
+               hd_images[file] = hd_stack_img
+               meteors[file] = best_meteor
+               HD = 1
+
+   for file in sd_images:
+      print("SD IMGS:", file) 
+      cv2.imshow('pepe', sd_images[file])
+   for file in hd_images:
+      print("HD IMGS:", file) 
+      cv2.imshow('pepe', hd_images[file])
+
+   for file in meteors:
+      print(file, meteors[file])
+
+
+   if SD == 1 and HD == 1:
+      print("WIN! we have SD and HD meteors.")
+   if SD == 0 and HD == 1:
+      print("we have only HD meteors.")
+   if SD == 1 and HD == 0:
+      print("we have only SD meteors.")
+   for file in meteors:
+      print("METEOR:", file, media[file])
+      print(meteors[file])
+   save_old_meteor(meteors, media, sd_images, hd_images)
+
+def save_old_meteor(meteors, media, sd_images, hd_images):
+   for key in sd_images:
+      print("SD IMG:", key)
+   for key in hd_images:
+      print("HD IMG:", key)
+   mj = {}
+   for file in meteors:
+      if meteors[file] is None:
+         continue
+      fn, dir = fn_dir(file)
+      date = fn[0:10]
+      mdir = "/mnt/ams2/meteors/" + date + "/" 
+      w,h,num_frames = media[file]
+      print("WH:", w, h)
+      if int(w) == 1920:
+         HD = 1
+         mj['hd_trim'] = mdir + fn
+         mj['hd_video_file'] = mdir + fn 
+         mj['hd_stack'] = mdir + fn.replace(".mp4", "-stacked.jpg")
+         mj['hd_objects'] = meteors[file]
+         mj['meteor'] = 1
+         mj['archive_file'] = ""
+         hd_stack_img = hd_images[file]
+      else:
+         SD = 1
+         mj['sd_trim'] = mdir + fn 
+         mj['archive_file'] = ""
+         mj['sd_video_file'] = mdir + fn 
+         mj['trim_clip'] = mdir + fn 
+         mj['sd_stack'] = mdir + fn.replace(".mp4", "-stacked.jpg")
+         mj['sd_objects'] = meteors[file]
+         print("FILE:", file)
+         sd_stack_img = sd_images[file]
+   print(mj)
+   fn,dir = fn_dir(mj['sd_trim'])
+   date = fn[0:10]
+   mdir = "/mnt/ams2/meteors/" + date + "/" 
+   js = fn.replace(".mp4", ".json")
+   save_json_file(js, mj)
+   # copy vids
+   if "sd_trim" in mj:
+      cmd = "cp " + mj['sd_trim'] + " " + mdir
+      os.system(cmd)
+      print(sd_stack_img.shape)
+      print(mj['sd_stack'])
+      cv2.imwrite(mj['sd_stack'], sd_stack_img)
+   if "hd_trim" in mj:
+      cmd = "cp " + mj['hd_trim'] + " " + mdir
+      os.system(cmd)
+      cv2.imwrite(mj['hd_stack'], hd_stack_img)
+   print("Saved json:", js)
+
+
+
 def fireball(video_file, json_conf):
    objects = {}
-   hd_frames,hd_color_frames,subframes,sum_vals,max_vals,pos_vals = load_frames_fast(video_file, json_conf, 0, 0, [], 1,[])
+   hd_frames,hd_color_frames,subframes,sum_vals,max_vals,pos_vals = load_frames_fast(video_file, json_conf, 0, 0, 1, 1,[])
    i = 0
    med_file = video_file.replace(".mp4", "-med.jpg")
    if cfe(med_file) == 0:
@@ -155,7 +275,7 @@ def fireball(video_file, json_conf):
          desc = str(sum_vals[i]) + " " + str(max_vals[i]) + " " + str(pos_vals[i]) + " " + str(len(cnts))
          cv2.putText(sframe, desc,  (10,70), cv2.FONT_HERSHEY_SIMPLEX, .4, (255, 255, 255), 1)
          cv2.imshow('pepe', sframe)
-         cv2.waitKey(0)
+         cv2.waitKey(30)
          i += 1
 
    m = 0
@@ -177,7 +297,13 @@ def fireball(video_file, json_conf):
 
    if m > 1:
       best_meteor = dom_meteor(meteors, json_conf)
+   if m == 1:
+      best_meteor = meteors[0]
+   else: 
+      best_meteor = None
    print("DONE:", best_meteor)
+   if best_meteor is None:
+      return(None, None)
 
    # draw cnts on image 
    for i in range(0, len(best_meteor['oxs'])):
@@ -204,7 +330,13 @@ def fireball(video_file, json_conf):
       desc = "Frame:" + str(fn)
       cv2.putText(sframe, desc,  (10,20), cv2.FONT_HERSHEY_SIMPLEX, .4, (255, 255, 255), 1)
       cv2.imshow('pepe', sframe)
-      cv2.waitKey(0)
+      cv2.waitKey(30)
+
+   stack_img = stack_frames(hd_color_frames)
+   cv2.imshow('pepe', stack_img)
+   cv2.waitKey(60)
+
+   return(best_meteor, stack_img)
 
 
 def dom_meteor(meteors, json_conf):
