@@ -29,6 +29,71 @@ from matplotlib.figure import Figure
 from lib.DEFAULTS import *
 print(TL_IMAGE_DIR)
 
+def hourly_stacks_html(date, json_conf):
+   work_dir = "/mnt/ams2/SD/proc2/" + date + "/images/"
+   night_stack_dir = "/mnt/ams2/meteor_archive/" + STATION_ID + "/STACKS/" + date + "/"
+   hour_files = glob.glob(night_stack_dir + "*.jpg")
+   html_data = {}
+ 
+   night_images = {}
+   
+   cam_ids = []
+   for cam_num in json_conf['cameras']:
+      cams_id = json_conf['cameras'][cam_num]['cams_id']
+      cam_ids.append(cams_id)
+  
+   for id in cam_ids:
+      night_images[id] = [] 
+
+   for file in sorted(hour_files, reverse=True):
+      print(file)
+      fn, dir = fn_dir(file)
+      if "night" not in file:
+         el = fn.split("_")
+         hour = el[3]
+         cam = el[4].replace(".jpg", "")
+         if hour not in html_data:
+            html_data[hour] = {}
+         html_data[hour][cam] = file
+
+   html = "<table>"
+   for h in range(0,24):
+      hour = 23 - h
+      hk =  '{:02d}'.format(int(hour))
+      html += "<tr>"
+      if hk in html_data:
+        
+         for cid in sorted(cam_ids):
+            if cid in html_data[hk]:
+               print("DATA:", html_data[hk][cid])
+               img = cv2.imread(html_data[hk][cid])
+               night_images[cid].append(img)
+               html += "<td><img src=" + html_data[hk][cid] + "></td>"
+              
+            else:
+               print("Missing data for cam hour", cid, hk)
+      else:
+         print("No data for hour")     
+      html += "</tr>"
+
+   html += "</table>"
+   for cam_id in night_images:
+      night_stack_image = stack_frames(night_images[cam_id])
+      night_stack_file = "/mnt/ams2/SD/proc2/" + date + "/images/" + cam_id + "-night-stack.png"
+      night_stack_file_jpg = "/mnt/ams2/meteor_archive/" + STATION_ID + "/STACKS/" + date + "/" + cam_id + "-night-stack.jpg"
+      if night_stack_image is not None:
+         cv2.imwrite(night_stack_file, night_stack_image)
+         cv2.imwrite(night_stack_file_jpg, night_stack_image)
+         print(night_stack_file_jpg)
+      else:
+         print("Problem")
+
+      print(night_stack_file)
+
+   fp = open(night_stack_dir + "hours.html", "w")
+   fp.write(html)
+   fp.close()
+   print(night_stack_dir + "hours.html")
 def hourly_stacks(date, json_conf):
    hour_data = {}
    night_stack_dir = "/mnt/ams2/meteor_archive/" + STATION_ID + "/STACKS/" + date + "/"
@@ -55,9 +120,13 @@ def hourly_stacks(date, json_conf):
             im = cv2.imread(file)
             images.append(im)
          hour_stack_image = stack_frames(images)
-         hour_stack_file = night_stack_dir + fy + "_" + fm + "_" + fd + "_" + fh + "_" + cam + ".jpg"
-         cv2.imwrite(hour_stack_file, hour_stack_image)
-         print(hour_stack_file)
+         if hour_stack_image is not None:
+            hour_stack_file = night_stack_dir + fy + "_" + fm + "_" + fd + "_" + hour + "_" + cam + ".jpg"
+            print(hour_stack_file, hour_stack_image.shape)
+            cv2.imwrite(hour_stack_file, hour_stack_image)
+         else:
+            print("Data for Hour missing!")
+   hourly_stacks_html(date, json_conf)
 
 def tl_list(wild_dir, cam, fps = 25, json_conf=None, auonly = 1):
     files = glob.glob(wild_dir + "*" + cam + "*.jpg")

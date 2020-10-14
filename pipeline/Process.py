@@ -8,7 +8,7 @@ from lib.PipeProcess import run_jobs
 from datetime import datetime
 import datetime as dt
 
-from lib.PipeWeather import detect_clouds , make_flat, track_clouds, solar_info, audit_tl, detect_aurora, batch_aurora, aurora_report, aurora_stack_vid, tl_list, aurora_tl,  hourly_stacks
+from lib.PipeWeather import detect_clouds , make_flat, track_clouds, solar_info, audit_tl, detect_aurora, batch_aurora, aurora_report, aurora_stack_vid, tl_list, aurora_tl,  hourly_stacks, hourly_stacks_html
 from lib.PipeImage import quick_video_stack
 from lib.PipeTrans import trans_test 
 from lib.PipeManager import mln_report, mln_best, best_of , copy_super_stacks, super_stacks_to_video, multi_station_meteors, proc_status
@@ -389,4 +389,6 @@ if __name__ == "__main__":
       aurora_tl(sys.argv[2],sys.argv[3], json_conf)
    if cmd == "hs":
       hourly_stacks(sys.argv[2], json_conf)
+   if cmd == "hsh":
+      hourly_stacks_html(sys.argv[2], json_conf)
    
