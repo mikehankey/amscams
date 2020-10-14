@@ -11160,8 +11160,9 @@ def verify_meteor(meteor_json_file):
          else:
             print("Something wierd? Maybe a bird", len(sd_meteors), len(hd_meteors))
             print("No real meteors found here.")
-            print(sd_motion_objects)
-
+            print("HD:", hd_motion_objects)
+            print("SD:", sd_motion_objects)
+            
             # mv the maybe file to detect so we don't try to check it again. 
             detect_file = detect_file.replace("-detect.json", "-nometeor.json")
             os.system("mv " + meteor_json_file + " " + detect_file)
