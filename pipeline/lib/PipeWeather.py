@@ -295,6 +295,9 @@ def aurora_report(date, json_conf):
       cmd = "/usr/bin/ffmpeg -r " + str(frate) + " -f concat -safe 0 -i " + list_file + " -c:v libx264 -pix_fmt yuv420p -vf 'scale=" + str(ow) + ":" + str(oh) + "' -y " + outfile 
    else:
       print("No aurora detected.")
+      fn, dir = fn_dir(outfile)
+      os.system(("rm -rf " + dir))
+      return()
    #os.system(cmd)
    print(outfile)
    print(list_file)
