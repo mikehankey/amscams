@@ -1,4 +1,5 @@
-def find_object(objects, fn, cnt_x, cnt_y, cnt_w, cnt_h, intensity=0, hd=0, sd_multi=1, cnt_img=None ):
+from lib.UtilLib import calc_dist
+def find_object(objects, fn, cnt_x, cnt_y, cnt_w, cnt_h, intensity=0, hd=0, sd_multi=1, cnt_img=None ,classify=1):
    print("*** FIND OBJ START")
    matched = {}
    if hd == 1:
@@ -122,5 +123,32 @@ def find_object(objects, fn, cnt_x, cnt_y, cnt_w, cnt_h, intensity=0, hd=0, sd_m
 
    return(found_obj, objects)
 
+
+def min_cnt_dist(x,y,w,h,tx,ty,tw,th):
+   ds = []
+   ctx = tx+int(tw/2)
+   cty = ty+int(th/2)
+   cx = x+int(w/2)
+   cy = y+int(h/2)
+   dist = calc_dist((x,y), (tx,ty))
+   ds.append(dist)
+   dist = calc_dist((x,y), (tx+tw,ty+th))
+   ds.append(dist)
+   dist = calc_dist((x+w,y+h), (tx,ty))
+   ds.append(dist)
+   dist = calc_dist((x+w,y+h), (tx+tw,ty+th))
+   ds.append(dist)
+   dist = calc_dist((cx,cy), (ctx,cty))
+   ds.append(dist)
+   dist = calc_dist((x,y), (ctx,cty))
+   ds.append(dist)
+   dist = calc_dist((x+w,y), (ctx,cty))
+   ds.append(dist)
+   dist = calc_dist((x,y+h), (ctx,cty))
+   ds.append(dist)
+   dist = calc_dist((x+w,y+h), (ctx,cty))
+   ds.append(dist)
+   print("DISTS:", sorted(ds))
+   return(min(ds))
 
 

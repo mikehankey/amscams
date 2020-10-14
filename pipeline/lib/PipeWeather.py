@@ -29,6 +29,36 @@ from matplotlib.figure import Figure
 from lib.DEFAULTS import *
 print(TL_IMAGE_DIR)
 
+def stack_index(json_conf):
+   cam_ids = []
+   for cam_num in json_conf['cameras']:
+      cams_id = json_conf['cameras'][cam_num]['cams_id']
+      cam_ids.append(cams_id)
+   night_stack_dir = "/mnt/ams2/meteor_archive/" + STATION_ID + "/STACKS/" 
+   day_dirs = glob.glob(night_stack_dir + "*")
+   html = "<table>"
+   for day_dir in sorted(day_dirs, reverse=True):
+      if cfe(day_dir, 1) == 0:
+         continue
+      html += "<tr>"
+      fn, dir = fn_dir(day_dir)
+      date = fn
+      html += "<td>" + date + "</td>"
+      for cam in sorted(cam_ids):
+         file= day_dir + "/" + cam + "-night-stack.jpg"
+         if cfe(file) == 1:
+            url = day_dir + "/hours.html"
+            
+            html += "<td><a href=" + url + "><img src=" + file + "></a></td>"  
+         else:
+            html += "<td>" + " " + "</td>"  
+      html += "</tr>"
+   html += "</table>"
+   fp = open(night_stack_dir + "all.html", "w")
+   fp.write(html)
+   fp.close()
+
+
 def hourly_stacks_html(date, json_conf):
    work_dir = "/mnt/ams2/SD/proc2/" + date + "/images/"
    night_stack_dir = "/mnt/ams2/meteor_archive/" + STATION_ID + "/STACKS/" + date + "/"
@@ -68,7 +98,8 @@ def hourly_stacks_html(date, json_conf):
                print("DATA:", html_data[hk][cid])
                img = cv2.imread(html_data[hk][cid])
                night_images[cid].append(img)
-               html += "<td><img src=" + html_data[hk][cid] + "></td>"
+               link = "/pycgi/webUI.py?cmd=browse_day&cams_id=" + cid + "&day=" + str(date) + "&hour=" + str(hour)
+               html += "<td><a href=" + link + "><img src=" + html_data[hk][cid] + "></a></td>"
               
             else:
                print("Missing data for cam hour", cid, hk)
@@ -94,6 +125,7 @@ def hourly_stacks_html(date, json_conf):
    fp.write(html)
    fp.close()
    print(night_stack_dir + "hours.html")
+   stack_index(json_conf)
 def hourly_stacks(date, json_conf):
    hour_data = {}
    night_stack_dir = "/mnt/ams2/meteor_archive/" + STATION_ID + "/STACKS/" + date + "/"
