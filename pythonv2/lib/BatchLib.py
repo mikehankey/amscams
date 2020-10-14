@@ -501,7 +501,7 @@ def stack_day_cam_all(json_conf, glob_dir, cams_id ):
    print ("stacking failures")
    # stack failed captures
    img_dir = glob_dir + "/images/"
-   f_glob_dir = glob_dir + "/images/*" + cams_id + "*-stacked-tn.png"
+   f_glob_dir = glob_dir + "/images/*" + cams_id + "*-stacked-tn*"
    out_file = img_dir + cams_id + "-night-stack.png"
 
 

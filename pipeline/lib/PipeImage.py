@@ -62,7 +62,11 @@ def stack_frames(frames, skip = 1, resize=None, sun_status="night"):
    stacked_image = None
    fc = 0
    for frame in frames:
-      if True:
+      avg_px = np.mean(frame)
+      go = 1
+      if sun_status == 'night' and avg_px >= 70:
+         go = 0
+      if go == 1:
          if resize is not None:
             frame = cv2.resize(frame, (resize[0],resize[1]))
          if fc % skip == 0:
@@ -72,7 +76,10 @@ def stack_frames(frames, skip = 1, resize=None, sun_status="night"):
             else:
                stacked_image = stack_stack(stacked_image, frame_pil)
       fc = fc + 1
-   return(np.asarray(stacked_image))
+   if stacked_image is None:
+      return(None)
+   else:
+      return(np.asarray(stacked_image))
 
 
 def stack_frames_fast(frames, skip = 1, resize=None, sun_status="night", sum_vals=[]):

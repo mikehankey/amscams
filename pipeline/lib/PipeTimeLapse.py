@@ -495,7 +495,18 @@ def audit_min(date, json_conf):
             #   print("DID INTS.", hour, minute,  data[hour][minute][cam]['sum_int'],  data[hour][minute][cam]['avg_int'])
 
    save_json_file(data_file, data)
-   html = ""
+   html = """
+   <script>
+   function show_hide(div_id) {
+      var x = document.getElementById(div_id);
+      if (x.style.display === "none") {
+         x.style.display = "block";
+      } else {
+         x.style.display = "none";
+      }
+   }
+   </script>
+   """
    # find uptime
    updata = {}
    uptime_percs = []
@@ -524,7 +535,10 @@ def audit_min(date, json_conf):
             tot_m = 60
          uptime_perc = str((updata[hour]['tfiles'] / (tot_m*total_cams*2) * 100))[0:5]
          uptime_percs.append((hour,uptime_perc)) 
-         html += " " + str(updata[hour]['tfiles']) + " files of " +  str(tot_m*total_cams*2) + " expected. " + uptime_perc + "% uptime <table border=1>"
+         html += " " + str(updata[hour]['tfiles']) + " files of " +  str(tot_m*total_cams*2) + " expected. " + uptime_perc + "% uptime "
+         div_id = str(r_hour)
+         html += "<div id='" + div_id + "' style='display: none'>"
+         html += "<table border=1>"
          for r_min in range(0,60):
             s_min = 59 - r_min 
             if s_hour == limit_h and s_min >= limit_m:
@@ -560,6 +574,8 @@ def audit_min(date, json_conf):
                html += "</td>"
             html += "</tr>"
          html += "</table>"
+         html += "</div>"
+         html += "<a href=\"javascript: show_hide('" + div_id + "')\">Show/Hide " + div_id + "</a>" + str(data[hs][ms][cam]['sun']) + "<br>"
 
    html_file = data_file.replace(".json", ".html")
    out = open(html_file, "w")
@@ -641,23 +657,27 @@ def multi_cam_tl(date):
 
 def make_tl_html():
    print("MAKE HTML")
-   html = "<h1>Stacked Multi Camera Time Lapse for " + STATION_ID + "</h1>"      
+   html = "<h1>Time Lapse and Audits for " + STATION_ID + "</h1>"      
    html += "<p>Last updated:" + datetime.now().strftime("%Y_%m_%d") + "</p><ul>"
    vids = glob.glob(TL_VIDEO_DIR + "*.mp4")
    for vid in sorted(vids,reverse=True):
       
       vid_fn, vdir = fn_dir(vid)
       vid_desc = vid_fn[0:10]
-      html += "<li><a href=" + vid_fn + ">" + vid_desc + "</a></li>"
+      audit_fn = vid_fn.replace("_row_tl.mp4", "-audit.html")
+      html += "<li>" + vid_desc + " - <a href=" + vid_fn + ">" + " Row Timelapse</a>" + " - <a href=" + audit_fn + ">Audit</a></li>"
    html += "</ul>"
    oo = open(TL_VIDEO_DIR + "index.html", "w")
    oo.write(html)
    oo.close()
    print("saved:", TL_VIDEO_DIR + "index.html")
-   TL_CLOUD_FILE = "/mnt/archive.allsky.tv/" + STATION_ID + "/TL/VIDS/index.html"
-   oo = open(TL_CLOUD_FILE, "w")
-   oo.write(html)
-   oo.close()
+   try:
+      TL_CLOUD_FILE = "/mnt/archive.allsky.tv/" + STATION_ID + "/TL/VIDS/index.html"
+      oo = open(TL_CLOUD_FILE, "w")
+      oo.write(html)
+      oo.close()
+   except:
+      print("Cloud drive not connected.")
    
 
 def make_multi_cam_frame(frame, TID):
@@ -804,17 +824,17 @@ def tn_tl6(date,json_conf):
    new = 0
    cam_id_info, cam_num_info = load_cam_info(json_conf)
 
-
+   row_files = glob.glob(TL_PIC_DIR + "*row.png")
    for key in sorted(matrix.keys()):
       row_file = TL_PIC_DIR + key + "-row.png"
       row_file_tmp = TL_PIC_DIR + key + "-row_lr.jpg"
       redo = 0
-      if cfe(row_file) == 1:
+      if row_file in row_files:
          fs = os.stat(row_file)
          fsize = fs.st_size
          if fsize < 4000:
             redo = 1
-      if cfe(row_file) == 0 or redo == 1:
+      if row_file in row_files or redo == 1:
       #if True:
          if redo == 1:
             print("REDO!")

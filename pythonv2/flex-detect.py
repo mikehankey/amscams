@@ -684,7 +684,8 @@ def calc_seg_len(data):
    sc = 0
    for seg in segs:
       diff = abs(seg - data['med_seg'])
-      if data['med_seg'] > 0 and sc > 0:
+      if data['med_seg'] > 0 and sc > 0 and seg != 0:
+         #print("SEG:", seg, data['med_seg']) 
          diff_diff = seg / data['med_seg']
          if diff_diff > 2 or diff_diff < .5:
             bad_segs += 1
@@ -5268,7 +5269,11 @@ def analyze_object(object, hd = 0, sd_multi = 1, final=0):
          bad_items.append("short distance, many gaps, low cm")
 
    if meteor_yn == "Y" and final == 1:
-      if max_cm - elp < -30:
+      if max_cm > 0:
+         elp_cm_perc = elp / max_cm
+      else:
+         elp_cm_perc = 0
+      if elp_cm_perc < .5:
          meteor_yn = "no"
          obj_class = "plane"
          bad_items.append("to many elp frames compared to cm.")
@@ -6796,18 +6801,21 @@ def log_import_errors(video_file, message):
 def only_meteors(objects, best_one=0):
    meteors = []
    for obj in objects:
+      print("ONLY:", objects[obj]['report']['meteor_yn'] )
       if objects[obj]['report']['meteor_yn'] == "Y":
          meteors.append(objects[obj])
 
+   print("METEORS:", len(meteors))
    if len(meteors)  > 1: 
       nm = []
       for m in meteors:
+         print("CLASS:", m['report']['classify'])
          if m['report']['classify']['meteor_yn'] == "Y":
             #print(m['ofns'])
             #print(m)
             nm.append(m)
       meteors = nm
-
+   print("METEORS:", meteors)
    return(meteors)
 
 def refine_sync(sync_diff, sd_object, hd_object, hd_frame, sd_frame):
@@ -10888,6 +10896,7 @@ def verify_toomany_detects(day=None):
    print("Verify too many.")
    if day == None:
       return("pass day!")
+   print("/mnt/ams2/SD/proc2/" + day + "/data/*toomany.json")
    files = glob.glob("/mnt/ams2/SD/proc2/" + day + "/data/*toomany.json")
    for file in files:
       nm = file.replace("toomany", "nometeor")
@@ -10904,14 +10913,22 @@ def verify_toomany_detects(day=None):
          print(cmd)
          os.system(cmd)
       else:
+         print("VERIFY:", file)
          verify_toomany(file)
      
 
 def verify_toomany(file):
-   js = load_json_file(file)
+   js = load_json_file(file) 
+   for obj in js['objects']:
+      fr = len(js['objects'][obj]['oxs'])
+      if fr > 5:
+         js['objects'][obj]['report']['classify'] = classify_object(js['objects'][obj], sd=1)
+         print("REPORT:", js['objects'][obj])
+
    if js != 0:
 
       meteors = only_meteors(js['objects'])
+      print("METEORS:", len(meteors))
       if len(meteors) > 0:
          print("Total Events: ", len(js['events']))
          print("Total Objects: ", len(js['objects']))

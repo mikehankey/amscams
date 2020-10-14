@@ -2875,12 +2875,14 @@ def browse_day(day,cams_id,json_conf,form):
    cc = 0
    all_files = []
    for base_file in sorted(day_files,reverse=True):
-      all_files.append(base_file)
+      fn = base_file.split("/")[-1]
+      all_files.append((base_file,fn))
+   all_files = sorted(all_files, key=lambda x: x[1], reverse=True)
  
    #Get CAM IDs from drop_dow & Javascript
    all_cam_ids = get_the_cam_ids() 
 
-   print("<div class='h1_holder d-flex justify-content-between'><h1><span class='h'><span id='meteor_count'>"+format(len(day_files))+"</span> detections</span> on")
+   print("<div class='h1_holder d-flex justify-content-between'><h1><span class='h'><span id='meteor_count'>"+format(len(day_files))+"</span> minute clips</span> on")
    print("<input value='"+str(day.replace("_", "/"))+"' type='text' data-display-format='YYYY/MM/DD' data-action='reload' data-url-param='limit_day' data-send-format='YYYY_MM_DD' class='datepicker form-control'>")
    print(" by Cam #")
    
@@ -2893,7 +2895,13 @@ def browse_day(day,cams_id,json_conf,form):
             sel=''
       print('<option value="'+ccam_id+'" '+sel+'>'+ccam_id+'</option>')
    print("</select>") 
-   print("<select id='sun' class='cam_picker' data-url-param='sun' ><option value='0' selected>Night</option><option value='1'>Day</select></h1>")
+   print("<select id='sun' class='cam_picker' data-url-param='sun' >")
+   if str(sun) == '0': 
+      print("<option value='0' selected>Night</option>")
+      print("<option value='1'>Day</select></h1>")
+   else:
+      print("<option value='0' >Night</option>")
+      print("<option value='1' selected>Day</select></h1>")
    
    print("<div class='d-flex'><!--<a class='btn btn-primary mr-3' href='/pycgi/webUI.py?cmd=video_tools' style='text-transform: initial;'><span class='icon-youtube'></span> Generate Timelapse Video</a>--><button class='btn btn-primary' id='play_anim_thumb' style='text-transform: initial;'><span class='icon-youtube'></span> Timelapse Preview</button></div></div>") 
   
@@ -2904,12 +2912,12 @@ def browse_day(day,cams_id,json_conf,form):
    print("<input type='hidden' name='cur_date' value='"+str(day)+"'/>")
 
 
-   for base_file in sorted(day_files,reverse=True):
-
+   for base_file,fn in all_files:
+      #print(base_file)
       if cc + 1 < len(day_files) - 2:
-         next_stack_file = all_files[cc+1]
+         next_stack_file = all_files[cc+1][0]
       else:
-         next_stack_file = all_files[cc] 
+         next_stack_file = all_files[cc][0] 
       
       video_file = base_file + ".mp4"
       stack_file = stack_file_from_video(video_file)

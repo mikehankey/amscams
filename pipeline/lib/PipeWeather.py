@@ -16,10 +16,12 @@ from lib.PipeAutoCal import get_best_cal, get_cal_files, fn_dir
 
 #import math
 import os
-from lib.PipeVideo import ffmpeg_splice, find_hd_file, load_frames_fast, find_crop_size, ffprobe
+from lib.PipeAutoCal import fn_dir
+from lib.PipeVideo import ffmpeg_splice, find_hd_file, load_frames_fast, find_crop_size, ffprobe, load_frames_simple
 from lib.PipeUtil import load_json_file, save_json_file, cfe, get_masks, convert_filename_to_date_cam, buffered_start_end, get_masks, compute_intensity , bound_cnt, day_or_night, calc_dist
 from lib.DEFAULTS import *
 import glob
+from lib.PipeImage import stack_frames
 
 from matplotlib import pyplot as plt
 from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
@@ -27,12 +29,257 @@ from matplotlib.figure import Figure
 from lib.DEFAULTS import *
 print(TL_IMAGE_DIR)
 
+def hourly_stacks_html(date, json_conf):
+   work_dir = "/mnt/ams2/SD/proc2/" + date + "/images/"
+   night_stack_dir = "/mnt/ams2/meteor_archive/" + STATION_ID + "/STACKS/" + date + "/"
+   hour_files = glob.glob(night_stack_dir + "*.jpg")
+   html_data = {}
+ 
+   night_images = {}
+   
+   cam_ids = []
+   for cam_num in json_conf['cameras']:
+      cams_id = json_conf['cameras'][cam_num]['cams_id']
+      cam_ids.append(cams_id)
+  
+   for id in cam_ids:
+      night_images[id] = [] 
+
+   for file in sorted(hour_files, reverse=True):
+      print(file)
+      fn, dir = fn_dir(file)
+      if "night" not in file:
+         el = fn.split("_")
+         hour = el[3]
+         cam = el[4].replace(".jpg", "")
+         if hour not in html_data:
+            html_data[hour] = {}
+         html_data[hour][cam] = file
+
+   html = "<table>"
+   for h in range(0,24):
+      hour = 23 - h
+      hk =  '{:02d}'.format(int(hour))
+      html += "<tr>"
+      if hk in html_data:
+        
+         for cid in sorted(cam_ids):
+            if cid in html_data[hk]:
+               print("DATA:", html_data[hk][cid])
+               img = cv2.imread(html_data[hk][cid])
+               night_images[cid].append(img)
+               html += "<td><img src=" + html_data[hk][cid] + "></td>"
+              
+            else:
+               print("Missing data for cam hour", cid, hk)
+      else:
+         print("No data for hour")     
+      html += "</tr>"
+
+   html += "</table>"
+   for cam_id in night_images:
+      night_stack_image = stack_frames(night_images[cam_id])
+      night_stack_file = "/mnt/ams2/SD/proc2/" + date + "/images/" + cam_id + "-night-stack.png"
+      night_stack_file_jpg = "/mnt/ams2/meteor_archive/" + STATION_ID + "/STACKS/" + date + "/" + cam_id + "-night-stack.jpg"
+      if night_stack_image is not None:
+         cv2.imwrite(night_stack_file, night_stack_image)
+         cv2.imwrite(night_stack_file_jpg, night_stack_image)
+         print(night_stack_file_jpg)
+      else:
+         print("Problem")
+
+      print(night_stack_file)
+
+   fp = open(night_stack_dir + "hours.html", "w")
+   fp.write(html)
+   fp.close()
+   print(night_stack_dir + "hours.html")
+def hourly_stacks(date, json_conf):
+   hour_data = {}
+   night_stack_dir = "/mnt/ams2/meteor_archive/" + STATION_ID + "/STACKS/" + date + "/"
+   if cfe(night_stack_dir, 1) == 0:
+      os.makedirs(night_stack_dir)
+   work_dir = "/mnt/ams2/SD/proc2/" + date + "/images/"
+   for cam_num in json_conf['cameras']:
+      cams_id = json_conf['cameras'][cam_num]['cams_id']
+      if cams_id not in hour_data:
+         hour_data[cams_id] = {}
+      wild = work_dir + "*" + cams_id + "*-tn*"
+      files = glob.glob(wild)
+      for file in sorted(files):
+         (f_datetime, cam, f_date_str,fy,fm,fd, fh, fmin, fs) = convert_filename_to_date_cam(file)
+         if fh not in hour_data[cam]:
+            hour_data[cam][fh] = {} 
+            hour_data[cam][fh]['files'] = []
+         hour_data[cam][fh]['files'].append(file)
+   for cam in hour_data:
+      for hour in hour_data[cam]:
+         images = []
+         files = hour_data[cam][hour]['files']
+         for file in files:
+            im = cv2.imread(file)
+            images.append(im)
+         hour_stack_image = stack_frames(images)
+         if hour_stack_image is not None:
+            hour_stack_file = night_stack_dir + fy + "_" + fm + "_" + fd + "_" + hour + "_" + cam + ".jpg"
+            print(hour_stack_file, hour_stack_image.shape)
+            cv2.imwrite(hour_stack_file, hour_stack_image)
+         else:
+            print("Data for Hour missing!")
+   hourly_stacks_html(date, json_conf)
+
+def tl_list(wild_dir, cam, fps = 25, json_conf=None, auonly = 1):
+    files = glob.glob(wild_dir + "*" + cam + "*.jpg")
+    list = ""
+    dur = 1/ int(fps)
+    for file in files: 
+       if auonly == 1 and "-tl.jpg" in file:
+          foo = 1
+       else:
+          list += "file '" + file + "'\n"
+          list += "duration " + str(dur) + "\n"
+
+    list_file = wild_dir + "/" + cam + "_list.txt"
+    out_file = wild_dir + "/" + cam + ".mp4"
+    fp = open(list_file, "w")
+    fp.write(list)
+    ow = 640
+    oh = 360
+    cmd = "/usr/bin/ffmpeg -r " + str(fps) + " -f concat -safe 0 -i " + list_file + " -c:v libx264 -pix_fmt yuv420p -vf 'scale=" + str(ow) + ":" + str(oh) + "' -y " + out_file
+    print(cmd)
+    os.system(cmd)
+
+def aurora_tl(date, cam_num, json_conf):
+   frate = 25
+   dur = 1 / frate
+   ow = 640
+   oh = 360
+   print(date,cam_num)
+   afile = TL_DIR + "VIDS/" + date + "-audit.json"
+   ad = load_json_file(afile)
+   OUT_DIR = "/mnt/ams2/meteor_archive/" + STATION_ID + "/TL/AURORA/STACKS/" + date + "/" 
+   cams_id = json_conf['cameras'][cam_num]['cams_id']
+   cam_files = []
+   for hour in ad:
+      for min in ad[hour]:
+
+         #comp = np.zeros((1080,1920,3),dtype=np.uint8)
+         hk =  '{:02d}'.format(int(hour))
+         mk =  '{:02d}'.format(int(min))
+         if True:
+            adata = ad[hour][min][cam_num]
+            stack_file = None
+            snap_file = None
+            #print(adata)
+            if len(adata['stack_file']) > 0:
+               stack_file = adata['stack_file'][0]
+            if len(adata['snap_file']) > 0:
+               snap_file = adata['snap_file'][0]
+            if stack_file is not None:
+               fn,dir = fn_dir(stack_file)
+            if snap_file is not None:
+               fn,dir = fn_dir(snap_file)
+            if stack_file is None and snap_file is None:
+               continue
+            print("FN:", fn)
+            if "-" in fn:
+               root = fn.split("-")[0]
+            else:
+               root = fn.split(".")[0]
+            tl_fn = root + "-tl.jpg"
+
+            tl_file = OUT_DIR + tl_fn
+            print("TL FILE:", tl_file)
+            if cfe(tl_file) == 0:
+               if stack_file is not None and snap_file is not None:
+                  snap_img = cv2.imread(snap_file)
+                  stack_img = cv2.imread(stack_file)
+                  snap_img = cv2.resize(snap_img,(640,360))
+                  stack_img = cv2.resize(stack_img,(640,360))
+                  tl_frame = cv2.addWeighted(snap_img, 0.8, stack_img, 0.2, 0.0)
+                  print("BLEND!")
+               elif snap_file is not None:
+                  snap_img = cv2.resize(snap_img,(640,360))
+                  stack_img = cv2.resize(stack_img,(640,360))
+                  tl_frame = snap_img
+               elif stack_file is not None:
+                  stack_img = cv2.imread(snap_file)
+                  stack_img = cv2.imread(stack_file)
+                  tl_frame = stack_img
+
+               cv2.imwrite(tl_file, tl_frame)
+               print("writing")
+            cam_files.append(tl_file)
+
+   cam_files = glob.glob(OUT_DIR + "*" + cams_id + "*.jpg")
+   print(OUT_DIR + "*" + cams_id + "*.jpg")
+   list = ""
+   fc = 0
+   for file in sorted(cam_files, reverse=False):
+      last_file = cam_files[fc-1]
+      if fc+ 1 < len(cam_files):
+         next_file = cam_files[fc+1]
+      else: 
+         next_file = file
+      if True:
+         list += "file '" + file + "'\n"
+         list += "duration " + str(dur) + "\n"
+      fc += 1
+   list_file = OUT_DIR + "24HOUR_" + STATION_ID + "_" + cam_num + "_list.txt"
+   out_file = OUT_DIR + "24HOUR_" + STATION_ID + "_" + cam_num + "_.mp4"
+   fp = open(list_file, "w")
+   fp.write(list)
+   fp.close()
+
+   cmd = "/usr/bin/ffmpeg -r " + str(frate) + " -f concat -safe 0 -i " + list_file + " -c:v libx264 -pix_fmt yuv420p -vf 'scale=" + str(ow) + ":" + str(oh) + "' -y " + out_file 
+   os.system(cmd)
+   print(list_file)
+   print(out_file)
+
+
 def batch_aurora(json_conf):
    files = glob.glob("au/*.jpg")
    for f in files:
       aur = detect_aurora(f)
       if aur['detected'] == 1:
          print("AURORA DETECTED.")
+
+def aurora_stack_vid(video, json_conf):
+   #stack video frames in 
+   (f_datetime, cam, f_date_str,fy,fm,fd, fh, fmin, fs) = convert_filename_to_date_cam(video)
+   date = fy + "_" + fm + "_" + fd
+
+   sd_frames = load_frames_simple(video)
+   AS_DIR = TL_DIR + "AURORA/STACKS/" + date + "/" 
+   if cfe(AS_DIR, 1) == 0:
+      os.makedirs(AS_DIR)
+
+   root = video.replace(".mp4", "")
+   rfn, dir = fn_dir(root)
+   done_files = glob.glob(AS_DIR + rfn + "*.jpg")
+   print("CHECK:", AS_DIR + rfn + "*.jpg")
+   if len(done_files) > 5:
+      print("ALREADY DONE.")
+      return()
+
+   sd_frames = load_frames_simple(video)
+   fc = 0
+   vid_fn = video.split("/")[-1]
+   stack_fn = vid_fn.replace(".mp4", ".jpg")
+   short_frames = []
+   stack_lim = 10
+   for frame in sd_frames:
+      short_frames.append(frame)
+      if fc % stack_lim == 0 and fc > 0:
+         stack_image = stack_frames(short_frames)
+         short_frames = []
+         num = "{:04d}".format(fc)
+         tfn = stack_fn.replace(".jpg", "-" + str(num) + ".jpg")
+         outfile = AS_DIR + tfn 
+         cv2.imwrite(outfile, stack_image)
+         print(outfile)
+      fc += 1
+
 def aurora_report(date, json_conf):
    cam_nums = json_conf['cameras'].keys()
    afile = TL_DIR + "VIDS/" + date + "-audit.json"
@@ -46,6 +293,7 @@ def aurora_report(date, json_conf):
       os.makedirs(cache_dir)
    list = ""
    html = ""
+   row_file = None
    for hour in ad:
       for min in ad[hour]:
          comp = np.zeros((1080,1920,3),dtype=np.uint8)
@@ -56,12 +304,64 @@ def aurora_report(date, json_conf):
             adata = ad[hour][min][cam_num]
             if "aurora" in adata:
                aud = adata['aurora']
-               if aud['detected'] == 1 and adata['sun'][0] == 'night':
+               if "hist_data" in aud:
+                  hist = aud['hist_data'] 
+                  rg = hist['g'] / hist['r']
+                  bg = hist['g'] / hist['b']
+               else:
+                  rg = 0
+                  bg = 0
+               if "dom_color" in aud:
+                  print(hour, min,  aud['detected'], hist['r'], hist['g'], hist['b'], rg, bg, adata['sun'][2])
+               if aud['detected'] == 1 and (rg > 1.02 and bg > 1.02) and int(adata['sun'][2]) <= -10:
+                  aud['detected'] = 1
+               else:
+                  aud['detected'] = 0
+               if aud['detected'] == 1 :
                   row_file = ROW_DIR + "/" + str(hk) + "-" + str(mk) + "-row.png" 
+                  if len(adata['sd_file']) > 0:
+                     sd_file = adata['sd_file'][0]
+                  else:
+                     sd_file = ""
+                  if sd_file != "":
+                     aurora_stack_vid(sd_file, json_conf)
+                  if len(adata['hd_file']) > 0:
+                     hd_file = adata['hd_file'][0]
+                  else:
+                     hd_file = ""
+
+                  if len(adata['stack_file']) > 0:
+                     row_file = adata['stack_file'][0]
+                  elif len(adata['snap_file']) > 0:
+                     row_file = adata['snap_file'][0]
+                     if "png" in row_file:
+                        row_tn = row_file.replace(".png", "-tn.jpg")
+                     elif "jpg" in row_file:
+                        row_tn = row_file.replace(".jpg", "-tn.jpg")
+                     if cfe(row_tn) == 0:
+                        im = cv2.imread(row_file)
+                        im = cv2.resize(im,(THUMB_W,THUMB_H))
+                        cv2.imwrite(row_tn, im)
+                     row_file = row_tn
+
+                  else:
+                     print(row_file)
                   if cfe(row_file) == 1:
-                     print(row_file, hour, min, cam_num, aud, adata['sun'])
-                     html += "<img src='" + row_file + "'><br>"
-                     html += hk + ":" + mk + " " + cam_num + " " +  str(aud) + str(adata['sun'])
+                     print(row_file, hour, min, cam_num, aud, adata['sun'], rg, bg )
+                     if sd_file != "":
+                        html += "<a href=" + sd_file + ">"
+                     html += "<img width="  + str(THUMB_W) + "height=" + str(THUMB_H) + " src='" + row_file + "'><br>"
+                     if sd_file != "":
+                        html += "</a>"
+                     perm = aud['perm']
+                     area = aud['area']
+                     dom_color = aud['dom_color']
+                     hist = aud['hist_data']
+                     sun = adata['sun']
+                     html += hk + ":" + mk + " " + cam_num + " " +  str(perm) + " " + str(area) + " " + str(adata['sun']) + str(rg) + " " + str(bg) + "<br>"
+                     if hd_file != "":
+                        html += hd_file + "<BR>"
+                     #html += sd_file + "<BR>"
                      dur = 1 
                      list += "file '" + coutfile + "'\n"
                      list += "duration " + str(dur) + "\n"
@@ -87,15 +387,48 @@ def aurora_report(date, json_conf):
    fp.write(html)
    fp.close()
    frate = 25
-   row = cv2.imread(row_file)
-   oh, ow = row.shape[:2]
+   if row_file is not None:
+      row = cv2.imread(row_file)
+      oh, ow = row.shape[:2]
 
-   cmd = "/usr/bin/ffmpeg -r " + str(frate) + " -f concat -safe 0 -i " + list_file + " -c:v libx264 -pix_fmt yuv420p -vf 'scale=" + str(ow) + ":" + str(oh) + "' -y " + outfile 
-   os.system(cmd)
+      cmd = "/usr/bin/ffmpeg -r " + str(frate) + " -f concat -safe 0 -i " + list_file + " -c:v libx264 -pix_fmt yuv420p -vf 'scale=" + str(ow) + ":" + str(oh) + "' -y " + outfile 
+   else:
+      print("No aurora detected....")
+      fn, dir = fn_dir(outfile)
+      os.system(("rm -rf " + dir))
+      return()
+   #os.system(cmd)
    print(outfile)
    print(list_file)
    print(html_file)
-
+   all_list = ""
+   for cam_num in json_conf['cameras']:
+      cams_id = json_conf['cameras'][cam_num]['cams_id']
+      cmd = "./Process.py tl_list /mnt/ams2/meteor_archive/" + STATION_ID + "/TL/AURORA/STACKS/" + date + "/ " + cams_id + " 25"
+      os.system(cmd)
+      print(cmd)
+      coutfile = "/mnt/ams2/meteor_archive/" + STATION_ID + "/TL/AURORA/STACKS/" + date + "/" + cams_id + ".mp4"
+      if cfe(coutfile) == 1:
+         all_list += "file '" + coutfile + "'\n"
+   out_dir = "/mnt/ams2/meteor_archive/" + STATION_ID + "/TL/AURORA/VIDS/" 
+   if cfe(out_dir, 1) == 0:
+      os.makedirs(out_dir)
+   out_file = out_dir + "AURORA_" + STATION_ID + "_" + date + ".mp4"
+   list_file = out_dir + "AURORA_" + STATION_ID + "_" + date + ".txt"
+   fp = open(list_file, "w")
+   fp.write(all_list)
+   fp.close()
+   ow = 640
+   oh = 360
+   cmd = "/usr/bin/ffmpeg -re -f concat -safe 0 -i " + list_file + " -y " + out_file
+   print(cmd)
+   os.system(cmd)
+   of2 = out_file.replace(".mp4", "-2.mp4")
+   cmd = "/usr/bin/ffmpeg -i " + out_file + " -vf scale=" + str(ow) + ":" + str(oh) + " -aspect:v 640:360 -y " + of2 
+   print(cmd)
+   os.system(cmd)
+   print(out_file)
+   os.system("mv " + of2 + " " + out_file)
 
 def detect_aurora(img_file=None):
 #   img_file = "aurora.jpg"
