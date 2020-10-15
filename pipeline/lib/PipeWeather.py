@@ -273,8 +273,9 @@ def batch_aurora(json_conf):
    files = glob.glob("au/*.jpg")
    for f in files:
       aur = detect_aurora(f)
-      if aur['detected'] == 1:
-         print("AURORA DETECTED.")
+      if aur != 0:
+         if aur['detected'] == 1:
+            print("AURORA DETECTED.")
 
 def aurora_stack_vid(video, json_conf):
    #stack video frames in 
@@ -545,6 +546,10 @@ def detect_aurora(img_file=None):
    best_quad = ""
    detect = 0
    img = cv2.imread(img_file)
+   try:
+      w,h = img.shape[:2]
+   except:
+      return(0)
    #cv2.imshow('pepe', img)
    #cv2.waitKey(0)
    matched = color_thresh_new(img, (60,80,70), (200,250,200))
@@ -552,6 +557,7 @@ def detect_aurora(img_file=None):
    #cv2.waitKey(0)
 
    (hist_img, dom_color, hist_data) = histogram(img)
+   
    rg = hist_data['g'] / hist_data['r']
    bg = hist_data['g'] / hist_data['b']
    print("RG ALL:", rg, bg)
@@ -661,7 +667,10 @@ def detect_aurora(img_file=None):
 
 def color_thresh_new(image, low=[60,0,0], high=[255,200,200]):
    gsize = 100
-   height,width = image.shape[:2]
+   try:
+      height,width = image.shape[:2]
+   except:
+      return([])
 
    low_color_bound = np.array(low ,  dtype=np.uint8, ndmin=1)
    high_color_bound = np.array(high ,  dtype=np.uint8, ndmin=1)
@@ -1094,6 +1103,13 @@ def sum_hist(data):
 
 def histogram(image):
    #fig = plt.figure()
+
+   try:
+      height,width = image.shape[:2]
+   except:
+      dom_color = 'n'
+      hist_data = {'r': 0, 'g': 0, 'b': 0}
+      return(image, dom_color, hist_data)
    color = ('b', 'g', 'r')
    hist_data = {}
    dom_val = 0
@@ -1297,7 +1313,9 @@ def track_clouds(cam, day, json_conf):
 
          sub = cv2.subtract(gray, gray_mask)
          sub = cv2.subtract(gray, gray_flat)
-         (hist_img, dom_color, green_blue_perc, red_blue_perc) = histogram(color_sub)
+         hdr = histogram(color_sub) 
+         if hdr is not None:
+            (hist_img, dom_color, green_blue_perc, red_blue_perc) = hdr
          arr = []
          if last_sub is not None:
             image_diff = cv2.absdiff(sub.astype(frame.dtype), last_sub,)

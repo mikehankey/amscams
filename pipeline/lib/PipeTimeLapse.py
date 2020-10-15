@@ -464,7 +464,11 @@ def audit_min(date, json_conf):
             if True:
                timg = cv2.imread(stack_file)
                if data[hs][ms][cam]['sun'][0] == 'night':
-                  au,hist_img,marked_img = detect_aurora(stack_file)
+                  resp = detect_aurora(stack_file)
+                  if resp != 0:
+                     au,hist_img,marked_img = resp
+                  else:
+                     au = {'detected': 0}
 
                   if au['detected'] == 1:
                      print("AU:", au)
@@ -481,15 +485,21 @@ def audit_min(date, json_conf):
 
                else:
                    au = { "detected": 0}
-               sum_int = int(np.sum(timg))
-               avg_int = int(np.mean(timg))
-               ci_b = int(np.mean(timg[0]))
-               ci_g = int(np.mean(timg[1]))
-               ci_r = int(np.mean(timg[2]))
-               data[hs][ms][cam]['aurora'] = au
-               data[hs][ms][cam]['sum_int'] = sum_int
-               data[hs][ms][cam]['avg_int'] = avg_int
-               data[hs][ms][cam]['color_int'] = [ci_b, ci_g, ci_r]
+               try:
+                  sum_int = int(np.sum(timg))
+                  avg_int = int(np.mean(timg))
+                  ci_b = int(np.mean(timg[0]))
+                  ci_g = int(np.mean(timg[1]))
+                  ci_r = int(np.mean(timg[2]))
+                  data[hs][ms][cam]['aurora'] = au
+                  data[hs][ms][cam]['sum_int'] = sum_int
+                  data[hs][ms][cam]['avg_int'] = avg_int
+                  data[hs][ms][cam]['color_int'] = [ci_b, ci_g, ci_r]
+               except:
+                  data[hs][ms][cam]['aurora'] = au
+                  data[hs][ms][cam]['sum_int'] = 0 
+                  data[hs][ms][cam]['avg_int'] = 0 
+                  data[hs][ms][cam]['color_int'] = [0, 0, 0]
                #print("INTS:", stack_file, sum_int, avg_int)
             #else:
             #   print("DID INTS.", hour, minute,  data[hour][minute][cam]['sum_int'],  data[hour][minute][cam]['avg_int'])

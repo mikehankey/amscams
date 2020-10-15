@@ -233,7 +233,7 @@ def make_day_preview(day_dir, stats_data, json_conf):
  
       html_out +=  "<div class='preview'>"
       html_out +=  "<a class='mtt' href='webUI.py?cmd=browse_day&day=" + day_str + "&cams_id="+cams_id+"'  title='Browse all day'>"
-      html_out +=  "<img width=" + str(THUMB_W) + " height=" + str(THUMB_H) + " alt='" + day_str + "' class='img-fluid ns lz' src='" + obj_stack + "'>" 
+      html_out +=  "<img width=" + str(THUMB_W) + " height=" + str(THUMB_H) + " alt='" + day_str + "' class='img-fluid ns lz' src='" + obj_stack + "?c=1'>" 
       if(min_total==0):
             html_out +=  "</a><span class='pre-b'>Cam #"+ cams_id+" - <i>processing</i></span></div>"   
       else:
