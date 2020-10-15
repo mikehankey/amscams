@@ -8,5 +8,5 @@ for i in range (1, 45):
    yest = today - dt.timedelta(days=i)
    date = str(yest)[0:10].replace("-", "_")
    print(date)
-   os.system("./Process.py audit " + date)
-   os.system("./Process.py ar " + date)
+   os.system("./Process.py hs " + date)
+#   os.system("./Process.py ar " + date)
