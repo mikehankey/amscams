@@ -11031,11 +11031,11 @@ def verify_meteor(meteor_json_file):
             print("Failed 2nd classification. Not a real meteor.")
             meteor_report(maybe)
            # return()
-         cont = input("continue")
+         #cont = input("continue")
    suspect_meteors = good_met
    print(len(good_met), " suspect meteors")
    print(good_met)
-   cont = input("continue")
+   #cont = input("continue")
 
    if len(suspect_meteors) == 0:
       print("No real meteors found here.")
