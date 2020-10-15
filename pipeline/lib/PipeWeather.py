@@ -345,7 +345,7 @@ def aurora_report(date, json_conf):
                   bg = 0
                if "dom_color" in aud:
                   print(hour, min,  aud['detected'], hist['r'], hist['g'], hist['b'], rg, bg, adata['sun'][2])
-               if aud['detected'] == 1 and (rg > 1.02 and bg > 1.02) and int(adata['sun'][2]) <= -10:
+               if aud['detected'] == 1 and int(adata['sun'][2]) <= -10:
                   aud['detected'] = 1
                else:
                   aud['detected'] = 0
@@ -464,6 +464,9 @@ def aurora_report(date, json_conf):
 
 def detect_aurora(img_file=None):
 #   img_file = "aurora.jpg"
+   max_rg = 0
+   max_bg = 0
+   best_quad = ""
    detect = 0
    img = cv2.imread(img_file)
    #cv2.imshow('pepe', img)
@@ -471,7 +474,65 @@ def detect_aurora(img_file=None):
    matched = color_thresh_new(img, (60,80,70), (200,250,200))
    #cv2.imshow('pepe', matched)
    #cv2.waitKey(0)
+
    (hist_img, dom_color, hist_data) = histogram(img)
+   rg = hist_data['g'] / hist_data['r']
+   bg = hist_data['g'] / hist_data['b']
+   print("RG ALL:", rg, bg)
+   # check 4 quads of image
+   x1 = 0
+   x2 = int(img.shape[1] / 2)
+   y1 = 0
+   y2 = int(img.shape[0] / 2)
+   (hist_img, dom_color, hist_data) = histogram(img[y1:y2,x1:x2])
+   rg = hist_data['g'] / hist_data['r']
+   bg = hist_data['g'] / hist_data['b']
+   print("RG TL:", rg, bg)
+   if rg > max_rg and bg > max_bg:
+      max_rg = rg
+      max_bg = bg
+      best_quad = "TL"
+
+   x1 = int(img.shape[1] / 2)
+   x2 = img.shape[1]
+   y1 = 0
+   y2 = int(img.shape[0] / 2)
+   (hist_img, dom_color, hist_data) = histogram(img[y1:y2,x1:x2])
+   rg = hist_data['g'] / hist_data['r']
+   bg = hist_data['g'] / hist_data['b']
+   print("RG TR:", rg, bg)
+   if rg > max_rg and bg > max_bg:
+      max_rg = rg
+      max_bg = bg
+      best_quad = "TR"
+
+   x1 = int(img.shape[1] / 2)
+   x2 = img.shape[1]
+   y1 = int(img.shape[0] / 2)
+   y2 = img.shape[0]
+   (hist_img, dom_color, hist_data) = histogram(img[y1:y2,x1:x2])
+   rg = hist_data['g'] / hist_data['r']
+   bg = hist_data['g'] / hist_data['b']
+   print("RG BR:", rg, bg)
+   if rg > max_rg and bg > max_bg:
+      max_rg = rg
+      max_bg = bg
+      best_quad = "BR"
+
+   x1 = int(img.shape[1] / 2)
+   x2 = img.shape[1]
+   y1 = 0
+   y2 = int(img.shape[0] / 2)
+   (hist_img, dom_color, hist_data) = histogram(img[y1:y2,x1:x2])
+   rg = hist_data['g'] / hist_data['r']
+   bg = hist_data['g'] / hist_data['b']
+   print("RG BL:", rg, bg)
+   if rg > max_rg and bg > max_bg:
+      max_rg = rg
+      max_bg = bg
+      best_quad = "BL"
+
+
    #cv2.imshow('pepe', hist_img)
    #cv2.waitKey(0)
    cnt_res = cv2.findContours(matched, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
@@ -491,10 +552,14 @@ def detect_aurora(img_file=None):
       if max_area > 100:
          cv2.drawContours(img, [approx], -1, (0, 0, 255), 3)
          aprox.append(approx.tolist())
-         if dom_color == 'g':
+         print(dom_color, rg, bg)
+         if dom_color == 'g' and max_rg > 1.1 and max_bg > 1.1:
             detected = 1
+            print("DETECTED!")
          print("PERM/AREA:", perimeter, max_area) 
-   if detected == 1:
+
+   if detected == 1 or (max_bg > 1.1 and max_rg > 1.1):
+      detected = 1
       #cv2.imshow('pepe', img)
       #cv2.waitKey(30)
       aur = {
@@ -503,13 +568,18 @@ def detect_aurora(img_file=None):
          "perm": float(perimeter),
          "area": float(max_area),
          "dom_color": dom_color,
+         "max_rg": max_rg,
+         "max_bg": max_bg,
+         "best_quad": best_quad,
          "hist_data": hist_data
       }
+      print("AU DETECTED.", max_rg, max_bg, perimeter, max_area)
    else:
       aur = {
          "detected": 0,
          "hist_data": hist_data
       }
+      print("AU NOT DETECTED.", detected, max_rg, max_bg, best_quad)
    return(aur, hist_img,img)
 
 
