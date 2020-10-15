@@ -282,7 +282,7 @@ def aurora_stack_vid(video, json_conf):
    date = fy + "_" + fm + "_" + fd
 
    sd_frames = load_frames_simple(video)
-   AS_DIR = TL_DIR + "AURORA/STACKS/" + date + "/" 
+   AS_DIR = "/mnt/ams2/meteor_archive/" + STATION_ID + "/AURORA/STACKS/" + date + "/" 
    if cfe(AS_DIR, 1) == 0:
       os.makedirs(AS_DIR)
 
@@ -345,8 +345,6 @@ def aurora_report(date, json_conf):
                else:
                   rg = 0
                   bg = 0
-               if "dom_color" in aud:
-                  print(hour, min,  aud['detected'], hist['r'], hist['g'], hist['b'], rg, bg, adata['sun'][2])
                if aud['detected'] == 1 and int(adata['sun'][2]) <= -10:
                   aud['detected'] = 1
                else:
@@ -358,13 +356,16 @@ def aurora_report(date, json_conf):
                      sd_file = adata['sd_file'][0]
                   else:
                      sd_file = ""
-                  if sd_file != "":
-                     aurora_stack_vid(sd_file, json_conf)
+                  #if sd_file != "":
+                  #   aurora_stack_vid(sd_file, json_conf)
                   if len(adata['hd_file']) > 0:
                      hd_file = adata['hd_file'][0]
                   else:
                      hd_file = ""
-
+                  if sd_file != "":
+                     aurora_sd_files.append(sd_file)
+                  if hd_file != "":
+                     aurora_hd_files.append(hd_file)
                   if len(adata['stack_file']) > 0:
                      row_file = adata['stack_file'][0]
                   elif len(adata['snap_file']) > 0:
@@ -378,12 +379,7 @@ def aurora_report(date, json_conf):
                         im = cv2.resize(im,(THUMB_W,THUMB_H))
                         cv2.imwrite(row_tn, im)
                      row_file = row_tn
-                     aurora_sd_files.append(sd_file)
-                     aurora_hd_files.append(hd_file)
-                  else:
-                     print(row_file)
                   if cfe(row_file) == 1:
-                     print(row_file, hour, min, cam_num, aud, adata['sun'], rg, bg )
                      if sd_file != "":
                         html += "<a href=" + sd_file + ">"
                      html += "<img width="  + str(THUMB_W) + "height=" + str(THUMB_H) + " src='" + row_file + "'><br>"
@@ -428,6 +424,7 @@ def aurora_report(date, json_conf):
       oh, ow = row.shape[:2]
 
       cmd = "/usr/bin/ffmpeg -r " + str(frate) + " -f concat -safe 0 -i " + list_file + " -c:v libx264 -pix_fmt yuv420p -vf 'scale=" + str(ow) + ":" + str(oh) + "' -y " + outfile 
+      #os.system(("rm -rf " + dir))
    else:
       print("No aurora detected....")
       fn, dir = fn_dir(outfile)
@@ -441,7 +438,7 @@ def aurora_report(date, json_conf):
    for cam_num in json_conf['cameras']:
       cams_id = json_conf['cameras'][cam_num]['cams_id']
       cmd = "./Process.py tl_list /mnt/ams2/meteor_archive/" + STATION_ID + "/TL/AURORA/STACKS/" + date + "/ " + cams_id + " 25"
-      os.system(cmd)
+      #os.system(cmd)
       print(cmd)
       coutfile = "/mnt/ams2/meteor_archive/" + STATION_ID + "/TL/AURORA/STACKS/" + date + "/" + cams_id + ".mp4"
       if cfe(coutfile) == 1:
@@ -458,13 +455,88 @@ def aurora_report(date, json_conf):
    oh = 360
    cmd = "/usr/bin/ffmpeg -re -f concat -safe 0 -i " + list_file + " -y " + out_file
    print(cmd)
-   os.system(cmd)
+   #os.system(cmd)
    of2 = out_file.replace(".mp4", "-2.mp4")
    cmd = "/usr/bin/ffmpeg -i " + out_file + " -vf scale=" + str(ow) + ":" + str(oh) + " -aspect:v 640:360 -y " + of2 
    print(cmd)
-   os.system(cmd)
+   #os.system(cmd)
    print(out_file)
-   os.system("mv " + of2 + " " + out_file)
+   #os.system("mv " + of2 + " " + out_file)
+   print("AU FILES SD:", sorted(aurora_sd_files))
+   print("AU FILES HD:", sorted(aurora_hd_files))
+   # find the range for the aurora storm and copy all SD and HD files that fall into that range
+   # for longer term backup (so they don't get auro deleted)
+   AU_SRC_DIR = "/mnt/ams2/meteor_archive/" + STATION_ID + "/AURORA/SRC/"
+   min_file =  sorted(aurora_sd_files)[0]
+   max_file =  sorted(aurora_sd_files)[-1]
+   print("AU FILES SD:", sorted(aurora_sd_files))
+   print("AU FILES HD:", sorted(aurora_hd_files))
+   (min_datetime, cam, f_date_str,fy,fm,fd, min_h, fmin, fs) = convert_filename_to_date_cam(min_file)
+   (max_datetime, cam, f_date_str,fy,fm,fd, max_h, fmin, fs) = convert_filename_to_date_cam(max_file)
+   sd_dir = "/mnt/ams2/SD/proc2/" + fy + "_" + fm + "_" + fd + "/"
+   hd_dir = "/mnt/ams2/HD/"
+   AU_HD_DIR = AU_SRC_DIR + "HD/" + date + "/" 
+   AU_SD_DIR = AU_SRC_DIR + "SD/" + date + "/" 
+   sd_files = glob.glob(sd_dir + "*.mp4")
+   hd_files = glob.glob(hd_dir + fy + "_" + fd + "_" + fm + "*.mp4")
+
+
+   print ("LOAD:", sd_dir + "*.mp4")
+   min_h = int(min_h)
+   max_h = int(max_h)
+   if cfe(AU_SD_DIR, 1) == 0:
+      os.makedirs(AU_SD_DIR)
+   if cfe(AU_HD_DIR, 1) == 0:
+      os.makedirs(AU_HD_DIR)
+
+   sd_stack_dir = "/mnt/ams2/meteor_archive/" + STATION_ID + "/AURORA/STACKS/" + date + "/" 
+   temp = glob.glob(sd_stack_dir + "*.jpg")
+   print(sd_stack_dir + "*.jpg")
+   sd_need_stack = []
+   sd_stack_roots = {}
+   for t in temp:
+      fn, dir = fn_dir(t)
+      root = fn.split("-")[0]
+      print("ROOT:", root)
+      sd_stack_roots[root] = 1
+
+   for sdf in sorted(sd_files):
+      if "trim" not in sdf:
+         (f_datetime, cam, f_date_str,fy,fm,fd, fh, fmin, fs) = convert_filename_to_date_cam(sdf)
+         if int(min_h) <= int(fh) <= int(max_h):
+            fn, dir = fn_dir(sdf)
+            root = fn.split("-")[0]
+            root = root.replace(".mp4", "")
+            if root in sd_stack_roots:
+               print("SD FILE ALREADY STACKED.")
+            else:
+               print("SD FILE NEEDS TO BE STACKED.", root)
+               sd_need_stack.append(sdf)
+
+            save_file = AU_SD_DIR + fn
+            if cfe(save_file) == 0:
+               print(min_h, fh, max_h, sdf)
+               print("SAVE FILE:", sdf, AU_SD_DIR)
+               cmd = "cp " + sdf + " " + AU_SD_DIR
+               print(cmd)
+               os.system(cmd)
+
+   for sdf in sorted(hd_files):
+      if "trim" not in sdf:
+         (f_datetime, cam, f_date_str,fy,fm,fd, fh, fmin, fs) = convert_filename_to_date_cam(sdf)
+         if int(min_h) <= int(fh) <= int(max_h):
+            fn,dir = fn_dir(sdf)
+            save_file = AU_HD_DIR + fn
+            if cfe(save_file) == 0:
+               print(min_h, fh, max_h, sdf)
+               print("SAVE HD FILE:", sdf, AU_HD_DIR)
+               cmd = "cp " + sdf + " " + AU_HD_DIR
+               print(cmd)
+               os.system(cmd)
+      
+   for file in sd_need_stack:
+      print("STACK:", file)
+      aurora_stack_vid(file, json_conf)
 
 def detect_aurora(img_file=None):
 #   img_file = "aurora.jpg"
