@@ -179,7 +179,7 @@ def check_disk():
                cmd = "rm -rf " + file
                print(cmd)
                os.system(cmd)
-            if days_old > 7:
+            if days_old > 45:
                # delete non trim hd files
                ntf = glob.glob(file + "/hd_save/*.mp4")
                for nt in ntf:
