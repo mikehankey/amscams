@@ -1789,9 +1789,9 @@ def meteors_new(json_conf,form):
       #header_out = header_out + '<input type="radio" name="meteor_select" id="non_reduced" autocomplete="off">All '+ format(non_rec_cnt) +'  Non-Reduced Meteors Only</label>'
        
       if(has_limit_day==0):
-         pagination = get_pagination(cur_page,len(all_meteors),"/pycgi/webUI.py?cmd=new_meteors&meteor_per_page="+str(nompp),nompp)
+         pagination = get_pagination(cur_page,len(all_meteors),"/pycgi/webUI.py?cmd=meteors&meteor_per_page="+str(nompp),nompp)
       else:
-         pagination = get_pagination(cur_page,len(all_meteors),"/pycgi/webUI.py?cmd=new_meteors&limit_day="+limit_day+"&meteor_per_page="+str(nompp),nompp)
+         pagination = get_pagination(cur_page,len(all_meteors),"/pycgi/webUI.py?cmd=meteors&limit_day="+limit_day+"&meteor_per_page="+str(nompp),nompp)
 
       if(pagination[2] != ''):
          header_out = header_out + "<div class='page_h'>Page  " + format(cur_page) + "/" +  format(pagination[2]) + "</div>"
