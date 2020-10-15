@@ -313,6 +313,8 @@ def aurora_stack_vid(video, json_conf):
       fc += 1
 
 def aurora_report(date, json_conf):
+   aurora_sd_files = []
+   aurora_hd_files = []
    cam_nums = json_conf['cameras'].keys()
    afile = TL_DIR + "VIDS/" + date + "-audit.json"
    ad = load_json_file(afile)
@@ -350,6 +352,7 @@ def aurora_report(date, json_conf):
                else:
                   aud['detected'] = 0
                if aud['detected'] == 1 :
+            
                   row_file = ROW_DIR + "/" + str(hk) + "-" + str(mk) + "-row.png" 
                   if len(adata['sd_file']) > 0:
                      sd_file = adata['sd_file'][0]
@@ -375,7 +378,8 @@ def aurora_report(date, json_conf):
                         im = cv2.resize(im,(THUMB_W,THUMB_H))
                         cv2.imwrite(row_tn, im)
                      row_file = row_tn
-
+                     aurora_sd_files.append(sd_file)
+                     aurora_hd_files.append(hd_file)
                   else:
                      print(row_file)
                   if cfe(row_file) == 1:
