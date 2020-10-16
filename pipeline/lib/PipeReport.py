@@ -6,7 +6,6 @@
 
 
 from lib.PipeUtil import cfe , convert_filename_to_date_cam, load_json_file
-
 from lib.PipeImage import thumbnail, quick_video_stack
 from lib.DEFAULTS import *
 from lib.PipeUtil import cfe, load_json_file, save_json_file 
@@ -106,10 +105,11 @@ def cal_status(json_conf, year = None):
    auto_cal_dir = arc_cal_dir + "AUTO_CAL/" + year + "/solved/"
    free_cal_dir = "/mnt/ams2/cal/freecal/"
 
-def autocal_report(type="solved"):
+def autocal_report(type="solved", cal_files=[]):
    year = datetime.now().strftime("%Y")
    cal_dir = ARC_DIR + "CAL/AUTOCAL/" + year + "/" + type + "/" 
    outfile = cal_dir + "cal_report.html"
+
    out_head = """
       <style>
          .float_div {
@@ -123,10 +123,10 @@ def autocal_report(type="solved"):
       </style>
    """
    output = {} 
-   if type == "solved":
-      cal_files = glob.glob(cal_dir + "*calparams.json")
-   else:
-      cal_files = glob.glob(cal_dir + "*.png")
+   #if type == "solved":
+   #   cal_files = glob.glob(cal_dir + "*calparams.json")
+   #else:
+   #   cal_files = glob.glob(cal_dir + "*.png")
    
    for cf in sorted(cal_files, reverse=True):
       (f_datetime, cam, f_date_str,y,m,d, h, mm, s) = convert_filename_to_date_cam(cf)
@@ -139,8 +139,20 @@ def autocal_report(type="solved"):
          cp = load_json_file(cf)
       
          org = cf.replace("-calparams.json", ".png")
+         marked_img = cf.replace("-calparams.json", "-marked.jpg")
          azgrid = cf.replace("-calparams.json", "-azgrid.png")
+         if "stacked-stacked" in azgrid :
+            azgrid = azgrid.replace("stacked-stacked", "stacked")
          azgrid_tn = azgrid.replace(".png", "-tn.png")
+         if cfe(azgrid) == 0:
+            temp = azgrid.replace("-stacked", "")
+            if cfe(temp) == 1:
+               azgrid = temp
+               azgrid_tn = azgrid.replace(".png", "-tn.png")
+            else:
+               print("PROBLEM FILE!", azgrid)
+               continue 
+
          grid = cf.replace("-calparams.json", "-grid.png")
          grid_tn = grid.replace(".png", "-tn.png")
          #stars = cf.replace("-calparams.json", "-stars.png")
@@ -148,21 +160,27 @@ def autocal_report(type="solved"):
 
 
       if type == 'solved':
-
+         print("AZ:", azgrid)
          thumbnail(azgrid, MEDIUM_W, MEDIUM_H)
          print(azgrid_tn)
-         thumbnail(grid, MEDIUM_W, MEDIUM_H)
-         print(grid_tn)
+         #thumbnail(grid, MEDIUM_W, MEDIUM_H)
+         #print(grid_tn)
 
          output[cam] += "<div class='float_div'>"
          output[cam] += "<img src=" + azgrid_tn + ">"
          output[cam] += "<br><label style='text-align: center'>CAM: " + cam + " @ " + f_date_str + " <br>"  
          output[cam] += "AZ/EL: " + str(cp['center_az'])[0:5] + " / " + str(cp['center_el'])[0:5] + "<BR>"
-         output[cam] += "Stars/Res: " + str(len(cp['cat_image_stars'])) + " / " + str(cp['total_res_deg'])[0:5] + "&deg; <BR>"
+         output[cam] += "Pos/Pix: " + str(cp['position_angle'])[0:5] + " / " + str(cp['pixscale'])[0:5] + "<BR>"
+         if "cat_image_stars" in cp:
+            output[cam] += "Stars: " + str(len(cp['user_stars'])) + " / " + str(len(cp['cat_image_stars'])) + "<BR>"
+         else:
+            output[cam] += "Res: MISSING STAR DATA "
+         output[cam] += "Res: " +  str(cp['total_res_px'])[0:5]+ " px / " + str(cp['total_res_deg'])[0:5] + "&deg; <BR>"
          output[cam] += "<a href=" + azgrid + ">AZ Grid</a> - " 
-         output[cam] += "<a href=" + grid + ">RA Grid</a> - " 
+         #output[cam] += "<a href=" + grid + ">RA Grid</a> - " 
          #output[cam] += "<a href=" + stars + ">Stars</a> - " 
-         output[cam] += "<a href=" + org + ">Original</a> " 
+         output[cam] += "<a href=" + org + ">Original</a> - " 
+         output[cam] += "<a href=" + marked_img + ">Marked</a> " 
          output[cam] += "</div>\n"
       else:
          cf_tn = cf.replace(".png", "-tn.png")
@@ -182,4 +200,4 @@ def autocal_report(type="solved"):
       fp.write(output[cam])
 
    fp.close()
-
+   print(outfile)

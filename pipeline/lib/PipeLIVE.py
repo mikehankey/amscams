@@ -707,6 +707,7 @@ def resize_video(video_file, w, h, suf="-tn.mp4"):
    new_video_file = video_file.replace(".mp4", suf)
    if cfe(new_video_file) == 0:
       cmd = "/usr/bin/ffmpeg -i " + video_file + " -vf scale=\"" + str(w) + ":" + str(h) + "\" -y " + new_video_file + " > /dev/null 2>&1"
+      print(cmd)
       os.system(cmd)
    return(new_video_file)
 

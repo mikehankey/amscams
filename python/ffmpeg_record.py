@@ -67,7 +67,11 @@ def stop_capture(cam_num):
    else:
       cmd = "kill -9 `ps -aux | grep ffmpeg |grep -v grep| awk '{print $2}'`"
    print(cmd)
-   output = subprocess.check_output(cmd, shell=True).decode("utf-8")
+   try:
+      output = subprocess.check_output(cmd, shell=True).decode("utf-8")
+   except:
+      output = "ffmpeg process for this cam is not running. " +  str(cam_num)
+ 
    print (output)
 
 def purge(cam_num):
@@ -98,7 +102,19 @@ except:
 
 
 if (cmd == "stop"):
-   stop_capture("1")
+   if cam_num != "all":
+      stop_capture(cam_num)
+   else:
+      stop_capture("1")
+      stop_capture("2")
+      stop_capture("3")
+      stop_capture("4")
+      stop_capture("5")
+      stop_capture("6")
+      if "cam7" in json_conf['cameras']:
+         stop_capture("7")
+
+
 if (cmd == "start"):
    start_capture(cam_num)
 if (cmd == "start_all"):

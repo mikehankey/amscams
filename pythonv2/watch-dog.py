@@ -1,14 +1,26 @@
 #!/usr/bin/python3 
 
+import glob
 import subprocess
 import datetime
 import os
 import time
+
 #import sendgrid
 #from sendgrid.helpers.mail import *
 #from amscommon import read_config
-from lib.FileIO import load_json_file
+from lib.FileIO import load_json_file, save_json_file, cfe
 import psutil
+
+def get_file_info(file):
+   cur_time = int(time.time())
+   st = os.stat(file)
+   size = st.st_size
+   mtime = st.st_mtime
+   tdiff = cur_time - mtime
+   tdiff = tdiff / 60
+   return(size, tdiff)
+
 
 def check_running(cam_num, type, json_conf):
    cam_key = 'cam' + str(cam_num)
@@ -92,6 +104,17 @@ def ping_cam(cam_num):
       print ("Cam is down!")
       return(0)
 
+def check_corrupt(cam_num, stream_type):
+   files = sorted(glob.glob("/mnt/ams2/SD/" + "*" + cam_num + "*.mp4"), reverse=True)
+   corrupt = 0
+   for file in files[0:10]:
+      if cfe(file) == 1:
+         size, old = get_file_info(file)  
+         if old > 1 and size < 100:
+            print("CORRUPT FILE INFO:", file, size, old)
+            corrupt += 1
+   return(corrupt)
+
 def check_stream(cam_num, stream_type):
    bad = 0
    config = load_json_file("../conf/as6.json")
@@ -100,20 +123,20 @@ def check_stream(cam_num, stream_type):
       cmd = "find /mnt/ams2/SD/*.mp4 -mmin -5 |grep mp4 | grep -v proc | grep " + str(cam_num) + " |wc -l"
       print(cmd)
       output = subprocess.check_output(cmd, shell=True).decode("utf-8")
-      output.replace("\n", "")
+      output = int(output.replace("\n", ""))
       if int(output) > 0:
          print ("SD cam ", str(cam_num), " is good", output)
-         return(1)
+         return(output)
       else:
          print ("SD cam ", str(cam_num), " is bad. Restart.", output)
          return(0)
    if stream_type == 'HD':
       cmd = "find /mnt/ams2/HD -mmin -5 |grep " + str(cam_num) + " |wc -l"
       output = subprocess.check_output(cmd, shell=True).decode("utf-8")
-      output.replace("\n", "")
+      output = int(output.replace("\n", ""))
       if int(output) > 0:
          print ("HD cam ", str(cam_num), " is good", output)
-         return(1) 
+         return(output) 
       else:
          print ("HD cam ", str(cam_num), " is bad. Restart.", output)
          return(0) 
@@ -121,11 +144,57 @@ def check_stream(cam_num, stream_type):
 
 
    return(bad)
+
+def uptime():  
+    with open('/proc/uptime', 'r') as f:
+        uptime_seconds = float(f.readline().split()[0])
+        return uptime_seconds
+
 errors = []
 config = load_json_file("../conf/as6.json")
 json_conf = config
 obs_name = config['site']['obs_name']
-#print (obs_name)
+
+wd_file = "../conf/watchdog-status.json"
+
+if cfe(wd_file) == 1:
+   wd = load_json_file(wd_file)
+else:
+   wd = 0
+
+if wd == 0:
+   print("Make new WD.")
+   wd = {}
+   wd['last_system_reboot'] = uptime()
+   wd['system_reboots'] = []
+   wd['cams'] = {}
+   for cam in json_conf['cameras']:
+      wd['cams'][cam] = {}
+      cams_id = json_conf['cameras'][cam]['cams_id']
+      ip = json_conf['cameras'][cam]['ip']
+
+      wd['cams'][cam]['cams_id'] = cams_id
+      wd['cams'][cam]['ip'] = ip
+      wd['cams'][cam]['last_ping'] = 9999
+      wd['cams'][cam]['last_reboot'] = 0
+      wd['cams'][cam]['last_restart'] = 0 
+      wd['cams'][cam]['last5_hd_files'] = 0 
+      wd['cams'][cam]['last5_sd_files'] = 0 
+      wd['cams'][cam]['no_ping_for'] = 0
+      wd['cams'][cam]['no_sd_stream_for'] = 0
+      wd['cams'][cam]['no_hd_stream_for'] = 0
+      wd['cams'][cam]['last_sd_stream_time'] = 0
+      wd['cams'][cam]['last_hd_stream_time'] = 0
+      wd['cams'][cam]['corrupt_files'] = 0
+
+      wd['cams'][cam]['reboots'] = []
+      wd['cams'][cam]['restarts'] = []
+   save_json_file(wd_file, wd)
+else:
+   wd = load_json_file(wd_file)
+   if wd == 0:
+      wd = {}
+   print("Load WD")
 
 clean_zombies()
 cams_with_err = {}
@@ -134,21 +203,31 @@ cams_with_np = {}
 derrs = []
 #derrs = check_disk_space()
 #print (derrs)
-
+num_cams = len(json_conf['cameras'].keys()) + 1
 # Check Pings
 bad = 0
-for i in range (1,7):
+for i in range (1,num_cams):
    res = ping_cam(i)
-   print ("Cam " + str(i) + " " + str(res))
+   #print ("Cam " + str(i) + " " + str(res))
+   cam = "cam" + str(i)
    if res == 0: 
       errors.append("Cam " + str(i) + "did not respond to ping")
       ping_errors = 1
       cams_with_err[str(i)] = "no ping"
       cams_with_np[str(i)] = "no ping"
+      cur_time = int(time.time())
+      wd['cams'][cam]['last_ping'] = cur_time 
+      wd['cams'][cam]['no_ping_for'] = cur_time - wd['cams'][cam]['no_ping_for']
+      print("Update bad ping time.")   
+   else:
+      cur_time = int(time.time())
+      wd['cams'][cam]['last_ping'] = cur_time
+      wd['cams'][cam]['no_ping_for'] = 0
+      print("Update good ping time.")   
 
 # Check SD Streams
 stream_errors = 0
-for i in range (1,7):
+for i in range (1,num_cams):
    key = "cam" + str(i)
    cams_id = config['cameras'][key]['cams_id']
    res = check_stream(str(cams_id), "SD")
@@ -156,23 +235,49 @@ for i in range (1,7):
       errors.append("Cam " + str(cams_id) + "SD Stream not present. ")
       stream_errors = 1
       cams_with_err[str(i)] = "no SD stream"
+      cur_time = int(time.time())
+      wd['cams'][key]['last5_sd_files'] = res
+      print("Update bad check stream.")   
+   else:
+      cur_time = int(time.time())
+      wd['cams'][key]['last5_sd_files'] = res
+      wd['cams'][key]['last_sd_stream_time'] = cur_time
+      print("Update good check SD stream.", cur_time)   
+   corrupt_files = check_corrupt(str(cams_id), "SD")
+   wd['cams'][key]['corrupt_files'] = corrupt_files
+
 
 # Check HD Streams
-for i in range (1,7):
+for i in range (1,num_cams):
+   key = "cam" + str(i)
    res = check_stream(str(cams_id), "HD")
    if res == 0:
       errors.append("Cam " + str(cams_id) + "HD Stream not present. ")
       cams_with_err[str(i)] = "no HD stream"
       stream_errors = 1
 
+      cur_time = int(time.time())
+      wd['cams'][key]['last5_hd_files'] = res
+      wd['cams'][key]['no_hd_stream_for'] = cur_time - wd['cams'][cam]['last_hd_stream_time']
+      print("Update bad check stream.")   
+   else:
+      cur_time = int(time.time())
+      wd['cams'][key]['no_hd_stream_for'] = 0
+      wd['cams'][key]['last5_hd_files'] = res
+      wd['cams'][key]['last_hd_stream_time'] = cur_time
+      print("Update good check HD stream.", cur_time)   
+
+
 # check ffmpeg process
-for i in range (1,7):
+for i in range (1,num_cams):
    hd_run = check_running(str(i), "HD", json_conf)
    sd_run = check_running(str(i), "SD", json_conf)
    if int(hd_run) == 0 or int(sd_run) == 0:
       print("NO FFMPEG RUNNING FOR CAM:", str(i))
       cams_with_err[str(i)] = "no FFMPEG Process Running " + str(i)
       stream_errors = 1
+
+
 
 print("CAMS WITH ER:", cams_with_err)
 
@@ -186,17 +291,41 @@ for error in errors:
    print (error)
 
 if stream_errors == 1:
+   cur_time = int(time.time())
    for bad_cam in cams_with_err:
+      bad_key = "cam" + str(bad_cam)
       print("BAD:", bad_cam, cams_with_err[bad_cam])
       if bad_cam not in cams_with_np:
+
+         # Should we reboot the cam
+         # if the cam has had 10 restarts since the last reboot reboot the cam for a maximum of 1x per hour
          os.system("../python/ffmpeg_record.py stop " + bad_cam)
          time.sleep(3)
-         os.system("../python/ffmpeg_record.py start_all")
+         if len(wd['cams'][bad_key]['restarts']) > 5:
+            wd['cams'][bad_key]['restarts'] = []
+            wd['cams'][bad_key]['reboots'].append(cur_time)
+            print("REBOOTING CAM", bad_key)
+            os.system("./IMX291.py reboot " + wd['cams'][bad_key]['ip'] + "&")
+            log = open("/mnt/ams2/logs/cam_reboots.txt", "a")
+            log.write(str(cur_time) + " reboot:" + str(bad_cam) + wd['cams'][bad_key]['ip'])
+            time.sleep(30)
+         os.system("../python/ffmpeg_record.py start " + str(bad_cam))
+         wd['cams'][bad_key]['restarts'].append(cur_time)
+         wd['cams'][bad_key]['last_restart'] = cur_time
       else: 
          print("This cam is down, no point in restarting.")
+
+# Should we reboot the server if there are corrupt files of 50% or more and the server has not been rebooted in 12 hours then reboot it
+tc = 0
+for key in wd['cams']:
+   tc += wd['cams'][key]['corrupt_files']
+print("Total corrupt files system wide in last 10 minutes.", tc)   
 
 if len(derrs) > 0 or len(errors) > 0:
    #sendmail('mike.hankey@gmail.com', 'mike.hankey@gmail.com', 'AS6 Alert', msg)
    fp = open("/mnt/ams2/tmp/wd.txt", "w")
    fp.write(msg)
    fp.close()
+
+save_json_file(wd_file, wd)
+print("saved:", wd_file)

@@ -1,6 +1,6 @@
 #!/bin/sh
 
-sudo cp crontab-ams /var/spool/cron/crontabs/ams
+sudo cp crontab-2020 /var/spool/cron/crontabs/ams
 sudo cp crontab-root /var/spool/cron/crontabs/root
 sudo chown ams /var/spool/cron/crontabs/ams
 sudo chgrp crontab /var/spool/cron/crontabs/ams

@@ -1,10 +1,9 @@
 #!/bin/sh
-sudo apt-get install libcfitsio-dev
-#sudo apt-get install libjpeg-dev
-sudo apt-get install -y swig
+
 
 # Set gcc6 as CC env var
-CC=/usr/bin/gcc-6
+#CC=/usr/bin/gcc-6
+CC=/usr/bin/gcc
 export CC
 
 # MAKE SURE WE HAVE ALL PRE-REQS ELSE THIS WILL FAIL
@@ -19,35 +18,41 @@ export NETPBM_INC
 export NETPBM_LIB
 
 WCS_SLIB="-Lwcs"
-WCSLIB_INC="-I/usr/local/include/wcslib-5.15"
+#WCSLIB_INC="-I/usr/local/include/wcslib-5.15"
+#WCSLIB_INC="-I/usr/include/wcslib-5.15"
+WCSLIB_INC="-I/usr/include/wcslib-7.1"
 WCL_LIB="-Lwcs"
 export WCS_SLIB
 export WCSLIB_INC
 export WCS_LIB
 
-#cd ~/allsky6-install
+mkdir /home/ams/astrometry/
+cd /home/ams/astrometry/
+
 #wget http://astrometry.net/downloads/astrometry.net-latest.tar.gz
-#gunzip astrometry.net-latest.tar.gz
-#tar xf astrometry.net-latest.tar
+#wget http://192.168.1.4/mnt/ams2/astrometry.net-mike.tar.gz
 
-sudo pip install astropy
+wget http://archive.allsky.tv/APPS/INSTALL/astrometry.net-mike.tar.gz
+gunzip astrometry.net-mike.tar.gz
+tar xf astrometry.net-mike.tar
 
-cd ~/astrometry.net-0.73/
-#wget http://35.165.208.121/plot-constellations.c
-#cp plot-constellations.c blind
-#cp plot-constellations.c astrometry/blind
+
+cd /home/ams/astrometry/astrometry.net-0.73/
+wget http://archive.allsky.tv/APPS/INSTALL/plot-constellations.c
+cp plot-constellations.c blind
+cp plot-constellations.c astrometry/blind
 make
 make py
 make extra
-sudo make install
+make install
 
 #need these catalogs index-4116.fits  index-4117.fits  index-4118.fits  index-4119.fits
 
 wget http://broiler.astrometry.net/~dstn/4100/index-4116.fits
-sudo mv index-4116.fits /usr/local/astrometry/data
+mv index-4116.fits /usr/local/astrometry/data
 wget http://broiler.astrometry.net/~dstn/4100/index-4117.fits
-sudo mv index-4117.fits /usr/local/astrometry/data
+mv index-4117.fits /usr/local/astrometry/data
 wget http://broiler.astrometry.net/~dstn/4100/index-4118.fits
-sudo mv index-4118.fits /usr/local/astrometry/data
+mv index-4118.fits /usr/local/astrometry/data
 wget http://broiler.astrometry.net/~dstn/4100/index-4119.fits
-sudo mv index-4119.fits /usr/local/astrometry/data
+mv index-4119.fits /usr/local/astrometry/data mv index-4119.fits /usr/local/astrometry/data

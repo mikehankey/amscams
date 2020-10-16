@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
+#import rstrip
+import ast
 import os,sys,struct,json
 from time import sleep
 import hashlib
@@ -108,6 +109,14 @@ class DVRIPCam(object):
 		if self.socket == None:
 			self.connect()
 		data = self.send(1000,{"EncryptType":"MD5","LoginType":"DVRIP-Web","PassWord":self.sofia_hash(self.password),"UserName":self.user})
+		try:
+			ndata = data.decode('utf-8')
+			#ndata = str(data, "utf-8")
+			ddd = ast.literal_eval(ndata.rstrip('\x00'))
+			print("DATA:", data, ddd)
+			data = ddd
+		except:
+                	print("Response data is dict not byte.")
 		self.session = int(data["SessionID"],16)
 		self.alive_time = data["AliveInterval"]
 		self.keep_alive()
@@ -176,6 +185,16 @@ class DVRIPCam(object):
 		return self.get(1042, command)
 	def get(self, code, command):
 		data = self.send(code, {"Name":command,"SessionID":"0x%08X"%self.session})
+		try:
+			ndata = data.decode('utf-8')
+			ndata = ndata.rstrip('\x00')
+			ddd = json.loads(ndata) 
+			data = ddd 
+		except:
+			print(data)
+			print("data is dict not byte.")
+
+
 		if data["Ret"] in self.OK_CODES and command in data:
 			return data[command]
 		else:

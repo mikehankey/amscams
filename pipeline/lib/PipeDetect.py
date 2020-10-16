@@ -10,6 +10,7 @@ from datetime import datetime as dt
 import datetime
 #import math
 import os
+from lib.PipeAutoCal import fn_dir
 from lib.PipeVideo import ffmpeg_splice, find_hd_file, load_frames_fast, find_crop_size, ffprobe
 from lib.PipeUtil import load_json_file, save_json_file, cfe, get_masks, convert_filename_to_date_cam, buffered_start_end, get_masks, compute_intensity , bound_cnt
 from lib.DEFAULTS import *
@@ -20,6 +21,437 @@ import numpy as np
 import cv2
 
 json_conf = load_json_file(AMS_HOME + "/conf/as6.json")
+
+def biggest_cnts(cnts, count=5):
+   ci = []
+   cij = []
+   for cx,cy,cw,ch in cnts:
+      size = cw * ch
+      ci.append((cx,cy,cw,ch,size))
+      ci = sorted(ci , key=lambda x: (x[4]), reverse=True)
+   for cx,cy,cw,ch,size in ci:
+      #print("BIGGEST CNTS:", cx,cy,cw,ch,size)
+      inside = 0
+      if len(cij) > 0:
+         inside = check_cnt_inside(cij, (cx,cy,cw,ch))
+      if inside == 0:
+         cij.append((cx,cy,cw,ch))
+   return(cij[0:count])
+
+def check_cnt_inside(cnt_list, this_cnt):
+   tx,ty,tw,th = this_cnt
+   ctx = tx + (tw/2)
+   cty = ty + (th/2)
+   inside = 0
+   bl = 50
+   for x,y,w,h in cnt_list:
+      if w > bl:
+         bl = w   
+      if h > bl:
+         bl = h   
+      x1,y1,x2,y2 = bound_cnt(x, y,1920,1080, bl)
+      if x1 < tx < x2 and y1 < ty < y2:
+         inside = 1
+      if x1 < tx + tw < x2 and y1 < ty + th < y2:
+         inside = 1
+      if x1 < ctx < x2 and y1 < cty < y2:
+         inside = 1
+      if inside == 0:
+         dist = calc_dist((tx,ty),(x1,y1))
+         dist2 = calc_dist((tx,ty),(x2,y1))
+         dist3 = calc_dist((tx,ty),(x1,y2))
+         dist4 = calc_dist((tx,ty),(x2,y2))
+         dist5 = calc_dist((tx,ty),(tx,y1))
+         dist6 = calc_dist((tx,ty),(tx,y2))
+         dist7 = calc_dist((tx,ty),(x1,ty))
+         dist8 = calc_dist((tx,ty),(x2,ty))
+         min_dist = min(dist,dist2,dist3,dist4,dist5,dist6,dist7,dist8)
+         #print("NOT INSIDE MIN DIST:", min_dist)
+         if min_dist < 10:
+            inside = 1
+   return(inside)
+
+
+def best_thresh(img, thresh, i=0):
+   cnts,rects = find_contours_in_frame(img, thresh=thresh)
+   for cnt in cnts:
+      x,y,w,h = cnt
+      #if w >= img.shape[1]:
+      #   thresh = thresh + 50
+   for i in range(1,20):
+      thresh = thresh + (i*10)
+      cnts,rects = find_contours_in_frame(img, thresh=thresh)
+      if len(cnts) < 15:
+         return(thresh)
+      if thresh > 200:
+         thresh = 200
+   return(thresh)
+
+def verify_meteor(meteor_file, json_conf):
+   fn, dir = fn_dir(meteor_file)
+   base = fn.split("-")[0]
+   day = fn[0:10]
+   sd_dir = "/mnt/ams2/SD/proc2/" + day + "/" 
+   files = glob.glob(sd_dir + base + "*trim*.mp4")
+   print(files)
+   media = {}
+   for file in files:
+      w,h,frames = ffprobe(file)
+      media[file] = (w,h,frames)
+
+   meteors = {}
+   SD = 0
+   sd_stack_img = None
+   hd_stack_img = None
+   sd_images = {}
+   hd_images = {}
+   for file in media:
+      if "crop" not in file and "HD" not in file:
+         print(file, media[file])
+         best_meteor,sd_stack_img = fireball(file, json_conf)
+         if best_meteor is not None:
+            sd_images[file] = sd_stack_img
+            meteors[file] = best_meteor
+            SD = 1
+   if len(meteors) == 0:
+      print("Sorry we found no meteors here.")
+      return(None)
+
+   # if we made it this far we have at least found the meteor in one file
+   # lets check the HD files to see if we have a meteor there too
+   HD = 0
+   for file in media:
+      if "HD" in file and "crop" not in file:
+         best_meteor = fireball(file, json_conf)
+         if best_meteor is not None:
+            best_meteor, hd_stack_img = fireball(file, json_conf)
+            if best_meteor is not None:
+               hd_images[file] = hd_stack_img
+               meteors[file] = best_meteor
+               HD = 1
+
+   if SHOW == 1:
+      for file in sd_images:
+         print("SD IMGS:", file) 
+         cv2.imshow('pepe', sd_images[file])
+      for file in hd_images:
+         print("HD IMGS:", file) 
+         cv2.imshow('pepe', hd_images[file])
+
+   for file in meteors:
+      print(file, meteors[file])
+
+
+   if SD == 1 and HD == 1:
+      print("WIN! we have SD and HD meteors.")
+   if SD == 0 and HD == 1:
+      print("we have only HD meteors.")
+   if SD == 1 and HD == 0:
+      print("we have only SD meteors.")
+   for file in meteors:
+      print("METEOR:", file, media[file])
+      print(meteors[file])
+   save_old_meteor(meteors, media, sd_images, hd_images)
+
+def save_old_meteor(meteors, media, sd_images, hd_images):
+   for key in sd_images:
+      print("SD IMG:", key)
+   for key in hd_images:
+      print("HD IMG:", key)
+   mj = {}
+   for file in meteors:
+      if meteors[file] is None:
+         continue
+      print("METEOR FILE:", file, meteors[file])
+
+      fn, dir = fn_dir(file)
+      date = fn[0:10]
+      mdir = "/mnt/ams2/meteors/" + date + "/" 
+      w,h,num_frames = media[file]
+      print("WH:", w, h)
+      if int(w) == 1920:
+         HD = 1
+         mj['hd_trim'] = mdir + fn
+         mj['hd_video_file'] = mdir + fn 
+         mj['org_hd_vid'] = file 
+         mj['hd_stack'] = mdir + fn.replace(".mp4", "-stacked.png")
+         mj['hd_objects'] = meteors[file]
+         #mj['hd_objects'].append(meteors[file][id])
+         mj['meteor'] = 1
+         mj['archive_file'] = ""
+         hd_stack_img = hd_images[file]
+         hd_stack_img = cv2.resize(hd_stack_img, (THUMB_W, THUMB_H))
+      else:
+         SD = 1
+         mj['sd_trim'] = mdir + fn 
+         mj['archive_file'] = ""
+         mj['org_sd_vid'] = file 
+         mj['sd_video_file'] = mdir + fn 
+         mj['trim_clip'] = mdir + fn 
+         mj['sd_stack'] = mdir + fn.replace(".mp4", "-stacked.png")
+         mj['sd_objects'] = []
+         mj['sd_objects'].append( meteors[file])
+         #for id in meteors[file]:
+         #   print("SD OBJ:", meteors[file][id])
+         #   mj['sd_objects'].append(meteors[file][id])
+         print("FILE:", file)
+         sd_stack_img = sd_images[file]
+         sd_stack_img_tn = cv2.resize(sd_stack_img, (THUMB_W, THUMB_H))
+         obj_img = sd_stack_img.copy()
+         min_x = min(mj['sd_objects'][0]['oxs'])
+         min_y = min(mj['sd_objects'][0]['oys'])
+         max_x = max(mj['sd_objects'][0]['oxs'])
+         max_y = max(mj['sd_objects'][0]['oys'])
+         cv2.rectangle(obj_img, (min_x, min_y), (max_x, max_y), (255,255,255), 3, cv2.LINE_AA)
+         obj_tn = cv2.resize(obj_img, (THUMB_W, THUMB_H))
+   if "hd_trim" not in mj:
+      # Here we find trim and detect the HD meteor
+      for obj in mj['sd_objects']:
+         dur_fr = (len(obj['oxs'])) 
+      hd_trim = find_hd(mj['sd_trim'],dur_fr, mj['sd_objects'][0]['ofns'][0])
+      best_meteor, hd_stack_img = fireball(file, json_conf)
+      print("HD TRIM:", hd_trim)
+      print("BEST HD METEOR:", best_meteor)
+      if best_meteor is not None:
+         # We found the HD file and obj so copy it into the meteor dir and update the json
+         mj['hd_objects'] = []
+         mj['hd_objects'].append( best_meteor)
+         fn, dir = fn_dir(hd_trim)
+         mj['hd_trim'] = mdir + fn
+         mj['hd_video_file'] = mdir + fn 
+         mj['org_hd_vid'] = file 
+         mj['hd_stack'] = mdir + fn.replace(".mp4", "-stacked.png")
+         hd_stack_img_tn = cv2.resize(hd_stack_img, (THUMB_W, THUMB_H))
+         cmd = "cp " + hd_trim + " " + mdir + fn
+         print(cmd)
+         os.system(cmd)
+
+      else:
+         mj['hd_trim'] = "0"
+   print(mj)
+   fn,dir = fn_dir(mj['sd_trim'])
+   date = fn[0:10]
+   mdir = "/mnt/ams2/meteors/" + date + "/" 
+   js = fn.replace(".mp4", ".json")
+   save_json_file(mdir + js, mj)
+   # copy vids
+   if "sd_trim" in mj:
+      cmd = "cp " + mj['org_sd_vid'] + " " + mdir
+      os.system(cmd)
+      print(sd_stack_img.shape)
+      print(mj['sd_stack'])
+      cv2.imwrite(mj['sd_stack'], sd_stack_img)
+      cv2.imwrite(mj['sd_stack'].replace(".png", "-tn.png"), sd_stack_img_tn)
+      cv2.imwrite(mj['sd_stack'].replace(".png", "-obj-tn.png"), obj_tn)
+   if "hd_trim" in mj:
+      if mj['hd_trim'] != "0":
+         cmd = "cp " + mj['org_hd_vid'] + " " + mdir
+         os.system(cmd)
+         cv2.imwrite(mj['hd_stack'], hd_stack_img)
+         cv2.imwrite(mj['hd_stack'].replace(".png", "-tn.png"), hd_stack_img_tn)
+   print("Saved json:", js)
+
+
+
+def fireball(video_file, json_conf):
+   objects = {}
+   hd_frames,hd_color_frames,subframes,sum_vals,max_vals,pos_vals = load_frames_fast(video_file, json_conf, 0, 0, 1, 1,[])
+   i = 0
+   med_file = video_file.replace(".mp4", "-med.jpg")
+   if cfe(med_file) == 0:
+      median_frame = cv2.convertScaleAbs(np.median(np.array(hd_frames), axis=0))
+       
+      median_frame = cv2.GaussianBlur(median_frame, (7, 7), 0)
+      cv2.imwrite(med_file, median_frame)
+   else:
+      median_frame = cv2.imread(med_file)
+      median_frame = cv2.cvtColor(median_frame, cv2.COLOR_BGR2GRAY)
+   for frame in hd_frames:
+      meteor_on = 0
+      print("LOOP:")
+      subframe = cv2.subtract(frame, median_frame)
+      bx,by = pos_vals[i]
+      bx1,by1,bx2,by2 = bound_cnt(bx, by,frame.shape[1],frame.shape[0], 50)
+
+      min_val, max_val, min_loc, (mx,my)= cv2.minMaxLoc(subframe)
+      avg_val = np.mean(subframe)
+      half_max = ((max_val - avg_val) / 4) + avg_val
+
+      thresh = best_thresh(subframe, half_max, i)
+      cnts,rects = find_contours_in_frame(subframe, thresh=thresh)
+      if len(cnts) > 2:
+         cnts = biggest_cnts(cnts, 10)
+      #cnts = get_contours_in_image(subframe)
+      #print(len(cnts))
+
+      for cx,cy,cw,ch in cnts:
+         #print("FOUND CNTS: w/h",i, cw, ch)
+         cv2.rectangle(subframe, (cx, cy), (cx+cw, cy+ch), (255,255,255), 3, cv2.LINE_AA)
+         ccx = cx + int(cw / 2)
+         ccy = cy + int(ch / 2)
+         cnt_img = frame[cy:cy+ch,cx:cx+cw]
+         cnt_int = int(np.sum(cnt_img))
+         #object, objects = find_object(objects, i,ccx, ccy, cw, ch, cnt_int, 1, 0, None)
+         object, objects = find_object(objects, i,cx, cy, cw, ch, cnt_int, 1, 0, None)
+         print("CNTOBJ:", object, cx,cy,cw,ch)
+         objects[object] = analyze_object(objects[object], 1,1)
+         #if "class" in objects[object]:
+         #   if objects[object]['class'] != 'star':
+         #      print(objects[object]['report'])
+         if "meteor" in objects[object]:
+            if objects[object]['meteor'] == 1 and objects[object]['non_meteor'] == 0:
+               objects[object]['class'] = 'meteor'
+
+         if "class" in objects[object]['report']: 
+            #desc += " - " + objects[object]['report']['class'] + " " + str(objects[object]['report']['meteor']) + str(objects[object]['report']['non_meteor']) + str(objects[object]['report']['bad_items']) + str(objects[object]['oxs'])
+            if objects[object]['report']['meteor'] == 1 and objects[object]['report']['non_meteor'] == 0:
+                objects[object]['report']['class'] = "meteor"
+                rx1,ry1,rx2,ry2 = bound_cnt(ccx, ccy,frame.shape[1],frame.shape[0], 50)
+                cv2.rectangle(subframe, (rx1, ry1), (rx2, ry2), (255,0,0), 1, cv2.LINE_AA)
+            desc = str(object) + " - " + objects[object]['report']['class'] #+ " " + str(objects[object]['report']['meteor']) + str(objects[object]['report']['non_meteor']) 
+            cv2.putText(subframe, str(desc),  (ccx-10,ccy-10), cv2.FONT_HERSHEY_SIMPLEX, .8, (255, 255, 255), 1)
+            meteor_on = 1
+            #print("CNTS METEOR:", object)
+      
+
+
+      if meteor_on == 1:
+
+         if SHOW == 1:
+            sframe = cv2.resize(subframe, (1280, 720))
+            desc = "Frame:" + str(i)
+            cv2.putText(sframe, desc,  (10,40), cv2.FONT_HERSHEY_SIMPLEX, .4, (255, 255, 255), 1)
+            desc = str(sum_vals[i]) + " " + str(max_vals[i]) + " " + str(pos_vals[i]) + " " + str(len(cnts))
+            cv2.putText(sframe, desc,  (10,70), cv2.FONT_HERSHEY_SIMPLEX, .4, (255, 255, 255), 1)
+            cv2.imshow('pepe', sframe)
+            cv2.waitKey(30)
+         i += 1
+
+   m = 0
+   meteors = []
+   for obj in objects:
+
+      objects[obj] = analyze_object(objects[obj], 1,1)
+      if objects[obj]['report']['meteor'] == 1:
+         print(obj, "FRAMES:", len(objects[obj]['ofns']))
+         m += 1
+         meteors.append(objects[obj])
+         for r in objects[obj]['report']:
+            print("Report:", r, objects[obj]['report'][r])
+
+
+   for meteor in meteors:
+      meteor = analyze_object(meteor, 1,1)
+
+
+   if m > 1:
+      best_meteor = dom_meteor(meteors, json_conf)
+   if m == 1:
+      best_meteor = meteors[0]
+   else: 
+      best_meteor = None
+   print("DONE:", best_meteor)
+   if best_meteor is None:
+      return(None, None)
+
+   # draw cnts on image 
+   for i in range(0, len(best_meteor['oxs'])):
+      fn = best_meteor['ofns'][i] 
+      #fn = ff + i
+      img = hd_frames[fn]
+      x = best_meteor['oxs'][i]
+      y = best_meteor['oys'][i]
+      w = best_meteor['ows'][i]
+      h = best_meteor['ohs'][i]
+      cx = x + int(w/2)
+      cy = y + int(h/2)
+      lim = 50
+      if w > lim:
+         lim = w + 10
+      if h > lim:
+         lim = h + 10
+      rx1,ry1,rx2,ry2 = bound_cnt(cx, cy,1920,1080, lim)
+      
+      if SHOW == 1:
+         cv2.rectangle(img, (x, y), (x+w, y+h), (255,0,0), 1, cv2.LINE_AA)
+         cv2.rectangle(img, (rx1, ry1), (rx2, ry2), (128,0,0), 1, cv2.LINE_AA)
+
+         sframe = cv2.resize(img, (1280, 720))
+         desc = "Frame:" + str(fn)
+         cv2.putText(sframe, desc,  (10,20), cv2.FONT_HERSHEY_SIMPLEX, .4, (255, 255, 255), 1)
+         cv2.imshow('pepe', sframe)
+         cv2.waitKey(30)
+
+   stack_img = stack_frames(hd_color_frames)
+   if SHOW == 1:
+      cv2.imshow('pepe', stack_img)
+      cv2.waitKey(60)
+
+   return(best_meteor, stack_img)
+
+
+def dom_meteor(meteors, json_conf):
+   mcache = {}
+   scores = {}
+   durs = []
+   sizes = []
+   dists = []
+   for m in meteors:
+      id = m['obj_id']
+      mcache[id] = m
+      maxw = max(m['ows'])
+      maxh = max(m['ohs'])
+      size = maxw * maxh
+
+      durs.append((id, m['report']['cm']))
+      sizes.append((id, size))
+      dists.append((id, m['report']['ang_dist']))
+      print(m)
+
+   sorted_durs = sorted(durs, key=lambda x: (x[1]), reverse=True)
+   sorted_sizes = sorted(sizes, key=lambda x: (x[1]), reverse=True)
+   sorted_dists = sorted(dists, key=lambda x: (x[1]), reverse=True)
+   m1 =  sorted_durs[0][0]
+   m2 =  sorted_sizes[0][0]
+   m3 =  sorted_dists[0][0]
+   if m1 not in scores:
+      scores[m1] = 1
+   else:
+      scores[m1] += 1
+   if m2 not in scores:
+      scores[m2] = 1
+   else:
+      scores[m2] += 1
+   if m3 not in scores:
+      scores[m3] = 1
+   else:
+      scores[m3] += 1
+   print("\n*******DOM DUR*********\n")
+   print(mcache[m1])
+   print("\n*******DOM SIZE*********\n")
+   print(mcache[m2])
+   print("\n*******DOM DIST*********\n")
+   print(mcache[m3])
+   print("Longest dur :", sorted_durs[0])
+   print("Biggest Size:", sorted_sizes[0])
+   print("Longest Dist:", sorted_dists[0])
+   bm = 0
+   bs = 0
+   for m in scores:
+      score = scores[m]
+      if score > bs:
+         bs = score
+         mb = m
+   best_meteor = mcache[m]
+   return(best_meteor)
+  
+def first_last_dist(obj, objects):
+   fx = objects[obj]['xs'][0]
+   fy = objects[obj]['ys'][0]
+   lx = objects[obj]['xs'][-1]
+   ly = objects[obj]['ys'][-1]
+   dist = calc_dist((fx,fy),(lx,ly))
+   return(dist)
 
 def frames_to_image(frames):
    h,w = frames[0].shape[:2]
@@ -506,10 +938,10 @@ def refine_meteor(meteor_file, json_conf):
 
    for meteor in hd_meteors:
       # check to see if our crop is ok, if not we need to redo it. 
-      print("OXS:", meteor['oxs'][0] - cx1, cx2-cx1)
-      print("OYS:", meteor['oys'][0] - cy1, cy2-cy1)
-      print("OXS:", meteor['oxs'][-1] - cx1)
-      print("OYS:", meteor['oys'][-1] - cy1)
+      #print("OXS:", meteor['oxs'][0] - cx1, cx2-cx1)
+      #print("OYS:", meteor['oys'][0] - cy1, cy2-cy1)
+      #print("OXS:", meteor['oxs'][-1] - cx1)
+      #print("OYS:", meteor['oys'][-1] - cy1)
 
       nfns, nxs, nys, new_cnts = refine_meteor_points(meteor, crop_frames, json_conf)
 
@@ -1134,7 +1566,7 @@ def analyze_object(object, hd = 0, strict = 0):
       perform various tests to classify the type of object
       when strict == 1 perform more meteor strict tests
    '''
-
+   print("START ANAL:", hd, strict)
 
    if hd == 0:
       # if we are working with an HD file we need to mute the HD Multipliers
@@ -1145,7 +1577,8 @@ def analyze_object(object, hd = 0, strict = 0):
    bad_items = []
    good_items = []
 
-   if "report" not in object:
+   #if "report" not in object:
+   if True:
       object['report'] = {}
       object['report']['non_meteor'] = 0
       object['report']['meteor'] = 0
@@ -1157,17 +1590,19 @@ def analyze_object(object, hd = 0, strict = 0):
    # consecutive motion filter 
    if object['report']['cm'] < 3:
       object['report']['non_meteor'] = 1
+      object['report']['meteor'] = 0
 
    object['report']['unq_perc'], object['report']['unq_points'] = unq_points(object)
-   if object['report']['unq_points']  < 2 or object['report']['unq_perc'] < .5:
+   if object['report']['unq_points']  < 2 or object['report']['unq_perc'] < .5 and len(object['oxs']) > 3:
       object['report']['non_meteor'] = 1
+      object['report']['meteor'] = 0
       object['report']['bad_items'].append("Unq Points/Perc too low. " + str(object['report']['unq_points']) + " / " + str(object['report']['unq_perc']) )
 
    object['report']['object_px_length'], object['report']['line_segments'], object['report']['x_segs'], object['report']['ms'], object['report']['bs'] = calc_line_segments(object)
-
+   #print("MIN MAX XYs", min(object['oxs']), min(object['oys']), max(object['oxs']),max(object['oys']))
    object['report']['min_max_dist'] = calc_dist((min(object['oxs']), min(object['oys'])), (max(object['oxs']),max(object['oys']) ))
 
-   object = clean_bad_frames(object)
+   #object = clean_bad_frames(object)
 
 
    # ANG DIST / VEL
@@ -1178,8 +1613,10 @@ def analyze_object(object, hd = 0, strict = 0):
       sd_pxscale = hd_pxscale * (2.25)
       pxscale = sd_pxscale
 
-   if object['report']['non_meteor'] == 0:
+   #if object['report']['non_meteor'] == 0:
+   if True:
       ang_dist, ang_vel = ang_dist_vel(object['oxs'],object['oys'], [],[],pxscale)
+      #print("ANG DIST:", ang_dist, ang_vel)
       object['report']['ang_dist'] = ang_dist
       object['report']['ang_vel'] = ang_vel
 
@@ -1188,29 +1625,51 @@ def analyze_object(object, hd = 0, strict = 0):
          foo = 1
       else:
          object['report']['non_meteor'] = 1
+         object['report']['meteor'] = 0
          object['report']['bad_items'].append("bad ang vel: " + str(ang_vel))
 
       if ang_dist < .3:
          object['report']['non_meteor'] = 1
+         object['report']['meteor'] = 0
          object['report']['bad_items'].append("bad ang sep: " + str(ang_dist))
 
-   if object['report']['non_meteor'] == 1 :
-      return(object)
+
+   #if object['report']['non_meteor'] == 0 :
+      #print("ANG DIST/VEL:", ang_dist, ang_vel )
+
+   #print("MIN MAX:", object['report']['min_max_dist'])
+   #print("XS:", object['oxs'])
+   if object['report']['min_max_dist'] < 3 and len(object['oxs']) > 3:
+      object['report']['class'] = "star"
+   else:
+      if "class" not in object['report']:
+         object['report']['class'] = "unknown"
+
+
+   #print("STRICT:", strict)
+
+   #if object['report']['non_meteor'] != 1 :
+   #   return(object)
 
    if strict == 0:
       #print("INITIAL METEOR DETECTED!")
       if object['report']['non_meteor'] == 0 :
          object['report']['meteor'] = 1 
       return(object)
- 
-   print("************STRICT*************") 
+
+   
+
+   #print("************STRICT*************") 
 
    # more tests for video based detection 
 
    # big cnt perc test
+
    object['report']['big_perc'] = big_cnt_test(object, hd)
+   #print("BIG:", hd, object['report']['big_perc'])
    if object['report']['big_perc'] > .5:
       object['report']['non_meteor'] = 1
+      object['report']['meteor'] = 0
       object['report']['bad_items'].append("Big Perc % too high. " + str(object['report']['big_perc']))
 
    # meteor dir tests
@@ -1221,14 +1680,15 @@ def analyze_object(object, hd = 0, strict = 0):
 
    # NOT SURE THIS WORKS?!
    if object['report']['dir_test_perc'] < .80:
-      object['report']['non_meteor'] = 0
+      object['report']['non_meteor'] = 1
+      object['report']['meteor'] = 0
       object['report']['bad_items'].append("% direction too low. " + str(object['report']['dir_test_perc']))
 
    # intensity
-   if sum(object['oint']) < 0:
+   #if sum(object['oint']) < 0:
       # DISABLED FOR NOW
-      object['report']['non_meteor'] = 0
-      object['report']['bad_items'].append("Negative intensity, possible bird. ")
+   #   object['report']['non_meteor'] = 0
+   #   object['report']['bad_items'].append("Negative intensity, possible bird. ")
     
                                          
    (max_times, pos_neg_perc, perc_val) = analyze_intensity(object['oint'])
@@ -1237,14 +1697,16 @@ def analyze_object(object, hd = 0, strict = 0):
    object['report']['pos_perc'] = perc_val
    if pos_neg_perc < .5:
       object['report']['non_meteor'] = 1
+      object['report']['meteor'] = 0
       object['report']['bad_items'].append("% pos/neg intensity too low. " + str(object['report']['int_pos_neg_perc']))
 
 
-   if object['report']['non_meteor'] == 0:
+   if object['report']['non_meteor'] == 0 :
       print("*********** METEOR DETECTED *********")
       object['report']['meteor'] = 1
+      object['report']['class'] = "meteor"
 
-   print("END ANAL")   
+   #print("END ANAL")   
    return(object)    
 
 def analyze_object_old(object, hd = 0, sd_multi = 1, final=0):
@@ -1549,20 +2011,49 @@ def analyze_object_old(object, hd = 0, sd_multi = 1, final=0):
 
    return(object)
 
+def min_cnt_dist(x,y,w,h,tx,ty,tw,th):
+   ds = []
+   ctx = tx+int(tw/2)
+   cty = ty+int(th/2)
+   cx = x+int(w/2)
+   cy = y+int(h/2)
 
+   dist = calc_dist((x,y), (tx,ty))
+   ds.append(dist)
+   dist = calc_dist((x,y), (tx+tw,ty+th))
+   ds.append(dist)
+   dist = calc_dist((x+w,y+h), (tx,ty))
+   ds.append(dist)
+   dist = calc_dist((x+w,y+h), (tx+tw,ty+th))
+   ds.append(dist)
+   dist = calc_dist((cx,cy), (ctx,cty))
+   ds.append(dist)
+   dist = calc_dist((x,y), (ctx,cty))
+   ds.append(dist)
+   dist = calc_dist((x+w,y), (ctx,cty))
+   ds.append(dist)
+   dist = calc_dist((x,y+h), (ctx,cty))
+   ds.append(dist)
+   dist = calc_dist((x+w,y+h), (ctx,cty))
+   ds.append(dist)
+   print("DISTS:", sorted(ds))
+   return(min(ds))
 
 def find_object(objects, fn, cnt_x, cnt_y, cnt_w, cnt_h, intensity=0, hd=0, sd_multi=1, cnt_img=None ):
-
+   print("*** FIND OBJ START")
+   matched = {}
    if hd == 1:
-      obj_dist_thresh = 45 
+      obj_dist_thresh = 75 
    else:
-      obj_dist_thresh = 10
+      obj_dist_thresh = 35
 
-   center_x = cnt_x
-   center_y = cnt_y
+   center_x = cnt_x + int(cnt_w/2)
+   center_y = cnt_y + int(cnt_h/2)
 
    found = 0
    max_obj = 0
+   closest_objs = []
+   dist_objs = []
    for obj in objects:
       if 'oxs' in objects[obj]:
          ofns = objects[obj]['ofns']
@@ -1570,21 +2061,56 @@ def find_object(objects, fn, cnt_x, cnt_y, cnt_w, cnt_h, intensity=0, hd=0, sd_m
          oys = objects[obj]['oys']
          ows = objects[obj]['ows']
          ohs = objects[obj]['ohs']
-         for oi in range(0, len(oxs)):
+         if len(oxs) < 2:
+            check = len(oxs)
+         else:
+            check = 2 
+         for ii in range(0, check):
+            oi = len(oxs) - ii - 1
+            #oi = ii
             hm = int(ohs[oi] / 2)
             wm = int(ows[oi] / 2)
             lfn = int(ofns[-1] )
-            dist = calc_obj_dist((cnt_x,cnt_y,cnt_w,cnt_h),(oxs[oi], oys[oi], ows[oi], ohs[oi]))
-
+            #dist = calc_obj_dist((cnt_x,cnt_y,cnt_w,cnt_h),(oxs[oi], oys[oi], ows[oi], ohs[oi]))
+            t_center_x = oxs[oi] + int(ows[oi]/2) 
+            t_center_y = oys[oi] + int(ohs[oi]/2) 
+            c_dist = calc_dist((center_x,center_y),(t_center_x, t_center_y))
+            dist = min_cnt_dist(cnt_x,cnt_y,cnt_w,cnt_h,oxs[oi],oys[oi],ows[oi],ohs[oi])
+            print("CDIST/MDIST", c_dist, dist)
+            dist_objs.append((obj,dist))
             last_frame_diff = fn - lfn
+
             if dist < obj_dist_thresh and last_frame_diff < 10:
+               #if this is linked to a meteor only associate if the point is further from the start than the last recorded point
                found = 1
                found_obj = obj
+               #if obj not in matched:
+               closest_objs.append((obj,dist))
+               matched[obj] = 1
+
       if obj > max_obj:
          max_obj = obj
 
+   if len(closest_objs) > 1:
+      print("FIND: MORE THAN ONE MATCH!")
+
+      ci = sorted(closest_objs , key=lambda x: (x[1]), reverse=False)
+      print(ci)
+      found =1 
+      found_obj = ci[0][0]
+      #c = input("Continue")
+      #exit()
+
    if found == 0:
+      dist_objs = sorted(dist_objs, key=lambda x: (x[1]), reverse=False)
+      print("FIND: * * * * * * * OBJECT NOT FOUND. MAKE NEW ONE.", dist_objs)
+      print(" * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * ")
+    
       obj_id = max_obj + 1
+      #if obj_id > 10:
+      #   cc = input("cont")
+      #if obj_id > 20:
+      #   c = input("Continue")
       objects[obj_id] = {}
       objects[obj_id]['obj_id'] = obj_id
       objects[obj_id]['ofns'] = []
@@ -1594,12 +2120,13 @@ def find_object(objects, fn, cnt_x, cnt_y, cnt_w, cnt_h, intensity=0, hd=0, sd_m
       objects[obj_id]['ohs'] = []
       objects[obj_id]['oint'] = []
       objects[obj_id]['ofns'].append(fn)
-      objects[obj_id]['oxs'].append(center_x)
-      objects[obj_id]['oys'].append(center_y)
+      objects[obj_id]['oxs'].append(cnt_x)
+      objects[obj_id]['oys'].append(cnt_y)
       objects[obj_id]['ows'].append(cnt_w)
       objects[obj_id]['ohs'].append(cnt_h)
       objects[obj_id]['oint'].append(intensity)
       found_obj = obj_id
+      print("FIND NEW OBJ:", found_obj)
    if found == 1:
       #if objects[found_obj]['report']['obj_class'] == "meteor":
       #if True:
@@ -1616,18 +2143,21 @@ def find_object(objects, fn, cnt_x, cnt_y, cnt_w, cnt_h, intensity=0, hd=0, sd_m
       #      objects[found_obj]['oint'].append(intensity)
 
       #else:
+      if fn not in objects[found_obj]['ofns']:
          objects[found_obj]['ofns'].append(fn)
-         objects[found_obj]['oxs'].append(center_x)
-         objects[found_obj]['oys'].append(center_y)
+         objects[found_obj]['oxs'].append(cnt_x)
+         objects[found_obj]['oys'].append(cnt_y)
          objects[found_obj]['ows'].append(cnt_w)
          objects[found_obj]['ohs'].append(cnt_h)
          objects[found_obj]['oint'].append(intensity)
+         print("FIND: OBJ FOUND:", found_obj)
 
    #objects[found_obj] = analyze_object_old(objects[found_obj], hd, sd_multi, 1)
    #if objects[found_obj]['report']['meteor_yn'] == 'Y':
    #   max_int = max(objects[found_obj]['oint'])
    #   if max_int > 25000:
    #      objects[found_obj]['report']['obj_class'] = "fireball"
+   print("*** FIND OBJ END")
 
    return(found_obj, objects)
 
@@ -1874,8 +2404,10 @@ def get_trim_num(file):
    at = at.replace("-", "")
    return(at)
 
-def find_hd(sd_trim_file, dur):
+def find_hd(sd_trim_file, dur, meteor_start_frame=0):
    PIPE_OUT = PIPELINE_DIR + "IN/"
+   if cfe(PIPE_OUT, 1) == 0:
+      os.makedirs(PIPE_OUT)
    (f_datetime, cam, f_date_str,fy,fm,fd, fh, fmin, fs) = convert_filename_to_date_cam(sd_trim_file)
    sdfn = sd_trim_file.split("/")[-1]
    sd_trim_num = get_trim_num(sd_trim_file) 
@@ -1884,19 +2416,27 @@ def find_hd(sd_trim_file, dur):
    extra_trim_sec = int(sd_trim_num) / 25
    print("EXTRA TRIM SECONDS:", sd_trim_num)
    sd_trim_start = f_datetime + datetime.timedelta(seconds=extra_trim_sec)
-   sd_start_min_before = sd_trim_start + datetime.timedelta(seconds=-60)
-   sd_start_min_after = sd_trim_start + datetime.timedelta(seconds=+60)
+   if meteor_start_frame > 0:
+      mext = (meteor_start_frame / 25) + extra_trim_sec
+      meteor_event_start = f_datetime + datetime.timedelta(seconds=mext)
+
+      sd_start_min_before = sd_trim_start + datetime.timedelta(seconds=-60)
+      sd_start_min_after = sd_trim_start + datetime.timedelta(seconds=+60)
+   else:
+      meteor_event_start = sd_trim_start
+      mext = extra_trim_sec
 
    # get the HD files within +/- 1 min of the SD trim start time for this cam
    print("SD TRIM START TIME:", sd_trim_start)
-   date_wild = sd_trim_start.strftime("%Y_%m_%d_%H_%M")
-   date_wild_before = sd_start_min_before.strftime("%Y_%m_%d_%H_%M")
-   date_wild_after = sd_start_min_after.strftime("%Y_%m_%d_%H_%M")
+   print("SD METEOR START TIME:", meteor_event_start)
+   date_wild = sd_trim_start.strftime("%Y_%m_%d_%H")
+   #date_wild_before = sd_start_min_before.strftime("%Y_%m_%d_%H_%M")
+   #date_wild_after = sd_start_min_after.strftime("%Y_%m_%d_%H_%M")
    print("CAM:", cam)
    print("DATE WILD:", date_wild)
    hd_wild = "/mnt/ams2/HD/" + date_wild + "*" + cam + ".mp4"
-   hd_wild_before = "/mnt/ams2/HD/" + date_wild_before + "*" + cam + ".mp4"
-   hd_wild_after = "/mnt/ams2/HD/" + date_wild_after + "*" + cam + ".mp4"
+   #hd_wild_before = "/mnt/ams2/HD/" + date_wild_before + "*" + cam + ".mp4"
+   #hd_wild_after = "/mnt/ams2/HD/" + date_wild_after + "*" + cam + ".mp4"
    print("HD WILD:", hd_wild)
    hd_matches = glob.glob(hd_wild)
 
@@ -1909,27 +2449,33 @@ def find_hd(sd_trim_file, dur):
       print("SD/HD TIME DIFF:", hd_time_diff)
       if -60 <= hd_time_diff <= 0:
          best_hd_matches.append((hd_file, hd_time_diff))
-      if hd_time_diff > 0:
-         hd_matches_before = glob.glob(hd_wild_before)
+      #if hd_time_diff > 0:
+      #   hd_matches_before = glob.glob(hd_wild_before)
 
-         for hd_file in hd_matches_before:
-            (hd_datetime, hd_cam, hd_date_str,fy,fm,fd, fh, fmin, fs) = convert_filename_to_date_cam(hd_file)
-            hd_time_diff = (hd_datetime - sd_trim_start).total_seconds()
-            print("BEFORE SD/HD TIME DIFF:", hd_time_diff)
-            if -60 <= hd_time_diff <= 0:
-               best_hd_matches.append((hd_file,hd_time_diff))
-
+   hd_trim_out = None
    print("BEST HD FILE:", best_hd_matches)
+   if len(best_hd_matches) > 0:
+      temp = sorted(best_hd_matches, key=lambda x: (x[1]), reverse=True)
+      best_hd_matches = [temp[0]]
+      print("SORTED BEST HD FILE:", best_hd_matches)
+
    if len(best_hd_matches) == 1:
       hd_file = best_hd_matches[0][0]
+
+      w,h,frames = ffprobe(hd_file)
+      print(w,h,frames)
       hd_time_diff = best_hd_matches[0][1]
-      hd_trim_start = abs(hd_time_diff) * 25
-      hd_trim_end = hd_trim_start + dur
-      hd_trim_out = PIPE_OUT + sdfn
-      hd_trim_out = hd_trim_out.replace("-SD", "-HD")
+      hd_trim_start = (abs(hd_time_diff) * 25) 
+      print("HD TRIM START:", hd_trim_start)
+      hdfn, dir = fn_dir(hd_file)
+      hd_trim_end = hd_trim_start + dur + 100
       print("HD TRIM OUT:", hd_trim_out)
-      if cfe(hd_trim_out) == 0:
+      #if cfe(hd_trim_out) == 0:
+      if True:
+         print(hd_trim_start, hd_trim_end, hd_file)
          hd_trim_start, hd_trim_end, status = buffer_start_end(hd_trim_start, hd_trim_end, 10, 1499)
+         hdfn = hdfn.replace(".mp4", "-trim-" + "{:04d}".format(int(hd_trim_start)) + ".mp4")
+         hd_trim_out = PIPE_OUT + hdfn
          trim_min_file(hd_file, hd_trim_out, hd_trim_start, hd_trim_end)
       (hd_datetime, hd_cam, hd_date_str,fy,fm,fd, fh, fmin, fs) = convert_filename_to_date_cam(hd_file)
 
@@ -2311,6 +2857,8 @@ def find_contours_in_frame(frame, thresh=25 ):
       thresh_obj = cv2.dilate(threshold.copy(), None , iterations=4)
       threshold = cv2.convertScaleAbs(thresh_obj)
       cnt_res = cv2.findContours(threshold.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+      #cv2.imshow('pepe', threshold)
+      #cv2.waitKey(0)
 
       if len(cnt_res) == 3:
          (_, cnts, xx) = cnt_res
@@ -2322,7 +2870,7 @@ def find_contours_in_frame(frame, thresh=25 ):
 
    rects = []
    recs = []
-   if len(cnts) < 50:
+   if len(cnts) < 250:
       for (i,c) in enumerate(cnts):
          px_diff = 0
          x,y,w,h = cv2.boundingRect(cnts[i])

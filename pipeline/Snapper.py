@@ -39,9 +39,20 @@ def archive_snap_files():
          os.makedirs(arc_dir)
       if days_old > 1:
          old = file 
-         new = SNAP_DIR + day + "/" + fn 
-         new = new.replace(".png", "_1920x1080.jpg")
-         cmd = "convert " + old + " -resize 1920x1080 " + new
+         dir_1080 = SNAP_DIR + day + "/1080p/"
+         dir_360 = SNAP_DIR + day + "/360p/"
+         if cfe(dir_1080, 1) == 0:
+            os.makedirs(dir_1080)
+         if cfe(dir_360, 1) == 0:
+            os.makedirs(dir_360)
+         if ".png" in fn :
+            fn = fn.replace(".png", ".jpg")
+         file_1080 = dir_1080 + fn
+         file_360 = dir_360 + fn
+         cmd = "convert " + old + " -resize 1920x1080 " + file_1080
+         os.system(cmd)
+         print("CMD:", cmd ) 
+         cmd = "convert " + old + " -resize 640x360 " + file_360
          os.system(cmd)
          cmd2 = "rm " + old 
          os.system(cmd2)
@@ -50,7 +61,7 @@ def archive_snap_files():
 
 
 def purge_files():
-   files = glob.glob(SNAP_DIR + "*")
+   files = glob.glob(SNAP_DIR + "*.png")
    for file in files:
       if "comp" in file:
          cmd = "rm " + file
@@ -254,9 +265,10 @@ def snap_runner():
 
 
       if sec == 0 or sec == 30:
+         date_str = datetime.now().strftime("%Y_%m_%d_%H_%M_%S_000_")
          for cam in cams:
-            date_str = datetime.now().strftime("%Y_%m_%d_%H_%M_%S_000_")
-            outfile = SNAP_DIR + date_str + cam + ".png"
+            #cmd = "kill -9 `ps -aux | grep ffmpeg | grep SNAPS | grep " + cam_ip + " |grep -v grep| awk '{print $2}'`"
+            outfile = SNAP_DIR + date_str + cam + ".jpg"
             url = cams[cam]
             cmd = "/usr/bin/ffmpeg -y -i '" + url + "' -vframes 1 " + outfile + " >/dev/null 2>&1 &"
             print(cmd)

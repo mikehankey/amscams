@@ -216,7 +216,7 @@ def stack_glob(glob_dir, out_file):
       avg_px = np.mean(img)
       print("AG:", avg_px)
       if avg_px > 80 or avg_px == 0:
-         os.system("rm " + file)
+      #   os.system("rm " + file)
          continue
       img_pil = Image.fromarray(img)
       if stacked_image is None:
