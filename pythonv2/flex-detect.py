@@ -741,7 +741,10 @@ def classify_object(data, sd=1):
    if report['meteor_yn'] == "Y" and report['ang_sep_deg'] < .4:
       report['meteor_yn'] = "no"
       report['bad_items'].append("bad ang sep: " + str(report['ang_sep_deg']))
-
+   if px_dist < 4:
+      print("BAD PX", px_dist)
+      report['meteor_yn'] = "no"
+      report['bad_items'].append("bad px dist: " + str(report['px_dist']))
 
    # filter out detects with low CM
    last_fn = None
@@ -5051,6 +5054,10 @@ def analyze_object(object, hd = 0, sd_multi = 1, final=0):
 
 
    bad_items = []
+
+   xs = object['oxs']
+   ys = object['oys']
+
    perc_big = big_cnt_test(object, hd)
    if "ofns" not in object:
       if "report" not in object:
@@ -5066,6 +5073,13 @@ def analyze_object(object, hd = 0, sd_multi = 1, final=0):
       else:
          object['report']['meteor_yn'] = "no"
       return(object)
+
+   px_dist = calc_dist((min(xs),min(ys)), (max(xs),max(ys)))
+   if px_dist < 4:
+      if "report" not in object:
+         object['report'] = {}
+      object['report']['meteory_yn'] = "no"
+      bad_items.append("Bad px dist" + str(px_dist))
 
    last_x = object['oxs'][-1]
    last_y = object['oys'][-1]
@@ -5089,6 +5103,7 @@ def analyze_object(object, hd = 0, sd_multi = 1, final=0):
       dir_test_perc = meteor_dir_test(object['oxs'],object['oys'])
    else:
       dir_test_perc = 0
+
 
 
    id = object['obj_id']
@@ -10656,6 +10671,8 @@ def detect_in_vals(vals_file, cam_size_info):
       detect_file = vals_file.replace("-vals.json", "-toomany.json")
       save_json_file(detect_file, detect_info)
       print("Too many meteors.", len(suspect_meteors))
+      for m in suspect_meteors:
+         print(m['report'])
       return()
 
    if len(suspect_meteors) > 0:
@@ -11149,8 +11166,10 @@ def verify_meteor(meteor_json_file):
          else:
             print("Something wierd? Maybe a bird", len(sd_meteors), len(hd_meteors))
             print("No real meteors found here.")
-            print("HD:", hd_motion_objects)
-            print("SD:", sd_motion_objects)
+            for o in hd_motion_objects:
+               print("HD:", hd_motion_objects[o])
+            for o in sd_motion_objects:
+               print("SD:", sd_motion_objects[o])
             
             # mv the maybe file to detect so we don't try to check it again. 
             detect_file = detect_file.replace("-detect.json", "-nometeor.json")

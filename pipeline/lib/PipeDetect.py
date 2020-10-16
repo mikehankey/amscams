@@ -130,12 +130,13 @@ def verify_meteor(meteor_file, json_conf):
                meteors[file] = best_meteor
                HD = 1
 
-   for file in sd_images:
-      print("SD IMGS:", file) 
-      cv2.imshow('pepe', sd_images[file])
-   for file in hd_images:
-      print("HD IMGS:", file) 
-      cv2.imshow('pepe', hd_images[file])
+   if SHOW == 1:
+      for file in sd_images:
+         print("SD IMGS:", file) 
+         cv2.imshow('pepe', sd_images[file])
+      for file in hd_images:
+         print("HD IMGS:", file) 
+         cv2.imshow('pepe', hd_images[file])
 
    for file in meteors:
       print(file, meteors[file])
@@ -161,6 +162,8 @@ def save_old_meteor(meteors, media, sd_images, hd_images):
    for file in meteors:
       if meteors[file] is None:
          continue
+      print("METEOR FILE:", file, meteors[file])
+
       fn, dir = fn_dir(file)
       date = fn[0:10]
       mdir = "/mnt/ams2/meteors/" + date + "/" 
@@ -170,38 +173,82 @@ def save_old_meteor(meteors, media, sd_images, hd_images):
          HD = 1
          mj['hd_trim'] = mdir + fn
          mj['hd_video_file'] = mdir + fn 
-         mj['hd_stack'] = mdir + fn.replace(".mp4", "-stacked.jpg")
+         mj['org_hd_vid'] = file 
+         mj['hd_stack'] = mdir + fn.replace(".mp4", "-stacked.png")
          mj['hd_objects'] = meteors[file]
+         #mj['hd_objects'].append(meteors[file][id])
          mj['meteor'] = 1
          mj['archive_file'] = ""
          hd_stack_img = hd_images[file]
+         hd_stack_img = cv2.resize(hd_stack_img, (THUMB_W, THUMB_H))
       else:
          SD = 1
          mj['sd_trim'] = mdir + fn 
          mj['archive_file'] = ""
+         mj['org_sd_vid'] = file 
          mj['sd_video_file'] = mdir + fn 
          mj['trim_clip'] = mdir + fn 
-         mj['sd_stack'] = mdir + fn.replace(".mp4", "-stacked.jpg")
-         mj['sd_objects'] = meteors[file]
+         mj['sd_stack'] = mdir + fn.replace(".mp4", "-stacked.png")
+         mj['sd_objects'] = []
+         mj['sd_objects'].append( meteors[file])
+         #for id in meteors[file]:
+         #   print("SD OBJ:", meteors[file][id])
+         #   mj['sd_objects'].append(meteors[file][id])
          print("FILE:", file)
          sd_stack_img = sd_images[file]
+         sd_stack_img_tn = cv2.resize(sd_stack_img, (THUMB_W, THUMB_H))
+         obj_img = sd_stack_img.copy()
+         min_x = min(mj['sd_objects'][0]['oxs'])
+         min_y = min(mj['sd_objects'][0]['oys'])
+         max_x = max(mj['sd_objects'][0]['oxs'])
+         max_y = max(mj['sd_objects'][0]['oys'])
+         cv2.rectangle(obj_img, (min_x, min_y), (max_x, max_y), (255,255,255), 3, cv2.LINE_AA)
+         obj_tn = cv2.resize(obj_img, (THUMB_W, THUMB_H))
+   if "hd_trim" not in mj:
+      # Here we find trim and detect the HD meteor
+      for obj in mj['sd_objects']:
+         dur_fr = (len(obj['oxs'])) 
+      hd_trim = find_hd(mj['sd_trim'],dur_fr, mj['sd_objects'][0]['ofns'][0])
+      best_meteor, hd_stack_img = fireball(file, json_conf)
+      print("HD TRIM:", hd_trim)
+      print("BEST HD METEOR:", best_meteor)
+      if best_meteor is not None:
+         # We found the HD file and obj so copy it into the meteor dir and update the json
+         mj['hd_objects'] = []
+         mj['hd_objects'].append( best_meteor)
+         fn, dir = fn_dir(hd_trim)
+         mj['hd_trim'] = mdir + fn
+         mj['hd_video_file'] = mdir + fn 
+         mj['org_hd_vid'] = file 
+         mj['hd_stack'] = mdir + fn.replace(".mp4", "-stacked.png")
+         hd_stack_img_tn = cv2.resize(hd_stack_img, (THUMB_W, THUMB_H))
+         cmd = "cp " + hd_trim + " " + mdir + fn
+         print(cmd)
+         os.system(cmd)
+
+      else:
+         mj['hd_trim'] = "0"
    print(mj)
    fn,dir = fn_dir(mj['sd_trim'])
    date = fn[0:10]
    mdir = "/mnt/ams2/meteors/" + date + "/" 
    js = fn.replace(".mp4", ".json")
-   save_json_file(js, mj)
+   save_json_file(mdir + js, mj)
    # copy vids
    if "sd_trim" in mj:
-      cmd = "cp " + mj['sd_trim'] + " " + mdir
+      cmd = "cp " + mj['org_sd_vid'] + " " + mdir
       os.system(cmd)
       print(sd_stack_img.shape)
       print(mj['sd_stack'])
       cv2.imwrite(mj['sd_stack'], sd_stack_img)
+      cv2.imwrite(mj['sd_stack'].replace(".png", "-tn.png"), sd_stack_img_tn)
+      cv2.imwrite(mj['sd_stack'].replace(".png", "-obj-tn.png"), obj_tn)
    if "hd_trim" in mj:
-      cmd = "cp " + mj['hd_trim'] + " " + mdir
-      os.system(cmd)
-      cv2.imwrite(mj['hd_stack'], hd_stack_img)
+      if mj['hd_trim'] != "0":
+         cmd = "cp " + mj['org_hd_vid'] + " " + mdir
+         os.system(cmd)
+         cv2.imwrite(mj['hd_stack'], hd_stack_img)
+         cv2.imwrite(mj['hd_stack'].replace(".png", "-tn.png"), hd_stack_img_tn)
    print("Saved json:", js)
 
 
@@ -269,13 +316,15 @@ def fireball(video_file, json_conf):
 
 
       if meteor_on == 1:
-         sframe = cv2.resize(subframe, (1280, 720))
-         desc = "Frame:" + str(i)
-         cv2.putText(sframe, desc,  (10,40), cv2.FONT_HERSHEY_SIMPLEX, .4, (255, 255, 255), 1)
-         desc = str(sum_vals[i]) + " " + str(max_vals[i]) + " " + str(pos_vals[i]) + " " + str(len(cnts))
-         cv2.putText(sframe, desc,  (10,70), cv2.FONT_HERSHEY_SIMPLEX, .4, (255, 255, 255), 1)
-         cv2.imshow('pepe', sframe)
-         cv2.waitKey(30)
+
+         if SHOW == 1:
+            sframe = cv2.resize(subframe, (1280, 720))
+            desc = "Frame:" + str(i)
+            cv2.putText(sframe, desc,  (10,40), cv2.FONT_HERSHEY_SIMPLEX, .4, (255, 255, 255), 1)
+            desc = str(sum_vals[i]) + " " + str(max_vals[i]) + " " + str(pos_vals[i]) + " " + str(len(cnts))
+            cv2.putText(sframe, desc,  (10,70), cv2.FONT_HERSHEY_SIMPLEX, .4, (255, 255, 255), 1)
+            cv2.imshow('pepe', sframe)
+            cv2.waitKey(30)
          i += 1
 
    m = 0
@@ -323,18 +372,20 @@ def fireball(video_file, json_conf):
          lim = h + 10
       rx1,ry1,rx2,ry2 = bound_cnt(cx, cy,1920,1080, lim)
       
-      cv2.rectangle(img, (x, y), (x+w, y+h), (255,0,0), 1, cv2.LINE_AA)
-      cv2.rectangle(img, (rx1, ry1), (rx2, ry2), (128,0,0), 1, cv2.LINE_AA)
+      if SHOW == 1:
+         cv2.rectangle(img, (x, y), (x+w, y+h), (255,0,0), 1, cv2.LINE_AA)
+         cv2.rectangle(img, (rx1, ry1), (rx2, ry2), (128,0,0), 1, cv2.LINE_AA)
 
-      sframe = cv2.resize(img, (1280, 720))
-      desc = "Frame:" + str(fn)
-      cv2.putText(sframe, desc,  (10,20), cv2.FONT_HERSHEY_SIMPLEX, .4, (255, 255, 255), 1)
-      cv2.imshow('pepe', sframe)
-      cv2.waitKey(30)
+         sframe = cv2.resize(img, (1280, 720))
+         desc = "Frame:" + str(fn)
+         cv2.putText(sframe, desc,  (10,20), cv2.FONT_HERSHEY_SIMPLEX, .4, (255, 255, 255), 1)
+         cv2.imshow('pepe', sframe)
+         cv2.waitKey(30)
 
    stack_img = stack_frames(hd_color_frames)
-   cv2.imshow('pepe', stack_img)
-   cv2.waitKey(60)
+   if SHOW == 1:
+      cv2.imshow('pepe', stack_img)
+      cv2.waitKey(60)
 
    return(best_meteor, stack_img)
 
@@ -2353,8 +2404,10 @@ def get_trim_num(file):
    at = at.replace("-", "")
    return(at)
 
-def find_hd(sd_trim_file, dur):
+def find_hd(sd_trim_file, dur, meteor_start_frame=0):
    PIPE_OUT = PIPELINE_DIR + "IN/"
+   if cfe(PIPE_OUT, 1) == 0:
+      os.makedirs(PIPE_OUT)
    (f_datetime, cam, f_date_str,fy,fm,fd, fh, fmin, fs) = convert_filename_to_date_cam(sd_trim_file)
    sdfn = sd_trim_file.split("/")[-1]
    sd_trim_num = get_trim_num(sd_trim_file) 
@@ -2363,19 +2416,27 @@ def find_hd(sd_trim_file, dur):
    extra_trim_sec = int(sd_trim_num) / 25
    print("EXTRA TRIM SECONDS:", sd_trim_num)
    sd_trim_start = f_datetime + datetime.timedelta(seconds=extra_trim_sec)
-   sd_start_min_before = sd_trim_start + datetime.timedelta(seconds=-60)
-   sd_start_min_after = sd_trim_start + datetime.timedelta(seconds=+60)
+   if meteor_start_frame > 0:
+      mext = (meteor_start_frame / 25) + extra_trim_sec
+      meteor_event_start = f_datetime + datetime.timedelta(seconds=mext)
+
+      sd_start_min_before = sd_trim_start + datetime.timedelta(seconds=-60)
+      sd_start_min_after = sd_trim_start + datetime.timedelta(seconds=+60)
+   else:
+      meteor_event_start = sd_trim_start
+      mext = extra_trim_sec
 
    # get the HD files within +/- 1 min of the SD trim start time for this cam
    print("SD TRIM START TIME:", sd_trim_start)
-   date_wild = sd_trim_start.strftime("%Y_%m_%d_%H_%M")
-   date_wild_before = sd_start_min_before.strftime("%Y_%m_%d_%H_%M")
-   date_wild_after = sd_start_min_after.strftime("%Y_%m_%d_%H_%M")
+   print("SD METEOR START TIME:", meteor_event_start)
+   date_wild = sd_trim_start.strftime("%Y_%m_%d_%H")
+   #date_wild_before = sd_start_min_before.strftime("%Y_%m_%d_%H_%M")
+   #date_wild_after = sd_start_min_after.strftime("%Y_%m_%d_%H_%M")
    print("CAM:", cam)
    print("DATE WILD:", date_wild)
    hd_wild = "/mnt/ams2/HD/" + date_wild + "*" + cam + ".mp4"
-   hd_wild_before = "/mnt/ams2/HD/" + date_wild_before + "*" + cam + ".mp4"
-   hd_wild_after = "/mnt/ams2/HD/" + date_wild_after + "*" + cam + ".mp4"
+   #hd_wild_before = "/mnt/ams2/HD/" + date_wild_before + "*" + cam + ".mp4"
+   #hd_wild_after = "/mnt/ams2/HD/" + date_wild_after + "*" + cam + ".mp4"
    print("HD WILD:", hd_wild)
    hd_matches = glob.glob(hd_wild)
 
@@ -2388,27 +2449,33 @@ def find_hd(sd_trim_file, dur):
       print("SD/HD TIME DIFF:", hd_time_diff)
       if -60 <= hd_time_diff <= 0:
          best_hd_matches.append((hd_file, hd_time_diff))
-      if hd_time_diff > 0:
-         hd_matches_before = glob.glob(hd_wild_before)
+      #if hd_time_diff > 0:
+      #   hd_matches_before = glob.glob(hd_wild_before)
 
-         for hd_file in hd_matches_before:
-            (hd_datetime, hd_cam, hd_date_str,fy,fm,fd, fh, fmin, fs) = convert_filename_to_date_cam(hd_file)
-            hd_time_diff = (hd_datetime - sd_trim_start).total_seconds()
-            print("BEFORE SD/HD TIME DIFF:", hd_time_diff)
-            if -60 <= hd_time_diff <= 0:
-               best_hd_matches.append((hd_file,hd_time_diff))
-
+   hd_trim_out = None
    print("BEST HD FILE:", best_hd_matches)
+   if len(best_hd_matches) > 0:
+      temp = sorted(best_hd_matches, key=lambda x: (x[1]), reverse=True)
+      best_hd_matches = [temp[0]]
+      print("SORTED BEST HD FILE:", best_hd_matches)
+
    if len(best_hd_matches) == 1:
       hd_file = best_hd_matches[0][0]
+
+      w,h,frames = ffprobe(hd_file)
+      print(w,h,frames)
       hd_time_diff = best_hd_matches[0][1]
-      hd_trim_start = abs(hd_time_diff) * 25
-      hd_trim_end = hd_trim_start + dur
-      hd_trim_out = PIPE_OUT + sdfn
-      hd_trim_out = hd_trim_out.replace("-SD", "-HD")
+      hd_trim_start = (abs(hd_time_diff) * 25) 
+      print("HD TRIM START:", hd_trim_start)
+      hdfn, dir = fn_dir(hd_file)
+      hd_trim_end = hd_trim_start + dur + 100
       print("HD TRIM OUT:", hd_trim_out)
-      if cfe(hd_trim_out) == 0:
+      #if cfe(hd_trim_out) == 0:
+      if True:
+         print(hd_trim_start, hd_trim_end, hd_file)
          hd_trim_start, hd_trim_end, status = buffer_start_end(hd_trim_start, hd_trim_end, 10, 1499)
+         hdfn = hdfn.replace(".mp4", "-trim-" + "{:04d}".format(int(hd_trim_start)) + ".mp4")
+         hd_trim_out = PIPE_OUT + hdfn
          trim_min_file(hd_file, hd_trim_out, hd_trim_start, hd_trim_end)
       (hd_datetime, hd_cam, hd_date_str,fy,fm,fd, fh, fmin, fs) = convert_filename_to_date_cam(hd_file)
 

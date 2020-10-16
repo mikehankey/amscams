@@ -414,7 +414,7 @@ def scan_and_stack(video_file, sun_status):
    print("SCAN AND STACK TIME:", elapsed_time)
    vfn = video_file.split("/")[-1]
    print(proc_dir + vfn)
-
+   print(proc_vals_file)
    return(proc_vals_file)
 
 if sys.argv[1] == "bs":
