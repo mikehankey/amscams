@@ -157,7 +157,12 @@ obs_name = config['site']['obs_name']
 
 wd_file = "../conf/watchdog-status.json"
 
-if cfe(wd_file) == 0:
+if cfe(wd_file) == 1:
+   wd = load_json_file(wd_file)
+else:
+   wd = 0
+
+if wd == 0:
    print("Make new WD.")
    wd = {}
    wd['last_system_reboot'] = uptime()
@@ -187,6 +192,8 @@ if cfe(wd_file) == 0:
    save_json_file(wd_file, wd)
 else:
    wd = load_json_file(wd_file)
+   if wd == 0:
+      wd = {}
    print("Load WD")
 
 clean_zombies()
