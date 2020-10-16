@@ -107,7 +107,10 @@ def stack_stack(pic1, pic2):
 #def mark_image_obj():
 
 def mask_frame(frame, mp, masks, size=3):
+   if masks is None: 
+      return(frame)
    hdm_x = 2.7272
+   
    hdm_y = 1.875
    """ Mask bright pixels detected in the median
        and also mask areas defined in the config """

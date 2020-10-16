@@ -1153,6 +1153,7 @@ def gradient(image):
    #cv2.waitKey(0)
 
 def make_flat(cam,day,json_conf):
+   print("Make flat:", cam, day)
    if cfe(MASK_DIR, 1) == 0:
       os.makedirs(MASK_DIR)
    mask_file = MASK_DIR + cam + "_mask.png"
@@ -1162,16 +1163,28 @@ def make_flat(cam,day,json_conf):
       date = datetime.now().strftime("%Y_%m_%d")
    else:
       date = day
-   if cfe(mask_file) == 0:
+   #if cfe(mask_file) == 0:
+   if True:
       wild = "/mnt/ams2/SD/proc2/daytime/" + date + "/*" + cam + "*.mp4" 
+      nwild = "/mnt/ams2/SD/proc2/" + date + "/*" + cam + "*.mp4" 
+      print(wild)
       files = glob.glob(wild)
+      nfiles = glob.glob(nwild)
+      for file in nfiles:
+         files.append(file)
+      if len(files) == 0:
+         print("No files for this day", wild)
+         return(None, None)
       med_frames = []
       mask_frames = []
       fc = 0
       for file in sorted(files):
+         if "trim" in file or "crop" in file :
+            continue
          (f_datetime, cam, f_date_str,fy,fmin,fd, fh, fm, fs) = convert_filename_to_date_cam(file)
          sun_status, sun_az, sun_el = day_or_night(f_date_str, json_conf,1)
          if -15 <= int(sun_el) <= -10:
+
             frames,color_frames,subframes,sum_vals,max_vals,pos_vals = load_frames_fast(file, json_conf, 1, 1, [], 1,[])
             med_frames.append(color_frames[0])
          if -10 <= int(sun_el) <= -5:
@@ -1179,6 +1192,12 @@ def make_flat(cam,day,json_conf):
             mask = color_thresh(color_frames[0]) 
             mask_frames.append(mask)
 
+      print("MASK FRAMES:", len(mask_frames), len(med_frames))
+      if len(mask_frames) == 0:
+         print("No good frames selected...")
+         return(None, None)
+      for frame in mask_frames:
+         print(frame.shape)
       median_mask = cv2.convertScaleAbs(np.median(np.array(mask_frames), axis=0))
 
       median_flat = cv2.convertScaleAbs(np.median(np.array(med_frames), axis=0))
@@ -1187,6 +1206,7 @@ def make_flat(cam,day,json_conf):
       median_mask = fill_mask(median_mask)
       cv2.imwrite(mask_file, median_mask)
       cv2.imwrite(flat_file, median_flat)
+      print(mask_file)
    else:
       print("LOADING:", mask_file)
       median_mask = cv2.imread(mask_file)
