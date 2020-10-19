@@ -592,6 +592,8 @@ def load_frames_simple(trim_file):
             go = 0
       if frame is not None:
          frames.append(frame)
+      if frame_count > 1499:
+         go = 0
       frame_count += 1
 
    cap.release()

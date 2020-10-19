@@ -164,7 +164,7 @@ def tl_list(wild_dir, cam, fps = 25, json_conf=None, auonly = 1):
     files = glob.glob(wild_dir + "*" + cam + "*.jpg")
     list = ""
     dur = 1/ int(fps)
-    for file in files: 
+    for file in sorted(files): 
        if auonly == 1 and "-tl.jpg" in file:
           foo = 1
        else:
@@ -281,19 +281,20 @@ def aurora_stack_vid(video, json_conf):
    #stack video frames in 
    (f_datetime, cam, f_date_str,fy,fm,fd, fh, fmin, fs) = convert_filename_to_date_cam(video)
    date = fy + "_" + fm + "_" + fd
-
+   print("Load frames:", video)
    sd_frames = load_frames_simple(video)
-   AS_DIR = "/mnt/ams2/meteor_archive/" + STATION_ID + "/AURORA/STACKS/" + date + "/" 
+   print("Frames Loaded.")
+   AS_DIR = "/mnt/ams2/meteor_archive/" + STATION_ID + "/AURORA/STACKS/" + date + "/" + cam + "/" 
    if cfe(AS_DIR, 1) == 0:
       os.makedirs(AS_DIR)
 
-   root = video.replace(".mp4", "")
-   rfn, dir = fn_dir(root)
-   done_files = glob.glob(AS_DIR + rfn + "*.jpg")
-   print("CHECK:", AS_DIR + rfn + "*.jpg")
-   if len(done_files) > 5:
-      print("ALREADY DONE.")
-      return()
+   #root = video.replace(".mp4", "")
+   #rfn, dir = fn_dir(root)
+   #done_files = glob.glob(AS_DIR + rfn + "*.jpg")
+   #print("CHECK:", AS_DIR + rfn + "*.jpg")
+   #if len(done_files) > 5:
+   #   print("ALREADY DONE.")
+   #   return()
 
    sd_frames = load_frames_simple(video)
    fc = 0
@@ -303,14 +304,18 @@ def aurora_stack_vid(video, json_conf):
    stack_lim = 10
    for frame in sd_frames:
       short_frames.append(frame)
-      if fc % stack_lim == 0 and fc > 0:
+      if fc % stack_lim == 0 and fc > 0 and len(short_frames) > 0:
+         print("Stacking...")
          stack_image = stack_frames(short_frames)
          short_frames = []
          num = "{:04d}".format(fc)
          tfn = stack_fn.replace(".jpg", "-" + str(num) + ".jpg")
          outfile = AS_DIR + tfn 
-         cv2.imwrite(outfile, stack_image)
-         print(outfile)
+         try:
+            cv2.imwrite(outfile, stack_image)
+            print(outfile)
+         except: 
+            print("ERROR:")
       fc += 1
 
 def aurora_report(date, json_conf):
@@ -341,8 +346,12 @@ def aurora_report(date, json_conf):
                aud = adata['aurora']
                if "hist_data" in aud:
                   hist = aud['hist_data'] 
-                  rg = hist['g'] / hist['r']
-                  bg = hist['g'] / hist['b']
+                  if hist['r'] > 0 and hist['b'] > 0:
+                     rg = hist['g'] / hist['r']
+                     bg = hist['g'] / hist['b']
+                  else:
+                     rg = 0
+                     bg = 0
                else:
                   rg = 0
                   bg = 0
@@ -540,6 +549,7 @@ def aurora_report(date, json_conf):
       aurora_stack_vid(file, json_conf)
 
 def detect_aurora(img_file=None):
+   print("DA:", img_file)
 #   img_file = "aurora.jpg"
    max_rg = 0
    max_bg = 0
@@ -549,6 +559,7 @@ def detect_aurora(img_file=None):
    try:
       w,h = img.shape[:2]
    except:
+      print("Bad image.", img_file)
       return(0)
    #cv2.imshow('pepe', img)
    #cv2.waitKey(0)
@@ -558,8 +569,12 @@ def detect_aurora(img_file=None):
 
    (hist_img, dom_color, hist_data) = histogram(img)
    
-   rg = hist_data['g'] / hist_data['r']
-   bg = hist_data['g'] / hist_data['b']
+   if hist_data['r'] > 0:
+      rg = hist_data['g'] / hist_data['r']
+      bg = hist_data['g'] / hist_data['b']
+   else:
+      rg = 0
+      bg = 0
    print("RG ALL:", rg, bg)
    # check 4 quads of image
    x1 = 0
@@ -567,8 +582,12 @@ def detect_aurora(img_file=None):
    y1 = 0
    y2 = int(img.shape[0] / 2)
    (hist_img, dom_color, hist_data) = histogram(img[y1:y2,x1:x2])
-   rg = hist_data['g'] / hist_data['r']
-   bg = hist_data['g'] / hist_data['b']
+   if hist_data['r'] > 0:
+      rg = hist_data['g'] / hist_data['r']
+      bg = hist_data['g'] / hist_data['b']
+   else:
+      rg = 0
+      bg = 0
    print("RG TL:", rg, bg)
    if rg > max_rg and bg > max_bg:
       max_rg = rg
@@ -580,8 +599,12 @@ def detect_aurora(img_file=None):
    y1 = 0
    y2 = int(img.shape[0] / 2)
    (hist_img, dom_color, hist_data) = histogram(img[y1:y2,x1:x2])
-   rg = hist_data['g'] / hist_data['r']
-   bg = hist_data['g'] / hist_data['b']
+   if hist_data['r'] > 0:
+      rg = hist_data['g'] / hist_data['r']
+      bg = hist_data['g'] / hist_data['b']
+   else:
+      rg = 0
+      bg = 0
    print("RG TR:", rg, bg)
    if rg > max_rg and bg > max_bg:
       max_rg = rg
@@ -593,21 +616,30 @@ def detect_aurora(img_file=None):
    y1 = int(img.shape[0] / 2)
    y2 = img.shape[0]
    (hist_img, dom_color, hist_data) = histogram(img[y1:y2,x1:x2])
-   rg = hist_data['g'] / hist_data['r']
-   bg = hist_data['g'] / hist_data['b']
+   if hist_data['r'] > 0:
+      rg = hist_data['g'] / hist_data['r']
+      bg = hist_data['g'] / hist_data['b']
+   else:
+      rg = 0
+      bg = 0
    print("RG BR:", rg, bg)
    if rg > max_rg and bg > max_bg:
       max_rg = rg
       max_bg = bg
       best_quad = "BR"
 
-   x1 = int(img.shape[1] / 2)
-   x2 = img.shape[1]
-   y1 = 0
-   y2 = int(img.shape[0] / 2)
+   x1 = 0
+   x2 = int(img.shape[1] / 2)
+   y1 = int(img.shape[0] / 2)
+   y2 = img.shape[1]
+
    (hist_img, dom_color, hist_data) = histogram(img[y1:y2,x1:x2])
-   rg = hist_data['g'] / hist_data['r']
-   bg = hist_data['g'] / hist_data['b']
+   if hist_data['r'] > 0:
+      rg = hist_data['g'] / hist_data['r']
+      bg = hist_data['g'] / hist_data['b']
+   else:
+      rg = 0
+      bg = 0
    print("RG BL:", rg, bg)
    if rg > max_rg and bg > max_bg:
       max_rg = rg
@@ -635,15 +667,28 @@ def detect_aurora(img_file=None):
          cv2.drawContours(img, [approx], -1, (0, 0, 255), 3)
          aprox.append(approx.tolist())
          print(dom_color, rg, bg)
-         if dom_color == 'g' and max_rg > 1.1 and max_bg > 1.1:
+         if dom_color == 'g' and (max_rg > 1.2 or max_bg > 1.2):
             detected = 1
             print("DETECTED!")
+         try:
+            perimeter = float(perimeter)
+         except:
+            perimeter = 0
          print("PERM/AREA:", perimeter, max_area) 
 
    if detected == 1 or (max_bg > 1.1 and max_rg > 1.1):
+      try:
+         perimeter = float(perimeter)
+      except:
+         perimeter = 0
+      try:
+         max_area = float(max_area)
+      except:
+         max_area = 0
       detected = 1
       #cv2.imshow('pepe', img)
       #cv2.waitKey(30)
+      print("PERM:", perimeter)
       aur = {
          "detected": detected,
          "approx": aprox,
@@ -911,6 +956,9 @@ def extract_night_images(cam, day):
       fn, vdir = fn_dir(nfile )
       stack_file = vdir + "/images/" + fn
       stack_file = stack_file.replace(".mp4", "-stacked-tn.png")
+      if cfe(stack_file) == 0:
+         stack_file = stack_file.replace(".png", "jpg")
+ 
       
       vidfile = NIGHT_VID_DIR + fn
       night_images.append(vidfile)
@@ -919,9 +967,12 @@ def extract_night_images(cam, day):
 
    
 
-def extract_images(files):
+def extract_images(files, outdir=None):
+
    global TL_IMAGE_DIR
    global TL_VIDEO_DIR
+   if outdir is not None:
+      TL_IMAGE_DIR = outdir
    fn, dir = fn_dir(files[0])
    day = fn[0:10]
 
@@ -946,7 +997,10 @@ def extract_images(files):
       date_next_30 = f_datetime + datetime.timedelta(seconds=sec_to_30)
 
       print(f_datetime, sec_to_60, sec_to_30 , date_next_60, date_next_30, frame_to_60, frame_to_30)
-      outfile = TL_IMAGE_DIR + date_next_60.strftime("%Y_%m_%d_%H_%M_%S_000_") + cam + ".png"
+      if outdir is None:
+         outfile = TL_IMAGE_DIR + date_next_60.strftime("%Y_%m_%d_%H_%M_%S_000_") + cam + ".jpg"
+      else:
+         outfile = outdir + date_next_60.strftime("%Y_%m_%d_%H_%M_%S_000_") + cam + ".jpg"
       if cfe(outfile) == 0:
          cmd = """ /usr/bin/ffmpeg -i """ + file + """ -vf select="between(n\,""" + str(frame_to_60) + """\,""" + str(frame_to_60+1) + """),setpts=PTS-STARTPTS" -y -update 1 """ + outfile + " >/dev/null 2>&1"
          print(cmd)
@@ -954,7 +1008,11 @@ def extract_images(files):
       if cfe(outfile) == 1:
          all_files.append(outfile)
 
-      outfile = TL_IMAGE_DIR + date_next_30.strftime("%Y_%m_%d_%H_%M_%S_000_") + cam + ".png"
+      if outdir is None:
+         outfile = TL_IMAGE_DIR + date_next_30.strftime("%Y_%m_%d_%H_%M_%S_000_") + cam + ".png"
+      else:
+         outfile = outdir + date_next_60.strftime("%Y_%m_%d_%H_%M_%S_000_") + cam + ".jpg"
+
       if cfe(outfile) == 0:
          cmd = """ /usr/bin/ffmpeg -i """ + file + """ -vf select="between(n\,""" + str(frame_to_30) + """\,""" + str(frame_to_30+1) + """),setpts=PTS-STARTPTS" -y -update 1 """ + outfile + " >/dev/null 2>&1"
          print(cmd)
@@ -1132,8 +1190,13 @@ def histogram(image):
    img = None 
 
    # blue as % of green and red
-   green_blue_perc = hist_data['g'] / hist_data['b']
-   red_blue_perc = hist_data['r'] / hist_data['b']
+   if hist_data['b'] > 0:
+      green_blue_perc = hist_data['g'] / hist_data['b']
+      red_blue_perc = hist_data['r'] / hist_data['b']
+   else:
+      green_blue_perc = 0
+      red_blue_perc = 0
+      dom_color = 'n'
 
    text1 = "DOM COLOR: " + dom_color
    text2 = "Green/Blue Perc: " +  str(green_blue_perc)[0:4]
