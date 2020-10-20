@@ -12,7 +12,7 @@
       },
       {
          "ams_id": "AMS7",
-         "bid": [1],
+         "bid": [1,6],
          "operator": "Elizabeth Warner, University of MD",
          "location": "College Park, MD USA"
       },
@@ -24,30 +24,18 @@
       },
       {
          "ams_id": "AMS9",
-         "bid": [3,4,5],
+         "bid": [3,7],
          "operator": "Ed Abel",
          "location": "Mathias, WV USA"
       },
       {
-         "ams_id": "AMS42",
-         "bid": [6],
-         "operator": "Cedar Amateur Astronomers",
-         "location": "Cedar Rapids, IA USA"
-      },
-      {
-         "ams_id": "AMS48",
-         "bid": [7,8],
-         "operator": "James Hannon",
-         "location": "Otter Creek TWP, IA USA"
-      },
-      {
          "ams_id": "AMS8",
-         "bid": [9],
+         "bid": [4,8],
          "operator": "Kevin Palivec",
          "location": "Hawley TX, USA"
       },
       {
-         "bid": [8],
+         "bid": [9],
          "ams_id": "AMS24",
          "operator": "Robert Lunsford, University of Arizona",
          "location": "El Cajo, CA USA"
@@ -57,12 +45,24 @@
 
    "backups" : [
       {
+         "ams_id": "AMS48",
+         "bid": [7,8],
+         "operator": "James Hannon",
+         "location": "Otter Creek TWP, IA USA"
+      },
+      {
          "bid": 9,
          "ams_id": "AMS14",
          "operator": "Mel Helm",
          "location": "Auberry, CA USA"
       }
-   ]
+   ],
+      {
+         "ams_id": "AMS42",
+         "bid": [6],
+         "operator": "Cedar Amateur Astronomers",
+         "location": "Cedar Rapids, IA USA"
+      },
 
 
 }
