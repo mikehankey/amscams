@@ -1,8 +1,8 @@
 [
 {
-   "name": "Perseids 2020",
-   "start": "2020_08_11_12_00_00",
-   "end": "2020_08_12_14_00_00",
+   "name": "Orionids 2020",
+   "start": "2020_10_20_12_00_00",
+   "end": "2020_10_21_12_00_00",
    "video_providers" : [
       {
          "ams_id": "AMS1",
@@ -45,12 +45,6 @@
          "bid": [8,9],
          "operator": "Kevin Palivec",
          "location": "Hawley TX, USA"
-      },
-      {
-         "ams_id": "AMS2",
-         "bid": [9,10],
-         "operator": "Robert Ward",
-         "location": "Prescott, AZ USA"
       },
       {
          "bid": [8],
