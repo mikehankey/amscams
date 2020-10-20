@@ -55,15 +55,13 @@
          "ams_id": "AMS14",
          "operator": "Mel Helm",
          "location": "Auberry, CA USA"
-      }
-   ],
+      },
       {
          "ams_id": "AMS42",
          "bid": [6],
          "operator": "Cedar Amateur Astronomers",
          "location": "Cedar Rapids, IA USA"
-      },
-
-
+      }
+   ]
 }
 ]
