@@ -1106,32 +1106,38 @@ def minify_file(file, outdir, text, md, sd_img = None, hd_img = None):
          os.system(cmd)
          os.system("mv " + temp_outfile + " " + outfile)
          print("TEST HERE:", outfile) 
-   
-   # NOW MAKE THE CROP HD VIDEO
-   hw = hcx2 - hcx1
-   hh = hcy2 - hcy1
-   crop_file = outfile.replace(".mp4", "-crop.mp4")
-   if cfe(crop_file) == 0:
-      crop_file = crop_video(file, hcx1, hcy1, hw, hh, crop_file)
-   try:
-      stack_img_crop = stack_img[hcy1:hcy1+hh,hcx1:hcx1+hw]
-   except:
-      print("NO HD FILE? STACK IS BAD", file)
-      stack_img_crop = None
+     
+   # NOW MAKE THE CROP HD VIDEO if METEOR == 1
+   meteor = 0
+   if meteor == 1:
+      hw = hcx2 - hcx1
+      hh = hcy2 - hcy1
+      crop_file = outfile.replace(".mp4", "-crop.mp4")
+      if cfe(crop_file) == 0:
+         crop_file = crop_video(file, hcx1, hcy1, hw, hh, crop_file)
+      try:
+         stack_img_crop = stack_img[hcy1:hcy1+hh,hcx1:hcx1+hw]
+      except:
+         print("NO HD FILE? STACK IS BAD", file)
+         stack_img_crop = None
 
+
+      print("TIME TO MINIFY FILE:", elapsed_time)
+      print("MIN FILE:", outfile)
+      stack_file = outfile.replace(".mp4", ".jpg")
+      stack_crop_file = crop_file.replace(".mp4", ".jpg")
+      if stack_img_crop is not None:
+         cv2.imwrite(stack_crop_file, stack_img_crop)
+      if stack_img is not None:
+         cv2.imwrite(stack_file, stack_img)
+      print("STACK FILE:", stack_file)
+      print("STACK CROP FILE:", stack_crop_file)
+   else:
+      crop_file = None
+      cropbox_1080 = None
+      cropbox_720 = None
 
    elapsed_time = time.time() - start_time 
-   print("TIME TO MINIFY FILE:", elapsed_time)
-   print("MIN FILE:", outfile)
-   print("CROP FILE:", crop_file)
-   stack_file = outfile.replace(".mp4", ".jpg")
-   stack_crop_file = crop_file.replace(".mp4", ".jpg")
-   if stack_img_crop is not None:
-      cv2.imwrite(stack_crop_file, stack_img_crop)
-   if stack_img is not None:
-      cv2.imwrite(stack_file, stack_img)
-   print("STACK FILE:", stack_file)
-   print("STACK CROP FILE:", stack_crop_file)
    return(outfile, crop_file,cropbox_1080, cropbox_720)
 
         
