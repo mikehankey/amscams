@@ -336,6 +336,16 @@ def setup_vpn():
    os.system("wget " + pass_file + " -O /etc/openvpn/as6vpn.txt")
 
 def main_menu():
+   from time import gmtime, strftime
+   # MAKE SURE TIMEZONE IS UTC!
+   toff = int(strftime("%z", gmtime()))
+   if toff == 0:
+      print("UTC Timezone is set.")
+   else:
+      print("SETTING UTC TIME.")
+      os.system("sudo timedatectl set-timezone UTC")
+
+
    print("""
 AllSkyCams.com (ASC) software installer. 
 

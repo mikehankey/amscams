@@ -173,9 +173,11 @@ def project_snaps(json_conf):
              cv2.circle(asimg,(2500,2500), 1500, (128,128,128), 1)
              asimg_crop = asimg[cy1:cy2,cx1:cx2]
              print("ASIMG SIZE:", asimg_crop.shape)
-             disp_img = cv2.resize(asimg_crop, (800, 800))
-             cv2.imshow('allsky', disp_img)
-             cv2.waitKey(30)
+             if SHOW == 0:
+                disp_img = cv2.resize(asimg_crop, (800, 800))
+           
+                cv2.imshow('allsky', disp_img)
+                cv2.waitKey(30)
 
 def make_file_matrix(day,json_conf):
    today = datetime.now().strftime("%Y_%m_%d")
@@ -503,6 +505,7 @@ def guess_cal(cal_file, json_conf, cal_params = None):
    for star in stars:
       x,y,intense = star
       cv2.circle(img,(x,y), 7, (128,128,128), 1)
+   
    cv2.imshow('pepe', img)
    cv2.waitKey(30)
    print("CAM:", this_cam)
@@ -1609,7 +1612,7 @@ def solve_field(image_file, image_stars=[], json_conf={}):
    image_file = idir + ifn
 
    # solve field
-   cmd = "/usr/local/astrometry/bin/solve-field " + plate_file + " --crpix-center --cpulimit=30 --verbose --no-delete-temp --overwrite --width=" + str(HD_W) + " --height=" + str(HD_H) + " -d 1-40 --scale-units dw --scale-low 50 --scale-high 90 -S " + solved_file + " >" + astrout
+   cmd = "/usr/local/astrometry/bin/solve-field " + plate_file + " --crpix-center --cpulimit=30 --verbose --no-delete-temp --overwrite --width=" + str(HD_W) + " --height=" + str(HD_H) + " -d 1-40 --scale-units dw --scale-low 20 --scale-high 90 -S " + solved_file + " >" + astrout
    print(cmd)
    astr = cmd
    if cfe(solved_file) == 0:
@@ -2085,9 +2088,11 @@ def eval_cal_dupe(cp_file,json_conf,nc=None,oimg=None):
 
    nc['total_res_px'] = avg_res
    nc['match_perc'] = match_perc
-   dimg = cv2.resize(img, (1280,720))
-   cv2.imshow('pepe', dimg)
-   cv2.waitKey(15)
+   if SHOW == 1:
+      dimg = cv2.resize(img, (1280,720))
+   
+      cv2.imshow('pepe', dimg)
+      cv2.waitKey(15)
    return(nc, bad_stars)
 
 def remove_bad_stars(cp, bad_stars):
@@ -2454,6 +2459,7 @@ def cal_all(json_conf):
    cal_dir = ARC_DIR + "CAL/AUTOCAL/" + year + "/*.png"
    files = glob.glob(cal_dir)
    for file in files:
+      print("TRYING.")
       autocal(file, json_conf, 1)
       #exit()
 
@@ -2478,11 +2484,17 @@ def autocal(image_file, json_conf, show = 0):
    (f_datetime, cam, f_date_str,y,m,d, h, mm, s) = convert_filename_to_date_cam(image_file)
    cam = cam.replace(".png", "")
    masks = get_masks(cam, json_conf,1)
-   star_img = img.copy()
+   try:
+      star_img = img.copy()
+   except: 
+      print("BAD INPUT FILE:", image_file)
+      exit()
+      return()
+
    img = mask_frame(img, [], masks, 5)
 
    stars = get_image_stars(image_file, None, json_conf,0)
-
+   print("STARS:", len(stars))
    year = datetime.now().strftime("%Y")
    autocal_dir = "/mnt/ams2/meteor_archive/" + STATION_ID + "/CAL/AUTOCAL/" + year + "/solved/"
    mcp_file = autocal_dir + "multi_poly-" + STATION_ID + "-" + cam + ".info"
@@ -2822,23 +2834,23 @@ def check_close(point_list, x, y, max_dist):
    return(count)
 
 def find_stars_with_grid(image):
-   gsize = 100
+   gsize = 640 
    height, width = image.shape[:2]
    best_stars = []
 
-   sw = int(1920/100) + 1 
-   sh = int(1080/100) + 1 
+   sw = int(1920/gsize)  
+   sh = int(1080/gsize)  
    for i in range(0,sw):
       for j in range(0,sh):
          x1 = i * gsize
          y1 = j * gsize
          x2 = x1 + gsize 
          y2 = y1 + gsize 
-         if x2 > 1920:
+         if x2 >= 1920:
             x2 = 1920
-         if y2 > 1080:
+         if y2 >= 1080:
             y2 = 1080 
-         #print(x1, x2, y1,y2)
+         print(x1, x2, y1,y2)
          if True:
             if x2 <= width and y2 <= height:
                grid_img = image[y1:y2,x1:x2]
@@ -2868,17 +2880,20 @@ def get_image_stars(file=None,img=None,json_conf=None,show=0):
    if img is None:
       print("Loading image:", file)
       img = cv2.imread(file, 0)
+   print("Loaded.")
    if len(img.shape) > 2:
       img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
    show_pic = img.copy()
-   best_stars = find_stars_with_grid(img)
-
+   print("Finding stars.")
+   #best_stars = find_stars_with_grid(img)
+   #print("FOUND:", len(best_stars ))
+   
    #for x,y,f in best_stars:
    #   cv2.rectangle(show_pic, (x-5, y-5), (x+5, y+5), (255, 255, 255), 1)
 
    #dsp = cv2.resize(show_pic, (1280,720))
    #cv2.imshow('pepe', dsp)
-   return(best_stars)
+   #return(best_stars)
    #exit()
 
    raw_img = img.copy()
@@ -2927,9 +2942,10 @@ def get_image_stars(file=None,img=None,json_conf=None,show=0):
           cv2.putText(show_pic, str(star_int),  (int(10),int(980)), cv2.FONT_HERSHEY_SIMPLEX, .8, (255, 255, 255), 1)
           bcnt = cv2.resize(new_cnt_img, (100,100))
           show_pic[980:1080,0:100] = bcnt
-          dsp = cv2.resize(show_pic, (1280,720))
-          cv2.imshow('pepe', dsp)
-          cv2.waitKey(40)
+          if SHOW == 1:
+             dsp = cv2.resize(show_pic, (1280,720))
+             cv2.imshow('pepe', dsp)
+             cv2.waitKey(40)
       else:
           cv2.rectangle(show_pic, (bx1, by1), (bx2, by2 ), (150, 150, 150), 1)
       cc = cc + 1
