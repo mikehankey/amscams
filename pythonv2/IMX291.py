@@ -39,13 +39,14 @@ def get_cam_passwd(ip):
       if ip == cam_ip:
          el = sd_url.split("&")
          for k in el:
+            print("KEY:", k)
             if "password" in k:
                el2 = k.split("=")
                CameraPassword = el2[1]
                print("PASS IS:", CameraPassword)
-            else:
-               print("Default cam passwd")
-               CameraPassword=""
+            #else:
+            #   print("Default cam passwd")
+            #   CameraPassword=""
    return(CameraPassword)
 
 def sense_up(cam, cam_ip):
@@ -209,7 +210,7 @@ if cmd == "sense_up" or cmd == "sense_all":
    sun, az, alt  = day_or_night(datetime.now(), json_conf)
    if int(alt) >= -10:
       print("SUN:", sun, az, alt, "abort")
-      exit()
+      #exit()
 
 if len(sys.argv) > 1:
     CameraIP = str(sys.argv[2])
