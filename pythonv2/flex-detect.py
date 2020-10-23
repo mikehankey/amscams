@@ -192,7 +192,8 @@ def fix_arc_meteor(arc_file):
       frames = obj_to_frames(hd_meteors[0], start_trim_time,cal_params)
       arc_data['frames'] = frames
       save_json_file(arc_file, arc_data)
-      os.system("python3 MakeCache.py " + arc_file)
+
+      #os.system("python3 MakeCache.py " + arc_file)
       #sd_frames,sd_color_frames,sd_subframes,sum_vals,max_vals,pos_vals = load_frames_fast(sd_vid, json_conf, 0, 0, [], 1,[])
 
 
@@ -673,8 +674,8 @@ def calc_seg_len(data):
       if last_dist_from_start is not None:
          seg_len = int(abs(dist_from_start - last_dist_from_start))
          segs.append(seg_len)
-         if seg_len == 0:
-            bad_segs += 1
+         #if seg_len == 0:
+         #   bad_segs += 1
       else:
          segs.append(0)
       last_dist_from_start = dist_from_start
@@ -687,10 +688,10 @@ def calc_seg_len(data):
       if data['med_seg'] > 0 and sc > 0 and seg != 0:
          #print("SEG:", seg, data['med_seg']) 
          diff_diff = seg / data['med_seg']
-         if diff_diff > 2 or diff_diff < .5:
+         if diff_diff > 3 :
             bad_segs += 1
       sc += 1
-   if len(data['ofns']) - 1 > 0:
+   if len(data['ofns']) - 1 > 3:
       data['bad_seg_perc'] = bad_segs / (len(data['ofns']) - 1)
    else:
       data['bad_seg_perc'] = 1 
@@ -3711,12 +3712,21 @@ def make_trim_clips(meteor_objects, video_file):
 
 
 def make_trim_clip(video_file, start, end):
+   # convert start and end frame #s to seconds
+   print("START/END FN:", start, end)
+   start_sec = start / 25
+   end_sec = end / 25
+   dur = end_sec - start_sec
    outfile = video_file.replace(".mp4", "-trim-" + str(start) + ".mp4")
-   cmd = "/usr/bin/ffmpeg -i " + video_file + " -vf select=\"between(n\," + str(start) + "\," + str(end) + "),setpts=PTS-STARTPTS\" " + outfile + " 2>&1 > /dev/null"
+
+   # don't split on frame number as it requires re-encoding and is much longer also has issues when reset_timestamps are on. 
+   #cmd = "/usr/bin/ffmpeg -i " + video_file + " -vf select=\"between(n\," + str(start) + "\," + str(end) + "),setpts=PTS-STARTPTS\" " + outfile + " 2>&1 > /dev/null"
+   cmd = "/usr/bin/ffmpeg -y -i  " + video_file + " -ss 00:00:" + str(start_sec) + " -t 00:00:" + str(dur) + " -c copy " + outfile 
    print(cmd)
-   if cfe(outfile) == 0:   
-      print(cmd)
-      os.system(cmd)
+   exit()
+   #if cfe(outfile) == 0:   
+   #   print(cmd)
+   os.system(cmd)
    return(outfile, start, end)
 
 def scan_queue(cam):
@@ -9418,7 +9428,7 @@ def save_archive_meteor(video_file, syncd_sd_frames,syncd_hd_frames,frame_data,n
       make_movie_from_frames(syncd_hd_frames, [0,len(syncd_hd_frames) ], ma_hd_file, 1)
 
    cmd = "./MakeCache.py " + ma_json_file
-   os.system(cmd)
+   #os.system(cmd)
 
    #write_archive_index(archive_year,archive_mon)
 
@@ -11472,7 +11482,7 @@ def save_final_meteor(meteor_file):
 
    
    print(arc_json_file)
-   os.system("/usr/bin/python3 MakeCache.py " + arc_json_file)
+   #os.system("/usr/bin/python3 MakeCache.py " + arc_json_file)
 
 
 def meteors_only(objects):
@@ -12003,7 +12013,7 @@ if cmd == "fix_arc_all" or cmd == "faa" :
    cmd = "rm " + cache_dir + "/THUMBS/*"
    print(cmd)
    #os.system(cmd)
-   os.system("cd /home/ams/amscams/pythonv2; /usr/bin/python3 MakeCache.py " + video_file)
+   #os.system("cd /home/ams/amscams/pythonv2; /usr/bin/python3 MakeCache.py " + video_file)
    os.system("cd /home/ams/amscams/pythonv2; /usr/bin/python3 Create_Archive_Index.py 2019" )
 
 if cmd == "bfa" or cmd == "batch_fit_all_arc_files" :
