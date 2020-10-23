@@ -39,13 +39,14 @@ def get_cam_passwd(ip):
       if ip == cam_ip:
          el = sd_url.split("&")
          for k in el:
+            print("KEY:", k)
             if "password" in k:
                el2 = k.split("=")
                CameraPassword = el2[1]
                print("PASS IS:", CameraPassword)
-            else:
-               print("Default cam passwd")
-               CameraPassword=""
+            #else:
+            #   print("Default cam passwd")
+            #   CameraPassword=""
    return(CameraPassword)
 
 def sense_up(cam, cam_ip):

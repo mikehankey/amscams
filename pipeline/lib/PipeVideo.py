@@ -345,7 +345,8 @@ def find_hd_file(sd_file, sd_start_trim, sd_end_trim, trim_on =1):
 
 def ffmpeg_splice(video_file, start, end, outfile):
 
-   cmd = "/usr/bin/ffmpeg -i " + video_file + " -vf select='between(n\," + str(start) + "\," + str(end) + ")' -vsync 0 -start_number " + str(start) + " " + outfile + " > /dev/null 2>&1 "
+   cmd = "/usr/bin/ffmpeg -i " + video_file + " -vf select='between(n\," + str(start) + "\," + str(end) + ")' -reset_timestamps 1 -vsync 0 " + " " + outfile + " > /dev/null 2>&1 "
+   #cmd = "/usr/bin/ffmpeg -i " + video_file + " -vf select='between(n\," + str(start) + "\," + str(end) + ")' -reset_timestamps 1 -vsync 0 -start_number " + str(start) + " " + outfile + " > /dev/null 2>&1 "
 
 
    print(cmd)
