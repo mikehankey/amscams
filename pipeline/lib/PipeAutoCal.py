@@ -2469,6 +2469,7 @@ def cal_all(json_conf):
 
 
 def autocal(image_file, json_conf, show = 0):
+   print("Autocal.")
    '''
       Open the image and find stars in it. 
       If there are not enough stars move the image to the 'bad' dir and end. 
