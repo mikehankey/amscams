@@ -3722,8 +3722,6 @@ def make_trim_clip(video_file, start, end):
    # don't split on frame number as it requires re-encoding and is much longer also has issues when reset_timestamps are on. 
    #cmd = "/usr/bin/ffmpeg -i " + video_file + " -vf select=\"between(n\," + str(start) + "\," + str(end) + "),setpts=PTS-STARTPTS\" " + outfile + " 2>&1 > /dev/null"
    cmd = "/usr/bin/ffmpeg -y -i  " + video_file + " -ss 00:00:" + str(start_sec) + " -t 00:00:" + str(dur) + " -c copy " + outfile 
-   print(cmd)
-   exit()
    #if cfe(outfile) == 0:   
    #   print(cmd)
    os.system(cmd)
