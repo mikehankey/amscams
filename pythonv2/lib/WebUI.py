@@ -2468,10 +2468,11 @@ def override_detect(video_file,jsid, json_conf):
    bs = el[0]
    date = vfn[0:10]
    json_data = None
-   proc_file = "/mnt/ams2/SD/proc2/" + date + "/data/" + bs + "-meteor.json"
-   non_proc_file = "/mnt/ams2/SD/proc2/" + date + "/data/" + bs + "-nonmeteor.json"
-   if cfe(proc_file) == 1:
-      cmd = "mv " + proc_file + " " + non_proc_file
+   if False:
+      proc_file = "/mnt/ams2/SD/proc2/" + date + "/data/" + bs + "-meteor.json"
+      non_proc_file = "/mnt/ams2/SD/proc2/" + date + "/data/" + bs + "-nonmeteor.json"
+      if cfe(proc_file) == 1:
+         cmd = "mv " + proc_file + " " + non_proc_file
 
    base = video_file.replace(".mp4", "")
    el = base.split("/")
@@ -2489,7 +2490,7 @@ def override_detect(video_file,jsid, json_conf):
          cmd = "mv " + af + " /mnt/ams2/trash/"
          print(cmd, "<BR>")
          os.system(cmd)
-      exit()
+      #exit()
  
    if "meteors" in base:
       new_dir = "/mnt/ams2/trash/"
