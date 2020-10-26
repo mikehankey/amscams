@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-from lib.FFFuncs import slow_stack_video , imgs_to_vid
+from lib.FFFuncs import slow_stack_video , imgs_to_vid, snap_video
 
 import sys
 import os
@@ -16,6 +16,8 @@ if len(sys.argv) < 2:
 
 cmd = sys.argv[1]
 
+if cmd == "snap_video":
+   snap_video(sys.argv[2])
 if cmd == "slow_stack":
    video_file = sys.argv[2]
    out_dir = sys.argv[3]

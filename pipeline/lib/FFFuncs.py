@@ -3,10 +3,66 @@
 FFFuncs.py - GENERIC functions for ffmpeg
 
 """
+
 from lib.PipeVideo import load_frames_simple 
 from lib.PipeImage import stack_frames
+from lib.PipeUtil import convert_filename_to_date_cam, cfe
+from lib.PipeAutoCal import fn_dir
+
 import cv2
-import os, sys
+import os, sys, subprocess
+import datetime
+
+def snap_video(in_file):
+   (f_datetime, cam, f_date_str,fy,fm,fd, fh, fmin, fs) = convert_filename_to_date_cam(in_file)
+   w,h,total_frames = ffprobe(in_file)
+   date = fy + "_" + fd + "_" + fm
+
+   if True:
+      fs = int(fs)
+      if fs > 30:
+         # seconds to 60
+         sec_to_60 = 60 - fs
+         sec_to_30 = 90 - fs
+      elif fs < 30:
+         sec_to_60 = 60 - fs
+         sec_to_30 = 30 - fs
+      frame_to_60 = int(sec_to_60 * 25)
+      frame_to_30 = int(sec_to_30 * 25)
+      if frame_to_60 == 1500 or frame_to_60 == 1501:
+         frame_to_60 = 0
+      date_next_60 = f_datetime + datetime.timedelta(seconds=sec_to_60)
+      date_next_30 = f_datetime + datetime.timedelta(seconds=sec_to_30)
+      out_60_fn = date_next_60.strftime("%Y_%m_%d_%H_%M_%S_000_") + cam + ".jpg"
+      out_30_fn = date_next_30.strftime("%Y_%m_%d_%H_%M_%S_000_") + cam + ".jpg"
+
+
+   if w == "1920":
+      hd_outdir = "/mnt/ams2/SNAPS/" + date + "/1920p/" 
+      sd_outdir = "/mnt/ams2/SNAPS/" + date + "/360p/" 
+   else:
+      hd_outdir = None
+      sd_outdir = "/mnt/ams2/SNAPS/" + date + "/360p/" 
+   if hd_outdir is not None:
+      if cfe(hd_outdir, 1) == 0:
+         os.makedirs(hd_outdir)
+   if cfe(sd_outdir, 1) == 0:
+      os.makedirs(sd_outdir)
+   print("60:", frame_to_60, total_frames)
+   print("30:", frame_to_30, total_frames)
+   if frame_to_60 < total_frames:
+      outfile = sd_outdir + out_60_fn
+      cmd = """ /usr/bin/ffmpeg -i """ + in_file + """ -vf select="between(n\,""" + str(frame_to_60) + """\,""" + str(frame_to_60+1) + """),setpts=PTS-STARTPTS" -y -update 1 """ + outfile + " >/dev/null 2>&1"
+      print(cmd)
+      os.system(cmd)
+   print("SNAPS:", outfile)
+   if frame_to_30 < total_frames:
+      outfile = sd_outdir + out_30_fn
+      cmd = """ /usr/bin/ffmpeg -i """ + in_file + """ -vf select="between(n\,""" + str(frame_to_30) + """\,""" + str(frame_to_30+1) + """),setpts=PTS-STARTPTS" -y -update 1 """ + outfile + " >/dev/null 2>&1"
+      print(cmd)
+      os.system(cmd)
+
+   print("SNAPS:", outfile)
 
 def splice_video(in_file, start, end, outfile=None, type="frame"):
    # type = frame or sec 
@@ -96,3 +152,48 @@ def crop_video(in_file, out_file, crop_box):
 
 def resize_video(in_file, out_file, size, bit_rate=20):
    print("ff resize")
+
+def ffprobe(video_file):
+   default = [704,576]
+   #try:
+   if True:
+      cmd = "/usr/bin/ffprobe " + video_file + " > /tmp/ffprobe72.txt 2>&1"
+      output = subprocess.check_output(cmd, shell=True).decode("utf-8")
+   #except:
+   #    print("Couldn't probe.")
+   #    return(0,0,0)
+   #try:
+   #time.sleep(2)
+   output = None
+   if True:
+      fpp = open("/tmp/ffprobe72.txt", "r")
+      for line in fpp:
+         if "Duration" in line:
+            el = line.split(",")
+            dur = el[0]
+            dur = dur.replace("Duration: ", "")
+            el = dur.split(":")
+            tsec = el[2]
+            tmin = el[1]
+            tmin_sec = float(tmin) * 60
+            total_frames = (float(tsec)+tmin_sec) * 25
+         if "Stream" in line:
+            output = line
+      fpp.close()
+      print("OUTPUT: ", output)
+      print("TSEC:", dur)
+      print("DUR:", dur)
+      print("TF:", total_frames)
+      if output is None:
+         print("FFPROBE PROBLEM:", video_file)
+         exit()
+
+      el = output.split(",")
+      if "x" in el[3]:
+         dim = el[3].replace(" ", "")
+      elif "x" in el[2]:
+         dim = el[2].replace(" ", "")
+
+      w, h = dim.split("x")
+   return(w,h, int(total_frames))
+
