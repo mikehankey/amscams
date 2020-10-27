@@ -394,6 +394,10 @@ def controller(json_conf):
    #Delete multiple detections at once 
    if cmd == 'delete_multiple_detection':
       detections = form.getvalue('detections[]')
+      test = {}
+      test['detections'] = detections
+      test['text'] = detections[0]
+      save_json_file("/mnt/ams2/meteors/test.json", test)
       delete_multiple_detection(detections,json_conf)
       exit()
 
@@ -1644,12 +1648,25 @@ def get_meteor_dirs(meteor_dir):
             meteor_dirs.append(f)
    return(meteor_dirs)
 
-def get_meteors(meteor_dir,meteors):
+def get_meteors(meteor_dir,meteors,json_conf):
+   date = meteor_dir.split("/")[-1]
+ 
+   station_id = json_conf['site']['ams_id']
+   delete_log = "/mnt/ams2/SD/proc2/json/" + station_id  + ".del" 
+
+   if cfe(delete_log) == 1:
+      del_data = load_json_file(delete_log)
+   else:
+      del_data = {}
+
    glob_dir = meteor_dir + "*-trim*.mp4"
    files = glob.glob(meteor_dir + "/*-trim*.json")
    for f in files:
       if "calparams" not in f and "reduced" not in f and "manual" not in f:
-         meteors.append(f)
+         fn = f.split("/")[-1]
+         fn = fn.replace(".json", "")
+         if fn not in del_data:
+            meteors.append(f)
    return(meteors)
 
  
@@ -1687,9 +1704,9 @@ def meteors_new(json_conf,form):
       el = meteor_dir.split("/")
       this_date = el[-1]
       if limit_day is None: 
-         meteors = get_meteors(meteor_dir, meteors)
+         meteors = get_meteors(meteor_dir, meteors,json_conf)
       elif limit_day == this_date:
-         meteors = get_meteors(meteor_dir, meteors)
+         meteors = get_meteors(meteor_dir, meteors,json_conf)
          has_limit_day = 1
          header_out += "<h1><span class='h'><span id='meteor_count'>"+format(len(meteors))+"</span> meteors</span> captured on " 
          header_out += '<input value="'+limit_day.replace("_", "/")+'" type="text" data-display-format="YYYY/MM/DD" data-action="reload" data-url-param="limit_day" data-send-format="YYYY_MM_DD" class="datepicker form-control">'
@@ -1842,9 +1859,9 @@ def meteors(json_conf,form):
       el = meteor_dir.split("/")
       this_date = el[-1]
       if limit_day is None: 
-         meteors = get_meteors(meteor_dir, meteors)
+         meteors = get_meteors(meteor_dir, meteors,json_conf)
       elif limit_day == this_date:
-         meteors = get_meteors(meteor_dir, meteors)
+         meteors = get_meteors(meteor_dir, meteors,json_conf)
          print("<p>{:d} meteors captured on {:s}.</p>".format(len(meteors), str(this_date)))
    if limit_day is None:
       print("<p>{:d} meteors captured since inception.</p>".format(len(meteors)))
@@ -2443,31 +2460,81 @@ def examine_min(video_file,json_conf):
 
 #Delete multiple detections at once
 def delete_multiple_detection(detections,json_conf):
-      
+
+      print("DET:", detections)
+      if(type(detections) is str):
+         date = detections[0:8]
+      else:
+         date = detections[0][0:8]
+      station_id = json_conf['site']['ams_id']
+      out = open("/mnt/ams2/test.txt", "w")
+      out.write('test')
+      out.write(str(detections))
+      out.write("\n\n")
+      out.write(detections[0])
+      out.write("\n\n")
+      Y = date[0:4]
+      M = date[4:6]
+      D = date[6:8]
+      date = Y + "_" + M + "_" + D
+
+      del_file = "/mnt/ams2/SD/proc2/json/" + station_id  + ".del" 
+      out.write("DEL:" + del_file)
+      if cfe(del_file) == 0:
+         del_data = {}
+      else:
+         del_data = load_json_file(del_file)
 
       # If there's only one it's treated as a string (?)
       if(type(detections) is str):
             det = []
-            det.append(detections)
+            full_vid_file = parse_jsid(detections)
+            vid_file = full_vid_file.split("/")[-1]
+            det.append(vid_file)
             detections = det
       
       for to_delete in detections:
             #print("TO DELETE " + str(to_delete))
-            override_detect('',to_delete,'')
+            full_vid_file = parse_jsid(to_delete)
+            fn = full_vid_file.split("/")[-1]
+            base = fn.replace(".mp4", "")
+            del_data[base] = 1
+            #override_detect('',to_delete,json_conf)
 
+
+      save_json_file(del_file, del_data)
 
 
 def override_detect(video_file,jsid, json_conf):
    cgitb.enable()
     
+   station_id = json_conf['site']['ams_id']
    if jsid is not None:
       video_file = parse_jsid(jsid) 
 
    vfn = video_file.split("/")[-1]
-   el = vfn.split("-trim")
+   el = vfn.split(".")
+   jsid = el[0].replace("_", "")
    bs = el[0]
    date = vfn[0:10]
+
    json_data = None
+   delete_log = "/mnt/ams2/SD/proc2/json/" + station_id  + ".del" 
+   #print(delete_log)
+   if cfe(delete_log) == 1:
+      del_data = load_json_file(delete_log)
+      del_data[bs] = 1
+   else:
+      del_data = {}
+      del_data[bs] = 1
+   save_json_file(delete_log, del_data)
+
+   resp = {}
+   resp['status'] = "files added to delete log: " + delete_log
+   print(json.dumps(resp))
+
+   return()
+
    if False:
       proc_file = "/mnt/ams2/SD/proc2/" + date + "/data/" + bs + "-meteor.json"
       non_proc_file = "/mnt/ams2/SD/proc2/" + date + "/data/" + bs + "-nonmeteor.json"

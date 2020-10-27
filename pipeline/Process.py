@@ -8,6 +8,7 @@ from lib.PipeProcess import run_jobs
 from datetime import datetime
 import datetime as dt
 
+from lib.PipeMeteorClean import purge_meteors_for_date, fix_meteor_orphans, meteor_png_to_jpg
 from lib.PipeWeather import detect_clouds , make_flat, track_clouds, solar_info, audit_tl, detect_aurora, batch_aurora, aurora_report, aurora_stack_vid, tl_list, aurora_tl,  hourly_stacks, hourly_stacks_html
 from lib.PipeImage import quick_video_stack
 from lib.PipeTrans import trans_test 
@@ -401,4 +402,10 @@ if __name__ == "__main__":
       trim_end = sys.argv[4]
       out = sys.argv[5]
       ffmpeg_splice(file, trim_start, trim_end , out)
+   if cmd == "purge_meteors" :
+      purge_meteors_for_date(json_conf)
+   if cmd == "fmo" :
+      fix_meteor_orphans(sys.argv[2], json_conf)
+   if cmd == "mp2j" :
+      meteor_png_to_jpg(sys.argv[2], json_conf)
    
