@@ -180,13 +180,9 @@ def ffprobe(video_file):
          if "Stream" in line:
             output = line
       fpp.close()
-      print("OUTPUT: ", output)
-      print("TSEC:", dur)
-      print("DUR:", dur)
-      print("TF:", total_frames)
       if output is None:
          print("FFPROBE PROBLEM:", video_file)
-         exit()
+         return(0,0,0)
 
       el = output.split(",")
       if "x" in el[3]:
