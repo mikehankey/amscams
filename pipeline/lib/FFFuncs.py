@@ -153,6 +153,16 @@ def crop_video(in_file, out_file, crop_box):
 def resize_video(in_file, out_file, size, bit_rate=20):
    print("ff resize")
 
+def lower_bitrate(in_file, crf):
+   outfile_lr = in_file.replace(".mp4", "-lr.mp4")
+   cmd = "/usr/bin/ffmpeg -i " + in_file + " -vcodec libx264 -crf " + str(crf) + " -y " + outfile_lr
+   print(cmd)
+
+   os.system(cmd)
+   cmd = "mv " + outfile_lr + " " + in_file
+   print(cmd)
+   os.system(cmd)
+
 def ffprobe(video_file):
    default = [704,576]
    #try:
@@ -187,9 +197,13 @@ def ffprobe(video_file):
       el = output.split(",")
       if "x" in el[3]:
          dim = el[3].replace(" ", "")
+         bitrate = el[4]
+         bitrate  = bitrate.split(" ")[1]
       elif "x" in el[2]:
          dim = el[2].replace(" ", "")
+         bitrate = el[3]
+         bitrate  = bitrate.split(" ")[1]
 
       w, h = dim.split("x")
-   return(w,h, int(total_frames))
+   return(w,h, bitrate, int(total_frames))
 

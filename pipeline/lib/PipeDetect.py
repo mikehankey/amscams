@@ -108,7 +108,7 @@ def verify_meteor(meteor_file, json_conf):
    for file in media:
       if "crop" not in file and "HD" not in file:
          print(file, media[file])
-         best_meteor,sd_stack_img = fireball(file, json_conf)
+         best_meteor,sd_stack_img,bad_objs = fireball(file, json_conf)
          if best_meteor is not None:
             sd_images[file] = sd_stack_img
             meteors[file] = best_meteor
@@ -122,9 +122,9 @@ def verify_meteor(meteor_file, json_conf):
    HD = 0
    for file in media:
       if "HD" in file and "crop" not in file:
-         best_meteor = fireball(file, json_conf)
+         best_meteor, stack_img,bad_objs = fireball(file, json_conf)
          if best_meteor is not None:
-            best_meteor, hd_stack_img = fireball(file, json_conf)
+            best_meteor, hd_stack_img, bad_objs = fireball(file, json_conf)
             if best_meteor is not None:
                hd_images[file] = hd_stack_img
                meteors[file] = best_meteor
@@ -152,6 +152,31 @@ def verify_meteor(meteor_file, json_conf):
       print("METEOR:", file, media[file])
       print(meteors[file])
    save_old_meteor(meteors, media, sd_images, hd_images)
+
+def obj_to_mj(sd_file, hd_file, sd_objects, hd_objects):
+   sd_fn, dir = fn_dir(sd_file)
+   if hd_file is not None and hd_file != 0:
+      hd_fn, dir = fn_dir(hd_file)
+   date = sd_fn[0:10]
+   mdir = "/mnt/ams2/meteors/" + date + "/" 
+   mj = {}
+   mj['meteor'] = 1
+   mj['sd_trim'] = sd_file
+   mj['sd_stack'] = mdir + sd_fn.replace(".mp4", "-stacked.png")
+   mj['sd_objects'] = sd_objects
+   mj['hd_trim'] = hd_file
+   if hd_file != "":
+      mj['hd_stack'] = mdir + hd_fn.replace(".mp4", "-stacked.png")
+   else:
+      mj['hd_stack'] = ""
+      
+   mj['hd_objects'] = hd_objects
+   mj['trim_clip'] = sd_file
+   mj['sd_video_file'] = sd_file
+   mj['org_sd_vid'] = sd_file
+   mj['orig_hd_vid'] = hd_file
+   mj['hd_video_file'] = hd_file
+   return(mj)
 
 def save_old_meteor(meteors, media, sd_images, hd_images):
    for key in sd_images:
@@ -209,7 +234,7 @@ def save_old_meteor(meteors, media, sd_images, hd_images):
       for obj in mj['sd_objects']:
          dur_fr = (len(obj['oxs'])) 
       hd_trim = find_hd(mj['sd_trim'],dur_fr, mj['sd_objects'][0]['ofns'][0])
-      best_meteor, hd_stack_img = fireball(file, json_conf)
+      best_meteor, hd_stack_img, bad_objs  = fireball(file, json_conf)
       print("HD TRIM:", hd_trim)
       print("BEST HD METEOR:", best_meteor)
       if best_meteor is not None:
@@ -268,7 +293,6 @@ def fireball(video_file, json_conf):
       median_frame = cv2.cvtColor(median_frame, cv2.COLOR_BGR2GRAY)
    for frame in hd_frames:
       meteor_on = 0
-      print("LOOP:")
       subframe = cv2.subtract(frame, median_frame)
       bx,by = pos_vals[i]
       bx1,by1,bx2,by2 = bound_cnt(bx, by,frame.shape[1],frame.shape[0], 50)
@@ -282,10 +306,8 @@ def fireball(video_file, json_conf):
       if len(cnts) > 2:
          cnts = biggest_cnts(cnts, 10)
       #cnts = get_contours_in_image(subframe)
-      #print(len(cnts))
 
       for cx,cy,cw,ch in cnts:
-         #print("FOUND CNTS: w/h",i, cw, ch)
          cv2.rectangle(subframe, (cx, cy), (cx+cw, cy+ch), (255,255,255), 3, cv2.LINE_AA)
          ccx = cx + int(cw / 2)
          ccy = cy + int(ch / 2)
@@ -293,7 +315,6 @@ def fireball(video_file, json_conf):
          cnt_int = int(np.sum(cnt_img))
          #object, objects = find_object(objects, i,ccx, ccy, cw, ch, cnt_int, 1, 0, None)
          object, objects = find_object(objects, i,cx, cy, cw, ch, cnt_int, 1, 0, None)
-         print("CNTOBJ:", object, cx,cy,cw,ch)
          objects[object] = analyze_object(objects[object], 1,1)
          #if "class" in objects[object]:
          #   if objects[object]['class'] != 'star':
@@ -352,7 +373,7 @@ def fireball(video_file, json_conf):
       best_meteor = None
    print("DONE:", best_meteor)
    if best_meteor is None:
-      return(None, None)
+      return(None, None, objects)
 
    # draw cnts on image 
    for i in range(0, len(best_meteor['oxs'])):
@@ -387,7 +408,7 @@ def fireball(video_file, json_conf):
       cv2.imshow('pepe', stack_img)
       cv2.waitKey(60)
 
-   return(best_meteor, stack_img)
+   return(best_meteor, stack_img, objects )
 
 
 def dom_meteor(meteors, json_conf):
@@ -1566,8 +1587,7 @@ def analyze_object(object, hd = 0, strict = 0):
       perform various tests to classify the type of object
       when strict == 1 perform more meteor strict tests
    '''
-   print("START ANAL:", hd, strict)
-
+   #print("Start analyze")
    if hd == 0:
       # if we are working with an HD file we need to mute the HD Multipliers
       global HDM_X, HDM_Y
@@ -1578,6 +1598,7 @@ def analyze_object(object, hd = 0, strict = 0):
    good_items = []
 
    #if "report" not in object:
+   obj_id = object['obj_id'] 
    if True:
       object['report'] = {}
       object['report']['non_meteor'] = 0
@@ -1593,13 +1614,33 @@ def analyze_object(object, hd = 0, strict = 0):
       object['report']['meteor'] = 0
 
    object['report']['unq_perc'], object['report']['unq_points'] = unq_points(object)
-   if object['report']['unq_points']  < 2 or object['report']['unq_perc'] < .5 and len(object['oxs']) > 3:
+   if object['report']['unq_points'] > 3 and object['report']['unq_perc'] < .6 :
+      object['report']['non_meteor'] = 1
+      object['report']['meteor'] = 0
+      object['report']['bad_items'].append("Unq Points/Perc too low. " + str(object['report']['unq_points']) + " / " + str(object['report']['unq_perc']) )
+   if object['report']['unq_points']  <= 3 and object['report']['unq_perc'] < .8 :
       object['report']['non_meteor'] = 1
       object['report']['meteor'] = 0
       object['report']['bad_items'].append("Unq Points/Perc too low. " + str(object['report']['unq_points']) + " / " + str(object['report']['unq_perc']) )
 
    object['report']['object_px_length'], object['report']['line_segments'], object['report']['x_segs'], object['report']['ms'], object['report']['bs'] = calc_line_segments(object)
-   #print("MIN MAX XYs", min(object['oxs']), min(object['oys']), max(object['oxs']),max(object['oys']))
+   med_seg = np.median(object['report']['line_segments'])
+   bad_segs = 0
+   for seg in object['report']['line_segments']:
+      if seg <= 0:
+         bad_segs += 1
+      med_diff = abs(med_seg - seg)
+      if med_diff > med_seg * 3:
+         bad_segs += 1
+
+   bad_seg_perc = bad_segs / len(object['oxs'])
+   if bad_seg_perc > .5:
+      object['report']['non_meteor'] = 1
+      object['report']['meteor'] = 0
+      object['report']['class'] = "unknown"
+      object['report']['bad_seg_perc'] = bad_seg_perc
+      object['report']['bad_items'].append("Bad seg perc too high. " + str(object['report']['bad_seg_perc']) )
+
    object['report']['min_max_dist'] = calc_dist((min(object['oxs']), min(object['oys'])), (max(object['oxs']),max(object['oys']) ))
 
    #object = clean_bad_frames(object)
@@ -1616,7 +1657,6 @@ def analyze_object(object, hd = 0, strict = 0):
    #if object['report']['non_meteor'] == 0:
    if True:
       ang_dist, ang_vel = ang_dist_vel(object['oxs'],object['oys'], [],[],pxscale)
-      #print("ANG DIST:", ang_dist, ang_vel)
       object['report']['ang_dist'] = ang_dist
       object['report']['ang_vel'] = ang_vel
 
@@ -1634,39 +1674,24 @@ def analyze_object(object, hd = 0, strict = 0):
          object['report']['bad_items'].append("bad ang sep: " + str(ang_dist))
 
 
-   #if object['report']['non_meteor'] == 0 :
-      #print("ANG DIST/VEL:", ang_dist, ang_vel )
 
-   #print("MIN MAX:", object['report']['min_max_dist'])
-   #print("XS:", object['oxs'])
-   if object['report']['min_max_dist'] < 3 and len(object['oxs']) > 3:
+   if (object['report']['unq_perc'] < .1 or object['report']['min_max_dist'] <= 3) and len(object['oxs']) > 3:
       object['report']['class'] = "star"
    else:
       if "class" not in object['report']:
          object['report']['class'] = "unknown"
 
 
-   #print("STRICT:", strict)
-
-   #if object['report']['non_meteor'] != 1 :
-   #   return(object)
 
    if strict == 0:
-      #print("INITIAL METEOR DETECTED!")
       if object['report']['non_meteor'] == 0 :
          object['report']['meteor'] = 1 
       return(object)
 
    
 
-   #print("************STRICT*************") 
-
-   # more tests for video based detection 
-
-   # big cnt perc test
 
    object['report']['big_perc'] = big_cnt_test(object, hd)
-   #print("BIG:", hd, object['report']['big_perc'])
    if object['report']['big_perc'] > .5:
       object['report']['non_meteor'] = 1
       object['report']['meteor'] = 0
@@ -1702,11 +1727,10 @@ def analyze_object(object, hd = 0, strict = 0):
 
 
    if object['report']['non_meteor'] == 0 :
-      print("*********** METEOR DETECTED *********")
+      print("*********** METEOR DETECTED *********", obj_id )
       object['report']['meteor'] = 1
       object['report']['class'] = "meteor"
 
-   #print("END ANAL")   
    return(object)    
 
 def analyze_object_old(object, hd = 0, sd_multi = 1, final=0):
@@ -2036,11 +2060,9 @@ def min_cnt_dist(x,y,w,h,tx,ty,tw,th):
    ds.append(dist)
    dist = calc_dist((x+w,y+h), (ctx,cty))
    ds.append(dist)
-   print("DISTS:", sorted(ds))
    return(min(ds))
 
 def find_object(objects, fn, cnt_x, cnt_y, cnt_w, cnt_h, intensity=0, hd=0, sd_multi=1, cnt_img=None ):
-   print("*** FIND OBJ START")
    matched = {}
    if hd == 1:
       obj_dist_thresh = 75 
@@ -2076,9 +2098,29 @@ def find_object(objects, fn, cnt_x, cnt_y, cnt_w, cnt_h, intensity=0, hd=0, sd_m
             t_center_y = oys[oi] + int(ohs[oi]/2) 
             c_dist = calc_dist((center_x,center_y),(t_center_x, t_center_y))
             dist = min_cnt_dist(cnt_x,cnt_y,cnt_w,cnt_h,oxs[oi],oys[oi],ows[oi],ohs[oi])
-            print("CDIST/MDIST", c_dist, dist)
             dist_objs.append((obj,dist))
             last_frame_diff = fn - lfn
+            if "report" in objects[obj]:
+               if objects[obj]['report']['class'] == "meteor" and len(objects[obj]['oxs']) > 3:
+                  # only add this new point to the meteor if it is not equal to the last point and if the last_seg and current dist are reasonable.
+                  last_x = objects[obj]['oxs'][-1]
+                  last_y = objects[obj]['oys'][-1]
+                  last_x2 = objects[obj]['oxs'][-2]
+                  last_y2 = objects[obj]['oys'][-2]
+                  last_seg_dist = calc_dist((last_x,last_y), (last_x2, last_y2))
+                  this_seg_dist = calc_dist((last_x,last_y), (cnt_x, cnt_y))
+                  abs_diff = abs(last_seg_dist - this_seg_dist)
+                  #if last_x == cnt_x and last_y == cnt_y:
+                  #   # don't add duplicate points to an existing meteor. (This might cause problems??)
+                  #   continue
+                  if abs_diff > last_seg_dist * 3:
+                     # don't add points to meteors if they are more than 3x farther away than the last seg dist
+                     continue
+               if objects[obj]['report']['class'] == "star":
+                  # only match object if dist is within 5 px
+                  if dist > 5:
+                     continue 
+
 
             if dist < obj_dist_thresh and last_frame_diff < 10:
                #if this is linked to a meteor only associate if the point is further from the start than the last recorded point
@@ -2092,10 +2134,8 @@ def find_object(objects, fn, cnt_x, cnt_y, cnt_w, cnt_h, intensity=0, hd=0, sd_m
          max_obj = obj
 
    if len(closest_objs) > 1:
-      print("FIND: MORE THAN ONE MATCH!")
 
       ci = sorted(closest_objs , key=lambda x: (x[1]), reverse=False)
-      print(ci)
       found =1 
       found_obj = ci[0][0]
       #c = input("Continue")
@@ -2103,8 +2143,6 @@ def find_object(objects, fn, cnt_x, cnt_y, cnt_w, cnt_h, intensity=0, hd=0, sd_m
 
    if found == 0:
       dist_objs = sorted(dist_objs, key=lambda x: (x[1]), reverse=False)
-      print("FIND: * * * * * * * OBJECT NOT FOUND. MAKE NEW ONE.", dist_objs)
-      print(" * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * ")
     
       obj_id = max_obj + 1
       #if obj_id > 10:
@@ -2126,7 +2164,6 @@ def find_object(objects, fn, cnt_x, cnt_y, cnt_w, cnt_h, intensity=0, hd=0, sd_m
       objects[obj_id]['ohs'].append(cnt_h)
       objects[obj_id]['oint'].append(intensity)
       found_obj = obj_id
-      print("FIND NEW OBJ:", found_obj)
    if found == 1:
       #if objects[found_obj]['report']['obj_class'] == "meteor":
       #if True:
@@ -2150,14 +2187,12 @@ def find_object(objects, fn, cnt_x, cnt_y, cnt_w, cnt_h, intensity=0, hd=0, sd_m
          objects[found_obj]['ows'].append(cnt_w)
          objects[found_obj]['ohs'].append(cnt_h)
          objects[found_obj]['oint'].append(intensity)
-         print("FIND: OBJ FOUND:", found_obj)
 
    #objects[found_obj] = analyze_object_old(objects[found_obj], hd, sd_multi, 1)
    #if objects[found_obj]['report']['meteor_yn'] == 'Y':
    #   max_int = max(objects[found_obj]['oint'])
    #   if max_int > 25000:
    #      objects[found_obj]['report']['obj_class'] = "fireball"
-   print("*** FIND OBJ END")
 
    return(found_obj, objects)
 
