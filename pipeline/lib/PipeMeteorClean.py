@@ -1,4 +1,5 @@
 """
+   v1.x
    funcs for purging bad meteors
 """
 from lib.PipeDetect import fireball, obj_to_mj
