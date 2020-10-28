@@ -514,9 +514,11 @@ def find_stars_ajax(json_conf, stack_file, is_ajax = 1):
 def check_make_half_stack(sd_file,hd_file,meteor_reduced):
    if cfe(hd_file) == 0:
       hd_trim = meteor_reduced['hd_trim']
-      hd_trim.replace(".mp4", "-HD-meteor-stacked.png")
+      #hd_trim.replace(".mp4", "-HD-meteor-stacked.png")
 
-
+   print(sd_file)
+   print(hd_file)
+   exit()
    half_stack_file = sd_file.replace("-stacked", "-half-stack")
 
 
