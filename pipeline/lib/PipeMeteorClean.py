@@ -25,7 +25,10 @@ def fix_meteor_orphans(date, json_conf):
          print("This video is bad, we should delete it and all children.")
          wild = vid.replace(".mp4", "*.*")
          trash = "/mnt/ams2/trash/" + date + "/" 
+         if cfe(trash, 1) == 0:
+            os.makedirs(trash)
          cmd = "mv " + wild + " " + trash
+         os.system(cmd)
          print(cmd) 
          continue
       elif int(w) == 1920:
@@ -42,6 +45,7 @@ def fix_meteor_orphans(date, json_conf):
    orphans = 0
    meteor_index = {}
    for file in sd_vids:
+      hd_bit_rate = 0
       vid, w,h,sd_bit_rate,total_frames = sd_vids[file]
       meteor_index[file] = {}
       meteor_index[file]['sd_file'] = file
@@ -64,6 +68,7 @@ def fix_meteor_orphans(date, json_conf):
                vid, w,h,total_frames = None, 0, 0, 0
                if js['hd_trim'] in sd_vids:
                   vid, w,h,hd_bit_rate,total_frames =  sd_vids[js['hd_trim']] 
+
 
             meteor_index[file]['hd_dim'] = [int(w),int(h)]
             meteor_index[file]['hd_total_frame'] = int(total_frames)
@@ -146,7 +151,7 @@ def meteor_png_to_jpg(sd_file, hd_file, json_conf):
       jpg = png.replace(".png",".jpg")
       cmd = "convert " + png + " " + jpg
       print(cmd)
-      #os.system(cmd)
+      os.system(cmd)
       cmd = "rm " + png 
       os.system(cmd)
    for png in hd_pngs:

@@ -192,7 +192,7 @@ def ffprobe(video_file):
       fpp.close()
       if output is None:
          print("FFPROBE PROBLEM:", video_file)
-         return(0,0,0)
+         return(0,0,0,0)
 
       el = output.split(",")
       if "x" in el[3]:
