@@ -2,18 +2,88 @@
    v1.x
    funcs for purging bad meteors
 """
+from lib.DEFAULTS import *
+import cv2
 from lib.PipeDetect import fireball, obj_to_mj
-from lib.PipeUtil import load_json_file, save_json_file,cfe, convert_filename_to_date_cam
+from lib.PipeUtil import load_json_file, save_json_file,cfe, convert_filename_to_date_cam, get_file_info
 import os,sys
 import glob
-from lib.FFFuncs import ffprobe, lower_bitrate
+from lib.FFFuncs import ffprobe, lower_bitrate, resize_video
 
+def small_jpgs(date, json_conf):
+   print("Make small JPG:")
+   files = glob.glob("/mnt/ams2/meteors/" + date + "/*.jpg")
+   for file in files:
+      if "temp" in file:
+         continue
+      size, tdiff = get_file_info(file)
+      if "obj.jpg" in file:
+         # remove these files (old/not used)
+         cmd = "rm " + file
+         print(cmd)
+         os.system(cmd)
+      elif "-tn.jpg" in file:
+         if size > 2000:
+            print("TN SIZE TOO BIG, LOWER QUALITY.", file, size)
+            make_jpg_small(file, 60)
+         else:
+            print("TN SIZE GOOD.", file, size)
+      elif size > 100000:
+         print("IMG SIZE TOO BIG, LOWER QUALITY.", file, size)
+         make_jpg_small(file, 60)
+      else:
+         # check the img size, if it is SD and > X adjust quality (also resize dims if they are not 640x360
+         img = cv2.imread(file)
+         h,w = img.shape[:2]
+         if w == 1920:
+            print("HD IMG:", file, size)
+         else:
+            img = cv2.resize(img, (640,360))
+            cv2.imwrite(file, img)
+            print("SD IMG:", file, w,h, size)
+            make_jpg_small(file, 60)
+
+def make_jpg_small(file, qual):
+   tmp_file = file.replace(".jpg", "-temp.jpg") 
+   cmd = "convert -quality " + str(qual) + " "  + file + " " + tmp_file
+   os.system(cmd)
+   cmd = "mv " + tmp_file + " " + file
+   os.system(cmd)
+    
+
+def fix_thumbs(date, json_conf):
+   thumb = glob.glob("/mnt/ams2/meteors/" + date + "/*tn.jpg")
+   for file in thumb:
+      img = cv2.imread(file)
+      try:
+         h,w = img.shape[:2]
+      except:
+         print("BAD IMAGE:", file)
+         continue
+      if w != THUMB_W and h != THUMB_H:
+        img = cv2.resize(img, (THUMB_W,THUMB_H))
+        cv2.imwrite(file, img)
+        print("FIXED:", h,w,file)
+
+def fix_meteor_month(wild,json_conf):
+   mdirs = glob.glob("/mnt/ams2/meteors/" + str(wild) + "*")
+   for mdir in sorted(mdirs):
+      print("CLEAN:", mdir)
+      date = mdir.split("/")[-1]
+      fix_meteor_orphans(date,json_conf)
 
 def fix_meteor_orphans(date, json_conf):
+
    print("FMO:", date)
-   
+   meteor_dir = "/mnt/ams2/meteors/" + date + "/"
+   if cfe(meteor_dir, 1) == 0:
+      print("No meteors for this day.", meteor_dir)
+      return()
    vids = glob.glob("/mnt/ams2/meteors/" + date + "/*.mp4")
    jsons = glob.glob("/mnt/ams2/meteors/" + date + "/*.json")
+   if len(vids) == 0:
+      print("No meteors for this day", meteor_dir) 
+      return()
    hd_vids = {}
    sd_vids = {}
    for vid in vids: 
@@ -37,6 +107,12 @@ def fix_meteor_orphans(date, json_conf):
          hd_vids[vid] = [vid,w,h,bit_rate,total_frames]
       else:
          print("SD:", vid, w, h, total_frames)
+         if w != 640:
+            temp_out = vid.replace(".mp4", "-temp.mp4")
+            temp_out = resize_video(vid, temp_out, "640","360","25")
+            print(temp_out)
+            cmd = "mv " + temp_out + " " + vid
+            os.system(cmd)
          sd_vids[vid] = [vid,w,h,bit_rate,total_frames]
 
    #print("JSONS:", jsons)
@@ -45,6 +121,7 @@ def fix_meteor_orphans(date, json_conf):
 
    orphans = 0
    meteor_index = {}
+   used_hd = {}
    for file in sd_vids:
       hd_bit_rate = 0
       vid, w,h,sd_bit_rate,total_frames = sd_vids[file]
@@ -65,6 +142,7 @@ def fix_meteor_orphans(date, json_conf):
             meteor_index[file]['hd_file'] = js['hd_trim']
             if js['hd_trim'] in hd_vids:
                vid, w,h,hd_bit_rate,total_frames = hd_vids[js['hd_trim']]
+               used_hd[js['hd_trim']] = 1
             else:
                vid, w,h,total_frames = None, 0, 0, 0
                if js['hd_trim'] in sd_vids:
@@ -74,6 +152,28 @@ def fix_meteor_orphans(date, json_conf):
             meteor_index[file]['hd_dim'] = [int(w),int(h)]
             meteor_index[file]['hd_total_frame'] = int(total_frames)
             meteor_index[file]['hd_bit_rate'] = int(hd_bit_rate)
+         else:
+            meteor_index[file]['hd_dim'] = [0,0]
+            meteor_index[file]['hd_total_frame'] = 0
+            meteor_index[file]['hd_bit_rate'] = 0
+
+   # hd files
+   for hd_vid in hd_vids:
+      if len(hd_vid) < 5:
+         continue
+      if hd_vid in used_hd:
+         print("USED:", hd_vid)
+      else:
+         print("ORPHANED:", hd_vid)
+         wild = hd_vid.replace(".mp4", "*")
+         trash_dir = "/mnt/ams2/trash/" + date + "/"
+         if cfe(trash_dir, 1) == 0:
+            os.makedirs(trash_dir)
+         
+         cmd = "mv " + wild + " " + trash_dir
+         os.system(cmd)
+         print(cmd)
+ 
 
    hd_missing = 0
    for file in meteor_index:
@@ -108,22 +208,24 @@ def fix_meteor_orphans(date, json_conf):
                os.makedirs(reject_dir)
             print(cmd)
             os.system(cmd)
-         exit()
+         print("Handled missing json for:", file )
+         #exit()
   
    # lower the bit rate if needed. 
    for file in meteor_index:
-      if meteor_index[file]['hd_bit_rate'] > 2400:
-         lower_bitrate(meteor_index[file]['hd_file'], 32)
-      elif meteor_index[file]['hd_bit_rate'] > 2000:
-         lower_bitrate(meteor_index[file]['hd_file'], 30)
-      elif meteor_index[file]['hd_bit_rate'] > 1500:
-         lower_bitrate(meteor_index[file]['hd_file'], 28)
-      elif meteor_index[file]['hd_bit_rate'] > 1200:
-         lower_bitrate(meteor_index[file]['hd_file'], 27)
+      print("FILE:", file) 
+      if meteor_index[file]['json_file'] != 0:
+         if meteor_index[file]['hd_bit_rate'] > 2400:
+            lower_bitrate(meteor_index[file]['hd_file'], 32)
+         elif meteor_index[file]['hd_bit_rate'] > 2000:
+            lower_bitrate(meteor_index[file]['hd_file'], 30)
+         elif meteor_index[file]['hd_bit_rate'] > 1500:
+            lower_bitrate(meteor_index[file]['hd_file'], 28)
+         elif meteor_index[file]['hd_bit_rate'] > 1200:
+            lower_bitrate(meteor_index[file]['hd_file'], 27)
 
-      # convert pngs to jpgs
+         # convert pngs to jpgs
       meteor_png_to_jpg(meteor_index[file]['sd_file'], meteor_index[file]['hd_file'],json_conf)
-      exit()
    if orphans > 0:
       print("Orphans detected.", orphans)
    else:
@@ -132,17 +234,27 @@ def fix_meteor_orphans(date, json_conf):
       print(hd_missing, "missing hd files")
    else:
       print("No missing hd files." )
+   fix_thumbs(date, json_conf)
+
+   meteor_index_file = "/mnt/ams2/meteors/" + date + "/" + json_conf['site']['ams_id'] + "_" + date + ".meteors"
+   save_json_file(meteor_index_file, meteor_index)
+   print(meteor_index_file)
+   small_jpgs(date, json_conf)
+   return()
+   #exit() 
 
 
 
 def meteor_png_to_jpg(sd_file, hd_file, json_conf):
    mjf = sd_file.replace(".mp4", ".json")
-   mj = load_json_file(mjf)
-   if "png" in mj['hd_stack'] :
-      mj['hd_stack'] = mj['hd_stack'].replace(".png", ".jpg")
-   if "png" in mj['sd_stack'] :
-      mj['sd_stack'] = mj['sd_stack'].replace(".png", ".jpg")
-   save_json_file(mjf, mj)
+   if cfe(mjf) == 1:
+      mj = load_json_file(mjf)
+      if "hd_stack" in mj:
+         if "png" in mj['hd_stack'] :
+            mj['hd_stack'] = mj['hd_stack'].replace(".png", ".jpg")
+      if "png" in mj['sd_stack'] :
+         mj['sd_stack'] = mj['sd_stack'].replace(".png", ".jpg")
+      save_json_file(mjf, mj)
 
    hd_wild = hd_file.replace(".mp4", "*.png")
    sd_wild = sd_file.replace(".mp4", "*.png")
@@ -150,14 +262,14 @@ def meteor_png_to_jpg(sd_file, hd_file, json_conf):
    hd_pngs = glob.glob(hd_wild)
    for png in sd_pngs:
       jpg = png.replace(".png",".jpg")
-      cmd = "convert " + png + " " + jpg
+      cmd = "convert -quality 80 " + png + " " + jpg
       print(cmd)
       os.system(cmd)
       cmd = "rm " + png 
       os.system(cmd)
    for png in hd_pngs:
       jpg = png.replace(".png",".jpg")
-      cmd = "convert " + png + " " + jpg
+      cmd = "convert -quality 80 " + png + " " + jpg
       print(cmd)
       os.system(cmd)
       cmd = "rm " + png 
@@ -169,7 +281,7 @@ def purge_meteors_for_date(json_conf):
    station_id = json_conf['site']['ams_id']
    del_file = "/mnt/ams2/SD/proc2/json/" + station_id  + ".del"
    if cfe(del_file) == 0:
-      print("No delete file.")
+      print("No delete file.", del_file)
       return()
    else:
       del_data = load_json_file(del_file)
@@ -178,6 +290,8 @@ def purge_meteors_for_date(json_conf):
    print(cmd)
 
    for base in del_data:
+      if len(base) < 5:
+         continue
       delete_from_base(base,json_conf)
 
 
@@ -224,9 +338,10 @@ def delete_from_base(base, json_conf):
       for f in temp:
          files_to_del.append(f)
       # METEOR HD FILES
-      if hd_base is not None:
+      if hd_base is not None and hd_base != "" and len(hd_base) < 5:
          temp = glob.glob(meteor_dir + hd_base + "*")
          for f in temp:
+            print("HD BASE DEL:", f)
             files_to_del.append(f)
       # ARC METEOR SD & HD FILES
       if arc_base is not None:

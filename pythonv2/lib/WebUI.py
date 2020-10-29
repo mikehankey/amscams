@@ -1752,9 +1752,9 @@ def meteors_new(json_conf,form):
       for idx, meteor in enumerate(meteors):
          # Minus 1 so we have nompp per page starting at 0
          if(counter<=nompp-1 and idx <= meteor_from):
-            stack_file_tn = meteor.replace('.json', '-stacked-tn.png')
+            stack_file_tn = meteor.replace('.json', '-stacked-tn.jpg')
             video_file = meteor.replace('.json', '.mp4')
-            stack_obj_img = video_file.replace(".mp4", "-stacked-obj-tn.png")
+            stack_obj_img = video_file.replace(".mp4", "-stacked-obj-tn.jpg")
             reduce_file = meteor.replace(".json", "-reduced.json")
             reduced = 0
             if cfe(reduce_file) == 1:
@@ -2468,7 +2468,7 @@ def delete_multiple_detection(detections,json_conf):
          date = detections[0][0:8]
       station_id = json_conf['site']['ams_id']
       out = open("/mnt/ams2/test.txt", "w")
-      out.write('test')
+      out.write('Detections:')
       out.write(str(detections))
       out.write("\n\n")
       out.write(detections[0])
@@ -2494,8 +2494,9 @@ def delete_multiple_detection(detections,json_conf):
             detections = det
       
       for to_delete in detections:
-            #print("TO DELETE " + str(to_delete))
+            out.write("\nTO DELETE " + str(to_delete) + "\n")
             full_vid_file = parse_jsid(to_delete)
+            out.write("FUL VID:" + full_vid_file)
             fn = full_vid_file.split("/")[-1]
             base = fn.replace(".mp4", "")
             del_data[base] = 1
@@ -2532,7 +2533,7 @@ def override_detect(video_file,jsid, json_conf):
    resp = {}
    resp['status'] = "files added to delete log: " + delete_log
    print(json.dumps(resp))
-
+   #os.system("cd /home/ams/amscams/pipeline; ./Process.py purge_meteors &")
    return()
 
    if False:

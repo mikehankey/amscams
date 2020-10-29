@@ -150,10 +150,14 @@ def slow_stack_video(video_file, OUT_DIR, stack_lim=10):
 def crop_video(in_file, out_file, crop_box):
    print("ff crop")
 
-def resize_video(in_file, out_file, size, bit_rate=20):
+def resize_video(in_file, out_file, ow, oh, bit_rate=20):
+   cmd = "/usr/bin/ffmpeg -i " + in_file + " -c:v libx264 -crf " + str(bit_rate) + " -pix_fmt yuv420p -vf 'scale=" + str(ow) + ":" + str(oh) + "' -y " + out_file
+   os.system(cmd)
    print("ff resize")
+   return(out_file)
 
 def lower_bitrate(in_file, crf):
+   return()
    outfile_lr = in_file.replace(".mp4", "-lr.mp4")
    cmd = "/usr/bin/ffmpeg -i " + in_file + " -vcodec libx264 -crf " + str(crf) + " -y " + outfile_lr
    print(cmd)
@@ -165,13 +169,13 @@ def lower_bitrate(in_file, crf):
 
 def ffprobe(video_file):
    default = [704,576]
-   #try:
-   if True:
+   try:
+   #if True:
       cmd = "/usr/bin/ffprobe " + video_file + " > /tmp/ffprobe72.txt 2>&1"
       output = subprocess.check_output(cmd, shell=True).decode("utf-8")
-   #except:
-   #    print("Couldn't probe.")
-   #    return(0,0,0)
+   except:
+       print("Couldn't probe.")
+       return(0,0,0,0)
    #try:
    #time.sleep(2)
    output = None
