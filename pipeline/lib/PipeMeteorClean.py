@@ -34,7 +34,12 @@ def small_jpgs(date, json_conf):
       else:
          # check the img size, if it is SD and > X adjust quality (also resize dims if they are not 640x360
          img = cv2.imread(file)
-         h,w = img.shape[:2]
+         try:
+            h,w = img.shape[:2]
+         except:
+            print("IMG BAD:", file)
+            os.system("rm " + file)
+            continue
          if w == 1920:
             print("HD IMG:", file, size)
          else:
@@ -87,7 +92,7 @@ def fix_meteor_orphans(date, json_conf):
    hd_vids = {}
    sd_vids = {}
    for vid in vids: 
-      if "crop" in vid:
+      if "crop" in vid or "preview" in vid and "720" not in vid:
          continue
       w,h,bit_rate, total_frames= ffprobe(vid)
       print(vid, w, h, bit_rate, total_frames)
@@ -107,9 +112,10 @@ def fix_meteor_orphans(date, json_conf):
          hd_vids[vid] = [vid,w,h,bit_rate,total_frames]
       else:
          print("SD:", vid, w, h, total_frames)
-         if w != 640:
+         if int(w) != 640:
             temp_out = vid.replace(".mp4", "-temp.mp4")
             temp_out = resize_video(vid, temp_out, "640","360","25")
+
             print(temp_out)
             cmd = "mv " + temp_out + " " + vid
             os.system(cmd)
@@ -124,6 +130,7 @@ def fix_meteor_orphans(date, json_conf):
    used_hd = {}
    for file in sd_vids:
       hd_bit_rate = 0
+      print("FILE:",file)
       vid, w,h,sd_bit_rate,total_frames = sd_vids[file]
       meteor_index[file] = {}
       meteor_index[file]['sd_file'] = file
@@ -132,10 +139,19 @@ def fix_meteor_orphans(date, json_conf):
       meteor_index[file]['sd_total_frame'] = int(total_frames)
       meteor_index[file]['sd_bit_rate'] = int(sd_bit_rate)
       json_file = file.replace(".mp4",".json")
+      nojson = 0
       if cfe(json_file) == 0:
          meteor_index[file]['json_file'] = 0
-         orphans += 1
-      else:
+         orphans += 1 
+         nojson = 1
+      try:
+         js = load_json_file(json_file)
+      except:
+         nojson = 1
+         os.system("rm " + json_file)
+         meteor_index[file]['json_file'] = 0
+
+      if nojson == 0:
          meteor_index[file]['json_file'] = 1
          js = load_json_file(json_file)
          if "hd_trim" in js:
@@ -252,14 +268,18 @@ def meteor_png_to_jpg(sd_file, hd_file, json_conf):
       if "hd_stack" in mj:
          if "png" in mj['hd_stack'] :
             mj['hd_stack'] = mj['hd_stack'].replace(".png", ".jpg")
-      if "png" in mj['sd_stack'] :
-         mj['sd_stack'] = mj['sd_stack'].replace(".png", ".jpg")
-      save_json_file(mjf, mj)
+      if "sd_stack" in mj:
+         if "png" in mj['sd_stack'] :
+            mj['sd_stack'] = mj['sd_stack'].replace(".png", ".jpg")
+         save_json_file(mjf, mj)
 
-   hd_wild = hd_file.replace(".mp4", "*.png")
+   if hd_file is not None:
+      hd_wild = hd_file.replace(".mp4", "*.png")
+      hd_pngs = glob.glob(hd_wild)
+   else:
+      hd_pngs = []
    sd_wild = sd_file.replace(".mp4", "*.png")
    sd_pngs = glob.glob(sd_wild)
-   hd_pngs = glob.glob(hd_wild)
    for png in sd_pngs:
       jpg = png.replace(".png",".jpg")
       cmd = "convert -quality 80 " + png + " " + jpg

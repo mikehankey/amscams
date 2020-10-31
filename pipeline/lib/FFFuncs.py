@@ -199,15 +199,26 @@ def ffprobe(video_file):
          return(0,0,0,0)
 
       el = output.split(",")
+      print("PROBE:", el)
+      print("3", el[3])
+      print("2", el[2])
       if "x" in el[3]:
          dim = el[3].replace(" ", "")
          bitrate = el[4]
          bitrate  = bitrate.split(" ")[1]
       elif "x" in el[2]:
+         if "SAR" in el[2]:
+            ddel = el[2].split(" ")
+            print("D:", ddel)
+            for i in range(0, len(ddel)):
+               if "x" in ddel[i]:
+                  el[2] = ddel[i]
+            #exit()
          dim = el[2].replace(" ", "")
          bitrate = el[3]
          bitrate  = bitrate.split(" ")[1]
 
       w, h = dim.split("x")
+      print(w,h,bitrate)
    return(w,h, bitrate, int(total_frames))
 
