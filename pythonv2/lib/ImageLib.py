@@ -132,7 +132,7 @@ def make_10_sec_thumbs(sd_video_file, frames, json_conf):
 def thumb(image_file = "", image = "", perc_size = None):
    print("THUMB!", image_file)
    if image_file != "":
-      thumb_file = image_file.replace(".png", "-tn.png")
+      thumb_file = image_file.replace(".jpg", "-tn.jpg")
       image = cv2.imread(image_file, 0)
       print("THUMB FILE OPENED")
 
@@ -145,11 +145,14 @@ def thumb(image_file = "", image = "", perc_size = None):
 
    if perc_size is None:
       if w < 1000:
-         thumb_img = cv2.resize(image, (0,0),fx=.4, fy=.4)
+         #thumb_img = cv2.resize(image, (0,0),fx=.4, fy=.4)
+         thumb_img = cv2.resize(image, (320,180))
       else:
-         thumb_img = cv2.resize(image, (0,0),fx=.15, fy=.15)
+         #thumb_img = cv2.resize(image, (0,0),fx=.15, fy=.15)
+         thumb_img = cv2.resize(image, (320,180))
    else:
-      thumb_img = cv2.resize(image, (0,0),fx=perc_size, fy=perc_size)
+      #thumb_img = cv2.resize(image, (0,0),fx=perc_size, fy=perc_size)
+      thumb_img = cv2.resize(image, (320,180))
 
    if image_file != "":
       print("SAVING:", thumb_file)
@@ -169,13 +172,31 @@ def bigger_box(min_x,min_y,max_x,max_y,iw,ih,fac=5):
       max_y = ih-1
    return(min_x-fac,min_y-fac,max_x+fac,max_y+fac)
 
+def obj_to_hist(obj):
+   # hist = fn,x,y,w,h,i
+   hist = []
+   for i in range(0, len(obj['oxs'])):
+      x = obj['oxs'][i]
+      y = obj['oys'][i]
+      fn = obj['ofns'][i]
+      w = obj['ows'][i]
+      h = obj['ohs'][i]
+      i = obj['oint'][i]
+      hist.append([fn,x,y,w,h,x,y,i,i])
+   return(hist)
 
 def draw_stack(objects,stack_img,stack_file):
    if stack_img is None:
       return() 
    ih,iw=stack_img.shape[:2]
    for obj in objects:
-      hist = obj['history'] 
+      print("OBJ:", obj)
+      if "history" in obj:
+         hist = obj['history'] 
+      else:
+         hist = obj_to_hist(obj)
+         print("HIST:", hist)
+         #exit()        
       (max_x,max_y,min_x,min_y) = find_min_max_dist(hist)
       (min_x,min_y,max_x,max_y) = bigger_box(min_x,min_y,max_x,max_y,iw,ih,25) 
       cv2.rectangle(stack_img, (min_x, min_y), (max_x , max_y), (255, 0, 0,.02), 1)
@@ -184,10 +205,14 @@ def draw_stack(objects,stack_img,stack_file):
          obj['meteor'] = 1
 
       if obj['meteor'] == 1:
-         cv2.putText(stack_img, str(obj['oid']) + " Meteor",  (min_x,min_y-3), cv2.FONT_HERSHEY_SIMPLEX, .4, (255, 255, 255), 1)
+         if 'oid' in obj:
+            oid = obj['oid']
+         else:
+            oid = obj['obj_id']
+         cv2.putText(stack_img, str(oid) + " Meteor",  (min_x,min_y-3), cv2.FONT_HERSHEY_SIMPLEX, .4, (255, 255, 255), 1)
       else:
          cv2.putText(stack_img, str(obj['oid']) ,  (min_x-5,min_y-12), cv2.FONT_HERSHEY_SIMPLEX, .4, (255, 255, 255), 1)
-   stack_file=stack_file.replace("-stacked.png", "-stacked-obj.png")
+   stack_file=stack_file.replace("-stacked.jpg", "-stacked-obj.jpg")
    print("WROTE:", stack_file)
    cv2.imwrite(stack_file,stack_img)
 
@@ -235,7 +260,7 @@ def stack_frames(frames,video_file,nowrite=0, resize=None):
       resize_w = resize[0]
       resize_h = resize[1]
    stacked_image = None
-   stacked_file= video_file.replace(".mp4", "-stacked.png")
+   stacked_file= video_file.replace(".mp4", "-stacked.jpg")
    print("STACKED FILE IS:", stacked_file)
    if cfe(stacked_file) == 1 and nowrite == 0:
       #print("SKIP - Stack already done.") 

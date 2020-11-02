@@ -512,6 +512,16 @@ def find_stars_ajax(json_conf, stack_file, is_ajax = 1):
 
 
 def check_make_half_stack(sd_file,hd_file,meteor_reduced):
+   if cfe(sd_file) == 0:
+      if "png" in sd_file:
+         sd_file = sd_file.replace("png", "jpg")
+   if cfe(sd_file) == 0:
+      print("SD FILE NOT FOUND.", sd_file)
+      exit()
+   if cfe(hd_file) == 0:
+      print("HD FILE NOT FOUND.", sd_file)
+      exit()
+
    if cfe(hd_file) == 0:
       hd_trim = meteor_reduced['hd_trim']
       #hd_trim.replace(".mp4", "-HD-meteor-stacked.png")
@@ -2969,15 +2979,15 @@ def reduce_meteor_new(json_conf,form):
          mj['hd_file'] = mj['hd_file'].replace("/mnt/ams2/HD", "/mnt/ams2/meteors/" + day_dir)
          mj['hd_trim'] = mj['hd_trim'].replace("/mnt/ams2/HD", "/mnt/ams2/meteors/" + day_dir)
          mj['hd_crop_file'] = mj['hd_crop_file'].replace("/mnt/ams2/HD", "/mnt/ams2/meteors/" + day_dir)
-         mj['hd_crop_file_stack'] = mj['hd_crop_file'].replace(".mp4", "-stacked.png")
-         mj['hd_trim_stack'] = mj['hd_trim'].replace(".mp4", "-stacked.png")
+         mj['hd_crop_file_stack'] = mj['hd_crop_file'].replace(".mp4", "-stacked.jpg")
+         mj['hd_trim_stack'] = mj['hd_trim'].replace(".mp4", "-stacked.jpg")
       else:
          mj['hd_file'] = 0
          mj['hd_trim'] = 0
          mj['hd_crop_file'] = 0
          mj['hd_crop_file_stack'] = 0
          mj['hd_trim_stack'] = 0
-      mj['sd_stack'] = mj['sd_video_file'].replace(".mp4", "-stacked.png")
+      mj['sd_stack'] = mj['sd_video_file'].replace(".mp4", "-stacked.jpg")
 
 
    if cfe(meteor_reduced_file) == 1:
@@ -3026,12 +3036,16 @@ def reduce_meteor_new(json_conf,form):
    if "hd_stack" not in mj and mj['hd_trim'] != 0: 
       mj['hd_stack'] = mj['hd_trim'].replace(".mp4", "-stacked.jpg")
    else:
-      mj['hd_stack'] = sd_stack.replace(".jpg", "-HD.jpg")
+      mj['hd_stack'] = sd_stack.replace(".jpg", "-HD-meteor.jpg")
+      #exit()
       if cfe(mj['hd_stack']) == 0:
          tmp = cv2.imread(sd_stack)
          hd_stack_img = cv2.resize(tmp, (1920,1080))
          cv2.imwrite(mj['hd_stack'], hd_stack_img)
-      
+   if mj['hd_trim'] == 0 :
+      mj['hd_trim'] = mj['sd_video_file'] 
+      hd_trim = mj['sd_video_file']
+   print("MJ:", mj['hd_trim'])
 
    check_make_half_stack(mj['sd_stack'], mj['hd_stack'], mj)
    mj['half_stack'] = mj['half_stack'].replace("-stacked", "")
@@ -3112,7 +3126,7 @@ def reduce_meteor_new(json_conf,form):
 
    # We test if an important file is missing
    errors = ""
-
+   print("HD TRIM:", hd_trim)
    if(cfe(hd_trim)==0):
  
 

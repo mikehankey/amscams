@@ -41,6 +41,7 @@ def find_min_max_dist(hist,mute_wh=0):
          fn,x,y,w,h,mx,my = hs
       if len(hs) == 9:
          fn,x,y,w,h,mx,my,max_val,sum_val = hs
+      print("HIST:", hs)
       max_x, max_y,min_x,min_y = max_xy(x,y,w,h,max_x,max_y,min_x,min_y,mute_wh)
 
    return(max_x,max_y,min_x,min_y)

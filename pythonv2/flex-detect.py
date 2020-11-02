@@ -117,8 +117,8 @@ def save_old_and_new_meteor(sd_trim, hd_trim, sd_objs,hd_objs, sd_stack, hd_stac
    js = {}
    sd_file = mdir + sd_fn
    hd_file = mdir + hd_fn
-   sd_stack_file = sd_file.replace(".mp4", "-stacked.png")
-   hd_stack_file = hd_file.replace(".mp4", "-stacked.png")
+   sd_stack_file = sd_file.replace(".mp4", "-stacked.jpg")
+   hd_stack_file = hd_file.replace(".mp4", "-stacked.jpg")
    js['sd_video_file'] = sd_file
    js['trim_clip'] = sd_file
    js['hd_video_file'] = hd_file
@@ -532,7 +532,7 @@ def finish_meteor(meteor_file):
       # mv orig video file, stack file and image stack to proc2 dirs
       video_file = meteor_file.replace("-meteor.json", ".mp4")
       vals_file = meteor_file.replace("-meteor.json", "-vals.json")
-      stack_file = meteor_file.replace("-meteor.json", "-stacked.png")
+      stack_file = meteor_file.replace("-meteor.json", "-stacked.jpg")
 
 
       proc_dir = "/mnt/ams2/SD/proc2/" + day + "/"
@@ -597,9 +597,9 @@ def make_json_files(sd_meteor, hd_meteor):
   
    
    old_json['sd_video_file'] = "/mnt/ams2/meteors/" + day + "/" + sd_meteor['trim_clip']
-   old_json['sd_stack'] = "/mnt/ams2/meteors/" + day + "/" + sd_meteor['trim_clip'].replace(".mp4", "-stacked.png")
+   old_json['sd_stack'] = "/mnt/ams2/meteors/" + day + "/" + sd_meteor['trim_clip'].replace(".mp4", "-stacked.jpg")
    if hd_meteor is not None:
-      old_json['hd_stack'] = "/mnt/ams2/meteors/" + day + "/" + hd_meteor['trim_clip'].replace(".mp4", "-stacked.png")
+      old_json['hd_stack'] = "/mnt/ams2/meteors/" + day + "/" + hd_meteor['trim_clip'].replace(".mp4", "-stacked.jpg")
       old_json['hd_video_file'] = "/mnt/ams2/meteors/" + day + "/" + hd_meteor['trim_clip']
       old_json['hd_trim'] = "/mnt/ams2/meteors/" + day + "/" + hd_meteor['trim_clip']
    else:
@@ -922,7 +922,7 @@ def fix_missing_hd(dir):
 def stack_non_meteors():
    files = glob.glob("/mnt/ams2/non_meteors/*.mp4")
    for file in files:
-      stack_file = file.replace(".mp4", "-stacked.png")
+      stack_file = file.replace(".mp4", "-stacked.jpg")
       data_file = file.replace(".mp4", "-detect.json")
       if cfe(data_file) == 1:
          data = load_json_file(data_file)
@@ -945,11 +945,11 @@ def batch_move():
    for video_file in files:
       if "trim" in video_file:
          trim = 1
-         stack_file = video_file.replace(".mp4", "-stacked.png")
+         stack_file = video_file.replace(".mp4", "-stacked.jpg")
       
       else:
          trim = 0
-         stack_file = video_file.replace(".mp4", "-stacked.png")
+         stack_file = video_file.replace(".mp4", "-stacked.jpg")
          meteor_file = video_file.replace(".mp4", "-meteor.json")
          fail_file = video_file.replace(".mp4", "-fail.json")
       if cfe(stack_file) == 1 and trim != 1:
@@ -1119,7 +1119,7 @@ def save_old_style_meteor_json(meteor_json_file, meteor_obj, trim_clip ):
       hd_trim = 0
    oj = {}
    oj['sd_video_file'] = meteor_json_file.replace(".json", ".mp4")
-   sd_stack = meteor_json_file.replace(".json", "-stacked.png")
+   sd_stack = meteor_json_file.replace(".json", "-stacked.jpg")
 
    oj['sd_stack'] = sd_stack
    oj['hd_stack'] = sd_stack
@@ -1301,7 +1301,7 @@ def reject_meteor(meteor_json_file):
    min_file = meteor_json_file.replace("-meteor.json", ".mp4")
    (hd_datetime, cam, sd_date, sd_y, sd_m, sd_d, sd_h, sd_M, sd_s) = convert_filename_to_date_cam(min_file)
    meteor_date = sd_y + "_" + sd_m + "_" + sd_d
-   stack_file = meteor_json_file.replace("-meteor.json", "-stacked.png")
+   stack_file = meteor_json_file.replace("-meteor.json", "-stacked.jpg")
    proc_dir = "/mnt/ams2/SD/proc2/" + sd_y + "_" + sd_m + "_" + sd_d + "/"
    if cfe(proc_dir, 1) == 0:
       os.system("mkdir " + proc_dir)
@@ -3201,7 +3201,7 @@ def confirm_meteor_OLD(meteor_json_file):
       video_file = meteor_json_file.replace("-meteor.json", ".mp4")
    else:
       video_file = meteor_json_file.replace(".json", ".mp4")
-   orig_stack_file = meteor_json_file.replace("-meteor.json", "-stacked.png")
+   orig_stack_file = meteor_json_file.replace("-meteor.json", "-stacked.jpg")
    print("CONFIRM:", video_file)
    (hd_datetime, cam, sd_date, sd_y, sd_m, sd_d, sd_h, sd_M, sd_s) = convert_filename_to_date_cam(video_file)
 
@@ -3334,8 +3334,8 @@ def process_meteor_files(obj, meteor_date, video_file, old_scan ):
    meteor_json_file = video_file.replace(".mp4", "-meteor.json")
    old_meteor_json_file = old_meteor_dir + mf
    old_meteor_json_file = old_meteor_json_file.replace(".mp4", ".json")
-   old_meteor_stack_file = old_meteor_json_file.replace(".json", "-stacked.png")
-   orig_stack_file = video_file.replace(".mp4", "-stacked.png")
+   old_meteor_stack_file = old_meteor_json_file.replace(".json", "-stacked.jpg")
+   orig_stack_file = video_file.replace(".mp4", "-stacked.jpg")
 
    if old_scan == 0:
       print("Save old meteor json", old_meteor_json_file)
@@ -3736,7 +3736,7 @@ def scan_queue(cam):
    files = sorted(glob.glob(queue_dir + wild ), reverse=True)
    fc = 0
    for video_file in files:
-      stack_file = video_file.replace(".mp4", "-stacked.png")
+      stack_file = video_file.replace(".mp4", "-stacked.jpg")
       if cfe(stack_file) == 0 and "trim" not in video_file:
          quick_scan(video_file)
          #cmd = "./flex-detect.py qs " + video_file
@@ -3890,7 +3890,7 @@ def batch_quick():
    cc = 0
    files = sorted(files, reverse=True)
    for file in sorted(files, reverse=True):
-      png = file.replace(".mp4", "-stacked.png")
+      png = file.replace(".mp4", "-stacked.jpg")
       if cfe(png) == 0:
          (f_datetime, cam_id, f_date_str,fy,fmin,fd,fh, fm, fs) = parse_file_data(file)
          sun_status = day_or_night(f_date_str)
@@ -6228,7 +6228,7 @@ def calc_cm_for_event(event):
 def proc_move(video_file):
    fn = video_file.split("/")[-1]
    day = fn[0:10]
-   stack_file = video_file.replace(".mp4", "-stacked.png")
+   stack_file = video_file.replace(".mp4", "-stacked.jpg")
    vals_file = video_file.replace(".mp4", "-vals.json")
    detect_file = video_file.replace(".mp4", "-detect.json")
    proc_dir = "/mnt/ams2/SD/proc2/" + day + "/" 
@@ -6287,7 +6287,7 @@ def quickest_scan(video_file):
    start_time = time.time()
 
    # set stack file and skip if it alread exists.
-   stack_file = video_file.replace(".mp4", "-stacked.png")
+   stack_file = video_file.replace(".mp4", "-stacked.jpg")
    if cfe(stack_file) == 1 :
       print("Already done this.")
       return()
@@ -6546,7 +6546,7 @@ def quick_scan(video_file, old_meteor = 0):
    start_time = time.time()
 
    # set stack file and skip if it alread exists. 
-   stack_file = video_file.replace(".mp4", "-stacked.png")
+   stack_file = video_file.replace(".mp4", "-stacked.jpg")
    if cfe(stack_file) == 1 and old_meteor == 0:
       print("Already done this.")
       #return([])
@@ -6805,7 +6805,7 @@ def restack(file):
       frames,color_frames,subframes,sum_vals,max_vals,pos_vals = load_frames_fast(file, json_conf, 0, 0, [], 0,[])
       print("RESTACK: ", file, len(frames))
       stack = stack_frames_fast(frames, 1)
-      stack_file = file.replace(".mp4", "-stacked.png")
+      stack_file = file.replace(".mp4", "-stacked.jpg")
       print(stack.shape)
       cv2.imwrite(stack_file, stack)
 
@@ -8138,7 +8138,7 @@ def refine_points(frames, frame_data):
 def review_meteor(video_file):
    custom_frame = np.zeros((1080,1920,3),dtype=np.uint8)
    json_file= video_file.replace(".mp4", ".json")
-   stack_file = video_file.replace(".mp4", "-stacked.png")
+   stack_file = video_file.replace(".mp4", "-stacked.jpg")
    trim_num = get_trim_num(video_file)
 
    frames,color_frames,subframes,sum_vals,max_vals,pos_vals = load_frames_fast(video_file, json_conf, 0, 0, [], 0,[])
@@ -8161,7 +8161,7 @@ def review_meteor(video_file):
    fd['hd_trim'] = hd_trim
    hd_crop_file = update_hd_path(fd['hd_crop_file'])
    if hd_trim != 0:
-      hd_stack_file = hd_trim.replace(".mp4", "-stacked.png")
+      hd_stack_file = hd_trim.replace(".mp4", "-stacked.jpg")
       half_stack_file = hd_trim.replace(".mp4", "half-stack.png")
       if cfe(hd_stack_file) == 0:
          print("HD STACK NOT EXIST")
@@ -9917,7 +9917,7 @@ def check_archive(day, run):
          noHD = 0 
          if "hd_trim" in jd: 
             if jd['hd_trim'] is not None:
-               hd_stack = jd['hd_trim'].replace(".mp4", "-stacked.png")
+               hd_stack = jd['hd_trim'].replace(".mp4", "-stacked.jpg")
             else:
                noHD = 1
          else:
@@ -10108,7 +10108,7 @@ def make_preview_image(json_file):
        
          hd_trim = jd['hd_trim']
          if hd_trim is not None and hd_trim != 0:
-            hd_stack = hd_trim.replace(".mp4", "-stacked.png")
+            hd_stack = hd_trim.replace(".mp4", "-stacked.jpg")
             if "/mnt/ams2/HD" in hd_stack:
                sfn = hd_stack.split("/")[-1]
                day = sfn[0:10]  
@@ -10120,7 +10120,7 @@ def make_preview_image(json_file):
       if 'sd_stack' in jd:
          sd_stack = jd['sd_stack']
       else:
-         sd_stack = json_file.replace(".json", "-stacked.png")
+         sd_stack = json_file.replace(".json", "-stacked.jpg")
          if cfe(sd_stack) == 0:
             sd_stack = None   
       if "sd_objects" in jd:
@@ -11414,8 +11414,8 @@ def save_final_meteor(meteor_file):
    old_json_data['sd_video_file'] = old_json_dir + sdf
    old_json_data['hd_trim'] = old_json_dir + hdf
 
-   stack_file = old_json_dir + sdf.replace(".mp4", "-stacked.png")
-   hd_stack_file = old_json_dir + hdf.replace(".mp4", "-stacked.png")
+   stack_file = old_json_dir + sdf.replace(".mp4", "-stacked.jpg")
+   hd_stack_file = old_json_dir + hdf.replace(".mp4", "-stacked.jpg")
 
    old_json_data['sd_stack'] = stack_file
    old_json_data['hd_stack'] = hd_stack_file
@@ -11701,7 +11701,7 @@ def basic_scan(video_file):
    stacked_image = stack_frames_fast(sd_color_frames, 1, [PREVIEW_W, PREVIEW_H])
 
    elapsed_time = time.time() - start_time
-   stack_file = video_file.replace(".mp4", "-stacked.png") 
+   stack_file = video_file.replace(".mp4", "-stacked.jpg") 
    cv2.imwrite(stack_file, stacked_image)
    print(stack_file)
    print(vals_file)
