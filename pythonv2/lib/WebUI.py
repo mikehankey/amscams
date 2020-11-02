@@ -2508,6 +2508,7 @@ def delete_multiple_detection(detections,json_conf):
 
 
       save_json_file(del_file, del_data)
+      os.system("cd /home/ams/amscams/pipeline/; ./Process.py purge_meteors &")
 
 
 def override_detect(video_file,jsid, json_conf):
@@ -2537,7 +2538,7 @@ def override_detect(video_file,jsid, json_conf):
    resp = {}
    resp['status'] = "files added to delete log: " + delete_log
    print(json.dumps(resp))
-   #os.system("cd /home/ams/amscams/pipeline; ./Process.py purge_meteors &")
+   os.system("cd /home/ams/amscams/pipeline; ./Process.py purge_meteors &")
    return()
 
    if False:
