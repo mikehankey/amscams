@@ -133,7 +133,7 @@ def thumb(image_file = "", image = "", perc_size = None):
    print("THUMB!", image_file)
    if image_file != "":
       thumb_file = image_file.replace(".jpg", "-tn.jpg")
-      image = cv2.imread(image_file, 0)
+      image = cv2.imread(image_file)
       print("THUMB FILE OPENED")
 
    try:
