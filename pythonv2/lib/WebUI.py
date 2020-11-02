@@ -1752,9 +1752,13 @@ def meteors_new(json_conf,form):
       for idx, meteor in enumerate(meteors):
          # Minus 1 so we have nompp per page starting at 0
          if(counter<=nompp-1 and idx <= meteor_from):
-            stack_file_tn = meteor.replace('.json', '-stacked-tn.jpg')
+            stack_file_tn = meteor.replace('.json', '-stacked-tn.jpg') 
+            if cfe(stack_file_tn) == 0:
+               stack_file_tn = meteor.replace('.json', '-stacked-tn.png') 
             video_file = meteor.replace('.json', '.mp4')
             stack_obj_img = video_file.replace(".mp4", "-stacked-obj-tn.jpg")
+            if cfe(stack_obj_img) == 0:
+               stack_obj_img = video_file.replace(".mp4", "-stacked-obj-tn.png")
             reduce_file = meteor.replace(".json", "-reduced.json")
             reduced = 0
             if cfe(reduce_file) == 1:
