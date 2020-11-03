@@ -11379,7 +11379,6 @@ def save_final_meteor(meteor_file):
       old_json_data, new_json_data = make_json_files(sd_meteors[0],hd_meteors[0])
    else:
       old_json_data, new_json_data = make_json_files(sd_meteors[0],None)
-   print(old_json_data)
 
    old_json_dir = "/mnt/ams2/meteors/" + day + "/"
    arc_dir = "/mnt/ams2/meteor_archive/" + json_conf['site']['ams_id'] + "/METEOR/" + fy + "/" + fm + "/" + fd + "/" 
@@ -11415,7 +11414,9 @@ def save_final_meteor(meteor_file):
    old_json_data['hd_trim'] = old_json_dir + hdf
 
    stack_file = old_json_dir + sdf.replace(".mp4", "-stacked.jpg")
+   stack_file_tn = old_json_dir + sdf.replace(".mp4", "-stacked-tn.jpg")
    hd_stack_file = old_json_dir + hdf.replace(".mp4", "-stacked.jpg")
+   hd_stack_file_tn = old_json_dir + hdf.replace(".mp4", "-stacked-tn.jpg")
 
    old_json_data['sd_stack'] = stack_file
    old_json_data['hd_stack'] = hd_stack_file
@@ -11436,11 +11437,15 @@ def save_final_meteor(meteor_file):
 
    cv2.imwrite(stack_file, stacked_img)
    cv2.imwrite(hd_stack_file, hd_stacked_img)
-   hd_tn = cv2.resize(hd_stacked_img, (PREVIEW_W,PREVIEW_H))
-   sd_tn = cv2.resize(stacked_img, (PREVIEW_W,PREVIEW_H))
-   cv2.imwrite(stack_file.replace(".png", "-tn.png"), stacked_img)
-   cv2.imwrite(hd_stack_file.replace(".png", "-tn.png"), hd_stacked_img)
-   stacked_img_obj = stacked_img
+
+
+   hd_tn = cv2.resize(hd_stacked_img, (320,180))
+   sd_tn = cv2.resize(stacked_img, (320,180))
+
+
+   cv2.imwrite(stack_file_tn, sd_tn)
+   cv2.imwrite(hd_stack_file_tn, hd_tn)
+   stacked_img_obj = stacked_img.copy()
    if 'sd_prev_crop' not in mj:
       cx1,cy1,cx2,cy2,mid_x,mid_y = get_roi(None, real_meteors[0], 1, 1)
       mj['sd_prev_crop'] = [cx1,cy1,cx2,cy2,mid_x,mid_y]
@@ -11454,7 +11459,8 @@ def save_final_meteor(meteor_file):
 
    cx1,cy1,cx2,cy2,midx,midy = mj['sd_prev_crop']
    cv2.rectangle(stacked_img_obj, (cx1, cy1), (cx2, cy2), (255,255,255), 1, cv2.LINE_AA)
-   cv2.imwrite(stack_file.replace(".png", "-obj-tn.png"), stacked_img_obj)
+   stacked_img_obj = cv2.resize(stacked_img_obj, (320,180))
+   cv2.imwrite(stack_file.replace(".jpg", "-obj-tn.jpg"), stacked_img_obj)
 
 
    print(stack_file)

@@ -750,7 +750,7 @@ def batch_meteor_thumb(json_conf):
       mp4_files = glob.glob(meteor_dir + "/*.mp4")
       thumb_mp4s(mp4_files,json_conf)
       print(meteor_dir)
-      #exit()
+      exit()
 
 def batch_thumb(json_conf):
    print("BATCH THUMB")

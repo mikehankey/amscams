@@ -137,7 +137,7 @@ def thumb(image_file = "", image = "", perc_size = None):
       print("THUMB FILE OPENED")
 
    try:
-      h,w = image.shape
+      h,w = image.shape[:2]
       print("IMAGE SHAPE:", image.shape)
    except:
       print("IMAGE THUMB FAILED FOR ", image_file)
@@ -172,15 +172,18 @@ def bigger_box(min_x,min_y,max_x,max_y,iw,ih,fac=5):
       max_y = ih-1
    return(min_x-fac,min_y-fac,max_x+fac,max_y+fac)
 
-def obj_to_hist(obj):
+def obj_to_hist(obj, stack_img):
    # hist = fn,x,y,w,h,i
    hist = []
+   h,w = stack_img.shape[:2]
+   hdmx = 1920 / w
+   hdmy = 1080 / h 
    for i in range(0, len(obj['oxs'])):
-      x = obj['oxs'][i]
-      y = obj['oys'][i]
+      x = int(obj['oxs'][i] * hdmx)
+      y = int(obj['oys'][i] * hdmy)
       fn = obj['ofns'][i]
-      w = obj['ows'][i]
-      h = obj['ohs'][i]
+      w = int(obj['ows'][i] * hdmx)
+      h = int(obj['ohs'][i] * hdmy)
       i = obj['oint'][i]
       hist.append([fn,x,y,w,h,x,y,i,i])
    return(hist)
@@ -194,7 +197,7 @@ def draw_stack(objects,stack_img,stack_file):
       if "history" in obj:
          hist = obj['history'] 
       else:
-         hist = obj_to_hist(obj)
+         hist = obj_to_hist(obj, stack_img)
          print("HIST:", hist)
          #exit()        
       (max_x,max_y,min_x,min_y) = find_min_max_dist(hist)

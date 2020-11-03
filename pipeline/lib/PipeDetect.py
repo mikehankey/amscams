@@ -2298,6 +2298,21 @@ def json_rpt(obj):
          print(key, obj[key])
    print("")
    
+def re_detect(date):
+   files = glob.glob("/mnt/ams2/meteors/" + date + "/*.json")
+   data_dir = "/mnt/ams2/SD/proc2/" + date + "/data/" 
+   for file in files:
+
+      fn,dir= fn_dir(file)
+      root = fn.split("-")[0]
+      vals_file = data_dir + root + "-vals.json"
+      mm_file = data_dir + root + "-maybe-meteors.json"
+      cmd = "cd /home/ams/amscams/pythonv2/; ./flex-detect.py dv " + vals_file
+      os.system(cmd)
+      if cfe(mm_file):
+         cmd = "cd /home/ams/amscams/pythonv2/; ./flex-detect.py vm " + mm_file 
+         os.system(cmd)
+      #exit() 
 
 def detect_all(vals_file):
    video_file = vals_file.replace("-vals.json", ".mp4") 
