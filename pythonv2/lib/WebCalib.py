@@ -3025,7 +3025,6 @@ def reduce_meteor_new(json_conf,form):
 
    sd_video_file = mj['sd_video_file']
    sd_stack = mj['sd_stack']
-
    if "stacked" not in mj['sd_stack']:
       mj['sd_stack'] = mj['sd_stack'].replace(".jpg", "-stacked.jpg")
       mj['hd_stack'] = mj['hd_stack'].replace(".jpg", "-stacked.jpg")
@@ -3045,7 +3044,6 @@ def reduce_meteor_new(json_conf,form):
    if mj['hd_trim'] == 0 :
       mj['hd_trim'] = mj['sd_video_file'] 
       hd_trim = mj['sd_video_file']
-   print("MJ:", mj['hd_trim'])
 
    check_make_half_stack(mj['sd_stack'], mj['hd_stack'], mj)
    mj['half_stack'] = mj['half_stack'].replace("-stacked", "")
@@ -3126,7 +3124,6 @@ def reduce_meteor_new(json_conf,form):
 
    # We test if an important file is missing
    errors = ""
-   print("HD TRIM:", hd_trim)
    if(cfe(hd_trim)==0):
  
 

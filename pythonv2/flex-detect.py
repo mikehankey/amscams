@@ -105,8 +105,6 @@ def man_detect(trim_file):
       exit()
 
       save_old_and_new_meteor(trim_file, hd_trim, meteors, hd_objects, stacked_sd_frame, stacked_hd_frame)
-      print("SD:", trim_file)
-      print("HD:", hd_trim)
 
 def save_old_and_new_meteor(sd_trim, hd_trim, sd_objs,hd_objs, sd_stack, hd_stack, calib):
    sd_fn = sd_trim.split("/")[-1]
@@ -6901,8 +6899,6 @@ def sync_hd_sd_frames(obj):
 
    hd_objects = only_meteors(hd_objects)
    sd_objects = only_meteors(sd_objects)
-   print("SD:", sd_objects)
-   print("HD:", hd_objects )
 
 
    if len(hd_objects) == 0:
@@ -8641,8 +8637,6 @@ def sync_frames(sd_frames,hd_frames,sd_subframes,hd_subframes,sd_sum_vals,hd_sum
             new_hd_sum.append(int(np.sum(hd_subframe)))
 
 
-   print("SD:", new_sd_sum) 
-   print("HD:", new_hd_sum) 
 
    return(new_sd,new_hd,new_sd_sub,new_hd_sub,new_sd_sum,new_hd_sum)
 
@@ -11460,11 +11454,9 @@ def save_final_meteor(meteor_file):
    cx1,cy1,cx2,cy2,midx,midy = mj['sd_prev_crop']
    cv2.rectangle(stacked_img_obj, (cx1, cy1), (cx2, cy2), (255,255,255), 1, cv2.LINE_AA)
    stacked_img_obj = cv2.resize(stacked_img_obj, (320,180))
-   cv2.imwrite(stack_file.replace(".jpg", "-obj-tn.jpg"), stacked_img_obj)
+   stack_img_obj_file_tn = stack_file.replace(".jpg", "-obj-tn.jpg")
+   cv2.imwrite(stack_img_obj_file_tn, stacked_img_obj)
 
-
-   print(stack_file)
-   print(hd_stack_file)
 
 
 
