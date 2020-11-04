@@ -148,12 +148,15 @@ def check_disk():
       print("Root volume / is greater than 80%!", mounts["/"]) 
       del_needed = 1
 
+   hd_files = sorted(glob.glob("/mnt/ams2/HD/*.mp4"))
+   if len(hd_files) > 22000:
+      del_needed = 1
+
    # first get the HD files and start deleting some of then (remove the last 12 hours) 
    # then check disk again if it is still over 80% delete some more. 
    # continue to do this until the disk is less than 80% or there are only a max of 2 days of HD files left
    if del_needed == 1:
       print("Data volume /mnt/ams2 is greater than 80%!")
-      hd_files = sorted(glob.glob("/mnt/ams2/HD/*.mp4"))
       print(len(hd_files), " HD FILES")
       del_count = int(len(hd_files) / 10)
       for file in hd_files[0:del_count]:
