@@ -36,11 +36,11 @@ mkdir /home/ams/astrometry/
 cd /home/ams/astrometry/
 
 #wget http://astrometry.net/downloads/astrometry.net-latest.tar.gz
-#wget http://192.168.1.4/mnt/ams2/astrometry.net-mike.tar.gz
+wget http://192.168.1.4/mnt/ams2/astrometry.net-mike.tar.gz
 
 #wget http://archive.allsky.tv/APPS/INSTALL/astrometry.net-mike.tar.gz
-#gunzip astrometry.net-mike.tar.gz
-#tar xf astrometry.net-mike.tar
+gunzip astrometry.net-mike.tar.gz
+tar xf astrometry.net-mike.tar
 
 
 cd /home/ams/astrometry/astrometry.net-0.73/
