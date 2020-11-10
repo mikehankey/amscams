@@ -162,7 +162,12 @@ def check_disk():
       for file in hd_files[0:del_count]:
          if "meteor" not in file:
             print("Delete this file!", file)
-            os.system("rm " + file)
+            hd_datetime, hd_cam, hd_date, hd_y, hd_m, hd_d, hd_h, hd_M, hd_s,hd_ms = convert_filename_to_date_cam(file, 1)
+            elp = hd_datetime - datetime.now()
+            days_old = abs(elp.total_seconds()) / 86400
+            print("OLD:", file, days_old)
+            if days_old > 2.5:
+               os.system("rm " + file)
 
    # check SD dir  
    # if the disk usage is over 80% 

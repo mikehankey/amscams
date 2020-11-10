@@ -247,6 +247,7 @@ def find_hd_file_best(sd_file, trim_num, dur = 25, trim_on =1):
       dur = int(dur)
    else:
       print("NO HD FILES FOUND!")
+      hd_file = None 
       #exit()
 
    if hd_file is not None:
@@ -264,7 +265,7 @@ def find_hd_file_best(sd_file, trim_num, dur = 25, trim_on =1):
          hd_start = 0
 
       print("HD TRIM:", hd_start, hd_end, trim_adj, time_diff_sec)
-      hd_trim , trim_start, trim_end = make_trim_clip(hd_file, hd_start, hd_end)
+      hd_trim , trim_start, trim_end = make_trim_clip(hd_file, hd_start, hd_end, "-HD-meteor")
       print("SD/HD:", sd_file, hd_trim, trim_adj, trim_adj+dur)
       hd_proc_dir = "/mnt/ams2/SD/proc2/" + day + "/hd_save";
       if cfe(hd_proc_dir,1) == 0:
@@ -3709,20 +3710,25 @@ def make_trim_clips(meteor_objects, video_file):
    return(trim_clips, trim_starts, trim_ends,new_objs)
 
 
-def make_trim_clip(video_file, start, end):
+def make_trim_clip(video_file, start, end, suffix=""):
    # convert start and end frame #s to seconds
    print("START/END FN:", start, end)
    start_sec = start / 25
    end_sec = end / 25
    dur = end_sec - start_sec
    outfile = video_file.replace(".mp4", "-trim-" + str(start) + ".mp4")
+   if suffix != "":
+      outfile = outfile.replace(".mp4", suffix + ".mp4")
 
    # don't split on frame number as it requires re-encoding and is much longer also has issues when reset_timestamps are on. 
    #cmd = "/usr/bin/ffmpeg -i " + video_file + " -vf select=\"between(n\," + str(start) + "\," + str(end) + "),setpts=PTS-STARTPTS\" " + outfile + " 2>&1 > /dev/null"
    cmd = "/usr/bin/ffmpeg -y -i  " + video_file + " -ss 00:00:" + str(start_sec) + " -t 00:00:" + str(dur) + " -c copy " + outfile 
+   print(cmd)
    #if cfe(outfile) == 0:   
    #   print(cmd)
-   os.system(cmd)
+   os.system(cmd)  
+   if "HD" in outfile:
+      exit()
    return(outfile, start, end)
 
 def scan_queue(cam):
