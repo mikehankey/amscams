@@ -4,8 +4,8 @@ Autocal functions
 
 """
 import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
-#matplotlib.use('TkAgg')
 import time
 
 import pickle
@@ -173,7 +173,7 @@ def project_snaps(json_conf):
              cv2.circle(asimg,(2500,2500), 1500, (128,128,128), 1)
              asimg_crop = asimg[cy1:cy2,cx1:cx2]
              print("ASIMG SIZE:", asimg_crop.shape)
-             if SHOW == 0:
+             if SHOW == 1:
                 disp_img = cv2.resize(asimg_crop, (800, 800))
            
                 cv2.imshow('allsky', disp_img)
@@ -209,9 +209,6 @@ def project_many(files, json_conf,maps=None):
          asimg, ascp,maps = flatten_image(file, json_conf,None,None,maps)
       else:
          asimg, ascp,maps = flatten_image(file, json_conf,asimg,ascp,maps)
-      #disp_img = cv2.resize(asimg, (1080, 1080))
-      #cv2.imshow('pepe', disp_img)
-      #cv2.waitKey(30)
    return(asimg, ascp,maps)
 
 
@@ -243,9 +240,6 @@ def all_sky_image(file, cal_params, json_conf,pxscale_div,size=5000):
          #cv2.putText(asimg, str(text),  (int(new_cat_x),int(new_cat_y)), cv2.FONT_HERSHEY_SIMPLEX, .3, (255, 255, 255), 1)
       #else:
       #   print("SKIP:", img_az, img_el)
-   #disp_img = cv2.resize(asimg, (1080, 1080))
-   #cv2.imshow('pepe', disp_img)
-   #cv2.waitKey(30)
    return(asimg, cal_params)
 
 def reverse_map(json_conf):
@@ -496,7 +490,7 @@ def flatten_image(file, json_conf,asimg=None,ascp=None,maps=None):
 
 
 def guess_cal(cal_file, json_conf, cal_params = None):
-   print(cal_file)
+   print("GUESS", cal_file)
    cp_file = cal_file.replace(".png", "-calparams.json")
    (f_datetime, this_cam, f_date_str,y,m,d, h, mm, s) = convert_filename_to_date_cam(cal_file)
    img = cv2.imread(cal_file)
@@ -543,7 +537,6 @@ def guess_cal(cal_file, json_conf, cal_params = None):
    while guessing == 0:
       print("RES:", avg_res)
       print("Waiting for input.", ss)
-      #cv2.imshow('pepe', gimg)
       key = cv2.waitKey(0)
 
       if key == ord('+'):
@@ -2347,8 +2340,6 @@ def review_cals(json_conf, cam=None):
             else:
                print(cp)
                continue
-               #cv2.imshow("NO CAT STARS!", cal_img)
-               #exit()
 
             #if abs(med_data[cam]['med_pa'] - cp['position_angle']) > 10 and cp['total_res_px'] > 20:
             if False:
@@ -2462,6 +2453,7 @@ def cal_all(json_conf):
    year = datetime.now().strftime("%Y")
    cal_dir = ARC_DIR + "CAL/AUTOCAL/" + year + "/*.png"
    files = glob.glob(cal_dir)
+   print(cal_dir)
    for file in files:
       print("TRYING.")
       autocal(file, json_conf, 1)
@@ -2502,6 +2494,20 @@ def autocal(image_file, json_conf, show = 0):
    print("STARS:", len(stars))
    year = datetime.now().strftime("%Y")
    autocal_dir = "/mnt/ams2/meteor_archive/" + STATION_ID + "/CAL/AUTOCAL/" + year + "/solved/"
+   autocal_bad = "/mnt/ams2/meteor_archive/" + STATION_ID + "/CAL/AUTOCAL/" + year + "/bad/"
+   autocal_fail = "/mnt/ams2/meteor_archive/" + STATION_ID + "/CAL/AUTOCAL/" + year + "/failed/"
+   if cfe(autocal_dir, 1) == 0:
+      os.makedirs(autocal_dir)
+   if cfe(autocal_bad, 1) == 0:
+      os.makedirs(autocal_bad)
+   if cfe(autocal_fail, 1) == 0:
+      os.makedirs(autocal_fail)
+   if len(stars) < 7:
+      print("Not enough stars to solve.")
+      cmd = "mv " + image_file + " " + autocal_bad
+      print(cmd)
+      os.system(cmd)
+      return(0)
    mcp_file = autocal_dir + "multi_poly-" + STATION_ID + "-" + cam + ".info"
    if cfe(mcp_file) == 1:
       mcp = load_json_file(mcp_file)
@@ -2527,8 +2533,9 @@ def autocal(image_file, json_conf, show = 0):
       show_image(img, 'pepe', 300)
       show_image(plate_image, 'pepe', 300)
    status, cal_params,wcs_file = solve_field(plate_file, stars, json_conf)
-   if float(cal_params['position_angle']) < 0:
-      cal_params['position_angle'] = float(cal_params['position_angle']) + 180
+   if status == 1:
+      if float(cal_params['position_angle']) < 0:
+         cal_params['position_angle'] = float(cal_params['position_angle']) + 180
    print(cal_params)
 
    if mcp is not None:
@@ -2568,7 +2575,6 @@ def autocal(image_file, json_conf, show = 0):
 
    else:
       print("Plate solve failed. Clean up the mess!") 
-      exit()
       # rm original file and temp files here
       cmd = "mv " + image_file + "* " + fdir
       os.system(cmd)
@@ -2579,9 +2585,9 @@ def autocal(image_file, json_conf, show = 0):
    cat_stars = get_catalog_stars(cal_params)
    cal_params = pair_stars(cal_params, cal_params_file, json_conf)
    fn, dir = fn_dir(image_file)
-   guess_cal("temp/" + fn, json_conf, cal_params )
+   #guess_cal("temp/" + fn, json_conf, cal_params )
 
-   exit()
+   #exit()
    #cal_params['cat_image_stars']  = remove_dupe_cat_stars(cal_params['cat_image_stars'])
 
 
@@ -2621,7 +2627,8 @@ def autocal(image_file, json_conf, show = 0):
 
    save_json_file(cal_params_file, cal_params)
    if mcp is None:
-      status, cal_params  = minimize_poly_params_fwd(cal_params_file, cal_params,json_conf)
+      print("Skip mini poly")
+      #status, cal_params  = minimize_poly_params_fwd(cal_params_file, cal_params,json_conf)
    else:
       status = 1
    if status == 0:
@@ -2877,10 +2884,6 @@ def find_stars_with_grid(image):
                #print("GRID:", px_diff, grid_int)
                if 1000 < grid_int < 14000:
                   best_stars.append((bx+x1,by+y1,grid_int))
-               #   cv2.imshow('pepe', grid_img)
-               #   cv2.waitKey(30)
-               #cv2.imshow('grid_img', grid_img)
-               #cv2.waitKey(45)
    temp = sorted(best_stars, key=lambda x: x[2], reverse=True)
    return(temp)
 
@@ -2903,23 +2906,17 @@ def get_image_stars(file=None,img=None,json_conf=None,show=0):
    #for x,y,f in best_stars:
    #   cv2.rectangle(show_pic, (x-5, y-5), (x+5, y+5), (255, 255, 255), 1)
 
-   #dsp = cv2.resize(show_pic, (1280,720))
-   #cv2.imshow('pepe', dsp)
-   #return(best_stars)
-   #exit()
 
    raw_img = img.copy()
    (f_datetime, cam, f_date_str,y,m,d, h, mm, s) = convert_filename_to_date_cam(file)
    cam = cam.replace(".png", "")
    masks = get_masks(cam, json_conf,1)
    img = mask_frame(img, [], masks, 5)
-   #cv2.imshow("TESTING", show_pic)
    avg = np.median(img) 
    best_thresh = avg + 50
    _, star_bg = cv2.threshold(img, best_thresh, 255, cv2.THRESH_BINARY)
    thresh_obj = cv2.dilate(star_bg, None , iterations=4)
-   cv2.imshow('pepe', thresh_obj)
-   cv2.waitKey(0)
+   #cv2.waitKey(0)
 
    res = cv2.findContours(thresh_obj.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
    if len(res) == 3:
@@ -3016,8 +3013,6 @@ def eval_cnt(cnt_img, avg_px=5 ):
    
 
    #print(blob_x, blob_y, star_int)
-   #cv2.imshow('cnt', int_cnt)
-   #cv2.waitKey(0)
 
    return(max_px, avg_px,px_diff,(blob_x,blob_y),star_int)
 
@@ -3290,7 +3285,6 @@ def pair_stars(cal_params, cal_params_file, json_conf, cal_img=None, show = 0):
    for ix,iy,bp in cal_params['user_stars']:
       close_stars = find_close_stars((ix,iy), cat_stars)
       found = 0
-      #print("LEN CLOSE STARS:", len(close_stars))
       for name,mag,ra,dec,new_cat_x,new_cat_y,six,siy,cat_dist in close_stars:
          #dcname = str(name.decode("utf-8"))
          #dbname = dcname.encode("utf-8")
@@ -3312,7 +3306,6 @@ def pair_stars(cal_params, cal_params_file, json_conf, cal_img=None, show = 0):
                cal_params['x_poly'], cal_params['y_poly'], \
                dist_type, True, False, False)
 
-            #print("ASXY:", ix, iy, img_az, img_el, x_data[0], y_data[0])
          new_x = int(x_data[0])
          new_y = int(y_data[0])
 
@@ -3332,12 +3325,7 @@ def pair_stars(cal_params, cal_params_file, json_conf, cal_img=None, show = 0):
          #cv2.circle(temp_img,(six,siy), 7, (128,128,128), 1)
          #cv2.circle(temp_img,(int(new_cat_x),int(new_cat_y)), 7, (255,128,128), 1)
          #cv2.circle(temp_img,(int(new_x),int(new_y)), 7, (128,128,255), 1)
-         #cv2.imshow('pepe', temp_img)
-         #cv2.waitKey(30)
-         #print("MATCH DIST:", match_dist)
-         #print("DIST TO LINE:", dist_to_line, dist_to_line2)
          used_key = str(ra) + "-" + str(dec)
-         #print ("USED:", used_key)
 
          if match_dist >= 10 or used_key in used:
             bad = 1
@@ -3356,7 +3344,6 @@ def pair_stars(cal_params, cal_params_file, json_conf, cal_img=None, show = 0):
 
    my_close_stars,bad_stars = qc_stars(my_close_stars)
    cal_params['bad_stars'] = bad_stars
-   SHOW = 1   
    cal_params['no_match_stars'] = no_match
    if SHOW == 1:
       for star in my_close_stars:
@@ -3403,10 +3390,8 @@ def qc_stars(close_stars):
       cdist = calc_dist((six,siy),(960,540))
       res_times = res_diff / med_res
       if (res_times > 2 and cdist < 400) or bp < 0 or (res_times > 4 and cdist >= 400):
-         #print("BAD STAR:", dcname, str(med_res)[0:4], str(cat_dist)[0:4], str(res_diff)[0:4], str(res_times)[0:4], str(cdist)[0:4] , mag, bp)
          bad_stars.append(star)
       else:
-         #print("GOOD STAR:", dcname, str(med_res)[0:4], str(cat_dist)[0:4], str(res_diff)[0:4], str(res_times)[0:4], str(cdist)[0:4] , mag, bp)
          good_stars.append(star)
    return(good_stars, bad_stars)
 
@@ -3442,7 +3427,6 @@ def mag_report(stars, plot=0):
 
       mag_data = sorted(mag_data, key=lambda x: x[2], reverse=True)
       #for data in mag_data:
-      #   print(data)
       plt.plot(mags, flux, 'o')
       plt.plot(x_new, y_new )
       plt.show()
@@ -3476,7 +3460,6 @@ def get_catalog_stars(cal_params):
    x_res = int(cal_params['imagew'])
    y_res = int(cal_params['imageh'])
 
-   #print("USING CALP:", RA_center, dec_center, pos_angle_ref, cal_params['pixscale'], x_res, y_res)
 
    if img_w < 1920:
       center_x = int(x_res / 2)
@@ -3603,10 +3586,6 @@ def distort_xy(sx,sy,ra,dec,RA_center, dec_center, x_poly, y_poly, x_res, y_res,
    # Add the distortion correction and calculate Y image coordinates
    #y_array[i] = (Y1 - dY)*y_res/288.0 + y_res/2.0
    new_y = Y1 - dY + y_res/2.0
-   #print("DENIS RA:", X1, Y1, sx, sy, F_scale, w_pix, dist)
-   #print("DENIS:", X1, Y1, dX, dY, sx, sy, F_scale, w_pix, dist)
-   #print("THETA:",theta)
-   #print("DENIS:", sx,sy,new_x,new_y, sx-new_x, sy-new_y)
    return(new_x,new_y)
 
 
@@ -3634,7 +3613,7 @@ def find_close_stars(star_point, catalog_stars,dt=100):
       cat_x, cat_y = int(cat_x), int(cat_y)
       if cat_x - dt < scx < cat_x + dt and cat_y -dt < scy < cat_y + dt:
          cat_star_dist= calc_dist((cat_x,cat_y),(scx,scy))
-         print(dcname, cat_x, cat_y, scx, scy, cat_star_dist)
+         #print(dcname, cat_x, cat_y, scx, scy, cat_star_dist)
          matches.append((dcname,mag,ra,dec,cat_x,cat_y,scx,scy,cat_star_dist))
       else:
          cat_star_dist= calc_dist((cat_x,cat_y),(scx,scy))

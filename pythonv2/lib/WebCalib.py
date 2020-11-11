@@ -4406,6 +4406,7 @@ def free_cal(json_conf,form):
       sh,sw = sfs[0],sfs[1]
    else:
       half_stack_img = cv2.resize(stack_img, (0,0),fx=.5, fy=.5)
+   half_stack_img = cv2.resize(half_stack_img, (960,540))
 
    iw = int(sw/2)
    ih = int(sh/2)
@@ -4418,10 +4419,25 @@ def free_cal(json_conf,form):
    #cv2.imwrite(stack_file, stack_img)
 
    cfs = glob.glob(dir + "/" + "*azgrid-half.png")
-   print("AZ:", dir + "/" + "*azgrid-half.png")
+   if len(cfs) == 0:
+      cffs = glob.glob(dir + "/" + "*azgrid.png")
+      if len(cffs) > 0:
+         azg_img = cv2.imread(cffs[0])
+         azg_img_half = cv2.resize(azg_img, (960,540))
+         azg_half_file = cffs[0].replace(".png", "-half.png")
+         cv2.imwrite(azg_half_file, azg_img_half)     
+         cfs = glob.glob(dir + "/" + "*azgrid-half.png")
+  
+      
    if len(cfs) > 0:
       az_grid_file = cfs[0]
+      azg_img_half = cv2.imread(cfs[0])
       az_grid_blend = az_grid_file.replace(".png", "-blend.png")
+      if cfe(az_grid_blend) == 0:
+          blend_image = cv2.addWeighted(azg_img_half, .3, half_stack_img, .7, 0)
+          cv2.imwrite(az_grid_blend, blend_image)
+
+
    else:
       az_grid_file = "none"
       az_grid_blend = "none"
