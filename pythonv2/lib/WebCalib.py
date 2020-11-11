@@ -4443,7 +4443,8 @@ def free_cal(json_conf,form):
       az_grid_blend = "none"
 
    user_stars_file = cp_file.replace("-calparams.json", "-user-stars.json" )
-
+   if cfe(user_stars_file) == 0:
+      user_stars_file = user_stars_file.replace("-stacked", "")
    if cfe(user_stars_file) == 1:
       user_stars = load_json_file(user_stars_file)
       extra_js = """
@@ -4466,6 +4467,11 @@ def free_cal(json_conf,form):
          c = c + 1
       extra_js = extra_js + "]"
       extra_js = extra_js + """
+         </script>
+         <script>
+            window.onload = function () {
+               show_cat_stars('""" + stack_file + """','','pick')    
+            }
          </script>
    """
    else:
