@@ -1,5 +1,6 @@
 #!/bin/sh
 
+apt-get --yes --allow-downgrades --allow-remove-essential --allow-change-held-packages install libcairo2-dev libnetpbm10-dev netpbm
 curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
 python get-pip.py
 apt-get install libcfitsio-dev 
@@ -35,8 +36,8 @@ export WCS_LIB
 mkdir /home/ams/astrometry/
 cd /home/ams/astrometry/
 
-#wget http://astrometry.net/downloads/astrometry.net-latest.tar.gz
-wget http://192.168.1.4/mnt/ams2/astrometry.net-mike.tar.gz
+wget http://astrometry.net/downloads/astrometry.net-latest.tar.gz
+#wget http://192.168.1.4/mnt/ams2/astrometry.net-mike.tar.gz
 
 #wget http://archive.allsky.tv/APPS/INSTALL/astrometry.net-mike.tar.gz
 gunzip astrometry.net-mike.tar.gz
