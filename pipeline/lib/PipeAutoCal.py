@@ -2621,7 +2621,7 @@ def autocal(image_file, json_conf, show = 0):
       star_img = img.copy()
    except: 
       print("BAD INPUT FILE:", image_file)
-      exit()
+      os.system("rm " + image_file) 
       return()
 
    img = mask_frame(img, [], masks, 5)
@@ -2925,7 +2925,7 @@ def get_image_stars_with_catalog(file, img, cp, json_conf, cat_stars=None, show 
          avg = np.median(star_img)
          bg = avg * star_img.shape[0] * star_img.shape[1]
          intensity = flux - bg 
-         if intensity > 10 and status == 1:
+         if intensity > 100 and status == 1 and intensity < 5000:
             if SHOW == 1:
                desc = str(name) + " mag " + str(mag) + " " + str(int(intensity)) + "res x/y " + str(res_x) + " / " + str(res_y) 
                cv2.putText(console_image, desc,  (int(col_x+cw+25),int(row_y+12)), cv2.FONT_HERSHEY_SIMPLEX, .4, (255, 255, 255), 1)
