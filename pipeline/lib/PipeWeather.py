@@ -29,6 +29,47 @@ from matplotlib.figure import Figure
 from lib.DEFAULTS import *
 print(TL_IMAGE_DIR)
 
+
+def sunset_tl(date, json_conf):
+   print("Sunset:", date)
+   afile = TL_DIR + "VIDS/" + date + "-audit.json"
+    
+   focus_cam = "cam1"
+   if cfe(afile) == 1:
+      adata = load_json_file(afile)
+   else:
+      print("Audit file not found.", afile)
+      return()
+   final_frames = {}
+   for hour in sorted(adata):
+      #print(key, adata[key][cam]['sun'], adata[key][cam]['sd_file'])
+      for min in sorted(adata[hour]):
+         hkey = '{:02d}'.format(hour)
+         mkey = '{:02d}'.format(min)
+         key = str(hkey) + "-" + str(mkey)
+         for cam in sorted(adata[hour][min]):
+            pos = str(mc_layout[cam])
+
+         if key not in final_frames:
+            final_frames[key] = { "1": "", "2": "", "3": "", "4": "", "5": "", "6": "" }
+            final_frames[key][pos] = adata[hour][min][cam]['stack_file']
+               
+            stack_img = cv2.imread(stack_file)
+            cv2.imshow('pepe', stack_img)
+            #cv2.waitKey(50)
+
+   for min_key in final_frames:
+      print(min_key, final_frames[min_key])
+      #outfile = tl_dir + "comp_" + min_key + ".jpg"
+      #if cfe(outfile) == 0:
+      #if True:
+      #   make_six_image_comp(min_key, final_frames[min_key], 5)
+      #else:
+      #   print("skip.", min_key)
+   #video_from_images(date, "comp", json_conf)
+
+
+
 def stack_index(json_conf):
    cam_ids = []
    for cam_num in json_conf['cameras']:
