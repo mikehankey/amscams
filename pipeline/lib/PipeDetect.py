@@ -10,7 +10,7 @@ from datetime import datetime as dt
 import datetime
 #import math
 import os
-from lib.PipeAutoCal import fn_dir
+from lib.PipeAutoCal import fn_dir, get_cal_files
 from lib.PipeVideo import ffmpeg_splice, find_hd_file, load_frames_fast, find_crop_size, ffprobe
 from lib.PipeUtil import load_json_file, save_json_file, cfe, get_masks, convert_filename_to_date_cam, buffered_start_end, get_masks, compute_intensity , bound_cnt
 from lib.DEFAULTS import *
@@ -2297,7 +2297,41 @@ def json_rpt(obj):
       else:
          print(key, obj[key])
    print("")
+
+def get_cal_params(meteor_json_file):  
+   (f_datetime, cam, f_date_str,fy,fm,fd, fh, fmin, fs) = convert_filename_to_date_cam(meteor_json_file)
+
+   cal_files= get_cal_files(meteor_json_file, cam)
+   best_cal_file = cal_files[0][0]
+   print(best_cal_file)
+   cp = load_json_file(best_cal_file)
+   return(cp)
    
+def reduce_points(xs, ys, cal_params):
+   for i in range(0, len(xs)):
+      new_x, new_y, ra ,dec , az, el = XYtoRADec(fd['x'],fd['y'],trim_clip,meteor_obj['cal_params'],json_conf)
+
+ 
+def reduce_meteor(meteor_json_file):
+   mj = load_json_file(meteor_json_file)
+   if "cal_params" not in mj:
+      cal_params= get_cal_params(meteor_json_file)
+   print(mj['hd_trim'])
+   print(mj['hd_video_file'])
+   print(mj['sd_video_file'])
+   print(mj['sd_stack'])
+   print(mj['hd_stack'])
+   print("SDO:", mj['sd_objects'])
+   print("HDO:", mj['hd_objects'])
+   if "best_meteor" not in mj:
+      # redect the meteor in the HD clip
+      if cfe(mj['hd_trim']) == 1:
+         print("DETECT IN HD" )
+         best_meteor,hd_stack_img,bad_objs = fireball(mj['hd_trim'], json_conf)
+         print("DETECT IN HD:", best_meteor)
+         mj['best_meteor'] = best_meteor
+         azs, els = reduce_points(xs, ys, cal_params)
+
 def re_detect(date):
    files = glob.glob("/mnt/ams2/meteors/" + date + "/*.json")
    data_dir = "/mnt/ams2/SD/proc2/" + date + "/data/" 

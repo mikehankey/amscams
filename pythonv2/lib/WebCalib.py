@@ -4470,7 +4470,7 @@ def free_cal(json_conf,form):
          </script>
          <script>
             window.onload = function () {
-               show_cat_stars('""" + stack_file + """','','pick')    
+               show_cat_stars('""" + stack_file + """','','""" + cp_file + """')    
             }
          </script>
    """
@@ -4599,7 +4599,18 @@ def show_cat_stars(json_conf,form):
       cv2.imwrite(hd_stack_file, hd_stack_img)
    # check if this meteor file has been custom fit and if it has use that info.
    meteor_red_file = video_file.replace(".mp4", "-reduced.json")
+   cp_file = form.getvalue("cal_params_file")
+   if cfe(cp_file) == 1:
+      cal_params = load_json_file(cp_file)
+      cal_params['close_stars'] = cal_params['cat_image_stars']
+      #for st in cal_params['cat_image_stars']:
+      #   print(st, "<BR>")
+      if "crop_box" not in cal_params:
+         cal_params['crop_box'] = [0,0,0,0]
+      print(json.dumps(cal_params))
+      return()
 
+   exit()
    # check if there are zero stars selected and zero in cat_img
    if cfe(meteor_red_file) == 1 and "reduced" in meteor_red_file:
       meteor_red = load_json_file(meteor_red_file)
@@ -4676,7 +4687,6 @@ def show_cat_stars(json_conf,form):
          cal_params_file = cal_params_file
       else:
          cal_params_file = cal_params_file_orig
-
    star_points = []
    if cfe(hd_stack_file) == 0:
       bad_hd = 1      

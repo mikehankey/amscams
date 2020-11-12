@@ -3727,8 +3727,8 @@ def make_trim_clip(video_file, start, end, suffix=""):
    #if cfe(outfile) == 0:   
    #   print(cmd)
    os.system(cmd)  
-   if "HD" in outfile:
-      exit()
+   #if "HD" in outfile:
+   #   exit()
    return(outfile, start, end)
 
 def scan_queue(cam):
