@@ -743,12 +743,59 @@ def get_cam_best_guess(this_cam, json_conf):
              return(json_conf['cameras'][cam]['best_guess'])
    return(0,0,0,0)
 
+def refit_all(json_conf):
+   for cam in json_conf['cameras']:
+
+      cams_id = json_conf['cameras'][cam]['cams_id']
+      cal_files= get_cal_files(None, cams_id)
+
+
+      for data in cal_files:
+         redo = 0
+         run = 0
+         cal_file, temp = data
+         cp = load_json_file(cal_file)
+
+         if "total_res_px" not in cp:
+            redo = 1
+            cp['total_res_px'] = 9999
+         elif "refit" not in cp:
+            redo = 1
+         elif cp['total_res_px'] > 3:
+            redo = 1
+         elif len(cp['cat_image_stars']) < 10 :
+            redo = 1
+         if redo == 1:
+            if "user_stars" in cp:
+               print("RES:", cp['total_res_px'], len(cp['user_stars']), len(cp['cat_image_stars']))
+               if cp['total_res_px'] >= 2:
+                  run = 1 
+            else:
+               print("NO USER STARS")
+               run = 1 
+            if run == 1:
+               cmd = "./Process.py refit " + cal_file
+               print(cmd)
+               os.system(cmd)
+
+
 def refit_fov(cal_file, json_conf):
    (f_datetime, cam, f_date_str,year,m,d, h, mm, s) = convert_filename_to_date_cam(cal_file)
    cal_params = load_json_file(cal_file)
    image_file = cal_file.replace("-calparams.json", ".png")
    
    img = cv2.imread(image_file)
+
+   mask_file = MASK_DIR + cam + "_mask.png"
+   if cfe(mask_file) == 1:
+      mask_img = cv2.imread(mask_file)
+      mask_img = cv2.resize(mask_img, (1920,1080))
+   else:
+      mask_img = None
+   if mask_img is not None:
+      img = cv2.subtract(img, mask_img)
+
+
    gray_img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
    cal_params['user_stars'] = get_image_stars(cal_file, img.copy(), json_conf, 0)
    cal_params = pair_stars(cal_params, image_file, json_conf, gray_img)
@@ -777,8 +824,7 @@ def refit_fov(cal_file, json_conf):
 
          cal_params['y_poly_fwd'] = mcp['y_poly_fwd']
 
-
-   if cal_params['position_angle'] <= 0 or cal_params['total_res_px'] > 20:
+   if cal_params['position_angle'] <= 0 or cal_params['total_res_px'] >= 10:
       print("BAD POS.")
       #cal_params = optimize_matchs(cal_file,json_conf,cal_params,img)
       az_guess, el_guess, pos_ang_guess, pix_guess = get_cam_best_guess(cam, json_conf)
@@ -1621,7 +1667,6 @@ def get_cal_files(meteor_file=None, cam=None):
       print("CAM:", cam)
       cal_dirs = glob.glob("/mnt/ams2/cal/freecal/*" + cam + "*")
    for cd in cal_dirs:
-      print("CAL DIR:", cd)
       root_file = cd.split("/")[-1]
       if cfe(cd, 1) == 1:
          cp_files = glob.glob(cd + "/" + root_file + "*calparams.json")
@@ -3548,7 +3593,7 @@ def qc_stars(close_stars):
       cdist = calc_dist((six,siy),(960,540))
       res_times = abs(res_diff / med_res)
       #if (res_times > 2 and cdist < 400) or bp < 0 or (res_times > 4 and cdist >= 400):
-      if (res_times > 2 or cat_dist > 20):
+      if (res_times > 2 or cat_dist > 20 or bp < 10 or bp > 5000):
          bad_stars.append(star)
          print("FAILED QC:", dcname, cat_dist, med_res, res_diff, res_times)
       else:
