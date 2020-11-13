@@ -2489,6 +2489,10 @@ def delete_multiple_detection(detections,json_conf):
       else:
          del_data = load_json_file(del_file)
 
+         if del_data == 0:
+            del_data = {}
+
+
       # If there's only one it's treated as a string (?)
       if(type(detections) is str):
             det = []
@@ -2529,10 +2533,13 @@ def override_detect(video_file,jsid, json_conf):
    #print(delete_log)
    if cfe(delete_log) == 1:
       del_data = load_json_file(delete_log)
-      del_data[bs] = 1
    else:
       del_data = {}
       del_data[bs] = 1
+   if del_data == 0:
+      del_data = {}
+      del_data[bs] = 1
+   del_data[bs] = 1
    save_json_file(delete_log, del_data)
 
    resp = {}
