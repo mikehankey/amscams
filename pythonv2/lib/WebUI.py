@@ -1658,6 +1658,8 @@ def get_meteors(meteor_dir,meteors,json_conf):
       del_data = load_json_file(delete_log)
    else:
       del_data = {}
+   if del_data == 0:
+      del_data = {}
 
    glob_dir = meteor_dir + "*-trim*.mp4"
    files = glob.glob(meteor_dir + "/*-trim*.json")
@@ -1846,8 +1848,6 @@ def meteors_new(json_conf,form):
 def meteors(json_conf,form): 
    print ("""
    
-
-
    """)
 
 
