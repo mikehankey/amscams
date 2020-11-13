@@ -750,7 +750,8 @@ def refit_all(json_conf):
       cal_files= get_cal_files(None, cams_id)
 
 
-      for data in cal_files:
+      temp = sorted(cal_files, key=lambda x: x[0], reverse=True)
+      for data in temp:
          redo = 0
          run = 0
          cal_file, temp = data
@@ -783,6 +784,7 @@ def refit_all(json_conf):
                cmd = "./Process.py refit " + cal_file
                print(cmd)
                os.system(cmd)
+               #exit()
 
 
 def refit_fov(cal_file, json_conf):
@@ -814,6 +816,16 @@ def refit_fov(cal_file, json_conf):
    cal_params['user_stars'] = get_image_stars(cal_file, img.copy(), json_conf, 0)
    cal_params = pair_stars(cal_params, image_file, json_conf, gray_img)
 
+   usc = len( cal_params['user_stars'])
+   cisc = len( cal_params['cat_image_stars'])
+   usc_perc =  cisc / usc
+   print("USC:", cisc, usc, usc_perc)
+   if usc_perc < .5:
+      print("Not enough stars map? Maybe a bad position angle or astrometry vars?")
+
+      exit()
+
+
    data = [cal_file, cal_params['center_az'], cal_params['center_el'], cal_params['position_angle'], cal_params['pixscale'], len(cal_params['user_stars']), len(cal_params['cat_image_stars']), cal_params['total_res_px'],0]  
    #cal_params, bad_stars, marked_img = test_cal(cal_file, json_conf, cal_params, img, data)
    #save_json_file(cal_file, cal_params)
@@ -841,7 +853,8 @@ def refit_fov(cal_file, json_conf):
    if cal_params['position_angle'] <= 0 or cal_params['total_res_px'] >= 10:
       print("BAD POS.")
       #cal_params = optimize_matchs(cal_file,json_conf,cal_params,img)
-      az_guess, el_guess, pos_ang_guess, pix_guess = get_cam_best_guess(cam, json_conf)
+      #az_guess, el_guess, pos_ang_guess, pix_guess = get_cam_best_guess(cam, json_conf)
+      az_guess = 0
       if az_guess != 0:
          cal_params['center_az'] = float(az_guess)
          cal_params['center_el'] = float(el_guess)
@@ -852,8 +865,8 @@ def refit_fov(cal_file, json_conf):
          cal_params['dec_center'] = float( cal_params['dec_center'])
  
  
-      print("GUESS:", az_guess, el_guess, pos_ang_guess, pix_guess, cal_params['total_res_px'])
-      print("GUESS:", cal_params)
+         print("GUESS:", az_guess, el_guess, pos_ang_guess, pix_guess, cal_params['total_res_px'])
+         print("GUESS:", cal_params)
       #exit()
 
    save_json_file(cal_file, cal_params)
@@ -3634,9 +3647,9 @@ def qc_stars(close_stars):
       #if (res_times > 2 and cdist < 400) or bp < 0 or (res_times > 4 and cdist >= 400):
       if (res_times > 2 or cat_dist > max_cat_dist or bp < 10 or bp > 10000):
          bad_stars.append(star)
-         print("FAILED QC:", dcname, med_res, res_times, cat_dist, res_diff, bp)
+         #print("FAILED QC:", dcname, med_res, res_times, cat_dist, res_diff, bp)
       else:
-         print("PASSED QC:", dcname, cat_dist, med_res, res_diff, res_times)
+         #print("PASSED QC:", dcname, cat_dist, med_res, res_diff, res_times)
          good_stars.append(star)
    return(good_stars, bad_stars)
 
@@ -4327,7 +4340,8 @@ def reduce_fov_pos(this_poly, az,el,pos,pixscale, x_poly, y_poly, cal_params_fil
    pos_poly = 0
    cat_stars = get_catalog_stars(temp_cal_params)
    temp_cal_params, bad_stars, marked_img = eval_cal(cal_params_file, json_conf, temp_cal_params, oimage) 
-   print("CAL VALS:", temp_cal_params['center_az'], temp_cal_params['center_el'] , temp_cal_params['ra_center'] , temp_cal_params['dec_center'] , temp_cal_params['position_angle'] , temp_cal_params['pixscale'], temp_cal_params['total_res_px']) 
+   #print("CAL VALS:", temp_cal_params['center_az'], temp_cal_params['center_el'] , temp_cal_params['ra_center'] , temp_cal_params['dec_center'] , temp_cal_params['position_angle'] , temp_cal_params['pixscale'], temp_cal_params['total_res_px']) 
+   print("CAL VALS:", cal_params_file, temp_cal_params['total_res_px']) 
    match_val = 1 - temp_cal_params['match_perc'] 
    return(temp_cal_params['total_res_px'] )
    #pair_stars(temp_cal_params, cal_params_file, json_conf, None)
