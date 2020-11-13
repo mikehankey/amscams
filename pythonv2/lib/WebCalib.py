@@ -4484,6 +4484,8 @@ def free_cal(json_conf,form):
    template = template.replace("{%AZ%}", str(cp['center_az'])[0:5])
    template = template.replace("{%EL%}", str(cp['center_el'])[0:5])
    template = template.replace("{%POS%}", str(cp['position_angle'])[0:5])
+   template = template.replace("{%RA%}", str(cp['ra_center'])[0:5])
+   template = template.replace("{%DEC%}", str(cp['dec_center'])[0:5])
    template = template.replace("{%PX%}", str(cp['pixscale'])[0:5])
    template = template.replace("{%TSTARS%}", str(len(cp['cat_image_stars'])))
    template = template.replace("{%RES_PX%}", str(cp['total_res_px'])[0:5])

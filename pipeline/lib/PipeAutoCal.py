@@ -901,6 +901,8 @@ def minimize_fov(cal_file, cal_params, image_file,img,json_conf ):
       cal_params['fov_fit'] += 1 
    if len(img.shape) > 2:
       gray_img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+   else:
+      gray_img = img
    cp = pair_stars(cal_params, image_file, json_conf, gray_img)
    trash_stars, res_px,res_deg = cat_star_report(cp['cat_image_stars'], 4)
    print("TOTAL RES:", cal_params['position_angle'], res_px)
@@ -1728,6 +1730,15 @@ def solve_field(image_file, image_stars=[], json_conf={}):
 
    print("SOLVED FILE:", solved_file)
    if len(image_stars) < 10:
+      oimg = cv2.imread(image_file)
+      print(image_file)
+      print(oimg.shape)
+      image_stars = get_image_stars(image_file, oimg, json_conf,0)
+      plate_image, star_points = make_plate_image(oimg.copy(), image_stars)
+      plate_file = image_file.replace(".png", ".jpg")
+      cv2.imwrite(plate_file, plate_image)
+      image_file = plate_file
+   if len(image_stars) < 10:
       print("not enough stars", len(image_stars) )
       return(0, {}, "")
 
@@ -1739,6 +1750,7 @@ def solve_field(image_file, image_stars=[], json_conf={}):
    cmd = "/usr/local/astrometry/bin/solve-field " + plate_file + " --crpix-center --cpulimit=30 --verbose --no-delete-temp --overwrite --width=" + str(HD_W) + " --height=" + str(HD_H) + " -d 1-40 --scale-units dw --scale-low 60 --scale-high 90 -S " + solved_file + " >" + astrout
    print(cmd)
    astr = cmd
+   print(cmd)
    if cfe(solved_file) == 0:
       os.system(cmd)
 
@@ -2736,7 +2748,9 @@ def autocal(image_file, json_conf, show = 0):
    fn, dir = fn_dir(image_file)
    #guess_cal("temp/" + fn, json_conf, cal_params )
 
-   #exit()
+   for star in cal_params['cat_image_stars']:
+      print(star)
+
    #cal_params['cat_image_stars']  = remove_dupe_cat_stars(cal_params['cat_image_stars'])
 
 
@@ -2756,25 +2770,14 @@ def autocal(image_file, json_conf, show = 0):
    y_poly = np.float64(cal_params['y_poly'])
    print("CAL PARAMS:", cal_params)
    print("CAL PARAMS FILE:", cal_params_file)
-   res = scipy.optimize.minimize(reduce_fov_pos, this_poly, args=( az,el,pos,pixscale,x_poly, y_poly, image_file,img,json_conf, cal_params['cat_image_stars'],cal_params['user_stars'],1,show), method='Nelder-Mead')
-   print("RESULT:", res)
-   adj_az, adj_el, adj_pos, adj_px = res['x']
-   print("RES:", adj_az, adj_el, adj_pos, adj_px)
+   #cal_params = minimize_fov(cal_params_file, cal_params, image_file,img,json_conf )
 
-   new_az = az + (adj_az * np.float64(az) ** 2)
-   new_el = el + (adj_el * np.float64(el) ** 2)
-   new_position_angle = pos + (adj_pos * np.float64(pos) ** 2)
-   new_pixscale = pixscale + (adj_px * np.float64(pixscale) ** 2)
 
-   print("AZ/NEW AZ:", az, new_az, float(this_poly[0]) * az ** 2)
-
-   cal_params['center_az'] =  new_az
-   cal_params['center_el'] =  new_el
-   cal_params['position_angle'] =  new_position_angle
-   cal_params['pixscale'] =  new_pixscale
    cal_params = update_center_radec(cal_params_file,cal_params,json_conf)
 
    save_json_file(cal_params_file, cal_params)
+   print("SAVED:", cal_params_file)
+   #exit()
    if mcp is None:
       print("Skip mini poly")
       #status, cal_params  = minimize_poly_params_fwd(cal_params_file, cal_params,json_conf)
@@ -3105,15 +3108,8 @@ def get_image_stars(file=None,img=None,json_conf=None,show=0):
       img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
    show_pic = img.copy()
    print("Finding stars.")
-   best_stars = find_stars_with_grid(img)
-   print("FOUND:", len(best_stars ))
-   for star in best_stars:
-      print(star)
-   return(best_stars)
    #exit()
    
-   #for x,y,f in best_stars:
-   #   cv2.rectangle(show_pic, (x-5, y-5), (x+5, y+5), (255, 255, 255), 1)
 
 
    raw_img = img.copy()
@@ -3121,7 +3117,31 @@ def get_image_stars(file=None,img=None,json_conf=None,show=0):
    cam = cam.replace(".png", "")
    masks = get_masks(cam, json_conf,1)
    img = mask_frame(img, [], masks, 5)
+
+   mask_file = MASK_DIR + cam + "_mask.png"
+   if cfe(mask_file) == 1:
+      mask_img = cv2.imread(mask_file, 0)
+      mask_img = cv2.resize(mask_img, (1920,1080))
+   else:
+      mask_img = None
+   if mask_img is not None:
+      print(img.shape)
+      print(mask_img.shape)
+      img = cv2.subtract(img, mask_img)
+      print("MASK SUBTRACTED.")
+   cv2.imwrite("/mnt/ams2/masked.jpg", img)
+
+   best_stars = find_stars_with_grid(img)
+   print("FOUND:", len(best_stars ))
+   for star in best_stars:
+      print(star)
+   return(best_stars)
+
+
    avg = np.median(img) 
+
+
+
    best_thresh = avg + 50
    _, star_bg = cv2.threshold(img, best_thresh, 255, cv2.THRESH_BINARY)
    thresh_obj = cv2.dilate(star_bg, None , iterations=4)
@@ -3600,15 +3620,16 @@ def qc_stars(close_stars):
       dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist,bp = star
       rez.append(cat_dist)
    med_res = np.median(rez)
+   max_cat_dist = med_res * 2
    for star in close_stars:
       dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist,bp = star
       res_diff = abs(cat_dist - med_res)
       cdist = calc_dist((six,siy),(960,540))
       res_times = abs(res_diff / med_res)
       #if (res_times > 2 and cdist < 400) or bp < 0 or (res_times > 4 and cdist >= 400):
-      if (res_times > 2 or cat_dist > 20 or bp < 10 or bp > 5000):
+      if (res_times > 2 or cat_dist > max_cat_dist or bp < 10 or bp > 10000):
          bad_stars.append(star)
-         print("FAILED QC:", dcname, cat_dist, med_res, res_diff, res_times)
+         print("FAILED QC:", dcname, med_res, res_times, cat_dist, res_diff, bp)
       else:
          print("PASSED QC:", dcname, cat_dist, med_res, res_diff, res_times)
          good_stars.append(star)
