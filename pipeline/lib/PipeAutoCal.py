@@ -2789,8 +2789,6 @@ def autocal(image_file, json_conf, show = 0):
    print("CAL PARAMS:", cal_params)
    print("CAL PARAMS FILE:", cal_params_file)
    #cal_params = minimize_fov(cal_params_file, cal_params, image_file,img,json_conf )
-
-
    cal_params = update_center_radec(cal_params_file,cal_params,json_conf)
 
    save_json_file(cal_params_file, cal_params)
@@ -2825,7 +2823,7 @@ def autocal(image_file, json_conf, show = 0):
    #   cv2.imwrite("tmp_vids/" + fn, star_image)
 
    
-   freecal_copy(cal_params_file, json_conf)
+   new_cal_file = freecal_copy(cal_params_file, json_conf)
 
    cpf = cal_params_file.split("/")[-1]
    pimf = cpf.replace("-calparams.json", ".jpg")
@@ -2857,7 +2855,8 @@ def autocal(image_file, json_conf, show = 0):
 
    cmd = "mv " + tdir + saf + " " + sdir
    os.system(cmd)
-
+   cmd = "./Process.py refit " + new_cal_file
+   os.system(cmd)
 
 def cat_star_report(cat_image_stars, multi=2.5):
    #multi = 100
@@ -4786,7 +4785,7 @@ def freecal_copy(cal_params_file, json_conf):
    js = {}
    js['user_stars'] = user_stars
 
-
+   new_cal_file = fc_dir + cprf + "-stacked-calparams.json"
    save_json_file(fc_dir + cprf + "-user-stars.json", js)
    print("SAVED:", fc_dir + cprf + "-user-stars.json")
 
@@ -4810,6 +4809,7 @@ def freecal_copy(cal_params_file, json_conf):
   # cv2.imwrite(fc_dir + cprf + "-stacked-azgrid-half.png", azhalf)
   # cv2.imwrite(fc_dir + cprf + "-stacked-azgrid-half-blend.png", imgaz_blend)
   # cv2.imwrite(cpd + cprf + "-blend.png", imgaz_blend)
+   return(new_cal_file)
 
 
 def remove_dupe_cat_stars(paired_stars):
