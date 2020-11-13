@@ -756,6 +756,9 @@ def refit_all(json_conf):
          cal_file, temp = data
          cp = load_json_file(cal_file)
 
+         if "total_res_deg" not in cp:
+            redo = 1
+            run = 1
          if "total_res_px" not in cp:
             redo = 1
             cp['total_res_px'] = 9999
@@ -771,7 +774,7 @@ def refit_all(json_conf):
          if redo == 1:
             if "user_stars" in cp:
                print("RES:", cp['total_res_px'], len(cp['user_stars']), len(cp['cat_image_stars']))
-               if cp['total_res_px'] >= 2:
+               if cp['total_res_px'] >= 2 or cp['total_res_deg'] > .1:
                   run = 1 
             else:
                print("NO USER STARS")
@@ -856,6 +859,7 @@ def refit_fov(cal_file, json_conf):
    save_json_file(cal_file, cal_params)
    cal_params = minimize_fov(cal_file, cal_params, image_file,img,json_conf )
    cal_params['close_stars']  = cal_params['cat_image_stars']
+   trash_stars, cal_params['total_res_px'], cal_params['total_res_deg'] = cat_star_report(cal_params['cat_image_stars'], 4)
    save_json_file(cal_file, cal_params)
 
 def minimize_fov(cal_file, cal_params, image_file,img,json_conf ):
@@ -2738,7 +2742,8 @@ def autocal(image_file, json_conf, show = 0):
       print("Plate solve failed. Clean up the mess!") 
       # rm original file and temp files here
       cmd = "mv " + image_file + "* " + fdir
-      os.system(cmd)
+      print(cmd)
+      #os.system(cmd)
       return()
 
    # code below this point should only happen on the files that passed the plate solve. 
@@ -3326,7 +3331,7 @@ def save_cal_params(wcs_file,json_conf):
       if field == "pixscale":
          cal_params_json['pixscale'] = value
       if field == "orientation":
-         cal_params_json['position_angle'] = float(value) 
+         cal_params_json['position_angle'] = float(value) + 180
       if field == "ra_center":
          cal_params_json['ra_center'] = value
       if field == "dec_center":
