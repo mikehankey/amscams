@@ -2074,8 +2074,8 @@ def mask_admin(json_conf,form):
          #x,y,w,h = int(x), int(int(y) * .83), int(w), int(int(h) * .83) + 1
          cv2.rectangle(img, (x, y), (x + w, y + h), (128, 128, 128), -1)      
          tmasks.append((x,y,w,h))
-      cv2.imwrite("/mnt/ams2/tmp.jpg", img)
-      print("<img src=/mnt/ams2/tmp.jpg><br>")
+      cv2.imwrite("/mnt/ams2/temp/tmp.jpg", img)
+      print("<img src=/mnt/ams2/temp/tmp.jpg><br>")
       c = 0
       print("<p><form>")
       for mask in tmasks:
