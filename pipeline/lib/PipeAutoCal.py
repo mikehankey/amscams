@@ -759,10 +759,13 @@ def refit_all(json_conf):
          if "total_res_px" not in cp:
             redo = 1
             cp['total_res_px'] = 9999
+            run = 1
          elif "refit" not in cp:
             redo = 1
+            run = 1
          elif cp['total_res_px'] > 3:
             redo = 1
+            run = 1
          elif len(cp['cat_image_stars']) < 10 :
             redo = 1
          if redo == 1:
@@ -780,6 +783,8 @@ def refit_all(json_conf):
 
 
 def refit_fov(cal_file, json_conf):
+   if "png" in cal_file:
+      cal_file = cal_file.replace(".png", "-calparams.json")
    (f_datetime, cam, f_date_str,year,m,d, h, mm, s) = convert_filename_to_date_cam(cal_file)
    cal_params = load_json_file(cal_file)
    image_file = cal_file.replace("-calparams.json", ".png")
@@ -794,6 +799,12 @@ def refit_fov(cal_file, json_conf):
       mask_img = None
    if mask_img is not None:
       img = cv2.subtract(img, mask_img)
+      print("MASK SUBTRACTED.")
+
+   print("CAM:", cam)
+   masks = get_masks(cam, json_conf,1)
+   print("MASKS:", masks)
+   img = mask_frame(img, [], masks, 5)
 
 
    gray_img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
@@ -1176,10 +1187,10 @@ def deep_calib(cam, json_conf):
 
          #if "fov_fit" not in cp:
          print("STARS:", len(stars), len(cp['cat_image_stars']))
-         if len(cp['cat_image_stars']) > 10 and cp['fov_fit'] < 5:
+         if len(cp['cat_image_stars']) > 10 and cp['total_res_px'] > 5:
 
             print("MIN FOV:")
-            os.system("./Process.py refit " + cal_file)
+            #os.system("./Process.py refit " + cal_file)
             #cp = minimize_fov(cal_file, cp, cal_file,cal_img,json_conf )
             #save_json_file(cal_file, cp)
 
@@ -1203,6 +1214,8 @@ def deep_calib(cam, json_conf):
 
    star_db['autocal_stars'] = all_stars
    star_db['all_stars'] = all_stars
+   print("DONE LOADING CAL STARS.")
+
    # GET MORE STARS FROM METEOR IMAGES
    star_db['meteor_stars'] = []
    # GET METEOR STARS
@@ -2434,7 +2447,7 @@ def review_cals(json_conf, cam=None):
          if mask_img is not None:
             cal_img = cv2.subtract(cal_img, mask_img)
          if cfe(cp_file) == 1:
-            print("FILE:", file, cal_img.shape)
+            print("EVAL FILE:", file, cal_img.shape)
             cp, bad_stars, marked_img = eval_cal(cp_file,json_conf,cp,cal_img, mask_img)
 
             marked_img_file = cp_file.replace("-calparams.json", "-marked.jpg")
@@ -2498,7 +2511,7 @@ def review_cals(json_conf, cam=None):
                   cp['refit'] = 1
 
                new_cp = cp
-               new_cp = minimize_fov(cp_file, cp, cp_file,cal_img,json_conf )
+               #new_cp = minimize_fov(cp_file, cp, cp_file,cal_img,json_conf )
                end_res = new_cp['total_res_px']
                #if len(new_cp['cat_image_stars']) > 5:
                #   new_cp['cat_image_stars'], bad_stars = mag_report(new_cp['cat_image_stars'], 0)
