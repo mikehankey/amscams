@@ -219,7 +219,7 @@ def scan_and_stack_fast(file, sun_status = 0, vals = []):
       os.makedirs(proc_img_dir)
    if cfe(proc_data_dir, 1) == 0:
       os.makedirs(proc_data_dir)
-   stack_file = proc_img_dir + fn.replace(".mp4", "-stacked-tn.png")
+   stack_file = proc_img_dir + fn.replace(".mp4", "-stacked-tn.jpg")
    json_file = proc_data_dir + fn.replace(".mp4", "-vals.json")
 
 
@@ -265,7 +265,7 @@ def scan_and_stack_fast(file, sun_status = 0, vals = []):
             #os.system(cmd)
             return()
 
-
+      print(sun_status)
       if sun_status != 1:
          gray = cv2.cvtColor(small_frame, cv2.COLOR_BGR2GRAY)
          if fc > 0:
@@ -387,6 +387,7 @@ def scan_and_stack(video_file, sun_status):
    start_time = time.time()
 
    sd_frames,sd_color_frames,sd_subframes,sum_vals,max_vals,pos_vals = load_frames_fast(video_file, json_conf, 0, 0, [], 1,resize, sun_status)
+   print(sum_vals, sun_status)
    vals['sum_vals'] = sum_vals
    vals['max_vals'] = max_vals
    vals['pos_vals'] = pos_vals
@@ -413,7 +414,7 @@ def scan_and_stack(video_file, sun_status):
    print("SCAN AND STACK TIME:", elapsed_time)
    vfn = video_file.split("/")[-1]
    print(proc_dir + vfn)
-
+   print(proc_vals_file)
    return(proc_vals_file)
 
 if sys.argv[1] == "bs":

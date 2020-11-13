@@ -233,7 +233,7 @@ def make_day_preview(day_dir, stats_data, json_conf):
  
       html_out +=  "<div class='preview'>"
       html_out +=  "<a class='mtt' href='webUI.py?cmd=browse_day&day=" + day_str + "&cams_id="+cams_id+"'  title='Browse all day'>"
-      html_out +=  "<img width=" + str(THUMB_W) + " height=" + str(THUMB_H) + " alt='" + day_str + "' class='img-fluid ns lz' src='" + obj_stack + "'>" 
+      html_out +=  "<img width=" + str(THUMB_W) + " height=" + str(THUMB_H) + " alt='" + day_str + "' class='img-fluid ns lz' src='" + obj_stack + "?c=1'>" 
       if(min_total==0):
             html_out +=  "</a><span class='pre-b'>Cam #"+ cams_id+" - <i>processing</i></span></div>"   
       else:
@@ -394,6 +394,10 @@ def controller(json_conf):
    #Delete multiple detections at once 
    if cmd == 'delete_multiple_detection':
       detections = form.getvalue('detections[]')
+      test = {}
+      test['detections'] = detections
+      test['text'] = detections[0]
+      save_json_file("/mnt/ams2/meteors/test.json", test)
       delete_multiple_detection(detections,json_conf)
       exit()
 
@@ -1541,30 +1545,36 @@ def calibration(json_conf,form):
    else:
       print("No calibrations have been completed yet.")
       exit()
-   
+
+   cia = []
+   for cf in sorted(ci, reverse=True):
+      cia.append(ci[cf])
+   cia = sorted(cia, key=lambda x: x['cam_id'], reverse=False)
+      
 
    print("<table class='table table-dark table-striped table-hover td-al-m m-auto table-fit'>")
    print("<thead><tr><th>&nbsp;</th><th>Date</th><th>Cam ID</th><th>Stars</th><th>Center AZ/EL</th><th>Pos Angle</th><th>Pixscale</th><th>Res Px</th><th>Res Deg</th></tr></thead>")
    print("<tbody>")
  
-   for cf in sorted(ci, reverse=True):
-      if 'cal_image_file' in ci[cf]:
-         link = "/pycgi/webUI.py?cmd=free_cal&input_file=" + ci[cf]['cal_image_file'] 
+   #for cf in sorted(ci, reverse=True):
+   for cf in cia:
+      if 'cal_image_file' in cf:
+         link = "/pycgi/webUI.py?cmd=free_cal&input_file=" + cf['cal_image_file'] 
       else:
          link = ""
-      if ci[cf]['total_res_deg'] > .5:
+      if cf['total_res_deg'] > .5:
          color = "lv1"; #style='color: #ff0000'"
-      elif .4 < ci[cf]['total_res_deg'] <= .5:
+      elif .4 < cf['total_res_deg'] <= .5:
          color = "lv2"; #"style='color: #FF4500'"
-      elif .3 < ci[cf]['total_res_deg'] <= .4:
+      elif .3 < cf['total_res_deg'] <= .4:
          color = "lv3"; #"style='color: #FFFF00'"
-      elif .2 < ci[cf]['total_res_deg'] <= .3:
+      elif .2 < cf['total_res_deg'] <= .3:
          color = "lv4"; #"style='color: #00FF00'"
-      elif .1 < ci[cf]['total_res_deg'] <= .2:
+      elif .1 < cf['total_res_deg'] <= .2:
          color = "lv5"; #"style='color: #00ffff'"
-      elif 0 < ci[cf]['total_res_deg'] <= .1:
+      elif 0 < cf['total_res_deg'] <= .1:
          color = "lv8"; #"style='color: #0000ff'"
-      elif ci[cf]['total_res_deg'] == 0:
+      elif cf['total_res_deg'] == 0:
          color = "lv7"; #"style='color: #ffffff'"
       else:
          color = "lv7"
@@ -1576,9 +1586,9 @@ def calibration(json_conf,form):
          show_row = 0
 
       if show_row == 1: 
-         print("<tr class='" + color + "'><td><div class='st'></div></td><td><a class='btn btn-primary' href='{:s}'>{:s}</a></td><td><b>{:s}</b></td><td>{:s}</td><td>{:s}/{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td></tr>".format( link, str(ci[cf]['cal_date']), \
-            str(ci[cf]['cam_id']), str(ci[cf]['total_stars']), str(ci[cf]['center_az']), str(ci[cf]['center_el']), str(ci[cf]['position_angle']), \
-            str(ci[cf]['pixscale']), str(ci[cf]['total_res_px']), str(ci[cf]['total_res_deg']) ))
+         print("<tr class='" + color + "'><td><div class='st'></div></td><td><a class='btn btn-primary' href='{:s}'>{:s}</a></td><td><b>{:s}</b></td><td>{:s}</td><td>{:s}/{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td></tr>".format( link, str(cf['cal_date']), \
+            str(cf['cam_id']), str(cf['total_stars']), str(cf['center_az'])[0:5], str(cf['center_el'])[0:5], str(cf['position_angle'])[0:5], \
+            str(cf['pixscale'])[0:5], str(cf['total_res_px'])[0:5], str(cf['total_res_deg'])[0:5] ))
 
    print("</tbody></table></div>")
 
@@ -1638,12 +1648,27 @@ def get_meteor_dirs(meteor_dir):
             meteor_dirs.append(f)
    return(meteor_dirs)
 
-def get_meteors(meteor_dir,meteors):
+def get_meteors(meteor_dir,meteors,json_conf):
+   date = meteor_dir.split("/")[-1]
+ 
+   station_id = json_conf['site']['ams_id']
+   delete_log = "/mnt/ams2/SD/proc2/json/" + station_id  + ".del" 
+
+   if cfe(delete_log) == 1:
+      del_data = load_json_file(delete_log)
+   else:
+      del_data = {}
+   if del_data == 0:
+      del_data = {}
+
    glob_dir = meteor_dir + "*-trim*.mp4"
    files = glob.glob(meteor_dir + "/*-trim*.json")
    for f in files:
       if "calparams" not in f and "reduced" not in f and "manual" not in f:
-         meteors.append(f)
+         fn = f.split("/")[-1]
+         fn = fn.replace(".json", "")
+         if fn not in del_data:
+            meteors.append(f)
    return(meteors)
 
  
@@ -1681,9 +1706,9 @@ def meteors_new(json_conf,form):
       el = meteor_dir.split("/")
       this_date = el[-1]
       if limit_day is None: 
-         meteors = get_meteors(meteor_dir, meteors)
+         meteors = get_meteors(meteor_dir, meteors,json_conf)
       elif limit_day == this_date:
-         meteors = get_meteors(meteor_dir, meteors)
+         meteors = get_meteors(meteor_dir, meteors,json_conf)
          has_limit_day = 1
          header_out += "<h1><span class='h'><span id='meteor_count'>"+format(len(meteors))+"</span> meteors</span> captured on " 
          header_out += '<input value="'+limit_day.replace("_", "/")+'" type="text" data-display-format="YYYY/MM/DD" data-action="reload" data-url-param="limit_day" data-send-format="YYYY_MM_DD" class="datepicker form-control">'
@@ -1729,9 +1754,13 @@ def meteors_new(json_conf,form):
       for idx, meteor in enumerate(meteors):
          # Minus 1 so we have nompp per page starting at 0
          if(counter<=nompp-1 and idx <= meteor_from):
-            stack_file_tn = meteor.replace('.json', '-stacked-tn.png')
+            stack_file_tn = meteor.replace('.json', '-stacked-tn.jpg') 
+            if cfe(stack_file_tn) == 0:
+               stack_file_tn = meteor.replace('.json', '-stacked-tn.png') 
             video_file = meteor.replace('.json', '.mp4')
-            stack_obj_img = video_file.replace(".mp4", "-stacked-obj-tn.png")
+            stack_obj_img = video_file.replace(".mp4", "-stacked-obj-tn.jpg")
+            if cfe(stack_obj_img) == 0:
+               stack_obj_img = video_file.replace(".mp4", "-stacked-obj-tn.png")
             reduce_file = meteor.replace(".json", "-reduced.json")
             reduced = 0
             if cfe(reduce_file) == 1:
@@ -1783,9 +1812,9 @@ def meteors_new(json_conf,form):
       #header_out = header_out + '<input type="radio" name="meteor_select" id="non_reduced" autocomplete="off">All '+ format(non_rec_cnt) +'  Non-Reduced Meteors Only</label>'
        
       if(has_limit_day==0):
-         pagination = get_pagination(cur_page,len(all_meteors),"/pycgi/webUI.py?cmd=new_meteors&meteor_per_page="+str(nompp),nompp)
+         pagination = get_pagination(cur_page,len(all_meteors),"/pycgi/webUI.py?cmd=meteors&meteor_per_page="+str(nompp),nompp)
       else:
-         pagination = get_pagination(cur_page,len(all_meteors),"/pycgi/webUI.py?cmd=new_meteors&limit_day="+limit_day+"&meteor_per_page="+str(nompp),nompp)
+         pagination = get_pagination(cur_page,len(all_meteors),"/pycgi/webUI.py?cmd=meteors&limit_day="+limit_day+"&meteor_per_page="+str(nompp),nompp)
 
       if(pagination[2] != ''):
          header_out = header_out + "<div class='page_h'>Page  " + format(cur_page) + "/" +  format(pagination[2]) + "</div>"
@@ -1819,8 +1848,6 @@ def meteors_new(json_conf,form):
 def meteors(json_conf,form): 
    print ("""
    
-
-
    """)
 
 
@@ -1836,9 +1863,9 @@ def meteors(json_conf,form):
       el = meteor_dir.split("/")
       this_date = el[-1]
       if limit_day is None: 
-         meteors = get_meteors(meteor_dir, meteors)
+         meteors = get_meteors(meteor_dir, meteors,json_conf)
       elif limit_day == this_date:
-         meteors = get_meteors(meteor_dir, meteors)
+         meteors = get_meteors(meteor_dir, meteors,json_conf)
          print("<p>{:d} meteors captured on {:s}.</p>".format(len(meteors), str(this_date)))
    if limit_day is None:
       print("<p>{:d} meteors captured since inception.</p>".format(len(meteors)))
@@ -2252,6 +2279,8 @@ def examine_min(video_file,json_conf):
 
    print("<div class='h-100 flex-fixed-canvas'>")
    stack_file = stack_file.replace(".png", "-tn.png")
+   if cfe(stack_file) == 0:
+      stack_file = stack_file.replace(".png", ".jpg")
    if os.path.isfile(stack_file):
       print("<a href='" + video_file + "' class='vid_link_gal mx-auto d-block' title='Click to Play'><img src='" + stack_file + "' class='mx-auto d-block img-fluid' style='width:100%'></a>")
    else:
@@ -2435,35 +2464,95 @@ def examine_min(video_file,json_conf):
 
 #Delete multiple detections at once
 def delete_multiple_detection(detections,json_conf):
-      
+
+      print("DET:", detections)
+      if(type(detections) is str):
+         date = detections[0:8]
+      else:
+         date = detections[0][0:8]
+      station_id = json_conf['site']['ams_id']
+      out = open("/mnt/ams2/test.txt", "w")
+      out.write('Detections:')
+      out.write(str(detections))
+      out.write("\n\n")
+      out.write(detections[0])
+      out.write("\n\n")
+      Y = date[0:4]
+      M = date[4:6]
+      D = date[6:8]
+      date = Y + "_" + M + "_" + D
+
+      del_file = "/mnt/ams2/SD/proc2/json/" + station_id  + ".del" 
+      out.write("DEL:" + del_file)
+      if cfe(del_file) == 0:
+         del_data = {}
+      else:
+         del_data = load_json_file(del_file)
+
+         if del_data == 0:
+            del_data = {}
+
 
       # If there's only one it's treated as a string (?)
       if(type(detections) is str):
             det = []
-            det.append(detections)
+            full_vid_file = parse_jsid(detections)
+            vid_file = full_vid_file.split("/")[-1]
+            det.append(vid_file)
             detections = det
       
       for to_delete in detections:
-            #print("TO DELETE " + str(to_delete))
-            override_detect('',to_delete,'')
+            out.write("\nTO DELETE " + str(to_delete) + "\n")
+            full_vid_file = parse_jsid(to_delete)
+            out.write("FUL VID:" + full_vid_file)
+            fn = full_vid_file.split("/")[-1]
+            base = fn.replace(".mp4", "")
+            del_data[base] = 1
+            #override_detect('',to_delete,json_conf)
 
+
+      save_json_file(del_file, del_data)
+      os.system("cd /home/ams/amscams/pipeline/; ./Process.py purge_meteors &")
 
 
 def override_detect(video_file,jsid, json_conf):
    cgitb.enable()
     
+   station_id = json_conf['site']['ams_id']
    if jsid is not None:
       video_file = parse_jsid(jsid) 
 
    vfn = video_file.split("/")[-1]
-   el = vfn.split("-trim")
+   el = vfn.split(".")
+   jsid = el[0].replace("_", "")
    bs = el[0]
    date = vfn[0:10]
+
    json_data = None
-   proc_file = "/mnt/ams2/SD/proc2/" + date + "/data/" + bs + "-meteor.json"
-   non_proc_file = "/mnt/ams2/SD/proc2/" + date + "/data/" + bs + "-nonmeteor.json"
-   if cfe(proc_file) == 1:
-      cmd = "mv " + proc_file + " " + non_proc_file
+   delete_log = "/mnt/ams2/SD/proc2/json/" + station_id  + ".del" 
+   #print(delete_log)
+   if cfe(delete_log) == 1:
+      del_data = load_json_file(delete_log)
+   else:
+      del_data = {}
+      del_data[bs] = 1
+   if del_data == 0:
+      del_data = {}
+      del_data[bs] = 1
+   del_data[bs] = 1
+   save_json_file(delete_log, del_data)
+
+   resp = {}
+   resp['status'] = "files added to delete log: " + delete_log
+   print(json.dumps(resp))
+   os.system("cd /home/ams/amscams/pipeline; ./Process.py purge_meteors &")
+   return()
+
+   if False:
+      proc_file = "/mnt/ams2/SD/proc2/" + date + "/data/" + bs + "-meteor.json"
+      non_proc_file = "/mnt/ams2/SD/proc2/" + date + "/data/" + bs + "-nonmeteor.json"
+      if cfe(proc_file) == 1:
+         cmd = "mv " + proc_file + " " + non_proc_file
 
    base = video_file.replace(".mp4", "")
    el = base.split("/")
@@ -2481,7 +2570,7 @@ def override_detect(video_file,jsid, json_conf):
          cmd = "mv " + af + " /mnt/ams2/trash/"
          print(cmd, "<BR>")
          os.system(cmd)
-      exit()
+      #exit()
  
    if "meteors" in base:
       new_dir = "/mnt/ams2/trash/"
@@ -2869,12 +2958,14 @@ def browse_day(day,cams_id,json_conf,form):
    cc = 0
    all_files = []
    for base_file in sorted(day_files,reverse=True):
-      all_files.append(base_file)
+      fn = base_file.split("/")[-1]
+      all_files.append((base_file,fn))
+   all_files = sorted(all_files, key=lambda x: x[1], reverse=True)
  
    #Get CAM IDs from drop_dow & Javascript
    all_cam_ids = get_the_cam_ids() 
 
-   print("<div class='h1_holder d-flex justify-content-between'><h1><span class='h'><span id='meteor_count'>"+format(len(day_files))+"</span> detections</span> on")
+   print("<div class='h1_holder d-flex justify-content-between'><h1><span class='h'><span id='meteor_count'>"+format(len(day_files))+"</span> minute clips</span> on")
    print("<input value='"+str(day.replace("_", "/"))+"' type='text' data-display-format='YYYY/MM/DD' data-action='reload' data-url-param='limit_day' data-send-format='YYYY_MM_DD' class='datepicker form-control'>")
    print(" by Cam #")
    
@@ -2887,7 +2978,13 @@ def browse_day(day,cams_id,json_conf,form):
             sel=''
       print('<option value="'+ccam_id+'" '+sel+'>'+ccam_id+'</option>')
    print("</select>") 
-   print("<select id='sun' class='cam_picker' data-url-param='sun' ><option value='0' selected>Night</option><option value='1'>Day</select></h1>")
+   print("<select id='sun' class='cam_picker' data-url-param='sun' >")
+   if str(sun) == '0': 
+      print("<option value='0' selected>Night</option>")
+      print("<option value='1'>Day</select></h1>")
+   else:
+      print("<option value='0' >Night</option>")
+      print("<option value='1' selected>Day</select></h1>")
    
    print("<div class='d-flex'><!--<a class='btn btn-primary mr-3' href='/pycgi/webUI.py?cmd=video_tools' style='text-transform: initial;'><span class='icon-youtube'></span> Generate Timelapse Video</a>--><button class='btn btn-primary' id='play_anim_thumb' style='text-transform: initial;'><span class='icon-youtube'></span> Timelapse Preview</button></div></div>") 
   
@@ -2898,12 +2995,12 @@ def browse_day(day,cams_id,json_conf,form):
    print("<input type='hidden' name='cur_date' value='"+str(day)+"'/>")
 
 
-   for base_file in sorted(day_files,reverse=True):
-
+   for base_file,fn in all_files:
+      #print(base_file)
       if cc + 1 < len(day_files) - 2:
-         next_stack_file = all_files[cc+1]
+         next_stack_file = all_files[cc+1][0]
       else:
-         next_stack_file = all_files[cc] 
+         next_stack_file = all_files[cc][0] 
       
       video_file = base_file + ".mp4"
       stack_file = stack_file_from_video(video_file)
@@ -2924,6 +3021,9 @@ def browse_day(day,cams_id,json_conf,form):
 
       html_out =  "<div class='preview  "+ htclass +"'>"
       html_out +=  "<a class='mtt mb-3' href='webUI.py?cmd=examine_min&video_file=" + video_file + "&next_stack_file=" + next_stack_file  + "' title='Examine'>"
+      jpg = stack_file.replace(".png", "jpg")
+      if cfe(jpg) == 1:
+         stack_file_tn = jpg
       html_out +=  "<img class='ns lz' src='" + stack_file_tn + "'>"
       html_out +=  "<span>"+base_js_name[0] +"/" +base_js_name[1]+"/" +base_js_name[2] + " " +  base_js_name[3]+ ":" +  base_js_name[4]+ ":" +  base_js_name[5] +"</span>"
       html_out +=  "</a></div>"

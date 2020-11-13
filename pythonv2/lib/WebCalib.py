@@ -512,12 +512,24 @@ def find_stars_ajax(json_conf, stack_file, is_ajax = 1):
 
 
 def check_make_half_stack(sd_file,hd_file,meteor_reduced):
+   if cfe(sd_file) == 0:
+      if "png" in sd_file:
+         sd_file = sd_file.replace("png", "jpg")
+   if cfe(sd_file) == 0:
+      print("SD FILE NOT FOUND.", sd_file)
+      exit()
+   if cfe(hd_file) == 0:
+      print("HD FILE NOT FOUND.", sd_file)
+      exit()
+
    if cfe(hd_file) == 0:
       hd_trim = meteor_reduced['hd_trim']
-      hd_trim.replace(".mp4", "-HD-meteor-stacked.png")
+      #hd_trim.replace(".mp4", "-HD-meteor-stacked.png")
 
-
-   half_stack_file = sd_file.replace("-stacked", "-half-stack")
+   if "stacked" in sd_file:
+      half_stack_file = sd_file.replace("-stacked", "-half-stack")
+   else:
+      half_stack_file = sd_file.replace("-stacked", "-half-stack")
 
 
    if True :
@@ -525,12 +537,12 @@ def check_make_half_stack(sd_file,hd_file,meteor_reduced):
       if hd_file != 0:
          if cfe(hd_file) == 1:
             img = cv2.imread(hd_file)
-            img = cv2.resize(img, (0,0),fx=.5, fy=.5)
+            img = cv2.resize(img, (960,540))
             sd_img = cv2.imread(sd_file)
             sd_img = cv2.resize(sd_img, (960,540))
+            #exit()
             blend_image = cv2.addWeighted(img, .6, sd_img, .4, 0)
             img = blend_image
-            #print("BLENDING")
          else:
             img = cv2.imread(sd_file)
             img = cv2.resize(img, (960,540))
@@ -604,7 +616,6 @@ def find_mask_bp(image):
       mx = mx + 5 
       my = my + 5 
       max_loc = (mx,my)
-      print(wc, px_diff, max_loc)
       if px_diff > 10:
          x,y = max_loc
 
@@ -2942,7 +2953,6 @@ def reduce_meteor_new(json_conf,form):
                #ms_link = sync_urls['sync_urls'][st] + "/pycgi/webUI.py?cmd=reduce&video_file=" + ms_data['obs'][st]['sd_video_file'].replace(".json", ".mp4")
                ms_link = ""
                ms_desc = ms_desc + "<a href=" + ms_link + ">" + st + "</a><BR>"
-               #print(ms_desc)
          template = template.replace("{MULTI_STATION}", ms_desc)
 
     
@@ -2951,7 +2961,6 @@ def reduce_meteor_new(json_conf,form):
    else:
       ms_data = None
       cal_files = get_active_cal_file(mj['sd_video_file'])
-      #print("GETTING CAL FILES for ", mj['sd_video_file'], "<HR>")
       #for cal_file in cal_files:
       #   print(cal_file, "<BR>")
       if cal_files is not None:
@@ -2970,15 +2979,15 @@ def reduce_meteor_new(json_conf,form):
          mj['hd_file'] = mj['hd_file'].replace("/mnt/ams2/HD", "/mnt/ams2/meteors/" + day_dir)
          mj['hd_trim'] = mj['hd_trim'].replace("/mnt/ams2/HD", "/mnt/ams2/meteors/" + day_dir)
          mj['hd_crop_file'] = mj['hd_crop_file'].replace("/mnt/ams2/HD", "/mnt/ams2/meteors/" + day_dir)
-         mj['hd_crop_file_stack'] = mj['hd_crop_file'].replace(".mp4", "-stacked.png")
-         mj['hd_trim_stack'] = mj['hd_trim'].replace(".mp4", "-stacked.png")
+         mj['hd_crop_file_stack'] = mj['hd_crop_file'].replace(".mp4", "-stacked.jpg")
+         mj['hd_trim_stack'] = mj['hd_trim'].replace(".mp4", "-stacked.jpg")
       else:
          mj['hd_file'] = 0
          mj['hd_trim'] = 0
          mj['hd_crop_file'] = 0
          mj['hd_crop_file_stack'] = 0
          mj['hd_trim_stack'] = 0
-      mj['sd_stack'] = mj['sd_video_file'].replace(".mp4", "-stacked.png")
+      mj['sd_stack'] = mj['sd_video_file'].replace(".mp4", "-stacked.jpg")
 
 
    if cfe(meteor_reduced_file) == 1:
@@ -2996,7 +3005,6 @@ def reduce_meteor_new(json_conf,form):
          template = template.replace("{SOLUTIONS}", solution)
          sol_dir = link + "monte_carlo/"
          sol_files = glob.glob(sol_dir + "*")
-         print(sol_dir) 
          for sf in sorted(sol_files):
             if "png" in sf and "track" not in sf and "orbit" not in sf:
                plots_html = plots_html + "<figure ><img width=400 src=" + sf + "></figure>" 
@@ -3009,28 +3017,33 @@ def reduce_meteor_new(json_conf,form):
    template = template.replace("{%TRAJECTORY_TABLE%}", traj_html)
    template = template.replace("{%ORBIT_TABLE%}", orb_html)
 
-   mj['half_stack'] = mj['sd_stack'].replace(".png", "-half-stack.png")
+   if "stacked" in mj['sd_stack']:
+      if "png" in mj['sd_stack']:
+         mj['half_stack'] = mj['sd_stack'].replace("-stacked.png", "-half-stack.png")
+      else:
+         mj['half_stack'] = mj['sd_stack'].replace("-stacked.jpg", "-half-stack.jpg")
+
    sd_video_file = mj['sd_video_file']
    sd_stack = mj['sd_stack']
-
    if "stacked" not in mj['sd_stack']:
-      mj['sd_stack'] = mj['sd_stack'].replace(".png", "-stacked.png")
-      mj['hd_stack'] = mj['hd_stack'].replace(".png", "-stacked.png")
+      mj['sd_stack'] = mj['sd_stack'].replace(".jpg", "-stacked.jpg")
+      mj['hd_stack'] = mj['hd_stack'].replace(".jpg", "-stacked.jpg")
 
 
 
 
    if "hd_stack" not in mj and mj['hd_trim'] != 0: 
-      mj['hd_stack'] = mj['hd_trim'].replace(".mp4", "-stacked.png")
+      mj['hd_stack'] = mj['hd_trim'].replace(".mp4", "-stacked.jpg")
    else:
-      mj['hd_stack'] = sd_stack.replace(".png", "-HD.png")
+      mj['hd_stack'] = sd_stack.replace(".jpg", "-HD-meteor.jpg")
+      #exit()
       if cfe(mj['hd_stack']) == 0:
          tmp = cv2.imread(sd_stack)
          hd_stack_img = cv2.resize(tmp, (1920,1080))
-         print(mj['hd_stack'])
          cv2.imwrite(mj['hd_stack'], hd_stack_img)
-      
-   #print(mj['sd_stack'], mj['hd_stack'])  
+   if mj['hd_trim'] == 0 :
+      mj['hd_trim'] = mj['sd_video_file'] 
+      hd_trim = mj['sd_video_file']
 
    check_make_half_stack(mj['sd_stack'], mj['hd_stack'], mj)
    mj['half_stack'] = mj['half_stack'].replace("-stacked", "")
@@ -3040,7 +3053,7 @@ def reduce_meteor_new(json_conf,form):
 
    if cfe(hd_stack_file) == 0:
       stack_img = cv2.imread(sd_stack)
-      hd_stack_file = sd_stack.replace("-stacked.png", "-HD-stacked.png")
+      hd_stack_file = sd_stack.replace("-stacked.png", "-HD-stacked.jpg")
       hd_stack_img = cv2.resize(stack_img, (1920,1080))
    hd_stack = hd_stack_file
 
@@ -3058,10 +3071,10 @@ def reduce_meteor_new(json_conf,form):
 
       mj['cal_params_file']  = cal_params_file
       if cal_params_file is not None:
-         az_grid_file = cal_params_file.replace("-calparams.json", "-azgrid-half.png")
+         az_grid_file = cal_params_file.replace("-calparams.json", "-azgrid-half.jpg")
    else:
       cal_params_file = mj['cal_params_file']
-      az_grid_file = cal_params_file.replace("-calparams.json", "-azgrid-half.png")
+      az_grid_file = cal_params_file.replace("-calparams.json", "-azgrid-half.jpg")
   
    # find new? 
    if cal_params_file is not None:
@@ -3093,13 +3106,12 @@ def reduce_meteor_new(json_conf,form):
 
 
    if reduced == 1:
-      #print(meteor_reduced.keys())
       sd_video_file = meteor_reduced['sd_video_file']
       hd_video_file = meteor_reduced['hd_video_file']
       if "stacked" not in meteor_reduced['sd_stack']:
-         sd_stack = meteor_reduced['sd_stack'].replace(".png", "-stacked.png")
+         sd_stack = meteor_reduced['sd_stack'].replace(".jpg", "-stacked.jpg")
       if "stacked" not in meteor_reduced['hd_stack']:
-         hd_stack = meteor_reduced['hd_stack'].replace(".png", "-stacked.png")
+         hd_stack = meteor_reduced['hd_stack'].replace(".jpg", "-stacked.jpg")
       template = template.replace("{SD_VIDEO}", sd_video_file)
       template = template.replace("{HD_VIDEO}", str(hd_video_file))
       template = template.replace("{SD_STACK}", sd_stack)
@@ -3112,7 +3124,6 @@ def reduce_meteor_new(json_conf,form):
 
    # We test if an important file is missing
    errors = ""
-
    if(cfe(hd_trim)==0):
  
 
@@ -3120,10 +3131,9 @@ def reduce_meteor_new(json_conf,form):
 
          # We automatically fix the issue
          fix_hd_vid_real_inline(hd_video_file,video_file,meteor_json_file) 
-         #print("HD===> FIXED")
          #errors += "<p>HD TRIM - <b><a href='" +  hd_trim + "'> " +  hd_trim + "</a></b> as defined in the JSON is missing. <br> Do you want to replace it with: <a href='" +  hd_video_file + "'><b> " +  hd_video_file + "</b></a>?<br><a href='/pycgi/webUI.py?cmd=fix_hd_vid&json_file="+meteor_json_file+"&hd_video_file="+hd_video_file+"&cur_video_file="+video_file+"' class='btn btn-primary mt-2'>FIX THIS</a></p>"
       else:
-         print("<br>===> FAILED")
+         #print("<br>===> FAILED")
          errors += "<p>HD TRIM - <b><a href='" +  hd_trim + "'> " +  hd_trim + "</a></b> as defined in the JSON is missing.</p>"
          errors += "<p>HD TRIM - <b><a href='" +  hd_video_file + "'> " +  hd_video_file + "</a></b> as guessed by the program is missing too.</p>"
 
@@ -3233,7 +3243,7 @@ def reduce_meteor_new(json_conf,form):
 
 
       fr_id = "fr_row" + str(fn)
-      cmp_img_url = prefix  + str(fn) + ".png"
+      cmp_img_url = prefix  + str(fn) + ".jpg"
       cmp_img = "<img alt=\"" + str(fn) + "\" width=\"50\" height=\"50\" src=" + cmp_img_url + " class=\"img-fluid select_meteor\">"
 
       del_frame_link = "javascript:del_frame('" + str(fn) + "','" + meteor_json_file +"')"
@@ -3258,7 +3268,7 @@ def reduce_meteor_new(json_conf,form):
    template = template.replace("{%RED_TABLE%}", red_table)
    template = template.replace("{%STAR_TABLE%}", stars_table)
  
-   light_curve_file = sd_video_file.replace('.mp4','-lightcurve.png')
+   light_curve_file = sd_video_file.replace('.mp4','-lightcurve.jpg')
    if(isfile(light_curve_file)):
       template = template.replace("{%LIGHT_CURVE%}", '<a class="d-block nop text-center img-link-n" href="'+light_curve_file+'"><img  src="'+light_curve_file+'" class="mt-2 img-fluid"></a>')
    else:
@@ -3306,7 +3316,6 @@ def reduce_meteor_new(json_conf,form):
    return(js_html)
 
 def reduce_meteor(json_conf,form):
-
    form_cal_params_file = form.getvalue("cal_params_file")
    hdm_x = 2.7272727272727272
    hdm_y = 1.875
@@ -3349,17 +3358,17 @@ def reduce_meteor(json_conf,form):
          mr['hd_file'] = mr['hd_file'].replace("/mnt/ams2/HD", "/mnt/ams2/meteors/" + day_dir)
          mr['hd_trim'] = mr['hd_trim'].replace("/mnt/ams2/HD", "/mnt/ams2/meteors/" + day_dir)
          mr['hd_crop_file'] = mr['hd_crop_file'].replace("/mnt/ams2/HD", "/mnt/ams2/meteors/" + day_dir)
-         mr['hd_crop_file_stack'] = mr['hd_crop_file'].replace(".mp4", "-stacked.png")
-         mr['hd_trim_stack'] = mr['hd_trim'].replace(".mp4", "-stacked.png")
+         mr['hd_crop_file_stack'] = mr['hd_crop_file'].replace(".mp4", "-stacked.jpg")
+         mr['hd_trim_stack'] = mr['hd_trim'].replace(".mp4", "-stacked.jpg")
       else:
          mr['hd_file'] = 0
          mr['hd_trim'] = 0
          mr['hd_crop_file'] = 0
          mr['hd_crop_file_stack'] = 0
          mr['hd_trim_stack'] = 0
-      mr['sd_stack'] = mj['sd_video_file'].replace(".mp4", "-stacked.png")
+      mr['sd_stack'] = mj['sd_video_file'].replace(".mp4", "-stacked.jpg")
      
-      mr['half_stack'] = mj['sd_stack'].replace("-stacked.png", "-half-stack.png")
+      mr['half_stack'] = mj['sd_stack'].replace("-stacked.jpg", "-half-stack.jpg")
    sd_video_file = mr['sd_video_file']
    sd_stack = mr['sd_stack']
 
@@ -4268,7 +4277,7 @@ def auto_cal(json_conf,form):
    input_file = form.getvalue("input_file")
    cal_params_file = input_file.replace(".png", "-calparams.json")
    az_grid = input_file.replace(".png", "-azgrid-half.png")
-   if cfe(cal_params) == 1:
+   if cfe(cal_params_file) == 1:
       cal_params = load_json_file(cal_params_file)
    else:
       print("can't find cal file", cal_params_file)
@@ -4316,10 +4325,9 @@ def free_cal(json_conf,form):
 
    input_file = form.getvalue("input_file")
    # if no input file is specified ask for one. 
-   #print(input_file)
    if cfe(input_file) == 0:
-      
-      auto_cal(json_conf,form)
+      print("input file was not found .")
+      #auto_cal(json_conf,form)
       return()
    if input_file is None :
       print("To start the calibration process, goto the <a href=webUI.py>minute-by-minute view</a> for a stary night, click a thumb with nice stars and then click the 'Calibrate Star Field' button.<BR><BR> ")
@@ -4333,6 +4341,26 @@ def free_cal(json_conf,form):
       return()
 
    # test the input file, stack if video, check size and re-size, make half-stack, copy to work dir
+   fn, dir = fn_dir(input_file)
+   cfs = glob.glob(dir + "/" + "*calparams.json")
+   if len(cfs) >= 1:
+      cp_file = cfs[0]
+   else:
+      print("NO CP:!", input_file)
+      exit()
+  
+   #print("IN FILE:", input_file)
+   #print("CP FILE:", cp_file)
+   if cfe(cp_file) == 0:
+      cp_file = cp_file.replace("-calparams.json", "-stacked-calparams.json")
+      if cfe(cp_file) == 0:
+         cp_file = cp_file.replace("-calparams.json", "-stacked-calparams.json")
+
+   if cfe(cp_file) == 1:
+      cp = load_json_file(cp_file)
+   else:
+      print("NO CP:", cp_file)
+      exit()
 
    (f_datetime, cam_id, f_date_str,Y,M,D, H, MM, S) = better_parse_file_date(input_file)
    if ".png" in cam_id:
@@ -4350,6 +4378,11 @@ def free_cal(json_conf,form):
       dr  = el[-1].replace(".mp4", "")
       sfn = el[-1].replace(".mp4", "-stacked.png")
       stack_file = "/mnt/ams2/cal/freecal/" + dr + "/" + sfn 
+      if cfe(stack_file) == 0:
+         sfn = el[-1].replace(".mp4", ".png")
+         stack_file = "/mnt/ams2/cal/freecal/" + dr + "/" + sfn 
+
+
 
       if cfe(stack_file) == 0:
          frames = load_video_frames(input_file, json_conf, 100)
@@ -4365,7 +4398,6 @@ def free_cal(json_conf,form):
    sfs = stack_img.shape
    sh,sw = sfs[0],sfs[1]
 
-
    if sw != 1920:
       #stack_img = adjustLevels(stack_img, 5,.98,255)
       half_stack_img = stack_img 
@@ -4374,25 +4406,45 @@ def free_cal(json_conf,form):
       sh,sw = sfs[0],sfs[1]
    else:
       half_stack_img = cv2.resize(stack_img, (0,0),fx=.5, fy=.5)
+   half_stack_img = cv2.resize(half_stack_img, (960,540))
 
    iw = int(sw/2)
    ih = int(sh/2)
 
    half_stack_file = base_dir + "/" + base_file + "-half-stack.png"
-   stack_file = base_dir + "/" + base_file + "-stacked.png"
+   #stack_file = base_dir + "/" + base_file + "-stacked.png"
 
 
    cv2.imwrite(half_stack_file, half_stack_img)
-   cv2.imwrite(stack_file, stack_img)
+   #cv2.imwrite(stack_file, stack_img)
+
+   cfs = glob.glob(dir + "/" + "*azgrid-half.png")
+   if len(cfs) == 0:
+      cffs = glob.glob(dir + "/" + "*azgrid.png")
+      if len(cffs) > 0:
+         azg_img = cv2.imread(cffs[0])
+         azg_img_half = cv2.resize(azg_img, (960,540))
+         azg_half_file = cffs[0].replace(".png", "-half.png")
+         cv2.imwrite(azg_half_file, azg_img_half)     
+         cfs = glob.glob(dir + "/" + "*azgrid-half.png")
+  
+      
+   if len(cfs) > 0:
+      az_grid_file = cfs[0]
+      azg_img_half = cv2.imread(cfs[0])
+      az_grid_blend = az_grid_file.replace(".png", "-blend.png")
+      if cfe(az_grid_blend) == 0:
+          blend_image = cv2.addWeighted(azg_img_half, .3, half_stack_img, .7, 0)
+          cv2.imwrite(az_grid_blend, blend_image)
 
 
-   user_stars_file = stack_file.replace("-stacked.png", "-user-stars.json")
+   else:
+      az_grid_file = "none"
+      az_grid_blend = "none"
 
-   print("user_stars_file:", user_stars_file)
-   az_grid_file = stack_file.replace(".png", "-azgrid-half.png")
-   az_grid_blend = stack_file.replace(".png", "-azgrid-half-blend.png")
-
-
+   user_stars_file = cp_file.replace("-calparams.json", "-user-stars.json" )
+   if cfe(user_stars_file) == 0:
+      user_stars_file = user_stars_file.replace("-stacked", "")
    if cfe(user_stars_file) == 1:
       user_stars = load_json_file(user_stars_file)
       extra_js = """
@@ -4401,13 +4453,25 @@ def free_cal(json_conf,form):
       extra_js = extra_js + "var stars = ["
 
       c = 0
-      for sx,sy in user_stars['user_stars']:
+      for sdata in user_stars['user_stars']:
+         if len(sdata) == 2:
+            sx,sy = sdata
+         elif len(sdata) == 3:
+            sx,sy,sf = sdata
+         else:
+            print("BAD:", sdata)
+            exit()
          if c > 0:
             extra_js = extra_js + ","
          extra_js=extra_js+ "[" + str(sx) + "," +str(sy) +"]" 
          c = c + 1
       extra_js = extra_js + "]"
       extra_js = extra_js + """
+         </script>
+         <script>
+            window.onload = function () {
+               show_cat_stars('""" + stack_file + """','','""" + cp_file + """')    
+            }
          </script>
    """
    else:
@@ -4417,6 +4481,15 @@ def free_cal(json_conf,form):
 
    #get Meteor Date as title
    template = template.replace("{%METEOR_DATE%}", get_meteor_date(stack_file))
+   template = template.replace("{%AZ%}", str(cp['center_az'])[0:5])
+   template = template.replace("{%EL%}", str(cp['center_el'])[0:5])
+   template = template.replace("{%POS%}", str(cp['position_angle'])[0:5])
+   template = template.replace("{%RA%}", str(cp['ra_center'])[0:5])
+   template = template.replace("{%DEC%}", str(cp['dec_center'])[0:5])
+   template = template.replace("{%PX%}", str(cp['pixscale'])[0:5])
+   template = template.replace("{%TSTARS%}", str(len(cp['cat_image_stars'])))
+   template = template.replace("{%RES_PX%}", str(cp['total_res_px'])[0:5])
+   template = template.replace("{%RES_DEG%}", str(cp['total_res_deg'])[0:5])
 
 
    js_html = """
@@ -4445,18 +4518,18 @@ def free_cal(json_conf,form):
       </div>
       <div style="float:left" id=info_panel>Info: </div>
       <div style="clear: both"></div>
-      <div id=star_panel> Stars: </div>
-      <div id=star_list>star_list: </div>
        <BR><BR>
    """
    #print(stack_file)
+      #<div id=star_panel> Stars: </div>
+      #<div id=star_list>star_list: </div>
 
    list_of_buttons = '<a class="btn btn-primary d-block" onclick="javascript:show_image(\''+half_stack_file+'\',1,1)">Show Image</a>'
    list_of_buttons += '<a class="btn btn-primary d-block mt-2" onclick="javascript:find_stars(\''+stack_file+'\')">Find Stars</a>'
-   list_of_buttons += '<a class="btn btn-primary d-block mt-2" onclick="javascript:make_plate(\''+stack_file+'\')">Make Plate</a>'
-   list_of_buttons += '<a class="btn btn-primary d-block mt-2" onclick="javascript:solve_field(\''+stack_file+'\')">Solve Field</a>'
+   #list_of_buttons += '<a class="btn btn-primary d-block mt-2" onclick="javascript:make_plate(\''+stack_file+'\')">Make Plate</a>'
+   #list_of_buttons += '<a class="btn btn-primary d-block mt-2" onclick="javascript:solve_field(\''+stack_file+'\')">Solve Field</a>'
    list_of_buttons += '<a class="btn btn-primary d-block mt-2" onclick="javascript:show_cat_stars(\''+stack_file+'\',\'\',\'pick\')">Show Catalog Stars</a>'
-   list_of_buttons += '<a class="btn btn-primary d-block mt-2" onclick="javascript:fit_field(\''+stack_file+'\')">Fit Field</a>'
+   #list_of_buttons += '<a class="btn btn-primary d-block mt-2" onclick="javascript:fit_field(\''+stack_file+'\')">Fit Field</a>'
    list_of_buttons += '<a class="btn btn-primary d-block mt-2" onclick="javascript:az_grid(\''+az_grid_blend+'\')">AZ Grid</a>'
    list_of_buttons += '<a class="btn btn-danger d-block mt-4"  onclick="javascript:delete_cal(\''+stack_file+'\')">Delete Calibration</a>'
  
@@ -4467,13 +4540,12 @@ def free_cal(json_conf,form):
    print(template)
    print(canvas_html)
 
-   extra_js = extra_js + """ 
-   """
+   extra_js = extra_js + """ """
+  
  
 
    print(js_html)
    print(extra_js)
-
 
 
 def default_cal_params(cal_params,json_conf):
@@ -4529,7 +4601,18 @@ def show_cat_stars(json_conf,form):
       cv2.imwrite(hd_stack_file, hd_stack_img)
    # check if this meteor file has been custom fit and if it has use that info.
    meteor_red_file = video_file.replace(".mp4", "-reduced.json")
+   cp_file = form.getvalue("cal_params_file")
+   if cfe(cp_file) == 1:
+      cal_params = load_json_file(cp_file)
+      cal_params['close_stars'] = cal_params['cat_image_stars']
+      #for st in cal_params['cat_image_stars']:
+      #   print(st, "<BR>")
+      if "crop_box" not in cal_params:
+         cal_params['crop_box'] = [0,0,0,0]
+      print(json.dumps(cal_params))
+      return()
 
+   exit()
    # check if there are zero stars selected and zero in cat_img
    if cfe(meteor_red_file) == 1 and "reduced" in meteor_red_file:
       meteor_red = load_json_file(meteor_red_file)
@@ -4606,7 +4689,6 @@ def show_cat_stars(json_conf,form):
          cal_params_file = cal_params_file
       else:
          cal_params_file = cal_params_file_orig
-
    star_points = []
    if cfe(hd_stack_file) == 0:
       bad_hd = 1      
@@ -4661,7 +4743,8 @@ def show_cat_stars(json_conf,form):
       else: 
          cal_params['crop_box'] = meteor_red['crop_box']
    else:
-         cal_params['crop_box'] = (0,0,0,0)
+         if "crop_box" not in cal_params:
+            cal_params['crop_box'] = (0,0,0,0)
 
 
    #else:
@@ -5079,4 +5162,10 @@ def div_table_vars():
    end_row = "</div>"
    end_cell= "</div>"
    return(start_table, start_row, start_cell, end_table, end_row, end_cell)
+
+
+def fn_dir(file):
+   fn = file.split("/")[-1]
+   dir = file.replace(fn, "")
+   return(fn, dir)
 

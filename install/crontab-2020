@@ -1,41 +1,16 @@
-*/15 * * * * cd /home/ams/amscams/python/; ./as6-latest.py > /dev/null
-5 * * * * cd /home/ams/amscams/pythonv2/; ./batchJobs.py fi > /tmp/pd.txt
-#6 * * * * cd /home/ams/amscams/pythonv2/; ./batchJobs.py mi > /tmp/pd.txt
-10 */2 * * * cd /home/ams/amscams/pythonv2/; ./batchJobs.py sna 2 > /tmp/pd.txt
-30 * * * * cd /home/ams/amscams/pythonv2/; ./batchJobs.py bmt > /tmp/bdhd.txt
-*/5 * * * * cd /home/ams/amscams/pythonv2/; ./watch-dog.py > /tmp/wd.txt
 
-### reduce and sync
-30 */4 * * * cd /home/ams/amscams/pythonv2/; ./autoCal.py cal_index > /dev/null
-31 */4 * * * cd /home/ams/amscams/pythonv2/; ./autoCal.py meteor_index > /dev/null
-
+*/15 * * * * cd /home/ams/amscams/python/; ./as7-latest.py > /dev/null
+* * * * * cd /home/ams/amscams/pythonv2/; ./watch-dog.py > /tmp/wd.txt
 */10 * * * * cd /home/ams/amscams/pythonv2/; ./NOAA.py
-#*/15 * * * * cd /home/ams/amscams/pythonv2/; ./doDay.py batch 3
-10 */4 * * * cd /home/ams/amscams/pythonv2/; ./doDay.py cd
-
-
 */5 * * * * cd /home/ams/amscams/pythonv2/; ./scan_stack.py bs
-25 * * * * cd /home/ams/amscams/pythonv2; ./scan_stack fms
-15 */8 * * * cd /home/ams/amscams/pythonv2; ./ASDaemon.py fix_days
-*/20 * * * * cd /home/ams/amscams/pythonv2; ./ASDaemon.py rvms
-*/15 * * * * cd /home/ams/amscams/pythonv2; ./ASDaemon.py rvd
-20 */8 * * * cd /home/ams/amscams/pythonv2; ./ASDaemon.py proc_index
-20 */2 * * * cd /home/ams/amscams/pythonv2; ./day_stack.py
-25 */8 * * * cd /home/ams/amscams/pythonv2; ./move_day_files.py
+*/5 * * * * cd /home/ams/amscams/pythonv2; ./day_stack.py
+32 */2 * * * cd /home/ams/amscams/pythonv2; ./IMX291.py sense_all all > /dev/null 2>&1
 
-#SENSE UP / AUTO CAL
-32 */3 * * * cd /home/ams/amscams/pythonv2; ./IMX291.py sense_all all > /dev/null 2>&1
-20 12 * * * cd /home/ams/amscams/pipeline/; ./Process.py ca
-# New Pipe Line
-# Live Minute
-#*/10 * * * * cd /home/ams/amscams/pipeline/; ./Process.py bcm
-# Morning report
-#10 12 * * * cd /home/ams/amscams/pipeline/; ./Process.py detect_rpt
-# Meteors Last Night 
-#30 12 * * * cd /home/ams/amscams/pipeline/; ./Process.py mln
+## JOB RUNNER CRON (Runs all other jobs)
+5 * * * * cd /home/ams/amscams/pipeline; ./Process.py run_jobs
 
-# Audit and TN TL
-30 * * * * cd /home/ams/amscams/pipeline/; ./Process.py audit today
-30 1 * * * cd /home/ams/amscams/pipeline/; ./Process.py audit yest 
-58 */6 * * * cd /home/ams/amscams/pipeline/; ./Process.py tntl today
-38 5 * * * cd /home/ams/amscams/pipeline/; ./Process.py tntl yest
+### OPTIONAL
+###*/10 * * * * cd /home/ams/amscams/pipeline; ./Process.py bcm
+###*/30 * * * * cd /home/ams/amscams/pipeline; ./Process.py mln
+###* * * * * cd /home/ams/amscams/pipeline; ./Snapper.py
+

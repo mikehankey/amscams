@@ -50,8 +50,11 @@ def ffmpeg_cat(file1, file2, outfile=None):
 
 def ffprobe(video_file):
    default = [704,576]
-   cmd = "/usr/bin/ffprobe " + video_file + " > /tmp/ffprobe72.txt 2>&1"
-   output = subprocess.check_output(cmd, shell=True).decode("utf-8")
+   try:
+      cmd = "/usr/bin/ffprobe " + video_file + " > /tmp/ffprobe72.txt 2>&1"
+      output = subprocess.check_output(cmd, shell=True).decode("utf-8")
+   except:
+       return(0,0,0)
    #try:
    #time.sleep(2)
    output = None
@@ -342,7 +345,8 @@ def find_hd_file(sd_file, sd_start_trim, sd_end_trim, trim_on =1):
 
 def ffmpeg_splice(video_file, start, end, outfile):
 
-   cmd = "/usr/bin/ffmpeg -i " + video_file + " -vf select='between(n\," + str(start) + "\," + str(end) + ")' -vsync 0 -start_number " + str(start) + " " + outfile + " > /dev/null 2>&1 "
+   cmd = "/usr/bin/ffmpeg -i " + video_file + " -vf select='between(n\," + str(start) + "\," + str(end) + ")' -reset_timestamps 1 -vsync 0 " + " " + outfile + " > /dev/null 2>&1 "
+   #cmd = "/usr/bin/ffmpeg -i " + video_file + " -vf select='between(n\," + str(start) + "\," + str(end) + ")' -reset_timestamps 1 -vsync 0 -start_number " + str(start) + " " + outfile + " > /dev/null 2>&1 "
 
 
    print(cmd)
@@ -589,6 +593,8 @@ def load_frames_simple(trim_file):
             go = 0
       if frame is not None:
          frames.append(frame)
+      if frame_count > 1499:
+         go = 0
       frame_count += 1
 
    cap.release()
