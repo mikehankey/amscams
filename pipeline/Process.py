@@ -419,5 +419,8 @@ if __name__ == "__main__":
    if cmd == "refit" :
       refit_fov(sys.argv[2] , json_conf)
    if cmd == "refit_all" :
-      refit_all(json_conf)
+      if len(sys.argv) ==3:
+         refit_all(json_conf, sys.argv[2])
+      else:
+         refit_all(json_conf )
    

@@ -503,7 +503,7 @@ def guess_cal(cal_file, json_conf, cal_params = None):
    
    cv2.imshow('pepe', img)
    cv2.waitKey(30)
-   print("CAM:", this_cam)
+   print("GUSS CAM:", this_cam)
    az_guess, el_guess, pix_guess, pos_ang_guess = get_cam_best_guess(this_cam, json_conf)
    if "src.jpg" in cal_file:
       cp_file = cal_file.replace("-src.jpg", "-calparams.json")
@@ -743,18 +743,27 @@ def get_cam_best_guess(this_cam, json_conf):
              return(json_conf['cameras'][cam]['best_guess'])
    return(0,0,0,0)
 
-def refit_all(json_conf):
-   for cam in json_conf['cameras']:
+def refit_all(json_conf, cam_id=None):
+   if cam_id is not None:
+      cams = [cam_id]
+   else:
+      cams = []
+      for cam in json_conf['cameras']:
 
-      cams_id = json_conf['cameras'][cam]['cams_id']
+         cams_id = json_conf['cameras'][cam]['cams_id']
+         cams.append(cams_id)
+   print("CAMS:", cams)
+
+   for cams_id in cams:
+
       cal_files= get_cal_files(None, cams_id)
 
-
       temp = sorted(cal_files, key=lambda x: x[0], reverse=True)
+      print("CAL FILES:", temp)
       for data in temp:
          redo = 0
          run = 0
-         cal_file, temp = data
+         cal_file, xxx = data
          cp = load_json_file(cal_file)
 
          if "total_res_deg" not in cp:
@@ -772,6 +781,8 @@ def refit_all(json_conf):
             run = 1
          elif len(cp['cat_image_stars']) < 10 :
             redo = 1
+         redo = 1
+         run = 1
          if redo == 1:
             if "user_stars" in cp:
                print("RES:", cp['total_res_px'], len(cp['user_stars']), len(cp['cat_image_stars']))
@@ -785,7 +796,7 @@ def refit_all(json_conf):
                print(cmd)
                os.system(cmd)
                #exit()
-
+   os.system("cd ../pythonv2/; ./autoCal.py cal_index")
 
 def refit_fov(cal_file, json_conf):
    if "png" in cal_file:
@@ -806,7 +817,7 @@ def refit_fov(cal_file, json_conf):
       img = cv2.subtract(img, mask_img)
       print("MASK SUBTRACTED.")
 
-   print("CAM:", cam)
+   print("REFIT CAM:", cam)
    masks = get_masks(cam, json_conf,1)
    print("MASKS:", masks)
    img = mask_frame(img, [], masks, 5)
@@ -820,7 +831,7 @@ def refit_fov(cal_file, json_conf):
    cisc = len( cal_params['cat_image_stars'])
    usc_perc =  cisc / usc
    print("USC:", cisc, usc, usc_perc)
-   if usc_perc < .5:
+   if usc_perc < .4:
       print("Not enough stars map? Maybe a bad position angle or astrometry vars?")
 
       exit()
@@ -3638,6 +3649,8 @@ def qc_stars(close_stars):
       rez.append(cat_dist)
    med_res = np.median(rez)
    max_cat_dist = med_res * 2
+   if max_cat_dist < 5:
+      max_cat_dist = 10 
    for star in close_stars:
       dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist,bp = star
       res_diff = abs(cat_dist - med_res)
