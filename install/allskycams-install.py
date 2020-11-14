@@ -37,6 +37,7 @@ def format_drive():
             el = output.split("\"")
             uuid = el[1]
             fstab = "UUID=" + uuid + " /mnt/ams2               ext4    errors=continue 0       1\n"
+            print("**** ADD THIS LINE TO /etc/fstab ****")
             print(fstab)
       else:
          print("Aborted. Should have typed YES")
@@ -205,6 +206,10 @@ def setup_dirs():
       print("MK1")
       if cfe("/mnt/ams2",1) == 0:
          os.makedirs("/mnt/ams2")
+      if cfe("/mnt/ams2/logs",1) == 0:
+         os.makedirs("/mnt/ams2/logs")
+      if cfe("/mnt/ams2/backup",1) == 0:
+         os.makedirs("/mnt/ams2/backup")
       if cfe("/mnt/ams2/SD",1) == 0:
          os.makedirs("/mnt/ams2/SD")
       if cfe("/mnt/ams2/latest",1) == 0:
@@ -336,6 +341,16 @@ def setup_vpn():
    os.system("wget " + pass_file + " -O /etc/openvpn/as6vpn.txt")
 
 def main_menu():
+   from time import gmtime, strftime
+   # MAKE SURE TIMEZONE IS UTC!
+   toff = int(strftime("%z", gmtime()))
+   if toff == 0:
+      print("UTC Timezone is set.")
+   else:
+      print("SETTING UTC TIME.")
+      os.system("sudo timedatectl set-timezone UTC")
+
+
    print("""
 AllSkyCams.com (ASC) software installer. 
 

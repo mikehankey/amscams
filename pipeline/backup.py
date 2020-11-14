@@ -23,6 +23,6 @@ cmd = "/usr/bin/rsync -av /mnt/ams2/cal " + BK_DIR
 os.system(cmd)
 cmd = "/usr/bin/rsync -av /home/ams/amscams/conf " + BK_DIR
 os.system(cmd)
-cmd = "/usr/bin/rsync -av /mnt/ams2/meteor_archive " + BK_DIR
-os.system(cmd)
-print(cmd)
+#cmd = "/usr/bin/rsync -av /mnt/ams2/meteor_archive " + BK_DIR
+#os.system(cmd)
+#print(cmd)

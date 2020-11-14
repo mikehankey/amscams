@@ -428,7 +428,7 @@ def ang_dist_vel(xs=[], ys=[],azs=[],els=[], pixscale=155):
 
    # Formula for finding ang_dist and vel from px
    if len(xs) > 0:
-      px_dist = calc_dist((xs[0],ys[0]), (xs[-1], ys[-1]))
+      px_dist = calc_dist((min(xs),min(ys)), (max(xs), max(ys)))
       ang_dist = px_dist * pixscale
       ang_dist = arc_seconds_to_degrees(ang_dist)
       # to find angular velocity per second in degrees 
