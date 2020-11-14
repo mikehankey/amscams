@@ -52,6 +52,12 @@
          "operator": "Robert Lunsford, University of Arizona",
          "location": "El Cajo, CA USA"
       }
+      {
+         "ams_id": "102",
+         "bid": [1],
+         "operator": "George Fleenor ",
+         "location": "Bradenton, FL USA"
+      },
 
    ],
 
