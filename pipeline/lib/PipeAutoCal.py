@@ -743,6 +743,13 @@ def get_cam_best_guess(this_cam, json_conf):
              return(json_conf['cameras'][cam]['best_guess'])
    return(0,0,0,0)
 
+def super_cal(json_conf):
+   #refit_all(json_conf)
+   os.system("./Process.py ca")
+   for cam in json_conf['cameras']:
+      cams_id = json_conf['cameras'][cam]['cams_id']
+      os.system("./Process.py deep_cal " + cams_id)
+   refit_all(json_conf)
 def refit_all(json_conf, cam_id=None):
    if cam_id is not None:
       cams = [cam_id]
