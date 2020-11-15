@@ -231,7 +231,6 @@ def check_disk():
                print(cmd)
                os.system(cmd)
                print(dd, days_old)
-   exit()
 
 
 
@@ -745,3 +744,4 @@ if cmd == "batch":
    batch(sys.argv[2])
 if cmd == "cd":
    check_disk()
+ck_disk()
