@@ -18,7 +18,7 @@ from lib.PipeUtil import convert_filename_to_date_cam, day_or_night , load_json_
 from lib.PipeVideo import scan_stack_file, make_preview_videos, load_frames_simple, ffmpeg_cat , ffmpeg_cats, ffmpeg_splice
 from lib.PipeDetect import detect_in_vals , obj_report, trim_events, detect_all, get_trim_num, trim_min_file, detect_meteor_in_clip, analyze_object, refine_meteor, refine_all_meteors, fireball, verify_meteor, re_detect, reduce_meteor, reject_meteors
 from lib.PipeSync import sync_day 
-from lib.PipeAutoCal import autocal , solve_field, cal_all, draw_star_image, freecal_copy, apply_calib, index_failed, deep_calib, deep_cal_report, blind_solve_meteors, guess_cal, flatten_image, project_many, project_snaps, review_cals, star_db_mag, cal_report, review_all_cals, reverse_map, cal_index, sync_back_admin_cals, min_fov, fn_dir, refit_fov, refit_all, super_cal
+from lib.PipeAutoCal import autocal , solve_field, cal_all, draw_star_image, freecal_copy, apply_calib, index_failed, deep_calib, deep_cal_report, blind_solve_meteors, guess_cal, flatten_image, project_many, project_snaps, review_cals, star_db_mag, cal_report, review_all_cals, reverse_map, cal_index, sync_back_admin_cals, min_fov, fn_dir, refit_fov, refit_all, super_cal, check_all
 from lib.PipeReport import autocal_report, detect_report 
 from lib.PipeLIVE import meteor_min_files, broadcast_live_meteors, broadcast_minutes, meteors_last_night, mln_final, pip_video, mln_sync, super_stacks, meteor_index, fix_missing_images, fflist, resize_video, minify_file, make_preview_meteor, make_preview_meteors, sync_preview_meteors
 from lib.PipeTimeLapse import make_tl_for_cam, video_from_images, six_cam_video, timelapse_all, tn_tl6, sync_tl_vids, multi_cam_tl, audit_min, purge_tl , plot_min_int, aurora_fast
@@ -371,7 +371,8 @@ if __name__ == "__main__":
    if cmd == "min_fov":
       min_fov(sys.argv[2], json_conf)
    if cmd == "fireball":
-      fireball(sys.argv[2], json_conf)
+      # last arg is nomask 1 means don't use mask
+      fireball(sys.argv[2], json_conf, 1)
    if cmd == "audit_tl":
       audit_tl(sys.argv[2], json_conf)
    if cmd == "au":
@@ -427,4 +428,6 @@ if __name__ == "__main__":
          refit_all(json_conf )
    if cmd == 'reject_meteors':
       reject_meteors(sys.argv[2], json_conf)
+   if cmd == 'check_all':
+      check_all(json_conf, sys.argv[2])
    

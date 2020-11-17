@@ -4,15 +4,15 @@
 
 '''
 import scipy.optimize
-
+from lib.UIJavaScript import *
 import glob
 from datetime import datetime as dt
 import datetime
 #import math
 import os
-from lib.PipeAutoCal import fn_dir, get_cal_files
+from lib.PipeAutoCal import fn_dir, get_cal_files, get_image_stars, get_catalog_stars, pair_stars, update_center_radec, cat_star_report, minimize_fov
 from lib.PipeVideo import ffmpeg_splice, find_hd_file, load_frames_fast, find_crop_size, ffprobe
-from lib.PipeUtil import load_json_file, save_json_file, cfe, get_masks, convert_filename_to_date_cam, buffered_start_end, get_masks, compute_intensity , bound_cnt
+from lib.PipeUtil import load_json_file, save_json_file, cfe, get_masks, convert_filename_to_date_cam, buffered_start_end, get_masks, compute_intensity , bound_cnt, day_or_night
 from lib.DEFAULTS import *
 from lib.PipeMeteorTests import big_cnt_test, calc_line_segments, calc_dist, unq_points, analyze_intensity, calc_obj_dist, meteor_direction, meteor_direction_test, check_pt_in_mask, filter_bad_objects, obj_cm, meteor_dir_test, ang_dist_vel
 from lib.PipeImage import stack_frames
@@ -21,6 +21,124 @@ import numpy as np
 import cv2
 
 json_conf = load_json_file(AMS_HOME + "/conf/as6.json")
+
+
+def reject_meteors(date, jsfs):
+   meteor_dir = "/mnt/ams2/meteors/" + date + "/"
+   files = glob.glob("/mnt/ams2/meteors/" + date + "/*.json")
+   meteors = []
+   for mf in files:
+      if "reduced" not in mf and "stars" not in mf and "man" not in mf:
+         meteors.append(mf)
+
+   rejects = 0
+   rej_html = """
+      <style>
+         .detect_image {
+            float :left; 
+            padding: 25px 25px 25px 25px;
+            background-color: #cccccc;
+         }
+         .objects_div {
+            float :left; 
+            padding: 25px 25px 25px 25px;
+            background-color: #cccccc;
+            font-family: "Lucida Console", Courier, monospace;
+            font-size:1vw;
+         }
+      </style>
+   """
+   rej_html += JS_SHOW_HIDE
+   total_detects = len(meteors)
+   for file in sorted(meteors):
+      fn, dir = fn_dir(file) 
+      base_fn = fn.replace(".json", "")
+      sd_video_file = file.replace(".json", ".mp4")
+      (f_datetime, cam, f_date_str,fy,fmin,fd, fh, fm, fs) = convert_filename_to_date_cam(file)
+      sun_status, sun_az, sun_el = day_or_night(f_date_str, json_conf,1)
+      if -10 < float(sun_el) < 0:
+         if float(sun_az) > 180:
+            sun_status = "dusk"
+         else:
+            sun_status = "dawn"
+
+      mj = load_json_file(file)
+      #print(mj['sd_objects'])
+      #print(file, sun_status, sun_az, sun_el)
+      #if "meteor_data" not in mj :
+      #if (sun_status == "dawn" or sun_status == "dusk"):
+      if "meteor_data" not in mj:
+      #if True:
+         # detect without the mask
+         best_meteor,sd_stack_img,bad_objs,cp = fireball(sd_video_file, json_conf, 1)
+         mj['meteor_data'] = {}
+         mj['meteor_data']['sd_meteor'] = best_meteor
+         mj['meteor_data']['cal_params'] = cp
+         mj['meteor_data']['bad_objs'] = bad_objs
+         save_json_file(file, mj)
+         if best_meteor is not None:
+            sd_stack_img = cv2.resize(sd_stack_img, (640, 360))
+            cv2.imshow('pepe2', sd_stack_img)
+            cv2.waitKey(180)
+         else:
+            sf = sd_video_file.replace(".mp4", "-stacked.jpg")
+            if cfe(sf) == 0:
+               sf = sd_video_file.replace(".mp4", "stacked.png")
+            if cfe(sf) == 1:
+               sd_stack_img = cv2.imread(sf)
+               sd_stack_img = cv2.resize(sd_stack_img, (1280, 720))
+               cv2.imshow('pepe2', sd_stack_img)
+               cv2.waitKey(180)
+      # DUSK / DAWN REJECT CHECK -- MAKE SURE IT IS NOT A BIRD BY CHECKING INTENSITY VALS
+      #if sun_status == "dawn" or sun_status == "dusk" or sun_status == "day":
+
+      
+      if (mj['meteor_data']['sd_meteor']) is None:
+         print(mj['meteor_data']['sd_meteor'], mj['sd_stack'], mj['sd_video_file'])
+         rejects += 1 
+
+         rej_html += "<div id='row_container'><div class='detect_image'><a href='" + mj['sd_video_file'] + "'><img width=640 height=320 src='" + mj['sd_stack'] + "'></a></div><div class='objects_div'>" 
+         tot_obj = 0
+         for obj in mj['meteor_data']['bad_objs']:
+            if mj['meteor_data']['bad_objs'][obj]['report']['class'] == 'star' or mj['meteor_data']['bad_objs'][obj]['report']['unq_points'] < 3:
+               continue 
+            div_id = base_fn + "-" + str(obj)
+            if mj['meteor_data']['bad_objs'][obj]['report']['meteor'] == 1:
+               met_desc = "METEOR"
+            else:
+               met_desc = "NON METEOR"
+
+            fn_desc = len(mj['meteor_data']['bad_objs'][obj]['ofns'])
+            bi_desc = ""
+            for item in mj['meteor_data']['bad_objs'][obj]['report']['bad_items']:
+               if bi_desc != "":
+                  bi_desc += ","
+               print("ITEM:", item)
+               its = item.split(".")
+               bi_desc += its[0]
+            rej_html += "<a href=\"javascript: show_hide('" + div_id + "')\">Object:" + str(obj)+ "</a> - " + mj['meteor_data']['bad_objs'][obj]['report']['class'].upper() + " " + met_desc + " " + str(fn_desc) + " frames " + bi_desc
+            
+            rej_html += "<br>"
+            rej_html += "<div id='" + div_id + "' style='display: none' >"
+            rej_html += "<ul>"
+            rej_html += "<li> fns" + str(mj['meteor_data']['bad_objs'][obj]['ofns'])  
+            rej_html += "<li> xs" + str(mj['meteor_data']['bad_objs'][obj]['oxs'])  
+            rej_html += "<li> ys" + str(mj['meteor_data']['bad_objs'][obj]['oys'])  
+            rej_html += "<li> ws" + str(mj['meteor_data']['bad_objs'][obj]['ohs'])  
+            rej_html += "<li> hs" + str(mj['meteor_data']['bad_objs'][obj]['ows'])  
+            rej_html += "<li> is" + str(mj['meteor_data']['bad_objs'][obj]['oint'])  
+            for key in mj['meteor_data']['bad_objs'][obj]['report']:
+               rej_html += "<li>" + str(key) + " " + str(mj['meteor_data']['bad_objs'][obj]['report'][key]) + "</li>"
+            rej_html += "</ul>"
+            rej_html += "</li></div>"
+            tot_obj += 1 
+         rej_html += "</div><div style='clear:both'></div></div>"
+
+   fp = open(meteor_dir + "/rejected.html", "w")
+   fp.write(rej_html)
+   fp.close()
+   print(total_detects, rejects)
+
 
 def biggest_cnts(cnts, count=5):
    ci = []
@@ -277,12 +395,139 @@ def save_old_meteor(meteors, media, sd_images, hd_images):
    print("Saved json:", js)
 
 
+def mark_up_meteor_frame(frame, mark_objs,cp):
 
-def fireball(video_file, json_conf):
+   oh,ow = frame.shape[:2]
+   frame = cv2.resize(frame, (1280,720))
+   full_frame = cv2.resize(frame, (1920,1080))
+   hdm_x = 1280 / ow
+   hdm_y = 720 / oh
+
+   half_x = 1920 / 1280
+   half_y = 1080 / 720
+   
+   rsize = 5 
+   for star in cp['cat_image_stars']:
+      dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist,bp = star
+      six = int(six / half_x)
+      siy = int(siy / half_y)
+      rx1,ry1,rx2,ry2 = bound_cnt(six, siy,1280,720, rsize)
+      cv2.putText(frame, str(dcname),  (six-10,siy-10), cv2.FONT_HERSHEY_SIMPLEX, .4, (255, 255, 255), 1)
+      #cv2.rectangle(frame, (rx1, ry1), (rx2, ry2), (255,0,0), 1, cv2.LINE_AA)
+      cv2.circle(frame,(six,siy), 10, (255,255,255), 1)
+   #cv2.imshow('pepe', full_frame)
+   #cv2.waitKey(0)
+
+   for data in mark_objs:
+      obj_id, obj_class, ccx, ccy = data
+      cx = int(ccx * hdm_x)
+      cy = int(ccy * hdm_y)
+      print("CCX:", obj_id, hdm_x, hdm_y, ccx, ccy, cx,cy, obj_class)
+      if obj_class == "meteor":
+         rsize = 50
+         cv2.line(frame, (cx-10,cy), (cx+10,cy), (200,200,200), 1)
+         cv2.line(frame, (cx,cy-10), (cx,cy+10), (200,200,200), 1)
+         cv2.putText(frame, str(obj_class),  (cx-10,cy-10), cv2.FONT_HERSHEY_SIMPLEX, .4, (255, 255, 255), 1)
+      elif obj_class != 'star':
+         rsize = 10
+         cv2.putText(frame, str(obj_class),  (cx-10,cy-10), cv2.FONT_HERSHEY_SIMPLEX, .4, (255, 255, 255), 1)
+      rx1,ry1,rx2,ry2 = bound_cnt(cx, cy,1280,720, rsize)
+      cv2.rectangle(frame, (rx1, ry1), (rx2, ry2), (255,0,0), 1, cv2.LINE_AA)
+   return(frame)
+
+def calib_image(file, image=None,json_conf=None):
+
+   before_cp, after_cp = get_cal_params(file)
+
+   before_cp = update_center_radec(file,before_cp,json_conf)
+   after_cp = update_center_radec(file,after_cp,json_conf)
+   if image is None:
+      image = cv2.imread(file)
+   image = cv2.resize(image, (1920,1080))
+
+   before_cp['user_stars'] = get_image_stars(file, image.copy(), json_conf, 1)
+   after_cp['user_stars'] = before_cp['user_stars']
+
+   # do cal for before
+   cat_stars = get_catalog_stars(before_cp)
+   before_cp = pair_stars(before_cp, file, json_conf, image)
+   for star in before_cp['cat_image_stars']:
+      dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist,bp = star
+   temp_stars, before_res_px,before_res_deg = cat_star_report(before_cp['cat_image_stars'], 4)
+
+   # do cal for after 
+   cat_stars = get_catalog_stars(after_cp)
+   after_cp = pair_stars(after_cp, file, json_conf, image)
+   for star in after_cp['cat_image_stars']:
+      dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist,bp = star
+   temp_stars, after_res_px,after_res_deg = cat_star_report(after_cp['cat_image_stars'], 4)
+
+   print("BEFORE RES:", before_res_px, before_res_deg, len(before_cp['user_stars']), len(before_cp['cat_image_stars']))
+   print(before_cp['center_az'])
+   print("AFTER RES:", after_res_px, after_res_deg,len(before_cp['user_stars']), len(before_cp['cat_image_stars']))
+   print(after_cp['center_az'])
+
+   if before_res_px < after_res_px:
+      cp = dict(before_cp)
+   else:
+      cp = dict(after_cp)
+
+   if len(cp['cat_image_stars']) > 15 and cp['total_res_px'] > 2:
+      cp = minimize_fov(file, cp, file ,image,json_conf ) 
+   else:
+      print("This meteor calib is good!")
+
+   return(cp)
+
+def mask_stars(img, cp):
+   hdm_x = 1920 / img.shape[1]
+   hdm_y = 1080 / img.shape[0]
+   for star in cp['user_stars']:
+      #dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist,bp = star
+      six, siy, oint = star
+      sd_six = int(six / hdm_x)
+      sd_siy = int(siy / hdm_y)
+      bx1,by1,bx2,by2 = bound_cnt(sd_six, sd_siy,img.shape[1],img.shape[0], 2)
+      if len(img.shape) == 2:
+         img[by1:by2,bx1:bx2] = [0]
+      else:
+         img[by1:by2,bx1:bx2] = [0,0,0]
+      #cv2.circle(img,(sd_six,sd_siy), 10, (255,255,255), 1)
+   #cv2.imshow('pepe', img)
+   #cv2.waitKey(0)
+   return(img)
+
+
+def fireball(video_file, json_conf, nomask=0):
+   (f_datetime, cam, f_date_str,fy,fmin,fd, fh, fm, fs) = convert_filename_to_date_cam(video_file)
+
    objects = {}
    hd_frames,hd_color_frames,subframes,sum_vals,max_vals,pos_vals = load_frames_fast(video_file, json_conf, 0, 0, 1, 1,[])
    i = 0
    med_file = video_file.replace(".mp4", "-med.jpg")
+
+   fh, fw = hd_frames[0].shape[:2]
+   if fh == 1080:
+      HD = 1
+   else:
+      HD = 0
+   print("FH:", fh, fw)
+   # load mask file if it exists
+   mask_file = MASK_DIR + cam + "_mask.png"
+   if cfe(mask_file) == 1 and nomask == 0:
+      mask_img = cv2.imread(mask_file,0)
+      print(mask_file)
+      print(mask_img.shape)
+      mask_img = cv2.resize(mask_img, (fw,fh))
+
+      print("YES MASK!")
+   else:
+      mask_img = None
+      print("NO MASK!")
+
+   cp = calib_image(video_file, hd_frames[0], json_conf)
+   cp['user_stars'] = get_image_stars(video_file, hd_frames[0].copy(), json_conf, 1)
+
    if cfe(med_file) == 0:
       median_frame = cv2.convertScaleAbs(np.median(np.array(hd_frames), axis=0))
        
@@ -291,30 +536,51 @@ def fireball(video_file, json_conf):
    else:
       median_frame = cv2.imread(med_file)
       median_frame = cv2.cvtColor(median_frame, cv2.COLOR_BGR2GRAY)
+
+   # Calibrate the median frame
+   last_sub = None
    for frame in hd_frames:
+      frame = mask_stars(frame, cp)
       meteor_on = 0
       subframe = cv2.subtract(frame, median_frame)
+      if last_sub is None:
+         last_sub = subframe
+      sub_diff = cv2.subtract(subframe, last_sub)
+      last_sub = subframe.copy()
+
+      subframe = sub_diff
+
+      sdframe = cv2.resize(sub_diff, (640, 360))
+      cv2.imshow('pepe2', sdframe)
+      cv2.waitKey(30)
+
+      if mask_img is not None and nomask ==0:
+         subframe = cv2.subtract(frame, mask_img)
+         sub_diff = cv2.subtract(sub_diff, mask_img)
+
+
       bx,by = pos_vals[i]
       bx1,by1,bx2,by2 = bound_cnt(bx, by,frame.shape[1],frame.shape[0], 50)
 
-      min_val, max_val, min_loc, (mx,my)= cv2.minMaxLoc(subframe)
-      avg_val = np.mean(subframe)
+      min_val, max_val, min_loc, (mx,my)= cv2.minMaxLoc(sub_diff)
+      avg_val = np.mean(sub_diff)
       half_max = ((max_val - avg_val) / 4) + avg_val
 
-      thresh = best_thresh(subframe, half_max, i)
-      cnts,rects = find_contours_in_frame(subframe, thresh=thresh)
+      thresh = best_thresh(sub_diff, half_max, i)
+      cnts,rects = find_contours_in_frame(sub_diff, thresh=thresh)
       if len(cnts) > 2:
          cnts = biggest_cnts(cnts, 10)
       #cnts = get_contours_in_image(subframe)
 
+      # Here we are inside 1 single frame and loop over all contours 
+      mark_objs = []
       for cx,cy,cw,ch in cnts:
-         cv2.rectangle(subframe, (cx, cy), (cx+cw, cy+ch), (255,255,255), 3, cv2.LINE_AA)
+         #cv2.rectangle(subframe, (cx, cy), (cx+cw, cy+ch), (255,255,255), 3, cv2.LINE_AA)
          ccx = cx + int(cw / 2)
          ccy = cy + int(ch / 2)
          cnt_img = frame[cy:cy+ch,cx:cx+cw]
          cnt_int = int(np.sum(cnt_img))
-         #object, objects = find_object(objects, i,ccx, ccy, cw, ch, cnt_int, 1, 0, None)
-         object, objects = find_object(objects, i,cx, cy, cw, ch, cnt_int, 1, 0, None)
+         object, objects = find_object(objects, i,cx, cy, cw, ch, cnt_int, HD, 0, None)
          objects[object] = analyze_object(objects[object], 1,1)
          #if "class" in objects[object]:
          #   if objects[object]['class'] != 'star':
@@ -327,12 +593,14 @@ def fireball(video_file, json_conf):
             #desc += " - " + objects[object]['report']['class'] + " " + str(objects[object]['report']['meteor']) + str(objects[object]['report']['non_meteor']) + str(objects[object]['report']['bad_items']) + str(objects[object]['oxs'])
             if objects[object]['report']['meteor'] == 1 and objects[object]['report']['non_meteor'] == 0:
                 objects[object]['report']['class'] = "meteor"
-                rx1,ry1,rx2,ry2 = bound_cnt(ccx, ccy,frame.shape[1],frame.shape[0], 50)
-                cv2.rectangle(subframe, (rx1, ry1), (rx2, ry2), (255,0,0), 1, cv2.LINE_AA)
-            desc = str(object) + " - " + objects[object]['report']['class'] #+ " " + str(objects[object]['report']['meteor']) + str(objects[object]['report']['non_meteor']) 
-            cv2.putText(subframe, str(desc),  (ccx-10,ccy-10), cv2.FONT_HERSHEY_SIMPLEX, .8, (255, 255, 255), 1)
+                #rx1,ry1,rx2,ry2 = bound_cnt(ccx, ccy,frame.shape[1],frame.shape[0], 50)
+                #cv2.rectangle(subframe, (rx1, ry1), (rx2, ry2), (255,0,0), 1, cv2.LINE_AA)
+            desc = str(object) + " - " + objects[object]['report']['class'] 
+            #cv2.putText(subframe, str(desc),  (ccx-10,ccy-10), cv2.FONT_HERSHEY_SIMPLEX, .8, (255, 255, 255), 1)
             meteor_on = 1
             #print("CNTS METEOR:", object)
+            mark_objs.append([object, objects[object]['report'], ccx,ccy])
+      subframe = mark_up_meteor_frame(subframe, mark_objs, cp)
       
 
 
@@ -367,13 +635,13 @@ def fireball(video_file, json_conf):
 
    if m > 1:
       best_meteor = dom_meteor(meteors, json_conf)
-   if m == 1:
+   elif m == 1:
       best_meteor = meteors[0]
    else: 
+      print("There is no meteor detected.")
       best_meteor = None
-   print("DONE:", best_meteor)
    if best_meteor is None:
-      return(None, None, objects)
+      return(None, None, objects,None)
 
    # draw cnts on image 
    for i in range(0, len(best_meteor['oxs'])):
@@ -399,17 +667,30 @@ def fireball(video_file, json_conf):
 
          sframe = cv2.resize(img, (1280, 720))
          desc = "Frame:" + str(fn)
-         cv2.putText(sframe, desc,  (10,20), cv2.FONT_HERSHEY_SIMPLEX, .4, (255, 255, 255), 1)
+         cv2.putText(sframe, desc,  (10,20), cv2.FONT_HERSHEY_SIMPLEX, .2, (255, 255, 255), 1)
          cv2.imshow('pepe', sframe)
          cv2.waitKey(30)
 
    stack_img = stack_frames(hd_color_frames)
    if SHOW == 1:
+      stack_img = cv2.resize(frame, (640, 360))
+      if best_meteor is None:
+         cv2.putText(stack_img, "NO METEOR DETECTED",  (250,180), cv2.FONT_HERSHEY_SIMPLEX, .6, (255, 255, 255), 1)
+      else:
+         cv2.putText(stack_img, "METEOR DETECTED",  (250,180), cv2.FONT_HERSHEY_SIMPLEX, .6, (255, 255, 255), 1)
       cv2.imshow('pepe', stack_img)
-      cv2.waitKey(60)
+      cv2.waitKey(300)
 
-   return(best_meteor, stack_img, objects )
+   return(best_meteor, stack_img, objects ,cp)
 
+def meteor_detect_image(mo, dimg, objects, cp):
+
+   for i in range(0,len(mo['ofns'])):
+      x = mo['oxs'][i]
+      y = mo['oys'][i]
+      print(i, x,y)
+   cv2.imshow('pepe', dimg)
+   cv2.waitKey(0)
 
 def dom_meteor(meteors, json_conf):
    mcache = {}
@@ -463,6 +744,7 @@ def dom_meteor(meteors, json_conf):
       if score > bs:
          bs = score
          mb = m
+   print("The best meteor is:", m, mcache[m])
    best_meteor = mcache[m]
    return(best_meteor)
   
@@ -1115,8 +1397,11 @@ def make_roi_comp_img(frames, meteor):
    fy = 1080 - fh
    fy2 = 1080
    stack_img[fy:fy2,0:1920] = roi_row
-   cv2.imshow('FINAL STACK', stack_img)
-   cv2.waitKey(0)
+
+
+   stack_img = cv2.resize(frame, (640, 360))
+   cv2.imshow('pepe2', stack_img)
+   cv2.waitKey(180)
    
 
    
@@ -2065,7 +2350,7 @@ def min_cnt_dist(x,y,w,h,tx,ty,tw,th):
 def find_object(objects, fn, cnt_x, cnt_y, cnt_w, cnt_h, intensity=0, hd=0, sd_multi=1, cnt_img=None ):
    matched = {}
    if hd == 1:
-      obj_dist_thresh = 75 
+      obj_dist_thresh = 65 
    else:
       obj_dist_thresh = 35
 
@@ -2300,12 +2585,94 @@ def json_rpt(obj):
 
 def get_cal_params(meteor_json_file):  
    (f_datetime, cam, f_date_str,fy,fm,fd, fh, fmin, fs) = convert_filename_to_date_cam(meteor_json_file)
-
+   before_files = []
+   after_files = []
    cal_files= get_cal_files(meteor_json_file, cam)
-   best_cal_file = cal_files[0][0]
-   print(best_cal_file)
-   cp = load_json_file(best_cal_file)
-   return(cp)
+   for cf,td in cal_files:
+      (c_datetime, ccam, c_date_str,cy,cm,cd, ch, cmm, cs) = convert_filename_to_date_cam(cf)
+      time_diff = f_datetime - c_datetime
+      sec_diff= time_diff.total_seconds()
+      if sec_diff <= 0:
+         after_files.append((cf,sec_diff))
+      else:
+         before_files.append((cf,sec_diff))
+
+   after_files = sorted(after_files, key=lambda x: (x[1]), reverse=False)[0:5]
+   print("Calibs after this meteor.")
+   before_data = []
+   after_data = []
+   for af in after_files:
+      cpf, td = af
+      cp = load_json_file(cpf)
+      before_data.append((cpf, float(cp['center_az']), float(cp['center_el']), float(cp['position_angle']), float(cp['pixscale']), float(cp['total_res_px'])))
+
+   before_files = sorted(before_files, key=lambda x: (x[1]), reverse=False)[0:5]
+   print("Calibs before this meteor.")
+   for af in before_files:
+      cpf, td = af
+      cp = load_json_file(cpf)
+      if "total_res_px" in cp:
+         after_data.append((cpf, float(cp['center_az']), float(cp['center_el']), float(cp['position_angle']), float(cp['pixscale']), float(cp['total_res_px'])))
+      else:
+         print("NO RES?", cpf, cp['center_az'], cp['center_el'], cp['position_angle'], cp['pixscale'])
+
+   azs = [row[1] for row in before_data] 
+   els = [row[2] for row in before_data] 
+   pos = [row[3] for row in before_data] 
+   px = [row[4] for row in before_data] 
+   print("AZS:", azs)
+
+   if len(azs) > 3:
+      before_med_az = np.median(azs)
+      before_med_el = np.median(els)
+      before_med_pos = np.median(pos)
+      before_med_px = np.median(px)
+   else:
+      print("PX:", px)
+      before_med_az = np.mean(azs)
+      before_med_el = np.mean(els)
+      before_med_pos = np.mean(pos)
+      before_med_px = np.mean(px)
+
+   azs = [row[1] for row in after_data] 
+   els = [row[2] for row in after_data] 
+   pos = [row[3] for row in after_data] 
+   px = [row[4] for row in after_data] 
+
+   if len(azs) > 3:
+      after_med_az = np.median(azs)
+      after_med_el = np.median(els)
+      after_med_pos = np.median(pos)
+      after_med_px = np.median(px)
+   else:
+      after_med_az = np.mean(azs)
+      after_med_el = np.mean(els)
+      after_med_pos = np.mean(pos)
+      after_med_px = np.mean(px)
+
+   print("BEFORE MED:", before_med_az, before_med_el, before_med_pos, before_med_px)
+   print("AFTER MED:", after_med_az, after_med_el, after_med_pos, after_med_px)
+
+   autocal_dir = "/mnt/ams2/meteor_archive/" + STATION_ID + "/CAL/AUTOCAL/" + fy + "/solved/" 
+   mcp_file = autocal_dir + "multi_poly-" + STATION_ID + "-" + cam + ".info"
+   if cfe(mcp_file) == 1:
+      mcp = load_json_file(mcp_file)
+      # GET EXTRA STARS?
+   else:
+      mcp = None
+   before_cp = dict(mcp)
+   after_cp = dict(mcp)
+   before_cp['center_az'] = before_med_az
+   before_cp['center_el'] = before_med_el
+   before_cp['position_angle'] = before_med_pos
+   before_cp['pixscale'] = before_med_px 
+
+   after_cp['center_az'] = after_med_az
+   after_cp['center_el'] = after_med_el
+   after_cp['position_angle'] = after_med_pos
+   after_cp['pixscale'] = after_med_px 
+
+   return(before_cp, after_cp)
    
 def reduce_points(xs, ys, cal_params):
    for i in range(0, len(xs)):
@@ -2315,7 +2682,7 @@ def reduce_points(xs, ys, cal_params):
 def reduce_meteor(meteor_json_file):
    mj = load_json_file(meteor_json_file)
    if "cal_params" not in mj:
-      cal_params= get_cal_params(meteor_json_file)
+      cal_params, after_cal_params = get_cal_params(meteor_json_file)
    print(mj['hd_trim'])
    print(mj['hd_video_file'])
    print(mj['sd_video_file'])

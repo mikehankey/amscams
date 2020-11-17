@@ -52,12 +52,13 @@ def meteor_dir_test(fxs,fys):
    match = 0
    nomatch = 0
 
+
    for i in range(0,len(fxs)):
       x = fxs[i]
       y = fys[i]
       dir_x = x - fx 
       dir_y = y - fy
-      if dir_x < 0:
+      if dir_x <= 0:
          x_dir_mod = 1
       else:
          x_dir_mod = -1
@@ -66,12 +67,12 @@ def meteor_dir_test(fxs,fys):
       else:
          y_dir_mod = -1
 
-      if x_dir_mod == fx_dir_mod :
+      if x_dir_mod == fx_dir_mod or dir_x <= 1:
          match = match + 1
       else:
          nomatch = nomatch + 1
 
-      if y_dir_mod == fy_dir_mod :
+      if y_dir_mod == fy_dir_mod or dir_y <= 1:
          match = match + 1
       else:
          nomatch = nomatch + 1
