@@ -744,7 +744,7 @@ def get_cam_best_guess(this_cam, json_conf):
    return(0,0,0,0)
 
 def super_cal(json_conf):
-   #os.system("./Process.py ca")
+   os.system("./Process.py ca")
    refit_all(json_conf)
    for cam in json_conf['cameras']:
       cams_id = json_conf['cameras'][cam]['cams_id']

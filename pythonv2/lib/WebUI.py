@@ -1549,7 +1549,8 @@ def calibration(json_conf,form):
    cia = []
    for cf in sorted(ci, reverse=True):
       cia.append(ci[cf])
-   cia = sorted(cia, key=lambda x: x['cam_id'], -x['cal_image_file'], reverse=False)
+   #cia = sorted(cia, key=lambda x: x['cam_id'], -x['cal_image_file'], reverse=False)
+   cia = sorted(cia, key=lambda x: x['cam_id'] )
       
 
    print("<table class='table table-dark table-striped table-hover td-al-m m-auto table-fit'>")
