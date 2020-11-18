@@ -2903,6 +2903,7 @@ def autocal(image_file, json_conf, show = 0):
 
 
    else:
+      os.system("rm /tmp/tmp.*")
       print("Plate solve failed. Clean up the mess!") 
       # rm original file and temp files here
       cmd = "mv " + image_file + "* " + fdir
