@@ -152,6 +152,13 @@ def check_disk():
    if len(hd_files) > 22000:
       del_needed = 1
 
+   # remove tmp files
+   os.system("rm /tmp/tmp.ppm*")
+   os.system("rm /tmp/tmp.remove*")
+   os.system("rm /tmp/tmp.fits*")
+   os.system("rm /tmp/tmp.uncomp*")
+   os.system("rm /tmp/tmp.*")
+
    # first get the HD files and start deleting some of then (remove the last 12 hours) 
    # then check disk again if it is still over 80% delete some more. 
    # continue to do this until the disk is less than 80% or there are only a max of 2 days of HD files left
@@ -744,4 +751,3 @@ if cmd == "batch":
    batch(sys.argv[2])
 if cmd == "cd":
    check_disk()
-ck_disk()
