@@ -913,7 +913,7 @@ def refit_fov(cal_file, json_conf):
          print("SAVE NEWER CP ITS BETTER THAN ORIGINAL FILE")
       
          print("ORIG:", ocp['center_az'], ocp['center_el'], ocp['position_angle'], ocp['pixscale'])
-         print("NEW:", new_cal_params['az_center'], new_cal_params['el_center'], new_cal_params['position_angle'], new_cal_params['pixscale'])
+         print("NEW:", new_cal_params['center_az'], new_cal_params['center_el'], new_cal_params['position_angle'], new_cal_params['pixscale'])
          save_json_file(cal_file, new_cal_params)
          cal_params = dict(new_cal_params)
          exit()
