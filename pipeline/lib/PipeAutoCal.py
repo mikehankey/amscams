@@ -793,6 +793,7 @@ def refit_all(json_conf, cam_id=None, type="all"):
          redo = 0
          run = 0
          cal_file, xxx = data
+         print("Loading:", cal_file)
          cp = load_json_file(cal_file)
 
          if "total_res_deg" not in cp:
@@ -863,6 +864,7 @@ def refit_fov(cal_file, json_conf):
    print("USC:", cisc, usc, usc_perc)
    print("STARTING RES:", cal_params['total_res_px'] )
    if usc_perc < .4 or cal_params['total_res_px'] > 4:
+      print(cal_file)
       bcp, acp = get_cal_params(cal_file, json_conf)
       acp['user_stars'] = cal_params['user_stars']
       bcp['user_stars'] = cal_params['user_stars']
