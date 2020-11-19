@@ -866,24 +866,28 @@ def refit_fov(cal_file, json_conf):
    if usc_perc < .4 or cal_params['total_res_px'] > 4:
       print(cal_file)
       bcp, acp = get_cal_params(cal_file, json_conf)
-      acp['user_stars'] = cal_params['user_stars']
-      bcp['user_stars'] = cal_params['user_stars']
-      acp['cat_image_stars'] = cal_params['cat_image_stars']
-      bcp['cat_image_stars'] = cal_params['cat_image_stars']
-      print(bcp['pixscale'])
-      print(acp['pixscale'])
-      data = [cal_file, bcp['center_az'], bcp['center_el'], bcp['position_angle'], bcp['pixscale'], len(bcp['user_stars']), len(bcp['cat_image_stars']), cal_params['total_res_px'],0]  
-      tcp , bad_stars, marked_img = test_cal(cal_file, json_conf, bcp, img, data)
-      print("BEFORE/CUR:", tcp['total_res_px'],  cal_params['total_res_px'])
-      if tcp['total_res_px'] < cal_params['total_res_px']:
-         cal_params = dict(tcp)
-         print("BCP BETTER")
-      data = [cal_file, acp['center_az'], acp['center_el'], acp['position_angle'], acp['pixscale'], len(acp['user_stars']), len(acp['cat_image_stars']), cal_params['total_res_px'],0]  
-      tcp , bad_stars, marked_img = test_cal(cal_file, json_conf, acp, img, data)
-      print("AFTER/CUR:", tcp['total_res_px'],  cal_params['total_res_px'])
-      if tcp['total_res_px'] < cal_params['total_res_px']:
-         cal_params = dict(tcp)
-         print("ACP BETTER")
+      if acp is not None:
+         acp['user_stars'] = cal_params['user_stars']
+         acp['cat_image_stars'] = cal_params['cat_image_stars']
+         data = [cal_file, acp['center_az'], acp['center_el'], acp['position_angle'], acp['pixscale'], len(acp['user_stars']), len(acp['cat_image_stars']), cal_params['total_res_px'],0]  
+         tcp , bad_stars, marked_img = test_cal(cal_file, json_conf, acp, img, data)
+         print("AFTER/CUR:", tcp['total_res_px'],  cal_params['total_res_px'])
+         if tcp['total_res_px'] < cal_params['total_res_px']:
+            cal_params = dict(tcp)
+            print("ACP BETTER")
+
+
+
+      if bcp is not None:
+         bcp['user_stars'] = cal_params['user_stars']
+         bcp['cat_image_stars'] = cal_params['cat_image_stars']
+
+         data = [cal_file, bcp['center_az'], bcp['center_el'], bcp['position_angle'], bcp['pixscale'], len(bcp['user_stars']), len(bcp['cat_image_stars']), cal_params['total_res_px'],0]  
+         tcp , bad_stars, marked_img = test_cal(cal_file, json_conf, bcp, img, data)
+         print("BEFORE/CUR:", tcp['total_res_px'],  cal_params['total_res_px'])
+         if tcp['total_res_px'] < cal_params['total_res_px']:
+            cal_params = dict(tcp)
+            print("BCP BETTER")
 
    if cal_params['total_res_px'] > 4:
       print("Not enough stars map or res px too high? Maybe a bad position angle or astrometry vars?")
@@ -916,6 +920,12 @@ def refit_fov(cal_file, json_conf):
       
          print("ORIG:", ocp['center_az'], ocp['center_el'], ocp['position_angle'], ocp['pixscale'])
          print("NEW:", new_cal_params['center_az'], new_cal_params['center_el'], new_cal_params['position_angle'], new_cal_params['pixscale'])
+         if type(new_cal_params['x_poly']) is not list:
+            new_cal_params['x_poly'] = new_cal_params['x_poly'].tolist()
+            new_cal_params['y_poly'] = new_cal_params['y_poly'].tolist()
+            new_cal_params['y_poly_fwd'] = new_cal_params['y_poly_fwd'].tolist()
+            new_cal_params['x_poly_fwd'] = new_cal_params['x_poly_fwd'].tolist()
+
          save_json_file(cal_file, new_cal_params)
          cal_params = dict(new_cal_params)
          exit()
@@ -993,10 +1003,22 @@ def refit_fov(cal_file, json_conf):
          print("GUESS:", cal_params)
       #exit()
 
+   if type(cal_params['x_poly']) is not list:
+      cal_params['x_poly'] = cal_params['x_poly'].tolist()
+      cal_params['y_poly'] = cal_params['y_poly'].tolist()
+      cal_params['y_poly_fwd'] = cal_params['y_poly_fwd'].tolist()
+      cal_params['x_poly_fwd'] = cal_params['x_poly_fwd'].tolist()
    save_json_file(cal_file, cal_params)
    cal_params = minimize_fov(cal_file, cal_params, image_file,img,json_conf )
    cal_params['close_stars']  = cal_params['cat_image_stars']
    trash_stars, cal_params['total_res_px'], cal_params['total_res_deg'] = cat_star_report(cal_params['cat_image_stars'], 4)
+   if type(cal_params['x_poly']) is not list:
+      cal_params['x_poly'] = cal_params['x_poly'].tolist()
+      cal_params['y_poly'] = cal_params['y_poly'].tolist()
+      cal_params['y_poly_fwd'] = cal_params['y_poly_fwd'].tolist()
+      cal_params['x_poly_fwd'] = cal_params['x_poly_fwd'].tolist()
+
+
    save_json_file(cal_file, cal_params)
    cmd = "./AzElGrid.py az_grid " + cal_file
    os.system(cmd)
@@ -2049,10 +2071,20 @@ def optimize_var(cp_file,json_conf,var,cp,img):
    cal_img_file = cp_file.replace("-calparams.json", ".png")
    ores = cp['total_res_px']
    best_cal_params = None
+
+   if ores <= 10:
+      low, high = -5,5
+      modp = 10
+   elif 10 < ores < 20:
+      low, high = -10,10
+      modp = 5
+   else:
+      low, high = -25,25
+      modp = 2
   
    tcal = dict(cp)
-   for i in range (-25,25):
-      val = i / 10
+   for i in range (low,high):
+      val = i / modp
       tcal[var] = float(cp[var]) + val
 
       data = [cp_file, tcal['center_az'], tcal['center_el'], tcal['position_angle'], tcal['pixscale'], len(tcal['user_stars']), len(tcal['cat_image_stars']), tcal['total_res_px'],0]  
@@ -5616,60 +5648,63 @@ def get_cal_params(meteor_json_file,json_conf):
          before_files.append((cf,sec_diff))
 
    after_files = sorted(after_files, key=lambda x: (x[1]), reverse=False)[0:5]
-   print("Calibs after this meteor.")
    before_data = []
    after_data = []
-   for af in after_files:
-      cpf, td = af
-      cp = load_json_file(cpf)
-      before_data.append((cpf, float(cp['center_az']), float(cp['center_el']), float(cp['position_angle']), float(cp['pixscale']), float(cp['total_res_px'])))
-
-   before_files = sorted(before_files, key=lambda x: (x[1]), reverse=False)[0:5]
-   print("Calibs before this meteor.")
-   for af in before_files:
-      cpf, td = af
-      cp = load_json_file(cpf)
-      if "total_res_px" in cp:
+   print("Before / After")
+   if len(after_files) > 0:
+      for af in after_files:
+         cpf, td = af
+         print("LOADING:", cpf)
+         cp = load_json_file(cpf)
          after_data.append((cpf, float(cp['center_az']), float(cp['center_el']), float(cp['position_angle']), float(cp['pixscale']), float(cp['total_res_px'])))
+
+   if len(before_files) > 0:
+      before_files = sorted(before_files, key=lambda x: (x[1]), reverse=False)[0:5]
+      for af in before_files:
+         cpf, td = af
+         cp = load_json_file(cpf)
+         if "total_res_px" in cp:
+            before_data.append((cpf, float(cp['center_az']), float(cp['center_el']), float(cp['position_angle']), float(cp['pixscale']), float(cp['total_res_px'])))
+         else:
+            print("NO RES?", cpf, cp['center_az'], cp['center_el'], cp['position_angle'], cp['pixscale'])
+   if len(before_files) > 0:
+      azs = [row[1] for row in before_data]
+      els = [row[2] for row in before_data]
+      pos = [row[3] for row in before_data]
+      px = [row[4] for row in before_data]
+      print("AZS:", azs)
+
+      if len(azs) > 3:
+         before_med_az = np.median(azs)
+         before_med_el = np.median(els)
+         before_med_pos = np.median(pos)
+         before_med_px = np.median(px)
       else:
-         print("NO RES?", cpf, cp['center_az'], cp['center_el'], cp['position_angle'], cp['pixscale'])
+         print("PX:", px)
+         before_med_az = np.mean(azs)
+         before_med_el = np.mean(els)
+         before_med_pos = np.mean(pos)
+         before_med_px = np.mean(px)
+      print("BEFORE MED:", before_med_az, before_med_el, before_med_pos, before_med_px)
 
-   azs = [row[1] for row in before_data]
-   els = [row[2] for row in before_data]
-   pos = [row[3] for row in before_data]
-   px = [row[4] for row in before_data]
-   print("AZS:", azs)
+   if len(after_files) > 0:
+      azs = [row[1] for row in after_data]
+      els = [row[2] for row in after_data]
+      pos = [row[3] for row in after_data]
+      px = [row[4] for row in after_data]
 
-   if len(azs) > 3:
-      before_med_az = np.median(azs)
-      before_med_el = np.median(els)
-      before_med_pos = np.median(pos)
-      before_med_px = np.median(px)
-   else:
-      print("PX:", px)
-      before_med_az = np.mean(azs)
-      before_med_el = np.mean(els)
-      before_med_pos = np.mean(pos)
-      before_med_px = np.mean(px)
+      if len(azs) > 3:
+         after_med_az = np.median(azs)
+         after_med_el = np.median(els)
+         after_med_pos = np.median(pos)
+         after_med_px = np.median(px)
+      else:
+         after_med_az = np.mean(azs)
+         after_med_el = np.mean(els)
+         after_med_pos = np.mean(pos)
+         after_med_px = np.mean(px)
 
-   azs = [row[1] for row in after_data]
-   els = [row[2] for row in after_data]
-   pos = [row[3] for row in after_data]
-   px = [row[4] for row in after_data]
-
-   if len(azs) > 3:
-      after_med_az = np.median(azs)
-      after_med_el = np.median(els)
-      after_med_pos = np.median(pos)
-      after_med_px = np.median(px)
-   else:
-      after_med_az = np.mean(azs)
-      after_med_el = np.mean(els)
-      after_med_pos = np.mean(pos)
-      after_med_px = np.mean(px)
-
-   print("BEFORE MED:", before_med_az, before_med_el, before_med_pos, before_med_px)
-   print("AFTER MED:", after_med_az, after_med_el, after_med_pos, after_med_px)
+      print("AFTER MED:", after_med_az, after_med_el, after_med_pos, after_med_px)
 
    autocal_dir = "/mnt/ams2/meteor_archive/" + STATION_ID + "/CAL/AUTOCAL/" + fy + "/solved/"
    mcp_file = autocal_dir + "multi_poly-" + STATION_ID + "-" + cam + ".info"
@@ -5682,21 +5717,33 @@ def get_cal_params(meteor_json_file,json_conf):
 
    if mcp is not None:
       print("MCP:", mcp_file)
-      before_cp = dict(mcp)
-      after_cp = dict(mcp)
+      if len(before_files) > 0:
+         before_cp = dict(mcp)
+      else: 
+         before_cp = {}
+      if len(after_files) > 0:
+         after_cp = dict(mcp)
+      else: 
+         after_cp = {}
    else:
       dc = get_default_calib(cf,json_conf)
       before_cp = {}
       after_cp = {}
-   before_cp['center_az'] = before_med_az
-   before_cp['center_el'] = before_med_el
-   before_cp['position_angle'] = before_med_pos
-   before_cp['pixscale'] = before_med_px
+   if len(before_files) > 0:
+      before_cp['center_az'] = before_med_az
+      before_cp['center_el'] = before_med_el
+      before_cp['position_angle'] = before_med_pos
+      before_cp['pixscale'] = before_med_px
+   else:
+      before_cp = None
 
-   after_cp['center_az'] = after_med_az
-   after_cp['center_el'] = after_med_el
-   after_cp['position_angle'] = after_med_pos
-   after_cp['pixscale'] = after_med_px
+   if len(after_files) > 0:
+      after_cp['center_az'] = after_med_az
+      after_cp['center_el'] = after_med_el
+      after_cp['position_angle'] = after_med_pos
+      after_cp['pixscale'] = after_med_px
+   else:
+      after_cp = None
 
    return(before_cp, after_cp)
 
