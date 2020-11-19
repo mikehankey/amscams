@@ -863,7 +863,7 @@ def refit_fov(cal_file, json_conf):
    print("USC:", cisc, usc, usc_perc)
    print("STARTING RES:", cal_params['total_res_px'] )
    if usc_perc < .4 or cal_params['total_res_px'] > 4:
-      bcp, acp = get_cal_params(cal_file)
+      bcp, acp = get_cal_params(cal_file, json_conf)
       acp['user_stars'] = cal_params['user_stars']
       bcp['user_stars'] = cal_params['user_stars']
       acp['cat_image_stars'] = cal_params['cat_image_stars']
@@ -912,7 +912,7 @@ def refit_fov(cal_file, json_conf):
       if new_cal_params['total_res_px'] < ocp['total_res_px']:
          print("SAVE NEWER CP ITS BETTER THAN ORIGINAL FILE")
       
-         print("ORIG:", ocp['az_center'], ocp['el_center'], ocp['position_angle'], ocp['pixscale'])
+         print("ORIG:", ocp['center_az'], ocp['center_el'], ocp['position_angle'], ocp['pixscale'])
          print("NEW:", new_cal_params['az_center'], new_cal_params['el_center'], new_cal_params['position_angle'], new_cal_params['pixscale'])
          save_json_file(cal_file, new_cal_params)
          cal_params = dict(new_cal_params)
@@ -2906,7 +2906,8 @@ def autocal(image_file, json_conf, show = 0):
       os.system("rm /tmp/tmp.*")
       print("Plate solve failed. Clean up the mess!") 
       # rm original file and temp files here
-      cmd = "mv " + image_file + "* " + fdir
+      wild = image_file.replace(".png", "*")
+      cmd = "mv " + wild + " " + fdir
       print(cmd)
       #os.system(cmd)
       return()
@@ -3662,6 +3663,12 @@ def pair_stars(cal_params, cal_params_file, json_conf, cal_img=None, show = 0):
       cal_img = cv2.imread(img_file)
    if len(cal_img.shape) > 2:
       cal_img = cv2.cvtColor(cal_img, cv2.COLOR_BGR2GRAY)
+   if "x_poly" not in cal_params:
+      cal_params['x_poly'] = np.zeros(shape=(15,), dtype=np.float64)
+      cal_params['y_poly'] = np.zeros(shape=(15,), dtype=np.float64)
+      cal_params['x_poly_fwd'] = np.zeros(shape=(15,), dtype=np.float64)
+      cal_params['y_poly_fwd'] = np.zeros(shape=(15,), dtype=np.float64)
+
 
    temp_img = cal_img.copy()
    ih, iw= cal_img.shape[:2]
@@ -3860,8 +3867,10 @@ def get_catalog_stars(cal_params):
    
    catalog_stars = []
    possible_stars = 0
-   img_w = int(cal_params['imagew'])
-   img_h = int(cal_params['imageh'])
+   img_w = 1920 
+   img_h = 1080
+   cal_params['imagew'] = 1920
+   cal_params['imageh'] = 1080
    RA_center = float(cal_params['ra_center']) 
    dec_center = float(cal_params['dec_center']) 
    F_scale = 3600/float(cal_params['pixscale'])
@@ -3929,6 +3938,8 @@ def default_cal_params(cal_params,json_conf):
    if 'y_poly_fwd' not in cal_params:
       y_poly = np.zeros(shape=(15,), dtype=np.float64)
       cal_params['y_poly_fwd'] = x_poly.tolist()
+   cal_params['imagew'] = 1920
+   cal_params['imageh'] = 1080
 
    return(cal_params)
 
@@ -5588,7 +5599,7 @@ def distance(point,coef):
     return abs((coef[0]*point[0])-point[1]+coef[1])/math.sqrt((coef[0]*coef[0])+1)
 
 
-def get_cal_params(meteor_json_file):
+def get_cal_params(meteor_json_file,json_conf):
    (f_datetime, cam, f_date_str,fy,fm,fd, fh, fmin, fs) = convert_filename_to_date_cam(meteor_json_file)
    before_files = []
    after_files = []
@@ -5667,9 +5678,14 @@ def get_cal_params(meteor_json_file):
    else:
       mcp = None
 
-   print("MCP:", mcp_file)
-   before_cp = dict(mcp)
-   after_cp = dict(mcp)
+   if mcp is not None:
+      print("MCP:", mcp_file)
+      before_cp = dict(mcp)
+      after_cp = dict(mcp)
+   else:
+      dc = get_default_calib(cf,json_conf)
+      before_cp = {}
+      after_cp = {}
    before_cp['center_az'] = before_med_az
    before_cp['center_el'] = before_med_el
    before_cp['position_angle'] = before_med_pos
