@@ -229,7 +229,7 @@ if __name__ == "__main__":
 
    if cmd == 'az_grid':
 
-      cal_file = cal_param_file.replace("-calparams.json", ".jpg")
+      cal_file = cal_param_file.replace("-calparams.json", ".png")
       if cfe(cal_file) == 0:
          cal_file = cal_param_file.replace("-calparams.json", "-src.jpg")
       if cfe(cal_file) == 0:
@@ -250,6 +250,7 @@ if __name__ == "__main__":
       iw = 1920
 
       cal_image = np.zeros((ih,iw),dtype=np.uint8)
+      print("CAL FILE:", cal_file)
       az_grid(cal_file,cal_params,cal_image,iw,ih)
       exit()
 
