@@ -928,9 +928,14 @@ def refit_fov(cal_file, json_conf):
 
          save_json_file(cal_file, new_cal_params)
          cal_params = dict(new_cal_params)
-         exit()
       else:
           print("Orig better", ocp['total_res_px'], new_cal_params['total_res_px'])
+          if type(new_cal_params['x_poly']) is not list:
+             new_cal_params['x_poly'] = new_cal_params['x_poly'].tolist()
+             new_cal_params['y_poly'] = new_cal_params['y_poly'].tolist()
+             new_cal_params['y_poly_fwd'] = new_cal_params['y_poly_fwd'].tolist()
+             new_cal_params['x_poly_fwd'] = new_cal_params['x_poly_fwd'].tolist()
+
           save_json_file(cal_file, new_cal_params)
           cal_params = dict(new_cal_params)
           #cont = input("continue...")
@@ -1861,7 +1866,7 @@ def get_cal_files(meteor_file=None, cam=None):
             cmd = "rm -rf " + cd
             print(cmd)
             os.system(cmd)
-            exit()
+            #exit()
  
       if meteor_file is not None:
          (c_datetime, ccam, c_date_str,cy,cm,cd, ch, cmm, cs) = convert_filename_to_date_cam(cpf)
@@ -2073,7 +2078,7 @@ def optimize_var(cp_file,json_conf,var,cp,img):
    best_cal_params = None
 
    if ores <= 10:
-      low, high = -5,5
+      low, high = -7,7
       modp = 10
    elif 10 < ores < 20:
       low, high = -10,10
@@ -2825,6 +2830,63 @@ def cal_all(json_conf):
 
 def autocal(image_file, json_conf, show = 0):
    print("Autocal.")
+
+   stars = get_image_stars(image_file, None, json_conf,0)
+   img = cv2.imread(image_file, 0)
+   ares = None
+   bres = None
+   if len(stars) > 10:
+      bcp, acp = get_cal_params(image_file, json_conf)
+      if acp is not None:
+         acp['user_stars'] = stars
+         acp['cat_image_stars'] = []
+         data = [image_file, acp['center_az'], acp['center_el'], acp['position_angle'], acp['pixscale'], len(acp['user_stars']), len(acp['cat_image_stars']), 99,0]  
+         tcp , bad_stars, marked_img = test_cal(image_file, json_conf, acp, img, data)
+         tcp = pair_stars(tcp, image_file, json_conf, img)
+      if bcp is not None:
+         bcp['user_stars'] = stars
+         bcp['cat_image_stars'] = []
+         data = [image_file, bcp['center_az'], bcp['center_el'], bcp['position_angle'], bcp['pixscale'], len(bcp['user_stars']), len(bcp['cat_image_stars']), 99,0]  
+         tbcp , bad_stars, marked_img = test_cal(image_file, json_conf, bcp, img, data)
+          
+         tbcp = pair_stars(tbcp, image_file, json_conf, img)
+
+      if acp is None and bcp is None:
+         print("end") 
+      else:
+
+         if acp is not None and bcp is not None:
+            if tbcp['total_res_px'] < tcp['total_res_px']:
+               tcp = tbcp
+         if acp is None and bcp is not None:
+            tcp = tbcp 
+
+         print("BCP:", bcp)
+         print("ACP:", bcp)
+         print("TCP:", tcp)
+
+         tcp = pair_stars(tcp, image_file, json_conf, img)
+         cp = minimize_fov(image_file, tcp, image_file,img.copy(),json_conf )
+         if cp['total_res_px'] < 5 and len(cp['cat_image_stars']) > 10:
+            fn,dir = fn_dir(image_file)
+            base = fn.replace(".png", "")
+            fdir = "/mnt/ams2/cal/freecal/" + base + "/"
+            if cfe(fdir, 1) == 0:
+               os.makedirs(fdir)
+            cmd = "mv " + image_file + " " + fdir + base + "-stacked.png"
+            os.system(cmd)
+            print(cmd)
+            cpf = fdir + base + "-stacked-calparams.json"
+            save_json_file(cpf, cp)
+            print("Save:", cpf) 
+
+            cmd = "./AzElGrid.py az_grid " + cp_file 
+            print(cmd)
+            os.system(cmd)
+
+            exit()
+            return()
+
    '''
       Open the image and find stars in it. 
       If there are not enough stars move the image to the 'bad' dir and end. 
@@ -2839,7 +2901,6 @@ def autocal(image_file, json_conf, show = 0):
   
    '''
 
-   img = cv2.imread(image_file, 0)
 
    (f_datetime, cam, f_date_str,y,m,d, h, mm, s) = convert_filename_to_date_cam(image_file)
    cam = cam.replace(".png", "")
@@ -2853,7 +2914,6 @@ def autocal(image_file, json_conf, show = 0):
 
    #img = mask_frame(img, [], masks, 5)
 
-   stars = get_image_stars(image_file, None, json_conf,0)
    print("STARS:", len(stars))
    year = datetime.now().strftime("%Y")
    autocal_dir = "/mnt/ams2/meteor_archive/" + STATION_ID + "/CAL/AUTOCAL/" + year + "/solved/"
@@ -4553,7 +4613,7 @@ def reduce_fov_pos(this_poly, az,el,pos,pixscale, x_poly, y_poly, cal_params_fil
    cat_stars = get_catalog_stars(temp_cal_params)
    temp_cal_params, bad_stars, marked_img = eval_cal(cal_params_file, json_conf, temp_cal_params, oimage) 
    tstars = len(temp_cal_params['cat_image_stars'])
-   print("CAL VALS:", cal_params_file, temp_cal_params['total_res_px'], start_stars, tstars) 
+   print("CAL VALS:", cal_params_file, temp_cal_params['total_res_px'], len(temp_cal_params['user_stars']), start_stars, tstars) 
    sd = start_stars - tstars
    if sd <= 0:
       sd = 0
@@ -5662,6 +5722,7 @@ def get_cal_params(meteor_json_file,json_conf):
       before_files = sorted(before_files, key=lambda x: (x[1]), reverse=False)[0:5]
       for af in before_files:
          cpf, td = af
+         print("CPF:", cpf)
          cp = load_json_file(cpf)
          if "total_res_px" in cp:
             before_data.append((cpf, float(cp['center_az']), float(cp['center_el']), float(cp['position_angle']), float(cp['pixscale']), float(cp['total_res_px'])))
