@@ -621,6 +621,8 @@ def load_frames_fast(trim_file, json_conf, limit=0, mask=0,crop=(),color=0,resiz
                   frame = mask_frame(frame, [], masks, 5)
 
                if last_frame is not None:
+                  if frame_count > 5:
+                     last_frame = frames[-5]
                   subframe = cv2.subtract(frame, last_frame)
                   sum_val =cv2.sumElems(subframe)[0]
 
