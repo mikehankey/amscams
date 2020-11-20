@@ -10528,7 +10528,7 @@ def check_pt_in_mask(masks, px,py):
       h = int(h)
       x2 = x1 + w
       y2 = y1 + h
-      print("CHECK MASK:", px, py, x1 , x2 ,y1, y2)
+      #print("CHECK MASK:", px, py, x1 , x2 ,y1, y2)
       if py == 0 or px == 0:
          return(1)
       if x1 <= px <= x2 and y1 <= py <= y2:
@@ -10614,6 +10614,7 @@ def detect_in_vals(vals_file, cam_size_info):
       ff = 0
       for point in ev['pos_vals']:
          px,py = point
+         sum_val = ev['sum_vals'][ff]
          max_val = ev['max_vals'][ff]
          fn = start_frame + ff
          ff += 1
@@ -10622,7 +10623,7 @@ def detect_in_vals(vals_file, cam_size_info):
          masked = check_pt_in_mask(masks, px, py)
          if masked == 0:
             object, objects = find_object(objects, fn,px, py, 10, 10, max_val, 0, 0, None,0)
-            print("OBJ:", px, py, cam, object)
+            print("EV OBJ:", object, px, py, cam, max_val, sum_val, objects[object]['ofns'], objects[object]['oint'])
          #else:
          #   print("MASKED POINT!")
 

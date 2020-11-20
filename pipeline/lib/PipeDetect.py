@@ -10,6 +10,7 @@ from datetime import datetime as dt
 import datetime
 #import math
 import os
+from lib.FFFuncs import imgs_to_vid
 from lib.PipeAutoCal import fn_dir, get_cal_files, get_image_stars, get_catalog_stars, pair_stars, update_center_radec, cat_star_report, minimize_fov
 from lib.PipeVideo import ffmpeg_splice, find_hd_file, load_frames_fast, find_crop_size, ffprobe
 from lib.PipeUtil import load_json_file, save_json_file, cfe, get_masks, convert_filename_to_date_cam, buffered_start_end, get_masks, compute_intensity , bound_cnt, day_or_night
@@ -25,6 +26,7 @@ json_conf = load_json_file(AMS_HOME + "/conf/as6.json")
 
 def reject_meteors(date, jsfs):
    meteor_dir = "/mnt/ams2/meteors/" + date + "/"
+   trash_dir = "/mnt/ams2/trash/" + date + "/"
    files = glob.glob("/mnt/ams2/meteors/" + date + "/*.json")
    meteors = []
    for mf in files:
@@ -48,6 +50,7 @@ def reject_meteors(date, jsfs):
          }
       </style>
    """
+   rejected_meteors = []
    rej_html += JS_SHOW_HIDE
    total_detects = len(meteors)
    for file in sorted(meteors):
@@ -78,8 +81,8 @@ def reject_meteors(date, jsfs):
          save_json_file(file, mj)
          if best_meteor is not None:
             sd_stack_img = cv2.resize(sd_stack_img, (640, 360))
-            cv2.imshow('pepe2', sd_stack_img)
-            cv2.waitKey(180)
+            #cv2.imshow('pepe2', sd_stack_img)
+            #cv2.waitKey(180)
          else:
             sf = sd_video_file.replace(".mp4", "-stacked.jpg")
             if cfe(sf) == 0:
@@ -87,14 +90,13 @@ def reject_meteors(date, jsfs):
             if cfe(sf) == 1:
                sd_stack_img = cv2.imread(sf)
                sd_stack_img = cv2.resize(sd_stack_img, (1280, 720))
-               cv2.imshow('pepe2', sd_stack_img)
-               cv2.waitKey(180)
+               #cv2.imshow('pepe2', sd_stack_img)
+               #cv2.waitKey(180)
       # DUSK / DAWN REJECT CHECK -- MAKE SURE IT IS NOT A BIRD BY CHECKING INTENSITY VALS
       #if sun_status == "dawn" or sun_status == "dusk" or sun_status == "day":
-
-      
       if (mj['meteor_data']['sd_meteor']) is None:
          print(mj['meteor_data']['sd_meteor'], mj['sd_stack'], mj['sd_video_file'])
+         rejected_meteors.append(mj)
          rejects += 1 
 
          rej_html += "<div id='row_container'><div class='detect_image'><a href='" + mj['sd_video_file'] + "'><img width=640 height=320 src='" + mj['sd_stack'] + "'></a></div><div class='objects_div'>" 
@@ -133,11 +135,256 @@ def reject_meteors(date, jsfs):
             rej_html += "</li></div>"
             tot_obj += 1 
          rej_html += "</div><div style='clear:both'></div></div>"
-
+   print(meteor_dir + "/rejected.html")
    fp = open(meteor_dir + "/rejected.html", "w")
    fp.write(rej_html)
    fp.close()
    print(total_detects, rejects)
+  
+   if len(rejected_meteors) > 0:
+      if cfe(trash_dir, 1) == 0:
+         os.makedirs(trash_dir)
+   for mj in rejected_meteors:
+      base_sd_fn, xx = fn_dir(mj['sd_video_file'])
+      base_hd_fn, xx = fn_dir(mj['hd_video_file'])
+      base_hd_trim_fn, xx = fn_dir(mj['hd_trim'])
+      base_sd_fn = base_sd_fn.replace(".mp4", "")
+      base_hd_fn = base_hd_fn.replace(".mp4", "")
+      base_hd_trim_fn = base_hd_trim_fn.replace(".mp4", "")
+      if "archive_file" in mj:
+         base_archive = mj['archive_file'].replace(".json", "")
+         cmd = "rm " + base_archive + "*" + " " + trash_dir
+         print(cmd)
+         os.system(cmd)
+
+      cmd = "mv " + meteor_dir + base_sd_fn + "*" + " " + trash_dir
+      print(cmd)
+      os.system(cmd)
+      cmd = "mv " + meteor_dir + base_hd_fn + "*" + " " + trash_dir
+      print(cmd)
+      os.system(cmd)
+      cmd = "mv " + meteor_dir + base_hd_trim_fn + "*" + " " + trash_dir
+      print(cmd)
+      os.system(cmd)
+   # move reject report to trash dir for this day
+   os.system("mv " + meteor_dir + "rejected.html" + " " + trash_dir)
+   make_trash_index(trash_dir)
+
+   make_meteor_confirmed_index(meteor_dir)
+
+def make_meteor_summary(mj, div_id):
+   sum_html = "<div>"
+   msd = mj['meteor_data']['sd_meteor'] 
+   msbo = mj['meteor_data']['bad_objs'] 
+   mcp = mj['meteor_data']['cal_params'] 
+   ang_vel = msd['report']['ang_vel']
+   ang_dist = msd['report']['ang_dist']
+   tf = len(msd['ofns'])
+   dur_sec = tf / 25
+   sum_html +=  "<div class='info'>Ang Velocity: " + str(ang_vel)[0:4] + " </div>"
+   sum_html +=  "<div class='info'>Ang Distance: " + str(ang_dist)[0:4] + " </div>"
+   sum_html +=  "<div class='info'>Duration: " + str(dur_sec) + "s (" + str(tf) + "f)</div>"
+   vdiv_id = div_id + "-vid"
+   js_play_link = "\"javascript:SwapDivsWithClick('" + div_id + "', '" + vdiv_id + "',1)\""
+   sum_html +=  "<div class='info'><a href=" + js_play_link + ">Play</a></div>"
+   sum_html +=  "<div class='info'><a href=\"javascript:reject_meteor('" + mj['sd_video_file'] +"','" + div_id + "')\">Reject</a></div>"
+   #sum_html +=  "<div class='info'>Frames : " + str(msd['ofns']) + "</div>"
+   sum_html += "</div>"
+   return(sum_html)
+
+def make_final_meteor_vids(meteor_dir, mjf, msd, cp=None, frames=None, hd=0):
+    tf = len(frames)
+    tmf = len(msd['ofns'])
+    mjfn, mdir = fn_dir(mjf)
+    (f_datetime, cam, f_date_str,fy,fmin,fd, fh, fm, fs) = convert_filename_to_date_cam(mjf)
+    orig_trim_num = int(get_trim_num(mjf))
+
+    final_dir = meteor_dir + "final/"
+    ff = msd['ofns'][0]
+    if ff > 10:
+       print("FIRST FRAME > 10 retrim!")
+       frame_shift = 10 - ff  - 1
+       new_frame_start = abs(frame_shift)
+       new_frame_end = ff + abs(frame_shift) + tmf + 10 
+       if new_frame_end > tf:
+          new_frame_end = tf 
+    else:
+       print("FIRST < 10 no trim start! check end")
+       frame_shift = 0
+       new_frame_start = 0
+       new_frame_end = msd['ofns'][-1] + 10 
+       if new_frame_end >= tf + frame_shift:
+          new_frame_end = tf - 1
+    new_frames = frames[new_frame_start:new_frame_end]
+    print("MJF:", mjf)
+
+    print("NEW FRAMES:", len(new_frames), new_frame_start, new_frame_end)
+    print("FRAME SHIFT:", frame_shift)
+    print("OFNS:", msd['ofns'])
+
+    if True:
+       for i in range(0, len(msd['ofns'])):
+          fn = msd['ofns'][i] + frame_shift
+          print("OLD/NEW FN:", msd['ofns'][i] , fn)
+          frame = new_frames[fn].copy()
+
+          x = msd['oxs'][i]
+          y = msd['oys'][i]
+          w = msd['ows'][i]
+          h = msd['ohs'][i]
+          cx = x + int(w/2)
+          cy = y + int(h/2)
+
+
+          cv2.circle(frame,(cx,cy), 3, (0,255,255), 1)
+          cv2.rectangle(frame, (x, y), (x+w, y+h), (255,255,255), 1, cv2.LINE_AA)
+          
+          cv2.imshow('pepe', frame)
+          cv2.waitKey(30)
+    new_trim_num = int(orig_trim_num) + abs(frame_shift)
+    base_final_file = final_dir + fy + "_" + fmin + "_" + fd + "_" + fh + "_" + fm + "_" + fs + "000" + "-trim-" + str(new_trim_num) 
+    msd['final_media'] = remaster_frames(final_dir, base_final_file, new_frames, 0)
+    
+    return(msd)
+
+def remaster_frames(final_dir, base_final_file, frames, hd=0):
+   bfn, bdir = fn_dir(base_final_file)
+   tmp_dir = "/mnt/ams2/remaster/"
+   if cfe(final_dir, 1) == 0:
+      os.makedirs(final_dir)
+   if cfe(tmp_dir, 1) == 0:
+      os.makedirs(tmp_dir)
+   cmd = "rm " + tmp_dir + "*.jpg"
+   os.system(cmd)
+   vid_360 = base_final_file + "-360p.mp4" 
+   vid_180 = base_final_file + "-180p.mp4" 
+   for i in range(0, len(frames)):
+      frame = frames[i]
+      if hd == 0:
+         sd_360= cv2.resize(frame, (640, 360))
+         sd_180= cv2.resize(frame, (320, 180))
+         fc = "{:04d}".format(i)
+         frame_file = tmp_dir + bfn + "-360p-" + fc + ".jpg"
+         cv2.imwrite(frame_file, sd_360)
+         frame_file = tmp_dir + bfn + "-180p-" + fc + ".jpg"
+         cv2.imwrite(frame_file, sd_180)
+         final_media = [vid_360, vid_180]
+   imgs_to_vid (tmp_dir, vid_360, wild="360p", fps=25, crf=20, img_type= "jpg")
+   imgs_to_vid (tmp_dir, vid_180, wild="180p", fps=25, crf=20, img_type= "jpg")
+   cmd = "rm " + tmp_dir + "*.jpg"
+   os.system(cmd)
+   final_media = [vid_360, vid_180]
+   return(final_media)
+ 
+
+def make_meteor_confirmed_index(meteor_dir):
+   el = meteor_dir.split("/")
+   fn = el[-2]
+   y,m,d = fn.split("_") 
+   print(el)
+   meteor_html = HTML_HEADER + "<head><style>" +  STYLE_IMAGE_OVERLAY + "</style>"
+   meteor_html += "<script>" + JS_SWAP_DIV_WITH_CLICK + JS_REJECT_METEOR + "</script></head>"
+   meteor_html += "<div class='main'>"
+   meteor_html += """
+      <div class='header'>
+         <div class="header-title">Meteor Admin v2.0 </div>
+         <div class="header-links">
+         Home | Meteors | Calibration | Time Lapse | Config | Live
+         </div>
+         <div style="clear: both"></div>
+         <div class="breadcrumbs"> 
+            Meteors -> """ + y + """ -> """ + m + """ -> """ + d + """
+         </div>
+      </div>
+
+   """
+
+   meteor_html += "<div style='clear: both'></div>"
+   jsons = glob.glob(meteor_dir + "*.json")
+   for mjf in sorted(jsons):
+      fn, dir = fn_dir(mjf)
+      base = fn.replace(".json", "")
+      tn =mjf.replace(".json", "-stacked-tn.jpg")
+      vid = mjf.replace(".json", ".mp4")
+
+      if cfe(tn) == 0:
+         tn =mjf.replace(".json", "-stacked-tn.png")
+      mj = load_json_file(mjf)
+      vid = sorted(mj['meteor_data']['sd_meteor']['final_media'])[1]
+      #print("FINAL:", mj['meteor_data']['sd_meteor']['final_media'])
+      #exit()
+      cdiv_id = base
+      vdiv_id = base + "-vid"
+      ddiv_id = base + "-del"
+      ms = make_meteor_summary(mj,cdiv_id) 
+      js_link = "\"javascript:SwapDivsWithClick('" + cdiv_id + "', '" + vdiv_id + "',1)\""
+      js_undo_link = "\"javascript:SwapDivsWithClick('" + ddiv_id + "', '" + cdiv_id + "',0)\""
+      vjs_link = "\"javascript:SwapDivsWithClick('" + vdiv_id + "', '" + cdiv_id + "',0)\""
+      meteor_html += """
+
+         <div class='container' id='""" + vdiv_id + """' style="display: None">
+            <a href=""" + vjs_link + """>
+            <video autoplay loop controls id='video_""" + cdiv_id + """'>
+               <source src='""" + vid + """' type="video/mp4">
+            </video> 
+            </a>
+         </div>
+         <div class='container' id='""" + cdiv_id + """'>
+            <a href=""" + js_link + """><img class='image' src='""" + tn + """'></a>
+            <div class='middle'><div class='text'>""" + ms + """</div></div>
+         </div>
+         <div class='container' id='""" + ddiv_id + """' style="display: None">
+            <a href=""" + js_link + """><img class='image-deactive' src='""" + tn + """'></a>
+            <div class='deactive'><div class='text'><a href=""" + js_undo_link + """>undo</a></div></div>
+         </div>
+      """
+
+
+
+   fp = open(meteor_dir + "/confirmed.html", "w")
+   meteor_html += "</div><!--end main div-->"
+   meteor_html += HTML_FOOTER
+   fp.write(meteor_html)
+   fp.close()
+   print("Saved." + meteor_dir + "/confirmed.html")
+
+
+def make_trash_index(trash_dir):
+   el = trash_dir.split("/")
+   fn = el[-2]
+   print(el)
+   trash = """
+      <style>
+         .detect_image {
+            float :left; 
+            padding: 25px 25px 25px 25px;
+            background-color: #cccccc;
+            font-family: "Lucida Console", Courier, monospace;
+            font-size:1vw;
+         }
+         .h1 {
+            font-family: "Lucida Console", Courier, monospace;
+            font-size:1vw;
+         }
+      </style>
+      <h1>Rejected Detections """ + fn + """</h1>
+   """
+   jsons = glob.glob(trash_dir + "*.json")
+   for mjf in sorted(jsons):
+      #mj = load_json_file(mjf)
+      tn =mjf.replace(".json", "-stacked-tn.jpg")
+      vid =mjf.replace(".json", ".mp4")
+      if cfe(tn) == 0:
+         tn =mjf.replace(".json", "-stacked-tn.png")
+      trash += "<div class='detect_image'><a href=" + vid + "><img src='" + tn + "'></a></div>"
+
+
+   fp = open(trash_dir + "/trash.html", "w")
+   fp.write(trash)
+   fp.close()
+   print("Saved." + trash_dir + "/trash.html")
+ 
+
 
 
 def biggest_cnts(cnts, count=5):
@@ -499,6 +746,8 @@ def mask_stars(img, cp):
 
 
 def fireball(video_file, json_conf, nomask=0):
+   fn, meteor_dir = fn_dir(video_file)
+   jsf = video_file.replace(".mp4", ".json")
    (f_datetime, cam, f_date_str,fy,fmin,fd, fh, fm, fs) = convert_filename_to_date_cam(video_file)
 
    objects = {}
@@ -539,6 +788,7 @@ def fireball(video_file, json_conf, nomask=0):
 
    # Calibrate the median frame
    last_sub = None
+   frame_num = 0
    for frame in hd_frames:
       frame = mask_stars(frame, cp)
       meteor_on = 0
@@ -551,8 +801,8 @@ def fireball(video_file, json_conf, nomask=0):
       subframe = sub_diff
 
       sdframe = cv2.resize(sub_diff, (640, 360))
-      cv2.imshow('pepe2', sdframe)
-      cv2.waitKey(30)
+      #cv2.imshow('pepe2', sdframe)
+      #cv2.waitKey(0)
 
       if mask_img is not None and nomask ==0:
          subframe = cv2.subtract(frame, mask_img)
@@ -580,7 +830,7 @@ def fireball(video_file, json_conf, nomask=0):
          ccy = cy + int(ch / 2)
          cnt_img = frame[cy:cy+ch,cx:cx+cw]
          cnt_int = int(np.sum(cnt_img))
-         object, objects = find_object(objects, i,cx, cy, cw, ch, cnt_int, HD, 0, None)
+         object, objects = find_object(objects, frame_num,cx, cy, cw, ch, cnt_int, HD, 0, None)
          objects[object] = analyze_object(objects[object], 1,1)
          #if "class" in objects[object]:
          #   if objects[object]['class'] != 'star':
@@ -615,6 +865,7 @@ def fireball(video_file, json_conf, nomask=0):
             cv2.imshow('pepe', sframe)
             cv2.waitKey(30)
          i += 1
+      frame_num = frame_num + 1
 
    m = 0
    meteors = []
@@ -675,11 +926,14 @@ def fireball(video_file, json_conf, nomask=0):
    if SHOW == 1:
       stack_img = cv2.resize(frame, (640, 360))
       if best_meteor is None:
-         cv2.putText(stack_img, "NO METEOR DETECTED",  (250,180), cv2.FONT_HERSHEY_SIMPLEX, .6, (255, 255, 255), 1)
+         cv2.putText(stack_img, "METEOR REJECTED",  (250,180), cv2.FONT_HERSHEY_SIMPLEX, .6, (255, 255, 255), 1)
       else:
+         stack_img = cv2.resize(stack_img, (1280, 720))
          cv2.putText(stack_img, "METEOR DETECTED",  (250,180), cv2.FONT_HERSHEY_SIMPLEX, .6, (255, 255, 255), 1)
       cv2.imshow('pepe', stack_img)
       cv2.waitKey(300)
+   print("HDF:", len(hd_color_frames))
+   best_meteor = make_final_meteor_vids(meteor_dir, jsf, best_meteor, cp, hd_color_frames, 0)
 
    return(best_meteor, stack_img, objects ,cp)
 
@@ -1577,21 +1831,17 @@ def reduce_align_roi_images(poly, full_frame, ideal_roi, rx1,ry1,rx2,ry2, x,y,w,
       print("BOUNDS PROB x1", shift_x, shift_y)
       print("SF 1 X/Y", sf_x1, sf_y1)
       sf_x1 = 0
-      #exit()
    if sf_x2 >= full_frame.shape[1]:
       sf_x1 = full_frame.shape[0] - (sf_x2 - sf_x1)
       sf_x2 = full_frame.shape[0]
       print("BOUNDS PROB x2", sf_x1, sf_x2)
-      #exit()
    if sf_y1 <= 0:
       print("BOUNDS PROB y1")
       sf_y1 = 0
-      #exit()
    if sf_y2 >= full_frame.shape[0]:
       print("BOUNDS PROB y2", sf_y2, full_frame.shape)
       sf_y1 = full_frame.shape[0] - (sf_y2 - sf_y1)
       sf_y2 = full_frame.shape[0]
-      #exit()
    #cv2.imshow('pepe', full_frame)
    #cv2.waitKey(30)
  
@@ -2352,7 +2602,7 @@ def find_object(objects, fn, cnt_x, cnt_y, cnt_w, cnt_h, intensity=0, hd=0, sd_m
    if hd == 1:
       obj_dist_thresh = 65 
    else:
-      obj_dist_thresh = 35
+      obj_dist_thresh = 10 
 
    center_x = cnt_x + int(cnt_w/2)
    center_y = cnt_y + int(cnt_h/2)
@@ -2713,7 +2963,6 @@ def re_detect(date):
       if cfe(mm_file):
          cmd = "cd /home/ams/amscams/pythonv2/; ./flex-detect.py vm " + mm_file 
          os.system(cmd)
-      #exit() 
 
 def detect_all(vals_file):
    video_file = vals_file.replace("-vals.json", ".mp4") 
@@ -2748,7 +2997,6 @@ def detect_all(vals_file):
    print("OBJECTS:",  objects)
 
 
-   #exit()
 
    # FOR EACH EVENT MAKE AN SD TRIM FILE AND TRIM CROP FILE
    trim_files, crop_files, crop_boxes,durs = trim_events(vals_file, obj_events, total_frames, w, h, hdm_x, hdm_y)
@@ -2853,6 +3101,7 @@ def get_trim_num(file):
    at = at.replace("-HD.mp4", "")
    at = at.replace(".mp4", "")
    at = at.replace("-", "")
+   at = at.replace(".json", "")
    return(at)
 
 def find_hd(sd_trim_file, dur, meteor_start_frame=0):
