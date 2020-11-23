@@ -499,9 +499,11 @@ def clip_fireball(proc_dir, vfn, events):
       video_file = proc_dir + vfn
       outfile = video_file.replace(".mp4", "-trim-" + str(start) + ".mp4")
       cmd = "cd /home/ams/amscams/pipeline/; ./FFF.py splice_video " + video_file + " " + str(start) + " " + str(end) + " " + outfile + " " + "frame"
-      find_hd_min(video_file, start, end)
+      hd_trim_clip = find_hd_min(video_file, start, end)
       os.system(cmd)
       print(cmd)
+      print("SD:", outfile)
+      print("HD:", hd_trim_clip)
 
 def find_hd_min(sd_file, start_frame, end_frame):
 
@@ -538,7 +540,7 @@ def find_hd_min(sd_file, start_frame, end_frame):
       cmd = "cd /home/ams/amscams/pipeline/; ./FFF.py splice_video " + hd_min_file + " " + str(hd_start_sec) + " " + str(hd_start_sec + dur_sec) + " " + outfile + " " + "sec"
       os.system(cmd)
       print(cmd)
-   exit()
+   return(outfile)
 
 def calc_real_cm(data):
    rc = []

@@ -222,10 +222,9 @@ def make_final_meteor_vids(meteor_dir, mjf, msd, cp=None, frames=None, hd=0):
     print("FRAME SHIFT:", frame_shift)
     print("OFNS:", msd['ofns'])
 
-    if True:
+    if False:
        for i in range(0, len(msd['ofns'])):
           fn = msd['ofns'][i] + frame_shift
-          print("OLD/NEW FN:", msd['ofns'][i] , fn)
           frame = new_frames[fn].copy()
 
           x = msd['oxs'][i]
@@ -654,30 +653,34 @@ def mark_up_meteor_frame(frame, mark_objs,cp):
    half_y = 1080 / 720
    
    rsize = 5 
-   for star in cp['cat_image_stars']:
-      dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist,bp = star
-      six = int(six / half_x)
-      siy = int(siy / half_y)
-      rx1,ry1,rx2,ry2 = bound_cnt(six, siy,1280,720, rsize)
-      cv2.putText(frame, str(dcname),  (six-10,siy-10), cv2.FONT_HERSHEY_SIMPLEX, .4, (255, 255, 255), 1)
+   #for star in cp['cat_image_stars']:
+   #   dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist,bp = star
+   #   six = int(six / half_x)
+   #   siy = int(siy / half_y)
+   #   rx1,ry1,rx2,ry2 = bound_cnt(six, siy,1280,720, rsize)
+   #   cv2.putText(frame, str(dcname),  (six-10,siy-10), cv2.FONT_HERSHEY_SIMPLEX, .4, (255, 255, 255), 1)
       #cv2.rectangle(frame, (rx1, ry1), (rx2, ry2), (255,0,0), 1, cv2.LINE_AA)
-      cv2.circle(frame,(six,siy), 10, (255,255,255), 1)
+   #   cv2.circle(frame,(six,siy), 10, (255,255,255), 1)
    #cv2.imshow('pepe', full_frame)
    #cv2.waitKey(0)
 
    for data in mark_objs:
-      obj_id, obj_class, ccx, ccy = data
+      #print("DATA:", data)
+      obj_id, obj_data, ccx, ccy = data
+      obj_class = obj_data['report']['class']
       cx = int(ccx * hdm_x)
       cy = int(ccy * hdm_y)
-      print("CCX:", obj_id, hdm_x, hdm_y, ccx, ccy, cx,cy, obj_class)
+      #print("CCX:", obj_id, hdm_x, hdm_y, ccx, ccy, cx,cy, obj_class)
       if obj_class == "meteor":
          rsize = 50
          cv2.line(frame, (cx-10,cy), (cx+10,cy), (200,200,200), 1)
          cv2.line(frame, (cx,cy-10), (cx,cy+10), (200,200,200), 1)
-         cv2.putText(frame, str(obj_class),  (cx-10,cy-10), cv2.FONT_HERSHEY_SIMPLEX, .4, (255, 255, 255), 1)
+         desc = str(obj_id) + " " + str(obj_class) + str(obj_data['oint'][-1])
+         cv2.putText(frame, desc,  (cx-10,cy-10), cv2.FONT_HERSHEY_SIMPLEX, .4, (255, 255, 255), 1)
       elif obj_class != 'star':
          rsize = 10
-         cv2.putText(frame, str(obj_class),  (cx-10,cy-10), cv2.FONT_HERSHEY_SIMPLEX, .4, (255, 255, 255), 1)
+         desc = str(obj_id) + " " + str(obj_class) + str(obj_data['oint'][-1])
+         cv2.putText(frame, desc,  (cx-10,cy-10), cv2.FONT_HERSHEY_SIMPLEX, .4, (255, 255, 255), 1)
       rx1,ry1,rx2,ry2 = bound_cnt(cx, cy,1280,720, rsize)
       cv2.rectangle(frame, (rx1, ry1), (rx2, ry2), (255,0,0), 1, cv2.LINE_AA)
    return(frame)
@@ -748,32 +751,230 @@ def mask_stars(img, cp):
 def fireball(video_file, json_conf, nomask=0):
    fn, meteor_dir = fn_dir(video_file)
    jsf = video_file.replace(".mp4", ".json")
+   best_meteor = None
+   if cfe(jsf) == 1:
+      jdata = load_json_file(jsf)
+      print("LOADING:", jsf)
+      if "best_meteor" not in jdata:
+         jdata = None
+      else:
+         best_meteor = jdata['best_meteor']
+   else:
+      jdata = None
+
+   best_meteor, hd_frames, hd_color_frames, median_frame, mask_img = fireball_phase1(video_file, json_conf, jsf, jdata, best_meteor, nomask)
+   if jdata is None:
+      jdata = {}
+      jdata['best_meteor'] = best_meteor
+      save_json_file(jsf, jdata)
+   fireball_plot_points(best_meteor)
+   exit()
+   #best_meteor, frame_data = fireball_fill_frame_data(best_meteor, hd_color_frames)
+   best_meteor = fireball_phase3(video_file, json_conf, jsf, jdata, best_meteor, nomask, hd_frames, hd_color_frames, median_frame, mask_img,5)
+   fireball_plot_points(best_meteor)
+   #best_meteor = fireball_decel(video_file, json_conf, jsf, jdata, best_meteor, nomask, hd_frames, hd_color_frames, median_frame, mask_img,5)
+
+def fireball_plot_points(bm):
+   plot = np.zeros((720,1280,3),dtype=np.uint8)
+   for i in range(0, len(bm['oxs'])):
+      fn = bm['ofns'][i]
+      ox = int(bm['oxs'][i] )
+      oy = int(bm['oys'][i] )
+      ow = int(bm['ows'][i] )
+      oh = int(bm['ohs'][i] )
+      oint = int(bm['oint'][i])
+      if "ccxs" in bm:
+         nx = bm['ccxs'][i]
+         ny = bm['ccys'][i]
+      else:
+         nx = int(ox + (ow/2))
+         ny = int(oy + (oh/2))
+      plot[ny,nx] = 255
+      print(i, fn, ox, oy, nx, ny)
+   cv2.imshow('plot', plot)
+   cv2.waitKey(0)
+
+def fireball_fill_frame_data(bm, frames):
+   oh, ow = frames[0].shape[:2]
+   hdm_x = 1280 / ow
+   hdm_y = 1280 / oh
+   # fill in frame data object first
+
+   (dom_dir, quad, ideal_pos, ideal_roi_big_img) = get_movement_info(bm, 640, 640)
+   print("DOM:", dom_dir, quad)
+
+   frame_data = {}
+   for fn in range(bm['ofns'][0], bm['ofns'][-1]+1):
+      frame_data[fn] = {}
+
+   for i in range(0, len(bm['oxs'])):
+      
+      print(i,fn)
+      fn = bm['ofns'][i]
+      ox = int(bm['oxs'][i] )
+      oy = int(bm['oys'][i] )
+      ow = int(bm['ows'][i] )
+      oh = int(bm['ohs'][i] )
+      if i <= len(bm['oint'])-1:
+         oint = int(bm['oint'][i])
+      else:
+         oint = 0
+      if "ccxs" in bm:
+         nx = bm['ccxs'][i]
+         ny = bm['ccys'][i]
+      else:
+         nx = int((bm['oxs'][i] + bm['ows'][i]/2) * hdm_x)
+         ny = int((bm['oys'][i] + bm['ohs'][i]/2) * hdm_y)
+      frame_data[fn]['ox'] = ox
+      frame_data[fn]['oy'] = oy
+      frame_data[fn]['ow'] = ow
+      frame_data[fn]['oh'] = oh
+      frame_data[fn]['nx'] = nx
+      frame_data[fn]['ny'] = ny
+      frame_data[fn]['oint'] = oint
+
+   # Loop over frames, identify missing frame data, acquire data for those frames, reformat data to BM 
+   for fn in frame_data:
+      frame = frames[fn]
+      if "ox" not in frame_data[fn]:
+         print("MISSING!", fn, frame_data[fn])
+         bx1,by1,bx2,by2 = bound_cnt(last_ocx, last_ocy,frame.shape[1],frame.shape[0], 50)
+         roi = frame[by1:by2,bx1:bx2] 
+
+         roi_bw = cv2.cvtColor(roi, cv2.COLOR_BGR2GRAY)
+         min_val, max_val, min_loc, (mx,my)= cv2.minMaxLoc(roi_bw)
+         thresh = max_val - 25
+         _, threshold = cv2.threshold(roi.copy(), thresh, 255, cv2.THRESH_BINARY)
+
+         cnts = get_contours_in_image(threshold)
+         if len(cnts) > 1:
+            cnts = lead_cnts(cnts, dom_dir, quad)
+         if len(cnts) == 1:
+            cnt_x, cnt_y, cnt_w, cnt_h = cnts[0]
+            cnt_x += bx1
+            cnt_y += by1
+            cnt_img = frame[cnt_y:cnt_y+cnt_h,cnt_x:cnt_x+cnt_w]
+            cnt_int = int(np.sum(cnt_img))
+            
+            hframe = cv2.resize(frame, (1280, 720))
+            cur_x = int((cnt_x  ) + ((cnt_w )/2))
+            cur_y = int((cnt_y ) + ((cnt_h )/2))
+            if cnt_w > cnt_h:
+               avg_size = cnt_h
+            else:
+               avg_size = cnt_w
+            new_x, new_y = center_roi_blob(hframe, cur_x, cur_y,avg_size) 
+            frame_data[fn]['ox'] = cnt_x
+            frame_data[fn]['oy'] = cnt_y
+            frame_data[fn]['ow'] = cnt_w
+            frame_data[fn]['oh'] = cnt_h
+            frame_data[fn]['ny'] = new_x
+            frame_data[fn]['nx'] = new_y
+            frame_data[fn]['oint'] = cnt_int
+         else:
+            # NO CNT FOUND IN THIS FRAME AREA
+            frame_data[fn]['ox'] = 0
+            frame_data[fn]['oy'] = 0
+            frame_data[fn]['ow'] = 0
+            frame_data[fn]['oh'] = 0
+            frame_data[fn]['ny'] = 0
+            frame_data[fn]['nx'] = 0
+            frame_data[fn]['oint'] = 0 
+
+      else:
+         ox = frame_data[fn]['ox']
+         oy = frame_data[fn]['oy']
+         ow = frame_data[fn]['ow']
+         oh = frame_data[fn]['oh']
+         ocx = int(ox + (ow/2))
+         ocy = int(oy + (oh/2))
+         last_ocx = ocx
+         last_ocy = ocy
+
+   ofns = []
+   oxs = []
+   oys = []
+   ohs = []
+   ows = []
+   oint = []
+   ccxs = []
+   ccys = []
+   # Loop over new frame data and add to BM arrays
+   for fn in frame_data:
+      ofns.append(fn)
+      oxs.append(frame_data[fn]['ox'])
+      oys.append(frame_data[fn]['oy'])
+      ows.append(frame_data[fn]['ow'])
+      ohs.append(frame_data[fn]['oh'])
+      ccxs.append(frame_data[fn]['nx'])
+      ccys.append(frame_data[fn]['ny'])
+      oint.append(frame_data[fn]['oint'])
+
+   # update the BM object
+   bm['ofns'] = ofns
+   bm['oxs'] = oxs
+   bm['oys'] = oys
+   bm['ows'] = ows 
+   bm['ohs'] = ohs 
+   bm['ccxs'] = ccxs
+   bm['ccys'] = ccys
+   bm['oint'] = oint
+   return(bm, frame_data)
+
+def fireball_decel(video_file, json_conf, jsf, jdata, best_meteor, nomask, hd_frames, hd_color_frames, median_frame, mask_img,med_dist):
+   nxs = best_meteor['ccxs']
+   nys = best_meteor['ccys']
+   for i in range(0, len(nxs)):
+      x = nxs[i]
+      y = nys[i]
+      if i > 0:
+         dist = calc_dist((x,y),(last_x,last_y))
+         dist_x = x - last_x
+         dist_y = y - last_y
+         print(i, x,y,last_x,last_y,dist, dist_x, dist_y)
+      else:
+         dist = 0
+      last_x = x
+      last_y = y
+
+def fireball_phase1(video_file, json_conf, jsf, jdata, best_meteor, nomask):
+   #PHASE 1
    (f_datetime, cam, f_date_str,fy,fmin,fd, fh, fm, fs) = convert_filename_to_date_cam(video_file)
 
    objects = {}
+   # load up the frames
    hd_frames,hd_color_frames,subframes,sum_vals,max_vals,pos_vals = load_frames_fast(video_file, json_conf, 0, 0, 1, 1,[])
    i = 0
    med_file = video_file.replace(".mp4", "-med.jpg")
+
+   stack_img = stack_frames(hd_color_frames)
+   stack_img = cv2.resize(stack_img, (1280, 720))
+
+   gray_img = cv2.cvtColor(stack_img, cv2.COLOR_BGR2GRAY)
+   min_val, max_val, min_loc, (mx,my)= cv2.minMaxLoc(gray_img)
+   #thresh =max_val - 100 
+   thresh = 100
+   if thresh < 0:
+      thresh = 10
+   _, thresh_img = cv2.threshold(gray_img.copy(), thresh, 255, cv2.THRESH_BINARY)
+   fb_mask = cv2.bitwise_not(thresh_img)
+
 
    fh, fw = hd_frames[0].shape[:2]
    if fh == 1080:
       HD = 1
    else:
       HD = 0
-   print("FH:", fh, fw)
    # load mask file if it exists
    mask_file = MASK_DIR + cam + "_mask.png"
    if cfe(mask_file) == 1 and nomask == 0:
       mask_img = cv2.imread(mask_file,0)
-      print(mask_file)
-      print(mask_img.shape)
       mask_img = cv2.resize(mask_img, (fw,fh))
 
-      print("YES MASK!")
    else:
       mask_img = None
-      print("NO MASK!")
 
+   # load calib
    cp = calib_image(video_file, hd_frames[0], json_conf)
    cp['user_stars'] = get_image_stars(video_file, hd_frames[0].copy(), json_conf, 1)
 
@@ -786,23 +987,34 @@ def fireball(video_file, json_conf, nomask=0):
       median_frame = cv2.imread(med_file)
       median_frame = cv2.cvtColor(median_frame, cv2.COLOR_BGR2GRAY)
 
-   # Calibrate the median frame
+   print("PHASE 1 MAIN", len(hd_frames))
+   # PHASE 1 MAIN Loop
    last_sub = None
    frame_num = 0
+   subs = []
+   if hd_frames[0].shape[0] != fb_mask.shape[0] and hd_frames[0].shape[1] != fb_mask.shape[1] :
+      fb_mask = cv2.resize(fb_mask, (hd_frames[0].shape[1], hd_frames[0].shape[0]))
    for frame in hd_frames:
+      color_frame = hd_color_frames[frame_num]
+      if best_meteor is not None:
+         continue
       frame = mask_stars(frame, cp)
+      frame = cv2.subtract(frame, fb_mask)
       meteor_on = 0
       subframe = cv2.subtract(frame, median_frame)
       if last_sub is None:
          last_sub = subframe
+      if frame_num > 10:
+         last_sub = subs[-10]
+      if frame_num > 25:
+         last_sub = subs[-25]
       sub_diff = cv2.subtract(subframe, last_sub)
       last_sub = subframe.copy()
+      subs.append(last_sub)
 
       subframe = sub_diff
 
       sdframe = cv2.resize(sub_diff, (640, 360))
-      #cv2.imshow('pepe2', sdframe)
-      #cv2.waitKey(0)
 
       if mask_img is not None and nomask ==0:
          subframe = cv2.subtract(frame, mask_img)
@@ -821,7 +1033,7 @@ def fireball(video_file, json_conf, nomask=0):
       if len(cnts) > 2:
          cnts = biggest_cnts(cnts, 10)
       #cnts = get_contours_in_image(subframe)
-
+     
       # Here we are inside 1 single frame and loop over all contours 
       mark_objs = []
       for cx,cy,cw,ch in cnts:
@@ -830,11 +1042,9 @@ def fireball(video_file, json_conf, nomask=0):
          ccy = cy + int(ch / 2)
          cnt_img = frame[cy:cy+ch,cx:cx+cw]
          cnt_int = int(np.sum(cnt_img))
+         #new_x, new_y = center_roi_blob(color_frame, ccx, ccy,int((cw+ch)/2)) 
          object, objects = find_object(objects, frame_num,cx, cy, cw, ch, cnt_int, HD, 0, None)
          objects[object] = analyze_object(objects[object], 1,1)
-         #if "class" in objects[object]:
-         #   if objects[object]['class'] != 'star':
-         #      print(objects[object]['report'])
          if "meteor" in objects[object]:
             if objects[object]['meteor'] == 1 and objects[object]['non_meteor'] == 0:
                objects[object]['class'] = 'meteor'
@@ -845,11 +1055,9 @@ def fireball(video_file, json_conf, nomask=0):
                 objects[object]['report']['class'] = "meteor"
                 #rx1,ry1,rx2,ry2 = bound_cnt(ccx, ccy,frame.shape[1],frame.shape[0], 50)
                 #cv2.rectangle(subframe, (rx1, ry1), (rx2, ry2), (255,0,0), 1, cv2.LINE_AA)
-            desc = str(object) + " - " + objects[object]['report']['class'] 
-            #cv2.putText(subframe, str(desc),  (ccx-10,ccy-10), cv2.FONT_HERSHEY_SIMPLEX, .8, (255, 255, 255), 1)
+            desc = "OBJ:" + str(object) + " - " + objects[object]['report']['class'] 
             meteor_on = 1
-            #print("CNTS METEOR:", object)
-            mark_objs.append([object, objects[object]['report'], ccx,ccy])
+            mark_objs.append([object, objects[object], ccx,ccy])
       subframe = mark_up_meteor_frame(subframe, mark_objs, cp)
       
 
@@ -858,10 +1066,12 @@ def fireball(video_file, json_conf, nomask=0):
 
          if SHOW == 1:
             sframe = cv2.resize(subframe, (1280, 720))
+            #sframe = cv2.resize(frame, (1280, 720))
             desc = "Frame:" + str(i)
             cv2.putText(sframe, desc,  (10,40), cv2.FONT_HERSHEY_SIMPLEX, .4, (255, 255, 255), 1)
-            desc = str(sum_vals[i]) + " " + str(max_vals[i]) + " " + str(pos_vals[i]) + " " + str(len(cnts))
-            cv2.putText(sframe, desc,  (10,70), cv2.FONT_HERSHEY_SIMPLEX, .4, (255, 255, 255), 1)
+            #desc = str(sum_vals[i][0]) + " " + str(max_vals[i][0]) + " " + str(pos_vals[i][0]) + " " + str(len(cnts))
+            #desc = str(obj)
+            #cv2.putText(sframe, desc,  (10,70), cv2.FONT_HERSHEY_SIMPLEX, .4, (255, 255, 255), 1)
             cv2.imshow('pepe', sframe)
             cv2.waitKey(30)
          i += 1
@@ -869,74 +1079,529 @@ def fireball(video_file, json_conf, nomask=0):
 
    m = 0
    meteors = []
+
+   print(objects)
    for obj in objects:
+      print(obj, objects[obj]['ofns'])
 
-      objects[obj] = analyze_object(objects[obj], 1,1)
-      if objects[obj]['report']['meteor'] == 1:
-         print(obj, "FRAMES:", len(objects[obj]['ofns']))
-         m += 1
-         meteors.append(objects[obj])
-         for r in objects[obj]['report']:
-            print("Report:", r, objects[obj]['report'][r])
-
-
-   for meteor in meteors:
-      meteor = analyze_object(meteor, 1,1)
-
-
-   if m > 1:
-      best_meteor = dom_meteor(meteors, json_conf)
-   elif m == 1:
-      best_meteor = meteors[0]
-   else: 
-      print("There is no meteor detected.")
-      best_meteor = None
    if best_meteor is None:
-      return(None, None, objects,None)
+      max_int = 0
+      best = 0
+      for obj in objects:
+         objects[obj] = analyze_object(objects[obj], 1,1)
+         if len(objects[obj]['report']['bad_items']) == 0:
+            if max(objects[obj]['oint']) > max_int:
+               best = obj
+               max_int = max(objects[obj]['oint'])
+      obj = best
+ 
+      best_meteor = objects[best]
 
-   # draw cnts on image 
-   for i in range(0, len(best_meteor['oxs'])):
-      fn = best_meteor['ofns'][i] 
-      #fn = ff + i
-      img = hd_frames[fn]
-      x = best_meteor['oxs'][i]
-      y = best_meteor['oys'][i]
-      w = best_meteor['ows'][i]
-      h = best_meteor['ohs'][i]
-      cx = x + int(w/2)
-      cy = y + int(h/2)
-      lim = 50
-      if w > lim:
-         lim = w + 10
-      if h > lim:
-         lim = h + 10
-      rx1,ry1,rx2,ry2 = bound_cnt(cx, cy,1920,1080, lim)
-      
-      if SHOW == 1:
-         cv2.rectangle(img, (x, y), (x+w, y+h), (255,0,0), 1, cv2.LINE_AA)
-         cv2.rectangle(img, (rx1, ry1), (rx2, ry2), (128,0,0), 1, cv2.LINE_AA)
+   return(best_meteor, hd_frames, hd_color_frames, median_frame,mask_img )
 
-         sframe = cv2.resize(img, (1280, 720))
-         desc = "Frame:" + str(fn)
-         cv2.putText(sframe, desc,  (10,20), cv2.FONT_HERSHEY_SIMPLEX, .2, (255, 255, 255), 1)
-         cv2.imshow('pepe', sframe)
-         cv2.waitKey(30)
+def fireball_phase2(video_file, json_conf, jsf, jdata, best_meteor, nomask,hd_frames, hd_color_frames, median_frame, mask_img):
+   # PHASE 2
+   # HERE THE 1st RUN OF THE METEOR SHOULD BE DONE. WE EITHER JUST RAN IT OR LOADED IT. 
+   # NOW TIME TO REFINE. 
+   # IF NO BEST METEOR EXISTS WE SHOULD END WITH NO DETECT. 
+
+   #best_meteor['ccxs'] = []
+   #best_meteor['ccys'] = []
 
    stack_img = stack_frames(hd_color_frames)
-   if SHOW == 1:
-      stack_img = cv2.resize(frame, (640, 360))
-      if best_meteor is None:
-         cv2.putText(stack_img, "METEOR REJECTED",  (250,180), cv2.FONT_HERSHEY_SIMPLEX, .6, (255, 255, 255), 1)
+   stack_img = cv2.resize(stack_img, (1280, 720))
+
+   gray_img = cv2.cvtColor(stack_img, cv2.COLOR_BGR2GRAY)
+   min_val, max_val, min_loc, (mx,my)= cv2.minMaxLoc(gray_img)
+   thresh =max_val - 45 
+   if thresh < 0:
+      thresh = 10 
+   _, thresh_img = cv2.threshold(gray_img.copy(), thresh, 255, cv2.THRESH_BINARY)
+   fb_mask = cv2.bitwise_not(thresh_img)
+   masked_stack = cv2.subtract(gray_img, fb_mask)
+
+   mfh, mfw = hd_frames[0].shape[:2]
+   fb_mask = cv2.resize(fb_mask, (1280, 720))
+   median_frame = cv2.resize(fb_mask, (1280, 720))
+   fb_mask_c = cv2.cvtColor(fb_mask,cv2.COLOR_GRAY2BGR)
+   fh, fw = hd_frames[0].shape[:2]
+   hdm_x = 1280 / fw
+   hdm_y = 720 / fh 
+
+   #LOOP OVER THE METEOR AGAIN AND REFINE THE BLOBS 
+   # INSIDE A ZOMMED DROP
+   x_segs = []
+   y_segs = []
+   new_cxs = []
+   new_cys = []
+   objects = {}
+   for i in range(0, len(best_meteor['oxs'])):
+      fn = best_meteor['ofns'][i] 
+      if fn == 0:
+         last_frame = hd_frames[fn]
+      elif fn <= 5:
+         last_frame = hd_frames[fn-1]
+      elif 5 < fn <= 10:
+         last_frame = hd_frames[fn-5]
+      elif 10 < fn <= 20:
+         last_frame = hd_frames[fn-10]
+      elif 20 < fn <= 30:
+         last_frame = hd_frames[fn-20]
       else:
-         stack_img = cv2.resize(stack_img, (1280, 720))
-         cv2.putText(stack_img, "METEOR DETECTED",  (250,180), cv2.FONT_HERSHEY_SIMPLEX, .6, (255, 255, 255), 1)
-      cv2.imshow('pepe', stack_img)
-      cv2.waitKey(300)
-   print("HDF:", len(hd_color_frames))
-   best_meteor = make_final_meteor_vids(meteor_dir, jsf, best_meteor, cp, hd_color_frames, 0)
+         last_frame = hd_frames[fn-30]
+     
+      #fn = ff + i
+      img = hd_frames[fn]
+      last_frame = cv2.resize(last_frame, (1280,720))
+      img = cv2.resize(img, (1280,720))
+      print("MSK, IMG,", fb_mask_c.shape, img.shape)
+      masked_img = cv2.subtract(img, fb_mask)
+      masked_img = cv2.subtract(masked_img, median_frame)
+      masked_img = cv2.subtract(masked_img, last_frame)
+      min_val, max_val, min_loc, (mx,my)= cv2.minMaxLoc(masked_img)
+      thresh =max_val - 35 
+      if thresh < 0:
+         thresh = 10 
 
-   return(best_meteor, stack_img, objects ,cp)
+      if "ccxs" not in best_meteor:
+         x = int(best_meteor['oxs'][i] * hdm_x)
+         y = int(best_meteor['oys'][i] * hdm_y)
+         w = int(best_meteor['ows'][i] * hdm_x)
+         h = int(best_meteor['ohs'][i] * hdm_y)
+         cx = x + int(w/2)
+         cy = y + int(h/2)
+      else:
+         print("CCXS:", i, best_meteor['ccxs'])
+         x = int(best_meteor['oxs'][i] * hdm_x)
+         y = int(best_meteor['oys'][i] * hdm_y)
+         w = int(best_meteor['ows'][i] * hdm_x)
+         h = int(best_meteor['ohs'][i] * hdm_y)
+         cx = best_meteor['ccxs'][i]
+         cy = best_meteor['ccys'][i]
+      new_cx = cx
+      new_cy = cy
+      lim = 50
+      rx1,ry1,rx2,ry2 = bound_cnt(cx, cy,1280,720, lim)
+      new_x = cx
+      new_y = cy
+       
+      if True:
+         of = hd_color_frames[fn].copy()
+         of = cv2.resize(of, (1280,720))
+         cf = hd_color_frames[fn].copy()
+         cf = cv2.resize(cf, (1280,720))
+         cv2.rectangle(cf, (x, y), (x+w, y+h), (255,0,0), 1, cv2.LINE_AA)
+         roi_img = of[ry1:ry2,rx1:rx2] 
+         if roi_img.shape[0] != 100 or roi_img.shape[1] != 100:
+            roi_p = np.zeros((100,100,3),dtype=np.uint8)
+            px = 100 - roi_img.shape[1]
+            py = 100 - roi_img.shape[0]
+            roi_p[py:100, px:100] = roi_img
+         else:
+            roi_p = roi_img
+         
+         rh, rw = roi_p.shape[:2]
+         cv2.rectangle(cf, (rx1, ry1), (rx2, ry2), (0,0,255), 1, cv2.LINE_AA)
+         cv2.rectangle(masked_img, (rx1, ry1), (rx2, ry2), (128,0,0), 1, cv2.LINE_AA)
+         cv2.rectangle(masked_img, (x, y), (x+w, y+h), (255,0,0), 1, cv2.LINE_AA)
+         masked_img = cv2.resize(masked_img, (640,360))
+         cci = np.zeros((720,1280,3),dtype=np.uint8)
+         masked_img_c = cv2.cvtColor(masked_img,cv2.COLOR_GRAY2BGR)
+         roi_p_b = cv2.resize(roi_p, (640,640))
+         #cv2.line(roi_p_b, (320,0), (320,640), (255,255,255), 1)
 
+         (dom_dir, quad, ideal_pos, ideal_roi_big_img) = get_movement_info(best_meteor, 640, 640)
+         ipx1,ipy1,ipx2,ipy2 = ideal_pos
+         #cv2.rectangle(roi_p_b, (ipx1, ipy1), (ipx2, ipy2), (255,255,0), 2, cv2.LINE_AA)
+
+         roi_p_b_g = cv2.cvtColor(roi_p_b, cv2.COLOR_BGR2GRAY)
+         min_val, max_val, min_loc, (mx,my)= cv2.minMaxLoc(roi_p_b_g)
+         _, threshold = cv2.threshold(roi_p_b_g.copy(), max_val - 5, 255, cv2.THRESH_BINARY)
+         thresh_obj = cv2.dilate(threshold.copy(), None , iterations=6)
+
+         cnts,rects = find_contours_in_frame(thresh_obj, 100)
+         if len(cnts) > 1:
+            cnts = lead_cnts(cnts, dom_dir, quad)
+         for scx, scy, scw, sch in cnts:
+            sccx = int(scx + (scw/2))
+            sccy = int(scy + (sch/2))
+            adj_x = sccx - 320
+            adj_y = sccy - 320
+            cv2.rectangle(thresh_obj, (scx, scy), (scx+scw, scy+sch), (255,255,0), 2, cv2.LINE_AA)
+            cv2.line(thresh_obj, (sccx,sccy), (320,320), (255,255,255), 1)
+            print("ADJ:", adj_x, adj_y)
+            adj_x = int(adj_x / 6.4)
+            adj_y = int(adj_y / 6.4)
+            adj_x = 0
+            adj_y = 0
+            if roi_img.shape[0] == 100 and roi_img.shape[1] == 100:
+               new_x = cx + adj_x
+               new_y = cy + adj_y
+            nrx1,nry1,nrx2,nry2 = bound_cnt(new_x, new_y,1280,720, 50)
+            cv2.rectangle(cf, (nrx1, nry1), (nrx2, nry2), (255,0,255), 2, cv2.LINE_AA)
+            cv2.imshow('crop', thresh_obj)
+            cv2.waitKey(30)
+            roi_img = of[nry1:nry2,nrx1:nrx2] 
+
+         cv2.circle(cf,(new_cx,new_cy), 10, (255,255,255), 1)
+         new_cxs.append(new_cx)
+         new_cys.append(new_cy)
+
+         threshold = cv2.convertScaleAbs(thresh_obj)
+         threshold_c = cv2.cvtColor(threshold,cv2.COLOR_GRAY2BGR)
+
+         #cv2.line(roi_p_b_g, (0,320), (640,320), (255,255,255), 1)
+         #cci[0:640,640:1280] = roi_p_b
+         new_roi = cv2.resize(roi_img, (640,640))
+         cci[0:640,640:1280] = new_roi 
+         #cci[0:640,640:1280] = threshold_c
+         orig_img = cv2.resize(cf, (640,360))
+         cci[0:360,0:640] = orig_img
+         #cci[0:rh,0:rw] = roi_p
+         #cci[360:720,640:1280] = roi_img
+
+
+
+         cv2.imshow('pepe', cci)
+         cv2.waitKey(30)
+   print("NEW:", len(new_cxs))
+   exit()
+   best_meteor['ccxs'] = new_cxs
+   best_meteor['ccys'] = new_cys
+
+
+   #for i in range(0, len(best_meteor['oxs'])):
+   #   fn = best_meteor['ofns'][i] 
+   #   frame = hd_color_frames[fn]
+   #   frame = cv2.resize(frame, (1280,720))
+
+
+   return(best_meteor)
+
+def center_roi_blob(frame, cx, cy,cnt_size): 
+   fh, fw = frame.shape[:2]
+   oframe = frame.copy()
+   roi_size = 100 
+   roi_size2 = roi_size * 2 
+   rx1,ry1,rx2,ry2 = bound_cnt(cx, cy,fw,fh, roi_size)
+   roi_img = frame[ry1:ry2,rx1:rx2]
+   if roi_img.shape[0] != roi_size2  or roi_img.shape[1] != roi_size2:
+      roi_p = np.zeros((roi_size2,roi_size2,3),dtype=np.uint8)
+      px = (roi_size2 ) - roi_img.shape[1]
+      py = (roi_size2)- roi_img.shape[0]
+      roi_p[py:roi_size2, px:roi_size2] = roi_img
+   else:
+      roi_p = roi_img
+
+   gray_roi = cv2.cvtColor(roi_p, cv2.COLOR_BGR2GRAY)
+   min_val, max_val, min_loc, (mx,my)= cv2.minMaxLoc(gray_roi)
+   thresh = max_val - 40
+   _, threshold = cv2.threshold(gray_roi.copy(), thresh, 255, cv2.THRESH_BINARY)
+   threshold = cv2.cvtColor(threshold, cv2.COLOR_GRAY2BGR)
+
+   roi_disp = np.zeros((720,1280,3),dtype=np.uint8)
+   roi_div = 360 / roi_size2
+   roi_p = cv2.resize(roi_p, (360,360))
+   threshold = cv2.resize(threshold, (360,360))
+   grid_size = 5 
+   best_sum = 0
+   best_grid = None
+   grid_squares = []
+   for col in range(0, int(360/grid_size)):
+      for row in range(0, int(360/grid_size)):
+         gx1 = col * grid_size
+         gy1 = row * grid_size
+         gx2 = gx1 + grid_size 
+         gy2 = gy1 + grid_size 
+         grid_sum_img = roi_p[gy1:gy2,gx1:gx2]
+         grid_sum = np.sum(grid_sum_img)
+         grid_squares.append((gx1,gy1,gx2,gy2,grid_sum))
+         if grid_sum > best_sum: 
+            best_sum = grid_sum
+            best_grid = [gx1,gy1,gx2,gy2]
+
+   print("SIZE:", cnt_size)
+   if cnt_size < 20:
+      grid_lim = 3
+   elif 20 <= cnt_size <= 30:
+      grid_lim = 5
+   elif 30 <= cnt_size <= 40:
+      grid_lim = 7 
+   elif 40 <= cnt_size <= 50:
+      grid_lim = 10
+   elif 50 <= cnt_size <= 60:
+      grid_lim = 15
+   else:
+      grid_lim = 25 
+
+   sorted_grids = sorted(grid_squares, key=lambda x: (x[4]), reverse=True)
+   gxs = []
+   gys = []
+   for best_grid in sorted_grids[0:grid_lim]:
+      gx1,gy1,gx2,gy2,grid_sum = best_grid 
+      gxs.append((gx1, gx2))
+      gys.append((gy1, gy2))
+      cv2.rectangle(roi_p, (gx1, gy1), (gx2, gy2), (255,255,0), 1, cv2.LINE_AA)
+   mgx = int(np.mean(gxs))
+   mgy = int(np.mean(gys))
+
+   adj_x = int((mgx - 180) / roi_div)
+   adj_y = int((mgy - 180) / roi_div)
+   new_x = cx+adj_x
+   new_y = cy+adj_y
+   if False:
+      rx1,ry1,rx2,ry2 = bound_cnt(cx+adj_x, cy+adj_y,fw,fh, roi_size)
+      new_roi_img = oframe[ry1:ry2,rx1:rx2]
+      if new_roi_img.shape[0] != roi_size2  or new_roi_img.shape[1] != roi_size2:
+         new_roi_p = np.zeros((roi_size2,roi_size2,3),dtype=np.uint8)
+         px = (roi_size2 ) - new_roi_img.shape[1]
+         py = (roi_size2)- new_roi_img.shape[0]
+         new_roi_p[py:roi_size2, px:roi_size2] = new_roi_img
+      else:
+         new_roi_p = new_roi_img
+      cv2.imshow('new roi_p', new_roi_p)
+      new_roi_p = cv2.resize(new_roi_p, (360,360))
+
+      cv2.circle(roi_p,(mgx,mgy), 3, (0,0,255), 1)
+      cv2.line(new_roi_p, (0,180), (360,180), (255,255,255), 1)
+      cv2.line(new_roi_p, (180,0), (180,360), (255,255,255), 1)
+      cv2.line(roi_p, (0,180), (360,180), (255,255,255), 1)
+      cv2.line(roi_p, (180,0), (180,360), (255,255,255), 1)
+
+      roi_disp[0:360, 0:360] = roi_p
+      roi_disp[0:360, 360:720] = new_roi_p 
+      cv2.imshow('roi_center', roi_disp)
+      cv2.waitKey(0)
+   return(new_x, new_y)
+
+
+
+
+
+def fireball_phase3(video_file, json_conf, jsf, jdata, best_meteor, nomask,hd_frames, hd_color_frames, median_frame, mask_img,med_times):
+   fh, fw = hd_frames[0].shape[:2]
+   hdm_x = 1280 / fw
+   hdm_y = 720 / fh 
+
+   vid_fn, vid_dir = fn_dir(video_file)
+   # PHASE 3
+   p_res_tot = 0 
+   p_res_pt = 0
+
+   # loop over points and correct the worst ones based on the estimate
+   new_xs = []
+   new_ys = []
+   for i in range(0, len(best_meteor['oxs'])):
+      fn = best_meteor['ofns'][i]
+      frame = hd_color_frames[fn].copy()
+      frame = cv2.resize(frame, (1280,720))
+      ox = int(best_meteor['oxs'][i]*hdm_x)
+      oy = int(best_meteor['oys'][i]*hdm_y)
+      ow = int(best_meteor['ows'][i]*hdm_x)
+      oh = int(best_meteor['ohs'][i]*hdm_y)
+      cur_x = int(ox + (ow/2))
+      cur_y = int(oy + (oh/2))
+      if ow < oh:
+         avg_size = ow
+      else:
+         avg_size = oh
+      new_x, new_y = center_roi_blob(frame, cur_x, cur_y,avg_size) 
+      new_xs.append(new_x)
+      new_ys.append(new_y)
+
+
+   best_meteor['ccxs'] = new_xs
+   best_meteor['ccys'] = new_ys
+
+   new_new_xs = []
+   new_new_ys = []
+   est_xs = []
+   est_ys = []
+
+   for i in range(0, len(best_meteor['oxs'])):
+      tf = len(best_meteor['oxs']) -1 
+      fn = best_meteor['ofns'][i]
+      frame = hd_color_frames[fn].copy()
+      frame = cv2.resize(frame, (1280,720))
+      cur_x = best_meteor['ccxs'][i]
+      cur_y = best_meteor['ccys'][i]
+      ox1 = int(best_meteor['oxs'][i] * hdm_x)
+      oy1 = int(best_meteor['oys'][i] * hdm_y)
+      ow = best_meteor['ows'][i]*hdm_x
+      oh = best_meteor['ohs'][i]*hdm_x
+      ox2 = int(best_meteor['oxs'][i] * hdm_x) + int(best_meteor['ows'][i]*hdm_x)
+      oy2 = int(best_meteor['oys'][i] * hdm_y) + int(best_meteor['ohs'][i]*hdm_y)
+      
+
+      avg_size = (ow + oh) / 2
+      rects = []
+
+      # we are at the start, so use same array len for before and after up until frame 10
+      if i < 10:
+         if i + 1 + i < tf :
+            array_len = i
+         else:
+            array_len = tf - i + 1 + i
+      # we are past the start and not yet at the end. it is safe to use est of +/- 10 on each side of the current frame
+      elif i + 11 < tf:
+         array_len = 11 
+      elif i + 11 >= tf:
+         array_len = tf - i + 1 + i
+
+         
+
+      if i > 12 and i <= tf-1:
+         last_10_x = int(sum(best_meteor['ccxs'][i-array_len-1:i-1])  / array_len)
+         last_10_y = int(sum(best_meteor['ccys'][i-array_len-1:i-1])  / array_len)
+  
+         next_10_x = int(sum(best_meteor['ccxs'][i+1:i+array_len+1])  / array_len)
+         next_10_y = int(sum(best_meteor['ccys'][i+1:i+array_len+1])  / array_len)
+      else:
+         next_10_x = None
+         next_10_y = None
+         last_10_x = None
+         last_10_y = None
+
+      #print("LAST/NEXT:", array_len, last_10_x, last_10_y, next_10_x, next_10_y)
+
+      if last_10_x is not None and next_10_x is not None and i > 10:
+         est_x = int((last_10_x + next_10_x) / 2)
+         est_y = int((last_10_y + next_10_y) / 2)
+      else:
+         est_x = cur_x
+         est_y = cur_y
+      cv2.circle(frame,(est_x,est_y), 10, (0,255,0), 1)
+      p_res_err = calc_dist((est_x,est_y), (cur_x, cur_y))
+      p_res_tot += p_res_err
+      p_res_pt += 1
+      avg_res = p_res_tot/p_res_pt
+      cv2.putText(frame, "ARES:"+ str(p_res_tot/p_res_pt)[0:4],  (30,10), cv2.FONT_HERSHEY_SIMPLEX, .4, (255, 255, 255), 1)
+      cv2.putText(frame, "TRES:"+ str(p_res_err)[0:4],  (30,30), cv2.FONT_HERSHEY_SIMPLEX, .4, (255, 255, 255), 1)
+
+      circles = []
+      text_info = []
+      text_info.append(("File: " + vid_fn, 10,30))
+      text_info.append(("Frame: " + str(fn), 10,45))
+      text_info.append(("Frame Res: " + str(p_res_err), 10,60))
+      text_info.append(("Total Res: " + str(avg_res), 10,70))
+      circles.append((last_10_x, last_10_y, (0,255,0), "last 10 mean"))
+      circles.append((next_10_x, next_10_y, (0,0,255), "next 10 mean"))
+      circles.append((cur_x, cur_y, (255,255,255), "cur "))
+      circles.append((est_x, est_y, (0,255,255), "est "))
+
+      if p_res_err > (avg_res * med_times):
+         new_new_xs.append(est_x)
+         new_new_ys.append(est_y)
+         est_xs.append(est_x)
+         est_ys.append(est_y)
+         frame =  make_meteor_frame(hd_color_frames[fn], est_x,est_y, fn, circles, rects, text_info,new_xs,new_ys )
+      else:
+         new_new_xs.append(cur_x)
+         new_new_ys.append(cur_y)
+         est_xs.append(cur_x)
+         est_ys.append(cur_y)
+         frame =  make_meteor_frame(hd_color_frames[fn], cur_x,cur_y, fn, circles, rects, text_info, new_xs,new_ys)
+      cv2.imshow('pepe', frame)
+      if p_res_err > (avg_res * 3):
+         cv2.waitKey(0)
+      else:
+         cv2.waitKey(30)
+
+   best_meteor['ccxs'] = new_new_xs
+   best_meteor['ccys'] = new_new_ys
+   best_meteor['est_xs'] = est_xs
+   best_meteor['est_ys'] = est_ys 
+
+
+   #best_meteor = make_final_meteor_vids(meteor_dir, jsf, best_meteor, cp, hd_color_frames, 0)
+   jdata = {}
+   jdata['best_meteor'] = best_meteor
+   save_json_file(jsf, jdata)
+   print("saved:" , jsf)
+   return(best_meteor)
+  
+def make_meteor_frame(frame, cx,cy, fn=None, circles=None, rects=None, text_info=None, new_xs=None, new_ys=None):
+   frame = cv2.resize(frame, (1280,720))
+   rx1,ry1,rx2,ry2 = bound_cnt(cx, cy,1280,720, 50)
+   roi_img = frame[ry1:ry2,rx1:rx2]
+
+
+   if circles is not None:
+      for x,y,color,text in circles:
+         if x is not None:
+            cv2.circle(frame,(x,y), 2, color, 1)
+
+   if rects is not None:
+      for x1,y1,x2,y2 in rects:
+         cv2.rectangle(frame, (x1, y1), (x2, y2), (255,128,128), 1, cv2.LINE_AA)
+   point_plot = np.zeros((720,1280,3),dtype=np.uint8)
+
+   cci = np.zeros((720,1280,3),dtype=np.uint8)
+   if roi_img.shape[0] != 100 or roi_img.shape[1] != 100:
+      roi_p = np.zeros((100,100,3),dtype=np.uint8)
+      px = 100 - roi_img.shape[1]
+      py = 100 - roi_img.shape[0]
+      roi_p[py:100, px:100] = roi_img
+   else:
+      roi_p = roi_img
+
+
+   new_roi_big = cv2.resize(roi_p, (640,640))
+   point_plot = cv2.resize(point_plot, (640,360))
+   cv2.line(new_roi_big, (0,320), (640,320), (255,255,255), 1)
+   cv2.line(new_roi_big, (320,0), (320,640), (255,255,255), 1)
+   #cv2.line(roi_p_b_g, (0,320), (640,320), (255,255,255), 1)
+   #cci[0:640,640:1280] = roi_p_b
+   cci[0:640,640:1280] = new_roi_big
+   orig_img = cv2.resize(frame, (640,360))
+   cci[0:360,0:640] = orig_img
+   cci[360:720,0:640] = point_plot 
+
+   if text_info is not None:
+      for data in text_info:
+         desc, tx, ty = data 
+         cv2.putText(cci, desc,  (tx,ty), cv2.FONT_HERSHEY_SIMPLEX, .4, (255, 255, 255), 1)
+
+   return(cci)
+
+
+def lead_cnts(cnts, dom_dir, quad):
+   hor_mov = quad[0]
+   vert_mov = quad[1]
+   if hor_mov == "right":
+      best_x = 0
+   else:
+      best_x = 9999
+   if vert_mov == "down":
+      best_y = 0
+   else:
+      best_y = 9999
+   best_y = 0
+   best_cnt = []
+   print(dom_dir, hor_mov, vert_mov)
+   print(cnts)
+   for x,y,w,h in cnts:
+      x1 = x
+      y1 = y
+      x2 = x + w
+      y2 = y + h
+      if dom_dir == 'x' and hor_mov == "right":
+         if x2 > best_x:
+            best_x = x2
+            best_cnt = [[x,y,w,h]]
+      if dom_dir == 'x' and hor_mov == "left":
+         if x1 < best_x:
+            best_x = x1
+            best_cnt = [[x,y,w,h]]
+      if dom_dir == 'y' and hor_mov == "down":
+         if y2 > best_x:
+            best_y = y2
+            best_cnt = [[x,y,w,h]]
+      if dom_dir == 'y' and hor_mov == "top":
+         if y1 < best_y:
+            best_y = y1
+            best_cnt = [[x,y,w,h]]
+   return(best_cnt)
 def meteor_detect_image(mo, dimg, objects, cp):
 
    for i in range(0,len(mo['ofns'])):
@@ -1897,6 +2562,8 @@ def get_move_info(meteor, cnt_w, cnt_h):
 
 
 def get_movement_info(meteor, cnt_w, cnt_h):
+   hw = int(cnt_w / 2)
+   hh = int(cnt_h / 2)
    moving_x = meteor['oxs'][0] - meteor['oxs'][-1]
    moving_y = meteor['oys'][0] - meteor['oys'][-1]
    if abs(moving_x) > abs(moving_y):
@@ -1920,32 +2587,32 @@ def get_movement_info(meteor, cnt_w, cnt_h):
    qh = int(cnt_h/3)
    if y_dir is None:
       # The meteor is moving perfectly horizontally
-      ideal_y1 = 150 - qh
-      ideal_y2 = 150 + qh
+      ideal_y1 = hh - qh
+      ideal_y2 = hh + qh
       y_quad_loc = "center"
    if x_dir is None:
       # The meteor is moving perfectly vertically 
-      ideal_x1 = 150 - qw
-      ideal_x2 = 150 + qw
+      ideal_x1 = hw - qw
+      ideal_x2 = hw + qw
       x_quad_loc = "center"
 
    # based on the dom dir and x,y movement choose the best ROI quad for placing the meteor
    if x_dir == "right_to_left":
       x_quad_loc = "left" 
-      ideal_x1 = 150 - qw
-      ideal_x2 = 150 - qw + cnt_w
+      ideal_x1 = hh 
+      ideal_x2 = 0 
    if x_dir == "left_to_right":
       x_quad_loc = "right" 
-      ideal_x1 = 150 + qw - cnt_w
-      ideal_x2 = 150 + qw
+      ideal_x1 = hw 
+      ideal_x2 = hw * 2 
    if y_dir == "up_to_down":
-      y_quad_loc = "top"
-      ideal_y1 = 150+qh - cnt_h
-      ideal_y2 = 150+qh
-   if y_dir == "down_to_up":
       y_quad_loc = "bottom"
-      ideal_y1 = 150 - qh
-      ideal_y2 = 150 - qh + cnt_h
+      ideal_y1 = hh 
+      ideal_y2 = hh * 2
+   if y_dir == "down_to_up":
+      y_quad_loc = "top"
+      ideal_y1 = 0 
+      ideal_y2 = hh 
    
 
    ideal = [ideal_x1, ideal_y1, ideal_x2, ideal_y2]
@@ -2122,7 +2789,6 @@ def analyze_object(object, hd = 0, strict = 0):
       perform various tests to classify the type of object
       when strict == 1 perform more meteor strict tests
    '''
-   #print("Start analyze")
    if hd == 0:
       # if we are working with an HD file we need to mute the HD Multipliers
       global HDM_X, HDM_Y
@@ -2139,6 +2805,13 @@ def analyze_object(object, hd = 0, strict = 0):
       object['report']['non_meteor'] = 0
       object['report']['meteor'] = 0
       object['report']['bad_items'] = []
+
+   max_int = 0
+   max_times = 0
+   fb = 0
+   for intv in object['oint']:
+      if intv > 2000:
+         fb += 1
 
 
    # basic initial tests for vals-detect/stict = 0, if these all pass the clip should be video detected
@@ -2169,7 +2842,7 @@ def analyze_object(object, hd = 0, strict = 0):
          bad_segs += 1
 
    bad_seg_perc = bad_segs / len(object['oxs'])
-   if bad_seg_perc > .5:
+   if bad_seg_perc > .65:
       object['report']['non_meteor'] = 1
       object['report']['meteor'] = 0
       object['report']['class'] = "unknown"
@@ -2218,13 +2891,6 @@ def analyze_object(object, hd = 0, strict = 0):
 
 
 
-   if strict == 0:
-      if object['report']['non_meteor'] == 0 :
-         object['report']['meteor'] = 1 
-      return(object)
-
-   
-
 
    object['report']['big_perc'] = big_cnt_test(object, hd)
    if object['report']['big_perc'] > .5:
@@ -2262,9 +2928,14 @@ def analyze_object(object, hd = 0, strict = 0):
 
 
    if object['report']['non_meteor'] == 0 :
-      print("*********** METEOR DETECTED *********", obj_id )
       object['report']['meteor'] = 1
       object['report']['class'] = "meteor"
+
+   #print("FB:", obj_id, fb)
+   #if fb > 5:
+   #   object['report']['meteor'] = 1
+      #object['report']['class'] = "fireball meteor"
+      
 
    return(object)    
 
@@ -2598,11 +3269,15 @@ def min_cnt_dist(x,y,w,h,tx,ty,tw,th):
    return(min(ds))
 
 def find_object(objects, fn, cnt_x, cnt_y, cnt_w, cnt_h, intensity=0, hd=0, sd_multi=1, cnt_img=None ):
+   print("FIND OBJ:", fn, cnt_x, cnt_y, cnt_w, cnt_h)
    matched = {}
    if hd == 1:
       obj_dist_thresh = 65 
    else:
-      obj_dist_thresh = 10 
+      obj_dist_thresh = 15 
+
+   #if intensity > 2000:
+   #   obj_dist_thresh = obj_dist_thresh * 2.5
 
    center_x = cnt_x + int(cnt_w/2)
    center_y = cnt_y + int(cnt_h/2)
@@ -2610,6 +3285,7 @@ def find_object(objects, fn, cnt_x, cnt_y, cnt_w, cnt_h, intensity=0, hd=0, sd_m
    found = 0
    max_obj = 0
    closest_objs = []
+   not_close_objs = []
    dist_objs = []
    for obj in objects:
       if 'oxs' in objects[obj]:
@@ -2645,45 +3321,43 @@ def find_object(objects, fn, cnt_x, cnt_y, cnt_w, cnt_h, intensity=0, hd=0, sd_m
                   last_seg_dist = calc_dist((last_x,last_y), (last_x2, last_y2))
                   this_seg_dist = calc_dist((last_x,last_y), (cnt_x, cnt_y))
                   abs_diff = abs(last_seg_dist - this_seg_dist)
-                  #if last_x == cnt_x and last_y == cnt_y:
-                  #   # don't add duplicate points to an existing meteor. (This might cause problems??)
+                  print("THIS/LAST SEG:", obj, this_seg_dist, last_seg_dist)
+                  #if abs_diff > last_seg_dist * 5 and last_seg_dist > 0:
+                     # don't add points to meteors if they are more than 5x farther away than the last seg dist
+                  #   cont = input("ABORTED MATCH DUE TO ABS_DIFF." + str( abs_diff) + " " + str( last_seg_dist * 5))
                   #   continue
-                  if abs_diff > last_seg_dist * 3:
-                     # don't add points to meteors if they are more than 3x farther away than the last seg dist
-                     continue
                if objects[obj]['report']['class'] == "star":
                   # only match object if dist is within 5 px
                   if dist > 5:
                      continue 
 
-
-            if dist < obj_dist_thresh and last_frame_diff < 10:
+         
+            if dist < obj_dist_thresh : #and last_frame_diff < 15:
                #if this is linked to a meteor only associate if the point is further from the start than the last recorded point
                found = 1
                found_obj = obj
                #if obj not in matched:
                closest_objs.append((obj,dist))
                matched[obj] = 1
+            else: 
+               not_close_objs.append((obj,dist,last_frame_diff))
 
       if obj > max_obj:
          max_obj = obj
 
-   if len(closest_objs) > 1:
+   if len(closest_objs) >= 1:
 
       ci = sorted(closest_objs , key=lambda x: (x[1]), reverse=False)
       found =1 
       found_obj = ci[0][0]
-      #c = input("Continue")
-      #exit()
-
+   elif (len(not_close_objs) > 0):
+      for nc in not_close_objs:
+         print("not close" , nc)
+      found = 0
    if found == 0:
       dist_objs = sorted(dist_objs, key=lambda x: (x[1]), reverse=False)
     
       obj_id = max_obj + 1
-      #if obj_id > 10:
-      #   cc = input("cont")
-      #if obj_id > 20:
-      #   c = input("Continue")
       objects[obj_id] = {}
       objects[obj_id]['obj_id'] = obj_id
       objects[obj_id]['ofns'] = []
@@ -2722,12 +3396,6 @@ def find_object(objects, fn, cnt_x, cnt_y, cnt_w, cnt_h, intensity=0, hd=0, sd_m
          objects[found_obj]['ows'].append(cnt_w)
          objects[found_obj]['ohs'].append(cnt_h)
          objects[found_obj]['oint'].append(intensity)
-
-   #objects[found_obj] = analyze_object_old(objects[found_obj], hd, sd_multi, 1)
-   #if objects[found_obj]['report']['meteor_yn'] == 'Y':
-   #   max_int = max(objects[found_obj]['oint'])
-   #   if max_int > 25000:
-   #      objects[found_obj]['report']['obj_class'] = "fireball"
 
    return(found_obj, objects)
 
@@ -3541,10 +4209,8 @@ def find_contours_in_frame(frame, thresh=25 ):
    contours = [] 
    result = []
    _, threshold = cv2.threshold(frame.copy(), thresh, 255, cv2.THRESH_BINARY)
-   thresh_obj = cv2.dilate(threshold.copy(), None , iterations=4)
+   thresh_obj = cv2.dilate(threshold.copy(), None , iterations=3)
    threshold = cv2.convertScaleAbs(thresh_obj)
-   #cv2.imshow('THRE', threshold)
-   #cv2.waitKey(30)
    cnt_res = cv2.findContours(threshold.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
    if len(cnt_res) == 3:
       (_, cnts, xx) = cnt_res
@@ -3554,11 +4220,10 @@ def find_contours_in_frame(frame, thresh=25 ):
    if len(cnts) > 20:
       thresh = thresh +5 
       _, threshold = cv2.threshold(frame.copy(), thresh, 255, cv2.THRESH_BINARY)
-      thresh_obj = cv2.dilate(threshold.copy(), None , iterations=4)
-      threshold = cv2.convertScaleAbs(thresh_obj)
+      #dil
+      #thresh_obj = cv2.dilate(threshold.copy(), None , iterations=4)
+      #threshold = cv2.convertScaleAbs(thresh_obj)
       cnt_res = cv2.findContours(threshold.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-      #cv2.imshow('pepe', threshold)
-      #cv2.waitKey(0)
 
       if len(cnt_res) == 3:
          (_, cnts, xx) = cnt_res
@@ -3581,7 +4246,8 @@ def find_contours_in_frame(frame, thresh=25 ):
             cnt_frame = frame[y:y+h, x:x+w]
             min_val, max_val, min_loc, (mx,my)= cv2.minMaxLoc(cnt_frame)
             avg_val = np.mean(cnt_frame)
-            if max_val - avg_val > 5 and (x > 0 and y > 0):
+            #if max_val - avg_val > 5 and (x > 0 and y > 0):
+            if (x > 0 and y > 0):
                rects.append([x,y,x+w,y+h])
                contours.append([x,y,w,h])
 
@@ -3596,7 +4262,7 @@ def find_contours_in_frame(frame, thresh=25 ):
          rc = rc + 1
 
    #cv2.imshow("pepe", threshold)
-   #cv2.waitKey(30)
+   #cv2.waitKey(0)
 
    return(contours, recs)
 
