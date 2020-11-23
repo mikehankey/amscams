@@ -11,7 +11,7 @@ import datetime
 #import math
 import os
 from lib.FFFuncs import imgs_to_vid
-from lib.PipeAutoCal import fn_dir, get_cal_files, get_image_stars, get_catalog_stars, pair_stars, update_center_radec, cat_star_report, minimize_fov
+from lib.PipeAutoCal import fn_dir, get_cal_files, get_image_stars, get_catalog_stars, pair_stars, update_center_radec, cat_star_report, minimize_fov, XYtoRADec
 from lib.PipeVideo import ffmpeg_splice, find_hd_file, load_frames_fast, find_crop_size, ffprobe
 from lib.PipeUtil import load_json_file, save_json_file, cfe, get_masks, convert_filename_to_date_cam, buffered_start_end, get_masks, compute_intensity , bound_cnt, day_or_night
 from lib.DEFAULTS import *
@@ -767,11 +767,14 @@ def fireball(video_file, json_conf, nomask=0):
       jdata = {}
       jdata['best_meteor'] = best_meteor
       save_json_file(jsf, jdata)
-   fireball_plot_points(best_meteor)
-   exit()
+   #fireball_plot_points(best_meteor)
    #best_meteor, frame_data = fireball_fill_frame_data(best_meteor, hd_color_frames)
    best_meteor = fireball_phase3(video_file, json_conf, jsf, jdata, best_meteor, nomask, hd_frames, hd_color_frames, median_frame, mask_img,5)
    fireball_plot_points(best_meteor)
+   best_meteor = apply_calib(video_file, best_meteor,json_conf)
+   jdata['best_meteor'] = best_meteor
+   save_json_file(jsf, jdata)
+   print("Saved:", jsf)
    #best_meteor = fireball_decel(video_file, json_conf, jsf, jdata, best_meteor, nomask, hd_frames, hd_color_frames, median_frame, mask_img,5)
 
 def fireball_plot_points(bm):
@@ -1096,7 +1099,7 @@ def fireball_phase1(video_file, json_conf, jsf, jdata, best_meteor, nomask):
       obj = best
  
       best_meteor = objects[best]
-
+   best_meteor['cp'] = cp
    return(best_meteor, hd_frames, hd_color_frames, median_frame,mask_img )
 
 def fireball_phase2(video_file, json_conf, jsf, jdata, best_meteor, nomask,hd_frames, hd_color_frames, median_frame, mask_img):
@@ -1410,9 +1413,11 @@ def fireball_phase3(video_file, json_conf, jsf, jdata, best_meteor, nomask,hd_fr
       new_ys.append(new_y)
 
 
+
    best_meteor['ccxs'] = new_xs
    best_meteor['ccys'] = new_ys
 
+   fireball_plot_points(best_meteor)
    new_new_xs = []
    new_new_ys = []
    est_xs = []
@@ -1450,7 +1455,7 @@ def fireball_phase3(video_file, json_conf, jsf, jdata, best_meteor, nomask,hd_fr
 
          
 
-      if i > 12 and i <= tf-1:
+      if i > 12 and i <= tf-11:
          last_10_x = int(sum(best_meteor['ccxs'][i-array_len-1:i-1])  / array_len)
          last_10_y = int(sum(best_meteor['ccys'][i-array_len-1:i-1])  / array_len)
   
@@ -1488,10 +1493,10 @@ def fireball_phase3(video_file, json_conf, jsf, jdata, best_meteor, nomask,hd_fr
       circles.append((next_10_x, next_10_y, (0,0,255), "next 10 mean"))
       circles.append((cur_x, cur_y, (255,255,255), "cur "))
       circles.append((est_x, est_y, (0,255,255), "est "))
-
+      circles = []
       if p_res_err > (avg_res * med_times):
-         new_new_xs.append(est_x)
-         new_new_ys.append(est_y)
+         new_new_xs.append(cur_x)
+         new_new_ys.append(cur_y)
          est_xs.append(est_x)
          est_ys.append(est_y)
          frame =  make_meteor_frame(hd_color_frames[fn], est_x,est_y, fn, circles, rects, text_info,new_xs,new_ys )
@@ -1502,8 +1507,8 @@ def fireball_phase3(video_file, json_conf, jsf, jdata, best_meteor, nomask,hd_fr
          est_ys.append(cur_y)
          frame =  make_meteor_frame(hd_color_frames[fn], cur_x,cur_y, fn, circles, rects, text_info, new_xs,new_ys)
       cv2.imshow('pepe', frame)
-      if p_res_err > (avg_res * 3):
-         cv2.waitKey(0)
+      if p_res_err > (avg_res * 3) and p_res_err > 2:
+         cv2.waitKey(30)
       else:
          cv2.waitKey(30)
 
@@ -1512,12 +1517,40 @@ def fireball_phase3(video_file, json_conf, jsf, jdata, best_meteor, nomask,hd_fr
    best_meteor['est_xs'] = est_xs
    best_meteor['est_ys'] = est_ys 
 
+   for i in range(0, len(best_meteor['oxs'])):
+      fn = best_meteor['ofns'][i]
+      est_x = best_meteor['est_xs'][i]
+      est_y = best_meteor['est_ys'][i]
+      cx = best_meteor['ccxs'][i]
+      cy = best_meteor['ccys'][i]
+
+      frame =  make_meteor_frame(hd_color_frames[fn], est_x,est_y, fn, [], [], [], [],[])
+      cv2.imshow('pepe', frame)
+      cv2.waitKey(30)
 
    #best_meteor = make_final_meteor_vids(meteor_dir, jsf, best_meteor, cp, hd_color_frames, 0)
    jdata = {}
    jdata['best_meteor'] = best_meteor
    save_json_file(jsf, jdata)
    print("saved:" , jsf)
+   return(best_meteor)
+
+def apply_calib(video_file, best_meteor, json_conf):
+   best_meteor['ras'] = []
+   best_meteor['decs'] = []
+   best_meteor['azs'] = []
+   best_meteor['els'] = []
+   for i in range(0, len(best_meteor['oxs'])):
+      fn = best_meteor['ofns'][i]
+      est_x = best_meteor['est_xs'][i]
+      est_y = best_meteor['est_ys'][i]
+      cx = best_meteor['ccxs'][i]
+      cy = best_meteor['ccys'][i]
+      tx, ty, ra ,dec , az, el = XYtoRADec(cx,cy,video_file,best_meteor['cp'],json_conf)
+      best_meteor['ras'].append(ra) 
+      best_meteor['decs'].append(dec) 
+      best_meteor['azs'].append(az) 
+      best_meteor['els'].append(el) 
    return(best_meteor)
   
 def make_meteor_frame(frame, cx,cy, fn=None, circles=None, rects=None, text_info=None, new_xs=None, new_ys=None):
