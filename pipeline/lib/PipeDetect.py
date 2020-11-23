@@ -1085,11 +1085,10 @@ def fireball_phase1(video_file, json_conf, jsf, jdata, best_meteor, nomask):
 
    print(objects)
    for obj in objects:
-      print(obj, objects[obj]['ofns'])
-
+      print("OBJ:", obj, len(objects[obj]['ofns']), objects[obj]['report']['bad_items'])
    if best_meteor is None:
       max_int = 0
-      best = 0
+      best = None
       for obj in objects:
          objects[obj] = analyze_object(objects[obj], 1,1)
          if len(objects[obj]['report']['bad_items']) == 0:
@@ -1097,8 +1096,13 @@ def fireball_phase1(video_file, json_conf, jsf, jdata, best_meteor, nomask):
                best = obj
                max_int = max(objects[obj]['oint'])
       obj = best
- 
-      best_meteor = objects[best]
+      if best is not None:
+         best_meteor = objects[best]
+      else:
+         print("No best object." )
+         for obj in objects:
+            print(obj, len(objects[obj]['ofns']), objects[obj]['report']['bad_items'])
+
    best_meteor['cp'] = cp
    return(best_meteor, hd_frames, hd_color_frames, median_frame,mask_img )
 
@@ -2855,7 +2859,7 @@ def analyze_object(object, hd = 0, strict = 0):
       object['report']['meteor'] = 0
 
    object['report']['unq_perc'], object['report']['unq_points'] = unq_points(object)
-   if object['report']['unq_points'] > 3 and object['report']['unq_perc'] < .6 :
+   if object['report']['unq_points'] > 3 and object['report']['unq_perc'] < .4 :
       object['report']['non_meteor'] = 1
       object['report']['meteor'] = 0
       object['report']['bad_items'].append("Unq Points/Perc too low. " + str(object['report']['unq_points']) + " / " + str(object['report']['unq_perc']) )
@@ -2875,7 +2879,8 @@ def analyze_object(object, hd = 0, strict = 0):
          bad_segs += 1
 
    bad_seg_perc = bad_segs / len(object['oxs'])
-   if bad_seg_perc > .65:
+   #if bad_seg_perc > .40:
+   if False:
       object['report']['non_meteor'] = 1
       object['report']['meteor'] = 0
       object['report']['class'] = "unknown"
@@ -2902,7 +2907,7 @@ def analyze_object(object, hd = 0, strict = 0):
       object['report']['ang_vel'] = ang_vel
 
       # filter out detections that don't match ang vel or ang sep desired values
-      if float(ang_vel) > .5 and float(ang_vel) < 80:
+      if float(ang_vel) > .3 and float(ang_vel) < 80:
          foo = 1
       else:
          object['report']['non_meteor'] = 1
