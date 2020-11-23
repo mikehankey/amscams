@@ -251,7 +251,7 @@ def scan_and_stack_fast(file, sun_status = 0, vals = []):
             continue
 
       if not grabbed and fc > 5:
-         print(fc)
+         print("FRAME NOT GRABBED:", fc)
          break
 
       if sun_status == 1:
@@ -266,7 +266,6 @@ def scan_and_stack_fast(file, sun_status = 0, vals = []):
             #os.system(cmd)
             return()
 
-      print(sun_status)
       if sun_status != 1:
          gray = cv2.cvtColor(small_frame, cv2.COLOR_BGR2GRAY)
          if fc > 0:
