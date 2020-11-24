@@ -15,7 +15,7 @@ import sys
 
 def view(file, show):
 
-    out_file = file.replace(".mp4", ".jpg")
+    out_file = file.replace(".mp4", "-stacked.jpg")
     #print (file)
     #print (out_file)
     img_matrix = [] 

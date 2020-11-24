@@ -777,6 +777,19 @@ def fireball(video_file, json_conf, nomask=0):
    print("Saved:", jsf)
    #best_meteor = fireball_decel(video_file, json_conf, jsf, jdata, best_meteor, nomask, hd_frames, hd_color_frames, median_frame, mask_img,5)
 
+def save_meteor():
+   HD = 1
+   mj['hd_trim'] = mdir + fn
+   mj['hd_video_file'] = mdir + fn
+   mj['org_hd_vid'] = file
+   mj['hd_stack'] = mdir + fn.replace(".mp4", "-stacked.png")
+   mj['hd_objects'] = meteors[file]
+   #mj['hd_objects'].append(meteors[file][id])
+   mj['meteor'] = 1
+   mj['archive_file'] = ""
+   hd_stack_img = hd_images[file]
+   hd_stack_img = cv2.resize(hd_stack_img, (THUMB_W, THUMB_H))
+
 def fireball_plot_points(bm):
    plot = np.zeros((720,1280,3),dtype=np.uint8)
    for i in range(0, len(bm['oxs'])):
