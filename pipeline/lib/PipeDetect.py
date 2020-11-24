@@ -747,6 +747,39 @@ def mask_stars(img, cp):
    #cv2.waitKey(0)
    return(img)
 
+def make_roi_video(video_file,bm, frames, json_conf):
+   roi_size = 25
+   roi_size2 = roi_size * 2
+   for i in range(0, len(frames)):
+      if bm['ofns'][0] <= i <= bm['ofns'][-1]:
+         # meteor is active
+         rx = bm['oxs'][i]
+         ry = bm['oys'][i]
+      else:
+         # meteor is inactive (use 1st frame / last frame for crop location on missing frames)
+         if i < bm['ofns'][0]:
+            rx = bm['oxs'][0]
+            ry = bm['oys'][0]
+         elif i > bm['ofns'][0]:
+            rx = bm['oxs'][-1]
+            ry = bm['oys'][-1]
+
+      rx1,ry1,rx2,ry2 = bound_cnt(rx, ry,1280,720, 25)
+      of = frames[i].copy()
+      of = cv2.resize(of, (1280,720))
+      roi_img = of[ry1:ry2,rx1:rx2]
+      # this only handles the left side now BUG/FIX
+      if roi_img.shape[0] != roi_size2 or roi_img.shape[1] != roi_size2:
+         roi_p = np.zeros((100,100,3),dtype=np.uint8)
+         px = roi_size2 - roi_img.shape[1]
+         py = roi_size2 - roi_img.shape[0]
+         roi_p[py:roi_size2, px:roi_size2] = roi_img
+      else:
+         roi_p = roi_img
+   cv2.imshow("ROI", roi_p)
+   cv2.waitKey(0)
+
+   
 
 def fireball(video_file, json_conf, nomask=0):
    fn, meteor_dir = fn_dir(video_file)
