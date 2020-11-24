@@ -64,9 +64,9 @@ def stack_frames(frames, skip = 1, resize=None, sun_status="night"):
    for frame in frames:
       avg_px = np.mean(frame)
       go = 1
-      if sun_status == 'night' and avg_px >= 125:
-         print("TOO BRIGHT!", avg_px)
-         go = 0
+      #if sun_status == 'night' and avg_px >= 125:
+      #   print("TOO BRIGHT!", avg_px)
+      #   go = 0
       if go == 1:
          if resize is not None:
             frame = cv2.resize(frame, (resize[0],resize[1]))
