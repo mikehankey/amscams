@@ -2943,8 +2943,9 @@ def reduce_meteor_new(json_conf,form):
          hd_trim = mj['hd_trim']
       else:
          hd_trim = 0
-
-
+      if cfe(hd_trim) == 1:
+         mj['hd_file'] = hd_trim
+         meteor_reduced['hd_video_file'] = hd_trim
 
 
    if reduced == 1:
