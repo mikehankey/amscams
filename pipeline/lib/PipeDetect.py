@@ -756,11 +756,13 @@ def fireball(video_file, json_conf, nomask=0):
       jdata = load_json_file(jsf)
       print("LOADING:", jsf)
       if "best_meteor" not in jdata:
-         jdata = None
+         best_meteor = None
       else:
          best_meteor = jdata['best_meteor']
    else:
       jdata = None
+   #print("JDATA:", jdata)
+   #exit()
 
    best_meteor, hd_frames, hd_color_frames, median_frame, mask_img = fireball_phase1(video_file, json_conf, jsf, jdata, best_meteor, nomask)
    if jdata is None:
@@ -775,20 +777,85 @@ def fireball(video_file, json_conf, nomask=0):
    jdata['best_meteor'] = best_meteor
    save_json_file(jsf, jdata)
    print("Saved:", jsf)
+   jsfr = jsf.replace(".json", "-reduced.json")
+   if "hd_trim" in jdata:
+      hd_trim = jdata['hd_trim']
+   else:
+      hd_trim = None
+   mj, mjr = make_base_meteor_json(video_file,hd_trim, best_meteor)
+   save_json_file(jsfr, mjr)
    #best_meteor = fireball_decel(video_file, json_conf, jsf, jdata, best_meteor, nomask, hd_frames, hd_color_frames, median_frame, mask_img,5)
 
-def save_meteor():
-   HD = 1
-   mj['hd_trim'] = mdir + fn
-   mj['hd_video_file'] = mdir + fn
-   mj['org_hd_vid'] = file
-   mj['hd_stack'] = mdir + fn.replace(".mp4", "-stacked.png")
-   mj['hd_objects'] = meteors[file]
-   #mj['hd_objects'].append(meteors[file][id])
-   mj['meteor'] = 1
-   mj['archive_file'] = ""
-   hd_stack_img = hd_images[file]
-   hd_stack_img = cv2.resize(hd_stack_img, (THUMB_W, THUMB_H))
+def make_base_meteor_json(video_file, hd_video_file,best_meteor=None ):
+   mj = {}
+   mjr = {}
+   (f_datetime, cam, f_date_str,fy,fmin,fd, fh, fm, fs) = convert_filename_to_date_cam(video_file)
+   sd_fn, dir = fn_dir(video_file)
+   if hd_video_file is not None:
+      hd_fn, dir = fn_dir(hd_video_file)
+      hd_stack_fn = hd_fn.replace(".mp4", "-stacked.jpg")
+   stack_fn = sd_fn.replace(".mp4", "-stacked.jpg")
+
+   date = sd_fn[0:10]
+   mdir = "/mnt/ams2/meteors/" + date + "/"
+   mj["sd_video_file"] = mdir + sd_fn
+   mj["sd_stack"] = mdir + stack_fn
+   mj["sd_objects"] = []
+   if hd_video_file is not None:
+      mj["hd_trim"] = mdir + hd_fn
+      mj["hd_stack"] = mdir + hd_stack_fn
+      mj["hd_video_file"] = mdir + hd_fn
+      mj["hd_trim"] = mdir + hd_fn
+      mj["hd_objects"] = []
+   mj["meteor"] = 1
+
+   # reduce
+   mjr['api_key'] = "123"
+   mjr['station_name'] = STATION_ID
+   mjr['device_name'] = cam
+   mjr["sd_video_file"] = mdir + sd_fn
+   mjr["sd_stack"] = mdir + stack_fn
+   if hd_video_file is not None:
+      mjr["hd_video_file"] = mdir + sd_fn
+      mjr["hd_stack"] = mdir + stack_fn
+   mjr["event_start_time"] = ""
+   mjr["event_duration"] = ""
+   mjr["peak_magnitude"] = ""
+   mjr["start_az"] = ""
+   mjr["start_el"] = ""
+   mjr["end_az"] = ""
+   mjr["end_el"] = ""
+   mjr["start_ra"] = ""
+   mjr["start_dec"] = ""
+   mjr["end_ra"] = ""
+   mjr["end_dec"] = ""
+   # dt, fn, x,y,w,h,ra,dec,az,el (FLUX)
+   mjr["meteor_frame_data"] = []
+   mjr["crop_box"] = []
+   if best_meteor is not None:
+      mjr["cal_params"] = best_meteor['cp']
+      min_x = min(best_meteor['oxs'])
+      max_x = max(best_meteor['oxs'])
+      min_y = min(best_meteor['oys'])
+      max_y = max(best_meteor['oys'])
+      mjr['crop_box'] = [min_x,min_y,max_x,max_y]
+      for i in range(0, len(best_meteor['ofns'])):
+         dt = "1999-01-01 00:00:00"
+         fn = best_meteor['ofns'][i]
+         x = best_meteor['oxs'][i]
+         y = best_meteor['oys'][i]
+         w = best_meteor['ows'][i]
+         h = best_meteor['ohs'][i]
+         ra = best_meteor['ras'][i]
+         dec = best_meteor['decs'][i]
+         az = best_meteor['azs'][i]
+         el = best_meteor['els'][i]
+         oint = best_meteor['oint'][i]
+         #FLUX
+         oint = best_meteor['oint'][i]
+         mjr['meteor_frame_data'].append((dt, fn, x, y, w, h, oint, ra, dec, az, el))
+
+   return(mj, mjr)
 
 def fireball_plot_points(bm):
    plot = np.zeros((720,1280,3),dtype=np.uint8)
