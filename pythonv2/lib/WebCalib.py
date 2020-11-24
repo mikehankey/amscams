@@ -2738,7 +2738,7 @@ def update_red_info_ajax(json_conf, form):
             rsp['cat_image_stars'] = mr['cal_params']['cat_image_stars'] 
             sc = 0
             for star in mr['cal_params']['cat_image_stars']:
-               (dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist) = star
+               (dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist,bp) = star
                max_res_deg = float(max_res_deg) + float(match_dist)
                max_res_px = float(max_res_px) + float(cat_dist )
                sc = sc + 1
@@ -2782,7 +2782,14 @@ def update_red_info_ajax(json_conf, form):
       rsp['status'] = 1
    else: 
       rsp['status'] = 0
-         
+
+   sdfn = video_file.split("/")[-1]
+   sdfn_root = sdfn.replace(".mp4", "")
+   cache_dir = "/mnt/ams2/CACHE/" + sdfn_root + "/"
+   if cfe(cache_dir,) == 0:
+      os.makedirs(cache_dir)
+   prefix = cache_dir + sdfn + "-frm"
+     
 
    print(json.dumps(rsp))
    
@@ -3184,7 +3191,7 @@ def reduce_meteor_new(json_conf,form):
    if cfe(cache_dir,) == 0:
       os.makedirs(cache_dir)
    prefix = cache_dir + sdfn + "-frm"
-   print (prefix)
+
   # prefix = sd_video_file.replace(".mp4", "-frm")
   # prefix = prefix.replace("SD/proc2/", "CACHE/")
   # prefix = prefix.replace("/passed", "")
