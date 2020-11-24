@@ -748,37 +748,64 @@ def mask_stars(img, cp):
    return(img)
 
 def make_roi_video(video_file,bm, frames, json_conf):
+   vid_fn, vdir = fn_dir(video_file)
+   vid_base = vid_fn.replace(".mp4", "")
+   date = vid_fn[0:10]
+   year = vid_fn[0:4]
+   mon = vid_fn[5:7]
+   cache_dir = "/mnt/ams2/CACHE/" + year + "/" + mon + "/" + vid_base + "/"
+   prefix = cache_dir + vid_base + "-frm"
+   if cfe(cache_dir, 1) == 0:
+      os.makedirs(cache_dir)
+   print("CACHE DIR:", cache_dir)
    roi_size = 25
    roi_size2 = roi_size * 2
-   for i in range(0, len(frames)):
-      if bm['ofns'][0] <= i <= bm['ofns'][-1]:
+   roi_frames = []
+   for j in range(0, len(frames)):
+      i = j - bm['ofns'][0]
+      print(j,i, bm['ofns'][0], bm['ofns'][-1])
+      if bm['ofns'][0] <= j < bm['ofns'][-1]:
          # meteor is active
-         rx = bm['oxs'][i]
-         ry = bm['oys'][i]
+         print("ACTIVE", j)
+         rx = bm['ccxs'][i]
+         ry = bm['ccys'][i]
       else:
+         print("NOT ACTIVE", j)
          # meteor is inactive (use 1st frame / last frame for crop location on missing frames)
-         if i < bm['ofns'][0]:
-            rx = bm['oxs'][0]
-            ry = bm['oys'][0]
-         elif i > bm['ofns'][0]:
-            rx = bm['oxs'][-1]
-            ry = bm['oys'][-1]
+         if j < bm['ofns'][0]:
+            rx = bm['ccxs'][0]
+            ry = bm['ccys'][0]
+            print("BEF BEFORE", i, bm['ofns'][0])
+         elif j > bm['ofns'][-1]:
+            rx = bm['ccxs'][-1]
+            ry = bm['ccys'][-1]
+            print("AFT AFTER", i, bm['ofns'][-1])
 
       rx1,ry1,rx2,ry2 = bound_cnt(rx, ry,1280,720, 25)
-      of = frames[i].copy()
+      of = frames[j].copy()
       of = cv2.resize(of, (1280,720))
       roi_img = of[ry1:ry2,rx1:rx2]
-      # this only handles the left side now BUG/FIX
+      roi_frames.append(roi_img)
+         # this only handles the left side now BUG/FIX
       if roi_img.shape[0] != roi_size2 or roi_img.shape[1] != roi_size2:
-         roi_p = np.zeros((100,100,3),dtype=np.uint8)
+         roi_p = np.zeros((roi_size2,roi_size2,3),dtype=np.uint8)
          px = roi_size2 - roi_img.shape[1]
          py = roi_size2 - roi_img.shape[0]
          roi_p[py:roi_size2, px:roi_size2] = roi_img
       else:
          roi_p = roi_img
-   cv2.imshow("ROI", roi_p)
-   cv2.waitKey(0)
-
+      ffn = "{:04d}".format(int(j))
+      outfile = prefix + ffn + ".jpg"
+      cv2.imwrite(outfile, roi_p)
+      print(outfile)
+      cv2.rectangle(of, (rx1, ry1), (rx2, ry2), (255,255,255), 1, cv2.LINE_AA)
+      cv2.imshow("ROI", of)
+      cv2.waitKey(0)
+   tracking_outfile = "/mnt/ams2/meteors/" + date + "/" + vid_base + "-tracking.mp4"
+   cmd = "./FFF.py imgs_to_vid " + cache_dir + " " + year + " " + tracking_outfile + " 25 27"
+   os.system(cmd)
+   print(cmd)
+   exit()
    
 
 def fireball(video_file, json_conf, nomask=0):
@@ -796,8 +823,10 @@ def fireball(video_file, json_conf, nomask=0):
       jdata = None
    #print("JDATA:", jdata)
    #exit()
+   hd_frames,hd_color_frames,subframes,sum_vals,max_vals,pos_vals = load_frames_fast(video_file, json_conf, 0, 0, 1, 1,[])
+   make_roi_video(video_file,best_meteor, hd_color_frames, json_conf)
 
-   best_meteor, hd_frames, hd_color_frames, median_frame, mask_img = fireball_phase1(video_file, json_conf, jsf, jdata, best_meteor, nomask)
+   best_meteor, hd_frames, hd_color_frames, median_frame, mask_img = fireball_phase1(hd_frames, hd_color_frames, subframes,sum_vals,max_vals,pos_vals, video_file, json_conf, jsf, jdata, best_meteor, nomask)
    if jdata is None:
       jdata = {}
       jdata['best_meteor'] = best_meteor
@@ -1055,7 +1084,7 @@ def fireball_decel(video_file, json_conf, jsf, jdata, best_meteor, nomask, hd_fr
       last_x = x
       last_y = y
 
-def fireball_phase1(video_file, json_conf, jsf, jdata, best_meteor, nomask):
+def fireball_phase1(hd_frames, hd_color_frames, subframes,sum_vals,max_vals,pos_vals, video_file, json_conf, jsf, jdata, best_meteor, nomask):
    #PHASE 1
    (f_datetime, cam, f_date_str,fy,fmin,fd, fh, fm, fs) = convert_filename_to_date_cam(video_file)
 

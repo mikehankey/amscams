@@ -3185,12 +3185,16 @@ def reduce_meteor_new(json_conf,form):
    #Name of the option in the <select>
    if cal_params_file is not None:
       template = template.replace("{SELECTED_CAL_PARAMS_FILE_NAME}", get_meteor_date(cal_params_file))
-   sdfn = sd_video_file.split("/")[-1]
-   sdfn_root = sdfn.replace(".mp4", "")
-   cache_dir = "/mnt/ams2/CACHE/" + sdfn_root + "/"
-   if cfe(cache_dir,) == 0:
-      os.makedirs(cache_dir)
-   prefix = cache_dir + sdfn + "-frm"
+   vid_fn = sd_video_file.split("/")[-1]
+   vid_base = vid_fn.replace(".mp4", "")
+   date = vid_fn[0:10]
+   year = vid_fn[0:4]
+   mon = vid_fn[5:7]
+   cache_dir = "/mnt/ams2/CACHE/" + year + "/" + mon + "/" + vid_base + "/"
+
+   tracking_outfile = "/mnt/ams2/meteors/" + date + "/" + vid_base + "-tracking.mp4"
+
+   prefix = cache_dir + vid_fn + "-frm"
 
   # prefix = sd_video_file.replace(".mp4", "-frm")
   # prefix = prefix.replace("SD/proc2/", "CACHE/")
@@ -3255,7 +3259,8 @@ def reduce_meteor_new(json_conf,form):
       ra_dec = str(ra) + "/" + str(dec) 
 
 
-      fr_id = "fr_row" + str(fn)
+      fr_id = "{:04d}".format(fr_row)
+
       cmp_img_url = prefix  + str(fn) + ".jpg"
       cmp_img = "<img alt=\"" + str(fn) + "\" width=\"50\" height=\"50\" src=" + cmp_img_url + " class=\"img-fluid select_meteor\">"
 
