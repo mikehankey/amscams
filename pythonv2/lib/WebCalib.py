@@ -3196,7 +3196,7 @@ def reduce_meteor_new(json_conf,form):
       if "cal_params" in meteor_reduced:
          if "cat_image_stars" in meteor_reduced['cal_params']:
             for star in meteor_reduced['cal_params']['cat_image_stars']:
-               (dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist) = star
+               (dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist,bp) = star
                good_name =  dcname.encode("ascii","xmlcharrefreplace")
 
                good_name = str(good_name).replace("b'", "")
