@@ -805,7 +805,6 @@ def make_roi_video(video_file,bm, frames, json_conf):
    cmd = "./FFF.py imgs_to_vid " + cache_dir + " " + year + " " + tracking_outfile + " 25 27"
    os.system(cmd)
    print(cmd)
-   exit()
    
 
 def fireball(video_file, json_conf, nomask=0):
