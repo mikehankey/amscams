@@ -2728,7 +2728,7 @@ def update_red_info_ajax(json_conf, form):
    meteor_red_file = meteor_json_file.replace(".json", "-reduced.json")
    rsp = {}
 
-
+   #print(meteor_red_file)
 
    if cfe(meteor_red_file) == 1:
       mr = load_json_file(meteor_red_file)
@@ -2786,7 +2786,7 @@ def update_red_info_ajax(json_conf, form):
    sdfn = video_file.split("/")[-1]
    sdfn_root = sdfn.replace(".mp4", "")
    cache_dir = "/mnt/ams2/CACHE/" + sdfn_root + "/"
-   if cfe(cache_dir,) == 0:
+   if cfe(cache_dir,1) == 0:
       os.makedirs(cache_dir)
    prefix = cache_dir + sdfn + "-frm"
      
@@ -3259,9 +3259,9 @@ def reduce_meteor_new(json_conf,form):
       ra_dec = str(ra) + "/" + str(dec) 
 
 
-      fr_id = "{:04d}".format(fr_row)
+      fr_id = "{:04d}".format(fn)
 
-      cmp_img_url = prefix  + str(fn) + ".jpg"
+      cmp_img_url = prefix  + str(fr_id) + ".jpg"
       cmp_img = "<img alt=\"" + str(fn) + "\" width=\"50\" height=\"50\" src=" + cmp_img_url + " class=\"img-fluid select_meteor\">"
 
       del_frame_link = "javascript:del_frame('" + str(fn) + "','" + meteor_json_file +"')"
@@ -4160,8 +4160,8 @@ def upscale_2HD(json_conf,form):
    (f_datetime, cam_id, f_date_str,Y,M,D, H, MM, S) = better_parse_file_date(hd_stack_file)
    base_dir = "/mnt/ams2/cal/freecal/" + Y + "_" + M + "_" + D + "_" + H + "_" + MM + "_" + S + "_" + "000" + "_" + cam_id
    base_file = Y + "_" + M + "_" + D + "_" + H + "_" + MM + "_" + S + "_" + "000" + "_" + cam_id
-   if cfe(base_dir, 1) != 1:
-      os.system("mkdir " + base_dir)
+   if cfe(base_dir, 1) == 0:
+      os.makedirs(base_dir)
    stack_file = base_dir + "/" + base_file + "-stacked.png"
    orig_file = base_dir + "/" + base_file + "-orig.png"
    half_stack_file = base_dir + "/" + base_file + "-half-stack.png"

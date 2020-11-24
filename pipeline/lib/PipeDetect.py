@@ -824,7 +824,6 @@ def fireball(video_file, json_conf, nomask=0):
    #print("JDATA:", jdata)
    #exit()
    hd_frames,hd_color_frames,subframes,sum_vals,max_vals,pos_vals = load_frames_fast(video_file, json_conf, 0, 0, 1, 1,[])
-   make_roi_video(video_file,best_meteor, hd_color_frames, json_conf)
 
    best_meteor, hd_frames, hd_color_frames, median_frame, mask_img = fireball_phase1(hd_frames, hd_color_frames, subframes,sum_vals,max_vals,pos_vals, video_file, json_conf, jsf, jdata, best_meteor, nomask)
    if jdata is None:
@@ -845,6 +844,7 @@ def fireball(video_file, json_conf, nomask=0):
    else:
       hd_trim = None
    mj, mjr = make_base_meteor_json(video_file,hd_trim, best_meteor)
+   make_roi_video(video_file,best_meteor, hd_color_frames, json_conf)
    save_json_file(jsfr, mjr)
    #best_meteor = fireball_decel(video_file, json_conf, jsf, jdata, best_meteor, nomask, hd_frames, hd_color_frames, median_frame, mask_img,5)
 
@@ -1085,6 +1085,7 @@ def fireball_decel(video_file, json_conf, jsf, jdata, best_meteor, nomask, hd_fr
       last_y = y
 
 def fireball_phase1(hd_frames, hd_color_frames, subframes,sum_vals,max_vals,pos_vals, video_file, json_conf, jsf, jdata, best_meteor, nomask):
+   print("FRAMES:", len(hd_frames), len(hd_color_frames))
    #PHASE 1
    (f_datetime, cam, f_date_str,fy,fmin,fd, fh, fm, fs) = convert_filename_to_date_cam(video_file)
 
