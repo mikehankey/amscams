@@ -2738,7 +2738,7 @@ def update_red_info_ajax(json_conf, form):
             rsp['cat_image_stars'] = mr['cal_params']['cat_image_stars'] 
             sc = 0
             for star in mr['cal_params']['cat_image_stars']:
-               (dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist) = star
+               (dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist,bp) = star
                max_res_deg = float(max_res_deg) + float(match_dist)
                max_res_px = float(max_res_px) + float(cat_dist )
                sc = sc + 1
