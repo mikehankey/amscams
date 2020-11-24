@@ -33,7 +33,32 @@ function update_reduction_on_canvas_and_table(json_resp) {
         
         // Get thumb path
         var frame_id = parseInt(v[1]);
-        var thumb_path = my_image.substring(0,my_image.indexOf('-half')) + '-frm' + frame_id + '.png';
+        id_pad = v[1]
+        id_str = id_pad.toString()
+        if (id_str.length == 1) {
+           pid = "000" + id_str
+        }
+        if (id_str.length == 2) {
+           pid = "00" + id_str
+        }
+        if (id_str.length == 3) {
+           pid = "0" + id_str
+        }
+        if (id_str.length == 3) {
+           pid = id_str
+        }
+        var thumb_path = my_image.substring(0,my_image.indexOf('-half')) //+ '-frm' + frame_id + '.png';
+        var file_parts = thumb_path.split("/")
+        frame_fn = file_parts[5]
+        frame_date = file_parts[4]
+        date_el = frame_date.split("_")
+        frame_year = date_el[0]
+        frame_month = date_el[1] 
+        frame_day = date_el[2]
+        var thumb_path = "/mnt/ams2/CACHE/" + frame_year + "/" + frame_month + "/" + frame_fn + "/" + frame_fn + "-frm" + pid + ".jpg"
+
+        console.log("IPAD:", pid, thumb_path)
+       
         var square_size = 6;
         var _time = v[0].split(' ');
   
