@@ -23,6 +23,19 @@ import cv2
 
 json_conf = load_json_file(AMS_HOME + "/conf/as6.json")
 
+def confirm_meteors(date ):
+   meteor_dir = "/mnt/ams2/meteors/" + date + "/"
+   trash_dir = "/mnt/ams2/trash/" + date + "/"
+   files = glob.glob("/mnt/ams2/meteors/" + date + "/*.json")
+   meteors = []
+   for mf in files:
+      if "reduced" not in mf and "stars" not in mf and "man" not in mf:
+         meteors.append(mf)
+   for meteor in meteors:
+      meteor_vid = meteor.replace(".json", ".mp4")
+      cmd = "./Process.py fireball " + meteor_vid
+      os.system(cmd)
+#      exit()
 
 def reject_meteors(date, jsfs):
    meteor_dir = "/mnt/ams2/meteors/" + date + "/"
@@ -729,6 +742,33 @@ def calib_image(file, image=None,json_conf=None):
 
    return(cp)
 
+
+def mask_points(img, points ):
+   hdm_x = 1920 / img.shape[1]
+   hdm_y = 1080 / img.shape[0]
+   tp = len(points)
+   tc = 0
+   for x,y,size in points:
+      if size > 2:
+         size = 2
+      if tp - tc > 3:
+         size = 5 
+      if tp - tc > 5:
+         size = 10
+      if tp - tc > 10:
+         size = 20
+
+      print("BLOCK POINTS:", x,y,size)
+      bx1,by1,bx2,by2 = bound_cnt(x, y,img.shape[1],img.shape[0], size)
+      if len(img.shape) == 2:
+         img[by1:by2,bx1:bx2] = [0]
+      else:
+         img[by1:by2,bx1:bx2] = [0,0,0]
+      tc += 1
+   return(img)
+
+
+
 def mask_stars(img, cp):
    hdm_x = 1920 / img.shape[1]
    hdm_y = 1080 / img.shape[0]
@@ -762,11 +802,11 @@ def make_roi_video(video_file,bm, frames, json_conf):
    roi_size2 = roi_size * 2
    roi_frames = []
    for j in range(0, len(frames)):
-      i = j - bm['ofns'][0]
+      i = j - bm['ofns'][0]  
       print(j,i, bm['ofns'][0], bm['ofns'][-1])
-      if bm['ofns'][0] <= j < bm['ofns'][-1]:
+      if bm['ofns'][0] <= j < bm['ofns'][-1] - 1:
          # meteor is active
-         print("ACTIVE", j)
+         print("ACTIVE", j, i, len(bm['ccxs']))
          rx = bm['ccxs'][i]
          ry = bm['ccys'][i]
       else:
@@ -798,9 +838,10 @@ def make_roi_video(video_file,bm, frames, json_conf):
       outfile = prefix + ffn + ".jpg"
       cv2.imwrite(outfile, roi_p)
       print(outfile)
-      cv2.rectangle(of, (rx1, ry1), (rx2, ry2), (255,255,255), 1, cv2.LINE_AA)
-      cv2.imshow("ROI", of)
-      cv2.waitKey(0)
+      if SHOW == 1:
+         cv2.rectangle(of, (rx1, ry1), (rx2, ry2), (255,255,255), 1, cv2.LINE_AA)
+         cv2.imshow("pepe", of)
+         cv2.waitKey(30)
    tracking_outfile = "/mnt/ams2/meteors/" + date + "/" + vid_base + "-tracking.mp4"
    cmd = "./FFF.py imgs_to_vid " + cache_dir + " " + year + " " + tracking_outfile + " 25 27"
    os.system(cmd)
@@ -824,14 +865,70 @@ def fireball(video_file, json_conf, nomask=0):
    #exit()
    hd_frames,hd_color_frames,subframes,sum_vals,max_vals,pos_vals = load_frames_fast(video_file, json_conf, 0, 0, 1, 1,[])
 
+   fh, fw = hd_frames[0].shape[:2]
+   hdm_x_720 = 1280 / fw
+   hdm_y_720 = 720 / fh
+
    best_meteor, hd_frames, hd_color_frames, median_frame, mask_img = fireball_phase1(hd_frames, hd_color_frames, subframes,sum_vals,max_vals,pos_vals, video_file, json_conf, jsf, jdata, best_meteor, nomask)
+   best_meteor, frame_data = fireball_fill_frame_data(best_meteor, hd_color_frames)
+
+   print("FNS",best_meteor['ofns'])
+   print("XS",best_meteor['oxs'])
+   print("YS",best_meteor['oys'])
+   print("INTS",best_meteor['oint'])
+   print("DIST:", best_meteor['fs_dist'])
+      
+
+
    if jdata is None:
       jdata = {}
       jdata['best_meteor'] = best_meteor
       save_json_file(jsf, jdata)
    #fireball_plot_points(best_meteor)
-   #best_meteor, frame_data = fireball_fill_frame_data(best_meteor, hd_color_frames)
+   #print("BEST:", best_meteor)
+   #exit()
+   if best_meteor is None:
+      # detection failed, flag JSF.
+      jdata['rejected'] = 1
+      jdata['rejected_desc'] = "No best meteor found."
+      save_json_file(jsf, jdata)
+      print("No meteor detected.", jsf)
+      return()
+
+   if max(best_meteor['oint']) < 1000000:
+      best_meteor['ccxs'] = []
+      best_meteor['ccys'] = []
+      for i in range(0, len(best_meteor['oxs'])):
+         cx = int((best_meteor['oxs'][i] + int(best_meteor['ows'][i]/2)) * hdm_x_720)
+         cy = int((best_meteor['oys'][i] + int(best_meteor['ohs'][i]/2)) * hdm_y_720)
+         best_meteor['ccxs'].append(cx)
+         best_meteor['ccys'].append(cy)
+      jdata['best_meteor'] = best_meteor
+      if "hd_trim" in jdata:
+         hd_trim = jdata['hd_trim']
+      else:
+         hd_trim = None
+      #print(base_js['meteor_frame_data'])
+      best_meteor = apply_calib(video_file, best_meteor, json_conf)
+      base_js, base_jsr = make_base_meteor_json(video_file, hd_trim,best_meteor)
+      print("BASE:", base_js)
+      jsfr = jsf.replace(".json", "-reduced.json") 
+      save_json_file(jsf, jdata)
+      save_json_file(jsfr, base_jsr)
+      print("Small meteor don't need to refine", max(best_meteor['oint']))
+      print("CCXS:", best_meteor['ccxs'])
+      print("CCYS:", best_meteor['ccys'])
+      make_roi_video(video_file,best_meteor, hd_color_frames, json_conf)
+      return()
+   else:
+      jdata['best_meteor'] = best_meteor
+      save_json_file(jsf, jdata)
+      print("big meteor lets refine", max(best_meteor['oint']))
+      #return()
+
+
    best_meteor = fireball_phase3(video_file, json_conf, jsf, jdata, best_meteor, nomask, hd_frames, hd_color_frames, median_frame, mask_img,5)
+
    fireball_plot_points(best_meteor)
    best_meteor = apply_calib(video_file, best_meteor,json_conf)
    jdata['best_meteor'] = best_meteor
@@ -937,25 +1034,26 @@ def fireball_plot_points(bm):
          ny = int(oy + (oh/2))
       plot[ny,nx] = 255
       print(i, fn, ox, oy, nx, ny)
-   cv2.imshow('plot', plot)
-   cv2.waitKey(0)
+   cv2.imshow('pepe', plot)
+   cv2.waitKey(30)
 
 def fireball_fill_frame_data(bm, frames):
    oh, ow = frames[0].shape[:2]
    hdm_x = 1280 / ow
-   hdm_y = 1280 / oh
+   hdm_y = 720 / oh
    # fill in frame data object first
 
    (dom_dir, quad, ideal_pos, ideal_roi_big_img) = get_movement_info(bm, 640, 640)
    print("DOM:", dom_dir, quad)
 
    frame_data = {}
-   for fn in range(bm['ofns'][0], bm['ofns'][-1]+1):
+   ff = bm['ofns'][0]
+   lf = bm['ofns'][-1] + 1
+   for fn in range(ff, lf):
       frame_data[fn] = {}
 
-   for i in range(0, len(bm['oxs'])):
-      
-      print(i,fn)
+   for i in range(0, len(bm['ofns'])):
+       
       fn = bm['ofns'][i]
       ox = int(bm['oxs'][i] )
       oy = int(bm['oys'][i] )
@@ -979,6 +1077,53 @@ def fireball_fill_frame_data(bm, frames):
       frame_data[fn]['ny'] = ny
       frame_data[fn]['oint'] = oint
 
+   for fn in frame_data:
+      if "ox" not in frame_data[fn]:
+         print("MISSING/FIX!")
+         frame_data[fn]['ox'] = int((frame_data[fn-1]['ox'] + frame_data[fn+1]['ox']) / 2)
+         frame_data[fn]['oy'] = int((frame_data[fn-1]['oy'] + frame_data[fn+1]['oy']) / 2)
+         frame_data[fn]['ow'] = frame_data[fn-1]['ow'] 
+         frame_data[fn]['oh'] = frame_data[fn-1]['oh'] 
+         frame_data[fn]['nx'] = int((frame_data[fn-1]['nx'] + frame_data[fn+1]['nx']) / 2)
+         frame_data[fn]['ny'] = int((frame_data[fn-1]['ny'] + frame_data[fn+1]['ny']) / 2)
+         frame_data[fn]['oint'] = 0
+      print(fn, frame_data[fn])
+
+   ofns = []
+   oxs = []
+   oys = []
+   ohs = []
+   ows = []
+   oint = []
+   ccxs = []
+   ccys = []
+   # Loop over new frame data and add to BM arrays
+   for fn in frame_data:
+      ofns.append(fn)
+      oxs.append(frame_data[fn]['ox'])
+      oys.append(frame_data[fn]['oy'])
+      ows.append(frame_data[fn]['ow'])
+      ohs.append(frame_data[fn]['oh'])
+      ccxs.append(frame_data[fn]['nx'])
+      ccys.append(frame_data[fn]['ny'])
+      oint.append(frame_data[fn]['oint'])
+
+   # update the BM object
+   bm['ofns'] = ofns
+   bm['oxs'] = oxs
+   bm['oys'] = oys
+   bm['ows'] = ows
+   bm['ohs'] = ohs
+   bm['ccxs'] = ccxs
+   bm['ccys'] = ccys
+   bm['oint'] = oint
+   return(bm, frame_data)
+
+
+
+
+   exit()
+   #return(bm, frame_data)
    # Loop over frames, identify missing frame data, acquire data for those frames, reformat data to BM 
    for fn in frame_data:
       frame = frames[fn]
@@ -1141,11 +1286,16 @@ def fireball_phase1(hd_frames, hd_color_frames, subframes,sum_vals,max_vals,pos_
    subs = []
    if hd_frames[0].shape[0] != fb_mask.shape[0] and hd_frames[0].shape[1] != fb_mask.shape[1] :
       fb_mask = cv2.resize(fb_mask, (hd_frames[0].shape[1], hd_frames[0].shape[0]))
+   past_points = []
    for frame in hd_frames:
       color_frame = hd_color_frames[frame_num]
-      if best_meteor is not None:
-         continue
+      #if best_meteor is not None:
+      #   continue
       frame = mask_stars(frame, cp)
+
+      frame = mask_points(frame, past_points )
+      cv2.imshow("FR", frame)
+      cv2.waitKey(0)
       frame = cv2.subtract(frame, fb_mask)
       meteor_on = 0
       subframe = cv2.subtract(frame, median_frame)
@@ -1187,10 +1337,14 @@ def fireball_phase1(hd_frames, hd_color_frames, subframes,sum_vals,max_vals,pos_
          #cv2.rectangle(subframe, (cx, cy), (cx+cw, cy+ch), (255,255,255), 3, cv2.LINE_AA)
          ccx = cx + int(cw / 2)
          ccy = cy + int(ch / 2)
+         size = int((cw+ch)/2)
+         past_points.append((ccx,ccy,size))
          cnt_img = frame[cy:cy+ch,cx:cx+cw]
          cnt_int = int(np.sum(cnt_img))
          #new_x, new_y = center_roi_blob(color_frame, ccx, ccy,int((cw+ch)/2)) 
          object, objects = find_object(objects, frame_num,cx, cy, cw, ch, cnt_int, HD, 0, None)
+         #print(objects[object]['fs_dist'])
+         #print(objects[object]['segs'])
          objects[object] = analyze_object(objects[object], 1,1)
          if "meteor" in objects[object]:
             if objects[object]['meteor'] == 1 and objects[object]['non_meteor'] == 0:
@@ -1205,7 +1359,8 @@ def fireball_phase1(hd_frames, hd_color_frames, subframes,sum_vals,max_vals,pos_
             desc = "OBJ:" + str(object) + " - " + objects[object]['report']['class'] 
             meteor_on = 1
             mark_objs.append([object, objects[object], ccx,ccy])
-      subframe = mark_up_meteor_frame(subframe, mark_objs, cp)
+      if SHOW == 1:
+         subframe = mark_up_meteor_frame(subframe, mark_objs, cp)
       
 
 
@@ -1220,7 +1375,7 @@ def fireball_phase1(hd_frames, hd_color_frames, subframes,sum_vals,max_vals,pos_
             #desc = str(obj)
             #cv2.putText(sframe, desc,  (10,70), cv2.FONT_HERSHEY_SIMPLEX, .4, (255, 255, 255), 1)
             cv2.imshow('pepe', sframe)
-            cv2.waitKey(30)
+            cv2.waitKey(0)
          i += 1
       frame_num = frame_num + 1
 
@@ -1229,8 +1384,10 @@ def fireball_phase1(hd_frames, hd_color_frames, subframes,sum_vals,max_vals,pos_
 
    print(objects)
    for obj in objects:
-      print("OBJ:", obj, len(objects[obj]['ofns']), objects[obj]['report']['bad_items'])
-   if best_meteor is None:
+      print("OBJ:", obj, len(objects[obj]['ofns']), objects[obj]['report']['bad_items'], objects[obj]['fs_dist'])
+   #print("BEST:", best_meteor)
+   #if best_meteor is None:
+   if True:
       max_int = 0
       best = None
       for obj in objects:
@@ -1246,8 +1403,8 @@ def fireball_phase1(hd_frames, hd_color_frames, subframes,sum_vals,max_vals,pos_
          print("No best object." )
          for obj in objects:
             print(obj, len(objects[obj]['ofns']), objects[obj]['report']['bad_items'])
-
-   best_meteor['cp'] = cp
+   if best_meteor is not None:
+      best_meteor['cp'] = cp
    return(best_meteor, hd_frames, hd_color_frames, median_frame,mask_img )
 
 def fireball_phase2(video_file, json_conf, jsf, jdata, best_meteor, nomask,hd_frames, hd_color_frames, median_frame, mask_img):
@@ -1570,7 +1727,7 @@ def fireball_phase3(video_file, json_conf, jsf, jdata, best_meteor, nomask,hd_fr
    new_new_ys = []
    est_xs = []
    est_ys = []
-
+   past_points = []
    for i in range(0, len(best_meteor['oxs'])):
       tf = len(best_meteor['oxs']) -1 
       fn = best_meteor['ofns'][i]
@@ -1578,13 +1735,15 @@ def fireball_phase3(video_file, json_conf, jsf, jdata, best_meteor, nomask,hd_fr
       frame = cv2.resize(frame, (1280,720))
       cur_x = best_meteor['ccxs'][i]
       cur_y = best_meteor['ccys'][i]
+
       ox1 = int(best_meteor['oxs'][i] * hdm_x)
       oy1 = int(best_meteor['oys'][i] * hdm_y)
       ow = best_meteor['ows'][i]*hdm_x
       oh = best_meteor['ohs'][i]*hdm_x
       ox2 = int(best_meteor['oxs'][i] * hdm_x) + int(best_meteor['ows'][i]*hdm_x)
       oy2 = int(best_meteor['oys'][i] * hdm_y) + int(best_meteor['ohs'][i]*hdm_y)
-      
+      size = int((ow+oh)/2) 
+      past_points.append((cur_x,cur_y,size))
 
       avg_size = (ow + oh) / 2
       rects = []
@@ -1690,8 +1849,9 @@ def apply_calib(video_file, best_meteor, json_conf):
    best_meteor['els'] = []
    for i in range(0, len(best_meteor['oxs'])):
       fn = best_meteor['ofns'][i]
-      est_x = best_meteor['est_xs'][i]
-      est_y = best_meteor['est_ys'][i]
+      if "est_x" in best_meteor:
+         est_x = best_meteor['est_xs'][i]
+         est_y = best_meteor['est_ys'][i]
       cx = best_meteor['ccxs'][i]
       cy = best_meteor['ccys'][i]
       tx, ty, ra ,dec , az, el = XYtoRADec(cx,cy,video_file,best_meteor['cp'],json_conf)
@@ -3456,7 +3616,7 @@ def find_object(objects, fn, cnt_x, cnt_y, cnt_w, cnt_h, intensity=0, hd=0, sd_m
    if hd == 1:
       obj_dist_thresh = 65 
    else:
-      obj_dist_thresh = 15 
+      obj_dist_thresh = 30 
 
    #if intensity > 2000:
    #   obj_dist_thresh = obj_dist_thresh * 2.5
@@ -3516,11 +3676,21 @@ def find_object(objects, fn, cnt_x, cnt_y, cnt_w, cnt_h, intensity=0, hd=0, sd_m
          
             if dist < obj_dist_thresh : #and last_frame_diff < 15:
                #if this is linked to a meteor only associate if the point is further from the start than the last recorded point
+               if len(objects[obj]['oxs']) > 3:
+                  last_x = objects[obj]['oxs'][-1]
+                  last_y = objects[obj]['oys'][-1]
+                  last_x2 = objects[obj]['oxs'][-2]
+                  last_y2 = objects[obj]['oys'][-2]
+                  last_seg_dist = calc_dist((last_x,last_y), (last_x2, last_y2))
+                  this_seg_dist = calc_dist((last_x,last_y), (cnt_x, cnt_y))
+                  abs_diff = abs(last_seg_dist - this_seg_dist)
+                  print("ABS DIFF IS:", abs_diff)
+                  if abs_diff > 5:
+                     found = 0
                found = 1
                found_obj = obj
-               #if obj not in matched:
-               closest_objs.append((obj,dist))
                matched[obj] = 1
+               closest_objs.append((obj,dist))
             else: 
                not_close_objs.append((obj,dist,last_frame_diff))
 
@@ -3548,12 +3718,16 @@ def find_object(objects, fn, cnt_x, cnt_y, cnt_w, cnt_h, intensity=0, hd=0, sd_m
       objects[obj_id]['ows'] = []
       objects[obj_id]['ohs'] = []
       objects[obj_id]['oint'] = []
+      objects[obj_id]['fs_dist'] = []
+      objects[obj_id]['segs'] = []
       objects[obj_id]['ofns'].append(fn)
       objects[obj_id]['oxs'].append(cnt_x)
       objects[obj_id]['oys'].append(cnt_y)
       objects[obj_id]['ows'].append(cnt_w)
       objects[obj_id]['ohs'].append(cnt_h)
       objects[obj_id]['oint'].append(intensity)
+      objects[obj_id]['fs_dist'].append(0)
+      objects[obj_id]['segs'].append(0)
       found_obj = obj_id
    if found == 1:
       #if objects[found_obj]['report']['obj_class'] == "meteor":
@@ -3572,12 +3746,33 @@ def find_object(objects, fn, cnt_x, cnt_y, cnt_w, cnt_h, intensity=0, hd=0, sd_m
 
       #else:
       if fn not in objects[found_obj]['ofns']:
+         cx = cnt_x + int(cnt_w/2)
+         cy = cnt_y + int(cnt_h/2)
+         if len(objects[found_obj]['oxs']) >= 1:
+            fx = objects[found_obj]['oxs'][0] + int(objects[found_obj]['ows'][0]/2)
+            fy = objects[found_obj]['oys'][0] + int(objects[found_obj]['ohs'][0]/2)
+            lx = objects[found_obj]['oxs'][-1] + int(objects[found_obj]['ows'][-1]/2)
+            ly = objects[found_obj]['oys'][-1] + int(objects[found_obj]['ohs'][-1]/2)
+            last_fs_dist = calc_dist((fx,fy),(lx,ly))
+            fs_dist = calc_dist((fx,fy),(cx,cy))
+            this_seg = fs_dist - last_fs_dist
+            if len(objects[found_obj]['segs']) > 3:
+               med_seg = np.median(objects[found_obj]['segs'])
+               
+            objects[found_obj]['fs_dist'].append(fs_dist)
+            objects[found_obj]['segs'].append(this_seg)
+         else:
+            objects[found_obj]['fs_dist'].append(0)
+            objects[found_obj]['segs'].append(0)
+
+
          objects[found_obj]['ofns'].append(fn)
          objects[found_obj]['oxs'].append(cnt_x)
          objects[found_obj]['oys'].append(cnt_y)
          objects[found_obj]['ows'].append(cnt_w)
          objects[found_obj]['ohs'].append(cnt_h)
          objects[found_obj]['oint'].append(intensity)
+
 
    return(found_obj, objects)
 
@@ -3644,6 +3839,8 @@ def detect_in_vals(vals_file, masks=None, vals_data=None):
 
    # analyze the objects for a first run meteor detection (strict=0) 
    for id in objects:
+      print("FS", objects[id]['fs_dist'])
+      print("SEGS:", objects[id]['segs'])
       objects[id] = analyze_object(objects[id], 0,0)
    objects = filter_bad_objects(objects)
 

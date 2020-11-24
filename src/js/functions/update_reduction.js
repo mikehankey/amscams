@@ -44,7 +44,7 @@ function update_reduction_on_canvas_and_table(json_resp) {
         if (id_str.length == 3) {
            pid = "0" + id_str
         }
-        if (id_str.length == 3) {
+        if (id_str.length == 4) {
            pid = id_str
         }
         var thumb_path = my_image.substring(0,my_image.indexOf('-half')) //+ '-frm' + frame_id + '.png';
