@@ -3178,10 +3178,16 @@ def reduce_meteor_new(json_conf,form):
    #Name of the option in the <select>
    if cal_params_file is not None:
       template = template.replace("{SELECTED_CAL_PARAMS_FILE_NAME}", get_meteor_date(cal_params_file))
-
-   prefix = sd_video_file.replace(".mp4", "-frm")
-   prefix = prefix.replace("SD/proc2/", "meteors/")
-   prefix = prefix.replace("/passed", "")
+   sdfn = sd_video_file.split("/")[-1]
+   sdfn_root = sdfn.replace(".mp4", "")
+   cache_dir = "/mnt/ams2/CACHE/" + sdfn_root + "/"
+   if cfe(cache_dir,) == 0:
+      os.makedirs(cache_dir)
+   prefix = cache_dir + sdfn + "-frm"
+   print (prefix)
+  # prefix = sd_video_file.replace(".mp4", "-frm")
+  # prefix = prefix.replace("SD/proc2/", "CACHE/")
+  # prefix = prefix.replace("/passed", "")
 
    # STARS TABLE
 
