@@ -87,12 +87,10 @@
             
             
             <div class="box">
-                    <h2>Calibration &amp; Reduction</h2>
-                    <p class="mb-1">Load a calibration parameters</p>
-                    <select id="cal_param_selected" class="custom-select">
-                        <option value="{SELECTED_CAL_PARAMS_FILE}">{SELECTED_CAL_PARAMS_FILE_NAME}</option>
-                    </select>
-                    
+                    <h2>Calibration</h2>
+                    <p class="mb-1">Calibration parameters</p>
+                    {CAL_PARAMS}
+                    <!-- 
                     <div class="row mt-3">
                         <span id="star_counter" class="col-12 pb-2"></span>
                         <div id="reduc_info" class="col">
@@ -105,7 +103,7 @@
                           <a id="reduce_meteor" class="btn btn-primary btn-v"><i class="icon-reduce_meteor"></i> Reduce Meteor</a>
                         </div>
                     </div>
-
+                    -->
                     <div class="row mt-3">
                         <div class="col pl-4 pr-4 "> 
                               {ARCHIVE_LINK}
