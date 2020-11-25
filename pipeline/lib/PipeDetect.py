@@ -3,6 +3,7 @@
    Pipeline Detection Routines
 
 '''
+import math
 import scipy.optimize
 from lib.UIJavaScript import *
 import glob
@@ -15,7 +16,7 @@ from lib.PipeAutoCal import fn_dir, get_cal_files, get_image_stars, get_catalog_
 from lib.PipeVideo import ffmpeg_splice, find_hd_file, load_frames_fast, find_crop_size, ffprobe
 from lib.PipeUtil import load_json_file, save_json_file, cfe, get_masks, convert_filename_to_date_cam, buffered_start_end, get_masks, compute_intensity , bound_cnt, day_or_night
 from lib.DEFAULTS import *
-from lib.PipeMeteorTests import big_cnt_test, calc_line_segments, calc_dist, unq_points, analyze_intensity, calc_obj_dist, meteor_direction, meteor_direction_test, check_pt_in_mask, filter_bad_objects, obj_cm, meteor_dir_test, ang_dist_vel
+from lib.PipeMeteorTests import big_cnt_test, calc_line_segments, calc_dist, unq_points, analyze_intensity, calc_obj_dist, meteor_direction, meteor_direction_test, check_pt_in_mask, filter_bad_objects, obj_cm, meteor_dir_test, ang_dist_vel, gap_test
 from lib.PipeImage import stack_frames
 
 import numpy as np
@@ -33,8 +34,13 @@ def confirm_meteors(date ):
          meteors.append(mf)
    for meteor in meteors:
       meteor_vid = meteor.replace(".json", ".mp4")
-      cmd = "./Process.py fireball " + meteor_vid
-      os.system(cmd)
+      mj = load_json_file(meteor)
+      if "rejected" in mj or "best_meteor" in mj:
+         print("ALREADY DONE.")
+      else:
+         cmd = "./Process.py fireball " + meteor_vid
+         os.system(cmd)
+         print(cmd)
 #      exit()
 
 def reject_meteors(date, jsfs):
@@ -675,7 +681,6 @@ def mark_up_meteor_frame(frame, mark_objs,cp):
       #cv2.rectangle(frame, (rx1, ry1), (rx2, ry2), (255,0,0), 1, cv2.LINE_AA)
    #   cv2.circle(frame,(six,siy), 10, (255,255,255), 1)
    #cv2.imshow('pepe', full_frame)
-   #cv2.waitKey(0)
 
    for data in mark_objs:
       #print("DATA:", data)
@@ -784,7 +789,6 @@ def mask_stars(img, cp):
          img[by1:by2,bx1:bx2] = [0,0,0]
       #cv2.circle(img,(sd_six,sd_siy), 10, (255,255,255), 1)
    #cv2.imshow('pepe', img)
-   #cv2.waitKey(0)
    return(img)
 
 def make_roi_video(video_file,bm, frames, json_conf):
@@ -827,13 +831,30 @@ def make_roi_video(video_file,bm, frames, json_conf):
       roi_img = of[ry1:ry2,rx1:rx2]
       roi_frames.append(roi_img)
          # this only handles the left side now BUG/FIX
+      side = None
       if roi_img.shape[0] != roi_size2 or roi_img.shape[1] != roi_size2:
          roi_p = np.zeros((roi_size2,roi_size2,3),dtype=np.uint8)
-         px = roi_size2 - roi_img.shape[1]
-         py = roi_size2 - roi_img.shape[0]
-         roi_p[py:roi_size2, px:roi_size2] = roi_img
+         if roi_img.shape[1] != roi_size2:
+            #problem with left or right side edge
+            px = roi_size2 - roi_img.shape[1]
+            py = roi_size2 - roi_img.shape[0]
+            if rx1 < 100:
+               side = "left"
+               roi_p[py:roi_size2, px:roi_size2] = roi_img
+            else:
+
+               side = "right"
+               rh, rw = roi_img.shape[:2]
+               print("RIGHT SIDE ROI IMG:", roi_img.shape)
+               roi_p[py:rh, 0:rw] = roi_img
+         if roi_img.shape[0] != roi_size2:
+            #problem with top or bottom side edge
+            px = roi_size2 - roi_img.shape[1]
+            py = roi_size2 - roi_img.shape[0]
+         #roi_p[py:roi_size2, px:roi_size2] = roi_img
       else:
          roi_p = roi_img
+ 
       ffn = "{:04d}".format(int(j))
       outfile = prefix + ffn + ".jpg"
       cv2.imwrite(outfile, roi_p)
@@ -870,7 +891,24 @@ def fireball(video_file, json_conf, nomask=0):
    hdm_y_720 = 720 / fh
 
    best_meteor, hd_frames, hd_color_frames, median_frame, mask_img = fireball_phase1(hd_frames, hd_color_frames, subframes,sum_vals,max_vals,pos_vals, video_file, json_conf, jsf, jdata, best_meteor, nomask)
-   best_meteor, frame_data = fireball_fill_frame_data(best_meteor, hd_color_frames)
+   gap_test_res = None
+   if best_meteor is not None:
+      gap_test_res , gap_test_info = gap_test(best_meteor['ofns'])
+      if gap_test_res == 0:
+         print("GAP TEST FAILED. PLANE!")
+         best_meteor = None
+   if best_meteor is None:
+      # detection failed, flag JSF.
+      jdata['rejected'] = 1
+      jdata['rejected_desc'] = "No best meteor found."
+      if gap_test_res is not None and gap_test_res == 0:
+         jdata['gap_test_info'] = gap_test_info
+      save_json_file(jsf, jdata)
+      print("No meteor detected.", jsf)
+      return()
+
+
+   best_meteor, frame_data = fireball_fill_frame_data(video_file,best_meteor, hd_color_frames)
 
    print("FNS",best_meteor['ofns'])
    print("XS",best_meteor['oxs'])
@@ -887,13 +925,6 @@ def fireball(video_file, json_conf, nomask=0):
    #fireball_plot_points(best_meteor)
    #print("BEST:", best_meteor)
    #exit()
-   if best_meteor is None:
-      # detection failed, flag JSF.
-      jdata['rejected'] = 1
-      jdata['rejected_desc'] = "No best meteor found."
-      save_json_file(jsf, jdata)
-      print("No meteor detected.", jsf)
-      return()
 
    if max(best_meteor['oint']) < 1000000:
       best_meteor['ccxs'] = []
@@ -1037,7 +1068,9 @@ def fireball_plot_points(bm):
    cv2.imshow('pepe', plot)
    cv2.waitKey(30)
 
-def fireball_fill_frame_data(bm, frames):
+def fireball_fill_frame_data(video_file, bm, frames):
+   trim_num = get_trim_num(video_file) 
+   (f_datetime, cam, f_date_str,fy,fmin,fd, fh, fm, fs) = convert_filename_to_date_cam(video_file)
    oh, ow = frames[0].shape[:2]
    hdm_x = 1280 / ow
    hdm_y = 720 / oh
@@ -1077,17 +1110,75 @@ def fireball_fill_frame_data(bm, frames):
       frame_data[fn]['ny'] = ny
       frame_data[fn]['oint'] = oint
 
-   for fn in frame_data:
+   extra_sec = int(trim_num) / 25
+   start_trim_frame_time = f_datetime + datetime.timedelta(0,extra_sec)
+   print("")
+   print("")
+   print("")
+   print("")
+   bad_frames = []
+   for fn in sorted(frame_data.keys()):
+      print(fn, frame_data[fn])
+      prev_frame = None
+      next_frame = None
+      next_found = 0
+      prev_found = 0
       if "ox" not in frame_data[fn]:
          print("MISSING/FIX!")
-         frame_data[fn]['ox'] = int((frame_data[fn-1]['ox'] + frame_data[fn+1]['ox']) / 2)
-         frame_data[fn]['oy'] = int((frame_data[fn-1]['oy'] + frame_data[fn+1]['oy']) / 2)
-         frame_data[fn]['ow'] = frame_data[fn-1]['ow'] 
-         frame_data[fn]['oh'] = frame_data[fn-1]['oh'] 
-         frame_data[fn]['nx'] = int((frame_data[fn-1]['nx'] + frame_data[fn+1]['nx']) / 2)
-         frame_data[fn]['ny'] = int((frame_data[fn-1]['ny'] + frame_data[fn+1]['ny']) / 2)
-         frame_data[fn]['oint'] = 0
-      print(fn, frame_data[fn])
+         for i in range(1, 5):
+            prev_frame = fn - i
+            if "ox" in frame_data[prev_frame]:
+               print("PREV FRAME IS: ", prev_frame)
+               prev_found = 1
+               break
+         for i in range(1, 5):
+            next_frame = fn + i
+            if "ox" in frame_data[next_frame]:
+               print("NEXT FRAME IS: ", next_frame)
+               next_found = 1
+               break
+         print("PN F:", prev_found, next_found)
+         if (next_found == 0 or prev_found == 0):
+            print("FDP:", frame_data[prev_frame])
+            print("FDN:", frame_data[next_frame])
+            print("There is no prev or next frame", prev_frame, next_frame, next_found, prev_found)
+            bad_frames.append(fn)
+         else:
+            gap_len = next_frame - prev_frame
+            if gap_len > 1:
+               print("GAP prev/next:", gap_len, prev_frame, next_frame)
+               print("FDP:", frame_data[prev_frame])
+               print("FDN:", frame_data[next_frame])
+               print("PREVX:", frame_data[prev_frame]['ox'] , frame_data[next_frame]['ox'])
+               print("PREVY:", frame_data[prev_frame]['oy'] , frame_data[next_frame]['oy'])
+               dif_x = int((frame_data[next_frame]['ox'] - frame_data[prev_frame]['ox']) / 2 )
+               dif_y = int((frame_data[next_frame]['oy'] - frame_data[prev_frame]['oy']) / 2)
+               frame_data[fn]['ox'] = frame_data[prev_frame]['ox'] + dif_x
+               frame_data[fn]['oy'] = frame_data[prev_frame]['oy'] + dif_y
+               frame_data[fn]['nx'] = frame_data[prev_frame]['nx'] + dif_x
+               frame_data[fn]['ny'] = frame_data[prev_frame]['ny'] + dif_y
+               frame_data[fn]['ow'] = frame_data[prev_frame]['ow']
+               frame_data[fn]['oh'] = frame_data[prev_frame]['oh']
+               frame_data[fn]['oint'] = 0
+               print("FILL DIF XY:", fn, frame_data[fn])
+               #exit()
+
+            # here we have the easiest fix of just 1 missing frame in the middle with entries on both sides
+            elif fn+1 < len(frame_data.keys()) and fn-1 > 0:
+               frame_data[fn]['ox'] = int((frame_data[fn-1]['ox'] + frame_data[fn+1]['ox']) / 2)
+               frame_data[fn]['oy'] = int((frame_data[fn-1]['oy'] + frame_data[fn+1]['oy']) / 2)
+               frame_data[fn]['nx'] = int((frame_data[fn-1]['nx'] + frame_data[fn+1]['nx']) / 2)
+               frame_data[fn]['ny'] = int((frame_data[fn-1]['ny'] + frame_data[fn+1]['ny']) / 2)
+               frame_data[fn]['ow'] = frame_data[fn-1]['ow'] 
+               frame_data[fn]['oh'] = frame_data[fn-1]['oh'] 
+               frame_data[fn]['oint'] = 0
+            else:
+               print("Can't fix", fn, frame_data[fn])
+      if "dt" not in frame_data[fn]:
+         extra_sec = fn / 25
+         frame_time = start_trim_frame_time + datetime.timedelta(0,extra_sec)
+         frame_time_str = frame_time.strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]
+         frame_data[fn]['dt'] = frame_time_str
 
    ofns = []
    oxs = []
@@ -1097,16 +1188,20 @@ def fireball_fill_frame_data(bm, frames):
    oint = []
    ccxs = []
    ccys = []
+   dts= []
    # Loop over new frame data and add to BM arrays
    for fn in frame_data:
-      ofns.append(fn)
-      oxs.append(frame_data[fn]['ox'])
-      oys.append(frame_data[fn]['oy'])
-      ows.append(frame_data[fn]['ow'])
-      ohs.append(frame_data[fn]['oh'])
-      ccxs.append(frame_data[fn]['nx'])
-      ccys.append(frame_data[fn]['ny'])
-      oint.append(frame_data[fn]['oint'])
+      if 'ox' in frame_data[fn]:
+         ofns.append(fn)
+         oxs.append(frame_data[fn]['ox'])
+         oys.append(frame_data[fn]['oy'])
+         ows.append(frame_data[fn]['ow'])
+         ohs.append(frame_data[fn]['oh'])
+         ccxs.append(frame_data[fn]['nx'])
+         ccys.append(frame_data[fn]['ny'])
+         oint.append(frame_data[fn]['oint'])
+         dts.append(frame_data[fn]['dt'])
+      print("FD:", fn, frame_data[fn])
 
    # update the BM object
    bm['ofns'] = ofns
@@ -1117,6 +1212,10 @@ def fireball_fill_frame_data(bm, frames):
    bm['ccxs'] = ccxs
    bm['ccys'] = ccys
    bm['oint'] = oint
+   bm['dt'] = dts
+
+   for d in frame_data:
+      print(d, frame_data[d])
    return(bm, frame_data)
 
 
@@ -1269,6 +1368,11 @@ def fireball_phase1(hd_frames, hd_color_frames, subframes,sum_vals,max_vals,pos_
    # load calib
    cp = calib_image(video_file, hd_frames[0], json_conf)
    cp['user_stars'] = get_image_stars(video_file, hd_frames[0].copy(), json_conf, 1)
+   x = cp['total_res_px']
+   if math.isnan(x) is True:
+      print("ISNANA")
+      cp['total_res_deg'] = 999
+      cp['total_res_px'] = 999
 
    if cfe(med_file) == 0:
       median_frame = cv2.convertScaleAbs(np.median(np.array(hd_frames), axis=0))
@@ -1294,8 +1398,8 @@ def fireball_phase1(hd_frames, hd_color_frames, subframes,sum_vals,max_vals,pos_
       frame = mask_stars(frame, cp)
 
       frame = mask_points(frame, past_points )
-      cv2.imshow("FR", frame)
-      cv2.waitKey(0)
+      #cv2.imshow("FR", frame)
+      #cv2.waitKey(30)
       frame = cv2.subtract(frame, fb_mask)
       meteor_on = 0
       subframe = cv2.subtract(frame, median_frame)
@@ -1308,14 +1412,13 @@ def fireball_phase1(hd_frames, hd_color_frames, subframes,sum_vals,max_vals,pos_
       sub_diff = cv2.subtract(subframe, last_sub)
       last_sub = subframe.copy()
       subs.append(last_sub)
-
       subframe = sub_diff
 
       sdframe = cv2.resize(sub_diff, (640, 360))
 
-      if mask_img is not None and nomask ==0:
-         subframe = cv2.subtract(frame, mask_img)
-         sub_diff = cv2.subtract(sub_diff, mask_img)
+      #if mask_img is not None and nomask ==0:
+      #   subframe = cv2.subtract(frame, mask_img)
+      #   sub_diff = cv2.subtract(sub_diff, mask_img)
 
 
       bx,by = pos_vals[i]
@@ -1375,7 +1478,7 @@ def fireball_phase1(hd_frames, hd_color_frames, subframes,sum_vals,max_vals,pos_
             #desc = str(obj)
             #cv2.putText(sframe, desc,  (10,70), cv2.FONT_HERSHEY_SIMPLEX, .4, (255, 255, 255), 1)
             cv2.imshow('pepe', sframe)
-            cv2.waitKey(0)
+            cv2.waitKey(30)
          i += 1
       frame_num = frame_num + 1
 
@@ -1679,7 +1782,7 @@ def center_roi_blob(frame, cx, cy,cnt_size):
       roi_disp[0:360, 0:360] = roi_p
       roi_disp[0:360, 360:720] = new_roi_p 
       cv2.imshow('roi_center', roi_disp)
-      cv2.waitKey(0)
+      cv2.waitKey(30)
    return(new_x, new_y)
 
 
@@ -1950,7 +2053,7 @@ def meteor_detect_image(mo, dimg, objects, cp):
       y = mo['oys'][i]
       print(i, x,y)
    cv2.imshow('pepe', dimg)
-   cv2.waitKey(0)
+   cv2.waitKey(30)
 
 def dom_meteor(meteors, json_conf):
    mcache = {}
@@ -2962,7 +3065,6 @@ def get_movement_info(meteor, cnt_w, cnt_h):
    ideal_img = np.zeros((300,300),dtype=np.uint8)
    #ideal_img[ideal_y1:ideal_y2, ideal_x1:ideal_x2] = 255
    #cv2.imshow("IDEAL", ideal_img)
-   #cv2.waitKey(0)
    return(dom_dir, quad, ideal, ideal_img)
 
 
@@ -4641,7 +4743,6 @@ def find_contours_in_frame(frame, thresh=25 ):
          rc = rc + 1
 
    #cv2.imshow("pepe", threshold)
-   #cv2.waitKey(0)
 
    return(contours, recs)
 

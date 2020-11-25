@@ -73,6 +73,7 @@ def day_or_night(capture_date, json_conf):
 
 
 def convert_filename_to_date_cam(file):
+   #print("FILE:",file)
    el = file.split("/")
    filename = el[-1]
    if "trim" in filename:

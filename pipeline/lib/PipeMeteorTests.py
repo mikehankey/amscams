@@ -1,6 +1,36 @@
 import math
 import numpy as np
 
+def gap_test(fns):
+   total_gaps = 0
+   gap_events = 0
+   total_fns = len(fns)
+   fn_dur = fns[-1] - fns[0]
+   for i in range(0, len(fns)):
+      fn = fns[i]
+      if i > 0 and last_fn is not None:
+         gap = fn - last_fn - 1
+         if gap > 1:
+            print("FN GAP:", fn, last_fn, gap)
+            total_gaps += gap
+            gap_events += 1
+      last_fn = fn
+
+   print("GAP TEST RESULTS:")
+   print("Total FNS:", total_fns)
+   print("FN Dur:", fn_dur)
+   print("Total Gaps:", total_gaps)
+   print("Gap Events:", gap_events)
+   gap_test_info = {}
+   gap_test_info['total_fns'] = total_fns
+   gap_test_info['fn_dur'] = fn_dur
+   gap_test_info['total_gaps'] = total_gaps
+   gap_test_info['gap_events'] = gap_events
+   if gap_events > 5 or total_gaps > 10:
+      return(0, gap_test_info)
+   else:
+      return(1, gap_test_info)
+
 def analyze_intensity(ints):
    pos_vals = []
    neg_vals = []
