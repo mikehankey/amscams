@@ -763,7 +763,6 @@ def mask_points(img, points ):
       if tp - tc > 10:
          size = 20
 
-      print("BLOCK POINTS:", x,y,size)
       bx1,by1,bx2,by2 = bound_cnt(x, y,img.shape[1],img.shape[0], size)
       if len(img.shape) == 2:
          img[by1:by2,bx1:bx2] = [0]
@@ -801,31 +800,25 @@ def make_roi_video(video_file,bm, frames, json_conf):
    prefix = cache_dir + vid_base + "-frm"
    if cfe(cache_dir, 1) == 0:
       os.makedirs(cache_dir)
-   print("CACHE DIR:", cache_dir)
-   roi_size = 25
+   roi_size = 50
    roi_size2 = roi_size * 2
    roi_frames = []
    for j in range(0, len(frames)):
       i = j - bm['ofns'][0]  
-      print(j,i, bm['ofns'][0], bm['ofns'][-1])
       if bm['ofns'][0] <= j < bm['ofns'][-1] - 1:
          # meteor is active
-         print("ACTIVE", j, i, len(bm['ccxs']))
          rx = bm['ccxs'][i]
          ry = bm['ccys'][i]
       else:
-         print("NOT ACTIVE", j)
          # meteor is inactive (use 1st frame / last frame for crop location on missing frames)
          if j < bm['ofns'][0]:
             rx = bm['ccxs'][0]
             ry = bm['ccys'][0]
-            print("BEF BEFORE", i, bm['ofns'][0])
          elif j > bm['ofns'][-1]:
             rx = bm['ccxs'][-1]
             ry = bm['ccys'][-1]
-            print("AFT AFTER", i, bm['ofns'][-1])
 
-      rx1,ry1,rx2,ry2 = bound_cnt(rx, ry,1280,720, 25)
+      rx1,ry1,rx2,ry2 = bound_cnt(rx, ry,1280,720, roi_size)
       of = frames[j].copy()
       of = cv2.resize(of, (1280,720))
       roi_img = of[ry1:ry2,rx1:rx2]
@@ -834,31 +827,24 @@ def make_roi_video(video_file,bm, frames, json_conf):
       side = None
       if roi_img.shape[0] != roi_size2 or roi_img.shape[1] != roi_size2:
          roi_p = np.zeros((roi_size2,roi_size2,3),dtype=np.uint8)
-         if roi_img.shape[1] != roi_size2:
-            #problem with left or right side edge
-            px = roi_size2 - roi_img.shape[1]
-            py = roi_size2 - roi_img.shape[0]
-            if rx1 < 100:
-               side = "left"
-               roi_p[py:roi_size2, px:roi_size2] = roi_img
-            else:
-
-               side = "right"
-               rh, rw = roi_img.shape[:2]
-               print("RIGHT SIDE ROI IMG:", roi_img.shape)
-               roi_p[py:rh, 0:rw] = roi_img
-         if roi_img.shape[0] != roi_size2:
-            #problem with top or bottom side edge
-            px = roi_size2 - roi_img.shape[1]
-            py = roi_size2 - roi_img.shape[0]
-         #roi_p[py:roi_size2, px:roi_size2] = roi_img
+         px1 = 0
+         px2 = roi_img.shape[1]
+         if ry > 720/2:
+            # object is near the bottom edge
+            py1 = 0
+            py2 = roi_img.shape[0]
+         else:
+            py1 = roi_size2 - roi_img.shape[0]  
+            py2 = roi_size2 
+         roi_p[py1:py2, px1:px2] = roi_img
+         cv2.imshow("ROIPXXX", roi_p)
+         cv2.waitKey(0)
       else:
          roi_p = roi_img
  
       ffn = "{:04d}".format(int(j))
       outfile = prefix + ffn + ".jpg"
       cv2.imwrite(outfile, roi_p)
-      print(outfile)
       if SHOW == 1:
          cv2.rectangle(of, (rx1, ry1), (rx2, ry2), (255,255,255), 1, cv2.LINE_AA)
          cv2.imshow("pepe", of)
@@ -885,6 +871,10 @@ def fireball(video_file, json_conf, nomask=0):
    #print("JDATA:", jdata)
    #exit()
    hd_frames,hd_color_frames,subframes,sum_vals,max_vals,pos_vals = load_frames_fast(video_file, json_conf, 0, 0, 1, 1,[])
+   tracking_updates = {}
+
+   #make_roi_video(video_file,best_meteor, hd_color_frames, json_conf)
+   #exit()
 
    fh, fw = hd_frames[0].shape[:2]
    hdm_x_720 = 1280 / fw
@@ -909,6 +899,9 @@ def fireball(video_file, json_conf, nomask=0):
 
 
    best_meteor, frame_data = fireball_fill_frame_data(video_file,best_meteor, hd_color_frames)
+   #tracking_file = video_file.replace(".mp4", "-tracking.mp4")
+   #tracking_updates = fireball_tracking_center(tracking_file)
+   #best_meteor, frame_data = fireball_fill_frame_data(video_file,best_meteor, hd_color_frames, tracking_updates)
 
    print("FNS",best_meteor['ofns'])
    print("XS",best_meteor['oxs'])
@@ -1068,7 +1061,7 @@ def fireball_plot_points(bm):
    cv2.imshow('pepe', plot)
    cv2.waitKey(30)
 
-def fireball_fill_frame_data(video_file, bm, frames):
+def fireball_fill_frame_data(video_file, bm, frames, tracking_updates = None):
    trim_num = get_trim_num(video_file) 
    (f_datetime, cam, f_date_str,fy,fmin,fd, fh, fm, fs) = convert_filename_to_date_cam(video_file)
    oh, ow = frames[0].shape[:2]
@@ -1191,8 +1184,21 @@ def fireball_fill_frame_data(video_file, bm, frames):
    dts= []
    # Loop over new frame data and add to BM arrays
    for fn in frame_data:
+      if tracking_updates is not None:
+         if fn in tracking_updates:
+            mod_x, mod_y = tracking_updates[fn]
+         else:
+            mod_x, mod_y = 0,0
+      else:
+            mod_x, mod_y = 0,0
+      print("MOD XY:", fn, mod_x, mod_y, frame_data[fn]['nx'], frame_data[fn]['ny'])
+      print("FD BEFORE MOD:", fn, frame_data[fn])
       if 'ox' in frame_data[fn]:
          ofns.append(fn)
+         frame_data[fn]['ox'] = frame_data[fn]['ox']+mod_x
+         frame_data[fn]['oy'] = frame_data[fn]['oy']+mod_y
+         frame_data[fn]['nx'] = frame_data[fn]['nx']+mod_x
+         frame_data[fn]['ny'] = frame_data[fn]['ny']+mod_y
          oxs.append(frame_data[fn]['ox'])
          oys.append(frame_data[fn]['oy'])
          ows.append(frame_data[fn]['ow'])
@@ -1201,7 +1207,7 @@ def fireball_fill_frame_data(video_file, bm, frames):
          ccys.append(frame_data[fn]['ny'])
          oint.append(frame_data[fn]['oint'])
          dts.append(frame_data[fn]['dt'])
-      print("FD:", fn, frame_data[fn])
+      print("FD AFTER MOD:", fn, frame_data[fn])
 
    # update the BM object
    bm['ofns'] = ofns
@@ -1327,6 +1333,98 @@ def fireball_decel(video_file, json_conf, jsf, jdata, best_meteor, nomask, hd_fr
       last_x = x
       last_y = y
 
+def grid_intensity_center(roi_p, cnt_size=5): 
+
+   rh, rw = roi_p.shape[:2]
+   scale_xy = 360/rw
+   roi_p = cv2.resize(roi_p, (360, 360))
+   cnt_size = cnt_size * scale_xy 
+   grid_size = 5 
+   best_sum = 0
+   best_grid = None
+   grid_squares = []
+   roi_size = rh
+   roi_size2 = roi_size 
+   roi_div = 360 / roi_size2
+   cx = 180
+   cy = 180
+   for col in range(0, int(360/grid_size)):
+      for row in range(0, int(360/grid_size)):
+         gx1 = col * grid_size
+         gy1 = row * grid_size
+         gx2 = gx1 + grid_size
+         gy2 = gy1 + grid_size
+         grid_sum_img = roi_p[gy1:gy2,gx1:gx2]
+         grid_sum = int(np.sum(grid_sum_img))
+         grid_squares.append((gx1,gy1,gx2,gy2,grid_sum))
+
+   grid_lim = 3
+
+
+   sorted_grids = sorted(grid_squares, key=lambda x: (x[4]), reverse=True)
+   gxs = []
+   gys = []
+   for best_grid in sorted_grids[0:grid_lim]:
+      gx1,gy1,gx2,gy2,grid_sum = best_grid
+      print("GRID SUM:", gx1, gy1, gx2, gy2, grid_sum)
+      gxs.append((gx1, gx2))
+      gys.append((gy1, gy2))
+      cv2.rectangle(roi_p, (gx1, gy1), (gx2, gy2), (150,150,150), 1, cv2.LINE_AA)
+   mgx = int(np.mean(gxs))
+   mgy = int(np.mean(gys))
+  
+   adj_x = int((mgx - 180) / roi_div)
+   adj_y = int((mgy - 180) / roi_div)
+   cv2.imshow('ROIPPPP', roi_p)
+   cv2.waitKey(0)
+   return(adj_x, adj_y)
+
+def fireball_tracking_center(tracking_file):
+   hd_frames,hd_color_frames,subframes,sum_vals,max_vals,pos_vals = load_frames_fast(tracking_file, json_conf, 0, 0, 1, 1,[])
+   tracking_updates = {}
+   th, tw = hd_frames[0].shape[:2]
+   tcx = int(tw / 2)
+   tcy = int(th / 2)
+   fn = 0
+   for frame in hd_frames:
+      subframe = cv2.subtract(frame, hd_frames[0])
+      min_val, max_val, min_loc, (mx,my)= cv2.minMaxLoc(subframe)
+
+      pxd = max_val - min_val
+      print("PX DIFF, MIN, MAX:", pxd, min_val, max_val)
+      if pxd > 20:
+         thresh = int(max_val - (pxd / 2))
+      else:
+         thresh = 40 
+      _, thresh_img = cv2.threshold(subframe.copy(), thresh, 255, cv2.THRESH_BINARY)
+      cnts = get_contours_in_image(thresh_img)
+      if len(cnts) > 1:
+         cnts_a = biggest_cnts(cnts, 10)
+         cnts = cnts_a[0]
+         if cnts[2] > cnts[3]:
+           cnt_size = cnts[2]
+         else:
+           cnt_size = cnts[3]
+      else:
+         cnt_size = 5
+
+      if pxd > 25:
+         adj_x, adj_y = grid_intensity_center(frame, cnt_size) 
+         ccx = tcx + adj_x
+         ccy = tcy + adj_y
+         cv2.rectangle(thresh_img, (ccx-2, ccy-2), (ccx+2, ccy+2), (255,255,255), 1, cv2.LINE_AA)
+         cv2.putText(thresh_img, str(fn) + " " + str(adj_x) + " " + str(adj_y),  (10,10), cv2.FONT_HERSHEY_SIMPLEX, .2, (255, 255, 255), 1)
+         tracking_updates[fn] = [adj_x, adj_y]
+
+
+      fn += 1
+      #cv2.imshow("ROITHRESH", thresh_img)
+      #cv2.waitKey(30)
+   for key in tracking_updates:
+      print(key, tracking_updates[key])
+   #exit()
+   return(tracking_updates)
+
 def fireball_phase1(hd_frames, hd_color_frames, subframes,sum_vals,max_vals,pos_vals, video_file, json_conf, jsf, jdata, best_meteor, nomask):
    print("FRAMES:", len(hd_frames), len(hd_color_frames))
    #PHASE 1
@@ -1334,7 +1432,8 @@ def fireball_phase1(hd_frames, hd_color_frames, subframes,sum_vals,max_vals,pos_
 
    objects = {}
    # load up the frames
-   hd_frames,hd_color_frames,subframes,sum_vals,max_vals,pos_vals = load_frames_fast(video_file, json_conf, 0, 0, 1, 1,[])
+   if len(hd_frames) == 0:
+      hd_frames,hd_color_frames,subframes,sum_vals,max_vals,pos_vals = load_frames_fast(video_file, json_conf, 0, 0, 1, 1,[])
    i = 0
    med_file = video_file.replace(".mp4", "-med.jpg")
 
@@ -1440,12 +1539,22 @@ def fireball_phase1(hd_frames, hd_color_frames, subframes,sum_vals,max_vals,pos_
          #cv2.rectangle(subframe, (cx, cy), (cx+cw, cy+ch), (255,255,255), 3, cv2.LINE_AA)
          ccx = cx + int(cw / 2)
          ccy = cy + int(ch / 2)
+         rx1,ry1,rx2,ry2 = bound_cnt(ccx, ccy,frame.shape[1],frame.shape[0], 50)
          size = int((cw+ch)/2)
          past_points.append((ccx,ccy,size))
          cnt_img = frame[cy:cy+ch,cx:cx+cw]
+         roi_img = frame[ry1:ry2,rx1:rx2]
          cnt_int = int(np.sum(cnt_img))
+
+         if True:
+            adj_x, adj_y = grid_intensity_center(roi_img, cw) 
+            ccx = ccx + adj_x
+            ccy = ccy + adj_y
+            new_cx = ccx - int(cw/2)
+            new_cy = ccy - int(ch/2)
          #new_x, new_y = center_roi_blob(color_frame, ccx, ccy,int((cw+ch)/2)) 
-         object, objects = find_object(objects, frame_num,cx, cy, cw, ch, cnt_int, HD, 0, None)
+         print("OLD?NEW:", cx, cy, new_cx, new_cy)
+         object, objects = find_object(objects, frame_num,new_cx, new_cy, cw, ch, cnt_int, HD, 0, None)
          #print(objects[object]['fs_dist'])
          #print(objects[object]['segs'])
          objects[object] = analyze_object(objects[object], 1,1)
@@ -1714,7 +1823,7 @@ def center_roi_blob(frame, cx, cy,cnt_size):
    roi_div = 360 / roi_size2
    roi_p = cv2.resize(roi_p, (360,360))
    threshold = cv2.resize(threshold, (360,360))
-   grid_size = 5 
+   grid_size = 5
    best_sum = 0
    best_grid = None
    grid_squares = []
