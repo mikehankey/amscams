@@ -16,7 +16,6 @@ function update_reduction_on_canvas_and_table(json_resp) {
     $.each(smf, function(i,v){
         all_frame_ids.push(parseInt(v[1]));
     });
-
     // Create Colors
     var rainbow = new Rainbow();
     rainbow.setNumberRange(0, 255);
@@ -181,6 +180,9 @@ function update_reduction_only(callback='') {
 
 // test if we have a missing thumb 
 function test_missing_thumb() {
+
+}
+function test_missing_thumb_old() {
     var rows_with_missing_thumbs = [];
     var we_try_how_many_times = 10;
     var cnt = 0;

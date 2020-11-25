@@ -22,7 +22,6 @@ function update_star_and_reduction(callback) {
             //console.log(cmd_data)
 
             if(json_resp['status']!==0) {
-             
                 // Remove All objects from Canvas
                 remove_objects();
                 
