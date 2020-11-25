@@ -3160,8 +3160,9 @@ def reduce_meteor_new(json_conf,form):
       template = template.replace("{ARCHIVE_LINK}", move_to_archive_link)
    else:
       archive_file = mj['archive_file']
-      view_arc_link_and_back = "<a class='btn btn-primary d-block mb-2' href='/pycgi/webUI.py?cmd=reduce2&video_file=" + archive_file + "'>View Archived Meteor</a>"
-      view_arc_link_and_back += "<a class='btn btn-primary d-block' href='/pycgi/webUI.py?cmd=move_to_archive&video_file=" + hd_trim + "&sd_video=" + video_file + "&json_file=" + meteor_json_file + "'>Replace Archived Meteor</a> "
+      #view_arc_link_and_back = "<a class='btn btn-primary d-block mb-2' href='/pycgi/webUI.py?cmd=reduce2&video_file=" + archive_file + "'>View Archived Meteor</a>"
+      #view_arc_link_and_back += "<a class='btn btn-primary d-block' href='/pycgi/webUI.py?cmd=move_to_archive&video_file=" + hd_trim + "&sd_video=" + video_file + "&json_file=" + meteor_json_file + "'>Replace Archived Meteor</a> "
+      view_arc_link_and_back = ""
       template = template.replace("{ARCHIVE_LINK}", view_arc_link_and_back)
 
    jsid = video_file.split("/")[-1]
@@ -3291,7 +3292,8 @@ def reduce_meteor_new(json_conf,form):
    if(isfile(light_curve_file)):
       template = template.replace("{%LIGHT_CURVE%}", '<a class="d-block nop text-center img-link-n" href="'+light_curve_file+'"><img  src="'+light_curve_file+'" class="mt-2 img-fluid"></a>')
    else:
-      template = template.replace("{%LIGHT_CURVE%}", "<div class='alert error mt-4'>Light Curve file not found</div>")
+      light_curve_url = graph_light_curve(mj)
+      template = template.replace("{%LIGHT_CURVE%}", "<div class='alert error mt-4'><iframe src=" + light_curve_url  + " width=100% height=640></iframe></div>")
 
    
    #template = template.replace("{%RED_TABLE%}", "")
@@ -3333,6 +3335,19 @@ def reduce_meteor_new(json_conf,form):
       js_html += "<script>var json_reduced = '" + meteor_reduced_file + "'</script>"
 
    return(js_html)
+
+def graph_light_curve(mj):
+   x1_vals = ""
+   y1_vals = ""
+   for i in range(0, len(mj['best_meteor']['ofns'])):
+      if x1_vals != "":
+         x1_vals += ","
+         y1_vals += ","
+      x1_vals += str(mj['best_meteor']['ofns'][i])
+      y1_vals += str(mj['best_meteor']['oint'][i])
+   gurl = "/pycgi/plot.html?"
+   gurl += "title=Meteor_Light_Curve&xat=Intensity&yat=Frame&x1_vals=" + x1_vals + "&y1_vals=" + y1_vals 
+   return(gurl)
 
 def reduce_meteor(json_conf,form):
    form_cal_params_file = form.getvalue("cal_params_file")
