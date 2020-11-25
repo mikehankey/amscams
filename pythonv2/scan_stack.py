@@ -497,13 +497,67 @@ def clip_fireball(proc_dir, vfn, events):
       print("CLIP FIREBALL:", proc_dir + vfn, start, end)
       video_file = proc_dir + vfn
       outfile = video_file.replace(".mp4", "-trim-" + str(start) + ".mp4")
+      jsf = outfile.replace(".mp4", ".json")
       cmd = "cd /home/ams/amscams/pipeline/; ./FFF.py splice_video " + video_file + " " + str(start) + " " + str(end) + " " + outfile + " " + "frame"
       hd_trim_clip = find_hd_min(video_file, start, end)
+
       os.system(cmd)
       print(cmd)
       print("SD:", outfile)
       print("HD:", hd_trim_clip)
+      mj = make_base_meteor_json(outfile, hd_trim_clip )
+      jsf = mj['sd_video_file'].replace(".mp4", ".json")
+      cmd = "cp " + outfile + " " + mj['sd_video_file']
+      print(cmd)
+      os.system(cmd)
+      if hd_trim_clip is not None:
+         cmd = "cp " + hd_trim_clip + " " + mj['hd_trim']
+         print(cmd)
+         os.system(cmd)
+         cmd = "./stack-full.py " + mj['hd_trim']
+         os.system(cmd)
+         
+      cmd = "cp " + outfile + " " + mj['sd_video_file']
+      save_json_file(jsf, mj)
+      cmd = "./stack-full.py " + mj['sd_video_file']
+      os.system(cmd)
+      if cfe(mj['sd_stack']) == 1:
+         simg = cv2.imread(mj['sd_stack'])
+         thumb = cv2.resize(simg, (320,180))
+         th_fn = mj['sd_stack'].replace(".jpg", "-tn.jpg")
+         cv2.imwrite(th_fn, thumb)
 
+      print("saved:", jsf)
+
+def make_base_meteor_json(video_file, hd_video_file ):
+   mj = {}
+   sd_fn, dir = fn_dir(video_file)
+   if hd_video_file is not None:
+      hd_fn, dir = fn_dir(hd_video_file)
+      hd_stack_fn = hd_fn.replace(".mp4", "-stacked.jpg")
+   stack_fn = sd_fn.replace(".mp4", "-stacked.jpg")
+
+   date = sd_fn[0:10]
+   mdir = "/mnt/ams2/meteors/" + date + "/" 
+   mj["sd_video_file"] = mdir + sd_fn 
+   mj["sd_stack"] = mdir + stack_fn
+   mj["sd_objects"] = []
+   if hd_video_file is not None:
+      mj["hd_trim"] = mdir + hd_fn
+      mj["hd_stack"] = mdir + hd_stack_fn
+      mj["hd_video_file"] = mdir + hd_fn
+      mj["hd_trim"] = mdir + hd_fn
+    #   mj["hd_trim_dir"]
+    #   mj["hd_trim_time_offset"]
+      mj["hd_objects"] = []
+    #mj["status"]
+    #mj["total_frames"]
+   mj["meteor"] = 1
+    #mj["test_results"]
+    #mj["flex_detect"]
+    #mj["archive_file"]
+
+   return(mj)
 def find_hd_min(sd_file, start_frame, end_frame):
 
    (sd_datetime, sd_cam, sd_date, sd_y, sd_m, sd_d, sd_h, sd_M, sd_s) = convert_filename_to_date_cam(sd_file)
@@ -530,7 +584,7 @@ def find_hd_min(sd_file, start_frame, end_frame):
    print("HD FILES:", hd_files_time)
    #for data in hd_files_time:
    #   print("HD DATA:", len(data), data)
-      
+   outfile = None   
    for hd_min_file, hd_start_sec, min_time in hd_files_time:
       print("HD TRIM:", hd_min_file, offset , offset + dur_sec)
       hd_fn = hd_min_file.split("/")[-1]
@@ -539,6 +593,24 @@ def find_hd_min(sd_file, start_frame, end_frame):
       cmd = "cd /home/ams/amscams/pipeline/; ./FFF.py splice_video " + hd_min_file + " " + str(hd_start_sec) + " " + str(hd_start_sec + dur_sec) + " " + outfile + " " + "sec"
       os.system(cmd)
       print(cmd)
+
+   # check hd save dir
+   if outfile is None:
+      hd_glob = "/mnt/ams2/SD/proc2/" + sd_y + "_" + sd_m + "_" + sd_d + "/hd_save/"  + sd_y + "_" + sd_m + "_" + sd_d + "_" + sd_h + "_*" + sd_cam + "*.mp4"
+      hd_files = sorted(glob.glob(hd_glob))
+      print ("HD GLOB:", hd_glob)
+      for hd_file in hd_files:
+         print(hd_file)
+         hd_datetime, hd_cam, hd_date, hd_y, hd_m, hd_d, hd_h, hd_M, hd_s = convert_filename_to_date_cam(hd_file)
+         time_diff = meteor_datetime - hd_datetime
+         time_diff_sec = time_diff.total_seconds()
+         if 0 <= time_diff_sec <= 60 and "HD" in hd_file and "crop" not in hd_file:
+
+            print("HD SAVE DIR TIME DIFF SEC:", time_diff_sec)
+            outfile = hd_file
+            hd_files_time.append((hd_file, time_diff_sec, hd_datetime))
+
+
    return(outfile)
 
 def calc_real_cm(data):
@@ -548,6 +620,13 @@ def calc_real_cm(data):
       rc.append(cm)
    real_cm = len(set(rc))
    return(real_cm)
+
+
+def fn_dir(file):
+   fn = file.split("/")[-1]
+   dir = file.replace(fn, "")
+   return(fn, dir)
+
 
 
 if sys.argv[1] == "bs":

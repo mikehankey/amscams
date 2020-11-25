@@ -1496,7 +1496,7 @@ def fireball_phase1(hd_frames, hd_color_frames, subframes,sum_vals,max_vals,pos_
       #   continue
       frame = mask_stars(frame, cp)
 
-      frame = mask_points(frame, past_points )
+      #frame = mask_points(frame, past_points )
       #cv2.imshow("FR", frame)
       #cv2.waitKey(30)
       frame = cv2.subtract(frame, fb_mask)
@@ -1546,15 +1546,14 @@ def fireball_phase1(hd_frames, hd_color_frames, subframes,sum_vals,max_vals,pos_
          roi_img = frame[ry1:ry2,rx1:rx2]
          cnt_int = int(np.sum(cnt_img))
 
-         if True:
+         if False:
             adj_x, adj_y = grid_intensity_center(roi_img, cw) 
             ccx = ccx + adj_x
             ccy = ccy + adj_y
             new_cx = ccx - int(cw/2)
             new_cy = ccy - int(ch/2)
          #new_x, new_y = center_roi_blob(color_frame, ccx, ccy,int((cw+ch)/2)) 
-         print("OLD?NEW:", cx, cy, new_cx, new_cy)
-         object, objects = find_object(objects, frame_num,new_cx, new_cy, cw, ch, cnt_int, HD, 0, None)
+         object, objects = find_object(objects, frame_num,cx, cy, cw, ch, cnt_int, HD, 0, None)
          #print(objects[object]['fs_dist'])
          #print(objects[object]['segs'])
          objects[object] = analyze_object(objects[object], 1,1)
