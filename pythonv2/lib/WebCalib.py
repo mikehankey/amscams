@@ -2900,7 +2900,7 @@ def reduce_meteor_js(meteor_reduced):
 
 
 def reduce_meteor_new(json_conf,form):
-
+   # latest for end of 2020
    #cgitb.enable()
       
    fp = open("/home/ams/amscams/pythonv2/templates/reducePage.html")
@@ -2935,6 +2935,7 @@ def reduce_meteor_new(json_conf,form):
    else:
       frame_table = ""
       reduced = 0
+      meteor_reduced = None
    mj = load_json_file(meteor_json_file)
    meteor_obj = get_meteor_object(mj)
    ms_desc = ""
@@ -2945,7 +2946,8 @@ def reduce_meteor_new(json_conf,form):
          hd_trim = 0
       if cfe(hd_trim) == 1:
          mj['hd_file'] = hd_trim
-         meteor_reduced['hd_video_file'] = hd_trim
+         if meteor_reduced is not None:
+            meteor_reduced['hd_video_file'] = hd_trim
 
 
    if reduced == 1:
@@ -2953,6 +2955,18 @@ def reduce_meteor_new(json_conf,form):
          if "cat_image_stars" in meteor_reduced['cal_params']:
             cat_image_stars = meteor_reduced['cal_params']['cat_image_stars']
             total_stars = len(cat_image_stars)
+         cal_params = meteor_reduced['cal_params']
+         cp_html = "<table width=80%>"
+         cp_html += "<tr><td>RA Center:</td><td>" + str(cal_params['ra_center'])[0:5] + "</td></tr>"
+         cp_html += "<tr><td>Dec Center:</td><td>" + str(cal_params['dec_center'])[0:5] + "</td></tr>"
+         cp_html += "<tr><td>Az Center:</td><td>" + str(cal_params['center_az'])[0:5] + "</td></tr>"
+         cp_html += "<tr><td>El Center:</td><td>" + str(cal_params['center_el'])[0:5] + "</td></tr>"
+         cp_html += "<tr><td>Position Angle:</td><td>" + str(cal_params['position_angle'])[0:5] + "</td></tr>"
+         cp_html += "<tr><td>Pixel Scale:</td><td>" + str(cal_params['pixscale'])[0:5] + "</td></tr>"
+         cp_html += "<tr><td>Image Points:</td><td>" + str(len(cal_params['user_stars'])) + "</td></tr>"
+         cp_html += "<tr><td>Catalog Pairs:</td><td>" + str( len( cal_params['cat_image_stars'])) + "</td></tr>"
+         cp_html += "</table>"
+         template = template.replace("{CAL_PARAMS}", cp_html)
       if "multi_station" in meteor_reduced:
          ms_data= meteor_reduced['multi_station']
          if cfe("/home/ams/amscams/conf/sync_urls.json") == 1:
@@ -3288,12 +3302,15 @@ def reduce_meteor_new(json_conf,form):
    template = template.replace("{%RED_TABLE%}", red_table)
    template = template.replace("{%STAR_TABLE%}", stars_table)
  
-   light_curve_file = sd_video_file.replace('.mp4','-lightcurve.jpg')
-   if(isfile(light_curve_file)):
-      template = template.replace("{%LIGHT_CURVE%}", '<a class="d-block nop text-center img-link-n" href="'+light_curve_file+'"><img  src="'+light_curve_file+'" class="mt-2 img-fluid"></a>')
+   if meteor_reduced is not None and reduced == 1:
+      light_curve_file = sd_video_file.replace('.mp4','-lightcurve.jpg')
+      if(isfile(light_curve_file)):
+         template = template.replace("{%LIGHT_CURVE%}", '<a class="d-block nop text-center img-link-n" href="'+light_curve_file+'"><img  src="'+light_curve_file+'" class="mt-2 img-fluid"></a>')
+      else:
+         light_curve_url = graph_light_curve(mj)
+         template = template.replace("{%LIGHT_CURVE%}", "<div class='alert error mt-4'><iframe scolling=no src=" + light_curve_url  + " width=100% height=640></iframe></div>")
    else:
-      light_curve_url = graph_light_curve(mj)
-      template = template.replace("{%LIGHT_CURVE%}", "<div class='alert error mt-4'><iframe src=" + light_curve_url  + " width=100% height=640></iframe></div>")
+      template = template.replace("{%LIGHT_CURVE%}", "<div class='alert error mt-4'>Currently, no data for light curve.</iframe></div>")
 
    
    #template = template.replace("{%RED_TABLE%}", "")
