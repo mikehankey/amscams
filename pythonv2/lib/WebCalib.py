@@ -2728,7 +2728,7 @@ def update_red_info_ajax(json_conf, form):
    meteor_red_file = meteor_json_file.replace(".json", "-reduced.json")
    rsp = {}
 
-
+   #print(meteor_red_file)
 
    if cfe(meteor_red_file) == 1:
       mr = load_json_file(meteor_red_file)
@@ -2738,7 +2738,7 @@ def update_red_info_ajax(json_conf, form):
             rsp['cat_image_stars'] = mr['cal_params']['cat_image_stars'] 
             sc = 0
             for star in mr['cal_params']['cat_image_stars']:
-               (dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist) = star
+               (dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist,bp) = star
                max_res_deg = float(max_res_deg) + float(match_dist)
                max_res_px = float(max_res_px) + float(cat_dist )
                sc = sc + 1
@@ -2782,7 +2782,14 @@ def update_red_info_ajax(json_conf, form):
       rsp['status'] = 1
    else: 
       rsp['status'] = 0
-         
+
+   sdfn = video_file.split("/")[-1]
+   sdfn_root = sdfn.replace(".mp4", "")
+   cache_dir = "/mnt/ams2/CACHE/" + sdfn_root + "/"
+   if cfe(cache_dir,1) == 0:
+      os.makedirs(cache_dir)
+   prefix = cache_dir + sdfn + "-frm"
+     
 
    print(json.dumps(rsp))
    
@@ -2893,7 +2900,7 @@ def reduce_meteor_js(meteor_reduced):
 
 
 def reduce_meteor_new(json_conf,form):
-
+   # latest for end of 2020
    #cgitb.enable()
       
    fp = open("/home/ams/amscams/pythonv2/templates/reducePage.html")
@@ -2928,6 +2935,7 @@ def reduce_meteor_new(json_conf,form):
    else:
       frame_table = ""
       reduced = 0
+      meteor_reduced = None
    mj = load_json_file(meteor_json_file)
    meteor_obj = get_meteor_object(mj)
    ms_desc = ""
@@ -2936,8 +2944,10 @@ def reduce_meteor_new(json_conf,form):
          hd_trim = mj['hd_trim']
       else:
          hd_trim = 0
-
-
+      if cfe(hd_trim) == 1:
+         mj['hd_file'] = hd_trim
+         if meteor_reduced is not None:
+            meteor_reduced['hd_video_file'] = hd_trim
 
 
    if reduced == 1:
@@ -2945,6 +2955,18 @@ def reduce_meteor_new(json_conf,form):
          if "cat_image_stars" in meteor_reduced['cal_params']:
             cat_image_stars = meteor_reduced['cal_params']['cat_image_stars']
             total_stars = len(cat_image_stars)
+         cal_params = meteor_reduced['cal_params']
+         cp_html = "<table width=80%>"
+         cp_html += "<tr><td>RA Center:</td><td>" + str(cal_params['ra_center'])[0:5] + "</td></tr>"
+         cp_html += "<tr><td>Dec Center:</td><td>" + str(cal_params['dec_center'])[0:5] + "</td></tr>"
+         cp_html += "<tr><td>Az Center:</td><td>" + str(cal_params['center_az'])[0:5] + "</td></tr>"
+         cp_html += "<tr><td>El Center:</td><td>" + str(cal_params['center_el'])[0:5] + "</td></tr>"
+         cp_html += "<tr><td>Position Angle:</td><td>" + str(cal_params['position_angle'])[0:5] + "</td></tr>"
+         cp_html += "<tr><td>Pixel Scale:</td><td>" + str(cal_params['pixscale'])[0:5] + "</td></tr>"
+         cp_html += "<tr><td>Image Points:</td><td>" + str(len(cal_params['user_stars'])) + "</td></tr>"
+         cp_html += "<tr><td>Catalog Pairs:</td><td>" + str( len( cal_params['cat_image_stars'])) + "</td></tr>"
+         cp_html += "</table>"
+         template = template.replace("{CAL_PARAMS}", cp_html)
       if "multi_station" in meteor_reduced:
          ms_data= meteor_reduced['multi_station']
          if cfe("/home/ams/amscams/conf/sync_urls.json") == 1:
@@ -3152,8 +3174,9 @@ def reduce_meteor_new(json_conf,form):
       template = template.replace("{ARCHIVE_LINK}", move_to_archive_link)
    else:
       archive_file = mj['archive_file']
-      view_arc_link_and_back = "<a class='btn btn-primary d-block mb-2' href='/pycgi/webUI.py?cmd=reduce2&video_file=" + archive_file + "'>View Archived Meteor</a>"
-      view_arc_link_and_back += "<a class='btn btn-primary d-block' href='/pycgi/webUI.py?cmd=move_to_archive&video_file=" + hd_trim + "&sd_video=" + video_file + "&json_file=" + meteor_json_file + "'>Replace Archived Meteor</a> "
+      #view_arc_link_and_back = "<a class='btn btn-primary d-block mb-2' href='/pycgi/webUI.py?cmd=reduce2&video_file=" + archive_file + "'>View Archived Meteor</a>"
+      #view_arc_link_and_back += "<a class='btn btn-primary d-block' href='/pycgi/webUI.py?cmd=move_to_archive&video_file=" + hd_trim + "&sd_video=" + video_file + "&json_file=" + meteor_json_file + "'>Replace Archived Meteor</a> "
+      view_arc_link_and_back = ""
       template = template.replace("{ARCHIVE_LINK}", view_arc_link_and_back)
 
    jsid = video_file.split("/")[-1]
@@ -3178,10 +3201,20 @@ def reduce_meteor_new(json_conf,form):
    #Name of the option in the <select>
    if cal_params_file is not None:
       template = template.replace("{SELECTED_CAL_PARAMS_FILE_NAME}", get_meteor_date(cal_params_file))
+   vid_fn = sd_video_file.split("/")[-1]
+   vid_base = vid_fn.replace(".mp4", "")
+   date = vid_fn[0:10]
+   year = vid_fn[0:4]
+   mon = vid_fn[5:7]
+   cache_dir = "/mnt/ams2/CACHE/" + year + "/" + mon + "/" + vid_base + "/"
 
-   prefix = sd_video_file.replace(".mp4", "-frm")
-   prefix = prefix.replace("SD/proc2/", "meteors/")
-   prefix = prefix.replace("/passed", "")
+   tracking_outfile = "/mnt/ams2/meteors/" + date + "/" + vid_base + "-tracking.mp4"
+
+   prefix = cache_dir + vid_fn + "-frm"
+
+  # prefix = sd_video_file.replace(".mp4", "-frm")
+  # prefix = prefix.replace("SD/proc2/", "CACHE/")
+  # prefix = prefix.replace("/passed", "")
 
    # STARS TABLE
 
@@ -3196,7 +3229,7 @@ def reduce_meteor_new(json_conf,form):
       if "cal_params" in meteor_reduced:
          if "cat_image_stars" in meteor_reduced['cal_params']:
             for star in meteor_reduced['cal_params']['cat_image_stars']:
-               (dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist) = star
+               (dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist,bp) = star
                good_name =  dcname.encode("ascii","xmlcharrefreplace")
 
                good_name = str(good_name).replace("b'", "")
@@ -3242,8 +3275,9 @@ def reduce_meteor_new(json_conf,form):
       ra_dec = str(ra) + "/" + str(dec) 
 
 
-      fr_id = "fr_row" + str(fn)
-      cmp_img_url = prefix  + str(fn) + ".jpg"
+      fr_id = "{:04d}".format(fn)
+
+      cmp_img_url = prefix  + str(fr_id) + ".jpg"
       cmp_img = "<img alt=\"" + str(fn) + "\" width=\"50\" height=\"50\" src=" + cmp_img_url + " class=\"img-fluid select_meteor\">"
 
       del_frame_link = "javascript:del_frame('" + str(fn) + "','" + meteor_json_file +"')"
@@ -3268,11 +3302,15 @@ def reduce_meteor_new(json_conf,form):
    template = template.replace("{%RED_TABLE%}", red_table)
    template = template.replace("{%STAR_TABLE%}", stars_table)
  
-   light_curve_file = sd_video_file.replace('.mp4','-lightcurve.jpg')
-   if(isfile(light_curve_file)):
-      template = template.replace("{%LIGHT_CURVE%}", '<a class="d-block nop text-center img-link-n" href="'+light_curve_file+'"><img  src="'+light_curve_file+'" class="mt-2 img-fluid"></a>')
+   if meteor_reduced is not None and reduced == 1:
+      light_curve_file = sd_video_file.replace('.mp4','-lightcurve.jpg')
+      if(isfile(light_curve_file)):
+         template = template.replace("{%LIGHT_CURVE%}", '<a class="d-block nop text-center img-link-n" href="'+light_curve_file+'"><img  src="'+light_curve_file+'" class="mt-2 img-fluid"></a>')
+      else:
+         light_curve_url = graph_light_curve(mj)
+         template = template.replace("{%LIGHT_CURVE%}", "<div class='alert error mt-4'><iframe scolling=no src=" + light_curve_url  + " width=100% height=640></iframe></div>")
    else:
-      template = template.replace("{%LIGHT_CURVE%}", "<div class='alert error mt-4'>Light Curve file not found</div>")
+      template = template.replace("{%LIGHT_CURVE%}", "<div class='alert error mt-4'>Currently, no data for light curve.</iframe></div>")
 
    
    #template = template.replace("{%RED_TABLE%}", "")
@@ -3314,6 +3352,19 @@ def reduce_meteor_new(json_conf,form):
       js_html += "<script>var json_reduced = '" + meteor_reduced_file + "'</script>"
 
    return(js_html)
+
+def graph_light_curve(mj):
+   x1_vals = ""
+   y1_vals = ""
+   for i in range(0, len(mj['best_meteor']['ofns'])):
+      if x1_vals != "":
+         x1_vals += ","
+         y1_vals += ","
+      x1_vals += str(mj['best_meteor']['ofns'][i])
+      y1_vals += str(mj['best_meteor']['oint'][i])
+   gurl = "/pycgi/plot.html?"
+   gurl += "title=Meteor_Light_Curve&xat=Intensity&yat=Frame&x1_vals=" + x1_vals + "&y1_vals=" + y1_vals 
+   return(gurl)
 
 def reduce_meteor(json_conf,form):
    form_cal_params_file = form.getvalue("cal_params_file")
@@ -4142,8 +4193,8 @@ def upscale_2HD(json_conf,form):
    (f_datetime, cam_id, f_date_str,Y,M,D, H, MM, S) = better_parse_file_date(hd_stack_file)
    base_dir = "/mnt/ams2/cal/freecal/" + Y + "_" + M + "_" + D + "_" + H + "_" + MM + "_" + S + "_" + "000" + "_" + cam_id
    base_file = Y + "_" + M + "_" + D + "_" + H + "_" + MM + "_" + S + "_" + "000" + "_" + cam_id
-   if cfe(base_dir, 1) != 1:
-      os.system("mkdir " + base_dir)
+   if cfe(base_dir, 1) == 0:
+      os.makedirs(base_dir)
    stack_file = base_dir + "/" + base_file + "-stacked.png"
    orig_file = base_dir + "/" + base_file + "-orig.png"
    half_stack_file = base_dir + "/" + base_file + "-half-stack.png"

@@ -56,7 +56,7 @@ def az_grid(cal_file,cal_params,cal_image,iw,ih,show =0):
 
    new_x, new_y, img_ra,img_dec, tl_az, tl_el = XYtoRADec(0,0,cal_param_file,cal_params,json_conf)
    print("TOP LEFT:", 0,0,new_x,new_y,img_ra,img_dec,tl_az,tl_el)
-   flen = 8
+   flen = 4
    if flen == 8:
       wd = 40
       hd = 20
@@ -64,6 +64,8 @@ def az_grid(cal_file,cal_params,cal_image,iw,ih,show =0):
       wd = 80
       hd = 30
 
+   #print(flen, wd, hd)
+   #exit()
 
    if center_el > 70:
       start_el = 30
@@ -227,7 +229,7 @@ if __name__ == "__main__":
 
    if cmd == 'az_grid':
 
-      cal_file = cal_param_file.replace("-calparams.json", ".jpg")
+      cal_file = cal_param_file.replace("-calparams.json", ".png")
       if cfe(cal_file) == 0:
          cal_file = cal_param_file.replace("-calparams.json", "-src.jpg")
       if cfe(cal_file) == 0:
@@ -248,6 +250,7 @@ if __name__ == "__main__":
       iw = 1920
 
       cal_image = np.zeros((ih,iw),dtype=np.uint8)
+      print("CAL FILE:", cal_file)
       az_grid(cal_file,cal_params,cal_image,iw,ih)
       exit()
 

@@ -537,10 +537,10 @@ def load_frames_fast(trim_file, json_conf, limit=0, mask=0,crop=(),color=0,resiz
                if last_frame is not None:
                   subframe = cv2.subtract(frame, last_frame)
                   sum_val =cv2.sumElems(subframe)[0]
-
                   if sum_val > 10 :
-                     _, thresh_frame = cv2.threshold(subframe, 15, 255, cv2.THRESH_BINARY)
-
+                     _, thresh_frame = cv2.threshold(subframe, 5, 255, cv2.THRESH_BINARY)
+                     #cv2.imshow('pepe', thresh_frame)
+                     #cv2.waitKey(0)
                      sum_val =cv2.sumElems(thresh_frame)[0]
                   else: 
                      sum_val = 0

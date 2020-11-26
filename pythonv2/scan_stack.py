@@ -2,7 +2,7 @@
 
 from PIL import ImageFont, ImageDraw, Image, ImageChops
 from datetime import datetime
-
+import datetime as dt
 import ephem
 import numpy as np
 #import datetime
@@ -241,6 +241,7 @@ def scan_and_stack_fast(file, sun_status = 0, vals = []):
    sub_frames = []
    fd = []
    stacked_image = None
+   fb = 0
    while True:
       grabbed , frame = cap.read()
       if fc < len(vals):
@@ -250,7 +251,7 @@ def scan_and_stack_fast(file, sun_status = 0, vals = []):
             continue
 
       if not grabbed and fc > 5:
-         print(fc)
+         print("FRAME NOT GRABBED:", fc)
          break
 
       if sun_status == 1:
@@ -265,7 +266,6 @@ def scan_and_stack_fast(file, sun_status = 0, vals = []):
             #os.system(cmd)
             return()
 
-      print(sun_status)
       if sun_status != 1:
          gray = cv2.cvtColor(small_frame, cv2.COLOR_BGR2GRAY)
          if fc > 0:
@@ -283,6 +283,10 @@ def scan_and_stack_fast(file, sun_status = 0, vals = []):
             _, thresh_frame = cv2.threshold(sub, 15, 255, cv2.THRESH_BINARY)
             #min_val, max_val, min_loc, (mx,my)= cv2.minMaxLoc(thresh_frame)
             sum_val =cv2.sumElems(thresh_frame)[0]
+
+            if sum_val > 5000:
+               fb += 1
+               print("FIREBALL:", fc, sum_val)
             mx = mx * 2
             my = my * 2
             sum_vals.append(sum_val)
@@ -388,10 +392,64 @@ def scan_and_stack(video_file, sun_status):
 
    sd_frames,sd_color_frames,sd_subframes,sum_vals,max_vals,pos_vals = load_frames_fast(video_file, json_conf, 0, 0, [], 1,resize, sun_status)
    print(sum_vals, sun_status)
+   i = 0
+   cm = 0
+   nomo = 0
+   med_sum = np.median(sum_vals)
+   max_times = 0
+   max_cm = 0
+   fb = 0
+   cmdata = []
+   event = []
+   events = []
+   for val in sum_vals:
+      if val > 10000:
+         fb += 1
+      if med_sum > 0:
+         times = val / med_sum
+      else:
+         times = 0
+      if times >= 2:
+         cm += 1
+         nomo = 0
+      else:
+         nomo += 1
+         if cm > 10 and nomo > 5:
+            events.append(event)
+            event = []
+            cm = 0
+         elif cm >= 3 and nomo >3:
+            # event ended
+            events.append(event)
+            event = []
+            cm = 0
+      if times > max_times :
+         max_times = times
+      if cm > max_cm :
+         max_cm = cm 
+      if cm >= 3:
+         print("SUM VAL:", i, med_sum, val, "X", int(times), nomo, int(cm), pos_vals[i])
+         event.append((i,med_sum,val,times,nomo,cm,pos_vals[i][0],pos_vals[i][1]))
+      cmdata.append((i,med_sum,val,times,nomo,cm,pos_vals[i]))
+      i += 1
    vals['sum_vals'] = sum_vals
    vals['max_vals'] = max_vals
    vals['pos_vals'] = pos_vals
+   ev = 0
+   real_events = []
+   for event in events:
+       real_cm = calc_real_cm(event)
+       if real_cm > 3:
+          real_events.append(event)
+          for data in event:
+
+             print(ev, data)
+       ev += 1
    elapsed_time = time.time() - start_time
+
+
+   vals['events'] = real_events 
+
    print("LOAD & SCAN TIME:", elapsed_time)
    print("FR:", len(sd_color_frames), sun_status, len(sum_vals), len(max_vals), len(pos_vals))
    if sun_status == "day":
@@ -415,7 +473,161 @@ def scan_and_stack(video_file, sun_status):
    vfn = video_file.split("/")[-1]
    print(proc_dir + vfn)
    print(proc_vals_file)
+
+   if max_times > 10 and max_cm > 10 and fb > 10:
+      fb_vfn = proc_vals_file.replace(".json", "-fireball.json")
+      fb_data = {}
+      fb_data['events'] = real_events
+      save_json_file(fb_vfn, fb_data)
+      print("POSSIBLE FIREBALL!!!!", max_times, max_cm, fb, fb_vfn)
+      clip_fireball(proc_dir, vfn, real_events)
+
    return(proc_vals_file)
+
+def clip_fireball(proc_dir, vfn, events):
+   for ev in events:
+      fns = [row[0] for row in ev]
+      start = min(fns) - 25
+      end = max(fns) + 50
+      if end > 1499:
+         end = 1499
+      if start < 0:
+         start = 0 
+
+      print("CLIP FIREBALL:", proc_dir + vfn, start, end)
+      video_file = proc_dir + vfn
+      outfile = video_file.replace(".mp4", "-trim-" + str(start) + ".mp4")
+      jsf = outfile.replace(".mp4", ".json")
+      cmd = "cd /home/ams/amscams/pipeline/; ./FFF.py splice_video " + video_file + " " + str(start) + " " + str(end) + " " + outfile + " " + "frame"
+      hd_trim_clip = find_hd_min(video_file, start, end)
+
+      os.system(cmd)
+      print(cmd)
+      print("SD:", outfile)
+      print("HD:", hd_trim_clip)
+      mj = make_base_meteor_json(outfile, hd_trim_clip )
+      jsf = mj['sd_video_file'].replace(".mp4", ".json")
+      cmd = "cp " + outfile + " " + mj['sd_video_file']
+      print(cmd)
+      os.system(cmd)
+      if hd_trim_clip is not None:
+         cmd = "cp " + hd_trim_clip + " " + mj['hd_trim']
+         print(cmd)
+         os.system(cmd)
+         cmd = "./stack-full.py " + mj['hd_trim']
+         os.system(cmd)
+         
+      cmd = "cp " + outfile + " " + mj['sd_video_file']
+      save_json_file(jsf, mj)
+      cmd = "./stack-full.py " + mj['sd_video_file']
+      os.system(cmd)
+      if cfe(mj['sd_stack']) == 1:
+         simg = cv2.imread(mj['sd_stack'])
+         thumb = cv2.resize(simg, (320,180))
+         th_fn = mj['sd_stack'].replace(".jpg", "-tn.jpg")
+         cv2.imwrite(th_fn, thumb)
+
+      print("saved:", jsf)
+
+def make_base_meteor_json(video_file, hd_video_file ):
+   mj = {}
+   sd_fn, dir = fn_dir(video_file)
+   if hd_video_file is not None:
+      hd_fn, dir = fn_dir(hd_video_file)
+      hd_stack_fn = hd_fn.replace(".mp4", "-stacked.jpg")
+   stack_fn = sd_fn.replace(".mp4", "-stacked.jpg")
+
+   date = sd_fn[0:10]
+   mdir = "/mnt/ams2/meteors/" + date + "/" 
+   mj["sd_video_file"] = mdir + sd_fn 
+   mj["sd_stack"] = mdir + stack_fn
+   mj["sd_objects"] = []
+   if hd_video_file is not None:
+      mj["hd_trim"] = mdir + hd_fn
+      mj["hd_stack"] = mdir + hd_stack_fn
+      mj["hd_video_file"] = mdir + hd_fn
+      mj["hd_trim"] = mdir + hd_fn
+    #   mj["hd_trim_dir"]
+    #   mj["hd_trim_time_offset"]
+      mj["hd_objects"] = []
+    #mj["status"]
+    #mj["total_frames"]
+   mj["meteor"] = 1
+    #mj["test_results"]
+    #mj["flex_detect"]
+    #mj["archive_file"]
+
+   return(mj)
+def find_hd_min(sd_file, start_frame, end_frame):
+
+   (sd_datetime, sd_cam, sd_date, sd_y, sd_m, sd_d, sd_h, sd_M, sd_s) = convert_filename_to_date_cam(sd_file)
+   day = sd_y + "_" + sd_m + "_" + sd_d
+   offset = int(start_frame) / 25
+   dur_sec = (int(end_frame) - int(start_frame)) / 25
+   meteor_datetime = sd_datetime + dt.timedelta(seconds=offset)
+   hd_glob = "/mnt/ams2/HD/" + sd_y + "_" + sd_m + "_" + sd_d + "_*" + sd_cam + "*.mp4"
+   hd_files = sorted(glob.glob(hd_glob))
+   hd_files_time = []
+   for hd_file in hd_files:
+      el = hd_file.split("_")
+      if len(el) == 8 and "meteor" not in hd_file and "crop" not in hd_file and "trim" not in hd_file and "TL" not in hd_file:
+
+         hd_datetime, hd_cam, hd_date, hd_y, hd_m, hd_d, hd_h, hd_M, hd_s = convert_filename_to_date_cam(hd_file)
+         time_diff = meteor_datetime - hd_datetime
+         time_diff_sec = time_diff.total_seconds()
+         if 0 <= time_diff_sec <= 60:
+            print("TIME DIFF SEC:", time_diff_sec)
+            hd_files_time.append((hd_file, time_diff_sec, hd_datetime))
+
+   print("SD FILES:", sd_file )
+   print("SD START/end:", start_frame, end_frame)
+   print("HD FILES:", hd_files_time)
+   #for data in hd_files_time:
+   #   print("HD DATA:", len(data), data)
+   outfile = None   
+   for hd_min_file, hd_start_sec, min_time in hd_files_time:
+      print("HD TRIM:", hd_min_file, offset , offset + dur_sec)
+      hd_fn = hd_min_file.split("/")[-1]
+      outfile = "/mnt/ams2/SD/proc2/" + day + "/hd_save/" + hd_fn 
+      outfile = outfile.replace(".mp4", "-trim-" + str(start_frame) + "-HD-meteor.mp4")
+      cmd = "cd /home/ams/amscams/pipeline/; ./FFF.py splice_video " + hd_min_file + " " + str(hd_start_sec) + " " + str(hd_start_sec + dur_sec) + " " + outfile + " " + "sec"
+      os.system(cmd)
+      print(cmd)
+
+   # check hd save dir
+   if outfile is None:
+      hd_glob = "/mnt/ams2/SD/proc2/" + sd_y + "_" + sd_m + "_" + sd_d + "/hd_save/"  + sd_y + "_" + sd_m + "_" + sd_d + "_" + sd_h + "_*" + sd_cam + "*.mp4"
+      hd_files = sorted(glob.glob(hd_glob))
+      print ("HD GLOB:", hd_glob)
+      for hd_file in hd_files:
+         print(hd_file)
+         hd_datetime, hd_cam, hd_date, hd_y, hd_m, hd_d, hd_h, hd_M, hd_s = convert_filename_to_date_cam(hd_file)
+         time_diff = meteor_datetime - hd_datetime
+         time_diff_sec = time_diff.total_seconds()
+         if 0 <= time_diff_sec <= 60 and "HD" in hd_file and "crop" not in hd_file:
+
+            print("HD SAVE DIR TIME DIFF SEC:", time_diff_sec)
+            outfile = hd_file
+            hd_files_time.append((hd_file, time_diff_sec, hd_datetime))
+
+
+   return(outfile)
+
+def calc_real_cm(data):
+   rc = []
+   for row in data:
+      i,med_sum,val,times,nomo,cm,x,y = row 
+      rc.append(cm)
+   real_cm = len(set(rc))
+   return(real_cm)
+
+
+def fn_dir(file):
+   fn = file.split("/")[-1]
+   dir = file.replace(fn, "")
+   return(fn, dir)
+
+
 
 if sys.argv[1] == "bs":
    if len(sys.argv) == 3:

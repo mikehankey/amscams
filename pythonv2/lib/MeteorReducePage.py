@@ -46,7 +46,7 @@ def reduce_meteor2(json_conf,form):
    cgitb.enable()
 
    HD = True
-
+   exit()
    # Build the page based on template  
    print(PAGE_TEMPLATE)
    with open(PAGE_TEMPLATE, 'r') as file:

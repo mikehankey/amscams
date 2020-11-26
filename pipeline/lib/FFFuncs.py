@@ -66,20 +66,20 @@ def snap_video(in_file):
 
 def splice_video(in_file, start, end, outfile=None, type="frame"):
    # type = frame or sec 
-   print("ff split video")
+   print("ff split video", type, start, end)
    # convert start and end frame #s to seconds
    if type == "frame":
-      start_sec = start / 25
-      end_sec = end / 25
+      start_sec = int(start) / 25
+      end_sec = int(end) / 25
       dur = end_sec - start_sec
    else:
       start_sec = start
       end_sec = end 
-      dur = end_sec - start_src
+      dur = float(end_sec) - float(start_sec)
    if outfile is None:
       outfile = in_file.replace(".mp4", "-trim-" + str(start) + ".mp4")
 
-   cmd = "/usr/bin/ffmpeg -y -i  " + video_file + " -ss 00:00:" + str(start_sec) + " -t 00:00:" + str(dur) + " -c copy " + outfile
+   cmd = "/usr/bin/ffmpeg -y -i  " + in_file + " -ss 00:00:" + str(start_sec) + " -t 00:00:" + str(dur) + " -c copy " + outfile
    os.system(cmd)
    return(outfile)
 
@@ -111,11 +111,11 @@ def vid_to_imgs(file, out_dir):
 def imgs_to_vid (in_dir, out_file, wild="", fps=25, crf=20, img_type= "jpg"):
    print("FFFuncs: images_to_video")
    wild = "*" + wild + "*." + img_type
-   cmd = "/usr/bin/ffmpeg -framerate " + fps + " -pattern_type glob -i '" + in_dir + wild + "' -c:v libx264 -pix_fmt yuv420p -y " + out_file + " >/dev/null 2>&1"
+   cmd = "/usr/bin/ffmpeg -framerate " + str(fps) + " -pattern_type glob -i '" + in_dir + wild + "' -c:v libx264 -pix_fmt yuv420p -y " + out_file + " >/dev/null 2>&1"
    print(cmd)
    os.system(cmd)
    outfile_lr = out_file.replace(".mp4", "-lr.mp4")
-   cmd = "/usr/bin/ffmpeg -i " + out_file + " -vcodec libx264 -crf " + crf + " -framerate " + fps + " -y " + outfile_lr
+   cmd = "/usr/bin/ffmpeg -i " + out_file + " -vcodec libx264 -crf " + str(crf) + " -framerate " + str(fps) + " -y " + outfile_lr
    print(cmd)
    os.system(cmd)
    cmd = "mv " + outfile_lr + " " + out_file

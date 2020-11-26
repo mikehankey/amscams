@@ -1548,8 +1548,10 @@ def calibration(json_conf,form):
 
    cia = []
    for cf in sorted(ci, reverse=True):
-      cia.append(ci[cf])
-   cia = sorted(cia, key=lambda x: x['cam_id'], reverse=False)
+      if "cam_id" in ci[cf]:
+         cia.append(ci[cf])
+   #cia = sorted(cia, key=lambda x: x['cam_id'], -x['cal_image_file'], reverse=False)
+   cia = sorted(cia, key=lambda x: x['cam_id'] )
       
 
    print("<table class='table table-dark table-striped table-hover td-al-m m-auto table-fit'>")
@@ -1558,10 +1560,18 @@ def calibration(json_conf,form):
  
    #for cf in sorted(ci, reverse=True):
    for cf in cia:
+      if "cam_id" not in cf:
+         print(cf)
+         continue
+      #hd_datetime, hd_cam, hd_date, hd_y, hd_m, hd_d, hd_h, hd_M, hd_s = convert_filename_to_date_cam(cf)
+      if "cal_date" not in cf:
+          cf['cal_date'] = "9999"
       if 'cal_image_file' in cf:
          link = "/pycgi/webUI.py?cmd=free_cal&input_file=" + cf['cal_image_file'] 
       else:
          link = ""
+      if "total_res_deg" not in cf:
+         cf['total_res_deg'] = 99
       if cf['total_res_deg'] > .5:
          color = "lv1"; #style='color: #ff0000'"
       elif .4 < cf['total_res_deg'] <= .5:
@@ -2101,8 +2111,8 @@ def mask_admin(json_conf,form):
          #x,y,w,h = int(x), int(int(y) * .83), int(w), int(int(h) * .83) + 1
          cv2.rectangle(img, (x, y), (x + w, y + h), (128, 128, 128), -1)      
          tmasks.append((x,y,w,h))
-      cv2.imwrite("/mnt/ams2/tmp.jpg", img)
-      print("<img src=/mnt/ams2/tmp.jpg><br>")
+      cv2.imwrite("/mnt/ams2/temp/tmp.jpg", img)
+      print("<img src=/mnt/ams2/temp/tmp.jpg><br>")
       c = 0
       print("<p><form>")
       for mask in tmasks:
