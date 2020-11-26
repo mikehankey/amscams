@@ -1024,7 +1024,7 @@ def make_base_meteor_json(video_file, hd_video_file,best_meteor=None ):
       max_y = max(best_meteor['oys'])
       mjr['crop_box'] = [min_x,min_y,max_x,max_y]
       for i in range(0, len(best_meteor['ofns'])):
-         dt = "1999-01-01 00:00:00"
+         #dt = "1999-01-01 00:00:00"
          fn = best_meteor['ofns'][i]
          x = int(best_meteor['ccxs'][i] * hdm_x_720)
          y = int(best_meteor['ccys'][i] * hdm_y_720)
@@ -1035,6 +1035,7 @@ def make_base_meteor_json(video_file, hd_video_file,best_meteor=None ):
          az = best_meteor['azs'][i]
          el = best_meteor['els'][i]
          oint = best_meteor['oint'][i]
+         dt = best_meteor['dt'][i]
          #FLUX
          oint = best_meteor['oint'][i]
          mjr['meteor_frame_data'].append((dt, fn, x, y, w, h, oint, ra, dec, az, el))
