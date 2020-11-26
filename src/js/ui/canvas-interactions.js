@@ -64,7 +64,7 @@ if ($('canvas#c').length!=0) {
   const render = canvas.renderAll.bind(canvas);
 
   // Loading Animation
-  loading({'text':'Loading Media...','overlay':true});
+  //loading({'text':'Loading Meteor Media...','overlay':true});
 
   // Zoom
   function canvas_interactions() {
