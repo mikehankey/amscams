@@ -866,8 +866,13 @@ def fireball(video_file, json_conf, nomask=0):
          best_meteor = None
       else:
          best_meteor = jdata['best_meteor']
+         base_js, base_jsr = make_base_meteor_json(video_file, hd_trim,best_meteor)
+         jdata = base_js
    else:
-      jdata = None
+      hd_trim = None
+      base_js, base_jsr = make_base_meteor_json(video_file, hd_trim,best_meteor)
+      jdata = base_js
+      #jdata = None
    #print("JDATA:", jdata)
    #exit()
    hd_frames,hd_color_frames,subframes,sum_vals,max_vals,pos_vals = load_frames_fast(video_file, json_conf, 0, 0, 1, 1,[])
@@ -913,7 +918,16 @@ def fireball(video_file, json_conf, nomask=0):
 
    if jdata is None:
       jdata = {}
+      if "cp" in best_meteor:
+         if "x_poly" in best_meteor['cp']:
+            if type(best_meteor['cp']['x_poly']) is not list:
+               best_meteor['cp']['x_poly'] = best_meteor['cp']['x_poly'].tolist()
+               best_meteor['cp']['y_poly'] = best_meteor['cp']['y_poly'].tolist()
+               best_meteor['cp']['x_poly_fwd'] = best_meteor['cp']['x_poly_fwd'].tolist()
+               best_meteor['cp']['y_poly_fwd'] = best_meteor['cp']['y_poly_fwd'].tolist()
+
       jdata['best_meteor'] = best_meteor
+
       save_json_file(jsf, jdata)
    #fireball_plot_points(best_meteor)
    #print("BEST:", best_meteor)
@@ -937,6 +951,18 @@ def fireball(video_file, json_conf, nomask=0):
       base_js, base_jsr = make_base_meteor_json(video_file, hd_trim,best_meteor)
       print("BASE:", base_js)
       jsfr = jsf.replace(".json", "-reduced.json") 
+
+      if "cp" in best_meteor:
+         print("YES1")
+         if "x_poly" in best_meteor['cp']:
+            print("YES2")
+            if type(best_meteor['cp']['x_poly']) is not list:
+               print("YES3")
+               best_meteor['cp']['x_poly'] = best_meteor['cp']['x_poly'].tolist()
+               best_meteor['cp']['y_poly'] = best_meteor['cp']['y_poly'].tolist()
+               best_meteor['cp']['x_poly_fwd'] = best_meteor['cp']['x_poly_fwd'].tolist()
+               best_meteor['cp']['y_poly_fwd'] = best_meteor['cp']['y_poly_fwd'].tolist()
+
       save_json_file(jsf, jdata)
       save_json_file(jsfr, base_jsr)
       print("Small meteor don't need to refine", max(best_meteor['oint']))
@@ -945,6 +971,19 @@ def fireball(video_file, json_conf, nomask=0):
       make_roi_video(video_file,best_meteor, hd_color_frames, json_conf)
       return()
    else:
+
+      if "cp" in best_meteor:
+         print("YES1")
+         if "x_poly" in best_meteor['cp']:
+            print("YES2")
+            if type(best_meteor['cp']['x_poly']) is not list:
+               print("YES3")
+               best_meteor['cp']['x_poly'] = best_meteor['cp']['x_poly'].tolist()
+               best_meteor['cp']['y_poly'] = best_meteor['cp']['y_poly'].tolist()
+               best_meteor['cp']['x_poly_fwd'] = best_meteor['cp']['x_poly_fwd'].tolist()
+               best_meteor['cp']['y_poly_fwd'] = best_meteor['cp']['y_poly_fwd'].tolist()
+
+      exit()
       jdata['best_meteor'] = best_meteor
       save_json_file(jsf, jdata)
       print("big meteor lets refine", max(best_meteor['oint']))
@@ -4166,10 +4205,12 @@ def get_cal_params(meteor_json_file):
    if cfe(mcp_file) == 1:
       mcp = load_json_file(mcp_file)
       # GET EXTRA STARS?
+      before_cp = dict(mcp)
+      after_cp = dict(mcp)
    else:
       mcp = None
-   before_cp = dict(mcp)
-   after_cp = dict(mcp)
+      before_cp = {}
+      after_cp = {}
    before_cp['center_az'] = before_med_az
    before_cp['center_el'] = before_med_el
    before_cp['position_angle'] = before_med_pos

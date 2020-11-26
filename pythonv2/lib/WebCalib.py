@@ -516,11 +516,16 @@ def check_make_half_stack(sd_file,hd_file,meteor_reduced):
       if "png" in sd_file:
          sd_file = sd_file.replace("png", "jpg")
    if cfe(sd_file) == 0:
-      print("SD FILE NOT FOUND.", sd_file)
-      exit()
+      sd_file = sd_file.replace("jpg", "png")
+      
+      if cfe(sd_file) == 0:
+         print("SD FILE NOT FOUND.", sd_file)
+         exit()
    if cfe(hd_file) == 0:
-      print("HD FILE NOT FOUND.", sd_file)
-      exit()
+      hd_file = hd_file.replace("jpg", "png")
+      if cfe(hd_file) == 0:
+         print("HD FILE NOT FOUND.", sd_file)
+         exit()
 
    if cfe(hd_file) == 0:
       hd_trim = meteor_reduced['hd_trim']
@@ -2507,6 +2512,7 @@ def reduce_meteor_ajax(json_conf,meteor_json_file, cal_params_file, show = 0):
    print(json.dumps(response))
   
 def get_meteor_object(meteor_json):
+   return(None)
    if 'sd_objects' in meteor_json:
       objects = meteor_json['sd_objects']
    else:
@@ -2538,7 +2544,8 @@ def make_frame_table(meteor_reduced,meteor_json_file):
    prefix = prefix.replace("/passed", "")
 
    video_file = meteor_reduced['sd_video_file']
-   hd_stack_file = meteor_reduced['hd_stack']
+   if "hd_stack" in meteor_reduced:
+      hd_stack_file = meteor_reduced['hd_stack']
    cal_params_file = ""
    res_desc = "Residual Star Error: " + str(astro_res_err)[0:5]
    star_desc = "Total Stars: " + str(total_stars)
@@ -2796,7 +2803,10 @@ def update_red_info_ajax(json_conf, form):
 
 def reduce_meteor_js(meteor_reduced):
    video_file = meteor_reduced['sd_video_file']
-   hd_stack_file = meteor_reduced['hd_stack']
+   if "hd_stack" in meteor_reduced:
+      hd_stack_file = meteor_reduced['hd_stack']
+   else:
+      hd_stack_file = meteor_reduced['sd_stack']
    cal_params_file = ""
    if "cal_params" in meteor_reduced:
       if "total_res_deg" in meteor_reduced['cal_params']:
@@ -2991,6 +3001,9 @@ def reduce_meteor_new(json_conf,form):
          cal_params_file = None
       #print("Meteor not reduced yet...using...", cal_params_file)
       #exit()
+   #if "sd_video_file" not in mj:
+   #   mj['sd_video_file'] = mj['sd_trim']
+
    if "/mnt/ams2/meteors" not in mj['sd_video_file']:
       el = mj['sd_video_file'].split("/")
       sd_fn = el[-1]
@@ -3050,9 +3063,13 @@ def reduce_meteor_new(json_conf,form):
    if "stacked" not in mj['sd_stack']:
       mj['sd_stack'] = mj['sd_stack'].replace(".jpg", "-stacked.jpg")
       mj['hd_stack'] = mj['hd_stack'].replace(".jpg", "-stacked.jpg")
+   if cfe(mj['sd_stack']) == 0:
+      mj['sd_stack'] = mj['sd_stack'].replace(".jpg", ".png")
+   #exit()
 
-
-
+   if "hd_trim" not in mj:
+      hd_trim = mj['sd_video_file']
+      mj['hd_stack'] = mj['sd_stack']
 
    if "hd_stack" not in mj and mj['hd_trim'] != 0: 
       mj['hd_stack'] = mj['hd_trim'].replace(".mp4", "-stacked.jpg")
@@ -3060,10 +3077,12 @@ def reduce_meteor_new(json_conf,form):
       mj['hd_stack'] = sd_stack.replace(".jpg", "-HD-meteor.jpg")
       #exit()
       if cfe(mj['hd_stack']) == 0:
-         tmp = cv2.imread(sd_stack)
+         tmp = cv2.imread(mj['sd_stack'])
          hd_stack_img = cv2.resize(tmp, (1920,1080))
          cv2.imwrite(mj['hd_stack'], hd_stack_img)
-   if mj['hd_trim'] == 0 :
+
+
+   if "hd_trim" not in mj:
       mj['hd_trim'] = mj['sd_video_file'] 
       hd_trim = mj['sd_video_file']
 
@@ -3074,9 +3093,15 @@ def reduce_meteor_new(json_conf,form):
 
 
    if cfe(hd_stack_file) == 0:
-      stack_img = cv2.imread(sd_stack)
-      hd_stack_file = sd_stack.replace("-stacked.png", "-HD-stacked.jpg")
-      hd_stack_img = cv2.resize(stack_img, (1920,1080))
+      hd_stack_file = hd_stack_file.replace(".jpg", ".png")
+      if cfe(hd_stack_file) == 0:
+         hd_stack_file = sd_stack.replace("-stacked.png", "-HD-stacked.jpg")
+      if cfe(hd_stack_file) == 0:
+         print("NOT FOUND:", hd_stack_file)
+   #print(hd_stack_file)
+   #exit()
+   stack_img = cv2.imread(hd_stack_file)
+   hd_stack_img = cv2.resize(stack_img, (1920,1080))
    hd_stack = hd_stack_file
 
    if "cal_params_file" not in mj:
@@ -3129,11 +3154,14 @@ def reduce_meteor_new(json_conf,form):
 
    if reduced == 1:
       sd_video_file = meteor_reduced['sd_video_file']
-      hd_video_file = meteor_reduced['hd_video_file']
+      if "hd_video_file" in meteor_reduced:
+         hd_video_file = meteor_reduced['hd_video_file']
+      else:
+         hd_video_file = meteor_reduced['sd_video_file']
       if "stacked" not in meteor_reduced['sd_stack']:
          sd_stack = meteor_reduced['sd_stack'].replace(".jpg", "-stacked.jpg")
-      if "stacked" not in meteor_reduced['hd_stack']:
-         hd_stack = meteor_reduced['hd_stack'].replace(".jpg", "-stacked.jpg")
+      #if "stacked" not in meteor_reduced['hd_stack']:
+      #   hd_stack = meteor_reduced['hd_stack'].replace(".jpg", "-stacked.jpg")
       template = template.replace("{SD_VIDEO}", sd_video_file)
       template = template.replace("{HD_VIDEO}", str(hd_video_file))
       template = template.replace("{SD_STACK}", sd_stack)
@@ -3229,7 +3257,11 @@ def reduce_meteor_new(json_conf,form):
       if "cal_params" in meteor_reduced:
          if "cat_image_stars" in meteor_reduced['cal_params']:
             for star in meteor_reduced['cal_params']['cat_image_stars']:
-               (dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist,bp) = star
+               if len(star) == 17:
+                  (dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist,bp) = star
+               if len(star) == 16:
+                  (dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist) = star
+                  bp = 0
                good_name =  dcname.encode("ascii","xmlcharrefreplace")
 
                good_name = str(good_name).replace("b'", "")
@@ -3307,7 +3339,10 @@ def reduce_meteor_new(json_conf,form):
       if(isfile(light_curve_file)):
          template = template.replace("{%LIGHT_CURVE%}", '<a class="d-block nop text-center img-link-n" href="'+light_curve_file+'"><img  src="'+light_curve_file+'" class="mt-2 img-fluid"></a>')
       else:
-         light_curve_url = graph_light_curve(mj)
+         if "best_meteor" in mj:
+            light_curve_url = graph_light_curve(mj)
+         else:
+            light_curve_url = ""
          template = template.replace("{%LIGHT_CURVE%}", "<div class='alert error mt-4'><iframe scolling=no src=" + light_curve_url  + " width=100% height=640></iframe></div>")
    else:
       template = template.replace("{%LIGHT_CURVE%}", "<div class='alert error mt-4'>Currently, no data for light curve.</iframe></div>")
