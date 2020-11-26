@@ -516,6 +516,8 @@ def check_make_half_stack(sd_file,hd_file,meteor_reduced):
       if "png" in sd_file:
          sd_file = sd_file.replace("png", "jpg")
    if cfe(sd_file) == 0:
+      sd_file = sd_file.replace("jpg", "png")
+      
       print("SD FILE NOT FOUND.", sd_file)
       exit()
    if cfe(hd_file) == 0:
