@@ -1148,6 +1148,7 @@ def make_base_meteor_json(video_file, hd_video_file,best_meteor=None ):
          oint = best_meteor['oint'][i]
          mjr['meteor_frame_data'].append((dt, fn, x, y, w, h, oint, ra, dec, az, el))
 
+   mjr['crop_box'] = mfd_to_cropbox(mjr['meteor_frame_data']):
    return(mj, mjr)
 
 def fireball_plot_points(bm):
@@ -1328,6 +1329,7 @@ def fireball_fill_frame_data(video_file, bm, frames, tracking_updates = None):
    bm['ccys'] = ccys
    bm['oint'] = oint
    bm['dt'] = dts
+
 
    for d in frame_data:
       print(d, frame_data[d])
