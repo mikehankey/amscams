@@ -1,0 +1,271 @@
+{HEADER}
+<script src="/src/js/functions/check_login.js"></script> 
+
+<body onload='init_page()'>
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark"> 
+       
+    <a class="navbar-brand clearfix" href="/pycgi/webUI.py" title="Home">  
+        <iframe id="logo_holder" src="/dist/img/logo.svg" width="70" height="45" style="border:0"></iframe>
+        <span class="tx"><span class="m">AllSkyCams.com</span><span class="s">{AMSID} - {OBS_NAME} {LOCATION}</span></span>
+    </a>
+
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#mainN" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="mainN">
+      <ul class="navbar-nav ml-auto"> 
+         <li class="nav-item"><a class="nav-link" href="/pycgi/webUI.py?cmd=home">STACKS</a></li>
+         
+         <li class="nav-item"><a class="nav-link" href="/pycgi/webUI.py?cmd=meteors">Meteors</a></li>
+         <li class="nav-item dropdown">
+             <a class="nav-link dropdown-toggle" href="#" id="calib_dd" data-toggle="dropdown">Calibration</a>
+             <div class="dropdown-menu dropdown-menu-right">
+               <a class="dropdown-item" href="/pycgi/webUI.py?cmd=calibration">Past Calibrations</a>
+             </div>
+         </li>
+         <li class="nav-item"><a class="nav-link" href="/pycgi/webUI.py?cmd=live_view">Live</a></li>
+         <li class="nav-item dropdown">
+             <a class="nav-link dropdown-toggle" href="#" id="config_dd" data-toggle="dropdown">Config</a>
+             <div class="dropdown-menu dropdown-menu-right">
+               <a class="dropdown-item" href="/pycgi/webUI.py?cmd=mask_admin">Mask Admin</a>
+             </div>
+         </li>
+         <li class="nav-item"><a class="nav-link" href="/pycgi/webUI.py?cmd=login">Logout</a></li>
+     </ul>
+    </div>
+</nav>
+
+
+<div id="main_container" class="container-fluid d-flex h-100 mt-4 position-relative"> 
+        <div class="h-100 flex-fixed-canvas">
+          
+        
+            <div class="canvas-container">
+                 <canvas id="c" width="960" height="540"></canvas> 
+            </div>
+  
+            <ul class="nav nav-tabs mt-3">
+                <li class="nav-item">
+                    <a class="nav-link active" id="reduc-tab-l" data-toggle="tab" href="#reduc-tab" role="tab" aria-controls="reduction" aria-selected="true">Reduction</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" id="lightc-tab-l" data-toggle="tab" href="#lightc-tab" role="tab" aria-controls="lightc" aria-selected="true">Light Curve</a> 
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" id="stars-tab-l" data-toggle="tab" href="#stars-tab" role="tab" aria-controls="stars" aria-selected="false"><span id="str_cnt"></span> Stars</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" id="plots-tab-l" data-toggle="tab" href="#plots-tab" role="tab" aria-controls="plots" aria-selected="false">Plots</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" id="trajectory-tab-l" data-toggle="tab" href="#trajectory-tab" role="tab" aria-controls="trajectory" aria-selected="false">Trajectory</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" id="orbit-tab-l" data-toggle="tab" href="#orbit-tab" role="tab" aria-controls="orbit" aria-selected="false">Orbit</a>
+                </li>
+            </ul>
+            <div class="tab-content box " > 
+
+                <div class="tab-pane fade show active pr-3" id="reduc-tab" role="tabpanel" aria-labelledby="reduc-tab-l">
+                    
+                <table class="table table-dark table-striped table-hover td-al-m mb-2 pr-5" >
+                <thead>
+                <tr>
+                <th></th><th></th><th>#</th><th>Time</th><th>RA/DEC</th><th>AZ/EL</th><th>X/Y</th><th>w/h</th><th>Max px</th><th colspan="4"></th>
+                </tr>
+                </thead>
+                <tbody>
+                {FRAME_TABLE_ROWS}
+                </tbody>
+                </table>
+                </div>
+
+                <div class="tab-pane fade show pr-3" id="lightc-tab" role="tabpanel" aria-labelledby="lightc-tab-l">
+                    <div class='alert error mt-4'><iframe src="{LIGHTCURVE_URL}" width=640 height=640></iframe></div>
+                </div>
+
+                <div class="tab-pane fade" id="stars-tab" role="tabpanel" aria-labelledby="stars-tab-l">
+                     <table class="table table-dark table-striped table-hover td-al-m"><thead>
+                     <tr>
+                     <th>Name</th><th>mag</th><th>Cat RA/Dec</th><th>Res &deg;</th><th>Res. Pixels</th>
+                     </tr>
+                     </thead>
+                     <tbody>
+                     {STAR_ROWS} 
+                     </tbody></table>
+                </div> 
+
+                <div class="tab-pane fade" id="plots-tab" role="tabpanel" aria-labelledby="plots-tab-l">
+                    
+                </div> 
+
+                <div class="tab-pane fade" id="trajectory-tab" role="tabpanel" aria-labelledby="trajectory-tab-l">
+                    {%TRAJECTOR Y_TABLE%}
+                </div> 
+
+                <div class="tab-pane fade" id="orbit-tab" role="tabpanel" aria-labelledby="orbit-tab-l">
+                    
+                </div> 
+
+            </div>
+ 
+        </div>
+
+        <div class="flex-fixed-r-canvas h-100">
+
+            <div class="canvas_zoom_holder mb-3">
+                <div id="canvas_zoom_target"><img alt="" src="/dist/img/target.svg"/></div>
+                <div id="canvas_pointer_info"></div>
+                <div id="canvas_zoom"></div>
+            </div> 
+
+            <div class="box">
+                <h2>Meteor Info</h2>
+                <dl class="row mb-0">
+                    <dt class="col-6">Start Time</dt>   <dd class="col-6">{START_TIME}</dd>
+                    <dt class="col-6">Duration</dt>  	<dd class="col-6" id="dur">{DURATION}</dd>
+                    <dt class="col-6">Max Intensity</dt>    <dd class="col-6">{MAX_INTENSE}</dd>
+                    <dt class="col-6">Start AZ</dt>    <dd class="col-6">{START_AZ}</dd>
+                    <dt class="col-6">Start EL</dt>    <dd class="col-6">{START_El}</dd>
+                    <dt class="col-6">End AZ</dt>    <dd class="col-6">{END_AZ}</dd>
+                    <dt class="col-6">End EL</dt>    <dd class="col-6">{END_El}</dd>
+                    <dt class="col-6">Angular Velocity</dt>    <dd class="col-6">{ANG_VEL}</dd>
+                    <dt class="col-6">Angular Seperation</dt>    <dd class="col-6">{ANG_SEP}</dd>
+                </dl>
+                <hr class="w">
+                <div class="m-2 ml-5 mr-5">
+                    <div class="btn-holder row mt-1 mb-1">
+                        <a id="zoom_canvas" class="col btn btn-secondary mt-0 mb-0"><i class="icon-zoom-in"></i> <span>Zoom</span></a>
+                        <a id="show_grid" class="col btn btn-secondary mt-0 mb-0"><i class="icon-grid"></i> <span>Show Grid</span></a>
+                    </div>
+                    <div class="btn-holder row mt-1">
+                        <a id="play_anim" class="col btn btn-secondary mt-0 mb-0"><i class="icon-play"></i> <span>Thumbs Anim.</span></a> 
+                        <a id="show_json" class="col btn btn-secondary mt-0 mb-0 ml-1 json_viewer" data_src="/mnt/ams2/meteors/2020_11_24/2020_11_24_10_15_01_000_010003-trim-1183.json"><i class="icon-file-text"></i> All Data</a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="box">
+            
+                    <h2>Calibration Paramaters</h2>
+                    <table >
+                       <tr><td>RA Center:</td><td>{RA}</td></tr>
+                       <tr><td>Dec Center:</td><td>{DEC}</td></tr>
+                       <tr><td>Az Center:</td><td>{AZ}</td></tr>
+                       <tr><td>El Center:</td><td>{EL}</td></tr>
+                       <tr><td>Position Angle:</td><td>{POSITION_ANGLE}</td></tr>
+                       <tr><td>Pixel Scale:</td><td>{PIXSCALE}</td></tr>
+                       <tr><td>Image Points:</td><td>{IMG_STARS}</td></tr>
+                       <tr><td>Catalog Pairs:</td><td>{CAT_STARS}</td></tr>
+                       <tr><td>Residual Pixels:</td><td>{RES_PX}</td></tr>
+                       <tr><td>Residual Degrees:</td><td>{RES_DEG}</td></tr>
+                    </table>
+            </div>
+
+            <div class="box">
+                    <div class="row mt-3">
+                        <span id="star_counter" class="col-12 pb-2"></span>
+                        <div id="reduc_info" class="col">
+                            <a id="update_stars" class="btn btn-primary btn-v"><i class="icon-star_catalog"></i> Update Star List</a>
+                        </div>
+                        <div class="col">
+                          <a id="refresh_data" class="btn btn-primary btn-v"><i class="icon-spinner10"></i>Refresh Data</a>
+                        </div>
+                        <div class="col">
+                          <a id="reduce_meteor" class="btn btn-primary btn-v"><i class="icon-reduce_meteor"></i> Reduce Meteor</a>
+                        </div>
+                    </div>
+
+                    <div class="row mt-3 ">
+                        <div class="col"><a class="btn btn-primary btn-sm mx-auto d-block" data-toggle="collapse" href="#extra_command" role="button" aria-expanded="false" aria-controls="extra_command"><span class="icon-plus"></span> More commands...</a></div>
+                    </div>
+
+                    <div class="row mt-3 collapse" id="extra_command">
+                        <div class="col pl-4 pr-4 "> 
+                            <a class="btn btn-danger d-block mt-4" target=_blank href="/pycgi/webUI.py?cmd=override_detect&jsid=20201124101501000010003-trim-1183"> Reject Meteor</a> 
+                         </div>
+                    </div>
+            </div>       
+
+            <div class="box">
+                <h2>Media</h2>
+                <div class="d-flex">
+                       
+                        <div class="flex-fill pr-2">
+                            <a style="background:url({SD_STACK})" class="img-link d-block" href="{HD_STACK}">
+                                <img alt="" src="/dist/img/img_hd.svg"/>
+                            </a>
+                        </div>
+                        <div class="flex-fill pr-2">
+                            <a style="background:url({SD_STACK})" class="img-link d-block" href="{SD_STACK}">
+                                <img alt="" src="/dist/img/img_sd.svg"/>
+                            </a>
+                        </div>
+                        <div class="flex-fill pr-2">
+                            <a style="background:url({SD_STACK})" class="img-link d-block" href="{HALF_STACK}">
+                                <img alt="" src="/dist/img/img_hstack.svg"/>
+                            </a>
+                        </div>
+                        <div class="flex-fill pr-2">
+                            <a style="background:url({SD_STACK})" class="vid-link d-block" href="/dist/video_player.html?video={HD_TRIM}&butt=no">
+                                <img alt="" src="/dist/img/vid_hd.svg"/>
+                            </a>
+                        </div>
+                        <div class="flex-fill">
+                            <a style="background:url({SD_STACK})" class="vid-link d-block" href="/dist/video_player.html?video={SD_TRIM}&butt=no">
+                                <img alt="" src="/dist/img/vid_sd.svg"/>
+                            </a>
+                        </div> 
+                </div>
+            </div> 
+
+            <div class="box">
+                <h2 class="mb-0"><a data-toggle="collapse" href="#share_box" role="button" class="d-block dropdown-toggle dt-title" aria-expanded="true">Share</a></h2>
+                <div class="collapse p-3" id="share_box">
+                    <a class="btn btn-primary d-block mb-2">Submit to AMS Video Meteor Archive</a>
+                    <p class="mb-1 mt-3"><b>For fireballs only</b></p>
+                    <a class="btn btn-primary d-block mb-2">Submit to AMS Fireball Reports</a>
+                    <p class="mb-1 mt-3"><b>Social media</b></p>
+                    <div class="row">
+                        <div class="col"><a class="btn btn-primary btn-v"><i class="icon-facebook"></i> Share on facebook</a></div>
+                        <div class="col"><a class="btn btn-primary btn-v"><i class="icon-twitter"></i>Share on Twitter</a></div>
+                        <div class="col"><a class="btn btn-primary btn-v"><i class="icon-youtube"></i>Share on Youtube</a></div>
+                    </div> 
+                </div>
+            </div>
+</div>
+
+
+<!--<div id="meteor_frame_list"></div> 
+<div id="star_list"></div>  
+-->
+</div>
+<script>
+       {CAL_PARAMS}
+       {METEOR_FRAME_DATA}
+       {CROP_BOX}
+       var grid_by_default = false;
+       var sd_video_file = '{SD_TRIM}'
+       var my_image = '{HALF_STACK}'
+       var hd_stack_file = '{HD_STACK}'
+       var az_grid_file = '{AZ_GRID}'
+       var meteor_json_file = '{METEOR_JSON}'
+       var main_vid = '{SD_TRIM}'
+       var stars = [];
+       var json_reduced = '{METEOR_REDUCED_JSON}'
+function init_page() {
+   reduction_table_actions();
+   //var json_resp = {}
+   //json_resp['sd_meteor_frame_data'] = meteor_frame_data 
+   //json_resp['cat_image_stars'] = cal_params['cat_image_stars'] 
+   if(typeof meteor_frame_data !== 'undefined') {
+      update_meteor_points(meteor_frame_data) 
+   }
+   if(typeof cal_params !== 'undefined') {
+      update_stars_on_canvas_and_table(cal_params, crop_box)
+   }
+
+}
+</script>
+{FOOTER}

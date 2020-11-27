@@ -790,6 +790,75 @@ def mask_stars(img, cp):
    #cv2.imshow('pepe', img)
    return(img)
 
+def mfd_to_cropbox(mfd):
+   xs = []
+   ys = []
+   for row in mjr['meteor_frame_data']:
+      (dt, fn, x, y, w, h, oint, ra, dec, az, el) = row
+      xs.append(x)
+      xs.append(x+w)
+      ys.append(y)
+      ys.append(y)
+   crop_box = [min(xs),min(ys),max(xs),max(ys)]
+   return(crop_box)
+
+def make_roi_video_mfd(video_file, json_conf):
+   roi_size = 50
+   vid_fn, vid_dir = fn_dir(video_file)
+   vid_base = vid_fn.replace(".mp4", "")
+   mjf = video_file.replace(".mp4", ".json")
+   mjrf = video_file.replace(".mp4", "-reduced.json")
+
+   date = vid_fn[0:10]
+   year = vid_fn[0:4]
+   mon = vid_fn[5:7]
+   cache_dir = "/mnt/ams2/CACHE/" + year + "/" + mon + "/" + vid_base + "/"
+   prefix = cache_dir + vid_base + "-frm"
+
+   hd_frames,hd_color_frames,subframes,sum_vals,max_vals,pos_vals = load_frames_fast(video_file, json_conf, 0, 0, 1, 1,[])
+
+   updated_frame_data = []
+   if cfe(mjf) == 1:
+      mj = load_json_file(mjf)
+   if cfe(mjrf) == 1:
+      mjr = load_json_file(mjrf)
+   if "user_mods" in mj:
+      ufd = mj['user_mods']['frames']
+   used = {}
+   if "meteor_frame_data" in mjr:
+      for row in mjr['meteor_frame_data']:
+         (dt, fn, x, y, w, h, oint, ra, dec, az, el) = row
+         frame = hd_color_frames[fn]
+         sfn = str(fn)
+         if sfn in ufd:
+            x,y = ufd[sfn]
+            tx, ty, ra ,dec , az, el = XYtoRADec(x,y,video_file,mjr['cal_params'],json_conf)
+            #AZEL HERE!
+            print("UPDATED POINT", fn, x,y)
+         if fn not in used:
+            updated_frame_data.append((dt, fn, x, y, w, h, oint, ra, dec, az, el))
+
+            rx1,ry1,rx2,ry2 = bound_cnt(x, y,1920,1080, roi_size)
+            of = cv2.resize(frame, (1920,1080))
+            roi_img = of[ry1:ry2,rx1:rx2]
+            ffn = "{:04d}".format(int(fn))
+            outfile = prefix + ffn + ".jpg"
+            cv2.imwrite(outfile, roi_img)
+         print("WROTE:", outfile)
+         used[fn] = 1
+
+   crop_box = mfd_to_cropbox(updated_frame_data)
+
+   mjr['crop_box'] = crop_box 
+   mjr['meteor_frame_data'] = updated_frame_data
+   # NEXT LOOP THE CCXS CCYS fields 720p update from user mod
+
+   save_json_file(mjrf, mjr)      
+   save_json_file(mjf, mj)      
+         
+
+   
+
 def make_roi_video(video_file,bm, frames, json_conf):
    vid_fn, vdir = fn_dir(video_file)
    vid_base = vid_fn.replace(".mp4", "")
