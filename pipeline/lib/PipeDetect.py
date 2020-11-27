@@ -851,15 +851,22 @@ def make_roi_video_mfd(video_file, json_conf):
 
    mjr['crop_box'] = crop_box 
    mjr['meteor_frame_data'] = updated_frame_data
+
    # NEXT LOOP THE CCXS CCYS fields 720p update from user mod
 
    save_json_file(mjrf, mjr)      
    save_json_file(mjf, mj)      
+
+   print("COP:", mjr['crop_box'])
          
 
    
 
 def make_roi_video(video_file,bm, frames, json_conf):
+   mjf = video_file.replace(".mp4", ".json")
+   mjrf = video_file.replace(".mp4", "-reduced.json")
+   mj = load_json_file(mjf)
+   mjr = load_json_file(mjrf)
    vid_fn, vdir = fn_dir(video_file)
    vid_base = vid_fn.replace(".mp4", "")
    date = vid_fn[0:10]
@@ -872,12 +879,39 @@ def make_roi_video(video_file,bm, frames, json_conf):
    roi_size = 50
    roi_size2 = roi_size * 2
    roi_frames = []
+
+   if "user_mods" in mj:
+      ufd = mj['user_mods']['frames']
+   else:
+      ufd = {}
+   used = {}
+
+   hdm_x_720 = 1920 / 1280
+   hdm_y_720 = 1080 / 720
+   updated_frame_data = []
+   xs19 = []
+   ys19 = []
    for j in range(0, len(frames)):
       i = j - bm['ofns'][0]  
+      fns = str(j)
+
+      if fns in ufd:
+         mod_x,mod_y = ufd[fns] 
+         mod_x_720 = int(mod_x / hdm_x_720)
+         mod_y_720 = int(mod_y / hdm_y_720)
+         bm['ccxs'][i] = mod_x_720
+         bm['ccys'][i] = mod_y_720
+
       if bm['ofns'][0] <= j < bm['ofns'][-1] - 1:
          # meteor is active
          rx = bm['ccxs'][i]
          ry = bm['ccys'][i]
+         rw = bm['ows'][i]
+         rh = bm['ohs'][i]
+         oint = bm['oint'][i]
+         tx, ty, ra ,dec , az, el = XYtoRADec(hd_x,hd_y,video_file,mjr['cal_params'],json_conf)
+         date_str = bm['dt'][i]
+         updated_frame_data.append((date_str, j, hd_x, hd_y, rw, rh, oint, ra, dec, az, el))
       else:
          # meteor is inactive (use 1st frame / last frame for crop location on missing frames)
          if j < bm['ofns'][0]:
@@ -886,10 +920,15 @@ def make_roi_video(video_file,bm, frames, json_conf):
          elif j > bm['ofns'][-1]:
             rx = bm['ccxs'][-1]
             ry = bm['ccys'][-1]
-
-      rx1,ry1,rx2,ry2 = bound_cnt(rx, ry,1280,720, roi_size)
+      
+ 
+      hd_x = int(rx * hdm_x_720)
+      hd_y = int(ry * hdm_y_720)
+      xs19.append(hd_x)
+      ys19.append(hd_y)
+      rx1,ry1,rx2,ry2 = bound_cnt(hd_x, hd_y,1920,1080, roi_size)
       of = frames[j].copy()
-      of = cv2.resize(of, (1280,720))
+      of = cv2.resize(of, (1920,1080))
       roi_img = of[ry1:ry2,rx1:rx2]
       roi_frames.append(roi_img)
          # this only handles the left side now BUG/FIX
@@ -898,7 +937,7 @@ def make_roi_video(video_file,bm, frames, json_conf):
          roi_p = np.zeros((roi_size2,roi_size2,3),dtype=np.uint8)
          px1 = 0
          px2 = roi_img.shape[1]
-         if ry > 720/2:
+         if ry > 1080/2:
             # object is near the bottom edge
             py1 = 0
             py2 = roi_img.shape[0]
@@ -906,8 +945,6 @@ def make_roi_video(video_file,bm, frames, json_conf):
             py1 = roi_size2 - roi_img.shape[0]  
             py2 = roi_size2 
          roi_p[py1:py2, px1:px2] = roi_img
-         cv2.imshow("ROIPXXX", roi_p)
-         cv2.waitKey(0)
       else:
          roi_p = roi_img
  
@@ -918,6 +955,11 @@ def make_roi_video(video_file,bm, frames, json_conf):
          cv2.rectangle(of, (rx1, ry1), (rx2, ry2), (255,255,255), 1, cv2.LINE_AA)
          cv2.imshow("pepe", of)
          cv2.waitKey(30)
+  
+   mjr['crop_box'] = [min(xs19)-25, min(ys19)-25,max(xs19)+25,max(ys19)+25]
+   print("UPD:", updated_frame_data)
+   mjr['meteor_frame_data'] = updated_frame_data
+   save_json_file(mjrf, mjr)
    tracking_outfile = "/mnt/ams2/meteors/" + date + "/" + vid_base + "-tracking.mp4"
    cmd = "./FFF.py imgs_to_vid " + cache_dir + " " + year + " " + tracking_outfile + " 25 27"
    os.system(cmd)
@@ -935,9 +977,12 @@ def fireball(video_file, json_conf, nomask=0):
          best_meteor = None
       else:
          best_meteor = jdata['best_meteor']
+         if "hd_trim" in jdata:
+            hd_trim = jdata['hd_trim']
          base_js, base_jsr = make_base_meteor_json(video_file, hd_trim,best_meteor)
          jdata = base_js
    else:
+      # update this to find the HD file in the meteor dir, or the min_save dir if it is not present.
       hd_trim = None
       base_js, base_jsr = make_base_meteor_json(video_file, hd_trim,best_meteor)
       jdata = base_js
@@ -1576,6 +1621,9 @@ def fireball_phase1(hd_frames, hd_color_frames, subframes,sum_vals,max_vals,pos_
    # load calib
    cp = calib_image(video_file, hd_frames[0], json_conf)
    cp['user_stars'] = get_image_stars(video_file, hd_frames[0].copy(), json_conf, 1)
+   print("NEW CP:", cp['cat_image_stars'])
+   print("NEW US:", cp['user_stars'])
+   exit()
    x = cp['total_res_px']
    if math.isnan(x) is True:
       print("ISNANA")
