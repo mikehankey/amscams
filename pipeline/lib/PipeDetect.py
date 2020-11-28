@@ -824,6 +824,10 @@ def make_roi_video_mfd(video_file, json_conf):
       mjr = load_json_file(mjrf)
    if "user_mods" in mj:
       ufd = mj['user_mods']['frames']
+   else:
+      ufd = {}
+      ufd['frames'] = {}
+      ufd['user_stars'] = []
    used = {}
    if "meteor_frame_data" in mjr:
       for row in mjr['meteor_frame_data']:
