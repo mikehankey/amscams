@@ -1625,7 +1625,7 @@ def fireball_phase1(hd_frames, hd_color_frames, subframes,sum_vals,max_vals,pos_
    cp['user_stars'] = get_image_stars(video_file, hd_frames[0].copy(), json_conf, 1)
    print("NEW CP:", cp['cat_image_stars'])
    print("NEW US:", cp['user_stars'])
-   exit()
+   #exit()
    x = cp['total_res_px']
    if math.isnan(x) is True:
       print("ISNANA")
