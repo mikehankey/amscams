@@ -793,7 +793,7 @@ def mask_stars(img, cp):
 def mfd_to_cropbox(mfd):
    xs = []
    ys = []
-   for row in mjr['meteor_frame_data']:
+   for row in mfd:
       (dt, fn, x, y, w, h, oint, ra, dec, az, el) = row
       xs.append(x)
       xs.append(x+w)
@@ -1193,7 +1193,7 @@ def make_base_meteor_json(video_file, hd_video_file,best_meteor=None ):
          oint = best_meteor['oint'][i]
          mjr['meteor_frame_data'].append((dt, fn, x, y, w, h, oint, ra, dec, az, el))
 
-   mjr['crop_box'] = mfd_to_cropbox(mjr['meteor_frame_data']):
+   mjr['crop_box'] = mfd_to_cropbox(mjr['meteor_frame_data'])
    return(mj, mjr)
 
 def fireball_plot_points(bm):
