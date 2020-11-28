@@ -823,11 +823,13 @@ def make_roi_video_mfd(video_file, json_conf):
    if cfe(mjrf) == 1:
       mjr = load_json_file(mjrf)
    if "user_mods" in mj:
-      ufd = mj['user_mods']['frames']
+      if "frames" in mj['user_mods']:
+         ufd = mj['user_mods']['frames']
+      else:
+         ufd = {}
    else:
       ufd = {}
-      ufd['frames'] = {}
-      ufd['user_stars'] = []
+      mj['user_mods'] = {}
    used = {}
    if "meteor_frame_data" in mjr:
       for row in mjr['meteor_frame_data']:
@@ -841,14 +843,20 @@ def make_roi_video_mfd(video_file, json_conf):
             print("UPDATED POINT", fn, x,y)
          if fn not in used:
             updated_frame_data.append((dt, fn, x, y, w, h, oint, ra, dec, az, el))
-
+            #cx = x + int(w/2)
+            #cy = y + int(h/2)
             rx1,ry1,rx2,ry2 = bound_cnt(x, y,1920,1080, roi_size)
             of = cv2.resize(frame, (1920,1080))
             roi_img = of[ry1:ry2,rx1:rx2]
+
+            #cv2.rectangle(of, (rx1, ry1), (rx2, ry2), (255,255,255), 1, cv2.LINE_AA)
+            #cv2.imshow('pepe', of)
+            #cv2.waitKey(0)
+
             ffn = "{:04d}".format(int(fn))
             outfile = prefix + ffn + ".jpg"
             cv2.imwrite(outfile, roi_img)
-         print("WROTE:", outfile)
+            print("WROTE:", outfile, x,y)
          used[fn] = 1
 
    crop_box = mfd_to_cropbox(updated_frame_data)
@@ -913,6 +921,8 @@ def make_roi_video(video_file,bm, frames, json_conf):
          rw = bm['ows'][i]
          rh = bm['ohs'][i]
          oint = bm['oint'][i]
+         hd_x = int(rx * hdm_x_720)
+         hd_y = int(ry * hdm_y_720)
          tx, ty, ra ,dec , az, el = XYtoRADec(hd_x,hd_y,video_file,mjr['cal_params'],json_conf)
          date_str = bm['dt'][i]
          updated_frame_data.append((date_str, j, hd_x, hd_y, rw, rh, oint, ra, dec, az, el))
@@ -926,8 +936,8 @@ def make_roi_video(video_file,bm, frames, json_conf):
             ry = bm['ccys'][-1]
       
  
-      hd_x = int(rx * hdm_x_720)
-      hd_y = int(ry * hdm_y_720)
+         hd_x = int(rx * hdm_x_720)
+         hd_y = int(ry * hdm_y_720)
       xs19.append(hd_x)
       ys19.append(hd_y)
       rx1,ry1,rx2,ry2 = bound_cnt(hd_x, hd_y,1920,1080, roi_size)
