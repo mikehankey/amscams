@@ -3775,6 +3775,8 @@ def pair_stars(cal_params, cal_params_file, json_conf, cal_img=None, show = 0):
    total_match_dist = 0
    total_cat_dist = 0
    total_matches = 0
+   for var in cal_params:
+      print("PAIR STARS CP:", var, str(cal_params[var]))
    cat_stars = get_catalog_stars(cal_params)
 
    #new_user_stars = []
@@ -3796,6 +3798,7 @@ def pair_stars(cal_params, cal_params_file, json_conf, cal_img=None, show = 0):
       close_stars = find_close_stars((ix,iy), cat_stars)
       found = 0
       for name,mag,ra,dec,new_cat_x,new_cat_y,six,siy,cat_dist in close_stars:
+         print("CLOSE STAR:", name,mag,ra,dec,new_cat_x,new_cat_y,six,siy,cat_dist)
          #dcname = str(name.decode("utf-8"))
          #dbname = dcname.encode("utf-8")
          new_x, new_y, img_ra,img_dec, img_az, img_el = XYtoRADec(ix,iy,cal_params_file,cal_params,json_conf)
@@ -3836,13 +3839,15 @@ def pair_stars(cal_params, cal_params_file, json_conf, cal_img=None, show = 0):
          #cv2.circle(temp_img,(int(new_cat_x),int(new_cat_y)), 7, (255,128,128), 1)
          #cv2.circle(temp_img,(int(new_x),int(new_y)), 7, (128,128,255), 1)
          used_key = str(ra) + "-" + str(dec)
-
+         print("MATCH:", match_dist)
          if match_dist >= 10 or used_key in used:
             bad = 1
+            print("SKIPPING CLOSE STAR!", name, new_x, new_y)
             #plt.plot(xs, ys)
             #plt.show()
          else:
             my_close_stars.append((name,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist,bp))
+            print("ADDING CLOSE STAR!", name, new_x, new_y)
             total_match_dist = total_match_dist + match_dist
             total_cat_dist = total_cat_dist + cat_dist
             total_matches = total_matches + 1

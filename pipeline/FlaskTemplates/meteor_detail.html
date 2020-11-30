@@ -2,40 +2,8 @@
 <script src="/src/js/functions/check_login.js"></script> 
 
 <body onload='init_page()'>
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark"> 
-       
-    <a class="navbar-brand clearfix" href="/pycgi/webUI.py" title="Home">  
-        <iframe id="logo_holder" src="/dist/img/logo.svg" width="70" height="45" style="border:0"></iframe>
-        <span class="tx"><span class="m">AllSkyCams.com</span><span class="s">{AMSID} - {OBS_NAME} {LOCATION}</span></span>
-    </a>
 
-    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#mainN" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-    </button>
-
-    <div class="collapse navbar-collapse" id="mainN">
-      <ul class="navbar-nav ml-auto"> 
-         <li class="nav-item"><a class="nav-link" href="/pycgi/webUI.py?cmd=home">STACKS</a></li>
-         
-         <li class="nav-item"><a class="nav-link" href="/pycgi/webUI.py?cmd=meteors">Meteors</a></li>
-         <li class="nav-item dropdown">
-             <a class="nav-link dropdown-toggle" href="#" id="calib_dd" data-toggle="dropdown">Calibration</a>
-             <div class="dropdown-menu dropdown-menu-right">
-               <a class="dropdown-item" href="/pycgi/webUI.py?cmd=calibration">Past Calibrations</a>
-             </div>
-         </li>
-         <li class="nav-item"><a class="nav-link" href="/pycgi/webUI.py?cmd=live_view">Live</a></li>
-         <li class="nav-item dropdown">
-             <a class="nav-link dropdown-toggle" href="#" id="config_dd" data-toggle="dropdown">Config</a>
-             <div class="dropdown-menu dropdown-menu-right">
-               <a class="dropdown-item" href="/pycgi/webUI.py?cmd=mask_admin">Mask Admin</a>
-             </div>
-         </li>
-         <li class="nav-item"><a class="nav-link" href="/pycgi/webUI.py?cmd=login">Logout</a></li>
-     </ul>
-    </div>
-</nav>
-
+{NAV}
 
 <div id="main_container" class="container-fluid d-flex h-100 mt-4 position-relative"> 
         <div class="h-100 flex-fixed-canvas">
@@ -127,9 +95,9 @@
                     <dt class="col-6">Duration</dt>  	<dd class="col-6" id="dur">{DURATION}</dd>
                     <dt class="col-6">Max Intensity</dt>    <dd class="col-6">{MAX_INTENSE}</dd>
                     <dt class="col-6">Start AZ</dt>    <dd class="col-6">{START_AZ}</dd>
-                    <dt class="col-6">Start EL</dt>    <dd class="col-6">{START_El}</dd>
+                    <dt class="col-6">Start EL</dt>    <dd class="col-6">{START_EL}</dd>
                     <dt class="col-6">End AZ</dt>    <dd class="col-6">{END_AZ}</dd>
-                    <dt class="col-6">End EL</dt>    <dd class="col-6">{END_El}</dd>
+                    <dt class="col-6">End EL</dt>    <dd class="col-6">{END_EL}</dd>
                     <dt class="col-6">Angular Velocity</dt>    <dd class="col-6">{ANG_VEL}</dd>
                     <dt class="col-6">Angular Seperation</dt>    <dd class="col-6">{ANG_SEP}</dd>
                 </dl>
@@ -141,14 +109,15 @@
                     </div>
                     <div class="btn-holder row mt-1">
                         <a id="play_anim" class="col btn btn-secondary mt-0 mb-0"><i class="icon-play"></i> <span>Thumbs Anim.</span></a> 
-                        <a id="show_json" class="col btn btn-secondary mt-0 mb-0 ml-1 json_viewer" data_src="/mnt/ams2/meteors/2020_11_24/2020_11_24_10_15_01_000_010003-trim-1183.json"><i class="icon-file-text"></i> All Data</a>
+                        <a id="show_json" class="col btn btn-secondary mt-0 mb-0 ml-1 json_viewer" data_src="{JSON_CONF}"><i class="icon-file-text"></i> All Data</a>
                     </div>
                 </div>
             </div>
             
             <div class="box">
+                <h2 class="mb-0"><a data-toggle="collapse" href="#share_box" role="button" class="d-block dropdown-toggle dt-title" aria-expanded="true">Calibration Paramaters</a></h2>
+                <div class="collapse p-3" id="share_box">
             
-                    <h2>Calibration Paramaters</h2>
                     <table >
                        <tr><td>RA Center:</td><td>{RA}</td></tr>
                        <tr><td>Dec Center:</td><td>{DEC}</td></tr>
@@ -161,6 +130,7 @@
                        <tr><td>Residual Pixels:</td><td>{RES_PX}</td></tr>
                        <tr><td>Residual Degrees:</td><td>{RES_DEG}</td></tr>
                     </table>
+                </div>
             </div>
 
             <div class="box">
@@ -260,7 +230,12 @@ function init_page() {
    //json_resp['sd_meteor_frame_data'] = meteor_frame_data 
    //json_resp['cat_image_stars'] = cal_params['cat_image_stars'] 
    if(typeof meteor_frame_data !== 'undefined') {
-      update_meteor_points(meteor_frame_data) 
+        if (meteor_frame_data.length < 200) {
+           update_meteor_points(meteor_frame_data) 
+        }
+        else {
+           msg = " excessive frames detected. Canvas features disabled."
+        }
    }
    if(typeof cal_params !== 'undefined') {
       update_stars_on_canvas_and_table(cal_params, crop_box)

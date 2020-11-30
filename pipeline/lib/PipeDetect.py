@@ -24,6 +24,79 @@ import cv2
 
 json_conf = load_json_file(AMS_HOME + "/conf/as6.json")
 
+
+def make_meteor_index_all(json_conf):
+   amsid = json_conf['site']['ams_id']
+   mr_dir = "/mnt/ams2/meteors/"
+   mdirs = []
+   all_meteors = []
+   files = glob.glob(mr_dir + "*")
+   for mdir in files:
+      #print(mdir)
+      day, dir = fn_dir(mdir)
+      if cfe(mdir, 1) == 1:
+         mi_file = mdir + "/" + day + "-" + amsid + ".meteors"
+         print(mi_file)
+         mi_file, mdata = make_meteor_index_day(day, json_conf)
+         for data in mdata:
+            print("ADDING:", day, len(mdata))
+            all_meteors.append(data)
+   amf = mr_dir + amsid + "-meteors.info"    
+   all_meteors = sorted(all_meteors, key=lambda x: (x[0]), reverse=True)
+   save_json_file(amf, all_meteors)
+   print("Saved:", amf)
+
+def make_meteor_index_day(day, json_conf):
+   amsid = json_conf['site']['ams_id']
+   mdir = "/mnt/ams2/meteors/" + day + "/"
+   files = glob.glob(mdir + "*.json")
+   meteors = []
+   mi = {}
+   meteor_data = []
+   for mf in files:
+      if "reduced" not in mf and "stars" not in mf and "man" not in mf and "star" not in mf and "import" not in mf and "archive" not in mf:
+         meteors.append(mf)
+
+   for meteor in meteors:
+      mi[meteor] = {}
+      fn, dir = fn_dir(meteor)
+      el = fn.split("-")
+      print("FN:", fn) 
+      ddd = el[0].split("_")
+      if len(ddd) == 8:
+         y,m,d,h,mm,s,ms,cam = ddd
+      else:
+         print("BAD FILE:", ddd, len(ddd))
+         continue
+      start_time = y + "-" + m + "-" + d + " " + h + ":" + m + ":" + s
+      mj = load_json_file(meteor)
+      if "best_meteor" in mj:
+         reduced = 1
+         print(mj['best_meteor'])
+         if "dt" in mj['best_meteor']:
+            start_time = str(mj['best_meteor']['dt'][0])
+         dur = str(len(mj['best_meteor']['ofns']) / 25)[0:4]
+         report = mj['best_meteor']['report']
+         ang_vel = report['ang_vel']
+         ang_dist = report['ang_dist']
+      else:
+         reduced = 0
+         dur = 0
+         ang_vel = 0
+         ang_dist = 0
+      mi[meteor]['start_time'] = start_time
+      mi[meteor]['dur'] = dur
+      mi[meteor]['ang_vel'] = ang_vel
+      mi[meteor]['ang_dist'] = ang_dist
+      meteor_data.append((meteor, reduced, start_time, dur, ang_vel, ang_dist))
+
+   mid = sorted(meteor_data, key=lambda x: (x[0]), reverse=True)
+   mi_file = mdir + day + "-" + amsid + ".meteors"
+   save_json_file(mi_file, mid)
+   print("saved", mi_file)
+   return(mi_file, mid)
+   
+
 def confirm_meteors(date ):
    meteor_dir = "/mnt/ams2/meteors/" + date + "/"
    trash_dir = "/mnt/ams2/trash/" + date + "/"

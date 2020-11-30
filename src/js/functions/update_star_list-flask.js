@@ -1,9 +1,9 @@
 function update_stars_on_canvas_and_table(cp, crop_box) {
 
    console.log("IN update_stars_on_canvas_and_table")
+   var table_tbody_html = '';
    cat_stars = cp['cat_image_stars']
    console.log(cat_stars)
-   var table_tbody_html = '';
   
     // Draw New Box
    if(typeof crop_box !== 'undefined') {
@@ -110,12 +110,13 @@ function update_stars_on_canvas_and_table(cp, crop_box) {
 
 
 function update_star_list() {
+   console.log("IN update_star_list")
+        //cal_params_file:  $('#cal_param_selected').val(),   // The one selected 
+        //type: typeof type !== 'undefined' ? type : 'nopick', // 'nopick' is the default option
     var cmd_data = {
         video_file:          main_vid,          // Defined on the page
         hd_stack_file:       hd_stack_file,     // Defined on the page
         cmd: 'show_cat_stars',                 
-        cal_params_file:  $('#cal_param_selected').val(),   // The one selected 
-        type: typeof type !== 'undefined' ? type : 'nopick', // 'nopick' is the default option
         points: ''
     }
  
@@ -130,8 +131,9 @@ function update_star_list() {
          }
     }); 
 
-    loading({text:'Updating star list...', overlay:true});
+    //loading({text:'Updating star list...', overlay:true});
 
+    console.log("IN update_star_list remove previous objs")
     // Remove All objects from Canvas but the reduction squares
     var objects = canvas.getObjects()
     for (let i in objects) {
@@ -139,24 +141,31 @@ function update_star_list() {
             canvas.remove(objects[i]);
         }
     }
- 
+    console.log("IN update_star_list call ajax")
     $.ajax({ 
-        url:  "/pycgi/webUI.py",
+        url:  "/API/show_cat_stars",
         data: cmd_data,
         success: function(data) {
-            var json_resp = $.parseJSON(data);
-            if(json_resp['status']!==0) {
-                update_stars_on_canvas_and_table(json_resp);
-
+            //var json_resp = $.parseJSON(data);
+            console.log("IN update_star_list response ", data)
+            update_stars_on_canvas_and_table(data['cp'], data['crop_box']);
+            //if(data['status']!==0) {
+                //update_stars_on_canvas_and_table(json_resp['cat_image_stars'], json_resp['crop_box']);
                 // Open proper tab
-                $('#stars-tab-l').click();
-                
-                loading_done();
-            }  
- 
-        } 
+                //$('#stars-tab-l').click();
+             //   loading_done();
+            //}  
+            //else {
+            //    alert("error update stars on canvas status = 0!")
+            //    loading_done();
+            //}
+        },
+        error: function(data) {
+           console.log("ERROR") 
+           //loading_done();
+        }
     });
- 
+   console.log("DONE UPDATE") 
 }
 
 
