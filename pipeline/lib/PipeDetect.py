@@ -1846,7 +1846,7 @@ def fireball_phase1(hd_frames, hd_color_frames, subframes,sum_vals,max_vals,pos_
             #desc = str(obj)
             #cv2.putText(sframe, desc,  (10,70), cv2.FONT_HERSHEY_SIMPLEX, .4, (255, 255, 255), 1)
             cv2.imshow('pepe', sframe)
-            cv2.waitKey(30)
+            cv2.waitKey(0)
          i += 1
       frame_num = frame_num + 1
 
@@ -4160,11 +4160,16 @@ def find_object(objects, fn, cnt_x, cnt_y, cnt_w, cnt_h, intensity=0, hd=0, sd_m
                   this_seg_dist = calc_dist((last_x,last_y), (cnt_x, cnt_y))
                   abs_diff = abs(last_seg_dist - this_seg_dist)
                   print("ABS DIFF IS:", abs_diff)
-                  if abs_diff > 5:
-                     found = 0
+                  if abs_diff > 8:
+                     found = 1 
+                     found_obj = obj
+                     matched[obj] = 1
+                     closest_objs.append((obj,dist))
                   else:
                      found = 1
                      found_obj = obj
+                     matched[obj] = 1
+                     closest_objs.append((obj,dist))
                else: 
                   found = 1
                   found_obj = obj
