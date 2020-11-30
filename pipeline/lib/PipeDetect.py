@@ -1097,9 +1097,10 @@ def fireball(video_file, json_conf, nomask=0):
    hdm_x_720 = 1280 / fw
    hdm_y_720 = 720 / fh
    print("BP1")
-   best_meteor, hd_frames, hd_color_frames, median_frame, mask_img = fireball_phase1(hd_frames, hd_color_frames, subframes,sum_vals,max_vals,pos_vals, video_file, json_conf, jsf, jdata, best_meteor, nomask)
+   best_meteor, hd_frames, hd_color_frames, median_frame, mask_img,cp = fireball_phase1(hd_frames, hd_color_frames, subframes,sum_vals,max_vals,pos_vals, video_file, json_conf, jsf, jdata, best_meteor, nomask)
    print("AP1")
    gap_test_res = None
+   jdata['cp'] = cp
    if best_meteor is not None:
       gap_test_res , gap_test_info = gap_test(best_meteor['ofns'])
       if gap_test_res == 0:
@@ -1159,8 +1160,8 @@ def fireball(video_file, json_conf, nomask=0):
          hd_trim = None
       #print(base_js['meteor_frame_data'])
       print("APPLY CALIB!")
-      best_meteor = apply_calib(video_file, best_meteor, json_conf)
-      base_js, base_jsr = make_base_meteor_json(video_file, hd_trim,best_meteor)
+      best_meteor = apply_calib(video_file, best_meteor, cp, json_conf)
+      base_js, base_jsr = make_base_meteor_json(video_file, hd_trim,best_meteor,cp)
       print("BASE:", base_js)
       jsfr = jsf.replace(".json", "-reduced.json") 
 
@@ -1177,6 +1178,8 @@ def fireball(video_file, json_conf, nomask=0):
 
       save_json_file(jsf, jdata)
       save_json_file(jsfr, base_jsr)
+      print("saved:", jsfr)
+      exit()
       print("Small meteor don't need to refine", max(best_meteor['oint']))
       print("CCXS:", best_meteor['ccxs'])
       print("CCYS:", best_meteor['ccys'])
@@ -1204,7 +1207,7 @@ def fireball(video_file, json_conf, nomask=0):
    best_meteor = fireball_phase3(video_file, json_conf, jsf, jdata, best_meteor, nomask, hd_frames, hd_color_frames, median_frame, mask_img,5)
 
    fireball_plot_points(best_meteor)
-   best_meteor = apply_calib(video_file, best_meteor,json_conf)
+   best_meteor = apply_calib(video_file, best_meteor,cp,json_conf)
    jdata['best_meteor'] = best_meteor
    save_json_file(jsf, jdata)
    print("Saved:", jsf)
@@ -1218,7 +1221,7 @@ def fireball(video_file, json_conf, nomask=0):
    save_json_file(jsfr, mjr)
    #best_meteor = fireball_decel(video_file, json_conf, jsf, jdata, best_meteor, nomask, hd_frames, hd_color_frames, median_frame, mask_img,5)
 
-def make_base_meteor_json(video_file, hd_video_file,best_meteor=None ):
+def make_base_meteor_json(video_file, hd_video_file,best_meteor=None ,cp=None):
    mj = {}
    mjr = {}
    (f_datetime, cam, f_date_str,fy,fmin,fd, fh, fm, fs) = convert_filename_to_date_cam(video_file)
@@ -1292,6 +1295,34 @@ def make_base_meteor_json(video_file, hd_video_file,best_meteor=None ):
 
    mjr['crop_box'] = mfd_to_cropbox(mjr['meteor_frame_data'])
    return(mj, mjr)
+
+def make_frame_data(best_meteor,cp):
+   meteor_frame_data = []
+   if best_meteor is not None:
+      min_x = min(best_meteor['oxs'])
+      max_x = max(best_meteor['oxs'])
+      min_y = min(best_meteor['oys'])
+      max_y = max(best_meteor['oys'])
+      crop_box = [min_x,min_y,max_x,max_y]
+      for i in range(0, len(best_meteor['ofns'])):
+         #dt = "1999-01-01 00:00:00"
+         fn = best_meteor['ofns'][i]
+         x = int(best_meteor['ccxs'][i] * hdm_x_720)
+         y = int(best_meteor['ccys'][i] * hdm_y_720)
+         w = best_meteor['ows'][i]
+         h = best_meteor['ohs'][i]
+         ra = best_meteor['ras'][i]
+         dec = best_meteor['decs'][i]
+         az = best_meteor['azs'][i]
+         el = best_meteor['els'][i]
+         oint = best_meteor['oint'][i]
+         dt = best_meteor['dt'][i]
+         #FLUX
+         oint = best_meteor['oint'][i]
+         mjr['meteor_frame_data'].append((dt, fn, x, y, w, h, oint, ra, dec, az, el))
+   return(mjr, crop_box)
+
+
 
 def fireball_plot_points(bm):
    plot = np.zeros((720,1280,3),dtype=np.uint8)
@@ -1696,11 +1727,13 @@ def fireball_phase1(hd_frames, hd_color_frames, subframes,sum_vals,max_vals,pos_
    gray_img = cv2.cvtColor(stack_img, cv2.COLOR_BGR2GRAY)
    min_val, max_val, min_loc, (mx,my)= cv2.minMaxLoc(gray_img)
    #thresh =max_val - 100 
-   thresh = 100
+   thresh = 80
    if thresh < 0:
       thresh = 10
    _, thresh_img = cv2.threshold(gray_img.copy(), thresh, 255, cv2.THRESH_BINARY)
    fb_mask = cv2.bitwise_not(thresh_img)
+   cv2.imshow("fb_mask", fb_mask)
+   cv2.waitKey(0)
 
 
    fh, fw = hd_frames[0].shape[:2]
@@ -1720,11 +1753,8 @@ def fireball_phase1(hd_frames, hd_color_frames, subframes,sum_vals,max_vals,pos_
    do_cal = 0
    for key in jdata:
       print("JD:", key)
-   if "best_meteor" in jdata:
-      if "cp" in jdata['best_meteor']:
-         cp = jdata['best_meteor']['cp']
-      else:
-         cp = calib_image(video_file, hd_frames[0], json_conf)
+   if "cp" in jdata:
+      cp = jdata['cp']
    else:
       cp = calib_image(video_file, hd_frames[0], json_conf)
 
@@ -1785,7 +1815,9 @@ def fireball_phase1(hd_frames, hd_color_frames, subframes,sum_vals,max_vals,pos_
       #cv2.waitKey(30)
       frame = cv2.subtract(frame, fb_mask)
       meteor_on = 0
-      subframe = cv2.subtract(frame, median_frame)
+      # This causes problems for dim meteors...
+      subframe = frame
+      #subframe = cv2.subtract(frame, median_frame)
       if last_sub is None:
          last_sub = subframe
       if frame_num > 10:
@@ -1859,7 +1891,8 @@ def fireball_phase1(hd_frames, hd_color_frames, subframes,sum_vals,max_vals,pos_
       
 
 
-      if meteor_on == 1:
+      #if meteor_on == 1:
+      if True:
 
          if SHOW == 1:
             sframe = cv2.resize(subframe, (1280, 720))
@@ -1898,9 +1931,7 @@ def fireball_phase1(hd_frames, hd_color_frames, subframes,sum_vals,max_vals,pos_
          print("No best object." )
          for obj in objects:
             print(obj, len(objects[obj]['ofns']), objects[obj]['report']['bad_items'])
-   if best_meteor is not None:
-      best_meteor['cp'] = cp
-   return(best_meteor, hd_frames, hd_color_frames, median_frame,mask_img )
+   return(best_meteor, hd_frames, hd_color_frames, median_frame,mask_img,cp )
 
 def fireball_phase2(video_file, json_conf, jsf, jdata, best_meteor, nomask,hd_frames, hd_color_frames, median_frame, mask_img):
    # PHASE 2
@@ -2337,7 +2368,7 @@ def fireball_phase3(video_file, json_conf, jsf, jdata, best_meteor, nomask,hd_fr
    print("saved:" , jsf)
    return(best_meteor)
 
-def apply_calib(video_file, best_meteor, json_conf):
+def apply_calib(video_file, best_meteor, cp,json_conf):
    best_meteor['ras'] = []
    best_meteor['decs'] = []
    best_meteor['azs'] = []
@@ -2349,7 +2380,7 @@ def apply_calib(video_file, best_meteor, json_conf):
          est_y = best_meteor['est_ys'][i]
       cx = best_meteor['ccxs'][i]
       cy = best_meteor['ccys'][i]
-      tx, ty, ra ,dec , az, el = XYtoRADec(cx,cy,video_file,best_meteor['cp'],json_conf)
+      tx, ty, ra ,dec , az, el = XYtoRADec(cx,cy,video_file,cp,json_conf)
       best_meteor['ras'].append(ra) 
       best_meteor['decs'].append(dec) 
       best_meteor['azs'].append(az) 
