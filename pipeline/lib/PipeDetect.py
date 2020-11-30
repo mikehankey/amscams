@@ -1,6 +1,6 @@
 ''' 
 
-   Pipeline Detection Routines
+   Pipeline Detection Routines - functions for detecting
 
 '''
 import math
