@@ -777,15 +777,19 @@ def mark_up_meteor_frame(frame, mark_objs,cp):
    return(frame)
 
 def calib_image(file, image=None,json_conf=None):
-
+   print("CALIB IMAGE")
    before_cp, after_cp = get_cal_params(file)
+   print("AFTER GET CAL")
 
+   print(before_cp, after_cp)
    before_cp = update_center_radec(file,before_cp,json_conf)
    after_cp = update_center_radec(file,after_cp,json_conf)
+   print("AFTER UPDATE")
    if image is None:
+      print("READ FILE:", file)
       image = cv2.imread(file)
    image = cv2.resize(image, (1920,1080))
-
+   print("OK1")
    before_cp['user_stars'] = get_image_stars(file, image.copy(), json_conf, 1)
    after_cp['user_stars'] = before_cp['user_stars']
 
@@ -795,6 +799,7 @@ def calib_image(file, image=None,json_conf=None):
    for star in before_cp['cat_image_stars']:
       dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist,bp = star
    temp_stars, before_res_px,before_res_deg = cat_star_report(before_cp['cat_image_stars'], 4)
+   print("OK2")
 
    # do cal for after 
    cat_stars = get_catalog_stars(after_cp)
@@ -1054,6 +1059,7 @@ def make_roi_video(video_file,bm, frames, json_conf):
    
 
 def fireball(video_file, json_conf, nomask=0):
+   print("FIREBALL!")
    fn, meteor_dir = fn_dir(video_file)
    jsf = video_file.replace(".mp4", ".json")
    best_meteor = None
@@ -1078,6 +1084,7 @@ def fireball(video_file, json_conf, nomask=0):
    #exit()
    hd_frames,hd_color_frames,subframes,sum_vals,max_vals,pos_vals = load_frames_fast(video_file, json_conf, 0, 0, 1, 1,[])
    tracking_updates = {}
+   print("FIREBALL2!")
 
    #make_roi_video(video_file,best_meteor, hd_color_frames, json_conf)
    #exit()
@@ -1085,8 +1092,9 @@ def fireball(video_file, json_conf, nomask=0):
    fh, fw = hd_frames[0].shape[:2]
    hdm_x_720 = 1280 / fw
    hdm_y_720 = 720 / fh
-
+   print("BP1")
    best_meteor, hd_frames, hd_color_frames, median_frame, mask_img = fireball_phase1(hd_frames, hd_color_frames, subframes,sum_vals,max_vals,pos_vals, video_file, json_conf, jsf, jdata, best_meteor, nomask)
+   print("AP1")
    gap_test_res = None
    if best_meteor is not None:
       gap_test_res , gap_test_info = gap_test(best_meteor['ofns'])
@@ -1148,6 +1156,7 @@ def fireball(video_file, json_conf, nomask=0):
       else:
          hd_trim = None
       #print(base_js['meteor_frame_data'])
+      print("APPLY CALIB!")
       best_meteor = apply_calib(video_file, best_meteor, json_conf)
       base_js, base_jsr = make_base_meteor_json(video_file, hd_trim,best_meteor)
       print("BASE:", base_js)
@@ -1708,7 +1717,9 @@ def fireball_phase1(hd_frames, hd_color_frames, subframes,sum_vals,max_vals,pos_
       mask_img = None
 
    # load calib
+   print("FIREBALL3!")
    cp = calib_image(video_file, hd_frames[0], json_conf)
+   print("FIREBALL4!")
    cp['user_stars'] = get_image_stars(video_file, hd_frames[0].copy(), json_conf, 1)
    print("NEW CP:", cp['cat_image_stars'])
    print("NEW US:", cp['user_stars'])
@@ -4350,14 +4361,18 @@ def get_cal_params(meteor_json_file):
       else:
          before_files.append((cf,sec_diff))
 
+   print("BF:", before_files)
+   print("AF:", after_files)
+
    after_files = sorted(after_files, key=lambda x: (x[1]), reverse=False)[0:5]
    print("Calibs after this meteor.")
    before_data = []
    after_data = []
-   for af in after_files:
-      cpf, td = af
-      cp = load_json_file(cpf)
-      before_data.append((cpf, float(cp['center_az']), float(cp['center_el']), float(cp['position_angle']), float(cp['pixscale']), float(cp['total_res_px'])))
+   if len(after_files) > 0:
+      for af in after_files:
+         cpf, td = af
+         cp = load_json_file(cpf)
+         after_data.append((cpf, float(cp['center_az']), float(cp['center_el']), float(cp['position_angle']), float(cp['pixscale']), float(cp['total_res_px'])))
 
    before_files = sorted(before_files, key=lambda x: (x[1]), reverse=False)[0:5]
    print("Calibs before this meteor.")
@@ -4365,15 +4380,21 @@ def get_cal_params(meteor_json_file):
       cpf, td = af
       cp = load_json_file(cpf)
       if "total_res_px" in cp:
-         after_data.append((cpf, float(cp['center_az']), float(cp['center_el']), float(cp['position_angle']), float(cp['pixscale']), float(cp['total_res_px'])))
+         before_data.append((cpf, float(cp['center_az']), float(cp['center_el']), float(cp['position_angle']), float(cp['pixscale']), float(cp['total_res_px'])))
       else:
          print("NO RES?", cpf, cp['center_az'], cp['center_el'], cp['position_angle'], cp['pixscale'])
-
-   azs = [row[1] for row in before_data] 
-   els = [row[2] for row in before_data] 
-   pos = [row[3] for row in before_data] 
-   px = [row[4] for row in before_data] 
-   print("AZS:", azs)
+ 
+   if len(before_data) > 0:
+      azs = [row[1] for row in before_data] 
+      els = [row[2] for row in before_data] 
+      pos = [row[3] for row in before_data] 
+      px = [row[4] for row in before_data] 
+      print("AZS:", azs)
+   else:
+      azs = []
+      els = []
+      pos = []
+      px = []
 
    if len(azs) > 3:
       before_med_az = np.median(azs)
@@ -4417,6 +4438,7 @@ def get_cal_params(meteor_json_file):
       mcp = None
       before_cp = {}
       after_cp = {}
+   print("AFTER MCP")
    before_cp['center_az'] = before_med_az
    before_cp['center_el'] = before_med_el
    before_cp['position_angle'] = before_med_pos
@@ -4426,7 +4448,7 @@ def get_cal_params(meteor_json_file):
    after_cp['center_el'] = after_med_el
    after_cp['position_angle'] = after_med_pos
    after_cp['pixscale'] = after_med_px 
-
+   print("END func")
    return(before_cp, after_cp)
    
 def reduce_points(xs, ys, cal_params):
