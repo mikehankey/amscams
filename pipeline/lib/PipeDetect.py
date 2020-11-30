@@ -974,7 +974,10 @@ def make_roi_video(video_file,bm, frames, json_conf):
    roi_frames = []
 
    if "user_mods" in mj:
-      ufd = mj['user_mods']['frames']
+      if "frames" in mj['user_mods']:
+         ufd = mj['user_mods']['frames']
+      else:
+         ufd = {}
    else:
       ufd = {}
    used = {}
@@ -1062,7 +1065,6 @@ def make_roi_video(video_file,bm, frames, json_conf):
    
 
 def fireball(video_file, json_conf, nomask=0):
-   print("FIREBALL!")
    fn, meteor_dir = fn_dir(video_file)
    jsf = video_file.replace(".mp4", ".json")
    best_meteor = None
@@ -1073,18 +1075,17 @@ def fireball(video_file, json_conf, nomask=0):
          best_meteor = None
       else:
          best_meteor = jdata['best_meteor']
-         if "hd_trim" in jdata:
-            hd_trim = jdata['hd_trim']
-         base_js, base_jsr = make_base_meteor_json(video_file, hd_trim,best_meteor)
-         jdata = base_js
+         #if "hd_trim" in jdata:
+         #   hd_trim = jdata['hd_trim']
+         #base_js, base_jsr = make_base_meteor_json(video_file, hd_trim,best_meteor)
+         #jdata = base_js
    else:
       # update this to find the HD file in the meteor dir, or the min_save dir if it is not present.
       hd_trim = None
       base_js, base_jsr = make_base_meteor_json(video_file, hd_trim,best_meteor)
       jdata = base_js
       #jdata = None
-   #print("JDATA:", jdata)
-   #exit()
+   print("JDATA:", jdata)
    hd_frames,hd_color_frames,subframes,sum_vals,max_vals,pos_vals = load_frames_fast(video_file, json_conf, 0, 0, 1, 1,[])
    tracking_updates = {}
    print("FIREBALL2!")
@@ -1142,8 +1143,6 @@ def fireball(video_file, json_conf, nomask=0):
 
       save_json_file(jsf, jdata)
    #fireball_plot_points(best_meteor)
-   #print("BEST:", best_meteor)
-   #exit()
 
    if max(best_meteor['oint']) < 1000000:
       best_meteor['ccxs'] = []
@@ -1196,7 +1195,6 @@ def fireball(video_file, json_conf, nomask=0):
                best_meteor['cp']['x_poly_fwd'] = best_meteor['cp']['x_poly_fwd'].tolist()
                best_meteor['cp']['y_poly_fwd'] = best_meteor['cp']['y_poly_fwd'].tolist()
 
-      exit()
       jdata['best_meteor'] = best_meteor
       save_json_file(jsf, jdata)
       print("big meteor lets refine", max(best_meteor['oint']))
@@ -1719,11 +1717,37 @@ def fireball_phase1(hd_frames, hd_color_frames, subframes,sum_vals,max_vals,pos_
    else:
       mask_img = None
 
-   # load calib
-   print("FIREBALL3!")
-   cp = calib_image(video_file, hd_frames[0], json_conf)
+   do_cal = 0
+   for key in jdata:
+      print("JD:", key)
+   if "best_meteor" in jdata:
+      if "cp" in jdata['best_meteor']:
+         cp = jdata['best_meteor']['cp']
+      else:
+         cp = calib_image(video_file, hd_frames[0], json_conf)
+   else:
+      cp = calib_image(video_file, hd_frames[0], json_conf)
+
+   if "user_mods" in jdata:
+      print("USERMODS")
+      print(cp)
+      print(jdata['user_mods'])
+      user_mods = jdata['user_mods']
+      cp['user_stars'] = get_image_stars(video_file, hd_frames[0].copy(), json_conf, 1)
+      for star in user_mods['user_stars']:
+         print("ADDING USER STARS", star)
+         cp['user_stars'].append(star)
+      stack_img_l = cv2.resize(stack_img, (1920, 1080))
+      cp = pair_stars(cp, video_file, json_conf, stack_img_l)
+      #exit() 
+   else:
+      user_mods = None
+      cp['user_stars'] = get_image_stars(video_file, hd_frames[0].copy(), json_conf, 1)
+      stack_img_l = cv2.resize(stack_img, (1920, 1080))
+      cp = pair_stars(cp, video_file, json_conf, stack_img_l)
+
+
    print("FIREBALL4!")
-   cp['user_stars'] = get_image_stars(video_file, hd_frames[0].copy(), json_conf, 1)
    print("NEW CP:", cp['cat_image_stars'])
    print("NEW US:", cp['user_stars'])
    #exit()
