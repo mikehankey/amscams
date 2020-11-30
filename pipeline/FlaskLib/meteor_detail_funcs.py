@@ -3,6 +3,7 @@ from FlaskLib.FlaskUtils import get_template
 from lib.PipeUtil import cfe, load_json_file, save_json_file
 from lib.PipeAutoCal import fn_dir
 import time
+import cv2
 
 
 def detail_page(amsid, date, meteor_file):
@@ -37,24 +38,97 @@ def detail_page(amsid, date, meteor_file):
 
    sd_stack = sd_trim.replace(".mp4", "-stacked.jpg")
    half_stack = sd_stack.replace("stacked", "half-stack")
+   if cfe(METEOR_DIR + half_stack) == 0:
+      if cfe(METEOR_DIR + sd_stack) == 1:
+         simg = cv2.imread(METEOR_DIR + sd_stack)
+         simg  = cv2.resize(simg,(int(1920/2),int(1080/2)))
+         cv2.imwrite(METEOR_DIR + half_stack,  simg)
+         print("SAVED HALF", half_stack)
+      else:
+         print("NO SD ", sd_stack)
+ 
    az_grid = ""
    header = get_template("FlaskTemplates/header.html")
-   header = header.replace("{OBS_NAME}", obs_name)
-   header = header.replace("{AMSID}", amsid)
    footer = get_template("FlaskTemplates/footer.html")
-   footer = footer.replace("{RAND}", str(time.time()))
+   nav = get_template("FlaskTemplates/nav.html")
    template = get_template("FlaskTemplates/meteor_detail.html")
+
+   footer = footer.replace("{RAND}", str(time.time()))
+   if "location" in json_conf:
+      template = template.replace("{LOCATION}", json_conf['site']['location'])
+   else:
+      template = template.replace("{LOCATION}", "")
    template = template.replace("{HEADER}", header)
    template = template.replace("{FOOTER}", footer)
+   template = template.replace("{NAV}", nav)
+   template = template.replace("{OBS_NAME}", obs_name)
+   template = template.replace("{AMSID}", amsid)
    template = template.replace("{MEDIA_HOST}", MEDIA_HOST)
    template = template.replace("{HALF_STACK}", METEOR_VDIR + half_stack)
    template = template.replace("{HD_STACK}", METEOR_VDIR + hd_stack)
    template = template.replace("{SD_STACK}", METEOR_VDIR + sd_stack)
    template = template.replace("{HD_TRIM}", METEOR_VDIR + hd_trim)
    template = template.replace("{AZ_GRID}", METEOR_VDIR + az_grid)
+   template = template.replace("{JSON_CONF}", mjvf)
    template = template.replace("{METEOR_JSON}", mjvf)
    template = template.replace("{SD_TRIM}", METEOR_VDIR + sd_trim)
    template = template.replace("{METEOR_REDUCED_JSON}", mjrvf)
+
+   if "best_meteor" not in mj: 
+      template = template.replace("{START_TIME}", "-")
+      template = template.replace("{DURATION}", "-")
+      template = template.replace("{MAX_INTENSE}", "-")
+      template = template.replace("{START_AZ}", "-")
+      template = template.replace("{START_EL}", "-")
+      template = template.replace("{END_EL}", "-")
+      template = template.replace("{END_AZ}", "-")
+      template = template.replace("{START_RA}", "-")
+      template = template.replace("{END_RA}", "-")
+      template = template.replace("{ANG_VEL}", "-")
+      template = template.replace("{ANG_SEP}", "-")
+      template = template.replace("{RA}", str("-"))
+      template = template.replace("{DEC}", str("-"))
+      template = template.replace("{AZ}", str("-"))
+      template = template.replace("{EL}", str("-"))
+      template = template.replace("{POSITION_ANGLE}", str("-"))
+      template = template.replace("{PIXSCALE}", str("-"))
+      template = template.replace("{IMG_STARS}", str("-"))
+      template = template.replace("{CAT_STARS}", str("-"))
+      template = template.replace("{RES_PX}", str("-"))
+      template = template.replace("{RES_DEG}", str("-"))
+
+
+   else:
+      dur = len(mj['best_meteor']['ofns']) / 25 
+      template = template.replace("{START_TIME}", mj['best_meteor']['dt'][0])
+      template = template.replace("{DURATION}", str(dur)[0:4])
+      template = template.replace("{MAX_INTENSE}", str(max(mj['best_meteor']['oint'])))
+
+      template = template.replace("{START_AZ}", str(mj['best_meteor']['azs'][0])[0:5])
+      template = template.replace("{END_AZ}", str(mj['best_meteor']['azs'][-1])[0:5])
+      template = template.replace("{START_RA}", str(mj['best_meteor']['ras'][0])[0:5])
+      template = template.replace("{END_RA}", str(mj['best_meteor']['ras'][-1])[0:5])
+      template = template.replace("{START_DEC}", str(mj['best_meteor']['decs'][0])[0:5])
+      template = template.replace("{END_DEC}", str(mj['best_meteor']['decs'][-1])[0:5])
+      template = template.replace("{START_EL}", str(mj['best_meteor']['els'][0])[0:5])
+      template = template.replace("{END_EL}", str(mj['best_meteor']['els'][-1])[0:5])
+      template = template.replace("{ANG_VEL}", str(mj['best_meteor']['report']['ang_vel'])[0:5])
+      template = template.replace("{ANG_SEP}", str(mj['best_meteor']['report']['ang_dist'])[0:5])
+      if "cp" in mj['best_meteor']:
+         cp = mj['best_meteor']['cp']
+         print(cp)
+         template = template.replace("{RA}", str(cp['ra_center'])[0:5])
+         template = template.replace("{DEC}", str(cp['dec_center'])[0:5])
+         template = template.replace("{AZ}", str(cp['center_az'])[0:5])
+         template = template.replace("{EL}", str(cp['center_el'])[0:5])
+         template = template.replace("{POSITION_ANGLE}", str(cp['position_angle'])[0:5])
+         template = template.replace("{PIXSCALE}", str(cp['pixscale'])[0:5])
+         template = template.replace("{IMG_STARS}", str(len(cp['user_stars'])))
+         template = template.replace("{CAT_STARS}", str(len(cp['cat_image_stars'])))
+         template = template.replace("{RES_PX}", str(cp['total_res_px'])[0:5])
+         template = template.replace("{RES_DEG}", str(cp['total_res_deg'])[0:5])
+
+
    if cfe(mjrf) == 1:
       mjr = load_json_file(mjrf)
       frame_table_rows = frames_table(mjr, base_name, CACHE_VDIR)
@@ -65,12 +139,17 @@ def detail_page(amsid, date, meteor_file):
       cal_params_js_var = ""
       mfd_js_var = ""
       crop_box = ""
+      crop_box_js_var = ""
+      frame_table_rows = ""
+
+   lc_html = light_curve_url(METEOR_DIR + sd_trim , mj)
+
    template = template.replace("{CROP_BOX}", crop_box_js_var)
    template = template.replace("{CAL_PARAMS}", cal_params_js_var)
    template = template.replace("{METEOR_FRAME_DATA}", mfd_js_var)
    template = template.replace("{FRAME_TABLE_ROWS}", frame_table_rows)
    template = template.replace("{STAR_ROWS}", "")
-   template = template.replace("{LIGHTCURVE_URL}", "")
+   template = template.replace("{LIGHTCURVE_URL}", lc_html)
    return(template)   
 
 def frames_table(mjr, base_name, CACHE_VDIR):
@@ -107,3 +186,29 @@ def frames_table(mjr, base_name, CACHE_VDIR):
         #table_tbody_html+= '<td>'+v[6]+'</td>';
 
    return(frames_table)   
+
+def light_curve_url(sd_video_file, mj):
+   light_curve_file = sd_video_file.replace('.mp4','-lightcurve.jpg')
+   if(cfe(light_curve_file) == 1):
+      lc_url = '<a class="d-block nop text-center img-link-n" href="'+light_curve_file+'"><img  src="'+light_curve_file+'" class="mt-2 img-fluid"></a>'
+   else:
+      if "best_meteor" in mj:
+         lc_url = graph_light_curve(mj)
+      else:
+         lc_url = ""
+         #lc_url = "<div class='alert error mt-4'><iframe scolling=no src=" + light_curve_url  + " width=100% height=640></iframe></div>"
+   return(lc_url)
+
+def graph_light_curve(mj):
+   x1_vals = ""
+   y1_vals = ""
+   for i in range(0, len(mj['best_meteor']['ofns'])):
+      if x1_vals != "":
+         x1_vals += ","
+         y1_vals += ","
+      x1_vals += str(mj['best_meteor']['ofns'][i])
+      y1_vals += str(mj['best_meteor']['oint'][i])
+   gurl = "/dist/plot.html?"
+   gurl += "title=Meteor_Light_Curve&xat=Intensity&yat=Frame&x1_vals=" + x1_vals + "&y1_vals=" + y1_vals
+   return(gurl)
+

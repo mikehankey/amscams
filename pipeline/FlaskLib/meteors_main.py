@@ -42,13 +42,16 @@ def meteors_main (amsid, in_data) :
    else:
       sort_by = in_data['sorted_by']
 
+   if in_data['start_date'] is None and in_data['end_date'] is not None:
+      in_data['start_date'] = in_data['end_date']
 
    if in_data['start_date'] is None and in_data['end_date'] is None:
       # do entire index with pagination
       #/mnt/ams2/meteors/AMS1-meteors.info
+      sorted_meteors = sorted(mid, key=lambda x: (x[0]), reverse=False)
       total_meteors = len(mid)
-      sd = mid[0][2]
-      ed = mid[-1][2]
+      ed = mid[0][2]
+      sd = mid[-1][2]
       tmeteors = mid
 
    elif in_data['start_date'] is not None and in_data['end_date'] is None:
@@ -93,11 +96,12 @@ def meteors_main (amsid, in_data) :
    if ei >= len(tmeteors):
       ei = len(tmeteors)
    print("SI:", si, ei)
-   if sort_by == "date":
-      sorted_meteors = sorted(tmeteors, key=lambda x: (x[0]), reverse=False)
+   #if sort_by == "date":
+   sorted_meteors = sorted(tmeteors, key=lambda x: (x[0]), reverse=True)
    
    these_meteors = sorted_meteors[si:ei]
    print("THESE:", len(sorted_meteors), si, ei)
+  
    start_day, start_time = sd.split(" ")
    start_day = start_day.replace("_", "/")
    end_day, end_time = ed.split(" ")
@@ -156,7 +160,7 @@ def meteors_main (amsid, in_data) :
          cmd = "convert " + thumb_png + " " + thumb + " >/dev/null"
          os.system(cmd)
       vthumb = thumb.replace("/mnt/ams2", "")
-      vothumb = vthumb
+      vothumb = vthumb.replace("-tn.jpg", "-obj-tn.jpg")
       fn, vdir = fn_dir(vthumb)   
       div_id = fn.replace("-stacked-tn.jpg", "")
       vvid_link = vid.replace("/mnt/ams2", "")
