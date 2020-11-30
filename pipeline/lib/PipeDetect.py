@@ -4143,7 +4143,11 @@ def find_object(objects, fn, cnt_x, cnt_y, cnt_w, cnt_h, intensity=0, hd=0, sd_m
          
             if dist < obj_dist_thresh : #and last_frame_diff < 15:
                #if this is linked to a meteor only associate if the point is further from the start than the last recorded point
-               if len(objects[obj]['oxs']) > 3:
+               print("CENTER:", center_x, center_y , cnt_x, cnt_y, objects[obj]['oxs'], objects[obj]['oys'])
+               if cnt_x in objects[obj]['oxs'] and cnt_y in objects[obj]['oys']:
+                  print("DUPE PIX")
+                  found = 0
+               elif len(objects[obj]['oxs']) > 3:
                   last_x = objects[obj]['oxs'][-1]
                   last_y = objects[obj]['oys'][-1]
                   last_x2 = objects[obj]['oxs'][-2]
@@ -4154,10 +4158,11 @@ def find_object(objects, fn, cnt_x, cnt_y, cnt_w, cnt_h, intensity=0, hd=0, sd_m
                   print("ABS DIFF IS:", abs_diff)
                   if abs_diff > 5:
                      found = 0
-               found = 1
-               found_obj = obj
-               matched[obj] = 1
-               closest_objs.append((obj,dist))
+               else: 
+                  found = 1
+                  found_obj = obj
+                  matched[obj] = 1
+                  closest_objs.append((obj,dist))
             else: 
                not_close_objs.append((obj,dist,last_frame_diff))
 
