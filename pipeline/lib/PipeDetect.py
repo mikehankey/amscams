@@ -877,7 +877,10 @@ def mfd_to_cropbox(mfd):
       xs.append(x+w)
       ys.append(y)
       ys.append(y)
-   crop_box = [min(xs),min(ys),max(xs),max(ys)]
+   if len(xs) > 0:
+      crop_box = [min(xs),min(ys),max(xs),max(ys)]
+   else:
+      crop_box = [0,0,0,0]
    return(crop_box)
 
 def make_roi_video_mfd(video_file, json_conf):
@@ -1088,7 +1091,7 @@ def fireball(video_file, json_conf, nomask=0):
 
    #make_roi_video(video_file,best_meteor, hd_color_frames, json_conf)
    #exit()
-
+   print("LEN :", len(hd_frames))
    fh, fw = hd_frames[0].shape[:2]
    hdm_x_720 = 1280 / fw
    hdm_y_720 = 720 / fh
@@ -4144,10 +4147,11 @@ def find_object(objects, fn, cnt_x, cnt_y, cnt_w, cnt_h, intensity=0, hd=0, sd_m
             if dist < obj_dist_thresh : #and last_frame_diff < 15:
                #if this is linked to a meteor only associate if the point is further from the start than the last recorded point
                print("CENTER:", center_x, center_y , cnt_x, cnt_y, objects[obj]['oxs'], objects[obj]['oys'])
-               if cnt_x in objects[obj]['oxs'] and cnt_y in objects[obj]['oys']:
-                  print("DUPE PIX")
-                  found = 0
-               elif len(objects[obj]['oxs']) > 3:
+               #if cnt_x in objects[obj]['oxs'] and cnt_y in objects[obj]['oys']:
+               #   print("DUPE PIX")
+               #   found = 0
+               if len(objects[obj]['oxs']) > 3:
+               #if False:
                   last_x = objects[obj]['oxs'][-1]
                   last_y = objects[obj]['oys'][-1]
                   last_x2 = objects[obj]['oxs'][-2]
@@ -4158,6 +4162,9 @@ def find_object(objects, fn, cnt_x, cnt_y, cnt_w, cnt_h, intensity=0, hd=0, sd_m
                   print("ABS DIFF IS:", abs_diff)
                   if abs_diff > 5:
                      found = 0
+                  else:
+                     found = 1
+                     found_obj = obj
                else: 
                   found = 1
                   found_obj = obj
@@ -4379,15 +4386,16 @@ def get_cal_params(meteor_json_file):
          cp = load_json_file(cpf)
          after_data.append((cpf, float(cp['center_az']), float(cp['center_el']), float(cp['position_angle']), float(cp['pixscale']), float(cp['total_res_px'])))
 
-   before_files = sorted(before_files, key=lambda x: (x[1]), reverse=False)[0:5]
-   print("Calibs before this meteor.")
-   for af in before_files:
-      cpf, td = af
-      cp = load_json_file(cpf)
-      if "total_res_px" in cp:
-         before_data.append((cpf, float(cp['center_az']), float(cp['center_el']), float(cp['position_angle']), float(cp['pixscale']), float(cp['total_res_px'])))
-      else:
-         print("NO RES?", cpf, cp['center_az'], cp['center_el'], cp['position_angle'], cp['pixscale'])
+   if len(before_files) > 0:
+      before_files = sorted(before_files, key=lambda x: (x[1]), reverse=False)[0:5]
+      print("Calibs before this meteor.")
+      for af in before_files:
+         cpf, td = af
+         cp = load_json_file(cpf)
+         if "total_res_px" in cp:
+            before_data.append((cpf, float(cp['center_az']), float(cp['center_el']), float(cp['position_angle']), float(cp['pixscale']), float(cp['total_res_px'])))
+         else:
+            print("NO RES?", cpf, cp['center_az'], cp['center_el'], cp['position_angle'], cp['pixscale'])
  
    if len(before_data) > 0:
       azs = [row[1] for row in before_data] 
@@ -4406,12 +4414,17 @@ def get_cal_params(meteor_json_file):
       before_med_el = np.median(els)
       before_med_pos = np.median(pos)
       before_med_px = np.median(px)
-   else:
+   elif len(az) > 0:
       print("PX:", px)
       before_med_az = np.mean(azs)
       before_med_el = np.mean(els)
       before_med_pos = np.mean(pos)
       before_med_px = np.mean(px)
+   else:
+      before_med_az = 0
+      before_med_el = 0
+      before_med_pos = 0
+      before_med_px = 0
 
    azs = [row[1] for row in after_data] 
    els = [row[2] for row in after_data] 
@@ -4423,15 +4436,25 @@ def get_cal_params(meteor_json_file):
       after_med_el = np.median(els)
       after_med_pos = np.median(pos)
       after_med_px = np.median(px)
-   else:
+   elif len(azs) :
       after_med_az = np.mean(azs)
       after_med_el = np.mean(els)
       after_med_pos = np.mean(pos)
       after_med_px = np.mean(px)
+   else:
+      after_med_az = 0
+      after_med_el = 0
+      after_med_pos = 0
+      after_med_px = 0
+
 
    print("BEFORE MED:", before_med_az, before_med_el, before_med_pos, before_med_px)
    print("AFTER MED:", after_med_az, after_med_el, after_med_pos, after_med_px)
-
+   if after_med_az == 0:
+      after_med_az = before_med_az
+      after_med_el = before_med_el
+      after_med_pos = before_med_pos
+      after_med_px = before_med_px
    autocal_dir = "/mnt/ams2/meteor_archive/" + STATION_ID + "/CAL/AUTOCAL/" + fy + "/solved/" 
    mcp_file = autocal_dir + "multi_poly-" + STATION_ID + "-" + cam + ".info"
    if cfe(mcp_file) == 1:
