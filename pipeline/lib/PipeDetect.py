@@ -1343,7 +1343,7 @@ def apply_frame_deletes(mjf, mj=None, mjr=None, json_conf=None):
    mj['best_meteor']['ccxs'] = n_ccxs
    mj['best_meteor']['ccys'] = n_ccys
 
-   mfd,crop_box = make_meteor_frame_data(mj['best_meteor'], mj['cal_params'])
+   mfd,crop_box = make_meteor_frame_data(mj['best_meteor'], mj['cp'])
    mj['crop_box'] = crop_box
    mjr['crop_box'] = crop_box
    mjr['meteor_frame_data'] = mfd

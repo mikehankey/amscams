@@ -40,7 +40,7 @@ def delete_frame(meteor_file, fn):
          del(mj['best_meteor']['cp'])
 
    
-   print("MJCAL:", mj['cal_params'])
+   print("MJCAL:", mj['cp'])
    mj,mjr = apply_frame_deletes(jsf,mj,None,None)
    save_json_file(jsf, mj)
    save_json_file(jsrf, mjr)
