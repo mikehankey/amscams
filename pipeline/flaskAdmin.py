@@ -1,6 +1,6 @@
 from flask import Flask, request
 from FlaskLib.FlaskUtils import get_template
-from FlaskLib.api_funcs import update_meteor_points, show_cat_stars, delete_meteor, delete_meteors, reduce_meteor
+from FlaskLib.api_funcs import update_meteor_points, show_cat_stars, delete_meteor, delete_meteors, reduce_meteor, delete_frame
 from lib.PipeUtil import cfe, load_json_file, save_json_file
 from lib.PipeAutoCal import fn_dir
 from FlaskLib.meteor_detail_funcs import detail_page 
@@ -15,6 +15,13 @@ import json
 @app.route('/')
 def main_menu():
    return 'Main Menu!'
+
+
+@app.route('/api/delete_frame/<meteor_file>/', methods=['GET', 'POST'])
+def del_frame(meteor_file):
+   fn = request.args.get('fn')
+   out = delete_frame(meteor_file,fn)
+   return out
 
 @app.route('/api/reduce_meteor/<meteor_file>/', methods=['GET', 'POST'])
 def red_meteor(meteor_file):
@@ -114,7 +121,7 @@ def main_api(cmd):
          frames = request.args.get('frames')
          frames = json.loads(frames)
       else :
-         data = request.form.get('sd_video_file')
+         sd_video_file = request.form.get('sd_video_file')
          frames = request.form.get('frames')
          frames = json.loads(frames)
 

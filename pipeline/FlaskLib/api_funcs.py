@@ -1,8 +1,51 @@
 from lib.PipeUtil import load_json_file, save_json_file, cfe, bound_cnt
 from lib.PipeAutoCal import get_image_stars, get_catalog_stars , pair_stars, eval_cnt, update_center_radec, fn_dir
+from lib.PipeDetect import fireball, apply_frame_deletes
 import os
 import cv2
 from FlaskLib.FlaskUtils import parse_jsid
+
+
+def delete_frame(meteor_file, fn):
+   resp = {}
+   date = meteor_file[0:10]
+   meteor_dir = "/mnt/ams2/meteors/" + date + "/"
+   if "json" in meteor_file:
+      meteor_vid = meteor_file.replace(".json", ".mp4")
+      jsf = meteor_dir + meteor_file
+   else:
+      jf = meteor_file.replace(".mp4", ".json")
+      jsf = meteor_dir + jf 
+      meteor_vid = meteor_file
+   mj = load_json_file(jsf)
+   jsrf = jsf.replace(".json", "-reduced.json")
+   if "user_mods" not in mj:
+      mj['user_mods'] = {}
+      mj['user_mods']['user_stars'] = []
+      mj['user_mods']['frames'] = {}
+      mj['user_mods']['del_frames'] = []
+   else:
+      if "del_frames" not in mj['user_mods']:
+         mj['user_mods']['del_frames'] = []
+   mj['user_mods']['del_frames'].append(fn)
+   resp = {}
+   resp['status'] = 1
+   resp['msg'] = "frame deleted."
+
+   if "best_meteor" in mj:
+      print("BEST METEOR EXISTS IN MJ")
+      if "cp" in mj['best_meteor']:
+         print("CP EXISTS IN BEST METEOR")
+         mj['cal_params'] = mj['best_meteor']['cp']
+         del(mj['best_meteor']['cp'])
+
+   
+   print("MJCAL:", mj['cal_params'])
+   mj,mjr = apply_frame_deletes(jsf,mj,None,None)
+   save_json_file(jsf, mj)
+   save_json_file(jsrf, mjr)
+   return(resp)
+
 
 def reduce_meteor(meteor_file):
    resp = {}

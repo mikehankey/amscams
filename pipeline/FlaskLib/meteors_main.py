@@ -135,7 +135,9 @@ def meteors_main (amsid, in_data) :
    for meteor in these_meteors:
 
       meteor_file, reduced, start_time, dur, ang_vel, ang_dist = meteor 
-    
+      print("MF:", meteor_file) 
+      if cfe(meteor_file) == 0:
+         continue
       stime = start_time.split(".")[0]
       fn,dir = fn_dir(meteor_file)
       dfn = fn.replace(".json", "") 
@@ -168,9 +170,13 @@ def meteors_main (amsid, in_data) :
       jsid = div_id.replace("_", "")
       vfn = fn.replace("-stacked-tn.jpg", ".mp4")
       meteor_detail_link = "/meteors/" + amsid + "/" + mdate + "/" + vfn + "/"
+      if reduced == 1:
+         ht_class = "reduced"
+      else:
+         ht_class = "norm"
       # Per meteor cell / div
       out += """
-         <div id='""" + jsid + """' class='preview select-to norm'>
+         <div id='""" + jsid + """' class='preview select-to """ + ht_class + """'>
             <a class='mtt' href='""" + meteor_detail_link + """' data-obj='""" + vothumb + """' title='Go to Info Page'>
                <img alt='""" + show_datetime_cam + """' class='img-fluid ns lz' src='""" + vthumb + """'>
                <span>""" + show_datetime_cam + """</span>

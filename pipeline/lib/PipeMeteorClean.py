@@ -550,8 +550,14 @@ def delete_from_base(base, json_conf):
             arc_base = js['archive_file'].split("/")[-1].replace(".json", "")
             arc_js_file = js['archive_file']
             arc_js = load_json_file(js['archive_file'])
-            arc_hd_vid = arc_js['info']['hd_vid']
-            arc_sd_vid = arc_js['info']['sd_vid']
+            if "hd_vid" in arc_js['info']:
+               arc_hd_vid = arc_js['info']['hd_vid']
+            else:
+               arc_hd_vid = None
+            if "sd_vid" in arc_js['info']:
+               arc_sd_vid = arc_js['info']['sd_vid']
+            else:
+               arc_sd_vid = None
             arc_dir = arc_js_file.replace( js['archive_file'].split("/")[-1], "")
          else:
             arc_base = None
@@ -573,16 +579,16 @@ def delete_from_base(base, json_conf):
             files_to_del.append(f)
       # ARC METEOR SD & HD FILES
       if arc_base is not None:
-         arc_sd_base = arc_sd_vid.replace(".mp4", "")
-         arc_hd_base = arc_hd_vid.replace(".mp4", "")
-
-         temp = glob.glob(arc_sd_base + "*")
-         for f in temp:
-            files_to_del.append(f)
-
-         temp = glob.glob(arc_hd_base + "*")
-         for f in temp:
-            files_to_del.append(f)
+         if arc_sd_vid is not None:
+            arc_sd_base = arc_sd_vid.replace(".mp4", "")
+            temp = glob.glob(arc_sd_base + "*")
+            for f in temp:
+               files_to_del.append(f)
+         if arc_hd_vid is not None:
+            arc_hd_base = arc_hd_vid.replace(".mp4", "")
+            temp = glob.glob(arc_hd_base + "*")
+            for f in temp:
+               files_to_del.append(f)
 
            
 

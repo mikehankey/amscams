@@ -1179,7 +1179,6 @@ def fireball(video_file, json_conf, nomask=0):
       save_json_file(jsf, jdata)
       save_json_file(jsfr, base_jsr)
       print("saved:", jsfr)
-      exit()
       print("Small meteor don't need to refine", max(best_meteor['oint']))
       print("CCXS:", best_meteor['ccxs'])
       print("CCYS:", best_meteor['ccys'])
@@ -1216,7 +1215,7 @@ def fireball(video_file, json_conf, nomask=0):
       hd_trim = jdata['hd_trim']
    else:
       hd_trim = None
-   mj, mjr = make_base_meteor_json(video_file,hd_trim, best_meteor)
+   mj, mjr = make_base_meteor_json(video_file,hd_trim, best_meteor, cp)
    make_roi_video(video_file,best_meteor, hd_color_frames, json_conf)
    save_json_file(jsfr, mjr)
    #best_meteor = fireball_decel(video_file, json_conf, jsf, jdata, best_meteor, nomask, hd_frames, hd_color_frames, median_frame, mask_img,5)
@@ -1270,7 +1269,7 @@ def make_base_meteor_json(video_file, hd_video_file,best_meteor=None ,cp=None):
    hdm_x_720 = 1920 / 1280
    hdm_y_720 = 1080 / 720
    if best_meteor is not None:
-      mjr["cal_params"] = best_meteor['cp']
+      mjr["cal_params"] = cp
       min_x = min(best_meteor['oxs'])
       max_x = max(best_meteor['oxs'])
       min_y = min(best_meteor['oys'])
@@ -1296,8 +1295,69 @@ def make_base_meteor_json(video_file, hd_video_file,best_meteor=None ,cp=None):
    mjr['crop_box'] = mfd_to_cropbox(mjr['meteor_frame_data'])
    return(mj, mjr)
 
-def make_frame_data(best_meteor,cp):
+def apply_frame_deletes(mjf, mj=None, mjr=None, json_conf=None):
+   dd = {}
+   if mj is None:
+      mj = load_json_file(mjf)
+   if "user_mods" in mj:
+      
+      if "del_frames" in mj['user_mods']:
+         for fn in mj['user_mods']['del_frames']:
+            print("DD:", fn)
+            dd[int(fn)] = 1
+      else:
+         print("NO FRAME DELETES.")
+         return(0)
+   else:
+      print("NO USER MODS IN MJ FRAME DELETES.")
+      return(0)
+   if mjr is None:
+      mjrf = mjf.replace(".json", "-reduced.json")
+      mjr = load_json_file(mjrf)
+
+   n_ofns = []
+   n_oxs = []
+   n_oys = []
+   n_ows = []
+   n_ohs = []
+   n_oint = []
+   n_ccxs = []
+   n_ccys = []
+   for i in range(0,len(mj['best_meteor']['ofns'])):
+      fn = mj['best_meteor']['ofns'][i]
+      if fn not in dd:
+         n_ofns.append(mj['best_meteor']['ofns'][i])
+         n_oxs.append(mj['best_meteor']['oxs'][i])
+         n_oys.append(mj['best_meteor']['oys'][i])
+         n_ows.append(mj['best_meteor']['ows'][i])
+         n_ohs.append(mj['best_meteor']['ohs'][i])
+         n_oint.append(mj['best_meteor']['oint'][i])
+         n_ccxs.append(mj['best_meteor']['ccxs'][i])
+         n_ccys.append(mj['best_meteor']['ccys'][i])
+   mj['best_meteor']['ofns'] = n_ofns
+   mj['best_meteor']['oxs'] = n_oxs
+   mj['best_meteor']['oys'] = n_oys
+   mj['best_meteor']['ows'] = n_ows
+   mj['best_meteor']['ohs'] = n_ohs
+   mj['best_meteor']['oint'] = n_oint
+   mj['best_meteor']['ccxs'] = n_ccxs
+   mj['best_meteor']['ccys'] = n_ccys
+
+   mfd,crop_box = make_meteor_frame_data(mj['best_meteor'], mj['cal_params'])
+   mj['crop_box'] = crop_box
+   mjr['crop_box'] = crop_box
+   mjr['meteor_frame_data'] = mfd
+   save_json_file(mjf, mj)
+   save_json_file(mjrf, mjr)
+   print("NEW MFD:", len(mfd))
+   for fd in mfd:
+      print(fd)
+   return(mj, mjr)
+
+def make_meteor_frame_data(best_meteor,cp):
    meteor_frame_data = []
+   hdm_x_720 = 1920 / 1280
+   hdm_y_720 = 1080 / 720
    if best_meteor is not None:
       min_x = min(best_meteor['oxs'])
       max_x = max(best_meteor['oxs'])
@@ -1319,8 +1379,9 @@ def make_frame_data(best_meteor,cp):
          dt = best_meteor['dt'][i]
          #FLUX
          oint = best_meteor['oint'][i]
-         mjr['meteor_frame_data'].append((dt, fn, x, y, w, h, oint, ra, dec, az, el))
-   return(mjr, crop_box)
+         print("new MFD:", fn)
+         meteor_frame_data.append((dt, fn, x, y, w, h, oint, ra, dec, az, el))
+   return(meteor_frame_data, crop_box)
 
 
 
@@ -1732,8 +1793,6 @@ def fireball_phase1(hd_frames, hd_color_frames, subframes,sum_vals,max_vals,pos_
       thresh = 10
    _, thresh_img = cv2.threshold(gray_img.copy(), thresh, 255, cv2.THRESH_BINARY)
    fb_mask = cv2.bitwise_not(thresh_img)
-   cv2.imshow("fb_mask", fb_mask)
-   cv2.waitKey(0)
 
 
    fh, fw = hd_frames[0].shape[:2]
@@ -1764,9 +1823,10 @@ def fireball_phase1(hd_frames, hd_color_frames, subframes,sum_vals,max_vals,pos_
       print(jdata['user_mods'])
       user_mods = jdata['user_mods']
       cp['user_stars'] = get_image_stars(video_file, hd_frames[0].copy(), json_conf, 1)
-      for star in user_mods['user_stars']:
-         print("ADDING USER STARS", star)
-         cp['user_stars'].append(star)
+      if "user_stars" in user_mods:
+         for star in user_mods['user_stars']:
+            print("ADDING USER STARS", star)
+            cp['user_stars'].append(star)
       stack_img_l = cv2.resize(stack_img, (1920, 1080))
       cp = pair_stars(cp, video_file, json_conf, stack_img_l)
       #exit() 
