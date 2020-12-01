@@ -1972,7 +1972,7 @@ def fireball_phase1(hd_frames, hd_color_frames, subframes,sum_vals,max_vals,pos_
 
    print(objects)
    for obj in objects:
-      print("OBJ:", obj, len(objects[obj]['ofns']), objects[obj]['report']['bad_items'], objects[obj]['fs_dist'])
+      print("MIKE OBJ:", obj, objects[obj]['ofns'], objects[obj]['report']['bad_items'], objects[obj]['fs_dist'])
    #print("BEST:", best_meteor)
    #if best_meteor is None:
    if True:
@@ -4248,11 +4248,12 @@ def find_object(objects, fn, cnt_x, cnt_y, cnt_w, cnt_h, intensity=0, hd=0, sd_m
                   last_seg_dist = calc_dist((last_x,last_y), (last_x2, last_y2))
                   this_seg_dist = calc_dist((last_x,last_y), (cnt_x, cnt_y))
                   abs_diff = abs(last_seg_dist - this_seg_dist)
-                  print("THIS/LAST SEG:", obj, this_seg_dist, last_seg_dist)
-                  #if abs_diff > last_seg_dist * 5 and last_seg_dist > 0:
+                  print("THIS/LAST SEG:", obj, this_seg_dist, last_seg_dist, abs_diff)
+                  last_fn_diff = fn - objects[obj]['ofns'][-1]
+                  if abs_diff > 20 or this_seg_dist > 20 or last_fn_diff > 5:
                      # don't add points to meteors if they are more than 5x farther away than the last seg dist
                   #   cont = input("ABORTED MATCH DUE TO ABS_DIFF." + str( abs_diff) + " " + str( last_seg_dist * 5))
-                  #   continue
+                     continue
                if objects[obj]['report']['class'] == "star":
                   # only match object if dist is within 5 px
                   if dist > 5:
@@ -4274,12 +4275,12 @@ def find_object(objects, fn, cnt_x, cnt_y, cnt_w, cnt_h, intensity=0, hd=0, sd_m
                   last_seg_dist = calc_dist((last_x,last_y), (last_x2, last_y2))
                   this_seg_dist = calc_dist((last_x,last_y), (cnt_x, cnt_y))
                   abs_diff = abs(last_seg_dist - this_seg_dist)
-                  print("ABS DIFF IS:", abs_diff)
-                  if abs_diff > 8:
-                     found = 1 
-                     found_obj = obj
-                     matched[obj] = 1
-                     closest_objs.append((obj,dist))
+                  print("2nd ABS DIFF IS:", abs_diff, last_seg_dist, this_seg_dist)
+                  if abs_diff > 20:
+                     found = 0 
+                     #found_obj = obj
+                     #matched[obj] = 1
+                     not_close_objs.append((obj,dist))
                   else:
                      found = 1
                      found_obj = obj
