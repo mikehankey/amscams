@@ -19,19 +19,19 @@ function select_multiple_meteors_ajax() {
 
 
     $.ajax({ 
-        url:  "/pycgi/webUI.py",
+        url:  "/API/update_meteor_points",
         data: cmd_data, 
         success: function(data) {
-            
             if($.trim(data)!='') { 
-
-                update_reduction_only();
+                // will need to add this back
+                //update_reduction_only();
                 loading_done();
 
                 // Anti cache?
                 //console.log('ANTI CACHE on ' + fn)
                 $.each(meteor_select_updates,function(i,v) {
                     $('tr#fr_'+i+' img.select_meteor').attr('src', $('tr#fr_'+i+' img.select_meteor').attr('src')+'&w='+Math.round(Math.random(10000)*10000));
+                    console.log("UPDATE" + i)
                 })
 
 
@@ -61,7 +61,7 @@ function select_multiple_meteors_ajax() {
             loading_done();
 
             bootbox.alert({
-                message: "The process returned an error",
+                message: "AJAX FAILED! The process returned an error",
                 className: 'rubberBand animated error',
                 centerVertical: true 
             });

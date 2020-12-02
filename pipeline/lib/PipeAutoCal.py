@@ -91,7 +91,6 @@ def sync_back_admin_cals():
          cmd = "rm " + of
          os.system(cmd)
       print("DONE:", fc_d)
-      #exit()
 
 
 def find_fc_files(root_file, fcdirs = None):
@@ -3775,6 +3774,8 @@ def pair_stars(cal_params, cal_params_file, json_conf, cal_img=None, show = 0):
    total_match_dist = 0
    total_cat_dist = 0
    total_matches = 0
+   for var in cal_params:
+      print("PAIR STARS CP:", var, str(cal_params[var]))
    cat_stars = get_catalog_stars(cal_params)
 
    #new_user_stars = []
@@ -3795,7 +3796,9 @@ def pair_stars(cal_params, cal_params_file, json_conf, cal_img=None, show = 0):
          bp = 0
       close_stars = find_close_stars((ix,iy), cat_stars)
       found = 0
+      print("USER STAR:", ix,iy,bp)
       for name,mag,ra,dec,new_cat_x,new_cat_y,six,siy,cat_dist in close_stars:
+         print("CLOSE STAR:", name,mag,ra,dec,new_cat_x,new_cat_y,six,siy,cat_dist)
          #dcname = str(name.decode("utf-8"))
          #dbname = dcname.encode("utf-8")
          new_x, new_y, img_ra,img_dec, img_az, img_el = XYtoRADec(ix,iy,cal_params_file,cal_params,json_conf)
@@ -3836,13 +3839,15 @@ def pair_stars(cal_params, cal_params_file, json_conf, cal_img=None, show = 0):
          #cv2.circle(temp_img,(int(new_cat_x),int(new_cat_y)), 7, (255,128,128), 1)
          #cv2.circle(temp_img,(int(new_x),int(new_y)), 7, (128,128,255), 1)
          used_key = str(ra) + "-" + str(dec)
-
+         print("MATCH:", match_dist)
          if match_dist >= 10 or used_key in used:
             bad = 1
+            print("SKIPPING CLOSE STAR!", name, new_x, new_y)
             #plt.plot(xs, ys)
             #plt.show()
          else:
             my_close_stars.append((name,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist,bp))
+            print("ADDING CLOSE STAR!", name, new_x, new_y)
             total_match_dist = total_match_dist + match_dist
             total_cat_dist = total_cat_dist + cat_dist
             total_matches = total_matches + 1
@@ -3883,9 +3888,15 @@ def pair_stars(cal_params, cal_params_file, json_conf, cal_img=None, show = 0):
    fit_on = 0
    if fit_on == 1:
       os.system("./fitPairs.py " + cal_params_file)
-   cal_params['cat_image_stars'], bad = qc_stars(cal_params['cat_image_stars'])
+   #cal_params['cat_image_stars'], bad = qc_stars(cal_params['cat_image_stars'])
    print("CAT STARS !", len(cal_params['cat_image_stars']))
    print("NO MATCH!", len(no_match))
+   for star in no_match:
+      print("NO MATCH:", star)
+   for star in cal_params['cat_image_stars']:
+      print("MATCH:", star)
+   for star in cal_params['bad_stars']:
+      print("BAD STAR:", star)
    cal_params['cat_image_stars'], res_px,res_deg = cat_star_report(cal_params['cat_image_stars'], 4)
    cal_params['total_res_px'] = res_px
    cal_params['total_res_deg'] = res_deg
@@ -4760,7 +4771,6 @@ def minimize_poly_params_fwd(cal_params_file, cal_params,json_conf,show=0):
    if res_px > 20:
       print("Something is bad here. Abort!")
       return(0, cal_params)
-   #exit()
    # do y poly 
    field = 'y_poly'
    res = scipy.optimize.minimize(reduce_fit, y_poly, args=(field,cal_params,cal_params_file,fit_img,json_conf), method='Nelder-Mead')

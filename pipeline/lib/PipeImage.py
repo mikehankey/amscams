@@ -4,7 +4,7 @@
 
 """
 from PIL import ImageFont, ImageDraw, Image, ImageChops
-
+from lib.PipeUtil import load_json_file
 import numpy as np
 import cv2
 import os
@@ -33,9 +33,26 @@ def rotate_bound(image, angle):
     # perform the actual rotation and return the image
     return cv2.warpAffine(image, M, (nW, nH))
 
+def restack_meteor(video_file):
+   if "mp4" in video_file:
+      jsf = video_file.replace(".mp4", ".json")
+   elif "json" in video_file: 
+      jsf = video_file
+      video_file = jsf.replace(".json", ".mp4") 
+   
+   js = load_json_file(jsf)
+   sd_file = js['sd_video_file']
+   hd_file = js['hd_trim']
+   print("SD:", sd_file)
+   print("HD:", hd_file)
+   stack_frame, stack_file = quick_video_stack(sd_file)
+   js['sd_stack'] = stack_file
+   stack_frame, stack_file = quick_video_stack(hd_file)
+   js['hd_stack'] = stack_file
+
 def quick_video_stack(video_file, count = 0, save=1):
    frames = []
-   img_file = video_file.replace(".mp4",".jpg")
+   img_file = video_file.replace(".mp4","-stacked.jpg")
    temp_dir = "/mnt/ams2/tmp/st/"
    if cfe(temp_dir, 1) == 0:
       os.makedirs(temp_dir)
@@ -51,8 +68,16 @@ def quick_video_stack(video_file, count = 0, save=1):
    stack_frame = stack_frames(frames)
    os.system("rm " + temp_dir + "*")
    if save == 1:
+      print("SAVED NEW STACK:", img_file)
       cv2.imwrite(img_file, stack_frame)
-   return(stack_frame)
+      stack_frame_tn = cv2.resize(stack_frame, (320,180))
+      img_file_half = img_file.replace("-stacked.jpg", "-half-stack.jpg")
+      img_file_tn = img_file.replace(".jpg", "-tn.jpg")
+      cv2.imwrite(img_file_tn, stack_frame_tn)
+      stack_frame_half = cv2.resize(stack_frame, (960,540))
+      cv2.imwrite(img_file_half, stack_frame_half)
+
+   return(stack_frame, img_file)
   
 
 
