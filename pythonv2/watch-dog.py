@@ -157,6 +157,7 @@ obs_name = config['site']['obs_name']
 
 wd_file = "../conf/watchdog-status.json"
 
+
 if cfe(wd_file) == 1:
    wd = load_json_file(wd_file)
 else:

@@ -1,0 +1,2 @@
+cp -R /home/ams/amscams/src /mnt/ams2/
+cp -R /home/ams/amscams/dist /mnt/ams2/
