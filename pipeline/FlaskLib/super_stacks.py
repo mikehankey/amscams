@@ -6,6 +6,9 @@ from lib.PipeUtil import load_json_file, save_json_file, cfe
 from lib.PipeAutoCal import fn_dir
 
 def stacks_main(amsid, data) :
+   json_file = "/mnt/ams2/SD/proc2/json/" + "main-index.json"
+   stats_data = load_json_file(json_file)
+
    out = """
 
       <div class='h1_holder d-flex justify-content-between'>
@@ -25,6 +28,8 @@ def stacks_main(amsid, data) :
       vdir = sdir.replace("/mnt/ams2", "")
       if cfe(sdir,1) == 1:
          stack_day, trash = fn_dir(sdir)
+         if stack_day in stats_data:
+            data = stats_data[stack_day]
          date = stack_day
          dsp_date = date.replace("_", "/")
          out += """
@@ -39,11 +44,15 @@ def stacks_main(amsid, data) :
          for cam in json_conf['cameras']:
             cams_id = json_conf['cameras'][cam]['cams_id']
             night_stack_file = vdir + "/" + cams_id + "-night-stack.jpg"
+            if cams_id in data:
+               minutes = data[cams_id]
+            else:
+               minutes = ""
             out += """
 	       <div class='preview'>
 	          <a class='mtt' href='/stacks_day/""" + amsid + "/" + date + """/' title='Browse all day'>
                   <img width=320 height=180 alt='""" + date + """' class='img-fluid ns lz' src='""" + night_stack_file + """'>
-                  </a><span class='pre-b'>Cam #010001</span>
+                  </a><span class='pre-b'>Cam #" + cams_id + " " + minutes " minutes</span>
                </div>
             """
          out += "</div>"
