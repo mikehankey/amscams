@@ -4254,6 +4254,9 @@ def find_object(objects, fn, cnt_x, cnt_y, cnt_w, cnt_h, intensity=0, hd=0, sd_m
                      # don't add points to meteors if they are more than 5x farther away than the last seg dist
                   #   cont = input("ABORTED MATCH DUE TO ABS_DIFF." + str( abs_diff) + " " + str( last_seg_dist * 5))
                      continue
+                  # if this cnt_x, y is the same as the last one, don't add!
+                  if last_x == cnt_x and last_y == cnt_y:
+                     continue
                if objects[obj]['report']['class'] == "star":
                   # only match object if dist is within 5 px
                   if dist > 5:

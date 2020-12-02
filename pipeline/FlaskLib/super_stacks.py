@@ -30,12 +30,13 @@ def stacks_main(amsid, data) :
          stack_day, trash = fn_dir(sdir)
          if stack_day in stats_data:
             data = stats_data[stack_day]
+            mets = data['meteor_files']
          date = stack_day
          dsp_date = date.replace("_", "/")
          out += """
          <div class='h2_holder d-flex justify-content-between'>
 	       <h2>""" + dsp_date + """ 
-               - <a class='btn btn-primary' href=/meteors/""" + amsid + """ + "/" + date + "/" + >XX Meteors </a>
+               - <a class='btn btn-primary' href=/meteors/""" + amsid + "/?start_date=" + date + "/>" + str(mets) + """ Meteors </a>
 	      </h2><p><a href=>XX Non-Meteors </a>  </a>
          </div>
          <div class='gallery gal-resize row text-center text-lg-left mb-5'>
@@ -52,7 +53,7 @@ def stacks_main(amsid, data) :
 	       <div class='preview'>
 	          <a class='mtt' href='/stacks_day/""" + amsid + "/" + date + """/' title='Browse all day'>
                   <img width=320 height=180 alt='""" + date + """' class='img-fluid ns lz' src='""" + night_stack_file + """'>
-                  </a><span class='pre-b'>Cam #" + cams_id + " " + minutes " minutes</span>
+                  </a><span class='pre-b'>Cam #""" + cams_id + " " + str(minutes) + """ minutes</span>
                </div>
             """
          out += "</div>"

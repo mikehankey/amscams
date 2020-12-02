@@ -113,7 +113,12 @@ def show_cat_stars (video_file, hd_stack_file, points):
    mjrf = "/mnt/ams2/" + video_file.replace(".mp4", "-reduced.json")
    mj = load_json_file(mjf)
    mjr = load_json_file(mjrf)
-   cp = mj['cp']
+   if "cp" in mj:
+      cp = mj['cp']
+   elif "best_meteor" in mj:
+      if "cp" in mj['best_meteor']:
+         mj['cp'] = mj['best_meteor']['cp']
+         cp = mj['cp']
    c = update_center_radec(video_file,cp,json_conf)
    pts = points.split("|")
    if "hd_stack" in mj:
@@ -157,6 +162,8 @@ def show_cat_stars (video_file, hd_stack_file, points):
    if "user_mods" not in mj:
       mj['user_mods'] = {}
    if "user_stars" not in mj['user_mods']:
+      mj['user_mods']['user_stars'] = user_stars
+   else:
       mj['user_mods']['user_stars'] = user_stars
    mj['cp'] = cp
    mjr['cal_params'] = cp

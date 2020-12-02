@@ -1,6 +1,6 @@
 from flask import Flask, request
 from FlaskLib.FlaskUtils import get_template, make_default_template
-
+from FlaskLib.Pagination import get_pagination
 import glob
 from lib.PipeUtil import load_json_file, save_json_file, cfe
 from lib.PipeAutoCal import fn_dir
@@ -91,14 +91,13 @@ def meteors_main (amsid, in_data) :
 
 
 
-   si = page
+   si = (page - 1) * meteor_per_page
    ei = page * meteor_per_page
    if ei >= len(tmeteors):
       ei = len(tmeteors)
    print("SI:", si, ei)
    #if sort_by == "date":
    sorted_meteors = sorted(tmeteors, key=lambda x: (x[0]), reverse=True)
-   
    these_meteors = sorted_meteors[si:ei]
    print("THESE:", len(sorted_meteors), si, ei)
   
@@ -203,6 +202,10 @@ def meteors_main (amsid, in_data) :
       """
 
 
+   pagination = get_pagination(page, len(tmeteors), "/meteors/" + amsid + "/?meteor_per_page=" + str(meteor_per_page) + "&start_day=" + start_day + "&end_day=" + end_day, meteor_per_page )
+   out += "<div class='page_h'>Page  " + format(page) + "/" +  format(pagination[2]) + "</div></div>"
+   out += pagination[0]
+   out += "</div>"
 
 
    template = make_default_template(amsid, "meteors_main.html", json_conf)

@@ -2,6 +2,7 @@ from flask import Flask, request
 from FlaskLib.FlaskUtils import get_template
 from FlaskLib.api_funcs import update_meteor_points, show_cat_stars, delete_meteor, delete_meteors, reduce_meteor, delete_frame
 from lib.PipeUtil import cfe, load_json_file, save_json_file
+from lib.PipePwdProtect import login_page, check_pwd_ajax
 from lib.PipeAutoCal import fn_dir
 from FlaskLib.meteor_detail_funcs import detail_page 
 from FlaskLib.meteors_main import meteors_main 
@@ -14,7 +15,20 @@ import json
 
 @app.route('/')
 def main_menu():
-   return 'Main Menu!'
+   out = login_page()
+   header = get_template("FlaskTemplates/header.html")
+   footer = get_template("FlaskTemplates/footer.html")
+   out = out.replace("{HEADER}", header)
+   out = out.replace("{FOOTER}", footer)
+
+   return out
+
+@app.route('/api/check_login', methods=['GET', 'POST'])
+def chk_login():
+   user = request.args.get('user')
+   passwd = request.args.get('pwd')
+   out = check_pwd_ajax(user, passwd)
+   return out
 
 
 @app.route('/api/delete_frame/<meteor_file>/', methods=['GET', 'POST'])

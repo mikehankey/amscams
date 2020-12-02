@@ -41,9 +41,10 @@ def detail_page(amsid, date, meteor_file):
    if cfe(METEOR_DIR + half_stack) == 0:
       if cfe(METEOR_DIR + sd_stack) == 1:
          simg = cv2.imread(METEOR_DIR + sd_stack)
-         simg  = cv2.resize(simg,(int(1920/2),int(1080/2)))
+         simg  = cv2.resize(simg,(1920,1080))
+         simg  = cv2.resize(simg,(960,540))
          cv2.imwrite(METEOR_DIR + half_stack,  simg)
-         print("SAVED HALF", half_stack)
+         print("SAVED HALF", METEOR_DIR + half_stack, simg.shape)
       else:
          print("NO SD ", sd_stack)
  
@@ -65,9 +66,15 @@ def detail_page(amsid, date, meteor_file):
    template = template.replace("{AMSID}", amsid)
    template = template.replace("{MEDIA_HOST}", MEDIA_HOST)
    template = template.replace("{HALF_STACK}", METEOR_VDIR + half_stack)
-   template = template.replace("{HD_STACK}", METEOR_VDIR + hd_stack)
+   if hd_stack is None or hd_stack == 0:
+      template = template.replace("{HD_STACK}", "#")
+   else:
+      template = template.replace("{HD_STACK}", METEOR_VDIR + hd_stack)
    template = template.replace("{SD_STACK}", METEOR_VDIR + sd_stack)
-   template = template.replace("{HD_TRIM}", METEOR_VDIR + hd_trim)
+   if hd_trim is None or hd_trim == 0:
+      template = template.replace("{HD_TRIM}", "#")
+   else:
+      template = template.replace("{HD_TRIM}", METEOR_VDIR + hd_trim)
    template = template.replace("{AZ_GRID}", METEOR_VDIR + az_grid)
    template = template.replace("{JSON_CONF}", mjvf)
    template = template.replace("{METEOR_JSON}", mjvf)
