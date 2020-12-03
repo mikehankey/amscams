@@ -14,7 +14,7 @@ def run_jobs(json_conf):
    sun, az, alt = day_or_night(datetime.now(), json_conf, 1)
    print(sun, az, alt)
    cmds = []
-   cmds.append(('day', "Clean disk / Purge old files", "cd /home/ams/amscams/pythonv2; ./doDay.py cd"))
+   cmds.append(('all', "Clean disk / Purge old files", "cd /home/ams/amscams/pythonv2; ./doDay.py cd"))
    cmds.append(('day', "Move Day Files", "cd /home/ams/amscams/pythonv2; ./move_day_files.py"))
    cmds.append(('all', "Update the proc index", "cd /home/ams/amscams/pythonv2; ./ASDaemon.py proc_index"))
    cmds.append(('all', "Update the file index", "cd /home/ams/amscams/pythonv2; ./batchJobs.py fi"))
