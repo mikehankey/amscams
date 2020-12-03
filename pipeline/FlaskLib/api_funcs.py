@@ -4,7 +4,7 @@ from lib.PipeDetect import fireball, apply_frame_deletes
 import os
 import cv2
 from FlaskLib.FlaskUtils import parse_jsid
-
+import glob
 
 def delete_frame(meteor_file, fn):
    resp = {}
@@ -108,24 +108,46 @@ def delete_meteors(data):
    return resp
 
 def show_cat_stars (video_file, hd_stack_file, points):
+
    json_conf = load_json_file("../conf/as6.json")
-   mjf = "/mnt/ams2/" + video_file.replace(".mp4", ".json")
-   mjrf = "/mnt/ams2/" + video_file.replace(".mp4", "-reduced.json")
-   mj = load_json_file(mjf)
-   mjr = load_json_file(mjrf)
-   if "cp" in mj:
-      cp = mj['cp']
-   elif "best_meteor" in mj:
-      if "cp" in mj['best_meteor']:
-         mj['cp'] = mj['best_meteor']['cp']
+   cp = None
+   if "cal" in video_file:
+      app_type = "calib"
+   else:
+      app_type = "meteor"
+
+   if app_type == "meteor":
+      mjf = "/mnt/ams2/" + video_file.replace(".mp4", ".json")
+      mjrf = "/mnt/ams2/" + video_file.replace(".mp4", "-reduced.json")
+      mj = load_json_file(mjf)
+      mjr = load_json_file(mjrf)
+      if "cp" in mj:
          cp = mj['cp']
-   c = update_center_radec(video_file,cp,json_conf)
+      elif "best_meteor" in mj:
+         if "cp" in mj['best_meteor']:
+            mj['cp'] = mj['best_meteor']['cp']
+            cp = mj['cp']
+      c = update_center_radec(video_file,cp,json_conf)
+      if "hd_stack" in mj:
+         hd_img = cv2.imread(mj['hd_stack'], 0)
+         print("HD IMG:", hd_img.shape)
+   else:
+      cal_r = video_file.replace("-half-stack.png", "")
+      cal_root = "/mnt/ams2" + cal_r 
+      cps = glob.glob(cal_root + "*calparams.json")
+      sfs = glob.glob(cal_root + "*stacked.png")
+      stack_file = sfs[0]
+      cpf = cps[0]
+      cp = load_json_file(cpf)
+      hd_img = cv2.imread(stack_file, 0)
+
+   if cp is None:
+      resp = {
+         "status" : 0
+      }
+      return(resp)
+
    pts = points.split("|")
-   if "hd_stack" in mj:
-      hd_img = cv2.imread(mj['hd_stack'], 0)
-      print("HD IMG:", hd_img.shape)
-
-
    user_stars = []
    for pt in pts:
       ddd = pt.split(",")
@@ -156,23 +178,33 @@ def show_cat_stars (video_file, hd_stack_file, points):
 
    cp['user_stars'] = user_stars
    cp = pair_stars(cp, video_file, json_conf, hd_img)
-   print("CP NEW RA:", cp['ra_center'])
-   print("CP NEW DEC:", cp['dec_center'])
-   print("NEW CAT IMAGE STARS:", cp['cat_image_stars'])
-   if "user_mods" not in mj:
-      mj['user_mods'] = {}
-   if "user_stars" not in mj['user_mods']:
-      mj['user_mods']['user_stars'] = user_stars
-   else:
-      mj['user_mods']['user_stars'] = user_stars
-   mj['cp'] = cp
-   mjr['cal_params'] = cp
-   save_json_file(mjf, mj)
-   save_json_file(mjrf, mjr)
+
    resp = {}
+
+   if app_type == "meteor":
+      return("NO NOW")
+      if "user_mods" not in mj:
+         mj['user_mods'] = {}
+      if "user_stars" not in mj['user_mods']:
+         mj['user_mods']['user_stars'] = user_stars
+      else:
+         mj['user_mods']['user_stars'] = user_stars
+      mj['cp'] = cp
+      mjr['cal_params'] = cp
+      save_json_file(mjf, mj)
+      save_json_file(mjrf, mjr)
+      resp['crop_box'] = mjr['crop_box']
+   else:
+      resp['crop_box'] = [0,0,0,0]
+      if "user_mods" not in cp:
+         cp['user_mods'] = {}
+      cp['user_mods']['user_stars'] = cp['user_stars']
+      save_json_file(cpf, cp)
+      print("SAVED CALPARAMS IN:", cpf)
+
+
    resp['msg'] = "good"
    resp['status'] = 1
-   resp['crop_box'] = mjr['crop_box']
    resp['cp'] = cp
    return(resp)
 

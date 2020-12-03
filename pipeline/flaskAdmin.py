@@ -1,6 +1,7 @@
 from flask import Flask, request
 from FlaskLib.FlaskUtils import get_template
 from FlaskLib.api_funcs import update_meteor_points, show_cat_stars, delete_meteor, delete_meteors, reduce_meteor, delete_frame
+from FlaskLib.calib_funcs import calib_main, cal_file
 from lib.PipeUtil import cfe, load_json_file, save_json_file
 from lib.PipePwdProtect import login_page, check_pwd_ajax
 from lib.PipeAutoCal import fn_dir
@@ -20,7 +21,6 @@ def main_menu():
    footer = get_template("FlaskTemplates/footer.html")
    out = out.replace("{HEADER}", header)
    out = out.replace("{FOOTER}", footer)
-
    return out
 
 @app.route('/api/check_login', methods=['GET', 'POST'])
@@ -58,6 +58,16 @@ def del_meteors():
    out = delete_meteors(data)
    return out
 
+@app.route('/calfile/<amsid>/<calfile>/', methods=['GET', 'POST'])
+def cfile(amsid, calfile):
+   out = cal_file(amsid, calfile)
+   return out
+
+
+@app.route('/calib/<amsid>/', methods=['GET', 'POST'])
+def calib(amsid):
+   out = calib_main(amsid)
+   return out
 
 @app.route('/live/<amsid>/', methods=['GET', 'POST'])
 def live(amsid):
@@ -164,4 +174,3 @@ def main_api(cmd):
       #delete_cal(amsid, data)
 
    return out 
-   #return out
