@@ -1,3 +1,4 @@
+
 from flask import Flask, request
 from FlaskLib.FlaskUtils import get_template
 from FlaskLib.api_funcs import update_meteor_points, show_cat_stars, delete_meteor, delete_meteors, reduce_meteor, delete_frame
@@ -13,6 +14,7 @@ from FlaskLib.live import live_view
 app = Flask(__name__, static_url_path='/static')
 import json
 
+# Main controller for AllSkyCams UI application.
 
 @app.route('/')
 def main_menu():
