@@ -1,7 +1,7 @@
 from flask import Flask, request
 from FlaskLib.FlaskUtils import get_template
 from FlaskLib.api_funcs import update_meteor_points, show_cat_stars, delete_meteor, delete_meteors, reduce_meteor, delete_frame
-from FlaskLib.calib_funcs import calib_main, cal_file
+from FlaskLib.calib_funcs import calib_main, cal_file, show_masks
 from lib.PipeUtil import cfe, load_json_file, save_json_file
 from lib.PipePwdProtect import login_page, check_pwd_ajax
 from lib.PipeAutoCal import fn_dir
@@ -56,6 +56,12 @@ def del_meteors():
    data['detections'] = request.form.get('detections')
 
    out = delete_meteors(data)
+   return out
+
+
+@app.route('/cal/masks/<amsid>/', methods=['GET', 'POST'])
+def masks(amsid):
+   out = show_masks(amsid)
    return out
 
 @app.route('/calfile/<amsid>/<calfile>/', methods=['GET', 'POST'])

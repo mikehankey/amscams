@@ -6,6 +6,24 @@ import cv2
 from FlaskLib.FlaskUtils import parse_jsid, make_default_template, get_template 
 import glob
 
+def show_masks(amsid):
+   json_conf = load_json_file("../conf/as6.json")
+   mask_dir = "/mnt/ams2/meteor_archive/" + amsid + "/CAL/MASKS/"
+   masks = glob.glob(mask_dir + "*mask.png")
+   out = """
+      <div id="main_container" class="container-fluid d-flex h-100 mt-4 position-relative">
+   """
+
+   for mask in sorted(masks):
+      mask = mask.replace("/mnt/ams2", "")
+      fn,dir = fn_dir(mask)
+      cam = fn.replace("_mask.png", "")
+      out += "<div style='float: left'><img src=" + mask + "><br><caption>" + cam + "</caption></div>"
+   out += "</div>"
+   template = make_default_template(amsid, "calib.html", json_conf)
+   template = template.replace("{MAIN_TABLE}", out)
+   return(template)
+
 def cal_file(amsid, calib_file):
    json_conf = load_json_file("../conf/as6.json")
    
