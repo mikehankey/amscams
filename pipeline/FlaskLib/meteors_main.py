@@ -50,6 +50,7 @@ def meteors_main (amsid, in_data) :
       #/mnt/ams2/meteors/AMS1-meteors.info
       sorted_meteors = sorted(mid, key=lambda x: (x[0]), reverse=False)
       total_meteors = len(mid)
+      print(mid)
       ed = mid[0][2]
       sd = mid[-1][2]
       tmeteors = mid
