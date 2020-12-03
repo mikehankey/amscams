@@ -1,4 +1,6 @@
 var v = Cookies.get('wpAMS-10091976');
 if(v == undefined) {
-    window.location.href = "/";
+    if (window.pathname != "/") {
+       window.location.href = "/"
+    }
 }
