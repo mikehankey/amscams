@@ -780,7 +780,8 @@ def calib_image(file, image=None,json_conf=None):
    print("CALIB IMAGE")
    before_cp, after_cp = get_cal_params(file)
    print("AFTER GET CAL")
-
+   if before_cp is None and after_cp is None:
+      return(None)
    print(before_cp, after_cp)
    before_cp = update_center_radec(file,before_cp,json_conf)
    after_cp = update_center_radec(file,after_cp,json_conf)
@@ -854,6 +855,8 @@ def mask_points(img, points ):
 def mask_stars(img, cp):
    hdm_x = 1920 / img.shape[1]
    hdm_y = 1080 / img.shape[0]
+   if cp is None:
+      return(img)
    for star in cp['user_stars']:
       #dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist,bp = star
       six, siy, oint = star
@@ -959,7 +962,10 @@ def make_roi_video(video_file,bm, frames, json_conf):
    mjf = video_file.replace(".mp4", ".json")
    mjrf = video_file.replace(".mp4", "-reduced.json")
    mj = load_json_file(mjf)
-   mjr = load_json_file(mjrf)
+   if cfe(mjrf) == 1:
+      mjr = load_json_file(mjrf)
+   else:
+      mjr = None
    vid_fn, vdir = fn_dir(video_file)
    vid_base = vid_fn.replace(".mp4", "")
    date = vid_fn[0:10]
@@ -987,6 +993,10 @@ def make_roi_video(video_file,bm, frames, json_conf):
    updated_frame_data = []
    xs19 = []
    ys19 = []
+   ra = 0
+   dec = 0
+   az = 0
+   el = 0
    for j in range(0, len(frames)):
       i = j - bm['ofns'][0]  
       fns = str(j)
@@ -1007,7 +1017,10 @@ def make_roi_video(video_file,bm, frames, json_conf):
          oint = bm['oint'][i]
          hd_x = int(rx * hdm_x_720)
          hd_y = int(ry * hdm_y_720)
-         tx, ty, ra ,dec , az, el = XYtoRADec(hd_x,hd_y,video_file,mjr['cal_params'],json_conf)
+         if "cal_params" in mj: 
+            if mj["cal_params"] is not None:
+               tx, ty, ra ,dec , az, el = XYtoRADec(hd_x,hd_y,video_file,mjr['cal_params'],json_conf)
+         
          date_str = bm['dt'][i]
          updated_frame_data.append((date_str, j, hd_x, hd_y, rw, rh, oint, ra, dec, az, el))
       else:
@@ -1053,11 +1066,12 @@ def make_roi_video(video_file,bm, frames, json_conf):
          cv2.rectangle(of, (rx1, ry1), (rx2, ry2), (255,255,255), 1, cv2.LINE_AA)
          cv2.imshow("pepe", of)
          cv2.waitKey(30)
-  
-   mjr['crop_box'] = [min(xs19)-25, min(ys19)-25,max(xs19)+25,max(ys19)+25]
-   print("UPD:", updated_frame_data)
-   mjr['meteor_frame_data'] = updated_frame_data
-   save_json_file(mjrf, mjr)
+ 
+   if mjr is not None:
+      mjr['crop_box'] = [min(xs19)-25, min(ys19)-25,max(xs19)+25,max(ys19)+25]
+      print("UPD:", updated_frame_data)
+      mjr['meteor_frame_data'] = updated_frame_data
+      save_json_file(mjrf, mjr)
    tracking_outfile = "/mnt/ams2/meteors/" + date + "/" + vid_base + "-tracking.mp4"
    cmd = "./FFF.py imgs_to_vid " + cache_dir + " " + year + " " + tracking_outfile + " 25 27"
    os.system(cmd)
@@ -1160,24 +1174,26 @@ def fireball(video_file, json_conf, nomask=0):
          hd_trim = None
       #print(base_js['meteor_frame_data'])
       print("APPLY CALIB!")
-      best_meteor = apply_calib(video_file, best_meteor, cp, json_conf)
+      if cp is not None:
+         best_meteor = apply_calib(video_file, best_meteor, cp, json_conf)
       base_js, base_jsr = make_base_meteor_json(video_file, hd_trim,best_meteor,cp)
       print("BASE:", base_js)
       jsfr = jsf.replace(".json", "-reduced.json") 
 
       if "cp" in best_meteor:
-         print("YES1")
-         if "x_poly" in best_meteor['cp']:
-            print("YES2")
-            if type(best_meteor['cp']['x_poly']) is not list:
-               print("YES3")
-               best_meteor['cp']['x_poly'] = best_meteor['cp']['x_poly'].tolist()
-               best_meteor['cp']['y_poly'] = best_meteor['cp']['y_poly'].tolist()
-               best_meteor['cp']['x_poly_fwd'] = best_meteor['cp']['x_poly_fwd'].tolist()
-               best_meteor['cp']['y_poly_fwd'] = best_meteor['cp']['y_poly_fwd'].tolist()
+         jdata['cp'] = best_meteor['cp']
+         del(best_meteor['cp'])
+         if "x_poly" in jdata['cp']:
+            if type(jdata['cp']['x_poly']) is not list:
+               jdata['cp']['x_poly'] = jdata['cp']['x_poly'].tolist()
+               jdata['cp']['y_poly'] = jdata['cp']['y_poly'].tolist()
+               jdata['cp']['x_poly_fwd'] = jdata['cp']['x_poly_fwd'].tolist()
+               jdata['cp']['y_poly_fwd'] = jdata['cp']['y_poly_fwd'].tolist()
 
       save_json_file(jsf, jdata)
-      save_json_file(jsfr, base_jsr)
+      if jdata['cp'] is not None:
+         base_jsr['cp'] = jdata['cp']
+         save_json_file(jsfr, base_jsr)
       print("saved:", jsfr)
       print("Small meteor don't need to refine", max(best_meteor['oint']))
       print("CCXS:", best_meteor['ccxs'])
@@ -1282,10 +1298,16 @@ def make_base_meteor_json(video_file, hd_video_file,best_meteor=None ,cp=None):
          y = int(best_meteor['ccys'][i] * hdm_y_720)
          w = best_meteor['ows'][i]
          h = best_meteor['ohs'][i]
-         ra = best_meteor['ras'][i]
-         dec = best_meteor['decs'][i]
-         az = best_meteor['azs'][i]
-         el = best_meteor['els'][i]
+         if "ras" in best_meteor:
+            ra = best_meteor['ras'][i]
+            dec = best_meteor['decs'][i]
+            az = best_meteor['azs'][i]
+            el = best_meteor['els'][i]
+         else:
+            ra = 0
+            dec = 0
+            az = 0
+            el = 0
          oint = best_meteor['oint'][i]
          dt = best_meteor['dt'][i]
          #FLUX
@@ -1832,20 +1854,17 @@ def fireball_phase1(hd_frames, hd_color_frames, subframes,sum_vals,max_vals,pos_
       #exit() 
    else:
       user_mods = None
-      cp['user_stars'] = get_image_stars(video_file, hd_frames[0].copy(), json_conf, 1)
-      stack_img_l = cv2.resize(stack_img, (1920, 1080))
-      cp = pair_stars(cp, video_file, json_conf, stack_img_l)
+      if cp is not None:
+         cp['user_stars'] = get_image_stars(video_file, hd_frames[0].copy(), json_conf, 1)
+         stack_img_l = cv2.resize(stack_img, (1920, 1080))
+         cp = pair_stars(cp, video_file, json_conf, stack_img_l)
 
-
-   print("FIREBALL4!")
-   print("NEW CP:", cp['cat_image_stars'])
-   print("NEW US:", cp['user_stars'])
-   #exit()
-   x = cp['total_res_px']
-   if math.isnan(x) is True:
-      print("ISNANA")
-      cp['total_res_deg'] = 999
-      cp['total_res_px'] = 999
+   if cp is not None:
+      x = cp['total_res_px']
+      if math.isnan(x) is True:
+         print("ISNANA")
+         cp['total_res_deg'] = 999
+         cp['total_res_px'] = 999
 
    if cfe(med_file) == 0:
       median_frame = cv2.convertScaleAbs(np.median(np.array(hd_frames), axis=0))
@@ -4488,6 +4507,8 @@ def get_cal_params(meteor_json_file):
    before_files = []
    after_files = []
    cal_files= get_cal_files(meteor_json_file, cam)
+   if len(cal_files) == 0:
+      return(None,None)
    for cf,td in cal_files:
       (c_datetime, ccam, c_date_str,cy,cm,cd, ch, cmm, cs) = convert_filename_to_date_cam(cf)
       time_diff = f_datetime - c_datetime
@@ -4538,7 +4559,7 @@ def get_cal_params(meteor_json_file):
       before_med_el = np.median(els)
       before_med_pos = np.median(pos)
       before_med_px = np.median(px)
-   elif len(az) > 0:
+   elif len(azs) > 0:
       print("PX:", px)
       before_med_az = np.mean(azs)
       before_med_el = np.mean(els)
