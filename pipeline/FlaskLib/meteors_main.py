@@ -116,7 +116,7 @@ def meteors_main (amsid, in_data) :
          <div class='d-flex'>
             <div class='mr-2'><select name='rpp' id='rpp' data-rel='meteor_per_page' class='btn btn-primary'><option value="20">20 / page</option><option value="40">40 / page</option><option selected value="60">60 / page</option><option value="80">80 / page</option><option value="100">100 / page</option><option value="150">150 / page</option><option value="200">200 / page</option><option value="500">500 / page</option><option value="1000">1000 / page</option><option value="10000">10000 / page</option></select></div>
             <div class='btn-group mr-3'><button id='show_gal' class='btn btn-primary act'><i class='icon-list'></i></button></div>
-            <div class='page_h'>Page  1/2</div>
+            <div class='page_h'>Page  """ + str(page) + """</div>
          </div>
       </div>
       <div id='main_container' class='container-fluid h-100 mt-4 lg-l'>
@@ -134,6 +134,9 @@ def meteors_main (amsid, in_data) :
    for meteor in these_meteors:
 
       meteor_file, reduced, start_time, dur, ang_vel, ang_dist = meteor 
+      red_file = meteor_file.replace(".json", "-reduced.json")
+      if cfe(red_file) == 1:
+         reduced = 1
       print("MF:", meteor_file) 
       if cfe(meteor_file) == 0:
          continue
@@ -203,9 +206,9 @@ def meteors_main (amsid, in_data) :
 
 
    pagination = get_pagination(page, len(tmeteors), "/meteors/" + amsid + "/?meteor_per_page=" + str(meteor_per_page) + "&start_day=" + start_day + "&end_day=" + end_day, meteor_per_page )
-   out += "<div class='page_h'>Page  " + format(page) + "/" +  format(pagination[2]) + "</div></div>"
+   out += "</div><!--main container!--> <div class='page_h'><!--Page  " + format(page) + "/" +  format(pagination[2]) + "--></div></div> <!-- ADD EXTRA FOR ENDING MAIN PROPERLY. --> <div>"
    out += pagination[0]
-   out += "</div>"
+   #out += "</div>"
 
 
    template = make_default_template(amsid, "meteors_main.html", json_conf)

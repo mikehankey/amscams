@@ -19,6 +19,7 @@ function select_multiple_meteors_ajax() {
 
 
     $.ajax({ 
+        type:"POST",
         url:  "/API/update_meteor_points",
         data: cmd_data, 
         success: function(data) {
@@ -40,7 +41,8 @@ function select_multiple_meteors_ajax() {
 
                 // Reset Selection
                 meteor_select_updates = [];
-                
+                location.reload();
+ 
           
                   
             } else {
@@ -202,7 +204,7 @@ function addModalTemplate(meteor_id,neighbor) {
         <div class="modal-content">\
         <div class="modal-header"> \
             <div><strong>FRAME #<span id="sel_frame_id"></span></strong> \
-            - Click the center of the meteor to update the reduction frame. \
+            - Click the leading edge of the meteor to update the reduction frame. \
             </div>\
             <div>\
                     <button id="switch_select_mode" class="btn btn-primary btn-sm" data-lbl="Switch to multiple mode"><b>Switch to single mode</b></button>\

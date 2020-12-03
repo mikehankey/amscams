@@ -165,7 +165,7 @@ def check_disk():
    if del_needed == 1:
       print("Data volume /mnt/ams2 is greater than 80%!")
       print(len(hd_files), " HD FILES")
-      del_count = int(len(hd_files) / 5)
+      del_count = int(len(hd_files) / 3)
       for file in hd_files[0:del_count]:
          if "meteor" not in file:
             print("Delete this file!", file)

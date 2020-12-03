@@ -1,0 +1,114 @@
+<body onload='init_page()'>
+
+<link rel="stylesheet" href="/dist/div_table.css"/>
+<div id="main_container" class="container-fluid d-flex h-100 mt-4 position-relative"> 
+        <div class="h-100 flex-fixed-canvas">
+            <div class="canvas-container">
+                 <canvas id="c" width="960" height="540"></canvas> 
+            </div>
+        </div>
+        <div class="flex-fixed-r-canvas h-100">
+			<div class="canvas_zoom_holder mb-3">
+	            <div id="canvas_zoom_target"><img alt="" src="/dist/img/target.svg"/></div>
+	            <div id="canvas_pointer_info"></div>
+                <div id="canvas_zoom"></div>
+            </div> 
+             
+            <div class="box">
+                <h2>Calibration Info</h2>
+                <dl class="row mb-0">
+                    <dt class="col-6">Time</dt>   <dd class="col-6">{CAL_TIME}</dd> 
+                    <dt class="col-6">Center AZ</dt>   <dd class="col-6">{CENTER_AZ}</dd> 
+                    <dt class="col-6">Center EL</dt>   <dd class="col-6">{CENTER_EL}</dd> 
+                    <dt class="col-6">Position Angle</dt>   <dd class="col-6">{POSITION_ANGLE}</dd> 
+                    <dt class="col-6">Pixel Scale</dt>   <dd class="col-6">{PIXSCALE}</dd> 
+                    <dt class="col-6">Stars</dt>   <dd class="col-6">{TOTAL_STARS}</dd> 
+                    <dt class="col-6">Res PX</dt>   <dd class="col-6">{RES_PX}</dd> 
+                    <dt class="col-6">Res Deg</dt>   <dd class="col-6">{RES_DEG}</dd> 
+                </dl>
+                <!--<div class="btn-holder row mt-1">
+                    <a id="show_grid" class="col btn btn-secondary mt-0 mb-0"><i class="icon-grid"></i> <span>Show AZ Grid</span></a>
+                </div>-->
+            </div>
+            
+            <div class="box">
+                    <h2>ACTIONS</h2>
+                    <div class="row mt-3 " >
+                        <div class="col pl-4 pr-4 "> 
+
+                            <a class="btn btn-primary d-block" onclick="javascript:show_image('{HALF_STACK}',1,1)">Show Image</a><a class="btn btn-primary d-block mt-2" onclick="javascript:find_stars('{HALF_STACK}')">Find Stars</a><a class="btn btn-primary d-block mt-2" onclick="javascript:show_cat_stars('{STACK_FILE}','','pick')">Show Catalog Stars</a><a class="btn btn-primary d-block mt-2" onclick="javascript:calib_az_grid('{AZ_GRID}')">AZ Grid</a><a class="btn btn-danger d-block mt-4"  onclick="javascript:delete_cal('{STACK_FILE}')">Delete Calibration</a>
+
+                            <a id="update_stars" class="btn btn-primary btn-v"><i class="icon-star_catalog"></i> Update Star List</a>
+
+
+                        </div>
+                    </div>
+            </div>
+
+             
+
+            <div class="box" id="star_panel"></div>
+           <!-- 
+            <div class="box">
+                <h2>Calibration</h2>
+                <div class="p-3">
+                  <a id="auto_detect_stars" class="btn btn-primary d-block mb-2 ">Automatic Star Detection</a>
+                    <div id="solve_field_info" class="mb-2 " hidden>
+                        <span id="star_counter" class="pb-2"></span>
+                        <a id="solve_field" class="btn d-block btn-primary"><i class="icon-star_catalog"></i> Solve Field</a>
+                    </div>
+
+
+                    <div id="delete_calib_holder" class="mt-4" hidden>
+                        <p class="mb-1">The calibration parameters are automatically saved. If you are not happy with the result:</p>
+                        <a id="delete_calibration" class="btn d-block btn-danger"><i class="icon-delete"></i> Delete Calibration Parameters</a>
+                    </div>
+                </div>
+            </div>
+            --> 
+        </div>
+</div>
+<div class='divTable' style='border: 1px solid #000;' ><div class='divTableBody'>
+<div id="star_list"></div>
+</div>
+</div>
+
+
+      <div>
+      <div style="float:left; padding: 10px;" id=action_buttons>
+      </div>
+      <div style="clear: both"></div>
+      </div>
+      <div style="float:left" id=info_panel>Info: </div>
+      <div style="clear: both"></div>
+       <BR><BR>
+   
+
+   <script>
+      var cal_params = {CAL_PARAMS}
+      var main_vid = '{STACK_FILE}'
+      var my_image = '{HALF_STACK}'
+      var half_stack_file = '{HALF_STACK}'
+      var az_grid_file = '{AZ_GRID}'
+      var grid_by_default = false
+      var hd_stack_file = '{STACK_FILE}'
+      var crop_box = [0,0,0,0]
+
+function calib_az_grid(az_grid_file) {
+          alert(az_grid_file)
+          canvas.setBackgroundImage(az_grid_file, canvas.renderAll.bind(canvas));
+}
+
+
+function init_page() {
+   if(typeof cal_params !== 'undefined') {
+      update_stars_on_canvas_and_table(cal_params, crop_box)
+   }
+
+}
+
+   </script>
+   
+<script>var stars = [{USER_STARS}]</script> 
+
+ 
