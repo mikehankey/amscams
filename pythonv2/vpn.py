@@ -28,7 +28,8 @@ if "flask_admin" in json_conf:
    flask_running = int(output.replace("\n", ""))
    if flask_running == 0:
       print("FLASK RUNNING:", flask_running)
-      cmd = "cd /home/ams/amscams/pipeline; /home/ams/amscams/pipeline/run-uwsgi.sh & "
+      cmd = "cd /home/ams/amscams/pipeline; /home/ams/amscams/pipeline/run-uwsgi.sh > /tmp/sgi.txt 2>&1 & "
+      print(cmd)
       os.system(cmd)
 
 
