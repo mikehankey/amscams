@@ -31,7 +31,7 @@ def cal_file(amsid, calib_file):
    caldir = caldir.replace("-stacked.png", "")
 
    cps = glob.glob(caldir + "*cal*.json")
-   hss = glob.glob(caldir + "*half-stack*")
+   hss = glob.glob(caldir + "*half-stack.png")
    azs = glob.glob(caldir + "*az*half*")
    sfs = glob.glob(caldir + "*stacked.png")
    if len(cps) == 0 :
