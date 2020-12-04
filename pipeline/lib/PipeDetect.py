@@ -898,6 +898,8 @@ def make_roi_video_mfd(video_file, json_conf):
    mon = vid_fn[5:7]
    cache_dir = "/mnt/ams2/CACHE/" + year + "/" + mon + "/" + vid_base + "/"
    prefix = cache_dir + vid_base + "-frm"
+   if cfe(cache_dir, 1) == 0:
+      os.makedirs(cache_dir)
 
    hd_frames,hd_color_frames,subframes,sum_vals,max_vals,pos_vals = load_frames_fast(video_file, json_conf, 0, 0, 1, 1,[])
 

@@ -165,7 +165,15 @@ def meteors_main (amsid, in_data) :
          showing meteors  """ + str(si) + "-" + str(ei) + """
          </h1>
          <div class='d-flex'>
-            <div class='mr-2'><select name='rpp' id='rpp' data-rel='meteor_per_page' class='btn btn-primary'><option value="20">20 / page</option><option value="40">40 / page</option><option selected value="60">60 / page</option><option value="80">80 / page</option><option value="100">100 / page</option><option value="150">150 / page</option><option value="200">200 / page</option><option value="500">500 / page</option><option value="1000">1000 / page</option><option value="10000">10000 / page</option></select></div>
+            <div class='mr-2'><select name='rpp' id='rpp' data-rel='meteor_per_page' class='btn btn-primary'>"""
+   opts = [25,50,100,250,500,1000]
+   for i in opts:
+      if i == meteor_per_page:
+         out += "<option value='" + str(i) + "' selected>" + str(i) + " / page</option>"
+      else:
+         out += "<option value='" + str(i) + "'>" + str(i) + " / page</option>"
+
+   out  += """</select></div>
             <div class='btn-group mr-3'><button id='show_gal' class='btn btn-primary act'><i class='icon-list'></i></button></div>
             <div class='page_h'>Page  """ + str(page) + """</div>
          </div>

@@ -4,7 +4,7 @@ from lib.PipeUtil import cfe, load_json_file, save_json_file
 from lib.PipeAutoCal import fn_dir
 import time
 import cv2
-
+import os
 
 def detail_page(amsid, date, meteor_file):
    MEDIA_HOST = request.host_url.replace("5000", "80")
@@ -136,8 +136,20 @@ def detail_page(amsid, date, meteor_file):
          template = template.replace("{RES_DEG}", str(cp['total_res_deg'])[0:5])
 
 
+   if cfe("/mnt/ams2" + CACHE_VDIR, 1) == 0:
+      if "mp4" in meteor_file:
+         vid = meteor_file.replace(".json", ".mp4")
+      else:
+         vid = meteor_file.replace(".json", ".mp4")
+      cmd = "./Process.py roi_mfd " + METEOR_DIR + vid
+      print(cmd)
+      os.system(cmd)
+   print("CACHE:", CACHE_VDIR) 
+
    if cfe(mjrf) == 1:
       mjr = load_json_file(mjrf)
+
+
       frame_table_rows = frames_table(mjr, base_name, CACHE_VDIR)
       cal_params_js_var = "var cal_params = " + str(mjr['cal_params'])
       mfd_js_var = "var meteor_frame_data = " + str(mjr['meteor_frame_data'])
@@ -159,7 +171,10 @@ def detail_page(amsid, date, meteor_file):
    template = template.replace("{LIGHTCURVE_URL}", lc_html)
    return(template)   
 
+
+
 def frames_table(mjr, base_name, CACHE_VDIR):
+
    if True:
       # check for reduced data
       #dt, fn, x, y, w, h, oint, ra, dec, az, el
