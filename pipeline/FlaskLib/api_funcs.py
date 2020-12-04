@@ -184,7 +184,6 @@ def show_cat_stars (video_file, hd_stack_file, points):
    resp = {}
 
    if app_type == "meteor":
-      return("NO NOW")
       if "user_mods" not in mj:
          mj['user_mods'] = {}
       if "user_stars" not in mj['user_mods']:

@@ -838,7 +838,13 @@ def refit_fov(cal_file, json_conf):
 
 
    gray_img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-   cal_params['user_stars'] = get_image_stars(cal_file, img.copy(), json_conf, 0)
+   find_stars = 1
+   if "user_mods" in cal_params:
+      if "user_stars" in cal_params['user_mods']:
+         cal_params['user_stars'] = cal_params['user_mods']['user_stars']
+         find_stars = 0
+   if find_stars == 1:
+      cal_params['user_stars'] = get_image_stars(cal_file, img.copy(), json_conf, 0)
 
    print("STARTING RA/DEC:", cal_params['ra_center'], cal_params['dec_center'], cal_params['total_res_px'])
    cal_params = update_center_radec(cal_file,cal_params,json_conf)

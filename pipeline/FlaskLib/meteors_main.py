@@ -63,7 +63,7 @@ def get_meteors_in_range(station_id, start_date, end_date,del_data):
    days_in_range = int(diff.total_seconds() / 86300) 
    if days_in_range == 0:
       days_in_range = 1
-   if days_in_range <= 90:
+   if days_in_range <= 180:
       for day_plus in range(0, days_in_range):
          this_date = start_dt + datetime.timedelta(days = day_plus)  
          this_day = this_date.strftime("%Y_%m_%d")
@@ -78,6 +78,7 @@ def get_meteors_in_range(station_id, start_date, end_date,del_data):
                mi.append(dd)
          else:
             print("NO MIF:", mif)
+   
 
 
    return(mi)
@@ -144,7 +145,7 @@ def meteors_main (amsid, in_data) :
    ei = page * meteor_per_page
    if ei >= len(tmeteors):
       ei = len(tmeteors)
-   out += ("SI/EI:" + str(si) + " " + str(ei))
+   #out += ("SI/EI:" + str(si) + " " + str(ei))
    sorted_meteors = sorted(tmeteors, key=lambda x: (x[0]), reverse=True)
    these_meteors = sorted_meteors[si:ei]
 
