@@ -4,7 +4,7 @@ import numpy as np
 import sys
 import time
 from PIL import ImageFont, ImageDraw, Image, ImageChops
-from lib.PipeProcess import run_jobs
+from lib.PipeProcess import run_jobs, update_code
 from datetime import datetime
 import datetime as dt
 
@@ -443,4 +443,6 @@ if __name__ == "__main__":
       apply_frame_deletes(sys.argv[2],None,None,json_conf)
    if cmd == 'restack_meteor':
       restack_meteor(sys.argv[2])
+   if cmd == 'update_code':
+      update_code(json_conf)
    

@@ -4,6 +4,33 @@ from lib.PipeUtil import day_or_night, check_running
 import datetime as dt
 import os
 
+def update_code(json_conf):
+   if cfe("lib/version") == 1:
+      fp = open("lib/version")
+      for line in fp:
+         line = line.replace("\n", "")
+         install_version = float(line)
+      fp.close()
+   else:
+      install_version = 0
+      latest_version = 3.0
+  
+   cl_v = "/mnt/archive.allsky.tv/APPS/version"
+   if cfe(cl_v) == 1: 
+      fp = open(cl_v)
+      for line in fp:
+         line = line.replace("\n", "")
+         latest_version = float(line)
+      fp.close()
+   else:
+      latest_version = 3
+
+   print("INSTALLED VERSION IS ", install_version)
+   print("LATEST VERSION IS ", latest_version)
+   if install_version != latest_version:
+      print("Code not up to date. We should sync.")
+
+
 def run_jobs(json_conf):
    running = check_running("Process.py run_jobs")
    if running >= 3:
