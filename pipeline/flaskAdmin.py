@@ -19,7 +19,7 @@ import json
 @app.route('/')
 def main_menu():
    out = login_page()
-   header = get_template("FlaskTemplates/header.html")
+   header = get_template("FlaskTemplates/header-login.html")
    footer = get_template("FlaskTemplates/footer.html")
    out = out.replace("{HEADER}", header)
    out = out.replace("{FOOTER}", footer)

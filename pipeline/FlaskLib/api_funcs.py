@@ -113,10 +113,10 @@ def show_cat_stars (video_file, hd_stack_file, points):
 
    json_conf = load_json_file("../conf/as6.json")
    cp = None
-   if "cal" in video_file:
-      app_type = "calib"
-   else:
+   if "meteors" in video_file:
       app_type = "meteor"
+   else:
+      app_type = "calib"
 
    if app_type == "meteor":
       mjf = "/mnt/ams2/" + video_file.replace(".mp4", ".json")
@@ -129,6 +129,9 @@ def show_cat_stars (video_file, hd_stack_file, points):
          if "cp" in mj['best_meteor']:
             mj['cp'] = mj['best_meteor']['cp']
             cp = mj['cp']
+      elif "cal_params" in mjr:
+         cp = mjr['cal_params']
+
       c = update_center_radec(video_file,cp,json_conf)
       if "hd_stack" in mj:
          hd_img = cv2.imread(mj['hd_stack'], 0)
