@@ -88,6 +88,8 @@ def delete_meteor(jsid, data):
 
 def delete_meteors(data):
    resp = {}
+   json_conf = load_json_file("../conf/as6.json")
+   amsid = json_conf['site']['ams_id']
    detections = data['detections'].split(";")
    delete_log = "/mnt/ams2/SD/proc2/json/" + amsid + ".del"
    if cfe(delete_log) == 1:

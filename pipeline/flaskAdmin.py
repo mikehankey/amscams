@@ -122,15 +122,15 @@ def stacks(amsid):
 @app.route('/meteors/<amsid>/', methods=['GET', 'POST'])
 def meteors(amsid ):
    req = {}
-   start_date = request.args.get('start_date')
-   end_date = request.args.get('end_date')
+   start_day = request.args.get('start_day')
+   end_day = request.args.get('end_day')
    meteor_per_page = request.args.get('meteor_per_page')
    sort_by = request.args.get('sort_by')
    filter = request.args.get('filter')
    p = request.args.get('p')
 
-   req['start_date'] = start_date
-   req['end_date'] = end_date
+   req['start_day'] = start_day
+   req['end_day'] = end_day
    req['meteor_per_page'] = meteor_per_page
    req['p'] = p
    req['sort_by'] = sort_by 

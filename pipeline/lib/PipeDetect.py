@@ -61,18 +61,18 @@ def make_meteor_index_day(day, json_conf):
       mi[meteor] = {}
       fn, dir = fn_dir(meteor)
       el = fn.split("-")
-      print("FN:", fn) 
+      #print("FN:", fn) 
       ddd = el[0].split("_")
       if len(ddd) == 8:
          y,m,d,h,mm,s,ms,cam = ddd
       else:
-         print("BAD FILE:", ddd, len(ddd))
+         #print("BAD FILE:", ddd, len(ddd))
          continue
       start_time = y + "-" + m + "-" + d + " " + h + ":" + m + ":" + s
       mj = load_json_file(meteor)
       if "best_meteor" in mj:
          reduced = 1
-         print(mj['best_meteor'])
+         #print(mj['best_meteor'])
          if "dt" in mj['best_meteor']:
             start_time = str(mj['best_meteor']['dt'][0])
          dur = str(len(mj['best_meteor']['ofns']) / 25)[0:4]

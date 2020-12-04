@@ -5,9 +5,101 @@ import glob
 from lib.PipeUtil import load_json_file, save_json_file, cfe
 from lib.PipeAutoCal import fn_dir
 import datetime 
+from datetime import datetime as dt
+import os
+def filename_to_date(filename):
+   fn, dir = fn_dir(filename)
+   ddd = fn.split("_")
+   if len(ddd) == 8:
+      y,m,d,h,mm,s,ms,cam = ddd
+   else:
+      return("0000-00-00 00:00:00.0")
+      print("BAD FILE:", ddd, len(ddd))
+   start_time = y + "-" + m + "-" + d + " " + h + ":" + m + ":" + s + ".0"
+   return(start_time)
 
+def live_meteor_count(amsid, days, del_data):
+   print("DAYS:", days)
+   print("DEL:", str(del_data))
+   md = "/mnt/ams2/meteors/"
+   mc = []
+   rc = []
+   for day in days:
+      mc,rc = day_count(md,amsid, day,mc,rc,del_data)
+   return(mc,rc)
+
+def get_meteors_in_range(station_id, start_date, end_date,del_data):
+   mi = []
+   deleted = 0
+   amsid = station_id
+
+   delete_log = "/mnt/ams2/SD/proc2/json/" + amsid + ".del"
+   if cfe(delete_log) == 1:
+      os.system("./Process.py purge_meteors")
+      deleted = 1
+
+
+   start_dt = datetime.datetime.strptime(start_date + "_00_00_00", "%Y_%m_%d_%H_%M_%S") 
+   end_dt = datetime.datetime.strptime(end_date + "_23_59_59", "%Y_%m_%d_%H_%M_%S") 
+
+   if start_date == end_date:
+      # get meteors from that days index file after building it on the fly!
+      os.system("./Process.py mmi_day " + start_date)
+      mif = "/mnt/ams2/meteors/" + start_date + "/" + start_date + "-" + station_id + ".meteors"
+      if cfe(mif) == 1:
+         mi = load_json_file(mif)
+      else:
+         mi = []
+      return(mi)
+
+   # check to see how many days in the range
+   # if it is > 7 and use the month full index file (and have to del with bad sync.)
+   # else use the main index file
+   print(start_date, end_date)
+   start_date = start_date.replace("-", "_")
+   end_date = end_date.replace("-", "_")
+   diff = end_dt - start_dt
+   print("DIFF:", diff)
+   days_in_range = int(diff.total_seconds() / 86300) 
+   if days_in_range == 0:
+      days_in_range = 1
+   if days_in_range <= 90:
+      for day_plus in range(0, days_in_range):
+         this_date = start_dt + datetime.timedelta(days = day_plus)  
+         this_day = this_date.strftime("%Y_%m_%d")
+         #if deleted == 1:
+         #   os.system("./Process.py mmi_day " + this_day)
+         mif = "/mnt/ams2/meteors/" + this_day + "/" + this_day + "-" + station_id + ".meteors"
+         print("This day:", this_day, mif)
+         if cfe(mif) == 1:
+            mit = load_json_file(mif)
+            print("ADDING METEORS FOR DAY:", mif)
+            for dd in mit:
+               mi.append(dd)
+         else:
+            print("NO MIF:", mif)
+
+
+   return(mi)
+def day_count(md, amsid, day,mc,rc,del_data):
+   jsons = glob.glob(md + day + "/*.json")
+   for js in jsons:
+      fn,dir = fn_dir(js)
+      root = fn.replace(".json", "")
+      print("ROOT:", root)
+      if root not in del_data:
+         if "reduced" in js:
+            rc += 1 
+         elif "reduced" not in js and "stars" not in js and "man" not in js and "star" not in js and "import" not in js and "archive" not in js:
+            mc.append(js) 
+         else:
+            rc.append(js) 
+      else:
+         print("DEL FOUND:", js)
+   return(mc,rc)
 
 def meteors_main (amsid, in_data) :
+
    json_conf = load_json_file("../conf/as6.json")
    delete_log = "/mnt/ams2/SD/proc2/json/" + amsid + ".del"
    if cfe(delete_log) == 1:
@@ -18,11 +110,16 @@ def meteors_main (amsid, in_data) :
    mif = "/mnt/ams2/meteors/" + amsid + "-meteors.info"
    out = ""
    tmeteors = []
-   if cfe(mif) == 1:
-      mid = load_json_file(mif)
-   else:
-      out = "no index!"
-      return(out)
+
+   # get meteor array for date range supplied
+   if in_data['end_day'] is None and in_data['start_day'] is not None:
+      in_data['end_day'] = in_data['start_day']
+   if in_data['end_day'] is None:
+      in_data['end_day'] = dt.now().strftime("%Y_%m_%d")
+   if in_data['start_day'] is None:
+      in_data['start_day'] = dt.now().strftime("%Y_%m_%d")
+   tmeteors = get_meteors_in_range(amsid, in_data['start_day'], in_data['end_day'],del_data)
+
 
    if in_data['p'] is None:
       page = 1
@@ -42,77 +139,28 @@ def meteors_main (amsid, in_data) :
    else:
       sort_by = in_data['sorted_by']
 
-   if in_data['start_date'] is None and in_data['end_date'] is not None:
-      in_data['start_date'] = in_data['end_date']
 
-   if in_data['start_date'] is None and in_data['end_date'] is None:
-      # do entire index with pagination
-      #/mnt/ams2/meteors/AMS1-meteors.info
-      sorted_meteors = sorted(mid, key=lambda x: (x[0]), reverse=False)
-      total_meteors = len(mid)
-      print(mid)
-      ed = mid[0][2]
-      sd = mid[-1][2]
-      tmeteors = mid
-
-   elif in_data['start_date'] is not None and in_data['end_date'] is None:
-      # do just 1 day
-      sd = in_data['start_date'] + " 00:00:00"
-      ed = in_data['start_date'] + " 23:59:59"
-      for data in mid:
-         if len(data) == 6:
-            meteor, reduced, start_time, dur, ang_vel, ang_dist = data
-            if in_data['start_date'] in meteor:
-               tmeteors.append(data)
-         else:
-            print("BAD:", data)
-            exit()
-
-      total_meteors = len(tmeteors)
- 
-
-   elif in_data['start_date'] is not None and in_data['end_date'] is not None:
-      #do a range of dates
-      sd = in_data['start_date'] + " 00:00:00"
-      ed = in_data['end_date'] + " 23:59:59"
-
-      start_dt = datetime.datetime.strptime(sd, "%Y_%m_%d %H:%M:%S")
-      end_dt = datetime.datetime.strptime(ed, "%Y_%m_%d %H:%M:%S")
-      #out += "range of dates", + in_data['start_date'], in_data['end_date']
-      for data in mid:
-         meteor, reduced, start_time, dur, ang_vel, ang_dist = data
-         stime = start_time.split(".")[0]
-         meteor_dt = datetime.datetime.strptime(stime, "%Y-%m-%d %H:%M:%S")
-         if start_dt <= meteor_dt <= end_dt:
-
-
-            tmeteors.append(data)
-      total_meteors = len(tmeteors)
-
-
-
-
-   si = (page - 1) * meteor_per_page
+   si = ((page - 1) * meteor_per_page)
    ei = page * meteor_per_page
    if ei >= len(tmeteors):
       ei = len(tmeteors)
-   print("SI:", si, ei)
-   #if sort_by == "date":
+   out += ("SI/EI:" + str(si) + " " + str(ei))
    sorted_meteors = sorted(tmeteors, key=lambda x: (x[0]), reverse=True)
    these_meteors = sorted_meteors[si:ei]
-   print("THESE:", len(sorted_meteors), si, ei)
-  
-   start_day, start_time = sd.split(" ")
-   start_day = start_day.replace("_", "/")
-   end_day, end_time = ed.split(" ")
-   end_day = end_day.replace("_", "/")
+
+   start_day = in_data['start_day']  
+   end_day = in_data['end_day']  
+
+
+   total_meteors = len(sorted_meteors)
+
    # header area
    out += """
       <div class='h1_holder  d-flex justify-content-between'>
          <h1><span class='h'><span id='meteor_count'>""" + str(total_meteors)+ """</span> meteors</span> captured between 
-         <input value='""" + start_day + """' type="text" data-display-format="YYYY/MM/DD" data-action="reload" data-url-param="start_date" data-send-format="YYYY_MM_DD" class="datepicker form-control"> and
-         <input value='""" + end_day + """' type="text" data-display-format="YYYY/MM/DD" data-action="reload" data-url-param="end_date" data-send-format="YYYY_MM_DD" class="datepicker form-control"> 
-
+         <input value='""" + start_day + """' type="text" data-display-format="YYYY/MM/DD" data-action="reload" data-url-param="start_day" data-send-format="YYYY_MM_DD" class="datepicker form-control"> and
+         <input value='""" + end_day + """' type="text" data-display-format="YYYY/MM/DD" data-action="reload" data-url-param="end_day" data-send-format="YYYY_MM_DD" class="datepicker form-control"> 
+         showing meteors  """ + str(si) + "-" + str(ei) + """
          </h1>
          <div class='d-flex'>
             <div class='mr-2'><select name='rpp' id='rpp' data-rel='meteor_per_page' class='btn btn-primary'><option value="20">20 / page</option><option value="40">40 / page</option><option selected value="60">60 / page</option><option value="80">80 / page</option><option value="100">100 / page</option><option value="150">150 / page</option><option value="200">200 / page</option><option value="500">500 / page</option><option value="1000">1000 / page</option><option value="10000">10000 / page</option></select></div>
@@ -132,20 +180,24 @@ def meteors_main (amsid, in_data) :
    """
    #out += str(total_meteors) + " meteors between " + sd + " and " + ed
 
+       
+      
+      
+
    for meteor in these_meteors:
 
       meteor_file, reduced, start_time, dur, ang_vel, ang_dist = meteor 
       red_file = meteor_file.replace(".json", "-reduced.json")
       if cfe(red_file) == 1:
          reduced = 1
-      print("MF:", meteor_file) 
       if cfe(meteor_file) == 0:
          continue
+
       stime = start_time.split(".")[0]
       fn,dir = fn_dir(meteor_file)
       dfn = fn.replace(".json", "") 
-      print("DEL?:", dfn)
       if dfn in del_data:
+         print("ALREADY DELETED:", dfn)
 
          continue
       el = fn.split("_")
@@ -205,22 +257,16 @@ def meteors_main (amsid, in_data) :
          </div>
       """
 
-
-   pagination = get_pagination(page, len(tmeteors), "/meteors/" + amsid + "/?meteor_per_page=" + str(meteor_per_page) + "&start_day=" + start_day + "&end_day=" + end_day, meteor_per_page )
+   if "/" in start_day:
+      start_day = start_day.replace("/", "_")
+      end_day = end_day.replace("/", "_")
+   pagination = get_pagination(page, len(sorted_meteors), "/meteors/" + amsid + "/?meteor_per_page=" + str(meteor_per_page) + "&start_day=" + start_day + "&end_day=" + end_day, meteor_per_page )
    out += "</div><!--main container!--> <div class='page_h'><!--Page  " + format(page) + "/" +  format(pagination[2]) + "--></div></div> <!-- ADD EXTRA FOR ENDING MAIN PROPERLY. --> <div>"
    out += pagination[0]
-   #out += "</div>"
 
 
    template = make_default_template(amsid, "meteors_main.html", json_conf)
    template = template.replace("{MAIN_TABLE}", out)
-   out = """
-
-      <div class='h1_holder d-flex justify-content-between'>
-         <h1>Review Stacks by Day<input value='2020/11/28' type='text' data-display-format='YYYY/MM/DD'  data-action='reload' data-url-param='limit_day' data-send-format='YYYY_MM_DD' class='datepicker form-control'></h1>
-         <div class='page_h'>Page  1/10</div></div>
-         <div id='main_container' class='container-fluid h-100 mt-4 lg-l'>
-   """
 
 
 

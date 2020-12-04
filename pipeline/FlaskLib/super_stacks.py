@@ -36,7 +36,7 @@ def stacks_main(amsid, data) :
          out += """
          <div class='h2_holder d-flex justify-content-between'>
 	       <h2>""" + dsp_date + """ 
-               - <a class='btn btn-primary' href=/meteors/""" + amsid + "/?start_date=" + date + "/>" + str(mets) + """ Meteors </a>
+               - <a class='btn btn-primary' href=/meteors/""" + amsid + "/?start_day=" + date + ">" + str(mets) + """ Meteors </a>
 	      </h2><p><a href=>XX Non-Meteors </a>  </a>
          </div>
          <div class='gallery gal-resize row text-center text-lg-left mb-5'>
