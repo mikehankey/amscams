@@ -29,6 +29,7 @@ def update_code(json_conf):
    print("LATEST VERSION IS ", latest_version)
    if install_version != latest_version:
       print("Code not up to date. We should sync.")
+      os.system("git pull")
 
 
 def run_jobs(json_conf):
