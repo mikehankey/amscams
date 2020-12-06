@@ -6,8 +6,15 @@ from lib.PipeUtil import load_json_file, save_json_file, cfe
 from lib.PipeAutoCal import fn_dir
 
 def stacks_main(amsid, data) :
+
    json_file = "/mnt/ams2/SD/proc2/json/" + "main-index.json"
+   if cfe("/mnt/ams2/meteors", 1) == 0:
+      return("Problem: data drive is not mounted. ")
+   if cfe(json_file) == 0:
+      return("Problem: main index file doesn't exist. ")
    stats_data = load_json_file(json_file)
+   if stats_data == 0:
+      return("Problem: main index file is corrupted. ")
 
    out = """
 
@@ -146,6 +153,10 @@ def stacks_hour(amsid, day, hour):
    json_conf = load_json_file("../conf/as6.json")
    glob_dir = "/mnt/ams2/SD/proc2/" + day + "/" 
    stack_files = glob.glob(glob_dir + day + "_" + hour + "*.mp4")
+   day_glob_dir = "/mnt/ams2/SD/proc2/daytime/" + day + "/" 
+   day_stack_files = glob.glob(day_glob_dir + day + "_" + hour + "*.mp4")
+   for dsf in day_stack_files:
+      stack_files.append(dsf)
    min_files = {}
    template = make_default_template(amsid, "super_stacks_main.html", json_conf)
    for sf in sorted(stack_files, reverse=False):

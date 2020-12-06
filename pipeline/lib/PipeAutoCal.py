@@ -995,7 +995,6 @@ def refit_fov(cal_file, json_conf):
          cal_params['y_poly_fwd'] = mcp['y_poly_fwd']
 
    if cal_params['position_angle'] <= 0 or cal_params['total_res_px'] >= 10:
-      print("BAD POS.")
       #cal_params = optimize_matchs(cal_file,json_conf,cal_params,img)
       #az_guess, el_guess, pos_ang_guess, pix_guess = get_cam_best_guess(cam, json_conf)
       az_guess = 0
@@ -1153,12 +1152,10 @@ def deep_cal_report(cam, json_conf):
 
       if "user_stars" not in cp:
          cp['user_stars'] = get_image_stars(cal, gray_cal_img.copy(), json_conf, 0)
-         print("GET USER STARS1")
          exit()
       else:
          if len(cp['user_stars']) < 5:
             cp['user_stars'] = get_image_stars(cal, gray_cal_img.copy(), json_conf, 0)
-            print("GET USER STARS2")
             exit()
       cp = pair_stars(cp, cal_file, json_conf, cal_img)
 
@@ -1342,7 +1339,6 @@ def deep_calib(cam, json_conf):
          cp = pair_stars(cp, cal_file, json_conf, gray_cal_img)
          if len(cp['cat_image_stars']) < 10:
             continue
-         print("PAIRED STARS:", len(cp['cat_image_stars'])) 
 
          #cal_files= get_cal_files(cal_file)
          #if len(cal_files) > 5:
@@ -2181,7 +2177,6 @@ def optimize_matchs(cp_file,json_conf,nc,oimg):
       score = res / match_perc 
       print("POS:",  nc['position_angle'], match_perc, res)
       if score < best_score :
-         print("BETTER MATCH:", i, res, match_perc, score)
          best_score = score 
          best_pos = a + opos
 
@@ -2209,7 +2204,6 @@ def optimize_matchs(cp_file,json_conf,nc,oimg):
       res = nc['total_res_px']
       score = res / match_perc 
       if score < best_score :
-         print("BETTER AZ MATCH:", i, res, match_perc, score)
          best_score = score 
          best_az = oaz + a
       print("AZ:", best_az)
@@ -2237,7 +2231,6 @@ def optimize_matchs(cp_file,json_conf,nc,oimg):
       res = nc['total_res_px']
       score = res / match_perc
       if score < best_score :
-         print("BETTER EL MATCH:", i, res, match_perc, score)
          best_score = score
          best_el = oel + a
       print("EL:", best_el)
@@ -2264,7 +2257,6 @@ def optimize_matchs(cp_file,json_conf,nc,oimg):
       res = nc['total_res_px']
       score = res / match_perc
       if score < best_score :
-         print("BETTER PX MATCH:", i, res, match_perc, score)
          best_score = score
          best_ps = ops + a
       print("PS:", best_ps)
@@ -2323,11 +2315,9 @@ def eval_cal(cp_file,json_conf,nc=None,oimg=None, mask_img=None):
       img = cv2.imread(img_file)
       oimg = img.copy()
    if nc is None:
-      print("NC IS NONE SO GETTING USER STARS...")
       nc['user_stars'] = get_image_stars(img_file, None, json_conf,0)
 
    elif "user_stars" not in nc:
-      print("NC GETTING USER STARS.", nc)
       nc['user_stars'] = get_image_stars(img_file, None, json_conf,0)
 
    #print("UPDATING CENTER")
@@ -2339,9 +2329,7 @@ def eval_cal(cp_file,json_conf,nc=None,oimg=None, mask_img=None):
    #      print("GET STARS because BP missin?:", img_file)
    #      exit()
    #      nc['user_stars'] = get_image_stars(img_file, None, json_conf,0)
-   #print("PAIRING STARS")
    nc = pair_stars(nc, cp_file, json_conf, gimg)
-   #print("AFTER PAIR:")
    if len(nc['user_stars']) > 0:
       match_perc = len(nc['cat_image_stars']) / len(nc['user_stars']) 
    else:
@@ -2360,7 +2348,6 @@ def eval_cal(cp_file,json_conf,nc=None,oimg=None, mask_img=None):
    else:
       avg_res = tres / len(nc['cat_image_stars'])
 
-   #print("BAD STARS:")
    for star in nc['cat_image_stars']:
       dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist,star_int = star
       if cat_dist > avg_res * 2:
@@ -2680,11 +2667,9 @@ def review_cals(json_conf, cam=None):
 
             #print("CAT ", cp['cat_image_stars'])
             #cp = remove_bad_stars(cp, bad_stars)
-            print("CAT /USER ", len(cp['cat_image_stars']), len(cp['user_stars']))
             if len(cp['user_stars']) > 0:
                stars_matched = len(cp['cat_image_stars']) / len(cp['user_stars'])
             else:
-               print("NO USER STARS????", cp_file)
                continue
                #exit()
             print("STARS MATCHED:", stars_matched)
@@ -2706,7 +2691,6 @@ def review_cals(json_conf, cam=None):
             #continue
 
             #if stars_matched < .3:
-               # BAD CAL PARAMS HERE?
             #   continue
             if len(cp['cat_image_stars']) > 5:
                cp['cat_image_stars'], bad_stars = mag_report(cp['cat_image_stars'], 0)
@@ -3129,9 +3113,8 @@ def cat_star_report(cat_image_stars, multi=2.5):
    for star in cat_image_stars:
       dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist,star_int = star
       if cat_dist > med_c_dist * multi:
-         print("BAD", dcname, cat_dist, med_c_dist - cat_dist  )
+         foo = 1
       else:
-         print(dcname, cat_dist, med_c_dist - cat_dist  )
          c_dist.append(abs(cat_dist))
          m_dist.append(abs(match_dist))
          clean_stars.append(star)
@@ -3360,8 +3343,6 @@ def find_stars_with_grid(img):
             else:
                bad_stars.append((bx+x1,by+y1,int(star_int)))
 
-   print("GRID STARS FOUND:", stars)
-   print("BAD STARS::", bad_stars)
    return(stars)
 
 def get_image_stars(file=None,img=None,json_conf=None,show=0):
@@ -3444,7 +3425,6 @@ def get_image_stars(file=None,img=None,json_conf=None,show=0):
       by = by + y
       bx1,by1,bx2,by2= bound_cnt(bx,by,1920,1080,10)
       new_cnt_img = raw_img[by1:by2,bx1:bx2]
-      print("GET USER STARS:", bx1,bx2,by1,by2)
 
       name = "/mnt/ams2/tmp/cnt" + str(cc) + ".png"
       #star_test = test_star(cnt_img)
@@ -3780,8 +3760,6 @@ def pair_stars(cal_params, cal_params_file, json_conf, cal_img=None, show = 0):
    total_match_dist = 0
    total_cat_dist = 0
    total_matches = 0
-   for var in cal_params:
-      print("PAIR STARS CP:", var, str(cal_params[var]))
    cat_stars = get_catalog_stars(cal_params)
 
    #new_user_stars = []
@@ -3802,9 +3780,7 @@ def pair_stars(cal_params, cal_params_file, json_conf, cal_img=None, show = 0):
          bp = 0
       close_stars = find_close_stars((ix,iy), cat_stars)
       found = 0
-      print("USER STAR:", ix,iy,bp)
       for name,mag,ra,dec,new_cat_x,new_cat_y,six,siy,cat_dist in close_stars:
-         print("CLOSE STAR:", name,mag,ra,dec,new_cat_x,new_cat_y,six,siy,cat_dist)
          #dcname = str(name.decode("utf-8"))
          #dbname = dcname.encode("utf-8")
          new_x, new_y, img_ra,img_dec, img_az, img_el = XYtoRADec(ix,iy,cal_params_file,cal_params,json_conf)
@@ -3845,15 +3821,12 @@ def pair_stars(cal_params, cal_params_file, json_conf, cal_img=None, show = 0):
          #cv2.circle(temp_img,(int(new_cat_x),int(new_cat_y)), 7, (255,128,128), 1)
          #cv2.circle(temp_img,(int(new_x),int(new_y)), 7, (128,128,255), 1)
          used_key = str(ra) + "-" + str(dec)
-         print("MATCH:", match_dist)
          if match_dist >= 10 or used_key in used:
             bad = 1
-            print("SKIPPING CLOSE STAR!", name, new_x, new_y)
             #plt.plot(xs, ys)
             #plt.show()
          else:
             my_close_stars.append((name,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist,bp))
-            print("ADDING CLOSE STAR!", name, new_x, new_y)
             total_match_dist = total_match_dist + match_dist
             total_cat_dist = total_cat_dist + cat_dist
             total_matches = total_matches + 1
@@ -3895,14 +3868,14 @@ def pair_stars(cal_params, cal_params_file, json_conf, cal_img=None, show = 0):
    if fit_on == 1:
       os.system("./fitPairs.py " + cal_params_file)
    #cal_params['cat_image_stars'], bad = qc_stars(cal_params['cat_image_stars'])
-   print("CAT STARS !", len(cal_params['cat_image_stars']))
-   print("NO MATCH!", len(no_match))
-   for star in no_match:
-      print("NO MATCH:", star)
-   for star in cal_params['cat_image_stars']:
-      print("MATCH:", star)
-   for star in cal_params['bad_stars']:
-      print("BAD STAR:", star)
+   #print("CAT STARS !", len(cal_params['cat_image_stars']))
+   #print("NO MATCH!", len(no_match))
+   #for star in no_match:
+   #   print("NO MATCH:", star)
+   #for star in cal_params['cat_image_stars']:
+   #   print("MATCH:", star)
+   #for star in cal_params['bad_stars']:
+   #   print("BAD STAR:", star)
    cal_params['cat_image_stars'], res_px,res_deg = cat_star_report(cal_params['cat_image_stars'], 4)
    cal_params['total_res_px'] = res_px
    cal_params['total_res_deg'] = res_deg

@@ -28,10 +28,15 @@ def live_meteor_count(amsid, days, del_data):
       mc,rc = day_count(md,amsid, day,mc,rc,del_data)
    return(mc,rc)
 
-def get_meteors_in_range(station_id, start_date, end_date,del_data):
+def get_meteors_in_range(station_id, start_date, end_date,del_data,filters=None):
    mi = []
    deleted = 0
    amsid = station_id
+
+   nored = 0
+   if filters is not None:
+      if "nored" in filters:
+         nored = 1
 
    delete_log = "/mnt/ams2/SD/proc2/json/" + amsid + ".del"
    if cfe(delete_log) == 1:
@@ -76,6 +81,14 @@ def get_meteors_in_range(station_id, start_date, end_date,del_data):
             mit = load_json_file(mif)
             print("ADDING METEORS FOR DAY:", mif)
             for dd in mit:
+               if nored == 1:
+                  meteor_file, reduced, start_time, dur, ang_vel, ang_dist = dd 
+                  rf = meteor_file.replace(".json", "-reduced.json")
+                  if cfe(rf) == 1:
+                     reduced = 1
+                  if reduced == 1:
+                     print("NORED")
+                     continue
                mi.append(dd)
          else:
             print("NO MIF:", mif)
@@ -113,6 +126,7 @@ def meteors_main (amsid, in_data) :
    out = ""
    tmeteors = []
 
+
    # get meteor array for date range supplied
    if in_data['end_day'] is None and in_data['start_day'] is not None:
       in_data['end_day'] = in_data['start_day']
@@ -120,7 +134,7 @@ def meteors_main (amsid, in_data) :
       in_data['end_day'] = dt.now().strftime("%Y_%m_%d")
    if in_data['start_day'] is None:
       in_data['start_day'] = dt.now().strftime("%Y_%m_%d")
-   tmeteors = get_meteors_in_range(amsid, in_data['start_day'], in_data['end_day'],del_data)
+   tmeteors = get_meteors_in_range(amsid, in_data['start_day'], in_data['end_day'],del_data, in_data['filter'])
 
 
    if in_data['p'] is None:
@@ -135,7 +149,7 @@ def meteors_main (amsid, in_data) :
    if in_data['filter'] is None:
       filter = []
    else:
-      filter = in_data['filters']
+      filter = in_data['filter']
    if in_data['sort_by'] is None:
       sort_by = "date"
    else:

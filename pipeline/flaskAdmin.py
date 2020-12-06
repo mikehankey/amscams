@@ -1,18 +1,26 @@
 
 from flask import Flask, request
+from FlaskLib.Learning import learning_meteors_dataset
 from FlaskLib.FlaskUtils import get_template
-from FlaskLib.api_funcs import update_meteor_points, show_cat_stars, delete_meteor, delete_meteors, reduce_meteor, delete_frame
+from FlaskLib.api_funcs import update_meteor_points, show_cat_stars, delete_meteor, delete_meteors, reduce_meteor, delete_frame, crop_video
 from FlaskLib.calib_funcs import calib_main, cal_file, show_masks
 from lib.PipeUtil import cfe, load_json_file, save_json_file
 from lib.PipePwdProtect import login_page, check_pwd_ajax
 from lib.PipeAutoCal import fn_dir
 from FlaskLib.meteor_detail_funcs import detail_page 
+from FlaskLib.config_funcs import config_vars 
 from FlaskLib.meteors_main import meteors_main 
 from FlaskLib.super_stacks import stacks_main, stacks_day_hours, stacks_hour
 from FlaskLib.min_detail import min_detail_main
 from FlaskLib.live import live_view
-app = Flask(__name__, static_url_path='/static')
+
 import json
+
+
+
+app = Flask(__name__, static_url_path='/static')
+
+#, ssl_context=('cert.pem', 'key.pem'))
 
 # Main controller for AllSkyCams UI application.
 
@@ -60,6 +68,14 @@ def del_meteors():
    out = delete_meteors(data)
    return out
 
+@app.route('/cal/vars/<amsid>/', methods=['GET', 'POST'])
+def op_vars(amsid):
+   if request.method == "POST":
+      data = request.form
+   else:
+      data = None
+   out = config_vars(amsid,data)
+   return out
 
 @app.route('/cal/masks/<amsid>/', methods=['GET', 'POST'])
 def masks(amsid):
@@ -118,6 +134,8 @@ def stacks(amsid):
    out = stacks_main(amsid,req)
    return(out)
 
+
+
 # MAIN METEOR PAGE
 @app.route('/meteors/<amsid>/', methods=['GET', 'POST'])
 def meteors(amsid ):
@@ -144,9 +162,24 @@ def meteor_detail_page(amsid, date, meteor_file):
    out = detail_page(amsid, date, meteor_file )
    return out
 
+@app.route('/LEARNING/METEORS/', methods=['GET', 'POST'])
+def lrn_meteors():
+   out = learning_meteors_dataset()
+   return out
 
 @app.route('/API/<cmd>', methods=['GET', 'POST'])
 def main_api(cmd):
+   if cmd == 'crop_video':
+      sd_video_file = request.args.get('video_file')
+      x = request.args.get('x')
+      y = request.args.get('y')
+      w = request.args.get('w')
+      h = request.args.get('h')
+      out = crop_video(sd_video_file, x,y,w,h)
+      resp = {}
+      resp['status'] = 1
+      return(resp)
+
    if cmd == 'update_meteor_points':
       if request.method == "GET":
          sd_video_file = request.args.get('sd_video_file')
