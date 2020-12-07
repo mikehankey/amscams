@@ -21,6 +21,8 @@ for cam in cameras:
    cams_id = cameras[cam]['cams_id']
 
    cmd = "./get_latest.py " + cam_num
+   print(cmd)
+   os.system(cmd)
    cur_day = datetime.now().strftime("%Y_%m_%d")
    cur_day_hm = datetime.now().strftime("%Y_%m_%d_%H_%M")
    cloud_dir = "/mnt/archive.allsky.tv/" + amsid + "/LATEST/" 

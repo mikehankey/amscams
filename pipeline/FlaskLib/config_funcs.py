@@ -17,7 +17,7 @@ def config_vars(amsid, data=None):
   
    jc = load_json_file("../conf/as6.json")
 
-   fields =['operator_name', 'operator_email', 'operator_state', 'operator_city', 'operator_country', 'operator_device', 'device_lat', 'device_lng', 'device_alt']
+   fields =['operator_name', 'obs_name', 'operator_email', 'operator_state', 'operator_city', 'operator_country', 'operator_device', 'device_lat', 'device_lng', 'device_alt']
    if data is not None:
       print("UPDATE DATA", data)
       for field in fields:
@@ -72,11 +72,11 @@ def config_vars(amsid, data=None):
          net_html += "<td>link down</td></tr>"
 
  
-   for field in fields:
-      if field not in si:
-         si[field] = ""
+   #for field in fields:
+   #   if field not in si:
+   #      si[field] = ""
 
-
+   out = out.replace("{OBSV_NAME}", si['obs_name'])
    out = out.replace("{NETWORK_INFO}", net_html)
    out = out.replace("{DISK_INFO}", drive_html)
    out = out.replace("{OPERATOR_NAME}", si['operator_name'])

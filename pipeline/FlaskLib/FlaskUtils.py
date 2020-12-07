@@ -16,7 +16,7 @@ def make_default_template(amsid, main_template, json_conf):
    template = template.replace("{FOOTER}", footer)
    template = template.replace("{NAV}", nav)
    template = template.replace("{AMSID}", amsid)
-   if "obs_name" in json_conf:
+   if "obs_name" in json_conf['site']:
       template = template.replace("{OBS_NAME}", json_conf['site']['obs_name'])
    else:
       template = template.replace("{OBS_NAME}", "")
