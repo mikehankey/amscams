@@ -13,7 +13,7 @@ if "cloud_latest" in jsc:
 else: 
    cloud_on = 1 
 
-cloud_on = 1 
+#cloud_on = 1 
 
 cameras = jsc['cameras']
 for cam in cameras:
