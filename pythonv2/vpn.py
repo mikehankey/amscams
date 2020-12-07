@@ -60,7 +60,7 @@ if vpn_connect == 1 and running == 0:
    os.system(cmd)
 if vpn_connect == 0 and running == 1:   
    print ("Terminate running VPN connection, it is no longer requested.")
-   cmd ="killall openvpn"
+   cmd ="/usr/bin/killall openvpn"
    print(cmd)
    os.system(cmd)
    #cmd ="ip link delete tun0"
