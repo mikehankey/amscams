@@ -38,6 +38,9 @@ def stacks_main(amsid, data) :
          if stack_day in stats_data:
             data = stats_data[stack_day]
             mets = data['meteor_files']
+         else:
+            print("NO data for this day.")
+            continue
          date = stack_day
          dsp_date = date.replace("_", "/")
          out += """
