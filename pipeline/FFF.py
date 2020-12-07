@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-from lib.FFFuncs import slow_stack_video , imgs_to_vid, snap_video, splice_video, vid_to_imgs, crop_video, best_crop_size
+from lib.FFFuncs import slow_stack_video , imgs_to_vid, snap_video, splice_video, vid_to_imgs, crop_video, best_crop_size, lower_bitrate
 
 import sys
 import os
@@ -40,6 +40,8 @@ if cmd == "vid_to_imgs":
 
    vid_to_imgs(file, out_dir, suffix, resize)
 
+if cmd == "lower_bitrate":
+   lower_bitrate(sys.argv[2], sys.argv[3])
 if cmd == "snap_video":
    snap_video(sys.argv[2])
 if cmd == "slow_stack":

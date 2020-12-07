@@ -63,6 +63,10 @@ def make_meteor_learning_dataset():
                   vw,vh,br,tf = ldb['ffprobe']
                   vw,vh,br,tf = int(vw),int(vh),int(br),int(tf)
 
+               if vw == 0 or vh == 0:
+                  lbd[lfn]['error'] = "video is bad."
+                  continue
+
                if cfe(learning_vid) == 0:
                   make_vid = 1
                if cfe(crop_file) == 0:

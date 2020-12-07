@@ -181,7 +181,6 @@ def resize_video(in_file, out_file, ow, oh, bit_rate=20):
    return(out_file)
 
 def lower_bitrate(in_file, crf):
-   return()
    outfile_lr = in_file.replace(".mp4", "-lr.mp4")
    cmd = "/usr/bin/ffmpeg -i " + in_file + " -vcodec libx264 -crf " + str(crf) + " -y " + outfile_lr
    print(cmd)
@@ -190,6 +189,7 @@ def lower_bitrate(in_file, crf):
    cmd = "mv " + outfile_lr + " " + in_file
    print(cmd)
    os.system(cmd)
+   return()
 
 def ffprobe(video_file):
    default = [704,576]

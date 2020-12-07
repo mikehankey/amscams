@@ -5,6 +5,7 @@ from lib.PipeAutoCal import fn_dir
 import time
 import cv2
 import os
+import numpy as np
 
 def detail_page(amsid, date, meteor_file):
    MEDIA_HOST = request.host_url.replace("5000", "80")
@@ -121,8 +122,15 @@ def detail_page(amsid, date, meteor_file):
       template = template.replace("{END_EL}", str(mj['best_meteor']['els'][-1])[0:5])
       template = template.replace("{ANG_VEL}", str(mj['best_meteor']['report']['ang_vel'])[0:5])
       template = template.replace("{ANG_SEP}", str(mj['best_meteor']['report']['ang_dist'])[0:5])
+
       if "cp" in mj['best_meteor']:
          cp = mj['best_meteor']['cp']
+         mj['cp'] = cp
+         del(mj['best_meteor']['cp'])
+
+      if "cp" in mj:
+         cp = mj['cp']
+
          print(cp)
          template = template.replace("{RA}", str(cp['ra_center'])[0:5])
          template = template.replace("{DEC}", str(cp['dec_center'])[0:5])
@@ -148,6 +156,9 @@ def detail_page(amsid, date, meteor_file):
 
    if cfe(mjrf) == 1:
       mjr = load_json_file(mjrf)
+      if np.isnan(mjr['cal_params']['total_res_px']) or mjr['cal_params']['total_res_px'] is None or len(mjr['cal_params']['cat_image_stars']) == 0:
+         mjr['cal_params']['total_res_px'] = 9999
+         mjr['cal_params']['total_res_deg'] = 9999
 
 
       frame_table_rows = frames_table(mjr, base_name, CACHE_VDIR)
@@ -162,6 +173,7 @@ def detail_page(amsid, date, meteor_file):
       frame_table_rows = ""
 
    lc_html = light_curve_url(METEOR_DIR + sd_trim , mj)
+  
 
    template = template.replace("{CROP_BOX}", crop_box_js_var)
    template = template.replace("{CAL_PARAMS}", cal_params_js_var)

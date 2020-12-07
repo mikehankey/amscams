@@ -12,6 +12,7 @@ import datetime
 #import math
 import os
 from lib.FFFuncs import imgs_to_vid
+from lib.FFFuncs import ffprobe as ffprobe4
 from lib.PipeAutoCal import fn_dir, get_cal_files, get_image_stars, get_catalog_stars, pair_stars, update_center_radec, cat_star_report, minimize_fov, XYtoRADec
 from lib.PipeVideo import ffmpeg_splice, find_hd_file, load_frames_fast, find_crop_size, ffprobe
 from lib.PipeUtil import load_json_file, save_json_file, cfe, get_masks, convert_filename_to_date_cam, buffered_start_end, get_masks, compute_intensity , bound_cnt, day_or_night
@@ -23,6 +24,105 @@ import numpy as np
 import cv2
 
 json_conf = load_json_file(AMS_HOME + "/conf/as6.json")
+
+def check_for_trailing_frames(video_file, mj=None, json_conf=None):
+   if json_conf is None:
+      json_conf = load_json_file("../conf/as6.json")
+   jsf = video_file.replace(".mp4", ".json")
+   jsrf = video_file.replace(".mp4", "-reduced.json")
+   if cfe(jsf) == 1 :
+      mj = load_json_file(jsf)
+   else:
+      print("NO MJ", jsf)
+      return()
+
+   if cfe(jsrf) == 1 :
+      mjr = load_json_file(jsrf)
+   else:
+      mjr = None
+
+   if "best_meteor" in mj:
+      bm = mj['best_meteor']
+   else:
+      print("NO BEST METEOR!?")
+      return()
+
+   if "ffprobe" not in mj:
+      vw,vh,br,tf = ffprobe4(video_file)
+      vw,vh,br,tf = int(vw),int(vh),int(br),int(tf)  
+      mj['ffprobe'] = [vw,vh,br,tf]
+  
+   # get first / last frame num and location
+   ff = bm['ofns'][0]
+   lf = bm['ofns'][-1]
+   fx = bm['oxs'][0]
+   lx = bm['oxs'][-1]
+   fy = bm['oys'][0]
+   ly = bm['oys'][-1]
+
+   # get direction of travel
+   if fx - lx < 0:
+      x_dir = "right"
+      rx1 = lx 
+      rx2 = lx + 50
+   if fx - lx > 0:
+      x_dir = "left"
+      rx1 = lx 
+      rx2 = lx - 50
+   if fy - ly < 0:
+      y_dir = "down"
+      ry1 = ly 
+      ry2 = ly - 50
+   if fx - lx > 0:
+      y_dir = "up"
+      ry1 = ly 
+      ry2 = ly + 50
+   if rx1 <= 5 or ry1 <= 5:
+      # we are at the edge we can't fix this.
+      return(mj)
+   if rx1 >= vw-5 or ry1 >= vh-5:
+      # we are at the edge we can't fix this.
+      return(mj)
+   if rx1 <= 0 :
+      rx1 = 0
+   if ry1 <= 0 :
+      ry1 = 0
+   if rx2 >= vw :
+      rx2 = vw
+   if ry2 >= vh :
+      ry2 = vh
+
+   # open stack file and display the 'ending area'
+   sf = video_file.replace(".mp4", "-stacked.jpg")
+   img = cv2.imread(sf)
+
+   for i in range(0, len(bm['ofns'])):
+      x = bm['oxs'][i]
+      y = bm['oys'][i]
+      w = bm['ows'][i]
+      h = bm['ohs'][i]
+      print(x,y,w,h)
+      cv2.rectangle(img, (x, y), (x+w, y+h), (128,128,128), 1, cv2.LINE_AA)
+   cv2.rectangle(img, (rx1, ry1), (rx2, ry2), (255,255,255), 1, cv2.LINE_AA)
+
+   print("OFD:", len(bm['ofns']))
+   print("OF CX:", len(bm['ccxs']))
+   print("MFD:", len(mjr['meteor_frame_data']))
+   print("MFD:", mjr['meteor_frame_data'][0], mjr['meteor_frame_data'][-1])
+   print("OF:", bm['ofns'][0], bm['ofns'][-1])
+
+
+   cv2.imshow('pepe', img)   
+   cv2.waitKey(0)
+
+
+
+   # load the video frames
+   #hd_frames,hd_color_frames,subframes,sum_vals,max_vals,pos_vals = load_frames_fast(video_file, json_conf, 0, 0, 1, 1,[])
+
+
+
+   
 
 def reduce_in_crop(video_file, json_conf):
    vw,vh,frames = ffprobe(video_file)
@@ -1000,23 +1100,65 @@ def make_roi_video_mfd(video_file, json_conf):
       ufd = {}
       mj['user_mods'] = {}
    used = {}
+   vh,vw = hd_color_frames[0].shape[:2]
    if "meteor_frame_data" in mjr:
       for row in mjr['meteor_frame_data']:
          (dt, fn, x, y, w, h, oint, ra, dec, az, el) = row
          frame = hd_color_frames[fn]
          sfn = str(fn)
          if sfn in ufd:
-            x,y = ufd[sfn]
-            tx, ty, ra ,dec , az, el = XYtoRADec(x,y,video_file,mjr['cal_params'],json_conf)
-            #AZEL HERE!
-            print("UPDATED POINT", fn, x,y)
+            temp_x,temp_y = ufd[sfn]
+            if temp_x > 0 and temp_y > 0:
+               x = temp_x  
+               y = temp_y  
+               tx, ty, ra ,dec , az, el = XYtoRADec(x,y,video_file,mjr['cal_params'],json_conf)
+               print("UPDATED POINT", fn, x,y)
          if fn not in used:
             updated_frame_data.append((dt, fn, x, y, w, h, oint, ra, dec, az, el))
             #cx = x + int(w/2)
             #cy = y + int(h/2)
             rx1,ry1,rx2,ry2 = bound_cnt(x, y,1920,1080, roi_size)
             of = cv2.resize(frame, (1920,1080))
+            if rx2 - rx1 != roi_size * 2:
+               print("PROBLEM AT THE X EDGE!")
+               exit()
+            if ry2 - ry1 != roi_size * 2:
+               print("PROBLEM AT THE Y EDGE! height is only", ry2-ry1 )
+               # make new canvas
+               roi_p = np.zeros((roi_size*2,roi_size*2,3),dtype=np.uint8)
+               #put image in canvas dependent on top or bottom
+               if ry1 < vh / 2:
+                  # we are at the top
+                  # add difference insize to the roi_p_y1 var
+                  py1 = 100 - (ry2-ry1)
+                  py2 = 100 
+                  roi_p[py1:py2,0:100] = of[ry1:ry2,rx1:rx2]
+                  roi_img = roi_p
+                  print("TOP NEW CANVAS PASTE Y", py1,py2)
+               else:
+                  # we are at the bottom
+                  py1 = 0 
+                  py2 = (ry2-ry1)
+                  print("BOTTOM NEW CANVAS PASTE Y", py1,py2)
+                  exit()
+
+            else:
+               roi_img = of[ry1:ry2,rx1:rx2]
+
+
+            #cv2.rectangle(of, (rx1, ry1), (rx2, ry2), (255,255,255), 1, cv2.LINE_AA)
+            #cv2.imshow('pepe', of)
+            #cv2.waitKey(0)
+
+            ffn = "{:04d}".format(int(fn))
+            outfile = prefix + ffn + ".jpg"
+            cv2.imwrite(outfile, roi_img)
+            print("WROTE:", outfile, x,y)
+         else:
+            print("ALREADY USED:", fn)
+
             roi_img = of[ry1:ry2,rx1:rx2]
+
 
             #cv2.rectangle(of, (rx1, ry1), (rx2, ry2), (255,255,255), 1, cv2.LINE_AA)
             #cv2.imshow('pepe', of)
@@ -1027,6 +1169,7 @@ def make_roi_video_mfd(video_file, json_conf):
             cv2.imwrite(outfile, roi_img)
             print("WROTE:", outfile, x,y)
          used[fn] = 1
+
 
    crop_box = mfd_to_cropbox(updated_frame_data)
 
@@ -1051,6 +1194,10 @@ def make_roi_video(video_file,bm, frames, json_conf):
       mjr = load_json_file(mjrf)
    else:
       mjr = None
+   if "best_meteor" not in mj:
+      return()
+   bm = mj['best_meteor']
+
    vid_fn, vdir = fn_dir(video_file)
    vid_base = vid_fn.replace(".mp4", "")
    date = vid_fn[0:10]
@@ -1087,18 +1234,19 @@ def make_roi_video(video_file,bm, frames, json_conf):
    dec = 0
    az = 0
    el = 0
-   for j in range(0, len(frames)):
+   for j in range(0, len(frames)-1):
       i = j - bm['ofns'][0]  
       fns = str(j)
 
       if fns in ufd:
          mod_x,mod_y = ufd[fns] 
-         mod_x_720 = int(mod_x / hdm_x_720)
-         mod_y_720 = int(mod_y / hdm_y_720)
-         bm['ccxs'][i] = mod_x_720
-         bm['ccys'][i] = mod_y_720
+         if mod_x > 0 and mod_y > 0:
+            mod_x_720 = int(mod_x / hdm_x_720)
+            mod_y_720 = int(mod_y / hdm_y_720)
+            bm['ccxs'][i] = mod_x_720
+            bm['ccys'][i] = mod_y_720
 
-      if bm['ofns'][0] <= j < bm['ofns'][-1] - 1:
+      if bm['ofns'][0] <= j <= bm['ofns'][-1] :
          # meteor is active
          rx = bm['ccxs'][i]
          ry = bm['ccys'][i]
@@ -1107,6 +1255,7 @@ def make_roi_video(video_file,bm, frames, json_conf):
          oint = bm['oint'][i]
          hd_x = int(rx * hdm_x_720)
          hd_y = int(ry * hdm_y_720)
+         print("ACTIVE", rx,ry)
          if "cal_params" in mj: 
             if mj["cal_params"] is not None:
                tx, ty, ra ,dec , az, el = XYtoRADec(hd_x,hd_y,video_file,mjr['cal_params'],json_conf)
@@ -1115,10 +1264,11 @@ def make_roi_video(video_file,bm, frames, json_conf):
          updated_frame_data.append((date_str, j, hd_x, hd_y, rw, rh, oint, ra, dec, az, el))
       else:
          # meteor is inactive (use 1st frame / last frame for crop location on missing frames)
+         print("NOT ACTIVE")
          if j < bm['ofns'][0]:
             rx = bm['ccxs'][0]
             ry = bm['ccys'][0]
-         elif j > bm['ofns'][-1]:
+         elif j >= bm['ofns'][-1]:
             rx = bm['ccxs'][-1]
             ry = bm['ccys'][-1]
       
@@ -1130,6 +1280,7 @@ def make_roi_video(video_file,bm, frames, json_conf):
       rx1,ry1,rx2,ry2 = bound_cnt(hd_x, hd_y,1920,1080, roi_size)
       of = frames[j].copy()
       of = cv2.resize(of, (1920,1080))
+      print("ROI IMG:", i, hd_x, hd_y, fns, ry1,ry2,rx1,rx2)
       roi_img = of[ry1:ry2,rx1:rx2]
       roi_frames.append(roi_img)
          # this only handles the left side now BUG/FIX
@@ -1145,6 +1296,7 @@ def make_roi_video(video_file,bm, frames, json_conf):
          else:
             py1 = roi_size2 - roi_img.shape[0]  
             py2 = roi_size2 
+         print("ALT ROI CROP:", i, fns, py1,py2,px1,px2)
          roi_p[py1:py2, px1:px2] = roi_img
       else:
          roi_p = roi_img
@@ -1166,7 +1318,28 @@ def make_roi_video(video_file,bm, frames, json_conf):
    cmd = "./FFF.py imgs_to_vid " + cache_dir + " " + year + " " + tracking_outfile + " 25 27"
    os.system(cmd)
    print(cmd)
-   
+  
+
+def remake_mfd_all(json_conf):
+   mdirs = glob.glob("/mnt/ams2/meteors/*")
+   for mdir in mdirs:
+      if cfe(mdir, 1) == 1:
+         files = glob.glob(mdir + "/" + "/*.json")
+         meteors = []
+
+         for mf in files:
+            if "reduced" not in mf and "stars" not in mf and "man" not in mf:
+               meteors.append(mf)
+               for meteor in meteors:
+                  meteor_vid = meteor.replace(".json", ".mp4")
+                  remake_mfd(meteor_vid, json_conf)
+
+def remake_mfd(video_file, json_conf):
+
+
+   hd_frames,hd_color_frames,subframes,sum_vals,max_vals,pos_vals = load_frames_fast(video_file, json_conf, 0, 0, 1, 1,[])
+   make_roi_video(video_file,None, hd_color_frames, json_conf)
+
 
 def fireball(video_file, json_conf, nomask=0):
    fn, meteor_dir = fn_dir(video_file)
@@ -1247,7 +1420,6 @@ def fireball(video_file, json_conf, nomask=0):
       jdata['best_meteor'] = best_meteor
 
       save_json_file(jsf, jdata)
-   #fireball_plot_points(best_meteor)
 
    if max(best_meteor['oint']) < 1000000:
       best_meteor['ccxs'] = []
@@ -1283,12 +1455,16 @@ def fireball(video_file, json_conf, nomask=0):
       save_json_file(jsf, jdata)
       if jdata['cp'] is not None:
          base_jsr['cp'] = jdata['cp']
-         save_json_file(jsfr, base_jsr)
+         mjr = base_jsr
       print("saved:", jsfr)
       print("Small meteor don't need to refine", max(best_meteor['oint']))
       print("CCXS:", best_meteor['ccxs'])
       print("CCYS:", best_meteor['ccys'])
+
+      print("SAVEING MJR BEFORE ROI VID:", len(base_jsr['meteor_frame_data']))
       make_roi_video(video_file,best_meteor, hd_color_frames, json_conf)
+      print("SAVEING MJR AFTER ROI VID:", len(base_jsr['meteor_frame_data']))
+      save_json_file(jsfr, base_jsr)
       return()
    else:
 
@@ -1321,8 +1497,11 @@ def fireball(video_file, json_conf, nomask=0):
       hd_trim = jdata['hd_trim']
    else:
       hd_trim = None
+
    mj, mjr = make_base_meteor_json(video_file,hd_trim, best_meteor, cp)
+   print("SAVEING MJR BEFORE ROI VID:", len(mjr['meteor_frame_data']))
    make_roi_video(video_file,best_meteor, hd_color_frames, json_conf)
+   print("SAVEING MJR AFTER ROI VID:", len(mjr['meteor_frame_data']))
    save_json_file(jsfr, mjr)
    #best_meteor = fireball_decel(video_file, json_conf, jsf, jdata, best_meteor, nomask, hd_frames, hd_color_frames, median_frame, mask_img,5)
 
@@ -1387,6 +1566,7 @@ def make_base_meteor_json(video_file, hd_video_file,best_meteor=None ,cp=None):
       max_y = max(best_meteor['oys'])
       mjr['crop_box'] = [min_x,min_y,max_x,max_y]
       for i in range(0, len(best_meteor['ofns'])):
+         print("*****MFD I:", i)
          #dt = "1999-01-01 00:00:00"
          fn = best_meteor['ofns'][i]
 
@@ -1416,6 +1596,7 @@ def make_base_meteor_json(video_file, hd_video_file,best_meteor=None ,cp=None):
          oint = best_meteor['oint'][i]
          mjr['meteor_frame_data'].append((dt, fn, x, y, w, h, oint, ra, dec, az, el))
 
+   print("MFD LEN:", len(mjr['meteor_frame_data']))
    mjr['crop_box'] = mfd_to_cropbox(mjr['meteor_frame_data'])
    return(mj, mjr)
 
