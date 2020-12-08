@@ -8,6 +8,24 @@ jsc = load_json_file("../conf/as6.json")
 amsid = jsc['site']['ams_id']
 
 
+def ping_cam(cam_num, config=None):
+   #config = read_config("conf/config-" + str(cam_num) + ".txt")
+   if config is None:
+      config = load_json_file("../conf/as6.json")
+
+   key = "cam" + str(cam_num)
+   cmd = "ping -c 1 " + config['cameras'][key]['ip']
+
+   response = os.system(cmd)
+   if response == 0:
+      print ("Cam is up!")
+      return(1)
+   else:
+      print ("Cam is down!")
+      return(0)
+
+
+
 if "cloud_latest" in jsc:
    cloud_on = 1
 else: 
@@ -18,6 +36,10 @@ else:
 cameras = jsc['cameras']
 for cam in cameras:
    cam_num = cam.replace("cam", "")
+   ping_ok = ping_cam(cam_num, jsc)
+   if ping_ok == 0:
+      print("Cam ping down.")
+      continue
    cams_id = cameras[cam]['cams_id']
 
    cmd = "./get_latest.py " + cam_num

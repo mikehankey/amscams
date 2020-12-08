@@ -7,6 +7,7 @@ import os
 import time
 
 import json
+from caliblib import load_json_file
 
 json_file = open('../conf/as6.json')
 json_str = json_file.read()
@@ -15,6 +16,23 @@ json_conf = json.loads(json_str)
 
 
 video_dir = "/mnt/ams2"
+
+
+def ping_cam(cam_num):
+   #config = read_config("conf/config-" + str(cam_num) + ".txt")
+   config = load_json_file("../conf/as6.json")
+
+   key = "cam" + str(cam_num)
+   cmd = "ping -c 1 " + config['cameras'][key]['ip']
+
+   response = os.system(cmd)
+   if response == 0:
+      print ("Cam is up!")
+      return(1)
+   else:
+      print ("Cam is down!")
+      return(0)
+
 
 def check_running(cam_num, type):
 
@@ -33,6 +51,10 @@ def check_running(cam_num, type):
 
 def start_capture(cam_num):
 
+   ping_ok = ping_cam(cam_num)
+   if ping_ok == 0:
+      print("NO PING ON CAM!", cam_num)
+      return()
 
    cam_key = 'cam' + str(cam_num)
    cam_ip = json_conf['cameras'][cam_key]['ip']
