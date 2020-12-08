@@ -166,15 +166,23 @@ def check_disk():
       print("Data volume /mnt/ams2 is greater than 80%!")
       print(len(hd_files), " HD FILES")
       del_count = int(len(hd_files) / 3)
-      for file in hd_files[0:del_count]:
+      print("DEL C:", del_count)
+      #test = input('wait')
+      fc = 0
+      for file in hd_files:
+         print(fc, file)
+         print("Delete this file!", file)
+         hd_datetime, hd_cam, hd_date, hd_y, hd_m, hd_d, hd_h, hd_M, hd_s,hd_ms = convert_filename_to_date_cam(file, 1)
+         elp = hd_datetime - datetime.now()
+         days_old = abs(elp.total_seconds()) / 86400
+         print("OLD:", file, days_old)
          if "meteor" not in file:
-            print("Delete this file!", file)
-            hd_datetime, hd_cam, hd_date, hd_y, hd_m, hd_d, hd_h, hd_M, hd_s,hd_ms = convert_filename_to_date_cam(file, 1)
-            elp = hd_datetime - datetime.now()
-            days_old = abs(elp.total_seconds()) / 86400
-            print("OLD:", file, days_old)
             if days_old > 2.5:
                os.system("rm " + file)
+         else:
+            if days_old > 30:
+               os.system("rm " + file)
+         fc += 1
 
    # check SD dir  
    # if the disk usage is over 80% 
