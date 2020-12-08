@@ -1,23 +1,32 @@
-sudo apt update
-sudo apt install build-essential cmake git pkg-config libgtk-3-dev libavcodec-dev libavformat-dev libswscale-dev libv4l-dev libxvidcore-dev libx264-dev
-sudo apt install libjpeg-dev libpng-dev libtiff-dev gfortran openexr libatlas-base-dev python3-dev python3-numpy libtbb2 libtbb-dev libdc1394-22-dev
+#sudo apt update
+#sudo apt install build-essential cmake git pkg-config libgtk-3-dev libavcodec-dev libavformat-dev libswscale-dev libv4l-dev libxvidcore-dev libx264-dev
+#sudo apt install libjpeg-dev libpng-dev libtiff-dev gfortran openexr libatlas-base-dev python3-dev python3-numpy libtbb2 libtbb-dev libdc1394-22-dev
+#sudo apt install libopenjp2-tools
 
-$CV_DIR = ~/ams/opencv_base/
+$CV_DIR = /root/opencv_base/opencv
 if [ -d "$CV_DIR" ]; then
     echo "$CV_DIR exist"
-    cd ~ams/opencv_base/opencv
+    cd /root/opencv_base/opencv
 else
    echo "Cloning opencv source."
-   mkdir ~ams/opencv_base
-   cd ~ams/opencv_base/opencv
-   #git clone https://github.com/opencv/opencv.git
-   #git clone https://github.com/opencv/opencv_contrib.git
+#   mkdir ~root/opencv_base
+#   cd ~root/opencv_base/
+#   git clone https://github.com/opencv/opencv.git
+#   git clone https://github.com/opencv/opencv_contrib.git
 fi
 
+cd /root/opencv_base/opencv/
 mkdir build && cd build
 
-make clean
+rm -rf /root/opencv_base/opencv/build/*
+
+cd /root/opencv_base/opencv/build
+
+#make clean
 cmake -D CMAKE_BUILD_TYPE=RELEASE \
+    -D WITH_WEBP=OFF\
+    -D FORCE_VTK=ON\
+    -D WITH_TBB=ON\
     -D CMAKE_INSTALL_PREFIX=/usr/local \
     -D BUILD_opencv_python2=OFF \
     -D WITH_LIBV4L=OFF\
@@ -36,3 +45,5 @@ cmake -D CMAKE_BUILD_TYPE=RELEASE \
 
 make -j4
 sudo make install
+
+#libopenjp2-tools
