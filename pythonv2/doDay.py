@@ -291,7 +291,7 @@ def check_disk():
                print(cmd)
                os.system(cmd)
             else:
-               print("KEEP THIS MONTH DIR IT IS OLDER THAN 1 MONTH", month)
+               print("KEEP THIS MONTH DIR IT IS LESS THAN 1 MONTH OLD", month)
 
    print("THIS YEAR:", this_year)
    # remove trash and other tmp dirs
