@@ -171,14 +171,15 @@ def check_disk():
       fc = 0
       for file in hd_files:
          print(fc, file)
-         print("Delete this file!", file)
          hd_datetime, hd_cam, hd_date, hd_y, hd_m, hd_d, hd_h, hd_M, hd_s,hd_ms = convert_filename_to_date_cam(file, 1)
          elp = hd_datetime - datetime.now()
          days_old = abs(elp.total_seconds()) / 86400
-         print("OLD:", file, days_old)
          if "meteor" not in file:
             if days_old > 2.5:
+               print("RM OLD:", file, days_old)
                os.system("rm " + file)
+            else:
+               print("KEEP:", file)
          else:
             if days_old > 30:
                os.system("rm " + file)
