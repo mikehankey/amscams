@@ -35,10 +35,10 @@
                     <h2>ACTIONS</h2>
                     <div class="row mt-3 " >
                         <div class="col pl-4 pr-4 "> 
-
-                            <a class="btn btn-primary d-block" onclick="javascript:show_image('{HALF_STACK}',1,1)">Show Image</a><a class="btn btn-primary d-block mt-2" onclick="javascript:find_stars('{HALF_STACK}')">Find Stars</a><a class="btn btn-primary d-block mt-2" onclick="javascript:show_cat_stars('{STACK_FILE}','','pick')">Show Catalog Stars</a><a class="btn btn-primary d-block mt-2" onclick="javascript:calib_az_grid('{AZ_GRID}')">AZ Grid</a><a class="btn btn-danger d-block mt-4"  onclick="javascript:delete_cal('{STACK_FILE}')">Delete Calibration</a>
-
                             <a id="update_stars" class="btn btn-primary btn-v"><i class="icon-star_catalog"></i> Update Star List</a>
+
+                            <!--<a class="btn btn-primary d-block" onclick="javascript:show_image('{HALF_STACK}',1,1)">Show Image</a><a class="btn btn-primary d-block mt-2" onclick="javascript:find_stars('{HALF_STACK}')">Find Stars</a><a class="btn btn-primary d-block mt-2" onclick="javascript:show_cat_stars('{STACK_FILE}','','pick')">Show Catalog Stars</a><a class="btn btn-primary d-block mt-2" onclick="javascript:calib_az_grid('{AZ_GRID}')">AZ Grid</a><a class="btn btn-danger d-block mt-4"  onclick="javascript:delete_cal('{STACK_FILE}')">Delete Calibration</a>-->
+
 
 
                         </div>
@@ -68,18 +68,29 @@
             --> 
         </div>
 </div>
+
+<div style="margin-left: 100px; margin-top: 25px">
 <div class='divTable' style='border: 1px solid #000;' ><div class='divTableBody'>
-<div id="star_list"></div>
+
+                     <table class="table table-dark table-striped table-hover td-al-m"><thead>
+                     <tr>
+                     <th>Name</th><th>mag</th><th>Cat RA/Dec</th><th>Res &deg;</th><th>Res. Pixels</th>
+                     </tr>
+                     </thead>
+                     <tbody>
+                     {STAR_ROWS}
+                     </tbody></table>
+
 </div>
 </div>
 
-
+</div>
       <div>
       <div style="float:left; padding: 10px;" id=action_buttons>
       </div>
       <div style="clear: both"></div>
       </div>
-      <div style="float:left" id=info_panel>Info: </div>
+      <div style="float:left" id=info_panel></div>
       <div style="clear: both"></div>
        <BR><BR>
    

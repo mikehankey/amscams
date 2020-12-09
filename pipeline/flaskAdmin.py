@@ -130,6 +130,8 @@ def stacks(amsid):
    req['start_day'] = start_day
    req['end_day'] = end_day 
    req['hour'] = hour
+   req['days_per_page'] = request.args.get('days_per_page')
+   req['p'] = request.args.get('p')
 
    out = stacks_main(amsid,req)
    return(out)

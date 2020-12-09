@@ -1,5 +1,7 @@
 from flask import Flask, request
 from FlaskLib.FlaskUtils import get_template
+from FlaskLib.Pagination import get_pagination
+
 
 import glob
 from lib.PipeUtil import load_json_file, save_json_file, cfe
@@ -17,12 +19,31 @@ def stacks_main(amsid, data) :
       return("Problem: main index file is corrupted. ")
 
    out = """
-
       <div class='h1_holder d-flex justify-content-between'>
-         <h1>Review Stacks by Day<input value='2020/11/28' type='text' data-display-format='YYYY/MM/DD'  data-action='reload' data-url-param='limit_day' data-send-format='YYYY_MM_DD' class='datepicker form-control'></h1>
-         <div class='page_h'>Page  1/10</div></div>
+         <h1>Review Stacks by Day </h1>
+         <!--<input value='' type='text' data-display-format='YYYY/MM/DD'  data-action='reload' data-url-param='limit_day' data-send-format='YYYY_MM_DD' class='datepicker form-control'></h1>
+         <div class='page_h'>Page  1/10</div>-->
+      </div>
          <div id='main_container' class='container-fluid h-100 mt-4 lg-l'>
    """
+   if data['days_per_page'] is not None:
+      days_per_page = int(data['days_per_page'])
+   else:
+      days_per_page = 10
+
+   if data['p'] is not None:
+      page = int(data['p'])
+   else:
+      page = 1
+   sdirs = glob.glob("/mnt/ams2/meteor_archive/" + amsid + "/STACKS/*")
+
+
+   pagination = get_pagination(page, len(sdirs), "/stacks/" + amsid + "/?days_per_page=" + str(days_per_page), days_per_page)
+
+   start_ind = (page - 1) * days_per_page
+   end_ind = start_ind + days_per_page
+   if end_ind > len(sdirs):
+      end_ind = len(sdirs)
 
 
    header = get_template("FlaskTemplates/header.html")
@@ -30,8 +51,7 @@ def stacks_main(amsid, data) :
    nav = get_template("FlaskTemplates/nav.html")
    template = get_template("FlaskTemplates/super_stacks_main.html")
    json_conf = load_json_file("../conf/as6.json")
-   sdirs = glob.glob("/mnt/ams2/meteor_archive/" + amsid + "/STACKS/*")
-   for sdir in sorted(sdirs, reverse=True):
+   for sdir in sorted(sdirs, reverse=True)[start_ind:end_ind]:
       vdir = sdir.replace("/mnt/ams2", "")
       if cfe(sdir,1) == 1:
          stack_day, trash = fn_dir(sdir)
@@ -67,6 +87,10 @@ def stacks_main(amsid, data) :
                </div>
             """
          out += "</div>"
+
+   out += "</div><!--main container!--> <div class='page_h'><!--Page  " + format(page) + "/" +  format(pagination[2]) + "--></div></div> <!-- ADD EXTRA FOR ENDING MAIN PROPERLY. --> <div>"
+   out += pagination[0]
+
          #all_stacks = glob.glob(sdir + "/*.jpg")
          #for img in all_stacks:
          #   out += img + "<BR>"
