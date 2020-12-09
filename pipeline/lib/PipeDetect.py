@@ -1082,6 +1082,7 @@ def make_roi_video_mfd(video_file, json_conf):
    cache_dir = "/mnt/ams2/CACHE/" + year + "/" + mon + "/" + vid_base + "/"
    prefix = cache_dir + vid_base + "-frm"
    if cfe(cache_dir, 1) == 0:
+      print("CACHE DIR:", cache_dir)
       os.makedirs(cache_dir)
 
    hd_frames,hd_color_frames,subframes,sum_vals,max_vals,pos_vals = load_frames_fast(video_file, json_conf, 0, 0, 1, 1,[])
@@ -1346,8 +1347,8 @@ def fireball(video_file, json_conf, nomask=0):
    jsf = video_file.replace(".mp4", ".json")
    best_meteor = None
    if cfe(jsf) == 1:
-      jdata = load_json_file(jsf)
       print("LOADING:", jsf)
+      jdata = load_json_file(jsf)
       if "best_meteor" not in jdata:
          best_meteor = None
       else:
@@ -1389,6 +1390,14 @@ def fireball(video_file, json_conf, nomask=0):
       jdata['rejected_desc'] = "No best meteor found."
       if gap_test_res is not None and gap_test_res == 0:
          jdata['gap_test_info'] = gap_test_info
+
+      if "x_poly" in jdata['cp']:
+         if type(jdata['cp']['x_poly']) is not list:
+            jdata['cp']['x_poly'] = jdata['cp']['x_poly'].tolist()
+            jdata['cp']['y_poly'] = jdata['cp']['y_poly'].tolist()
+            jdata['cp']['x_poly_fwd'] = jdata['cp']['x_poly_fwd'].tolist()
+            jdata['cp']['y_poly_fwd'] = jdata['cp']['y_poly_fwd'].tolist()
+
       save_json_file(jsf, jdata)
       print("No meteor detected.", jsf)
       return()
@@ -1465,7 +1474,7 @@ def fireball(video_file, json_conf, nomask=0):
       make_roi_video(video_file,best_meteor, hd_color_frames, json_conf)
       print("SAVEING MJR AFTER ROI VID:", len(base_jsr['meteor_frame_data']))
       save_json_file(jsfr, base_jsr)
-      return()
+      return(jdata,base_jsr)
    else:
 
       if "cp" in best_meteor:
@@ -4825,6 +4834,7 @@ def get_cal_params(meteor_json_file):
       print("Calibs before this meteor.")
       for af in before_files:
          cpf, td = af
+         print("LOADING CPF for BEFORE:",cpf)
          cp = load_json_file(cpf)
          if "total_res_px" in cp:
             before_data.append((cpf, float(cp['center_az']), float(cp['center_el']), float(cp['position_angle']), float(cp['pixscale']), float(cp['total_res_px'])))
@@ -4931,12 +4941,24 @@ def reduce_meteor(meteor_json_file):
    print("HDO:", mj['hd_objects'])
    if "best_meteor" not in mj:
       # redect the meteor in the HD clip
-      if cfe(mj['hd_trim']) == 1:
+      if False:
+         # cfe(mj['hd_trim']) == 1:
          print("DETECT IN HD" )
-         best_meteor,hd_stack_img,bad_objs = fireball(mj['hd_trim'], json_conf)
+         resp = fireball(mj['hd_trim'], json_conf)
+         print(resp)
+         if len(resp) > 0:
+            mj, mjr = resp
          print("DETECT IN HD:", best_meteor)
          mj['best_meteor'] = best_meteor
          azs, els = reduce_points(xs, ys, cal_params)
+      else:
+         resp = fireball(mj['hd_trim'], json_conf)
+         print("RESP:", resp)
+         if len(resp) > 0:
+            mj, mjr = resp
+         print("DETECTED :", mj['best_meteor'])
+         #mj['best_meteor'] = best_meteor
+         #azs, els = reduce_points(xs, ys, cal_params)
 
 def re_detect(date):
    files = glob.glob("/mnt/ams2/meteors/" + date + "/*.json")
@@ -5091,6 +5113,7 @@ def get_trim_num(file):
    at = at.replace(".mp4", "")
    at = at.replace("-", "")
    at = at.replace(".json", "")
+   at = at.replace("HDmeteor", "")
    return(at)
 
 def find_hd(sd_trim_file, dur, meteor_start_frame=0):

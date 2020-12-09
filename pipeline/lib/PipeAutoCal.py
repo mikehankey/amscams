@@ -72,7 +72,8 @@ def sync_back_admin_cals():
          cv2.imwrite(jpg_src, src_img)
 
       # remake azgrid open src image and resave as .png without -src.jpg (if it doesn't exist)
-      cmd = "./AzElGrid.py az_grid " + cp_file 
+      cp_img_file = cp_file.replace("-calparams.json", ".png")
+      cmd = "./AzElGrid.py az_grid " + cp_img_file 
       print(cmd)
       os.system(cmd)
 
@@ -845,6 +846,9 @@ def refit_fov(cal_file, json_conf):
          find_stars = 0
    if find_stars == 1:
       cal_params['user_stars'] = get_image_stars(cal_file, img.copy(), json_conf, 0)
+   if "total_res_px" not in cal_params:
+      cal_params['total_res_px'] = 999
+      cal_params['total_res_deg'] = 999
 
    print("STARTING RA/DEC:", cal_params['ra_center'], cal_params['dec_center'], cal_params['total_res_px'])
    cal_params = update_center_radec(cal_file,cal_params,json_conf)
@@ -871,6 +875,7 @@ def refit_fov(cal_file, json_conf):
    if usc_perc < .4 or cal_params['total_res_px'] > 4:
       print(cal_file)
       bcp, acp = get_cal_params(cal_file, json_conf)
+      print("BEFORE AFTER:", bcp, acp)
       if acp is not None:
          acp['user_stars'] = cal_params['user_stars']
          acp['cat_image_stars'] = cal_params['cat_image_stars']
@@ -1029,7 +1034,8 @@ def refit_fov(cal_file, json_conf):
 
 
    save_json_file(cal_file, cal_params)
-   cmd = "./AzElGrid.py az_grid " + cal_file
+   cp_img_file = cal_file.replace("-calparams.json", ".png")
+   cmd = "./AzElGrid.py az_grid " + cp_img_file 
    os.system(cmd)
    print(cmd)
 
@@ -2504,6 +2510,8 @@ def cal_index(cam, json_conf, r_station_id = None):
       test_img = get_cal_img(img_file)
       if cfe(file) == 1 and cfe(img_file) == 1:
          cp = load_json_file(file)
+         cp_img_file = file.replace("-calparams.json", ".png")
+
          cmd = "./AzElGrid.py az_grid " + file
          #os.system(cmd)
 
@@ -2656,6 +2664,10 @@ def review_cals(json_conf, cam=None):
          cal_img = cv2.imread(file)
          #cal_img = cv2.cvtColor(cal_img, cv2.COLOR_BGR2GRAY)
          if mask_img is not None:
+            print("MASK:", mask_img.shape)
+            mask_img = cv2.resize(mask_img, (cal_img.shape[1],cal_img.shape[0]))
+
+            print("CAL:", cal_img.shape)
             cal_img = cv2.subtract(cal_img, mask_img)
          if cfe(cp_file) == 1:
             print("EVAL FILE:", file, cal_img.shape)
@@ -2855,7 +2867,8 @@ def autocal(image_file, json_conf, show = 0):
          print("TCP:", tcp)
 
          tcp = pair_stars(tcp, image_file, json_conf, img)
-         cp = minimize_fov(image_file, tcp, image_file,img.copy(),json_conf )
+         #cp = minimize_fov(image_file, tcp, image_file,img.copy(),json_conf )
+         cp = tcp
          if cp['total_res_px'] < 5 and len(cp['cat_image_stars']) > 10:
             fn,dir = fn_dir(image_file)
             base = fn.replace(".png", "")
@@ -3043,10 +3056,11 @@ def autocal(image_file, json_conf, show = 0):
       os.system(cmd)
       return()
 
+   cal_img_file = cal_params_file.replace("-calparams.json", ".png")
 
-   cmd = "./AzElGrid.py az_grid " + cal_params_file + ">/tmp/mike.txt 2>&1"
+   cmd = "./AzElGrid.py az_grid " + cal_img_file + ">/tmp/mike.txt 2>&1"
    print(cmd)
-   os.system(cmd)
+   #os.system(cmd)
 
    cat_stars = get_catalog_stars(cal_params)
    cal_params = pair_stars(cal_params, cal_params_file, json_conf)
@@ -3092,7 +3106,9 @@ def autocal(image_file, json_conf, show = 0):
    cmd = "mv " + tdir + saf + " " + sdir
    os.system(cmd)
    cmd = "./Process.py refit " + new_cal_file
-   os.system(cmd)
+   print(cmd)
+   #os.system(cmd)
+
 
 def cat_star_report(cat_image_stars, multi=2.5):
    #multi = 100
@@ -5687,6 +5703,7 @@ def get_cal_params(meteor_json_file,json_conf):
    before_files = []
    after_files = []
    cal_files= get_cal_files(meteor_json_file, cam)
+   cf = None
    for cf,td in cal_files:
       (c_datetime, ccam, c_date_str,cy,cm,cd, ch, cmm, cs) = convert_filename_to_date_cam(cf)
       time_diff = f_datetime - c_datetime
@@ -5705,14 +5722,19 @@ def get_cal_params(meteor_json_file,json_conf):
          cpf, td = af
          print("LOADING:", cpf)
          cp = load_json_file(cpf)
+         if "total_res_px" not in cp:
+            cp['total_res_px'] = 99
+            cp['total_res_deg'] = 99
+
          after_data.append((cpf, float(cp['center_az']), float(cp['center_el']), float(cp['position_angle']), float(cp['pixscale']), float(cp['total_res_px'])))
 
    if len(before_files) > 0:
       before_files = sorted(before_files, key=lambda x: (x[1]), reverse=False)[0:5]
       for af in before_files:
          cpf, td = af
-         print("CPF:", cpf)
+         print("BEFORE CPF:", cpf)
          cp = load_json_file(cpf)
+         print("LOADED BEFORE CPF:", cpf)
          if "total_res_px" in cp:
             before_data.append((cpf, float(cp['center_az']), float(cp['center_el']), float(cp['position_angle']), float(cp['pixscale']), float(cp['total_res_px'])))
          else:
@@ -5775,10 +5797,12 @@ def get_cal_params(meteor_json_file,json_conf):
          after_cp = dict(mcp)
       else: 
          after_cp = {}
-   else:
+   elif cf is not None:
       dc = get_default_calib(cf,json_conf)
       before_cp = {}
       after_cp = {}
+   else:
+      return(None, None)
    if len(before_files) > 0:
       before_cp['center_az'] = before_med_az
       before_cp['center_el'] = before_med_el

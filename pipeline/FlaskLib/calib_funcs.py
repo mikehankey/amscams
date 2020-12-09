@@ -43,12 +43,14 @@ def cal_file(amsid, calib_file):
       return(template)
    if len(hss) == 0 :
       if cfe(sfs[0]) == 1:
-          stack_img = cv2.imread(sfs[0], 0)
-          hsimg  = cv2.resize(stack_img,(960,540))
-          hss = []
-          hsf = sfs[0].replace("-stacked.png", "-half-stack.png")
-          hss.append(hsf)
-          cv2.imwrite(hsf, hsimg)
+          for x in range(0, len(sfs)):
+             if "az" not in sfs: 
+                stack_img = cv2.imread(sfs[x], 0)
+                hsimg  = cv2.resize(stack_img,(960,540))
+                hss = []
+                hsf = sfs[x].replace("-stacked.png", "-half-stack.png")
+                hss.append(hsf)
+                cv2.imwrite(hsf, hsimg)
       else:
          template = "Problem: no half-stack file exists and we could not make one." + caldir
          return(template)
@@ -62,6 +64,7 @@ def cal_file(amsid, calib_file):
    if len(azs) == 0 :
       #template = "Problem: no azgrid file exists in this dir. " + caldir
       os.system("./AzElGrid.py az_grid " + cps[0] + " > /dev/null")
+      print("./AzElGrid.py az_grid " + cps[0] + " > /dev/null")
       azs = glob.glob(caldir + "*az*half*")
 
    star_rows = ""
@@ -80,6 +83,10 @@ def cal_file(amsid, calib_file):
    st = hs.replace("/mnt/ams2", "")
    azs[0] = hs.replace("/mnt/ams", "")
    cal_time = calib_file[0:20]
+   if "total_res_px" not in cp:
+      cp['total_res_px']  = 999
+   if "total_res_deg" not in cp:
+      cp['total_res_deg']  = 999
 
    cd_template = cd_template.replace("{CAL_PARAMS}", str(cp))
    cd_template = cd_template.replace("{RA_CENTER}", str(cp['ra_center'])[0:5])
