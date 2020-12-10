@@ -2910,7 +2910,7 @@ def autocal(image_file, json_conf, show = 0):
             print(cmd)
             os.system(cmd)
 
-            exit()
+            #exit()
             return()
 
    '''
