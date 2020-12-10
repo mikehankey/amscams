@@ -2845,7 +2845,7 @@ def autocal(image_file, json_conf, show = 0):
    bres = None
    if len(stars) <= 10:
       fn, cdir = fn_dir(image_file)
-      cmd = "mv " + image_file + " " + cdir + "/BAD/" 
+      cmd = "mv " + image_file + " " + cdir + "/bad/" 
       print(cmd)
       return()
 
@@ -2894,10 +2894,12 @@ def autocal(image_file, json_conf, show = 0):
             cpf = fdir + base + "-stacked-calparams.json"
 
             if "y_poly" in cp:
-               cp['y_poly'] = cp['y_poly'].tolist()
-               cp['x_poly'] = cp['x_poly'].tolist()
-               cp['x_poly_fwd'] = cp['x_poly_fwd'].tolist()
-               cp['y_poly_fwd'] = cp['y_poly_fwd'].tolist()
+               print(type(cp['y_poly']))
+               if type(cp['y_poly']) != list:
+                  cp['y_poly'] = cp['y_poly'].tolist()
+                  cp['x_poly'] = cp['x_poly'].tolist()
+                  cp['x_poly_fwd'] = cp['x_poly_fwd'].tolist()
+                  cp['y_poly_fwd'] = cp['y_poly_fwd'].tolist()
 
             save_json_file(cpf, cp)
             print("Save:", cpf) 
