@@ -2824,7 +2824,12 @@ def cal_all(json_conf):
    files = glob.glob(cal_dir)
    print(cal_dir)
    for file in files:
-      print("TRYING.")
+      print("TRYING.", file)
+ ##     last_cal['x_poly'] = cp['x_poly'].tolist()
+ #     last_cal['y_poly'] = cp['y_poly'].tolist()
+ #     last_cal['y_poly_fwd'] = cp['y_poly_fwd'].tolist()
+ #     last_cal['x_poly_fwd'] = cp['x_poly_fwd'].tolist()
+
       autocal(file, json_conf, 1)
       #exit()
 
@@ -2832,10 +2837,18 @@ def cal_all(json_conf):
 def autocal(image_file, json_conf, show = 0):
    print("Autocal.")
 
+   if cfe(image_file) == 0:
+      return ()
    stars = get_image_stars(image_file, None, json_conf,0)
    img = cv2.imread(image_file, 0)
    ares = None
    bres = None
+   if len(stars) <= 10:
+      fn, cdir = fn_dir(image_file)
+      cmd = "mv " + image_file + " " + cdir + "/BAD/" 
+      print(cmd)
+      return()
+
    if len(stars) > 10:
       bcp, acp = get_cal_params(image_file, json_conf)
       if acp is not None:
@@ -2879,10 +2892,17 @@ def autocal(image_file, json_conf, show = 0):
             os.system(cmd)
             print(cmd)
             cpf = fdir + base + "-stacked-calparams.json"
+
+            if "y_poly" in cp:
+               cp['y_poly'] = cp['y_poly'].tolist()
+               cp['x_poly'] = cp['x_poly'].tolist()
+               cp['x_poly_fwd'] = cp['x_poly_fwd'].tolist()
+               cp['y_poly_fwd'] = cp['y_poly_fwd'].tolist()
+
             save_json_file(cpf, cp)
             print("Save:", cpf) 
 
-            cmd = "./AzElGrid.py az_grid " + cp_file 
+            cmd = "./AzElGrid.py az_grid " + cpf 
             print(cmd)
             os.system(cmd)
 
@@ -3852,7 +3872,8 @@ def pair_stars(cal_params, cal_params_file, json_conf, cal_img=None, show = 0):
          if len(close_stars) >= 1:
             no_match.append(close_stars[0])
 
-   my_close_stars,bad_stars = qc_stars(my_close_stars)
+   #my_close_stars,bad_stars = qc_stars(my_close_stars)
+   bad_stars = []
    cal_params['bad_stars'] = bad_stars
    cal_params['no_match_stars'] = no_match
    if SHOW == 1:
