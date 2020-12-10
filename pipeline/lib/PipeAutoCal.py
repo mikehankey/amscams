@@ -2831,6 +2831,7 @@ def cal_all(json_conf):
  #     last_cal['x_poly_fwd'] = cp['x_poly_fwd'].tolist()
 
       autocal(file, json_conf, 1)
+
       #exit()
 
 
@@ -2846,6 +2847,7 @@ def autocal(image_file, json_conf, show = 0):
    if len(stars) <= 10:
       fn, cdir = fn_dir(image_file)
       cmd = "mv " + image_file + " " + cdir + "/bad/" 
+      os.system(cmd)
       print(cmd)
       return()
 
@@ -3027,7 +3029,7 @@ def autocal(image_file, json_conf, show = 0):
       wild = image_file.replace(".png", "*")
       cmd = "mv " + wild + " " + fdir
       print(cmd)
-      #os.system(cmd)
+      os.system(cmd)
       return()
 
    # code below this point should only happen on the files that passed the plate solve. 
