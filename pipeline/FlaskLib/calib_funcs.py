@@ -6,6 +6,17 @@ import cv2
 from FlaskLib.FlaskUtils import parse_jsid, make_default_template, get_template 
 import glob
 
+
+def del_calfile(amsid, calfile):
+   fn, dir= fn_dir(calfile)
+   fn = fn.replace("-stacked.png", "") 
+   cmd = "rm -rf /mnt/ams2/cal/freecal/" + fn 
+   print("CMD", cmd)
+   os.system(cmd)
+   resp = {}
+   resp['status'] = 1
+   return(resp)
+
 def show_masks(amsid):
    json_conf = load_json_file("../conf/as6.json")
    mask_dir = "/mnt/ams2/meteor_archive/" + amsid + "/CAL/MASKS/"
@@ -88,6 +99,8 @@ def cal_file(amsid, calib_file):
    if "total_res_deg" not in cp:
       cp['total_res_deg']  = 999
 
+   cd_template = cd_template.replace("{AMSID}", str(amsid))
+   cd_template = cd_template.replace("{CALFILE}", str(calib_file))
    cd_template = cd_template.replace("{CAL_PARAMS}", str(cp))
    cd_template = cd_template.replace("{RA_CENTER}", str(cp['ra_center'])[0:5])
    cd_template = cd_template.replace("{DEC_CENTER}", str(cp['dec_center'])[0:5])
