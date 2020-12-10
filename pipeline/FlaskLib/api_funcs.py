@@ -39,8 +39,8 @@ def crop_video(in_file, x,y,w,h):
       cv2.rectangle(img, (int(nx), int(ny)), (int(nx+nw) , int(ny+nh) ), (255, 255, 255), 1)
       nf = sf.replace(".jpg", "-test.jpg")
       print("saved", nf)
-      cv2.imwrite(nf, img)
-      cv2.imshow('pepe', img)
+      #cv2.imwrite(nf, img)
+      #cv2.imshow('pepe', img)
 
    out_file = in_file.replace(".mp4", "-crop.mp4")
    cmd = "./FFF.py crop_video " + in_file + " " + out_file + " " + str(nx) + "," + str(ny) + "," + str(nw) + "," + str(nh)

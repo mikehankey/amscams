@@ -1385,7 +1385,7 @@ def fireball(video_file, json_conf, nomask=0):
          print("GAP TEST FAILED. PLANE!")
          best_meteor = None
    if best_meteor is None:
-      # detection failed, flag JSF.
+      # detection failed
       jdata['rejected'] = 1
       jdata['rejected_desc'] = "No best meteor found."
       if gap_test_res is not None and gap_test_res == 0:
@@ -1716,8 +1716,8 @@ def fireball_plot_points(bm):
          ny = int(oy + (oh/2))
       plot[ny,nx] = 255
       print(i, fn, ox, oy, nx, ny)
-   cv2.imshow('pepe', plot)
-   cv2.waitKey(30)
+   #cv2.imshow('pepe', plot)
+   #cv2.waitKey(30)
 
 def fireball_fill_frame_data(video_file, bm, frames, tracking_updates = None):
    trim_num = get_trim_num(video_file) 
@@ -2039,8 +2039,8 @@ def grid_intensity_center(roi_p, cnt_size=5, fn=None):
   
       adj_x = int((mgx - 180) / roi_div)
       adj_y = int((mgy - 180) / roi_div)
-      cv2.imshow('ROIPPPP', roi_p)
-      cv2.waitKey(30)
+      #cv2.imshow('ROIPPPP', roi_p)
+      #cv2.waitKey(30)
    else:
       adj_x = 0
       adj_y = 0
@@ -2452,8 +2452,8 @@ def fireball_phase2(video_file, json_conf, jsf, jdata, best_meteor, nomask,hd_fr
                new_y = cy + adj_y
             nrx1,nry1,nrx2,nry2 = bound_cnt(new_x, new_y,1280,720, 50)
             cv2.rectangle(cf, (nrx1, nry1), (nrx2, nry2), (255,0,255), 2, cv2.LINE_AA)
-            cv2.imshow('crop', thresh_obj)
-            cv2.waitKey(30)
+            #cv2.imshow('crop', thresh_obj)
+            #cv2.waitKey(30)
             roi_img = of[nry1:nry2,nrx1:nrx2] 
 
          cv2.circle(cf,(new_cx,new_cy), 10, (255,255,255), 1)
@@ -2475,8 +2475,8 @@ def fireball_phase2(video_file, json_conf, jsf, jdata, best_meteor, nomask,hd_fr
 
 
 
-         cv2.imshow('pepe', cci)
-         cv2.waitKey(30)
+         #cv2.imshow('pepe', cci)
+         #cv2.waitKey(30)
    print("NEW:", len(new_cxs))
    exit()
    best_meteor['ccxs'] = new_cxs
@@ -3738,7 +3738,6 @@ def reduce_align_roi_images(poly, full_frame, ideal_roi, rx1,ry1,rx2,ry2, x,y,w,
    sf_x2 = rx2+shift_x
    if sf_x1 <= 0:
       print("BOUNDS PROB x1", shift_x, shift_y)
-      print("SF 1 X/Y", sf_x1, sf_y1)
       sf_x1 = 0
    if sf_x2 >= full_frame.shape[1]:
       sf_x1 = full_frame.shape[0] - (sf_x2 - sf_x1)

@@ -159,14 +159,25 @@ def meteors(amsid ):
 
    return out
 
+@app.route('/goto/meteor/<meteor_file>/', methods=['GET', 'POST'])
+def goto_meteor(meteor_file):
+   json_conf = load_json_file("../conf/as6.json")
+   amsid = json_conf['site']['ams_id']
+   date = meteor_file[0:10] 
+   out = detail_page(amsid, date, meteor_file )
+   return out
+
 @app.route('/meteors/<amsid>/<date>/<meteor_file>/', methods=['GET', 'POST'])
 def meteor_detail_page(amsid, date, meteor_file):
    out = detail_page(amsid, date, meteor_file )
    return out
 
-@app.route('/LEARNING/METEORS/', methods=['GET', 'POST'])
-def lrn_meteors():
-   out = learning_meteors_dataset()
+@app.route('/LEARNING/METEORS/<amsid>', methods=['GET', 'POST'])
+def lrn_meteors(amsid):
+   req = {}
+   req['p'] = request.args.get('p')
+   req['ipp'] = request.args.get('ipp')
+   out = learning_meteors_dataset(amsid, req)
    return out
 
 @app.route('/API/<cmd>', methods=['GET', 'POST'])

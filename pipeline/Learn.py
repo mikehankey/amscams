@@ -9,6 +9,33 @@ import cv2
 from lib.PipeImage import stack_frames
 from lib.PipeVideo import load_frames_simple 
 
+SHOW = 0
+
+def update_dataset():
+   # sync data with deleted meteors etc
+   year = "2020"
+   L_DIR = "/mnt/ams2/LEARNING/METEORS/" 
+   vids = glob.glob(L_DIR + year + "/VIDS/*.mp4")
+   for vid in vids:
+      fn, dir = fn_dir(vid)
+      md = fn[0:10]
+      mf = "/mnt/ams2/meteors/" + md + "/" + fn
+      if cfe(mf) == 0:
+         print("ORIG METEOR NO LONGER FOUND!", fn, mf)
+         crop = vid.replace("VIDS", "CROPS")
+         crop = crop.replace(".mp4", "-crop-360p.mp4")
+         imgs = vid.replace("VIDS", "IMGS")
+         imgs = imgs.replace(".mp4", "*")
+         cmd = "rm " + vid
+         print(cmd)
+         os.system(cmd)
+         cmd = "rm " + crop
+         os.system(cmd)
+         print(cmd)
+         cmd = "rm " + imgs
+         os.system(cmd)
+         print(cmd)
+
 
 def make_meteor_learning_dataset():
    # clip all meteor videos and drop into learning dir
@@ -25,9 +52,16 @@ def make_meteor_learning_dataset():
          for js in jss:
             if "reduced" in js or "star" in js or "manual" in js or "import" in js or "archive" in js or "events" in js:
                continue
+            ldb = add_meteor_to_ldb(js, ldb)
+   save_json_file(learning_db_file, ldb)
+
+def add_meteor_to_ldb(js, ldb, force=0):
+   if True:
+      if True:
+         if True:
             mj = load_json_file(js)
             if mj == 0:
-               continue
+               return(ldb) 
             vid = js.replace(".json", ".mp4")
             if "best_meteor" in mj:
                bm = mj['best_meteor']
@@ -65,7 +99,7 @@ def make_meteor_learning_dataset():
 
                if vw == 0 or vh == 0:
                   lbd[lfn]['error'] = "video is bad."
-                  continue
+                  return(ldb) 
 
                if cfe(learning_vid) == 0:
                   make_vid = 1
@@ -75,9 +109,12 @@ def make_meteor_learning_dataset():
                   make_cs = 1
                if cfe(lsf) == 0:
                   make_lsf = 1
-               #print(learning_vid, make_vid)
-               #print(crop_file, make_crop)
 
+               if force == 1:
+                  make_vid = 1
+                  make_crop = 1
+                  make_cs = 1
+                  make_lsf = 1
 
                if make_vid == 1:
                   trim_cmd = "./FFF.py splice_video " + vid + " " + str(ff) + " " + str(lf) + " " + outfile + " frame"  
@@ -125,29 +162,51 @@ def make_meteor_learning_dataset():
                   ldb[lfn]['crop_360'] = [cx1,cy1,cx2,cy2]
                   ldb[lfn]['crop_dim'] = [bw,bh]
 
-               if cfe(crop_file) == 0:
+               if make_crop == 1:
                   sf = vid.replace(".mp4", "-stacked.jpg") 
                   img = cv2.imread(sf)
                   img = cv2.resize(img, (640,360))
                   cv2.rectangle(img, (min_x, min_y), (max_x,max_y), (255, 255, 255), 1)
                   cv2.rectangle(img, (cx1, cy1), (cx2,cy2), (255, 255, 255), 1)
                   crop_video(outfile, crop_file, [cx1,cy1,bw,bh])
-                  cv2.imshow('pepe', img)
-                  cv2.waitKey(30)
+                  cv2.imwrite("/mnt/ams2/test123.jpg", img)
+                  if SHOW == 1:
+                     cv2.imshow('pepe', img)
+                     cv2.waitKey(30)
                if make_cs == 1:
                   frames = load_frames_simple(crop_file)
                   stack_img = stack_frames(frames, skip = 1, resize=None, sun_status="day")
                   cv2.imwrite(crop_stack, stack_img)
-                  cv2.imshow('pepe', stack_img)
-                  cv2.waitKey(30)
+                  print("Saved stack crop:", crop_stack)
+                  if SHOW == 1:
+                     cv2.imshow('pepe', stack_img)
+                     cv2.waitKey(30)
                if make_lsf == 1:
                   frames = load_frames_simple(learning_vid)
                   stack_img_full = stack_frames(frames, skip = 1, resize=None, sun_status="day")
                   stack_img_full = cv2.resize(stack_img_full, (640,360))
-                  #cv2.imshow('pepe', stack_img_full)
-                  #cv2.waitKey(30)
                   cv2.imwrite(lsf, stack_img_full)
-   save_json_file(learning_db_file, ldb)
+            
+   return(ldb)  
+# PER METEOR LOOP HERE
 
-
-make_meteor_learning_dataset()
+print(len(sys.argv))
+if len(sys.argv) == 1:
+   cont = input("Make ALL meteor learning dataset?")
+   make_meteor_learning_dataset()
+else: 
+   cmd = sys.argv[1]
+   if len(sys.argv) > 2:
+      file = sys.argv[2]
+   if cmd == "update":
+      update_dataset()
+   if cmd == "add":
+      cont = input("Add one meteor to data set?")
+      L_DIR = "/mnt/ams2/LEARNING/METEORS/"
+      learning_db_file = L_DIR + "meteors.json"
+      if cfe(learning_db_file) == 1:
+         ldb = load_json_file(learning_db_file)
+      else: 
+         ldb = {}
+      ldb = add_meteor_to_ldb(file, ldb, 1)
+      save_json_file(learning_db_file, ldb)
