@@ -1002,7 +1002,8 @@ def calib_image(file, image=None,json_conf=None):
       cp = dict(after_cp)
 
    if len(cp['cat_image_stars']) > 15 and cp['total_res_px'] > 2:
-      cp = minimize_fov(file, cp, file ,image,json_conf ) 
+      foo = 1
+      #cp = minimize_fov(file, cp, file ,image,json_conf ) 
    else:
       print("This meteor calib is good!")
 

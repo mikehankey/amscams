@@ -174,7 +174,11 @@ def detail_page(amsid, date, meteor_file):
 
    lc_html = light_curve_url(METEOR_DIR + sd_trim , mj)
   
+   fn, vdir = fn_dir(meteor_file)
+   div_id = fn.replace(".mp4", "")
+   jsid = div_id.replace("_", "")
 
+   template = template.replace("{JSID}", jsid)
    template = template.replace("{CROP_BOX}", crop_box_js_var)
    template = template.replace("{CAL_PARAMS}", cal_params_js_var)
    template = template.replace("{METEOR_FRAME_DATA}", mfd_js_var)

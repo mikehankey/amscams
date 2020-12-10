@@ -109,12 +109,12 @@ def add_meteor_to_ldb(js, ldb, force=0):
                   make_cs = 1
                if cfe(lsf) == 0:
                   make_lsf = 1
-
+                  make_lsf = 0
                if force == 1:
                   make_vid = 1
                   make_crop = 1
                   make_cs = 1
-                  make_lsf = 1
+                  #make_lsf = 1
 
                if make_vid == 1:
                   trim_cmd = "./FFF.py splice_video " + vid + " " + str(ff) + " " + str(lf) + " " + outfile + " frame"  
@@ -192,7 +192,6 @@ def add_meteor_to_ldb(js, ldb, force=0):
 
 print(len(sys.argv))
 if len(sys.argv) == 1:
-   cont = input("Make ALL meteor learning dataset?")
    make_meteor_learning_dataset()
 else: 
    cmd = sys.argv[1]
@@ -201,7 +200,6 @@ else:
    if cmd == "update":
       update_dataset()
    if cmd == "add":
-      cont = input("Add one meteor to data set?")
       L_DIR = "/mnt/ams2/LEARNING/METEORS/"
       learning_db_file = L_DIR + "meteors.json"
       if cfe(learning_db_file) == 1:

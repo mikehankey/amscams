@@ -141,6 +141,7 @@ def crop_video(in_file, x,y,w,h):
       cmd = "./Process.py roi_mfd " + in_file + " >/mnt/ams2/tmp/api.points 2>&1"
       os.system(cmd)
 
+
    return(resp)
 
 def delete_frame(meteor_file, fn):
@@ -375,6 +376,11 @@ def update_meteor_points(sd_video_file,frames):
    cmd = "./Process.py roi_mfd /mnt/ams2/" + sd_video_file + " >/mnt/ams2/tmp/api.points 2>&1"
    print("COMMAND:", cmd)
    os.system(cmd)
+
+   cmd = "./Learn.py add " + json_file + " >/mnt/ams2/tmp/api.points 2>&1"
+   print("COMMAND:", cmd)
+   os.system(cmd)
+
    mjr = load_json_file(rjson_file)
    resp['status'] = 1
    if "cal_params" in mj:

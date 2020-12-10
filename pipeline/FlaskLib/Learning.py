@@ -3,7 +3,7 @@ from lib.PipeAutoCal import fn_dir
 from FlaskLib.Pagination import get_pagination
 from flask import Flask, request
 from FlaskLib.FlaskUtils import get_template, make_default_template
-
+import time
 import glob
 from lib.PipeUtil import load_json_file, save_json_file, cfe
 from lib.PipeAutoCal import fn_dir
@@ -58,6 +58,7 @@ def js_learn_funcs():
 
 
 def learning_meteors_dataset(amsid, in_data):
+   rand = str(time.time())
    json_conf = load_json_file("../conf/as6.json")
    template = make_default_template(amsid, "live.html", json_conf)
    js_code = js_learn_funcs()
@@ -68,16 +69,18 @@ def learning_meteors_dataset(amsid, in_data):
    else:
       page = int(page)
    if items_per_page is None:
-      items_per_page = 100
+      items_per_page = 1000
    else:
       items_per_page = int(items_per_page) 
    si = (page-1) * items_per_page
    ei = si + items_per_page
-   
+  
    LEARNING_VID_DIR = "/mnt/ams2/LEARNING/METEORS/2020/VIDS/"
    files = glob.glob(LEARNING_VID_DIR + "*.mp4")
+   total = len(files)
    out = "<script>" + js_code + "</script>"
    out += "<div id='main_container' class='container-fluid h-100 mt-4 lg-l'>"
+   out += "<h1>Meteor Data Set " + str(total) + " meteors</h1>"
    for file in sorted(files, reverse=True)[si:ei]:
       vfile = file.replace("/mnt/ams2", "")
       fn, dir = fn_dir(vfile)
@@ -90,7 +93,7 @@ def learning_meteors_dataset(amsid, in_data):
 
       js_link = "<a href=\"javascript: SwapDivLearnDetail('" + div_id + "', '" + crop_img + "','" + crop_vid + "', 1)\">"
       #out += "<div style='float: left; display=none' id='details_" + div_id + "'>" + js_link + "<video src=" + crop_vid + "></a></div>\n"
-      out += "<div style='float: left' id='" + div_id + "'>" + js_link + "<img src=" + crop_img + "></a></div>\n"
+      out += "<div style='float: left' id='" + div_id + "'>" + js_link + "<img src=" + crop_img +"?r=" + str(rand) + "></a></div>\n"
    out += "</div>"
 
    pagination = get_pagination(page, len(files), "/LEARNING/METEORS/" + amsid + "?ipp=" + str(items_per_page) , items_per_page)
