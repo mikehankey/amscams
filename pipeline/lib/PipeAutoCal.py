@@ -3563,6 +3563,9 @@ def make_plate_image(image, file_stars):
       x1,y1,x2,y2= bound_cnt(x,y,iw,ih,15)
       cnt_img = hd_stack_img[y1:y2,x1:x2]
       ch,cw = cnt_img.shape
+      print(cnt_img.shape)
+      if ch == 0 or cw == 0 :
+         continue
       max_pnt,max_val,min_val = cnt_max_px(cnt_img)
       mx,my = max_pnt
       mx = mx - 15
