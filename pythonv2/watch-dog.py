@@ -300,6 +300,7 @@ if stream_errors == 1:
 
          # Should we reboot the cam
          # if the cam has had 10 restarts since the last reboot reboot the cam for a maximum of 1x per hour
+         # MIKE TEST TEMP
          os.system("../python/ffmpeg_record.py stop " + bad_cam)
          time.sleep(3)
          if len(wd['cams'][bad_key]['restarts']) > 5:
@@ -310,6 +311,7 @@ if stream_errors == 1:
             log = open("/mnt/ams2/logs/cam_reboots.txt", "a")
             log.write(str(cur_time) + " reboot:" + str(bad_cam) + wd['cams'][bad_key]['ip'])
             time.sleep(30)
+         # MIKE TEST TEMP
          os.system("../python/ffmpeg_record.py start " + str(bad_cam))
          wd['cams'][bad_key]['restarts'].append(cur_time)
          wd['cams'][bad_key]['last_restart'] = cur_time
