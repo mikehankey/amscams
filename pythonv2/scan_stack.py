@@ -142,7 +142,7 @@ def batch_ss(wildcard=None):
       if "trim" not in file:
          new_files.append(file)
 
-   for file in sorted(new_files, reverse=True):
+   for file in sorted(new_files, reverse=True)[0:1000]:
       (f_datetime, cam, f_date_str,fy,fmin,fd, fh, fm, fs) = convert_filename_to_date_cam(file)
       sun_status = day_or_night(f_date_str, json_conf)
       cur_time = int(time.time())
