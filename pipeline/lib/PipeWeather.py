@@ -1322,7 +1322,7 @@ def make_flat(cam,day,json_conf):
    flat_file = MASK_DIR + cam + "_flat.png"
 
    if day is None: 
-      date = datetime.now().strftime("%Y_%m_%d")
+      date = datetime.datetime.now().strftime("%Y_%m_%d")
    else:
       date = day
    #if cfe(mask_file) == 0:

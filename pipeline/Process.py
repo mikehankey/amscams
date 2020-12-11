@@ -328,6 +328,12 @@ if __name__ == "__main__":
       refine_all_meteors(sys.argv[2],json_conf )
    if cmd == "clouds":
       detect_clouds(sys.argv[2],json_conf )
+   if cmd == "make_flats":
+      for cam in json_conf['cameras']:
+         cam_id = json_conf['cameras'][cam]['cams_id']
+         print("Make Flat.", cam_id)
+         make_flat(cam_id,None, json_conf )
+   
    if cmd == "make_flat":
       if len(sys.argv) > 3:
          day = sys.argv[3]
