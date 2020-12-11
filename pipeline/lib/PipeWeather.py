@@ -99,6 +99,14 @@ def stack_index(json_conf):
    fp.write(html)
    fp.close()
 
+def make_all_hourly_stacks(json_conf):
+   days = glob.glob("/mnt/ams2/SD/proc2/*")
+   for day_dir in days:
+       
+      day, dir = fn_dir(day_dir)
+      el = day.split("_")
+      if len(el) == 3:
+         print(day)
 
 def hourly_stacks_html(date, json_conf):
    work_dir = "/mnt/ams2/SD/proc2/" + date + "/images/"
