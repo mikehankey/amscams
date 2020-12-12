@@ -2573,7 +2573,7 @@ def center_roi_blob(frame, cx, cy,cnt_size):
          new_roi_p[py:roi_size2, px:roi_size2] = new_roi_img
       else:
          new_roi_p = new_roi_img
-      cv2.imshow('new roi_p', new_roi_p)
+      #cv2.imshow('new roi_p', new_roi_p)
       new_roi_p = cv2.resize(new_roi_p, (360,360))
 
       cv2.circle(roi_p,(mgx,mgy), 3, (0,0,255), 1)
@@ -2584,8 +2584,8 @@ def center_roi_blob(frame, cx, cy,cnt_size):
 
       roi_disp[0:360, 0:360] = roi_p
       roi_disp[0:360, 360:720] = new_roi_p 
-      cv2.imshow('roi_center', roi_disp)
-      cv2.waitKey(30)
+      #cv2.imshow('roi_center', roi_disp)
+      #cv2.waitKey(30)
    return(new_x, new_y)
 
 
@@ -2719,11 +2719,11 @@ def fireball_phase3(video_file, json_conf, jsf, jdata, best_meteor, nomask,hd_fr
          est_xs.append(cur_x)
          est_ys.append(cur_y)
          frame =  make_meteor_frame(hd_color_frames[fn], cur_x,cur_y, fn, circles, rects, text_info, new_xs,new_ys)
-      cv2.imshow('pepe', frame)
-      if p_res_err > (avg_res * 3) and p_res_err > 2:
-         cv2.waitKey(30)
-      else:
-         cv2.waitKey(30)
+      #cv2.imshow('pepe', frame)
+      #if p_res_err > (avg_res * 3) and p_res_err > 2:
+      #   cv2.waitKey(30)
+      #else:
+      #   cv2.waitKey(30)
 
    best_meteor['ccxs'] = new_new_xs
    best_meteor['ccys'] = new_new_ys
@@ -2738,8 +2738,8 @@ def fireball_phase3(video_file, json_conf, jsf, jdata, best_meteor, nomask,hd_fr
       cy = best_meteor['ccys'][i]
 
       frame =  make_meteor_frame(hd_color_frames[fn], est_x,est_y, fn, [], [], [], [],[])
-      cv2.imshow('pepe', frame)
-      cv2.waitKey(30)
+      #cv2.imshow('pepe', frame)
+      #cv2.waitKey(30)
 
    #best_meteor = make_final_meteor_vids(meteor_dir, jsf, best_meteor, cp, hd_color_frames, 0)
    jdata = {}
@@ -2855,8 +2855,8 @@ def meteor_detect_image(mo, dimg, objects, cp):
       x = mo['oxs'][i]
       y = mo['oys'][i]
       print(i, x,y)
-   cv2.imshow('pepe', dimg)
-   cv2.waitKey(30)
+   #cv2.imshow('pepe', dimg)
+   #cv2.waitKey(30)
 
 def dom_meteor(meteors, json_conf):
    mcache = {}
@@ -2950,8 +2950,8 @@ def frames_to_image(frames):
       px2 = px1 + w
       py2 = py1 + h
       big_img[py1:py2,px1:px2] = frame
-      cv2.imshow('pepe', big_img)
-      cv2.waitKey(90)
+      #cv2.imshow('pepe', big_img)
+      #cv2.waitKey(90)
 
       col += 1
    
@@ -3281,8 +3281,8 @@ def make_subframe(frame, median_frame, thresh_div=2, past_cnts=None,dom_dir=None
                   else:
                      print("XY CNT:", x,y,w,h)
                      subframe[y:y+h,0:x] = 0
-   cv2.imshow("SUB", subframe)
-   cv2.waitKey(30)
+   #cv2.imshow("SUB", subframe)
+   #cv2.waitKey(30)
 
    avg_val = np.mean(subframe)
    min_val, max_val, min_loc, (mx,my)= cv2.minMaxLoc(frame)
