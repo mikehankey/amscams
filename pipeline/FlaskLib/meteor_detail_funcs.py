@@ -55,7 +55,7 @@ def detail_page(amsid, date, meteor_file):
    nav = get_template("FlaskTemplates/nav.html")
    template = get_template("FlaskTemplates/meteor_detail.html")
 
-   footer = footer.replace("{RAND}", str(time.time()))
+   #footer = footer.replace("{RAND}", str(time.time()))
    if "location" in json_conf:
       template = template.replace("{LOCATION}", json_conf['site']['location'])
    else:

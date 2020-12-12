@@ -112,8 +112,8 @@ def check_for_trailing_frames(video_file, mj=None, json_conf=None):
    print("OF:", bm['ofns'][0], bm['ofns'][-1])
 
 
-   cv2.imshow('pepe', img)   
-   cv2.waitKey(0)
+   #cv2.imshow('pepe', img)   
+   #cv2.waitKey(0)
 
 
 
