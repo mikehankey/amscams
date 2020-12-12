@@ -139,10 +139,22 @@ def detail_page(amsid, date, meteor_file):
          template = template.replace("{POSITION_ANGLE}", str(cp['position_angle'])[0:5])
          template = template.replace("{PIXSCALE}", str(cp['pixscale'])[0:5])
          template = template.replace("{IMG_STARS}", str(len(cp['user_stars'])))
-         template = template.replace("{CAT_STARS}", str(len(cp['cat_image_stars'])))
-         template = template.replace("{RES_PX}", str(cp['total_res_px'])[0:5])
-         template = template.replace("{RES_DEG}", str(cp['total_res_deg'])[0:5])
+         if "cat_image_stars" in cp:
+            template = template.replace("{CAT_STARS}", str(len(cp['cat_image_stars'])))
+         else:
+            template = template.replace("{CAT_STARS}", "")
+         if "total_res_px" in cp:
+            template = template.replace("{RES_PX}", str(cp['total_res_px'])[0:5])
+            template = template.replace("{RES_DEG}", str(cp['total_res_deg'])[0:5])
+         else:
+            template = template.replace("{RES_PX}", "")
+            template = template.replace("{RES_DEG}", "")
+            cp['total_res_px'] = 99
+            cp['total_res_deg'] = 99
 
+   #if "total_res_px" not in cp:
+   #   cp['total_res_px'] = 99
+   #   cp['total_res_deg'] = 99
 
    if cfe("/mnt/ams2" + CACHE_VDIR, 1) == 0:
       if "mp4" in meteor_file:
@@ -156,6 +168,11 @@ def detail_page(amsid, date, meteor_file):
 
    if cfe(mjrf) == 1:
       mjr = load_json_file(mjrf)
+      if "total_res_px" not in mjr['cal_params']:
+         mjr['cal_params']['total_res_px'] = 99
+         mjr['cal_params']['total_res_deg'] = 99
+         mjr['cal_params']['cat_image_stars'] = []
+
       if np.isnan(mjr['cal_params']['total_res_px']) or mjr['cal_params']['total_res_px'] is None or len(mjr['cal_params']['cat_image_stars']) == 0:
          mjr['cal_params']['total_res_px'] = 9999
          mjr['cal_params']['total_res_deg'] = 9999

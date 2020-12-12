@@ -115,7 +115,10 @@ def crop_video(in_file, x,y,w,h):
       best_meteor, frame_data = fireball_fill_frame_data(in_file,best_meteor, o_frames)
       if cfe(jsf) == 1:
          mj = load_json_file(jsf)
-         hd_trim = mj['hd_trim']
+         if "hd_trim" in mj:
+            hd_trim = mj['hd_trim']
+         else:
+            hd_trim = None
          if "cp" in "mj":
             cp = mj['cp']
       else:

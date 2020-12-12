@@ -991,21 +991,21 @@ def calib_image(file, image=None,json_conf=None):
       after_res_px = 0
       after_res_eg = 0
 
-   print("BEFORE RES:", before_res_px, before_res_deg, len(before_cp['user_stars']), len(before_cp['cat_image_stars']))
-   print(before_cp['center_az'])
-   print("AFTER RES:", after_res_px, after_res_deg,len(before_cp['user_stars']), len(before_cp['cat_image_stars']))
-   print(after_cp['center_az'])
+   #print("BEFORE RES:", before_res_px, before_res_deg, len(before_cp['user_stars']), len(before_cp['cat_image_stars']))
+   #print(before_cp['center_az'])
+   #print("AFTER RES:", after_res_px, after_res_deg,len(before_cp['user_stars']), len(before_cp['cat_image_stars']))
+   #print(after_cp['center_az'])
 
    if before_res_px < after_res_px:
       cp = dict(before_cp)
    else:
       cp = dict(after_cp)
 
-   if len(cp['cat_image_stars']) > 15 and cp['total_res_px'] > 2:
-      foo = 1
-      #cp = minimize_fov(file, cp, file ,image,json_conf ) 
-   else:
-      print("This meteor calib is good!")
+   #if len(cp['cat_image_stars']) > 15 and cp['total_res_px'] > 2:
+   #   foo = 1
+   #   #cp = minimize_fov(file, cp, file ,image,json_conf ) 
+   #else:
+   #   print("This meteor calib is good!")
 
    cp = update_center_radec(file,cp,json_conf)
    return(cp)
