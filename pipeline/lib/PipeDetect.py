@@ -4953,10 +4953,15 @@ def reduce_meteor(meteor_json_file):
          azs, els = reduce_points(xs, ys, cal_params)
       else:
          resp = fireball(mj['hd_trim'], json_conf)
-         print("RESP:", resp)
-         if len(resp) > 0:
-            mj, mjr = resp
-         print("DETECTED :", mj['best_meteor'])
+         if resp is None:
+            print("Meteor Not detected.")
+            exit()
+         else:
+            print("Meteor detected.")
+         
+         #if len(resp) > 0:
+         #   mj, mjr = resp
+         #print("DETECTED :", mj['best_meteor'])
          #mj['best_meteor'] = best_meteor
          #azs, els = reduce_points(xs, ys, cal_params)
 
