@@ -218,18 +218,22 @@ def meteor_night_stacks(date, json_conf):
                img = cv2.resize(img,(1920,1080))
             images.append(img)
       print("IMAGES:", cams_id, len(images))
-      meteor_stack_image = stack_frames(images, 1, None, "night")
-      stack_imgs[cams_id] = meteor_stack_image
-      outfile = mdir + cams_id + "_meteors.jpg"
-      cv2.imwrite(outfile, meteor_stack_image)
-      print("SAVED:", outfile)
+      if len(images) > 0:
+         meteor_stack_image = stack_frames(images, 1, None, "night")
+         stack_imgs[cams_id] = meteor_stack_image
+         outfile = mdir + cams_id + "_meteors.jpg"
+         print("SAVED:", outfile)
+         cv2.imwrite(outfile, meteor_stack_image)
 
-   if len(json_conf['cameras']) == 6:
+   if len(stack_imgs.keys()) == 6:
       comp_w = int((1920/2) * 2)
       comp_h = int((1080/2) * 3)
-   if len(json_conf['cameras']) == 7:
+   elif len(stack_imgs.keys()) == 7:
       comp_w = int((1920/2) * 2)
       comp_h = int((1080/2) * 4)
+   else:
+      comp_w = 1920
+      comp_h = int((1080/2) * len(stack_imgs.keys()) )
 
    comp = np.zeros((comp_h,comp_w,3),dtype=np.uint8)
 
@@ -238,8 +242,8 @@ def meteor_night_stacks(date, json_conf):
    c = 0
    px1 = 0
    px2 = int(1920/2)   
-   for cam in json_conf['cameras']:
-      cams_id = json_conf['cameras'][cam]['cams_id']
+   for cams_id in stack_imgs:
+      #cams_id = json_conf['cameras'][cam]['cams_id']
       if c == 0:
          px1 = 0   
          px2 = int((1920/2))   
