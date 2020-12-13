@@ -247,20 +247,26 @@ def meteor_night_stacks(date, json_conf):
       if c == 0:
          px1 = 0   
          px2 = int((1920/2))   
+         py1 = int(row * (1080/2))
+         py2 = int(py1 + (1080/2))
       elif c == 6 :
-         px1 = 0 + (1920/4)   
-         px2 = px2 + (1920/4)
+         px1 = int(0 + (1920/4))
+         px2 = 1440
+         py1 = 540 * 3
+         py2 = 540 * 4
       elif c % 2 == 0 :
          px1 = 0   
          px2 = int((1920/2))   
          row += 1
          col = 1
+         py1 = int(row * (1080/2))
+         py2 = int(py1 + (1080/2))
       else:
          px1 = int((1920/2))   
          px2 = int(1920)   
          col = 2
-      py1 = int(row * (1080/2))
-      py2 = int(py1 + (1080/2))
+         py1 = int(row * (1080/2))
+         py2 = int(py1 + (1080/2))
       print("COMP XYS:", c, col, row, py1, py2, px1, px2)
       img = cv2.resize(stack_imgs[cams_id],(int(1920/2),int(1080/2)))
       comp[py1:py2,px1:px2] = img
