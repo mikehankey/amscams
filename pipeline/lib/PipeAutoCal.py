@@ -857,7 +857,60 @@ def refit_fov(cal_file, json_conf):
    cal_params['ra_center'] = float( cal_params['ra_center'])
    cal_params['dec_center'] = float( cal_params['dec_center'])
 
+   cat_stars = get_catalog_stars(cal_params)
+
+
+   for name,mag,ra,dec,cat_x,cat_y in cat_stars:
+      dcname = str(name.decode("utf-8"))
+      dbname = dcname.encode("utf-8")
+      if mag <= 5:
+         cat_x, cat_y = int(cat_x), int(cat_y)
+         #print("CAT:", cat_x, cat_y)
+         if cat_x - 10 <= 0 or cat_y - 10 <= 0 or cat_x + 10 >= 1920 or cat_y + 10 >= 1080:
+            continue
+
+         ival = gray_img[cat_y,cat_x] 
+         if ival > 5:
+            star_img = gray_img[cat_y-10:cat_y+10,cat_x-10:cat_x+10]
+            max_px, avg_px, px_diff,max_loc,star_int = eval_cnt(star_img)
+            print("MORE STAR?", max_px, avg_px, px_diff, star_int)
+            #if (2< px_diff < 7) and 100 < star_int < 11000:
+            if 100 < star_int < 11000:
+               cv2.rectangle(img, (cat_x-10, cat_y-10), (cat_x + 10, cat_y + 10), (128, 128, 128), 1)
+               cv2.putText(img , str(int(px_diff)),  (int(cat_x),int(cat_y)), cv2.FONT_HERSHEY_SIMPLEX, .4, (255, 255, 255), 1)
+               cal_params['user_stars'].append((cat_x, cat_y, star_int))
+
+
+   # remove anything too close to the mask area
+   new_user_stars = []
+   for star in cal_params['user_stars']:
+      x,y,i = star
+      mx = x  
+      my = y + 25
+      if my > 0 and mx > 0 and mx < 1920 and my < 1080:
+         if gray_img[my,mx] > 10:
+            new_user_stars.append(star)
+   cal_params['user_stars'] = new_user_stars
+
+
    cal_params = pair_stars(cal_params, image_file, json_conf, gray_img)
+   for star in cal_params['user_stars']:
+      x,y,i = star
+      cv2.circle(img,(x,y), 7, (128,128,128), 1)
+
+   new_cat_stars = []
+   for cat_star in cal_params['cat_image_stars']:
+      dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist,bp = cat_star
+      new_cat_stars.append(cat_star)
+      print("GRAY:", my,mx,gray_img[my,mx]) 
+      cv2.rectangle(img, (new_cat_x-2, new_cat_y-2), (new_cat_x + 2, new_cat_y + 2), (128, 128, 128), 1)
+      cv2.rectangle(img, (new_x-2, new_y-2), (new_x + 2, new_y + 2), (255, 128, 128), 1)
+   cal_params['cat_image_stars'] = new_cat_stars   
+   #cv2.imshow('pepe', gray_img)
+   #cv2.waitKey(0)
+   #cv2.imshow('pepe', img)
+   #cv2.waitKey(0)
+
    print("FILE RES vs RECALC RES:", ocp['total_res_px'], cal_params['total_res_px'])
    print("OCP:", ocp['ra_center'], ocp['dec_center'], ocp['position_angle'], ocp['pixscale'], ocp['total_res_px'])
    #for star in ocp['cat_image_stars']:
@@ -1977,31 +2030,36 @@ def view_calib(cp_file,json_conf,nc,oimg, show = 1):
       else:
          x,y = star
          flux = 0
-      cv2.circle(img,(x,y), 5, (128,128,128), 1)
+      #cv2.circle(img,(x,y), 5, (128,128,128), 1)
    for star in nc['no_match_stars']:
       name,mag,ra,dec,new_cat_x,new_cat_y,six,siy,cat_dist = star
-      cv2.circle(img,(int(new_cat_x),int(new_cat_y)), 5, (128,255,128), 1)
+      #cv2.circle(img,(int(new_cat_x),int(new_cat_y)), 5, (128,255,128), 1)
 
    for star in nc['cat_image_stars']:
       dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist,star_int = star
-      cv2.circle(img,(six,siy), 10, (128,128,128), 1)
-      cv2.circle(img,(int(new_x),int(new_y)), 10, (128,128,255), 1)
-      cv2.circle(img,(int(new_cat_x),int(new_cat_y)), 10, (128,255,128), 1)
-      cv2.line(img, (int(new_cat_x),int(new_cat_y)), (int(new_x),int(new_y)), (255), 2)
-      cv2.line(img, (int(six),int(siy)), (int(new_cat_x),int(new_cat_y)), (255), 2)
-      cv2.putText(img, str(dcname),  (int(new_cat_x),int(new_cat_y)), cv2.FONT_HERSHEY_SIMPLEX, .8, (255, 255, 255), 1)
+      #cv2.circle(img,(six,siy), 10, (128,128,128), 1)
+      #cv2.circle(img,(int(new_x),int(new_y)), 10, (128,128,255), 1)
+      #cv2.circle(img,(int(new_cat_x),int(new_cat_y)), 10, (128,255,128), 1)
+      #cv2.line(img, (int(new_cat_x),int(new_cat_y)), (int(new_x),int(new_y)), (255), 2)
+      #cv2.line(img, (int(six),int(siy)), (int(new_cat_x),int(new_cat_y)), (255), 2)
+      #cv2.putText(img, str(dcname),  (int(new_cat_x),int(new_cat_y)), cv2.FONT_HERSHEY_SIMPLEX, .8, (255, 255, 255), 1)
       #cv2.line(marked_img, (six,siy), (new_x,new_y), (255), 2)
       tres += cat_dist
 
    fn, dir = fn_dir(cp_file)
-   cv2.putText(img, "Res:" + str(nc['total_res_px'])[0:5],  (25,25), cv2.FONT_HERSHEY_SIMPLEX, .8, (255, 255, 255), 1)
-   cv2.putText(img, "AZ/EL:" + str(nc['center_az'])[0:6] + "/" + str(nc['center_el'])[0:6],  (25,50), cv2.FONT_HERSHEY_SIMPLEX, .8, (255, 255, 255), 1)
-   cv2.putText(img, "RA/DEC:" + str(nc['ra_center'])[0:6] + "/" + str(nc['dec_center'])[0:6],  (25,75), cv2.FONT_HERSHEY_SIMPLEX, .8, (255, 255, 255), 1)
-   cv2.putText(img, "POS:" + str(nc['position_angle'])[0:6] ,  (25,100), cv2.FONT_HERSHEY_SIMPLEX, .8, (255, 255, 255), 1)
-   cv2.putText(img, "PIX:" + str(nc['pixscale'])[0:6] ,  (25,125), cv2.FONT_HERSHEY_SIMPLEX, .8, (255, 255, 255), 1)
-   cv2.putText(img, "File:" + str(fn),  (25,150), cv2.FONT_HERSHEY_SIMPLEX, .8, (255, 255, 255), 1)
-   cv2.putText(img, "Match %:" + str(nc['match_perc']),  (25,175), cv2.FONT_HERSHEY_SIMPLEX, .8, (255, 255, 255), 1)
-   cv2.putText(img, "POLY" +  str(nc['x_poly'][0]),  (25,200), cv2.FONT_HERSHEY_SIMPLEX, .8, (255, 255, 255), 1)
+   #cv2.putText(img, "Res:" + str(nc['total_res_px'])[0:5],  (25,25), cv2.FONT_HERSHEY_SIMPLEX, .8, (255, 255, 255), 1)
+   #cv2.putText(img, "AZ/EL:" + str(nc['center_az'])[0:6] + "/" + str(nc['center_el'])[0:6],  (25,50), cv2.FONT_HERSHEY_SIMPLEX, .8, (255, 255, 255), 1)
+   #cv2.putText(img, "RA/DEC:" + str(nc['ra_center'])[0:6] + "/" + str(nc['dec_center'])[0:6],  (25,75), cv2.FONT_HERSHEY_SIMPLEX, .8, (255, 255, 255), 1)
+   #cv2.putText(img, "POS:" + str(nc['position_angle'])[0:6] ,  (25,100), cv2.FONT_HERSHEY_SIMPLEX, .8, (255, 255, 255), 1)
+   #cv2.putText(img, "PIX:" + str(nc['pixscale'])[0:6] ,  (25,125), cv2.FONT_HERSHEY_SIMPLEX, .8, (255, 255, 255), 1)
+   #cv2.putText(img, "File:" + str(fn),  (25,150), cv2.FONT_HERSHEY_SIMPLEX, .8, (255, 255, 255), 1)
+   #cv2.putText(img, "Match %:" + str(nc['match_perc']),  (25,175), cv2.FONT_HERSHEY_SIMPLEX, .8, (255, 255, 255), 1)
+   #cv2.putText(img, "POLY" +  str(nc['x_poly'][0]),  (25,200), cv2.FONT_HERSHEY_SIMPLEX, .8, (255, 255, 255), 1)
+
+
+   img = draw_star_image(img, nc['cat_image_stars'], nc) 
+   #cv2.imshow('pepe', star_image)
+   #cv2.waitKey(0)
 
    if SHOW == 1:
       dimg = cv2.resize(img, (1280,720))
@@ -3509,6 +3567,7 @@ def eval_cnt(cnt_img, avg_px=5 ):
    int_diff = max_int - avg_int
 
    int_cnt = cnt_img.copy()
+
    for x in range(0, int_cnt.shape[1]):
       for y in range(0, int_cnt.shape[0]):
          px = int_cnt[y,x]
@@ -3517,8 +3576,9 @@ def eval_cnt(cnt_img, avg_px=5 ):
 
    star_int = int(np.sum(int_cnt))
    min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(cnt_img)
+   _, star_bg = cv2.threshold(cnt_img, max_px-10, 255, cv2.THRESH_BINARY)
 
-   cnt_res = cv2.findContours(int_cnt.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+   cnt_res = cv2.findContours(star_bg.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
    if len(cnt_res) == 3:
       (_, cnts, xx) = cnt_res
    elif len(cnt_res) == 2:
@@ -3526,16 +3586,31 @@ def eval_cnt(cnt_img, avg_px=5 ):
 
    if len(cnts) == 1:
       for (i,c) in enumerate(cnts):
-         px_diff = 0
+         #px_diff = 0
          x,y,w,h = cv2.boundingRect(cnts[i])
          blob_x = int(x) + int(w/2) 
          blob_y = int(y) + int(h/2) 
-         #cv2.rectangle(int_cnt, (blob_x-1, blob_y-1), (blob_x+1, blob_y+1), (255, 255, 255), 1)
+         blob_w = w
+         blob_h = h 
+         #cv2.rectangle(int_cnt, (blob_x-4, blob_y-4), (blob_x+4, blob_y+4), (255, 255, 255), 1)
+         blob = 1
    else:
       blob_x = int(max_loc[0])
       blob_y = int(max_loc[1])
-   
-
+      blob_h = 0
+      blob_w = 0 
+      blob = 0
+ 
+   if blob == 0:
+      star_int = 0
+   is_star = "N"
+   if 100 < star_int < 13000 and 3 <= blob_w <= 15 and 3 <= blob_h <= 15:
+      is_star = "Y"
+   else:
+      star_int = 0
+   #print("INT:", star_int, blob_x,blob_y,blob_w,blob_h,is_star)
+   #cv2.imshow('pepe', int_cnt)
+   #cv2.waitKey(0)
    #print(blob_x, blob_y, star_int)
 
    return(max_px, avg_px,px_diff,(blob_x,blob_y),star_int)
@@ -4721,7 +4796,7 @@ def reduce_fov_pos(this_poly, az,el,pos,pixscale, x_poly, y_poly, cal_params_fil
       if tries % 50 == 0:
          new_star_image = draw_star_image(image, new_paired_stars, temp_cal_params ) 
 
-         cv2.imshow('pepe', new_star_image)
+         cv2.imshow('REDUCE FOV', new_star_image)
          cv2.waitKey(30)
 
 
@@ -4980,7 +5055,7 @@ def draw_star_image(img, cat_image_stars,cp=None) :
 
    image = Image.fromarray(img)
    draw = ImageDraw.Draw(image)
-   font = ImageFont.truetype("/usr/share/fonts/truetype/freefont/FreeSans.ttf", 16, encoding="unic" )
+   font = ImageFont.truetype("/usr/share/fonts/truetype/freefont/FreeSans.ttf", 20, encoding="unic" )
    org_x = None
    org_y = None
    for star in cat_image_stars:
@@ -5447,6 +5522,7 @@ def clean_pairs(merged_stars, cam_id = "", inc_limit = 5,first_run=1,show=0):
          else:
             cv2.line(img, (six,siy), (int(np_new_cat_x),int(np_new_cat_y)), (0,255,0), 1)
           
+         cv2.line(img, (six,siy), (int(new_x),int(new_y)), (255,0,0), 1)
          cv2.circle(img,(six,siy), 5, (255), 1)
          if line_dist < 50:  
            np_ms = np.append(np_ms, [[ra,dec,six,siy,img_res]],axis=0 )
@@ -5457,8 +5533,9 @@ def clean_pairs(merged_stars, cam_id = "", inc_limit = 5,first_run=1,show=0):
    if SHOW == 1:
       simg = cv2.resize(img, (960,540))
       cv2.imshow(cam_id, simg)
-      cv2.imwrite("/mnt/ams2/tmp/fitmovies/star_img1.png", img)
-      cv2.waitKey(30)
+      print("/mnt/ams2/cal/lens_model_" + cam_id + ".jpg")
+      cv2.imwrite("/mnt/ams2/cal/lens_model_" + cam_id + ".jpg", img)
+      cv2.waitKey(0)
 
 
    img = np.zeros((1080,1920),dtype=np.uint8)

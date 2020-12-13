@@ -1355,11 +1355,11 @@ def make_flat(cam,day,json_conf):
             continue
          (f_datetime, cam, f_date_str,fy,fmin,fd, fh, fm, fs) = convert_filename_to_date_cam(file)
          sun_status, sun_az, sun_el = day_or_night(f_date_str, json_conf,1)
-         if -15 <= int(sun_el) <= -10:
+         if -10 <= int(sun_el) <= 0:
 
             frames,color_frames,subframes,sum_vals,max_vals,pos_vals = load_frames_fast(file, json_conf, 1, 1, [], 1,[])
             med_frames.append(color_frames[0])
-         if -10 <= int(sun_el) <= -5:
+         if -5 <= int(sun_el) <= 0:
             frames,color_frames,subframes,sum_vals,max_vals,pos_vals = load_frames_fast(file, json_conf, 1, 1, [], 1,[])
             mask = color_thresh(color_frames[0]) 
             mask_frames.append(mask)
@@ -1714,8 +1714,8 @@ def color_thresh(image, low=[60,0,0], high=[255,200,200]):
    gsize = 100
    height,width = image.shape[:2]
 
-   low_color_bound = np.array((60,0,0) ,  dtype=np.uint8, ndmin=1)
-   high_color_bound = np.array((225,200,200) ,  dtype=np.uint8, ndmin=1)
+   low_color_bound = np.array((50,0,0) ,  dtype=np.uint8, ndmin=1)
+   high_color_bound = np.array((225,225,225) ,  dtype=np.uint8, ndmin=1)
    mask = cv2.inRange(image,low_color_bound, high_color_bound)
    mask_image = 255- mask
    #cv2.imshow('mask', mask_image)
@@ -1724,8 +1724,8 @@ def color_thresh(image, low=[60,0,0], high=[255,200,200]):
    sub = cv2.subtract(gray, mask_image)
 
 
-   #cv2.imshow('sub', sub)
-   #cv2.waitKey(45)
+   cv2.imshow('sub', sub)
+   cv2.waitKey(0)
 
 
    for w in range(0,width):
