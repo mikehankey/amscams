@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-from lib.FFFuncs import slow_stack_video , imgs_to_vid, snap_video, splice_video
+from lib.FFFuncs import slow_stack_video , imgs_to_vid, snap_video, splice_video, vid_to_imgs, crop_video, best_crop_size, lower_bitrate
 
 import sys
 import os
@@ -16,6 +16,32 @@ if len(sys.argv) < 2:
 
 cmd = sys.argv[1]
 
+if cmd == "crop_video":
+   in_file = sys.argv[2]
+   out_file = sys.argv[3]
+   cb = sys.argv[4]
+   x,y,w,h = cb.split(",")
+   crop_box = [x,y,w,h]
+   crop_video(in_file, out_file, crop_box)
+
+if cmd == "vid_to_imgs":
+   file = sys.argv[2]
+   out_dir = sys.argv[3]
+   if len(sys.argv) >= 4 :
+      suffix = sys.argv[4] 
+   else:
+      suffix = None
+   if len(sys.argv) >=5 :
+      resz = sys.argv[5] 
+      w,h = resz.split("x")
+      resize = [w,h]
+   else:
+      resize = None
+
+   vid_to_imgs(file, out_dir, suffix, resize)
+
+if cmd == "lower_bitrate":
+   lower_bitrate(sys.argv[2], sys.argv[3])
 if cmd == "snap_video":
    snap_video(sys.argv[2])
 if cmd == "slow_stack":
@@ -39,5 +65,6 @@ if cmd == "splice_video":
    end = sys.argv[4]
    outfile = sys.argv[5]
    type = sys.argv[6] 
-   #print(start, end, type) 
+   print(start, end, type) 
    splice_video(in_file, start, end, outfile, type)
+

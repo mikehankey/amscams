@@ -506,6 +506,7 @@ def meteor_png_to_jpg(sd_file, hd_file, json_conf):
 
 
 def purge_meteors_for_date(json_conf):
+   purge_days = {}
    station_id = json_conf['site']['ams_id']
    del_file = "/mnt/ams2/SD/proc2/json/" + station_id  + ".del"
    if cfe(del_file) == 0:
@@ -521,7 +522,13 @@ def purge_meteors_for_date(json_conf):
       if len(base) < 5:
          continue
       delete_from_base(base,json_conf)
+      dday = base[0:10]
+      purge_days[dday] = 1
 
+   for day in purge_days:
+      cmd = "./Process.py mmi_day " + day
+      print(cmd)
+      os.system(cmd)
 
 
 
@@ -542,10 +549,11 @@ def delete_from_base(base, json_conf):
          js = load_json_file(jsf)
          if "hd_trim" in js:
             hd_base = js['hd_trim'].split("/")[-1].replace(".mp4", "")
-            print("HD_BASE:", hd_base)
+            print("HD_BASE STR:", hd_base)
          else:
             print("NO HD_BASE:", jsf)
             hd_base = None
+            exit()
          if "archive_file" in js:
             arc_base = js['archive_file'].split("/")[-1].replace(".json", "")
             arc_js_file = js['archive_file']
@@ -572,7 +580,7 @@ def delete_from_base(base, json_conf):
       for f in temp:
          files_to_del.append(f)
       # METEOR HD FILES
-      if hd_base is not None and hd_base != "" and len(hd_base) < 5:
+      if hd_base is not None and hd_base != "" and len(hd_base) > 5:
          temp = glob.glob(meteor_dir + hd_base + "*")
          for f in temp:
             print("HD BASE DEL:", f)

@@ -81,20 +81,25 @@ def quick_video_stack(video_file, count = 0, save=1):
   
 
 
-def stack_frames(frames, skip = 1, resize=None, sun_status="night"):
+def stack_frames(frames, skip = 1, resize=None, sun_status="day"):
 
 
    stacked_image = None
    fc = 0
    for frame in frames:
       avg_px = np.mean(frame)
+      #print("AVG PX:", avg_px)
+      #print("RES:", resize)
       go = 1
-      #if sun_status == 'night' and avg_px >= 125:
-      #   print("TOO BRIGHT!", avg_px)
-      #   go = 0
+      if sun_status == 'night' and avg_px >= 105:
+         print("TOO BRIGHT!", avg_px)
+         go = 0
+      if avg_px >= 200:
+         print("TOO BRIGHT!", avg_px)
+         go = 0
       if go == 1:
          if resize is not None:
-            frame = cv2.resize(frame, (resize[0],resize[1]))
+               frame = cv2.resize(frame, (int(resize[0]),int(resize[1])))
          if fc % skip == 0:
             frame_pil = Image.fromarray(frame)
             if stacked_image is None:

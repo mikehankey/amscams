@@ -134,3 +134,6 @@ ln -s /usr/include/wcslib-5.18 /usr/local/include/wcslib-5.15
 /home/ams/amscams/install/astrometry-install.sh
 #docker run -dit -P --name ubuntu-test -v ~/container-data:/data ubuntu
 cd /home/ams/amscams/install && ./install-wasabi.py
+
+ln -s /home/ams/amscams/install/README /home/ams/Desktop/README.txt
+

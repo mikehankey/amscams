@@ -1,0 +1,195 @@
+<head> 
+   <script src="/dist/js/amscam.min.js"></script>
+
+</head>
+<body style="margin:0;padding:0;background:transparent">
+<div id="graph" style="width:100%; margin: 0 auto" ></div>
+</body>
+
+<script>
+
+// HEx to RGBA 
+function hexToRgb(hex) {
+    var bigint = parseInt(hex, 16);
+    var r = (bigint >> 16) & 255;
+    var g = (bigint >> 8) & 255;
+    var b = bigint & 255;
+    return r + "," + g + "," + b + ",1";
+}
+
+// get GET Variables
+function getQueryVariable(variable) {
+   var query = window.location.search.substring(1);
+   var vars = query.split("&");
+   for (var i=0;i<vars.length;i++) {
+      var pair = vars[i].split("=");
+      if(pair[0] == variable){return pair[1];}
+   }
+   return(false);
+}
+
+// GET ALL QUERY PARAMETERS
+function getQueryParams(qs) {
+    qs = qs.split("+").join(" ");
+    var params = {},
+        tokens,
+        re = /[?&]?([^=]+)=([^&]*)/g;
+
+    while (tokens = re.exec(qs)) {
+        params[decodeURIComponent(tokens[1])]  = decodeURIComponent(tokens[2]);
+    }
+
+    return params;
+}
+
+var  all_variables = getQueryParams(document.location.search);
+
+
+
+// Data from URL
+all_data = {
+   'title': getQueryVariable("title")?getQueryVariable("title").replace(/_/g, ' '):'No Title',        // Main Title
+   'x_title': getQueryVariable("xat")?getQueryVariable("xat").replace(/_/g, ' '):'',                  // Title for X
+   'y_title': getQueryVariable("yat")?getQueryVariable("yat").replace(/_/g, ' '):'',                  // Title for Y
+   'x1_vals': getQueryVariable("x1_vals")?getQueryVariable("x1_vals").split(","):false,                  // X Values - SERIE 1
+   'y1_vals': getQueryVariable("y1_vals")?getQueryVariable("y1_vals").split(","):false,                  // Y Values - SERIE 1 
+   'z1_vals': getQueryVariable("z1_vals")?getQueryVariable("z1_vals").split(","):false,                  // Z Values - SERIE 1 
+
+   's_ratio1': getQueryVariable("s_ratio1")?true:false,                                                  // Same Axis ratio for SERIE 1
+   'title1': getQueryVariable("title1")?getQueryVariable("title1").replace(/_/g, ' '):'',                // Name SERIE 1
+   'y1_reverse': getQueryVariable("y1_reverse")?true:false,                                              // Reverse Y on SERIE 1
+   'linetype1': getQueryVariable("linetype1")?getQueryVariable("linetype1"):'markers',                   // LINE TYPE FOR SERIE 1
+   'lineshape1':  getQueryVariable("lineshape1")?getQueryVariable("lineshape1"):'linear',               // LINE SHAPE FOR SERIE 1
+
+   
+
+   'x2_vals': getQueryVariable("x2_vals")?getQueryVariable("x2_vals").split(","):false,                  // X Values - SERIE 2
+   'y2_vals': getQueryVariable("y2_vals")?getQueryVariable("y2_vals").split(","):false,                  // Y Values - SERIE 2
+   'title2': getQueryVariable("title2")?getQueryVariable("title2").replace(/_/g, ' '):'',                // Name SERIE 2
+   'linetype2': getQueryVariable("linetype2")?getQueryVariable("linetype2"):'linear',                     // LINE TYPE FOR SERIE 2
+
+
+
+   'x_texts': getQueryVariable("tx1")?getQueryVariable("tx1").split(","):'',                          // Name of the X values (?)
+   'y_texts': getQueryVariable("ty1")?getQueryVariable("ty1").split(","):'',                          // Name of the Y values (?)
+   't1d': getQueryVariable("t1d")?getQueryVariable("t1d"):"points",                                   // Type of line 1
+   't2d': getQueryVariable("t2d")?getQueryVariable("t2d"):"fit",                                      // Type of line 2
+   'wtf' : getQueryVariable("ry"),                                                                    // No fucking clue
+}
+
+// Build the graph based on options
+
+// Point Data
+var trace1 = {
+  x: all_data.x1_vals,
+  y: all_data.y1_vals, 
+  mode: all_data.linetype1,   // lines+
+  type: 'scatter',
+  marker : { symbol: 'square-open-dot', size:10  },
+  xaxis: "x1",
+  yaxis: "y1",
+  name: all_data.title1
+};
+
+// Do we have Z values?
+if(all_data.z1_vals != false) {
+   trace1.z = all_data.z1_vals;
+   trace1.type = 'surface'
+}
+
+ 
+
+
+// Create all Colors (same than on the canvas)
+var rainbow = new Rainbow();
+rainbow.setNumberRange(0, 255);
+var all_colors = [];
+var total = all_data.x1_vals.length; 
+var step = parseInt(255/total);  
+for (var i = 0; i <= 255; i = i + step) {
+   all_colors.push('rgba('+hexToRgb(rainbow.colourAt(i))+')'); 
+}
+ 
+// We had the color scale to X
+trace1.marker.color  =  all_colors;
+
+// Add the line shape  
+trace1.line = {}
+trace1.line.shape = all_data.lineshape1;
+ 
+var GRID_COLOR = 'rgba(255,255,255,.1)';
+var TICK_FONT_COLOR = 'rgba(255,255,255,.75)';
+var H_LINE_COLOR = 'rgba(255,255,255,.4)';
+var V_LINE_COLOR = 'rgba(255,255,255,.1)';
+     
+var layout = {
+   title: {
+      text: all_data.title, 
+      font: {  color:'#ffffff' },
+      xref: 'x',   
+      yref: 'y',  
+      x: 0.05, 
+   },
+   height: 517,
+   width: 937,
+   paper_bgcolor: "rgba(9,29,63,1)",  // For exporting in PNG!
+   plot_bgcolor: "rgba(9,29,63,1)",   // For exporting in PNG!
+   xaxis:{
+         autorange: true,
+         zerolinecolor: H_LINE_COLOR, 
+         zerolinewidth: 1,
+         gridcolor: GRID_COLOR, 
+         linecolor: H_LINE_COLOR,  
+         title: { font: { size: 15, color: '#b1b1b1' } },
+         tickfont: { color: TICK_FONT_COLOR}
+   },
+   yaxis:{
+         zerolinecolor: V_LINE_COLOR, 
+         zerolinewidth: 1, 
+         gridcolor: GRID_COLOR, 
+         linecolor: V_LINE_COLOR,
+         title: { font: {  size: 15, color: '#b1b1b1' }}, 
+         tickfont: { color: TICK_FONT_COLOR} 
+   },
+   showlegend: false
+};
+
+// If it's the same ratio on the SERIE 1
+if(all_data.s_ratio1) {
+   layout.yaxis.scaleanchor = "x";
+   layout.yaxis.scaleratio = 1;  
+}
+ 
+
+// If we reverse the Y1 axis
+if(all_data.y1_reverse) {
+   layout.yaxis.autorange = 'reversed';
+}
+ 
+
+
+
+var data = [trace1];
+Plotly.newPlot("graph", data, layout, {responsive: true});
+ 
+
+//If we have 2 set of data
+if (all_data.x2_vals != false && all_data.y2_vals != false) {
+
+   var trace2 = {
+      x: all_data.x2_vals,
+      y: all_data.y2_vals,
+      mode: 'lines',
+      type: 'scatter', 
+      name: all_data.title2,
+      yaxis: "x2",
+      line: {
+         color: 'rgba(213,42,224,.5)' 
+      }
+   };
+ 
+
+   // We add the 2nd "trace"
+   Plotly.addTraces("graph",trace2 );
+} 
+</script>

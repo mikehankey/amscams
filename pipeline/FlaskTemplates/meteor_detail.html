@@ -1,5 +1,4 @@
 {HEADER}
-<script src="/src/js/functions/check_login.js"></script> 
 
 <body onload='init_page()'>
 
@@ -155,8 +154,15 @@
 
                     <div class="row mt-3 collapse" id="extra_command">
                         <div class="col pl-4 pr-4 "> 
-                            <a class="btn btn-danger d-block mt-4" target=_blank href="/pycgi/webUI.py?cmd=override_detect&jsid=20201124101501000010003-trim-1183"> Reject Meteor</a> 
+		           <a class='delete_meteor_gallery col btn btn-danger btn-sm' title='Delete Detection' data-meteor='{JSID}'><i class='icon-delete'></i></a>
+
+
                          </div>
+
+                        <div class="col pl-4 pr-4 "> 
+                            <a class="btn d-block btn-primary mt-4" href="javascript:man_reduce()">Manually Reduce</a> 
+                         </div>
+
                     </div>
             </div>       
 

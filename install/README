@@ -1,0 +1,81 @@
+ALLSKYCAMS ADMIN
+
+To access the web admin and check your captures, open google chrome and goto :
+
+http://localhost/
+
+login as your AMSXX id and use the password "meteors"
+
+CHECK CAM LIVE FEEDS
+
+To access the camera video stream, open VLC media player (Orange cone)
+
+Select : Media -> Open Network Stream
+
+Enter the cam URL per this format 
+
+For HD (best for focusing)
+rtsp://CAM_IP_ADDRESS/user=admin&password=&channel=1&stream=0.sdp
+
+For SD 
+rtsp://CAM_IP_ADDRESS/user=admin&password=&channel=1&stream=1.sdp
+
+You can copy and paste these URLs and they should all work. 
+
+SD URLs:
+rtsp://192.168.76.71/user=admin&password=&channel=1&stream=1.sdp
+rtsp://192.168.76.72/user=admin&password=&channel=1&stream=1.sdp
+rtsp://192.168.76.73/user=admin&password=&channel=1&stream=1.sdp
+rtsp://192.168.76.74/user=admin&password=&channel=1&stream=1.sdp
+rtsp://192.168.76.75/user=admin&password=&channel=1&stream=1.sdp
+rtsp://192.168.76.76/user=admin&password=&channel=1&stream=1.sdp
+rtsp://192.168.76.77/user=admin&password=&channel=1&stream=1.sdp
+
+HD URLs:
+rtsp://192.168.76.71/user=admin&password=&channel=1&stream=0.sdp
+rtsp://192.168.76.72/user=admin&password=&channel=1&stream=0.sdp
+rtsp://192.168.76.73/user=admin&password=&channel=1&stream=0.sdp
+rtsp://192.168.76.74/user=admin&password=&channel=1&stream=0.sdp
+rtsp://192.168.76.75/user=admin&password=&channel=1&stream=0.sdp
+rtsp://192.168.76.76/user=admin&password=&channel=1&stream=0.sdp
+rtsp://192.168.76.77/user=admin&password=&channel=1&stream=0.sdp
+
+For trouble shooting to see if a cam is still up:
+
+open terminal (black dos looking box)
+
+type:
+
+ping 192.168.76.71
+
+(or whatever camera IP address you want to check)
+
+Press [CNTL-C] to exit.
+
+
+NETWORK SETUP
+
+to add a route to your normal PC for the camera network port so that you can access the camera feeds on your network:
+
+For Windows:
+open a DOS prompt as administrator
+
+type:
+
+route add 192.168.76.0 MASK 255.255.255.0 IP_OF_LINUX
+
+where IP_OF_LINUX is this host's IP address. To figure that out, open the terminal and type:
+
+ip a 
+
+then look for something like 192.168.x.x
+
+
+CAMERA ADMIN
+Each camera has its own web admin you can use to access the settings or view the live feed, BUT this admin only works in the OLD Internet Explorer.
+Win10 has a verion of this, but you have to search for "Internet Explorer"
+
+Once in IE, go to the cam IP address. 
+
+Login with username : admin 
+and no password (blank password)

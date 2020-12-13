@@ -6,6 +6,36 @@ import cv2
 from FlaskLib.FlaskUtils import parse_jsid, make_default_template, get_template 
 import glob
 
+
+def del_calfile(amsid, calfile):
+   fn, dir= fn_dir(calfile)
+   fn = fn.replace("-stacked.png", "") 
+   cmd = "rm -rf /mnt/ams2/cal/freecal/" + fn 
+   print("CMD", cmd)
+   os.system(cmd)
+   resp = {}
+   resp['status'] = 1
+   return(resp)
+
+def show_masks(amsid):
+   json_conf = load_json_file("../conf/as6.json")
+   mask_dir = "/mnt/ams2/meteor_archive/" + amsid + "/CAL/MASKS/"
+   masks = glob.glob(mask_dir + "*mask.png")
+   out = ""
+   #out = """
+   #   <div id="main_container" class="container-fluid d-flex h-100 mt-4 position-relative">
+   #"""
+
+   for mask in sorted(masks):
+      mask = mask.replace("/mnt/ams2", "")
+      fn,dir = fn_dir(mask)
+      cam = fn.replace("_mask.png", "")
+      out += "<div style='float:left; padding: 10px'><img width=640 height=360 src=" + mask + "><br><caption>" + cam + "</caption><br></div>\n"
+   #out += "</div>"
+   template = make_default_template(amsid, "calib.html", json_conf)
+   template = template.replace("{MAIN_TABLE}", out)
+   return(template)
+
 def cal_file(amsid, calib_file):
    json_conf = load_json_file("../conf/as6.json")
    
@@ -13,7 +43,7 @@ def cal_file(amsid, calib_file):
    caldir = caldir.replace("-stacked.png", "")
 
    cps = glob.glob(caldir + "*cal*.json")
-   hss = glob.glob(caldir + "*half-stack*")
+   hss = glob.glob(caldir + "*half-stack.png")
    azs = glob.glob(caldir + "*az*half*")
    sfs = glob.glob(caldir + "*stacked.png")
    if len(cps) == 0 :
@@ -24,12 +54,14 @@ def cal_file(amsid, calib_file):
       return(template)
    if len(hss) == 0 :
       if cfe(sfs[0]) == 1:
-          stack_img = cv2.imread(sfs[0], 0)
-          hsimg  = cv2.resize(stack_img,(960,540))
-          hss = []
-          hsf = sfs[0].replace("-stacked.png", "-half-stack.png")
-          hss.append(hsf)
-          cv2.imwrite(hsf, hsimg)
+          for x in range(0, len(sfs)):
+             if "az" not in sfs: 
+                stack_img = cv2.imread(sfs[x], 0)
+                hsimg  = cv2.resize(stack_img,(960,540))
+                hss = []
+                hsf = sfs[x].replace("-stacked.png", "-half-stack.png")
+                hss.append(hsf)
+                cv2.imwrite(hsf, hsimg)
       else:
          template = "Problem: no half-stack file exists and we could not make one." + caldir
          return(template)
@@ -43,7 +75,15 @@ def cal_file(amsid, calib_file):
    if len(azs) == 0 :
       #template = "Problem: no azgrid file exists in this dir. " + caldir
       os.system("./AzElGrid.py az_grid " + cps[0] + " > /dev/null")
+      print("./AzElGrid.py az_grid " + cps[0] + " > /dev/null")
       azs = glob.glob(caldir + "*az*half*")
+
+   star_rows = ""
+   for star in cp['cat_image_stars']:
+      dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist,bp = star
+      star_rows += "<tr><td>{:s}</td><td>{:s} </td><td> {:s} / {:s}</td><td>{:s}</td><td>{:s}</td><!-- <td>{:s}</td> --></tr>".format(dcname, str(mag), str(ra)[0:5], str(dec)[0:5], str(match_dist)[0:5], str(cat_dist)[0:5], str(bp))
+
+
 
    template = make_default_template(amsid, "calib.html", json_conf)
    template = template.replace("</html>", "<script src='/src/js/mikes/freecal-ajax.js'></script></html>")
@@ -54,7 +94,13 @@ def cal_file(amsid, calib_file):
    st = hs.replace("/mnt/ams2", "")
    azs[0] = hs.replace("/mnt/ams", "")
    cal_time = calib_file[0:20]
+   if "total_res_px" not in cp:
+      cp['total_res_px']  = 999
+   if "total_res_deg" not in cp:
+      cp['total_res_deg']  = 999
 
+   cd_template = cd_template.replace("{AMSID}", str(amsid))
+   cd_template = cd_template.replace("{CALFILE}", str(calib_file))
    cd_template = cd_template.replace("{CAL_PARAMS}", str(cp))
    cd_template = cd_template.replace("{RA_CENTER}", str(cp['ra_center'])[0:5])
    cd_template = cd_template.replace("{DEC_CENTER}", str(cp['dec_center'])[0:5])
@@ -72,6 +118,7 @@ def cal_file(amsid, calib_file):
    cd_template = cd_template.replace("{USER_STARS}", "")
    print("AZS:", azs[0])
    template = template.replace("{MAIN_TABLE}", cd_template)
+   template = template.replace("{STAR_ROWS}", star_rows)
 
    return(template)
 
