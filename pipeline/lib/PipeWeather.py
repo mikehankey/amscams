@@ -200,6 +200,71 @@ def hourly_stacks_html(date, json_conf):
    print(night_stack_dir + "hours.html")
    stack_index(json_conf)
 
+
+def meteor_night_stacks(date, json_conf):
+   mdir = "/mnt/ams2/meteors/" + date + "/"
+   stack_imgs = {}
+   for cam in json_conf['cameras']:
+      cams_id = json_conf['cameras'][cam]['cams_id']
+      files = glob.glob(mdir + "*" + cams_id + "*.json")
+      images = []
+      for mf in files:
+         if "reduced" not in mf and "stars" not in mf and "man" not in mf and "star" not in mf and "import" not in mf and "archive" not in mf:
+            mj = load_json_file(mf)
+            if "hd_stack" in mj:
+               img = cv2.imread(mj['hd_stack'])
+            elif "sd_stack" in mj:
+               img = cv2.imread(mj['sd_stack'])
+               img = cv2.resize(img,(1920,1080))
+            images.append(img)
+      print("IMAGES:", cams_id, len(images))
+      meteor_stack_image = stack_frames(images, 1, None, "night")
+      stack_imgs[cams_id] = meteor_stack_image
+      outfile = mdir + cams_id + "_meteors.jpg"
+      cv2.imwrite(outfile, meteor_stack_image)
+      print("SAVED:", outfile)
+
+   if len(json_conf['cameras']) == 6:
+      comp_w = int((1920/2) * 2)
+      comp_h = int((1080/2) * 3)
+   if len(json_conf['cameras']) == 7:
+      comp_w = int((1920/2) * 2)
+      comp_h = int((1080/2) * 4)
+
+   comp = np.zeros((comp_h,comp_w,3),dtype=np.uint8)
+
+   col = 0
+   row = 0
+   c = 0
+   px1 = 0
+   px2 = int(1920/2)   
+   for cam in json_conf['cameras']:
+      cams_id = json_conf['cameras'][cam]['cams_id']
+      if c == 0:
+         px1 = 0   
+         px2 = int((1920/2))   
+      elif c == 6 :
+         px1 = 0 + (1920/4)   
+         px2 = px2 + (1920/4)
+      elif c % 2 == 0 :
+         px1 = 0   
+         px2 = int((1920/2))   
+         row += 1
+         col = 1
+      else:
+         px1 = int((1920/2))   
+         px2 = int(1920)   
+         col = 2
+      py1 = int(row * (1080/2))
+      py2 = int(py1 + (1080/2))
+      print("COMP XYS:", c, col, row, py1, py2, px1, px2)
+      img = cv2.resize(stack_imgs[cams_id],(int(1920/2),int(1080/2)))
+      comp[py1:py2,px1:px2] = img
+      c += 1
+   outfile = mdir + json_conf['site']['ams_id'] + "_meteors.jpg"
+   cv2.imwrite(outfile, comp)
+   print("Saved:", outfile)
+   
 def hourly_stacks(date, json_conf):
    hour_data = {}
    solar_hours = solar_info(date, json_conf)
