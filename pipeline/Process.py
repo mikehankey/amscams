@@ -9,7 +9,7 @@ from datetime import datetime
 import datetime as dt
 
 from lib.PipeMeteorClean import purge_meteors_for_date, fix_meteor_orphans, meteor_png_to_jpg, fix_meteor_month, restack_meteor_dir
-from lib.PipeWeather import detect_clouds , make_flat, track_clouds, solar_info, audit_tl, detect_aurora, batch_aurora, aurora_report, aurora_stack_vid, tl_list, aurora_tl,  hourly_stacks, make_all_hourly_stacks, hourly_stacks_html
+from lib.PipeWeather import detect_clouds , make_flat, track_clouds, solar_info, audit_tl, detect_aurora, batch_aurora, aurora_report, aurora_stack_vid, tl_list, aurora_tl,  hourly_stacks, make_all_hourly_stacks, hourly_stacks_html, meteor_night_stacks
 from lib.PipeImage import quick_video_stack, restack_meteor
 from lib.PipeTrans import trans_test 
 from lib.PipeManager import mln_report, mln_best, best_of , copy_super_stacks, super_stacks_to_video, multi_station_meteors, proc_status
@@ -464,4 +464,6 @@ if __name__ == "__main__":
       remake_mfd(sys.argv[2], json_conf)
    if cmd == 'remake_mfd_all':
       remake_mfd_all(json_conf)
+   if cmd == 'mns':
+      meteor_night_stacks(sys.argv[2], json_conf)
    
