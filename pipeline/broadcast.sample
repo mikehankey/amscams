@@ -18,7 +18,7 @@
       },
       {
          "ams_id": "AMS9",
-         "bid": [2],
+         "bid": [2,3,4],
          "operator": "Ed Abel",
          "location": "Mathias, WV USA"
       },
@@ -29,7 +29,7 @@
          "location": "Hawley TX, USA"
       },
       {
-         "bid": [4,5,6],
+         "bid": [5,6],
          "ams_id": "AMS24",
          "operator": "Robert Lunsford, University of Arizona",
          "location": "El Cajo, CA USA"
@@ -39,12 +39,6 @@
          "bid": [6,7,8],
          "operator": "George Fleenor ",
          "location": "Bradenton, FL USA"
-      },
-      {
-         "ams_id": "AMS49",
-         "bid": [9],
-         "operator": "Cafego’s Aurora View Farms B&B",
-         "location": "Fairbanks, AK USA"
       }
 
    ],
@@ -73,6 +67,12 @@
          "bid": [8],
          "operator": "Cedar Amateur Astronomers",
          "location": "Cedar Rapids, IA USA"
+      },
+      {
+         "ams_id": "AMS49",
+         "bid": [9],
+         "operator": "Cafego’s Aurora View Farms B&B",
+         "location": "Fairbanks, AK USA"
       }
 
 
