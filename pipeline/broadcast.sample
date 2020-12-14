@@ -24,19 +24,19 @@
       },
       {
          "ams_id": "AMS8",
-         "bid": [3],
+         "bid": [3,4],
          "operator": "Kevin Palivec",
          "location": "Hawley TX, USA"
       },
       {
-         "bid": [4],
+         "bid": [4,5],
          "ams_id": "AMS24",
          "operator": "Robert Lunsford, University of Arizona",
          "location": "El Cajo, CA USA"
       },
       {
          "ams_id": "AMS102",
-         "bid": [5],
+         "bid": [6,7],
          "operator": "George Fleenor ",
          "location": "Bradenton, FL USA"
       },
@@ -47,7 +47,7 @@
          "location": "Otter Creek TWP, IA USA"
       },
       {
-         "bid": [7],
+         "bid": [7,8],
          "ams_id": "AMS14",
          "operator": "Mel Helm",
          "location": "Auberry, CA USA"
