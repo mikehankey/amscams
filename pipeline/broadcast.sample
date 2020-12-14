@@ -6,7 +6,7 @@
    "video_providers" : [
       {
          "ams_id": "AMS1",
-         "bid": [0],
+         "bid": [0,1],
          "operator": "Mike Hankey",
          "location": "Monkton, MD USA"
       },
@@ -18,25 +18,25 @@
       },
       {
          "ams_id": "AMS9",
-         "bid": [2,3,4],
+         "bid": [2],
          "operator": "Ed Abel",
          "location": "Mathias, WV USA"
       },
       {
          "ams_id": "AMS8",
-         "bid": [3,4,5],
+         "bid": [3,4,5,6],
          "operator": "Kevin Palivec",
          "location": "Hawley TX, USA"
       },
       {
-         "bid": [5,6],
+         "bid": [5],
          "ams_id": "AMS24",
          "operator": "Robert Lunsford, University of Arizona",
          "location": "El Cajo, CA USA"
       },
       {
          "ams_id": "AMS102",
-         "bid": [6,7,8],
+         "bid": [6,7,8,9],
          "operator": "George Fleenor ",
          "location": "Bradenton, FL USA"
       }
