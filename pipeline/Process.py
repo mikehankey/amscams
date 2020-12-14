@@ -8,6 +8,7 @@ from lib.PipeProcess import run_jobs, update_code
 from datetime import datetime
 import datetime as dt
 
+from lib.PipeCustomVideos import  meteors_last_night_for_cam
 from lib.PipeMeteorClean import purge_meteors_for_date, fix_meteor_orphans, meteor_png_to_jpg, fix_meteor_month, restack_meteor_dir
 from lib.PipeWeather import detect_clouds , make_flat, track_clouds, solar_info, audit_tl, detect_aurora, batch_aurora, aurora_report, aurora_stack_vid, tl_list, aurora_tl,  hourly_stacks, make_all_hourly_stacks, hourly_stacks_html, meteor_night_stacks
 from lib.PipeImage import quick_video_stack, restack_meteor
@@ -468,4 +469,7 @@ if __name__ == "__main__":
       meteor_night_stacks(sys.argv[2], json_conf)
    if cmd == 'hotspots':
       reject_hotspots(sys.argv[2], json_conf)
-   
+   if cmd == "mln_cam":
+      date = sys.argv[2]
+      cam_num = sys.argv[3]
+      meteors_last_night_for_cam(date, cam_num, json_conf)
