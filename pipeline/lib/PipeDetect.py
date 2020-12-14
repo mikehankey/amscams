@@ -246,16 +246,22 @@ def make_meteor_index_day(day, json_conf):
          report = mj['best_meteor']['report']
          ang_vel = report['ang_vel']
          ang_dist = report['ang_dist']
+            
       else:
          reduced = 0
          dur = 0
          ang_vel = 0
          ang_dist = 0
+      if "hotspot" in mj:
+         hotspot = mj['hotspot']
+      else:
+         hotspot = 0
       mi[meteor]['start_time'] = start_time
       mi[meteor]['dur'] = dur
       mi[meteor]['ang_vel'] = ang_vel
       mi[meteor]['ang_dist'] = ang_dist
-      meteor_data.append((meteor, reduced, start_time, dur, ang_vel, ang_dist))
+      mi[meteor]['hotspot'] = hotspot 
+      meteor_data.append((meteor, reduced, start_time, dur, ang_vel, ang_dist, hotspot))
 
    mid = sorted(meteor_data, key=lambda x: (x[0]), reverse=True)
    mi_file = mdir + day + "-" + amsid + ".meteors"
@@ -290,6 +296,80 @@ def confirm_meteors(date ):
          os.system(cmd)
          print(cmd)
 #      exit()
+
+def reject_hotspots(date, json_conf):
+   mdir = "/mnt/ams2/meteors/" + date + "/" 
+   jsfiles = glob.glob(mdir + "*.json")
+   hot_spots = {}
+   hsi = []
+   for mf in jsfiles:
+      if mf not in hot_spots:
+         hot_spots[mf] = {}
+         hot_spots[mf]['xs'] = []
+         hot_spots[mf]['ys'] = []
+      if "reduced" not in mf and "stars" not in mf and "man" not in mf and "star" not in mf and "import" not in mf and "archive" not in mf:
+         mj = load_json_file(mf) 
+         if "sd_objects" in mj:
+            if "history" in mj['sd_objects'][0]:
+               for hd in mj['sd_objects'][0]['history']:
+                  x = hd[1]
+                  y = hd[2]
+                  hot_spots[mf]['xs'].append(x)
+                  hot_spots[mf]['ys'].append(y)
+   for mf in hot_spots:
+      hot_spots[mf]['avg_x'] = int(np.mean(hot_spots[mf]['xs']))
+      hot_spots[mf]['avg_y'] = int(np.mean(hot_spots[mf]['ys']))
+      hsi.append((mf, hot_spots[mf]['avg_x'], hot_spots[mf]['avg_y']))
+      
+   hsi = sorted(hsi, key=lambda x: (x[1]), reverse=True)
+   hotspots = {}
+   for d in hsi:
+      hotspots = log_hotspot(hotspots,d)
+
+   for hs in hotspots:
+      if len(hotspots[hs]['children']) > 3:
+         #print(hs, hotspots[hs]['x'], hotspots[hs]['y'], len(hotspots[hs]['children']))
+         for child in hotspots[hs]['children']:
+            print(child, len(hotspots[hs]['children']))
+            mj = load_json_file(child)
+            mj['hotspot'] = len(hotspots[hs]['children'])
+            save_json_file(child, mj)
+            print("saved", child)
+
+def log_hotspot(hotspots, d):
+   file, avg_x, avg_y = d
+   (f_datetime, cam, f_date_str,fy,fmin,fd, fh, fm, fs) = convert_filename_to_date_cam(file)
+   print("CAM!:", cam)
+    
+   found = 0
+   for hfile in hotspots:
+      if found == 1:
+         continue
+      hx = hotspots[hfile]['x']
+      hy = hotspots[hfile]['y']
+      hcam = hotspots[hfile]['cam']
+      if hcam != cam:
+         continue
+      dist = calc_dist((avg_x,avg_y),(hx,hy))
+      if dist < 10:
+         found = 1
+         first_file = hfile
+   if found == 1:
+      print("FOUND!")
+      #this_id = hotspots[first_file]['id']
+      hotspots[first_file]['children'].append(file)
+   if found == 0:
+      print("NEW FOUND!")
+      # not found make new hotspot
+      hotspots[file] = {}
+      hotspots[file]['x'] = avg_x
+      hotspots[file]['y'] = avg_y
+      hotspots[file]['children'] = []
+      hotspots[file]['cam'] = cam
+
+   return(hotspots)
+
+  
 
 def reject_meteors(date, jsfs):
    meteor_dir = "/mnt/ams2/meteors/" + date + "/"

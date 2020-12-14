@@ -7,6 +7,7 @@ from lib.PipeAutoCal import fn_dir
 import datetime 
 from datetime import datetime as dt
 import os
+
 def filename_to_date(filename):
    fn, dir = fn_dir(filename)
    ddd = fn.split("_")
@@ -33,10 +34,14 @@ def get_meteors_in_range(station_id, start_date, end_date,del_data,filters=None)
    deleted = 0
    amsid = station_id
 
+   hotspot_filter = 0
    nored = 0
    if filters is not None:
       if "nored" in filters:
          nored = 1
+      if "hotspot" in filters:
+         hotspot_filter = 1
+         print("HOTSPOT FILTER ON!")
 
    delete_log = "/mnt/ams2/SD/proc2/json/" + amsid + ".del"
    if cfe(delete_log) == 1:
@@ -55,7 +60,20 @@ def get_meteors_in_range(station_id, start_date, end_date,del_data,filters=None)
          mi = load_json_file(mif)
       else:
          mi = []
-      return(mi)
+ 
+      if hotspot_filter == 0 and nored == 0:
+         return(mi)
+      elif hotspot_filter == 1:
+         filtered_index = []
+         for dd in mi:
+            meteor_file, reduced, start_time, dur, ang_vel, ang_dist, hotspot = dd 
+            if hotspot > 20:
+               filtered_index.append(dd)
+
+      filtered_index = sorted(filtered_index, key=lambda x: (x[6]), reverse=True)
+
+      return(filtered_index)
+   
 
    # check to see how many days in the range
    # if it is > 7 and use the month full index file (and have to del with bad sync.)
@@ -82,12 +100,17 @@ def get_meteors_in_range(station_id, start_date, end_date,del_data,filters=None)
             print("ADDING METEORS FOR DAY:", mif)
             for dd in mit:
                if nored == 1:
-                  meteor_file, reduced, start_time, dur, ang_vel, ang_dist = dd 
+                  meteor_file, reduced, start_time, dur, ang_vel, ang_dist, hotspot = dd 
                   rf = meteor_file.replace(".json", "-reduced.json")
                   if cfe(rf) == 1:
                      reduced = 1
                   if reduced == 1:
                      print("NORED")
+                     continue
+               if hotspot_filter == 1:
+                  meteor_file, reduced, start_time, dur, ang_vel, ang_dist, hotspot = dd 
+                  print("HOSPOT VALUE", hotspot)
+                  if hotspot <= 20:
                      continue
                mi.append(dd)
          else:
@@ -209,8 +232,11 @@ def meteors_main (amsid, in_data) :
       
 
    for meteor in these_meteors:
-
-      meteor_file, reduced, start_time, dur, ang_vel, ang_dist = meteor 
+      if len(meteor) == 6:
+         meteor_file, reduced, start_time, dur, ang_vel, ang_dist = meteor 
+         hotspot = 0
+      elif len(meteor) == 7:
+         meteor_file, reduced, start_time, dur, ang_vel, ang_dist, hotspot = meteor 
       red_file = meteor_file.replace(".json", "-reduced.json")
       if cfe(red_file) == 1:
          reduced = 1
