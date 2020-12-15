@@ -1413,7 +1413,7 @@ def make_flat(cam,day,json_conf):
    #if cfe(mask_file) == 0:
    if True:
       wild = "/mnt/ams2/SD/proc2/daytime/" + date + "/*" + cam + "*.mp4" 
-      nwild = "/mnt/ams2/SD/proc2/" + date + "/*" + cam + "*.mp4" 
+      nwild = "/mnt/ams2/SD/proc2/" + date + "/images/*" + cam + "*.jpg" 
       print(wild)
       files = glob.glob(wild)
       nfiles = glob.glob(nwild)
@@ -1424,6 +1424,7 @@ def make_flat(cam,day,json_conf):
          return(None, None)
       med_frames = []
       mask_frames = []
+      night_mask_frames = []
       fc = 0
       for file in sorted(files):
          if "trim" in file or "crop" in file :
@@ -1438,6 +1439,8 @@ def make_flat(cam,day,json_conf):
             frames,color_frames,subframes,sum_vals,max_vals,pos_vals = load_frames_fast(file, json_conf, 1, 1, [], 1,[])
             mask = color_thresh(color_frames[0]) 
             mask_frames.append(mask)
+
+      
 
       print("MASK FRAMES:", len(mask_frames), len(med_frames))
       if len(mask_frames) == 0:
@@ -1799,8 +1802,8 @@ def color_thresh(image, low=[60,0,0], high=[255,200,200]):
    sub = cv2.subtract(gray, mask_image)
 
 
-   cv2.imshow('sub', sub)
-   cv2.waitKey(0)
+   #cv2.imshow('sub', sub)
+   #cv2.waitKey(0)
 
 
    for w in range(0,width):
