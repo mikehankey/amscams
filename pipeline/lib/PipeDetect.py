@@ -297,6 +297,65 @@ def confirm_meteors(date ):
          print(cmd)
 #      exit()
 
+def reject_mask_detects(date, json_conf):
+   del_log = "/mnt/ams2/SD/proc2/json/" + json_conf['site']['ams_id'] + ".del"
+   if cfe(del_log) == 1:
+      del_data = load_json_file(del_log)
+   else:
+      del_data = {} 
+   mdir = "/mnt/ams2/meteors/" + date + "/" 
+   jsfiles = glob.glob(mdir + "*.json")
+   mask_files = glob.glob("/mnt/ams2/meteor_archive/" + json_conf['site']['ams_id'] + "/CAL/MASKS/*mask*.png" )
+   mask_imgs = {}
+   sd_mask_imgs = {}
+   for mf in mask_files:
+      mi = cv2.imread(mf)
+      omh, omw = mi.shape[:2]
+      fn,dir = fn_dir(mf)
+      fn = fn.replace("_mask.png", "")
+      mi = cv2.resize(mi, (1920, 1080))
+      sd = cv2.resize(mi, (omw, omh))
+      mask_imgs[fn] = mi
+      sd_mask_imgs[fn] = sd
+   hsi = []
+   for mf in jsfiles:
+      if "reduced" not in mf and "stars" not in mf and "man" not in mf and "star" not in mf and "import" not in mf and "archive" not in mf:
+         mj = load_json_file(mf) 
+         (f_datetime, cam, f_date_str,fy,fmin,fd, fh, fm, fs) = convert_filename_to_date_cam(mf)
+         mask_hits = 0
+         if "sd_objects" in mj:
+            if "history" in mj['sd_objects'][0]:
+               for hd in mj['sd_objects'][0]['history']:
+                  x = hd[1]
+                  y = hd[2]
+                  if x < 0:
+                     x = 0
+                  if x >= 1920:
+                     x = 1919 
+                  if y < 0:
+                     y = 0
+                  if y >= 1080:
+                     y = 1079 
+                  if mask_imgs[cam][y,x][0] == 255:
+                     mask_hits += 1
+                  if x < omw and y < omh:
+                     print("SD SIZE:", sd_mask_imgs[cam].shape)
+                     sd_val = sd_mask_imgs[cam][y,x][0]
+                     print("SD VAL", x,y,sd_val)
+                     if sd_val == 255:
+                        print("SD MASK HIT!", sd_val)
+               mperc = mask_hits / len(mj['sd_objects'][0]['history'])
+               print("MASK :", x,y, mask_hits, len(mj['sd_objects'][0]['history']), mperc)
+               if mperc > .8 :
+                  print("DELETE MASK HITS:", mask_hits, len(mj['sd_objects'][0]['history']))
+                  fn, dir = fn_dir(mf)
+                  root_file = fn.replace(".json", "")
+                  print("ROOT:", root_file)
+                  del_data[root_file] = 1
+   save_json_file(del_log, del_data)
+
+   os.system("./Process.py purge_meteors")
+
 def reject_hotspots(date, json_conf):
    mdir = "/mnt/ams2/meteors/" + date + "/" 
    jsfiles = glob.glob(mdir + "*.json")

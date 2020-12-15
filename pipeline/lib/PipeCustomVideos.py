@@ -186,8 +186,8 @@ def meteors_last_night_for_cam(date, cams_id, json_conf):
           #cv2.putText(show_frame, str("DETECT"),  (20,50), cv2.FONT_HERSHEY_SIMPLEX, .4, (255, 255, 255), 1)
           #cv2.putText(show_frame, str(fn),  (20,70), cv2.FONT_HERSHEY_SIMPLEX, .4, (255, 255, 255), 1)
 
-          cv2.imshow('pepe', show_frame)
-          cv2.waitKey(30)
+          #cv2.imshow('pepe', show_frame)
+          #cv2.waitKey(30)
           cv2.imwrite("./CACHE/" + frame_file, show_frame)
     cmd = "./FFF.py imgs_to_vid ./CACHE/ " + fy + " /mnt/ams2/CUSTOM_VIDEOS/" + date + "_" + cams_id + ".mp4 25 28"
     print(cmd)

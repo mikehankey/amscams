@@ -1459,9 +1459,10 @@ def make_flat(cam,day,json_conf):
 
       med_show = cv2.resize(median_night, (1280,720))
       med_show_gray = cv2.cvtColor(med_show, cv2.COLOR_BGR2GRAY)
-      _, thresh= cv2.threshold(med_show_gray, 100, 255, cv2.THRESH_BINARY)
-      
-      cnts = get_contours(thresh)
+      _, thresh= cv2.threshold(med_show_gray, 80, 255, cv2.THRESH_BINARY)
+      thresh_dil = cv2.dilate(thresh.copy(), None , iterations=8)
+      cnts = get_contours(thresh_dil)
+      cv2.imwrite("/mnt/ams2/test.jpg", thresh_dil) 
 
 
 
