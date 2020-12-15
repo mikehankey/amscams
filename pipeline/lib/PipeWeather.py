@@ -1413,10 +1413,12 @@ def make_flat(cam,day,json_conf):
    #if cfe(mask_file) == 0:
    if True:
       wild = "/mnt/ams2/SD/proc2/daytime/" + date + "/*" + cam + "*.mp4" 
-      nwild = "/mnt/ams2/SD/proc2/" + date + "/images/*" + cam + "*.jpg" 
+      nwild = "/mnt/ams2/SD/proc2/" + date + "*" + cam + "*.jpg" 
+      nstack_wild = "/mnt/ams2/SD/proc2/" + date + "/images/*" + cam + "*.jpg" 
       print(wild)
       files = glob.glob(wild)
       nfiles = glob.glob(nwild)
+      nstacks = glob.glob(nstack_wild)
       for file in nfiles:
          files.append(file)
       if len(files) == 0:
@@ -1431,16 +1433,37 @@ def make_flat(cam,day,json_conf):
             continue
          (f_datetime, cam, f_date_str,fy,fmin,fd, fh, fm, fs) = convert_filename_to_date_cam(file)
          sun_status, sun_az, sun_el = day_or_night(f_date_str, json_conf,1)
+
          if -10 <= int(sun_el) <= 0:
 
             frames,color_frames,subframes,sum_vals,max_vals,pos_vals = load_frames_fast(file, json_conf, 1, 1, [], 1,[])
             med_frames.append(color_frames[0])
          if -5 <= int(sun_el) <= 0:
+            print("MASK FRAMES:", file)
             frames,color_frames,subframes,sum_vals,max_vals,pos_vals = load_frames_fast(file, json_conf, 1, 1, [], 1,[])
             mask = color_thresh(color_frames[0]) 
+
             mask_frames.append(mask)
 
+      night_images = []
+      for file in sorted(nstacks):
+         if "trim" in file or "crop" in file :
+            continue
+         (f_datetime, cam, f_date_str,fy,fmin,fd, fh, fm, fs) = convert_filename_to_date_cam(file)
+         sun_status, sun_az, sun_el = day_or_night(f_date_str, json_conf,1)
+         if int(sun_el) < -10:
+            img = cv2.imread(file)
+            night_images.append(img)
       
+      median_night = cv2.convertScaleAbs(np.median(np.array(night_images), axis=0))
+
+      med_show = cv2.resize(median_night, (1280,720))
+      med_show_gray = cv2.cvtColor(med_show, cv2.COLOR_BGR2GRAY)
+      _, thresh= cv2.threshold(med_show_gray, 100, 255, cv2.THRESH_BINARY)
+      
+      cnts = get_contours(thresh)
+
+
 
       print("MASK FRAMES:", len(mask_frames), len(med_frames))
       if len(mask_frames) == 0:
@@ -1448,12 +1471,21 @@ def make_flat(cam,day,json_conf):
          return(None, None)
       for frame in mask_frames:
          print(frame.shape)
+      print("MASK FRAMES:", len(mask_frames))
       median_mask = cv2.convertScaleAbs(np.median(np.array(mask_frames), axis=0))
-
       median_flat = cv2.convertScaleAbs(np.median(np.array(med_frames), axis=0))
       median_mask = cv2.GaussianBlur(median_mask, (15, 15), 0)
       median_mask = cv2.dilate(median_mask.copy(), None , iterations=4)
       median_mask = fill_mask(median_mask)
+
+      omh, omw = median_mask.shape[:2]
+
+      median_mask = cv2.resize(median_mask, (1280,720))
+      for x,y,w,h in cnts:
+         print("ADDING EXTRA AREAS TO MASK", x,y,w,h)
+         median_mask[y:y+w,x:x+w] = 255
+      median_mask = cv2.resize(median_mask, (omw,omh))
+
       cv2.imwrite(mask_file, median_mask)
       cv2.imwrite(flat_file, median_flat)
       print(mask_file)
