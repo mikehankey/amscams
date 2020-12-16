@@ -75,6 +75,12 @@ def stacks_main(amsid, data) :
          for cam in json_conf['cameras']:
             cams_id = json_conf['cameras'][cam]['cams_id']
             night_stack_file = vdir + "/" + cams_id + "-night-stack.jpg"
+            print("NIGHT STACK FILE!", night_stack_file)
+            if cfe("/mnt/ams2/" + night_stack_file) == 0:
+               print("NOT FOUND")
+               night_stack_file = "/none.png"               
+            else:
+               print("FOUND")
             if cams_id in data:
                minutes = data[cams_id]
             else:
@@ -218,7 +224,7 @@ def stacks_hour(amsid, day, hour):
       """
 
       for cam in min_files[min]:
-         print(cam, min_files[min][cam])
+         #print(cam, min_files[min][cam])
          min_file, min_dir = fn_dir(min_files[min][cam])
          min_link = min_file.replace("-stacked-tn.jpg", "")
          out += """

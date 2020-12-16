@@ -283,9 +283,11 @@ def scan_and_stack_fast(file, sun_status = 0, vals = []):
          gray = cv2.cvtColor(small_frame, cv2.COLOR_BGR2GRAY)
          if fc > 0:
             sub = cv2.subtract(gray, last_gray)
+            masked_frame = cv2.subtract(gray, small_mask)
             if mask_img is not None:
-               print("MASK SUB", small_mask.shape, sub.shape)
-               
+               #print("MASK SUB", small_mask.shape, sub.shape)
+               #cv2.imshow('pepe', masked_frame) 
+               #cv2.waitKey(30)
                sub = cv2.subtract(sub, small_mask)
                 #gray_frames[-1])
          else:
@@ -300,7 +302,7 @@ def scan_and_stack_fast(file, sun_status = 0, vals = []):
             _, thresh_frame = cv2.threshold(sub, 15, 255, cv2.THRESH_BINARY)
             #min_val, max_val, min_loc, (mx,my)= cv2.minMaxLoc(thresh_frame)
             sum_val =cv2.sumElems(thresh_frame)[0]
-            print("SUM VAL:", sum_val)
+            #print("SUM VAL:", sum_val)
             if sum_val > 5000:
                fb += 1
                print("FIREBALL:", fc, sum_val)

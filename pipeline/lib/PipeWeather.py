@@ -181,6 +181,8 @@ def hourly_stacks_html(date, json_conf):
    for cam_id in night_images:
       print("NIGHT IMAGES:", cam_id, len(night_images[cam_id]))
 
+      if len(night_images[cam_id] == 0:
+         continue
       night_stack_image = stack_frames(night_images[cam_id], 1, None, "night")
       night_stack_file = "/mnt/ams2/SD/proc2/" + date + "/images/" + cam_id + "-night-stack.png"
       night_stack_file_jpg = "/mnt/ams2/meteor_archive/" + STATION_ID + "/STACKS/" + date + "/" + cam_id + "-night-stack.jpg"
