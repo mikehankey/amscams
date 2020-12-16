@@ -84,7 +84,7 @@ def find_object(objects, fn, cnt_x, cnt_y, cnt_w, cnt_h, intensity=0, hd=0, sd_m
       objects[obj_id]['oys'].append(cnt_y)
       objects[obj_id]['ows'].append(cnt_w)
       objects[obj_id]['ohs'].append(cnt_h)
-      objects[obj_id]['oint'].append(intensity)
+      objects[obj_id]['oint'].append(int(intensity))
       found_obj = obj_id
       print("FIND NEW OBJ:", found_obj)
    if found == 1:

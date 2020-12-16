@@ -235,7 +235,7 @@ def make_meteor_index_day(day, json_conf):
       else:
          #print("BAD FILE:", ddd, len(ddd))
          continue
-      start_time = y + "-" + m + "-" + d + " " + h + ":" + m + ":" + s
+      start_time = y + "-" + m + "-" + d + " " + h + ":" + mm + ":" + s
       mj = load_json_file(meteor)
       if "best_meteor" in mj:
          reduced = 1
@@ -4652,10 +4652,10 @@ def min_cnt_dist(x,y,w,h,tx,ty,tw,th):
    return(min(ds))
 
 def find_object(objects, fn, cnt_x, cnt_y, cnt_w, cnt_h, intensity=0, hd=0, sd_multi=1, cnt_img=None , obj_tdist = None):
-   print("FIND OBJ:", fn, cnt_x, cnt_y, cnt_w, cnt_h)
+   #print("FIND OBJ:", fn, cnt_x, cnt_y, cnt_w, cnt_h)
    matched = {}
    if hd == 1:
-      obj_dist_thresh = 65 
+      obj_dist_thresh = 80 
    else:
       obj_dist_thresh = 30 
    if obj_tdist is not None:
@@ -4706,9 +4706,9 @@ def find_object(objects, fn, cnt_x, cnt_y, cnt_w, cnt_h, intensity=0, hd=0, sd_m
                   last_seg_dist = calc_dist((last_x,last_y), (last_x2, last_y2))
                   this_seg_dist = calc_dist((last_x,last_y), (cnt_x, cnt_y))
                   abs_diff = abs(last_seg_dist - this_seg_dist)
-                  print("THIS/LAST SEG:", obj, this_seg_dist, last_seg_dist, abs_diff)
+                  #print("THIS/LAST SEG:", obj, this_seg_dist, last_seg_dist, abs_diff)
                   last_fn_diff = fn - objects[obj]['ofns'][-1]
-                  if abs_diff > 20 or this_seg_dist > 20 or last_fn_diff > 5:
+                  if abs_diff > 20 or this_seg_dist > 20 or last_fn_diff > 7:
                      # don't add points to meteors if they are more than 5x farther away than the last seg dist
                   #   cont = input("ABORTED MATCH DUE TO ABS_DIFF." + str( abs_diff) + " " + str( last_seg_dist * 5))
                      continue
@@ -4721,6 +4721,7 @@ def find_object(objects, fn, cnt_x, cnt_y, cnt_w, cnt_h, intensity=0, hd=0, sd_m
                      continue 
 
          
+            #print("DIFF:", dist, obj_dist_thresh)
             if dist < obj_dist_thresh : #and last_frame_diff < 15:
                #if this is linked to a meteor only associate if the point is further from the start than the last recorded point
                #if cnt_x in objects[obj]['oxs'] and cnt_y in objects[obj]['oys']:
@@ -4735,7 +4736,8 @@ def find_object(objects, fn, cnt_x, cnt_y, cnt_w, cnt_h, intensity=0, hd=0, sd_m
                   last_seg_dist = calc_dist((last_x,last_y), (last_x2, last_y2))
                   this_seg_dist = calc_dist((last_x,last_y), (cnt_x, cnt_y))
                   abs_diff = abs(last_seg_dist - this_seg_dist)
-                  if abs_diff > 20:
+                  #print("ABS DIFF:", abs_diff)
+                  if abs_diff > obj_dist_thresh:
                      found = 0 
                      #found_obj = obj
                      #matched[obj] = 1
@@ -4762,8 +4764,8 @@ def find_object(objects, fn, cnt_x, cnt_y, cnt_w, cnt_h, intensity=0, hd=0, sd_m
       found =1 
       found_obj = ci[0][0]
    elif (len(not_close_objs) > 0):
-      for nc in not_close_objs:
-         print("not close" , nc)
+      #for nc in not_close_objs:
+      #   print("not close" , nc)
       found = 0
    if found == 0:
       dist_objs = sorted(dist_objs, key=lambda x: (x[1]), reverse=False)
@@ -4898,8 +4900,8 @@ def detect_in_vals(vals_file, masks=None, vals_data=None):
 
    # analyze the objects for a first run meteor detection (strict=0) 
    for id in objects:
-      print("FS", objects[id]['fs_dist'])
-      print("SEGS:", objects[id]['segs'])
+      #print("FS", objects[id]['fs_dist'])
+      #print("SEGS:", objects[id]['segs'])
       objects[id] = analyze_object(objects[id], 0,0)
    objects = filter_bad_objects(objects)
 
