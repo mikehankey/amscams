@@ -570,7 +570,8 @@ def stack_frames_fast(frames, skip = 1, resize=None, sun_status="night", sum_val
    return(np.asarray(stacked_image))
 
 
-def load_frames_fast(trim_file, json_conf, limit=0, mask=0,crop=(),color=0,resize=[], sun_status="night"):
+
+def load_frames_fast(trim_file, json_conf, limit=0, mask=0,crop=(),color=0,resize=[], sun_status="night", mask_img = None):
    (f_datetime, cam, f_date_str,fy,fm,fd, fh, fmin, fs) = convert_filename_to_date_cam(trim_file)
    cap = cv2.VideoCapture(trim_file)
 
@@ -590,9 +591,13 @@ def load_frames_fast(trim_file, json_conf, limit=0, mask=0,crop=(),color=0,resiz
    frame_count = 0
    last_frame = None
    go = 1
+   mask_resized = 0
    while go == 1:
       if True :
          _ , frame = cap.read()
+         if mask_img is not None and mask_resized == 0:
+            mask_img = cv2.resize(mask_img, (frame.shape[1],frame.shape[0]))
+            mask_resized = 1
          if frame is None:
             if frame_count <= 5 :
                cap.release()
@@ -618,13 +623,16 @@ def load_frames_fast(trim_file, json_conf, limit=0, mask=0,crop=(),color=0,resiz
                      hd = 1
                   else:
                      hd = 0
-                  masks = get_masks(cam, json_conf,hd)
-                  frame = mask_frame(frame, [], masks, 5)
+                  #masks = get_masks(cam, json_conf,hd)
+                  #frame = mask_frame(frame, [], masks, 5)
 
                if last_frame is not None:
                   if frame_count > 5:
                      last_frame = frames[-5]
                   subframe = cv2.subtract(frame, last_frame)
+                  if mask_img is not None:
+                     subframe = cv2.subtract(subframe, mask_img)
+
                   sum_val =cv2.sumElems(subframe)[0]
 
                   if sum_val > 10 :

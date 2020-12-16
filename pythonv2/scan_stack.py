@@ -209,6 +209,14 @@ def batch_ss(wildcard=None):
 
 
 def scan_and_stack_fast(file, sun_status = 0, vals = []):
+   mask_imgs, sd_mask_imgs = load_mask_imgs(json_conf)
+
+   (f_datetime, cam, f_date_str,fy,fm,fd, fh, fmin, fs) = convert_filename_to_date_cam(file)
+   if cam in mask_imgs:
+      mask_img = mask_imgs[cam]
+   else:
+      mask_img = None
+
    print("VALS:", vals)
    fn = file.split("/")[-1]
    day = fn[0:10]
@@ -242,6 +250,7 @@ def scan_and_stack_fast(file, sun_status = 0, vals = []):
    fd = []
    stacked_image = None
    fb = 0
+   mask_resized = 0
    while True:
       grabbed , frame = cap.read()
       if fc < len(vals):
@@ -265,11 +274,19 @@ def scan_and_stack_fast(file, sun_status = 0, vals = []):
             cmd = "rm " + file
             #os.system(cmd)
             return()
+      if mask_img is not None and mask_resized == 0:
+         mask_img = cv2.resize(mask_img, (frame.shape[1],frame.shape[0]))
+         small_mask = cv2.resize(mask_img, (0,0),fx=.5, fy=.5)
+         mask_resized = 1
 
       if sun_status != 1:
          gray = cv2.cvtColor(small_frame, cv2.COLOR_BGR2GRAY)
          if fc > 0:
             sub = cv2.subtract(gray, last_gray)
+            if mask_img is not None:
+               print("MASK SUB", small_mask.shape, sub.shape)
+               
+               sub = cv2.subtract(sub, small_mask)
                 #gray_frames[-1])
          else:
             sub = cv2.subtract(gray, gray)
@@ -283,7 +300,7 @@ def scan_and_stack_fast(file, sun_status = 0, vals = []):
             _, thresh_frame = cv2.threshold(sub, 15, 255, cv2.THRESH_BINARY)
             #min_val, max_val, min_loc, (mx,my)= cv2.minMaxLoc(thresh_frame)
             sum_val =cv2.sumElems(thresh_frame)[0]
-
+            print("SUM VAL:", sum_val)
             if sum_val > 5000:
                fb += 1
                print("FIREBALL:", fc, sum_val)
@@ -390,7 +407,7 @@ def scan_and_stack(video_file, sun_status):
    vals = {}
    start_time = time.time()
 
-   sd_frames,sd_color_frames,sd_subframes,sum_vals,max_vals,pos_vals = load_frames_fast(video_file, json_conf, 0, 0, [], 1,resize, sun_status)
+   sd_frames,sd_color_frames,sd_subframes,sum_vals,max_vals,pos_vals = load_frames_fast(video_file, json_conf, 0, 0, [], 1,resize, sun_status )
    print(sum_vals, sun_status)
    i = 0
    cm = 0
@@ -613,6 +630,22 @@ def find_hd_min(sd_file, start_frame, end_frame):
 
    return(outfile)
 
+def load_mask_imgs(json_conf):
+   mask_files = glob.glob("/mnt/ams2/meteor_archive/" + json_conf['site']['ams_id'] + "/CAL/MASKS/*mask*.png" )
+   mask_imgs = {}
+   sd_mask_imgs = {}
+   for mf in mask_files:
+      mi = cv2.imread(mf, 0)
+      omh, omw = mi.shape[:2]
+      fn,dir = fn_dir(mf)
+      fn = fn.replace("_mask.png", "")
+      mi = cv2.resize(mi, (1920, 1080))
+      sd = cv2.resize(mi, (omw, omh))
+      mask_imgs[fn] = mi
+      sd_mask_imgs[fn] = sd
+   return(mask_imgs, sd_mask_imgs)
+
+
 def calc_real_cm(data):
    rc = []
    for row in data:
@@ -636,8 +669,8 @@ if sys.argv[1] == "bs":
       batch_ss()
 
 if sys.argv[1] == "ss":
-   #scan_and_stack_fast(sys.argv[2], sys.argv[3])
-   scan_and_stack(sys.argv[2], sys.argv[3])
+   scan_and_stack_fast(sys.argv[2], sys.argv[3])
+   #scan_and_stack(sys.argv[2], sys.argv[3])
 if sys.argv[1] == "fms":
    if len(sys.argv) < 3:
       now = datetime.now()
