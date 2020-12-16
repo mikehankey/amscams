@@ -221,7 +221,7 @@ def make_meteor_index_day(day, json_conf):
    mi = {}
    meteor_data = []
    for mf in files:
-      if "reduced" not in mf and "stars" not in mf and "man" not in mf and "star" not in mf and "import" not in mf and "archive" not in mf:
+      if "reduced" not in mf and "stars" not in mf and "man" not in mf and "star" not in mf and "import" not in mf and "archive" not in mf and "cal" not in mf and "frame" not in mf:
          meteors.append(mf)
 
    for meteor in meteors:
@@ -252,6 +252,15 @@ def make_meteor_index_day(day, json_conf):
          dur = 0
          ang_vel = 0
          ang_dist = 0
+
+         (f_datetime, cam, f_date_str,fy,fmin,fd, fh, fm, fs) = convert_filename_to_date_cam(meteor)
+         trim_num = int(get_trim_num(meteor))
+         print("TRIM NUM:", trim_num)
+         extra_sec = int(trim_num) / 25
+         start_time_dt = f_datetime + datetime.timedelta(0,extra_sec)
+
+         start_time = start_time_dt.strftime('%Y-%m-%d %H:%M:%S')
+
       if "hotspot" in mj:
          hotspot = mj['hotspot']
       else:
