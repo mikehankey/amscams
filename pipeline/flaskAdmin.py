@@ -3,7 +3,7 @@ from flask import Flask, request
 from FlaskLib.Learning import learning_meteors_dataset
 from FlaskLib.FlaskUtils import get_template
 from FlaskLib.api_funcs import update_meteor_points, show_cat_stars, delete_meteor, delete_meteors, reduce_meteor, delete_frame, crop_video
-from FlaskLib.calib_funcs import calib_main, cal_file, show_masks, del_calfile
+from FlaskLib.calib_funcs import calib_main, cal_file, show_masks, del_calfile, lens_model
 from lib.PipeUtil import cfe, load_json_file, save_json_file
 from lib.PipePwdProtect import login_page, check_pwd_ajax
 from lib.PipeAutoCal import fn_dir
@@ -68,6 +68,12 @@ def del_meteors():
    out = delete_meteors(data)
    return out
 
+@app.route('/cal/lensmodel/<amsid>/', methods=['GET', 'POST'])
+def lens_mod(amsid):
+   out = lens_model(amsid)
+   return out
+
+
 @app.route('/cal/vars/<amsid>/', methods=['GET', 'POST'])
 def op_vars(amsid):
    if request.method == "POST":
@@ -95,7 +101,9 @@ def cfile(amsid, calfile):
 
 @app.route('/calib/<amsid>/', methods=['GET', 'POST'])
 def calib(amsid):
-   out = calib_main(amsid)
+   req = {}
+   req['cam_id_filter'] = request.args.get('cam_id_filter')
+   out = calib_main(amsid,req)
    return out
 
 @app.route('/live/<amsid>/', methods=['GET', 'POST'])

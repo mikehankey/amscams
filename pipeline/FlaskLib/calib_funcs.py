@@ -6,6 +6,45 @@ import cv2
 from FlaskLib.FlaskUtils import parse_jsid, make_default_template, get_template 
 import glob
 
+def lens_model(amsid):
+   lms = glob.glob("/mnt/ams2/cal/lens*")
+   json_conf = load_json_file("../conf/as6.json")
+   out = ""
+
+   out += """   <div id="main_container" class="container-fluid h-100 mt-4 lg-l"> """
+   
+   template = make_default_template(amsid, "calib.html", json_conf)
+
+
+   for lens in sorted(lms):
+      vlens = lens.replace("/mnt/ams2", "")
+      lfn,dir = fn_dir(vlens)
+      lfn = lfn.replace("lens_model_", "")
+      lfn = lfn.replace(".jpg", "")
+      star_db = "/mnt/ams2/meteor_archive/" + amsid + "/CAL/AUTOCAL/2020/solved/star_db-" + amsid + "-" + lfn + ".info"
+      mp_cal = "/mnt/ams2/meteor_archive/" + amsid + "/CAL/AUTOCAL/2020/solved/multi_poly-" + amsid +"-" + lfn + ".info"
+      sdb = load_json_file(star_db)
+      mp = load_json_file(mp_cal)
+      x_fun = mp['x_fun']
+      y_fun = mp['y_fun']
+      x_fun_fwd = mp['x_fun_fwd']
+      y_fun_fwd = mp['y_fun_fwd']
+      pf = len(sdb['processed_files'])
+      ts = len(sdb['autocal_stars'])
+      out += "<div style='float: left' class='preview select-to norm'>"
+      out += "<a href=" + vlens + "><img width=640 height=360 src=" + vlens + "></a><br>" 
+      out += "<table>"
+      out +=  "<tr><td>Camera</td><td>" + lfn + "</td></tr>"
+      out += "<tr><td>Total Files / Total Stars</td><td>" + str(pf) + "/" + str(ts) + "</td></tr> "
+      out += "<tr><td>Res Error in PX: </td><td>" + str(x_fun)[0:4] + "/" + str(y_fun)[0:4] + "</td></tr> " 
+      out += "<tr><td>Fwd Res Error in Deg: </td><td>" + str(x_fun_fwd)[0:4] + "/" + str(y_fun_fwd)[0:4] + "</td></tr>"
+      out += "</table></div>" 
+   out += "</div>"
+
+   template = template.replace("{MAIN_TABLE}", out)
+
+   return(template)
+
 
 def del_calfile(amsid, calfile):
    fn, dir= fn_dir(calfile)
@@ -122,20 +161,40 @@ def cal_file(amsid, calib_file):
 
    return(template)
 
-def calib_main(amsid):
+def calib_main(amsid,in_data):
+   if in_data['cam_id_filter'] is not None:
+      cam_id_filter = in_data['cam_id_filter']
+   else: 
+      cam_id_filter = None
    json_conf = load_json_file("../conf/as6.json")
    template = make_default_template(amsid, "calib.html", json_conf)
-   out = cal_history(amsid) 
+
+   
+   selector = "<select onChange='window.location.href=\"/calib/" + amsid + "/?cam_id_filter=\" + this.value '> name=cam_id_filter>"
+   for cam in json_conf['cameras']:
+      cams_id = json_conf['cameras'][cam]['cams_id']
+      if cam_id_filter == cams_id:
+         selector += "<option selected>" + cams_id + "</option>"
+      else:
+         selector += "<option >" + cams_id + "</option>"
+   selector += "</select>"
+   #out =selector
+   out = cal_history(amsid, cam_id_filter, selector) 
+
+   
 
    template = template.replace("{MAIN_TABLE}", out)
 
    return(template)
 
 
-def cal_history(amsid, cam_id_filter=None):
+def cal_history(amsid, cam_id_filter=None, selector=None):
    #cam_id_filter = form.getvalue("cam_id")
    out = ""
    out += "<h1>Past Calibrations</h1>"
+   out += "<center> Limit calibrations to camera " + selector + "</center>"
+
+
    freecal_index = "/mnt/ams2/cal/freecal_index.json"
    if cfe(freecal_index) == 1:
       ci = load_json_file("/mnt/ams2/cal/freecal_index.json")
@@ -152,11 +211,12 @@ def cal_history(amsid, cam_id_filter=None):
 
 
    out += "<table class='table table-dark table-striped table-hover td-al-m m-auto table-fit'>"
-   out += "<thead><tr><th>&nbsp;</th><th>Date</th><th>Cam ID</th><th>Stars</th><th>Center AZ/EL</th><th>Pos Angle</th><th>Pixscale</th><th>Res Px</th><th>Res Deg</th></tr></thead>"
+   out += "<thead><tr><th>&nbsp;</th><th>Date</th><th>Cam ID</th><th>Stars</th><th>Center AZ/EL</th><th>Pos Angle</th><th>Pixscale</th><th>Res Px</th><th>Res Deg</th><th>Preview</th></tr></thead>"
    out += "<tbody>"
 
    #for cf in sorted(ci, reverse=True):
    for cf in cia:
+      cal_image_file = None
       if "cam_id" not in cf:
          out += cf
          continue
@@ -164,6 +224,7 @@ def cal_history(amsid, cam_id_filter=None):
       if "cal_date" not in cf:
           cf['cal_date'] = "9999"
       if 'cal_image_file' in cf:
+         cal_image_file = cf['cal_image_file']
          ci_fn, ci_dir = fn_dir(cf['cal_image_file'])
          link = "/calfile/" + amsid + "/" + ci_fn + "/" 
       else:
@@ -188,15 +249,28 @@ def cal_history(amsid, cam_id_filter=None):
          color = "lv7"
       if cam_id_filter is None:
          show_row = 1
-      elif cam_id == cam_id_filter:
+      elif cf['cam_id'] == cam_id_filter:
          show_row = 1
       else:
          show_row = 0
 
       if show_row == 1:
-         out += "<tr class='" + color + "'><td><div class='st'></div></td><td><a class='btn btn-primary' href='{:s}'>{:s}</a></td><td><b>{:s}</b></td><td>{:s}</td><td>{:s}/{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td></tr>".format( link, str(cf['cal_date']), \
+         if cal_image_file is not None:
+            cal_thumb = cal_image_file.replace(".png", "-tn.jpg")
+            if cfe(cal_thumb) == 0:
+               img = cv2.imread(cal_image_file)
+               try:
+                  tn = cv2.resize(img,(320,180))
+                  cv2.imwrite(cal_thumb, tn)
+               except:
+                  print("PROBLEM WITH :", cal_image_file)
+            vcal = cal_thumb.replace("/mnt/ams2", "")
+            cal_img_thumb = "<img src=" + vcal + " width=320 height=180>"
+         else:
+            cal_img_thumb = ""
+         out += "<tr class='" + color + "'><td><div class='st'></div></td><td><a class='btn btn-primary' href='{:s}'>{:s}</a></td><td><b>{:s}</b></td><td>{:s}</td><td>{:s}/{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td></tr>".format( link, str(cf['cal_date']), \
             str(cf['cam_id']), str(cf['total_stars']), str(cf['center_az'])[0:5], str(cf['center_el'])[0:5], str(cf['position_angle'])[0:5], \
-            str(cf['pixscale'])[0:5], str(cf['total_res_px'])[0:5], str(cf['total_res_deg'])[0:5] )
+            str(cf['pixscale'])[0:5], str(cf['total_res_px'])[0:5], str(cf['total_res_deg'])[0:5],cal_img_thumb )
 
    out += "</tbody></table></div>"
 
