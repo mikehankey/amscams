@@ -1460,7 +1460,10 @@ def make_flat(cam,day,json_conf):
       median_night = cv2.convertScaleAbs(np.median(np.array(night_images), axis=0))
 
       med_show = cv2.resize(median_night, (1280,720))
-      med_show_gray = cv2.cvtColor(med_show, cv2.COLOR_BGR2GRAY)
+      if len(med_show.shape) == 3:
+         med_show_gray = cv2.cvtColor(med_show, cv2.COLOR_BGR2GRAY)
+      else:
+         med_show_gray = med_show
       _, thresh= cv2.threshold(med_show_gray, 80, 255, cv2.THRESH_BINARY)
       thresh_dil = cv2.dilate(thresh.copy(), None , iterations=8)
       cnts = get_contours(thresh_dil)
