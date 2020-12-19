@@ -188,6 +188,8 @@ def stacks_hour(amsid, day, hour):
    stack_files = glob.glob(glob_dir + day + "_" + hour + "*.mp4")
    day_glob_dir = "/mnt/ams2/SD/proc2/daytime/" + day + "/" 
    day_stack_files = glob.glob(day_glob_dir + day + "_" + hour + "*.mp4")
+   print(glob_dir)
+   print(day_glob_dir)
    for dsf in day_stack_files:
       stack_files.append(dsf)
    min_files = {}

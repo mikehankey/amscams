@@ -255,7 +255,6 @@ def make_meteor_index_day(day, json_conf):
 
          (f_datetime, cam, f_date_str,fy,fmin,fd, fh, fm, fs) = convert_filename_to_date_cam(meteor)
          trim_num = int(get_trim_num(meteor))
-         print("TRIM NUM:", trim_num)
          extra_sec = int(trim_num) / 25
          start_time_dt = f_datetime + datetime.timedelta(0,extra_sec)
 

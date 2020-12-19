@@ -553,22 +553,7 @@ def delete_from_base(base, json_conf):
          else:
             print("NO HD_BASE:", jsf)
             hd_base = None
-            exit()
-         if "archive_file" in js:
-            arc_base = js['archive_file'].split("/")[-1].replace(".json", "")
-            arc_js_file = js['archive_file']
-            arc_js = load_json_file(js['archive_file'])
-            if "hd_vid" in arc_js['info']:
-               arc_hd_vid = arc_js['info']['hd_vid']
-            else:
-               arc_hd_vid = None
-            if "sd_vid" in arc_js['info']:
-               arc_sd_vid = arc_js['info']['sd_vid']
-            else:
-               arc_sd_vid = None
-            arc_dir = arc_js_file.replace( js['archive_file'].split("/")[-1], "")
-         else:
-            arc_base = None
+            return ()
       else:
          print("JSF DOESNT EXIST?", jsf)
          return()
@@ -586,6 +571,7 @@ def delete_from_base(base, json_conf):
             print("HD BASE DEL:", f)
             files_to_del.append(f)
       # ARC METEOR SD & HD FILES
+      arc_base = None
       if arc_base is not None:
          if arc_sd_vid is not None:
             arc_sd_base = arc_sd_vid.replace(".mp4", "")
