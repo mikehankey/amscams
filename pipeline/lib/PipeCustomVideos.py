@@ -14,6 +14,153 @@ import os
 import numpy as np
 import pytz
 utc = pytz.UTC
+SHOW = 0
+
+def assemble_custom(TL_CONF, json_conf):
+   min_index = {}
+   tl_conf = load_json_file(TL_CONF)
+   print(tl_conf)
+   all_start_dt = datetime.strptime(tl_conf['start_time'], "%Y_%m_%d_%H_%M_%S")
+   all_end_dt = datetime.strptime(tl_conf['end_time'], "%Y_%m_%d_%H_%M_%S")
+   for n in range(int(((all_end_dt - all_start_dt).seconds)/60)+1):
+      min_dt = all_start_dt + dt.timedelta(minutes=n)
+      min_key = min_dt.strftime("%Y_%m_%d_%H_%M")
+      min_index[min_key] = []
+
+
+   cache1 = glob.glob("CACHE/*" + tl_conf['cams_id'] + "*")
+   cache2 = glob.glob("CACHE2/*" + tl_conf['cams_id'] + "*")
+ 
+   # Add meteors first, then slow stacks, then single frame TLs
+   used = {}
+   for file in sorted(cache1):
+      (f_datetime, cam, f_date_str,fy,fmon,fd, fh, fm, fs) = convert_filename_to_date_cam(file)
+      if all_start_dt <= f_datetime <= all_end_dt :
+         min_key = fy + "_" + fmon + "_" + fd + "_" + fh + "_" + fm
+         print(min_key)
+         if "meteor" in file:
+            min_index[min_key].append(file)
+
+   for key in min_index:
+      if len(min_index[key]) > 25:
+         used[key] = 1
+      else:
+         min_index[key] = []
+   for slow_start, slow_end in tl_conf['slow_stacks']: 
+      start_dt = datetime.strptime(slow_start, "%Y_%m_%d_%H_%M")
+      end_dt = datetime.strptime(slow_end, "%Y_%m_%d_%H_%M")
+
+      for file in sorted(cache2):
+         (f_datetime, cam, f_date_str,fy,fmon,fd, fh, fm, fs) = convert_filename_to_date_cam(file)
+         if start_dt <= f_datetime <= end_dt :
+            min_key = fy + "_" + fmon + "_" + fd + "_" + fh + "_" + fm
+            if min_key not in used:
+               print("adding CACHE2:", min_key, file)
+               min_index[min_key].append(file)
+
+   for key in min_index:
+      if len(min_index[key]) > 0:
+         used[key] = 1
+
+   for file in sorted(cache1):
+      (f_datetime, cam, f_date_str,fy,fmon,fd, fh, fm, fs) = convert_filename_to_date_cam(file)
+      if all_start_dt <= f_datetime <= all_end_dt :
+         min_key = fy + "_" + fmon + "_" + fd + "_" + fh + "_" + fm
+         if min_key not in used:
+            print(min_key)
+            min_index[min_key].append(file)
+         else:
+            print("ALREADY USED!", min_key)
+  
+
+   list = ""
+   for key in min_index:
+      if len(min_index[key]) > 0:
+         for file in min_index[key]:
+            list += "file '" + file + "'\n" 
+   
+   fp = open("list.txt", "w")
+   fp.write(list)
+   fp.close()
+   exit()
+
+   final_files = []
+   for file in sorted(cache1):
+      (f_datetime, cam, f_date_str,fy,fmin,fd, fh, fm, fs) = convert_filename_to_date_cam(file)
+      if start_dt <= f_datetime <= end_dt :
+         final_files.append(file)
+
+
+   print("FINAL 2", len(final_files))
+   for slow_start, slow_end in tl_conf['slow_stacks']: 
+
+      start_dt = datetime.strptime(slow_start, "%Y_%m_%d_%H_%M")
+      end_dt = datetime.strptime(slow_end, "%Y_%m_%d_%H_%M")
+      cmd = "./FFF.py slow_stack_range " + slow_start[0:10] + " " + slow_start[11:13] + " " + slow_end[11:13] + " " + tl_conf['cams_id']
+
+      temp = []
+      for file in sorted(cache2):
+         (f_datetime, cam, f_date_str,fy,fmin,fd, fh, fm, fs) = convert_filename_to_date_cam(file)
+         if start_dt <= f_datetime <= end_dt :
+            if "HD" not in file:
+               if cam + "-" in file:
+                  temp.append(file)
+
+      if len(temp) == 0:
+         print("NO SLOW FILES FOR THIS HOUR!")
+         print("CMD:", cmd)
+         os.system(cmd)
+         cache2 = glob.glob("CACHE2/*" + tl_conf['cams_id'] + "*")
+
+      for file in sorted(cache2):
+         (f_datetime, cam, f_date_str,fy,fmin,fd, fh, fm, fs) = convert_filename_to_date_cam(file)
+         if start_dt <= f_datetime <= end_dt :
+            if "HD" not in file:
+               if cam + "-" in file:
+                  print("ADDING SLOW:", file)
+
+                  final_files.append(file)
+
+   list = ''
+   print("FINAL", len(final_files))
+   final = []
+   for file in sorted(final_files):
+      fn,dir = fn_dir(file)
+      final.append((dir,fn))
+
+   final = sorted(final, key=lambda x: x[1], reverse=False)
+
+   mon = 0
+   fsl = 0
+   for dir, file in final:
+
+      if "meteor" in file or cams_id + "-" in file: 
+         mon = 1
+         fsl = 0
+      else:
+         mon = 0
+         fsl += 1
+      if mon == 1 or fsl > 1:
+         list += "file '" + dir + "/" + file + "'\n"
+   fp = open("list.txt", "w")
+   fp.write(list)
+   fp.close()
+   print("wrote list: list.txt")
+
+
+def hd_snaps(hd_dir, json_conf):
+   snap_dir = hd_dir + "/snaps/"
+   if cfe(snap_dir, 1) == 0:
+      os.makedirs(snap_dir)
+   hd_files = glob.glob(hd_dir + "*.mp4")
+   for file in hd_files:
+      fn, dir = fn_dir(file)
+      outfile = snap_dir + fn
+      outfile = outfile.replace(".mp4", ".jpg")
+      cmd = """ /usr/bin/ffmpeg -i """ + file + """ -vf select="between(n\,""" + str(0) + """\,""" + str(1) + """),setpts=PTS-STARTPTS" -y -update 1 """ + outfile + " >/dev/null 2>&1"
+      print(cmd)
+      os.system(cmd)
+
 
 def time_lapse_frames(date, cams_id, json_conf, sunset, sunrise):
 
@@ -29,12 +176,16 @@ def time_lapse_frames(date, cams_id, json_conf, sunset, sunrise):
    for file in yest_files:
       (f_datetime, cam, f_date_str,fy,fmin,fd, fh, fm, fs) = convert_filename_to_date_cam(file)
       f_datetime= utc.localize(f_datetime) 
-      if sunset <= f_datetime <= sunrise:
+      #if sunset <= f_datetime <= sunrise:
+      if True:
          all_files.append(file)
+      else:
+         print("SKIPPING")
    for file in today_files:
       (f_datetime, cam, f_date_str,fy,fmin,fd, fh, fm, fs) = convert_filename_to_date_cam(file)
       f_datetime= utc.localize(f_datetime) 
-      if int(fh) < 20:
+      #if int(fh) < 20:
+      if True:
          all_files.append(file)
    yest_snap_dir = "/mnt/ams2/SD/proc2/" + yest + "/snaps/"
    if cfe(yest_snap_dir,1) == 0:
@@ -60,6 +211,7 @@ def time_lapse_frames(date, cams_id, json_conf, sunset, sunrise):
          tl_files.append(outfile)
 
          #os.system(cmd)
+   print("TL FILES:", len(tl_files))
    return(tl_files)
 
 
@@ -117,13 +269,25 @@ def meteors_last_night_for_cam(date, cams_id, json_conf):
     yfiles = glob.glob(ymdir + "*" + cams_id + "*.json")
 
     sun = Sun(float(json_conf['site']['device_lat']), float(json_conf['site']['device_lng']))
-    sunrise =sun.get_sunrise_time(date_dt)
-    sunset =sun.get_sunset_time(yest_dt)
+
+    try:
+       sunrise =sun.get_sunrise_time(date_dt)
+       sunset =sun.get_sunset_time(yest_dt)
+       sunrise = datetime.strptime(sr, "%Y_%m_%d_%H_%M_%S")
+       sunset = datetime.strptime(ss, "%Y_%m_%d_%H_%M_%S")
+    except:
+       sr = date + "_23_59_59"
+       ss = date + "_00_00_00"
+       sunrise = datetime.strptime(sr, "%Y_%m_%d_%H_%M_%S")
+       sunset = datetime.strptime(ss, "%Y_%m_%d_%H_%M_%S")
+       sunrise = utc.localize(sunrise) 
+       sunset = utc.localize(sunset) 
 
     print("SS:", sunset, sunrise)
 
 
     tl_files = time_lapse_frames(date, cams_id, json_conf, sunset, sunrise)
+    #exit()
     #tl_files = []
     #exit()
 
@@ -133,7 +297,8 @@ def meteors_last_night_for_cam(date, cams_id, json_conf):
           (f_datetime, cam, f_date_str,fy,fmin,fd, fh, fm, fs) = convert_filename_to_date_cam(mf)
           # only add meteors that happened after the sunset yesterday
           f_datetime= utc.localize(f_datetime) 
-          if sunset <= f_datetime <= sunrise:
+          #if sunset <= f_datetime <= sunrise:
+          if True:
              meteors.append(mf)
 
     hd_meteors = []
@@ -142,19 +307,21 @@ def meteors_last_night_for_cam(date, cams_id, json_conf):
        if "reduced" not in mf and "stars" not in mf and "man" not in mf and "star" not in mf and "import" not in mf and "archive" not in mf:
           (f_datetime, cam, f_date_str,fy,fmin,fd, fh, fm, fs) = convert_filename_to_date_cam(mf)
           f_datetime= utc.localize(f_datetime) 
-          if sunset <= f_datetime <= sunrise:
+          #if sunset <= f_datetime <= sunrise:
+          if True:
              meteors.append(mf)
 
     for meteor_file in meteors:
 
        mj = load_json_file(meteor_file)
        if "hd_trim" in mj:
+          print("ADDING:", mj['hd_trim'])
           hd_meteors.append((meteor_file, mj['hd_trim']))
     hd_meteors = sorted(hd_meteors, key=lambda x: x[0], reverse=True)
 
 
-    meteors_last_night_detect_data(date, cams_id, json_conf, hd_meteors)
-    exit()
+    #meteors_last_night_detect_data(date, cams_id, json_conf, hd_meteors)
+    #exit()
 
     if cfe("./CACHE/", 1) == 0:
        os.makedirs("./CACHE/")
@@ -172,8 +339,9 @@ def meteors_last_night_for_cam(date, cams_id, json_conf):
           cv2.putText(cimg, str(f_date_str),  (1100,710), cv2.FONT_HERSHEY_SIMPLEX, .4, (255, 255, 255), 1)
           op_desc = json_conf['site']['operator_name'] + " " + json_conf['site']['obs_name'] + " " + json_conf['site']['location']
           cv2.putText(cimg, str(op_desc),  (10,710), cv2.FONT_HERSHEY_SIMPLEX, .4, (255, 255, 255), 1)
-          cv2.imshow('pepe', cimg)
-          cv2.waitKey(30)
+          if SHOW == 1:
+             cv2.imshow('pepe', cimg)
+             cv2.waitKey(30)
           cv2.imwrite(cache_file, cimg)
 
     meteor_data = []
@@ -223,7 +391,7 @@ def meteors_last_night_for_cam(date, cams_id, json_conf):
              max_y = objects[obj]['oys'][-1] + 25
        elif len(objects) == 0:
           print("NO METEOR FOUND!?")
-          continue
+          #continue
        else:
           print("MORE THAN ONE OBJECT!")
           ff = 0
@@ -248,6 +416,8 @@ def meteors_last_night_for_cam(date, cams_id, json_conf):
 
        rcc = 0
        cx1, cy1,cx2,cy2 = hd_crop
+       if lf - ff < 7:
+          continue
        for fn in range(ff, lf):
 
           frame = hd_color_frames[fn]
@@ -273,9 +443,9 @@ def meteors_last_night_for_cam(date, cams_id, json_conf):
 
           #cv2.putText(show_frame, str("DETECT"),  (20,50), cv2.FONT_HERSHEY_SIMPLEX, .4, (255, 255, 255), 1)
           #cv2.putText(show_frame, str(fn),  (20,70), cv2.FONT_HERSHEY_SIMPLEX, .4, (255, 255, 255), 1)
-
-          cv2.imshow('pepe', show_frame)
-          cv2.waitKey(30)
+          if SHOW == 1:
+             cv2.imshow('pepe', show_frame)
+             cv2.waitKey(30)
           cv2.imwrite("./CACHE/" + frame_file, show_frame)
           rcc += 1
     cmd = "./FFF.py imgs_to_vid ./CACHE/ " + cams_id + " /mnt/ams2/CUSTOM_VIDEOS/" + date + "_" + cams_id + ".mp4 25 28"

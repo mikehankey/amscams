@@ -5055,7 +5055,8 @@ def draw_star_image(img, cat_image_stars,cp=None) :
 
    image = Image.fromarray(img)
    draw = ImageDraw.Draw(image)
-   font = ImageFont.truetype("/usr/share/fonts/truetype/freefont/FreeSans.ttf", 20, encoding="unic" )
+   #font = ImageFont.truetype("/usr/share/fonts/truetype/freefont/FreeSans.ttf", 20, encoding="unic" )
+   font = ImageFont.truetype("/usr/share/fonts/truetype/DejaVuSans.ttf", 20, encoding="unic" )
    org_x = None
    org_y = None
    for star in cat_image_stars:

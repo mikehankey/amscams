@@ -36,12 +36,17 @@ def get_meteors_in_range(station_id, start_date, end_date,del_data,filters=None)
 
    hotspot_filter = 0
    nored = 0
+   cam_filter = 0
    if filters is not None:
       if "nored" in filters:
          nored = 1
       if "hotspot" in filters:
          hotspot_filter = 1
          print("HOTSPOT FILTER ON!")
+      if "cam" in filters:
+         print("CAM FILTER:", filters)
+         xx,cam_id = filters.split(":")
+         cam_filter = cam_id
 
    delete_log = "/mnt/ams2/SD/proc2/json/" + amsid + ".del"
    if cfe(delete_log) == 1:
@@ -61,7 +66,7 @@ def get_meteors_in_range(station_id, start_date, end_date,del_data,filters=None)
       else:
          mi = []
  
-      if hotspot_filter == 0 and nored == 0:
+      if hotspot_filter == 0 and nored == 0 and cam_filter == 0:
          return(mi)
       elif hotspot_filter == 1:
          filtered_index = []
@@ -69,8 +74,15 @@ def get_meteors_in_range(station_id, start_date, end_date,del_data,filters=None)
             meteor_file, reduced, start_time, dur, ang_vel, ang_dist, hotspot = dd 
             if hotspot > 20:
                filtered_index.append(dd)
+      elif cam_filter != 0:
+         filtered_index = []
+         for dd in mi:
+            meteor_file, reduced, start_time, dur, ang_vel, ang_dist, hotspot = dd 
+            if cam_filter in meteor_file: 
+               filtered_index.append(dd)
 
-      filtered_index = sorted(filtered_index, key=lambda x: (x[6]), reverse=True)
+
+      filtered_index = sorted(filtered_index, key=lambda x: (x[6]), reverse=False)
 
       return(filtered_index)
    

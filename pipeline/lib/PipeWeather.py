@@ -208,6 +208,10 @@ def meteor_night_stacks(date, json_conf):
    stack_imgs = {}
    for cam in json_conf['cameras']:
       cams_id = json_conf['cameras'][cam]['cams_id']
+      outfile = mdir + cams_id + "_meteors.jpg"
+      if cfe(outfile) == 1:
+         print("SKIP DONE!", outfile)
+         continue
       files = glob.glob(mdir + "*" + cams_id + "*.json")
       images = []
       for mf in files:
@@ -223,9 +227,16 @@ def meteor_night_stacks(date, json_conf):
       if len(images) > 0:
          meteor_stack_image = stack_frames(images, 1, None, "night")
          stack_imgs[cams_id] = meteor_stack_image
-         outfile = mdir + cams_id + "_meteors.jpg"
          print("SAVED:", outfile)
          cv2.imwrite(outfile, meteor_stack_image)
+
+   for cam in json_conf['cameras']:
+      cams_id = json_conf['cameras'][cam]['cams_id']
+      outfile = mdir + cams_id + "_meteors.jpg"
+      if cfe(outfile) == 1:
+         img = cv2.imread(outfile)
+         stack_imgs[cams_id] = img
+
 
    if len(stack_imgs.keys()) == 6:
       comp_w = int((1920/2) * 2)
@@ -273,8 +284,39 @@ def meteor_night_stacks(date, json_conf):
       img = cv2.resize(stack_imgs[cams_id],(int(1920/2),int(1080/2)))
       comp[py1:py2,px1:px2] = img
       c += 1
+   mh, mw = comp.shape[:2]
+   comp_titled = np.zeros((mh+250,mw,3),dtype=np.uint8)
+   comp_titled[0:mh,0:mw] = comp
+
+   half_w = int(mw/2)
+   font = cv2.FONT_HERSHEY_SIMPLEX
+
+   title = "Geminid Meteor Shower"
+   textsize = cv2.getTextSize(title, font, 2,2)[0]
+   textX = int((comp_titled.shape[1] - textsize[0]) / 2)
+   cv2.putText(comp_titled, str(title),  (textX,mh + 60), cv2.FONT_HERSHEY_SIMPLEX, 2, (255, 255, 255), 1) 
+
+   subtitle = json_conf['site']['obs_name'] + " " + json_conf['site']['location']
+   textsize = cv2.getTextSize(subtitle, font, 1.2,2)[0]
+   textX = int((comp_titled.shape[1] - textsize[0]) / 2)
+   cv2.putText(comp_titled, str(subtitle),  (textX,mh + 110), cv2.FONT_HERSHEY_SIMPLEX, 1.2, (255, 255, 255), 1) 
+
+   date_desc = "December 13th, 2020"
+   textsize = cv2.getTextSize(date_desc, font, 1.2,2)[0]
+   textX = int((comp_titled.shape[1] - textsize[0]) / 2)
+   cv2.putText(comp_titled, str(date_desc),  (textX,mh + 155), cv2.FONT_HERSHEY_SIMPLEX, 1.2, (255, 255, 255), 1) 
+
+   op_name = json_conf['site']['operator_name']
+   textsize = cv2.getTextSize(op_name, font, 1.2,2)[0]
+   textX = int((comp_titled.shape[1] - textsize[0]) / 2)
+   cv2.putText(comp_titled, str(op_name),  (textX,mh +200), cv2.FONT_HERSHEY_SIMPLEX, 1.2, (255, 255, 255), 1) 
+
+
    outfile = mdir + json_conf['site']['ams_id'] + "_meteors.jpg"
    cv2.imwrite(outfile, comp)
+   outfile_t = mdir + json_conf['site']['ams_id'] + "_meteors_title.jpg"
+   cv2.imwrite(outfile, comp)
+   cv2.imwrite(outfile_t, comp_titled)
    print("Saved:", outfile)
    
 def hourly_stacks(date, json_conf):

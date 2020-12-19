@@ -24,7 +24,7 @@ app = Flask(__name__, static_url_path='/static')
 
 # Main controller for AllSkyCams UI application.
 
-@app.route('/')
+@app.route('/', methods=['GET', 'POST'])
 def main_menu():
    out = login_page()
    header = get_template("FlaskTemplates/header-login.html")
