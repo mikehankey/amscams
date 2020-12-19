@@ -1482,7 +1482,7 @@ def make_flat(cam,day,json_conf):
       median_flat = cv2.convertScaleAbs(np.median(np.array(med_frames), axis=0))
       median_mask = cv2.GaussianBlur(median_mask, (15, 15), 0)
       median_mask = cv2.dilate(median_mask.copy(), None , iterations=4)
-      median_mask = fill_mask(median_mask)
+      #median_mask = fill_mask(median_mask)
 
       omh, omw = median_mask.shape[:2]
 
