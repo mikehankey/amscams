@@ -2134,6 +2134,7 @@ def test_cal(cp_file,json_conf,cp, cal_img, cdata ):
    cp['position_angle'] = pos
    cp['pixscale'] = px
    cp = update_center_radec(cp_file,cp,json_conf)
+   print("EVAL:", cp_file)
    cp, bad_stars, marked_img = eval_cal(cp_file,json_conf,cp,cal_img, None)
    return(cp, bad_stars, marked_img)
 
@@ -3850,6 +3851,9 @@ def Decdeg2DMS( Decin ):
 
 def pair_stars(cal_params, cal_params_file, json_conf, cal_img=None, show = 0):
    dist_type = "radial"
+   if cal_img is None:
+      cal_img_file = cal_params_file.replace("-calparams.json", ".png")
+      cal_img = cv2.imread(cal_img_file)
 
    (f_datetime, cam, f_date_str,y,m,d, h, mm, s) = convert_filename_to_date_cam(cal_params_file)
    jd = datetime2JD(f_datetime, 0.0)
