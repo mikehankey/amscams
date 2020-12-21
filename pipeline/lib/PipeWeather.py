@@ -1530,8 +1530,9 @@ def make_flat(cam,day,json_conf):
 
       median_mask = cv2.resize(median_mask, (1280,720))
       for x,y,w,h in cnts:
-         print("ADDING EXTRA AREAS TO MASK", x,y,w,h)
-         median_mask[y:y+w,x:x+w] = 255
+         if w < 50 and h < 50:
+            print("ADDING EXTRA AREAS TO MASK", x,y,w,h)
+            median_mask[y:y+w,x:x+w] = 255
       median_mask = cv2.resize(median_mask, (omw,omh))
 
       cv2.imwrite(mask_file, median_mask)
