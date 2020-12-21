@@ -113,6 +113,16 @@ def assemble_custom(TL_CONF, json_conf):
       mframes = dump_meteor_frames(rj['hd_video_file'], ff, lf, "./FINAL/", json_conf)
       min_index[min_key]['meteors'] = mframes
 
+   for min_key in min_index:
+      min_key_dt = datetime.strptime(min_key, "%Y_%m_%d_%H_%M")
+      for slow_start, slow_end , mod in tl_conf['slow_stacks']: 
+         start_dt = datetime.strptime(slow_start, "%Y_%m_%d_%H_%M")
+         end_dt = datetime.strptime(slow_end, "%Y_%m_%d_%H_%M")
+         if start_dt <= min_key <= end_dt:
+            print("SLOW STACK NEEDED:", min_key)
+   exit()
+
+
    for slow_start, slow_end , mod in tl_conf['slow_stacks']: 
       start_dt = datetime.strptime(slow_start, "%Y_%m_%d_%H_%M")
       end_dt = datetime.strptime(slow_end, "%Y_%m_%d_%H_%M")
