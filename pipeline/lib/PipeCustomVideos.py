@@ -16,12 +16,241 @@ import pytz
 utc = pytz.UTC
 SHOW = 0
 
+
 def assemble_custom(TL_CONF, json_conf):
    min_index = {}
    tl_conf = load_json_file(TL_CONF)
    print(tl_conf)
    all_start_dt = datetime.strptime(tl_conf['start_time'], "%Y_%m_%d_%H_%M_%S")
    all_end_dt = datetime.strptime(tl_conf['end_time'], "%Y_%m_%d_%H_%M_%S")
+   cache_dir = "./FINAL/"
+   cams_id = tl_conf['cams_id']
+   date = all_start_dt.strftime("%Y_%m_%d")
+   mdir = "/mnt/ams2/meteors/" + date + "/" 
+   jsons = glob.glob(mdir + "*" + cams_id + "*")
+   reds = []
+
+   date_dt = datetime.strptime(date, "%Y_%m_%d")
+   ffy, fmm, fdd = date.split("_")
+   yest = (date_dt - dt.timedelta(days = 1)).strftime("%Y_%m_%d")
+   yest_dt = (date_dt - dt.timedelta(days = 1))
+
+   mdir = "/mnt/ams2/meteors/" + date + "/" 
+   jfiles = glob.glob(mdir + "*" + cams_id + "*.json")
+
+
+   ymdir = "/mnt/ams2/meteors/" + yest + "/" 
+   yfiles = glob.glob(ymdir + "*" + cams_id + "*.json")
+
+   sun = Sun(float(json_conf['site']['device_lat']), float(json_conf['site']['device_lng']))
+
+   try:
+      sunrise =sun.get_sunrise_time(date_dt)
+      sunset =sun.get_sunset_time(yest_dt)
+      sunrise = datetime.strptime(sr, "%Y_%m_%d_%H_%M_%S")
+      sunset = datetime.strptime(ss, "%Y_%m_%d_%H_%M_%S")
+   except:
+      sr = date + "_23_59_59"
+      ss = date + "_00_00_00"
+      sunrise = datetime.strptime(sr, "%Y_%m_%d_%H_%M_%S")
+      sunset = datetime.strptime(ss, "%Y_%m_%d_%H_%M_%S")
+      sunrise = utc.localize(sunrise) 
+      sunset = utc.localize(sunset) 
+
+
+   min_index = {}
+   for n in range(int(((all_end_dt - all_start_dt).seconds)/60)+1):
+      min_dt = all_start_dt + dt.timedelta(minutes=n)
+      min_key = min_dt.strftime("%Y_%m_%d_%H_%M")
+      min_index[min_key] = {}
+      min_index[min_key]['snaps'] = []
+      min_index[min_key]['slow_stacks'] = []
+      min_index[min_key]['meteors'] = []
+
+
+   # get TL Files
+   tl_files = time_lapse_frames(date, cams_id, json_conf, sunset, sunrise)
+   for tl in tl_files:
+      (f_datetime, cam, f_date_str,fy,fmin,fd, fh, fm, fs) = convert_filename_to_date_cam(tl)
+      fn, dir = fn_dir(tl)
+      cache_file = "./CACHE/" + fn
+      if cfe(cache_file) == 0:
+         print("cp "+ tl + " ./CACHE/")
+         os.system("cp "+ tl + " ./CACHE/")
+         cimg = cv2.imread(cache_file)
+         cv2.putText(cimg, str(f_date_str),  (1100,710), cv2.FONT_HERSHEY_SIMPLEX, .4, (255, 255, 255), 1)
+         op_desc = json_conf['site']['operator_name'] + " " + json_conf['site']['obs_name'] + " " + json_conf['site']['location']
+         cv2.putText(cimg, str(op_desc),  (10,710), cv2.FONT_HERSHEY_SIMPLEX, .4, (255, 255, 255), 1)
+         if SHOW == 1:
+            cv2.imshow('pepe', cimg)
+            cv2.waitKey(30)
+         cv2.imwrite(cache_file, cimg)
+
+
+
+   cache1 = glob.glob("CACHE/*" + tl_conf['cams_id'] + "*")
+   cache2 = glob.glob("CACHE2/*" + tl_conf['cams_id'] + "*")
+
+   # get meteors
+   for js in jsons:
+      if "reduced" in js:
+         reds.append(js)
+   for red in reds:
+      (f_datetime, cam, f_date_str,fy,fmon,fd, fh, fm, fs) = convert_filename_to_date_cam(red)
+      if all_start_dt <= f_datetime <= all_end_dt :
+         min_key = fy + "_" + fmon + "_" + fd + "_" + fh + "_" + fm
+      rj = load_json_file(red)
+      mfd = len(rj['meteor_frame_data'])
+      if rj['meteor_frame_data'][0][2] - 100 < 0 or rj['meteor_frame_data'][0][2] + 100 > 1920:
+         continue
+      if mfd < 15:
+         continue
+      ff = rj['meteor_frame_data'][0][1]  - 10
+      lf = rj['meteor_frame_data'][-1][1] + 15
+      if mfd > 30:
+         lf += 50 
+      print(red, mfd , ff, lf)
+      mframes = dump_meteor_frames(rj['hd_video_file'], ff, lf, "./FINAL/", json_conf)
+      min_index[min_key]['meteors'] = mframes
+
+   for slow_start, slow_end , mod in tl_conf['slow_stacks']: 
+      start_dt = datetime.strptime(slow_start, "%Y_%m_%d_%H_%M")
+      end_dt = datetime.strptime(slow_end, "%Y_%m_%d_%H_%M")
+
+      for file in sorted(cache2):
+         (f_datetime, cam, f_date_str,fy,fmon,fd, fh, fm, fs) = convert_filename_to_date_cam(file)
+         if start_dt <= f_datetime <= end_dt :
+            min_key = fy + "_" + fmon + "_" + fd + "_" + fh + "_" + fm
+            if len(min_index[min_key]['meteors']) == 0:
+               print("adding CACHE2:", min_key, file)
+               min_index[min_key]['slow_stacks'].append(file)
+
+   for min_key in min_index:
+      if len(min_index[min_key]['meteors'])  == 0 and len(min_index[min_key]['slow_stacks']) > 0 :
+         for i in range(0, len(min_index[min_key]['slow_stacks'])):
+            if i % 5 == 0:
+               cmd = "cp " + min_index[min_key]['slow_stacks'][i] + " " + cache_dir
+               print(cmd)
+               os.system(cmd)
+
+   for file in cache1:
+      if "meteor" in file:
+         continue  
+      (f_datetime, cam, f_date_str,fy,fmon,fd, fh, fm, fs) = convert_filename_to_date_cam(file)
+      if all_start_dt <= f_datetime <= all_end_dt :
+         min_key = fy + "_" + fmon + "_" + fd + "_" + fh + "_" + fm
+         min_index[min_key]['snaps'].append(file)
+   for key in min_index:
+      if len(min_index[key]['meteors']) == 0 and len(min_index[key]['slow_stacks']) == 0:
+         if len(min_index[key]['snaps']) > 0:
+            cmd = "cp " + min_index[key]['snaps'][0] + " " + cache_dir
+            os.system(cmd)
+
+      print(key, min_index[key])
+
+   cmd = "./FFF.py imgs_to_vid " + cache_dir + " " + cams_id + " /mnt/ams2/CUSTOM_VIDEOS/" + date + "_" + cams_id + "_meteors.mp4 25 24"
+   print(cmd)
+   os.system(cmd)
+   cmd = "./FFF.py resize /mnt/ams2/CUSTOM_VIDEOS/" + date + "_" + cams_id + "_meteors.mp4 /mnt/ams2/CUSTOM_VIDEOS/" + date + "_" + cams_id + "_meteors-360p.mp4 640 360 25"
+   os.system(cmd)
+   cmd = "./FFF.py resize /mnt/ams2/CUSTOM_VIDEOS/" + date + "_" + cams_id + "_meteors.mp4 /mnt/ams2/CUSTOM_VIDEOS/" + date + "_" + cams_id + "_meteors-180p.mp4 320 180 28"
+   os.system(cmd)
+
+def dump_meteor_frames(hdf, ff, lf, cache_dir, json_conf):
+   file_fn, file_dir = fn_dir(hdf)
+   date = file_fn[0:10]
+   hd_frames,hd_color_frames,subframes,sum_vals,max_vals,pos_vals = load_frames_fast(hdf, json_conf, 0, 0, 1, 1,[])
+   frame_prefix = file_fn.replace(".mp4", "")
+   files = glob.glob(cache_dir + frame_prefix + "*")
+   if len(files) > 5:
+      return(files)
+   stars = get_image_stars(hdf, hd_frames[0].copy(), json_conf, 0)
+   (f_datetime, cams_id, f_date_str,fy,fmin,fd, fh, fm, fs) = convert_filename_to_date_cam(hdf)
+   trim_num = get_trim_num(hdf)
+   extra_sec = int(trim_num) / 25
+   start_trim_frame_time = f_datetime + dt.timedelta(0,extra_sec)
+   if ff < 0 :
+      ff = 0
+   if lf >= len(hd_frames) :
+      lf = len(hd_frames)
+   rcc = 0
+   mframes = []
+   if True:
+      for fn in range(ff, lf):
+
+         frame = hd_color_frames[fn]
+         counter = "{:04d}".format(fn)
+         frame_file = frame_prefix + "-" + counter + ".jpg"
+         extra_sec = fn / 25
+         frame_time = start_trim_frame_time + dt.timedelta(0,extra_sec)
+         frame_time_str = frame_time.strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]
+
+
+         if rcc <= 10:
+            if rcc <= 7 :
+               rc_val = 130 + (rcc * 5)
+            else:
+               rc_val = rc_val - 5
+          #cv2.rectangle(frame, (cx1, cy1), (cx2, cy2), (rc_val,rc_val,rc_val), 2, cv2.LINE_AA)
+
+         show_frame = cv2.resize(frame,(1280,720))
+         cv2.putText(show_frame, str(frame_time_str),  (1100,710), cv2.FONT_HERSHEY_SIMPLEX, .4, (255, 255, 255), 1)
+         op_desc = json_conf['site']['operator_name'] + " " + json_conf['site']['obs_name'] + " " + json_conf['site']['location']
+         cv2.putText(show_frame, str(op_desc),  (10,710), cv2.FONT_HERSHEY_SIMPLEX, .4, (255, 255, 255), 1)
+
+         #cv2.putText(show_frame, str("DETECT"),  (20,50), cv2.FONT_HERSHEY_SIMPLEX, .4, (255, 255, 255), 1)
+         #cv2.putText(show_frame, str(fn),  (20,70), cv2.FONT_HERSHEY_SIMPLEX, .4, (255, 255, 255), 1)
+         if SHOW == 1:
+            cv2.imshow('pepe', show_frame)
+            cv2.waitKey(30)
+         mframes.append(cache_dir + frame_file)
+         cv2.imwrite(cache_dir + frame_file, show_frame)
+         rcc += 1
+
+   return(mframes)
+
+def assemble_custom_old(TL_CONF, json_conf):
+   min_index = {}
+   tl_conf = load_json_file(TL_CONF)
+   print(tl_conf)
+   all_start_dt = datetime.strptime(tl_conf['start_time'], "%Y_%m_%d_%H_%M_%S")
+   all_end_dt = datetime.strptime(tl_conf['end_time'], "%Y_%m_%d_%H_%M_%S")
+
+   cams_id = tl_conf['cams_id']
+   date = all_start_dt.strftime("%Y_%m_%d")
+   mdir = "/mnt/ams2/meteors/" + date + "/" 
+   mdata_file = mdir + json_conf['site']['ams_id'] + "_" + date + "_" + cams_id + "_meteor_data.info"
+   print(mdata_file)
+   meteors = load_json_file(mdata_file)
+   fmeteors = []
+   bmeteors = []
+   for meteor in meteors:
+      if "obj_id" in meteor['objects']:
+         print(meteor['hdf'], len(meteor['objects']['ofns']))
+         if len(meteor['objects']['ofns']) >= 10:
+            meteor['best'] = meteor['objects'][obj] = meteor['objects']
+            fmeteors.append(meteor)
+         else:
+            bmeteors.append(meteor)
+      else:
+         for obj in meteor['objects']:
+            print(meteor['hdf'], len(meteor['objects'][obj]['ofns']))
+            if len(meteor['objects'][obj]['ofns']) >= 10:
+               meteor['best'] = meteor['objects'][obj]
+               fmeteors.append(meteor)
+            else:
+               bmeteors.append(meteor)
+
+   for meteor in fmeteors:
+      print("FINAL:", meteor['hdf'], len(meteor['best']['ofns']))
+      root_fn, dir = fn_dir(meteor['hdf'])
+      root_fn = root_fn.replace(".mp4", "")
+      print("ROOT:", root_fn)
+
+   exit()
+   for meteor in bmeteors:
+      print("BAD:", meteor['hdf'])
+
    for n in range(int(((all_end_dt - all_start_dt).seconds)/60)+1):
       min_dt = all_start_dt + dt.timedelta(minutes=n)
       min_key = min_dt.strftime("%Y_%m_%d_%H_%M")
@@ -254,7 +483,7 @@ def meteors_last_night_detect_data(date, cams_id, json_conf, hd_meteors):
 
 def meteors_last_night_for_cam(date, cams_id, json_conf):
     meteors = []
-
+    
 
     date_dt = datetime.strptime(date, "%Y_%m_%d")
     ffy, fmm, fdd = date.split("_")
@@ -319,7 +548,12 @@ def meteors_last_night_for_cam(date, cams_id, json_conf):
           hd_meteors.append((meteor_file, mj['hd_trim']))
     hd_meteors = sorted(hd_meteors, key=lambda x: x[0], reverse=True)
 
+    for data in hd_meteors:
+       print(data)
 
+    meteors_last_night_detect_data(date, cams_id, json_conf, hd_meteors)
+    mdata_file = mdir + json_conf['site']['ams_id'] + "_" + date + "_" + cams_id + "_meteor_data.info"
+    exit()
     #meteors_last_night_detect_data(date, cams_id, json_conf, hd_meteors)
     #exit()
 

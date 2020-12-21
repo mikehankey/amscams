@@ -15,12 +15,13 @@ from lib.PipeAutoCal import fn_dir, get_cal_files
 from lib.DEFAULTS import *
 import numpy as np
 
-def aurora_fast(date, json_conf):
+def aurora_fast(date, focus_cam = None, json_conf = None):
    snap_dir = "/mnt/ams2/SNAPS/" + date + "/360p/" 
    slow_stack_dir = "/mnt/ams2/meteor_archive/" + STATION_ID + "/AURORA/STACKS/" + date + "/" 
 
    rerun = 0
-   focus_cam = "cam2"
+   if focus_cam is None:
+      focus_cam = "cam2"
    cam_id_info, cam_num_info = load_cam_info(json_conf)
    data_file = TL_VIDEO_DIR + date + "-audit.json"
 
@@ -124,6 +125,7 @@ def aurora_fast(date, json_conf):
                                  print("GOOD:", slow_stack_file)
                               else:
                                  print("MISSING SLOW STACK:", slow_stack_file)
+                                 print("AURORA STACK:", sd_file)
                                  aurora_stack_vid(sd_file, json_conf)
                            if cfe(slow_stack_file) == 1:
                               fn,dir = fn_dir(slow_stack_file)
@@ -153,7 +155,7 @@ def aurora_fast(date, json_conf):
       file, fn = dfile
       list += "file '" + file + "'\n"
       list += "duration " + str(dur) + "\n"
-   au_vid_dir = "/mnt/ams2/meteor_archive/AMS49/AURORA/VID/"  
+   au_vid_dir = "/mnt/ams2/meteor_archive/" + STATION_ID + "/AURORA/VIDS/"  
    au_vid_list = au_vid_dir + date + "_" + cam_num_info[focus_cam] + "_" + "list.txt"
    au_vid_file = au_vid_dir + date + "_" + cam_num_info[focus_cam] + "_SLOW_360p" + ".mp4"
    if cfe(au_vid_dir, 1) == 0:

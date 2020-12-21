@@ -140,9 +140,10 @@ def crop_video(in_file, x,y,w,h):
       base_js['best_meteor'] = best_meteor
       save_json_file(jsf, base_js)
       save_json_file(jsfr, base_jsr)
-
-      cmd = "./Process.py roi_mfd " + in_file + " >/mnt/ams2/tmp/api.points 2>&1"
-      os.system(cmd)
+  
+   cmd = "./Process.py roi_mfd " + in_file + " >/mnt/ams2/tmp/api.points 2>&1"
+   print(cmd)
+   os.system(cmd)
 
 
    return(resp)
@@ -319,12 +320,13 @@ def show_cat_stars (video_file, hd_stack_file, points):
       #nsy = ry1 + max_loc[1]
       nsx = rx1 + mx
       nsy = ry1 + my
-      print("CLOSE IMAGE STAR LOCATION:", sx, sy, nsx, nsy, mx, my)
+      #print("CLOSE IMAGE STAR LOCATION:", sx, sy, nsx, nsy, mx, my)
       user_stars.append((nsx,nsy,999))
 
    cp['user_stars'] = user_stars
    cp = pair_stars(cp, video_file, json_conf, hd_img)
-
+   print("USER STARS:", len(user_stars))
+   print("PAIRED STARS:", len(cp['cat_image_stars']))
    resp = {}
 
    if app_type == "meteor":

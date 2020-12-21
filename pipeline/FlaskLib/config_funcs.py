@@ -27,6 +27,7 @@ def config_vars(amsid, data=None):
                jc['site'][field] = data[field]
          else:
             print("MISSING FIELD:", field )
+            jc['site'][field] = ""
       save_json_file("../conf/as6.json", jc)
 
    print(str(jc['site']))
@@ -35,6 +36,9 @@ def config_vars(amsid, data=None):
    template = make_default_template(amsid, "live.html", jc)
    out = make_default_template(amsid, "config_form.html", jc)
    si = jc['site']
+   for field in fields:
+      if field not in si:
+         si[field] = ""
    cam_rows = ""
 
 
