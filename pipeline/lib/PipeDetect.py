@@ -236,7 +236,10 @@ def make_meteor_index_day(day, json_conf):
          #print("BAD FILE:", ddd, len(ddd))
          continue
       start_time = y + "-" + m + "-" + d + " " + h + ":" + mm + ":" + s
-      mj = load_json_file(meteor)
+      try:
+         mj = load_json_file(meteor)
+      except:
+         print("CORRUPT FILE.", mf)
       if "best_meteor" in mj:
          reduced = 1
          #print(mj['best_meteor'])
@@ -328,7 +331,10 @@ def reject_mask_detects(date, json_conf):
    hsi = []
    for mf in jsfiles:
       if "reduced" not in mf and "stars" not in mf and "man" not in mf and "star" not in mf and "import" not in mf and "archive" not in mf:
-         mj = load_json_file(mf) 
+         try:
+            mj = load_json_file(mf) 
+         except:
+            print("corrupt", mf)
          (f_datetime, cam, f_date_str,fy,fmin,fd, fh, fm, fs) = convert_filename_to_date_cam(mf)
          mask_hits = 0
          if "sd_objects" in mj:
@@ -344,7 +350,7 @@ def reject_mask_detects(date, json_conf):
                      y = 0
                   if y >= 1080:
                      y = 1079 
-                  if mask_imgs[cam][y,x][0] == 255:
+                  if mask_imgs[cam][y,x][0] > 10:
                      mask_hits += 1
                   if x < omw and y < omh:
                      print("SD SIZE:", sd_mask_imgs[cam].shape)
@@ -375,7 +381,12 @@ def reject_hotspots(date, json_conf):
          hot_spots[mf]['xs'] = []
          hot_spots[mf]['ys'] = []
       if "reduced" not in mf and "stars" not in mf and "man" not in mf and "star" not in mf and "import" not in mf and "archive" not in mf:
-         mj = load_json_file(mf) 
+         print(mf)
+         try:
+            mj = load_json_file(mf) 
+         except:
+            print("corrupted json:", mf)
+            continue
          if "sd_objects" in mj:
             if "history" in mj['sd_objects'][0]:
                for hd in mj['sd_objects'][0]['history']:
@@ -384,9 +395,10 @@ def reject_hotspots(date, json_conf):
                   hot_spots[mf]['xs'].append(x)
                   hot_spots[mf]['ys'].append(y)
    for mf in hot_spots:
-      hot_spots[mf]['avg_x'] = int(np.mean(hot_spots[mf]['xs']))
-      hot_spots[mf]['avg_y'] = int(np.mean(hot_spots[mf]['ys']))
-      hsi.append((mf, hot_spots[mf]['avg_x'], hot_spots[mf]['avg_y']))
+      if len(hot_spots[mf]['xs']) > 2:
+         hot_spots[mf]['avg_x'] = int(np.mean(hot_spots[mf]['xs']))
+         hot_spots[mf]['avg_y'] = int(np.mean(hot_spots[mf]['ys']))
+         hsi.append((mf, hot_spots[mf]['avg_x'], hot_spots[mf]['avg_y']))
       
    hsi = sorted(hsi, key=lambda x: (x[1]), reverse=True)
    hotspots = {}
@@ -402,6 +414,7 @@ def reject_hotspots(date, json_conf):
             mj['hotspot'] = len(hotspots[hs]['children'])
             save_json_file(child, mj)
             print("saved", child)
+   os.system("./Process.py mmi_day " + date)
 
 def log_hotspot(hotspots, d):
    file, avg_x, avg_y = d
@@ -418,7 +431,7 @@ def log_hotspot(hotspots, d):
       if hcam != cam:
          continue
       dist = calc_dist((avg_x,avg_y),(hx,hy))
-      if dist < 10:
+      if dist < 50:
          found = 1
          first_file = hfile
    if found == 1:

@@ -67,12 +67,15 @@ def get_meteors_in_range(station_id, start_date, end_date,del_data,filters=None)
          mi = []
  
       if hotspot_filter == 0 and nored == 0 and cam_filter == 0:
+         print("NO FILTERS ON")
          return(mi)
       elif hotspot_filter == 1:
          filtered_index = []
+         print("HOTSPOT FILTERS ON")
          for dd in mi:
             meteor_file, reduced, start_time, dur, ang_vel, ang_dist, hotspot = dd 
-            if hotspot > 20:
+            print("HOTSPOT", hotspot)
+            if hotspot >= 4:
                filtered_index.append(dd)
       elif cam_filter != 0:
          filtered_index = []

@@ -1369,7 +1369,7 @@ def reduce_shift(poly, this_image, last_image,area):
 
 def fill_mask(img):
    for col in range(0,img.shape[1]-1):
-      for row in range(0,img.shape[0]-1):
+      for row in range(int(img.shape[0]/2),img.shape[0]-1):
          val = img[row,col]
          if val > 10:
             # block out rest of col 
@@ -1523,8 +1523,9 @@ def make_flat(cam,day,json_conf):
       median_mask = cv2.convertScaleAbs(np.median(np.array(mask_frames), axis=0))
       median_flat = cv2.convertScaleAbs(np.median(np.array(med_frames), axis=0))
       median_mask = cv2.GaussianBlur(median_mask, (15, 15), 0)
-      median_mask = cv2.dilate(median_mask.copy(), None , iterations=4)
-      #median_mask = fill_mask(median_mask)
+      median_mask = cv2.dilate(median_mask.copy(), None , iterations=8)
+      median_mask = fill_mask(median_mask)
+      median_mask = cv2.dilate(median_mask.copy(), None , iterations=8)
 
       omh, omw = median_mask.shape[:2]
 
