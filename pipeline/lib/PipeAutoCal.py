@@ -1485,7 +1485,6 @@ def deep_calib(cam, json_conf):
          print("CDIST, STD, DED, CAT, MULTI:", cal_file, dcname, cat_center_dist, std_dist, med_dist, cat_dist, multi)
 
    print("BEST STARS:", len(best_stars))
-   cont  = input("continue to multi fit ")
    status, cal_params,merged_stars = minimize_poly_multi_star(best_stars, json_conf,0,0,cam,None,mcp,SHOW)
    if status == 0:
       print("Multi star min failed.")
