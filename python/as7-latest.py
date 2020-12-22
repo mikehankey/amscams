@@ -27,11 +27,10 @@ def ping_cam(cam_num, config=None):
 
 
 if "cloud_latest" in jsc:
-   cloud_on = 1
+   cloud_on = jsc['cloud_latest']
 else: 
    cloud_on = 0 
 
-#cloud_on = 1 
 
 cameras = jsc['cameras']
 for cam in cameras:
