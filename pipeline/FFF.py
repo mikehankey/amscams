@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-from lib.FFFuncs import slow_stack_video , imgs_to_vid, snap_video, splice_video
+from lib.FFFuncs import slow_stack_video , imgs_to_vid, snap_video, splice_video, resize_video 
 
 import sys
 import os
@@ -16,6 +16,10 @@ if len(sys.argv) < 2:
 
 cmd = sys.argv[1]
 
+if cmd == "resize_video":
+   #resize_video(in_file, out_file, ow, oh, bit_rate=20):
+
+   resize_video(sys.argv[2], sys.argv[3], sys.argv[4], sys.argv[5])
 if cmd == "snap_video":
    snap_video(sys.argv[2])
 if cmd == "slow_stack":
