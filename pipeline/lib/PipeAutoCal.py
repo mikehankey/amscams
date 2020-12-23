@@ -494,6 +494,7 @@ def guess_cal(cal_file, json_conf, cal_params = None):
    cp_file = cal_file.replace(".png", "-calparams.json")
    (f_datetime, this_cam, f_date_str,y,m,d, h, mm, s) = convert_filename_to_date_cam(cal_file)
    img = cv2.imread(cal_file)
+
    orig_img = img.copy()
    gray_img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
    stars = get_image_stars(cal_file, gray_img.copy(), json_conf, 0)
@@ -821,16 +822,21 @@ def refit_fov(cal_file, json_conf):
    print("START CP VALS:", cal_params['center_az'], cal_params['center_el'], cal_params['position_angle'], cal_params['pixscale'])
 
    img = cv2.imread(image_file)
-
+   if img.shape[0] != 1080:
+      img = cv2.resize(img, (1920, 1080))
+      cv2.imwrite(image_file, img)
    mask_file = MASK_DIR + cam + "_mask.png"
    if cfe(mask_file) == 1:
       mask_img = cv2.imread(mask_file)
       mask_img = cv2.resize(mask_img, (1920,1080))
+
    else:
       mask_img = None
+
    if mask_img is not None:
       img = cv2.subtract(img, mask_img)
       print("MASK SUBTRACTED.")
+   gray_img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
    print("REFIT CAM:", cam)
    #masks = get_masks(cam, json_conf,1)
@@ -838,7 +844,6 @@ def refit_fov(cal_file, json_conf):
    #img = mask_frame(img, [], masks, 5)
 
 
-   gray_img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
    find_stars = 1
    if "user_mods" in cal_params:
       if "user_stars" in cal_params['user_mods']:

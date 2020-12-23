@@ -80,19 +80,24 @@ def cal_file(amsid, calib_file):
    
    caldir = "/mnt/ams2/cal/freecal/" + calib_file + "/"
    caldir = caldir.replace("-stacked.png", "")
+   caldir = caldir.replace(".png", "")
 
    cps = glob.glob(caldir + "*cal*.json")
+   print ("GLOB:", caldir + "*cal*.json")
    hss = glob.glob(caldir + "*half-stack.png")
    azs = glob.glob(caldir + "*az*half*")
    sfs = glob.glob(caldir + "*stacked.png")
    if len(cps) == 0 :
+      cdd = caldir.replace(".png/", "")
       template = "Problem: no calparams file exists in this dir. " + caldir
-      return(template)
+      cmd = "rm -rf " + cdd
+      #os.system(cmd)
+      return(template + cmd)
    if len(cps) > 1 :
       template = "Problem: more than one cal file in this dir, please delete one." + caldir
       return(template)
    if len(hss) == 0 :
-      if cfe(sfs[0]) == 1:
+      if len(sfs) >= 1:
           for x in range(0, len(sfs)):
              if "az" not in sfs: 
                 stack_img = cv2.imread(sfs[x], 0)

@@ -283,6 +283,13 @@ def show_cat_stars (video_file, hd_stack_file, points):
       cal_root = "/mnt/ams2" + cal_r 
       cps = glob.glob(cal_root + "*calparams.json")
       sfs = glob.glob(cal_root + "*stacked.png")
+      if len(sfs) == 0:
+         ttt = cal_root + ".png"
+         if cfe(ttt) == 1:
+            sfs.append(ttt)
+         else:
+            return("Problem can't find cal file")
+      print("GLOB:" + cal_root + "*stacked.png")
       stack_file = sfs[0]
       cpf = cps[0]
       cp = load_json_file(cpf)

@@ -167,7 +167,13 @@ if __name__ == "__main__":
       autocal_report("failed")
 
    if cmd == "deep_cal":
-      deep_calib(sys.argv[2], json_conf)
+      if sys.argv[2] == "all":
+         for cam in json_conf['cameras']:
+            cams_id = json_conf['cameras'][cam]['cams_id']
+            deep_calib(cams_id, json_conf)
+
+      else:
+         deep_calib(sys.argv[2], json_conf)
    if cmd == "dc_report":
       deep_cal_report(sys.argv[2], json_conf)
  
