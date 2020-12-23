@@ -1,15 +1,49 @@
 [
 {
-   "name": "Orionids 2020",
-   "start": "2020_10_20_12_00_00",
-   "end": "2020_10_21_12_00_00",
+   "name": "Geminids 2020",
+   "start": "2020_12_13_12_00_00",
+   "end": "2020_12_14_14_00_00",
    "video_providers" : [
       {
          "ams_id": "AMS1",
-         "bid": [0],
+         "bid": [0,1],
          "operator": "Mike Hankey",
          "location": "Monkton, MD USA"
       },
+      {
+         "ams_id": "AMS15",
+         "bid": [1],
+         "operator": "Peter Deterline",
+         "location": "Douglassville, PA USA"
+      },
+      {
+         "ams_id": "AMS9",
+         "bid": [2],
+         "operator": "Ed Abel",
+         "location": "Mathias, WV USA"
+      },
+      {
+         "ams_id": "AMS8",
+         "bid": [3,4,5,6],
+         "operator": "Kevin Palivec",
+         "location": "Hawley TX, USA"
+      },
+      {
+         "bid": [5],
+         "ams_id": "AMS24",
+         "operator": "Robert Lunsford, University of Arizona",
+         "location": "El Cajo, CA USA"
+      },
+      {
+         "ams_id": "AMS102",
+         "bid": [6,7,8,9],
+         "operator": "George Fleenor ",
+         "location": "Bradenton, FL USA"
+      }
+
+   ],
+
+   "backups" : [
       {
          "ams_id": "AMS7",
          "bid": [1,6],
@@ -17,51 +51,31 @@
          "location": "College Park, MD USA"
       },
       {
-         "ams_id": "AMS15",
-         "bid": [2],
-         "operator": "Peter Deterline",
-         "location": "Douglassville, PA USA"
-      },
-      {
-         "ams_id": "AMS9",
-         "bid": [3,7],
-         "operator": "Ed Abel",
-         "location": "Mathias, WV USA"
-      },
-      {
-         "ams_id": "AMS8",
-         "bid": [4,8],
-         "operator": "Kevin Palivec",
-         "location": "Hawley TX, USA"
-      },
-      {
-         "bid": [9],
-         "ams_id": "AMS24",
-         "operator": "Robert Lunsford, University of Arizona",
-         "location": "El Cajo, CA USA"
-      }
-
-   ],
-
-   "backups" : [
-      {
-         "ams_id": "AMS48",
          "bid": [7,8],
-         "operator": "James Hannon",
-         "location": "Otter Creek TWP, IA USA"
-      },
-      {
-         "bid": 9,
          "ams_id": "AMS14",
          "operator": "Mel Helm",
          "location": "Auberry, CA USA"
       },
       {
-         "ams_id": "AMS42",
+         "ams_id": "AMS48",
          "bid": [6],
+         "operator": "James Hannon",
+         "location": "Otter Creek TWP, IA USA"
+      },
+      {
+         "ams_id": "AMS42",
+         "bid": [8],
          "operator": "Cedar Amateur Astronomers",
          "location": "Cedar Rapids, IA USA"
+      },
+      {
+         "ams_id": "AMS49",
+         "bid": [9],
+         "operator": "Cafego’s Aurora View Farms B&B",
+         "location": "Fairbanks, AK USA"
       }
+
+
    ]
 }
 ]

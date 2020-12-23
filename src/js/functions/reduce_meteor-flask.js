@@ -18,7 +18,8 @@ function reduce_meteor() {
             var json_resp = data
            
             if(json_resp['status']!==0) {
-                update_reduction_on_canvas_and_table(json_resp);
+                window.location.reload();
+                //update_reduction_on_canvas_and_table(json_resp);
 
                 // Open proper tab
                 $('#reduc-tab-l').click();

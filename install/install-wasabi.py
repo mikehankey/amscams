@@ -27,7 +27,7 @@ def install():
 os.system("sudo mkdir /mnt/archive.allsky.tv")
 os.system("sudo chown ams:ams /mnt/archive.allsky.tv")
 os.system("sudo chown ams:ams /mnt/archive.allsky.tv")
-os.system("chomd 777 /mnt/archive.allsky.tv")
+os.system("chmod 777 /mnt/archive.allsky.tv")
 os.system("sudo apt-get install build-essential git libfuse-dev libcurl4-openssl-dev libxml2-dev mime-support automake libtool")
 os.system("sudo apt-get install pkg-config libssl-dev")
 os.system("cd /home/ams/; git clone https://github.com/s3fs-fuse/s3fs-fuse;")

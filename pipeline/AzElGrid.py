@@ -104,6 +104,8 @@ def az_grid(cal_file,cal_params,cal_image,iw,ih,show =0):
       print("USING MCP POLY VALS!")
    else:
       print("No MCP file.", mcpf)
+      cal_params['x_poly'] = np.zeros(shape=(15,),dtype=np.float64)
+      cal_params['y_poly'] =  np.zeros(shape=(15,),dtype=np.float64)
 
    RA_center = float(cal_params['ra_center'])
    dec_center = float(cal_params['dec_center'])
@@ -218,7 +220,8 @@ if __name__ == "__main__":
       img_x = int(sys.argv[1])
       img_y = int(sys.argv[2])
       cal_param_file = sys.argv[3]
-
+   if "png" in cal_param_file:
+      cal_param_file = cal_param_file.replace(".png", "-calparams.json")
 
    cal_params = load_json_file(cal_param_file)
 

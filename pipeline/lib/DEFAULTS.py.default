@@ -1,11 +1,13 @@
-LOCATION = "Monkton, MD"
 
-NETWORK_STATIONS = ['AMS15', 'AMS1', 'AMS7', 'AMS9']
+SHOW = 0
+STATION_ID = "AMSXXX"
+LOCATION = ""
+NETWORK_STATIONS = []
 
 AMS_HOME = "/home/ams/amscams"
 CONF_DIR = AMS_HOME + "/conf"
-STATION_ID = "AMS1"
 ARC_DIR = "/mnt/ams2/meteor_archive/" + STATION_ID + "/"
+METEOR_DIR = "/mnt/ams2/meteors/"
 METEOR_ARC_DIR = "/mnt/ams2/meteor_archive/" + STATION_ID + "/METEOR/"
 CLOUD_DIR = "/mnt/archive.allsky.tv/" + STATION_ID + "/"
 CLOUD_METEOR_DIR = CLOUD_DIR + "METEOR/"
@@ -52,4 +54,10 @@ MULTI_CAM_LAYOUT = [ "010005", "010001", "010002", "010003", "010006", "010004"]
 MASK_DIR = "/mnt/ams2/meteor_archive/" + STATION_ID + "/CAL/MASKS/"
 TL_IMAGE_DIR = "/mnt/ams2/meteor_archive/" + STATION_ID + "/TL/PICS/"
 TL_VIDEO_DIR = "/mnt/ams2/meteor_archive/" + STATION_ID + "/TL/VIDS/"
+
+
+BK_MNT_PT = "/mnt/backup/"
+BK_DEV = "192.168.1.21:/as6_data"
+BK_UUID = ""
+BK_DIR = "/mnt/backup/ams2/"
 

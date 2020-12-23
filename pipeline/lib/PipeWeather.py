@@ -99,6 +99,16 @@ def stack_index(json_conf):
    fp.write(html)
    fp.close()
 
+def make_all_hourly_stacks(json_conf):
+   days = glob.glob("/mnt/ams2/SD/proc2/*")
+   for day_dir in sorted(days, reverse=True):
+       
+      day, dir = fn_dir(day_dir)
+      el = day.split("_")
+      if len(el) == 3:
+         cmd = "./Process.py hs " + day
+         os.system(cmd)
+         print(cmd)
 
 def hourly_stacks_html(date, json_conf):
    work_dir = "/mnt/ams2/SD/proc2/" + date + "/images/"
@@ -107,6 +117,7 @@ def hourly_stacks_html(date, json_conf):
    html_data = {}
  
    night_images = {}
+   day_images = {}
    
    cam_ids = []
    for cam_num in json_conf['cameras']:
@@ -115,6 +126,7 @@ def hourly_stacks_html(date, json_conf):
   
    for id in cam_ids:
       night_images[id] = [] 
+      day_images[id] = [] 
 
 
 
@@ -122,9 +134,9 @@ def hourly_stacks_html(date, json_conf):
       print(file)
       (f_datetime, cam, f_date_str,fy,fm,fd, fh, fmin, fs) = convert_filename_to_date_cam(file)
       sun_status, sun_az, sun_el = day_or_night(f_date_str, json_conf,1)
-      if float(sun_el) > -10:
-         print("SKIP DAWN/DUSK:", sun_el)
-         #continue
+      if float(sun_el) > -15:
+         print("DAYTIME FILE:", sun_el)
+
       fn, dir = fn_dir(file)
       if "night" not in file:
          el = fn.split("_")
@@ -151,9 +163,10 @@ def hourly_stacks_html(date, json_conf):
                sun_status, sun_az, sun_el = day_or_night(fdate, json_conf,1)
                print("SUN EL:",  sun_status, sun_az, sun_el)
                img = cv2.imread(html_data[hk][cid])
-               if float(sun_el) < -10:
+               if float(sun_el) < -20:
                   night_images[cid].append(img)
                else:
+                  day_images[cid].append(img)
                   print("SKIP DAWN/DUSK:", sun_el)
                link = "/pycgi/webUI.py?cmd=browse_day&cams_id=" + cid + "&day=" + str(date) + "&hour=" + str(hour)
                html += "<td><a href=" + link + "><img src=" + html_data[hk][cid] + "></a></td>"
@@ -166,7 +179,11 @@ def hourly_stacks_html(date, json_conf):
 
    html += "</table>"
    for cam_id in night_images:
-      night_stack_image = stack_frames(night_images[cam_id])
+      print("NIGHT IMAGES:", cam_id, len(night_images[cam_id]))
+
+      if len(night_images[cam_id]) == 0:
+         continue
+      night_stack_image = stack_frames(night_images[cam_id], 1, None, "night")
       night_stack_file = "/mnt/ams2/SD/proc2/" + date + "/images/" + cam_id + "-night-stack.png"
       night_stack_file_jpg = "/mnt/ams2/meteor_archive/" + STATION_ID + "/STACKS/" + date + "/" + cam_id + "-night-stack.jpg"
       try:
@@ -185,12 +202,132 @@ def hourly_stacks_html(date, json_conf):
    print(night_stack_dir + "hours.html")
    stack_index(json_conf)
 
+
+def meteor_night_stacks(date, json_conf):
+   mdir = "/mnt/ams2/meteors/" + date + "/"
+   stack_imgs = {}
+   for cam in json_conf['cameras']:
+      cams_id = json_conf['cameras'][cam]['cams_id']
+      outfile = mdir + cams_id + "_meteors.jpg"
+      if cfe(outfile) == 1:
+         print("SKIP DONE!", outfile)
+         continue
+      files = glob.glob(mdir + "*" + cams_id + "*.json")
+      images = []
+      for mf in files:
+         if "reduced" not in mf and "stars" not in mf and "man" not in mf and "star" not in mf and "import" not in mf and "archive" not in mf:
+            mj = load_json_file(mf)
+            if "hd_stack" in mj:
+               img = cv2.imread(mj['hd_stack'])
+            elif "sd_stack" in mj:
+               img = cv2.imread(mj['sd_stack'])
+               img = cv2.resize(img,(1920,1080))
+            images.append(img)
+      print("IMAGES:", cams_id, len(images))
+      if len(images) > 0:
+         meteor_stack_image = stack_frames(images, 1, None, "night")
+         stack_imgs[cams_id] = meteor_stack_image
+         print("SAVED:", outfile)
+         cv2.imwrite(outfile, meteor_stack_image)
+
+   for cam in json_conf['cameras']:
+      cams_id = json_conf['cameras'][cam]['cams_id']
+      outfile = mdir + cams_id + "_meteors.jpg"
+      if cfe(outfile) == 1:
+         img = cv2.imread(outfile)
+         stack_imgs[cams_id] = img
+
+
+   if len(stack_imgs.keys()) == 6:
+      comp_w = int((1920/2) * 2)
+      comp_h = int((1080/2) * 3)
+   elif len(stack_imgs.keys()) == 7:
+      comp_w = int((1920/2) * 2)
+      comp_h = int((1080/2) * 4)
+   else:
+      comp_w = 1920
+      comp_h = int((1080/2) * len(stack_imgs.keys()) )
+
+   comp = np.zeros((comp_h,comp_w,3),dtype=np.uint8)
+
+   col = 0
+   row = 0
+   c = 0
+   px1 = 0
+   px2 = int(1920/2)   
+   for cams_id in stack_imgs:
+      #cams_id = json_conf['cameras'][cam]['cams_id']
+      if c == 0:
+         px1 = 0   
+         px2 = int((1920/2))   
+         py1 = int(row * (1080/2))
+         py2 = int(py1 + (1080/2))
+      elif c == 6 :
+         px1 = int(0 + (1920/4))
+         px2 = 1440
+         py1 = 540 * 3
+         py2 = 540 * 4
+      elif c % 2 == 0 :
+         px1 = 0   
+         px2 = int((1920/2))   
+         row += 1
+         col = 1
+         py1 = int(row * (1080/2))
+         py2 = int(py1 + (1080/2))
+      else:
+         px1 = int((1920/2))   
+         px2 = int(1920)   
+         col = 2
+         py1 = int(row * (1080/2))
+         py2 = int(py1 + (1080/2))
+      print("COMP XYS:", c, col, row, py1, py2, px1, px2)
+      img = cv2.resize(stack_imgs[cams_id],(int(1920/2),int(1080/2)))
+      comp[py1:py2,px1:px2] = img
+      c += 1
+   mh, mw = comp.shape[:2]
+   comp_titled = np.zeros((mh+250,mw,3),dtype=np.uint8)
+   comp_titled[0:mh,0:mw] = comp
+
+   half_w = int(mw/2)
+   font = cv2.FONT_HERSHEY_SIMPLEX
+
+   title = "Geminid Meteor Shower"
+   textsize = cv2.getTextSize(title, font, 2,2)[0]
+   textX = int((comp_titled.shape[1] - textsize[0]) / 2)
+   cv2.putText(comp_titled, str(title),  (textX,mh + 60), cv2.FONT_HERSHEY_SIMPLEX, 2, (255, 255, 255), 1) 
+
+   subtitle = json_conf['site']['obs_name'] + " " + json_conf['site']['location']
+   textsize = cv2.getTextSize(subtitle, font, 1.2,2)[0]
+   textX = int((comp_titled.shape[1] - textsize[0]) / 2)
+   cv2.putText(comp_titled, str(subtitle),  (textX,mh + 110), cv2.FONT_HERSHEY_SIMPLEX, 1.2, (255, 255, 255), 1) 
+
+   date_desc = "December 13th, 2020"
+   textsize = cv2.getTextSize(date_desc, font, 1.2,2)[0]
+   textX = int((comp_titled.shape[1] - textsize[0]) / 2)
+   cv2.putText(comp_titled, str(date_desc),  (textX,mh + 155), cv2.FONT_HERSHEY_SIMPLEX, 1.2, (255, 255, 255), 1) 
+
+   op_name = json_conf['site']['operator_name']
+   textsize = cv2.getTextSize(op_name, font, 1.2,2)[0]
+   textX = int((comp_titled.shape[1] - textsize[0]) / 2)
+   cv2.putText(comp_titled, str(op_name),  (textX,mh +200), cv2.FONT_HERSHEY_SIMPLEX, 1.2, (255, 255, 255), 1) 
+
+
+   outfile = mdir + json_conf['site']['ams_id'] + "_meteors.jpg"
+   cv2.imwrite(outfile, comp)
+   outfile_t = mdir + json_conf['site']['ams_id'] + "_meteors_title.jpg"
+   cv2.imwrite(outfile, comp)
+   cv2.imwrite(outfile_t, comp_titled)
+   print("Saved:", outfile)
+   
 def hourly_stacks(date, json_conf):
    hour_data = {}
+   solar_hours = solar_info(date, json_conf)
+
    night_stack_dir = "/mnt/ams2/meteor_archive/" + STATION_ID + "/STACKS/" + date + "/"
    if cfe(night_stack_dir, 1) == 0:
       os.makedirs(night_stack_dir)
    work_dir = "/mnt/ams2/SD/proc2/" + date + "/images/"
+   day_work_dir = "/mnt/ams2/SD/proc2/daytime/" + date + "/images/"
    for cam_num in json_conf['cameras']:
       cams_id = json_conf['cameras'][cam_num]['cams_id']
       if cams_id not in hour_data:
@@ -204,15 +341,38 @@ def hourly_stacks(date, json_conf):
             hour_data[cam][fh]['files'] = []
          hour_data[cam][fh]['files'].append(file)
 
+      wild = day_work_dir + "*" + cams_id + "*-tn*"
+      files = glob.glob(wild)
+      print("DAY FILES:", wild, len(files))
+      for file in sorted(files):
+         (f_datetime, cam, f_date_str,fy,fm,fd, fh, fmin, fs) = convert_filename_to_date_cam(file)
+         if fh not in hour_data[cam]:
+            hour_data[cam][fh] = {} 
+            hour_data[cam][fh]['files'] = []
+         hour_data[cam][fh]['files'].append(file)
+
    for cam in hour_data:
-      for hour in hour_data[cam]:
+       for hour in hour_data[cam]:
+          print("HOUR DATA:", cam, hour, len(hour_data[cam][hour]['files']))
+
+   for cam in hour_data:
+       for hour in hour_data[cam]:
          images = []
          files = hour_data[cam][hour]['files']
          for file in files:
             (f_datetime, cam, f_date_str,fy,fm,fd, fh, fmin, fs) = convert_filename_to_date_cam(file)
             im = cv2.imread(file)
             images.append(im)
-         hour_stack_image = stack_frames(images)
+         print("SOLAR HOUR:", solar_hours[int(fh)])
+         if int(fh) in solar_hours:
+            sun_status, sun_az, sun_el = solar_hours[int(fh)]
+            if float(sun_el) > -10:
+               sun_status = "day"
+         else:
+            print("MISSING SOLAOR HOUR", int(fh))
+            sun_status = "night"
+         print("LAST HOUR/MIN SUN STATS:", fh, sun_status, len(images))
+         hour_stack_image = stack_frames(images, 1, None, sun_status )
          if hour_stack_image is not None:
             hour_stack_file = night_stack_dir + fy + "_" + fm + "_" + fd + "_" + hour + "_" + cam + ".jpg"
             print(hour_stack_file, hour_stack_image.shape)
@@ -788,10 +948,15 @@ def color_thresh_new(image, low=[60,0,0], high=[255,200,200]):
 
 
 def solar_info(date, json_conf):
+   solar_hours = {}
    for i in range(0,24):
+      date = date.replace("_", "/")
+      date = date.replace("-", "/")
       f_date_str = date + ' {:02d}:{:02d}:00'.format(i,0) 
       sun_status, sun_az, sun_el = day_or_night(f_date_str, json_conf,1)
+      solar_hours[i] = [sun_status, sun_az, sun_el]
       print(f_date_str, sun_status, sun_az, sun_el)
+   return(solar_hours)
 
 def multi_audit_tl(date, json_conf, outsize, outdir, frate, snaps_per_second):
    for cam_num in range(1, len(json_conf['cameras'].keys()) + 1):
@@ -1204,7 +1369,7 @@ def reduce_shift(poly, this_image, last_image,area):
 
 def fill_mask(img):
    for col in range(0,img.shape[1]-1):
-      for row in range(0,img.shape[0]-1):
+      for row in range(int(img.shape[0]/2),img.shape[0]-1):
          val = img[row,col]
          if val > 10:
             # block out rest of col 
@@ -1286,16 +1451,18 @@ def make_flat(cam,day,json_conf):
    flat_file = MASK_DIR + cam + "_flat.png"
 
    if day is None: 
-      date = datetime.now().strftime("%Y_%m_%d")
+      date = datetime.datetime.now().strftime("%Y_%m_%d")
    else:
       date = day
    #if cfe(mask_file) == 0:
    if True:
       wild = "/mnt/ams2/SD/proc2/daytime/" + date + "/*" + cam + "*.mp4" 
-      nwild = "/mnt/ams2/SD/proc2/" + date + "/*" + cam + "*.mp4" 
+      nwild = "/mnt/ams2/SD/proc2/" + date + "*" + cam + "*.jpg" 
+      nstack_wild = "/mnt/ams2/SD/proc2/" + date + "/images/*" + cam + "*.jpg" 
       print(wild)
       files = glob.glob(wild)
       nfiles = glob.glob(nwild)
+      nstacks = glob.glob(nstack_wild)
       for file in nfiles:
          files.append(file)
       if len(files) == 0:
@@ -1303,20 +1470,48 @@ def make_flat(cam,day,json_conf):
          return(None, None)
       med_frames = []
       mask_frames = []
+      night_mask_frames = []
       fc = 0
       for file in sorted(files):
          if "trim" in file or "crop" in file :
             continue
          (f_datetime, cam, f_date_str,fy,fmin,fd, fh, fm, fs) = convert_filename_to_date_cam(file)
          sun_status, sun_az, sun_el = day_or_night(f_date_str, json_conf,1)
-         if -15 <= int(sun_el) <= -10:
+
+         if -10 <= int(sun_el) <= 0:
 
             frames,color_frames,subframes,sum_vals,max_vals,pos_vals = load_frames_fast(file, json_conf, 1, 1, [], 1,[])
             med_frames.append(color_frames[0])
-         if -10 <= int(sun_el) <= -5:
+         if -5 <= int(sun_el) <= 0:
+            print("MASK FRAMES:", file)
             frames,color_frames,subframes,sum_vals,max_vals,pos_vals = load_frames_fast(file, json_conf, 1, 1, [], 1,[])
             mask = color_thresh(color_frames[0]) 
+
             mask_frames.append(mask)
+
+      night_images = []
+      for file in sorted(nstacks):
+         if "trim" in file or "crop" in file :
+            continue
+         (f_datetime, cam, f_date_str,fy,fmin,fd, fh, fm, fs) = convert_filename_to_date_cam(file)
+         sun_status, sun_az, sun_el = day_or_night(f_date_str, json_conf,1)
+         if int(sun_el) < -10:
+            img = cv2.imread(file)
+            night_images.append(img)
+      
+      median_night = cv2.convertScaleAbs(np.median(np.array(night_images), axis=0))
+
+      med_show = cv2.resize(median_night, (1280,720))
+      if len(med_show.shape) == 3:
+         med_show_gray = cv2.cvtColor(med_show, cv2.COLOR_BGR2GRAY)
+      else:
+         med_show_gray = med_show
+      _, thresh= cv2.threshold(med_show_gray, 80, 255, cv2.THRESH_BINARY)
+      thresh_dil = cv2.dilate(thresh.copy(), None , iterations=8)
+      cnts = get_contours(thresh_dil)
+      cv2.imwrite("/mnt/ams2/test.jpg", thresh_dil) 
+
+
 
       print("MASK FRAMES:", len(mask_frames), len(med_frames))
       if len(mask_frames) == 0:
@@ -1324,12 +1519,23 @@ def make_flat(cam,day,json_conf):
          return(None, None)
       for frame in mask_frames:
          print(frame.shape)
+      print("MASK FRAMES:", len(mask_frames))
       median_mask = cv2.convertScaleAbs(np.median(np.array(mask_frames), axis=0))
-
       median_flat = cv2.convertScaleAbs(np.median(np.array(med_frames), axis=0))
       median_mask = cv2.GaussianBlur(median_mask, (15, 15), 0)
-      median_mask = cv2.dilate(median_mask.copy(), None , iterations=4)
+      median_mask = cv2.dilate(median_mask.copy(), None , iterations=8)
       median_mask = fill_mask(median_mask)
+      median_mask = cv2.dilate(median_mask.copy(), None , iterations=8)
+
+      omh, omw = median_mask.shape[:2]
+
+      median_mask = cv2.resize(median_mask, (1280,720))
+      for x,y,w,h in cnts:
+         if w < 50 and h < 50:
+            print("ADDING EXTRA AREAS TO MASK", x,y,w,h)
+            median_mask[y:y+w,x:x+w] = 255
+      median_mask = cv2.resize(median_mask, (omw,omh))
+
       cv2.imwrite(mask_file, median_mask)
       cv2.imwrite(flat_file, median_flat)
       print(mask_file)
@@ -1668,8 +1874,8 @@ def color_thresh(image, low=[60,0,0], high=[255,200,200]):
    gsize = 100
    height,width = image.shape[:2]
 
-   low_color_bound = np.array((60,0,0) ,  dtype=np.uint8, ndmin=1)
-   high_color_bound = np.array((225,200,200) ,  dtype=np.uint8, ndmin=1)
+   low_color_bound = np.array((50,0,0) ,  dtype=np.uint8, ndmin=1)
+   high_color_bound = np.array((225,225,225) ,  dtype=np.uint8, ndmin=1)
    mask = cv2.inRange(image,low_color_bound, high_color_bound)
    mask_image = 255- mask
    #cv2.imshow('mask', mask_image)
@@ -1679,7 +1885,7 @@ def color_thresh(image, low=[60,0,0], high=[255,200,200]):
 
 
    #cv2.imshow('sub', sub)
-   #cv2.waitKey(45)
+   #cv2.waitKey(0)
 
 
    for w in range(0,width):

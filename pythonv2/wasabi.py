@@ -207,7 +207,7 @@ def connect_wasabi():
    uid = os.getuid()
    gid = os.getgid()
    #cmd = "s3fs archive.allsky.tv /mnt/archive.allsky.tv -o passwd_file=/home/ams/amscams/conf/wasabi.txt -o dbglevel=debug -o url=https://s3.wasabisys.com -o umask=0007,uid="+str(uid)+",gid="+str(gid)
-   cmd = "s3fs -o use_path_request_style -o url=https://s3.wasabi.com archive.allsky.tv /mnt/archive.allsky.tv -o passwd_file=/home/ams/amscams/conf/wasabi.txt -o dbglevel=debug -o url=https://s3.wasabisys.com -o umask=0007,uid="+str(uid)+",gid="+str(gid)
+   cmd = "s3fs -o use_path_request_style -o url=https://s3.wasabi.com archive.allsky.tv /mnt/archive.allsky.tv -o nonempty -o passwd_file=/home/ams/amscams/conf/wasabi.txt -o dbglevel=debug -o url=https://s3.wasabisys.com -o umask=0007,uid="+str(uid)+",gid="+str(gid)
    print(cmd)
    os.system(cmd)
 

@@ -9,7 +9,7 @@ $(function() {
             $.get(url)
             .fail(function() { 
                 //console.log('NOT FOUND ', url)
-                $img.attr('src','./dist/img/proccessing.png').addClass('process');
+                $img.attr('src','/dist/img/proccessing.png').addClass('process');
             })
 
         });

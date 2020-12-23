@@ -1,26 +1,36 @@
+
 from flask import Flask, request
+from FlaskLib.Learning import learning_meteors_dataset
 from FlaskLib.FlaskUtils import get_template
-from FlaskLib.api_funcs import update_meteor_points, show_cat_stars, delete_meteor, delete_meteors, reduce_meteor, delete_frame
+from FlaskLib.api_funcs import update_meteor_points, show_cat_stars, delete_meteor, delete_meteors, reduce_meteor, delete_frame, crop_video
+from FlaskLib.calib_funcs import calib_main, cal_file, show_masks, del_calfile, lens_model
 from lib.PipeUtil import cfe, load_json_file, save_json_file
 from lib.PipePwdProtect import login_page, check_pwd_ajax
 from lib.PipeAutoCal import fn_dir
 from FlaskLib.meteor_detail_funcs import detail_page 
+from FlaskLib.config_funcs import config_vars 
 from FlaskLib.meteors_main import meteors_main 
 from FlaskLib.super_stacks import stacks_main, stacks_day_hours, stacks_hour
 from FlaskLib.min_detail import min_detail_main
 from FlaskLib.live import live_view
-app = Flask(__name__, static_url_path='/static')
+
 import json
 
 
-@app.route('/')
+
+app = Flask(__name__, static_url_path='/static')
+
+#, ssl_context=('cert.pem', 'key.pem'))
+
+# Main controller for AllSkyCams UI application.
+
+@app.route('/', methods=['GET', 'POST'])
 def main_menu():
    out = login_page()
-   header = get_template("FlaskTemplates/header.html")
+   header = get_template("FlaskTemplates/header-login.html")
    footer = get_template("FlaskTemplates/footer.html")
    out = out.replace("{HEADER}", header)
    out = out.replace("{FOOTER}", footer)
-
    return out
 
 @app.route('/api/check_login', methods=['GET', 'POST'])
@@ -58,6 +68,43 @@ def del_meteors():
    out = delete_meteors(data)
    return out
 
+@app.route('/cal/lensmodel/<amsid>/', methods=['GET', 'POST'])
+def lens_mod(amsid):
+   out = lens_model(amsid)
+   return out
+
+
+@app.route('/cal/vars/<amsid>/', methods=['GET', 'POST'])
+def op_vars(amsid):
+   if request.method == "POST":
+      data = request.form
+   else:
+      data = None
+   out = config_vars(amsid,data)
+   return out
+
+@app.route('/cal/masks/<amsid>/', methods=['GET', 'POST'])
+def masks(amsid):
+   out = show_masks(amsid)
+   return out
+
+@app.route('/calfile/del/<amsid>/<calfile>/', methods=['GET', 'POST'])
+def del_cfile(amsid, calfile):
+   out = del_calfile(amsid, calfile)
+   return out
+
+@app.route('/calfile/<amsid>/<calfile>/', methods=['GET', 'POST'])
+def cfile(amsid, calfile):
+   out = cal_file(amsid, calfile)
+   return out
+
+
+@app.route('/calib/<amsid>/', methods=['GET', 'POST'])
+def calib(amsid):
+   req = {}
+   req['cam_id_filter'] = request.args.get('cam_id_filter')
+   out = calib_main(amsid,req)
+   return out
 
 @app.route('/live/<amsid>/', methods=['GET', 'POST'])
 def live(amsid):
@@ -96,23 +143,27 @@ def stacks(amsid):
    req['start_day'] = start_day
    req['end_day'] = end_day 
    req['hour'] = hour
+   req['days_per_page'] = request.args.get('days_per_page')
+   req['p'] = request.args.get('p')
 
    out = stacks_main(amsid,req)
    return(out)
+
+
 
 # MAIN METEOR PAGE
 @app.route('/meteors/<amsid>/', methods=['GET', 'POST'])
 def meteors(amsid ):
    req = {}
-   start_date = request.args.get('start_date')
-   end_date = request.args.get('end_date')
+   start_day = request.args.get('start_day')
+   end_day = request.args.get('end_day')
    meteor_per_page = request.args.get('meteor_per_page')
    sort_by = request.args.get('sort_by')
    filter = request.args.get('filter')
    p = request.args.get('p')
 
-   req['start_date'] = start_date
-   req['end_date'] = end_date
+   req['start_day'] = start_day
+   req['end_day'] = end_day
    req['meteor_per_page'] = meteor_per_page
    req['p'] = p
    req['sort_by'] = sort_by 
@@ -121,14 +172,40 @@ def meteors(amsid ):
 
    return out
 
+@app.route('/goto/meteor/<meteor_file>/', methods=['GET', 'POST'])
+def goto_meteor(meteor_file):
+   json_conf = load_json_file("../conf/as6.json")
+   amsid = json_conf['site']['ams_id']
+   date = meteor_file[0:10] 
+   out = detail_page(amsid, date, meteor_file )
+   return out
+
 @app.route('/meteors/<amsid>/<date>/<meteor_file>/', methods=['GET', 'POST'])
 def meteor_detail_page(amsid, date, meteor_file):
    out = detail_page(amsid, date, meteor_file )
    return out
 
+@app.route('/LEARNING/METEORS/<amsid>', methods=['GET', 'POST'])
+def lrn_meteors(amsid):
+   req = {}
+   req['p'] = request.args.get('p')
+   req['ipp'] = request.args.get('ipp')
+   out = learning_meteors_dataset(amsid, req)
+   return out
 
 @app.route('/API/<cmd>', methods=['GET', 'POST'])
 def main_api(cmd):
+   if cmd == 'crop_video':
+      sd_video_file = request.args.get('video_file')
+      x = request.args.get('x')
+      y = request.args.get('y')
+      w = request.args.get('w')
+      h = request.args.get('h')
+      out = crop_video(sd_video_file, x,y,w,h)
+      resp = {}
+      resp['status'] = 1
+      return(resp)
+
    if cmd == 'update_meteor_points':
       if request.method == "GET":
          sd_video_file = request.args.get('sd_video_file')
@@ -164,4 +241,3 @@ def main_api(cmd):
       #delete_cal(amsid, data)
 
    return out 
-   #return out

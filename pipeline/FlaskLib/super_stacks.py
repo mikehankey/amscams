@@ -1,21 +1,49 @@
 from flask import Flask, request
 from FlaskLib.FlaskUtils import get_template
+from FlaskLib.Pagination import get_pagination
+
 
 import glob
 from lib.PipeUtil import load_json_file, save_json_file, cfe
 from lib.PipeAutoCal import fn_dir
 
 def stacks_main(amsid, data) :
+
    json_file = "/mnt/ams2/SD/proc2/json/" + "main-index.json"
+   if cfe("/mnt/ams2/meteors", 1) == 0:
+      return("Problem: data drive is not mounted. ")
+   if cfe(json_file) == 0:
+      return("Problem: main index file doesn't exist. ")
    stats_data = load_json_file(json_file)
+   if stats_data == 0:
+      return("Problem: main index file is corrupted. ")
 
    out = """
-
       <div class='h1_holder d-flex justify-content-between'>
-         <h1>Review Stacks by Day<input value='2020/11/28' type='text' data-display-format='YYYY/MM/DD'  data-action='reload' data-url-param='limit_day' data-send-format='YYYY_MM_DD' class='datepicker form-control'></h1>
-         <div class='page_h'>Page  1/10</div></div>
+         <h1>Review Stacks by Day </h1>
+         <!--<input value='' type='text' data-display-format='YYYY/MM/DD'  data-action='reload' data-url-param='limit_day' data-send-format='YYYY_MM_DD' class='datepicker form-control'></h1>
+         <div class='page_h'>Page  1/10</div>-->
+      </div>
          <div id='main_container' class='container-fluid h-100 mt-4 lg-l'>
    """
+   if data['days_per_page'] is not None:
+      days_per_page = int(data['days_per_page'])
+   else:
+      days_per_page = 10
+
+   if data['p'] is not None:
+      page = int(data['p'])
+   else:
+      page = 1
+   sdirs = glob.glob("/mnt/ams2/meteor_archive/" + amsid + "/STACKS/*")
+
+
+   pagination = get_pagination(page, len(sdirs), "/stacks/" + amsid + "/?days_per_page=" + str(days_per_page), days_per_page)
+
+   start_ind = (page - 1) * days_per_page
+   end_ind = start_ind + days_per_page
+   if end_ind > len(sdirs):
+      end_ind = len(sdirs)
 
 
    header = get_template("FlaskTemplates/header.html")
@@ -23,20 +51,22 @@ def stacks_main(amsid, data) :
    nav = get_template("FlaskTemplates/nav.html")
    template = get_template("FlaskTemplates/super_stacks_main.html")
    json_conf = load_json_file("../conf/as6.json")
-   sdirs = glob.glob("/mnt/ams2/meteor_archive/" + amsid + "/STACKS/*")
-   for sdir in sorted(sdirs, reverse=True):
+   for sdir in sorted(sdirs, reverse=True)[start_ind:end_ind]:
       vdir = sdir.replace("/mnt/ams2", "")
       if cfe(sdir,1) == 1:
          stack_day, trash = fn_dir(sdir)
          if stack_day in stats_data:
             data = stats_data[stack_day]
             mets = data['meteor_files']
+         else:
+            print("NO data for this day.")
+            continue
          date = stack_day
          dsp_date = date.replace("_", "/")
          out += """
          <div class='h2_holder d-flex justify-content-between'>
 	       <h2>""" + dsp_date + """ 
-               - <a class='btn btn-primary' href=/meteors/""" + amsid + "/?start_date=" + date + "/>" + str(mets) + """ Meteors </a>
+               - <a class='btn btn-primary' href=/meteors/""" + amsid + "/?start_day=" + date + ">" + str(mets) + """ Meteors </a>
 	      </h2><p><a href=>XX Non-Meteors </a>  </a>
          </div>
          <div class='gallery gal-resize row text-center text-lg-left mb-5'>
@@ -45,6 +75,12 @@ def stacks_main(amsid, data) :
          for cam in json_conf['cameras']:
             cams_id = json_conf['cameras'][cam]['cams_id']
             night_stack_file = vdir + "/" + cams_id + "-night-stack.jpg"
+            print("NIGHT STACK FILE!", night_stack_file)
+            if cfe("/mnt/ams2/" + night_stack_file) == 0:
+               print("NOT FOUND")
+               night_stack_file = "/none.png"               
+            else:
+               print("FOUND")
             if cams_id in data:
                minutes = data[cams_id]
             else:
@@ -57,6 +93,10 @@ def stacks_main(amsid, data) :
                </div>
             """
          out += "</div>"
+
+   out += "</div><!--main container!--> <div class='page_h'><!--Page  " + format(page) + "/" +  format(pagination[2]) + "--></div></div> <!-- ADD EXTRA FOR ENDING MAIN PROPERLY. --> <div>"
+   out += pagination[0]
+
          #all_stacks = glob.glob(sdir + "/*.jpg")
          #for img in all_stacks:
          #   out += img + "<BR>"
@@ -146,6 +186,12 @@ def stacks_hour(amsid, day, hour):
    json_conf = load_json_file("../conf/as6.json")
    glob_dir = "/mnt/ams2/SD/proc2/" + day + "/" 
    stack_files = glob.glob(glob_dir + day + "_" + hour + "*.mp4")
+   day_glob_dir = "/mnt/ams2/SD/proc2/daytime/" + day + "/" 
+   day_stack_files = glob.glob(day_glob_dir + day + "_" + hour + "*.mp4")
+   print(glob_dir)
+   print(day_glob_dir)
+   for dsf in day_stack_files:
+      stack_files.append(dsf)
    min_files = {}
    template = make_default_template(amsid, "super_stacks_main.html", json_conf)
    for sf in sorted(stack_files, reverse=False):
@@ -180,7 +226,7 @@ def stacks_hour(amsid, day, hour):
       """
 
       for cam in min_files[min]:
-         print(cam, min_files[min][cam])
+         #print(cam, min_files[min][cam])
          min_file, min_dir = fn_dir(min_files[min][cam])
          min_link = min_file.replace("-stacked-tn.jpg", "")
          out += """

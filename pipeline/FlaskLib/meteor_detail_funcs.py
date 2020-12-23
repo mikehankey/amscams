@@ -4,7 +4,8 @@ from lib.PipeUtil import cfe, load_json_file, save_json_file
 from lib.PipeAutoCal import fn_dir
 import time
 import cv2
-
+import os
+import numpy as np
 
 def detail_page(amsid, date, meteor_file):
    MEDIA_HOST = request.host_url.replace("5000", "80")
@@ -54,7 +55,7 @@ def detail_page(amsid, date, meteor_file):
    nav = get_template("FlaskTemplates/nav.html")
    template = get_template("FlaskTemplates/meteor_detail.html")
 
-   footer = footer.replace("{RAND}", str(time.time()))
+   #footer = footer.replace("{RAND}", str(time.time()))
    if "location" in json_conf:
       template = template.replace("{LOCATION}", json_conf['site']['location'])
    else:
@@ -121,8 +122,15 @@ def detail_page(amsid, date, meteor_file):
       template = template.replace("{END_EL}", str(mj['best_meteor']['els'][-1])[0:5])
       template = template.replace("{ANG_VEL}", str(mj['best_meteor']['report']['ang_vel'])[0:5])
       template = template.replace("{ANG_SEP}", str(mj['best_meteor']['report']['ang_dist'])[0:5])
+
       if "cp" in mj['best_meteor']:
          cp = mj['best_meteor']['cp']
+         mj['cp'] = cp
+         del(mj['best_meteor']['cp'])
+
+      if "cp" in mj:
+         cp = mj['cp']
+
          print(cp)
          template = template.replace("{RA}", str(cp['ra_center'])[0:5])
          template = template.replace("{DEC}", str(cp['dec_center'])[0:5])
@@ -131,13 +139,45 @@ def detail_page(amsid, date, meteor_file):
          template = template.replace("{POSITION_ANGLE}", str(cp['position_angle'])[0:5])
          template = template.replace("{PIXSCALE}", str(cp['pixscale'])[0:5])
          template = template.replace("{IMG_STARS}", str(len(cp['user_stars'])))
-         template = template.replace("{CAT_STARS}", str(len(cp['cat_image_stars'])))
-         template = template.replace("{RES_PX}", str(cp['total_res_px'])[0:5])
-         template = template.replace("{RES_DEG}", str(cp['total_res_deg'])[0:5])
+         if "cat_image_stars" in cp:
+            template = template.replace("{CAT_STARS}", str(len(cp['cat_image_stars'])))
+         else:
+            template = template.replace("{CAT_STARS}", "")
+         if "total_res_px" in cp:
+            template = template.replace("{RES_PX}", str(cp['total_res_px'])[0:5])
+            template = template.replace("{RES_DEG}", str(cp['total_res_deg'])[0:5])
+         else:
+            template = template.replace("{RES_PX}", "")
+            template = template.replace("{RES_DEG}", "")
+            cp['total_res_px'] = 99
+            cp['total_res_deg'] = 99
 
+   #if "total_res_px" not in cp:
+   #   cp['total_res_px'] = 99
+   #   cp['total_res_deg'] = 99
+
+   if cfe("/mnt/ams2" + CACHE_VDIR, 1) == 0:
+      if "mp4" in meteor_file:
+         vid = meteor_file.replace(".json", ".mp4")
+      else:
+         vid = meteor_file.replace(".json", ".mp4")
+      cmd = "./Process.py roi_mfd " + METEOR_DIR + vid
+      print(cmd)
+      os.system(cmd)
+   print("CACHE:", CACHE_VDIR) 
 
    if cfe(mjrf) == 1:
       mjr = load_json_file(mjrf)
+      if "total_res_px" not in mjr['cal_params']:
+         mjr['cal_params']['total_res_px'] = 99
+         mjr['cal_params']['total_res_deg'] = 99
+         mjr['cal_params']['cat_image_stars'] = []
+
+      if np.isnan(mjr['cal_params']['total_res_px']) or mjr['cal_params']['total_res_px'] is None or len(mjr['cal_params']['cat_image_stars']) == 0:
+         mjr['cal_params']['total_res_px'] = 9999
+         mjr['cal_params']['total_res_deg'] = 9999
+
+
       frame_table_rows = frames_table(mjr, base_name, CACHE_VDIR)
       cal_params_js_var = "var cal_params = " + str(mjr['cal_params'])
       mfd_js_var = "var meteor_frame_data = " + str(mjr['meteor_frame_data'])
@@ -150,7 +190,12 @@ def detail_page(amsid, date, meteor_file):
       frame_table_rows = ""
 
    lc_html = light_curve_url(METEOR_DIR + sd_trim , mj)
+  
+   fn, vdir = fn_dir(meteor_file)
+   div_id = fn.replace(".mp4", "")
+   jsid = div_id.replace("_", "")
 
+   template = template.replace("{JSID}", jsid)
    template = template.replace("{CROP_BOX}", crop_box_js_var)
    template = template.replace("{CAL_PARAMS}", cal_params_js_var)
    template = template.replace("{METEOR_FRAME_DATA}", mfd_js_var)
@@ -159,7 +204,10 @@ def detail_page(amsid, date, meteor_file):
    template = template.replace("{LIGHTCURVE_URL}", lc_html)
    return(template)   
 
+
+
 def frames_table(mjr, base_name, CACHE_VDIR):
+
    if True:
       # check for reduced data
       #dt, fn, x, y, w, h, oint, ra, dec, az, el

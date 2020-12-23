@@ -4,6 +4,34 @@ from lib.PipeUtil import day_or_night, check_running
 import datetime as dt
 import os
 
+def update_code(json_conf):
+   if cfe("lib/version") == 1:
+      fp = open("lib/version")
+      for line in fp:
+         line = line.replace("\n", "")
+         install_version = float(line)
+      fp.close()
+   else:
+      install_version = 0
+      latest_version = 3.0
+  
+   cl_v = "/mnt/archive.allsky.tv/APPS/version"
+   if cfe(cl_v) == 1: 
+      fp = open(cl_v)
+      for line in fp:
+         line = line.replace("\n", "")
+         latest_version = float(line)
+      fp.close()
+   else:
+      latest_version = 3
+
+   print("INSTALLED VERSION IS ", install_version)
+   print("LATEST VERSION IS ", latest_version)
+   if install_version != latest_version:
+      print("Code not up to date. We should sync.")
+      os.system("git pull")
+
+
 def run_jobs(json_conf):
    running = check_running("Process.py run_jobs")
    if running >= 3:
@@ -14,22 +42,25 @@ def run_jobs(json_conf):
    sun, az, alt = day_or_night(datetime.now(), json_conf, 1)
    print(sun, az, alt)
    cmds = []
-   cmds.append(('day', "Clean disk / Purge old files", "cd /home/ams/amscams/pythonv2; ./doDay.py cd"))
+   cmds.append(('all', "Clean disk / Purge old files", "cd /home/ams/amscams/pythonv2; ./doDay.py cd"))
+   cmds.append(('day', "Make Meteor Index", "cd /home/ams/amscams/pipeline; ./Process.py mmi_all"))
    cmds.append(('day', "Move Day Files", "cd /home/ams/amscams/pythonv2; ./move_day_files.py"))
+   cmds.append(('day', "Run Calibs (if daytime)", "cd /home/ams/amscams/pipeline; ./Process.py ca"))
+   #cmds.append(('day', "Super Cal", "cd /home/ams/amscams/pipeline; ./Process.py super_cal"))
+   cmds.append(('day', "Run Master Stacks for Current Night", "cd /home/ams/amscams/pythonv2; ./autoCal.py cal_index"))
    cmds.append(('all', "Update the proc index", "cd /home/ams/amscams/pythonv2; ./ASDaemon.py proc_index"))
    cmds.append(('all', "Update the file index", "cd /home/ams/amscams/pythonv2; ./batchJobs.py fi"))
    #cmds.append(('all', "Run Master Stacks for Current Night", "cd /home/ams/amscams/pythonv2; ./batchJobs.py sna 1"))
    cmds.append(('all', "Run Master Stacks for Current Night", "cd /home/ams/amscams/pipeline; ./Process.py hs " + today))
    cmds.append(('all', "Run Master Stacks for Last Night", "cd /home/ams/amscams/pipeline; ./Process.py hs " + yest))
-   cmds.append(('day', "Run Master Stacks for Current Night", "cd /home/ams/amscams/pythonv2; ./autoCal.py cal_index"))
+
    cmds.append(('day', "Run Master Stacks for Current Night", "cd /home/ams/amscams/pythonv2; ./autoCal.py meteor_index"))
    cmds.append(('all', "Batch Meteor Thumbs", "cd /home/ams/amscams/pythonv2; ./batchJobs.py bmt"))
-   cmds.append(('day', "Run Calibs (if daytime)", "cd /home/ams/amscams/pipeline; ./Process.py ca"))
    cmds.append(('all', "Run Vals Detector", "cd /home/ams/amscams/pythonv2; ./flex-detect.py bv " + today))
    cmds.append(('all', "Run Vals Detector", "cd /home/ams/amscams/pythonv2; ./flex-detect.py bv " + yest))
    cmds.append(('all', "Run Verify Meteor", "cd /home/ams/amscams/pythonv2; ./flex-detect.py vms " + today))
    cmds.append(('all', "Run Verify Meteor", "cd /home/ams/amscams/pythonv2; ./flex-detect.py vms " + yest))
-   cmds.append(('all', "Run Audit", "cd /home/ams/amscams/pipeline; ./Process.py audit " + today))
+   #cmds.append(('all', "Run Audit", "cd /home/ams/amscams/pipeline; ./Process.py audit " + today))
 
    for cmd in cmds :
       if sun == "day":
