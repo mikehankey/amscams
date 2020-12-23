@@ -10,6 +10,18 @@ from lib.DEFAULTS import *
 from lib.PipeUtil import cfe, load_json_file, save_json_file
 
 
+def sync_index_day(day,json_conf ):
+   amsid = json_conf['site']['ams_id']
+   year = day[0:4]
+   mif = "/mnt/ams2/meteors/" + day + "/" + day + "-" + amsid + ".meteors"
+   cloud_dir = "/mnt/archive.allsky.tv/" + amsid + "/METEOR/" + year + "/" + day + "/" 
+   cloud_indx = cloud_dir +  day + "-" + amsid + ".meteors"
+   if cfe(cloud_dir,1) == 0:
+      print("making:", cloud_dir)
+      os.makedirs(cloud_dir)
+   cmd = "rsync -auv " + mif + " " + cloud_indx
+   os.system(cmd)
+   print(cmd)
 
 def sync_day(inday):
    year, month, day = inday.split("_")
