@@ -14,6 +14,8 @@ import cv2
 import os, sys, subprocess
 import datetime
 
+
+
 def snap_video(in_file):
    (f_datetime, cam, f_date_str,fy,fm,fd, fh, fmin, fs) = convert_filename_to_date_cam(in_file)
    w,h,total_frames = ffprobe(in_file)
