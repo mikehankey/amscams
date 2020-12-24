@@ -190,6 +190,41 @@ def reduce_in_crop(video_file, json_conf):
    else:
       print("NOTHING?")
 
+def make_meteor_index_day_all(json_conf):
+   cams = []
+   for cam in json_conf['cameras']:
+      cams_id = json_conf['cameras'][cam]['cams_id']
+      cams.append(cams_id)
+   amsid = json_conf['site']['ams_id']
+   mr_dir = "/mnt/ams2/meteors/"
+   mdirs = []
+   all_meteors = []
+   files = glob.glob(mr_dir + "*")
+   mi_day = []
+   for mdir in files:
+      #print(mdir)
+      day, dir = fn_dir(mdir)
+      
+      if cfe(mdir, 1) == 1:
+         ind_file = mdir + "/" + day + "-" + amsid + ".meteors"
+         if cfe(ind_file) == 1:
+            ind = load_json_file(ind_file)
+            count = len(ind)
+         else:
+            print("NOT FOUND:", ind_file)
+            count = 0
+         for cams_id in cams: 
+            stack_file = mdir + "/" + cams_id + "_meteors.jpg"
+            if cfe(stack_file) == 1:
+               mi_day.append((day, stack_file, count))
+               print("ADDING:", stack_file)
+            else:
+               print("NO STCK:", stack_file)
+   mi_day_file = "/mnt/ams2/meteors/" + amsid + "_" + "mi_day.json"
+   mi_day = sorted(mi_day, key=lambda x: (x[0]), reverse=True)
+   save_json_file(mi_day_file, mi_day)
+   print("Saved: ", mi_day_file)
+
 
 
 def make_meteor_index_all(json_conf):
@@ -267,12 +302,19 @@ def make_meteor_index_day(day, json_conf):
          hotspot = mj['hotspot']
       else:
          hotspot = 0
+      if "multi_station_event" in mj:
+         mi[meteor]['multi_station'] = 1
+         msm = 1
+      else:
+         mi[meteor]['multi_station'] = 0
+         msm = 0
+
       mi[meteor]['start_time'] = start_time
       mi[meteor]['dur'] = dur
       mi[meteor]['ang_vel'] = ang_vel
       mi[meteor]['ang_dist'] = ang_dist
       mi[meteor]['hotspot'] = hotspot 
-      meteor_data.append((meteor, reduced, start_time, dur, ang_vel, ang_dist, hotspot))
+      meteor_data.append((meteor, reduced, start_time, dur, ang_vel, ang_dist, hotspot,msm))
 
    mid = sorted(meteor_data, key=lambda x: (x[0]), reverse=True)
    mi_file = mdir + day + "-" + amsid + ".meteors"

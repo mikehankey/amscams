@@ -73,14 +73,14 @@ def get_meteors_in_range(station_id, start_date, end_date,del_data,filters=None)
          filtered_index = []
          print("HOTSPOT FILTERS ON")
          for dd in mi:
-            meteor_file, reduced, start_time, dur, ang_vel, ang_dist, hotspot = dd 
+            meteor_file, reduced, start_time, dur, ang_vel, ang_dist, hotspot, msm = dd 
             print("HOTSPOT", hotspot)
             if hotspot >= 4:
                filtered_index.append(dd)
       elif cam_filter != 0:
          filtered_index = []
          for dd in mi:
-            meteor_file, reduced, start_time, dur, ang_vel, ang_dist, hotspot = dd 
+            meteor_file, reduced, start_time, dur, ang_vel, ang_dist, hotspot, msm  = dd 
             if cam_filter in meteor_file: 
                filtered_index.append(dd)
 
@@ -115,7 +115,7 @@ def get_meteors_in_range(station_id, start_date, end_date,del_data,filters=None)
             print("ADDING METEORS FOR DAY:", mif)
             for dd in mit:
                if nored == 1:
-                  meteor_file, reduced, start_time, dur, ang_vel, ang_dist, hotspot = dd 
+                  meteor_file, reduced, start_time, dur, ang_vel, ang_dist, hotspot, msm = dd 
                   rf = meteor_file.replace(".json", "-reduced.json")
                   if cfe(rf) == 1:
                      reduced = 1
@@ -123,7 +123,7 @@ def get_meteors_in_range(station_id, start_date, end_date,del_data,filters=None)
                      print("NORED")
                      continue
                if hotspot_filter == 1:
-                  meteor_file, reduced, start_time, dur, ang_vel, ang_dist, hotspot = dd 
+                  meteor_file, reduced, start_time, dur, ang_vel, ang_dist, hotspot, msm = dd 
                   print("HOSPOT VALUE", hotspot)
                   if hotspot <= 20:
                      continue
@@ -150,6 +150,28 @@ def day_count(md, amsid, day,mc,rc,del_data):
       else:
          print("DEL FOUND:", js)
    return(mc,rc)
+
+def meteors_by_day(amsid, in_data):
+   json_conf = load_json_file("../conf/as6.json")
+   mi_day_file  = "/mnt/ams2/meteors/" + amsid + "_mi_day.json"
+   mi_day = load_json_file(mi_day_file)
+   out = "<div>"
+   last_day = None
+   for day, stack_file, count in mi_day:
+      if last_day is None:
+         out += day + " - " + str(count) + " meteors<br>"
+         out += "<div style='float:left'>"
+         last_day = day
+      if day != last_day:
+         out += "</div><div style='clear:both'>"
+         out += day + " " + str(count) + " meteors</div>"
+         out += "<div style='float:left'>"
+      vs = stack_file.replace("/mnt/ams2", "")
+      vs = vs.replace(".jpg", "-tn.jpg")
+      out += "<a href=/meteors/" + amsid + "/?start_day=" + day + "><img src=" +  vs + "></a>\n"
+      last_day = day
+   out += "</div></div>"
+   return(out)
 
 def meteors_main (amsid, in_data) :
 
@@ -251,7 +273,7 @@ def meteors_main (amsid, in_data) :
          meteor_file, reduced, start_time, dur, ang_vel, ang_dist = meteor 
          hotspot = 0
       elif len(meteor) == 7:
-         meteor_file, reduced, start_time, dur, ang_vel, ang_dist, hotspot = meteor 
+         meteor_file, reduced, start_time, dur, ang_vel, ang_dist, hotspot, msm = meteor 
       red_file = meteor_file.replace(".json", "-reduced.json")
       if cfe(red_file) == 1:
          reduced = 1

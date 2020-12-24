@@ -31,8 +31,8 @@ def events_for_day(day, json_conf):
       station = "AMS" + station
       sm = load_json_file(file)
       for data in sm:
-         (meteor, reduced, start_time, dur, ang_vel, ang_dist, hotspot) = data
-         meteors.append((station,meteor, reduced, start_time, dur, ang_vel, ang_dist, hotspot))
+         (meteor, reduced, start_time, dur, ang_vel, ang_dist, hotspot, msm) = data
+         meteors.append((station,meteor, reduced, start_time, dur, ang_vel, ang_dist, hotspot, msm))
    meteors = sorted(meteors, key=lambda x: (x[3]), reverse=False)
    events = {}
    for meteor in meteors:
@@ -58,12 +58,16 @@ def events_for_day(day, json_conf):
             if ts == amsid:
                print("MY FILE!:", events[event_id]['files'][i])
                js = load_json_file(events[event_id]['files'][i])
-               js['multi_station_event'] = events[event_id]
-               save_json_file(events[event_id]['files'][i], js)
+               if events[event]['total_stations'] > 1:
+                  js['multi_station_event'] = events[event_id]
+                  save_json_file(events[event_id]['files'][i], js)
+               elif "multi_station_event" in js: 
+                  del js['multi_station_event']
+                  save_json_file(events[event_id]['files'][i], js)
                print("SAVED", events[event_id]['files'][i])
 
 def check_make_event(data, events):
-   station,meteor, reduced, start_time, dur, ang_vel, ang_dist, hotspot = data
+   station,meteor, reduced, start_time, dur, ang_vel, ang_dist, hotspot, msm = data
    if "." in start_time:
       start_datetime = datetime.datetime.strptime(start_time, "%Y-%m-%d %H:%M:%S.%f")
    else:
