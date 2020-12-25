@@ -17,13 +17,62 @@ from lib.PipeAutoCal import fn_dir, get_cal_files, get_image_stars, get_catalog_
 from lib.PipeVideo import ffmpeg_splice, find_hd_file, load_frames_fast, find_crop_size, ffprobe
 from lib.PipeUtil import load_json_file, save_json_file, cfe, get_masks, convert_filename_to_date_cam, buffered_start_end, get_masks, compute_intensity , bound_cnt, day_or_night
 from lib.DEFAULTS import *
-from lib.PipeMeteorTests import big_cnt_test, calc_line_segments, calc_dist, unq_points, analyze_intensity, calc_obj_dist, meteor_direction, meteor_direction_test, check_pt_in_mask, filter_bad_objects, obj_cm, meteor_dir_test, ang_dist_vel, gap_test
+from lib.PipeMeteorTests import big_cnt_test, calc_line_segments, calc_dist, unq_points, analyze_intensity, calc_obj_dist, meteor_direction, meteor_direction_test, check_pt_in_mask, filter_bad_objects, obj_cm, meteor_dir_test, ang_dist_vel, gap_test, best_fit_slope_and_intercept
 from lib.PipeImage import stack_frames
 
 import numpy as np
 import cv2
 
 json_conf = load_json_file(AMS_HOME + "/conf/as6.json")
+
+def perfect_points(meteor_file, json_conf):
+
+   if "/mnt/ams2/meteors" not in meteor_file:
+      day = meteor_file[0:10]
+      meteor_file = meteor_file.replace(".mp4", "")
+      meteor_file = meteor_file.replace(".json", "")
+      meteor_file = "/mnt/ams2/meteors/" + day + "/" + meteor_file + ".json"
+
+
+   if cfe(meteor_file) == 1 :
+      mj = load_json_file(meteor_file)
+   else:
+      print("NO MJ", meteor_file)
+      return()
+   if "best_meteor" not in mj:
+      print("No best meteor. Must reduce before running perfect points.")
+   bm = mj['best_meteor']
+   xs = bm['oxs']
+   ys = bm['oys']
+   m,b =  best_fit_slope_and_intercept(xs,ys)
+
+
+   for i in range(0, len(xs)):
+      line_y = m*xs[i]+b
+      print(xs[i], ys[i], line_y)
+
+   # things we want to check, test or fix
+   # determine x,y direction of travel & dom direction
+
+   (dom_dir, quad, ideal_pos, ideal_roi_big_img) = get_movement_info(bm, 640, 640)
+
+   bm['report']['object_px_length'], bm['report']['line_segments'], bm['report']['x_segs'], bm['report']['ms'], bm['report']['bs'] = calc_line_segments(bm)
+   
+   # last_seg_dist of each frame
+   print("SEGS:", bm['report']['line_segments'])
+   print("XSEGS:", bm['report']['x_segs'])
+   print("M:", m)
+   print("B:", b)
+   # find the leading edge of each frame 
+   # x diff per frame
+   # y diff per frame
+   # overall line and dist to line for each
+   # make sure no frames, esp the last have a negative seg dist
+   # check the start of the meteor to make sure no undetected pre-frames exist
+   # check the end of the meteor to make sure no undetected post-frames exit
+   # determine est_x,est_y for each frame and the err between choosen point and est point
+   # make sure there are no empty frames / replace with est_x,est_y if the blob can't be found 
+
 
 def check_for_trailing_frames(video_file, mj=None, json_conf=None):
    if json_conf is None:
