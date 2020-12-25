@@ -337,7 +337,7 @@ def confirm_meteors(date ):
    files = glob.glob("/mnt/ams2/meteors/" + date + "/*.json")
    meteors = []
    for mf in files:
-      if "reduced" not in mf and "stars" not in mf and "man" not in mf:
+      if "reduced" not in mf and "star" not in mf and "man" not in mf:
          meteors.append(mf)
    for meteor in meteors:
       meteor_vid = meteor.replace(".json", ".mp4")
