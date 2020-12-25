@@ -39,9 +39,13 @@ def events_for_day(day, json_conf):
       id, events = check_make_event(meteor, events)
    msc = 1
    for event in events:
-      ust = len(set(events[event]['stations']))
-      events[event]['total_stations'] = ust
-      if ust >= 2:
+      ust = set(events[event]['stations'])
+      ustl = list(ust)
+      ts = len(ustl)
+      print("STATIONS:", events[event]['stations'])
+      print("TS:", ts)
+      events[event]['total_stations'] = ts
+      if ts >= 2:
          print(events[event]['files'])
          msc += 1
          events[event]['mse_id'] = msc
@@ -50,21 +54,25 @@ def events_for_day(day, json_conf):
    print("Total Obs:", len(meteors))
    print("Total Events:", len(events))
    print("Total MS events:", msc)
+
    for event_id in events:
       if amsid in events[event_id]['stations']:
-         #print("MY event:", events[event_id]['stations'], events[event_id]['files'])
          for i in range(0, len(events[event_id]['stations'])):
             ts = events[event_id]['stations'][i]
             if ts == amsid:
+             
+               print("STATIONS:", events[event_id]['stations'])
+               print("TOTAL STATIONS:", events[event_id]['total_stations'])
                print("MY FILE!:", events[event_id]['files'][i])
                js = load_json_file(events[event_id]['files'][i])
-               if events[event]['total_stations'] > 1:
+               if events[event_id]['total_stations'] > 1:
                   js['multi_station_event'] = events[event_id]
                   save_json_file(events[event_id]['files'][i], js)
+                  print("EVENT FOUND", events[event_id]['files'][i])
                elif "multi_station_event" in js: 
                   del js['multi_station_event']
                   save_json_file(events[event_id]['files'][i], js)
-               print("SAVED", events[event_id]['files'][i])
+                  print("NO EVENT FOUND", events[event_id]['files'][i])
 
 def check_make_event(data, events):
    station,meteor, reduced, start_time, dur, ang_vel, ang_dist, hotspot, msm = data
@@ -91,7 +99,7 @@ def check_make_event(data, events):
       else:
          event_datetime = datetime.datetime.strptime(event_dt, "%Y-%m-%d %H:%M:%S")
       time_diff = (start_datetime - event_datetime).total_seconds()
-      if abs(time_diff) < 60:
+      if abs(time_diff) < 25:
          print("MATCH", station, event_id, start_datetime, event_datetime, (start_datetime - event_datetime).total_seconds())
          events[event_id]['start_datetime'].append(start_time) 
          events[event_id]['stations'].append(station) 

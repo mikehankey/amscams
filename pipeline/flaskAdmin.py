@@ -9,10 +9,11 @@ from lib.PipePwdProtect import login_page, check_pwd_ajax
 from lib.PipeAutoCal import fn_dir
 from FlaskLib.meteor_detail_funcs import detail_page 
 from FlaskLib.config_funcs import config_vars 
-from FlaskLib.meteors_main import meteors_main 
+from FlaskLib.meteors_main import meteors_main , meteors_by_day
 from FlaskLib.super_stacks import stacks_main, stacks_day_hours, stacks_hour
 from FlaskLib.min_detail import min_detail_main
 from FlaskLib.live import live_view
+from FlaskLib.TL import tl_menu 
 
 import json
 
@@ -23,6 +24,11 @@ app = Flask(__name__, static_url_path='/static')
 #, ssl_context=('cert.pem', 'key.pem'))
 
 # Main controller for AllSkyCams UI application.
+
+@app.route('/TL/<amsid>/', methods=['GET', 'POST'])
+def tlm(amsid):
+   out = tl_menu(amsid)
+   return(out)
 
 @app.route('/', methods=['GET', 'POST'])
 def main_menu():
@@ -150,6 +156,13 @@ def stacks(amsid):
    return(out)
 
 
+
+
+@app.route('/meteors_by_day/<amsid>/', methods=['GET', 'POST'])
+def meteors_bd(amsid ):
+   req = {}
+   out = meteors_by_day(amsid,req)
+   return(out)
 
 # MAIN METEOR PAGE
 @app.route('/meteors/<amsid>/', methods=['GET', 'POST'])

@@ -37,7 +37,10 @@ def get_meteors_in_range(station_id, start_date, end_date,del_data,filters=None)
    hotspot_filter = 0
    nored = 0
    cam_filter = 0
+   multi_filter = 0
    if filters is not None:
+      if "multi" in filters:
+         multi_filter = 1
       if "nored" in filters:
          nored = 1
       if "hotspot" in filters:
@@ -66,7 +69,7 @@ def get_meteors_in_range(station_id, start_date, end_date,del_data,filters=None)
       else:
          mi = []
  
-      if hotspot_filter == 0 and nored == 0 and cam_filter == 0:
+      if hotspot_filter == 0 and nored == 0 and cam_filter == 0 and multi_filter == 0:
          print("NO FILTERS ON")
          return(mi)
       elif hotspot_filter == 1:
@@ -82,6 +85,12 @@ def get_meteors_in_range(station_id, start_date, end_date,del_data,filters=None)
          for dd in mi:
             meteor_file, reduced, start_time, dur, ang_vel, ang_dist, hotspot, msm  = dd 
             if cam_filter in meteor_file: 
+               filtered_index.append(dd)
+      elif multi_filter != 0:
+         filtered_index = []
+         for dd in mi:
+            meteor_file, reduced, start_time, dur, ang_vel, ang_dist, hotspot, msm  = dd 
+            if msm == 1:
                filtered_index.append(dd)
 
 
@@ -273,7 +282,9 @@ def meteors_main (amsid, in_data) :
          meteor_file, reduced, start_time, dur, ang_vel, ang_dist = meteor 
          hotspot = 0
       elif len(meteor) == 7:
-         meteor_file, reduced, start_time, dur, ang_vel, ang_dist, hotspot, msm = meteor 
+         meteor_file, reduced, start_time, dur, ang_vel, ang_dist, hotspot = meteor 
+      elif len(meteor) == 8:
+         meteor_file, reduced, start_time, dur, ang_vel, ang_dist, hotspot,msm = meteor 
       red_file = meteor_file.replace(".json", "-reduced.json")
       if cfe(red_file) == 1:
          reduced = 1

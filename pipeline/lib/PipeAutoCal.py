@@ -30,6 +30,102 @@ import glob
 from PIL import ImageFont, ImageDraw, Image, ImageChops
 tries = 0
 
+def get_more_stars_with_catalog(meteor_file, cal_params, image, json_conf):
+
+   cat_stars = get_catalog_stars(cal_params)
+   if len(image.shape) == 3:
+      gray_img = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+   else:
+      gray_img = image
+
+
+
+   for name,mag,ra,dec,cat_x,cat_y in cat_stars:
+      dcname = str(name.decode("utf-8"))
+      dbname = dcname.encode("utf-8")
+      if mag <= 5:
+         cat_x, cat_y = int(cat_x), int(cat_y)
+         #print("CAT:", cat_x, cat_y)
+         if cat_x - 10 <= 0 or cat_y - 10 <= 0 or cat_x + 10 >= 1920 or cat_y + 10 >= 1080:
+            continue
+
+         ival = gray_img[cat_y,cat_x]
+         if ival > 5:
+            star_img = gray_img[cat_y-10:cat_y+10,cat_x-10:cat_x+10]
+            max_px, avg_px, px_diff,max_loc,star_int = eval_cnt(star_img)
+            print("MORE STAR?", max_px, avg_px, px_diff, star_int)
+            #if (2< px_diff < 7) and 100 < star_int < 11000:
+            if 100 < star_int < 11000:
+               cv2.rectangle(image, (cat_x-10, cat_y-10), (cat_x + 10, cat_y + 10), (128, 128, 128), 1)
+               cv2.putText(image , str(int(px_diff)),  (int(cat_x),int(cat_y)), cv2.FONT_HERSHEY_SIMPLEX, .4, (255, 255, 255), 1)
+               cal_params['user_stars'].append((cat_x, cat_y, star_int))
+   return(cal_params)
+
+
+def refit_meteors(day, json_conf):
+   mdir = "/mnt/ams2/meteors/" + day + "/"
+   files = glob.glob(mdir + "*.json")
+   print(mdir)
+   meteors = []
+   for mf in files:
+      if "reduced" not in mf and "stars" not in mf and "man" not in mf and "star" not in mf and "import" not in mf and "archive" not in mf and "cal" not in mf and "frame" not in mf:
+         meteors.append(mf)
+   for meteor in meteors:
+      cmd = "./Process.py refit_meteor " + meteor
+      print(cmd)
+      os.system(cmd)
+
+def refit_meteor(meteor_file, json_conf):
+
+   if "/mnt/ams2/meteors" not in meteor_file:
+      day = meteor_file[0:10]
+      meteor_file = meteor_file.replace(".mp4", "")
+      meteor_file = meteor_file.replace(".json", "")
+      meteor_file = "/mnt/ams2/meteors/" + day + "/" + meteor_file + ".json"
+
+   print("Loading...", meteor_file)
+   mj = load_json_file(meteor_file)
+   cp = mj['cp']
+   org_res = cp['total_res_px']
+  
+   if cfe(mj['hd_stack']) == 1:
+      image = cv2.imread(mj['hd_stack'])
+   print("BEFORE MORE STARS:", len(cp['cat_image_stars']) )
+   if "more_stars" not in cp:
+      cp['more_stars'] = 1
+      cp = get_more_stars_with_catalog(meteor_file, cp, image, json_conf)
+      cp = pair_stars(cp, meteor_file, json_conf, image)
+      cp, bad_stars,marked_img = eval_cal(meteor_file,json_conf,cp,image)
+      print("AFTER MORE STARS:", len(cp['cat_image_stars']) )
+
+   if len(cp['cat_image_stars']) > 12 :
+      print("we have enough stars to refit the meteor.")
+      cp = minimize_fov(meteor_file, cp, meteor_file ,image,json_conf )
+   else:
+      print("Not enough stars to refit.")
+      return()
+
+
+
+
+   if cp['total_res_px'] < org_res:
+      print("NEW RES IS BETTER!", cp['total_res_px'], org_res)
+      cp = pair_stars(cp, meteor_file, json_conf, image)
+      cp, bad_stars,marked_img = eval_cal(meteor_file,json_conf,cp,image)
+      mj['cp'] = cp
+      # need to apply the new calib to the points now. 
+      if "refit_info" not in mj:
+         mj['refit_info'] = {}
+         mj['refit_info']['runs'] = 1
+      else:
+         mj['refit_info']['runs'] += 1
+      red = meteor_file.replace(".json", "-reduced.json")
+      red_data = load_json_file(red)
+      red_data['cal_params'] = cp
+      save_json_file(red, red_data)
+      save_json_file(meteor_file, mj)
+      print("saved:", meteor_file)   
+
 
 def sync_back_admin_cals():
    cc_dir = "/mnt/archive.allsky.tv/" + STATION_ID + "/CAL/"
