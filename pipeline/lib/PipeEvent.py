@@ -22,20 +22,28 @@ def events_for_day(day, json_conf):
       cloud_detail_file = cloud_dir + ns + "/METEORS/" + year + "/" + day + "/" + day + "-" + ns + "-detail.meteors.gz"
       cmd = "rsync -auv " + cloud_idx_file + " " + event_dir + idx_file
       print(cmd)
-      os.system(cmd)
+      #os.system(cmd)
       cmd = "rsync -auv " + cloud_detail_file + " " + event_dir + detail_file
       print(cmd)
-      os.system(cmd)
+      #os.system(cmd)
+      cmd = "gunzip -k " + event_dir + detail_file
+      print(cmd)
+      #os.system(cmd)
+
 
    station_files = glob.glob(event_dir + "*.meteors")
    meteors = []
    for file in station_files:
+      if "detail" in file:
+         continue
       el = file.split("-AMS")
       station = el[1]
       station = station.replace(".meteors", "")
       station = "AMS" + station
       sm = load_json_file(file)
+      print("LOADED:", file)
       for data in sm:
+         print("DATA:", data)
          (meteor, reduced, start_time, dur, ang_vel, ang_dist, hotspot, msm) = data
          meteors.append((station,meteor, reduced, start_time, dur, ang_vel, ang_dist, hotspot, msm))
    meteors = sorted(meteors, key=lambda x: (x[3]), reverse=False)
@@ -60,12 +68,16 @@ def events_for_day(day, json_conf):
    station_files = glob.glob(event_dir + "*.meteors")
    meteors = []
    for file in station_files:
+      if "detail" in file:
+         continue
       el = file.split("-AMS")
       station = el[1]
       station = station.replace(".meteors", "")
       station = "AMS" + station
       sm = load_json_file(file)
+      print("LOAD:", file)
       for data in sm:
+         print("DATA:", data)
          (meteor, reduced, start_time, dur, ang_vel, ang_dist, hotspot, msm) = data
          meteors.append((station,meteor, reduced, start_time, dur, ang_vel, ang_dist, hotspot, msm))
    meteors = sorted(meteors, key=lambda x: (x[3]), reverse=False)
