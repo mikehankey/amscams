@@ -21,6 +21,11 @@ def sync_meteor_preview_all(day,json_conf ):
       if "reduced" not in mf and "stars" not in mf and "man" not in mf and "star" not in mf and "import" not in mf and "archive" not in mf and "cal" not in mf and "frame" not in mf:
          meteors.append(mf)
    cloud_dir = "/mnt/archive.allsky.tv/" + json_conf['site']['ams_id'] + "/METEORS/" + year + "/" + day + "/" 
+   print("Checking cloud...", cloud_dir)
+   if cfe(cloud_dir,1) == 0:
+      os.makedirs(cloud_dir)
+
+
    cloud_prev_files = glob.glob(cloud_dir + "*prev.jpg")
    print(cloud_dir)
    in_cloud = {}
@@ -30,19 +35,24 @@ def sync_meteor_preview_all(day,json_conf ):
       in_cloud[fn] = 1
 
    ns = 0
+
+
+
    for mm in meteors:
       fn, fnd = fn_dir(mm)
-      fn = fn.replace(".json", "-prev.jpg")
-      if fn in in_cloud:
-         print("File syncd already:", fn)
-      else:
-         print("File not syncd already:", fn)
-         sync_meteor_preview(mm, json_conf)
+      mj = load_json_file(mm)
+      if "multi_station_event" in mj:
+         fn = fn.replace(".json", "-prev.jpg")
+         if fn in in_cloud:
+            print("File syncd already:", fn)
+         else:
+            print("File not syncd already:", fn)
+            sync_meteor_preview(mm, json_conf, 0)
 
 
 
 
-def sync_meteor_preview(meteor_file,json_conf ):
+def sync_meteor_preview(meteor_file,json_conf,ccd=1 ):
    if "/mnt/ams2/meteors" not in meteor_file:
       day = meteor_file[0:10]
       meteor_file = meteor_file.replace(".mp4", "")
@@ -67,10 +77,12 @@ def sync_meteor_preview(meteor_file,json_conf ):
    #if cfe(prev) == 0:
    #   os.system(cmd)
    #   print(cmd)
-   print("Checking cloud...", cloud_prev)
-   if cfe(cloud_dir,1) == 0:
-      os.makedirs(cloud_dir)
-   cmd = "rsync -auv " + prev + " " + cloud_dir 
+   if ccd == 1:
+      print("Checking cloud...", cloud_prev)
+      if cfe(cloud_dir,1) == 0:
+         os.makedirs(cloud_dir)
+   #cmd = "rsync -auv " + prev + " " + cloud_dir 
+   cmd = "cp " + prev + " " + cloud_dir 
    print(cmd)
    os.system(cmd)
 
