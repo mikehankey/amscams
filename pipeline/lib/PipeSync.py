@@ -10,6 +10,38 @@ from lib.DEFAULTS import *
 from lib.PipeUtil import cfe, load_json_file, save_json_file
 from lib.PipeAutoCal import fn_dir
 
+def sync_meteor_preview_all(day,json_conf ):
+   year = day[0:4]
+   mdir = "/mnt/ams2/meteors/" + day + "/"
+   files = glob.glob(mdir + "*.json")
+   meteors = []
+   mi = {}
+   meteor_data = []
+   for mf in files:
+      if "reduced" not in mf and "stars" not in mf and "man" not in mf and "star" not in mf and "import" not in mf and "archive" not in mf and "cal" not in mf and "frame" not in mf:
+         meteors.append(mf)
+   cloud_dir = "/mnt/archive.allsky.tv/" + json_conf['site']['ams_id'] + "/METEORS/" + year + "/" + day + "/" 
+   cloud_prev_files = glob.glob(cloud_dir + "*prev.jpg")
+   print(cloud_dir)
+   in_cloud = {}
+   for cf in cloud_prev_files:
+      fn, dir = fn_dir(cf)
+      fn = fn.replace(".json", "-prev.jpg")
+      in_cloud[fn] = 1
+
+   ns = 0
+   for mm in meteors:
+      fn, fnd = fn_dir(mm)
+      fn = fn.replace(".json", "-prev.jpg")
+      if fn in in_cloud:
+         print("File syncd already:", fn)
+      else:
+         print("File not syncd already:", fn)
+         sync_meteor_preview(mm, json_conf)
+
+
+
+
 def sync_meteor_preview(meteor_file,json_conf ):
    amsid = json_conf['site']['ams_id']
    stack = meteor_file.replace(".json", "-stacked.jpg")
