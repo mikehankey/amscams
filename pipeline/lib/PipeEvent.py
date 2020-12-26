@@ -20,7 +20,7 @@ def events_for_day(day, json_conf):
       cloud_idx_file = cloud_dir + ns + "/METEORS/" + year + "/" + day + "/" + day + "-" + ns + ".meteors"
       cmd = "rsync -auv " + cloud_idx_file + " " + event_dir + idx_file
       print(cmd)
-      #os.system(cmd)
+      os.system(cmd)
 
    station_files = glob.glob(event_dir + "*.meteors")
    meteors = []

@@ -23,9 +23,10 @@ def make_ms_html(amsid, mse):
          if cfe(local_dir,1) == 0:
             os.makedirs(local_dir)
       else:
+         cloud_dir = "/mnt/archive.allsky.tv/" + tstation + "/METEORS/" + year + "/" + day + "/" 
          cloud_url = "https://archive.allsky.tv/" + tstation + "/METEORS/" + year + "/" + day + "/" 
       cloud_prev = cloud_dir + file + "-prev.jpg"
-      cloud_prev_url = cloud_url + file + "-prev.jpg"
+      cloud_prev_url = cloud_url + file + "-prev.jpg?x"
       prev_img = cloud_prev_url = "<img src=" + cloud_prev_url + ">"      
       ms_html += "<tr><td>" + mse['stations'][i] + "</td><td>" + mse['start_datetime'][i] + "</td><td>" + file + "</td><td>" + prev_img + "</td></tr>"
    ms_html += "</table>"

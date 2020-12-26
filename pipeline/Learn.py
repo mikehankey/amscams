@@ -15,6 +15,8 @@ def update_dataset():
    # sync data with deleted meteors etc
    year = "2020"
    L_DIR = "/mnt/ams2/LEARNING/METEORS/" 
+   if cfe(L_DIR, 1) == 0:
+      os.makedirs(L_DIR)
    vids = glob.glob(L_DIR + year + "/VIDS/*.mp4")
    for vid in vids:
       fn, dir = fn_dir(vid)
