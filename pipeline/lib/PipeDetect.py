@@ -1866,6 +1866,12 @@ def remake_mfd(video_file, json_conf):
 
 
 def fireball(video_file, json_conf, nomask=0):
+   if "/mnt/ams2/meteors" not in video_file:
+      day = video_file[0:10]
+      video_file = video_file.replace(".mp4", "")
+      video_file = video_file.replace(".json", "")
+      video_file = "/mnt/ams2/meteors/" + day + "/" + video_file + ".mp4"
+
    fn, meteor_dir = fn_dir(video_file)
    jsf = video_file.replace(".mp4", ".json")
    best_meteor = None
