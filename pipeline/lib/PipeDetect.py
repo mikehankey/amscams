@@ -584,6 +584,17 @@ def make_meteor_index_day(day, json_conf):
          mj = load_json_file(meteor)
       except:
          print("CORRUPT FILE.", mf)
+      meteor_red = meteor.replace(".json", "-reduced.json")
+      if cfe(meteor_red) == 1:
+         try:
+            mjr = load_json_file(meteor_red)
+         except:
+            print("CORRUPT FILE.", meteor_red)
+            mjr = None
+      else:
+         mjr = None
+
+
       if "best_meteor" in mj:
          reduced = 1
          #print(mj['best_meteor'])
@@ -623,12 +634,20 @@ def make_meteor_index_day(day, json_conf):
       mi[meteor]['ang_vel'] = ang_vel
       mi[meteor]['ang_dist'] = ang_dist
       mi[meteor]['hotspot'] = hotspot 
+
+      if mjr is not None:
+         mi[meteor]['meteor_frame_data'] = mjr['meteor_frame_data']
       meteor_data.append((meteor, reduced, start_time, dur, ang_vel, ang_dist, hotspot,msm))
 
    mid = sorted(meteor_data, key=lambda x: (x[0]), reverse=True)
    mi_file = mdir + day + "-" + amsid + ".meteors"
+   mi_detail_file = mdir + day + "-" + amsid + "-detail.meteors"
    save_json_file(mi_file, mid)
+   save_json_file(mi_detail_file, mi)
+   os.system("gzip -kf " + mi_file)
+   os.system("gzip -kf " + mi_detail_file)
    print("saved", mi_file)
+   print("saved", mi_detail_file)
    return(mi_file, mid)
 
 def batch_reduce(json_conf):

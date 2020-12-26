@@ -10,6 +10,14 @@ from lib.DEFAULTS import *
 from lib.PipeUtil import cfe, load_json_file, save_json_file
 from lib.PipeAutoCal import fn_dir
 
+
+def sync_conf(json_conf ):
+   amsid = json_conf['site']['ams_id']
+   cloud_dir = "/mnt/archive.allsky.tv/" + amsid + "/CAL/"
+   if cfe(cloud_dir + "as6.json") == 0:
+      cmd = "cp ../conf/as6.json " + cloud_dir 
+      os.system(cmd)
+
 def sync_meteor_preview_all(day,json_conf ):
    year = day[0:4]
    mdir = "/mnt/ams2/meteors/" + day + "/"
@@ -89,13 +97,19 @@ def sync_meteor_preview(meteor_file,json_conf,ccd=1 ):
 def sync_index_day(day,json_conf ):
    amsid = json_conf['site']['ams_id']
    year = day[0:4]
+   sync_conf(json_conf)
    mif = "/mnt/ams2/meteors/" + day + "/" + day + "-" + amsid + ".meteors"
+   mif_detail = "/mnt/ams2/meteors/" + day + "/" + day + "-" + amsid + "-detail.meteors.gz"
    cloud_dir = "/mnt/archive.allsky.tv/" + amsid + "/METEORS/" + year + "/" + day + "/" 
    cloud_indx = cloud_dir +  day + "-" + amsid + ".meteors"
+   cloud_detail = cloud_dir +  day + "-" + amsid + "-detail.meteors.gz"
    if cfe(cloud_dir,1) == 0:
       print("making:", cloud_dir)
       os.makedirs(cloud_dir)
    cmd = "rsync -auv " + mif + " " + cloud_indx
+   os.system(cmd)
+   print(cmd)
+   cmd = "rsync -auv " + mif_detail + " " + cloud_detail
    os.system(cmd)
    print(cmd)
 

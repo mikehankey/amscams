@@ -17,10 +17,45 @@ def events_for_day(day, json_conf):
    for ns in network_sites:
       print(ns)
       idx_file = day + "-" + ns + ".meteors"
+      detail_file = day + "-" + ns + "-detail.meteors.gz"
       cloud_idx_file = cloud_dir + ns + "/METEORS/" + year + "/" + day + "/" + day + "-" + ns + ".meteors"
+      cloud_detail_file = cloud_dir + ns + "/METEORS/" + year + "/" + day + "/" + day + "-" + ns + "-detail.meteors.gz"
       cmd = "rsync -auv " + cloud_idx_file + " " + event_dir + idx_file
       print(cmd)
       os.system(cmd)
+      cmd = "rsync -auv " + cloud_detail_file + " " + event_dir + detail_file
+      print(cmd)
+      os.system(cmd)
+
+   station_files = glob.glob(event_dir + "*.meteors")
+   meteors = []
+   for file in station_files:
+      el = file.split("-AMS")
+      station = el[1]
+      station = station.replace(".meteors", "")
+      station = "AMS" + station
+      sm = load_json_file(file)
+      for data in sm:
+         (meteor, reduced, start_time, dur, ang_vel, ang_dist, hotspot, msm) = data
+         meteors.append((station,meteor, reduced, start_time, dur, ang_vel, ang_dist, hotspot, msm))
+   meteors = sorted(meteors, key=lambda x: (x[3]), reverse=False)
+   events = {}
+   for meteor in meteors:
+      id, events = check_make_event(meteor, events)
+   msc = 1
+   for event in events:
+      ust = set(events[event]['stations'])
+      ustl = list(ust)
+      ts = len(ustl)
+      print("STATIONS:", events[event]['stations'])
+      print("TS:", ts)
+      events[event]['total_stations'] = ts
+      if ts >= 2:
+         print(events[event]['files'])
+         msc += 1
+         events[event]['mse_id'] = msc
+
+   save_json_file(event_dir + day + "_events.json", events)
 
    station_files = glob.glob(event_dir + "*.meteors")
    meteors = []
