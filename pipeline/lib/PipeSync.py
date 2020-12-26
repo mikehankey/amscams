@@ -3,18 +3,44 @@
 functions to sync the meteor archive with the wasabi dir
 
 '''
-
+import cv2
 import glob
 import os
 from lib.DEFAULTS import *
 from lib.PipeUtil import cfe, load_json_file, save_json_file
+from lib.PipeAutoCal import fn_dir
 
+def sync_meteor_preview(meteor_file,json_conf ):
+   amsid = json_conf['site']['ams_id']
+   stack = meteor_file.replace(".json", "-stacked.jpg")
+   prev = stack.replace("-stacked.jpg", "-prev.jpg")
+   prev_fn,ddd = fn_dir(prev)
+   year = prev_fn[0:4]
+   day = prev_fn[0:10]
+   cloud_dir = "/mnt/archive.allsky.tv/" + amsid + "/METEORS/" + year + "/" + day + "/" 
+   cloud_prev = cloud_dir + prev_fn
+   img = cv2.imread(stack)
+   img =  cv2.resize(img, (320,180))
+   cv2.imwrite(prev, img)
+   prev_tmp = prev.replace(".jpg", "-temp.jpg")
+   cmd = "convert " + prev + " -quality 80 " + prev_tmp 
+   os.system(cmd)
+   os.system("mv " + prev_tmp + " " + prev)
+   #if cfe(prev) == 0:
+   #   os.system(cmd)
+   #   print(cmd)
+   print("Checking cloud...", cloud_prev)
+   if cfe(cloud_dir,1) == 0:
+      os.makedirs(cloud_dir)
+   cmd = "rsync -auv " + prev + " " + cloud_dir 
+   print(cmd)
+   os.system(cmd)
 
 def sync_index_day(day,json_conf ):
    amsid = json_conf['site']['ams_id']
    year = day[0:4]
    mif = "/mnt/ams2/meteors/" + day + "/" + day + "-" + amsid + ".meteors"
-   cloud_dir = "/mnt/archive.allsky.tv/" + amsid + "/METEOR/" + year + "/" + day + "/" 
+   cloud_dir = "/mnt/archive.allsky.tv/" + amsid + "/METEORS/" + year + "/" + day + "/" 
    cloud_indx = cloud_dir +  day + "-" + amsid + ".meteors"
    if cfe(cloud_dir,1) == 0:
       print("making:", cloud_dir)

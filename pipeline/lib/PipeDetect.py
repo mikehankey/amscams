@@ -13,7 +13,7 @@ import datetime
 import os
 from lib.FFFuncs import imgs_to_vid
 from lib.FFFuncs import ffprobe as ffprobe4
-from lib.PipeAutoCal import fn_dir, get_cal_files, get_image_stars, get_catalog_stars, pair_stars, update_center_radec, cat_star_report, minimize_fov, XYtoRADec
+from lib.PipeAutoCal import fn_dir, get_cal_files, get_image_stars, get_catalog_stars, pair_stars, update_center_radec, cat_star_report, minimize_fov, XYtoRADec, poly_fit_check
 from lib.PipeVideo import ffmpeg_splice, find_hd_file, load_frames_fast, find_crop_size, ffprobe
 from lib.PipeUtil import load_json_file, save_json_file, cfe, get_masks, convert_filename_to_date_cam, buffered_start_end, get_masks, compute_intensity , bound_cnt, day_or_night
 from lib.DEFAULTS import *
@@ -24,6 +24,24 @@ import numpy as np
 import cv2
 
 json_conf = load_json_file(AMS_HOME + "/conf/as6.json")
+
+def perfect_points_all(day, json_conf):
+   mdir = "/mnt/ams2/meteors/" + day + "/"
+   files = glob.glob(mdir + "*.json")
+   meteors = []
+   mi = {}
+   meteor_data = []
+   for mf in files:
+      if "reduced" not in mf and "stars" not in mf and "man" not in mf and "star" not in mf and "import" not in mf and "archive" not in mf and "cal" not in mf and "frame" not in mf:
+         meteors.append(mf)
+   for mm in meteors:
+      fn, dir = fn_dir(mm)
+      fn = fn.replace(".json", "")
+      cmd = "./Process.py pp " + fn
+      print(cmd)
+      os.system(cmd)
+      #exit()
+
 
 def perfect_points(meteor_file, json_conf):
 
@@ -36,28 +54,256 @@ def perfect_points(meteor_file, json_conf):
 
    if cfe(meteor_file) == 1 :
       mj = load_json_file(meteor_file)
+      img = cv2.imread(mj['sd_stack'])
+      img = cv2.resize(img, (1280, 720))
+      hd_frames,hd_color_frames,subframes,sum_vals,max_vals,pos_vals = load_frames_fast(mj['sd_video_file'], json_conf, 0, 0, 1, 1,[])
+
    else:
       print("NO MJ", meteor_file)
       return()
    if "best_meteor" not in mj:
       print("No best meteor. Must reduce before running perfect points.")
    bm = mj['best_meteor']
-   xs = bm['oxs']
-   ys = bm['oys']
+   xs = bm['ccxs']
+   ys = bm['ccys']
    m,b =  best_fit_slope_and_intercept(xs,ys)
 
+   (dom_dir, quad, ideal, ideal_roi_big_img) = get_movement_info(bm, 500, 500)
+   print("DOM:", dom_dir)
+   print("QUAD:", quad)
+   print("IDEAL:", ideal)
+   bm['report']['object_px_length'], bm['report']['line_segments'], bm['report']['x_segs'], bm['report']['ms'], bm['report']['bs'] = calc_line_segments(bm)
+
+   lys = []
+   xds = []
+   yds = []
+   last_x = None
+   for i in range(0, len(xs)):
+      line_y = int(m*xs[i]+b)
+      lys.append(line_y)
+      print(xs[i], ys[i], line_y)
+      if last_x is None:
+         xds.append(0)
+         yds.append(0)
+      else:
+         xds.append(xs[i] - last_x)
+         yds.append(ys[i] - last_y)
+
+   med_x = int(sum(xds) / len(xds) - 1)
+   med_y = int(sum(yds) / len(yds) - 1)
+   med_seg = np.median(bm['report']['line_segments'])
+   new_xs = []
+   new_ys = []
+   for i in range(0, len(xs)):
+      fn = bm['ofns'][i]
+      frame = hd_color_frames[fn].copy()
+      frame = cv2.subtract(frame, hd_color_frames[fn-1])
+      frame = cv2.resize(frame, (1280, 720))
+
+
+      # calc point distance to line
+      dist_to_line = poly_fit_check(xs,ys, xs[i],ys[i])
+      # calc point distance estimate point 
+      dist_to_est = calc_dist((xs[i],ys[i]),(xs[i],lys[i]))
+      #print("DIST TO LINE:", dist_to_line, dist_to_est, bm['report']['line_segments'][i])
+      seg_err = abs(bm['report']['line_segments'][i] - med_seg)
+      line_err = bm['report']['line_segments'][i] = dist_to_line
+      est_err = bm['report']['line_segments'][i] = dist_to_est 
+      total_error = seg_err + line_err + est_err 
+      if total_error > 2.25:
+         print("ERROR (seg,line,est,total):", seg_err, line_err, est_err, total_error)
+      else:
+         print("OK (seg,line,est,total):", seg_err, line_err, est_err, total_error)
+
+      #cv2.circle(frame,(xs[i],line_y), 1, (0,255,255), 1)
+      #cv2.circle(frame,(xs[i],ys[i]), 1, (0,0,255), 1)
+      rx1,ry1,rx2,ry2 = bound_cnt(xs[i], ys[i],frame.shape[1],frame.shape[0], 50)
+      cnt_img = frame[ry1:ry2,rx1:rx2]
+      cnt_img = cv2.resize(cnt_img, (500, 500))
+
+      thresh = np.mean(cnt_img) + 25
+
+      if quad[0] == 'left':
+         cnt_img[0:500,250:500] = [0,0,0]
+         if quad[1] == 'bottom':
+            cnt_img[0:250,0:500] = [0,0,0]
+         if quad[1] == 'top':
+            cnt_img[250:500,0:500] = [0,0,0]
+
+      if quad[0] == 'right':
+         cnt_img[0:500,0:250] = [0,0,0]
+
+      _, threshold = cv2.threshold(cnt_img.copy(), thresh, 255, cv2.THRESH_BINARY)
+      cnts = get_contours_in_image(threshold)
+      if cnts == 0:
+         thresh = np.mean(cnt_img) + 5
+         _, threshold = cv2.threshold(cnt_img.copy(), thresh, 255, cv2.THRESH_BINARY)
+         cnts = get_contours_in_image(threshold)
+      print("CNTS:", len(cnts))
+      best_x = None
+      best_y = None
+      if len(cnts) == 1:
+         cx,cy,cw,ch = cnts[0]
+         best_x = int(cx + (cw/2))
+         best_y = int(cy + (ch/2))
+      elif len(cnts) > 1:
+         for cx,cy,cw,ch in cnts:
+            if best_x is None:
+               best_x = int(cx + (cw/2))
+               best_y = int(cy + (ch/2))
+            if quad[0] == "left":
+               if int(cx + (cw/2)) < best_x:
+                  best_x = int(cx + (cw/2))
+                  best_y = int(cy + (ch/2))
+      else:
+         #no cnt found!?
+         gray_img = cv2.cvtColor(cnt_img, cv2.COLOR_BGR2GRAY)
+         min_val, max_val, min_loc, (mx,my)= cv2.minMaxLoc(gray_img)
+         best_x = 250
+         best_y = 250
+         cw = 5
+         ch = 5
+      adj_x = int((250 - best_x)/5)
+      adj_y = int((250 - best_y)/5)
+      new_x = xs[i] - adj_x
+      new_y = ys[i] - adj_y
+      new_xs.append(new_x)
+      new_ys.append(new_y)
+      rx1,ry1,rx2,ry2 = bound_cnt(new_x,new_y,frame.shape[1],frame.shape[0], 50)
+      lead_cnt_img = frame[ry1:ry2,rx1:rx2]
+      lead_cnt_img = cv2.resize(cnt_img, (500, 500))
+      cv2.line(lead_cnt_img, (0,250), (500,250), (200,200,200), 1)
+      cv2.line(lead_cnt_img, (250,0), (250,500), (200,200,200), 1)
+      print("ADJ:", xs[i], ys[i], adj_x, adj_y, new_x,new_y)
+
+
+      cv2.rectangle(threshold, (best_x, best_y), (best_x+cw, best_y+ch), (128,128,128), 1, cv2.LINE_AA)
+
+      cv2.imshow('pepe', threshold)
+      cv2.waitKey(30)
+
+      cv2.imshow('pepe', lead_cnt_img)
+      cv2.waitKey(30)
+
+      #cv2.imshow('pepe', cnt_img)
+      #cv2.waitKey(0)
+      last_x = best_x
+      last_y = best_y
+
+   bm['report']['line_segments'], xds, yds = comp_segs(new_xs,new_ys)
+   med_x = int(np.median(xds))
+   med_y = int(np.median(yds))
+   print("SEGS!", bm['report']['line_segments'])
+   print("XSEGS!", xds)
+   print("YSEGS!", yds)
+   fx = new_xs[0]
+   fy = new_ys[0]
+   ax = None
+   ay = None
+   bx = None
+   by = None
+   exs = []
+   eys = []
+   for i in range(0, len(xs)):
+      fn = bm['ofns'][i]
+      new_x = new_xs[i]
+      new_y = new_ys[i]
+      if i < 10:
+         lim = i 
+      elif i + 10 >= len(new_xs):
+         lim = len(new_xs) - i
+      else:
+         lim = 10
+
+      cv2.circle(img,(bm['ccxs'][i],bm['ccys'][i]), 2, (0,0,255), 1)
+      bx = np.mean(new_xs[i-lim:i-1])
+      by = np.mean(new_ys[i-lim:i-1])
+      ax = np.mean(new_xs[i+1:i+lim])
+      ay = np.mean(new_ys[i+1:i+lim])
+      print("AB:", i, lim, bx, by, ax,ay)
+      x = xs[i]
+      y = ys[i]
+      ly = lys[i]
+      if math.isnan(bx) is not True and math.isnan(ax) is not True:
+         est_x = int((bx + ax) / 2)
+         est_y = int((by + ay) / 2)
+         cv2.circle(img,(est_x,est_y), 1, (255,255,0), 1)
+         exs.append(est_x)
+         eys.append(est_y)
+      else:
+         exs.append(new_x)
+         eys.append(new_y)
+
+      #lseg = bm['report']['line_segments'][i] 
+      cv2.circle(img,(new_x,new_y), 1, (0,255,255), 1)
+      #cv2.circle(img,(x,y), 1, (0,0,255), 1)
+      #cv2.circle(img,(est_x,est_y), 1, (0,255,0), 1)
+      #cv2.circle(frame,(xs[i],ys[i]), 1, (0,0,255), 1)
+
+      if bm['report']['line_segments'][i] == 0 and i > 0:
+         fix_x = xs[i-1] + med_x
+         fix_y = ys[i-1] + med_y
+         #xs[i] = fix_x
+         #ys[i] = fix_y
+         cv2.circle(img,(fix_x,fix_y), 1, (255,0,0), 1)
+         print("FIX!", bm['report']['line_segments'][i], med_x, med_y, fix_x, fix_y)
+
+   #cv2.line(img, (xs[0],lys[0]), (xs[-1],lys[-1]), (200,200,200), 1)
+   cv2.imshow('pepe', img)
+   cv2.waitKey(30)
 
    for i in range(0, len(xs)):
-      line_y = m*xs[i]+b
-      print(xs[i], ys[i], line_y)
+      fn = bm['ofns'][i]
+      ex = exs[i]
+      ey = eys[i]
+      nx = new_xs[i]
+      ny = new_ys[i]
+      frame = hd_color_frames[fn]
+      frame = cv2.resize(frame, (1280, 720))
+      cv2.circle(frame,(ex,ey), 1, (255,0,0), 1)
+      cv2.circle(frame,(nx,ny), 1, (0,255,0), 1)
+      cv2.imshow('pepe', frame)
+      cv2.waitKey(30)
+      nx1,ny1,nx2,ny2 = bound_cnt(nx, ny,1280,720, 50)
+      frame = hd_color_frames[fn]
+      frame = cv2.resize(frame, (1280, 720))
+      cnt_img = frame[ny1:ny2,nx1:nx2]
+
+      cv2.line(cnt_img, (0,50), (100,50), (200,200,200), 1)
+      cv2.line(cnt_img, (50,0), (50,100), (200,200,200), 1)
+
+      cv2.imshow('pepe', cnt_img)
+      cv2.waitKey(30)
+
+   bm['ccxs'] = new_xs
+   bm['ccys'] = new_ys
+   mj['best_meteor'] = bm
+   mfd,crop_box = make_meteor_frame_data(mj['best_meteor'], mj['cp'])
+
+   mj['best_meteor'] = apply_calib(mj['sd_video_file'], mj['best_meteor'], mj['cp'], json_conf)
+
+   redf = meteor_file.replace(".json", "-reduced.json")
+   red = load_json_file(redf)
+   red['meteor_frame_data'] = mfd
+   red['cal_params'] = mj['cp']
+   save_json_file(redf, red) 
+   save_json_file(meteor_file, mj) 
+
+   red = load_json_file(redf)
+   print("NEW MFD:")
+   for data in red['meteor_frame_data']:
+      print("MFD:", data)
 
    # things we want to check, test or fix
    # determine x,y direction of travel & dom direction
 
-   (dom_dir, quad, ideal_pos, ideal_roi_big_img) = get_movement_info(bm, 640, 640)
+   make_roi_video(mj['sd_video_file'],bm, hd_color_frames, json_conf)
 
-   bm['report']['object_px_length'], bm['report']['line_segments'], bm['report']['x_segs'], bm['report']['ms'], bm['report']['bs'] = calc_line_segments(bm)
-   
+   red = load_json_file(redf)
+   print("NEW MFD:")
+   for data in red['meteor_frame_data']:
+      print("MFD:", data)
+
    # last_seg_dist of each frame
    print("SEGS:", bm['report']['line_segments'])
    print("XSEGS:", bm['report']['x_segs'])
@@ -72,6 +318,22 @@ def perfect_points(meteor_file, json_conf):
    # check the end of the meteor to make sure no undetected post-frames exit
    # determine est_x,est_y for each frame and the err between choosen point and est point
    # make sure there are no empty frames / replace with est_x,est_y if the blob can't be found 
+
+def comp_segs(xs,ys):
+   segs = []
+   xds = []
+   yds = []
+   for i in range(0, len(xs)):
+      if i > 0:
+         sd = calc_dist((xs[i], ys[i]), (xs[i-1], ys[i-1]))
+         segs.append(sd)
+         xds.append(xs[i] - xs[i-1])
+         yds.append(ys[i] - ys[i-1])
+      else:
+         segs.append(0)
+         xds.append(0)
+         yds.append(0)
+   return(segs, xds, yds)
 
 
 def check_for_trailing_frames(video_file, mj=None, json_conf=None):
@@ -1357,6 +1619,7 @@ def make_roi_video_mfd(video_file, json_conf):
    if "meteor_frame_data" in mjr:
       for row in mjr['meteor_frame_data']:
          (dt, fn, x, y, w, h, oint, ra, dec, az, el) = row
+         print("ROW:", row)
          frame = hd_color_frames[fn]
          sfn = str(fn)
          if sfn in ufd:
@@ -1422,7 +1685,6 @@ def make_roi_video_mfd(video_file, json_conf):
             cv2.imwrite(outfile, roi_img)
             print("WROTE:", outfile, x,y)
          used[fn] = 1
-
 
    crop_box = mfd_to_cropbox(updated_frame_data)
 
@@ -1511,9 +1773,12 @@ def make_roi_video(video_file,bm, frames, json_conf):
          print("ACTIVE", rx,ry)
          if "cal_params" in mj: 
             if mj["cal_params"] is not None:
+               print("UPDATE RADEC!")
                tx, ty, ra ,dec , az, el = XYtoRADec(hd_x,hd_y,video_file,mjr['cal_params'],json_conf)
          
          date_str = bm['dt'][i]
+         tx, ty, ra ,dec , az, el = XYtoRADec(hd_x,hd_y,video_file,mjr['cal_params'],json_conf)
+         print("UPDATED RA:", ra,dec,az,el)
          updated_frame_data.append((date_str, j, hd_x, hd_y, rw, rh, oint, ra, dec, az, el))
       else:
          # meteor is inactive (use 1st frame / last frame for crop location on missing frames)
@@ -1945,7 +2210,7 @@ def make_meteor_frame_data(best_meteor,cp):
          dt = best_meteor['dt'][i]
          #FLUX
          oint = best_meteor['oint'][i]
-         print("new MFD:", fn)
+         print("new MFD:", fn, az,el)
          meteor_frame_data.append((dt, fn, x, y, w, h, oint, ra, dec, az, el))
    return(meteor_frame_data, crop_box)
 

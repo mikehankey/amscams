@@ -327,6 +327,9 @@ def meteors_main (amsid, in_data) :
          ht_class = "reduced"
       else:
          ht_class = "norm"
+      if msm == 1:
+         ht_class = "multi"
+      print("MSM:", msm)
       # Per meteor cell / div
       out += """
          <div id='""" + jsid + """' class='preview select-to """ + ht_class + """'>

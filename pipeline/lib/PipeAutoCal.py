@@ -93,10 +93,11 @@ def refit_meteor(meteor_file, json_conf):
    print("BEFORE MORE STARS:", len(cp['cat_image_stars']) )
    if "more_stars" not in cp:
       cp['more_stars'] = 1
-      cp = get_more_stars_with_catalog(meteor_file, cp, image, json_conf)
-      cp = pair_stars(cp, meteor_file, json_conf, image)
-      cp, bad_stars,marked_img = eval_cal(meteor_file,json_conf,cp,image)
-      print("AFTER MORE STARS:", len(cp['cat_image_stars']) )
+
+   cp = get_more_stars_with_catalog(meteor_file, cp, image, json_conf)
+   cp = pair_stars(cp, meteor_file, json_conf, image)
+   cp, bad_stars,marked_img = eval_cal(meteor_file,json_conf,cp,image)
+   print("AFTER MORE STARS:", len(cp['cat_image_stars']) )
 
    if len(cp['cat_image_stars']) > 12 :
       print("we have enough stars to refit the meteor.")

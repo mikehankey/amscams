@@ -7,6 +7,30 @@ import cv2
 import os
 import numpy as np
 
+def make_ms_html(amsid, mse):
+   ms_html = "<table width=100%>"
+   ms_html += "<tr><td>Station</td><td>Start Datetime</td><td>File</td></tr>"
+   for i in range(0, len(mse['stations'])):
+      file,dir = fn_dir(mse['files'][i])
+      file = file.replace(".json", "")
+      tstation = mse['stations'][i]
+      year = file[0:4]
+      day = file[0:10]
+      if tstation != amsid:
+         local_dir = "/mnt/ams2/meteor_archive/" + tstation + "/METEORS/" + year + "/" + day + "/" 
+         cloud_dir = "/mnt/archive.allsky.tv/" + tstation + "/METEORS/" + year + "/" + day + "/" 
+         cloud_url = "https://archive.allsky.tv/" + tstation + "/METEORS/" + year + "/" + day + "/" 
+         if cfe(local_dir,1) == 0:
+            os.makedirs(local_dir)
+      else:
+         cloud_url = "https://archive.allsky.tv/" + tstation + "/METEORS/" + year + "/" + day + "/" 
+      cloud_prev = cloud_dir + file + "-prev.jpg"
+      cloud_prev_url = cloud_url + file + "-prev.jpg"
+      prev_img = cloud_prev_url = "<img src=" + cloud_prev_url + ">"      
+      ms_html += "<tr><td>" + mse['stations'][i] + "</td><td>" + mse['start_datetime'][i] + "</td><td>" + file + "</td><td>" + prev_img + "</td></tr>"
+   ms_html += "</table>"
+   return(ms_html)
+
 def detail_page(amsid, date, meteor_file):
    MEDIA_HOST = request.host_url.replace("5000", "80")
    MEDIA_HOST = ""
@@ -36,6 +60,18 @@ def detail_page(amsid, date, meteor_file):
    else:
       hd_trim = None
       hd_stack = None
+   if "multi_station_event" in mj:
+      otherobs = """
+                <li class="nav-item">
+                    <a class="nav-link" id="multi-tab-l" data-toggle="tab" href="#multi-tab" role="tab" aria-controls="multi" aria-selected="false"><span id="str_cnt"></span>Other Observations</a>
+                </li>
+      """
+      ms_html = str(mj['multi_station_event'])
+      ms_html = make_ms_html(amsid, mj['multi_station_event'])
+   else:
+      otherobs = ""
+      ms_html = ""
+
 
    sd_stack = sd_trim.replace(".mp4", "-stacked.jpg")
    half_stack = sd_stack.replace("stacked", "half-stack")
@@ -67,6 +103,8 @@ def detail_page(amsid, date, meteor_file):
    template = template.replace("{AMSID}", amsid)
    template = template.replace("{MEDIA_HOST}", MEDIA_HOST)
    template = template.replace("{HALF_STACK}", METEOR_VDIR + half_stack)
+   template = template.replace("<!--OTHEROBS-->", otherobs)
+   template = template.replace("{%MULTI_STATION_DATA%}", ms_html)
    if hd_stack is None or hd_stack == 0:
       template = template.replace("{HD_STACK}", "#")
    else:
