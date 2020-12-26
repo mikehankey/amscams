@@ -43,6 +43,12 @@ def sync_meteor_preview_all(day,json_conf ):
 
 
 def sync_meteor_preview(meteor_file,json_conf ):
+   if "/mnt/ams2/meteors" not in meteor_file:
+      day = meteor_file[0:10]
+      meteor_file = meteor_file.replace(".mp4", "")
+      meteor_file = meteor_file.replace(".json", "")
+      meteor_file = "/mnt/ams2/meteors/" + day + "/" + meteor_file + ".json"
+
    amsid = json_conf['site']['ams_id']
    stack = meteor_file.replace(".json", "-stacked.jpg")
    prev = stack.replace("-stacked.jpg", "-prev.jpg")
