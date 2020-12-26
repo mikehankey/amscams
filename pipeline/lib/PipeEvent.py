@@ -17,7 +17,7 @@ def events_for_day(day, json_conf):
    for ns in network_sites:
       print(ns)
       idx_file = day + "-" + ns + ".meteors"
-      cloud_idx_file = cloud_dir + ns + "/METEOR/" + year + "/" + day + "/" + day + "-" + ns + ".meteors"
+      cloud_idx_file = cloud_dir + ns + "/METEORS/" + year + "/" + day + "/" + day + "-" + ns + ".meteors"
       cmd = "rsync -auv " + cloud_idx_file + " " + event_dir + idx_file
       print(cmd)
       #os.system(cmd)
