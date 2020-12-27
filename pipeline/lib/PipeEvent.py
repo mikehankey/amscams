@@ -13,7 +13,9 @@ def events_for_day(day, json_conf):
    network_sites = json_conf['site']['multi_station_sync']
    print("EVD:", day)
    my_idx = "/mnt/ams2/meteors/" + day + "/" + day + "-" + amsid + ".meteors"
+   my_detail = "/mnt/ams2/meteors/" + day + "/" + day + "-" + amsid + "-detail.meteors"
    os.system("cp " + my_idx + " " + event_dir)
+   os.system("cp " + my_detail + " " + event_dir)
    for ns in network_sites:
       print(ns)
       idx_file = day + "-" + ns + ".meteors"
@@ -22,24 +24,49 @@ def events_for_day(day, json_conf):
       cloud_detail_file = cloud_dir + ns + "/METEORS/" + year + "/" + day + "/" + day + "-" + ns + "-detail.meteors.gz"
       cmd = "rsync -auv " + cloud_idx_file + " " + event_dir + idx_file
       print(cmd)
-      os.system(cmd)
+      #os.system(cmd)
       cmd = "rsync -auv " + cloud_detail_file + " " + event_dir + detail_file
       print(cmd)
-      os.system(cmd)
+      #os.system(cmd)
       cmd = "gunzip -k " + event_dir + detail_file
       print(cmd)
-      os.system(cmd)
+      #os.system(cmd)
 
 
    station_files = glob.glob(event_dir + "*.meteors")
    meteors = []
+   meteor_details = {}
+
    for file in station_files:
+      el = file.split("-AMS")
+      station = el[1]
+      station = station.replace(".meteors", "")
+      station = station.replace("-detail", "")
+      station = "AMS" + station
+
       if "detail" in file:
-         continue
+         print("loading:", station, file)
+         if station not in meteor_details:
+            details = load_json_file(file)
+            meteor_details[station] = details 
+
+
+   for station in meteor_details:
+      print(station)
+      for key in meteor_details[station]:
+         #print(key, meteor_details[station][key])
+         print(station, key, len(meteor_details[station][key]))
+
+   #exit()
+
+   for file in station_files:
       el = file.split("-AMS")
       station = el[1]
       station = station.replace(".meteors", "")
       station = "AMS" + station
+      if "detail" in file:
+         continue
+
       sm = load_json_file(file)
       print("LOADED:", file)
       for data in sm:
@@ -64,6 +91,7 @@ def events_for_day(day, json_conf):
          events[event]['mse_id'] = msc
 
    save_json_file(event_dir + day + "_events.json", events)
+   print("EVENTS:", event_dir + day + "_events.json", events)
 
    station_files = glob.glob(event_dir + "*.meteors")
    meteors = []
@@ -96,15 +124,25 @@ def events_for_day(day, json_conf):
          print(events[event]['files'])
          msc += 1
          events[event]['mse_id'] = msc
+         if "mfds" not in events[event]:
+            events[event]['mfds'] = []
+         for cc in range (0, len(events[event]['stations'])):
+            st = events[event]['stations'][cc]
+            fl = events[event]['files'][cc]
+            mfd = meteor_details[st][fl]
+            events[event]['mfds'].append(mfd)
 
    save_json_file(event_dir + day + "_events.json", events)
+   print("SAVED:", event_dir + day + "_events.json")
    print("Total Obs:", len(meteors))
    print("Total Events:", len(events))
    print("Total MS events:", msc)
 
+
    for event_id in events:
       if amsid in events[event_id]['stations']:
          for i in range(0, len(events[event_id]['stations'])):
+            obs_file = events[event_id]['files'][i]
             ts = events[event_id]['stations'][i]
             if ts == amsid:
              

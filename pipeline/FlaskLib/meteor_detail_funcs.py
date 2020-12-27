@@ -8,12 +8,18 @@ import os
 import numpy as np
 
 def make_ms_html(amsid, mse):
-   ms_html = "<table width=100%>"
-   ms_html += "<tr><td>Station</td><td>Start Datetime</td><td>File</td></tr>"
+   #ms_html = "<table width=100%>"
+   #ms_html += "<tr><td>Station</td><td>Start Datetime</td><td>File</td></tr>"
+   ms_html = ""
    for i in range(0, len(mse['stations'])):
       file,dir = fn_dir(mse['files'][i])
       file = file.replace(".json", "")
       tstation = mse['stations'][i]
+      mfd = mse['mfds'][i]
+      if "meteor_frame_data" not in mfd:
+         meteor_frame_data = None
+      else:
+         meteor_frame_data = mfd['meteor_frame_data']
       year = file[0:4]
       day = file[0:10]
       if tstation != amsid:
@@ -28,8 +34,23 @@ def make_ms_html(amsid, mse):
       cloud_prev = cloud_dir + file + "-prev.jpg"
       cloud_prev_url = cloud_url + file + "-prev.jpg?xx"
       prev_img = cloud_prev_url = "<img src=" + cloud_prev_url + ">"      
-      ms_html += "<tr><td>" + mse['stations'][i] + "</td><td>" + mse['start_datetime'][i] + "</td><td>" + prev_img + "<br>" + file + "</td></tr>"
-   ms_html += "</table>"
+      #ms_html += "<tr><td>" + mse['stations'][i] + "</td><td>" + mse['start_datetime'][i] + "</td><td>" + prev_img + "<br>" + file + "</td></tr>"
+      ms_html += "<div>" + mse['stations'][i] + " " +  mse['start_datetime'][i] +  prev_img + "<br>" + file 
+      if meteor_frame_data is not None:
+         fmfd = meteor_frame_data[0]
+         lmfd = meteor_frame_data[-1]
+         (dt, fn, x, y, w, h, oint, ra, dec, az, el) = fmfd
+         first_az_el = str(az)[0:5] + " / " + str(el)[0:5]
+         (dt, fn, x, y, w, h, oint, ra, dec, az, el) = lmfd 
+         last_az_el = str(az)[0:5] + " / " + str(el)[0:5]
+         ms_html += " First AZ/EL: " + first_az_el + " Last AZ/EL: " + last_az_el + ""
+         #ms_html += "<tr><td colspan=4>" + str(meteor_frame_data) + "</td></tr>"
+      else:
+         #ms_html += "<tr><td colspan=4>Meteor Not Reduced Yet.</td></tr>"
+         ms_html += "Meteor Not Reduced Yet."
+      ms_html += "</div>"
+
+   #ms_html += "</table>"
    return(ms_html)
 
 def detail_page(amsid, date, meteor_file):
