@@ -3060,7 +3060,7 @@ def autocal(image_file, json_conf, show = 0):
          tcp = pair_stars(tcp, image_file, json_conf, img)
          #cp = minimize_fov(image_file, tcp, image_file,img.copy(),json_conf )
          cp = tcp
-         if cp['total_res_px'] < 5 and len(cp['cat_image_stars']) > 10:
+         if cp['total_res_px'] < 10 and len(cp['cat_image_stars']) > 10:
             fn,dir = fn_dir(image_file)
             base = fn.replace(".png", "")
             fdir = "/mnt/ams2/cal/freecal/" + base + "/"
@@ -3088,6 +3088,8 @@ def autocal(image_file, json_conf, show = 0):
 
             #exit()
             return()
+         else:
+            print("RES TOO HIGH OR STARS TOO LOW TO AUTOCAL.", cp['total_res_px'], len(cp['cat_image_stars']))
 
    '''
       Open the image and find stars in it. 
