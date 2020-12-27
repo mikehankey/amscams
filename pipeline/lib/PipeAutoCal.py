@@ -2678,7 +2678,10 @@ def cal_index(cam, json_conf, r_station_id = None):
       img_file = file.replace("-calparams.json", "-src.jpg")
       test_img = get_cal_img(img_file)
       if cfe(file) == 1 and cfe(img_file) == 1:
-         cp = load_json_file(file)
+         try:
+            cp = load_json_file(file)
+         except:
+            print("BAD CAL FILE:", file)
          cp_img_file = file.replace("-calparams.json", ".png")
 
          cmd = "./AzElGrid.py az_grid " + file
@@ -2691,7 +2694,8 @@ def cal_index(cam, json_conf, r_station_id = None):
          if cfe(jpg_file) == 0:
             cmd = "convert -quality 80 " + img_file + " " + jpg_file
             os.system(cmd)
-         ci_data.append((file, cp['center_az'], cp['center_el'], cp['position_angle'], cp['pixscale'], len(cp['user_stars']), len(cp['cat_image_stars']), cp['total_res_px']))
+         if "total_res_px" in cp:
+            ci_data.append((file, cp['center_az'], cp['center_el'], cp['position_angle'], cp['pixscale'], len(cp['user_stars']), len(cp['cat_image_stars']), cp['total_res_px']))
 
    temp = sorted(ci_data, key=lambda x: x[0], reverse=True)
    save_json_file(save_file, temp)
@@ -2778,7 +2782,10 @@ def review_cals(json_conf, cam=None):
    for cam, file in temp:
       cp_file = file.replace(".png", "-calparams.json")
       print(cp_file)
-      cp = load_json_file(cp_file)
+      try:
+         cp = load_json_file(cp_file)
+      except:
+         print("Bad cal file.", cp_file)
       if "total_res_px" not in cp:
          cp['total_res_px'] = 20
       cal_data.append((cam, file, cp['center_az'], cp['center_el'], cp['position_angle'], cp['pixscale'], cp['total_res_px']))
