@@ -1,5 +1,5 @@
-
-from flask import Flask, request
+import base64
+from flask import Flask, request, Response, make_response
 from FlaskLib.Learning import learning_meteors_dataset
 from FlaskLib.FlaskUtils import get_template
 from FlaskLib.api_funcs import update_meteor_points, show_cat_stars, delete_meteor, delete_meteors, reduce_meteor, delete_frame, crop_video
@@ -14,6 +14,7 @@ from FlaskLib.super_stacks import stacks_main, stacks_day_hours, stacks_hour
 from FlaskLib.min_detail import min_detail_main
 from FlaskLib.live import live_view
 from FlaskLib.TL import tl_menu 
+from FlaskLib.Maps import make_map 
 
 import json
 
@@ -29,6 +30,20 @@ app = Flask(__name__, static_url_path='/static')
 def tlm(amsid):
    out = tl_menu(amsid)
    return(out)
+
+
+@app.route('/maps/', methods=['GET', 'POST'])
+def map_runner():
+
+   points = request.args.get('points')
+   lines = request.args.get('lines')
+
+
+   img = make_map(points, lines)
+   response = make_response(img.getvalue())
+   response.headers['Content-Type'] = 'image/png'
+   response.headers['Content-Disposition'] = 'filename=%d.png' % 0
+   return response
 
 @app.route('/', methods=['GET', 'POST'])
 def main_menu():

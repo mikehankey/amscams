@@ -25,7 +25,7 @@ from lib.PipeReport import autocal_report, detect_report
 from lib.PipeLIVE import meteor_min_files, broadcast_live_meteors, broadcast_minutes, meteors_last_night, mln_final, pip_video, mln_sync, super_stacks, meteor_index, fix_missing_images, fflist, resize_video, minify_file, make_preview_meteor, make_preview_meteors, sync_preview_meteors
 from lib.PipeTimeLapse import make_tl_for_cam, video_from_images, six_cam_video, timelapse_all, tn_tl6, sync_tl_vids, multi_cam_tl, audit_min, purge_tl , plot_min_int, aurora_fast
 from lib.PipeMeteorDelete import delete_all_meteor_files
-from lib.PipeEvent import events_for_day
+from lib.PipeEvent import events_for_day, get_network_info
 
 
 '''
@@ -501,3 +501,5 @@ if __name__ == "__main__":
       sync_meteor_preview(sys.argv[2], json_conf)
    if cmd == "sync_prev_all":
       sync_meteor_preview_all(sys.argv[2], json_conf)
+   if cmd == "get_network_info":
+      get_network_info(json_conf)
