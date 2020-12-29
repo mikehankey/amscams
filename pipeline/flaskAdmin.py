@@ -14,7 +14,7 @@ from FlaskLib.super_stacks import stacks_main, stacks_day_hours, stacks_hour
 from FlaskLib.min_detail import min_detail_main
 from FlaskLib.live import live_view
 from FlaskLib.TL import tl_menu 
-from FlaskLib.Maps import make_map 
+#from FlaskLib.Maps import make_map 
 
 import json
 

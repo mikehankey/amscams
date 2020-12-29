@@ -724,8 +724,11 @@ def reject_mask_detects(date, json_conf):
                      mask_hits += 1
                   if x < omw and y < omh:
                      print("SD SIZE:", sd_mask_imgs[cam].shape)
-                     sd_val = sd_mask_imgs[cam][y,x][0]
-                     print("SD VAL", x,y,sd_val)
+                     if 0 < y < sd_mask_imgs[cam].shape[0] and 0 < x < sd_mask_imgs[cam].shape[1] :
+                        sd_val = sd_mask_imgs[cam][y,x][0]
+                        print("SD VAL", x,y,sd_val)
+                     else:
+                        sd_val = 255
                      if sd_val == 255:
                         print("SD MASK HIT!", sd_val)
                mperc = mask_hits / len(mj['sd_objects'][0]['history'])
