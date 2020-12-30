@@ -700,6 +700,9 @@ def reject_mask_detects(date, json_conf):
       sd_mask_imgs[fn] = sd
    hsi = []
    for mf in jsfiles:
+      #if "reduced" not in mf and "stars" not in mf and "man" not in mf and "star" not in mf and "import" not in mf and "archive" not in mf:
+      #   hd_frames,hd_color_frames,subframes,sum_vals,max_vals,pos_vals = load_frames_fast(video_file, json_conf, 0, 0, 1, 1,[])
+
       if "reduced" not in mf and "stars" not in mf and "man" not in mf and "star" not in mf and "import" not in mf and "archive" not in mf:
          try:
             mj = load_json_file(mf) 
