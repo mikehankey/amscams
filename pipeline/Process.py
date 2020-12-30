@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 
+import glob
 import numpy as np
 import sys
 import time
@@ -474,9 +475,28 @@ if __name__ == "__main__":
    if cmd == 'mns':
       meteor_night_stacks(sys.argv[2], json_conf)
    if cmd == 'hotspots':
-      reject_hotspots(sys.argv[2], json_conf)
+      if sys.argv[2] == "all":
+         files = glob.glob("/mnt/ams2/meteors/*")
+         for file in files:
+            if cfe(file, 1) == 1:
+               fn, fdir = fn_dir(file)
+               print(fn)
+               reject_hotspots(fn, json_conf)
+      else:
+         reject_hotspots(sys.argv[2], json_conf)
    if cmd == 'reject_masks':
-      reject_mask_detects(sys.argv[2], json_conf)
+      if sys.argv[2] == "all":
+         files = glob.glob("/mnt/ams2/meteors/*")
+         for file in files:
+            print(file)
+            if cfe(file, 1) == 1:
+               fn, fdir = fn_dir(file)
+               print(fn)
+               reject_mask_detects(fn, json_conf)
+            else:
+               print("NO FILE:", file)
+      else:
+         reject_mask_detects(sys.argv[2], json_conf)
    if cmd == "mln_cam":
       date = sys.argv[2]
       cam_num = sys.argv[3]

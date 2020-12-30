@@ -3016,7 +3016,11 @@ def autocal(image_file, json_conf, show = 0):
 
    if cfe(image_file) == 0:
       return ()
-   stars = get_image_stars(image_file, None, json_conf,0)
+   try:
+      stars = get_image_stars(image_file, None, json_conf,0)
+   except:
+      print("FAILED!", image_file)
+      return()
    img = cv2.imread(image_file, 0)
    ares = None
    bres = None

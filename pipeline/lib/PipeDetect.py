@@ -804,7 +804,7 @@ def log_hotspot(hotspots, d):
       if hcam != cam:
          continue
       dist = calc_dist((avg_x,avg_y),(hx,hy))
-      if dist < 50:
+      if dist < 80:
          found = 1
          first_file = hfile
    if found == 1:

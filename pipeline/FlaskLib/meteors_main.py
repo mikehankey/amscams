@@ -134,7 +134,7 @@ def get_meteors_in_range(station_id, start_date, end_date,del_data,filters=None)
                if hotspot_filter == 1:
                   meteor_file, reduced, start_time, dur, ang_vel, ang_dist, hotspot, msm = dd 
                   print("HOSPOT VALUE", hotspot)
-                  if hotspot <= 20:
+                  if hotspot <= 5:
                      continue
                mi.append(dd)
          else:
