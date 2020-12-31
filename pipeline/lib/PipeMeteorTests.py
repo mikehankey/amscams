@@ -27,7 +27,7 @@ def gap_test(fns):
    gap_test_info['total_gaps'] = total_gaps
    gap_test_info['gap_events'] = gap_events
    rat = fn_dur / total_fns
-   if (gap_events > 5 or total_gaps > 10) and rat > 2.5 and gap_events > 2:
+   if (gap_events > 5 or total_gaps > 10) and rat > 3.1 and gap_events > 2:
       return(0, gap_test_info)
    else:
       return(1, gap_test_info)

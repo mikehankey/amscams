@@ -710,6 +710,9 @@ def reject_mask_detects(date, json_conf):
          if "confirmed" in mj:
             print("SKIP CONFIRMED.")
             continue
+         if "multi_station_event" in mj:
+            print("SKIP MULTI-STATION CONFIRMED.")
+            continue
 
          print("\n\n\n\n RUNNING:", mf)
          tfs += 1
@@ -738,8 +741,8 @@ def reject_mask_detects(date, json_conf):
             thresh = max_val - 10
             if thresh < 10:
                thresh = 10
-            if thresh > 25:
-               thresh = 25 
+            if thresh > 10:
+               thresh = 10 
             _, threshold = cv2.threshold(frame, thresh, 255, cv2.THRESH_BINARY)
             cnts = get_contours_in_image(threshold)
             for x,y,w,h in cnts:
@@ -798,8 +801,8 @@ def reject_mask_detects(date, json_conf):
                   print("BAD OBJ:", objects[obj])
          if found == 0 and pos == 0:
             print("NO POSSIBLE METEOR.")
-            cv2.imshow('pepe', simg)
-            cv2.waitKey(0)
+            #cv2.imshow('pepe', simg)
+            #cv2.waitKey(0)
             fn, dir = fn_dir(mf)
             root_file = fn.replace(".json", "")
             del_data[root_file] = 1
@@ -816,8 +819,8 @@ def reject_mask_detects(date, json_conf):
                if objects[obj]['report']['meteor'] == 1:
                   print(objects[obj]['ofns'])
             meteors_conf += 1
-            cv2.imshow('pepe', simg)
-            cv2.waitKey(0)
+            #cv2.imshow('pepe', simg)
+            #cv2.waitKey(60)
    print("total files:", tfs)   
    print("total confirmed meteors :", meteors)   
 
