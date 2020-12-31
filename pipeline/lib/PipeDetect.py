@@ -699,10 +699,130 @@ def reject_mask_detects(date, json_conf):
       mask_imgs[fn] = mi
       sd_mask_imgs[fn] = sd
    hsi = []
-   for mf in jsfiles:
-      #if "reduced" not in mf and "stars" not in mf and "man" not in mf and "star" not in mf and "import" not in mf and "archive" not in mf:
-      #   hd_frames,hd_color_frames,subframes,sum_vals,max_vals,pos_vals = load_frames_fast(video_file, json_conf, 0, 0, 1, 1,[])
 
+
+   meteors = 0
+   meteors_conf = 0
+   tfs = 0
+   for mf in sorted(jsfiles,reverse=True):
+      if "reduced" not in mf and "stars" not in mf and "man" not in mf and "star" not in mf and "import" not in mf and "archive" not in mf:
+         mj = load_json_file(mf) 
+         if "confirmed" in mj:
+            print("SKIP CONFIRMED.")
+            continue
+
+         print("\n\n\n\n RUNNING:", mf)
+         tfs += 1
+         stack_f = mf.replace(".json", "-stacked.jpg")
+         simg= cv2.imread(stack_f)
+         video_file = mf.replace(".json", ".mp4")
+         hd_frames,hd_color_frames,subframes,sum_vals,max_vals,pos_vals = load_frames_fast(video_file, json_conf, 0, 0, 1, 1,[])
+         objects = {}
+         fn = 0
+         (f_datetime, cam, f_date_str,fy,fmin,fd, fh, fm, fs) = convert_filename_to_date_cam(mf)
+         mask = sd_mask_imgs[cam]
+         if mask.shape[0] != subframes[0].shape[0]:
+            mask = cv2.resize(mask, (subframes[0].shape[1], subframes[0].shape[0]))
+         if len(mask.shape) == 3:
+            mask = cv2.cvtColor(mask, cv2.COLOR_BGR2GRAY)
+
+         bg_img = hd_frames[0]
+         fn = 0
+         intense = []
+         full_bg_avg = np.mean(bg_img)
+         for frame in subframes:
+
+            frame = cv2.subtract(frame, mask)
+            
+            min_val, max_val, min_loc, (mx,my)= cv2.minMaxLoc(frame)
+            thresh = max_val - 10
+            if thresh < 10:
+               thresh = 10
+            if thresh > 25:
+               thresh = 25 
+            _, threshold = cv2.threshold(frame, thresh, 255, cv2.THRESH_BINARY)
+            cnts = get_contours_in_image(threshold)
+            for x,y,w,h in cnts:
+               if w < 2 or h < 2:
+                  continue
+               cnt_img = hd_frames[fn][y:y+h,x:x+h]
+               bg_cnt_img = bg_img[y:y+h,x:x+h]
+               int_cnt = cv2.subtract(cnt_img, bg_cnt_img)
+               cx = int(x + (w/2))
+               cy = int(y + (h/2))
+               cval = hd_frames[fn][cy,cx]
+               oint = int(np.sum(int_cnt))
+               avg_px_int = int(oint / (cnt_img.shape[0] * cnt_img.shape[1]))
+               avg_bg_px = int(np.sum(bg_cnt_img) / (cnt_img.shape[0] * cnt_img.shape[1]))
+               print("INTENSITY:", fn, oint, avg_bg_px, cval, avg_px_int)
+               #cv2.imshow('pepe', int_cnt)
+               #cv2.waitKey(30)
+               object, objects = find_object(objects, fn,x, y, w, h, oint, 0, 0, None)
+            cv2.imshow('pepe', frame)
+            cv2.waitKey(30)
+            fn += 1
+         found = 0
+         for obj in objects:
+            objects[obj] = analyze_object(objects[obj])
+            gap_test_res , gap_test_info = gap_test(objects[obj]['ofns'])
+            avg_int = int(np.mean(objects[obj]['oint']))
+            if gap_test_res == 0:
+               objects[obj]['report']['bad_items'].append("plane / gap test failed." + str(gap_test_info))
+               objects[obj]['report']['meteor'] = 0
+               objects[obj]['report']['non_meteor'] = 1
+            if full_bg_avg > 120 and avg_int < 100:
+               objects[obj]['report']['bad_items'].append("bird / low intensity")
+               objects[obj]['report']['meteor'] = 0
+               objects[obj]['report']['non_meteor'] = 1
+            if objects[obj]['report']['meteor'] == 1 and gap_test_res == 1 and avg_int > 100:
+               objects[obj]['report']['meteor'] = 1
+               meteors += 1
+               found = 1
+         pos = 0
+         if found == 0:
+            for obj in objects:
+               gap_test_res , gap_test_info = gap_test(objects[obj]['ofns'])
+               avg_int = int(np.mean(objects[obj]['oint']))
+               if gap_test_res == 0:
+                  objects[obj]['report']['bad_items'].append("plane / gap test failed." + str(gap_test_info))
+               if full_bg_avg > 120 and avg_int < 100:
+                  objects[obj]['report']['bad_items'].append("bird / low intensity")
+                  objects[obj]['report']['meteor'] = 0
+                  objects[obj]['report']['non_meteor'] = 1
+
+               if full_bg_avg > 120 and avg_int < 100:
+                  print("BIRD DETECTED")
+               if len(objects[obj]['ofns']) >= 3 and gap_test_res == 1 and avg_int > 100:
+                  pos += 1
+               else:
+                  print("BAD OBJ:", objects[obj])
+         if found == 0 and pos == 0:
+            print("NO POSSIBLE METEOR.")
+            cv2.imshow('pepe', simg)
+            cv2.waitKey(0)
+            fn, dir = fn_dir(mf)
+            root_file = fn.replace(".json", "")
+            del_data[root_file] = 1
+         else:
+            print("METEOR FOUND.", len(objects) )
+            meteors_found = []
+            for obj in objects:
+               if objects[obj]['report']['meteor'] == 1:
+                  meteors_found.append(objects[obj])
+            mj['confirmed'] = 1
+            mj['confirmed_meteors'] = meteors_found
+            save_json_file(mf, mj)
+            for obj in objects:
+               if objects[obj]['report']['meteor'] == 1:
+                  print(objects[obj]['ofns'])
+            meteors_conf += 1
+            cv2.imshow('pepe', simg)
+            cv2.waitKey(0)
+   print("total files:", tfs)   
+   print("total confirmed meteors :", meteors)   
+
+
+   if False:
       if "reduced" not in mf and "stars" not in mf and "man" not in mf and "star" not in mf and "import" not in mf and "archive" not in mf:
          try:
             mj = load_json_file(mf) 
@@ -1038,8 +1158,8 @@ def make_final_meteor_vids(meteor_dir, mjf, msd, cp=None, frames=None, hd=0):
           cy = y + int(h/2)
 
 
-          cv2.circle(frame,(cx,cy), 3, (0,255,255), 1)
-          cv2.rectangle(frame, (x, y), (x+w, y+h), (255,255,255), 1, cv2.LINE_AA)
+          #cv2.circle(frame,(cx,cy), 3, (0,255,255), 1)
+          #cv2.rectangle(frame, (x, y), (x+w, y+h), (255,255,255), 1, cv2.LINE_AA)
           
           cv2.imshow('pepe', frame)
           cv2.waitKey(30)

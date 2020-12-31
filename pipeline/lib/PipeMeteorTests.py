@@ -11,22 +11,23 @@ def gap_test(fns):
       if i > 0 and last_fn is not None:
          gap = fn - last_fn - 1
          if gap > 1:
-            print("FN GAP:", fn, last_fn, gap)
+            #print("FN GAP:", fn, last_fn, gap)
             total_gaps += gap
             gap_events += 1
       last_fn = fn
 
-   print("GAP TEST RESULTS:")
-   print("Total FNS:", total_fns)
-   print("FN Dur:", fn_dur)
-   print("Total Gaps:", total_gaps)
-   print("Gap Events:", gap_events)
+   #print("GAP TEST RESULTS:")
+   #print("Total FNS:", total_fns)
+   #print("FN Dur:", fn_dur)
+   #print("Total Gaps:", total_gaps)
+   #print("Gap Events:", gap_events)
    gap_test_info = {}
    gap_test_info['total_fns'] = total_fns
    gap_test_info['fn_dur'] = fn_dur
    gap_test_info['total_gaps'] = total_gaps
    gap_test_info['gap_events'] = gap_events
-   if gap_events > 5 or total_gaps > 10:
+   rat = fn_dur / total_fns
+   if (gap_events > 5 or total_gaps > 10) and rat > 2.5 and gap_events > 2:
       return(0, gap_test_info)
    else:
       return(1, gap_test_info)
