@@ -939,6 +939,7 @@ def refit_fov(cal_file, json_conf):
    if "png" in cal_file:
       cal_file = cal_file.replace(".png", "-calparams.json")
    (f_datetime, cam, f_date_str,year,m,d, h, mm, s) = convert_filename_to_date_cam(cal_file)
+   this_cam = cam
    cal_params = load_json_file(cal_file)
    image_file = cal_file.replace("-calparams.json", ".png")
 
@@ -5995,6 +5996,7 @@ def distance(point,coef):
 
 def get_cal_params(meteor_json_file,json_conf):
    (f_datetime, cam, f_date_str,fy,fm,fd, fh, fmin, fs) = convert_filename_to_date_cam(meteor_json_file)
+   this_cam = cam
    before_files = []
    after_files = []
    cal_files= get_cal_files(meteor_json_file, cam)
