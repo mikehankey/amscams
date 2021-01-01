@@ -10,6 +10,57 @@ from lib.DEFAULTS import *
 from lib.PipeUtil import cfe, load_json_file, save_json_file
 from lib.PipeAutoCal import fn_dir
 
+def do_meteor_day_prep(day, json_conf):
+
+   # for each day we want to do these things in this order.
+   # run confirm / reject_mask filter on all meteors
+   cmd = "./Process.py reject_masks " + day
+   print(cmd)
+   os.system(cmd)
+
+   # build the index and sync
+   cmd = "./Process.py mmi_day " + day
+   print(cmd)
+   os.system(cmd)
+
+   # sync index files
+   cmd = "./Process.py sid " + day
+   print(cmd)
+   os.system(cmd)
+
+   # check for multi-station events 
+   cmd = "./Process.py efd " + day
+   print(cmd)
+
+   # sync prev files for MS events 
+   cmd = "./Process.py sync_prev_all " + day
+   print(cmd)
+
+   # run the confirm/reduce on all meteors 
+   cmd = "./Process.py confirm " + day
+   print(cmd)
+   os.system(cmd)
+
+   # run the refit on all (MS) meteors 
+   cmd = "./Process.py refit_meteors " + day
+   print(cmd)
+   os.system(cmd)
+
+   # build the index and sync (Again)
+   cmd = "./Process.py mmi_day " + day
+   print(cmd)
+   os.system(cmd)
+
+   # sync index files
+   cmd = "./Process.py sid " + day
+   print(cmd)
+   os.system(cmd)
+
+   # Now all events for this day should be prepped and the 'min-data' sync'd. 
+   # mini-data is the txt data + 1 thumb preview image for the multi-station events
+
+
+
 
 def sync_conf(json_conf ):
    amsid = json_conf['site']['ams_id']

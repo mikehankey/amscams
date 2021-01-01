@@ -140,12 +140,12 @@ def make_ms_html(amsid, mse):
    station_map = "/maps/?points=" + station_pts
 
    ms_html += "</div></div>"
-   ms_html += """
-      <div class='h1_holder  d-flex justify-content-between'>
-         <h1><span class='h'>Map</span> </h1>
-      </div>
-   """
-   ms_html += "<img src=" + station_map+ "><br>"
+   #ms_html += """
+   #   <div class='h1_holder  d-flex justify-content-between'>
+   #      <h1><span class='h'>Map</span> </h1>
+   #   </div>
+   #"""
+   #ms_html += "<img src=" + station_map+ "><br>"
    #ms_html += station_map
    return(ms_html)
 
