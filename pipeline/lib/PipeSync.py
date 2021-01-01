@@ -12,7 +12,7 @@ from lib.PipeAutoCal import fn_dir
 
 def prep_month(year_day, json_conf):
    mdirs = glob.glob("/mnt/ams2/meteors/" + year_day + "*")
-   for dd in mdirs:
+   for dd in sorted(mdirs, reverse=True):
       fn,dir = fn_dir(dd)
       do_meteor_day_prep(fn,json_conf)
 
