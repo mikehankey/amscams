@@ -56,6 +56,17 @@ function ajax_api_crop(crop_box) {
 
 
 function man_reduce() {
+
+
+   var modal = document.getElementById("myModal");
+
+
+   // Get the <span> element that closes the modal
+   var span = document.getElementsByClassName("close")[0];
+
+
+
+
    // sd_video_file
    var objects = canvas.getObjects() 
    var cc = 0
@@ -119,9 +130,16 @@ function man_reduce() {
        selectable: false
        })
      );
-    
 
-     ajax_api_crop(crop_box ) 
-     
+     //ajax_api_crop(crop_box ) 
+     x = crop_box[0]
+     y = crop_box[1]
+     w = crop_box[2]
+     h = crop_box[3]
+     //alert("HELLO:")
+     man_url = "/meteor_man_reduce/?file=" + sd_video_file + "&x=" + x + "&y=" + y + "&w=" + w + "&h=" + h
+     document.getElementById('modal_url').src = man_url;
+     modal.style.display = "block";
+     //window.location.replace(man_url)
 
 }

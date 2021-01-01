@@ -2,18 +2,19 @@ import base64
 from flask import Flask, request, Response, make_response
 from FlaskLib.Learning import learning_meteors_dataset
 from FlaskLib.FlaskUtils import get_template
-from FlaskLib.api_funcs import update_meteor_points, show_cat_stars, delete_meteor, delete_meteors, reduce_meteor, delete_frame, crop_video
+from FlaskLib.api_funcs import update_meteor_points, show_cat_stars, delete_meteor, restore_meteor, delete_meteors, reduce_meteor, delete_frame, crop_video
 from FlaskLib.calib_funcs import calib_main, cal_file, show_masks, del_calfile, lens_model
 from lib.PipeUtil import cfe, load_json_file, save_json_file
 from lib.PipePwdProtect import login_page, check_pwd_ajax
 from lib.PipeAutoCal import fn_dir
 from FlaskLib.meteor_detail_funcs import detail_page 
 from FlaskLib.config_funcs import config_vars 
-from FlaskLib.meteors_main import meteors_main , meteors_by_day
+from FlaskLib.meteors_main import meteors_main , meteors_by_day, trash_page
 from FlaskLib.super_stacks import stacks_main, stacks_day_hours, stacks_hour
 from FlaskLib.min_detail import min_detail_main
 from FlaskLib.live import live_view
 from FlaskLib.TL import tl_menu 
+from FlaskLib.man_reduce import meteor_man_reduce , save_man_reduce
 #from FlaskLib.Maps import make_map 
 
 import json
@@ -68,6 +69,46 @@ def del_frame(meteor_file):
    out = delete_frame(meteor_file,fn)
    return out
 
+@app.route('/save_man_reduce/', methods=['GET', 'POST'])
+def save_man_red():
+   data = {}
+   data['frame_data'] = request.form.get('frame_data')
+   data['sd_video_file'] = request.form.get('sd_video_file')
+   data['x'] = request.form.get('x')
+   data['y'] = request.form.get('y')
+   data['w'] = request.form.get('w')
+   data['h'] = request.form.get('h')
+   data['ow'] = request.form.get('ow')
+   data['oh'] = request.form.get('oh')
+   data['ScaleFactor'] = request.form.get('ScaleFactor')
+   out = save_man_reduce(data)
+   return(out)   
+
+@app.route('/meteor_man_reduce/', methods=['GET', 'POST'])
+def meteor_man_red():
+  
+   meteor_file = request.args.get('file')
+   x = int(request.args.get('x'))
+   y = int(request.args.get('y'))
+   w = int(request.args.get('w'))
+   h = int(request.args.get('h'))
+   ScaleFactor = request.args.get('ScaleFactor')
+   if ScaleFactor is None:
+      ScaleFactor = 5
+   else:
+      ScaleFactor = int(ScaleFactor)
+   step = request.args.get('step')
+   if step is not None:
+      step = int(step)   
+   first_frame = request.args.get('first_frame')
+   last_frame = request.args.get('last_frame')
+   if first_frame is not None:
+      first_frame = int(first_frame)
+   if last_frame is not None:
+      last_frame = int(last_frame)
+   out = meteor_man_reduce(meteor_file, x,y,w,h,step,first_frame,last_frame,ScaleFactor)
+   return out
+
 @app.route('/api/reduce_meteor/<meteor_file>/', methods=['GET', 'POST'])
 def red_meteor(meteor_file):
    out = reduce_meteor(meteor_file)
@@ -79,6 +120,14 @@ def del_meteor(jsid):
    data['data'] = request.args.get('data')
    out = delete_meteor(jsid, data)
    return out
+
+@app.route('/api/restore_meteor/<jsid>/', methods=['GET', 'POST'])
+def rest_meteor(jsid):
+   data = {}
+   data['data'] = request.args.get('data')
+   out = restore_meteor(jsid, data)
+   return out
+
 
 @app.route('/api/delete_meteors/', methods=['GET', 'POST'])
 def del_meteors():
@@ -177,6 +226,19 @@ def stacks(amsid):
 def meteors_bd(amsid ):
    req = {}
    out = meteors_by_day(amsid,req)
+   return(out)
+
+
+# TRASH PAGE
+@app.route('/trash/<amsid>/', methods=['GET', 'POST'])
+def trash_pg(amsid ):
+   req = {}
+   start_day = request.args.get('start_day')
+   end_day = request.args.get('end_day')
+   req = {}
+   req['start_day'] = start_day
+   req['end_day'] = end_day
+   out = trash_page(amsid, req)
    return(out)
 
 # MAIN METEOR PAGE

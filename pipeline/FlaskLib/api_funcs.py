@@ -206,6 +206,32 @@ def reduce_meteor(meteor_file):
    resp['sd_meteor_frame_data'] =  []
    return resp
 
+
+def restore_meteor(jsid, data):
+   resp = {}
+   json_conf = load_json_file("../conf/as6.json")
+   amsid = json_conf['site']['ams_id']
+   video_file = jsid + ".mp4"
+   json_file = video_file.replace(".mp4", ".json")
+   sd_root = jsid
+   day = jsid[0:10]
+   trash_dir = "/mnt/ams2/trash/" + day + "/" 
+   meteor_dir = "/mnt/ams2/meteors/" + day + "/" 
+   mj = load_json_file("/mnt/ams2/trash/" + day + "/" + json_file)
+   if "hd_trim" in mj:
+      hd_root, hd_dir = fn_dir(mj['hd_trim'])
+      hd_root = hd_root.replace(".mp4", "")
+      hd_cmd = "mv " + trash_dir + hd_root + "* " + meteor_dir
+      os.system(hd_cmd)
+      print(hd_cmd)
+   sd_cmd = "mv " + trash_dir + sd_root + "* " + meteor_dir
+   os.system(sd_cmd)
+   print(sd_cmd)
+
+
+   print("RESTORE:", video_file, json_file)
+   return("OK" + sd_root + " " + hd_root)
+
 def delete_meteor(jsid, data):
    resp = {}
    json_conf = load_json_file("../conf/as6.json")
@@ -397,6 +423,8 @@ def update_meteor_points(sd_video_file,frames):
    resp['status'] = 1
    if "cal_params" in mj:
       resp['calib'] = mj['cal_params']
+   if "cp" in mj:
+      resp['calib'] = mj['cp']
    if "meteor_frame_data" in mj:
       resp['frames'] = mjr['meteor_frame_data']
 

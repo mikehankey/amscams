@@ -6,6 +6,13 @@ function meteor_is_deleted(id) {
       update_selected_counter();
 }
 
+function meteor_is_restored(id) {
+   var $div = $('#'+id);
+   $div.css('opacity',.5).removeClass('norm meteor reduced').addClass('restored').find('.btn-toolbar').remove().end().find('a').removeAttr('href').removeAttr('title').attr('title','RESTORED').unbind('mouseover').unbind('mouseout').end().find(".custom-checkbox").remove();                  
+   $div.find('.overlay_loader').remove(); 
+   alert("Restored meteor.")
+}
+
 
 function reject_meteor(id) {
       loading({text:"Deleting", container:$("#"+id), overlay:true});
@@ -21,6 +28,22 @@ function reject_meteor(id) {
             }
       });
 }
+
+function restore_meteor(id) {
+      loading({text:"Restoring", container:$("#"+id), overlay:true});
+      $.ajax({ 
+            url:  "/api/restore_meteor/" + id + "/",
+            data: {jsid: id},
+            success: function(data) {
+                  meteor_is_restored(id); 
+            }, 
+            error: function() {
+                  alert('Impossible to restore. Please, reload the page and try again later.')
+                  loading_done();
+            }
+      });
+}
+
  
 
 

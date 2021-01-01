@@ -182,6 +182,82 @@ def meteors_by_day(amsid, in_data):
    out += "</div></div>"
    return(out)
 
+
+def trash_page (amsid, in_data) :
+   start_day = in_data['start_day']
+   date = start_day
+   json_conf = load_json_file("../conf/as6.json")
+   trash_dir = "/mnt/ams2/trash/" + start_day + "/" 
+   print(trash_dir + "*.json") 
+   trash_files = []
+   trash_json = glob.glob(trash_dir + "*.json")
+   for tj in trash_json:
+      if "reduced" not in tj:
+         trash_files.append(tj)
+   template = make_default_template(amsid, "meteors_main.html", json_conf)
+
+   out = """
+      <div id='main_container' class='container-fluid h-100 mt-4 lg-l'>
+      <div class='gallery gal-resize reg row text-center text-lg-left'>
+      <div class='list-onl'>
+      <div class='filter-header d-flex flex-row-reverse '>
+      <button id="sel-all" title="Select All" class="btn btn-primary ml-3"><i class="icon-checkbox-checked"></i></button>
+      <button id="restore-all" class="restore-all btn "><i class="icon-restore"></i> Restore <span class="sel-ctn">All</span> Selected</button>
+     </div>
+     </div>
+   """
+   print("TRASH:", trash_files)
+   for trash in trash_files: 
+      fn, dir = fn_dir(trash)
+      jsid = fn.replace(".json", "")
+      ht_class = "norm"
+      meteor_detail_link = "#"
+      vothumb = "/trash/" + date + "/" + jsid + "-stacked-tn.jpg" 
+      #vothumb = vthumb.replace("-tn.jpg", "-obj-tn.jpg")
+      vvid_link = "/trash/" + date + "/" + jsid + ".mp4" 
+      vthumb = "/trash/" + date + "/" + jsid + "-stacked-tn.jpg" 
+      show_datetime_cam = """
+       Classify<BR>
+       <div style="display: None">
+       Clouds/Moon - Plane - Car Lights - Bird
+       Satellite - Rocket - Aurora - Lightening
+       Trees - 
+       </div>
+      """
+      out += """
+         <div id='""" + jsid + """' class='preview select-to """ + ht_class + """'>
+            <a class='mtt' href='""" + meteor_detail_link + """' data-obj='""" + vothumb + """' title='Go to Info Page'>
+               <img alt='""" + "ALT" + """' class='img-fluid ns lz' src='""" + vthumb + """'>
+               <span>""" + show_datetime_cam + """</span>
+            </a>
+
+            <div class='list-onl'>
+               <span>""" + show_datetime_cam + """</span>
+            </div>
+            <div class="list-onl sel-box">
+               <div class="custom-control big custom-checkbox">
+                  <input type="checkbox" class="custom-control-input" id='chec_""" + jsid + """' name='chec_""" + jsid + """'>
+                  <label class="custom-control-label" for='chec_""" + jsid + """'></label>
+               </div>
+            </div>
+
+            <div class='btn-toolbar'>
+               <div class='btn-group'>
+                  <a style='color:#ffffff' class='vid_link_gal col btn btn-primary btn-sm' title='Play Video' href='/dist/video_player.html?video=""" + vvid_link + """&vid_id=""" + jsid + """'>
+                  <!--<i class='icon-play'>-->Play</i></a>
+                  <a style='color:#ffffff' class='restore_meteor_gallery col btn btn-sm' title='Restore Detection' href="javascript:restore_meteor('""" + jsid + """')">Restore Meteor<i class='icon-restore'></i></a>
+               </div>
+            </div>
+         </div>
+      """
+
+
+
+
+   template = template.replace("{MAIN_TABLE}", out)
+   template = template.replace("{RAND}", "v3.0000")
+   return(template)
+
 def meteors_main (amsid, in_data) :
 
    json_conf = load_json_file("../conf/as6.json")

@@ -18,7 +18,7 @@ import scipy.optimize
 import math
 import cv2
 import numpy as np
-from lib.PipeUtil import bound_cnt, cnt_max_px, cfe, load_json_file, save_json_file, convert_filename_to_date_cam, angularSeparation, calc_dist, date_to_jd, get_masks , find_angle, collinear
+from lib.PipeUtil import bound_cnt, cnt_max_px, cfe, load_json_file, save_json_file, convert_filename_to_date_cam, angularSeparation, calc_dist, date_to_jd, get_masks , find_angle, collinear, get_trim_num
 from lib.PipeImage import mask_frame, quick_video_stack
 from lib.DEFAULTS import *
 import os
@@ -53,7 +53,6 @@ def get_more_stars_with_catalog(meteor_file, cal_params, image, json_conf):
          if ival > 5:
             star_img = gray_img[cat_y-10:cat_y+10,cat_x-10:cat_x+10]
             max_px, avg_px, px_diff,max_loc,star_int = eval_cnt(star_img)
-            print("MORE STAR?", max_px, avg_px, px_diff, star_int)
             #if (2< px_diff < 7) and 100 < star_int < 11000:
             if 100 < star_int < 11000:
                cv2.rectangle(image, (cat_x-10, cat_y-10), (cat_x + 10, cat_y + 10), (128, 128, 128), 1)
@@ -77,6 +76,9 @@ def refit_meteors(day, json_conf):
 
 def refit_meteor(meteor_file, json_conf):
 
+   (f_datetime, this_cam, f_date_str,y,m,d, h, mm, s) = convert_filename_to_date_cam(meteor_file)
+   video_file = meteor_file.replace(".json", ".mp4")
+
    if "/mnt/ams2/meteors" not in meteor_file:
       day = meteor_file[0:10]
       meteor_file = meteor_file.replace(".mp4", "")
@@ -87,6 +89,22 @@ def refit_meteor(meteor_file, json_conf):
    mj = load_json_file(meteor_file)
    cp = mj['cp']
    org_res = cp['total_res_px']
+
+   # load MCP data and update CP poly
+   year = datetime.now().strftime("%Y")
+   mcp_dir = "/mnt/ams2/cal/" 
+   mcp_file = mcp_dir + "multi_poly-" + STATION_ID + "-" + this_cam + ".info"
+   if cfe(mcp_file) == 1:
+      mcp = load_json_file(mcp_file)
+      cp['x_poly'] = mcp['x_poly']
+      cp['y_poly'] = mcp['y_poly']
+      cp['x_poly_fwd'] = mcp['x_poly_fwd']
+      cp['y_poly_fwd'] = mcp['y_poly_fwd']
+   else:
+      print("NO MCP!", mcp_file)
+      os.system("cp /mnt/ams2/meteor_archive/" + STATION_ID + "/CAL/AUTOCAL/2020/solved/*.info /mnt/ams2/cal/" )
+      exit()
+
   
    if cfe(mj['hd_stack']) == 1:
       image = cv2.imread(mj['hd_stack'])
@@ -123,6 +141,10 @@ def refit_meteor(meteor_file, json_conf):
       red = meteor_file.replace(".json", "-reduced.json")
       red_data = load_json_file(red)
       red_data['cal_params'] = cp
+      best_meteor, meteor_frame_data = meteor_apply_calib(video_file, mj['best_meteor'], cp,json_conf)
+      mj['best_meteor'] = best_meteor
+      red_data['meteor_frame_data'] = meteor_frame_data
+
       save_json_file(red, red_data)
       save_json_file(meteor_file, mj)
       print("saved:", meteor_file)   
@@ -395,8 +417,10 @@ def make_gnome_map(file, json_conf,asimg=None,ascp=None,maps=None):
 
    cal_params = update_center_radec(file,cal_params,json_conf)
    year = datetime.now().strftime("%Y")
-   autocal_dir = "/mnt/ams2/meteor_archive/" + STATION_ID + "/CAL/AUTOCAL/" + year + "/solved/"
-   mcp_file = autocal_dir + "multi_poly-" + STATION_ID + "-" + this_cam + ".info"
+   #autocal_dir = "/mnt/ams2/meteor_archive/" + STATION_ID + "/CAL/AUTOCAL/" + year + "/solved/"
+   #mcp_file = autocal_dir + "multi_poly-" + STATION_ID + "-" + this_cam + ".info"
+   mcp_dir = "/mnt/ams2/cal/" 
+   mcp_file = mcp_dir + "multi_poly-" + STATION_ID + "-" + this_cam + ".info"
    mcp = load_json_file(mcp_file)
    cal_params['x_poly'] = mcp['x_poly']
    cal_params['y_poly'] = mcp['y_poly']
@@ -477,8 +501,10 @@ def flatten_image(file, json_conf,asimg=None,ascp=None,maps=None):
 
    cal_params = update_center_radec(file,cal_params,json_conf)
    year = datetime.now().strftime("%Y")
-   autocal_dir = "/mnt/ams2/meteor_archive/" + STATION_ID + "/CAL/AUTOCAL/" + year + "/solved/"
-   mcp_file = autocal_dir + "multi_poly-" + STATION_ID + "-" + this_cam + ".info"
+   #autocal_dir = "/mnt/ams2/meteor_archive/" + STATION_ID + "/CAL/AUTOCAL/" + year + "/solved/"
+   #mcp_file = autocal_dir + "multi_poly-" + STATION_ID + "-" + this_cam + ".info"
+   mcp_dir = "/mnt/ams2/cal/" 
+   mcp_file = mcp_dir + "multi_poly-" + STATION_ID + "-" + this_cam + ".info"
    mcp = load_json_file(mcp_file)
    cal_params['x_poly'] = mcp['x_poly']
    cal_params['y_poly'] = mcp['y_poly']
@@ -634,7 +660,7 @@ def guess_cal(cal_file, json_conf, cal_params = None):
    gimg, avg_res, last_cal = make_guess(az_guess, el_guess, pix_guess, pos_ang_guess, this_cam, cal_file, orig_img.copy(), gray_img, stars, json_conf)
    ss = 1 
    while guessing == 0:
-      print("RES:", avg_res)
+      print("GC RES:", avg_res)
       print("Waiting for input.", ss)
       key = cv2.waitKey(0)
 
@@ -952,9 +978,9 @@ def refit_fov(cal_file, json_conf):
       cal_params['total_res_px'] = 999
       cal_params['total_res_deg'] = 999
 
-   print("STARTING RA/DEC:", cal_params['ra_center'], cal_params['dec_center'], cal_params['total_res_px'])
+   #print("STARTING RA/DEC:", cal_params['ra_center'], cal_params['dec_center'], cal_params['total_res_px'])
    cal_params = update_center_radec(cal_file,cal_params,json_conf)
-   print("AFTER UPDATE RA/DEC:", cal_params['ra_center'], cal_params['dec_center'], cal_params['total_res_px'])
+   #print("AFTER UPDATE RA/DEC:", cal_params['ra_center'], cal_params['dec_center'], cal_params['total_res_px'])
    ocp = dict(cal_params)
    cal_params['ra_center'] = float( cal_params['ra_center'])
    cal_params['dec_center'] = float( cal_params['dec_center'])
@@ -1138,8 +1164,10 @@ def refit_fov(cal_file, json_conf):
    #exit()
    #print(bad_stars)
 
-   autocal_dir = "/mnt/ams2/meteor_archive/" + STATION_ID + "/CAL/AUTOCAL/" + year + "/solved/"
-   mcp_file = autocal_dir + "multi_poly-" + STATION_ID + "-" + cam + ".info"
+   #autocal_dir = "/mnt/ams2/meteor_archive/" + STATION_ID + "/CAL/AUTOCAL/" + year + "/solved/"
+   #mcp_file = autocal_dir + "multi_poly-" + STATION_ID + "-" + cam + ".info"
+   mcp_dir = "/mnt/ams2/cal/" 
+   mcp_file = mcp_dir + "multi_poly-" + STATION_ID + "-" + this_cam + ".info"
    if cfe(mcp_file) == 1:
       mcp = load_json_file(mcp_file)
    else:
@@ -1241,7 +1269,8 @@ def minimize_fov(cal_file, cal_params, image_file,img,json_conf ):
    cp = pair_stars(cal_params, image_file, json_conf, gray_img)
    trash_stars, res_px,res_deg = cat_star_report(cp['cat_image_stars'], 4)
 
-   print("TOTAL RES:", cal_params['position_angle'], res_px )
+   print("POLY:", cal_params['x_poly'] )
+   print("TOTAL RES:", res_px )
    cp['total_res_px'] = res_px 
    cp['total_res_deg'] = res_deg 
 
@@ -1293,8 +1322,14 @@ def deep_cal_report(cam, json_conf):
    dummy_file = df + "_cam.png"
    cal_files= get_cal_files(None, cam)
    print("CFs:", cal_files)
-   autocal_dir = "/mnt/ams2/meteor_archive/" + STATION_ID + "/CAL/AUTOCAL/" + year + "/solved/"
-   mcp_file = autocal_dir + "multi_poly-" + STATION_ID + "-" + cam + ".info"
+
+
+   #autocal_dir = "/mnt/ams2/meteor_archive/" + STATION_ID + "/CAL/AUTOCAL/" + year + "/solved/"
+   #mcp_file = autocal_dir + "multi_poly-" + STATION_ID + "-" + cam + ".info"
+
+   mcp_dir = "/mnt/ams2/cal/" 
+   mcp_file = mcp_dir + "multi_poly-" + STATION_ID + "-" + this_cam + ".info"
+
    if cfe(mcp_file) == 1:
       mcp = load_json_file(mcp_file)
    else:
@@ -1443,8 +1478,10 @@ def deep_calib(cam, json_conf):
          all_cal_files.append((file,res))
    #all_cal_files = deep_cal_report(cam, json_conf)
    year = datetime.now().strftime("%Y")
-   autocal_dir = "/mnt/ams2/meteor_archive/" + STATION_ID + "/CAL/AUTOCAL/" + year + "/solved/"
-   mcp_file = autocal_dir + "multi_poly-" + STATION_ID + "-" + cam + ".info"
+   #autocal_dir = "/mnt/ams2/meteor_archive/" + STATION_ID + "/CAL/AUTOCAL/" + year + "/solved/"
+   #mcp_file = autocal_dir + "multi_poly-" + STATION_ID + "-" + cam + ".info"
+   mcp_dir = "/mnt/ams2/cal/" 
+   mcp_file = mcp_dir + "multi_poly-" + STATION_ID + "-" + this_cam + ".info"
    if cfe(mcp_file) == 1:
       mcp = load_json_file (mcp_file)
    else:
@@ -1623,7 +1660,6 @@ def get_best_cp(mfile, json_conf, ci_data, stars,cal_img_file):
 
       cp = pair_stars(cp, mfile, json_conf, cal_img)
       fn, dir = fn_dir(mfile)
-      #print("RES:", fn, cp['total_res_px'], len(cp['user_stars']), len(cp['cat_image_stars']))
       bd.append((cp_file, cp['total_res_px'], len(cp['user_stars']), len(cp['cat_image_stars'])))
    temp = sorted(bd, key=lambda x: x[1], reverse=False)
    best_cal_data = bd[0]
@@ -1871,36 +1907,32 @@ def star_cnt(simg):
 
    return(status)
 
-def apply_calib(meteor_file, json_conf):
+def apply_calib_old(meteor_file, json_conf):
    if "json" in meteor_file:
       hd_file = meteor_file.replace(".json", "-HD.mp4")
 
+   mj = load_json_file(meteor_file)
 
    stack = quick_video_stack(hd_file) 
    stack = cv2.cvtColor(stack, cv2.COLOR_BGR2GRAY)
    stack_org = stack.copy()
 
-   stars = get_image_stars(meteor_file, stack_org.copy(), json_conf, 1)
-   cal_files= get_cal_files(meteor_file)
-   best_cal_file, cp = get_best_cal(meteor_file, cal_files, stars, stack, json_conf)
-   cp['user_stars'] = stars
-   if best_cal_file == 0:
+   if "cp" not in mj:
+      stars = get_image_stars(meteor_file, stack_org.copy(), json_conf, 1)
+      cal_files= get_cal_files(meteor_file)
+      best_cal_file, cp = get_best_cal(meteor_file, cal_files, stars, stack, json_conf)
+      cp['user_stars'] = stars
+      if best_cal_file == 0:
 
       
-      return(0)
+         return(0)
 
-   mj = load_json_file(meteor_file)
-   cp['best_cal'] = best_cal_file
-   calib = cp_to_calib(cp, stack_org)   
-   mj['calib'] = calib
+      cp['best_cal'] = best_cal_file
+      calib = cp_to_calib(cp, stack_org)   
+      mj['calib'] = calib
+      
 
-   star_image = draw_star_image(None, stack, cp, 0) 
-   if CAL_MOVIE == 1:
-      fn, dir = fn_dir(meteor_file)
-      fn = fn.replace(".json", "")
-      cv2.imwrite("tmp_vids/" + fn, star_image)
-
-   save_json_file(meteor_file, mj)
+      save_json_file(meteor_file, mj)
 
 
 def get_cnt_intensity(image, x, y, size):
@@ -2223,13 +2255,11 @@ def get_best_cal_new(cp_file, json_conf) :
    best_cp['total_res_px'] = 9999
    for data in bfiles:
       ncp, bad_stars, marked_img = test_cal(cp_file, json_conf, tcp, cal_img, data)
-      print("NEW RES:", ncp['total_res_px'])
       if float(ncp['total_res_px']) < float(best_cp['total_res_px']):
          print("RESET BEST CAL!", ncp['total_res_px'])
          best_cp = dict(ncp)
    for data in afiles:
       ncp, bad_stars, marked_img = test_cal(cp_file, json_conf, tcp, cal_img, data)
-      print("NEW RES:", ncp['total_res_px'])
       if float(ncp['total_res_px']) < float(best_cp['total_res_px']):
          print("RESET BEST CAL!", ncp['total_res_px'])
          best_cp = dict(ncp)
@@ -2471,7 +2501,6 @@ def optimize_matchs(cp_file,json_conf,nc,oimg):
 
 
 def eval_cal(cp_file,json_conf,nc=None,oimg=None, mask_img=None):
-   #print("EVAL CAL")
    if len(oimg.shape) == 3:
       gimg = cv2.cvtColor(oimg, cv2.COLOR_BGR2GRAY)
    else:
@@ -2484,7 +2513,7 @@ def eval_cal(cp_file,json_conf,nc=None,oimg=None, mask_img=None):
 
    img_file = cp_file.replace("-calparams.json", ".png")
    if cfe(img_file) == 0:
-      img_file = cp_file.replace("-calparams.json", "-src.jpg")
+      img_file = cp_file.replace("-calparams.json", ".jpg")
    if oimg is None:
       print("OPEN OIMG", img_file)
       img = cv2.imread(img_file)
@@ -2495,7 +2524,7 @@ def eval_cal(cp_file,json_conf,nc=None,oimg=None, mask_img=None):
    elif "user_stars" not in nc:
       nc['user_stars'] = get_image_stars(img_file, None, json_conf,0)
 
-   #print("UPDATING CENTER")
+   #print("UPDATING CENTER", nc['x_poly'])
    nc = update_center_radec(cp_file,nc,json_conf)
    #print("GETTING CATALOG STARS")
    cat_stars = get_catalog_stars(nc)
@@ -2514,7 +2543,6 @@ def eval_cal(cp_file,json_conf,nc=None,oimg=None, mask_img=None):
 
    tres = 0
    bad_stars = []
-   #print("CALC RES:")
    for star in nc['cat_image_stars']:
       dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist,star_int = star
       tres += cat_dist
@@ -2534,7 +2562,7 @@ def eval_cal(cp_file,json_conf,nc=None,oimg=None, mask_img=None):
    nc['match_perc'] = match_perc
 
    #print("DONE EVAL")
-   print("RES", nc['position_angle'], avg_res)
+   print("EVAL RES", nc['position_angle'], avg_res)
    marked_img = view_calib(cp_file,json_conf,nc,oimg)
    return(nc, bad_stars, marked_img)
 
@@ -3345,7 +3373,6 @@ def cat_star_report(cat_image_stars, multi=2.5):
 
       if cat_dist > med_c_dist * multi:
          foo = 1
-         print("TOO FAR:", six,siy, cat_dist)
       else:
          c_dist.append(abs(cat_dist))
          m_dist.append(abs(match_dist))
@@ -4103,8 +4130,8 @@ def pair_stars(cal_params, cal_params_file, json_conf, cal_img=None, show = 0):
    bad_stars = []
    cal_params['bad_stars'] = bad_stars
    cal_params['no_match_stars'] = no_match
-   print("BAD:", bad_stars)
-   print("NO MATCH:", no_match)
+   #print("BAD:", bad_stars)
+   #print("NO MATCH:", no_match)
    print("CAT STARS:", len(my_close_stars))
    if SHOW == 1:
       for star in my_close_stars:
@@ -4429,6 +4456,13 @@ def AzEltoRADec(az,el,cal_file,cal_params,json_conf):
    azr = np.radians(az)
    elr = np.radians(el)
    hd_datetime, hd_cam, hd_date, hd_y, hd_m, hd_d, hd_h, hd_M, hd_s = convert_filename_to_date_cam(cal_file)
+
+   if "trim" in cal_file:
+      # add extra sec from trim num
+      trim_num = get_trim_num(cal_file)
+      print("TRIM NUM:", trim_num)
+      exit()
+
    #hd_datetime = hd_y + "/" + hd_m + "/" + hd_d + " " + hd_h + ":" + hd_M + ":" + hd_s
    if "device_lat" in cal_params:
       device_lat = cal_params['device_lat']
@@ -4933,7 +4967,6 @@ def reduce_fov_pos(this_poly, az,el,pos,pixscale, x_poly, y_poly, cal_params_fil
    else:
       avg_res = 9999999
       res = 9999999
-   print("STAR RES:", tries, avg_res, start_stars, tstars)
 
    if orig_star_count > len(paired_stars):
       pen = orig_star_count - len(paired_stars)
@@ -4968,7 +5001,8 @@ def reduce_fov_pos(this_poly, az,el,pos,pixscale, x_poly, y_poly, cal_params_fil
 
    tries = tries + 1
    if tries % 25 == 0:
-      print("RES:", tries, avg_res)
+      print("XP:", cal_params['x_poly'])
+      print("RES:", avg_res)
    if min_run == 1:
       return(avg_res)
    else:
@@ -6039,8 +6073,12 @@ def get_cal_params(meteor_json_file,json_conf):
 
       print("AFTER MED:", after_med_az, after_med_el, after_med_pos, after_med_px)
 
-   autocal_dir = "/mnt/ams2/meteor_archive/" + STATION_ID + "/CAL/AUTOCAL/" + fy + "/solved/"
-   mcp_file = autocal_dir + "multi_poly-" + STATION_ID + "-" + cam + ".info"
+   #autocal_dir = "/mnt/ams2/meteor_archive/" + STATION_ID + "/CAL/AUTOCAL/" + fy + "/solved/"
+   #mcp_file = autocal_dir + "multi_poly-" + STATION_ID + "-" + cam + ".info"
+
+   mcp_dir = "/mnt/ams2/cal/" 
+   mcp_file = mcp_dir + "multi_poly-" + STATION_ID + "-" + this_cam + ".info"
+
    if cfe(mcp_file) == 1:
       print("MCP:", mcp_file)
       mcp = load_json_file(mcp_file)
@@ -6082,3 +6120,92 @@ def get_cal_params(meteor_json_file,json_conf):
 
    return(before_cp, after_cp)
 
+def reapply_meteor_cal(video_file,json_conf):
+   mjf = video_file.replace(".mp4", ".json")
+   mjrf = video_file.replace(".mp4", "-reduced.json")
+   mj = load_json_file(mjf)
+   mjr = load_json_file(mjrf)
+   if "user_mods" in mj:
+      if "frames" in mj['user_mods']:
+         ufd = mj['user_mods']['frames']
+      else:
+         ufd = {}
+
+   best_meteor, mfd = meteor_apply_calib(video_file, mj['best_meteor'], mj['cp'],json_conf,ufd)
+   mj['best_meteor'] = best_meteor
+   mjr['meteor_frame_data'] = mfd
+   save_json_file(mjf, mj)
+   save_json_file(mjrf, mjr)
+   print("done")
+
+def meteor_apply_calib(video_file, best_meteor, cp,json_conf,ufd=None):
+   best_meteor['ras'] = []
+   best_meteor['decs'] = []
+   best_meteor['azs'] = []
+   best_meteor['els'] = []
+   new_ccx = []
+   new_ccy = []
+   hdm_x = 1920 / 1280
+   hdm_y = 1080 / 720
+   for i in range(0, len(best_meteor['oxs'])):
+      fn = best_meteor['ofns'][i]
+      
+      if "est_x" in best_meteor:
+         est_x = best_meteor['est_xs'][i]
+         est_y = best_meteor['est_ys'][i]
+      # ccxs 720p so must be upscaled to 1080p
+      cx = int(best_meteor['ccxs'][i]  )
+      cy = int(best_meteor['ccys'][i] )
+      hdx = int(best_meteor['ccxs'][i] * hdm_x)
+      hdy = int(best_meteor['ccys'][i] * hdm_y)
+      if ufd is not None:
+         if str(fn) in ufd :
+            hdx,hdy = ufd[str(fn)]
+            print("USING UFD VALS:", hdx,hdy)
+            cx = int(hdx/hdm_x)
+            cy = int(hdy/hdm_y)
+      else:
+         print("NO UFD:", ufd)
+      new_ccx.append(cx)
+      new_ccy.append(cy)
+      tx, ty, ra ,dec , az, el = XYtoRADec(hdx,hdy,video_file,cp,json_conf)
+      best_meteor['ras'].append(ra)
+      best_meteor['decs'].append(dec)
+      best_meteor['azs'].append(az)
+      best_meteor['els'].append(el)
+   best_meteor['ccxs'] = new_ccx
+   best_meteor['ccys'] = new_ccy
+   meteor_frame_data, crop_box = meteor_make_frame_data(best_meteor,cp)
+   best_meteor['crop_box'] = crop_box
+   return(best_meteor,meteor_frame_data)
+
+
+
+def meteor_make_frame_data(best_meteor,cp):
+   meteor_frame_data = []
+   hdm_x_720 = 1920 / 1280
+   hdm_y_720 = 1080 / 720
+   if best_meteor is not None:
+      min_x = min(best_meteor['oxs'])
+      max_x = max(best_meteor['oxs'])
+      min_y = min(best_meteor['oys'])
+      max_y = max(best_meteor['oys'])
+      crop_box = [min_x,min_y,max_x,max_y]
+      for i in range(0, len(best_meteor['ofns'])):
+         #dt = "1999-01-01 00:00:00"
+         fn = best_meteor['ofns'][i]
+         x = int(best_meteor['ccxs'][i] * hdm_x_720)
+         y = int(best_meteor['ccys'][i] * hdm_y_720)
+         w = best_meteor['ows'][i]
+         h = best_meteor['ohs'][i]
+         ra = best_meteor['ras'][i]
+         dec = best_meteor['decs'][i]
+         az = best_meteor['azs'][i]
+         el = best_meteor['els'][i]
+         oint = best_meteor['oint'][i]
+         dt = best_meteor['dt'][i]
+         #FLUX
+         oint = best_meteor['oint'][i]
+         print("new MFD:", fn, x, y, az,el)
+         meteor_frame_data.append((dt, fn, x, y, w, h, oint, ra, dec, az, el))
+   return(meteor_frame_data, crop_box)

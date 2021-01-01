@@ -11,8 +11,7 @@ from datetime import datetime as dt
 import datetime
 #import math
 import os
-from lib.FFFuncs import imgs_to_vid
-from lib.FFFuncs import ffprobe as ffprobe4
+from lib.FFFuncs import ffprobe as ffprobe4, imgs_to_vid
 from lib.PipeAutoCal import fn_dir, get_cal_files, get_image_stars, get_catalog_stars, pair_stars, update_center_radec, cat_star_report, minimize_fov, XYtoRADec, poly_fit_check
 from lib.PipeVideo import ffmpeg_splice, find_hd_file, load_frames_fast, find_crop_size, ffprobe
 from lib.PipeUtil import load_json_file, save_json_file, cfe, get_masks, convert_filename_to_date_cam, buffered_start_end, get_masks, compute_intensity , bound_cnt, day_or_night
@@ -1774,7 +1773,7 @@ def make_roi_video_mfd(video_file, json_conf):
                x = temp_x  
                y = temp_y  
                tx, ty, ra ,dec , az, el = XYtoRADec(x,y,video_file,mjr['cal_params'],json_conf)
-               print("UPDATED POINT", fn, x,y)
+               print("USING UPDATED POINT", fn, x,y)
          if fn not in used:
             updated_frame_data.append((dt, fn, x, y, w, h, oint, ra, dec, az, el))
             #cx = x + int(w/2)
@@ -1844,6 +1843,8 @@ def make_roi_video_mfd(video_file, json_conf):
 
    save_json_file(mjrf, mjr)      
    save_json_file(mjf, mj)      
+   vid_file = mjf.replace(".json", ".mp4")
+   os.system("./Process.py recal " + vid_file)
 
    print("COP:", mjr['crop_box'])
          
