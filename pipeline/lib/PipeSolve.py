@@ -26,11 +26,12 @@ def get_best_obs(obs):
 
 def simple_solve(day, event_id, json_conf):
    nsinfo = load_json_file("../conf/network_station_info.json")
-
+   event_id = str(event_id)
    amsid = json_conf['site']['ams_id']
    year = day[0:4]
    event_file = "/mnt/ams2/meteor_archive/" + amsid + "/EVENTS/" + year + "/" + day + "/" + day + "_events.json"
    events = load_json_file(event_file)
+   print(event_file)
    #for event in events:
 
    good_obs = [] 
@@ -67,7 +68,7 @@ def simple_solve(day, event_id, json_conf):
             for sol in sols:
                solutions.append(sol)
 
-
+   return(solutions)
    points = []
    lines = []
 

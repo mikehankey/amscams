@@ -527,3 +527,5 @@ if __name__ == "__main__":
       reapply_meteor_cal(sys.argv[2], json_conf)
    if cmd == "do_meteor_day_prep" or cmd == "meteor_prep":
       do_meteor_day_prep(sys.argv[2], json_conf)
+   if cmd == "prep_month" :
+      prep_month(sys.argv[2], json_conf)
