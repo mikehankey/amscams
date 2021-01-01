@@ -760,8 +760,8 @@ def reject_mask_detects(date, json_conf):
                #cv2.imshow('pepe', int_cnt)
                #cv2.waitKey(30)
                object, objects = find_object(objects, fn,x, y, w, h, oint, 0, 0, None)
-            cv2.imshow('pepe', frame)
-            cv2.waitKey(30)
+            #cv2.imshow('pepe', frame)
+            #cv2.waitKey(30)
             fn += 1
          found = 0
          for obj in objects:
