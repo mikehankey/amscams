@@ -166,6 +166,7 @@ def sync_back_admin_cals():
    new_files = glob.glob(blc_dir + "*")
    fc_dirs = None
    for file in new_files:
+      (f_datetime, this_cam, f_date_str,y,m,d, h, mm, s) = convert_filename_to_date_cam(file)
       rfn, dir = fn_dir(file)
       rfn = rfn.replace("-calparams.json", "")
       #print("RFN:", rfn, file)
