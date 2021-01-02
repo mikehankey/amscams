@@ -33,6 +33,7 @@ def point_from_bearing(p1, brng, d):
 
 def main(meteor_file):
     mj = load_json_file(meteor_file)
+    map_file = meteor_file.replace(".json", "-map.png")
     json_conf = load_json_file("../conf/as6.json")
     nsinfo = load_json_file("../conf/network_station_info.json")
     mse = mj['multi_station_event']
@@ -68,7 +69,7 @@ def main(meteor_file):
     for sol in solutions:
         print("SOLUTION:", sol)
         start_lat,start_lon,start_alt,end_lat,end_lon,end_alt = sol
-        obs_lines.append(((float(start_lon),float(start_lat)), (float(end_lon),float(end_lat)),'black',3,'track'))
+        obs_lines.append(((float(start_lon),float(start_lat)), (float(end_lon),float(end_lat)),'black',3,''))
         for i in range(0,len(mse['stations'])):
            station = mse['stations'][i]
            station_lat,station_lon,station_alt = nsinfo[mse['stations'][i]]['loc']
@@ -160,7 +161,12 @@ def main(meteor_file):
                         ''.format(SOURCE, LICENSE),
                         loc=4, prop={'size': 12}, frameon=True)
     #ax.add_artist(text)
+    plt.savefig(map_file)
+    map_jpg = map_file.replace(".png", ".jpg")
+    os.system("convert " + map_file + " " + map_jpg)
+    os.system("rm " + map_file )
 
+    print("saved:", map_file)
     plt.show()
 
 def fn_dir(file):

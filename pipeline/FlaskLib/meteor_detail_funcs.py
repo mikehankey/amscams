@@ -51,7 +51,7 @@ def make_obs_object(mse, nsinfo):
 
    return(obs) 
 
-def make_ms_html(amsid, mse):
+def make_ms_html(amsid, this_file, mse):
    #ms_html = "<table width=100%>"
    #ms_html += "<tr><td>Station</td><td>Start Datetime</td><td>File</td></tr>"
    if cfe("../conf/network_station_info.json") == 0:
@@ -137,16 +137,15 @@ def make_ms_html(amsid, mse):
          station_pts += ";"
       loc = nsinfo[station]['loc']
       station_pts += str(loc[0]) + "," + str(loc[1]) + "," + station
-   station_map = "/maps/?points=" + station_pts
-
+   station_map = meteor_file.replace(".json", "-map.jpg")
    ms_html += "</div></div>"
-   #ms_html += """
-   #   <div class='h1_holder  d-flex justify-content-between'>
-   #      <h1><span class='h'>Map</span> </h1>
-   #   </div>
-   #"""
-   #ms_html += "<img src=" + station_map+ "><br>"
-   #ms_html += station_map
+   if cfe(station_map) == 1:
+      ms_html += """
+         <div class='h1_holder  d-flex justify-content-between'>
+            <h1><span class='h'>Map</span> </h1>
+         </div>
+   """
+      ms_html += "<img src=" + station_map+ "><br>"
    return(ms_html)
 
 def detail_page(amsid, date, meteor_file):
@@ -188,7 +187,7 @@ def detail_page(amsid, date, meteor_file):
                 </li>
       """
       ms_html = str(mj['multi_station_event'])
-      ms_html = make_ms_html(amsid, mj['multi_station_event'])
+      ms_html = make_ms_html(amsid, meteor_file, mj['multi_station_event'])
    else:
       otherobs = ""
       ms_html = ""

@@ -116,7 +116,6 @@ def events_for_day(day, json_conf):
       print(cmd)
       os.system(cmd)
 
-
    station_files = glob.glob(event_dir + "*.meteors")
    meteors = []
    meteor_details = {}
