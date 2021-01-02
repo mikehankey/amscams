@@ -71,7 +71,8 @@ def main(meteor_file):
     save_json_file(meteor_file,mj)
     for skey, sol in solutions:
         print("SOLUTION:", sol)
-        start_lat,start_lon,start_alt,end_lat,end_lon,end_alt = sol
+        start_lat,start_lon,start_alt,end_lat,end_lon,end_alt,dist,dur,vel = sol
+        print("DIST:", dist, dur, vel)
         obs_lines.append(((float(start_lon),float(start_lat)), (float(end_lon),float(end_lat)),'black',3,''))
         for i in range(0,len(mse['stations'])):
            station = mse['stations'][i]
@@ -169,7 +170,7 @@ def main(meteor_file):
     os.system("rm " + map_file )
 
     print("saved:", map_file)
-    plt.show()
+    #plt.show()
 
 def fn_dir(file):
    fn = file.split("/")[-1]

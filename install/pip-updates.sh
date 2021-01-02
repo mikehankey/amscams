@@ -4,3 +4,9 @@ sudo pip3 install suntime
 sudo pip3 install flask
 sudo pip3 install psutil
 sudo pip3 install uwsgi
+#cartopy
+sudo pip3 install --upgrade cython numpy pyshp six
+sudo pip3 install shapely --no-binary shapely
+sudo apt-get install libgeos-dev
+sudo apt-get install libproj-dev
+sudo apt-get install geopy
