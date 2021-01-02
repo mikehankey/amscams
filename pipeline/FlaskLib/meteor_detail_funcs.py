@@ -153,7 +153,7 @@ def make_ms_html(amsid, meteor_file, mse):
       ms_html += "<img src=" + station_map+ "><br>"
    if "solutions" in mj:
    for skey, sol in solutions:
-      saz,sel,salt,eaz,eel,ealt = sol
+      saz,sel,salt,eaz,eel,ealt,dist,dur,vel = sol
    ms_html += str(saz) + " " + str(sel) + " " + str(salt) + " " + str(eaz) + " " + str(eel) + " " + str(ealt) + "<BR>"
    return(ms_html)
 
