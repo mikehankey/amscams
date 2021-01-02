@@ -1,4 +1,5 @@
 #!/usr/bin/python3
+import os
 import sys
 import matplotlib.pyplot as plt
 import cartopy.crs as ccrs
@@ -66,6 +67,8 @@ def main(meteor_file):
         print(key)    
 
     solutions = simple_solve(day, event_id, json_conf)
+    mj['solutions'] = solutions
+    save_json_file(meteor_file,mj)
     for sol in solutions:
         print("SOLUTION:", sol)
         start_lat,start_lon,start_alt,end_lat,end_lon,end_alt = sol
@@ -100,7 +103,6 @@ def main(meteor_file):
     print("ELAT:", elats)
     print("AVG:", clon,clat)
     print("EXT:", extent)
-    #exit()
     fig = plt.figure()
     ax = fig.add_subplot(1, 1, 1, projection=ccrs.PlateCarree())
     ax.set_extent(extent, crs=ccrs.PlateCarree())
