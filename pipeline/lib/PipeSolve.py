@@ -7,6 +7,8 @@ from PIL import Image
 from mpl_toolkits.basemap import Basemap
 import matplotlib.pyplot as plt
 import math
+from geopy.distance import distance
+from geopy.point import Point
 
 
 
@@ -59,6 +61,8 @@ def simple_solve(day, event_id, json_conf):
                print(event_id, station, obs[station][file]['azs'])
    if len(good_obs) == 2:
       print("We have two good obs. Solve them.")
+      print(good_obs)
+      www = input('waiting.')
       station1 = good_obs[0]['station']
       station2 = good_obs[1]['station']
       file1 = good_obs[0]['file']
@@ -191,9 +195,19 @@ def int_planes(obs1, obs2):
 
    print("START2:", slat2, slon2,salt2)
    print("END2:", elat2, elon2,ealt2)
+
+
+   a = Point(slon, slat, salt)
+   b = Point(elon, elat, ealt)
+   dist1 = distance(a, b).km
+
+   a = Point(slon2, slat2, salt2)
+   b = Point(elon2, elat2, ealt2)
+   dist1 = distance(a, b).km
+
    solutions = []
-   solutions.append((slat,slon,salt,elat,elon,ealt))
-   solutions.append((slat2,slon2,salt2,elat2,elon2,ealt2))
+   solutions.append((slat,slon,salt,elat,elon,ealt,dist))
+   solutions.append((slat2,slon2,salt2,elat2,elon2,ealt2,dist))
    return(solutions)
 
 
