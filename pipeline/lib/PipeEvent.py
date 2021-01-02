@@ -149,7 +149,7 @@ def events_for_day(day, json_conf):
       station = "AMS" + station
       if "detail" in file:
          continue
-
+      print("LOADING:", file)
       sm = load_json_file(file)
       print("LOADED:", file)
       for data in sm:
@@ -214,7 +214,12 @@ def events_for_day(day, json_conf):
          for cc in range (0, len(events[event]['stations'])):
             st = events[event]['stations'][cc]
             fl = events[event]['files'][cc]
-            mfd = meteor_details[st][fl]
+            if st in meteor_details:
+               mfd = meteor_details[st][fl]
+            else:
+               print("FILE MISSING MFD!", st, fl)
+               exit()
+               mfd = []
             events[event]['mfds'].append(mfd)
          obs = make_obs_object(events[event])
          events[event]['obs'] = obs
