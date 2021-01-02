@@ -117,7 +117,7 @@ def refit_meteor(meteor_file, json_conf):
    cp, bad_stars,marked_img = eval_cal(meteor_file,json_conf,cp,image)
    print("AFTER MORE STARS:", len(cp['cat_image_stars']) )
 
-   if len(cp['cat_image_stars']) > 12 :
+   if len(cp['cat_image_stars']) >= 8  :
       print("we have enough stars to refit the meteor.")
       cp = minimize_fov(meteor_file, cp, meteor_file ,image,json_conf )
    else:
@@ -1483,13 +1483,14 @@ def deep_calib(cam, json_conf):
    #autocal_dir = "/mnt/ams2/meteor_archive/" + STATION_ID + "/CAL/AUTOCAL/" + year + "/solved/"
    #mcp_file = autocal_dir + "multi_poly-" + STATION_ID + "-" + cam + ".info"
    mcp_dir = "/mnt/ams2/cal/" 
-   mcp_file = mcp_dir + "multi_poly-" + STATION_ID + "-" + this_cam + ".info"
+   autocal_dir = "/mnt/ams2/cal/" 
+   mcp_file = mcp_dir + "multi_poly-" + STATION_ID + "-" + cam + ".info"
    if cfe(mcp_file) == 1:
       mcp = load_json_file (mcp_file)
    else:
       mcp = None
    all_stars = []   
-   star_db_file = autocal_dir + "star_db-" + cam + ".info"
+   star_db_file = mcp_dir + "star_db-" + cam + ".info"
    if cfe(star_db_file) == 1:
       star_db = load_json_file(star_db_file)
       if "processed_files" not in star_db:
@@ -2828,17 +2829,18 @@ def review_cals(json_conf, cam=None):
    #exit()
    good_cal_files = []
 
-   mcp_file = autocal_dir + "multi_poly-" + STATION_ID + "-" + cam + ".info"
-   if cfe(mcp_file) == 1:
-      mcp = load_json_file(mcp_file)
-      # GET EXTRA STARS?
-   else:
-      mcp = None
 
    for file in files:
       if "grid" not in file and "tn" not in file and "stars" not in file and "blend" not in file:
          (f_datetime, cam, f_date_str,y,m,d, h, mm, s) = convert_filename_to_date_cam(file)
          print("FILE:", file)
+
+         mcp_file = autocal_dir + "multi_poly-" + STATION_ID + "-" + cam + ".info"
+         if cfe(mcp_file) == 1:
+            mcp = load_json_file(mcp_file)
+         else:
+            mcp = None
+
 
 
          cp_file = file.replace(".png", "-calparams.json")

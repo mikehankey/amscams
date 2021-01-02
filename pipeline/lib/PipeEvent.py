@@ -113,9 +113,8 @@ def events_for_day(day, json_conf):
       print(cmd)
       os.system(cmd)
       cmd = "gunzip -kf " + event_dir + detail_file
-      print(cmd)
+      print("GUNZIP:", cmd)
       os.system(cmd)
-
 
    station_files = glob.glob(event_dir + "*.meteors")
    meteors = []
@@ -282,7 +281,7 @@ def check_make_event(data, events):
          return(event_id, events)
       else:
          foo = 1
-         #print("NO MATCH.", start_datetime, event_datetime, (start_datetime - event_datetime).total_seconds())
+         print("NO MATCH.", start_datetime, event_datetime, (start_datetime - event_datetime).total_seconds())
 
    # not the 1st and not found so make a new one
    this_id = max(events.keys()) + 1
