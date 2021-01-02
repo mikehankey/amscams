@@ -1,7 +1,7 @@
 import numpy as np
 from sympy import Point3D, Line3D, Segment3D, Plane
 import pymap3d as pm
-from lib.PipeUtil import load_json_file, save_json_file, cfe, calc_dist
+from lib.PipeUtil import load_json_file, save_json_file, cfe, calc_dist, convert_filename_to_date_cam
 import io
 from PIL import Image
 from mpl_toolkits.basemap import Basemap
@@ -59,20 +59,38 @@ def simple_solve(day, event_id, json_conf):
                print(event_id, station, obs[station][file]['azs'])
    if len(good_obs) == 2:
       print("We have two good obs. Solve them.")
-      solutions = int_planes(good_obs[0], good_obs[1])
-   elif len(good_obs) > 2:
+      station1 = good_obs[0]['station']
+      station2 = good_obs[1]['station']
+      file1 = good_obs[0]['file']
+      file2 = good_obs[1]['file']
+      (f_datetime, cam1, f_date_str,fy,fmon,fd, fh, fm, fs) = convert_filename_to_date_cam(file1)
+      (f_datetime, cam2, f_date_str,fy,fmon,fd, fh, fm, fs) = convert_filename_to_date_cam(file2)
+      station_key = station1 + "-" + cam1 + ":" + station2 + "-" + cam2
+      sols = int_planes(good_obs[0], good_obs[1])
       solutions = []
+      for sol in sols:
+         solutions.append((station_key,sol))
+   elif len(good_obs) > 2:
       for oo in range(0,len(good_obs)):
          if oo != 0:
+            station1 = good_obs[0]['station']
+            station2 = good_obs[1]['station']
+            file1 = good_obs[0]['file']
+            file2 = good_obs[1]['file']
+            (f_datetime, cam1, f_date_str,fy,fmon,fd, fh, fm, fs) = convert_filename_to_date_cam(file1)
+            (f_datetime, cam2, f_date_str,fy,fmon,fd, fh, fm, fs) = convert_filename_to_date_cam(file2)
+
+            station_key = station1 + "-" + cam1 + ":" + station2 + "-" + cam2
+            station_key = station1 + "," + station2
             sols = int_planes(good_obs[0], good_obs[oo])
             for sol in sols:
-               solutions.append(sol)
+               solutions.append((station_key,sol))
 
    return(solutions)
    points = []
    lines = []
 
-   for sol in solutions:
+   for station_key, sol in solutions:
       slat,slon,salt,elat,elon,ealt = sol
       lines.append((slat,slon,elat,elon,'b'))
 
