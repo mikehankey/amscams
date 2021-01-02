@@ -7,7 +7,7 @@ import cv2
 import os
 import numpy as np
 
-def make_obs_object(mse, nsinfo):
+def make_obs_object(mj,mse, nsinfo):
    obs = {}
    for i in range(0, len(mse['stations'])):
       station = mse['stations'][i] 
@@ -51,14 +51,15 @@ def make_obs_object(mse, nsinfo):
 
    return(obs) 
 
-def make_ms_html(amsid, meteor_file, mse):
+def make_ms_html(amsid, meteor_file, mj):
+   mse = mj['multi_station_event']
    #ms_html = "<table width=100%>"
    #ms_html += "<tr><td>Station</td><td>Start Datetime</td><td>File</td></tr>"
    if cfe("../conf/network_station_info.json") == 0:
       os.system("./Process.py get_network_info")
    nsinfo = load_json_file("../conf/network_station_info.json")
 
-   obs = make_obs_object(mse, nsinfo)
+   obs = make_obs_object(mj,mse, nsinfo)
 
    station_pts = ""
 
@@ -151,10 +152,26 @@ def make_ms_html(amsid, meteor_file, mse):
          </div>
    """
       ms_html += "<img src=" + station_map+ "><br>"
+   ms_html += """
+            <div class="tab-content box " >
+
+                <div class="tab-pane fade show active pr-3" id="sol-tab" role="tabpanel" aria-labelledby="reduc-tab-l">
+
+                <table class="table table-dark table-striped table-hover td-al-m mb-2 pr-5" >
+                <thead>
+                <tr>
+                </th><th>Solution</th><th>Start Time</th><th>Start Lat</th><th>Start Lon</th><th>Start Alt</th><th>End Lat</th><th>End Lon</th><th>End Alt</th>
+                <th>Distance</th><th>Duration</th><th>Velocity</th>
+                </tr>
+                </thead>
+
+   """
    if "solutions" in mj:
-   for skey, sol in solutions:
-      saz,sel,salt,eaz,eel,ealt = sol
-   ms_html += str(saz) + " " + str(sel) + " " + str(salt) + " " + str(eaz) + " " + str(eel) + " " + str(ealt) + "<BR>"
+      
+      for skey, sol in mj['solutions']:
+         slon,slat,salt,elon,elat,ealt = sol
+         ms_html += "<tr><td>" + skey + "</td><td>TIME</td><td>" + str(slat)[0:5] + "</td><td>" + str(slon)[0:5] + "</td><td>" + str(salt/1000)[0:5] + "</td><td>" + str(elat)[0:5] + "</td><td>" + str(elon)[0:5] + "</td><td>" + str(ealt/1000)[0:5] + "</td></tr>"
+   ms_html += "</table></div></div>"
    return(ms_html)
 
 def detail_page(amsid, date, meteor_file):
@@ -196,7 +213,7 @@ def detail_page(amsid, date, meteor_file):
                 </li>
       """
       ms_html = str(mj['multi_station_event'])
-      ms_html = make_ms_html(amsid, meteor_file, mj['multi_station_event'])
+      ms_html = make_ms_html(amsid, meteor_file, mj)
    else:
       otherobs = ""
       ms_html = ""
