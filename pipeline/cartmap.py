@@ -69,7 +69,7 @@ def main(meteor_file):
     solutions = simple_solve(day, event_id, json_conf)
     mj['solutions'] = solutions
     save_json_file(meteor_file,mj)
-    for sol in solutions:
+    for skey, sol in solutions:
         print("SOLUTION:", sol)
         start_lat,start_lon,start_alt,end_lat,end_lon,end_alt = sol
         obs_lines.append(((float(start_lon),float(start_lat)), (float(end_lon),float(end_lat)),'black',3,''))

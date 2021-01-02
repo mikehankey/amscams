@@ -4,6 +4,15 @@ import glob
 import datetime
 from lib.PipeAutoCal import fn_dir
 
+def solve_day(day, json_conf):
+   amsid = json_conf['site']['ams_id']
+   meteor_index = "/mnt/ams2/meteors/" + day + "/" + day + "-" + amsid + ".meteors"
+   mid = load_json_file(meteor_index)
+   for data in mid:
+      meteor_file, reduced, start_time, dur, ang_vel, ang_dist, hotspot, msm = data
+      if msm == 1:
+         cmd = "./cartmap.py " + meteor_file
+         os.system(cmd)
 def make_obs_object(mse):
 
    nsinfo = load_json_file("../conf/network_station_info.json")
