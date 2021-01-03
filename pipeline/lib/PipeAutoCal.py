@@ -61,18 +61,23 @@ def get_more_stars_with_catalog(meteor_file, cal_params, image, json_conf):
    return(cal_params)
 
 
-def refit_meteors(day, json_conf):
+def refit_meteors(day, json_conf,multi=0):
    mdir = "/mnt/ams2/meteors/" + day + "/"
    files = glob.glob(mdir + "*.json")
    print(mdir)
    meteors = []
    for mf in files:
       if "reduced" not in mf and "stars" not in mf and "man" not in mf and "star" not in mf and "import" not in mf and "archive" not in mf and "cal" not in mf and "frame" not in mf:
-         meteors.append(mf)
+         if multi == 0:
+            meteors.append(mf)
+         else: 
+            mj = load_json_file(mf)
+            if "multi_station_event" in mj:
+               meteors.append(mf)
    for meteor in meteors:
       cmd = "./Process.py refit_meteor " + meteor
       print(cmd)
-      os.system(cmd)
+      #os.system(cmd)
 
 def refit_meteor(meteor_file, json_conf):
 
@@ -4547,6 +4552,9 @@ def XYtoRADec(img_x,img_y,cal_file,cal_params,json_conf):
    sl = math.sin(math.radians(lat))
    cl = math.cos(math.radians(lat))
 
+   if "imagew" not in cal_params:
+      cal_params['imagew'] = 1920
+      cal_params['imageh'] = 1080 
 
    x_det = img_x - int(cal_params['imagew'])/2
    y_det = img_y - int(cal_params['imageh'])/2

@@ -512,7 +512,13 @@ if __name__ == "__main__":
    if cmd == "refit_meteor":
       refit_meteor(sys.argv[2], json_conf)
    if cmd == "refit_meteors":
-      refit_meteors(sys.argv[2], json_conf)
+      if len(sys.argv) == 3:
+         refit_meteors(sys.argv[2], json_conf)
+      else:
+         if sys.argv[3] == "multi":
+            refit_meteors(sys.argv[2], json_conf, 1)
+         else:
+            refit_meteors(sys.argv[2], json_conf, 0)
    if cmd == "pp":
       perfect_points(sys.argv[2], json_conf)
    if cmd == "pp_all":
