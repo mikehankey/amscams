@@ -127,6 +127,13 @@ def refit_meteor(meteor_file, json_conf):
    if "more_stars" not in cp:
       cp['more_stars'] = 1
 
+   mask_file = MASK_DIR + this_cam + "_mask.png"
+   if cfe(mask_file) == 1:
+      mask_img = cv2.imread(mask_file)
+      mask_img = cv2.resize(mask_img, (image.shape[1],image.shape[0]))
+      image = cv2.subtract(image, mask_img)
+
+
    cp = get_more_stars_with_catalog(meteor_file, cp, image, json_conf)
    cp = pair_stars(cp, meteor_file, json_conf, image)
    cp, bad_stars,marked_img = eval_cal(meteor_file,json_conf,cp,image)
