@@ -379,6 +379,9 @@ def meteors_main (amsid, in_data) :
       cel = camd.split("-")
       cam = cel[0]
       show_datetime_cam = stime + " - " + cam
+      if reduced == 1:
+         show_datetime_cam += "<BR>Ang Vel: " + str(ang_vel)[0:4] + " Duration: " + str(dur) 
+   
       meteor_dt = datetime.datetime.strptime(stime, "%Y-%m-%d %H:%M:%S")
       mdate, mtime = stime.split(" ")
       mdate = mdate.replace("-", "_")
