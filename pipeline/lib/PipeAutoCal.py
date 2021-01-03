@@ -62,6 +62,7 @@ def get_more_stars_with_catalog(meteor_file, cal_params, image, json_conf):
 
 
 def refit_meteors(day, json_conf,multi=0):
+   print("RFM")
    mdir = "/mnt/ams2/meteors/" + day + "/"
    files = glob.glob(mdir + "*.json")
    print(mdir)
@@ -73,11 +74,20 @@ def refit_meteors(day, json_conf,multi=0):
          else: 
             mj = load_json_file(mf)
             if "multi_station_event" in mj:
+               #print("MF:", mf, multi,mj['multi_station_event'])
+               if "best_meteor" not in mj and "rejected" not in mj:
+                  meteor_vid = mf.replace(".mp4", ".json")
+                  cmd = "./Process.py fireball " + meteor_vid
+                  print(cmd)
+                  os.system(cmd)
+
                meteors.append(mf)
+            else:
+               print("MSE NOT FOUND IN ", mf)
    for meteor in meteors:
       cmd = "./Process.py refit_meteor " + meteor
       print(cmd)
-      #os.system(cmd)
+      os.system(cmd)
 
 def refit_meteor(meteor_file, json_conf):
 
