@@ -16,54 +16,56 @@ def prep_month(year_day, json_conf):
       fn,dir = fn_dir(dd)
       do_meteor_day_prep(fn,json_conf)
 
-def do_meteor_day_prep(day, json_conf):
+def do_meteor_day_prep(day, json_conf,phase=1):
 
    # for each day we want to do these things in this order.
    # run confirm / reject_mask filter on all meteors
-   cmd = "./Process.py reject_masks " + day
-   print(cmd)
-   os.system(cmd)
+   if phase == 1:
+      cmd = "./Process.py reject_masks " + day
+      print(cmd)
+      os.system(cmd)
 
-   # build the index and sync
-   cmd = "./Process.py mmi_day " + day
-   print(cmd)
-   os.system(cmd)
+      # build the index and sync
+      cmd = "./Process.py mmi_day " + day
+      print(cmd)
+      os.system(cmd)
 
-   # sync index files
-   cmd = "./Process.py sid " + day
-   print(cmd)
-   os.system(cmd)
+      # sync index files
+      cmd = "./Process.py sid " + day
+      print(cmd)
+      os.system(cmd)
 
-   # check for multi-station events 
-   cmd = "./Process.py efd " + day
-   print(cmd)
+   if phase == 2:
+      # check for multi-station events 
+      cmd = "./Process.py efd " + day
+      print(cmd)
 
-   # sync prev files for MS events 
-   cmd = "./Process.py sync_prev_all " + day
-   print(cmd)
+      # sync prev files for MS events 
+      cmd = "./Process.py sync_prev_all " + day
+      print(cmd)
 
-   # run the confirm/reduce on all meteors 
-   cmd = "./Process.py confirm " + day
-   print(cmd)
-   os.system(cmd)
+      # run the confirm/reduce on all meteors 
+      cmd = "./Process.py confirm " + day
+      print(cmd)
+      os.system(cmd)
 
-   # run the refit on all (MS) meteors 
-   cmd = "./Process.py refit_meteors " + day
-   print(cmd)
-   os.system(cmd)
+      # run the refit on all (MS) meteors 
+      cmd = "./Process.py refit_meteors " + day
+      print(cmd)
+      os.system(cmd)
 
-   # build the index and sync (Again)
-   cmd = "./Process.py mmi_day " + day
-   print(cmd)
-   os.system(cmd)
+      # build the index and sync (Again)
+      cmd = "./Process.py mmi_day " + day
+      print(cmd)
+      os.system(cmd)
 
-   # sync index files
-   cmd = "./Process.py sid " + day
-   print(cmd)
-   os.system(cmd)
+      # sync index files
+      cmd = "./Process.py sid " + day
+      print(cmd)
+      os.system(cmd)
 
-   # Now all events for this day should be prepped and the 'min-data' sync'd. 
-   # mini-data is the txt data + 1 thumb preview image for the multi-station events
+      # Now all events for this day should be prepped and the 'min-data' sync'd. 
+      # mini-data is the txt data + 1 thumb preview image for the multi-station events
 
 
 
