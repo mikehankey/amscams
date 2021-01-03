@@ -161,7 +161,7 @@ def refit_meteor(meteor_file, json_conf):
       else:
          mj['refit_info']['runs'] += 1
       red = meteor_file.replace(".json", "-reduced.json")
-      if cfe(red_data) == 0:
+      if cfe(red) == 0:
          return()
       red_data = load_json_file(red)
       red_data['cal_params'] = cp
