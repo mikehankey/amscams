@@ -132,7 +132,7 @@ def refit_meteor(meteor_file, json_conf):
    cp, bad_stars,marked_img = eval_cal(meteor_file,json_conf,cp,image)
    print("AFTER MORE STARS:", len(cp['cat_image_stars']) )
 
-   if len(cp['cat_image_stars']) >= 8  :
+   if len(cp['cat_image_stars']) >= 5  :
       print("we have enough stars to refit the meteor.")
       cp = minimize_fov(meteor_file, cp, meteor_file ,image,json_conf )
    else:
