@@ -76,7 +76,7 @@ def refit_meteors(day, json_conf,multi=0):
             if "multi_station_event" in mj:
                #print("MF:", mf, multi,mj['multi_station_event'])
                if "best_meteor" not in mj and "rejected" not in mj:
-                  meteor_vid = mf.replace(".mp4", ".json")
+                  meteor_vid = mf.replace(".json", ".mp4")
                   cmd = "./Process.py fireball " + meteor_vid
                   print(cmd)
                   os.system(cmd)
