@@ -9,4 +9,4 @@ sudo pip3 install --upgrade cython numpy pyshp six
 sudo pip3 install shapely --no-binary shapely
 sudo apt-get install libgeos-dev
 sudo apt-get install libproj-dev
-sudo apt-get install geopy
+sudo pip3 install geopy
