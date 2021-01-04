@@ -707,8 +707,25 @@ def reject_mask_detects(date, json_conf):
       if "reduced" not in mf and "stars" not in mf and "man" not in mf and "star" not in mf and "import" not in mf and "archive" not in mf:
          mj = load_json_file(mf) 
          if "confirmed" in mj:
-            print("SKIP CONFIRMED.")
-            continue
+            if len(mj['confirmed_meteors']) > 0:
+               print("SKIP CONFIRMED.")
+               # make sure the obj isn't bad / check segs and other filters
+               print(mf)
+               seg_test_result = seg_test(mj['confirmed_meteors'][0]['segs'])
+               if seg_test_result == 1:
+                  print("SEG TEST GOOD")
+                  continue
+               else:
+                  fn, dir = fn_dir(mf)
+                  root_file = fn.replace(".json", "")
+                  del_data[root_file] = 1
+                  print("seg test failed.", mf)
+                  exit()
+            else:
+               print("BAD NO CONFIRMED?", mf)
+               fn, dir = fn_dir(mf)
+               root_file = fn.replace(".json", "")
+               del_data[root_file] = 1
          if "multi_station_event" in mj:
             print("SKIP MULTI-STATION CONFIRMED.")
             continue
@@ -756,7 +773,7 @@ def reject_mask_detects(date, json_conf):
                oint = int(np.sum(int_cnt))
                avg_px_int = int(oint / (cnt_img.shape[0] * cnt_img.shape[1]))
                avg_bg_px = int(np.sum(bg_cnt_img) / (cnt_img.shape[0] * cnt_img.shape[1]))
-               print("INTENSITY:", fn, oint, avg_bg_px, cval, avg_px_int)
+               #print("INTENSITY:", fn, oint, avg_bg_px, cval, avg_px_int)
                #cv2.imshow('pepe', int_cnt)
                #cv2.waitKey(30)
                object, objects = find_object(objects, fn,x, y, w, h, oint, 0, 0, None)
@@ -867,6 +884,38 @@ def reject_mask_detects(date, json_conf):
    save_json_file(del_log, del_data)
 
    os.system("./Process.py purge_meteors")
+
+def seg_test(segs):
+   mean_seg = np.mean(segs)
+   total_segs = len(segs)
+   neg_segs = 0
+   good_segs = 0
+   for s in segs:
+      if s < 0:
+         neg_segs += 1
+      if mean_seg - 5 < s < mean_seg + 5:
+         good_segs += 1
+   if neg_segs > 0:
+      neg_perc = neg_segs / total_segs
+   else:
+      neg_perc = 0
+   if good_segs > 0:
+      good_perc = good_segs / total_segs
+   else:
+      good_perc = 0
+
+   print("GOOD SEG PERC:", good_perc)
+   print("NEG SEG PERC:", neg_perc)
+   status = 1
+   if total_segs > 8:
+      if good_perc < .6 :
+         status = 0
+      if neg_perc > .4:
+         status = 0
+   else:
+      # fine / ignore test on low frame meteors
+      status = 1
+   return(status)
 
 def reject_hotspots(date, json_conf):
    mdir = "/mnt/ams2/meteors/" + date + "/" 
