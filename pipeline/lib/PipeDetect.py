@@ -720,7 +720,6 @@ def reject_mask_detects(date, json_conf):
                   root_file = fn.replace(".json", "")
                   del_data[root_file] = 1
                   print("seg test failed.", mf)
-                  exit()
             else:
                print("BAD NO CONFIRMED?", mf)
                fn, dir = fn_dir(mf)
@@ -904,6 +903,11 @@ def seg_test(segs):
    else:
       good_perc = 0
 
+   print("SEGS:", segs)
+   print("TOTAL:", total_segs)
+   print("MEAN:", mean_seg)
+   print("GOOD :", good_segs)
+   print("NEG :", neg_segs)
    print("GOOD SEG PERC:", good_perc)
    print("NEG SEG PERC:", neg_perc)
    status = 1

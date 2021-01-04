@@ -486,7 +486,7 @@ if __name__ == "__main__":
          reject_hotspots(sys.argv[2], json_conf)
    if cmd == 'reject_masks':
       if sys.argv[2] == "all":
-         files = glob.glob("/mnt/ams2/meteors/*")
+         files = sorted(glob.glob("/mnt/ams2/meteors/*"), reverse=True)
          for file in files:
             print(file)
             if cfe(file, 1) == 1:
