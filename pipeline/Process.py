@@ -537,3 +537,9 @@ if __name__ == "__main__":
       prep_month(sys.argv[2], json_conf)
    if cmd == "solve_day" :
       solve_day(sys.argv[2], json_conf)
+   if cmd == "simple_tl" :
+      simple_TL(sys.argv[2], json_conf)
+   if cmd == "j2" :
+      print("J2")
+      join_two( json_conf)
+

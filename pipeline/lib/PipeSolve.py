@@ -62,7 +62,7 @@ def simple_solve(day, event_id, json_conf):
    if len(good_obs) == 2:
       print("We have two good obs. Solve them.")
       print(good_obs)
-      www = input('waiting.')
+      #www = input('waiting.')
       station1 = good_obs[0]['station']
       station2 = good_obs[1]['station']
       file1 = good_obs[0]['file']
@@ -117,11 +117,13 @@ def int_planes(obs1, obs2):
    """
    wgs84 = pm.Ellipsoid('wgs84');
    lat1,lon1,alt1 = obs1['loc']
+   dur1 = len(obs1['azs'])
    saz1 = obs1['azs'][0]
    eaz1 = obs1['azs'][-1]
    sel1 = obs1['els'][0]
    eel1 = obs1['els'][-1]
 
+   dur2 = len(obs2['azs'])
    saz2 = obs2['azs'][0]
    eaz2 = obs2['azs'][-1]
    sel2 = obs2['els'][0]
@@ -166,9 +168,11 @@ def int_planes(obs1, obs2):
    start_line2 = Line3D(Point3D(x2,y2,z2),Point3D(sveX2,sveY2,sveZ2))
    end_line2 = Line3D(Point3D(x2,y2,z2),Point3D(eveX2,eveY2,eveZ2))
 
+   #plane 2 line 1
    start_inter2 = plane2.intersection(start_line1)
    end_inter2 = plane2.intersection(end_line1)
 
+   #plane 1 line 2
    start_inter1 = plane1.intersection(start_line2)
    end_inter1 = plane1.intersection(end_line2)
 
@@ -197,17 +201,39 @@ def int_planes(obs1, obs2):
    print("END2:", elat2, elon2,ealt2)
 
 
-   a = Point(slon, slat, salt)
-   b = Point(elon, elat, ealt)
+   a = Point(slon, slat, 0)
+   b = Point(elon, elat, 0)
    dist1 = distance(a, b).km
+   h = salt - ealt
+   dist1 = math.sqrt(dist1**2 + h**2)
 
-   a = Point(slon2, slat2, salt2)
-   b = Point(elon2, elat2, ealt2)
-   dist1 = distance(a, b).km
+   a = Point(slon2, slat2, 0)
+   b = Point(elon2, elat2, 0)
+   dist2 = distance(a, b).km
+   h = salt2 - ealt2
+   dist2 = math.sqrt(dist2**2 + h**2)
+
+
+   vel1 = dist1 / (dur2/25)
+
+   vel2 = dist2 / (dur1/25)
+   print("VEL1:", dist1, dur2, vel1 )
+   print("VEL2:", dist2, dur1, vel2 )
+
+   if dist1 > dist2:
+      md = dist1
+   else:
+      md = dist2
+   if dur1 > dur2 :
+      mdu = dur1
+   else:
+      mdu = dur2
+   vel = md / (mdu/25)
+
 
    solutions = []
-   solutions.append((slat,slon,salt,elat,elon,ealt,dist))
-   solutions.append((slat2,slon2,salt2,elat2,elon2,ealt2,dist))
+   solutions.append((slat,slon,salt,elat,elon,ealt,dist1,dur2,vel1))
+   solutions.append((slat2,slon2,salt2,elat2,elon2,ealt,dist2,dur1,vel2))
    return(solutions)
 
 

@@ -169,9 +169,10 @@ def make_ms_html(amsid, meteor_file, mj):
    if "solutions" in mj:
       
       for skey, sol in mj['solutions']:
-         slon,slat,salt,elon,elat,ealt = sol
-         saz,sel,salt,eaz,eel,ealt,dist,dur,vel = sol
-         ms_html += "<tr><td>" + skey + "</td><td>TIME</td><td>" + str(slat)[0:5] + "</td><td>" + str(slon)[0:5] + "</td><td>" + str(salt/1000)[0:5] + "</td><td>" + str(elat)[0:5] + "</td><td>" + str(elon)[0:5] + "</td><td>" + str(ealt/1000)[0:5] + "</td></tr>"
+         print(skey,sol)
+         slon,slat,salt,elon,elat,ealt,dist,dur,vel = sol
+         #saz,sel,salt,eaz,eel,ealt,dist,dur,vel = sol
+         ms_html += "<tr><td>" + skey + "</td><td>TIME</td><td>" + str(slat)[0:5] + "</td><td>" + str(slon)[0:5] + "</td><td>" + str(salt/1000)[0:5] + "</td><td>" + str(elat)[0:5] + "</td><td>" + str(elon)[0:5] + "</td><td>" + str(ealt/1000)[0:5] + "</td><td>" + str(dist)[0:5] + "</td><td>" + str(dur)[0:5] + "</td><td>" + str(vel)[0:5] + "</td></tr>"
    ms_html += "</table></div></div>"
    return(ms_html)
 

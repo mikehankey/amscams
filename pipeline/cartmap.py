@@ -66,20 +66,36 @@ def main(meteor_file):
     for key in mse:
         print(key)    
 
+    sol_c_lat = []
+    sol_c_lon = []
     solutions = simple_solve(day, event_id, json_conf)
     mj['solutions'] = solutions
     save_json_file(meteor_file,mj)
+    color_pairs = [
+       ["green", "red"],
+       ["blue", "orange"]
+    ]
+    cp = 0
     for skey, sol in solutions:
         print("SOLUTION:", sol)
         start_lat,start_lon,start_alt,end_lat,end_lon,end_alt,dist,dur,vel = sol
+        sol_c_lat.append(start_lat)
+        sol_c_lon.append(start_lon)
+        sol_c_lat.append(end_lat)
+        sol_c_lon.append(end_lon)
         print("DIST:", dist, dur, vel)
         obs_lines.append(((float(start_lon),float(start_lat)), (float(end_lon),float(end_lat)),'black',3,''))
+
         for i in range(0,len(mse['stations'])):
            station = mse['stations'][i]
            station_lat,station_lon,station_alt = nsinfo[mse['stations'][i]]['loc']
            station_lat,station_lon,station_alt = float(station_lat),float(station_lon),float(station_alt)
-           obs_lines.append(((float(station_lon),float(station_lat)), (float(start_lon),float(start_lat)),'red',1,''))
-           obs_lines.append(((float(station_lon),float(station_lat)), (float(end_lon),float(end_lat)),'green',1,''))
+           print("CP:", color_pairs[cp])
+           obs_lines.append(((float(station_lon),float(station_lat)), (float(start_lon),float(start_lat)),color_pairs[cp][1],1,''))
+           obs_lines.append(((float(station_lon),float(station_lat)), (float(end_lon),float(end_lat)),color_pairs[cp][0],1,''))
+           cp += 1
+           if cp >= len(color_pairs):
+              cp = 0
 
     # set area min_lon, max_lon, min_lat, max_lat
     #extent = [-70,-85,35,45]
@@ -99,15 +115,28 @@ def main(meteor_file):
 
     clon = np.mean(elons)
     clat = np.mean(elats)
+
+    ctlon = np.mean(sol_c_lon)
+    ctlat = np.mean(sol_c_lat)
     extent = [clon-2,clon+2,clat-2,clat+2]
+
+    extent = [clon-2,clon+2,clat-2,clat+2]
+    extent2 = [ctlon-.5,ctlon+.5,ctlat-.5,ctlat+.5]
     print("ELON:", elons)
     print("ELAT:", elats)
     print("AVG:", clon,clat)
     print("EXT:", extent)
-    fig = plt.figure()
-    ax = fig.add_subplot(1, 1, 1, projection=ccrs.PlateCarree())
-    ax.set_extent(extent, crs=ccrs.PlateCarree())
+    fig = plt.figure(figsize=(8,4.5))
+    ax1 = fig.add_subplot(1, 2, 1, projection=ccrs.PlateCarree())
+    ax1.set_extent(extent, crs=ccrs.PlateCarree())
 
+    ax2 = fig.add_subplot(1, 2, 2, projection=ccrs.PlateCarree())
+
+    ax1.margins(x=.1,y=.1)
+    ax2.margins(x=.1,y=.1)
+
+
+    ax2.set_extent(extent2, crs=ccrs.PlateCarree())
     # Put a background image on for nice sea rendering.
     #ax.stock_img()
 
@@ -121,24 +150,35 @@ def main(meteor_file):
     SOURCE = 'Natural Earth'
     LICENSE = 'public domain'
 
-    ax.add_feature(cfeature.LAND)
-    ax.add_feature(cfeature.OCEAN)
-    ax.add_feature(cfeature.COASTLINE)
-    ax.add_feature(cfeature.BORDERS)
-    ax.add_feature(cfeature.LAKES)
-    ax.add_feature(cfeature.RIVERS)
-    ax.add_feature(states_provinces, edgecolor='gray')
+    ax1.add_feature(cfeature.LAND)
+    ax1.add_feature(cfeature.OCEAN)
+    ax1.add_feature(cfeature.COASTLINE)
+    ax1.add_feature(cfeature.BORDERS)
+    ax1.add_feature(cfeature.LAKES)
+    ax1.add_feature(cfeature.RIVERS)
+    ax1.add_feature(states_provinces, edgecolor='gray')
 
-    geodetic_transform = ccrs.Geodetic()._as_mpl_transform(ax)
+    ax2.add_feature(cfeature.LAND)
+    ax2.add_feature(cfeature.OCEAN)
+    ax2.add_feature(cfeature.COASTLINE)
+    ax2.add_feature(cfeature.BORDERS)
+    ax2.add_feature(cfeature.LAKES)
+    ax2.add_feature(cfeature.RIVERS)
+    ax2.add_feature(states_provinces, edgecolor='gray')
+
+
+    geodetic_transform = ccrs.Geodetic()._as_mpl_transform(ax1)
     text_transform = offset_copy(geodetic_transform, units='dots', x=+15)
+
+    geodetic_transform2 = ccrs.Geodetic()._as_mpl_transform(ax2)
 
 
     # plot points
     for point in points:
        lon,lat,color,label = point
-       ax.plot(lon, lat, marker='o', color=color, markersize=5,
+       ax1.plot(lon, lat, marker='o', color=color, markersize=5,
           alpha=0.7, transform=ccrs.Geodetic()) 
-       ax.text(lon, lat, label,
+       ax1.text(lon, lat, label,
             verticalalignment='center', horizontalalignment='left',
             transform=text_transform,
             bbox=dict(facecolor='sandybrown', alpha=0.5, boxstyle='round'))
@@ -148,12 +188,18 @@ def main(meteor_file):
        slon,slat = p1
        elon,elat = p2
 
-       plt.plot([slon, elon], [slat, elat],
+       ax1.plot([slon, elon], [slat, elat],
          color=color, linewidth=thickness, marker='o', markersize=3,
          # Be explicit about which transform you want:
          transform=geodetic_transform)
+       #if color == 'black':
+       if True:
+          ax2.plot([slon, elon], [slat, elat],
+             color=color, linewidth=thickness, marker='o', markersize=3,
+             # Be explicit about which transform you want:
+             transform=geodetic_transform2)
        if label != '':
-           ax.text(elon, elat, label,
+           ax1.text(elon, elat, label,
                verticalalignment='center', horizontalalignment='left',
                transform=text_transform,
                bbox=dict(facecolor='sandybrown', alpha=0.5, boxstyle='round'))
@@ -166,7 +212,7 @@ def main(meteor_file):
     #ax.add_artist(text)
     plt.savefig(map_file)
     map_jpg = map_file.replace(".png", ".jpg")
-    os.system("convert " + map_file + " " + map_jpg)
+    os.system("convert -resize 848x480 " + map_file + " " + map_jpg)
     os.system("rm " + map_file )
 
     print("saved:", map_file)

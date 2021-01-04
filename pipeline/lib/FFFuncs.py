@@ -143,7 +143,7 @@ def imgs_to_vid (in_dir, out_file, wild="", fps=25, crf=20, img_type= "jpg"):
    print("VIDEO READY:", out_file)
 
 
-def slow_stack_range(date, start_hour, end_hour, cams_id):
+def slow_stack_range(date, start_hour, end_hour, cams_id, speed=10):
    files = glob.glob("/mnt/ams2/SD/proc2/" + date + "/*" + cams_id + "*.mp4")
    for file in files:
       if "trim" in file:
@@ -151,7 +151,7 @@ def slow_stack_range(date, start_hour, end_hour, cams_id):
       (f_datetime, cam, f_date_str,fy,fm,fd, fh, fmin, fs) = convert_filename_to_date_cam(file)
       #/mnt/ams2/CUSTOM_VIDEOS/out.mp4
       if start_hour <= int(fh) <= end_hour and cam == cams_id and "crop" not in file:
-         cmd = "./FFF.py slow_stack " + file +  " ./CACHE2/ 10"
+         cmd = "./FFF.py slow_stack " + file +  " ./CACHE2/ " + str(speed)
          print(cmd)
          os.system(cmd)
 
@@ -193,7 +193,8 @@ def crop_video(in_file, out_file, crop_box):
 
 def resize_video(in_file, out_file, ow, oh, bit_rate=20):
    cmd = "/usr/bin/ffmpeg -i " + in_file + " -c:v libx264 -crf " + str(bit_rate) + " -pix_fmt yuv420p -vf 'scale=" + str(ow) + ":" + str(oh) + "' -y " + out_file
-   os.system(cmd)
+   #os.system(cmd)
+   print(cmd)
    print("ff resize")
    return(out_file)
 
