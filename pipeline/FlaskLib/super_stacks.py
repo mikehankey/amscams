@@ -58,6 +58,7 @@ def stacks_main(amsid, data) :
          if stack_day in stats_data:
             data = stats_data[stack_day]
             mets = data['meteor_files']
+            non_meteors = data['failed_files']
          else:
             print("NO data for this day.")
             continue
@@ -67,7 +68,7 @@ def stacks_main(amsid, data) :
          <div class='h2_holder d-flex justify-content-between'>
 	       <h2>""" + dsp_date + """ 
                - <a class='btn btn-primary' href=/meteors/""" + amsid + "/?start_day=" + date + ">" + str(mets) + """ Meteors </a>
-	      </h2><p><a href=>XX Non-Meteors </a>  </a>
+	      </h2><p><a href=/trash/""" + amsid + "/?start_day=" + date + """>""" + str(non_meteors) + """ Non-Meteors </a>  </a>
          </div>
          <div class='gallery gal-resize row text-center text-lg-left mb-5'>
          """

@@ -16,6 +16,63 @@ import pytz
 utc = pytz.UTC
 SHOW = 0
 
+def join_two(json_conf):
+   one = sorted(glob.glob("./CACHE3/*"))
+   two = sorted(glob.glob("./CACHE2/*"))
+   print("JOIN", len(one))
+   comp_h = 360
+   comp_w = 640 * 2 
+   for i in range(0, len(one)):
+
+      file1 = one[i]
+      file2 = two[i]
+      img1 = cv2.imread(file1)
+      img2 = cv2.imread(file2)
+      img1 = cv2.resize(img1,(640,360))
+      img2 = cv2.resize(img2,(640,360))
+      comp = np.zeros((comp_h,comp_w,3),dtype=np.uint8)
+      comp[0:360,0:640] = img1
+      comp[0:360,640:1280] = img2
+      if i % 2 == 0:
+         out = file1.replace("CACHE3", "FINAL")
+         print("WROTE:", i, out)
+         cv2.imwrite(out, img2)
+         cv2.imshow('pepe', img2)
+         cv2.waitKey(30)
+
+
+def simple_TL(TL_CONF, json_conf):
+   tl_conf = load_json_file(TL_CONF)
+   start_day = tl_conf['start_time'][0:10]
+   end_day = tl_conf['end_time'][0:10]
+   all_start_dt = datetime.strptime(tl_conf['start_time'], "%Y_%m_%d_%H_%M_%S")
+   all_end_dt = datetime.strptime(tl_conf['end_time'], "%Y_%m_%d_%H_%M_%S")
+   slow_stack_start,slow_stack_end,slow_stack_speed = tl_conf['slow_stacks'][0]
+   ss_start_dt = datetime.strptime(slow_stack_start, "%Y_%m_%d_%H_%M_%S")
+   ss_end_dt = datetime.strptime(slow_stack_end, "%Y_%m_%d_%H_%M_%S")
+   cam = tl_conf['cams_id']
+   night_files = glob.glob("/mnt/ams2/SD/proc2/" + start_day + "/*" + cam + "*.mp4")
+   day_files = glob.glob("/mnt/ams2/SD/proc2/daytime/" + start_day + "/*" + cam + "*.mp4")
+   all_files = []
+   for file in night_files:
+      (f_datetime, cam, f_date_str,fy,fmin,fd, fh, fm, fs) = convert_filename_to_date_cam(file)
+      if all_start_dt <= f_datetime <= all_end_dt:
+          print(file)
+      if ss_start_dt <= f_datetime <= ss_end_dt:
+         print("SLOW STACK!", file)
+
+         cmd = "./FFF.py slow_stack " + file +  " ./CACHE2/ " + str(slow_stack_speed)
+         print(cmd)
+         os.system(cmd)
+   for file in day_files:
+      (f_datetime, cam, f_date_str,fy,fmin,fd, fh, fm, fs) = convert_filename_to_date_cam(file)
+      if ss_start_dt <= f_datetime <= ss_end_dt:
+         print("SLOW STACK!", file)
+
+         cmd = "./FFF.py slow_stack " + file +  " ./CACHE2/ " + str(slow_stack_speed)
+         print(cmd)
+         os.system(cmd)
+
 
 def assemble_custom(TL_CONF, json_conf):
    min_index = {}

@@ -1,5 +1,46 @@
 {HEADER}
 
+<style>
+/* The Modal (background) */
+.mike-modal {
+  display: none; /* Hidden by default */
+  position: fixed; /* Stay in place */
+  z-index: 1; /* Sit on top */
+  left: 0;
+  top: 0;
+  width: 100%; /* Full width */
+  height: 100%; /* Full height */
+  overflow: auto; /* Enable scroll if needed */
+  background-color: rgb(0,0,0); /* Fallback color */
+  background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+}
+
+/* Modal Content/Box */
+.mike-modal-content {
+  background-color: #fefefe;
+  margin: 5% auto; /* 15% from the top and centered */
+  padding: 10px;
+  border: 1px solid #888;
+  width: 80%; /* Could be more or less, depending on screen size */
+  height: 80%; /* Could be more or less, depending on screen size */
+}
+
+/* The Close Button */
+.mike-close {
+  color: #aaa;
+  float: right;
+  font-size: 28px;
+  font-weight: bold;
+}
+
+.mike-close:hover,
+.mike-close:focus {
+  color: black;
+  text-decoration: none;
+  cursor: pointer;
+}
+</style>
+
 <body onload='init_page()'>
 
 {NAV}
@@ -22,6 +63,9 @@
                 <li class="nav-item">
                     <a class="nav-link" id="stars-tab-l" data-toggle="tab" href="#stars-tab" role="tab" aria-controls="stars" aria-selected="false"><span id="str_cnt"></span> Stars</a>
                 </li>
+
+		<!--OTHEROBS-->
+
                 <!--
                 <li class="nav-item">
                     <a class="nav-link" id="plots-tab-l" data-toggle="tab" href="#plots-tab" role="tab" aria-controls="plots" aria-selected="false">Plots</a>
@@ -71,6 +115,10 @@
 
                 <div class="tab-pane fade" id="trajectory-tab" role="tabpanel" aria-labelledby="trajectory-tab-l">
                     {%TRAJECTOR Y_TABLE%}
+                </div> 
+
+                <div class="tab-pane fade" id="multi-tab" role="tabpanel" aria-labelledby="multi-tab-l">
+                    {%MULTI_STATION_DATA%}
                 </div> 
 
                 <div class="tab-pane fade" id="orbit-tab" role="tabpanel" aria-labelledby="orbit-tab-l">
@@ -220,6 +268,20 @@
 <div id="star_list"></div>  
 -->
 </div>
+
+<!--<button id="myBtn">Open Modal</button>-->
+
+<!-- The Modal -->
+<div id="myModal" class="mike-modal">
+
+  <!-- Modal content -->
+  <div class="mike-modal-content">
+    <span class="mike-close">&times;</span>
+    <iframe id='modal_url' src="/dist/wait.html" width=100% height=100%></iframe>
+  </div>
+
+</div>
+
 <script>
        {CAL_PARAMS}
        {METEOR_FRAME_DATA}
@@ -252,4 +314,33 @@ function init_page() {
 
 }
 </script>
+
+<script>
+// Get the modal
+var modal = document.getElementById("myModal");
+
+// Get the button that opens the modal
+var btn = document.getElementById("myBtn");
+
+// Get the <span> element that closes the modal
+var span = document.getElementsByClassName("mike-close")[0];
+
+// When the user clicks on the button, open the modal
+//btn.onclick = function() {
+//  modal.style.display = "block";
+//}
+
+// When the user clicks on <span> (x), close the modal
+span.onclick = function() {
+  modal.style.display = "none";
+}
+
+// When the user clicks anywhere outside of the modal, close it
+window.onclick = function(event) {
+  if (event.target == modal) {
+    modal.style.display = "none";
+  }
+}
+</script>
+
 {FOOTER}

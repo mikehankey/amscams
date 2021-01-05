@@ -7,6 +7,175 @@ import cv2
 import os
 import numpy as np
 
+def make_obs_object(mj,mse, nsinfo):
+   obs = {}
+   for i in range(0, len(mse['stations'])):
+      station = mse['stations'][i] 
+      file = mse['files'][i] 
+      fn, dir = fn_dir(file)
+      
+      if station not in obs:
+         obs[station] = {}
+      if fn not in obs[station]:
+
+         obs[station][fn] = {}
+         obs[station][fn]['loc'] = nsinfo[station]['loc']
+         obs[station][fn]['times'] = []
+         obs[station][fn]['fns'] = []
+         obs[station][fn]['xs'] = []
+         obs[station][fn]['ys'] = []
+         obs[station][fn]['azs'] = []
+         obs[station][fn]['els'] = []
+         obs[station][fn]['ras'] = []
+         obs[station][fn]['decs'] = []
+         obs[station][fn]['ints'] = []
+      mfd = mse['mfds'][i]
+      if "meteor_frame_data" in mfd:
+         for mc in range(0, len(mfd['meteor_frame_data'])):
+            data = mfd['meteor_frame_data'][mc]
+            dt, fnum, x, y, w, h, oint, ra, dec, az, el = data
+            obs[station][fn]['times'].append(dt)
+            obs[station][fn]['fns'].append(fnum)
+            obs[station][fn]['xs'].append(x)
+            obs[station][fn]['ys'].append(y)
+            obs[station][fn]['ints'].append(oint)
+            obs[station][fn]['ras'].append(ra)
+            obs[station][fn]['decs'].append(dec)
+            obs[station][fn]['azs'].append(az)
+            obs[station][fn]['els'].append(el)
+            print("DATA:", fn, data)
+
+   for station in obs:
+       for file in obs[station]:
+         print(station, file, obs[station][file])
+
+   return(obs) 
+
+def make_ms_html(amsid, meteor_file, mj):
+   mse = mj['multi_station_event']
+   #ms_html = "<table width=100%>"
+   #ms_html += "<tr><td>Station</td><td>Start Datetime</td><td>File</td></tr>"
+   if cfe("../conf/network_station_info.json") == 0:
+      os.system("./Process.py get_network_info")
+   nsinfo = load_json_file("../conf/network_station_info.json")
+
+   obs = make_obs_object(mj,mse, nsinfo)
+
+   station_pts = ""
+
+   ms_html = """
+      <div class='h1_holder  d-flex justify-content-between'>
+         <h1><span class='h'>Captures</span> </h1>
+      </div>
+   """
+
+   ms_html += """
+      <div id='main_container' class='container-fluid h-100 mt-4 lg-l'>
+      <div class='gallery gal-resize reg row text-center text-lg-left'>
+
+   """
+   active_stations = {}
+   for i in range(0, len(mse['stations'])):
+      file,dir = fn_dir(mse['files'][i])
+      file = file.replace(".json", "")
+      tstation = mse['stations'][i]
+      active_stations[tstation] = 1
+      mfd = mse['mfds'][i]
+      if "meteor_frame_data" not in mfd:
+         meteor_frame_data = None
+      else:
+         meteor_frame_data = mfd['meteor_frame_data']
+      year = file[0:4]
+      day = file[0:10]
+      if tstation != amsid:
+         local_dir = "/mnt/ams2/meteor_archive/" + tstation + "/METEORS/" + year + "/" + day + "/" 
+         cloud_dir = "/mnt/archive.allsky.tv/" + tstation + "/METEORS/" + year + "/" + day + "/" 
+         cloud_url = "https://archive.allsky.tv/" + tstation + "/METEORS/" + year + "/" + day + "/" 
+         if cfe(local_dir,1) == 0:
+            os.makedirs(local_dir)
+      else:
+         cloud_dir = "/mnt/archive.allsky.tv/" + tstation + "/METEORS/" + year + "/" + day + "/" 
+         cloud_url = "https://archive.allsky.tv/" + tstation + "/METEORS/" + year + "/" + day + "/" 
+      cloud_prev = cloud_dir + file + "-prev.jpg"
+      cloud_prev_url = cloud_url + file + "-prev.jpg?xx"
+      prev_img = "<img src=" + cloud_prev_url + ">"      
+      #ms_html += "<tr><td>" + mse['stations'][i] + "</td><td>" + mse['start_datetime'][i] + "</td><td>" + prev_img + "<br>" + file + "</td></tr>"
+      ht_class = "norm"
+      jsid = ""
+      meteor_detail_link = ""
+      vothumb = cloud_prev_url
+      vthumb = cloud_prev_url 
+      show_datetime_cam = mse['start_datetime'][i]
+      #ms_html += "<div>" + mse['stations'][i] + " " +  mse['start_datetime'][i] +  prev_img + "<br>" + file 
+      if meteor_frame_data is not None:
+         fmfd = meteor_frame_data[0]
+         lmfd = meteor_frame_data[-1]
+         (dt, fn, x, y, w, h, oint, ra, dec, az, el) = fmfd
+         first_az_el = str(az)[0:5] + " / " + str(el)[0:5]
+         (dt, fn, x, y, w, h, oint, ra, dec, az, el) = lmfd 
+         last_az_el = str(az)[0:5] + " / " + str(el)[0:5]
+         az_desc = " First: " + first_az_el + "<br>Last : " + last_az_el + ""
+         #ms_html += "<tr><td colspan=4>" + str(meteor_frame_data) + "</td></tr>"
+      else:
+         az_desc = "AZ/EL Pending"
+         #ms_html += "<tr><td colspan=4>Meteor Not Reduced Yet.</td></tr>"
+         #ms_html += "Meteor Not Reduced Yet."
+      show_datetime_cam += "<br>" + az_desc
+      ms_html += """
+         
+         <div id='""" + jsid + """' class='preview select-to """ + ht_class + """'>
+            <a class='mtt' href='""" + meteor_detail_link + """' data-obj='""" + vothumb + """' title='Go to Info Page'>
+               <img alt='""" + show_datetime_cam + """' class='img-fluid ns lz' src='""" + vthumb + """'>
+               <span>""" + tstation + " " + show_datetime_cam + """</span>
+            </a>
+
+
+      """
+      ms_html += "</div>"
+
+   for station in active_stations:
+      if station_pts != "":
+         station_pts += ";"
+      loc = nsinfo[station]['loc']
+      station_pts += str(loc[0]) + "," + str(loc[1]) + "," + station
+   fn,dir = fn_dir(meteor_file)
+   date = fn[0:10]
+   fn = fn.replace(".mp4", "-map.jpg")
+   station_map = "/meteors/" + date + "/" + fn
+   print("MAP:", station_map)
+   ms_html += "</div></div>"
+   #if cfe(station_map) == 1:
+   if True:
+      ms_html += """
+         <div class='h1_holder  d-flex justify-content-between'>
+            <h1><span class='h'>Map</span> </h1>
+         </div>
+   """
+      ms_html += "<img src=" + station_map+ "><br>"
+   ms_html += """
+            <div class="tab-content box " >
+
+                <div class="tab-pane fade show active pr-3" id="sol-tab" role="tabpanel" aria-labelledby="reduc-tab-l">
+
+                <table class="table table-dark table-striped table-hover td-al-m mb-2 pr-5" >
+                <thead>
+                <tr>
+                </th><th>Solution</th><th>Start Time</th><th>Start Lat</th><th>Start Lon</th><th>Start Alt</th><th>End Lat</th><th>End Lon</th><th>End Alt</th>
+                <th>Distance</th><th>Duration</th><th>Velocity</th>
+                </tr>
+                </thead>
+
+   """
+   if "solutions" in mj:
+      
+      for skey, sol in mj['solutions']:
+         print(skey,sol)
+         slon,slat,salt,elon,elat,ealt,dist,dur,vel = sol
+         #saz,sel,salt,eaz,eel,ealt,dist,dur,vel = sol
+         ms_html += "<tr><td>" + skey + "</td><td>TIME</td><td>" + str(slat)[0:5] + "</td><td>" + str(slon)[0:5] + "</td><td>" + str(salt/1000)[0:5] + "</td><td>" + str(elat)[0:5] + "</td><td>" + str(elon)[0:5] + "</td><td>" + str(ealt/1000)[0:5] + "</td><td>" + str(dist)[0:5] + "</td><td>" + str(dur)[0:5] + "</td><td>" + str(vel)[0:5] + "</td></tr>"
+   ms_html += "</table></div></div>"
+   return(ms_html)
+
 def detail_page(amsid, date, meteor_file):
    MEDIA_HOST = request.host_url.replace("5000", "80")
    MEDIA_HOST = ""
@@ -22,7 +191,10 @@ def detail_page(amsid, date, meteor_file):
    CACHE_VDIR = CACHE_DIR.replace("/mnt/ams2", "")
    mjf = METEOR_DIR + meteor_file.replace(".mp4", ".json")
    mjvf = METEOR_VDIR + meteor_file.replace(".mp4", ".json")
-   mjrf = METEOR_DIR + meteor_file.replace(".mp4", "-reduced.json")
+   if "mp4" in meteor_file:
+      mjrf = METEOR_DIR + meteor_file.replace(".mp4", "-reduced.json")
+   else:
+      mjrf = METEOR_DIR + meteor_file.replace(".json", "-reduced.json")
    mjrvf = METEOR_VDIR + mjrf.replace("/mnt/ams2", "")
    if cfe(mjf) == 1:
       mj = load_json_file(mjf)
@@ -36,6 +208,18 @@ def detail_page(amsid, date, meteor_file):
    else:
       hd_trim = None
       hd_stack = None
+   if "multi_station_event" in mj:
+      otherobs = """
+                <li class="nav-item">
+                    <a class="nav-link" id="multi-tab-l" data-toggle="tab" href="#multi-tab" role="tab" aria-controls="multi" aria-selected="false"><span id="str_cnt"></span>Other Observations</a>
+                </li>
+      """
+      ms_html = str(mj['multi_station_event'])
+      ms_html = make_ms_html(amsid, meteor_file, mj)
+   else:
+      otherobs = ""
+      ms_html = ""
+
 
    sd_stack = sd_trim.replace(".mp4", "-stacked.jpg")
    half_stack = sd_stack.replace("stacked", "half-stack")
@@ -67,6 +251,8 @@ def detail_page(amsid, date, meteor_file):
    template = template.replace("{AMSID}", amsid)
    template = template.replace("{MEDIA_HOST}", MEDIA_HOST)
    template = template.replace("{HALF_STACK}", METEOR_VDIR + half_stack)
+   template = template.replace("<!--OTHEROBS-->", otherobs)
+   template = template.replace("{%MULTI_STATION_DATA%}", ms_html)
    if hd_stack is None or hd_stack == 0:
       template = template.replace("{HD_STACK}", "#")
    else:
@@ -168,10 +354,15 @@ def detail_page(amsid, date, meteor_file):
 
    if cfe(mjrf) == 1:
       mjr = load_json_file(mjrf)
-      if "total_res_px" not in mjr['cal_params']:
-         mjr['cal_params']['total_res_px'] = 99
-         mjr['cal_params']['total_res_deg'] = 99
-         mjr['cal_params']['cat_image_stars'] = []
+      print("LOADING REDUCE FILE:", mjrf)
+      if "cal_params" in mjr:
+         if "total_res_px" not in mjr['cal_params']:
+            mjr['cal_params']['total_res_px'] = 99
+            mjr['cal_params']['total_res_deg'] = 99
+            mjr['cal_params']['cat_image_stars'] = []
+      else:
+         mjr['cal_params'] = mj['cp']
+
 
       if np.isnan(mjr['cal_params']['total_res_px']) or mjr['cal_params']['total_res_px'] is None or len(mjr['cal_params']['cat_image_stars']) == 0:
          mjr['cal_params']['total_res_px'] = 9999
@@ -202,6 +393,8 @@ def detail_page(amsid, date, meteor_file):
    template = template.replace("{FRAME_TABLE_ROWS}", frame_table_rows)
    template = template.replace("{STAR_ROWS}", "")
    template = template.replace("{LIGHTCURVE_URL}", lc_html)
+   ts = time.time()
+   template = template.replace("{RAND}", str(ts))
    return(template)   
 
 

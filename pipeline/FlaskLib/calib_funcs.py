@@ -5,6 +5,7 @@ import os
 import cv2
 from FlaskLib.FlaskUtils import parse_jsid, make_default_template, get_template 
 import glob
+import time
 
 def lens_model(amsid):
    lms = glob.glob("/mnt/ams2/cal/lens*")
@@ -56,6 +57,72 @@ def del_calfile(amsid, calfile):
    resp['status'] = 1
    return(resp)
 
+
+def edit_mask_points(mask_file, action, mask_points_str):
+   mask_file_half = "/mnt/ams2/" + mask_file
+   mask_file = mask_file_half.replace("half", "mask")
+   flat_file = mask_file_half.replace("half", "flat")
+   app_file = mask_file_half.replace("half", "applied")
+   print("MASK FILE:", mask_file)
+   mimg = cv2.imread(mask_file,0) 
+   fimg = cv2.imread(flat_file,0) 
+   oh, ow = mimg.shape[:2]
+   print("mask:", mask_file)
+   mimg = cv2.resize(mimg,(960,540))
+   mp = mask_points_str.split(";")
+   for mm in mp:
+      print("mp:", mm)
+      el = mm.split(",")
+      if len(el) == 3:
+         x,y,s = el
+         x = int(x)
+         y = int(y)
+         s = int(s)
+         s = int(s / 2)
+         x1 = x - s 
+         y1 = y - s 
+         x2 = x + s 
+         y2 = y + s 
+         if x1 < 0:
+            x1 = 0
+         if y1 < 0:
+            y1 = 0
+         if x2 > 960:
+            x2 = 960 
+         if y2 > 540:
+            y2 = 540
+         if action == "add":
+            print("ADD:", x1,y1,x2,y2)
+            mimg[y1:y2,x1:x2] = 255
+         if action == "del":
+            print("DEL:", x1,y1,x2,y2)
+            mimg[y1:y2,x1:x2] = 0
+
+   print("SAVED:", mask_file)
+   mimg = cv2.resize(mimg,(ow,oh))
+   aimg = cv2.subtract(fimg, mimg)
+   cv2.imwrite(mask_file, mimg)
+   cv2.imwrite(app_file, aimg) 
+   himg = cv2.resize(aimg,(960,540))
+   cv2.imwrite(mask_file_half, himg) 
+        
+
+def edit_mask(amsid, cam):
+   json_conf = load_json_file("../conf/as6.json")
+   out = amsid + "_" + cam
+   mask_file = "/mnt/ams2/meteor_archive/" + amsid + "/CAL/MASKS/" + cam + "_applied.png"
+   mask_file_half = "/mnt/ams2/meteor_archive/" + amsid + "/CAL/MASKS/" + cam + "_half.png"
+   vmask = "/meteor_archive/" + amsid + "/CAL/MASKS/" + cam + "_half.png"
+   if cfe(mask_file_half) == 0:
+      img = cv2.imread(mask_file)
+      img2 = cv2.resize(img,(960,540))
+      cv2.imwrite(mask_file_half, img2)
+   
+   template = make_default_template(amsid, "edit_mask.html", json_conf)
+   template = template.replace("{MAIN_TABLE}", out)
+   template = template.replace("{MASK_FILE}", vmask)
+   return(template)
+
 def show_masks(amsid):
    json_conf = load_json_file("../conf/as6.json")
    mask_dir = "/mnt/ams2/meteor_archive/" + amsid + "/CAL/MASKS/"
@@ -64,12 +131,16 @@ def show_masks(amsid):
    #out = """
    #   <div id="main_container" class="container-fluid d-flex h-100 mt-4 position-relative">
    #"""
-
+   rand = str(time.time())
    for mask in sorted(masks):
       mask = mask.replace("/mnt/ams2", "")
       fn,dir = fn_dir(mask)
       cam = fn.replace("_mask.png", "")
-      out += "<div style='float:left; padding: 10px'><img width=640 height=360 src=" + mask + "><br><caption>" + cam + "</caption><br></div>\n"
+      applied = mask.replace("mask", "applied")
+      elink = "<a href='/edit_mask/" + amsid + "/" + cam + "/'>"
+      out += "<div style='float:left; padding: 10px'>" + elink + "<img width=640 height=360 src=" + mask + "?" + rand + "><br><caption>" + cam + "</caption></a><br></div>\n"
+      out += "<div style='float:left; padding: 10px'>" + elink + "<img width=640 height=360 src=" + applied + "?" + rand + "><br><caption>" + cam + "</caption></a><br></div>\n"
+      out += "<div style='clear:both'></div>"
    #out += "</div>"
    template = make_default_template(amsid, "calib.html", json_conf)
    template = template.replace("{MAIN_TABLE}", out)
@@ -80,19 +151,24 @@ def cal_file(amsid, calib_file):
    
    caldir = "/mnt/ams2/cal/freecal/" + calib_file + "/"
    caldir = caldir.replace("-stacked.png", "")
+   caldir = caldir.replace(".png", "")
 
    cps = glob.glob(caldir + "*cal*.json")
+   print ("GLOB:", caldir + "*cal*.json")
    hss = glob.glob(caldir + "*half-stack.png")
    azs = glob.glob(caldir + "*az*half*")
    sfs = glob.glob(caldir + "*stacked.png")
    if len(cps) == 0 :
+      cdd = caldir.replace(".png/", "")
       template = "Problem: no calparams file exists in this dir. " + caldir
-      return(template)
+      cmd = "rm -rf " + cdd
+      #os.system(cmd)
+      return(template + cmd)
    if len(cps) > 1 :
       template = "Problem: more than one cal file in this dir, please delete one." + caldir
       return(template)
    if len(hss) == 0 :
-      if cfe(sfs[0]) == 1:
+      if len(sfs) >= 1:
           for x in range(0, len(sfs)):
              if "az" not in sfs: 
                 stack_img = cv2.imread(sfs[x], 0)

@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 
+import glob
 import numpy as np
 import sys
 import time
@@ -17,15 +18,15 @@ from lib.PipeManager import mln_report, mln_best, best_of , copy_super_stacks, s
 from lib.PipeFiles import get_pending_files
 from lib.PipeUtil import convert_filename_to_date_cam, day_or_night , load_json_file, save_json_file, cfe, remove_corrupt_files
 from lib.PipeVideo import scan_stack_file, make_preview_videos, load_frames_simple, ffmpeg_cat , ffmpeg_cats, ffmpeg_splice
-from lib.PipeDetect import detect_in_vals , obj_report, trim_events, detect_all, get_trim_num, trim_min_file, detect_meteor_in_clip, analyze_object, refine_meteor, refine_all_meteors, fireball, verify_meteor, re_detect, reduce_meteor, reject_meteors, confirm_meteors, make_roi_video_mfd, make_meteor_index_day, make_meteor_index_all,apply_frame_deletes, reduce_in_crop, batch_reduce, check_for_trailing_frames, remake_mfd, remake_mfd_all, reject_hotspots, reject_mask_detects
+from lib.PipeDetect import detect_in_vals , obj_report, trim_events, detect_all, get_trim_num, trim_min_file, detect_meteor_in_clip, analyze_object, refine_meteor, refine_all_meteors, fireball, verify_meteor, re_detect, reduce_meteor, reject_meteors, confirm_meteors, make_roi_video_mfd, make_meteor_index_day, make_meteor_index_all,apply_frame_deletes, reduce_in_crop, batch_reduce, check_for_trailing_frames, remake_mfd, remake_mfd_all, reject_hotspots, reject_mask_detects, perfect_points, perfect_points_all
 
-from lib.PipeSync import sync_day 
-from lib.PipeAutoCal import autocal , solve_field, cal_all, draw_star_image, freecal_copy, apply_calib, index_failed, deep_calib, deep_cal_report, blind_solve_meteors, guess_cal, flatten_image, project_many, project_snaps, review_cals, star_db_mag, cal_report, review_all_cals, reverse_map, cal_index, sync_back_admin_cals, min_fov, fn_dir, refit_fov, refit_all, super_cal, check_all
+from lib.PipeSync import sync_day , sync_index_day, sync_meteor_preview, sync_meteor_preview_all, do_meteor_day_prep, prep_month
+from lib.PipeAutoCal import autocal , solve_field, cal_all, draw_star_image, freecal_copy, apply_calib_old, index_failed, deep_calib, deep_cal_report, blind_solve_meteors, guess_cal, flatten_image, project_many, project_snaps, review_cals, star_db_mag, cal_report, review_all_cals, reverse_map, cal_index, sync_back_admin_cals, min_fov, fn_dir, refit_fov, refit_all, super_cal, check_all, refit_meteor, refit_meteors, reapply_meteor_cal
 from lib.PipeReport import autocal_report, detect_report 
 from lib.PipeLIVE import meteor_min_files, broadcast_live_meteors, broadcast_minutes, meteors_last_night, mln_final, pip_video, mln_sync, super_stacks, meteor_index, fix_missing_images, fflist, resize_video, minify_file, make_preview_meteor, make_preview_meteors, sync_preview_meteors
 from lib.PipeTimeLapse import make_tl_for_cam, video_from_images, six_cam_video, timelapse_all, tn_tl6, sync_tl_vids, multi_cam_tl, audit_min, purge_tl , plot_min_int, aurora_fast
 from lib.PipeMeteorDelete import delete_all_meteor_files
-
+from lib.PipeEvent import events_for_day, get_network_info, solve_day
 
 
 '''
@@ -167,7 +168,13 @@ if __name__ == "__main__":
       autocal_report("failed")
 
    if cmd == "deep_cal":
-      deep_calib(sys.argv[2], json_conf)
+      if sys.argv[2] == "all":
+         for cam in json_conf['cameras']:
+            cams_id = json_conf['cameras'][cam]['cams_id']
+            deep_calib(cams_id, json_conf)
+
+      else:
+         deep_calib(sys.argv[2], json_conf)
    if cmd == "dc_report":
       deep_cal_report(sys.argv[2], json_conf)
  
@@ -330,10 +337,11 @@ if __name__ == "__main__":
    if cmd == "clouds":
       detect_clouds(sys.argv[2],json_conf )
    if cmd == "make_flats":
+      day = sys.argv[2]
       for cam in json_conf['cameras']:
          cam_id = json_conf['cameras'][cam]['cams_id']
          print("Make Flat.", cam_id)
-         make_flat(cam_id,None, json_conf )
+         make_flat(cam_id,day, json_conf )
    
    if cmd == "make_flat":
       if len(sys.argv) > 3:
@@ -468,9 +476,28 @@ if __name__ == "__main__":
    if cmd == 'mns':
       meteor_night_stacks(sys.argv[2], json_conf)
    if cmd == 'hotspots':
-      reject_hotspots(sys.argv[2], json_conf)
+      if sys.argv[2] == "all":
+         files = glob.glob("/mnt/ams2/meteors/*")
+         for file in files:
+            if cfe(file, 1) == 1:
+               fn, fdir = fn_dir(file)
+               print(fn)
+               reject_hotspots(fn, json_conf)
+      else:
+         reject_hotspots(sys.argv[2], json_conf)
    if cmd == 'reject_masks':
-      reject_mask_detects(sys.argv[2], json_conf)
+      if sys.argv[2] == "all":
+         files = sorted(glob.glob("/mnt/ams2/meteors/*"), reverse=True)
+         for file in files:
+            print(file)
+            if cfe(file, 1) == 1:
+               fn, fdir = fn_dir(file)
+               print(fn)
+               reject_mask_detects(fn, json_conf)
+            else:
+               print("NO FILE:", file)
+      else:
+         reject_mask_detects(sys.argv[2], json_conf)
    if cmd == "mln_cam":
       date = sys.argv[2]
       cam_num = sys.argv[3]
@@ -479,3 +506,41 @@ if __name__ == "__main__":
       hd_snaps(sys.argv[2], json_conf)
    if cmd == "custom":
       assemble_custom(sys.argv[2], json_conf)
+   if cmd == "sid":
+      sync_index_day(sys.argv[2], json_conf)
+   if cmd == "efd":
+      events_for_day(sys.argv[2], json_conf)
+   if cmd == "refit_meteor":
+      refit_meteor(sys.argv[2], json_conf)
+   if cmd == "refit_meteors":
+      if len(sys.argv) == 3:
+         refit_meteors(sys.argv[2], json_conf)
+      else:
+         if sys.argv[3] == "multi":
+            refit_meteors(sys.argv[2], json_conf, 1)
+         else:
+            refit_meteors(sys.argv[2], json_conf, 0)
+   if cmd == "pp":
+      perfect_points(sys.argv[2], json_conf)
+   if cmd == "pp_all":
+      perfect_points_all(sys.argv[2], json_conf)
+   if cmd == "sync_prev":
+      sync_meteor_preview(sys.argv[2], json_conf)
+   if cmd == "sync_prev_all":
+      sync_meteor_preview_all(sys.argv[2], json_conf)
+   if cmd == "get_network_info":
+      get_network_info(json_conf)
+   if cmd == "recal":
+      reapply_meteor_cal(sys.argv[2], json_conf)
+   if cmd == "do_meteor_day_prep" or cmd == "meteor_prep":
+      do_meteor_day_prep(sys.argv[2], json_conf)
+   if cmd == "prep_month" :
+      prep_month(sys.argv[2], json_conf)
+   if cmd == "solve_day" :
+      solve_day(sys.argv[2], json_conf)
+   if cmd == "simple_tl" :
+      simple_TL(sys.argv[2], json_conf)
+   if cmd == "j2" :
+      print("J2")
+      join_two( json_conf)
+

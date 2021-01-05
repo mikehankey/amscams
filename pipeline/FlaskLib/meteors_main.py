@@ -37,7 +37,10 @@ def get_meteors_in_range(station_id, start_date, end_date,del_data,filters=None)
    hotspot_filter = 0
    nored = 0
    cam_filter = 0
+   multi_filter = 0
    if filters is not None:
+      if "multi" in filters:
+         multi_filter = 1
       if "nored" in filters:
          nored = 1
       if "hotspot" in filters:
@@ -66,19 +69,28 @@ def get_meteors_in_range(station_id, start_date, end_date,del_data,filters=None)
       else:
          mi = []
  
-      if hotspot_filter == 0 and nored == 0 and cam_filter == 0:
+      if hotspot_filter == 0 and nored == 0 and cam_filter == 0 and multi_filter == 0:
+         print("NO FILTERS ON")
          return(mi)
       elif hotspot_filter == 1:
          filtered_index = []
+         print("HOTSPOT FILTERS ON")
          for dd in mi:
-            meteor_file, reduced, start_time, dur, ang_vel, ang_dist, hotspot = dd 
-            if hotspot > 20:
+            meteor_file, reduced, start_time, dur, ang_vel, ang_dist, hotspot, msm = dd 
+            print("HOTSPOT", hotspot)
+            if hotspot >= 4:
                filtered_index.append(dd)
       elif cam_filter != 0:
          filtered_index = []
          for dd in mi:
-            meteor_file, reduced, start_time, dur, ang_vel, ang_dist, hotspot = dd 
+            meteor_file, reduced, start_time, dur, ang_vel, ang_dist, hotspot, msm  = dd 
             if cam_filter in meteor_file: 
+               filtered_index.append(dd)
+      elif multi_filter != 0:
+         filtered_index = []
+         for dd in mi:
+            meteor_file, reduced, start_time, dur, ang_vel, ang_dist, hotspot, msm  = dd 
+            if msm == 1:
                filtered_index.append(dd)
 
 
@@ -112,7 +124,7 @@ def get_meteors_in_range(station_id, start_date, end_date,del_data,filters=None)
             print("ADDING METEORS FOR DAY:", mif)
             for dd in mit:
                if nored == 1:
-                  meteor_file, reduced, start_time, dur, ang_vel, ang_dist, hotspot = dd 
+                  meteor_file, reduced, start_time, dur, ang_vel, ang_dist, hotspot, msm = dd 
                   rf = meteor_file.replace(".json", "-reduced.json")
                   if cfe(rf) == 1:
                      reduced = 1
@@ -120,9 +132,9 @@ def get_meteors_in_range(station_id, start_date, end_date,del_data,filters=None)
                      print("NORED")
                      continue
                if hotspot_filter == 1:
-                  meteor_file, reduced, start_time, dur, ang_vel, ang_dist, hotspot = dd 
+                  meteor_file, reduced, start_time, dur, ang_vel, ang_dist, hotspot, msm = dd 
                   print("HOSPOT VALUE", hotspot)
-                  if hotspot <= 20:
+                  if hotspot <= 5:
                      continue
                mi.append(dd)
          else:
@@ -147,6 +159,104 @@ def day_count(md, amsid, day,mc,rc,del_data):
       else:
          print("DEL FOUND:", js)
    return(mc,rc)
+
+def meteors_by_day(amsid, in_data):
+   json_conf = load_json_file("../conf/as6.json")
+   mi_day_file  = "/mnt/ams2/meteors/" + amsid + "_mi_day.json"
+   mi_day = load_json_file(mi_day_file)
+   out = "<div>"
+   last_day = None
+   for day, stack_file, count in mi_day:
+      if last_day is None:
+         out += day + " - " + str(count) + " meteors<br>"
+         out += "<div style='float:left'>"
+         last_day = day
+      if day != last_day:
+         out += "</div><div style='clear:both'>"
+         out += day + " " + str(count) + " meteors</div>"
+         out += "<div style='float:left'>"
+      vs = stack_file.replace("/mnt/ams2", "")
+      vs = vs.replace(".jpg", "-tn.jpg")
+      out += "<a href=/meteors/" + amsid + "/?start_day=" + day + "><img src=" +  vs + "></a>\n"
+      last_day = day
+   out += "</div></div>"
+   return(out)
+
+
+def trash_page (amsid, in_data) :
+   start_day = in_data['start_day']
+   date = start_day
+   json_conf = load_json_file("../conf/as6.json")
+   trash_dir = "/mnt/ams2/trash/" + start_day + "/" 
+   print(trash_dir + "*.json") 
+   trash_files = []
+   trash_json = glob.glob(trash_dir + "*.json")
+   for tj in trash_json:
+      if "reduced" not in tj:
+         trash_files.append(tj)
+   template = make_default_template(amsid, "meteors_main.html", json_conf)
+
+   out = """
+      <div id='main_container' class='container-fluid h-100 mt-4 lg-l'>
+      <div class='gallery gal-resize reg row text-center text-lg-left'>
+      <div class='list-onl'>
+      <div class='filter-header d-flex flex-row-reverse '>
+      <button id="sel-all" title="Select All" class="btn btn-primary ml-3"><i class="icon-checkbox-checked"></i></button>
+      <button id="restore-all" class="restore-all btn "><i class="icon-restore"></i> Restore <span class="sel-ctn">All</span> Selected</button>
+     </div>
+     </div>
+   """
+   print("TRASH:", trash_files)
+   for trash in trash_files: 
+      fn, dir = fn_dir(trash)
+      jsid = fn.replace(".json", "")
+      ht_class = "norm"
+      meteor_detail_link = "#"
+      vothumb = "/trash/" + date + "/" + jsid + "-stacked-tn.jpg" 
+      #vothumb = vthumb.replace("-tn.jpg", "-obj-tn.jpg")
+      vvid_link = "/trash/" + date + "/" + jsid + ".mp4" 
+      vthumb = "/trash/" + date + "/" + jsid + "-stacked-tn.jpg" 
+      show_datetime_cam = """
+       Classify<BR>
+       <div style="display: None">
+       Clouds/Moon - Plane - Car Lights - Bird
+       Satellite - Rocket - Aurora - Lightening
+       Trees - 
+       </div>
+      """
+      out += """
+         <div id='""" + jsid + """' class='preview select-to """ + ht_class + """'>
+            <a class='mtt' href='""" + meteor_detail_link + """' data-obj='""" + vothumb + """' title='Go to Info Page'>
+               <img alt='""" + "ALT" + """' class='img-fluid ns lz' src='""" + vthumb + """'>
+               <span>""" + show_datetime_cam + """</span>
+            </a>
+
+            <div class='list-onl'>
+               <span>""" + show_datetime_cam + """</span>
+            </div>
+            <div class="list-onl sel-box">
+               <div class="custom-control big custom-checkbox">
+                  <input type="checkbox" class="custom-control-input" id='chec_""" + jsid + """' name='chec_""" + jsid + """'>
+                  <label class="custom-control-label" for='chec_""" + jsid + """'></label>
+               </div>
+            </div>
+
+            <div class='btn-toolbar'>
+               <div class='btn-group'>
+                  <a style='color:#ffffff' class='vid_link_gal col btn btn-primary btn-sm' title='Play Video' href='/dist/video_player.html?video=""" + vvid_link + """&vid_id=""" + jsid + """'>
+                  <!--<i class='icon-play'>-->Play</i></a>
+                  <a style='color:#ffffff' class='restore_meteor_gallery col btn btn-sm' title='Restore Detection' href="javascript:restore_meteor('""" + jsid + """')">Restore Meteor<i class='icon-restore'></i></a>
+               </div>
+            </div>
+         </div>
+      """
+
+
+
+
+   template = template.replace("{MAIN_TABLE}", out)
+   template = template.replace("{RAND}", "v3.0000")
+   return(template)
 
 def meteors_main (amsid, in_data) :
 
@@ -249,6 +359,8 @@ def meteors_main (amsid, in_data) :
          hotspot = 0
       elif len(meteor) == 7:
          meteor_file, reduced, start_time, dur, ang_vel, ang_dist, hotspot = meteor 
+      elif len(meteor) == 8:
+         meteor_file, reduced, start_time, dur, ang_vel, ang_dist, hotspot,msm = meteor 
       red_file = meteor_file.replace(".json", "-reduced.json")
       if cfe(red_file) == 1:
          reduced = 1
@@ -267,6 +379,9 @@ def meteors_main (amsid, in_data) :
       cel = camd.split("-")
       cam = cel[0]
       show_datetime_cam = stime + " - " + cam
+      if reduced == 1:
+         show_datetime_cam += "<BR>Ang Vel: " + str(ang_vel)[0:4] + " Duration: " + str(dur) 
+   
       meteor_dt = datetime.datetime.strptime(stime, "%Y-%m-%d %H:%M:%S")
       mdate, mtime = stime.split(" ")
       mdate = mdate.replace("-", "_")
@@ -291,6 +406,9 @@ def meteors_main (amsid, in_data) :
          ht_class = "reduced"
       else:
          ht_class = "norm"
+      if msm == 1:
+         ht_class = "multi"
+      print("MSM:", msm)
       # Per meteor cell / div
       out += """
          <div id='""" + jsid + """' class='preview select-to """ + ht_class + """'>

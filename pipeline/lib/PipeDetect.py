@@ -11,19 +11,329 @@ from datetime import datetime as dt
 import datetime
 #import math
 import os
-from lib.FFFuncs import imgs_to_vid
-from lib.FFFuncs import ffprobe as ffprobe4
-from lib.PipeAutoCal import fn_dir, get_cal_files, get_image_stars, get_catalog_stars, pair_stars, update_center_radec, cat_star_report, minimize_fov, XYtoRADec
+from lib.FFFuncs import ffprobe as ffprobe4, imgs_to_vid
+from lib.PipeAutoCal import fn_dir, get_cal_files, get_image_stars, get_catalog_stars, pair_stars, update_center_radec, cat_star_report, minimize_fov, XYtoRADec, poly_fit_check
 from lib.PipeVideo import ffmpeg_splice, find_hd_file, load_frames_fast, find_crop_size, ffprobe
 from lib.PipeUtil import load_json_file, save_json_file, cfe, get_masks, convert_filename_to_date_cam, buffered_start_end, get_masks, compute_intensity , bound_cnt, day_or_night
 from lib.DEFAULTS import *
-from lib.PipeMeteorTests import big_cnt_test, calc_line_segments, calc_dist, unq_points, analyze_intensity, calc_obj_dist, meteor_direction, meteor_direction_test, check_pt_in_mask, filter_bad_objects, obj_cm, meteor_dir_test, ang_dist_vel, gap_test
+from lib.PipeMeteorTests import big_cnt_test, calc_line_segments, calc_dist, unq_points, analyze_intensity, calc_obj_dist, meteor_direction, meteor_direction_test, check_pt_in_mask, filter_bad_objects, obj_cm, meteor_dir_test, ang_dist_vel, gap_test, best_fit_slope_and_intercept
 from lib.PipeImage import stack_frames
 
 import numpy as np
 import cv2
 
 json_conf = load_json_file(AMS_HOME + "/conf/as6.json")
+
+def perfect_points_all(day, json_conf):
+   mdir = "/mnt/ams2/meteors/" + day + "/"
+   files = glob.glob(mdir + "*.json")
+   meteors = []
+   mi = {}
+   meteor_data = []
+   for mf in files:
+      if "reduced" not in mf and "stars" not in mf and "man" not in mf and "star" not in mf and "import" not in mf and "archive" not in mf and "cal" not in mf and "frame" not in mf:
+         meteors.append(mf)
+   for mm in meteors:
+      fn, dir = fn_dir(mm)
+      fn = fn.replace(".json", "")
+      cmd = "./Process.py pp " + fn
+      print(cmd)
+      os.system(cmd)
+      #exit()
+
+
+def perfect_points(meteor_file, json_conf):
+
+   if "/mnt/ams2/meteors" not in meteor_file:
+      day = meteor_file[0:10]
+      meteor_file = meteor_file.replace(".mp4", "")
+      meteor_file = meteor_file.replace(".json", "")
+      meteor_file = "/mnt/ams2/meteors/" + day + "/" + meteor_file + ".json"
+
+
+   if cfe(meteor_file) == 1 :
+      mj = load_json_file(meteor_file)
+      img = cv2.imread(mj['sd_stack'])
+      img = cv2.resize(img, (1280, 720))
+      hd_frames,hd_color_frames,subframes,sum_vals,max_vals,pos_vals = load_frames_fast(mj['sd_video_file'], json_conf, 0, 0, 1, 1,[])
+
+   else:
+      print("NO MJ", meteor_file)
+      return()
+   if "best_meteor" not in mj:
+      print("No best meteor. Must reduce before running perfect points.")
+   bm = mj['best_meteor']
+   xs = bm['ccxs']
+   ys = bm['ccys']
+   m,b =  best_fit_slope_and_intercept(xs,ys)
+
+   (dom_dir, quad, ideal, ideal_roi_big_img) = get_movement_info(bm, 500, 500)
+   print("DOM:", dom_dir)
+   print("QUAD:", quad)
+   print("IDEAL:", ideal)
+   bm['report']['object_px_length'], bm['report']['line_segments'], bm['report']['x_segs'], bm['report']['ms'], bm['report']['bs'] = calc_line_segments(bm)
+
+   lys = []
+   xds = []
+   yds = []
+   last_x = None
+   for i in range(0, len(xs)):
+      line_y = int(m*xs[i]+b)
+      lys.append(line_y)
+      print(xs[i], ys[i], line_y)
+      if last_x is None:
+         xds.append(0)
+         yds.append(0)
+      else:
+         xds.append(xs[i] - last_x)
+         yds.append(ys[i] - last_y)
+
+   med_x = int(sum(xds) / len(xds) - 1)
+   med_y = int(sum(yds) / len(yds) - 1)
+   med_seg = np.median(bm['report']['line_segments'])
+   new_xs = []
+   new_ys = []
+   for i in range(0, len(xs)):
+      fn = bm['ofns'][i]
+      frame = hd_color_frames[fn].copy()
+      frame = cv2.subtract(frame, hd_color_frames[fn-1])
+      frame = cv2.resize(frame, (1280, 720))
+
+
+      # calc point distance to line
+      dist_to_line = poly_fit_check(xs,ys, xs[i],ys[i])
+      # calc point distance estimate point 
+      dist_to_est = calc_dist((xs[i],ys[i]),(xs[i],lys[i]))
+      #print("DIST TO LINE:", dist_to_line, dist_to_est, bm['report']['line_segments'][i])
+      seg_err = abs(bm['report']['line_segments'][i] - med_seg)
+      line_err = bm['report']['line_segments'][i] = dist_to_line
+      est_err = bm['report']['line_segments'][i] = dist_to_est 
+      total_error = seg_err + line_err + est_err 
+      if total_error > 2.25:
+         print("ERROR (seg,line,est,total):", seg_err, line_err, est_err, total_error)
+      else:
+         print("OK (seg,line,est,total):", seg_err, line_err, est_err, total_error)
+
+      #cv2.circle(frame,(xs[i],line_y), 1, (0,255,255), 1)
+      #cv2.circle(frame,(xs[i],ys[i]), 1, (0,0,255), 1)
+      rx1,ry1,rx2,ry2 = bound_cnt(xs[i], ys[i],frame.shape[1],frame.shape[0], 50)
+      cnt_img = frame[ry1:ry2,rx1:rx2]
+      cnt_img = cv2.resize(cnt_img, (500, 500))
+
+      thresh = np.mean(cnt_img) + 25
+
+      if quad[0] == 'left':
+         cnt_img[0:500,250:500] = [0,0,0]
+         if quad[1] == 'bottom':
+            cnt_img[0:250,0:500] = [0,0,0]
+         if quad[1] == 'top':
+            cnt_img[250:500,0:500] = [0,0,0]
+
+      if quad[0] == 'right':
+         cnt_img[0:500,0:250] = [0,0,0]
+
+      _, threshold = cv2.threshold(cnt_img.copy(), thresh, 255, cv2.THRESH_BINARY)
+      cnts = get_contours_in_image(threshold)
+      if cnts == 0:
+         thresh = np.mean(cnt_img) + 5
+         _, threshold = cv2.threshold(cnt_img.copy(), thresh, 255, cv2.THRESH_BINARY)
+         cnts = get_contours_in_image(threshold)
+      print("CNTS:", len(cnts))
+      best_x = None
+      best_y = None
+      if len(cnts) == 1:
+         cx,cy,cw,ch = cnts[0]
+         best_x = int(cx + (cw/2))
+         best_y = int(cy + (ch/2))
+      elif len(cnts) > 1:
+         for cx,cy,cw,ch in cnts:
+            if best_x is None:
+               best_x = int(cx + (cw/2))
+               best_y = int(cy + (ch/2))
+            if quad[0] == "left":
+               if int(cx + (cw/2)) < best_x:
+                  best_x = int(cx + (cw/2))
+                  best_y = int(cy + (ch/2))
+      else:
+         #no cnt found!?
+         gray_img = cv2.cvtColor(cnt_img, cv2.COLOR_BGR2GRAY)
+         min_val, max_val, min_loc, (mx,my)= cv2.minMaxLoc(gray_img)
+         best_x = 250
+         best_y = 250
+         cw = 5
+         ch = 5
+      adj_x = int((250 - best_x)/5)
+      adj_y = int((250 - best_y)/5)
+      new_x = xs[i] - adj_x
+      new_y = ys[i] - adj_y
+      new_xs.append(new_x)
+      new_ys.append(new_y)
+      rx1,ry1,rx2,ry2 = bound_cnt(new_x,new_y,frame.shape[1],frame.shape[0], 50)
+      lead_cnt_img = frame[ry1:ry2,rx1:rx2]
+      lead_cnt_img = cv2.resize(cnt_img, (500, 500))
+      cv2.line(lead_cnt_img, (0,250), (500,250), (200,200,200), 1)
+      cv2.line(lead_cnt_img, (250,0), (250,500), (200,200,200), 1)
+      print("ADJ:", xs[i], ys[i], adj_x, adj_y, new_x,new_y)
+
+      if SHOW == 1:
+         cv2.rectangle(threshold, (best_x, best_y), (best_x+cw, best_y+ch), (128,128,128), 1, cv2.LINE_AA)
+
+         cv2.imshow('pepe', threshold)
+         cv2.waitKey(30)
+
+         cv2.imshow('pepe', lead_cnt_img)
+         cv2.waitKey(30)
+
+      last_x = best_x
+      last_y = best_y
+
+   bm['report']['line_segments'], xds, yds = comp_segs(new_xs,new_ys)
+   med_x = int(np.median(xds))
+   med_y = int(np.median(yds))
+   print("SEGS!", bm['report']['line_segments'])
+   print("XSEGS!", xds)
+   print("YSEGS!", yds)
+   fx = new_xs[0]
+   fy = new_ys[0]
+   ax = None
+   ay = None
+   bx = None
+   by = None
+   exs = []
+   eys = []
+   for i in range(0, len(xs)):
+      fn = bm['ofns'][i]
+      new_x = new_xs[i]
+      new_y = new_ys[i]
+      if i < 10:
+         lim = i 
+      elif i + 10 >= len(new_xs):
+         lim = len(new_xs) - i
+      else:
+         lim = 10
+
+      cv2.circle(img,(bm['ccxs'][i],bm['ccys'][i]), 2, (0,0,255), 1)
+      bx = np.mean(new_xs[i-lim:i-1])
+      by = np.mean(new_ys[i-lim:i-1])
+      ax = np.mean(new_xs[i+1:i+lim])
+      ay = np.mean(new_ys[i+1:i+lim])
+      print("AB:", i, lim, bx, by, ax,ay)
+      x = xs[i]
+      y = ys[i]
+      ly = lys[i]
+      if math.isnan(bx) is not True and math.isnan(ax) is not True:
+         est_x = int((bx + ax) / 2)
+         est_y = int((by + ay) / 2)
+         cv2.circle(img,(est_x,est_y), 1, (255,255,0), 1)
+         exs.append(est_x)
+         eys.append(est_y)
+      else:
+         exs.append(new_x)
+         eys.append(new_y)
+
+      #lseg = bm['report']['line_segments'][i] 
+      cv2.circle(img,(new_x,new_y), 1, (0,255,255), 1)
+      #cv2.circle(img,(x,y), 1, (0,0,255), 1)
+      #cv2.circle(img,(est_x,est_y), 1, (0,255,0), 1)
+      #cv2.circle(frame,(xs[i],ys[i]), 1, (0,0,255), 1)
+
+      if bm['report']['line_segments'][i] == 0 and i > 0:
+         fix_x = xs[i-1] + med_x
+         fix_y = ys[i-1] + med_y
+         #xs[i] = fix_x
+         #ys[i] = fix_y
+         cv2.circle(img,(fix_x,fix_y), 1, (255,0,0), 1)
+         print("FIX!", bm['report']['line_segments'][i], med_x, med_y, fix_x, fix_y)
+
+   #cv2.line(img, (xs[0],lys[0]), (xs[-1],lys[-1]), (200,200,200), 1)
+   if SHOW == 1:
+      cv2.imshow('pepe', img)
+      cv2.waitKey(30)
+
+   for i in range(0, len(xs)):
+      fn = bm['ofns'][i]
+      ex = exs[i]
+      ey = eys[i]
+      nx = new_xs[i]
+      ny = new_ys[i]
+      frame = hd_color_frames[fn]
+      frame = cv2.resize(frame, (1280, 720))
+      if SHOW == 1:
+         cv2.circle(frame,(ex,ey), 1, (255,0,0), 1)
+         cv2.circle(frame,(nx,ny), 1, (0,255,0), 1)
+         cv2.imshow('pepe', frame)
+         cv2.waitKey(30)
+      nx1,ny1,nx2,ny2 = bound_cnt(nx, ny,1280,720, 50)
+      frame = hd_color_frames[fn]
+      frame = cv2.resize(frame, (1280, 720))
+      cnt_img = frame[ny1:ny2,nx1:nx2]
+      if SHOW == 1:
+         cv2.line(cnt_img, (0,50), (100,50), (200,200,200), 1)
+         cv2.line(cnt_img, (50,0), (50,100), (200,200,200), 1)
+ 
+         cv2.imshow('pepe', cnt_img)
+         cv2.waitKey(30)
+
+   bm['ccxs'] = new_xs
+   bm['ccys'] = new_ys
+   mj['best_meteor'] = bm
+   mfd,crop_box = make_meteor_frame_data(mj['best_meteor'], mj['cp'])
+
+   mj['best_meteor'] = apply_calib(mj['sd_video_file'], mj['best_meteor'], mj['cp'], json_conf)
+
+   redf = meteor_file.replace(".json", "-reduced.json")
+   red = load_json_file(redf)
+   red['meteor_frame_data'] = mfd
+   red['cal_params'] = mj['cp']
+   save_json_file(redf, red) 
+   save_json_file(meteor_file, mj) 
+
+   red = load_json_file(redf)
+   print("NEW MFD:")
+   for data in red['meteor_frame_data']:
+      print("MFD:", data)
+
+   # things we want to check, test or fix
+   # determine x,y direction of travel & dom direction
+
+   make_roi_video(mj['sd_video_file'],bm, hd_color_frames, json_conf)
+
+   red = load_json_file(redf)
+   print("NEW MFD:")
+   for data in red['meteor_frame_data']:
+      print("MFD:", data)
+
+   # last_seg_dist of each frame
+   print("SEGS:", bm['report']['line_segments'])
+   print("XSEGS:", bm['report']['x_segs'])
+   print("M:", m)
+   print("B:", b)
+   # find the leading edge of each frame 
+   # x diff per frame
+   # y diff per frame
+   # overall line and dist to line for each
+   # make sure no frames, esp the last have a negative seg dist
+   # check the start of the meteor to make sure no undetected pre-frames exist
+   # check the end of the meteor to make sure no undetected post-frames exit
+   # determine est_x,est_y for each frame and the err between choosen point and est point
+   # make sure there are no empty frames / replace with est_x,est_y if the blob can't be found 
+
+def comp_segs(xs,ys):
+   segs = []
+   xds = []
+   yds = []
+   for i in range(0, len(xs)):
+      if i > 0:
+         sd = calc_dist((xs[i], ys[i]), (xs[i-1], ys[i-1]))
+         segs.append(sd)
+         xds.append(xs[i] - xs[i-1])
+         yds.append(ys[i] - ys[i-1])
+      else:
+         segs.append(0)
+         xds.append(0)
+         yds.append(0)
+   return(segs, xds, yds)
+
 
 def check_for_trailing_frames(video_file, mj=None, json_conf=None):
    if json_conf is None:
@@ -112,8 +422,6 @@ def check_for_trailing_frames(video_file, mj=None, json_conf=None):
    print("OF:", bm['ofns'][0], bm['ofns'][-1])
 
 
-   #cv2.imshow('pepe', img)   
-   #cv2.waitKey(0)
 
 
 
@@ -190,6 +498,41 @@ def reduce_in_crop(video_file, json_conf):
    else:
       print("NOTHING?")
 
+def make_meteor_index_day_all(json_conf):
+   cams = []
+   for cam in json_conf['cameras']:
+      cams_id = json_conf['cameras'][cam]['cams_id']
+      cams.append(cams_id)
+   amsid = json_conf['site']['ams_id']
+   mr_dir = "/mnt/ams2/meteors/"
+   mdirs = []
+   all_meteors = []
+   files = glob.glob(mr_dir + "*")
+   mi_day = []
+   for mdir in files:
+      #print(mdir)
+      day, dir = fn_dir(mdir)
+      
+      if cfe(mdir, 1) == 1:
+         ind_file = mdir + "/" + day + "-" + amsid + ".meteors"
+         if cfe(ind_file) == 1:
+            ind = load_json_file(ind_file)
+            count = len(ind)
+         else:
+            print("NOT FOUND:", ind_file)
+            count = 0
+         for cams_id in cams: 
+            stack_file = mdir + "/" + cams_id + "_meteors.jpg"
+            if cfe(stack_file) == 1:
+               mi_day.append((day, stack_file, count))
+               print("ADDING:", stack_file)
+            else:
+               print("NO STCK:", stack_file)
+   mi_day_file = "/mnt/ams2/meteors/" + amsid + "_" + "mi_day.json"
+   mi_day = sorted(mi_day, key=lambda x: (x[0]), reverse=True)
+   save_json_file(mi_day_file, mi_day)
+   print("Saved: ", mi_day_file)
+
 
 
 def make_meteor_index_all(json_conf):
@@ -236,7 +579,21 @@ def make_meteor_index_day(day, json_conf):
          #print("BAD FILE:", ddd, len(ddd))
          continue
       start_time = y + "-" + m + "-" + d + " " + h + ":" + mm + ":" + s
-      mj = load_json_file(meteor)
+      try:
+         mj = load_json_file(meteor)
+      except:
+         print("CORRUPT FILE.", mf)
+      meteor_red = meteor.replace(".json", "-reduced.json")
+      if cfe(meteor_red) == 1:
+         try:
+            mjr = load_json_file(meteor_red)
+         except:
+            print("CORRUPT FILE.", meteor_red)
+            mjr = None
+      else:
+         mjr = None
+
+
       if "best_meteor" in mj:
          reduced = 1
          #print(mj['best_meteor'])
@@ -264,17 +621,32 @@ def make_meteor_index_day(day, json_conf):
          hotspot = mj['hotspot']
       else:
          hotspot = 0
+      if "multi_station_event" in mj:
+         mi[meteor]['multi_station'] = 1
+         msm = 1
+      else:
+         mi[meteor]['multi_station'] = 0
+         msm = 0
+
       mi[meteor]['start_time'] = start_time
       mi[meteor]['dur'] = dur
       mi[meteor]['ang_vel'] = ang_vel
       mi[meteor]['ang_dist'] = ang_dist
       mi[meteor]['hotspot'] = hotspot 
-      meteor_data.append((meteor, reduced, start_time, dur, ang_vel, ang_dist, hotspot))
+
+      if mjr is not None:
+         mi[meteor]['meteor_frame_data'] = mjr['meteor_frame_data']
+      meteor_data.append((meteor, reduced, start_time, dur, ang_vel, ang_dist, hotspot,msm))
 
    mid = sorted(meteor_data, key=lambda x: (x[0]), reverse=True)
    mi_file = mdir + day + "-" + amsid + ".meteors"
+   mi_detail_file = mdir + day + "-" + amsid + "-detail.meteors"
    save_json_file(mi_file, mid)
+   save_json_file(mi_detail_file, mi)
+   os.system("gzip -kf " + mi_file)
+   os.system("gzip -kf " + mi_detail_file)
    print("saved", mi_file)
+   print("saved", mi_detail_file)
    return(mi_file, mid)
 
 def batch_reduce(json_conf):
@@ -292,7 +664,7 @@ def confirm_meteors(date ):
    files = glob.glob("/mnt/ams2/meteors/" + date + "/*.json")
    meteors = []
    for mf in files:
-      if "reduced" not in mf and "stars" not in mf and "man" not in mf:
+      if "reduced" not in mf and "star" not in mf and "man" not in mf:
          meteors.append(mf)
    for meteor in meteors:
       meteor_vid = meteor.replace(".json", ".mp4")
@@ -326,9 +698,154 @@ def reject_mask_detects(date, json_conf):
       mask_imgs[fn] = mi
       sd_mask_imgs[fn] = sd
    hsi = []
-   for mf in jsfiles:
+
+
+   meteors = 0
+   meteors_conf = 0
+   tfs = 0
+   for mf in sorted(jsfiles,reverse=True):
       if "reduced" not in mf and "stars" not in mf and "man" not in mf and "star" not in mf and "import" not in mf and "archive" not in mf:
          mj = load_json_file(mf) 
+         if "confirmed" in mj:
+            if len(mj['confirmed_meteors']) > 0:
+               print("SKIP CONFIRMED.")
+               # make sure the obj isn't bad / check segs and other filters
+               print(mf)
+               seg_test_result = seg_test(mj['confirmed_meteors'][0]['segs'])
+               if seg_test_result == 1:
+                  print("SEG TEST GOOD")
+                  continue
+               else:
+                  fn, dir = fn_dir(mf)
+                  root_file = fn.replace(".json", "")
+                  del_data[root_file] = 1
+                  print("seg test failed.", mf)
+            else:
+               print("BAD NO CONFIRMED?", mf)
+               fn, dir = fn_dir(mf)
+               root_file = fn.replace(".json", "")
+               del_data[root_file] = 1
+         if "multi_station_event" in mj:
+            print("SKIP MULTI-STATION CONFIRMED.")
+            continue
+
+         print("\n\n\n\n RUNNING:", mf)
+         tfs += 1
+         stack_f = mf.replace(".json", "-stacked.jpg")
+         simg= cv2.imread(stack_f)
+         video_file = mf.replace(".json", ".mp4")
+         hd_frames,hd_color_frames,subframes,sum_vals,max_vals,pos_vals = load_frames_fast(video_file, json_conf, 0, 0, 1, 1,[])
+         objects = {}
+         fn = 0
+         (f_datetime, cam, f_date_str,fy,fmin,fd, fh, fm, fs) = convert_filename_to_date_cam(mf)
+         mask = sd_mask_imgs[cam]
+         if mask.shape[0] != subframes[0].shape[0]:
+            mask = cv2.resize(mask, (subframes[0].shape[1], subframes[0].shape[0]))
+         if len(mask.shape) == 3:
+            mask = cv2.cvtColor(mask, cv2.COLOR_BGR2GRAY)
+
+         bg_img = hd_frames[0]
+         fn = 0
+         intense = []
+         full_bg_avg = np.mean(bg_img)
+         for frame in subframes:
+
+            frame = cv2.subtract(frame, mask)
+            
+            min_val, max_val, min_loc, (mx,my)= cv2.minMaxLoc(frame)
+            thresh = max_val - 10
+            if thresh < 10:
+               thresh = 10
+            if thresh > 10:
+               thresh = 10 
+            _, threshold = cv2.threshold(frame, thresh, 255, cv2.THRESH_BINARY)
+            cnts = get_contours_in_image(threshold)
+            for x,y,w,h in cnts:
+               if w < 2 or h < 2:
+                  continue
+               cnt_img = hd_frames[fn][y:y+h,x:x+h]
+               bg_cnt_img = bg_img[y:y+h,x:x+h]
+               int_cnt = cv2.subtract(cnt_img, bg_cnt_img)
+               cx = int(x + (w/2))
+               cy = int(y + (h/2))
+               cval = hd_frames[fn][cy,cx]
+               oint = int(np.sum(int_cnt))
+               avg_px_int = int(oint / (cnt_img.shape[0] * cnt_img.shape[1]))
+               avg_bg_px = int(np.sum(bg_cnt_img) / (cnt_img.shape[0] * cnt_img.shape[1]))
+               #print("INTENSITY:", fn, oint, avg_bg_px, cval, avg_px_int)
+               #cv2.imshow('pepe', int_cnt)
+               #cv2.waitKey(30)
+               object, objects = find_object(objects, fn,x, y, w, h, oint, 0, 0, None)
+            #cv2.imshow('pepe', frame)
+            #cv2.waitKey(30)
+            fn += 1
+         found = 0
+         for obj in objects:
+            objects[obj] = analyze_object(objects[obj])
+            gap_test_res , gap_test_info = gap_test(objects[obj]['ofns'])
+            avg_int = int(np.mean(objects[obj]['oint']))
+            if gap_test_res == 0:
+               objects[obj]['report']['bad_items'].append("plane / gap test failed." + str(gap_test_info))
+               objects[obj]['report']['meteor'] = 0
+               objects[obj]['report']['non_meteor'] = 1
+            if full_bg_avg > 120 and avg_int < 100:
+               objects[obj]['report']['bad_items'].append("bird / low intensity")
+               objects[obj]['report']['meteor'] = 0
+               objects[obj]['report']['non_meteor'] = 1
+            if objects[obj]['report']['meteor'] == 1 and gap_test_res == 1 and avg_int > 100:
+               objects[obj]['report']['meteor'] = 1
+               meteors += 1
+               found = 1
+         pos = 0
+         if found == 0:
+            for obj in objects:
+               gap_test_res , gap_test_info = gap_test(objects[obj]['ofns'])
+               avg_int = int(np.mean(objects[obj]['oint']))
+               if gap_test_res == 0:
+                  objects[obj]['report']['bad_items'].append("plane / gap test failed." + str(gap_test_info))
+               if full_bg_avg > 120 and avg_int < 100:
+                  objects[obj]['report']['bad_items'].append("bird / low intensity")
+                  objects[obj]['report']['meteor'] = 0
+                  objects[obj]['report']['non_meteor'] = 1
+
+               if full_bg_avg > 120 and avg_int < 100:
+                  print("BIRD DETECTED")
+               if len(objects[obj]['ofns']) >= 3 and gap_test_res == 1 and avg_int > 100:
+                  pos += 1
+               else:
+                  print("BAD OBJ:", objects[obj])
+         if found == 0 and pos == 0:
+            print("NO POSSIBLE METEOR.")
+            #cv2.imshow('pepe', simg)
+            #cv2.waitKey(0)
+            fn, dir = fn_dir(mf)
+            root_file = fn.replace(".json", "")
+            del_data[root_file] = 1
+         else:
+            print("METEOR FOUND.", len(objects) )
+            meteors_found = []
+            for obj in objects:
+               if objects[obj]['report']['meteor'] == 1:
+                  meteors_found.append(objects[obj])
+            mj['confirmed'] = 1
+            mj['confirmed_meteors'] = meteors_found
+            save_json_file(mf, mj)
+            for obj in objects:
+               if objects[obj]['report']['meteor'] == 1:
+                  print(objects[obj]['ofns'])
+            meteors_conf += 1
+            #cv2.imshow('pepe', simg)
+            #cv2.waitKey(60)
+   print("total files:", tfs)   
+   print("total confirmed meteors :", meteors)   
+
+
+   if False:
+      if "reduced" not in mf and "stars" not in mf and "man" not in mf and "star" not in mf and "import" not in mf and "archive" not in mf:
+         try:
+            mj = load_json_file(mf) 
+         except:
+            print("corrupt", mf)
          (f_datetime, cam, f_date_str,fy,fmin,fd, fh, fm, fs) = convert_filename_to_date_cam(mf)
          mask_hits = 0
          if "sd_objects" in mj:
@@ -344,12 +861,15 @@ def reject_mask_detects(date, json_conf):
                      y = 0
                   if y >= 1080:
                      y = 1079 
-                  if mask_imgs[cam][y,x][0] == 255:
+                  if mask_imgs[cam][y,x][0] > 10:
                      mask_hits += 1
                   if x < omw and y < omh:
                      print("SD SIZE:", sd_mask_imgs[cam].shape)
-                     sd_val = sd_mask_imgs[cam][y,x][0]
-                     print("SD VAL", x,y,sd_val)
+                     if 0 < y < sd_mask_imgs[cam].shape[0] and 0 < x < sd_mask_imgs[cam].shape[1] :
+                        sd_val = sd_mask_imgs[cam][y,x][0]
+                        print("SD VAL", x,y,sd_val)
+                     else:
+                        sd_val = 255
                      if sd_val == 255:
                         print("SD MASK HIT!", sd_val)
                mperc = mask_hits / len(mj['sd_objects'][0]['history'])
@@ -364,6 +884,43 @@ def reject_mask_detects(date, json_conf):
 
    os.system("./Process.py purge_meteors")
 
+def seg_test(segs):
+   mean_seg = np.mean(segs)
+   total_segs = len(segs)
+   neg_segs = 0
+   good_segs = 0
+   for s in segs:
+      if s < 0:
+         neg_segs += 1
+      if mean_seg - 5 < s < mean_seg + 5:
+         good_segs += 1
+   if neg_segs > 0:
+      neg_perc = neg_segs / total_segs
+   else:
+      neg_perc = 0
+   if good_segs > 0:
+      good_perc = good_segs / total_segs
+   else:
+      good_perc = 0
+
+   print("SEGS:", segs)
+   print("TOTAL:", total_segs)
+   print("MEAN:", mean_seg)
+   print("GOOD :", good_segs)
+   print("NEG :", neg_segs)
+   print("GOOD SEG PERC:", good_perc)
+   print("NEG SEG PERC:", neg_perc)
+   status = 1
+   if total_segs > 8:
+      if good_perc < .6 :
+         status = 0
+      if neg_perc > .4:
+         status = 0
+   else:
+      # fine / ignore test on low frame meteors
+      status = 1
+   return(status)
+
 def reject_hotspots(date, json_conf):
    mdir = "/mnt/ams2/meteors/" + date + "/" 
    jsfiles = glob.glob(mdir + "*.json")
@@ -375,7 +932,12 @@ def reject_hotspots(date, json_conf):
          hot_spots[mf]['xs'] = []
          hot_spots[mf]['ys'] = []
       if "reduced" not in mf and "stars" not in mf and "man" not in mf and "star" not in mf and "import" not in mf and "archive" not in mf:
-         mj = load_json_file(mf) 
+         print(mf)
+         try:
+            mj = load_json_file(mf) 
+         except:
+            print("corrupted json:", mf)
+            continue
          if "sd_objects" in mj:
             if "history" in mj['sd_objects'][0]:
                for hd in mj['sd_objects'][0]['history']:
@@ -384,9 +946,10 @@ def reject_hotspots(date, json_conf):
                   hot_spots[mf]['xs'].append(x)
                   hot_spots[mf]['ys'].append(y)
    for mf in hot_spots:
-      hot_spots[mf]['avg_x'] = int(np.mean(hot_spots[mf]['xs']))
-      hot_spots[mf]['avg_y'] = int(np.mean(hot_spots[mf]['ys']))
-      hsi.append((mf, hot_spots[mf]['avg_x'], hot_spots[mf]['avg_y']))
+      if len(hot_spots[mf]['xs']) > 2:
+         hot_spots[mf]['avg_x'] = int(np.mean(hot_spots[mf]['xs']))
+         hot_spots[mf]['avg_y'] = int(np.mean(hot_spots[mf]['ys']))
+         hsi.append((mf, hot_spots[mf]['avg_x'], hot_spots[mf]['avg_y']))
       
    hsi = sorted(hsi, key=lambda x: (x[1]), reverse=True)
    hotspots = {}
@@ -402,6 +965,7 @@ def reject_hotspots(date, json_conf):
             mj['hotspot'] = len(hotspots[hs]['children'])
             save_json_file(child, mj)
             print("saved", child)
+   os.system("./Process.py mmi_day " + date)
 
 def log_hotspot(hotspots, d):
    file, avg_x, avg_y = d
@@ -418,7 +982,7 @@ def log_hotspot(hotspots, d):
       if hcam != cam:
          continue
       dist = calc_dist((avg_x,avg_y),(hx,hy))
-      if dist < 10:
+      if dist < 80:
          found = 1
          first_file = hfile
    if found == 1:
@@ -649,8 +1213,8 @@ def make_final_meteor_vids(meteor_dir, mjf, msd, cp=None, frames=None, hd=0):
           cy = y + int(h/2)
 
 
-          cv2.circle(frame,(cx,cy), 3, (0,255,255), 1)
-          cv2.rectangle(frame, (x, y), (x+w, y+h), (255,255,255), 1, cv2.LINE_AA)
+          #cv2.circle(frame,(cx,cy), 3, (0,255,255), 1)
+          #cv2.rectangle(frame, (x, y), (x+w, y+h), (255,255,255), 1, cv2.LINE_AA)
           
           cv2.imshow('pepe', frame)
           cv2.waitKey(30)
@@ -1253,6 +1817,7 @@ def make_roi_video_mfd(video_file, json_conf):
    if "meteor_frame_data" in mjr:
       for row in mjr['meteor_frame_data']:
          (dt, fn, x, y, w, h, oint, ra, dec, az, el) = row
+         print("ROW:", row)
          frame = hd_color_frames[fn]
          sfn = str(fn)
          if sfn in ufd:
@@ -1261,7 +1826,7 @@ def make_roi_video_mfd(video_file, json_conf):
                x = temp_x  
                y = temp_y  
                tx, ty, ra ,dec , az, el = XYtoRADec(x,y,video_file,mjr['cal_params'],json_conf)
-               print("UPDATED POINT", fn, x,y)
+               print("USING UPDATED POINT", fn, x,y)
          if fn not in used:
             updated_frame_data.append((dt, fn, x, y, w, h, oint, ra, dec, az, el))
             #cx = x + int(w/2)
@@ -1319,16 +1884,20 @@ def make_roi_video_mfd(video_file, json_conf):
             print("WROTE:", outfile, x,y)
          used[fn] = 1
 
-
    crop_box = mfd_to_cropbox(updated_frame_data)
 
    mjr['crop_box'] = crop_box 
+
+   updated_frame_data = sorted(updated_frame_data, key=lambda x: (x[1]), reverse=False)
+
    mjr['meteor_frame_data'] = updated_frame_data
 
    # NEXT LOOP THE CCXS CCYS fields 720p update from user mod
 
    save_json_file(mjrf, mjr)      
    save_json_file(mjf, mj)      
+   vid_file = mjf.replace(".json", ".mp4")
+   os.system("./Process.py recal " + vid_file)
 
    print("COP:", mjr['crop_box'])
          
@@ -1405,11 +1974,19 @@ def make_roi_video(video_file,bm, frames, json_conf):
          hd_x = int(rx * hdm_x_720)
          hd_y = int(ry * hdm_y_720)
          print("ACTIVE", rx,ry)
-         if "cal_params" in mj: 
-            if mj["cal_params"] is not None:
-               tx, ty, ra ,dec , az, el = XYtoRADec(hd_x,hd_y,video_file,mjr['cal_params'],json_conf)
+         if "cp" in mj: 
+            if mj["cp"] is not None:
+               print("UPDATE RADEC!")
+               tx, ty, ra ,dec , az, el = XYtoRADec(hd_x,hd_y,video_file,mj['cp'],json_conf)
          
          date_str = bm['dt'][i]
+         #if "cal_params" in mjr:
+         #   tx, ty, ra ,dec , az, el = XYtoRADec(hd_x,hd_y,video_file,mjr['cal_params'],json_conf)
+         #else:
+         #   print(mjr)
+         #   print("MISSING CAL PARAMS IN MJR.")
+         #   exit()
+         #print("UPDATED RA:", ra,dec,az,el)
          updated_frame_data.append((date_str, j, hd_x, hd_y, rw, rh, oint, ra, dec, az, el))
       else:
          # meteor is inactive (use 1st frame / last frame for crop location on missing frames)
@@ -1491,6 +2068,12 @@ def remake_mfd(video_file, json_conf):
 
 
 def fireball(video_file, json_conf, nomask=0):
+   if "/mnt/ams2/meteors" not in video_file:
+      day = video_file[0:10]
+      video_file = video_file.replace(".mp4", "")
+      video_file = video_file.replace(".json", "")
+      video_file = "/mnt/ams2/meteors/" + day + "/" + video_file + ".mp4"
+
    fn, meteor_dir = fn_dir(video_file)
    jsf = video_file.replace(".mp4", ".json")
    best_meteor = None
@@ -1621,6 +2204,8 @@ def fireball(video_file, json_conf, nomask=0):
       print("SAVEING MJR BEFORE ROI VID:", len(base_jsr['meteor_frame_data']))
       make_roi_video(video_file,best_meteor, hd_color_frames, json_conf)
       print("SAVEING MJR AFTER ROI VID:", len(base_jsr['meteor_frame_data']))
+
+      base_jsr['meteor_frame_data'] = sorted(base_jsr['meteor_frame_data'], key=lambda x: (x[1]), reverse=False)
       save_json_file(jsfr, base_jsr)
       return(jdata,base_jsr)
    else:
@@ -1659,6 +2244,7 @@ def fireball(video_file, json_conf, nomask=0):
    print("SAVEING MJR BEFORE ROI VID:", len(mjr['meteor_frame_data']))
    make_roi_video(video_file,best_meteor, hd_color_frames, json_conf)
    print("SAVEING MJR AFTER ROI VID:", len(mjr['meteor_frame_data']))
+   mjr['meteor_frame_data'] = sorted(mjr['meteor_frame_data'], key=lambda x: (x[1]), reverse=False)
    save_json_file(jsfr, mjr)
    #best_meteor = fireball_decel(video_file, json_conf, jsf, jdata, best_meteor, nomask, hd_frames, hd_color_frames, median_frame, mask_img,5)
 
@@ -1841,7 +2427,7 @@ def make_meteor_frame_data(best_meteor,cp):
          dt = best_meteor['dt'][i]
          #FLUX
          oint = best_meteor['oint'][i]
-         print("new MFD:", fn)
+         print("new MFD:", fn, az,el)
          meteor_frame_data.append((dt, fn, x, y, w, h, oint, ra, dec, az, el))
    return(meteor_frame_data, crop_box)
 
@@ -5101,7 +5687,7 @@ def reduce_meteor(meteor_json_file):
          mj['best_meteor'] = best_meteor
          azs, els = reduce_points(xs, ys, cal_params)
       else:
-         resp = fireball(mj['hd_trim'], json_conf)
+         resp = fireball(mj['sd_video_file'], json_conf)
          if resp is None:
             print("Meteor Not detected.")
             exit()

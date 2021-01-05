@@ -1,3 +1,5 @@
+import time
+
 def get_template(file): 
    out = ""
    fp = open(file, "r")
@@ -16,6 +18,7 @@ def make_default_template(amsid, main_template, json_conf):
    template = template.replace("{FOOTER}", footer)
    template = template.replace("{NAV}", nav)
    template = template.replace("{AMSID}", amsid)
+   ts = time.time()
    if "obs_name" in json_conf['site']:
       template = template.replace("{OBS_NAME}", json_conf['site']['obs_name'])
    else:
@@ -24,6 +27,7 @@ def make_default_template(amsid, main_template, json_conf):
       template = template.replace("{LOCATION}", json_conf['site']['location'])
    else:
       template = template.replace("{LOCATION}", "")
+   template = template.replace("{RAND}", str(time.time()))
    return template
 
 
