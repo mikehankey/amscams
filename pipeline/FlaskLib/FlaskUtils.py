@@ -27,7 +27,7 @@ def make_default_template(amsid, main_template, json_conf):
       template = template.replace("{LOCATION}", json_conf['site']['location'])
    else:
       template = template.replace("{LOCATION}", "")
-   template = template.replace("{RAND}", str(time))
+   template = template.replace("{RAND}", str(time.time()))
    return template
 
 

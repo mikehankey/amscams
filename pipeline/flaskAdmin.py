@@ -3,7 +3,7 @@ from flask import Flask, request, Response, make_response
 from FlaskLib.Learning import learning_meteors_dataset
 from FlaskLib.FlaskUtils import get_template
 from FlaskLib.api_funcs import update_meteor_points, show_cat_stars, delete_meteor, restore_meteor, delete_meteors, reduce_meteor, delete_frame, crop_video
-from FlaskLib.calib_funcs import calib_main, cal_file, show_masks, del_calfile, lens_model
+from FlaskLib.calib_funcs import calib_main, cal_file, show_masks, del_calfile, lens_model, edit_mask, edit_mask_points
 from lib.PipeUtil import cfe, load_json_file, save_json_file
 from lib.PipePwdProtect import login_page, check_pwd_ajax
 from lib.PipeAutoCal import fn_dir
@@ -158,6 +158,12 @@ def masks(amsid):
    out = show_masks(amsid)
    return out
 
+@app.route('/edit_mask/<amsid>/<camid>/', methods=['GET', 'POST'])
+def emasks(amsid,camid):
+   out = edit_mask(amsid,camid)
+   return out
+
+
 @app.route('/calfile/del/<amsid>/<calfile>/', methods=['GET', 'POST'])
 def del_cfile(amsid, calfile):
    out = del_calfile(amsid, calfile)
@@ -292,6 +298,18 @@ def main_api(cmd):
       w = request.args.get('w')
       h = request.args.get('h')
       out = crop_video(sd_video_file, x,y,w,h)
+      resp = {}
+      resp['status'] = 1
+      return(resp)
+   if cmd == 'edit_mask_points':
+      mask_file = request.args.get('mask_file')
+      if mask_file is None:
+         mask_file = request.form.get('mask_file')
+      action = request.args.get('action')
+      mask_points = request.args.get('mask_points')
+      
+      out = edit_mask_points(mask_file,action,mask_points)
+      #out = "OK"
       resp = {}
       resp['status'] = 1
       return(resp)
