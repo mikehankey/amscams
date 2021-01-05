@@ -1510,6 +1510,7 @@ def make_flat(cam,day,json_conf):
          if -5 <= int(sun_el) <= 0:
             print("MASK FRAMES:", file)
             frames,color_frames,subframes,sum_vals,max_vals,pos_vals = load_frames_fast(file, json_conf, 1, 1, [], 1,[])
+            test_frame = frames[0]
             mask = color_thresh(color_frames[0]) 
 
             mask_frames.append(mask)
@@ -1549,6 +1550,7 @@ def make_flat(cam,day,json_conf):
       median_flat = cv2.convertScaleAbs(np.median(np.array(med_frames), axis=0))
       median_mask = cv2.GaussianBlur(median_mask, (15, 15), 0)
       median_mask = cv2.dilate(median_mask.copy(), None , iterations=8)
+      prefilled_mask = median_mask.copy()
       median_mask = fill_mask(median_mask)
       median_mask = cv2.dilate(median_mask.copy(), None , iterations=8)
 
@@ -1572,7 +1574,16 @@ def make_flat(cam,day,json_conf):
    #cv2.imshow('MASK', median_mask)
    #cv2.imshow('FLAT', median_flat)
    #cv2.waitKey(0)
-   return(median_mask, median_flat)
+
+   
+   applied_mask = cv2.subtract(test_frame, median_mask)
+
+   applied_file = mask_file.replace("mask", "applied")
+   prefile = mask_file.replace("mask", "pref")
+   cv2.imwrite(prefile,prefilled_mask) 
+   cv2.imwrite(applied_file, applied_mask)
+
+   return(median_mask, median_flat,prefilled_mask,applied_mask)
 
 
 def track_clouds(cam, day, json_conf):
@@ -1586,7 +1597,7 @@ def track_clouds(cam, day, json_conf):
 
    # load radar files
 
-   color_mask, color_flat = make_flat(cam,day,json_conf)
+   color_mask, color_flat,prefilled,applied = make_flat(cam,day,json_conf)
    gray_mask = cv2.cvtColor(color_mask, cv2.COLOR_BGR2GRAY)
    gray_flat = cv2.cvtColor(color_flat, cv2.COLOR_BGR2GRAY)
    if use_snaps == 1:

@@ -337,10 +337,11 @@ if __name__ == "__main__":
    if cmd == "clouds":
       detect_clouds(sys.argv[2],json_conf )
    if cmd == "make_flats":
+      day = sys.argv[2]
       for cam in json_conf['cameras']:
          cam_id = json_conf['cameras'][cam]['cams_id']
          print("Make Flat.", cam_id)
-         make_flat(cam_id,None, json_conf )
+         make_flat(cam_id,day, json_conf )
    
    if cmd == "make_flat":
       if len(sys.argv) > 3:

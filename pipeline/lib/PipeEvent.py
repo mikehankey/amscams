@@ -226,6 +226,7 @@ def events_for_day(day, json_conf):
             if st in meteor_details:
                mfd = meteor_details[st][fl]
             else:
+               print(events[event])
                print("FILE MISSING MFD!", st, fl)
                exit()
                mfd = []

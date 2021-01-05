@@ -69,7 +69,10 @@ def show_masks(amsid):
       mask = mask.replace("/mnt/ams2", "")
       fn,dir = fn_dir(mask)
       cam = fn.replace("_mask.png", "")
+      applied = mask.replace("mask", "applied")
       out += "<div style='float:left; padding: 10px'><img width=640 height=360 src=" + mask + "><br><caption>" + cam + "</caption><br></div>\n"
+      out += "<div style='float:left; padding: 10px'><img width=640 height=360 src=" + applied + "><br><caption>" + cam + "</caption><br></div>\n"
+      out += "<div style='clear:both'></div>"
    #out += "</div>"
    template = make_default_template(amsid, "calib.html", json_conf)
    template = template.replace("{MAIN_TABLE}", out)
