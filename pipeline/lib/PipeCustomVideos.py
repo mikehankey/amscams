@@ -54,6 +54,7 @@ def simple_TL(TL_CONF, json_conf):
    night_files = glob.glob("/mnt/ams2/SD/proc2/" + start_day + "/*" + cam + "*.mp4")
    day_files = glob.glob("/mnt/ams2/SD/proc2/daytime/" + start_day + "/*" + cam + "*.mp4")
    all_files = []
+   print(len(night_files), len(day_files))
    for file in night_files:
       (f_datetime, cam, f_date_str,fy,fmin,fd, fh, fm, fs) = convert_filename_to_date_cam(file)
       if all_start_dt <= f_datetime <= all_end_dt:
