@@ -393,8 +393,12 @@ def meteors_main (amsid, in_data) :
       if cfe(thumb) == 0 and cfe(thumb_png) == 1:
          cmd = "convert " + thumb_png + " " + thumb + " >/dev/null"
          os.system(cmd)
+     
       vthumb = thumb.replace("/mnt/ams2", "")
       vothumb = vthumb.replace("-tn.jpg", "-obj-tn.jpg")
+      if cfe("/mnt/ams2/" + vothumb) == 0:
+         vothumb = vothumb.replace(".jpg", ".png")
+
       fn, vdir = fn_dir(vthumb)   
       div_id = fn.replace("-stacked-tn.jpg", "")
       vvid_link = vid.replace("/mnt/ams2", "")
