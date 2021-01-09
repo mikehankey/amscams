@@ -471,8 +471,11 @@ def fix_meteor_orphans(date, json_conf):
 def convert_meteor_pngs_to_jpgs():
    os.system("find /mnt/ams2/meteors/ |grep .png > /tmp/pngs.txt")
    fp = open("/tmp/pngs.txt")
+   files = []
    for line in fp:
       line = line.replace("\n", "")
+      files.append(line)
+   for line in sorted(files):
       new_file = line.replace(".png", ".jpg")
       cmd = "convert -quality 70 " + line + " " + new_file
       print(cmd)
