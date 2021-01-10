@@ -50,11 +50,13 @@ def ffmpeg_cat(file1, file2, outfile=None):
 
 def ffprobe(video_file):
    default = [704,576]
-   try:
+   print("FFP:")
+   #try:
+   if True:
       cmd = "/usr/bin/ffprobe " + video_file + " > /tmp/ffprobe72.txt 2>&1"
       output = subprocess.check_output(cmd, shell=True).decode("utf-8")
-   except:
-       return(0,0,0)
+   #except:
+   #    return(0,0,0)
    #try:
    #time.sleep(2)
    output = None

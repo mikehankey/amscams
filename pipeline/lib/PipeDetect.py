@@ -2070,7 +2070,7 @@ def remake_mfd(video_file, json_conf):
 
 
 def fireball(video_file, json_conf, nomask=0):
-   if "/mnt/ams2/meteors" not in video_file:
+   if "/mnt/ams2/meteors" not in video_file and "proc2" not in video_file:
       day = video_file[0:10]
       video_file = video_file.replace(".mp4", "")
       video_file = video_file.replace(".json", "")
@@ -2252,6 +2252,7 @@ def fireball(video_file, json_conf, nomask=0):
 
 def make_base_meteor_json(video_file, hd_video_file,best_meteor=None ,cp=None):
    vw,vh,frames = ffprobe(video_file)
+   print("FFP", vw,vh,frames, video_file)
 
    hdm_x_sd = 1920 / int(vw)
    hdm_y_sd = 1080 / int(vh)

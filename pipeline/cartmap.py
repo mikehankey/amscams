@@ -1,6 +1,8 @@
 #!/usr/bin/python3
 import os
 import sys
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import cartopy.crs as ccrs
 import cartopy.feature as cfeature
@@ -116,12 +118,15 @@ def main(meteor_file):
     clon = np.mean(elons)
     clat = np.mean(elats)
 
-    ctlon = np.mean(sol_c_lon)
-    ctlat = np.mean(sol_c_lat)
     extent = [clon-2,clon+2,clat-2,clat+2]
 
-    extent = [clon-2,clon+2,clat-2,clat+2]
-    extent2 = [ctlon-.5,ctlon+.5,ctlat-.5,ctlat+.5]
+    if len(solutions) > 1:
+       ctlon = np.mean(sol_c_lon)
+       ctlat = np.mean(sol_c_lat)
+
+       extent2 = [ctlon-.5,ctlon+.5,ctlat-.5,ctlat+.5]
+    else:
+       extent2 = extent
     print("ELON:", elons)
     print("ELAT:", elats)
     print("AVG:", clon,clat)
@@ -135,7 +140,7 @@ def main(meteor_file):
     ax1.margins(x=.1,y=.1)
     ax2.margins(x=.1,y=.1)
 
-
+    print("EXTENT2 :", extent2)
     ax2.set_extent(extent2, crs=ccrs.PlateCarree())
     # Put a background image on for nice sea rendering.
     #ax.stock_img()

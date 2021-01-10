@@ -3,6 +3,7 @@ from lib.PipeDetect import analyze_object, get_trim_num, make_base_meteor_json
 from lib.PipeAutoCal import get_image_stars, get_catalog_stars , pair_stars, eval_cnt, update_center_radec, fn_dir
 from lib.PipeDetect import fireball, apply_frame_deletes, find_object, analyze_object, make_base_meteor_json, fireball_fill_frame_data, calib_image, apply_calib, grid_intensity_center
 from lib.PipeVideo import ffprobe, load_frames_fast
+from lib.PipeImage import restack_meteor
 import datetime
 import os
 import cv2
@@ -228,6 +229,7 @@ def meteor_man_reduce(meteor_file, x,y,w,h, step, first_frame,last_frame,ScaleFa
       ow = """ + str(vw) + """
       oh = """ + str(vh) + """
       function select_frame(fn) {
+         //<a href=javascript:select_frame(" + str(c) + ")>
          frames.push(fn)
          if (frames.length == 2) {
             // goto step 2
