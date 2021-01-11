@@ -34,8 +34,8 @@ def do_meteor_day_prep(day, json_conf,phase=1):
       cmd = "./Process.py sid " + day
       print(cmd)
       os.system(cmd)
-
-   if phase == 2:
+   print("PHASE", phase)
+   if int(phase) == 2:
       # check for multi-station events 
       cmd = "./Process.py efd " + day
       print(cmd)

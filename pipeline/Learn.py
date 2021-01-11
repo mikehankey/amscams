@@ -11,11 +11,13 @@ from lib.PipeVideo import load_frames_simple
 
 SHOW = 0
 
+
+
 def update_dataset():
    # sync data with deleted meteors etc
-   year = "2020"
+   year = "2021"
    L_DIR = "/mnt/ams2/LEARNING/METEORS/" 
-   if cfe(L_DIR, 1) == 0:
+   if cfe(L_DIR + year, 1) == 0:
       os.makedirs(L_DIR)
    vids = glob.glob(L_DIR + year + "/VIDS/*.mp4")
    for vid in vids:
@@ -77,6 +79,14 @@ def add_meteor_to_ldb(js, ldb, force=0):
                year = fn[0:4] 
 
                outfile = "/mnt/ams2/LEARNING/METEORS/" + year + "/VIDS/" + fn
+               outdir = "/mnt/ams2/LEARNING/METEORS/" + year + "/VIDS/" 
+               cdir = "/mnt/ams2/LEARNING/METEORS/" + year + "/CROPS/" 
+               idir = "/mnt/ams2/LEARNING/METEORS/" + year + "/IMGS/" 
+               if cfe(outdir, 1) == 0:
+                  os.makedirs(outdir)
+                  os.makedirs(cdir)
+                  os.makedirs(idir)
+
                learning_vid = outfile
                lsf = outfile.replace("VIDS", "IMGS")
                lsf = lsf.replace(".mp4", "-stacked.jpg")
@@ -111,12 +121,14 @@ def add_meteor_to_ldb(js, ldb, force=0):
                   make_cs = 1
                if cfe(lsf) == 0:
                   make_lsf = 1
-                  make_lsf = 0
                if force == 1:
                   make_vid = 1
                   make_crop = 1
                   make_cs = 1
-                  #make_lsf = 1
+                  make_lsf = 1
+
+               print("FILE:", learning_vid, crop_file, crop_stack, lsf)
+               print("FILE:", make_vid, make_crop, make_cs, make_lsf)
 
                if make_vid == 1:
                   trim_cmd = "./FFF.py splice_video " + vid + " " + str(ff) + " " + str(lf) + " " + outfile + " frame"  
@@ -184,10 +196,13 @@ def add_meteor_to_ldb(js, ldb, force=0):
                      cv2.imshow('pepe', stack_img)
                      cv2.waitKey(30)
                if make_lsf == 1:
+                  print(learning_vid)
                   frames = load_frames_simple(learning_vid)
-                  stack_img_full = stack_frames(frames, skip = 1, resize=None, sun_status="day")
-                  stack_img_full = cv2.resize(stack_img_full, (640,360))
-                  cv2.imwrite(lsf, stack_img_full)
+                  print(len(frames))
+                  if len(frames) >= 0:
+                     stack_img_full = stack_frames(frames, skip = 1, resize=None, sun_status="day")
+                     stack_img_full = cv2.resize(stack_img_full, (640,360))
+                     cv2.imwrite(lsf, stack_img_full)
             
    return(ldb)  
 # PER METEOR LOOP HERE
