@@ -123,6 +123,10 @@ def refit_meteor(meteor_file, json_conf):
   
    if cfe(mj['hd_stack']) == 1:
       image = cv2.imread(mj['hd_stack'])
+      hd_stack = mj['hd_stack']
+   else:
+      print("NO HD STACK!", mj['hd_stack'])
+      exit()
    print("BEFORE MORE STARS:", len(cp['cat_image_stars']) )
    if "more_stars" not in cp:
       cp['more_stars'] = 1
@@ -133,8 +137,24 @@ def refit_meteor(meteor_file, json_conf):
       mask_img = cv2.resize(mask_img, (image.shape[1],image.shape[0]))
       image = cv2.subtract(image, mask_img)
 
+   print("IMG:", image.shape)
+   if False:
+      temp_cp = optimize_var(meteor_file,json_conf,"center_az",cp,image)
+      if temp_cp is not None:
+         cp = temp_cp
+      cp, bad_stars,marked_img = eval_cal(meteor_file,json_conf,cp,image)
 
-   cp = get_more_stars_with_catalog(meteor_file, cp, image, json_conf)
+      temp_cp = optimize_var(meteor_file,json_conf,"center_el",cp,image)
+      if temp_cp is not None:
+         cp = temp_cp
+      cp, bad_stars,marked_img = eval_cal(meteor_file,json_conf,cp,image)
+      temp_cp = optimize_var(meteor_file,json_conf,"position_angle",cp,image)
+      if temp_cp is not None:
+         cp = temp_cp
+      cp, bad_stars,marked_img = eval_cal(meteor_file,json_conf,cp,image)
+      #   cp = get_more_stars_with_catalog(meteor_file, cp, image, json_conf)
+      print("CP:", cp)
+   cp = update_center_radec(meteor_file,cp,json_conf)
    cp = pair_stars(cp, meteor_file, json_conf, image)
    cp, bad_stars,marked_img = eval_cal(meteor_file,json_conf,cp,image)
    print("AFTER MORE STARS:", len(cp['cat_image_stars']) )
@@ -2538,7 +2558,11 @@ def eval_cal(cp_file,json_conf,nc=None,oimg=None, mask_img=None):
       print("LOADING CAL FILE:", cp_file)
       nc = load_json_file(cp_file)
 
-   img_file = cp_file.replace("-calparams.json", ".png")
+   if "cal_params" in cp_file:
+      img_file = cp_file.replace("-calparams.json", ".png")
+   else: 
+      img_file = cp_file.replace(".json", "-stacked.jpg")
+
    if cfe(img_file) == 0:
       img_file = cp_file.replace("-calparams.json", ".jpg")
    if oimg is None:
@@ -2550,7 +2574,7 @@ def eval_cal(cp_file,json_conf,nc=None,oimg=None, mask_img=None):
 
    elif "user_stars" not in nc:
       nc['user_stars'] = get_image_stars(img_file, None, json_conf,0)
-
+   print("NC IS:", nc)
    #print("UPDATING CENTER", nc['x_poly'])
    nc = update_center_radec(cp_file,nc,json_conf)
    #print("GETTING CATALOG STARS")

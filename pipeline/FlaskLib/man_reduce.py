@@ -49,7 +49,7 @@ def default_best_meteor(sd_video_file, user_mods, ow,oh):
    extra_sec = int(trim_num) / 25
    start_trim_frame_time = f_datetime + datetime.timedelta(0,extra_sec)
 
-   for fn in user_mods['frames']:
+   for fn in sorted(user_mods['frames'].keys()):
       mx,my = user_mods['frames'][fn]
       print("UMF:", fn,mx,my)
       js['obj_id'] = 1
@@ -106,7 +106,23 @@ def save_man_reduce(data):
    hdm_y = 1080 / int(oh) 
    print("OWH", ow, oh, hdm_x, hdm_y)
    print("CROPXY", crop_x, crop_y)
-   fd = frame_data.split(";")
+
+   temp = frame_data.split(";")
+
+   fd = []
+   for row in temp:
+      print("ROW:", row)
+      data = row.split(",")
+      if len(data) != 3:
+         continue
+      fn,x,y = data
+      fn,x,y = int(fn),int(x),int(y)
+      fd.append((fn,x,y))
+   fd = sorted(fd, key=lambda x: x[0], reverse=False)
+
+   print("FD IS:", fd)
+   
+
    hd_frames,hd_color_frames,subframes,sum_vals,max_vals,pos_vals = load_frames_fast(sd_video_file, json_conf, 0, 0, 1, 1,[])
 
    sfile = sd_video_file.replace(".mp4", "-stacked.jpg")
@@ -119,12 +135,13 @@ def save_man_reduce(data):
          mj['user_mods'] = {}
       mj['user_mods']['frames'] = {}
 
-      for row in fd:
-         print("ROW:", row)
-         data = row.split(",")
+      for data in fd:
+         #print("ROW:", row)
+         #data = row.split(",")
          if len(data) != 3:
             continue
          fn,x,y = data
+         print(fn,x,y)
          fn = int(fn) 
          x = int(x) 
          y = int(y) 
