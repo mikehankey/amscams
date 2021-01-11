@@ -4,7 +4,7 @@ import pymap3d as pm
 from lib.PipeUtil import load_json_file, save_json_file, cfe, calc_dist, convert_filename_to_date_cam
 import io
 from PIL import Image
-from mpl_toolkits.basemap import Basemap
+#from mpl_toolkits.basemap import Basemap
 import matplotlib.pyplot as plt
 import math
 from geopy.distance import distance

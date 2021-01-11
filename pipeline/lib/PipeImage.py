@@ -73,7 +73,9 @@ def quick_video_stack(video_file, count = 0, save=1):
       stack_frame_tn = cv2.resize(stack_frame, (320,180))
       img_file_half = img_file.replace("-stacked.jpg", "-half-stack.jpg")
       img_file_tn = img_file.replace(".jpg", "-tn.jpg")
+      img_file_obj_tn = img_file.replace(".jpg", "obj-tn.jpg")
       cv2.imwrite(img_file_tn, stack_frame_tn)
+      cv2.imwrite(img_file_obj_tn, stack_frame_tn)
       stack_frame_half = cv2.resize(stack_frame, (960,540))
       cv2.imwrite(img_file_half, stack_frame_half)
 

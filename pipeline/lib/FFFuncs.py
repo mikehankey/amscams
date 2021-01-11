@@ -193,7 +193,7 @@ def crop_video(in_file, out_file, crop_box):
 
 def resize_video(in_file, out_file, ow, oh, bit_rate=20):
    cmd = "/usr/bin/ffmpeg -i " + in_file + " -c:v libx264 -crf " + str(bit_rate) + " -pix_fmt yuv420p -vf 'scale=" + str(ow) + ":" + str(oh) + "' -y " + out_file
-   #os.system(cmd)
+   os.system(cmd)
    print(cmd)
    print("ff resize")
    return(out_file)

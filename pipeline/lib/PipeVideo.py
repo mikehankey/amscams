@@ -39,7 +39,7 @@ def ffmpeg_cat(file1, file2, outfile=None):
    list += "file '" + file2 + "'\n"
    outfile = file1.replace(".mp4", "-cat.mp4")
 
-   list_file = "tmp_vids/cat.txt"
+   list_file = "./tmp_vids/cat.txt"
    fp = open(list_file, "w")
    fp.write(list)
    fp.close()
