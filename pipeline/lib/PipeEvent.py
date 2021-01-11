@@ -228,7 +228,7 @@ def events_for_day(day, json_conf):
             else:
                print(events[event])
                print("FILE MISSING MFD!", st, fl)
-               exit()
+               continue
                mfd = []
             events[event]['mfds'].append(mfd)
          obs = make_obs_object(events[event])
