@@ -15,6 +15,7 @@ from FlaskLib.min_detail import min_detail_main
 from FlaskLib.live import live_view
 from FlaskLib.TL import tl_menu 
 from FlaskLib.man_reduce import meteor_man_reduce , save_man_reduce
+from FlaskLib.man_detect import man_detect 
 #from FlaskLib.Maps import make_map 
 
 import json
@@ -108,6 +109,19 @@ def meteor_man_red():
       last_frame = int(last_frame)
    out = meteor_man_reduce(meteor_file, x,y,w,h,step,first_frame,last_frame,ScaleFactor)
    return out
+
+@app.route('/man_detect/<min_file>/', methods=['GET', 'POST'])
+def manual_detect(min_file):
+  
+   step = request.args.get('step')
+   ff = request.args.get('ff')
+   lf = request.args.get('lf')
+   data = {}
+   data['step'] = step
+   data['ff'] = ff
+   data['lf'] = lf
+   out = man_detect(min_file, data)
+   return(out)
 
 @app.route('/api/reduce_meteor/<meteor_file>/', methods=['GET', 'POST'])
 def red_meteor(meteor_file):

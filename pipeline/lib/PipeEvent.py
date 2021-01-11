@@ -118,7 +118,7 @@ def events_for_day(day, json_conf):
       cmd = "rsync -auv " + cloud_idx_file + " " + event_dir + idx_file
       print(cmd)
       os.system(cmd)
-      cmd = "rsync -auv " + cloud_detail_file + " " + event_dir + detail_file
+      cmd = "rsync -av " + cloud_detail_file + " " + event_dir + detail_file
       print(cmd)
       os.system(cmd)
       cmd = "gunzip -kf " + event_dir + detail_file
@@ -228,7 +228,7 @@ def events_for_day(day, json_conf):
             else:
                print(events[event])
                print("FILE MISSING MFD!", st, fl)
-               exit()
+               continue
                mfd = []
             events[event]['mfds'].append(mfd)
          obs = make_obs_object(events[event])

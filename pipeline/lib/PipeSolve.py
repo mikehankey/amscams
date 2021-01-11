@@ -4,7 +4,7 @@ import pymap3d as pm
 from lib.PipeUtil import load_json_file, save_json_file, cfe, calc_dist, convert_filename_to_date_cam
 import io
 from PIL import Image
-from mpl_toolkits.basemap import Basemap
+#from mpl_toolkits.basemap import Basemap
 import matplotlib.pyplot as plt
 import math
 from geopy.distance import distance
@@ -33,6 +33,7 @@ def simple_solve(day, event_id, json_conf):
    year = day[0:4]
    event_file = "/mnt/ams2/meteor_archive/" + amsid + "/EVENTS/" + year + "/" + day + "/" + day + "_events.json"
    events = load_json_file(event_file)
+   solutions = []
    print(event_file)
    #for event in events:
 
@@ -319,7 +320,7 @@ def make_map(pts, lns):
     plt.savefig(buf, format='png')
     buf.seek(0)
     im = Image.open(buf)
-    im.show()
+    #im.show()
     #buf.close()
     return(buf)
 

@@ -468,6 +468,21 @@ def fix_meteor_orphans(date, json_conf):
    #exit() 
 
 
+def convert_meteor_pngs_to_jpgs():
+   os.system("find /mnt/ams2/meteors/ |grep .png > /tmp/pngs.txt")
+   fp = open("/tmp/pngs.txt")
+   files = []
+   for line in fp:
+      line = line.replace("\n", "")
+      files.append(line)
+   for line in sorted(files):
+      new_file = line.replace(".png", ".jpg")
+      cmd = "convert -quality 70 " + line + " " + new_file
+      print(cmd)
+      os.system(cmd)
+      cmd = "rm " + line
+      print(cmd)
+      os.system(cmd)
 
 def meteor_png_to_jpg(sd_file, hd_file, json_conf):
    mjf = sd_file.replace(".mp4", ".json")
@@ -548,7 +563,10 @@ def delete_from_base(base, json_conf):
          print(jsf)
          js = load_json_file(jsf)
          if "hd_trim" in js:
-            hd_base = js['hd_trim'].split("/")[-1].replace(".mp4", "")
+            if js['hd_trim'] is not None:
+               hd_base = js['hd_trim'].split("/")[-1].replace(".mp4", "")
+            else:
+               hd_base = None
             print("HD_BASE STR:", hd_base)
          else:
             print("NO HD_BASE:", jsf)

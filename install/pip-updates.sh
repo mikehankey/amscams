@@ -10,3 +10,5 @@ sudo pip3 install shapely --no-binary shapely
 sudo apt-get install libgeos-dev
 sudo apt-get install libproj-dev
 sudo pip3 install geopy
+sudo pip3 install cartopy
+sudo pip3 install pymap3d

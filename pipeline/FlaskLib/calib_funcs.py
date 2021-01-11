@@ -100,6 +100,8 @@ def edit_mask_points(mask_file, action, mask_points_str):
 
    print("SAVED:", mask_file)
    mimg = cv2.resize(mimg,(ow,oh))
+   print(fimg.shape)
+   print(mimg.shape)
    aimg = cv2.subtract(fimg, mimg)
    cv2.imwrite(mask_file, mimg)
    cv2.imwrite(app_file, aimg) 

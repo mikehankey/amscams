@@ -1474,6 +1474,17 @@ def make_flat(cam,day,json_conf):
       os.makedirs(MASK_DIR)
    mask_file = MASK_DIR + cam + "_mask.png"
    flat_file = MASK_DIR + cam + "_flat.png"
+   latest_file = "/mnt/ams2/latest/" + cam + ".jpg"
+   if cfe(mask_file) == 0:
+      applied_file = mask_file.replace("mask", "applied")
+      late = cv2.imread(latest_file)
+      oh, ow = late.shape[:2]
+      comp = np.zeros((oh,ow,3),dtype=np.uint8)
+      comp = cv2.resize(comp, (640,360))
+      late = cv2.resize(late, (640,360))
+      cv2.imwrite(mask_file, comp)
+      cv2.imwrite(applied_file, late)
+      cv2.imwrite(flat_file, late)
 
    if day is None: 
       date = datetime.datetime.now().strftime("%Y_%m_%d")

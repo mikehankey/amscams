@@ -693,7 +693,7 @@ def calc_seg_len(data):
    if len(data['ofns']) - 1 > 3:
       data['bad_seg_perc'] = bad_segs / (len(data['ofns']) - 1)
    else:
-      data['bad_seg_perc'] = 1 
+      data['bad_seg_perc'] = 0
    data['bad_segs'] = bad_segs
    return(data)
 

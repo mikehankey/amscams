@@ -10,7 +10,7 @@ from datetime import datetime
 import datetime as dt
 
 from lib.PipeCustomVideos import  meteors_last_night_for_cam, hd_snaps, assemble_custom, simple_TL, join_two
-from lib.PipeMeteorClean import purge_meteors_for_date, fix_meteor_orphans, meteor_png_to_jpg, fix_meteor_month, restack_meteor_dir
+from lib.PipeMeteorClean import purge_meteors_for_date, fix_meteor_orphans, meteor_png_to_jpg, fix_meteor_month, restack_meteor_dir, convert_meteor_pngs_to_jpgs
 from lib.PipeWeather import detect_clouds , make_flat, track_clouds, solar_info, audit_tl, detect_aurora, batch_aurora, aurora_report, aurora_stack_vid, tl_list, aurora_tl,  hourly_stacks, make_all_hourly_stacks, hourly_stacks_html, meteor_night_stacks
 from lib.PipeImage import quick_video_stack, restack_meteor
 from lib.PipeTrans import trans_test 
@@ -533,7 +533,11 @@ if __name__ == "__main__":
    if cmd == "recal":
       reapply_meteor_cal(sys.argv[2], json_conf)
    if cmd == "do_meteor_day_prep" or cmd == "meteor_prep":
-      do_meteor_day_prep(sys.argv[2], json_conf)
+      if len(sys.argv) == 4:
+         phase = sys.argv[3]
+      else:
+         phase = 1
+      do_meteor_day_prep(sys.argv[2], json_conf, phase)
    if cmd == "prep_month" :
       prep_month(sys.argv[2], json_conf)
    if cmd == "solve_day" :
@@ -544,3 +548,5 @@ if __name__ == "__main__":
       print("J2")
       join_two( json_conf)
 
+   if cmd == "convert_pngs" :
+      convert_meteor_pngs_to_jpgs()

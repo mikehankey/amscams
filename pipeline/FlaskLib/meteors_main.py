@@ -315,6 +315,18 @@ def meteors_main (amsid, in_data) :
 
    total_meteors = len(sorted_meteors)
 
+   filter_display = ""
+   msc = 0   
+   for meteor in these_meteors:
+      if len(meteor) == 8:
+         meteor_file, reduced, start_time, dur, ang_vel, ang_dist, hotspot,msm = meteor 
+         if msm == 1:
+            msc += 1
+   if msc > 0:
+       link = "<a href='/meteors/" + amsid + "/?start_day=" + start_day + "&filter=multi'>"
+       filter_display += "<span style='margin: 25px'>" + link + str(msc) + " multi-station meteors detected</a></span>"
+
+
    # header area
    out += """
       <div class='h1_holder  d-flex justify-content-between'>
@@ -322,6 +334,9 @@ def meteors_main (amsid, in_data) :
          <input value='""" + start_day + """' type="text" data-display-format="YYYY/MM/DD" data-action="reload" data-url-param="start_day" data-send-format="YYYY_MM_DD" class="datepicker form-control"> and
          <input value='""" + end_day + """' type="text" data-display-format="YYYY/MM/DD" data-action="reload" data-url-param="end_day" data-send-format="YYYY_MM_DD" class="datepicker form-control"> 
          showing meteors  """ + str(si) + "-" + str(ei) + """
+
+""" + filter_display + """
+
          </h1>
          <div class='d-flex'>
             <div class='mr-2'><select name='rpp' id='rpp' data-rel='meteor_per_page' class='btn btn-primary'>"""
@@ -350,7 +365,6 @@ def meteors_main (amsid, in_data) :
    #out += str(total_meteors) + " meteors between " + sd + " and " + ed
 
        
-      
       
 
    for meteor in these_meteors:
@@ -393,8 +407,12 @@ def meteors_main (amsid, in_data) :
       if cfe(thumb) == 0 and cfe(thumb_png) == 1:
          cmd = "convert " + thumb_png + " " + thumb + " >/dev/null"
          os.system(cmd)
+     
       vthumb = thumb.replace("/mnt/ams2", "")
       vothumb = vthumb.replace("-tn.jpg", "-obj-tn.jpg")
+      if cfe("/mnt/ams2/" + vothumb) == 0:
+         vothumb = vothumb.replace(".jpg", ".png")
+
       fn, vdir = fn_dir(vthumb)   
       div_id = fn.replace("-stacked-tn.jpg", "")
       vvid_link = vid.replace("/mnt/ams2", "")
