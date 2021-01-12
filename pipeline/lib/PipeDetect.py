@@ -657,8 +657,8 @@ def make_meteor_index_day(day, json_conf):
    mi_detail_file = mdir + day + "-" + amsid + "-detail.meteors"
    save_json_file(mi_file, mid)
    save_json_file(mi_detail_file, mi)
-   os.system("gzip -kf " + mi_file)
-   os.system("gzip -kf " + mi_detail_file)
+   os.system("gzip -f " + mi_file)
+   os.system("gzip -f " + mi_detail_file)
    print("saved", mi_file)
    print("saved", mi_detail_file)
    return(mi_file, mid)

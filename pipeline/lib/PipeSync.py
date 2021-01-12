@@ -39,7 +39,7 @@ def do_meteor_day_prep(day, json_conf,phase=1):
       year = day[0:10]
       event_dir = "/mnt/ams2/meteor_archive/" + amsid + "/" + year + "/" + day + "/"
    
-      cmd = "rm " + event_dir + "AMS*"
+      cmd = "rm " + event_dir + "*AMS*"
       print(cmd)
       os.system(cmd)
 
@@ -91,7 +91,7 @@ def do_meteor_day_prep(day, json_conf,phase=1):
       year = day[0:10]
       event_dir = "/mnt/ams2/meteor_archive/" + amsid + "/" + year + "/" + day + "/"
    
-      cmd = "rm " + event_dir + "AMS*"
+      cmd = "rm " + event_dir + "*AMS*"
       print(cmd)
       os.system(cmd)
 
