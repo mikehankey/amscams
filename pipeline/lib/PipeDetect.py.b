@@ -3,6 +3,8 @@
    Pipeline Detection Routines - functions for detecting
 
 '''
+
+from PIL import Image
 import math
 import scipy.optimize
 from lib.UIJavaScript import *
@@ -559,16 +561,10 @@ def make_meteor_index_all(json_conf):
 def make_meteor_index_day(day, json_conf):
    amsid = json_conf['site']['ams_id']
    mdir = "/mnt/ams2/meteors/" + day + "/"
-   lcdir = mdir + "cloud_files/"
    files = glob.glob(mdir + "*.json")
    meteors = []
    mi = {}
    meteor_data = []
-   if cfe(lcdir, 1) == 0:
-      os.makedirs(lcdir)
-
-   
-
    for mf in files:
       if "reduced" not in mf and "stars" not in mf and "man" not in mf and "star" not in mf and "import" not in mf and "archive" not in mf and "cal" not in mf and "frame" not in mf:
          meteors.append(mf)
@@ -591,8 +587,6 @@ def make_meteor_index_day(day, json_conf):
          print("CORRUPT FILE.", mf)
          continue
       meteor_red = meteor.replace(".json", "-reduced.json")
-      mfn,mdd = fn_dir(meteor)
-      lcfile = mdd + "cloud_files/" + amsid + "_" + mfn
       if cfe(meteor_red) == 1:
          try:
             mjr = load_json_file(meteor_red)
@@ -646,10 +640,6 @@ def make_meteor_index_day(day, json_conf):
       if mjr is not None:
          if "meteor_frame_data" in mjr:
             mi[meteor]['meteor_frame_data'] = mjr['meteor_frame_data']
-            if msm == 1:
-               mdata = mjr['meteor_frame_data']
-               save_json_file(lcfile, mdata)
-               print("SAVED:", lcfile)
       meteor_data.append((meteor, reduced, start_time, dur, ang_vel, ang_dist, hotspot,msm))
 
    mid = sorted(meteor_data, key=lambda x: (x[0]), reverse=True)
@@ -657,8 +647,8 @@ def make_meteor_index_day(day, json_conf):
    mi_detail_file = mdir + day + "-" + amsid + "-detail.meteors"
    save_json_file(mi_file, mid)
    save_json_file(mi_detail_file, mi)
-   os.system("gzip -f " + mi_file)
-   os.system("gzip -f " + mi_detail_file)
+   os.system("gzip -kf " + mi_file)
+   os.system("gzip -kf " + mi_detail_file)
    print("saved", mi_file)
    print("saved", mi_detail_file)
    return(mi_file, mid)
@@ -691,6 +681,17 @@ def confirm_meteors(date ):
          print(cmd)
 #      exit()
 
+def is_grey_scale(img_path):
+    img = Image.open(img_path).convert('RGB')
+    w,h = img.size
+    for i in range(w):
+        for j in range(h):
+            r,g,b = img.getpixel((i,j))
+            if r != g != b: return False
+    return True
+
+
+
 def reject_mask_detects(date, json_conf):
    del_log = "/mnt/ams2/SD/proc2/json/" + json_conf['site']['ams_id'] + ".del"
    if cfe(del_log) == 1:
@@ -720,7 +721,9 @@ def reject_mask_detects(date, json_conf):
    for mf in sorted(jsfiles,reverse=True):
       if "reduced" not in mf and "stars" not in mf and "man" not in mf and "star" not in mf and "import" not in mf and "archive" not in mf:
          mj = load_json_file(mf) 
-         if "confirmed" in mj:
+         tn = mf.replace(".json", "-stacked-tn.png")
+         gray_thumbs = is_grey_scale(tn)
+         if "confirmed" in mj and gray_thumbs is None:
             if len(mj['confirmed_meteors']) > 0:
                print("SKIP CONFIRMED.")
                # make sure the obj isn't bad / check segs and other filters
@@ -749,6 +752,11 @@ def reject_mask_detects(date, json_conf):
          simg= cv2.imread(stack_f)
          video_file = mf.replace(".json", ".mp4")
          hd_frames,hd_color_frames,subframes,sum_vals,max_vals,pos_vals = load_frames_fast(video_file, json_conf, 0, 0, 1, 1,[])
+         #if gray_thumbs is True:
+         #   stack_img = stack_frames(hd_color_frames)
+            #stack_img_tn = cv2.resize(mask, (stack_img, subframes[0].shape[0]))
+            
+             
          objects = {}
          fn = 0
          (f_datetime, cam, f_date_str,fy,fmin,fd, fh, fm, fs) = convert_filename_to_date_cam(mf)
@@ -2082,7 +2090,7 @@ def remake_mfd(video_file, json_conf):
 
 
 def fireball(video_file, json_conf, nomask=0):
-   if "/mnt/ams2/meteors" not in video_file and "proc2" not in video_file:
+   if "/mnt/ams2/meteors" not in video_file:
       day = video_file[0:10]
       video_file = video_file.replace(".mp4", "")
       video_file = video_file.replace(".json", "")
@@ -2264,7 +2272,6 @@ def fireball(video_file, json_conf, nomask=0):
 
 def make_base_meteor_json(video_file, hd_video_file,best_meteor=None ,cp=None):
    vw,vh,frames = ffprobe(video_file)
-   print("FFP", vw,vh,frames, video_file)
 
    hdm_x_sd = 1920 / int(vw)
    hdm_y_sd = 1080 / int(vh)
