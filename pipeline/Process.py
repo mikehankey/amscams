@@ -511,7 +511,10 @@ if __name__ == "__main__":
    if cmd == "efd":
       events_for_day(sys.argv[2], json_conf)
    if cmd == "refit_meteor":
-      refit_meteor(sys.argv[2], json_conf)
+      if len(sys.argv) == 4:
+         refit_meteor(sys.argv[2], json_conf,1)
+      else:
+         refit_meteor(sys.argv[2], json_conf)
    if cmd == "refit_meteors":
       if len(sys.argv) == 3:
          refit_meteors(sys.argv[2], json_conf)

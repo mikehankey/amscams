@@ -89,7 +89,7 @@ def refit_meteors(day, json_conf,multi=0):
       print(cmd)
       os.system(cmd)
 
-def refit_meteor(meteor_file, json_conf):
+def refit_meteor(meteor_file, json_conf,force=0):
 
    (f_datetime, this_cam, f_date_str,y,m,d, h, mm, s) = convert_filename_to_date_cam(meteor_file)
    video_file = meteor_file.replace(".json", ".mp4")
@@ -107,7 +107,8 @@ def refit_meteor(meteor_file, json_conf):
       if "runs" in mj['refit_info']:
          if mj['refit_info']['runs'] >= 1:
             print("DONE REFIT ALREADY.",  mj['refit_info']['runs'])
-            return()
+            if force == 0:
+               return()
 
    cp = mj['cp']
    org_res = cp['total_res_px']
