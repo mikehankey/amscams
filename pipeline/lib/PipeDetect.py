@@ -559,10 +559,16 @@ def make_meteor_index_all(json_conf):
 def make_meteor_index_day(day, json_conf):
    amsid = json_conf['site']['ams_id']
    mdir = "/mnt/ams2/meteors/" + day + "/"
+   lcdir = mdir + "cloud_files/"
    files = glob.glob(mdir + "*.json")
    meteors = []
    mi = {}
    meteor_data = []
+   if cfe(lcdir, 1) == 0:
+      os.makedirs(lcdir)
+
+   
+
    for mf in files:
       if "reduced" not in mf and "stars" not in mf and "man" not in mf and "star" not in mf and "import" not in mf and "archive" not in mf and "cal" not in mf and "frame" not in mf:
          meteors.append(mf)
@@ -585,6 +591,8 @@ def make_meteor_index_day(day, json_conf):
          print("CORRUPT FILE.", mf)
          continue
       meteor_red = meteor.replace(".json", "-reduced.json")
+      mfn,mdd = fn_dir(meteor)
+      lcfile = mdd + "cloud_files/" + amsid + "_" + mfn
       if cfe(meteor_red) == 1:
          try:
             mjr = load_json_file(meteor_red)
@@ -638,6 +646,10 @@ def make_meteor_index_day(day, json_conf):
       if mjr is not None:
          if "meteor_frame_data" in mjr:
             mi[meteor]['meteor_frame_data'] = mjr['meteor_frame_data']
+            if msm == 1:
+               mdata = mjr['meteor_frame_data']
+               save_json_file(lcfile, mdata)
+               print("SAVED:", lcfile)
       meteor_data.append((meteor, reduced, start_time, dur, ang_vel, ang_dist, hotspot,msm))
 
    mid = sorted(meteor_data, key=lambda x: (x[0]), reverse=True)
