@@ -683,12 +683,14 @@ def confirm_meteors(date ):
    for meteor in meteors:
       meteor_vid = meteor.replace(".json", ".mp4")
       mj = load_json_file(meteor)
-      if "rejected" in mj or "best_meteor" in mj:
+      red = meteor.replace(".json", "-reduced.json")
+      if "rejected" in mj or "best_meteor" in mj and cfe(red) != 0:
          print("ALREADY DONE.")
       else:
-         cmd = "./Process.py fireball " + meteor_vid
-         os.system(cmd)
-         print(cmd)
+         if "rejected" not in mj:
+            cmd = "./Process.py fireball " + meteor_vid
+            os.system(cmd)
+            print(cmd)
 #      exit()
 
 def reject_mask_detects(date, json_conf):
@@ -1978,12 +1980,22 @@ def make_roi_video(video_file,bm, frames, json_conf):
             bm['ccxs'][i] = mod_x_720
             bm['ccys'][i] = mod_y_720
 
-      if bm['ofns'][0] <= j <= bm['ofns'][-1] :
+      #print("BEST", bm)
+      if bm['ofns'][0] <= j < bm['ofns'][-1] :
          # meteor is active
-         rx = bm['ccxs'][i]
-         ry = bm['ccys'][i]
+         if i >= len(bm['ofns']):
+            continue
+         print(i, j, len(bm['ows']), len(bm['ohs']))
+         print(bm['ofns'])
          rw = bm['ows'][i]
          rh = bm['ohs'][i]
+         if i < len(bm['ccxs']):
+            rx = bm['ccxs'][i]
+            ry = bm['ccys'][i]
+         else:
+            rx = int(bm['oxs'][i] + (rw/2))
+            ry = int(bm['oys'][i] + (rh/2))
+            
          oint = bm['oint'][i]
          hd_x = int(rx * hdm_x_720)
          hd_y = int(ry * hdm_y_720)
@@ -2146,9 +2158,9 @@ def fireball(video_file, json_conf, nomask=0):
       save_json_file(jsf, jdata)
       print("No meteor detected.", jsf)
       return()
-
-
    best_meteor, frame_data = fireball_fill_frame_data(video_file,best_meteor, hd_color_frames)
+
+
    #tracking_file = video_file.replace(".mp4", "-tracking.mp4")
    #tracking_updates = fireball_tracking_center(tracking_file)
    #best_meteor, frame_data = fireball_fill_frame_data(video_file,best_meteor, hd_color_frames, tracking_updates)
@@ -2216,6 +2228,8 @@ def fireball(video_file, json_conf, nomask=0):
       print("CCYS:", best_meteor['ccys'])
 
       print("SAVEING MJR BEFORE ROI VID:", len(base_jsr['meteor_frame_data']))
+
+
       make_roi_video(video_file,best_meteor, hd_color_frames, json_conf)
       print("SAVEING MJR AFTER ROI VID:", len(base_jsr['meteor_frame_data']))
 
@@ -2525,13 +2539,13 @@ def fireball_fill_frame_data(video_file, bm, frames, tracking_updates = None):
       prev_found = 0
       if "ox" not in frame_data[fn]:
          print("MISSING/FIX!")
-         for i in range(1, 5):
+         for i in range(1, 10):
             prev_frame = fn - i
             if "ox" in frame_data[prev_frame]:
                print("PREV FRAME IS: ", prev_frame)
                prev_found = 1
                break
-         for i in range(1, 5):
+         for i in range(1, 10):
             next_frame = fn + i
             if "ox" in frame_data[next_frame]:
                print("NEXT FRAME IS: ", next_frame)
@@ -2574,6 +2588,7 @@ def fireball_fill_frame_data(video_file, bm, frames, tracking_updates = None):
                frame_data[fn]['oint'] = 0
             else:
                print("Can't fix", fn, frame_data[fn])
+               exit()
       if "dt" not in frame_data[fn]:
          extra_sec = fn / 25
          frame_time = start_trim_frame_time + datetime.timedelta(0,extra_sec)
@@ -2633,7 +2648,6 @@ def fireball_fill_frame_data(video_file, bm, frames, tracking_updates = None):
 
 
 
-   exit()
    #return(bm, frame_data)
    # Loop over frames, identify missing frame data, acquire data for those frames, reformat data to BM 
    for fn in frame_data:
@@ -5705,7 +5719,6 @@ def reduce_meteor(meteor_json_file):
          resp = fireball(mj['sd_video_file'], json_conf)
          if resp is None:
             print("Meteor Not detected.")
-            exit()
          else:
             print("Meteor detected.")
          
