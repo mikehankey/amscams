@@ -102,6 +102,13 @@ def refit_meteor(meteor_file, json_conf):
 
    print("Loading...", meteor_file)
    mj = load_json_file(meteor_file)
+
+   if "refit_info" in mj:
+      if "runs" in mj['refit_info']:
+         if mj['refit_info']['runs'] >= 1:
+            print("DONE REFIT ALREADY.",  mj['refit_info']['runs'])
+            return()
+
    cp = mj['cp']
    org_res = cp['total_res_px']
 

@@ -18,6 +18,7 @@ def prep_month(year_day, json_conf):
 
 def do_meteor_day_prep(day, json_conf,phase=1):
 
+   amsid = json_conf['site']['ams_id']
    # for each day we want to do these things in this order.
    # run confirm / reject_mask filter on all meteors
    if phase == 1:
@@ -32,6 +33,21 @@ def do_meteor_day_prep(day, json_conf,phase=1):
 
       # sync index files
       cmd = "./Process.py sid " + day
+      print(cmd)
+      os.system(cmd)
+
+      year = day[0:10]
+      event_dir = "/mnt/ams2/meteor_archive/" + amsid + "/" + year + "/" + day + "/"
+   
+      cmd = "rm " + event_dir + "AMS*"
+      print(cmd)
+      os.system(cmd)
+
+      cmd = "./Process.py efd " + day
+      print(cmd)
+      os.system(cmd)
+
+      cmd = "./Process.py sync_prev_all " + day
       print(cmd)
       os.system(cmd)
    print("PHASE", phase)
@@ -64,9 +80,28 @@ def do_meteor_day_prep(day, json_conf,phase=1):
       print(cmd)
       os.system(cmd)
 
+      # sync prev files
+      cmd = "./Process.py sync_prev_all " + day
+      print(cmd)
+      os.system(cmd)
+
       # Now all events for this day should be prepped and the 'min-data' sync'd. 
       # mini-data is the txt data + 1 thumb preview image for the multi-station events
+      # rm past station data and re-sync
+      year = day[0:10]
+      event_dir = "/mnt/ams2/meteor_archive/" + amsid + "/" + year + "/" + day + "/"
+   
+      cmd = "rm " + event_dir + "AMS*"
+      print(cmd)
+      os.system(cmd)
 
+      cmd = "./Process.py efd " + day
+      print(cmd)
+      os.system(cmd)
+
+      cmd = "./Process.py solve_day " + day
+      print(cmd)
+      os.system(cmd)
 
 
 
