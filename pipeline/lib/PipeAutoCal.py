@@ -290,13 +290,15 @@ def find_fc_files(root_file, fcdirs = None):
 def star_db_mag(cam, json_conf):
    year = datetime.now().strftime("%Y")
    autocal_dir = "/mnt/ams2/meteor_archive/" + STATION_ID + "/CAL/AUTOCAL/" + year + "/solved/"
-   st_db = autocal_dir + "star_db-" + STATION_ID + "-" + cam + ".info"
-   print(st_db)
-   sdb = load_json_file(st_db)
+   cal_dir = "/mnt/ams2/cal/" 
+   st_db = cal_dir + "star_db-" + STATION_ID + "-" + cam + ".info"
+   if cfe(st_db):
+      sdb = load_json_file(st_db)
+   else: 
+      sdb = {}
    mags = []
    flux = []
    i = 0
-   print(st_db)
    exit()
    for star in sdb['autocal_stars']:
       (cal_file , center_az, center_el, ra_center, dec_center, position_angle, pixscale, dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist,star_int) = star
@@ -1523,7 +1525,7 @@ def deep_calib(cam, json_conf):
       each star entry must log the star name, image x,y, cal_params at that time (ra,dec etc), time of image
    """
    data,ci_data = review_cals(json_conf, cam)
-
+   amsid = json_con['site']['ams_id']
    #print(star_db)
 
    all_cal_files = []
@@ -1542,7 +1544,7 @@ def deep_calib(cam, json_conf):
    else:
       mcp = None
    all_stars = []   
-   star_db_file = mcp_dir + "star_db-" + cam + ".info"
+   star_db_file = mcp_dir + "star_db-" + amsid + "-" + cam + ".info"
    if cfe(star_db_file) == 1:
       star_db = load_json_file(star_db_file)
       if "processed_files" not in star_db:
