@@ -1525,7 +1525,7 @@ def deep_calib(cam, json_conf):
       each star entry must log the star name, image x,y, cal_params at that time (ra,dec etc), time of image
    """
    data,ci_data = review_cals(json_conf, cam)
-   amsid = json_con['site']['ams_id']
+   amsid = json_conf['site']['ams_id']
    #print(star_db)
 
    all_cal_files = []
@@ -2324,7 +2324,6 @@ def get_best_cal_new(cp_file, json_conf) :
    return(best_cp)
 
 def test_cal(cp_file,json_conf,cp, cal_img, cdata ):
-   print("TESTING CAL DATA", cdata)
    cfile, az, el, pos, px, num_ustars, num_cstars, res, tdiff = cdata
    cp['center_az'] = az 
    cp['center_el'] = el
@@ -4125,7 +4124,7 @@ def pair_stars(cal_params, cal_params_file, json_conf, cal_img=None, show = 0):
          ix,iy = data
          bp = 0
       close_stars = find_close_stars((ix,iy), cat_stars)
-      print("USER STAR:", data, close_stars)
+      #print("USER STAR:", data, close_stars)
       if len(close_stars) == 0:
          print("NO CLOSE STARS.", ix,iy)
       found = 0
