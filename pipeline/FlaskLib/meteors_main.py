@@ -320,6 +320,7 @@ def meteors_main (amsid, in_data) :
    for meteor in these_meteors:
       if len(meteor) == 8:
          meteor_file, reduced, start_time, dur, ang_vel, ang_dist, hotspot,msm = meteor 
+         print("METEOR:", msm)
          if msm == 1:
             msc += 1
    if msc > 0:

@@ -22,8 +22,8 @@ def lens_model(amsid):
       lfn,dir = fn_dir(vlens)
       lfn = lfn.replace("lens_model_", "")
       lfn = lfn.replace(".jpg", "")
-      star_db = "/mnt/ams2/meteor_archive/" + amsid + "/CAL/AUTOCAL/2020/solved/star_db-" + amsid + "-" + lfn + ".info"
-      mp_cal = "/mnt/ams2/meteor_archive/" + amsid + "/CAL/AUTOCAL/2020/solved/multi_poly-" + amsid +"-" + lfn + ".info"
+      star_db = "/mnt/ams2/cal/star_db-" + amsid + "-" + lfn + ".info"
+      mp_cal = "/mnt/ams2/cal/multi_poly-" + amsid +"-" + lfn + ".info"
       sdb = load_json_file(star_db)
       mp = load_json_file(mp_cal)
       x_fun = mp['x_fun']

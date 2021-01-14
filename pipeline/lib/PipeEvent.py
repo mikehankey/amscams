@@ -100,6 +100,8 @@ def events_for_day(day, json_conf):
    amsid = json_conf['site']['ams_id']
    year = day[0:4]
    event_dir = "/mnt/ams2/meteor_archive/" + amsid + "/EVENTS/" + year + "/" + day + "/"  
+   cmd = "rm " + event_dir + "*AMS*"
+   os.system(cmd)
    cloud_dir = "/mnt/archive.allsky.tv/" 
    if cfe(event_dir, 1) == 0:
       os.makedirs(event_dir)

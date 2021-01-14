@@ -89,7 +89,7 @@ def refit_meteors(day, json_conf,multi=0):
       print(cmd)
       os.system(cmd)
 
-def refit_meteor(meteor_file, json_conf):
+def refit_meteor(meteor_file, json_conf,force=0):
 
    (f_datetime, this_cam, f_date_str,y,m,d, h, mm, s) = convert_filename_to_date_cam(meteor_file)
    video_file = meteor_file.replace(".json", ".mp4")
@@ -102,6 +102,14 @@ def refit_meteor(meteor_file, json_conf):
 
    print("Loading...", meteor_file)
    mj = load_json_file(meteor_file)
+
+   if "refit_info" in mj:
+      if "runs" in mj['refit_info']:
+         if mj['refit_info']['runs'] >= 1:
+            print("DONE REFIT ALREADY.",  mj['refit_info']['runs'])
+            if force == 0:
+               return()
+
    cp = mj['cp']
    org_res = cp['total_res_px']
 
@@ -282,13 +290,15 @@ def find_fc_files(root_file, fcdirs = None):
 def star_db_mag(cam, json_conf):
    year = datetime.now().strftime("%Y")
    autocal_dir = "/mnt/ams2/meteor_archive/" + STATION_ID + "/CAL/AUTOCAL/" + year + "/solved/"
-   st_db = autocal_dir + "star_db-" + STATION_ID + "-" + cam + ".info"
-   print(st_db)
-   sdb = load_json_file(st_db)
+   cal_dir = "/mnt/ams2/cal/" 
+   st_db = cal_dir + "star_db-" + STATION_ID + "-" + cam + ".info"
+   if cfe(st_db):
+      sdb = load_json_file(st_db)
+   else: 
+      sdb = {}
    mags = []
    flux = []
    i = 0
-   print(st_db)
    exit()
    for star in sdb['autocal_stars']:
       (cal_file , center_az, center_el, ra_center, dec_center, position_angle, pixscale, dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist,star_int) = star
@@ -1515,7 +1525,7 @@ def deep_calib(cam, json_conf):
       each star entry must log the star name, image x,y, cal_params at that time (ra,dec etc), time of image
    """
    data,ci_data = review_cals(json_conf, cam)
-
+   amsid = json_conf['site']['ams_id']
    #print(star_db)
 
    all_cal_files = []
@@ -1534,7 +1544,7 @@ def deep_calib(cam, json_conf):
    else:
       mcp = None
    all_stars = []   
-   star_db_file = mcp_dir + "star_db-" + cam + ".info"
+   star_db_file = mcp_dir + "star_db-" + amsid + "-" + cam + ".info"
    if cfe(star_db_file) == 1:
       star_db = load_json_file(star_db_file)
       if "processed_files" not in star_db:
@@ -2314,7 +2324,6 @@ def get_best_cal_new(cp_file, json_conf) :
    return(best_cp)
 
 def test_cal(cp_file,json_conf,cp, cal_img, cdata ):
-   print("TESTING CAL DATA", cdata)
    cfile, az, el, pos, px, num_ustars, num_cstars, res, tdiff = cdata
    cp['center_az'] = az 
    cp['center_el'] = el
@@ -4115,7 +4124,7 @@ def pair_stars(cal_params, cal_params_file, json_conf, cal_img=None, show = 0):
          ix,iy = data
          bp = 0
       close_stars = find_close_stars((ix,iy), cat_stars)
-      print("USER STAR:", data, close_stars)
+      #print("USER STAR:", data, close_stars)
       if len(close_stars) == 0:
          print("NO CLOSE STARS.", ix,iy)
       found = 0

@@ -96,8 +96,8 @@ def make_ms_html(amsid, meteor_file, mj):
       else:
          cloud_dir = "/mnt/archive.allsky.tv/" + tstation + "/METEORS/" + year + "/" + day + "/" 
          cloud_url = "https://archive.allsky.tv/" + tstation + "/METEORS/" + year + "/" + day + "/" 
-      cloud_prev = cloud_dir + file + "-prev.jpg"
-      cloud_prev_url = cloud_url + file + "-prev.jpg?xx"
+      cloud_prev = cloud_dir + tstation + "_" + file + "-prev.jpg"
+      cloud_prev_url = cloud_url + tstation + "_" + file + "-prev.jpg?xx"
       prev_img = "<img src=" + cloud_prev_url + ">"      
       #ms_html += "<tr><td>" + mse['stations'][i] + "</td><td>" + mse['start_datetime'][i] + "</td><td>" + prev_img + "<br>" + file + "</td></tr>"
       ht_class = "norm"

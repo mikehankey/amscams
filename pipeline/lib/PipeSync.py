@@ -18,6 +18,7 @@ def prep_month(year_day, json_conf):
 
 def do_meteor_day_prep(day, json_conf,phase=1):
 
+   amsid = json_conf['site']['ams_id']
    # for each day we want to do these things in this order.
    # run confirm / reject_mask filter on all meteors
    if phase == 1:
@@ -32,6 +33,21 @@ def do_meteor_day_prep(day, json_conf,phase=1):
 
       # sync index files
       cmd = "./Process.py sid " + day
+      print(cmd)
+      os.system(cmd)
+
+      year = day[0:10]
+      event_dir = "/mnt/ams2/meteor_archive/" + amsid + "/" + year + "/" + day + "/"
+   
+      cmd = "rm " + event_dir + "*AMS*"
+      print(cmd)
+      os.system(cmd)
+
+      cmd = "./Process.py efd " + day
+      print(cmd)
+      os.system(cmd)
+
+      cmd = "./Process.py sync_prev_all " + day
       print(cmd)
       os.system(cmd)
    print("PHASE", phase)
@@ -64,9 +80,28 @@ def do_meteor_day_prep(day, json_conf,phase=1):
       print(cmd)
       os.system(cmd)
 
+      # sync prev files
+      cmd = "./Process.py sync_prev_all " + day
+      print(cmd)
+      os.system(cmd)
+
       # Now all events for this day should be prepped and the 'min-data' sync'd. 
       # mini-data is the txt data + 1 thumb preview image for the multi-station events
+      # rm past station data and re-sync
+      year = day[0:10]
+      event_dir = "/mnt/ams2/meteor_archive/" + amsid + "/" + year + "/" + day + "/"
+   
+      cmd = "rm " + event_dir + "*AMS*"
+      print(cmd)
+      os.system(cmd)
 
+      cmd = "./Process.py efd " + day
+      print(cmd)
+      os.system(cmd)
+
+      cmd = "./Process.py solve_day " + day
+      print(cmd)
+      os.system(cmd)
 
 
 
@@ -78,8 +113,10 @@ def sync_conf(json_conf ):
       os.system(cmd)
 
 def sync_meteor_preview_all(day,json_conf ):
+   amsid = json_conf['site']['ams_id']
    year = day[0:4]
    mdir = "/mnt/ams2/meteors/" + day + "/"
+   lcdir = mdir + "cloud_files/"
    files = glob.glob(mdir + "*.json")
    meteors = []
    mi = {}
@@ -98,25 +135,28 @@ def sync_meteor_preview_all(day,json_conf ):
    in_cloud = {}
    for cf in cloud_prev_files:
       fn, dir = fn_dir(cf)
-      fn = fn.replace(".json", "-prev.jpg")
+      #fn = fn.replace(".json", "-prev.jpg")
+      #fn = amsid + "_" + fn
       in_cloud[fn] = 1
 
    ns = 0
 
-
+   
 
    for mm in meteors:
       fn, fnd = fn_dir(mm)
       mj = load_json_file(mm)
       if "multi_station_event" in mj:
          fn = fn.replace(".json", "-prev.jpg")
+         fn = amsid + "_" + fn 
          if fn in in_cloud:
             print("File syncd already:", fn)
          else:
             print("File not syncd already:", fn)
             sync_meteor_preview(mm, json_conf, 0)
 
-
+   cmd = "rsync -av " + lcdir + " " + cloud_dir
+   os.system(cmd)
 
 
 def sync_meteor_preview(meteor_file,json_conf,ccd=1 ):
@@ -130,17 +170,22 @@ def sync_meteor_preview(meteor_file,json_conf,ccd=1 ):
    stack = meteor_file.replace(".json", "-stacked.jpg")
    prev = stack.replace("-stacked.jpg", "-prev.jpg")
    prev_fn,ddd = fn_dir(prev)
+   prev_dir = ddd + "/cloud_files/"
+   prev = prev_dir + amsid + "_" + prev_fn
+   if cfe(prev_dir, 1) == 0:
+      os.makedirs(prev_dir)
    year = prev_fn[0:4]
    day = prev_fn[0:10]
    cloud_dir = "/mnt/archive.allsky.tv/" + amsid + "/METEORS/" + year + "/" + day + "/" 
    cloud_prev = cloud_dir + prev_fn
-   img = cv2.imread(stack)
-   img =  cv2.resize(img, (320,180))
-   cv2.imwrite(prev, img)
-   prev_tmp = prev.replace(".jpg", "-temp.jpg")
-   cmd = "convert " + prev + " -quality 80 " + prev_tmp 
-   os.system(cmd)
-   os.system("mv " + prev_tmp + " " + prev)
+   if cfe(prev) == 0:
+      img = cv2.imread(stack)
+      img =  cv2.resize(img, (320,180))
+      cv2.imwrite(prev, img)
+      prev_tmp = prev.replace(".jpg", "-temp.jpg")
+      cmd = "convert " + prev + " -quality 80 " + prev_tmp 
+      os.system(cmd)
+      os.system("mv " + prev_tmp + " " + prev)
    #if cfe(prev) == 0:
    #   os.system(cmd)
    #   print(cmd)
@@ -151,7 +196,7 @@ def sync_meteor_preview(meteor_file,json_conf,ccd=1 ):
    #cmd = "rsync -auv " + prev + " " + cloud_dir 
    cmd = "cp " + prev + " " + cloud_dir 
    print(cmd)
-   os.system(cmd)
+   #os.system(cmd)
 
 def sync_index_day(day,json_conf ):
    amsid = json_conf['site']['ams_id']
