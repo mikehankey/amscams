@@ -26,6 +26,7 @@ import ephem
 import lib.brightstardata as bsd
 from lib.PipeReport import autocal_report
 from datetime import datetime
+import datetime as dt
 import glob
 from PIL import ImageFont, ImageDraw, Image, ImageChops
 tries = 0
@@ -822,7 +823,8 @@ def make_guess(az_guess, el_guess, pix_guess, pos_ang_guess, this_cam, cal_file,
    return(img, avg_dist, cp)
 
 def blind_solve_meteors(day,json_conf,cam=None):
-
+   CAL_STAR_LIMIT = 20
+   SHOW = 1
    pos_files = []
    mds = sorted(glob.glob("/mnt/ams2/meteors/" + day +"*"), reverse=True)
    all_meteor_imgs = []
@@ -850,7 +852,7 @@ def blind_solve_meteors(day,json_conf,cam=None):
                   continue
                fn, dir = fn_dir(js['hd_trim']) 
                js['hd_trim'] = md + "/" + fn
-               stack_file = js['hd_trim'].replace(".mp4", "-stacked.png")
+               stack_file = js['hd_trim'].replace(".mp4", "-stacked.jpg")
                if cfe(stack_file) == 0:
                   print(stack_file, " not found")
                
@@ -861,14 +863,14 @@ def blind_solve_meteors(day,json_conf,cam=None):
                   temp_img = cal_img.copy()
                   gray_cal_img = cv2.cvtColor(cal_img, cv2.COLOR_BGR2GRAY)
                   stars = get_image_stars(stack_file, gray_cal_img.copy(), json_conf, 0)
-                  if SHOW == 1:
-                     cv2.imshow('pepe', temp_img)
-                     cv2.waitKey(30)
                   print("STARS:", len(stars))
                   if len(stars) >= CAL_STAR_LIMIT:
                      mfn, mdir = fn_dir(stack_file) 
                      year = mfn[0:4]
                      pos_files.append((stack_file, len(stars)))
+                     if SHOW == 1:
+                        cv2.imshow('pepe', temp_img)
+                        cv2.waitKey(30)
                      #cmd = "cp " + stack_file + " /mnt/ams2/meteor_archive/" + STATION_ID + "/CAL/AUTOCAL/" + year + "/"  
                      #print(cmd)
                      #os.system(cmd)
@@ -889,7 +891,7 @@ def blind_solve_meteors(day,json_conf,cam=None):
             tdiff = f_datetime - c_datetime
             tdiff = tdiff.total_seconds()
             if tdiff < (86400 * 3) or (tdiff < 0 and tdiff > (-1*86400*3)):
-               print("WE HAVE A CALIBRATION WITHIN THE LAST 3 DAYS FOR THIS CAM. SKIP!", ccam, mcam, mfile, tdiff, f_datetime, c_datetime )
+               #print("WE HAVE A CALIBRATION WITHIN THE LAST 3 DAYS FOR THIS CAM. SKIP!", ccam, mcam, mfile, tdiff, f_datetime, c_datetime )
                good_cals[mcam].append(cal_file)
 
    print("These cams have had a calibration within the last 3 days.")
@@ -898,12 +900,25 @@ def blind_solve_meteors(day,json_conf,cam=None):
 
    pos_files = sorted(pos_files, key=lambda x: x[1], reverse=True)
    for mfile, stars in pos_files:
+
       (f_datetime, mcam, f_date_str,y,m,d, h, mm, s) = convert_filename_to_date_cam(mfile)
-      if len(set(good_cals[mcam])) <= 15:
+      if len(set(good_cals[mcam])) <= 25:
          if stars > CAL_STAR_LIMIT:
-            cmd = "cp " + mfile + " /mnt/ams2/meteor_archive/" + STATION_ID + "/CAL/AUTOCAL/" + year + "/"  
-            print("COPY A FILE FOR CALIB ", stars, cmd)
-            os.system(cmd)
+            trim_num = get_trim_num(mfile)
+            print("TRIM NUM:", trim_num)
+            extra_sec = int(trim_num) / 25
+            start_time_dt = f_datetime + dt.timedelta(0,extra_sec)
+
+            new_cal_ts = start_time_dt.strftime('%Y_%m_%d_%H_%M_%S')
+            new_cal_fn  = new_cal_ts + "_000_" + mcam + ".png"
+            new_cal_file = "/mnt/ams2/meteor_archive/" + STATION_ID + "/CAL/AUTOCAL/" + year + "/"  + new_cal_fn
+            year = y
+            cal_img = cv2.imread(mfile)
+            cv2.imwrite(new_cal_file, cal_img)
+            print("Saving", new_cal_file)
+            #cmd = "cp " + mfile + " /mnt/ams2/meteor_archive/" + STATION_ID + "/CAL/AUTOCAL/" + year + "/"  
+            #print("COPY A FILE FOR CALIB ", stars, cmd)
+            #os.system(cmd)
             good_cals[mcam].append((mfile, stars))
                
       

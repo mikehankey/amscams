@@ -373,6 +373,10 @@ def get_trim_num(file):
    at = at.replace("-", "")
    at = at.replace(".json", "")
    at = at.replace("HDmeteor", "")
+   at = at.replace("-stacked", "")
+   at = at.replace("stacked", "")
+   at = at.replace(".jpg", "")
+   at = at.replace(".png", "")
    return(at)
 
 
