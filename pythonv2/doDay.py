@@ -181,7 +181,7 @@ def check_disk():
             else:
                print("KEEP:", file)
          else:
-            if days_old > 30:
+            if days_old > 10:
                os.system("rm " + file)
          fc += 1
 
@@ -203,7 +203,7 @@ def check_disk():
                cmd = "rm -rf " + file
                print(cmd)
                os.system(cmd)
-            if days_old > 45:
+            if days_old > 10:
                # delete non trim hd files
                ntf = glob.glob(file + "/hd_save/*.mp4")
                for nt in ntf:
