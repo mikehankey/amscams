@@ -440,7 +440,10 @@ if __name__ == "__main__":
    if cmd == "super_cal" or cmd == "supercal":
       super_cal( json_conf)
    if cmd == "refit_all" :
-      if len(sys.argv) ==3:
+      if len(sys.argv) ==4:
+         # only do bad ones
+         refit_all(json_conf, sys.argv[2], sys.argv[3])
+      elif len(sys.argv) ==3:
          refit_all(json_conf, sys.argv[2])
       else:
          refit_all(json_conf )

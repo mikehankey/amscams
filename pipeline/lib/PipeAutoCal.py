@@ -100,7 +100,7 @@ def refit_meteor(meteor_file, json_conf,force=0):
       meteor_file = meteor_file.replace(".json", "")
       meteor_file = "/mnt/ams2/meteors/" + day + "/" + meteor_file + ".json"
 
-   print("Loading...", meteor_file)
+   #print("Loading...", meteor_file)
    mj = load_json_file(meteor_file)
 
    if "refit_info" in mj:
@@ -952,7 +952,7 @@ def check_all(json_conf, cam_id=None):
          print (cal_file, cp['total_res_px'], cp['total_res_deg'])
 
 def refit_all(json_conf, cam_id=None, type="all"):
-   if cam_id is not None:
+   if cam_id is not None and cam_id != 'all':
       cams = [cam_id]
    else:
       cams = []
@@ -961,33 +961,50 @@ def refit_all(json_conf, cam_id=None, type="all"):
          cams_id = json_conf['cameras'][cam]['cams_id']
          cams.append(cams_id)
    print("CAMS:", cams)
+   print("TYPE:", type)
 
    for cams_id in cams:
 
       cal_files= get_cal_files(None, cams_id)
 
       temp = sorted(cal_files, key=lambda x: x[0], reverse=True)
-      print("CAL FILES:", temp)
       for data in temp:
          redo = 0
          run = 0
          cal_file, xxx = data
-         print("Loading:", cal_file)
          cp = load_json_file(cal_file)
-
+         if "total_res_px" in cp and "fov_fit" in cp:
+            ok = 1
+         else:
+            if "fov_fit" not in cp:
+               cp['fov_fit'] = 1
+            if "total_res_px" not in cp:
+               cp['total_res_px'] = 999
+               cp['total_res_deg'] = 999
+            if 'cat_image_stars' not in cp:
+               cp['cat_image_stars'] = []
+            print("Missing total_res_px or fov_fit?", cal_file, cp['total_res_px'], cp['fov_fit'], len(cp['cat_image_stars']))
+          
          if "total_res_deg" not in cp:
             cp['total_res_deg'] = 999
          if "total_res_px" not in cp:
             cp['total_res_px'] = 9999
-         elif "refit" not in cp:
-            cp['refit'] = 1
+         elif "fov_fit" not in cp:
+            cp['fov_fit'] = 1
          if type == "all":
             run = 1
+         if type == "new":
+            if cp['fov_fit'] <= 1 and cp['total_res_px'] > 3:
+               run = 1
+            else:
+               #print("SKIP REFIT ALREADY:", cp['fov_fit'])
+               run = 0
          if run == 1:
             cmd = "./Process.py refit " + cal_file
             print(cmd)
             os.system(cmd)
                #exit()
+   
    os.system("cd ../pythonv2/; ./autoCal.py cal_index")
 
 def refit_fov(cal_file, json_conf):
@@ -998,7 +1015,7 @@ def refit_fov(cal_file, json_conf):
    cal_params = load_json_file(cal_file)
    image_file = cal_file.replace("-calparams.json", ".png")
 
-   print("START CP VALS:", cal_params['center_az'], cal_params['center_el'], cal_params['position_angle'], cal_params['pixscale'])
+   #print("START CP VALS:", cal_params['center_az'], cal_params['center_el'], cal_params['position_angle'], cal_params['pixscale'])
 
    img = cv2.imread(image_file)
    if img.shape[0] != 1080:
@@ -1014,7 +1031,7 @@ def refit_fov(cal_file, json_conf):
 
    if mask_img is not None:
       img = cv2.subtract(img, mask_img)
-      print("MASK SUBTRACTED.")
+      #print("MASK SUBTRACTED.")
    gray_img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
    print("REFIT CAM:", cam)
@@ -1057,7 +1074,7 @@ def refit_fov(cal_file, json_conf):
          if ival > 5:
             star_img = gray_img[cat_y-10:cat_y+10,cat_x-10:cat_x+10]
             max_px, avg_px, px_diff,max_loc,star_int = eval_cnt(star_img)
-            print("MORE STAR?", max_px, avg_px, px_diff, star_int)
+            #print("MORE STAR?", max_px, avg_px, px_diff, star_int)
             #if (2< px_diff < 7) and 100 < star_int < 11000:
             if 100 < star_int < 11000:
                cv2.rectangle(img, (cat_x-10, cat_y-10), (cat_x + 10, cat_y + 10), (128, 128, 128), 1)
@@ -1087,7 +1104,7 @@ def refit_fov(cal_file, json_conf):
       dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist,bp = cat_star
       new_cat_stars.append(cat_star)
       if 0 < mx < 1920 and 0 < my < 1080:
-         print("GRAY:", my,mx,gray_img[my,mx]) 
+         #print("GRAY:", my,mx,gray_img[my,mx]) 
          cv2.rectangle(img, (new_cat_x-2, new_cat_y-2), (new_cat_x + 2, new_cat_y + 2), (128, 128, 128), 1)
          cv2.rectangle(img, (new_x-2, new_y-2), (new_x + 2, new_y + 2), (255, 128, 128), 1)
    cal_params['cat_image_stars'] = new_cat_stars   
@@ -1097,10 +1114,10 @@ def refit_fov(cal_file, json_conf):
    #cv2.waitKey(0)
 
    print("FILE RES vs RECALC RES:", ocp['total_res_px'], cal_params['total_res_px'])
-   print("OCP:", ocp['ra_center'], ocp['dec_center'], ocp['position_angle'], ocp['pixscale'], ocp['total_res_px'])
+   #print("OCP:", ocp['ra_center'], ocp['dec_center'], ocp['position_angle'], ocp['pixscale'], ocp['total_res_px'])
    #for star in ocp['cat_image_stars']:
    #   print(star)
-   print("NEW CP:", cal_params['ra_center'], cal_params['dec_center'], cal_params['position_angle'], cal_params['pixscale'], cal_params['total_res_px'])
+   #print("NEW CP:", cal_params['ra_center'], cal_params['dec_center'], cal_params['position_angle'], cal_params['pixscale'], cal_params['total_res_px'])
    #for star in ocp['cat_image_stars']:
       #print(star)
    #cont = input("continue...")
@@ -1108,7 +1125,7 @@ def refit_fov(cal_file, json_conf):
    usc = len( cal_params['user_stars'])
    cisc = len( cal_params['cat_image_stars'])
    usc_perc =  cisc / usc
-   print("USC:", cisc, usc, usc_perc)
+   #print("USC:", cisc, usc, usc_perc)
    print("STARTING RES:", cal_params['total_res_px'] )
    if usc_perc < .4 or cal_params['total_res_px'] > 4:
       print(cal_file)

@@ -140,7 +140,7 @@ def make_ms_html(amsid, meteor_file, mj):
       station_pts += str(loc[0]) + "," + str(loc[1]) + "," + station
    fn,dir = fn_dir(meteor_file)
    date = fn[0:10]
-   fn = fn.replace(".mp4", "-map.jpg")
+   fn = fn.replace(".mp4", "-map.jpg?" + str(time.time()))
    station_map = "/meteors/" + date + "/" + fn
    print("MAP:", station_map)
    ms_html += "</div></div>"
