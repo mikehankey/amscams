@@ -249,6 +249,7 @@ def scan_and_stack_fast(file, sun_status = 0, vals = []):
    sub_frames = []
    fd = []
    stacked_image = None
+   stacked_sub_np = None
    fb = 0
    mask_resized = 0
    while True:
@@ -281,19 +282,25 @@ def scan_and_stack_fast(file, sun_status = 0, vals = []):
 
       if sun_status != 1:
          gray = cv2.cvtColor(small_frame, cv2.COLOR_BGR2GRAY)
+         #gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
          if fc > 0:
             sub = cv2.subtract(gray, last_gray)
             masked_frame = cv2.subtract(gray, small_mask)
+            #masked_frame = cv2.subtract(gray, mask_img)
             if mask_img is not None:
-               #print("MASK SUB", small_mask.shape, sub.shape)
-               #cv2.imshow('pepe', masked_frame) 
-               #cv2.waitKey(30)
                sub = cv2.subtract(sub, small_mask)
-                #gray_frames[-1])
+               #sub = cv2.subtract(sub, mask_img)
          else:
             sub = cv2.subtract(gray, gray)
+         if stacked_sub_np is not None:
+            sub = cv2.subtract(sub, stacked_sub_np)
 
          min_val, max_val, min_loc, (mx,my)= cv2.minMaxLoc(sub)
+         #cv2.imshow('sub', sub)
+         #cv2.waitKey(30)
+         #if stacked_sub_np is not None:
+         #   cv2.imshow('stack', stacked_sub_np)
+         #   cv2.waitKey(30)
          if max_val < 10:
             sum_vals.append(0)
             max_vals.append(0)
@@ -338,10 +345,16 @@ def scan_and_stack_fast(file, sun_status = 0, vals = []):
             if max_val > avg_max * 1.2 or fc <= 10:
                #print("STAK THE FRAME", avg_max, max_val, diff, fc)
                frame_pil = Image.fromarray(small_frame)
+               sub_pil = Image.fromarray(sub)
                if stacked_image is None:
                   stacked_image = stack_stack(frame_pil, frame_pil)
+                  stacked_sub = stack_stack(sub_pil, sub_pil)
                else:
                   stacked_image = stack_stack(stacked_image, frame_pil)
+                  stacked_sub = stack_stack(stacked_sub, sub_pil)
+               stacked_sub_np = np.array(stacked_sub)
+               #cv2.imshow('pepe', stacked_sub_np)
+               #cv2.waitKey(30)
       last_gray = gray
       #frames.append(frame)
       if fc % 100 == 1:
