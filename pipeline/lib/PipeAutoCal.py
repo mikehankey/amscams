@@ -824,19 +824,23 @@ def make_guess(az_guess, el_guess, pix_guess, pos_ang_guess, this_cam, cal_file,
 
 def blind_solve_meteors(day,json_conf,cam=None):
    CAL_STAR_LIMIT = 20
-   SHOW = 1
+   SHOW = 0
    pos_files = []
-   mds = sorted(glob.glob("/mnt/ams2/meteors/" + day +"*"), reverse=True)
+   mds = sorted(glob.glob("/mnt/ams2/meteors/" + "*"), reverse=True)
+   print("/mnt/ams2/meteors/" + day +"/*")
    all_meteor_imgs = []
    auto_cal_dir = "/mnt/ams2/meteor_archive/" + STATION_ID + "/CAL/AUTOCAL/" + day[0:4] + "/"  
    if cfe(auto_cal_dir,1) == 0:
       os.makedirs(auto_cal_dir)
 
+   print("BLIND", len(mds))
    for md in mds[0:90]:
+      print("MD:", md)
       if cam is None:
          jsfs = glob.glob(md + "/*.json")
       else:
          jsfs = glob.glob(md + "/*" + cam + "*.json")
+         print("LEN:", len(jsfs))
       for jsf in jsfs:
          if "reduced" in jsf:
             continue
@@ -2209,7 +2213,7 @@ def solve_field(image_file, image_stars=[], json_conf={}):
    image_file = idir + ifn
 
    # solve field
-   cmd = "/usr/local/astrometry/bin/solve-field " + plate_file + " --crpix-center --cpulimit=30 --verbose --no-delete-temp --overwrite --width=" + str(HD_W) + " --height=" + str(HD_H) + " -d 1-40 --scale-units dw --scale-low 60 --scale-high 90 -S " + solved_file + " >" + astrout
+   cmd = "/usr/local/astrometry/bin/solve-field " + plate_file + " --crpix-center --cpulimit=30 --verbose --no-delete-temp --overwrite --width=" + str(HD_W) + " --height=" + str(HD_H) + " -d 1-40 --scale-units dw --scale-low 60 --scale-high 120 -S " + solved_file + " >" + astrout
    print(cmd)
    astr = cmd
    print(cmd)
