@@ -3896,7 +3896,13 @@ def make_plate_image(image, file_stars):
       x1,y1,x2,y2= bound_cnt(x,y,iw,ih,15)
       cnt_img = hd_stack_img[y1:y2,x1:x2]
       ch,cw = cnt_img.shape
+      cent_w = int(1920/2)
+      cent_h = int(1080/2)
+      dist_to_center = calc_dist((x,y), (cent_w,cent_h))
+      print("DIST:", x,y,cent_w,cent_h,dist_to_center)
       print(cnt_img.shape)
+      if dist_to_center > 600:
+         continue
       if ch == 0 or cw == 0 :
          continue
       max_pnt,max_val,min_val = cnt_max_px(cnt_img)
