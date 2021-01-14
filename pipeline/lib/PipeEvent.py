@@ -71,7 +71,7 @@ def get_network_info(json_conf):
       local_dir = "/mnt/ams2/meteor_archive/" + ts + "/CAL/"
       cloud_dir = "/mnt/archive.allsky.tv/" + ts + "/CAL/"
       if cfe(local_dir,1) == 0:
-         os.makedirs(localdir)
+         os.makedirs(local_dir)
       local_file = local_dir + "as6.json"
       cloud_file = cloud_dir + "as6.json"
       if cfe(local_file) == 0:
