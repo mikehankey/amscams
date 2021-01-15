@@ -26,6 +26,7 @@ import ephem
 import lib.brightstardata as bsd
 from lib.PipeReport import autocal_report
 from datetime import datetime
+import datetime as dt
 import glob
 from PIL import ImageFont, ImageDraw, Image, ImageChops
 tries = 0
@@ -100,7 +101,7 @@ def refit_meteor(meteor_file, json_conf,force=0):
       meteor_file = meteor_file.replace(".json", "")
       meteor_file = "/mnt/ams2/meteors/" + day + "/" + meteor_file + ".json"
 
-   print("Loading...", meteor_file)
+   #print("Loading...", meteor_file)
    mj = load_json_file(meteor_file)
 
    if "refit_info" in mj:
@@ -822,19 +823,24 @@ def make_guess(az_guess, el_guess, pix_guess, pos_ang_guess, this_cam, cal_file,
    return(img, avg_dist, cp)
 
 def blind_solve_meteors(day,json_conf,cam=None):
-
+   CAL_STAR_LIMIT = 20
+   SHOW = 0
    pos_files = []
-   mds = sorted(glob.glob("/mnt/ams2/meteors/" + day +"*"), reverse=True)
+   mds = sorted(glob.glob("/mnt/ams2/meteors/" + "*"), reverse=True)
+   print("/mnt/ams2/meteors/" + day +"/*")
    all_meteor_imgs = []
    auto_cal_dir = "/mnt/ams2/meteor_archive/" + STATION_ID + "/CAL/AUTOCAL/" + day[0:4] + "/"  
    if cfe(auto_cal_dir,1) == 0:
       os.makedirs(auto_cal_dir)
 
+   print("BLIND", len(mds))
    for md in mds[0:90]:
+      print("MD:", md)
       if cam is None:
          jsfs = glob.glob(md + "/*.json")
       else:
          jsfs = glob.glob(md + "/*" + cam + "*.json")
+         print("LEN:", len(jsfs))
       for jsf in jsfs:
          if "reduced" in jsf:
             continue
@@ -850,7 +856,7 @@ def blind_solve_meteors(day,json_conf,cam=None):
                   continue
                fn, dir = fn_dir(js['hd_trim']) 
                js['hd_trim'] = md + "/" + fn
-               stack_file = js['hd_trim'].replace(".mp4", "-stacked.png")
+               stack_file = js['hd_trim'].replace(".mp4", "-stacked.jpg")
                if cfe(stack_file) == 0:
                   print(stack_file, " not found")
                
@@ -861,14 +867,14 @@ def blind_solve_meteors(day,json_conf,cam=None):
                   temp_img = cal_img.copy()
                   gray_cal_img = cv2.cvtColor(cal_img, cv2.COLOR_BGR2GRAY)
                   stars = get_image_stars(stack_file, gray_cal_img.copy(), json_conf, 0)
-                  if SHOW == 1:
-                     cv2.imshow('pepe', temp_img)
-                     cv2.waitKey(30)
                   print("STARS:", len(stars))
                   if len(stars) >= CAL_STAR_LIMIT:
                      mfn, mdir = fn_dir(stack_file) 
                      year = mfn[0:4]
                      pos_files.append((stack_file, len(stars)))
+                     if SHOW == 1:
+                        cv2.imshow('pepe', temp_img)
+                        cv2.waitKey(30)
                      #cmd = "cp " + stack_file + " /mnt/ams2/meteor_archive/" + STATION_ID + "/CAL/AUTOCAL/" + year + "/"  
                      #print(cmd)
                      #os.system(cmd)
@@ -889,7 +895,7 @@ def blind_solve_meteors(day,json_conf,cam=None):
             tdiff = f_datetime - c_datetime
             tdiff = tdiff.total_seconds()
             if tdiff < (86400 * 3) or (tdiff < 0 and tdiff > (-1*86400*3)):
-               print("WE HAVE A CALIBRATION WITHIN THE LAST 3 DAYS FOR THIS CAM. SKIP!", ccam, mcam, mfile, tdiff, f_datetime, c_datetime )
+               #print("WE HAVE A CALIBRATION WITHIN THE LAST 3 DAYS FOR THIS CAM. SKIP!", ccam, mcam, mfile, tdiff, f_datetime, c_datetime )
                good_cals[mcam].append(cal_file)
 
    print("These cams have had a calibration within the last 3 days.")
@@ -898,12 +904,25 @@ def blind_solve_meteors(day,json_conf,cam=None):
 
    pos_files = sorted(pos_files, key=lambda x: x[1], reverse=True)
    for mfile, stars in pos_files:
+
       (f_datetime, mcam, f_date_str,y,m,d, h, mm, s) = convert_filename_to_date_cam(mfile)
-      if len(set(good_cals[mcam])) <= 15:
+      if len(set(good_cals[mcam])) <= 25:
          if stars > CAL_STAR_LIMIT:
-            cmd = "cp " + mfile + " /mnt/ams2/meteor_archive/" + STATION_ID + "/CAL/AUTOCAL/" + year + "/"  
-            print("COPY A FILE FOR CALIB ", stars, cmd)
-            os.system(cmd)
+            trim_num = get_trim_num(mfile)
+            print("TRIM NUM:", trim_num)
+            extra_sec = int(trim_num) / 25
+            start_time_dt = f_datetime + dt.timedelta(0,extra_sec)
+
+            new_cal_ts = start_time_dt.strftime('%Y_%m_%d_%H_%M_%S')
+            new_cal_fn  = new_cal_ts + "_000_" + mcam + ".png"
+            new_cal_file = "/mnt/ams2/meteor_archive/" + STATION_ID + "/CAL/AUTOCAL/" + year + "/"  + new_cal_fn
+            year = y
+            cal_img = cv2.imread(mfile)
+            cv2.imwrite(new_cal_file, cal_img)
+            print("Saving", new_cal_file)
+            #cmd = "cp " + mfile + " /mnt/ams2/meteor_archive/" + STATION_ID + "/CAL/AUTOCAL/" + year + "/"  
+            #print("COPY A FILE FOR CALIB ", stars, cmd)
+            #os.system(cmd)
             good_cals[mcam].append((mfile, stars))
                
       
@@ -952,7 +971,7 @@ def check_all(json_conf, cam_id=None):
          print (cal_file, cp['total_res_px'], cp['total_res_deg'])
 
 def refit_all(json_conf, cam_id=None, type="all"):
-   if cam_id is not None:
+   if cam_id is not None and cam_id != 'all':
       cams = [cam_id]
    else:
       cams = []
@@ -961,33 +980,50 @@ def refit_all(json_conf, cam_id=None, type="all"):
          cams_id = json_conf['cameras'][cam]['cams_id']
          cams.append(cams_id)
    print("CAMS:", cams)
+   print("TYPE:", type)
 
    for cams_id in cams:
 
       cal_files= get_cal_files(None, cams_id)
 
       temp = sorted(cal_files, key=lambda x: x[0], reverse=True)
-      print("CAL FILES:", temp)
       for data in temp:
          redo = 0
          run = 0
          cal_file, xxx = data
-         print("Loading:", cal_file)
          cp = load_json_file(cal_file)
-
+         if "total_res_px" in cp and "fov_fit" in cp:
+            ok = 1
+         else:
+            if "fov_fit" not in cp:
+               cp['fov_fit'] = 1
+            if "total_res_px" not in cp:
+               cp['total_res_px'] = 999
+               cp['total_res_deg'] = 999
+            if 'cat_image_stars' not in cp:
+               cp['cat_image_stars'] = []
+            print("Missing total_res_px or fov_fit?", cal_file, cp['total_res_px'], cp['fov_fit'], len(cp['cat_image_stars']))
+          
          if "total_res_deg" not in cp:
             cp['total_res_deg'] = 999
          if "total_res_px" not in cp:
             cp['total_res_px'] = 9999
-         elif "refit" not in cp:
-            cp['refit'] = 1
+         elif "fov_fit" not in cp:
+            cp['fov_fit'] = 1
          if type == "all":
             run = 1
+         if type == "new":
+            if cp['fov_fit'] <= 1 and cp['total_res_px'] > 3:
+               run = 1
+            else:
+               #print("SKIP REFIT ALREADY:", cp['fov_fit'])
+               run = 0
          if run == 1:
             cmd = "./Process.py refit " + cal_file
             print(cmd)
             os.system(cmd)
                #exit()
+   
    os.system("cd ../pythonv2/; ./autoCal.py cal_index")
 
 def refit_fov(cal_file, json_conf):
@@ -998,7 +1034,7 @@ def refit_fov(cal_file, json_conf):
    cal_params = load_json_file(cal_file)
    image_file = cal_file.replace("-calparams.json", ".png")
 
-   print("START CP VALS:", cal_params['center_az'], cal_params['center_el'], cal_params['position_angle'], cal_params['pixscale'])
+   #print("START CP VALS:", cal_params['center_az'], cal_params['center_el'], cal_params['position_angle'], cal_params['pixscale'])
 
    img = cv2.imread(image_file)
    if img.shape[0] != 1080:
@@ -1014,7 +1050,7 @@ def refit_fov(cal_file, json_conf):
 
    if mask_img is not None:
       img = cv2.subtract(img, mask_img)
-      print("MASK SUBTRACTED.")
+      #print("MASK SUBTRACTED.")
    gray_img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
    print("REFIT CAM:", cam)
@@ -1057,7 +1093,7 @@ def refit_fov(cal_file, json_conf):
          if ival > 5:
             star_img = gray_img[cat_y-10:cat_y+10,cat_x-10:cat_x+10]
             max_px, avg_px, px_diff,max_loc,star_int = eval_cnt(star_img)
-            print("MORE STAR?", max_px, avg_px, px_diff, star_int)
+            #print("MORE STAR?", max_px, avg_px, px_diff, star_int)
             #if (2< px_diff < 7) and 100 < star_int < 11000:
             if 100 < star_int < 11000:
                cv2.rectangle(img, (cat_x-10, cat_y-10), (cat_x + 10, cat_y + 10), (128, 128, 128), 1)
@@ -1087,7 +1123,7 @@ def refit_fov(cal_file, json_conf):
       dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist,bp = cat_star
       new_cat_stars.append(cat_star)
       if 0 < mx < 1920 and 0 < my < 1080:
-         print("GRAY:", my,mx,gray_img[my,mx]) 
+         #print("GRAY:", my,mx,gray_img[my,mx]) 
          cv2.rectangle(img, (new_cat_x-2, new_cat_y-2), (new_cat_x + 2, new_cat_y + 2), (128, 128, 128), 1)
          cv2.rectangle(img, (new_x-2, new_y-2), (new_x + 2, new_y + 2), (255, 128, 128), 1)
    cal_params['cat_image_stars'] = new_cat_stars   
@@ -1097,10 +1133,10 @@ def refit_fov(cal_file, json_conf):
    #cv2.waitKey(0)
 
    print("FILE RES vs RECALC RES:", ocp['total_res_px'], cal_params['total_res_px'])
-   print("OCP:", ocp['ra_center'], ocp['dec_center'], ocp['position_angle'], ocp['pixscale'], ocp['total_res_px'])
+   #print("OCP:", ocp['ra_center'], ocp['dec_center'], ocp['position_angle'], ocp['pixscale'], ocp['total_res_px'])
    #for star in ocp['cat_image_stars']:
    #   print(star)
-   print("NEW CP:", cal_params['ra_center'], cal_params['dec_center'], cal_params['position_angle'], cal_params['pixscale'], cal_params['total_res_px'])
+   #print("NEW CP:", cal_params['ra_center'], cal_params['dec_center'], cal_params['position_angle'], cal_params['pixscale'], cal_params['total_res_px'])
    #for star in ocp['cat_image_stars']:
       #print(star)
    #cont = input("continue...")
@@ -1108,7 +1144,7 @@ def refit_fov(cal_file, json_conf):
    usc = len( cal_params['user_stars'])
    cisc = len( cal_params['cat_image_stars'])
    usc_perc =  cisc / usc
-   print("USC:", cisc, usc, usc_perc)
+   #print("USC:", cisc, usc, usc_perc)
    print("STARTING RES:", cal_params['total_res_px'] )
    if usc_perc < .4 or cal_params['total_res_px'] > 4:
       print(cal_file)
@@ -2177,7 +2213,7 @@ def solve_field(image_file, image_stars=[], json_conf={}):
    image_file = idir + ifn
 
    # solve field
-   cmd = "/usr/local/astrometry/bin/solve-field " + plate_file + " --crpix-center --cpulimit=30 --verbose --no-delete-temp --overwrite --width=" + str(HD_W) + " --height=" + str(HD_H) + " -d 1-40 --scale-units dw --scale-low 60 --scale-high 90 -S " + solved_file + " >" + astrout
+   cmd = "/usr/local/astrometry/bin/solve-field " + plate_file + " --crpix-center --cpulimit=30 --verbose --no-delete-temp --overwrite --width=" + str(HD_W) + " --height=" + str(HD_H) + " -d 1-40 --scale-units dw --scale-low 60 --scale-high 120 -S " + solved_file + " >" + astrout
    print(cmd)
    astr = cmd
    print(cmd)
@@ -3860,7 +3896,13 @@ def make_plate_image(image, file_stars):
       x1,y1,x2,y2= bound_cnt(x,y,iw,ih,15)
       cnt_img = hd_stack_img[y1:y2,x1:x2]
       ch,cw = cnt_img.shape
+      cent_w = int(1920/2)
+      cent_h = int(1080/2)
+      dist_to_center = calc_dist((x,y), (cent_w,cent_h))
+      print("DIST:", x,y,cent_w,cent_h,dist_to_center)
       print(cnt_img.shape)
+      if dist_to_center > 600:
+         continue
       if ch == 0 or cw == 0 :
          continue
       max_pnt,max_val,min_val = cnt_max_px(cnt_img)

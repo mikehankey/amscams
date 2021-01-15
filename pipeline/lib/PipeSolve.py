@@ -14,7 +14,11 @@ from geopy.point import Point
 
 def get_best_obs(obs):
    best_dist = 99999
+   best_file = None
    for file in obs:
+      if best_file is None:
+         best_file = file
+
       mid_x = np.mean(obs[file]['xs'])
       mid_y = np.mean(obs[file]['ys'])
       dist_to_center = calc_dist((mid_x,mid_y), (1920/2, 1080/2))
