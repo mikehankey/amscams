@@ -3471,14 +3471,15 @@ def cat_star_report(cat_image_stars, multi=2.5):
       center_dist = calc_dist((six,siy),(960,540))
       cat_center_dist = calc_dist((new_cat_x,new_cat_y),(960,540))
       if 800 < center_dist < 1000:
-         multi = 5 
+         multi = 10 
       elif 400 < center_dist <= 800:
-         multi = 4 
+         multi = 6
       else:
          multi = 2.5
 
       if cat_dist > med_c_dist * multi:
          foo = 1
+         print("FAILED!", center_dist, multi, med_c_dist, cat_dist)
       else:
          c_dist.append(abs(cat_dist))
          m_dist.append(abs(match_dist))
@@ -4175,7 +4176,7 @@ def pair_stars(cal_params, cal_params_file, json_conf, cal_img=None, show = 0):
          ix,iy = data
          bp = 0
       close_stars = find_close_stars((ix,iy), cat_stars)
-      #print("USER STAR:", data, close_stars)
+      print("USER STAR:", cc, data, close_stars)
       if len(close_stars) == 0:
          print("NO CLOSE STARS.", ix,iy)
       found = 0
@@ -4222,7 +4223,7 @@ def pair_stars(cal_params, cal_params_file, json_conf, cal_img=None, show = 0):
          used_key = str(ra) + "-" + str(dec)
          if match_dist >= 20 or used_key in used:
             bad = 1
-            #print("USER STAR NOT FOUND.", match_dist)
+            print("USER STAR NOT FOUND.", match_dist)
             #plt.plot(xs, ys)
             #plt.show()
          else:
@@ -4244,9 +4245,9 @@ def pair_stars(cal_params, cal_params_file, json_conf, cal_img=None, show = 0):
    bad_stars = []
    cal_params['bad_stars'] = bad_stars
    cal_params['no_match_stars'] = no_match
-   #print("BAD:", bad_stars)
-   #print("NO MATCH:", no_match)
-   #print("CAT STARS:", len(my_close_stars))
+   print("BAD:", bad_stars)
+   print("NO MATCH:", no_match)
+   print("CAT STARS:", len(my_close_stars))
    if SHOW == 1:
       for star in my_close_stars:
          dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist,bp = star
