@@ -1176,6 +1176,13 @@ def refit_fov(cal_file, json_conf):
    if cal_params['total_res_px'] > 4:
       print("Not enough stars map or res px too high? Maybe a bad position angle or astrometry vars?")
       cp = dict(cal_params)
+
+      cpr = optimize_var(cal_file,json_conf,"position_angle",cp,img)
+      if cpr is not None:
+         print("CAL VALS:", cal_file, cp['total_res_px'] ) 
+         cp = dict(cpr)
+
+
       cpr = optimize_var(cal_file,json_conf,"center_az",cal_params,img)
 
       if cpr is not None:
@@ -1187,10 +1194,6 @@ def refit_fov(cal_file, json_conf):
          print("CAL VALS:", cal_file, cpr['total_res_px'] ) 
          cp = dict(cpr)
       
-      cpr = optimize_var(cal_file,json_conf,"position_angle",cp,img)
-      if cpr is not None:
-         print("CAL VALS:", cal_file, cp['total_res_px'] ) 
-         cp = dict(cpr)
 
       cpr = optimize_var(cal_file,json_conf,"pixscale",cp,img)
       if cpr is not None:
@@ -2366,7 +2369,7 @@ def test_cal(cp_file,json_conf,cp, cal_img, cdata ):
    cp['position_angle'] = pos
    cp['pixscale'] = px
    cp = update_center_radec(cp_file,cp,json_conf)
-   print("EVAL:", cp_file)
+   #print("EVAL:", cp_file)
    cp, bad_stars, marked_img = eval_cal(cp_file,json_conf,cp,cal_img, None)
    return(cp, bad_stars, marked_img)
 
@@ -2382,21 +2385,26 @@ def optimize_var(cp_file,json_conf,var,cp,img):
       low, high = -10,10
       modp = 5
    else:
-      low, high = -25,25
+      low, high = -30,30
       modp = 2
+   if var == 'position_angle':
+      if ores > 20:
+         low,high=0,360
+         modp = 1 
+         cp[var] = 0
   
    tcal = dict(cp)
    for i in range (low,high):
       val = i / modp
       tcal[var] = float(cp[var]) + val
-
       data = [cp_file, tcal['center_az'], tcal['center_el'], tcal['position_angle'], tcal['pixscale'], len(tcal['user_stars']), len(tcal['cat_image_stars']), tcal['total_res_px'],0]  
       tcal = update_center_radec(cp_file,tcal,json_conf)
       tcal['ra_center'] = float( tcal['ra_center'])
       tcal['dec_center'] = float( tcal['dec_center'])
 
       tcp , bad_stars, marked_img = test_cal(cp_file, json_conf, tcal, img, data)
-      print("BEFORE/CUR:", tcp['total_res_px'],  cp['total_res_px'])
+      #print("BEFORE/CUR:", tcp['total_res_px'],  cp['total_res_px'])
+      print("OPT: ", var, low, high, val,  tcp['total_res_px'],  cp['total_res_px'])
       if tcp['total_res_px'] < cp['total_res_px']:
          best_cal_params = dict(tcp)
          
@@ -2600,7 +2608,7 @@ def eval_cal(cp_file,json_conf,nc=None,oimg=None, mask_img=None):
    if oimg is not None:
       img = oimg.copy()
    if nc is None:
-      print("LOADING CAL FILE:", cp_file)
+      #print("LOADING CAL FILE:", cp_file)
       nc = load_json_file(cp_file)
 
    if "cal_params" in cp_file:
@@ -2611,7 +2619,7 @@ def eval_cal(cp_file,json_conf,nc=None,oimg=None, mask_img=None):
    if cfe(img_file) == 0:
       img_file = cp_file.replace("-calparams.json", ".jpg")
    if oimg is None:
-      print("OPEN OIMG", img_file)
+      #print("OPEN OIMG", img_file)
       img = cv2.imread(img_file)
       oimg = img.copy()
    if nc is None:
@@ -2619,7 +2627,7 @@ def eval_cal(cp_file,json_conf,nc=None,oimg=None, mask_img=None):
 
    elif "user_stars" not in nc:
       nc['user_stars'] = get_image_stars(img_file, None, json_conf,0)
-   print("NC IS:", nc)
+   #print("NC IS:", nc)
    #print("UPDATING CENTER", nc['x_poly'])
    nc = update_center_radec(cp_file,nc,json_conf)
    #print("GETTING CATALOG STARS")
@@ -2658,8 +2666,9 @@ def eval_cal(cp_file,json_conf,nc=None,oimg=None, mask_img=None):
    nc['match_perc'] = match_perc
 
    #print("DONE EVAL")
-   print("EVAL RES", nc['position_angle'], avg_res)
-   marked_img = view_calib(cp_file,json_conf,nc,oimg)
+   print("EVAL RES", avg_res)
+   #marked_img = view_calib(cp_file,json_conf,nc,oimg)
+   marked_img = None
    return(nc, bad_stars, marked_img)
 
       
@@ -2975,7 +2984,7 @@ def review_cals(json_conf, cam=None):
             cp, bad_stars, marked_img = eval_cal(cp_file,json_conf,cp,cal_img, mask_img)
 
             marked_img_file = cp_file.replace("-calparams.json", "-marked.jpg")
-            cv2.imwrite(marked_img_file, marked_img)
+            #cv2.imwrite(marked_img_file, marked_img)
             print("MARKED:", marked_img_file)
 
             #print("CAT ", cp['cat_image_stars'])
@@ -3901,7 +3910,7 @@ def make_plate_image(image, file_stars):
       dist_to_center = calc_dist((x,y), (cent_w,cent_h))
       print("DIST:", x,y,cent_w,cent_h,dist_to_center)
       print(cnt_img.shape)
-      if dist_to_center > 600:
+      if dist_to_center > 500:
          continue
       if ch == 0 or cw == 0 :
          continue
@@ -4113,7 +4122,7 @@ def Decdeg2DMS( Decin ):
    return out
 
 def pair_stars(cal_params, cal_params_file, json_conf, cal_img=None, show = 0):
-   print("PAIR STARS.")
+   #print("PAIR STARS.")
    dist_type = "radial"
    if cal_img is None:
       cal_img_file = cal_params_file.replace("-calparams.json", ".png")
@@ -4237,7 +4246,7 @@ def pair_stars(cal_params, cal_params_file, json_conf, cal_img=None, show = 0):
    cal_params['no_match_stars'] = no_match
    #print("BAD:", bad_stars)
    #print("NO MATCH:", no_match)
-   print("CAT STARS:", len(my_close_stars))
+   #print("CAT STARS:", len(my_close_stars))
    if SHOW == 1:
       for star in my_close_stars:
          dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist,bp = star
