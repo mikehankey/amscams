@@ -31,6 +31,68 @@ import glob
 from PIL import ImageFont, ImageDraw, Image, ImageChops
 tries = 0
 
+def cal_manager(json_conf):
+
+   menu = """
+   Calibration Manager
+      1) Cal status
+
+   """
+   print(menu)
+   cmd = input("Enter function.")
+   if cmd == "1":
+      cal_status(json_conf) 
+      #cal_index(cam, json_conf, None)
+
+def cal_status(json_conf):
+   all_data = {}
+   for cnum in json_conf['cameras']:
+      good_files = []
+      bad_files = []
+      very_bad_files = []
+      good_azs = []
+      good_els = []
+      good_pos = []
+      good_pix = []
+      cam = json_conf['cameras'][cnum]['cams_id']
+      cal_index_file = "/mnt/ams2/meteor_archive/" + STATION_ID + "/CAL/" + STATION_ID + "_" + cam + "_CAL_INDEX.json"
+      ci = load_json_file(cal_index_file)
+      for data in ci:
+         file, center_az, center_el, position_angle, pixscale, user_stars, cat_stars, total_res_px = data
+         #print(file, total_res_px)
+         if total_res_px < 5:
+            good_files.append(file)
+            good_azs.append(center_az)
+            good_els.append(center_el)
+            good_pos.append(position_angle)
+            good_pix.append(float(pixscale))
+         if 5 < total_res_px < 10:
+            bad_files.append(file)
+         if total_res_px > 10:
+            very_bad_files.append(file)
+      print(cam, len(ci), "files", len(good_files), "good", len(bad_files), "bad", len(very_bad_files), "very bad")
+      all_data[cam] = {}
+      all_data[cam]['good_files'] = good_files
+      all_data[cam]['bad_files'] = bad_files
+      all_data[cam]['very_bad_files'] = very_bad_files
+      all_data[cam]['good_azs'] = good_azs
+      all_data[cam]['good_els'] = good_els
+      all_data[cam]['good_pos'] = good_pos
+      all_data[cam]['good_pix'] = good_pix
+         
+   for cam in all_data:
+      good_azs = all_data[cam]['good_azs']
+      good_els = all_data[cam]['good_els']
+      good_pos = all_data[cam]['good_pos']
+      good_pix = all_data[cam]['good_pix']
+      if len(good_azs) > 5:
+         print(cam, "Med AZ:", np.median(good_azs))
+         print(cam, "Med EL:", np.median(good_els))
+         print(cam, "Med POS:", np.median(good_pos))
+         print(cam, "Med Pix:", np.median(good_pix))
+           
+
+
 def get_more_stars_with_catalog(meteor_file, cal_params, image, json_conf):
 
    cat_stars = get_catalog_stars(cal_params)
@@ -971,6 +1033,8 @@ def check_all(json_conf, cam_id=None):
          print (cal_file, cp['total_res_px'], cp['total_res_deg'])
 
 def refit_all(json_conf, cam_id=None, type="all"):
+   if "limit" in type :
+      tt, lim = type.split("_")
    if cam_id is not None and cam_id != 'all':
       cams = [cam_id]
    else:
@@ -983,11 +1047,14 @@ def refit_all(json_conf, cam_id=None, type="all"):
    print("TYPE:", type)
 
    for cams_id in cams:
-
+      
       cal_files= get_cal_files(None, cams_id)
 
       temp = sorted(cal_files, key=lambda x: x[0], reverse=True)
+      count = 0
       for data in temp:
+         if count > int(lim):
+            continue 
          redo = 0
          run = 0
          cal_file, xxx = data
@@ -1018,6 +1085,16 @@ def refit_all(json_conf, cam_id=None, type="all"):
             else:
                #print("SKIP REFIT ALREADY:", cp['fov_fit'])
                run = 0
+         if type == "bad":
+            if cp['total_res_px'] > 5:
+               run = 1
+            else:
+               print("SKIP REFIT ALREADY:", cp['total_res_px'])
+               run = 0
+         if "limit" in type and cp['total_res_px'] > 7:
+            run = 1
+            count = count + 1
+
          if run == 1:
             cmd = "./Process.py refit " + cal_file
             print(cmd)
