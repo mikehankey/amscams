@@ -174,6 +174,7 @@ if __name__ == "__main__":
             deep_calib(cams_id, json_conf)
 
       else:
+         xxx = input("DEEP")
          deep_calib(sys.argv[2], json_conf)
    if cmd == "dc_report":
       deep_cal_report(sys.argv[2], json_conf)

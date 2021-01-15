@@ -47,12 +47,12 @@ def get_more_stars_with_catalog(meteor_file, cal_params, image, json_conf):
       if mag <= 5:
          cat_x, cat_y = int(cat_x), int(cat_y)
          #print("CAT:", cat_x, cat_y)
-         if cat_x - 10 <= 0 or cat_y - 10 <= 0 or cat_x + 10 >= 1920 or cat_y + 10 >= 1080:
+         if cat_x - 25 <= 0 or cat_y - 25 <= 0 or cat_x + 25 >= 1920 or cat_y + 25 >= 1080:
             continue
 
          ival = gray_img[cat_y,cat_x]
          if ival > 5:
-            star_img = gray_img[cat_y-10:cat_y+10,cat_x-10:cat_x+10]
+            star_img = gray_img[cat_y-25:cat_y+25,cat_x-25:cat_x+25]
             max_px, avg_px, px_diff,max_loc,star_int = eval_cnt(star_img)
             #if (2< px_diff < 7) and 100 < star_int < 11000:
             if 100 < star_int < 11000:
@@ -1268,7 +1268,6 @@ def refit_fov(cal_file, json_conf):
    else:
       mcp = None 
       print(mcp_file)
-      #xxx = input("Wait.")
 
    if mcp is not None:
       if mcp != 0:
@@ -1449,7 +1448,6 @@ def deep_cal_report(cam, json_conf):
             cp['user_stars'] = get_image_stars(cal, gray_cal_img.copy(), json_conf, 0)
             exit()
       cp = pair_stars(cp, cal_file, json_conf, cal_img)
-
       before_std_dist, before_avg_dist = calc_starlist_res(cp['cat_image_stars'])
       if mcp is not None:
       #if False:
@@ -1513,19 +1511,19 @@ def deep_cal_report(cam, json_conf):
             #save_json_file(cal, cp)
             grid = cal.replace("-calparams.json", "-azgrid.png")
          
-            cmd = "./AzElGrid.py az_grid " + cal 
-            print(cmd)
-            os.system(cmd)
+            #cmd = "./AzElGrid.py az_grid " + cal 
+            #print(cmd)
+            #os.system(cmd)
 
-         if cfe(grid) == 0:
-            grid = grid.replace("-stacked", "")
+         #if cfe(grid) == 0:
+         #   grid = grid.replace("-stacked", "")
         
 
       std_dist, avg_dist = calc_starlist_res(cp['cat_image_stars'])
       fov_done = 0
       if 'fov_fit' in cp:
          print("File FOV fitted ", cp['fov_fit'], " times")
-         if cp['fov_fit'] > 33:
+         if cp['fov_fit'] > 2:
             print("File already FOV fitted ", cp['fov_fit'], " times")
             fov_done = 1
       else:
@@ -1573,6 +1571,8 @@ def deep_calib(cam, json_conf):
          all_cal_files.append((file,res))
    #all_cal_files = deep_cal_report(cam, json_conf)
    year = datetime.now().strftime("%Y")
+
+
    #autocal_dir = "/mnt/ams2/meteor_archive/" + STATION_ID + "/CAL/AUTOCAL/" + year + "/solved/"
    #mcp_file = autocal_dir + "multi_poly-" + STATION_ID + "-" + cam + ".info"
    mcp_dir = "/mnt/ams2/cal/" 
@@ -1631,6 +1631,8 @@ def deep_calib(cam, json_conf):
             continue
          print("STARS:", len(cp['user_stars']))
          #cp = pair_stars(cp, cal_file, json_conf, gray_cal_img)
+
+
          if len(cp['cat_image_stars']) < 10:
             continue
 
@@ -1710,9 +1712,9 @@ def deep_calib(cam, json_conf):
       center_dist = calc_dist((six,siy),(960,540))
       cat_center_dist = calc_dist((new_cat_x,new_cat_y),(960,540))
       if cat_center_dist > 800:
-         multi = 3 
+         multi = 10 
       else:
-         multi = 2 
+         multi = 4
       if cat_dist < std_dist * multi:
          best_stars.append(star)
       else:
@@ -2796,7 +2798,7 @@ def cal_index(cam, json_conf, r_station_id = None):
    cloud_save_file = save_file.replace("ams2/meteor_archive", "archive.allsky.tv")
    cfn, cdir = fn_dir(cloud_save_file)
    if r_station_id is None:
-      print("GET CAL FILES:")
+      print("GET CAL FILES XX:")
       cal_files= get_cal_files(None, cam)
    else:
       cal_files= glob.glob(r_cal_dir + "*" + cam + "*calparams.json")
@@ -2922,6 +2924,11 @@ def review_cals(json_conf, cam=None):
       if "total_res_px" not in cp:
          cp['total_res_px'] = 20
       cal_data.append((cam, file, cp['center_az'], cp['center_el'], cp['position_angle'], cp['pixscale'], cp['total_res_px']))
+      #print("BMORE", len(cp['cat_image_stars']))
+      #cal_img = cv2.imread(file)
+      #cp = get_more_stars_with_catalog(cp_file, cp, cal_img, json_conf)
+      #print("AMORE", file, len(cp['cat_image_stars']))
+      #exit()
       #cp['user_stars'] = get_image_stars(file, None, json_conf,0)
       #print("UPDATING STAR DATA.")
       save_json_file(cp_file, cp)
@@ -2931,17 +2938,19 @@ def review_cals(json_conf, cam=None):
    #exit()
    good_cal_files = []
 
+   mcp_file = autocal_dir + "multi_poly-" + STATION_ID + "-" + cam + ".info"
+   if cfe(mcp_file) == 1:
+      mcp = load_json_file(mcp_file)
+
+
+   else:
+      mcp = None
 
    for file in files:
       if "grid" not in file and "tn" not in file and "stars" not in file and "blend" not in file:
          (f_datetime, cam, f_date_str,y,m,d, h, mm, s) = convert_filename_to_date_cam(file)
          print("FILE:", file)
 
-         mcp_file = autocal_dir + "multi_poly-" + STATION_ID + "-" + cam + ".info"
-         if cfe(mcp_file) == 1:
-            mcp = load_json_file(mcp_file)
-         else:
-            mcp = None
 
 
 
@@ -4176,9 +4185,9 @@ def pair_stars(cal_params, cal_params_file, json_conf, cal_img=None, show = 0):
          ix,iy = data
          bp = 0
       close_stars = find_close_stars((ix,iy), cat_stars)
-      print("USER STAR:", cc, data, close_stars)
-      if len(close_stars) == 0:
-         print("NO CLOSE STARS.", ix,iy)
+      #print("USER STAR:", cc, data, close_stars)
+      #if len(close_stars) == 0:
+      #   print("NO CLOSE STARS.", ix,iy)
       found = 0
       for name,mag,ra,dec,new_cat_x,new_cat_y,six,siy,cat_dist in close_stars:
          #dcname = str(name.decode("utf-8"))
@@ -4223,7 +4232,11 @@ def pair_stars(cal_params, cal_params_file, json_conf, cal_img=None, show = 0):
          used_key = str(ra) + "-" + str(dec)
          if match_dist >= 20 or used_key in used:
             bad = 1
-            print("USER STAR NOT FOUND.", match_dist)
+            if used_key in used:
+               dd = "used already"
+            else:
+               dd = "too far"
+            print("USER STAR NOT FOUND.", match_dist,dd )
             #plt.plot(xs, ys)
             #plt.show()
          else:
