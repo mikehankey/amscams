@@ -1402,6 +1402,8 @@ def refit_fov(cal_file, json_conf):
 
 
 def heal_all(cam,json_conf):
+
+   ci_data = cal_index(cam, json_conf)
    if cam == "all":
       for cnum in json_conf['cameras']:
          cam = json_conf['cameras'][cnum]['cams_id']
@@ -1886,7 +1888,10 @@ def get_best_cp(mfile, json_conf, ci_data, stars,cal_img_file):
    for data in ci_data[0:25]:
       cp_file, az, el, pos, px, star_count, match, res = data
       #print("FINDING BEST CAL:", az, el, pos, px)
-      cp = load_json_file(cp_file)
+      if cfe(cp_file) == 1:
+         cp = load_json_file(cp_file)
+      else:
+         continue
       cp = update_center_radec(mfile,cp,json_conf)
       cp['user_stars'] = stars
 
