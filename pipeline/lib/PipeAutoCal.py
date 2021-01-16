@@ -36,17 +36,90 @@ def cal_manager(json_conf):
    menu = """
    Calibration Manager
       1) Cal status
+      2) Update cal index
+      3) Re-Solve Cal Failures
 
    """
    print(menu)
    cmd = input("Enter function.")
    if cmd == "1":
       cal_status(json_conf) 
-      #cal_index(cam, json_conf, None)
+   if cmd == "2":
+      update_cal_index(json_conf) 
+   if cmd == "3":
+      cam_num = input("Enter cam num for re-solving (1-7):")
+      limit = input("How many do you want to try (5,10,20,all):")
+      star_lim = input("Minimum stars required (10,15,20):")
+      resolve_failed(cam_num, limit, star_lim, json_conf) 
+
+def resolve_failed(cam_num, limit, star_lim, json_conf):
+   cam_num = "cam" + cam_num
+   cams_id = json_conf['cameras'][cam_num]['cams_id']
+   all_files = []
+   AUTOCAL_ROOT = "/mnt/ams2/meteor_archive/" + STATION_ID + "/CAL/AUTOCAL/"
+   year_dirs = glob.glob(AUTOCAL_ROOT + "*")
+   for yd in year_dirs:
+      print(yd)
+      fail_files = glob.glob(yd + "/failed/*" + cams_id + "*.png")
+      for fail in fail_files:
+         all_files.append(fail)
+   count = 0
+   for file in all_files:
+      fn, dd = fn_dir(file)
+      root = fn.replace(".png", "")
+      fcdir = "/mnt/ams2/cal/freecal/" + root
+      fcfile = "/mnt/ams2/cal/freecal/" + root + "/" + root + "-stacked-calparams.json"
+      solved = cfe("/mnt/ams2/cal/freecal/" + root, 1)
+      if count < int(limit) and solved == 0:
+         gray_img = cv2.imread(file,0)
+         stars = get_image_stars(file, gray_img.copy(), json_conf, 0)
+         if len(stars) > int(star_lim):
+            new_file = file.replace("failed/", "")
+            print(count, file,len(stars))
+            cmd = "mv " + file + " " + new_file
+            print(cmd)
+            os.system(cmd)
+            cmd = "./Process.py ac " + new_file
+            print(cmd)
+            os.system(cmd)
+            if cfe(fcfile) == 1:
+               print("SUCCESS! refit now.")
+               cmd = "./Process.py refit " + fcfile
+               os.system(cmd) 
+            count += 1
+
+
+def update_cal_index(json_conf):
+
+   for cnum in json_conf['cameras']:
+      cam = json_conf['cameras'][cnum]['cams_id']
+      cal_index(cam, json_conf, None)
+   os.system("cd /home/ams/amscams/pythonv2/; ./autoCal.py cal_index")
 
 def cal_status(json_conf):
    all_data = {}
+   cal_dir = "/mnt/ams2/cal/"
    for cnum in json_conf['cameras']:
+      cam = json_conf['cameras'][cnum]['cams_id']
+      st_db = cal_dir + "star_db-" + STATION_ID + "-" + cam + ".info"
+      if cfe(st_db):
+         sdb = load_json_file(st_db)
+         total_stars = len(sdb['autocal_stars'])
+         #total_files = len(sdb['processed_files'])
+      else:
+         total_stars = 0
+         total_files = 0
+      mcp_file = cal_dir + "multi_poly-" + STATION_ID + "-" + cam + ".info"
+      if cfe(mcp_file) == 1:
+         mcp = load_json_file(mcp_file)
+         #cp['x_poly'] = mcp['x_poly']
+         #cp['y_poly'] = mcp['y_poly']
+         #cp['x_poly_fwd'] = mcp['x_poly_fwd']
+         #cp['y_poly_fwd'] = mcp['y_poly_fwd']
+         mcp_res = (mcp['x_fun_fwd'] + mcp['y_fun_fwd']) / 2
+      else:
+         mcp_res = 999
+
       good_files = []
       bad_files = []
       very_bad_files = []
@@ -54,7 +127,6 @@ def cal_status(json_conf):
       good_els = []
       good_pos = []
       good_pix = []
-      cam = json_conf['cameras'][cnum]['cams_id']
       cal_index_file = "/mnt/ams2/meteor_archive/" + STATION_ID + "/CAL/" + STATION_ID + "_" + cam + "_CAL_INDEX.json"
       ci = load_json_file(cal_index_file)
       for data in ci:
@@ -70,8 +142,10 @@ def cal_status(json_conf):
             bad_files.append(file)
          if total_res_px > 10:
             very_bad_files.append(file)
-      print(cam, len(ci), "files", len(good_files), "good", len(bad_files), "bad", len(very_bad_files), "very bad")
       all_data[cam] = {}
+      all_data[cam]['mcp_res'] = mcp_res
+      all_data[cam]['total_files'] = len(good_files) + len(bad_files) + len(very_bad_files)
+      all_data[cam]['total_stars'] = total_stars
       all_data[cam]['good_files'] = good_files
       all_data[cam]['bad_files'] = bad_files
       all_data[cam]['very_bad_files'] = very_bad_files
@@ -79,17 +153,61 @@ def cal_status(json_conf):
       all_data[cam]['good_els'] = good_els
       all_data[cam]['good_pos'] = good_pos
       all_data[cam]['good_pix'] = good_pix
-         
+        
    for cam in all_data:
+      print("")
+      good_files = all_data[cam]['good_files']
+      bad_files = all_data[cam]['bad_files']
+      very_bad_files = all_data[cam]['very_bad_files']
       good_azs = all_data[cam]['good_azs']
       good_els = all_data[cam]['good_els']
       good_pos = all_data[cam]['good_pos']
       good_pix = all_data[cam]['good_pix']
+      total_stars = all_data[cam]['total_stars']
+      total_files = all_data[cam]['total_files']
+      mcp_res = str(all_data[cam]['mcp_res'])[0:5]
       if len(good_azs) > 5:
-         print(cam, "Med AZ:", np.median(good_azs))
-         print(cam, "Med EL:", np.median(good_els))
-         print(cam, "Med POS:", np.median(good_pos))
-         print(cam, "Med Pix:", np.median(good_pix))
+         print(cam, "Med AZ,EL,PS,PX:", str(np.median(good_azs))[0:5], str(np.median(good_els))[0:5], str(np.median(good_pos))[0:5], str(np.median(good_pix))[0:5])
+      print(cam, "Cal Files", len(good_files), "good", len(bad_files), "bad", len(very_bad_files), "very bad")
+      print(cam, "MCP Files,Stars,Res::", total_files, total_stars, mcp_res)
+
+   """
+      build wiz commands
+         - do we have enough cal files for the cam, if not try to-resolve old file or blind solve meteors
+         - has the lens model been made yet, if not refit the files and then make it
+         - do we have bad or very bad files, if so try to heal them as long as we have some good files
+         - is the lens model's fun_fwd < .1, if not refit things and then rebuild it. Do this at least 3-5 times until the fun_fwd is < .1 or .05 at best. 
+         - when total stars in the lens model exceed 500 and fun_fwd <= .05 the model is as good as it can be and we can stop trying to rebuild it. 
+   """
+ 
+   wiz_cmds = [] 
+   for cam in all_data:
+      good_files = all_data[cam]['good_files']
+      bad_files = all_data[cam]['bad_files']
+      very_bad_files = all_data[cam]['very_bad_files']
+      good_azs = all_data[cam]['good_azs']
+      good_els = all_data[cam]['good_els']
+      good_pos = all_data[cam]['good_pos']
+      good_pix = all_data[cam]['good_pix']
+      total_stars = all_data[cam]['total_stars']
+      total_files = all_data[cam]['total_files']
+      mcp_res = str(all_data[cam]['mcp_res'])[0:5]
+      if total_files < 50:
+         wiz_cmds.append(('./Process.py resolve_failed ' + cam + ' 10 20', 'resolve failed cals'))
+      if len(bad_files) > 0 or len(very_bad_files) > 0:
+         if len(good_files) > 0:
+            wiz_cmds.append(('./Process.py heal_all ' + cam, 'heal bad files ' + cam))
+            wiz_cmds.append(('./Process.py refit_all ' + cam + ' new', 'refit bad files ' + cam))
+         else:
+            wiz_cmds.append(('', 'refit bad files ' + cam))
+            wiz_cmds.append(('./Process.py refit_all ' + cam + ' new', 'refit bad files ' + cam))
+      if float(mcp_res) > .1 :
+         wiz_cmds.append(('./Process.py deep_cal ' + cam, 'remake lens model aka deep_cal ' + cam))
+         wiz_cmds.append(('./Process.py refit_all ' + cam, 'refit cal files with new lens model ' + cam))
+         wiz_cmds.append(('./Process.py deep_cal ' + cam, 'remake lens model aka deep_cal ' + cam))
+         wiz_cmds.append(('./Process.py refit_all ' + cam, 'refit cal files with new lens model ' + cam))
+   for cmd in wiz_cmds:
+      print(cmd)
            
 
 
@@ -1403,12 +1521,12 @@ def refit_fov(cal_file, json_conf):
 
 def heal_all(cam,json_conf):
 
-   ci_data = cal_index(cam, json_conf)
    if cam == "all":
       for cnum in json_conf['cameras']:
          cam = json_conf['cameras'][cnum]['cams_id']
-         cal_index_file = "/mnt/ams2/meteor_archive/" + STATION_ID + "/CAL/" + STATION_ID + "_" + cam + "_CAL_INDEX.json"
-         ci_data = load_json_file(cal_index_file)
+         ci_data = cal_index(cam, json_conf)
+         #cal_index_file = "/mnt/ams2/meteor_archive/" + STATION_ID + "/CAL/" + STATION_ID + "_" + cam + "_CAL_INDEX.json"
+         #ci_data = load_json_file(cal_index_file)
 
          for data in ci_data:
             cp_file, az, el, pos, px, star_count, match, res = data
@@ -3724,10 +3842,10 @@ def get_image_stars_with_catalog(file, img, cp, json_conf, cat_stars=None, show 
             key = str(six) 
             temp_key = key[0:-1]
             new_key = temp_key + "0"
-            print("KEY/NEW KEY:", key, new_key)
+            #print("KEY/NEW KEY:", key, new_key)
             new_key = new_key + "-" +  str(siy)[0:-1]
             new_key += "0"
-            print("KEY/TEMP KEY:", key, new_key)
+            #print("KEY/TEMP KEY:", key, new_key)
             if key not in star_dict:
                star_dict[key] = {}
                star_dict[key]['data'] = [six,siy,star_int]
@@ -3735,7 +3853,7 @@ def get_image_stars_with_catalog(file, img, cp, json_conf, cat_stars=None, show 
                star_dict[key]['cat_star'] = (dcname,mag,ra,dec,new_cat_x,new_cat_y) 
 
             else:
-               print("DUPE STAR") 
+               #print("DUPE STAR") 
                star_dict[key]['data'] = [six,siy,star_int]
                star_dict[key]['count'] = 2 
                star_dict[key]['cat_star'] = (dcname,mag,ra,dec,new_cat_x,new_cat_y) 
@@ -3749,7 +3867,7 @@ def get_image_stars_with_catalog(file, img, cp, json_conf, cat_stars=None, show 
          name,mag,ra,dec,new_cat_x,new_cat_y = star_dict[key]['cat_star']
          six, siy, star_int = star_dict[key]['data']
          close = check_close (set(all_points), six,siy, 50)
-         print("Stars close to this one including itself:", close)
+         #print("Stars close to this one including itself:", close)
          if close <= 1:
             new_cat_x, new_cat_y = int(new_cat_x), int(new_cat_y)
             good_stars.append(star_dict[key]['data'])
@@ -3761,7 +3879,7 @@ def get_image_stars_with_catalog(file, img, cp, json_conf, cat_stars=None, show 
             cat_image_stars.append((name,mag,ra,dec,ra,dec,match_dist,new_cat_x,new_cat_y,0,0,new_cat_x,new_cat_y,six,siy,cat_dist,star_int))
 
 
-   print("GOOD STARS:", good_stars)
+   #print("GOOD STARS:", good_stars)
    cp['cat_image_stars'] = cat_image_stars
    return(good_stars, cp)
 
@@ -3790,7 +3908,7 @@ def find_stars_with_grid_old(image):
             x2 = 1920
          if y2 >= 1080:
             y2 = 1080 
-         print(x1, x2, y1,y2)
+         #print(x1, x2, y1,y2)
          if True:
             if x2 <= width and y2 <= height:
                grid_img = image[y1:y2,x1:x2]
@@ -3867,16 +3985,13 @@ def get_image_stars(file=None,img=None,json_conf=None,show=0):
    stars = []
    huge_stars = []
    if img is None:
-      print("Loading image:", file)
       img = cv2.imread(file, 0)
-   print("Loaded.")
    if img.shape[0] != '1080':
       img = cv2.resize(img, (1920,1080))
 
    if len(img.shape) > 2:
       img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
    show_pic = img.copy()
-   print("Finding stars.")
    #exit()
    
 
@@ -3888,7 +4003,6 @@ def get_image_stars(file=None,img=None,json_conf=None,show=0):
    #img = mask_frame(img, [], masks, 5)
 
    mask_file = MASK_DIR + cam + "_mask.png"
-   print("MASK FILE:", mask_file)
    if cfe(mask_file) == 1:
       mask_img = cv2.imread(mask_file, 0)
       mask_img = cv2.resize(mask_img, (1920,1080))
@@ -3896,19 +4010,14 @@ def get_image_stars(file=None,img=None,json_conf=None,show=0):
       mask_img = None
    if mask_img is not None:
       mask_img = cv2.resize(mask_img, (img.shape[1],img.shape[0]))
-      print("IMAGER:", img.shape)
-      print("MASK:", mask_img.shape)
-      print("MASK SUBTRACTED.")
       img = cv2.subtract(img, mask_img)
    cv2.imwrite("/mnt/ams2/masked.jpg", img)
    #cv2.imshow('pepe', img)
 
    best_stars = find_stars_with_grid(img)
-   print("FOUND:", len(best_stars ))
    for star in best_stars:
       x,y,z = star
       cv2.circle(img, (int(x),int(y)), 5, (128,128,128), 1)
-      print(star)
    #cv2.imshow('pepe', img)
    #cv2.waitKey(0)
    return(best_stars)
@@ -3965,9 +4074,7 @@ def get_image_stars(file=None,img=None,json_conf=None,show=0):
    stars = temp
    #stars = temp[0:50]
    
-   #print("STARS BEFORE VAL:", len(stars))
    stars = validate_stars(stars, raw_img)
-   #print("STARS AFTER VAL:", len(stars))
 
    return(stars)
 
