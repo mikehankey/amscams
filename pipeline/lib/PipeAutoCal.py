@@ -53,8 +53,11 @@ def cal_manager(json_conf):
       resolve_failed(cam_num, limit, star_lim, json_conf) 
 
 def resolve_failed(cam_num, limit, star_lim, json_conf):
-   cam_num = "cam" + cam_num
-   cams_id = json_conf['cameras'][cam_num]['cams_id']
+   if len(cam_num) > 1:
+      cams_id = cam_num
+   else:
+      cam_num = "cam" + cam_num
+      cams_id = json_conf['cameras'][cam_num]['cams_id']
    all_files = []
    AUTOCAL_ROOT = "/mnt/ams2/meteor_archive/" + STATION_ID + "/CAL/AUTOCAL/"
    year_dirs = glob.glob(AUTOCAL_ROOT + "*")
@@ -208,6 +211,8 @@ def cal_status(json_conf):
          wiz_cmds.append(('./Process.py refit_all ' + cam, 'refit cal files with new lens model ' + cam))
    for cmd in wiz_cmds:
       print(cmd)
+     
+      os.system(cmd[0])
            
 
 
