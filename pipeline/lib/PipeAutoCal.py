@@ -76,6 +76,7 @@ def resolve_failed(cam_num, limit, star_lim, json_conf):
       if count < int(limit) and solved == 0:
          gray_img = cv2.imread(file,0)
          stars = get_image_stars(file, gray_img.copy(), json_conf, 0)
+         print("Trying:", fn, len(stars))
          if len(stars) > int(star_lim):
             new_file = file.replace("failed/", "")
             print(count, file,len(stars))
@@ -195,8 +196,8 @@ def cal_status(json_conf):
       total_stars = all_data[cam]['total_stars']
       total_files = all_data[cam]['total_files']
       mcp_res = str(all_data[cam]['mcp_res'])[0:5]
-      if total_files < 50:
-         wiz_cmds.append(('./Process.py resolve_failed ' + cam + ' 10 20', 'resolve failed cals'))
+      if total_files < 10:
+         wiz_cmds.append(('./Process.py resolve_failed ' + cam + ' 10 10', 'resolve failed cals'))
       if len(bad_files) > 0 or len(very_bad_files) > 0:
          if len(good_files) > 0:
             wiz_cmds.append(('./Process.py heal_all ' + cam, 'heal bad files ' + cam))
