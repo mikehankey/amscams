@@ -248,8 +248,6 @@ def get_more_stars_with_catalog(meteor_file, cal_params, image, json_conf):
                cal_params['user_stars'].append((cat_x, cat_y, star_int))
             #else:
             #   print("Star int bad?", star_int)
-         else :
-            print("IVAL TOO LOW:", ival)
    return(cal_params)
 
 
@@ -1272,7 +1270,6 @@ def refit_fov(cal_file, json_conf):
    print("AFTER GET MORE:", len(cal_params['user_stars']), len(cal_params['cat_image_stars'])) 
    cal_params = pair_stars(cal_params, cal_file, json_conf, img.copy())
    print("AFTER GET MORE & PAIR:", len(cal_params['user_stars']), len(cal_params['cat_image_stars'])) 
-   xxx = input("cont")
 
 
    print("REFIT CAM:", cam)
