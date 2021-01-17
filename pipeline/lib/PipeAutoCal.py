@@ -239,12 +239,17 @@ def get_more_stars_with_catalog(meteor_file, cal_params, image, json_conf):
          ival = gray_img[cat_y,cat_x]
          if ival > 5:
             star_img = gray_img[cat_y-25:cat_y+25,cat_x-25:cat_x+25]
+            #print(cat_y,cat_x,np.sum(star_img))
             max_px, avg_px, px_diff,max_loc,star_int = eval_cnt(star_img)
             #if (2< px_diff < 7) and 100 < star_int < 11000:
             if 100 < star_int < 11000:
                cv2.rectangle(image, (cat_x-10, cat_y-10), (cat_x + 10, cat_y + 10), (128, 128, 128), 1)
                cv2.putText(image , str(int(px_diff)),  (int(cat_x),int(cat_y)), cv2.FONT_HERSHEY_SIMPLEX, .4, (255, 255, 255), 1)
                cal_params['user_stars'].append((cat_x, cat_y, star_int))
+            #else:
+            #   print("Star int bad?", star_int)
+         else :
+            print("IVAL TOO LOW:", ival)
    return(cal_params)
 
 
@@ -693,7 +698,6 @@ def make_gnome_map(file, json_conf,asimg=None,ascp=None,maps=None):
             dec_data[0] = img_dec
             degrees_per_pix = float(ascp['pixscale'])*0.000277778
             px_per_degree = 1 / degrees_per_pix
-            #print("PX:", px_per_degree)
 
             x_data, y_data = cyraDecToXY(ra_data, \
                dec_data,
@@ -798,7 +802,6 @@ def flatten_image(file, json_conf,asimg=None,ascp=None,maps=None):
             dec_data[0] = img_dec
             degrees_per_pix = float(ascp['pixscale'])*0.000277778
             px_per_degree = 1 / degrees_per_pix
-            #print("PX:", px_per_degree)
 
             x_data, y_data = cyraDecToXY(ra_data, \
                dec_data, 
@@ -1264,7 +1267,12 @@ def refit_fov(cal_file, json_conf):
       #print("MASK SUBTRACTED.")
    gray_img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
-
+   print("BEFORE GET MORE:", len(cal_params['user_stars']), len(cal_params['cat_image_stars'])) 
+   cal_params = get_more_stars_with_catalog(cal_file, cal_params, img.copy(), json_conf)
+   print("AFTER GET MORE:", len(cal_params['user_stars']), len(cal_params['cat_image_stars'])) 
+   cal_params = pair_stars(cal_params, cal_file, json_conf, img.copy())
+   print("AFTER GET MORE & PAIR:", len(cal_params['user_stars']), len(cal_params['cat_image_stars'])) 
+   xxx = input("cont")
 
 
    print("REFIT CAM:", cam)
@@ -1280,6 +1288,8 @@ def refit_fov(cal_file, json_conf):
          find_stars = 0
    if find_stars == 1:
       cal_params['user_stars'] = get_image_stars(cal_file, img.copy(), json_conf, 0)
+      print("GET MORE.")
+      cal_params = get_more_stars_with_catalog(cal_file, cal_params, img.copy(), json_conf)
    if "total_res_px" not in cal_params:
       cal_params['total_res_px'] = 999
       cal_params['total_res_deg'] = 999
@@ -1781,7 +1791,6 @@ def deep_cal_report(cam, json_conf):
          cat_match = 0
       #plot_cat_image_stars(gray_cal_img, cp, cal, json_conf)
       if cat_match < .5:
-         print("PROB:", cal )
          print("IMAGE STARS TO CAT STARS VERY LOW, COULD BE A BAD FILE.", len(cp['user_stars']), len(cp['cat_image_stars']), cat_match)
          exit()
 
@@ -4169,14 +4178,14 @@ def eval_cnt(cnt_img, avg_px=5 ):
    if blob == 0:
       star_int = 0
    is_star = "N"
-   if 100 < star_int < 13000 and 3 <= blob_w <= 15 and 3 <= blob_h <= 15:
+   if 100 < star_int < 13000 and 2 <= blob_w <= 15 and 2 <= blob_h <= 15:
       is_star = "Y"
    else:
       star_int = 0
-   #print("INT:", star_int, blob_x,blob_y,blob_w,blob_h,is_star)
    #cv2.imshow('pepe', int_cnt)
    #cv2.waitKey(0)
-   #print(blob_x, blob_y, star_int)
+   #print("STAR INT:", star_int)
+   #xxx = input("wait")
 
    return(max_px, avg_px,px_diff,(blob_x,blob_y),star_int)
 
