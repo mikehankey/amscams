@@ -35,7 +35,7 @@ def cal_manager(json_conf):
 
    menu = """
    Calibration Manager
-      1) Cal status
+      1) Cal Wizard 
       2) Update cal index
       3) Re-Solve Cal Failures
 
@@ -101,6 +101,7 @@ def update_cal_index(json_conf):
    os.system("cd /home/ams/amscams/pythonv2/; ./autoCal.py cal_index")
 
 def cal_status(json_conf):
+   # AKA CAL WIZ
    all_data = {}
    cal_dir = "/mnt/ams2/cal/"
    for cnum in json_conf['cameras']:
@@ -205,11 +206,13 @@ def cal_status(json_conf):
          else:
             wiz_cmds.append(('', 'refit bad files ' + cam))
             wiz_cmds.append(('./Process.py refit_all ' + cam + ' new', 'refit bad files ' + cam))
-      if float(mcp_res) > .1 :
+      if float(mcp_res) > .1 or total_stars < 600:
          wiz_cmds.append(('./Process.py deep_cal ' + cam, 'remake lens model aka deep_cal ' + cam))
          wiz_cmds.append(('./Process.py refit_all ' + cam, 'refit cal files with new lens model ' + cam))
          wiz_cmds.append(('./Process.py deep_cal ' + cam, 'remake lens model aka deep_cal ' + cam))
          wiz_cmds.append(('./Process.py refit_all ' + cam, 'refit cal files with new lens model ' + cam))
+      if float(total_stars) < 600:
+         wiz_cmds.append(('./Process.py resolve_failed ' + cam + ' 10 10', 'resolve failed cals'))
    for cmd in wiz_cmds:
       print(cmd)
      
