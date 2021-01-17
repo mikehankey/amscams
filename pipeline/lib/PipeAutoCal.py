@@ -236,19 +236,20 @@ def get_more_stars_with_catalog(meteor_file, cal_params, image, json_conf):
       if mag <= 5:
          cat_x, cat_y = int(cat_x), int(cat_y)
          #print("CAT:", cat_x, cat_y)
-         if cat_x - 25 <= 0 or cat_y - 25 <= 0 or cat_x + 25 >= 1920 or cat_y + 25 >= 1080:
+         if cat_x - 15 <= 0 or cat_y - 15 <= 0 or cat_x + 15 >= 1920 or cat_y + 15 >= 1080:
             continue
 
          ival = gray_img[cat_y,cat_x]
          if ival > 5:
-            star_img = gray_img[cat_y-25:cat_y+25,cat_x-25:cat_x+25]
+            star_img = gray_img[cat_y-15:cat_y+15,cat_x-15:cat_x+15]
             #print(cat_y,cat_x,np.sum(star_img))
             max_px, avg_px, px_diff,max_loc,star_int = eval_cnt(star_img)
+            mx,my = max_loc
             #if (2< px_diff < 7) and 100 < star_int < 11000:
             if 100 < star_int < 11000:
                cv2.rectangle(image, (cat_x-10, cat_y-10), (cat_x + 10, cat_y + 10), (128, 128, 128), 1)
                cv2.putText(image , str(int(px_diff)),  (int(cat_x),int(cat_y)), cv2.FONT_HERSHEY_SIMPLEX, .4, (255, 255, 255), 1)
-               cal_params['user_stars'].append((cat_x, cat_y, star_int))
+               cal_params['user_stars'].append((cat_x+mx, cat_y+my, star_int))
             #else:
             #   print("Star int bad?", star_int)
    return(cal_params)
