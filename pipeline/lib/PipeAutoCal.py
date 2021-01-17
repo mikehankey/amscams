@@ -3746,9 +3746,13 @@ def cat_star_report(cat_image_stars, multi=2.5):
       center_dist = calc_dist((six,siy),(960,540))
       cat_center_dist = calc_dist((new_cat_x,new_cat_y),(960,540))
       if 800 < center_dist < 1000:
-         multi = 10 
+         multi = 12
+         if med_c_dist <= 3:
+            med_c_dist = 3 
       elif 400 < center_dist <= 800:
-         multi = 6
+         multi = 7
+         if med_c_dist <= 2.5:
+            med_c_dist = 2.5
       else:
          multi = 2.5
 
@@ -4490,6 +4494,7 @@ def pair_stars(cal_params, cal_params_file, json_conf, cal_img=None, show = 0):
                dd = "too far"
             #plt.plot(xs, ys)
             #plt.show()
+            print("NOT FOUND:", dd)
          else:
             my_close_stars.append((name,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist,bp))
             total_match_dist = total_match_dist + match_dist
@@ -4499,6 +4504,7 @@ def pair_stars(cal_params, cal_params_file, json_conf, cal_img=None, show = 0):
             found = 1
       if found == 0:
          if len(close_stars) >= 1:
+            
             no_match.append(close_stars[0])
       cc += 1
 
