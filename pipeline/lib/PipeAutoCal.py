@@ -6182,7 +6182,7 @@ def clean_pairs(merged_stars, cam_id = "", inc_limit = 5,first_run=1,show=0):
    if first_run == 1:
       gsize = 50
    else:
-      gsize = 50
+      gsize = 100
    for w in range(0,1920):
       for h in range(0,1080):
          if (w == 0 and h == 0) or (w % gsize == 0 and h % gsize == 0):
