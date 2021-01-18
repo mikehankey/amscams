@@ -298,12 +298,12 @@ def refit_meteor(meteor_file, json_conf,force=0):
    #print("Loading...", meteor_file)
    mj = load_json_file(meteor_file)
 
-   if "refit_info" in mj:
-      if "runs" in mj['refit_info']:
-         if mj['refit_info']['runs'] >= 1:
-            print("DONE REFIT ALREADY.",  mj['refit_info']['runs'])
-            if force == 0:
-               return()
+   #if "refit_info" in mj:
+   #   if "runs" in mj['refit_info']:
+   #      if mj['refit_info']['runs'] >= 1:
+   #         print("DONE REFIT ALREADY.",  mj['refit_info']['runs'])
+   #         if force == 0:
+   #            return()
 
    cp = mj['cp']
    org_res = cp['total_res_px']
@@ -312,17 +312,23 @@ def refit_meteor(meteor_file, json_conf,force=0):
    year = datetime.now().strftime("%Y")
    mcp_dir = "/mnt/ams2/cal/" 
    mcp_file = mcp_dir + "multi_poly-" + STATION_ID + "-" + this_cam + ".info"
+   already_fit = 0
    if cfe(mcp_file) == 1:
       mcp = load_json_file(mcp_file)
-      cp['x_poly'] = mcp['x_poly']
-      cp['y_poly'] = mcp['y_poly']
-      cp['x_poly_fwd'] = mcp['x_poly_fwd']
-      cp['y_poly_fwd'] = mcp['y_poly_fwd']
+      if cp['x_poly'] == mcp['x_poly']:
+         already_fit = 1
+      else:
+         cp['x_poly'] = mcp['x_poly']
+         cp['y_poly'] = mcp['y_poly']
+         cp['x_poly_fwd'] = mcp['x_poly_fwd']
+         cp['y_poly_fwd'] = mcp['y_poly_fwd']
    else:
       print("NO MCP!", mcp_file)
       os.system("cp /mnt/ams2/meteor_archive/" + STATION_ID + "/CAL/AUTOCAL/2020/solved/*.info /mnt/ams2/cal/" )
       exit()
-
+   if already_fit == 1:
+      print("Already fit.")
+      return()
   
    if cfe(mj['hd_stack']) == 1:
       image = cv2.imread(mj['hd_stack'])
@@ -367,7 +373,7 @@ def refit_meteor(meteor_file, json_conf,force=0):
    #   exit()
    if len(cp['cat_image_stars']) >= 5  :
       print("we have enough stars to refit the meteor.")
-      #cp = minimize_fov(meteor_file, cp, meteor_file ,image,json_conf )
+      cp = minimize_fov(meteor_file, cp, meteor_file ,image,json_conf )
    else:
       print("Not enough stars to refit.")
       return()

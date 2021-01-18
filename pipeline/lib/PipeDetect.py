@@ -722,6 +722,12 @@ def reject_mask_detects(date, json_conf):
    for mf in sorted(jsfiles,reverse=True):
       if "reduced" not in mf and "stars" not in mf and "man" not in mf and "star" not in mf and "import" not in mf and "archive" not in mf:
          mj = load_json_file(mf) 
+         if "multi_station_event" in mj:
+            print("SKIP MULTI-STATION CONFIRMED.")
+            continue
+         if "best_meteor" in mj:
+            print("SKIP BEST METEOR CONFIRMED.")
+            continue
          if "confirmed" in mj:
             if len(mj['confirmed_meteors']) > 0:
                print("SKIP CONFIRMED.")
@@ -741,9 +747,6 @@ def reject_mask_detects(date, json_conf):
                fn, dir = fn_dir(mf)
                root_file = fn.replace(".json", "")
                del_data[root_file] = 1
-         if "multi_station_event" in mj:
-            print("SKIP MULTI-STATION CONFIRMED.")
-            continue
 
          print("\n\n\n\n RUNNING:", mf)
          tfs += 1
