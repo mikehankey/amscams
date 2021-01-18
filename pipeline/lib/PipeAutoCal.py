@@ -6227,8 +6227,8 @@ def clean_pairs(merged_stars, cam_id = "", inc_limit = 5,first_run=1,show=0):
    if SHOW == 1:
       simg = cv2.resize(img, (960,540))
       cv2.imshow(cam_id, simg)
-      cv2.imwrite("/mnt/ams2/tmp/fitmovies/star_img2.png", img)
-      cv2.waitKey(30)
+   cv2.imwrite("/mnt/ams2/cal/lens_model_" + cam_id + "_grid.jpg", img)
+   cv2.waitKey(30)
 
    #return(merged_stars)
    print("UPDATED MERGED STARS", len(updated_merged_stars))

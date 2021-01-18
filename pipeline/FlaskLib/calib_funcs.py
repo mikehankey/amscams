@@ -18,6 +18,8 @@ def lens_model(amsid):
 
 
    for lens in sorted(lms):
+      if "grid" in lens:
+         continue
       vlens = lens.replace("/mnt/ams2", "")
       lfn,dir = fn_dir(vlens)
       lfn = lfn.replace("lens_model_", "")
