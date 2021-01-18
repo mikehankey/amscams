@@ -41,6 +41,19 @@ def run_jobs(json_conf):
    yest = (datetime.now() - dt.timedelta(days = 1)).strftime("%Y_%m_%d")
    sun, az, alt = day_or_night(datetime.now(), json_conf, 1)
    print(sun, az, alt)
+ 
+   amsid = json_conf['site']['ams_id']
+   # check to make sure the cloud drive is setup and cal sync'd
+   cloud_conf_dir = "/mnt/archive.allsky.tv/" + amsid + "/CAL/"
+   cloud_conf_file = cloud_conf_dir + "as6.json"
+   if cfe(cloud_conf_dir,1) == 0:
+      os.makedirs(cloud_conf_dir)
+   if cfe(cloud_conf_file) == 0:
+      os.system("cp ../conf/as6.json " + cloud_conf_file)
+   else:
+      print("Cloud conf file is good.")
+   #exit() 
+
    cmds = []
    cmds.append(('all', "Clean disk / Purge old files", "cd /home/ams/amscams/pythonv2; ./doDay.py cd"))
    cmds.append(('day', "Make Meteor Index", "cd /home/ams/amscams/pipeline; ./Process.py mmi_all"))

@@ -16,10 +16,31 @@ from lib.PipeLIVE import det_table, swap_pic_to_vid
 from lib.PipeReport import mk_css
 from lib.PipeDetect import get_trim_num , detect_meteor_in_clip, analyze_object
 from datetime import datetime
+from lib.PipeAutoCal import fn_dir
 import datetime as dt
 MLN_CACHE_DIR = "/mnt/ams2/MLN_CACHE/"
 
 #/mnt/ams2/meteor_archive/AMS2/LIVE/METEORS/2020_08_13/2020_08_13-AMS2-METEORS.json
+
+def station_list():
+   CLOUD_DIR = "/mnt/archive.allsky.tv/"
+   stations = glob.glob(CLOUD_DIR + "AMS*")
+
+   local_station_dir = "/mnt/ams2/STATIONS/CONF/"
+   if cfe(local_station_dir, 1) == 0:
+      os.makedirs(local_station_dir)
+
+
+   for station_dir in stations:
+      station, dir = fn_dir(station_dir)
+      cloud_file = CLOUD_DIR + station + "/CAL/as6.json"  
+      local_file = local_station_dir + station + "_as6.json"  
+      if cfe(cloud_file) == 1 and cfe(local_file) == 0:
+         cmd = "cp " + cloud_file + " " + local_file
+         print(cmd)
+         os.system(cmd)
+      if cfe(cloud_file) == 0:
+         print(cloud_file + " is missing!")
 
 def proc_status():
    sd_pending = glob.glob("/mnt/ams2/SD/*.mp4")
