@@ -247,9 +247,10 @@ def get_more_stars_with_catalog(meteor_file, cal_params, image, json_conf):
             mx,my = max_loc
             #if (2< px_diff < 7) and 100 < star_int < 11000:
             if 100 < star_int < 11000:
+               print("MORE STAR FOUND!", star_int)
                cv2.rectangle(image, (cat_x-10, cat_y-10), (cat_x + 10, cat_y + 10), (128, 128, 128), 1)
                cv2.putText(image , str(int(px_diff)),  (int(cat_x),int(cat_y)), cv2.FONT_HERSHEY_SIMPLEX, .4, (255, 255, 255), 1)
-               cal_params['user_stars'].append((cat_x+mx, cat_y+my, star_int))
+               cal_params['user_stars'].append((cat_x, cat_y, star_int))
             #else:
             #   print("Star int bad?", star_int)
    return(cal_params)
@@ -1270,11 +1271,15 @@ def refit_fov(cal_file, json_conf):
    gray_img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
    print("BEFORE GET MORE:", len(cal_params['user_stars']), len(cal_params['cat_image_stars'])) 
-   cal_params = get_more_stars_with_catalog(cal_file, cal_params, img.copy(), json_conf)
-   print("AFTER GET MORE:", len(cal_params['user_stars']), len(cal_params['cat_image_stars'])) 
-   cal_params = pair_stars(cal_params, cal_file, json_conf, img.copy())
-   print("AFTER GET MORE & PAIR:", len(cal_params['user_stars']), len(cal_params['cat_image_stars'])) 
-
+   if len(cal_params['cat_image_stars']) > 25:
+      cal_params = get_more_stars_with_catalog(cal_file, cal_params, img.copy(), json_conf)
+      print("AFTER GET MORE:", len(cal_params['user_stars']), len(cal_params['cat_image_stars'])) 
+      cal_params = pair_stars(cal_params, cal_file, json_conf, img.copy())
+      print("AFTER GET MORE & PAIR:", len(cal_params['user_stars']), len(cal_params['cat_image_stars'])) 
+ 
+   if cal_params['total_res_px'] < 1.2:
+      print("GOOD ENOUGH ALREADY.")
+      return("") 
 
    print("REFIT CAM:", cam)
    #masks = get_masks(cam, json_conf,1)
@@ -1478,9 +1483,7 @@ def refit_fov(cal_file, json_conf):
    data = [cal_file, cal_params['center_az'], cal_params['center_el'], cal_params['position_angle'], cal_params['pixscale'], len(cal_params['user_stars']), len(cal_params['cat_image_stars']), cal_params['total_res_px'],0]  
    #cal_params, bad_stars, marked_img = test_cal(cal_file, json_conf, cal_params, img, data)
    #save_json_file(cal_file, cal_params)
-   print("SAVED:", cal_file)
-   for star in cal_params['cat_image_stars']:
-      print(star)
+   #print("SAVED:", cal_file)
    #exit()
    #print(bad_stars)
 
