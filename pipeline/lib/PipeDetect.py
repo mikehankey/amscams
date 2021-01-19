@@ -1833,15 +1833,17 @@ def make_roi_video_mfd(video_file, json_conf):
          i += 1
    else:
       hd_color_frames = []
-      for cf in cache_frames:
+      for cf in sorted(cache_frames):
          cfi = cv2.imread(cf)
          hd_color_frames.append(cfi)
 
    updated_frame_data = []
+   print("MJF:", mjf)
    if cfe(mjf) == 1:
       mj = load_json_file(mjf)
    if cfe(mjrf) == 1:
       mjr = load_json_file(mjrf)
+
    if "user_mods" in mj:
       if "frames" in mj['user_mods']:
          ufd = mj['user_mods']['frames']
