@@ -3,6 +3,8 @@
    multi-station functions here
 
 """
+
+
 import time
 import cv2
 import numpy as np
@@ -20,9 +22,27 @@ from lib.PipeAutoCal import fn_dir
 import datetime as dt
 MLN_CACHE_DIR = "/mnt/ams2/MLN_CACHE/"
 
-#/mnt/ams2/meteor_archive/AMS2/LIVE/METEORS/2020_08_13/2020_08_13-AMS2-METEORS.json
+from math import sin, cos, sqrt, atan2, radians
+
+def dist_between_two_points(lat1,lon1,lat2,lon2):
+   R = 6373.0
+   lat1 = radians(lat1)
+   lon1 = radians(lon1)
+   lat2 = radians(lat2)
+   lon2 = radians(lon2)
+   dlon = lon2 - lon1
+   dlat = lat2 - lat1
+   a = (sin(dlat/2))**2 + cos(lat1) * cos(lat2) * (sin(dlon/2))**2
+   c = 2 * atan2(sqrt(a), sqrt(1-a))
+   distance = R * c
+
+   return(distance)
 
 def station_list():
+   json_conf = load_json_file("../conf/as6.json")
+   my_lat = float(json_conf['site']['device_lat'])
+   my_lon = float(json_conf['site']['device_lng'])
+   my_alt = float(json_conf['site']['device_alt'])
    CLOUD_DIR = "/mnt/archive.allsky.tv/"
    stations = glob.glob(CLOUD_DIR + "AMS*")
 
@@ -41,6 +61,31 @@ def station_list():
          os.system(cmd)
       if cfe(cloud_file) == 0:
          print(cloud_file + " is missing!")
+
+   confs = glob.glob(local_station_dir + "*.json")
+   my_stations = []
+   remote_urls = []
+   for conf in confs:
+      js = load_json_file(conf)
+      id = js['site']['ams_id']
+      lat = float(js['site']['device_lat'])
+      lon = float(js['site']['device_lng'])
+      alt = float(js['site']['device_alt'])
+      dist = dist_between_two_points(my_lat, my_lon, lat, lon)
+      if dist < 300:
+         print(id, lat,lon,alt, dist)
+         my_stations.append((id))
+         #, lat, lon, alt))
+         if "remote_url" in json_conf['site']:
+            remote_urls.append(json_conf['site']['remote_url'])
+         else:
+            remote_urls.append('')
+   json_conf['site']['multi_station_sync'] = my_stations
+   json_conf['site']['remote_urls'] = remote_urls
+   save_json_file("../conf/as6.json", json_conf)
+   os.system("./Process.py get_network_info")
+     
+      
 
 def proc_status():
    sd_pending = glob.glob("/mnt/ams2/SD/*.mp4")

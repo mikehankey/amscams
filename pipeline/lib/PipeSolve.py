@@ -75,6 +75,8 @@ def simple_solve(day, event_id, json_conf):
       (f_datetime, cam1, f_date_str,fy,fmon,fd, fh, fm, fs) = convert_filename_to_date_cam(file1)
       (f_datetime, cam2, f_date_str,fy,fmon,fd, fh, fm, fs) = convert_filename_to_date_cam(file2)
       station_key = station1 + "-" + cam1 + ":" + station2 + "-" + cam2
+      print("OBS1:", good_obs[0])
+      print("OBS2:", good_obs[1])
       sols = int_planes(good_obs[0], good_obs[1])
       solutions = []
       for sol in sols:
@@ -205,15 +207,16 @@ def int_planes(obs1, obs2):
    print("START2:", slat2, slon2,salt2)
    print("END2:", elat2, elon2,ealt2)
 
-
-   a = Point(slon, slat, 0)
-   b = Point(elon, elat, 0)
+   print("S", slon, slat)
+   print("E", elon, elat)
+   a = Point(slat, slon, 0)
+   b = Point(elat, elon, 0)
    dist1 = distance(a, b).km
    h = salt - ealt
    dist1 = math.sqrt(dist1**2 + h**2)
 
-   a = Point(slon2, slat2, 0)
-   b = Point(elon2, elat2, 0)
+   a = Point(slat2, slon2, 0)
+   b = Point(elat2, elon2, 0)
    dist2 = distance(a, b).km
    h = salt2 - ealt2
    dist2 = math.sqrt(dist2**2 + h**2)

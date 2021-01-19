@@ -369,6 +369,16 @@ def refit_meteor(meteor_file, json_conf,force=0):
    # do batch mode
    cp, bad_stars,marked_img = eval_cal(meteor_file,json_conf,cp,image)
 
+   short_bright_stars = []
+   if "cat_image_stars" in cp: 
+      for star in cp['cat_image_stars']:
+
+         dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist,bp = star
+         short_bright_stars.append((dcname,dcname,ra,dec,mag))
+         cp['short_bright_stars'] = short_bright_stars
+   else:
+      cp['short_bright_stars'] = None
+
    #if cp['total_res_px'] > 5:
    #   exit()
    if len(cp['cat_image_stars']) >= 5  :
@@ -4705,8 +4715,12 @@ def get_catalog_stars(cal_params):
       #print("RA:", ra)
       #print("DEC:", dec)
       #print("MAG:", mag)
-      dcname = cname.decode("utf-8")
-      dbname = bname.decode("utf-8")
+      try:
+         dcname = cname.decode("utf-8")
+         dbname = bname.decode("utf-8")
+      except: 
+         dcname = cname
+         dbname = bname
       if dcname == "":
          name = bname
       else:
@@ -4854,8 +4868,12 @@ def find_close_stars(star_point, catalog_stars,dt=100):
    matches = []
    nomatches = []
    for name,mag,ra,dec,cat_x,cat_y in catalog_stars:
-      dcname = str(name.decode("utf-8"))
-      dbname = dcname.encode("utf-8")
+      try:
+         dcname = str(name.decode("utf-8"))
+         dbname = dcname.encode("utf-8")
+      except:
+         dcname = name
+         dbname = name
       cat_x, cat_y = int(cat_x), int(cat_y)
       cat_center_dist = calc_dist((cat_x,cat_y),(960,540))
 
