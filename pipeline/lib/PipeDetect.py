@@ -1811,12 +1811,31 @@ def make_roi_video_mfd(video_file, json_conf):
    year = vid_fn[0:4]
    mon = vid_fn[5:7]
    cache_dir = "/mnt/ams2/CACHE/" + year + "/" + mon + "/" + vid_base + "/"
+   cache_dir_frames = "/mnt/ams2/CACHE/" + year + "/" + mon + "/" + vid_base + "_frms/"
    prefix = cache_dir + vid_base + "-frm"
    if cfe(cache_dir, 1) == 0:
       print("CACHE DIR:", cache_dir)
       os.makedirs(cache_dir)
+   if cfe(cache_dir_frames, 1) == 0:
+      print("CACHE DIR:", cache_dir_frames)
+      os.makedirs(cache_dir_frames)
 
-   hd_frames,hd_color_frames,subframes,sum_vals,max_vals,pos_vals = load_frames_fast(video_file, json_conf, 0, 0, 1, 1,[])
+   cache_frames = glob.glob(cache_dir_frames + "*.jpg")
+   print(cache_dir_frames)
+   print(cache_frames)
+   if len(cache_frames) == 0:
+      hd_frames,hd_color_frames,subframes,sum_vals,max_vals,pos_vals = load_frames_fast(video_file, json_conf, 0, 0, 1, 1,[])
+      i = 0
+      for ff in hd_color_frames:
+         frm_file = cache_dir_frames + vid_base + "-{:04d}".format(int(i)) + ".jpg"
+         print(frm_file)
+         cv2.imwrite(frm_file, ff)
+         i += 1
+   else:
+      hd_color_frames = []
+      for cf in cache_frames:
+         cfi = cv2.imread(cf)
+         hd_color_frames.append(cfi)
 
    updated_frame_data = []
    if cfe(mjf) == 1:
@@ -1833,8 +1852,9 @@ def make_roi_video_mfd(video_file, json_conf):
       mj['user_mods'] = {}
    used = {}
    vh,vw = hd_color_frames[0].shape[:2]
+   print(mjr['meteor_frame_data'])
    if "meteor_frame_data" in mjr:
-      mjr['meteor_frame_data'] = sorted(mjr[meteor_frame_data], key=lambda x: (x[1]), reverse=False)
+      mjr['meteor_frame_data'] = sorted(mjr['meteor_frame_data'], key=lambda x: (x[1]), reverse=False)
       for row in mjr['meteor_frame_data']:
          (dt, fn, x, y, w, h, oint, ra, dec, az, el) = row
          print("ROW:", row)
