@@ -2137,6 +2137,7 @@ def fireball(video_file, json_conf, nomask=0):
    hdm_y_720 = 720 / fh
    print("BP1")
    best_meteor, hd_frames, hd_color_frames, median_frame, mask_img,cp = fireball_phase1(hd_frames, hd_color_frames, subframes,sum_vals,max_vals,pos_vals, video_file, json_conf, jsf, jdata, best_meteor, nomask)
+   #print("BEST:", best_meteor['ofns'])
    print("AP1")
    gap_test_res = None
    jdata['cp'] = cp
@@ -2163,6 +2164,8 @@ def fireball(video_file, json_conf, nomask=0):
       print("No meteor detected.", jsf)
       return()
    best_meteor, frame_data = fireball_fill_frame_data(video_file,best_meteor, hd_color_frames)
+   print("BEST:", best_meteor['ofns'])
+   #exit()
 
 
    #tracking_file = video_file.replace(".mp4", "-tracking.mp4")
@@ -2609,7 +2612,7 @@ def fireball_fill_frame_data(video_file, bm, frames, tracking_updates = None):
    ccys = []
    dts= []
    # Loop over new frame data and add to BM arrays
-   for fn in frame_data:
+   for fn in sorted(frame_data.keys()):
       if tracking_updates is not None:
          if fn in tracking_updates:
             mod_x, mod_y = tracking_updates[fn]
