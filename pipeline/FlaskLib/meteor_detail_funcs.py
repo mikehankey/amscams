@@ -17,7 +17,8 @@ def make_obs_object(mj,mse, nsinfo):
       if station not in obs:
          obs[station] = {}
       if fn not in obs[station]:
-
+         print("STATION:", station)
+         print("STATION:", nsinfo[station])
          obs[station][fn] = {}
          obs[station][fn]['loc'] = nsinfo[station]['loc']
          obs[station][fn]['times'] = []

@@ -1872,13 +1872,30 @@ def make_roi_video_mfd(video_file, json_conf):
                tx, ty, ra ,dec , az, el = XYtoRADec(x,y,video_file,mjr['cal_params'],json_conf)
                print("USING UPDATED POINT", fn, x,y)
          if fn not in used:
+            use_roi_p = 0
             updated_frame_data.append((dt, int(fn), x, y, w, h, oint, ra, dec, az, el))
             #cx = x + int(w/2)
             #cy = y + int(h/2)
             rx1,ry1,rx2,ry2 = bound_cnt(x, y,1920,1080, roi_size)
             if rx2 - rx1 != roi_size * 2:
-               print("PROBLEM AT THE X EDGE!")
-               exit()
+                roi_p = np.zeros((roi_size*2,roi_size*2,3),dtype=np.uint8)
+                if rx2 > vw/2:
+                   # we are on the right side. 
+                   px1 = 0
+                   px2 =  (rx2-rx1)
+                   print("ROIP:", roi_p.shape)
+                   xsz = rx2 - rx1
+                   ysz = ry2 - ry1
+                   #rx2 = rx1 + xsz
+                   print("ROIP2:", px1, px2, ry1, ry2, rx1,rx2)
+                   print("ROIP3:", xsz,ysz)
+                   roi_p[0:50,px1:px2] = of[ry1:ry2,rx1:rx2]
+
+                   #cv2.imshow("ROI", roi_p)
+                   #cv2.waitKey(0)
+                   roi_img = roi_p
+                   use_roi_p = 1
+
             if ry2 - ry1 != roi_size * 2:
                print("PROBLEM AT THE Y EDGE! height is only", ry2-ry1 )
                # make new canvas
@@ -1899,11 +1916,18 @@ def make_roi_video_mfd(video_file, json_conf):
                   # we are at the bottom
                   py1 = 0 
                   py2 = (ry2-ry1)
-                  print("BOTTOM NEW CANVAS PASTE Y", py1,py2)
-                  exit()
+                  print("BOTTOM NEW CANVAS PASTE Y", py1,py2,ry1,ry2)
+
+                  roi_p[py1:py2,0:100] = of[ry1:ry2,rx1:rx2]
+                  roi_img = roi_p
+
+                  #exit()
 
             else:
-               roi_img = of[ry1:ry2,rx1:rx2]
+               if use_roi_p == 0:
+                  roi_img = of[ry1:ry2,rx1:rx2]
+               else:
+                  roi_img = roi_p
 
 
             #cv2.rectangle(of, (rx1, ry1), (rx2, ry2), (255,255,255), 1, cv2.LINE_AA)
@@ -1914,7 +1938,7 @@ def make_roi_video_mfd(video_file, json_conf):
             ffn = "{:04d}".format(int(fn))
             outfile = prefix + ffn + ".jpg"
             cv2.imwrite(outfile, roi_img)
-            print("WROTE:", outfile, x,y)
+            print("WROTE:", ffn, outfile, x,y)
          else:
             print("ALREADY USED:", fn)
 
