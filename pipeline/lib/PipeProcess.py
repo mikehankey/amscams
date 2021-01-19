@@ -30,6 +30,7 @@ def update_code(json_conf):
    if install_version != latest_version:
       print("Code not up to date. We should sync.")
       os.system("git pull")
+      os.system("cd /home/ams/amscams/install; ./update-flask-assets.sh ")
 
 
 def run_jobs(json_conf):

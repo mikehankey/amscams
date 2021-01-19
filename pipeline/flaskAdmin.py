@@ -1,4 +1,5 @@
 import base64
+import os
 from flask import Flask, request, Response, make_response
 from FlaskLib.Learning import learning_meteors_dataset
 from FlaskLib.FlaskUtils import get_template
@@ -303,6 +304,9 @@ def lrn_meteors(amsid):
    out = learning_meteors_dataset(amsid, req)
    return out
 
+
+
+
 @app.route('/API/<cmd>', methods=['GET', 'POST'])
 def main_api(cmd):
    if cmd == 'crop_video':
@@ -324,6 +328,16 @@ def main_api(cmd):
       
       out = edit_mask_points(mask_file,action,mask_points)
       #out = "OK"
+      resp = {}
+      resp['status'] = 1
+      return(resp)
+
+   if cmd == 'refit_meteor':
+       
+      sd_video_file = request.args.get('video_file')
+      fn, dir = fn_dir(sd_video_file)
+      cmd = "./Process.py refit_meteor " + fn
+      os.system(cmd)
       resp = {}
       resp['status'] = 1
       return(resp)

@@ -38,8 +38,10 @@ def cal_manager(json_conf):
       1) Cal Wizard 
       2) Update cal index
       3) Re-Solve Cal Failures
+      4) Gen Cal History
 
    """
+
    print(menu)
    cmd = input("Enter function.")
    if cmd == "1":
@@ -51,6 +53,37 @@ def cal_manager(json_conf):
       limit = input("How many do you want to try (5,10,20,all):")
       star_lim = input("Minimum stars required (10,15,20):")
       resolve_failed(cam_num, limit, star_lim, json_conf) 
+   if cmd == "4":
+      gen_cal_hist(json_conf) 
+
+def gen_cal_hist(json_conf):
+   all_files = {}
+   for cam in sorted(json_conf['cameras']):
+      cams_id = json_conf['cameras'][cam]['cams_id']
+      all_files[cams_id] = {}
+      all_files[cams_id]['cal_files'] = []
+      all_files[cams_id]['dates'] = []
+      all_files[cams_id]['azs'] = []
+      all_files[cams_id]['els'] = []
+      all_files[cams_id]['pos'] = []
+      all_files[cams_id]['pxs'] = []
+      cal_files = glob.glob("/mnt/ams2/cal/freecal/*" + cams_id + "*")
+      for cf in sorted(cal_files):
+         all_files[cams_id]['cal_files'].append(cf)
+         (f_datetime, this_cam, f_date_str,y,m,d, h, mm, s) = convert_filename_to_date_cam(cf)
+         cfs = glob.glob(cf + "/*calparams.json")
+         if cfe(cfs[0]) == 0:
+           
+            continue
+         cp = load_json_file(cfs[0])
+         print(cfs[0])
+         all_files[cams_id]['dates'].append(f_date_str)
+         all_files[cams_id]['azs'].append(cp['center_az'])
+         all_files[cams_id]['els'].append(cp['center_el'])
+         all_files[cams_id]['pos'].append(cp['position_angle'])
+         all_files[cams_id]['pxs'].append(cp['pixscale'])
+   save_json_file("/mnt/ams2/cal/cal_history.json", all_files)
+   print("/mnt/ams2/cal/cal_history.json" )
 
 def resolve_failed(cam_num, limit, star_lim, json_conf):
    if len(cam_num) > 1:
@@ -176,14 +209,14 @@ def cal_status(json_conf):
       print(cam, "Cal Files", len(good_files), "good", len(bad_files), "bad", len(very_bad_files), "very bad")
       print(cam, "MCP Files,Stars,Res::", total_files, total_stars, mcp_res)
 
-   """
-      build wiz commands
-         - do we have enough cal files for the cam, if not try to-resolve old file or blind solve meteors
-         - has the lens model been made yet, if not refit the files and then make it
-         - do we have bad or very bad files, if so try to heal them as long as we have some good files
-         - is the lens model's fun_fwd < .1, if not refit things and then rebuild it. Do this at least 3-5 times until the fun_fwd is < .1 or .05 at best. 
-         - when total stars in the lens model exceed 500 and fun_fwd <= .05 the model is as good as it can be and we can stop trying to rebuild it. 
-   """
+#   out = """
+#      build wiz commands
+#         - do we have enough cal files for the cam, if not try to-resolve old file or blind solve meteors
+#         - has the lens model been made yet, if not refit the files and then make it
+#         - do we have bad or very bad files, if so try to heal them as long as we have some good files
+#         - is the lens model's fun_fwd < .1, if not refit things and then rebuild it. Do this at least 3-5 times until the fun_fwd is < .1 or .05 at best. 
+#         - when total stars in the lens model exceed 500 and fun_fwd <= .05 the model is as good as it can be and we can stop trying to rebuild it. 
+#   """
  
    wiz_cmds = [] 
    for cam in all_data:
@@ -328,7 +361,7 @@ def refit_meteor(meteor_file, json_conf,force=0):
       exit()
    if already_fit == 1:
       print("Already fit.")
-      return()
+      #return()
   
    if cfe(mj['hd_stack']) == 1:
       image = cv2.imread(mj['hd_stack'])
