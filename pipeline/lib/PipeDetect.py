@@ -1801,7 +1801,7 @@ def mfd_to_cropbox(mfd):
    return(crop_box)
 
 def make_roi_video_mfd(video_file, json_conf):
-   roi_size = 50
+   roi_size = 25
    vid_fn, vid_dir = fn_dir(video_file)
    vid_base = vid_fn.replace(".mp4", "")
    mjf = video_file.replace(".mp4", ".json")
@@ -1861,12 +1861,14 @@ def make_roi_video_mfd(video_file, json_conf):
          (dt, fn, x, y, w, h, oint, ra, dec, az, el) = row
          print("ROW:", row)
          frame = hd_color_frames[fn]
+         of = cv2.resize(frame, (1920,1080))
          sfn = str(fn)
          if sfn in ufd:
             temp_x,temp_y = ufd[sfn]
             if temp_x > 0 and temp_y > 0:
                x = temp_x  
                y = temp_y  
+               #cv2.circle(of,(x,y), 5, (0,255,255), 1)
                tx, ty, ra ,dec , az, el = XYtoRADec(x,y,video_file,mjr['cal_params'],json_conf)
                print("USING UPDATED POINT", fn, x,y)
          if fn not in used:
@@ -1874,7 +1876,6 @@ def make_roi_video_mfd(video_file, json_conf):
             #cx = x + int(w/2)
             #cy = y + int(h/2)
             rx1,ry1,rx2,ry2 = bound_cnt(x, y,1920,1080, roi_size)
-            of = cv2.resize(frame, (1920,1080))
             if rx2 - rx1 != roi_size * 2:
                print("PROBLEM AT THE X EDGE!")
                exit()
@@ -1884,14 +1885,17 @@ def make_roi_video_mfd(video_file, json_conf):
                roi_p = np.zeros((roi_size*2,roi_size*2,3),dtype=np.uint8)
                #put image in canvas dependent on top or bottom
                if ry1 < vh / 2:
+                  print("TOP:", ry1, ry2, vh/2)
                   # we are at the top
                   # add difference insize to the roi_p_y1 var
-                  py1 = 100 - (ry2-ry1)
-                  py2 = 100 
+                  py1 = 50 - (ry2-ry1)
+                  py2 = 50 
+                  #offset = 50 - (ry2-ry1)
                   roi_p[py1:py2,0:100] = of[ry1:ry2,rx1:rx2]
                   roi_img = roi_p
                   print("TOP NEW CANVAS PASTE Y", py1,py2)
                else:
+                  print("BOTTOM:", ry1, ry2, vh/2)
                   # we are at the bottom
                   py1 = 0 
                   py2 = (ry2-ry1)
@@ -1903,6 +1907,7 @@ def make_roi_video_mfd(video_file, json_conf):
 
 
             #cv2.rectangle(of, (rx1, ry1), (rx2, ry2), (255,255,255), 1, cv2.LINE_AA)
+            #cv2.circle(of,(x,y), 10, (255,255,255), 1)
             #cv2.imshow('pepe', of)
             #cv2.waitKey(0)
 
