@@ -1996,7 +1996,7 @@ def make_roi_video(video_file,bm, frames, json_conf):
    prefix = cache_dir + vid_base + "-frm"
    if cfe(cache_dir, 1) == 0:
       os.makedirs(cache_dir)
-   roi_size = 50
+   roi_size = 25
    roi_size2 = roi_size * 2
    roi_frames = []
 
