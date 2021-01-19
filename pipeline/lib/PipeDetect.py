@@ -1834,6 +1834,7 @@ def make_roi_video_mfd(video_file, json_conf):
    used = {}
    vh,vw = hd_color_frames[0].shape[:2]
    if "meteor_frame_data" in mjr:
+      mjr['meteor_frame_data'] = sorted(mjr[meteor_frame_data], key=lambda x: (x[1]), reverse=False)
       for row in mjr['meteor_frame_data']:
          (dt, fn, x, y, w, h, oint, ra, dec, az, el) = row
          print("ROW:", row)
@@ -1847,7 +1848,7 @@ def make_roi_video_mfd(video_file, json_conf):
                tx, ty, ra ,dec , az, el = XYtoRADec(x,y,video_file,mjr['cal_params'],json_conf)
                print("USING UPDATED POINT", fn, x,y)
          if fn not in used:
-            updated_frame_data.append((dt, fn, x, y, w, h, oint, ra, dec, az, el))
+            updated_frame_data.append((dt, int(fn), x, y, w, h, oint, ra, dec, az, el))
             #cx = x + int(w/2)
             #cy = y + int(h/2)
             rx1,ry1,rx2,ry2 = bound_cnt(x, y,1920,1080, roi_size)
