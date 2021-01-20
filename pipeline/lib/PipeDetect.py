@@ -2918,12 +2918,14 @@ def fireball_phase1(hd_frames, hd_color_frames, subframes,sum_vals,max_vals,pos_
    #PHASE 1
    (f_datetime, cam, f_date_str,fy,fmin,fd, fh, fm, fs) = convert_filename_to_date_cam(video_file)
    mask_imgs, sd_mask_imgs = load_mask_imgs(json_conf)
-
+   print("CAM:", cam)
    if cam in mask_imgs:
       mask_img = mask_imgs[cam]
    else:
       mask_img = None
-
+   if mask_img is None:
+      print("no mask")
+      exit()
    objects = {}
    # load up the frames
    if len(hd_frames) == 0:
@@ -2950,13 +2952,6 @@ def fireball_phase1(hd_frames, hd_color_frames, subframes,sum_vals,max_vals,pos_
    else:
       HD = 0
    # load mask file if it exists
-   mask_file = MASK_DIR + cam + "_mask.png"
-   if cfe(mask_file) == 1 and nomask == 0:
-      mask_img = cv2.imread(mask_file,0)
-      mask_img = cv2.resize(mask_img, (fw,fh))
-
-   else:
-      mask_img = None
 
    do_cal = 0
    for key in jdata:
@@ -3010,6 +3005,9 @@ def fireball_phase1(hd_frames, hd_color_frames, subframes,sum_vals,max_vals,pos_
    if hd_frames[0].shape[0] != fb_mask.shape[0] and hd_frames[0].shape[1] != fb_mask.shape[1] :
       fb_mask = cv2.resize(fb_mask, (hd_frames[0].shape[1], hd_frames[0].shape[0]))
    past_points = []
+   if mask_img is None:
+      print("NO MASK.")
+      exit()
    for frame in hd_frames:
       color_frame = hd_color_frames[frame_num]
       #if best_meteor is not None:
@@ -3020,7 +3018,10 @@ def fireball_phase1(hd_frames, hd_color_frames, subframes,sum_vals,max_vals,pos_
             mask_img = cv2.resize(mask_img, (frame.shape[1], frame.shape[0]))
          if len(frame.shape) == 3 and len(mask_img.shape) == 2:
             mask_img = cv2.cvtColor(mask_img, cv2.COLOR_GRAY2BGR)
+         
          frame = cv2.subtract(frame, mask_img)
+         #cv2.imshow('pepe2', frame)
+         #cv2.waitKey(0)
 
 
       #frame = mask_points(frame, past_points )
