@@ -489,10 +489,23 @@ def load_frames_fast(trim_file, json_conf, limit=0, mask=0,crop=(),color=0,resiz
    (f_datetime, cam, f_date_str,fy,fm,fd, fh, fmin, fs) = convert_filename_to_date_cam(trim_file)
    cap = cv2.VideoCapture(trim_file)
 
-   if "HD" in trim_file:
-      masks = get_masks(cam, json_conf,1)
+   #if "HD" in trim_file:
+   #   masks = get_masks(cam, json_conf,1)
+   #else:
+   #   masks = get_masks(cam, json_conf,1)
+
+   masks = []
+
+   mask_imgs, sd_mask_imgs = load_mask_imgs(json_conf)
+
+   if cam in mask_imgs:
+      mask_img = mask_imgs[cam]
    else:
-      masks = get_masks(cam, json_conf,1)
+      mask_img = None
+
+
+
+
    if "crop" in trim_file:
       masks = None
 
@@ -534,10 +547,15 @@ def load_frames_fast(trim_file, json_conf, limit=0, mask=0,crop=(),color=0,resiz
                   else:
                      hd = 0
                   #masks = get_masks(cam, json_conf,hd)
-                  frame = mask_frame(frame, [], masks, 5)
+                  #frame = mask_frame(frame, [], masks, 5)
 
                if last_frame is not None:
                   subframe = cv2.subtract(frame, last_frame)
+                  if mask_img.shape[0] != subframe.shape[0]: 
+                     mask_img = cv2.resize(mask_img,(subframe.shape[1],subframe.shape[0]))
+                     print(mask_img.shape, subframe.shape)
+                  subframe= cv2.subtract(subframe, mask_img)
+
                   sum_val =cv2.sumElems(subframe)[0]
                   if sum_val > 10 :
                      _, thresh_frame = cv2.threshold(subframe, 5, 255, cv2.THRESH_BINARY)
@@ -601,5 +619,21 @@ def load_frames_simple(trim_file):
 
    cap.release()
    return(frames)
+
+
+def load_mask_imgs(json_conf):
+   mask_files = glob.glob("/mnt/ams2/meteor_archive/" + json_conf['site']['ams_id'] + "/CAL/MASKS/*mask*.png" )
+   mask_imgs = {}
+   sd_mask_imgs = {}
+   for mf in mask_files:
+      mi = cv2.imread(mf, 0)
+      omh, omw = mi.shape[:2]
+      fn,dir = fn_dir(mf)
+      fn = fn.replace("_mask.png", "")
+      mi = cv2.resize(mi, (1920, 1080))
+      sd = cv2.resize(mi, (omw, omh))
+      mask_imgs[fn] = mi
+      sd_mask_imgs[fn] = sd
+   return(mask_imgs, sd_mask_imgs)
 
 #def trim_crop_video():
