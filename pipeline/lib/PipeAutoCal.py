@@ -3849,7 +3849,7 @@ def cat_star_report(cat_image_stars, multi=2.5):
 
       if cat_dist > med_c_dist * multi:
          foo = 1
-         #print("FAILED!", center_dist, multi, med_c_dist, cat_dist)
+         print("FAILED!", center_dist, multi, med_c_dist, cat_dist)
       else:
          c_dist.append(abs(cat_dist))
          m_dist.append(abs(match_dist))
@@ -4517,7 +4517,7 @@ def pair_stars(cal_params, cal_params_file, json_conf, cal_img=None, show = 0):
    total_matches = 0
    cat_stars = get_catalog_stars(cal_params)
 
-   #print("CAT STARS IS:", len(cat_stars))
+   print("CAT STARS IS:", len(cat_stars))
 
    #new_user_stars = []
    #new_stars = []

@@ -304,6 +304,8 @@ def show_cat_stars (video_file, hd_stack_file, points):
       if "hd_stack" in mj:
          hd_img = cv2.imread(mj['hd_stack'], 0)
          print("HD IMG:", hd_img.shape)
+      if "short_bright_stars" in cp:
+         del (cp['short_bright_stars'])
    else:
       cal_r = video_file.replace("-half-stack.png", "")
       cal_root = "/mnt/ams2" + cal_r 
