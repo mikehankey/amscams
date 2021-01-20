@@ -2917,6 +2917,12 @@ def fireball_phase1(hd_frames, hd_color_frames, subframes,sum_vals,max_vals,pos_
    print("FRAMES:", len(hd_frames), len(hd_color_frames))
    #PHASE 1
    (f_datetime, cam, f_date_str,fy,fmin,fd, fh, fm, fs) = convert_filename_to_date_cam(video_file)
+   mask_imgs, sd_mask_imgs = load_mask_imgs(json_conf)
+
+   if cam in mask_imgs:
+      mask_img = mask_imgs[cam]
+   else:
+      mask_img = None
 
    objects = {}
    # load up the frames
@@ -3009,6 +3015,13 @@ def fireball_phase1(hd_frames, hd_color_frames, subframes,sum_vals,max_vals,pos_
       #if best_meteor is not None:
       #   continue
       frame = mask_stars(frame, cp)
+      if mask_img is not None:
+         if mask_img.shape[0] != frame.shape[0]:
+            mask_img = cv2.resize(mask_img, (frame.shape[1], frame.shape[0]))
+         if len(frame.shape) == 3 and len(mask_img.shape) == 2:
+            mask_img = cv2.cvtColor(mask_img, cv2.COLOR_GRAY2BGR)
+         frame = cv2.subtract(frame, mask_img)
+
 
       #frame = mask_points(frame, past_points )
       #cv2.imshow("FR", frame)
@@ -6435,3 +6448,17 @@ def find_contours_in_frame(frame, thresh=25 ):
 
    return(contours, recs)
 
+def load_mask_imgs(json_conf):
+   mask_files = glob.glob("/mnt/ams2/meteor_archive/" + json_conf['site']['ams_id'] + "/CAL/MASKS/*mask*.png" )
+   mask_imgs = {}
+   sd_mask_imgs = {}
+   for mf in mask_files:
+      mi = cv2.imread(mf, 0)
+      omh, omw = mi.shape[:2]
+      fn,dir = fn_dir(mf)
+      fn = fn.replace("_mask.png", "")
+      mi = cv2.resize(mi, (1920, 1080))
+      sd = cv2.resize(mi, (omw, omh))
+      mask_imgs[fn] = mi
+      sd_mask_imgs[fn] = sd
+   return(mask_imgs, sd_mask_imgs)
