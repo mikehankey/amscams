@@ -58,13 +58,13 @@ function refit_meteor() {
     var cmd_data = {
         video_file:       sd_video_file,          // Defined on the page
     }
-
+    alert("Please wait a moment for the page to reload.")
     $.ajax({
         url:  "/API/refit_meteor",
         data: cmd_data,
         success: function(data) {
             var json_resp = data;
-            if(json_resp['status']!==0) {
+            //if(json_resp['status']!==0) {
 
                 // Remove All objects from Canvas with type =   type: 'reduc_rect'
                 //remove_reduction_objects_from_canvas();
@@ -72,16 +72,16 @@ function refit_meteor() {
                 //update_reduction_on_canvas_and_table(json_resp);
                 // Update Add frames
                 //setup_add_frames();
-            }
+            //}
             //reduction_table_actions();
             //if(callback!='') {
             //  callback();
             //}
-            loading_done();
+            //loading_done();
             window.location.reload()
         }, error: function(data) {
 
-            loading_done();
+            //loading_done();
             //bootbox.alert({
             //    message: "Something went wrong with the reduction data. Please, try again later",
             //    className: 'rubberBand animated error',

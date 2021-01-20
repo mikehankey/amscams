@@ -189,8 +189,10 @@
                             <a id="update_stars" class="btn btn-primary btn-v"><i class="icon-star_catalog"></i> Update Star List</a>
                         </div>
                         <div class="col">
-                          <a id="refresh_data" class="btn btn-primary btn-v"><i class="icon-spinner10"></i>Refresh Data</a>
+                          <a id="refresh_data" class="btn btn-primary btn-v" href="javascript:refit_meteor()"><i class="icon-spinner10"></i>Refit Calibration</a>
                         </div>
+                        <!--
+                        -->
                         <div class="col">
                           <a id="reduce_meteor" class="btn btn-primary btn-v"><i class="icon-reduce_meteor"></i> Reduce Meteor</a>
                         </div>
@@ -201,15 +203,15 @@
                     </div>
 
                     <div class="row mt-3 collapse" id="extra_command">
+
                         <div class="col pl-4 pr-4 "> 
-		           <a class='delete_meteor_gallery col btn btn-danger btn-sm' title='Delete Detection' data-meteor='{JSID}'><i class='icon-delete'></i></a>
-
-
+                            <a class="btn d-block btn-primary " href="javascript:man_reduce()">Manually Reduce</a> 
                          </div>
 
                         <div class="col pl-4 pr-4 "> 
-                            <a class="btn d-block btn-primary mt-4" href="javascript:man_reduce()">Manually Reduce</a> 
+		           <a class='delete_meteor_gallery col btn btn-danger btn-sm' style='width: 360px; margin: 15px;' title='Delete Detection' data-meteor='{JSID}'>Reject Meteor</a>
                          </div>
+
 
                     </div>
             </div>       
