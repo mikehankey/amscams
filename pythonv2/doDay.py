@@ -166,11 +166,11 @@ def check_disk():
       print("Data volume /mnt/ams2 is greater than 80%!")
       print(len(hd_files), " HD FILES")
       del_count = int(len(hd_files) / 3)
-      print("DEL C:", del_count)
+      #print("DEL C:", del_count)
       #test = input('wait')
       fc = 0
       for file in hd_files:
-         print(fc, file)
+         #print(fc, file)
          hd_datetime, hd_cam, hd_date, hd_y, hd_m, hd_d, hd_h, hd_M, hd_s,hd_ms = convert_filename_to_date_cam(file, 1)
          elp = hd_datetime - datetime.now()
          days_old = abs(elp.total_seconds()) / 86400
@@ -178,10 +178,8 @@ def check_disk():
             if days_old > 2.5:
                print("RM OLD:", file, days_old)
                os.system("rm " + file)
-            else:
-               print("KEEP:", file)
          else:
-            if days_old > 10:
+            if days_old > 4:
                os.system("rm " + file)
          fc += 1
 
@@ -194,20 +192,23 @@ def check_disk():
       if "json" not in file and "daytime" not in file and "all" not in file:
          if cfe(file, 1) == 1:
             fn = file.split("/")[-1]
-            #print("day dir:", fn)
             dir_date = datetime.strptime(fn , "%Y_%m_%d")
             elp = dir_date - datetime.now()
             days_old = abs(elp.total_seconds()) / 86400
-            if days_old > 45:
+            print("day dir:", fn, days_old)
+
+            if days_old > 37:
                print("This file is ", int(days_old), " days old.")
                cmd = "rm -rf " + file
                print(cmd)
                os.system(cmd)
-            if days_old > 10:
+            if days_old > 5:
                # delete non trim hd files
+               print("HD SAVE DEL:", file + "/hd_save/*.mp4"  )
                ntf = glob.glob(file + "/hd_save/*.mp4")
                for nt in ntf:
-                  if "trim" not in nt:
+                  #if "trim" not in nt:
+                  if True:
                      ntfs.append(nt)
                # delete data files 
                data_dir = file + "/data/"
@@ -222,6 +223,28 @@ def check_disk():
       print("NTF:", ntf)
       cmd = "rm  " + ntf
       os.system(cmd)
+
+   # trash > 14
+   trash_dir = "/mnt/ams2/trash/" 
+   trash_dirs = glob.glob(trash_dir+ "*")
+   now = datetime.now()
+   for td in trash_dirs:
+      if cfe(td, 1) == 0:
+         continue
+      fn = td.split("/")[-1]
+      cdate = fn[0:10]  
+      print("CD", cdate)
+      try:
+         dir_date = datetime.strptime(cdate , "%Y_%m_%d")
+         elp = dir_date - datetime.now()
+         days_old = abs(elp.total_seconds()) / 86400
+         print("TRASH", fn, days_old)
+         if days_old > 14:
+            cmd = "rm -rf " + td
+            os.system(cmd)
+            print(cmd)
+      except:
+         print("TRASH COULDN'T BE REMOVED", fn, days_old)
 
    # Cache files > 14 days gone.
    now = datetime.now()
