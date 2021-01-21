@@ -56,6 +56,8 @@ def cal_manager(json_conf):
    if cmd == "4":
       gen_cal_hist(json_conf) 
 
+
+
 def gen_cal_hist(json_conf):
    all_files = {}
    for cam in sorted(json_conf['cameras']):
@@ -82,8 +84,78 @@ def gen_cal_hist(json_conf):
          all_files[cams_id]['els'].append(cp['center_el'])
          all_files[cams_id]['pos'].append(cp['position_angle'])
          all_files[cams_id]['pxs'].append(cp['pixscale'])
+
+   by_day = {}
+   cal_groups = {}
+   for cam in all_files:
+      by_day[cam] = {}
+      cal_groups[cam] = {}
+      for i in range (0,len(all_files[cam]['cal_files'])):
+         fn, dir = fn_dir(all_files[cam]['cal_files'][i])
+         day = fn[0:10]
+         if day not in by_day[cam]:
+            by_day[cam][day] = {}
+            by_day[cam][day]['azs'] = []
+            by_day[cam][day]['els'] = []
+            by_day[cam][day]['pos'] = []
+            by_day[cam][day]['pxs'] = []
+         by_day[cam][day]['azs'].append(float(all_files[cam]['azs'][i]))
+         by_day[cam][day]['els'].append(float(all_files[cam]['els'][i]))
+         by_day[cam][day]['pos'].append(float(all_files[cam]['pos'][i]))
+         by_day[cam][day]['pxs'].append(float(all_files[cam]['pxs'][i]))
+     
+   for cam in by_day:
+
+      for day in by_day[cam]:
+
+         print(cam, day, np.median(by_day[cam][day]['azs']), np.median(by_day[cam][day]['els']), np.median(by_day[cam][day]['pos']), np.median(by_day[cam][day]['pxs']))
+         cdata = [ day, np.median(by_day[cam][day]['azs']), np.median(by_day[cam][day]['els']), np.median(by_day[cam][day]['pos']), np.median(by_day[cam][day]['pxs'])]
+         find_cal_group(cam, cdata, cal_groups)
+   for cam in cal_groups:
+      for gid in cal_groups[cam]:
+         print("GROUP:", cam, gid,  len(cal_groups[cam][gid]['days']), cal_groups[cam][gid]['start_day'], cal_groups[cam][gid]['end_day'], cal_groups[cam][gid]['az'], cal_groups[cam][gid]['el'], cal_groups[cam][gid]['pos'], cal_groups[cam][gid]['pxs'])
+
+      all_files[cam]['groups'] = cal_groups[cam]
    save_json_file("/mnt/ams2/cal/cal_history.json", all_files)
    print("/mnt/ams2/cal/cal_history.json" )
+
+
+def find_cal_group(cam, cal_data, cal_groups):
+   (tday, az,el,pos,px) = cal_data
+   found = 0
+   for group_id in cal_groups[cam]:
+      gaz = cal_groups[cam][group_id]['az']
+      gel = cal_groups[cam][group_id]['el']
+      gpos = cal_groups[cam][group_id]['pos']
+      gpxs= cal_groups[cam][group_id]['pxs']
+      if gaz - 1.5 < az < gaz + 1.5 and gel - 1.5 < el < gel + 1.5:
+         found = 1
+         this_group_id = group_id
+         cal_groups[cam][group_id]['days'].append(tday)
+         min_day = min(cal_groups[cam][group_id]['days'])
+         max_day = max(cal_groups[cam][group_id]['days'])
+         cal_groups[cam][group_id]['start_day'] = min_day
+         cal_groups[cam][group_id]['end_day'] = max_day
+         return(group_id, cal_groups)
+   if found == 0:
+      if len(cal_groups[cam].keys()) == 0:
+         group_id = 1
+      else:
+         group_id = max(cal_groups[cam].keys()) + 1
+
+      cal_groups[cam][group_id] = {}
+      cal_groups[cam][group_id]['days'] = []
+      cal_groups[cam][group_id]['days'].append(tday)
+      cal_groups[cam][group_id]['az'] = az
+      cal_groups[cam][group_id]['el'] = el
+      cal_groups[cam][group_id]['pos'] = pos
+      cal_groups[cam][group_id]['pxs'] = px
+      min_day = min(cal_groups[cam][group_id]['days'])
+      max_day = max(cal_groups[cam][group_id]['days'])
+
+      cal_groups[cam][group_id]['start_day'] = min_day
+      cal_groups[cam][group_id]['end_day'] = max_day
+      return(group_id, cal_groups)
 
 def resolve_failed(cam_num, limit, star_lim, json_conf):
    if len(cam_num) > 1:

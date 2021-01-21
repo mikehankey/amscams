@@ -12,6 +12,75 @@ from lib.PipeVideo import load_frames_simple
 SHOW = 0
 
 
+def remake_learning_index():
+   L_DIR = "/mnt/ams2/LEARNING/METEORS/" 
+   ldb = load_json_file(L_DIR + "meteors.json")
+   years = glob.glob(L_DIR + "*")
+   for year_dir in years:
+      if cfe(year_dir, 1) == 1:
+         M_DIR = year_dir + "/VIDS/"
+         learning_files = glob.glob(M_DIR + "*.mp4")
+         print(year_dir, len(learning_files))
+         for lfile in learning_files:
+            lfn, ldir = fn_dir(lfile)
+            day = lfn[0:10]
+            mjv = "/mnt/ams2/meteors/" + day + "/" + lfn 
+            mjf = mjv.replace(".mp4", ".json")
+            if lfn in ldb:
+               print("Meteor is in the index already.")
+            else:
+               print("Meteor is not in the index.", mjf)
+               if cfe(mjf) == 1:
+                  mj = load_json_file(mjf)
+                  if "best_meteor" in mj:
+                     print("BEST METEOR FOUND.")
+                     ldb[lfn] = {}
+                     ldb[lfn]['ofns'] = mj['best_meteor']['ofns']
+                     ldb[lfn]['xs'] = mj['best_meteor']['oxs']
+                     ldb[lfn]['ys'] = mj['best_meteor']['oys']
+                     ldb[lfn]['ws'] = mj['best_meteor']['ows']
+                     ldb[lfn]['hs'] = mj['best_meteor']['ohs']
+                     ldb[lfn]['oint'] = mj['best_meteor']['oint']
+                     ldb[lfn] = get_crop_info(mjv, ldb[lfn])
+                     print("NEW DATA:", ldb[lfn]) 
+                     exit()
+     
+   
+def get_crop_info(vid, ldb_row):
+   vw,vh,br,tf = ffprobe(vid)
+   vw,vh,br,tf = int(vw),int(vh),int(br),int(tf)
+   ldb_row['ffprobe'] = [vw,vh,br,tf]
+   hdm_x_360 = 640 / vw
+   hdm_y_360 = 360 / vh
+   ox_360 = []
+   oy_360 = []
+   ow_360 = []
+   oh_360 = []
+   for i in range(0,len(ldb_row['xs'])):
+      ox_360.append(int(ldb_row['xs'][i]*hdm_x_360))
+      oy_360.append(int(ldb_row['ys'][i]*hdm_y_360))
+      ow_360.append(int(ldb_row['ws'][i]*hdm_x_360))
+      oh_360.append(int(ldb_row['hs'][i]*hdm_y_360))
+      ox_360.append(int(ldb_row['xs'][i]*hdm_x_360) + int(ldb_row['ws'][i]*hdm_x_360))
+      oy_360.append(int(ldb_row['ys'][i]*hdm_y_360) + int(ldb_row['hs'][i]*hdm_y_360))
+
+
+   bw, bh = best_crop_size(ldb_row['xs'], ldb_row['ys'], vw,vh)
+   min_x = min(ox_360)
+   min_y = min(oy_360)
+   max_x = max(ox_360)
+   max_y = max(oy_360)
+   cx = int((min_x + max_x) / 2)
+   cy = int((min_y + max_y) / 2)
+   #bw, bh = bc_size
+   cx1 = int(cx - (bw/2))
+   cx2 = int(cx + (bw/2))
+   cy1 = int(cy - (bh/2))
+   cy2 = int(cy + (bh/2))
+   ldb_row['crop_360'] = [cx1,cy1,cx2,cy2]
+   ldb_row['crop_dim'] = [bw,bh]
+   return(ldb_row) 
+
 
 def update_dataset():
    # sync data with deleted meteors etc
@@ -41,10 +110,13 @@ def update_dataset():
          print(cmd)
 
 
-def make_meteor_learning_dataset():
+def make_meteor_learning_dataset(day_wild):
    # clip all meteor videos and drop into learning dir
    L_DIR = "/mnt/ams2/LEARNING/METEORS/"
-   mdirs = glob.glob("/mnt/ams2/meteors/*")
+   if day_wild is None:
+      mdirs = sorted(glob.glob("/mnt/ams2/meteors/*"), reverse=True)
+   else:
+      mdirs = sorted(glob.glob("/mnt/ams2/meteors/" + day_wild + "*"), reverse=True)
    learning_db_file = L_DIR + "meteors.json"
    if cfe(learning_db_file) == 0:
       ldb = {}
@@ -203,13 +275,34 @@ def add_meteor_to_ldb(js, ldb, force=0):
                      stack_img_full = stack_frames(frames, skip = 1, resize=None, sun_status="day")
                      stack_img_full = cv2.resize(stack_img_full, (640,360))
                      cv2.imwrite(lsf, stack_img_full)
-            
+
    return(ldb)  
-# PER METEOR LOOP HERE
+
+def learning_menu():
+   menu = """
+      1) Add meteors to Learning Data Set
+      2) Purge deleted meteors from Learning Data Set
+      3) Remake meteors.json index file 
+   """
+   print(menu)
+   selected = input("Select function #")
+   if selected == "1":
+      day_wild = input("Select date, or date wildcard (YYYY_MM, YYYY) or blank for all dates")
+      if day_wild == "":
+         day_wild = None
+      make_meteor_learning_dataset(day_wild) 
+
+   if selected == "2":
+      update_dataset()
+   if selected == "3":
+      remake_learning_index()
 
 print(len(sys.argv))
+
+
 if len(sys.argv) == 1:
-   make_meteor_learning_dataset()
+   learning_menu()
+   #make_meteor_learning_dataset()
 else: 
    cmd = sys.argv[1]
    if len(sys.argv) > 2:
