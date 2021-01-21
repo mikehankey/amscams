@@ -74,9 +74,25 @@ def learning_meteors_dataset(amsid, in_data):
       items_per_page = int(items_per_page) 
    si = (page-1) * items_per_page
    ei = si + items_per_page
-  
-   LEARNING_VID_DIR = "/mnt/ams2/LEARNING/METEORS/2020/VIDS/"
-   files = glob.glob(LEARNING_VID_DIR + "*.mp4")
+ 
+
+ 
+   #LEARNING_VID_DIR = "/mnt/ams2/LEARNING/METEORS/2020/VIDS/"
+   files = []
+   L_DIR = "/mnt/ams2/LEARNING/METEORS/"
+   years = glob.glob(L_DIR + "*")
+   for year_dir in years:
+      if cfe(year_dir, 1) == 1:
+         M_DIR = year_dir + "/VIDS/"
+         learning_files = glob.glob(M_DIR + "*.mp4")
+         print(year_dir, len(learning_files))
+         for lfile in learning_files:
+            files.append(lfile)
+
+
+
+
+   #files = glob.glob(LEARNING_VID_DIR + "*.mp4")
    total = len(files)
    out = "<script>" + js_code + "</script>"
    out += "<div id='main_container' class='container-fluid h-100 mt-4 lg-l'>"
