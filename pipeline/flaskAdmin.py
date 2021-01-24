@@ -52,7 +52,7 @@ def map_runner():
 def main_menu():
    out = login_page()
    header = get_template("FlaskTemplates/header-login.html")
-   footer = get_template("FlaskTemplates/footer.html")
+   footer = get_template("FlaskTemplates/footer-login.html")
    out = out.replace("{HEADER}", header)
    out = out.replace("{FOOTER}", footer)
    return out
