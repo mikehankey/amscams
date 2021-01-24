@@ -12,3 +12,15 @@ sudo apt-get install libproj-dev
 sudo pip3 install geopy
 sudo pip3 install cartopy
 sudo pip3 install pymap3d
+sudo apt-get install redis-server
+
+# REDIS SETUP
+#supervised systemd
+#bind 127.0.0.1 ::1
+#vi /etc/redis/redis.conf 
+#sudo systemctl restart redis.service
+
+
+# edit conf add service
+pip3 install redis
+
