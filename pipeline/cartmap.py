@@ -78,9 +78,9 @@ def main(meteor_file):
        ["blue", "orange"]
     ]
     cp = 0
-    for skey, sol in solutions:
+    for sol in solutions:
         print("SOLUTION:", sol)
-        start_lat,start_lon,start_alt,end_lat,end_lon,end_alt,dist,dur,vel = sol
+        station_key, start_lat,start_lon,start_alt,end_lat,end_lon,end_alt,dist,dur,vel = sol
         sol_c_lat.append(start_lat)
         sol_c_lon.append(start_lon)
         sol_c_lat.append(end_lat)

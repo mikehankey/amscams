@@ -69,21 +69,25 @@ def gen_cal_hist(json_conf):
       all_files[cams_id]['els'] = []
       all_files[cams_id]['pos'] = []
       all_files[cams_id]['pxs'] = []
+      all_files[cams_id]['res'] = []
       cal_files = glob.glob("/mnt/ams2/cal/freecal/*" + cams_id + "*")
       for cf in sorted(cal_files):
-         all_files[cams_id]['cal_files'].append(cf)
          (f_datetime, this_cam, f_date_str,y,m,d, h, mm, s) = convert_filename_to_date_cam(cf)
          cfs = glob.glob(cf + "/*calparams.json")
          if cfe(cfs[0]) == 0:
            
             continue
          cp = load_json_file(cfs[0])
+         if "total_res_px" not in cp:
+            continue
          print(cfs[0])
+         all_files[cams_id]['cal_files'].append(cf)
          all_files[cams_id]['dates'].append(f_date_str)
          all_files[cams_id]['azs'].append(cp['center_az'])
          all_files[cams_id]['els'].append(cp['center_el'])
          all_files[cams_id]['pos'].append(cp['position_angle'])
          all_files[cams_id]['pxs'].append(cp['pixscale'])
+         all_files[cams_id]['res'].append(cp['total_res_px'])
 
    by_day = {}
    cal_groups = {}
@@ -99,17 +103,20 @@ def gen_cal_hist(json_conf):
             by_day[cam][day]['els'] = []
             by_day[cam][day]['pos'] = []
             by_day[cam][day]['pxs'] = []
+            by_day[cam][day]['res'] = []
          by_day[cam][day]['azs'].append(float(all_files[cam]['azs'][i]))
          by_day[cam][day]['els'].append(float(all_files[cam]['els'][i]))
          by_day[cam][day]['pos'].append(float(all_files[cam]['pos'][i]))
          by_day[cam][day]['pxs'].append(float(all_files[cam]['pxs'][i]))
-     
+         by_day[cam][day]['res'].append(float(all_files[cam]['res'][i]))
+    
+
+   day_hist = [] 
    for cam in by_day:
-
       for day in by_day[cam]:
-
-         print(cam, day, np.median(by_day[cam][day]['azs']), np.median(by_day[cam][day]['els']), np.median(by_day[cam][day]['pos']), np.median(by_day[cam][day]['pxs']))
-         cdata = [ day, np.median(by_day[cam][day]['azs']), np.median(by_day[cam][day]['els']), np.median(by_day[cam][day]['pos']), np.median(by_day[cam][day]['pxs'])]
+         print(cam, day, np.median(by_day[cam][day]['azs']), np.median(by_day[cam][day]['els']), np.median(by_day[cam][day]['pos']), np.median(by_day[cam][day]['pxs']), np.mean(by_day[cam][day]['res']))
+         cdata = [ day, np.median(by_day[cam][day]['azs']), np.median(by_day[cam][day]['els']), np.median(by_day[cam][day]['pos']), np.median(by_day[cam][day]['pxs']),  np.mean(by_day[cam][day]['res'])]
+         day_hist.append((cam, day, np.median(by_day[cam][day]['azs']), np.median(by_day[cam][day]['els']), np.median(by_day[cam][day]['pos']), np.median(by_day[cam][day]['pxs']),  np.mean(by_day[cam][day]['res'])))
          find_cal_group(cam, cdata, cal_groups)
    for cam in cal_groups:
       for gid in cal_groups[cam]:
@@ -118,16 +125,31 @@ def gen_cal_hist(json_conf):
       all_files[cam]['groups'] = cal_groups[cam]
    save_json_file("/mnt/ams2/cal/cal_history.json", all_files)
    print("/mnt/ams2/cal/cal_history.json" )
+   for hist in day_hist:
+      print(hist)
+   save_json_file("/mnt/ams2/cal/cal_day_hist.json", day_hist)
+   print("/mnt/ams2/cal/cal_day_hist.json")
+
+def get_default_calib_hist(day, cams_id, json_conf):
+   day_dt = datetime.strptime(day, "%Y_%m_%d")
+   cal_hist_all = load_json_file("/mnt/ams2/cal/cal_day_hist.json")
+   cal_hist = []
+   for row in cal_hist_all:
+      (cam, day, azs, els, pos, pxs, res) = row
+      if cam == cams_id:
+         cal_hist.append(row)
+
 
 
 def find_cal_group(cam, cal_data, cal_groups):
-   (tday, az,el,pos,px) = cal_data
+   (tday, az,el,pos,px,res) = cal_data
    found = 0
    for group_id in cal_groups[cam]:
       gaz = cal_groups[cam][group_id]['az']
       gel = cal_groups[cam][group_id]['el']
       gpos = cal_groups[cam][group_id]['pos']
       gpxs= cal_groups[cam][group_id]['pxs']
+      gres = cal_groups[cam][group_id]['res']
       if gaz - 1.5 < az < gaz + 1.5 and gel - 1.5 < el < gel + 1.5:
          found = 1
          this_group_id = group_id
@@ -150,6 +172,7 @@ def find_cal_group(cam, cal_data, cal_groups):
       cal_groups[cam][group_id]['el'] = el
       cal_groups[cam][group_id]['pos'] = pos
       cal_groups[cam][group_id]['pxs'] = px
+      cal_groups[cam][group_id]['res'] = res
       min_day = min(cal_groups[cam][group_id]['days'])
       max_day = max(cal_groups[cam][group_id]['days'])
 

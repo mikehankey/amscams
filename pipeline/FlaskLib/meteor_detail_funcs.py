@@ -134,25 +134,36 @@ def make_ms_html(amsid, meteor_file, mj):
       """
       ms_html += "</div>"
 
+   all_lats = []
+   all_lons = []
+
    for station in active_stations:
       if station_pts != "":
          station_pts += ";"
       loc = nsinfo[station]['loc']
       station_pts += str(loc[0]) + "," + str(loc[1]) + "," + station
+      all_lats.append(float(loc[0]))
+      all_lons.append(float(loc[1]))
    fn,dir = fn_dir(meteor_file)
    date = fn[0:10]
    fn = fn.replace(".mp4", "-map.jpg?" + str(time.time()))
    station_map = "/meteors/" + date + "/" + fn
+   kml_file = station_map.replace("-map.jpg", ".kml")
    print("MAP:", station_map)
    ms_html += "</div></div>"
    #if cfe(station_map) == 1:
+
+   center_lat = np.mean(all_lats)
+   center_lon = np.mean(all_lons)
+
    if True:
       ms_html += """
          <div class='h1_holder  d-flex justify-content-between'>
             <h1><span class='h'>Map</span> </h1>
          </div>
    """
-      ms_html += "<img src=" + station_map+ "><br>"
+      #ms_html += "<img src=" + station_map+ "><br>"
+      ms_html += "<iframe src=\"/maps/index.html?mf=" + kml_file + "&lat=" + str(center_lat) + "&lon=" + str(center_lon) + "\" width=800 height=440></iframe><br><a href=" + kml_file + ">KML</a>"
    ms_html += """
             <div class="tab-content box " >
 
@@ -169,15 +180,19 @@ def make_ms_html(amsid, meteor_file, mj):
    """
    if "solutions" in mj:
       
-      for skey, sol in mj['solutions']:
-         print(skey,sol)
-         slon,slat,salt,elon,elat,ealt,dist,dur,vel = sol
+      for sdata in mj['solutions']:
+         if len(sdata) == 2:
+            (skey,sol) = sdata
+            slon,slat,salt,elon,elat,ealt,dist,dur,vel = sol
+         else:
+            skey, slon,slat,salt,elon,elat,ealt,dist,dur,vel = sdata
          #saz,sel,salt,eaz,eel,ealt,dist,dur,vel = sol
          ms_html += "<tr><td>" + skey + "</td><td>TIME</td><td>" + str(slat)[0:5] + "</td><td>" + str(slon)[0:5] + "</td><td>" + str(salt/1000)[0:5] + "</td><td>" + str(elat)[0:5] + "</td><td>" + str(elon)[0:5] + "</td><td>" + str(ealt/1000)[0:5] + "</td><td>" + str(dist)[0:5] + "</td><td>" + str(dur)[0:5] + "</td><td>" + str(vel)[0:5] + "</td></tr>"
    ms_html += "</table></div></div>"
    return(ms_html)
 
 def detail_page(amsid, date, meteor_file):
+   remote = 1
    MEDIA_HOST = request.host_url.replace("5000", "80")
    MEDIA_HOST = ""
    METEOR_DIR = "/mnt/ams2/meteors/"
@@ -235,8 +250,12 @@ def detail_page(amsid, date, meteor_file):
          print("NO SD ", sd_stack)
  
    az_grid = ""
-   header = get_template("FlaskTemplates/header.html")
-   footer = get_template("FlaskTemplates/footer.html")
+   if remote == 1:
+      header = get_template("FlaskTemplates/header-remote.html")
+      footer = get_template("FlaskTemplates/footer-remote.html")
+   else:
+      header = get_template("FlaskTemplates/header.html")
+      footer = get_template("FlaskTemplates/footer.html")
    nav = get_template("FlaskTemplates/nav.html")
    template = get_template("FlaskTemplates/meteor_detail.html")
 

@@ -11,8 +11,13 @@ def solve_day(day, json_conf):
    for data in mid:
       meteor_file, reduced, start_time, dur, ang_vel, ang_dist, hotspot, msm = data
       if msm == 1:
-         cmd = "./cartmap.py " + meteor_file
+         #cmd = "./cartmap.py " + meteor_file
+         cmd = "./Process.py simple_solve " + meteor_file
          os.system(cmd)
+         cmd = "./KML.py " + meteor_file
+         os.system(cmd)
+
+
 def make_obs_object(mse):
 
    nsinfo = load_json_file("../conf/network_station_info.json")
@@ -111,6 +116,9 @@ def events_for_day(day, json_conf):
    my_detail = "/mnt/ams2/meteors/" + day + "/" + day + "-" + amsid + "-detail.meteors"
    os.system("cp " + my_idx + " " + event_dir)
    os.system("cp " + my_detail + " " + event_dir)
+   print("cp " + my_idx + " " + event_dir)
+   print("cp " + my_detail + " " + event_dir)
+
    for ns in network_sites:
       print(ns)
       idx_file = day + "-" + ns + ".meteors"
@@ -140,9 +148,9 @@ def events_for_day(day, json_conf):
 
       if "detail" in file:
          print("loading:", station, file)
-         if station not in meteor_details:
-            details = load_json_file(file)
-            meteor_details[station] = details 
+         #if station not in meteor_details:
+         details = load_json_file(file)
+         meteor_details[station] = details 
 
 
    for station in meteor_details:
