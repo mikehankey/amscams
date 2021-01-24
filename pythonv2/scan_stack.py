@@ -293,6 +293,9 @@ def scan_and_stack_fast(file, sun_status = 0, vals = []):
                sub = cv2.subtract(sub, small_mask)
             if small_thresh is not None:
                sub = cv2.subtract(sub, small_thresh)
+               #debug only
+               #ksmall_thresh_c = cv2.cvtColor(small_thresh, cv2.COLOR_GRAY2BGR)
+               #small_frame = cv2.subtract(small_frame, small_thresh_c)
                #sub = cv2.subtract(sub, mask_img)
          else:
             sub = cv2.subtract(gray, gray)
@@ -300,7 +303,7 @@ def scan_and_stack_fast(file, sun_status = 0, vals = []):
             sub = cv2.subtract(sub, stacked_sub_np)
 
          min_val, max_val, min_loc, (mx,my)= cv2.minMaxLoc(sub)
-         #cv2.imshow('sub', sub)
+         #cv2.imshow('sub', small_frame)
          #cv2.waitKey(30)
          #if stacked_sub_np is not None:
          #   cv2.imshow('stack', stacked_sub_np)
@@ -363,7 +366,7 @@ def scan_and_stack_fast(file, sun_status = 0, vals = []):
       #frames.append(frame)
       if fc == 1:
          # add to the mask on the 1st frame.
-         _, threshold = cv2.threshold(frame.copy(), 100, 255, cv2.THRESH_BINARY)
+         _, threshold = cv2.threshold(frame.copy(), 120, 255, cv2.THRESH_BINARY)
          small_thresh = cv2.resize(threshold, (0,0),fx=.5, fy=.5)
          small_thresh = cv2.cvtColor(small_thresh, cv2.COLOR_BGR2GRAY)
 
