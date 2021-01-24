@@ -775,7 +775,9 @@ def reject_mask_detects(date, json_conf):
    meteors_conf = 0
    tfs = 0
    for mf in sorted(jsfiles,reverse=True):
-      if "reduced" not in mf and "stars" not in mf and "man" not in mf and "star" not in mf and "import" not in mf and "archive" not in mf:
+      if "reduced" not in mf and "stars" not in mf and "man" not in mf and "star" not in mf and "import" not in mf and "archive" not in mf and "frame" not in mf:
+         if cfe(mf) == 0:
+            continue
          mj = load_json_file(mf) 
          if "multi_station_event" in mj:
             print("SKIP MULTI-STATION CONFIRMED.")
