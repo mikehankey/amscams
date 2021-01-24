@@ -210,6 +210,7 @@ def batch_ss(wildcard=None):
 
 def scan_and_stack_fast(file, sun_status = 0, vals = []):
    mask_imgs, sd_mask_imgs = load_mask_imgs(json_conf)
+   threshold = None
 
    (f_datetime, cam, f_date_str,fy,fm,fd, fh, fmin, fs) = convert_filename_to_date_cam(file)
    if cam in mask_imgs:
@@ -252,6 +253,7 @@ def scan_and_stack_fast(file, sun_status = 0, vals = []):
    stacked_sub_np = None
    fb = 0
    mask_resized = 0
+   small_thresh = None
    while True:
       grabbed , frame = cap.read()
       if fc < len(vals):
@@ -289,6 +291,8 @@ def scan_and_stack_fast(file, sun_status = 0, vals = []):
             #masked_frame = cv2.subtract(gray, mask_img)
             if mask_img is not None:
                sub = cv2.subtract(sub, small_mask)
+            if small_thresh is not None:
+               sub = cv2.subtract(sub, small_thresh)
                #sub = cv2.subtract(sub, mask_img)
          else:
             sub = cv2.subtract(gray, gray)
@@ -357,6 +361,12 @@ def scan_and_stack_fast(file, sun_status = 0, vals = []):
                #cv2.waitKey(30)
       last_gray = gray
       #frames.append(frame)
+      if fc == 1:
+         # add to the mask on the 1st frame.
+         _, threshold = cv2.threshold(frame.copy(), 100, 255, cv2.THRESH_BINARY)
+         small_thresh = cv2.resize(threshold, (0,0),fx=.5, fy=.5)
+         small_thresh = cv2.cvtColor(small_thresh, cv2.COLOR_BGR2GRAY)
+
       if fc % 100 == 1:
          print(fc)
       fc += 1
