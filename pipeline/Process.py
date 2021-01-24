@@ -501,7 +501,7 @@ if __name__ == "__main__":
                print(fn)
                reject_mask_detects(fn, json_conf)
                reject_mask_detects(fn, json_conf)
-               reject_planes(sys.argv[2], json_conf)
+               reject_planes(fn, json_conf)
             else:
                print("NO FILE:", file)
       else:
