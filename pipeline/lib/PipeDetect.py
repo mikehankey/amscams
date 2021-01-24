@@ -693,6 +693,61 @@ def confirm_meteors(date ):
             print(cmd)
 #      exit()
 
+def reject_planes(date, json_conf):
+   del_log = "/mnt/ams2/SD/proc2/json/" + json_conf['site']['ams_id'] + ".del"
+   if cfe(del_log) == 1:
+      del_data = load_json_file(del_log)
+   else:
+      del_data = {} 
+
+   mdir = "/mnt/ams2/meteors/" + date + "/" 
+   jsfiles = glob.glob(mdir + "*.json")
+   for mf in sorted(jsfiles,reverse=True):
+      if "reduced" not in mf and "stars" not in mf and "man" not in mf and "star" not in mf and "import" not in mf and "archive" not in mf:
+         mj = load_json_file(mf) 
+         if "confirmed" in mj:
+            if len(mj['confirmed_meteors']) > 0:
+               before_cm = len(mj['confirmed_meteors'])
+               #print("CHECK FOR PLANE.")
+               new_conf = []
+               for obj_data in mj['confirmed_meteors']:
+                  if obj_data['report']['meteor'] == 1 and obj_data['report']['ang_vel'] < 4:
+                     # is the 1st frame less than frame 25? 
+                     plane = 0
+                     if obj_data['ofns'][0] < 25:
+                        gap_test_res , gap_test_info = gap_test(obj_data['ofns'])
+                        if gap_test_info['gap_events'] > 4 or gap_test_info['total_gaps'] > 25:
+                           plane = 1
+                           print("DEF PLANE? ", mf, obj_data['ofns'], obj_data['report']['ang_vel'], gap_test_res, gap_test_info['gap_events'], gap_test_info['total_gaps'])
+                        else:
+                           print("MAYBE PLANE? ", mf, obj_data['ofns'], obj_data['report']['ang_vel'], gap_test_res, gap_test_info['gap_events'], gap_test_info['total_gaps'])
+                           plane = 1
+                           #print("INT? ", obj_data['oint'])
+                     if plane == 0:
+                        new_conf.append(obj_data)
+                     else:
+                        mj['plane'] = 1
+                  elif obj_data['report']['meteor'] == 1: 
+                     new_conf.append(obj_data)
+               mj['confirmed_meteors'] = new_conf 
+               after_cm = len(mj['confirmed_meteors'])
+               print("FINAL:", mf, before_cm, after_cm) 
+               if after_cm == 0 or 'plane' in mj:
+                  fn, dir = fn_dir(mf)
+                  root_file = fn.replace(".json", "")
+                  del_data[root_file] = 1
+                  print("DEL:", root_file)
+   
+               save_json_file(mf, mj)
+         if 'plane' in mj:
+            fn, dir = fn_dir(mf)
+            root_file = fn.replace(".json", "")
+            del_data[root_file] = 1
+            print("DEL:", root_file)
+   save_json_file(del_log, del_data)
+   os.system("./Process.py purge_meteors")
+
+
 def reject_mask_detects(date, json_conf):
    del_log = "/mnt/ams2/SD/proc2/json/" + json_conf['site']['ams_id'] + ".del"
    if cfe(del_log) == 1:
@@ -900,7 +955,6 @@ def reject_mask_detects(date, json_conf):
                   print("ROOT:", root_file)
                   del_data[root_file] = 1
    save_json_file(del_log, del_data)
-
    os.system("./Process.py purge_meteors")
 
 def seg_test(segs):
