@@ -10,8 +10,13 @@ def get_template(file):
 
 
 def make_default_template(amsid, main_template, json_conf):
-   header = get_template("FlaskTemplates/header.html")
-   footer = get_template("FlaskTemplates/footer.html")
+   remote = 1
+   if remote == 1:
+      header = get_template("FlaskTemplates/header-remote.html")
+      footer = get_template("FlaskTemplates/footer-remote.html")
+   else:
+      header = get_template("FlaskTemplates/header.html")
+      footer = get_template("FlaskTemplates/footer.html")
    nav = get_template("FlaskTemplates/nav.html")
    template = get_template("FlaskTemplates/" + main_template  )
    template = template.replace("{HEADER}", header)
@@ -27,7 +32,7 @@ def make_default_template(amsid, main_template, json_conf):
       template = template.replace("{LOCATION}", json_conf['site']['location'])
    else:
       template = template.replace("{LOCATION}", "")
-   template = template.replace("{RAND}", str(time.time()))
+   template = template.replace("{RAND}", str(time.time())[0:10])
    return template
 
 
