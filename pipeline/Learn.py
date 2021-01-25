@@ -9,7 +9,7 @@ import cv2
 from lib.PipeImage import stack_frames
 from lib.PipeVideo import load_frames_simple 
 
-SHOW = 1
+SHOW = 0
 
 
 def remake_learning_index():
@@ -49,8 +49,8 @@ def remake_learning_index():
                         img = cv2.resize(img, (640,360))
                         cx1,cy1,cx2,cy2 = ldb[lfn]['crop_360']
                         cv2.rectangle(img, (cx1, cy1), (cx2,cy2), (255, 255, 255), 1)
-                        cv2.imshow('pepe',img)
-                        cv2.waitKey(30)
+                        #cv2.imshow('pepe',img)
+                        #cv2.waitKey(30)
    save_json_file(L_DIR + "meteors.json", ldb)
      
    
@@ -289,8 +289,12 @@ def add_meteor_to_ldb(js, ldb, force=0):
                      cv2.waitKey(30)
                if make_cs == 1:
                   frames = load_frames_simple(crop_file)
-                  stack_img = stack_frames(frames, skip = 1, resize=None, sun_status="day")
-                  cv2.imwrite(crop_stack, stack_img)
+                  stack_img = stack_frames(frames, 1, None, "day")
+                  print("FRAMES:", len(frames))
+                  if stack_img is not None: 
+                     cv2.imwrite(crop_stack, stack_img)
+                  else:
+                     continue
                   print("Saved stack crop:", crop_stack)
                   if SHOW == 1:
                      cv2.imshow('pepe', stack_img)

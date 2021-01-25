@@ -95,6 +95,7 @@ def stack_frames(frames, skip = 1, resize=None, sun_status="day"):
       try:
          avg_px = np.mean(frame)
       except: 
+         print("FRAME PROB:", frame.shape)
          avg_px = 255
       #print("AVG PX:", avg_px)
       #print("RES:", resize)
@@ -102,7 +103,7 @@ def stack_frames(frames, skip = 1, resize=None, sun_status="day"):
       if sun_status == 'night' and avg_px >= 120:
          print("TOO BRIGHT!", avg_px)
          go = 0
-      if avg_px >= 120:
+      if avg_px >= 130:
          print("TOO BRIGHT!", avg_px)
          go = 0
       if go == 1:
@@ -116,6 +117,7 @@ def stack_frames(frames, skip = 1, resize=None, sun_status="day"):
                stacked_image = stack_stack(stacked_image, frame_pil)
       fc = fc + 1
    if stacked_image is None:
+      print("NO STACK IMG")
       return(None)
    else:
       return(np.asarray(stacked_image))
