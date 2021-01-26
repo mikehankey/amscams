@@ -52,7 +52,7 @@ def simple_solve(day, event_id, json_conf ):
                # there is more than 1 obs from this station 
                # we need to pick the 'best' one. (the one closest to the center FOV)
                best_file = get_best_obs(obs[station])
-               xxx = input("MORE THAN 1 OBS FOR STATION " + station + " using " + best_file)
+               #xxx = input("MORE THAN 1 OBS FOR STATION " + station + " using " + best_file)
             else:
                for file in obs[station]:
                   best_file = file
