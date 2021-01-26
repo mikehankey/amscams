@@ -499,6 +499,10 @@ def reduce_in_crop(video_file, json_conf):
       print("NOTHING?")
 
 def make_meteor_index_day_all(json_conf):
+   if "redis" in json_conf:
+      redis_on = 1
+   else:
+      redis_on = 0
    cams = []
    for cam in json_conf['cameras']:
       cams_id = json_conf['cameras'][cam]['cams_id']
@@ -546,7 +550,7 @@ def make_meteor_index_all(json_conf):
       day, dir = fn_dir(mdir)
       if cfe(mdir, 1) == 1:
          mi_file = mdir + "/" + day + "-" + amsid + ".meteors"
-         print(mi_file)
+         print("MMIF:", mi_file)
          mi_file, mdata = make_meteor_index_day(day, json_conf)
          for data in mdata:
             print("ADDING:", day, len(mdata))
@@ -557,6 +561,14 @@ def make_meteor_index_all(json_conf):
    print("Saved:", amf)
 
 def make_meteor_index_day(day, json_conf):
+
+   if "redis" in json_conf:
+      redis_on = 1
+      import redis
+      r = redis.Redis(decode_responses=True)
+   else:
+      redis_on = 0
+
    amsid = json_conf['site']['ams_id']
    mdir = "/mnt/ams2/meteors/" + day + "/"
    lcdir = mdir + "cloud_files/"
@@ -568,9 +580,10 @@ def make_meteor_index_day(day, json_conf):
       os.makedirs(lcdir)
 
    
+   
 
    for mf in files:
-      if "reduced" not in mf and "stars" not in mf and "man" not in mf and "star" not in mf and "import" not in mf and "archive" not in mf and "cal" not in mf and "frame" not in mf:
+      if "reduced" not in mf and "stars" not in mf and "man" not in mf and "star" not in mf and "import" not in mf and "archive" not in mf and "cal" not in mf and "frame" not in mf and "event" not in mf:
          meteors.append(mf)
 
    for meteor in meteors:
@@ -636,6 +649,8 @@ def make_meteor_index_day(day, json_conf):
       else:
          mi[meteor]['multi_station'] = 0
          msm = 0
+      if "oint" in mj:
+         hotspot = max(mj['oint'])
 
       mi[meteor]['start_time'] = start_time
       mi[meteor]['dur'] = dur
@@ -651,6 +666,16 @@ def make_meteor_index_day(day, json_conf):
                save_json_file(lcfile, mdata)
                print("SAVED:", lcfile)
       meteor_data.append((meteor, reduced, start_time, dur, ang_vel, ang_dist, hotspot,msm))
+
+      if redis_on == 1:
+         fn, dir = fn_dir(meteor)
+         key = "mi:" + fn
+         val = str([reduced, start_time, dur, ang_vel, ang_dist, hotspot,msm])
+       
+         r.mset({key: val})
+         #xxx = r.get("test")
+
+
 
    mid = sorted(meteor_data, key=lambda x: (x[0]), reverse=True)
    mi_file = mdir + day + "-" + amsid + ".meteors"
