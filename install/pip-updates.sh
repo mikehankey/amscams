@@ -24,3 +24,4 @@ sudo apt-get install redis-server
 # edit conf add service
 pip3 install redis
 pip3 install simplekml
+pip3 install boto3 

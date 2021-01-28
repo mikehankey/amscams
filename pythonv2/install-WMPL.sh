@@ -23,6 +23,7 @@ sudo pip install pyproj
 sudo pip install -U git+https://github.com/matplotlib/basemap.git
 #sudo pip install basemap-data-hires
 
+cd /home/ams/dvida/WesternMeteorPyLib/
 sudo python setup.py install
 
 
