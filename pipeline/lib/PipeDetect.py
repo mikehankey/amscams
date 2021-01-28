@@ -2047,11 +2047,27 @@ def make_roi_video_mfd(video_file, json_conf):
    # NEXT LOOP THE CCXS CCYS fields 720p update from user mod
 
    save_json_file(mjrf, mjr)      
+   if "revision" not in mj:
+      mj['revision'] = 1
+   else:
+      mj['revision'] += 1
+
    save_json_file(mjf, mj)      
    vid_file = mjf.replace(".json", ".mp4")
    os.system("./Process.py recal " + vid_file)
 
-   print("COP:", mjr['crop_box'])
+   print("CROP:", mjr['crop_box'])
+
+   # WE SHOULD NOW UPDATE DYNAMO DB WITH THIS METEOR IF IT IS ENABLED
+   
+   if "dynamodb" in json_conf:
+      mfn, xxx = fn_dir(mjf)
+      cmd = "./DynaDB.py add_obs " + mfn
+      print("DDDDDDD:", cmd)
+      os.system(cmd)
+   else:
+      print("NO DYN")
+      
          
 
    
