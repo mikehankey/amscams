@@ -303,28 +303,28 @@ def sync_db_day(dynamodb, station_id, day):
          if local_meteors[lkey]['revision'] == db_meteors[lkey]['revision']:
             print(lkey, "GOOD: The remote and local revisions are the same." )
    
+if __name__ == "__main__":
+   cmd = sys.argv[1]
+   if cmd == "sync_db_day":
+      station_id = json_conf['site']['ams_id']
+      sync_db_day(dynamodb, station_id, sys.argv[2])
 
-cmd = sys.argv[1]
-if cmd == "sync_db_day":
-   station_id = json_conf['site']['ams_id']
-   sync_db_day(dynamodb, station_id, sys.argv[2])
+   if cmd == "ct":
+      create_tables(dynamodb)
+   if cmd == "ls":
+      load_stations(dynamodb)
+   if cmd == "del_obs":
+      station_id = json_conf['site']['ams_id']
+      meteor_file = sys.argv[2]
+      delete_obs(dynamodb, station_id, meteor_file)
+   if cmd == "add_obs":
+      station_id = json_conf['site']['ams_id']
+      meteor_file = sys.argv[2]
+      insert_meteor_obs(dynamodb, station_id, meteor_file)
 
-if cmd == "ct":
-   create_tables(dynamodb)
-if cmd == "ls":
-   load_stations(dynamodb)
-if cmd == "del_obs":
-   station_id = json_conf['site']['ams_id']
-   meteor_file = sys.argv[2]
-   delete_obs(dynamodb, station_id, meteor_file)
-if cmd == "add_obs":
-   station_id = json_conf['site']['ams_id']
-   meteor_file = sys.argv[2]
-   insert_meteor_obs(dynamodb, station_id, meteor_file)
-
-if cmd == "search_obs":
-   station_id = json_conf['site']['ams_id']
-   search_obs(dynamodb, station_id, sys.argv[2])
-if cmd == "load_day":
-   station_id = json_conf['site']['ams_id']
-   load_meteor_obs_day(dynamodb, station_id, sys.argv[2])
+   if cmd == "search_obs":
+      station_id = json_conf['site']['ams_id']
+      search_obs(dynamodb, station_id, sys.argv[2])
+   if cmd == "load_day":
+      station_id = json_conf['site']['ams_id']
+      load_meteor_obs_day(dynamodb, station_id, sys.argv[2])

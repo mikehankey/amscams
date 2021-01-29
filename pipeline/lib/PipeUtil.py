@@ -13,7 +13,7 @@ import cv2
 #from PIL import ImageFont, ImageDraw, Image, ImageChops
 import numpy as np
 import ephem
-import json
+import simplejson as json
 import glob
 
 
@@ -194,7 +194,7 @@ def save_json_file(json_file, json_data, compress=False):
             json_data['cp'][key] = json_data['cp'][key].tolist()
    with open(json_file, 'w') as outfile:
       if(compress==False):
-         json.dump(json_data, outfile, indent=4, allow_nan=True)
+         json.dump(json_data, outfile, indent=4, allow_nan=True )
       else:
          json.dump(json_data, outfile, allow_nan=True)
    outfile.close()

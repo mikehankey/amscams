@@ -1,8 +1,14 @@
 import os
-from lib.PipeUtil import load_json_file, save_json_file, cfe
+from lib.PipeUtil import load_json_file, save_json_file, cfe, convert_filename_to_date_cam
+from DynaDB import load_meteor_obs_day,  search_obs
 import glob
 import datetime
 from lib.PipeAutoCal import fn_dir
+from lib.PipeDetect import get_trim_num
+import boto3
+from boto3.dynamodb.conditions import Key
+
+
 
 def solve_day(day, json_conf):
    amsid = json_conf['site']['ams_id']
@@ -61,7 +67,7 @@ def make_obs_object(mse):
 
    for station in obs:
        for file in obs[station]:
-         print(station, file, obs[station][file])
+         print(station, file, obs[station][file] )
 
    return(obs)
 
@@ -100,6 +106,45 @@ def get_network_info(json_conf):
    save_json_file("../conf/network_station_info.json", station_info)
    print("saved: ", "../conf/network_station_info.json")
       
+
+def dyna_events_for_day(day, json_conf):
+
+   dynamodb = boto3.resource('dynamodb')
+   # first get all existing known events
+   dy_events = {}
+
+   my_station = json_conf['site']['ams_id']
+   stations = json_conf['site']['multi_station_sync']
+   if my_station not in stations:
+      stations.append(my_station)
+
+   # get obs and data from the dynadb for today from stations in my network 
+   # loop over all obs from all stations 
+   # if obs does not have a registered event id register the new event in events table and update related obs with event id
+   # 
+   #  
+   if cfe("/mnt/ams2/EVENTS/" + day + "_obs.json") == 1:
+      all_data = load_json_file("/mnt/ams2/EVENTS/" + day + "_obs.json")
+   else:
+      all_data = {}
+      for station in sorted(stations):
+         print("getting dyna data for:", station)
+         all_data[station] = search_obs(dynamodb, station, day)
+      save_json_file("/mnt/ams2/EVENTS/" + day + "_obs.json", all_data)
+      print("/mnt/ams2/EVENTS/" + day + "_obs.json", all_data)
+   for station in all_data:
+      for item in all_data[station]:
+         if item['event_start_time'] == "":
+            (f_datetime, cam, f_date_str,fy,fm,fd, max_h, fmin, fs) = convert_filename_to_date_cam(item['sd_video_file'])
+            trim_num = int(get_trim_num(item['sd_video_file']))
+            extra_sec = int(trim_num) / 25
+            start_time_dt = f_datetime + datetime.timedelta(0,extra_sec)
+            item['event_start_time'] = start_time_dt
+
+         print(item['station_id'], item['sd_video_file'], item['event_start_time'])
+
+
+
 
 def events_for_day(day, json_conf):
    amsid = json_conf['site']['ams_id']
