@@ -1,6 +1,6 @@
 import os
 from lib.PipeUtil import load_json_file, save_json_file, cfe, convert_filename_to_date_cam
-from DynaDB import load_meteor_obs_day,  search_obs
+from DynaDB import load_meteor_obs_day,  search_obs, insert_meteor_event, search_events
 import glob
 import datetime
 from lib.PipeAutoCal import fn_dir
@@ -105,6 +105,7 @@ def get_network_info(json_conf):
    station_info[amsid]['loc'] = loc
    save_json_file("../conf/network_station_info.json", station_info)
    print("saved: ", "../conf/network_station_info.json")
+
       
 
 def dyna_events_for_day(day, json_conf):
@@ -112,11 +113,16 @@ def dyna_events_for_day(day, json_conf):
    dynamodb = boto3.resource('dynamodb')
    # first get all existing known events
    dy_events = {}
+   events = {}
 
    my_station = json_conf['site']['ams_id']
    stations = json_conf['site']['multi_station_sync']
    if my_station not in stations:
       stations.append(my_station)
+
+   events = search_events(dynamodb, day, stations)
+   for event in events:
+      print("DY EV:", event)
 
    # get obs and data from the dynadb for today from stations in my network 
    # loop over all obs from all stations 
@@ -132,6 +138,9 @@ def dyna_events_for_day(day, json_conf):
          all_data[station] = search_obs(dynamodb, station, day)
       save_json_file("/mnt/ams2/EVENTS/" + day + "_obs.json", all_data)
       print("/mnt/ams2/EVENTS/" + day + "_obs.json", all_data)
+
+
+   meteors = []
    for station in all_data:
       for item in all_data[station]:
          if item['event_start_time'] == "":
@@ -139,9 +148,39 @@ def dyna_events_for_day(day, json_conf):
             trim_num = int(get_trim_num(item['sd_video_file']))
             extra_sec = int(trim_num) / 25
             start_time_dt = f_datetime + datetime.timedelta(0,extra_sec)
-            item['event_start_time'] = start_time_dt
+            start_time_dt_str = start_time_dt.strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]
+            item['event_start_time'] = start_time_dt_str
 
-         print(item['station_id'], item['sd_video_file'], item['event_start_time'])
+         #print(item['station_id'], item['sd_video_file'], item['event_start_time'])
+
+         meteor = [item['station_id'],item['sd_video_file'], item['event_start_time']]
+         meteors.append((item['station_id'],item['sd_video_file'], item['event_start_time']))
+   meteors = sorted(meteors, key=lambda x: (x[2]), reverse=False)
+   events = {}
+   for meteor in meteors:
+      id, events = check_make_event(meteor, events)
+      print(meteor)
+   for eid in events:
+      total_stations = len(set(events[eid]['stations']))
+      events[eid]['total_stations'] = total_stations
+      if total_stations > 1: 
+         print("MULTI", eid, events[eid])
+         min_time = min(events[eid]['start_datetime'])
+         day = min_time[0:10]
+         day = day.replace("-", "_")
+         min_time = min_time.replace("-", "")
+         min_time = min_time.replace(":", "")
+         min_time = min_time.replace(" ", "_")
+         if "." in min_time:
+            rt, xx = min_time.split(".")
+            min_time = rt
+         wmpl_id = min_time
+         events[eid]['event_day'] = day
+         events[eid]['event_id'] = wmpl_id
+         print("MIN TIME:", wmpl_id, day, events[eid])
+         insert_meteor_event(dynamodb, wmpl_id, events[eid])
+      #else:
+      #   print("SINGLE STATION:", eid, events[eid])
 
 
 
@@ -318,7 +357,7 @@ def events_for_day(day, json_conf):
                   print("NO EVENT FOUND", events[event_id]['files'][i])
 
 def check_make_event(data, events):
-   station,meteor, reduced, start_time, dur, ang_vel, ang_dist, hotspot, msm = data
+   station,meteor, start_time = data
    if "." in start_time:
       start_datetime = datetime.datetime.strptime(start_time, "%Y-%m-%d %H:%M:%S.%f")
    else:
@@ -349,9 +388,6 @@ def check_make_event(data, events):
          events[event_id]['files'].append(meteor) 
 
          return(event_id, events)
-      else:
-         foo = 1
-         print("NO MATCH.", start_datetime, event_datetime, (start_datetime - event_datetime).total_seconds())
 
    # not the 1st and not found so make a new one
    this_id = max(events.keys()) + 1

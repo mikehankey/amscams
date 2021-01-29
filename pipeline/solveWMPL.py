@@ -3,6 +3,7 @@
 import matplotlib
 matplotlib.use('agg')
 
+from DynaDB import get_event, get_obs
 from lib.PipeUtil import load_json_file, save_json_file, cfe, calc_dist
 import sys
 import numpy as np
@@ -13,6 +14,10 @@ import math
 import wmpl.Utils.TrajConversions as trajconv
 import wmpl.Utils.SolarLongitude as sollon
 from wmpl.Trajectory import Trajectory as traj
+
+import boto3
+from boto3.dynamodb.conditions import Key
+
 
 import time
 from wmpl.Utils.TrajConversions import equatorialCoordPrecession_vect, J2000_JD
@@ -35,6 +40,22 @@ def get_best_obs(obs):
    print("BEST:", best_file)
    return(best_file)
 
+
+def solve_event(event_id):
+
+    dynamodb = boto3.resource('dynamodb')
+    event = get_event(dynamodb, event_id)
+    print(event)
+    obs = {}
+    for i in range(0, len(event['stations'])):
+       t_station = event['stations'][i]
+       t_file = event['files'][i]
+       dy_obs_data = get_obs(dynamodb, t_station, t_file)
+       obs_data = convert_dy_obs(dy_obs_data)
+
+def convert_dy_obs(dy_obs_data):
+   print("DYO:", dy_obs_data)
+   return(dy_obs_data)
 
 def WMPL_solve(obs):
     solve_dir = "/mnt/ams2/EVENTS/"
@@ -113,3 +134,5 @@ if cmd == "solve":
    WMPL_solve(obs)
 if cmd == "report":
    WMPL_report(meteor_file)
+if cmd == "se":
+   solve_event(meteor_file)

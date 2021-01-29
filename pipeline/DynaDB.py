@@ -39,9 +39,10 @@ def create_tables(dynamodb):
       print("Station table exists.")
 
    # obs table
-   if True:
+   #if True:
+   try:
       table = dynamodb.create_table(
-         TableName='n_meteor_obs',
+         TableName='meteor_obs',
          BillingMode='PAY_PER_REQUEST',
          KeySchema=[
             {
@@ -64,20 +65,20 @@ def create_tables(dynamodb):
             }
          ]
       ) 
-      table.meta.client.get_waiter('table_exists').wait(TableName='n_meteor_obs')
+      table.meta.client.get_waiter('table_exists').wait(TableName='meteor_obs')
    #try:
-   #except:
-   #   print("meteor obs table exists already.")
+   except:
+      print("meteor obs table exists already.")
 
 
    # event table
    try:
       table = dynamodb.create_table(
-         TableName='n_meteor_event',
+         TableName='x_meteor_event',
          BillingMode='PAY_PER_REQUEST',
          KeySchema=[
             {
-               'AttributeName': 'day',
+               'AttributeName': 'event_day',
                'KeyType' : 'HASH'
             },
             {
@@ -87,7 +88,7 @@ def create_tables(dynamodb):
          ],
          AttributeDefinitions=[
             {
-               'AttributeName': 'day',
+               'AttributeName': 'event_day',
                'AttributeType': 'S',
             },
             {
@@ -96,7 +97,7 @@ def create_tables(dynamodb):
             }
          ]
       ) 
-      table.meta.client.get_waiter('table_exists').wait(TableName='n_meteor_event')
+      table.meta.client.get_waiter('table_exists').wait(TableName='x_meteor_event')
    except: 
       print("Event table exists.")
    print("Made tables.")
@@ -112,6 +113,10 @@ def load_meteor_obs_day(dynamodb, station_id, day):
       print("loading", meteor_file) 
       insert_meteor_obs(dynamodb, station_id, meteor_file)
 
+def insert_meteor_event(dynamodb, event_id, event_data):
+   event_data = json.loads(json.dumps(event_data), parse_float=Decimal)
+   table = dynamodb.Table('x_meteor_event')
+   table.put_item(Item=event_data)
 
 def insert_meteor_obs(dynamodb, station_id, meteor_file):
    update_time = datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
@@ -169,7 +174,7 @@ def insert_meteor_obs(dynamodb, station_id, meteor_file):
       "meteor_frame_data": meteor_frame_data
    }
    obs_data = json.loads(json.dumps(obs_data), parse_float=Decimal)
-   table = dynamodb.Table('n_meteor_obs')
+   table = dynamodb.Table('meteor_obs')
    table.put_item(Item=obs_data)
    mj['calib'] = calib
    mj['last_update'] = update_time
@@ -214,7 +219,7 @@ def load_stations(dynamodb):
       insert_station(dynamodb, fn)
 
 def delete_obs(dynamodb, station_id, sd_video_file):
-   table = dynamodb.Table('n_meteor_obs')
+   table = dynamodb.Table('meteor_obs')
    response = table.delete_item(
       Key= {
          "station_id": station_id,
@@ -223,9 +228,26 @@ def delete_obs(dynamodb, station_id, sd_video_file):
    )
    print("DEL:", response)
 
+
+def search_events(dynamodb, date, stations):
+   print("DATE:", date)
+   table = dynamodb.Table('x_meteor_event')
+   response = table.query(
+      KeyConditionExpression='event_day= :date',
+      ExpressionAttributeValues={
+         ':date': date,
+      } 
+   )
+      #KeyConditionExpression=Key('sd_video_file').between('2021', '2022')
+   #print("RESP:", response)
+   #for item in response['Items']:
+   #   for key in item:
+   #      print(key)
+   return(response['Items'])
+
 def search_obs(dynamodb, station_id, date):
    print(station_id, date)
-   table = dynamodb.Table('n_meteor_obs')
+   table = dynamodb.Table('meteor_obs')
    response = table.query(
       KeyConditionExpression='station_id = :station_id AND begins_with(sd_video_file, :date)',
       ExpressionAttributeValues={
@@ -239,6 +261,41 @@ def search_obs(dynamodb, station_id, date):
       for key in item:
          print(key)
    return(response['Items'])
+
+
+def get_event(dynamodb, event_id):
+   table = dynamodb.Table('x_meteor_event')
+   event_day = event_id[0:8]
+   y = event_day[0:4]
+   m = event_day[4:6]
+   d = event_day[6:8]
+   event_day = y + "_" + m + "_" + d
+   print("GET EVENT:", event_day, event_id)
+   response = table.query(
+      KeyConditionExpression='event_day= :event_day AND event_id= :event_id',
+      ExpressionAttributeValues={
+         ':event_day': event_day,
+         ':event_id': event_id,
+      } 
+   )
+   return(response['Items'][0])
+
+def get_obs(dynamodb, station_id, sd_video_file):
+
+
+   print("GET OBS:", station_id, sd_video_file)
+   table = dynamodb.Table('meteor_obs')
+   response = table.query(
+      KeyConditionExpression='station_id = :station_id AND sd_video_file = :sd_video_file',
+      ExpressionAttributeValues={
+         ':station_id': station_id,
+         ':sd_video_file': sd_video_file,
+      } 
+   )
+   if len(response['Items']) > 0:
+      return(response['Items'][0])
+   else:
+      return(None)
 
 def sync_db_day(dynamodb, station_id, day):
    db_meteors = {}
