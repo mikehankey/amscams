@@ -359,8 +359,11 @@ def get_more_stars_with_catalog(meteor_file, cal_params, image, json_conf):
 
 
    for name,mag,ra,dec,cat_x,cat_y in cat_stars:
-      dcname = str(name.decode("utf-8"))
-      dbname = dcname.encode("utf-8")
+      try:
+         dcname = str(name.decode("utf-8"))
+         dbname = dcname.encode("utf-8")
+      except:
+         dcname, dbname = name,name
       if mag <= 5:
          cat_x, cat_y = int(cat_x), int(cat_y)
          #print("CAT:", cat_x, cat_y)
@@ -368,12 +371,14 @@ def get_more_stars_with_catalog(meteor_file, cal_params, image, json_conf):
             continue
 
          ival = gray_img[cat_y,cat_x]
+         print(name, ival, cat_x,cat_y)
          if ival > 5:
             star_img = gray_img[cat_y-15:cat_y+15,cat_x-15:cat_x+15]
             #print(cat_y,cat_x,np.sum(star_img))
             max_px, avg_px, px_diff,max_loc,star_int = eval_cnt(star_img)
             mx,my = max_loc
             #if (2< px_diff < 7) and 100 < star_int < 11000:
+            print(max_px,avg_px,px_diff,star_int)
             if 100 < star_int < 11000:
                print("MORE STAR FOUND!", star_int)
                cv2.rectangle(image, (cat_x-10, cat_y-10), (cat_x + 10, cat_y + 10), (128, 128, 128), 1)
@@ -509,12 +514,33 @@ def refit_meteor(meteor_file, json_conf,force=0):
 
    #if cp['total_res_px'] > 5:
    #   exit()
-   if len(cp['cat_image_stars']) >= 5  :
+   if len(cp['cat_image_stars']) >= 20  :
       print("we have enough stars to refit the meteor.")
-      cp = minimize_fov(meteor_file, cp, meteor_file ,image,json_conf )
    else:
-      print("Not enough stars to refit.")
+      print("Try to get more stars")
+
+      if "short_bright_stars" in cp:
+         del cp['short_bright_stars'] 
+      cp = get_more_stars_with_catalog(meteor_file, cp, image.copy(), json_conf)
+      print("AFTER GET MORE:", len(cp['user_stars']), len(cp['cat_image_stars'])) 
+      cp= pair_stars(cp, meteor_file, json_conf, image.copy())
+      print("AFTER GET MORE & PAIR:", len(cp['user_stars']), len(cp['cat_image_stars'])) 
+   if len(cp['cat_image_stars']) <= 5  :
+      print("Not enough stars to refit. We should update with the best default cal")
       return()
+   else:
+      short_bright_stars = []
+      if "cat_image_stars" in cp:
+         for star in cp['cat_image_stars']:
+
+            dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist,bp = star
+            short_bright_stars.append((dcname,dcname,ra,dec,mag))
+            cp['short_bright_stars'] = short_bright_stars
+      else:
+         cp['short_bright_stars'] = None
+
+
+      cp = minimize_fov(meteor_file, cp, meteor_file ,image,json_conf )
 
 
 
@@ -1464,6 +1490,7 @@ def refit_fov(cal_file, json_conf):
             continue
 
          ival = gray_img[cat_y,cat_x] 
+         print(name, ival, cat_x,cat_y)
          if ival > 5:
             star_img = gray_img[cat_y-10:cat_y+10,cat_x-10:cat_x+10]
             max_px, avg_px, px_diff,max_loc,star_int = eval_cnt(star_img)
