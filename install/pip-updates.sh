@@ -25,3 +25,4 @@ sudo apt-get install redis-server
 pip3 install redis
 pip3 install simplekml
 pip3 install boto3 
+pip3 install simplejson

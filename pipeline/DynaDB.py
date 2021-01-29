@@ -12,8 +12,6 @@ import subprocess
 from boto3.dynamodb.conditions import Key
 
 
-dynamodb = boto3.resource('dynamodb')
-json_conf = load_json_file("../conf/as6.json")
 
 
 def create_tables(dynamodb):
@@ -304,6 +302,8 @@ def sync_db_day(dynamodb, station_id, day):
             print(lkey, "GOOD: The remote and local revisions are the same." )
    
 if __name__ == "__main__":
+   dynamodb = boto3.resource('dynamodb')
+   json_conf = load_json_file("../conf/as6.json")
    cmd = sys.argv[1]
    if cmd == "sync_db_day":
       station_id = json_conf['site']['ams_id']
