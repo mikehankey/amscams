@@ -104,7 +104,7 @@ def create_tables(dynamodb):
 
 def load_obs_month(dynamodb, station_id, wild):
    files = glob.glob("/mnt/ams2/meteors/" + wild + "*")
-   for file in files:
+   for file in sorted(files):
       if cfe(file, 1) == 1:
          day = file.split("/")[-1]
          load_meteor_obs_day(dynamodb, station_id,day)
