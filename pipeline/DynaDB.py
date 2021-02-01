@@ -106,6 +106,7 @@ def load_obs_month(dynamodb, station_id, wild):
    files = glob.glob("/mnt/ams2/meteors/" + wild + "*")
    for file in files:
       if cfe(file, 1) == 1:
+         day = file.split("/")[-1]
          load_meteor_obs_day(dynamodb, station_id,day)
 
 def load_meteor_obs_day(dynamodb, station_id, day):
