@@ -1,9 +1,24 @@
 from lib.PipeUtil import angularSeparation
 import numpy as np
-from lib.conversions import datetime2JD 
+#from lib.conversions import datetime2JD 
 from lib.cyjd2LST import *
 import math
 J2000_DAYS = 2451545.0
+
+
+
+def datetime2JD(dt, UT_corr=0.0):
+    """ Converts a datetime object to Julian date.
+    Arguments:
+        dt: [datetime object]
+    Keyword arguments:
+        UT_corr: [float] UT correction in hours (difference from local time to UT)
+    Return:
+        jd: [float] Julian date
+    """
+
+    return date2JD(dt.year, dt.month, dt.day, dt.hour, dt.minute, dt.second, dt.microsecond/1000.0,
+        UT_corr=UT_corr)
 
 
 def cyaltAz2RADec(azim, elev, jd, lat, lon):

@@ -48,6 +48,21 @@ def map_runner():
    response.headers['Content-Disposition'] = 'filename=%d.png' % 0
    return response
 
+
+@app.route('/event_detail/<event_id>/', methods=['GET', 'POST'])
+def event_detail_control(event_id):
+   from FlaskLib.Events import event_detail
+   resp = event_detail(event_id)
+   return(resp)
+
+@app.route('/events/<date>/', methods=['GET', 'POST'])
+def events_control(date):
+   from FlaskLib.Events import list_events_for_day
+
+   resp = list_events_for_day(date)
+   return(resp)
+
+
 @app.route('/', methods=['GET', 'POST'])
 def main_menu():
    out = login_page()

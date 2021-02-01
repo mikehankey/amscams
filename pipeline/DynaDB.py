@@ -102,6 +102,12 @@ def create_tables(dynamodb):
       print("Event table exists.")
    print("Made tables.")
 
+def load_obs_month(dynamodb, station_id, wild):
+   files = glob.glob("/mnt/ams2/meteors/" + wild + "*")
+   for file in files:
+      if cfe(file, 1) == 1:
+         load_meteor_obs_day(dynamodb, station_id,day)
+
 def load_meteor_obs_day(dynamodb, station_id, day):
    files = glob.glob("/mnt/ams2/meteors/" + day + "/*.json")
    meteors = []
@@ -278,7 +284,11 @@ def get_event(dynamodb, event_id):
          ':event_id': event_id,
       } 
    )
-   return(response['Items'][0])
+   if len(response['Items']) > 0:
+      return(response['Items'][0])
+   else:
+      print("Get event failed for :", event_id)
+      return([])
 
 def get_obs(dynamodb, station_id, sd_video_file):
 
@@ -357,6 +367,31 @@ def sync_db_day(dynamodb, station_id, day):
          insert_meteor_obs(dynamodb, station_id, meteor_file)
          if local_meteors[lkey]['revision'] == db_meteors[lkey]['revision']:
             print(lkey, "GOOD: The remote and local revisions are the same." )
+
+def update_event(dynamodb, event_id, simple_status, wmpl_status, sol_dir):
+   table = dynamodb.Table("x_meteor_event")
+   event_day = event_id[0:8]
+   y = event_day[0:4]
+   m = event_day[4:6]
+   d = event_day[6:8]
+   event_day = y + "_" + m + "_" + d
+
+   response = table.update_item(
+      Key = {
+         'event_day': event_day ,
+         'event_id': event_id
+      },
+      UpdateExpression="set simple_solve=:simple_status, WMPL_solve=:wmpl_status, sol_dir=:sol_dir",
+      ExpressionAttributeValues={
+         ':simple_status': simple_status,
+         ':wmpl_status': wmpl_status, 
+         ':sol_dir': sol_dir 
+      },
+      ReturnValues="UPDATED_NEW"
+   )
+   print(response)
+   return response
+
    
 if __name__ == "__main__":
    dynamodb = boto3.resource('dynamodb')
@@ -385,3 +420,6 @@ if __name__ == "__main__":
    if cmd == "load_day":
       station_id = json_conf['site']['ams_id']
       load_meteor_obs_day(dynamodb, station_id, sys.argv[2])
+   if cmd == "load_month":
+      station_id = json_conf['site']['ams_id']
+      load_obs_month(dynamodb, station_id, sys.argv[2])

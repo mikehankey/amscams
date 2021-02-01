@@ -29,6 +29,7 @@ from lib.PipeMeteorDelete import delete_all_meteor_files
 from lib.PipeEvent import events_for_day, get_network_info, solve_day, dyna_events_for_day
 from lib.PipeSolve import simple_solve
 
+#from RMS.GreatCircle import fitGC
 
 '''
 
@@ -593,3 +594,16 @@ if __name__ == "__main__":
          print("No MSE in mj")
    if cmd == "ded" :
       dyna_events_for_day(sys.argv[2], json_conf)
+
+   if cmd == "gc":
+      mf = sys.argv[2]
+      mfr = mf.replace(".json", "-reduced.json")
+      mjr = load_json_file(mfr)
+      mj = load_json_file(mf)
+      meteor_frame_data = mjr['meteor_frame_data']
+      cp = mj['cp']
+      if "loc" not in cp:
+         loc = [json_conf['site']['device_lat'],json_conf['site']['device_lng'],json_conf['site']['device_alt']]
+      cp['loc'] = loc
+      #fitGC(meteor_frame_data, cp)
+

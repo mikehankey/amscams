@@ -40,14 +40,14 @@ from datetime import datetime, timedelta, MINYEAR
 import numpy as np
 import scipy.optimize
 
-#from RMS.Math import vectMag, vectNorm
+from RMS.Math import vectMag, vectNorm
 
 
 # Import Cython functions
-#import pyximport
-#pyximport.install(setup_args={'include_dirs':[np.get_include()]})
-#from RMS.Astrometry.CyFunctions import cyraDec2AltAz
+import pyximport
+pyximport.install(setup_args={'include_dirs':[np.get_include()]})
 
+#from RMS.Astrometry.CyFunctions import cyraDec2AltAz
 from lib.cyFuncs import cyraDec2AltAz
 
 ### CONSTANTS ###

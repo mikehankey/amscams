@@ -30,6 +30,69 @@ def get_best_obs(obs):
    print("BEST:", best_file)
    return(best_file)
 
+def simple_solvev2(obs):
+   nsinfo = load_json_file("../conf/network_station_info.json")
+   good_obs = []
+   solutions = []
+   if True:
+      if True:
+         best_obs = []
+         for station in obs:
+            if len(obs[station].keys()) > 1:
+               # there is more than 1 obs from this station
+               # we need to pick the 'best' one. (the one closest to the center FOV)
+               best_file = get_best_obs(obs[station])
+               #xxx = input("MORE THAN 1 OBS FOR STATION " + station + " using " + best_file)
+            else:
+               for file in obs[station]:
+                  best_file = file
+            if True:
+               file = best_file
+               #for file in obs[station]:
+
+               if len(obs[station][file]['azs']) >= 3:
+                  obs[station][file]['loc'] = nsinfo[station]['loc']
+                  obs[station][file]['file'] = file
+                  obs[station][file]['station'] = station
+                  good_obs.append(obs[station][file])
+               print(station, obs[station][file]['azs'])
+   if len(good_obs) == 2:
+      print("We have two good obs. Solve them.")
+      #print(good_obs)
+      #www = input('waiting.')
+      station1 = good_obs[0]['station']
+      station2 = good_obs[1]['station']
+      file1 = good_obs[0]['file']
+      file2 = good_obs[1]['file']
+      (f_datetime, cam1, f_date_str,fy,fmon,fd, fh, fm, fs) = convert_filename_to_date_cam(file1)
+      (f_datetime, cam2, f_date_str,fy,fmon,fd, fh, fm, fs) = convert_filename_to_date_cam(file2)
+      station_key = station1 + "-" + cam1 + ":" + station2 + "-" + cam2
+      print("OBS1:", good_obs[0]['station'], good_obs[0]['file'])
+      print("OBS2:", good_obs[1]['station'], good_obs[1]['file'])
+      sols = int_planes(good_obs[0], good_obs[1])
+      solutions = []
+      for sol in sols:
+         solutions.append(sol)
+   elif len(good_obs) > 2:
+      print("We have more than 2 obs. Solve each one.")
+      for oo in range(0,len(good_obs)):
+         if oo != 0:
+            station1 = good_obs[0]['station']
+            station2 = good_obs[1]['station']
+            file1 = good_obs[0]['file']
+            file2 = good_obs[1]['file']
+            (f_datetime, cam1, f_date_str,fy,fmon,fd, fh, fm, fs) = convert_filename_to_date_cam(file1)
+            (f_datetime, cam2, f_date_str,fy,fmon,fd, fh, fm, fs) = convert_filename_to_date_cam(file2)
+
+            #station_key = station1 + "-" + cam1 + ":" + station2 + "-" + cam2
+            #station_key = station1 + "," + station2
+            sols = int_planes(good_obs[0], good_obs[oo])
+            for sol in sols:
+               solutions.append(sol)
+
+   print("DONE")
+   return(solutions)
+
 def simple_solve(day, event_id, json_conf ):
    nsinfo = load_json_file("../conf/network_station_info.json")
    event_id = str(event_id)
