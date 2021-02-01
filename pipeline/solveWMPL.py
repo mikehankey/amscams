@@ -5,7 +5,7 @@ import matplotlib
 matplotlib.use('agg')
 import glob
 from lib.PipeAutoCal import fn_dir
-from DynaDB import get_event, get_obs, search_events, update_event
+from DynaDB import get_event, get_obs, search_events, update_event, update_event_sol
 from lib.PipeUtil import load_json_file, save_json_file, cfe, calc_dist
 import sys
 import numpy as np
@@ -129,9 +129,11 @@ def solve_event(event_id):
        simple_status = 1
        wmpl_status = 0
 
-    make_event_json(solve_dir)
+    solution = make_event_json(solve_dir)
 
-    update_event(dynamodb, event_id, simple_status, wmpl_status, solve_dir)
+    print("UPDATE EVENT SOL:")
+    update_event_sol(dynamodb, event_id, solution, obs)
+    #update_event(dynamodb, event_id, simple_status, wmpl_status, solve_dir)
 
 
 def convert_dy_obs(dy_obs_data, obs):
@@ -414,8 +416,8 @@ def make_event_json(solve_dir):
 
 
    save_json_file(event_file, solution)
-   print("SAVED:", event_file)
-   return(1)
+   print("SAVED EVENT FILE:", event_file)
+   return(solution)
 
 def make_kml(kml_file, points, lines):
    import simplekml
@@ -558,7 +560,7 @@ def event_report(solve_dir, obs):
     html += "<pre>" + report + "</pre>"
     fp = open(solve_dir + "/index.html", "w")
     fp.write(html)
-    print("SAVED:", solve_dir + "/index.html")
+    print("SAVED INDEX:", solve_dir + "/index.html")
 
 
 

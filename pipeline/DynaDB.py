@@ -369,6 +369,35 @@ def sync_db_day(dynamodb, station_id, day):
          if local_meteors[lkey]['revision'] == db_meteors[lkey]['revision']:
             print(lkey, "GOOD: The remote and local revisions are the same." )
 
+
+def update_event_sol(dynamodb, event_id, sol_data, obs_data):
+   sol_data = json.loads(json.dumps(sol_data), parse_float=Decimal)
+   #obs_data_save = json.loads(json.dumps(obs_data), parse_float=Decimal)
+
+   table = dynamodb.Table("x_meteor_event")
+   event_day = event_id[0:8]
+   y = event_day[0:4]
+   m = event_day[4:6]
+   d = event_day[6:8]
+   event_day = y + "_" + m + "_" + d
+
+   response = table.update_item(
+      Key = {
+         'event_day': event_day ,
+         'event_id': event_id
+      },
+      UpdateExpression="set solution=:sol_data ",
+      ExpressionAttributeValues={
+         ':sol_data': sol_data
+      },
+      ReturnValues="UPDATED_NEW"
+   )
+   print(response)
+         #':obs_data': obs_data,
+   return response
+
+
+
 def update_event(dynamodb, event_id, simple_status, wmpl_status, sol_dir):
    table = dynamodb.Table("x_meteor_event")
    event_day = event_id[0:8]

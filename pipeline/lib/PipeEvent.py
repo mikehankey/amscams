@@ -107,6 +107,11 @@ def get_network_info(json_conf):
    print("saved: ", "../conf/network_station_info.json")
 
       
+def dyna_events_for_month(wild, json_conf):
+   files = glob.glob("/mnt/ams2/meteors/" + wild + "*")
+   for file in files:
+      day = file.split("/")[-1]
+      dyna_events_for_day(day, json_conf)
 
 def dyna_events_for_day(day, json_conf):
 
