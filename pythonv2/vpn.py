@@ -31,6 +31,10 @@ def auto_update():
       os.system(cmd)
       cmd = "cp /home/ams/amscams/install/pip-updates.sh /home/ams/amscams/install/last_run.txt "
       os.system(cmd)
+ 
+      # Stop flask (so new code will work)
+      cmd = "cd /home/ams/amscams/pipeline; /home/ams/amscams/pipeline/run-uwsgi.sh > /tmp/sgi.txt 2>&1"
+      os.system(cmd)
       
 
 def check_running():
