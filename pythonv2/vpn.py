@@ -20,6 +20,11 @@ def auto_update():
       cmd = "diff /home/ams/amscams/install/last_run.txt /home/ams/amscams/install/pip-updates.sh |wc -l "
       output = subprocess.check_output(cmd, shell=True).decode("utf-8")
       print("UPDATE DIFF:", output)
+      try:
+         if int(output) > 0:
+            update_needed = 1
+      except:
+         print("Problem with update diff.")
    if update_needed == 1:
       cmd = "cd /home/ams/amscams/install; sudo ./pip-updates.sh"
       print(cmd)
