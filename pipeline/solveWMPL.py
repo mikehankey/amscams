@@ -251,6 +251,7 @@ def make_event_json(solve_dir):
    print("LINES:", lines)
 
    solution = {}
+   solution['sol_dir'] = solve_dir 
    solution['traj'] = {}
    solution['orb'] = {}
    solution['rad'] = {}

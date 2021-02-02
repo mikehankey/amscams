@@ -84,13 +84,15 @@ def event_detail(event_id):
       <div id='main_container' class='container-fluid h-100 mt-4 lg-l'>
    """
 
-   if "sol_dir" in event:
-      sol_dir = event['sol_dir']
-   else:
-      sol_dir = "" 
-      sol_jpgs = []
-      sol_pickles = []
-      sol_jsons = []
+   if "solution" in event:
+      if "sol_dir" in event['solution']:
+         sol_dir = event['solution']['sol_dir']
+      else:
+         sol_dir = "" 
+         sol_jpgs = []
+         sol_pickles = []
+         sol_jsons = []
+         print("SOLDIR IS MISSING FROM EVENT!")
 
    if sol_dir != "" and sol_dir is not None:
       sol_jpgs = glob.glob(sol_dir + "/*.jpg")
@@ -120,7 +122,9 @@ def event_detail(event_id):
    else:
       event_data = {}
       no_sol = 1
-      
+   
+   print("FULL:", full_event_file)
+   
    if no_sol == 1:
       obs_html = make_obs_html(event, remote_urls)
       out = "no solution yet." 
@@ -290,8 +294,8 @@ def list_events_for_day(date):
          sol_dir = event['sol_dir']
       else:
          sol_dir = None
-      if "WMPL_solve" in event:
-         wmpl_status = event['WMPL_solve']
+      if "solution" in event:
+         wmpl_status = 1 
       else:
          wmpl_status = None 
 
@@ -315,6 +319,7 @@ def list_events_for_day(date):
       else:
          #elink = "#"
          elink = "/event_detail/" + event_id + "/"
+
       if wmpl_status is None:
          html += "<td><a href=" + elink + ">Event not solved yet.</a></td>"
       else: 
