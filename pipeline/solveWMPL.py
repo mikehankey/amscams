@@ -46,6 +46,15 @@ def get_best_obs(obs):
    print("BEST:", best_file)
    return(best_file)
 
+def solve_month(wild):
+   files = glob.glob("/mnt/ams2/meteors/" + wild + "*")
+   mets = []
+   for file in files:
+      if cfe(file, 1) == 1:
+         mets.append(file)
+   for file in mets:
+      day = file.split("/")[-1]
+      solve_day(day)
 
 def solve_day(day):
 
@@ -96,6 +105,11 @@ def solve_event(event_id):
 
         if len(obs[station_id][file]['times']) > 0:
            start_times.append(obs[station_id][file]['times'][0])
+
+    if len(start_times) == 0:
+       print("PROB: NO DATA?", event_id)
+       xx = input("?")
+       return()
 
     event_start = sorted(start_times)[0]
     print("START TIMES:", start_times)
@@ -670,3 +684,5 @@ if cmd == "sd":
    solve_day(meteor_file)
 if cmd == "mej":
    make_event_json(meteor_file)
+if cmd == "sm":
+   solve_month(meteor_file)

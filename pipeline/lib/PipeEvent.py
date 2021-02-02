@@ -363,7 +363,10 @@ def events_for_day(day, json_conf):
 
 def check_make_event(data, events):
    print("MDATA:", data)
-   station,meteor, start_time = data[0], data[1], data[3]
+   if len(data) == 3:
+      station,meteor, start_time = data
+   else:
+      station,meteor, start_time = data[0], data[1], data[3]
    if "." in start_time:
       start_datetime = datetime.datetime.strptime(start_time, "%Y-%m-%d %H:%M:%S.%f")
    else:

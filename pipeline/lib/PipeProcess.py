@@ -55,8 +55,33 @@ def run_jobs(json_conf):
       print("Cloud conf file is good.")
    #exit() 
 
+   # Once every 5 hours run the events for yesterday and today, IF WMPL is installed
+   if "WMPL" in json_conf:
+      print("WMPL EXIST.")
+      run_solve = 0
+      if cfe("/home/ams/solved_last.txt") == 0:
+         run_solve = 1
+         os.system("touch /home/ams/solved_last.txt")
+         print("Run events.")
+      else:
+         size, tdiff = get_file_info("/home/ams/solved_last.txt")
+         print("Last Update:", tdiff)
+         if int(tdiff) / 60 > 5:
+            os.system("./DynaDB.py load_day " + yest + "")
+            os.system("./Process.py ded " + yest + "")
+            os.system("./solveWMPL.py sd " + yest + "")
+            os.system("touch /home/ams/solved_last.txt")
+
+            os.system("./DynaDB.py load_day " + today + "")
+            os.system("./Process.py ded " + today + "")
+            os.system("./solveWMPL.py sd " + today + "")
+            os.system("touch /home/ams/solved_last.txt")
+
+
+
    cmds = []
    cmds.append(('all', "Clean disk / Purge old files", "cd /home/ams/amscams/pythonv2; ./doDay.py cd"))
+   cmds.append(('day', "Clean disk / Purge old files", "cd /home/ams/amscams/pipeline; ./Process.py rm_corrupt"))
    cmds.append(('day', "Make Meteor Index", "cd /home/ams/amscams/pipeline; ./Process.py mmi_all"))
    cmds.append(('day', "Move Day Files", "cd /home/ams/amscams/pythonv2; ./move_day_files.py"))
    cmds.append(('day', "Run Calibs (if daytime)", "cd /home/ams/amscams/pipeline; ./Process.py ca"))

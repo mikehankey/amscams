@@ -2294,6 +2294,10 @@ def fireball(video_file, json_conf, nomask=0):
       if gap_test_res == 0:
          print("GAP TEST FAILED. PLANE!")
          best_meteor = None
+   elif "confirmed" in jdata: 
+      print("FIREBALL DETECT NOT FOUND, BUT CONFIRMED METEOR EXISTS.")
+      print(jdata['confirmed'])
+      exit()
    if best_meteor is None:
       # detection failed
       jdata['rejected'] = 1
