@@ -5,7 +5,7 @@ import numpy as np
 import sys
 import time
 from PIL import ImageFont, ImageDraw, Image, ImageChops
-from lib.PipeProcess import run_jobs, update_code
+from lib.PipeProcess import run_jobs 
 from datetime import datetime
 import datetime as dt
 

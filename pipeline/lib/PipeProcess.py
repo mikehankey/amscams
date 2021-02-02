@@ -4,7 +4,11 @@ from lib.PipeUtil import day_or_night, check_running
 import datetime as dt
 import os
 
-def update_code(json_conf):
+def gitpull(json_conf):
+   print("git pull > /home/ams/lastpull.txt")
+   os.system("git pull > /home/ams/lastpull.txt")
+   os.system("cd /home/ams/amscams/install; ./update-flask-assets.sh ")
+   return()
    if cfe("lib/version") == 1:
       fp = open("lib/version")
       for line in fp:
@@ -42,6 +46,25 @@ def run_jobs(json_conf):
    yest = (datetime.now() - dt.timedelta(days = 1)).strftime("%Y_%m_%d")
    sun, az, alt = day_or_night(datetime.now(), json_conf, 1)
    print(sun, az, alt)
+
+   # update from git hub(Change to work 1x per x hours)
+
+   update_code = 0
+   if cfe('/home/ams/lastpull.txt') == 0:
+      update_code = 1
+   else:
+      size, tdiff = get_file_info("/home/ams/lastpull.txt")
+
+      if tdiff / 60 > .00005:
+         print("UPDATE CODE.")
+         update_code = 1
+      else:
+         print("Code was last updated", tdiff / 60, "hours ago")
+
+   if update_code == 1:
+
+      gitpull(json_conf)
+
  
    amsid = json_conf['site']['ams_id']
    # check to make sure the cloud drive is setup and cal sync'd
