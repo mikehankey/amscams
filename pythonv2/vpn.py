@@ -24,7 +24,7 @@ def auto_update():
       cmd = "cd /home/ams/amscams/install; sudo ./pip-updates.sh"
       print(cmd)
       os.system(cmd)
-      cmd = "cp /mnt/ams2/amscams/install/pip-updates.sh /home/ams/amscams/install/last_run.txt "
+      cmd = "cp /home/ams/amscams/install/pip-updates.sh /home/ams/amscams/install/last_run.txt "
       os.system(cmd)
       
 
