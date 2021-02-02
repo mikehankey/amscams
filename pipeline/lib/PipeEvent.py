@@ -357,7 +357,8 @@ def events_for_day(day, json_conf):
                   print("NO EVENT FOUND", events[event_id]['files'][i])
 
 def check_make_event(data, events):
-   station,meteor, start_time = data
+   print("MDATA:", data)
+   station,meteor, start_time = data[0], data[1], data[3]
    if "." in start_time:
       start_datetime = datetime.datetime.strptime(start_time, "%Y-%m-%d %H:%M:%S.%f")
    else:
