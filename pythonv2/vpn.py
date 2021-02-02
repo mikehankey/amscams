@@ -12,6 +12,21 @@ import json
 json_conf = load_json_file("../conf/as6.json")
 
 
+def auto_update():
+   update_needed = 0
+   if cfe("/home/ams/amscams/install/last_run.txt") == 0:
+      update_needed = 1
+   else:
+      cmd = "diff /home/ams/amscams/install/last_run.txt /home/ams/amscams/install/pip-updates.sh |wc -l "
+      output = subprocess.check_output(cmd, shell=True).decode("utf-8")
+      print("UPDATE DIFF:", output)
+   if update_needed == 1:
+      cmd = "cd /home/ams/amscams/install; sudo ./pip-updates.sh"
+      print(cmd)
+      os.system(cmd)
+      cmd = "cp /mnt/ams2/amscams/install/pip-updates.sh /home/ams/amscams/install/last_run.txt "
+      os.system(cmd)
+      
 
 def check_running():
    cmd = "/sbin/ifconfig -a | grep 10.8.0 | grep -v grep | wc -l"
@@ -40,7 +55,8 @@ else:
 
 
 amsid = json_conf['site']['ams_id'].upper()
-
+auto_update()
+#exit()
 # check if a VPN connect request exists
 # and then connect if it does
 
