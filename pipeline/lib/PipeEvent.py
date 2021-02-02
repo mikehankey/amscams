@@ -134,6 +134,8 @@ def dyna_events_for_day(day, json_conf):
    # if obs does not have a registered event id register the new event in events table and update related obs with event id
    # 
    #  
+   if cfe("/mnt/ams2/EVENTS/" + day, 1) == 0:
+      os.makedirs("/mnt/ams2/EVENTS/" + day ) 
    if cfe("/mnt/ams2/EVENTS/" + day + "_obs.json") == 1:
       all_data = load_json_file("/mnt/ams2/EVENTS/" + day + "_obs.json")
    else:

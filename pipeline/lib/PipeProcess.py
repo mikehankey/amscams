@@ -76,9 +76,27 @@ def run_jobs(json_conf):
       os.system("cp ../conf/as6.json " + cloud_conf_file)
    else:
       print("Cloud conf file is good.")
-   #exit() 
 
    # Once every 5 hours run the events for yesterday and today, IF WMPL is installed
+   if "dynamodb" in json_conf:
+      run_load = 0
+      if cfe("/home/ams/loaded_last.txt") == 0:
+         run_load = 1
+         os.system("touch /home/ams/loaded_last.txt")
+         print("load meteors .")
+      else:
+         size, tdiff = get_file_info("/home/ams/loaded_last.txt")
+         print("Last Loaded Data :", tdiff/60, "hours ago")
+         if int(tdiff) / 60 > 5:
+            run_load = 1 
+      print("YES:", run_load)
+      if run_load == 1:
+         os.system("./DynaDB.py load_day " + yest + "")
+         os.system("./DynaDB.py load_day " + today + "")
+         os.system("./Process.py ded " + yest + "")
+         os.system("./Process.py ded " + today + "")
+   print("ENDDY")
+   exit()
    if "WMPL" in json_conf:
       print("WMPL EXIST.")
       run_solve = 0
@@ -90,8 +108,6 @@ def run_jobs(json_conf):
          size, tdiff = get_file_info("/home/ams/solved_last.txt")
          print("Last Update:", tdiff)
          if int(tdiff) / 60 > 5:
-            os.system("./DynaDB.py load_day " + yest + "")
-            os.system("./Process.py ded " + yest + "")
             os.system("./solveWMPL.py sd " + yest + "")
             os.system("touch /home/ams/solved_last.txt")
 
