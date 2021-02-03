@@ -10,11 +10,11 @@ from lib.DEFAULTS import *
 from lib.PipeUtil import cfe, load_json_file, save_json_file
 from lib.PipeAutoCal import fn_dir
 
-def prep_month(year_day, json_conf):
+def prep_month(year_day, json_conf, phase=1):
    mdirs = glob.glob("/mnt/ams2/meteors/" + year_day + "*")
    for dd in sorted(mdirs, reverse=True):
       fn,dir = fn_dir(dd)
-      do_meteor_day_prep(fn,json_conf)
+      do_meteor_day_prep(fn,json_conf,phase)
 
 def do_meteor_day_prep(day, json_conf,phase=1):
 

@@ -1,4 +1,5 @@
 #!/usr/bin/python3
+import os
 from datetime import datetime
 import json
 from decimal import Decimal
@@ -10,7 +11,7 @@ import boto3
 import socket
 import subprocess
 from boto3.dynamodb.conditions import Key
-
+from lib.PipeUtil import get_file_info
 
 
 
@@ -237,40 +238,107 @@ def delete_obs(dynamodb, station_id, sd_video_file):
 
 
 def search_events(dynamodb, date, stations):
-   print("DATE:", date)
-   table = dynamodb.Table('x_meteor_event')
-   response = table.query(
-      KeyConditionExpression='event_day= :date',
-      ExpressionAttributeValues={
-         ':date': date,
-      } 
-   )
-      #KeyConditionExpression=Key('sd_video_file').between('2021', '2022')
-   #print("RESP:", response)
-   #for item in response['Items']:
-   #   for key in item:
-   #      print(key)
-   return(response['Items'])
+   dyn_cache = "/mnt/ams2/DYCACHE/"
+   use_cache = 0
+   if cfe(dyn_cache, 1) == 0:
+      os.makedirs(dyn_cache)
+   dc_file = dyn_cache + date + "_events.json"   
+   if cfe(dc_file) == 1:
+      size, tdiff = get_file_info(dc_file)
+      hours_old = tdiff / 60
+      print("HOURS OLD:", hours_old)
+      if hours_old < 4:
+         use_cache = 1   
+
+   if use_cache == 0:
+      if dynamodb is None:
+         dynamodb = boto3.resource('dynamodb')
+
+
+      table = dynamodb.Table('x_meteor_event')
+      response = table.query(
+         KeyConditionExpression='event_day= :date',
+         ExpressionAttributeValues={
+           ':date': date,
+         } 
+      )
+      save_json_file(dc_file, response['Items'])
+      return(response['Items'])
+   else :
+      print("we will use cache for events today" + date)
+      return(load_json_file(dc_file))
+
 
 def search_obs(dynamodb, station_id, date):
    print(station_id, date)
-   table = dynamodb.Table('meteor_obs')
-   response = table.query(
-      KeyConditionExpression='station_id = :station_id AND begins_with(sd_video_file, :date)',
-      ExpressionAttributeValues={
-         ':station_id': station_id,
-         ':date': date,
-      } 
-   )
-      #KeyConditionExpression=Key('sd_video_file').between('2021', '2022')
-   print("RESP:", response)
-   for item in response['Items']:
-      for key in item:
-         print(key)
-   return(response['Items'])
+
+   dyn_cache = "/mnt/ams2/DYCACHE/"
+   use_cache = 0
+   if cfe(dyn_cache, 1) == 0:
+      os.makedirs(dyn_cache)
+   dc_file = dyn_cache + date + "_" + station_id + "_obs.json"   
+   if cfe(dc_file) == 1:
+      size, tdiff = get_file_info(dc_file)
+      hours_old = tdiff / 60
+      print("HOURS OLD:", hours_old)
+      if hours_old < 4:
+         use_cache = 1   
+   if use_cache == 0:
+      if dynamodb is None:
+         dynamodb = boto3.resource('dynamodb')
+
+      table = dynamodb.Table('meteor_obs')
+      response = table.query(
+         KeyConditionExpression='station_id = :station_id AND begins_with(sd_video_file, :date)',
+         ExpressionAttributeValues={
+            ':station_id': station_id,
+            ':date': date,
+         } 
+      )
+      save_json_file(dc_file, response['Items'])
+      print("USE DYNA OBS CALL:",date, station_id )
+      return(response['Items'])
+   else:
+      print("USE OBS CACHE:", dc_file)
+      return(load_json_file(dc_file))
 
 
-def get_event(dynamodb, event_id):
+def get_event(dynamodb, event_id, nocache=1):
+
+
+   print("GET EVENT:", event_id)
+   dyn_cache = "/mnt/ams2/DYCACHE/"
+   use_cache = 0
+   if cfe(dyn_cache, 1) == 0:
+      os.makedirs(dyn_cache)
+
+   y = event_id[0:4]
+   m = event_id[4:6]
+   d = event_id[6:8]
+   date = y + "_" + m + "_" + d
+
+   dc_file = dyn_cache + date + "_events.json"   
+   if cfe(dc_file) == 1:
+      size, tdiff = get_file_info(dc_file)
+      hours_old = tdiff / 60
+      print("HOURS OLD:", hours_old)
+      if hours_old < 4:
+         use_cache = 1   
+   if nocache == 0:
+      use_cache = 0 
+
+   if use_cache == 1:
+      evs = load_json_file(dc_file)
+      for ev in evs:
+         if ev['event_id'] == event_id:
+            print("USE CACHE FOR EVENT PLEASE!", event_id)
+            return(ev)
+
+   if dynamodb is None:
+      dynamodb = boto3.resource('dynamodb')
+
+   print("GET EVENT WITHOUT USING THE CACHE!")
+
    table = dynamodb.Table('x_meteor_event')
    event_day = event_id[0:8]
    y = event_day[0:4]
@@ -285,16 +353,35 @@ def get_event(dynamodb, event_id):
          ':event_id': event_id,
       } 
    )
+   print("GETTING EVENT FOR:", event_day, event_id)
+
    if len(response['Items']) > 0:
       return(response['Items'][0])
    else:
       print("Get event failed for :", event_id)
+      print(response)
       return([])
 
 def get_obs(dynamodb, station_id, sd_video_file):
+   date= sd_video_file[0:10]
+   dyn_cache = "/mnt/ams2/DYCACHE/"
+   use_cache = 0
+   if cfe(dyn_cache, 1) == 0:
+      os.makedirs(dyn_cache)
+   dc_file = dyn_cache + date + "_" + station_id + "_obs.json"   
+   if cfe(dc_file) == 1:
+      size, tdiff = get_file_info(dc_file)
+      if tdiff / 60 < 4:
+         dc_obs = load_json_file(dc_file)
+         for obs in dc_obs:
+            print("OBS:", obs)
+            
+            if obs['sd_video_file'] == sd_video_file:
+               print("USE CACHE OBS:", station_id, sd_video_file)
+               return(obs)
 
-
-   print("GET OBS:", station_id, sd_video_file)
+   if dynamodb is None:
+      dynamodb = boto3.resource('dynamodb')
    table = dynamodb.Table('meteor_obs')
    response = table.query(
       KeyConditionExpression='station_id = :station_id AND sd_video_file = :sd_video_file',
@@ -394,6 +481,7 @@ def update_event_sol(dynamodb, event_id, sol_data, obs_data):
    )
    print(response)
          #':obs_data': obs_data,
+   print("UPDATED EVENT WITH SOLUTION.")
    return response
 
 
@@ -422,6 +510,70 @@ def update_event(dynamodb, event_id, simple_status, wmpl_status, sol_dir):
    print(response)
    return response
 
+def do_dyna_day(dynamodb, day):
+   # do everything to prep and load meteors
+   # to get them ready for solving
+   # and then also download event data for this site
+   # and update the mse info in the json for each site
+   # also sync prev imgs for mse events
+   cmd = "./Process.py reject_masks " + day
+   print(cmd)
+   os.system(cmd)
+   
+   cmd = "./Process.py confirm " + day
+   print(cmd)
+   os.system(cmd)
+
+   cmd = "./DynaDB.py load_day " + day
+   print(cmd)
+   os.system(cmd)
+
+   cmd = "./Process.py ded " + day
+   print(cmd)
+   os.system(cmd)
+
+
+def update_mj_events(dynamodb, date):
+   print("UPDATE MJ FOR DYNA EVENTS FOR", date)
+   json_conf = load_json_file("../conf/as6.json")
+   stations = json_conf['site']['multi_station_sync']
+   amsid = json_conf['site']['ams_id']
+   if amsid not in stations:
+      stations.append(amdid)
+   events = search_events(dynamodb, date, stations)
+   dyn_cache = "/mnt/ams2/DYCACHE/"
+   if cfe(dyn_cache, 1) == 0:
+      os.makedirs(dyn_cache)
+   save_json_file(dyn_cache + date + "_events.json",events)
+   my_files = []
+   for event in events:
+      mse = {}
+      mse['start_datetime'] = []
+      mse['stations'] = []
+      mse['files'] = []
+ 
+      if "solution" in event:
+         mse['solution'] = event['solution']
+      if "orb" in event:
+         mse['orb'] = event['orb']
+      for i in range(0, len(event['stations'])):
+         mse['stations'].append(event['stations'][i])
+         mse['files'].append(event['files'][i])
+         mse['event_id'] = event['event_id']
+      
+         if event['stations'][i] == amsid:
+            my_files.append((event['files'][i], mse))
+            print("my files:", event['files'][i])
+        
+   mse_log = "/mnt/ams2/meteors/" + date + "/" + amsid + "_" + date + "_mse.info" 
+   mse_db = {}
+   print("SAVED:", dyn_cache + date + "_events.json")
+   for file,ev in my_files:
+      mse_db[file] = ev
+      print("UPDATE LOCAL FILE:", file, ev)
+
+   save_json_file(mse_log, mse_db)
+   print("saved:", mse_log)
    
 if __name__ == "__main__":
    dynamodb = boto3.resource('dynamodb')
@@ -453,3 +605,7 @@ if __name__ == "__main__":
    if cmd == "load_month":
       station_id = json_conf['site']['ams_id']
       load_obs_month(dynamodb, station_id, sys.argv[2])
+   if cmd == "ddd":
+      do_dyna_day(dynamodb, sys.argv[2])
+   if cmd == "umje":
+      update_mj_events(dynamodb, sys.argv[2])

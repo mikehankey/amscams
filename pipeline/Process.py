@@ -551,7 +551,11 @@ if __name__ == "__main__":
          phase = 1
       do_meteor_day_prep(sys.argv[2], json_conf, phase)
    if cmd == "prep_month" :
-      prep_month(sys.argv[2], json_conf)
+      if len(sys.argv) == 4:
+         print("PHASE ON")
+         prep_month(sys.argv[2], json_conf, sys.argv[3])
+      else:
+         prep_month(sys.argv[2], json_conf)
    if cmd == "solve_day" :
       solve_day(sys.argv[2], json_conf)
    if cmd == "simple_tl" :

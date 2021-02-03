@@ -6,7 +6,7 @@ matplotlib.use('agg')
 import glob
 from lib.PipeAutoCal import fn_dir
 from DynaDB import get_event, get_obs, search_events, update_event, update_event_sol
-from lib.PipeUtil import load_json_file, save_json_file, cfe, calc_dist
+from lib.PipeUtil import load_json_file, save_json_file, cfe, calc_dist, convert_filename_to_date_cam
 import sys
 import numpy as np
 import datetime
@@ -77,7 +77,7 @@ def solve_event(event_id):
     nsinfo = load_json_file("../conf/network_station_info.json")
 
     dynamodb = boto3.resource('dynamodb')
-    event = get_event(dynamodb, event_id)
+    event = get_event(dynamodb, event_id, 0)
     print(event)
 
 
@@ -92,6 +92,9 @@ def solve_event(event_id):
        dy_obs_data = get_obs(dynamodb, t_station, t_file)
        dy_obs_data['loc'] = nsinfo[t_station]['loc']
        obs_data = convert_dy_obs(dy_obs_data, obs )
+
+    for key in obs_data:
+       print(key, obs_data[key])
 
     # get WMPL ID (lowest start time)
     start_times = []
@@ -143,15 +146,297 @@ def solve_event(event_id):
        simple_status = 1
        wmpl_status = 0
 
-    solution = make_event_json(solve_dir)
+    solution = make_event_json(event_id, solve_dir)
+    if solution == 0:
+       print("FAILED TO SOLVE!")
+       return(0)
+    event_file = solve_dir + "/" + event_id + "-event.json"
+
+    make_event_html(event_file)
+
+    # remove the pngs and then copy the results to the cloud dir
+    cloud_dir = solve_dir.replace("/mnt/ams2/meteor_archive/", "/mnt/archive.allsky.tv/")
+    if cfe(cloud_dir,1) == 0:
+       os.makedirs(cloud_dir)
+    cmd = "rm " + solve_dir + "/*.png"
+    print(cmd)
+    os.system(cmd)
+    cmd = "cp " + solve_dir + "/* " + cloud_dir
+    print(cmd)
+    os.system(cmd)
+    #xxx = input("cloud files should have copied here.")
+
+
 
     print("UPDATE EVENT SOL:")
-    update_event_sol(dynamodb, event_id, solution, obs)
+    update_event_sol(None, event_id, solution, obs)
     #update_event(dynamodb, event_id, simple_status, wmpl_status, solve_dir)
+
+def make_css():
+   css = """
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+.container {
+  padding: 5px;
+  float: left;
+  position: relative;
+  width: 320px;
+}
+
+.image {
+  opacity: 1;
+  display: block;
+  width: 100%;
+  height: auto;
+  transition: .5s ease;
+  backface-visibility: hidden;
+}
+
+.middle {
+  top: 50%;
+  left: 50%;
+  width: 100%
+  transition: .5s ease;
+  opacity: 0;
+  position: absolute;
+  text-align: center;
+  transform: translate(-50%, -50%);
+  -ms-transform: translate(-50%, -50%);
+}
+
+.container:hover .image {
+  opacity: 0.3;
+}
+
+.container:hover .middle {
+  opacity: 1;
+}
+
+.text {
+  color: black;
+  font-size: 16px;
+}
+</style>
+</head>
+<body>
+
+
+   """
+   return(css)
+
+  #background-color: #0c0c0c;
+
+def make_event_html(event_json_file):
+   css = make_css()
+   dynamodb = None
+   obs_file = event_json_file.replace("-event.json", "-obs.json")
+   event_data = load_json_file(event_json_file)
+   solve_dir = event_data['sol_dir']
+   xxx = solve_dir.split("/")[-1]
+ 
+
+   event_id = event_data['event_id']
+   event = get_event(dynamodb, event_id, 0)
+
+   event_file = solve_dir + "/" + event_id + "-event.json"
+   event_index_file = solve_dir + "/index.html" 
+   kml_file = solve_dir + "/" + event_id + "-map.kml"
+
+   sd = solve_dir.split("/")[-1]
+   if "." in sd:
+      temp = sd.split(".")
+      sdd = temp[0]
+   else:
+      sdd = sd 
+
+   report_file = solve_dir + "/" + sdd + "_report.txt"
+   if "/mnt/ams2" in kml_file:
+      kml_file = kml_file.replace("/mnt/ams2", "")
+   if "solution" not in event:
+      print("NO SOLUTION IN EVENT!", event)
+      xxx = input("xx")
+   print("EVENT SOL:", event['solution'])
+   if event['solution'] == 0:
+      print("solve failed.")
+      return(0)
+   orb_link = event['solution']['orb']['link']
+
+   print("EVENT ID IS:", event_id)
+   print("SOL DIR IS:", solve_dir)
+   #obs_data = load_json_file(obs_file)
+   obs_data = event['solution']['obs']
+   # make the obs part
+   sum_html = make_sum_html(event_id, event, solve_dir, obs_data)
+
+   obs_html = make_obs_html(event_id, event, solve_dir, obs_data)
+
+   center_lat, center_lon = center_obs(obs_data)
+
+   kml_file = kml_file.replace("/meteor_archive/", "https://archive.allsky.tv/")
+   
+   map_html = "<div style='clear: both'> &nbsp; </div>"
+   map_html += "<div>"
+   map_html += "<h2>Trajectory</h2>"
+   map_html += "<iframe src=\"https://archive.allsky.tv/APPS/dist/maps/index.html?mf=" + kml_file + "&lat=" + str(center_lat) + "&lon=" + str(center_lon) + "\" width=800 height=440></iframe><br><a href=" + kml_file + ">KML</a><br>"
+
+   map_html += "</div>"
+
+   if orb_link != "":
+      orb_html = "<h2>Orbit</h2>"
+      orb_html += "<iframe border=0 src=\"" + orb_link + "\" width=800 height=440></iframe><br><a href=" + orb_link + ">Orbit</a><br>"
+
+
+
+   plot_html = "<h2>Plots</h2>"
+   plot_html += "<div>\n"
+   sol_jpgs = glob.glob(solve_dir + "/*.jpg")
+   for img in sorted(sol_jpgs):
+      img = img.replace("/mnt/ams2/meteor_archive/", "http://archive.allsky.tv/")
+      if "ground" not in img and "orbit" not in img:
+         plot_html += "<div style='float:left; padding: 3px'><img width=600 height=480 src=" + img + "></div>\n"
+
+   plot_html += "</div>"
+
+   # final report
+   rpt = open(report_file) 
+   rpt_out = "<div style='clear:both'> &nbsp; </div><br>"
+   rpt_out += "<h2>WMPL Report</h2><div><pre>"
+   for line in rpt:
+      print("LINE:", line)
+      rpt_out += line
+   rpt_out += "</pre></div>"
+
+   fp = open(event_index_file, "w")
+   fp.write(css)
+   fp.write(sum_html)
+   fp.write(obs_html)
+   fp.write(map_html)
+   fp.write(orb_html)
+   fp.write(plot_html)
+   fp.write(rpt_out)
+   fp.close() 
+
+   # add the event summary
+
+   # add the map
+
+   # add the orbit
+
+   # add the graphs
+
+def make_sum_html(event_id, event, solve_dir, obs):
+   XXX = "xxx"
+   tj = event['solution']['traj']
+   ob = event['solution']['orb']
+   if "duration" in event:
+      duration = event['duration']
+   else:
+      duration = 0
+   shower_code = event['solution']['shower']['shower_code']
+   html = "<h2>Event Summary</h2>"
+   html += "<table border=0 padding=3><tr><td>"
+   html += "<table border=0 padding=5>"
+   html += "<tr><td>Event ID</td>"
+   html += "<td>" + str(event_id) + "</td></tr>"
+   html += "<tr><td>Start Time</td>"
+   html += "<td>" + str(event['start_datetime'][0]) + "</td></tr>"
+   html += "<tr><td>Duration</td>"
+   html += "<td>" + str(duration) + "</td></tr>"
+   html += "<tr><td>Start Height &nbsp; &nbsp; &nbsp; </td>"
+   html += "<td>" + str(tj['start_ele']/1000)[0:5] + " km</td></tr>"
+   html += "<tr><td>End Height</td>"
+   html += "<td>" + str(tj['end_ele']/1000)[0:5] + " km</td></tr>"
+   html += "<tr><td>Vel Init</td>"
+   html += "<td>" + str(tj['v_init']/1000)[0:5] + " km/s</td></tr>"
+   html += "<tr><td>Vel Avg</td>"
+   html += "<td>" + str(tj['v_avg']/1000)[0:5] + " km/s</td></tr>"
+   html += "<tr><td>Shower</td>"
+   html += "<td>" + str(shower_code) + "</td></tr>"
+   html += "</table>"
+
+   html += "</td><td> &nbsp; &nbsp; </td><td>"
+   html += "<table border=0>"
+   html += "<tr><td>Semi Major Axis (a)</td>"
+   html += "<td>" + str(ob['a'])[0:5] + "</td></tr>"
+   html += "<tr><td>Eccentricty (e)</td>"
+   html += "<td>" + str(ob['e'])[0:5] + "</td></tr>"
+   html += "<tr><td>Inclination (i)</td>"
+   html += "<td>" + str(ob['i'])[0:5] + "</td></tr>"
+   html += "<tr><td>Peri (peri)</td>"
+   html += "<td>" + str(ob['peri'])[0:5] + "</td></tr>"
+   html += "<tr><td>Lon of Asc Node (node) &nbsp; &nbsp; &nbsp; </td>"
+   html += "<td>" + str(ob['node'])[0:5] + "</td></tr>"
+   #html += "<tr><td>q</td>"
+   #html += "<td>" + str(ob['q'])[0:5] + "</td></tr>"
+   html += "<tr><td>Period (T)</td>"
+   html += "<td>" + str(ob['T'])[0:5] + "</td></tr>"
+   html += "<tr><td>Mean Anomaly (M)</td>"
+   html += "<td>" + str(ob['mean_anomaly'])[0:5] + "</td></tr>"
+   html += "<tr><td>Julian Date (JD)</td>"
+   html += "<td>" + str(ob['jd_ref']) + "</td></tr>"
+
+   html += "</table>"
+   html += "</td></tr>"
+   html += "</table>"
+
+   return(html)
+
+def make_obs_html(event_id, event, solve_dir, obs):
+   html = "<h2>Observations</h2>"
+   html += "<div>"
+
+   if True:
+
+      blocks = []
+      for i in range(0, len(event['stations'])):
+         temp = ""
+         file = event['files'][i]
+         (f_datetime, cam, f_date_str,fy,fmon,fd, fh, fm, fs) = convert_filename_to_date_cam(file)
+         station_id = event['stations'][i]
+         prev_file = file.replace(".mp4", "-prev.jpg")
+         year = file[0:4]
+         day = file[0:10]
+         #link = remote_urls[station_id] + "/meteors/" + station_id + "/" + day + "/" + file + "/"
+         start_az =  event['solution']['obs'][station_id][file]['azs'][0]
+         end_az =  event['solution']['obs'][station_id][file]['azs'][-1]
+         start_el =  event['solution']['obs'][station_id][file]['els'][0]
+         end_el =  event['solution']['obs'][station_id][file]['els'][-1]
+         dur =  len(event['solution']['obs'][station_id][file]['els']) / 25
+
+         start_time = event['start_datetime'][i]
+         caption =  station_id + "-" + cam + "<br>" + start_time
+         caption += "<br> " + str(start_az)[0:5] + " / " + str(start_el)[0:5]
+         caption += "<br> " + str(end_az)[0:5] + " / " + str(end_el)[0:5]
+         caption += "<br> " + str(dur)[0:5] + " sec" 
+         temp += "   <div class='container'>\n "
+         temp += "      <img class='image' src=https://archive.allsky.tv/" + station_id + "/METEORS/" + year + "/" + day + "/" + station_id + "_" + prev_file + ">\n"
+         temp+="<div class='middle'><div class='text'>" + caption + "</div></div>"
+
+         temp += "   </div>\n"
+
+         blocks.append((caption, temp))
+
+      last_id = None
+      for id, block in sorted(blocks, key=lambda x: (x[0]), reverse=False):
+         html += block
+         #if last_id is not None and last_id != id:
+         #   html += "<div style='clear:both'></div><br>"
+         last_id = id
+      #html += "   <div class='spacer'> &nbsp; </div>\n"
+
+      #html += "</div>\n"
+   html += "</div>"
+
+
+
+   return(html)
 
 
 def convert_dy_obs(dy_obs_data, obs):
-   print("DYO:", dy_obs_data)
+   #print("DYO:", dy_obs_data)
    station = dy_obs_data['station_id']
    fn = dy_obs_data['sd_video_file']
    if station not in obs:
@@ -192,7 +477,7 @@ def make_orbit_link(event_id, orb):
    link = "http://orbit.allskycams.com/index_emb.php?name={:s}&epoch={:f}&a={:f}&M={:f}&e={:f}&I={:f}&Peri={:f}&Node={:f}&P={:f}&q={:f}&T={:f}#".format(event_id, orb['jd_ref'], orb['a'], orb['mean_anomaly'], orb['e'], orb['i'], orb['peri'], orb['node'], orb['T'], orb['q'], orb['jd_ref'])
    return(link)
 
-def make_event_json(solve_dir):
+def make_event_json(event_id, solve_dir):
 
    import pickle
    jpgs = glob.glob(solve_dir + "/*.jpg")
@@ -230,9 +515,11 @@ def make_event_json(solve_dir):
             station_data[station_id] = obs_data['loc']
             points.append((lon,lat,alt,station_id))
 
+   durs = []
    for ss in simple_solve:
       print(ss)
       sol_key, start_lat, start_lon, start_ele, end_lat, end_lon, end_ele, dist, dur, vel = ss 
+      durs.append(dur)
       (skey1,skey2) = sol_key.split("_")
       station1,cam1 = skey1.split("-")
       station2,cam2 = skey2.split("-")
@@ -247,11 +534,19 @@ def make_event_json(solve_dir):
       
       lines.append((start_lon,start_lat,start_ele,end_lon,end_lat,end_ele,line_desc))
 
+   if len(durs) > 0:
+      duration = max(durs) / 25
+   else:
+      duration = 0
    print("POINTS:", points)
    print("LINES:", lines)
 
    solution = {}
+   solution['event_id'] = event_id
+   solution['duration'] = duration
    solution['sol_dir'] = solve_dir 
+   solution['obs'] = as_obs
+   solution['simple_solve'] = simple_solve
    solution['traj'] = {}
    solution['orb'] = {}
    solution['rad'] = {}
@@ -429,7 +724,7 @@ def make_event_json(solve_dir):
    for obs in traj.observations:
       print(obs.station_id, obs.time_data)
 
-
+   solution['event_id'] = event_id
    save_json_file(event_file, solution)
    print("SAVED EVENT FILE:", event_file)
    return(solution)
@@ -546,7 +841,7 @@ def event_report(solve_dir, obs):
         day = file[0:10]
         link = remote_urls[station_id] + "/meteors/" + station_id + "/" + day + "/" + file + "/"
         html += "<h1>" + station_id + " " + file + "</h1>"
-        html += "<a href=" + link + ">"
+        #html += "<a href=" + link + ">"
         html += "<img src=https://archive.allsky.tv/" + station_id + "/METEORS/" + year + "/" + day + "/" + station_id + "_" + prev_file + "></a>"
         html += "<hr>"
 
@@ -569,13 +864,14 @@ def event_report(solve_dir, obs):
              print(jpg_f, " already made.")
 
     for jpg in jpgs:
-       jpg = jpg.replace("/mnt/ams2", "")
+       jpg = jpg.replace("/mnt/ams2/meteor_archive/", "")
        html += "<img src=" + jpg + ">"
     html += "<p>"
     html += "<pre>" + report + "</pre>"
     fp = open(solve_dir + "/index.html", "w")
     fp.write(html)
     print("SAVED INDEX:", solve_dir + "/index.html")
+
 
 
 
@@ -626,11 +922,11 @@ def WMPL_solve(obs):
         if True:
             lat,lon,alt = obs[station_id][file]['loc']
             lat,lon,alt = float(lat), float(lon), float(alt)
-            print(station_id, "LAT/LON", lat, lon, alt)
             azs = np.radians(obs[station_id][file]['azs'])
             els = np.radians(obs[station_id][file]['els'])
             times = obs[station_id][file]['times']
             print("STATION:", station_id)
+            print("FILE:", file)
             print("TIMES:", times)
             print("LAT:", lat)
             print("LON:", lon)
@@ -645,6 +941,8 @@ def WMPL_solve(obs):
         
             # Set input points for the first site
             traj_solve.infillTrajectory(azs, els, times, np.radians(float(lat)), np.radians(float(lon)), alt, station_id=station_id)
+            print("-----")
+
 
     traj_solve.run()
 
@@ -670,8 +968,25 @@ def WMPL_solve(obs):
           print(sf)
        event_report(solve_dir, obs)
 
+
+def center_obs(obs_data):
+   lats = []
+   lons = []
+   for st in obs_data:
+      for fn in obs_data[st]:
+         lat,lon,alt = obs_data[st][fn]['loc']
+      lats.append(float(lat))
+      lons.append(float(lon))
+   return(np.mean(lats),np.mean(lons))
+
+
 cmd = sys.argv[1]
 meteor_file = sys.argv[2]
+
+#event_json_file = "/mnt/ams2/meteor_archive/AMS1/EVENTS/2021_01_03/20210103_074325.960/20210103_074323-event.json"
+#make_event_html(event_json_file)
+#exit()
+
 
 if cmd == "solve":
    mj = load_json_file(meteor_file)
