@@ -609,9 +609,10 @@ if __name__ == "__main__":
       do_dyna_day(dynamodb, sys.argv[2])
    if cmd == "dddm":
       wild = sys.argv[2]
-      files = glob.glob("/mnt/ams2/meteors/" + wild)
+      files = glob.glob("/mnt/ams2/meteors/" + wild + "*")
       for file in sorted(files):
          day = file.split("/")[-1]
+         print(file, day)
          do_dyna_day(dynamodb, day)
    if cmd == "umje":
       update_mj_events(dynamodb, sys.argv[2])
