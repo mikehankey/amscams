@@ -95,8 +95,7 @@ def run_jobs(json_conf):
          os.system("./DynaDB.py load_day " + today + "")
          os.system("./Process.py ded " + yest + "")
          os.system("./Process.py ded " + today + "")
-   print("ENDDY")
-   exit()
+
    if "WMPL" in json_conf:
       print("WMPL EXIST.")
       run_solve = 0
