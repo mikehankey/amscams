@@ -1,5 +1,5 @@
 # ROOT CRONS MUST BE INSTALLED AS ROOT
-10 * * * * cd /home/ams/amscams/pythonv2 ; ./vpn.py > /tmp/vpn.txt
+* * * * * cd /home/ams/amscams/pythonv2 ; ./vpn.py > /tmp/vpn.txt
 52 * * * * cd /home/ams/amscams/pythonv2 ; ./time.sh >> /tmp/time.txt
 @reboot cd /home/ams/amscams/pipeline/; ./run-uwsgi.sh
 
