@@ -460,6 +460,8 @@ def sync_db_day(dynamodb, station_id, day):
 def update_event_sol(dynamodb, event_id, sol_data, obs_data):
    sol_data = json.loads(json.dumps(sol_data), parse_float=Decimal)
    #obs_data_save = json.loads(json.dumps(obs_data), parse_float=Decimal)
+   if dynamodb is None:
+      dynamodb = boto3.resource('dynamodb')
 
    table = dynamodb.Table("x_meteor_event")
    event_day = event_id[0:8]

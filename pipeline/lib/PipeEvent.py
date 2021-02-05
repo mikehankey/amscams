@@ -125,9 +125,10 @@ def dyna_events_for_day(day, json_conf):
    if my_station not in stations:
       stations.append(my_station)
 
-   events = search_events(dynamodb, day, stations)
-   for event in events:
-      print("DY EV:", event)
+   dy_events = search_events(dynamodb, day, stations)
+   dy_keys = {}
+   for event in dy_events:
+      dy_keys[event['event_id']] = 1
 
    # get obs and data from the dynadb for today from stations in my network 
    # loop over all obs from all stations 
@@ -136,15 +137,13 @@ def dyna_events_for_day(day, json_conf):
    #  
    if cfe("/mnt/ams2/EVENTS/" + day, 1) == 0:
       os.makedirs("/mnt/ams2/EVENTS/" + day ) 
-   if cfe("/mnt/ams2/EVENTS/" + day + "_obs.json") == 1:
-      all_data = load_json_file("/mnt/ams2/EVENTS/" + day + "_obs.json")
-   else:
-      all_data = {}
-      for station in sorted(stations):
-         print("getting dyna data for:", station)
-         all_data[station] = search_obs(dynamodb, station, day)
-      save_json_file("/mnt/ams2/EVENTS/" + day + "_obs.json", all_data)
-      print("/mnt/ams2/EVENTS/" + day + "_obs.json", all_data)
+
+   all_data = {}
+   for station in sorted(stations):
+      print("getting dyna data for:", station)
+      all_data[station] = search_obs(dynamodb, station, day)
+   save_json_file("/mnt/ams2/EVENTS/" + day + "_obs.json", all_data)
+   print("/mnt/ams2/EVENTS/" + day + "_obs.json", all_data)
 
 
    meteors = []
@@ -158,15 +157,14 @@ def dyna_events_for_day(day, json_conf):
             start_time_dt_str = start_time_dt.strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]
             item['event_start_time'] = start_time_dt_str
 
-         #print(item['station_id'], item['sd_video_file'], item['event_start_time'])
-
          meteor = [item['station_id'],item['sd_video_file'], item['event_start_time']]
          meteors.append((item['station_id'],item['sd_video_file'], item['event_start_time']))
    meteors = sorted(meteors, key=lambda x: (x[2]), reverse=False)
    events = {}
    for meteor in meteors:
       id, events = check_make_event(meteor, events)
-      print(meteor)
+      #print(meteor)
+
    for eid in events:
       total_stations = len(set(events[eid]['stations']))
       events[eid]['total_stations'] = total_stations
@@ -185,7 +183,12 @@ def dyna_events_for_day(day, json_conf):
          events[eid]['event_day'] = day
          events[eid]['event_id'] = wmpl_id
          print("MIN TIME:", wmpl_id, day, events[eid])
-         insert_meteor_event(dynamodb, wmpl_id, events[eid])
+         print("EID:", wmpl_id)
+         if wmpl_id not in dy_keys:
+            print("INSERT NEW METEOR EVENT!", wmpl_id)
+            insert_meteor_event(dynamodb, wmpl_id, events[eid])
+         else:
+            print("EVENT ID ALREADY EXISTS IN THE DYNA DATA!")
       #else:
       #   print("SINGLE STATION:", eid, events[eid])
 

@@ -66,11 +66,13 @@ def solve_day(day):
       stations.append(my_station)
 
    events = search_events(dynamodb, day, stations)
+   print("EV:", events)
    for event in events:
       print("DY EV:", event['event_id'])
       solve_event(event['event_id'])
 
-def solve_event(event_id):
+def solve_event(event_id, force=0):
+    print("EVID:", event_id)
     json_conf = load_json_file("../conf/as6.json")
     ams_id = json_conf['site']['ams_id']
     solve_dir = "/mnt/ams2/meteor_archive/" + ams_id + "/EVENTS/"
@@ -78,7 +80,12 @@ def solve_event(event_id):
 
     dynamodb = boto3.resource('dynamodb')
     event = get_event(dynamodb, event_id, 0)
+    print("EVID:", event_id)
     print(event)
+    if "solution" in event and force != 1:
+       if event['solution'] != 0:
+          print("EVENT IS ALREADY SOLVED!")    
+          return()
 
 
     obs = {}
@@ -111,7 +118,6 @@ def solve_event(event_id):
 
     if len(start_times) == 0:
        print("PROB: NO DATA?", event_id)
-       xx = input("?")
        return()
 
     event_start = sorted(start_times)[0]
@@ -127,6 +133,14 @@ def solve_event(event_id):
     print("SOLVE DIR:", solve_dir)
     if cfe(solve_dir, 1) == 0:
        os.makedirs(solve_dir)
+
+    if cfe(solve_dir, 1) == 1:
+       print("SOLVE DIR EXISTS FROM PAST RUN DELETE CONTENTS.")
+       files = glob.glob(solve_dir + "/*")
+       for file in files:
+          print("DEL:", file)
+       #xxx = input("DELETE PAST FILES?")
+       os.system("rm " + solve_dir + "/*")
 
     print("SOLVE WITH THESE OBS:")
     for key in obs_data:
@@ -146,10 +160,17 @@ def solve_event(event_id):
        simple_status = 1
        wmpl_status = 0
 
-    solution = make_event_json(event_id, solve_dir)
-    if solution == 0:
+    resp = make_event_json(event_id, solve_dir)
+    
+    if resp == 0:
        print("FAILED TO SOLVE!")
        return(0)
+    solution,as_obs = resp
+
+    print("EVID:", event_id)
+    print("UPDATE EVENT SOL:")
+    update_event_sol(None, event_id, solution, as_obs)
+
     event_file = solve_dir + "/" + event_id + "-event.json"
 
     make_event_html(event_file)
@@ -164,12 +185,9 @@ def solve_event(event_id):
     cmd = "cp " + solve_dir + "/* " + cloud_dir
     print(cmd)
     os.system(cmd)
-    #xxx = input("cloud files should have copied here.")
 
 
 
-    print("UPDATE EVENT SOL:")
-    update_event_sol(None, event_id, solution, obs)
     #update_event(dynamodb, event_id, simple_status, wmpl_status, solve_dir)
 
 def make_css():
@@ -257,7 +275,6 @@ def make_event_html(event_json_file):
       kml_file = kml_file.replace("/mnt/ams2", "")
    if "solution" not in event:
       print("NO SOLUTION IN EVENT!", event)
-      xxx = input("xx")
    print("EVENT SOL:", event['solution'])
    if event['solution'] == 0:
       print("solve failed.")
@@ -284,9 +301,11 @@ def make_event_html(event_json_file):
 
    map_html += "</div>"
 
-   if orb_link != "":
+   if orb_link != "" and orb_link != "#":
       orb_html = "<h2>Orbit</h2>"
       orb_html += "<iframe border=0 src=\"" + orb_link + "\" width=800 height=440></iframe><br><a href=" + orb_link + ">Orbit</a><br>"
+   else:
+      orb_html = ""
 
 
 
@@ -294,6 +313,7 @@ def make_event_html(event_json_file):
    plot_html += "<div>\n"
    sol_jpgs = glob.glob(solve_dir + "/*.jpg")
    for img in sorted(sol_jpgs):
+      print("PLOT IMAGE:", img)
       img = img.replace("/mnt/ams2/meteor_archive/", "http://archive.allsky.tv/")
       if "ground" not in img and "orbit" not in img:
          plot_html += "<div style='float:left; padding: 3px'><img width=600 height=480 src=" + img + "></div>\n"
@@ -301,13 +321,16 @@ def make_event_html(event_json_file):
    plot_html += "</div>"
 
    # final report
-   rpt = open(report_file) 
-   rpt_out = "<div style='clear:both'> &nbsp; </div><br>"
-   rpt_out += "<h2>WMPL Report</h2><div><pre>"
-   for line in rpt:
-      print("LINE:", line)
-      rpt_out += line
-   rpt_out += "</pre></div>"
+   if cfe(report_file) == 1:
+      rpt = open(report_file) 
+      rpt_out = "<div style='clear:both'> &nbsp; </div><br>"
+      rpt_out += "<h2>WMPL Report</h2><div><pre>"
+      for line in rpt:
+         print("LINE:", line)
+         rpt_out += line
+      rpt_out += "</pre></div>"
+   else:
+      rpt_out = ""
 
    fp = open(event_index_file, "w")
    fp.write(css)
@@ -319,22 +342,15 @@ def make_event_html(event_json_file):
    fp.write(rpt_out)
    fp.close() 
 
-   # add the event summary
-
-   # add the map
-
-   # add the orbit
-
-   # add the graphs
 
 def make_sum_html(event_id, event, solve_dir, obs):
    XXX = "xxx"
    tj = event['solution']['traj']
    ob = event['solution']['orb']
    if "duration" in event:
-      duration = event['duration']
+      duration = float(event['duration'])
    else:
-      duration = 0
+      duration = float(0)
    shower_code = event['solution']['shower']['shower_code']
    html = "<h2>Event Summary</h2>"
    html += "<table border=0 padding=3><tr><td>"
@@ -430,8 +446,6 @@ def make_obs_html(event_id, event, solve_dir, obs):
       #html += "</div>\n"
    html += "</div>"
 
-
-
    return(html)
 
 
@@ -456,7 +470,7 @@ def convert_dy_obs(dy_obs_data, obs):
    obs[station][fn]['ras'] = []
    obs[station][fn]['decs'] = []
    obs[station][fn]['ints'] = []
-   obs[station][fn]['revision'] = dy_obs_data['revision']
+   obs[station][fn]['revision'] = int(dy_obs_data['revision'])
 
    for row in dy_obs_data['meteor_frame_data']:
       (dt, frn, x, y, w, h, oint, ra, dec, az, el) = row
@@ -471,10 +485,16 @@ def convert_dy_obs(dy_obs_data, obs):
       obs[station][fn]['ints'].append(int(oint))
       
 
+   print("OBS:", obs)
    return(obs)
 
 def make_orbit_link(event_id, orb):
-   link = "http://orbit.allskycams.com/index_emb.php?name={:s}&epoch={:f}&a={:f}&M={:f}&e={:f}&I={:f}&Peri={:f}&Node={:f}&P={:f}&q={:f}&T={:f}#".format(event_id, orb['jd_ref'], orb['a'], orb['mean_anomaly'], orb['e'], orb['i'], orb['peri'], orb['node'], orb['T'], orb['q'], orb['jd_ref'])
+   if orb['mean_anomaly'] is None:
+      return("#")
+   try:
+      link = "http://orbit.allskycams.com/index_emb.php?name={:s}&epoch={:f}&a={:f}&M={:f}&e={:f}&I={:f}&Peri={:f}&Node={:f}&P={:f}&q={:f}&T={:f}#".format(event_id, orb['jd_ref'], orb['a'], orb['mean_anomaly'], orb['e'], orb['i'], orb['peri'], orb['node'], orb['T'], orb['q'], orb['jd_ref'])
+   except:
+      link = "#"
    return(link)
 
 def make_event_json(event_id, solve_dir):
@@ -494,6 +514,8 @@ def make_event_json(event_id, solve_dir):
    print("SOL DIR:", solve_dir)
    print("SOL:", sol_file)
    simple_solve = load_json_file(sol_file)
+
+
    as_obs = load_json_file(obs_file)
 
    event_file = sol_file.replace("-simple.json", "-event.json")
@@ -535,17 +557,17 @@ def make_event_json(event_id, solve_dir):
       lines.append((start_lon,start_lat,start_ele,end_lon,end_lat,end_ele,line_desc))
 
    if len(durs) > 0:
-      duration = max(durs) / 25
+      duration = float(max(durs) / 25)
    else:
-      duration = 0
+      duration = float(0)
    print("POINTS:", points)
    print("LINES:", lines)
 
    solution = {}
    solution['event_id'] = event_id
-   solution['duration'] = duration
+   solution['duration'] = float(duration)
    solution['sol_dir'] = solve_dir 
-   solution['obs'] = as_obs
+#   solution['obs'] = as_obs
    solution['simple_solve'] = simple_solve
    solution['traj'] = {}
    solution['orb'] = {}
@@ -636,15 +658,19 @@ def make_event_json(event_id, solve_dir):
 
 
    make_kml(kml_file, points, lines)
+   #print("SHOWER:" , traj.orbit.la_sun, traj.orbit.L_g, traj.orbit.B_g, traj.orbit.v_g)
+   if traj.orbit.la_sun is not None:
+      shower_obj = associateShower(traj.orbit.la_sun, traj.orbit.L_g, traj.orbit.B_g, traj.orbit.v_g)
 
-   shower_obj = associateShower(traj.orbit.la_sun, traj.orbit.L_g, traj.orbit.B_g, traj.orbit.v_g)
-
-   if shower_obj is None:
-      shower_no = -1
-      shower_code = '...'
+      if shower_obj is None:
+         shower_no = -1
+         shower_code = '...'
+      else:
+         shower_no = shower_obj.IAU_no
+         shower_code = shower_obj.IAU_code
    else:
-      shower_no = shower_obj.IAU_no
-      shower_code = shower_obj.IAU_code
+         shower_no = -1
+         shower_code = '...'
 
 
 
@@ -652,7 +678,7 @@ def make_event_json(event_id, solve_dir):
    solution['kml']['lines'] = lines
 
    solution['shower'] = {}
-   solution['shower']['shower_no'] = shower_no
+   solution['shower']['shower_no'] = float(shower_no)
    solution['shower']['shower_code'] = shower_code
 
 
@@ -660,19 +686,38 @@ def make_event_json(event_id, solve_dir):
    solution['traj']['v_avg'] = float(traj.v_avg)
 
    solution['orb']['jd_ref'] = traj.orbit.jd_ref
-   solution['orb']['la_sun'] = np.degrees(traj.orbit.la_sun)
+   if traj.orbit.la_sun is not None:
+      solution['orb']['la_sun'] = np.degrees(traj.orbit.la_sun)
+      solution['orb']['i'] = float(np.degrees(traj.orbit.i))
+      solution['orb']['peri'] = float(np.degrees(traj.orbit.peri))
+      solution['orb']['node'] = float(np.degrees(traj.orbit.node))
+      solution['orb']['pi'] = float(np.degrees(traj.orbit.pi))
+      solution['orb']['true_anomaly'] = float(np.degrees(traj.orbit.true_anomaly))
+   else:
+      solution['orb']['la_sun'] = 0
+      solution['orb']['i'] = 0
+      solution['orb']['peri'] = 0
+      solution['orb']['node'] = 0
+      solution['orb']['pi'] = 0
+      solution['orb']['true_anomaly'] = 0
    solution['orb']['a'] = traj.orbit.a
    solution['orb']['e'] = traj.orbit.e
-   solution['orb']['i'] = float(np.degrees(traj.orbit.i))
-   solution['orb']['peri'] = float(np.degrees(traj.orbit.peri))
-   solution['orb']['node'] = float(np.degrees(traj.orbit.node))
-   solution['orb']['pi'] = float(np.degrees(traj.orbit.pi))
    solution['orb']['q'] = traj.orbit.q
    solution['orb']['Q'] = traj.orbit.Q
-   solution['orb']['true_anomaly'] = float(np.degrees(traj.orbit.true_anomaly))
-   solution['orb']['eccentric_anomaly'] = float(np.degrees(traj.orbit.eccentric_anomaly))
-   solution['orb']['mean_anomaly'] = float(np.degrees(traj.orbit.mean_anomaly))
-   solution['orb']['T'] = traj.orbit.T
+   if solution['orb']['true_anomaly'] != 0:
+      solution['orb']['eccentric_anomaly'] = 0
+      solution['orb']['mean_anomaly'] = 0
+      solution['orb']['T'] = 0 
+   else:
+      if traj.orbit.eccentric_anomaly is not None:
+         solution['orb']['eccentric_anomaly'] = float(np.degrees(traj.orbit.eccentric_anomaly))
+
+         solution['orb']['mean_anomaly'] = float(np.degrees(traj.orbit.mean_anomaly))
+      else:
+         solution['orb']['eccentric_anomaly'] = 0
+         solution['orb']['mean_anomaly'] = 0
+
+      solution['orb']['T'] = traj.orbit.T
    solution['orb']['Tj'] = traj.orbit.Tj
 
    solution['rad']['apparent_ECI'] = {}
@@ -725,9 +770,10 @@ def make_event_json(event_id, solve_dir):
       print(obs.station_id, obs.time_data)
 
    solution['event_id'] = event_id
+   solution['obs'] = as_obs
    save_json_file(event_file, solution)
    print("SAVED EVENT FILE:", event_file)
-   return(solution)
+   return(solution,as_obs)
 
 def make_kml(kml_file, points, lines):
    import simplekml
@@ -904,6 +950,7 @@ def WMPL_solve(obs):
     e_dir = e_dir.replace(" ", "_")
     solve_dir += day + "/" + e_dir 
 
+
     event_start_dt = datetime.datetime.strptime(event_start, "%Y-%m-%d %H:%M:%S.%f")
     jd_ref = trajconv.datetime2JD(event_start_dt)
     #print(event_start_dt, jd_ref)
@@ -1000,5 +1047,7 @@ if cmd == "sd":
    solve_day(meteor_file)
 if cmd == "mej":
    make_event_json(meteor_file)
+if cmd == "meh":
+   make_event_html(meteor_file)
 if cmd == "sm":
    solve_month(meteor_file)

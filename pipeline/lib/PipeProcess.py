@@ -93,8 +93,6 @@ def run_jobs(json_conf):
       if run_load == 1:
          os.system("./DynaDB.py load_day " + yest + "")
          os.system("./DynaDB.py load_day " + today + "")
-         os.system("./Process.py ded " + yest + "")
-         os.system("./Process.py ded " + today + "")
 
    if "WMPL" in json_conf:
       print("WMPL EXIST.")
@@ -111,7 +109,7 @@ def run_jobs(json_conf):
             os.system("touch /home/ams/solved_last.txt")
 
             os.system("./DynaDB.py load_day " + today + "")
-            os.system("./Process.py ded " + today + "")
+            #os.system("./Process.py ded " + today + "")
             os.system("./solveWMPL.py sd " + today + "")
             os.system("touch /home/ams/solved_last.txt")
 

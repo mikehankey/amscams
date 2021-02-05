@@ -30,8 +30,33 @@ auth = HTTPBasicAuth()
 
 # Main controller for AllSkyCams UI application.
 
-#json_conf = load_json_file("../conf/as6.json")
-#   user_id = json_conf['site_
+json_conf = load_json_file("../conf/as6.json")
+if "dynamodb" in json_conf:
+   dynDB = 1
+   from flask_dynamo import Dynamo
+   app.config['DYNAMO_TABLES'] = [
+   {
+      'TableName': 'station',
+      'KeySchema': [dict(AttributeName='station_id', KeyType='HASH')],
+      'AttributeDefinitions' : [dict(AttributeName='station_id', AttributeType='S')],
+      'BillingMode': 'PAY_PER_REQUEST'
+   },
+   {
+      'TableName': 'meteor_obs',
+      'KeySchema': [dict(AttributeName='station_id', KeyType='HASH'),dict(AttributeName='sd_video_file', KeyType='RANGE')],
+      'AttributeDefinitions': [dict(AttributeName='station_id', AttributeType='S'), dict(AttributeName='sd_video_file', AttributeType='S')],
+      'BillingMode': 'PAY_PER_REQUEST'
+   },
+   {
+      'TableName': 'x_meteor_event',
+      'KeySchema': [dict(AttributeName='event_day', KeyType='HASH'),dict(AttributeName='event_id', KeyType='RANGE')],
+      'AttributeDefinitions' : [dict(AttributeName='event_day', AttributeType='S'), dict(AttributeName='event_id', AttributeType='S')],
+      'BillingMode': 'PAY_PER_REQUEST'
+   }
+   ]
+   dynamo = Dynamo(app)
+
+
 
 @auth.verify_password
 def verify_password(username,password):
@@ -75,7 +100,7 @@ def event_detail_control(event_id):
 def events_control(date):
    from FlaskLib.Events import list_events_for_day
 
-   resp = list_events_for_day(date)
+   resp = list_events_for_day(dynamo, date)
    return(resp)
 
 
