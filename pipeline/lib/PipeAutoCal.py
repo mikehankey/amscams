@@ -32,13 +32,14 @@ from PIL import ImageFont, ImageDraw, Image, ImageChops
 tries = 0
 
 def cal_manager(json_conf):
-
+   amsid = json_conf['site']['ams_id']
    menu = """
    Calibration Manager
       1) Cal Wizard 
       2) Update cal index
       3) Re-Solve Cal Failures
       4) Gen Cal History
+      5) Make Default Cal
 
    """
 
@@ -55,6 +56,19 @@ def cal_manager(json_conf):
       resolve_failed(cam_num, limit, star_lim, json_conf) 
    if cmd == "4":
       gen_cal_hist(json_conf) 
+
+   default_hist = {}
+   rdf = []
+   if cmd == "5":
+      for cam in json_conf['cameras']:
+         cams_id = json_conf['cameras'][cam]['cams_id']
+         default_hist[cams_id] = make_default_cal(json_conf, cams_id)
+
+      for cams_id in default_hist:
+         for row in default_hist[cams_id]['range_data']:
+            rdf.append(row)
+   save_json_file("/mnt/ams2/cal/" + amsid + "_cal_range.json", rdf)
+   print("SAVED: /mnt/ams2/cal/" + amsid + "_cal_range.json", rdf)
 
 
 
@@ -129,6 +143,153 @@ def gen_cal_hist(json_conf):
       print(hist)
    save_json_file("/mnt/ams2/cal/cal_day_hist.json", day_hist)
    print("/mnt/ams2/cal/cal_day_hist.json")
+
+def make_default_cal(json_conf, cam ):
+   cdh = load_json_file("/mnt/ams2/cal/cal_day_hist.json")
+   rezs = []
+   calibs = []
+   for row in cdh:
+      cam_id, day, az, el, pos, pxs, res = row
+      if cam_id == cam:
+         print(cam_id, day, az, el, pos, pxs, res)
+         rezs.append(res)
+         calibs.append(row)
+   mr = np.median(rezs)
+   best_rows = []
+   worst_rows = []
+   cdh = sorted(cdh, key=lambda x: x[1], reverse=False)
+   cam_moved = []
+   last_row = None
+   last_best = None
+   first_cal_row = None
+   last_cal_row = None
+   for row in calibs:
+      cam_id, day, az, el, pos, pxs, res = row
+      if last_row is None:
+         first_cal_row = row
+         cam_moved.append(row)
+      if last_row is not None:
+         lcam_id, lday, laz, lel, lpos, lpxs, lres = last_row
+         cal_diff = calc_cal_diff(row, last_row)
+         print("DIFF FROM LAST:", cal_diff)
+         if cal_diff > 1:
+            cam_moved.append(row)
+      if cam_id == cam:
+         if res <= mr:
+            best_rows.append(row)
+         else:
+            worst_rows.append(row)
+      last_row = row
+      last_best = row
+   last_cal_row = row
+   cam_moved.append(row)
+   best_rows = sorted(best_rows, key=lambda x: x[1], reverse=True)
+   worst_rows = sorted(best_rows, key=lambda x: x[1], reverse=True)
+   cam_moved = sorted(cam_moved, key=lambda x: x[1], reverse=True)
+   ranges = []
+   for i in range(0, len(cam_moved)):
+      print("CAM MOVED: ", cam_moved[i])
+      if i + 1 < len(cam_moved) :
+         ranges.append((cam_moved[i][1], cam_moved[i+1][1]))
+      else:
+         ranges.append((cam_moved[i][1], "START"))
+   range_data = []
+   for rng in ranges:
+      #new_cal_ts = start_time_dt.strftime('%Y_%m_%d_%H_%M_%S')
+      if rng[1] == "START":
+         continue 
+      s_dt = datetime.strptime(rng[0], "%Y_%m_%d")
+      e_dt = datetime.strptime(rng[1], "%Y_%m_%d")
+      med_list = []
+      for row in calibs:
+         r_dt = datetime.strptime(row[1], "%Y_%m_%d")
+         if e_dt < r_dt < s_dt:
+            print("     CALIB IN RANGE ADD TO MED LIST.", r_dt, s_dt, e_dt)
+      med_az, med_el, med_pos, med_px, med_res = calc_med_range(cam, s_dt, e_dt)
+      print("RANGE:", cam, rng[0], rng[1], med_az, med_el, med_pos, med_px, med_res)
+      range_data.append((cam, rng[0], rng[1], med_az, med_el, med_pos, med_px, med_res))
+   cam_hist = {}
+   cam_hist['calibs'] = calibs
+   cam_hist['cam_moved'] = cam_moved
+   cam_hist['range_data'] = range_data 
+   return(cam_hist)
+
+def get_calib_from_range(cam, t_day,json_conf):
+   print("CAM/DAY:", cam, t_day)
+   t_dt = datetime.strptime(t_day, "%Y_%m_%d")
+   rdata = load_json_file("/mnt/ams2/cal/" + json_conf['site']['ams_id'] + "_cal_range.json")
+
+   tcam, s_day, e_day, med_az, med_el, med_pos, med_px, med_res = rdata[0]
+   s_dt = datetime.strptime(s_day, "%Y_%m_%d")
+
+   if t_dt > s_dt:
+      return(rdata[0])
+
+   tcam, s_day, e_day, med_az, med_el, med_pos, med_px, med_res = rdata[-1]
+   e_dt = datetime.strptime(e_day, "%Y_%m_%d")
+
+   if t_dt < e_dt:
+      return(rdata[-1])
+
+
+   for row in rdata:
+      print("ROW:", row)
+      tcam, s_day, e_day, med_az, med_el, med_pos, med_px, med_res = row
+      s_dt = datetime.strptime(s_day, "%Y_%m_%d")
+      e_dt = datetime.strptime(e_day, "%Y_%m_%d")
+      if tcam == cam:
+         if e_dt < t_dt < s_dt:
+            print("THIS IS THE WAY:", row) 
+            return(row)
+   return(None)
+       
+
+
+def calc_med_range(cam, s_dt, e_dt): 
+
+      #all_files[cams_id]['cal_files'] = []
+      #all_files[cams_id]['dates'] = []
+      #all_files[cams_id]['azs'] = []
+      #all_files[cams_id]['els'] = []
+      #all_files[cams_id]['pos'] = []
+      #ji#all_files[cams_id]['pxs'] = []
+      #all_files[cams_id]['res'] = []
+
+   all_data = load_json_file("/mnt/ams2/cal/cal_history.json")
+   cal_files = all_data[cam] 
+
+   azs = []
+   els = []
+   poss = []
+   pxs = []
+   res = []
+   for i in range(0, len(cal_files['cal_files'])):
+      c_dt = datetime.strptime(cal_files['dates'][i], "%Y-%m-%d %H:%M:%S")
+      if e_dt < c_dt < s_dt:
+         azs.append(float(cal_files['azs'][i]))
+         els.append(float(cal_files['els'][i]))
+         poss.append(float(cal_files['pos'][i]))
+         pxs.append(float(cal_files['pxs'][i]))
+         res.append(float(cal_files['res'][i]))
+
+   med_az = float(np.median(azs))
+   med_el = float(np.median(els))
+   med_pos = float(np.median(poss))
+   med_px = float(np.median(pxs))
+   med_res = float(np.median(res))
+   return(med_az, med_el, med_pos, med_px, med_res)
+ 
+def calc_cal_diff(row, last_row):
+   cam_id, day, az, el, pos, pxs, res = row
+   lcam_id, lday, laz, lel, lpos, lpxs, lres = last_row
+   
+
+   azd = abs(az - laz)
+   eld = abs(el - lel)
+   posd = abs(pos - lpos)
+   cal_diff = (azd + eld + posd) / 3
+   print("CAL DIF:", azd, eld, posd, cal_diff)
+   return(cal_diff)
 
 def get_default_calib_hist(day, cams_id, json_conf):
    day_dt = datetime.strptime(day, "%Y_%m_%d")
@@ -421,6 +582,8 @@ def refit_meteor(meteor_file, json_conf,force=0):
 
    (f_datetime, this_cam, f_date_str,y,m,d, h, mm, s) = convert_filename_to_date_cam(meteor_file)
    video_file = meteor_file.replace(".json", ".mp4")
+   day = y + "_" + m + "_" + d
+   cam = this_cam
 
    if "/mnt/ams2/meteors" not in meteor_file:
       day = meteor_file[0:10]
@@ -459,16 +622,54 @@ def refit_meteor(meteor_file, json_conf,force=0):
       print("NO MCP!", mcp_file)
       os.system("cp /mnt/ams2/meteor_archive/" + STATION_ID + "/CAL/AUTOCAL/2020/solved/*.info /mnt/ams2/cal/" )
       exit()
-   if already_fit == 1:
-      print("Already fit.")
-      #return()
-  
+
    if cfe(mj['hd_stack']) == 1:
       image = cv2.imread(mj['hd_stack'])
       hd_stack = mj['hd_stack']
    else:
       print("NO HD STACK!", mj['hd_stack'])
       exit()
+
+   result = get_calib_from_range(cam, day,json_conf)
+   if result != None:
+      print(result)
+      cam, sd, ed, med_az, med_el, med_pos, med_px, med_res = result
+      def_cal = [med_az, med_el, med_pos, med_px, med_res]
+   else:
+      print("Failed to get default med cal")   
+      def_cal = []
+   print("DEFAULT CALIB:", def_cal)
+   # test if the default cal is better than the current cal. 
+
+   acp = dict(cp)
+   test_data1 = [meteor_file, acp['center_az'], acp['center_el'], acp['position_angle'], acp['pixscale'], len(acp['user_stars']), len(acp['cat_image_stars']), acp['total_res_px'],0]  
+   test_data2 = [meteor_file, med_az, med_el, med_pos, med_px, len(acp['user_stars']), len(acp['cat_image_stars']), acp['total_res_px'],0]  
+   tcp1 , bad_stars, marked_img = test_cal(meteor_file, json_conf, acp, image, test_data1)
+   tcp2 , bad_stars, marked_img = test_cal(meteor_file, json_conf, acp, image, test_data2)
+   print("CUR/DEF:", tcp1['total_res_px'],  tcp2['total_res_px'])
+   if tcp2['total_res_px'] < tcp1['total_res_px']:
+      print("Update meteor cal with default it is better.")
+      cp = dict(tcp)
+   else:
+      print("Keep the current cal it is better than default.")
+      print(test_data1)
+      print(test_data2)
+
+   # if the current cal has less than 5 stars use the default params:
+   if len(cp['cat_image_stars']) < 5:
+      print("USE DEFAULT CALIB, NOT ENOUGH STARS!")
+      cp['center_az'] = med_az
+      cp['center_el'] = med_el
+      cp['position_angle'] = med_pos
+      cp['pixscale'] = med_px  
+      mj['cp'] = cp
+      save_json_file(meteor_file, mj)
+      return()
+
+   if already_fit == 1:
+      print("Already fit.")
+      #return()
+  
    print("BEFORE MORE STARS:", len(cp['cat_image_stars']) )
    if "more_stars" not in cp:
       cp['more_stars'] = 1
@@ -1392,7 +1593,7 @@ def refit_all(json_conf, cam_id=None, type="all"):
                #print("SKIP REFIT ALREADY:", cp['fov_fit'])
                run = 0
          if type == "bad":
-            if cp['total_res_px'] > 5:
+            if cp['total_res_px'] > 2:
                run = 1
             else:
                print("SKIP REFIT ALREADY:", cp['total_res_px'])
@@ -3321,6 +3522,8 @@ def cal_index(cam, json_conf, r_station_id = None):
    if cfe(cdir, 1) == 1:
       save_json_file(cloud_save_file, temp)
    return(temp)
+
+#def get_med_cal_range(json_conf, cam, calibs=None, start_date= None, end_date=None):
 
 def get_med_cal(json_conf, cam, ci_data=None, this_date= None):
    year = datetime.now().strftime("%Y")

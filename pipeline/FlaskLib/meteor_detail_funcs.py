@@ -163,7 +163,7 @@ def make_ms_html(amsid, meteor_file, mj):
          </div>
    """
       #ms_html += "<img src=" + station_map+ "><br>"
-      ms_html += "<iframe src=\"/dist/maps/index.html?mf=" + kml_file + "&lat=" + str(center_lat) + "&lon=" + str(center_lon) + "\" width=800 height=440></iframe><br><a href=" + kml_file + ">KML</a>"
+      ms_html += "<iframe src=\"https://archive.allsky.tv/dist/maps/index.html?mf=" + kml_file + "&lat=" + str(center_lat) + "&lon=" + str(center_lon) + "\" width=800 height=440></iframe><br><a href=" + kml_file + ">KML</a>"
    ms_html += """
             <div class="tab-content box " >
 

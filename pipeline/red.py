@@ -37,7 +37,6 @@ def refresh_day(date, dynamodb=None, use_cache=0):
    if cfe(dc_file) == 1:
       size, tdiff = get_file_info(dc_file)
       hours_old = tdiff / 60
-      print("HOURS OLD:", hours_old)
       if hours_old < 4:
          print("USING EVENT DYCACHE:", dc_file)
          use_cache = 1
@@ -68,7 +67,7 @@ def refresh_day(date, dynamodb=None, use_cache=0):
    for station_id in stations:
  
       obs = get_dyna_obs (dynamodb, station_id, date, force_update=0)
-      print("OBS:", station_id, obs)
+      print("OBS:", station_id, len(obs))
 
 def get_dyna_obs (dynamodb, station_id, date, force_update=0):
 
@@ -80,7 +79,6 @@ def get_dyna_obs (dynamodb, station_id, date, force_update=0):
    if cfe(dc_file) == 1:
       size, tdiff = get_file_info(dc_file)
       hours_old = tdiff / 60
-      print("HOURS OLD:", hours_old)
       if hours_old < 4:
          use_cache = 1
    if use_cache == 0 or force_update==1:

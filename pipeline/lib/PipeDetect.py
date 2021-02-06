@@ -4274,6 +4274,7 @@ def find_best_thresh(subframe, thresh):
    return(best_thresh)
 
 
+
 def refine_all_meteors(day, json_conf):
    mfs = glob.glob("/mnt/ams2/meteors/" + day + "/*.json")
    for mf in mfs:
