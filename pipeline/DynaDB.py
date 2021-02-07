@@ -4,14 +4,13 @@ from datetime import datetime
 import json
 from decimal import Decimal
 import sys
-from lib.PipeAutoCal import fn_dir
 import glob
 from lib.PipeUtil import cfe, load_json_file, save_json_file
 import boto3
 import socket
 import subprocess
 from boto3.dynamodb.conditions import Key
-from lib.PipeUtil import get_file_info
+from lib.PipeUtil import get_file_info, fn_dir
 
 
 
@@ -269,7 +268,7 @@ def search_events(dynamodb, date, stations):
       return(load_json_file(dc_file))
 
 
-def search_obs(dynamodb, station_id, date):
+def search_obs(dynamodb, station_id, date, no_cache=0):
    print(station_id, date)
 
    dyn_cache = "/mnt/ams2/DYCACHE/"
@@ -283,7 +282,7 @@ def search_obs(dynamodb, station_id, date):
       print("HOURS OLD:", hours_old)
       if hours_old < 4:
          use_cache = 1   
-   if use_cache == 0:
+   if use_cache == 0 or no_cache == 1:
       if dynamodb is None:
          dynamodb = boto3.resource('dynamodb')
 
@@ -397,7 +396,7 @@ def get_obs(dynamodb, station_id, sd_video_file):
 
 def sync_db_day(dynamodb, station_id, day):
    db_meteors = {}
-   items = search_obs(dynamodb, station_id, day)
+   items = search_obs(dynamodb, station_id, day, 1)
    for item in items:
       db_meteors[item['sd_video_file']] = {}
       db_meteors[item['sd_video_file']]['dyna'] = 1
@@ -456,6 +455,11 @@ def sync_db_day(dynamodb, station_id, day):
          if local_meteors[lkey]['revision'] == db_meteors[lkey]['revision']:
             print(lkey, "GOOD: The remote and local revisions are the same." )
 
+   print("SEARCH OBS:", station_id, day)
+   items = search_obs(dynamodb, station_id, day, 1)
+   for item in items:
+      print("IN DB:", station_id, item['sd_video_file'])
+   print(len(items), "items for", station_id)
 
 def update_event_sol(dynamodb, event_id, sol_data, obs_data):
    sol_data = json.loads(json.dumps(sol_data), parse_float=Decimal)
