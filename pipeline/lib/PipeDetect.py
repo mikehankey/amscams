@@ -2295,9 +2295,14 @@ def fireball(video_file, json_conf, nomask=0):
          print("GAP TEST FAILED. PLANE!")
          best_meteor = None
    elif "confirmed" in jdata: 
+      
       print("FIREBALL DETECT NOT FOUND, BUT CONFIRMED METEOR EXISTS.")
-      print(jdata['confirmed'])
-      exit()
+      print(jdata['confirmed_meteors'])
+      for met in jdata['confirmed_meteors']:
+         if met['report']['meteor'] == 1:
+            print("USE CONF MET.")
+            best_meteor = met
+      #exit()
    if best_meteor is None:
       # detection failed
       jdata['rejected'] = 1
@@ -2394,6 +2399,11 @@ def fireball(video_file, json_conf, nomask=0):
 
       base_jsr['meteor_frame_data'] = sorted(base_jsr['meteor_frame_data'], key=lambda x: (x[1]), reverse=False)
       save_json_file(jsfr, base_jsr)
+     
+      os.system("./Process.py refit_meteor " + jsf)
+      os.system("./Process.py refine " + jsf)
+
+
       return(jdata,base_jsr)
    else:
 
@@ -2433,6 +2443,8 @@ def fireball(video_file, json_conf, nomask=0):
    print("SAVEING MJR AFTER ROI VID:", len(mjr['meteor_frame_data']))
    mjr['meteor_frame_data'] = sorted(mjr['meteor_frame_data'], key=lambda x: (x[1]), reverse=False)
    save_json_file(jsfr, mjr)
+   os.system("./Process.py refit_meteor " + mj)
+   os.system("./Process.py refine " + mj)
    #best_meteor = fireball_decel(video_file, json_conf, jsf, jdata, best_meteor, nomask, hd_frames, hd_color_frames, median_frame, mask_img,5)
 
 def make_base_meteor_json(video_file, hd_video_file,best_meteor=None ,cp=None):
@@ -4126,13 +4138,14 @@ def refine_meteor_points(meteor, crop_frames, json_conf):
       cnts = get_roi_cnts(meteor, frame, median_frame, nxs[c]-cx1, nys[c]-cy1, dom_dir, x_dir, y_dir)
       new_cnts.append(cnts)
       if cnts is not None:
-         # update the final x,y for the 'leading edge' and blob center 
+         # update the final x,y for the 'leading edge' and blob center
          # BLOB CENTER X,Y
          nxs[c] = cnts[0] + int(cnts[2]/2)
          nys[c] = cnts[1] + int(cnts[3]/2)
-         # LEADING X,Y 
+         # LEADING X,Y
          lcx, lcy = get_leading_cnt(dom_dir, x_dir, y_dir, cnts[0], cnts[1], cnts[2], cnts[3])
          past_cnts.append(cnts)
+
       else:
          lcy = None
          lcx = None
@@ -4282,7 +4295,364 @@ def refine_all_meteors(day, json_conf):
          print("REFINE:", mf)
          refine_meteor(mf, json_conf)
 
+def get_leading_edge(dom_dir, x_dir, y_dir, cnt_img):
+
+   gray_img = cv2.cvtColor(cnt_img, cv2.COLOR_BGR2GRAY)
+   min_val, max_val, min_loc, (mx,my)= cv2.minMaxLoc(gray_img)
+   avg_val = np.mean(gray_img)
+   thresh = ((max_val - avg_val)/2) + avg_val
+   _, threshold = cv2.threshold(gray_img.copy(), thresh, 255, cv2.THRESH_BINARY)
+   cnts= get_contours_in_image(threshold)
+   best_x = None
+   best_y = None
+   for x,y,w,h in cnts:
+      cv2.rectangle(cnt_img, (x, y), (x+w, y+h), (0,0,255), 1, cv2.LINE_AA)
+      if x_dir == 'right_to_left':
+         cnx = x 
+         if best_x is None:
+            best_x = cnx
+         elif cnx < best_x:
+            best_x = cnx
+
+      if x_dir == 'left_to_right':
+         cnx = x 
+         if best_x is None:
+            best_x = cnx + w
+         elif cnx > best_x:
+            best_x = cnx + w
+
+      if y_dir == 'up_to_down':
+         cny = y
+         if best_y is None:
+            best_y = cny + h
+         elif cny > best_y:
+            best_y = cny + h
+
+      if y_dir == 'down_to_up':
+         cny = y 
+         if best_y is None:
+            best_y = cny
+         elif cny < best_y:
+            best_y = cny
+   if best_x is not None:
+      cv2.circle(cnt_img,(best_x,best_y), 5, (255,0,255), 1)
+
+
+   #cv2.imshow('pep2', cnt_img)
+   #cv2.waitKey(0)
+   print(dom_dir)
+   print(x_dir)
+   print(y_dir)
+
+
+
+   return(best_x, best_y)
+
+
 def refine_meteor(meteor_file, json_conf):
+   if "/mnt/ams2" not in meteor_file:
+      dd = meteor_file[0:10]
+      meteor_file = "/mnt/ams2/meteors/" + dd + "/" + meteor_file
+      video_file = meteor_file.replace(".json", ".mp4")
+      red_file = meteor_file.replace(".json", "-reduced.json")
+   else:
+      video_file = meteor_file.replace(".json", ".mp4")
+      red_file = meteor_file.replace(".json", "-reduced.json")
+
+   mj = load_json_file(meteor_file)
+
+   if cfe(red_file) == 1:
+      mjr = load_json_file(red_file)
+   else:
+      print("NOT REDUCED ABORT!")
+      return(0)
+   if "leading_edge" in mjr:
+      return()
+   mfd = mjr['meteor_frame_data']
+   frames,color_frames,subframes,sum_vals,max_vals,pos_vals = load_frames_fast(mj['sd_video_file'], json_conf, 0, 0, [], 1,[])
+
+   # things we want to check
+   """
+   1) are there bad frames at the end of the file. if so, remove them. 
+      and EOM bad frame will be less in distance than the total meteor track. 
+   """
+   # check for bad points at the end of the event and remove them
+   tds, bps, bfns, segs,x_segs,y_segs = seg_info(mfd)
+   print("SEGS:", segs)
+   print("BAD PT:", bps)
+   print("BAD CN:", bfns)
+   last_frame_good = 0
+
+
+
+   chk = 1
+   print("BPS:", bps)
+   if len(bps) == 0:
+      chk = 0
+   while chk == 1 and len(bps) > 0:
+      if len(bps) == 1:
+         last_val = bps[0]
+      else:
+         print("LEN:", len(bps))
+         last_val = bps[-1]
+      last_mfd = len(mfd) - 1
+      print ("Last val, last_mfd:", last_val, last_mfd)
+      if last_val == last_mfd:
+         print("REMOVING LAST", last_val)
+         mfd.pop()
+         bps.pop()
+      else:
+         chk = 0
+
+   tds, bps, bfns, segs,x_segs,y_segs = seg_info(mfd)
+   print(segs)
+   print(bps)
+
+
+   # Now the ending bad frames should be removed.
+   # NEXT WE WANT TO FIND THE LEADING EDGE
+   # FOR EACH ROW
+
+   #(dom_dir, quad, ideal_pos, ideal_roi_big_img) = get_movement_info(mj['best_meteor'], 10, 10)
+   dom_dir, x_dir, y_dir = get_move_info(mj['best_meteor'], 10, 10)
+
+   i = 0
+   new_mfd = []
+   seg_ds = []
+   for row in mfd:
+      (dt, fn, hd_x, hd_y, w, h, oint, ra, dec, az, el) = row
+      if i > 0:
+         tr_dist = calc_dist((fx, fy), (hd_x,hd_y))
+         seg_dist = tr_dist - last_tr_dist
+      else:
+         fx = hd_x
+         fy = hd_y
+         tr_dist = 0
+         seg_dist = 0
+      last_tr_dist = tr_dist 
+      print("SEG INFO:", tr_dist, seg_dist, segs[i], x_segs[i], y_segs[i])
+
+      fn = int(fn)
+      cframe = color_frames[fn]
+      bframe = cv2.resize(cframe, (1920,1080))
+      rx1,ry1,rx2,ry2 = bound_cnt(hd_x,hd_y,1920,1080, 10)
+      roi_img = bframe[ry1:ry2,rx1:rx2]
+      big_roi = cv2.resize(roi_img, (100,100))
+      hh, ww = big_roi.shape[:2]
+
+      factor = 5
+      print(fn) 
+      if fn in bfns :
+         print("BAD:", fn) 
+         #This is a bad frame, we should use an estimate. A blob most likely does not exist so there is no point in looking for leading edge
+         print("FN IS BAD NO LE:", fn)
+         # USE ESTIMATE! 
+         if i > 5:
+            x_seg = np.mean(x_segs[i-5:i-1])
+            y_seg = np.mean(y_segs[i-5:i-1])
+         else:
+            x_seg = np.mean(x_segs[0:i])
+            y_seg = np.mean(y_segs[0:i])
+         print("FN:",  i) 
+         print("XS:", x_segs)
+         print("YS:", y_segs)
+
+         if True:
+            est_x = int(last_x + x_seg)
+            est_y = int(last_y + y_seg)
+            cv2.circle(bframe,(est_x,est_y), 1, (0,0,255), 1)
+            new_mfd.append((dt, fn, est_x, est_y, w, h, oint, ra, dec, az, el)) 
+
+            lx = est_x
+            ly = est_y
+      else:
+         lx, ly = get_leading_edge(dom_dir, x_dir, y_dir, big_roi)
+         if lx is not None:
+            lx = int((lx/factor) + rx1)
+            ly = int((ly/factor) + ry1)
+            print("LX LY:", lx, ly)
+            cv2.circle(bframe,(lx,ly), 1, (255,0,255), 1)
+            new_mfd.append((dt, fn, lx, ly, w, h, oint, ra, dec, az, el)) 
+         else:
+            new_mfd.append((dt, fn, hd_x, hd_y, w, h, oint, ra, dec, az, el)) 
+            lx = hd_x
+            ly = hd_y
+
+      cv2.rectangle(bframe, (rx1, ry1), (rx2, ry2), (0,0,255), 1, cv2.LINE_AA)
+      show_frame = cv2.resize(bframe, (1280,720))
+      show_frame[5:hh+5,5:ww+5] = big_roi
+      cv2.putText(show_frame, str(i),  (5,20), cv2.FONT_HERSHEY_SIMPLEX, .4, (255, 255, 255), 1)
+      if fn in bfns:
+         cv2.putText(show_frame, str("BAD POINT!"),  (100,10), cv2.FONT_HERSHEY_SIMPLEX, .4, (255, 255, 255), 1)
+      cv2.imshow("pepe", show_frame)
+      cv2.waitKey(30)
+      i += 1
+
+      last_x = lx
+      last_y = ly
+   # Now we should have LE X,Ys for all frames except the bad frames. 
+   # Let's re-figure out where those bad frames are.
+
+   tds, bps, bfns, segs,x_segs,y_segs = seg_info(new_mfd)
+   print("SEGS:", segs)
+   print("BFNS:", bfns)
+   print("X SEGS:", x_segs)
+   print("Y SEGS:", y_segs)
+   med_seg = np.median(segs)
+   med_x_seg = np.median(x_segs)
+   med_y_seg = np.median(y_segs)
+   #print("MED:", med_seg, x_seg, y_seg)
+
+
+   tds, bps, bfns, segs,x_segs,y_segs = seg_info(new_mfd)
+   print("BEFORE:", bps)
+   for i in range(0, len(bps)+1):
+      if len(bps) > 0:
+         new_mfd = fix_fn(new_mfd, bps[0], med_x_seg, med_y_seg)
+         tds, bps, bfns, segs,x_segs,y_segs = seg_info(new_mfd)
+      print("AFTER:", bps)
+
+
+   i = 0
+   for mf in new_mfd:
+      (dt, fn, hd_x, hd_y, w, h, oint, ra, dec, az, el) = mf
+      print(fn)
+      frame = color_frames[fn]
+      bframe = cv2.resize(frame, (1920,1080))
+      cv2.circle(bframe,(hd_x,hd_y), 1, (0,0,255), 1)
+      show_frame = cv2.resize(bframe, (1280,720))
+      cv2.imshow('pepe', show_frame)
+      cv2.waitKey(30)
+      print(i, mf)
+      i += 1
+
+   tds, bps, bfns, segs,x_segs,y_segs = seg_info(new_mfd)
+   
+   if len(bps) > 0:
+      print("BAD:", bps)
+      new_mfd = fix_fn(new_mfd, bps[0], med_x_seg, med_y_seg)
+      tds, bps, bfns, segs,x_segs,y_segs = seg_info(new_mfd)
+
+
+
+   print("BAD POINTS:", bps)
+   print("BAD FN:", bfns)
+
+
+   print("NEW SEGS:", segs)
+   print("X SEGS:", x_segs)
+   print("Y  SEGS:", y_segs)
+   print("BAD POINTS:", bps)
+   print("BAD FNS:", bfns)
+
+   i = 0
+   for mf in new_mfd:
+      (dt, fn, hd_x, hd_y, w, h, oint, ra, dec, az, el) = mf
+      print(fn)
+      frame = color_frames[fn]
+      bframe = cv2.resize(frame, (1920,1080))
+      cv2.circle(bframe,(hd_x,hd_y), 1, (0,0,255), 1)
+      show_frame = cv2.resize(bframe, (1280,720))
+      cv2.imshow('pepe', show_frame)
+      cv2.waitKey(30)
+      print(i, mf)
+      i += 1
+
+   mjr['meteor_frame_data'] = new_mfd
+   mjr['leading_edge'] = 1
+   save_json_file(red_file, mjr)
+
+   make_roi_video_mfd(video_file, json_conf)
+   return(1)
+
+def fix_bad_fns(bps, new_mfd, med_x_seg, med_y_seg):
+   tds, bps, bfns, segs,x_segs,y_segs = seg_info(new_mfd)
+   for bf in sorted(bps):
+      if bf > 4:
+         new_mfd = fix_fn(new_mfd, bf, med_x_seg, med_y_seg)
+   tds, bps, bfns, segs,x_segs,y_segs = seg_info(new_mfd)
+   return(new_mfd)
+
+def fix_fn(mfd, fn_num, med_x, med_y):
+   row = mfd[fn_num-1]
+   (dt, fn, hd_x, hd_y, w, h, oint, ra, dec, az, el) = row
+   print("\n\n FIX ", fn_num, fn+1 )
+   new_x = int(hd_x + med_x)
+   new_y = int(hd_y + med_y)
+   print("FRAME BEFORE:",  dt, fn, hd_x, hd_y, w, h, oint, ra, dec, az, el) 
+   print("NEWX:", hd_x , med_x, new_x)
+   print("NEWY:", hd_y , med_y, new_y)
+   (dt, fn, hd_x, hd_y, w, h, oint, ra, dec, az, el) = mfd[fn_num]
+   print("FRAME CURRENT:",  dt, fn, hd_x, hd_y, w, h, oint, ra, dec, az, el) 
+   mfd[fn_num] = (dt, fn, new_x, new_y, w, h, oint, ra, dec, az, el) 
+   print("FRAME FIXED:",  mfd[fn_num])
+   return(mfd)
+
+def seg_info(mfd):
+   sc = 0
+   bps = []
+   bfn = []
+   tds = []
+   ltds = []
+   last_x = None
+   last_y = None
+   first_x = mfd[0][2] 
+   first_y = mfd[0][3] 
+   last_td = None
+   segs = [] 
+   x_segs = [] 
+   y_segs = [] 
+   
+
+   for row in mfd:
+      (dt, fn, hd_x, hd_y, w, h, oint, ra, dec, az, el) = row
+      td = calc_dist((first_x, first_y), (hd_x, hd_y))
+      if last_x is not None:
+         x_seg = hd_x - last_x
+         y_seg = hd_y - last_y
+         x_segs.append(x_seg)
+         y_segs.append(y_seg)
+      else:
+         x_segs.append(0)
+         y_segs.append(0)
+      if last_td is not None:
+         seg = td - last_td
+         segs.append(seg)
+      else:
+         segs.append(0)
+      tds.append(td)
+      last_td = td
+      last_x = hd_x
+      last_y = hd_y
+
+   med_seg = np.median(segs)
+   sc = 0
+   for seg in segs:
+      if sc == 0:
+         foo = 1
+         #print(sc)
+      else:
+         seg_diff = abs(abs(seg) - med_seg)
+
+         if (abs(seg_diff) > 4 or (seg ) > med_seg * 2) and sc > 3:
+            #print("BAD POINT!, ", seg_diff, sc)
+            bps.append(sc)
+            row = mfd[sc]
+            (dt, fn, hd_x, hd_y, w, h, oint, ra, dec, az, el) = row
+            bfn.append(fn)
+         #else:
+         #   print("SEG OK:", med_seg, seg, seg_diff )
+      sc += 1
+
+
+
+   return (tds, bps, bfn, segs, x_segs,y_segs)
+
+
+def refine_meteor_old(meteor_file, json_conf):
+   if "/mnt/ams2" not in meteor_file:
+      dd = meteor_file[0:10]
+      meteor_file = "/mnt/ams2/meteors/" + dd + "/" + meteor_file
    console_image = np.zeros((720,1280),dtype=np.uint8)
    color_console_image = np.zeros((720,1280,3),dtype=np.uint8)
    leading_xs = []

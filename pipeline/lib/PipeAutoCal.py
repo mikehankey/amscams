@@ -217,7 +217,13 @@ def make_default_cal(json_conf, cam ):
 def get_calib_from_range(cam, t_day,json_conf):
    print("CAM/DAY:", cam, t_day)
    t_dt = datetime.strptime(t_day, "%Y_%m_%d")
-   rdata = load_json_file("/mnt/ams2/cal/" + json_conf['site']['ams_id'] + "_cal_range.json")
+   adata = load_json_file("/mnt/ams2/cal/" + json_conf['site']['ams_id'] + "_cal_range.json")
+   rdata = []
+   for row in adata:
+      tcam, s_day, e_day, med_az, med_el, med_pos, med_px, med_res = row
+      if tcam == cam:
+         rdata.append((tcam, s_day, e_day, med_az, med_el, med_pos, med_px, med_res))
+   
 
    tcam, s_day, e_day, med_az, med_el, med_pos, med_px, med_res = rdata[0]
    s_dt = datetime.strptime(s_day, "%Y_%m_%d")
@@ -644,17 +650,27 @@ def refit_meteor(meteor_file, json_conf,force=0):
    acp = dict(cp)
    test_data1 = [meteor_file, acp['center_az'], acp['center_el'], acp['position_angle'], acp['pixscale'], len(acp['user_stars']), len(acp['cat_image_stars']), acp['total_res_px'],0]  
    test_data2 = [meteor_file, med_az, med_el, med_pos, med_px, len(acp['user_stars']), len(acp['cat_image_stars']), acp['total_res_px'],0]  
-   tcp1 , bad_stars, marked_img = test_cal(meteor_file, json_conf, acp, image, test_data1)
-   tcp2 , bad_stars, marked_img = test_cal(meteor_file, json_conf, acp, image, test_data2)
-   print("CUR/DEF:", tcp1['total_res_px'],  tcp2['total_res_px'])
-   if tcp2['total_res_px'] < tcp1['total_res_px']:
+   
+   print("YO")
+
+
+   test1_cp , bad_stars, marked_img = test_cal(meteor_file, json_conf, acp, image, test_data1)
+   print("TEST1", test_data1, test1_cp['total_res_px'])
+
+
+   test2_cp, bad_stars, marked_img = test_cal(meteor_file, json_conf, acp, image, test_data2)
+   print("TEST2", test_data2, test2_cp['total_res_px'])
+   print("TEST1", test_data1, test1_cp['total_res_px'])
+
+   if test2_cp['total_res_px'] < test1_cp['total_res_px']:
       print("Update meteor cal with default it is better.")
-      cp = dict(tcp)
+      cp = dict(test2_cp)
    else:
       print("Keep the current cal it is better than default.")
       print(test_data1)
       print(test_data2)
 
+   #exit()
    # if the current cal has less than 5 stars use the default params:
    if len(cp['cat_image_stars']) < 5:
       print("USE DEFAULT CALIB, NOT ENOUGH STARS!")
@@ -3047,15 +3063,21 @@ def get_best_cal_new(cp_file, json_conf) :
    return(best_cp)
 
 def test_cal(cp_file,json_conf,cp, cal_img, cdata ):
+   print("TESTING...")
    cfile, az, el, pos, px, num_ustars, num_cstars, res, tdiff = cdata
    cp['center_az'] = az 
    cp['center_el'] = el
    cp['position_angle'] = pos
    cp['pixscale'] = px
+   if "short_bright_stars" in cp:
+      del cp['short_bright_stars']
    cp = update_center_radec(cp_file,cp,json_conf)
-   #print("EVAL:", cp_file)
+   print("TESTING...", az, el, pos, px, cp['ra_center'], cp['dec_center'])
    cp, bad_stars, marked_img = eval_cal(cp_file,json_conf,cp,cal_img, None)
-   return(cp, bad_stars, marked_img)
+   print("TESTING...")
+   print("TEST CAL:", cp_file, cp['total_res_px'])
+   tcp = dict(cp)
+   return(tcp, bad_stars, marked_img)
 
 def optimize_var(cp_file,json_conf,var,cp,img):
    cal_img_file = cp_file.replace("-calparams.json", ".png")
@@ -3285,6 +3307,9 @@ def optimize_matchs(cp_file,json_conf,nc,oimg):
 
 
 def eval_cal(cp_file,json_conf,nc=None,oimg=None, mask_img=None,batch_mode=None,short_bright_stars=None):
+
+   print("E1")
+
    if len(oimg.shape) == 3:
       gimg = cv2.cvtColor(oimg, cv2.COLOR_BGR2GRAY)
    else:
@@ -3299,6 +3324,7 @@ def eval_cal(cp_file,json_conf,nc=None,oimg=None, mask_img=None,batch_mode=None,
    else: 
       img_file = cp_file.replace(".json", "-stacked.jpg")
 
+   print("E2")
    if cfe(img_file) == 0:
       img_file = cp_file.replace("-calparams.json", ".jpg")
    if oimg is None:
@@ -3310,12 +3336,16 @@ def eval_cal(cp_file,json_conf,nc=None,oimg=None, mask_img=None,batch_mode=None,
    elif "user_stars" not in nc:
       nc['user_stars'] = get_image_stars(img_file, None, json_conf,0)
    nc = update_center_radec(cp_file,nc,json_conf)
+   print("E2.5")
   
    if short_bright_stars is not None: 
+      print("E2.6")
       cat_stars,short_bright_stars = get_catalog_stars(nc,1,[])
    else:
+      print("E2.7")
       cat_stars = get_catalog_stars(nc)
  
+   print("E3")
    #if "user_stars" in nc:
    #   if len(nc['user_stars'][0]) == 2:
    #      print("GET STARS because BP missin?:", img_file)
@@ -3345,6 +3375,7 @@ def eval_cal(cp_file,json_conf,nc=None,oimg=None, mask_img=None,batch_mode=None,
          bad_stars.append(star)
 
 
+   print("E4")
 
    nc['total_res_px'] = avg_res
    nc['match_perc'] = match_perc
@@ -5026,6 +5057,8 @@ def mag_report(stars, plot=0):
    return(new_stars, bad_stars)
 
 def get_catalog_stars(cal_params):
+   print("C1")
+   print("CP:", cal_params['center_az'], cal_params['center_el'], cal_params['ra_center'], cal_params['dec_center'], cal_params['position_angle'], cal_params['pixscale'])
    if "short_bright_stars" not in cal_params:
       mybsd = bsd.brightstardata()
       bright_stars = mybsd.bright_stars
@@ -5043,6 +5076,7 @@ def get_catalog_stars(cal_params):
    RA_center = float(cal_params['ra_center']) 
    dec_center = float(cal_params['dec_center']) 
    F_scale = 3600/float(cal_params['pixscale'])
+   print("C2")
    if "x_poly" in cal_params:
       x_poly = cal_params['x_poly']
       y_poly = cal_params['y_poly']
@@ -5067,6 +5101,7 @@ def get_catalog_stars(cal_params):
    bright_stars_sorted = sorted(bright_stars, key=lambda x: x[4], reverse=False)
 
    sbs = []
+   print("C3")
    for bname, cname, ra, dec, mag in bright_stars_sorted:
       #print("NAME:", bname)
       #print("CNAME:", cname)
@@ -5095,6 +5130,7 @@ def get_catalog_stars(cal_params):
       #else:
       #   print("FAILED TO MATCH:", ang_sep, mag)
 
+   print("C4", len(catalog_stars))
    #print("CAT STARS:", len(catalog_stars))
    if len(catalog_stars) == 0:
       exit()
