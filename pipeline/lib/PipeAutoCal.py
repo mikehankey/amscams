@@ -624,6 +624,8 @@ def refit_meteor(meteor_file, json_conf,force=0):
          cp['y_poly'] = mcp['y_poly']
          cp['x_poly_fwd'] = mcp['x_poly_fwd']
          cp['y_poly_fwd'] = mcp['y_poly_fwd']
+         mj['cp'] = cp
+         save_json_file(meteor_file, mj)
    else:
       print("NO MCP!", mcp_file)
       os.system("cp /mnt/ams2/meteor_archive/" + STATION_ID + "/CAL/AUTOCAL/2020/solved/*.info /mnt/ams2/cal/" )
