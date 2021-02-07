@@ -649,28 +649,30 @@ def refit_meteor(meteor_file, json_conf,force=0):
    print("DEFAULT CALIB:", def_cal)
    # test if the default cal is better than the current cal. 
 
-   acp = dict(cp)
-   test_data1 = [meteor_file, acp['center_az'], acp['center_el'], acp['position_angle'], acp['pixscale'], len(acp['user_stars']), len(acp['cat_image_stars']), acp['total_res_px'],0]  
-   test_data2 = [meteor_file, med_az, med_el, med_pos, med_px, len(acp['user_stars']), len(acp['cat_image_stars']), acp['total_res_px'],0]  
+   if len(def_cal) > 0:
+      acp = dict(cp)
+      test_data1 = [meteor_file, acp['center_az'], acp['center_el'], acp['position_angle'], acp['pixscale'], len(acp['user_stars']), len(acp['cat_image_stars']), acp['total_res_px'],0]  
+      test_data2 = [meteor_file, med_az, med_el, med_pos, med_px, len(acp['user_stars']), len(acp['cat_image_stars']), acp['total_res_px'],0]  
    
-   print("YO")
 
 
-   test1_cp , bad_stars, marked_img = test_cal(meteor_file, json_conf, acp, image, test_data1)
-   print("TEST1", test_data1, test1_cp['total_res_px'])
+      test1_cp , bad_stars, marked_img = test_cal(meteor_file, json_conf, acp, image, test_data1)
+      print("TEST1", test_data1, test1_cp['total_res_px'])
 
 
-   test2_cp, bad_stars, marked_img = test_cal(meteor_file, json_conf, acp, image, test_data2)
-   print("TEST2", test_data2, test2_cp['total_res_px'])
-   print("TEST1", test_data1, test1_cp['total_res_px'])
+      test2_cp, bad_stars, marked_img = test_cal(meteor_file, json_conf, acp, image, test_data2)
+      print("TEST2", test_data2, test2_cp['total_res_px'])
+      print("TEST1", test_data1, test1_cp['total_res_px'])
 
-   if test2_cp['total_res_px'] < test1_cp['total_res_px']:
-      print("Update meteor cal with default it is better.")
-      cp = dict(test2_cp)
+      if test2_cp['total_res_px'] < test1_cp['total_res_px']:
+         print("Update meteor cal with default it is better.")
+         cp = dict(test2_cp)
+      else:
+         print("Keep the current cal it is better than default.")
+         print(test_data1)
+         print(test_data2)
    else:
-      print("Keep the current cal it is better than default.")
-      print(test_data1)
-      print(test_data2)
+      print("No good def cal.") 
 
    #exit()
    # if the current cal has less than 5 stars use the default params:
