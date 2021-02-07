@@ -379,4 +379,8 @@ def get_trim_num(file):
    at = at.replace(".png", "")
    return(at)
 
+def fn_dir(file):
+   fn = file.split("/")[-1]
+   dir = file.replace(fn, "")
+   return(fn, dir)
 

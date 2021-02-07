@@ -69,7 +69,10 @@ def simple_solvev2(obs):
       station_key = station1 + "-" + cam1 + ":" + station2 + "-" + cam2
       print("OBS1:", good_obs[0]['station'], good_obs[0]['file'])
       print("OBS2:", good_obs[1]['station'], good_obs[1]['file'])
-      sols = int_planes(good_obs[0], good_obs[1])
+      try:
+         sols = int_planes(good_obs[0], good_obs[1])
+      except:
+         sols = []
       solutions = []
       for sol in sols:
          solutions.append(sol)
@@ -142,7 +145,10 @@ def simple_solve(day, event_id, json_conf ):
       station_key = station1 + "-" + cam1 + ":" + station2 + "-" + cam2
       print("OBS1:", good_obs[0]['station'], good_obs[0]['file'])
       print("OBS2:", good_obs[1]['station'], good_obs[1]['file'])
-      sols = int_planes(good_obs[0], good_obs[1])
+      try:
+         sols = int_planes(good_obs[0], good_obs[1])
+      except:
+         sols = []
       solutions = []
       for sol in sols:
          solutions.append(sol)
@@ -207,6 +213,14 @@ def int_planes(obs1, obs2):
 
    lat1,lon1,alt1 = obs1['loc']
    lat2,lon2,alt2 = obs2['loc']
+
+
+   print("AZ1", obs1['azs'])
+   print("AZ2", obs2['azs'])
+   print("L1", lat1, lon1, alt1)
+   print("L2", lat2, lon2, alt2)
+   print("AZ1", saz1, eaz1, sel1, eel1)
+   print("AZ2", saz2, eaz2, sel2, eel2)
    x1, y1, z1 = pm.geodetic2ecef(float(lat1), float(lon1), float(alt1), wgs84)
    x2, y2, z2 = pm.geodetic2ecef(float(lat2), float(lon2), float(alt2), wgs84)
 
@@ -227,7 +241,9 @@ def int_planes(obs1, obs2):
    #Point3D(sveX2,sveY2,sveZ2), \
    #Point3D(eveX2,eveY2,eveZ2))
 
-
+   print("XYZ", x1,y1,z1) 
+   print("SEV", sveX1,sveY1,sveZ1) 
+   print("SEV", eveX1,eveY1,eveZ1) 
    plane1 = Plane( \
       Point3D(x1,y1,z1), \
       Point3D(sveX1,sveY1,sveZ1), \
