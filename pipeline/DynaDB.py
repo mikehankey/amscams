@@ -1,4 +1,5 @@
 #!/usr/bin/python3
+import math
 import os
 from datetime import datetime
 import json
@@ -139,7 +140,13 @@ def insert_meteor_obs(dynamodb, station_id, meteor_file):
 
       if "cp" in mj:
          cp = mj['cp']
-         calib = [cp['ra_center'], cp['dec_center'], cp['center_az'], cp['center_el'], cp['position_angle'], cp['pixscale']]
+         if "total_res_px" not in cp:
+            cp['total_res_px'] = 9999
+         if "cat_image_stars" not in cp:
+            cp['cat_image_stars'] = []
+         if math.isnan(cp['total_res_px']):
+            cp['total_res_px'] = 9999
+         calib = [cp['ra_center'], cp['dec_center'], cp['center_az'], cp['center_el'], cp['position_angle'], cp['pixscale'], len(cp['cat_image_stars']), cp['total_res_px']]
       else:
          calib = []
       if cfe(red_file) == 1:
@@ -182,6 +189,8 @@ def insert_meteor_obs(dynamodb, station_id, meteor_file):
    }
    obs_data = json.loads(json.dumps(obs_data), parse_float=Decimal)
    table = dynamodb.Table('meteor_obs')
+   print("SD VID:", sd_vid)
+   print("OBS:", obs_data)
    table.put_item(Item=obs_data)
    mj['calib'] = calib
    mj['last_update'] = update_time
@@ -226,6 +235,7 @@ def load_stations(dynamodb):
       insert_station(dynamodb, fn)
 
 def delete_obs(dynamodb, station_id, sd_video_file):
+   print("DELETE:", station_id, sd_video_file)
    table = dynamodb.Table('meteor_obs')
    response = table.delete_item(
       Key= {
@@ -400,8 +410,10 @@ def sync_db_day(dynamodb, station_id, day):
    for item in items:
       db_meteors[item['sd_video_file']] = {}
       db_meteors[item['sd_video_file']]['dyna'] = 1
-      if "revision" not in db_meteors[item['sd_video_file']]:
+      if "revision" not in item:
          db_meteors[item['sd_video_file']]['revision'] = 1
+      else:
+         db_meteors[item['sd_video_file']]['revision'] = item['revision']
 
    files = glob.glob("/mnt/ams2/meteors/" + day + "/*.json")   
    meteors = []
@@ -425,7 +437,8 @@ def sync_db_day(dynamodb, station_id, day):
       if dkey not in local_meteors:
          print(dkey, "DELETE OBS: no longer exists locally and should be removed from the remote db." )
          meteor_file = dkey.replace(".mp4", ".json")
-         delete_obs(dynamodb, station_id, meteor_file)
+         video_file = dkey
+         delete_obs(dynamodb, station_id, video_file)
       else:
          print(dkey, "GOOD: exists locally." )
 
@@ -449,7 +462,7 @@ def sync_db_day(dynamodb, station_id, day):
          if db_meteors[lkey]['revision'] > local_meteors[lkey]['revision']:
             print(lkey, "UPDATE LOCAL: The remote DB has a newer version of this file" )
          if local_meteors[lkey]['revision'] > db_meteors[lkey]['revision']:
-            print(lkey, "UPDATE REMOTE : The local DB has a newer version of this file. " )
+            print(lkey, "UPDATE REMOTE : The local DB has a newer version of this file. " , local_meteors[lkey]['revision'] ,   db_meteors[lkey]['revision'])
          meteor_file = dkey.replace(".mp4", ".json")
          insert_meteor_obs(dynamodb, station_id, meteor_file)
          if local_meteors[lkey]['revision'] == db_meteors[lkey]['revision']:
@@ -622,3 +635,11 @@ if __name__ == "__main__":
          do_dyna_day(dynamodb, day)
    if cmd == "umje":
       update_mj_events(dynamodb, sys.argv[2])
+   if cmd == "sync_year":
+      wild = sys.argv[2]
+      station_id = json_conf['site']['ams_id']
+      files = glob.glob("/mnt/ams2/meteors/" + wild + "*")
+      for file in sorted(files):
+         day = file.split("/")[-1]
+         print(file, day)
+         sync_db_day(dynamodb, station_id, day)
