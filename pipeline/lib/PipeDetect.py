@@ -4291,6 +4291,7 @@ def find_best_thresh(subframe, thresh):
 def refine_all_meteors(day, json_conf):
    mfs = glob.glob("/mnt/ams2/meteors/" + day + "/*.json")
    for mf in mfs:
+      print(mf)
       if "reduced" not in mf:
          print("REFINE:", mf)
          refine_meteor(mf, json_conf)
@@ -4484,8 +4485,8 @@ def refine_meteor(meteor_file, json_conf):
       cv2.putText(show_frame, str(i),  (5,20), cv2.FONT_HERSHEY_SIMPLEX, .4, (255, 255, 255), 1)
       if fn in bfns:
          cv2.putText(show_frame, str("BAD POINT!"),  (100,10), cv2.FONT_HERSHEY_SIMPLEX, .4, (255, 255, 255), 1)
-      cv2.imshow("pepe", show_frame)
-      cv2.waitKey(30)
+      #cv2.imshow("pepe", show_frame)
+      #cv2.waitKey(30)
       i += 1
 
       last_x = lx
@@ -4521,8 +4522,8 @@ def refine_meteor(meteor_file, json_conf):
       bframe = cv2.resize(frame, (1920,1080))
       cv2.circle(bframe,(hd_x,hd_y), 1, (0,0,255), 1)
       show_frame = cv2.resize(bframe, (1280,720))
-      cv2.imshow('pepe', show_frame)
-      cv2.waitKey(30)
+      #cv2.imshow('pepe', show_frame)
+      #cv2.waitKey(30)
       print(i, mf)
       i += 1
 
@@ -4553,8 +4554,8 @@ def refine_meteor(meteor_file, json_conf):
       bframe = cv2.resize(frame, (1920,1080))
       cv2.circle(bframe,(hd_x,hd_y), 1, (0,0,255), 1)
       show_frame = cv2.resize(bframe, (1280,720))
-      cv2.imshow('pepe', show_frame)
-      cv2.waitKey(30)
+      #cv2.imshow('pepe', show_frame)
+      #cv2.waitKey(30)
       print(i, mf)
       i += 1
 
@@ -4872,8 +4873,8 @@ def make_roi_comp_img(frames, meteor):
 
 
    stack_img = cv2.resize(frame, (640, 360))
-   cv2.imshow('pepe2', stack_img)
-   cv2.waitKey(180)
+   #cv2.imshow('pepe2', stack_img)
+   #cv2.waitKey(180)
    
 
    
