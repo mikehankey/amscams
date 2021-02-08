@@ -4335,7 +4335,7 @@ def get_leading_edge(dom_dir, x_dir, y_dir, cnt_img):
             best_y = cny
          elif cny < best_y:
             best_y = cny
-   if best_x is not None:
+   if best_x is not None and cnt_img is not None and best_y is not None:
       cv2.circle(cnt_img,(best_x,best_y), 5, (255,0,255), 1)
 
 
@@ -4431,7 +4431,6 @@ def refine_meteor(meteor_file, json_conf):
          tr_dist = 0
          seg_dist = 0
       last_tr_dist = tr_dist 
-      print("SEG INFO:", tr_dist, seg_dist, segs[i], x_segs[i], y_segs[i])
 
       fn = int(fn)
       cframe = color_frames[fn]
@@ -4442,7 +4441,7 @@ def refine_meteor(meteor_file, json_conf):
       hh, ww = big_roi.shape[:2]
 
       factor = 5
-      print(fn) 
+      print(meteor_file, fn) 
       if fn in bfns :
          print("BAD:", fn) 
          #This is a bad frame, we should use an estimate. A blob most likely does not exist so there is no point in looking for leading edge
@@ -4468,7 +4467,7 @@ def refine_meteor(meteor_file, json_conf):
             ly = est_y
       else:
          lx, ly = get_leading_edge(dom_dir, x_dir, y_dir, big_roi)
-         if lx is not None:
+         if lx is not None and ly is not None:
             lx = int((lx/factor) + rx1)
             ly = int((ly/factor) + ry1)
             print("LX LY:", lx, ly)
