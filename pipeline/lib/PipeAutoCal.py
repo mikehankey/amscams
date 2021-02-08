@@ -18,7 +18,7 @@ import scipy.optimize
 import math
 import cv2
 import numpy as np
-from lib.PipeUtil import bound_cnt, cnt_max_px, cfe, load_json_file, save_json_file, convert_filename_to_date_cam, angularSeparation, calc_dist, date_to_jd, get_masks , find_angle, collinear, get_trim_num
+from lib.PipeUtil import bound_cnt, cnt_max_px, cfe, load_json_file, save_json_file, convert_filename_to_date_cam, angularSeparation, calc_dist, date_to_jd, get_masks , find_angle, collinear, get_trim_num, day_or_night
 from lib.PipeImage import mask_frame, quick_video_stack
 from lib.DEFAULTS import *
 import os
@@ -40,6 +40,7 @@ def cal_manager(json_conf):
       3) Re-Solve Cal Failures
       4) Gen Cal History
       5) Make Default Cal
+      6) HD Night Cal 
 
    """
 
@@ -56,6 +57,10 @@ def cal_manager(json_conf):
       resolve_failed(cam_num, limit, star_lim, json_conf) 
    if cmd == "4":
       gen_cal_hist(json_conf) 
+   if cmd == "6":
+      cam_num = input("Enter cam # (1-7): ")
+      interval = input("Time Interval in Minutes: (15,30,60) ")
+      hd_night_cal(cam_num, json_conf, int(interval))
 
    default_hist = {}
    rdf = []
@@ -67,8 +72,38 @@ def cal_manager(json_conf):
       for cams_id in default_hist:
          for row in default_hist[cams_id]['range_data']:
             rdf.append(row)
-   save_json_file("/mnt/ams2/cal/" + amsid + "_cal_range.json", rdf)
-   print("SAVED: /mnt/ams2/cal/" + amsid + "_cal_range.json", rdf)
+      save_json_file("/mnt/ams2/cal/" + amsid + "_cal_range.json", rdf)
+      print("SAVED: /mnt/ams2/cal/" + amsid + "_cal_range.json", rdf)
+
+
+def hd_night_cal(cam_num, json_conf, interval=30):
+   ams_id = json_conf['site']['ams_id']
+   key = "cam" + str(cam_num)
+   cams_id = json_conf['cameras'][key]['cams_id']
+   hd_files = glob.glob("/mnt/ams2/HD/*" + cams_id + "*.mp4")
+   i = 0
+   for file in sorted(hd_files):
+      if "trim" in file:
+         continue
+      if i % interval == 0:
+         (f_datetime, cam, f_date_str,fy,fm,fd, fh, fmin, fs) = convert_filename_to_date_cam(file)
+
+         sun = day_or_night(f_date_str, json_conf)
+         print(sun)
+         print(file)
+         fn, dir = fn_dir(file)
+         year = fn[0:4] 
+         cal_dir = "/mnt/ams2/meteor_archive/" + ams_id + "/CAL/AUTOCAL/" + year + "/" 
+         outfile = cal_dir + fn
+         outfile = outfile.replace(".mp4", ".png")
+         #cmd = """ /usr/bin/ffmpeg -i """ + file + """ -vf select="between(n\,""" + str(0) + """\,""" + str(1) + """),setpts=PTS-STARTPTS" -y -update 1 """ + outfile + " >/dev/null 2>&1"
+         cmd = """ /usr/bin/ffmpeg -i """ + file + """ -ss 00:00:01 -vframes 1 -q:v 2 """ + outfile + " >/dev/null 2>&1"
+         if sun == "night":
+            if cfe(outfile) == 0:
+               print(cmd)
+               os.system(cmd)
+
+      i += 1
 
 
 
@@ -3879,11 +3914,12 @@ def autocal(image_file, json_conf, show = 0, heal_only=0):
    try:
       stars = get_image_stars(image_file, None, json_conf,0)
    except:
-      #print("FAILED!", image_file)
+      print("FAILED TO GET STARS!", image_file)
       return()
    img = cv2.imread(image_file, 0)
    ares = None
    bres = None
+   print("STARS:", len(stars))
    if len(stars) <= 10:
       fn, cdir = fn_dir(image_file)
       cmd = "mv " + image_file + " " + cdir + "/bad/" 
@@ -4353,14 +4389,18 @@ def check_close(point_list, x, y, max_dist):
    return(count)
 
 def find_stars_with_grid_old(image):
-   gsize = 640 
+   print("FIND SARS WITH GRID!")
+   gsize = 200 
    height, width = image.shape[:2]
    best_stars = []
 
    sw = int(1920/gsize)  
    sh = int(1080/gsize)  
+  
+   print("SW,SH:", sw, sh)
    for i in range(0,sw):
       for j in range(0,sh):
+         print(i,j)
          x1 = i * gsize
          y1 = j * gsize
          x2 = x1 + gsize 
@@ -4369,7 +4409,7 @@ def find_stars_with_grid_old(image):
             x2 = 1920
          if y2 >= 1080:
             y2 = 1080 
-         #print(x1, x2, y1,y2)
+         print(x1, x2, y1,y2)
          if True:
             if x2 <= width and y2 <= height:
                grid_img = image[y1:y2,x1:x2]
@@ -4381,6 +4421,7 @@ def find_stars_with_grid_old(image):
                bx2 = bx + 5
                by2 = by + 5
                cv2.rectangle(grid_img, (bx1, by1), (bx2, by2 ), (255, 255, 255), 1)
+               print("GRID INT:", grid_int)
                if 1000 < grid_int < 14000:
                   best_stars.append((bx+x1,by+y1,grid_int))
    temp = sorted(best_stars, key=lambda x: x[2], reverse=True)
@@ -4394,6 +4435,7 @@ def find_stars_with_grid(img):
    cols = int(int(iw) / gsize[0])
    stars = []
    bad_stars = []
+   bright_points = []
    for col in range(0,cols+1):
       for row in range(0,rows+1):
          x1 = col * gsize[0]
@@ -4410,6 +4452,12 @@ def find_stars_with_grid(img):
          gimg = img[y1:y2,x1:x2]
          avg = np.median(gimg)
          best_thresh = avg + 40 
+
+         max_px, avg_px, px_diff,max_loc,star_int = eval_cnt(gimg.copy(), avg)
+         if px_diff > 30:
+            print("MAX/AVG/DIF:", max_px, avg_px, px_diff)
+            bright_points.append((max_loc[0], max_loc[1], star_int))
+
          _, star_bg = cv2.threshold(gimg, best_thresh, 255, cv2.THRESH_BINARY)
          thresh_obj = cv2.dilate(star_bg, None , iterations=4)
 
@@ -4420,6 +4468,7 @@ def find_stars_with_grid(img):
             (cnts ,xx) = res
          cc = 0
          huge = []
+         print("CNTS:", len(cnts))
          for (i,c) in enumerate(cnts):
             x,y,w,h = cv2.boundingRect(cnts[i])
             px_val = int(img[y,x])
@@ -4434,10 +4483,16 @@ def find_stars_with_grid(img):
             new_cnt_img = gimg[by1:by2,bx1:bx2]
 
             name = "/mnt/ams2/tmp/cnt" + str(cc) + ".png"
+            print("STAR?:", bx, by, star_int, max_px, px_diff)
             if star_int > 50:
                stars.append((bx+x1,by+y1,int(star_int)))
             else:
                bad_stars.append((bx+x1,by+y1,int(star_int)))
+
+   for star in stars:
+      print(stars)
+   for bp in bright_points :
+      print(bp)
 
    return(stars)
 
@@ -4476,6 +4531,7 @@ def get_image_stars(file=None,img=None,json_conf=None,show=0):
    #cv2.imshow('pepe', img)
 
    best_stars = find_stars_with_grid(img)
+   print("BEST STARS:", len(best_stars))
    for star in best_stars:
       x,y,z = star
       cv2.circle(img, (int(x),int(y)), 5, (128,128,128), 1)
