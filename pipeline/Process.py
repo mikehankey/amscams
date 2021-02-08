@@ -11,7 +11,7 @@ import datetime as dt
 
 from lib.PipeCustomVideos import  meteors_last_night_for_cam, hd_snaps, assemble_custom, simple_TL, join_two
 from lib.PipeMeteorClean import purge_meteors_for_date, fix_meteor_orphans, meteor_png_to_jpg, fix_meteor_month, restack_meteor_dir, convert_meteor_pngs_to_jpgs
-from lib.PipeWeather import detect_clouds , make_flat, track_clouds, solar_info, audit_tl, detect_aurora, batch_aurora, aurora_report, aurora_stack_vid, tl_list, aurora_tl,  hourly_stacks, make_all_hourly_stacks, hourly_stacks_html, meteor_night_stacks
+from lib.PipeWeather import detect_clouds , make_flat, track_clouds, solar_info, audit_tl, detect_aurora, batch_aurora, aurora_report, aurora_stack_vid, tl_list, aurora_tl,  hourly_stacks, make_all_hourly_stacks, hourly_stacks_html, meteor_night_stacks, fast_aurora, fast_au_report, plot_aud
 from lib.PipeImage import quick_video_stack, restack_meteor
 from lib.PipeTrans import trans_test 
 from lib.PipeManager import mln_report, mln_best, best_of , copy_super_stacks, super_stacks_to_video, multi_station_meteors, proc_status, station_list
@@ -615,3 +615,15 @@ if __name__ == "__main__":
 
    if cmd == "get_def_cal" or cmd == "gdc":
       get_calib_from_range(sys.argv[2], sys.argv[3], json_conf)
+   if cmd == "fastaur" :
+      fast_au_report(sys.argv[2],  json_conf)
+   if cmd == "plot_aud" :
+      plot_aud(sys.argv[2],  json_conf)
+
+   if cmd == "fastau" :
+      if sys.argv[3] == 'all':
+         for cam in json_conf['cameras']:
+            cams_id = json_conf['cameras'][cam]['cams_id']
+            fast_aurora(sys.argv[2], cams_id, json_conf)
+      else:
+         fast_aurora(sys.argv[2], sys.argv[3], json_conf)

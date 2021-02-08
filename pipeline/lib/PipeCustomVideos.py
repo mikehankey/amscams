@@ -1,5 +1,5 @@
 import glob
-from lib.FFFuncs import best_crop_size
+from lib.FFFuncs import best_crop_size, slow_stack_video
 from lib.PipeUtil import load_json_file, save_json_file, cfe, day_or_night, convert_filename_to_date_cam, bound_cnt
 from lib.PipeMeteorTests import gap_test
 from lib.PipeDetect import get_contours_in_image, find_object, analyze_object, get_trim_num
@@ -22,26 +22,30 @@ def join_two(json_conf):
    print("JOIN", len(one))
    comp_h = 360
    comp_w = 640 * 2 
-   for i in range(0, len(one)):
+   for i in range(0, len(two)):
 
-      file1 = one[i]
+      #file1 = one[i]
       file2 = two[i]
-      img1 = cv2.imread(file1)
+      #img1 = cv2.imread(file1)
       img2 = cv2.imread(file2)
-      img1 = cv2.resize(img1,(640,360))
+      #img1 = cv2.resize(img1,(640,360))
       img2 = cv2.resize(img2,(640,360))
-      comp = np.zeros((comp_h,comp_w,3),dtype=np.uint8)
-      comp[0:360,0:640] = img1
-      comp[0:360,640:1280] = img2
-      if i % 2 == 0:
-         out = file1.replace("CACHE3", "FINAL")
-         print("WROTE:", i, out)
+      #comp = np.zeros((comp_h,comp_w,3),dtype=np.uint8)
+      #comp[0:360,0:640] = img1
+      #comp[0:360,640:1280] = img2
+      #if i % 2 == 0:
+      if True:
+         out = file2.replace("CACHE2", "FINAL")
+         #print("WROTE:", i, out)
          cv2.imwrite(out, img2)
-         cv2.imshow('pepe', img2)
-         cv2.waitKey(30)
+         #cv2.imshow('pepe', img2)
+         #cv2.waitKey(30)
 
 
 def simple_TL(TL_CONF, json_conf):
+   # slow stack speeds 10 SS = 1 min = 149 stacked frames = 6 seconds
+   # slow stack speeds 25 SS = 1 min = 60 stacked frames = 2.3 seconds
+   # SS = 50 = 1 minute = 30 stacked frames or 1.3 seconds
    tl_conf = load_json_file(TL_CONF)
    start_day = tl_conf['start_time'][0:10]
    end_day = tl_conf['end_time'][0:10]
@@ -57,14 +61,21 @@ def simple_TL(TL_CONF, json_conf):
    print(len(night_files), len(day_files))
    for file in night_files:
       (f_datetime, cam, f_date_str,fy,fmin,fd, fh, fm, fs) = convert_filename_to_date_cam(file)
-      if all_start_dt <= f_datetime <= all_end_dt:
-          print(file)
+      fn,dir = fn_dir(file)
+      sfile = "./CACHE2/" + fn
+      sfile = sfile.replace(".mp4", "-0100.jpg")
       if ss_start_dt <= f_datetime <= ss_end_dt:
-         print("SLOW STACK!", file)
-
-         cmd = "./FFF.py slow_stack " + file +  " ./CACHE2/ " + str(slow_stack_speed)
-         print(cmd)
-         os.system(cmd)
+         print("CHECK:", sfile)
+         if cfe(sfile) == 0:
+            print("SLOW STACK!", file)
+            slow_stack_video(file, "./CACHE2/", 50) 
+         else:
+            print("DONE SKIP", sfile)
+         #cmd = "./FFF.py slow_stack " + file +  " ./CACHE2/ " + str(slow_stack_speed)
+      #else:
+  
+         #print("wrong time", ss_start_dt, f_datetime, ss_end_dt)
+         #os.system(cmd)
    for file in day_files:
       (f_datetime, cam, f_date_str,fy,fmin,fd, fh, fm, fs) = convert_filename_to_date_cam(file)
       if ss_start_dt <= f_datetime <= ss_end_dt:
@@ -73,7 +84,7 @@ def simple_TL(TL_CONF, json_conf):
          cmd = "./FFF.py slow_stack " + file +  " ./CACHE2/ " + str(slow_stack_speed)
          print(cmd)
          os.system(cmd)
-
+   cmd = "/usr/bin/ffmpeg -framerate 25 -pattern_type glob -i './CACHE2/*.jpg' -c:v libx264 -pix_fmt yuv420p -y /mnt/ams2/CUSTOM_VIDEOS/" + start_day + "_" + cam + "_simple_tl.mp4"
 
 def assemble_custom(TL_CONF, json_conf):
    min_index = {}
@@ -130,6 +141,10 @@ def assemble_custom(TL_CONF, json_conf):
    tl_files = time_lapse_frames(date, cams_id, json_conf, sunset, sunrise)
    for tl in tl_files:
       (f_datetime, cam, f_date_str,fy,fmin,fd, fh, fm, fs) = convert_filename_to_date_cam(tl)
+      if all_start_dt < f_datetime < all_end_dt:
+         good = 1
+      else:
+         continue
       fn, dir = fn_dir(tl)
       cache_file = "./CACHE/" + fn
       if cfe(cache_file) == 0:
@@ -176,9 +191,8 @@ def assemble_custom(TL_CONF, json_conf):
       for slow_start, slow_end , mod in tl_conf['slow_stacks']: 
          start_dt = datetime.strptime(slow_start, "%Y_%m_%d_%H_%M")
          end_dt = datetime.strptime(slow_end, "%Y_%m_%d_%H_%M")
-         if start_dt <= min_key <= end_dt:
+         if start_dt <= min_key_dt <= end_dt:
             print("SLOW STACK NEEDED:", min_key)
-   exit()
 
 
    for slow_start, slow_end , mod in tl_conf['slow_stacks']: 
@@ -196,7 +210,7 @@ def assemble_custom(TL_CONF, json_conf):
    for min_key in min_index:
       if len(min_index[min_key]['meteors'])  == 0 and len(min_index[min_key]['slow_stacks']) > 0 :
          for i in range(0, len(min_index[min_key]['slow_stacks'])):
-            if i % 5 == 0:
+            if i % 1 == 0:
                cmd = "cp " + min_index[min_key]['slow_stacks'][i] + " " + cache_dir
                print(cmd)
                os.system(cmd)
