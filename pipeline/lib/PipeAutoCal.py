@@ -3347,7 +3347,6 @@ def optimize_matchs(cp_file,json_conf,nc,oimg):
 
 def eval_cal(cp_file,json_conf,nc=None,oimg=None, mask_img=None,batch_mode=None,short_bright_stars=None):
 
-   print("E1")
 
    if len(oimg.shape) == 3:
       gimg = cv2.cvtColor(oimg, cv2.COLOR_BGR2GRAY)
@@ -3363,7 +3362,6 @@ def eval_cal(cp_file,json_conf,nc=None,oimg=None, mask_img=None,batch_mode=None,
    else: 
       img_file = cp_file.replace(".json", "-stacked.jpg")
 
-   print("E2")
    if cfe(img_file) == 0:
       img_file = cp_file.replace("-calparams.json", ".jpg")
    if oimg is None:
@@ -3375,16 +3373,12 @@ def eval_cal(cp_file,json_conf,nc=None,oimg=None, mask_img=None,batch_mode=None,
    elif "user_stars" not in nc:
       nc['user_stars'] = get_image_stars(img_file, None, json_conf,0)
    nc = update_center_radec(cp_file,nc,json_conf)
-   print("E2.5")
   
    if short_bright_stars is not None: 
-      print("E2.6")
       cat_stars,short_bright_stars = get_catalog_stars(nc,1,[])
    else:
-      print("E2.7")
       cat_stars = get_catalog_stars(nc)
  
-   print("E3")
    #if "user_stars" in nc:
    #   if len(nc['user_stars'][0]) == 2:
    #      print("GET STARS because BP missin?:", img_file)
@@ -3414,7 +3408,6 @@ def eval_cal(cp_file,json_conf,nc=None,oimg=None, mask_img=None,batch_mode=None,
          bad_stars.append(star)
 
 
-   print("E4")
 
    nc['total_res_px'] = avg_res
    nc['match_perc'] = match_perc
@@ -3911,24 +3904,27 @@ def autocal(image_file, json_conf, show = 0, heal_only=0):
 
    if cfe(image_file) == 0:
       return ()
-   try:
-      stars = get_image_stars(image_file, None, json_conf,0)
-   except:
-      print("FAILED TO GET STARS!", image_file)
-      return()
+   stars = get_image_stars(image_file, None, json_conf,0)
+   #try:
+   #except:
+   #   print("FAILED TO GET STARS!", image_file)
+   #   return()
    img = cv2.imread(image_file, 0)
    ares = None
    bres = None
    print("STARS:", len(stars))
-   if len(stars) <= 10:
+   if len(stars) < 10:
       fn, cdir = fn_dir(image_file)
       cmd = "mv " + image_file + " " + cdir + "/bad/" 
       os.system(cmd)
       print(cmd)
       return()
 
-   if len(stars) > 10:
+   print("HI", len(stars))
+
+   if len(stars) >= 10:
       bcp, acp = get_cal_params(image_file, json_conf)
+      print("ACP/BCP:", acp, bcp)
       if acp is not None:
          acp['user_stars'] = stars
          acp['cat_image_stars'] = []
@@ -3960,7 +3956,7 @@ def autocal(image_file, json_conf, show = 0, heal_only=0):
          tcp = pair_stars(tcp, image_file, json_conf, img)
          #cp = minimize_fov(image_file, tcp, image_file,img.copy(),json_conf )
          cp = tcp
-         if cp['total_res_px'] < 10 and len(cp['cat_image_stars']) > 10:
+         if cp['total_res_px'] < 10 and len(cp['cat_image_stars']) >= 10:
             fn,dir = fn_dir(image_file)
             base = fn.replace(".png", "")
             fdir = "/mnt/ams2/cal/freecal/" + base + "/"
@@ -3983,6 +3979,9 @@ def autocal(image_file, json_conf, show = 0, heal_only=0):
             print("Save:", cpf) 
 
             cmd = "./AzElGrid.py az_grid " + cpf 
+            print(cmd)
+            os.system(cmd)
+            cmd = "./Process.py refit " + cpf 
             print(cmd)
             os.system(cmd)
 
@@ -4162,6 +4161,9 @@ def autocal(image_file, json_conf, show = 0, heal_only=0):
 
    cmd = "./AzElGrid.py az_grid " + cal_img_file + ">/tmp/mike.txt 2>&1"
    print(cmd)
+   cmd = "./Process.py refit " + cpf 
+   print(cmd)
+   os.system(cmd)
    #os.system(cmd)
 
    cat_stars = get_catalog_stars(cal_params)
@@ -4209,7 +4211,7 @@ def autocal(image_file, json_conf, show = 0, heal_only=0):
    os.system(cmd)
    cmd = "./Process.py refit " + new_cal_file
    print(cmd)
-   #os.system(cmd)
+   os.system(cmd)
 
 
 def cat_star_report(cat_image_stars, multi=2.5):
@@ -4429,19 +4431,21 @@ def find_stars_with_grid_old(image):
 
 def find_stars_with_grid(img):
    raw_img = img.copy()
-   gsize = 250,250
+   gsize = 50,50
    ih,iw = img.shape[:2]
    rows = int(int(ih) / gsize[1])
    cols = int(int(iw) / gsize[0])
    stars = []
    bad_stars = []
    bright_points = []
+   grids = []
    for col in range(0,cols+1):
       for row in range(0,rows+1):
          x1 = col * gsize[0]
          y1 = row * gsize[1]
          x2 = x1 + gsize[0]
          y2 = y1 + gsize[1]
+         grids.append((x1,y1,x2,y2))
          #print("GRID:", col,row)
          #print("GRID:",x1,y1,x2,y2)
          #print("GRID:",iw,ih)
@@ -4450,51 +4454,77 @@ def find_stars_with_grid(img):
          if y2 >= ih:
             y2 = ih 
          gimg = img[y1:y2,x1:x2]
+         gimg = cv2.GaussianBlur(gimg, (3, 3), 0)
          avg = np.median(gimg)
          best_thresh = avg + 40 
 
          max_px, avg_px, px_diff,max_loc,star_int = eval_cnt(gimg.copy(), avg)
-         if px_diff > 30:
-            print("MAX/AVG/DIF:", max_px, avg_px, px_diff)
-            bright_points.append((max_loc[0], max_loc[1], star_int))
+         if avg_px < 20:
+            #in mask area
+            continue
+        
+         cny = gimg.shape[0] - 1
+         cnx = gimg.shape[1] - 1
+         if y1 + 100 > 1080:
+            continue
+         elif img[y1+100,x1] <= 5:
+            continue
 
-         _, star_bg = cv2.threshold(gimg, best_thresh, 255, cv2.THRESH_BINARY)
-         thresh_obj = cv2.dilate(star_bg, None , iterations=4)
+         if gimg[cny,cnx] == 0 or gimg[cny,0] == 0:
+            print("NEAR MASK")
+            continue
 
-         res = cv2.findContours(thresh_obj.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-         if len(res) == 3:
-            (_, cnts, xx) = res
-         else:
-            (cnts ,xx) = res
-         cc = 0
-         huge = []
-         print("CNTS:", len(cnts))
-         for (i,c) in enumerate(cnts):
-            x,y,w,h = cv2.boundingRect(cnts[i])
-            px_val = int(img[y,x])
-            cnt_img = gimg[y:y+h,x:x+w]
-            cnt_img = cv2.GaussianBlur(cnt_img, (7, 7), 0)
+         if px_diff > 10 and avg_px > 20:
+            #cv2.imshow('p', gimg)
+            #cv2.waitKey(30)
+            bright_points.append((x1+max_loc[0], y1+max_loc[1], star_int))
 
-            max_px, avg_px, px_diff,max_loc,star_int = eval_cnt(cnt_img.copy(), avg)
-            bx,by = max_loc
-            bx = bx + x
-            by = by + y
-            bx1,by1,bx2,by2= bound_cnt(bx,by,gsize[1],gsize[0],10)
-            new_cnt_img = gimg[by1:by2,bx1:bx2]
+         if False:
+            _, star_bg = cv2.threshold(gimg, best_thresh, 255, cv2.THRESH_BINARY)
+            thresh_obj = cv2.dilate(star_bg, None , iterations=4)
 
-            name = "/mnt/ams2/tmp/cnt" + str(cc) + ".png"
-            print("STAR?:", bx, by, star_int, max_px, px_diff)
-            if star_int > 50:
-               stars.append((bx+x1,by+y1,int(star_int)))
+            res = cv2.findContours(thresh_obj.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+            if len(res) == 3:
+               (_, cnts, xx) = res
             else:
-               bad_stars.append((bx+x1,by+y1,int(star_int)))
+               (cnts ,xx) = res
+            cc = 0
+            huge = []
+            print("CNTS:", len(cnts))
+            for (i,c) in enumerate(cnts):
+               x,y,w,h = cv2.boundingRect(cnts[i])
+               px_val = int(img[y,x])
+               cnt_img = gimg[y:y+h,x:x+w]
+               cnt_img = cv2.GaussianBlur(cnt_img, (7, 7), 0)
+
+               max_px, avg_px, px_diff,max_loc,star_int = eval_cnt(cnt_img.copy(), avg)
+               bx,by = max_loc
+               bx = bx + x
+               by = by + y
+               bx1,by1,bx2,by2= bound_cnt(bx,by,gsize[1],gsize[0],10)
+               new_cnt_img = gimg[by1:by2,bx1:bx2]
+
+               name = "/mnt/ams2/tmp/cnt" + str(cc) + ".png"
+               print("STAR?:", bx, by, star_int, max_px, px_diff)
+               if star_int > 50:
+                  stars.append((bx+x1,by+y1,int(star_int)))
+               else:
+                  bad_stars.append((bx+x1,by+y1,int(star_int)))
+
+   for x1,y1,x2,y2 in grids:
+      cv2.rectangle(img, (x1, y1), (x2, y2), (77, 88, 77), 1)
 
    for star in stars:
+      x,y,i = star 
       print(stars)
+      cv2.circle(img, (int(x),int(y)), 5, (0,128,128), 1)
    for bp in bright_points :
+      x,y,i = bp
       print(bp)
-
-   return(stars)
+      cv2.circle(img, (int(x),int(y)), 5, (128,128,128), 1)
+   #cv2.imshow('p', img)
+   #cv2.waitKey(30)
+   return(bright_points)
 
 def get_image_stars(file=None,img=None,json_conf=None,show=0):
 
@@ -4933,7 +4963,7 @@ def pair_stars(cal_params, cal_params_file, json_conf, cal_img=None, show = 0):
    total_matches = 0
    cat_stars = get_catalog_stars(cal_params)
 
-   print("CAT STARS IS:", len(cat_stars))
+   #print("CAT STARS IS:", len(cat_stars))
 
    #new_user_stars = []
    #new_stars = []
@@ -5117,8 +5147,7 @@ def mag_report(stars, plot=0):
    return(new_stars, bad_stars)
 
 def get_catalog_stars(cal_params):
-   print("C1")
-   print("CP:", cal_params['center_az'], cal_params['center_el'], cal_params['ra_center'], cal_params['dec_center'], cal_params['position_angle'], cal_params['pixscale'])
+   #print("CP:", cal_params['center_az'], cal_params['center_el'], cal_params['ra_center'], cal_params['dec_center'], cal_params['position_angle'], cal_params['pixscale'])
    if "short_bright_stars" not in cal_params:
       mybsd = bsd.brightstardata()
       bright_stars = mybsd.bright_stars
@@ -5136,7 +5165,6 @@ def get_catalog_stars(cal_params):
    RA_center = float(cal_params['ra_center']) 
    dec_center = float(cal_params['dec_center']) 
    F_scale = 3600/float(cal_params['pixscale'])
-   print("C2")
    if "x_poly" in cal_params:
       x_poly = cal_params['x_poly']
       y_poly = cal_params['y_poly']
@@ -5161,7 +5189,6 @@ def get_catalog_stars(cal_params):
    bright_stars_sorted = sorted(bright_stars, key=lambda x: x[4], reverse=False)
 
    sbs = []
-   print("C3")
    for bname, cname, ra, dec, mag in bright_stars_sorted:
       #print("NAME:", bname)
       #print("CNAME:", cname)
@@ -5180,18 +5207,13 @@ def get_catalog_stars(cal_params):
          name = cname
 
       ang_sep = angularSeparation(ra,dec,RA_center,dec_center)
-      #print("TESTING BSD:", name, ra, dec, ang_sep)
       if ang_sep < fov_radius and float(mag) < 7:
          sbs.append((bname, cname, ra, dec, mag))
          new_cat_x, new_cat_y = distort_xy(0,0,ra,dec,RA_center, dec_center, x_poly, y_poly, x_res, y_res, pos_angle_ref,F_scale)
 
          possible_stars = possible_stars + 1
          catalog_stars.append((name,mag,ra,dec,new_cat_x,new_cat_y))
-      #else:
-      #   print("FAILED TO MATCH:", ang_sep, mag)
 
-   print("C4", len(catalog_stars))
-   #print("CAT STARS:", len(catalog_stars))
    if len(catalog_stars) == 0:
       exit()
    return(catalog_stars)
