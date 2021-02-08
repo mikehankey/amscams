@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-
+import os
 import numpy as np
 from DynaDB import search_events, get_event
 import boto3
@@ -15,6 +15,27 @@ import boto3
 import socket
 import subprocess
 from boto3.dynamodb.conditions import Key
+
+def obs_review(date, json_conf):
+
+   os.system("./DynaDB.py cd " + date)
+   print("./DynaDB.py cd " + date)
+   
+   le_dir = "/mnt/ams2/meteor_archive/" + json_conf['site']['ams_id'] + "/EVENTS/" + date + "/"
+   stations = json_conf['site']['multi_station_sync']
+   if json_conf['site']['ams_id'] not in stations:
+      stations.append(json_conf['site']['ams_id'])
+
+   html = ""
+   for station in stations:
+      html += "<h1>" + station + "</h1>"
+      obs_file = le_dir + station + "_" + date + ".json"
+      if cfe(obs_file) == 1:
+         obs = load_json_file(obs_file)
+         html += str(len(obs)) + " meteor obs"
+         for ob in obs:
+            html += str(ob) + "<HR>"
+   return(html)
 
 def event_sum(ed):
    traj = ed['traj']

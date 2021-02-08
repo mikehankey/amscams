@@ -261,6 +261,8 @@ def delete_obs(dynamodb, station_id, sd_video_file):
 def cache_day(dynamodb, date, json_conf):
    # LOCAL EVENT DIR
    le_dir = "/mnt/ams2/meteor_archive/" + json_conf['site']['ams_id'] + "/EVENTS/" + date + "/"
+   if cfe(le_dir, 1) == 0:
+      os.makedirs(le_dir)
    stations = json_conf['site']['multi_station_sync']
    if json_conf['site']['ams_id'] not in stations:
       stations.append(json_conf['site']['ams_id'])
@@ -497,15 +499,15 @@ def sync_db_day(dynamodb, station_id, day):
             print(lkey, "UPDATE LOCAL: The remote DB has a newer version of this file" )
          if local_meteors[lkey]['revision'] > db_meteors[lkey]['revision']:
             print(lkey, "UPDATE REMOTE : The local DB has a newer version of this file. " , local_meteors[lkey]['revision'] ,   db_meteors[lkey]['revision'])
-         meteor_file = dkey.replace(".mp4", ".json")
-         insert_meteor_obs(dynamodb, station_id, meteor_file)
+            meteor_file = dkey.replace(".mp4", ".json")
+            insert_meteor_obs(dynamodb, station_id, meteor_file)
          if local_meteors[lkey]['revision'] == db_meteors[lkey]['revision']:
             print(lkey, "GOOD: The remote and local revisions are the same." )
 
    print("SEARCH OBS:", station_id, day)
    items = search_obs(dynamodb, station_id, day, 1)
    for item in items:
-      print("IN DB:", station_id, item['sd_video_file'])
+      print("IN DB:", station_id, item['sd_video_file'], item['revision'])
    print(len(items), "items for", station_id)
 
 def update_event_sol(dynamodb, event_id, sol_data, obs_data, status):
