@@ -1,5 +1,6 @@
 #!/usr/bin/python3
-
+import sys
+import os
 import numpy as np
 from lib.PipeUtil import load_json_file, save_json_file, cfe
 from lib.PipeWeather import color_thresh_new, get_contours
@@ -11,13 +12,26 @@ json_conf = load_json_file("../conf/as6.json")
    
   
 def detect_laser_in_thumbs(date,json_conf):
+   ld = "/mnt/ams2/laser/" + date + "/"  
+   if cfe(ld, 1) == 0:
+      os.makedirs(ld)
    detects = []
    files = glob.glob("/mnt/ams2/SD/proc2/" + date + "/images/*tn.jpg")
+   html = ""
    for file in files:
-      print(file)
-
-def detect_laser_in_img(file, json_conf):
-   matched = color_thresh_new(frame, (0,0,0), (45,255,255))
+      val = detect_laser_in_img(file)
+      if val > 0:
+         detects.append((file, val))
+   for file, val in detects:
+      vf = file.replace("/mnt/ams2", "")
+      html += "<div style='float: left'><img src=" + vf + "></div>"
+   fp = open(ld + "laser.html", "w")
+   fp.write(html)
+   print("saved:", ld + "laser.html")
+def detect_laser_in_img(file):
+   frame = cv2.imread(file)
+   matched = color_thresh_new(frame, (0,50,50), (45,255,255))
+   return(np.sum(matched))
    
 def detect_laser_activity(file, json_conf):
    
@@ -45,11 +59,22 @@ def detect_laser_activity(file, json_conf):
          sub_diff = cv2.subtract(sub, last_sub)
          sub = cv2.subtract(frame, mask)
          cnts = get_contours(sub_diff)
+         print(fn, np.sum(sub_diff))
          if len(cnts) > 0:
             print(fn, len(cnts))
             file_fn = file.split("/")[-1]
             laser_activity.append((file_fn,fn))
-      last_sub = sub
+      last_sub = sub.copy()
+      last_frame = frame.copy()
       fn += 1
    print("Laser Detected:", laser_detected)
    print("Laser Activity:", len(laser_activity))
+
+cmd = sys.argv[1]
+file = sys.argv[2]
+
+if cmd == 'detect_laser':
+   detect_laser_in_thumbs(file,json_conf)
+if cmd == 'laser_activity':
+   detect_laser_activity(file,json_conf)
+
