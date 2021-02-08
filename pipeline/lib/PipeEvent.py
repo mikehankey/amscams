@@ -1,6 +1,6 @@
 import os
 from lib.PipeUtil import load_json_file, save_json_file, cfe, convert_filename_to_date_cam
-from DynaDB import load_meteor_obs_day,  search_obs, insert_meteor_event, search_events
+from DynaDB import load_meteor_obs_day,  search_obs, insert_meteor_event, search_events, delete_event, delete_obs
 import glob
 import datetime
 from lib.PipeAutoCal import fn_dir
@@ -139,12 +139,42 @@ def dyna_events_for_day(day, json_conf):
       os.makedirs("/mnt/ams2/EVENTS/" + day ) 
 
    all_data = {}
+   all_obs = {}
    for station in sorted(stations):
       print("getting dyna data for:", station)
       all_data[station] = search_obs(dynamodb, station, day)
+      for item in all_data[station]:
+         sd_video_file = item['sd_video_file']
+         key = station + "_" + sd_video_file
+         all_obs[key] = 1 
    save_json_file("/mnt/ams2/EVENTS/" + day + "_obs.json", all_data)
-   print("/mnt/ams2/EVENTS/" + day + "_obs.json", all_data)
+   #print("/mnt/ams2/EVENTS/" + day + "_obs.json", all_data)
 
+   # now check each event and make sure it belongs to this cluster of stations
+   # also make sure the obs files are still valid (haven't been deleted).
+
+   my_events = {}
+   evd = 0
+   for event in dy_events:
+      in_network = 0
+      for station in stations:
+         if station in event['stations']:
+            in_network += 1
+      if in_network == 0: 
+         print("This event is not part of our local network, skip it.")
+         continue
+      # check if the obs are sill valid.
+      for i in range(0, len(event['stations'])):
+         station = event['stations'][i]
+         file = event['files'][i]
+         key = station + "_" + file 
+         if key in all_obs:
+            print("OBS IS GOOD") 
+         else:
+            print("OBS IS NOT GOOD", event['event_id'], station) 
+            delete_event(dynamodb, day, event['event_id']) 
+            evd += 1
+   print("HI", len(dy_events), evd)      
 
    meteors = []
    for station in all_data:
@@ -193,6 +223,9 @@ def dyna_events_for_day(day, json_conf):
       #   print("SINGLE STATION:", eid, events[eid])
 
 
+   for eid in events:
+      if "event_id" in events[eid]:
+         print(events[eid]['event_id'], events[eid])
 
 
 def events_for_day(day, json_conf):

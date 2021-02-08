@@ -14,6 +14,12 @@ import sys
 
 
 def refresh_day(date, dynamodb=None, use_cache=0):
+   """ download fresh DYNA data for 1 day and load it into redis
+      meteor(obs)
+      obs: OBS:AMSXX:SD_VIDEO_FILE = "[meteor start_time, station, duration, revision, cat_star_total, res_error, azs, els]
+      event: EV:EVENT_ID = "[event start_time, stations, duration, revision, solve_status, vinit, vavg, start ele, end ele, a, e, i,shower ]
+
+   """
    json_conf = load_json_file("../conf/as6.json")
    stations = json_conf['site']['multi_station_sync']
    amsid = json_conf['site']['ams_id']
@@ -31,16 +37,6 @@ def refresh_day(date, dynamodb=None, use_cache=0):
    if cfe(dyn_cache, 1) == 0:
       os.makedirs(dyn_cache)
 
-
-   # GET ALL NETWORK EVENTS FOR THE DAY
-   dc_file = dyn_cache + date + "_events.json"
-   if cfe(dc_file) == 1:
-      size, tdiff = get_file_info(dc_file)
-      hours_old = tdiff / 60
-      if hours_old < 4:
-         print("USING EVENT DYCACHE:", dc_file)
-         use_cache = 1
-         events = load_json_file(dc_file)
 
 
    if use_cache == 0:
@@ -117,6 +113,8 @@ def load_meteor_index(r ):
       val = str([reduced,start_time,dur,ang_vel,ang_dist,hotspot,msm])
       r.mset({key: val})
       print("setting.", meteor, start_time)
+
+
 
 
 if __name__ == "__main__":

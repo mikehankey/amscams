@@ -28,6 +28,31 @@ from boto3.dynamodb.conditions import Key
 import time
 from wmpl.Utils.TrajConversions import equatorialCoordPrecession_vect, J2000_JD
 
+def solve_status(day):
+   dynamodb = boto3.resource('dynamodb')
+   stations = []
+   events = search_events(dynamodb, day, stations)
+   solved_html = ""
+   not_solved_html = ""
+   failed_html = ""
+   for event in events:
+      if "solve_status" in event :
+         if "FAILED" in event['solve_status']:
+            failed_html += event['event_id'] + " " + event['solve_status'] + "\n"
+         else:
+            solved_html += event['event_id'] + " " + event['solve_status'] + "\n"
+      else:
+         if "solution" in event:
+            if event["solution"] != 0:
+               solved_html += event['event_id'] + " Solved.\n"
+
+         else:
+            not_solved_html += event['event_id'] + " Not solved.\n"
+      #solve_event(event['event_id'])
+   print(solved_html)
+   print(failed_html)
+   print(not_solved_html)
+
 def get_best_obs(obs):
    best_dist = 99999
    best_file = None
@@ -83,15 +108,20 @@ def solve_event(event_id, force=0):
     print("EVID:", event_id)
     print(event)
     if "solution" in event and force != 1:
-       if event['solution'] != 0:
-          print("EVENT IS ALREADY SOLVED!")    
-          return()
+       if "solve_status" in event:
+          if "FAIL" in event['solve_status']:
+             print("The event ran and failed.")
+          else:
+             print("The event ran and passed.")
+             #return()
 
 
     obs = {}
     print("EV:", event_id, event)
     if len(event) == 0:
        return()
+
+    bad_obs = []
     for i in range(0, len(event['stations'])):
        t_station = event['stations'][i]
        t_file = event['files'][i]
@@ -115,6 +145,8 @@ def solve_event(event_id, force=0):
 
         if len(obs[station_id][file]['times']) > 0:
            start_times.append(obs[station_id][file]['times'][0])
+        else:
+           bad_obs.append(station_id + " missing reduction.")
 
     if len(start_times) == 0:
        print("PROB: NO DATA?", event_id)
@@ -150,7 +182,14 @@ def solve_event(event_id, force=0):
     save_json_file(solve_dir + "/" + event_id + "-simple.json", sol)
     save_json_file(solve_dir + "/" + event_id + "-obs.json", obs)
     print("SAVED FILES IN:", solve_dir)
-    WMPL_solve(obs_data)
+    if len(bad_obs) > 0:
+       print("BAD OBS!", bad_obs)
+       obs_data = {}
+       solution = {}
+       update_event_sol(None, event_id, solution, obs_data, str(bad_obs))
+       return()
+    else: 
+       WMPL_solve(obs_data)
 
     solved_files = glob.glob(solve_dir + "/*")
     if len(solved_files) > 10:
@@ -164,12 +203,15 @@ def solve_event(event_id, force=0):
     
     if resp == 0:
        print("FAILED TO SOLVE!")
+       solution = {}
+       #solution['obs'] = obs_data
+       update_event_sol(None, event_id, solution, obs_data, "WMPL FAILED.")
        return(0)
     solution,as_obs = resp
 
     print("EVID:", event_id)
     print("UPDATE EVENT SOL:")
-    update_event_sol(None, event_id, solution, as_obs)
+    update_event_sol(None, event_id, solution, as_obs, "SUCESS")
 
     event_file = solve_dir + "/" + event_id + "-event.json"
 
@@ -957,7 +999,7 @@ def WMPL_solve(obs):
 
 
     # Init new trajectory solving
-    traj_solve = traj.Trajectory(jd_ref, output_dir=solve_dir, meastype=meastype, save_results=True, monte_carlo=False, show_plots=False, max_toffset=2,v_init_part=.5)
+    traj_solve = traj.Trajectory(jd_ref, output_dir=solve_dir, meastype=meastype, save_results=True, monte_carlo=False, show_plots=False, max_toffset=3,v_init_part=.5, estimate_timing_vel=False)
    
     for station_id in obs:
         if len(obs[station_id].keys()) > 1:
@@ -1051,3 +1093,5 @@ if cmd == "meh":
    make_event_html(meteor_file)
 if cmd == "sm":
    solve_month(meteor_file)
+if cmd == "status":
+   solve_status(meteor_file)

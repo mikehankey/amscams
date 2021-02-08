@@ -234,6 +234,18 @@ def load_stations(dynamodb):
       print(fn)   
       insert_station(dynamodb, fn)
 
+
+def delete_event(dynamodb, event_day, event_id):
+   print("DELETE EVENT:", event_day, event_id)
+   table = dynamodb.Table('x_meteor_event')
+   response = table.delete_item(
+      Key= {
+         "event_day": event_day,
+         "event_id": event_id
+     }
+   )
+   print("DEL:", response)
+
 def delete_obs(dynamodb, station_id, sd_video_file):
    print("DELETE:", station_id, sd_video_file)
    table = dynamodb.Table('meteor_obs')
@@ -246,6 +258,24 @@ def delete_obs(dynamodb, station_id, sd_video_file):
    print("DEL:", response)
 
 
+def cache_day(dynamodb, date, json_conf):
+   # LOCAL EVENT DIR
+   le_dir = "/mnt/ams2/meteor_archive/" + json_conf['site']['ams_id'] + "/EVENTS/" + date + "/"
+   stations = json_conf['site']['multi_station_sync']
+   if json_conf['site']['ams_id'] not in stations:
+      stations.append(json_conf['site']['ams_id'])
+   events = search_events(dynamodb, date, stations)
+   for event in events:
+      print(event['event_id']) 
+   event_file = le_dir + date + "_events.json"
+   save_json_file(event_file, events)
+   print("SAVED:", event_file)
+   for station in stations:
+      obs = search_obs(dynamodb, station, date)
+      obs_file = le_dir + station + "_" + date + ".json"
+      save_json_file(obs_file, obs)
+      print("SAVED:", obs_file)
+
 def search_events(dynamodb, date, stations):
    dyn_cache = "/mnt/ams2/DYCACHE/"
    use_cache = 0
@@ -257,8 +287,10 @@ def search_events(dynamodb, date, stations):
       hours_old = tdiff / 60
       print("HOURS OLD:", hours_old)
       if hours_old < 4:
+       
          use_cache = 1   
 
+   use_cache = 0
    if use_cache == 0:
       if dynamodb is None:
          dynamodb = boto3.resource('dynamodb')
@@ -292,6 +324,8 @@ def search_obs(dynamodb, station_id, date, no_cache=0):
       print("HOURS OLD:", hours_old)
       if hours_old < 4:
          use_cache = 1   
+
+   use_cache = 0
    if use_cache == 0 or no_cache == 1:
       if dynamodb is None:
          dynamodb = boto3.resource('dynamodb')
@@ -474,7 +508,7 @@ def sync_db_day(dynamodb, station_id, day):
       print("IN DB:", station_id, item['sd_video_file'])
    print(len(items), "items for", station_id)
 
-def update_event_sol(dynamodb, event_id, sol_data, obs_data):
+def update_event_sol(dynamodb, event_id, sol_data, obs_data, status):
    sol_data = json.loads(json.dumps(sol_data), parse_float=Decimal)
    #obs_data_save = json.loads(json.dumps(obs_data), parse_float=Decimal)
    if dynamodb is None:
@@ -492,8 +526,9 @@ def update_event_sol(dynamodb, event_id, sol_data, obs_data):
          'event_day': event_day ,
          'event_id': event_id
       },
-      UpdateExpression="set solution=:sol_data ",
+      UpdateExpression="set solve_status=:status, solution=:sol_data  ",
       ExpressionAttributeValues={
+         ':status': status ,
          ':sol_data': sol_data
       },
       ReturnValues="UPDATED_NEW"
@@ -643,3 +678,6 @@ if __name__ == "__main__":
          day = file.split("/")[-1]
          print(file, day)
          sync_db_day(dynamodb, station_id, day)
+   if cmd == "cache_day" or cmd == "cd":
+      day = sys.argv[2]
+      cache_day(dynamodb, day, json_conf)

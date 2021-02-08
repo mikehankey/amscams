@@ -332,7 +332,8 @@ def list_events_for_day(dynamo, date):
    json_conf = load_json_file("../conf/as6.json")
    stations = json_conf['site']['multi_station_sync']
    remote_urls = get_remote_urls(json_conf)
-
+   le_dir = "/mnt/ams2/meteor_archive/" + json_conf['site']['ams_id'] + "/EVENTS/" + date + "/"
+   le_file = le_dir + date + "_events.json"
 
    ams_id = json_conf['site']['ams_id']
    #date = "2021_01_24"
@@ -355,10 +356,12 @@ def list_events_for_day(dynamo, date):
    #)
    #response = dynamo.tables['x_meteor_event'].query()
 
-   response = dynamo.tables['x_meteor_event'].scan()
+   #response = dynamo.tables['x_meteor_event'].scan()
 
-   events = response['Items']
-   events= sorted(events, key=lambda x: x['event_id'], reverse=True)
+   #events = response['Items']
+   #events= sorted(events, key=lambda x: x['event_id'], reverse=True)
+   events = load_json_file(le_file)
+   
 
    if len(events) == 0:
       return("There are no events registered for " + date)
@@ -368,7 +371,24 @@ def list_events_for_day(dynamo, date):
    event_dir = "/mnt/ams2/meteor_archive/" + json_conf['site']['ams_id'] + "/EVENTS/" + date + "/" 
    html = "<table>"
    html += "<tr><td>Event ID</td><td>Stations</td><td>Start Height</td><td>End Height</td><td>Vel Init</td><td>Vel Avg</td><td>a</td><td>e</td><td>i</td><td>Shower</td><td>Status</td></tr>"
+
+   solved_events = []
+   unsolved_events = []
+
+   bad_events = []
+
    for event in events:
+      if "solve_status" in event:
+         if "FAIL" in event['solve_status']:
+            bad_events.append(event)
+
+         else:
+            solved_events.append(event)
+      else:
+         unsolved_events.append(event)
+
+
+   for event in solved_events:
       print(event)
       stations = event['stations']
       ustations = set(stations)
@@ -433,19 +453,20 @@ def list_events_for_day(dynamo, date):
          #elink = "#"
          elink = "/event_detail/" + event_id + "/"
 
-      if wmpl_status is None:
-         if "solution" not in event:
-            html += "<td colspan=8><a href=" + elink + ">Event not solved yet.</a></td>"
-         elif solution == 0:
-            html += "<td colspan=8><a href=" + elink + ">WMPL Solve Failed.</a></td>"
+      if "solve_status" in event:
+         html += "<td colspan=8><a href=" + elink + ">" + event['solve_status'] + "</a></td>"
+
       else: 
-         if wmpl_status == 0:
-            html += "<td><a href=" + elink + ">Failed</a></td>"
-         else:
-            html += "<td><a href=" + elink + ">Solved</a></td>"
+         html += "<td><a href=" + elink + ">Not Solved yet</a></td>"
       html += "</tr>" 
         
    html += "</table>"
+
+   html += ("<h1>Failed events</h1>")
+
+   for event in bad_events:
+      html += "<li><a href=/event_detail/" + event['event_id'] + ">" + event['event_id'] + "</a></li>\n"
+
 
    return(html)
 
