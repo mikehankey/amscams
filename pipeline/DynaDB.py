@@ -441,6 +441,10 @@ def get_obs(dynamodb, station_id, sd_video_file):
       return(None)
 
 def sync_db_day(dynamodb, station_id, day):
+   # remove the cache 
+   cmd = "rm /mnt/ams2/DYCACHE/*.json"
+   os.system(cmd)
+
    db_meteors = {}
    items = search_obs(dynamodb, station_id, day, 1)
    for item in items:
@@ -635,7 +639,7 @@ if __name__ == "__main__":
    dynamodb = boto3.resource('dynamodb')
    json_conf = load_json_file("../conf/as6.json")
    cmd = sys.argv[1]
-   if cmd == "sync_db_day":
+   if cmd == "sync_db_day" or cmd == "sdd":
       station_id = json_conf['site']['ams_id']
       sync_db_day(dynamodb, station_id, sys.argv[2])
 

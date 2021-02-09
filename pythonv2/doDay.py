@@ -192,7 +192,11 @@ def check_disk():
       if "json" not in file and "daytime" not in file and "all" not in file:
          if cfe(file, 1) == 1:
             fn = file.split("/")[-1]
-            dir_date = datetime.strptime(fn , "%Y_%m_%d")
+            try:
+               dir_date = datetime.strptime(fn , "%Y_%m_%d")
+            except:
+               print("OTHER FILE:", file)
+               continue
             elp = dir_date - datetime.now()
             days_old = abs(elp.total_seconds()) / 86400
             print("day dir:", fn, days_old)
