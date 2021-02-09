@@ -115,39 +115,47 @@ def dyna_events_for_month(wild, json_conf):
 
 def dyna_events_for_day(day, json_conf):
 
-   dynamodb = boto3.resource('dynamodb')
-   # first get all existing known events
-   dy_events = {}
-   events = {}
-
+   amsid = json_conf['site']['ams_id']
    my_station = json_conf['site']['ams_id']
    stations = json_conf['site']['multi_station_sync']
    if my_station not in stations:
       stations.append(my_station)
 
-   dy_events = search_events(dynamodb, day, stations)
+   # Load up events for today
+   date = day
+   le_dir = "/mnt/ams2/meteor_archive/" + json_conf['site']['ams_id'] + "/EVENTS/" + date + "/"
+   event_file = le_dir + date + "_events.json"
+   dy_events = load_json_file(event_file)
    dy_keys = {}
    for event in dy_events:
-      dy_keys[event['event_id']] = 1
+      dy_keys[event['event_id']] = event
 
-   # get obs and data from the dynadb for today from stations in my network 
+   all_data = {}
+   for station in stations:
+      obs_file = le_dir + station + "_" + date + ".json"
+      all_data[station] = load_json_file(obs_file)
+
+
+   # first get all existing known events
+   events = {}
+
+
    # loop over all obs from all stations 
    # if obs does not have a registered event id register the new event in events table and update related obs with event id
-   # 
    #  
    if cfe("/mnt/ams2/EVENTS/" + day, 1) == 0:
       os.makedirs("/mnt/ams2/EVENTS/" + day ) 
 
-   all_data = {}
    all_obs = {}
    for station in sorted(stations):
-      print("getting dyna data for:", station)
-      all_data[station] = search_obs(dynamodb, station, day)
+      #print("getting dyna data for:", station)
+      #all_data[station] = search_obs(dynamodb, station, day)
       for item in all_data[station]:
          sd_video_file = item['sd_video_file']
          key = station + "_" + sd_video_file
          all_obs[key] = 1 
-   save_json_file("/mnt/ams2/EVENTS/" + day + "_obs.json", all_data)
+
+   #save_json_file("/mnt/ams2/EVENTS/" + day + "_obs.json", all_data)
    #print("/mnt/ams2/EVENTS/" + day + "_obs.json", all_data)
 
    # now check each event and make sure it belongs to this cluster of stations
@@ -174,7 +182,6 @@ def dyna_events_for_day(day, json_conf):
             print("OBS IS NOT GOOD", event['event_id'], station) 
             delete_event(dynamodb, day, event['event_id']) 
             evd += 1
-   print("HI", len(dy_events), evd)      
 
    meteors = []
    for station in all_data:
@@ -219,13 +226,55 @@ def dyna_events_for_day(day, json_conf):
             insert_meteor_event(dynamodb, wmpl_id, events[eid])
          else:
             print("EVENT ID ALREADY EXISTS IN THE DYNA DATA!")
+            print(dy_keys[wmpl_id])
       #else:
       #   print("SINGLE STATION:", eid, events[eid])
 
 
+   # Now update my meteor files with the mse info
    for eid in events:
       if "event_id" in events[eid]:
-         print(events[eid]['event_id'], events[eid])
+         for i in range(0, len(events[eid]['stations'])):
+            st = events[eid]['stations'][i]
+            file = events[eid]['files'][i]
+            event_id = events[eid]['event_id']
+            if st == amsid:
+               print("\nFILE:", file)
+               #print("THIS FILE IS MINE AND SHOULD BE UPDATED WITH EVENT INFO!")
+               day = file[0:10]
+               md = "/mnt/ams2/meteors/" + day + "/"  
+               mf = md + file
+               mf = mf.replace(".mp4", ".json")
+               mj = load_json_file(mf)
+               mj['multi_station_event'] = events[eid]
+               dyd = dy_keys[event_id]
+               if "solve_status" in dyd:
+                  if "SUC" in dyd['solve_status']:
+                     dyd['solve_status'] = "SUCCESS"
+                     if "solution" in dyd:
+                        event_dir = dyd['solution']['sol_dir'].replace("/mnt/ams2/meteor_archive/", "http://archive.allsky.tv/")
+                        print("UPDATING MSE FOR SOLVED EVENT:")
+                        print( eid, event_id, st, file, dyd['solve_status'], event_dir, dyd['solution']['orb']['link'])
+                        mj['multi_station_event']['event_id'] = event_id
+                        mj['multi_station_event']['solve_status'] = "SUCCESS"
+                        mj['multi_station_event']['event_file'] = event_dir + "/index.html"
+                        if "http" in dyd['solution']['orb']['link']:
+                           mj['multi_station_event']['orb_file'] = event_dir + dyd['solution']['orb']['link']
+                     else:
+                        print("EVENT FAILED!?", syd['solve_status'])
+                        mj['multi_station_event']['solve_status'] = "FAILED"
+                  else:
+                     print("UPDATING MSE FOR EVENT SOLUTION MISSING!:")
+                     print(event_id, st, file, dyd['solve_status'] )
+                     mj['multi_station_event']['solve_status'] = "WMPL FAILED"
+               else:
+                  print("UPDATING MSE FOR UN-SOLVED EVENT:", eid, event_id, st, file)
+                  mj['multi_station_event']['solve_status'] = "NOT RUN"
+               print("saving:", mf)
+               save_json_file(mf, mj)
+               #exit()
+   os.system("./Process.py sync_prev_all " + date)
+   
 
 
 def events_for_day(day, json_conf):
@@ -400,7 +449,6 @@ def events_for_day(day, json_conf):
                   print("NO EVENT FOUND", events[event_id]['files'][i])
 
 def check_make_event(data, events):
-   print("MDATA:", data)
    if len(data) == 3:
       station,meteor, start_time = data
    else:
@@ -429,7 +477,7 @@ def check_make_event(data, events):
          event_datetime = datetime.datetime.strptime(event_dt, "%Y-%m-%d %H:%M:%S")
       time_diff = (start_datetime - event_datetime).total_seconds()
       if abs(time_diff) < 2:
-         print("MATCH", station, event_id, start_datetime, event_datetime, (start_datetime - event_datetime).total_seconds())
+         #print("MATCH", station, event_id, start_datetime, event_datetime, (start_datetime - event_datetime).total_seconds())
          events[event_id]['start_datetime'].append(start_time) 
          events[event_id]['stations'].append(station) 
          events[event_id]['files'].append(meteor) 

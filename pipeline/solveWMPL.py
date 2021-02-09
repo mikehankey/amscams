@@ -211,7 +211,7 @@ def solve_event(event_id, force=1):
 
     print("EVID:", event_id)
     print("UPDATE EVENT SOL:")
-    update_event_sol(None, event_id, solution, as_obs, "SUCESS")
+    update_event_sol(None, event_id, solution, as_obs, "SUCCESS")
 
     event_file = solve_dir + "/" + event_id + "-event.json"
 

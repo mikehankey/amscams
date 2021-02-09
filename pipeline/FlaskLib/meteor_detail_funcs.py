@@ -30,7 +30,11 @@ def make_obs_object(mj,mse, nsinfo):
          obs[station][fn]['ras'] = []
          obs[station][fn]['decs'] = []
          obs[station][fn]['ints'] = []
-      mfd = mse['mfds'][i]
+    
+      if "mfds" in mse:
+         mfd = mse['mfds'][i]
+      else:
+         mfd = {}
       if "meteor_frame_data" in mfd:
          for mc in range(0, len(mfd['meteor_frame_data'])):
             data = mfd['meteor_frame_data'][mc]
@@ -54,6 +58,19 @@ def make_obs_object(mj,mse, nsinfo):
 
 def make_ms_html(amsid, meteor_file, mj):
    mse = mj['multi_station_event']
+
+
+   print("MSE:", mse)
+
+   if "event_file" in mse:
+      ms_html = "<iframe width=100% height=800 src=" + mse['event_file'] + "></iframe>"
+      print(ms_html)
+      return(ms_html)
+
+   failed = 0
+   if "solve_status" in mse:
+      if "FAILED" in mse['solve_status']:
+         failed = 1
    #ms_html = "<table width=100%>"
    #ms_html += "<tr><td>Station</td><td>Start Datetime</td><td>File</td></tr>"
    if cfe("../conf/network_station_info.json") == 0:
@@ -64,7 +81,11 @@ def make_ms_html(amsid, meteor_file, mj):
 
    station_pts = ""
 
-   ms_html = """
+   if failed == 1:
+      note = "This event failed."
+   else:
+      note = ""
+   ms_html = note + """
       <div class='h1_holder  d-flex justify-content-between'>
          <h1><span class='h'>Captures</span> </h1>
       </div>
@@ -81,7 +102,10 @@ def make_ms_html(amsid, meteor_file, mj):
       file = file.replace(".json", "")
       tstation = mse['stations'][i]
       active_stations[tstation] = 1
-      mfd = mse['mfds'][i]
+      if "mfds" in mse:
+         mfd = mse['mfds'][i]
+      else:
+         mfd = {}
       if "meteor_frame_data" not in mfd:
          meteor_frame_data = None
       else:
@@ -99,6 +123,10 @@ def make_ms_html(amsid, meteor_file, mj):
          cloud_url = "https://archive.allsky.tv/" + tstation + "/METEORS/" + year + "/" + day + "/" 
       cloud_prev = cloud_dir + tstation + "_" + file + "-prev.jpg"
       cloud_prev_url = cloud_url + tstation + "_" + file + "-prev.jpg?xx"
+      if ".mp4" in cloud_prev:
+         cloud_prev = cloud_prev.replace(".mp4", "")
+         cloud_prev_url = cloud_prev_url.replace(".mp4", "")
+         
       prev_img = "<img src=" + cloud_prev_url + ">"      
       #ms_html += "<tr><td>" + mse['stations'][i] + "</td><td>" + mse['start_datetime'][i] + "</td><td>" + prev_img + "<br>" + file + "</td></tr>"
       ht_class = "norm"
@@ -133,6 +161,10 @@ def make_ms_html(amsid, meteor_file, mj):
 
       """
       ms_html += "</div>"
+
+   ms_html += "</div>"
+   ms_html += "</div>"
+   return(ms_html)
 
    all_lats = []
    all_lons = []
@@ -227,7 +259,7 @@ def detail_page(amsid, date, meteor_file):
    if "multi_station_event" in mj:
       otherobs = """
                 <li class="nav-item">
-                    <a class="nav-link" id="multi-tab-l" data-toggle="tab" href="#multi-tab" role="tab" aria-controls="multi" aria-selected="false"><span id="str_cnt"></span>Other Observations</a>
+                    <a class="nav-link" id="multi-tab-l" data-toggle="tab" href="#multi-tab" role="tab" aria-controls="multi" aria-selected="false"><span id="str_cnt"></span>Event Solution</a>
                 </li>
       """
       ms_html = str(mj['multi_station_event'])
