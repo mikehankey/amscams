@@ -96,7 +96,7 @@ def solve_day(day):
       print("DY EV:", event['event_id'])
       solve_event(event['event_id'])
 
-def solve_event(event_id, force=0):
+def solve_event(event_id, force=1):
     print("EVID:", event_id)
     json_conf = load_json_file("../conf/as6.json")
     ams_id = json_conf['site']['ams_id']
@@ -999,7 +999,7 @@ def WMPL_solve(obs):
 
 
     # Init new trajectory solving
-    traj_solve = traj.Trajectory(jd_ref, output_dir=solve_dir, meastype=meastype, save_results=True, monte_carlo=False, show_plots=False, max_toffset=3,v_init_part=.5, estimate_timing_vel=False)
+    traj_solve = traj.Trajectory(jd_ref, output_dir=solve_dir, meastype=meastype, save_results=True, monte_carlo=False, show_plots=False, max_toffset=3,v_init_part=.5, estimate_timing_vel=True)
    
     for station_id in obs:
         if len(obs[station_id].keys()) > 1:
