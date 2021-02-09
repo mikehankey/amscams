@@ -29,3 +29,4 @@ pip3 install simplekml
 pip3 install boto3 
 pip3 install simplejson
 pip3 install flask_httpauth
+pip3 install flask-dynamo
