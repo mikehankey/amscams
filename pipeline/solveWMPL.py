@@ -96,7 +96,7 @@ def solve_day(day):
       print("DY EV:", event['event_id'])
       solve_event(event['event_id'])
 
-def solve_event(event_id, force=1):
+def solve_event(event_id, force=1, time_sync=1):
     print("EVID:", event_id)
     json_conf = load_json_file("../conf/as6.json")
     ams_id = json_conf['site']['ams_id']
@@ -189,7 +189,7 @@ def solve_event(event_id, force=1):
        update_event_sol(None, event_id, solution, obs_data, str(bad_obs))
        return()
     else: 
-       WMPL_solve(obs_data)
+       WMPL_solve(obs_data, time_sync)
 
     solved_files = glob.glob(solve_dir + "/*")
     if len(solved_files) > 10:
@@ -205,13 +205,20 @@ def solve_event(event_id, force=1):
        print("FAILED TO SOLVE!")
        solution = {}
        #solution['obs'] = obs_data
-       update_event_sol(None, event_id, solution, obs_data, "WMPL FAILED.")
+       if time_sync == 0:
+          update_event_sol(None, event_id, solution, obs_data, "WMPL FAILED. TIME SYNC FAILED.")
+       else:
+          update_event_sol(None, event_id, solution, obs_data, "WMPL FAILED.")
+
        return(0)
     solution,as_obs = resp
 
     print("EVID:", event_id)
     print("UPDATE EVENT SOL:")
-    update_event_sol(None, event_id, solution, as_obs, "SUCESS")
+    if time_sync == 1:
+       update_event_sol(None, event_id, solution, as_obs, "SUCCESS")
+    if time_sync == 0:
+       update_event_sol(None, event_id, solution, as_obs, "TIME SYNC FAIL")
 
     event_file = solve_dir + "/" + event_id + "-event.json"
 
@@ -963,7 +970,7 @@ def event_report(solve_dir, obs):
 
 
 
-def WMPL_solve(obs):
+def WMPL_solve(obs,time_sync=1):
     json_conf = load_json_file("../conf/as6.json")
     ams_id  = json_conf['site']['ams_id']
     solve_dir = "/mnt/ams2/meteor_archive/" + ams_id + "/EVENTS/"
@@ -999,7 +1006,11 @@ def WMPL_solve(obs):
 
 
     # Init new trajectory solving
-    traj_solve = traj.Trajectory(jd_ref, output_dir=solve_dir, meastype=meastype, save_results=True, monte_carlo=False, show_plots=False, max_toffset=3,v_init_part=.5, estimate_timing_vel=True)
+    if time_sync == 1:
+       etv = True:
+    else:
+       etv = False:
+    traj_solve = traj.Trajectory(jd_ref, output_dir=solve_dir, meastype=meastype, save_results=True, monte_carlo=False, show_plots=False, max_toffset=3,v_init_part=.5, estimate_timing_vel=etv)
    
     for station_id in obs:
         if len(obs[station_id].keys()) > 1:
