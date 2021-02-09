@@ -475,6 +475,9 @@ def list_events_for_day(dynamo, date):
          elink = "/event_detail/" + event_id + "/"
 
       if "solve_status" in event:
+         if "SUC" in event['solve_status']:
+            event['solve_status'] = "SUCCESS"
+   
          html += "<td colspan=8><a href=" + elink + ">" + event['solve_status'] + "</a></td>"
 
       else: 
