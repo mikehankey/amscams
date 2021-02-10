@@ -146,7 +146,7 @@ def insert_meteor_obs(dynamodb, station_id, meteor_file):
             cp['cat_image_stars'] = []
          if math.isnan(cp['total_res_px']):
             cp['total_res_px'] = 9999
-         calib = [cp['ra_center'], cp['dec_center'], cp['center_az'], cp['center_el'], cp['position_angle'], cp['pixscale'], len(cp['cat_image_stars']), cp['total_res_px']]
+         calib = [cp['ra_center'], cp['dec_center'], cp['center_az'], cp['center_el'], cp['position_angle'], cp['pixscale'], float(len(cp['cat_image_stars'])), float(cp['total_res_px'])]
       else:
          calib = []
       if cfe(red_file) == 1:
@@ -527,15 +527,34 @@ def update_event_sol(dynamodb, event_id, sol_data, obs_data, status):
    d = event_day[6:8]
    event_day = y + "_" + m + "_" + d
 
+   print("STATUS:", status)
+   print("SOL DATA:" ,sol_data)
+   for key in sol_data:
+      print("SOL:", key, sol_data[key], type(sol_data[key]))
+      #for fkey in sol_data[key]:
+      #   print("SOL:", sol_data[key][fkey])
+   if "obs" in sol_data:
+      del sol_data['obs']
+   for key in obs_data:
+      for fkey in obs_data[key]:
+         obs_data[key][fkey]['calib'][6] = float(obs_data[key][fkey]['calib'][6])
+         del obs_data[key][fkey]['calib']
+         
+   obs_data = json.loads(json.dumps(obs_data), parse_float=Decimal)
+      
+   #obs_data = {}
+   #sol_data = {}
+
    response = table.update_item(
       Key = {
          'event_day': event_day ,
          'event_id': event_id
       },
-      UpdateExpression="set solve_status=:status, solution=:sol_data  ",
+      UpdateExpression="set solve_status=:status, solution=:sol_data, obs=:obs_data  ",
       ExpressionAttributeValues={
          ':status': status ,
-         ':sol_data': sol_data
+         ':sol_data': sol_data,
+         ':obs_data': obs_data
       },
       ReturnValues="UPDATED_NEW"
    )

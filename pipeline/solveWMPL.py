@@ -111,9 +111,10 @@ def solve_event(event_id, force=1, time_sync=1):
        if "solve_status" in event:
           if "FAIL" in event['solve_status']:
              print("The event ran and failed.")
+             return()
           else:
              print("The event ran and passed.")
-             #return()
+             return()
 
 
     obs = {}
@@ -333,7 +334,7 @@ def make_event_html(event_json_file):
    print("EVENT ID IS:", event_id)
    print("SOL DIR IS:", solve_dir)
    #obs_data = load_json_file(obs_file)
-   obs_data = event['solution']['obs']
+   obs_data = event['obs']
    # make the obs part
    sum_html = make_sum_html(event_id, event, solve_dir, obs_data)
 
@@ -437,7 +438,10 @@ def make_sum_html(event_id, event, solve_dir, obs):
    #html += "<tr><td>q</td>"
    #html += "<td>" + str(ob['q'])[0:5] + "</td></tr>"
    html += "<tr><td>Period (T)</td>"
-   html += "<td>" + str(ob['T'])[0:5] + "</td></tr>"
+   if "T" in ob:
+      html += "<td>" + str(ob['T'])[0:5] + "</td></tr>"
+   else: 
+      html += "<td>" + "No Period Value!" + "</td></tr>"
    html += "<tr><td>Mean Anomaly (M)</td>"
    html += "<td>" + str(ob['mean_anomaly'])[0:5] + "</td></tr>"
    html += "<tr><td>Julian Date (JD)</td>"
@@ -465,11 +469,11 @@ def make_obs_html(event_id, event, solve_dir, obs):
          year = file[0:4]
          day = file[0:10]
          #link = remote_urls[station_id] + "/meteors/" + station_id + "/" + day + "/" + file + "/"
-         start_az =  event['solution']['obs'][station_id][file]['azs'][0]
-         end_az =  event['solution']['obs'][station_id][file]['azs'][-1]
-         start_el =  event['solution']['obs'][station_id][file]['els'][0]
-         end_el =  event['solution']['obs'][station_id][file]['els'][-1]
-         dur =  len(event['solution']['obs'][station_id][file]['els']) / 25
+         start_az =  event['obs'][station_id][file]['azs'][0]
+         end_az =  event['obs'][station_id][file]['azs'][-1]
+         start_el =  event['obs'][station_id][file]['els'][0]
+         end_el =  event['obs'][station_id][file]['els'][-1]
+         dur =  len(event['obs'][station_id][file]['els']) / 25
 
          start_time = event['start_datetime'][i]
          caption =  station_id + "-" + cam + "<br>" + start_time
@@ -519,19 +523,19 @@ def convert_dy_obs(dy_obs_data, obs):
    obs[station][fn]['ras'] = []
    obs[station][fn]['decs'] = []
    obs[station][fn]['ints'] = []
-   obs[station][fn]['revision'] = int(dy_obs_data['revision'])
+   obs[station][fn]['revision'] = float(dy_obs_data['revision'])
 
    for row in dy_obs_data['meteor_frame_data']:
       (dt, frn, x, y, w, h, oint, ra, dec, az, el) = row
       obs[station][fn]['times'].append(dt)
-      obs[station][fn]['fns'].append(int(frn))
-      obs[station][fn]['xs'].append(int(x))
-      obs[station][fn]['ys'].append(int(y))
+      obs[station][fn]['fns'].append(float(frn))
+      obs[station][fn]['xs'].append(float(x))
+      obs[station][fn]['ys'].append(float(y))
       obs[station][fn]['azs'].append(float(az))
       obs[station][fn]['els'].append(float(el))
       obs[station][fn]['ras'].append(float(ra))
       obs[station][fn]['decs'].append(float(dec))
-      obs[station][fn]['ints'].append(int(oint))
+      obs[station][fn]['ints'].append(float(oint))
       
 
    print("OBS:", obs)
@@ -742,6 +746,8 @@ def make_event_json(event_id, solve_dir):
       solution['orb']['node'] = float(np.degrees(traj.orbit.node))
       solution['orb']['pi'] = float(np.degrees(traj.orbit.pi))
       solution['orb']['true_anomaly'] = float(np.degrees(traj.orbit.true_anomaly))
+      if math.isnan(solution['orb']['true_anomaly']):
+         solution['orb']['true_anomaly'] = 0
    else:
       solution['orb']['la_sun'] = 0
       solution['orb']['i'] = 0
@@ -753,12 +759,15 @@ def make_event_json(event_id, solve_dir):
    solution['orb']['e'] = traj.orbit.e
    solution['orb']['q'] = traj.orbit.q
    solution['orb']['Q'] = traj.orbit.Q
+   if traj.orbit.true_anomaly is not None:
+      if math.isnan(traj.orbit.true_anomaly) is True:
+         solution['orb']['true_anomaly'] = 0
    if solution['orb']['true_anomaly'] == 0:
       solution['orb']['eccentric_anomaly'] = 0
       solution['orb']['mean_anomaly'] = 0
       solution['orb']['T'] = 0 
    else:
-      if traj.orbit.eccentric_anomaly is not None:
+      if traj.orbit.eccentric_anomaly is not None and math.isnan(traj.orbit.eccentric_anomaly) is False:
          solution['orb']['eccentric_anomaly'] = float(np.degrees(traj.orbit.eccentric_anomaly))
 
          solution['orb']['mean_anomaly'] = float(np.degrees(traj.orbit.mean_anomaly))
@@ -766,8 +775,9 @@ def make_event_json(event_id, solve_dir):
          solution['orb']['eccentric_anomaly'] = 0
          solution['orb']['mean_anomaly'] = 0
 
-      solution['orb']['T'] = traj.orbit.T
-   solution['orb']['Tj'] = traj.orbit.Tj
+   if traj.orbit.T is not None:
+      if math.isnan(traj.orbit.T) is True:
+         solution['orb']['T'] = 0 
 
    solution['rad']['apparent_ECI'] = {}
    solution['rad']['apparent_ECI']['ra'] = traj.orbit.ra
@@ -1007,9 +1017,9 @@ def WMPL_solve(obs,time_sync=1):
 
     # Init new trajectory solving
     if time_sync == 1:
-       etv = True:
+       etv = True
     else:
-       etv = False:
+       etv = False
     traj_solve = traj.Trajectory(jd_ref, output_dir=solve_dir, meastype=meastype, save_results=True, monte_carlo=False, show_plots=False, max_toffset=3,v_init_part=.5, estimate_timing_vel=etv)
    
     for station_id in obs:
