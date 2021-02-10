@@ -198,6 +198,9 @@ def dyna_events_for_day(day, json_conf):
          meteors.append((item['station_id'],item['sd_video_file'], item['event_start_time']))
    meteors = sorted(meteors, key=lambda x: (x[2]), reverse=False)
    events = {}
+   dynamodb = boto3.resource('dynamodb')
+
+
    for meteor in meteors:
       id, events = check_make_event(meteor, events)
       #print(meteor)

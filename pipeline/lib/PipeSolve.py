@@ -244,15 +244,18 @@ def int_planes(obs1, obs2):
    print("XYZ", x1,y1,z1) 
    print("SEV", sveX1,sveY1,sveZ1) 
    print("SEV", eveX1,eveY1,eveZ1) 
-   plane1 = Plane( \
-      Point3D(x1,y1,z1), \
-      Point3D(sveX1,sveY1,sveZ1), \
-      Point3D(eveX1,eveY1,eveZ1))
+   try:
+      plane1 = Plane( \
+         Point3D(x1,y1,z1), \
+         Point3D(sveX1,sveY1,sveZ1), \
+         Point3D(eveX1,eveY1,eveZ1))
 
-   plane2 = Plane( \
-      Point3D(x2,y2,z2), \
-      Point3D(sveX2,sveY2,sveZ2), \
-      Point3D(eveX2,eveY2,eveZ2))
+      plane2 = Plane( \
+         Point3D(x2,y2,z2), \
+         Point3D(sveX2,sveY2,sveZ2), \
+         Point3D(eveX2,eveY2,eveZ2))
+   except:
+      return([])
 
    start_line1 = Line3D(Point3D(x1,y1,z1),Point3D(sveX1,sveY1,sveZ1))
    end_line1 = Line3D(Point3D(x1,y1,z1),Point3D(eveX1,eveY1,eveZ1))
