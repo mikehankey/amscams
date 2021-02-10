@@ -133,9 +133,12 @@ def dyna_events_for_day(day, json_conf):
       dy_keys[event['event_id']] = event
 
    all_data = {}
+   obs_events = {}
    for station in stations:
       obs_file = le_dir + station + "_" + date + ".json"
       all_data[station] = load_json_file(obs_file)
+      obs_events[station] = {}
+      obs_events[station]
 
 
    # first get all existing known events
@@ -178,12 +181,26 @@ def dyna_events_for_day(day, json_conf):
          station = event['stations'][i]
          file = event['files'][i]
          key = station + "_" + file 
+         if file not in obs_events[station]:
+            obs_events[station][file] = {}
+            obs_events[station][file]['events'] = []
+
+         
+         obs_events[station][file]['events'].append(event['event_id'])
          if key in all_obs:
             print("OBS IS GOOD") 
          else:
             print("OBS IS NOT GOOD", event['event_id'], station) 
             delete_event(dynamodb, day, event['event_id']) 
             evd += 1
+
+   for station in obs_events:
+      for file in obs_events[station]:
+         if len(obs_events[station][file]['events']) > 1:
+            print("DUPE EVENTS DELETE EXCESS:", obs_events[station][file]['events'])
+            print("DELETE THIS ONE: ", max(obs_events[station][file]['events']))
+            delete_event(dynamodb, day, max(obs_events[station][file]['events'])) 
+
 
    meteors = []
    for station in all_data:
