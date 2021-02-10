@@ -483,7 +483,7 @@ def check_make_event(data, events):
       else:
          event_datetime = datetime.datetime.strptime(event_dt, "%Y-%m-%d %H:%M:%S")
       time_diff = (start_datetime - event_datetime).total_seconds()
-      if abs(time_diff) < 2:
+      if abs(time_diff) < 6:
          #print("MATCH", station, event_id, start_datetime, event_datetime, (start_datetime - event_datetime).total_seconds())
          events[event_id]['start_datetime'].append(start_time) 
          events[event_id]['stations'].append(station) 
