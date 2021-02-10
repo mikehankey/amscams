@@ -26,7 +26,7 @@ from lib.PipeReport import autocal_report, detect_report
 from lib.PipeLIVE import meteor_min_files, broadcast_live_meteors, broadcast_minutes, meteors_last_night, mln_final, pip_video, mln_sync, super_stacks, meteor_index, fix_missing_images, fflist, resize_video, minify_file, make_preview_meteor, make_preview_meteors, sync_preview_meteors
 from lib.PipeTimeLapse import make_tl_for_cam, video_from_images, six_cam_video, timelapse_all, tn_tl6, sync_tl_vids, multi_cam_tl, audit_min, purge_tl , plot_min_int, aurora_fast
 from lib.PipeMeteorDelete import delete_all_meteor_files
-from lib.PipeEvent import events_for_day, get_network_info, solve_day, dyna_events_for_day, dyna_events_for_month
+from lib.PipeEvent import events_for_day, get_network_info, solve_day, dyna_events_for_day, dyna_events_for_month, delete_events_day 
 from lib.PipeSolve import simple_solve
 
 #from RMS.GreatCircle import fitGC
@@ -617,6 +617,8 @@ if __name__ == "__main__":
       get_calib_from_range(sys.argv[2], sys.argv[3], json_conf)
    if cmd == "fastaur" :
       fast_au_report(sys.argv[2],  json_conf)
+   if cmd == "delete_events_day" :
+      delete_events_day(sys.argv[2],json_conf )
    if cmd == "plot_aud" :
       plot_aud(sys.argv[2],  json_conf)
 
