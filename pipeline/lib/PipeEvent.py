@@ -115,6 +115,8 @@ def dyna_events_for_month(wild, json_conf):
 
 def dyna_events_for_day(day, json_conf):
 
+   dynamodb = boto3.resource('dynamodb')
+
    amsid = json_conf['site']['ams_id']
    my_station = json_conf['site']['ams_id']
    stations = json_conf['site']['multi_station_sync']
@@ -198,7 +200,6 @@ def dyna_events_for_day(day, json_conf):
          meteors.append((item['station_id'],item['sd_video_file'], item['event_start_time']))
    meteors = sorted(meteors, key=lambda x: (x[2]), reverse=False)
    events = {}
-   dynamodb = boto3.resource('dynamodb')
 
 
    for meteor in meteors:
