@@ -597,13 +597,17 @@ def do_dyna_day(dynamodb, day):
    # also sync prev imgs for mse events
    cmd = "./Process.py reject_masks " + day
    print(cmd)
-   os.system(cmd)
+   #os.system(cmd)
    
    cmd = "./Process.py confirm " + day
    print(cmd)
+   #os.system(cmd)
+
+   cmd = "./DynaDB.py sync_db_day " + day
+   print(cmd)
    os.system(cmd)
 
-   cmd = "./DynaDB.py load_day " + day
+   cmd = "./DynaDB.py cd " + day
    print(cmd)
    os.system(cmd)
 

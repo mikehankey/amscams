@@ -438,10 +438,13 @@ def make_sum_html(event_id, event, solve_dir, obs):
    #html += "<tr><td>q</td>"
    #html += "<td>" + str(ob['q'])[0:5] + "</td></tr>"
    html += "<tr><td>Period (T)</td>"
+
    if "T" in ob:
       html += "<td>" + str(ob['T'])[0:5] + "</td></tr>"
+      print("T IS :", ob['T'])
    else: 
       html += "<td>" + "No Period Value!" + "</td></tr>"
+      print("T IS MISSING FOR OB:" )
    html += "<tr><td>Mean Anomaly (M)</td>"
    html += "<td>" + str(ob['mean_anomaly'])[0:5] + "</td></tr>"
    html += "<tr><td>Julian Date (JD)</td>"
@@ -543,6 +546,10 @@ def convert_dy_obs(dy_obs_data, obs):
 
 def make_orbit_link(event_id, orb):
    link = "http://orbit.allskycams.com/index_emb.php?name={:s}&epoch={:f}&a={:f}&M={:f}&e={:f}&I={:f}&Peri={:f}&Node={:f}&P={:f}&q={:f}&T={:f}#".format(event_id, orb['jd_ref'], orb['a'], orb['mean_anomaly'], orb['e'], orb['i'], orb['peri'], orb['node'], orb['T'], orb['q'], orb['jd_ref'])
+   #try:
+   #   link = "http://orbit.allskycams.com/index_emb.php?name={:s}&epoch={:f}&a={:f}&M={:f}&e={:f}&I={:f}&Peri={:f}&Node={:f}&P={:f}&q={:f}&T={:f}#".format(event_id, orb['jd_ref'], orb['a'], orb['mean_anomaly'], orb['e'], orb['i'], orb['peri'], orb['node'], orb['T'], orb['q'], orb['jd_ref'])
+   #except:
+   #   link = ""
    return(link)
 
 def make_event_json(event_id, solve_dir):
@@ -608,8 +615,6 @@ def make_event_json(event_id, solve_dir):
       duration = float(max(durs) / 25)
    else:
       duration = float(0)
-   print("POINTS:", points)
-   print("LINES:", lines)
 
    solution = {}
    solution['event_id'] = event_id
@@ -773,6 +778,8 @@ def make_event_json(event_id, solve_dir):
    if traj.orbit.T is not None:
       if math.isnan(traj.orbit.T) is True:
          solution['orb']['T'] = 0 
+      else:
+         solution['orb']['T'] = traj.orbit.T
 
    solution['rad']['apparent_ECI'] = {}
    solution['rad']['apparent_ECI']['ra'] = traj.orbit.ra
@@ -810,8 +817,8 @@ def make_event_json(event_id, solve_dir):
    print(traj.orbit.true_anomaly)
    print(traj.orbit.eccentric_anomaly)
    print(traj.orbit.mean_anomaly)
-   print(traj.orbit.T)
-   print(traj.orbit.Tj)
+   print("T", traj.orbit.T)
+   print("TJ", traj.orbit.Tj)
    for line in str(traj.orbit).split("\n"):
       print("ORB:", line)
 
