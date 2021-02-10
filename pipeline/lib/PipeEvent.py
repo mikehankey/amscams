@@ -9,6 +9,15 @@ import boto3
 from boto3.dynamodb.conditions import Key
 
 
+def delete_events_day(date, json_conf):
+   dynamodb = boto3.resource('dynamodb')
+   os.system("./DynaDB.py cd " + date)
+   le_dir = "/mnt/ams2/meteor_archive/" + json_conf['site']['ams_id'] + "/EVENTS/" + date + "/"
+   event_file = le_dir + date + "_events.json"
+   dy_events = load_json_file(event_file)
+   for row in dy_events :
+      print(row['event_id'])
+      delete_event(dynamodb, date, row['event_id'])
 
 def solve_day(day, json_conf):
    amsid = json_conf['site']['ams_id']
@@ -115,6 +124,7 @@ def dyna_events_for_month(wild, json_conf):
 
 def dyna_events_for_day(day, json_conf):
 
+   os.system("./DynaDB.py cd " + day)
    dynamodb = boto3.resource('dynamodb')
 
    amsid = json_conf['site']['ams_id']

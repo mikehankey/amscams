@@ -40,7 +40,8 @@ def solve_status(day):
          if "FAILED" in event['solve_status']:
             failed_html += event['event_id'] + " " + event['solve_status'] + "\n"
          else:
-            solved_html += event['event_id'] + " " + event['solve_status'] + "\n"
+            event_url = event['solution']['sol_dir'].replace("/mnt/ams2/meteor_archive/", "http://archive.allsky.tv/")
+            solved_html += event['event_id'] + " " + event['solve_status'] + " " + event_url + "/index.html\n"
       else:
          if "solution" in event:
             if event["solution"] != 0:
@@ -82,7 +83,7 @@ def solve_month(wild):
       solve_day(day)
 
 def solve_day(day):
-
+   os.system("./DynaDB.py cd " + day)
    dynamodb = boto3.resource('dynamodb')
    json_conf = load_json_file("../conf/as6.json")
    my_station = json_conf['site']['ams_id']
@@ -545,7 +546,10 @@ def convert_dy_obs(dy_obs_data, obs):
    return(obs)
 
 def make_orbit_link(event_id, orb):
-   link = "http://orbit.allskycams.com/index_emb.php?name={:s}&epoch={:f}&a={:f}&M={:f}&e={:f}&I={:f}&Peri={:f}&Node={:f}&P={:f}&q={:f}&T={:f}#".format(event_id, orb['jd_ref'], orb['a'], orb['mean_anomaly'], orb['e'], orb['i'], orb['peri'], orb['node'], orb['T'], orb['q'], orb['jd_ref'])
+   if orb['a'] is None:
+      link = ""
+   else:
+      link = "http://orbit.allskycams.com/index_emb.php?name={:s}&epoch={:f}&a={:f}&M={:f}&e={:f}&I={:f}&Peri={:f}&Node={:f}&P={:f}&q={:f}&T={:f}#".format(event_id, orb['jd_ref'], orb['a'], orb['mean_anomaly'], orb['e'], orb['i'], orb['peri'], orb['node'], orb['T'], orb['q'], orb['jd_ref'])
    #try:
    #   link = "http://orbit.allskycams.com/index_emb.php?name={:s}&epoch={:f}&a={:f}&M={:f}&e={:f}&I={:f}&Peri={:f}&Node={:f}&P={:f}&q={:f}&T={:f}#".format(event_id, orb['jd_ref'], orb['a'], orb['mean_anomaly'], orb['e'], orb['i'], orb['peri'], orb['node'], orb['T'], orb['q'], orb['jd_ref'])
    #except:
@@ -775,6 +779,12 @@ def make_event_json(event_id, solve_dir):
          solution['orb']['eccentric_anomaly'] = 0
          solution['orb']['mean_anomaly'] = 0
 
+   if traj.orbit.T is None:
+      print("T IS NONE!")
+      traj.orbit.T = 0
+   if math.isnan(traj.orbit.T):
+      print("T IS NAN!")
+   #xxx = input("wait. for T:" + str(traj.orbit.T))
    if traj.orbit.T is not None:
       if math.isnan(traj.orbit.T) is True:
          solution['orb']['T'] = 0 
