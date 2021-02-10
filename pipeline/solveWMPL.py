@@ -356,7 +356,7 @@ def make_event_html(event_json_file):
    sol_jpgs = glob.glob(solve_dir + "/*.jpg")
    for img in sorted(sol_jpgs):
       print("PLOT IMAGE:", img)
-      img = img.replace("/mnt/ams2/meteor_archive/", "http://archive.allsky.tv/")
+      img = img.replace("/mnt/ams2/meteor_archive/", "https://archive.allsky.tv/")
       if "ground" not in img and "orbit" not in img:
          plot_html += "<div style='float:left; padding: 3px'><img width=600 height=480 src=" + img + "></div>\n"
 
@@ -746,7 +746,7 @@ def make_event_json(event_id, solve_dir):
    solution['orb']['e'] = traj.orbit.e
    solution['orb']['q'] = traj.orbit.q
    solution['orb']['Q'] = traj.orbit.Q
-   if solution['orb']['true_anomaly'] != 0:
+   if solution['orb']['true_anomaly'] == 0:
       solution['orb']['eccentric_anomaly'] = 0
       solution['orb']['mean_anomaly'] = 0
       solution['orb']['T'] = 0 

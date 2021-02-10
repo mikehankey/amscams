@@ -634,7 +634,40 @@ def update_mj_events(dynamodb, date):
 
    save_json_file(mse_log, mse_db)
    print("saved:", mse_log)
+
+def orbs_for_day(date,json_conf):
+   le_dir = "/mnt/ams2/meteor_archive/" + json_conf['site']['ams_id'] + "/EVENTS/" + date + "/"
+   event_file = le_dir + date + "_events.json"
+   orbs_file = le_dir + date + "_orbs.json"
+   events = load_json_file(event_file)
+
    
+   orbs = {}
+   for ev in events:
+      if "solution" in ev:
+         if "orb" in ev['solution']:
+            o = ev['solution']['orb']
+            print(ev['event_id'],ev)
+            event_url = ev['solution']['sol_dir'].replace("/mnt/ams2/meteor_archive/", "http://archive.allsky.tv/")
+            print(event_url)
+            op = {}
+            op['name'] = ev['event_id']
+            op['epoch'] = o['jd_ref']
+            op['utc_date'] = min(ev['start_datetime'])
+            op['T'] = o['jd_ref']
+            op['vel'] = 0
+            op['a'] = o['a']
+            op['e'] = o['e']
+            op['I'] = o['i']
+            op['Peri'] = o['peri']
+            op['Node'] = o['node']
+            op['q'] = o['q']
+            op['M'] = o['mean_anomaly']
+            op['P'] = o['T']
+            orbs[ev['event_id']] = op
+   save_json_file(orbs_file, orbs)
+   print("saved.", orbs_file)
+ 
 if __name__ == "__main__":
    dynamodb = boto3.resource('dynamodb')
    json_conf = load_json_file("../conf/as6.json")
@@ -687,3 +720,6 @@ if __name__ == "__main__":
    if cmd == "cache_day" or cmd == "cd":
       day = sys.argv[2]
       cache_day(dynamodb, day, json_conf)
+   if cmd == "orbs_for_day" or cmd == "ofd":
+      day = sys.argv[2]
+      orbs_for_day(day, json_conf)
