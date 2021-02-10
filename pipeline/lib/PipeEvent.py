@@ -251,6 +251,9 @@ def dyna_events_for_day(day, json_conf):
                mf = mf.replace(".mp4", ".json")
                mj = load_json_file(mf)
                mj['multi_station_event'] = events[eid]
+               if event_id not in dy_keys:
+                  print("EVENT ID NOT FOUND IN DYKEYS. new event?:", event_id, mf)
+                  dy_keys[event_id] = events[eid]
                dyd = dy_keys[event_id]
                if "solve_status" in dyd:
                   if "SUC" in dyd['solve_status']:
