@@ -444,6 +444,8 @@ def sync_db_day(dynamodb, station_id, day):
    # remove the cache 
    cmd = "rm /mnt/ams2/DYCACHE/*.json"
    os.system(cmd)
+   cmd = "./DynaDB.py cd " + day 
+   os.system(cmd)
 
    db_meteors = {}
    items = search_obs(dynamodb, station_id, day, 1)
@@ -465,11 +467,17 @@ def sync_db_day(dynamodb, station_id, day):
    for mf in meteors:
       fn, xxx = fn_dir(mf)
       sd_video_file = fn.replace(".json", ".mp4")
+      mfr = mf.replace(".json", "-reduced.json")
       mj = load_json_file(mf)
+      if cfe(mfr) == 1:
+         mjr = load_json_file(mfr)
+      else:
+         mjr['meteor_frame_data'] = []
       if "revision" not in mj:
          mj['revision'] = 1
       local_meteors[sd_video_file] = {}
       local_meteors[sd_video_file]['revision'] = mj['revision']
+      local_meteors[sd_video_file]['meteor_frame_data'] = mjr['meteor_frame_data']
 
    # Do all of the db meteors still exist locally, if not 
    # they have been deleted and should be removed from the remote db
@@ -504,7 +512,12 @@ def sync_db_day(dynamodb, station_id, day):
          if local_meteors[lkey]['revision'] > db_meteors[lkey]['revision']:
             print(lkey, "UPDATE REMOTE : The local DB has a newer version of this file. " , local_meteors[lkey]['revision'] ,   db_meteors[lkey]['revision'])
             meteor_file = dkey.replace(".mp4", ".json")
-            insert_meteor_obs(dynamodb, station_id, meteor_file)
+            #insert_meteor_obs(dynamodb, station_id, meteor_file)
+            obs_data['revision'] = mj['revision']
+            obs_data['meteor_frame_data'] = mjr['meteor_frame_data']
+            obs_data['last_update'] = datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
+            update_meteor_obs(dynamodb, station_id, meteor_file, obs_data)
+
          if local_meteors[lkey]['revision'] == db_meteors[lkey]['revision']:
             print(lkey, "GOOD: The remote and local revisions are the same." )
 
@@ -513,6 +526,22 @@ def sync_db_day(dynamodb, station_id, day):
    for item in items:
       print("IN DB:", station_id, item['sd_video_file'], item['revision'])
    print(len(items), "items for", station_id)
+
+
+def update_meteor_obs(dynamodb, station_id, sd_video_file, obs_data):
+   response = table.update_item(
+      Key = {
+         'station_id': station_id,
+         'sd_video_file': sd_video_file 
+      },
+      UpdateExpression="set meteor_frame_data=:meteor_frame_data",
+      ExpressionAttributeValues={
+         ':meteor_frame_data': meteor_frame_data,
+         ':revision': revision,
+         ':last_update': last_update
+      },
+      ReturnValues="UPDATED_NEW"
+   )
 
 def update_event_sol(dynamodb, event_id, sol_data, obs_data, status):
    sol_data = json.loads(json.dumps(sol_data), parse_float=Decimal)
@@ -612,6 +641,14 @@ def do_dyna_day(dynamodb, day):
    os.system(cmd)
 
    cmd = "./Process.py ded " + day
+   print(cmd)
+   os.system(cmd)
+
+   cmd = "./Process.py sync_prev_all " + day
+   print(cmd)
+   os.system(cmd)
+
+   cmd = "./DynaDB.py cd " + day
    print(cmd)
    os.system(cmd)
 
