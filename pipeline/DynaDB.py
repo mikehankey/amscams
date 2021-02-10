@@ -487,7 +487,7 @@ def sync_db_day(dynamodb, station_id, day):
    for lkey in local_meteors:
       if lkey not in db_meteors:
          print(lkey, "INSERT OBS: is not in the DB yet. We should add it." )
-         meteor_file = dkey.replace(".mp4", ".json")
+         meteor_file = lkey.replace(".mp4", ".json")
          insert_meteor_obs(dynamodb, station_id, meteor_file)
       else:
          print(lkey, "GOOD: exists in the remote db." )
