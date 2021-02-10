@@ -444,6 +444,8 @@ def sync_db_day(dynamodb, station_id, day):
    # remove the cache 
    cmd = "rm /mnt/ams2/DYCACHE/*.json"
    os.system(cmd)
+   cmd = "./DynaDB.py cd " + day 
+   os.system(cmd)
 
    db_meteors = {}
    items = search_obs(dynamodb, station_id, day, 1)
@@ -612,6 +614,14 @@ def do_dyna_day(dynamodb, day):
    os.system(cmd)
 
    cmd = "./Process.py ded " + day
+   print(cmd)
+   os.system(cmd)
+
+   cmd = "./Process.py sync_prev_all " + day
+   print(cmd)
+   os.system(cmd)
+
+   cmd = "./DynaDB.py cd " + day
    print(cmd)
    os.system(cmd)
 
