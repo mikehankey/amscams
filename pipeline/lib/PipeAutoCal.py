@@ -4161,7 +4161,7 @@ def autocal(image_file, json_conf, show = 0, heal_only=0):
 
    cmd = "./AzElGrid.py az_grid " + cal_img_file + ">/tmp/mike.txt 2>&1"
    print(cmd)
-   cmd = "./Process.py refit " + cpf 
+   cmd = "./Process.py refit " + cal_params_file 
    print(cmd)
    os.system(cmd)
    #os.system(cmd)
