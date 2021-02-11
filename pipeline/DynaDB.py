@@ -513,6 +513,7 @@ def sync_db_day(dynamodb, station_id, day):
             print(lkey, "UPDATE REMOTE : The local DB has a newer version of this file. " , local_meteors[lkey]['revision'] ,   db_meteors[lkey]['revision'])
             meteor_file = dkey.replace(".mp4", ".json")
             #insert_meteor_obs(dynamodb, station_id, meteor_file)
+            obs_data = {}
             obs_data['revision'] = mj['revision']
             obs_data['meteor_frame_data'] = mjr['meteor_frame_data']
             obs_data['last_update'] = datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
@@ -529,16 +530,22 @@ def sync_db_day(dynamodb, station_id, day):
 
 
 def update_meteor_obs(dynamodb, station_id, sd_video_file, obs_data):
+
+   if dynamodb is None:
+      dynamodb = boto3.resource('dynamodb')
+   table = dynamodb.Table("meteor_obs")
+   obs_data = json.loads(json.dumps(obs_data), parse_float=Decimal)
+
    response = table.update_item(
       Key = {
          'station_id': station_id,
          'sd_video_file': sd_video_file 
       },
-      UpdateExpression="set meteor_frame_data=:meteor_frame_data",
+      UpdateExpression="set revision = :revision, last_update= :last_update, meteor_frame_data=:meteor_frame_data",
       ExpressionAttributeValues={
-         ':meteor_frame_data': meteor_frame_data,
-         ':revision': revision,
-         ':last_update': last_update
+         ':meteor_frame_data': obs_data['meteor_frame_data'],
+         ':revision': obs_data['revision'],
+         ':last_update': obs_data['last_update']
       },
       ReturnValues="UPDATED_NEW"
    )
