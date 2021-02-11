@@ -1,9 +1,7 @@
 {
     "flask_admin": 1,
-    "cloud_dir": "/mnt/archive.allsky.tv",
-    "data_dir": "/mnt/ams2",
     "site": {
-        "ams_id": "AMS105",
+        "ams_id": "AMS108",
         "os_drive": "/dev/sdb1",
         "data_drive": "/dev/sda1",
         "API_HOST": "35.167.238.105",
@@ -16,11 +14,11 @@
         "cams_queue_dir": "/mnt/ams2/CAMS/queue/",
         "cams_dir": "/home/ams/amscams/",
         "proc_dir": "/mnt/ams2/SD/proc2/",
-        "obs_name": "Starlight Farm",
-        "operator_name": "Mike Hankey",
-        "operator_email": "mike.hankey@gmail.com",
-        "operator_city": "Monkton",
-        "operator_state": "MD",
+        "obs_name": "",
+        "operator_name": "",
+        "operator_email": "",
+        "operator_city": "",
+        "operator_state": "",
         "device_lng": "-76.584255",
         "device_lat": "39.589190",
         "device_alt": "100",
@@ -28,7 +26,8 @@
         "multi_station_sync": [
         ],
         "cal_dir": "/mnt/ams2/cal/",
-        "operator_country": "USA"
+        "remote_urls": [
+        ]
     },
     "camera_settingsv1": {
         "night": {
@@ -52,7 +51,7 @@
     },
     "cameras": {
         "cam1": {
-            "cams_id": "011051",
+            "cams_id": "011081",
             "best_guess": [
                 351.5,
                 43.84,
@@ -75,7 +74,7 @@
             ]
         },
         "cam2": {
-            "cams_id": "011052",
+            "cams_id": "011082",
             "cam_version": "1",
             "ip": "192.168.76.72",
             "sd_url": "/user=admin&password=&channel=1&stream=1.sdp",
@@ -96,7 +95,7 @@
             ]
         },
         "cam3": {
-            "cams_id": "011053",
+            "cams_id": "011083",
             "cam_version": "1",
             "ip": "192.168.76.73",
             "sd_url": "/user=admin&password=&channel=1&stream=1.sdp",
@@ -113,7 +112,7 @@
             ]
         },
         "cam4": {
-            "cams_id": "011054",
+            "cams_id": "011084",
             "cam_version": "1",
             "ip": "192.168.76.74",
             "sd_url": "/user=admin&password=&channel=1&stream=1.sdp",
@@ -138,7 +137,7 @@
             ]
         },
         "cam5": {
-            "cams_id": "011055",
+            "cams_id": "011085",
             "cam_version": "1",
             "ip": "192.168.76.75",
             "sd_url": "/user=admin&password=&channel=1&stream=1.sdp",
@@ -156,7 +155,7 @@
         },
         "cam6": {
             "cam_version": "1",
-            "cams_id": "011056",
+            "cams_id": "011086",
             "ip": "192.168.76.76",
             "sd_url": "/user=admin&password=&channel=1&stream=1.sdp",
             "hd_url": "/user=admin&password=&channel=1&stream=0.sdp",
@@ -170,10 +169,11 @@
                 704,
                 576
             ]
-        },
-        "cam7": {
+        }
+    },
+    "cam7": {
             "cam_version": "1",
-            "cams_id": "011057",
+            "cams_id": "011087",
             "ip": "192.168.76.77",
             "sd_url": "/user=admin&password=&channel=1&stream=1.sdp",
             "hd_url": "/user=admin&password=&channel=1&stream=0.sdp",
@@ -188,7 +188,4 @@
                 576
             ]
         }
-
-
-    }
 }
