@@ -499,7 +499,7 @@ def list_events_for_day(dynamo, date, recache=0):
          events = []
    
    else:
-      html += "loading event file:" + le_file + "<br>"
+      #html += "loading event file:" + le_file + "<br>"
       events = load_json_file(le_file)
    
 
@@ -510,8 +510,6 @@ def list_events_for_day(dynamo, date, recache=0):
 
 
    event_dir = "/mnt/ams2/meteor_archive/" + json_conf['site']['ams_id'] + "/EVENTS/" + date + "/" 
-   html += "<table>"
-   html += "<tr><td>Event ID</td><td>Stations</td><td>Start Height</td><td>End Height</td><td>Vel Init</td><td>Vel Avg</td><td>a</td><td>e</td><td>i</td><td>Shower</td><td>Status</td></tr>"
 
    solved_events = []
    unsolved_events = []
@@ -519,6 +517,7 @@ def list_events_for_day(dynamo, date, recache=0):
    bad_events = []
 
    for event in events:
+      #html += str(event) + "<hr>"
       if "event_id" in event and "solve_status" in event:
          #html += str(event['event_id']) + " " + " " + event['solve_status'] + "<hr>"
          yo = 1
@@ -537,9 +536,12 @@ def list_events_for_day(dynamo, date, recache=0):
          if event not in unsolved_events:
             unsolved_events.append(event)
 
+   if len(solved_events) > 0:
+      html += "<table>"
+      html += "<tr><td>Event ID</td><td>Stations</td><td>Start Height</td><td>End Height</td><td>Vel Init</td><td>Vel Avg</td><td>a</td><td>e</td><td>i</td><td>Shower</td><td>Status</td></tr>"
 
    for event in solved_events:
-      print(event)
+      #print(event)
       stations = event['stations']
       ustations = set(stations)
       files = event['files']
@@ -613,7 +615,8 @@ def list_events_for_day(dynamo, date, recache=0):
          html += "<td><a href=" + elink + ">Not Solved yet</a></td>"
       html += "</tr>" 
         
-   html += "</table>"
+   if len(solved_events) > 0:
+      html += "</table>"
 
    if len(bad_events) > 0:
       html += ("<h1>Failed events</h1>")
@@ -621,7 +624,7 @@ def list_events_for_day(dynamo, date, recache=0):
       for event in bad_events:
          html += "<li><a href=/event_detail/" + event['event_id'] + ">" + event['event_id'] + "</a></li>\n"
 
-   if len(bad_events) > 0:
+   if len(unsolved_events) > 0:
       html += ("<h1>Unsolved</h1>")
       for event in unsolved_events:
          html += "<li><a href=/event_detail/" + event['event_id'] + ">" + event['event_id'] + "</a></li>\n"
