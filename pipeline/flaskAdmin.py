@@ -91,7 +91,7 @@ def map_runner():
 @app.route('/obs_review/<day>/', methods=['GET', 'POST'])
 @auth.login_required
 def obs_rev_control(day):
-   from FlaskLib.Events import obs_review
+   from FlaskLib.Events import obs_review 
    resp = obs_review(day, json_conf)
    return(resp)
 
@@ -100,7 +100,16 @@ def obs_rev_control(day):
 @auth.login_required
 def event_detail_control(event_id):
    from FlaskLib.Events import event_detail
-   resp = event_detail(event_id)
+   resp = event_detail(event_id,json_conf)
+   return(resp)
+
+
+@app.route('/events/', methods=['GET', 'POST'])
+@auth.login_required
+def events_main_control():
+   from FlaskLib.Events import list_event_days
+
+   resp = list_event_days(json_conf)
    return(resp)
 
 @app.route('/events/<date>/', methods=['GET', 'POST'])
