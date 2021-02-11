@@ -155,6 +155,8 @@ def event_detail(event_id, json_conf):
    these_obs = []
    best_obs = {}
    all_obs = get_obs_data(date, json_conf)
+   if "solve_status" not in this_event:
+      this_event['solve_status'] = "UNSOLVED"
    for station in all_obs:
       if station in these_stations:
          for obs in all_obs[station]:
@@ -170,13 +172,16 @@ Status           : {:s}
 <hr>
    """.format(str(this_event['event_id']), str(min(this_event['start_datetime'])), str(this_event['solve_status']))
    #html += str(this_event)
-   for station in this_event['obs']:
-      for file in this_event['obs'][station]:
-         print(station, file)
-         key = station + ":" + file
-         best_obs[key] = 1
+   if "obs" in this_event:
+      for station in this_event['obs']:
+         for file in this_event['obs'][station]:
+            print(station, file)
+            key = station + ":" + file
+            best_obs[key] = 1
 
-   print("BEST OBS:", best_obs)
+      print("BEST OBS:", best_obs)
+   #else:
+   #   these_obs = []
    remote_urls = get_remote_urls(json_conf)
 
    for obs in these_obs:
@@ -186,6 +191,7 @@ Status           : {:s}
       else:
          best = 0
       print("THESE OBS BEST?", key, best)
+      print("OBS", obs)
       obs_html = obs_json_to_html(obs, best,remote_urls)
       out += str(obs_html) + "<HR>"
       #out += "OBS:" + str(obs) + "<HR>"
@@ -486,7 +492,7 @@ def list_events_for_day(dynamo, date, recache=0):
       html += "Re-caching DYNA DB DATA<br>"
       os.system("./DynaDB.py cd " + date)
       if cfe(le_file) == 1:
-         html += "loading event file after recache:" + le_file + "<br>"
+         #html += "loading event file after recache:" + le_file + "<br>"
          events = load_json_file(le_file)
       else:
          html += "No dyna events exist for this day:" + date + "<br>"
@@ -517,9 +523,10 @@ def list_events_for_day(dynamo, date, recache=0):
          #html += str(event['event_id']) + " " + " " + event['solve_status'] + "<hr>"
          yo = 1
       else:
-         html += "MISSING STATUS?" + str(event) + "<hr>"
-         unsolved_events.append(event)
-         print("UNSOLVED!")
+         #html += "MISSING STATUS?" + str(event) + "<hr>"
+         if event not in unsolved_events:
+            unsolved_events.append(event)
+            print("UNSOLVED!")
       if "solve_status" in event:
          if "FAIL" in event['solve_status']:
             bad_events.append(event)
@@ -527,7 +534,8 @@ def list_events_for_day(dynamo, date, recache=0):
          else:
             solved_events.append(event)
       else:
-         unsolved_events.append(event)
+         if event not in unsolved_events:
+            unsolved_events.append(event)
 
 
    for event in solved_events:
@@ -607,14 +615,16 @@ def list_events_for_day(dynamo, date, recache=0):
         
    html += "</table>"
 
-   html += ("<h1>Failed events</h1>")
+   if len(bad_events) > 0:
+      html += ("<h1>Failed events</h1>")
 
-   for event in bad_events:
-      html += "<li><a href=/event_detail/" + event['event_id'] + ">" + event['event_id'] + "</a></li>\n"
+      for event in bad_events:
+         html += "<li><a href=/event_detail/" + event['event_id'] + ">" + event['event_id'] + "</a></li>\n"
 
-   html += ("<h1>Unsolved</h1>")
-   for event in unsolved_events:
-      html += "<li><a href=/event_detail/" + event['event_id'] + ">" + event['event_id'] + "</a></li>\n"
+   if len(bad_events) > 0:
+      html += ("<h1>Unsolved</h1>")
+      for event in unsolved_events:
+         html += "<li><a href=/event_detail/" + event['event_id'] + ">" + event['event_id'] + "</a></li>\n"
 
 
    return(html)
