@@ -517,7 +517,9 @@ def list_events_for_day(dynamo, date, recache=0):
          #html += str(event['event_id']) + " " + " " + event['solve_status'] + "<hr>"
          yo = 1
       else:
-         html += "MISING STATUS?" + str(event) + "<hr>"
+         html += "MISSING STATUS?" + str(event) + "<hr>"
+         unsolved_events.append(event)
+         print("UNSOLVED!")
       if "solve_status" in event:
          if "FAIL" in event['solve_status']:
             bad_events.append(event)
@@ -608,6 +610,10 @@ def list_events_for_day(dynamo, date, recache=0):
    html += ("<h1>Failed events</h1>")
 
    for event in bad_events:
+      html += "<li><a href=/event_detail/" + event['event_id'] + ">" + event['event_id'] + "</a></li>\n"
+
+   html += ("<h1>Unsolved</h1>")
+   for event in unsolved_events:
       html += "<li><a href=/event_detail/" + event['event_id'] + ">" + event['event_id'] + "</a></li>\n"
 
 
