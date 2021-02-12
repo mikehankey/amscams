@@ -512,11 +512,18 @@ def make_obs_html(event_id, event, solve_dir, obs):
          year = file[0:4]
          day = file[0:10]
          #link = remote_urls[station_id] + "/meteors/" + station_id + "/" + day + "/" + file + "/"
-         start_az =  event['obs'][station_id][file]['azs'][0]
-         end_az =  event['obs'][station_id][file]['azs'][-1]
-         start_el =  event['obs'][station_id][file]['els'][0]
-         end_el =  event['obs'][station_id][file]['els'][-1]
-         dur =  len(event['obs'][station_id][file]['els']) / 25
+         if len(event['obs'][station_id]) >= 2:
+            start_az =  event['obs'][station_id][file]['azs'][0]
+            end_az =  event['obs'][station_id][file]['azs'][-1]
+            start_el =  event['obs'][station_id][file]['els'][0]
+            end_el =  event['obs'][station_id][file]['els'][-1]
+            dur =  len(event['obs'][station_id][file]['els']) / 25
+         else:
+            start_az = 9999
+            end_az = 9999
+            start_el = 9999
+            end_el = 9999
+            dur = 0
 
          start_time = event['start_datetime'][i]
          caption =  station_id + "-" + cam + "<br>" + start_time
