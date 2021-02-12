@@ -511,13 +511,14 @@ def sync_db_day(dynamodb, station_id, day):
             print(lkey, "UPDATE LOCAL: The remote DB has a newer version of this file" )
          if local_meteors[lkey]['revision'] > db_meteors[lkey]['revision']:
             print(lkey, "UPDATE REMOTE : The local DB has a newer version of this file. " , local_meteors[lkey]['revision'] ,   db_meteors[lkey]['revision'])
-            meteor_file = dkey.replace(".mp4", ".json")
+            meteor_file = lkey.replace(".mp4", ".json")
             #insert_meteor_obs(dynamodb, station_id, meteor_file)
             obs_data = {}
-            obs_data['revision'] = mj['revision']
-            obs_data['meteor_frame_data'] = mjr['meteor_frame_data']
+            obs_data['revision'] = local_meteors[lkey]['revision']
+            obs_data['meteor_frame_data'] = local_meteors[lkey]['meteor_frame_data']
             obs_data['last_update'] = datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
-            update_meteor_obs(dynamodb, station_id, meteor_file, obs_data)
+            sd_video_file = meteor_file.replace(".json", ".mp4")
+            update_meteor_obs(dynamodb, station_id, sd_video_file, obs_data)
 
          if local_meteors[lkey]['revision'] == db_meteors[lkey]['revision']:
             print(lkey, "GOOD: The remote and local revisions are the same." )
@@ -531,11 +532,21 @@ def sync_db_day(dynamodb, station_id, day):
 
 def update_meteor_obs(dynamodb, station_id, sd_video_file, obs_data):
 
+   dmfd = []
+   for data in obs_data['meteor_frame_data']:
+      (dt, fn, x, y, w, h, oint, ra, dec, az, el) = data
+      dmfd.append((dt,float(fn),float(x),float(y),float(w),float(h),float(oint),float(ra),float(dec),float(az),float(el)))
+   obs_data['meteor_frame_data'] = dmfd
+ 
+
    if dynamodb is None:
       dynamodb = boto3.resource('dynamodb')
    table = dynamodb.Table("meteor_obs")
    obs_data = json.loads(json.dumps(obs_data), parse_float=Decimal)
-
+   print("REV:", obs_data['revision'])
+   print("OBS:", obs_data)
+   print("ST:", station_id)
+   print("F:", sd_video_file)
    response = table.update_item(
       Key = {
          'station_id': station_id,
@@ -549,6 +560,8 @@ def update_meteor_obs(dynamodb, station_id, sd_video_file, obs_data):
       },
       ReturnValues="UPDATED_NEW"
    )
+   print(response)
+   xxx = input("cont")
 
 def update_event_sol(dynamodb, event_id, sol_data, obs_data, status):
    sol_data = json.loads(json.dumps(sol_data), parse_float=Decimal)
