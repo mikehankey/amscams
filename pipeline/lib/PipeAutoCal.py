@@ -4377,7 +4377,7 @@ def get_image_stars_with_catalog(file, img, cp, json_conf, cat_stars=None, show 
             cat_dist = calc_dist((new_cat_x,new_cat_y), (six,siy))
             cat_image_stars.append((name,mag,ra,dec,ra,dec,match_dist,new_cat_x,new_cat_y,0,0,new_cat_x,new_cat_y,six,siy,cat_dist,star_int))
 
-
+   print("Done get img stars.")
    #print("GOOD STARS:", good_stars)
    cp['cat_image_stars'] = cat_image_stars
    return(good_stars, cp)
@@ -4391,7 +4391,6 @@ def check_close(point_list, x, y, max_dist):
    return(count)
 
 def find_stars_with_grid_old(image):
-   print("FIND SARS WITH GRID!")
    gsize = 200 
    height, width = image.shape[:2]
    best_stars = []
@@ -4430,8 +4429,9 @@ def find_stars_with_grid_old(image):
    return(temp)
 
 def find_stars_with_grid(img):
+   print("FIND SARS WITH GRID!")
    raw_img = img.copy()
-   gsize = 50,50
+   gsize = 200,200
    ih,iw = img.shape[:2]
    rows = int(int(ih) / gsize[1])
    cols = int(int(iw) / gsize[0])
@@ -4446,19 +4446,25 @@ def find_stars_with_grid(img):
          x2 = x1 + gsize[0]
          y2 = y1 + gsize[1]
          grids.append((x1,y1,x2,y2))
-         #print("GRID:", col,row)
-         #print("GRID:",x1,y1,x2,y2)
-         #print("GRID:",iw,ih)
+         print("GRID:", col,row)
+         print("GRID:",x1,y1,x2,y2)
+         print("GRID:",iw,ih)
          if x2 >= iw:
             x2 = iw
          if y2 >= ih:
             y2 = ih 
          gimg = img[y1:y2,x1:x2]
-         gimg = cv2.GaussianBlur(gimg, (3, 3), 0)
+         #gimg = cv2.GaussianBlur(gimg, (3, 3), 0)
          avg = np.median(gimg)
          best_thresh = avg + 40 
 
-         max_px, avg_px, px_diff,max_loc,star_int = eval_cnt(gimg.copy(), avg)
+         min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(gimg)
+         px_diff = max_val - min_val
+         avg_px = np.mean(gimg)
+         star_int = 999
+         #max_px, avg_px, px_diff,max_loc,star_int = eval_cnt(gimg.copy(), avg)
+
+
          if avg_px < 20:
             #in mask area
             continue
@@ -4528,6 +4534,7 @@ def find_stars_with_grid(img):
 
 def get_image_stars(file=None,img=None,json_conf=None,show=0):
 
+   print("GET IMG STARS.")
    stars = []
    huge_stars = []
    if img is None:
@@ -4547,6 +4554,7 @@ def get_image_stars(file=None,img=None,json_conf=None,show=0):
    cam = cam.replace(".png", "")
    #masks = get_masks(cam, json_conf,1)
    #img = mask_frame(img, [], masks, 5)
+   print("GET IMG STARS2.")
 
    mask_file = MASK_DIR + cam + "_mask.png"
    if cfe(mask_file) == 1:
@@ -4560,6 +4568,7 @@ def get_image_stars(file=None,img=None,json_conf=None,show=0):
    cv2.imwrite("/mnt/ams2/masked.jpg", img)
    #cv2.imshow('pepe', img)
 
+   print("GET IMG STARS3.")
    best_stars = find_stars_with_grid(img)
    print("BEST STARS:", len(best_stars))
    for star in best_stars:
@@ -4627,6 +4636,7 @@ def get_image_stars(file=None,img=None,json_conf=None,show=0):
 
 
 def eval_cnt(cnt_img, avg_px=5 ):
+   print("EV", cnt_img.shape)
    cnt_img = cv2.GaussianBlur(cnt_img, (7, 7), 0)
    cnth,cntw = cnt_img.shape
    max_px = np.max(cnt_img)
@@ -4686,6 +4696,7 @@ def eval_cnt(cnt_img, avg_px=5 ):
    #print("STAR INT:", star_int)
    #xxx = input("wait")
 
+   print("EV2")
    return(max_px, avg_px,px_diff,(blob_x,blob_y),star_int)
 
 def make_plate_image(image, file_stars): 

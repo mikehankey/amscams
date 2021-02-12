@@ -117,7 +117,7 @@ def events_main_control():
 def events_control(date):
    from FlaskLib.Events import list_events_for_day
 
-   resp = list_events_for_day(dynamo, date)
+   resp = list_events_for_day(date)
    return(resp)
 
 

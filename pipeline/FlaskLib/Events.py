@@ -478,7 +478,7 @@ def list_event_days(json_conf):
    return(out)
    #le_file = le_dir + date + "_events.json"
 
-def list_events_for_day(dynamo, date, recache=0):
+def list_events_for_day(date, recache=0):
    json_conf = load_json_file("../conf/as6.json")
    stations = json_conf['site']['multi_station_sync']
    remote_urls = get_remote_urls(json_conf)
@@ -559,10 +559,10 @@ def list_events_for_day(dynamo, date, recache=0):
       ustations = ustations.replace("{", "")
       ustations = ustations.replace("}", "")
       ustations = ustations.replace("'", "")
-      html += "<tr><td>" + event_id + "</td><td>" + str(ustations) + "</td>\n"
       shower_no = ""
       shower_code = ""
       if wmpl_status == 1:
+         sol_dir = solution['sol_dir']
          orb = solution['orb']
          if "shower" in solution:
             shower_no = solution['shower']['shower_no']
@@ -570,7 +570,12 @@ def list_events_for_day(dynamo, date, recache=0):
          if shower_no == -1:
             shower_no = ""
             shower_code = ""
-  
+
+          
+         plink = sol_dir.replace("/mnt/ams2/meteor_archive/", "http://archive.allsky.tv/")
+         plink += "/index.html"
+         pref = "<a href=" + plink + ">"
+         html += "<tr><td>" + pref + event_id + "</a></td><td>" + str(ustations) + "</td>\n"
         
          traj = solution['traj']
          start_ele = traj['start_ele']

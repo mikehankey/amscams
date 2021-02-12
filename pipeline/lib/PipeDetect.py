@@ -1776,7 +1776,7 @@ def calib_image(file, image=None,json_conf=None):
       print("READ FILE:", file)
       image = cv2.imread(file)
    image = cv2.resize(image, (1920,1080))
-   print("OK1")
+   print("OK1a")
    before_cp['user_stars'] = get_image_stars(file, image.copy(), json_conf, 1)
    after_cp['user_stars'] = before_cp['user_stars']
 
@@ -1791,6 +1791,7 @@ def calib_image(file, image=None,json_conf=None):
       before_res_px = 0
       before_res_eg = 0
 
+   print("OK2")
    # do cal for after 
    if len(before_cp['user_stars']) > 0:
       cat_stars = get_catalog_stars(after_cp)
@@ -1802,6 +1803,7 @@ def calib_image(file, image=None,json_conf=None):
       after_res_px = 0
       after_res_eg = 0
 
+   print("OK3")
    #print("BEFORE RES:", before_res_px, before_res_deg, len(before_cp['user_stars']), len(before_cp['cat_image_stars']))
    #print(before_cp['center_az'])
    #print("AFTER RES:", after_res_px, after_res_deg,len(before_cp['user_stars']), len(before_cp['cat_image_stars']))
@@ -1819,6 +1821,7 @@ def calib_image(file, image=None,json_conf=None):
    #   print("This meteor calib is good!")
 
    cp = update_center_radec(file,cp,json_conf)
+   print("OK4")
    return(cp)
 
 
