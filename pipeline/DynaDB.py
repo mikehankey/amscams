@@ -561,7 +561,6 @@ def update_meteor_obs(dynamodb, station_id, sd_video_file, obs_data):
       ReturnValues="UPDATED_NEW"
    )
    print(response)
-   xxx = input("cont")
 
 def update_event_sol(dynamodb, event_id, sol_data, obs_data, status):
    sol_data = json.loads(json.dumps(sol_data), parse_float=Decimal)
