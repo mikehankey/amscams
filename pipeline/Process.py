@@ -9,6 +9,8 @@ from lib.PipeProcess import run_jobs
 from datetime import datetime
 import datetime as dt
 
+
+from lib.Remaster import make_event_video
 from lib.PipeCustomVideos import  meteors_last_night_for_cam, hd_snaps, assemble_custom, simple_TL, join_two
 from lib.PipeMeteorClean import purge_meteors_for_date, fix_meteor_orphans, meteor_png_to_jpg, fix_meteor_month, restack_meteor_dir, convert_meteor_pngs_to_jpgs
 from lib.PipeWeather import detect_clouds , make_flat, track_clouds, solar_info, audit_tl, detect_aurora, batch_aurora, aurora_report, aurora_stack_vid, tl_list, aurora_tl,  hourly_stacks, make_all_hourly_stacks, hourly_stacks_html, meteor_night_stacks, fast_aurora, fast_au_report, plot_aud
@@ -621,6 +623,8 @@ if __name__ == "__main__":
       delete_events_day(sys.argv[2],json_conf )
    if cmd == "plot_aud" :
       plot_aud(sys.argv[2],  json_conf)
+   if cmd == "make_event_video" or cmd == 'mev' :
+      make_event_video(sys.argv[2],  json_conf)
 
    if cmd == "fastau" :
       if sys.argv[3] == 'all':
