@@ -28,6 +28,45 @@ from boto3.dynamodb.conditions import Key
 import time
 from wmpl.Utils.TrajConversions import equatorialCoordPrecession_vect, J2000_JD
 
+def GC_az_el(azs, els):
+
+   import RMS.GreatCircle
+   from RMS.Math import polarToCartesian, cartesianToPolar
+   import numpy as np
+   from RMS import GreatCircle
+
+
+   azim = np.array(azs)
+   elev = np.array(els)
+
+   ### Fit a great circle to Az/Alt measurements and compute model beg/end RA and Dec ###
+
+   # Convert the measurement Az/Alt to cartesian coordinates
+   # NOTE: All values that are used for Great Circle computation are:
+   #   theta - the zenith angle (90 deg - altitude)
+   #   phi - azimuth +N of due E, which is (90 deg - azim)
+   x, y, z = polarToCartesian(np.radians((90 - azim)%360), np.radians(90 - elev))
+
+   # Fit a great circle
+   C, theta0, phi0 = GreatCircle.fitGreatCircle(x, y, z)
+
+   azs_gc = []
+   els_gc = []
+
+   # Get the first point on the great circle
+   for i in range(0, len(azs)):
+      phase1 = GreatCircle.greatCirclePhase(np.radians(90 - elev[i]), np.radians((90 - azim[i])%360), \
+            theta0, phi0)
+      alt1, azim1 = cartesianToPolar(*GreatCircle.greatCircle(phase1, theta0, phi0))
+      alt1 = 90 - np.degrees(alt1)
+      azim1 = (90 - np.degrees(azim1))%360
+      print("ORG/NEW:", azs[i], els[i], azim1, alt1)
+      azs_gc.append(float(azim1))
+      els_gc.append(float(alt1))
+   return(azs_gc, els_gc)
+
+
+
 def solve_status(day):
    dynamodb = boto3.resource('dynamodb')
    stations = []
@@ -542,6 +581,9 @@ def convert_dy_obs(dy_obs_data, obs):
       obs[station][fn]['ints'].append(float(oint))
       
 
+
+   obs[station][fn]['gc_azs'], obs[station][fn]['gc_els'] = GC_az_el(obs[station][fn]['azs'], obs[station][fn]['els'])
+
    print("OBS:", obs)
    return(obs)
 
@@ -1044,8 +1086,12 @@ def WMPL_solve(obs,time_sync=1):
         if True:
             lat,lon,alt = obs[station_id][file]['loc']
             lat,lon,alt = float(lat), float(lon), float(alt)
-            azs = np.radians(obs[station_id][file]['azs'])
-            els = np.radians(obs[station_id][file]['els'])
+            if "azs_gc" in obs[station_id][file]:
+               azs = np.radians(obs[station_id][file]['azs_gc'])
+               els = np.radians(obs[station_id][file]['els_gc'])
+            else:
+               azs = np.radians(obs[station_id][file]['azs'])
+               els = np.radians(obs[station_id][file]['els'])
             times = obs[station_id][file]['times']
             print("STATION:", station_id)
             print("FILE:", file)
