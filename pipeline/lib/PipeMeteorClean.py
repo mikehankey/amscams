@@ -562,6 +562,10 @@ def delete_from_base(base, json_conf):
       if cfe(jsf) == 1:
          print(jsf)
          js = load_json_file(jsf)
+         if "final_vid" in js:
+            print("DEL:", js['final_vid'])
+            cmd = "rm " + final_vid
+            os.system(cmd)
          if "hd_trim" in js:
             if js['hd_trim'] is not None:
                hd_base = js['hd_trim'].split("/")[-1].replace(".mp4", "")
