@@ -4,6 +4,7 @@
 
 '''
 
+from PIL import Image, ImageDraw, ImageFont
 
 from lib.PipeUtil import cfe , convert_filename_to_date_cam, load_json_file
 from lib.PipeImage import thumbnail, quick_video_stack
