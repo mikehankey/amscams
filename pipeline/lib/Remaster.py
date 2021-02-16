@@ -1,5 +1,5 @@
 from PIL import Image, ImageDraw, ImageFont
-
+from lib.FFFuncs import best_crop_size
 import math
 import scipy.optimize
 from lib.UIJavaScript import *
@@ -67,8 +67,6 @@ def valid_calib(meteor_file, mj, image,json_conf):
    res_px = np.mean(rez)
    print("RES:", res_px, rez)
 
-   #cv2.imshow('STARS', cvimg)
-   #cv2.waitKey(30)
    return(mj['cp'], cvimg)
 
 def mask_stars(image_stars, image):
@@ -98,8 +96,10 @@ def make_event_video(meteor_file,json_conf):
       return()
 
    if "hd_red" in mj:
-      print("Already did it.")
-      return()
+      if "final_vid" in mj:
+         if cfe(mj['final_vid']) == 1:
+            print("Already did it.")
+            return()
 
    if cfe(red_file) == 1:
       mjr = load_json_file(red_file)
@@ -204,11 +204,7 @@ def make_event_video(meteor_file,json_conf):
       if thresh_val < 10:
          thresh_val = 10 
       _, threshold = cv2.threshold(crop_frame.copy(), thresh_val, 255, cv2.THRESH_BINARY)
-      print("THRESH:", thresh_val)
-      #cv2.imshow('THRESH', threshold)
-      #if preg_stack is not None:
-      #   cv2.imshow('pepe', preg_stack)
-      #cv2.waitKey(30)
+
       conts = get_lead_contour_in_image(threshold, dom_dir,x_dir,y_dir,min_x,min_y,seg_len,last_x,last_y)
       if len(conts) == 0:
          hd_frame_data[fi] = {}
@@ -218,8 +214,6 @@ def make_event_video(meteor_file,json_conf):
          sf = cframe.copy()
          for x,y,w,h,lx,ly in conts:
             cv2.rectangle(sf, (int(x), int(y)), (int(x+w) , int(y+h) ), (255, 255, 255), 1)
-         #cv2.imshow("CONT", sf)
-         #cv2.waitKey(9990)
 
 
       if len(conts) > 0:
@@ -283,8 +277,9 @@ def make_event_video(meteor_file,json_conf):
          last_x = lx
          last_y = ly
       print("C:", conts)
-      cv2.imshow('pepe', cframe)
-      cv2.waitKey(30)
+      if SHOW == 1:
+         cv2.imshow('pepe', cframe)
+         cv2.waitKey(30)
       fi += 1
       last_frame = frame
 
@@ -298,6 +293,8 @@ def make_event_video(meteor_file,json_conf):
          else:
             cm = cm + 1
          rx1,ry1,rx2,ry2 = bound_cnt(data['hd_lx'],data['hd_ly'],frame.shape[1],frame.shape[0], 10) 
+
+
          roi_img = frame[ry1:ry2,rx1:rx2]
 
          last_good_fn = hd_fn
@@ -363,8 +360,9 @@ def make_event_video(meteor_file,json_conf):
    if len(events) == 0:
       print("NO EVENTS!?")
       stack_image = stack_frames(hd_color_frames)
-      cv2.imshow('pepe', stack_image)
-      cv2.waitKey(99)
+      if SHOW == 1:
+         cv2.imshow('pepe', stack_image)
+         cv2.waitKey(99)
 
       mj['hd_red'] = {}
       mj['hd_red']['status'] = 0
@@ -463,8 +461,9 @@ def make_event_video(meteor_file,json_conf):
       roi_big = cv2.resize(roi_img, (300,300))
       show_frame[0:300,0:300] = roi_big
       cv2.rectangle(show_frame, (int(rx1), int(ry1)), (int(rx2) , int(ry2) ), (255, 255, 255), 1)
-      cv2.imshow('pepe', show_frame)
-      cv2.waitKey(30)
+      if SHOW == 1:
+         cv2.imshow('pepe', show_frame)
+         cv2.waitKey(30)
 
       print(hd_frame_data[fn])
 
@@ -586,13 +585,14 @@ def make_event_video(meteor_file,json_conf):
 
       if "est_x" in hd_frame_data[hd_fn]:
          print("CORRECT:", hd_fn)
-         cv2.line(stack_image, (hd_frame_data[hd_fn]['est_x'],hd_frame_data[hd_fn]['est_y']), (hd_frame_data[hd_fn]['est_x2'],hd_frame_data[hd_fn]['est_y2']), (155,155,155), 1)
-         cv2.line(stack_image, (lx,ly), (lx2,ly2), (0,0,0), 1)
-         cv2.putText(stack_image, str(fc),  (hd_frame_data[hd_fn]['est_x2'], hd_frame_data[hd_fn]['est_y2']), cv2.FONT_HERSHEY_SIMPLEX, .3, (255, 255, 255), 1)
-         cv2.putText(stack_image, str(fc),  (lx2, ly2), cv2.FONT_HERSHEY_SIMPLEX, .3, (200, 200, 200), 1)
+         #cv2.line(stack_image, (hd_frame_data[hd_fn]['est_x'],hd_frame_data[hd_fn]['est_y']), (hd_frame_data[hd_fn]['est_x2'],hd_frame_data[hd_fn]['est_y2']), (155,155,155), 1)
+         #cv2.line(stack_image, (lx,ly), (lx2,ly2), (0,0,0), 1)
+         #cv2.putText(stack_image, str(fc),  (hd_frame_data[hd_fn]['est_x2'], hd_frame_data[hd_fn]['est_y2']), cv2.FONT_HERSHEY_SIMPLEX, .3, (255, 255, 255), 1)
+         #cv2.putText(stack_image, str(fc),  (lx2, ly2), cv2.FONT_HERSHEY_SIMPLEX, .3, (200, 200, 200), 1)
       else:
-         cv2.line(stack_image, (lx,ly), (lx2,ly2), (100,100,100), 1)
-         cv2.putText(stack_image, str(fc),  (lx2, ly2), cv2.FONT_HERSHEY_SIMPLEX, .3, (200, 200, 200), 1)
+         foo = 1
+         #cv2.line(stack_image, (lx,ly), (lx2,ly2), (100,100,100), 1)
+         #cv2.putText(stack_image, str(fc),  (lx2, ly2), cv2.FONT_HERSHEY_SIMPLEX, .3, (200, 200, 200), 1)
       fc += 1
 
    min_x = min(axs) - 25
@@ -608,7 +608,35 @@ def make_event_video(meteor_file,json_conf):
    if max_x > 1919:
       max_x = 1919 
 
+   print("AX", axs)
+   print("AY", axs)
+   print("MIN", min_x,min_y,max_x,max_y)
+   crop_w, crop_h = best_crop_size([min_x,max_x], [min_y,max_y], 1920,1080)
+   print("CROP WH:", crop_w,crop_h)
+   cent_x = int(np.mean(axs))
+   cent_y = int(np.mean(ays))
+   cx1 = int(cent_x - (crop_w/2))
+   cy1 = int(cent_y - (crop_h/2))
+   cx2 = int(cent_x + (crop_w/2))
+   cy2 = int(cent_y + (crop_h/2))
+   if cx1 < 0:
+      cx1 = 0
+      cx2 = crop_w
+   if cy1 < 0:
+      cy1 = 0
+      cy2 = crop_h
+   if cx2 > 1919:
+      cx1 = 1919 - crop_w
+      cx2 = 1919 
+   if cy2 > 1079:
+      cy1 = 1079 - crop_h
+      cy2 = 1079
+
+   hd_crop_info = [cx1,cy1,cx2,cy2]
+   print("CROP SIZE:", crop_w, crop_h)
+
    roi_img = stack_image[min_y:max_y,min_x:max_x]
+   crop_stack = stack_image[cy1:cy2,cx1:cx2]
    rh, rw = roi_img.shape[0:2]
 
    print("RW, RH:", rw, rh)
@@ -617,19 +645,24 @@ def make_event_video(meteor_file,json_conf):
       # 
       nw = int(rw) * 5
       nh = int(rh) * 5
+      enl = 5
    elif rh * 4 < 800 and rw * 4 < 1400:
       nw = int(rw) * 4 
       nh = int(rh) * 4 
+      enl = 4
    elif rh * 3 < 800 and rw * 3 < 1400:
       nw = int(rw) * 3 
       nh = int(rh) * 3 
+      enl = 3
    elif rh * 2 < 800 and rw * 2 < 1400:
       nw = int(rw) * 2
       nh = int(rh) * 2 
+      enl = 2
    else:
       print("ROI TOO BIG TO ENLARGE?????:", rw, rh, rw* 5, rh * 5)
       nw = int(rw)  
       nh = int(rh) 
+      enl = 1
 
    if max_x < 1920 / 2:
       # ideal loc right side
@@ -684,12 +717,12 @@ def make_event_video(meteor_file,json_conf):
    print("region SHAPE:", roi_tly, roi_tly+nh,roi_tlx, roi_tlx+nw )
    if roi_img_big.shape[0] < 800:
       show_image[roi_tly:roi_tly+nh,roi_tlx:roi_tlx+nw] = roi_img_big
-   #cv2.imshow("ROI", roi_img_big)
    cv2.rectangle(show_image, (int(roi_tlx), int(roi_tly)), (int(roi_tlx+nw) , int(roi_tly+nh) ), (255, 255, 255), 1)
    cv2.rectangle(show_image, (int(min_x), int(min_y)), (int(max_x) , int(max_y) ), (255, 255, 255), 1)
    blend_image = cv2.addWeighted(show_image, .8, star_overlay, .2,0)
-   cv2.imshow('pepe', blend_image)
-   cv2.waitKey(120)
+   if SHOW ==1 :
+      cv2.imshow('pepe', blend_image)
+      cv2.waitKey(120)
 
    # SAVE THE HD FRAMES IN CACHE AND THEN MAKE A FINAL VIDEO WITH BUFF +/-5
    hd_fns = sorted(hd_frame_data.keys())
@@ -718,16 +751,26 @@ def make_event_video(meteor_file,json_conf):
    cache_dir_crop = "/mnt/ams2/CACHE/" + year + "/" + final_file_key + "_crop/" 
    if cfe(cache_dir, 1) == 0:
       os.makedirs(cache_dir)
+   if cfe(cache_dir_crop, 1) == 0:
+      os.makedirs(cache_dir_crop)
 
+   cx1,cy1,cx2,cy2 = crop_area
    for i in range(ff, lf+1):
       ffn = "{:04d}".format(int(i))
+      crop_img = frame[cx1:cy2,cx1:cy2]
       if i in hd_frame_data:
          lx = hd_frame_data[i]['hd_lx']
          ly = hd_frame_data[i]['hd_ly']
          roi_img = make_roi_img(hd_color_frames[i], lx, ly, 25)
-         if cfe(cache_dir + final_file_key + "_" + ffn + ".jpg") == 0:
-            cv2.imwrite(cache_dir + final_file_key + "_" + ffn + ".jpg", hd_color_frames[i])
-            print("saving...", cache_dir + final_file_key + "_" + ffn + ".jpg")
+      if cfe(cache_dir_crop + final_file_key + "_" + ffn + ".jpg") == 0:
+         cv2.imwrite(cache_dir + final_file_key + "_" + ffn + ".jpg", hd_color_frames[i])
+         print("saving...", cache_dir + final_file_key + "_" + ffn + ".jpg")
+      if cfe(cache_dir + final_file_key + "_" + ffn + ".jpg") == 0:
+         cv2.imwrite(cache_dir + final_file_key + "_" + ffn + ".jpg", hd_color_frames[i])
+         print("saving...", cache_dir + final_file_key + "_" + ffn + ".jpg")
+
+
+      if SHOW == 1:
          cv2.imshow('pepe', hd_color_frames[i])
          cv2.waitKey(30)
   
@@ -739,14 +782,21 @@ def make_event_video(meteor_file,json_conf):
       cmd = "./FFF.py imgs_to_vid " + cache_dir + " " + final_file_key + " " + final_dir + final_file_key + ".mp4" + " 25 28" 
       print(cmd)
       os.system(cmd)
+   # save ROI big image
+
+   cv2.imwrite(final_dir + final_file_key + "_crop.jpg", crop_stack)
    mj['hd_red'] = {}
    mj['hd_red']['hd_mfd'] = hd_frame_data
    mj['final_vid'] = final_dir + final_file_key + ".mp4"
    mj['hd_red']['crop_area'] = crop_area
+   mj['hd_red']['enl'] = enl
    mj['hd_red']['status'] = 1
    mj['hd_red']['frame_buf'] = 5
+   mj['hd_red']['hd_crop_info'] = hd_crop_info
    save_json_file(meteor_file, mj)
+
    print("Saved.", meteor_file)
+   print("Saved.", final_dir + final_file_key + "_crop.jpg")
 
 def make_roi_img(image, x, y, size):
    rx1 = x - size
@@ -795,8 +845,6 @@ def make_roi_img(image, x, y, size):
       cnt_img = blank
    print(rx1,ry1,rx2,ry2)
    print(cnt_img.shape)
-   #cv2.imshow('cnt', cnt_img)
-   #cv2.waitKey(0)
    return(1)
 
 
@@ -1157,8 +1205,6 @@ def get_lead_contour_in_image(frame, dom_dir,x_dir,y_dir,min_x=0,min_y=0,seg_len
       print("USING MEAN CNT!")
 
 
-   #cv2.imshow('frame', frame)
-   #cv2.waitKey(30)
    if False:
       if best_cnt is not None:
          [x,y,w,h,lx,ly] = best_cnt
