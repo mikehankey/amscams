@@ -287,6 +287,11 @@ def make_css():
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <style>
+body {
+  background-color: #FFFFFF;
+}
+
+
 .container {
   padding: 5px;
   float: left;
@@ -329,7 +334,7 @@ def make_css():
 }
 </style>
 </head>
-<body>
+<body >
 
 
    """
