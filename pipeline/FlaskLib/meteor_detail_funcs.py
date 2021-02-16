@@ -178,6 +178,8 @@ def make_ms_html(amsid, meteor_file, mj):
    print("MSE:", mse)
 
    if "event_file" in mse:
+      if "http:" in mse['event_file']:
+         mse['event_file'] = mse['event_file'].replace("http:", "https:")
       ms_html = "<iframe width=100% height=800 src=" + mse['event_file'] + "></iframe>"
       print(ms_html)
       return(ms_html)
