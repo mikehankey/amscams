@@ -362,7 +362,7 @@ def meteor_man_reduce(meteor_file, x,y,w,h, step, first_frame,last_frame,ScaleFa
                },
                success: function(data) {
 
-                  meteor_page_url = "/meteors/" + amsid + "/" + day + "/" + file_fn + "/"
+                  meteor_page_url = "/meteor/" + amsid + "/" + day + "/" + file_fn + "/"
                   window.location.href = meteor_page_url 
                   top.window.location.href=meteor_page_url
                   //$.each(ids, function(i,v){

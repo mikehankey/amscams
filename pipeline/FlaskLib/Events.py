@@ -104,7 +104,7 @@ def obs_json_to_html(obs, best, remote_urls = None):
    caption = ""
    if remote_urls is not None:
       rurl = remote_urls[obs['station_id']]
-      link = remote_urls[station_id] + "/meteors/" + station_id + "/" + date + "/" + file + "/"
+      link = remote_urls[station_id] + "/meteor/" + station_id + "/" + date + "/" + file + "/"
       href = "<a href=" + link + ">"
    else:
       href = ""
@@ -287,7 +287,7 @@ def event_detail_old(event_id):
          prev_file = file.replace(".mp4", "-prev.jpg")
          year = file[0:4]
          day = file[0:10]
-         link = remote_urls[station_id] + "/meteors/" + station_id + "/" + day + "/" + file + "/"
+         link = remote_urls[station_id] + "/meteor/" + station_id + "/" + day + "/" + file + "/"
          caption =  station_id + "-" + cam
          temp += "<div id='" + prev_file + "' class='preview select-to multi'>\n "
          temp += "<a href=" + link + " class='mtt'>\n"
@@ -369,7 +369,7 @@ def make_obs_html_new(event_id, event, solve_dir, obs):
          prev_file = file.replace(".mp4", "-prev.jpg")
          year = file[0:4]
          day = file[0:10]
-         #link = remote_urls[station_id] + "/meteors/" + station_id + "/" + day + "/" + file + "/"
+         #link = remote_urls[station_id] + "/meteor/" + station_id + "/" + day + "/" + file + "/"
          start_az =  event['solution']['obs'][station_id][file]['azs'][0]
          end_az =  event['solution']['obs'][station_id][file]['azs'][-1]
          start_el =  event['solution']['obs'][station_id][file]['els'][0]
@@ -418,7 +418,7 @@ def make_obs_html(event, remote_urls):
       prev_file = file.replace(".mp4", "-prev.jpg")
       year = file[0:4]
       day = file[0:10]
-      link = remote_urls[station_id] + "/meteors/" + station_id + "/" + day + "/" + file + "/"
+      link = remote_urls[station_id] + "/meteor/" + station_id + "/" + day + "/" + file + "/"
       caption =  station_id + "-" + cam
       temp += "<div id='" + prev_file + "' class='preview select-to multi'>\n "
       temp += "<a href=" + link + " class='mtt'>\n"
@@ -597,7 +597,7 @@ def list_events_for_day(date, recache=0):
          prev_file = file.replace(".mp4", "-prev.jpg")
          year = file[0:4]
          day = file[0:10]
-         link = remote_urls[station_id] + "/meteors/" + station_id + "/" + day + "/" + file + "/"
+         link = remote_urls[station_id] + "/meteor/" + station_id + "/" + day + "/" + file + "/"
          caption =  station_id + "-" + cam  
          #html += "<a href=" + link + ">"
          #html += "<figure><img src=https://archive.allsky.tv/" + station_id + "/METEORS/" + year + "/" + day + "/" + station_id + "_" + prev_file + "><figcaption>" + caption + "</figcaption></a></figure>"

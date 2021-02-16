@@ -294,7 +294,7 @@ def make_ms_html(amsid, meteor_file, mj):
    fn,dir = fn_dir(meteor_file)
    date = fn[0:10]
    fn = fn.replace(".mp4", "-map.jpg?" + str(time.time()))
-   station_map = "/meteors/" + date + "/" + fn
+   station_map = "/meteor/" + date + "/" + fn
    kml_file = station_map.replace("-map.jpg", ".kml")
    print("MAP:", station_map)
    ms_html += "</div></div>"
