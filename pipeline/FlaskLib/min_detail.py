@@ -42,7 +42,7 @@ def min_detail_main(amsid, day, min_file):
       if "reduced" not in mf:
          mfn, mdir = fn_dir(mf)
          mfn = mfn.replace(".json", ".mp4")
-         meteor_link = "/meteors/" + amsid + "/" + date + "/" + mfn + "/"
+         meteor_link = "/meteor/" + amsid + "/" + date + "/" + mfn + "/"
          out += "<li><a href=" + meteor_link + ">Meteor Detected</a></li>"
    out += "</ul>"
 

@@ -271,7 +271,9 @@ def best_crop_size(oxs, oys, vw,vh):
       '496x279',
       '480x270',
       '384x216',
-      '320x180'
+      '320x180',
+      '160x90',
+      '80x45',
    ]
 
       #'288x162',
@@ -280,10 +282,10 @@ def best_crop_size(oxs, oys, vw,vh):
       #'128x72',
       #'96x54'
 
-   min_x = min(oxs)
-   min_y = min(oys)
-   max_x = max(oxs)
-   max_y = max(oys)
+   min_x = min(oxs) 
+   min_y = min(oys) 
+   max_x = max(oxs) 
+   max_y = max(oys) 
 
    obj_w = max_x - min_x
    obj_h = max_y - min_y
@@ -295,6 +297,7 @@ def best_crop_size(oxs, oys, vw,vh):
       if obj_w < cw and obj_h < ch:
          best_size = [cw,ch]
    print("OBJ_W, OBJ_H", obj_w, obj_h)
+   [cw,ch] = best_size
    print("BEST CROP SIZE:", cw,ch)
    return([cw,ch])
 

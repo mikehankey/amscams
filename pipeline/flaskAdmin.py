@@ -8,7 +8,7 @@ from FlaskLib.calib_funcs import calib_main, cal_file, show_masks, del_calfile, 
 from lib.PipeUtil import cfe, load_json_file, save_json_file
 from lib.PipePwdProtect import login_page, check_pwd_ajax
 from lib.PipeAutoCal import fn_dir
-from FlaskLib.meteor_detail_funcs import detail_page 
+from FlaskLib.meteor_detail_funcs import detail_page , pick_points, pick_points_day
 from FlaskLib.config_funcs import config_vars 
 from FlaskLib.meteors_main import meteors_main , meteors_by_day, trash_page
 from FlaskLib.super_stacks import stacks_main, stacks_day_hours, stacks_hour
@@ -93,6 +93,17 @@ def map_runner():
 def obs_rev_control(day):
    from FlaskLib.Events import obs_review 
    resp = obs_review(day, json_conf)
+   return(resp)
+
+
+@app.route('/pick_points/<meteor_id>/', methods=['GET', 'POST'])
+@auth.login_required
+def cntl_pick_points(meteor_id):
+   el = meteor_id.split("_")
+   if len(el) == 3:
+      resp = pick_points_day(meteor_id,json_conf)
+   else: 
+      resp = pick_points(meteor_id,json_conf)
    return(resp)
 
 
@@ -367,7 +378,7 @@ def trash_pg(amsid ):
    return(out)
 
 # MAIN METEOR PAGE
-@app.route('/meteors/<amsid>/', methods=['GET', 'POST'])
+@app.route('/meteor/<amsid>/', methods=['GET', 'POST'])
 @auth.login_required
 def meteors(amsid ):
    req = {}
@@ -397,7 +408,7 @@ def goto_meteor(meteor_file):
    out = detail_page(amsid, date, meteor_file )
    return out
 
-@app.route('/meteors/<amsid>/<date>/<meteor_file>/', methods=['GET', 'POST'])
+@app.route('/meteor/<amsid>/<date>/<meteor_file>/', methods=['GET', 'POST'])
 @auth.login_required
 def meteor_detail_page(amsid, date, meteor_file):
    out = detail_page(amsid, date, meteor_file )

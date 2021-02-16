@@ -95,7 +95,7 @@ def man_detect(min_file, data):
       os.system("./Process.py restack_meteor " + mj['sd_video_file'])
       vidfn = mj['sd_video_file'].split("/")[-1]
       date = vidfn[0:10]
-      murl = "/meteors/" + amsid + "/" + date + "/" + vidfn + "/" 
+      murl = "/meteor/" + amsid + "/" + date + "/" + vidfn + "/" 
       out += "<a href=" + murl + ">goto meteor</a>"
 
    out += javascript(mf)

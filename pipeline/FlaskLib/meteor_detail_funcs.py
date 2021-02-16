@@ -6,6 +6,121 @@ import time
 import cv2
 import os
 import numpy as np
+import glob
+
+def pick_points_day(day, json_conf):
+   print("PPD")
+   xfiles = glob.glob("/mnt/ams2/meteors/" + day + "/*.json")
+   print("/mnt/ams2/meteors/" + day + "/*.json")
+   files = []
+   for file in xfiles:
+      print(file)
+      if "reduced" not in file:
+         files.append(file)
+   out = ""
+   for file in files:
+      mf = file.split("/")[-1]
+      print(file)
+      mj = load_json_file(file)
+      if "final_vid" in mj:
+         vf = mj['final_vid']
+      vf = vf.replace("/mnt/ams2", "")
+      icf = vf.replace(".mp4", "_crop.jpg")
+      mfile = json_conf['site']['ams_id'] + ":" + mf
+      link = "/pick_points/" + mfile + "/" 
+      href = "<a href=" + link + ">"
+      out += href + "<img width=320 height=180 src='" + icf + "?123'></a>"
+   return(out)
+
+def pick_points(meteor_id, json_conf):
+   out = ""
+   station_id, meteor_video = meteor_id.split(":")
+   mf = meteor_video.replace(".mp4", ".json")
+   date = mf[0:10]
+   meteor_file = "/mnt/ams2/meteors/" + date + "/" + mf 
+   print(meteor_file)
+   mj = load_json_file(meteor_file)
+   if "final_vid" in mj:
+      fvid = mj['final_vid']
+      fv_fn = fvid.split("/")[-1]
+      cache_dir = "/mnt/ams2/CACHE/" + year + "/" + fv_fn + "_crop/"
+   if "final_vid" in mj:
+      roi_big = mj['final_vid'].replace(".mp4", "_crop.jpg")
+      vroi = roi_big.replace("/mnt/ams2", "")
+   out += "<img width=1280 height=720 src=" + vroi + ">"
+
+   out += """
+
+      <script src="https://archive.allsky.tv/APPS/src/js/plugins/fabric.js?1613429206.2923284"></script>
+
+      <canvas id="c" width=1920 height=1080 style="border:1px solid #ccc"></canvas>
+
+      <script> 
+      var images = {:s}
+      let points = {:s}
+      ii = 0
+
+      var canvas = new fabric.Canvas("c", {
+         hoverCursor: 'pointer',
+         selection: true,
+         selectionBorderColor: 'green',
+         backgroundColor: null
+      });
+
+
+      for (i in points) {
+         var x = points[i][0]
+         var y = points[i][1]
+         console.log(x,y)
+         canvas.add(new fabric.Line([x, y, x+100, y+100], {
+            left: x,
+            top: y,
+            stroke: 'red'
+         }));
+      }
+
+
+      function set_image() {
+         imageUrl = images[ii]
+         canvas.setBackgroundImage(imageUrl, canvas.renderAll.bind(canvas), {
+         // Optionally add an opacity lvl to the image
+         backgroundImageOpacity: 0.5,
+         // should the image be resized to fit the container?
+         backgroundImageStretch: false
+         });
+      }
+
+      function next_img() {
+         ii = ii + 1
+         if (ii >= images.length) {
+            ii = 0
+         }
+         imageUrl = images[ii]
+         set_image()
+         document.getElementById("frame_num").innerHTML=ii
+      }
+   
+      function prev_img() {
+         ii = ii - 1
+         if (ii < 0) {
+            ii = 0
+         }
+         imageUrl = images[ii]
+         set_image()
+         document.getElementById("frame_num").innerHTML=ii
+      }
+
+
+      set_image()
+
+      </script>
+      <span id="frame_num">#</span>
+      <a href="javascript:prev_img()">Prev</a> - 
+      <a href="javascript:next_img()">Next</a> - 
+
+   """.format(files, points)
+
+   return(out)
 
 def make_obs_object(mj,mse, nsinfo):
    obs = {}
@@ -179,7 +294,7 @@ def make_ms_html(amsid, meteor_file, mj):
    fn,dir = fn_dir(meteor_file)
    date = fn[0:10]
    fn = fn.replace(".mp4", "-map.jpg?" + str(time.time()))
-   station_map = "/meteors/" + date + "/" + fn
+   station_map = "/meteor/" + date + "/" + fn
    kml_file = station_map.replace("-map.jpg", ".kml")
    print("MAP:", station_map)
    ms_html += "</div></div>"
