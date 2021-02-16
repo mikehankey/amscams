@@ -79,7 +79,7 @@ def solve_status(day):
          if "FAILED" in event['solve_status']:
             failed_html += event['event_id'] + " " + event['solve_status'] + "\n"
          else:
-            event_url = event['solution']['sol_dir'].replace("/mnt/ams2/meteor_archive/", "http://archive.allsky.tv/")
+            event_url = event['solution']['sol_dir'].replace("/mnt/ams2/meteor_archive/", "https://archive.allsky.tv/")
             solved_html += event['event_id'] + " " + event['solve_status'] + " " + event_url + "/index.html\n"
       else:
          if "solution" in event:
@@ -598,9 +598,9 @@ def make_orbit_link(event_id, orb):
    if orb['a'] is None:
       link = ""
    else:
-      link = "http://orbit.allskycams.com/index_emb.php?name={:s}&epoch={:f}&a={:f}&M={:f}&e={:f}&I={:f}&Peri={:f}&Node={:f}&P={:f}&q={:f}&T={:f}#".format(event_id, orb['jd_ref'], orb['a'], orb['mean_anomaly'], orb['e'], orb['i'], orb['peri'], orb['node'], orb['T'], orb['q'], orb['jd_ref'])
+      link = "https://orbit.allskycams.com/index_emb.php?name={:s}&epoch={:f}&a={:f}&M={:f}&e={:f}&I={:f}&Peri={:f}&Node={:f}&P={:f}&q={:f}&T={:f}#".format(event_id, orb['jd_ref'], orb['a'], orb['mean_anomaly'], orb['e'], orb['i'], orb['peri'], orb['node'], orb['T'], orb['q'], orb['jd_ref'])
    #try:
-   #   link = "http://orbit.allskycams.com/index_emb.php?name={:s}&epoch={:f}&a={:f}&M={:f}&e={:f}&I={:f}&Peri={:f}&Node={:f}&P={:f}&q={:f}&T={:f}#".format(event_id, orb['jd_ref'], orb['a'], orb['mean_anomaly'], orb['e'], orb['i'], orb['peri'], orb['node'], orb['T'], orb['q'], orb['jd_ref'])
+   #   link = "https://orbit.allskycams.com/index_emb.php?name={:s}&epoch={:f}&a={:f}&M={:f}&e={:f}&I={:f}&Peri={:f}&Node={:f}&P={:f}&q={:f}&T={:f}#".format(event_id, orb['jd_ref'], orb['a'], orb['mean_anomaly'], orb['e'], orb['i'], orb['peri'], orb['node'], orb['T'], orb['q'], orb['jd_ref'])
    #except:
    #   link = ""
    return(link)
@@ -916,7 +916,7 @@ def make_kml(kml_file, points, lines):
          pnt.style.labelstyle.color=color
 #simplekml.Color.darkgoldenrod
          pnt.style.labelstyle.scale = 1
-         pnt.style.iconstyle.icon.href = 'http://maps.google.com/mapfiles/kml/shapes/placemark_circle.png'
+         pnt.style.iconstyle.icon.href = 'https://maps.google.com/mapfiles/kml/shapes/placemark_circle.png'
          pnt.style.iconstyle.color=color
          pnt.altitudemode = simplekml.AltitudeMode.relativetoground
 
@@ -940,7 +940,7 @@ def make_kml(kml_file, points, lines):
          pnt.style.labelstyle.color=color
 #simplekml.Color.darkgoldenrod
          pnt.style.labelstyle.scale = 1
-         pnt.style.iconstyle.icon.href = 'http://maps.google.com/mapfiles/kml/shapes/placemark_circle.png'
+         pnt.style.iconstyle.icon.href = 'https://maps.google.com/mapfiles/kml/shapes/placemark_circle.png'
          pnt.style.iconstyle.color=color
          pnt.altitudemode = simplekml.AltitudeMode.relativetoground
 
