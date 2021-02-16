@@ -215,13 +215,14 @@ def dyna_events_for_day(day, json_conf):
    meteors = []
    for station in all_data:
       for item in all_data[station]:
-         if item['event_start_time'] == "":
-            (f_datetime, cam, f_date_str,fy,fm,fd, max_h, fmin, fs) = convert_filename_to_date_cam(item['sd_video_file'])
-            trim_num = int(get_trim_num(item['sd_video_file']))
-            extra_sec = int(trim_num) / 25
-            start_time_dt = f_datetime + datetime.timedelta(0,extra_sec)
-            start_time_dt_str = start_time_dt.strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]
-            item['event_start_time'] = start_time_dt_str
+         print(item)
+         #if 'event_start_time' == "":
+         (f_datetime, cam, f_date_str,fy,fm,fd, max_h, fmin, fs) = convert_filename_to_date_cam(item['sd_video_file'])
+         trim_num = int(get_trim_num(item['sd_video_file']))
+         extra_sec = int(trim_num) / 25
+         start_time_dt = f_datetime + datetime.timedelta(0,extra_sec)
+         start_time_dt_str = start_time_dt.strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]
+         item['event_start_time'] = start_time_dt_str
 
          meteor = [item['station_id'],item['sd_video_file'], item['event_start_time']]
          meteors.append((item['station_id'],item['sd_video_file'], item['event_start_time']))
