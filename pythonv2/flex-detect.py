@@ -1648,6 +1648,8 @@ def apply_calib(obj , frames=None , user_station = None):
          hd_frames,hd_color_frames,hd_subframes,sum_vals,max_vals,pos_vals = load_frames_fast(obj['trim_clip'], json_conf, 5, 0, [], 0,[])
          print("SD FRAMES:", len(hd_frames))
       frames = hd_frames
+   if len(frames) == 0:
+      return(None, None)
 
    frame = frames[0]
    frame = cv2.resize(frame, (1920,1080))
