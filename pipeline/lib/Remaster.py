@@ -136,8 +136,19 @@ def make_final_json(mj, json_conf):
 
    return(final_json)   
 
+def remaster_month(wild,json_conf):
+   print("REMASTER MONTH:", wild)
+   days = glob.glob("/mnt/ams2/meteors/" + wild + "*")
+   print("/mnt/ams2/meteors/" + wild + "*")
+   for day_dir in sorted(days, reverse=True):
+      day, fdir = fn_dir(day_dir)
+      print("DAY:", day)
+      if cfe(day_dir,1) == 1:
+         remaster_day(day, json_conf)
+
 def remaster_day(day,json_conf):
 
+   print("REMASTER DAY:", day)
    mfs = []
    files = glob.glob("/mnt/ams2/meteors/" + day + "/*.json")
    for mf in files:
@@ -146,6 +157,7 @@ def remaster_day(day,json_conf):
    for mf in mfs:
       print(mf)
       make_event_video(mf,json_conf)
+   sync_final_day(day, json_conf)
 
 def valid_calib(meteor_file, mj, image,json_conf):
    stars = get_image_stars(meteor_file, image, json_conf,0)
@@ -164,7 +176,6 @@ def valid_calib(meteor_file, mj, image,json_conf):
    print("ORIG RES:", mj['cp']['total_res_px'])
 
 
-   exit()
 
    star_over = np.zeros((1080,1920,3),dtype=np.uint8)
    # Pass the image to PIL
@@ -785,7 +796,7 @@ def make_event_video(meteor_file,json_conf):
 
    hd_crop_info = [cx1,cy1,cx2,cy2]
    print("CROP SIZE:", crop_w, crop_h)
-
+   print("CROP INFO:", hd_crop_info)
    roi_img = stack_image[min_y:max_y,min_x:max_x]
    crop_stack = stack_image[cy1:cy2,cx1:cx2]
    rh, rw = roi_img.shape[0:2]
@@ -909,10 +920,13 @@ def make_event_video(meteor_file,json_conf):
    if cfe(cache_dir_crop, 1) == 0:
       os.makedirs(cache_dir_crop)
 
-   cx1,cy1,cx2,cy2 = crop_area
+   print("CROP INFO:", hd_crop_info)
+   cx1,cy1,cx2,cy2 = hd_crop_info
    for i in range(ff, lf+1):
+      frame = hd_color_frames[i]
       ffn = "{:04d}".format(int(i))
-      crop_img = frame[cx1:cy2,cx1:cy2]
+      crop_img = frame[cy1:cy2,cx1:cx2]
+      print("CROP IMG:", hd_crop_info, crop_img.shape)
       if i in hd_frame_data:
          lx = hd_frame_data[i]['hd_lx']
          ly = hd_frame_data[i]['hd_ly']
@@ -920,10 +934,12 @@ def make_event_video(meteor_file,json_conf):
       if cfe(cache_dir_crop + final_file_key + "_" + ffn + ".jpg") == 0:
          crop_file = cache_dir_crop + final_file_key + "_" + ffn + ".jpg"
          crop_file_lr = cache_dir_crop + final_file_key + "_" + ffn + "_lr.jpg"
-         cv2.imwrite(cache_dir_crop + final_file_key + "_" + ffn + ".jpg", hd_color_frames[i])
+         print(cache_dir_crop + final_file_key)
+         cv2.imwrite(cache_dir_crop + final_file_key + "_" + ffn + ".jpg", crop_img)
          os.system("convert -quality 60 " + crop_file + " " + crop_file_lr)
          os.system("mv " + crop_file_lr + " " + crop_file)
          print("saving...", cache_dir + final_file_key + "_" + ffn + ".jpg")
+
       if cfe(cache_dir + final_file_key + "_" + ffn + ".jpg") == 0:
          cv2.imwrite(cache_dir + final_file_key + "_" + ffn + ".jpg", hd_color_frames[i])
          print("saving...", cache_dir + final_file_key + "_" + ffn + ".jpg")
@@ -962,6 +978,20 @@ def make_event_video(meteor_file,json_conf):
    print("STACK: mv " + fstack_lr + " " + fstack)
    os.system("mv " + fstack_lr + " " + fstack)
 
+   # Need a thumb stack and also a crop video here still
+   thumb_stack = cv2.resize(stack_image, (320,180))
+   thumb_stack_file = final_dir + final_file_key + "_stacked-tn.jpg"
+   cv2.imwrite(thumb_stack_file, thumb_stack)
+   lf = thumb_stack_file.replace(".jpg", "-lr.jpg")
+   os.system("convert -quality 60 " + thumb_stack_file + " " + lf)
+   os.system("mv " + lf + " " + thumb_stack_file )
+
+   #if cfe(final_dir + final_file_key + "_crop.mp4") == 0:
+   if True:
+      cmd = "./FFF.py imgs_to_vid " + cache_dir_crop + " " + final_file_key + " " + final_dir + final_file_key + "_crop.mp4" + " 25 28" 
+      print(cmd)
+      os.system(cmd)
+
    # lower BR on cache full frame files (we do it here after the ffmpeg make movie call to not mess up the movie
    ffs = glob.glob(cache_dir + "*.jpg")
    for f in ffs:
@@ -992,6 +1022,37 @@ def make_event_video(meteor_file,json_conf):
    final_json_file = final_dir + final_file_key + ".json"
    save_json_file(final_json_file, final_json)
    print("FINAL JSON SAVED:", final_json_file)
+
+def sync_final_day(day, json_conf):
+   ams_id = json_conf['site']['ams_id']
+   year = day[0:4]
+   arc_dir = "/mnt/archive.allsky.tv/" + ams_id + "/METEORS/" + year + "/" + day + "/"
+   arc_files = glob.glob(arc_dir + "*")
+   afs = {}
+   for af in arc_files:
+      afn, adir = fn_dir(af)
+      afs[afn] = 1
+
+   final_dir = "/mnt/ams2/meteors/" + day + "/final/"
+   jsons = glob.glob(final_dir + "*.json")
+   for jsf in jsons:
+      jfn,jdir = fn_dir(jsf)
+      fn_root = jfn.replace(".json", "")
+      mj = load_json_file(jsf)
+      if "multi_station_event" in mj:
+         if "stations" in mj['multi_station_event']:
+            if len(mj['multi_station_event']['stations']) >= 2:
+            # ms event we should sync these files
+               ffs = glob.glob(jdir + "/" + fn_root + "*")
+               for ff in ffs:
+                  ffn,fdir = fn_dir(ff)
+                  if ffn not in afs:
+                     print("File not inside the arc dir, we should copy it.", ffn, afs)
+                     cmd = "cp " + ff + " " + arc_dir
+                     print(cmd)
+                     os.system(cmd)
+                  else:
+                     print("File already in archive.", ffn)
 
 
 def apply_cal_hdf(file, hd_frame_data, cp, json_conf):

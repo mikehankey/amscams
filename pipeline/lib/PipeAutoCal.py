@@ -623,34 +623,40 @@ def refit_meteors(day, json_conf,multi=0):
       os.system(cmd)
 
 def clean_user_stars(user_stars, image):
-
+   good_stars = []
    for star in user_stars:
       if len(star) == 2:
          x,y = star
       else:
          x,y,i = star
-   sx1 = x - 10
-   sx2 = x + 10
-   sy1 = y - 10
-   sy2 = y + 10
-   if sx1 < 0:
-      sx1 = 0
-   if sy1 < 0:
-      sy1 = 0
-   if sx2 > 1919:
-      sx2 = 1919
-   if sy2 < 1079:
-      sy2 = 1079
-   star_img = image[sy1:sy2,sx1:sx2]
-   avg_val = np.mean(star_img)
-   bg_val = np.mean(star_img) * star_img.shape[0] * star_img.shape[1]
-   star_int = np.sum(star_img) - bg_val
-   if star_int > 10:
-      print("STAR INT FOR THIS POSITION:", x, y, star_int)
-   if SHOW == 1:
-      cv2.imshow('pepe', star_img)
-      cv2.waitKey(0)
-   return(user_stars)
+      sx1 = x - 10 
+      sx2 = x + 10
+      sy1 = y - 10
+      sy2 = y + 10
+      if sx1 < 0:
+         sx1 = 0
+      if sy1 < 0:
+         sy1 = 0
+      if sx2 > 1919:
+         sx2 = 1919
+      if sy2 > 1079:
+         sy2 = 1079
+      star_img = image[sy1:sy2,sx1:sx2]
+      avg_val = np.mean(star_img[0:2,0:2])
+      avg_val2 = np.mean(star_img[8:12,8:12])
+      avg_val_diff = avg_val2 - avg_val
+      print("AVG VAL:", avg_val)
+      print("AVG VAL2:", avg_val2)
+      print("AVG VAL DIF:", avg_val2 - avg_val)
+      if avg_val_diff >= 15:
+         good_stars.append(star)
+
+      if SHOW == 1:
+         star_img = cv2.resize(star_img, (500,500))
+         cv2.imshow('pepe', star_img)
+         cv2.waitKey(30)
+   print("BEFORE/AFTER:", len(user_stars), len(good_stars))
+   return(good_stars)
 
 def refit_meteor(meteor_file, json_conf,force=0):
 
@@ -717,8 +723,7 @@ def refit_meteor(meteor_file, json_conf,force=0):
    print("DEFAULT CALIB:", def_cal)
    # test if the default cal is better than the current cal. 
 
-   user_stars = cp['user_stars']
-   user_stars = clean_user_stars(user_stars,image)
+   cp['user_stars'] = clean_user_stars(cp['user_stars'],image)
   # exit()
 
    if len(def_cal) > 0:
@@ -746,6 +751,12 @@ def refit_meteor(meteor_file, json_conf,force=0):
    else:
       print("No good def cal.") 
 
+   if len(cp['cat_image_stars']) < 5:
+      cp['user_stars'] = get_image_stars(meteor_file, image, json_conf, 0)
+      cp = pair_stars(cp, meteor_file, json_conf, image)
+
+   print("US:", len(cp['user_stars']))
+   print("CAT:", len(cp['cat_image_stars']))
    #exit()
    # if the current cal has less than 5 stars use the default params:
    if len(cp['cat_image_stars']) < 5:
@@ -5154,12 +5165,14 @@ def pair_stars(cal_params, cal_params_file, json_conf, cal_img=None, show = 0):
 
    total_res_px = total_cat_dist / total_matches
    good_stars = []
+   if total_res_px < 4:
+      total_res_px = 4
    for star in my_close_stars:
       dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist,bp = star
-      if cat_dist < total_res_px:
+      if cat_dist < total_res_px * 3:
          good_stars.append(star)
       else:
-         print("star match not good enough.", dcname, cat_dist)
+         print("star match not good enough.", dcname, total_res_px, cat_dist)
    good_stars = remove_close_stars(good_stars)
 
    my_close_stars = good_stars
