@@ -22,6 +22,120 @@ from lib.PipeImage import stack_frames
 import numpy as np
 import cv2
 
+def make_final_json(mj, json_conf):
+   station_id = json_conf['site']['ams_id']
+   sd_vid = mj['sd_video_file']
+   (f_datetime, camera_id, f_date_str,fy,fmin,fd, fh, fm, fs) = convert_filename_to_date_cam(sd_vid)
+   red_file = mj['sd_video_file'].replace(".mp4", "-reduced.json")
+   if cfe(red_file) == 0:
+      print("file not reduced!", red_file)
+      return(None)
+   else:
+      mjr = load_json_file(red_file)
+
+   hd_vid = mj['hd_trim']
+   final_vid = mj['final_vid']
+   if "hd_red" in mj:
+      final_format = "HD"
+      hd_mfd = mj['hd_red']['hd_mfd']
+      sd_mfd = None
+   else:
+      final_format = "SD"
+      sd_mfd = mjr['meteor_frame_data']
+      hd_mfd = None
+
+   cp = mj['cp']
+
+   hd_crop_info = mj['hd_red']['hd_crop_info']
+   if "multi_station_event" in mj:
+      mse = {}
+      if "event_id" in mj['multi_station_event']:
+         mse['event_id'] = mj['multi_station_event']['event_id']
+      if "event_file" in mj['multi_station_event']:
+         mse['event_file'] = mj['multi_station_event']['event_file']
+      if "orb_file" in mj['multi_station_event']:
+         mse['orb_file'] = mj['multi_station_event']['orb_file']
+      if "solve_status" in mj['multi_station_event']:
+         mse['solve_status'] = mj['multi_station_event']['solve_status']
+      else:
+         mse['solve_status'] = "NOT SOLVED."
+      mse['start_datetime'] = mj['multi_station_event']['start_datetime']
+      mse['stations'] = mj['multi_station_event']['stations']
+      mse['files'] = mj['multi_station_event']['files']
+   else:
+      mse = {}
+
+   sdv_fn,dd = fn_dir(sd_vid)
+   hdv_fn,dd = fn_dir(hd_vid)
+   fin_fn,dd = fn_dir(final_vid)
+
+   final_vid = mj['final_vid']
+   # FOR THE OBSERVATION! 
+
+   frame_data = []
+   if hd_mfd is not None:
+      for fn in sorted(hd_mfd.keys()):
+         data = hd_mfd[fn]
+         print(data)
+         fro = {}
+         fro['dt'] = data['dt']
+         fro['fn'] = data['fn']
+         fro['x'] = data['hd_lx']
+         fro['y'] = data['hd_ly']
+       
+         fro['az'] = data['az']
+         fro['el'] = data['el']
+         fro['ra'] = data['ra']
+         fro['dec'] = data['dec']
+         fro['int'] = 0
+         frame_data.append(fro)   
+   elif sd_mfd is not None:
+      for data in sd_mfd:
+         (dt, fn, x, y, w, h, oint, ra, dec, az, el) = row
+         fro = {}
+         fro['dt'] = dt
+         fro['fn'] = fn
+         fro['x'] = x
+         fro['y'] = y 
+         fro['az'] = az
+         fro['el'] = el
+         fro['ra'] = ra
+         fro['dec'] = dec
+         fro['int'] = oint
+         frame_data.append(fro)   
+
+   final_json = {
+      "info": {
+         "station_id": station_id,
+         "camera_id": camera_id,
+         "loc": [json_conf['site']['device_lat'], json_conf['site']['device_lng'], json_conf['site']['device_alt']]
+      },
+      "multi_station_event" : mse,
+
+      "media": {
+         "sd_vid": sdv_fn,
+         "hd_vid": hdv_fn,
+         "final_vid": fin_fn,
+         "final_format": final_format 
+      },
+      "frames": frame_data,
+
+      "hd_crop_info" : hd_crop_info,
+      "calib" : {
+         "az" : cp['center_az'],
+         "el" : cp['center_el'],
+         "ra" : cp['ra_center'],
+         "dec" : cp['dec_center'],
+         "pos" : cp['position_angle'],
+         "pxs" : cp['pixscale'],
+         "total_stars" : len(cp['cat_image_stars']),
+         "total_res_px" : cp['total_res_px']
+      }
+
+   }
+
+   return(final_json)   
+
 def remaster_day(day,json_conf):
 
    mfs = []
@@ -35,10 +149,22 @@ def remaster_day(day,json_conf):
 
 def valid_calib(meteor_file, mj, image,json_conf):
    stars = get_image_stars(meteor_file, image, json_conf,0)
-   mj['cp']['user_stars'] = stars
-   mj['cp'] = pair_stars(mj['cp'], meteor_file, json_conf, image)
-   
 
+   tmj = dict(mj)
+
+   tmj['cp']['user_stars'] = stars
+   tmj['cp'] = pair_stars(tmj['cp'], meteor_file, json_conf, image)
+   
+   print("NEW IMG STARS:", len(tmj['cp']['user_stars']))
+   print("NEW CAT STARS:", len(tmj['cp']['cat_image_stars']))
+   print("NEW RES:", tmj['cp']['total_res_px'])
+
+   print("ORIG IMG STARS:", len(mj['cp']['user_stars']))
+   print("ORIG CAT STARS:", len(mj['cp']['cat_image_stars']))
+   print("ORIG RES:", mj['cp']['total_res_px'])
+
+
+   exit()
 
    star_over = np.zeros((1080,1920,3),dtype=np.uint8)
    # Pass the image to PIL
@@ -81,6 +207,7 @@ def mask_stars(image_stars, image):
    return(image)
 
 def make_event_video(meteor_file,json_conf):
+   # setup input / env vars
    (f_datetime, cam, f_date_str,fy,fmin,fd, fh, fm, fs) = convert_filename_to_date_cam(meteor_file)
    amsid = json_conf['site']['ams_id']
    if "/mnt/ams2" not in meteor_file:
@@ -89,6 +216,7 @@ def make_event_video(meteor_file,json_conf):
    
    red_file = meteor_file.replace(".json", "-reduced.json")
 
+   # load meteor file
    if cfe(meteor_file) == 1:
       mj = load_json_file(meteor_file)
    else:
@@ -99,8 +227,9 @@ def make_event_video(meteor_file,json_conf):
       if "final_vid" in mj:
          if cfe(mj['final_vid']) == 1:
             print("Already did it.")
-            return()
+            #return()
 
+   # load reduction file
    if cfe(red_file) == 1:
       mjr = load_json_file(red_file)
    else:
@@ -109,6 +238,9 @@ def make_event_video(meteor_file,json_conf):
 
    mjr = load_json_file(red_file)
    sd_vid = mj['sd_video_file']
+
+   # load HD video file
+
    if "hd_trim" in mj:
       hd_vid = mj['hd_trim']
    else:
@@ -125,6 +257,7 @@ def make_event_video(meteor_file,json_conf):
    else:
       hd_vid = None
 
+   # apply calib and make star overlay 
    mj['cp'],star_overlay = valid_calib(meteor_file, mj,hd_frames[0], json_conf) 
    print(sd_vid, hd_vid)
    print(len(subframes))
@@ -132,6 +265,8 @@ def make_event_video(meteor_file,json_conf):
    sd_fns = []
    sd_xs = []
    sd_ys = []
+
+   # load SD meteor frame data
    if "meteor_frame_data" in mjr:
       mfd = mjr['meteor_frame_data']
    else:
@@ -141,6 +276,7 @@ def make_event_video(meteor_file,json_conf):
       mj['hd_red']['err'] = "no sd mfd ."
 
       return()
+
    for row in mfd:
       (dt, fn, x, y, w, h, oint, ra, dec, az, el) = row
       sd_dts.append(dt)
@@ -148,6 +284,7 @@ def make_event_video(meteor_file,json_conf):
       sd_xs.append(x)
       sd_ys.append(y)
 
+   # determine SD ROI area
    min_x = min(sd_xs) - 100
    min_y = min(sd_ys) - 100
    max_x = max(sd_xs) + 100
@@ -162,9 +299,11 @@ def make_event_video(meteor_file,json_conf):
    if max_y > 1079:
       max_y = 1079
 
+   # get movement info
    dom_dir, x_dir, y_dir = get_move_info(mj['best_meteor'], 10, 10)
    fi = 0
-   print("MIN/MAX:", min_x, min_y, max_x, max_y)
+
+   # loop over HD subframes and find meteor objects in the frames
    hd_frame_data = {}
    last_x = None
    last_y = None
@@ -177,6 +316,7 @@ def make_event_video(meteor_file,json_conf):
    mc = 0
    seg_len = None
    segs = []
+
    for frame in subframes:
       print("###########################################")
       print("FRAME:", fi)
@@ -283,6 +423,8 @@ def make_event_video(meteor_file,json_conf):
       fi += 1
       last_frame = frame
 
+   # now that we have the objs, determine consecutive motion and which are real vs bad
+
    cm = 0
    for hd_fn in hd_frame_data:
       data = hd_frame_data[hd_fn]
@@ -309,6 +451,7 @@ def make_event_video(meteor_file,json_conf):
       hd_frame_data[hd_fn] = data
       print(hd_fn, data)
 
+   # determine HD event start and end frames
    event_start = None
    event_end = None
    events = []
@@ -331,6 +474,8 @@ def make_event_video(meteor_file,json_conf):
    print("EVENT START END", event_start, event_end)
    print("EVENT START END", events)
    last_dist_from_start = None
+
+   # group HD obj frames in objects
    objects = {}
    if len(events) == 0:
       for fn in hd_frame_data:
@@ -356,6 +501,7 @@ def make_event_video(meteor_file,json_conf):
       if len(sfs) > 0:
          events = [[min(sfs), max(efs)]]
 
+   # splice out the 'main' hd event and handle multi-events
    print("LEN EVENTS:", len(events), events)
    if len(events) == 0:
       print("NO EVENTS!?")
@@ -400,6 +546,8 @@ def make_event_video(meteor_file,json_conf):
 
       return()
    else:
+      # load HD frame data into a key'd dict 
+
       hd_mfd_dict = {}
       fx = None
       fy = None
@@ -451,7 +599,7 @@ def make_event_video(meteor_file,json_conf):
    if missing > 0:
       hd_frame_data = fill_missing_frames(hd_frame_data)
 
-   # HD DATA SHOULD BE CLEANED UP AND COMPLETE NOW! ??
+   # HD DATA SHOULD BE CLEANED UP AND COMPLETE NOW! 
    for fn in hd_frame_data:
       data = hd_frame_data[fn]
       frame = hd_color_frames[fn]
@@ -501,7 +649,8 @@ def make_event_video(meteor_file,json_conf):
    hd_frame_data = update_dists(hd_frame_data)
    hd_frame_data = update_times(hd_frame_data)
 
-
+   # HD DATA is now SYNC'd with SD and updated 
+   # NOW DO QUALITY CHECKS ON THE POINTS
    segs = []
    xds = []
    yds = []
@@ -519,6 +668,8 @@ def make_event_video(meteor_file,json_conf):
    med_seg = np.median(segs)
    med_dfl = np.median(dfls)
    fnc = 0
+
+   # DETERMINE EST X,Y if the POINT LOOKS BAD
    for hd_fn in hd_frame_data: 
       if "seg_dist" in hd_frame_data[hd_fn] and fnc > 1:
          seg_err = abs(hd_frame_data[hd_fn]['seg_dist'] - med_seg)
@@ -724,10 +875,14 @@ def make_event_video(meteor_file,json_conf):
       cv2.imshow('pepe', blend_image)
       cv2.waitKey(120)
 
-   # SAVE THE HD FRAMES IN CACHE AND THEN MAKE A FINAL VIDEO WITH BUFF +/-5
    hd_fns = sorted(hd_frame_data.keys())
+   if min(hd_fns) < 5:
+      frame_buffer = min(hd_fns) - 1
+   else:
+      frame_buffer = 5
+   # SAVE THE HD FRAMES IN CACHE AND THEN MAKE A FINAL VIDEO WITH BUFF +/-5
    print("HDFNS:", hd_fns)
-   ff = min(hd_fns) - 5
+   ff = min(hd_fns) - frame_buffer 
    lf = max(hd_fns) + 5
    if ff < 0:
       ff = 0
@@ -763,7 +918,11 @@ def make_event_video(meteor_file,json_conf):
          ly = hd_frame_data[i]['hd_ly']
          roi_img = make_roi_img(hd_color_frames[i], lx, ly, 25)
       if cfe(cache_dir_crop + final_file_key + "_" + ffn + ".jpg") == 0:
-         cv2.imwrite(cache_dir + final_file_key + "_" + ffn + ".jpg", hd_color_frames[i])
+         crop_file = cache_dir_crop + final_file_key + "_" + ffn + ".jpg"
+         crop_file_lr = cache_dir_crop + final_file_key + "_" + ffn + "_lr.jpg"
+         cv2.imwrite(cache_dir_crop + final_file_key + "_" + ffn + ".jpg", hd_color_frames[i])
+         os.system("convert -quality 60 " + crop_file + " " + crop_file_lr)
+         os.system("mv " + crop_file_lr + " " + crop_file)
          print("saving...", cache_dir + final_file_key + "_" + ffn + ".jpg")
       if cfe(cache_dir + final_file_key + "_" + ffn + ".jpg") == 0:
          cv2.imwrite(cache_dir + final_file_key + "_" + ffn + ".jpg", hd_color_frames[i])
@@ -782,21 +941,70 @@ def make_event_video(meteor_file,json_conf):
       cmd = "./FFF.py imgs_to_vid " + cache_dir + " " + final_file_key + " " + final_dir + final_file_key + ".mp4" + " 25 28" 
       print(cmd)
       os.system(cmd)
-   # save ROI big image
 
+   # save final images
    cv2.imwrite(final_dir + final_file_key + "_crop.jpg", crop_stack)
+   cv2.imwrite(final_dir + final_file_key + "_stacked.jpg", stack_image)
+
+   fstack_c = final_dir + final_file_key + "_crop.jpg"
+   fstack_c_lr = fstack_c.replace(".jpg", "_lr.jpg")
+
+   fstack = final_dir + final_file_key + "_stacked.jpg"
+   fstack_lr = fstack.replace(".jpg", "_lr.jpg")
+
+   print("FS:", fstack_c, fstack_c_lr)
+
+   os.system("convert -quality 60 " + fstack_c + " " + fstack_c_lr)
+   print("CROP: mv " + fstack_c_lr + " " + fstack_c)
+   os.system("mv " + fstack_c_lr + " " + fstack_c)
+
+   os.system("convert -quality 60 " + fstack + " " + fstack_lr)
+   print("STACK: mv " + fstack_lr + " " + fstack)
+   os.system("mv " + fstack_lr + " " + fstack)
+
+   # lower BR on cache full frame files (we do it here after the ffmpeg make movie call to not mess up the movie
+   ffs = glob.glob(cache_dir + "*.jpg")
+   for f in ffs:
+      lf = f.replace(".jpg", "-lr.jpg")
+      os.system("convert -quality 60 " + f + " " + lf)
+      os.system("mv " + lf + " " + f )
+      print("mv " + lf + " " + f )
+
+   hd_frame_data = apply_cal_hdf(final_file_key, hd_frame_data, mj['cp'], json_conf)  
+
    mj['hd_red'] = {}
    mj['hd_red']['hd_mfd'] = hd_frame_data
    mj['final_vid'] = final_dir + final_file_key + ".mp4"
    mj['hd_red']['crop_area'] = crop_area
    mj['hd_red']['enl'] = enl
    mj['hd_red']['status'] = 1
-   mj['hd_red']['frame_buf'] = 5
+   
+   mj['hd_red']['frame_buf'] = frame_buffer
    mj['hd_red']['hd_crop_info'] = hd_crop_info
    save_json_file(meteor_file, mj)
 
    print("Saved.", meteor_file)
    print("Saved.", final_dir + final_file_key + "_crop.jpg")
+
+   final_json = make_final_json(mj, json_conf)
+   print("FINAL JSON MADE:", final_json)
+
+   final_json_file = final_dir + final_file_key + ".json"
+   save_json_file(final_json_file, final_json)
+   print("FINAL JSON SAVED:", final_json_file)
+
+
+def apply_cal_hdf(file, hd_frame_data, cp, json_conf):
+   for fn in hd_frame_data:
+      data = hd_frame_data[fn]
+      x = data['hd_lx']
+      y = data['hd_ly']
+      tx, ty, ra ,dec , az, el = XYtoRADec(x,y,file,cp,json_conf)
+      hd_frame_data[fn]['az'] = az
+      hd_frame_data[fn]['el'] = el
+      hd_frame_data[fn]['ra'] = ra
+      hd_frame_data[fn]['dec'] = dec
+   return(hd_frame_data)
 
 def make_roi_img(image, x, y, size):
    rx1 = x - size

@@ -8,7 +8,7 @@ from FlaskLib.calib_funcs import calib_main, cal_file, show_masks, del_calfile, 
 from lib.PipeUtil import cfe, load_json_file, save_json_file
 from lib.PipePwdProtect import login_page, check_pwd_ajax
 from lib.PipeAutoCal import fn_dir
-from FlaskLib.meteor_detail_funcs import detail_page , pick_points, pick_points_day
+from FlaskLib.meteor_detail_funcs import detail_page , pick_points, pick_points_day 
 from FlaskLib.config_funcs import config_vars 
 from FlaskLib.meteors_main import meteors_main , meteors_by_day, trash_page
 from FlaskLib.super_stacks import stacks_main, stacks_day_hours, stacks_hour
@@ -96,6 +96,22 @@ def obs_rev_control(day):
    return(resp)
 
 
+@app.route('/save_points/', methods=['GET', 'POST'])
+@auth.login_required
+def cntl_save_points():
+   from FlaskLib.PointPicker import save_points
+
+   jdata = request.get_json()
+   data = jdata['data']
+   file = jdata['file']
+   print("FILE:", file)
+   print("DATA:", data)
+   #data = request.args.get('data')
+   #file = request.args.get('file')
+
+
+   resp = save_points(file,data,json_conf)
+   return(resp)
 @app.route('/pick_points/<meteor_id>/', methods=['GET', 'POST'])
 @auth.login_required
 def cntl_pick_points(meteor_id):
@@ -104,6 +120,14 @@ def cntl_pick_points(meteor_id):
       resp = pick_points_day(meteor_id,json_conf)
    else: 
       resp = pick_points(meteor_id,json_conf)
+   return(resp)
+
+
+@app.route('/point_picker/<date>/', methods=['GET', 'POST'])
+@auth.login_required
+def cntl_point_picker (date):
+   from FlaskLib.PointPicker import point_picker 
+   resp = point_picker(date,json_conf)
    return(resp)
 
 

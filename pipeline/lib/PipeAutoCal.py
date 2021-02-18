@@ -568,24 +568,27 @@ def get_more_stars_with_catalog(meteor_file, cal_params, image, json_conf):
          dcname, dbname = name,name
       if mag <= 5:
          cat_x, cat_y = int(cat_x), int(cat_y)
-         #print("CAT:", cat_x, cat_y)
          if cat_x - 15 <= 0 or cat_y - 15 <= 0 or cat_x + 15 >= 1920 or cat_y + 15 >= 1080:
             continue
 
          ival = gray_img[cat_y,cat_x]
-         print(name, ival, cat_x,cat_y)
+         #print(name, ival, cat_x,cat_y)
          if ival > 5:
             star_img = gray_img[cat_y-15:cat_y+15,cat_x-15:cat_x+15]
             #print(cat_y,cat_x,np.sum(star_img))
             max_px, avg_px, px_diff,max_loc,star_int = eval_cnt(star_img)
             mx,my = max_loc
             #if (2< px_diff < 7) and 100 < star_int < 11000:
-            print(max_px,avg_px,px_diff,star_int)
             if 100 < star_int < 11000:
-               print("MORE STAR FOUND!", star_int)
-               cv2.rectangle(image, (cat_x-10, cat_y-10), (cat_x + 10, cat_y + 10), (128, 128, 128), 1)
-               cv2.putText(image , str(int(px_diff)),  (int(cat_x),int(cat_y)), cv2.FONT_HERSHEY_SIMPLEX, .4, (255, 255, 255), 1)
-               cal_params['user_stars'].append((cat_x, cat_y, star_int))
+               bg_val = avg_px * star_img.shape[0] * star_img.shape[1]
+               star_int = np.sum(star_img) - bg_val
+
+               print("MORE STAR FOUND!", star_int, avg_px, max_px, px_diff)
+               if star_int > 10:
+               #print(max_px,avg_px,px_diff,star_int)
+                  cv2.rectangle(image, (cat_x-10, cat_y-10), (cat_x + 10, cat_y + 10), (128, 128, 128), 1)
+                  cv2.putText(image , str(int(px_diff)),  (int(cat_x),int(cat_y)), cv2.FONT_HERSHEY_SIMPLEX, .4, (255, 255, 255), 1)
+                  cal_params['user_stars'].append((cat_x, cat_y, star_int))
             #else:
             #   print("Star int bad?", star_int)
    return(cal_params)
@@ -618,6 +621,36 @@ def refit_meteors(day, json_conf,multi=0):
       cmd = "./Process.py refit_meteor " + meteor
       print(cmd)
       os.system(cmd)
+
+def clean_user_stars(user_stars, image):
+
+   for star in user_stars:
+      if len(star) == 2:
+         x,y = star
+      else:
+         x,y,i = star
+   sx1 = x - 10
+   sx2 = x + 10
+   sy1 = y - 10
+   sy2 = y + 10
+   if sx1 < 0:
+      sx1 = 0
+   if sy1 < 0:
+      sy1 = 0
+   if sx2 > 1919:
+      sx2 = 1919
+   if sy2 < 1079:
+      sy2 = 1079
+   star_img = image[sy1:sy2,sx1:sx2]
+   avg_val = np.mean(star_img)
+   bg_val = np.mean(star_img) * star_img.shape[0] * star_img.shape[1]
+   star_int = np.sum(star_img) - bg_val
+   if star_int > 10:
+      print("STAR INT FOR THIS POSITION:", x, y, star_int)
+   if SHOW == 1:
+      cv2.imshow('pepe', star_img)
+      cv2.waitKey(0)
+   return(user_stars)
 
 def refit_meteor(meteor_file, json_conf,force=0):
 
@@ -683,6 +716,10 @@ def refit_meteor(meteor_file, json_conf,force=0):
       def_cal = []
    print("DEFAULT CALIB:", def_cal)
    # test if the default cal is better than the current cal. 
+
+   user_stars = cp['user_stars']
+   user_stars = clean_user_stars(user_stars,image)
+  # exit()
 
    if len(def_cal) > 0:
       acp = dict(cp)
@@ -801,7 +838,8 @@ def refit_meteor(meteor_file, json_conf,force=0):
 
 
 
-   if cp['total_res_px'] < org_res:
+   #if cp['total_res_px'] < org_res:
+   if True:
       print("NEW RES IS BETTER!", cp['total_res_px'], org_res)
       cp = pair_stars(cp, meteor_file, json_conf, image)
       cp, bad_stars,marked_img = eval_cal(meteor_file,json_conf,cp,image)
@@ -824,6 +862,34 @@ def refit_meteor(meteor_file, json_conf,force=0):
       save_json_file(red, red_data)
       save_json_file(meteor_file, mj)
       print("saved:", meteor_file)   
+   else:
+      print("DID NOT SAVE! new fit worse than the original.")
+      print("ORG:", mj['cp']['ra_center'])
+      print("ORG:", mj['cp']['dec_center'])
+      print("ORG:", mj['cp']['position_angle'])
+      print("ORG:", mj['cp']['pixscale'])
+      print("NEW:", cp['ra_center'])
+      print("NEW:", cp['dec_center'])
+      print("ORG:", cp['position_angle'])
+      print("ORG:", cp['pixscale'])
+
+      red = meteor_file.replace(".json", "-reduced.json")
+      red_data = load_json_file(red)
+      print("RED:", red_data['cal_params']['ra_center'])
+      print("RED:", red_data['cal_params']['dec_center'])
+      print("RED:", red_data['cal_params']['position_angle'])
+      print("RED:", red_data['cal_params']['pixscale'])
+
+      
+      for star in cp['cat_image_stars']:
+         dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist,bp = star
+         if cat_dist < (cp['total_res_px'] * 1.5):
+            print("GOOD match: ", dcname, cat_dist)
+         else:
+            print("BAD match: ", dcname, cat_dist)
+      print("RES:", cp['total_res_px'])
+
+
 
 
 def sync_back_admin_cals():
@@ -4636,7 +4702,6 @@ def get_image_stars(file=None,img=None,json_conf=None,show=0):
 
 
 def eval_cnt(cnt_img, avg_px=5 ):
-   print("EV", cnt_img.shape)
    cnt_img = cv2.GaussianBlur(cnt_img, (7, 7), 0)
    cnth,cntw = cnt_img.shape
    max_px = np.max(cnt_img)
@@ -4696,7 +4761,6 @@ def eval_cnt(cnt_img, avg_px=5 ):
    #print("STAR INT:", star_int)
    #xxx = input("wait")
 
-   print("EV2")
    return(max_px, avg_px,px_diff,(blob_x,blob_y),star_int)
 
 def make_plate_image(image, file_stars): 
@@ -4993,6 +5057,17 @@ def pair_stars(cal_params, cal_params_file, json_conf, cal_img=None, show = 0):
       else:
          ix,iy = data
          bp = 0
+
+      # INTENSITY OF IMAGE STAR
+      sx1 = ix - 5 
+      sx2 = ix + 5
+      sy1 = iy - 5
+      sy2 = iy + 5
+      if sx1 < 0:
+         sx1 = 0
+      if sy1 < 0:
+         sy1 = 0
+      #xxx = input("xxx")
       close_stars = find_close_stars((ix,iy), cat_stars)
       found = 0
       for name,mag,ra,dec,new_cat_x,new_cat_y,six,siy,cat_dist in close_stars:
@@ -5077,6 +5152,17 @@ def pair_stars(cal_params, cal_params_file, json_conf, cal_img=None, show = 0):
 
       #show_image(temp_img,'pepe', 0) 
 
+   total_res_px = total_cat_dist / total_matches
+   good_stars = []
+   for star in my_close_stars:
+      dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist,bp = star
+      if cat_dist < total_res_px:
+         good_stars.append(star)
+      else:
+         print("star match not good enough.", dcname, cat_dist)
+   good_stars = remove_close_stars(good_stars)
+
+   my_close_stars = good_stars
 
    cal_params['cat_image_stars'] = my_close_stars
    if total_matches > 0:
@@ -6360,6 +6446,37 @@ def freecal_copy(cal_params_file, json_conf):
   # cv2.imwrite(fc_dir + cprf + "-stacked-azgrid-half-blend.png", imgaz_blend)
   # cv2.imwrite(cpd + cprf + "-blend.png", imgaz_blend)
    return(new_cal_file)
+
+def remove_close_stars(stars):
+   stars = sorted(stars , key=lambda x: x[1], reverse=False)
+   good_stars = []
+   locs = []
+   for star in stars:
+      dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist,bp = star
+      if check_loc(dcname, six,siy,locs) is True:
+         locs.append((six,siy))
+         print("GOOD LOC:", dcname, len(locs))
+         good_stars.append(star)
+      else:
+         print("BAD LOC:", dcname)
+
+   print("B/A:", len(stars), len(good_stars))
+   return(good_stars)
+
+def check_loc(name, x,y,locs):
+   good = 1
+   sc = 0
+   for lx,ly in locs:
+      dist = calc_dist((x,y),(lx,ly))
+      print(sc, name, x,y,lx,ly, dist)
+      if dist < 50:
+         good = 0
+      sc += 1
+
+   if good == 1:
+      return True
+   else:
+      return False 
 
 
 def remove_dupe_cat_stars(paired_stars):

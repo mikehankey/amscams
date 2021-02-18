@@ -294,7 +294,7 @@ def dyna_events_for_day(day, json_conf):
                         mj['multi_station_event']['solve_status'] = "SUCCESS"
                         mj['multi_station_event']['event_file'] = event_dir + "/index.html"
                         if "http" in dyd['solution']['orb']['link']:
-                           mj['multi_station_event']['orb_file'] = event_dir + dyd['solution']['orb']['link']
+                           mj['multi_station_event']['orb_file'] = dyd['solution']['orb']['link']
                      else:
                         print("EVENT FAILED!?", syd['solve_status'])
                         mj['multi_station_event']['solve_status'] = "FAILED"

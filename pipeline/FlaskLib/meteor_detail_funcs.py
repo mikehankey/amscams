@@ -33,21 +33,43 @@ def pick_points_day(day, json_conf):
    return(out)
 
 def pick_points(meteor_id, json_conf):
+
+   points = []
    out = ""
    station_id, meteor_video = meteor_id.split(":")
    mf = meteor_video.replace(".mp4", ".json")
+   year = mf[0:4] 
    date = mf[0:10]
    meteor_file = "/mnt/ams2/meteors/" + date + "/" + mf 
-   print(meteor_file)
+   red_file = meteor_file.replace(".json", "-reduced.json")
+   if cfe(red_file) == 1:
+      mjr = load_json_file(meteor_file)
    mj = load_json_file(meteor_file)
    if "final_vid" in mj:
       fvid = mj['final_vid']
       fv_fn = fvid.split("/")[-1]
+      fv_fn = fv_fn.replace(".mp4", "")
       cache_dir = "/mnt/ams2/CACHE/" + year + "/" + fv_fn + "_crop/"
    if "final_vid" in mj:
       roi_big = mj['final_vid'].replace(".mp4", "_crop.jpg")
+      crop_stack_file = mj['final_vid'].replace(".mp4", "_crop.jpg")
+      stack_file = mj['final_vid'].replace(".mp4", "_stacked.jpg")
       vroi = roi_big.replace("/mnt/ams2", "")
+   if "hd_red" in mj:
+      if "hd_mfd" in mj['hd_red']:
+         for key in mj['hd_red']['hd_mfd']:
+            data = mj['hd_red']['hd_mfd'][key]
+            points.append((data['hd_lx'], data['hd_ly']))
+            print(data)
+   else:
+      print(mj)
+   out += crop_stack_file + "<br>" 
+   out += stack_file + "<br>" 
    out += "<img width=1280 height=720 src=" + vroi + ">"
+
+   print("CACHE:", cache_dir)
+   files = glob.glob(cache_dir + "*")
+
 
    out += """
 
@@ -56,9 +78,14 @@ def pick_points(meteor_id, json_conf):
       <canvas id="c" width=1920 height=1080 style="border:1px solid #ccc"></canvas>
 
       <script> 
+      var crop_stack_file = "{:s}"
+      var stack_file = "{:s}"
       var images = {:s}
-      let points = {:s}
+      var points = {:s}
       ii = 0
+   """.format(crop_stack_file, stack_file, str(files), str(points))
+
+   out += """
 
       var canvas = new fabric.Canvas("c", {
          hoverCursor: 'pointer',
@@ -118,7 +145,7 @@ def pick_points(meteor_id, json_conf):
       <a href="javascript:prev_img()">Prev</a> - 
       <a href="javascript:next_img()">Next</a> - 
 
-   """.format(files, points)
+   """
 
    return(out)
 
