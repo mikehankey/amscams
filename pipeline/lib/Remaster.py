@@ -548,8 +548,8 @@ def make_event_video(meteor_file,json_conf):
          print(objects[obj])
       print("MANY EVENTS!!!", events)
       stack_image = stack_frames(hd_color_frames)
-      cv2.imshow('pepe', stack_image)
-      cv2.waitKey(30)
+      #cv2.imshow('pepe', stack_image)
+      #cv2.waitKey(30)
 
       mj['hd_red'] = {}
       mj['hd_red']['status'] = 0
