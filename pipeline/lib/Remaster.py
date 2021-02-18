@@ -923,6 +923,8 @@ def make_event_video(meteor_file,json_conf):
    print("CROP INFO:", hd_crop_info)
    cx1,cy1,cx2,cy2 = hd_crop_info
    for i in range(ff, lf+1):
+      if i >= len(hd_color_frames):
+         continue 
       frame = hd_color_frames[i]
       ffn = "{:04d}".format(int(i))
       crop_img = frame[cy1:cy2,cx1:cx2]
