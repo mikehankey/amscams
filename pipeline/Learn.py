@@ -294,7 +294,8 @@ def add_meteor_to_ldb(js, ldb, force=0):
                   if stack_img is not None: 
                      cv2.imwrite(crop_stack, stack_img)
                   else:
-                     continue
+                     print("failed to add, stack img bad.")
+                     return() 
                   print("Saved stack crop:", crop_stack)
                   if SHOW == 1:
                      cv2.imshow('pepe', stack_img)
