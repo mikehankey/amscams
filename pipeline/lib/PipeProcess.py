@@ -1,8 +1,10 @@
 from datetime import datetime
+import glob
 from lib.PipeUtil import cfe, save_json_file, convert_filename_to_date_cam, load_json_file, day_or_night   , get_file_info
 from lib.PipeUtil import day_or_night, check_running
 import datetime as dt
 import os
+import subprocess
 
 def gitpull(json_conf):
    print("git pull > /home/ams/lastpull.txt")
@@ -89,10 +91,10 @@ def run_jobs(json_conf):
          print("Last Loaded Data :", tdiff/60, "hours ago")
          if int(tdiff) / 60 > 5:
             run_load = 1 
-      print("YES:", run_load)
       if run_load == 1:
          os.system("./DynaDB.py load_day " + yest + "")
          os.system("./DynaDB.py load_day " + today + "")
+         os.system("touch /home/ams/loaded_last.txt")
 
    if "WMPL" in json_conf:
       print("WMPL EXIST.")
@@ -113,6 +115,36 @@ def run_jobs(json_conf):
             os.system("./solveWMPL.py sd " + today + "")
             os.system("touch /home/ams/solved_last.txt")
 
+   # check on scan stack
+   sd_files = glob.glob("/mnt/ams2/SD/*.mp4")
+   for file in sd_files:
+      (f_datetime, cam, f_date_str,fy,fmin,fd, fh, fm, fs) = convert_filename_to_date_cam(file)
+      elp = f_datetime - datetime.now()
+      days_old = abs(elp.total_seconds()) / 86400
+      print("SD FILE IS DAYS OLD:", days_old)
+      if (days_old > 5):
+         cmd = "rm " + file 
+         print(cmd)
+         os.system(cmd)
+   sd_files = glob.glob("/mnt/ams2/SD/*.mp4")
+   if len(sd_files) > 0:
+      # restart scan stack if it is running.
+      restart_scan = 0
+      try:
+         if cfe("/home/ams/scan-restart.txt") == 1:
+            size, tdiff = get_file_info("/home/ams/scan-restart.txt")
+            if tdiff / 60 > 2:
+               restart_scan = 1
+         else:
+            restart_scan = 1
+
+         if restart_scan == 1:
+            cmd = "kill -9 $(ps aux | grep 'scan_stack' | awk '{print $2}')"
+            print(cmd)
+            os.system(cmd)
+            os.system("touch /home/ams/scan-restart.txt")
+      except:
+         print("Scan stack is not running at all.")
 
 
    cmds = []
