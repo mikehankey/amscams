@@ -238,7 +238,7 @@ def make_event_video(meteor_file,json_conf):
       if "final_vid" in mj:
          if cfe(mj['final_vid']) == 1:
             print("Already did it.")
-            #return()
+            return()
 
    # load reduction file
    if cfe(red_file) == 1:
@@ -474,12 +474,15 @@ def make_event_video(meteor_file,json_conf):
                if hd_fn + 3 in hd_frame_data:
                   if hd_frame_data[hd_fn+3]['cm'] >= 2:
                      event_start = hd_fn 
-      if event_start is not None and event_end is None and data['cm'] == last_cm and 'hd_lx' not in data and "hd_lx" not in hd_frame_data[hd_fn+1] :
+      if hd_fn +1 in hd_frame_data:
+         if event_start is not None and event_end is None and data['cm'] == last_cm and 'hd_lx' not in data and "hd_lx" not in hd_frame_data[hd_fn+1] :
+            event_end = hd_fn - 1
+            if event_end - event_start >= 3:
+               events.append((event_start, event_end))
+               event_start = None
+               event_end = None
+      else:
          event_end = hd_fn - 1
-         if event_end - event_start >= 3:
-            events.append((event_start, event_end))
-            event_start = None
-            event_end = None
       last_cm = data['cm']
 
    print("EVENT START END", event_start, event_end)
