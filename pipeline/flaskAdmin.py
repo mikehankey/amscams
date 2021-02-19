@@ -17,6 +17,7 @@ from FlaskLib.live import live_view
 from FlaskLib.TL import tl_menu 
 from FlaskLib.man_reduce import meteor_man_reduce , save_man_reduce
 from FlaskLib.man_detect import man_detect 
+from FlaskLib.meteors_main_redis import meteors_main_redis
 #from FlaskLib.Maps import make_map 
 from flask import redirect, url_for, abort
 import json
@@ -399,6 +400,30 @@ def trash_pg(amsid ):
    req['start_day'] = start_day
    req['end_day'] = end_day
    out = trash_page(amsid, req)
+   return(out)
+
+
+# REDIS MAIN
+@app.route('/rmeteor/<amsid>/', methods=['GET', 'POST'])
+@auth.login_required
+def rmeteors(amsid ):
+   req = {}
+   start_day = request.args.get('start_day')
+   end_day = request.args.get('end_day')
+   meteor_per_page = request.args.get('meteor_per_page')
+   sort_by = request.args.get('sort_by')
+   filterd = request.args.get('filter')
+   p = request.args.get('p')
+
+   req['start_day'] = start_day
+   req['end_day'] = end_day
+   req['meteor_per_page'] = meteor_per_page
+   req['p'] = p
+   req['sort_by'] = sort_by 
+   req['filter'] = filterd
+
+   out = meteors_main_redis(amsid,req, json_conf)
+
    return(out)
 
 # MAIN METEOR PAGE

@@ -6420,15 +6420,23 @@ def detect_all(vals_file):
    
 
 def get_trim_num(file):
-   el = file.split("-trim") 
-   at = el[1]
-   at = at.replace("-SD.mp4", "")
-   at = at.replace("-crop", "")
-   at = at.replace("-HD.mp4", "")
-   at = at.replace(".mp4", "")
-   at = at.replace("-", "")
-   at = at.replace(".json", "")
-   at = at.replace("HDmeteor", "")
+   print("FILE:", file)
+   if "TRIM" in file:
+      el = file.split("-TRIM") 
+   else:
+      el = file.split("-trim") 
+   if len(el) > 1:
+      at = el[1]
+      at = at.replace("-SD.mp4", "")
+      at = at.replace("-crop", "")
+      at = at.replace("-HD.mp4", "")
+      at = at.replace(".mp4", "")
+      at = at.replace("-", "")
+      at = at.replace(".json", "")
+      at = at.replace("HDmeteor", "")
+   else:
+      print("FAILED GETTING TRIM NUM ON FILE:", file)
+      exit()
    return(at)
 
 def find_hd(sd_trim_file, dur, meteor_start_frame=0):
