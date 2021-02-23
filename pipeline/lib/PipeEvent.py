@@ -229,7 +229,6 @@ def dyna_events_for_day(day, json_conf):
             fv = ""
          meteor = [item['station_id'],item['sd_video_file'], fv, item['event_start_time'], ]
          print("FV:", fv)
-         xxx = input("xxx")
          meteors.append((item['station_id'],item['sd_video_file'], fv, item['event_start_time']))
    meteors = sorted(meteors, key=lambda x: (x[3]), reverse=False)
    events = {}
