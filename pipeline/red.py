@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-import keydb
+#import keydb
 import json
 import os
 # functions for loading data in and out of redis
@@ -102,7 +102,7 @@ def get_dyna_obs (dynamodb, station_id, date, force_update=0):
    
 def load_meteor_index_all(r):
    cmd = "find /mnt/ams2/meteors |grep .json |grep -v reduced |grep -v star |grep -v manual |grep -v error |grep -v cloud_files |grep -v final |grep -v report | grep -v mi_day | grep -v events |grep -v frame |grep -v cal | grep -v test | grep -v mi_day | grep -v HD > /mnt/ams2/all_meteors.txt"
-   #os.system(cmd)
+   os.system(cmd)
    fp = open("/mnt/ams2/all_meteors.txt")
    meteor_db = []
    meteors = []
@@ -174,6 +174,19 @@ def load_meteor_index_all(r):
       #exit()
    save_json_file("/mnt/ams2/all_meteors.json", meteor_db)
    print("Saved: /mnt/ams2/all_meteors.json" )
+
+   load = 1
+   if load == 1:
+      am = load_json_file("/mnt/ams2/all_meteors.json")
+      am = sorted(am, key=lambda x: x['tme'], reverse=False)
+      for data in am:
+         key = "OB:" + data['sd']
+         del data['sd']
+         jdata = json.dumps(data)
+         val = str(jdata)
+         r.mset({key: val})
+      print("Loaded redis.")
+
 
 def test(r):
    load = 1

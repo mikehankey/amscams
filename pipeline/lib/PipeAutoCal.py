@@ -41,6 +41,7 @@ def cal_manager(json_conf):
       4) Gen Cal History
       5) Make Default Cal
       6) HD Night Cal 
+      7) Sync Cal Files
 
    """
 
@@ -61,6 +62,8 @@ def cal_manager(json_conf):
       cam_num = input("Enter cam # (1-7): ")
       interval = input("Time Interval in Minutes: (15,30,60) ")
       hd_night_cal(cam_num, json_conf, int(interval))
+   if cmd == "7":
+      sync_cal(json_conf) 
 
    default_hist = {}
    rdf = []
@@ -75,6 +78,50 @@ def cal_manager(json_conf):
       save_json_file("/mnt/ams2/cal/" + amsid + "_cal_range.json", rdf)
       print("SAVED: /mnt/ams2/cal/" + amsid + "_cal_range.json", rdf)
 
+def sync_cal(json_conf):
+   cal_dir = "/mnt/ams2/cal/" 
+   cloud_dir = "/mnt/archive.allsky.tv/" + json_conf['site']['ams_id'] + "/CAL/"
+   cloud_img_dir = cloud_dir + "IMAGES/"
+   if cfe(cloud_img_dir, 1) == 0:
+      os.makedirs(cloud_img_dir)
+   # copy MCP and DEFAULT FILES TO CLOUD
+   cmd = "cp " + cal_dir + "multi_poly* " + cloud_dir
+   print(cmd)
+   cmd = "cp " + cal_dir + "lens* " + cloud_dir
+   print(cmd)
+
+   cmd = "cp " + cal_dir + "cal_day_hist.json " + cloud_dir
+   print(cmd)
+
+   cmd = "cp " + cal_dir + "cal_history.json " + cloud_dir
+   print(cmd)
+
+   cdirs = glob.glob("/mnt/ams2/cal/freecal/*")
+   print("/mnt/ams2/cal/freecal/*")
+
+   cloud_files = []
+   cf = glob.glob(cloud_img_dir + "*")
+   for cf in cloud_files:
+      fn, xx = fn_dir(cf)
+      cloud_files.append(fn)
+
+   for cd in cdirs:
+      if cfe(cd, 1) == 1:
+         cfn , xx = fn_dir(cd)
+         cfile = cd + "/" + cfn + "-stacked.png"
+         if cfe(cfile) == 1:
+            jpg = cfile.replace(".png", ".jpg")
+            if cfe(jpg) == 0:
+               cmd = "convert -quality 70 " + cfile + " " + jpg
+               print(cmd)
+               os.system(cmd)
+            jpg_fn, xx = fn_dir(jpg)
+            if jpg_fn not in cloud_files:
+               cmd = "cp " + jpg + " " + cloud_img_dir
+               print(cmd)
+               os.system(cmd)
+            else:
+               print("File already sync'd")
 
 def hd_night_cal(cam_num, json_conf, interval=30):
    ams_id = json_conf['site']['ams_id']

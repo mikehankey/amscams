@@ -1031,6 +1031,74 @@ def make_event_video(meteor_file,json_conf):
 def sync_final_day(day, json_conf):
    ams_id = json_conf['site']['ams_id']
    year = day[0:4]
+   clf_index = "/mnt/ams2/meteors/" + day + "/cloud_files.txt"
+   os.system("ls -l /mnt/archive.allsky.tv/" + ams_id + "/METEORS/" + year + "/" + day + "/* > "  + clf_index)
+   cloud_files = {}
+   fp = open(clf_index)
+   for line in fp:
+      line = line.replace("\n", "")
+      el = line.split() 
+      if len(el) >= 8:
+         cfn,xxx = fn_dir(el[8])
+         cloud_files[cfn] = el[4]
+
+   local_index = "/mnt/ams2/meteors/" + day + "/local_files.txt"
+   os.system("ls -l /mnt/ams2/meteors/" + day + "/final/* > "  + local_index)
+   local_files = {}
+   fp = open(local_index)
+   for line in fp:
+      line = line.replace("\n", "")
+      el = line.split() 
+      if len(el) >= 8:
+         lfn,xxx = fn_dir(el[8])
+         local_files[lfn] = el[4]
+
+   cloud_adds = []
+   cloud_dels = []
+
+   for local_file in local_files :
+      if local_file not in cloud_files:
+         print("File is NOT sync'd!", local_file)
+         cloud_adds.append(local_file)
+      elif local_files[local_file] != cloud_files[local_file]:
+         print("Sizes don't match need to update!")
+         cloud_adds.append(local_file)
+      else:
+         print("File is sync'd!", local_file)
+
+   for cloud_file in cloud_files :
+      if cloud_file not in local_files:
+         print("This cloud file is not in the local files dir. Should we delete it from the cloud?", cloud_file)
+
+   mses = {}
+   for lfile in cloud_adds:
+      lfroot = lfile
+      lfroot = lfroot.replace("_stacked", "") 
+      lfroot = lfroot.replace("_crop", "") 
+      lfroot = lfroot.replace("-tn", "") 
+      lfroot = lfroot.replace(".json", "") 
+      lfroot = lfroot.replace(".mp4", "") 
+      lfroot = lfroot.replace(".jpg", "") 
+      if lfroot not in mses:
+         jsf = "/mnt/ams2/meteors/" + day + "/final/" + lfroot + ".json"
+         if cfe(jsf) == 1:
+            js = load_json_file(jsf)
+         else:
+            print("NO JS!", jsf)
+            js = {}
+         if "multi_station_event" in js:
+            mses[lfroot] = 1
+         else:
+            mses[lfroot] = 0
+      if mses[lfroot] == 1:
+         cmd = "cp /mnt/ams2/meteors/" + day + "/final/" + lfile + " " + "/mnt/archive.allsky.tv/" + ams_id + "/METEORS/" + year + "/" + day + "/" + lfile
+         #os.system(cmd)
+         print(cmd) 
+
+   print(mses)
+   exit()
+
+
    arc_dir = "/mnt/archive.allsky.tv/" + ams_id + "/METEORS/" + year + "/" + day + "/"
    arc_files = glob.glob(arc_dir + "*")
    afs = {}

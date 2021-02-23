@@ -108,6 +108,11 @@ def meteors_main_redis(amsid, req,json_conf):
    total_meteors = len(meteors)
    si = 0
    ei = total_meteors
+   ei = 100
+   print("METEORS:", total_meteors)
+   if total_meteors == 0:
+      out = "no meteors for search criteria."
+      return(out)
 
    #meteors = sorted(meteors, reverse=True)
    meteors = sorted(meteors, key=lambda x: x['tme'], reverse=True)
@@ -127,6 +132,7 @@ def meteors_main_redis(amsid, req,json_conf):
          jsid = rf
          meteor_detail_link = "/meteor/" + amsid + "/" + day + "/" + data['sd'] + "/" 
          vothumb = vtn.replace("-tn.jpg", "-obj-tn.jpg")
+        
          vthumb = vtn
          (sd_datetime, sd_cam, sd_date, sd_y, sd_m, sd_d, sd_h, sd_M, sd_s) = convert_filename_to_date_cam(data['sd'])
          show_datetime_cam = data['tme'] + " " + sd_cam
@@ -134,7 +140,8 @@ def meteors_main_redis(amsid, req,json_conf):
             show_datetime_cam += "<br> Vel:" + str(data['av'])[0:4]
          if "dur" in data:
             show_datetime_cam += " Dur:" + str(data['dur'])[0:4]
-         vvid_link  = ""
+         vvid_link  = data['sd']
+       
 
          if data['rd'] == 1:
             ht_class = "reduced"
@@ -144,6 +151,11 @@ def meteors_main_redis(amsid, req,json_conf):
             if data['ms'] == 1:
                ht_class = "multi"
 
+         if "fv" in data:
+            vthumb = "/meteors/" + day + "/final/" + data["fv"]
+            vvid_link  = vthumb 
+            vthumb = vthumb.replace(".mp4", "_crop.jpg")
+#.split("/")[-1]
    
 
          out += """
@@ -177,8 +189,11 @@ def meteors_main_redis(amsid, req,json_conf):
    if start_day is not None and end_day is None:
       end_day = start_day
 
+   if start_day is None:
+      start_day = ""
+      end_day = ""
 
-   #def page_header (filter_display = None, meteor_per_page=50, total_meteors="", start_day="", end_day="", si=0, ei=0, page=1):
+   #def page_header (filter_display = None, meteor_per_page=50, total_meteors="", start_day="", end_day="", si, ei, page=1):
    print ("TEST:", "", 50, total_meteors, start_day, end_day, si, ei, page)
    page_top = page_header ("", 50, total_meteors, start_day, end_day, si, ei, page)
    out = page_top + out + "</div>"
@@ -190,10 +205,62 @@ def meteors_main_redis(amsid, req,json_conf):
    return(template)
 
 def page_header (filter_display = None, meteor_per_page=50, total_meteors="", start_day="", end_day="", si=0, ei=0, page=1):
+   print("SI:", si, ei)
    if filter_display is None:
       filter_display = ""
    # header area
    out = """
+<style>
+/* The Modal (background) */
+.modal {
+  display: none; /* Hidden by default */
+  position: fixed; /* Stay in place */
+  z-index: 1; /* Sit on top */
+  left: 0;
+  top: 0;
+  width: 100%; /* Full width */
+  height: 100%; /* Full height */
+  overflow: auto; /* Enable scroll if needed */
+  background-color: rgb(0,0,0); /* Fallback color */
+  background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+}
+
+/* Modal Content/Box */
+.modal-content {
+  background-color: #fefefe;
+  margin: 15% auto; /* 15% from the top and centered */
+  padding: 20px;
+  border: 1px solid #888;
+  width: 80%; /* Could be more or less, depending on screen size */
+}
+
+/* The Close Button */
+.close {
+  color: #aaa;
+  float: right;
+  font-size: 28px;
+  font-weight: bold;
+}
+
+.close:hover,
+.close:focus {
+  color: black;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+</style>
+
+<div id="myModal" class="modal">
+
+  <!-- Modal content -->
+  <div class="modal-content">
+    <span class="close">&times;</span>
+    <div id="modcontent">Some text in the Modal..</div>
+  </div>
+
+</div>
+
       <div class='h1_holder  d-flex justify-content-between'>
          <h1><span class='h'><span id='meteor_count'>""" + str(total_meteors)+ """</span> meteors</span> captured between 
          <input value='""" + start_day + """' type="text" data-display-format="YYYY/MM/DD" data-action="reload" data-url-param="start_day" data-send-format="YYYY_MM_DD" class="datepicker form-control"> and
@@ -225,6 +292,43 @@ def page_header (filter_display = None, meteor_per_page=50, total_meteors="", st
       <button id="del-all" class="del-all btn btn-danger"><i class="icon-delete"></i> Delete <span class="sel-ctn">All</span> Selected</button>
      </div>
      </div>
+
+<script>
+// Get the modal
+var modal = document.getElementById("myModal");
+function open_modal(butt, date) {
+   jsid = butt.id
+   // Get the button that opens the modal
+   var btn = document.getElementById(jsid);
+
+
+   // When the user clicks on the button, open the modal
+   btn.onclick = function() {
+      modal.style.display = "block";
+   }
+
+
+   document.getElementById("modcontent").innerHTML = "<iframe height=600 width=800 src='/point_picker/" + date + "/?file=" + jsid + "'></iframe>"
+   //document.getElementById("modcontent").innerHTML = "HIHIHI"
+
+}
+
+   // Get the <span> element that closes the modal
+   var span = document.getElementsByClassName("close")[0];
+   // When the user clicks on <span> (x), close the modal
+   span.onclick = function() {
+      modal.style.display = "none";
+   }
+
+   // When the user clicks anywhere outside of the modal, close it
+   window.onclick = function(event) {
+   if (event.target == modal) {
+      modal.style.display = "none";
+   }
+}
+</script>
+
+<button id="2021_02_09_02_42_01_000_010001-trim-0005.json" onclick="open_modal(this, '2021_02_09')" >Open Modal</button>
 
    """
 
