@@ -1,7 +1,6 @@
 #!/usr/bin/python3
 
 
-
 def check_running():
    cmd = "/sbin/ifconfig -a | grep 10.8.0 | grep -v grep | wc -l"
    print(cmd)
@@ -17,7 +16,7 @@ if "flask_admin" in json_conf:
    flask_running = int(output.replace("\n", ""))
    if flask_running == 0:
       print("FLASK RUNNING:", flask_running)
-      cmd = "cd /home/ams/amscams/pipeline; /home/ams/amscams/pipeline/run-uwsgi.sh > /tmp/sgi.txt 2>&1 & "
+      cmd = "cd /home/ams/amscams/pipeline; /home/ams/amscams/pipeline/run-uwsgi-ssl > /tmp/sgi.txt 2>&1 & "
       print(cmd)
       os.system(cmd)
 
