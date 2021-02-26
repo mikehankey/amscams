@@ -33,7 +33,7 @@ def auto_update():
       os.system(cmd)
  
       # Stop flask (so new code will work)
-      cmd = "cd /home/ams/amscams/pipeline; /home/ams/amscams/pipeline/run-uwsgi.sh > /tmp/sgi.txt 2>&1"
+      cmd = "cd /home/ams/amscams/pipeline; /home/ams/amscams/pipeline/run-uwsgi-ssl > /tmp/sgi.txt 2>&1"
       os.system(cmd)
       
 
@@ -54,7 +54,7 @@ if "flask_admin" in json_conf:
    print("FLASK:", flask_running)
    if flask_running == 0:
       print("FLASK RUNNING:", flask_running)
-      cmd = "cd /home/ams/amscams/pipeline; /home/ams/amscams/pipeline/run-uwsgi.sh > /tmp/sgi.txt 2>&1 & "
+      cmd = "cd /home/ams/amscams/pipeline; /home/ams/amscams/pipeline/run-uwsgi-ssl > /tmp/sgi.txt 2>&1 & "
       print(cmd)
       os.system(cmd)
 else:
