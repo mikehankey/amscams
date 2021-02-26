@@ -32,7 +32,8 @@ def load_remote_conf(station_id):
    if cfe(local_cal_dir, 1) == 0:
       os.makedirs(local_cal_dir)
    if cfe(lconf_file) == 1:
-      print("Lconf found")
+      print("Lconf found", lconf_file)
+      
       json_conf = load_json_file(lconf_file)
       return(json_conf, station_data)
    elif cfe(cconf_file) == 1:
@@ -128,8 +129,8 @@ def remote_calibrate():
          ci_data[cams_id]['cal_index'] = []
       ci_file = R_CAL_DIR + r_station_id + "_" + cams_id + "_CAL_INDEX.json"
       if station_data['remote_url'] != "":
-         remote_url_base = "https://" + station_data['remote_url'] 
-         remote_url = "https://" + station_data['remote_url'] + ci_file
+         remote_url_base = "http://" + station_data['remote_url'] 
+         remote_url = "http://" + station_data['remote_url'] + ci_file
          fn, dir = fn_dir(ci_file)
          fne = fn.split("-")
          fnr = fne[0]
@@ -141,6 +142,7 @@ def remote_calibrate():
             cmd = "wget \"" + remote_url + "\" -O " + local_file
             os.system(cmd)
          local_cal_files.append(local_file)
+         print(local_file)
          cij = load_json_file(local_file)
          ci_data[cams_id]['cal_index'] = cij 
     
@@ -148,11 +150,12 @@ def remote_calibrate():
          mfn, mdir = fn_dir(mcp_file)
          if cfe(mdir, 1) == 0:
             os.makedirs(mdir)
-         if cfe(mcp_file) == 0:
+         if cfe(mcp_file) == 0 or cfe(mcp_file) == 1:
             remote_mcp = remote_url_base + mcp_file
             cmd = "wget \"" + remote_mcp + "\" -O " + mcp_file
             print(cmd)
             os.system(cmd)
+
 
       menu_cam_select += "   " + str(cam.replace("cam", "")) + ") " + cams_id + "\n"
 
@@ -415,6 +418,11 @@ def load_mcp(r_station_id, cams_id):
    R_CAL_DIR = LOCAL_ROOT + r_station_id + "/CAL/"
    mcp_file = R_CAL_DIR + "AUTOCAL/" + year + "/solved/" + "multi_poly-" + r_station_id + "-" + cams_id + ".info"
    mcp = None
+   print("MCP:", mcp_file)
+   st = os.stat(mcp_file)
+   size = st.st_size
+   if size == 0:
+      return(None)
    if cfe(mcp_file) == 1:
       mcp = load_json_file(mcp_file)
    else:

@@ -1,4 +1,5 @@
 #!/usr/bin/python3
+
 import glob
 import sys
 import subprocess
@@ -6,6 +7,7 @@ import os
 import time
 
 import json
+from caliblib import load_json_file
 
 json_file = open('../conf/as6.json')
 json_str = json_file.read()
@@ -14,6 +16,23 @@ json_conf = json.loads(json_str)
 
 
 video_dir = "/mnt/ams2"
+
+
+def ping_cam(cam_num):
+   #config = read_config("conf/config-" + str(cam_num) + ".txt")
+   config = load_json_file("../conf/as6.json")
+
+   key = "cam" + str(cam_num)
+   cmd = "ping -c 1 " + config['cameras'][key]['ip']
+
+   response = os.system(cmd)
+   if response == 0:
+      print ("Cam is up!")
+      return(1)
+   else:
+      print ("Cam is down!")
+      return(0)
+
 
 def check_running(cam_num, type):
 
@@ -31,6 +50,12 @@ def check_running(cam_num, type):
 
 
 def start_capture(cam_num):
+
+   ping_ok = ping_cam(cam_num)
+   if ping_ok == 0:
+      print("NO PING ON CAM!", cam_num)
+      return()
+
    cam_key = 'cam' + str(cam_num)
    cam_ip = json_conf['cameras'][cam_key]['ip']
    sd_url = json_conf['cameras'][cam_key]['sd_url']
@@ -38,20 +63,19 @@ def start_capture(cam_num):
    cams_id = json_conf['cameras'][cam_key]['cams_id']
    running = check_running(cam_num, "HD")
    if running == 0:
-      cmd = "/usr/bin/ffmpeg -rtsp_transport tcp -i 'rtsp://" + cam_ip + hd_url + "' -rtsp_transport tcp -c copy -map 0 -f segment -strftime 1 -segment_time 60 -segment_format mp4 \"" + video_dir + "/HD/" + "%Y_%m_%d_%H_%M_%S_000_" + cams_id + ".mp4\" 2>&1 > /dev/null & "
+      cmd = "/usr/bin/ffmpeg -rtsp_transport tcp -r 25 -i 'rtsp://" + cam_ip + hd_url + "' -c copy -map 0 -f segment -reset_timestamps 1 -segment_time 60 -segment_format mp4 -segment_atclocktime 1 -strftime 1 \"" + video_dir + "/HD/" + "%Y_%m_%d_%H_%M_%S_000_" + cams_id + ".mp4\" 2>&1 > /dev/null & "
       print(cmd)
-   
       os.system(cmd)
-      time.sleep(2)
+      #time.sleep(2)
    else: 
       print ("ffmpeg already running for cam:", cam_num)
 
    running = check_running(cam_num, "SD")
    if running == 0:
-      cmd = "/usr/bin/ffmpeg -rtsp_transport tcp -i 'rtsp://" + cam_ip + sd_url + "' -c copy -map 0 -f segment -strftime 1 -segment_time 60 -segment_format mp4 \"" + video_dir + "/SD/" + "%Y_%m_%d_%H_%M_%S_000_" + cams_id + ".mp4\" 2>&1 > /dev/null & "
+      cmd = "/usr/bin/ffmpeg -rtsp_transport tcp -r 25 -i 'rtsp://" + cam_ip + sd_url + "' -c copy -map 0 -f segment -reset_timestamps 1 -segment_time 60 -segment_format mp4 -segment_atclocktime 1 -strftime 1 \"" + video_dir + "/SD/" + "%Y_%m_%d_%H_%M_%S_000_" + cams_id + ".mp4\" 2>&1 > /dev/null & "
       print(cmd)
       os.system(cmd)
-      time.sleep(2)
+      #time.sleep(2)
    else: 
       print ("ffmpeg already running for cam:", cam_num)
 
@@ -102,30 +126,20 @@ except:
 
 
 if (cmd == "stop"):
-   if cam_num is not "all":
+   if cam_num != "all":
       stop_capture(cam_num)
    else:
-      stop_capture("1")
-      stop_capture("2")
-      stop_capture("3")
-      stop_capture("4")
-      stop_capture("5")
-      stop_capture("6")
-      if "cam7" in json_conf['cameras']:
-         stop_capture("7")
+      for i in range(0,len(json_conf['cameras'].keys())):
+         num = str(i + 1)
+         stop_capture(num)
 
 
 if (cmd == "start"):
    start_capture(cam_num)
 if (cmd == "start_all"):
-   start_capture("1")
-   start_capture("2")
-   start_capture("3")
-   start_capture("4")
-   start_capture("5")
-   start_capture("6")
-   if "cam7" in json_conf['cameras']:
-      start_capture("7")
+   for i in range(0,len(json_conf['cameras'].keys())):
+      num = str(i + 1)
+      start_capture(num)
 
 if (cmd == "purge"):
    purge(cam_num)

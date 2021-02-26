@@ -1,0 +1,11 @@
+./stop-uwsgi.sh
+sleep 1
+#sudo /usr/local/bin/uwsgi --shared-socket [::]:443 --https =443,cert.pem,key.pem --thunder-lock --uid 1000 --gid 1000 --wsgi-file flaskAdmin.py --callable app --processes 4 --threads 2 --stats 127.0.0.1:9191 --check-static /mnt/ams2/ --pidfile=/tmp/uwsgi.pid 
+
+#sudo /usr/local/bin/uwsgi --shared-socket 0.0.0.0:443 --uid 1000 --gid 1000 --https =0,allsky.crt,allsky.key --wsgi-file flaskAdmin.py --callable app --processes 4 --threads 2 --stats 127.0.0.1:9191 --check-static /mnt/ams2/ --pidfile=/tmp/uwsgi.pid 
+
+sudo uwsgi --shared-socket 0.0.0.0:443 --uid ams --gid ams --http =0,allsky.crt,allsky.key --wsgi-file flaskAdmin.py --callable app 
+
+#--process 4 --threads 2 --check-static /mnt/ams2/ --pidfile=/tmp/uwsgi.pid
+
+

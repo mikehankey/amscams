@@ -1,6 +1,37 @@
 import math
 import numpy as np
 
+def gap_test(fns):
+   total_gaps = 0
+   gap_events = 0
+   total_fns = len(fns)
+   fn_dur = fns[-1] - fns[0]
+   for i in range(0, len(fns)):
+      fn = fns[i]
+      if i > 0 and last_fn is not None:
+         gap = fn - last_fn - 1
+         if gap > 1:
+            #print("FN GAP:", fn, last_fn, gap)
+            total_gaps += gap
+            gap_events += 1
+      last_fn = fn
+
+   #print("GAP TEST RESULTS:")
+   #print("Total FNS:", total_fns)
+   #print("FN Dur:", fn_dur)
+   #print("Total Gaps:", total_gaps)
+   #print("Gap Events:", gap_events)
+   gap_test_info = {}
+   gap_test_info['total_fns'] = total_fns
+   gap_test_info['fn_dur'] = fn_dur
+   gap_test_info['total_gaps'] = total_gaps
+   gap_test_info['gap_events'] = gap_events
+   rat = fn_dur / total_fns
+   if (gap_events > 5 or total_gaps > 10) and rat > 3.1 and gap_events > 2:
+      return(0, gap_test_info)
+   else:
+      return(1, gap_test_info)
+
 def analyze_intensity(ints):
    pos_vals = []
    neg_vals = []
@@ -52,12 +83,13 @@ def meteor_dir_test(fxs,fys):
    match = 0
    nomatch = 0
 
+
    for i in range(0,len(fxs)):
       x = fxs[i]
       y = fys[i]
       dir_x = x - fx 
       dir_y = y - fy
-      if dir_x < 0:
+      if dir_x <= 0:
          x_dir_mod = 1
       else:
          x_dir_mod = -1
@@ -66,12 +98,12 @@ def meteor_dir_test(fxs,fys):
       else:
          y_dir_mod = -1
 
-      if x_dir_mod == fx_dir_mod :
+      if x_dir_mod == fx_dir_mod or dir_x <= 1:
          match = match + 1
       else:
          nomatch = nomatch + 1
 
-      if y_dir_mod == fy_dir_mod :
+      if y_dir_mod == fy_dir_mod or dir_y <= 1:
          match = match + 1
       else:
          nomatch = nomatch + 1
@@ -231,26 +263,6 @@ def unq_points(object):
    perc = unq_tot / tot
    return(perc, unq_tot)
 
-def big_cnt_test(object,hd=0):
-   sizes = []
-   big = 0
-   sz_thresh = 20
-   if hd == 1:
-      sz_thresh = 40
-
-   for i in range(0, len(object['ofns'])):
-      w = object['ows'][i]
-      h = object['ohs'][i]
-      if w > sz_thresh:
-         big += 1
-      if h > sz_thresh:
-         big += 1
-      sizes.append(w)
-      sizes.append(h)
-   tot = len(sizes)
-   if len(sizes) > 0:
-      perc_big = big / len(sizes)
-   return(perc_big)
 
 def calc_line_segments(xobj):
    dist_from_start = []
@@ -448,12 +460,9 @@ def ang_dist_vel(xs=[], ys=[],azs=[],els=[], pixscale=155):
 
    # Formula for finding ang_dist and vel from px
    if len(xs) > 0:
-      px_dist = calc_dist((xs[0],ys[0]), (xs[-1], ys[-1]))
+      px_dist = calc_dist((min(xs),min(ys)), (max(xs), max(ys)))
       ang_dist = px_dist * pixscale
-      #print("PIX DIST: ", px_dist)
-      #print("ANG DIST ARC SEC: ", ang_dist)
       ang_dist = arc_seconds_to_degrees(ang_dist)
-      #print("ANG DIST DEG: ", ang_dist)
       # to find angular velocity per second in degrees 
       ang_vel = ang_dist / (len(xs) / 25)
    # Formula for finding ang_dist and vel from az,el 

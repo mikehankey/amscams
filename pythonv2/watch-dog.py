@@ -157,7 +157,13 @@ obs_name = config['site']['obs_name']
 
 wd_file = "../conf/watchdog-status.json"
 
-if cfe(wd_file) == 0:
+
+if cfe(wd_file) == 1:
+   wd = load_json_file(wd_file)
+else:
+   wd = 0
+
+if wd == 0:
    print("Make new WD.")
    wd = {}
    wd['last_system_reboot'] = uptime()
@@ -187,6 +193,8 @@ if cfe(wd_file) == 0:
    save_json_file(wd_file, wd)
 else:
    wd = load_json_file(wd_file)
+   if wd == 0:
+      wd = {}
    print("Load WD")
 
 clean_zombies()
@@ -292,16 +300,18 @@ if stream_errors == 1:
 
          # Should we reboot the cam
          # if the cam has had 10 restarts since the last reboot reboot the cam for a maximum of 1x per hour
+         # MIKE TEST TEMP
          os.system("../python/ffmpeg_record.py stop " + bad_cam)
          time.sleep(3)
          if len(wd['cams'][bad_key]['restarts']) > 5:
             wd['cams'][bad_key]['restarts'] = []
             wd['cams'][bad_key]['reboots'].append(cur_time)
             print("REBOOTING CAM", bad_key)
-            os.system("./IMX291.py reboot " + wd['cams'][bad_key]['ip'])
+            os.system("./IMX291.py reboot " + wd['cams'][bad_key]['ip'] + "&")
             log = open("/mnt/ams2/logs/cam_reboots.txt", "a")
             log.write(str(cur_time) + " reboot:" + str(bad_cam) + wd['cams'][bad_key]['ip'])
             time.sleep(30)
+         # MIKE TEST TEMP
          os.system("../python/ffmpeg_record.py start " + str(bad_cam))
          wd['cams'][bad_key]['restarts'].append(cur_time)
          wd['cams'][bad_key]['last_restart'] = cur_time

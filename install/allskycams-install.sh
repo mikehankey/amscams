@@ -57,12 +57,18 @@ update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-6 60 --slave /usr/bi
 # Python
 apt-get --yes install python3-dev
 apt-get --yes install python-dev
+apt-get --yes install libcfitsio-dev
 
 #PIP
 wget https://bootstrap.pypa.io/get-pip.py
 python3 get-pip.py
 mv /usr/local/bin/pip /usr/local/bin/pip3
 python get-pip.py
+
+python get-pip.py
+pip install pyfits
+pip install numpy
+
 
 #PIP INSTALLS
 pip3 install daemon
@@ -111,3 +117,5 @@ pip3 install sympy
 cd ~
 git clone https://github.com/mikehankey/fireball_camera
 git clone https://github.com/mikehankey/amscams
+
+./install-opencv.sh

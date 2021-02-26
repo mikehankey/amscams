@@ -270,11 +270,11 @@ def sync_event(meteor_json_url, meteor_date):
    print("Syncing...", data_file)
    save_json_file(data_file, meteor_data_json)
    sync_video =  meteor_data_json['sd_video_file'] 
-   sync_pic =  sync_video.replace(".mp4", "-stacked.png")
+   sync_pic =  sync_video.replace(".mp4", "-stacked.jpg")
    video_file = data_file.replace("json", "mp4")
    video_url = "http://" + host + sync_video
    stack_url = "http://" + host + sync_pic
-   stack_file = data_file.replace(".json", "-stacked.png")
+   stack_file = data_file.replace(".json", "-stacked.jpg")
    video_url = "http://" + host + sync_video
    if cfe(video_file) == 0:
       cmd = "wget \"" + video_url + "\" -O " + video_file
@@ -350,8 +350,8 @@ def sync_events_to_cloud(json_conf, meteor_date):
          print(cmd)
          os.system(cmd)
       if sd_stack_file_syncd == 0:
-         stack_file = file.replace("-reduced.json", "-stacked.png")
-         cmd = "./upload_file.py " + str(meteor_date) + " " + str(station_name) + " " + str(device_name) + " " + str(event_id) + " stacked.png " + "/mnt/ams2/meteors/" + str(meteor_date) + "/" + stack_file
+         stack_file = file.replace("-reduced.json", "-stacked.jpg")
+         cmd = "./upload_file.py " + str(meteor_date) + " " + str(station_name) + " " + str(device_name) + " " + str(event_id) + " stacked.jpg" + "/mnt/ams2/meteors/" + str(meteor_date) + "/" + stack_file
          print(cmd)
          os.system(cmd)
 
@@ -449,8 +449,8 @@ def purge_data(json_conf):
 
 
 def hd_stack_meteors(json_conf, day, cam):
-   hd_glob = "/mnt/ams2/meteors/" + day + "/*" + cam + "*HD-meteor-stacked.png"
-   out_file = "/mnt/ams2/meteors/" + day + "/hd_stack-" + cam + ".png"
+   hd_glob = "/mnt/ams2/meteors/" + day + "/*" + cam + "*HD-meteor-stacked.jpg"
+   out_file = "/mnt/ams2/meteors/" + day + "/hd_stack-" + cam + ".jpg"
    stack_glob(hd_glob, out_file)
 
 def stack_night_all(json_conf, limit=0, tday = None):
@@ -501,8 +501,8 @@ def stack_day_cam_all(json_conf, glob_dir, cams_id ):
    print ("stacking failures")
    # stack failed captures
    img_dir = glob_dir + "/images/"
-   f_glob_dir = glob_dir + "/images/*" + cams_id + "*-stacked-tn.png"
-   out_file = img_dir + cams_id + "-night-stack.png"
+   f_glob_dir = glob_dir + "/images/*" + cams_id + "*-stacked-tn*"
+   out_file = img_dir + cams_id + "-night-stack.jpg"
 
 
    stack_glob(f_glob_dir, out_file)
@@ -512,15 +512,15 @@ def stack_day_cam(json_conf, glob_dir, cams_id ):
    print ("stacking failures")
    # stack failed captures
    img_dir = glob_dir + "/images/"
-   f_glob_dir = glob_dir + "/failed/*" + cams_id + "*-stacked.png"
-   out_file = img_dir + cams_id + "-failed-stack.png"
+   f_glob_dir = glob_dir + "/failed/*" + cams_id + "*-stacked.jpg"
+   out_file = img_dir + cams_id + "-failed-stack.jpg"
    stack_glob(f_glob_dir, out_file)
 
    print ("stacking meteors")
    # then stack meteors, then join together
    glob_dir = f_glob_dir.replace("failed", "passed")
    print("GLOB:", glob_dir)
-   meteor_out_file = img_dir + cams_id + "-meteors-stack.png"
+   meteor_out_file = img_dir + cams_id + "-meteors-stack.jpg"
    stack_glob(glob_dir, meteor_out_file)
 
    # now join the two together (if both exist)
@@ -533,7 +533,7 @@ def stack_day_cam(json_conf, glob_dir, cams_id ):
 
       print(out_file, meteor_out_file)
       final_stack = stack_stack(im1p,im2p)
-      night_out_file = img_dir + cams_id + "-night-stack.png"
+      night_out_file = img_dir + cams_id + "-night-stack.jpg"
       final_stack_np = np.asarray(final_stack)
       cv2.imwrite(night_out_file, final_stack_np)
       print(night_out_file)
@@ -542,14 +542,14 @@ def stack_day_cam(json_conf, glob_dir, cams_id ):
       ih,iw = im1.shape
       empty = np.zeros((ih,iw),dtype=np.uint8)
       cv2.imwrite(meteor_out_file, empty)
-      night_out_file = img_dir + cams_id + "-night-stack.png"
+      night_out_file = img_dir + cams_id + "-night-stack.jpg"
       print ("Only fails and no meteors exist")
       os.system("cp " + out_file + " " + night_out_file)
       print(night_out_file)
    elif cfe(out_file) == 0 and cfe(meteor_out_file) == 0:
       ih,iw = 576,704
       empty = np.zeros((ih,iw),dtype=np.uint8)
-      night_out_file = img_dir + cams_id + "-night-stack.png"
+      night_out_file = img_dir + cams_id + "-night-stack.jpg"
       cv2.imwrite(meteor_out_file, empty)
       cv2.imwrite(out_file, empty)
       cv2.imwrite(night_out_file, empty)
@@ -563,7 +563,7 @@ def move_images(json_conf):
    proc_dir = json_conf['site']['proc_dir']
    days = get_days(json_conf)
    for day in days:
-      cmd = "mv " + proc_dir + day + "/*.png " + proc_dir + day + "/images/"
+      cmd = "mv " + proc_dir + day + "/*.jpg" + proc_dir + day + "/images/"
       print(cmd)
       os.system(cmd)
       cmd = "mv " + proc_dir + day + "/*.txt " + proc_dir + day + "/data/"
@@ -689,10 +689,13 @@ def thumb_mp4s(mp4_files,json_conf):
    for file in mp4_files:
       print("WORKING ON FILE:", file)
 
-      stack_file = file.replace(".mp4", "-stacked.png") 
-      draw_file = file.replace(".mp4", "-stacked-obj.png") 
-      stack_thumb = stack_file.replace(".png", "-tn.png") 
+      stack_file = file.replace(".mp4", "-stacked.jpg") 
+      draw_file = file.replace(".mp4", "-stacked-obj.jpg") 
+      stack_thumb = stack_file.replace(".jpg", "-tn.jpg") 
       meteor_json_file = file.replace(".mp4", ".json") 
+      print("STACK THUMB:", stack_thumb)
+      if cfe(stack_thumb) == 0 :
+         thumb(stack_file)
 
       if "crop" in meteor_json_file:
          if cfe(stack_file) == 0 :
@@ -726,7 +729,7 @@ def thumb_mp4s(mp4_files,json_conf):
          if cfe(stack_thumb) == 0 :
             thumb(stack_file)
 
-      draw_file_tn = draw_file.replace(".png", "-tn.png")
+      draw_file_tn = draw_file.replace(".jpg", "-tn.jpg")
       if cfe(draw_file) == 0:
          print("DRAW:", draw_file)
          stack_image = cv2.imread(stack_file, 0)
@@ -736,16 +739,18 @@ def thumb_mp4s(mp4_files,json_conf):
          else:
             cmd = "cp " + stack_file + " " + draw_file
             os.system(cmd)
-            draw_file_tn = draw_file.replace(".png", "-tn.png")
+            draw_file_tn = draw_file.replace(".jpg", "-tn.jpg")
       if cfe(draw_file_tn) == 0  :
          thumb(draw_file)
 
 def batch_meteor_thumb(json_conf):
    meteor_base_dir = "/mnt/ams2/meteors/"
    meteor_dirs = sorted(glob.glob(meteor_base_dir + "/*"), reverse=True)
-   for meteor_dir in meteor_dirs:
+   for meteor_dir in meteor_dirs[:15]:
       mp4_files = glob.glob(meteor_dir + "/*.mp4")
       thumb_mp4s(mp4_files,json_conf)
+      print(meteor_dir)
+      exit()
 
 def batch_thumb(json_conf):
    print("BATCH THUMB")
@@ -759,10 +764,10 @@ def batch_thumb(json_conf):
    for proc_day in sorted(proc_days,reverse=True):
       folder = proc_day + "/images/"
       print("FOLDER", folder)
-      glob_dir = folder + "*-stacked.png"
+      glob_dir = folder + "*-stacked.jpg"
       image_files = glob.glob(glob_dir) 
       for file in image_files:
-         tn_file = file.replace(".png", "-tn.png")
+         tn_file = file.replace(".jpg", "-tn.jpg")
          if cfe(tn_file) == 0:
             print(file)
             thumb(file)
@@ -783,9 +788,9 @@ def stack_folder(folder,json_conf):
    print("GOLD:", folder)
    [failed_files, meteor_files,pending_files] = get_day_stats(folder, json_conf)
    for file in meteor_files:
-      stack_file = file.replace(".mp4", "-stacked.png")
+      stack_file = file.replace(".mp4", "-stacked.jpg")
       stack_img = cv2.imread(stack_file,0)
-      stack_obj_file = file.replace(".mp4", "-stacked-obj.png")
+      stack_obj_file = file.replace(".mp4", "-stacked-obj.jpg")
       obj_json_file = file.replace(".mp4", ".json")
       objects = load_json_file(obj_json_file)
       if cfe(stack_obj_file) == 0: 
@@ -794,9 +799,9 @@ def stack_folder(folder,json_conf):
          except:
             print("draw failed")
    for file in failed_files:
-      stack_file = file.replace(".mp4", "-stacked.png")
+      stack_file = file.replace(".mp4", "-stacked.jpg")
       stack_img = cv2.imread(stack_file,0)
-      stack_obj_file = file.replace(".mp4", "-stacked-obj.png")
+      stack_obj_file = file.replace(".mp4", "-stacked-obj.jpg")
       obj_json_file = file.replace(".mp4", ".json")
       objects = load_json_file(obj_json_file)
       if cfe(stack_obj_file) == 0:
@@ -807,8 +812,8 @@ def stack_folder(folder,json_conf):
 
 def get_active_cal_file(input_file):
    print("INPUT FILE", input_file)
-   if "png" in input_file:
-      input_file = input_file.replace(".png", ".mp4")
+   if "jpg" in input_file:
+      input_file = input_file.replace(".jpg", ".mp4")
    
    (f_datetime, cam_id, f_date_str,Y,M,D, H, MM, S) = better_parse_file_date(input_file)
 

@@ -1,0 +1,85 @@
+<div id="main_container" class="container-fluid d-flex h-100 mt-4 position-relative">
+
+
+<form method=POST>
+<div style="margin: 20px">
+<h2>Site Info</h2>
+<table width=100%>
+<tr>
+	<td>AMS ID</td>
+	<td>{AMSID}</td>
+</tr>
+<tr>
+	<td>Operator Name</td>
+	<td><input type=text name=operator_name value="{OPERATOR_NAME}"></td>
+</tr>
+<tr>
+	<td>Operator Email</td>
+	<td><input type=text name=operator_email value="{OPERATOR_EMAIL}"></td>
+</tr>
+
+<tr>
+	<td>Observatory or Station Name</td>
+	<td><input type=text name=obs_name value="{OBSV_NAME}"></td>
+</tr>
+
+
+
+
+<tr>
+	<td>State/Province</td>
+	<td><input type=text name=operator_state value="{OPERATOR_STATE}"></td>
+</tr>
+<tr>
+	<td>City</td>
+	<td><input type=text name=operator_city value="{OPERATOR_CITY}"></td>
+</tr>
+<tr>
+	<td>Country</td>
+	<td><input type=text name=operator_country value="{OPERATOR_COUNTRY}"></td>
+</tr>
+<tr>
+	<td>Latitude</td>
+	<td><input type=text name=device_lat value="{DEVICE_LAT}"></td>
+</tr>
+<tr>
+	<td>Longitude</td>
+	<td><input type=text name=device_lng value="{DEVICE_LON}"></td>
+</tr>
+<tr>
+	<td>Elevation above Sea Level</td>
+	<td><input type=text name=device_alt value="{DEVICE_ALT}"></td>
+</tr>
+<tr><td colspan=2><input type="submit" value="Update"></td></tr>
+</table>
+
+</div>
+
+<div style="margin: 20px">
+<h2>Camera Info</h2>
+<table width=100%>
+{CAMERA_INFO}
+</table>
+
+</div>
+
+<div style="margin: 20px">
+<h2>Network Info</h2>
+<table width=100%>
+{NETWORK_INFO}
+</table>
+</div>
+
+<div style="margin: 20px">
+<h2>Disk Info</h2>
+<table width=100%>
+{DISK_INFO}
+</table>
+</div>
+
+
+</div>
+
+</form>
+
+

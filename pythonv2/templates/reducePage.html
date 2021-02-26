@@ -11,11 +11,11 @@
                     <a class="nav-link active" id="reduc-tab-l" data-toggle="tab" href="#reduc-tab" role="tab" aria-controls="reduction" aria-selected="true">Reduction</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" id="lightc-tab-l" data-toggle="tab" href="#lightc-tab" role="tab" aria-controls="lightc" aria-selected="true">Light Curve</a>
+                    <a class="nav-link" id="lightc-tab-l" data-toggle="tab" href="#lightc-tab" role="tab" aria-controls="lightc" aria-selected="true">Light Curve</a> 
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" id="stars-tab-l" data-toggle="tab" href="#stars-tab" role="tab" aria-controls="stars" aria-selected="false"><span id="str_cnt"></span> Stars</a>
-                </li>
+                </li><!--
                 <li class="nav-item">
                     <a class="nav-link" id="plots-tab-l" data-toggle="tab" href="#plots-tab" role="tab" aria-controls="plots" aria-selected="false">Plots</a>
                 </li>
@@ -24,7 +24,7 @@
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" id="orbit-tab-l" data-toggle="tab" href="#orbit-tab" role="tab" aria-controls="orbit" aria-selected="false">Orbit</a>
-                </li>
+                </li>-->
             </ul>
 
             <div class="tab-content box " > 
@@ -87,12 +87,10 @@
             
             
             <div class="box">
-                    <h2>Calibration &amp; Reduction</h2>
-                    <p class="mb-1">Load a calibration parameters</p>
-                    <select id="cal_param_selected" class="custom-select">
-                        <option value="{SELECTED_CAL_PARAMS_FILE}">{SELECTED_CAL_PARAMS_FILE_NAME}</option>
-                    </select>
-                    
+                    <h2>Calibration</h2>
+                    <p class="mb-1">Calibration parameters</p>
+                    {CAL_PARAMS}
+                    <!-- 
                     <div class="row mt-3">
                         <span id="star_counter" class="col-12 pb-2"></span>
                         <div id="reduc_info" class="col">
@@ -105,7 +103,7 @@
                           <a id="reduce_meteor" class="btn btn-primary btn-v"><i class="icon-reduce_meteor"></i> Reduce Meteor</a>
                         </div>
                     </div>
-
+                    -->
                     <div class="row mt-3">
                         <div class="col pl-4 pr-4 "> 
                               {ARCHIVE_LINK}
@@ -118,7 +116,7 @@
 
                     <div class="row mt-3 collapse" id="extra_command">
                         <div class="col pl-4 pr-4 "> 
-                            
+                           <!-- 
                            <a class="btn btn-primary d-block" href="/pycgi/webUI.py?cmd=manual_reduction&video_file={HD_VIDEO}&hd_stack={HD_STACK}&sd_stack={SD_STACK}&sd_video={SD_VIDEO}&json_file={METEOR_JSON_FILE}"><strong>NEW</strong> Manual Reduction</a>
 
                             <a class="btn btn-primary d-block mt-2" id="radec_mode">RA/Dec Mode</a>
@@ -128,8 +126,8 @@
                             <a class="btn btn-primary d-block mt-2"  target=_blank href=/pycgi/webUI.py?cmd=clone_cal&file={SD_STACK}>Clone & Save Calibration</a> 
                             <a class="btn btn-primary d-block mt-2"  target=_blank href=/pycgi/webUI.py?cmd=free_cal&input_file={HD_STACK}>Calibrate This Image</a> 
                             <a class="btn btn-primary d-block mt-2"  target=_blank href=webUI.py?cmd=man_reduce&file={SD_STACK}&cal_params_file={CAL_PARAMS_FILE}>Manually Reduce</a>
-                             <!-- same link as del meteor-->
                             <a class="btn btn-primary d-block mt-2" target=_blank href=/pycgi/webUI.py?cmd=reject_meteor&cal_params_file={METEOR_JSON_FILE}> Delete Selected Stars<br/>and Mark image as cloudy</a> 
+-->
                             <a class="btn btn-danger d-block mt-4" target=_blank href="/pycgi/webUI.py?cmd=override_detect&jsid={JSID}"> Reject Meteor</a> 
                          </div>
                     </div>

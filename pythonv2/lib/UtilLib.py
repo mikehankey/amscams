@@ -410,3 +410,11 @@ def load_json_file(json_file):
       json_data = json.load(infile)
    return(json_data)
 
+
+
+
+def fn_dir(file):
+   fn = file.split("/")[-1]
+   dir = file.replace(fn, "")
+   return(fn, dir)
+

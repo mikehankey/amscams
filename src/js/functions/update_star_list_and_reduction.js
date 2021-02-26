@@ -22,7 +22,6 @@ function update_star_and_reduction(callback) {
             //console.log(cmd_data)
 
             if(json_resp['status']!==0) {
-             
                 // Remove All objects from Canvas
                 remove_objects();
                 
@@ -48,11 +47,11 @@ function update_star_and_reduction(callback) {
         }, error: function(data) {
             
             loading_done();
-            bootbox.alert({
-                message: "Something went wrong with this detection.",
-                className: 'rubberBand animated error',
-                centerVertical: true 
-            });
+            //bootbox.alert({
+            //    message: "Something went wrong with this detection.",
+            //    className: 'rubberBand animated error',
+            //    centerVertical: true 
+            //});
         }
     });
 

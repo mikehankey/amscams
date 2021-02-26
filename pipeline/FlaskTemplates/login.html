@@ -1,0 +1,106 @@
+{HEADER} 
+    <style>
+        
+        .card-header {
+            padding:0;
+        }
+        .card.login { 
+            margin-top: auto;
+            margin-bottom: auto;
+            width: 400px;
+            background-color: rgba(0,0,0,0) !important;
+        }
+
+        h3 {
+            margin: 0 0 .5rem;
+            line-height: 1.5;
+        }
+
+        .tdf {
+            margin-top: calc(100vh/2 - 200px);
+        }
+
+    </style> 
+ 
+        <div class="container">
+                <div class="d-flex justify-content-center h-100 tdf">
+                    <div class="card login">
+                        <div class="card-header">			 
+				            <h3><iframe id="logo_holder" src="/dist/img/logo.svg" width="70" height="45" style="border:0" class="float-right"></iframe> Login</h3>
+                        </div>
+                        <form id="login_form">
+                            <div class="alert alert-error" id="error" hidden></div>
+                            <div class="input-group form-group"> 
+                                <input id="u" type="text" class="form-control" placeholder="username" autocomplete="username">
+                            </div>
+                            <div class="input-group form-group">
+                                <input id="p" type="password" class="form-control" placeholder="password" autocomplete="current-password" >
+                            </div>
+                            <!--
+                            <div class="row align-items-center remember">
+                                <input type="checkbox">Remember Me
+                            </div>
+                            -->
+                            <div class="form-group">
+                                <input type="submit" value="Login" class="btn btn-primary float-right">
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+{FOOTER}
+            
+<script>
+    $(function() {
+
+        // Remove cookie for logout
+        Cookies.remove('wpAMS-10091976', { path: '/' });
+
+        $('#login_form input').focus(function() {
+            $('#error').attr('hidden','');
+        });
+
+        $('#login_form').submit(function() {
+            // Ajax call to check pwd/user
+            var cmd_data = {
+                cmd: 'check_pwd', 
+                user: $('#u').val(),
+                pwd: $('#p').val()
+            }
+            user = $('#u').val()
+            loading({text: "Please wait",overlay:true});
+
+            $.ajax({ 
+                url:  "/api/check_login",
+                data: cmd_data,
+                success: function(data) {
+                    //data = jQuery.parseJSON(data);
+                    if(data.passed !== undefined && data.passed == 1) {
+                        // We setup the cookie here
+                        $('.container .d-flex').remove();
+                        Cookies.set('wpAMS-10091976', 'arythrisvV', { expires: 1, path: '/' });
+                        window.location.href = "/stacks/" + user + "/"
+                    } else if(data.passed !== undefined) {
+                        $('#error').html("Wrong username / password combination.").removeAttr('hidden');
+                    } else {
+                        $('#error').html(data.error).removeAttr('hidden');
+                    }
+
+                    loading_done();
+
+                },
+                error: function(d) {
+                    alert('Something is wrong, please try again or contact Mike.');
+                    loading_done();
+                }
+            })
+
+            return false;
+        });
+    });
+</script>
+ 
+</body>
+</html>
+ 

@@ -1,0 +1,131 @@
+{HEADER}
+{NAV}
+<link rel="stylesheet" href="/dist/div_table.css"/>
+<div id="main_container" class="container-fluid d-flex h-100 mt-4 position-relative"> 
+        <div class="h-100 flex-fixed-canvas">
+            <div class="canvas-container">
+                 <canvas class='mask_c' id="mask_c" width="960" height="540"></canvas> 
+            </div>
+        </div> 
+<form>
+        <div style='margin: 25px 25px 25px 25px'>
+<h2>Edit Mask For Camera</h2>
+<p>
+Add or remove mask area by selecting the image and pressing the desired action button. 
+</p>
+<p>
+Select Mask Block Size
+</p>
+
+<input class='mask_r' type=radio id=blocksize name=blocksize value=10>10x10<BR>
+<input class='mask_r' type=radio id=blocksize name=blocksize value=25>25x25<BR>
+<input class='mask_r' type=radio id=blocksize name=blocksize value=50>50x50<BR>
+<input class='mask_r' checked type=radio id=blocksize name=blocksize value=100>100x100<BR>
+
+<P>
+<input style="width: 100; padding: 5px; width=100px; margin: 10px 0px 10px 0px" type=button onclick="javascript:edit_mask_points('add')" id=add_mask value=" Add Mask Area For Select Points "><BR>
+<input style="width: 100; padding: 5px; width=100px; margin: 10px 0px 10px 0px" type=button onclick="javascript:edit_mask_points('del')" id=add_mask value=" Del Mask Area For Select Points "><BR>
+
+<BR>
+</form>
+</div>
+</div>
+
+   <script>
+      var mask_file = '{MASK_FILE}'
+      var mask_points = []
+      var my_image = mask_file
+      var new_img     = my_image
+      new_img.height  = 960;
+      new_img.width   = 540;
+   </script>
+
+{FOOTER}
+<script>
+
+function edit_mask_points(action) {
+    mask_points_str = ""
+    for (p in mask_points) {
+       x = mask_points[p][0]
+       y = mask_points[p][1]
+       s = mask_points[p][2]
+       if (mask_points_str != "") {
+          mask_points_str = mask_points_str + ";"
+
+       }
+       mask_points_str = mask_points_str + x + "," + y + "," + s
+       }
+    var cmd_data = {
+        mask_file: mask_file,
+        mask_points: mask_points_str,
+        action: action,
+    }
+
+
+    $.ajax({
+        url:  "/API/edit_mask_points",
+        data: cmd_data,
+        success: function(data) {
+            update_img = new_img + "?r=" + Math.floor(Date.now() / 1000)
+            canvas.setBackgroundImage(new_img, canvas.renderAll.bind(canvas));
+            $(".mask_c").css("background-image","url("+mask_file+"?random="+ new Date().getTime())
+
+            mask_points = []
+            console.log("update backimg", update_img)
+        },
+        error: function(data) {
+           console.log("ERROR")
+           //loading_done();
+        }
+    });
+   console.log("DONE UPDATE")
+
+
+}
+
+
+   var canvas = new fabric.Canvas('mask_c', {
+      hoverCursor: 'default',
+      selection: true
+   });
+
+   canvas.setBackgroundImage(new_img, canvas.renderAll.bind(canvas));
+   canvas.on('mouse:down', function(e) {
+   blocksize = $('input[name="blocksize"]:checked').val();
+
+
+      var pointer = canvas.getPointer(event.e);
+      x_val = pointer.x | 0;
+      y_val = pointer.y | 0;
+      mask_points.push([x_val,y_val,blocksize])
+      var circle = new fabric.Circle({
+         radius: blocksize/2,
+         fill: 'rgba(0,0,0,0)',
+         strokeWidth: 1,
+         stroke: 'rgba(100,200,200,.85)',
+         left: x_val-(blocksize/2),
+         top: y_val-(blocksize/2),
+         selectable: false
+      });
+
+    var objFound = false
+    var clickPoint = new fabric.Point(x_val,y_val);
+    var objects = canvas.getObjects('circle')
+    for (let i in objects) {
+    if (!objFound && objects[i].containsPoint(clickPoint)) {
+        objFound = true
+        canvas.remove(objects[i]);
+    }
+    }
+    if (objFound == false) {
+      canvas.add(circle);
+      canvas.bringForward(circle)
+
+    }
+
+    //$('#canvas_pointer_info').text('Star Added');
+  });
+
+
+   </script>
+   

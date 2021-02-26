@@ -118,7 +118,7 @@ def run_df():
             used_perc = disk_data[4]
             mount = disk_data[5]
             print(mount, used_perc)
-            if mount == "/" or mount == "/mnt/ams2" or mount == "/mnt/archive.allsky.tv":
+            if mount == "/" or mount == "/mnt/ams2" or mount == "/mnt/archive.allsky.tv" or mount == "/home":
                df_data.append((file_system, size, used, avail, used_perc, mount))
                used_perc = used_perc.replace(" ", "")
                mounts[mount] = int(used_perc.replace("%", ""))
@@ -129,51 +129,152 @@ def run_df():
 
 def check_disk():
    df_data, mounts = run_df()
-
+   if "data_dir" in json_conf:
+      data_dir = json_conf['data_dir']
+   else:
+      data_dir = "/mnt/ams2"
    print(mounts)
-
+   print(data_dir)
+   print(mounts[data_dir])
    del_needed = 0
    if "/mnt/archive.allsky.tv" not in mounts:
       print("Wasabi is not mounted! Mounting now.")
       os.system("./wasabi.py mnt")
-   if "/mnt/ams2" in mounts:
-      if mounts["/mnt/ams2"] > 80:
-         print("Data volume /mnt/ams2 is greater than 80%!", mounts["/mnt/ams2"]) 
+   if data_dir in mounts:
+      if mounts[data_dir] > 80:
+         print("Data volume /mnt/ams2 is greater than 80%!", mounts[data_dir]) 
          del_needed = 1
    if mounts["/"] > 80:
       print("Root volume / is greater than 80%!", mounts["/"]) 
       del_needed = 1
+
+   hd_files = sorted(glob.glob("/mnt/ams2/HD/*.mp4"))
+   if len(hd_files) > 22000:
+      del_needed = 1
+
+   # remove tmp files
+   os.system("rm /tmp/tmp.ppm*")
+   os.system("rm /tmp/tmp.remove*")
+   os.system("rm /tmp/tmp.fits*")
+   os.system("rm /tmp/tmp.uncomp*")
+   os.system("rm /tmp/tmp.*")
 
    # first get the HD files and start deleting some of then (remove the last 12 hours) 
    # then check disk again if it is still over 80% delete some more. 
    # continue to do this until the disk is less than 80% or there are only a max of 2 days of HD files left
    if del_needed == 1:
       print("Data volume /mnt/ams2 is greater than 80%!")
-      hd_files = sorted(glob.glob("/mnt/ams2/HD/*.mp4"))
       print(len(hd_files), " HD FILES")
-      del_count = int(len(hd_files) / 10)
-      for file in hd_files[0:del_count]:
+      del_count = int(len(hd_files) / 3)
+      #print("DEL C:", del_count)
+      #test = input('wait')
+      fc = 0
+      for file in hd_files:
+         #print(fc, file)
+         hd_datetime, hd_cam, hd_date, hd_y, hd_m, hd_d, hd_h, hd_M, hd_s,hd_ms = convert_filename_to_date_cam(file, 1)
+         elp = hd_datetime - datetime.now()
+         days_old = abs(elp.total_seconds()) / 86400
          if "meteor" not in file:
-            print("Delete this file!", file)
-            os.system("rm " + file)
+            if days_old > 2.5:
+               print("RM OLD:", file, days_old)
+               os.system("rm " + file)
+         else:
+            if days_old > 4:
+               os.system("rm " + file)
+         fc += 1
 
    # check SD dir  
    # if the disk usage is over 80% 
    # get folders in /proc2, delete the folders one at a time and re-check disk until disk <80% or max of 30 folders exist
    proc2_files = glob.glob("/mnt/ams2/SD/proc2/*")
+   ntfs = []
    for file in proc2_files:
       if "json" not in file and "daytime" not in file and "all" not in file:
          if cfe(file, 1) == 1:
             fn = file.split("/")[-1]
-            #print("day dir:", fn)
-            dir_date = datetime.strptime(fn , "%Y_%m_%d")
+            try:
+               dir_date = datetime.strptime(fn , "%Y_%m_%d")
+            except:
+               print("OTHER FILE:", file)
+               continue
             elp = dir_date - datetime.now()
             days_old = abs(elp.total_seconds()) / 86400
-            if days_old > 45:
+            print("day dir:", fn, days_old)
+
+            if days_old > 37:
                print("This file is ", int(days_old), " days old.")
                cmd = "rm -rf " + file
                print(cmd)
                os.system(cmd)
+            if days_old > 5:
+               # delete non trim hd files
+               print("HD SAVE DEL:", file + "/hd_save/*.mp4"  )
+               ntf = glob.glob(file + "/hd_save/*.mp4")
+               for nt in ntf:
+                  #if "trim" not in nt:
+                  if True:
+                     ntfs.append(nt)
+               # delete data files 
+               data_dir = file + "/data/"
+               if cfe(data_dir, 1) == 1:
+                  data_files = file + "/data/*.json"
+                  cmd = "rm -rf " + data_dir
+                  print(cmd)
+                  os.system(cmd)
+
+   print("Non Trim Saved HD Min Files:")
+   for ntf in ntfs:
+      print("NTF:", ntf)
+      cmd = "rm  " + ntf
+      os.system(cmd)
+
+   # trash > 14
+   trash_dir = "/mnt/ams2/trash/" 
+   trash_dirs = glob.glob(trash_dir+ "*")
+   now = datetime.now()
+   for td in trash_dirs:
+      if cfe(td, 1) == 0:
+         continue
+      fn = td.split("/")[-1]
+      cdate = fn[0:10]  
+      print("CD", cdate)
+      try:
+         dir_date = datetime.strptime(cdate , "%Y_%m_%d")
+         elp = dir_date - datetime.now()
+         days_old = abs(elp.total_seconds()) / 86400
+         print("TRASH", fn, days_old)
+         if days_old > 14:
+            cmd = "rm -rf " + td
+            os.system(cmd)
+            print(cmd)
+      except:
+         print("TRASH COULDN'T BE REMOVED", fn, days_old)
+
+   # Cache files > 14 days gone.
+   now = datetime.now()
+   this_year = now.strftime("%Y")
+   this_month = now.strftime("%m")
+   cache_dir = "/mnt/ams2/CACHE/" + json_conf['site']['ams_id'] + "/" 
+   years = glob.glob(cache_dir + "*")
+   for y in years:
+      mon_dirs = glob.glob(y + "/*") 
+      for md in mon_dirs:
+         print(md)
+         day_dirs = glob.glob(md + "/*") 
+         for dd in day_dirs:
+            cy = dd.split("/")[-3]
+            cm = dd.split("/")[-2]
+            cd = dd.split("/")[-1]
+            cdate = cy + "_" + cm + "_" + cd
+            dir_date = datetime.strptime(cdate , "%Y_%m_%d")
+            elp = dir_date - datetime.now()
+            days_old = abs(elp.total_seconds()) / 86400
+            if days_old > 15:
+               cmd = "rm -rf " + dd
+               print(cmd)
+               os.system(cmd)
+               print(dd, days_old)
+
 
 
    # purge out old files from daytime dir
@@ -217,7 +318,7 @@ def check_disk():
                print(cmd)
                os.system(cmd)
             else:
-               print("KEEP THIS MONTH DIR IT IS OLDER THAN 1 MONTH", month)
+               print("KEEP THIS MONTH DIR IT IS LESS THAN 1 MONTH OLD", month)
 
    print("THIS YEAR:", this_year)
    # remove trash and other tmp dirs

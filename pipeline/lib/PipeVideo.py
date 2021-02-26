@@ -39,7 +39,7 @@ def ffmpeg_cat(file1, file2, outfile=None):
    list += "file '" + file2 + "'\n"
    outfile = file1.replace(".mp4", "-cat.mp4")
 
-   list_file = "tmp_vids/cat.txt"
+   list_file = "./tmp_vids/cat.txt"
    fp = open(list_file, "w")
    fp.write(list)
    fp.close()
@@ -50,8 +50,13 @@ def ffmpeg_cat(file1, file2, outfile=None):
 
 def ffprobe(video_file):
    default = [704,576]
-   cmd = "/usr/bin/ffprobe " + video_file + " > /tmp/ffprobe72.txt 2>&1"
-   output = subprocess.check_output(cmd, shell=True).decode("utf-8")
+   print("FFP:")
+   #try:
+   if True:
+      cmd = "/usr/bin/ffprobe " + video_file + " > /tmp/ffprobe72.txt 2>&1"
+      output = subprocess.check_output(cmd, shell=True).decode("utf-8")
+   #except:
+   #    return(0,0,0)
    #try:
    #time.sleep(2)
    output = None
@@ -342,7 +347,8 @@ def find_hd_file(sd_file, sd_start_trim, sd_end_trim, trim_on =1):
 
 def ffmpeg_splice(video_file, start, end, outfile):
 
-   cmd = "/usr/bin/ffmpeg -i " + video_file + " -vf select='between(n\," + str(start) + "\," + str(end) + ")' -vsync 0 -start_number " + str(start) + " " + outfile + " > /dev/null 2>&1 "
+   cmd = "/usr/bin/ffmpeg -i " + video_file + " -vf select='between(n\," + str(start) + "\," + str(end) + ")' -reset_timestamps 1 -vsync 0 " + " " + outfile + " > /dev/null 2>&1 "
+   #cmd = "/usr/bin/ffmpeg -i " + video_file + " -vf select='between(n\," + str(start) + "\," + str(end) + ")' -reset_timestamps 1 -vsync 0 -start_number " + str(start) + " " + outfile + " > /dev/null 2>&1 "
 
 
    print(cmd)
@@ -483,10 +489,23 @@ def load_frames_fast(trim_file, json_conf, limit=0, mask=0,crop=(),color=0,resiz
    (f_datetime, cam, f_date_str,fy,fm,fd, fh, fmin, fs) = convert_filename_to_date_cam(trim_file)
    cap = cv2.VideoCapture(trim_file)
 
-   if "HD" in trim_file:
-      masks = get_masks(cam, json_conf,1)
+   #if "HD" in trim_file:
+   #   masks = get_masks(cam, json_conf,1)
+   #else:
+   #   masks = get_masks(cam, json_conf,1)
+
+   masks = []
+
+   mask_imgs, sd_mask_imgs = load_mask_imgs(json_conf)
+
+   if cam in mask_imgs:
+      mask_img = mask_imgs[cam]
    else:
-      masks = get_masks(cam, json_conf,1)
+      mask_img = None
+
+
+
+
    if "crop" in trim_file:
       masks = None
 
@@ -528,15 +547,20 @@ def load_frames_fast(trim_file, json_conf, limit=0, mask=0,crop=(),color=0,resiz
                   else:
                      hd = 0
                   #masks = get_masks(cam, json_conf,hd)
-                  frame = mask_frame(frame, [], masks, 5)
+                  #frame = mask_frame(frame, [], masks, 5)
 
                if last_frame is not None:
                   subframe = cv2.subtract(frame, last_frame)
+                  if mask_img.shape[0] != subframe.shape[0]: 
+                     mask_img = cv2.resize(mask_img,(subframe.shape[1],subframe.shape[0]))
+                     print(mask_img.shape, subframe.shape)
+                  subframe= cv2.subtract(subframe, mask_img)
+
                   sum_val =cv2.sumElems(subframe)[0]
-
                   if sum_val > 10 :
-                     _, thresh_frame = cv2.threshold(subframe, 15, 255, cv2.THRESH_BINARY)
-
+                     _, thresh_frame = cv2.threshold(subframe, 5, 255, cv2.THRESH_BINARY)
+                     #cv2.imshow('pepe', thresh_frame)
+                     #cv2.waitKey(0)
                      sum_val =cv2.sumElems(thresh_frame)[0]
                   else: 
                      sum_val = 0
@@ -589,9 +613,27 @@ def load_frames_simple(trim_file):
             go = 0
       if frame is not None:
          frames.append(frame)
+      if frame_count > 1499:
+         go = 0
       frame_count += 1
 
    cap.release()
    return(frames)
+
+
+def load_mask_imgs(json_conf):
+   mask_files = glob.glob("/mnt/ams2/meteor_archive/" + json_conf['site']['ams_id'] + "/CAL/MASKS/*mask*.png" )
+   mask_imgs = {}
+   sd_mask_imgs = {}
+   for mf in mask_files:
+      mi = cv2.imread(mf, 0)
+      omh, omw = mi.shape[:2]
+      fn,dir = fn_dir(mf)
+      fn = fn.replace("_mask.png", "")
+      mi = cv2.resize(mi, (1920, 1080))
+      sd = cv2.resize(mi, (omw, omh))
+      mask_imgs[fn] = mi
+      sd_mask_imgs[fn] = sd
+   return(mask_imgs, sd_mask_imgs)
 
 #def trim_crop_video():

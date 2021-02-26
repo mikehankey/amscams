@@ -48,6 +48,7 @@ import scipy.optimize
 #pyximport.install(setup_args={'include_dirs':[np.get_include()]})
 #from RMS.Astrometry.CyFunctions import cyraDec2AltAz
 
+from lib.cyFuncs import cyraDec2AltAz
 
 ### CONSTANTS ###
 

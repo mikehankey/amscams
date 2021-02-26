@@ -4,5 +4,5 @@ function reduction_table_actions(anticache=-1) {
         // Setup Select Meteor
         setup_select_meteor(anticache);
         // Missing Thumbs?
-        setTimeout(function() { test_missing_thumb(); }, 2000);
+        //setTimeout(function() { test_missing_thumb(); }, 2000);
 }

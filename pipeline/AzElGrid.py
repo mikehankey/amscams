@@ -56,6 +56,16 @@ def az_grid(cal_file,cal_params,cal_image,iw,ih,show =0):
 
    new_x, new_y, img_ra,img_dec, tl_az, tl_el = XYtoRADec(0,0,cal_param_file,cal_params,json_conf)
    print("TOP LEFT:", 0,0,new_x,new_y,img_ra,img_dec,tl_az,tl_el)
+   flen = 4
+   if flen == 8:
+      wd = 40
+      hd = 20
+   else:
+      wd = 80
+      hd = 30
+
+   #print(flen, wd, hd)
+   #exit()
 
    if center_el > 70:
       start_el = 30
@@ -63,18 +73,19 @@ def az_grid(cal_file,cal_params,cal_image,iw,ih,show =0):
       start_az = 0
       end_az = 355
    else:
-      start_az = center_az - 80
-      end_az = center_az + 70
-      start_el = center_el - 30
-      end_el = center_el + 30
+      start_az = center_az - wd
+      end_az = center_az + wd
+      start_el = center_el - hd
+      end_el = center_el + hd
+      print("USEING:" , start_az, end_az, center_az, wd)
       if start_el < 0:
          start_el = 0
       if end_el >= 90:
          end_el = 89.7
 
-      if center_az - 80 < 0:
-         start_az = center_az - 80
-         end_az = start_az + 160 
+      if center_az - wd < 0:
+         start_az = center_az -wd  
+         end_az = start_az + (wd * 2) 
 
    if cal_file is not None:
       (f_datetime, cam, f_date_str,y,m,d, h, mm, s) = convert_filename_to_date_cam(cal_file)
@@ -93,6 +104,8 @@ def az_grid(cal_file,cal_params,cal_image,iw,ih,show =0):
       print("USING MCP POLY VALS!")
    else:
       print("No MCP file.", mcpf)
+      cal_params['x_poly'] = np.zeros(shape=(15,),dtype=np.float64)
+      cal_params['y_poly'] =  np.zeros(shape=(15,),dtype=np.float64)
 
    RA_center = float(cal_params['ra_center'])
    dec_center = float(cal_params['dec_center'])
@@ -109,6 +122,7 @@ def az_grid(cal_file,cal_params,cal_image,iw,ih,show =0):
    #if start_az > end_az:
    #   start_az = start_az - 360
 
+      
    print("START AZ, END AZ", start_az, end_az)
    #for az in range(int(start_az),int(end_az)):
       #for el in range(int(start_el),int(end_el)+30):
@@ -178,13 +192,17 @@ def az_grid(cal_file,cal_params,cal_image,iw,ih,show =0):
    print(half_stack_img.shape)
    print(az_grid_half_img_c.shape)
    blend_image = cv2.addWeighted(half_stack_img, .9, az_grid_half_img_c, .1,0)
-   cv2.imwrite(az_grid_half_blend, blend_image)
+   if "-azgrid" in az_grid_half_blend:
+      cv2.imwrite(az_grid_half_blend, blend_image)
    #print(az_grid_half_blend)
-   cv2.imwrite(az_grid_file, cal_image)
-   cv2.imwrite(az_grid_file_half, az_grid_half_img)
+   if "-azgrid" in az_grid_file:
+      cv2.imwrite(az_grid_file, cal_image)
+   if "-azgrid" in az_grid_file_half:
+      cv2.imwrite(az_grid_file_half, az_grid_half_img)
    az_grid_file_tn = az_grid_file.replace(".png", "-tn.png")
    az_grid_tn_img = cv2.resize(half_stack_img, (THUMB_W, THUMB_H))
-   cv2.imwrite(az_grid_file_tn, az_grid_tn_img)
+   if "-azgrid" in az_grid_file_tn:
+      cv2.imwrite(az_grid_file_tn, az_grid_tn_img)
    tr_grid_file = az_grid_file.replace(".png", "-t.png")
    #cmd = "/usr/bin/convert " + az_grid_file + " " + tr_grid_file
    #print(cmd)
@@ -206,7 +224,8 @@ if __name__ == "__main__":
       img_x = int(sys.argv[1])
       img_y = int(sys.argv[2])
       cal_param_file = sys.argv[3]
-
+   if "png" in cal_param_file:
+      cal_param_file = cal_param_file.replace(".png", "-calparams.json")
 
    cal_params = load_json_file(cal_param_file)
 
@@ -217,7 +236,9 @@ if __name__ == "__main__":
 
    if cmd == 'az_grid':
 
-      cal_file = cal_param_file.replace("-calparams.json", "-src.jpg")
+      cal_file = cal_param_file.replace("-calparams.json", ".png")
+      if cfe(cal_file) == 0:
+         cal_file = cal_param_file.replace("-calparams.json", "-src.jpg")
       if cfe(cal_file) == 0:
          cal_file = cal_file.replace(".jpg", "-stacked.png")
          if cfe(cal_file) == 0:
@@ -236,6 +257,7 @@ if __name__ == "__main__":
       iw = 1920
 
       cal_image = np.zeros((ih,iw),dtype=np.uint8)
+      print("CAL FILE:", cal_file)
       az_grid(cal_file,cal_params,cal_image,iw,ih)
       exit()
 

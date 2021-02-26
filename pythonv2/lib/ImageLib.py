@@ -132,12 +132,12 @@ def make_10_sec_thumbs(sd_video_file, frames, json_conf):
 def thumb(image_file = "", image = "", perc_size = None):
    print("THUMB!", image_file)
    if image_file != "":
-      thumb_file = image_file.replace(".png", "-tn.png")
-      image = cv2.imread(image_file, 0)
+      thumb_file = image_file.replace(".jpg", "-tn.jpg")
+      image = cv2.imread(image_file)
       print("THUMB FILE OPENED")
 
    try:
-      h,w = image.shape
+      h,w = image.shape[:2]
       print("IMAGE SHAPE:", image.shape)
    except:
       print("IMAGE THUMB FAILED FOR ", image_file)
@@ -145,11 +145,14 @@ def thumb(image_file = "", image = "", perc_size = None):
 
    if perc_size is None:
       if w < 1000:
-         thumb_img = cv2.resize(image, (0,0),fx=.4, fy=.4)
+         #thumb_img = cv2.resize(image, (0,0),fx=.4, fy=.4)
+         thumb_img = cv2.resize(image, (320,180))
       else:
-         thumb_img = cv2.resize(image, (0,0),fx=.15, fy=.15)
+         #thumb_img = cv2.resize(image, (0,0),fx=.15, fy=.15)
+         thumb_img = cv2.resize(image, (320,180))
    else:
-      thumb_img = cv2.resize(image, (0,0),fx=perc_size, fy=perc_size)
+      #thumb_img = cv2.resize(image, (0,0),fx=perc_size, fy=perc_size)
+      thumb_img = cv2.resize(image, (320,180))
 
    if image_file != "":
       print("SAVING:", thumb_file)
@@ -169,13 +172,34 @@ def bigger_box(min_x,min_y,max_x,max_y,iw,ih,fac=5):
       max_y = ih-1
    return(min_x-fac,min_y-fac,max_x+fac,max_y+fac)
 
+def obj_to_hist(obj, stack_img):
+   # hist = fn,x,y,w,h,i
+   hist = []
+   h,w = stack_img.shape[:2]
+   hdmx = 1920 / w
+   hdmy = 1080 / h 
+   for i in range(0, len(obj['oxs'])):
+      x = int(obj['oxs'][i] * hdmx)
+      y = int(obj['oys'][i] * hdmy)
+      fn = obj['ofns'][i]
+      w = int(obj['ows'][i] * hdmx)
+      h = int(obj['ohs'][i] * hdmy)
+      i = obj['oint'][i]
+      hist.append([fn,x,y,w,h,x,y,i,i])
+   return(hist)
 
 def draw_stack(objects,stack_img,stack_file):
    if stack_img is None:
       return() 
    ih,iw=stack_img.shape[:2]
    for obj in objects:
-      hist = obj['history'] 
+      print("OBJ:", obj)
+      if "history" in obj:
+         hist = obj['history'] 
+      else:
+         hist = obj_to_hist(obj, stack_img)
+         print("HIST:", hist)
+         #exit()        
       (max_x,max_y,min_x,min_y) = find_min_max_dist(hist)
       (min_x,min_y,max_x,max_y) = bigger_box(min_x,min_y,max_x,max_y,iw,ih,25) 
       cv2.rectangle(stack_img, (min_x, min_y), (max_x , max_y), (255, 0, 0,.02), 1)
@@ -184,10 +208,14 @@ def draw_stack(objects,stack_img,stack_file):
          obj['meteor'] = 1
 
       if obj['meteor'] == 1:
-         cv2.putText(stack_img, str(obj['oid']) + " Meteor",  (min_x,min_y-3), cv2.FONT_HERSHEY_SIMPLEX, .4, (255, 255, 255), 1)
+         if 'oid' in obj:
+            oid = obj['oid']
+         else:
+            oid = obj['obj_id']
+         cv2.putText(stack_img, str(oid) + " Meteor",  (min_x,min_y-3), cv2.FONT_HERSHEY_SIMPLEX, .4, (255, 255, 255), 1)
       else:
          cv2.putText(stack_img, str(obj['oid']) ,  (min_x-5,min_y-12), cv2.FONT_HERSHEY_SIMPLEX, .4, (255, 255, 255), 1)
-   stack_file=stack_file.replace("-stacked.png", "-stacked-obj.png")
+   stack_file=stack_file.replace("-stacked.jpg", "-stacked-obj.jpg")
    print("WROTE:", stack_file)
    cv2.imwrite(stack_file,stack_img)
 
@@ -215,9 +243,9 @@ def stack_glob(glob_dir, out_file):
          continue 
       avg_px = np.mean(img)
       print("AG:", avg_px)
-      #if avg_px > 80 or avg_px == 0:
+      if avg_px > 80 or avg_px == 0:
       #   os.system("rm " + file)
-      #   continue
+         continue
       img_pil = Image.fromarray(img)
       if stacked_image is None:
          stacked_image = stack_stack(img_pil, img_pil)
@@ -235,7 +263,7 @@ def stack_frames(frames,video_file,nowrite=0, resize=None):
       resize_w = resize[0]
       resize_h = resize[1]
    stacked_image = None
-   stacked_file= video_file.replace(".mp4", "-stacked.png")
+   stacked_file= video_file.replace(".mp4", "-stacked.jpg")
    print("STACKED FILE IS:", stacked_file)
    if cfe(stacked_file) == 1 and nowrite == 0:
       #print("SKIP - Stack already done.") 

@@ -816,6 +816,9 @@ def cal_index(json_conf):
    for cp_file in cal_files:
       cj = load_json_file(cp_file)
       (f_datetime, cam_id, f_date_str,fy,fm,fd, fh, fmin, fs) = convert_filename_to_date_cam(cp_file)
+      if cj == 0:
+         print("Bad file", cp_file)
+         continue
       if 'center_az' not in cj:
          new_date = fy + "/" + fm + "/" + fd + " " + fh + ":" + fmin + ":" + fs
          az, el = radec_to_azel(cj['ra'],cj['dec'], new_date,json_conf)
@@ -869,9 +872,11 @@ def cal_index(json_conf):
          #print(cmd)
       if "total_res_px" in cj:
          cal_files[cp_file]['total_res_px'] = cj['total_res_px']
-         cal_files[cp_file]['total_res_deg'] = cj['total_res_deg']         
       else:
          cal_files[cp_file]['total_res_px'] = 0
+      if "total_res_deg" in cj:
+         cal_files[cp_file]['total_res_deg'] = cj['total_res_deg']         
+      else:
          cal_files[cp_file]['total_res_deg'] = 0
 
    for cp_file in cal_files:

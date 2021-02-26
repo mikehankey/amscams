@@ -1,0 +1,44 @@
+
+
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark"> 
+       
+    <a class="navbar-brand clearfix" href="/stacks/{AMSID}/" title="Home">  
+        <iframe id="logo_holder" src="/dist/img/logo.svg" width="70" height="45" style="border:0"></iframe>
+	<span class="tx"><span class="m">AllSkyCams.com</span><span class="s">{AMSID} {OBS_NAME}</span></span>
+    </a>
+
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#mainN" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="mainN">
+      <ul class="navbar-nav ml-auto"> 
+         <li class="nav-item"><a class="nav-link" href="/stacks/{AMSID}/">STACKS</a></li>
+         
+         <li class="nav-item"><a class="nav-link" href="/meteor/{AMSID}/">Meteors</a></li>
+         <li class="nav-item dropdown">
+             <a class="nav-link dropdown-toggle" href="#" id="calib_dd" data-toggle="dropdown">Calibration</a>
+             <div class="dropdown-menu dropdown-menu-right">
+               <a class="dropdown-item" href="/calib/{AMSID}/">Past Calibrations</a>
+               <a class="dropdown-item" href="/cal/lensmodel/{AMSID}/">Lens Models</a>
+             </div>
+         </li>
+         <li class="nav-item dropdown">
+             <a class="nav-link dropdown-toggle" href="#" id="learn_dd" data-toggle="dropdown">Learning</a>
+             <div class="dropdown-menu dropdown-menu-right">
+               <a class="dropdown-item" href="/LEARNING/METEORS/{AMSID}">Meteor Data Set</a>
+               <a class="dropdown-item" href="/LEARNING/NON_METEORS/{AMSID}">Non Meteor Data Set</a>
+             </div>
+         </li>
+
+         <li class="nav-item"><a class="nav-link" href="/live/{AMSID}/">Live</a></li>
+         <li class="nav-item dropdown">
+             <a class="nav-link dropdown-toggle" href="#" id="config_dd" data-toggle="dropdown">Config</a>
+             <div class="dropdown-menu dropdown-menu-right">
+               <a class="dropdown-item" href="/cal/masks/{AMSID}/">Mask Admin</a>
+               <a class="dropdown-item" href="/cal/vars/{AMSID}/">System Info</a>
+             </div>
+         </li>
+     </ul>
+    </div>
+</nav>

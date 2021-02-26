@@ -30,6 +30,8 @@ def get_cam_url(cam_ip):
    return(url, cams_id)
 
 def get_cam_passwd(ip):
+   CameraUserName = "admin"
+   CameraPassword = ""
    json_conf = load_json_file("../conf/as6.json")
    for cam in json_conf['cameras']:
       cam_ip = json_conf['cameras'][cam]['ip']
@@ -37,10 +39,14 @@ def get_cam_passwd(ip):
       if ip == cam_ip:
          el = sd_url.split("&")
          for k in el:
+            print("KEY:", k)
             if "password" in k:
                el2 = k.split("=")
                CameraPassword = el2[1]
                print("PASS IS:", CameraPassword)
+            #else:
+            #   print("Default cam passwd")
+            #   CameraPassword=""
    return(CameraPassword)
 
 def sense_up(cam, cam_ip):

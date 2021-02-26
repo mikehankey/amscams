@@ -13,7 +13,7 @@ import cv2
 #from PIL import ImageFont, ImageDraw, Image, ImageChops
 import numpy as np
 import ephem
-import json
+import simplejson as json
 import glob
 
 
@@ -188,9 +188,13 @@ def load_json_file(json_file):
    return json_data 
 
 def save_json_file(json_file, json_data, compress=False):
+   if "cp" in json_data:
+      for key in json_data['cp']:
+         if type(json_data['cp'][key]) == np.ndarray:
+            json_data['cp'][key] = json_data['cp'][key].tolist()
    with open(json_file, 'w') as outfile:
       if(compress==False):
-         json.dump(json_data, outfile, indent=4, allow_nan=True)
+         json.dump(json_data, outfile, indent=4, allow_nan=True )
       else:
          json.dump(json_data, outfile, allow_nan=True)
    outfile.close()
@@ -357,3 +361,26 @@ def find_angle(p1,p2):
 
 def collinear(x1, y1, x2, y2, x3, y3): 
    return ((y1 - y2) * (x1 - x3), (y1 - y3) * (x1 - x2));
+
+
+def get_trim_num(file):
+   el = file.split("-trim")
+   at = el[1]
+   at = at.replace("-SD.mp4", "")
+   at = at.replace("-crop", "")
+   at = at.replace("-HD.mp4", "")
+   at = at.replace(".mp4", "")
+   at = at.replace("-", "")
+   at = at.replace(".json", "")
+   at = at.replace("HDmeteor", "")
+   at = at.replace("-stacked", "")
+   at = at.replace("stacked", "")
+   at = at.replace(".jpg", "")
+   at = at.replace(".png", "")
+   return(at)
+
+def fn_dir(file):
+   fn = file.split("/")[-1]
+   dir = file.replace(fn, "")
+   return(fn, dir)
+
