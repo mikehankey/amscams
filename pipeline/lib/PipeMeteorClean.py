@@ -56,6 +56,15 @@ def make_jpg_small(file, qual):
    os.system(cmd)
    cmd = "mv " + tmp_file + " " + file
    os.system(cmd)
+
+def compress_hour_images(date,json_conf):
+   for dir in glob.glob("/mnt/ams2/SD/proc2/*"):
+      day = dir.split("/")[-1]
+      ddd = day.split("_")
+      if len(ddd) == 3:
+         imgs = glob.glob(dir + "/images/*.jpg")
+         for img in imgs:
+            print(img)
     
 
 def fix_thumbs(date, json_conf):
