@@ -125,15 +125,21 @@ def day_night_settings(cam, cam_ip, type):
       print("Set camera settings for day")
      
 
+def encode(cam, cam_ip):
+   enc_info = cam.get_info("Simplify.Encode")
+   print(enc_info)
+   #cam.set_info("Simplify.Encode", cam_info)
+   cam.close()
+
 def test(cam, cam_ip):
    sun, az, alt  = day_or_night(datetime.now(), json_conf)
    print(sun, az,alt)
    #https://github.com/NeiroNx/python-dvr
-   #enc_info = cam.get_info("Simplify.Encode")
-   test_info = cam.get_info("Camera.ParamEx")
+   enc_info = cam.get_info("Simplify.Encode")
+   #test_info = cam.get_info("Camera.ParamEx")
    #test_info = cam.get_info("NetWork.NetCommon")
    #test_info = cam.get_info("NetWork.NetCommon")
-   print (test_info)
+   print (enc_info)
    cam.close()
 
 def camera_settings():
@@ -296,4 +302,12 @@ if cmd == "reboot":
       print ("Failure. Could not connect to camera!")
    print("REBOOTING CAM", CameraIP)
    cam.reboot()
-   
+  
+ 
+if cmd == "encode":
+   cam = DVRIPCam(CameraIP,CameraUserName,CameraPassword)
+   if cam.login():
+      print ("Success! Connected to " + CameraIP)
+   else:
+      print ("Failure. Could not connect to camera!")
+   encode(cam, CameraIP)
