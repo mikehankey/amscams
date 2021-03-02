@@ -238,7 +238,7 @@ def make_event_video(meteor_file,json_conf):
       if "final_vid" in mj:
          if cfe(mj['final_vid']) == 1:
             print("Already did it.")
-            return()
+            #return()
 
    # load reduction file
    if cfe(red_file) == 1:
@@ -1086,13 +1086,14 @@ def sync_final_day(day, json_conf):
          else:
             print("NO JS!", jsf)
             js = {}
-         if "multi_station_event" in js:
+         #if "multi_station_event" in js:
+         if True:
             mses[lfroot] = 1
          else:
             mses[lfroot] = 0
       if mses[lfroot] == 1:
          cmd = "cp /mnt/ams2/meteors/" + day + "/final/" + lfile + " " + "/mnt/archive.allsky.tv/" + ams_id + "/METEORS/" + year + "/" + day + "/" + lfile
-         #os.system(cmd)
+         os.system(cmd)
          print(cmd) 
 
    print(mses)
