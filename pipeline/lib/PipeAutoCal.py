@@ -872,7 +872,7 @@ def refit_meteor(meteor_file, json_conf,force=0):
 
       if "short_bright_stars" in cp:
          del cp['short_bright_stars'] 
-      cp = get_more_stars_with_catalog(meteor_file, cp, image.copy(), json_conf)
+      #cp = get_more_stars_with_catalog(meteor_file, cp, image.copy(), json_conf)
       print("AFTER GET MORE:", len(cp['user_stars']), len(cp['cat_image_stars'])) 
       cp= pair_stars(cp, meteor_file, json_conf, image.copy())
       print("AFTER GET MORE & PAIR:", len(cp['user_stars']), len(cp['cat_image_stars'])) 
