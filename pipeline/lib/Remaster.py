@@ -278,6 +278,10 @@ def make_event_video(meteor_file,json_conf):
    sd_ys = []
 
    # load SD meteor frame data
+   if "user_mods" in mj:
+      user_mods = mj['user_mods']['frames']
+   else:
+      user_mods = None
    if "meteor_frame_data" in mjr:
       mfd = mjr['meteor_frame_data']
    else:
@@ -292,6 +296,10 @@ def make_event_video(meteor_file,json_conf):
       (dt, fn, x, y, w, h, oint, ra, dec, az, el) = row
       sd_dts.append(dt)
       sd_fns.append(fn)
+      if user_mods is not None:
+         if fn in user_mods:
+            x = user_mods[fn][0]
+            y = user_mods[fn][1]
       sd_xs.append(x)
       sd_ys.append(y)
 
@@ -652,6 +660,13 @@ def make_event_video(meteor_file,json_conf):
          hd_frame_data[hd_fn]['dt'] = mfdd[sd_fn]['dt']
          hd_frame_data[hd_fn]['sd_x'] = mfdd[sd_fn]['sd_x']
          hd_frame_data[hd_fn]['sd_y'] = mfdd[sd_fn]['sd_y']
+         # respect the user mods over the auto points here.
+         if sd_fn in user_mods:
+            hd_frame_data[hd_fn]['hd_lx'] = user_mods[sd_fn][0]
+            hd_frame_data[hd_fn]['hd_ly'] = user_mods[sd_fn][1]
+            print("USER MOD FOUND!", sd_fn, hd_fn)
+            xxx = input('xxx')
+
       hd_frame = hd_color_frames[hd_fn]
       sd_fn = hd_fn + sd_hd_sync
       if sd_fn < len(sd_color_frames):
@@ -923,6 +938,10 @@ def make_event_video(meteor_file,json_conf):
    if cfe(cache_dir_crop, 1) == 0:
       os.makedirs(cache_dir_crop)
 
+   if user_mods is not None:
+      print("USER MODS:", user_mods)
+      xxx = input("USER MODS exist.")
+
    print("CROP INFO:", hd_crop_info)
    cx1,cy1,cx2,cy2 = hd_crop_info
    for i in range(ff, lf+1):
@@ -933,8 +952,19 @@ def make_event_video(meteor_file,json_conf):
       crop_img = frame[cy1:cy2,cx1:cx2]
       print("CROP IMG:", hd_crop_info, crop_img.shape)
       if i in hd_frame_data:
-         lx = hd_frame_data[i]['hd_lx']
-         ly = hd_frame_data[i]['hd_ly']
+         # over ride with maual detect data here if it exists
+         print("SD FN:", sd_fn, type(sd_fn))
+         sd_fn = str(hd_frame_data[i]['sd_fn'])
+         if sd_fn in user_mods:
+            lx = user_mods[sd_fn][0]
+            ly = user_mods[sd_fn][1]
+            hd_frame_data[i]['hd_lx'] = lx
+            hd_frame_data[i]['hd_ly'] = ly
+            xxx = input("USING USER MODS HERE.")
+            cv2.circle(hd_color_frames[i],(lx,ly), 4, (0,0,255), 1)
+         else:
+            lx = hd_frame_data[i]['hd_lx']
+            ly = hd_frame_data[i]['hd_ly']
          roi_img = make_roi_img(hd_color_frames[i], lx, ly, 25)
       if cfe(cache_dir_crop + final_file_key + "_" + ffn + ".jpg") == 0:
          crop_file = cache_dir_crop + final_file_key + "_" + ffn + ".jpg"
