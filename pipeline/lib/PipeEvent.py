@@ -88,6 +88,7 @@ def get_network_info(json_conf):
    ms = json_conf['site']['multi_station_sync']
    station_info = {}
    for ts in ms:
+      print(ts)
       local_dir = "/mnt/ams2/meteor_archive/" + ts + "/CAL/"
       cloud_dir = "/mnt/archive.allsky.tv/" + ts + "/CAL/"
       if cfe(local_dir,1) == 0:
