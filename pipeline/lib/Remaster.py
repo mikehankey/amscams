@@ -1062,6 +1062,12 @@ def sync_final_day(day, json_conf):
    ams_id = json_conf['site']['ams_id']
    year = day[0:4]
    clf_index = "/mnt/ams2/meteors/" + day + "/cloud_files.txt"
+
+   cloud_dir = "/mnt/archive.allsky.tv/" + ams_id + "/METEORS/" + year + "/" + day + "/"
+   if cfe(cloud_dir, 1) == 0:
+      os.makedirs(cloud_dir)
+
+
    os.system("ls -l /mnt/archive.allsky.tv/" + ams_id + "/METEORS/" + year + "/" + day + "/* > "  + clf_index)
    cloud_files = {}
    fp = open(clf_index)
