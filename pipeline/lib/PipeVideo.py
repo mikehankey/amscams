@@ -528,6 +528,9 @@ def load_frames_fast(trim_file, json_conf, limit=0, mask=0,crop=(),color=0,resiz
             else:
                go = 0
          else:
+            if mask_img is None:
+               mask_img = np.zeros((frame.shape[0] ,frame.shape[1]),dtype=np.uint8)
+
             if color == 1:
                if sun_status == "day" and frame_count % 25 == 0:
                   color_frames.append(frame)
