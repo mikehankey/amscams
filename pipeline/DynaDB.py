@@ -190,7 +190,6 @@ def insert_meteor_obs(dynamodb, station_id, meteor_file):
    obs_data = json.loads(json.dumps(obs_data), parse_float=Decimal)
    table = dynamodb.Table('meteor_obs')
    print("SD VID:", sd_vid)
-   print("OBS:", obs_data)
    table.put_item(Item=obs_data)
    mj['calib'] = calib
    mj['last_update'] = update_time
@@ -419,7 +418,6 @@ def get_obs(dynamodb, station_id, sd_video_file):
       if tdiff / 60 < 4:
          dc_obs = load_json_file(dc_file)
          for obs in dc_obs:
-            print("OBS:", obs)
             
             if obs['sd_video_file'] == sd_video_file:
                print("USE CACHE OBS:", station_id, sd_video_file)
@@ -478,6 +476,8 @@ def sync_db_day(dynamodb, station_id, day):
       local_meteors[sd_video_file] = {}
       local_meteors[sd_video_file]['revision'] = mj['revision']
       local_meteors[sd_video_file]['meteor_frame_data'] = mjr['meteor_frame_data']
+      if "final_vid" in mj:
+         local_meteors[sd_video_file]['final_vid'] = mj['final_vid']
 
    # Do all of the db meteors still exist locally, if not 
    # they have been deleted and should be removed from the remote db
@@ -507,9 +507,9 @@ def sync_db_day(dynamodb, station_id, day):
       if lkey not in db_meteors:
          print(lkey, "IGNORE: is not in the DB yet. But should be added in this run." )
       else:
-         if db_meteors[lkey]['revision'] > local_meteors[lkey]['revision']:
-            print(lkey, "UPDATE LOCAL: The remote DB has a newer version of this file" )
-         if local_meteors[lkey]['revision'] > db_meteors[lkey]['revision']:
+         force = 1
+         if local_meteors[lkey]['revision'] > db_meteors[lkey]['revision'] or "final_data" not in db_meteors[lkey] or force == 1:
+           
             print(lkey, "UPDATE REMOTE : The local DB has a newer version of this file. " , local_meteors[lkey]['revision'] ,   db_meteors[lkey]['revision'])
             meteor_file = lkey.replace(".mp4", ".json")
             #insert_meteor_obs(dynamodb, station_id, meteor_file)
@@ -517,6 +517,18 @@ def sync_db_day(dynamodb, station_id, day):
             obs_data['revision'] = local_meteors[lkey]['revision']
             obs_data['meteor_frame_data'] = local_meteors[lkey]['meteor_frame_data']
             obs_data['last_update'] = datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
+            if "final_vid" in local_meteors[lkey]:
+               print("ADD FINAL DATA!")
+               final_vid = local_meteors[lkey]['final_vid']
+               final_vid_fn, xxx = fn_dir(final_vid)
+               final_data_file = final_vid.replace(".mp4", ".json")
+               final_data = load_json_file(final_data_file)
+               obs_data['final_vid'] = final_vid_fn
+               obs_data['final_data'] = final_data 
+            else:
+               print("No final data?")
+
+             
             sd_video_file = meteor_file.replace(".json", ".mp4")
             update_meteor_obs(dynamodb, station_id, sd_video_file, obs_data)
 
@@ -544,7 +556,6 @@ def update_meteor_obs(dynamodb, station_id, sd_video_file, obs_data):
    table = dynamodb.Table("meteor_obs")
    obs_data = json.loads(json.dumps(obs_data), parse_float=Decimal)
    print("REV:", obs_data['revision'])
-   print("OBS:", obs_data)
    print("ST:", station_id)
    print("F:", sd_video_file)
    response = table.update_item(
@@ -552,9 +563,11 @@ def update_meteor_obs(dynamodb, station_id, sd_video_file, obs_data):
          'station_id': station_id,
          'sd_video_file': sd_video_file 
       },
-      UpdateExpression="set revision = :revision, last_update= :last_update, meteor_frame_data=:meteor_frame_data",
+      UpdateExpression="set revision = :revision, last_update= :last_update, meteor_frame_data=:meteor_frame_data, final_vid=:final_vid, final_data=:final_data",
       ExpressionAttributeValues={
          ':meteor_frame_data': obs_data['meteor_frame_data'],
+         ':final_vid': obs_data['final_vid'],
+         ':final_data': obs_data['final_data'],
          ':revision': obs_data['revision'],
          ':last_update': obs_data['last_update']
       },
@@ -645,11 +658,19 @@ def do_dyna_day(dynamodb, day):
    # also sync prev imgs for mse events
    cmd = "./Process.py reject_masks " + day
    print(cmd)
-   #os.system(cmd)
+   os.system(cmd)
+
+   cmd = "./Process.py reject_planes " + day
+   print(cmd)
+   os.system(cmd)
    
    cmd = "./Process.py confirm " + day
    print(cmd)
-   #os.system(cmd)
+   os.system(cmd)
+
+   cmd = "./Process.py remaster_day " + day
+   print(cmd)
+   os.system(cmd)
 
    cmd = "./DynaDB.py sync_db_day " + day
    print(cmd)
@@ -664,6 +685,10 @@ def do_dyna_day(dynamodb, day):
    os.system(cmd)
 
    cmd = "./Process.py sync_prev_all " + day
+   print(cmd)
+   os.system(cmd)
+
+   cmd = "./Process.py sync_final_day " + day
    print(cmd)
    os.system(cmd)
 

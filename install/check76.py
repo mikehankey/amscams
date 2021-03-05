@@ -2,7 +2,7 @@
 
 import os
 
-os.system("ip a |grep 192.168.76 > ip.txt")
+os.system("/usr/sbin/ip a |grep 192.168.76 > ip.txt")
 fp = open("ip.txt")
 lc = 0
 for line in fp:
@@ -10,6 +10,6 @@ for line in fp:
 
 if lc == 0:
    print("The ip is down.")
-   os.system("netplan apply")
+   os.system("/usr/sbin/netplan apply")
 else:
    print("The ip is up.")

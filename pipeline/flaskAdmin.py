@@ -105,13 +105,14 @@ def cntl_save_points():
    jdata = request.get_json()
    data = jdata['data']
    file = jdata['file']
+   station = jdata['station']
    print("FILE:", file)
    print("DATA:", data)
    #data = request.args.get('data')
    #file = request.args.get('file')
 
 
-   resp = save_points(file,data,json_conf)
+   resp = save_points(file,station,data,json_conf)
    return(resp)
 @app.route('/pick_points/<meteor_id>/', methods=['GET', 'POST'])
 @auth.login_required
@@ -128,7 +129,8 @@ def cntl_pick_points(meteor_id):
 @auth.login_required
 def cntl_point_picker (date):
    from FlaskLib.PointPicker import point_picker 
-   resp = point_picker(date,json_conf)
+   station = request.args.get('station')
+   resp = point_picker(date,station, json_conf)
    return(resp)
 
 

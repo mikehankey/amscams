@@ -10,9 +10,9 @@ from datetime import datetime
 import datetime as dt
 
 
-from lib.Remaster import make_event_video, remaster_day, sync_final_day, remaster_month
+from lib.Remaster import make_event_video, remaster_day, sync_final_day, remaster_month, reduce_remote_meteor
 from lib.PipeCustomVideos import  meteors_last_night_for_cam, hd_snaps, assemble_custom, simple_TL, join_two
-from lib.PipeMeteorClean import purge_meteors_for_date, fix_meteor_orphans, meteor_png_to_jpg, fix_meteor_month, restack_meteor_dir, convert_meteor_pngs_to_jpgs
+from lib.PipeMeteorClean import purge_meteors_for_date, fix_meteor_orphans, meteor_png_to_jpg, fix_meteor_month, restack_meteor_dir, convert_meteor_pngs_to_jpgs, compress_hour_images
 from lib.PipeWeather import detect_clouds , make_flat, track_clouds, solar_info, audit_tl, detect_aurora, batch_aurora, aurora_report, aurora_stack_vid, tl_list, aurora_tl,  hourly_stacks, make_all_hourly_stacks, hourly_stacks_html, meteor_night_stacks, fast_aurora, fast_au_report, plot_aud
 from lib.PipeImage import quick_video_stack, restack_meteor
 from lib.PipeTrans import trans_test 
@@ -631,6 +631,10 @@ if __name__ == "__main__":
       sync_final_day(sys.argv[2],  json_conf)
    if cmd == "remaster_month" :
       remaster_month(sys.argv[2],  json_conf)
+   if cmd == "chi" :
+      compress_hour_images(sys.argv[2],  json_conf)
+   if cmd == "rmm" :
+      reduce_remote_meteor(sys.argv[2], sys.argv[3], json_conf)
 
    if cmd == "fastau" :
       if sys.argv[3] == 'all':

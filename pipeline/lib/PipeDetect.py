@@ -1939,7 +1939,6 @@ def make_roi_video_mfd(video_file, json_conf):
       mj['user_mods'] = {}
    used = {}
    vh,vw = hd_color_frames[0].shape[:2]
-   print(mjr['meteor_frame_data'])
    if "meteor_frame_data" in mjr:
       mjr['meteor_frame_data'] = sorted(mjr['meteor_frame_data'], key=lambda x: (x[1]), reverse=False)
       for row in mjr['meteor_frame_data']:

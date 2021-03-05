@@ -21,6 +21,14 @@ from lib.PipeImage import stack_frames
 
 import numpy as np
 import cv2
+import matplotlib
+#matplotlib.use('TkAgg')
+from matplotlib import pyplot as plt
+
+from sklearn import linear_model, datasets
+from skimage.measure import ransac, LineModelND, CircleModel
+
+
 
 def make_final_json(mj, json_conf):
    station_id = json_conf['site']['ams_id']
@@ -217,6 +225,715 @@ def mask_stars(image_stars, image):
          image[ry1:ry2,rx1:rx2] = 0
    return(image)
 
+
+def get_cont(frame):
+   min_val, max_val, min_loc, (mx,my)= cv2.minMaxLoc(frame)
+   avg_val = np.mean(frame)
+   thresh_val = avg_val +  ((max_val - avg_val) * .5)
+   px_diff = max_val - avg_val
+   print("PXD:", px_diff)
+   if thresh_val < 10:
+      thresh_val = 10
+   #thresh_val = 25 
+   _, threshold = cv2.threshold(frame.copy(), thresh_val, 255, cv2.THRESH_BINARY)
+
+
+   cnt_res = cv2.findContours(threshold.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+   cnt_data = []
+   if len(cnt_res) == 3:
+      (_, cnts, xx) = cnt_res
+   elif len(cnt_res) == 2:
+      (cnts, xx) = cnt_res
+   for (i,c) in enumerate(cnts):
+      x,y,w,h = cv2.boundingRect(cnts[i])
+      if w > 1 and h > 1:
+         cnt_data.append((x,y,w,h))
+   cnt_data = sorted(cnt_data, key=lambda x: (x[2]*x[3]), reverse=True)
+   if len(cnt_data) > 1:
+      bx,by,bw,bh = cnt_data[0]
+      good_cnt = []
+      good_cnt.append(cnt_data[0])
+      for x,y,w,h in cnt_data[1:]:
+         if (bx <= x <= bx+bw and by <= y <= by+bh) or (bx <= x+w <= bx+bw and by <= y+h <= by+bh):
+            print("this cnt is inside a bigger one.")
+         else:
+            good_cnt.append((x,y,w,h))
+      return(good_cnt)
+   else:
+      return(cnt_data)
+
+def find_bright_spots(img):
+   from RMS.ImageLib import adjustLevels
+   gamma = 1
+
+   ih,iw = img.shape[:2]
+   step = int(ih / 4)
+   bright_spots = []
+   for i in range(0,4):
+      y1 = i * step
+      
+      y2 = int(y1+step)
+      if y2 >= ih:
+         y2 = ih - 1
+      part_img = img[y1:y2,0:iw]
+
+      avg = np.mean(part_img)
+
+      temp = adjustLevels(part_img, avg,gamma,255)
+      temp = cv2.convertScaleAbs(temp)
+
+      avg = np.mean(temp)
+      _, threshold = cv2.threshold(temp.copy(), 40, 255, cv2.THRESH_BINARY)
+      cnts = get_cont(threshold)
+      for x,y,w,h in cnts:
+         print(w,h)
+         cv2.rectangle(threshold, (int(x), int(y)), (int(x+w) , int(y+h) ), (255, 255, 255), 1)
+         bright_spots.append((x,y+y1,w,h))
+
+
+      #cv2.imshow('pepe', threshold)
+      #cv2.waitKey(0)
+   return(bright_spots)
+
+def add_spots_to_mask(image, spots):
+   for x,y,w,h in spots:
+      image[y:y+h,x:x+w] = 255
+   return(image)
+
+
+def reduce_remote_meteor(video_file, station_id, json_conf):
+
+   # CONFIG / SETUP
+   # set local and cloud dirs for station remote data 
+   local_conf = "/mnt/ams2/STATIONS/" + station_id + "_as6.json"
+   cloud_conf = "/mnt/archive.allsky.tv/" + station_id + "/CAL/as6.json"
+   # check to make sure this is not our station
+   if station_id != json_conf['site']['ams_id']:
+      print("Working with remote meteor.")
+   # copy the remote sites config file if we don't aready have it
+   if cfe(local_conf) == 0:
+      os.system("cp " + cloud_conf + " " + local_conf)
+   else:
+      print("We have the conf file.")
+   # load remote conf
+   remote_conf = load_json_file(local_conf)
+
+   # load video frames
+   frames,color_frames,subframes,sum_vals,max_vals,pos_vals = load_frames_fast(video_file, remote_conf, 0, 0, 1, 1,[])
+   bright_spots = find_bright_spots(frames[0])
+   main_mask = np.zeros((1080,1920),dtype=np.uint8)
+   main_mask = add_spots_to_mask(main_mask, bright_spots)
+   fc = 0
+   frame_data = []
+
+   # get initial contours inside each frame
+   for oframe in frames:
+      frame = cv2.subtract(oframe, frames[0]) 
+      frame = cv2.subtract(frame, main_mask) 
+      cnts = get_cont(frame)
+      cnt_frame_data = [] 
+      for cnt in cnts:
+         x,y,w,h = cnt 
+         #cv2.rectangle(frame, (int(x), int(y)), (int(x+w) , int(y+h) ), (255, 255, 255), 1)
+         cnt_frame_data.append((x,y,w,h))
+      frame_data.append((fc, cnt_frame_data))
+      fc += 1
+
+   # filter out duplicate contours 
+   dupes = {}
+   for data in frame_data:
+      fn, cnts = data
+      for cnt in cnts:
+         x,y,w,h = cnt
+         key = str(x) + "." + str(y)
+         if key not in dupes:
+            dupes[key] = 1
+         else:
+            dupes[key] += 1
+   dupe_areas = {}
+
+   for key in dupes: 
+      print(key, dupes[key])
+      if dupes[key] > 5:
+         dupe_areas[key] = 1
+
+   # APPLY RANSAC MODEL TO FILTER POINTS
+   ffd = []
+   XS = []
+   YS = []
+   for data in frame_data:
+      good_cnts = []
+      for x,y,w,h in data[1]:
+         key = str(x) + "." + str(y)
+         if key in dupe_areas:
+            print("skip this cnt it is a dupe area. (star, ground light etc)")
+         else:
+            center_x = int(x + (w/2))
+            center_y = int(y + (h/2))
+            XS.append(center_x)
+            YS.append(center_y)
+            good_cnts.append((x,y,w,h))
+      ffd.append((data[0], good_cnts))
+   XS = np.array(XS)
+   YS = np.array(YS)
+   XS.reshape(-1, 1)
+   YS.reshape(-1, 1)
+
+   data = np.column_stack([XS,YS])
+   model = LineModelND()
+   model.estimate(data)
+   model_robust, inliers = ransac(data, LineModelND, min_samples=2,
+                               residual_threshold=10, max_trials=1000)
+
+   outliers = inliers == False
+
+   # generate coordinates of estimated models
+   line_x = np.arange(XS.min(),XS.max())  #[:, np.newaxis]
+   line_y = model.predict_y(line_x)
+   line_y_robust = model_robust.predict_y(line_x)
+
+   # make plot for ransac filter
+   fig, ax = plt.subplots()
+   ax.plot(data[outliers, 0], data[outliers, 1], '.r', alpha=0.6,
+        label='Outlier data')
+   ax.plot(data[inliers, 0], data[inliers, 1], '.b', alpha=0.6,
+        label='Inlier data')
+   plt.gca().invert_yaxis()
+   XS = data[inliers,0]
+   YS = data[inliers,1]
+   #plt.show()
+
+   XS = data[inliers,0]
+   YS = data[inliers,1]
+
+   # make mask around the good area XS/YS
+   mask_img = np.zeros((1080,1920),dtype=np.uint8)
+   for i in range(0, len(XS)):
+      if True:
+         x = XS[i]
+         y = YS[i]
+         h = 10 
+         w = 10 
+         y1 = y - h
+         y2 = y + w
+         x1 = x - h
+         x2 = x + h
+         if y1 < 0:
+            y1 = 0
+         if x1 < 0:
+            x1 = 0
+         if x2 >= 1920:
+            x2 = 1919 
+         if y2 >= 1080:
+            y2 = 1079 
+         mask_img[y1:y2,x1:x2] = 255
+
+   mask_img = cv2.dilate(mask_img.copy(), None , iterations=4)
+
+   # find largest cnt in the mask and mute everything else
+   cnts = get_cont(mask_img)
+   if len(cnts) > 1:
+      for cnt in cnts[1:]:
+         x,y,w,h = cnt
+         mask_img[y:y+h, x:x+w] = 0
+
+   # invert mask img now we can subtract it
+   mask_img = (255-mask_img)
+   mask_img = add_spots_to_mask(mask_img, bright_spots)
+
+
+   # get contours again with mask applied 
+   frame_data = []
+   dupes = {}
+   fc = 0
+   for oframe in frames:
+      frame = cv2.subtract(oframe, frames[0]) 
+      frame = cv2.subtract(frame, mask_img)
+      cnts = get_cont(frame)
+      cnt_frame_data = [] 
+      for cnt in cnts:
+         x,y,w,h = cnt 
+         key = str(x) + "." + str(y)
+         if key not in dupes:
+            dupes[key] = 1
+         else:
+            dupes[key] += 1
+         #cv2.rectangle(frame, (int(x), int(y)), (int(x+w) , int(y+h) ), (255, 255, 255), 1)
+         cnt_frame_data.append((x,y,w,h))
+      frame_data.append((fc, cnt_frame_data))
+      #cv2.imshow("P", frame)
+      #cv2.waitKey(30)
+      fc += 1
+
+   # REMOVE DUPE CNTS IF THEY STILL EXIST
+   good_cnts = []
+   clean_fd = []
+   for data in frame_data:
+      fn, cnts = data
+      good_cnts = []
+      for cnt in cnts:
+         x,y,w,h = cnt 
+         key = str(x) + "." + str(y)
+         skip = 0
+         if key in dupes:
+            if dupes[key] > 2:
+               skip = 1
+         if skip == 0:
+            good_cnts.append(cnt)
+      clean_fd.append((fn, good_cnts))
+
+   # BEST CNT PER FRAME
+   # now all data should be pretty good but 
+   # we have to choose the best cnt per frame
+
+   last_x = None
+   dist = 0
+
+   # get movement info
+   dom_dir, x_dir, y_dir = dir_info(clean_fd)
+
+   frame_data = []
+   for data in clean_fd:
+      fn, cnts = data
+      frame = color_frames[fn]
+
+      if len(cnts) == 0:
+         # no contours to deal with
+         foo = 1
+         best_cnt = None
+      elif len(cnts) == 1:
+         # just 1 cnt 
+         best_cnt = cnts[0]
+         x,y,w,h = cnts[0]
+         center_x = int(x + (w/2))
+         center_y = int(y + (h/2))
+         #cv2.rectangle(frame, (int(x), int(y)), (int(x+w) , int(y+h) ), (255, 255, 255), 1)
+         if last_x is not None:
+            dist = calc_dist((center_x,center_y), (last_x,last_y))
+         print(fn,x,y,dist)
+         last_x = x
+         last_y = y
+      else:
+         # many cnts we have to choose the best one
+         last_best_x = None
+         last_best_y = None
+         for cnt in cnts:
+            x,y,w,h = cnt
+            #cv2.rectangle(frame, (int(x), int(y)), (int(x+w) , int(y+h) ), (255, 255, 255), 1)
+            center_x = int(x + (w/2))
+            center_y = int(y + (h/2))
+            dist = calc_dist((center_x, center_y), (last_x,last_y))
+            print(fn,x,y,dist)
+            if last_best_x is None:
+               last_best_x = x
+               last_best_y = y
+               best_cnt_x = cnt
+            else:
+               # is this x,y further down the track than the last best one?
+               if x_dir == "right_to_left":
+                  # we want the cnt that is lowest in x value
+                  if x < last_best_x:
+                     print("BETTER? ", x, last_best_x)
+                     # this cnt is better for the x_val
+                     best_cnt_x = cnt
+                     last_best_x = x
+               else:
+                  # we want the cnt that is highest in x value
+                  if x + w > last_best_x:
+                     # this cnt is better for the x_val
+                     best_cnt_ = cnt
+                     last_best_x = x + w
+            last_x = x
+            last_y = y
+         best_cnt = best_cnt_x  
+         x,y,w,h= best_cnt
+         #cv2.rectangle(frame, (int(x), int(y)), (int(x+w) , int(y+h) ), (0, 0, 255), 1)
+      print("BEST:", best_cnt)
+      frame_data.append((fn, best_cnt))
+
+   # by now we have 1 leading edge cnt per frame
+   # now we need to choose the leading edge or blob focus area (for fireballs)
+   final_frame_data = []
+   for data in frame_data:
+      fn, cnts = data
+      if cnts is not None:
+         frame_obj = {}
+         x,y,w,h= cnts
+         lx, ly,cx,cy = get_leading_point(cnts, dom_dir, x_dir, y_dir) 
+         frame_obj['fn'] = fn
+         frame_obj['x'] = x
+         frame_obj['y'] = y
+         frame_obj['w'] = w
+         frame_obj['h'] = h
+         frame_obj['lx'] = lx
+         frame_obj['ly'] = ly
+         frame_obj['cx'] = cx
+         frame_obj['cy'] = cy
+         #meteor exists here
+         frame = color_frames[fn]
+         bw_frame = frames[fn]
+ 
+         # this CNT is HUGE must be a fireball
+         if w > 25 or h > 25:
+            # We need to reduce the size of this cnt by raising the thresh
+            cnt_img = bw_frame[y:y+h,x:x+w]
+            min_val, max_val, min_loc, (mx,my)= cv2.minMaxLoc(cnt_img)
+            thresh_val = max_val - 20
+            if thresh_val > 200:
+               thresh_val = 200
+            print("TV:", thresh_val)
+            if thresh_val < 80:
+               thresh_val = 80
+            _, threshold = cv2.threshold(cnt_img.copy(), thresh_val, 255, cv2.THRESH_BINARY)
+            cnts = get_cont(threshold)
+            if len(cnts) == 0:
+               foo = 1 
+            elif len(cnts) == 1:
+               sx,sy,sw,sh = cnts[0]
+               slx, sly,scx,scy = get_leading_point(cnts[0], dom_dir, x_dir, y_dir) 
+               slx += x
+               sly += y
+               scx += x
+               scy += y
+               print("SUB:", sw,sh)
+            else:
+               best_cnt = get_leading_cnt(cnts, dom_dir, x_dir, y_dir) 
+               sx,sy,sw,sh = best_cnt 
+               slx, sly,scx,scy = get_leading_point(best_cnt, dom_dir, x_dir, y_dir) 
+               slx += x
+               sly += y
+               scx += x
+               scy += y
+               cnts = [best_cnt]
+            if cnts is not None:
+               frame_obj['sx'] = sx + x
+               frame_obj['sy'] = sy + y
+               frame_obj['sw'] = sw
+               frame_obj['sh'] = sh
+               frame_obj['slx'] = slx
+               frame_obj['sly'] = sly
+               frame_obj['scx'] = scx
+               frame_obj['scy'] = scy
+                
+
+            #cv2.imshow("pepe2", threshold)
+            #cv2.waitKey(30)
+ 
+            #cv2.rectangle(frame, (int(x), int(y)), (int(x+w) , int(y+h) ), (0, 0, 255), 1)
+      print(data)
+
+
+      if cnts is not None:
+         final_frame_data.append(frame_obj)
+      #cv2.imshow("pepe", frame)
+      #cv2.waitKey(30)
+
+   # if we have more than 100 frames we are dealing with a bigger meteor and should determine
+   # a rolling estimate before and after each frame and then check the leading points against 
+   # this for QA purposes
+   final_frame_data = sorted(final_frame_data, key=lambda x: (x['fn']), reverse=False)
+   total_frames = len(final_frame_data)
+   fc = 0
+   xs = []
+   ys = []
+
+   for frame_obj in final_frame_data:
+      lx = frame_obj['lx']
+      ly = frame_obj['ly']
+      x = frame_obj['x']
+      y = frame_obj['y']
+      w = frame_obj['w']
+      h = frame_obj['h']
+      cx = int(x + (w/2))
+      cy = int(y + (h/2))
+      if w > 50 and h > 50:
+         # FRAME IS A BIG BURST
+         xs.append(cx)
+         ys.append(cy)
+      elif w > 25 and h > 25:
+         if "slx" in frame_obj:
+            slx = frame_obj['slx']
+            sly = frame_obj['sly']
+            print("USING SLX!:", slx, sly)
+            ex = int((lx + cx + slx) / 3)
+            ey = int((ly + cy + sly) / 3)
+         else:
+            print("NO SLX?")
+            ex = int((lx + cx ) / 2)
+            ey = int((ly + cy ) / 2)
+         xs.append(ex)
+         ys.append(ey)
+      else:
+         ex = int((lx + cx ) / 2)
+         ey = int((ly + cy ) / 2)
+         xs.append(ex)
+         ys.append(ey)
+
+   # FINAL FINAL
+   # UGH! This is the final final loop. 
+   final_xs = []
+   final_ys = []
+   est_xs = []
+   est_ys = []
+   fc = 0
+   frame_data = []
+   for frame_obj in final_frame_data:
+      print("FD:", frame_obj)
+      frame = color_frames[fn]
+      overlay = frame.copy()
+      fn = frame_obj['fn']
+      x = frame_obj['x']
+      y = frame_obj['y']
+      w = frame_obj['w']
+      h = frame_obj['h']
+      lx = frame_obj['lx']
+      ly = frame_obj['ly']
+      cx = int(x + (w/2))
+      cy = int(y + (h/2))
+      if "slx" in frame_obj:
+         slx = frame_obj['slx']
+         sly = frame_obj['sly']
+      else:
+         slx = lx
+         sly = ly
+      
+      if fc >= 30 and total_frames - fc >= 30:
+         est_buf = 30 
+      elif fc >= 25 and total_frames - fc >= 25:
+         est_buf = 25
+      elif fc >= 20 and total_frames - fc >= 20:
+         est_buf = 20 
+      elif fc >= 15 and total_frames - fc >= 15:
+         est_buf = 15
+      elif fc >= 10 and total_frames - fc >= 10:
+         est_buf = 10 
+      elif fc >= 5 and total_frames - fc >= 5:
+         est_buf = 5
+      else:
+         est_buf = None 
+      if est_buf is not None:
+         before_fc1 = fc-est_buf
+         before_fc2 = fc-1
+         after_fc1 = fc+1
+         after_fc2 = fc+est_buf
+         print("EST BUF:", before_fc1, before_fc2, after_fc1, after_fc2)
+         est_before_x = int(np.mean(xs[fc-est_buf:fc-1]))
+         est_before_y = int(np.mean(ys[fc-est_buf:fc-1]))
+         est_after_x = int(np.mean(xs[fc+1:fc+est_buf]))
+         est_after_y = int(np.mean(ys[fc+1:fc+est_buf]))
+         est_x = int((est_before_x + est_after_x) / 2)
+         est_y = int((est_before_y + est_after_y) / 2)
+         print("EST!", est_buf)
+
+         
+      else:
+         print("EST IS NONE!", est_buf)
+         est_x = int((lx + cx) / 2)
+         est_y = int((ly + cy) / 2)
+
+      print("ALL POSSIBLE POINTS:", cx, cy, lx, ly, slx, sly, est_x, est_y)
+      merge_x = int((cx + lx + slx + est_x) / 4)
+      merge_y = int((cy + ly + sly + est_y) / 4)
+
+      print("MERGE XY:", merge_x, merge_y)
+
+      # find error between orig lx,ly, and est_x, est_y & merge_x, merge_y
+      lxy_err = calc_dist((lx,ly), (est_x,est_y))
+      mxy_err = calc_dist((lx,ly), (merge_x,merge_y))
+      sxy_err = calc_dist((slx,sly), (est_x,est_y))
+      cxy_err = calc_dist((cx,cy), (est_x,est_y))
+      mean_err = (lxy_err + mxy_err + sxy_err + cxy_err) / 4
+      print("ERROR (l/e,l/m,s/e,c/e):", lxy_err, mxy_err, sxy_err, cxy_err)
+      good_xs = []
+      good_ys = []
+      if lxy_err < mean_err:
+         good_xs.append(lx)
+         good_ys.append(ly)
+      if mxy_err < mean_err:
+         good_xs.append(merge_x)
+         good_ys.append(merge_y)
+      if sxy_err < mean_err:
+         good_xs.append(slx)
+         good_ys.append(sly)
+      if cxy_err < mean_err:
+         good_xs.append(cx)
+         good_ys.append(cy)
+      good_xs.append(est_x)
+      good_ys.append(est_y)
+      good_xs.append(est_x)
+      good_ys.append(est_y)
+
+      if len(good_xs) > 1:
+         best_x = int(np.mean(good_xs))
+         best_y = int(np.mean(good_ys))
+         print("BEST USING MEAN:", good_xs)
+         print("BEST USING MEAN:", good_ys)
+      else:
+         best_x = est_x 
+         best_y = est_y
+         print("BEST USING EST:", est_x)
+         print("BEST USING EST:", est_y)
+      print("BEST:", best_x, best_y)
+      cv2.circle(overlay,(best_x,best_y), 2, (0,0,255), 1)
+      cv2.circle(overlay,(est_x,est_y), 2, (255,0,0), 1)
+      est_best_err = calc_dist((best_x,best_y), (est_x,est_y))
+      est_lx_err = calc_dist((lx,ly), (est_x,est_y))
+
+      print("BEST ERROR:", est_best_err, est_lx_err) 
+      final_x = int((est_x + best_x)/2)
+      final_y = int((est_y + best_y)/2)
+      frame_obj['final_x'] = final_x
+      frame_obj['final_y'] = final_y
+      print(frame_obj)
+      cv2.line(overlay, (final_x-50,final_y), (final_x+50, final_y), (155,155,155,100), 1)
+      cv2.line(overlay, (final_x,final_y-50), (final_x, final_y+50), (155,155,155,100), 1)
+      alpha = .4
+      show_frame = cv2.addWeighted(overlay, alpha, frame, 1- alpha, 0)
+      final_xs.append(final_x)
+      final_ys.append(final_y)
+      est_xs.append(est_x)
+      est_ys.append(est_y)
+      cv2.imshow('pepe', show_frame)
+      cv2.waitKey(0)
+      fc += 1
+      frame_data.append(frame_obj)
+
+  
+   frame_data = add_dist_info(frame_data)
+
+   fig, ax = plt.subplots()
+   ax.plot(final_xs, final_ys, '.r', alpha=0.6,
+        label='final data')
+   ax.plot(est_xs, est_ys, '.b', alpha=0.6,
+        label='final data')
+   plt.gca().invert_yaxis()
+   plt.show()
+
+def add_dist_info(frame_data):
+   last_x = None
+   first_x = None
+   last_dist_from_start = None
+   for fo in frame_data:
+      fx = fo['final_x']
+      fy = fo['final_y']
+      if first_x is None:
+         first_x = fx
+         first_y = fy
+      if last_x is not None:
+         dist_from_last = calc_dist((fx,fy), (last_x,last_y))
+         xdiff = fx - last_x
+         ydiff = fy - last_y
+      else:
+         dist_from_last = 0
+         xdiff = 0
+         ydiff = 0
+      dist_from_start= calc_dist((first_x,first_y), (fx,fy))
+      if last_dist_from_start is not None:
+         seg_len = dist_from_start - last_dist_from_start
+      else:
+         seg_len = 0
+      last_x = fx
+      last_y = fy
+      last_dist_from_start = dist_from_start
+      print(fx,fy, dist_from_start, dist_from_last, seg_len, xdiff, ydiff)
+
+def get_leading_point(cnt, dom_dir, x_dir, y_dir):
+   x,y,w,h = cnt
+   cx = int(x + (w/2))
+   cy = int(y + (h/2))
+   if x_dir == "right_to_left":
+      # low x is best
+      lx = x
+   else:
+      # high x is best
+      lx = x + w
+   if x_dir == "down_to_up":
+      # low y is best
+      ly = y 
+   else:
+      ly = y + h 
+   return(lx,ly, cx,cy)
+
+def get_leading_cnt(cnts, dom_dir, x_dir, y_dir):
+   last_best_x = None 
+   for cnt in cnts:
+      x,y,w,h = cnt
+      print("LEADING CNT:", x,y,w,h)
+      if last_best_x is None:
+         last_best_x = x
+         last_best_y = y
+         best_cnt_x = cnt
+         best_cnt_y = cnt
+      else:
+         # is this x,y further down the track than the last best one?
+         if x_dir == "right_to_left":
+            # we want the cnt that is lowest in x value
+            if x < last_best_x:
+               # this cnt is better for the x_val
+               best_cnt_x = cnt
+               last_best_x = x
+               print("LOWER X IS BETTER THIS IS BEST? ", best_cnt_x)
+         else:
+            # we want the cnt that is highest in x value
+            if x + w > last_best_x:
+               # this cnt is better for the x_val
+               best_cnt_x = cnt
+               last_best_x = x + w
+               print("HIGHER X IS BETTER THIS IS BEST? ", best_cnt_x)
+         if y_dir == "down_to_up":
+            # we want the cnt that is lowest in y value
+            if y < last_best_y:
+               # this cnt is better for the x_val
+               best_cnt_y = cnt
+               last_best_y = y
+               print("LOWER Y IS BETTER THIS IS BEST? ", best_cnt_y)
+         else:
+            # we want the cnt that is highest in x value
+            if y + h > last_best_y:
+               # this cnt is better for the x_val
+               best_cnt_y = cnt
+               last_best_y = y + y
+               print("HIGHER Y IS BETTER THIS IS BEST? ", best_cnt_y)
+
+   print("BEST X:", best_cnt_x)
+   print("BEST Y:", best_cnt_y)
+   if best_cnt_x[0] != best_cnt_y[0]:
+      print("BEST CNT Y/X are not the same! lets talk the bigger one")
+      if best_cnt_x[2] +best_cnt_x[3] > best_cnt_y[2] + best_cnt_y[3]:
+         best_cnt_x = best_cnt_x
+      else:
+         best_cnt_x = best_cnt_y
+
+   return(best_cnt_x)
+
+def dir_info(frame_data):
+   first_x = None
+   for fn, cnts in frame_data:
+      if first_x is None:
+         if len(cnts) > 0:
+            first_x = cnts[0][0]
+            first_y = cnts[0][1]
+      if len(cnts) > 0:
+         last_x = cnts[0][0]
+         last_y = cnts[0][1]
+   x_diff = first_x - last_x
+   y_diff = first_y - last_y
+   if abs(x_diff) > abs(y_diff):
+      dom_dir = "x"
+   else:
+      dom_dir = "y"
+   if x_diff > 0:
+      x_dir = "right_to_left"
+   else:
+      x_dir = "left_to_right"
+   if y_diff > 0:
+      y_dir = "down_to_up"
+   else:
+      y_dir = "up_to_down"
+   return(dom_dir, x_dir, y_dir)
+      
+
+
 def make_event_video(meteor_file,json_conf):
    # setup input / env vars
    (f_datetime, cam, f_date_str,fy,fmin,fd, fh, fm, fs) = convert_filename_to_date_cam(meteor_file)
@@ -238,7 +955,7 @@ def make_event_video(meteor_file,json_conf):
       if "final_vid" in mj:
          if cfe(mj['final_vid']) == 1:
             print("Already did it.")
-            return()
+            #return()
 
    # load reduction file
    if cfe(red_file) == 1:
@@ -278,6 +995,10 @@ def make_event_video(meteor_file,json_conf):
    sd_ys = []
 
    # load SD meteor frame data
+   if "user_mods" in mj:
+      user_mods = mj['user_mods']['frames']
+   else:
+      user_mods = None
    if "meteor_frame_data" in mjr:
       mfd = mjr['meteor_frame_data']
    else:
@@ -292,6 +1013,10 @@ def make_event_video(meteor_file,json_conf):
       (dt, fn, x, y, w, h, oint, ra, dec, az, el) = row
       sd_dts.append(dt)
       sd_fns.append(fn)
+      if user_mods is not None:
+         if fn in user_mods:
+            x = user_mods[fn][0]
+            y = user_mods[fn][1]
       sd_xs.append(x)
       sd_ys.append(y)
 
@@ -347,7 +1072,7 @@ def make_event_video(meteor_file,json_conf):
       crop_frame = frame[min_y:max_y, min_x:max_x]
       min_val, max_val, min_loc, (mx,my)= cv2.minMaxLoc(crop_frame)
       avg_val = np.mean(crop_frame)
-      thresh_val = avg_val +  ((max_val - avg_val) * .5)
+      thresh_val = avg_val +  ((max_val - avg_val) * .10)
       #if thresh_val > 100:
       #   thresh_val = 100
       px_diff = max_val - avg_val
@@ -361,10 +1086,10 @@ def make_event_video(meteor_file,json_conf):
          hd_frame_data[fi] = {}
 
 
-      if len(conts) > 0:
-         sf = cframe.copy()
-         for x,y,w,h,lx,ly in conts:
-            cv2.rectangle(sf, (int(x), int(y)), (int(x+w) , int(y+h) ), (255, 255, 255), 1)
+      #if len(conts) > 0:
+      #   sf = cframe.copy()
+      #   for x,y,w,h,lx,ly in conts:
+      #      cv2.rectangle(sf, (int(x), int(y)), (int(x+w) , int(y+h) ), (255, 255, 255), 1)
 
 
       if len(conts) > 0:
@@ -622,7 +1347,7 @@ def make_event_video(meteor_file,json_conf):
       roi_img = frame[ry1:ry2,rx1:rx2]
       roi_big = cv2.resize(roi_img, (300,300))
       show_frame[0:300,0:300] = roi_big
-      cv2.rectangle(show_frame, (int(rx1), int(ry1)), (int(rx2) , int(ry2) ), (255, 255, 255), 1)
+      #cv2.rectangle(show_frame, (int(rx1), int(ry1)), (int(rx2) , int(ry2) ), (255, 255, 255), 1)
       if SHOW == 1:
          cv2.imshow('pepe', show_frame)
          cv2.waitKey(30)
@@ -652,6 +1377,13 @@ def make_event_video(meteor_file,json_conf):
          hd_frame_data[hd_fn]['dt'] = mfdd[sd_fn]['dt']
          hd_frame_data[hd_fn]['sd_x'] = mfdd[sd_fn]['sd_x']
          hd_frame_data[hd_fn]['sd_y'] = mfdd[sd_fn]['sd_y']
+         # respect the user mods over the auto points here.
+         if sd_fn in user_mods:
+            hd_frame_data[hd_fn]['hd_lx'] = user_mods[sd_fn][0]
+            hd_frame_data[hd_fn]['hd_ly'] = user_mods[sd_fn][1]
+            print("USER MOD FOUND!", sd_fn, hd_fn)
+            xxx = input('xxx')
+
       hd_frame = hd_color_frames[hd_fn]
       sd_fn = hd_fn + sd_hd_sync
       if sd_fn < len(sd_color_frames):
@@ -923,6 +1655,10 @@ def make_event_video(meteor_file,json_conf):
    if cfe(cache_dir_crop, 1) == 0:
       os.makedirs(cache_dir_crop)
 
+   if user_mods is not None:
+      print("USER MODS:", user_mods)
+      xxx = input("USER MODS exist.")
+
    print("CROP INFO:", hd_crop_info)
    cx1,cy1,cx2,cy2 = hd_crop_info
    for i in range(ff, lf+1):
@@ -933,8 +1669,19 @@ def make_event_video(meteor_file,json_conf):
       crop_img = frame[cy1:cy2,cx1:cx2]
       print("CROP IMG:", hd_crop_info, crop_img.shape)
       if i in hd_frame_data:
-         lx = hd_frame_data[i]['hd_lx']
-         ly = hd_frame_data[i]['hd_ly']
+         # over ride with maual detect data here if it exists
+         print("SD FN:", sd_fn, type(sd_fn))
+         sd_fn = str(hd_frame_data[i]['sd_fn'])
+         if sd_fn in user_mods:
+            lx = user_mods[sd_fn][0]
+            ly = user_mods[sd_fn][1]
+            hd_frame_data[i]['hd_lx'] = lx
+            hd_frame_data[i]['hd_ly'] = ly
+            xxx = input("USING USER MODS HERE.")
+            cv2.circle(hd_color_frames[i],(lx,ly), 4, (0,0,255), 1)
+         else:
+            lx = hd_frame_data[i]['hd_lx']
+            ly = hd_frame_data[i]['hd_ly']
          roi_img = make_roi_img(hd_color_frames[i], lx, ly, 25)
       if cfe(cache_dir_crop + final_file_key + "_" + ffn + ".jpg") == 0:
          crop_file = cache_dir_crop + final_file_key + "_" + ffn + ".jpg"
@@ -1031,6 +1778,81 @@ def make_event_video(meteor_file,json_conf):
 def sync_final_day(day, json_conf):
    ams_id = json_conf['site']['ams_id']
    year = day[0:4]
+   clf_index = "/mnt/ams2/meteors/" + day + "/cloud_files.txt"
+
+   cloud_dir = "/mnt/archive.allsky.tv/" + ams_id + "/METEORS/" + year + "/" + day + "/"
+   if cfe(cloud_dir, 1) == 0:
+      os.makedirs(cloud_dir)
+
+
+   os.system("ls -l /mnt/archive.allsky.tv/" + ams_id + "/METEORS/" + year + "/" + day + "/* > "  + clf_index)
+   cloud_files = {}
+   fp = open(clf_index)
+   for line in fp:
+      line = line.replace("\n", "")
+      el = line.split() 
+      if len(el) >= 8:
+         cfn,xxx = fn_dir(el[8])
+         cloud_files[cfn] = el[4]
+
+   local_index = "/mnt/ams2/meteors/" + day + "/local_files.txt"
+   os.system("ls -l /mnt/ams2/meteors/" + day + "/final/* > "  + local_index)
+   local_files = {}
+   fp = open(local_index)
+   for line in fp:
+      line = line.replace("\n", "")
+      el = line.split() 
+      if len(el) >= 8:
+         lfn,xxx = fn_dir(el[8])
+         local_files[lfn] = el[4]
+
+   cloud_adds = []
+   cloud_dels = []
+
+   for local_file in local_files :
+      if local_file not in cloud_files:
+         print("File is NOT sync'd!", local_file)
+         cloud_adds.append(local_file)
+      elif local_files[local_file] != cloud_files[local_file]:
+         print("Sizes don't match need to update!")
+         cloud_adds.append(local_file)
+      else:
+         print("File is sync'd!", local_file)
+
+   for cloud_file in cloud_files :
+      if cloud_file not in local_files:
+         print("This cloud file is not in the local files dir. Should we delete it from the cloud?", cloud_file)
+
+   mses = {}
+   for lfile in cloud_adds:
+      lfroot = lfile
+      lfroot = lfroot.replace("_stacked", "") 
+      lfroot = lfroot.replace("_crop", "") 
+      lfroot = lfroot.replace("-tn", "") 
+      lfroot = lfroot.replace(".json", "") 
+      lfroot = lfroot.replace(".mp4", "") 
+      lfroot = lfroot.replace(".jpg", "") 
+      if lfroot not in mses:
+         jsf = "/mnt/ams2/meteors/" + day + "/final/" + lfroot + ".json"
+         if cfe(jsf) == 1:
+            js = load_json_file(jsf)
+         else:
+            print("NO JS!", jsf)
+            js = {}
+         #if "multi_station_event" in js:
+         if True:
+            mses[lfroot] = 1
+         else:
+            mses[lfroot] = 0
+      if mses[lfroot] == 1:
+         cmd = "cp /mnt/ams2/meteors/" + day + "/final/" + lfile + " " + "/mnt/archive.allsky.tv/" + ams_id + "/METEORS/" + year + "/" + day + "/" + lfile
+         os.system(cmd)
+         print(cmd) 
+
+   print(mses)
+   exit()
+
+
    arc_dir = "/mnt/archive.allsky.tv/" + ams_id + "/METEORS/" + year + "/" + day + "/"
    arc_files = glob.glob(arc_dir + "*")
    afs = {}

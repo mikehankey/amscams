@@ -88,6 +88,7 @@ def get_network_info(json_conf):
    ms = json_conf['site']['multi_station_sync']
    station_info = {}
    for ts in ms:
+      print(ts)
       local_dir = "/mnt/ams2/meteor_archive/" + ts + "/CAL/"
       cloud_dir = "/mnt/archive.allsky.tv/" + ts + "/CAL/"
       if cfe(local_dir,1) == 0:
@@ -148,7 +149,7 @@ def dyna_events_for_day(day, json_conf):
       obs_file = le_dir + station + "_" + date + ".json"
       all_data[station] = load_json_file(obs_file)
       obs_events[station] = {}
-      obs_events[station]
+      #obs_events[station]
 
 
    # first get all existing known events
@@ -223,10 +224,14 @@ def dyna_events_for_day(day, json_conf):
          start_time_dt = f_datetime + datetime.timedelta(0,extra_sec)
          start_time_dt_str = start_time_dt.strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]
          item['event_start_time'] = start_time_dt_str
-
-         meteor = [item['station_id'],item['sd_video_file'], item['event_start_time']]
-         meteors.append((item['station_id'],item['sd_video_file'], item['event_start_time']))
-   meteors = sorted(meteors, key=lambda x: (x[2]), reverse=False)
+         if "final_vid" in item:
+            fv = item['final_vid']
+         else:
+            fv = ""
+         meteor = [item['station_id'],item['sd_video_file'], fv, item['event_start_time'], ]
+         print("FV:", fv)
+         meteors.append((item['station_id'],item['sd_video_file'], fv, item['event_start_time']))
+   meteors = sorted(meteors, key=lambda x: (x[3]), reverse=False)
    events = {}
 
 
@@ -487,7 +492,7 @@ def check_make_event(data, events):
    if len(data) == 3:
       station,meteor, start_time = data
    else:
-      station,meteor, start_time = data[0], data[1], data[3]
+      station,meteor, final_vid, start_time = data
    if "." in start_time:
       start_datetime = datetime.datetime.strptime(start_time, "%Y-%m-%d %H:%M:%S.%f")
    else:
@@ -501,6 +506,10 @@ def check_make_event(data, events):
       events[event_id]['stations'].append(station) 
       events[event_id]['files'] = [] 
       events[event_id]['files'].append(meteor) 
+      events[event_id]['final_vids'] = [] 
+
+      #if "final_vid" in meteor:
+      events[event_id]['final_vids'].append(final_vid) 
       return(event_id, events)
 
    # look for matching event 
@@ -516,6 +525,7 @@ def check_make_event(data, events):
          events[event_id]['start_datetime'].append(start_time) 
          events[event_id]['stations'].append(station) 
          events[event_id]['files'].append(meteor) 
+         events[event_id]['final_vids'].append(final_vid) 
 
          return(event_id, events)
 
@@ -531,6 +541,8 @@ def check_make_event(data, events):
       events[event_id]['stations'].append(station) 
       events[event_id]['files'] = [] 
       events[event_id]['files'].append(meteor) 
+      events[event_id]['final_vids'] = [] 
+      events[event_id]['final_vids'].append(final_vid) 
       return(event_id, events)
 
 
