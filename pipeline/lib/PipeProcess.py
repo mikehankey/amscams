@@ -92,8 +92,8 @@ def run_jobs(json_conf):
          if int(tdiff) / 60 > 5:
             run_load = 1 
       if run_load == 1:
-         os.system("./DynaDB.py load_day " + yest + "")
-         os.system("./DynaDB.py load_day " + today + "")
+         os.system("./DynaDB.py ddd " + yest + "")
+         os.system("./DynaDB.py ddd " + today + "")
          os.system("touch /home/ams/loaded_last.txt")
 
    if "WMPL" in json_conf:

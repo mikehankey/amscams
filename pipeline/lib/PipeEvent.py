@@ -282,6 +282,9 @@ def dyna_events_for_day(day, json_conf):
                md = "/mnt/ams2/meteors/" + day + "/"  
                mf = md + file
                mf = mf.replace(".mp4", ".json")
+               print("MF:", mf)
+               if cfe(mf) == 0:
+                  continue
                mj = load_json_file(mf)
                mj['multi_station_event'] = events[eid]
                if event_id not in dy_keys:
