@@ -14,6 +14,47 @@ from boto3.dynamodb.conditions import Key
 from lib.PipeUtil import get_file_info, fn_dir
 
 
+def save_json_conf(dynamodb, json_conf):
+   cams = []
+   station_id = json_conf['site']['ams_id']
+   for cam in json_conf['cameras']:
+      cam_id = json_conf['cameras'][cam]['cams_id']
+      cams.append(cam_id)
+   conf_mini = {}
+   conf_mini['station_id'] = json_conf['site']['ams_id']
+   conf_mini['operator_name'] = json_conf['site']['operator_name']
+   conf_mini['email'] = json_conf['site']['operator_email']
+   if "obs_name" not in json_conf['site']:
+      conf_mini['obs_name'] = ""
+   conf_mini['city'] = json_conf['site']['operator_city']
+   conf_mini['state'] = json_conf['site']['operator_state']
+   if "operator_country" not in json_conf['site']:
+      json_conf['site']['operator_country'] = "USA"
+   conf_mini['country'] = json_conf['site']['operator_country']
+   conf_mini['lat'] = float(json_conf['site']['device_lat'])
+   conf_mini['lon'] = float(json_conf['site']['device_lng'])
+   conf_mini['alt'] = float(json_conf['site']['device_alt'])
+   conf_mini['passwd'] = json_conf['site']['pwd']
+   conf_mini['cameras'] = cams
+
+   conf_mini = json.loads(json.dumps(conf_mini), parse_float=Decimal)
+   table = dynamodb.Table('station')
+   table.put_item(Item=conf_mini)
+
+   save_json_file("../conf/" + station_id + "_conf.json", conf_mini)
+   print("../conf/" + station_id + "_conf.json")
+
+   print(conf_mini)
+   local_conf = "../conf/" + station_id + "_conf.json"
+   cloud_conf = "/mnt/archive.allsky.tv/" + station_id + "/CAL/" + station_id + "_conf.json"
+   cloud_dir = "/mnt/archive.allsky.tv/" + station_id + "/CAL/" 
+   os.system("cp " + local_conf + " " + cloud_conf)
+   
+   # CP CAL FILES
+   os.system("cp /mnt/ams2/cal/multi* " + " " + cloud_dir)
+   os.system("cp /mnt/ams2/cal/cal_day* " + " " + cloud_dir)
+   os.system("cp /mnt/ams2/cal/cal_hist* " + " " + cloud_dir)
+   
 
 def create_tables(dynamodb):
 
@@ -598,7 +639,8 @@ def update_event_sol(dynamodb, event_id, sol_data, obs_data, status):
       del sol_data['obs']
    for key in obs_data:
       for fkey in obs_data[key]:
-         obs_data[key][fkey]['calib'][6] = float(obs_data[key][fkey]['calib'][6])
+         
+         #obs_data[key][fkey]['calib'][6] = float(obs_data[key][fkey]['calib'][6])
          del obs_data[key][fkey]['calib']
          
    obs_data = json.loads(json.dumps(obs_data), parse_float=Decimal)
@@ -804,6 +846,15 @@ if __name__ == "__main__":
       load_obs_month(dynamodb, station_id, sys.argv[2])
    if cmd == "ddd":
       do_dyna_day(dynamodb, sys.argv[2])
+
+   if cmd == "dedm":
+      wild = sys.argv[2]
+      files = glob.glob("/mnt/ams2/meteors/" + wild + "*")
+      for file in sorted(files):
+         day = file.split("/")[-1]
+         cmd = "./Process.py ded " + day
+         os.system(cmd)
+
    if cmd == "dddm":
       wild = sys.argv[2]
       files = glob.glob("/mnt/ams2/meteors/" + wild + "*")
@@ -827,3 +878,5 @@ if __name__ == "__main__":
    if cmd == "orbs_for_day" or cmd == "ofd":
       day = sys.argv[2]
       orbs_for_day(day, json_conf)
+   if cmd == "save_conf":
+      save_json_conf(dynamodb, json_conf)

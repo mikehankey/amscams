@@ -51,7 +51,15 @@ def simple_solvev2(obs):
                #for file in obs[station]:
 
                if len(obs[station][file]['azs']) >= 3:
-                  obs[station][file]['loc'] = nsinfo[station]['loc']
+                  if station in nsinfo:
+                     obs[station][file]['loc'] = nsinfo[station]['loc']
+                  else:
+                     local_file = "/mnt/ams2/STATIONS/CONF/" + station + "_as6.json"
+                     cloud_file = "/mnt/archive.allsky.tv/" + station + "/CAL/as6.json"
+                     if cfe(local_file) == 0:
+                        os.system("cp "  + cloud_file + " " + local_file)
+                        jsi = load_json_file(local_file)
+                        dy_obs_data['loc'] = [jsi['site']['device_lat'], jsi['site']['device_lng'], jsi['site']['device_alt']]
                   obs[station][file]['file'] = file
                   obs[station][file]['station'] = station
                   good_obs.append(obs[station][file])
