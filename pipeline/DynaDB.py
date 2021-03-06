@@ -13,6 +13,29 @@ import subprocess
 from boto3.dynamodb.conditions import Key
 from lib.PipeUtil import get_file_info, fn_dir
 
+def back_loader(dynamodb, json_conf):
+   mdirs = glob.glob("/mnt/ams2/meteors/*")
+   meteor_days = []
+   update_time = datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
+   for mdir in mdirs:
+      if cfe(mdir, 1) == 1:
+         meteor_days.append(mdir)
+   c = 0
+   for day_dir in sorted(meteor_days, reverse=True):
+      work_file = day_dir + "/" + "work.info"
+      day = day_dir.split("/")[-1]
+      if cfe(work_file) == 1:
+         print("Work file exists we can skip.", day)
+      else:
+         print("Work file doesn't exist lets do the work.", day)
+         os.system("./DynaDB.py ddd " + day)
+         work = {}
+         work['dyna-ddd'] = update_time
+         save_json_file(work_file, work)
+         c += 1
+      if c > 10:
+         print("That's enough for now!")
+         exit()
 
 def save_json_conf(dynamodb, json_conf):
    cams = []
@@ -641,7 +664,10 @@ def update_event_sol(dynamodb, event_id, sol_data, obs_data, status):
       for fkey in obs_data[key]:
          
          #obs_data[key][fkey]['calib'][6] = float(obs_data[key][fkey]['calib'][6])
-         del obs_data[key][fkey]['calib']
+         if key in obs_data:
+            if fkey in obs_data[key]:
+               if 'calib' in obs_data[key][fkey]:
+                  del obs_data[key][fkey]['calib']
          
    obs_data = json.loads(json.dumps(obs_data), parse_float=Decimal)
       
@@ -710,9 +736,9 @@ def do_dyna_day(dynamodb, day):
    print(cmd)
    os.system(cmd)
 
-   cmd = "./Process.py remaster_day " + day
-   print(cmd)
-   os.system(cmd)
+   #cmd = "./Process.py remaster_day " + day
+   #print(cmd)
+   #os.system(cmd)
 
    cmd = "./DynaDB.py sync_db_day " + day
    print(cmd)
@@ -880,3 +906,5 @@ if __name__ == "__main__":
       orbs_for_day(day, json_conf)
    if cmd == "save_conf":
       save_json_conf(dynamodb, json_conf)
+   if cmd == "back_load":
+      back_loader(dynamodb, json_conf)
