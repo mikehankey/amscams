@@ -279,16 +279,21 @@ def get_day_stats(day, day_dir, json_conf):
    data_dir = "/mnt/ams2/SD/proc2/" + day + "/data/*-meteor.json"
    min_file_dir = "/mnt/ams2/SD/proc2/" + day + "/*.mp4"
    min_file_day_dir = "/mnt/ams2/SD/proc2/daytime/" + day + "/*.mp4"
-   failed_files = glob.glob(data_dir)
+   trash_dir = "/mnt/ams2/trash/" + day + "/"
+
+   if cfe(trash_dir, 1) == 1:
+      failed_files = glob.glob(trash_dir + "*.json")
+   else:
+      failed_files = []
+
+   print("TRASH:", trash_dir, len(failed_files))
    tmp_meteor_files = glob.glob(meteor_dir)
    tmp_meteor_files2 = glob.glob(data_dir)
    meteor_files = []
    umeteor_files = {}
    temp = []
    for f in failed_files:
-      if "many" in f:
-         temp.append(f)
-      if "nometeor" in f:
+      if "reduced" not in f:
          temp.append(f)
    failed_files = temp
    for tmp in tmp_meteor_files2 :
