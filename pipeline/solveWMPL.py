@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 
+import json
 import os
 import matplotlib
 matplotlib.use('agg')
@@ -84,10 +85,10 @@ def solve_status(day):
       else:
          if "solution" in event:
             if event["solution"] != 0:
-               solved_html += event['event_id'] + " Solved.\n"
+               solved_html += event['event_id'] + " Solved.\n" 
 
          else:
-            not_solved_html += event['event_id'] + " Not solved.\n"
+            not_solved_html += event['event_id'] + " Not solved. " + str(event['stations']) + "\n"
       #solve_event(event['event_id'])
    print(solved_html)
    print(failed_html)
@@ -134,7 +135,95 @@ def solve_day(day):
    print("EV:", events)
    for event in events:
       print("DY EV:", event['event_id'])
-      solve_event(event['event_id'])
+      if "solve_status" in event:
+         print("Solve Status.", event['solve_status'] )
+      else:
+         print("Not Solved.")
+         solve_event(event['event_id'])
+
+def parse_extra_obs(extra):
+   print("EXTRA OBS FILE:", extra)
+   fp = open(extra)
+   on = 0
+   dc = 0
+   dts = []
+   azs = []
+   els = []
+   for line in fp:
+      if on == 1:
+         if dc == 0:
+            fields = line.replace("\n", "").split(",")
+            flc = 0
+            for fl in fields:
+               if fl == "datetime":
+                  dti = flc
+               if fl == "altitude":
+                  alti = flc
+               if fl == "azimuth":
+                  azi = flc
+               flc += 1
+            print(fields)
+         else:
+            values = line.replace("\n", "").split(",")
+            dt = values[dti]
+            dt = dt.replace("T", " ")
+            az = float(values[azi])
+            el = float(values[alti])
+            print(dt, az, el)
+            dts.append(dt)
+            azs.append(az)
+            els.append(el)
+         dc += 1
+      if "telescope" in line:
+         rd = line.replace("# - ","")
+         rd = rd.replace("{telescope: ","")
+         rd = rd.replace("}","")
+         rd = rd.replace("\n","")
+         station = rd
+      if "original_raw_filename" in line:
+         rd = line.replace("# - ","")
+         rd = rd.replace("{original_raw_filename: ","")
+         rd = rd.replace("}","")
+         rd = rd.replace("\n","")
+         obs_file = rd
+
+      if "obs_latitude" in line:
+         rd = line.replace("# - ","")
+         rd = rd.replace("{obs_latitude: ","")
+         rd = rd.replace("}","")
+         rd = rd.replace("\n","")
+         obs_lat = float(rd)
+         print(obs_lat)
+      if "obs_longitude" in line:
+         rd = line.replace("# - ","")
+         rd = rd.replace("{obs_longitude: ","")
+         rd = rd.replace("}","")
+         rd = rd.replace("\n","")
+         obs_lon = float(rd)
+         print(obs_lon)
+      if "obs_elevation" in line:
+         rd = line.replace("# - ","")
+         rd = rd.replace("{obs_elevation: ","")
+         rd = rd.replace("}","")
+         rd = rd.replace("\n","")
+         obs_alt = float(rd)
+         print(obs_alt)
+      if "# schema" in line:
+         on = 1
+
+   e_obs = {}
+   times = []
+   #for i in range(0,len(azs)):
+   #   ft = i/25
+   #   times.append(ft)
+   e_obs['station'] = station
+   e_obs['file'] = obs_file 
+   e_obs['loc'] = [obs_lat,obs_lon,obs_alt]
+   e_obs['azs'] = azs
+   e_obs['els'] = els
+   e_obs['times'] = dts
+   print(e_obs)
+   return(e_obs)
 
 def solve_event(event_id, force=1, time_sync=1):
     print("EVID:", event_id)
@@ -147,6 +236,13 @@ def solve_event(event_id, force=1, time_sync=1):
     event = get_event(dynamodb, event_id, 0)
     print("EVID:", event_id)
     print(event)
+    extra_obs_dir = "/mnt/ams2/OTHEROBS/" + event_id + "/"
+    if cfe(extra_obs_dir, 1) == 1:
+       extra_obs = glob.glob(extra_obs_dir + "*")
+    else:
+       extra_obs = []
+
+
     if "solution" in event and force != 1:
        if "solve_status" in event:
           if "FAIL" in event['solve_status']:
@@ -168,11 +264,26 @@ def solve_event(event_id, force=1, time_sync=1):
        t_file = event['files'][i]
        print(t_station, t_file)
        dy_obs_data = get_obs(dynamodb, t_station, t_file)
-       dy_obs_data['loc'] = nsinfo[t_station]['loc']
+       if t_station in nsinfo:
+          dy_obs_data['loc'] = nsinfo[t_station]['loc']
+       else:
+          local_file = "/mnt/ams2/STATIONS/CONF/" + t_station + "_as6.json" 
+          cloud_file = "/mnt/archive.allsky.tv/" + t_station + "/CAL/as6.json" 
+          if cfe(local_file) == 0:
+             os.system("cp "  + cloud_file + " " + local_file)
+          jsi = load_json_file(local_file)
+          dy_obs_data['loc'] = [jsi['site']['device_lat'], jsi['site']['device_lng'], jsi['site']['device_alt']]
        obs_data = convert_dy_obs(dy_obs_data, obs )
 
+    extra_obs_data = []
+    if len(extra_obs) > 0:
+       for efile in extra_obs:
+          edata = parse_extra_obs(efile)
+          extra_obs_data.append(edata)
+
     for key in obs_data:
-       print(key, obs_data[key])
+       print(key)
+       #, obs_data[key])
 
     # get WMPL ID (lowest start time)
     start_times = []
@@ -219,6 +330,9 @@ def solve_event(event_id, force=1, time_sync=1):
     for key in obs_data:
        print(key)
     sol = simple_solvev2(obs_data)
+
+    obs_data = add_extra_obs(extra_obs_data, obs_data)
+
     print("SIMPLE:", sol)
     save_json_file(solve_dir + "/" + event_id + "-simple.json", sol)
     save_json_file(solve_dir + "/" + event_id + "-obs.json", obs)
@@ -517,7 +631,8 @@ def make_obs_html(event_id, event, solve_dir, obs):
          year = file[0:4]
          day = file[0:10]
          #link = remote_urls[station_id] + "/meteors/" + station_id + "/" + day + "/" + file + "/"
-         if len(event['obs'][station_id]) >= 2:
+         if len(event['obs'][station_id][file]['azs']) >= 2:
+            print(event['obs'][station_id])
             start_az =  event['obs'][station_id][file]['azs'][0]
             end_az =  event['obs'][station_id][file]['azs'][-1]
             start_el =  event['obs'][station_id][file]['els'][0]
@@ -556,6 +671,29 @@ def make_obs_html(event_id, event, solve_dir, obs):
 
    return(html)
 
+def add_extra_obs(extra_obs, obs):
+
+   #for data in extra_obs:
+   #   print("DATA:", data)
+
+   for data in extra_obs:
+      print(data)
+      station = data['station']
+      obs_file = data['file']
+      azs = data['azs']
+      els = data['els']
+      times = data['times']
+      loc = data['loc']
+      if station not in obs:
+         obs[station] = {}
+      if obs_file not in obs[station]:
+         obs[station][obs_file] = {}
+      obs[station][obs_file]['azs'] = azs
+      obs[station][obs_file]['els'] = els
+      obs[station][obs_file]['times'] = times
+      obs[station][obs_file]['loc'] = loc
+      obs[station][obs_file]['gc_azs'], obs[station][obs_file]['gc_els'] = GC_az_el(obs[station][obs_file]['azs'], obs[station][obs_file]['els'])
+   return(obs)
 
 def convert_dy_obs(dy_obs_data, obs):
    #print("DYO:", dy_obs_data)
@@ -992,7 +1130,10 @@ def event_report(solve_dir, obs):
     if "remote_urls" in json_conf['site']:
        for i in range(0, len(json_conf['site']['multi_station_sync'])):
           station = json_conf['site']['multi_station_sync'][i]
-          url = json_conf['site']['remote_urls'][i]
+          if i in json_conf['site']['remote_urls']:
+             url = json_conf['site']['remote_urls'][i]
+          else: 
+             url = ""
           remote_urls[station] = url
           print(station, url)
 
@@ -1010,7 +1151,10 @@ def event_report(solve_dir, obs):
         prev_file = file.replace(".mp4", "-prev.jpg")
         year = file[0:4]
         day = file[0:10]
-        link = remote_urls[station_id] + "/meteors/" + station_id + "/" + day + "/" + file + "/"
+        if station_id in remote_urls:
+           link = remote_urls[station_id] + "/meteors/" + station_id + "/" + day + "/" + file + "/"
+        else:
+           link = ""
         html += "<h1>" + station_id + " " + file + "</h1>"
         #html += "<a href=" + link + ">"
         html += "<img src=https://archive.allsky.tv/" + station_id + "/METEORS/" + year + "/" + day + "/" + station_id + "_" + prev_file + "></a>"
@@ -1086,7 +1230,7 @@ def WMPL_solve(obs,time_sync=1):
        etv = True
     else:
        etv = False
-    traj_solve = traj.Trajectory(jd_ref, output_dir=solve_dir, meastype=meastype, save_results=True, monte_carlo=False, show_plots=False, max_toffset=3,v_init_part=.5, estimate_timing_vel=etv)
+    traj_solve = traj.Trajectory(jd_ref, output_dir=solve_dir, meastype=meastype, save_results=True, monte_carlo=False, show_plots=False, max_toffset=3,v_init_part=.5, estimate_timing_vel=etv, show_jacchia=True  )
    
     for station_id in obs:
         if len(obs[station_id].keys()) > 1:
@@ -1105,6 +1249,7 @@ def WMPL_solve(obs,time_sync=1):
                azs = np.radians(obs[station_id][file]['azs'])
                els = np.radians(obs[station_id][file]['els'])
             times = obs[station_id][file]['times']
+
             print("STATION:", station_id)
             print("FILE:", file)
             print("TIMES:", times)
