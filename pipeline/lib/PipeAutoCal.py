@@ -194,13 +194,23 @@ def gen_cal_hist(json_conf):
       all_files[cams_id]['pxs'] = []
       all_files[cams_id]['res'] = []
       cal_files = glob.glob("/mnt/ams2/cal/freecal/*" + cams_id + "*")
+      corrupt = []
       for cf in sorted(cal_files):
          (f_datetime, this_cam, f_date_str,y,m,d, h, mm, s) = convert_filename_to_date_cam(cf)
          cfs = glob.glob(cf + "/*calparams.json")
          if cfe(cfs[0]) == 0:
            
             continue
-         cp = load_json_file(cfs[0])
+         print(cfs[0])
+         try:
+            cp = load_json_file(cfs[0])
+         except:
+            print("This file is corrupted!", cfs[0])
+            fn, dir = fn_dir(cfs[0])
+            rm_dir = "/mnt/ams2/cal/freecal/" + fn + "/"
+            rm_dir = rm_dir.replace("-stacked-calparams.json", "")
+            corrupt.append(rm_dir)
+            continue
          if "total_res_px" not in cp:
             continue
          print(cfs[0])
@@ -211,7 +221,13 @@ def gen_cal_hist(json_conf):
          all_files[cams_id]['pos'].append(cp['position_angle'])
          all_files[cams_id]['pxs'].append(cp['pixscale'])
          all_files[cams_id]['res'].append(cp['total_res_px'])
-
+   for cc in corrupt:
+      cmd = "rm " + cc + "*"
+      print("CORUPT:", cmd)
+      cmd = "rmdir " + cc 
+      print("CORUPT:", cmd)
+   print("CC:", corrupt)
+   exit()
    by_day = {}
    cal_groups = {}
    for cam in all_files:
