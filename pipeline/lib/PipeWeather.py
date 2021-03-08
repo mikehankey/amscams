@@ -1565,6 +1565,8 @@ def make_flat(cam,day,json_conf):
    mask_file = MASK_DIR + cam + "_mask.png"
    flat_file = MASK_DIR + cam + "_flat.png"
    latest_file = "/mnt/ams2/latest/" + cam + ".jpg"
+
+   print("SAVE:", MASK_DIR + cam + "_mask.png")
    cv2.imwrite(MASK_DIR + cam + "_mask.png", default)
 
    if cfe(mask_file) == 0:
