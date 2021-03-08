@@ -168,6 +168,8 @@ def save_points(file, station, in_data, json_conf):
                fnum = int(fnum)
                if fnum in sd_changes:
                   new_sd_mfd.append(( dt, fnum, sd_changes[fnum]['x'], sd_changes[fnum]['y'], w, h, oint, sd_changes[fnum]['ra'], sd_changes[fnum]['dec'], sd_changes[fnum]['az'], sd_changes[fnum]['el'] ))
+               else:
+                  new_sd_mfd.append(dt, fnum, x, y, w, h, oint, ra, dec, az, el)
             mjr['meteor_frame_data'] = new_sd_mfd
 
             save_json_file(mfr, mjr)
@@ -426,7 +428,7 @@ function moveSelected(direction,scale) {
          this_url= window.location.href
          new_url = this_url.replace(odata_file, next_data_file)
 
-         window.location.replace(new_url);
+         //window.location.replace(new_url);
       }
 
       function goto_prev_file() {
