@@ -1558,6 +1558,8 @@ def gradient(image):
 
 def make_flat(cam,day,json_conf):
    print("Make flat:", cam, day)
+   
+   default = np.zeros((704,576,3),dtype=np.uint8)
    if cfe(MASK_DIR, 1) == 0:
       os.makedirs(MASK_DIR)
    mask_file = MASK_DIR + cam + "_mask.png"
