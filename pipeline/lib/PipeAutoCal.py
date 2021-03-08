@@ -4072,16 +4072,17 @@ def cal_all(json_conf):
    cal_dir = ARC_DIR + "CAL/AUTOCAL/" + year + "/*.png"
    files = glob.glob(cal_dir)
    print(cal_dir)
-   for file in files:
+   for file in sorted(files:)
       print("TRYING.", file)
  ##     last_cal['x_poly'] = cp['x_poly'].tolist()
  #     last_cal['y_poly'] = cp['y_poly'].tolist()
  #     last_cal['y_poly_fwd'] = cp['y_poly_fwd'].tolist()
  #     last_cal['x_poly_fwd'] = cp['x_poly_fwd'].tolist()
 
-      autocal(file, json_conf, 1)
-
-      #exit()
+      #autocal(file, json_conf, 1)
+      print("RAN:", file)
+      # temporarily disabled
+      exit()
 
 
 def autocal(image_file, json_conf, show = 0, heal_only=0):
