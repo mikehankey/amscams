@@ -1,4 +1,5 @@
 #!/usr/bin/python3
+from lib.PipeManager import dist_between_two_points
 import math
 import os
 from datetime import datetime
@@ -6,7 +7,7 @@ import json
 from decimal import Decimal
 import sys
 import glob
-from lib.PipeUtil import cfe, load_json_file, save_json_file
+from lib.PipeUtil import cfe, load_json_file, save_json_file, check_running
 import boto3
 import socket
 import subprocess
@@ -185,10 +186,16 @@ def load_meteor_obs_day(dynamodb, station_id, day):
       print("loading", meteor_file) 
       insert_meteor_obs(dynamodb, station_id, meteor_file)
 
-def insert_meteor_event(dynamodb, event_id, event_data):
-   event_data = json.loads(json.dumps(event_data), parse_float=Decimal)
-   table = dynamodb.Table('x_meteor_event')
-   table.put_item(Item=event_data)
+def insert_meteor_event(dynamodb=None, event_id=None, event_data=None):
+   
+   if dynamodb is None:
+      dynamodb = boto3.resource('dynamodb')
+   print("DYNA INSERT EVENT ID:", event_id)
+   print("DYNA INSERT EVENT DATA:", event_data)
+   if event_id is not None and event_data is not None:
+      event_data = json.loads(json.dumps(event_data), parse_float=Decimal)
+      table = dynamodb.Table('x_meteor_event')
+      table.put_item(Item=event_data)
 
 def insert_meteor_obs(dynamodb, station_id, meteor_file):
    update_time = datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
@@ -341,21 +348,69 @@ def cache_day(dynamodb, date, json_conf):
       save_json_file(obs_file, obs)
       print("SAVED:", obs_file)
 
-def search_events(dynamodb, date, stations):
+def update_dyna_cache_for_day(dynamodb, date, stations):
+   obs_file = dyn_cache + date + "_ALL_OBS.json" 
+   event_file = dyn_cache + date + "_ALL_EVENTS.json" 
+   stations_file = dyn_cache + date + "_ALL_STATIONS.json" 
+   dyn_cache = "/mnt/ams2/DYCACHE/"
+
+   # get station list of stations that could have shared obs
+   all_stations = glob.glob("/mnt/ams2/STATIONS/CONF/*")
+   clusters = make_station_clusters(all_stations)
+   cluster_stations = []
+   stations = []
+   for data in clusters:
+      #('AMS8', 32.654, -99.844, 'Hawley', [])
+      station, lat, lon, city, partners = data
+      if len(partners) > 1:
+         cluster_stations.append(data)
+
+   # get the obs for each station for this day
+   all_obs = []
+   unq_stations = {}
+   for data in cluster_stations:
+      station_id = data[0]
+      unq_stations[station_id] = 1
+      stations.append(station_id)
+      print(station, date)
+      obs = search_obs(dynamodb, station_id, date, 1)
+      unq_stations[station_id] = len(obs)
+      print(len(obs), obs)
+      xxx = input("xxx")
+      for data in obs:
+         all_obs.append(data)
+
+   # get all of the events for this day 
+   events = search_events(dynamodb, date, stations, 1)
+
+
+   save_json_file(obs_file, all_obs)
+   save_json_file(event_file, events)
+   save_json_file(stations_file, clusters)
+   for st in unq_stations:
+      print(st, unq_stations[st])
+   print("UPDATED THE DYNA CACHE!", obs_file)
+   print("UPDATED THE DYNA CACHE!", event_file)
+   print("UPDATED THE DYNA CACHE!", stations_file)
+
+
+def search_events(dynamodb, date, stations, nocache=0):
    dyn_cache = "/mnt/ams2/DYCACHE/"
    use_cache = 0
    if cfe(dyn_cache, 1) == 0:
       os.makedirs(dyn_cache)
-   dc_file = dyn_cache + date + "_events.json"   
-   if cfe(dc_file) == 1:
-      size, tdiff = get_file_info(dc_file)
-      hours_old = tdiff / 60
-      print("HOURS OLD:", hours_old)
-      if hours_old < 4:
-       
-         use_cache = 1   
+   if nocache == 0:
+      all_events_file = dyn_cache + date + "_ALL_EVENTS.json"   
+      print("USING ALL_EVENTS CACHE :", all_events_file)
+      aed = load_json_file(all_events_file)
+      return(aed)
 
-   use_cache = 0
+   # This area should really only be used by the update dyna cache calls
+
+   if nocache == 1:
+      use_cache = 0
+
+   #use_cache = 0
    if use_cache == 0:
       if dynamodb is None:
          dynamodb = boto3.resource('dynamodb')
@@ -368,11 +423,40 @@ def search_events(dynamodb, date, stations):
            ':date': date,
          } 
       )
-      save_json_file(dc_file, response['Items'])
+      #save_json_file(dc_file, response['Items'])
       return(response['Items'])
-   else :
-      print("we will use cache for events today" + date)
-      return(load_json_file(dc_file))
+
+def make_station_clusters(all_stations):
+   st_lat_lon = []
+   for stc in all_stations:
+      jc = load_json_file(stc)
+      station_id = jc['site']['ams_id']
+      lat = float(jc['site']['device_lat'])
+      lon = float(jc['site']['device_lng'])
+      alt = float(jc['site']['device_alt'])
+      city = jc['site']['operator_city']
+      st_lat_lon.append((station_id, lat, lon, alt, city))
+   cluster_data = []
+   for data in st_lat_lon:
+      (station_id, lat, lon, alt, city) = data
+      matches = []
+      for sdata in st_lat_lon:
+         (sid, tlat, tlon, talt, tcity) = sdata
+         if sid == station_id :
+            continue
+         dist = dist_between_two_points(lat, lon, tlat, tlon)
+         if dist < 450:
+            matches.append((sid, dist))
+      cluster_data.append((station_id, lat,lon,city,matches))
+
+   return(cluster_data)
+
+def get_all_obs(dynamodb, date, json_conf):
+   all_stations = glob.glob("/mnt/ams2/STATIONS/CONF/*")
+   if cfe("/mnt/ams2/STATIONS/CONF/clusters.json") == 0:
+      make_station_clusters(all_stations)
+   for station in all_stations:
+      print(station)
 
 
 def search_obs(dynamodb, station_id, date, no_cache=0):
@@ -382,15 +466,19 @@ def search_obs(dynamodb, station_id, date, no_cache=0):
    use_cache = 0
    if cfe(dyn_cache, 1) == 0:
       os.makedirs(dyn_cache)
-   dc_file = dyn_cache + date + "_" + station_id + "_obs.json"   
-   if cfe(dc_file) == 1:
-      size, tdiff = get_file_info(dc_file)
-      hours_old = tdiff / 60
-      print("HOURS OLD:", hours_old)
-      if hours_old < 4:
-         use_cache = 1   
+   all_obs_file = dyn_cache + date + "_ALL_OBS.json"
+   final_data = []
+   if cfe(all_obs_file) == 1:
+      if no_cache == 0:
+         all_obs_data = load_json_file(all_obs_file)
+         for data in all_obs_data:
+            if len(data) > 0:
+               if data['station_id'] == station_id:
+                  final_data.append(data)
+         use_cache = 1
+      return(final_data)
 
-   use_cache = 0
+   #use_cache = 0
    if use_cache == 0 or no_cache == 1:
       if dynamodb is None:
          dynamodb = boto3.resource('dynamodb')
@@ -403,8 +491,8 @@ def search_obs(dynamodb, station_id, date, no_cache=0):
             ':date': date,
          } 
       )
-      save_json_file(dc_file, response['Items'])
-      print("USE DYNA OBS CALL:",date, station_id )
+      #save_json_file(dc_file, response['Items'])
+      print("USING HOT DYNA OBS CALL:",date, station_id )
       return(response['Items'])
    else:
       print("USE OBS CACHE:", dc_file)
@@ -476,7 +564,14 @@ def get_obs(dynamodb, station_id, sd_video_file):
    use_cache = 0
    if cfe(dyn_cache, 1) == 0:
       os.makedirs(dyn_cache)
-   dc_file = dyn_cache + date + "_" + station_id + "_obs.json"   
+   all_obs_file = dyn_cache + date + "_ALL_OBS.json"   
+   aod = load_json_file(all_obs_file)
+   for row in aod:
+      if row['station_id'] == station_id and row['sd_video_file'] == sd_video_file:
+         obs_data = row
+   return(obs_data)
+
+def get_obs_old():
    if cfe(dc_file) == 1:
       size, tdiff = get_file_info(dc_file)
       if tdiff / 60 < 4:
@@ -908,3 +1003,7 @@ if __name__ == "__main__":
       save_json_conf(dynamodb, json_conf)
    if cmd == "back_load":
       back_loader(dynamodb, json_conf)
+   if cmd == "get_all_obs":
+      get_all_obs(dynamodb, sys.argv[2], json_conf)
+   if cmd == "udc":
+      update_dyna_cache_for_day(dynamodb, sys.argv[2], json_conf)
