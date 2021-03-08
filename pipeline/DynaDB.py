@@ -305,7 +305,11 @@ def load_stations(dynamodb):
       insert_station(dynamodb, fn)
 
 
-def delete_event(dynamodb, event_day, event_id):
+def delete_event(dynamodb=None, event_day=None, event_id=None):
+
+   if dynamodb is None:
+      dynamodb = boto3.resource('dynamodb')
+
    print("DELETE EVENT:", event_day, event_id)
    table = dynamodb.Table('x_meteor_event')
    response = table.delete_item(
@@ -349,10 +353,13 @@ def cache_day(dynamodb, date, json_conf):
       print("SAVED:", obs_file)
 
 def update_dyna_cache_for_day(dynamodb, date, stations):
+   dyn_cache = "/mnt/ams2/DYCACHE/"
    obs_file = dyn_cache + date + "_ALL_OBS.json" 
    event_file = dyn_cache + date + "_ALL_EVENTS.json" 
    stations_file = dyn_cache + date + "_ALL_STATIONS.json" 
-   dyn_cache = "/mnt/ams2/DYCACHE/"
+
+   # remove current files for the day
+   os.system("rm " + dyn_cache + date + "*")
 
    # get station list of stations that could have shared obs
    all_stations = glob.glob("/mnt/ams2/STATIONS/CONF/*")
@@ -372,11 +379,10 @@ def update_dyna_cache_for_day(dynamodb, date, stations):
       station_id = data[0]
       unq_stations[station_id] = 1
       stations.append(station_id)
-      print(station, date)
+      print("SEARCH OBS FOR:", station, date)
       obs = search_obs(dynamodb, station_id, date, 1)
       unq_stations[station_id] = len(obs)
       print(len(obs), obs)
-      xxx = input("xxx")
       for data in obs:
          all_obs.append(data)
 
@@ -460,7 +466,7 @@ def get_all_obs(dynamodb, date, json_conf):
 
 
 def search_obs(dynamodb, station_id, date, no_cache=0):
-   print(station_id, date)
+   print("SEARCH OBS:", station_id, date)
 
    dyn_cache = "/mnt/ams2/DYCACHE/"
    use_cache = 0
@@ -470,19 +476,21 @@ def search_obs(dynamodb, station_id, date, no_cache=0):
    final_data = []
    if cfe(all_obs_file) == 1:
       if no_cache == 0:
+         print("USING THE CACHE FILE!")
          all_obs_data = load_json_file(all_obs_file)
          for data in all_obs_data:
             if len(data) > 0:
                if data['station_id'] == station_id:
                   final_data.append(data)
          use_cache = 1
-      return(final_data)
+         print("RETURN FINAL DATA FROM CACHE")
+         return(final_data)
 
    #use_cache = 0
    if use_cache == 0 or no_cache == 1:
       if dynamodb is None:
          dynamodb = boto3.resource('dynamodb')
-
+      print("GETTING HOT METEOR OBS FOR ", station_id, date)
       table = dynamodb.Table('meteor_obs')
       response = table.query(
          KeyConditionExpression='station_id = :station_id AND begins_with(sd_video_file, :date)',

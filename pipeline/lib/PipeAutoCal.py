@@ -4072,7 +4072,7 @@ def cal_all(json_conf):
    cal_dir = ARC_DIR + "CAL/AUTOCAL/" + year + "/*.png"
    files = glob.glob(cal_dir)
    print(cal_dir)
-   for file in sorted(files:)
+   for file in sorted(files):
       print("TRYING.", file)
  ##     last_cal['x_poly'] = cp['x_poly'].tolist()
  #     last_cal['y_poly'] = cp['y_poly'].tolist()

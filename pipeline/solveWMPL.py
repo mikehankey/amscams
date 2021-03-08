@@ -6,7 +6,7 @@ import matplotlib
 matplotlib.use('agg')
 import glob
 from lib.PipeAutoCal import fn_dir
-from DynaDB import get_event, get_obs, search_events, update_event, update_event_sol, insert_meteor_event
+from DynaDB import get_event, get_obs, search_events, update_event, update_event_sol, insert_meteor_event, delete_event
 from lib.PipeUtil import load_json_file, save_json_file, cfe, calc_dist, convert_filename_to_date_cam, check_running, get_trim_num
 import sys
 import numpy as np
@@ -150,6 +150,11 @@ def events_report(date, type="all"):
             insert_meteor_event(None, event_id, event)
          event['event_status'] = status
          final_event_index.append(event)
+         total_stations = len(set(event['stations']))
+         if total_stations <= 1:
+            print("NEED TO DELETE THIS EVENT AS IT ONLY HAS ONE STATION!")
+            delete_event(None, event['event_day'], event['event_id'])
+
          if status == "SUCCESS":
             rpt_s += ("{:s}          {:s}     {:s}          {:s}\n".format(str(event_id), str(min(event['start_datetime'])), str(status), str(event['stations'])))
          elif status == "unsolved":
@@ -580,16 +585,36 @@ def parse_extra_obs(extra):
    return(e_obs)
 
 def solve_event(event_id, force=1, time_sync=1):
+    year = event_id[0:4]
+    mon = event_id[4:6]
+    day = event_id[6:8]
+    local_event_dir = "/mnt/ams2/EVENTS/" + year + "/" + mon + "/" + day + "/" + event_id + "/" 
+    cloud_event_dir = "/mnt/archive.allsky.tv/EVENTS/" + year + "/" + mon + "/" + day + "/" + event_id + "/" 
+    print(local_event_dir)
+    print(cloud_event_dir)
+    if cfe(cloud_event_dir, 1) == 0:
+       os.makedirs(cloud_event_dir)
+       cloud_event_files = []
+    else:
+       cloud_event_files = glob.glob(cloud_event_dir + "*") 
+
+    if cfe(local_event_dir, 1) == 0:
+       os.makedirs(local_event_dir)
+
+    if len(cloud_event_files) > 1:
+       print("This event was already processed.")
+       return()
+
     print("EVID:", event_id)
     json_conf = load_json_file("../conf/as6.json")
     ams_id = json_conf['site']['ams_id']
-    solve_dir = "/mnt/ams2/meteor_archive/" + ams_id + "/EVENTS/"
+    solve_dir = local_event_dir 
     nsinfo = load_json_file("../conf/network_station_info.json")
 
     dynamodb = boto3.resource('dynamodb')
     event = get_event(dynamodb, event_id, 0)
     ev_status = check_event_status(event)
-    print(ev_status)
+
     status = ev_status['status']
     if status == 1:
        print("This event was already solved successfully.", event_id)
@@ -597,8 +622,8 @@ def solve_event(event_id, force=1, time_sync=1):
     if status == -1:
        print("This event was failed to solve.", event_id)
        return()
-    print("EVID:", event_id)
-    print(event)
+
+    # Check if there are 3rd party network obs to import
     extra_obs_dir = "/mnt/ams2/OTHEROBS/" + event_id + "/"
     if cfe(extra_obs_dir, 1) == 1:
        extra_obs = glob.glob(extra_obs_dir + "*")
@@ -645,9 +670,6 @@ def solve_event(event_id, force=1, time_sync=1):
           edata = parse_extra_obs(efile)
           extra_obs_data.append(edata)
 
-    for key in obs_data:
-       print(key)
-       #, obs_data[key])
 
     # get WMPL ID (lowest start time)
     start_times = []
@@ -697,7 +719,6 @@ def solve_event(event_id, force=1, time_sync=1):
 
     obs_data = add_extra_obs(extra_obs_data, obs_data)
 
-    print("SIMPLE:", sol)
     save_json_file(solve_dir + "/" + event_id + "-simple.json", sol)
     save_json_file(solve_dir + "/" + event_id + "-obs.json", obs)
     print("SAVED FILES IN:", solve_dir)
@@ -744,7 +765,7 @@ def solve_event(event_id, force=1, time_sync=1):
     make_event_html(event_file)
 
     # remove the pngs and then copy the results to the cloud dir
-    cloud_dir = solve_dir.replace("/mnt/ams2/meteor_archive/", "/mnt/archive.allsky.tv/")
+    cloud_dir = solve_dir.replace("/mnt/ams2/", "/mnt/archive.allsky.tv/")
     if cfe(cloud_dir,1) == 0:
        os.makedirs(cloud_dir)
     cmd = "rm " + solve_dir + "/*.png"
@@ -838,13 +859,34 @@ def check_event_status(event):
    cloud_event_exists = 0
    if "solution" in event:
       cloud_event_dir = "/mnt/archive.allsky.tv/EVENTS/" + year + "/" + month + "/" + day + "/" + event['event_id'] + "/" 
-      local_event_dir = event['solution']['sol_dir'] + "/" 
+      local_event_dir = "/mnt/ams2/EVENTS/" + year + "/" + month + "/" + day + "/" + event['event_id'] + "/" 
+      legacy_event_dir = event['solution']['sol_dir'] + "/" 
       print("LOCAL DIR:", local_event_dir)
       print("CLOUD DIR:", cloud_event_dir)
+      print("LEGECY DIR:", legacy_event_dir)
+
+      if cfe(legacy_event_dir, 1) == 1:
+         leg_f = glob.glob(legacy_event_dir + "*")
+         print("LEGECY FILES:", leg_f)
+         if len(leg_f) >= 1:
+            # We should move these old files to the new event dir 
+
+            for lf in leg_f:
+               fn, lg_dir = fn_dir(lf)
+               cmd = "mv " + lf + " " + local_event_dir
+               print(cmd)
+               os.system(cmd)
+            os.system("rmdir " + legacy_event_dir)
+
+
       if cfe(local_event_dir, 1) == 1:
-         local_event_exists = 1
+         lf = glob.glob(local_event_dir + "*")
+         if len(lf) >= 1:
+            local_event_exists = 1
       if cfe(cloud_event_dir, 1) == 1:
-         cloud_event_exists = 1
+         cf = glob.glob(cloud_event_dir + "*")
+         if len(cf) >= 1:
+            cloud_event_exists = 1
       print("Local event status:", local_event_exists)
       print("CLOUD event status:", cloud_event_exists)
    ev_status = {}
