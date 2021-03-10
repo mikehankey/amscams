@@ -277,6 +277,10 @@ def scan_and_stack_fast(file, sun_status = 0, vals = []):
             cmd = "rm " + file
             #os.system(cmd)
             return()
+
+      if mask_img is None:
+         print("NO MASK!")
+         mask_img = np.zeros((frame.shape[1],frame.shape[0]),dtype=np.uint8)
       if mask_img is not None and mask_resized == 0:
          mask_img = cv2.resize(mask_img, (frame.shape[1],frame.shape[0]))
          small_mask = cv2.resize(mask_img, (0,0),fx=.5, fy=.5)
