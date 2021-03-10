@@ -26,6 +26,9 @@ def stack_day_all():
       exit()
 
 
+   if cfe("fixed-day-pngs.txt") == 0:
+      print("FIX PNGS.")
+      os.system("./fix-day-pngs.py")
 
    exists = {}
    day_files = glob.glob("/mnt/ams2/SD/proc2/daytime/*.mp4")
@@ -61,14 +64,14 @@ def day_stack(video_file, day):
    cmd = "rm /home/ams/tmp-stack/foo*"
    os.system(cmd)
    # stack 1 FPS
-   cmd = "/usr/bin/ffmpeg -i " + video_file + " -vf fps=1 /home/ams/tmp-stack/foo-%03d.jpg > /dev/null 2>&1"
+   #cmd = "/usr/bin/ffmpeg -i " + video_file + " -vf fps=1 /home/ams/tmp-stack/foo-%03d.jpg > /dev/null 2>&1"
    # stack just 1 frame 
    mia_out = "/home/ams/tmp-stack/foo-%03d.jpg"
    cmd = "/usr/bin/ffmpeg -ss 00:00:01.00 -i " + video_file + " -frames:v 1 " + mia_out
-   #print(cmd)
+   print(cmd)
    os.system(cmd)
    files = glob.glob("/home/ams/tmp-stack/*.jpg")
-   stack_file = video_file.replace(".mp4", "-stacked-tn.png")
+   stack_file = video_file.replace(".mp4", "-stacked-tn.jpg")
    stack_fn = stack_file.split("/")[-1]
    stack_file = day_dir + "images/" + stack_fn 
 
