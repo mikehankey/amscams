@@ -9308,12 +9308,18 @@ def obj_to_arc_meteor(meteor_file):
       meteor_frame_time_str = meteor_frame_time.strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]
       frame['dt'] = meteor_frame_time_str 
       print(frame)
+      try:
+         new_x, new_y, ra ,dec , az, el = XYtoRADec(frame['x'],frame['y'],mj['hd_trim'],cal_params,json_conf)
+         frame['az'] = az 
+         frame['el'] = el
+         frame['ra'] = ra 
+         frame['dec'] = dec
+      except:
+         frame['az'] = 0
+         frame['el'] = 0
+         frame['ra'] = 0
+         frame['dec'] = 0
 
-      new_x, new_y, ra ,dec , az, el = XYtoRADec(frame['x'],frame['y'],mj['hd_trim'],cal_params,json_conf)
-      frame['az'] = az 
-      frame['el'] = el
-      frame['ra'] = ra 
-      frame['dec'] = dec
 
 
       frames.append(frame)
