@@ -9,6 +9,7 @@ import subprocess
 def gitpull(json_conf):
    print("git pull > /home/ams/lastpull.txt")
    os.system("git pull > /home/ams/lastpull.txt")
+   print("update flask.")
    os.system("cd /home/ams/amscams/install; ./update-flask-assets.sh ")
    return()
    if cfe("lib/version") == 1:
@@ -37,6 +38,7 @@ def gitpull(json_conf):
       print("Code not up to date. We should sync.")
       os.system("git pull")
       os.system("cd /home/ams/amscams/install; ./update-flask-assets.sh ")
+   print("DONE GIT PULL.")
 
 
 def run_jobs(json_conf):
@@ -50,7 +52,7 @@ def run_jobs(json_conf):
    print(sun, az, alt)
 
    # update from git hub(Change to work 1x per x hours)
-
+   print("CHECK CODE UPDATES.")
    update_code = 0
    if cfe('/home/ams/lastpull.txt') == 0:
       update_code = 1
@@ -63,11 +65,12 @@ def run_jobs(json_conf):
       else:
          print("Code was last updated", tdiff / 60, "hours ago")
 
+   print("UPDATE CODE?", update_code)
    if update_code == 1:
 
       gitpull(json_conf)
 
- 
+   print("checking cloud dir") 
    amsid = json_conf['site']['ams_id']
    # check to make sure the cloud drive is setup and cal sync'd
    cloud_conf_dir = "/mnt/archive.allsky.tv/" + amsid + "/CAL/"
@@ -152,6 +155,9 @@ def run_jobs(json_conf):
    cmds.append(('day', "Clean disk / Purge old files", "cd /home/ams/amscams/pipeline; ./Process.py rm_corrupt"))
    cmds.append(('day', "Make Meteor Index", "cd /home/ams/amscams/pipeline; ./Process.py mmi_all"))
    cmds.append(('day', "Move Day Files", "cd /home/ams/amscams/pythonv2; ./move_day_files.py"))
+
+   cmds.append(('day', "(Update default cal)", "cd /home/ams/amscams/pipeline; ./Process.py run_cal_defaults"))
+   cmds.append(('day', "(Fixup any bad cal files)", "cd /home/ams/amscams/pipeline; ./Process.py refit_all all bad "))
    cmds.append(('day', "Run Calibs (if daytime)", "cd /home/ams/amscams/pipeline; ./Process.py ca"))
    #cmds.append(('day', "Super Cal", "cd /home/ams/amscams/pipeline; ./Process.py super_cal"))
    cmds.append(('day', "Run Master Stacks for Current Night", "cd /home/ams/amscams/pythonv2; ./autoCal.py cal_index"))
