@@ -340,8 +340,10 @@ def define_events(date):
    ax.xaxis.set_major_locator(loc)
 
    #plt.gca().invert_yaxis()
-   plt.savefig("/mnt/ams2/test.jpg")
-   print("saved /mnt/ams2/test.jpg")
+   plt.savefig("/mnt/ams2/test.png")
+   print("saved /mnt/ams2/test.png")
+
+   events_report(date)
 
 
 def GC_az_el(azs, els):
@@ -465,8 +467,20 @@ def solve_month(wild):
       day = file.split("/")[-1]
       solve_day(day)
 
-def solve_day(day, cores=4):
-   os.system("./DynaDB.py cd " + day)
+
+def delete_events_day(date):
+   dyn_cache = "/mnt/ams2/DYCACHE/"
+   xxx = input("Are you sure you want to delete all events for " + date + " [ENTER] to cont or [CNTL-X] to quit.")
+   events_file = dyn_cache + date + "_ALL_EVENTS.json"
+   events = load_json_file(events_file)
+   for event in events: 
+      delete_event(None, event['event_day'], event['event_id'])
+
+def solve_day(day, cores=0):
+   date = day
+   dyn_cache = "/mnt/ams2/DYCACHE/"
+   #os.system("./DynaDB.py cd " + day)
+   print("Solve day", day)
    dynamodb = boto3.resource('dynamodb')
    json_conf = load_json_file("../conf/as6.json")
    my_station = json_conf['site']['ams_id']
@@ -474,12 +488,23 @@ def solve_day(day, cores=4):
    if my_station not in stations:
       stations.append(my_station)
 
-   events = search_events(dynamodb, day, stations)
+   #events = search_events(dynamodb, day, stations)
+
+   obs_file = dyn_cache + date + "_ALL_OBS.json"
+   events_file = dyn_cache + date + "_ALL_EVENTS.json"
+   events_index_file = dyn_cache + date + "_ALL_EVENTS_INDEX.json"
+   events = load_json_file(events_file)
+   events_index = load_json_file(events_index_file)
+
    print("TOTAL EVENTS:", len(events))
    total_events = len(events)
    ec = 0
+
    for event in events:
       print("DY EV:", event['event_id'])
+
+      ev_status = check_event_status(event)
+      print("EV STATUS:", ev_status)
       if "solve_status" in event:
          print("Solve Status.", event['solve_status'] )
       else:
@@ -584,14 +609,22 @@ def parse_extra_obs(extra):
    print(e_obs)
    return(e_obs)
 
+def get_event_data(date, event_id):
+   dyn_cache = "/mnt/ams2/DYCACHE/"
+   events_file = dyn_cache + date + "_ALL_EVENTS.json"
+   ev = load_json_file(events_file)
+   for event in ev:
+      print("SCANNING:", event_id, event['event_id'])
+      if event_id == event['event_id']:
+         return(event) 
+
 def solve_event(event_id, force=1, time_sync=1):
     year = event_id[0:4]
     mon = event_id[4:6]
     day = event_id[6:8]
+    date = year + "_" + mon + "_" + day
     local_event_dir = "/mnt/ams2/EVENTS/" + year + "/" + mon + "/" + day + "/" + event_id + "/" 
     cloud_event_dir = "/mnt/archive.allsky.tv/EVENTS/" + year + "/" + mon + "/" + day + "/" + event_id + "/" 
-    print(local_event_dir)
-    print(cloud_event_dir)
     if cfe(cloud_event_dir, 1) == 0:
        os.makedirs(cloud_event_dir)
        cloud_event_files = []
@@ -603,22 +636,27 @@ def solve_event(event_id, force=1, time_sync=1):
 
     if len(cloud_event_files) > 1:
        print("This event was already processed.")
-       return()
+       
+       #return()
 
     print("EVID:", event_id)
+
+
+
     json_conf = load_json_file("../conf/as6.json")
     ams_id = json_conf['site']['ams_id']
     solve_dir = local_event_dir 
     nsinfo = load_json_file("../conf/network_station_info.json")
 
     dynamodb = boto3.resource('dynamodb')
-    event = get_event(dynamodb, event_id, 0)
+    #event = get_event(dynamodb, event_id, 0)
+    event =  get_event_data(date, event_id)
     ev_status = check_event_status(event)
 
     status = ev_status['status']
     if status == 1:
        print("This event was already solved successfully.", event_id)
-       return()
+       #return()
     if status == -1:
        print("This event was failed to solve.", event_id)
        return()
@@ -699,7 +737,8 @@ def solve_event(event_id, force=1, time_sync=1):
     e_dir = event_start.replace("-", "")
     e_dir = e_dir.replace(":", "")
     e_dir = e_dir.replace(" ", "_")
-    solve_dir += day + "/" + e_dir 
+    #solve_dir += day + "/" + e_dir 
+    solve_dir = local_event_dir 
     print("SOLVE DIR:", solve_dir)
     if cfe(solve_dir, 1) == 0:
        os.makedirs(solve_dir)
@@ -709,8 +748,8 @@ def solve_event(event_id, force=1, time_sync=1):
        files = glob.glob(solve_dir + "/*")
        for file in files:
           print("DEL:", file)
-       #xxx = input("DELETE PAST FILES?")
-       os.system("rm " + solve_dir + "/*")
+       #os.system("rm " + solve_dir + "/*")
+       #os.system("rmdir " + solve_dir )
 
     print("SOLVE WITH THESE OBS:")
     for key in obs_data:
@@ -719,8 +758,8 @@ def solve_event(event_id, force=1, time_sync=1):
 
     obs_data = add_extra_obs(extra_obs_data, obs_data)
 
-    save_json_file(solve_dir + "/" + event_id + "-simple.json", sol)
-    save_json_file(solve_dir + "/" + event_id + "-obs.json", obs)
+    save_json_file(local_event_dir + "/" + event_id + "-simple.json", sol)
+    save_json_file(local_event_dir + "/" + event_id + "-obs.json", obs)
     print("SAVED FILES IN:", solve_dir)
     if len(bad_obs) > 0:
        print("BAD OBS!", bad_obs)
@@ -729,7 +768,7 @@ def solve_event(event_id, force=1, time_sync=1):
        update_event_sol(None, event_id, solution, obs_data, str(bad_obs))
        return()
     else: 
-       WMPL_solve(obs_data, time_sync)
+       WMPL_solve(event_id, obs_data, time_sync)
 
     solved_files = glob.glob(solve_dir + "/*")
     if len(solved_files) > 10:
@@ -770,8 +809,8 @@ def solve_event(event_id, force=1, time_sync=1):
        os.makedirs(cloud_dir)
     cmd = "rm " + solve_dir + "/*.png"
     print(cmd)
-    os.system(cmd)
-    cmd = "cp " + solve_dir + "/* " + cloud_dir
+    #os.system(cmd)
+    cmd = "rsync -auv " + solve_dir + "* " + cloud_dir 
     print(cmd)
     os.system(cmd)
 
@@ -843,7 +882,14 @@ body {
 
 def check_event_status(event):
    # status : 1 = solve success ; 0 = not solved ; -1 = failed solve; 2 = currently being solved
-   print("Checking event status:", event['event_id'])
+   if event is None:
+      ev_status = {}
+      ev_status['status'] = 0
+      ev_status['lee'] = 0 
+      ev_status['cee'] = 0
+      return(ev_status)
+
+   print("Checking event status:", event)
    status = 0
    if "solve_status" in event:
        print("Status: ", event['solve_status'])
@@ -857,27 +903,22 @@ def check_event_status(event):
    #print(event)
    local_event_exists = 0
    cloud_event_exists = 0
+   legacy_event_dir = None
+   cloud_event_dir = "/mnt/archive.allsky.tv/EVENTS/" + year + "/" + month + "/" + day + "/" + event['event_id'] + "/" 
+   local_event_dir = "/mnt/ams2/EVENTS/" + year + "/" + month + "/" + day + "/" + event['event_id'] + "/" 
    if "solution" in event:
-      cloud_event_dir = "/mnt/archive.allsky.tv/EVENTS/" + year + "/" + month + "/" + day + "/" + event['event_id'] + "/" 
-      local_event_dir = "/mnt/ams2/EVENTS/" + year + "/" + month + "/" + day + "/" + event['event_id'] + "/" 
-      legacy_event_dir = event['solution']['sol_dir'] + "/" 
+      if "solution" in event:
+         if "sol_dir" in event['solution']:
+            legacy_event_dir = event['solution']['sol_dir'] + "/" 
+
       print("LOCAL DIR:", local_event_dir)
       print("CLOUD DIR:", cloud_event_dir)
-      print("LEGECY DIR:", legacy_event_dir)
+      if legacy_event_dir is not None:
+         if cfe(legacy_event_dir, 1) == 1:
+            print("LEGECY DIR:", legacy_event_dir)
 
-      if cfe(legacy_event_dir, 1) == 1:
-         leg_f = glob.glob(legacy_event_dir + "*")
-         print("LEGECY FILES:", leg_f)
-         if len(leg_f) >= 1:
-            # We should move these old files to the new event dir 
-
-            for lf in leg_f:
-               fn, lg_dir = fn_dir(lf)
-               cmd = "mv " + lf + " " + local_event_dir
-               print(cmd)
-               os.system(cmd)
-            os.system("rmdir " + legacy_event_dir)
-
+      if cfe(local_event_dir, 1) == 0:
+         os.makedirs(local_event_dir)
 
       if cfe(local_event_dir, 1) == 1:
          lf = glob.glob(local_event_dir + "*")
@@ -896,22 +937,31 @@ def check_event_status(event):
    return(ev_status)
 
 
-def make_event_html(event_json_file):
+def make_event_html(event_json_file ):
+   lfn, local_event_dir = fn_dir(event_json_file)
    css = make_css()
    dynamodb = None
    obs_file = event_json_file.replace("-event.json", "-obs.json")
    print("LOADING:", event_json_file)
    event_data = load_json_file(event_json_file)
-   solve_dir = event_data['sol_dir']
-   xxx = solve_dir.split("/")[-1]
  
 
    event_id = event_data['event_id']
+
+   year = event_id[0:4]
+   mon = event_id[4:6]
+   day = event_id[6:8]
+   date = year + "_" + mon + "_" + day
+   #HHHH
+   solve_dir = local_event_dir 
+   xxx = solve_dir.split("/")[-1]
+
+
    event = get_event(dynamodb, event_id, 0)
 
-   event_file = solve_dir + "/" + event_id + "-event.json"
-   event_index_file = solve_dir + "/index.html" 
-   kml_file = solve_dir + "/" + event_id + "-map.kml"
+   event_file = solve_dir + event_id + "-event.json"
+   event_index_file = solve_dir + "index.html" 
+   kml_file = solve_dir + event_id + "-map.kml"
 
    sd = solve_dir.split("/")[-1]
    if "." in sd:
@@ -967,7 +1017,7 @@ def make_event_html(event_json_file):
    sol_jpgs = glob.glob(solve_dir + "/*.jpg")
    for img in sorted(sol_jpgs):
       print("PLOT IMAGE:", img)
-      img = img.replace("/mnt/ams2/meteor_archive/", "https://archive.allsky.tv/")
+      img = img.replace("/mnt/ams2/", "https://archive.allsky.tv/")
       if "ground" not in img and "orbit" not in img:
          plot_html += "<div style='float:left; padding: 3px'><img width=600 height=480 src=" + img + "></div>\n"
 
@@ -1038,6 +1088,8 @@ def make_sum_html(event_id, event, solve_dir, obs):
    html += "<td>" + str(ob['peri'])[0:5] + "</td></tr>"
    html += "<tr><td>Lon of Asc Node (node) &nbsp; &nbsp; &nbsp; </td>"
    html += "<td>" + str(ob['node'])[0:5] + "</td></tr>"
+   html += "<tr><td>(q) &nbsp; &nbsp; &nbsp; </td>"
+   html += "<td>" + str(ob['q'])[0:5] + "</td></tr>"
    #html += "<tr><td>q</td>"
    #html += "<td>" + str(ob['q'])[0:5] + "</td></tr>"
    html += "<tr><td>Period (T)</td>"
@@ -1199,6 +1251,8 @@ def make_event_json(event_id, solve_dir):
    jsons = glob.glob(solve_dir + "/*.json")
    pks = glob.glob(solve_dir + "/*.pickle")
 
+   print("looking in solve dir", solve_dir)
+
    for js in jsons:
       if "obs.json" in js:
          obs_file = js
@@ -1206,8 +1260,6 @@ def make_event_json(event_id, solve_dir):
       if "simple.json" in js:
          sol_file = js
 
-   print("SOL DIR:", solve_dir)
-   print("SOL:", sol_file)
    simple_solve = load_json_file(sol_file)
 
 
@@ -1420,7 +1472,6 @@ def make_event_json(event_id, solve_dir):
       traj.orbit.T = 0
    if math.isnan(traj.orbit.T):
       print("T IS NAN!")
-   #xxx = input("wait. for T:" + str(traj.orbit.T))
    if traj.orbit.T is not None:
       if math.isnan(traj.orbit.T) is True:
          solution['orb']['T'] = 0 
@@ -1568,7 +1619,7 @@ def make_kml(kml_file, points, lines):
 
 
 
-def event_report(solve_dir, obs):
+def event_report(solve_dir, event_final_dir, obs):
     json_conf = load_json_file("../conf/as6.json")
     remote_urls = {}
     if "remote_urls" in json_conf['site']:
@@ -1622,22 +1673,41 @@ def event_report(solve_dir, obs):
           else:
              print(jpg_f, " already made.")
 
-    for jpg in jpgs:
+    print("MOVE THE WMPL FILES TO THE FINAL EVENT DIR!")
+    final_jpgs = []
+    for sf in solved_files:
+       fn, xxx = fn_dir(sf)
+       new_file = event_final_dir + fn 
+       cmd = "mv " + sf + " " + event_final_dir
+       print(cmd)
+       os.system(cmd)
+       if "jpg" in fn:
+          final_jpgs.append(new_file)
+       print(cmd)
+ 
+    for jpg in final_jpgs:
        jpg = jpg.replace("/mnt/ams2/meteor_archive/", "")
        html += "<img src=" + jpg + ">"
     html += "<p>"
     html += "<pre>" + report + "</pre>"
     fp = open(solve_dir + "/index.html", "w")
     fp.write(html)
-    print("SAVED INDEX:", solve_dir + "/index.html")
+    print("SAVED INDEX:", event_final_dir + "/index.html")
 
 
 
 
-def WMPL_solve(obs,time_sync=1):
+def WMPL_solve(event_id, obs,time_sync=1):
     json_conf = load_json_file("../conf/as6.json")
     ams_id  = json_conf['site']['ams_id']
-    solve_dir = "/mnt/ams2/meteor_archive/" + ams_id + "/EVENTS/"
+
+    year = event_id[0:4]
+    mon = event_id[4:6]
+    day = event_id[6:8]
+    date = year + "_" + mon + "_" + day
+
+    event_final_dir = "/mnt/ams2/EVENTS/" + year + "/" + mon + "/" + day + "/" + event_id + "/"
+    solve_dir = "/mnt/ams2/EVENTS/" + year + "/" + mon + "/" + event_id + "/"
     # Inputs are RA/Dec
     meastype = 2
 
@@ -1660,7 +1730,7 @@ def WMPL_solve(obs,time_sync=1):
     e_dir = event_start.replace("-", "")
     e_dir = e_dir.replace(":", "")
     e_dir = e_dir.replace(" ", "_")
-    solve_dir += day + "/" + e_dir 
+#    solve_dir 
 
 
     event_start_dt = datetime.datetime.strptime(event_start, "%Y-%m-%d %H:%M:%S.%f")
@@ -1734,7 +1804,8 @@ def WMPL_solve(obs,time_sync=1):
        print(solve_dir )
        for sf in solved_files:
           print(sf)
-       event_report(solve_dir, obs)
+       #xxx = input("Gen report...")
+       event_report(solve_dir, event_final_dir, obs)
 
 
 def center_obs(obs_data):
@@ -1777,6 +1848,7 @@ def menu():
    if command == "3":
       print("Define Events")
       cmd = "./solveWMPL.py define_events " + date
+      os.system(cmd)
       print(cmd)
    if command == "4":
       print("Solve ALL Events")
@@ -1825,6 +1897,8 @@ if cmd == "status":
    solve_status(meteor_file)
 if cmd == "define_events" or cmd == "de":
    define_events(meteor_file)
+if cmd == "delete_events_day" :
+   delete_events_day(meteor_file)
 if cmd == "events_report" or cmd == "er":
    if len(sys.argv) > 2:
       events_report(meteor_file, sys.argv[2])

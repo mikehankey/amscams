@@ -352,14 +352,21 @@ def cache_day(dynamodb, date, json_conf):
       save_json_file(obs_file, obs)
       print("SAVED:", obs_file)
 
-def update_dyna_cache_for_day(dynamodb, date, stations):
+def update_dyna_cache_for_day(dynamodb, date, stations, utype=None):
+
+   if utype is None:
+      do_obs = 1
+      do_events = 1
+   if utype == "events": 
+      do_obs = 0
+      do_events = 1
+
    dyn_cache = "/mnt/ams2/DYCACHE/"
    obs_file = dyn_cache + date + "_ALL_OBS.json" 
    event_file = dyn_cache + date + "_ALL_EVENTS.json" 
    stations_file = dyn_cache + date + "_ALL_STATIONS.json" 
 
    # remove current files for the day
-   os.system("rm " + dyn_cache + date + "*")
 
    # get station list of stations that could have shared obs
    all_stations = glob.glob("/mnt/ams2/STATIONS/CONF/*")
@@ -371,33 +378,36 @@ def update_dyna_cache_for_day(dynamodb, date, stations):
       station, lat, lon, city, partners = data
       if len(partners) > 1:
          cluster_stations.append(data)
+   save_json_file(stations_file, clusters)
+   print("UPDATED THE DYNA CACHE!", stations_file)
 
    # get the obs for each station for this day
-   all_obs = []
-   unq_stations = {}
-   for data in cluster_stations:
-      station_id = data[0]
-      unq_stations[station_id] = 1
-      stations.append(station_id)
-      print("SEARCH OBS FOR:", station, date)
-      obs = search_obs(dynamodb, station_id, date, 1)
-      unq_stations[station_id] = len(obs)
-      print(len(obs), obs)
-      for data in obs:
-         all_obs.append(data)
+   if do_obs == 1:
+      os.system("rm " + obs_file ) 
+      all_obs = []
+      unq_stations = {}
+      for data in cluster_stations:
+         station_id = data[0]
+         unq_stations[station_id] = 1
+         stations.append(station_id)
+         print("SEARCH OBS FOR:", station, date)
+         obs = search_obs(dynamodb, station_id, date, 1)
+         unq_stations[station_id] = len(obs)
+         print(len(obs), obs)
+         for data in obs:
+            all_obs.append(data)
+      save_json_file(obs_file, all_obs)
+      print("UPDATED THE DYNA CACHE!", obs_file)
 
-   # get all of the events for this day 
-   events = search_events(dynamodb, date, stations, 1)
+   if do_events == 1:
+      os.system("rm " + event_file ) 
+      # get all of the events for this day 
+      events = search_events(dynamodb, date, stations, 1)
 
 
-   save_json_file(obs_file, all_obs)
-   save_json_file(event_file, events)
-   save_json_file(stations_file, clusters)
-   for st in unq_stations:
-      print(st, unq_stations[st])
-   print("UPDATED THE DYNA CACHE!", obs_file)
-   print("UPDATED THE DYNA CACHE!", event_file)
-   print("UPDATED THE DYNA CACHE!", stations_file)
+      save_json_file(event_file, events)
+      print("UPDATED THE DYNA CACHE!", event_file)
+
 
 
 def search_events(dynamodb, date, stations, nocache=0):
@@ -607,10 +617,10 @@ def get_obs_old():
 
 def sync_db_day(dynamodb, station_id, day):
    # remove the cache 
-   cmd = "rm /mnt/ams2/DYCACHE/*.json"
-   os.system(cmd)
-   cmd = "./DynaDB.py cd " + day 
-   os.system(cmd)
+   #cmd = "rm /mnt/ams2/DYCACHE/*.json"
+   #os.system(cmd)
+   #cmd = "./DynaDB.py cd " + day 
+   #os.system(cmd)
 
    db_meteors = {}
    items = search_obs(dynamodb, station_id, day, 1)
@@ -1014,4 +1024,8 @@ if __name__ == "__main__":
    if cmd == "get_all_obs":
       get_all_obs(dynamodb, sys.argv[2], json_conf)
    if cmd == "udc":
-      update_dyna_cache_for_day(dynamodb, sys.argv[2], json_conf)
+      if len(sys.argv) > 3:
+         utype = sys.argv[3]
+      else:
+         utype = None
+      update_dyna_cache_for_day(dynamodb, sys.argv[2], json_conf, utype)

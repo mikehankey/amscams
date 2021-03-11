@@ -11,7 +11,7 @@ import os
 from lib.FFFuncs import ffprobe as ffprobe4, imgs_to_vid
 from lib.PipeAutoCal import fn_dir, get_cal_files, get_image_stars, get_catalog_stars, pair_stars, update_center_radec, cat_star_report, minimize_fov, XYtoRADec, poly_fit_check
 from lib.PipeVideo import ffmpeg_splice, find_hd_file, load_frames_fast, find_crop_size, ffprobe
-from lib.PipeUtil import load_json_file, save_json_file, cfe, get_masks, convert_filename_to_date_cam, buffered_start_end, get_masks, compute_intensity , bound_cnt, day_or_night, calc_dist
+from lib.PipeUtil import load_json_file, save_json_file, cfe, get_masks, convert_filename_to_date_cam, buffered_start_end, get_masks, compute_intensity , bound_cnt, day_or_night, calc_dist, get_trim_num
 from lib.DEFAULTS import *
 from lib.PipeMeteorTests import big_cnt_test, calc_line_segments, calc_dist, unq_points, analyze_intensity, calc_obj_dist, meteor_direction, meteor_direction_test, check_pt_in_mask, filter_bad_objects, obj_cm, meteor_dir_test, ang_dist_vel, gap_test, best_fit_slope_and_intercept
 from lib.PipeImage import stack_frames
@@ -22,7 +22,7 @@ from lib.PipeImage import stack_frames
 import numpy as np
 import cv2
 import matplotlib
-#matplotlib.use('TkAgg')
+matplotlib.use('TkAgg')
 from matplotlib import pyplot as plt
 
 from sklearn import linear_model, datasets
@@ -301,6 +301,54 @@ def add_spots_to_mask(image, spots):
    return(image)
 
 
+def scan_for_stars(image):
+   from RMS.ImageLib import adjustLevels
+   ih, iw = image.shape[:2]
+   hor_size = int(ih / 10)
+   stars = []
+   for i in range(0, 10):
+      y1 = i * hor_size
+      y2 = y1 + hor_size
+      o_row_img = image[y1:y2,0:iw]
+      
+      row_img = cv2.cvtColor(o_row_img, cv2.COLOR_BGR2GRAY)
+      avg = np.mean(row_img) 
+      avg = avg #- (avg/3)
+      gamma = .8
+      temp = adjustLevels(row_img, avg,gamma,255)
+      temp = cv2.convertScaleAbs(temp)
+
+      tavg = np.mean(temp) 
+      tavg = tavg * 2
+      if tavg < 10:
+         tavg = 10
+      print ("TAVG:", tavg)
+      _, threshold = cv2.threshold(temp.copy(), tavg, 255, cv2.THRESH_BINARY)
+
+      cnts = get_cont(threshold)
+      for cnt in cnts:
+         x,y,w,h = cnt 
+         if w <= 8 and h <= 8:
+            cv2.rectangle(o_row_img, (int(x), int(y)), (int(x+w) , int(y+h) ), (255, 255, 255), 1)
+            cx = x + (w/2)
+            cy = y + (h/2)
+            star_img = row_img[y:y+h,x:x+h]
+            star_int = np.sum(star_img)
+            stars.append((cx, cy, star_int))
+         else:
+            cv2.rectangle(o_row_img, (int(x), int(y)), (int(x+w) , int(y+h) ), (0, 0, 255), 1)
+            print("too big:",w,h)
+
+   #   cv2.imshow('star finder adj', o_row_img)
+   #   cv2.waitKey(0)
+   #for star in stars:
+   #   cv2.circle(image,(x,y), 4, (0,0,255), 1)
+   #   print(star)
+   #cv2.imshow('pepe', image)
+   #cv2.waitKey(0)
+
+   return(stars)
+
 def reduce_remote_meteor(video_file, station_id, json_conf):
 
    # CONFIG / SETUP
@@ -316,10 +364,152 @@ def reduce_remote_meteor(video_file, station_id, json_conf):
    else:
       print("We have the conf file.")
    # load remote conf
-   remote_conf = load_json_file(local_conf)
+   if station_id != json_conf['site']['ams_id']:
+      remote_conf = load_json_file(local_conf)
+   else:
+      remote_conf = json_conf
+
+
+
+   frames,color_frames,subframes,sum_vals,max_vals,pos_vals = load_frames_fast(video_file, json_conf, 0, 0, 1, 1,[])
+   stars = scan_for_stars(color_frames[0])
+   close_cals,lens_model = get_remote_calib(station_id, video_file,remote_conf)
+   calib = get_best_cal(video_file, frames[0], close_cals, stars, lens_model, remote_conf)
+   print(calib)
+   exit()
+
+
+   frame_data,color_frames = scan_meteor_file(video_file, station_id, remote_conf, frames,color_frames,subframes)
+
+   # now get remote calib info!
+
+   if color_frames[0].shape[0] < 1080:
+      sd_frame_data = frame_data
+
+
+   for fro in frame_data:
+      fn = int(fro['fn'])
+      x = int(fro['x'])
+      y = int(fro['y'])
+      w = int(fro['w'])
+      h = int(fro['h'])
+      sf = color_frames[fn].copy()
+      lx = int(fro['lx'])
+      ly = int(fro['ly'])
+ 
+      print(fro)
+      sf[ly,lx] = [0,0,255]
+      #cv2.rectangle(sf, (int(x), int(y)), (int(x+w) , int(y+h) ), (255, 255, 255), 1)
+      cv2.imshow('final',  sf)
+      cv2.waitKey(0)
+
+def get_best_cal(video_file, cal_image, close_cals, stars,lens_model, json_conf):
+   for td, cal_info in close_cals:
+      #print(cal_info)
+      calib = {}
+      calib['ra_center'] = ""
+      calib['dec_center'] = ""
+      calib['center_az'] = cal_info[2]
+      calib['center_el'] = cal_info[3]
+      calib['position_angle'] = cal_info[4]
+      calib['pixscale'] = cal_info[5]
+      calib['user_stars'] = stars
+      if "x_poly" in lens_model:
+         calib['x_poly'] = lens_model['x_poly']
+         calib['y_poly'] = lens_model['y_poly']
+         calib['x_poly_fwd'] = lens_model['x_poly_fwd']
+         calib['y_poly_fwd'] = lens_model['y_poly_fwd']
+      else:
+         calib['x_poly'] = np.zeros(shape=(15,), dtype=np.float64)
+         calib['y_poly'] = np.zeros(shape=(15,), dtype=np.float64)
+         calib['x_poly_fwd'] = np.zeros(shape=(15,), dtype=np.float64)
+         calib['y_poly_fwd'] = np.zeros(shape=(15,), dtype=np.float64)
+
+
+      calib = update_center_radec(video_file,calib,json_conf)
+      cp = pair_stars(calib, video_file, json_conf, cal_image)
+      print("CP?", cal_info[1], cp['center_az'], cp['center_el'], cp['position_angle'], cp['pixscale'], cp['ra_center'], cp['dec_center'], cp['total_res_px'])
+      for star in cp['cat_image_stars']:
+         print(star)
+      #print("RES:", cp['total_res_px'])
+      #for star in cp['cat_image_stars'] :
+      #   print(star)
+
+def get_remote_calib(station_id,video_file,json_conf):
+   (f_datetime, cams_id, f_date_str,fy,fmin,fd, fh, fm, fs) = convert_filename_to_date_cam(video_file)
+   trim_num = get_trim_num(video_file)
+   print(f_datetime, trim_num)
+   extra_sec = int(trim_num) / 25
+   trim_time = f_datetime + datetime.timedelta(0,extra_sec)
+   print("TRIM TIME IS:", trim_time)
+
+      #first_dt = datetime.datetime.strptime(dt, "%Y-%m-%d %H:%M:%S.%f")
+
+   print("Get remote calib for :", station_id, cams_id, f_date_str)
+   local_cal_dir = "/mnt/ams2/STATIONS/" + "/CAL/"
+   cloud_cal_dir = "/mnt/archive.allsky.tv/" + station_id + "/CAL/"
+   # files needed: (multi_poly_AMSX-CAMID.info cal_day_hist.json, cal_history.json
+   all_files = []
+   all_files.append(('cal_day_hist.json', station_id + "_" + "cal_day_hist.json"))
+   all_files.append(('cal_history.json', station_id + "_" + "cal_history.json"))
+   for cam in json_conf['cameras']:
+      cid = json_conf['cameras'][cam]['cams_id']
+      all_files.append(("multi_poly-" + station_id + "-" + cid + ".info", station_id + "_" + cid + "_lens_model.json"))
+      if cid == cams_id: 
+         lm_file = local_cal_dir + station_id + "_" + cid + "_lens_model.json"
+         if cfe(lm_file) == 1:
+            lens_model = load_json_file(lm_file)
+         else:
+            print("NO LENS MODEL!")
+            lens_model = None
+   if cfe(local_cal_dir,1) == 0:
+      os.makedirs(local_cal_dir)
+
+   for file in all_files:
+      of, lf = file
+      cloud_file = cloud_cal_dir + of
+      local_file = local_cal_dir + lf
+      if cfe(local_file) == 0:
+         cmd = "cp " + cloud_file + " " + local_file 
+         print(cmd)
+         os.system(cmd)
+      else:
+         print("we already have this file.", local_file)
+
+   cal_day_hist = load_json_file(local_cal_dir + station_id + "_cal_day_hist.json")
+   close_cals = []
+   for cdh in cal_day_hist:
+      if cdh[0] == cams_id:
+         print(cdh)
+         cal_date = cdh[1]
+         cal_dt = datetime.datetime.strptime(cal_date, "%Y_%m_%d")
+         time_diff = trim_time - cal_dt
+         td = (time_diff.total_seconds()/60/60/24)
+         close_cals.append((td, cdh))
+
+
+   calib = {}
+   calib['ra_center'] = ""
+   calib['dec_center'] = ""
+   calib['center_az'] = ""
+   calib['center_el'] = ""
+   calib['position_angle'] = ""
+   calib['pix_scale'] = ""
+   calib['x_poly'] = ""
+   calib['y_poly'] = ""
+   calib['x_poly_fwd'] = ""
+   calib['y_poly_fwd'] = ""
+
+   close_cals = sorted(close_cals, key=lambda x: (x[0]), reverse=False)
+
+   return(close_cals[0:10], lens_model)
+
+
+def scan_meteor_file(video_file,station_id, json_conf, frames=None, color_frames=None, subframes=None):
 
    # load video frames
-   frames,color_frames,subframes,sum_vals,max_vals,pos_vals = load_frames_fast(video_file, remote_conf, 0, 0, 1, 1,[])
+   if frames is None:
+      frames,color_frames,subframes,sum_vals,max_vals,pos_vals = load_frames_fast(video_file, json_conf, 0, 0, 1, 1,[])
    bright_spots = find_bright_spots(frames[0])
    main_mask = np.zeros((1080,1920),dtype=np.uint8)
    main_mask = add_spots_to_mask(main_mask, bright_spots)
@@ -329,6 +519,9 @@ def reduce_remote_meteor(video_file, station_id, json_conf):
    # get initial contours inside each frame
    for oframe in frames:
       frame = cv2.subtract(oframe, frames[0]) 
+      if main_mask.shape[0] != frame.shape[0]:
+         main_mask = cv2.resize(main_mask, (frame.shape[1], frame.shape[0]))
+      print(main_mask.shape, frame.shape)
       frame = cv2.subtract(frame, main_mask) 
       cnts = get_cont(frame)
       cnt_frame_data = [] 
@@ -407,7 +600,7 @@ def reduce_remote_meteor(video_file, station_id, json_conf):
    YS = data[inliers,1]
 
    # make mask around the good area XS/YS
-   mask_img = np.zeros((1080,1920),dtype=np.uint8)
+   mask_img = np.zeros((oframe.shape[0],oframe.shape[1]),dtype=np.uint8)
    for i in range(0, len(XS)):
       if True:
          x = XS[i]
@@ -446,8 +639,13 @@ def reduce_remote_meteor(video_file, station_id, json_conf):
    frame_data = []
    dupes = {}
    fc = 0
+   #cv2.imshow('P', mask_img)
+   #cv2.waitKey(0)
    for oframe in frames:
       frame = cv2.subtract(oframe, frames[0]) 
+      if mask_img.shape[0] != oframe.shape[0]:
+         mask_img = cv2.resize(mask_img, (frame.shape[1], frame.shape[0]))
+
       frame = cv2.subtract(frame, mask_img)
       cnts = get_cont(frame)
       cnt_frame_data = [] 
@@ -458,11 +656,11 @@ def reduce_remote_meteor(video_file, station_id, json_conf):
             dupes[key] = 1
          else:
             dupes[key] += 1
-         #cv2.rectangle(frame, (int(x), int(y)), (int(x+w) , int(y+h) ), (255, 255, 255), 1)
+         cv2.rectangle(frame, (int(x), int(y)), (int(x+w) , int(y+h) ), (255, 255, 255), 1)
          cnt_frame_data.append((x,y,w,h))
       frame_data.append((fc, cnt_frame_data))
       #cv2.imshow("P", frame)
-      #cv2.waitKey(30)
+      #cv2.waitKey(0)
       fc += 1
 
    # REMOVE DUPE CNTS IF THEY STILL EXIST
@@ -793,8 +991,8 @@ def reduce_remote_meteor(video_file, station_id, json_conf):
       final_ys.append(final_y)
       est_xs.append(est_x)
       est_ys.append(est_y)
-      cv2.imshow('pepe', show_frame)
-      cv2.waitKey(0)
+      #cv2.imshow('pepe', show_frame)
+      #cv2.waitKey(0)
       fc += 1
       frame_data.append(frame_obj)
 
@@ -807,12 +1005,15 @@ def reduce_remote_meteor(video_file, station_id, json_conf):
    ax.plot(est_xs, est_ys, '.b', alpha=0.6,
         label='final data')
    plt.gca().invert_yaxis()
-   plt.show()
+   #plt.show()
+
+   return(frame_data, color_frames)
 
 def add_dist_info(frame_data):
    last_x = None
    first_x = None
    last_dist_from_start = None
+   new_frame_data = []
    for fo in frame_data:
       fx = fo['final_x']
       fy = fo['final_y']
@@ -835,7 +1036,14 @@ def add_dist_info(frame_data):
       last_x = fx
       last_y = fy
       last_dist_from_start = dist_from_start
+      fo['dist_from_start'] = dist_from_start
+      fo['dist_from_last'] = dist_from_last
+      fo['seg_len'] = seg_len
+      fo['xdiff'] = xdiff
+      fo['ydiff'] = ydiff 
+      new_frame_data.append(fo)
       print(fx,fy, dist_from_start, dist_from_last, seg_len, xdiff, ydiff)
+   return(new_frame_data)
 
 def get_leading_point(cnt, dom_dir, x_dir, y_dir):
    x,y,w,h = cnt
@@ -847,11 +1055,13 @@ def get_leading_point(cnt, dom_dir, x_dir, y_dir):
    else:
       # high x is best
       lx = x + w
-   if x_dir == "down_to_up":
+   if y_dir == "down_to_up":
       # low y is best
       ly = y 
    else:
       ly = y + h 
+
+   #xxx = input("xxx")
    return(lx,ly, cx,cy)
 
 def get_leading_cnt(cnts, dom_dir, x_dir, y_dir):
@@ -908,6 +1118,7 @@ def get_leading_cnt(cnts, dom_dir, x_dir, y_dir):
 
 def dir_info(frame_data):
    first_x = None
+   last_x= None
    for fn, cnts in frame_data:
       if first_x is None:
          if len(cnts) > 0:
@@ -916,8 +1127,12 @@ def dir_info(frame_data):
       if len(cnts) > 0:
          last_x = cnts[0][0]
          last_y = cnts[0][1]
-   x_diff = first_x - last_x
-   y_diff = first_y - last_y
+   if last_x is not None:
+      x_diff = first_x - last_x
+      y_diff = first_y - last_y
+   else:
+      x_diff = 0
+      y_diff = 0
    if abs(x_diff) > abs(y_diff):
       dom_dir = "x"
    else:
