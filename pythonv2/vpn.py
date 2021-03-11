@@ -68,7 +68,7 @@ else:
 
 amsid = json_conf['site']['ams_id'].upper()
 auto_update()
-#exit()
+
 # check if a VPN connect request exists
 # and then connect if it does
 
@@ -84,13 +84,18 @@ print("R:", r.text)
 running = check_running()
 print("VPN CONNECT:", vpn_connect)
 print("RUNNING:", running)
+print(type(vpn_connect), type(running))
+if vpn_connect == 1:
+   print("VPN CONNECT:", vpn_connect)
+if running == 1:
+   print("RUNNING:", running)
 
-if vpn_connect == 1 and running == 0:   
+if vpn_connect >= 1 and running == 0:   
    # connect request exists make connection
    cmd ="/usr/sbin/openvpn --config /etc/openvpn/" + amsid + ".ovpn &"
    print(cmd)
    os.system(cmd)
-if vpn_connect == 0 and running == 1:   
+if int(vpn_connect) == 0 and int(running) >= 1:   
    print ("Terminate running VPN connection, it is no longer requested.")
    cmd ="/usr/bin/killall openvpn"
    print(cmd)
