@@ -212,6 +212,12 @@ def find_existing_event(event, events):
    return(0, None)
 
 def define_events(date):
+
+   print("Update DYNA Cache")
+   cmd = "./DynaDB.py udc " + date
+   print(cmd)
+   os.system(cmd)
+
    dyn_cache = "/mnt/ams2/DYCACHE/"
    obs_file = dyn_cache + date + "_ALL_OBS.json"
    events_file = dyn_cache + date + "_ALL_EVENTS.json"
@@ -479,7 +485,10 @@ def delete_events_day(date):
 def solve_day(day, cores=0):
    date = day
    dyn_cache = "/mnt/ams2/DYCACHE/"
-   #os.system("./DynaDB.py cd " + day)
+   cmd = "./DynaDB.py udc " + day + " events"
+   print(cmd)
+   os.system(cmd)
+   x = input("xxx")
    print("Solve day", day)
    dynamodb = boto3.resource('dynamodb')
    json_conf = load_json_file("../conf/as6.json")
@@ -497,12 +506,12 @@ def solve_day(day, cores=0):
    events_index = load_json_file(events_index_file)
 
    print("TOTAL EVENTS:", len(events))
+   print("TOTAL INDEX:", len(events_index))
    total_events = len(events)
    ec = 0
 
-   for event in events:
+   for event in events_index:
       print("DY EV:", event['event_id'])
-
       ev_status = check_event_status(event)
       print("EV STATUS:", ev_status)
       if "solve_status" in event:
@@ -623,6 +632,11 @@ def solve_event(event_id, force=1, time_sync=1):
     mon = event_id[4:6]
     day = event_id[6:8]
     date = year + "_" + mon + "_" + day
+    print("EID", event_id)
+    print("Y", year)
+    print("M", mon)
+    print("D", day)
+    print("Dt", date)
     local_event_dir = "/mnt/ams2/EVENTS/" + year + "/" + mon + "/" + day + "/" + event_id + "/" 
     cloud_event_dir = "/mnt/archive.allsky.tv/EVENTS/" + year + "/" + mon + "/" + day + "/" + event_id + "/" 
     if cfe(cloud_event_dir, 1) == 0:
@@ -1804,7 +1818,6 @@ def WMPL_solve(event_id, obs,time_sync=1):
        print(solve_dir )
        for sf in solved_files:
           print(sf)
-       #xxx = input("Gen report...")
        event_report(solve_dir, event_final_dir, obs)
 
 
