@@ -95,7 +95,9 @@ def check_make_events(obs_time, obs, events):
    return(events)
 
 def events_report(date, type="all"):
-   dyn_cache = "/mnt/ams2/DYCACHE/"
+   year, mon, day = date.split("_")
+   day_dir = "/mnt/ams2/EVENTS/" + year + "/" + mon + "/" + day + "/" 
+   dyn_cache = day_dir 
    obs_file = dyn_cache + date + "_ALL_OBS.json"
    events_file = dyn_cache + date + "_ALL_EVENTS.json"
    events_index_file = dyn_cache + date + "_ALL_EVENTS_INDEX.json"
@@ -212,13 +214,15 @@ def find_existing_event(event, events):
    return(0, None)
 
 def define_events(date):
+   year, mon, day = date.split("_")
+   day_dir = "/mnt/ams2/EVENTS/" + year + "/" + mon + "/" + day + "/" 
 
    print("Update DYNA Cache")
    cmd = "./DynaDB.py udc " + date
    print(cmd)
    os.system(cmd)
 
-   dyn_cache = "/mnt/ams2/DYCACHE/"
+   dyn_cache = day_dir 
    obs_file = dyn_cache + date + "_ALL_OBS.json"
    events_file = dyn_cache + date + "_ALL_EVENTS.json"
    events_index_file = dyn_cache + date + "_ALL_EVENTS_INDEX.json"
@@ -393,7 +397,11 @@ def GC_az_el(azs, els):
 
 def solve_status(day):
    date = day
-   dyn_cache = "/mnt/ams2/DYCACHE/"
+
+   year, mon, day = date.split("_")
+   day_dir = "/mnt/ams2/EVENTS/" + year + "/" + mon + "/" + day + "/" 
+   dyn_cache = day_dir
+   #dyn_cache = "/mnt/ams2/DYCACHE/"
    dynamodb = boto3.resource('dynamodb')
    obs_file = dyn_cache + date + "_ALL_OBS.json"
    events_file = dyn_cache + date + "_ALL_EVENTS.json"
@@ -475,7 +483,9 @@ def solve_month(wild):
 
 
 def delete_events_day(date):
-   dyn_cache = "/mnt/ams2/DYCACHE/"
+   year, mon, day = date.split("_")
+   day_dir = "/mnt/ams2/EVENTS/" + year + "/" + mon + "/" + day + "/" 
+   dyn_cache = day_dir 
    xxx = input("Are you sure you want to delete all events for " + date + " [ENTER] to cont or [CNTL-X] to quit.")
    events_file = dyn_cache + date + "_ALL_EVENTS.json"
    events = load_json_file(events_file)
@@ -484,11 +494,12 @@ def delete_events_day(date):
 
 def solve_day(day, cores=0):
    date = day
-   dyn_cache = "/mnt/ams2/DYCACHE/"
+   year, mon, dom = date.split("_")
+   day_dir = "/mnt/ams2/EVENTS/" + year + "/" + mon + "/" + dom + "/" 
+   dyn_cache = day_dir 
    cmd = "./DynaDB.py udc " + day + " events"
    print(cmd)
    os.system(cmd)
-   x = input("xxx")
    print("Solve day", day)
    dynamodb = boto3.resource('dynamodb')
    json_conf = load_json_file("../conf/as6.json")
@@ -619,7 +630,9 @@ def parse_extra_obs(extra):
    return(e_obs)
 
 def get_event_data(date, event_id):
-   dyn_cache = "/mnt/ams2/DYCACHE/"
+   year, mon, day = date.split("_")
+   day_dir = "/mnt/ams2/EVENTS/" + year + "/" + mon + "/" + day + "/" 
+   dyn_cache = day_dir 
    events_file = dyn_cache + date + "_ALL_EVENTS.json"
    ev = load_json_file(events_file)
    for event in ev:
@@ -823,7 +836,7 @@ def solve_event(event_id, force=1, time_sync=1):
        os.makedirs(cloud_dir)
     cmd = "rm " + solve_dir + "/*.png"
     print(cmd)
-    #os.system(cmd)
+    os.system(cmd)
     cmd = "rsync -auv " + solve_dir + "* " + cloud_dir 
     print(cmd)
     os.system(cmd)
@@ -968,6 +981,7 @@ def make_event_html(event_json_file ):
    date = year + "_" + mon + "_" + day
    #HHHH
    solve_dir = local_event_dir 
+   print("SOLVE DIR IS #1:", solve_dir)
    xxx = solve_dir.split("/")[-1]
 
 
@@ -976,6 +990,7 @@ def make_event_html(event_json_file ):
    event_file = solve_dir + event_id + "-event.json"
    event_index_file = solve_dir + "index.html" 
    kml_file = solve_dir + event_id + "-map.kml"
+   print("KML FILE:", kml_file)
 
    sd = solve_dir.split("/")[-1]
    if "." in sd:
@@ -1273,6 +1288,10 @@ def make_event_json(event_id, solve_dir):
          kml_file = js.replace("-obs.json", "-map.kml")
       if "simple.json" in js:
          sol_file = js
+
+
+   print("SOL FILE:", sol_file)
+   print("KML FILE:", kml_file)
 
    simple_solve = load_json_file(sol_file)
 
@@ -1634,6 +1653,9 @@ def make_kml(kml_file, points, lines):
 
 
 def event_report(solve_dir, event_final_dir, obs):
+    print("EVREPORT:")
+    print("SOLVE DIR:", solve_dir)
+    print("FINAL DIR:", event_final_dir)
     json_conf = load_json_file("../conf/as6.json")
     remote_urls = {}
     if "remote_urls" in json_conf['site']:
@@ -1691,6 +1713,7 @@ def event_report(solve_dir, event_final_dir, obs):
     final_jpgs = []
     for sf in solved_files:
        fn, xxx = fn_dir(sf)
+       fn = fn.replace(".png", ".jpg")
        new_file = event_final_dir + fn 
        cmd = "mv " + sf + " " + event_final_dir
        print(cmd)
@@ -1698,10 +1721,11 @@ def event_report(solve_dir, event_final_dir, obs):
        if "jpg" in fn:
           final_jpgs.append(new_file)
        print(cmd)
- 
+      
     for jpg in final_jpgs:
        jpg = jpg.replace("/mnt/ams2/meteor_archive/", "")
        html += "<img src=" + jpg + ">"
+       print(html)
     html += "<p>"
     html += "<pre>" + report + "</pre>"
     fp = open(solve_dir + "/index.html", "w")
@@ -1721,7 +1745,7 @@ def WMPL_solve(event_id, obs,time_sync=1):
     date = year + "_" + mon + "_" + day
 
     event_final_dir = "/mnt/ams2/EVENTS/" + year + "/" + mon + "/" + day + "/" + event_id + "/"
-    solve_dir = "/mnt/ams2/EVENTS/" + year + "/" + mon + "/" + event_id + "/"
+    solve_dir = "/mnt/ams2/EVENTS/" + year + "/" + mon + "/" + day + "/" + event_id + "/"
     # Inputs are RA/Dec
     meastype = 2
 

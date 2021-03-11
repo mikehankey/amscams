@@ -360,8 +360,13 @@ def update_dyna_cache_for_day(dynamodb, date, stations, utype=None):
    if utype == "events": 
       do_obs = 0
       do_events = 1
+   print("DATE:", date)
+   year, mon, day = date.split("_")
+   day_dir = "/mnt/ams2/EVENTS/" + year + "/" + mon + "/" + day + "/"
+   dyn_cache = day_dir
+   if cfe(dyn_cache, 1) == 0:
+      os.makedirs(dyn_cache)
 
-   dyn_cache = "/mnt/ams2/DYCACHE/"
    obs_file = dyn_cache + date + "_ALL_OBS.json" 
    event_file = dyn_cache + date + "_ALL_EVENTS.json" 
    stations_file = dyn_cache + date + "_ALL_STATIONS.json" 
@@ -411,7 +416,12 @@ def update_dyna_cache_for_day(dynamodb, date, stations, utype=None):
 
 
 def search_events(dynamodb, date, stations, nocache=0):
-   dyn_cache = "/mnt/ams2/DYCACHE/"
+   year, mon, day = date.split("_")
+   day_dir = "/mnt/ams2/EVENTS/" + year + "/" + mon + "/" + day + "/"
+   dyn_cache = day_dir
+   if cfe(dyn_cache, 1) == 0:
+      os.makedirs(dyn_cache)
+
    use_cache = 0
    if cfe(dyn_cache, 1) == 0:
       os.makedirs(dyn_cache)
@@ -477,8 +487,12 @@ def get_all_obs(dynamodb, date, json_conf):
 
 def search_obs(dynamodb, station_id, date, no_cache=0):
    print("SEARCH OBS:", station_id, date)
+   year, mon, day = date.split("_")
+   day_dir = "/mnt/ams2/EVENTS/" + year + "/" + mon + "/" + day + "/"
+   dyn_cache = day_dir
+   if cfe(dyn_cache, 1) == 0:
+      os.makedirs(dyn_cache)
 
-   dyn_cache = "/mnt/ams2/DYCACHE/"
    use_cache = 0
    if cfe(dyn_cache, 1) == 0:
       os.makedirs(dyn_cache)
@@ -518,10 +532,18 @@ def search_obs(dynamodb, station_id, date, no_cache=0):
 
 
 def get_event(dynamodb, event_id, nocache=1):
+   year = event_id[0:4]
+   mon = event_id[4:6]
+   dom = event_id[6:8]
+   date = year + "_" + mon + "_" + dom
 
 
    print("GET EVENT:", event_id)
-   dyn_cache = "/mnt/ams2/DYCACHE/"
+   day_dir = "/mnt/ams2/EVENTS/" + year + "/" + mon + "/" + dom + "/"
+   dyn_cache = day_dir
+   if cfe(dyn_cache, 1) == 0:
+      os.makedirs(dyn_cache)
+
    use_cache = 0
    if cfe(dyn_cache, 1) == 0:
       os.makedirs(dyn_cache)
@@ -578,7 +600,12 @@ def get_event(dynamodb, event_id, nocache=1):
 
 def get_obs(dynamodb, station_id, sd_video_file):
    date= sd_video_file[0:10]
-   dyn_cache = "/mnt/ams2/DYCACHE/"
+   year, mon, day = date.split("_")
+   day_dir = "/mnt/ams2/EVENTS/" + year + "/" + mon + "/" + day + "/"
+   dyn_cache = day_dir
+   if cfe(dyn_cache, 1) == 0:
+      os.makedirs(dyn_cache)
+
    use_cache = 0
    if cfe(dyn_cache, 1) == 0:
       os.makedirs(dyn_cache)
@@ -886,7 +913,12 @@ def update_mj_events(dynamodb, date):
    if amsid not in stations:
       stations.append(amdid)
    events = search_events(dynamodb, date, stations)
-   dyn_cache = "/mnt/ams2/DYCACHE/"
+   year, mon, day = date.split("_")
+   day_dir = "/mnt/ams2/EVENTS/" + year + "/" + mon + "/" + day + "/"
+   dyn_cache = day_dir
+   if cfe(dyn_cache, 1) == 0:
+      os.makedirs(dyn_cache)
+
    if cfe(dyn_cache, 1) == 0:
       os.makedirs(dyn_cache)
    save_json_file(dyn_cache + date + "_events.json",events)

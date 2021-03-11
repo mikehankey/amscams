@@ -6811,6 +6811,7 @@ def AzEltoRADec_old(az,el,cal_file,cal_params,json_conf):
 def fn_dir(file):
    fn = file.split("/")[-1]
    dir = file.replace(fn, "")
+   dir = dir.replace("//", "/")
    return(fn, dir)
 
 """ 
