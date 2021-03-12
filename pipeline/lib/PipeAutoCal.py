@@ -1514,9 +1514,9 @@ def guess_cal(cal_file, json_conf, cal_params = None):
    for star in stars:
       x,y,intense = star
       cv2.circle(img,(x,y), 7, (128,128,128), 1)
-   
-   cv2.imshow('pepe', img)
-   cv2.waitKey(30)
+   if SHOW == 1: 
+      cv2.imshow('pepe', img)
+      cv2.waitKey(30)
    print("GUSS CAM:", this_cam)
    az_guess, el_guess, pix_guess, pos_ang_guess = get_cam_best_guess(this_cam, json_conf)
    if "src.jpg" in cal_file:
