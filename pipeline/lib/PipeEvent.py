@@ -133,7 +133,7 @@ def dyna_events_for_day(date, json_conf):
       os.makedirs(local_event_dir)
    for data_file in data_files:
       #if True:
-      if cfe(local_event_dir + data_file) == 0:
+      if cfe(local_event_dir + data_file) == 0 or "ALL_EVENTS.json" in data_file:
          cmd = "cp " + cloud_event_dir + data_file + " " + local_event_dir
          print(cmd)
          os.system(cmd)
@@ -161,8 +161,8 @@ def dyna_events_for_day(date, json_conf):
             mse['total_stations'] = len(set(event['stations']))
             mse['event_day'] = date
             mse['event_id'] = event['event_id']
-            if "status" in event:
-               mse['solve_status'] = event['status']
+            if "solve_status" in event:
+               mse['solve_status'] = event['solve_status']
             else:
                mse['solve_status'] = "NOT SOLVED"
             print("MSE:", mse)

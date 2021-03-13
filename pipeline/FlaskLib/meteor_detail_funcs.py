@@ -216,8 +216,13 @@ def make_ms_html(amsid, meteor_file, mj):
 
    failed = 0
    if "solve_status" in mse:
+      solve_status = mse['solve_status']
       if "FAILED" in mse['solve_status']:
          failed = 1
+   else:
+      solve_status = "NOT SOLVED"
+
+   ms_html += solve_status
    #ms_html = "<table width=100%>"
    #ms_html += "<tr><td>Station</td><td>Start Datetime</td><td>File</td></tr>"
    if cfe("../conf/network_station_info.json") == 0:
@@ -232,6 +237,9 @@ def make_ms_html(amsid, meteor_file, mj):
       note = "This event failed."
    else:
       note = ""
+
+  
+
    ms_html = note + """
       <div class='h1_holder  d-flex justify-content-between'>
          <h1><span class='h'>Captures</span> </h1>
