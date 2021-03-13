@@ -332,6 +332,13 @@ def define_events(date):
    all_events = ms_events + ss_events
    save_json_file(events_index_file, all_events)
    print("saved:", events_index_file)
+   cloud_events_index_file = events_index_file.replace("/mnt/ams2/", "/mnt/archive.allsky.tv/")
+   cfn, cdir = fn_dir(cloud_events_index_file)
+   if cfe(cdir,1) == 0:
+      os.makedirs(cdir)
+   cmd = "cp " + events_index_file + " " + cloud_events_index_file
+   print(cmd)
+   os.system(cmd)
    mins = []
    counts = []
    # Plot unq station obs by minute
@@ -492,7 +499,7 @@ def delete_events_day(date):
    for event in events: 
       delete_event(None, event['event_day'], event['event_id'])
 
-def solve_day(day, cores=0):
+def solve_day(day, cores=20):
    date = day
    year, mon, dom = date.split("_")
    day_dir = "/mnt/ams2/EVENTS/" + year + "/" + mon + "/" + dom + "/" 
@@ -695,15 +702,15 @@ def solve_event(event_id, force=1, time_sync=1):
     else:
        extra_obs = []
 
-
-    if "solution" in event and force != 1:
-       if "solve_status" in event:
-          if "FAIL" in event['solve_status']:
-             print("The event ran and failed.")
-             return()
-          else:
-             print("The event ran and passed.")
-             return()
+    if event is not None:
+       if "solution" in event and force != 1:
+          if "solve_status" in event:
+             if "FAIL" in event['solve_status']:
+                print("The event ran and failed.")
+                return()
+             else:
+                print("The event ran and passed.")
+                return()
 
 
     obs = {}
@@ -1732,6 +1739,10 @@ def event_report(solve_dir, event_final_dir, obs):
     fp.write(html)
     print("SAVED INDEX:", event_final_dir + "/index.html")
 
+    # sync data to cloud
+    cloud_final_dir = event_final_dir.replace("/mnt/ams2/", "/mnt/archive.allsky.tv/")
+    cmd = "rsync -auv " + event_final_dir + " " + cloud_final_dir
+    print(cmd)
 
 
 

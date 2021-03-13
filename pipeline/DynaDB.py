@@ -375,6 +375,7 @@ def update_dyna_cache_for_day(dynamodb, date, stations, utype=None):
 
    # get station list of stations that could have shared obs
    all_stations = glob.glob("/mnt/ams2/STATIONS/CONF/*")
+   print("ALL STATIONS:", all_stations)
    clusters = make_station_clusters(all_stations)
    cluster_stations = []
    stations = []
@@ -385,6 +386,8 @@ def update_dyna_cache_for_day(dynamodb, date, stations, utype=None):
          cluster_stations.append(data)
    save_json_file(stations_file, clusters)
    print("UPDATED THE DYNA CACHE!", stations_file)
+   cloud_stations_file = stations_file.replace("/mnt/ams2/", "/mnt/archive.allsky.tv/")
+   os.system("cp " + stations_file + " " + cloud_stations_file)
 
    # get the obs for each station for this day
    if do_obs == 1:
@@ -403,6 +406,8 @@ def update_dyna_cache_for_day(dynamodb, date, stations, utype=None):
             all_obs.append(data)
       save_json_file(obs_file, all_obs)
       print("UPDATED THE DYNA CACHE!", obs_file)
+      cloud_obs_file = obs_file.replace("/mnt/ams2/", "/mnt/archive.allsky.tv/")
+      os.system("cp " + obs_file + " " + cloud_obs_file)
 
    if do_events == 1:
       os.system("rm " + event_file ) 
@@ -412,6 +417,9 @@ def update_dyna_cache_for_day(dynamodb, date, stations, utype=None):
 
       save_json_file(event_file, events)
       print("UPDATED THE DYNA CACHE!", event_file)
+      cloud_event_file = event_file.replace("/mnt/ams2/", "/mnt/archive.allsky.tv/")
+      os.system("cp " + event_file + " " + cloud_event_file)
+      print(cloud_event_file)
 
 
 
