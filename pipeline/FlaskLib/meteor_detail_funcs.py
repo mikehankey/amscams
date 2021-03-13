@@ -222,7 +222,6 @@ def make_ms_html(amsid, meteor_file, mj):
    else:
       solve_status = "NOT SOLVED"
 
-   ms_html += solve_status
    #ms_html = "<table width=100%>"
    #ms_html += "<tr><td>Station</td><td>Start Datetime</td><td>File</td></tr>"
    if cfe("../conf/network_station_info.json") == 0:
@@ -239,6 +238,8 @@ def make_ms_html(amsid, meteor_file, mj):
       note = ""
 
   
+
+   note = solve_status
 
    ms_html = note + """
       <div class='h1_holder  d-flex justify-content-between'>
