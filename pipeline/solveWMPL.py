@@ -1,4 +1,5 @@
 #!/usr/bin/python3
+from lib.PipeManager import dist_between_two_points
 import time
 import json
 import os
@@ -60,20 +61,28 @@ def check_make_events(obs_time, obs, events):
       found = 0
       #print(obs_time, event['start_datetime'])
       times = event['start_datetime']
-      for e_time in times:
+      for i in range(0, len(event['stations'])):
+         e_time = event['start_datetime'][i]
+         station = event['stations'][i]
+         lat = event['lats'][i]
+         lon = event['lons'][i]
          time_diff = (obs_time - e_time).total_seconds()
          #print("THIS TIME DIFF:", time_diff, obs_time, e_time)
          if time_diff < 5:
-            new_event = dict(event)
-            new_event['stations'].append(obs['station_id'])
-            new_event['files'].append(obs['sd_video_file'])
-            new_event['start_datetime'].append(obs_time)
-            new_event['lats'].append(obs['lat'])
-            new_event['lons'].append(obs['lon'])
-            found = 1
-            #print("We found the event:", new_event)
-            events[ec] = new_event
-            return(events)
+            station_dist = dist_between_two_points(obs['lat'], obs['lon'], lat, lon)
+            if station_dist < 500:
+               print("STATION DIST!", station_dist)
+               new_event = dict(event)
+               new_event['stations'].append(obs['station_id'])
+               new_event['files'].append(obs['sd_video_file'])
+               new_event['start_datetime'].append(obs_time)
+               new_event['lats'].append(obs['lat'])
+               new_event['lons'].append(obs['lon'])
+               found = 1
+               events[ec] = new_event
+               return(events)
+            else:
+               print("REJECT STATION DIST!", station_dist)
       ec += 1
            
    # if we got this far it must be a new obs not related to any existing events
