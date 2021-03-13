@@ -160,9 +160,12 @@ def make_obs_object(mj,mse, nsinfo):
          obs[station] = {}
       if fn not in obs[station]:
          print("STATION:", station)
-         print("STATION:", nsinfo[station])
+         
          obs[station][fn] = {}
-         obs[station][fn]['loc'] = nsinfo[station]['loc']
+         if station in nsinfo:
+            obs[station][fn]['loc'] = nsinfo[station]['loc']
+         else:
+            obs[station][fn]['loc'] = [0,0,0]
          obs[station][fn]['times'] = []
          obs[station][fn]['fns'] = []
          obs[station][fn]['xs'] = []

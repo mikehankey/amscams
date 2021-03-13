@@ -761,7 +761,10 @@ def update_meteor_obs(dynamodb, station_id, sd_video_file, obs_data):
       (dt, fn, x, y, w, h, oint, ra, dec, az, el) = data
       dmfd.append((dt,float(fn),float(x),float(y),float(w),float(h),float(oint),float(ra),float(dec),float(az),float(el)))
    obs_data['meteor_frame_data'] = dmfd
- 
+   if "final_vid" not in obs_data:
+      obs_data['final_vid'] = "" 
+   if "final_data" not in obs_data:
+      obs_data['final_data'] = {} 
 
    if dynamodb is None:
       dynamodb = boto3.resource('dynamodb')
