@@ -17,7 +17,7 @@ date = event_start_time[0:10]
 sd_dir = "/mnt/ams2/SD/proc2/" + date + "/" 
 hd_dir = "/mnt/ams2/HD/"
 out_dir = "/mnt/ams2/CUSTOM/SPACEX/2021_03_14/"
-cloud_dir = "/mnt/ams2/" + ams_id + "/CUSTOM/SPACEX/2021_03_14/"
+cloud_dir = "/mnt/archive.allsky.tv/" + ams_id + "/CUSTOM/SPACEX/2021_03_14/"
 if cfe(out_dir,1) == 0:
    os.makedirs(out_dir)
 if cfe(cloud_dir,1) == 0:
@@ -77,3 +77,4 @@ out = open(out_dir + "index.html", "w")
 out.write(html)
 os.system("cp " + out_dir + "index.html" + " " + cloud_dir)
 print(out_dir)
+print(cloud_dir)
