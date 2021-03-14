@@ -1,7 +1,9 @@
 #!/usr/bin/python3
 import datetime
-from lib.PipeVideo import ffmpeg_cats
-from lib.PipeUtil import cfe, save_json_file, load_json_file
+import cv2
+
+from lib.PipeVideo import ffmpeg_cats, load_frames_simple
+from lib.PipeUtil import cfe, save_json_file, load_json_file, convert_filename_to_date_cam
 import os
 import glob
 # script to archive footage from longer events like space-x rockets or satellites
@@ -97,7 +99,7 @@ def archive_event_data():
    print(out_dir)
    print(cloud_dir)
 
-def dump_frames():
+def cat_videos():
    work_dir = "/mnt/ams2/CUSTOM/SPACEX/2021_03_14/ALL/"
    out_dir = "/mnt/ams2/CUSTOM/SPACEX/2021_03_14/FINAL/"
    stations = ['AMS1', 'AMS7', 'AMS9', 'AMS15'] 
@@ -114,4 +116,45 @@ def dump_frames():
          print(station, file)
       outfile = out_dir + station + "_spacex_2021_03_14"
       ffmpeg_cats(sorted(station_files[station]['files']), outfile)
+
+
+
+def dump_frames():
+   work_dir = "/mnt/ams2/CUSTOM/SPACEX/2021_03_14/ALL/"
+   out_dir = "/mnt/ams2/CUSTOM/SPACEX/2021_03_14/FRAMES/"
+   if cfe(out_dir,1) == 0:
+      os.makedirs(out_dir)
+   stations = ['AMS1', 'AMS7', 'AMS9', 'AMS15'] 
+   station_files = {}
+   for station in stations:
+      station_files[station] = {}
+      print(work_dir + station + "_*.mp4")
+      station_files[station]['files'] = glob.glob(work_dir + station + "_*.mp4")
+
+   #print(station_files)
+   for station in station_files:
+      for file in sorted(station_files[station]['files']):
+         fn = file.split("/")[-1]
+         if "ALL" in fn:
+            continue
+         el = fn.split("_")
+         print(el)
+         station,sequence,frmt,year,month,day,hour,minute,second,msec,cam = el
+         date_str = year + "_" + month + "_" + day + "_" + hour + "_" + minute + "_" + second
+         f_datetime = datetime.datetime.strptime(date_str, "%Y_%m_%d_%H_%M_%S")
+
+         tdir = out_dir + fn.replace(".mp4", "")
+         if cfe(tdir,1) == 0:
+            os.makedirs(tdir)
+         frames = load_frames_simple(file)
+         for i in range(0, len(frames)):
+            extra_sec = i / 25
+            frame_time = f_datetime + datetime.timedelta(0,extra_sec)
+            frame_time_str = frame_time.strftime("%Y_%m_%d_%H_%M_%S.%f")
+            outfile = tdir + frame_time_str + ".jpg"
+            print(frame_time, frame_time_str, outfile)
+            cv2.imwrite(outfile, frames[i])
+         #print("ST:", station, tdir, file, len(frames))
+      #outfile = out_dir + station + "_spacex_2021_03_14"
+
 dump_frames()
