@@ -1,0 +1,8 @@
+{
+"title" : "SpaceX Launch 2021/03/14 10:10 UTC",
+"credits" : "Mike Hankey, Monkton MD / AMS - AllSkyCams",
+"ams_id" : "AMS1",
+"cams" : ["010003", "010002"],
+"event_start_time" : "2021_03_14_10_08_00",
+"event_end_time" :  "2021_03_14_10_11_01"
+}
