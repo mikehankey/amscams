@@ -1,4 +1,4 @@
-from lib.PipeUtil import load_json_file, save_json_file, cfe, bound_cnt
+from lib.PipeUtil import load_json_file, save_json_file, cfe, bound_cnt, convert_filename_to_date_cam
 from lib.PipeAutoCal import get_image_stars, get_catalog_stars , pair_stars, eval_cnt, update_center_radec, fn_dir
 from lib.PipeDetect import fireball, apply_frame_deletes, find_object, analyze_object, make_base_meteor_json, fireball_fill_frame_data, calib_image, apply_calib, grid_intensity_center, make_roi_video_mfd
 from lib.PipeVideo import ffprobe, load_frames_fast
@@ -278,8 +278,9 @@ def delete_meteors(data):
    return resp
 
 def show_cat_stars (video_file, hd_stack_file, points):
-
+   (f_datetime, cam, f_date_str,fy,fmin,fd, fh, fm, fs) = convert_filename_to_date_cam(video_file)
    json_conf = load_json_file("../conf/as6.json")
+   STATION_ID = json_conf['site']['ams_id']
    cp = None
    if "meteors" in video_file:
       app_type = "meteor"
@@ -300,7 +301,22 @@ def show_cat_stars (video_file, hd_stack_file, points):
       elif "cal_params" in mjr:
          cp = mjr['cal_params']
 
-      #cp = update_center_radec(video_file,cp,json_conf)
+      cp = update_center_radec(video_file,cp,json_conf)
+      print(cp['center_az'])
+      print(cp['center_el'])
+      print(cp['ra_center'])
+      print(cp['dec_center'])
+      print(cp['position_angle'])
+      print(cp['pixscale'])
+      mcp_file = "/mnt/ams2/cal/" + "multi_poly-" + STATION_ID + "-" + cam + ".info" 
+      print("MCP:", mcp_file)
+      if cfe(mcp_file) == 1:
+         mcp = load_json_file(mcp_file)
+         cp['x_poly'] = mcp['x_poly']
+         cp['y_poly'] = mcp['y_poly']
+         cp['x_poly_fwd'] = mcp['x_poly_fwd']
+         cp['y_poly_fwd'] = mcp['y_poly_fwd']
+      print(cp['x_poly'])
       if "hd_stack" in mj:
          hd_img = cv2.imread(mj['hd_stack'], 0)
          print("HD IMG:", hd_img.shape)
