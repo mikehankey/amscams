@@ -440,9 +440,9 @@ def update_meteor_points(sd_video_file,frames):
    #os.system(cmd)
    make_roi_video_mfd("/mnt/ams2/" + sd_video_file, json_conf)
 
-   cmd = "./Learn.py add " + json_file + " >/mnt/ams2/tmp/api.points 2>&1 &"
-   print("COMMAND:", cmd)
-   os.system(cmd)
+   #cmd = "./Learn.py add " + json_file + " >/mnt/ams2/tmp/api.points 2>&1 &"
+   #print("COMMAND:", cmd)
+   #os.system(cmd)
 
    mjr = load_json_file(rjson_file)
    resp['status'] = 1
