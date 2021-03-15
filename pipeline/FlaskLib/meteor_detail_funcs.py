@@ -240,8 +240,29 @@ def make_ms_html(amsid, meteor_file, mj):
   
 
    note = solve_status
+   ms_html = ""
+   if solve_status == "SUCCESS":
+      event_day = mse['event_day']
+      y,m,d = event_day.split("_")
+      event_dir = "/mnt/archive.allsky.tv/EVENTS/" + y + "/" + m + "/" + d + "/" + mse['event_id'] + "/"
+      event_url = event_dir.replace("/mnt/", "https://")
+      event_link = event_url + "index.html"
+      mse['event_link'] = event_link
+      event_href = "<a target=_blank href=" + event_link + ">Event " + mse['event_id'] + " Solved</a>" 
+      ms_html += """
+         <div class='h1_holder  d-flex justify-content-between'>
+            <h1><span class='h'>""" + event_href + """</span> </h1>
+         </div>
+      """
+   else:
+      ms_html += """
+         <div class='h1_holder  d-flex justify-content-between'>
+            <h1><span class='h'>""" + str(solve_status) + """</span> </h1>
+         </div>
+      """
 
-   ms_html = note + """
+
+   ms_html += """
       <div class='h1_holder  d-flex justify-content-between'>
          <h1><span class='h'>Captures</span> </h1>
       </div>
@@ -318,7 +339,18 @@ def make_ms_html(amsid, meteor_file, mj):
       """
       ms_html += "</div>"
 
+
    ms_html += "</div>"
+
+   if solve_status == "SUCCESS":
+      ms_html += """
+         <div class='h1_holder  d-flex justify-content-between'>
+            <h1><span class='h'>Solution</span> </h1>
+         </div>
+      """
+      ms_html += solve_report(mse)
+
+
    ms_html += "</div>"
    return(ms_html)
 
@@ -378,6 +410,12 @@ def make_ms_html(amsid, meteor_file, mj):
          ms_html += "<tr><td>" + skey + "</td><td>TIME</td><td>" + str(slat)[0:5] + "</td><td>" + str(slon)[0:5] + "</td><td>" + str(salt/1000)[0:5] + "</td><td>" + str(elat)[0:5] + "</td><td>" + str(elon)[0:5] + "</td><td>" + str(ealt/1000)[0:5] + "</td><td>" + str(dist)[0:5] + "</td><td>" + str(dur)[0:5] + "</td><td>" + str(vel)[0:5] + "</td></tr>"
    ms_html += "</table></div></div>"
    return(ms_html)
+
+def solve_report(mse):
+   out = ""
+   out += """<iframe width=100% height=800 src='""" + mse['event_link'] + """'></iframe>"""
+   return(out)
+
 
 def detail_page(amsid, date, meteor_file):
    remote = 1

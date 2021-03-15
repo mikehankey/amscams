@@ -774,13 +774,57 @@ def clean_user_stars(user_stars, image):
    print("BEFORE/AFTER:", len(user_stars), len(good_stars))
    return(good_stars)
 
+def use_default_cal(meteor_file, mj,json_conf):
+   mfn, mdir = fn_dir(meteor_file)
+   (f_datetime, this_cam, f_date_str,y,m,d, h, mm, s) = convert_filename_to_date_cam(meteor_file)
+   day = mfn[0:10]
+   cal_hist = get_default_calib_hist(day, this_cam, json_conf)
+   last_best_res = None
+   azs = []
+   els = []
+   poss = []
+   pxss = []
+   rezs= []
+   for day_diff, hist in cal_hist[0:30]:
+      cam, date ,az, el, pos, pxs, res = hist
+      azs.append(az) 
+      els.append(el) 
+      poss.append(pos) 
+      pxss.append(pxs) 
+      rezs.append(res) 
+   az = np.median(azs)      
+   el = np.median(els)      
+   pos = np.median(poss)      
+   pxs= np.median(pxss)      
+   res= np.median(res)      
+   mj['cp']['center_az'] = az
+   mj['cp']['center_el'] = el
+   mj['cp']['position_angle'] = pos
+   mj['cp']['pixscale'] = pxs
+   mj['cp']['total_res_px'] = res
+   mj['cp']['used_default'] = 1
+   mj['cp']['user_stars'] = []
+   mj['cp']['cat_image_stars'] = []
+   mj['cp'] = update_center_radec(meteor_file,mj['cp'],json_conf)
+   mcp_dir = "/mnt/ams2/cal/"
+   mcp_file = mcp_dir + "multi_poly-" + json_conf['site']['ams_id'] + "-" + this_cam + ".info"
+   if cfe(mcp_file) == 1:
+      mcp = load_json_file(mcp_file)
+      mj['cp']['x_poly'] = mcp['x_poly']
+      mj['cp']['y_poly'] = mcp['y_poly']
+      mj['cp']['x_poly_fwd'] = mcp['x_poly_fwd']
+      mj['cp']['y_poly_fwd'] = mcp['y_poly_fwd']
+
+   return(mj)
+
+
 def refit_meteor(meteor_file, json_conf,force=0):
 
    (f_datetime, this_cam, f_date_str,y,m,d, h, mm, s) = convert_filename_to_date_cam(meteor_file)
    video_file = meteor_file.replace(".json", ".mp4")
    day = y + "_" + m + "_" + d
    cam = this_cam
-
+   print("VF:", video_file)
    if "/mnt/ams2/meteors" not in meteor_file:
       day = meteor_file[0:10]
       meteor_file = meteor_file.replace(".mp4", "")
@@ -790,11 +834,33 @@ def refit_meteor(meteor_file, json_conf,force=0):
    #print("Loading...", meteor_file)
    first_frame = None
    mj = load_json_file(meteor_file)
+   red_file = meteor_file.replace(".json", "-reduced.json")
+   if cfe(red_file) == 1:
+      mjr = load_json_file(red_file)
+   else:
+      mjr = None
    cp = mj['cp']
+   starting_res = cp['total_res_px']
+   print(starting_res)
+   if starting_res > 5:
+      mj = use_default_cal(meteor_file, mj,json_conf)
+      save_json_file(meteor_file, mj)
+      if mjr is not None:
+         mjr['cal_params'] = mj['cp']
+      print("Saved MJ using the default calib!", meteor_file)
+      return()
    if "hd_trim" in mj:
       hd_vid = mj['hd_trim']
+      sd_vid = mj['sd_video_file']
+      print("HD VID:", hd_vid)
       frames =load_frames_simple(hd_vid, 2)
+      if len(frames) == 0:
+         frames =load_frames_simple(sd_vid, 2)
+      
       first_frame = frames[0]
+      if first_frame.shape[0] != '1080':
+         first_frame = cv2.resize(first_frame, (1920, 1080))
+
       image = first_frame
       star_file = hd_vid.replace(".mp4", "-first.jpg")
       star_file_half = hd_vid.replace(".mp4", "-first-half.jpg")
@@ -966,7 +1032,18 @@ def refit_meteor(meteor_file, json_conf,force=0):
       cp= pair_stars(cp, meteor_file, json_conf, image.copy())
       print("AFTER GET MORE & PAIR:", len(cp['user_stars']), len(cp['cat_image_stars'])) 
    if len(cp['cat_image_stars']) < 3  :
-      print("Not enough stars to refit. We should update with the best default cal")
+      mj = use_default_cal(meteor_file, mj,json_conf)
+      save_json_file(meteor_file, mj)
+      print("Not enough stars to refit. Updated cp using the default cal.")
+
+      red_file = meteor_file.replace(".json", "-reduced.json")
+      if cfe(red_file) == 1:
+         mjr = load_json_file(red_file)
+         mjr['cal_params'] = mj['cp']
+         save_json_file(red_file, mjr)
+         print("Save red:", red_file)
+
+
       return()
    else:
       short_bright_stars = []
