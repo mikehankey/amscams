@@ -2772,7 +2772,7 @@ def deep_calib(cam, json_conf):
    med_dist = np.median(dists)
    std_dist = np.std(dists)
    if len(all_stars) < 10:
-      print("not enough stars. only ", len(autocal_images), " files " )
+      print("not enough stars. only ", len(autocal_images), " files ", len(all_stars), " stars" )
       return(0)
    multi = 2
    for star in all_stars:
@@ -4241,7 +4241,7 @@ def make_cal_obj(az,el,pos,px,stars,cat_image_stars,res):
    return(cp)
 
 def autocal(image_file, json_conf, show = 0, heal_only=0):
-
+   cp = None
    # evaluate a calibration file and try to fit it against a known calibration
    # if it passes import into the system
    # if it fails try to blind solve it
@@ -4313,7 +4313,7 @@ def autocal(image_file, json_conf, show = 0, heal_only=0):
          best_cp = dict(cp)
 
    if True:
-      if True:
+      if cp is not None:
          if cp['total_res_px'] < 10 and len(cp['cat_image_stars']) >= 10:
             fn,dir = fn_dir(image_file)
             base = fn.replace(".png", "")
@@ -4356,15 +4356,8 @@ def autocal(image_file, json_conf, show = 0, heal_only=0):
                cv2.waitKey(30)
             return()
 
-   print("IF we made it this far, it means we could not use a default calibration to solve the field. ", cp['total_res_px'])
+   print("IF we made it this far, it means we could not use a default calibration to solve the field. ")
    print("Let's try to blind solve it...")
-   blind_dir = in_dir + "/BLIND/"
-   if cfe(blind_dir, 1) == 0:
-      os.makedirs(blind_dir)
-   os.system("mv " + image_file + " " + blind_dir)
-   print("mv " + image_file + " " + blind_dir)
-   print("ABORTING FOR NOW!")
-   return()
 
 
    try:
@@ -6900,7 +6893,7 @@ def fn_dir(file):
 
 
 def minimize_poly_multi_star(merged_stars, json_conf,orig_ra_center=0,orig_dec_center=0,cam_id=None,master_file=None,mcp=None,show=0):
-   if len(merged_stars) < 50:
+   if len(merged_stars) < 30:
       print("not enough stars to multi fit!")
       return(0,0,0)
 
