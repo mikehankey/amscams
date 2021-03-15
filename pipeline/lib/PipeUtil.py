@@ -384,3 +384,17 @@ def fn_dir(file):
    dir = file.replace(fn, "")
    return(fn, dir)
 
+def load_mask_imgs(json_conf):
+   mask_files = glob.glob("/mnt/ams2/meteor_archive/" + json_conf['site']['ams_id'] + "/CAL/MASKS/*mask*.png" )
+   mask_imgs = {}
+   sd_mask_imgs = {}
+   for mf in mask_files:
+      mi = cv2.imread(mf, 0)
+      omh, omw = mi.shape[:2]
+      fn,dir = fn_dir(mf)
+      fn = fn.replace("_mask.png", "")
+      mi = cv2.resize(mi, (1920, 1080))
+      sd = cv2.resize(mi, (omw, omh))
+      mask_imgs[fn] = mi
+      sd_mask_imgs[fn] = sd
+   return(mask_imgs, sd_mask_imgs)
