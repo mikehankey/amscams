@@ -3369,8 +3369,6 @@ def view_calib(cp_file,json_conf,nc,oimg, show = 1):
 
 
    img = draw_star_image(img, nc['cat_image_stars'], nc) 
-   #cv2.imshow('pepe', star_image)
-   #cv2.waitKey(0)
 
    if SHOW == 1:
       dimg = cv2.resize(img, (1280,720))
@@ -4275,8 +4273,9 @@ def autocal(image_file, json_conf, show = 0, heal_only=0):
       img = cv2.subtract(gray_img, mask_img)
       img = cv2.cvtColor(img, cv2.COLOR_GRAY2BGR)
 
-   cv2.imshow('pepe', mask_img)
-   cv2.waitKey(30)
+   if SHOW == 1:
+      cv2.imshow('pepe', mask_img)
+      cv2.waitKey(30)
 
    # get stars / bright spots in image
    stars = scan_for_stars(img)
