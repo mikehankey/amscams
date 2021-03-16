@@ -1,4 +1,5 @@
 from lib.PipeUtil import cfe, load_json_file, save_json_file, fn_dir, load_mask_imgs, calc_dist
+from lib.PipeMeteorTests import obj_cm
 import numpy as np
 
 class Detector():
@@ -14,13 +15,13 @@ class Detector():
       gaps = []
       last_dists = []
       dists_from_start = []
+      cls = "unknown"
 
       # reject any object with less than 3 frames 
-      if len(obj['ofns']) == 0:
+      if len(obj['ofns']) < 3:
          report['status'] = "reject"
+         cls = "noise"
          return(0, report)
-
-
 
       # determine gaps between frames, dist from start, dist from previous
       for i in range(0, len(obj['ofns'])):
@@ -44,13 +45,14 @@ class Detector():
       max_dist = max(dists_from_start)
       px_per_frame = max(dists_from_start) / dur_frames
 
-      if max_dist < 5 or px_per_frame < .2:
+      if max_dist < 5 or px_per_frame < .05:
          moving = 0
       else:
          moving = 1
 
-      report['total_frames'] = obj['ofns']
+      report['total_frames'] = len(obj['ofns'])
       report['dur_frame'] = dur_frames
+      report['max_cm'] = obj_cm(obj['ofns'])
       report['dur_seconds'] = dur_seconds
       report['med_gaps'] = med_gaps 
       report['mean_fr_dist'] = np.mean(last_dists)
@@ -59,9 +61,59 @@ class Detector():
       report['px_per_second'] = max(dists_from_start) / dur_seconds 
       report['px_per_frame'] = max(dists_from_start) / dur_frames
       report['moving'] = moving
+
+      # based on the above try to classify the object into 1 of the following:
+      # 1 - meteor (cm, dist, speed,change in intensity,overall duration, low gaps)
+      # 2 - fireball meteor (cm, dist, speed,change in intensity,overall duration, low gaps, higher max inensity, longer duration)
+      # 3 - satellite (longer than meteor, more like plane, very low speed but high intensity difference)
+      # 4 - plane (gaps, intensity change, duration, speed)
+      # 5 - low flying plane/helicopter (bright overall intensity, big from start to end. VS fading off of fireball)
+      # 6 - cloud/moon (large in size, hot spot / recurring)
+      # 7 - car (large objects and also near bottom 1/3 of image)
+      # 8 - bird (gaps, intensity, speed?, non linear movement, dark obj on light BG, occuring at daytime)
+
+      # do plane first
+      plane_score = 0
+
+      # add points based on gaps
+      if 2 <= report['med_gaps'] <= 4:
+         plane_score += 1
+      elif 5 < report['med_gaps'] <= 10:
+         plane_score += 3
+      print(report['med_gaps'], plane_score)
+
+      # add points based on speed 
+      if report['px_per_frame'] < .15:
+         plane_score += 3
+      if .15 < report['px_per_frame'] < .5:
+         plane_score += 2
+      if .5 < report['px_per_frame'] < 1:
+         plane_score += 1 
+      if 1 < report['px_per_frame'] < 2:
+         plane_score += .5 
+      print("SP:", report['px_per_frame'], plane_score)
+
+      # add point based on long dur
+      if report['dur_seconds'] > 10:
+         plane_score += 1 
+      print("DR:", report['px_per_frame'], plane_score)
+
+      # add points based on intensity
+      if report['max_mean_int_factor'] < 3:
+         plane_score += 1
+      print("INT:", report['px_per_frame'], plane_score)
+
+      print(report['max_mean_int_factor'], plane_score)
+
+      if report['mean_fr_dist'] < 1.5:
+         plane_score += 1
+      
+      print(report['mean_fr_dist'], plane_score)
+
+      report['plane_score'] = plane_score
       return(1, report)
 
-   def find_objects(fn,x,y,w,h,intensity,objects,dist_thresh=10):
+   def find_objects(fn,x,y,w,h,intensity,objects,dist_thresh=30):
       
       maybe_matches = []
       cx = int(x + (w/2))
@@ -89,12 +141,17 @@ class Detector():
             tcy = int(objects[obj]['oys'][-1] + (objects[obj]['ohs'][-1]/2))
             dist = calc_dist((cx,cy),(tcx,tcy))
             fn_diff = fn - objects[obj]['ofns'][-1]
-            if dist < dist_thresh and fn_diff < 10 and fn not in objects[obj]['ofns']:
+            if dist < dist_thresh and fn_diff < 90 and fn not in objects[obj]['ofns']:
                maybe_matches.append((obj,dist))
          if len(maybe_matches) == 0:
             no_match = 1
          elif len(maybe_matches) == 1:
             obj = maybe_matches[0][0]
+            if "class" not in objects[obj] and len(objects[obj]['ofns']) > 5:
+               # try to class the obj. if there is minimal distance it is a star
+               dist = calc_dist((min(objects[obj]['oxs']), min(objects[obj]['oys'])), (max(objects[obj]['oxs']), max(objects[obj]['oys'])))
+               if dist <= 2:
+                  objects[obj]['class'] = "star"
             objects[obj]['oid'] = obj
             objects[obj]['ofns'].append(fn)
             objects[obj]['oxs'].append(x)

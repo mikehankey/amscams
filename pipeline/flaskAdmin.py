@@ -2,6 +2,7 @@ import base64
 import os
 from flask import Flask, request, Response, make_response
 from FlaskLib.Learning import learning_meteors_dataset
+from FlaskLib.motion_detects import motion_detects
 from FlaskLib.FlaskUtils import get_template
 from FlaskLib.api_funcs import update_meteor_points, show_cat_stars, delete_meteor, restore_meteor, delete_meteors, reduce_meteor, delete_frame, crop_video
 from FlaskLib.calib_funcs import calib_main, cal_file, show_masks, del_calfile, lens_model, edit_mask, edit_mask_points
@@ -475,6 +476,11 @@ def lrn_meteors(amsid):
    return out
 
 
+@app.route('/motion/<date>/', methods=['GET', 'POST'])
+@auth.login_required
+def cnt_motion(date):
+   out = motion_detects(date)
+   return(out)
 
 
 @app.route('/API/<cmd>', methods=['GET', 'POST'])

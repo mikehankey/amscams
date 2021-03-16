@@ -138,7 +138,6 @@ def dump_frames():
          if "ALL" in fn:
             continue
          el = fn.split("_")
-         print(el)
          station,sequence,frmt,year,month,day,hour,minute,second,msec,cam = el
          date_str = year + "_" + month + "_" + day + "_" + hour + "_" + minute + "_" + second
          f_datetime = datetime.datetime.strptime(date_str, "%Y_%m_%d_%H_%M_%S")
@@ -157,4 +156,100 @@ def dump_frames():
          #print("ST:", station, tdir, file, len(frames))
       #outfile = out_dir + station + "_spacex_2021_03_14"
 
-dump_frames()
+#dump_frames()
+
+def get_contours(frame):
+   cont = []
+   crop= []
+   cnt_res = cv2.findContours(frame.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+   if len(cnt_res) == 3:
+      (_, cnts, xx) = cnt_res
+   elif len(cnt_res) == 2:
+      (cnts, xx) = cnt_res
+   for (i,c) in enumerate(cnts):
+      x,y,w,h = cv2.boundingRect(cnts[i])
+      if w > 1 and h > 1:
+         cont.append((x,y,w,h))
+
+   #cont = sorted(cont, key=lambda x: (x[2]+x[3]), reverse=True)[0:10]
+   #cont = sorted(cont, key=lambda x: (x[0]), reverse=False)
+   return(cont)
+
+def mask_points(frame, points):
+   for x,y,w,h in points:
+      frame[y:y+h,x:x+w] = 0
+   return frame
+
+def tracker(vfile, first_frame=None):
+   frames = load_frames_simple(vfile)
+   #if first_frame is None:
+   first_frame = cv2.cvtColor(frames[0], cv2.COLOR_BGR2GRAY)
+
+   _, threshold = cv2.threshold(first_frame.copy(), 60, 255, cv2.THRESH_BINARY)
+   threshold = cv2.dilate(threshold.copy(), None , iterations=4)
+   stars = get_contours(threshold)
+   first_frame = mask_points(first_frame, stars)
+   print("STARS:", stars)
+   #cv2.imshow('pepe', threshold)
+   #cv2.waitKey(0)
+
+   fn = vfile.split("/")[-1]
+   el = fn.split("_")
+   station,sequence,frmt,year,month,day,hour,minute,second,msec,cam = el
+   date_str = year + "_" + month + "_" + day + "_" + hour + "_" + minute + "_" + second
+   f_datetime = datetime.datetime.strptime(date_str, "%Y_%m_%d_%H_%M_%S")
+
+
+
+   i = 0
+   for frame in frames:
+      bw_frame =  cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+      bw_frame = mask_points(bw_frame, stars)
+      mframe = frame.copy()
+      sub = cv2.subtract(bw_frame, first_frame)
+      sub = mask_points(sub, stars)
+
+      extra_sec = i / 25
+      frame_time = f_datetime + datetime.timedelta(0,extra_sec)
+      frame_time_str = frame_time.strftime("%Y_%m_%d_%H_%M_%S.%f")
+
+      #sub[0:500,0:1920] = 0
+      thresh_val = 50
+      min_val, max_val, min_loc, (mx,my)= cv2.minMaxLoc(sub)
+      thresh_val = max_val - 100
+      if thresh_val < 30:
+         thresh_val = 30
+      thresh_val = 10
+      _, threshold = cv2.threshold(sub.copy(), thresh_val, 255, cv2.THRESH_BINARY)
+      cnts= get_contours(threshold)
+      print("LEN:", len(cnts), cnts)
+      for cnt in cnts:
+          x,y,w,h = cnt
+          if x < 0:
+             x = 0 
+          if y + h >= 1080:
+             y = 1080 - h
+          
+          #roi_img = frame[y:y+h,x:x+w]
+          #roi_img = cv2.resize(roi_img,(1280,720))
+          #mframe[100:820, 320:1600] = roi_img
+          cv2.rectangle(mframe, (int(x), int(y)), (int(x+w) , int(y+h) ), (255, 255, 255), 1)
+      show_frame = cv2.resize(mframe,(1280,720))
+      cv2.putText(show_frame, str(frame_time_str),  (25, 1080), cv2.FONT_HERSHEY_SIMPLEX, .3, (200, 200, 200), 1)
+      #show_frame = cv2.resize(threshold,(1280,720))
+      cv2.imshow('pepe', show_frame)
+      cv2.waitKey(10)
+      i += 1
+   return(first_frame)
+
+vfiles = ["/mnt/ams2/CUSTOM/SPACEX/2021_03_14/ALL/AMS1_01_HD_2021_03_14_10_08_38_000_010003.mp4", "/mnt/ams2/CUSTOM/SPACEX/2021_03_14/ALL/AMS1_02_HD_2021_03_14_10_09_00_000_010003.mp4", "/mnt/ams2/CUSTOM/SPACEX/2021_03_14/ALL/AMS1_03_HD_2021_03_14_10_10_01_000_010003.mp4"]
+
+vfiles = [ '/mnt/ams2/CUSTOM/SPACEX/2021_03_14/ALL/AMS7_01_HD_2021_03_14_10_08_39_000_010039.mp4', '/mnt/ams2/CUSTOM/SPACEX/2021_03_14/ALL/AMS7_02_HD_2021_03_14_10_09_00_000_010039.mp4', '/mnt/ams2/CUSTOM/SPACEX/2021_03_14/ALL/AMS7_03_HD_2021_03_14_10_10_00_000_010039.mp4']
+
+vfiles = ['/mnt/ams2/CUSTOM/SPACEX/2021_03_14/ALL/AMS9_01_HD_2021_03_14_10_08_00_000_010052.mp4', '/mnt/ams2/CUSTOM/SPACEX/2021_03_14/ALL/AMS9_02_HD_2021_03_14_10_09_00_000_010052.mp4', '/mnt/ams2/CUSTOM/SPACEX/2021_03_14/ALL/AMS9_03_HD_2021_03_14_10_08_53_000_010051.mp4', '/mnt/ams2/CUSTOM/SPACEX/2021_03_14/ALL/AMS9_04_HD_2021_03_14_10_09_01_000_010051.mp4', '/mnt/ams2/CUSTOM/SPACEX/2021_03_14/ALL/AMS9_05_HD_2021_03_14_10_10_01_000_010051.mp4']
+
+
+
+first_frame = None
+for vfile in vfiles:
+   first_frame = tracker(vfile, first_frame)

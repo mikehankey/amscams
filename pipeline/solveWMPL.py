@@ -508,7 +508,7 @@ def delete_events_day(date):
    for event in events: 
       delete_event(None, event['event_day'], event['event_id'])
 
-def solve_day(day, cores=20):
+def solve_day(day, cores=4):
    date = day
    year, mon, dom = date.split("_")
    day_dir = "/mnt/ams2/EVENTS/" + year + "/" + mon + "/" + dom + "/" 
@@ -1917,6 +1917,20 @@ def menu():
       cmd = "./solveWMPL.py sd " + event_id
       print(cmd)
 
+def day_wizard(day):
+      # sync the latest dyna cache for this day
+   cmd = "./DynaDB.py udc " + day
+   os.system(cmd)
+
+   cmd = "./solveWMPL.py de " + day
+   os.system(cmd)
+
+   cmd = "./solveWMPL.py sd " + day
+   os.system(cmd)
+
+   cmd = "./DynaDB.py udc " + day + " events "
+   os.system(cmd)
+
 
 
 
@@ -1940,6 +1954,8 @@ if cmd == "solve":
    WMPL_solve(obs)
 if cmd == "report":
    WMPL_report(meteor_file)
+if cmd == "wiz":
+   day_wizard(meteor_file)
 if cmd == "se":
    solve_event(meteor_file)
 if cmd == "sd":
