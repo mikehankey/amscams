@@ -15,12 +15,16 @@ def run_analyzer(day, cam, file_limit=10):
       min_file = MinFile(vfile)
       if min_file.moving_objects is not None:
          for obj in min_file.moving_objects:
-            #print(obj['report'])
             if obj['report']['plane_score'] < 2:
+               print(min_file.stack_file)
+               img = cv2.imread(min_file.stack_file)
+               cv2.imshow('pepe', img)
                for key in obj['report']:
                   print(key, obj['report'][key])
-            else: 
-               print("plane:", obj['report']['plane_score'])
+               print("")
+               cv2.waitKey(0)
+            #else: 
+            #   print("plane:", obj['report']['plane_score'])
 
 
 
@@ -105,5 +109,5 @@ def run_scan_and_stack(day, cam, file_limit=10):
 day = sys.argv[1]
 cam = sys.argv[2]
 run_scan_and_stack(day,cam)
-#run_analyzer(day,cam)
+run_analyzer(day,cam)
 

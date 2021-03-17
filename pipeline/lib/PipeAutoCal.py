@@ -3237,7 +3237,6 @@ def get_cal_files(meteor_file=None, cam=None):
             cmd = "rm -rf " + cd
             print(cmd)
             os.system(cmd)
-            #exit()
  
       if meteor_file is not None:
          (c_datetime, ccam, c_date_str,cy,cm,cd, ch, cmm, cs) = convert_filename_to_date_cam(cpf)
@@ -3669,7 +3668,6 @@ def optimize_matchs(cp_file,json_conf,nc,oimg):
 
    save_json_file(cp_file, nc)   
    return(nc)
-   #exit()
 
 
 
@@ -3707,11 +3705,6 @@ def eval_cal(cp_file,json_conf,nc=None,oimg=None, mask_img=None,batch_mode=None,
    else:
       cat_stars = get_catalog_stars(nc)
  
-   #if "user_stars" in nc:
-   #   if len(nc['user_stars'][0]) == 2:
-   #      print("GET STARS because BP missin?:", img_file)
-   #      exit()
-   #      nc['user_stars'] = get_image_stars(img_file, None, json_conf,0)
    nc = pair_stars(nc, cp_file, json_conf, gimg)
    if len(nc['user_stars']) > 0:
       match_perc = len(nc['cat_image_stars']) / len(nc['user_stars']) 
@@ -4000,18 +3993,9 @@ def review_cals(json_conf, cam=None):
       if "total_res_px" not in cp:
          cp['total_res_px'] = 20
       cal_data.append((cam, file, cp['center_az'], cp['center_el'], cp['position_angle'], cp['pixscale'], cp['total_res_px']))
-      #print("BMORE", len(cp['cat_image_stars']))
-      #cal_img = cv2.imread(file)
-      #cp = get_more_stars_with_catalog(cp_file, cp, cal_img, json_conf)
-      #print("AMORE", file, len(cp['cat_image_stars']))
-      #exit()
-      #cp['user_stars'] = get_image_stars(file, None, json_conf,0)
-      #print("UPDATING STAR DATA.")
       save_json_file(cp_file, cp)
    med_data = find_meds(cal_data)
 
-   #print(med_data)
-   #exit()
    good_cal_files = []
 
    mcp_file = autocal_dir + "multi_poly-" + STATION_ID + "-" + cam + ".info"
@@ -4075,7 +4059,6 @@ def review_cals(json_conf, cam=None):
                stars_matched = len(cp['cat_image_stars']) / len(cp['user_stars'])
             else:
                continue
-               #exit()
             print("STARS MATCHED:", stars_matched)
             print("CP:", cp_file, cp['center_az'], cp['center_el'], cp['position_angle'], cp['pixscale'])
             if cp['total_res_px'] > 15:
@@ -4223,8 +4206,6 @@ def cal_all(json_conf):
 
       autocal(file, json_conf, 1)
       print("RAN:", file)
-      # temporarily disabled
-      #exit()
 
 
 def make_cal_obj(az,el,pos,px,stars,cat_image_stars,res):
@@ -4495,7 +4476,6 @@ def autocal(image_file, json_conf, show = 0, heal_only=0):
 
    save_json_file(cal_params_file, cal_params)
    print("SAVED:", cal_params_file)
-   #exit()
    if mcp is None:
       print("Skip mini poly")
       #status, cal_params  = minimize_poly_params_fwd(cal_params_file, cal_params,json_conf)
@@ -4959,7 +4939,6 @@ def get_image_stars(file=None,img=None,json_conf=None,show=0):
    if len(img.shape) > 2:
       img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
    show_pic = img.copy()
-   #exit()
    
 
 
@@ -5032,8 +5011,8 @@ def get_image_stars(file=None,img=None,json_conf=None,show=0):
           show_pic[980:1080,0:100] = bcnt
           if SHOW == 1:
              dsp = cv2.resize(show_pic, (1280,720))
-             cv2.imshow('pepe', dsp)
-             cv2.waitKey(0)
+             #cv2.imshow('pepe', dsp)
+             #cv2.waitKey(30)
       else:
           cv2.rectangle(show_pic, (bx1, by1), (bx2, by2 ), (150, 150, 150), 1)
       cc = cc + 1
@@ -5498,7 +5477,10 @@ def pair_stars(cal_params, cal_params_file, json_conf, cal_img=None, show = 0):
 
       #show_image(temp_img,'pepe', 0) 
 
-   total_res_px = total_cat_dist / total_matches
+   if total_matches > 1:
+      total_res_px = total_cat_dist / total_matches
+   else:
+      total_res_px = 999
    good_stars = []
    if total_res_px < 4:
       total_res_px = 4
@@ -5633,13 +5615,29 @@ def get_catalog_stars(cal_params):
    bright_stars_sorted = sorted(bright_stars, key=lambda x: x[4], reverse=False)
 
    sbs = []
-   for bname, cname, ra, dec, mag in bright_stars_sorted:
+   for data in bright_stars_sorted:
+      if len(data) == 5:
+         bname, cname, ra, dec, mag = data
+      elif len(data) == 6:
+         #print("DATA:", data)
+         bname, mag, ra, dec, cat_x, cat_y = data
+         cname = bname
+      elif len(data) == 17:
+         iname,mag,ra,dec,img_ra,img_dec,match_dist,cat_x,cat_y,img_az,img_el,old_cat_x,old_cat_y,six,siy,cat_dist,star_int  = data 
+         bname = iname
+         cname = iname
+      else:
+         print("BAD DATA:", len(data))
+         print("BAD DATA:", data)
+         exit()
+
       try:
          dcname = cname.decode("utf-8")
          dbname = bname.decode("utf-8")
       except: 
          dcname = cname
          dbname = bname
+
       if dcname == "":
          name = bname
       else:
@@ -5654,7 +5652,8 @@ def get_catalog_stars(cal_params):
          catalog_stars.append((name,mag,ra,dec,new_cat_x,new_cat_y))
 
    if len(catalog_stars) == 0:
-      exit()
+      print("NO CATALOG STARS!?")
+      
    return(catalog_stars)
 
 def default_cal_params(cal_params,json_conf):
@@ -5828,10 +5827,15 @@ def AzEltoRADec(az,el,cal_file,cal_params,json_conf):
 
    if "trim" in cal_file:
       # add extra sec from trim num
-      trim_num = get_trim_num(cal_file)
-      extra_sec = int(trim_num) / 25
-      trim_time = hd_datetime + dt.timedelta(0,extra_sec)
-      hd_datetime = trim_time
+      try:
+         trim_num = get_trim_num(cal_file)
+         extra_sec = int(trim_num) / 25
+         trim_time = hd_datetime + dt.timedelta(0,extra_sec)
+         hd_datetime = trim_time
+      except:
+         trim_num = 0
+         extra_sec = 0
+         trim_time = hd_datetime 
 
 
 
@@ -7122,7 +7126,6 @@ def clean_pairs(merged_stars, cam_id = "", inc_limit = 5,first_run=1,show=0):
    #print(np_ms.shape)
    ms_index = {}
    for star in merged_stars:
-      print("STAR:", star)
       (cal_file , center_az, center_el, ra_center, dec_center, position_angle, pixscale, dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist,star_int) = star
       img_res = cat_dist
       ms_key = str(ra) + ":" + str(dec) + ":" + str(six) + ":" + str(siy)
@@ -7297,10 +7300,6 @@ def reduce_fit_multi(this_poly,field, merged_stars, cal_params, fit_img, json_co
    avgpixscale = 162
    for star in merged_stars:
       (cal_file , center_az, center_el, ra_center, dec_center, position_angle, pixscale, dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist,star_int) = star
-      #if 157 < float(pixscale) < 163 and old_img_res > 2:
-      #   pixscale = avgpixscale
-      #if 157 < float(pixscale) < 163 :
-      #   pixscale = avgpixscale
  
       if field == 'x_poly' or field == 'y_poly':
          new_cat_x, new_cat_y = distort_xy(0,0,ra,dec,float(ra_center), float(dec_center), x_poly, y_poly, float(1920), float(1080), float(position_angle),3600/float(pixscale))
@@ -7319,19 +7318,11 @@ def reduce_fit_multi(this_poly,field, merged_stars, cal_params, fit_img, json_co
             color = [0,0,255]
 
          desc = str(pixscale)[0:4]
-         #cv2.putText(this_fit_img, desc,  (int(new_cat_x),int(new_cat_y)), cv2.FONT_HERSHEY_SIMPLEX, .5, (255, 255, 255), 1)
          cv2.rectangle(this_fit_img, (int(new_cat_x)-10, int(new_cat_y)-10), (int(new_cat_x) + 10, int(new_cat_y) + 10), color, 1)
          cv2.line(this_fit_img, (six,siy), (int(new_cat_x),int(new_cat_y)), color, 2) 
          new_y = new_cat_y
          new_x = new_cat_x
-         #print("RES OLD/NEW:", old_img_res, img_res)
       else:
-
-         #if 157 < float(pixscale) < 164 and float(old_img_res) > 1:
-         #   pixscale = avgpixscale
-         #if 157 < float(pixscale) < 163 :
-         #   pixscale = avgpixscale
-
          cal_params['ra_center'] = ra_center
          cal_params['dec_center'] = dec_center
          cal_params['position_angle'] = position_angle 
@@ -7344,30 +7335,19 @@ def reduce_fit_multi(this_poly,field, merged_stars, cal_params, fit_img, json_co
          img_res = abs(angularSeparation(ra,dec,img_ra,img_dec))
 
          if img_res <= .1:
-            # gree
             color = [0,255,0]
          elif .1 < img_res <= .2:
-            # blue 
             color = [0,200,0]
          elif .2 < img_res <= .3:
-            # orange
             color = [0,69,255]
          elif img_res > .3:
-            # red 
             color = [0,0,255]
-
-         #img_res = abs(calc_dist((six,siy),(new_x,new_y)))
 
          cv2.rectangle(this_fit_img, (int(new_x)-10, int(new_y)-10), (int(new_x) + 10, int(new_y) + 10), color, 1)
          cv2.line(this_fit_img, (six,siy), (int(new_x),int(new_y)), color, 2) 
       cv2.circle(this_fit_img,(six,siy), 12, (128,128,128), 1)
-      #new_merged_stars.append((cal_file,ra_center,dec_center,pos_angle,pixscale,dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy, img_res, np_new_cat_x, np_new_cat_y))
       new_merged_stars.append((cal_file , center_az, center_el, ra_center, dec_center, position_angle, pixscale, dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist,star_int))
-
       total_res = total_res + img_res
-     
- 
-
 
    total_stars = len(merged_stars)
    if total_stars > 0:
@@ -7388,7 +7368,6 @@ def reduce_fit_multi(this_poly,field, merged_stars, cal_params, fit_img, json_co
    print("Avg Residual Error:", avg_res )
    print("Show:", show)
    tries = tries + 1
-   #print("Try:", tries)
    if mode == 0: 
       return(avg_res)
    else:
@@ -7401,17 +7380,12 @@ def calc_starlist_res(ms):
    close_stars = []
    dist_list = []
    for star in ms:
-
       if len(star) == 16:
          iname,mag,o_ra,o_dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,old_cat_x,old_cat_y,six,siy,cat_dist  =star 
       if len(star) == 17:
          iname,mag,o_ra,o_dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,old_cat_x,old_cat_y,six,siy,cat_dist,star_int  =star 
       if len(star) == 24:
          (cal_file , center_az, center_el, ra_center, dec_center, position_angle, pixscale, dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist,star_int) = star
-
-      #(cal_file , center_az, center_el, ra_center, dec_center, position_angle, pixscale, dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist,star_int) = star
-      #(cal_file,ra_center,dec_center,pos_angle,pixscale,dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy, img_res,np_new_cat_x,np_new_cat_y) = star
-      #px_dist = calc_dist((six,siy),(new_cat_x,new_cat_y))
       dist_list.append(cat_dist)
    std_dev_dist = np.std(dist_list)
    avg_dev_dist = np.mean(dist_list)
@@ -7692,7 +7666,6 @@ def scan_for_stars(image):
       tavg = tavg * 2
       if tavg < 10:
          tavg = 10
-      print ("TAVG:", tavg)
       _, threshold = cv2.threshold(temp.copy(), tavg, 255, cv2.THRESH_BINARY)
 
       cnts = get_cont(threshold)
@@ -7713,15 +7686,11 @@ def scan_for_stars(image):
             smin = np.min(star_img)
             smax = np.max(star_img)
             savg = np.mean(star_img)
-            print("PXV:", smin, smax, savg)
             if star_int > 100:
-               print("STAR:", cx, cy, star_int)
                stars.append((cx, cy+y1, star_int))
             else:
                bad_areas.append((x,y+y1,w,h))
          else:
-            print("HHH:", h)
-            #cv2.rectangle(image, (x, y+y1), (x+w, y+y1+h), (0, 0, 255), 1)
             bad_areas.append((x,y+y1,w,h))
    
       
@@ -7732,21 +7701,10 @@ def scan_for_stars(image):
       y = int(y)
       good = 1
       for bx,by,bw,bh in bad_areas :
-         print("TESTING: ", y, by, by+h)
          if by -5 <= y <= by+h + 5:
-            print("THIS STAR IS INSIDE A BAD AREA!!!!")
             good = 0
-      if good == 0:
-         print("BAD AREA STAR:", star)
-         #cv2.rectangle(image, (x, y), (x+w, y+h), (0, 255, 255), 2)
-      else:
-         cv2.circle(image,(x,y), 10, (255,0,0), 1)
-         print(star)
 
 
-   if SHOW == 1:
-      cv2.imshow('pepe', image)
-      cv2.waitKey(30)
    return(stars)
 
 def get_cont(frame):
@@ -7754,7 +7712,6 @@ def get_cont(frame):
    avg_val = np.mean(frame)
    thresh_val = avg_val +  ((max_val - avg_val) * .5)
    px_diff = max_val - avg_val
-   print("PXD:", px_diff)
    if thresh_val < 10:
       thresh_val = 10
    #thresh_val = 25 
@@ -7778,7 +7735,7 @@ def get_cont(frame):
       good_cnt.append(cnt_data[0])
       for x,y,w,h in cnt_data[1:]:
          if (bx <= x <= bx+bw and by <= y <= by+bh) or (bx <= x+w <= bx+bw and by <= y+h <= by+bh):
-            print("this cnt is inside a bigger one.")
+            foo = 1
          else:
             good_cnt.append((x,y,w,h))
       return(good_cnt)

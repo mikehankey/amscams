@@ -15,6 +15,8 @@ class Detector():
       gaps = []
       last_dists = []
       dists_from_start = []
+      x_dist = []
+      y_dist = []
       cls = "unknown"
 
       # reject any object with less than 3 frames 
@@ -31,15 +33,18 @@ class Detector():
 
             dist_from_last = calc_dist((obj['oxs'][i], obj['oys'][i]), (obj['oxs'][i-1],obj['oys'][i-1]))
             dist_from_start = calc_dist((obj['oxs'][0], obj['oys'][0]), (obj['oxs'][i],obj['oys'][i]))
+            x_dist.append((obj['oxs'][i] - obj['oxs'][i-1]))
+            y_dist.append((obj['oys'][i] - obj['oys'][i-1]))
 
             gaps.append(fn_gaps)
-            last_dists.append(dist_from_last)
             last_dists.append(dist_from_last)
             dists_from_start.append(dist_from_start)
          else:
             gaps.append(0)
             last_dists.append(0)
             dists_from_start.append(0)
+            x_dist.append(0)
+            y_dist.append(0)
 
       med_gaps = np.median(gaps)
       max_dist = max(dists_from_start)
@@ -60,6 +65,10 @@ class Detector():
       report['max_px_dist'] = max(dists_from_start)
       report['px_per_second'] = max(dists_from_start) / dur_seconds 
       report['px_per_frame'] = max(dists_from_start) / dur_frames
+      report['x_dist'] = x_dist
+      report['y_dist'] = y_dist
+      report['last_dists'] = last_dists
+      report['dists_from_start'] = dists_from_start
       report['moving'] = moving
 
       # based on the above try to classify the object into 1 of the following:
@@ -80,7 +89,6 @@ class Detector():
          plane_score += 1
       elif 5 < report['med_gaps'] <= 10:
          plane_score += 3
-      print(report['med_gaps'], plane_score)
 
       # add points based on speed 
       if report['px_per_frame'] < .15:
@@ -91,24 +99,19 @@ class Detector():
          plane_score += 1 
       if 1 < report['px_per_frame'] < 2:
          plane_score += .5 
-      print("SP:", report['px_per_frame'], plane_score)
 
       # add point based on long dur
       if report['dur_seconds'] > 10:
          plane_score += 1 
-      print("DR:", report['px_per_frame'], plane_score)
 
       # add points based on intensity
       if report['max_mean_int_factor'] < 3:
          plane_score += 1
-      print("INT:", report['px_per_frame'], plane_score)
 
-      print(report['max_mean_int_factor'], plane_score)
 
       if report['mean_fr_dist'] < 1.5:
          plane_score += 1
       
-      print(report['mean_fr_dist'], plane_score)
 
       report['plane_score'] = plane_score
       return(1, report)
@@ -136,7 +139,6 @@ class Detector():
          return(1, objects)
       else:
          for obj in objects:
-            #print("OBJINFO:", obj, objects[obj])
             tcx = int(objects[obj]['oxs'][-1] + (objects[obj]['ows'][-1]/2))
             tcy = int(objects[obj]['oys'][-1] + (objects[obj]['ohs'][-1]/2))
             dist = calc_dist((cx,cy),(tcx,tcy))
