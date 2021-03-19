@@ -83,12 +83,15 @@ def man_detect(min_file, data):
          os.system(cmd)
          vhdtrim_file = hd_trim.replace("/mnt/ams2", "")
          out += "<a href=" + vhdtrim_file + ">HD Trim File</a><BR>"
+      else:
+         hd_trim = None
 
       mj, mjr = make_base_meteor_json(trim_file,hd_trim, None, None) 
       out += str(mj)
       
       os.system("cp " + trim_file + " " + mj['sd_video_file'])
-      os.system("cp " + hd_trim + " " + mj['hd_trim'])
+      if hd_trim is not None:
+         os.system("cp " + hd_trim + " " + mj['hd_trim'])
       mjf = mj['sd_video_file'].replace(".mp4", ".json")
       save_json_file(mjf, mj)
       # make the stacks

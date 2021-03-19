@@ -42,13 +42,20 @@ def restack_meteor(video_file):
    
    js = load_json_file(jsf)
    sd_file = js['sd_video_file']
-   hd_file = js['hd_trim']
-   print("SD:", sd_file)
-   print("HD:", hd_file)
+   if "hd_trim" in js:
+      hd_file = js['hd_trim']
+   else:
+      hd_file = None
+   #print("SD:", sd_file)
+   #print("HD:", hd_file)
    stack_frame, stack_file = quick_video_stack(sd_file)
    js['sd_stack'] = stack_file
-   stack_frame, stack_file = quick_video_stack(hd_file)
-   js['hd_stack'] = stack_file
+   if hd_file is not None:
+      stack_frame, stack_file = quick_video_stack(hd_file)
+      js['hd_stack'] = stack_file
+   else:
+      js['hd_stack'] = ""
+
 
 def quick_video_stack(video_file, count = 0, save=1):
    frames = []
