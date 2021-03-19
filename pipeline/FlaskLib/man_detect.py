@@ -20,6 +20,8 @@ def man_detect(min_file, data):
    lf = data['lf']
    mf = min_file 
    out = "<P>Select the first and last image that contains the meteor.</p>"
+   if step == "2":
+      out = ""
    date = min_file[0:10]
    min_dir = "/mnt/ams2/SD/proc2/" + date + "/" 
    min_file = min_dir + min_file
