@@ -185,7 +185,6 @@ class Calibration():
       self.cat_image_stars = more_stars
       cur_res = self.test_new_cal_params(self.az,self.el,self.position_angle,self.pixel_scale,self.lens_model['x_poly'],self.lens_model['y_poly'],self.lens_model['x_poly_fwd'],self.lens_model['y_poly_fwd'])
       self.cp = self.obj_to_json()
-      print("INIT RES/V:", self.total_res_px, self.orev)
      
 
       #good_stars, bad_stars = self.maga(self.cp['cat_image_stars']) 
@@ -607,9 +606,11 @@ class Calibration():
 
    def save_cal_params(self):
       if "freecal" in self.cal_image_file:
-         print("We are working with a free cal file. that is great.")
          cp_file = self.cal_image_file.replace(".png", "-calparams.json")
-         cp = load_json_file(cp_file)
+         if cfe(cp_file) == 1:
+            cp = load_json_file(cp_file)
+         else:
+            cp = {}
          cp['center_az'] = self.az
          cp['center_el'] = self.el
          cp['ra_center'] = self.ra
@@ -633,7 +634,6 @@ class Calibration():
          else:
             cp['orev'] = cp['orev'] + 1
          cp['last_update'] = datetime.datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
-         print("SAVED:", cp_file)
          save_json_file(cp_file, cp)
 
 
@@ -709,7 +709,7 @@ class Calibration():
       mod_pix = this_poly[3]*self.opixel_scale
 
       new_res = self.test_new_cal_params(self.az+mod_az,self.el+mod_el,self.position_angle+mod_pos,self.pixel_scale+mod_pix,self.lens_model['x_poly'],self.lens_model['y_poly'],self.lens_model['x_poly_fwd'],self.lens_model['y_poly_fwd'])
-      print("RES:", len(self.cat_image_stars), new_res)
+      #print("RES:", self.orev, len(self.cat_image_stars), new_res)
       #print(mod_az, mod_el, mod_pos, mod_pix)
       return(new_res)
 
@@ -873,6 +873,8 @@ if __name__ == "__main__":
    import sys
 
    # scan all cal files in freecal dir and load them as class object and then view them
+   # This process will skip files it has already optimized
+
    import glob
    json_conf = load_json_file("../conf/as6.json")
    for cam_num in json_conf['cameras']:
@@ -897,7 +899,7 @@ if __name__ == "__main__":
                   continue 
                   #exit()
                if "orev" in cp:
-                  if cp['orev'] > 5 or cp['total_res_px'] < 2:
+                  if cp['orev'] >= 2 or cp['total_res_px'] < 2:
                      skip = 1
          if cfe(cal_image_file) == 1 and skip == 0:
 
@@ -906,9 +908,9 @@ if __name__ == "__main__":
             #calibration.draw_cal_image()
 
             if (calibration.total_res_px > 2 or calibration.orev == 0) and calibration.orev < 5:
-               print("RUN MINI?????:", calibration.total_res_px, calibration.orev)
-               #xxx = input("Enter to minimize")
                calibration.minimize_cal_params()
+               calibration.save_cal_params()
+               print("RES:", len(calibration.cat_image_stars), calibration.total_res_px, calibration.orev)
                if calibration.total_res_px > 2:
                   print("RES still bad try to tweek.")
                   calibration.tweek_cal()
@@ -918,8 +920,6 @@ if __name__ == "__main__":
                #calibration.draw_cal_image()
             else:
                print("GOOD:", len(calibration.cat_image_stars), "stars", calibration.total_res_px, "px res")
-         else:
-            print("SKIP!")
          c += 1
       print("finished cam:", cam_num)
 

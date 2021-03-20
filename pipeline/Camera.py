@@ -13,12 +13,12 @@ class Camera:
                cam_info['cam_num'] = cam
       if cams_id is not None:
          for cam in json_conf['cameras']:
-            tcams_id = json_conf['cameras'][cam]
+            tcams_id = json_conf['cameras'][cam]['cams_id']
             if str(tcams_id) == str(cams_id):
                cam_info = json_conf['cameras'][cam]
                cam_info['cam_num'] = cam.replace("cam", "")
-               print(cam_info)
       self.station_id = json_conf['site']['ams_id']
+
       self.cam_num = cam_info['cam_num']
       self.cams_id = cam_info['cams_id']
       self.ip = cam_info['ip']

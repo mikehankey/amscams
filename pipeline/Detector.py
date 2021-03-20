@@ -1,6 +1,12 @@
+
+import numpy as np
+from sklearn import linear_model, datasets
+from skimage.measure import ransac, LineModelND, CircleModel
+
 from lib.PipeUtil import cfe, load_json_file, save_json_file, fn_dir, load_mask_imgs, calc_dist
 from lib.PipeMeteorTests import obj_cm
-import numpy as np
+
+
 
 class Detector():
    def __init__(self):
@@ -8,47 +14,173 @@ class Detector():
 
 
    def analyze_object(obj):
+
+      self = Detector()
       report = {}
       # determine event duration
-      dur_frames = obj['ofns'][-1] - obj['ofns'][0]
+      dur_frames = (obj['ofns'][-1] - obj['ofns'][0]) + 1
       dur_seconds = dur_frames / 25
       gaps = []
       last_dists = []
       dists_from_start = []
-      x_dist = []
-      y_dist = []
+      report['x_dist'] = []
+      report['y_dist'] = []
       cls = "unknown"
+      report['max_dist'] = calc_dist((obj['oxs'][0], obj['oys'][0]), (obj['oxs'][-1], obj['oys'][-1]))
 
-      # reject any object with less than 3 frames 
-      if len(obj['ofns']) < 3:
+      report['plane_score'] = 0
+      report['meteor_score'] = 0
+      report['cloud_score'] = 0
+      report['bird_score'] = 0
+      report['class'] = "unknown"
+      plane_score = 0
+      cloud_score = 0
+      if report['max_dist'] < 3:
+         report['moving'] = 0
+      else:
+         report['moving'] = 1
+         report['meteor_score'] += 1
+
+      if report['moving'] == 0 and len(obj['ofns']) >= 3 and np.mean(obj['ows']) < 4 and np.mean(obj['ohs']) < 4:
+         report['class'] = "star"
+         # check for blob in stack here here
+      if report['moving'] == 0 and np.mean(obj['ows']) < 4 and np.mean(obj['ohs']) < 4:
+         report['class'] = "star"
+         
+
+      # reject any object with 0 frames
+      if len(obj['ofns']) == 0:
          report['status'] = "reject"
          cls = "noise"
          return(0, report)
 
+      # determine unq points
+      up = {}
+      for i in range(0, len(obj['ofns'])):
+         key = str(obj['ocxs'][i]) + "." + str(obj['ocys'][i])
+         up[key] = 1
+      report['unq_points'] = len(up.keys())
+      if report['unq_points'] == 1:
+         report['class'] = "star"
+
+      if report['unq_points'] <= 2:
+         report['meteor_score'] += -10
+
+      # determine cm and reject < 3
+      report['max_cm'] = obj_cm(obj['ofns'])
+      report['cm_perc'] = report['max_cm'] / len(obj['ofns'])
+      if report['max_cm'] > 3 and report['cm_perc'] > .8 :
+         report['meteor_score'] + 1
+
       # determine gaps between frames, dist from start, dist from previous
+      report['segs'] = []
       for i in range(0, len(obj['ofns'])):
          if i > 0:
             fn = obj['ofns'][i]
             fn_gaps = fn - obj['ofns'][i-1]
-
-            dist_from_last = calc_dist((obj['oxs'][i], obj['oys'][i]), (obj['oxs'][i-1],obj['oys'][i-1]))
-            dist_from_start = calc_dist((obj['oxs'][0], obj['oys'][0]), (obj['oxs'][i],obj['oys'][i]))
-            x_dist.append((obj['oxs'][i] - obj['oxs'][i-1]))
-            y_dist.append((obj['oys'][i] - obj['oys'][i-1]))
+         
+            dist_from_last = calc_dist((obj['ocxs'][i], obj['ocys'][i]), (obj['ocxs'][i-1],obj['ocys'][i-1]))
+            dist_from_start = calc_dist((obj['ocxs'][0], obj['ocys'][0]), (obj['ocxs'][i],obj['ocys'][i]))
+            report['x_dist'].append((obj['ocxs'][i] - obj['ocxs'][i-1]))
+            report['y_dist'].append((obj['ocys'][i] - obj['ocys'][i-1]))
 
             gaps.append(fn_gaps)
             last_dists.append(dist_from_last)
             dists_from_start.append(dist_from_start)
+            seg = dist_from_start - last_dist_from_start
+            last_dist_from_start = dist_from_start
+            report['segs'].append(seg)
          else:
+            last_dist_from_start = 0
             gaps.append(0)
             last_dists.append(0)
             dists_from_start.append(0)
-            x_dist.append(0)
-            y_dist.append(0)
+            report['x_dist'].append(0)
+            report['y_dist'].append(0)
+            report['segs'].append(0)
+      # determine the % of x & y agreement (with med)
+      report['med_seg'] = np.median(report['segs'])
+      report['med_x'] = np.median(report['x_dist'])
+      report['med_y'] = np.median(report['y_dist'])
+      x_agree = 1
+      y_agree = 1
+      good_xd = 0
+      good_yd = 0
+      for i in range(0, len(obj['ofns'])):
+         if i > 0:
+            xdf = abs(report['med_x'] - report['x_dist'][i])
+            ydf = abs(report['med_y'] - report['y_dist'][i])
+            if xdf <= report['med_x'] + 1:
+               good_xd += 1
+            if ydf <= report['med_y'] + 1:
+               good_yd += 1
+              
+         report['xd_agree'] = good_xd + 1 / (len(obj['ofns']))
+         report['yd_agree'] = good_yd + 1 / (len(obj['ofns']))
+      if report['xd_agree'] >= .9:
+         report['meteor_score'] += 1
+      if report['yd_agree'] >= .9:
+         report['meteor_score'] += 1
+      if report['xd_agree'] <= .6:
+         report['meteor_score'] -= 1
+      if report['yd_agree'] <= .6:
+         report['meteor_score'] -= 1
 
+
+      # determine % of obj that are 'big frames'
+      big = 0
+      for i in range(0, len(obj['ows'])):
+         size = obj['ows'][i] + obj['ohs'][i]
+         if size > 40:
+            big += 1
+      if len(obj['ofns']) > 0:
+         big_perc = big / len(obj['ofns'])
+      else:
+         big_perc = 0
+
+      # determine % of x & y dists that are agreeing
+      med_x = np.median(report['x_dist'])
+      med_y = np.median(report['y_dist'])
+      bad_xd = 0
+      bad_yd = 0
+      x_dir = obj['ocxs'][0] - obj['ocxs'][-1]
+      y_dir = obj['ocys'][0] - obj['ocys'][-1]
+      if abs(x_dir) > abs(y_dir):
+         dom_dir = "x"
+      else:
+         dom_dir = "y"
+      report['x_dir'] = x_dir
+      report['y_dir'] = y_dir
+      report['dom_dir'] = dom_dir
+      for i in range (0, len(obj['ofns'])):
+         if med_x > 0 and report['x_dist'][i] < 0:
+            bad_xd += 1
+         if med_y > 0 and report['y_dist'][i] < 0:
+            bad_yd += 1
+
+         if med_x < 0 and report['x_dist'][i] > 0:
+            bad_xd += 1
+         if med_y < 0 and report['y_dist'][i] > 0:
+            bad_yd += 1
+
+         if bad_xd > 0:
+            bad_x_perc = bad_xd / len(obj['ofns'])
+         else:
+            bad_x_perc = 0
+         if bad_yd > 0:
+            bad_y_perc = bad_yd / len(obj['ofns'])
+         else:
+            bad_y_perc = 0
+
+      report['big_perc'] = big_perc
+      report['bad_x_perc'] = bad_x_perc
+      report['bad_y_perc'] = bad_y_perc
       med_gaps = np.median(gaps)
       max_dist = max(dists_from_start)
-      px_per_frame = max(dists_from_start) / dur_frames
+      if dur_frames > 0:
+         px_per_frame = max(dists_from_start) / dur_frames
+      else:
+         px_per_frame = 0
 
       if max_dist < 5 or px_per_frame < .05:
          moving = 0
@@ -57,16 +189,21 @@ class Detector():
 
       report['total_frames'] = len(obj['ofns'])
       report['dur_frame'] = dur_frames
-      report['max_cm'] = obj_cm(obj['ofns'])
       report['dur_seconds'] = dur_seconds
       report['med_gaps'] = med_gaps 
       report['mean_fr_dist'] = np.mean(last_dists)
       report['max_mean_int_factor'] = max(obj['oint']) / np.mean(obj['oint'])
+      report['min_max_int_factor'] = max(obj['oint']) / np.min(obj['oint'])
       report['max_px_dist'] = max(dists_from_start)
-      report['px_per_second'] = max(dists_from_start) / dur_seconds 
-      report['px_per_frame'] = max(dists_from_start) / dur_frames
-      report['x_dist'] = x_dist
-      report['y_dist'] = y_dist
+      if dur_seconds > 0:
+         report['px_per_second'] = max(dists_from_start) / dur_seconds 
+      else:
+         report['px_per_second'] = 9
+      if dur_seconds > 0:
+         report['px_per_frame'] = max(dists_from_start) / dur_frames
+      else:
+         report['px_per_frame'] = 0
+
       report['last_dists'] = last_dists
       report['dists_from_start'] = dists_from_start
       report['moving'] = moving
@@ -81,14 +218,22 @@ class Detector():
       # 7 - car (large objects and also near bottom 1/3 of image)
       # 8 - bird (gaps, intensity, speed?, non linear movement, dark obj on light BG, occuring at daytime)
 
-      # do plane first
-      plane_score = 0
+
+      if report['cm_perc'] > .9:
+         report['meteor_score'] += 1
+      if report['cm_perc'] < .5:
+         report['meteor_score'] -= 1
+
 
       # add points based on gaps
       if 2 <= report['med_gaps'] <= 4:
          plane_score += 1
       elif 5 < report['med_gaps'] <= 10:
          plane_score += 3
+         report['meteor_score'] -= 1 
+      if report['total_frames'] < 4 and report['cm_perc'] < .9:
+         report['meteor_score'] -= 1 
+
 
       # add points based on speed 
       if report['px_per_frame'] < .15:
@@ -99,6 +244,12 @@ class Detector():
          plane_score += 1 
       if 1 < report['px_per_frame'] < 2:
          plane_score += .5 
+      if 2 < report['px_per_frame'] < 20:
+         report['meteor_score'] += 1 
+      if 2 < report['px_per_frame'] < 10:
+         report['meteor_score'] += 1 
+      if report['px_per_frame'] < .9:
+         report['meteor_score'] -= 1 
 
       # add point based on long dur
       if report['dur_seconds'] > 10:
@@ -107,26 +258,123 @@ class Detector():
       # add points based on intensity
       if report['max_mean_int_factor'] < 3:
          plane_score += 1
+      if report['max_mean_int_factor'] > 5 :
+         report['meteor_score'] += 1
 
 
       if report['mean_fr_dist'] < 1.5:
          plane_score += 1
-      
+      if 2 <= report['mean_fr_dist'] <= 15 :
+         report['meteor_score'] += 1
+
 
       report['plane_score'] = plane_score
+
+
+      # if this is not already ID'd as a plane, check to see it's ransac outlier %
+      try:
+         XS,YS,BXS,BYS = self.ransac_outliers(obj['ocxs'],obj['ocys'])
+      except:
+         XS = obj['ocxs']
+         YS = obj['ocys']
+         BXS = []
+         BYS = []
+         
+      if len(XS) > 0:
+         ransac_perc = len(BXS) / len(XS)
+      else:
+         ransac_perc = 0
+      if len(BXS) == 0:
+         ransac_perc = 1
+      report['ransac'] = ransac_perc
+      report['ransac_xs'] = XS
+      report['ransac_ys'] = YS
+
+
+      # CLOUD DETECTOR 
+      # how can we detect a cloud what meterics?
+      # bp > .4 -- 
+      # max_int > 30,000
+      # px_vel < 3
+      if report['big_perc'] >= .4:
+         cloud_score += 1
+      if report['big_perc'] >= .5:
+         cloud_score += 1
+      if report['big_perc'] >= .8:
+         cloud_score += 1
+      if max(obj['oint']) >= 30000 and report['px_per_frame'] < 3:
+         cloud_score += 1
+      report['cloud_score'] = cloud_score
+      final_met_score = report['meteor_score'] - report['cloud_score'] - report['plane_score']
+      if report['class'] == "star" or report['moving'] == 0:
+         report['class'] = "star"
+
+      elif final_met_score >= 1 or report['meteor_score'] > 2:
+         report['class'] = "meteor"
+      elif report['cloud_score'] >= 3 and report['meteor_score'] < 2:
+         report['class'] = "meteor"
+      elif report['plane_score'] >= 3 and report['meteor_score'] < 2:
+         report['class'] = "plane"
+
+
       return(1, report)
 
-   def find_objects(fn,x,y,w,h,intensity,objects,dist_thresh=30):
+   def ransac_outliers(self,XS,YS):
+      XS = np.array(XS)
+      YS = np.array(YS)
+      XS.reshape(-1, 1)
+      YS.reshape(-1, 1)
+
+      self.sd_min_max = [int(min(XS))-50, int(min(YS))-50, int(max(XS))+50, int(max(YS)+50)]
+
+      data = np.column_stack([XS,YS])
+      model = LineModelND()
+      model.estimate(data)
+      model_robust, inliers = ransac(data, LineModelND, min_samples=2,
+         residual_threshold=10, max_trials=1000)
+
+      outliers = inliers == False
+
+      # generate coordinates of estimated models
+      line_x = np.arange(XS.min(),XS.max())  #[:, np.newaxis]
+      line_y = model.predict_y(line_x)
+      line_y_robust = model_robust.predict_y(line_x)
+
+      # make plot for ransac filter
+      import matplotlib
+      matplotlib.use('TkAgg')
+      from matplotlib import pyplot as plt
+
+      fig, ax = plt.subplots()
+      ax.plot(data[outliers, 0], data[outliers, 1], '.r', alpha=0.6,
+        label='Outlier data')
+      ax.plot(data[inliers, 0], data[inliers, 1], '.b', alpha=0.6,
+        label='Inlier data')
+      plt.gca().invert_yaxis()
+      XS = data[inliers,0]
+      YS = data[inliers,1]
+      BXS = data[outliers,0]
+      BYS = data[outliers,1]
+      #plt.show()
+      return(XS,YS,BXS,BYS)
+
+
+   def find_objects(fn,x,y,w,h,cx,cy,intensity,objects,dist_thresh=50,lx=None,ly=None):
       
       maybe_matches = []
-      cx = int(x + (w/2))
-      cy = int(y + (h/2))
+      last_closest_dist = None
+      #cx = int(x + (w/2))
+      #cy = int(y + (h/2))
       if len(objects.keys()) == 0:
          objects[1] = {}
          objects[1]['oid'] = 1
          objects[1]['ofns'] = []
          objects[1]['oxs'] = []
          objects[1]['oys'] = []
+         objects[1]['ocxs'] = []
+         objects[1]['ocys'] = []
+         objects[1]['olxs'] = []
+         objects[1]['olys'] = []
          objects[1]['ows'] = []
          objects[1]['ohs'] = []
          objects[1]['oint'] = []
@@ -135,6 +383,11 @@ class Detector():
          objects[1]['oys'].append(y)
          objects[1]['ows'].append(w)
          objects[1]['ohs'].append(h)
+         objects[1]['ocxs'].append(cx)
+         objects[1]['ocys'].append(cy)
+         if lx is not None:
+            objects[1]['olxs'].append(lx)
+            objects[1]['olys'].append(ly)
          objects[1]['oint'].append(intensity)
          return(1, objects)
       else:
@@ -143,8 +396,27 @@ class Detector():
             tcy = int(objects[obj]['oys'][-1] + (objects[obj]['ohs'][-1]/2))
             dist = calc_dist((cx,cy),(tcx,tcy))
             fn_diff = fn - objects[obj]['ofns'][-1]
-            if dist < dist_thresh and fn_diff < 90 and fn not in objects[obj]['ofns']:
-               maybe_matches.append((obj,dist))
+
+                #and fn not in objects[obj]['ofns'] :
+            if dist < dist_thresh and fn_diff < 25: 
+               mkeys = {}
+               for i in range(0, len(objects[obj]['ofns'])):
+                  key = str(objects[obj]['ocxs'][i]) + "." + str(objects[obj]['ocys'][i])
+                  mkeys[key] = 1
+               tkey = str(cx) + "." + str(cy)
+               if tkey not in mkeys:
+                  maybe_matches.append((obj,dist))
+               else:
+                  return(obj, objects)
+
+            if last_closest_dist is None: 
+               last_fn_diff = fn_diff
+               last_obj = obj 
+               last_closest_dist = dist
+            if dist < last_closest_dist : 
+               last_obj = obj 
+               last_fn_diff = fn_diff
+               last_closest_dist = dist
          if len(maybe_matches) == 0:
             no_match = 1
          elif len(maybe_matches) == 1:
@@ -152,31 +424,37 @@ class Detector():
             if "class" not in objects[obj] and len(objects[obj]['ofns']) > 5:
                # try to class the obj. if there is minimal distance it is a star
                dist = calc_dist((min(objects[obj]['oxs']), min(objects[obj]['oys'])), (max(objects[obj]['oxs']), max(objects[obj]['oys'])))
-               if dist <= 2:
-                  objects[obj]['class'] = "star"
+               #if dist <= 2:
+               #   objects[obj]['class'] = "star"
             objects[obj]['oid'] = obj
             objects[obj]['ofns'].append(fn)
             objects[obj]['oxs'].append(x)
             objects[obj]['oys'].append(y)
             objects[obj]['ows'].append(w)
             objects[obj]['ohs'].append(h)
+            objects[obj]['ocxs'].append(cx)
+            objects[obj]['ocys'].append(cy)
             objects[obj]['oint'].append(intensity)
+            if lx is not None:
+               objects[1]['olxs'].append(lx)
+               objects[1]['olys'].append(ly)
             return(obj, objects)
          else:
-            print("THERE IS MORE THAN 1 OBJECT WE COULD MATCH AGAINST! Which is it?", len(maybe_matches))
+            # Make new object
             maybe_matches = sorted(maybe_matches, key=lambda x: (x[1]), reverse=False)
-            #for oid,dist in maybe_matches:
-            #   print("TOO MANY!", oid, objects[oid], dist)
             obj = maybe_matches[0][0]
             objects[obj]['ofns'].append(fn)
             objects[obj]['oxs'].append(x)
             objects[obj]['oys'].append(y)
             objects[obj]['ows'].append(w)
             objects[obj]['ohs'].append(h)
+            objects[obj]['ocxs'].append(cx)
+            objects[obj]['ocys'].append(cy)
             objects[obj]['oint'].append(intensity)
-            print("BEST:", obj, objects[obj])
+            if lx is not None:
+               objects[1]['olxs'].append(lx)
+               objects[1]['olys'].append(ly)
             return(obj, objects)
-            #exit()
 
       # by here we should have a maybe match or a new match 
       # if there are no maybes make a new one
@@ -189,11 +467,20 @@ class Detector():
          objects[nid]['oys'] = []
          objects[nid]['ows'] = []
          objects[nid]['ohs'] = []
+         objects[nid]['ocxs'] = []
+         objects[nid]['ocys'] = []
+         objects[nid]['olxs'] = []
+         objects[nid]['olys'] = []
          objects[nid]['oint'] = []
          objects[nid]['ofns'].append(fn)
          objects[nid]['oxs'].append(x)
          objects[nid]['oys'].append(y)
          objects[nid]['ows'].append(w)
          objects[nid]['ohs'].append(h)
+         objects[nid]['ocxs'].append(cx)
+         objects[nid]['ocys'].append(cy)
          objects[nid]['oint'].append(intensity)
+         if lx is not None:
+            objects[1]['olxs'].append(lx)
+            objects[1]['olys'].append(ly)
          return(1, objects)
