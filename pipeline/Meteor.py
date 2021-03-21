@@ -1,4 +1,5 @@
 import glob
+import os
 import scipy.optimize
 import numpy as np
 import datetime
@@ -9,13 +10,19 @@ from PIL import ImageFont, ImageDraw, Image, ImageChops
 
 from Detector import Detector
 from Camera import Camera
-from lib.PipeAutoCal import gen_cal_hist,update_center_radec, get_catalog_stars, pair_stars, scan_for_stars, calc_dist, minimize_fov, AzEltoRADec , HMS2deg, distort_xy
+from Calibration import Calibration
+from lib.PipeAutoCal import gen_cal_hist,update_center_radec, get_catalog_stars, pair_stars, scan_for_stars, calc_dist, minimize_fov, AzEltoRADec , HMS2deg, distort_xy, XYtoRADec, angularSeparation
 from lib.PipeUtil import load_json_file, save_json_file, cfe
 
 
 class Meteor():
    def __init__(self, meteor_file=None, min_file=None,detect_obj=None):
 
+      self.json_conf = load_json_file("../conf/as6.json")
+      self.sd_objects = None
+      self.hd_objects = None
+      self.best_meteor = None
+      self.cp = None
       if min_file is not None:
          print("MIN FILE WORK!")
          # we are dealing with a new meteor detection here, so initialize appropriately
@@ -33,13 +40,35 @@ class Meteor():
       elif meteor_file is not None:
          # we are dealing with a meteor that has already been processed. Set it up the best we can 
          # based on what data is available, the version etc. 
-         json_conf = load_json_file("../conf/as6.json")
-         self.station_id = json_conf['site']['ams_id']
-         self.lat = json_conf['site']['device_lat']
-         self.lon = json_conf['site']['device_lng']
-         self.alt = json_conf['site']['device_alt']
+         self.station_id = self.json_conf['site']['ams_id']
+         self.lat = self.json_conf['site']['device_lat']
+         self.lon = self.json_conf['site']['device_lng']
+         self.alt = self.json_conf['site']['device_alt']
          self.meteor_file = meteor_file
-         self.reduce_file = meteor_file.replace(".json", "-reduced.json")
+         self.meteor_fn = meteor_file.split("/")[-1]
+         self.meteor_base = self.meteor_fn.replace(".json", "")
+         self.reduce_file = self.meteor_file.replace(".json", "-reduced.json")
+
+         self.trim_num = self.meteor_file.split("trim")[-1]
+         self.trim_num = self.trim_num.replace("-", "")
+         self.trim_num = self.trim_num.replace(".json", "")
+         self.trim_num = self.trim_num.replace(".mp4", "")
+         print("TRIM:", self.trim_num)
+         self.extra_sec = int(self.trim_num) / 25
+         self.file_start_time = datetime.datetime.strptime(self.meteor_fn[0:19], "%Y_%m_%d_%H_%M_%S")
+         self.trim_start_time = self.file_start_time + datetime.timedelta(0,self.extra_sec)
+
+         self.date = self.meteor_fn[0:10]
+         self.year = self.meteor_fn[0:4]
+         self.mon = self.meteor_fn[5:7]
+         self.cache_dir_roi = "/mnt/ams2/CACHE/" + self.year + "/" + self.mon + "/" + self.meteor_base + "/"
+         self.cache_dir_frames = "/mnt/ams2/CACHE/" + self.year + "/" + self.mon + "/" + self.meteor_base + "_frms/"
+         self.cloud_meteor_dir = "/mnt/archive.allsky.tv/" + self.station_id + "/" + self.year + "/" + self.date + "/"
+
+         if cfe(self.cache_dir_roi,1) == 0:
+            os.makedirs(self.cache_dir_roi)
+         if cfe(self.cache_dir_frames,1) == 0:
+            os.makedirs(self.cache_dir_frames)
 
          if cfe(self.meteor_file) == 1:
             mj = load_json_file(self.meteor_file)
@@ -55,16 +84,40 @@ class Meteor():
          if mj is not None:
             if "sd_video_file" in self.mj:
                self.sd_vid = self.mj['sd_video_file'].split("/")[-1]
+               self.sd_stack_file = self.sd_vid.replace(".mp4", "-stacked.jpg")
             else:
                self.sd_vid = None
+               self.sd_stack_file = None
          else:
             self.sd_vid = None
 
          if "hd_trim" in self.mj:
             self.hd_vid = self.mj['hd_video_file'].split("/")[-1]
+            self.hd_stack_file = self.hd_vid.replace(".mp4", "-stacked.jpg")
          else:
-            self.sd_vid = None
+            self.hd_vid = None
+            self.hd_stack_file = None
 
+
+         calib = Calibration(meteor_file=meteor_file)
+         self.cp = calib.cp
+         if len(calib.cat_image_stars) > 10:
+            calib.minimize_cal_params()
+            self.cp['center_az'] = calib.az
+            self.cp['center_el'] = calib.el
+            self.cp['ra_center'] = calib.ra
+            self.cp['dec_center'] = calib.dec
+            self.cp['position_angle'] = calib.position_angle
+            self.cp['pixscale'] = calib.pixel_scale
+            self.cp['x_poly'] = calib.lens_model['x_poly']
+            self.cp['y_poly'] = calib.lens_model['y_poly']
+            self.cp['x_poly_fwd'] = calib.lens_model['x_poly_fwd']
+            self.cp['y_poly_fwd'] = calib.lens_model['y_poly_fwd']
+            self.cp['user_stars'] = calib.user_stars
+            self.cp['cat_image_stars'] = calib.cat_image_stars
+            self.cp['total_res_px'] = calib.total_res_px
+            self.cp['total_res_deg'] = calib.total_res_deg
+         calib.draw_cal_image()
 
          self.cams_id = self.sd_vid[24:30]
          self.meteor_day = self.sd_vid[0:10]
@@ -79,6 +132,11 @@ class Meteor():
          else:
             self.event_id = None
 
+         if "best_meteor" in mj:
+            self.best_meteor = mj['best_meteor']
+         else:
+            print("RUN METEOR SCAN!")
+            self.meteor_scan()
 
    def meteor_scan_crop(self, obj):
       x1,y1,x2,y2 = self.define_area_box(obj, self.fw, self.fh, 10)
@@ -98,7 +156,6 @@ class Meteor():
       y_dir = obj['report']['y_dir'] 
       dom_dir = obj['report']['dom_dir'] 
  
-
 
       for frame in self.sd_frames:
          #fn = obj['ofns'][i]
@@ -459,7 +516,14 @@ class Meteor():
    def meteor_scan(self):
       print("   meteor scan.", self.meteor_dir + self.sd_vid)
       mask2 = None
+
+
       self.sd_frames, self.sd_stacked_image = self.load_frames(self.meteor_dir + self.sd_vid)
+
+      self.sd_wh = (self.sd_frames[0].shape[1],self.sd_frames[0].shape[0])
+      self.hdm_x = 1920 / self.sd_wh[0]
+      self.hdm_y = 1080 / self.sd_wh[1]
+
       self.first_frame = self.sd_frames[0].copy()
       self.sd_subframes = []
       self.max_vals = []
@@ -568,6 +632,7 @@ class Meteor():
          self.pos_meteors = pos_meteors
          self.sd_objects = objects
          self.meteor_detected = 1
+         self.best_meteor = pos_meteors[0]
       if len(pos_meteors) == 2:
          # most likely case is these are the same overlapping check. 
          xs1 = pos_meteors[0]['oxs']
@@ -599,6 +664,8 @@ class Meteor():
          self.pos_meteors = pos_meteors
          self.sd_objects = objects
          self.meteor_detected = 1
+         self.best_meteor = pos_meteors[0]
+
       if len(pos_meteors) > 2:
          # Lots of possible meteors here. Let's see how many fit inside the same cont
          work_stack = self.sd_stacked_image.copy()
@@ -635,6 +702,8 @@ class Meteor():
          print("NON-CHILDREN:", other_objs)
          print("SPECTRA :", spectra)
 
+
+
          for oid in children:
             obj = objects[oid]
             cv2.putText(work_stack, str(obj['oid']) + " " + str(obj['report']['class']),  (obj['oxs'][0], obj['oys'][0]), cv2.FONT_HERSHEY_SIMPLEX, .5, (200, 200, 200), 1)
@@ -649,11 +718,16 @@ class Meteor():
             obj = objects[oid]
             cv2.putText(work_stack, str(obj['oid']) + " spectra" ,  (obj['oxs'][0], obj['oys'][0]), cv2.FONT_HERSHEY_SIMPLEX, .5, (200, 200, 200), 1)
 
+         # MERGE DOM & CHILDREN INTO 1 OBJ. # still have merge fn bugs too!
+         self.best_meteor = dom_obj
+         self.pos_meteors = [dom_obj]
+         doid = dom_obj['oid']
+         objects[doid]['report']['class'] = "meteor"
+         self.sd_objects = objects
          cv2.rectangle(work_stack, (int(dx1), int(dy1)), (int(dx2) , int(dy2) ), (0, 0, 255), 1) 
          cv2.imshow('pepe', work_stack)
          cv2.waitKey(0)
-
-         exit()
+         #exit()
 
       #self.report_objects(objects)
 
@@ -1030,13 +1104,156 @@ class Meteor():
                return(1)
       return(0)
 
+   def update_meteor_reduce(self):
+      # update the DTs here too!
+      # update current x,y points with latest calibration params
+      # if we have LXs use those
+      # if we have user mods use those!  
+      self.best_meteor['ras'] = []
+      self.best_meteor['decs'] = []
+      self.best_meteor['azs'] = []
+      self.best_meteor['els'] = []
+      self.best_meteor['dt'] = []
+      self.event_dur = (self.best_meteor['ofns'][-1] - self.best_meteor['ofns'][0])/2
+
+      for i in range(0, len(self.best_meteor['oxs'])):
+         fn = self.best_meteor['ofns'][i]
+         extra_sec = fn / 25
+         frame_time = self.trim_start_time + datetime.timedelta(0,extra_sec)
+         frame_time_str = frame_time.strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]
+         self.best_meteor['dt'].append(frame_time_str)
+         cx = int(self.best_meteor['ocxs'][i] * self.hdm_x)
+         cy = int(self.best_meteor['ocys'][i] * self.hdm_y)
+         tx, ty, ra ,dec , az, el = XYtoRADec(cx,cy,self.sd_vid,self.cp,self.json_conf)
+         self.best_meteor['ras'].append(ra)
+         self.best_meteor['decs'].append(dec)
+         self.best_meteor['azs'].append(az)
+         self.best_meteor['els'].append(el)
+      self.best_meteor['report']['ang_dist'] = abs(angularSeparation(self.best_meteor['ras'][0],self.best_meteor['decs'][0],self.best_meteor['ras'][-1],self.best_meteor['decs'][-1]))
+      self.best_meteor['report']['ang_sep'] = abs(angularSeparation(self.best_meteor['ras'][0],self.best_meteor['decs'][0],self.best_meteor['ras'][-1],self.best_meteor['decs'][-1]))
+      self.best_meteor['report']['ang_vel'] = self.best_meteor['report']['ang_sep'] / self.event_dur
+
+
+   def save_meteor_files(self):
+      self.update_meteor_reduce()
+      self.make_meteor_frame_data()
+      print("save the meteor file and reduce file")
+      if cfe(self.meteor_file) == 1:
+         mj = load_json_file(self.meteor_file)
+      else:
+         mj = {}
+      if cfe(self.reduce_file) == 1:
+         mjr = load_json_file(self.reduce_file)
+      else:
+         mjr = {}
+      mjr["station_id"] = self.station_id
+      mjr["device_name"] = self.cams_id
+      mjr["sd_video_file"] = self.sd_vid
+      mjr["sd_stack"] = self.sd_stack_file
+      mjr["hd_video_file"] = self.hd_vid
+      mjr["hd_stack"] = self.hd_stack_file
+      mjr["crop_box"] = self.crop_box
+
+      mj['cp'] = self.cp
+      mj['best_meteor'] = self.best_meteor
+
+      mjr['meteor_frame_data'] = self.meteor_frame_data
+      mjr['cal_params'] = self.cp
+      save_json_file(self.meteor_file, mj)
+      save_json_file(self.reduce_file, mjr)
+
+   def make_meteor_frame_data(self):
+      # don't forget to add the user_mods / user overrides. 
+      self.meteor_frame_data = []
+      hdm_x_720 = 1920 / 1280
+      hdm_y_720 = 1080 / 720
+      if self.best_meteor is not None:
+         min_x = min(self.best_meteor['oxs'])
+         max_x = max(self.best_meteor['oxs'])
+         min_y = min(self.best_meteor['oys'])
+         max_y = max(self.best_meteor['oys'])
+         self.crop_box = [int(min_x*self.hdm_x),int(min_y*self.hdm_y),int(max_x*self.hdm_x),int(max_y*self.hdm_y)]
+         for i in range(0, len(self.best_meteor['ofns'])):
+            #dt = "1999-01-01 00:00:00"
+            fn = self.best_meteor['ofns'][i]
+            x = int(self.best_meteor['ocxs'][i] * self.hdm_x)
+            y = int(self.best_meteor['ocys'][i] * self.hdm_y)
+            w = self.best_meteor['ows'][i]
+            h = self.best_meteor['ohs'][i]
+            ra = self.best_meteor['ras'][i]
+            dec = self.best_meteor['decs'][i]
+            az = self.best_meteor['azs'][i]
+            el = self.best_meteor['els'][i]
+            oint = self.best_meteor['oint'][i]
+            dt = self.best_meteor['dt'][i]
+            oint = self.best_meteor['oint'][i]
+            self.meteor_frame_data.append((dt, fn, x, y, w, h, oint, ra, dec, az, el))
+
+   def make_cache_files(self):
+      ff = self.meteor_frame_data[0][1] 
+      lf = self.meteor_frame_data[-1][1]
+      sf = ff - 10
+      ef = lf + 10
+      if sf < 0:
+         sf = 0
+      if ef > len(self.sd_frames):
+         ef = len(self.sd_frames) - 1
+
+
+      mfd = {}
+      for data in self.meteor_frame_data:
+         (dt, fn, x, y, w, h, oint, ra, dec, az, el) = data
+         mfd[fn] = (dt, fn, x, y, w, h, oint, ra, dec, az, el)
+
+      print(sf, ef)
+      for i in range(sf, ef):
+         frm_file = self.cache_dir_frames + self.meteor_base + "-{:04d}".format(i) + ".jpg"
+         print(frm_file)
+         frame = self.sd_frames[i]
+         frame_1080 = cv2.resize(frame,(1920,1080))
+         if i in mfd:
+            print("MFD:", i)
+            (dt, fn, x, y, w, h, oint, ra, dec, az, el) = mfd[i]
+            x1,y1,x2,y2 = self.roi_area(x,y,1920,1080,50)
+            roi_img = frame_1080[y1:y2,x1:x2]
+
+            ffn = "{:04d}".format(int(fn))
+            outfile = self.cache_dir_roi + self.meteor_base + "-frm" + ffn + ".jpg"
+            print(outfile)
+            cv2.imwrite(outfile, roi_img)
+
+            cv2.imshow('pepe2', roi_img)
+            cv2.imshow('pepe', frame)
+            cv2.waitKey(0)
+
+   def roi_area(self,x,y,iw,ih,roi_size):
+      rs = int(roi_size/2)
+      x1 = x - rs
+      x2 = x + rs
+      y1 = y - rs
+      y2 = y + rs
+      if x1 < 0:
+         x2 = x2 + (x1*-1)
+         x1 = 0 
+      if y1 < 0:
+         y2 = y2 + (y1*-1)
+         y1 = 0 
+      if x2 > iw:
+         x2 = iw
+         x1 = x1 - (x2-iw)
+      if y2 > ih:
+         y2 = ih
+         y1 = y1 - (y2-ih)
+      return(x1,y1,x2,y2) 
+
+   def make_frame_cache_files(self):
+
+      for data in self.meteor_frame_data:
+         (dt, fn, x, y, w, h, oint, ra, dec, az, el) = data
 
    def make_final_trim(self, min_file, trim_start, trim_end ):
       print("Make ")
 
-
-   def save_meteor(self):
-      print("Save meteor.")
 
    def make_full_frame_cache(self):
       print("Make full frame cache.")
@@ -1096,12 +1313,14 @@ class Meteor():
 
 if __name__ == "__main__":
    import sys
-   meteors = glob.glob("/mnt/ams2/meteors/2021_03_20/*.json")
-   # meteors = ['/mnt/ams2/meteors/2021_03_15/2021_03_15_07_32_01_000_010006-trim-1105.json']
-   meteors = ['/mnt/ams2/meteors/2021_03_20/2021_03_20_00_31_01_000_010005-trim-0016.json']
+   #meteors = glob.glob("/mnt/ams2/meteors/2021_03_20/*.json")
+   meteors = ['/mnt/ams2/meteors/2021_03_20/2021_03_20_06_54_00_000_010002-trim-0528.json']
    for meteor_file in meteors:
       if "reduced" not in meteor_file:
          my_meteor = Meteor(meteor_file=meteor_file)
          print("My Meteor:", my_meteor.sd_vid)
          my_meteor.meteor_scan()
          my_meteor.report_objects(my_meteor.sd_objects)
+         my_meteor.save_meteor_files()
+         my_meteor.make_cache_files()
+         exit()

@@ -7663,11 +7663,10 @@ def scan_for_stars(image):
       temp = cv2.convertScaleAbs(temp)
 
       tavg = np.mean(temp)
-      tavg = tavg * 2
-      if tavg < 10:
-         tavg = 10
+      tavg = tavg * 3 
+      if tavg < 20:
+         tavg = 20
       _, threshold = cv2.threshold(temp.copy(), tavg, 255, cv2.THRESH_BINARY)
-
       cnts = get_cont(threshold)
       size = 10
       for cnt in cnts:
@@ -7692,7 +7691,8 @@ def scan_for_stars(image):
                bad_areas.append((x,y+y1,w,h))
          else:
             bad_areas.append((x,y+y1,w,h))
-   
+      #cv2.imshow('pepe', threshold)
+      #cv2.waitKey(0)
       
    good_stars = []
    for star in stars:

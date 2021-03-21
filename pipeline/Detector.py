@@ -287,8 +287,12 @@ class Detector():
       if len(BXS) == 0:
          ransac_perc = 1
       report['ransac'] = ransac_perc
-      report['ransac_xs'] = XS
-      report['ransac_ys'] = YS
+      report['ransac_xs'] = []
+      report['ransac_ys'] = []
+      for X in XS:
+         report['ransac_xs'].append(int(X))
+      for Y in YS:
+         report['ransac_ys'].append(int(Y))
 
 
       # CLOUD DETECTOR 
