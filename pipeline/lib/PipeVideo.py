@@ -23,7 +23,7 @@ def ffmpeg_cats(files, outfile=None):
    for file in files:
       list += "file '" + file + "'\n"
    list_file = "tmp_vids/cat.txt"
-   outfile = files[-1].replace(".mp4", "") 
+   outfile = files[0].replace(".mp4", "") 
    last_fn, ld = fn_dir(files[-1])
    outfile = outfile + "__" + last_fn
    fp = open(list_file, "w")
