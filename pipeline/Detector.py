@@ -14,7 +14,7 @@ class Detector():
 
 
    def analyze_object(obj):
-
+      print("   ANALYZE:", obj['obj_id'])
       self = Detector()
       report = {}
       # determine event duration
@@ -23,11 +23,14 @@ class Detector():
       gaps = []
       last_dists = []
       dists_from_start = []
+      report['bad_items'] = []
+      report['good_items'] = []
       report['x_dist'] = []
       report['y_dist'] = []
       cls = "unknown"
-      report['max_dist'] = calc_dist((obj['oxs'][0], obj['oys'][0]), (obj['oxs'][-1], obj['oys'][-1]))
+      report['max_dist'] = calc_dist((obj['oxs'][0], obj['oys'][0]), (obj['oxs'][-1] + obj['ows'][-1], obj['ccys'][-1] + obj['ohs'][-1]))
 
+      report['elapsed_frames'] = max(obj['ofns']) - min(obj['ofns'])
       report['plane_score'] = 0
       report['meteor_score'] = 0
       report['cloud_score'] = 0
@@ -40,6 +43,7 @@ class Detector():
       else:
          report['moving'] = 1
          report['meteor_score'] += 1
+         report['good_items'].append("object is moving.")
 
       if report['moving'] == 0 and len(obj['ofns']) >= 3 and np.mean(obj['ows']) < 4 and np.mean(obj['ohs']) < 4:
          report['class'] = "star"
@@ -57,20 +61,23 @@ class Detector():
       # determine unq points
       up = {}
       for i in range(0, len(obj['ofns'])):
-         key = str(obj['ocxs'][i]) + "." + str(obj['ocys'][i])
+         key = str(obj['ccxs'][i]) + "." + str(obj['ccys'][i])
          up[key] = 1
       report['unq_points'] = len(up.keys())
       if report['unq_points'] == 1:
          report['class'] = "star"
 
       if report['unq_points'] <= 2:
-         report['meteor_score'] += -10
+         report['meteor_score'] += -1
+         report['bad_items'].append("there are 2 or less unique points!?. " + str(report['unq_points'] ))
 
       # determine cm and reject < 3
       report['max_cm'] = obj_cm(obj['ofns'])
       report['cm_perc'] = report['max_cm'] / len(obj['ofns'])
       if report['max_cm'] > 3 and report['cm_perc'] > .8 :
          report['meteor_score'] + 1
+         report['good_items'].append("there are 3 or more consecutive motion frames!?.")
+
 
       # determine gaps between frames, dist from start, dist from previous
       report['segs'] = []
@@ -79,10 +86,10 @@ class Detector():
             fn = obj['ofns'][i]
             fn_gaps = fn - obj['ofns'][i-1]
          
-            dist_from_last = calc_dist((obj['ocxs'][i], obj['ocys'][i]), (obj['ocxs'][i-1],obj['ocys'][i-1]))
-            dist_from_start = calc_dist((obj['ocxs'][0], obj['ocys'][0]), (obj['ocxs'][i],obj['ocys'][i]))
-            report['x_dist'].append((obj['ocxs'][i] - obj['ocxs'][i-1]))
-            report['y_dist'].append((obj['ocys'][i] - obj['ocys'][i-1]))
+            dist_from_last = calc_dist((obj['ccxs'][i], obj['ccys'][i]), (obj['ccxs'][i-1],obj['ccys'][i-1]))
+            dist_from_start = calc_dist((obj['ccxs'][0], obj['ccys'][0]), (obj['ccxs'][i],obj['ccys'][i]))
+            report['x_dist'].append((obj['ccxs'][i] - obj['ccxs'][i-1]))
+            report['y_dist'].append((obj['ccys'][i] - obj['ccys'][i-1]))
 
             gaps.append(fn_gaps)
             last_dists.append(dist_from_last)
@@ -119,12 +126,17 @@ class Detector():
          report['yd_agree'] = good_yd + 1 / (len(obj['ofns']))
       if report['xd_agree'] >= .9:
          report['meteor_score'] += 1
+         report['good_items'].append("agreement with x direction!?.")
+
       if report['yd_agree'] >= .9:
          report['meteor_score'] += 1
+         report['good_items'].append("agreement with y direction!?.")
       if report['xd_agree'] <= .6:
          report['meteor_score'] -= 1
+         report['bad_items'].append("disagreement with x direction!?.")
       if report['yd_agree'] <= .6:
          report['meteor_score'] -= 1
+         report['bad_items'].append("disagreement with y direction!?.")
 
 
       # determine % of obj that are 'big frames'
@@ -143,8 +155,8 @@ class Detector():
       med_y = np.median(report['y_dist'])
       bad_xd = 0
       bad_yd = 0
-      x_dir = obj['ocxs'][0] - obj['ocxs'][-1]
-      y_dir = obj['ocys'][0] - obj['ocys'][-1]
+      x_dir = obj['ccxs'][0] - obj['ccxs'][-1]
+      y_dir = obj['ccys'][0] - obj['ccys'][-1]
       if abs(x_dir) > abs(y_dir):
          dom_dir = "x"
       else:
@@ -221,8 +233,10 @@ class Detector():
 
       if report['cm_perc'] > .9:
          report['meteor_score'] += 1
+         report['good_items'].append("cm perc good.")
       if report['cm_perc'] < .5:
          report['meteor_score'] -= 1
+         report['good_items'].append("cm perc too low.")
 
 
       # add points based on gaps
@@ -231,8 +245,10 @@ class Detector():
       elif 5 < report['med_gaps'] <= 10:
          plane_score += 3
          report['meteor_score'] -= 1 
-      if report['total_frames'] < 4 and report['cm_perc'] < .9:
+         report['bad_items'].append("5-10 gaps detected.")
+      if report['elapsed_frames'] < 4 and report['cm_perc'] < .9:
          report['meteor_score'] -= 1 
+         report['bad_items'].append("less than 4 elapsed frames and also gaps detected.")
 
 
       # add points based on speed 
@@ -246,10 +262,11 @@ class Detector():
          plane_score += .5 
       if 2 < report['px_per_frame'] < 20:
          report['meteor_score'] += 1 
-      if 2 < report['px_per_frame'] < 10:
-         report['meteor_score'] += 1 
+         report['good_items'].append("good meteor speed.")
+
       if report['px_per_frame'] < .9:
          report['meteor_score'] -= 1 
+         report['bad_items'].append("low speed.")
 
       # add point based on long dur
       if report['dur_seconds'] > 10:
@@ -272,27 +289,27 @@ class Detector():
 
 
       # if this is not already ID'd as a plane, check to see it's ransac outlier %
-      try:
-         XS,YS,BXS,BYS = self.ransac_outliers(obj['ocxs'],obj['ocys'])
-      except:
-         XS = obj['ocxs']
-         YS = obj['ocys']
-         BXS = []
-         BYS = []
+      #try:
+      #   XS,YS,BXS,BYS = self.ransac_outliers(obj['ccxs'],obj['ccys'])
+      #except:
+      #   XS = obj['ccxs']
+      #   YS = obj['ccys']
+      #   BXS = []
+      #   BYS = []
          
-      if len(XS) > 0:
-         ransac_perc = len(BXS) / len(XS)
-      else:
-         ransac_perc = 0
-      if len(BXS) == 0:
-         ransac_perc = 1
-      report['ransac'] = ransac_perc
-      report['ransac_xs'] = []
-      report['ransac_ys'] = []
-      for X in XS:
-         report['ransac_xs'].append(int(X))
-      for Y in YS:
-         report['ransac_ys'].append(int(Y))
+      #if len(XS) > 0:
+      #   ransac_perc = len(BXS) / len(XS)
+      #else:
+      #   ransac_perc = 0
+      #if len(BXS) == 0:
+      #   ransac_perc = 1
+      #report['ransac'] = ransac_perc
+      #report['ransac_xs'] = []
+      #report['ransac_ys'] = []
+      #for X in XS:
+      #   report['ransac_xs'].append(int(X))
+      #for Y in YS:
+      #   report['ransac_ys'].append(int(Y))
 
 
       # CLOUD DETECTOR 
@@ -313,10 +330,10 @@ class Detector():
       if report['class'] == "star" or report['moving'] == 0:
          report['class'] = "star"
 
-      elif final_met_score >= 1 or report['meteor_score'] > 2:
+      elif final_met_score >= 1 or report['meteor_score'] >= 2:
          report['class'] = "meteor"
       elif report['cloud_score'] >= 3 and report['meteor_score'] < 2:
-         report['class'] = "meteor"
+         report['class'] = "cloud"
       elif report['plane_score'] >= 3 and report['meteor_score'] < 2:
          report['class'] = "plane"
 
@@ -371,12 +388,12 @@ class Detector():
       #cy = int(y + (h/2))
       if len(objects.keys()) == 0:
          objects[1] = {}
-         objects[1]['oid'] = 1
+         objects[1]['obj_id'] = 1
          objects[1]['ofns'] = []
          objects[1]['oxs'] = []
          objects[1]['oys'] = []
-         objects[1]['ocxs'] = []
-         objects[1]['ocys'] = []
+         objects[1]['ccxs'] = []
+         objects[1]['ccys'] = []
          objects[1]['olxs'] = []
          objects[1]['olys'] = []
          objects[1]['ows'] = []
@@ -387,8 +404,8 @@ class Detector():
          objects[1]['oys'].append(y)
          objects[1]['ows'].append(w)
          objects[1]['ohs'].append(h)
-         objects[1]['ocxs'].append(cx)
-         objects[1]['ocys'].append(cy)
+         objects[1]['ccxs'].append(cx)
+         objects[1]['ccys'].append(cy)
          if lx is not None:
             objects[1]['olxs'].append(lx)
             objects[1]['olys'].append(ly)
@@ -403,9 +420,10 @@ class Detector():
 
                 #and fn not in objects[obj]['ofns'] :
             if dist < dist_thresh and fn_diff < 25: 
+               #print("OBJ FOUND? DIST THRESH/ FN DIFF:", fn, dist_thresh, dist, fn_diff)
                mkeys = {}
                for i in range(0, len(objects[obj]['ofns'])):
-                  key = str(objects[obj]['ocxs'][i]) + "." + str(objects[obj]['ocys'][i])
+                  key = str(objects[obj]['ccxs'][i]) + "." + str(objects[obj]['ccys'][i])
                   mkeys[key] = 1
                tkey = str(cx) + "." + str(cy)
                if tkey not in mkeys:
@@ -430,14 +448,14 @@ class Detector():
                dist = calc_dist((min(objects[obj]['oxs']), min(objects[obj]['oys'])), (max(objects[obj]['oxs']), max(objects[obj]['oys'])))
                #if dist <= 2:
                #   objects[obj]['class'] = "star"
-            objects[obj]['oid'] = obj
+            objects[obj]['obj_id'] = obj
             objects[obj]['ofns'].append(fn)
             objects[obj]['oxs'].append(x)
             objects[obj]['oys'].append(y)
             objects[obj]['ows'].append(w)
             objects[obj]['ohs'].append(h)
-            objects[obj]['ocxs'].append(cx)
-            objects[obj]['ocys'].append(cy)
+            objects[obj]['ccxs'].append(cx)
+            objects[obj]['ccys'].append(cy)
             objects[obj]['oint'].append(intensity)
             if lx is not None:
                objects[1]['olxs'].append(lx)
@@ -452,8 +470,8 @@ class Detector():
             objects[obj]['oys'].append(y)
             objects[obj]['ows'].append(w)
             objects[obj]['ohs'].append(h)
-            objects[obj]['ocxs'].append(cx)
-            objects[obj]['ocys'].append(cy)
+            objects[obj]['ccxs'].append(cx)
+            objects[obj]['ccys'].append(cy)
             objects[obj]['oint'].append(intensity)
             if lx is not None:
                objects[1]['olxs'].append(lx)
@@ -465,14 +483,14 @@ class Detector():
       if len(maybe_matches) == 0:
          nid = max(objects.keys()) + 1
          objects[nid] = {}
-         objects[nid]['oid'] = nid
+         objects[nid]['obj_id'] = nid
          objects[nid]['ofns'] = []
          objects[nid]['oxs'] = []
          objects[nid]['oys'] = []
          objects[nid]['ows'] = []
          objects[nid]['ohs'] = []
-         objects[nid]['ocxs'] = []
-         objects[nid]['ocys'] = []
+         objects[nid]['ccxs'] = []
+         objects[nid]['ccys'] = []
          objects[nid]['olxs'] = []
          objects[nid]['olys'] = []
          objects[nid]['oint'] = []
@@ -481,8 +499,8 @@ class Detector():
          objects[nid]['oys'].append(y)
          objects[nid]['ows'].append(w)
          objects[nid]['ohs'].append(h)
-         objects[nid]['ocxs'].append(cx)
-         objects[nid]['ocys'].append(cy)
+         objects[nid]['ccxs'].append(cx)
+         objects[nid]['ccys'].append(cy)
          objects[nid]['oint'].append(intensity)
          if lx is not None:
             objects[1]['olxs'].append(lx)

@@ -374,8 +374,8 @@ class Calibration():
          cv2.putText(img, str(cal_fn),  (10, 1040), cv2.FONT_HERSHEY_SIMPLEX, .5, (200, 200, 200), 1)
          cv2.putText(img, "v" + str(self.orev),  (10, 1020), cv2.FONT_HERSHEY_SIMPLEX, .5, (200, 200, 200), 1)
 
-         cv2.imshow('pepe', img)
-         cv2.waitKey(30)
+         #cv2.imshow('pepe', img)
+         #cv2.waitKey(30)
 
    def tweek_cal(self):
       # test the final result and see how it is?
