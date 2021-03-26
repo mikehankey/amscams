@@ -69,7 +69,6 @@ class Meteor():
          self.trim_num = self.trim_num.replace("-", "")
          self.trim_num = self.trim_num.replace(".json", "")
          self.trim_num = self.trim_num.replace(".mp4", "")
-         print("TRIM:", self.trim_num)
          self.extra_sec = int(self.trim_num) / 25
          self.file_start_time = datetime.datetime.strptime(self.meteor_fn[0:19], "%Y_%m_%d_%H_%M_%S")
          self.trim_start_time = self.file_start_time + datetime.timedelta(0,self.extra_sec)
@@ -109,7 +108,6 @@ class Meteor():
                self.meteor_scan_info = {}
 
             if "best_meteor" in mj:
-               #print("LOAD BEST:", mj['best_meteor'])
                if "obj_id" in mj['best_meteor']:
                   oid = mj['best_meteor']['obj_id']
                else:
@@ -130,18 +128,15 @@ class Meteor():
                      # values saved at 720p res convert to SD
                      before_x = self.meteor_scan_info['sd_objects'][oid]['ccxs']
                      before_y = self.meteor_scan_info['sd_objects'][oid]['ccys']
-                     print("BEFORE:", before_x, before_y)
                      for i in range(0, len(self.meteor_scan_info['sd_objects'][oid]['ofns'])):
                         cx = self.meteor_scan_info['sd_objects'][oid]['ccxs'][i]
                         cy = self.meteor_scan_info['sd_objects'][oid]['ccxs'][i]
                         cx7 = int(cx / self.hdm_x_720)
                         cy7 = int(cy / self.hdm_y_720)
-                        print("CONV720:", cx,cy,cx7,cy7)
                         self.meteor_scan_info['sd_objects'][oid]['ccxs'][i] = cx7
                         self.meteor_scan_info['sd_objects'][oid]['ccxs'][i] = cy7
                      aft_x = self.meteor_scan_info['sd_objects'][oid]['ccxs']
                      aft_y = self.meteor_scan_info['sd_objects'][oid]['ccys']
-                     print("AFT:", aft_x, aft_y)
                for i in range(0, len(self.best_meteor['ofns'])):
                   x = self.best_meteor['oxs'][i]
                   y = self.best_meteor['oys'][i]
@@ -149,13 +144,18 @@ class Meteor():
                   h = self.best_meteor['ohs'][i]
                   tcx = int(x + (w/2))
                   tcy = int(y + (h/2))
-                  cx = self.best_meteor['ccxs'][i]
-                  cy = self.best_meteor['ccys'][i]
-                  cx7 = int(cx / self.hdm_x_720)
-                  cy7 = int(cy / self.hdm_y_720)
+                  if "ocxs" in self.best_meteor:
+                     self.best_meteor['ccxs'] = self.best_meteor['ocxs']
+                     self.best_meteor['ccys'] = self.best_meteor['ocys']
+                      
+                  if "ccxs" in self.best_meteor:
+                     cx = self.best_meteor['ccxs'][i]
+                     cy = self.best_meteor['ccys'][i]
+                     cx7 = int(cx / self.hdm_x_720)
+                     cy7 = int(cy / self.hdm_y_720)
 
-                  tcx7 = int(tcx * self.hdm_x_720)
-                  tcy7 = int(tcy * self.hdm_y_720)
+                     tcx7 = int(tcx * self.hdm_x_720)
+                     tcy7 = int(tcy * self.hdm_y_720)
 
 
                   cv2.circle(wi,(tcx,tcy), 2, (0,255,255), 1)
@@ -229,7 +229,6 @@ class Meteor():
          if "best_meteor" in mj:
             self.best_meteor = mj['best_meteor']
          else:
-            print("RUN METEOR SCAN!")
             self.meteor_scan()
 
 
@@ -244,16 +243,12 @@ class Meteor():
          for oid in self.meteor_scan_info['sd_objects']:
             obj = self.meteor_scan_info['sd_objects'][oid]
             if len(obj['ofns']) >= 3:
-               print("SD OBJ:", oid, obj['ofns'])
-               print("SD OBJ:", oid, obj['ofns'])
                for i in range(0, len(obj['ofns'])):
                   cv2.circle(work_image,(obj['oxs'][i],obj['oys'][i]), 2, (0,0,255), 1)
 
          obj = self.best_meteor
          if len(obj['ofns']) >= 3:
             oid = obj['obj_id']
-            print("SD OBJ:", oid, obj['ofns'])
-            print("SD OBJ:", oid, obj['ofns'])
             for i in range(0, len(obj['ofns'])):
                cv2.circle(work_image,(obj['oxs'][i],obj['oys'][i]), 2, (0,255,255), 1)
 
@@ -262,7 +257,7 @@ class Meteor():
          self.load_frames(self.meteor_dir + self.sd_vid)
 
       self.crop_frames = self.make_object_crop_frames()
-      self.crop_vals_data, self.crop_vals_event = self.vals_scan(self.crop_frames)
+      #self.crop_vals_data, self.crop_vals_event, self.pos_meteors = self.vals_scan(self.crop_frames)
       self.crop_scan = {}
 
       self.contour_crop_scan(self.crop_frames)
@@ -320,7 +315,6 @@ class Meteor():
             last_cy = cy
          else:
             if fc > 0:
-               #print("Contour is missing, use a real time estimate of where it should be!")
                print("Contour is missing, do not fill it might be a false cnt!")
                if last_cnt is not None:
                   fn, x, y, w, h, cx, cy, intensity = last_cnt 
@@ -336,10 +330,8 @@ class Meteor():
                   else:
                      med_xd = 0 
                      med_yd = 0
-                  print("LAST X,Y, xd,yd:", cx,cy, med_xd,med_yd)
                   new_x = x + med_xd
                   new_y = y + med_yd
-                  print("NEW X:", x, y, med_xd, med_yd) 
                   cv2.rectangle(crop_show, (int(new_x), int(new_y)), (int(new_x+w) , int(new_y+h) ), (128, 128, 255), 1) 
          fc += 1
 
@@ -366,26 +358,18 @@ class Meteor():
       crop_x1 = self.hd_crop_box[0]
       crop_y1 = self.hd_crop_box[1]
       for fn in self.crop_frame_data:
-         print(fn, self.crop_frame_data[fn]['cnts'])
          for data in self.crop_frame_data[fn]['cnts']:
             fn, x, y, w, h, cx, cy, intensity = data
-            print("FIND FN:", fn)
             oid, objects = Detector.find_objects(fn,x,y,w,h,cx,cy,intensity,objects, 50)
       for oid in objects:
          if len(objects[oid]['ofns']) >= 3:
             status, report = Detector.analyze_object(objects[oid])
-            print("STATUS:", status)
             objects[oid]['report'] = report
-         else:
-            print("BAD OBJ:", oid)
-            #del objects[oid]
       
       # do we have a meteor obj that is what we want to build the channel from
       pos_meteors = []
       for oid in objects:
-         self.print_object(objects[oid])
          if "report" not in objects[oid]:
-            print("REJECT OBJ", oid)
             obj_class = "unknown"
          else:
             obj_class = objects[oid]['report']['class']
@@ -424,6 +408,7 @@ class Meteor():
          self.crop_scan['best_meteor'] = pos_meteors[0]
       else:
          print("************** CRAP: there is more than one possible meteor after the crop scan.")
+         xxx = input("XXX")
          # need to add merge/filter code
          self.crop_scan['status'] = 1
          self.crop_scan['desc'] = "crop scan meteor found"
@@ -443,7 +428,6 @@ class Meteor():
 
       for gcnt in past_cnts:
          for cnt in gcnt:
-            print(cnt)
             pfn, x, y, w, h, cx, cy, intensity = cnt
             if w > 10 or h > 10:
                w = 10
@@ -462,9 +446,7 @@ class Meteor():
             
          _, threshold = cv2.threshold(sub.copy(), thresh_val, 255, cv2.THRESH_BINARY)
          threshold = cv2.cvtColor(threshold, cv2.COLOR_BGR2GRAY)
-         print("SELF:", self.meteor_file)
          cnts,noise = self.get_contours(threshold, sub, fn, 1,thresh_val)
-         print("    fn, max_val, thresh val, cnts :", fn, max_val, thresh_val, len(cnts))
          if cnts == 1 or thresh_val <= 10:
             i = -1
          i = i - 1
@@ -472,26 +454,21 @@ class Meteor():
 
    def find_group(self, fn, x,y,groups):
       if len(groups.keys()) == 0:
-         print("   GROUPS: MAKE FIRST GROUP")
          gid = 1
          groups[1] = []
          groups[1].append((gid,fn,x,y))
          return(gid, groups)
       else:
-         print("   GROUPS: SEARCH FOR GROUP")
          for gid in groups:
             for cnt in groups[gid]:
-               print(cnt)
                gid,gfn, gx,gy = cnt
                dist = calc_dist((x,y,),(gx,gy))
                if dist < 20:
                   group = [gid,fn,x,y]
                   groups[gid].append(group)
-                  print("   GROUP FOUND: SEARCH FOR GROUP")
                   return(gid, groups)
 
       # if we made it this far it must be a new group
-      print("   GROUPS: NEW GROUP MADE")
       gid = max(groups.keys())
       gid += 1
       groups[gid] = []
@@ -527,7 +504,6 @@ class Meteor():
           else:
              vdd[vdkey] += 1
       for key in vdd:
-         print("VDD:", key, vdd[key])
          if vdd[key] >= 2:
             vx,vy = key.split(".")
             vd_masks.append((int(vx),int(vy)))
@@ -537,9 +513,7 @@ class Meteor():
       perc15 = int(len(sub_vals_data) * .15)
       max_vals = [mdata[3] for mdata in sub_vals_data]
 
-      print("P15", perc15, len(sub_vals_data))
       max_val_avg = np.mean(max_vals[0:perc15])
-      print("P15", perc15, len(sub_vals_data), max_val_avg)
       if max_val_avg == 0 :
          max_val_avg = 1
 
@@ -559,12 +533,10 @@ class Meteor():
           CXS.append(mx)
           CYS.append(my)
           RES = self.find_group(fc,mx,my,groups)
-          print("GR:", RES)
           gid, groups = RES
           vdkey = str(data[4]) + "." + str(data[5])
           mvf = int(max_val / max_val_avg)
           if vdd[vdkey] > 2 or (mx == 0 or my == 0):
-             print("IGNORE:", fc, vdd[vdkey])
              no_ev += 1
              event = 0
              if cm == 1 and no_ev == 2:
@@ -572,14 +544,12 @@ class Meteor():
              if no_ev >= 5:
                 cm = 0
           else:
-             print("KEEP:", fc, vdd[vdkey])
              cm += 1
              no_ev = 0
              event = 1
           if cm >= 1 and no_ev >= 5:
              cm = 0
           if event == 1 and mvf >= 2:
-             print("ADD EVENT DATA!", fc, event)
              event_data.append((event, cm, mvf, fc, sum_val, avg_val, max_val, mx, my))
           vals_data.append((event, cm, mvf, fc, sum_val, avg_val, max_val, mx, my))
 
@@ -589,7 +559,6 @@ class Meteor():
       group_objects = []
       oc = 1
       for key in groups:
-         print("GROUP:", key)
          CXS = []
          CYS = []
          KEYS = []
@@ -606,22 +575,27 @@ class Meteor():
             KEYS.append(str(x) + "." + str(y))
 
          unq = set(KEYS)
+
          status, report = Detector.analyze_object(obj)
          obj['status'] = status
          obj['report'] = report
-         group_objects.append((key,obj))
+         print("MIKE STATUS:", obj['obj_id'],  obj['status'], obj['report']['class'])
+         if obj['report']['class'] == "meteor" or obj['report']['class'] == "unknown":
+            print("***************** STATUS:", obj['obj_id'],  obj['status'], obj['report']['class'])
 
-      print("GOOD GROUPS:", len(good_groups))
+            group_objects.append((key,obj))
+
       work_img = self.sd_stacked_image.copy()
       meteor_found = 0
+      pos_meteors = []
       for gid, obj in group_objects:
          print(gid, obj['ofns'], obj['report']['class'])
-
+         print("********************* GROUP******************")
          if obj['report']['class'] == 'meteor' or obj['report']['class'] == "unknown":
             meteor_found = 1
             cv2.putText(work_img, str(obj['report']['class']),  ((obj['oxs'][0]), (obj['oys'][0])), cv2.FONT_HERSHEY_SIMPLEX, .5, (200, 200, 200), 1)
             cv2.imshow('pepe', work_img)
-
+            pos_meteors.append(obj)
             try:
                NXS, NYS, BXS, BYS,LINE_X,LINE_Y,LINE_RANSAC_Y = self.ransac_outliers(CXS,CYS, "Group " + str(key))
                ransac_run = 1
@@ -632,8 +606,15 @@ class Meteor():
             cv2.putText(work_img, str(obj['report']['class']),  ((obj['oxs'][0]), (obj['oys'][0])), cv2.FONT_HERSHEY_SIMPLEX, .5, (200, 200, 200), 1)
             cv2.imshow('pepe', work_img)
             cv2.waitKey(30)
-      if meteor_found == 0:
+
+
+      if len(pos_meteors) == 0:
          xxx = input("NO METEOR FOUND FROM THE VALS DETECTOR!")
+      elif len(pos_meteors) == 1:
+         xxx = input("ONE METEOR FOUND FROM THE VALS DETECTOR!")
+      elif len(pos_meteors) > 1:
+         xxx = input("MORE THAN METEOR FOUND FROM THE VALS DETECTOR!")
+         
       # find the event end and trim the array to only active event frames
       over = 0
       last_cm = 0
@@ -651,20 +632,18 @@ class Meteor():
             last_frame_diff = fc - last_fc
          last_cm = cm
          (event, new_cm, mvf, fc, sum_val, avg_val, max_val, mx, my) = data
-         print("MIKE:", fc, cm, last_frame_diff)
          if new_cm <= 1 or 0 <= last_frame_diff <= 2:
             new_event_data.append(data)
          last_fc = fc
       over = over * -1
-      print("OVER:", over)
       active_event_data = new_event_data 
       # [0:over]
       if len(active_event_data) == 0:
          for data in vals_data:
-            print(vals_data)
+            print("VALS DATA:", vals_data)
          xx = input("VALS EVENT DETECT FAILED." + self.meteor_file)
 
-      return(vals_data, active_event_data)
+      return(vals_data, active_event_data,pos_meteors)
 
    def make_object_crop_frames(self, obj=None):
       # take an existing meteor scan detection, crop the frames around it
@@ -684,7 +663,6 @@ class Meteor():
       y1 = int(y1 * self.hdm_y)
       y2 = int(y2 * self.hdm_y)
       x1,y1,x2,y2 = self.expand_crop_area(x1,y1,x2,y2,50)
-      print("HD:", x1,y1,x2,y2)
       self.hd_crop_box = [x1,y1,x2,y2] 
       for sd_frame in self.sd_frames:
          # resize frame to 1080p and work in this scale
@@ -707,221 +685,6 @@ class Meteor():
       if y2 >= 1080:
          y2 = 1079
       return(x1,y1,x2,y2)
-
-   def meteor_scan_crop_old(self, obj):
-
-      x1,y1,x2,y2 = self.define_area_box(obj, self.fw, self.fh, 10)
-      x1 = x1 - 50
-      y1 = y1 - 50
-      x2 = x2 + 50
-      y2 = y2 + 50
-      if x1 < 0:
-         x1 = 0
-      if y1 < 0:
-         y1 = 0
-      if x2 > 1920:
-         x2 = 1920 
-      if y2 > 1080:
-         y2 = 1080
-      crop_x1 = x1 
-      crop_y1 = y1
-      crop_bg = self.sd_frames[0][y1:y2,x1:x2]
-      crop_bg = cv2.cvtColor(crop_bg, cv2.COLOR_BGR2GRAY)
-      last_best_cnt = None
-      last_thresh = None
-      self.sd_objects = []
-      #for i in range(0, len(obj['ofns'])):
-      fn = 0
-      evc = 0
-      crop_fd = []
-      mike = 1
-      x_dir = obj['report']['x_dir']
-      y_dir = obj['report']['y_dir'] 
-      dom_dir = obj['report']['dom_dir'] 
-
-
-      for frame in self.sd_frames:
-         #fn = obj['ofns'][i]
-         crop = self.sd_frames[fn][y1:y2,x1:x2]
-         crop = cv2.cvtColor(crop, cv2.COLOR_BGR2GRAY)
-         crop_sub = cv2.subtract(crop, crop_bg)
-         big_crop = cv2.resize(crop, (crop.shape[1]*10,crop.shape[0]*10))
-         avg_val = np.median(crop_sub)
-         max_val = np.max(crop_sub)
-         thresh_val = (max_val/2) + avg_val
-         if thresh_val < 10:
-            thresh_val = 10
-         if thresh_val > 10:
-            thresh_val = 10 
-         _, threshold = cv2.threshold(crop_sub.copy(), thresh_val, 255, cv2.THRESH_BINARY)
-         cnts,noise = self.get_contours(threshold, crop_sub, fn, 1,thresh_val)
-         crop_show = crop.copy()
-         if len(cnts) > 0:
-            evc += 1
-
-         # pick the leading cnt of all available
-         best_cnt = None
-         for data in cnts:
-            fn, x, y, w, h, cx, cy, intensity = data
-            if best_cnt is not None:
-               if obj['report']['dom_dir'] == "x":
-                  if x_dir > 0:
-                     if x < best_cnt[1] :
-                        best_cnt = data
-                     # lower x is better
-                  else:
-                     if x > best_cnt[1] :
-                        best_cnt = data
-                     # higher x is better
-               else:
-                  if y_dir > 0:
-                     if y < best_cnt[2]:
-                        best_cnt = data
-                  else:
-                     if y > best_cnt[2]:
-                        best_cnt = data
-            else:
-               best_cnt = data
-
-         # only add the cnt if it is further on the track than the previous one
-         if evc > 2:
-            good = 0
-         else:
-            good = 1
-         if last_best_cnt is not None and best_cnt is not None:
-            fn, x, y, w, h, cx, cy, intensity = best_cnt 
-            if obj['report']['dom_dir'] == "x":
-               if x_dir > 0:
-                  if x < last_best_cnt[1]:
-                     good = 1
-               else:
-                  if x > last_best_cnt[1]:
-                     good = 1
-            else:
-               if y_dir > 0:
-                  if y < last_best_cnt[2]:
-                     good = 1
-               else:
-                  if y > last_best_cnt[2]:
-                     good = 1
-         if best_cnt is not None: 
-            if good == 1:
-               cv2.rectangle(crop_show, (int(x), int(y)), (int(x+w) , int(y+h) ), (255, 255, 255), 1) 
-               crop_fd.append(("GOOD", best_cnt))
-            else:
-               cv2.rectangle(crop_show, (int(x), int(y)), (int(x+w) , int(y+h) ), (0, 0, 255), 1) 
-               crop_fd.append(("BAD", best_cnt))
-
-
-         fn += 1
-         last_best_cnt = best_cnt
-         last_thresh = threshold 
-
-      # here we have all of the cnts in the crop area event time
-      # some are bad so let's first remove the bad ones at the end
-
-      first_fn = crop_fd[0][1][0]
-      last_fn = crop_fd[-1][1][0]
-    
-      # here we will try to get the leading x,y
-      temp = []
-      for status, best_cnt in crop_fd:
-         fn, x, y, w, h, cx, cy, intensity = best_cnt 
-
-         # first get the leading corner of the cnt
-         if x_dir > 0:
-            lx = x 
-         else:
-            lx = x + w
-         if y_dir > 0:
-            ly = y
-         else:
-            ly = y + h
-
-         temp.append((status,fn, x, y, w, h, cx, cy, lx, ly, intensity))
-      temp = sorted(temp, key=lambda x: (x[1]), reverse=True)
-      good = []
-      first_good_frame = 0
-      for best_cnt in temp:
-         status, fn, x, y, w, h, cx, cy, lx, ly, intensity = best_cnt 
-         if status == "BAD" and first_good_frame == 0:
-            foo = 1
-         else:
-            first_good_frame = 1
-         if first_good_frame == 1:
-            good.append(best_cnt)
-      good = sorted(good, key=lambda x: (x[1]), reverse=False)
-
-      # now things will be pretty good, but we might still have a rouge bad frame at the start (from a star) 
-      # check just the first frame and make sure it is good else delete it
-      if good[0][0] == "BAD" or (good[0][1] - good[1][1] > 1):
-         good.remove[0]
-      good2 = []
-      # now check frames in the middle. If there is just 1 bad frame separated by 2 good frames fix it. 
-      for i in range(0, len(good)):
-         status, fn, x, y, w, h, cx, cy, lx, ly, intensity = good[i] 
-         if status == "BAD" and i + 1 < len(good) and i > 0:
-            if good[i+1][0] == "GOOD":
-               last_x = good[i-1][2]
-               last_y = good[i-1][3]
-               last_w = good[i-1][4]
-               last_h = good[i-1][5]
-               next_x = good[i+1][2]
-               next_y = good[i+1][3]
-               next_w = good[i+1][4]
-               next_h = good[i+1][5]
-               this_x = int((last_x + next_x)/2)
-               this_y = int((last_y + next_y)/2)
-               this_w = int((last_w + next_w)/2)
-               this_h = int((last_h + next_h)/2)
-               this_cx = int(this_x + (this_w/2))
-               this_cy = int(this_y + (this_h/2))
-               good2.append(("FIXED", fn, this_x, this_y, this_w, this_h, this_cx, this_cy, lx, ly, intensity))
-         else:
-            good2.append(("FIXED", fn, x, y, w, h, cx, cy, lx, ly, intensity))
-            #good2.append(good[i])
-
-      # now everything should be fixed but there might be some missing frames still in the middle of the event
-      for i in range(0,len(good2)):
-         data = good2[i]
-         if i+ 1 < len(good2):
-            act_next_fn = good2[i+1][1] 
-            next_fn = data[1] + 1
-
-      # now that all frames are as good as they can get, convert the frames to objects and classify
-      objects = {}
-      obj['ofns'] = []
-      obj['oxs'] = []
-      obj['oys'] = []
-      obj['ows'] = []
-      obj['ohs'] = []
-      obj['ccxs'] = []
-      obj['ccys'] = []
-      obj['olxs'] = []
-      obj['olys'] = []
-      obj['oint'] = []
-      for fd in good2:
-         status, fn, x, y, w, h, cx, cy, lx, ly,intensity = fd
-         obj['ofns'].append(fn)
-         obj['oxs'].append(x+x1)
-         obj['oys'].append(y+y1)
-         obj['ows'].append(w)
-         obj['ohs'].append(h)
-         obj['ccxs'].append(cx+x1)
-         obj['ccys'].append(cy+y1)
-         obj['olxs'].append(lx+x1)
-         obj['olys'].append(ly+y1)
-         obj['oint'].append(intensity)
-         oid, objects = Detector.find_objects(fn,x+crop_x1,y+crop_y1,w,h,cx+crop_x1,cy+crop_y1,intensity,objects, 20, lx+crop_x1, ly+crop_y1)
-
-      status, report = Detector.analyze_object(obj)
-      obj['report'] = report
-      obj = self.add_obj_estimates(obj)
- 
-      oid = obj['obj_id']
-      objects = {}
-      objects[oid] = obj
-      self.report_objects(objects)
 
    def add_obj_estimates(self, obj):
       lxs = obj['olxs']
@@ -1010,9 +773,7 @@ class Meteor():
    def report_objects(self, objects=None):
       objects = self.meteor_scan_info['sd_objects']
       show_img = self.sd_stacked_image.copy()
-      print("OBJECTS:", len(objects))
       for oid in objects:
-         print("OID:", oid, objects[oid])
          obj = objects[oid]
          x1,y1,x2,y2 = self.define_area_box(objects[oid], self.fw, self.fh, 10)
 
@@ -1027,7 +788,6 @@ class Meteor():
          #big_crop = cv2.resize(crop_img,(int(crop_img.shape[1]*mult),int(crop_img.shape[0]*mult)))
          #if len(big_crop.shape) == 2:
          #   big_crop = cv2.cvtColor(big_crop, cv2.COLOR_GRAY2BGR)
-         print("X1:", x1,y1,x2,y2)
          cv2.rectangle(show_img, (x1,y1), (x2,y2), (255, 255, 255), 1) 
 
          for i in range(0,len(obj['ofns'])):
@@ -1107,12 +867,11 @@ class Meteor():
          cv2.putText(show_img,obj['report']['class'], ((obj['oxs'][0]), (obj['oys'][0])), cv2.FONT_HERSHEY_SIMPLEX, .5, (200, 200, 200), 1)
       self.DF.add_image(0,4,show_img)
       self.DF.render_frame(0 )
-      print("Frame rendered for report obj")
 
-   def vals_detect_crop_confirm(self):
-
-      mxs = [data[7] for data in self.vals_event]
-      mys = [data[8] for data in self.vals_event]
+   def vals_detect_crop_confirm(self, mxs=None,mys=None):
+      if mxs is None:
+         mxs = [data[7] for data in self.vals_event]
+         mys = [data[8] for data in self.vals_event]
       x1 = min(mxs) 
       x2 = max(mxs)
       y1 = min(mys) 
@@ -1153,7 +912,6 @@ class Meteor():
          cnts = self.get_contours_simple(sub_crop_thresh, sub_crop)
 
          for data in cnts:
-            print("CNT:", data)
             (x,y,w,h,intensity) = data
             SD_XS.append(x+x1)
             SD_XS.append(x+x1+w)
@@ -1202,7 +960,6 @@ class Meteor():
       status, report = Detector.analyze_object(obj)
       obj['report'] = report
 
-      self.print_object(obj)
 
       HDX1,HDY1,HDX2,HDY2 = self.get_hd_crop_area_169(SD_XS,SD_YS)
       obj['hd_crop_169'] = [HDX1,HDY1,HDX2,HDY2]
@@ -1219,11 +976,8 @@ class Meteor():
    def get_lead_cnt(self, cnts):
       best_val = None
       best_cnt = None
-      print("GET LEAD:", cnts)
       for cnt in cnts:
          x,y,w,h,intensity = cnt
-         print("DOM:", self.dom_dir, self.x_dir, self.y_dir)
-         print("CNT:", x,y,w,h)
          if self.dom_dir == "x":
             # dom movement is left/right use x_dir to decide best
 
@@ -1283,6 +1037,7 @@ class Meteor():
 
    def meteor_scan(self):
       print("   meteor scan.", self.meteor_dir + self.sd_vid)
+      self.pos_meteors = []
       mask2 = None
 
       self.load_frames(self.meteor_dir + self.sd_vid)
@@ -1322,29 +1077,32 @@ class Meteor():
       # 2) are we dealing with a fireball or very bright event (VBE) if so we will need special processing
       #    check the max vals & event duration to figure this out
 
-      self.vals_data, self.vals_event = self.vals_scan(self.sd_frames)
+      self.vals_data, self.vals_event, self.pos_meteors = self.vals_scan(self.sd_frames)
       for data in self.vals_data:
          (event, cm, mvf, fc, sum_val, avg_val, max_val, mx, my) = data
          self.sub_vals_sum.append(sum_val)
          self.sub_vals_max.append(max_val)
          self.sub_vals_avg.append(avg_val)
          self.max_factor.append(mvf)
-         print("VALS:", data)
 
       # If we have a vals detect, lets do a quick crop scan for confirmation. 
       # If we validate the vals detect quickly we can exit out fast right now!
-      if len(self.vals_event) >= 3:
-         print("VALS EVENT DETECTED!")
-         self.vals_detect = 1
-         self.vals_event_status, vals_obj = self.vals_detect_crop_confirm()
-      else:
-         self.vals_event_status = 0
-         print("VALS EVENT NOT DETECTED?!?!?")
-         for data in self.vals_data:
-            print("VALS DATA:", data)
-         xxx = ("waiting")
 
-      if self.vals_event_status == 1:
+      npos = []
+      for obj in self.pos_meteors:
+         self.vals_event_status, vals_obj = self.vals_detect_crop_confirm()
+         status, report = Detector.analyze_object(obj)
+         obj['report'] = report
+         print(status, report['class'])
+         if report['class'] == 'meteor' or report['class'] == 'unknown':
+            npos.append(obj)
+
+      self.pos_meteors = npos
+      
+
+
+
+      if len(self.pos_meteors) == 1:
          # WE ARE DONE! THE DETECT IS CONFIRM. THE CROP SCAN IS DONE AND 
          # WE HAVE THE LEADING CNT FOR EACH FRAME 
          print("SAVE THE EVENT AND EXIT WE ARE DONE!")
@@ -1363,12 +1121,15 @@ class Meteor():
          self.meteor_scan_info['crop_scan'] = crop_scan
          self.save_meteor_files()
          return()
-         #exit()
- 
-      # SKIP / DISABLE FOR NOW
+      elif len(self.pos_meteors) == 0:
+         print ("0 meteors found by vals detect!")
+      elif len(self.pos_meteors) > 1:
+         print ("more than 1 meteor found by vals detect!")
+      xxx = input("Pause") 
       return()
-      #self.plot_data(data_series=[self.sub_vals_sum],title="Subframe Sum Vals", labels=[], colors='r')
-      #self.plot_data(data_series=[self.sub_vals_max,self.sub_vals_avg],title="Subframe Max Vals", labels=[], colors=['r', 'b'])
+
+
+      # REST OF THE METEOR SCAN (if vals detect failed)
 
       max_sum = max(self.sub_vals_sum) 
       max_val = max(self.sub_vals_max) 
@@ -1386,7 +1147,6 @@ class Meteor():
 
       # scan each frame and build a list of cnts in each frame
       work_img = self.sd_stacked_image.copy()
-      print(work_img.shape)
 
       # make mask of bright spots (moon etc) in 1st frame
       ff = cv2.cvtColor(self.sd_frames[0], cv2.COLOR_BGR2GRAY)
@@ -1401,13 +1161,11 @@ class Meteor():
       if mask2 is None :
          mask2 = cv2.dilate(thresh2.copy(), None , iterations=4)
          mask2 = cv2.cvtColor(mask2, cv2.COLOR_GRAY2BGR)
-      print("THRESH VAL:", f_thresh_val)
       #cv2.imshow('ffmask', mask2)
       cv2.waitKey(30)
      
       self.first_frame = cv2.GaussianBlur(self.first_frame, (7, 7), 0)
 
-      #display_frame.make_multi_frame(images = [])
       fc = 0
       sub = cv2.subtract(self.first_frame, self.third_frame)
       ideal_thresh = self.ideal_thresh(sub )
@@ -1448,7 +1206,6 @@ class Meteor():
             self.avg_avg_val = np.median(self.avg_vals)
 
          #thresh_val = self.avg_avg_val + (max_val*.5) + extra_thresh
-         print("VALS AVG, MAX, THRESH:", self.avg_avg_val, max_val, thresh_val )
          _, threshold = cv2.threshold(sub.copy(), thresh_val, 255, cv2.THRESH_BINARY)
 
          f_thresh_val = np.mean(sub) + (np.max(frame) * .5)
@@ -1464,14 +1221,11 @@ class Meteor():
 
          # check for noise blasts
          if len(cnts) > 40:
-            print ("NOISE FIX! 50")
             _, threshold = cv2.threshold(sub.copy(), thresh_val+50, 255, cv2.THRESH_BINARY)
             cnts,noise = self.get_contours(threshold, sub, fc, 1)
             self.DF.add_image(fc,2,threshold)
-         print("   1ST SCAN CNTS (thresh,mask_thresh,fn,cnts):", thresh_val, f_thresh_val, fc, len(cnts))
 
          if len(cnts) > 20:
-            print ("NOISE FIX! 20")
             _, threshold = cv2.threshold(sub.copy(), thresh_val+20, 255, cv2.THRESH_BINARY)
             cnts,noise = self.get_contours(threshold, sub, fc, 1)
             self.DF.add_image(fc,2,threshold)
@@ -1498,7 +1252,6 @@ class Meteor():
             if len(self.first_frame.shape) > 2:
                self.first_frame = cv2.cvtColor(self.first_frame, cv2.COLOR_BGR2GRAY)
 
-         #self.display_frame(fc)
          self.DF.render_frame(fc)
          fc += 1
 
@@ -1507,8 +1260,6 @@ class Meteor():
       #cv2.waitKey(30)
 
       # END 1st scan of frames
-      for data in frame_cnts:
-         print(data)
       if self.fireball == 1:
          self.cleanup_fireball_data(frame_cnts)
          obj = self.best_meteor
@@ -1521,13 +1272,11 @@ class Meteor():
          for fn,x,y,w,h,cx,cy,intensity in self.sd_frame_cnts:
             oid, objects = Detector.find_objects(fn,x,y,w,h,cx,cy,intensity,objects, 20)
 
-      pos_meteors = []
+      self.pos_meteors = []
 
       clean_objects = {}
       noise_objects = {}
       deletes = []
-
-      print("TOTAL OBJECTS:", len(objects))
 
       for oid in objects:
          if objects[oid] is not None:
@@ -1550,37 +1299,23 @@ class Meteor():
       for oid in deletes:
          del objects[oid]
 
-      # we only want to clean potential meteor objects!
-      # important 
-      #if len(clean_objects.keys()) > 0:
-      #   foo = 1
-         #objects = clean_objects
-      #else:
-      #   print("NO METEOR OBJECTS DETECTED!")
-      #   cv2.imshow("NO METEOR OBJECTS DETECTED!", work_stack)
-      #   cv2.waitKey(0)
-         #return()
-
-
       for oid in objects:
          status, report = Detector.analyze_object(objects[oid])
          if report['class'] == "meteor" or report['class'] == "unknown":
-            pos_meteors.append(objects[oid])
+            self.pos_meteors.append(objects[oid])
 
-      print("      We have", len(pos_meteors), "possible meteors.")
-      if len(pos_meteors) == 0:
-         self.pos_meteors = pos_meteors
+      print("      We have", len(self.pos_meteors), "possible meteors.")
+      if len(self.pos_meteors) == 0:
          self.sd_objects = objects
          self.meteor_detected = 0
          self.meteor_scan_info['status'] = 0
          self.meteor_scan_info['desc'] = ['no meteors detected']
          self.meteor_scan_info['sd_objects'] = objects
 
-      if len(pos_meteors) == 1:
-         self.pos_meteors = pos_meteors
+      if len(self.pos_meteors) == 1:
          self.sd_objects = objects
          self.meteor_detected = 1
-         self.best_meteor = pos_meteors[0]
+         self.best_meteor = self.pos_meteors[0]
          if self.best_meteor['report']['class'] == "meteor":
             self.meteor_scan_info['status'] = 1 
             self.meteor_scan_info['desc'] = ['meteor detected']
@@ -1594,15 +1329,15 @@ class Meteor():
             self.meteor_scan_info['desc'] = ['unknown obj detected']
             self.meteor_scan_info['sd_objects'] = objects
 
-      if len(pos_meteors) == 2:
+      if len(self.pos_meteors) == 2:
          # most likely case is these are the same overlapping check. 
          self.meteor_scan_info['status'] = 3 
          self.meteor_scan_info['desc'] = ['multi-meteors detected']
          self.meteor_scan_info['sd_objects'] = objects
-         xs1 = pos_meteors[0]['oxs']
-         ys1 = pos_meteors[0]['oys']
-         xs2 = pos_meteors[1]['oxs']
-         ys2 = pos_meteors[1]['oys']
+         xs1 = self.pos_meteors[0]['oxs']
+         ys1 = self.pos_meteors[0]['oys']
+         xs2 = self.pos_meteors[1]['oxs']
+         ys2 = self.pos_meteors[1]['oys']
          if len(xs1) > len(xs2):
             dom_x = xs1
             sub_x = xs2
@@ -1617,29 +1352,25 @@ class Meteor():
          sub_cy = np.mean(sub_y)
          if min(dom_x) - 20 <= sub_cx <= max(dom_x) + 20 and min(dom_y) -20 <= sub_cy <= max(dom_y) + 20:
             # the sub is part of the dom merge the two
-            print("SUB IS INSIDE DOM")
-            pos_meteors = self.merge_objects(pos_meteors)
+            self.pos_meteors = self.merge_objects(pos_meteors)
          else:
             print("SUB IS NOT PART OF THE DOM?", min(dom_x), sub_cx, max(dom_x), min(dom_y), sub_cy, max(dom_y))
 
-         print("      AFTER MERGE WE HAVE", len(pos_meteors), "meteors")
-         for pos in pos_meteors:
-            print(pos)
-         self.pos_meteors = pos_meteors
          self.sd_objects = objects
          self.meteor_detected = 1
          self.meteor_scan_info['status'] = 1
          self.meteor_scan_info['desc'] = ['meteor detected']
          self.meteor_scan_info['sd_objects'] = objects
-         self.best_meteor = pos_meteors[0]
+         # this is wrong i think!
+         self.best_meteor = self.pos_meteors[0]
 
-      if len(pos_meteors) > 2:
+      if len(self.pos_meteors) > 2:
          # Lots of possible meteors here. Let's see how many fit inside the same cont
          self.meteor_scan_info['status'] = 3 
          self.meteor_scan_info['desc'] = ['multi-meteors detected']
          work_stack = self.sd_stacked_image.copy()
          bsize = 0
-         for pos in pos_meteors:
+         for pos in self.pos_meteors:
             size = len(pos['ofns']) 
             if size > bsize:
                dom_obj = pos
@@ -1655,7 +1386,7 @@ class Meteor():
          dy2 = max(dom_obj['oys']) + 20
          cx1 = np.mean(dom_obj['oxs'])
          cy1 = np.mean(dom_obj['oys'])
-         for pos in pos_meteors:
+         for pos in self.pos_meteors:
             if pos['obj_id'] != dom_obj['obj_id']:
                center_x = np.mean(pos['oxs'])
                center_y = np.mean(pos['oys'])
@@ -2007,9 +1738,6 @@ class Meteor():
 
             dist_to_prev = calc_dist((cx,cy),(pcx,pcy))
             int_diff_to_prev = p_intensity - intensity
-            print("CNT:", fn, cnt)
-            print("PCNT:", fn -1, prev_cnt)
-            print("INT", fn, p_intensity, intensity)
             prev_dist_from_start = calc_dist((first_x,first_y), (pcx,pcy))
             dist_from_start = calc_dist((first_x,first_y), (cx,cy))
             if dist_from_start < prev_dist_from_start :
@@ -2042,11 +1770,8 @@ class Meteor():
             if self.frame_data[fn]['status'] == "BAD":
                del_fns[fn] = 1
       for fn in del_fns:
-         print("DEL FRAME:", fn)
          del(self.frame_data[fn])
 
-      #for fn in sorted(fns, reverse=True):
-      #   print("FINAL FRAME DATA:", fn, self.frame_data[fn])
 
 
    def estimate_frame_data(self):
@@ -2058,7 +1783,6 @@ class Meteor():
       fc = 0
       last_x = None
       for fn in sorted(self.frame_data.keys()):
-         print("LOOP START FRAME:", fn)
          if len(XDS) < 10:
             xdist = np.median(XDS)
             ydist = np.median(YDS)
@@ -2073,13 +1797,11 @@ class Meteor():
             YS.append(cy)
 
             if dist_to_prev > 10:
-               print("BAD PREV DIST", fn, dist_to_prev, int_diff_to_prev)
                if "bad_items" not in self.frame_data[fn]:
                   self.frame_data[fn]['bad_items'] = []
                self.frame_data[fn]['bad_items'].append("dist to prev to large " + str(dist_to_prev) )
                self.frame_data[fn]['status'] = "BAD"
             if intensity < 100 and int_diff_to_prev > 100:
-               print("BAD PREV INT", fn, dist_to_prev, int_diff_to_prev)
                if "bad_items" not in self.frame_data[fn]:
                   self.frame_data[fn]['bad_items'] = []
                   self.frame_data[fn]['bad_items'].append("big intensity drop" + str(int_diff_to_prev) )
@@ -2093,8 +1815,6 @@ class Meteor():
          if "status" not in self.frame_data[fn] and len(self.frame_data[fn]['cnts']) > 0:
             good += 1
 
-      for fn in sorted(fns, reverse=True):
-         print(fn, self.frame_data[fn])
 
    def estimate_frame_data(self):
       frame_data = {}
@@ -2105,7 +1825,6 @@ class Meteor():
       fc = 0
       last_x = None
       for fn in sorted(self.frame_data.keys()):
-         print("LOOP START FRAME:", fn)
          if len(XDS) < 10:
             xdist = np.median(XDS)
             ydist = np.median(YDS)
@@ -2132,7 +1851,6 @@ class Meteor():
                est_x = last_x + (xdist*fn_diff)
                est_y = last_y + (ydist*fn_diff)
 
-               print("   FRAME ", fn, "IS GOOD FN DIFF FROM LAST FRAME IS:", fn_diff, "THIS XY IS:", cx,cy,"LAST DIFF:", xdist,ydist, "ESTXY:", est_x,est_y)
             last_x = cx
             last_y = cy
          else:
@@ -2140,7 +1858,6 @@ class Meteor():
                fn_diff = fn - last_fn
                est_x = last_x + (xdist*fn_diff)
                est_y = last_y + (ydist*fn_diff)
-               print("   FRAME ", fn, "IS MISSING FN DIFF FROM LAST FRAME IS:", fn_diff, "LAST XY IS:", last_x,last_y,"LAST DIFF:", xdist,ydist, "ESTXY:", est_x,est_y)
             XS.append(est_x)
             YS.append(est_y)
          fc += 1
@@ -2148,14 +1865,8 @@ class Meteor():
 
       EXS = []
       EYS = []
-      print("TOTAL XS:", len(XS))
-      print("TOTAL YS:", len(YS))
-      print("TOTAL FD:", len(self.frame_data.keys()))
 
       i = 0
-      for fn in self.frame_data:
-         print(fn, self.frame_data[fn])
-      print(self.frame_data)
       for fn in sorted(self.frame_data.keys()):
          if fn not in self.frame_data:
             print(fn, "NOT IN FRAME DATA")
@@ -2184,7 +1895,6 @@ class Meteor():
                est_y = cy
                EXS.append(cx)
                EYS.append(cy)
-         print(fn, self.frame_data[fn])
          self.frame_data[fn]['est_x'] = est_x
          self.frame_data[fn]['est_y'] = est_y
          if len(self.frame_data[fn]['cnts']) > 0:
@@ -2192,9 +1902,6 @@ class Meteor():
             cnt = self.frame_data[fn]['cnts'][0]
             fn, x, y, w, h, cx, cy, intensity = cnt
          i += 1
-         if fn in self.frame_data:
-            print("   EST FD:", fn, self.frame_data[fn])
-      #self.plot_xy_data(xs=EXS,ys=EYS,title="Estimated Points", labels=[], colors=['g', 'b'], invert_y=1, show=1)
 
 
    def fill_empty_frames(self):
@@ -2203,7 +1910,6 @@ class Meteor():
       fns = [row[0] for row in self.frame_cnts]
       if len(fns) < 1:
          return(frame_data)
-      print("MINMAX:",min(fns),max(fns))
       for i in range(min(fns), max(fns)+1):
          if i not in frame_data:
             frame_data[i] = {}
@@ -2224,14 +1930,10 @@ class Meteor():
             y = int(avg_cy - (avg_h/2))
             new_cnt = [fn,int(x),int(y),int(avg_w),int(avg_h),int(avg_cx),int(avg_cy),max_i]
             frame_data[fn]['cnts'] = [new_cnt]
-            print("FILLED:", fn, frame_data[fn] )
-         else:
-            print("FINE:", fn, frame_data[fn] )
 
       XS = []
       YS = []
       for fn in frame_data:
-         print(fn, frame_data[fn])
          if "merge_cnts" in frame_data[fn]:
             cnt = frame_data[fn]['merge_cnts']
          elif len(frame_data[fn]['cnts']) > 0:
@@ -2239,13 +1941,11 @@ class Meteor():
          else:
             cnt = None
          if cnt is not None:
-            print("CNT:", cnt)
             (fn,x,y,avg_w,avg_h,cx,cy,max_i) = cnt 
             XS.append(cx)
             YS.append(cy)
 
       slope,intercept = self.best_fit_slope_and_intercept(XS, YS)
-      print("SLOP:", len(XS), len(YS))
       
       #self.plot_xy_data(xs=XS,ys=YS,title="", labels=[], colors=['g', 'b'], invert_y=1, show=0)
       cmask = self.make_channel(XS,YS)
@@ -2264,8 +1964,6 @@ class Meteor():
                   if fc > 30:
                      cmask = self.make_channel(XS[fc-30:fc-10],YS[fc-30:fc-10])
  
-         print(gray_frame.shape)
-         print(cmask.shape)
          if len(cmask.shape) == 3:
             cmask = cv2.cvtColor(cmask,cv2.COLOR_BGR2GRAY)
          gray_frame = cv2.subtract(gray_frame, cmask)
@@ -2333,9 +2031,6 @@ class Meteor():
       ane_fn_diff = pi - an_efn
       anm_fn_diff = pi - an_mfn
 
-      print("AN FN DIF:", ans_fn_diff, ane_fn_diff, anm_fn_diff)
-      print("ANXS:", an_xs)
-      print("ANYS:", an_ys)
 
 
       for i in range(0, len(XS)):
@@ -2346,7 +2041,6 @@ class Meteor():
             yds.append(YS[i]-YS[i-1])
 
       if pi > 6 and pi + 6 < len(XS):
-         print("PI:", XS[pi-5:pi-1])
          last_10_x = np.mean(XS[pi-5:pi-1])
          last_10_y = np.mean(YS[pi-5:pi-1])
          next_10_x = np.mean(XS[pi+1:pi+5])
@@ -2369,7 +2063,6 @@ class Meteor():
             yds.append(YS[i]-YS[i-1])
 
       if pi > 6 and pi + 6 < len(XS):
-         print("PI:", XS[pi-5:pi-1])
          last_10_x = np.mean(XS[pi-5:pi-1])
          last_10_y = np.mean(YS[pi-5:pi-1])
          next_10_x = np.mean(XS[pi+1:pi+5])
@@ -2389,20 +2082,16 @@ class Meteor():
          slope,intercept = self.best_fit_slope_and_intercept(XS[0:pi], YS[0:pi])
          x_dist = np.mean(xds[0:10])
          y_dist = np.mean(yds[0:10])
-         print("XDIST", 0, pi-1, xds, x_dist)
       else:
          slope,intercept = self.best_fit_slope_and_intercept(XS[pi-6:pi-1], YS[pi-6:pi-1])
          x_dist = np.median(xds[pi-10:pi-1])
          y_dist = np.median(yds[pi-10::pi-1])
       if next_10_x is None:
-         print("FIGURE IT OUT:", pi-1, x_dist)
          est_x = XS[pi-1] + x_dist
          est_y = slope * est_x + intercept
          
       XS[pi] = est_x
       YS[pi] = est_y
-      #print("X_DIST:", x_dist)
-      print("PI:", pi, XS[pi-1], YS[pi-1], est_x,est_y  )
 
 
       return(est_x,est_y, XS,YS)
@@ -2422,18 +2111,11 @@ class Meteor():
       else:
          channel_img = np.zeros((self.fh,self.fw),dtype=np.uint8)
 
-      #if channel_img is not None:
-      #   for i in range(0, len(XS)):
-      #      print("ADD CHANNEL CIRCLE:", XS[i], YS[i])
-      #      cv2.circle(channel_img,(XS[i],YS[i]), 2, (255,255,255), 1)
-
-
       min_lin_x = XS[0]
       max_lin_x = XS[-1]
       min_lin_y = line_regr[0]
       max_lin_y = line_regr[-1]
 
-      #channel_img = np.zeros((self.fh,self.fw),dtype=np.uint8)
       print("LINE:", XS, YS)
       cv2.line(channel_img, (int(min_lin_x),int(min_lin_y)), (int(max_lin_x),int(max_lin_y)), (255,255,255), 3)
       channel_img = self.invert_image(channel_img)
@@ -2538,93 +2220,6 @@ class Meteor():
                min_dist = dist
       return(min_dist)
 
-   def meteor_scan_phase2 (self):
-
-      # clean up and re-analyze pos_meteors
-      clean_objs = []
-      for obj in pos_meteors:
-         new_obj = self.clean_met_obj(obj)
-         #status, report = Detector.analyze_object(objects[oid])
-         #obj['report'] = report
-         clean_objs.append(obj)
-      pos_meteors = clean_objs
-      if len(pos_meteors) > 1:
-         pos_meteors = self.merge_objects(pos_meteors)
-
-      if len(pos_meteors) == 1:
-         #self.meteor_scan_crop(obj)
-         met = pos_meteors[0]
-         x1 = min(met['ccxs']) - 50
-         y1 = min(met['ccys']) - 50
-         x2 = max(met['ccxs']) + 50
-         y2 = max(met['ccys']) + 50
-         if x1 < 0:
-            x1 = 0
-         if y1 < 0:
-            y1 = 0
-         if x2 >= self.fw:
-            x2 = self.fw
-         if y2 >= self.fh:
-            x2 = self.fh
-
-         self.sd_min_max = [x1,x2,y1,y2]
-         message = "METEOR DETECTED"
-         cv2.rectangle(work_stack, (int(x1), int(y1)), (int(x2) , int(y2) ), (0, 0, 255), 1) 
-
-      elif len(pos_meteors) > 1:
-         message = "MULTIPLE METEORS DETECTED"
-         merged_meteors = self.merge_overlapping_objects(pos_meteors)
-         for obj in pos_meteors:
-            x1,y1,x2,y2 = self.define_area_box(obj, self.fw, self.fh)
-            self.meteor_scan_crop(obj)
-            if y1 < 100:
-               cv2.putText(work_stack, str(obj['obj_id']) + " " + obj['report']['class'],  (x1, y2), cv2.FONT_HERSHEY_SIMPLEX, .5, (200, 200, 200), 1)
-            else:
-               cv2.putText(work_stack, str(obj['obj_id']) + " " + obj['report']['class'],  (x1, y1), cv2.FONT_HERSHEY_SIMPLEX, .5, (200, 200, 200), 1)
-            cv2.rectangle(work_stack, (int(x1), int(y1)), (int(x2) , int(y2) ), (255, 255, 255), 1) 
-      else:
-         message = "NO METEOR LIKE OBJECTS DETECTED!"
-         if len(work_stack) == 2:
-            work_stack = cv2.cvtColor(work_stack,cv2.COLOR_GRAY2BGR)
-
-      # now we are done with the initial meteor scan
-      # all objects should be classed or unknown 
-      # at this point we only care about meteors or unknowns
-      # return the objs for now and we can finalize the clean up
-      # in another function
-
-
-      show_image = work_stack.copy()
-      for oid in objects:
-         obj = objects[oid]
-         #self.meteor_scan_crop(obj)
-         x = obj['oxs'][0]
-         y = obj['oys'][0]
-         x1,y1,x2,y2 = self.define_area_box(obj, self.fw, self.fh)
-         if obj['report']['class'] == "meteor":
-            cv2.rectangle(show_image, (int(x1), int(y1)), (int(x2) , int(y2) ), (0, 0, 255), 1) 
-            cv2.putText(show_image, str(obj['obj_id']) + " " + obj['report']['class'],  (x1, y1), cv2.FONT_HERSHEY_SIMPLEX, .5, (200, 200, 200), 1)
-         elif obj['report']['class'] == "unknown":
-            cv2.rectangle(show_image, (int(x1), int(y1)), (int(x2) , int(y2) ), (0, 128, 128), 1) 
-            cv2.putText(show_image, str(obj['obj_id']) + " " + obj['report']['class'],  (x1, y1), cv2.FONT_HERSHEY_SIMPLEX, .5, (200, 200, 200), 1)
-         elif obj['report']['class'] == "plane":
-            cv2.rectangle(show_image, (int(x1), int(y1)), (int(x2) , int(y2) ), (0, 128, 128), 1) 
-            cv2.putText(show_image, str(obj['obj_id']) + " " + obj['report']['class'],  (x1, y1), cv2.FONT_HERSHEY_SIMPLEX, .5, (200, 200, 200), 1)
-         elif obj['report']['class'] == "star":
-            foo = 1
-            #cv2.rectangle(show_image, (int(x1+40), int(y1+40)), (int(x2-40) , int(y2-40) ), (128, 128, 128), 1) 
-         else:
-            cv2.rectangle(show_image, (int(x1), int(y1)), (int(x2) , int(y2) ), (255, 255, 255), 1) 
-            cv2.putText(show_image, str(obj['obj_id']) + " " + obj['report']['class'],  (x, y), cv2.FONT_HERSHEY_SIMPLEX, .5, (200, 200, 200), 1)
-
-      self.meteor_scan_info['objects'] = objects
-      #self.sd_min_max = [0,0,0,0]
-      cv2.imshow("METEOR SCAN OBJ SUMMARY", show_image)
-      cv2.waitKey(200)
-
-      self.report_objects()
-      
-
 
 
    def clean_met_obj(self,obj):
@@ -2702,16 +2297,6 @@ class Meteor():
             last_y = cy
             last_fn = fn
 
-      # now check for missing frames in the middle.
-      # NOT IMPLEMENTED YET (MAYBE MOVE THIS)
-      #fc = None
-      #for fn in good_frame_data:
-      #   if fc is None:
-      #      fc = fn
-      #   print(fn, good_frame_data[fn])
-      #   if fc not in good_frame_data:
-      #      print("Add missing frame.", fc)
-      #   fc += 1
 
       # convert the good clean frame data back to an object 
       # and analyze it
@@ -2787,27 +2372,6 @@ class Meteor():
       new_obj['ncxs'] = ncxs
       new_obj['ncys'] = ncys
       return(new_obj) 
-
-
-   def display_frame(self,fn):
-      disp = np.zeros((1080,1920,3),dtype=np.uint8)
-      if fn > len(self.sd_frames) -1:
-         return 
-      frame = self.sd_frames[fn].copy()
-      sub_frame = self.sd_sub_frames[fn].copy()
-      stack_frame = self.sd_stacked_image.copy()
-     
-      sub_frame = cv2.resize(sub_frame, (640,360))
-      normal_frame = cv2.resize(frame, (640,360))
-      stack_frame = cv2.resize(stack_frame, (640,360))
-      print(normal_frame.shape)
-      disp[0:360,0:640] = stack_frame 
-      disp[0:360,640:1280] = normal_frame 
-      disp[0:360,1280:1920] = sub_frame
-      cv2.imshow('DF', disp)
-      cv2.waitKey(30)
-      if fn in self.frame_data:
-         print("we have frame data:", fn)
 
    def define_area_box(self,met,fw,fh,size=50):
       x1 = min(met['oxs']) - size
@@ -3122,8 +2686,7 @@ class Meteor():
          mj['crop_scan'] = self.crop_scan
       mj['meteor_scan_info'] = self.meteor_scan_info
       # convert the ccx vars to 720p from native res
-      #hdm_x_720 = 1280 / self.fw
-      #hdm_y_720 = 720 / self.fh
+
       temp_x = []
       temp_y = []
       print("720:", self.hdm_x_720, self.hdm_y_720)
@@ -3141,13 +2704,10 @@ class Meteor():
             temp_y.append(hy)
          self.best_meteor['ccxs'] = temp_x
          self.best_meteor['ccys'] = temp_y
-         print("CCXS", self.best_meteor['ccxs'])
          mj['best_meteor'] = self.best_meteor
 
          mjr['meteor_frame_data'] = self.meteor_frame_data
          mjr['cal_params'] = self.cp
-         for iii in mj['best_meteor']['oint']:
-            print("INT", iii, type(iii))
          save_json_file(self.reduce_file, mjr)
       save_json_file(self.meteor_file, mj)
 
@@ -3195,6 +2755,7 @@ class Meteor():
             self.meteor_frame_data.append((dt, fn, x, y, w, h, oint, ra, dec, az, el))
 
    def make_cache_files(self):
+      print("Making cache files.")
       if self.best_meteor is None:
          return
       ff = self.meteor_frame_data[0][1] 
@@ -3212,7 +2773,6 @@ class Meteor():
          (dt, fn, x, y, w, h, oint, ra, dec, az, el) = data
          mfd[fn] = (dt, fn, x, y, w, h, oint, ra, dec, az, el)
 
-      print(sf, ef)
       for i in range(sf, ef):
          frm_file = self.cache_dir_frames + self.meteor_base + "-{:04d}".format(i) + ".jpg"
          print(frm_file)
@@ -3227,15 +2787,11 @@ class Meteor():
 
             ffn = "{:04d}".format(int(fn))
             outfile = self.cache_dir_roi + self.meteor_base + "-frm" + ffn + ".jpg"
-            print(outfile)
             try:
                cv2.imwrite(outfile, roi_img)
             except: 
                print("FAILED TO WRITE ROI IMG FOR ", fn, outfile)
 
-            #cv2.imshow('pepe2', roi_img)
-            #cv2.imshow('pepe', frame)
-            #cv2.waitKey(0)
 
    def roi_area(self,x,y,iw,ih,roi_size):
       rs = int(roi_size/2)
@@ -3256,31 +2812,6 @@ class Meteor():
          y2 = ih
          y1 = y1 - (y2-ih)
       return(x1,y1,x2,y2) 
-
-   def make_frame_cache_files(self):
-
-      for data in self.meteor_frame_data:
-         (dt, fn, x, y, w, h, oint, ra, dec, az, el) = data
-
-   def make_final_trim(self, min_file, trim_start, trim_end ):
-      print("Make ")
-
-
-   def make_full_frame_cache(self):
-      print("Make full frame cache.")
-
-   def make_roi_thumbs(self):
-      print("Make roi thumbs (for web admin).")
-
-   def apply_calib_to_frames(self):
-      print("Make ")
-
-   def make_meteor_images(self):
-      print("Make ")
-
-
-   def retrim_minute_clip(self):
-      print("Make ")
 
    def load_frames(self,vid_file):
       self.sd_stacked_image = None
@@ -3314,12 +2845,8 @@ class Meteor():
             else:
                frame_pil = Image.fromarray(frame)
                self.sd_stacked_image=ImageChops.lighter(self.sd_stacked_image,frame_pil)
-
-
          if frame_count > 1499:
             go = 0
-
-
          frame_count += 1
          last_frame = frame
 
@@ -3358,8 +2885,6 @@ if __name__ == "__main__":
          if "reduced" not in meteor_file:
             mj = load_json_file(meteor_file)
             if "meteor_scan_info" in mj:
-               print(mj['meteor_scan_info'])
-               print(meteor_file)
                if "sd_objects" in mj['meteor_scan_info']:
                   print("METEOR SCAN DONE", len(mj['meteor_scan_info']['sd_objects']), " total objects")
                else:

@@ -14,7 +14,6 @@ class Detector():
 
 
    def analyze_object(obj):
-      print("   ANALYZE:", obj['obj_id'])
       self = Detector()
       report = {}
       # determine event duration
@@ -187,8 +186,10 @@ class Detector():
       report['big_perc'] = big_perc
       report['bad_x_perc'] = bad_x_perc
       report['bad_y_perc'] = bad_y_perc
+      report['gaps'] = gaps
       med_gaps = np.median(gaps)
       max_dist = max(dists_from_start)
+      report['med_gaps'] = med_gaps
       if dur_frames > 0:
          px_per_frame = max(dists_from_start) / dur_frames
       else:
@@ -241,9 +242,11 @@ class Detector():
 
       # add points based on gaps
       if 2 <= report['med_gaps'] <= 4:
-         plane_score += 1
+         report['plane_score'] += 2
+         report['meteor_score'] -= 1
       elif 5 < report['med_gaps'] <= 10:
-         plane_score += 3
+         report['plane_score'] += 3
+         report['meteor_score'] -= 2
          report['meteor_score'] -= 1 
          report['bad_items'].append("5-10 gaps detected.")
       if report['elapsed_frames'] < 4 and report['cm_perc'] < .9:
@@ -420,7 +423,6 @@ class Detector():
 
                 #and fn not in objects[obj]['ofns'] :
             if dist < dist_thresh and fn_diff < 25: 
-               #print("OBJ FOUND? DIST THRESH/ FN DIFF:", fn, dist_thresh, dist, fn_diff)
                mkeys = {}
                for i in range(0, len(objects[obj]['ofns'])):
                   key = str(objects[obj]['ccxs'][i]) + "." + str(objects[obj]['ccys'][i])

@@ -682,6 +682,7 @@ def sync_db_day(dynamodb, station_id, day):
       if cfe(mfr) == 1:
          mjr = load_json_file(mfr)
       else:
+         mjr = {}
          mjr['meteor_frame_data'] = []
       if "revision" not in mj:
          mj['revision'] = 1
