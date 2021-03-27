@@ -148,7 +148,13 @@ def event_detail_control(event_id):
 def events_main_control():
    from FlaskLib.Events import all_events 
 
-   resp = all_events(json_conf)
+   fv = {}
+   fv['solve_status'] = request.args.get('status')
+   fv['start_date'] = request.args.get('start_date')
+   fv['end_date'] = request.args.get('end_date')
+   fv['stations'] = request.args.get('stations')
+    
+   resp = all_events(json_conf, fv)
    return(resp)
 
 @app.route('/events/<date>/', methods=['GET', 'POST'])
