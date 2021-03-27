@@ -146,9 +146,9 @@ def event_detail_control(event_id):
 @app.route('/events/', methods=['GET', 'POST'])
 @auth.login_required
 def events_main_control():
-   from FlaskLib.Events import list_event_days
+   from FlaskLib.Events import all_events 
 
-   resp = list_event_days(json_conf)
+   resp = all_events(json_conf)
    return(resp)
 
 @app.route('/events/<date>/', methods=['GET', 'POST'])

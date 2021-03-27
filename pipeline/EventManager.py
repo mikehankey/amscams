@@ -114,6 +114,7 @@ class EventManager():
          print(cmd)
 
    def all_events_report(self):
+      c = 0
       print("All events report")
       all_events_file = "/mnt/ams2/EVENTS/ALL_EVENTS.json"
       all_events = load_json_file(all_events_file)
@@ -123,7 +124,9 @@ class EventManager():
       all_trajectories = []
       all_radiants = []
       all_showers = []
+      all_events = sorted(all_events, key=lambda x: (x['event_id']), reverse=True)
       for event in all_events:
+         shower = ""
          if "solve_status" in event:
             status = event['solve_status']
          else:
@@ -168,27 +171,31 @@ class EventManager():
          local_ev_dir = "/mnt/ams2/EVENTS/" + e_year + "/" + e_month + "/" + e_day + "/" + event['event_id'] + "/" 
          cloud_ev_dir = "/mnt/archive.allsky.tv/EVENTS/" + e_year + "/" + e_month + "/" + e_day + "/" + event['event_id'] + "/" 
          if "SUCCESS" or "SOLVE" in status:
-            if cfe(local_ev_dir,1) == 1:
-               lvd_status = 1
-            else:
-               lvd_status = 0
-
-            #if cfe(cloud_ev_dir,1) == 1:
+            lvd_status = 1
+            cvd_status = 1
+            #if cfe(local_ev_dir,1) == 1:
             #   lvd_status = 1
+            #   cvd_status = 1
             #else:
             #   lvd_status = 0
+            #   cvd_status = 0
 
-            if cfe(local_ev_dir) == 1:
-               cvd_status = 1
-            else:
-               cvd_status = 0
+            #if cfe(cloud_ev_dir,1) == 1:
+            #   cvd_status = 1
+            #else:
+            #   cvd_status = 0
+
          else:
             lvd_status = 0
             cvd_status = 0
             print(local_ev_dir)
-
+          
          rpt = "{:s} {:s} {:s} {:s} {:s} {:s} {:s} {:s}".format(status, str(event['event_id']), str(min(event['start_datetime'])), sts, fls, shower, str(lvd_status), str(cvd_status))
+         #print(rpt)
+         if c % 100 == 0:
+            print("working", c)
          events_summary.append( (status, event['event_id'], min(event['start_datetime']), sts, fls, shower, lvd_status, cvd_status))
+         c += 1
 
       save_json_file("/mnt/ams2/EVENTS/ALL_EVENTS_SUMMARY.json", events_summary)
       save_json_file("/mnt/ams2/EVENTS/ALL_ORBITS.json", all_orbits)

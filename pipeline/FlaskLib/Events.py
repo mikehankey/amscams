@@ -16,6 +16,23 @@ import socket
 import subprocess
 from boto3.dynamodb.conditions import Key
 
+
+def all_events(json_conf):
+   event_dir = "/mnt/ams2/EVENTS/"
+   cloud_event_dir = "/mnt/archive.allsky.tv/EVENTS/"
+   aes = event_dir + "ALL_EVENTS_SUMMARY.json"
+   caes = cloud_event_dir + "ALL_EVENTS_SUMMARY.json"
+   if cfe(event_dir,1) == 0:
+      os.makedirs(event_dir)
+   if cfe(aes) == 0:
+      if cfe(caes) == 0:
+         os.system(" cp " + caes + " " + aes)
+
+   data = load_json_file(aes)
+   for d in data:
+      out += str(d) + "<br>"
+   return(out)
+
 def get_obs_data(date, json_conf):
 
 
