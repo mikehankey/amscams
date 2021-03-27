@@ -107,7 +107,10 @@ class StationSync():
             status = self.sync_status[mday]
          else:
             status = 0
-         print("SYNC YEAR:", mday,status)
+         if status == 0:
+            self.date = mday
+            self.sync_day() 
+            print("SYNC YEAR:", mday,status)
 
 
 
