@@ -2125,10 +2125,6 @@ def refit_fov(cal_file, json_conf):
          cv2.rectangle(img, (new_cat_x-2, new_cat_y-2), (new_cat_x + 2, new_cat_y + 2), (128, 128, 128), 1)
          cv2.rectangle(img, (new_x-2, new_y-2), (new_x + 2, new_y + 2), (255, 128, 128), 1)
    cal_params['cat_image_stars'] = new_cat_stars   
-   #cv2.imshow('pepe', gray_img)
-   #cv2.waitKey(0)
-   #cv2.imshow('pepe', img)
-   #cv2.waitKey(0)
 
    print("FILE RES vs RECALC RES:", ocp['total_res_px'], cal_params['total_res_px'])
    #print("OCP:", ocp['ra_center'], ocp['dec_center'], ocp['position_angle'], ocp['pixscale'], ocp['total_res_px'])
@@ -4331,7 +4327,7 @@ def autocal(image_file, json_conf, show = 0, heal_only=0):
             print(cmd)
             os.system(cmd)
             print("We imported this file without having to plate solve.", cp['total_res_px'])
-            if show == 1:
+            if SHOW == 1:
                star_image = draw_star_image(img, cp['cat_image_stars'], cp) 
                cv2.imshow('pepe', star_image)
                cv2.waitKey(30)
@@ -4840,8 +4836,6 @@ def find_stars_with_grid(img):
          print("AVG DIFF:", avg_tiny, avg, avg_diff)
          if blob == 1 or avg_diff > 10:
             print("EVAL STAR?", px_diff, avg_px, max_val, avg_diff)
-            #cv2.imshow('p', gimg)
-            #cv2.waitKey(30)
             bright_points.append((star_x1+max_loc[0], star_y1+max_loc[1], star_int))
          else:
             bad_points.append((star_x1+max_loc[0], star_y1+max_loc[1], star_int))
@@ -4897,8 +4891,6 @@ def find_stars_with_grid(img):
       print("BAD:", bp)
       cv2.circle(img, (int(x),int(y)), 10, (128,128,128), 1)
    cv2.imwrite("/mnt/ams2/temp2.jpg", img)
-   #cv2.imshow('p', img)
-   #cv2.waitKey(30)
    return(bright_points)
 
 def check_star_blob(image):
@@ -4965,8 +4957,6 @@ def get_image_stars(file=None,img=None,json_conf=None,show=0):
       x,y,z = star
       cv2.circle(img, (int(x),int(y)), 5, (128,128,128), 1)
    cv2.imwrite("/mnt/ams2/temp.jpg", img)
-   #cv2.imshow('pepe', img)
-   #cv2.waitKey(0)
    return(best_stars)
 
 
@@ -5011,8 +5001,6 @@ def get_image_stars(file=None,img=None,json_conf=None,show=0):
           show_pic[980:1080,0:100] = bcnt
           if SHOW == 1:
              dsp = cv2.resize(show_pic, (1280,720))
-             #cv2.imshow('pepe', dsp)
-             #cv2.waitKey(30)
       else:
           cv2.rectangle(show_pic, (bx1, by1), (bx2, by2 ), (150, 150, 150), 1)
       cc = cc + 1
@@ -5081,9 +5069,6 @@ def eval_cnt(cnt_img, avg_px=5 ):
       is_star = "Y"
    else:
       star_int = 0
-   #cv2.imshow('pepe', int_cnt)
-   #cv2.waitKey(0)
-   #print("STAR INT:", star_int)
 
    return(max_px, avg_px,px_diff,(blob_x,blob_y),star_int)
 
