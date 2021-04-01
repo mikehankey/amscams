@@ -4254,6 +4254,7 @@ def autocal(image_file, json_conf, show = 0, heal_only=0):
          cv2.circle(img,(x,y), 10, (128,128,255), 1)
       cv2.imwrite(star_scan_file,img)
       print("SAVED:", star_scan_file)
+      #x = input("X")
    if SHOW == 1:
       cv2.imshow("SCAN STARS DONE.", img)
       cv2.waitKey(30)
