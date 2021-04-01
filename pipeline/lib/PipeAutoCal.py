@@ -4890,10 +4890,10 @@ def check_star_blob(image):
    good = 0
    if len(cnts) > 1:
       return(0)
-   bg_val = np.mean(img[0:3,0:3])
+   bg_val = np.mean(image[0:3,0:3])
    for (i,c) in enumerate(cnts):
       x,y,w,h = cv2.boundingRect(cnts[i])
-      star_val = np.mean(img[y:y+h,x:x+w])
+      star_val = np.mean(image[y:y+h,x:x+w])
       flux_val = star_val - bg_val
       if 1 <= w <= 8 and 1 <= h <= 8:
          #print("STAR BLOB.", x,y,w,h, "STAR VAL:", star_val)
