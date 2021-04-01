@@ -106,6 +106,13 @@ def cal_manager(json_conf):
       print("SAVED: /mnt/ams2/cal/" + amsid + "_cal_range.json", rdf)
 
 
+def update_defaults(json_conf):
+   gen_cal_hist(json_conf)
+   for cam in json_conf['cameras']:
+      cams_id = json_conf['cameras'][cam]['cams_id']
+      default_hist[cams_id] = make_default_cal(json_conf, cams_id)
+
+
 def run_cal_defaults(json_conf):
    gen_cal_hist(json_conf)
    #sync_cal(json_conf)
@@ -4215,6 +4222,7 @@ def make_cal_obj(az,el,pos,px,stars,cat_image_stars,res):
    return(cp)
 
 def autocal(image_file, json_conf, show = 0, heal_only=0):
+   update_defaults(json_conf)
    cp = None
    star_scan_file = image_file.replace(".png", "_star_scan.jpg")
    # evaluate a calibration file and try to fit it against a known calibration
@@ -4258,8 +4266,8 @@ def autocal(image_file, json_conf, show = 0, heal_only=0):
       for star in stars:
          (x,y,sint) = star
          cv2.circle(img,(x,y), 10, (128,128,255), 1)
-      cv2.imwrite(star_scan_file,img)
-      print("SAVED:", star_scan_file)
+      #cv2.imwrite(star_scan_file,img)
+      #print("SAVED:", star_scan_file)
    if SHOW == 1:
       cv2.imshow("SCAN STARS DONE.", img)
       cv2.waitKey(30)
