@@ -247,7 +247,6 @@ def gen_cal_hist(json_conf):
       cmd = "rmdir " + cc 
       print("CORUPT:", cmd)
    print("CC:", corrupt)
-   exit()
    by_day = {}
    cal_groups = {}
    for cam in all_files:
