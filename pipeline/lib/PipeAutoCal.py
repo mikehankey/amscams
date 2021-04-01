@@ -108,6 +108,7 @@ def cal_manager(json_conf):
 
 def update_defaults(json_conf):
    gen_cal_hist(json_conf)
+   default_hist = {}
    for cam in json_conf['cameras']:
       cams_id = json_conf['cameras'][cam]['cams_id']
       default_hist[cams_id] = make_default_cal(json_conf, cams_id)
@@ -4303,9 +4304,11 @@ def autocal(image_file, json_conf, show = 0, heal_only=0):
          last_best_res = tcp['total_res_px']
          best_cp = dict(cp)
       if tcp['total_res_px'] < last_best_res:
+
          best_cp = dict(cp)
    if True:
-      if cp is not None:
+      if best_cp is not None:
+         cp = best_cp
          if cp['total_res_px'] < 10 and len(cp['cat_image_stars']) >= 10:
             fn,dir = fn_dir(image_file)
             base = fn.replace(".png", "")
