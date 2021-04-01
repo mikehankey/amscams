@@ -512,6 +512,7 @@ def resolve_failed(cam_num, limit, star_lim, json_conf):
       for fail in fail_files:
          all_files.append(fail)
    count = 0
+   print("ALL FILES:", len(all_files))
    for file in all_files:
       fn, dd = fn_dir(file)
       root = fn.replace(".png", "")
@@ -1768,7 +1769,9 @@ def blind_solve_meteors(day,json_conf,cam=None):
                   cal_img = cv2.imread(stack_file)
                   temp_img = cal_img.copy()
                   gray_cal_img = cv2.cvtColor(cal_img, cv2.COLOR_BGR2GRAY)
-                  stars = get_image_stars(stack_file, gray_cal_img.copy(), json_conf, 0)
+
+                  #stars = get_image_stars(stack_file, gray_cal_img.copy(), json_conf, 0)
+                  stars = scan_for_stars(gray_cal_img.copy())
                   print("STARS:", len(stars))
                   if len(stars) >= CAL_STAR_LIMIT:
                      mfn, mdir = fn_dir(stack_file) 
@@ -1986,6 +1989,7 @@ def refit_fov(cal_file, json_conf):
    cal_params = load_json_file(cal_file)
    image_file = cal_file.replace("-calparams.json", ".png")
    img = cv2.imread(image_file)
+   orig_img = img.copy()
    cal_params['user_stars'] = scan_for_stars(img)
 
    if "total_res_px" in cal_params:
@@ -2222,10 +2226,12 @@ def refit_fov(cal_file, json_conf):
          temp_cal = temp_dir + fn
          print(cmd)
          os.system(cmd)
-         plate_image, star_points = make_plate_image(img.copy(), cal_params['user_stars'])
+
+         plate_image, star_points = make_plate_image(plt_img.copy(), cal_params['user_stars'])
 
          plate_file = temp_cal.replace(".png", ".jpg")
          cv2.imwrite(plate_file, plate_image)
+         print("SAVED:", plate_file)
 
          status, cal_params, wcs = solve_field(plate_file, cal_params['user_stars'], json_conf)
          if status == 0:
@@ -4254,7 +4260,6 @@ def autocal(image_file, json_conf, show = 0, heal_only=0):
          cv2.circle(img,(x,y), 10, (128,128,255), 1)
       cv2.imwrite(star_scan_file,img)
       print("SAVED:", star_scan_file)
-      #x = input("X")
    if SHOW == 1:
       cv2.imshow("SCAN STARS DONE.", img)
       cv2.waitKey(30)
@@ -4285,13 +4290,12 @@ def autocal(image_file, json_conf, show = 0, heal_only=0):
          cp['x_poly_fwd'] = mcp['x_poly_fwd']
          cp['y_poly_fwd'] = mcp['y_poly_fwd']
       tcp , bad_stars, marked_img = test_cal(image_file, json_conf, cp, img, data)
-      #print("RES:", tcp['total_res_px'])
+      print("TEST CAL RES:", tcp['total_res_px'])
       if last_best_res is None:
          last_best_res = tcp['total_res_px']
          best_cp = dict(cp)
       if tcp['total_res_px'] < last_best_res:
          best_cp = dict(cp)
-
    if True:
       if cp is not None:
          if cp['total_res_px'] < 10 and len(cp['cat_image_stars']) >= 10:
@@ -4380,8 +4384,10 @@ def autocal(image_file, json_conf, show = 0, heal_only=0):
           
       show_image(star_img, 'pepe', 300)
 
+   plt_img = cv2.imread(image_file)
+   #cv2.imwrite("/mnt/ams2/test/plt_img.jpg", plt_img)
 
-   plate_image, star_points = make_plate_image(img.copy(), stars )
+   plate_image, star_points = make_plate_image(plt_img, stars )
 
 
 
@@ -4906,10 +4912,10 @@ def check_star_blob(image):
       #   print("BAD STAR BLOB.", x,y,w,h)
 
 
-   cv2.imshow('pepe2', image) 
+   #cv2.imshow('pepe2', image) 
    # SAVE STAR IMAGE!
-   cv2.imshow('pepe', star_bg) 
-   cv2.waitKey(30)
+   #cv2.imshow('pepe', star_bg) 
+   #cv2.waitKey(30)
 
    return(good)
 def get_image_stars(file=None,img=None,json_conf=None,show=0):
@@ -5091,8 +5097,8 @@ def make_plate_image(image, file_stars):
       cent_h = int(1080/2)
       dist_to_center = calc_dist((x,y), (cent_w,cent_h))
       print(cnt_img.shape)
-      if dist_to_center > 500:
-         continue
+      #if dist_to_center > 500:
+      #   continue
       if ch == 0 or cw == 0 :
          continue
       max_pnt,max_val,min_val = cnt_max_px(cnt_img)
@@ -7538,7 +7544,8 @@ def meteor_make_frame_data(best_meteor,cp):
          meteor_frame_data.append((dt, fn, x, y, w, h, oint, ra, dec, az, el))
    return(meteor_frame_data, crop_box)
 
-def scan_for_stars(image):
+def scan_for_stars(img):
+   image = img.copy()
    from RMS.ImageLib import adjustLevels
    ih, iw = image.shape[:2]
    hor_size = int(ih / 20)
@@ -7567,7 +7574,7 @@ def scan_for_stars(image):
          cnts = []
 
       size = 10
-      #print("CNTS:", len(cnts))
+      print("CNTS:", len(cnts))
       for cnt in cnts:
          x,y,w,h = cnt
          if w <= 15 and h <= 15:
@@ -7586,14 +7593,16 @@ def scan_for_stars(image):
             smax = np.max(star_img)
             savg = np.mean(star_roi)
             pxd = smax - savg
-            if star_int > 100 and pxd > 20:
-               #print("STAR INT:", x,y1+y, star_int, smin, smax, savg, pxd)
+            if star_int > 80 and pxd > 20:
+            #if True:
+
+               print("STAR INT:", x,y1+y, star_int, smin, smax, savg, pxd)
                stars.append((cx, cy+y1, star_int))
             else:
-               #print("BAD INT OR PXD TOO LOW.", star_int, pxd)
+               print("BAD INT OR PXD TOO LOW.", star_int, pxd)
                bad_areas.append((x,y+y1,w,h))
          else:
-            #print("BAD CNT TOO BIG.")
+            print("BAD CNT TOO BIG.")
             bad_areas.append((x,y+y1,w,h))
       #if SHOW == 1:
       #   cv2.imshow('pepe', threshold)
@@ -7609,8 +7618,8 @@ def scan_for_stars(image):
          if by -5 <= y <= by+h + 5:
             good = 0
 
+   print("FINAL SCAN STARS:", len(stars))
    if SHOW == 1:
-      print("FINAL STARS:", len(stars))
       for star in stars:
          x,y,star_int = star
          cv2.circle(image,(x,y), 4, (0,0,255), 1)
@@ -7639,7 +7648,7 @@ def get_cont(frame):
       (cnts, xx) = cnt_res
    for (i,c) in enumerate(cnts):
       x,y,w,h = cv2.boundingRect(cnts[i])
-      if w >= 2 or h >= 2:
+      if w >= 1 and h >= 1:
          cnt_data.append((x,y,w,h))
    cnt_data = sorted(cnt_data, key=lambda x: (x[2]*x[3]), reverse=True)
    if len(cnt_data) > 1:
