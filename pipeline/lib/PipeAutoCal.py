@@ -447,7 +447,7 @@ def get_default_calib_hist(this_day, cams_id, json_conf):
    cal_hist = []
    for row in cal_hist_all:
       (cam, day, azs, els, pos, pxs, res) = row
-      print("DAY:", this_day_dt, day)
+      #print("DAY:", this_day_dt, day)
       day_dt = datetime.strptime(day, "%Y_%m_%d")
       if cam == cams_id:
          days_diff = abs((day_dt - this_day_dt).total_seconds() / 60 / 60 / 24)
@@ -616,8 +616,8 @@ def cal_status(json_conf):
       total_stars = all_data[cam]['total_stars']
       total_files = all_data[cam]['total_files']
       mcp_res = str(all_data[cam]['mcp_res'])[0:5]
-      if len(good_azs) > 5:
-         print(cam, "Med AZ,EL,PS,PX:", str(np.median(good_azs))[0:5], str(np.median(good_els))[0:5], str(np.median(good_pos))[0:5], str(np.median(good_pix))[0:5])
+      #if len(good_azs) > 5:
+         #print(cam, "Med AZ,EL,PS,PX:", str(np.median(good_azs))[0:5], str(np.median(good_els))[0:5], str(np.median(good_pos))[0:5], str(np.median(good_pix))[0:5])
       print(cam, "Cal Files", len(good_files), "good", len(bad_files), "bad", len(very_bad_files), "very bad")
       print(cam, "MCP Files,Stars,Res::", total_files, total_stars, mcp_res)
 
@@ -687,25 +687,18 @@ def get_more_stars_with_catalog(meteor_file, cal_params, image, json_conf):
             continue
 
          ival = gray_img[cat_y,cat_x]
-         #print(name, ival, cat_x,cat_y)
          if ival > 5:
             star_img = gray_img[cat_y-15:cat_y+15,cat_x-15:cat_x+15]
-            #print(cat_y,cat_x,np.sum(star_img))
             max_px, avg_px, px_diff,max_loc,star_int = eval_cnt(star_img)
             mx,my = max_loc
-            #if (2< px_diff < 7) and 100 < star_int < 11000:
             if 100 < star_int < 11000:
                bg_val = avg_px * star_img.shape[0] * star_img.shape[1]
                star_int = np.sum(star_img) - bg_val
 
-               print("MORE STAR FOUND!", star_int, avg_px, max_px, px_diff)
                if star_int > 10:
-               #print(max_px,avg_px,px_diff,star_int)
                   cv2.rectangle(image, (cat_x-10, cat_y-10), (cat_x + 10, cat_y + 10), (128, 128, 128), 1)
                   cv2.putText(image , str(int(px_diff)),  (int(cat_x),int(cat_y)), cv2.FONT_HERSHEY_SIMPLEX, .4, (255, 255, 255), 1)
                   cal_params['user_stars'].append((cat_x, cat_y, star_int))
-            #else:
-            #   print("Star int bad?", star_int)
    return(cal_params)
 
 
@@ -1110,7 +1103,7 @@ def refit_meteor(meteor_file, json_conf,force=0):
             print("GOOD match: ", dcname, cat_dist)
          else:
             print("BAD match: ", dcname, cat_dist)
-      print("RES:", cp['total_res_px'])
+      #print("RES:", cp['total_res_px'])
 
 
 
@@ -1996,7 +1989,7 @@ def refit_fov(cal_file, json_conf):
    cal_params['user_stars'] = scan_for_stars(img)
 
    if "total_res_px" in cal_params:
-      print("BEFORE HEALED", cal_params['total_res_px'])
+      #print("BEFORE HEALED", cal_params['total_res_px'])
       if cal_params['total_res_px'] > 4:
          print("THIS CAL IS MESSED UP TRY TO FIX IT!")
          day = year + "_" + m + "_" + d
@@ -2030,7 +2023,7 @@ def refit_fov(cal_file, json_conf):
 
    cal_params['user_stars'] = scan_for_stars(img)
 
-   print("USER STARS:", len(cal_params['user_stars']))
+   #print("USER STARS:", len(cal_params['user_stars']))
 
    #if len(cal_params['cat_image_stars']) > 25:
       #cal_params = get_more_stars_with_catalog(cal_file, cal_params, img.copy(), json_conf)
@@ -2081,7 +2074,6 @@ def refit_fov(cal_file, json_conf):
             continue
 
          ival = gray_img[cat_y,cat_x] 
-         print(name, ival, cat_x,cat_y)
          if ival > 5:
             star_img = gray_img[cat_y-10:cat_y+10,cat_x-10:cat_x+10]
             max_px, avg_px, px_diff,max_loc,star_int = eval_cnt(star_img)
@@ -3438,7 +3430,7 @@ def test_cal(cp_file,json_conf,cp, cal_img, cdata ):
    cp = update_center_radec(cp_file,cp,json_conf)
    cp, bad_stars, marked_img = eval_cal(cp_file,json_conf,cp,cal_img, None)
    tcp = dict(cp)
-   print("AZ,EL,RA,DEC,POS,PX:", az,el,pos,px,cp['ra_center'],cp['dec_center'])
+   #print("AZ,EL,RA,DEC,POS,PX:", az,el,pos,px,cp['ra_center'],cp['dec_center'])
    return(tcp, bad_stars, marked_img)
 
 def optimize_var(cp_file,json_conf,var,cp,img):
@@ -4255,11 +4247,13 @@ def autocal(image_file, json_conf, show = 0, heal_only=0):
 
    # get stars / bright spots in image
    stars = scan_for_stars(img)
-   for star in stars:
-      (x,y,sint) = star
-      cv2.circle(img,(x,y), 10, (128,128,255), 1)
-   cv2.imshow("SCAN STARS DONE.", img)
-   cv2.waitKey(30)
+   if SHOW == 1:
+      for star in stars:
+         (x,y,sint) = star
+         cv2.circle(img,(x,y), 10, (128,128,255), 1)
+   
+      cv2.imshow("SCAN STARS DONE.", img)
+      cv2.waitKey(30)
 
 
    # if not enough stars abort / clean up
@@ -4902,10 +4896,10 @@ def check_star_blob(image):
       star_val = np.mean(img[y:y+h,x:x+w])
       flux_val = star_val - bg_val
       if 1 <= w <= 8 and 1 <= h <= 8:
-         print("STAR BLOB.", x,y,w,h, "STAR VAL:", star_val)
+         #print("STAR BLOB.", x,y,w,h, "STAR VAL:", star_val)
          good = 1
-      else:
-         print("BAD STAR BLOB.", x,y,w,h)
+      #else:
+      #   print("BAD STAR BLOB.", x,y,w,h)
 
 
    cv2.imshow('pepe2', image) 
@@ -7308,6 +7302,7 @@ def poly_fit_check(line_xs,line_ys, x,y, z=None):
             z = np.polyfit(line_xs,line_ys,1)
             f = np.poly1d(z)
          except:
+            print("POLY:", line_xs)
             return(999)
 
       else:
@@ -7568,7 +7563,7 @@ def scan_for_stars(image):
          cnts = []
 
       size = 10
-      print("CNTS:", len(cnts))
+      #print("CNTS:", len(cnts))
       for cnt in cnts:
          x,y,w,h = cnt
          if w <= 15 and h <= 15:
@@ -7588,13 +7583,13 @@ def scan_for_stars(image):
             savg = np.mean(star_roi)
             pxd = smax - savg
             if star_int > 100 and pxd > 20:
-               print("STAR INT:", x,y1+y, star_int, smin, smax, savg, pxd)
+               #print("STAR INT:", x,y1+y, star_int, smin, smax, savg, pxd)
                stars.append((cx, cy+y1, star_int))
             else:
-               print("BAD INT OR PXD TOO LOW.", star_int, pxd)
+               #print("BAD INT OR PXD TOO LOW.", star_int, pxd)
                bad_areas.append((x,y+y1,w,h))
          else:
-            print("BAD CNT TOO BIG.")
+            #print("BAD CNT TOO BIG.")
             bad_areas.append((x,y+y1,w,h))
       #if SHOW == 1:
       #   cv2.imshow('pepe', threshold)
