@@ -3231,8 +3231,11 @@ def get_cal_files(meteor_file=None, cam=None):
          if len(cp_files) == 1:
             cpf = cp_files[0]
          if len(cp_files) > 1:
-            print("CAL ERROR :", cp_files)
-            exit()
+            if "stacked" in cp_files[0]:
+               cpf = cp_files[0]
+            else:
+               cpf = cp_files[1]
+        
          if len(cp_files) == 0:
             print("CAL ERROR :", cd + "/" + root_file, cp_files)
             cmd = "rm -rf " + cd
