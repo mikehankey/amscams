@@ -40,7 +40,7 @@ def all_events(json_conf, fv):
       show_row = 0
       solve_status, event_id, event_datetime, stations, files, shower, ls, cs = row
       if fv['stations'] is not None:
-         asd = fv['stations'].split(",")
+         asd = fv['stations']
          tsd = stations.split(",")
          for st in asd:
             for tst in tsd:

@@ -42,7 +42,7 @@ class EventManager():
          self.cloud_file_index = self.cloud_dir + "cloud_event_files_" + self.year + "_" + self.month + ".txt"
       if day is not None:
          print(self.day)
-         self.day, self.year, self.month = day.split("_")
+         self.year, self.month, self.day = day.split("_")
          self.batch_mode = "day"
          self.date = day
          self.cloud_dir = "/mnt/archive.allsky.tv/EVENTS/" + self.year + "/" + self.month + "/" + self.day + "/"
@@ -58,11 +58,46 @@ class EventManager():
       if self.cmd == "de" or self.cmd == "define_events":
           self.define_events()
       if self.cmd == "aei" or self.cmd == "all_events_index":
-          self.all_events_index()
+          self.all_events_index_new()
       if self.cmd == "aer" or self.cmd == "all_events_report":
           self.all_events_report()
       if self.cmd == "sus" or self.cmd == "solve_unsolved":
           self.solve_unsolved_events()
+      if self.cmd == "re" or self.cmd == "reconcile_events":
+          self.reconcile_events()
+
+   def reconcile_events(self):
+      now = datetime.datetime.now().strftime("%Y_%m_%d")
+      nyear = now[0:4]
+      nmonth = now[5:7]
+      print("NY:",nyear)
+      print("NM:",nmonth)
+      print("Y:",self.year)
+   #   exit()
+      if nyear == self.year:
+         print("RECONCILE THIS YEAR:", self.year)
+      else:
+         nmonth = 12
+      for i in range(1,int(nmonth)+1):
+         num_days = calendar.monthrange(int(self.year), i)[1]
+         days = [datetime.date(int(self.year), int(i), day) for day in range(1, num_days+1)]
+         for day_dt in days:
+            if day_dt <= datetime.date.today():
+               day = day_dt.strftime("%Y_%m_%d")
+               cmd = "./solveWMPL.py de " + day
+               print(cmd)
+               os.system(cmd)
+               cmd = "./DynaDB.py udc " + day
+               print(cmd)
+               cmd = "./solveWMPL.py sd " + day
+               print(cmd)
+               os.system(cmd)
+               cmd = "./solveWMPL.py de " + day
+               print(cmd)
+               os.system(cmd)
+               cmd = "./DynaDB.py udc " + day
+               print(cmd)
+      
 
    def define_events(self):
 
@@ -112,6 +147,128 @@ class EventManager():
          print("Define events for on day")
          cmd = "./solveWMPL.py de " + self.date
          print(cmd)
+
+
+   def all_events_index_new(self):
+      now = datetime.datetime.now().strftime("%Y_%m_%d")
+      years = []
+      nyear = now[0:4]
+      nmonth = now[5:7]
+      temp = glob.glob("/mnt/ams2/EVENTS/*")
+      for year_dir in temp:
+         if cfe(year_dir, 1) == 1:
+             year = year_dir.split("/")[-1]
+             years.append(year)
+      print("YEARS:", years)
+      ev_files = []
+      for year in years:
+         if year == nyear:
+            end_month = nmonth
+         else:
+            end_month = 12
+         for i in range(1,int(nmonth)+1):
+            num_days = calendar.monthrange(int(self.year), i)[1]
+            days = [datetime.date(int(self.year), int(i), day) for day in range(1, num_days+1)]
+            for day_dt in days:
+               if year == nyear: 
+                  end_dt = datetime.date.today()
+                  #.strftime("%Y_%m_%d")
+               else:
+                  end_d = str(year) + "_12_31"  
+                  end_dt = datetime.datetime.strptime(end_d, "%Y_%m_%d")
+               if day_dt <= end_dt:
+                  date_str = day_dt.strftime("%Y_%m_%d")
+                  y,m,d = date_str.split("_")
+                  ev_dir = "/mnt/ams2/EVENTS/" + y + "/" + m + "/" + d + "/" 
+                  ev_file = ev_dir + date_str + "_ALL_EVENTS.json"
+                  if cfe(ev_file) == 1:
+                     print("THERE ARE EVENTS TODAY:", ev_file) 
+                     ev_files.append(ev_file)
+                  else:
+                     print("THERE ARE NO EVENTS TODAY:", ev_file) 
+      all_events = []
+      day_summary = []
+      events_summary = []
+      for ev_file in ev_files:
+         solve_info_file = ev_file.replace("_ALL_EVENTS", "_SOLVE_INFO")
+         try:
+            evd = load_json_file(ev_file)
+            efn = ev_file.split("/")[-1]
+            eday = efn[0:10]
+            print("ADDING:", len(evd), "events")
+         except:
+            print("CORRUPT EVENT FILE!", ev_file)
+         solved = 0
+         failed = 0
+         missing = 0
+         unsolved = 0
+         day_total = 0
+         for data in evd:
+            if "solve_status" in data:
+               if "SUCCESS" in data['solve_status']:
+                  solved += 1
+                  status = "SUCCESS"
+               if "UNSOLVED" in data['solve_status']:
+                  unsolved += 1
+                  status = "UNSOLVED"
+               if "FAIL" in data['solve_status']:
+                  failed += 1
+                  status = "WMPL FAILED"
+               if "missing" in data['solve_status']:
+                  missing += 1
+                  status = data['solve_status']
+            else:
+               unsolved += 1
+               #print(data['event_id'], data['solve_status'] )
+            day_total += 1   
+            all_events.append(data)
+            shower = ""
+            if "solution" in data:
+               if "shower" in data['solution']:
+                  shower = data['solution']['shower']['shower_code']
+               else:
+                  shower = ""
+
+            events_summary.append( (status, data['event_id'], min(data['start_datetime']), data['stations'], data['files'], shower, 1, 1))
+         day_data = {}
+         day_data['date'] = eday
+         day_data['total_events'] = day_total
+         day_data['total_solved'] = solved
+         day_data['total_unsolved'] = unsolved
+         day_data['total_failed'] = failed
+         day_data['total_missing'] = missing
+         day_summary.append(day_data)
+         print("TOTAL EVENTS thru:", eday, solved, unsolved, failed, missing)
+
+      for data in day_summary:
+         day = data['date']
+         day_total = data['total_events']
+         y,m,d = day.split("_")
+         ev_dir = "/mnt/ams2/EVENTS/" + y + "/" + m + "/" + d + "/"  
+         if cfe(ev_dir, 1) == 0:
+            print("NO EVENT DIR!", ev_dir)
+         else:
+            print("EVENT DIR EXISTS", ev_dir)
+            ev_file = ev_dir + day + "_ALL_EVENTS.json" 
+
+         if day_total == 0:
+            cmd = "./solveWMPL.py de " + day
+            print(cmd)
+            #input("RUN DETERMINE EVENTS?:" + cmd)
+            #os.system(cmd)
+            if cfe(solve_info_file) == 1:
+               solve_info = load_json_file(solve_info_file)
+            else:
+               solve_info = {}
+            solve_info['last_event_run'] = now
+
+            save_json_file(solve_info_file, solve_info)
+      save_json_file("/mnt/ams2/EVENTS/EVENTS_DAY_SUMMARY.json", day_summary)
+      save_json_file("/mnt/ams2/EVENTS/ALL_EVENTS.json", all_events)
+
+
+      save_json_file("/mnt/ams2/EVENTS/ALL_EVENTS_SUMMARY.json", events_summary)
+
 
    def all_events_report(self):
       c = 0
@@ -213,6 +370,8 @@ class EventManager():
       S = event_id[13:15]
       return(Y,M,D,H,MIN,S)
 
+
+
    def solve_unsolved_events(self):
       cores = 20
       events = load_json_file("/mnt/ams2/EVENTS/ALL_EVENTS_SUMMARY.json")
@@ -243,9 +402,17 @@ class EventManager():
       os.system("find /mnt/ams2/EVENTS/ | grep ALL_EVENTS.json > /mnt/ams2/EVENTS/ALL_EVENTS.txt")
       fp = open("/mnt/ams2/EVENTS/ALL_EVENTS.txt")
       for line in fp:
+         if "/mnt/ams2/EVENTS/ALL_EVENTS" in line:
+            continue
          line = line.replace("\n", "")
          print("LOADING:", line)
-         ev_data = load_json_file(line)
+         print("EV FILE:", line)
+         try:
+            ev_data = load_json_file(line)
+         except:
+            print("CORRUPT EVENT FILE:", line)
+            xx = input("Waiting...")
+            ev_data = []
          for data in ev_data:
             print("DATA:", data)
             all_events.append(data)
@@ -322,5 +489,6 @@ if __name__ == "__main__":
       if len(el) == 2:
          EM = EventManager(cmd=sys.argv[1], month=sys.argv[2])
       if len(el) == 1:
+         print("YEAR:", sys.argv[2])
          EM = EventManager(cmd=sys.argv[1], year=sys.argv[2])
       EM.controller()

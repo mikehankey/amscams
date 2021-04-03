@@ -508,7 +508,7 @@ def delete_events_day(date):
    for event in events: 
       delete_event(None, event['event_day'], event['event_id'])
 
-def solve_day(day, cores=4):
+def solve_day(day, cores=20):
    date = day
    year, mon, dom = date.split("_")
    day_dir = "/mnt/ams2/EVENTS/" + year + "/" + mon + "/" + dom + "/" 
@@ -539,12 +539,11 @@ def solve_day(day, cores=4):
 
    for event in events_index:
       print("DY EV:", event['event_id'])
-      ev_status = check_event_status(event)
-      print("EV STATUS:", ev_status)
       if "solve_status" in event:
          print("Solve Status.", event['solve_status'] )
       else:
          print("Not Solved.")
+         print(event)
          if cores == 0:
             solve_event(event['event_id'])
          else:
@@ -560,6 +559,11 @@ def solve_day(day, cores=4):
                 running = check_running("solveWMPL.py")
                 print(running, " solving processes running.")
       ec += 1
+
+   cmd = "./DynaDB.py udc " + day + " events"
+   print(cmd)
+   os.system(cmd)
+
    exit()
 def parse_extra_obs(extra):
    print("EXTRA OBS FILE:", extra)

@@ -352,6 +352,20 @@ def cache_day(dynamodb, date, json_conf):
       save_json_file(obs_file, obs)
       print("SAVED:", obs_file)
 
+
+def get_all_events(dynamodb):
+   table = dynamodb.Table("x_meteor_event")
+   response = table.scan()
+   items = response['Items']
+   while 'LastEvaluatedKey' in response:
+      print(response['LastEvaluatedKey'])
+      response = table.scan(ExclusiveStartKey=response['LastEvaluatedKey'])
+      items.extend(response['Items'])
+   outfile = "/mnt/ams2/EVENTS/ALL_EVENTS.json"
+   save_json_file(outfile, items)
+   print("saved:", outfile)
+
+
 def update_dyna_cache_for_day(dynamodb, date, stations, utype=None):
 
    if utype is None:
@@ -1067,6 +1081,8 @@ if __name__ == "__main__":
       back_loader(dynamodb, json_conf)
    if cmd == "get_all_obs":
       get_all_obs(dynamodb, sys.argv[2], json_conf)
+   if cmd == "get_all_events":
+      get_all_events(dynamodb)
    if cmd == "udc":
       if len(sys.argv) > 3:
          utype = sys.argv[3]
