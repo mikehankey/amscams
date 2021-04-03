@@ -575,13 +575,13 @@ class Meteor():
             KEYS.append(str(x) + "." + str(y))
 
          unq = set(KEYS)
-
+         
          status, report = Detector.analyze_object(obj)
          obj['status'] = status
          obj['report'] = report
          print("MIKE STATUS:", obj['obj_id'],  obj['status'], obj['report']['class'])
          if obj['report']['class'] == "meteor" or obj['report']['class'] == "unknown":
-            print("***************** STATUS:", obj['obj_id'],  obj['status'], obj['report']['class'])
+            print("***************** STATUS:", obj['obj_id'],  obj['status'], obj['report']['class'], obj['report']['meteor_score'])
 
             group_objects.append((key,obj))
 
@@ -589,9 +589,9 @@ class Meteor():
       meteor_found = 0
       pos_meteors = []
       for gid, obj in group_objects:
-         print(gid, obj['ofns'], obj['report']['class'])
+         print(gid, obj['ofns'], obj['report']['class'], obj['report']['meteor_score'])
          print("********************* GROUP******************")
-         if obj['report']['class'] == 'meteor' or obj['report']['class'] == "unknown":
+         if obj['report']['class'] == 'meteor':
             meteor_found = 1
             cv2.putText(work_img, str(obj['report']['class']),  ((obj['oxs'][0]), (obj['oys'][0])), cv2.FONT_HERSHEY_SIMPLEX, .5, (200, 200, 200), 1)
             cv2.imshow('pepe', work_img)
@@ -607,6 +607,7 @@ class Meteor():
             cv2.imshow('pepe', work_img)
             cv2.waitKey(30)
 
+     
 
       if len(pos_meteors) == 0:
          xxx = input("NO METEOR FOUND FROM THE VALS DETECTOR!")
@@ -904,10 +905,16 @@ class Meteor():
          sub_crop = cv2.subtract(crop_frame, fcf)
          sub_crop = cv2.cvtColor(sub_crop, cv2.COLOR_BGR2GRAY)
          min_val, max_val, min_loc, (mx,my)= cv2.minMaxLoc(sub_crop)
-         if max_val > 10:
-            thresh_val = max_val - (max_val * .25)
-         else:
-            thresh_val = 10
+       
+         #first = cv2.cvtColor(self.crop_frames[0], cv2.COLOR_BGR2GRAY) 
+         thresh_val,cnts = self.find_best_thresh_val(crop_frame, self.crop_frames[0], fn ,[])
+
+         #if max_val > 10:
+         #   thresh_val = max_val - (max_val * .25)
+         #else:
+         #   thresh_val = 10
+         if thresh_val < 20:
+            thresh_val = 20
          _, sub_crop_thresh = cv2.threshold(sub_crop.copy(), thresh_val, 255, cv2.THRESH_BINARY)
          cnts = self.get_contours_simple(sub_crop_thresh, sub_crop)
 
@@ -928,7 +935,7 @@ class Meteor():
 
          cv2.imshow('vals_detect', sub_crop_thresh)
          if len(cnts) > 0:
-            cv2.waitKey(30)
+            cv2.waitKey(0)
          else:
             cv2.waitKey(30)
          fn += 1
@@ -1078,6 +1085,7 @@ class Meteor():
       #    check the max vals & event duration to figure this out
 
       self.vals_data, self.vals_event, self.pos_meteors = self.vals_scan(self.sd_frames)
+      xx = input("meteor_scan 1")
       for data in self.vals_data:
          (event, cm, mvf, fc, sum_val, avg_val, max_val, mx, my) = data
          self.sub_vals_sum.append(sum_val)
@@ -1089,6 +1097,15 @@ class Meteor():
       # If we validate the vals detect quickly we can exit out fast right now!
 
       npos = []
+      xx = input("meteor_scan 1b: pos_meteors:" + str(len(self.pos_meteors)))
+      for obj in self.pos_meteors:
+         print("POS METEOR FNS:", obj['ofns'])
+         print("POS METEOR XS:", obj['oxs'])
+         print("POS METEOR YS:", obj['oys'])
+         print("POS METEOR CLASS:", obj['report']['class'])
+         print("POS METEOR SCORE:", obj['report']['meteor_score'])
+
+      xx = input("wait before crop confirm pos meteors:" + str(len(self.pos_meteors)))
       for obj in self.pos_meteors:
          self.vals_event_status, vals_obj = self.vals_detect_crop_confirm()
          status, report = Detector.analyze_object(obj)
@@ -1098,8 +1115,8 @@ class Meteor():
             npos.append(obj)
 
       self.pos_meteors = npos
+      xx = input("meteor_scan 2 after crop confirm" + str(len(self.pos_meteors)))
       
-
 
 
       if len(self.pos_meteors) == 1:
@@ -1129,6 +1146,7 @@ class Meteor():
       return()
 
 
+      xx = input("meteor_scan 3" + str(len(self.pos_meteors)))
       # REST OF THE METEOR SCAN (if vals detect failed)
 
       max_sum = max(self.sub_vals_sum) 
@@ -1710,7 +1728,6 @@ class Meteor():
             self.frame_data[fn]['bad_items'].append("missing fd in prev" + str(prev_dist_from_start) + " " + str(dist_from_start) )
             self.frame_data[fn]['status'] = "BAD"
             continue
-         print("DEBUG:", fn, self.frame_data[fn])
          if "cnts" not in self.frame_data[fn]:
             print("NO CNTS!")
             self.frame_data[fn]['cnts'] = [] 

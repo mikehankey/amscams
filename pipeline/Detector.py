@@ -63,12 +63,15 @@ class Detector():
          key = str(obj['ccxs'][i]) + "." + str(obj['ccys'][i])
          up[key] = 1
       report['unq_points'] = len(up.keys())
+
+
       if report['unq_points'] == 1:
          report['class'] = "star"
 
       if report['unq_points'] <= 2:
-         report['meteor_score'] += -1
+         report['meteor_score'] += -10
          report['bad_items'].append("there are 2 or less unique points!?. " + str(report['unq_points'] ))
+
 
       # determine cm and reject < 3
       report['max_cm'] = obj_cm(obj['ofns'])
@@ -104,6 +107,17 @@ class Detector():
             report['x_dist'].append(0)
             report['y_dist'].append(0)
             report['segs'].append(0)
+
+      total_gaps = sum(gaps) - len(gaps)
+      if total_gaps > len(gaps):
+         report['meteor_score'] = -1
+         report['plane_score'] += 1
+         report['bad_items'].append("too many gaps for event length") 
+
+      if report['unq_points'] <= 3 and total_gaps > 3:
+         report['meteor_score'] += -10
+         report['bad_items'].append("there are 3 points and > 3 gaps!?. " )
+
       # determine the % of x & y agreement (with med)
       report['med_seg'] = np.median(report['segs'])
       report['med_x'] = np.median(report['x_dist'])
@@ -340,6 +354,7 @@ class Detector():
       elif report['plane_score'] >= 3 and report['meteor_score'] < 2:
          report['class'] = "plane"
 
+      print("ANALYZE REPORT:", "ID", obj['obj_id'], "CLASS:", report['class'], "METEOR SCORE:", report['meteor_score'])
 
       return(1, report)
 
