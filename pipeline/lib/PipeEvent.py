@@ -123,7 +123,60 @@ def dyna_events_for_month(wild, json_conf):
       day = file.split("/")[-1]
       dyna_events_for_day(day, json_conf)
 
-def dyna_events_for_day(day, json_conf):
+def dyna_events_for_day(date, json_conf):
+   ams_id = json_conf['site']['ams_id']
+   year,mon,day = date.split("_")
+   data_files = [ year + "_" + mon + "_" + day + "_ALL_EVENTS.json", year + "_" + mon + "_" + day + "_ALL_OBS.json", year + "_" + mon + "_" + day + "_ALL_STATIONS.json"]
+   local_event_dir = "/mnt/ams2/EVENTS/" + year + "/" + mon + "/" + day + "/" 
+   cloud_event_dir = "/mnt/archive.allsky.tv/EVENTS/" + year + "/" + mon + "/" + day + "/" 
+   if cfe(local_event_dir,1) == 0:
+      os.makedirs(local_event_dir)
+   for data_file in data_files:
+      #if True:
+      if cfe(local_event_dir + data_file) == 0 or "ALL_EVENTS.json" in data_file:
+         cmd = "cp " + cloud_event_dir + data_file + " " + local_event_dir
+         print(cmd)
+         os.system(cmd)
+   events = load_json_file(local_event_dir + data_files[0])
+   for event in events:
+      for i in range(0, len(event['stations'])):
+         station = event['stations'][i]
+         vfile = event['files'][i]
+         js_file = vfile.replace(".mp4", ".json")
+         meteor_dir = "/mnt/ams2/meteors/" + date + "/"
+         
+         if station == ams_id:
+            # Check if this meteor still exists
+            if cfe(meteor_dir + js_file) == 0:
+               print("Meteor must have been deleted?")
+               continue
+            print("This is one of my events!", event['event_id'], meteor_dir + js_file)
+            print(event)
+            mse = {}
+            mse['stations'] = event['stations']
+            mse['files'] = event['files']
+            mse['start_datetime'] = event['start_datetime']
+            if "final_vids" in event:
+               mse['final_vids'] = event['final_vids']
+            mse['total_stations'] = len(set(event['stations']))
+            mse['event_day'] = date
+            mse['event_id'] = event['event_id']
+            if "solve_status" in event:
+               mse['solve_status'] = event['solve_status']
+            else:
+               mse['solve_status'] = "NOT SOLVED"
+            print("MSE:", mse)
+            mj = load_json_file(meteor_dir + js_file)
+            mj['multi_station_event'] = mse
+            save_json_file(meteor_dir + js_file, mj)
+            print("SAVED:", meteor_dir + js_file)
+
+
+
+         
+
+
+def dyna_events_for_day_old(day, json_conf):
 
    os.system("./DynaDB.py cd " + day)
    dynamodb = boto3.resource('dynamodb')

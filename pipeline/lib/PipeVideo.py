@@ -18,12 +18,12 @@ from lib.PipeMeteorTests import ang_dist_vel, angularSeparation
 
 def ffmpeg_cats(files, outfile=None):
    print("FILES:", files)
-   files = sorted(files[2:])
+   #files = sorted(files[2:])
    list = ""
    for file in files:
       list += "file '" + file + "'\n"
    list_file = "tmp_vids/cat.txt"
-   outfile = files[2].replace(".mp4", "") 
+   outfile = files[0].replace(".mp4", "") 
    last_fn, ld = fn_dir(files[-1])
    outfile = outfile + "__" + last_fn
    fp = open(list_file, "w")

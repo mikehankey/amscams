@@ -22,7 +22,7 @@ from lib.PipeImage import stack_frames
 import numpy as np
 import cv2
 import matplotlib
-matplotlib.use('TkAgg')
+#matplotlib.use('TkAgg')
 from matplotlib import pyplot as plt
 
 from sklearn import linear_model, datasets

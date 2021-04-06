@@ -296,7 +296,10 @@ def perfect_points(meteor_file, json_conf):
    # things we want to check, test or fix
    # determine x,y direction of travel & dom direction
 
-   make_roi_video(mj['sd_video_file'],bm, hd_color_frames, json_conf)
+   # this func version is buggy with the crops??
+   #make_roi_video(mj['sd_video_file'],bm, hd_color_frames, json_conf)
+   # 2021_03_14
+   make_roi_video_mfd(mj['sd_video_file'], json_conf)
 
    red = load_json_file(redf)
    print("NEW MFD:")

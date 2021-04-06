@@ -33,7 +33,7 @@ def auto_update():
       os.system(cmd)
  
       # Stop flask (so new code will work)
-      cmd = "cd /home/ams/amscams/pipeline; /home/ams/amscams/pipeline/run-uwsgi-ssl > /tmp/sgi.txt 2>&1"
+      cmd = "cd /home/ams/amscams/pipeline; ./stop-uwsgi.py > /tmp/ssgi.txt 2>&1"
       os.system(cmd)
       
 

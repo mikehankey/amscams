@@ -279,6 +279,8 @@ def hourly_stacks_html(date, json_conf):
          cv2.imwrite(night_stack_file_jpg, night_stack_image)
          print(night_stack_file_jpg)
       except:
+         print(night_stack_file_jpg)
+         print(night_stack_file.shape)
          print("Problem saving night stack file ", night_stack_file)
          exit()
 

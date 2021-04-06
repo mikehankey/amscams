@@ -352,6 +352,20 @@ def cache_day(dynamodb, date, json_conf):
       save_json_file(obs_file, obs)
       print("SAVED:", obs_file)
 
+
+def get_all_events(dynamodb):
+   table = dynamodb.Table("x_meteor_event")
+   response = table.scan()
+   items = response['Items']
+   while 'LastEvaluatedKey' in response:
+      print(response['LastEvaluatedKey'])
+      response = table.scan(ExclusiveStartKey=response['LastEvaluatedKey'])
+      items.extend(response['Items'])
+   outfile = "/mnt/ams2/EVENTS/ALL_EVENTS.json"
+   save_json_file(outfile, items)
+   print("saved:", outfile)
+
+
 def update_dyna_cache_for_day(dynamodb, date, stations, utype=None):
 
    if utype is None:
@@ -360,8 +374,13 @@ def update_dyna_cache_for_day(dynamodb, date, stations, utype=None):
    if utype == "events": 
       do_obs = 0
       do_events = 1
+   print("DATE:", date)
+   year, mon, day = date.split("_")
+   day_dir = "/mnt/ams2/EVENTS/" + year + "/" + mon + "/" + day + "/"
+   dyn_cache = day_dir
+   if cfe(dyn_cache, 1) == 0:
+      os.makedirs(dyn_cache)
 
-   dyn_cache = "/mnt/ams2/DYCACHE/"
    obs_file = dyn_cache + date + "_ALL_OBS.json" 
    event_file = dyn_cache + date + "_ALL_EVENTS.json" 
    stations_file = dyn_cache + date + "_ALL_STATIONS.json" 
@@ -370,6 +389,7 @@ def update_dyna_cache_for_day(dynamodb, date, stations, utype=None):
 
    # get station list of stations that could have shared obs
    all_stations = glob.glob("/mnt/ams2/STATIONS/CONF/*")
+   print("ALL STATIONS:", all_stations)
    clusters = make_station_clusters(all_stations)
    cluster_stations = []
    stations = []
@@ -380,6 +400,8 @@ def update_dyna_cache_for_day(dynamodb, date, stations, utype=None):
          cluster_stations.append(data)
    save_json_file(stations_file, clusters)
    print("UPDATED THE DYNA CACHE!", stations_file)
+   cloud_stations_file = stations_file.replace("/mnt/ams2/", "/mnt/archive.allsky.tv/")
+   os.system("cp " + stations_file + " " + cloud_stations_file)
 
    # get the obs for each station for this day
    if do_obs == 1:
@@ -398,6 +420,8 @@ def update_dyna_cache_for_day(dynamodb, date, stations, utype=None):
             all_obs.append(data)
       save_json_file(obs_file, all_obs)
       print("UPDATED THE DYNA CACHE!", obs_file)
+      cloud_obs_file = obs_file.replace("/mnt/ams2/", "/mnt/archive.allsky.tv/")
+      os.system("cp " + obs_file + " " + cloud_obs_file)
 
    if do_events == 1:
       os.system("rm " + event_file ) 
@@ -407,11 +431,19 @@ def update_dyna_cache_for_day(dynamodb, date, stations, utype=None):
 
       save_json_file(event_file, events)
       print("UPDATED THE DYNA CACHE!", event_file)
+      cloud_event_file = event_file.replace("/mnt/ams2/", "/mnt/archive.allsky.tv/")
+      os.system("cp " + event_file + " " + cloud_event_file)
+      print(cloud_event_file)
 
 
 
 def search_events(dynamodb, date, stations, nocache=0):
-   dyn_cache = "/mnt/ams2/DYCACHE/"
+   year, mon, day = date.split("_")
+   day_dir = "/mnt/ams2/EVENTS/" + year + "/" + mon + "/" + day + "/"
+   dyn_cache = day_dir
+   if cfe(dyn_cache, 1) == 0:
+      os.makedirs(dyn_cache)
+
    use_cache = 0
    if cfe(dyn_cache, 1) == 0:
       os.makedirs(dyn_cache)
@@ -477,8 +509,12 @@ def get_all_obs(dynamodb, date, json_conf):
 
 def search_obs(dynamodb, station_id, date, no_cache=0):
    print("SEARCH OBS:", station_id, date)
+   year, mon, day = date.split("_")
+   day_dir = "/mnt/ams2/EVENTS/" + year + "/" + mon + "/" + day + "/"
+   dyn_cache = day_dir
+   if cfe(dyn_cache, 1) == 0:
+      os.makedirs(dyn_cache)
 
-   dyn_cache = "/mnt/ams2/DYCACHE/"
    use_cache = 0
    if cfe(dyn_cache, 1) == 0:
       os.makedirs(dyn_cache)
@@ -518,10 +554,18 @@ def search_obs(dynamodb, station_id, date, no_cache=0):
 
 
 def get_event(dynamodb, event_id, nocache=1):
+   year = event_id[0:4]
+   mon = event_id[4:6]
+   dom = event_id[6:8]
+   date = year + "_" + mon + "_" + dom
 
 
    print("GET EVENT:", event_id)
-   dyn_cache = "/mnt/ams2/DYCACHE/"
+   day_dir = "/mnt/ams2/EVENTS/" + year + "/" + mon + "/" + dom + "/"
+   dyn_cache = day_dir
+   if cfe(dyn_cache, 1) == 0:
+      os.makedirs(dyn_cache)
+
    use_cache = 0
    if cfe(dyn_cache, 1) == 0:
       os.makedirs(dyn_cache)
@@ -578,7 +622,12 @@ def get_event(dynamodb, event_id, nocache=1):
 
 def get_obs(dynamodb, station_id, sd_video_file):
    date= sd_video_file[0:10]
-   dyn_cache = "/mnt/ams2/DYCACHE/"
+   year, mon, day = date.split("_")
+   day_dir = "/mnt/ams2/EVENTS/" + year + "/" + mon + "/" + day + "/"
+   dyn_cache = day_dir
+   if cfe(dyn_cache, 1) == 0:
+      os.makedirs(dyn_cache)
+
    use_cache = 0
    if cfe(dyn_cache, 1) == 0:
       os.makedirs(dyn_cache)
@@ -647,6 +696,7 @@ def sync_db_day(dynamodb, station_id, day):
       if cfe(mfr) == 1:
          mjr = load_json_file(mfr)
       else:
+         mjr = {}
          mjr['meteor_frame_data'] = []
       if "revision" not in mj:
          mj['revision'] = 1
@@ -726,7 +776,10 @@ def update_meteor_obs(dynamodb, station_id, sd_video_file, obs_data):
       (dt, fn, x, y, w, h, oint, ra, dec, az, el) = data
       dmfd.append((dt,float(fn),float(x),float(y),float(w),float(h),float(oint),float(ra),float(dec),float(az),float(el)))
    obs_data['meteor_frame_data'] = dmfd
- 
+   if "final_vid" not in obs_data:
+      obs_data['final_vid'] = "" 
+   if "final_data" not in obs_data:
+      obs_data['final_data'] = {} 
 
    if dynamodb is None:
       dynamodb = boto3.resource('dynamodb')
@@ -886,7 +939,12 @@ def update_mj_events(dynamodb, date):
    if amsid not in stations:
       stations.append(amdid)
    events = search_events(dynamodb, date, stations)
-   dyn_cache = "/mnt/ams2/DYCACHE/"
+   year, mon, day = date.split("_")
+   day_dir = "/mnt/ams2/EVENTS/" + year + "/" + mon + "/" + day + "/"
+   dyn_cache = day_dir
+   if cfe(dyn_cache, 1) == 0:
+      os.makedirs(dyn_cache)
+
    if cfe(dyn_cache, 1) == 0:
       os.makedirs(dyn_cache)
    save_json_file(dyn_cache + date + "_events.json",events)
@@ -1023,6 +1081,8 @@ if __name__ == "__main__":
       back_loader(dynamodb, json_conf)
    if cmd == "get_all_obs":
       get_all_obs(dynamodb, sys.argv[2], json_conf)
+   if cmd == "get_all_events":
+      get_all_events(dynamodb)
    if cmd == "udc":
       if len(sys.argv) > 3:
          utype = sys.argv[3]

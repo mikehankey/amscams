@@ -16,6 +16,68 @@ import socket
 import subprocess
 from boto3.dynamodb.conditions import Key
 
+
+def all_events(json_conf, fv):
+   #fv['solve_status']  # 0 = not run, 1 = solved, -1 = failed -2 missing reductions
+   #fv['start_date'] 
+   #fv['end_date'] 
+   #fv['stations'] # list of stations to include in list "," separated
+   select_data = []
+
+   event_dir = "/mnt/ams2/EVENTS/"
+   cloud_event_dir = "/mnt/archive.allsky.tv/EVENTS/"
+   aes = event_dir + "ALL_EVENTS_SUMMARY.json"
+   caes = cloud_event_dir + "ALL_EVENTS_SUMMARY.json"
+   if cfe(event_dir,1) == 0:
+      os.makedirs(event_dir)
+   if cfe(aes) == 0:
+      if cfe(caes) == 0:
+         os.system(" cp " + caes + " " + aes)
+   out = ""
+   ae_data = load_json_file(aes)
+   
+   for row in ae_data:
+      show_row = 0
+      solve_status, event_id, event_datetime, stations, files, shower, ls, cs = row
+      if fv['stations'] is not None:
+         asd = fv['stations']
+         tsd = stations.split(",")
+         for st in asd:
+            for tst in tsd:
+               if st == tst:
+                  show_row = 1
+      else:
+         show_row = 1
+      if show_row == 1:
+         select_data.append(row)
+   
+   select_data = sorted(select_data, key=lambda x: (x[2]), reverse=True)
+
+   matches = 0
+   out_table = "<table>"
+   out_table += "<tr><td>Event ID</td><td>Status</td></tr>"
+   for data in select_data:
+      show_row = 0
+      solve_status, event_id, event_datetime, stations, files, shower, ls, cs = data
+      print("DATA:", data)
+      if fv['solve_status'] is None:
+         show_row = 1
+      elif fv['solve_status'] == "1" and "SUCCESS" in solve_status :
+         show_row = 1
+      elif fv['solve_status'] == "0" and "NOT SOLVED" in solve_status :
+         show_row = 1
+      elif fv['solve_status'] == "-1" and "FAILED" in solve_status :
+         show_row = 1
+      elif fv['solve_status'] == "-2" and "missing" in solve_status :
+         show_row = 1
+      if show_row == 1:
+         matches += 1
+         out_table += "<tr><td>" + str(event_id) + "</td><td>" + solve_status + "</td></tr>\n"
+
+   out_table += "</table>"
+   head = str(matches) + " events <br>"
+   return(head + out_table)
+
 def get_obs_data(date, json_conf):
 
 
