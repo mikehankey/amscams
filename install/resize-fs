@@ -1,0 +1,9 @@
+# NOTES ON RESIZEING LVM root partition
+
+$ lvm
+lvm> lvextend -l +100%FREE /dev/ubuntu-vg/ubuntu-lv
+lvm> exit
+
+# And then, we need to resize the file system to use the new available space in the logical volume
+$ resize2fs /dev/ubuntu-vg/ubuntu-lv
+resize2fs 1.44.1 (24-Mar-2018)
