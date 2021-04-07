@@ -4228,6 +4228,7 @@ def make_cal_obj(az,el,pos,px,stars,cat_image_stars,res):
 def autocal(image_file, json_conf, show = 0, heal_only=0):
    update_defaults(json_conf)
    cp = None
+   best_cp = None
    star_scan_file = image_file.replace(".png", "_star_scan.jpg")
    # evaluate a calibration file and try to fit it against a known calibration
    # if it passes import into the system
