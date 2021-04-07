@@ -138,8 +138,9 @@ def cntl_point_picker (date):
 @app.route('/event_detail/<event_id>/', methods=['GET', 'POST'])
 @auth.login_required
 def event_detail_control(event_id):
-   from FlaskLib.Events import event_detail
-   resp = event_detail(event_id,json_conf)
+   from FlaskLib.EventViewer import EventViewer 
+   EV = EventViewer(event_id=event_id)
+   resp = EV.EVO.render_template(template_file="FlaskTemplates/EventViewer.html")
    return(resp)
 
 

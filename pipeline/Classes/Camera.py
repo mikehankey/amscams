@@ -1,11 +1,13 @@
 import cv2
+from pathlib import Path
 
 from lib.PipeUtil import cfe, load_json_file, save_json_file, fn_dir, load_mask_imgs
 
 class Camera:
    def __init__(self, cam_num=None, cams_id=None, json_conf=None):
       if json_conf is None:
-         json_conf = load_json_file("../conf/as6.json")
+         self.home_dir = str(Path.home())
+         json_conf = load_json_file(self.home_dir + "/amscams/conf/as6.json")
       if cam_num is not None:
          for cam in json_conf['cameras']:
             if str(cam) == "cam" + str(cam_num):

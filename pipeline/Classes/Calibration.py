@@ -3,11 +3,12 @@ import scipy.optimize
 import numpy as np
 import datetime
 import cv2
+from pathlib import Path
 
 
 from lib.PipeAutoCal import gen_cal_hist,update_center_radec, get_catalog_stars, pair_stars, scan_for_stars, calc_dist, minimize_fov, AzEltoRADec , HMS2deg, distort_xy , XYtoRADec, angularSeparation, use_default_cal
 from lib.PipeUtil import load_json_file, save_json_file, cfe
-from Camera import Camera
+from Classes.Camera import Camera
 
 class Calibration():
    def __init__(self, cam_num=None,cams_id=None,json_conf=None,datestr=None,meteor_file=None,cal_image_file=None,time_mod=0):
@@ -23,7 +24,8 @@ class Calibration():
          camera = Camera(cam_num = cam_num)
          self.camera = camera
       if json_conf is None:
-         json_conf = load_json_file("../conf/as6.json")
+         self.home_dir = str(Path.home())
+         json_conf = load_json_file(self.home_dir + "/amscams/conf/as6.json")
          self.json_conf = json_conf
       self.cal_image_file = None
       self.cal_img = None
@@ -1156,7 +1158,8 @@ if __name__ == "__main__":
 
    if cmd == "scan_update_cals":
       # scan / re-update calib files with latest lens model
-      json_conf = load_json_file("../conf/as6.json")
+      home_dir = str(Path.home())
+      json_conf = load_json_file(home_dir + "/amscams/conf/as6.json")
       for cam_num in json_conf['cameras']:
          if cam_num == "cam1":
             continue

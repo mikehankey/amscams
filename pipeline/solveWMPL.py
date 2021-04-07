@@ -682,7 +682,8 @@ def solve_event(event_id, force=1, time_sync=1):
        os.makedirs(local_event_dir)
 
     if len(cloud_event_files) > 1:
-       print("This event was already processed.")
+     
+       print("This event was already processed.", cloud_event_files)
        
        #return()
 
@@ -745,9 +746,13 @@ def solve_event(event_id, force=1, time_sync=1):
              cloud_file = "/mnt/archive.allsky.tv/" + t_station + "/CAL/as6.json" 
              if cfe(local_file) == 0:
                 os.system("cp "  + cloud_file + " " + local_file)
+             print("LOADING:", local_file)
              jsi = load_json_file(local_file)
              dy_obs_data['loc'] = [jsi['site']['device_lat'], jsi['site']['device_lng'], jsi['site']['device_alt']]
+             print("LOC:", dy_obs_data['loc'], t_station)
           obs_data = convert_dy_obs(dy_obs_data, obs )
+
+    exit()
 
     extra_obs_data = []
     if len(extra_obs) > 0:

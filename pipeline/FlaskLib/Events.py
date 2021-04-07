@@ -40,8 +40,14 @@ def all_events(json_conf, fv):
       show_row = 0
       solve_status, event_id, event_datetime, stations, files, shower, ls, cs = row
       if fv['stations'] is not None:
-         asd = fv['stations']
-         tsd = stations.split(",")
+         tsd = fv['stations']
+         if "," not in tsd:
+            temp = [tsd]
+            tsd = temp
+         else:   
+            temp = tsd.split(",")
+            tsd = temp
+         asd = stations
          for st in asd:
             for tst in tsd:
                if st == tst:
@@ -64,7 +70,7 @@ def all_events(json_conf, fv):
          show_row = 1
       elif fv['solve_status'] == "1" and "SUCCESS" in solve_status :
          show_row = 1
-      elif fv['solve_status'] == "0" and "NOT SOLVED" in solve_status :
+      elif fv['solve_status'] == "0" or "NOT SOLVED" in solve_status :
          show_row = 1
       elif fv['solve_status'] == "-1" and "FAILED" in solve_status :
          show_row = 1
@@ -72,7 +78,9 @@ def all_events(json_conf, fv):
          show_row = 1
       if show_row == 1:
          matches += 1
-         out_table += "<tr><td>" + str(event_id) + "</td><td>" + solve_status + "</td></tr>\n"
+         link = "/event_detail/" + str(event_id) + "/"
+         href = "<a href=" + link + ">" 
+         out_table += "<tr><td>" + href + str(event_id) + "</a></td><td>" + solve_status + "</td></tr>\n"
 
    out_table += "</table>"
    head = str(matches) + " events <br>"
@@ -199,7 +207,104 @@ Last Update : {:s}
 
    return(html)
 
+def event_detail_template():
+
+   ### SUMMARY / TOP
+   sum_html = """
+   <table>
+   <tr>
+      <td>Event ID</td>
+      <td>{EVENT_ID}</td>
+   </tr>
+   <tr>
+      <td>Status</td>
+      <td>{STATUS}</td>
+   </tr>
+   <tr>
+      <td>Start Time</td>
+      <td>{EVENT_START_TIME}</td>
+   </tr>
+   <tr>
+      <td>Duration</td>
+      <td>{DURATION}</td>
+   </tr>
+   <tr>
+      <td>Velocity</td>
+      <td>{VELOCITY}</td>
+   </tr>
+   <tr>
+      <td>Ending Altitude</td>
+      <td>{END_ALT}</td>
+   </tr>
+   </table>
+   """
+
+   ### OBS HTML
+   obs_html = """
+   <tr>
+      <td>Stations</td>
+      <td>{STATIONS}</td>
+   </tr>
+   <tr>
+      <td>Files</td>
+      <td>{FILES}</td>
+   </tr>
+   </table>
+
+   """
+
+   ### TRAJ HTML
+   traj_html = """
+
+   """
+
+   ### ORB HTML
+   orb_html = """
+
+   """
+
+   ### WMPL HTML
+   wmpl_report_html = """
+
+   """
+
+   return(html)
+
 def event_detail(event_id, json_conf):
+   y = event_id[0:4]
+   m = event_id[4:6]
+   d = event_id[6:8]
+   date = y + "_" + m + "_" + d
+   le_dir = "/mnt/ams2/EVENTS/" + y + "/" + m + "/" + d + "/"
+   le_file = le_dir + date + "_ALL_EVENTS.json"
+   out = ""
+   if cfe(le_file) == 1:
+      events = load_json_file(le_file)
+   for ev in events:
+      if ev['event_id'] == event_id:
+         event = ev
+   out += le_file + "<BR>"
+   out += str(len(events))
+   #out += str(event)
+
+   stations = event['stations']
+   files = event['files']
+   status = event['solve_status']
+   dates = event['start_datetime']
+   sol = event['solution']
+   out += "Status:" + status + "<BR>"
+   out += str(stations)
+   out += str(files)
+   template = event_detail_template()
+   template = template.replace("{EVENT_ID}", event_id)
+   template = template.replace("{STATUS}", status)
+   template = template.replace("{EVENT_START_TIME}", min(dates))
+   template = template.replace("{STATIONS}", str(stations))
+   template = template.replace("{FILES}", str(files))
+
+   return(template)
+
+def event_detail_old(event_id, json_conf):
    y = event_id[0:4]
    m = event_id[4:6]
    d = event_id[6:8]
