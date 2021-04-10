@@ -118,7 +118,11 @@ class Events():
       orb_iframe = """<iframe width=100% height=450 src="https://orbit.allskycams.com/index_emb.php?file={:s}"></iframe>""".format(self.orb_link)
       self.stations_link = "https://archive.allsky.tv/EVENTS/ALL_STATIONS.kml"
       stations_iframe = """<iframe width=100% height=450 src="https://archive.allsky.tv/APPS/dist/maps/index.html?mf={:s}&lat={:s}&lon={:s}&zoom=3"></iframe>""".format(self.stations_link, str(self.center_lat), str(self.center_lon))
+      self.radiant_link = "https://archive.allsky.tv/EVENTS/PLOTS_ALL_RADIANTS.json"
+      rad_iframe = """<iframe width=100% height=660 src="https://archive.allsky.tv/APPS/dist/radiants.html?mf={:s}"></iframe>""".format(self.radiant_link)
 
+
+      template = template.replace("{RADIANTS_IFRAME}", rad_iframe)
       template = template.replace("{TRAJECTORY_IFRAME}", traj_iframe)
       template = template.replace("{ORBIT_IFRAME}", orb_iframe)
       template = template.replace("{STATIONS_IFRAME}", stations_iframe)
