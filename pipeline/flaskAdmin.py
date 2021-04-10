@@ -135,6 +135,15 @@ def cntl_point_picker (date):
    return(resp)
 
 
+@app.route('/kml_failed/<event_id>/', methods=['GET', 'POST'])
+@auth.login_required
+def event_kml_failed(event_id):
+   from FlaskLib.EventViewer import EventViewer 
+   EV = EventViewer(event_id=event_id)
+   resp = EV.EVO.make_failed_kml()
+   return Response(resp, mimetype='application/vnd.google-earth.kml+xml')
+
+
 @app.route('/event_detail/<event_id>/', methods=['GET', 'POST'])
 @auth.login_required
 def event_detail_control(event_id):
@@ -147,15 +156,17 @@ def event_detail_control(event_id):
 @app.route('/events/', methods=['GET', 'POST'])
 @auth.login_required
 def events_main_control():
-   from FlaskLib.Events import all_events 
-
+   #from FlaskLib.Events import all_events 
+   from Classes.Events import Events 
    fv = {}
    fv['solve_status'] = request.args.get('status')
    fv['start_date'] = request.args.get('start_date')
    fv['end_date'] = request.args.get('end_date')
    fv['stations'] = request.args.get('stations')
+   EVS = Events(fv)
     
-   resp = all_events(json_conf, fv)
+   EVS.load_events()
+   resp = EVS.render_events_list()
    return(resp)
 
 @app.route('/events/<date>/', methods=['GET', 'POST'])

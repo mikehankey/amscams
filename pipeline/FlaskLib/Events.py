@@ -70,7 +70,7 @@ def all_events(json_conf, fv):
          show_row = 1
       elif fv['solve_status'] == "1" and "SUCCESS" in solve_status :
          show_row = 1
-      elif fv['solve_status'] == "0" or "NOT SOLVED" in solve_status :
+      elif fv['solve_status'] == "0" and "UNSOLVED" in solve_status :
          show_row = 1
       elif fv['solve_status'] == "-1" and "FAILED" in solve_status :
          show_row = 1
@@ -80,7 +80,7 @@ def all_events(json_conf, fv):
          matches += 1
          link = "/event_detail/" + str(event_id) + "/"
          href = "<a href=" + link + ">" 
-         out_table += "<tr><td>" + href + str(event_id) + "</a></td><td>" + solve_status + "</td></tr>\n"
+         out_table += "<tr><td>" + href + str(event_id) + "</a></td><td>" + solve_status + "</td><td>" + str(stations) + "</tr>\n"
 
    out_table += "</table>"
    head = str(matches) + " events <br>"

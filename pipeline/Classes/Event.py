@@ -26,6 +26,7 @@ from lib.FFFuncs import best_crop_size, ffprobe
 
 class Event():
    def __init__(self, event_id):
+      self.obs = None 
       self.event_id = event_id
       self.kml_link = None
       self.orb_link = None
@@ -37,6 +38,11 @@ class Event():
       self.local_event_file = self.local_event_dir + self.date + "_ALL_EVENTS.json"
       self.todays_events = []
       self.media = None
+      self.kml_file = self.local_event_dir + self.event_id + "-map.kml" 
+      self.kml_link = self.kml_file.replace("/mnt/ams2", "")
+      if cfe(self.local_event_dir,1) == 0:
+         os.makedirs(self.local_event_dir)
+      self.cloud_event_dir = self.local_event_dir.replace("/mnt/ams2", "/mnt/archive.allsky.tv")
 
 
       if cfe(self.local_event_file) == 1:
@@ -56,8 +62,7 @@ class Event():
       self.files = event['files']
       self.start_datetimes = event['start_datetime']
       if "obs" in event:
-         for key in event['obs'].keys():
-            print(key, event['obs'][key])
+         self.obs = event['obs']
       if "solution" in event:
          if "traj" in event['solution']:
             self.center_lat, self.center_lon = self.center_obs(event['obs'])
@@ -84,7 +89,7 @@ class Event():
             print(self.solve_dir)
             print(self.cloud_url + "index.html")
       else:
-         print("Solution is empty!", event['solution'])
+         print("Solution is empty!")
 
    def parse_filename(self, filename):
       fn = filename.split("/")[-1]
@@ -118,17 +123,51 @@ class Event():
       return(media)
 
    def render_fail_template(self,template_file):
+      ev_header = self.get_template("FlaskTemplates/EventViewerHeader.html")
+      ev_footer = self.get_template("FlaskTemplates/EventViewerFooter.html")
       # Solver failed, or did not run due to missing data or some other reason. 
       # Make a nice debug page so we can :
       #   1) figure out what happened 2) Correct the bad data 3) Re-run/reschedule event run
+      print("KML:")
       template = ""
       fp = open(template_file, "r")
       for line in fp:
          template += line
+
+      if self.obs is not None:
+         self.make_failed_kml() 
+         self.center_lat, self.center_lon = self.center_obs(self.obs)
+         traj_iframe = """<iframe width=100% height=450 src="https://archive.allsky.tv/APPS/dist/maps/index.html?mf={:s}&lat={:s}&lon={:s}"></iframe>""".format(self.kml_link, str(self.center_lat), str(self.center_lon))
+
+         obs_html = self.make_obs_html() 
+      else:
+         obs_html = "<div class='container-lg' style='height: 450'><br><br><h1>Observation data not loaded for this event yet.</h1>"
+         obs_table = self.obs_table()
+         #obs_html = self.make_obs_html() 
+         obs_html += "Waiting for stations to sync needed observations:<ul>\n"
+         obs_html += obs_table
+         obs_html += "</ul></div>"
+         traj_iframe = "Data not loaded."
+         self.kml_link = ""
+
+      template = template.replace("{TRAJECTORY_IFRAME}", traj_iframe)
+      template = template.replace("{KML_LINK}", self.kml_link)
       template = template.replace("{EVENT:EVENT_ID}", self.event_id)
+      template = template.replace("{OBSERVATIONS}", obs_html)
+      template = template.replace("{EV_HEADER}", ev_header)
+      template = template.replace("{EV_FOOTER}", ev_footer)
+
       return(template)
 
-
+   def obs_table(self):
+      html = ""
+      for i in range(0,len(self.stations)):
+         station = self.stations[i]
+         obs_file = self.files[i] 
+         fn = obs_file.split("/")[-1]
+         html += "<li>" + station + " " + fn + "</li>\n"
+     
+      return(html)
    def render_template(self, template_file):
       if self.solve_status != "SUCCESS":
          template_file = template_file.replace(".html", "Fail.html")
@@ -228,11 +267,12 @@ class Event():
 
    def make_obs_html(self):
       
-      html = "<div>"
+      html = "<!-- OBS HTML -->\n"
+      html += "<div class='container'>\n"
+      html += "<div class='row'>\n"
       event = self.event
       if True:
 
-         blocks = []
          for i in range(0, len(event['stations'])):
             temp = ""
             file = event['files'][i]
@@ -242,13 +282,20 @@ class Event():
             year = file[0:4]
             day = file[0:10]
             #link = remote_urls[station_id] + "/meteors/" + station_id + "/" + day + "/" + file + "/"
-            if len(event['obs'][station_id][file]['azs']) >= 2:
-               print(event['obs'][station_id])
-               start_az =  event['obs'][station_id][file]['azs'][0]
-               end_az =  event['obs'][station_id][file]['azs'][-1]
-               start_el =  event['obs'][station_id][file]['els'][0]
-               end_el =  event['obs'][station_id][file]['els'][-1]
-               dur =  len(event['obs'][station_id][file]['els']) / 25
+            if "obs" in event:
+               if len(event['obs'][station_id][file]['azs']) >= 2:
+                  print(event['obs'][station_id])
+                  start_az =  event['obs'][station_id][file]['azs'][0]
+                  end_az =  event['obs'][station_id][file]['azs'][-1]
+                  start_el =  event['obs'][station_id][file]['els'][0]
+                  end_el =  event['obs'][station_id][file]['els'][-1]
+                  dur =  len(event['obs'][station_id][file]['els']) / 25
+               else:
+                  start_az = 9999
+                  end_az = 9999
+                  start_el = 9999
+                  end_el = 9999
+                  dur = 0
             else:
                start_az = 9999
                end_az = 9999
@@ -261,29 +308,26 @@ class Event():
             caption += "<br> " + str(start_az)[0:5] + " / " + str(start_el)[0:5]
             caption += "<br> " + str(end_az)[0:5] + " / " + str(end_el)[0:5]
             caption += "<br> " + str(dur)[0:5] + " sec"
-            temp += "   <div class='container'>\n "
-            temp += "      <img class='image' src=https://archive.allsky.tv/" + station_id + "/METEORS/" + year + "/" + day + "/" + station_id + "_" + prev_file + ">\n"
-            temp+="<div class='middle'><div class='text'>" + caption + "</div></div>"
+            html += "<div class='col-md-4'>\n"
+            html += "<img class='img-responsive' src=https://archive.allsky.tv/" + station_id + "/METEORS/" + year + "/" + day + "/" + station_id + "_" + prev_file + "><br>\n" + caption
+            html += "</div>\n"
 
-            temp += "   </div>\n"
-
-            blocks.append((caption, temp))
-
-         last_id = None
-         for id, block in sorted(blocks, key=lambda x: (x[0]), reverse=False):
-            html += block
-            #if last_id is not None and last_id != id:
-            #   html += "<div style='clear:both'></div><br>"
-            last_id = id
-         #html += "   <div class='spacer'> &nbsp; </div>\n"
-
-         #html += "</div>\n"
+      html += "</div>"
       html += "</div>"
 
       return(html)
 
-   def make_kml(kml_file, points, lines):
+   def make_failed_kml(self):
       import simplekml
+      import geopy
+      from geopy.distance import geodesic
+      #VincentyDistance
+
+      # given: lat1, lon1, b = bearing in degrees, d = distance in kilometers
+
+
+      #lat2, lon2 = destination.latitude, destination.longitude
+
       kml = simplekml.Kml()
       used = {}
 
@@ -292,78 +336,73 @@ class Event():
       # add station points
 
       station_folders = {}
-
-      for point in points:
-         lon,lat,alt,station = point
-         if station not in used and "3DP:" not in station:
+      used = {}
+      pc = 0
+      
+      for station in self.obs:
+         if station not in used:
+            print("ST:", station)
             station_folders[station] = kml.newfolder(name=station)
-            color = colors[pc]
-            pnt = station_folders[station].newpoint(name=station, coords=[(lon,lat,alt)])
-            pnt.description = station
-            pnt.style.labelstyle.color=color
-#simplekml.Color.darkgoldenrod
-            pnt.style.labelstyle.scale = 1
-            pnt.style.iconstyle.icon.href = 'https://maps.google.com/mapfiles/kml/shapes/placemark_circle.png'
-            pnt.style.iconstyle.color=color
-            pnt.altitudemode = simplekml.AltitudeMode.relativetoground
+            for file in self.obs[station]:
+               lat,lon,alt = self.obs[station][file]['loc']
+               color = colors[pc]
+               pnt = station_folders[station].newpoint(name=station, coords=[(lon,lat,alt)])
+               pnt.description = station
+               pnt.style.labelstyle.color=color
+               pnt.style.labelstyle.scale = 1
+               pnt.style.iconstyle.icon.href = 'https://maps.google.com/mapfiles/kml/shapes/placemark_circle.png'
+               pnt.style.iconstyle.color=color
+               pnt.altitudemode = simplekml.AltitudeMode.relativetoground
 
-            used[station] = color
-            pc += 1
-            if pc >= len(colors):
-               pc = 0
-      linestring = {}
-      lc = 0
-
-      # add 3D points
-      for point in points:
-         lon,lat,alt,station = point
-         if "3DP:" in station:
-            tstation, trash = station.split("_")
-            tstation = tstation.replace("3DP:", "")
-            print("S/T STATION:", station, tstation)
-            color = used[tstation]
-            pnt = station_folders[tstation].newpoint(name="", coords=[(lon,lat,alt)])
-            pnt.description = ""
-            pnt.style.labelstyle.color=color
-            pnt.style.labelstyle.scale = 1
-            pnt.style.iconstyle.icon.href = 'https://maps.google.com/mapfiles/kml/shapes/placemark_circle.png'
-            pnt.style.iconstyle.color=color
-            pnt.altitudemode = simplekml.AltitudeMode.relativetoground
-
-            #used[station] = color
-            pc += 1
-            if pc >= len(colors):
-               pc = 0
-
-      line_folder = kml.newfolder(name="Trajectory")
-      for line in lines:
-         (lon1,lat1,alt1,lon2,lat2,alt2,line_desc) = line
-         if "vect" in line_desc:
-            linestring[lc] = line_folder.newlinestring(name="")
-         else:
-            linestring[lc] = line_folder.newlinestring(name=line_desc)
-         linestring[lc].coords = [(lon1,lat1,alt1),(lon2,lat2,alt2)]
-         linestring[lc].altitudemode = simplekml.AltitudeMode.relativetoground
-
-         if "SS" in line_desc:
-            linestring[lc].extrude = 0
-            linestring[lc].style.linestyle.color=simplekml.Color.red
-            linestring[lc].style.linestyle.width=2
-         elif "WMPL" in line_desc:
-            linestring[lc].style.linestyle.color=simplekml.Color.darkred
-            linestring[lc].style.linestyle.width=5
-
-         else:
-            print("BLUE!")
-            linestring[lc].extrude = 0
-            if "end" in line_desc:
-               linestring[lc].style.linestyle.color=simplekml.Color.goldenrod
-            else:
-               linestring[lc].style.linestyle.color=simplekml.Color.darkgoldenrod
-         lc += 1
-      kml.save(kml_file)
-      print("saved", kml_file)
+               used[station] = color
 
 
+               if "azs" in self.obs[station][file]:
+                  azs= self.obs[station][file]['azs']
+                  print(station, azs[0])
+                  print(station, azs[-1])
+
+                  origin = geopy.Point(lat, lon)
+                  destination_start = geodesic(kilometers=300).destination(origin, azs[0])
+                  destination_end = geodesic(kilometers=300).destination(origin, azs[-1])
+                  print("DEST:", destination_start.latitude, destination_start.longitude)
+                  print("DEST:", destination_end.latitude, destination_end.longitude)
+                  line_desc = station + " start"
+                  linestring = kml.newlinestring(name=line_desc)
+                  linestring.coords = [(lon,lat,alt),(destination_start.longitude,destination_start.latitude,alt)]
+                  linestring.altitudemode = simplekml.AltitudeMode.relativetoground
+                  linestring.extrude = 0
+
+                  line_desc = station + " end"
+                  linestring = kml.newlinestring(name=line_desc)
+                  linestring.coords = [(lon,lat,alt),(destination_end.longitude,destination_end.latitude,alt)]
+                  linestring.altitudemode = simplekml.AltitudeMode.relativetoground
+                  linestring.extrude = 0
+
+
+
+
+               else:
+                  print(station, "NO MFD", self.obs[station][file].keys())
+                  azs = None
+               pc += 1
+
+      kml.save(self.kml_file)
+      if cfe(self.cloud_event_dir,1) == 0:
+         os.makedirs(self.cloud_event_dir)
+      cmd = "cp " + self.kml_file + " " + self.cloud_event_dir
+      print("CMD:", cmd)
+      os.system(cmd)
+
+
+      print(self.kml_file)
+      return(kml.kml())
+
+   def get_template(self, template_file):
+      temp = ""
+      fp = open(template_file, "r")
+      for line in fp:
+         temp += line
+      return(temp)
 
 #EV = Event(event_id="20210402_013425")

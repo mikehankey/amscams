@@ -14,10 +14,10 @@ from sklearn.datasets import make_regression
 
 from PIL import ImageFont, ImageDraw, Image, ImageChops
 
-from DisplayFrame import DisplayFrame
-from Detector import Detector
-from Camera import Camera
-from Calibration import Calibration
+from Classes.DisplayFrame import DisplayFrame
+from Classes.Detector import Detector
+from Classes.Camera import Camera
+from Classes.Calibration import Calibration
 from lib.PipeAutoCal import gen_cal_hist,update_center_radec, get_catalog_stars, pair_stars, scan_for_stars, calc_dist, minimize_fov, AzEltoRADec , HMS2deg, distort_xy, XYtoRADec, angularSeparation
 from lib.PipeUtil import load_json_file, save_json_file, cfe, check_running
 from lib.FFFuncs import best_crop_size, ffprobe
@@ -31,6 +31,12 @@ class EventManager():
       self.day = day
       self.month = month
       self.year = year
+      self.data_dir = "/mnt/ams2/"
+      self.all_events_summary_file = self.data_dir + "/EVENTS/ALL_EVENTS_SUMMARY.json"
+      self.all_orbits_file = self.data_dir + "/EVENTS/ALL_ORBITS.json"
+      self.all_trajectories_file = self.data_dir + "/EVENTS/ALL_TRAJECTORIES.json"
+      self.all_radiants_file = self.data_dir + "/EVENTS/ALL_RADIANTS.json"
+
       if year is not None:
          self.batch_mode = "year"
          self.cloud_dir = "/mnt/archive.allsky.tv/EVENTS/" + self.year + "/" 
@@ -49,10 +55,18 @@ class EventManager():
          self.cloud_file_index = self.cloud_dir + "cloud_event_files_" + self.year + "_" + self.month + "_" + self.day  
       self.local_dir = self.cloud_dir.replace("/archive.allsky.tv/", "/ams2/")
       self.local_file_index = self.cloud_file_index.replace("/archive.allsky.tv/", "/ams2/")
+      self.all_events_dir = "/mnt/ams2/EVENTS/"
+      self.all_events_traj = "/mnt/ams2/EVENTS/ALL_TRAJECTORIES.json"
+      self.all_events_traj_kml = "/mnt/ams2/EVENTS/ALL_TRAJECTORIES.kml"
+      self.cloud_all_events_traj_kml = "/mnt/archive.allsky.tv/EVENTS/ALL_TRAJECTORIES.kml"
+      self.all_events_orb = "/mnt/ams2/EVENTS/ALL_ORBITS.json"
+      self.cloud_event_dir = "/mnt/archive.allsky.tv/EVENTS/"
 
    def controller(self):
       if self.cmd is None:
          return()
+      if self.cmd == "all_traj":
+          cloud_files = self.make_all_traj_kml()
       if self.cmd == "cloud_files":
           cloud_files = self.update_html_index()
       if self.cmd == "de" or self.cmd == "define_events":
@@ -61,6 +75,7 @@ class EventManager():
           self.all_events_index_new()
       if self.cmd == "aer" or self.cmd == "all_events_report":
           self.all_events_report()
+          self.make_period_files()
       if self.cmd == "sus" or self.cmd == "solve_unsolved":
           self.solve_unsolved_events()
       if self.cmd == "re" or self.cmd == "reconcile_events":
@@ -204,6 +219,9 @@ class EventManager():
          unsolved = 0
          day_total = 0
          for data in evd:
+            if "solution" not in data:
+               data['solve_status'] = "UNSOLVED"
+               status = "UNSOLVED"
             if "solve_status" in data:
                if "SUCCESS" in data['solve_status']:
                   solved += 1
@@ -270,6 +288,56 @@ class EventManager():
       save_json_file("/mnt/ams2/EVENTS/ALL_EVENTS_SUMMARY.json", events_summary)
 
 
+   def make_all_traj_kml(self):
+      import simplekml
+      import geopy
+      from geopy.distance import geodesic
+      all_traj = load_json_file(self.all_events_traj)
+      for traj in all_traj:
+         print(traj)
+
+
+      
+
+      # given: lat1, lon1, b = bearing in degrees, d = distance in kilometers
+
+
+      #lat2, lon2 = destination.latitude, destination.longitude
+
+      kml = simplekml.Kml()
+      used = {}
+
+      pc = 0
+      colors = ['ff0b86b8', 'ffed9564', 'ff0000ff', 'ff00ffff', 'ffff0000', 'ff00ff00', 'ff800080', 'ff0080ff', 'ff336699', 'ffff00ff' ]
+      # add station points
+
+      station_folders = {}
+      used = {}
+      pc = 0
+
+      for tj in all_traj:
+#{'end_ele': 65463.02962164887, 'v_avg': 19375.3589393399, 'end_lat': 40.2306482833715, 'start_lon': -76.75017937323105, 'start_lat': 40.20754500915026, 'start_ele': 83727.58043208688, 'v_init': 20026.277050047665, 'end_lon': -76.87984925733045}
+         if tj['start_ele'] > 140000 or tj['end_ele'] > 140000 or tj['start_ele'] < 60000 or tj['end_ele'] < 5000:
+            continue
+         color = colors[pc]
+         line_desc = tj['event_id'] 
+         linestring = kml.newlinestring(name=line_desc)
+         linestring.coords = [(tj['start_lon'],tj['start_lat'],tj['start_ele']),(tj['end_lon'],tj['end_lat'],tj['end_ele'])]
+         linestring.altitudemode = simplekml.AltitudeMode.relativetoground
+         linestring.extrude = 1
+
+      kml.save(self.all_events_traj_kml)
+      print("SAVED:", self.all_events_traj_kml)
+      if cfe(self.cloud_event_dir,1) == 0:
+         os.makedirs(self.cloud_event_dir)
+      cmd = "cp " + self.all_events_traj_kml + " " + self.cloud_all_events_traj_kml
+      print("CMD:", cmd)
+      os.system(cmd)
+
+
+      print(self.all_events_traj_kml)
+      return(kml.kml())
+
    def all_events_report(self):
       c = 0
       print("All events report")
@@ -277,7 +345,7 @@ class EventManager():
       all_events = load_json_file(all_events_file)
       print(len(all_events), "Total Events")
       events_summary = []
-      all_orbits = []
+      all_orbits = {}
       all_trajectories = []
       all_radiants = []
       all_showers = []
@@ -302,18 +370,31 @@ class EventManager():
                continue
             if "orb" in event['solution']:
                orb = event['solution']['orb']
-               all_orbits.append(orb)
+               print("SOL:", event['solution'])
+               orb['event_id'] = event['event_id']
+               orb['vel_init'] = event['solution']['traj']['v_init']
+               orb['event_datetime'] = min(event['start_datetime'])
+               show_orb = self.make_show_orb(orb)
+               if orb['T'] == 0 and orb['i'] == 0:
+                  print("BAD ORB:", orb)
+               else:
+                  all_orbits[event['event_id']] = show_orb
             else:
                orb = None
 
             if "traj" in event['solution']:
                traj = event['solution']['traj']
+               traj['event_id'] = event['event_id']
                all_trajectories.append(traj)
             else:
                traj = None
 
+ 
             if "rad" in event['solution']:
                radiants = event['solution']['rad']
+               radiants['event_id'] = event['event_id']
+               radiants['IAU'] = event['solution']['shower']['shower_code']
+               all_radiants.append(radiants)
             else:
                radiants = None
                all_radiants.append(radiants)
@@ -360,6 +441,38 @@ class EventManager():
       save_json_file("/mnt/ams2/EVENTS/ALL_SHOWERS.json", all_showers)
       save_json_file("/mnt/ams2/EVENTS/ALL_RADIANTS.json", all_radiants)
       print("Saved json files in /mnt/ams2/EVENTS")
+
+   def make_period_files (self):
+      if cfe(self.all_events_summary_file) == 1:
+         self.all_events = load_json_file(self.all_events_summary_file)
+      if cfe(self.all_orbits_file) == 1:
+         self.all_orbits = load_json_file(self.all_orbits_file)
+      if cfe(self.all_trajectories_file) == 1:
+         self.all_trajectories = load_json_file(self.all_trajectories_file)
+      if cfe(self.all_radiants_file) == 1:
+         self.all_radiants = load_json_file(self.all_radiants_file)
+   
+
+
+   def make_show_orb(self, orb):
+      print("ORB:", orb )
+      sorb = {}
+      #sorb['color'] = "red"
+      sorb['name'] = str(orb['event_id'])
+      sorb['epoch'] = str(orb['jd_ref'])
+      sorb['utc_date'] = str(orb['event_datetime'])
+      sorb['T'] = str(orb['jd_ref'])
+      sorb['vel'] = str(orb['vel_init'])
+      sorb['a'] = str(orb['a'])
+      sorb['e'] = str(orb['e'])
+      sorb['I'] = str(orb['i'])
+      sorb['Peri'] = str(orb['peri'])
+      sorb['Node'] = str(orb['node'])
+      sorb['q'] = str(orb['q'])
+      sorb['M'] = str(orb['mean_anomaly'])
+      sorb['P'] = str(orb['T'])
+      return(sorb)
+
 
    def parse_event_id(self, event_id):
       Y = event_id[0:4]

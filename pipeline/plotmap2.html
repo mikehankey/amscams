@@ -1,0 +1,194 @@
+
+
+<head>
+	<!-- Load plotly.js into the DOM -->
+<script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+
+	<script src='https://cdn.plot.ly/plotly-latest.min.js'></script>
+<style>
+body {
+  background-color: black;
+  color: white;
+  font: 1.3rem Inconsolata, monospace;
+}
+g.pointtext {
+display: none;
+}
+
+</style>
+AllSky.tv Meteor Radiant Viewer
+
+</head>
+
+<body>
+	<div id='myDiv' style="border: 1px #000000 solid; width: 100%; height:600"><!-- Plotly chart will be drawn inside this DIV --></div>
+</body>
+
+<script>
+
+var url='/test-data.json';
+
+d3.json(url, function(error, fdata) {
+  if (error) return console.warn(error);
+  lons = fdata['x']
+  lats = fdata['y']
+  colors = fdata['c']
+  positions = fdata['p']
+  names = fdata['n']
+  ptitle = fdata['t']
+
+//24 fields needed to draw grid ticks, the rest is data
+var data = [{
+    type: 'scattergeo',
+    mode: 'markers+text',
+    name: 'tick marks',
+    text: [
+         '0','30','60','90','120','150','180','210','240','270','300','330',
+         '30', '60', '90', '-30', '-60', '-90',
+         '30', '60', '90', '-30', '-60', '-90'
+    ],
+    lon: [
+         0,30,60,90,120,150,180,210,240,270,300,330,
+         270,270,270,270,270,270,
+         90,90,90,90,90,90
+    ],
+    lat: [
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        30, 60 , 90, -30, -60 , -90,
+        30, 60 , 90, -30, -60 , -90,
+    ],
+    marker: {
+        size: 6,
+        color: [
+           'rgba(255,255,255,0)',
+           'rgba(255,255,255,0)',
+           'rgba(255,255,255,0)',
+           'rgba(255,255,255,0)',
+           'rgba(255,255,255,0)',
+           'rgba(255,255,255,0)',
+           'rgba(255,255,255,0)',
+           'rgba(255,255,255,0)',
+           'rgba(255,255,255,0)',
+           'rgba(255,255,255,0)',
+           'rgba(255,255,255,0)',
+           'rgba(255,255,255,0)',
+           'rgba(255,255,255,0)',
+           'rgba(255,255,255,0)',
+           'rgba(255,255,255,0)',
+           'rgba(255,255,255,0)',
+           'rgba(255,255,255,0)',
+           'rgba(255,255,255,0)',
+           'rgba(255,255,255,0)',
+           'rgba(255,255,255,0)',
+           'rgba(255,255,255,0)',
+           'rgba(255,255,255,0)',
+           'rgba(255,255,255,0)',
+           'rgba(255,255,255,0)'
+        ],
+        line: {
+            width: 0
+        }
+    },
+    textposition: [
+        'top left', 'top left', 'top left', 'top left', 'top left',
+        'top left', 'top left', 'top left', 'top left', 'top left',
+        'top left', 'top left', 
+        'top left', 'top left', 'bottom left', 'top left', 'top left', 'top left',
+        'top left', 'top left', 'bottom left', 'top left', 'top left', 'top left',
+        'top left', 'top left', 'bottom left', 'top left', 'top left', 'top left'
+    ],
+},
+{
+    type: 'scattergeo',
+    name: 'AS7',
+    mode: 'markers',
+    text: names,
+    lon: lons,
+    lat: lats,
+    marker: {
+        size: 6,
+        color: colors,
+        line: {
+            width: 0
+        }
+    },
+    textposition: positions,
+}
+];
+
+
+config = {
+    displayModeBar: false 
+}
+
+
+var layout = {
+    title: ptitle,
+    paper_bgcolor: 'rgb(0,0,0)',
+    font: {
+        family: 'Inconsolata, monospace',
+        color: '#ffffff',
+        size: 6
+    },
+    titlefont: {
+        size: 16
+    },
+    margin: {
+       l: 50,
+       r: 50,
+       b: 50,
+       t: 50,
+       pad: 4
+    },
+
+    geo: {
+        autorange: 'reversed',
+        bgcolor: 'rgb(0,0,0)',
+        scope: 'world',
+        projection: {
+                type: 'mollweide',
+               
+                rotation: {
+                      lat: 0,
+                      lon: 270,
+                      roll:  180 
+                },
+            },
+        center_lon: 0,
+        resolution: 100,
+        lonaxis: {
+            'range': [0,360],
+            'showgrid': true,
+            'gridcolor': 'rgb(255,255,255)'
+        },
+        lataxis: {
+            'showgrid': true,
+            'gridcolor': 'rgb(255,255,255)',
+        },
+        color: 'rgb(255,255,255)',
+        visible: false,
+        showframe: true,
+        showrivers: false,
+        rivercolor: '#fff000',
+        showlakes: false,
+        lakecolor: '#fff000',
+        showland: false,
+        landcolor: '#EAE000',
+        countrycolor: '#EAE000',
+        countrywidth: 0,
+        subunitcolor: '#EAE000'
+    },
+    xaxis: {
+        showticklabels: true,
+        autorange: 'reversed'
+    },
+    yaxis: {
+        showticklabels: true
+    }
+};
+datas = data
+fig = Plotly.newPlot('myDiv', datas, layout,config);
+
+});
+
+</script>
