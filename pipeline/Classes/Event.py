@@ -27,6 +27,7 @@ from lib.FFFuncs import best_crop_size, ffprobe
 class Event():
    def __init__(self, event_id):
       self.obs = None 
+      self.event = None
       self.event_id = event_id
       self.kml_link = None
       self.orb_link = None
@@ -52,8 +53,15 @@ class Event():
          if ev['event_id'] == event_id:
             event = ev
             self.event = ev
-      self.event_start_time = min(event['start_datetime'])
-      self.event['event_start_time'] = self.event_start_time
+      if self.event is not None:
+         self.event_start_time = min(event['start_datetime'])
+         self.event['event_start_time'] = self.event_start_time
+      else:
+         event = {}
+         event['stations'] = []
+         event['files'] = []
+         event['start_datetime'] = []
+         self.event = event
       if "solve_status" in event: 
          self.solve_status = event['solve_status']
       else:

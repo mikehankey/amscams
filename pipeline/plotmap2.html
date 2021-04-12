@@ -16,17 +16,16 @@ display: none;
 }
 
 </style>
-AllSky.tv Meteor Radiant Viewer
 
 </head>
 
 <body>
-	<div id='myDiv' style="border: 1px #000000 solid; width: 100%; height:600"><!-- Plotly chart will be drawn inside this DIV --></div>
+	<div id='myDiv' style="border: 1px #FFFFFF solid; width: 100%; height:600"><!-- Plotly chart will be drawn inside this DIV --></div>
 </body>
 
 <script>
 
-var url='/test-data.json';
+var url='https://archive.allsky.tv/EVENTS/PLOTS_ALL_RADIANTS.json';
 
 d3.json(url, function(error, fdata) {
   if (error) return console.warn(error);
@@ -44,8 +43,8 @@ var data = [{
     name: 'tick marks',
     text: [
          '0','30','60','90','120','150','180','210','240','270','300','330',
-         '30', '60', '90', '-30', '-60', '-90',
-         '30', '60', '90', '-30', '-60', '-90'
+         '-30', '-60', '-90', '30', '60', '90',
+         '-30', '-60', '-90', '30', '60', '90'
     ],
     lon: [
          0,30,60,90,120,150,180,210,240,270,300,330,
@@ -118,12 +117,14 @@ var data = [{
 
 
 config = {
-    displayModeBar: false 
+    displayModeBar: false,
+    responsive: true
 }
 
 
 var layout = {
     title: ptitle,
+    autosize: true,
     paper_bgcolor: 'rgb(0,0,0)',
     font: {
         family: 'Inconsolata, monospace',
