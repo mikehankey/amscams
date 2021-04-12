@@ -125,6 +125,11 @@ class Events():
 
       return(template)
 
+   def make_missing_data_list(self):
+
+      for data in self.select_data:
+         print(data)
+
    def get_template(self, template_file):
       temp = ""
       fp = open(template_file, "r")
