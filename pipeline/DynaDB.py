@@ -676,10 +676,15 @@ def sync_db_day(dynamodb, station_id, day):
    for item in items:
       db_meteors[item['sd_video_file']] = {}
       db_meteors[item['sd_video_file']]['dyna'] = 1
+      if "meteor_frame_data" not in item:
+         db_meteors[item['sd_video_file']]['meteor_frame_data'] = item['meteor_frame_data']
+      else:
+         db_meteors[item['sd_video_file']]['meteor_frame_data'] = []
       if "revision" not in item:
          db_meteors[item['sd_video_file']]['revision'] = 1
       else:
          db_meteors[item['sd_video_file']]['revision'] = item['revision']
+   #   if "meteor_frame_data" in item:
 
    files = glob.glob("/mnt/ams2/meteors/" + day + "/*.json")   
    meteors = []
@@ -726,6 +731,10 @@ def sync_db_day(dynamodb, station_id, day):
          insert_meteor_obs(dynamodb, station_id, meteor_file)
       else:
          print(lkey, "GOOD: exists in the remote db." )
+         print("DBM:", lkey, db_meteors[lkey])
+         print("LM:", lkey, local_meteors[lkey])
+         if len(db_meteors[lkey]['meteor_frame_data']) == 0:
+            print("MISSING MFD!", lkey)
 
    # Do all of the revision numbers match between the local and db meteors?
    # If the local revision is higher than the remote, we need to push the updates to the DB

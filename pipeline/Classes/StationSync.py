@@ -76,6 +76,7 @@ class StationSync():
    def sync_missing_files(self):
       missing_dates = {}
       missing_reds = {}
+      missing_files = []
       missing_url = "https://allsky.tv/API/" + self.station_id + "/MISSING_DATA/"
       hdr = {'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.11 (KHTML, like Gecko) Chrome/23.0.1271.64 Safari/537.11',
           'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
@@ -96,7 +97,7 @@ class StationSync():
             continue
          station, ob_file = line.split(":")
          date = ob_file[0:10]
-
+         missing_files.append(ob_file)
          if date not in missing_dates:
             missing_dates[date] = 1
          else:
@@ -123,6 +124,11 @@ class StationSync():
             self.date = date
             print("RESYNCING DAY:", self.date)
             self.sync_day()
+
+      for ob_file in missing_files:
+         print(ob_file) 
+
+
 
 
    def sync_month(self):
@@ -171,7 +177,7 @@ class StationSync():
 
 
    def sync_day(self):
-      
+      self.force = 1   
       sync_log = "/mnt/ams2/meteors/" + self.date + "/sync.txt"
       print("SYNC DAY:", self.date)
 
