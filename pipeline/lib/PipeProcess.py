@@ -151,7 +151,7 @@ def run_jobs(json_conf):
 
 
    cmds = []
-   #cmds.append(('all', "Monitor", "cd /home/ams/amscams/pipeline; ./monitor.py "))
+   cmds.append(('all', "Monitor", "cd /home/ams/amscams/pipeline; ./monitor.py "))
    cmds.append(('all', "Clean disk / Purge old files", "cd /home/ams/amscams/pythonv2; ./doDay.py cd"))
    cmds.append(('day', "Clean disk / Purge old files", "cd /home/ams/amscams/pipeline; ./Process.py rm_corrupt"))
    cmds.append(('day', "Make Meteor Index", "cd /home/ams/amscams/pipeline; ./Process.py mmi_all"))
