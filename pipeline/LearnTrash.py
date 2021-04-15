@@ -84,7 +84,7 @@ objects = process_trash(video_file)
 
 for obj_id in objects:
   objects[obj_id] = analyze_object(objects[obj_id])
-
+  #print(objects[obj_id])
 
 for obj_id in objects:
    if objects[obj_id]['report']['meteor'] == 1:
@@ -95,8 +95,8 @@ for obj_id in objects:
       max_y = max(objects[obj_id]['oys'])  
       w = max_x-min_x
       h = max_y-min_y
-      
-      crop_video("/mnt/ams2/trash/test/2021_02_13_01_48_01_000_010320-trim-1396.mp4", "/mnt/ams2/trash/test/2021_02_13_01_48_01_000_010320-trim-1396_crop.mp4", min_x,min_y,w,h)
-      print("/mnt/ams2/trash/test/2021_02_13_01_48_01_000_010320-trim-1396.mp4", "/mnt/ams2/trash/test/2021_02_13_01_48_01_000_010320-trim-1396_crop.mp4", min_x,min_y,w,h)
+      #print(obj_id, objects[obj_id]['oxs'], objects[obj_id]['oys'])      
+      crop_video("/mnt/ams2/trash/test/2021_02_13_01_48_01_000_010320-trim-1396.mp4", "/mnt/ams2/trash/test/2021_02_13_01_48_01_000_010320-trim-1396_crop" + str(obj_id) + ".mp4", min_x,min_y,w,h)
+      print("/mnt/ams2/trash/test/2021_02_13_01_48_01_000_010320-trim-1396.mp4", "/mnt/ams2/trash/test/2021_02_13_01_48_01_000_010320-trim-1396_crop" + str(obj_id) + ".mp4", min_x,min_y,w,h)
 
 
