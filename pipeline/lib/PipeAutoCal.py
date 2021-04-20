@@ -315,6 +315,7 @@ def make_default_cal(json_conf, cam ):
    last_best = None
    first_cal_row = None
    last_cal_row = None
+   row = None
    for row in calibs:
       cam_id, day, az, el, pos, pxs, res = row
       if last_row is None:
@@ -334,6 +335,11 @@ def make_default_cal(json_conf, cam ):
       last_row = row
       last_best = row
    last_cal_row = row
+
+   if last_cal_row is None:
+      # this must be a new cam fail/return
+      return()
+
    cam_moved.append(row)
    best_rows = sorted(best_rows, key=lambda x: x[1], reverse=True)
    worst_rows = sorted(best_rows, key=lambda x: x[1], reverse=True)
