@@ -295,7 +295,7 @@ def add_trash_to_ldb(js, ldb, force=0):
                      cv2.imwrite(crop_stack, stack_img)
                   else:
                      print("failed to add, stack img bad.")
-                     return() 
+                     return(ldb) 
                   print("Saved stack crop:", crop_stack)
                   if SHOW == 1:
                      cv2.imshow('pepe', stack_img)
