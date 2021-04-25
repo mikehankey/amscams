@@ -76,6 +76,8 @@ class EventManager():
       if self.cmd == "aer" or self.cmd == "all_events_report":
           self.all_events_report()
           self.make_period_files()
+          cloud_files = self.make_all_traj_kml()
+          os.system("python3 PLT.py")
       if self.cmd == "sus" or self.cmd == "solve_unsolved":
           self.solve_unsolved_events()
       if self.cmd == "re" or self.cmd == "reconcile_events":
@@ -191,6 +193,10 @@ class EventManager():
                else:
                   end_d = str(year) + "_12_31"  
                   end_dt = datetime.datetime.strptime(end_d, "%Y_%m_%d")
+               day_dt = datetime.datetime(day_dt.year, day_dt.month, day_dt.day)
+               end_dt = datetime.datetime(end_dt.year, day_dt.month, day_dt.day)
+
+               print(type(day_dt), type(end_dt))
                if day_dt <= end_dt:
                   date_str = day_dt.strftime("%Y_%m_%d")
                   y,m,d = date_str.split("_")
@@ -279,11 +285,10 @@ class EventManager():
             else:
                solve_info = {}
             solve_info['last_event_run'] = now
-
+            print("SAVING SOLVE INFO FILES")
             save_json_file(solve_info_file, solve_info)
       save_json_file("/mnt/ams2/EVENTS/EVENTS_DAY_SUMMARY.json", day_summary)
       save_json_file("/mnt/ams2/EVENTS/ALL_EVENTS.json", all_events)
-
 
       save_json_file("/mnt/ams2/EVENTS/ALL_EVENTS_SUMMARY.json", events_summary)
 
@@ -440,6 +445,18 @@ class EventManager():
       save_json_file("/mnt/ams2/EVENTS/ALL_TRAJECTORIES.json", all_trajectories)
       save_json_file("/mnt/ams2/EVENTS/ALL_SHOWERS.json", all_showers)
       save_json_file("/mnt/ams2/EVENTS/ALL_RADIANTS.json", all_radiants)
+
+      cmd = "cp /mnt/ams2/EVENTS/ALL_EVENTS_SUMMARY.json /mnt/archive.allsky.tv/EVENTS/"
+      os.system(cmd)
+      cmd = "cp /mnt/ams2/EVENTS/ALL_ORBITS.json /mnt/archive.allsky.tv/EVENTS/"
+      os.system(cmd)
+      cmd = "cp /mnt/ams2/EVENTS/ALL_TRAJECTORIES.json /mnt/archive.allsky.tv/EVENTS/"
+      os.system(cmd)
+      cmd = "cp /mnt/ams2/EVENTS/ALL_SHOWERS.json /mnt/archive.allsky.tv/EVENTS/"
+      os.system(cmd)
+      cmd = "cp /mnt/ams2/EVENTS/ALL_RADIANTS.json /mnt/archive.allsky.tv/EVENTS/"
+      os.system(cmd)
+
       print("Saved json files in /mnt/ams2/EVENTS")
 
    def make_period_files (self):
@@ -491,7 +508,7 @@ class EventManager():
       unsolved = []
       for event in events:
          status, event_id, statrt_datetime, stations, files, shower, lvd_status,cvd_status= event
-         if status == "NOT SOLVED":
+         if status == "UNSOLVED":
             unsolved.append(event)
       print(len(unsolved), "unsolved events.")
 

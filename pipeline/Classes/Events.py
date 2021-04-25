@@ -35,6 +35,17 @@ class Events():
       self.cloud_event_dir = "/mnt/archive.allsky.tv/EVENTS/"
       self.all_events_file = self.event_dir + "ALL_EVENTS.json"
 
+   def status(self):
+      self.all_events = load_json_file("/mnt/ams2/EVENTS/ALL_EVENTS.json")
+      self.all_events = sorted(self.all_events, key=lambda x: (x['event_id']), reverse=True)
+      for event in self.all_events:
+         if event['solve_status'] == 'UNSOLVED' :
+            print(event['event_id'], event['solve_status'] , event)
+            cmd = "./solveWMPL.py se " + event['event_id'] + " " 
+            print(cmd)
+            os.system(cmd)
+
+
    def load_events(self):
       #fv['solve_status']  # 0 = not run, 1 = solved, -1 = failed -2 missing reductions
       #fv['start_date']

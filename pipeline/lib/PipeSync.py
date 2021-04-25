@@ -130,7 +130,7 @@ def sync_meteor_preview_all(day,json_conf ):
       os.makedirs(cloud_dir)
 
 
-   cloud_prev_files = glob.glob(cloud_dir + "*prev.jpg")
+   cloud_prev_files = glob.glob(cloud_dir + "*prev*")
    print(cloud_dir)
    in_cloud = {}
    for cf in cloud_prev_files:
@@ -149,17 +149,24 @@ def sync_meteor_preview_all(day,json_conf ):
       if "multi_station_event" in mj:
          fn = fn.replace(".json", "-prev.jpg")
          fn = amsid + "_" + fn 
-         if fn in in_cloud:
-            print("File syncd already:", fn)
+         vid_fn = fn.replace(".json", "-prev.jpg")
+         vid_fn = amsid + "_" + fn 
+         if fn in in_cloud and vid_fn in in_cloud:
+            print("Files syncd already:", fn)
          else:
             print("File not syncd already:", fn)
-            sync_meteor_preview(mm, json_conf, 0)
+            tags = ""
+            if fn not in in_cloud:
+               tags += "prev.jpg"
+            if fn not in in_cloud:
+               tags += "prev-vid.mpg"
+            sync_meteor_preview(mm, json_conf, 0, tags)
 
    cmd = "rsync -av " + lcdir + " " + cloud_dir
    os.system(cmd)
 
 
-def sync_meteor_preview(meteor_file,json_conf,ccd=1 ):
+def sync_meteor_preview(meteor_file,json_conf,ccd=1,tags=""):
    if "/mnt/ams2/meteors" not in meteor_file:
       day = meteor_file[0:10]
       meteor_file = meteor_file.replace(".mp4", "")
@@ -169,15 +176,19 @@ def sync_meteor_preview(meteor_file,json_conf,ccd=1 ):
    amsid = json_conf['site']['ams_id']
    stack = meteor_file.replace(".json", "-stacked.jpg")
    prev = stack.replace("-stacked.jpg", "-prev.jpg")
+   prev_vid = stack.replace("-stacked.jpg", "-prev-vid.mp4")
    prev_fn,ddd = fn_dir(prev)
+   prev_vid_fn,ddd = fn_dir(prev_vid)
    prev_dir = ddd + "/cloud_files/"
    prev = prev_dir + amsid + "_" + prev_fn
+   prev_vid = prev_dir + amsid + "_" + prev_vid_fn
    if cfe(prev_dir, 1) == 0:
       os.makedirs(prev_dir)
    year = prev_fn[0:4]
    day = prev_fn[0:10]
    cloud_dir = "/mnt/archive.allsky.tv/" + amsid + "/METEORS/" + year + "/" + day + "/" 
    cloud_prev = cloud_dir + prev_fn
+   cloud_prev_vid = cloud_dir + prev_vid_fn
    if cfe(prev) == 0:
       img = cv2.imread(stack)
       img =  cv2.resize(img, (320,180))
@@ -186,6 +197,13 @@ def sync_meteor_preview(meteor_file,json_conf,ccd=1 ):
       cmd = "convert " + prev + " -quality 80 " + prev_tmp 
       os.system(cmd)
       os.system("mv " + prev_tmp + " " + prev)
+   if cfe(prev_vid) == 0:
+      print("MAKE PREVIEW VID:", prev_vid)
+      from lib.FFFuncs import resize_video
+      vid_file = meteor_file.replace(".json", ".mp4")
+      resize_video(vid_file, prev_vid, 320, 180, 28)
+      print(prev_vid)
+
    #if cfe(prev) == 0:
    #   os.system(cmd)
    #   print(cmd)
@@ -194,9 +212,14 @@ def sync_meteor_preview(meteor_file,json_conf,ccd=1 ):
       if cfe(cloud_dir,1) == 0:
          os.makedirs(cloud_dir)
    #cmd = "rsync -auv " + prev + " " + cloud_dir 
-   cmd = "cp " + prev + " " + cloud_dir 
-   print(cmd)
-   #os.system(cmd)
+   if "prev.jpg" in tags:
+      cmd = "cp " + prev + " " + cloud_dir 
+      print(cmd)
+   if "prev-vid.mp4" in tags:
+      cmd = "cp " + prev_vid + " " + cloud_dir 
+      print(cmd)
+
+
 
 def sync_index_day(day,json_conf ):
    amsid = json_conf['site']['ams_id']

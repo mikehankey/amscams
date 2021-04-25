@@ -109,24 +109,26 @@ class Plotter():
       save_json_file("/mnt/ams2/EVENTS/PLOTS_ALL_RADIANTS.json", plot_data)
       cmd = "cp /mnt/ams2/EVENTS/PLOTS_ALL_RADIANTS.json /mnt/archive.allsky.tv/EVENTS/PLOTS_ALL_RADIANTS.json"
       os.system(cmd)
-      fig = plt.figure(figsize=(12,9))
-      ax = fig.add_subplot(111, projection="mollweide")
-      ax.scatter(ap_ras, ap_decs, marker='+', color='red')
-      plt.savefig("/mnt/ams2/test3.png")
-      fig.clear()
 
-      fig = plt.figure(figsize=(12,9))
-      ax = fig.add_subplot(111, projection="mollweide" )
-      tick_labels = np.array([60, 30, 0, 330, 300, 270, 240, 210,180,150,120,90])
-      ax.set_xticklabels(tick_labels)
-      ax.scatter(hl_ras, hl_decs, marker='+', color='red')
-      ax.grid(True)
-      title = "Sun-centererd geocentric ecliptic coordinates"
-      suptitle = "Jan 1, 2021 - Apr 9, 2021 \n" + str(len(hl_ras)) + " meteors"
-      plt.title(title)
-      plt.suptitle(suptitle, y=.2)
-      plt.savefig("/mnt/ams2/test4.png")
-      fig.clear()
+      #fig = plt.figure(figsize=(12,9))
+      #ax = fig.add_subplot(111, projection="mollweide")
+      #ax.scatter(ap_ras, ap_decs, marker='+', color='red')
+      #plt.savefig("/mnt/ams2/test3.png")
+      #fig.clear()
+
+      #fig = plt.figure(figsize=(12,9))
+      #ax = fig.add_subplot(111, projection="mollweide" )
+      #tick_labels = np.array([60, 30, 0, 330, 300, 270, 240, 210,180,150,120,90])
+
+      #ax.set_xticklabels(tick_labels)
+      #ax.scatter(hl_ras, hl_decs, marker='+', color='red')
+      #ax.grid(True)
+      #title = "Sun-centererd geocentric ecliptic coordinates"
+      #suptitle = "Jan 1, 2021 - Apr 9, 2021 \n" + str(len(hl_ras)) + " meteors"
+      #plt.title(title)
+      #plt.suptitle(suptitle, y=.2)
+      #plt.savefig("/mnt/ams2/test4.png")
+      #$fig.clear()
 
 
 
