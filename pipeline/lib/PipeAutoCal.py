@@ -4258,9 +4258,14 @@ def autocal(image_file, json_conf, show = 0, heal_only=0):
    if cfe(image_file) == 0:
       return ()
    #stars = get_image_stars(image_file, None, json_conf,0)
-   img = cv2.imread(image_file)
-
-   gray_img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+   print("IMAGE FILE:", image_file)
+   try:
+      img = cv2.imread(image_file)
+      gray_img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+   except:
+      print("BAD FILE")
+      os.system("rm " + image_file)
+      return()
 
    # subtract mask from image
    if mask_img is not None:
