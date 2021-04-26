@@ -176,6 +176,7 @@ class Event():
          html += "<li>" + station + " " + fn + "</li>\n"
      
       return(html)
+
    def render_template(self, template_file):
       if self.solve_status != "SUCCESS":
          template_file = template_file.replace(".html", "Fail.html")

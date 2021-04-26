@@ -38,7 +38,7 @@ class EventRunner():
             self.event_dict[event['event_id']] = event
       else:
          print("ERROR: NOT FOUND:", self.all_events_file)
-         self.all_events = None
+         self.all_events = []
 
       # DOWNLOAD DYNA DATA IF IT DOESN'T EXIST
       # OR IF THE CACHE FILE IS OLDER THAN X MINUTES

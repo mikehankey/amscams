@@ -207,6 +207,16 @@ class EventManager():
                      ev_files.append(ev_file)
                   else:
                      print("THERE ARE NO EVENTS TODAY:", ev_file) 
+                     cloud_ev_file = ev_file.replace("/mnt/ams2", "/mnt/archive.allsky.tv")
+                     cloud_ev_dir = ev_dir.replace("/mnt/ams2", "/mnt/archive.allsky.tv")
+                     if cfe(cloud_ev_file) == 1:
+                        print("CLOUD EVENT FILE EXISTS. COPY THEM.")
+                        if cfe(ev_dir, 1) == 0:
+                           os.makedirs(ev_dir)
+                        print("cp " + cloud_ev_dir + "*.json " + ev_dir)
+                        os.system("cp " + cloud_ev_dir + "*.json " + ev_dir)
+                        ev_files.append(ev_file)
+
       all_events = []
       day_summary = []
       events_summary = []
@@ -248,7 +258,9 @@ class EventManager():
             all_events.append(data)
             shower = ""
             if "solution" in data:
-               if "shower" in data['solution']:
+               if data['solution'] == 0:
+                  del data['solution']
+               elif "shower" in data['solution']:
                   shower = data['solution']['shower']['shower_code']
                else:
                   shower = ""
