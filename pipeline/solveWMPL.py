@@ -565,7 +565,8 @@ def solve_day(day, cores=20):
       go = 1
       if "solve_status" in event:
          print("Solve Status.", event['solve_status'] )
-         go = 0
+         if event['solve_status'] == "SUCCESS":
+            go = 1
          if event['solve_status'] == "unsolved":
             go = 1
 
@@ -761,7 +762,7 @@ def solve_event(event_id, force=1, time_sync=1):
 
 
     obs = {}
-    ignore_stations = ['AMS53', 'AMS59']
+    ignore_stations = ['AMS56']
     print("EV:", event_id, event)
     if event is None:
        print("EVENT IS NONE!")

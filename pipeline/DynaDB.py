@@ -11,7 +11,7 @@ from lib.PipeUtil import cfe, load_json_file, save_json_file, check_running
 import boto3
 import socket
 import subprocess
-from boto3.dynamodb.conditions import Key
+from boto3.dynamodb.conditions import Key, Attr
 from lib.PipeUtil import get_file_info, fn_dir
 
 def back_loader(dynamodb, json_conf):
@@ -261,7 +261,10 @@ def insert_meteor_obs(dynamodb, station_id, meteor_file):
    obs_data = json.loads(json.dumps(obs_data), parse_float=Decimal)
    table = dynamodb.Table('meteor_obs')
    print("SD VID:", sd_vid)
-   table.put_item(Item=obs_data)
+   try:
+      table.update_item(Item=obs_data)
+   except:
+      table.put_item(Item=obs_data)
    mj['calib'] = calib
    mj['last_update'] = update_time
    save_json_file(meteor_file, mj)
@@ -352,6 +355,26 @@ def cache_day(dynamodb, date, json_conf):
       save_json_file(obs_file, obs)
       print("SAVED:", obs_file)
 
+def select_obs_files(dynamodb, station_id, event_day):
+   print(station_id, event_day)
+   table = dynamodb.Table("meteor_obs")
+   all_items = []
+   response = table.query(
+      ProjectionExpression='station_id,sd_video_file,revision,event_id',
+      KeyConditionExpression=Key('station_id').eq(station_id) & Key('sd_video_file').begins_with(event_day),
+      )
+   for it in response['Items']:
+      all_items.append(it)
+   while 'LastEvaluatedKey' in response:
+      response = table.query(
+         ProjectionExpression='station_id,sd_video_file,revision,event_id',
+         KeyConditionExpression=Key('station_id').eq(station_id) & Key('sd_video_file').begins_with(event_day),
+         ExclusiveStartKey=response['LastEvaluatedKey'],
+         )
+      for it in response['Items']:
+         all_items.append(it)
+   print(len(all_items), " items")
+   return(all_items)
 
 def get_all_events(dynamodb):
    table = dynamodb.Table("x_meteor_event")
@@ -623,15 +646,26 @@ def get_event(dynamodb, event_id, nocache=1):
 def get_obs(dynamodb, station_id, sd_video_file):
    date= sd_video_file[0:10]
    year, mon, day = date.split("_")
+   obs_data = None
    day_dir = "/mnt/ams2/EVENTS/" + year + "/" + mon + "/" + day + "/"
+   cl_day_dir = "/mnt/archive.allsky.tv/EVENTS/" + year + "/" + mon + "/" + day + "/"
    dyn_cache = day_dir
+   all_obs_file = dyn_cache + date + "_ALL_OBS.json"   
+   all_obs_cloud_file = cl_day_dir + date +"_ALL_OBS.json"   
    if cfe(dyn_cache, 1) == 0:
       os.makedirs(dyn_cache)
+   if cfe(all_obs_file) == 0:
+      if cfe(all_obs_cloud_file) == 1:
+         os.system("cp " + all_obs_cloud_file + " " + all_obs_file) 
 
    use_cache = 0
    if cfe(dyn_cache, 1) == 0:
       os.makedirs(dyn_cache)
-   all_obs_file = dyn_cache + date + "_ALL_OBS.json"   
+   if cfe(all_obs_file) == 0:
+      print("NO OBS FILE!", all_obs_file)
+      print(all_obs_cloud_file)
+      exit()
+
    aod = load_json_file(all_obs_file)
    for row in aod:
       if row['station_id'] == station_id and row['sd_video_file'] == sd_video_file:
@@ -663,6 +697,12 @@ def get_obs_old():
       return(response['Items'][0])
    else:
       return(None)
+
+
+def sync_db_day_new(dynamodb, station_id, event_day):
+   dyn_obs_index = select_obs_files(dynamodb, station_id, event_day)
+   for item in dyn_obs_index:
+      print(item)
 
 def sync_db_day(dynamodb, station_id, day):
    # remove the cache 
@@ -743,9 +783,9 @@ def sync_db_day(dynamodb, station_id, day):
       if lkey not in db_meteors:
          print(lkey, "IGNORE: is not in the DB yet. But should be added in this run." )
       else:
-         force = 1
-         if local_meteors[lkey]['revision'] > db_meteors[lkey]['revision'] or "final_data" not in db_meteors[lkey] or force == 1:
-           
+         force = 0
+         if local_meteors[lkey]['revision'] > db_meteors[lkey]['revision'] or force == 1:
+          
             print(lkey, "UPDATE REMOTE : The local DB has a newer version of this file. " , local_meteors[lkey]['revision'] ,   db_meteors[lkey]['revision'])
             meteor_file = lkey.replace(".mp4", ".json")
             #insert_meteor_obs(dynamodb, station_id, meteor_file)
@@ -778,7 +818,31 @@ def sync_db_day(dynamodb, station_id, day):
    print(len(items), "items for", station_id)
 
 
-def update_meteor_obs(dynamodb, station_id, sd_video_file, obs_data):
+def update_meteor_obs(dynamodb, station_id, sd_video_file, obs_data=None):
+
+   if obs_data is None:
+      day = sd_video_file[0:10]
+      jsf = "/mnt/ams2/meteors/" + day + "/" + sd_video_file
+      jsf = jsf.replace(".mp4", ".json")
+      jsfr = jsf.replace(".json", "-reduced.json")
+      mj = load_json_file(jsf)
+      mjr = load_json_file(jsfr)
+      obs_data = {}
+      obs_data['revision'] = mj['revision']
+      obs_data['meteor_frame_data'] = mjr['meteor_frame_data']
+      obs_data['last_update'] = datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
+      if "final_vid" in mj:
+         print("ADD FINAL DATA!")
+         final_vid = mj['final_vid']
+         final_vid_fn, xxx = fn_dir(final_vid)
+         final_data_file = final_vid.replace(".mp4", ".json")
+         final_data = load_json_file(final_data_file)
+         obs_data['final_vid'] = final_vid_fn
+         obs_data['final_data'] = final_data
+      else:
+         print("No final data?")
+
+
 
    dmfd = []
    for data in obs_data['meteor_frame_data']:
@@ -797,6 +861,19 @@ def update_meteor_obs(dynamodb, station_id, sd_video_file, obs_data):
    print("REV:", obs_data['revision'])
    print("ST:", station_id)
    print("F:", sd_video_file)
+   if True:
+      if "cp" in mj:
+         cp = mj['cp']
+         if "total_res_px" not in cp:
+            cp['total_res_px'] = 9999
+         if "cat_image_stars" not in cp:
+            cp['cat_image_stars'] = []
+         if math.isnan(cp['total_res_px']):
+            cp['total_res_px'] = 9999
+         calib = [cp['ra_center'], cp['dec_center'], cp['center_az'], cp['center_el'], cp['position_angle'], cp['pixscale'], float(len(cp['cat_image_stars'])), float(cp['total_res_px'])]
+      else:
+         calib = []
+
    response = table.update_item(
       Key = {
          'station_id': station_id,
@@ -919,6 +996,7 @@ def do_dyna_day(dynamodb, day):
    print(cmd)
    os.system(cmd)
 
+
    cmd = "./DynaDB.py cd " + day
    print(cmd)
    os.system(cmd)
@@ -1027,6 +1105,9 @@ if __name__ == "__main__":
    if cmd == "sync_db_day" or cmd == "sdd":
       station_id = json_conf['site']['ams_id']
       sync_db_day(dynamodb, station_id, sys.argv[2])
+   if cmd == "sync_db_day_new" or cmd == "sdd":
+      station_id = json_conf['site']['ams_id']
+      sync_db_day_new(dynamodb, station_id, sys.argv[2])
 
    if cmd == "ct":
       create_tables(dynamodb)
@@ -1040,6 +1121,10 @@ if __name__ == "__main__":
       station_id = json_conf['site']['ams_id']
       meteor_file = sys.argv[2]
       insert_meteor_obs(dynamodb, station_id, meteor_file)
+   if cmd == "update_obs":
+      station_id = json_conf['site']['ams_id']
+      meteor_file = sys.argv[2]
+      update_meteor_obs(dynamodb, station_id, meteor_file)
 
    if cmd == "search_obs":
       station_id = json_conf['site']['ams_id']
@@ -1092,6 +1177,10 @@ if __name__ == "__main__":
       get_all_obs(dynamodb, sys.argv[2], json_conf)
    if cmd == "get_all_events":
       get_all_events(dynamodb)
+   if cmd == "select_obs_files":
+      # station_id and then date please
+      select_obs_files(dynamodb, sys.argv[2], sys.argv[3])
+
    if cmd == "udc":
       if len(sys.argv) > 3:
          utype = sys.argv[3]
