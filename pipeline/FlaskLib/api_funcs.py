@@ -452,6 +452,9 @@ def update_meteor_points(sd_video_file,frames):
       resp['calib'] = mj['cp']
    if "meteor_frame_data" in mj:
       resp['frames'] = mjr['meteor_frame_data']
+   cmd = "./DynamoDB.py add_obs " + json_file + " >/mnt/ams2/tmp/api.points 2>&1 &"
+   print("COMMAND:", cmd)
+   os.system(cmd)
 
    return(resp)
    #for frame in frames:
