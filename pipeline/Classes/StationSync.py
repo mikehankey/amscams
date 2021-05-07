@@ -25,11 +25,10 @@ class StationSync():
       self.yesterday = (datetime.datetime.now() - datetime.timedelta(days = 1)).strftime("%Y_%m_%d")
       self.json_conf = load_json_file("../conf/as6.json")
       self.station_id = self.json_conf['site']['ams_id']
-      if cfe("../conf/sync_status.json") == 1:
-         self.sync_status = load_json_file("../conf/sync_status.json")
-      else:
-         self.sync_status = self.update_sync_status()
-         save_json_file("../conf/sync_status.json", self.sync_status)
+
+
+      self.sync_status = self.update_sync_status()
+      save_json_file("../conf/sync_status.json", self.sync_status)
 
 
       self.force = force
@@ -135,6 +134,7 @@ class StationSync():
       #f_datetime = datetime.datetime.strptime(date_str, "%Y_%m_%d_%H_%M_%S")
 
       for d in range(1,31):
+         sync_status = 0
          if d < 10:
             ds = "0" + str(d)
          else:
