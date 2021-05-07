@@ -377,7 +377,7 @@ class SyncAWS():
          if cfe(mdir,1) == 1:
             meteor_dirs.append(mdir)
       for md in meteor_dirs:
-         print("sync_meteor_day(day)")
+         sync_meteor_day(day)
 
    def sync_meteor_day(self, day):
       url = API_URL + "?cmd=get_obs_for_day&station_id=" + self.station_id + "&day=" + day
