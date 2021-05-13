@@ -436,7 +436,7 @@ class SyncAWS():
    def sync_meteor_wild(self, wild):
       meteor_dirs = []
       mdirs = glob.glob("/mnt/ams2/meteors/" + wild + "*")
-      for mdir in mdirs:
+      for mdir in sorted(mdirs, reverse=True):
          if cfe(mdir,1) == 1:
             meteor_dirs.append(mdir)
       for md in meteor_dirs:
