@@ -4215,7 +4215,10 @@ def cal_all(json_conf):
  #     last_cal['x_poly_fwd'] = cp['x_poly_fwd'].tolist()
 
       autocal(file, json_conf, 1)
-      print("RAN:", file)
+      if cfe(file) == 1:
+     
+         print("RAN:", file)
+         exit()
 
 
 def make_cal_obj(az,el,pos,px,stars,cat_image_stars,res):
@@ -4232,6 +4235,7 @@ def make_cal_obj(az,el,pos,px,stars,cat_image_stars,res):
    return(cp)
 
 def autocal(image_file, json_conf, show = 0, heal_only=0):
+   orig_image_file = image_file
    update_defaults(json_conf)
    cp = None
    best_cp = None
@@ -4355,7 +4359,9 @@ def autocal(image_file, json_conf, show = 0, heal_only=0):
      
             ifn, idir = fn_dir(image_file)
             wild = image_file.replace(".png", ".*")
-            cmd = "mv " + image_file + " " + idir + "SOLVED/"
+            cmd = "mv " + image_file + " " + idir + "solved/"
+            if cfe(idir + "solved", 1) == 0:
+               os.makedirs(idir + "solved")
             print(cmd)
             os.system(cmd)
             print("We imported this file without having to plate solve.", cp['total_res_px'])

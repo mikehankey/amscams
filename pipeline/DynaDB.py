@@ -1,4 +1,5 @@
 #!/usr/bin/python3
+import requests
 from lib.PipeManager import dist_between_two_points
 import math
 import os
@@ -374,7 +375,6 @@ def select_obs_files(dynamodb, station_id, event_day):
          )
       for it in response['Items']:
          all_items.append(it)
-   print(len(all_items), " items")
    return(all_items)
 
 def get_all_events(dynamodb):
@@ -382,7 +382,6 @@ def get_all_events(dynamodb):
    response = table.scan()
    items = response['Items']
    while 'LastEvaluatedKey' in response:
-      print(response['LastEvaluatedKey'])
       response = table.scan(ExclusiveStartKey=response['LastEvaluatedKey'])
       items.extend(response['Items'])
    outfile = "/mnt/ams2/EVENTS/ALL_EVENTS.json"
@@ -398,7 +397,6 @@ def update_dyna_cache_for_day(dynamodb, date, stations, utype=None):
    if utype == "events": 
       do_obs = 0
       do_events = 1
-   print("DATE:", date)
    year, mon, day = date.split("_")
    day_dir = "/mnt/ams2/EVENTS/" + year + "/" + mon + "/" + day + "/"
    dyn_cache = day_dir
@@ -413,7 +411,17 @@ def update_dyna_cache_for_day(dynamodb, date, stations, utype=None):
 
    # get station list of stations that could have shared obs
    all_stations = glob.glob("/mnt/ams2/STATIONS/CONF/*")
-   print("ALL STATIONS:", all_stations)
+   API_URL = "https://kyvegys798.execute-api.us-east-1.amazonaws.com/api/allskyapi?cmd=get_stations"
+   response = requests.get(API_URL)
+   content = response.content.decode()
+   content = content.replace("\\", "")
+   if content[0] == "\"":
+      content = content[1:]
+      content = content[0:-1]
+   jdata = json.loads(content)
+   all_stations = jdata['all_vals']
+   print("HI!", all_stations)
+   #exit()
    clusters = make_station_clusters(all_stations)
    cluster_stations = []
    stations = []
@@ -423,7 +431,6 @@ def update_dyna_cache_for_day(dynamodb, date, stations, utype=None):
       if len(partners) > 1:
          cluster_stations.append(data)
    save_json_file(stations_file, clusters)
-   print("UPDATED THE DYNA CACHE!", stations_file)
    cloud_stations_file = stations_file.replace("/mnt/ams2/", "/mnt/archive.allsky.tv/")
    os.system("cp " + stations_file + " " + cloud_stations_file)
 
@@ -436,10 +443,8 @@ def update_dyna_cache_for_day(dynamodb, date, stations, utype=None):
          station_id = data[0]
          unq_stations[station_id] = 1
          stations.append(station_id)
-         print("SEARCH OBS FOR:", station, date)
          obs = search_obs(dynamodb, station_id, date, 1)
          unq_stations[station_id] = len(obs)
-         print(len(obs), obs)
          for data in obs:
             all_obs.append(data)
       save_json_file(obs_file, all_obs)
@@ -500,14 +505,18 @@ def search_events(dynamodb, date, stations, nocache=0):
 
 def make_station_clusters(all_stations):
    st_lat_lon = []
-   for stc in all_stations:
-      jc = load_json_file(stc)
-      station_id = jc['site']['ams_id']
-      lat = float(jc['site']['device_lat'])
-      lon = float(jc['site']['device_lng'])
-      alt = float(jc['site']['device_alt'])
-      city = jc['site']['operator_city']
-      st_lat_lon.append((station_id, lat, lon, alt, city))
+   for station_data in all_stations:
+      print("ST:", station_data)
+      #jc = load_json_file(stc)
+      station_id = station_data['station_id']
+      if "lat" in station_data:
+         lat = float(station_data['lat'])
+         lon = float(station_data['lon'])
+         alt = float(station_data['alt'])
+         city = station_data['city']
+         st_lat_lon.append((station_id, lat, lon, alt, city))
+      else:
+         print(station_id, "STATION DATA INCOMPLETE!")
    cluster_data = []
    for data in st_lat_lon:
       (station_id, lat, lon, alt, city) = data
@@ -527,8 +536,6 @@ def get_all_obs(dynamodb, date, json_conf):
    all_stations = glob.glob("/mnt/ams2/STATIONS/CONF/*")
    if cfe("/mnt/ams2/STATIONS/CONF/clusters.json") == 0:
       make_station_clusters(all_stations)
-   for station in all_stations:
-      print(station)
 
 
 def search_obs(dynamodb, station_id, date, no_cache=0):
