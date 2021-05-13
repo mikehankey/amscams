@@ -27,10 +27,18 @@ from lib.FFFuncs import best_crop_size, ffprobe
 class Plotter():
    def __init__(self, cmd=None, extra_args=[]):
       self.cmd = cmd
-      self.event_dir = "/mnt/ams2/EVENTS/"
-      self.all_radiants_file = "/mnt/ams2/EVENTS/ALL_RADIANTS.json"
-      self.all_radiants = load_json_file(self.all_radiants_file)
-      self.extra_args = extra_args
+      if "_" in extra_args[0] :
+         print(extra_args)
+         y,m,d = extra_argv[0].split("_")
+         self.event_dir = "/mnt/ams2/EVENTS/" + y + "/" + m + "/" + d + "/" 
+         self.all_radiants_file = self.event_dir + "ALL_RADIANTS.json"
+         self.all_radiants = load_json_file(self.all_radiants_file)
+
+      else:
+         self.event_dir = "/mnt/ams2/EVENTS/"
+         self.all_radiants_file = "/mnt/ams2/EVENTS/ALL_RADIANTS.json"
+         self.all_radiants = load_json_file(self.all_radiants_file)
+         self.extra_args = extra_args
 
    def plot_all_rad(self):
       import matplotlib
@@ -52,15 +60,31 @@ class Plotter():
          "y": [],
          "c": [],
          "n": [],
-         "p": []
+         "p": [],
+         "ids": []
       }
-
+      rads_by_day = {}
       for rad in self.all_radiants:
 
          if rad is None:
             continue
          if rad['geocentric']['ra_g'] is None or rad['geocentric']['dec_g'] is None :
             continue
+
+         event_id = rad['event_id']
+         day = event_id[0:8]
+         mon = event_id[0:6]
+
+         if day not in rads_by_day:
+            rads_by_day[day] = {
+               "t": "Sun Centered geocentric ecliptic coordinates <br>Jan 1, 2021 - Apr 9, 2021",
+               "x": [],
+               "y": [],
+               "c": [],
+               "n": [],
+               "p": [],
+               "ids": []
+            }
 
          #if "202103" not in rad['event_id'] :
          #   continue
@@ -91,12 +115,12 @@ class Plotter():
             hl_ra_n = 360 - hl_ra_n
 
 
-            plot_data['x'].append((hl_ra_n))
-            plot_data['y'].append(np.degrees(rad['ecliptic_helio']['B_h']) *-1)
-            plot_data['c'].append("rgba(255,255,255,1)")
-            plot_data['n'].append(rad['IAU'])
-            plot_data['p'].append("top center")
-
+            rads_by_day[day]['x'].append((hl_ra_n))
+            rads_by_day[day]['y'].append(np.degrees(rad['ecliptic_helio']['B_h']) *-1)
+            rads_by_day[day]['c'].append("rgba(255,255,255,1)")
+            rads_by_day[day]['n'].append(rad['IAU'])
+            rads_by_day[day]['p'].append("top center")
+            rads_by_day[day]['ids'].append(rad['event_id'])
 
             print("RAD:", rad['IAU'], rad['ecliptic_helio']['L_h'], rad['ecliptic_helio']['B_h'], np.degrees(rad['ecliptic_helio']['L_h']), np.degrees(rad['ecliptic_helio']['B_h']), hl_ra_n)
 
@@ -106,9 +130,13 @@ class Plotter():
       ax.grid(True)
       plt.savefig("/mnt/ams2/test2.png")
       fig.clear()
-      save_json_file("/mnt/ams2/EVENTS/PLOTS_ALL_RADIANTS.json", plot_data)
-      cmd = "cp /mnt/ams2/EVENTS/PLOTS_ALL_RADIANTS.json /mnt/archive.allsky.tv/EVENTS/PLOTS_ALL_RADIANTS.json"
-      os.system(cmd)
+      #save_json_file("/mnt/ams2/EVENTS/PLOTS_ALL_RADIANTS.json", plot_data)
+      #cmd = "cp /mnt/ams2/EVENTS/PLOTS_ALL_RADIANTS.json /mnt/archive.allsky.tv/EVENTS/PLOTS_ALL_RADIANTS.json"
+      #os.system(cmd)
+      for day in rads_by_day:
+         save_file = "/mnt/ams2/EVENTS/DAYS/" + day + "_PLOTS_ALL_RADIANTS.json"
+         print(save_file)
+         save_json_file(save_file, rads_by_day[day])
 
       #fig = plt.figure(figsize=(12,9))
       #ax = fig.add_subplot(111, projection="mollweide")

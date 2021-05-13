@@ -31,6 +31,7 @@ class EventManager():
       self.day = day
       self.month = month
       self.year = year
+      self.date = None
       self.data_dir = "/mnt/ams2/"
       self.all_events_summary_file = self.data_dir + "/EVENTS/ALL_EVENTS_SUMMARY.json"
       self.all_orbits_file = self.data_dir + "/EVENTS/ALL_ORBITS.json"
@@ -55,12 +56,21 @@ class EventManager():
          self.cloud_file_index = self.cloud_dir + "cloud_event_files_" + self.year + "_" + self.month + "_" + self.day  
       self.local_dir = self.cloud_dir.replace("/archive.allsky.tv/", "/ams2/")
       self.local_file_index = self.cloud_file_index.replace("/archive.allsky.tv/", "/ams2/")
-      self.all_events_dir = "/mnt/ams2/EVENTS/"
-      self.all_events_traj = "/mnt/ams2/EVENTS/ALL_TRAJECTORIES.json"
-      self.all_events_traj_kml = "/mnt/ams2/EVENTS/ALL_TRAJECTORIES.kml"
-      self.cloud_all_events_traj_kml = "/mnt/archive.allsky.tv/EVENTS/ALL_TRAJECTORIES.kml"
-      self.all_events_orb = "/mnt/ams2/EVENTS/ALL_ORBITS.json"
-      self.cloud_event_dir = "/mnt/archive.allsky.tv/EVENTS/"
+      if self.date is None:
+         self.all_events_dir = "/mnt/ams2/EVENTS/"
+         self.all_events_traj = "/mnt/ams2/EVENTS/ALL_TRAJECTORIES.json"
+         self.all_events_traj_kml = "/mnt/ams2/EVENTS/ALL_TRAJECTORIES.kml"
+         self.cloud_all_events_traj_kml = "/mnt/archive.allsky.tv/EVENTS/ALL_TRAJECTORIES.kml"
+         self.all_events_orb = "/mnt/ams2/EVENTS/ALL_ORBITS.json"
+         self.cloud_event_dir = "/mnt/archive.allsky.tv/EVENTS/"
+      else:
+         y,m,d = self.date.split("_")
+         self.all_events_dir = "/mnt/ams2/EVENTS/" + y + "/" + m + "/" + d + "/" 
+         self.cloud_event_dir = "/mnt/archive.allsky.tv/EVENTS/" + y + "/" + m + "/" + d + "/" 
+         self.all_events_traj = self.all_events_dir + "ALL_TRAJECTORIES.json"
+         self.all_events_traj_kml = self.all_events_dir + "ALL_TRAJECTORIES.kml"
+         self.cloud_all_events_traj_kml = self.cloud_event_dir + "ALL_TRAJECTORIES.kml"
+         self.all_events_orb = self.all_events_dir + "ALL_ORBITS.json"
 
    def controller(self):
       if self.cmd is None:
@@ -173,7 +183,10 @@ class EventManager():
       nmonth = now[5:7]
       temp = glob.glob("/mnt/ams2/EVENTS/*")
       for year_dir in temp:
+         if "DAYS" in year_dir:
+            continue
          if cfe(year_dir, 1) == 1:
+
              year = year_dir.split("/")[-1]
              years.append(year)
       print("YEARS:", years)
@@ -288,7 +301,7 @@ class EventManager():
             ev_file = ev_dir + day + "_ALL_EVENTS.json" 
 
          if day_total == 0:
-            cmd = "./solveWMPL.py de " + day
+            cmd = "python3 ./EVRun.py " + day
             print(cmd)
             #input("RUN DETERMINE EVENTS?:" + cmd)
             #os.system(cmd)
@@ -358,7 +371,16 @@ class EventManager():
    def all_events_report(self):
       c = 0
       print("All events report")
-      all_events_file = "/mnt/ams2/EVENTS/ALL_EVENTS.json"
+      if self.date is None:
+         all_events_file = "/mnt/ams2/EVENTS/ALL_EVENTS.json"
+      else:
+         el = self.date.split("_")
+         if len(el) == 3:
+            y,m,d = self.date.split("_")
+            all_events_file = "/mnt/ams2/EVENTS/" + y + "/" + m + "/" + d + "/" + self.date + "_ALL_EVENTS.json"
+         else:
+            all_events_file = "/mnt/ams2/EVENTS/ALL_EVENTS.json"
+      print(self.day, all_events_file)
       all_events = load_json_file(all_events_file)
       print(len(all_events), "Total Events")
       events_summary = []
@@ -368,6 +390,7 @@ class EventManager():
       all_showers = []
       all_events = sorted(all_events, key=lambda x: (x['event_id']), reverse=True)
       for event in all_events:
+         print(event['event_id'])
          shower = ""
          if "solve_status" in event:
             status = event['solve_status']
@@ -444,32 +467,47 @@ class EventManager():
             lvd_status = 0
             cvd_status = 0
             print(local_ev_dir)
+         if "duration" in event:
+            dur = event['duration']
+         else:
+            dur = 0
           
-         rpt = "{:s} {:s} {:s} {:s} {:s} {:s} {:s} {:s}".format(status, str(event['event_id']), str(min(event['start_datetime'])), sts, fls, shower, str(lvd_status), str(cvd_status))
+         rpt = "{:s} {:s} {:s} {:s} {:s} {:s} {:s} {:s}".format(status, str(event['event_id']), str(min(event['start_datetime'])), sts, fls, shower, str(lvd_status), str(dur))
          #print(rpt)
          if c % 100 == 0:
             print("working", c)
          events_summary.append( (status, event['event_id'], min(event['start_datetime']), sts, fls, shower, lvd_status, cvd_status))
          c += 1
 
-      save_json_file("/mnt/ams2/EVENTS/ALL_EVENTS_SUMMARY.json", events_summary)
-      save_json_file("/mnt/ams2/EVENTS/ALL_ORBITS.json", all_orbits)
-      save_json_file("/mnt/ams2/EVENTS/ALL_TRAJECTORIES.json", all_trajectories)
-      save_json_file("/mnt/ams2/EVENTS/ALL_SHOWERS.json", all_showers)
-      save_json_file("/mnt/ams2/EVENTS/ALL_RADIANTS.json", all_radiants)
+      if self.date is None:
+         event_dir = "/mnt/ams2/EVENTS/"
+         ce_dir = "/mnt/archive.allsky.tv/EVENTS/"
+      else:
+         event_dir = "/mnt/ams2/EVENTS/" + y + "/" + m + "/" + d + "/"
+         ce_dir = "/mnt/archive.allsky.tv/EVENTS/" + y + "/" + m + "/" + d + "/"
 
-      cmd = "cp /mnt/ams2/EVENTS/ALL_EVENTS_SUMMARY.json /mnt/archive.allsky.tv/EVENTS/"
+      save_json_file(event_dir + "ALL_EVENTS_SUMMARY.json", events_summary)
+      save_json_file(event_dir + "ALL_ORBITS.json", all_orbits)
+      save_json_file(event_dir + "ALL_TRAJECTORIES.json", all_trajectories)
+      save_json_file(event_dir + "ALL_SHOWERS.json", all_showers)
+      save_json_file(event_dir + "ALL_RADIANTS.json", all_radiants)
+
+      cmd = "cp " + event_dir + "ALL_EVENTS_SUMMARY.json " + ce_dir  
       os.system(cmd)
-      cmd = "cp /mnt/ams2/EVENTS/ALL_ORBITS.json /mnt/archive.allsky.tv/EVENTS/"
+      cmd = "cp " + event_dir + "ALL_ORBITS.json " + ce_dir
       os.system(cmd)
-      cmd = "cp /mnt/ams2/EVENTS/ALL_TRAJECTORIES.json /mnt/archive.allsky.tv/EVENTS/"
+      cmd = "cp " + event_dir + "ALL_TRAJECTORIES.json " + ce_dir
       os.system(cmd)
-      cmd = "cp /mnt/ams2/EVENTS/ALL_SHOWERS.json /mnt/archive.allsky.tv/EVENTS/"
+      cmd = "cp " + event_dir + "ALL_SHOWERS.json " + ce_dir
       os.system(cmd)
-      cmd = "cp /mnt/ams2/EVENTS/ALL_RADIANTS.json /mnt/archive.allsky.tv/EVENTS/"
+      cmd = "cp " + event_dir + "ALL_RADIANTS.json " + ce_dir
       os.system(cmd)
 
-      print("Saved json files in /mnt/ams2/EVENTS")
+      self.make_all_traj_kml()
+
+
+      print("Saved json files in " + event_dir)
+      exit()
 
    def make_period_files (self):
       if cfe(self.all_events_summary_file) == 1:

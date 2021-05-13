@@ -1,12 +1,13 @@
 from lib.PipeUtil import cfe, load_json_file, save_json_file, convert_filename_to_date_cam, get_trim_num
 from lib.PipeManager import dist_between_two_points
 from DynaDB import get_event, get_obs, search_events, update_event, update_event_sol, insert_meteor_event, delete_event
-
+import numpy as np
+import time
 import datetime
 import os
 
 class EventRunner():
-   def __init__(self, cmd=None, day=None, month=None,year=None,date=None):
+   def __init__(self, cmd=None, day=None, month=None,year=None,date=None, use_cache=0):
       self.cmd = cmd
       self.date = date 
       if date is not None:
@@ -25,6 +26,7 @@ class EventRunner():
       self.all_events_index_file = "/mnt/ams2/EVENTS/" + self.year + "/" + self.month + "/" + self.day + "/" + self.date + "_ALL_EVENTS_INDEX.json"  
       self.all_obs_file = "/mnt/ams2/EVENTS/" + self.year + "/" + self.month + "/" + self.day + "/" + self.date + "_ALL_OBS.json"  
       self.all_stations_file = "/mnt/ams2/EVENTS/" + self.year + "/" + self.month + "/" + self.day + "/" + self.date + "_ALL_STATIONS.json"  
+      self.single_station_file =  self.event_dir + self.date + "_ALL_SINGLE_STATION_METEORS.json"
 
       self.cloud_all_events_file = "/mnt/archive.allsky.tv/EVENTS/" + self.year + "/" + self.month + "/" + self.day + "/" + self.date + "_ALL_EVENTS.json"  
       self.cloud_all_events_index_file = "/mnt/archive.allsky.tv/EVENTS/" + self.year + "/" + self.month + "/" + self.day + "/" + self.date + "_ALL_EVENTS_INDEX.json"  
@@ -43,8 +45,9 @@ class EventRunner():
       # DOWNLOAD DYNA DATA IF IT DOESN'T EXIST
       # OR IF THE CACHE FILE IS OLDER THAN X MINUTES
       if cfe(self.all_events_file) == 0:
-         print("MISSING:", self.all_events_index_file) 
-      os.system("./DynaDB.py udc " + self.date)
+         print("ERROR MISSING:", self.all_events_index_file) 
+      if use_cache == 0:
+         os.system("./DynaDB.py udc " + self.date)
 
 
       if cfe(self.all_events_index_file) == 1:
@@ -56,9 +59,12 @@ class EventRunner():
       else:
          self.all_obs = None
       if cfe(self.all_stations_file) == 1:
+         print(self.all_stations_file)
          self.all_stations = load_json_file(self.all_stations_file)
       else:
          self.all_stations = None
+
+      print(len(self.all_stations), "TOTAL STATIONS")
 
       self.station_loc = {}
       for data in self.all_stations:
@@ -84,6 +90,7 @@ class EventRunner():
             event['solve_status'] = "SINGLE STATION" 
          for file in event['files']:
             self.file_index[file] = event['event_id']
+         print(event['event_id'], event['solve_status'])
          ec += 1
 
       self.single_station_obs = []
@@ -93,14 +100,15 @@ class EventRunner():
             event_id = self.file_index[ob['sd_video_file']]
             self.multi_station_obs.append(ob)
          else:
+            if "deleted" in ob:
+               if ob['deleted'] == 1:
+                  continue
             event_id = self.check_existing_event(ob)
             if event_id == None:
                self.single_station_obs.append(ob)
             else:
                print("THIS OB BELONGS TO THIS EVENT!", ob['station_id'], ob['sd_video_file'], event_id)
-               #print(event['stations'], event['files'])
                exit()
-         #print(event_id, ob['station_id'], ob['sd_video_file'] )
 
       for event in self.all_events:
          print(event['event_id'], event['total_stations'], event['solve_status'])
@@ -108,19 +116,25 @@ class EventRunner():
       print("SS OBS:", len(self.single_station_obs))
 
    def update_events_for_day(self):
+      print("SINGLE :", self.single_station_obs)
       new_events = []
       for ob in self.single_station_obs:
          found_existing = self.check_existing_event(ob) 
+         print(ob['station_id'], found_existing)
          if found_existing is not None:
             print("AN EVENT FOR THIS OBS WAS FOUND:", found_existing) 
          else: 
             obs_time = self.get_obs_datetime(ob)
 
-            ob['lat'] = self.station_loc[ob['station_id']][0]
-            ob['lon'] = self.station_loc[ob['station_id']][1]
-            new_events = self.check_make_events(obs_time, ob, new_events)
+            if ob['station_id'] in self.station_loc:
+               ob['lat'] = self.station_loc[ob['station_id']][0]
+               ob['lon'] = self.station_loc[ob['station_id']][1]
+               new_events = self.check_make_events(obs_time, ob, new_events)
+            else:
+               print("STATION MISSING FROM SELF.station_loc", ob['station_id'])
 
       new_mse = []
+      new_sse = []
       for ne in new_events:
          total_stations = len(set(ne['stations']))
          if total_stations > 1:
@@ -135,18 +149,42 @@ class EventRunner():
             ne['start_datetime'] = str_times
             self.insert_new_event(ne)
             new_mse.append(ne)
+         else:
+            str_times = []
+            for ttt in ne['start_datetime']:
+               if isinstance(ttt,str) is True:
+                  time_str = ttt
+               else:
+                  time_str = ttt.strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]
+               str_times.append(time_str)
+            ne['start_datetime'] = str_times
 
+
+            new_sse.append(ne)
+
+      save_json_file(self.event_dir + self.date + "_ALL_SINGLE_STATION_METEORS.json", new_sse)
+      print("SAVED:", self.event_dir + self.date + "_ALL_SINGLE_STATION_METEORS.json")
       if len(new_mse) > 0: 
          os.system("./DynaDB.py udc " + self.date + " events")
          print("./DynaDB.py udc " + self.date + " events")
          print("Updated CACHE with latest DynaDB!")
 
-      if len(new_mse) > 0 or cfe(self.cloud_all_events_file) == 0:
+      #if len(new_mse) > 0 or cfe(self.cloud_all_events_file) == 0 or cfe(:
+      if True:
          cmd = "cp " + self.all_events_file + " " + self.cloud_all_events_file
+         print(cmd)
          os.system(cmd)
          cmd = "cp " + self.all_obs_file + " " + self.cloud_all_obs_file
+         print(cmd)
          os.system(cmd)
          cmd = "cp " + self.all_stations_file + " " + self.cloud_all_stations_file
+         print(cmd)
+         os.system(cmd)
+         cmd = "cp " + self.all_stations_file + " " + self.cloud_all_stations_file
+         print(cmd)
+         os.system(cmd)
+         cmd = "cp " + self.single_station_file + " " + self.cloud_all_stations_file
+         print(cmd)
          os.system(cmd)
 
       
@@ -156,6 +194,241 @@ class EventRunner():
       print(len(new_mse), "New events added.")
 
 
+   def EOD_report(self, date):
+      report_template_file = "allsky.tv/event_template.html"
+      fp = open(report_template_file)
+      report_template = ""
+      for line in fp:
+         report_template += line
+
+      self.vdir = self.event_dir.replace("/mnt/ams2", "")
+      self.edir = self.event_dir
+      self.cdir = self.event_dir.replace("/mnt/ams2", "/mnt/archive.allsky.tv")
+
+      traj_file = self.edir + "ALL_TRAJECTORIES.kml"
+      orb_file =  self.edir + "ALL_ORBITS.json"
+      rad_file =  self.edir + "ALL_RADIANTS.json"
+      stations_file= self.edir + date + "_ALL_STATIONS.json"
+
+      if cfe(traj_file) == 0:
+         print("MISSING", traj_file)
+         exit()
+      if cfe("MISSING", orb_file) == 0:
+         print(orb_file)
+         exit()
+      if cfe("MISSING", rad_file) == 0:
+         print(rad_file)
+         exit()
+      if cfe("MISSING", stations_file) == 0:
+         print(stations_file)
+         exit()
+      traj_link = "https://archive.allsky.tv" + self.vdir + "ALL_TRAJECTORIES.kml"
+      orb_link = "https://archive.allsky.tv" + self.vdir + "ALL_ORBITS.json"
+      rad_link = "https://archive.allsky.tv" + self.vdir + "ALL_RADIANTS.json"
+      stations_link = "https://archive.allsky.tv" + self.vdir + date + "_ALL_STATIONS.json"
+
+      print(traj_link)
+      print(orb_link)
+      print(rad_link)
+      print(stations_link)
+      short_date = self.date.replace("_", "")
+      report_template = report_template.replace("{SHORT_DATE}", short_date)
+      report_template = report_template.replace("{TRAJ_LINK}", traj_link)
+      report_template = report_template.replace("{ORB_LINK}", orb_link)
+      report_template = report_template.replace("{RAD_LINK}", rad_link)
+      report_template = report_template.replace("{STATIONS_LINK}", stations_link)
+      #print("OUT:", report_template) 
+      station_report = {}
+      obs = load_json_file(self.all_obs_file)
+      ssd = load_json_file(self.single_station_file)
+      msd = load_json_file(self.all_events_file)
+      print(len(obs) , "total observations.")
+      print(len(ssd) , "single station events.")
+      print(len(msd) , "multi station events.")
+      meteor_counts = {}
+      meteor_counts_stations = {}
+      for h in range(0,24):
+          for m in range(1,5):
+             bin = str(h) + "." + str(m)
+             bin = str(h) 
+             meteor_counts[bin] = {}
+             meteor_counts[bin]['count'] = 0
+             meteor_counts[bin]['stations'] = {}
+             meteor_counts[bin]['avg'] = 0
+
+      for data in ssd:
+         bin = self.find_bin(min(data['start_datetime']))
+         meteor_counts[bin]['count'] += 1
+
+         used = {} 
+         for i in range(0, len(data['stations'])): 
+            station = data['stations'][i]
+            if station in used:
+               continue
+            station_bin = station + "." + bin
+            if station_bin not in meteor_counts_stations:
+               meteor_counts_stations[station_bin] = 1 
+            else:
+               meteor_counts_stations[station_bin] += 1 
+            if station not in meteor_counts[bin]['stations']:
+               meteor_counts[bin]['stations'][station] = 1
+            else:
+               meteor_counts[bin]['stations'][station] += 1
+
+            if station not in station_report:
+               station_report[station] = {}
+               station_report[station]['obs'] = 1
+               station_report[station]['mse'] = 1
+               station_report[station]['sse'] = 0 
+            else:
+               station_report[station]['obs'] += 1
+               station_report[station]['mse'] += 1
+               station_report[station]['sse'] += 0 
+            used[station] = 1
+
+      used = {} 
+      for data in msd:
+         bin = self.find_bin(min(data['start_datetime']))
+         meteor_counts[bin]['count'] += 1
+         for i in range(0, len(data['stations'])): 
+            station = data['stations'][i]
+            if station in used:
+               continue
+            station_bin = station + "." + bin
+            if station_bin not in meteor_counts_stations:
+               meteor_counts_stations[station_bin] = 1 
+            else:
+               meteor_counts_stations[station_bin] += 1 
+            if station not in meteor_counts[bin]['stations']:
+               meteor_counts[bin]['stations'][station] = 1
+            else:
+               meteor_counts[bin]['stations'][station] += 1
+
+
+            if station not in station_report:
+               station_report[station] = {}
+               station_report[station]['obs'] = 1
+               station_report[station]['mse'] = 0
+               station_report[station]['sse'] = 1
+            else:
+               station_report[station]['obs'] += 1
+               station_report[station]['mse'] += 0
+               station_report[station]['sse'] += 1
+            used[station] = 1
+      num_keys = []
+      for key in station_report.keys():
+         num_key = int(key.replace("AMS",""))
+         num_keys.append(num_key)
+
+      for num_key in sorted(num_keys):
+         station = "AMS" + str(num_key)
+         print(station, station_report[station]['obs'], station_report[station]['mse'], station_report[station]['sse'])
+      for event in msd:
+         event_id = event['event_id']
+         stations = event['stations']
+         print("MS", event_id, stations)
+
+      ssd = sorted(ssd, key=lambda x: x['start_datetime'][0], reverse=False)
+      for event in ssd:
+         files = event['files']
+         stations = event['stations']
+         #print("SS", stations, event['start_datetime'])
+
+      mc_xs = []
+      mc_ys = []
+      mc_ays = []
+      for key in meteor_counts:
+         mc_xs.append(key)
+         mc_ys.append(meteor_counts[key]['count'])
+         station_count = len(meteor_counts[key]['stations'].keys())
+         if station_count > 0:
+            avg_count = meteor_counts[key]['count'] / station_count
+            meteor_counts[key]['avg'] = avg_count 
+         else:
+            meteor_counts[key]['avg'] = 0
+         mc_ays.append(meteor_counts[key]['count'])
+        # print("TOTAL COUNT:", key, meteor_counts[key], meteor_counts[key]['avg'])
+      rstations = {}
+      for key in sorted(meteor_counts_stations.keys()):
+         st, bin = key.split(".")
+         if st not in rstations:
+            rstations[st] = {}
+            rstations[st][bin] = meteor_counts_stations[key]
+         else:
+            rstations[st][bin] = meteor_counts_stations[key]
+
+      mc_report = []
+      for key in rstations:
+         hr = []
+         for m in range(0,23):
+            if str(m) in rstations[key]:
+               hr.append(rstations[key][str(m)])
+            else:
+               hr.append(0)
+         rstations[key] = hr
+
+         print(key, rstations[key], int(np.sum(rstations[key])))
+         mc_report.append((key,rstations[key],int(np.sum(rstations[key]))))
+      print("TOTAL", mc_ys)
+      mc_report.append(("TOTAL",mc_ys,int(np.sum(mc_ys))))
+
+      mc_report_html = "<table>"
+      for row in mc_report:
+         sid, hours, total = row
+         hour_cells = ""
+         for hour in hours:
+            hour_cells += "<td>" + str(hour) + "</td>"
+         mc_report_html += "<tr><td>" + sid + "</td>" + hour_cells + "<td>" + str(total) + "</td></tr>"
+      mc_report_html = "</table>"
+
+      save_json_file(self.event_dir + self.date + "_METEOR_COUNTS.json", mc_report)
+      print(self.event_dir + self.date + "_METEOR_COUNTS.json")
+      import matplotlib
+      #matplotlib.use('TkAgg')
+      from matplotlib import pyplot as plt
+      #plt.scatter(dom_obj['oxs'], dom_obj['oys'])
+      plt.plot(mc_xs, mc_ys, c='red')
+      plt.savefig("meteor_counts.png")
+      cloud_dir = self.event_dir.replace("/mnt/ams2", "/mnt/archive.allsky.tv")
+
+
+      report_template = report_template.replace("{MC_REPORT}", mc_report_html)
+      out = open(self.edir + "report.html", "w")
+      out.write(report_template)
+      print(self.edir + "report.html")
+
+      out.close()
+      #cmd = "rsync -auv " + self.edir + "report.html " + self.cdir
+      #print(cmd)
+      #os.system(cmd)
+
+      cmd = "rsync -auv " + self.event_dir + "* " + cloud_dir 
+      print(cmd)
+      os.system(cmd)
+      
+      #plt.show()
+         
+      # STATION TOTAL OBS TOTAL SSE TOTAL MSE
+
+   def find_bin(self, date_str):
+      d,t = date_str.split(" ")
+      h,m,s = t.split(":")
+      mi = int(m)
+      hi = int(h)
+      b = None
+      if 0 <= mi < 15:
+         b = 1
+      if 15 <= mi < 30:
+         b = 2
+      if 30 <= mi < 45:
+         b = 3 
+      if 45 <= mi < 60:
+         b = 4 
+      if b is None:
+         print("ERROR:", date_str)
+      bin = str(hi) + "." + str(b)
+      bin = str(hi) 
+      return(bin)
 
    def update_existing_event(self ):
       print("UPDATE EVENT!")
@@ -189,12 +462,32 @@ class EventRunner():
             ev_dt = datetime.datetime.strptime(min(event['start_datetime']), "%Y-%m-%d %H:%M:%S.%f") 
          else:
             ev_dt = datetime.datetime.strptime(min(event['start_datetime']), "%Y-%m-%d %H:%M:%S") 
+         if ob['event_start_time'] == "" or ob['event_start_time'] == " " :
+            print("EVENT START TIME IS BLANK!", ob)
+            ob_dt = self.starttime_from_file(ob['sd_video_file'])
+            print("OBDT:", ob_dt)
+            ob['event_start_time'] = ob_dt.strftime( "%Y-%m-%d %H:%M:%S.%f")
+         #if " " not in ob['event_start_time']:
+         #   # no date on time var add it
+         #   print("DEBG:", ob['event_start_time'])
+         #   
+         #   date = ob['sd_video_file'][0:10]
+         #   date = date.replace("_", "-")
+         #   ob['event_start_time'] = date + " " + ob['event_start_time']
          if "." in ob['event_start_time']:
+            print(ob['event_start_time'])
+            if " " not in ob['event_start_time']:
+               date = ob['sd_video_file'][0:10]
+               date = date.replace("_", "-")
+               ob['event_start_time'] = date + " " + ob['event_start_time']
+
+
             ob_dt = datetime.datetime.strptime(ob['event_start_time'], "%Y-%m-%d %H:%M:%S.%f")
          else:
             if ob['event_start_time'] == "":
                ob_dt = self.starttime_from_file(ob['sd_video_file'])
             else:
+               print("EVS:", ob['event_start_time'])
                ob_dt = datetime.datetime.strptime(ob['event_start_time'], "%Y-%m-%d %H:%M:%S")
          time_diff = (ob_dt - ev_dt).total_seconds() 
          if -5 <= time_diff < 5:
@@ -203,6 +496,8 @@ class EventRunner():
                found_event = event['event_id']
                print("EV RANGE/TIME:", in_range, time_diff, ob['event_start_time'], min(event['start_datetime']))
       return(found_event)
+
+   
 
    def obs_inrange(self, event, ob):
       inrange = 0
