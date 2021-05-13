@@ -156,14 +156,24 @@ def make_meteor_learning_dataset(day_wild):
          for js in jss:
             if "reduced" in js or "star" in js or "manual" in js or "import" in js or "archive" in js or "events" in js:
                continue
-            ldb = add_meteor_to_ldb(js, ldb)
+            
+            ret = add_meteor_to_ldb(js, ldb)
+            if ret != ():
+                ldb = ret
+
    save_json_file(learning_db_file, ldb)
 
 def add_meteor_to_ldb(js, ldb, force=0):
    if True:
       if True:
          if True:
-            mj = load_json_file(js)
+            try:
+               mj = load_json_file(js)
+            except:
+               print("json corrupt")
+               return
+
+
             if mj == 0:
                return(ldb) 
             vid = js.replace(".json", ".mp4")
