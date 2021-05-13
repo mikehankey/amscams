@@ -14,6 +14,7 @@ import socket
 import subprocess
 from boto3.dynamodb.conditions import Key, Attr
 from lib.PipeUtil import get_file_info, fn_dir
+from Classes.SyncAWS import SyncAWS
 
 def back_loader(dynamodb, json_conf):
    mdirs = glob.glob("/mnt/ams2/meteors/*")

@@ -188,11 +188,11 @@ def crop_video(in_file, out_file, crop_box):
    cmd = "/usr/bin/ffmpeg -i " + in_file + " -filter:v \"" + crop + "\" -y " + out_file + " > /dev/null 2>&1"
 
    print("ff crop")
-   print(cmd)
+   print("BEST:", cmd)
    os.system(cmd) 
 
 def resize_video(in_file, out_file, ow, oh, bit_rate=20):
-   cmd = "/usr/bin/ffmpeg -i " + in_file + " -c:v libx264 -crf " + str(bit_rate) + " -pix_fmt yuv420p -vf 'scale=" + str(ow) + ":" + str(oh) + "' -y " + out_file
+   cmd = "/usr/bin/ffmpeg -i " + in_file + " -c:v libx264 -crf " + str(bit_rate) + " -pix_fmt yuv420p -vf 'scale=" + str(ow) + ":" + str(oh) + "' -y " + out_file + " >/dev/null 2>&1"
    os.system(cmd)
    print(cmd)
    print("ff resize")
@@ -200,7 +200,7 @@ def resize_video(in_file, out_file, ow, oh, bit_rate=20):
 
 def lower_bitrate(in_file, crf):
    outfile_lr = in_file.replace(".mp4", "-lr.mp4")
-   cmd = "/usr/bin/ffmpeg -i " + in_file + " -vcodec libx264 -crf " + str(crf) + " -y " + outfile_lr
+   cmd = "/usr/bin/ffmpeg -i " + in_file + " -vcodec libx264 -crf " + str(crf) + " -y " + outfile_lr + " > /dev/null 2>&1"
    print(cmd)
 
    os.system(cmd)
@@ -272,7 +272,12 @@ def best_crop_size(oxs, oys, vw,vh):
       '480x270',
       '384x216',
       '320x180',
+      '272x153',
+      '256x144',
+      '224x126',
+      '208x117',
       '160x90',
+      '96x54',
       '80x45',
    ]
 
@@ -287,10 +292,11 @@ def best_crop_size(oxs, oys, vw,vh):
    max_x = max(oxs) 
    max_y = max(oys) 
 
-   obj_w = max_x - min_x
-   obj_h = max_y - min_y
+   obj_w = (max_x - min_x) + 100
+   obj_h = (max_y - min_y) + 100
 
-   best_size = None
+   best_size = [1920,1080]
+   print("WH", obj_w, obj_h)
    for cs in crop_sizes:
       cw,ch = cs.split("x")
       cw,ch = int(cw),int(ch)
