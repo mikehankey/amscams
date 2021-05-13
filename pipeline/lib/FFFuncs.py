@@ -295,7 +295,8 @@ def best_crop_size(oxs, oys, vw,vh):
    obj_w = (max_x - min_x) + 100
    obj_h = (max_y - min_y) + 100
 
-   best_size = None
+   best_size = [1920,1080]
+   print("WH", obj_w, obj_h)
    for cs in crop_sizes:
       cw,ch = cs.split("x")
       cw,ch = int(cw),int(ch)

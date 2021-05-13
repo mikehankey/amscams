@@ -25,8 +25,10 @@ API_URL = "https://kyvegys798.execute-api.us-east-1.amazonaws.com/api/allskyapi"
 class SyncAWS():
 
    def __init__(self, station_id,api_key):
+      self.API_URL = "https://kyvegys798.execute-api.us-east-1.amazonaws.com/api/allskyapi"
       self.media_types = ['HD-crop.jpg', 'HD-crop.mp4', 'HD.jpg', 'HD.mp4', 'SD-crop.mp4', 'SD.jpg', 'SD.mp4', 'prev-crop.jpg', 'prev-vid.mp4', 'prev.jpg']
       self.my_sync_profile = "normal"
+      self.api_key = "123"
       self.cloud_policy = {}
       self.cloud_policy['non_confirmed'] = {}
       self.cloud_policy['confirmed'] = {}
@@ -74,6 +76,8 @@ class SyncAWS():
 
    def push_obs(self, api_key,station_id,meteor_file,mj=None):
       date = meteor_file[0:10]
+      if "sd_video_file" not in mj:
+         return()
       obs_data = self.make_obs_data(station_id, meteor_file,mj)
       obs_data['cmd'] = "put_obs"
       obs_data['station_id'] = station_id
@@ -81,7 +85,10 @@ class SyncAWS():
          "body": json.dumps(obs_data)
       }     
       headers = {'Content-type': 'application/json', 'Accept': 'text/plain'}
-      response = requests.post(API_URL, json.dumps(obs_data) )
+      print(json.dumps(obs_data))
+      headers = {'Content-type': 'application/json'}
+      response = requests.post(API_URL, data=json.dumps(obs_data) , headers=headers)
+      #response = requests.post(API_URL, json.dumps(obs_data) )
 
       print(response.content.decode())
 
@@ -125,13 +132,23 @@ class SyncAWS():
       return(data)
 
    def delete_aws_meteors(self, day):
-      url = API_URL + "?cmd=get_obs_for_day&station_id=" + self.station_id + "&day=" + day
+      # Need to do 2 things here
+      # 1 -- if the meteor is in the AWS DB but not locally, we need to del_commit it from the AWS DB
+      # 2 -- if the meteor is tagged as DELETED in AWS, but still exists locally, it means it was deleted from the cloud 
+      #    - that means we need to delete it locally and the commit the delete on the cloud end. 
+      # TODO / FUTURE -- 1) this needs to be locked down with perms 2) Delete commits should move the deleted data to trash. 
+
+      
+      url = self.API_URL + "?cmd=get_obs_for_day&station_id=" + self.station_id + "&day=" + day
       response = requests.get(url)
       content = response.content.decode()
       content = content.replace("\\", "")
       print(content)
-      data = json.loads(content)
+      jdata = json.loads(content)
+      data = jdata['all_vals']
       mdir = "/mnt/ams2/meteors/" + day + "/" 
+
+      # delete AWS meteors that don't exist locally
       for row in data:
          vid = row['vid']
          json_file = vid.replace(".mp4", ".json")
@@ -141,9 +158,53 @@ class SyncAWS():
 
             response = requests.get(url)
             content = response.content.decode()
-            print(content)
+            
          else:
             print("AWS METEOR IS GOOD!")
+      # delete local meteors that are tagged in AWS as deletes
+      url = self.API_URL + "?cmd=get_del_obs&station_id=" + self.station_id + "&date=" + day
+      #print(url)
+      response = requests.get(url)
+      content = response.content.decode()
+      content = content.replace("\\", "")
+      print(content)
+      jdata = json.loads(content)
+      data = jdata
+      print("DEL:", data)
+      need = 0
+      for row in data:
+         print("NEED TO DELETE", row)
+         need += 1
+         url = self.API_URL + "?cmd=del_obs_commit&station_id=" + self.station_id + "&sd_video_file=" + row['vid'] 
+         response = requests.get(url)
+         content = response.content.decode()
+         content = content.replace("\\", "")
+         print(content)
+         print(url)
+         self.delete_local_meteor(row['vid'])
+      print("AWS DELETE METEORS DONE.")
+      if need > 0:
+         os.system("./Process.py purge_meteors")
+
+   def delete_local_meteor(self, sd_video_file):
+      resp = {}
+      json_conf = load_json_file("../conf/as6.json")
+      amsid = self.station_id
+      print("VID:", sd_video_file)
+      delete_log = "/mnt/ams2/SD/proc2/json/" + amsid + ".del"
+      if cfe(delete_log) == 1:
+         try:
+            del_data = load_json_file(delete_log)
+         except:
+            del_data = {}
+      else:
+         del_data = {}
+      el = sd_video_file.split(".")
+      base = el[0]
+      del_data[base] = 1
+
+      save_json_file(delete_log, del_data)
+      print("SAVED DEL LOG:", delete_log)
 
    def sync_meteor(self, sd_vid):
      print("SYNC METEOR:", sd_vid)
@@ -381,11 +442,14 @@ class SyncAWS():
          self.sync_meteor_day(day)
 
    def sync_meteor_day(self, day):
+
       url = API_URL + "?cmd=get_obs_for_day&station_id=" + self.station_id + "&day=" + day
       mdir = "/mnt/ams2/meteors/" + day + "/"
       lcdir_stage = "/mnt/ams2/meteors/" + day + "/cloud_stage/"
       lcdir = "/mnt/ams2/meteors/" + day + "/cloud_files/"
       cloud_dir = "/mnt/archive.allsky.tv/" + self.station_id + "/METEORS/" + day[0:4] + "/" + day + "/"
+      self.delete_aws_meteors(day)
+
       if cfe(lcdir_stage, 1) == 0:
          os.system("mkdir " + lcdir_stage)
       if cfe(lcdir, 1) == 0:
@@ -418,8 +482,12 @@ class SyncAWS():
 
          if "root" in local_media:
             all_files[root]['local_media'] = local_media[root]
+            if "root" in local_media:
+               all_files[root]['mj']['sync_status'] = local_media[root]
          else:
             all_files[root]['local_media'] = []
+            if "root" in local_media:
+               all_files[root]['mj']['sync_status'] = local_media[root]
 
          all_files[root]['local_file'] = root
          all_files[root]['aws_file'] = {}
@@ -433,6 +501,7 @@ class SyncAWS():
       new_media_made = 0
       for root in sorted(all_files.keys()):
          make_media = 0
+
          if root in local_media:
             all_files[root]['local_media'] = local_media[root]
          else:
@@ -442,37 +511,33 @@ class SyncAWS():
 
          if len(all_files[root]['local_media']) < len(self.media_types)-1:
             make_media = 1
+         if root != all_files[root]['local_file']:
+            make_media = 0
+            print("THIS FILE SHOULD BE DELETED FROM AWS!")
+
 
          if make_media == 1:
-            print("TYPES:", len(all_files[root]['local_media']) , len(self.media_types)-1)
-            print("MAKE MEDIA FOR", root)
-            print("LOCAL MEDIA:", local_media[root])
-            print("ALLFILES MEDIA:", all_files[root]['local_media'])
             json_file = mdir + root + ".json"
             all_files[root]['mj']['local_media'] = all_files[root]['local_media']
             new_media_made = 1    
+            print("MAKE CM ALLFILES:", root, all_files[root])
             self.make_cloud_media(lcdir_stage, json_file, all_files[root]['mj'])
-         #print("METEORS:", root, all_files[root])
       if new_media_made == 1:
          local_media = self.get_local_media_day(day)
          for root in local_media:
             if "root" in all_files:
                all_files[root]['local_media'] = local_media[root]
 
-      for root in all_files:
-         if len(all_files[root]['local_media']) < len(self.media_types)-1:
-            print("MEDIA MISSING FOR :", root)
-         else:
-            print("MEDIA GOOD FOR :", root)
-
       response = requests.get(url)
       content = response.content.decode()
       content = content.replace("\\", "")
       data = json.loads(content)
       mdir = "/mnt/ams2/meteors/" + day + "/" 
-      print(url)
-      for row in data:
-
+      for row in data['all_vals']:
+         if "vid" not in row:
+            print(row)
+            print("VID MISSING FROM ROW!")
+            exit()
          vid = row['vid']
          root = mf.replace(".mp4", "")
          if root not in all_files:
@@ -536,17 +601,43 @@ class SyncAWS():
             meteor_confirm_status = "METEOR_NOT_CONFIRMED"
             all_files[root]['meteor_confirmed'] = 0
 
-         print(all_files[root]['meteor_confirmed'], root, all_files[root]['actions'], all_files[root]['local_rev'], all_files[root]['aws_rev'],  all_files[root]['media_sync_needed'], local_event_id, aws_event_id,aws_human_confirmed,local_human_confirmed, all_files[root]['local_media'] )
+         #print(all_files[root]['meteor_confirmed'], root, all_files[root]['actions'], all_files[root]['local_rev'], all_files[root]['aws_rev'],  all_files[root]['media_sync_needed'], local_event_id, aws_event_id,aws_human_confirmed,local_human_confirmed, all_files[root]['local_media'] )
       self.upload_cloud_media(day, all_files)
+      for root in all_files:
+         meteor_file = root + ".json"
+         if "local_sync_status" in root:
+            all_files[root]['mj']['sync_status'] = all_files[root]['local_sync_status']
+         else:
+            all_files[root]['mj']['sync_status']  = []
+         #del all_files[root]['mj']
+         sync_status = []
+         if root in local_media:
+            print("LOCAL MEDIA:", local_media[root]) 
+            for ext in local_media[root]:
+               cf = lcdir + self.station_id + "_" + root + "-" + ext
+               if cfe(cf) == 1:
+                  print("CLOUD FILE IS IN UPLOAD DIR!", cf)
+                  sync_status.append(ext)
+               #else:
+               #   print("CLOUD FILE IS IN NOT IN UPLOAD DIR!", cf)
+
+         else:
+            print("ROOT NOT IN LOCAL MEDIA!?", root)
+         all_files[root]['mj']['sync_status'] = sync_status
+         self.push_obs(self.api_key, self.station_id, meteor_file,all_files[root]['mj'])
 
 
 
    def compare_sync_media(self, local, aws):
       missing = 0
-      if len(local) == 0 or len(aws) == 0 :
+      if local == 0 or aws == 0:
+         missing = 1
+      elif len(local) == 0 or len(aws) == 0 :
          missing = 1
       for media in local:
-         if media not in aws:
+         if aws == 0:
+            missing = 1
+         elif media not in aws:
             missing = 1
       return(missing)
 
@@ -740,6 +831,7 @@ class SyncAWS():
       print("STAGE FILES MOVED!")
       rsync_cmd = "rsync -auv " + lcdir + "* " + cloud_dir
       print(rsync_cmd)
+      # MAIN UPLOADER HERE!!!
       os.system(rsync_cmd)
 
    def upload_cloud_media_old(self, day, mfiles):
@@ -799,6 +891,8 @@ class SyncAWS():
       errors= {}
       lcdir = lcdir_stage.replace("cloud_stage", "cloud_files")
       root_file = json_file.split("/")[-1].replace(".json", "")
+      if "sd_video_file" not in mj:
+         return()
       sd_vid = mj['sd_video_file']
       hd_vid = mj['hd_trim']
       ffp = {}
@@ -1033,6 +1127,7 @@ class SyncAWS():
          final_trim = mj['final_trim'] 
       else: 
          final_trim = {}
+         #"cat_stars": cat_stars,
       obs_data = {
          "station_id": station_id,
          "sd_video_file": sd_vid,
@@ -1043,7 +1138,7 @@ class SyncAWS():
          "peak_int": peak_int,
          "calib": calib,
          "final_trim": final_trim,
-         "cat_stars": cat_stars,
+         "cat_image_stars": [],
          "meteor_frame_data": meteor_frame_data,
          "revision": mj['revision'],
          "dfv": mj['dfv'],
