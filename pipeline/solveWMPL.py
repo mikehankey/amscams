@@ -762,7 +762,7 @@ def solve_event(event_id, force=1, time_sync=1):
 
 
     obs = {}
-    ignore_stations = ['AMS56']
+    ignore_stations = []
     print("EV:", event_id, event)
     if event is None:
        print("EVENT IS NONE!")
@@ -1676,13 +1676,20 @@ def make_kml(kml_file, points, lines):
    lc = 0
 
    # add 3D points
+   not_used = []
    for point in points:
       lon,lat,alt,station = point
       if "3DP:" in station:
          tstation, trash = station.split("_")
          tstation = tstation.replace("3DP:", "")
          print("S/T STATION:", station, tstation)
-         color = used[tstation]
+         if tstation in used:
+            color = used[tstation]
+         else: 
+            color = "ff000000"
+            not_used.append(station)
+            continue 
+
          pnt = station_folders[tstation].newpoint(name="", coords=[(lon,lat,alt)])
          pnt.description = "" 
          pnt.style.labelstyle.color=color
@@ -1696,7 +1703,7 @@ def make_kml(kml_file, points, lines):
          pc += 1
          if pc >= len(colors):
             pc = 0
-
+   print("NOT USED STATIONS:", not_used)
    line_folder = kml.newfolder(name="Trajectory")
    for line in lines:
       (lon1,lat1,alt1,lon2,lat2,alt2,line_desc) = line

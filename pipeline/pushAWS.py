@@ -25,13 +25,14 @@ def push_obs(api_key,station_id,meteor_file):
       return()
    obs_data['cmd'] = "put_obs"
    obs_data['station_id'] = station_id
-   aws_post_data = {
-      "body": obs_data
-   }     
-   #obs_data = json.loads(obs_data, parse_float=Decimal)
-   headers = {'Content-type': 'application/json', 'Accept': 'text/plain'}
-   response = requests.post(API_URL, json.dumps(obs_data) )
-
+   obs_data = json.loads(json.dumps(obs_data), parse_float=Decimal)
+   headers = {
+      'content-type': 'application/json'
+   }
+   #aws_post_data = json.loads(json.dumps(obs_data), parse_float=Decimal) 
+   headers = {'Content-type': 'application/json'}
+   response = requests.post(API_URL, data=json.dumps(obs_data) , headers=headers)
+   #print(obs_data)
    print(response.content.decode())
    #response = requests.get("https://kyvegys798.execute-api.us-east-1.amazonaws.com/api/allskyapi?cmd=get_event&event_date=2021_04_23&event_id=20210423_013032")
 #def push_event(obs_file):
@@ -79,22 +80,40 @@ def make_obs_data(station_id, date, meteor_file):
       peak_int = max(mj['best_meteor']['oint'])
    else:
       peak_int = 0
+   if "revision" in mj:
+      revision = mj['revision']
+   else:
+      revision = 1
+   if "sync_status" in mj:
+      sync_status = mj['sync_status']
+   else:
+      sync_status = []
+   if "dfv" in mj:
+      dfv = mj['dfv']
+   else:
+      dfv
+   if "cat_image_stars" in mj['cp']:
+      cat_image_stars = mj['cp']['cat_image_stars']
+   if "multi_station_meteor" in mj:
+      event_id = mj['multi_station_meteor']
+   else:
+      event_id = 0
 
    obs_data = {
+      "station_id": station_id,
       "sd_video_file": sd_vid,
       "hd_video_file": hd_vid,
-      "final_data": {},
-      "final_vid": "",
-      "prev_vid": 0,
-      "prev_jpg": 0,
-      "station_id": station_id,
       "event_start_time": event_start_time,
-      "duration": duration,
+      "event_id": event_id,
+      "dur": duration,
       "peak_int": peak_int,
       "calib": calib,
-      "revision": mj['revision'],
-      "last_update": update_time,
-      "meteor_frame_data": meteor_frame_data
+      "cat_image_stars": [],
+      "meteor_frame_data": meteor_frame_data,
+      "revision": revision,
+      "dfv": dfv,
+      "sync_status": sync_status,
+      "last_update": update_time
    }
    #obs_data = json.loads(json.dumps(obs_data), parse_float=Decimal)
    #table = dynamodb.Table('meteor_obs')

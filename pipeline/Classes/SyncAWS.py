@@ -107,6 +107,8 @@ class SyncAWS():
          for cf in cfs:
             el = cf.split("-")
             ext = el[-1]
+            if ext == "vid.mp4" :
+               ext = el[-2] + "-" + el[-1]
             if ext == "crop.jpg" or ext == "crop.mp4":
                ext = el[-2] + "-" + el[-1]
             cloud_files.append(ext)
@@ -1138,7 +1140,7 @@ class SyncAWS():
          "peak_int": peak_int,
          "calib": calib,
          "final_trim": final_trim,
-         "cat_image_stars": [],
+         "cat_image_stars": cat_stars,
          "meteor_frame_data": meteor_frame_data,
          "revision": mj['revision'],
          "dfv": mj['dfv'],

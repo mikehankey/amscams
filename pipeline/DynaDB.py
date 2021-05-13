@@ -993,7 +993,8 @@ def do_dyna_day(dynamodb, day):
    #print(cmd)
    #os.system(cmd)
 
-   cmd = "./DynaDB.py sync_db_day " + day
+   #cmd = "./DynaDB.py sync_db_day " + day
+   cmd = "/bin/bin/python3 AWS.py sd " + day
    print(cmd)
    os.system(cmd)
 
