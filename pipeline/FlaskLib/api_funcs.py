@@ -454,9 +454,9 @@ def update_meteor_points(sd_video_file,frames):
       resp['frames'] = mjr['meteor_frame_data']
    vid_fn = json_file.split("/")[-1]
    vid_fn = vid_fn.replace(".json", ".mp4")
-   cmd = "./DynamoDB.py update_obs " + vid_fn + " >/mnt/ams2/tmp/api.points 2>&1 &"
-   print("COMMAND:", cmd)
-   os.system(cmd)
+   #cmd = "./DynamoDB.py update_obs " + vid_fn + " >/mnt/ams2/tmp/api.points 2>&1 &"
+   #print("COMMAND:", cmd)
+   #os.system(cmd)
 
    return(resp)
    #for frame in frames:
