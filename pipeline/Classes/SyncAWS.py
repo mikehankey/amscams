@@ -91,6 +91,7 @@ class SyncAWS():
       #response = requests.post(API_URL, json.dumps(obs_data) )
 
       print(response.content.decode())
+      exit()
 
 
    def get_meteor_media_sync_status(self, sd_vid, cfs = []):
