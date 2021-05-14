@@ -1016,24 +1016,24 @@ def do_dyna_day(dynamodb, day):
    # also sync prev imgs for mse events
    cmd = "./Process.py reject_masks " + day
    print(cmd)
-   #os.system(cmd)
+   os.system(cmd)
 
    cmd = "./Process.py reject_planes " + day
    print(cmd)
-   #os.system(cmd)
+   os.system(cmd)
    
    cmd = "./Process.py confirm " + day
    print(cmd)
-   #os.system(cmd)
+   os.system(cmd)
 
    cmd = "./Process.py remaster_day " + day
    #print(cmd)
-   #os.system(cmd)
+   os.system(cmd)
 
    #cmd = "./DynaDB.py sync_db_day " + day
    cmd = "/usr/bin/python3 AWS.py sd " + day
    print(cmd)
-   #os.system(cmd)
+   os.system(cmd)
 
    cmd = "./DynaDB.py cd " + day
    print(cmd)
