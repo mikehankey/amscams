@@ -1,4 +1,5 @@
 #!/usr/bin/python3
+import redis
 import requests
 from lib.PipeManager import dist_between_two_points
 import math
@@ -15,6 +16,15 @@ import subprocess
 from boto3.dynamodb.conditions import Key, Attr
 from lib.PipeUtil import get_file_info, fn_dir
 from Classes.SyncAWS import SyncAWS
+
+#r = redis.Redis("allsky-redis.d2eqrc.0001.use1.cache.amazonaws.com", port=6379, decode_responses=True)
+API_URL = "https://kyvegys798.execute-api.us-east-1.amazonaws.com/api/allskyapi"
+
+class DecimalEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, Decimal):
+            return float(obj)
+        return json.JSONEncoder.default(self, obj)
 
 def back_loader(dynamodb, json_conf):
    mdirs = glob.glob("/mnt/ams2/meteors/*")
@@ -198,6 +208,11 @@ def insert_meteor_event(dynamodb=None, event_id=None, event_data=None):
       event_data = json.loads(json.dumps(event_data), parse_float=Decimal)
       table = dynamodb.Table('x_meteor_event')
       table.put_item(Item=event_data)
+      rkey = "E:" + event_id
+      rval = json.dumps(event_data)
+      r.set(rkey,rval)
+      print(rkey,rval)
+      print("saved redis")
 
 def insert_meteor_obs(dynamodb, station_id, meteor_file):
    update_time = datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
@@ -950,6 +965,21 @@ def update_event_sol(dynamodb, event_id, sol_data, obs_data, status):
    print(response)
          #':obs_data': obs_data,
    print("UPDATED EVENT WITH SOLUTION.")
+   url = API_URL + "?recache=1&cmd=get_event&event_id=" + event_id
+   print(url)
+   response = requests.get(url)
+   content = response.content.decode()
+   content = content.replace("\\", "")
+   #data = json.loads(content)
+   print(content)
+   #event_data = get_event(dynamodb, event_id, nocache=1)
+
+   #event_data = json.loads(event_data, parse_float=Decimal)
+  # rval = json.dumps(event_data, cls=DecimalEncoder)
+  # rkey = "E:" + event_id
+  # r.set(rkey,rval)
+  # print(rkey,rval)
+  # print("REDIS:")
    return response
 
 
@@ -986,25 +1016,24 @@ def do_dyna_day(dynamodb, day):
    # also sync prev imgs for mse events
    cmd = "./Process.py reject_masks " + day
    print(cmd)
-   os.system(cmd)
+   #os.system(cmd)
 
    cmd = "./Process.py reject_planes " + day
    print(cmd)
-   os.system(cmd)
+   #os.system(cmd)
    
    cmd = "./Process.py confirm " + day
    print(cmd)
-   os.system(cmd)
+   #os.system(cmd)
 
-   #cmd = "./Process.py remaster_day " + day
+   cmd = "./Process.py remaster_day " + day
    #print(cmd)
    #os.system(cmd)
 
    #cmd = "./DynaDB.py sync_db_day " + day
-   cmd = "/bin/bin/python3 AWS.py sd " + day
+   cmd = "/usr/bin/python3 AWS.py sd " + day
    print(cmd)
-   os.system(cmd)
-
+   #os.system(cmd)
 
    cmd = "./DynaDB.py cd " + day
    print(cmd)
