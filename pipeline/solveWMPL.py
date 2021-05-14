@@ -870,7 +870,12 @@ def solve_event(event_id, force=1, time_sync=1):
     else: 
        WMPL_solve(event_id, obs_data, time_sync)
 
-    solved_files = glob.glob(solve_dir + "/*")
+    sf = glob.glob(solve_dir + "/*")
+    solved_files = []
+    for ss in sf :
+       fn = ss.split("/")[-1]
+       solved_files.append(fn)
+
     if len(solved_files) > 10:
        simple_status = 1
        wmpl_status = 1
@@ -884,6 +889,7 @@ def solve_event(event_id, force=1, time_sync=1):
        print("FAILED TO SOLVE!")
        solution = {}
        #solution['obs'] = obs_data
+       solution['plots'] = solved_files
        if time_sync == 0:
           update_event_sol(None, event_id, solution, obs_data, "WMPL FAILED. TIME SYNC FAILED.")
        else:
@@ -896,6 +902,7 @@ def solve_event(event_id, force=1, time_sync=1):
     print("UPDATE EVENT SOL:")
     if time_sync == 1:
        update_event_sol(None, event_id, solution, as_obs, "SUCCESS")
+       exit()
     if time_sync == 0:
        update_event_sol(None, event_id, solution, as_obs, "TIME SYNC FAIL")
 
