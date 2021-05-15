@@ -96,10 +96,19 @@ def make_obs_data(station_id, date, meteor_file):
       cat_image_stars = mj['cp']['cat_image_stars']
    else:
       cat_image_stars = []
-   if "multi_station_meteor" in mj:
-      event_id = mj['multi_station_meteor']
+   if "multi_station_event" in mj:
+      event_id = mj['multi_station_event']['event_id'] + ":" + mj['multi_station_event']['solve_status']
    else:
       event_id = 0
+   if "ffp" in mj:
+      ffp = mj['ffp']
+   else:
+      ffp = {}
+   if "final_trim" in mj:
+      final_trim = mj['final_trim']
+   else:
+      final_trim = {}
+
 
    obs_data = {
       "station_id": station_id,
@@ -111,6 +120,8 @@ def make_obs_data(station_id, date, meteor_file):
       "peak_int": peak_int,
       "calib": calib,
       "cat_image_stars": cat_image_stars,
+      "ffp": ffp,
+      "final_trim": final_trim,
       "meteor_frame_data": meteor_frame_data,
       "revision": revision,
       "dfv": dfv,
@@ -125,15 +136,16 @@ def make_obs_data(station_id, date, meteor_file):
    save_json_file(meteor_file, mj)
    return(obs_data)
 
-json_conf = load_json_file("../conf/as6.json")
-if "api_key" in json_conf['site']:
-   api_key = json_conf['site']['api_key']
-else:
-   api_key = None
+if __name__ == "__main__":
+   json_conf = load_json_file("../conf/as6.json")
+   if "api_key" in json_conf['site']:
+      api_key = json_conf['site']['api_key']
+   else:
+      api_key = None
 
-station_id = json_conf['site']['ams_id']
+   station_id = json_conf['site']['ams_id']
 
-cmd = sys.argv[1]
-meteor_file = sys.argv[2]
-if cmd == "push_obs":
-   push_obs(api_key, station_id, meteor_file)
+   cmd = sys.argv[1]
+   meteor_file = sys.argv[2]
+   if cmd == "push_obs":
+      push_obs(api_key, station_id, meteor_file)

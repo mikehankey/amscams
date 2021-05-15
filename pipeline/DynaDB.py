@@ -204,7 +204,7 @@ def insert_meteor_event(dynamodb=None, event_id=None, event_data=None):
    else:
       admin_conf = load_json_file("admin_conf.json")
       import redis
-      r = redis.Redis("allsky-redis.d2eqrc.0001.use1.cache.amazonaws.com", port=6379, decode_responses=True)
+      r = redis.Redis(admin_conf['redis_host'], port=6379, decode_responses=True)
       admin = 1
 
    if dynamodb is None:
@@ -1056,6 +1056,15 @@ def update_event(dynamodb, event_id, simple_status, wmpl_status, sol_dir):
       ReturnValues="UPDATED_NEW"
    )
    print(response)
+   print("UPDATED EVENT WITH SOLUTION.")
+   url = API_URL + "?recache=1&cmd=get_event&event_id=" + event_id
+   print(url)
+   response = requests.get(url)
+   content = response.content.decode()
+   content = content.replace("\\", "")
+   #data = json.loads(content)
+   print(content)
+
    return response
 
 def do_dyna_day(dynamodb, day):
