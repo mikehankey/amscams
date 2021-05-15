@@ -199,7 +199,14 @@ def load_meteor_obs_day(dynamodb, station_id, day):
       insert_meteor_obs(dynamodb, station_id, meteor_file)
 
 def insert_meteor_event(dynamodb=None, event_id=None, event_data=None):
-   
+   if cfe("admin_conf.json") == 0:
+      print("feature for admin servers only.")
+   else:
+      admin_conf = load_json_file("admin_conf.json")
+      import redis
+      r = redis.Redis("allsky-redis.d2eqrc.0001.use1.cache.amazonaws.com", port=6379, decode_responses=True)
+      admin = 1
+
    if dynamodb is None:
       dynamodb = boto3.resource('dynamodb')
    print("DYNA INSERT EVENT ID:", event_id)
@@ -209,10 +216,53 @@ def insert_meteor_event(dynamodb=None, event_id=None, event_data=None):
       table = dynamodb.Table('x_meteor_event')
       table.put_item(Item=event_data)
       rkey = "E:" + event_id
-      rval = json.dumps(event_data)
+
+      rval = json.dumps(event_data ,cls=DecimalEncoder)
       r.set(rkey,rval)
       print(rkey,rval)
       print("saved redis")
+   # update all impacted obs
+   for i in range(0, len(event_data['stations'])):
+      # setup vars/values
+      station_id = event_data['stations'][i]
+      sd_video_file = event_data['files'][i]
+      if "solve_status" in event_data:
+         solve_status = event_data['solve_status']
+      else:
+         solve_status = "UNSOLVED"
+      event_id_val = event_id + ":" + solve_status
+
+      # setup redis keys for obs and get vals
+      okey = "O:" + station_id + ":" + sd_video_file
+      oikey = "OI:" + station_id + ":" + sd_video_file
+      ro_val = r.get(okey)
+      roi_val = r.get(oikey)
+      if ro_val is not None:
+         ro_val = json.loads(ro_val)
+         ro_val['event_id'] = event_id_val
+         ro_val = json.dumps(ro_val, cls=DecimalEncoder)
+         r.set(okey, ro_val)
+      if roi_val is not None:
+         roi_val = json.loads(roi_val)
+         roi_val['ei'] = event_id_val
+         roi_val = json.dumps(roi_val, cls=DecimalEncoder)
+         r.set(oikey, roi_val)
+
+      # update DYNA OBS with EVENT ID
+
+      table = dynamodb.Table('meteor_obs')
+      response = table.update_item(
+         Key = {
+            'station_id': station_id,
+            'sd_video_file': sd_video_file
+         },
+      UpdateExpression="set event_id = :event_id_val",
+      ExpressionAttributeValues={
+         ':event_id_val': event_id_val,
+      },
+      ReturnValues="UPDATED_NEW"
+   )
+   print("DID 1 EVENT:", event_data)
 
 def insert_meteor_obs(dynamodb, station_id, meteor_file):
    update_time = datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
