@@ -93,7 +93,6 @@ class SyncAWS():
       #response = requests.post(API_URL, json.dumps(obs_data) )
 
       print(response.content.decode())
-      exit()
 
 
    def get_meteor_media_sync_status(self, sd_vid, cfs = []):
@@ -470,9 +469,16 @@ class SyncAWS():
       if cfe(lcdir, 1) == 0:
          os.system("mkdir " + lcdir)
       self.get_mfiles(mdir)
+
+      # DETERMINE IF WE NEED TO MAKE MEDIA IMAGES
+      # OR CLIP VIDS
+
       local_media = self.get_local_media_day(day)
       # build local file dict 
       all_files = {}
+
+      # loop over all meteors in the days dir 
+      #  and build arrays      
       for mf in self.mfiles:
          fn = mf.split("/")[-1]
          root = fn.replace(".mp4", "")
@@ -608,6 +614,7 @@ class SyncAWS():
             all_files[root]['actions'].append("update_aws_obs")
          if all_files[root]['media_sync_needed'] == 1:
             all_files[root]['actions'].append("media_sync_needed")
+            all_files[root]['actions'].append("update_aws_obs")
          all_files[root]['meteor_confirmed'] = 0
          if local_event_id != 0 or aws_event_id != 0 or local_human_confirmed != 0 or aws_human_confirmed != 0:
             meteor_confirm_status = "METEOR_CONFIRMED"
