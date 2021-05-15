@@ -14,6 +14,7 @@ import sys
 import cv2
 from lib.FFFuncs import best_crop_size, crop_video, resize_video, splice_video, lower_bitrate, ffprobe
 from lib.PipeVideo import load_frames_simple
+from pushAWS import make_obs_data, push_obs
 #import aws
 
 # TWO TYPES OF PUSH REQUESTS ARE POSSIBLE.
@@ -74,7 +75,8 @@ class SyncAWS():
             vfn = json_file.split("/")[-1].replace(".json", ".mp4")
             self.mfiles.append(vfn)
 
-   def push_obs(self, api_key,station_id,meteor_file,mj=None):
+   def push_obs_OLD(self, api_key,station_id,meteor_file,mj=None):
+      # USE FUNCTION INSIDE pushAWS.py NOT THIS ONE
       date = meteor_file[0:10]
       if "sd_video_file" not in mj:
          return()
@@ -443,6 +445,16 @@ class SyncAWS():
       for md in meteor_dirs:
          day = md.split("/")[-1]
          self.sync_meteor_day(day)
+
+   def sync_meteor_day_data_only(self, day):
+      mdir = "/mnt/ams2/meteors/" + day + "/"
+      self.get_mfiles(mdir)
+      for mf in self.mfiles:
+         meteor_file = mf.replace(".mp4", ".json")
+         if cfe(mdir + meteor_file) == 1:
+            push_obs(self.api_key, self.station_id, meteor_file)
+         print(mf)
+
 
    def sync_meteor_day(self, day):
 
@@ -1071,7 +1083,8 @@ class SyncAWS():
          save_json_file(json_file, mj)
 
 
-   def make_obs_data(self, station_id, meteor_file,mj):
+   def make_obs_data_OLD(self, station_id, meteor_file,mj):
+      # USE THE FUNCTION INSIDE pushAWS.py to push obs not this one!
       jsf = meteor_file.split("/")[-1] 
       date = jsf[0:10]
       update_time = datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
