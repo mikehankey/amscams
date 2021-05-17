@@ -258,7 +258,7 @@ class SyncAWS():
      #sync_needed = 1
      if mj['revision'] > aws_data['revision'] or mj['dfv'] > aws_data['dfv'] or sync_needed == 1:
         print("WE NEED TO PUSH THIS DATA TO AWS!", sync_needed, jsf)
-        self.push_obs(self.api_key, self.station_id, jsf,mj)
+        push_obs(self.api_key, self.station_id, jsf)
      print("AWS:", aws_data['sync_status'])
    
    def find_hd_crop_area(self, mj):
@@ -646,7 +646,7 @@ class SyncAWS():
          else:
             print("ROOT NOT IN LOCAL MEDIA!?", root)
          all_files[root]['mj']['sync_status'] = sync_status
-         self.push_obs(self.api_key, self.station_id, meteor_file,all_files[root]['mj'])
+         push_obs(self.api_key, self.station_id, meteor_file)
 
 
 

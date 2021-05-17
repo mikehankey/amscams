@@ -91,7 +91,7 @@ def make_obs_data(station_id, date, meteor_file):
    if "dfv" in mj:
       dfv = mj['dfv']
    else:
-      dfv
+      dfv = 1
    if "cat_image_stars" in mj['cp']:
       cat_image_stars = mj['cp']['cat_image_stars']
    else:
