@@ -241,7 +241,10 @@ def delete_meteor(jsid, data):
    resp['msg'] = "deleted."
    delete_log = "/mnt/ams2/SD/proc2/json/" + amsid + ".del"
    if cfe(delete_log) == 1:
-      del_data = load_json_file(delete_log)
+      try:
+         del_data = load_json_file(delete_log)
+      except:
+         del_data = {}
    else:
       del_data = {}
    fn, dir = fn_dir(video_file)
