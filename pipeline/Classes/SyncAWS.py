@@ -469,7 +469,10 @@ class SyncAWS():
       if cfe(lcdir, 1) == 0:
          os.system("mkdir " + lcdir)
       self.get_mfiles(mdir)
-
+      if (len(self.mfiles)) > 80:
+         print("There are too many meteors detected for this day!") 
+         print("Clean out the dir before sync can happen!") 
+         exit()
       # DETERMINE IF WE NEED TO MAKE MEDIA IMAGES
       # OR CLIP VIDS
 
