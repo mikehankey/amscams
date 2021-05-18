@@ -563,7 +563,7 @@ class SyncAWS():
             print("VID MISSING FROM ROW!")
             exit()
          vid = row['vid']
-         root = mf.replace(".mp4", "")
+         root = vid.replace(".mp4", "")
          if root not in all_files:
             all_files[root] = {}
             all_files[root]['aws_file'] = root
