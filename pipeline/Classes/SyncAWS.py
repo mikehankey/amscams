@@ -149,7 +149,11 @@ class SyncAWS():
       content = content.replace("\\", "")
       print(content)
       jdata = json.loads(content)
-      data = jdata['all_vals']
+      if jdata is not None:
+         print(jdata)
+         data = jdata['all_vals']
+      else: 
+         data = []
       mdir = "/mnt/ams2/meteors/" + day + "/" 
 
       # delete AWS meteors that don't exist locally

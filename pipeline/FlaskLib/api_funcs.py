@@ -5,6 +5,7 @@ from lib.PipeVideo import ffprobe, load_frames_fast
 
 import os
 import cv2
+   #ny = int(int(y) / hdm_y)
 from FlaskLib.FlaskUtils import parse_jsid
 import glob
 import numpy as np
@@ -264,7 +265,11 @@ def delete_meteors(data):
    detections = data['detections'].split(";")
    delete_log = "/mnt/ams2/SD/proc2/json/" + amsid + ".del"
    if cfe(delete_log) == 1:
-      del_data = load_json_file(delete_log)
+      try:
+         del_data = load_json_file(delete_log)
+      except:
+         del_data = {}
+         os.system("rm " + delete_log)
    else:
       del_data = {} 
    for det in detections:
