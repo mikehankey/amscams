@@ -145,7 +145,13 @@ def make_meteor_index(date, json_conf):
       meteor_index[file]['sd_total_frame'] = int(total_frames)
       meteor_index[file]['sd_bit_rate'] = int(sd_bit_rate)
       json_file = file.replace(".mp4",".json")
+      
+      trash_json = json_file.replace(".json", ".trash")
+      if cfe(trash_json) == 1:
+         json_file = trash_json
+
       nojson = 0
+
       if cfe(json_file) == 0:
          meteor_index[file]['json_file'] = 0
          orphans += 1
@@ -566,8 +572,17 @@ def delete_from_base(base, json_conf):
    trash_dir = "/mnt/ams2/trash/" + date + "/" 
    if cfe(trash_dir,1) == 0:
       os.makedirs(trash_dir)
+   trash_jsons = []
    if True:
       jsf = meteor_dir + base + ".json"
+      jsft = meteor_dir + base + ".trash"
+      if cfe(jsft) == 1:
+         jsf = jsft
+         jsfn = jsf.split("/")[-1]
+         trash_jsons.append(jsfn)
+
+      
+
       if cfe(jsf) == 1:
          print(jsf)
          js = load_json_file(jsf)
@@ -622,4 +637,9 @@ def delete_from_base(base, json_conf):
       for file in files_to_del:
          cmd = "mv " + file + " " + trash_dir
          print(cmd)
+         os.system(cmd)
+      for file in trash_jsons:
+         trash_file = trash_dir + file
+         new_trash_file = trash_dir + file.replace(".trash", ".json")
+         cmd = "mv " + trash_file + " " + new_trash_file
          os.system(cmd)

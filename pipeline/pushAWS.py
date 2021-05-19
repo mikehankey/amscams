@@ -15,6 +15,16 @@ import sys
 API_URL = "https://kyvegys798.execute-api.us-east-1.amazonaws.com/api/allskyapi"
 
 def push_obs(api_key,station_id,meteor_file):
+   json_conf = load_json_file("../conf/as6.json")
+   if "registration" not in json_conf:
+      os.system("/usr/bin/python3 Register.py ")
+      json_conf = load_json_file("../conf/as6.json")
+      if "registration" not in json_conf:
+         print("COULD NOT REGISTER THE DEVICE!")
+         data = {}
+         save_json_file("../conf/registration_failed.json", data)
+         exit()
+
    date = meteor_file[0:10]
    meteor_file = "/mnt/ams2/meteors/" + date + "/" + meteor_file
    if cfe(meteor_file) == 1:
@@ -23,14 +33,16 @@ def push_obs(api_key,station_id,meteor_file):
       obs_data = None
       print("No meteor file.", meteor_file)
       return()
-   obs_data['cmd'] = "put_obs"
    obs_data['station_id'] = station_id
+   obs_data['api_key'] = json_conf['api_key']
+   obs_data['cmd'] = "put_obs"
    obs_data = json.loads(json.dumps(obs_data), parse_float=Decimal)
    headers = {
       'content-type': 'application/json'
    }
    #aws_post_data = json.loads(json.dumps(obs_data), parse_float=Decimal) 
    headers = {'Content-type': 'application/json'}
+   print(json.dumps(obs_data))
    response = requests.post(API_URL, data=json.dumps(obs_data) , headers=headers)
    #print(obs_data)
    print(response.content.decode())
