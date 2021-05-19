@@ -36,6 +36,10 @@ class SyncAWS():
       else:
          self.sync_log = {} 
       self.cloud_policy = {}
+      self.json_conf = load_json_file("../conf/as6.json")
+      if "registration" not in self.json_conf:
+         os.system("python3 Register.py")
+      self.json_conf = load_json_file("../conf/as6.json")
       self.cloud_policy['non_confirmed'] = {}
       self.cloud_policy['confirmed'] = {}
       self.cloud_policy['non_confirmed']['none'] = []
@@ -219,7 +223,8 @@ class SyncAWS():
          json_file = vid.replace(".mp4", ".json")
          if cfe(mdir + json_file) == 0:
             print("AWS METEOR EXISTS BUT NOT ON LOCAL STATION. IT MUST BE DELETED?")
-            url = API_URL + "?cmd=del_obs&station_id=" + self.station_id + "&sd_video_file=" + vid
+            url = API_URL + "?cmd=del_obs&station_id=" + self.station_id + "&sd_video_file=" + vid + "&api_key=" + self.json_conf['api_key']
+            print(url)
 
             response = requests.get(url)
             content = response.content.decode()
@@ -240,7 +245,7 @@ class SyncAWS():
       for row in data:
          print("NEED TO DELETE", row)
          need += 1
-         url = self.API_URL + "?cmd=del_obs_commit&station_id=" + self.station_id + "&sd_video_file=" + row['vid'] 
+         url = self.API_URL + "?cmd=del_obs_commit&station_id=" + self.station_id + "&sd_video_file=" + row['vid'] + self.json_conf['api_key']
          response = requests.get(url)
          content = response.content.decode()
          content = content.replace("\\", "")
@@ -529,6 +534,18 @@ class SyncAWS():
       cloud_dir = "/mnt/archive.allsky.tv/" + self.station_id + "/METEORS/" + day[0:4] + "/" + day + "/"
       cloud_url = "https://archive.allsky.tv/" + self.station_id + "/METEORS/" + day[0:4] + "/" + day + "/"
 
+      # get meteors for this day
+      self.get_mfiles(mdir)
+
+      # check if there are too many meteors for the day. 
+      # if more than 80 exist we should abort until the 
+      # operator cleans up the station
+      # FUTURE: log error message 
+      if (len(self.mfiles)) > 40:
+         print("There are too many meteors detected for this day!", len(self.mfiles)) 
+         print("Clean out the dir before sync can happen!") 
+         self.bad_day_filter(day)
+
       # check to see if a "cloud_files.info" exists in this dir. 
       # if not, the dir is not up to the current standard.  
 
@@ -554,17 +571,7 @@ class SyncAWS():
       if cfe(lcdir, 1) == 0:
          os.system("mkdir " + lcdir)
 
-      # get meteors for this day
-      self.get_mfiles(mdir)
 
-      # check if there are too many meteors for the day. 
-      # if more than 80 exist we should abort until the 
-      # operator cleans up the station
-      # FUTURE: log error message 
-      if (len(self.mfiles)) > 80:
-         print("There are too many meteors detected for this day!") 
-         print("Clean out the dir before sync can happen!") 
-         exit()
       # DETERMINE IF WE NEED TO MAKE MEDIA IMAGES
       # OR CLIP VIDS
 
@@ -761,6 +768,80 @@ class SyncAWS():
       print("DONE.")
       exit()
 
+   def bad_day_filter(self, day):
+      print(len(self.mfiles))
+      bad_zero = 0
+      report = {}
+      crops = {}
+      for mf in sorted(self.mfiles):
+         report[mf] = {}
+         mj = load_json_file("/mnt/ams2/meteors/" + day + "/" + mf.replace(".mp4", ".json"))
+         print(mf, "\n  CM:", len(mj['confirmed_meteors']))
+         report[mf]['meteors_in_file'] = len(mj['confirmed_meteors'])
+         report[mf]['bad_zero'] = 0
+         for cm in mj['confirmed_meteors']:
+            if "report" in cm:
+               print("   REPORT", cm['report']['meteor'])
+            if "best_meteor" in mj:
+               print("   BEST", mj['best_meteor']['crop_box'])
+               crop_key = str(int(mj['best_meteor']['crop_box'][0]/10)) + "." + str(int(mj['best_meteor']['crop_box'][1]/10))
+               print("CROP KEY", crop_key)
+               if crop_key in crops:
+                  crops[crop_key] += 1
+               else:
+                  crops[crop_key] = 1
+
+            print("   FN", cm['ofns'])
+            print("   XS", cm['oxs'])
+            print("   YS", cm['oys'])
+            print("   OW", cm['ows'])
+            print("   OH", cm['ows'])
+            print("   OINT", cm['oint'])
+            print("   SEGS", cm['segs'])
+
+            # check for 0 xs
+            zero_x = 0
+            zero_y = 0
+            for x in cm['oxs']:
+               if x == 0:
+                  zero_x += 1
+            for y in cm['oys']:
+               if y == 0:
+                  zero_y += 1
+            zero_x_p = zero_x / len(cm['oxs'])
+            zero_y_p = zero_y / len(cm['oys'])
+            print("   ZEROXP:", zero_x_p)
+            print("   ZEROYP:", zero_x_p)
+            if zero_x_p > .5 or zero_y_p > .5:
+               report[mf]['bad_zero'] = 1
+               bad_zero += 1
+            else:
+               report[mf]['bad_zero'] = 0
+      print("BAD ZEROS:", bad_zero)
+      c = 0
+      for key in crops:
+         print(key, crops[key])
+
+      for mf in report:
+         mj = load_json_file("/mnt/ams2/meteors/" + day + "/" + mf.replace(".mp4", ".json"))
+         print(c, mf, report[mf])
+         c = c + 1
+         if "best_meteor" in mj:
+            crop_key = str(int(mj['best_meteor']['crop_box'][0]/10)) + "." + str(int(mj['best_meteor']['crop_box'][1]/10))
+            if crop_key in crops:
+               crop_val = crops[crop_key]
+            else:
+               crop_val = 0
+         else:
+            crop_val = 0
+         #if crop_val > 2:
+         #   print("BAD CROP VAL!", crop_val, mf)
+         if (report[mf]['bad_zero'] == 1 and report[mf]['meteors_in_file'] > 1) or report[mf]['meteors_in_file'] > 3 or crop_val > 2:
+            mff = "/mnt/ams2/meteors/" + day + "/" + mf.replace(".mp4", ".json")
+            mff_trash = "/mnt/ams2/meteors/" + day + "/" + mf.replace(".mp4", ".trash")
+            cmd = "mv " + mff + " " + mff_trash
+            os.system(cmd)
+            print(cmd)
 
    def compare_sync_media(self, local, aws):
       missing = 0
