@@ -756,7 +756,7 @@ class SyncAWS():
          all_files[root]['mj']['sync_status'] = sync_status
          del all_files[root]['mj']
          print(root, all_files[root])
-         #push_obs(self.api_key, self.station_id, meteor_file)
+         push_obs(self.api_key, self.station_id, meteor_file)
       if day not in self.sync_log:
          self.sync_log[day] = {}
          self.sync_log[day]['updates'] = []
