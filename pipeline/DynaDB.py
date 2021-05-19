@@ -486,7 +486,6 @@ def update_dyna_cache_for_day(dynamodb, date, stations, utype=None):
    jdata = json.loads(content)
    all_stations = jdata['all_vals']
    print("HI!", all_stations)
-   #exit()
    clusters = make_station_clusters(all_stations)
    cluster_stations = []
    stations = []
@@ -716,7 +715,24 @@ def get_event(dynamodb, event_id, nocache=1):
       print(response)
       return([])
 
-def get_obs(dynamodb, station_id, sd_video_file):
+def get_obs(station_id, sd_video_file):
+   if True:
+      url = API_URL + "?cmd=get_obs&station_id=" + station_id + "&sd_video_file=" + sd_video_file
+      response = requests.get(url)
+      content = response.content.decode()
+      content = content.replace("\\", "")
+      if content[0] == "\"":
+         content = content[1:]
+         content = content[0:-1]
+      if "not found" in content:
+         data = {}
+         data['aws_status'] = False
+      else:
+         data = json.loads(content)
+         data['aws_status'] = True
+      return(data)
+
+def get_obs_old2(dynamodb, station_id, sd_video_file):
    date= sd_video_file[0:10]
    year, mon, day = date.split("_")
    obs_data = None
