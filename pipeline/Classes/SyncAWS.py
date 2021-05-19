@@ -766,7 +766,6 @@ class SyncAWS():
       self.sync_log[day]['last_update_version'] = 1
       save_json_file(self.sync_log_file, self.sync_log)
       print("DONE.")
-      exit()
 
    def bad_day_filter(self, day):
       print(len(self.mfiles))
@@ -775,7 +774,10 @@ class SyncAWS():
       crops = {}
       for mf in sorted(self.mfiles):
          report[mf] = {}
-         mj = load_json_file("/mnt/ams2/meteors/" + day + "/" + mf.replace(".mp4", ".json"))
+         mfile = "/mnt/ams2/meteors/" + day + "/" + mf.replace(".mp4", ".json")
+         if cfe(mfile) == 0:
+            continue
+         mj = load_json_file(mfile)
          print(mf, "\n  CM:", len(mj['confirmed_meteors']))
          report[mf]['meteors_in_file'] = len(mj['confirmed_meteors'])
          report[mf]['bad_zero'] = 0
@@ -823,6 +825,9 @@ class SyncAWS():
          print(key, crops[key])
 
       for mf in report:
+         mfile = "/mnt/ams2/meteors/" + day + "/" + mf.replace(".mp4", ".json")
+         if cfe(mfile) == 0:
+            continue
          mj = load_json_file("/mnt/ams2/meteors/" + day + "/" + mf.replace(".mp4", ".json"))
          print(c, mf, report[mf])
          c = c + 1

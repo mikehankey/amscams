@@ -1,4 +1,5 @@
 from Classes.SyncAWS import SyncAWS 
+import glob
 from lib.PipeUtil import load_json_file, cfe, save_json_file
 import sys
 import glob 

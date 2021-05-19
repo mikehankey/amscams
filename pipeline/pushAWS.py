@@ -1,4 +1,5 @@
 #!/usr/bin/python3
+import glob
 from decimal import Decimal
 import simplejson as json
 from datetime import datetime
@@ -13,6 +14,34 @@ import sys
 # PUSH OBS REQUESTS ARE ONLY ALLOWED WITH A KEY THAT MATCHES THE STATION'S OR AN ADMIN KEY
 # EVENTS ARE ONLY ALLOWED TO BE PUSH WITH ADMIN KEYS
 API_URL = "https://kyvegys798.execute-api.us-east-1.amazonaws.com/api/allskyapi"
+
+def get_meteor_media_sync_status(sd_vid):
+   # determine the current sync status for this meteor.
+   # does the meteor exist in dynamo with the right version?
+   # is the media fully uploaded to the cloud drive (tiny jpg, prev_jpg, prev_vid, final_vid)
+   day = sd_vid[0:10]
+   lcdir = "/mnt/ams2/meteors/" + day + "/cloud_files/"
+   cloud_files = []
+   if True:
+      wild = sd_vid.replace(".mp4", "")
+      print("GLOB", lcdir + "/*" + wild  + "*")
+      cfs = glob.glob(lcdir + "/*" + wild + "*")
+      print(lcdir + "/*" + wild + "*")
+      for cf in cfs:
+         print(cf)
+         el = cf.split("-")
+         ext = el[-1]
+         if ext == "vid.mp4" :
+            ext = el[-2] + "-" + el[-1]
+         if ext == "crop.jpg" or ext == "crop.mp4":
+            ext = el[-2] + "-" + el[-1]
+         cloud_files.append(ext)
+
+
+      sync_status = cloud_files
+      print("SS", sync_status)
+      #exit()
+      return(sync_status)
 
 def push_obs(api_key,station_id,meteor_file):
    json_conf = load_json_file("../conf/as6.json")
@@ -45,7 +74,7 @@ def push_obs(api_key,station_id,meteor_file):
    print(json.dumps(obs_data))
    response = requests.post(API_URL, data=json.dumps(obs_data) , headers=headers)
    #print(obs_data)
-   print(response.content.decode())
+   print("RESP:", response.content.decode())
    #response = requests.get("https://kyvegys798.execute-api.us-east-1.amazonaws.com/api/allskyapi?cmd=get_event&event_date=2021_04_23&event_id=20210423_013032")
 #def push_event(obs_file):
 
@@ -96,10 +125,8 @@ def make_obs_data(station_id, date, meteor_file):
       revision = mj['revision']
    else:
       revision = 1
-   if "sync_status" in mj:
-      sync_status = mj['sync_status']
-   else:
-      sync_status = []
+   mfn = meteor_file.split("/")[-1].replace(".json", "")
+   sync_status = get_meteor_media_sync_status(mfn)
    if "dfv" in mj:
       dfv = mj['dfv']
    else:
