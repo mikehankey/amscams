@@ -40,6 +40,7 @@ class RegisterDevice():
          print("CAMS ETH INTERFACE NOT FOUND")
          exit()
 
+      #
       data = json.loads(get("http://ip.jsontest.com/").text)
       self.public_ip = data["ip"]
       json_conf = load_json_file("../conf/as6.json")
