@@ -30,6 +30,11 @@ class SyncAWS():
       self.media_types = ['HD-crop.jpg', 'HD-crop.mp4', 'HD.jpg', 'HD.mp4', 'SD-crop.mp4', 'SD.jpg', 'SD.mp4', 'prev-crop.jpg', 'prev-vid.mp4', 'prev.jpg']
       self.my_sync_profile = "normal"
       self.api_key = "123"
+      self.sync_log_file = "../conf/sync_log.json"
+      if cfe(self.sync_log_file) == 1:
+         self.sync_log = load_json_file(self.sync_log_file)
+      else:
+         self.sync_log = {} 
       self.cloud_policy = {}
       self.cloud_policy['non_confirmed'] = {}
       self.cloud_policy['confirmed'] = {}
@@ -94,6 +99,58 @@ class SyncAWS():
 
       print(response.content.decode())
 
+   
+   def purge_deleted_cloud_files(self, day):
+      mdir = "/mnt/ams2/meteors/" + day + "/" 
+      self.get_mfiles(mdir)
+      cloud_files = glob.glob(mdir + "cloud_files/*")
+      cloud_stage_files = glob.glob(mdir + "cloud_stage/*")
+      print(mdir + "cloud_files/*")
+      good_roots = []
+      for mf in sorted(self.mfiles):
+         el = mf.split("-")
+         root = el[0]
+         good_roots.append(self.station_id + "_" + root)
+         print(self.station_id + "_" + root)
+      pr = 0
+      deleted = 0
+      for cf in sorted(cloud_stage_files):
+         cfn = cf.split("/")[-1]
+         el = cfn.split("-")
+         root = el[0]
+         if root in good_roots:
+            print("GOOD", root)
+         else:
+            print("BAD:", root)
+            cmd = "rm " + cf
+            print(cmd)
+            os.system(cmd)
+
+      for cf in sorted(cloud_files):
+         cfn = cf.split("/")[-1]
+         el = cfn.split("-")
+         root = el[0]
+         if "prev.jpg" in cfn:
+            pr += 1
+         if root in good_roots:
+            print("GOOD", root)
+         else:
+            print("BAD:", root)
+            cmd = "rm " + cf
+            print(cmd)
+            os.system(cmd)
+            deleted += 1
+      self.cloud_files = cloud_files 
+      if deleted > 0:
+         year = day[0:4]
+         lcdir = "/mnt/ams2/meteors/" + day + "/cloud_files/"
+         year = day[0:4]
+         cloud_dir = "/mnt/archive.allsky.tv/" + self.station_id + "/METEORS/" + year + "/" + day + "/"
+         cmd = "rsync -av " + lcdir + " " + cloud_dir + " --delete "
+         print("NEED TO RESYNC CLOUD DIR!")
+         print(cmd)
+         os.system(cmd)
+    
 
    def get_meteor_media_sync_status(self, sd_vid, cfs = []):
       # determine the current sync status for this meteor. 
@@ -450,6 +507,7 @@ class SyncAWS():
          self.sync_meteor_day(day)
 
    def sync_meteor_day_data_only(self, day):
+      
       mdir = "/mnt/ams2/meteors/" + day + "/"
       self.get_mfiles(mdir)
       for mf in self.mfiles:
@@ -460,19 +518,49 @@ class SyncAWS():
 
 
    def sync_meteor_day(self, day):
-
+      # remove deleted meteor cloud media
+      self.purge_deleted_cloud_files(day)
+      
+      # load up the needed vars
       url = API_URL + "?cmd=get_obs_for_day&station_id=" + self.station_id + "&day=" + day
       mdir = "/mnt/ams2/meteors/" + day + "/"
       lcdir_stage = "/mnt/ams2/meteors/" + day + "/cloud_stage/"
       lcdir = "/mnt/ams2/meteors/" + day + "/cloud_files/"
       cloud_dir = "/mnt/archive.allsky.tv/" + self.station_id + "/METEORS/" + day[0:4] + "/" + day + "/"
+      cloud_url = "https://archive.allsky.tv/" + self.station_id + "/METEORS/" + day[0:4] + "/" + day + "/"
+
+      # check to see if a "cloud_files.info" exists in this dir. 
+      # if not, the dir is not up to the current standard.  
+
+      response = requests.get(cloud_url + "cloud_files.info")
+      content = response.content.decode()
+      if "NoSuchKey" in content:
+         print("There is no remote cloud files index. make it.")
+         cfs = glob.glob(cloud_dir + "*")
+         cloud_files = []
+         for cf in cfs:
+            cloud_files.append(cf.split("/")[-1])
+         save_json_file(cloud_dir + "cloud_files.info", cloud_files)
+         print("SAVED:", cloud_dir + "cloud_files.info")
+      else:
+         cloud_files = json.loads(content)
+
+      # delete meteors inside AWS that no longer exist on the local station
       self.delete_aws_meteors(day)
 
+      # make staging and cloud dirs if they don't exist
       if cfe(lcdir_stage, 1) == 0:
          os.system("mkdir " + lcdir_stage)
       if cfe(lcdir, 1) == 0:
          os.system("mkdir " + lcdir)
+
+      # get meteors for this day
       self.get_mfiles(mdir)
+
+      # check if there are too many meteors for the day. 
+      # if more than 80 exist we should abort until the 
+      # operator cleans up the station
+      # FUTURE: log error message 
       if (len(self.mfiles)) > 80:
          print("There are too many meteors detected for this day!") 
          print("Clean out the dir before sync can happen!") 
@@ -487,6 +575,7 @@ class SyncAWS():
       # loop over all meteors in the days dir 
       #  and build arrays      
       for mf in self.mfiles:
+         print(mf)
          fn = mf.split("/")[-1]
          root = fn.replace(".mp4", "")
          mjf = mdir + root + ".json"
@@ -556,6 +645,7 @@ class SyncAWS():
             if "root" in all_files:
                all_files[root]['local_media'] = local_media[root]
 
+      # get meteors and data already logged in AWS and populate the main dict
       response = requests.get(url)
       content = response.content.decode()
       content = content.replace("\\", "")
@@ -577,13 +667,13 @@ class SyncAWS():
             all_files[root]['aws_file'] = root
             all_files[root]['aws_data'] = row
 
+      # loop over all local files and determine actions needed
       for root in all_files:
          actions = []
          if all_files[root]['local_file'] == 0:
             all_files[root]['actions'].append( "del_aws_obs")
          elif all_files[root]['aws_file'] == 0:
             all_files[root]['actions'].append("insert_aws_obs")
-
 
          if "rv" in all_files[root]['aws_data']:
             all_files[root]['aws_rev'] = all_files[root]['aws_data']['rv']
@@ -631,14 +721,18 @@ class SyncAWS():
             all_files[root]['meteor_confirmed'] = 0
 
          #print(all_files[root]['meteor_confirmed'], root, all_files[root]['actions'], all_files[root]['local_rev'], all_files[root]['aws_rev'],  all_files[root]['media_sync_needed'], local_event_id, aws_event_id,aws_human_confirmed,local_human_confirmed, all_files[root]['local_media'] )
+
+      # stage the media files for upload based on the confirmation of each meteor ? 
+      # this should be called "prep" we will upload later
       self.upload_cloud_media(day, all_files)
+
       for root in all_files:
          meteor_file = root + ".json"
          if "local_sync_status" in root:
             all_files[root]['mj']['sync_status'] = all_files[root]['local_sync_status']
          else:
             all_files[root]['mj']['sync_status']  = []
-         #del all_files[root]['mj']
+
          sync_status = []
          if root in local_media:
             print("LOCAL MEDIA:", local_media[root]) 
@@ -653,8 +747,19 @@ class SyncAWS():
          else:
             print("ROOT NOT IN LOCAL MEDIA!?", root)
          all_files[root]['mj']['sync_status'] = sync_status
-         push_obs(self.api_key, self.station_id, meteor_file)
-
+         del all_files[root]['mj']
+         print(root, all_files[root])
+         #push_obs(self.api_key, self.station_id, meteor_file)
+      if day not in self.sync_log:
+         self.sync_log[day] = {}
+         self.sync_log[day]['updates'] = []
+      update_time = datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
+      self.sync_log[day]['updates'].append(update_time)
+      self.sync_log[day]['last_update'] = update_time
+      self.sync_log[day]['last_update_version'] = 1
+      save_json_file(self.sync_log_file, self.sync_log)
+      print("DONE.")
+      exit()
 
 
    def compare_sync_media(self, local, aws):
@@ -858,10 +963,16 @@ class SyncAWS():
                      os.system(cmd)
 
       print("STAGE FILES MOVED!")
-      rsync_cmd = "rsync -auv " + lcdir + "* " + cloud_dir
-      print(rsync_cmd)
-      # MAIN UPLOADER HERE!!!
-      os.system(rsync_cmd)
+      print("SKIP RYSNC FOR NOW!")
+      total_local_cloud_files = len(glob.glob(lcdir + "*"))
+      if total_local_cloud_files != len(self.cloud_files) :
+         rsync_cmd = "rsync -auv " + lcdir + "* " + cloud_dir
+         print("Cloud media files and local meida files are NOT in sync. rsync needed!")
+         print(rsync_cmd)
+         # MAIN UPLOADER HERE!!!
+         #os.system(rsync_cmd)
+      else:
+         print("Cloud media files and local meida files are in sync. no rsync needed.")
 
    def upload_cloud_media_old(self, day, mfiles):
       year = day[0:4]
