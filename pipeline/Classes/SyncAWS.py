@@ -533,7 +533,7 @@ class SyncAWS():
       cloud_dir = "/mnt/archive.allsky.tv/" + self.station_id + "/METEORS/" + day[0:4] + "/" + day + "/"
       cloud_url = "https://archive.allsky.tv/" + self.station_id + "/METEORS/" + day[0:4] + "/" + day + "/"
 
-      # get meteors for this day
+      # get local meteors for this day
       self.get_mfiles(mdir)
 
       # check if there are too many meteors for the day. 
