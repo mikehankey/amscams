@@ -29,7 +29,6 @@ class SyncAWS():
       self.API_URL = "https://kyvegys798.execute-api.us-east-1.amazonaws.com/api/allskyapi"
       self.media_types = ['HD-crop.jpg', 'HD-crop.mp4', 'HD.jpg', 'HD.mp4', 'SD-crop.mp4', 'SD.jpg', 'SD.mp4', 'prev-crop.jpg', 'prev-vid.mp4', 'prev.jpg']
       self.my_sync_profile = "normal"
-      self.api_key = "123"
       self.sync_log_file = "../conf/sync_log.json"
       if cfe(self.sync_log_file) == 1:
          self.sync_log = load_json_file(self.sync_log_file)
@@ -245,7 +244,7 @@ class SyncAWS():
       for row in data:
          print("NEED TO DELETE", row)
          need += 1
-         url = self.API_URL + "?cmd=del_obs_commit&station_id=" + self.station_id + "&sd_video_file=" + row['vid'] + self.json_conf['api_key']
+         url = self.API_URL + "?cmd=del_obs_commit&station_id=" + self.station_id + "&sd_video_file=" + row['vid'] + "&api_key=" + self.json_conf['api_key']
          response = requests.get(url)
          content = response.content.decode()
          content = content.replace("\\", "")
@@ -557,6 +556,7 @@ class SyncAWS():
          cloud_files = []
          for cf in cfs:
             cloud_files.append(cf.split("/")[-1])
+         print(cloud_dir + "cloud_files.info")
          save_json_file(cloud_dir + "cloud_files.info", cloud_files)
          print("SAVED:", cloud_dir + "cloud_files.info")
       else:
@@ -586,7 +586,9 @@ class SyncAWS():
          fn = mf.split("/")[-1]
          root = fn.replace(".mp4", "")
          mjf = mdir + root + ".json"
+         print("ROOT IS:", root)
          if root not in all_files:
+            print("ROOT AD:", root)
             all_files[root] = {}
          if cfe(mjf) == 1:
             #all_files[root]['mj'] = {}
@@ -599,14 +601,15 @@ class SyncAWS():
          else:
             all_files[root]['local_rev'] = 1
 
-         if "sync_status" in all_files[root]['mj']:
-            all_files[root]['local_sync_status'] = all_files[root]['mj']['sync_status']
-         else:
-            all_files[root]['local_sync_status'] = []
+         if root not in all_files:
+            print("ROOT FILE MISSING????")
+            print("ROOT IS:", root)
+            exit()
 
-         if "root" in local_media:
+
+         if root in local_media:
             all_files[root]['local_media'] = local_media[root]
-            if "root" in local_media:
+            if root in local_media:
                all_files[root]['mj']['sync_status'] = local_media[root]
          else:
             all_files[root]['local_media'] = []
@@ -691,7 +694,8 @@ class SyncAWS():
          else:
             all_files[root]['aws_sync_status'] = []
 
-         media_missing = self.compare_sync_media(all_files[root]['local_sync_status'],  all_files[root]['aws_sync_status'])
+         local_sync_status = self.get_meteor_media_sync_status(root + ".mp4") 
+         media_missing = self.compare_sync_media(local_sync_status,  all_files[root]['aws_sync_status'])
          if media_missing > 0:
             all_files[root]['media_sync_needed'] = 1
          else:
@@ -705,6 +709,9 @@ class SyncAWS():
          else:
             aws_human_confirmed = 0
 
+         print("ROOT IS:", root)
+         if "mj" not in all_files[root]:
+            continue
          if "human_confirmed" in all_files[root]['mj']:
             local_human_confirmed =  all_files[root]['mj']['human_confirmed']
          else:
@@ -735,6 +742,8 @@ class SyncAWS():
 
       for root in all_files:
          meteor_file = root + ".json"
+         if "mj" not in all_files[root]:
+            continue
          if "local_sync_status" in root:
             all_files[root]['mj']['sync_status'] = all_files[root]['local_sync_status']
          else:
@@ -785,13 +794,14 @@ class SyncAWS():
             if "report" in cm:
                print("   REPORT", cm['report']['meteor'])
             if "best_meteor" in mj:
-               print("   BEST", mj['best_meteor']['crop_box'])
-               crop_key = str(int(mj['best_meteor']['crop_box'][0]/10)) + "." + str(int(mj['best_meteor']['crop_box'][1]/10))
-               print("CROP KEY", crop_key)
-               if crop_key in crops:
-                  crops[crop_key] += 1
-               else:
-                  crops[crop_key] = 1
+               if "crop_box" in mj['best_meteor']:
+                  print("   BEST", mj['best_meteor']['crop_box'])
+                  crop_key = str(int(mj['best_meteor']['crop_box'][0]/10)) + "." + str(int(mj['best_meteor']['crop_box'][1]/10))
+                  print("CROP KEY", crop_key)
+                  if crop_key in crops:
+                     crops[crop_key] += 1
+                  else:
+                     crops[crop_key] = 1
 
             print("   FN", cm['ofns'])
             print("   XS", cm['oxs'])
@@ -832,9 +842,12 @@ class SyncAWS():
          print(c, mf, report[mf])
          c = c + 1
          if "best_meteor" in mj:
-            crop_key = str(int(mj['best_meteor']['crop_box'][0]/10)) + "." + str(int(mj['best_meteor']['crop_box'][1]/10))
-            if crop_key in crops:
-               crop_val = crops[crop_key]
+            if "crop_box" in mj['best_meteor']:
+               crop_key = str(int(mj['best_meteor']['crop_box'][0]/10)) + "." + str(int(mj['best_meteor']['crop_box'][1]/10))
+               if crop_key in crops:
+                  crop_val = crops[crop_key]
+               else:
+                  crop_val = 0
             else:
                crop_val = 0
          else:
@@ -1026,7 +1039,12 @@ class SyncAWS():
       lcdir = "/mnt/ams2/meteors/" + day + "/cloud_files/"
       for mf in all_files :
          base_file = self.station_id + "_" + mf 
-         confirmed = all_files[mf]['meteor_confirmed']
+         if mf not in all_files:
+            continue
+         if "meteor_confirmed" in all_files[mf]:
+            confirmed = all_files[mf]['meteor_confirmed']
+         else:
+            confirmed = 0
          if confirmed == 1:
             exts = self.cloud_policy['confirmed'][self.my_sync_profile]
             for ext in exts:
