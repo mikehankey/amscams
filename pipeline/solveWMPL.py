@@ -767,7 +767,7 @@ def solve_event(event_id, force=1, time_sync=1):
     status = ev_status['status']
     if status == 1:
        print("This event was already solved successfully.", event_id)
-       return()
+       #return()
     if status == -1:
        print("This event was failed to solve.", event_id)
        #return()
@@ -822,6 +822,10 @@ def solve_event(event_id, force=1, time_sync=1):
              print("LOC:", dy_obs_data['loc'], t_station)
           obs_data = convert_dy_obs(dy_obs_data, obs )
 
+    for key in obs_data:
+      for file in obs_data[key]:
+         if "azs" in obs_data[key][file]:
+            print("OBS:", key, file, len(obs_data[key][file]['azs']))
 
     extra_obs_data = []
     if len(extra_obs) > 0:

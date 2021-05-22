@@ -1037,7 +1037,7 @@ def update_event_sol(dynamodb, event_id, sol_data, obs_data, status):
    content = response.content.decode()
    content = content.replace("\\", "")
    #data = json.loads(content)
-   print(content)
+   print("RECACHE REDIS!", content)
    #event_data = get_event(dynamodb, event_id, nocache=1)
 
    #event_data = json.loads(event_data, parse_float=Decimal)
