@@ -203,7 +203,7 @@ class SyncAWS():
       # TODO / FUTURE -- 1) this needs to be locked down with perms 2) Delete commits should move the deleted data to trash. 
 
       
-      url = self.API_URL + "?cmd=get_obs_for_day&station_id=" + self.station_id + "&day=" + day
+      url = self.API_URL + "?recache=1&cmd=get_obs_for_day&station_id=" + self.station_id + "&day=" + day
       response = requests.get(url)
       content = response.content.decode()
       content = content.replace("\\", "")
@@ -222,7 +222,7 @@ class SyncAWS():
          json_file = vid.replace(".mp4", ".json")
          if cfe(mdir + json_file) == 0:
             print("AWS METEOR EXISTS BUT NOT ON LOCAL STATION. IT MUST BE DELETED?")
-            url = API_URL + "?cmd=del_obs&station_id=" + self.station_id + "&sd_video_file=" + vid + "&api_key=" + self.json_conf['api_key']
+            url = API_URL + "?cmd=del_obs_commit&station_id=" + self.station_id + "&sd_video_file=" + vid + "&api_key=" + self.json_conf['api_key']
             print(url)
 
             response = requests.get(url)
@@ -331,6 +331,8 @@ class SyncAWS():
       hdys = []
       hdmx = 1920 / int(mj['ffp']['sd'][0])
       hdmy = 1080 / int(mj['ffp']['sd'][1])
+      if "best_meteor" not in mj:
+         return([0,0,0,0])
       for i in range(0, len(mj['best_meteor']['oxs'])):
          hdxs.append(mj['best_meteor']['oxs'][i]*hdmx)
          hdys.append(mj['best_meteor']['oys'][i]*hdmy)
@@ -515,8 +517,32 @@ class SyncAWS():
       mdir = "/mnt/ams2/meteors/" + day + "/"
       self.get_mfiles(mdir)
       for mf in self.mfiles:
+         update = 0         
          meteor_file = mf.replace(".mp4", ".json")
          if cfe(mdir + meteor_file) == 1:
+            mj = load_json_file(mdir + meteor_file)
+            if "ffp" not in mj:
+               sd_vid = mj['sd_video_file']
+               hd_vid = mj['hd_trim']
+               ffp = {}
+               sd_start = None
+               if cfe(hd_vid) == 1:
+                  ffp['hd'] = ffprobe(hd_vid)
+               else:
+                  hd_vid = None
+               if cfe(sd_vid) == 1:
+                  ffp['sd'] = ffprobe(sd_vid)
+               mj['ffp'] = ffp
+               update = 1
+
+            if "crop_box" not in mj:
+               x1, y1, x2, y2 = self.find_hd_crop_area(mj)
+               mj['crop_box'] = [x1,y1,x2,y2]
+               update = 1
+
+            if update == 1:
+               save_json_file(mdir + meteor_file, mj)
+
             push_obs(self.api_key, self.station_id, meteor_file)
          print(mf)
 
@@ -564,7 +590,7 @@ class SyncAWS():
 
       # delete meteors inside AWS that no longer exist on the local station
       self.delete_aws_meteors(day)
-
+      exit()
       # make staging and cloud dirs if they don't exist
       if cfe(lcdir_stage, 1) == 0:
          os.system("mkdir " + lcdir_stage)
@@ -1102,7 +1128,6 @@ class SyncAWS():
             else:
                print("NON CONFIRMED METEOR")
                print(mj.keys())
-               #exit()
                meteor_confirmed = 0
                file_types = self.cloud_policy['non_confirmed'][self.my_policy['non_confirmed']]['file_types'] 
             root = mf.replace(".json", "")
@@ -1168,6 +1193,7 @@ class SyncAWS():
 
       if "best_meteor" in mj:
          x1, y1, x2, y2 = self.find_hd_crop_area(mj)
+         crop_box = [x1, y1, x2, y2]  
          sd_start = mj['best_meteor']['ofns'][0] 
          sd_end = mj['best_meteor']['ofns'][-1] 
       else:
@@ -1309,6 +1335,7 @@ class SyncAWS():
          lower_bitrate(cloud_stage_files['HD.mp4'], 30)
       if sd_start is not None:
          mj['final_trim'] = final_trim
+         mj['crop_box'] = crop_box
          save_json_file(json_file, mj)
 
 

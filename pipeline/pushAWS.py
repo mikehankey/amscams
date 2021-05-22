@@ -40,7 +40,6 @@ def get_meteor_media_sync_status(sd_vid):
 
       sync_status = cloud_files
       print("SS", sync_status)
-      #exit()
       return(sync_status)
 
 def push_obs(api_key,station_id,meteor_file):
@@ -72,11 +71,12 @@ def push_obs(api_key,station_id,meteor_file):
    #aws_post_data = json.loads(json.dumps(obs_data), parse_float=Decimal) 
    headers = {'Content-type': 'application/json'}
    print(json.dumps(obs_data))
+   
    response = requests.post(API_URL, data=json.dumps(obs_data) , headers=headers)
-   #print(obs_data)
+   print(API_URL)
+   print("OBS DATA", obs_data)
    print("RESP:", response.content.decode())
    #response = requests.get("https://kyvegys798.execute-api.us-east-1.amazonaws.com/api/allskyapi?cmd=get_event&event_date=2021_04_23&event_id=20210423_013032")
-#def push_event(obs_file):
 
 
 def make_obs_data(station_id, date, meteor_file):
@@ -87,6 +87,22 @@ def make_obs_data(station_id, date, meteor_file):
       mj = load_json_file(meteor_file)
       if "revision" not in mj:
          mj['revision'] = 1
+
+      if "ffp" not in mj:
+         sd_vid = mj['sd_video_file']
+         hd_vid = mj['hd_trim']
+         ffp = {}
+         sd_start = None
+         if cfe(hd_vid) == 1:
+            ffp['hd'] = ffprobe(hd_vid)
+         else:
+            hd_vid = None
+         if cfe(sd_vid) == 1:
+            ffp['sd'] = ffprobe(sd_vid)
+         mj['ffp'] = ffp
+         save_json_file(meteor_file)
+
+
 
       if "cp" in mj:
          cp = mj['cp']
@@ -116,6 +132,14 @@ def make_obs_data(station_id, date, meteor_file):
    else:
       print("BAD FILE:", meteor_file)
       return()
+
+   crop_box = [0,0,0,0]
+   if "crop_box" in mj:
+      crop_box = mj['crop_box']
+   else: 
+      if "best_meteor" in mj:
+         if "crop_box" in mj['best_meteor']:
+            crop_box = mj['best_meteor']['crop_box']
 
    if "best_meteor" in mj:
       peak_int = max(mj['best_meteor']['oint'])
@@ -161,6 +185,7 @@ def make_obs_data(station_id, date, meteor_file):
       "dur": duration,
       "peak_int": peak_int,
       "calib": calib,
+      "crop_box": crop_box,
       "cat_image_stars": cat_image_stars,
       "ffp": ffp,
       "final_trim": final_trim,
@@ -176,6 +201,8 @@ def make_obs_data(station_id, date, meteor_file):
    #mj['calib'] = calib
    #mj['last_update'] = update_time
    save_json_file(meteor_file, mj)
+   print("CROP BOX!", crop_box)
+   print(obs_data)
    return(obs_data)
 
 if __name__ == "__main__":
