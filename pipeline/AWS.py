@@ -1,4 +1,5 @@
 from Classes.SyncAWS import SyncAWS 
+import glob
 from lib.PipeUtil import load_json_file, cfe, save_json_file
 import sys
 import glob 
@@ -27,6 +28,10 @@ def sync_file(sd_vid):
    day = sd_vid[0:10]
    SAWS.upload_cloud_media(day, [sd_vid])
    SAWS.sync_meteor(sd_vid) 
+
+
+def sync_day_data_only(day):
+   SAWS.sync_meteor_day_data_only(day)
 
 def sync_day(day):
    mdir = "/mnt/ams2/meteors/" + day + "/"
@@ -78,3 +83,5 @@ else:
       sync_month(sys.argv[2]) 
    if sys.argv[1] == "sf":
       sync_file(sys.argv[2]) 
+   if sys.argv[1] == "sd_data":
+      sync_day_data_only(sys.argv[2]) 

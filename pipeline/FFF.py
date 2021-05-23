@@ -31,11 +31,11 @@ if cmd == "crop_video":
 if cmd == "vid_to_imgs":
    file = sys.argv[2]
    out_dir = sys.argv[3]
-   if len(sys.argv) >= 4 :
+   if len(sys.argv) >= 5 :
       suffix = sys.argv[4] 
    else:
       suffix = None
-   if len(sys.argv) >=5 :
+   if len(sys.argv) >=6 :
       resz = sys.argv[5] 
       w,h = resz.split("x")
       resize = [w,h]

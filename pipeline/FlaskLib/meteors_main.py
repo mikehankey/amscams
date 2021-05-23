@@ -2,7 +2,7 @@ from flask import Flask, request
 from FlaskLib.FlaskUtils import get_template, make_default_template
 from FlaskLib.Pagination import get_pagination
 import glob
-from lib.PipeUtil import load_json_file, save_json_file, cfe
+from lib.PipeUtil import load_json_file, save_json_file, cfe, get_file_info
 from lib.PipeAutoCal import fn_dir
 import datetime 
 from datetime import datetime as dt
@@ -53,7 +53,7 @@ def get_meteors_in_range(station_id, start_date, end_date,del_data,filters=None)
 
    delete_log = "/mnt/ams2/SD/proc2/json/" + amsid + ".del"
    if cfe(delete_log) == 1:
-      os.system("./Process.py purge_meteors")
+      #os.system("./Process.py purge_meteors")
       deleted = 1
 
 
@@ -62,8 +62,10 @@ def get_meteors_in_range(station_id, start_date, end_date,del_data,filters=None)
 
    if start_date == end_date:
       # get meteors from that days index file after building it on the fly!
-      os.system("./Process.py mmi_day " + start_date)
       mif = "/mnt/ams2/meteors/" + start_date + "/" + start_date + "-" + station_id + ".meteors"
+      mif_size, mif_old = get_file_info(mif)
+      if mif_old > 10:
+         os.system("./Process.py mmi_day " + start_date)
       if cfe(mif) == 1:
          mi = load_json_file(mif)
       else:
@@ -259,7 +261,7 @@ def trash_page (amsid, in_data) :
    return(template)
 
 def meteors_main (amsid, in_data) :
-
+   print("meteors_main")
    json_conf = load_json_file("../conf/as6.json")
    delete_log = "/mnt/ams2/SD/proc2/json/" + amsid + ".del"
    if cfe(delete_log) == 1:
@@ -274,7 +276,6 @@ def meteors_main (amsid, in_data) :
    out = ""
    tmeteors = []
 
-
    # get meteor array for date range supplied
    if in_data['end_day'] is None and in_data['start_day'] is not None:
       in_data['end_day'] = in_data['start_day']
@@ -282,14 +283,14 @@ def meteors_main (amsid, in_data) :
       in_data['end_day'] = dt.now().strftime("%Y_%m_%d")
    if in_data['start_day'] is None:
       in_data['start_day'] = dt.now().strftime("%Y_%m_%d")
+   print("get_meteors_in_range")
    tmeteors = get_meteors_in_range(amsid, in_data['start_day'], in_data['end_day'],del_data, in_data['filter'])
-
+   print("done get_meteors_in_range")
 
    if in_data['p'] is None:
       page = 1
    else:
       page = int(in_data['p'])
-
    if in_data['meteor_per_page'] is None:
       meteor_per_page = 100
    else:
@@ -303,7 +304,6 @@ def meteors_main (amsid, in_data) :
    else:
       sort_by = in_data['sorted_by']
 
-
    si = ((page - 1) * meteor_per_page)
    ei = page * meteor_per_page
    if ei >= len(tmeteors):
@@ -315,9 +315,7 @@ def meteors_main (amsid, in_data) :
    start_day = in_data['start_day']  
    end_day = in_data['end_day']  
 
-
    total_meteors = len(sorted_meteors)
-
    filter_display = ""
    msc = 0   
    for meteor in these_meteors:

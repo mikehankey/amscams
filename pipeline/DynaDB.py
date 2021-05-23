@@ -204,7 +204,7 @@ def insert_meteor_event(dynamodb=None, event_id=None, event_data=None):
    else:
       admin_conf = load_json_file("admin_conf.json")
       import redis
-      r = redis.Redis("allsky-redis.d2eqrc.0001.use1.cache.amazonaws.com", port=6379, decode_responses=True)
+      r = redis.Redis(admin_conf['redis_host'], port=6379, decode_responses=True)
       admin = 1
 
    if dynamodb is None:
@@ -486,7 +486,6 @@ def update_dyna_cache_for_day(dynamodb, date, stations, utype=None):
    jdata = json.loads(content)
    all_stations = jdata['all_vals']
    print("HI!", all_stations)
-   #exit()
    clusters = make_station_clusters(all_stations)
    cluster_stations = []
    stations = []
@@ -716,7 +715,24 @@ def get_event(dynamodb, event_id, nocache=1):
       print(response)
       return([])
 
-def get_obs(dynamodb, station_id, sd_video_file):
+def get_obs(station_id, sd_video_file):
+   if True:
+      url = API_URL + "?cmd=get_obs&station_id=" + station_id + "&sd_video_file=" + sd_video_file
+      response = requests.get(url)
+      content = response.content.decode()
+      content = content.replace("\\", "")
+      if content[0] == "\"":
+         content = content[1:]
+         content = content[0:-1]
+      if "not found" in content:
+         data = {}
+         data['aws_status'] = False
+      else:
+         data = json.loads(content)
+         data['aws_status'] = True
+      return(data)
+
+def get_obs_old2(dynamodb, station_id, sd_video_file):
    date= sd_video_file[0:10]
    year, mon, day = date.split("_")
    obs_data = None
@@ -1021,7 +1037,7 @@ def update_event_sol(dynamodb, event_id, sol_data, obs_data, status):
    content = response.content.decode()
    content = content.replace("\\", "")
    #data = json.loads(content)
-   print(content)
+   print("RECACHE REDIS!", content)
    #event_data = get_event(dynamodb, event_id, nocache=1)
 
    #event_data = json.loads(event_data, parse_float=Decimal)
@@ -1056,6 +1072,15 @@ def update_event(dynamodb, event_id, simple_status, wmpl_status, sol_dir):
       ReturnValues="UPDATED_NEW"
    )
    print(response)
+   print("UPDATED EVENT WITH SOLUTION.")
+   url = API_URL + "?recache=1&cmd=get_event&event_id=" + event_id
+   print(url)
+   response = requests.get(url)
+   content = response.content.decode()
+   content = content.replace("\\", "")
+   #data = json.loads(content)
+   print(content)
+
    return response
 
 def do_dyna_day(dynamodb, day):
