@@ -590,7 +590,6 @@ class SyncAWS():
 
       # delete meteors inside AWS that no longer exist on the local station
       self.delete_aws_meteors(day)
-      exit()
       # make staging and cloud dirs if they don't exist
       if cfe(lcdir_stage, 1) == 0:
          os.system("mkdir " + lcdir_stage)
