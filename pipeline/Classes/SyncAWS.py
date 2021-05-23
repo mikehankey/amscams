@@ -451,7 +451,6 @@ class SyncAWS():
       lcdir = "/mnt/ams2/meteors/" + day + "/cloud_files/"
       cloud_dir = "/mnt/archive.allsky.tv/" + self.station_id + "/METEORS/" + day[0:4] + "/" + day + "/"
       self.delete_aws_meteors(day)
-
       if cfe(lcdir_stage, 1) == 0:
          os.system("mkdir " + lcdir_stage)
       if cfe(lcdir, 1) == 0:
