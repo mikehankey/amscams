@@ -535,14 +535,15 @@ class SyncAWS():
                mj['ffp'] = ffp
                update = 1
 
-            if "crop_box" not in mj:
+            #if "crop_box" not in mj:
+            if True:
                x1, y1, x2, y2 = self.find_hd_crop_area(mj)
                mj['crop_box'] = [x1,y1,x2,y2]
+               print("CROP:", meteor_file, mj['crop_box'])
                update = 1
 
             if update == 1:
                save_json_file(mdir + meteor_file, mj)
-
             push_obs(self.api_key, self.station_id, meteor_file)
          print(mf)
 
@@ -790,6 +791,7 @@ class SyncAWS():
          all_files[root]['mj']['sync_status'] = sync_status
          del all_files[root]['mj']
          print(root, all_files[root])
+         save_json_file(meteor_file,mj)
          push_obs(self.api_key, self.station_id, meteor_file)
       if day not in self.sync_log:
          self.sync_log[day] = {}
