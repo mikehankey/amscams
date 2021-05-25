@@ -589,6 +589,8 @@ class SyncAWS():
          for cf in cfs:
             cloud_files.append(cf.split("/")[-1])
          print(cloud_dir + "cloud_files.info")
+         if cfe(cloud_dir, 1) == 0:
+            os.makedirs(cloud_dir)
          save_json_file(cloud_dir + "cloud_files.info", cloud_files)
          print("SAVED:", cloud_dir + "cloud_files.info")
       else:
