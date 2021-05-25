@@ -208,7 +208,12 @@ class SyncAWS():
       content = response.content.decode()
       content = content.replace("\\", "")
       print(content)
-      jdata = json.loads(content)
+      if "nothing" not in content:
+         jdata = json.loads(content)
+      else: 
+         jdata = {}
+         jdata['all_vals'] = []
+         jdata['total_records'] = 0
       if jdata is not None:
          print(jdata)
          data = jdata['all_vals']
@@ -791,7 +796,8 @@ class SyncAWS():
          all_files[root]['mj']['sync_status'] = sync_status
          del all_files[root]['mj']
          print(root, all_files[root])
-         save_json_file(meteor_file,mj)
+         if "mj" in all_files[root]:
+            save_json_file(meteor_file,all_files[root]['mj'])
          push_obs(self.api_key, self.station_id, meteor_file)
       if day not in self.sync_log:
          self.sync_log[day] = {}
