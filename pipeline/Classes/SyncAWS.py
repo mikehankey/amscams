@@ -814,6 +814,8 @@ class SyncAWS():
          if cfe(mfile) == 0:
             continue
          mj = load_json_file(mfile)
+         if "confirmed_meteors" not in mj:
+            continue
          print(mf, "\n  CM:", len(mj['confirmed_meteors']))
          report[mf]['meteors_in_file'] = len(mj['confirmed_meteors'])
          report[mf]['bad_zero'] = 0
@@ -862,6 +864,8 @@ class SyncAWS():
          print(key, crops[key])
 
       for mf in report:
+         if "bad_zero" not in report[mf]:
+            continue
          mfile = "/mnt/ams2/meteors/" + day + "/" + mf.replace(".mp4", ".json")
          if cfe(mfile) == 0:
             continue
