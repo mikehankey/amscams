@@ -1,4 +1,5 @@
 from Classes.SyncAWS import SyncAWS 
+import datetime
 import glob
 from lib.PipeUtil import load_json_file, cfe, save_json_file
 import sys
@@ -78,7 +79,17 @@ else:
    if sys.argv[1] == "sb":
       sync_batch(sys.argv[2]) 
    if sys.argv[1] == "sd":
-      sync_day(sys.argv[2]) 
+      if sys.argv[2] == "today":
+         today = datetime.datetime.today()
+         today_str = today.strftime("%Y_%m_%d")
+         sync_day(today_str) 
+      elif sys.argv[2] == "yest":
+         today = datetime.datetime.today()
+         yest = today - datetime.timedelta(days=1)
+         yest_str = yest.strftime("%Y_%m_%d")
+         sync_day(yest_str) 
+      else:
+         sync_day(sys.argv[2]) 
    if sys.argv[1] == "sm":
       sync_month(sys.argv[2]) 
    if sys.argv[1] == "sf":
