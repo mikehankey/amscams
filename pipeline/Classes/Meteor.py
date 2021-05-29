@@ -339,11 +339,11 @@ class Meteor():
       else:
          print("REDUCED     :     {:s}".format("YES"))
       print("REVISION    :     {:s}".format(str(self.revision)))
-      obs = self.dyna_get_meteor()
-      self.cloud_revision = obs['revision']
-      print("CL REVISION :     {:s}".format(str(self.cloud_revision)))
-      if self.cloud_revision != self.revision:
-         self.dyna_update_meteor()
+      #obs = self.dyna_get_meteor()
+      #self.cloud_revision = obs['revision']
+      #print("CL REVISION :     {:s}".format(str(self.cloud_revision)))
+      #if self.cloud_revision != self.revision:
+      #   self.dyna_update_meteor()
       if self.event_id is not None:
          print("MS EVENT ID :     {:s}".format(str(self.event_id)))
       else:
@@ -993,6 +993,7 @@ class Meteor():
       self.DF.render_frame(0 )
 
    def vals_detect_crop_confirm(self, mxs=None,mys=None):
+      print("VALS DETECT CROP CONFIRM")
       if mxs is None:
          mxs = [data[7] for data in self.vals_event]
          mys = [data[8] for data in self.vals_event]
@@ -1171,7 +1172,7 @@ class Meteor():
       mask2 = None
 
       self.load_frames(self.meteor_dir + self.sd_vid)
-
+      print(len(self.sd_frames), " frames loaded")
       self.fw = self.sd_frames[0].shape[1] 
       self.fh = self.sd_frames[0].shape[0] 
       self.hdm_x = 1920 / self.fw
