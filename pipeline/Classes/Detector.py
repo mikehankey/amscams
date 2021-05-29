@@ -63,15 +63,16 @@ class Detector():
          key = str(obj['ccxs'][i]) + "." + str(obj['ccys'][i])
          up[key] = 1
       report['unq_points'] = len(up.keys())
-
+      obj['ccxs']
+      obj['ccys']
+      print("UPIS:", up)
 
       if report['unq_points'] == 1:
          report['class'] = "star"
 
       if report['unq_points'] <= 2:
          report['meteor_score'] += -10
-         report['bad_items'].append("there are 2 or less unique points!?. " + str(report['unq_points'] ))
-
+         report['bad_items'].append("there are 2 or less unique points!?. " + str(report['unq_points'] ) + " " +  str(up))
 
       # determine cm and reject < 3
       report['max_cm'] = obj_cm(obj['ofns'])
@@ -354,7 +355,7 @@ class Detector():
       elif report['plane_score'] >= 3 and report['meteor_score'] < 2:
          report['class'] = "plane"
 
-      print("ANALYZE REPORT:", "ID", obj['obj_id'], "CLASS:", report['class'], "METEOR SCORE:", report['meteor_score'])
+      print("ANALYZE REPORT:", "ID", obj['obj_id'], "CLASS:", report['class'], "METEOR SCORE:", report['meteor_score'], up)
 
       return(1, report)
 
