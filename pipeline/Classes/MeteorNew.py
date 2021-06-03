@@ -912,8 +912,9 @@ class Meteor():
          print("XY", x1, y1, x2, y2)
          print(roi_img.shape)
          blank_image[y1:y2,x1:x2] = roi_img
-         cv2.imshow('pepe', blank_image)
-         cv2.waitKey(30)
+         if self.show == 1:
+            cv2.imshow('pepe', blank_image)
+            cv2.waitKey(30)
          if cc == max_cols - 1:
             rc += 1
             cc = 0
@@ -1104,16 +1105,20 @@ class Meteor():
                   cx = int(x + (w/2))
                   cy = int(y + (h/2))
                   rgb_val = final_objects[obj]['rgb'][i]
-                  if final_objects[obj]['ransac'][7][i] == True:
-                     sd_img[cy,cx] = rgb_val
+                  if final_objects[obj]['ransac'] != 0:
+                     if final_objects[obj]['ransac'][7][i] == True:
+                        sd_img[cy,cx] = rgb_val
+                     else:
+                        sd_img[cy,cx] = [0,0,255] 
                   else:
                      sd_img[cy,cx] = [0,0,255] 
+                  
                   #cv2.rectangle(sd_img, (int(x), int(y)), (int(x+w) , int(y+h)), (255, 255, 255), 1)
                self.scan_data[key]['meteor_scan_crop_scan'] = final_objects
                self.scan_data[key]['meteor_scan_crop_scan_status'] = 1
          else:
             print("CROP SCAN ALREADY DONE!", key)
-         if self.show == 0:
+         if self.show == 1:
             cv2.imshow("FINAL", sd_img)
             cv2.waitKey(30)
 
