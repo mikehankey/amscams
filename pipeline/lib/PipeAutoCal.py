@@ -7606,7 +7606,6 @@ def scan_for_stars(img):
          cnts = []
 
       size = 10
-      print("CNTS:", len(cnts))
       for cnt in cnts:
          x,y,w,h = cnt
          if w <= 15 and h <= 15:
@@ -7628,10 +7627,8 @@ def scan_for_stars(img):
             if star_int > 80 and pxd > 20:
             #if True:
 
-               print("STAR INT:", x,y1+y, star_int, smin, smax, savg, pxd)
                stars.append((cx, cy+y1, star_int))
             else:
-               print("BAD INT OR PXD TOO LOW.", star_int, pxd)
                bad_areas.append((x,y+y1,w,h))
          else:
             print("BAD CNT TOO BIG.")
