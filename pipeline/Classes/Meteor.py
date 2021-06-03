@@ -1,4 +1,6 @@
+from decimal import Decimal
 import glob
+import json 
 import math
 import os
 import scipy.optimize
@@ -13,19 +15,24 @@ from sklearn.datasets import make_regression
 
 from PIL import ImageFont, ImageDraw, Image, ImageChops
 
-from DisplayFrame import DisplayFrame 
-from Detector import Detector
-from Camera import Camera
-from Calibration import Calibration
+from Classes.DisplayFrame import DisplayFrame 
+from Classes.Detector import Detector
+from Classes.Camera import Camera
+from Classes.Event import Event 
+from Classes.Calibration import Calibration
 from lib.PipeAutoCal import gen_cal_hist,update_center_radec, get_catalog_stars, pair_stars, scan_for_stars, calc_dist, minimize_fov, AzEltoRADec , HMS2deg, distort_xy, XYtoRADec, angularSeparation
 from lib.PipeUtil import load_json_file, save_json_file, cfe
 from lib.FFFuncs import best_crop_size, ffprobe 
+import boto3
+import socket
+
 
 
 
 class Meteor():
    def __init__(self, meteor_file=None, min_file=None,detect_obj=None):
       self.DF = DisplayFrame()
+      self.dynamodb = None
       self.json_conf = load_json_file("../conf/as6.json")
       self.sd_objects = None
       self.hd_objects = None
@@ -88,7 +95,16 @@ class Meteor():
          if cfe(self.meteor_file) == 1:
             mj = load_json_file(self.meteor_file)
             self.mj = mj
+            if "revision" in mj:
+               self.revision = mj['revision']
+            else:
+               self.revision = 1
+            if "app_version" in mj:
+               self.app_version = mj['app_version']
+            else:
+               self.app_version = 5.0
             if "sd_stack" in mj:
+
                if cfe(self.mj['sd_stack']) == 1:
                   self.sd_stacked_file = self.mj['sd_stack']
                   self.sd_stacked_image = cv2.imread(self.sd_stacked_file)
@@ -230,6 +246,113 @@ class Meteor():
             self.best_meteor = mj['best_meteor']
          else:
             self.meteor_scan()
+
+   def dyna_update_meteor(self):
+      print("UPDATE DYNA METEOR")
+
+      if self.mjr is None:
+         print("ERROR: no MFD/MJR DYNA UPDATE DENIED.")
+         return(0)
+
+      # make the dyna obs obj
+      obs_data = {}
+      obs_data['revision'] = self.revision
+      obs_data['meteor_frame_data'] = self.mjr['meteor_frame_data']
+      obs_data['last_update'] = datetime.datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
+      if "final_vid" in self.mj:
+         print("ADD FINAL DATA!")
+         final_vid = self.mj['final_data']['final_vid']
+         final_vid_fn, xxx = fn_dir(final_vid)
+         final_data_file = final_vid.replace(".mp4", ".json")
+         final_data = load_json_file(final_data_file)
+         obs_data['final_vid'] = final_vid_fn
+         obs_data['final_data'] = final_data
+      else:
+         print("No final data?")
+
+
+
+      dmfd = []
+      # structure / prep MFD array for Decimal/Dyna storage
+      for data in self.mjr['meteor_frame_data']:
+         (dt, fn, x, y, w, h, oint, ra, dec, az, el) = data
+         dmfd.append((dt,float(fn),float(x),float(y),float(w),float(h),float(oint),float(ra),float(dec),float(az),float(el)))
+      obs_data['meteor_frame_data'] = dmfd
+      if "final_vid" not in obs_data:
+         obs_data['final_vid'] = ""
+      if "final_data" not in obs_data:
+         obs_data['final_data'] = {}
+
+      if self.dynamodb is None:
+         self.dynamodb = boto3.resource('dynamodb')
+
+      table = self.dynamodb.Table("meteor_obs")
+      obs_data = json.loads(json.dumps(obs_data), parse_float=Decimal)
+      response = table.update_item(
+         Key = {
+            'station_id': self.station_id,
+            'sd_video_file': self.sd_vid
+         },
+         UpdateExpression="set revision = :revision, last_update= :last_update, meteor_frame_data=:meteor_frame_data, final_vid=:final_vid, final_data=:final_data",
+         ExpressionAttributeValues={
+            ':meteor_frame_data': obs_data['meteor_frame_data'],
+            ':final_vid': obs_data['final_vid'],
+            ':final_data': obs_data['final_data'],
+            ':revision': obs_data['revision'],
+            ':last_update': obs_data['last_update']
+         },
+         ReturnValues="UPDATED_NEW"
+      )
+      print(response)
+
+
+
+   def dyna_get_meteor(self):
+      if self.dynamodb is None:
+         self.dynamodb = boto3.resource('dynamodb')
+      table = self.dynamodb.Table('meteor_obs')
+      response = table.query(
+         KeyConditionExpression='station_id = :station_id AND sd_video_file = :sd_video_file',
+         ExpressionAttributeValues={
+            ':station_id': self.station_id,
+            ':sd_video_file': self.sd_vid,
+         }
+      )
+      return response['Items'][0]
+
+
+   def meteor_status(self):
+      print("METEOR STATUS")
+      print("FILE        :     {:s}".format(self.meteor_file))
+      if self.cp is None:
+         print("CALIBRATED  :     {:s}".format("NO"))
+      else:
+         print("CALIBRATED  :     {:s}".format("YES"))
+         print("RES         :     {:f}".format(self.mj['cp']['total_res_px']))
+         print("STARS       :     {:d}".format(len(self.mj['cp']['cat_image_stars'])))
+         print("RA/DEC      :     {:s} / {:s}".format(str(self.mj['cp']['ra_center'])[0:5], str(self.mj['cp']['dec_center'])[0:5]))
+         print("POS ANG     :     {:s} ".format(str(self.mj['cp']['position_angle'])[0:5]))
+         print("PX SCALE    :     {:s} ".format(str(self.mj['cp']['pixscale'])[0:5]))
+
+      if self.mjr is None:
+         print("REDUCED     :     {:s}".format("NO"))
+      else:
+         print("REDUCED     :     {:s}".format("YES"))
+      print("REVISION    :     {:s}".format(str(self.revision)))
+      #obs = self.dyna_get_meteor()
+      #self.cloud_revision = obs['revision']
+      #print("CL REVISION :     {:s}".format(str(self.cloud_revision)))
+      #if self.cloud_revision != self.revision:
+      #   self.dyna_update_meteor()
+      if self.event_id is not None:
+         print("MS EVENT ID :     {:s}".format(str(self.event_id)))
+      else:
+         print("MS EVENT    :     {:s}".format("NO"))
+
+      #for key in obs:
+      #   print(key )
+
+
 
 
 
@@ -870,6 +993,7 @@ class Meteor():
       self.DF.render_frame(0 )
 
    def vals_detect_crop_confirm(self, mxs=None,mys=None):
+      print("VALS DETECT CROP CONFIRM")
       if mxs is None:
          mxs = [data[7] for data in self.vals_event]
          mys = [data[8] for data in self.vals_event]
@@ -1048,7 +1172,7 @@ class Meteor():
       mask2 = None
 
       self.load_frames(self.meteor_dir + self.sd_vid)
-
+      print(len(self.sd_frames), " frames loaded")
       self.fw = self.sd_frames[0].shape[1] 
       self.fh = self.sd_frames[0].shape[0] 
       self.hdm_x = 1920 / self.fw
@@ -2883,9 +3007,16 @@ if __name__ == "__main__":
    else:
       print("   COMMANDS:")
       print("   1) Scan meteors for 1 day -- will run all detections, calibrations and syncs needed to complete meteor processing.")
+      print("   2) Examine meteor -- will load meteor and provide all options / status.")
       cmd = input("Enter the command you want to run. ")
       if cmd == "1":
          cmd = "scan"
+      if cmd == "2":
+         cmd = "meteor_status"
+   if cmd == "meteor_status":
+      meteor_file = sys.argv[3]
+      my_meteor = Meteor(meteor_file=meteor_file)
+   
 
    if cmd == "scan":
       if len(sys.argv) >= 3:

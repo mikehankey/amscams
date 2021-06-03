@@ -75,6 +75,20 @@ def tlm(amsid):
    return(out)
 
 
+@app.route('/msapi/', methods=['GET', 'POST'])
+@auth.login_required
+def msapi():
+   from FlaskLib.meteor_scan_api import meteor_scan_api_controller
+
+   jdata = request.get_json()
+
+   print("JDATA", jdata, type(jdata))
+   if jdata is None:
+      jdata = {}
+   out = meteor_scan_api_controller(jdata)
+   return(out)
+
+
 @app.route('/maps/', methods=['GET', 'POST'])
 @auth.login_required
 def map_runner():

@@ -5,6 +5,7 @@ import simplejson as json
 from datetime import datetime
 import math
 import requests
+from lib.FFFuncs import ffprobe
 from lib.PipeUtil import load_json_file, save_json_file,cfe
 import sys
 #import aws
@@ -24,11 +25,8 @@ def get_meteor_media_sync_status(sd_vid):
    cloud_files = []
    if True:
       wild = sd_vid.replace(".mp4", "")
-      print("GLOB", lcdir + "/*" + wild  + "*")
       cfs = glob.glob(lcdir + "/*" + wild + "*")
-      print(lcdir + "/*" + wild + "*")
       for cf in cfs:
-         print(cf)
          el = cf.split("-")
          ext = el[-1]
          if ext == "vid.mp4" :
@@ -39,7 +37,6 @@ def get_meteor_media_sync_status(sd_vid):
 
 
       sync_status = cloud_files
-      print("SS", sync_status)
       return(sync_status)
 
 def push_obs(api_key,station_id,meteor_file):
@@ -70,12 +67,8 @@ def push_obs(api_key,station_id,meteor_file):
    }
    #aws_post_data = json.loads(json.dumps(obs_data), parse_float=Decimal) 
    headers = {'Content-type': 'application/json'}
-   print(json.dumps(obs_data))
    
    response = requests.post(API_URL, data=json.dumps(obs_data) , headers=headers)
-   print(API_URL)
-   print("OBS DATA", obs_data)
-   print("RESP:", response.content.decode())
    #response = requests.get("https://kyvegys798.execute-api.us-east-1.amazonaws.com/api/allskyapi?cmd=get_event&event_date=2021_04_23&event_id=20210423_013032")
 
 
@@ -100,7 +93,7 @@ def make_obs_data(station_id, date, meteor_file):
          if cfe(sd_vid) == 1:
             ffp['sd'] = ffprobe(sd_vid)
          mj['ffp'] = ffp
-         save_json_file(meteor_file)
+         save_json_file(meteor_file, mj)
 
 
 
@@ -136,10 +129,6 @@ def make_obs_data(station_id, date, meteor_file):
    crop_box = [0,0,0,0]
    if "crop_box" in mj:
       crop_box = mj['crop_box']
-   else: 
-      if "best_meteor" in mj:
-         if "crop_box" in mj['best_meteor']:
-            crop_box = mj['best_meteor']['crop_box']
 
    if "best_meteor" in mj:
       peak_int = max(mj['best_meteor']['oint'])
@@ -202,7 +191,6 @@ def make_obs_data(station_id, date, meteor_file):
    #mj['last_update'] = update_time
    save_json_file(meteor_file, mj)
    print("CROP BOX!", crop_box)
-   print(obs_data)
    return(obs_data)
 
 if __name__ == "__main__":

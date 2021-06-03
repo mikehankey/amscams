@@ -44,11 +44,6 @@ class Detector():
          report['meteor_score'] += 1
          report['good_items'].append("object is moving.")
 
-      if report['moving'] == 0 and len(obj['ofns']) >= 3 and np.mean(obj['ows']) < 4 and np.mean(obj['ohs']) < 4:
-         report['class'] = "star"
-         # check for blob in stack here here
-      if report['moving'] == 0 and np.mean(obj['ows']) < 4 and np.mean(obj['ohs']) < 4:
-         report['class'] = "star"
          
 
       # reject any object with 0 frames
@@ -63,15 +58,16 @@ class Detector():
          key = str(obj['ccxs'][i]) + "." + str(obj['ccys'][i])
          up[key] = 1
       report['unq_points'] = len(up.keys())
-
+      obj['ccxs']
+      obj['ccys']
+      print("UPIS:", up)
 
       if report['unq_points'] == 1:
          report['class'] = "star"
 
       if report['unq_points'] <= 2:
          report['meteor_score'] += -10
-         report['bad_items'].append("there are 2 or less unique points!?. " + str(report['unq_points'] ))
-
+         report['bad_items'].append("there are 2 or less unique points!?. " + str(report['unq_points'] ) + " " +  str(up))
 
       # determine cm and reject < 3
       report['max_cm'] = obj_cm(obj['ofns'])
@@ -79,7 +75,6 @@ class Detector():
       if report['max_cm'] > 3 and report['cm_perc'] > .8 :
          report['meteor_score'] + 1
          report['good_items'].append("there are 3 or more consecutive motion frames!?.")
-
 
       # determine gaps between frames, dist from start, dist from previous
       report['segs'] = []
@@ -100,6 +95,7 @@ class Detector():
             last_dist_from_start = dist_from_start
             report['segs'].append(seg)
          else:
+            fn_gaps = 0
             last_dist_from_start = 0
             gaps.append(0)
             last_dists.append(0)
@@ -108,13 +104,13 @@ class Detector():
             report['y_dist'].append(0)
             report['segs'].append(0)
 
-      total_gaps = sum(gaps) - len(gaps)
-      if total_gaps > len(gaps):
-         report['meteor_score'] = -1
-         report['plane_score'] += 1
-         report['bad_items'].append("too many gaps for event length") 
+      print("GAPS:", gaps)
+      total_gaps = sum(gaps)
+      gaps_per_frame = total_gaps / len(obj['ofns'])
+      report['total_gaps'] = total_gaps
+      report['gaps_per_frame'] = gaps_per_frame
 
-      if report['unq_points'] <= 3 and total_gaps > 3:
+      if report['unq_points'] <= 3 and sum(gaps) > 3:
          report['meteor_score'] += -10
          report['bad_items'].append("there are 3 points and > 3 gaps!?. " )
 
@@ -130,9 +126,9 @@ class Detector():
          if i > 0:
             xdf = abs(report['med_x'] - report['x_dist'][i])
             ydf = abs(report['med_y'] - report['y_dist'][i])
-            if xdf <= report['med_x'] + 1:
+            if xdf <= abs(report['med_x']) + 1:
                good_xd += 1
-            if ydf <= report['med_y'] + 1:
+            if ydf <= abs(report['med_y']) + 1:
                good_yd += 1
               
          report['xd_agree'] = good_xd + 1 / (len(obj['ofns']))
@@ -150,13 +146,16 @@ class Detector():
       if report['yd_agree'] <= .6:
          report['meteor_score'] -= 1
          report['bad_items'].append("disagreement with y direction!?.")
+      if report['gaps_per_frame'] > 2:
+         report['meteor_score'] -=5 
+         report['bad_items'].append("Too many gaps per frame! " + str(report['gaps_per_frame']))
 
 
       # determine % of obj that are 'big frames'
       big = 0
       for i in range(0, len(obj['ows'])):
          size = obj['ows'][i] + obj['ohs'][i]
-         if size > 40:
+         if size > 20:
             big += 1
       if len(obj['ofns']) > 0:
          big_perc = big / len(obj['ofns'])
@@ -213,6 +212,12 @@ class Detector():
          moving = 0
       else:
          moving = 1
+
+      if report['med_gaps'] > 3:
+         report['meteor_score'] = -1
+         report['plane_score'] += 1
+         report['bad_items'].append("too many gaps for event length") 
+
 
       report['total_frames'] = len(obj['ofns'])
       report['dur_frame'] = dur_frames
@@ -281,7 +286,7 @@ class Detector():
          report['meteor_score'] += 1 
          report['good_items'].append("good meteor speed.")
 
-      if report['px_per_frame'] < .9:
+      if report['px_per_frame'] < .6:
          report['meteor_score'] -= 1 
          report['bad_items'].append("low speed.")
 
@@ -294,6 +299,12 @@ class Detector():
          plane_score += 1
       if report['max_mean_int_factor'] > 5 :
          report['meteor_score'] += 1
+     
+      # reject small dist objs
+      if report['max_px_dist'] < 3.5:
+         report['meteor_score'] = -5
+         report['class'] = "star"
+
 
 
       if report['mean_fr_dist'] < 1.5:
@@ -334,6 +345,8 @@ class Detector():
       # bp > .4 -- 
       # max_int > 30,000
       # px_vel < 3
+      if report['big_perc'] >= .7:
+         report['meteor_score'] = -10
       if report['big_perc'] >= .4:
          cloud_score += 1
       if report['big_perc'] >= .5:
@@ -344,17 +357,15 @@ class Detector():
          cloud_score += 1
       report['cloud_score'] = cloud_score
       final_met_score = report['meteor_score'] - report['cloud_score'] - report['plane_score']
-      if report['class'] == "star" or report['moving'] == 0:
-         report['class'] = "star"
 
-      elif final_met_score >= 1 or report['meteor_score'] >= 2:
+      if final_met_score >= 1 or report['meteor_score'] >= 2:
          report['class'] = "meteor"
       elif report['cloud_score'] >= 3 and report['meteor_score'] < 2:
          report['class'] = "cloud"
       elif report['plane_score'] >= 3 and report['meteor_score'] < 2:
          report['class'] = "plane"
 
-      print("ANALYZE REPORT:", "ID", obj['obj_id'], "CLASS:", report['class'], "METEOR SCORE:", report['meteor_score'])
+      print("ANALYZE REPORT:", "ID", obj['obj_id'], "CLASS:", report['class'], "METEOR SCORE:", report['meteor_score'], up)
 
       return(1, report)
 
@@ -399,7 +410,6 @@ class Detector():
 
 
    def find_objects(fn,x,y,w,h,cx,cy,intensity,objects,dist_thresh=50,lx=None,ly=None):
-      
       maybe_matches = []
       last_closest_dist = None
       #cx = int(x + (w/2))
@@ -434,19 +444,25 @@ class Detector():
             tcx = int(objects[obj]['oxs'][-1] + (objects[obj]['ows'][-1]/2))
             tcy = int(objects[obj]['oys'][-1] + (objects[obj]['ohs'][-1]/2))
             dist = calc_dist((cx,cy),(tcx,tcy))
+            #print("DIST / THRESH IS ", dist, dist_thresh)
             fn_diff = fn - objects[obj]['ofns'][-1]
 
                 #and fn not in objects[obj]['ofns'] :
-            if dist < dist_thresh and fn_diff < 25: 
+            if dist < dist_thresh and fn_diff < 10: 
+               #print("   GOOD", fn, dist_thresh, dist, fn_diff)
                mkeys = {}
                for i in range(0, len(objects[obj]['ofns'])):
                   key = str(objects[obj]['ccxs'][i]) + "." + str(objects[obj]['ccys'][i])
                   mkeys[key] = 1
                tkey = str(cx) + "." + str(cy)
                if tkey not in mkeys:
+                  #print("   ", fn, "ADD TO MAYBE?")
                   maybe_matches.append((obj,dist))
                else:
+                  #print("REJECT CAUSE WE ALREADY HAVE IT?")
                   return(obj, objects)
+            else:
+               print("     NO MATCH", dist, fn_diff)
 
             if last_closest_dist is None: 
                last_fn_diff = fn_diff
@@ -457,14 +473,14 @@ class Detector():
                last_fn_diff = fn_diff
                last_closest_dist = dist
          if len(maybe_matches) == 0:
+            #print(fn, "NO EXISTING MATCH FOUND!")
+            #print("   DIST:", last_closest_dist, last_fn_diff)
             no_match = 1
          elif len(maybe_matches) == 1:
             obj = maybe_matches[0][0]
             if "class" not in objects[obj] and len(objects[obj]['ofns']) > 5:
                # try to class the obj. if there is minimal distance it is a star
                dist = calc_dist((min(objects[obj]['oxs']), min(objects[obj]['oys'])), (max(objects[obj]['oxs']), max(objects[obj]['oys'])))
-               #if dist <= 2:
-               #   objects[obj]['class'] = "star"
             objects[obj]['obj_id'] = obj
             objects[obj]['ofns'].append(fn)
             objects[obj]['oxs'].append(x)

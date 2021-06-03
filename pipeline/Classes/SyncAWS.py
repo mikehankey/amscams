@@ -208,7 +208,12 @@ class SyncAWS():
       content = response.content.decode()
       content = content.replace("\\", "")
       print(content)
-      jdata = json.loads(content)
+      if "nothing" not in content:
+         jdata = json.loads(content)
+      else: 
+         jdata = {}
+         jdata['all_vals'] = []
+         jdata['total_records'] = 0
       if jdata is not None:
          print(jdata)
          data = jdata['all_vals']
@@ -535,14 +540,15 @@ class SyncAWS():
                mj['ffp'] = ffp
                update = 1
 
-            if "crop_box" not in mj:
+            #if "crop_box" not in mj:
+            if True:
                x1, y1, x2, y2 = self.find_hd_crop_area(mj)
                mj['crop_box'] = [x1,y1,x2,y2]
+               print("CROP:", meteor_file, mj['crop_box'])
                update = 1
 
             if update == 1:
                save_json_file(mdir + meteor_file, mj)
-
             push_obs(self.api_key, self.station_id, meteor_file)
          print(mf)
 
@@ -583,6 +589,8 @@ class SyncAWS():
          for cf in cfs:
             cloud_files.append(cf.split("/")[-1])
          print(cloud_dir + "cloud_files.info")
+         if cfe(cloud_dir, 1) == 0:
+            os.makedirs(cloud_dir)
          save_json_file(cloud_dir + "cloud_files.info", cloud_files)
          print("SAVED:", cloud_dir + "cloud_files.info")
       else:
@@ -790,6 +798,8 @@ class SyncAWS():
          all_files[root]['mj']['sync_status'] = sync_status
          del all_files[root]['mj']
          print(root, all_files[root])
+         if "mj" in all_files[root]:
+            save_json_file(meteor_file,all_files[root]['mj'])
          push_obs(self.api_key, self.station_id, meteor_file)
       if day not in self.sync_log:
          self.sync_log[day] = {}
@@ -812,6 +822,8 @@ class SyncAWS():
          if cfe(mfile) == 0:
             continue
          mj = load_json_file(mfile)
+         if "confirmed_meteors" not in mj:
+            continue
          print(mf, "\n  CM:", len(mj['confirmed_meteors']))
          report[mf]['meteors_in_file'] = len(mj['confirmed_meteors'])
          report[mf]['bad_zero'] = 0
@@ -860,6 +872,8 @@ class SyncAWS():
          print(key, crops[key])
 
       for mf in report:
+         if "bad_zero" not in report[mf]:
+            continue
          mfile = "/mnt/ams2/meteors/" + day + "/" + mf.replace(".mp4", ".json")
          if cfe(mfile) == 0:
             continue

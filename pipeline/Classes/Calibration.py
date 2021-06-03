@@ -51,14 +51,14 @@ class Calibration():
                   self.cp = load_json_file(cpf)
                   self.cp = update_center_radec(cpf,cp,json_conf)
                except:
-                  print("This calibration file doesn't exist or is corrupt.")
+                  print("ERROR: This calibration file doesn't exist or is corrupt.")
                   exit()
                if "orev" in self.cp:
                   self.orev = self.cp['orev']
 
             else:
                # try without the calparams? 
-               print("Could not load file:", cpf)
+               print("ERROR: Could not load cal file:", cpf)
                cpf = cpf.replace("-stacked", "")
                if cfe(cpf) == 1:
                   self.cp = load_json_file(cpf)
@@ -66,9 +66,9 @@ class Calibration():
                   if "orev" in self.cp:
                      self.orev = self.cp['orev']
                else:
-                  print("Could not load file:", cpf)
+                  print("ERROR: Could not load cal file:", cpf)
          else:
-            print("couldn't load cal image file.", cal_image_file)
+            print("ERROR: couldn't load cal image file.", cal_image_file)
       elif meteor_file is not None:
          self.meteor_file = meteor_file
          if cfe(meteor_file) == 1:
@@ -77,7 +77,7 @@ class Calibration():
                self.cp = mj['cp']
                self.cp = update_center_radec(meteor_file,self.cp,json_conf)
             else:
-               print("meteor doesn't have cp yet!")
+               print("WARN: meteor doesn't have cp yet!")
                mj['cp'] = {}
                mj = use_default_cal(meteor_file, mj,self.json_conf)
               
@@ -96,7 +96,7 @@ class Calibration():
                # the hd cal video is bad and couldn't create an image. use an SD image instead
                self.cal_image_file = mj['sd_video_file'].replace(".mp4", "-stars.jpg")
                cmd = """ /usr/bin/ffmpeg -i """ + mj['sd_video_file'] + """ -vf select="between(n\,""" + str(1) + """\,""" + str(2) + """),setpts=PTS-STARTPTS" -y -update 1 """ + self.cal_image_file + " >/dev/null 2>&1"
-               print(cmd)
+               print("CMD:", cmd)
                os.system(cmd)
 
                if cfe(self.cal_image_file) == 1:
@@ -106,13 +106,10 @@ class Calibration():
 
             if "cp" in mj:
                self.cp = mj['cp']
-               print("We have cp.")
             else:
-               print("need to use default cp to start?")
+               print("STATUS: need to use default cp to start?")
 
             self.cal_img = cv2.imread(self.cal_image_file)
-            print(self.cal_image_file)
-            print(self.cal_img.shape)
             cv2.imwrite(self.cal_image_file, self.cal_img,[cv2.IMWRITE_JPEG_QUALITY, 60] )
                    
             self.user_stars = scan_for_stars(self.cal_img)
@@ -120,9 +117,6 @@ class Calibration():
 
             self.cp = pair_stars(self.cp, self.cal_image_file, self.json_conf, self.cal_img)
             self.cat_image_stars = self.cp['cat_image_stars']
-            print("ST:", len(self.user_stars))
-            print("ST:", len(self.cp['user_stars']))
-            print("catST:", len(self.cp['cat_image_stars']))
             mj['cp']['user_stars'] = self.cp['user_stars']
             mj['cp']['cat_image_stars'] = self.cp['cat_image_stars']
             #cv2.imshow("pepe", self.cal_img)
@@ -131,13 +125,11 @@ class Calibration():
          met_fn = meteor_file.split("/")[-1]
          datestr = met_fn[0:19]
          self.cams_id = met_fn[24:30]
-         print("DATE:", datestr)
-         print("CAM:", self.cams_id)
          camera = Camera(cams_id = self.cams_id)
          self.calib_dt = datetime.datetime.strptime(datestr, "%Y_%m_%d_%H_%M_%S")
          self.camera = camera
       else:
-         print("No date passed into the calib. Assume the current date is now.")
+         print("ERROR: No date passed into the calib. Assume the current date is now.")
          self.calib_dt = datetime.datetime.now()
 
 
@@ -152,7 +144,7 @@ class Calibration():
       self.short_bright_stars = None
 
       if self.cp is None:
-         print("CP IS NONE!")
+         print("ERROR: CP IS NONE!")
          self.az = None
          self.el = None
          self.ra = None
@@ -213,8 +205,8 @@ class Calibration():
       else:
          self.cal_range = None
       if self.cal_range is None and self.az is None:
-         print("Warning: This camera is not entirely calibrated or the cal history has not been made.") 
-         print("To fix: ./Process.py cal_man -- run options 4 & 5")
+         print("WARNING: This camera is not entirely calibrated or the cal history has not been made.") 
+         print("WARNING: To fix: ./Process.py cal_man -- run options 4 & 5")
 
          self.default_az = None
          self.default_el = None
@@ -351,8 +343,7 @@ class Calibration():
          self.total_res_px = cur_res
          self.cp = self.obj_to_json()
          if self.total_res_px > 3 or self.orev == 0:
-            print("RUN TWEEK?????:", self.total_res_px, self.orev)
-
+            foo = 1
             #more_stars = self.find_more_stars_with_catalog()
             #self.cat_image_stars = more_stars
             #self.ra = self.cp['ra_center']
