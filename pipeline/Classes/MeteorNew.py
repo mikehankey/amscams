@@ -1104,6 +1104,7 @@ class Meteor():
                   h = final_objects[obj]['ohs'][i]
                   cx = int(x + (w/2))
                   cy = int(y + (h/2))
+                  print("FINAL OBJECTS:", final_objects[obj] )
                   rgb_val = final_objects[obj]['rgb'][i]
                   if final_objects[obj]['ransac'] != 0:
                      if final_objects[obj]['ransac'][7][i] == True:
