@@ -189,9 +189,19 @@ def load_json_file(json_file):
 
 def save_json_file(json_file, json_data, compress=False):
    if "cp" in json_data:
-      for key in json_data['cp']:
-         if type(json_data['cp'][key]) == np.ndarray:
-            json_data['cp'][key] = json_data['cp'][key].tolist()
+      if json_data['cp'] is not None:
+         for key in json_data['cp']:
+            if type(json_data['cp'][key]) == np.ndarray:
+               json_data['cp'][key] = json_data['cp'][key].tolist()
+
+
+   with open("test.json", 'w') as outfile:
+      json.dump(json_data, outfile, indent=4, allow_nan=True )
+   outfile.close()
+   print("trying to save:", json_file)
+   test_json = load_json_file("test.json")
+   # if this fails, the file is corrupt or there is a problem so do not save!
+
    with open(json_file, 'w') as outfile:
       if(compress==False):
          json.dump(json_data, outfile, indent=4, allow_nan=True )

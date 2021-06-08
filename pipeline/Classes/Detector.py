@@ -60,7 +60,6 @@ class Detector():
       report['unq_points'] = len(up.keys())
       obj['ccxs']
       obj['ccys']
-      print("UPIS:", up)
 
       if report['unq_points'] == 1:
          report['class'] = "star"
@@ -104,7 +103,6 @@ class Detector():
             report['y_dist'].append(0)
             report['segs'].append(0)
 
-      print("GAPS:", gaps)
       total_gaps = sum(gaps)
       gaps_per_frame = total_gaps / len(obj['ofns'])
       report['total_gaps'] = total_gaps
@@ -365,7 +363,6 @@ class Detector():
       elif report['plane_score'] >= 3 and report['meteor_score'] < 2:
          report['class'] = "plane"
 
-      print("ANALYZE REPORT:", "ID", obj['obj_id'], "CLASS:", report['class'], "METEOR SCORE:", report['meteor_score'], up)
 
       return(1, report)
 
@@ -444,25 +441,19 @@ class Detector():
             tcx = int(objects[obj]['oxs'][-1] + (objects[obj]['ows'][-1]/2))
             tcy = int(objects[obj]['oys'][-1] + (objects[obj]['ohs'][-1]/2))
             dist = calc_dist((cx,cy),(tcx,tcy))
-            #print("DIST / THRESH IS ", dist, dist_thresh)
             fn_diff = fn - objects[obj]['ofns'][-1]
 
                 #and fn not in objects[obj]['ofns'] :
             if dist < dist_thresh and fn_diff < 10: 
-               #print("   GOOD", fn, dist_thresh, dist, fn_diff)
                mkeys = {}
                for i in range(0, len(objects[obj]['ofns'])):
                   key = str(objects[obj]['ccxs'][i]) + "." + str(objects[obj]['ccys'][i])
                   mkeys[key] = 1
                tkey = str(cx) + "." + str(cy)
                if tkey not in mkeys:
-                  #print("   ", fn, "ADD TO MAYBE?")
                   maybe_matches.append((obj,dist))
                else:
-                  #print("REJECT CAUSE WE ALREADY HAVE IT?")
                   return(obj, objects)
-            else:
-               print("     NO MATCH", dist, fn_diff)
 
             if last_closest_dist is None: 
                last_fn_diff = fn_diff
@@ -473,8 +464,6 @@ class Detector():
                last_fn_diff = fn_diff
                last_closest_dist = dist
          if len(maybe_matches) == 0:
-            #print(fn, "NO EXISTING MATCH FOUND!")
-            #print("   DIST:", last_closest_dist, last_fn_diff)
             no_match = 1
          elif len(maybe_matches) == 1:
             obj = maybe_matches[0][0]
