@@ -1,6 +1,6 @@
 import colorsys
 from decimal import Decimal
-import pickle
+import pickle5 as pickle
 import glob
 import json
 import math
@@ -204,7 +204,7 @@ class Meteor():
       bad_html = "<div class='container-fluid'>"
       month = scan_date[0:7]
       SCAN_FILE = self.SCAN_DIR + self.station_id + "_" + month + "_scan.pickle"
-
+      print(SCAN_FILE)
       if cfe(SCAN_FILE) == 1:
          with open(SCAN_FILE, 'rb') as handle:
             scan_data = pickle.load(handle)

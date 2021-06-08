@@ -4,7 +4,7 @@ from Classes.DisplayFrame import DisplayFrame
 import cv2
 import glob
 from lib.PipeUtil import cfe, convert_filename_to_date_cam
-import pickle
+import pickle5 as pickle
 import os
 import datetime
 from datetime import datetime as dt
