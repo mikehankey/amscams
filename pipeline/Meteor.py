@@ -4,7 +4,7 @@ from Classes.DisplayFrame import DisplayFrame
 import cv2
 import glob
 from lib.PipeUtil import cfe, convert_filename_to_date_cam
-import pickle
+import pickle5 as pickle
 import os
 import datetime
 from datetime import datetime as dt
@@ -14,6 +14,10 @@ from lib.FFFuncs import ffprobe
 def scan_report(meteor_date):
    all_meteor = Meteor()
    all_meteor.scan_report(meteor_date)
+
+
+def make_media_for_day(meteor_date):
+   print("Make media for day")
 
 def scan_day(meteor_date):
    # We want to do 2 types of scans & then the media / save  processes
@@ -43,8 +47,11 @@ def scan_day(meteor_date):
 
    all_meteor.SCAN_FILE = SCAN_FILE
    all_meteor.scan_data = scan_data
-   all_meteor.check_scan_status_month()
-   exit()
+   all_meteor.check_scan_status_month(meteor_date)
+   #all_meteor.make_media_for_day(meteor_date)
+
+
+   return()
    if True:
       all_meteor.mdir = "/mnt/ams2/meteors/" + meteor_date + "/"
       all_meteor.get_mfiles(all_meteor.mdir)
