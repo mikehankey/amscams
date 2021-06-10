@@ -1067,25 +1067,22 @@ class Meteor():
             status = "UNSOLVED"
          elif "missing" in status:
             status = "WMPL FAILED"
-         print("EVENT:", obs_file, event_id, status)
          mf = "/mnt/ams2/meteors/" + obs_file[0:10] + "/" + obs_file.replace(".mp4", ".json")
          if cfe(mf) == 1:
-            print(mf)
             rkey = "M:" + obs_file.replace(".mp4", "")
             rval = self.r.get(rkey)
             if rval is not None:
                rval = json.loads(rval)
                rval["ev"] = event_id + ":" + status
                self.r.set(rkey, json.dumps(rval))
-               print("UPDATE RED:", rkey, rval)
-         else:
-            print("THIS OBS NO LONGER EXISTS!?", ev, mf)
+               #print("UPDATE RED:", rkey, rval)
+         #else:
+         #   print("THIS OBS NO LONGER EXISTS!?", ev, mf)
             #input()
 
 
    def load_all_meteors_into_redis(self, day=None):
       self.update_events_obs()
-      exit()
       in_day = day
       self.all_meteors = {}
       self.meteor_dirs = []
@@ -1098,6 +1095,9 @@ class Meteor():
          self.all_redis_keys = self.r.keys("M:*" + day + "*")
          mdd = ["/mnt/ams2/meteors/" + day ]
 
+
+      print("LOADING:", day)
+      print("MDD:", mdd)
       # for each day get the local json meteor files
       for md in mdd:
          day = md.split("/")[-1]
@@ -1134,7 +1134,7 @@ class Meteor():
                self.r.set(rkey, json.dumps(rval))
 
       print("ALL METEORS WITH CURRENT MJ INFO HAVE BEEN LOADED INTO REDIS!")
-    
+      input() 
       # load scan files if they exist
       all_scans = {}
       pk_scans = glob.glob("/mnt/ams2/meteor_scan/*.pickle")
@@ -1178,10 +1178,16 @@ class Meteor():
          day = scan_key[0:10]
          mdir = "/mnt/ams2/meteors/" + day + "/"
          mf = mdir + scan_key.replace(".mp4", ".json")
+         
 
          # check if the redis val is 100% up to date. If not reload it. 
          if "ev" not in rval:
-            mj = load_json_file(mf)
+            print(mf)
+            try:
+               mj = load_json_file(mf)
+            except:
+               print("CORRUPT JSON")
+               continue
             event_id = 0
             solve_status = 0
             if "multi_station_event" in mj:
@@ -2075,12 +2081,15 @@ class Meteor():
       all_roi_imgs = {}
       if day is None:
          self.load_all_meteors_into_redis(day)
+         
          self.rescan_all_meteors(day)
          self.make_meteor_media(day)
       else:
          if cfe("/mnt/ams2/METEOR_SCAN/" + day + "/", 1) == 0:
             os.makedirs("/mnt/ams2/METEOR_SCAN/" + day + "/")
          self.load_all_meteors_into_redis(day)
+         print("DONE LOAD REDIS")
+         return()
          self.rescan_all_meteors(day)
          self.make_meteor_media(day)
 

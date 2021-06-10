@@ -135,6 +135,10 @@ def make_obs_data(station_id, date, meteor_file):
    else:
       roi = [0,0,0,0]
 
+   if "hd_roi" in mj:
+      hd_roi = mj['hd_roi']
+   else:
+      hd_roi = [0,0,0,0]
    if "best_meteor" in mj:
       peak_int = max(mj['best_meteor']['oint'])
    else:
@@ -181,6 +185,7 @@ def make_obs_data(station_id, date, meteor_file):
       "calib": calib,
       "crop_box": crop_box,
       "roi": roi,
+      "hd_roi": hd_roi,
       "cat_image_stars": cat_image_stars,
       "ffp": ffp,
       "final_trim": final_trim,
@@ -197,6 +202,8 @@ def make_obs_data(station_id, date, meteor_file):
    #mj['last_update'] = update_time
    save_json_file(meteor_file, mj)
    print("CROP BOX!", crop_box)
+   print("ROI:", roi)
+   print("OBS", obs_data)
    return(obs_data)
 
 if __name__ == "__main__":

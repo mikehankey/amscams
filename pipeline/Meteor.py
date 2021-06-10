@@ -359,6 +359,7 @@ def scan_wild(meteor_wild):
          day = mdir.split("/")[-1]
          mdirs.append(day)
    for md in sorted(mdirs, reverse=True):
+      print("SCANNING:", md)
       scan_day(md)
 
 
