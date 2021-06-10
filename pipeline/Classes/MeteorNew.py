@@ -2089,7 +2089,7 @@ class Meteor():
             os.makedirs("/mnt/ams2/METEOR_SCAN/" + day + "/")
          self.load_all_meteors_into_redis(day)
          print("DONE LOAD REDIS")
-         return()
+         #return()
          self.rescan_all_meteors(day)
          self.make_meteor_media(day)
 
