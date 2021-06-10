@@ -4,7 +4,7 @@ from Classes.DisplayFrame import DisplayFrame
 import cv2
 import glob
 from lib.PipeUtil import cfe, convert_filename_to_date_cam
-import pickle5 as pickle
+#import pickle5 as pickle
 import os
 import datetime
 from datetime import datetime as dt
@@ -35,18 +35,9 @@ def scan_day(meteor_date):
    month = meteor_date[0:7]
    all_meteor.month = month
    SCAN_DIR = "/mnt/ams2/METEOR_SCAN/" 
-   if cfe(SCAN_DIR,1) == 0:
-      os.makedirs(SCAN_DIR)
-   SCAN_FILE = SCAN_DIR + all_meteor.station_id + "_" + month + "_scan.pickle"
   
-   if cfe(SCAN_FILE) == 1:
-      with open(SCAN_FILE, 'rb') as handle:
-         scan_data = pickle.load(handle)
-   else:
-      scan_data = {}
 
-   all_meteor.SCAN_FILE = SCAN_FILE
-   all_meteor.scan_data = scan_data
+   #all_meteor.scan_data = scan_data
    all_meteor.check_scan_status_month(meteor_date)
    #all_meteor.make_media_for_day(meteor_date)
 

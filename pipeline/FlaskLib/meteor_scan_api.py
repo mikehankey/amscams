@@ -41,6 +41,8 @@ def meteor_scan_api_controller(in_data):
       data['row_data'] = rows
       data['stats'] = stats
       data = json.dumps(data)
+   if cmd == "confirm_meteor":
+      MM.human_confirm_meteor(in_data['sd_video_file'])
 
    if cmd == "del_meteor_obs":
       if "sd_video_file" in in_data and "reclass" in in_data:
