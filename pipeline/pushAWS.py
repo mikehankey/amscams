@@ -1,4 +1,5 @@
 #!/usr/bin/python3
+import os
 import glob
 from decimal import Decimal
 import simplejson as json
@@ -129,6 +130,10 @@ def make_obs_data(station_id, date, meteor_file):
    crop_box = [0,0,0,0]
    if "crop_box" in mj:
       crop_box = mj['crop_box']
+   if "roi" in mj:
+      roi = mj['roi']
+   else:
+      roi = [0,0,0,0]
 
    if "best_meteor" in mj:
       peak_int = max(mj['best_meteor']['oint'])
@@ -175,6 +180,7 @@ def make_obs_data(station_id, date, meteor_file):
       "peak_int": peak_int,
       "calib": calib,
       "crop_box": crop_box,
+      "roi": roi,
       "cat_image_stars": cat_image_stars,
       "ffp": ffp,
       "final_trim": final_trim,
