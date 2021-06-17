@@ -2,77 +2,169 @@ from lib.PipeUtil import cfe, load_json_file, save_json_file, convert_filename_t
 from lib.PipeManager import dist_between_two_points
 from DynaDB import get_event, get_obs, search_events, update_event, update_event_sol, insert_meteor_event, delete_event
 import numpy as np
+import subprocess
 import time
 import datetime
 import os
+import redis
+import json
 
 class EventRunner():
    def __init__(self, cmd=None, day=None, month=None,year=None,date=None, use_cache=0):
+      admin_conf = load_json_file("admin_conf.json")
+      self.r = redis.Redis(admin_conf['redis_host'], port=6379, decode_responses=True)
       self.cmd = cmd
       self.date = date 
       if date is not None:
          year,month,day = date.split("_")
       self.event_dict = {}
-      self.day = day 
-      self.month = month 
-      self.year = year 
-      self.event_dir = "/mnt/ams2/EVENTS/" + self.year + "/" + self.month + "/" + self.day + "/" 
-      self.cloud_event_dir = "/mnt/archive.allsky.tv/EVENTS/" + self.year + "/" + self.month + "/" + self.day + "/" 
-      if cfe(self.event_dir, 1) == 0:
-         os.makedirs(self.event_dir)
-      if cfe(self.cloud_event_dir, 1) == 0:
-         os.makedirs(self.cloud_event_dir)
-      self.all_events_file = "/mnt/ams2/EVENTS/" + self.year + "/" + self.month + "/" + self.day + "/" + self.date + "_ALL_EVENTS.json"  
-      self.all_events_index_file = "/mnt/ams2/EVENTS/" + self.year + "/" + self.month + "/" + self.day + "/" + self.date + "_ALL_EVENTS_INDEX.json"  
-      self.all_obs_file = "/mnt/ams2/EVENTS/" + self.year + "/" + self.month + "/" + self.day + "/" + self.date + "_ALL_OBS.json"  
-      self.all_stations_file = "/mnt/ams2/EVENTS/" + self.year + "/" + self.month + "/" + self.day + "/" + self.date + "_ALL_STATIONS.json"  
-      self.single_station_file =  self.event_dir + self.date + "_ALL_SINGLE_STATION_METEORS.json"
+      if day is not None:
+         self.day = day 
+         self.month = month 
+         self.year = year 
+         self.event_dir = "/mnt/ams2/EVENTS/" + self.year + "/" + self.month + "/" + self.day + "/" 
+         self.cloud_event_dir = "/mnt/archive.allsky.tv/EVENTS/" + self.year + "/" + self.month + "/" + self.day + "/" 
+         if cfe(self.event_dir, 1) == 0:
+            os.makedirs(self.event_dir)
+         if cfe(self.cloud_event_dir, 1) == 0:
+            os.makedirs(self.cloud_event_dir)
+         self.all_events_file = "/mnt/ams2/EVENTS/" + self.year + "/" + self.month + "/" + self.day + "/" + self.date + "_ALL_EVENTS.json"  
+         self.all_events_index_file = "/mnt/ams2/EVENTS/" + self.year + "/" + self.month + "/" + self.day + "/" + self.date + "_ALL_EVENTS_INDEX.json"  
+         self.all_obs_file = "/mnt/ams2/EVENTS/" + self.year + "/" + self.month + "/" + self.day + "/" + self.date + "_ALL_OBS.json"  
+         self.all_stations_file = "/mnt/ams2/EVENTS/" + self.year + "/" + self.month + "/" + self.day + "/" + self.date + "_ALL_STATIONS.json"  
+         self.single_station_file =  self.event_dir + self.date + "_ALL_SINGLE_STATION_METEORS.json"
 
-      self.cloud_all_events_file = "/mnt/archive.allsky.tv/EVENTS/" + self.year + "/" + self.month + "/" + self.day + "/" + self.date + "_ALL_EVENTS.json"  
-      self.cloud_all_events_index_file = "/mnt/archive.allsky.tv/EVENTS/" + self.year + "/" + self.month + "/" + self.day + "/" + self.date + "_ALL_EVENTS_INDEX.json"  
-      self.cloud_all_obs_file = "/mnt/archive.allsky.tv/EVENTS/" + self.year + "/" + self.month + "/" + self.day + "/" + self.date + "_ALL_OBS.json"  
-      self.cloud_all_stations_file = "/mnt/archive.allsky.tv/EVENTS/" + self.year + "/" + self.month + "/" + self.day + "/" + self.date + "_ALL_STATIONS.json"  
-
-
-      if cfe(self.all_events_file) == 1:
-         self.all_events = load_json_file(self.all_events_file)
-         for event in self.all_events:
-            self.event_dict[event['event_id']] = event
-      else:
-         print("ERROR: NOT FOUND:", self.all_events_file)
-         self.all_events = []
-
-      # DOWNLOAD DYNA DATA IF IT DOESN'T EXIST
-      # OR IF THE CACHE FILE IS OLDER THAN X MINUTES
-      if cfe(self.all_events_file) == 0:
-         print("ERROR MISSING:", self.all_events_index_file) 
-      if use_cache == 0:
-         os.system("./DynaDB.py udc " + self.date)
+         self.cloud_all_events_file = "/mnt/archive.allsky.tv/EVENTS/" + self.year + "/" + self.month + "/" + self.day + "/" + self.date + "_ALL_EVENTS.json"  
+         self.cloud_all_events_index_file = "/mnt/archive.allsky.tv/EVENTS/" + self.year + "/" + self.month + "/" + self.day + "/" + self.date + "_ALL_EVENTS_INDEX.json"  
+         self.cloud_all_obs_file = "/mnt/archive.allsky.tv/EVENTS/" + self.year + "/" + self.month + "/" + self.day + "/" + self.date + "_ALL_OBS.json"  
+         self.cloud_all_stations_file = "/mnt/archive.allsky.tv/EVENTS/" + self.year + "/" + self.month + "/" + self.day + "/" + self.date + "_ALL_STATIONS.json"  
 
 
-      if cfe(self.all_events_index_file) == 1:
-         self.all_events_index = load_json_file(self.all_events_index_file)
-      else:
-         self.all_events_index = None
-      if cfe(self.all_obs_file) == 1:
-         self.all_obs = load_json_file(self.all_obs_file)
-      else:
-         self.all_obs = None
-      if cfe(self.all_stations_file) == 1:
-         print(self.all_stations_file)
-         self.all_stations = load_json_file(self.all_stations_file)
-      else:
-         self.all_stations = None
+         if cfe(self.all_events_file) == 1:
+            self.all_events = load_json_file(self.all_events_file)
+            for event in self.all_events:
+               self.event_dict[event['event_id']] = event
+         else:
+            print("ERROR: NOT FOUND:", self.all_events_file)
+            self.all_events = []
 
-      print(len(self.all_stations), "TOTAL STATIONS")
+         # DOWNLOAD DYNA DATA IF IT DOESN'T EXIST
+         # OR IF THE CACHE FILE IS OLDER THAN X MINUTES
+         if cfe(self.all_events_file) == 0:
+            print("ERROR MISSING:", self.all_events_index_file) 
+         if use_cache == 0:
+            os.system("./DynaDB.py udc " + self.date)
 
-      self.station_loc = {}
-      for data in self.all_stations:
-         sid = data[0]
-         lat = data[1]
-         lon = data[2]
-         self.station_loc[sid] = [lat,lon]
 
+         if cfe(self.all_events_index_file) == 1:
+            self.all_events_index = load_json_file(self.all_events_index_file)
+         else:
+            self.all_events_index = None
+         if cfe(self.all_obs_file) == 1:
+            self.all_obs = load_json_file(self.all_obs_file)
+         else:
+            self.all_obs = None
+         if cfe(self.all_stations_file) == 1:
+            print(self.all_stations_file)
+            self.all_stations = load_json_file(self.all_stations_file)
+         else:
+            self.all_stations = None
+
+         print(len(self.all_stations), "TOTAL STATIONS")
+
+         self.station_loc = {}
+         for data in self.all_stations:
+            sid = data[0]
+            lat = data[1]
+            lon = data[2]
+            self.station_loc[sid] = [lat,lon]
+
+   def update_missing_wmpl_keys(self):
+      ev_keys = self.r.keys("E*")
+      for ev_key in sorted(ev_keys, reverse=True):
+         event_id = ev_key.replace("E:", "")
+         evdata = self.r.get(ev_key)
+         #print(ev_key, evdata)
+         if evdata is not None:
+            evdata = json.loads(evdata)
+            if "wmpl_id" in evdata:
+               print("DONE")
+            else :
+               year = event_id[0:4]
+               mon = event_id[4:6]
+               dom = event_id[6:8]
+               ev_index = "/mnt/archive.allsky.tv/EVENTS/" + year + "/" + mon + "/" + dom + "/" + event_id + "/index.html" 
+               vel_file = ev_index.replace("index.html", event_id + "_velocities.jpg")
+               if "solve_status" not in evdata:
+                  continue
+
+               if evdata['solve_status'] == "SUCCESS":
+                  if cfe(vel_file) == 0:
+                     print("NO VEL", vel_file)
+                  if cfe(ev_index) == 1:
+                     cmd = "grep velocities " + ev_index
+                     try:
+                        output = subprocess.check_output(cmd, shell=True).decode("utf-8") 
+                        elm = output.split("/")
+                        vel_elm = elm[8].split("_")
+                        wmpl_id = vel_elm[0] + "_" + vel_elm[1]
+                        evdata['wmpl_id'] = wmpl_id
+                        print("EV:", evdata['wmpl_id'])
+                        self.r.set(ev_key, json.dumps(evdata))
+                     except:
+                        print("COULDNT RECOVER ID", vel_file)
+      
+
+   def update_all_stations_events(self):
+      self.update_missing_wmpl_keys()
+      exit()
+      all_station_events = {}
+      print("""
+            UPDATE ALL STATION EVENTS
+            Will create 1 master event file for each station in the wasabi/events dir for that staion.
+      """)
+      ev_keys = self.r.keys("E*")
+      for ev_key in ev_keys:
+         evdata = self.r.get(ev_key)
+         #print(ev_key, evdata)
+         if evdata is not None:
+            evdata = json.loads(evdata)
+         else:
+            continue
+         if "event_id" in evdata:
+            event_id = evdata['event_id']
+         else:
+            event_id = 0
+         if "solve_status" in evdata:
+            solve_status = evdata['solve_status']
+         else:
+            solve_status = 0
+
+         print(ev_key, evdata.keys())
+         if "stations" not in evdata:
+            print("PROBLEM EVENT:", ev_key, evdata)
+            #input()
+            continue
+         for i in range(0,len(evdata['stations'])):
+            this_station = evdata['stations'][i]
+            this_file = evdata['files'][i]
+            if this_station not in all_station_events:
+               all_station_events[this_station] = {}
+               all_station_events[this_station]['events'] = []
+            obs_ev_data = this_file + ":" + str(event_id) + ":" + str(solve_status)
+            all_station_events[this_station]['events'].append(obs_ev_data)
+      save_json_file("/mnt/ams2/EVENTS/ALL_STATIONS_EVENTS.json", all_station_events, True)
+      for station_id in all_station_events:
+         stjsf = "/mnt/ams2/EVENTS/ALL_EVENTS_" + station_id + ".json"
+         stjsf_zip = "/mnt/ams2/EVENTS/ALL_EVENTS_" + station_id + ".json.gz"
+         cloud_dir = "/mnt/archive.allsky.tv/EVENTS/STATIONS/" 
+         save_json_file(stjsf, all_station_events[station_id], True)
+         os.system("gzip -f " + stjsf)
+         os.system("cp " + stjsf_zip +" " + cloud_dir)
+         fn = stjsf_zip.split("/")[-1]
+         print("SAVED:", cloud_dir + fn)
+
+            
 
    def list_events_for_day(self):
       ec = 0
@@ -462,6 +554,18 @@ class EventRunner():
             ev_dt = datetime.datetime.strptime(min(event['start_datetime']), "%Y-%m-%d %H:%M:%S.%f") 
          else:
             ev_dt = datetime.datetime.strptime(min(event['start_datetime']), "%Y-%m-%d %H:%M:%S") 
+         print("START TIME!:", ob['event_start_time'])
+
+         if "_" in ob['event_start_time']:
+            el = ob['event_start_time'].split("_")
+            print("BAD TIME!", el)
+            y,m,d,h,mn,s = el[0:6]
+            if "." in s:
+               ss, ms = s.split(".")
+               ms = ms[0:3]
+               s = ss + "." + ms
+            ob['event_start_time'] = y + "-" + m + "-" + d + " " + h + ":" + mn + ":" + s
+
          if ob['event_start_time'] == "" or ob['event_start_time'] == " " :
             print("EVENT START TIME IS BLANK!", ob)
             ob_dt = self.starttime_from_file(ob['sd_video_file'])
@@ -480,7 +584,6 @@ class EventRunner():
                date = ob['sd_video_file'][0:10]
                date = date.replace("_", "-")
                ob['event_start_time'] = date + " " + ob['event_start_time']
-
 
             ob_dt = datetime.datetime.strptime(ob['event_start_time'], "%Y-%m-%d %H:%M:%S.%f")
          else:
@@ -514,12 +617,31 @@ class EventRunner():
    def get_obs_datetime(self, obs):
       if len(obs['meteor_frame_data']) > 0:
          obs_time = obs['meteor_frame_data'][0][0]
+         if "_" in obs_time:
+            print("BAD TIME!", obs_time)
+            el = obs_time.split("_")
+            print("EL:", el)
+            print("BAD TIME!", el)
+            y,m,d,h,mn,s = el[0:6]
+            if "." in s:
+               ss, ms = s.split(".")
+               ms = ms[0:3]
+               s = ss + "." + ms
+               obs_time = y + "-" + m + "-" + d + " " + h + ":" + mn + ":" + s
+            else:
+               obs_time = y + "-" + m + "-" + d + " " + h + ":" + mn + ":" + s + ".000"
+            print("NEW TIME", obs_time)
+
+
          if "." in obs_time:
             obs_dt = datetime.datetime.strptime(obs_time, "%Y-%m-%d %H:%M:%S.%f")
          else:
             obs_dt = datetime.datetime.strptime(obs_time, "%Y-%m-%d %H:%M:%S")
       else:
          obs_dt = self.starttime_from_file(obs['sd_video_file'])
+
+
+
       return(obs_dt)
 
    def starttime_from_file(self, filename):

@@ -14,8 +14,11 @@ if __name__ == "__main__":
       sys.argv[1] = yest 
    print(sys.argv[1])
    EVR = EventRunner(date=sys.argv[1],use_cache=0)
+   print("LIST EVENTS")
    EVR.list_events_for_day()
 
+   print("UPDATE EVENTS")
    EVR.update_events_for_day()
+   print("EOD REPORT ")
    EVR.EOD_report(sys.argv[1])
    #EV.make_missing_data_list()

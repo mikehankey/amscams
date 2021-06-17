@@ -498,7 +498,6 @@ def update_dyna_cache_for_day(dynamodb, date, stations, utype=None):
       os.system("rm " + event_file ) 
       # get all of the events for this day 
       events = search_events(dynamodb, date, stations, 1)
-      input("events file made?")
 
       save_json_file(event_file, events)
       cloud_event_file = event_file.replace("/mnt/ams2/", "/mnt/archive.allsky.tv/")
@@ -550,7 +549,7 @@ def make_station_clusters(all_stations):
       if "lat" in station_data:
          lat = float(station_data['lat'])
          lon = float(station_data['lon'])
-         if "city" not in station_data:
+         if "city" in station_data:
             city = station_data['city']
          else:
             city = ""
