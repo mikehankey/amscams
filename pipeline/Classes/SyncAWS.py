@@ -77,10 +77,12 @@ class SyncAWS():
             self.mdirs.append(md)
 
    def get_mfiles(self, mdir):
+      self.mfiles = []
       temp = glob.glob(mdir + "/*.json")
       for json_file in temp:
           if "reduced" not in json_file and "calparams" not in json_file and "manual" not in json_file and "starmerge" not in json_file and "master" not in json_file:
             vfn = json_file.split("/")[-1].replace(".json", ".mp4")
+            print("JSF:", json_file) 
             self.mfiles.append(vfn)
 
    def push_obs_OLD(self, api_key,station_id,meteor_file,mj=None):
@@ -219,6 +221,7 @@ class SyncAWS():
          data = jdata['all_vals']
       else: 
          data = []
+      aws_obs = data
       mdir = "/mnt/ams2/meteors/" + day + "/" 
 
       # delete AWS meteors that don't exist locally
@@ -257,8 +260,19 @@ class SyncAWS():
          print(url)
          self.delete_local_meteor(row['vid'])
       print("AWS DELETE METEORS DONE.")
+      print(len(aws_obs), "AWS METEORS ")
+      self.get_mfiles("/mnt/ams2/meteors/" + day + "/")
+      print("MF:", self.mfiles)
+      print(len(self.mfiles), "LOCAL STATION METEORS")
+      for mf in self.mfiles:
+         mff = "/mnt/ams2/meteors/" + day + "/" + mf.replace(".mp4", ".json") 
+         if cfe(mff) == 1:
+            print("JSON YES", mf)
+         else:
+            print("JSON NO", mf)
       if need > 0:
          os.system("./Process.py purge_meteors")
+      input("continue")
 
    def delete_local_meteor(self, sd_video_file):
       resp = {}
@@ -598,7 +612,7 @@ class SyncAWS():
 
       # delete meteors inside AWS that no longer exist on the local station
       self.delete_aws_meteors(day)
-      exit()
+
       # make staging and cloud dirs if they don't exist
       if cfe(lcdir_stage, 1) == 0:
          os.system("mkdir " + lcdir_stage)

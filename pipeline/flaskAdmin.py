@@ -85,6 +85,7 @@ def msapi():
    print("JDATA", jdata, type(jdata))
    if jdata is None:
       jdata = {}
+   print(jdata)
    out = meteor_scan_api_controller(jdata)
    return(out)
 

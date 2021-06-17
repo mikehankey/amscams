@@ -42,6 +42,9 @@ def gitpull(json_conf):
 
 
 def run_jobs(json_conf):
+   msg = "info:run_jobs:Run jobs ended"
+   cmd = "./log.py '" + msg + "'"
+   os.system(cmd)
    running = check_running("Process.py run_jobs")
    if running >= 3:
       print("Already running.")
@@ -110,12 +113,12 @@ def run_jobs(json_conf):
          size, tdiff = get_file_info("/home/ams/solved_last.txt")
          print("Last Update:", tdiff)
          if int(tdiff) / 60 > 5:
-            os.system("./solveWMPL.py sd " + yest + "")
+            #os.system("./solveWMPL.py sd " + yest + "")
             os.system("touch /home/ams/solved_last.txt")
 
-            os.system("./DynaDB.py load_day " + today + "")
-            #os.system("./Process.py ded " + today + "")
-            os.system("./solveWMPL.py sd " + today + "")
+            #os.system("./DynaDB.py load_day " + today + "")
+            ##os.system("./Process.py ded " + today + "")
+            #os.system("./solveWMPL.py sd " + today + "")
             os.system("touch /home/ams/solved_last.txt")
 
    # check on scan stack
@@ -199,4 +202,8 @@ def run_jobs(json_conf):
          if cmd[0] == 'all':
             print(cmd[2])
             os.system(cmd[2])
+
+   msg = "info:run_jobs:Run jobs ended"
+   cmd = "./log.py '" + msg + "'"
+   os.system(cmd)
    
