@@ -63,7 +63,10 @@ def get_meteors_in_range(station_id, start_date, end_date,del_data,filters=None)
    if start_date == end_date:
       # get meteors from that days index file after building it on the fly!
       mif = "/mnt/ams2/meteors/" + start_date + "/" + start_date + "-" + station_id + ".meteors"
-      mif_size, mif_old = get_file_info(mif)
+      if cfe(mif) == 1:
+         mif_size, mif_old = get_file_info(mif)
+      else:
+         mif_old = 0
       if mif_old > 10:
          os.system("./Process.py mmi_day " + start_date)
       if cfe(mif) == 1:
