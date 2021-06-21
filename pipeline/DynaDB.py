@@ -502,6 +502,7 @@ def update_dyna_cache_for_day(dynamodb, date, stations, utype=None):
       save_json_file(event_file, events)
       cloud_event_file = event_file.replace("/mnt/ams2/", "/mnt/archive.allsky.tv/")
       os.system("cp " + event_file + " " + cloud_event_file)
+      print("saved" + cloud_event_file)
 
 
 
