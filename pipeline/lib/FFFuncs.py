@@ -18,9 +18,10 @@ import datetime
 
 def snap_video(in_file):
    (f_datetime, cam, f_date_str,fy,fm,fd, fh, fmin, fs) = convert_filename_to_date_cam(in_file)
-   w,h,total_frames = ffprobe(in_file)
+   #w,h,bitrate,total_frames = ffprobe(in_file)
    date = fy + "_" + fd + "_" + fm
-
+   w = 1920
+   p = 1080
    if True:
       fs = int(fs)
       if fs > 30:
@@ -39,6 +40,7 @@ def snap_video(in_file):
       out_60_fn = date_next_60.strftime("%Y_%m_%d_%H_%M_%S_000_") + cam + ".jpg"
       out_30_fn = date_next_30.strftime("%Y_%m_%d_%H_%M_%S_000_") + cam + ".jpg"
 
+   total_frames = 1400
 
    if w == "1920":
       hd_outdir = "/mnt/ams2/SNAPS/" + date + "/1920p/" 
@@ -51,8 +53,8 @@ def snap_video(in_file):
          os.makedirs(hd_outdir)
    if cfe(sd_outdir, 1) == 0:
       os.makedirs(sd_outdir)
-   print("60:", frame_to_60, total_frames)
-   print("30:", frame_to_30, total_frames)
+   #print("60:", frame_to_60, total_frames)
+   #print("30:", frame_to_30, total_frames)
    if frame_to_60 < total_frames:
       outfile = sd_outdir + out_60_fn
       cmd = """ /usr/bin/ffmpeg -i """ + in_file + """ -vf select="between(n\,""" + str(frame_to_60) + """\,""" + str(frame_to_60+1) + """),setpts=PTS-STARTPTS" -y -update 1 """ + outfile + " >/dev/null 2>&1"
