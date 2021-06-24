@@ -51,25 +51,18 @@ def snap_video(in_file):
          os.makedirs(hd_outdir)
    if cfe(sd_outdir, 1) == 0:
       os.makedirs(sd_outdir)
-   print("60:", frame_to_60, total_frames)
-   print("30:", frame_to_30, total_frames)
    if frame_to_60 < total_frames:
       outfile = sd_outdir + out_60_fn
       cmd = """ /usr/bin/ffmpeg -i """ + in_file + """ -vf select="between(n\,""" + str(frame_to_60) + """\,""" + str(frame_to_60+1) + """),setpts=PTS-STARTPTS" -y -update 1 """ + outfile + " >/dev/null 2>&1"
-      print(cmd)
       os.system(cmd)
-   print("SNAPS:", outfile)
    if frame_to_30 < total_frames:
       outfile = sd_outdir + out_30_fn
       cmd = """ /usr/bin/ffmpeg -i """ + in_file + """ -vf select="between(n\,""" + str(frame_to_30) + """\,""" + str(frame_to_30+1) + """),setpts=PTS-STARTPTS" -y -update 1 """ + outfile + " >/dev/null 2>&1"
-      print(cmd)
       os.system(cmd)
 
-   print("SNAPS:", outfile)
 
 def splice_video(in_file, start, end, outfile=None, type="frame"):
    # type = frame or sec 
-   print("ff split video", type, start, end)
    # convert start and end frame #s to seconds
    if type == "frame":
       start_sec = int(start) / 25
@@ -87,14 +80,12 @@ def splice_video(in_file, start, end, outfile=None, type="frame"):
       outfile = in_file.replace(".mp4", "-trim-" + str(start) + ".mp4")
 
    cmd = "/usr/bin/ffmpeg -y -i  " + in_file + " -ss 00:00:" + str(start_sec) + " -t 00:00:" + str(dur) + " -c copy " + outfile
-   print(cmd)
    os.system(cmd)
    return(outfile)
 
 
 
 def list_to_video(list_file, outfile, fps=25, ow=640, oh=360, crf=30):
-   print("ff list to video")
    cmd = "/usr/bin/ffmpeg -r " + str(fps) + " -f concat -safe 0 -i " + list_file + " -c:v libx264 -pix_fmt yuv420p -vf 'scale=" + ow + ":" + oh + "' " + outfile
    os.system(cmd)
 
@@ -106,16 +97,10 @@ def list_to_video(list_file, outfile, fps=25, ow=640, oh=360, crf=30):
    os.system(cmd)
 
 
-   print("Made video from list:", outfile)
    return(outfile)
 
 def vid_to_imgs(file, out_dir, suffix=None, resize=None):
-   print(file)
-   print(out_dir)
-   print(suffix)
-   print(resize)
    tmp = file.split("/")[-1]
-   print("TMP:", tmp)
    fn,ext = tmp.split(".")
    if resize is not None:
       extra = "-vf 'scale=" + str(resize[0]) + ":" + str(resize[1]) + "' " 
@@ -124,23 +109,17 @@ def vid_to_imgs(file, out_dir, suffix=None, resize=None):
    if suffix is None:
       suffix = ""
    cmd = "/usr/bin/ffmpeg -i " + file + " " + extra + out_dir + fn + "-" + suffix + "-%04d.jpg > /dev/null 2>&1"
-   print(cmd)
    os.system(cmd)
-   print("Images exported to:", out_dir)
 
 def imgs_to_vid (in_dir, out_file, wild="", fps=25, crf=20, img_type= "jpg"):
-   print("FFFuncs: images_to_video")
    wild = "*" + wild + "*." + img_type
    cmd = "/usr/bin/ffmpeg -framerate " + str(fps) + " -pattern_type glob -i '" + in_dir + wild + "' -c:v libx264 -pix_fmt yuv420p -y " + out_file + " >/dev/null 2>&1"
-   print(cmd)
    os.system(cmd)
    outfile_lr = out_file.replace(".mp4", "-lr.mp4")
    cmd = "/usr/bin/ffmpeg -i " + out_file + " -vcodec libx264 -crf " + str(crf) + " -framerate " + str(fps) + " -y " + outfile_lr
-   print(cmd)
    os.system(cmd)
    cmd = "mv " + outfile_lr + " " + out_file
    os.system(cmd)
-   print("VIDEO READY:", out_file)
 
 
 def slow_stack_range(date, start_hour, end_hour, cams_id, speed=10):
@@ -152,7 +131,6 @@ def slow_stack_range(date, start_hour, end_hour, cams_id, speed=10):
       #/mnt/ams2/CUSTOM_VIDEOS/out.mp4
       if start_hour <= int(fh) <= end_hour and cam == cams_id and "crop" not in file:
          cmd = "./FFF.py slow_stack " + file +  " ./CACHE2/ " + str(speed)
-         print(cmd)
          os.system(cmd)
 
 
@@ -164,19 +142,15 @@ def slow_stack_video(video_file, OUT_DIR, stack_lim=10):
    vid_fn = video_file.split("/")[-1]
    stack_fn = vid_fn.replace(".mp4", ".jpg")
    short_frames = []
-   print(stack_lim)
    for frame in sd_frames:
       short_frames.append(frame)
       if fc % stack_lim == 0 and fc > 0 and len(short_frames) > 0:
-         print("Stacking...", frame.shape)
          stack_image = stack_frames(short_frames, 1, None, "day")
          short_frames = []
          num = "{:04d}".format(fc)
          tfn = stack_fn.replace(".jpg", "-" + str(num) + ".jpg")
          outfile = OUT_DIR + tfn
-         print(outfile)
          cv2.imwrite(outfile, stack_image)
-         print(outfile)
       fc += 1
 
 
@@ -187,25 +161,19 @@ def crop_video(in_file, out_file, crop_box):
 
    cmd = "/usr/bin/ffmpeg -i " + in_file + " -filter:v \"" + crop + "\" -y " + out_file + " > /dev/null 2>&1"
 
-   print("ff crop")
-   print("BEST:", cmd)
    os.system(cmd) 
 
 def resize_video(in_file, out_file, ow, oh, bit_rate=20):
    cmd = "/usr/bin/ffmpeg -i " + in_file + " -c:v libx264 -crf " + str(bit_rate) + " -pix_fmt yuv420p -vf 'scale=" + str(ow) + ":" + str(oh) + "' -y " + out_file + " >/dev/null 2>&1"
    os.system(cmd)
-   print(cmd)
-   print("ff resize")
    return(out_file)
 
 def lower_bitrate(in_file, crf):
    outfile_lr = in_file.replace(".mp4", "-lr.mp4")
    cmd = "/usr/bin/ffmpeg -i " + in_file + " -vcodec libx264 -crf " + str(crf) + " -y " + outfile_lr + " > /dev/null 2>&1"
-   print(cmd)
 
    os.system(cmd)
    cmd = "mv " + outfile_lr + " " + in_file
-   print(cmd)
    os.system(cmd)
    return()
 
@@ -217,6 +185,7 @@ def ffprobe(video_file):
       output = subprocess.check_output(cmd, shell=True).decode("utf-8")
    except:
        print("Couldn't probe.")
+       print(cmd)
        return(0,0,0,0)
    #try:
    #time.sleep(2)
@@ -257,8 +226,6 @@ def ffprobe(video_file):
    return(w,h, bitrate, int(total_frames))
 
 def best_crop_size(oxs, oys, vw,vh):
-   print("OXS:", oxs)
-   print("OYS:", oys)
    crop_sizes = [
       '1920x1080',
       '1600x900',
@@ -296,15 +263,12 @@ def best_crop_size(oxs, oys, vw,vh):
    obj_h = (max_y - min_y) + 100
 
    best_size = [1920,1080]
-   print("WH", obj_w, obj_h)
    for cs in crop_sizes:
       cw,ch = cs.split("x")
       cw,ch = int(cw),int(ch)
       if obj_w < cw and obj_h < ch:
          best_size = [cw,ch]
-   print("OBJ_W, OBJ_H", obj_w, obj_h)
    [cw,ch] = best_size
-   print("BEST CROP SIZE:", cw,ch)
    return([cw,ch])
 
 
