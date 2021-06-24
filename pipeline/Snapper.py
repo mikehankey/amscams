@@ -9,6 +9,7 @@
 """
 import cv2
 import numpy as np
+from lib.FFFuncs import snap_video
 from lib.DEFAULTS import *
 import sys
 from lib.PipeUtil import check_running, load_json_file, cfe, save_json_file
@@ -58,6 +59,16 @@ def archive_snap_files():
          os.system(cmd2)
          print("CMD:", cmd, cmd2) 
      
+
+def make_snap_files(cam_id, date_str, hd=1):
+   if hd == 1:
+      vid_dir = "/mnt/ams2/HD/"
+   vids = glob.glob(vid_dir + date_str + "*" + cam_id + "*.mp4")
+   print(vid_dir + date_str + "*" + cam_id + "*.mp4")
+
+   for vid in vids:
+      print(vid)
+      snap_video(vid)
 
 
 def purge_files():
@@ -299,3 +310,8 @@ else:
       purge_files()
    if sys.argv[1] == 'arc_snaps':
       archive_snap_files()
+   if sys.argv[1] == 'make_snap_files':
+      hd = 1
+      cam = sys.argv[2]
+      date_str = sys.argv[3]   
+      make_snap_files(cam, date_str, hd)
