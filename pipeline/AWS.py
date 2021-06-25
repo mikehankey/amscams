@@ -52,15 +52,16 @@ def sync_day_data_only(day):
 def sync_day(day):
    mdir = "/mnt/ams2/meteors/" + day + "/"
    SAWS.sync_meteor_day(day)
-   exit()
-   # SYNC MEDIA FUNCS
-   SAWS.delete_aws_meteors(day)
-   SAWS.delete_cloud_media(day)
-   SAWS.get_mfiles(mdir)
-   #SAWS.sync_meteor_media(SAWS.mfiles)
-   #SAWS.upload_cloud_media(day, SAWS.mfiles)
-   for sd_vid in SAWS.mfiles:
-      SAWS.sync_meteor(sd_vid)
+   old = 0
+   if old == 1:
+      # SYNC MEDIA FUNCS
+      SAWS.delete_aws_meteors(day)
+      SAWS.delete_cloud_media(day)
+      SAWS.get_mfiles(mdir)
+   #   SAWS.sync_meteor_media(SAWS.mfiles)
+      #SAWS.upload_cloud_media(day, SAWS.mfiles)
+      for sd_vid in SAWS.mfiles:
+         SAWS.sync_meteor(sd_vid)
 
 def sync_month(wild):
    print("/mnt/ams2/meteors/" + "*")
