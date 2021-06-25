@@ -128,9 +128,14 @@ def make_obs_data(station_id, date, meteor_file):
       sd_vid = mj['sd_video_file'].split("/")[-1]
       hd_vid = mj['hd_trim'].split("/")[-1]
       if "meteor_frame_data" in mjr:
-         meteor_frame_data = mjr['meteor_frame_data']
-         duration = len(mjr['meteor_frame_data']) / 25
-         event_start_time = mjr['meteor_frame_data'][0][0]
+         if len(mjr['meteor_frame_data']) > 0:
+            meteor_frame_data = mjr['meteor_frame_data']
+            duration = len(mjr['meteor_frame_data']) / 25
+            event_start_time = mjr['meteor_frame_data'][0][0]
+         else:
+            meteor_frame_data = []
+            event_start_time = ""
+            duration = 99
       else:
          meteor_frame_data = []
          event_start_time = ""
@@ -173,7 +178,7 @@ def make_obs_data(station_id, date, meteor_file):
    else:
       cat_image_stars = []
    if "multi_station_event" in mj:
-      event_id = mj['multi_station_event']['event_id'] + ":" + mj['multi_station_event']['solve_status']
+      event_id = str(mj['multi_station_event']['event_id']) + ":" + str(mj['multi_station_event']['solve_status'])
    else:
       event_id = 0
    if "ffp" in mj:
