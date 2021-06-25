@@ -668,7 +668,12 @@ class SyncAWS():
             all_files[root] = {}
          if cfe(mjf) == 1:
             #all_files[root]['mj'] = {}
-            all_files[root]['mj'] = load_json_file(mjf)
+            try:
+               all_files[root]['mj'] = load_json_file(mjf)
+            except:
+               print("CORUPT JSON!")
+               del all_files[root]
+               continue
          else:
             all_files[root]['mj'] = {}
 
