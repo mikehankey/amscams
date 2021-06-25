@@ -742,6 +742,10 @@ class SyncAWS():
       content = content.replace("\\", "")
       data = json.loads(content)
       mdir = "/mnt/ams2/meteors/" + day + "/" 
+      if "all_vals" not in data:
+         print("ERROR all_vals missing?", data)
+         input()
+
       for row in data['all_vals']:
          if "vid" not in row:
             print(row)
