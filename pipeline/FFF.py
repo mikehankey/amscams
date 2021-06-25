@@ -41,7 +41,7 @@ if cmd == "vid_to_imgs":
       resize = [w,h]
    else:
       resize = None
-
+   print("v2i: ", file, out_dir)
    vid_to_imgs(file, out_dir, suffix, resize)
 
 if cmd == "lower_bitrate":

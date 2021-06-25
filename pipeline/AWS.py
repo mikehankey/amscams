@@ -12,6 +12,21 @@ SAWS = SyncAWS(station_id, api_key)
 amf = SAWS.AWS_DIR + station_id + "_ALL_METEORS.json"
 amd = SAWS.AWS_DIR + station_id + "_ALL_METEOR_DIRS.json"
 
+
+
+def push_obs_day(day):
+   mdir = "/mnt/ams2/meteors/" + day + "/"
+   temp = glob.glob(mdir + "*.json")
+   for json_file in temp:
+      if "import" not in json_file and "report" not in json_file and "reduced" not in json_file and "calparams" not in json_file and "manual" not in json_file and "starmerge" not in json_file and "master" not in json_file:
+
+         jfn = json_file.split("/")[-1]
+         cmd = "python3 AWS.py push_obs " + jfn
+         print(cmd)
+         os.system(cmd)
+
+
+
 def index_local_meteors(): 
    SAWS.get_mdirs()
    for mdir in sorted(SAWS.mdirs, reverse=True):
@@ -96,3 +111,6 @@ else:
       sync_file(sys.argv[2]) 
    if sys.argv[1] == "sd_data":
       sync_day_data_only(sys.argv[2]) 
+   if sys.argv[1] == "push_day":
+      push_obs_day(sys.argv[2]) 
+

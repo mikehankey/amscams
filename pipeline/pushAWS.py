@@ -40,6 +40,7 @@ def get_meteor_media_sync_status(sd_vid):
       sync_status = cloud_files
       return(sync_status)
 
+
 def push_obs(api_key,station_id,meteor_file):
    json_conf = load_json_file("../conf/as6.json")
    if "registration" not in json_conf:
@@ -78,21 +79,30 @@ def make_obs_data(station_id, date, meteor_file):
 
    if cfe(meteor_file) == 1:
       red_file = meteor_file.replace(".json", "-reduced.json")
+      mfn = meteor_file.split("/")[-1]
+      mdir = meteor_file.replace(mfn, "")
       mj = load_json_file(meteor_file)
       if "revision" not in mj:
          mj['revision'] = 1
 
+      reprobe = 0
       if "ffp" not in mj:
+         reprobe = 1
+      elif "sd" not in mj['ffp']:
+         reprobe = 1
+
+      if reprobe == 1:
          sd_vid = mj['sd_video_file']
          hd_vid = mj['hd_trim']
          ffp = {}
          sd_start = None
          if cfe(hd_vid) == 1:
-            ffp['hd'] = ffprobe(hd_vid)
+            print("FFPROBE:", hd_vid)
+            ffp['hd'] = ffprobe(mdir + hd_vid)
          else:
             hd_vid = None
          if cfe(sd_vid) == 1:
-            ffp['sd'] = ffprobe(sd_vid)
+            ffp['sd'] = ffprobe(mdir + sd_vid)
          mj['ffp'] = ffp
          save_json_file(meteor_file, mj)
 
@@ -168,6 +178,12 @@ def make_obs_data(station_id, date, meteor_file):
       ffp = mj['ffp']
    else:
       ffp = {}
+   if 'sd' not in ffp:
+      ffp = {}
+      ffp['sd'] = ffprobe(sd_vid)
+   if 'hd' not in ffp:
+      if hd_vid is not None:
+         ffp['hd'] = ffprobe(hd_vid)
    if "final_trim" in mj:
       final_trim = mj['final_trim']
    else:
@@ -195,6 +211,8 @@ def make_obs_data(station_id, date, meteor_file):
       "sync_status": sync_status,
       "last_update": update_time
    }
+   if "human_points" in mj:
+      obs_data['human_points'] = mj['human_points']
    #obs_data = json.loads(json.dumps(obs_data), parse_float=Decimal)
    #table = dynamodb.Table('meteor_obs')
    #table.put_item(Item=obs_data)
@@ -217,5 +235,6 @@ if __name__ == "__main__":
 
    cmd = sys.argv[1]
    meteor_file = sys.argv[2]
+   print("CMD:", cmd)
    if cmd == "push_obs":
       push_obs(api_key, station_id, meteor_file)

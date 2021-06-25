@@ -22,9 +22,11 @@ from Classes.Detector import Detector
 from Classes.Camera import Camera
 from Classes.Event import Event
 from Classes.Calibration import Calibration
+from lib.PipeAutoCal import XYtoRADec
+from lib.PipeVideo import load_frames_simple
 from lib.PipeAutoCal import gen_cal_hist,update_center_radec, get_catalog_stars, pair_stars, scan_for_stars, calc_dist, minimize_fov, AzEltoRADec , HMS2deg, distort_xy, XYtoRADec, angularSeparation
 from lib.PipeUtil import load_json_file, save_json_file, cfe, convert_filename_to_date_cam,get_trim_num
-from lib.FFFuncs import best_crop_size, ffprobe, crop_video, splice_video
+from lib.FFFuncs import best_crop_size, ffprobe, crop_video, splice_video, lower_bitrate
 import boto3
 import socket
 
@@ -64,7 +66,8 @@ class Meteor():
       self.DF = DisplayFrame()
       self.SCAN_DIR = "/mnt/ams2/METEOR_SCAN/"
       self.SCAN_REPORT_DIR = "/mnt/ams2/METEOR_SCAN/REPORTS/"
-
+      self.sd_frames = None
+      self.sd_sub_frames = None
 
 
       if cfe(self.SCAN_DIR,1) == 0:
@@ -78,11 +81,12 @@ class Meteor():
       self.scan_period['years']= []
       temp_months = {}
       temp_years = {}
-      print(self.scan_period)
-      #if cfe(self.SCAN_DIR + "scan_period.json") == 1:
-      if False:
+      # regenerate 1x per day if the current day is not in there or the file time is old
+      if cfe(self.SCAN_DIR + "scan_period.json") == 1:
+         self.scan_period = load_json_file(self.SCAN_DIR + "scan_period.json")
          self.scan_days = load_json_file(self.SCAN_DIR + "scan_days.json")
       else:
+         print("REBUILDING SCAN PERIOD...")
          temp = glob.glob(self.SCAN_DIR + "*") 
          for ttt in temp:
             msdir = ttt
@@ -131,12 +135,10 @@ class Meteor():
       hdm_x = 1920 / iw
       hdm_y = 1080/ ih
       x1,y1,x2,y2 = sd_roi
-      print("SD2HD SDROI:", sd_roi)
       hx1 = x1 * hdm_x 
       hy1 = y1 * hdm_y
       hx2 = x2 * hdm_x
       hy2 = y2 * hdm_y
-      print("SD2HD HDROI:", hx1,hy1,hx2,hy2)
 
       hw = hx2 - hx1
       hh = hy2 - hy1
@@ -152,13 +154,11 @@ class Meteor():
       hx2 = int(cx + (hw/2))
       hy1 = int(cy - (hh/2))
       hy2 = int(cy + (hh/2))
-      print("SD:", sd_roi)
-      print("HD:", hx1,hy1,hx2,hy2)
       hx1,hy1,hx2,hy2 = self.bound_crop(hx1,hy1,hx2,hy2,1920,1080)
-      print("HD BOUND:", hx1,hy1,hx2,hy2)
       return(hx1,hy1,hx2,hy2)
 
    def make_meteor_image_html(self, data):
+
       sd_vid = data['sd']
       meteor_dir = "/mnt/ams2/meteors/" + sd_vid[0:10] + "/" 
       meteor_scan_dir = "/mnt/ams2/METEOR_SCAN/" + sd_vid[0:10] + "/" 
@@ -171,11 +171,11 @@ class Meteor():
       prev_img = sd_vid.replace(".mp4", "-PREV.jpg")
       prev_img = self.station_id + "_" + prev_img
       stack_thumb = sd_vid.replace(".mp4", "-stacked-tn.jpg")
-      if "mss" not in data:
-         return("")
-      [good_roi, good_sd_roi, good_sd_stack, good_ms_meteors, good_msc_meteors, good_hd_meteors, good_media] = data['mss']
-      ms_result = good_ms_meteors
 
+      if "hp" in data:
+         edit_color = "green"
+      else:
+         edit_color = "white"
 
       if "hc" in data:
          thumb_color = "green"
@@ -186,7 +186,7 @@ class Meteor():
       else:
          ev = None
 
-      icon_html = self.make_icons(self.station_id, sd_vid, thumb_color, ev)
+      icon_html = self.make_icons(self.station_id, sd_vid, thumb_color, edit_color, ev)
    
       meteor_link = "/meteor/" + self.station_id + "/" + sd_vid[0:10] + "/" + sd_vid
       if "meteor_scan_crop_scan" in data:
@@ -197,8 +197,10 @@ class Meteor():
          ms_result = 0
       else:
          ms_result = 1
+
       if "hc" in data:
          ms_result = 1
+
       if ms_result == "good" or str(ms_result) == "1" :
          # use the ROI image
          #print("DATA:", data)
@@ -207,7 +209,14 @@ class Meteor():
          for key in data:
             print(key)
          roi = data['roi']
-         img_file = meteor_scan_dir+ self.station_id + "_" + root_file + "-ROI.jpg"
+         roi_file = meteor_scan_dir+ self.station_id + "_" + root_file + "-ROI.jpg"
+         prev_file = meteor_scan_dir+ self.station_id + "_" + root_file + "-PREV.jpg"
+         if cfe(roi_file) == 1:
+            img_file = meteor_scan_dir+ self.station_id + "_" + root_file + "-ROI.jpg"
+            print("USE ROI:", roi_file)
+         else:
+            img_file = prev_file
+            print("USE PREV:", prev_file)
          iw = 150
          ih = 150
          if cfe(img_file) == 0:
@@ -226,8 +235,11 @@ class Meteor():
       img_html = """
          
          <div class="meteor_gallery" id="gl_{:s}_{:s}" style="background-color: #000000; background-image: url({:s}); background-repeat: no-repeat; background-size: 100%; width: {:s}px; height: {:s}px; border: 1px #000000 solid; float: left; color: #fcfcfc; margin:5px ">
-         <div style='width: 100%; height:80%'>{:s}</div><div>{:s}</div></div>
-      """.format(str(self.station_id), str(root_file), str(img_url), str(iw), str(ih),show_date, icon_html )
+         <div data-id="{:s}:{:s}" style='width: 100%; height:80%'>{:s}</div><div>{:s}</div></div>
+      """.format(str(self.station_id), str(root_file), str(img_url), str(iw), str(ih),self.station_id, root_file, show_date, icon_html )
+
+      print("IMG HTML DONE:", img_html)
+
       return(img_html)
 
    def delete_local_meteor(self, sd_video_file, reclass): 
@@ -283,7 +295,609 @@ class Meteor():
       cmd = "mv " + mdir + sd_wild + " " + nonmdir
       print(cmd)
       os.system(cmd)
+   
+   def get_meteor_media(self, meteor_file):
+      root = meteor_file.replace(".json", "")
+      ms_dir = "/mnt/ams2/METEOR_SCAN/" + meteor_file[0:10] + "/" + self.station_id + "_" + meteor_file.replace(".json", "*")
+      print(ms_dir)
+      all_media = []
+      med_files = glob.glob(ms_dir)
+      for med in med_files:
+         fn = med.split("/")[-1]
+         ext = fn.replace(self.station_id + "_" + root + "-", "")
+         all_media.append(ext)
+      return(all_media)
+
+   def mfd_frames_img(self, station_id, sd_video_file, frames, mfd):
+      frames_file = "/mnt/ams2/METEOR_SCAN/" + sd_video_file[0:10] + "/" + station_id + "_" + sd_video_file
+      frames_img_file = frames_file.replace(".mp4", "-FRMS.jpg")
+      print("FF:", frames_img_file)
+      total_cells = len(mfd)
+      total_cols_per_row = 800 / 20
+      total_rows = total_cells / total_cols_per_row
+      crop_frames = []
+      if total_rows < 1:
+         total_rows = 1
+      else:
+         total_rows = int(total_rows)
+      if total_rows == 1:
+         frm_h = 20
+         frm_w = total_cells * 20 
+         frames_img = np.zeros((frm_h,frm_w,3),dtype=np.uint8)
+
+      col = 0
+      row = 0
+      hdm_x = 1920 / frames[0].shape[1] 
+      hdm_y = 1080 / frames[0].shape[0] 
+      debug = frames[0]
+      for i in range(0, len(mfd)):
+
+         (dt, fn, hd_x, hd_y, w, h, oint, ra, dec, az, el) = mfd[i] 
+         frame = frames[fn]
+         sd_x = int(hd_x / hdm_x)
+         sd_y = int(hd_y / hdm_y)
+         x1 = sd_x - 10
+         x2 = sd_x + 10
+         y1 = sd_y - 10
+         y2 = sd_y + 10
+         if x1 < 0:
+            x1 = 0
+            x2 = 20
+         if x2 > frame.shape[1]:
+            x2 = frame.shape[1]
+            x1 = frame.shape[1] - 20
+         if y1 < 0:
+            y1 = 0
+            y2 = 20
+         if y2 > frame.shape[0]:
+            y2 = frame.shape[0]
+            y1 = frame.shape[0] - 20
+         x1,y1,x2,y2 = int(x1),int(y1),int(x2),int(y2)
+         print("HD/SD:", fn, hd_x, hd_y, sd_x, sd_y)
+         #print("X1:", x1, y1, x2, y2)
+         crop_frame = frame[y1:y2,x1:x2]
+         crop_frame[0:20,10:11] = [128,128,128]
+         crop_frame[10:11,0:20] = [128,128,128]
+         crop_frame[0:20,0:1] = [255,255,255]
+         crop_frame[0:20,19:20] = [255,255,255]
+         crop_frame[0:1,0:20] = [255,255,255]
+         crop_frame[19:20,0:20] = [255,255,255]
+         crop_frames.append(crop_frame)
+         cx1 = col * 20
+         cy1 = row * 20
+         cx2 = cx1 + 20
+         cy2 = cy1 + 20
+         cv2.rectangle(debug, (int(x1), int(y1)), (int(x2) , int(y2)), (255, 255, 255), 1)
+         #print("CX:", cx1,cy1,cx2,cy2)
+         #print("CROP:", crop_frame.shape)
+
+         frames_img[cy1:cy2,cx1:cx2] = crop_frame
+         col += 1
+
+      print("saving", frames_img_file)
+      print("size", frames_img.shape)
+      cv2.imwrite(frames_img_file, frames_img) 
+      cv2.imwrite("/mnt/ams2/debug.jpg", debug) 
+
+
+
+   def make_frames_img(self,final_sd_vid, mj):
+      frames_img_file = final_sd_vid.replace("-SD.mp4", "-FRMS.jpg")
+      crop_frames = []
+      if "meteor_scan_meteors" in mj:
+         if len(mj["meteor_scan_meteors"]) > 0:
+            fns = mj['meteor_scan_meteors'][0]['ofns']
+            xs = mj['meteor_scan_meteors'][0]['oxs']
+            ys = mj['meteor_scan_meteors'][0]['oys']
+            self.load_frames(mj['sd_video_file']) 
+            total_cells = len(fns)
+            total_cols_per_row = 800 / 20
+            total_rows = total_cells / total_cols_per_row
+            if total_rows < 1:
+               total_rows = 1
+            else:
+               total_rows = int(total_rows)
+            if total_rows == 1:
+               frm_h = 20
+               frm_w = total_cells * 20 
+               frames_img = np.zeros((frm_h,frm_w,3),dtype=np.uint8)
+            else:
+               frm_h = 20 * total_rows
+               frm_w = 800
+               frames_img = np.zeros((frm_h,frm_w,3),dtype=np.uint8)
+ 
+            col = 0
+            row = 0
+            for i in range(0, len(fns)):
+               fn = fns[i]
+               frame = self.sd_frames[fn]
+               x1 = xs[i] - 10
+               x2 = xs[i] + 10
+               y1 = ys[i] - 10
+               y2 = ys[i] + 10
+               if x1 < 0:
+                  x1 = 0
+                  x2 = 20
+               if x2 > frame.shape[1]:
+                  x2 = frame.shape[1]
+                  x1 = frame.shape[1] - 20
+               if y1 < 0:
+                  y1 = 0
+                  y2 = 20
+               if y2 > frame.shape[0]:
+                  y2 = frame.shape[0]
+                  y1 = frame.shape[0] - 20
+               x1,y1,x2,y2 = int(x1),int(y1),int(x2),int(y2)
+               crop_frame = frame[y1:y2,x1:x2]
+               crop_frame[0:20,10:11] = [128,128,128]
+               crop_frame[10:11,0:20] = [128,128,128]
+               crop_frame[0:20,0:1] = [255,255,255]
+               crop_frame[0:20,19:20] = [255,255,255]
+               crop_frame[0:1,0:20] = [255,255,255]
+               crop_frame[19:20,0:20] = [255,255,255]
+               crop_frames.append(crop_frame)
+               print("ROW/COL", row, col)
+               cx1 = col * 20
+               cy1 = row * 20
+               cx2 = cx1 + 20
+               cy2 = cy1 + 20
+               print("CX:", cx1,cy1,cx2,cy2)
+               print("CROP:", crop_frame.shape)
+
+               frames_img[cy1:cy2,cx1:cx2] = crop_frame
+               col += 1
+               if col >= 800 / 20:
+                  col = 0
+                  row = 0
+            cv2.imwrite(frames_img_file, frames_img)
+            print(frames_img_file)
+            for cf in crop_frames:
+               print(cf.shape)
+
+
+
+   def make_final_meteor_vids_pics(self,final_sd_vid, mj):
+
+      meteor_file = final_sd_vid.replace("-SD.mp4", ".json")
+      print("Making final meteor vids and pics for", final_sd_vid)
+      # this will make the images and SD final splice and then 
+      # make the SD ROI so both have the same # of frames
+      # before we can run this, we MUST have successfully completed meteor_scan
+      # we also must have the ffp info for the original sd video
+
+      if "all_media" not in mj:
+         mj['all_media'] = []
+      # IMAGE PROCESSING
+      # WE NEED: PREV.jpg, ROI.jpg, SD.jpg
+      # ROIHD.jpg HD.jpg
+      base_file = final_sd_vid.replace("-SD.mp4", "")
+      # SAVE SD ROI 
+      if "roi" in mj:
+         if sum(mj['roi']) > 0:
+            x1,y1,x2,y2 = mj['roi']
+            x1,y1,x2,y2 = int(x1),int(y1),int(x2),int(y2)  
+            mj['roi'] = [x1,y1,x2,y2]
+            print(x1,y1,x2,y2)
+            roi_img = self.sd_stack[y1:y2,x1:x2]
+            cv2.imwrite(base_file + "-ROI.jpg", roi_img, [cv2.IMWRITE_JPEG_QUALITY, 90])
+      else:
+         print("We can't make an ROI crop.")
+
+      # SAVE SD STACK
+      cv2.imwrite(base_file + "-SD.jpg", self.sd_stack,[cv2.IMWRITE_JPEG_QUALITY, 60])
+
+      # MAKE AND SAVE PREV IMG
+      prev_img = cv2.resize(self.sd_stack, (320,180))
+      cv2.imwrite(base_file + "-PREV.jpg", prev_img,[cv2.IMWRITE_JPEG_QUALITY, 90])
+
+      #frames_img = final_sd_vid.replace(".mp4", "-FRMS.jpg")
+      #if cfe(frames_img) == 0 or True:
+      #   self.make_frames_img(final_sd_vid, mj)
+    
+      # SAVE HD STACK AND HD ROI IF POSSIBLE
+      if self.hd_stack is not None: 
+         cv2.imwrite(base_file + "-HD.jpg", self.hd_stack,[cv2.IMWRITE_JPEG_QUALITY, 60])
+         if "roi" in mj:
+            if sum(mj['roi']) > 0:
+               hx1,hy1,hx2,hy2 = self.sd_to_hd_roi(mj['roi'], self.sd_stack.shape[1], self.sd_stack.shape[0])
+               if self.hd_stack.shape[0] != 1080:
+                  self.hd_stack = cv2.resize(self.hd_stack, (1920,1080))
+               #cv2.imshow('pepe', self.hd_stack)
+               #cv2.waitKey(0)
+               mj['roi_hd'] = [hx1,hy1,hx2,hy2]
+               hd_roi_img = self.hd_stack[hy1:hy2,hx1:hx2]
+               print("ROI:", hx1,hy1,hx2,hy2)
+               print("SHAPE:", hd_roi_img.shape)
+               cv2.imwrite(base_file + "-ROIHD.jpg", hd_roi_img,[cv2.IMWRITE_JPEG_QUALITY, 90])
+
+      # SD VIDEO SPLICE AND CROP
+      # we can only do this if meteor scan has run!
+      if "meteor_scan_meteors" in mj:
+         if len(mj['meteor_scan_meteors']) > 0:
+            start = mj['meteor_scan_meteors'][0]['ofns'][0] - 10
+            end = mj['meteor_scan_meteors'][0]['ofns'][-1] + 10
+
+            if "ffp" in mj:
+               if 'sd' in mj['ffp']:
+                  sd_w,sd_h,sd_bitrate,sd_frames = mj['ffp']['sd']
+               else:
+                  mj['ffp'] = ffprobe(mj['sd_video_file'])
+            else:
+               mj['ffp'] = ffprobe(mj['sd_video_file'])
+            if start < 0:
+               start = 0
+
+            if "final_trim" not in mj:
+               mj['final_trim'] = {}
+               mj['final_trim']['ffp'] = {}
+
+            if start < 0:
+               start = 0
+            media_file_name_temp = final_sd_vid.replace(".mp4", "-temp.mp4")
+            splice_video(mj['sd_video_file'], start,  end,  media_file_name_temp, "frame")
+            os.system("mv " + media_file_name_temp + " " + final_sd_vid)
+            lower_bitrate(final_sd_vid, 30)
+            if "SD.mp4" not in mj['all_media']:
+               mj['all_media'].append("SD.mp4")
+            mj['final_trim']['sd'] = [start,end]
+            if "ffp" not in mj['final_trim']:
+               mj['final_trim']['ffp'] = {}
+
+            mj['final_trim']['ffp']['sd'] = ffprobe(final_sd_vid)
+            # The final SD.mp4 should be made now. Next made the ROI.mp4 from this video.
+            x1,y1,x2,y2 = mj['roi']
+            cw = x2 - x1
+            ch = y2 - y1
+            crop_box = [x1,y1,cw,ch]
+            final_sd_crop_vid = final_sd_vid.replace("-SD.mp4", "-ROI.mp4")
+            crop_video(final_sd_vid, final_sd_crop_vid, crop_box) 
+            if "ROI.mp4" not in mj['all_media']:
+               mj['all_media'].append("ROI.mp4")
+
+      # NOW LETS DO THE SAME THING FOR THE HD FILES BUT ONLY IF THE 
+      # HD SCAN HAS ALREADY RUN SUCCESSFULLY
+      # RUN THE HD CROP SCAN / HD ROI
+      if "meteor_scan_hd_crop_scan" in mj:
+         if (type(mj['meteor_scan_hd_crop_scan']) == dict): 
+            mj['meteor_scan_hd_crop_scan'] = self.dict_to_array(mj['meteor_scan_hd_crop_scan'])
+
+         if len(mj['meteor_scan_hd_crop_scan']) > 0: 
+            if "ofns" in mj['meteor_scan_hd_crop_scan']:
+               print("HDCS", mj['meteor_scan_hd_crop_scan'])
+               print(type(mj['meteor_scan_hd_crop_scan']))
+               start = mj['meteor_scan_hd_crop_scan'][0]['ofns'][0] - 10
+               end = mj['meteor_scan_hd_crop_scan'][0]['ofns'][-1] + 10
+               if start < 0:
+                  start = 0    
+               final_hd_vid = final_sd_vid.replace("-SD.mp4", "-HD.mp4")
+               media_file_name_temp = final_hd_vid.replace(".mp4", "-temp.mp4")
+               splice_video(mj['hd_trim'], start,  end,  media_file_name_temp, "frame")
+               os.system("mv " + media_file_name_temp + " " + final_hd_vid)
+               lower_bitrate(final_hd_vid, 30)
+               mj['final_trim']['hd'] = [start,end]
+               mj['final_trim']['ffp']['hd'] = ffprobe(final_hd_vid)
+            else:
+                #MIKE
+                final_hd_vid = None
+                if "hd_trim" in mj:
+                   if mj['hd_trim'] != 0:
+                      if cfe(mj['hd_trim']) == 1:
+                         meteors, non_meteors, frame_data = self.meteor_scan_hd_crop(mj['hd_trim'], mj)
+                         mj['meteor_scan_hd_crop_scan'] = meteors
+                         mj['meteor_scan_hd_crop_scan'] = self.dict_to_array(meteors)
+                         if len(mj['meteor_scan_hd_crop_scan']) > 0:
+                            start = mj['meteor_scan_hd_crop_scan'][0]['ofns'][0] - 10
+                            end = mj['meteor_scan_hd_crop_scan'][0]['ofns'][-1] + 10
+                            if start < 5:
+                               start = 0
+                            final_hd_vid = final_sd_vid.replace("-SD.mp4", "-HD.mp4")
+                            media_file_name_temp = final_hd_vid.replace(".mp4", "-temp.mp4")
+
+                            print(meteors)
+                            splice_video(mj['hd_trim'], start,  end,  media_file_name_temp, "frame")
+                            os.system("mv " + media_file_name_temp + " " + final_hd_vid)
+                            lower_bitrate(final_hd_vid, 30)
+                            if "final_trim" not in mj:
+                               mj['final_trim'] = {}
+                               mj['final_trim']['ffp'] = {}
+                            mj['final_trim']['hd'] = [start,end]
+                            mj['final_trim']['ffp']['hd'] = ffprobe(final_hd_vid)
+
+
+
+         if "HD.mp4" not in mj['all_media']:
+            mj['all_media'].append("HD.mp4")
+
+         if "roi" in mj:
+            hx1,hy1,hx2,hy2 = self.sd_to_hd_roi(mj['roi'], self.sd_stack.shape[1], self.sd_stack.shape[0])
+            mj['roi_hd'] = [hx1,hy1,hx2,hy2]
+            final_hd_crop_vid = final_sd_vid.replace("-SD.mp4", "-ROIHD.mp4")
+            final_hd_vid = final_sd_vid.replace("-SD.mp4", "-HD.mp4")
+            if final_hd_vid is not None:
+               crop_video(final_hd_vid, final_hd_crop_vid, [hx1,hy1,hx2-hx1,hy2-hy1] )
+            else:
+               crop_video(mj['hd_trim'], final_hd_crop_vid, [hx1,hy1,hx2-hx1,hy2-hy1] )
+            if "ROIHD.mp4" not in mj['all_media']:
+               mj['all_media'].append("ROIHD.mp4")
+
+      frames_img = final_sd_vid.replace(".mp4", "-FRMS.jpg")
+
+      if cfe(frames_img) == 0 or True:
+         self.make_frames_img(final_sd_vid, mj)
       
+      mfn = meteor_file.split("/")[-1]
+      print("METEOR FILE IS:", mfn)
+      mfn = mfn.replace(self.station_id + "_", "")
+      mj['all_media'] = self.get_meteor_media(mfn)
+      print(mj['all_media'])
+      return(mj)
+
+   def dict_to_array(self,dict_data):
+      adata = []
+      for key in dict_data:
+         print("DICT:", key, dict_data[key])
+         if "obj_id" in dict_data[key]:
+            adata.append(dict_data[key])
+         else:
+            for obj_id in dict_data[key]:
+               adata.append(dict_data[key][obj_id])
+
+      return(adata)
+
+   def meteor_status_report(self, meteor_file):
+      mj_changed = 0
+      meteor_file = meteor_file.replace(".mp4", ".json")
+      root = meteor_file.replace(".json", "")
+      print("Status report for {:s}".format(meteor_file))
+      mdir = "/mnt/ams2/meteors/" + meteor_file[0:10] + "/"
+      ms_dir = "/mnt/ams2/METEOR_SCAN/" + meteor_file[0:10] + "/"
+      if cfe(ms_dir,1) == 0:
+         os.makedirs(ms_dir)
+      missing = []
+      rkey = "M:" + meteor_file.replace(".json", "")
+      if "mp4" in rkey:
+         rkey = rkey.replace(".mp4", "")
+      root = meteor_file.replace(".json", "")
+      rval = self.r.get(rkey)
+      if rval is not None and rval != 0 and rval != "0":
+         rval = json.loads(rval)
+         if "hp" in rval:
+            if rval['hp'] == 1:
+               print("this meteor has human points and has been review and is good. no more scanning or processing is needed for it. ")
+               # but first make sure all the redis data, ffprobe etc is good too.  And that AWS has the latest version of data.
+               #return()
+      if rval == 0 or rval == "0":
+         print("DELETED BAD REDIS KEY!")
+         self.r.delete(rkey)
+         rval = self.mj_to_redis(root) 
+         self.r.set(rkey, json.dumps(rval))
+
+         
+      final_media = {}
+      print("RKEY:", rkey)
+      # needed media files
+      # preview image / cropped thumbs
+      final_media['prev_img'] = ms_dir + self.station_id + "_" + root + "-PREV.jpg"
+      final_media['roi_img'] = ms_dir + self.station_id + "_" + root + "-ROI.jpg"
+      final_media['roi_hd_img'] = ms_dir + self.station_id + "_" + root + "-ROIHD.jpg"
+      # preview / cropped videos
+      final_media['roi_vid'] = ms_dir + self.station_id + "_" + root + "-ROI.mp4"
+      final_media['roi_hd_vid'] = ms_dir + self.station_id + "_" + root + "-ROIHD.mp4"
+      # SD/HD stack images
+      final_media['sd_img'] = ms_dir + self.station_id + "_" + root + "-SD.jpg"
+      final_media['hd_img'] = ms_dir + self.station_id + "_" + root + "-HD.jpg"
+
+      # trimmed videod clips
+      final_media['sd_vid'] = ms_dir + self.station_id + "_" + root + "-SD.mp4"
+      final_media['hd_vid'] = ms_dir + self.station_id + "_" + root + "-HD.mp4"
+
+      mfile = mdir + meteor_file
+      mjf = mfile.replace(".mp4", ".json") 
+      if cfe(mjf) == 1:
+         print("Meteor file good", mjf)
+         try:
+            mj = load_json_file(mjf)
+         except:
+
+            print("Loading MJ FAILED!", mfile)
+            return(0)
+         if cfe(mj['sd_stack']) == 1:
+            self.sd_stack = cv2.imread(mj['sd_stack'])
+         else:
+            self.sd_stack = None
+         if cfe(mj['hd_stack']) == 1:
+            self.hd_stack = cv2.imread(mj['hd_stack'])
+         else:
+            self.hd_stack = None
+
+
+
+         if cfe(mj['hd_stack']) == 1:
+            self.hd_stack = cv2.imread(mj['hd_stack'])
+         else:
+            self.hd_stack = None
+      else:
+         print("meteor file not found.", mfile)
+
+
+      print("ready?")
+      rval = self.mj_to_redis(root) 
+      print("RVAL:", rkey, rval)
+      if rval is not None:
+         self.r.set(rkey, json.dumps(rval))
+         print("RVAL:", rkey, rval)
+         if rval == 0:
+            exit() 
+         
+         print("REDIS SAVING:", rkey)
+         for field in rval:
+            print("   " + field, rval[field])
+
+      print("RVAL:", rkey, rval)
+
+
+      # vars we want to see in the json
+      # roi, meteor_scan_meteors (ms_meteors), msc_meteors (hd_crop_scan_meteors?)
+      # final_trim, ffp
+      # all_media
+      if "roi" not in mj or sum(mj['roi']) == 0:
+         print("THERE IS NO ROI DEFINED!")
+         if "meteor_scan_meteors" in mj:
+            if len(mj['meteor_scan_meteors']) > 0:
+               if "roi" in mj['meteor_scan_meteors'][0]:
+                  mj['roi'] = mj['meteor_scan_meteors'][0]['roi']
+                  roi = mj['roi']
+                  save_json_file(mfile, mj)
+       
+      if "meteor_scan_meteors" in mj:
+         if len(mj["meteor_scan_meteors"]) == 0:
+            del mj['meteor_scan_meteors']
+      if "msc_meteors" in mj:
+         if len(mj["msc_meteors"]) == 0:
+            del mj['msc_meteors']
+      if "meteor_scan_hd_crop_scan" in mj:
+         if len(mj["meteor_scan_hd_crop_scan"]) == 0:
+            del mj['meteor_scan_hd_crop_scan']
+      if "meteor_scan_meteors" not in mj and "msc_meteors" not in mj :
+         self.meteor_file = meteor_file
+         self.mj = mj
+         self.meteor_scan()
+         mj['meteor_scan_meteors'] = self.meteor_scan_meteors
+         print("METEOR SCAN METEORS", mj['meteor_scan_meteors'])
+         missing.append("msc_meteors")
+      elif "meteor_scan_meteors" not in mj and "msc_meteors" in mj:
+         mj['meteor_scan_meteors'] = mj['msc_meteors']
+
+      print(mj.keys())
+      if "run_crop_scan" in mj:
+         missing.append("rerun crop scan")
+
+      if "msc_meteors" not in mj or "run_crop_scan" in mj:
+         print("CROP SCAN!")
+         if "human_roi" in mj:
+            x1,y1,x2,y2 = mj['human_roi']
+         elif "roi" in mj:
+            x1,y1,x2,y2 = mj['roi']
+         else:
+            mj['roi'] = [0,0,0,0]
+            print("ROI IS ZERO!")
+         if sum(mj['roi']) > 0:
+            x1,y1,x2,y2 = self.bound_crop(x1,y1,x2,y2, self.sd_stack.shape[0],self.sd_stack.shape[1])
+            crop_video(mj['sd_video_file'], final_media['roi_vid'], [x1,y1,x2-x1,y2-y1] )
+            print("                ************************************ ")
+            print("                ************************************ ")
+            print("                ************************************ ")
+            print("                ************************************ ")
+            print("                RECROP METEOR final_media['roi_vid'] ")
+            mj['msc_meteors'] = self.meteor_scan_crop(meteor_file)
+            print("CROP DONE:", mj['msc_meteors'])
+            mj_changed = 1
+            for key in mj['msc_meteors']:
+   
+               print(key, mj['msc_meteors'][key])
+
+         if "msc_meteors" in mj:
+            if (type(mj['msc_meteors']) == dict): 
+               mj['msc_meteors'] = self.dict_to_array(mj['msc_meteors'])
+               if len(mj['msc_meteors']) > 0:
+                  start = mj['msc_meteors'][0]['ofns'][0] - 10
+                  end = mj['msc_meteors'][0]['ofns'][-1] + 10
+                  if start < 0:
+                     start = 0
+                  media_file_name_temp = final_media['roi_vid'].replace(".mp4", "-temp.mp4")
+                  splice_video(final_media['roi_vid'], start,  end,  media_file_name_temp, "frame")
+                  os.system("mv " + media_file_name_temp + " " + final_media['roi_vid'])
+                  print("RESPLICED", start, end, final_media['roi_vid'])
+                  mj_changed = 1
+               else:
+                  print("NO MSC METEORS!", mj['msc_meteors']) 
+
+           
+         # BEFORE WE ARE DONE WE NEED TO TRIM IT TOO
+         if "run_crop_scan" in mj:
+            
+
+            del (mj['run_crop_scan'])
+
+         
+      if "meteor_scan_hd_crop_scan" not in mj or "run_hd_crop_scan" in mj:
+
+         if "roi" in mj:
+            hx1,hy1,hx2,hy2 = self.sd_to_hd_roi(mj['roi'], self.sd_stack.shape[1], self.sd_stack.shape[0])
+            mj['roi_hd'] = [hx1,hy1,hx2,hy2]
+            final_sd_vid = final_media['sd_vid']
+            final_hd_crop_vid = final_sd_vid.replace("-SD.mp4", "-ROIHD.mp4")
+            if "hd_trim" in mj:
+               if mj['hd_trim'] is not None and mj['hd_trim'] != 0:
+                  crop_video(mj['hd_trim'], final_hd_crop_vid, [hx1,hy1,hx2-hx1,hy2-hy1] )
+
+            if self.sd_frames is None:
+               self.load_frames(mj['sd_video_file'])
+            meteors, non_meteors, frame_data = self.meteor_scan_hd_crop(final_hd_crop_vid, mj)
+
+            if "run_hd_crop_scan" in mj:
+               del (mj['run_hd_crop_scan'])
+            mj['meteor_scan_hd_crop_scan'] = meteors
+
+      else:
+         if (type(mj['meteor_scan_hd_crop_scan']) == dict): 
+            mj['meteor_scan_hd_crop_scan'] = self.dict_to_array(mj['meteor_scan_hd_crop_scan'])
+
+      if "msc_meteors" not in mj:
+         missing.append("msc_meteors")
+      else:
+         if (type(mj['msc_meteors']) == dict): 
+            mj['msc_meteors'] = self.dict_to_array(mj['msc_meteors'])
+      if "final_trim" not in mj:
+         missing.append("final_trim")
+      if "ffp" not in mj:
+         missing.append("ffp")
+      if "all_media" not in mj:
+         missing.append("all_media")
+      if len(missing) > 0:
+         print("   *** Missing variables in mj:", missing)
+      if "all_media" in missing:
+         meteor_media = self.get_meteor_media(meteor_file)
+         mj['all_media'] = meteor_media
+         mj_changed = 1
+      else:
+         meteor_media = mj['all_media']
+      for media in final_media:
+         media_file = final_media[media]   #ms_dir + self.station_id + "_" + root + "-" + media
+         print("CHECK:", media_file)
+         if cfe(media_file) == 0:
+            print("MISSING", media_file)
+            missing.append("MEDIA:" + media_file)
+
+      # CHECK FOR FINAL TRIM IN MJ
+      # IF IT IS NOT THERE OR IF THE SD IS MISSING 
+      # RE-TRIM THE SD VID AND CROP THE ROI FROM THE NEW TRIM FILE
+      # THIS IS TO ELIMINATE EXCESSIVE FRAMES AT THE START AND END
+
+      print("MISSING:", missing)
+      if "final_trim" not in mj or len(missing) > 0:
+         print("REMAKE VIDEOS SOMETHING IS MISSING!", missing)
+         mj = self.make_final_meteor_vids_pics(final_media['sd_vid'], mj)
+         mj_changed = 1
+
+      # RUN THE HD CROP SCAN / HD ROI
+
+      if mj_changed == 1:
+         print("saving updated json", mfile)
+         save_json_file(mfile, mj)
+      if mj_changed == 1 or len(missing) > 0 :
+         print("MISSING:", missing)
+         print("CHANGED:", mj_changed)
+         cmd = "./pushAWS.py push_obs " + meteor_file
+         print(cmd)
+         os.system(cmd)
+         rval = self.mj_to_redis(root) 
+         if rval is not None:
+            print("REDIS SAVING:", rkey)
+            self.r.set(rkey, json.dumps(rval))
+      
+
+
 
 
    def scan_report(self, scan_date, page_num=1,per_page=500):
@@ -304,10 +918,14 @@ class Meteor():
       print("SCAN DATE IS:", scan_date)
       if len(scan_date) == 7:
          all_redis_keys = self.r.keys("M:" + scan_date[0:8] + "*")
+         print("REDIS:", "M:" + scan_date[0:8] + "*")
       else:
          all_redis_keys = self.r.keys("M:" + scan_date + "*")
+         print("REDIS:", "M:" + scan_date[0:8] + "*")
+      debug_html = ""
       for rkey in sorted(all_redis_keys, reverse=True):
          key = rkey.replace("M:", "") 
+         debug_html += key + "<br>"
          mjf = "/mnt/ams2/meteors/" + key[0:10] + "/" + key + ".json" #key.replace(".mp4", ".json")
          if cfe(mjf) == 1:
             print("MJF GOOD:", mjf)
@@ -338,12 +956,8 @@ class Meteor():
          i = 0
 
 
-         if "meteor_scan_meteors" in data:
-            for obj in row_data[key]['meteor_scan_meteors']:
-               if "report" in obj:
-                  del obj['report']
-                  i += 1
-                  idx_data[key]['msm'].append(obj)
+         if "ms_meteors" in data:
+            debug_html += "&nbsp; meteor_scan_meteors yes" + "<br>"
          if "roi" in data:
             idx_data[key]['roi'] = data['roi']
          if "hc" in data:
@@ -426,6 +1040,8 @@ class Meteor():
       if cc_bad == 0:
          bad_msg = ""
          bad_html = ""
+
+      bad_html += debug_html
       all_html = date_nav_result + "<br>" + conf_msg + conf_html + good_msg + good_html + bad_msg + bad_html
 
       report_file = self.SCAN_REPORT_DIR + self.station_id + "_" + month + "_METEOR_SCAN.html"
@@ -435,12 +1051,11 @@ class Meteor():
       stats = {}
       return(all_html, idx_data, stats)
 
-   def make_icons(self, station_id, sd_vid, thumb_color="white", ev=None):
+   def make_icons(self, station_id, sd_vid, thumb_color="white", edit_color="white", ev=None):
       video_url = "/meteors/" + sd_vid[0:10] + "/" + sd_vid
       ev_icon = ""
       if ev is not None:
          event_id, solve_status = ev.split(":")
-         print("EV", ev)
          if event_id != "0" and event_id != 0:
             if "SUCCESS" in solve_status:
                ev_color = "green"
@@ -462,11 +1077,11 @@ class Meteor():
          <td><a class="meteor_astrometry" data-id="meteor_astrometry:{:s}_{:s}" href="javascript:void(0)">
          <i class="bi bi-stars" style="color: white" title="Review astrometry" data-content="Edit observation data."></i></a></td>
          <td>
-         <a class="reduce_meteor" data-id="reduce_meteor:' + key + '" href="javascript:void(0)"><i class="bi bi-pencil" style="color: white" data-toggle="popover" title="Edit observation data" data-content="Edit observation data."></i></td>
+         <a class="reduce_meteor" data-id="reduce_meteor:{:s}:{:s}" href="javascript:void(0)"><i class="bi bi-pencil" style="color: {:s}" data-toggle="popover" title="Edit observation data" data-content="Edit observation data."></i></td>
          <td>
 
 
-      """.format(station_id, sd_vid, video_url,station_id,sd_vid,thumb_color, station_id, sd_vid.replace(".mp4", ""), station_id, sd_vid.replace(".mp4", ""))
+      """.format(station_id, sd_vid, video_url,station_id,sd_vid,thumb_color, station_id, sd_vid.replace(".mp4", ""), station_id, sd_vid.replace(".mp4", ""),station_id, sd_vid.replace(".mp4", ""), edit_color)
       icon_html += ev_icon
 
       icon_trash_html = self.make_trash_icon(station_id, sd_vid)
@@ -503,6 +1118,176 @@ class Meteor():
          rval['hc'] = 1
          self.r.set(rkey, json.dumps(rval))
 
+   def debug(self, station_id, sd_video_file):
+      print("SD V:", sd_video_file)
+      mjf = "/mnt/ams2/meteors/" + sd_video_file[0:10] + "/" + sd_video_file.replace(".mp4", ".json")
+      mjrf = "/mnt/ams2/meteors/" + sd_video_file[0:10] + "/" + sd_video_file.replace(".mp4", "-reduced.json")
+      ms_root = "/mnt/ams2/METEOR_SCAN/" + sd_video_file[0:10] + "/" + station_id + "_" + sd_video_file.replace(".mp4", "")
+      roi_file = ms_root + "-ROI.mp4"
+      sd_file = ms_root + "-SD.mp4"
+      if cfe(mjf) == 1:
+         mj = load_json_file(mjf)
+      if cfe(mjrf) == 1:
+         mjr = load_json_file(mjrf)
+      print(mjrf)
+      rx1, ry1, rx2, ry2 = mj['roi']
+      #sd_frames = load_frames_simple(mj['sd_video_file'])
+      print(roi_file)
+      sd_frames = load_frames_simple(sd_file)
+      roi_frames = load_frames_simple(roi_file)
+
+      if "ffp" in mj:
+         sd_w = int(mj['ffp']['sd'][0])
+         sd_h = int(mj['ffp']['sd'][1])
+         hdm_x = 1920 / sd_w 
+         hdm_y = 1080 / sd_h 
+
+
+      for row in mjr['meteor_frame_data']:
+         (dt, ofn, hd_x, hd_y, w, h, oint, ra, dec, az, el) = row
+         afn = ofn - mj['final_trim']['sd'][0] - 1
+         frame = roi_frames[afn]
+         sd_frame = sd_frames[afn]
+         sd_x = int(hd_x / hdm_x) 
+         sd_y = int(hd_y / hdm_y) 
+         sd_rx = sd_x - rx1
+         sd_ry = sd_y - ry1
+         print("OFN/AFN", rx1, ry1, ofn, afn, sd_rx, sd_ry, sd_x, sd_y)
+         cv2.circle(frame,(sd_rx,sd_ry), 1, (0,0,255), 1)
+         cv2.circle(sd_frame,(sd_x,sd_y), 1, (0,0,255), 1)
+         cv2.putText(frame, str(afn),  (10, 10), cv2.FONT_HERSHEY_SIMPLEX, .4, (200, 200, 200), 1)
+         cv2.putText(sd_frame, str(afn),  (10, 10), cv2.FONT_HERSHEY_SIMPLEX, .4, (200, 200, 200), 1)
+         cv2.imshow('pepe', frame)
+         cv2.imshow('pepe_sd', sd_frame)
+         cv2.waitKey(0)
+         
+      
+   
+
+   def save_human_data(self, station_id, sd_video_file, human_data):
+      mjf = "/mnt/ams2/meteors/" + sd_video_file[0:10] + "/" + sd_video_file.replace(".mp4", ".json")
+      mjrf = "/mnt/ams2/meteors/" + sd_video_file[0:10] + "/" + sd_video_file.replace(".mp4", "-reduced.json")
+      (f_datetime, this_cam, f_date_str,fy,fmon,fd, fh, fm, fs) = convert_filename_to_date_cam(sd_video_file)
+      event_start_datetime = self.starttime_from_file(sd_video_file)
+
+
+      mfd = []
+      human_points = []
+      if cfe(mjf) == 1:
+         mj = load_json_file(mjf)
+      else:
+         return()
+      if cfe(mjrf) == 1:
+         mjr = load_json_file(mjrf)
+      else:
+         return()
+
+      sd_frames = load_frames_simple(mj['sd_video_file'])
+      trim_start = int(mj['final_trim']['sd'][0])
+      img_h, img_w = sd_frames[0].shape[:2]
+      mcp_dir = "/mnt/ams2/cal/"
+      mcp_file = mcp_dir + "multi_poly-" + station_id + "-" + this_cam + ".info"
+      crops = []
+      if cfe(mcp_file) == 1:
+         mcp = load_json_file(mcp_file)
+         mj['cp']['x_poly'] = mcp['x_poly']
+         mj['cp']['y_poly'] = mcp['y_poly']
+         mj['cp']['x_poly_fwd'] = mcp['x_poly_fwd']
+         mj['cp']['y_poly_fwd'] = mcp['y_poly_fwd']
+
+
+      if "human_roi" in mj:
+         roi = mj['human_roi']
+      elif "roi" in mj:
+         roi = mj['roi']
+      rx1,ry1,rx2,ry2 = roi
+      if "ffp" in mj:
+         if type(mj['ffp']) == list:
+            mj['ffp'] = {}
+            mj['ffp']['sd'] = ffprobe(mj['sd_video_file'])
+            mj['ffp']['hd'] = ffprobe(mj['hd_trim'])
+            sd_w = int(mj['ffp']['sd'][0])
+            sd_h = int(mj['ffp']['sd'][1])
+            hdm_x = 1920 / sd_w 
+            hdm_y = 1080 / sd_h 
+
+         elif "sd" in mj['ffp']:
+
+            print("MJ:", mj['ffp'])
+            if mj['ffp']['sd'][0] == 0:
+               mj['ffp']['sd'] = ffprobe(mj['sd_video_file'])
+               mj['ffp']['hd'] = ffprobe(mj['hd_trim'])
+            sd_w = int(mj['ffp']['sd'][0])
+            sd_h = int(mj['ffp']['sd'][1])
+
+            hdm_x = 1920 / sd_w 
+            hdm_y = 1080 / sd_h 
+         else:
+            mj['ffp'] = {}
+            mj['ffp']['sd'] = ffprobe(mj['sd_video_file'])
+            mj['ffp']['hd'] = ffprobe(mj['hd_trim'])
+            sd_w = int(mj['ffp']['sd'][0])
+            sd_h = int(mj['ffp']['sd'][1])
+            hdm_x = 1920 / sd_w 
+            hdm_y = 1080 / sd_h 
+      else:
+         hdm_x = 1920 / 704
+         hdm_y = 1080 / 576 
+      for fn in human_data:
+         row = human_data[fn]
+         if "hx" in row:
+            print("HUMAN:", row['hx'], row['hy'])
+            hx = row['hx'] + rx1
+            hy = row['hy'] + ry1
+            act = row['act']
+            print("HUMAN + ROI:", hx, hy)
+         elif "px" in row:
+            hx = row['px']
+            hy = row['py']
+            act = "existing"
+         ofn = int(fn) + int(trim_start) 
+       
+         x1 = hx - 12
+         x2 = hx + 12
+         y1 = hy - 12
+         y2 = hy + 12
+         x1,y1,x2,y2 = self.bound_crop(x1,y1,x2,y2, img_w,img_h)
+         int_crop_bg = sd_frames[0][y1:y2,x1:x2]
+         int_crop = sd_frames[ofn][y1:y2,x1:x2]
+         int_sub = cv2.subtract(int_crop, int_crop_bg)
+         oint = int(np.sum(int_sub))
+         w = int_crop.shape[1] 
+         h = int_crop.shape[0] 
+         hd_x = hx * hdm_x
+         hd_y = hy * hdm_y
+         extra_sec = int(ofn) / 25
+         frame_time = event_start_datetime + datetime.timedelta(0,extra_sec)
+         dt = datetime.datetime.now().strftime("%Y_%m_%d_%H_%M_%S.%f")
+
+         tx, ty, ra ,dec , az, el = XYtoRADec(hd_x,hd_y,sd_video_file,mj['cp'],self.json_conf)
+         if act != "del":
+            print(fn, ofn, hd_x, hd_y, w, h, oint, ra, dec, az, el)
+            mfd.append((dt, ofn, hd_x, hd_y, w, h, oint, ra, dec, az, el))
+            human_points.append((fn,act,hd_x,hd_y))
+      mjr['meteor_frame_data'] = mfd
+      mj['human_points'] = human_points
+      save_json_file(mjrf, mjr)
+      save_json_file(mjf, mj)
+
+      rkey = "M:" + sd_video_file.replace(".mp4", "")
+      rval = self.r.get(rkey)
+      if rval is not None:
+         rval = json.loads(rval)
+         rval['hp'] = 1
+         self.r.set(rkey, json.dumps(rval))
+
+      cmd = "./pushAWS.py push_obs " + sd_video_file.replace(".mp4", ".json")
+      print(cmd)
+      os.system(cmd)
+
+      self.mfd_frames_img(station_id, sd_video_file, sd_frames, mfd)
+      #for row in mfd:
+      #   print(row)
 
    def update_roi_crop(self, sd_video_file, new_roi):
       # save in the original json file
@@ -523,6 +1308,7 @@ class Meteor():
          if rval is not None:
             rval = json.loads(rval)
          rval['roi'] = new_roi
+         rval['human_roi'] = new_roi
          rval['hc'] = 1 
          self.r.set(rkey, json.dumps(rval))
 
@@ -543,6 +1329,10 @@ class Meteor():
 
          mj['hc'] = 1
          mj['roi'] = new_roi
+         mj['human_roi'] = new_roi
+         mj['run_crop_scan'] = 1
+         mj['run_hd_crop_scan'] = 1
+         print("saved ", mjf)
          save_json_file(mjf, mj)
 
          roi_img = sd_img[y1:y2,x1:x2]
@@ -557,6 +1347,9 @@ class Meteor():
          os.system("cp /mnt/ams2/meteors/" + sd_video_file[0:10] + "/" + roi_file + " " + cloud_dir)
          print("/mnt/ams2/datasets/images/training/meteors/" + "/" + roi_file)
          print("cp /mnt/ams2/meteors/" + sd_video_file[0:10] + "/" + roi_file + " " + cloud_dir)
+         cmd = "/usr/bin/python3 Meteor.py 3 " + sd_video_file.replace(".mp4", ".json")
+         print(cmd)
+         os.system(cmd)
 
 
       return(resp)
@@ -609,8 +1402,6 @@ class Meteor():
    def bound_crop(self,x1,y1,x2,y2,img_w,img_h):
       cw = x2 - x1
       ch = y2 - y1
-      print(x1,y1,x2,y2,img_w,img_h)
-      print("CWH:", cw,ch)
       if cw > ch:
          ch = cw
       else:
@@ -619,10 +1410,8 @@ class Meteor():
          ch = 1070
          cw = 1070
       if x1 < 0 or x2 < 0:
-         print("X1 or X2 less than 0!", x1, x2) 
          x1 = 0 
          x2 = x1 + cw
-         print("NEW X1 X2 !", x1, x2) 
       elif x2 > img_w or x1 > img_w:
          x2 = img_w - 1
          x1 = x2 - cw
@@ -632,7 +1421,6 @@ class Meteor():
       elif y2 > img_h or y1 > img_h:
          y2 = img_h - 1
          y1 = y2 - ch
-      print("FINAL BOUND 1:", x1,y1,x2,y2)
       return(int(x1),int(y1),int(x2),int(y2))
 
    def meteor_scan_hd_crop(self, crop_file, mj):
@@ -678,6 +1466,8 @@ class Meteor():
       return(meteors, non_meteors, frame_data)
 
    def meteor_scan_crop(self, mjf):
+      if "/" not in mjf:
+         mjf = "/mnt/ams2/meteors/" + mjf[0:10] + "/" + mjf
       if cfe(mjf) == 0:
          return({})
       mj = load_json_file(mjf)
@@ -689,7 +1479,10 @@ class Meteor():
       else:
          print("NO VIDEO FILE!")
          retun()
-      print("SCAN IN CROP!", len(self.sd_frames))
+      if "human_roi" in mj:
+         self.roi = mj['human_roi']
+      elif "roi" in mj:
+         self.roi = mj['roi']
       crop_frames = []
       big_crop_frames = []
       median_mask = None
@@ -730,9 +1523,10 @@ class Meteor():
       cnts = self.get_contours_simple(mask_thresh)
       for cnt in cnts:
          x,y,w,h,intensity,avg_px = cnt
+         print("CNT:", cnt)
          all_cnts.append((x,y,w,h))
 
-
+      print("FRAMES:", len(self.sd_frames))
       for frame in self.sd_frames:
          frame_data[fn] = {}
          frame_data[fn]['cnts'] = []
@@ -766,6 +1560,7 @@ class Meteor():
             cnt_save = [fn,x,y,w,h,cx,cy,intensity,avg_px]
             frame_data[fn]['cnts'].append(cnt_save)
             cv2.rectangle(show_crop, (int(x), int(y)), (int(x+w) , int(y+h)), (255, 255, 255), 1)
+         print(fn, cnts)
 
          crop_frames.append(crop_frame) 
          big_crop_frames.append(big_crop) 
@@ -1050,10 +1845,38 @@ class Meteor():
       r, g, b = colorsys.hsv_to_rgb(hue, 1, 1)
       return map(lambda x: int(255 * x), (r, g, b))
 
+   def sync_media_day(self, day):
+      local_dir = "/mnt/ams2/METEOR_SCAN/" + day + "/"
+      cloud_dir = "/mnt/archive.allsky.tv/" + self.station_id + "/METEORS/" + day + "/"
+
+      if cfe(cloud_dir, 1) == 0:
+         print(cloud_dir)
+         os.makedirs(cloud_dir)
+      cmd = "ls -l " + cloud_dir + " > " + local_dir + "cloudfiles.txt"
+      os.system(cmd)
+      fp = open(local_dir + "cloudfiles.txt")
+      for line in fp:
+         print(line)
+
+      local_files = glob.glob(local_dir + "*")
+      for local_file in local_files:
+         print(local_file)
+         # we should only push the ALL media IF the meteor is a multi-station detection, or human confirmed
+         # otherwise, only the thumbs / minimal info should be pushed
+         cmd = "cp " + local_file + " " + cloud_dir
+         print(cmd)
+         os.system(cmd)
+
+      #cmd = "rsync -auv " + local_dir + "*" + " " + cloud_dir
+      #print(cmd)
+      #os.system(cmd)
+
    def update_events_obs(self): 
-      print("EV")
+      print("update events obs ")
       events_cloud_file= "/mnt/archive.allsky.tv/EVENTS/STATIONS/ALL_EVENTS_" + self.station_id + ".json.gz"
       events_local_file= "/mnt/ams2/EVENTS/ALL_EVENTS_" + self.station_id + ".json.gz"
+      #if cfe(events_local_file) == 1:
+      #   return() 
       if cfe("/mnt/ams2/EVENTS/",1) == 0:
          os.makedirs("/mnt/ams2/EVENTS")
       cmd = "cp " + events_cloud_file + " " + events_local_file
@@ -1061,8 +1884,11 @@ class Meteor():
       cmd = "gunzip -f " + events_local_file
       os.system(cmd)
       all_events = load_json_file(events_local_file.replace(".gz", ""))
+      print("ALL EVENTS FILE:", events_local_file)
+
       for ev in all_events['events']:
          obs_file, event_id, status = ev.split(":")
+         print("OBS FILE IS:", obs_file)
          if str(status) == "0":
             status = "UNSOLVED"
          elif "missing" in status:
@@ -1070,19 +1896,23 @@ class Meteor():
          mf = "/mnt/ams2/meteors/" + obs_file[0:10] + "/" + obs_file.replace(".mp4", ".json")
          if cfe(mf) == 1:
             rkey = "M:" + obs_file.replace(".mp4", "")
+            print("RKEY IS:", rkey)
+            print("MF IS:", mf)
             rval = self.r.get(rkey)
             if rval is not None:
                rval = json.loads(rval)
                rval["ev"] = event_id + ":" + status
                self.r.set(rkey, json.dumps(rval))
-               #print("UPDATE RED:", rkey, rval)
-         #else:
-         #   print("THIS OBS NO LONGER EXISTS!?", ev, mf)
-            #input()
-
+               print("UPDATE RED:", rkey, rval)
+         else:
+            print("THIS OBS NO LONGER EXISTS!?", event_id, mf)
+            print("DELETEING:", rkey)
+            #self.r.delete(rkey)
+      input("Waiting...")
 
    def load_all_meteors_into_redis(self, day=None):
       self.update_events_obs()
+      input("WAIT!")
       in_day = day
       self.all_meteors = {}
       self.meteor_dirs = []
@@ -1123,18 +1953,34 @@ class Meteor():
       for day_key in sorted(self.meteor_days.keys(), reverse=True):
          print("DOING DAY:", day_key, len(self.meteor_days[day_key]['meteors']))
          for key in self.meteor_days[day_key]['meteors']: 
+            update = 0
             fkey = day_key + "_" + key
             rkey = "M:" + fkey 
-            if rkey not in self.all_redis_keys:
+            print(rkey)
+            rval = self.r.get(rkey)
+            if rval is None:
+               print("BAD KEY!")
+            else:
+               rval = json.loads(self.r.get(rkey))
+
+               if "final_trim" not in rval or "ffp" not in rval:
+                  print("FINAL TRIM MISSING FROM RVAL!")
+                  update = 1
+            if rkey not in self.all_redis_keys or update == 1:
+               print("UPDATE REDIS!")
                rval = self.mj_to_redis(fkey) 
                if rval == 0:
                   print("BAD FILE!", fkey)
-
-               print("REDIS SAVING:", rkey, rval )
+               print("REDIS SAVING:", rkey)
+               for rkey in rval:
+                  print("   " + rkey, rval[rkey])
                self.r.set(rkey, json.dumps(rval))
+            else:
+               print("redis good", rval)
+
 
       print("ALL METEORS WITH CURRENT MJ INFO HAVE BEEN LOADED INTO REDIS!")
-      input() 
+
       # load scan files if they exist
       all_scans = {}
       pk_scans = glob.glob("/mnt/ams2/meteor_scan/*.pickle")
@@ -1280,7 +2126,7 @@ class Meteor():
          self.r.set(rkey, json.dumps(rval))
          cc = 1
 
-   def make_meteor_media(self, day=None):
+   def make_meteor_media(self, day=None, meteor_file=None):
       index_html = ""
       self.ms_media_dir = "/mnt/ams2/METEOR_SCAN/" + day + "/" 
       self.meteor_dir = "/mnt/ams2/meteors/" + day + "/" 
@@ -1290,6 +2136,15 @@ class Meteor():
          self.all_redis_keys = self.r.keys("M:*")
       else:
          self.all_redis_keys = self.r.keys("M:*" + day + "*" )
+
+      if meteor_file is not None:
+         rkey = meteor_file.replace(".json", "") 
+         self.all_redis_keys = self.r.keys("M:" + rkey + "*" )
+         print(self.all_redis_keys)
+         day = meteor_file[0:10]
+         in_day = day
+
+
       self.show = 0 
       print("Make Media", len(self.all_redis_keys), " meteors exist in reddis...")
       all_media_files = {}
@@ -1310,7 +2165,6 @@ class Meteor():
                mj = load_json_file(mjf)
             except:
                print("THE MJF IS CORRUPT!", mjf)
-               input()
                continue
          else:
             print("MJF is not found. should we delte the redis key?:", mjf)
@@ -1334,8 +2188,18 @@ class Meteor():
 
          for media_file in sorted(final_media):
             out_file = self.ms_media_dir + final_media[media_file]
+            make_media = 0
+            if "final_trim" not in mj:
+               make_media = 1
+            if cfe(out_file) == 1:
+               print("     *****", media_file, "EXISTS")
+               file_missing = 0
+            else:
+               print("     *****", media_file, "MISSING!")
+               file_missing = 1
             print(out_file)
-            if cfe(out_file) == 0:
+            if cfe(out_file) == 0 or make_media == 1:
+               print("MAKING:", media_file, out_file, mjf)
                self.make_media(media_file, out_file, mjf, mj)
 
             if cfe(out_file) == 1:
@@ -1354,7 +2218,6 @@ class Meteor():
             save_json_file(self.ms_media_dir + "media.json", all_media_files)
          except:
             print("Problem saving json media file", sel.ms_media_dir + "media.json")
-            input()
          fp = open(self.ms_media_dir + "media.html", "w")
          fp.write(index_html)
          fp.close()
@@ -1387,16 +2250,22 @@ class Meteor():
 
        if media_file_type == "prev_img" and cfe(media_file_name) == 0:
           print("IMG:", media_file_type, media_file_name)
-          self.prev_img = cv2.resize(self.sd_stack, (320,180))
-          cv2.imwrite(media_file_name, self.prev_img, [cv2.IMWRITE_JPEG_QUALITY, 60])
+          try:
+             self.prev_img = cv2.resize(self.sd_stack, (320,180))
+             cv2.imwrite(media_file_name, self.prev_img, [cv2.IMWRITE_JPEG_QUALITY, 60])
+          except:
+             print("FAILED TO MAKE MEDIA FOR:", mj)
 
        if media_file_type == "roi_img" and "roi" in mj and cfe(media_file_name) == 0:
           x1,y1,x2,y2 = mj['roi']
           if sum(mj['roi']) > 0:
+             x1,y1,x2,y2 = int(x1),int(y1),int(x2),int(y2)
              self.roi_img = self.sd_stack[y1:y2,x1:x2]
              print("ROI IMG:", media_file_type, media_file_name)
-
-             cv2.imwrite(media_file_name, self.roi_img, [cv2.IMWRITE_JPEG_QUALITY, 60])
+             try:
+                cv2.imwrite(media_file_name, self.roi_img, [cv2.IMWRITE_JPEG_QUALITY, 60])
+             except:
+                print("error saving file.")
              if self.show == 1:
                 cv2.imshow('pepe3', self.roi_img)
                 cv2.waitKey(30)
@@ -1417,14 +2286,16 @@ class Meteor():
                 crop_box += str(ff)
              x1,y1,x2,y2 = mj['roi']
              crop_box = [x1,y1,x2-x1,y2-y1]
+             
              crop_video(mj['sd_video_file'], media_file_name, crop_box) 
+             print("JUST MADE SD CROP USING ROI VALS:", mj['roi'])
+             print("FF CROP:", crop_box)
+             if "meteor_scan_meteors" in mj:
+                if len(mj["meteor_scan_meteors"]) > 0:
+                   print("METEOR SCAN METEORS :", mj['meteor_scan_meteors'])
 
-             if "ms_meteors" in mj:
-                if len(mj["ms_meteors"]) > 0:
-                   print("METEOR SCAN METEORS CROP:", mj['ms_meteors'])
-
-                   start = mj['ms_meteors'][0]['ofns'][0] - 10
-                   end = mj['ms_meteors'][0]['ofns'][-1] + 10
+                   start = mj['meteor_scan_meteors'][0]['ofns'][0] - 10
+                   end = mj['meteor_scan_meteors'][0]['ofns'][-1] + 10
                    if start < 0:
                       start = 0
                    media_file_name_temp = media_file_name.replace(".mp4", "-temp.mp4")
@@ -1506,13 +2377,16 @@ class Meteor():
              cv2.imwrite(media_file_name, self.hd_stack, [cv2.IMWRITE_JPEG_QUALITY, 70])
 
        # SPLICE SD VIDEO
+       print("MEDIA FILE TYPE IS :", media_file_type, media_file_name)
        if media_file_type == "sd_vid":
-          if cfe(media_file_name) == 0:
-             #input("media has not been made yet")
-             if "meteor_scan_meteors" in mj:
-             #if "meteor_scan_meteors" in mj:
-                if len(mj["meteor_scan_meteors"]) > 0:
-                   print("METEOR SCAN METEORS CROP:", mj['meteor_scan_meteors'])
+          trim_good = 1
+          if "final_trim" not in mj:
+             print("final trim missing")
+             trim_good = 0
+          if cfe(media_file_name) == 0 or trim_good == 0:
+             if "ms_meteors" in mj:
+                if len(mj["ms_meteors"]) > 0:
+                   print("METEOR SCAN METEORS :", mj['meteor_scan_meteors'])
 
                    start = mj['meteor_scan_meteors'][0]['ofns'][0] - 10
                    end = mj['meteor_scan_meteors'][0]['ofns'][-1] + 10
@@ -1523,17 +2397,19 @@ class Meteor():
 
                    if "final_trim" not in mj:
                       mj['final_trim'] = {}
-                      mj['final_trim']['sd'] = [start,end]
+                   mj['final_trim']['sd'] = [start,end]
                    if "ffp" not in mj["final_trim"]:
                       mj['final_trim']['ffp'] = {}
                    mj['final_trim']['ffp']['sd'] = ffprobe(media_file_name)
+             else:
+                print("MISSING DATA REQUIRED TO MAKE THIS FILE!", mj.keys())
+          if "final_trim" not in mj:
+             print("final trim still missing")
 
        # SPLICE HD VIDEO
        if media_file_type == "hd_vid" and cfe(media_file_name) == 0:
-          #input("TRY TO SPLICE HD")
           if "meteor_scan_hd_crop_scan" not in mj:
              print("NO MSHD CROP SCAN in mj", mj.keys())
-             input("")
           else:
              hdfns = []
              print("HD SCAN CROP IS HERE NOW WHAT!", mj['meteor_scan_hd_crop_scan'])
@@ -1578,8 +2454,6 @@ class Meteor():
                             mj['final_trim']['ffp'] = {}
                          mj['final_trim']['ffp']['hd'] = ffprobe(media_file_name)
                          print(mj['final_trim'])
-       #input("END SPLICE HD")
-       print(mf)
        try:
           save_json_file("test.json", mj)
           save_json_file(mf, mj)
@@ -1587,18 +2461,34 @@ class Meteor():
        except:
           print(mj)
           print("MEDIA ERROR SAVING JSON!", mf)
-          input()
    
 
 
-   def rescan_all_meteors(self, day=None):
+   def rescan_all_meteors(self, day=None, meteor_file=None):
       print("RESCAN METEORS:", day)
+
+      force = False 
+      if meteor_file is not None:
+         force = True
       in_day = day
+      self.single_scan = 0
       if day is None:
          self.all_redis_keys = self.r.keys("M:*")
       else:
          self.all_redis_keys = self.r.keys("M:*" + day + "*" )
       self.show = 0 
+      if meteor_file is not None:
+         rkey = meteor_file.replace(".json", "") 
+         self.all_redis_keys = self.r.keys("M:" + rkey + "*" )
+         print(self.all_redis_keys)
+         day = meteor_file[0:10]
+         in_day = day
+         self.single_scan = 1
+         #self.debug_meteor(meteor_file)
+
+
+      all_media = self.get_ms_media(in_day)
+
 
       if False:
          # ??? NOT SURE WHAT THIS IS FOR
@@ -1630,7 +2520,6 @@ class Meteor():
                   if self.show == 1:
                      cv2.rectangle(hd_img, (int(hx1), int(hy1)), (int(hx2) , int(hy2)), (255, 255, 255), 1)
                      cv2.rectangle(sd_img, (int(x1), int(y1)), (int(x2) , int(y2)), (255, 255, 255), 1)
-
                 
                      cv2.imshow('hdf', hd_img)
                      cv2.imshow('sdf', sd_img)
@@ -1656,7 +2545,7 @@ class Meteor():
          rval = json.loads(rval)
          self.meteor_file = key + ".mp4"
          print(key, rval)
-         if "mss" in rval:
+         if "mss" in rval and force != False:
             [good_roi, good_sd_roi, good_sd_stack, good_ms_meteors, good_msc_meteors, good_hd_meteors, good_media] = rval['mss']
          else:
             rval['mss'] = [0, 0, 0, 0, 0, 0, 0] 
@@ -1674,10 +2563,22 @@ class Meteor():
             # THIS IS A TRASH'D METEOR
             self.r.delete(rkey)
             continue
-
+         remake_movies = 0
          # before we continue and make sure the redis status is up to date with the file system files.
+         if force is True:
+            remake_movies = 1
+         if "final_trim" in self.mj:
+            if "ffp" not in self.mj['final_trim']:
+               remake_movies = 1
+         else:
+            remake_movies = 1
+         if remake_movies == 1:
+            self.make_meteor_media(day, meteor_file=key)
 
-         
+         if "all_media" not in self.mj:
+            remake_movies = 1
+
+         print("REMAKE MEDIA", remake_movies) 
 
          if "meteor_scan_meteors" in self.mj:
              print("MSM TYPE:", type(self.mj['meteor_scan_meteors']))
@@ -1687,7 +2588,6 @@ class Meteor():
                 print("meteor_scan_meteors is a dict")
                 good_ms_meteors = 0
                 del (self.mj['meteor_scan_meteors'])
-                #input(" THE OBJECT IS A DICT BUT SHOULD BE A LIST!")
              else:
                 good_ms_meteors = 1
                 print("METEOR SCAN ALREADY DONE!")
@@ -1700,7 +2600,7 @@ class Meteor():
 
 
          # check or do meteor_scan LEVEL 1 first
-         if (good_ms_meteors == 0 or good_roi == 0 or "roi" not in rval) and "msf" not in rval and good_msc_meteors != 1:
+         if ((good_ms_meteors == 0 or good_roi == 0 or "roi" not in rval) and "msf" not in rval and good_msc_meteors != 1) or remake_movies == 1:
             # meteor scan has not run so do that first.
                self.meteor_scan()
                msm_total = len(self.meteor_scan_meteors)
@@ -1727,8 +2627,6 @@ class Meteor():
                save_json_file("test.json", self.mj)
                save_json_file(mf, self.mj)
                print("RAN METEOR SCAN and saved ", mf)
-               #input("THIS SHOULD ONLY HAPPEN 1X")
-               #exit()
 
          # do the crop scan if needed
          rval = self.r.get(rkey)
@@ -1737,18 +2635,32 @@ class Meteor():
          else:
             print("NO REDDIS!?", rkey)
 
-         if (int(good_msc_meteors) == 0 and int(good_roi) == 1 and "mscf" not in rval ) or ("msc_meteors" not in rval and int(good_roi) == 1):
+         if (int(good_msc_meteors) == 0 and int(good_roi) == 1 and "mscf" not in rval ) or ("msc_meteors" not in rval and int(good_roi) == 1) or remake_movies == 1 :
             print(rkey, rval)
-            if "msc_meteors" in self.mj:
+            if ("msc_meteors" in rval and ("roi" in self.mj or "roi" in rval)) :
                # we already did this, but redis must not know. 
                rval['msc_meteors'] = len(self.mj['msc_meteors'].keys())
                good_msc_meteors = 1
                rval['mss'] = [good_roi, good_sd_roi, good_sd_stack, good_ms_meteors, good_msc_meteors, good_hd_meteors, good_media] = rval['mss']
                self.r.set(rkey,json.dumps(rval))
                print("WE ALREADY DID IT!")
-            else:
+            elif "roi" in rval or "roi" in self.mj:
+               if "roi" in self.mj and "roi" not in rval:
+                  rval['roi'] = self.mj['roi']
+                  print("ROI IN in mj")
+               elif "roi" in rval and "roi" not in self.mj:
+                  self.mj['roi'] = rval['roi'] 
+                  print("ROI IN in rval ")
+               else:
+                  print(self.mj.keys())
+                  print(rval)
+                  for key in self.mj.keys():
+                     print("MJ KEY:", key)
+
                print("LETS DO METEOR SCAN CROP!", rval['roi'])
-               self.roi = rval['roi']
+               if "roi" in self.mj or "roi" in rval:
+                  self.roi = rval['roi']
+
                final_objects = self.meteor_scan_crop(mf)
 
                if len(final_objects.keys()) > 0:
@@ -1774,6 +2686,16 @@ class Meteor():
          else:
             print(rval)
             print("SKIP CROP METEOR BECAUSE:", good_msc_meteors, good_roi, good_ms_meteors )
+            # CHECK MEDIA BEFORE GIVING UP
+            mfn = mf.split("/")[-1].replace(".json", "")
+            if "all_media" not in rval:
+               print(all_media)
+               print("GET MEDIA from all_media for", mfn)
+               if mfn in all_media:
+                  rval['all_media'] = all_media[mfn]
+               else:
+                  rval['all_media'] = {}
+            print("MEDIA", rval['all_media'])
             if 'msc_meteors' in self.mj:
                print("   we did it already")
             else:
@@ -1829,7 +2751,6 @@ class Meteor():
                      self.mj['hdms_fail'] = 1
                   save_json_file(mf, self.mj)
                   print("SAVED HD CROP SCAN DATA IN ", mf)
-
             else:
                print("NO HD CROP FILE EXIST SO WE CAN'T DO THE HD CROP SCAN!!", hd_crop_file)
                if "roi" in self.mj:
@@ -1848,9 +2769,15 @@ class Meteor():
                   print("NO HD TRIM INSIDE THE MJ:")
                self.mj['meteor_scan_hd_crop_scan'] = -1
                save_json_file(mf, self.mj)
+
+         mfn = mf.split("/")[-1].replace(".json", "")
+         self.make_meteor_media(day=in_day, meteor_file=mfn)
+
+
       # now just print a report of what is in redis to see how we did for the day. 
       # this will drive the media sync to the S3FS
-      all_media = self.get_ms_media(in_day)
+      if self.single_scan == 1:
+         return()
       if in_day is None:
          self.all_redis_keys = self.r.keys("M:*")
       else:
@@ -1887,7 +2814,9 @@ class Meteor():
             prev_img = "<img src=" + prev_file.replace("/mnt/ams2", "") + ">"
          else:
             prev_img = ""
-         media = all_media[key]
+         if key in all_media:
+            media = all_media[key]
+         
          med_list = ""
          total_size = 0
          orig_json_link = "<a href=/meteors/" + key[0:10] + "/" + key + ".json" + ">" + key + "</a>"
@@ -1911,6 +2840,7 @@ class Meteor():
       out = open(ms_report_file, "w")
       out.write(final_scan_report)
       out.close()
+
 
    def get_ms_media(self, day):
       all_media = {}
@@ -1968,7 +2898,6 @@ class Meteor():
             print("Corrupt json file", mf)
             mj = None
             return({})
-            input()
       else:
          return(0)
       red_val = {}
@@ -1995,10 +2924,14 @@ class Meteor():
             event_id = mj['multi_station_event']['event_id']
          if "solve_status" in mj['multi_station_event']:
             solve_status = mj['multi_station_event']['solve_status']
+         red_val['ev'] = event_id + ":" + solve_status
 
+      if "human_points" in mj:
+         red_val['hp'] = 1
       if "ffp" in mj:
          red_val['ffp'] = mj['ffp']
       else:
+         print("FFP MISSING")
          hd_vid = None
          red_val['ffp'] = {}
          if "hd_trim" in mj:
@@ -2015,8 +2948,10 @@ class Meteor():
             if cfe(mj['sd_video_file']) == 1:
                sd_vid = mj['sd_video_file']
                red_val['ffp']['sd'] = ffprobe(mj['sd_video_file'])
-      if "final_media" in mj:
-         red_val['media'] = mj['media']
+      if "final_trim" in mj:
+         red_val['final_trim'] = mj['final_trim']
+      if "all_media" in mj:
+         red_val['all_media'] = mj['all_media']
       if "meteor_scan_meteors" in mj:
          red_val['ms_meteors'] = len(mj['meteor_scan_meteors'])
       if "msc_meteors" in mj:
@@ -2170,7 +3105,6 @@ class Meteor():
          print("MS RESULT:", ms_result)
          print(mfn, meteor_scan_status, meteor_crop_scan_status,ms_result)
 
-      #input("phase 1")
       # make all meteor composite image
 
       blank_image = np.zeros((1080,1920,3),dtype=np.uint8)
@@ -2219,7 +3153,6 @@ class Meteor():
             mod = 0
 
 
-      #input("phase 2")
 
       with open(self.SCAN_FILE, 'wb') as handle:
          pickle.dump(self.scan_data, handle, protocol=pickle.HIGHEST_PROTOCOL)
@@ -2267,7 +3200,6 @@ class Meteor():
                               mj['roi'] = roi 
                      save_json_file(mjf, mj)
                      print("SAVED:", mjf)
-                     #exit()
 
                # MJ VALS WE WANT TO GRAB FOR THE SCAN DB:
                #  version, dfv, manual_changes, aws_status, sync_status
@@ -2437,9 +3369,36 @@ class Meteor():
       with open(self.SCAN_FILE, 'wb') as handle:
          pickle.dump(self.scan_data, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
-         
+   def debug_meteor(self, mf):
+      mday = mf[0:10]
+      mdir = "/mnt/ams2/meteors/" + mday + "/" 
+      mj = load_json_file(mdir + mf)
+      mjr = load_json_file(mdir + mf.replace(".json", "-reduced.json"))
+      stack_img = cv2.imread(mj['sd_stack'])
+      ih, iw = stack_img.shape[:2]
+      hdm_x = 1920/ iw
+      hdm_y = 1080/ ih
+      x1,y1,x2,y2 = mj['roi']
+      roi_img = stack_img[y1:y2,x1:x2]
 
-   def meteor_scan(self):
+      cv2.rectangle(stack_img, (int(x1), int(y1)), (int(x2) , int(y2)), (255, 255, 255), 1)
+      for row in mjr['meteor_frame_data']:
+         print(row[2],row[3],row[4],row[5])
+         sd_x = row[2] + (row[4]/2)
+         sd_y = row[3] + (row[5]/2)
+         sd_x = int(sd_x/hdm_x)
+         sd_y = int(sd_y/hdm_y)
+         roi_x = sd_x - x1
+         roi_y = sd_y - y1
+         print("RXVAL", roi_x,roi_y)
+         cv2.rectangle(roi_img, (roi_x-2, roi_y-2), (roi_x+2 , roi_y+2), (255, 255, 255), 1)
+         cv2.rectangle(stack_img, (sd_x-2, sd_y-2), (sd_x+2 , sd_y+2), (255, 255, 255), 1)
+      
+      cv2.imshow('pepe', stack_img)
+      cv2.imshow('roipepe', roi_img)
+      cv2.waitKey(0)
+
+   def meteor_scan(self ):
       print("METEOR SCAN", self.meteor_file)
       bad = 0
       if "sd_video_file" in self.mj:

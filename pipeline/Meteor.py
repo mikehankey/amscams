@@ -3,7 +3,7 @@ import math
 from Classes.DisplayFrame import DisplayFrame
 import cv2
 import glob
-from lib.PipeUtil import cfe, convert_filename_to_date_cam
+from lib.PipeUtil import cfe, convert_filename_to_date_cam, load_json_file
 #import pickle5 as pickle
 import os
 import datetime
@@ -11,13 +11,39 @@ from datetime import datetime as dt
 from lib.FFFuncs import ffprobe
 
 
-def scan_report(meteor_date):
+def status_report(meteor_file):
    all_meteor = Meteor()
-   all_meteor.scan_report(meteor_date)
+   mdir = "/mnt/ams2/meteors/" + meteor_date[0:10] + "/" 
+   mfile = mdir + meteor_date 
+   if cfe(mfile) == 1:
+      all_meteor.meteor_status_report(meteor_file)
+   else:
+      print("Meteor file doesn't exist in local dir. Must have been deleted.") 
+      print(mfile)
+      return()
+   
 
 
 def make_media_for_day(meteor_date):
    print("Make media for day")
+
+def scan_meteor(meteor_file):
+   all_meteor = Meteor()
+   print("METEOR FILE:", meteor_file)
+   all_meteor.meteor_status_report(meteor_file)
+
+   #old
+   #all_meteor.rescan_all_meteors(meteor_file=meteor_file)
+
+def debug_meteor(meteor_file):
+   all_meteor = Meteor()
+   print("METEOR", meteor_file)
+   meteor_file = meteor_file.replace(".json", ".mp4")
+   all_meteor.debug(all_meteor.station_id, meteor_file)
+
+def sync_day(meteor_date):
+   all_meteor = Meteor()
+   all_meteor.sync_media_day(meteor_date)
 
 def scan_day(meteor_date):
    # We want to do 2 types of scans & then the media / save  processes
@@ -35,10 +61,20 @@ def scan_day(meteor_date):
    month = meteor_date[0:7]
    all_meteor.month = month
    SCAN_DIR = "/mnt/ams2/METEOR_SCAN/" 
-  
 
+   all_meteor.mdir = "/mnt/ams2/meteors/" + meteor_date + "/"
+   all_meteor.get_mfiles(all_meteor.mdir)
+   all_meteor.update_events_obs()
+
+   for mfile in all_meteor.mfiles:
+      meteor_file = mfile.replace(".mp4", ".json")
+      print(meteor_file)
+      all_meteor.meteor_status_report(meteor_file)
+
+
+   all_meteor.update_events_obs()
    #all_meteor.scan_data = scan_data
-   all_meteor.check_scan_status_month(meteor_date)
+   #all_meteor.check_scan_status_month(meteor_date)
    #all_meteor.make_media_for_day(meteor_date)
 
 
@@ -374,18 +410,33 @@ if __name__ == "__main__":
       print("   COMMANDS:")
       print("   1) Scan meteors for 1 day -- will run all detections, calibrations and syncs needed to complete meteor processing.")
       print("   2) Scan meteors for 1 month or 1 year -- will run all detections, calibrations and syncs needed to complete meteor processing.")
-      print("   3) Examine meteor -- will load meteor and provide all options / status.")
-      print("   4) Meteor Scan Report ")
+      print("   3) Scan single meteor ")
+      print("   4) Examine meteor -- will load meteor and provide all options / status.")
+      print("   5) Meteor Scan Report ")
+      print("   6) Debug Meteor ")
+      print("   7) Sync Media for day")
       cmd = input("Enter the command you want to run. ")
    if cmd == "1":
       cmd = "scan"
    if cmd == "2":
       cmd = "scan_wild"
    if cmd == "3":
+      cmd = "scan_single"
+   if cmd == "4":
       cmd = "meteor_status"
       meteor_file = sys.argv[2]
-   if cmd == "4":
-      cmd = "scan_report"
+   if cmd == "5":
+      cmd = "status_report"
+   if cmd == "6":
+      cmd = "debug"
+   if cmd == "7":
+      cmd = "sync_day"
+
+   if cmd == "sync_day":
+      if meteor_date is None:
+         meteor_date = input("Enter Date")
+      sync_day(meteor_date)
+
    if cmd == "scan":
       if meteor_date is None:
          meteor_date = input("Enter Date")
@@ -394,11 +445,23 @@ if __name__ == "__main__":
       if meteor_date is None:
          meteor_date = input("Enter Date Str YYYY_MM or YYYY")
       scan_wild(meteor_date)
-   if cmd == "scan_report":
+   if cmd == "scan_single":
+      if meteor_date is None:
+         meteor_date = input("Enter the meteor json filename with no path")
+      print("METOER DATE:", meteor_date)
+      scan_meteor(meteor_date)
+
+   if cmd == "debug":
+      if meteor_date is None:
+         meteor_date = input("Enter the meteor json filename with no path")
+      debug_meteor(meteor_date)
+
+
+   if cmd == "status_report":
 
       if meteor_date is None:
          meteor_date = input("Enter Date YYYY_MM_DD")
-      scan_report(meteor_date)
+      status_report(meteor_date)
 
 
    if cmd == "meteor_status":
