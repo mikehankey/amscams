@@ -44,6 +44,11 @@ def meteor_scan_api_controller(in_data):
    if cmd == "confirm_meteor":
       MM.human_confirm_meteor(in_data['sd_video_file'])
 
+   if cmd == "save_human_data":
+      station_id = in_data['station_id']
+      sd_video_file = in_data['sd_video_file']
+      human_data = in_data['human_data']
+      MM.save_human_data(station_id, sd_video_file, human_data)
    if cmd == "del_meteor_obs":
       if "sd_video_file" in in_data and "reclass" in in_data:
          sd_video_file = in_data['sd_video_file']

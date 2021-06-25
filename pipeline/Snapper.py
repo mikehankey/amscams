@@ -9,7 +9,7 @@
 """
 import cv2
 import numpy as np
-from lib.FFFuncs import snap_video
+from lib.FFFuncs import snap_video_new
 from lib.DEFAULTS import *
 import sys
 from lib.PipeUtil import check_running, load_json_file, cfe, save_json_file
@@ -66,9 +66,17 @@ def make_snap_files(cam_id, date_str, hd=1):
    vids = glob.glob(vid_dir + date_str + "*" + cam_id + "*.mp4")
    print(vid_dir + date_str + "*" + cam_id + "*.mp4")
 
-   for vid in vids:
-      print(vid)
-      snap_video(vid)
+   date = date_str[0:10]
+   outdir = "/mnt/ams2/SNAPS/" + date + "/"
+   print(outdir)
+   if cfe(outdir,1) == 0:
+      os.makedirs(outdir)
+   for vid in sorted(vids):
+      vid_fn = vid.split("/")[-1]
+      outfile = outdir + vid_fn.replace(".mp4", ".jpg")
+
+      print(vid, outfile)
+      snap_video_new(vid, outfile)
 
 
 def purge_files():

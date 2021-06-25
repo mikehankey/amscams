@@ -56,7 +56,6 @@ def simple_TL(TL_CONF, json_conf):
    ss_end_dt = datetime.strptime(slow_stack_end, "%Y_%m_%d_%H_%M_%S")
    cam = tl_conf['cams_id']
    print("/mnt/ams2/SD/proc2/" + start_day + "/*" + cam + "*.mp4")
-   print("/mnt/ams2/SD/proc2/daytime/" + start_day + "/*" + cam + "*.mp4")
    night_files = glob.glob("/mnt/ams2/SD/proc2/" + start_day + "/*" + cam + "*.mp4")
    day_files = glob.glob("/mnt/ams2/SD/proc2/daytime/" + start_day + "/*" + cam + "*.mp4")
    all_files = []
@@ -66,11 +65,12 @@ def simple_TL(TL_CONF, json_conf):
       fn,dir = fn_dir(file)
       sfile = "./CACHE2/" + fn
       sfile = sfile.replace(".mp4", "-0100.jpg")
+      print (ss_start_dt, f_datetime, ss_end_dt)
       if ss_start_dt <= f_datetime <= ss_end_dt:
          print("CHECK:", sfile)
          if cfe(sfile) == 0:
             print("SLOW STACK!", file)
-            slow_stack_video(file, "./CACHE2/", 50) 
+            slow_stack_video(file, "./CACHE2/", slow_stack_speed) 
          else:
             print("DONE SKIP", sfile)
          #cmd = "./FFF.py slow_stack " + file +  " ./CACHE2/ " + str(slow_stack_speed)

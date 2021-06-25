@@ -272,7 +272,6 @@ class SyncAWS():
             print("JSON NO", mf)
       if need > 0:
          os.system("./Process.py purge_meteors")
-      input("continue")
 
    def delete_local_meteor(self, sd_video_file):
       resp = {}
@@ -344,7 +343,34 @@ class SyncAWS():
         print("WE NEED TO PUSH THIS DATA TO AWS!", sync_needed, jsf)
         push_obs(self.api_key, self.station_id, jsf)
      print("AWS:", aws_data['sync_status'])
-   
+
+
+   def sync_prev(self, sd_video_file ):
+     # SYNC AT LEAST THE PREV FILE IF IT EXISTS & MAKE IT IF IT DOES NOT
+     date = sd_video_file[0:10]
+     mdir = "/mnt/ams2/meteors/" + date + "/" 
+     if cfe(mdir + "cloud_files", 1) == 0:
+        os.makedirs(mdir + "cloud_files")
+     prev_file = mdir + "cloud_files/" + self.station_id + "_" + sd_video_file.replace(".mp4", "-prev.jpg")
+     cloud_prev = "/mnt/archive.allsky.tv/" + self.station_id + "/METEORS/" + date[0:4] + "/" + date + "/" + self.station_id + "_" + sd_video_file.replace(".mp4", "-prev.jpg") 
+     print("PREV:", prev_file)
+     print("CL PREV:", cloud_prev)
+     if cfe(prev_file) == 0:
+        stack_file = sd_video_file.replace(".mp4", "-stacked.jpg")
+        if cfe(mdir + stack_file) == 1:
+           img = cv2.imread(mdir + stack_file)
+           img = cv2.resize(img, (self.PREV_W, self.PREV_H))
+           cv2.imwrite(prev_file, img) 
+        else:
+           print("NO STACK FILE:", mdir + stack_file)
+     if cfe(cloud_prev) == 0:
+        print("NO CLOUD PREV")
+        cmd = "cp " + prev_file + " " + cloud_prev
+        print(cmd)
+        os.system(cmd)
+     else:
+        print("cloud prev already xists? " + cloud_prev)
+
    def find_hd_crop_area(self, mj):
       hdxs = []
       hdys = []
@@ -586,7 +612,7 @@ class SyncAWS():
       # if more than 80 exist we should abort until the 
       # operator cleans up the station
       # FUTURE: log error message 
-      if (len(self.mfiles)) > 40:
+      if (len(self.mfiles)) > 90:
          print("There are too many meteors detected for this day!", len(self.mfiles)) 
          print("Clean out the dir before sync can happen!") 
          self.bad_day_filter(day)
@@ -602,7 +628,7 @@ class SyncAWS():
          cloud_files = []
          for cf in cfs:
             cloud_files.append(cf.split("/")[-1])
-         print(cloud_dir + "cloud_files.info")
+         #print(cloud_dir + "cloud_files.info")
          if cfe(cloud_dir, 1) == 0:
             os.makedirs(cloud_dir)
          save_json_file(cloud_dir + "cloud_files.info", cloud_files)
@@ -630,8 +656,10 @@ class SyncAWS():
       # loop over all meteors in the days dir 
       #  and build arrays      
       for mf in self.mfiles:
-         print(mf)
          fn = mf.split("/")[-1]
+         print("SYNC PREV:", fn)
+         self.sync_prev(fn)
+         print("DONE SYNC PREV")
          root = fn.replace(".mp4", "")
          mjf = mdir + root + ".json"
          print("ROOT IS:", root)
@@ -640,7 +668,12 @@ class SyncAWS():
             all_files[root] = {}
          if cfe(mjf) == 1:
             #all_files[root]['mj'] = {}
-            all_files[root]['mj'] = load_json_file(mjf)
+            try:
+               all_files[root]['mj'] = load_json_file(mjf)
+            except:
+               print("CORUPT JSON!")
+               del all_files[root]
+               continue
          else:
             all_files[root]['mj'] = {}
 
@@ -696,7 +729,7 @@ class SyncAWS():
             all_files[root]['mj']['local_media'] = all_files[root]['local_media']
             new_media_made = 1    
             print("MAKE CM ALLFILES:", root, all_files[root])
-            self.make_cloud_media(lcdir_stage, json_file, all_files[root]['mj'])
+            #self.make_cloud_media(lcdir_stage, json_file, all_files[root]['mj'])
       if new_media_made == 1:
          local_media = self.get_local_media_day(day)
          for root in local_media:
@@ -709,6 +742,10 @@ class SyncAWS():
       content = content.replace("\\", "")
       data = json.loads(content)
       mdir = "/mnt/ams2/meteors/" + day + "/" 
+      if "all_vals" not in data:
+         print("ERROR all_vals missing?", data)
+         input()
+
       for row in data['all_vals']:
          if "vid" not in row:
             print(row)
@@ -946,7 +983,7 @@ class SyncAWS():
          json_file = json_file.replace(".mp4", ".json")
          mj = load_json_file(json_file)
 
-         self.make_cloud_media(lcdir_stage, json_file, mj)
+         #self.make_cloud_media(lcdir_stage, json_file, mj)
       
          continue 
 

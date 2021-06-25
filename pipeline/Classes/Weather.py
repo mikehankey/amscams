@@ -26,7 +26,7 @@ from lib.PipeUtil import load_json_file, save_json_file, cfe
 from lib.FFFuncs import best_crop_size, ffprobe
 import boto3
 import socket
-
+import sys
 
 
 
@@ -41,6 +41,52 @@ class Weather():
          cams_id = json_conf['cameras'][cam_num]['cams_id']
          self.cams.append(cams_id)
 
+   def index_local_stacks(self):
+      local_stack_dir = "/mnt/ams2/METEOR_ARCHIVE/" + self.station_id + "/STACKS/" 
+      stack_hist_file = local_stack_dir + self.station_id + "_hour_stack_history.json"
+      # day/night stack files
+      dns_hist_file = local_stack_dir + self.station_id + "_day_night_stack_history.json"
+      if cfe(stack_hist_file) == 1:
+         sds = load_json_file(stack_hist_file)
+      else:
+         sds = {}
+      if cfe(stack_hist_file) == 1:
+         dns = load_json_file(dns_hist_file)
+      else:
+         dns = {}
+
+      stack_dirs = glob.glob(local_stack_dir + "*") 
+      dc = 0
+      for sd in sorted(stack_dirs, reverse=True):
+         if cfe(sd, 1) != 1:
+            continue
+         day = sd.split("/")[-1]
+         if day in sds and dc > 3:
+            print("This is already done.", day)
+         else:
+            sds[day] = {} 
+            dns[day] = {} 
+            sds[day]['hour_stack_files'] = []
+            dns[day]['day_stacks'] = []
+            dns[day]['night_stacks'] = []
+            sfs = glob.glob(sd+ "/*.jpg")
+            for sf in sfs:
+               sfn = sf.split("/")[-1]
+               sfn = sfn.replace(day + "_", "")
+               sfn = sfn.replace(".jpg", "")
+               if "night" in sfn:
+                  dns[day]['night_stacks'].append(sfn)
+               elif "day" in sfn:
+                  dns[day]['day_stacks'].append(sfn)
+               else :
+                  sds[day]['hour_stack_files'].append(sfn)
+            save_json_file(sd + "_hours.json", sds[day]['hour_stack_files'])
+            dc += 1
+
+      save_json_file(stack_hist_file, sds, True)
+      save_json_file(dns_hist_file, dns, True)
+      print(stack_hist_file)
+      print(dns_hist_file)
 
    def index_weather_snaps_all(self):
       dirs = glob.glob("/mnt/ams2/latest/*")

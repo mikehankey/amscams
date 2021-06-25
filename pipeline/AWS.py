@@ -12,6 +12,21 @@ SAWS = SyncAWS(station_id, api_key)
 amf = SAWS.AWS_DIR + station_id + "_ALL_METEORS.json"
 amd = SAWS.AWS_DIR + station_id + "_ALL_METEOR_DIRS.json"
 
+
+
+def push_obs_day(day):
+   mdir = "/mnt/ams2/meteors/" + day + "/"
+   temp = glob.glob(mdir + "*.json")
+   for json_file in temp:
+      if "import" not in json_file and "report" not in json_file and "reduced" not in json_file and "calparams" not in json_file and "manual" not in json_file and "starmerge" not in json_file and "master" not in json_file:
+
+         jfn = json_file.split("/")[-1]
+         cmd = "python3 AWS.py push_obs " + jfn
+         print(cmd)
+         os.system(cmd)
+
+
+
 def index_local_meteors(): 
    SAWS.get_mdirs()
    for mdir in sorted(SAWS.mdirs, reverse=True):
@@ -25,9 +40,9 @@ def sync_batch(wild=None):
 
 def sync_file(sd_vid):
    SAWS.sync_meteor(sd_vid) 
-   SAWS.sync_meteor_media([sd_vid]) 
+   #SAWS.sync_meteor_media([sd_vid]) 
    day = sd_vid[0:10]
-   SAWS.upload_cloud_media(day, [sd_vid])
+   #SAWS.upload_cloud_media(day, [sd_vid])
    SAWS.sync_meteor(sd_vid) 
 
 
@@ -37,15 +52,16 @@ def sync_day_data_only(day):
 def sync_day(day):
    mdir = "/mnt/ams2/meteors/" + day + "/"
    SAWS.sync_meteor_day(day)
-   exit()
-   # SYNC MEDIA FUNCS
-   SAWS.delete_aws_meteors(day)
-   SAWS.delete_cloud_media(day)
-   SAWS.get_mfiles(mdir)
-   SAWS.sync_meteor_media(SAWS.mfiles)
-   SAWS.upload_cloud_media(day, SAWS.mfiles)
-   for sd_vid in SAWS.mfiles:
-      SAWS.sync_meteor(sd_vid)
+   old = 0
+   if old == 1:
+      # SYNC MEDIA FUNCS
+      SAWS.delete_aws_meteors(day)
+      SAWS.delete_cloud_media(day)
+      SAWS.get_mfiles(mdir)
+   #   SAWS.sync_meteor_media(SAWS.mfiles)
+      #SAWS.upload_cloud_media(day, SAWS.mfiles)
+      for sd_vid in SAWS.mfiles:
+         SAWS.sync_meteor(sd_vid)
 
 def sync_month(wild):
    print("/mnt/ams2/meteors/" + "*")
@@ -96,3 +112,6 @@ else:
       sync_file(sys.argv[2]) 
    if sys.argv[1] == "sd_data":
       sync_day_data_only(sys.argv[2]) 
+   if sys.argv[1] == "push_day":
+      push_obs_day(sys.argv[2]) 
+

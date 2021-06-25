@@ -30,6 +30,10 @@ class DataSets():
    def __init__(self):
       self.labels = ["Meteors", "Non-Meteors"]
       self.label = ""
+      if cfe("/mnt/ams2/datasets/training/nonmeteors/", 1) == 0:
+         os.makedirs("/mnt/ams2/datasets/training/nonmeteors/")
+      if cfe("/mnt/ams2/datasets/training/meteors/", 1) == 0:
+         os.makedirs("/mnt/ams2/datasets/training/meteors/")
 
    def build_dataset(self,label):
       self.trashfiles = []
@@ -61,6 +65,7 @@ class DataSets():
          cntc = 0
          for cnt in cnts:
             x,y,w,h,intensity = cnt
+            print("CNTC:", cntc)
             cx = int(x + (w/2))
             cy = int(y + (h/2))
             if w > h:
@@ -93,11 +98,11 @@ class DataSets():
 
                   img_fn = "/mnt/ams2/datasets/training/nonmeteors/" + img_fn
                   img_fn = img_fn.replace(".jpg", "-" + str(cntc) + ".jpg")
-                  cntc + 1
                   cv2.imwrite(img_fn, crop)
                   print("    " + img_fn)
-         cv2.imshow('pepe', img)
-         cv2.waitKey(30)
+               cntc += 1
+         #cv2.imshow('pepe', img)
+         #cv2.waitKey(30)
 
    def get_contours_simple(self,image,sub):
       cnt_res = cv2.findContours(image.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)

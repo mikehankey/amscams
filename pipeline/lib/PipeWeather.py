@@ -1705,6 +1705,7 @@ def track_clouds(cam, day, json_conf):
    # load radar files
 
    color_mask, color_flat,prefilled,applied = make_flat(cam,day,json_conf)
+   print(color_mask.shape)
    gray_mask = cv2.cvtColor(color_mask, cv2.COLOR_BGR2GRAY)
    gray_flat = cv2.cvtColor(color_flat, cv2.COLOR_BGR2GRAY)
    if use_snaps == 1:

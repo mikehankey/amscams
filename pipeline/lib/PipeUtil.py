@@ -198,8 +198,11 @@ def save_json_file(json_file, json_data, compress=False):
    with open("test.json", 'w') as outfile:
       json.dump(json_data, outfile, indent=4, allow_nan=True )
    outfile.close()
-   print("trying to save:", json_file)
-   test_json = load_json_file("test.json")
+   try:
+      test_json = load_json_file("test.json")
+   except:
+      print("trying to save failed:", json_file)
+      exit()
    # if this fails, the file is corrupt or there is a problem so do not save!
 
    with open(json_file, 'w') as outfile:
