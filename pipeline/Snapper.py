@@ -101,10 +101,10 @@ def purge_files():
 def images_to_video(wild, cam, outfile, type="jpg"):
    if cam is not None:
       wild_str = wild + "*" + cam + "." + type 
-      cmd = "/usr/bin/ffmpeg -framerate 25 -pattern_type glob -i '" + wild_str + "' -c:v libx264 -pix_fmt yuv420p -y " + outfile + " >/dev/null 2>&1"
+      cmd = "/usr/bin/ffmpeg -framerate 25 -pattern_type glob -i '" + wild_str + "' -vf scale=320:240 -c:v libx264 -pix_fmt yuv420p -y " + outfile + " >/dev/null 2>&1"
    else:
       wild_str = wild + "." + type
-      cmd = "/usr/bin/ffmpeg -framerate 25 -pattern_type glob -i '" + wild_str + "' -c:v libx264 -pix_fmt yuv420p -y " + outfile + " >/dev/null 2>&1"
+      cmd = "/usr/bin/ffmpeg -framerate 25 -pattern_type glob -i '" + wild_str + "' -vf scale=320:240 -c:v libx264 -pix_fmt yuv420p -y " + outfile + " >/dev/null 2>&1"
    print(cmd)
    os.system(cmd)
    print(outfile)
