@@ -81,7 +81,10 @@ def make_obs_data(station_id, date, meteor_file):
       red_file = meteor_file.replace(".json", "-reduced.json")
       mfn = meteor_file.split("/")[-1]
       mdir = meteor_file.replace(mfn, "")
-      mj = load_json_file(meteor_file)
+      try:
+         mj = load_json_file(meteor_file)
+      except:
+         return({})
       if "revision" not in mj:
          mj['revision'] = 1
 
@@ -97,7 +100,6 @@ def make_obs_data(station_id, date, meteor_file):
          ffp = {}
          sd_start = None
          if cfe(hd_vid) == 1:
-            print("FFPROBE:", hd_vid)
             ffp['hd'] = ffprobe(mdir + hd_vid)
          else:
             hd_vid = None
@@ -223,9 +225,6 @@ def make_obs_data(station_id, date, meteor_file):
    #mj['calib'] = calib
    #mj['last_update'] = update_time
    save_json_file(meteor_file, mj)
-   print("CROP BOX!", crop_box)
-   print("ROI:", roi)
-   print("OBS", obs_data)
    return(obs_data)
 
 if __name__ == "__main__":
