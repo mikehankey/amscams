@@ -15,6 +15,10 @@ import os, sys, subprocess
 import datetime
 
 
+def snap_video_new(in_file, outfile):
+   cmd = """ /usr/bin/ffmpeg -i """ + in_file + """ -vf select="between(n\,""" + str(1) + """\,""" + str(2) + """),setpts=PTS-STARTPTS" -y -update 1 """ + outfile + " >/dev/null 2>&1"
+   print(cmd)
+   os.system(cmd)
 
 def snap_video(in_file):
    (f_datetime, cam, f_date_str,fy,fm,fd, fh, fmin, fs) = convert_filename_to_date_cam(in_file)
@@ -55,6 +59,7 @@ def snap_video(in_file):
       os.makedirs(sd_outdir)
    #print("60:", frame_to_60, total_frames)
    #print("30:", frame_to_30, total_frames)
+   outfile = sd_outdir + out_60_fn
    if frame_to_60 < total_frames:
       outfile = sd_outdir + out_60_fn
       cmd = """ /usr/bin/ffmpeg -i """ + in_file + """ -vf select="between(n\,""" + str(frame_to_60) + """\,""" + str(frame_to_60+1) + """),setpts=PTS-STARTPTS" -y -update 1 """ + outfile + " >/dev/null 2>&1"

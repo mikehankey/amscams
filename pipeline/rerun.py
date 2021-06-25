@@ -30,10 +30,13 @@ if years == 0:
          all_days.append((current_year + "_" +  smon + "_" + sday))
 
 for day in sorted(all_days,reverse=True):
+   solve_cmd = "./solveWMPL.py sd " + day
+   os.system(solve_cmd)
+
    ev_run_cmd = "python3 EVRun.py " + day
-   os.system(ev_run_cmd)
-   print(day)
-   exit()
+   #os.system(ev_run_cmd)
+   #print(day)
+
    udc_cmd = "./DynaDB.py udc " + day + " events"
    os.system(udc_cmd)
-   print(day)
+   #print(day)

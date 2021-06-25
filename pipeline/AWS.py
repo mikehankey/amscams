@@ -25,9 +25,9 @@ def sync_batch(wild=None):
 
 def sync_file(sd_vid):
    SAWS.sync_meteor(sd_vid) 
-   SAWS.sync_meteor_media([sd_vid]) 
+   #SAWS.sync_meteor_media([sd_vid]) 
    day = sd_vid[0:10]
-   SAWS.upload_cloud_media(day, [sd_vid])
+   #SAWS.upload_cloud_media(day, [sd_vid])
    SAWS.sync_meteor(sd_vid) 
 
 
@@ -42,8 +42,8 @@ def sync_day(day):
    SAWS.delete_aws_meteors(day)
    SAWS.delete_cloud_media(day)
    SAWS.get_mfiles(mdir)
-   SAWS.sync_meteor_media(SAWS.mfiles)
-   SAWS.upload_cloud_media(day, SAWS.mfiles)
+   #SAWS.sync_meteor_media(SAWS.mfiles)
+   #SAWS.upload_cloud_media(day, SAWS.mfiles)
    for sd_vid in SAWS.mfiles:
       SAWS.sync_meteor(sd_vid)
 

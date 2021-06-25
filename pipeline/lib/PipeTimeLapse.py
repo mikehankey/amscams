@@ -1155,8 +1155,9 @@ def make_tl_for_cam(date,cam, json_conf):
          fn = file.split("/")[-1]
          out_file = tl_dir + fn
          out_file = out_file.replace(".mp4", ".jpg")
+         print("trying ", file)
          try:
-            image = quick_video_stack(file, 1)
+            image, image_file = quick_video_stack(file, 1)
          except:
             continue
      
