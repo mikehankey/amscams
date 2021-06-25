@@ -55,6 +55,8 @@ def simple_TL(TL_CONF, json_conf):
    ss_start_dt = datetime.strptime(slow_stack_start, "%Y_%m_%d_%H_%M_%S")
    ss_end_dt = datetime.strptime(slow_stack_end, "%Y_%m_%d_%H_%M_%S")
    cam = tl_conf['cams_id']
+   print("/mnt/ams2/SD/proc2/" + start_day + "/*" + cam + "*.mp4")
+   print("/mnt/ams2/SD/proc2/daytime/" + start_day + "/*" + cam + "*.mp4")
    night_files = glob.glob("/mnt/ams2/SD/proc2/" + start_day + "/*" + cam + "*.mp4")
    day_files = glob.glob("/mnt/ams2/SD/proc2/daytime/" + start_day + "/*" + cam + "*.mp4")
    all_files = []
