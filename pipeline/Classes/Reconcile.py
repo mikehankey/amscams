@@ -224,7 +224,7 @@ class Reconcile():
             self.rec_data['meteor_index'][root_file]['cloud_files'].append(ext)
             cmd = "cp " + ms_file + " " + cloud_file
             print(cmd)
-            #os.system(cmd)
+            os.system(cmd)
          else:
             print("FILE IN CLOUD ALREADY", root_file, ext)
             #input()
