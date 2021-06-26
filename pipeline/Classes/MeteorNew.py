@@ -1913,11 +1913,9 @@ class Meteor():
             print("THIS OBS NO LONGER EXISTS!?", event_id, mf)
             print("DELETEING:", rkey)
             #self.r.delete(rkey)
-      input("Waiting...")
 
    def load_all_meteors_into_redis(self, day=None):
       self.update_events_obs()
-      input("WAIT!")
       in_day = day
       self.all_meteors = {}
       self.meteor_dirs = []
