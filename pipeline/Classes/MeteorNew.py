@@ -82,12 +82,17 @@ class Meteor():
       temp_months = {}
       temp_years = {}
       # regenerate 1x per day if the current day is not in there or the file time is old
+      if cfe(self.SCAN_DIR + "scan_days.json") == 1:
+         self.scan_days = load_json_file(self.SCAN_DIR + "scan_days.json")
+      else:
+         self.scan_days = {}
+
       if cfe(self.SCAN_DIR + "scan_period.json") == 1:
          self.scan_period = load_json_file(self.SCAN_DIR + "scan_period.json")
-         self.scan_days = load_json_file(self.SCAN_DIR + "scan_days.json")
       else:
          print("REBUILDING SCAN PERIOD...")
          temp = glob.glob(self.SCAN_DIR + "*") 
+         self.scan_days = {}
          for ttt in temp:
             msdir = ttt
             ttt = ttt.split("/")[-1]

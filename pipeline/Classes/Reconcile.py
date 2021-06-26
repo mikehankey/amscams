@@ -14,6 +14,8 @@ from datetime import datetime
 class Reconcile():
    def __init__(self, year=None,month=None):
       self.data_dir = "/mnt/ams2/METEOR_SCAN/DATA/"
+      if cfe(self.data_dir,1) == 0:
+         os.makedirs(self.data_dir)
       self.media_exts = ['FRMS.jpg', 'HD.jpg', 'HD.mp4', 'PREV.jpg', 'ROI.jpg', 'ROI.mp4', 'ROIHD.jpg', 'ROIHD.mp4', 'SD.jpg', 'SD.mp4']
       if cfe(self.data_dir, 1) == 0:
          os.makedirs(self.data_dir)
@@ -275,6 +277,8 @@ class Reconcile():
           * IF THERE ARE MORE THAN 200 meteors, abort unless it is Aug 8-16 or Dec 10-16
       """
       for root_file in self.rec_data['meteor_index']:
+         if "exts" not in self.rec_data['meteor_index'][root_file]:
+            self.rec_data['meteor_index'][root_file]['exts'] = []
          obs_data = self.rec_data['meteor_index'][root_file]['obs_data']
          # IS THERE FRAME DATA?
          # AREA THERE EXTS? HAS ALL MEDIA BEEN MADE?
@@ -295,9 +299,14 @@ class Reconcile():
          exts_missing = 0         
          missing_media = []
          for ext_type in self.media_exts: 
-            if ext_type not in self.rec_data['meteor_index'][root_file]['exts']:
-               exts_missing = 1
-               missing_media.append(ext_type)
+            if root_file in self.rec_data['meteor_index']:
+               if "exts" not in self.rec_data['meteor_index'][root_file]:
+                  self.rec_data['meteor_index'][root_file]['exts'] = []
+               print(self.rec_data['meteor_index'][root_file])
+               print("KEYS:", root_file, self.rec_data['meteor_index'][root_file].keys())
+               if ext_type not in self.rec_data['meteor_index'][root_file]['exts']:
+                  exts_missing = 1
+                  missing_media.append(ext_type)
 
            
          if "ROI.jpg" in missing_media or "ROI.mp4" in missing_media:
