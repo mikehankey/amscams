@@ -93,18 +93,25 @@ def make_obs_data(station_id, date, meteor_file):
          reprobe = 1
       elif "sd" not in mj['ffp']:
          reprobe = 1
+      elif "hd" not in mj['ffp']:
+         reprobe = 1
+      elif mj['ffp']['sd'][0] == 0:
+         reprobe = 1
 
       if reprobe == 1:
          sd_vid = mj['sd_video_file']
-         hd_vid = mj['hd_trim']
+         if "hd_trim" in mj:
+            hd_vid = mj['hd_trim']
+         else:
+            hd_vid = None
          ffp = {}
          sd_start = None
          if cfe(hd_vid) == 1:
-            ffp['hd'] = ffprobe(mdir + hd_vid)
+            ffp['hd'] = ffprobe(hd_vid)
          else:
             hd_vid = None
          if cfe(sd_vid) == 1:
-            ffp['sd'] = ffprobe(mdir + sd_vid)
+            ffp['sd'] = ffprobe(sd_vid)
          mj['ffp'] = ffp
          save_json_file(meteor_file, mj)
 
@@ -224,6 +231,11 @@ def make_obs_data(station_id, date, meteor_file):
    }
    if "human_points" in mj:
       obs_data['human_points'] = mj['human_points']
+   if "hc" in mj:
+      obs_data['hc'] = mj['hc']
+   else:
+      obs_data['hc'] = 0
+
    #obs_data = json.loads(json.dumps(obs_data), parse_float=Decimal)
    #table = dynamodb.Table('meteor_obs')
    #table.put_item(Item=obs_data)
