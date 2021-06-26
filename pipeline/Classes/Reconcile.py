@@ -51,7 +51,7 @@ class Reconcile():
             new = 0
 
          if root_file not in self.rec_data['meteor_index']:
-            print("GET OBS:", c, new, meteor_file)
+            print("GET OBS:", root_file)
             self.rec_data['meteor_index'][root_file] = {}
             self.rec_data['meteor_index'][root_file]['last_update'] = datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
             self.rec_data['meteor_index'][root_file]['obs_data'] = make_obs_data(self.station_id, date, meteor_file) 
@@ -69,6 +69,7 @@ class Reconcile():
          save_json_file(self.rec_file, self.rec_data)
 
 
+<<<<<<< HEAD
    def day_month_stats(self):
       for root_file in self.rec_data['meteor_index']:
          day = root_file[0:10]
@@ -121,6 +122,37 @@ class Reconcile():
          mdirs = glob.glob("/mnt/ams2/meteors/" + year + "*")
       else:
          mdirs = glob.glob("/mnt/ams2/meteors/" + year + "_" + mon + "*")
+=======
+
+   def reconcile_scans(self):
+      print("REC SCANS")
+      """
+        LOOP OVER ALL METEORS IN THE REC PERIOD
+        CHECK IF THE 3 SCANS WERE DONE YET, meteor_scan, meteor_crop_scan, hd_crop_scan
+        RE-RUN THE ONES THAT AREN'T DONE YET. 
+
+      """
+
+   def reconcile_media(self):
+      print("REC MEDIA")
+      """ 
+          FOR MEDIA WE WANT TO DO THIS IN 3 PHASES
+          1) Push the AWS data and prev thumbnail and that is it
+          2) For successful meteor scan meteors upload the SD video, ROI video, ROI thumb, SD STACK IMAGE (here we wil have 5 total files: prev.jpg, SD.jpg, ROI.jpg SD.mp4 ROI.mp4
+          3) For MSM or HC confirmed meteors, push the HD files too -- we will add HD.mp4 HDROI.mp4 HD.jpg and ROIHD.jpg (4 more files)
+          If the meteor is confirmed and all media is sync'd there should be a total of 9 files for the meteor inside the METEOR_SCAN DIR
+          If these don't exist yet, then the scan was not run, but should be. 
+
+          * CAP THIS / ONLY DO OPTION 1 if there are more than 100 meteors for the day. 
+          * IF THERE ARE MORE THAN 200 meteors, abort unless it is Aug 8-16 or Dec 10-16
+      """
+      for key in self.rec_data['meteor_index']:
+         print(key)
+
+
+   def get_all_meteor_files(self):
+      mdirs = glob.glob("/mnt/ams2/meteors/*")
+>>>>>>> 15b76c2bf6a067e803013c4ec69ee3e872282bf7
       mds = []
       for md in mdirs:
          if cfe(md,1) == 1:
