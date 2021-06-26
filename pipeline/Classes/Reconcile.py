@@ -25,7 +25,7 @@ class Reconcile():
          self.rec_file = self.data_dir + "reconcile_" + year + "_" + month + ".json"
       self.json_conf = load_json_file("../conf/as6.json")
       self.station_id = self.json_conf['site']['ams_id']
-      self.cloud_dir = "/mnt/archive.allsky.tv/" + self.station_id + "/METEORS/"
+      self.cloud_dir = "/mnt/archive.allsky.tv/" + self.station_id + "/METEORS/" 
       if cfe(self.cloud_dir,1) == 0:
          os.makedirs(self.cloud_dir)
 
@@ -280,6 +280,10 @@ class Reconcile():
          if "exts" not in self.rec_data['meteor_index'][root_file]:
             self.rec_data['meteor_index'][root_file]['exts'] = []
          obs_data = self.rec_data['meteor_index'][root_file]['obs_data']
+         date = root_file[0:10]
+         mdir = "/mnt/archive.allsky.tv/" + self.station_id + "/METEORS/" + date + "/" 
+         if cfe(mdir, 1) == 0:
+            os.makedirs(mdir)
          # IS THERE FRAME DATA?
          # AREA THERE EXTS? HAS ALL MEDIA BEEN MADE?
          # WHAT HAS BEEN SYNC'D?
