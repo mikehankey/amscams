@@ -218,7 +218,7 @@ class Reconcile():
       for ext in sd_exts:
          if ext == "prev.jpg":
             skiping = 1
-         elif ext not in self.rec_data['meteor_index'][root_file]['cloud_files']:
+         elif ext not in self.rec_data['meteor_index'][root_file]['cloud_files'] or (ext == "SD.mp4" and "ROI.mp4" not in self.rec_data['meteor_index'][root_file]['cloud_files'] ):
             ms_file = "/mnt/ams2/METEOR_SCAN/" + date + "/" + self.station_id + "_" + root_file + "-" + ext 
             cloud_file = "/mnt/archive.allsky.tv/" + self.station_id + "/METEORS/" + date + "/" + self.station_id + "_" + root_file + "-" + ext
             self.rec_data['meteor_index'][root_file]['cloud_files'].append(ext)
