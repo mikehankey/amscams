@@ -518,9 +518,20 @@ class Meteor():
       # SD VIDEO SPLICE AND CROP
       # we can only do this if meteor scan has run!
       if "meteor_scan_meteors" in mj:
+         if type(mj['meteor_scan_meteors']) == dict: 
+            mj['meteor_scan_meteors'] = self.dict_to_array(mj['meteor_scan_meteors'])
          if len(mj['meteor_scan_meteors']) > 0:
-            start = mj['meteor_scan_meteors'][0]['ofns'][0] - 10
-            end = mj['meteor_scan_meteors'][0]['ofns'][-1] + 10
+          
+            print("LEN:", len(mj['meteor_scan_meteors']))
+            if len( mj['meteor_scan_meteors'][0]['ofns']) > 0:
+               start = mj['meteor_scan_meteors'][0]['ofns'][0] - 10
+               end = mj['meteor_scan_meteors'][0]['ofns'][-1] + 10
+            else:
+               if "msc_meteors" in mj:
+                  if len(mj['msc_meteors']) > 0:
+                     if len( mj['meteor_scan_meteors'][0]['ofns']) > 0:
+                        start = mj['msc_meteors'][0]['ofns'][0] - 10
+                        end = mj['msc_meteors'][0]['ofns'][-1] + 10
 
             if "ffp" in mj:
                if 'sd' in mj['ffp']:
