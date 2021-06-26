@@ -29,7 +29,6 @@ class Reconcile():
       if cfe(self.cloud_dir,1) == 0:
          os.makedirs(self.cloud_dir)
 
-      print("YM", year, month)
 
       if cfe(self.rec_file) == 1:
          try:
@@ -60,7 +59,6 @@ class Reconcile():
 
       new = 0
       for root_file in self.rec_data['mfiles']:
-         print(c, root_file)   
          date = root_file[0:10]
          meteor_file = "/mnt/ams2/meteors/" + date + "/" + root_file + ".json"
          mon = date[0:7]
@@ -70,7 +68,6 @@ class Reconcile():
             new = 0
 
          if root_file not in self.rec_data['meteor_index']:
-            print("GET OBS:", root_file)
             self.rec_data['meteor_index'][root_file] = {}
             self.rec_data['meteor_index'][root_file]['last_update'] = datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
             self.rec_data['meteor_index'][root_file]['obs_data'] = make_obs_data(self.station_id, date, meteor_file) 
@@ -114,7 +111,6 @@ class Reconcile():
    def get_cloud_media(self, year):
       cloud_files_file = "/mnt/ams2/METEOR_SCAN/DATA/cloud_files_" + year + ".txt"
       cloud_wild = "/mnt/archive.allsky.tv/" + self.station_id + "/METEORS/" + year + "/" 
-      print(cloud_files_file)
       if cfe(cloud_files_file) == 0:
          print("GETTING CLOUD FILES....")
          print ("find " + cloud_wild + " > " + cloud_files_file)
@@ -172,10 +168,6 @@ class Reconcile():
             print("MISSING CLOUD FIELD!?", root_file)
             continue 
          if "ROI.jpg" not in cloud_files or "ROI.mp4" not in cloud_files:
-            #print("SOME CLOUD FILES ARE MISSING! THIS IS WHAT IS UPLOADED", cloud_files)
-            #print("THESE ARE THE LOCAL FILES!", ext_files)
-            # UPDATE THE OBS DATA TO THE LATEST POSSIBLE
-            #print(root_file)
             if "hc" not in self.rec_data['meteor_index'][root_file]['obs_data']:
                self.rec_data['meteor_index'][root_file]['obs_data'] = make_obs_data(self.station_id, date, meteor_file) 
 
@@ -211,8 +203,6 @@ class Reconcile():
          if sync_level >= 1:
             # METEOR SCAN FAILED ONLY PUT UP THE prev.jpg
             if "prev.jpg" not in self.rec_data['meteor_index'][root_file]['cloud_files']:
-               print(self.rec_data['meteor_index'][root_file]['obs_data']) 
-               print("NEED TO PUSH THE PREV.JPG/prev.jpg?", root_file)
                self.sync_prev(root_file)
             else:
                print("     CLOUD PREV FILE IS SYNC'D.", root_file)
@@ -228,13 +218,16 @@ class Reconcile():
       for ext in sd_exts:
          if ext == "prev.jpg":
             skiping = 1
-         else:
+         elif ext not in self.rec_data['meteor_index'][root_file]['cloud_files']:
             ms_file = "/mnt/ams2/METEOR_SCAN/" + date + "/" + self.station_id + "_" + root_file + "-" + ext 
             cloud_file = "/mnt/archive.allsky.tv/" + self.station_id + "/METEORS/" + date + "/" + self.station_id + "_" + root_file + "-" + ext
             self.rec_data['meteor_index'][root_file]['cloud_files'].append(ext)
             cmd = "cp " + ms_file + " " + cloud_file
             print(cmd)
-            os.system(cmd)
+            #os.system(cmd)
+         else:
+            print("FILE IN CLOUD ALREADY", root_file, ext)
+            #input()
          
 
    def sync_prev(self, root_file):
