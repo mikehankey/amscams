@@ -12,9 +12,9 @@ if __name__ == "__main__":
       mon = sys.argv[2]
       print("FF:", year, mon)
       R = Reconcile(year, mon)
-   R.reconcile_report(year,mon)
-   R.save_rec_data()
-   exit()
+   input("RECONCILE INIT DONE")
+   #R.reconcile_report(year,mon)
 
-   R.reconcile_media()
+   #R.reconcile_media()
    R.reconcile_cloud_media()
+   #R.save_rec_data()

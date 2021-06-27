@@ -62,7 +62,7 @@ class Meteor():
       }
 
 
-      self.show = 0
+      self.show = 1
       self.DF = DisplayFrame()
       self.SCAN_DIR = "/mnt/ams2/METEOR_SCAN/"
       self.SCAN_REPORT_DIR = "/mnt/ams2/METEOR_SCAN/REPORTS/"
@@ -4203,30 +4203,5 @@ class Meteor():
       def_mj['ffp'] = ""
       exit()
 
-   def obj_to_frames(self, hd_meteor, start_trim_time,cal_params):
-      ofns = hd_meteor['ofns']
-      xs = hd_meteor['oxs']
-      ys = hd_meteor['oys']
-      frames = []
-      for i in range(0,len(ofns)):
-         frame = {}
-         frame['fn'] = ofns[i]
-         frame['x'] = xs[i]
-         frame['y'] = ys[i]
-         frame['w'] = hd_meteor['ows'][i]
-         frame['h'] = hd_meteor['ohs'][i]
-
-         extra_meteor_sec = int(frame['fn']) /  25
-         meteor_frame_time = start_trim_time+ datetime.timedelta(0,extra_meteor_sec)
-         meteor_frame_time_str = meteor_frame_time.strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]
-         frame['dt'] = meteor_frame_time_str
-
-         new_x, new_y, ra ,dec , az, el = XYtoRADec(frame['x'],frame['y'],hd_meteor['trim_clip'],cal_params,json_conf)
-         frame['az'] = az
-         frame['el'] = el
-         frame['ra'] = ra
-         frame['dec'] = dec
 
 
-         frames.append(frame)
-      return(frames)
