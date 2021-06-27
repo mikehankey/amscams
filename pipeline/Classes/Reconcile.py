@@ -462,8 +462,8 @@ class Reconcile():
    def sync_prev(self, root_file):
       date = root_file[0:10]
       local_prev = "/mnt/ams2/meteors/" + date + "/cloud_files/" + self.station_id + "_" + root_file + "-prev.jpg"
-      ms_prev = "/mnt/ams2/METEOR_SCAN/" + date + "/cloud_files/" + self.station_id + "_" + root_file + "-PREV.jpg"
-      cloud_prev = "/mnt/archive.allsky.tv/" + self.station_id + "/METEOR_SCAN/" + date + "/cloud_files/" + self.station_id + "_" + root_file + "-prev.jpg"
+      ms_prev = "/mnt/ams2/METEOR_SCAN/" + date + "/" + self.station_id + "_" + root_file + "-PREV.jpg"
+      cloud_prev = "/mnt/archive.allsky.tv/" + self.station_id + "/METEORS/" + date[0:4] + "/" + date + "/" + self.station_id + "_" + root_file + "-prev.jpg"
       if cfe(local_prev) == 1:
          print("LOCAL prev.jpg EXISTS", root_file)
          cmd = "cp " + local_prev + " " + cloud_prev
