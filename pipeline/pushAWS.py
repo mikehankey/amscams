@@ -256,7 +256,6 @@ def make_obs_data(station_id, date, meteor_file):
    #mj['calib'] = calib
    #mj['last_update'] = update_time
    save_json_file(meteor_file, mj)
-   print("OBS DATA:", obs_data.keys())
    return(obs_data)
 
 if __name__ == "__main__":

@@ -74,8 +74,6 @@ class Reconcile():
             self.rec_data['meteor_index'][root_file]['last_update'] = datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
             self.rec_data['meteor_index'][root_file]['obs_data'] = make_obs_data(self.station_id, date, meteor_file) 
             new = new + 1
-         else:
-            print("DONE ALREADY.")
 
          c += 1
          last_month = mon
@@ -368,7 +366,6 @@ class Reconcile():
       else:
          cloud_index = {}
       for root_file in self.rec_data['meteor_index']:
-         print("WORKING ON ", root_file)
          date = root_file[0:10]
          meteor_file = "/mnt/ams2/meteors/" + date + "/" + root_file + ".json"
          if "cloud_files" in self.rec_data['meteor_index'][root_file]:
@@ -416,15 +413,13 @@ class Reconcile():
          print(root_file, "SYNC LEVEL:", sync_level, scan_confirmed, human_confirmed, msm_confirmed)
          if sync_level >= 1:
             # METEOR SCAN FAILED ONLY PUT UP THE prev.jpg
-            if "prev.jpg" not in self.rec_data['meteor_index'][root_file]['cloud_files']:
-               self.sync_prev(root_file)
-            else:
-               print("     CLOUD PREV FILE IS SYNC'D.", root_file)
+            ci_key = self.station_id + "_" + root_file 
+            if ci_key in cloud_index:
+               if "prev.jpg" not in cloud_index[ci_key]:
+                  self.sync_prev(root_file)
          if sync_level >= 2:
-            print("LEVEL2")
             self.sync_sd_files(root_file, cloud_index)
             # SYNC PREV and ALL SD MEDIA: prev.jpg, SD.mp4, SD.jpg, ROI.jpg, ROI.mp4
-         print("DOING SYNC WORK!", sync_level, root_file)
 
 
    def sync_sd_files(self, root_file, cloud_index):
@@ -529,8 +524,8 @@ class Reconcile():
             if root_file in self.rec_data['meteor_index']:
                if "exts" not in self.rec_data['meteor_index'][root_file]:
                   self.rec_data['meteor_index'][root_file]['exts'] = []
-               print(self.rec_data['meteor_index'][root_file])
-               print("KEYS:", root_file, self.rec_data['meteor_index'][root_file].keys())
+               #print(self.rec_data['meteor_index'][root_file])
+               #print("KEYS:", root_file, self.rec_data['meteor_index'][root_file].keys())
                if ext_type not in self.rec_data['meteor_index'][root_file]['exts']:
                   exts_missing = 1
                   missing_media.append(ext_type)
@@ -539,7 +534,7 @@ class Reconcile():
          if "ROI.jpg" in missing_media or "ROI.mp4" in missing_media:
             self.missing_scans.append(root_file)
 
-         print(root_file, mfd, exts_missing, cloud_missing, missing_media)
+         #print(root_file, mfd, exts_missing, cloud_missing, missing_media)
          #print(ext)
          #print(cloud_files)
 
@@ -553,7 +548,6 @@ class Reconcile():
          # 2) is the ROI field missing or are they all zeros. If this is the case a meteor was not detected, so we shouldn't scan. 
          # 3) save as a 'scan_failure' so we don't redo this!
          # 4) scan failures will be treated as LEVEL 1 syncs. -- only thumb and data.
-         print("NEED SCAN FOR :", root_file)
          date = root_file[0:10]
          meteor_file = "/mnt/ams2/meteors/" + date + "/" + root_file + ".json"
          if cfe(meteor_file) == 1:
@@ -624,7 +618,6 @@ class Reconcile():
 
 
    def make_meteor_frame_data(self, obj, mjf):
-      print("OBJ:", obj)
       (f_datetime, cam, f_date_str,fy,fmon,fd, fh, fm, fs) = convert_filename_to_date_cam(mjf)
       trim_num = get_trim_num(mjf)
       extra_sec = int(trim_num) / 25
@@ -644,13 +637,11 @@ class Reconcile():
          if "msc_meteors" in mj:
             if len(mj['msc_meteors']) > 0:
                obj = mj['msc_meteors'][0]
-               print("CHOOSE MSC METEOR!")
                found = 1
          if found == 0:
             if "meteo_scan_meteors" in mj:
                if len(mj['msc_meteors']) > 0:
                   obj = mj['msc_meteors'][0]
-                  print("CHOOSE METEOR SCAN METEOR !")
                   found = 1
       if found == 0:
          # NO METEOR FOUND SO WE CAN'T MAKE MFD
