@@ -167,6 +167,17 @@ def make_obs_data(station_id, date, meteor_file):
       peak_int = max(mj['best_meteor']['oint'])
    else:
       peak_int = 0
+   if peak_int == 0:
+      if "meteor_scan_meteors" in mj:
+         if len(mj['meteor_scan_meteors']) > 0:
+            peak_int = max(mj['meteor_scan_meteors'][0]['oint'])
+   if peak_int == 0:
+      if "msc_meteors" in mj:
+         if len(mj['msc_meteors']) > 0:
+            peak_int = max(mj['msc_meteors'][0]['oint'])
+
+
+
    if "revision" in mj:
       revision = mj['revision']
    else:
@@ -255,6 +266,5 @@ if __name__ == "__main__":
 
    cmd = sys.argv[1]
    meteor_file = sys.argv[2]
-   print("CMD:", cmd)
    if cmd == "push_obs":
       push_obs(api_key, station_id, meteor_file)

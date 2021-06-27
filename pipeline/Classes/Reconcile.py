@@ -1,4 +1,4 @@
-from lib.PipeUtil import cfe, load_json_file, save_json_file, get_file_info
+from lib.PipeUtil import cfe, load_json_file, save_json_file, get_file_info, convert_filename_to_date_cam,get_trim_num
 import os
 from pushAWS import make_obs_data
 import glob
@@ -86,6 +86,26 @@ class Reconcile():
          print("saving " + year + " data")
          save_json_file(self.rec_file, self.rec_data)
 
+      # REMOVE DELETED METEORS FROM THE REC_DATA METEOR INDEX
+      deleted_meteors = []
+      for root_file in self.rec_data['meteor_index']:
+         mfile = "/mnt/ams2/meteors/" + root_file[0:10] + "/" + root_file + ".json" 
+         if cfe(mfile) == 0:
+            print("   INFO: MFILE NO LONGER EXISTS. IT SHOULD BE DELETED FROM THE METEOR INDEX!")
+            print("   ",mfile)
+            deleted_meteors.append(root_file)
+      for root_file in deleted_meteors:
+         print("   INFO: REMOVED FILE FROM INDEX", root_file) 
+         print(self.rec_data.keys())
+         if root_file in self.rec_data['meteor_index']: 
+            del(self.rec_data['meteor_index'][root_file])
+         if root_file in self.rec_data['mfiles']: 
+            del(self.rec_data['mfiles'][root_file])
+         if root_file in self.rec_data['needs_review']: 
+            del(self.rec_data['needs_review'][root_file])
+         if root_file in self.rec_data['corrupt_json']: 
+            del(self.rec_data['corrupt_json'][root_file])
+
    def save_rec_data(self):
       save_json_file(self.rec_file, self.rec_data)
       print("SAVED:", self.rec_file)
@@ -107,7 +127,117 @@ class Reconcile():
          print(day, self.rec_data['day_data'][day])
       for mon in self.rec_data['month_data']:
          print(mon, self.rec_data['month_data'][mon])
-       
+
+
+
+   def reconcile_report(self, year = None, month=None):
+      print("RECONCILE REPORT FOR ", self.station_id, year, month)
+      for root_file in sorted(self.rec_data['meteor_index'], reverse=True):
+         obs_data = self.rec_data['meteor_index'][root_file]['obs_data']
+         peak_int = 0
+         ss = []
+         mfd = 0
+         if "meteor_frame_data" in obs_data:
+            mfd = len(obs_data['meteor_frame_data'])
+         else:
+            print("   INFO: NO METEOR FRAME DATA!")
+         if "sync_status" in obs_data:
+            sync_status = obs_data['sync_status']
+         else:
+            print("   INFO: GET SYNC STATUS!")
+
+         if "peak_int" in obs_data:
+            peak_int = obs_data['peak_int']
+            self.rec_data['meteor_index'][root_file]['obs_data']['peak_int'] = peak_int
+         else:
+            print("   INFO: GET PEAK INT!")
+
+         if "scan_status" in obs_data :
+            scan_status = obs_data['scan_status'] 
+         else:
+            print("   INFO: NEED TO GET SCAN STATUS!")
+            scan_status = self.get_scan_status(root_file)
+            self.rec_data['meteor_index'][root_file]['obs_data']['scan_status'] = scan_status
+         print(root_file, mfd, peak_int, scan_status )
+      
+   def get_scan_status(self, root_file):
+      mfile = "/mnt/ams2/meteors/" + root_file[0:10] + "/" + root_file + ".json"
+      scan_status = {}
+      scan_status['jobs'] = [] 
+      scan_status['mets'] = [] 
+      meteor_scan_run = 0
+      meteor_scan_meteors = 0
+      meteor_crop_scan_run = 0
+      meteor_crop_scan_meteors = 0
+      meteor_hd_crop_scan_run = 0
+      meteor_hd_crop_scan_meteors = 0
+      resave_mj = 0
+      if cfe(mfile) == 1:
+         try:
+            mj = load_json_file(mfile)
+         except:
+            mj = self.remake_mj(root_file)
+            resave_mj = 1
+            #exit()
+         if "meteor_scan_meteors" in mj:
+            meteor_scan_run = 1
+            meteor_scan_meteors = len(mj['meteor_scan_meteors'])
+         if "msc_meteors" in mj:
+            meteor_crop_scan_run = 1
+            if type(mj['msc_meteors']) == dict :
+               mj['msc_meteors'] = self.fix_hd_scan_data(mj['msc_meteors'])
+               print("FIXED MSC METEORS!")
+               input()
+
+
+            meteor_crop_scan_meteors = len(mj['msc_meteors'])
+
+
+
+         if "meteor_scan_hd_crop_scan" in mj:
+            if "meteors" in mj['meteor_scan_hd_crop_scan']:
+               print("TYPE IS:",  type(mj['meteor_scan_hd_crop_scan']))
+               mj['meteor_scan_hd_crop_scan'] = self.fix_hd_scan_data(mj['meteor_scan_hd_crop_scan']['meteors'])
+               print("FIXED 1:", mfile)
+            elif type(mj['meteor_scan_hd_crop_scan']) == dict :
+               mj['meteor_scan_hd_crop_scan'] = self.fix_hd_scan_data(mj['meteor_scan_hd_crop_scan'])
+               print("FIXED 2:", mfile)
+            elif len(mj['meteor_scan_hd_crop_scan']) > 1:
+               mj['meteor_scan_hd_crop_scan'] = self.only_meteors(mj['meteor_scan_hd_crop_scan'])
+
+            meteor_hd_crop_scan_run = 1
+            meteor_hd_crop_scan_meteors = len(mj['meteor_scan_hd_crop_scan'])
+         scan_status['jobs'] = [meteor_scan_run, meteor_crop_scan_run, meteor_hd_crop_scan_run] 
+         scan_status['mets'] = [meteor_scan_meteors, meteor_crop_scan_meteors, meteor_hd_crop_scan_meteors] 
+         mj['scan_status'] = scan_status
+         save_json_file(mfile, mj)
+      else: 
+         print("   ERROR MF NOT FOUND:", mfile )
+         input()
+      return(scan_status)
+
+   def only_meteors(self, objects):
+      final_meteors = []
+      for obj in objects:
+         if "report" in obj :
+            if obj['report']['class'] == "meteor":
+               final_meteors.append(obj)
+      return(final_meteors)
+
+   def fix_hd_scan_data(self, hd_scan_data):
+      final_hd_meteors = []
+      print(hd_scan_data)
+      for obj_id in hd_scan_data:
+         obj = hd_scan_data[obj_id]
+         if "report" in obj:
+            print(obj['report'])
+            if obj['report']['class'] == "meteor":
+               print("METEOR FOUND!")
+               final_hd_meteors.append(obj)
+      print("FINAL:", final_hd_meteors)
+      return(final_hd_meteors)
+
+            
    def get_cloud_media(self, year):
       cloud_files_file = "/mnt/ams2/METEOR_SCAN/DATA/cloud_files_" + year + ".txt"
       cloud_wild = "/mnt/archive.allsky.tv/" + self.station_id + "/METEORS/" + year + "/" 
@@ -227,7 +357,6 @@ class Reconcile():
             os.system(cmd)
          else:
             print("FILE IN CLOUD ALREADY", root_file, ext)
-            #input()
          
 
    def sync_prev(self, root_file):
@@ -375,3 +504,19 @@ class Reconcile():
             root = json_file.split("/")[-1].replace(".json", "")
 
             self.mfiles.append(root)
+
+   def remake_mj(self, root_file):
+      mfile = "/mnt/ams2/meteors/" + root_file[0:10] + "/" + root_file + ".json"
+      (f_datetime, cam, f_date_str,fy,fmon,fd, fh, fm, fs) = convert_filename_to_date_cam(root_file)
+      base_file = fy + "_" + fmon + "_" + fd + "_" + fh + "_" + fm
+      hd_wild = "/mnt/ams2/meteors/" + root_file[0:10] + "/" + base_file + "*HD-meteor.mp4"
+      pos_hds = glob.glob(hd_wild)
+      def_mj = {}
+      def_mj['sd_video_file'] = mfile.replace(".json", ".mp4")
+      def_mj['sd_stack'] = mfile.replace(".json", "-stacked.jpg")
+
+      if len(pos_hds) >= 1:
+         def_mj['hd_trim'] = pos_hds[0]
+         def_mj['hd_stack'] = pos_hds[0].replace(".mp4", "-stacked.mp4")
+         def_mj['hd_video_file'] = pos_hds[0]
+      return(def_mj)

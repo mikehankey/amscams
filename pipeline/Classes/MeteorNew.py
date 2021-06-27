@@ -660,7 +660,7 @@ class Meteor():
 
       return(adata)
 
-   def meteor_status_report(self, meteor_file):
+   def meteor_status_report(self, meteor_file, force=0):
       mj_changed = 0
       meteor_file = meteor_file.replace(".mp4", ".json")
       root = meteor_file.replace(".json", "")
@@ -774,7 +774,7 @@ class Meteor():
       if "meteor_scan_hd_crop_scan" in mj:
          if len(mj["meteor_scan_hd_crop_scan"]) == 0:
             del mj['meteor_scan_hd_crop_scan']
-      if "meteor_scan_meteors" not in mj and "msc_meteors" not in mj :
+      if "meteor_scan_meteors" not in mj and "msc_meteors" not in mj or force == 1:
          self.meteor_file = meteor_file
          self.mj = mj
          self.meteor_scan()
@@ -1468,12 +1468,15 @@ class Meteor():
          fn += 1
       meteors = {}
       non_meteors = {}
+
+      final_meteors = []
       for oid in objects:
          status, report = Detector.analyze_object(objects[oid])
          objects[oid]['report'] = report
          print(oid, objects[oid]['report']['class'] , objects[oid]['report']['bad_items'])
          if objects[oid]['report']['class'] == "meteor":
              meteors[oid] = objects[oid]
+             final_meteors.append(objects[oid]) 
          else:
              non_meteors[oid] = objects[oid]
 
@@ -2758,9 +2761,9 @@ class Meteor():
                   meteors, non_meteors, frame_data = self.meteor_scan_hd_crop(hd_crop_file, mj)
                   hd_ms_data = {}
                   hd_ms_data['meteors'] = meteors
-                  hd_ms_data['non_meteors'] = non_meteors
-                  hd_ms_data['frame_data'] = frame_data
-                  self.mj['meteor_scan_hd_crop_scan'] = hd_ms_data
+                  #hd_ms_data['non_meteors'] = non_meteors
+                  #hd_ms_data['frame_data'] = frame_data
+                  self.mj['meteor_scan_hd_crop_scan'] = hd_ms_data['meteors']
                   if len(hd_ms_data['meteors'].keys()) == 0:
                      self.mj['hdms_fail'] = 1
                   save_json_file(mf, self.mj)
@@ -3459,7 +3462,7 @@ class Meteor():
       self.meteor_scan_meteors = []
       self.meteor_scan_crops = []
 
-      objects = self.merge_close_objects(objects)
+      #objects = self.merge_close_objects(objects)
 
       for obj in objects:
          cx1,cy1,cx2,cy2 = self.bound_object(objects[obj],iw,ih)
@@ -3506,13 +3509,13 @@ class Meteor():
          #      print(obj, objects[obj]['report'])
          if self.show == 1:
             cv2.imshow('pepe', self.sd_stacked_image)
-            cv2.waitKey(30)
+            cv2.waitKey(0)
          #self.purge_bad_capture() 
 
       #print(objects)
       if self.show == 1:
          cv2.imshow('pepe', self.sd_stacked_image)
-         cv2.waitKey(90)
+         cv2.waitKey(0)
 
       self.save_learning_dataset()
       return()
@@ -3623,10 +3626,17 @@ class Meteor():
             print("   CHILD", obj, matrix[obj])
 
 
-      for obj in new_objects:
-         print("NEW", obj, new_objects[obj])
 
       print("merge obj done?", len(objects.keys()), len(new_objects.keys()))
+      for obj_id in new_objects:
+         obj = new_objects[obj_id]
+         if len(obj['ofns']) >= 3:
+            print(obj['ofns'])
+            print(obj['oxs'])
+            print(obj['oys'])
+            print(obj['ccxs'])
+            print(obj['ccys'])
+            print(obj_id, obj['report'], "\n")
       return(new_objects)            
 
    def purge_bad_capture(self):
@@ -4175,3 +4185,48 @@ class Meteor():
       extra_sec = int(trim_num) / 25
       event_start_time = f_datetime + datetime.timedelta(0,extra_sec)
       return(event_start_time)
+
+   def remake_mj(self, root_file):
+      mfile = "/mnt/ams2/meteors/" + root_file[0:10] + "/" + root_file + ".json"
+      (f_datetime, cam, f_date_str,fy,fmon,fd, fh, fm, fs) = convert_filename_to_date_cam(root_file)
+      base_file = fy + "_" + fmon + "_" + fd + "_" + fh + "_" + fm
+      hd_wild = "/mnt/ams2/meteors/" + root_file[0:10] + "/" + base_file + "*HD.mp4" 
+      pos_hds = glob.glob(hd_wild)
+      print("POSSIBLE HD FILES:", pos_hds)
+      def_mj = {}
+      def_mj['sd_video_file'] = mfile.replace(".json", ".mp4")
+      def_mj['sd_stack'] = mfile.replace(".json", "-stacked.jpg")
+
+      def_mj['hd_trim'] = ""
+      def_mj['hd_video_file'] = ""
+      def_mj['hd_stack'] = ""
+      def_mj['ffp'] = ""
+      exit()
+
+   def obj_to_frames(self, hd_meteor, start_trim_time,cal_params):
+      ofns = hd_meteor['ofns']
+      xs = hd_meteor['oxs']
+      ys = hd_meteor['oys']
+      frames = []
+      for i in range(0,len(ofns)):
+         frame = {}
+         frame['fn'] = ofns[i]
+         frame['x'] = xs[i]
+         frame['y'] = ys[i]
+         frame['w'] = hd_meteor['ows'][i]
+         frame['h'] = hd_meteor['ohs'][i]
+
+         extra_meteor_sec = int(frame['fn']) /  25
+         meteor_frame_time = start_trim_time+ datetime.timedelta(0,extra_meteor_sec)
+         meteor_frame_time_str = meteor_frame_time.strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]
+         frame['dt'] = meteor_frame_time_str
+
+         new_x, new_y, ra ,dec , az, el = XYtoRADec(frame['x'],frame['y'],hd_meteor['trim_clip'],cal_params,json_conf)
+         frame['az'] = az
+         frame['el'] = el
+         frame['ra'] = ra
+         frame['dec'] = dec
+
+
+         frames.append(frame)
+      return(frames)

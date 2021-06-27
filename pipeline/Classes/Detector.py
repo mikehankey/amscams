@@ -61,6 +61,9 @@ class Detector():
       obj['ccxs']
       obj['ccys']
 
+      print("OFNS:", obj['ofns'])
+      print("UNIQUE POINTS:", report['unq_points'])
+
       if report['unq_points'] == 1:
          report['class'] = "star"
 
