@@ -657,10 +657,21 @@ def frames_table(mjr, base_name, CACHE_VDIR):
       frames_table = "\n"
       for mfd in mjr['meteor_frame_data']:
          dt, fn, x, y, w, h, oint, ra, dec, az, el = mfd
-         date, dtime = dt.split(" ")
+         print(dt)
+         if " " in dt:
+            date, dtime = dt.split(" ")
+         else:
+            print("DATE TIME FIELD IS MAL FORMATTED!", dt)
+            elm = dt.split("_")
+            print("ELM:", elm)
+            y,m,d,h,mm,s = elm
+            date = y+ "-" + m + "-" + d 
+            dtime = h + "-" + mm + "-" + s 
+            dt = date + " " + dtime
+
          fnid = "{:04d}".format(mfd[1])
          frame_url = CACHE_VDIR + base_name + "-frm" + fnid + ".jpg?r=" + str(time.time())
-         frames_table += """<tr id='fr_{:d}' data-org-x='{:d}' data-org-y='{:d}'>""".format(mfd[1], mfd[2], mfd[3])
+         frames_table += """<tr id='fr_{:d}' data-org-x='{:d}' data-org-y='{:d}'>""".format(mfd[1], int(mfd[2]), int(mfd[3]))
          frames_table += """<td><div class="st" hidden style="Background-color:#ff0000"></div></td>"""
          img_id = "img_" + str(mfd[1])
          frames_table += """<td><img id='""" + img_id + """' alt="Thumb #'""" + str(mfd[1]) + """'" src='""" +frame_url+ """' width="50" height="50" class="img-fluid smi select_meteor" style="border-color:#ff0000"></td>"""

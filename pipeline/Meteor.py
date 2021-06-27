@@ -30,7 +30,7 @@ def make_media_for_day(meteor_date):
 def scan_meteor(meteor_file):
    all_meteor = Meteor()
    print("METEOR FILE:", meteor_file)
-   all_meteor.meteor_status_report(meteor_file)
+   all_meteor.meteor_status_report(meteor_file, 1)
 
    #old
    #all_meteor.rescan_all_meteors(meteor_file=meteor_file)
@@ -45,7 +45,7 @@ def sync_day(meteor_date):
    all_meteor = Meteor()
    all_meteor.sync_media_day(meteor_date)
 
-def scan_day(meteor_date):
+def scan_day(meteor_date,force=0):
    # We want to do 2 types of scans & then the media / save  processes
    #    Initial scan on full frame
    #    Follow crop scan
@@ -69,7 +69,7 @@ def scan_day(meteor_date):
    for mfile in all_meteor.mfiles:
       meteor_file = mfile.replace(".mp4", ".json")
       print(meteor_file)
-      all_meteor.meteor_status_report(meteor_file)
+      all_meteor.meteor_status_report(meteor_file,force)
 
 
    all_meteor.update_events_obs()
@@ -440,7 +440,11 @@ if __name__ == "__main__":
    if cmd == "scan":
       if meteor_date is None:
          meteor_date = input("Enter Date")
-      scan_day(meteor_date)
+      if len(sys.argv) > 3:
+         force = 1
+      else:
+         force = 0
+      scan_day(meteor_date, force)
    if cmd == "scan_wild":
       if meteor_date is None:
          meteor_date = input("Enter Date Str YYYY_MM or YYYY")

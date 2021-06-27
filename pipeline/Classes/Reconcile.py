@@ -1,8 +1,11 @@
-from lib.PipeUtil import cfe, load_json_file, save_json_file, get_file_info
+from lib.PipeUtil import cfe, load_json_file, save_json_file, get_file_info, convert_filename_to_date_cam,get_trim_num
+from lib.PipeAutoCal import XYtoRADec
+
 import os
 from pushAWS import make_obs_data
 import glob
 from datetime import datetime
+import datetime as ddtt
 
 """
  Reconcile -- Class for reconciling meteor data with latest detection, redis storage, calib, media, cloud, backup/archive and AWS. 
@@ -85,6 +88,26 @@ class Reconcile():
          print("saving " + year + " data")
          save_json_file(self.rec_file, self.rec_data)
 
+      # REMOVE DELETED METEORS FROM THE REC_DATA METEOR INDEX
+      deleted_meteors = []
+      for root_file in self.rec_data['meteor_index']:
+         mfile = "/mnt/ams2/meteors/" + root_file[0:10] + "/" + root_file + ".json" 
+         if cfe(mfile) == 0:
+            print("   INFO: MFILE NO LONGER EXISTS. IT SHOULD BE DELETED FROM THE METEOR INDEX!")
+            print("   ",mfile)
+            deleted_meteors.append(root_file)
+      for root_file in deleted_meteors:
+         print("   INFO: REMOVED FILE FROM INDEX", root_file) 
+         print(self.rec_data.keys())
+         if root_file in self.rec_data['meteor_index']: 
+            del(self.rec_data['meteor_index'][root_file])
+         if root_file in self.rec_data['mfiles']: 
+            del(self.rec_data['mfiles'][root_file])
+         if root_file in self.rec_data['needs_review']: 
+            del(self.rec_data['needs_review'][root_file])
+         if root_file in self.rec_data['corrupt_json']: 
+            del(self.rec_data['corrupt_json'][root_file])
+
    def save_rec_data(self):
       save_json_file(self.rec_file, self.rec_data)
       print("SAVED:", self.rec_file)
@@ -106,7 +129,149 @@ class Reconcile():
          print(day, self.rec_data['day_data'][day])
       for mon in self.rec_data['month_data']:
          print(mon, self.rec_data['month_data'][mon])
-       
+
+
+
+   def reconcile_report(self, year = None, month=None):
+      print("RECONCILE REPORT FOR ", self.station_id, year, month)
+      for root_file in sorted(self.rec_data['meteor_index'], reverse=True):
+         obs_data = self.rec_data['meteor_index'][root_file]['obs_data']
+         peak_int = 0
+         ss = []
+         mfd = 0
+         remake_mfd = 0
+         if "meteor_frame_data" in obs_data:
+            mfd = len(obs_data['meteor_frame_data'])
+            if mfd == 0:
+               remake_mfd = 1
+         else:
+            print("   INFO: NO METEOR FRAME DATA!")
+            remake_mfd = 1
+         if remake_mfd == 1:
+            meteor_file = "/mnt/ams2/meteors/" + root_file[0:10] + "/" + root_file + ".json"
+            self.rec_data['meteor_index'][root_file]['obs_data'] = make_obs_data(self.station_id, root_file[0:10], meteor_file) 
+
+
+            print("OBS DATA:", obs_data)
+            print("NEW OBS DATA:", self.rec_data['meteor_index'][root_file]['obs_data'])
+
+            meteor_frame_data = self.make_meteor_frame_data(obs_data, meteor_file)
+            mfd = len(meteor_frame_data)
+            if mfd == 0:
+               self.rec_data['needs_review'].append(root_file)
+               self.rec_data['needs_review'] = sorted(list(set(self.rec_data['needs_review'])))
+
+
+         if "sync_status" in obs_data:
+            sync_status = obs_data['sync_status']
+          
+         else:
+            print("   INFO: GET SYNC STATUS!")
+
+         if "peak_int" in obs_data:
+            peak_int = obs_data['peak_int']
+            self.rec_data['meteor_index'][root_file]['obs_data']['peak_int'] = peak_int
+         else:
+            print("   INFO: GET PEAK INT!")
+
+         if "scan_status" in obs_data :
+            scan_status = obs_data['scan_status'] 
+            up = 0
+            for ss in obs_data['scan_status']:
+               if ss == 0:
+                  up = 1
+            if up == 1:
+               scan_status = self.get_scan_status(root_file)
+               self.rec_data['meteor_index'][root_file]['obs_data']['scan_status'] = scan_status
+         else:
+            print("   INFO: NEED TO GET SCAN STATUS!")
+            scan_status = self.get_scan_status(root_file)
+            self.rec_data['meteor_index'][root_file]['obs_data']['scan_status'] = scan_status
+         print(root_file, mfd, peak_int, scan_status )
+      print("FILES NEEDING MANUAL REVIEW!")
+      for root_file in self.rec_data['needs_review']:
+         if "scan_status" in self.rec_data['meteor_index'][root_file]['obs_data']:
+            scan_status = self.rec_data['meteor_index'][root_file]['obs_data']['scan_status']
+         else:
+            scan_status = 0
+         print(root_file, scan_status)
+
+   def get_scan_status(self, root_file):
+      mfile = "/mnt/ams2/meteors/" + root_file[0:10] + "/" + root_file + ".json"
+      scan_status = {}
+      scan_status['jobs'] = [] 
+      scan_status['mets'] = [] 
+      meteor_scan_run = 0
+      meteor_scan_meteors = 0
+      meteor_crop_scan_run = 0
+      meteor_crop_scan_meteors = 0
+      meteor_hd_crop_scan_run = 0
+      meteor_hd_crop_scan_meteors = 0
+      resave_mj = 0
+      if cfe(mfile) == 1:
+         try:
+            mj = load_json_file(mfile)
+         except:
+            mj = self.remake_mj(root_file)
+            resave_mj = 1
+            #exit()
+         if "meteor_scan_meteors" in mj:
+            meteor_scan_run = 1
+            meteor_scan_meteors = len(mj['meteor_scan_meteors'])
+         if "msc_meteors" in mj:
+            meteor_crop_scan_run = 1
+            if type(mj['msc_meteors']) == dict :
+               mj['msc_meteors'] = self.fix_hd_scan_data(mj['msc_meteors'])
+               print("FIXED MSC METEORS!")
+
+
+            meteor_crop_scan_meteors = len(mj['msc_meteors'])
+
+
+
+         if "meteor_scan_hd_crop_scan" in mj:
+            if "meteors" in mj['meteor_scan_hd_crop_scan']:
+               print("TYPE IS:",  type(mj['meteor_scan_hd_crop_scan']))
+               mj['meteor_scan_hd_crop_scan'] = self.fix_hd_scan_data(mj['meteor_scan_hd_crop_scan']['meteors'])
+               print("FIXED 1:", mfile)
+            elif type(mj['meteor_scan_hd_crop_scan']) == dict :
+               mj['meteor_scan_hd_crop_scan'] = self.fix_hd_scan_data(mj['meteor_scan_hd_crop_scan'])
+               print("FIXED 2:", mfile)
+            elif len(mj['meteor_scan_hd_crop_scan']) > 1:
+               mj['meteor_scan_hd_crop_scan'] = self.only_meteors(mj['meteor_scan_hd_crop_scan'])
+
+            meteor_hd_crop_scan_run = 1
+            meteor_hd_crop_scan_meteors = len(mj['meteor_scan_hd_crop_scan'])
+         scan_status['jobs'] = [meteor_scan_run, meteor_crop_scan_run, meteor_hd_crop_scan_run] 
+         scan_status['mets'] = [meteor_scan_meteors, meteor_crop_scan_meteors, meteor_hd_crop_scan_meteors] 
+         mj['scan_status'] = scan_status
+         save_json_file(mfile, mj)
+      else: 
+         print("   ERROR MF NOT FOUND:", mfile )
+      return(scan_status)
+
+   def only_meteors(self, objects):
+      final_meteors = []
+      for obj in objects:
+         if "report" in obj :
+            if obj['report']['class'] == "meteor":
+               final_meteors.append(obj)
+      return(final_meteors)
+
+   def fix_hd_scan_data(self, hd_scan_data):
+      final_hd_meteors = []
+      print(hd_scan_data)
+      for obj_id in hd_scan_data:
+         obj = hd_scan_data[obj_id]
+         if "report" in obj:
+            print(obj['report'])
+            if obj['report']['class'] == "meteor":
+               print("METEOR FOUND!")
+               final_hd_meteors.append(obj)
+      print("FINAL:", final_hd_meteors)
+      return(final_hd_meteors)
+
+            
    def get_cloud_media(self, year):
       cloud_files_file = "/mnt/ams2/METEOR_SCAN/DATA/cloud_files_" + year + ".txt"
       cloud_wild = "/mnt/archive.allsky.tv/" + self.station_id + "/METEORS/" + year + "/" 
@@ -203,6 +368,7 @@ class Reconcile():
       else:
          cloud_index = {}
       for root_file in self.rec_data['meteor_index']:
+         print("WORKING ON ", root_file)
          date = root_file[0:10]
          meteor_file = "/mnt/ams2/meteors/" + date + "/" + root_file + ".json"
          if "cloud_files" in self.rec_data['meteor_index'][root_file]:
@@ -212,8 +378,9 @@ class Reconcile():
             cloud_files = self.rec_data['meteor_index'][root_file]['cloud_files']
             ext_files = self.rec_data['meteor_index'][root_file]['exts']
          else:
+            self.rec_data['meteor_index'][root_file]['cloud_files'] = []
             print("MISSING CLOUD FIELD!?", root_file)
-            continue 
+            #continue 
          if "ROI.jpg" not in cloud_files or "ROI.mp4" not in cloud_files:
             if "hc" not in self.rec_data['meteor_index'][root_file]['obs_data']:
                self.rec_data['meteor_index'][root_file]['obs_data'] = make_obs_data(self.station_id, date, meteor_file) 
@@ -257,6 +424,7 @@ class Reconcile():
             print("LEVEL2")
             self.sync_sd_files(root_file, cloud_index)
             # SYNC PREV and ALL SD MEDIA: prev.jpg, SD.mp4, SD.jpg, ROI.jpg, ROI.mp4
+         print("DOING SYNC WORK!", sync_level, root_file)
 
 
    def sync_sd_files(self, root_file, cloud_index):
@@ -268,6 +436,7 @@ class Reconcile():
          self.rec_data['meteor_index'][root_file]['cloud_files'] = []
          cloud_index[root_file] = []
 
+      year = root_file[0:4]
       for ext in sd_exts:
          if ext == "prev.jpg":
             skiping = 1
@@ -288,13 +457,13 @@ class Reconcile():
                os.system(cmd)
          else:
             print("FILE IN CLOUD ALREADY", root_file, ext)
-            #input()
          
 
    def sync_prev(self, root_file):
+      date = root_file[0:10]
       local_prev = "/mnt/ams2/meteors/" + date + "/cloud_files/" + self.station_id + "_" + root_file + "-prev.jpg"
       ms_prev = "/mnt/ams2/METEOR_SCAN/" + date + "/cloud_files/" + self.station_id + "_" + root_file + "-PREV.jpg"
-      cloud_prev = "/mnt/archive.allsky.tv/" + station_id + "/METEOR_SCAN/" + date + "/cloud_files/" + self.station_id + "_" + root_file + "-prev.jpg"
+      cloud_prev = "/mnt/archive.allsky.tv/" + self.station_id + "/METEOR_SCAN/" + date + "/cloud_files/" + self.station_id + "_" + root_file + "-prev.jpg"
       if cfe(local_prev) == 1:
          print("LOCAL prev.jpg EXISTS", root_file)
          cmd = "cp " + local_prev + " " + cloud_prev
@@ -436,3 +605,106 @@ class Reconcile():
             root = json_file.split("/")[-1].replace(".json", "")
 
             self.mfiles.append(root)
+
+   def remake_mj(self, root_file):
+      mfile = "/mnt/ams2/meteors/" + root_file[0:10] + "/" + root_file + ".json"
+      (f_datetime, cam, f_date_str,fy,fmon,fd, fh, fm, fs) = convert_filename_to_date_cam(root_file)
+      base_file = fy + "_" + fmon + "_" + fd + "_" + fh + "_" + fm
+      hd_wild = "/mnt/ams2/meteors/" + root_file[0:10] + "/" + base_file + "*HD-meteor.mp4"
+      pos_hds = glob.glob(hd_wild)
+      def_mj = {}
+      def_mj['sd_video_file'] = mfile.replace(".json", ".mp4")
+      def_mj['sd_stack'] = mfile.replace(".json", "-stacked.jpg")
+
+      if len(pos_hds) >= 1:
+         def_mj['hd_trim'] = pos_hds[0]
+         def_mj['hd_stack'] = pos_hds[0].replace(".mp4", "-stacked.mp4")
+         def_mj['hd_video_file'] = pos_hds[0]
+      return(def_mj)
+
+
+   def make_meteor_frame_data(self, obj, mjf):
+      print("OBJ:", obj)
+      (f_datetime, cam, f_date_str,fy,fmon,fd, fh, fm, fs) = convert_filename_to_date_cam(mjf)
+      trim_num = get_trim_num(mjf)
+      extra_sec = int(trim_num) / 25
+      trim_start_time = f_datetime + ddtt.timedelta(0,extra_sec)
+      print("TRIM START TIME IS:", trim_start_time)
+
+
+      if cfe(mjf) == 1:
+         try:
+            mj = load_json_file(mjf)
+         except:
+            return([])
+
+      if "oxs" not in obj:
+         # current object doesn't have a meteor... try using the ms_crop or meteor_scan 
+         found = 0
+         if "msc_meteors" in mj:
+            if len(mj['msc_meteors']) > 0:
+               obj = mj['msc_meteors'][0]
+               print("CHOOSE MSC METEOR!")
+               found = 1
+         if found == 0:
+            if "meteo_scan_meteors" in mj:
+               if len(mj['msc_meteors']) > 0:
+                  obj = mj['msc_meteors'][0]
+                  print("CHOOSE METEOR SCAN METEOR !")
+                  found = 1
+      if found == 0:
+         # NO METEOR FOUND SO WE CAN'T MAKE MFD
+         return([])
+
+      if "cp" in mj:
+         cp = mj['cp']
+      sd_w = 704
+      sd_h = 576
+      if "ffp" in obj:
+         if "sd" in obj['ffp']:
+            sd_w,sd_h,br,fr = obj['ffp']['sd']
+      self.hdm_x = 1920 / int(sd_w)
+      self.hdm_y = 1080 / int(sd_h)
+      # don't forget to add the user_mods / user overrides.
+      obj['meteor_frame_data'] = []
+      # for 720 to 1080
+      #hdm_x = 1920 / 1280
+      #hdm_y = 1080 / 720
+      if True:
+         min_x = min(obj['oxs'])
+         max_x = max(obj['oxs'])
+         min_y = min(obj['oys'])
+         max_y = max(obj['oys'])
+         self.crop_box = [int(min_x*self.hdm_x),int(min_y*self.hdm_y),int(max_x*self.hdm_x),int(max_y*self.hdm_y)]
+         for i in range(0, len(obj['ofns'])):
+
+            fn = obj['ofns'][i]
+            extra_sec = fn / 25
+            frame_time = trim_start_time + ddtt.timedelta(0,extra_sec)
+            frame_time_str = frame_time.strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]
+            dt = frame_time_str
+
+
+            ccx = int(obj['oxs'][i] + (obj['ows'][i]/2))
+            ccy = int(obj['oys'][i] + (obj['ohs'][i]/2))
+
+            x = int(ccx * self.hdm_x)
+            y = int(ccy * self.hdm_y)
+
+            w = obj['ows'][i]
+            h = obj['ohs'][i]
+            oint = obj['oint'][i]
+
+            #sfn = str(fn)
+            #if self.ufd is not None:
+            #   if sfn in self.ufd:
+            #      temp_x,temp_y = self.ufd[sfn]
+            #      x = temp_x
+            #      y = temp_y
+            # need over rides for user_mods or human_points!
+
+            tx, ty, ra ,dec , az, el = XYtoRADec(ccx,ccy,mjf,cp,self.json_conf)
+
+
+            obj['meteor_frame_data'].append((dt, fn, x, y, w, h, oint, ra, dec, az, el))
+      return(obj)

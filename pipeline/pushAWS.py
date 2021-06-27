@@ -17,16 +17,18 @@ import sys
 # EVENTS ARE ONLY ALLOWED TO BE PUSH WITH ADMIN KEYS
 API_URL = "https://kyvegys798.execute-api.us-east-1.amazonaws.com/api/allskyapi"
 
-def get_meteor_media_sync_status(sd_vid):
+def get_meteor_media_sync_status(station_id, sd_vid):
    # determine the current sync status for this meteor.
    # does the meteor exist in dynamo with the right version?
    # is the media fully uploaded to the cloud drive (tiny jpg, prev_jpg, prev_vid, final_vid)
    day = sd_vid[0:10]
    lcdir = "/mnt/ams2/meteors/" + day + "/cloud_files/"
+   cloud_dir = "/mnt/archive.allsky.tv/" + station_id + "/METEORS/" + day + "/"
    cloud_files = []
    if True:
-      wild = sd_vid.replace(".mp4", "")
-      cfs = glob.glob(lcdir + "/*" + wild + "*")
+      wild = station_id + "_" + sd_vid.replace(".mp4", "")
+      cfs = glob.glob(cloud_dir + wild + "*")
+      print(cloud_dir + wild + "*")
       for cf in cfs:
          el = cf.split("-")
          ext = el[-1]
@@ -38,6 +40,7 @@ def get_meteor_media_sync_status(sd_vid):
 
 
       sync_status = cloud_files
+      print(sync_status)
       return(sync_status)
 
 
@@ -167,12 +170,23 @@ def make_obs_data(station_id, date, meteor_file):
       peak_int = max(mj['best_meteor']['oint'])
    else:
       peak_int = 0
+   if peak_int == 0:
+      if "meteor_scan_meteors" in mj:
+         if len(mj['meteor_scan_meteors']) > 0:
+            peak_int = max(mj['meteor_scan_meteors'][0]['oint'])
+   if peak_int == 0:
+      if "msc_meteors" in mj:
+         if len(mj['msc_meteors']) > 0:
+            peak_int = max(mj['msc_meteors'][0]['oint'])
+
+
+
    if "revision" in mj:
       revision = mj['revision']
    else:
       revision = 1
    mfn = meteor_file.split("/")[-1].replace(".json", "")
-   sync_status = get_meteor_media_sync_status(mfn)
+   sync_status = get_meteor_media_sync_status(station_id, mfn)
    if "dfv" in mj:
       dfv = mj['dfv']
    else:
@@ -242,6 +256,7 @@ def make_obs_data(station_id, date, meteor_file):
    #mj['calib'] = calib
    #mj['last_update'] = update_time
    save_json_file(meteor_file, mj)
+   print("OBS DATA:", obs_data.keys())
    return(obs_data)
 
 if __name__ == "__main__":
@@ -255,6 +270,5 @@ if __name__ == "__main__":
 
    cmd = sys.argv[1]
    meteor_file = sys.argv[2]
-   print("CMD:", cmd)
    if cmd == "push_obs":
       push_obs(api_key, station_id, meteor_file)
