@@ -36,7 +36,6 @@ class Reconcile():
          except:
             print("CORRUPT rec file?", self.rec_file)
             self.rec_data = {}
-           # exit()
       else:
          self.rec_data = {}
       self.mfiles = []
@@ -157,11 +156,59 @@ class Reconcile():
             self.rec_data['meteor_index'][root]['exts'] = sorted(list(set(self.rec_data['meteor_index'][root]['exts'])))
 
 
-   def reconcile_cloud_media(self):
+   def update_cloud_index(self, year=None,month=None):
+      cloud_index_file = "/mnt/ams2/METEOR_SCAN/DATA/cloud_index_" + year + "_" + month + ".json"
+      if cfe(cloud_index_file) == 1:
+         cloud_index = load_json_file(cloud_index_file)
+      else:
+         cloud_index = {}
+      print("   FUNCH: UPDATE CLOUD INDEX")
+      if month is not None:
+         wild = year + "_" + month
+      else:
+         wild = year 
+      cloud_dir = "/mnt/archive.allsky.tv/" + self.station_id + "/METEORS/" + year + "/" 
+      cloud_dirs = glob.glob(cloud_dir + wild + "*")
+      for cdir in cloud_dirs:
+         cfs = glob.glob(cdir + "/*") 
+         for cff in cfs:
+            if "info" in cff:
+               continue
+            cf = cff.split("/")[-1]
+            elm = cf.split("-")
+            ext = elm[-1]
+            if "-SD-" in cf or "-HD-" in cf or "-prev-" in cf or "-crop" in cf:
+               print("LEGACY FILE. SHOULD DELETE!", cff)
+               cmd = "rm " + cff
+               os.system(cmd)
+               print(cmd)
+            root_file = cf.replace("-" + ext, "")
+            root_file = root_file.replace("-SD", "")
+            root_file = root_file.replace("-HD", "")
+            root_file = root_file.replace("-prev", "")
+            if root_file not in cloud_index:
+               cloud_index[root_file] = {}
+               cloud_index[root_file]['cloud_files'] = []
+       
+            cloud_index[root_file]['cloud_files'].append(ext)
+         print(cdir)
+      save_json_file(cloud_index_file, cloud_index)
+      print("SAVED:", cloud_index_file)
+ 
+
+   def reconcile_cloud_media(self, year, month):
+      cloud_index_file = "/mnt/ams2/METEOR_SCAN/DATA/cloud_index_" + year + "_" + month
+      if cfe(cloud_index_file) == 1:
+         cloud_index = load_json_file(cloud_index_file)
+      else:
+         cloud_index = {}
       for root_file in self.rec_data['meteor_index']:
          date = root_file[0:10]
          meteor_file = "/mnt/ams2/meteors/" + date + "/" + root_file + ".json"
          if "cloud_files" in self.rec_data['meteor_index'][root_file]:
+            if root_file in cloud_index:
+               print("   *** USING CLOUD INDEX FILES!")
+               self.rec_data['meteor_index'][root_file]['cloud_files'] = cloud_index[root_file]
             cloud_files = self.rec_data['meteor_index'][root_file]['cloud_files']
             ext_files = self.rec_data['meteor_index'][root_file]['exts']
          else:
@@ -208,23 +255,37 @@ class Reconcile():
                print("     CLOUD PREV FILE IS SYNC'D.", root_file)
          if sync_level >= 2:
             print("LEVEL2")
-            self.sync_sd_files(root_file)
+            self.sync_sd_files(root_file, cloud_index)
             # SYNC PREV and ALL SD MEDIA: prev.jpg, SD.mp4, SD.jpg, ROI.jpg, ROI.mp4
 
 
-   def sync_sd_files(self, root_file):
+   def sync_sd_files(self, root_file, cloud_index):
       sd_exts = ['prev.jpg', 'SD.mp4', 'SD.jpg', 'ROI.jpg', 'ROI.mp4']
       date = root_file[0:10]
+      if root_file in cloud_index:
+         self.rec_data['meteor_index'][root_file]['cloud_files'] = cloud_index[root_file]
+      else:
+         self.rec_data['meteor_index'][root_file]['cloud_files'] = []
+         cloud_index[root_file] = []
+
       for ext in sd_exts:
          if ext == "prev.jpg":
             skiping = 1
          elif ext not in self.rec_data['meteor_index'][root_file]['cloud_files'] or (ext == "SD.mp4" and "ROI.mp4" not in self.rec_data['meteor_index'][root_file]['cloud_files'] ):
             ms_file = "/mnt/ams2/METEOR_SCAN/" + date + "/" + self.station_id + "_" + root_file + "-" + ext 
-            cloud_file = "/mnt/archive.allsky.tv/" + self.station_id + "/METEORS/" + date + "/" + self.station_id + "_" + root_file + "-" + ext
-            self.rec_data['meteor_index'][root_file]['cloud_files'].append(ext)
-            cmd = "cp " + ms_file + " " + cloud_file
-            print(cmd)
-            os.system(cmd)
+         
+            if cfe(ms_file) == 0 and "SD.mp4" in ms_file:
+               cmd = "python3 Meteor.py 3 " + root_file + ".json"
+               print("SD FILE IS MISSING. TRY RESCAN", root_file)
+               print(cmd)
+               os.system(cmd)
+
+            cloud_file = "/mnt/archive.allsky.tv/" + self.station_id + "/METEORS/" + date[0:4] + "/" + date + "/" + self.station_id + "_" + root_file + "-" + ext
+            self.rec_data['meteor_index'][root_file]['cloud_files'] = cloud_index[root_file]
+            if cfe(cloud_file) == 0:
+               cmd = "cp " + ms_file + " " + cloud_file
+               print(cmd)
+               os.system(cmd)
          else:
             print("FILE IN CLOUD ALREADY", root_file, ext)
             #input()
