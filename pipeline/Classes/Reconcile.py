@@ -161,7 +161,6 @@ class Reconcile():
             if mfd == 0:
                self.rec_data['needs_review'].append(root_file)
                self.rec_data['needs_review'] = sorted(list(set(self.rec_data['needs_review'])))
-               input("no mfd! " + root_file)
 
 
          if "sync_status" in obs_data:
@@ -225,7 +224,6 @@ class Reconcile():
             if type(mj['msc_meteors']) == dict :
                mj['msc_meteors'] = self.fix_hd_scan_data(mj['msc_meteors'])
                print("FIXED MSC METEORS!")
-               input()
 
 
             meteor_crop_scan_meteors = len(mj['msc_meteors'])
@@ -251,7 +249,6 @@ class Reconcile():
          save_json_file(mfile, mj)
       else: 
          print("   ERROR MF NOT FOUND:", mfile )
-         input()
       return(scan_status)
 
    def only_meteors(self, objects):
@@ -326,7 +323,6 @@ class Reconcile():
 
 
    def reconcile_cloud_media(self):
-      input("REC CLOUD MEDIA!")
       for root_file in self.rec_data['meteor_index']:
          print("WORKING ON ", root_file)
          date = root_file[0:10]
