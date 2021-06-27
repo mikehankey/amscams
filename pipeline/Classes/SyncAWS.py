@@ -151,10 +151,10 @@ class SyncAWS():
          lcdir = "/mnt/ams2/meteors/" + day + "/cloud_files/"
          year = day[0:4]
          cloud_dir = "/mnt/archive.allsky.tv/" + self.station_id + "/METEORS/" + year + "/" + day + "/"
-         cmd = "rsync -av " + lcdir + " " + cloud_dir + " --delete "
-         print("NEED TO RESYNC CLOUD DIR!")
-         print(cmd)
-         os.system(cmd)
+         #cmd = "rsync -av " + lcdir + " " + cloud_dir + " --delete "
+         #print("NEED TO RESYNC CLOUD DIR!")
+         #print(cmd)
+         #os.system(cmd)
     
 
    def get_meteor_media_sync_status(self, sd_vid, cfs = []):
