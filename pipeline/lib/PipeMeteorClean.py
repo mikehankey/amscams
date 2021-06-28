@@ -585,7 +585,10 @@ def delete_from_base(base, json_conf):
 
       if cfe(jsf) == 1:
          print(jsf)
-         js = load_json_file(jsf)
+         try:
+            js = load_json_file(jsf)
+         except:
+            js = {}
          if "final_vid" in js:
             wild = js['final_vid'].replace(".mp4", "*")
             print("DEL:", wild)

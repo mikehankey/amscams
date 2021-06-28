@@ -354,6 +354,8 @@ class Reconcile():
                cloud_index[root_file]['cloud_files'] = []
        
             cloud_index[root_file]['cloud_files'].append(ext)
+            cloud_index[root_file]['cloud_files'] = sorted(list(set(cloud_index[root_file]['cloud_files'])))
+            
          print(cdir)
       save_json_file(cloud_index_file, cloud_index)
       print("SAVED:", cloud_index_file)

@@ -79,6 +79,21 @@ def push_obs(api_key,station_id,meteor_file):
 
 def make_obs_data(station_id, date, meteor_file):
    update_time = datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
+   mfn = meteor_file.split("/")[-1]
+   cloud_index_file = "/mnt/ams2/METEOR_SCAN/DATA/cloud_index_" + mfn[0:7] + ".json" 
+   if cfe(cloud_index_file) == 1 :
+      cloud_index = load_json_file(cloud_index_file)
+      ci_root_file = station_id + "_" + mfn.replace(".json", "")
+      ci_root_file = ci_root_file.replace(".mp4", "")
+      if ci_root_file in cloud_index:
+         sync_status = sorted(list(set(cloud_index[ci_root_file]['cloud_files'])))
+      else:
+         sync_status = []
+      print(ci_root_file, sync_status)
+   else:
+      cloud_index = {}
+      print("NO CLOUD_INDEX", cloud_index_file)
+      sync_status = []
 
    if cfe(meteor_file) == 1:
       red_file = meteor_file.replace(".json", "-reduced.json")
@@ -186,7 +201,6 @@ def make_obs_data(station_id, date, meteor_file):
    else:
       revision = 1
    mfn = meteor_file.split("/")[-1].replace(".json", "")
-   sync_status = get_meteor_media_sync_status(station_id, mfn)
    if "dfv" in mj:
       dfv = mj['dfv']
    else:
@@ -256,6 +270,7 @@ def make_obs_data(station_id, date, meteor_file):
    #mj['calib'] = calib
    #mj['last_update'] = update_time
    save_json_file(meteor_file, mj)
+   print("SYNC STATUS:", sync_status)
    return(obs_data)
 
 if __name__ == "__main__":
