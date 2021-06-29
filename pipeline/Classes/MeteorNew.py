@@ -660,10 +660,129 @@ class Meteor():
 
       return(adata)
 
+   def check_fix_cloud_media_for_day(self,day):
+      cloud_dir = "/mnt/archive.allsky.tv/" + self.station_id + "/METEORS/" + day[0:4] + "/" + day + "/"
+      local_dir = "/mnt/ams2/METEOR_SCAN/" + day + "/"
+      met_dir = "/mnt/ams2/meteors/" + day + "/cloud_files/"
+      self.get_mfiles("/mnt/ams2/meteors/" + day + "/")
+      cloud_files = {}
+      local_files = {}
+      root_files = {}
+      good_files = {}
+      bad_files = {}
+
+      for mfile in self.mfiles:
+         root_file = mfile.replace(".mp4", "")
+         root_files[root_file] = {}
+      if cfe(local_dir,1) == 0:
+         print("No METEOR_SCAN dir for this day.", day)
+         return()
+ 
+      cmd = "ls -l " + cloud_dir + "* >" + local_dir + "cloudfiles.txt"
+      os.system(cmd)
+
+      cmd = "ls -l " + local_dir + "* >" + local_dir + "localfiles.txt"
+      os.system(cmd)
+      cmd = "ls -l " + met_dir + "* >>" + local_dir + "localfiles.txt"
+      os.system(cmd)
+
+      if cfe(local_dir + "cloudfiles.txt") == 1:
+         fp = open(local_dir + "cloudfiles.txt", "r")
+      else:
+         print("no cloudfiles.txt in " + local_dir)
+         return()
+
+      for line in fp:
+         if ".meteors" in line or "info" in line or "txt" in line or ".json" in line or ".html" in line:
+            continue
+         line=line.replace("\n", "")
+         elms = line.split()
+         cloud_file = elms[8].split("/")[-1]
+         cloud_size = elms[4]
+         
+         ext = cloud_file.split("-")[-1] 
+         ext2 = cloud_file.split("-")[-2] 
+         if ext2 == 'prev':
+            ext = ext2 + "-" + ext
+         croot = cloud_file.replace("-" + ext, "")
+         croot = croot.replace(self.station_id + "_", "")
+         if croot in root_files:
+            cloud_files[cloud_file] = int(cloud_size)
+         else:
+            print(line)
+            bad_files[cloud_file] = "No meteor.json for this resource"
+
+
+      fp = open(local_dir + "localfiles.txt", "r")
+      for line in fp:
+         if ".meteors" in line or "info" in line or "txt" in line or ".json" in line or ".html" in line:
+            continue
+         line=line.replace("\n", "")
+         elms = line.split()
+         local_file = elms[8].split("/")[-1]
+         local_size = elms[4]
+         
+         local_files[local_file] = local_size
+      # check that all cloud files exist in the local dir and are the same sizeA
+      for cf in cloud_files:
+         if cf not in local_files:
+            bad_files[cf] = "local file missing" 
+         else:
+            if int(cloud_files[cf]) != int(local_files[cf]):
+               bad_files[cf] = "size mismatch " + str(local_files[cf]) + " != " + str(cloud_files[cf])
+
+            else:
+               good_files[cf] = cloud_files[cf]
+
+      # First fix any size mis-matches
+      for cf in bad_files:
+         print("BAD:", cf, bad_files[cf])
+         if "size" in bad_files[cf]:
+            local_file = local_dir + cf
+            cmd = "cp " + local_file + " " + cloud_dir
+            print(cmd)
+            os.system(cmd)
+
+      # Next make sure all of the local files exist in the cloud
+      # Follow sync level rules! -- 
+      # No meteor_scan_detection = LEVEL 1 -- thumb only
+      # Meteor Scan Detect = LEVEL 2 -- SD FILES ONLY
+      # Human confirm or MS confirm = LEVEL 3 -- ALL FILES
+      bad_local_files = {}
+      for lf in local_files:
+         # ignore types we don't want to upload (anymore)
+         root_file, ext = self.get_root_file(lf)
+         if root_file not in root_files:
+            bad_local_files[lf] = "No meteor.json for this resource"
+
+         if "prev-vid.mp4" in lf or "PREV.jpg" in lf or "txt" in lf or "info" in lf:
+            continue
+
+
+         if lf not in cloud_files:
+            if "HD" not in lf and root_file in root_files:
+               cmd = "cp " + local_dir + lf + " " + cloud_dir
+               print(cmd)
+               os.system(cmd)
+
+      # Then make sure there are no 0k files in the local dir. If there are these should
+      # be reported in an error report so they can be manually corrected or ignored
+
+   def get_root_file(self, fn):
+      print("FN:", fn)
+      ext = fn.split("-")[-1] 
+      ext2 = fn.split("-")[-2] 
+      if ext2 == 'prev':
+         ext = ext2 + "-" + ext
+      croot = fn.replace("-" + ext, "")
+      croot = croot.replace(self.station_id + "_", "")
+      return(croot, ext)
+
    def meteor_status_report(self, meteor_file, force=0):
       mj_changed = 0
       meteor_file = meteor_file.replace(".mp4", ".json")
       root = meteor_file.replace(".json", "")
+      root_file = root 
       print("Status report for {:s}".format(meteor_file))
       mdir = "/mnt/ams2/meteors/" + meteor_file[0:10] + "/"
       ms_dir = "/mnt/ams2/METEOR_SCAN/" + meteor_file[0:10] + "/"
@@ -714,9 +833,10 @@ class Meteor():
          try:
             mj = load_json_file(mjf)
          except:
-
+            mj = self.remake_mj(root_file)
             print("Loading MJ FAILED!", mfile)
-            return(0)
+            
+            #return(0)
          if cfe(mj['sd_stack']) == 1:
             self.sd_stack = cv2.imread(mj['sd_stack'])
          else:
@@ -1957,7 +2077,6 @@ class Meteor():
          if cfe(md,1) == 1:
             self.meteor_dirs.append(md)
             self.mfiles = []
-            print("GET MFILES FOR:", md)
             self.get_mfiles( md)
             for mfile in self.mfiles:
                print("     METEOR FILES:", mfile)
@@ -4190,18 +4309,16 @@ class Meteor():
       mfile = "/mnt/ams2/meteors/" + root_file[0:10] + "/" + root_file + ".json"
       (f_datetime, cam, f_date_str,fy,fmon,fd, fh, fm, fs) = convert_filename_to_date_cam(root_file)
       base_file = fy + "_" + fmon + "_" + fd + "_" + fh + "_" + fm
-      hd_wild = "/mnt/ams2/meteors/" + root_file[0:10] + "/" + base_file + "*HD.mp4" 
+      hd_wild = "/mnt/ams2/meteors/" + root_file[0:10] + "/" + base_file + "*HD-meteor.mp4"
       pos_hds = glob.glob(hd_wild)
-      print("POSSIBLE HD FILES:", pos_hds)
       def_mj = {}
       def_mj['sd_video_file'] = mfile.replace(".json", ".mp4")
       def_mj['sd_stack'] = mfile.replace(".json", "-stacked.jpg")
 
-      def_mj['hd_trim'] = ""
-      def_mj['hd_video_file'] = ""
-      def_mj['hd_stack'] = ""
-      def_mj['ffp'] = ""
-      exit()
-
+      if len(pos_hds) >= 1:
+         def_mj['hd_trim'] = pos_hds[0]
+         def_mj['hd_stack'] = pos_hds[0].replace(".mp4", "-stacked.mp4")
+         def_mj['hd_video_file'] = pos_hds[0]
+      return(def_mj)
 
 

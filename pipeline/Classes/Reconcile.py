@@ -101,10 +101,10 @@ class Reconcile():
             del(self.rec_data['meteor_index'][root_file])
          if root_file in self.rec_data['mfiles']: 
             del(self.rec_data['mfiles'][root_file])
-         if root_file in self.rec_data['needs_review']: 
-            del(self.rec_data['needs_review'][root_file])
-         if root_file in self.rec_data['corrupt_json']: 
-            del(self.rec_data['corrupt_json'][root_file])
+         #if root_file in self.rec_data['needs_review']: 
+         #   del(self.rec_data['needs_review'][root_file])
+         #if root_file in self.rec_data['corrupt_json']: 
+         #   del(self.rec_data['corrupt_json'][root_file])
 
    def save_rec_data(self):
       save_json_file(self.rec_file, self.rec_data)
@@ -359,7 +359,30 @@ class Reconcile():
          print(cdir)
       save_json_file(cloud_index_file, cloud_index)
       print("SAVED:", cloud_index_file)
- 
+
+   def fix_missing_cloud_files(self, year,month):
+      today = datetime.now().strftime("%Y_%m_%d")
+      cur_y,cur_m,cur_d = today.split("_") 
+      if cur_y == year and cur_m == month:
+         
+         day_limit = int(cur_d)
+      else:
+         day_limit = int(31)
+      print(cur_y,cur_m,cur_d)
+      print("DL:", day_limit)
+      from calendar import monthrange
+      num_days = monthrange(int(year), int(month))[1]
+      for d in range(1,num_days+1):
+         if d >= day_limit + 1:
+            continue
+         if d < 10:
+            day = str(year) + "_" + str(month) + "_" + "0" + str(d)
+         else:
+            day = str(year) + "_" + str(month) + "_"  + str(d)
+
+         cmd = "python3 Meteor.py 8 " + day 
+         print(cmd)
+         os.system(cmd)
 
    def reconcile_cloud_media(self, year, month):
       cloud_index_file = "/mnt/ams2/METEOR_SCAN/DATA/cloud_index_" + year + "_" + month

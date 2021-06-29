@@ -27,6 +27,10 @@ def status_report(meteor_file):
 def make_media_for_day(meteor_date):
    print("Make media for day")
 
+def fix_media(day):
+   all_meteor = Meteor()
+   all_meteor.check_fix_cloud_media_for_day(day)
+
 def scan_meteor(meteor_file):
    all_meteor = Meteor()
    print("METEOR FILE:", meteor_file)
@@ -415,6 +419,7 @@ if __name__ == "__main__":
       print("   5) Meteor Scan Report ")
       print("   6) Debug Meteor ")
       print("   7) Sync Media for day")
+      print("   8) Fix Media for day")
       cmd = input("Enter the command you want to run. ")
    if cmd == "1":
       cmd = "scan"
@@ -431,6 +436,13 @@ if __name__ == "__main__":
       cmd = "debug"
    if cmd == "7":
       cmd = "sync_day"
+   if cmd == "8":
+      cmd = "fix_media"
+
+   if cmd == "fix_media":
+      if meteor_date is None:
+         meteor_date = input("Enter Date")
+      fix_media(meteor_date)
 
    if cmd == "sync_day":
       if meteor_date is None:

@@ -95,6 +95,7 @@ def make_obs_data(station_id, date, meteor_file):
       print("NO CLOUD_INDEX", cloud_index_file)
       sync_status = []
 
+   print("SYNC STATUS:", sync_status)
    if cfe(meteor_file) == 1:
       red_file = meteor_file.replace(".json", "-reduced.json")
       mfn = meteor_file.split("/")[-1]
@@ -270,7 +271,6 @@ def make_obs_data(station_id, date, meteor_file):
    #mj['calib'] = calib
    #mj['last_update'] = update_time
    save_json_file(meteor_file, mj)
-   print("SYNC STATUS:", sync_status)
    return(obs_data)
 
 if __name__ == "__main__":
