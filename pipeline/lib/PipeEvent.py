@@ -20,6 +20,7 @@ def delete_events_day(date, json_conf):
       delete_event(dynamodb, date, row['event_id'])
 
 def solve_day(day, json_conf):
+   return()
    amsid = json_conf['site']['ams_id']
    meteor_index = "/mnt/ams2/meteors/" + day + "/" + day + "-" + amsid + ".meteors"
    mid = load_json_file(meteor_index)
