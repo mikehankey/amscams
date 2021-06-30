@@ -251,6 +251,7 @@ for i in range (1,num_cams):
 # Check HD Streams
 for i in range (1,num_cams):
    key = "cam" + str(i)
+   cams_id = config['cameras'][key]['cams_id']
    res = check_stream(str(cams_id), "HD")
    if res == 0:
       errors.append("Cam " + str(cams_id) + "HD Stream not present. ")
