@@ -35,6 +35,7 @@ class Filters():
       bad_detects = {}
       min_caps = {}
       print("CHECK DAY", shower_day)
+      self.mfiles = []
       self.get_mfiles("/mnt/ams2/meteors/" + day + "/")
       if len(self.mfiles) > self.max_detect_thresh and shower_day not in self.exp_dates:
          print("WOA WE HAVE A LOT OF CAPTURES. MIGHT BE A PROBLEM!", day, len(self.mfiles))
@@ -72,7 +73,11 @@ class Filters():
             maybe += 1
             meteor_file = "/mnt/ams2/meteors/" + mf[0:10] + "/" + mf.replace(".mp4", ".json")
             if cfe(meteor_file) == 1:
-               mj = load_json_file(meteor_file)
+               try:
+                  mj = load_json_file(meteor_file)
+               except:
+                  continue
+
             else:
                continue
             confirmed_meteors = 0
