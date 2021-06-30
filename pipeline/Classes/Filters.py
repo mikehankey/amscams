@@ -39,7 +39,7 @@ class Filters():
       self.get_mfiles("/mnt/ams2/meteors/" + day + "/")
       if len(self.mfiles) > self.max_detect_thresh and shower_day not in self.exp_dates:
          print("WOA WE HAVE A LOT OF CAPTURES. MIGHT BE A PROBLEM!", day, len(self.mfiles))
-         input() 
+         #input() 
       else:
          print("THIS DAY IS OK", len(self.mfiles))
          return()
