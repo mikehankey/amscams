@@ -75,6 +75,9 @@ class Filters():
             if cfe(meteor_file) == 1:
                try:
                   mj = load_json_file(meteor_file)
+                  if "multi_station_event"  in mj:
+                     # don't filter MSEs!
+                     continue
                except:
                   continue
 
@@ -130,6 +133,8 @@ class Filters():
       print("DELETE THIS METEOR!", mfile)
       try:
          mj = load_json_file(mfile)
+         if "multi_station_event" in mj:
+            return()
       except:
          return()
 
