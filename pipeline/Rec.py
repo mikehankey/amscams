@@ -19,6 +19,7 @@ if __name__ == "__main__":
       #R.reconcile_cloud_media(year, mon)
       R.save_rec_data()
       R.fix_missing_cloud_files(year,mon)
+      os.system("python3 AWS.py sm " + year + "_" + mon)
 
 
 

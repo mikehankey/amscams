@@ -155,7 +155,8 @@ class SyncAWS():
          #print("NEED TO RESYNC CLOUD DIR!")
          #print(cmd)
          #os.system(cmd)
-    
+   
+
 
    def get_meteor_media_sync_status(self, sd_vid, cfs = []):
       # determine the current sync status for this meteor. 
@@ -180,6 +181,47 @@ class SyncAWS():
       
       sync_status = cloud_files
       return(sync_status)
+
+   def get_obs_edits(self):
+      url = API_URL + "?cmd=get_obs_edits&station_id=" + self.station_id + "&api_key=" + self.json_conf['api_key']
+      response = requests.get(url)
+      content = response.content.decode()
+      content = content.replace("\\", "")
+      if content[0] == "\"":
+         content = content[1:]
+         content = content[0:-1]
+      if "not found" in content:
+         data = {}
+         data['aws_status'] = False
+      else:
+         data = json.loads(content)
+      for row in data['all_vals']:
+         remote_key, remote_value = row
+         redis_prefix, station_id, sd_video_file, remote_user, remote_command = remote_key.split(":")
+         print("REMOTE EDIT:", remote_command, sd_video_file, remote_user, remote_value)
+         if "trusted_users" not in self.json_conf:
+            self.trusted_users = []
+            self.trusted_users.append('mhankey') 
+         if remote_user == self.json_conf['username'] or remote_user in self.json_conf['trusted_users']:
+            # THIS REMOTE CALL WAS FROM US!
+            print("TRUSTED USER!", remote_user)
+            if remote_command == "recrop":
+               mjf = "/mnt/ams2/meteors/" + sd_video_file[0:10] + "/" + sd_video_file.replace(".mp4", ".json")
+               print("UPDATE ROI TO :", remote_value, mjf)
+               if cfe(mjf) == 1:
+                  try:
+                     mj = load_json_file(mjf)
+                     mj['roi'] = remote_value
+                     mj['hc'] = 1
+                     save_json_file(mjf,mj)
+                     # now rescan the meteor with the new crop
+                     os.system("python3 Meteor.py 3 " + sd_video_file.replace(".mp4", ".json"))
+                  except:
+                     print("BAD MJ!", mjf)
+               else:
+                  print("BAD MJ!", mjf)
+         
+
   
    def get_aws_obs(self,sd_vid):
       url = API_URL + "?cmd=get_obs&station_id=" + self.station_id + "&sd_video_file=" + sd_vid

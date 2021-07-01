@@ -96,6 +96,8 @@ def make_obs_data(station_id, date, meteor_file):
       sync_status = []
 
    print("SYNC STATUS:", sync_status)
+
+
    if cfe(meteor_file) == 1:
       red_file = meteor_file.replace(".json", "-reduced.json")
       mfn = meteor_file.split("/")[-1]

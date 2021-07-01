@@ -50,8 +50,14 @@ def sync_day_data_only(day):
    SAWS.sync_meteor_day_data_only(day)
 
 def sync_day(day):
+
+   SAWS.get_obs_edits()
+
+
    mdir = "/mnt/ams2/meteors/" + day + "/"
    SAWS.sync_meteor_day(day)
+
+
    old = 0
    if old == 1:
       # SYNC MEDIA FUNCS

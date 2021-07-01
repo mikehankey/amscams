@@ -540,6 +540,8 @@ class Reconcile():
             ext = 0
          if "cloud_files" in self.rec_data['meteor_index'][root_file]:
             cloud_files = self.rec_data['meteor_index'][root_file]['cloud_files']
+         else: 
+            cloud_files = {}
          if "ROI" not in cloud_files:
             cloud_missing = 1
 
