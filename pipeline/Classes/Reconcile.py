@@ -1,6 +1,6 @@
 from lib.PipeUtil import cfe, load_json_file, save_json_file, get_file_info, convert_filename_to_date_cam,get_trim_num
 from lib.PipeAutoCal import XYtoRADec
-
+import requests
 import os
 from pushAWS import make_obs_data
 import glob
@@ -16,6 +16,7 @@ import datetime as ddtt
 
 class Reconcile():
    def __init__(self, year=None,month=None):
+      self.API_URL = "https://kyvegys798.execute-api.us-east-1.amazonaws.com/api/allskyapi"
       self.data_dir = "/mnt/ams2/METEOR_SCAN/DATA/"
       if cfe(self.data_dir,1) == 0:
          os.makedirs(self.data_dir)
@@ -105,6 +106,30 @@ class Reconcile():
          #   del(self.rec_data['needs_review'][root_file])
          #if root_file in self.rec_data['corrupt_json']: 
          #   del(self.rec_data['corrupt_json'][root_file])
+
+   def reconcile_all_aws_obs(self):
+      aws_local_file = "/mnt/ams2/METEOR_SCAN/ALL_AWS.json"
+      if cfe(aws_local_file) == 0:
+         cmd = "wget https://archive.allsky.tv/EVENTS/OBS/STATIONS/" + self.station_id + ".json -O " + aws_local_file
+         os.system(cmd)
+      all_aws_obs = load_json_file(aws_local_file)
+      print(len(all_aws_obs))
+      all_aws_obs = sorted(all_aws_obs, key=lambda x: (x[1]), reverse=True)
+      deleted = 0
+      for row in all_aws_obs:
+         station_id, root_file, event, tme, revision , sync_status, peak_int,dur,res,stars = row
+         vid = root_file + ".mp4"
+         day = root_file[0:10]
+         mf = "/mnt/ams2/meteors/" + day + "/" + root_file + ".json"
+         if cfe(mf) == 0:
+            print("AWS OBS NO LONGER ON LOCAL STATION.", mf)
+            url = self.API_URL + "?cmd=del_obs_commit&station_id=" + self.station_id + "&sd_video_file=" + vid + "&api_key=" + self.json_conf['api_key']
+            print(deleted, url)
+            deleted += 1
+
+            response = requests.get(url)
+            content = response.content.decode()
+
 
    def save_rec_data(self):
       save_json_file(self.rec_file, self.rec_data)
@@ -577,6 +602,7 @@ class Reconcile():
          # 4) scan failures will be treated as LEVEL 1 syncs. -- only thumb and data.
          date = root_file[0:10]
          meteor_file = "/mnt/ams2/meteors/" + date + "/" + root_file + ".json"
+         scan_failed = 0
          if cfe(meteor_file) == 1:
             scan_failed = 0
             try:

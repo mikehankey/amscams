@@ -10,6 +10,7 @@ if __name__ == "__main__":
       mon = sys.argv[3]
       print("FF:", year, mon)
       R = Reconcile(year, mon)
+      R.reconcile_all_aws_obs()
       os.system("./Process.py purge_meteors")
       os.system("python3 ./Filter.py fm " + year + "_" + mon)
       R.fix_missing_cloud_files(year,mon)
