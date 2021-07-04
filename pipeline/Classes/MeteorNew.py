@@ -764,7 +764,6 @@ class Meteor():
                cmd = "cp " + local_dir + lf + " " + cloud_dir
                print(cmd)
                os.system(cmd)
-
       # Then make sure there are no 0k files in the local dir. If there are these should
       # be reported in an error report so they can be manually corrected or ignored
 

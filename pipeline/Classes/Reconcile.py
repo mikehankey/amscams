@@ -1,5 +1,6 @@
 from lib.PipeUtil import cfe, load_json_file, save_json_file, get_file_info, convert_filename_to_date_cam,get_trim_num
 from lib.PipeAutoCal import XYtoRADec
+import simplejson as json
 import requests
 import os
 from pushAWS import make_obs_data
@@ -107,8 +108,66 @@ class Reconcile():
          #if root_file in self.rec_data['corrupt_json']: 
          #   del(self.rec_data['corrupt_json'][root_file])
 
+   def get_aws_obs(self,day):
+      url = self.API_URL + "?cmd=get_obs_for_day&station_id=" + self.station_id + "&day=" + day
+      response = requests.get(url)
+      content = response.content.decode()
+      content = content.replace("\\", "")
+      if "nothing" not in content:
+         jdata = json.loads(content)
+      else:
+         jdata = {}
+         jdata['all_vals'] = []
+         jdata['total_records'] = 0
+      if jdata is not None:
+         data = jdata['all_vals']
+      else:
+         data = []
+      aws_obs = data
+      return(aws_obs)
+
+   def reconcile_day(self, date):
+      print("RECONCILE DAY.", date)
+
+      self.mfiles = []
+      self.aws_obs = []
+      mdir = "/mnt/ams2/meteors/" + date
+      self.get_mfiles(mdir)
+      self.aws_obs = self.get_aws_obs(date)
+
+      print("LOCAL FILES:", len(self.mfiles))
+      print("AWS FILES:", len(self.aws_obs))
+
+      # make sure sync status / cloud media is up to date
+      year_mon = date[0:7]
+      cloud_index_file = "/mnt/ams2/METEOR_SCAN/DATA/cloud_index_" + year_mon + ".json"
+      if cfe(cloud_index_file) == 1 :
+         cloud_index = load_json_file(cloud_index_file)
+      else:
+         cloud_index = {}
+         print("NO CLOUD_INDEX", cloud_index_file)
+         sync_status = []
+
+      aws_dict = {}
+      for aws_data in self.aws_obs:
+         mkey = aws_data['station_id'] + "_" + aws_data['vid'].replace(".mp4", "")
+         aws_dict[mkey] = aws_data
+
+      for mfile in self.mfiles:
+         mkey = self.station_id + "_" + mfile
+         if mkey in cloud_index:
+            if cloud_index[mkey]['cloud_files'] == aws_dict[mkey]['ss']:
+               print("INSYNC!", mkey, cloud_index[mkey]['cloud_files'], aws_dict[mkey]['ss'] ) 
+         else:
+            print("NOT IN CLOUD INDEX", mkey)
+
+
+
+
+
+
    def reconcile_all_aws_obs(self):
-      aws_local_file = "/mnt/ams2/METEOR_SCAN/ALL_AWS.json"
+      aws_local_file = "/mnt/ams2/METEOR_SCAN/DATA/ALL_AWS.json"
       if cfe(aws_local_file) == 0:
          cmd = "wget https://archive.allsky.tv/EVENTS/OBS/STATIONS/" + self.station_id + ".json -O " + aws_local_file
          os.system(cmd)
@@ -350,7 +409,7 @@ class Reconcile():
          cloud_index = load_json_file(cloud_index_file)
       else:
          cloud_index = {}
-      print("   FUNCH: UPDATE CLOUD INDEX")
+      print("   FUNC: UPDATE CLOUD INDEX")
       if month is not None:
          wild = year + "_" + month
       else:
