@@ -198,6 +198,10 @@ def cal_file(amsid, calib_file):
       azs = glob.glob(caldir + "*az*half*")
 
    star_rows = ""
+   if "cat_image_stars" not in cp:
+      cp['cat_image_stars'] = []
+   if "user_stars" not in cp:
+      cp['user_stars'] = []
    for star in cp['cat_image_stars']:
       dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist,bp = star
       star_rows += "<tr><td>{:s}</td><td>{:s} </td><td> {:s} / {:s}</td><td>{:s}</td><td>{:s}</td><!-- <td>{:s}</td> --></tr>".format(dcname, str(mag), str(ra)[0:5], str(dec)[0:5], str(match_dist)[0:5], str(cat_dist)[0:5], str(bp))

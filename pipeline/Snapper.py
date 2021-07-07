@@ -73,13 +73,18 @@ def make_snap_files(cam_id, date_str, hd=1, mod=1):
       os.makedirs(outdir)
    c = 0
    for vid in sorted(vids):
+      if "trim" in vid:
+         continue
       vid_fn = vid.split("/")[-1]
       print(c, mod)
       if c % mod == 0:
 
          outfile = outdir + vid_fn.replace(".mp4", ".jpg")
          print(vid, outfile)
-         snap_video_new(vid, outfile)
+         try:
+            snap_video_new(vid, outfile)
+         except:
+            print("bad vid")
       c += 1
 
 
@@ -327,4 +332,5 @@ else:
       mod = 15
       cam = sys.argv[2]
       date_str = sys.argv[3]   
+      print(cam,date_str)
       make_snap_files(cam, date_str, hd, mod)

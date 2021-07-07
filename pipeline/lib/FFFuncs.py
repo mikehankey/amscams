@@ -19,6 +19,10 @@ def snap_video_new(in_file, outfile):
    cmd = """ /usr/bin/ffmpeg -i """ + in_file + """ -vf select="between(n\,""" + str(1) + """\,""" + str(2) + """),setpts=PTS-STARTPTS" -y -update 1 """ + outfile + " >/dev/null 2>&1"
    print(cmd)
    os.system(cmd)
+   print(outfile)
+   img = cv2.imread(outfile)
+   print(outfile.shape)
+   cv2.imwrite(outfile, img, [cv2.IMWRITE_JPEG_QUALITY, 40])
 
 def snap_video(in_file):
    (f_datetime, cam, f_date_str,fy,fm,fd, fh, fmin, fs) = convert_filename_to_date_cam(in_file)

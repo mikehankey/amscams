@@ -100,8 +100,11 @@ def cal_manager(json_conf):
          default_hist[cams_id] = make_default_cal(json_conf, cams_id)
 
       for cams_id in default_hist:
-         for row in default_hist[cams_id]['range_data']:
-            rdf.append(row)
+         try:
+            for row in default_hist[cams_id]['range_data']:
+               rdf.append(row)
+         except:
+            print("no data for", cams_id)
       save_json_file("/mnt/ams2/cal/" + amsid + "_cal_range.json", rdf)
       print("SAVED: /mnt/ams2/cal/" + amsid + "_cal_range.json", rdf)
 
@@ -2646,8 +2649,8 @@ def deep_calib(cam, json_conf):
          all_cal_files.append((file,res))
    #all_cal_files = deep_cal_report(cam, json_conf)
    year = datetime.now().strftime("%Y")
-
-
+   print(all_cal_files)
+   input()
    #autocal_dir = "/mnt/ams2/meteor_archive/" + STATION_ID + "/CAL/AUTOCAL/" + year + "/solved/"
    #mcp_file = autocal_dir + "multi_poly-" + STATION_ID + "-" + cam + ".info"
    mcp_dir = "/mnt/ams2/cal/" 
@@ -2708,8 +2711,8 @@ def deep_calib(cam, json_conf):
          #cp = pair_stars(cp, cal_file, json_conf, gray_cal_img)
 
 
-         if len(cp['cat_image_stars']) < 10:
-            continue
+         #if len(cp['cat_image_stars']) < 10:
+         #   continue
 
          #cal_files= get_cal_files(cal_file)
          #if len(cal_files) > 5:
@@ -2732,9 +2735,9 @@ def deep_calib(cam, json_conf):
 
          #if "fov_fit" not in cp:
          print("STARS:", len(cp['user_stars']), len(cp['cat_image_stars']))
-         if len(cp['cat_image_stars']) > 10 and cp['total_res_px'] > 5:
+         #if len(cp['cat_image_stars']) > 10 and cp['total_res_px'] > 5:
 
-            print("MIN FOV:")
+         #   print("MIN FOV:")
             #os.system("./Process.py refit " + cal_file)
             #cp = minimize_fov(cal_file, cp, cal_file,cal_img,json_conf )
             #save_json_file(cal_file, cp)
@@ -2746,6 +2749,7 @@ def deep_calib(cam, json_conf):
          for data in cp['cat_image_stars']:
    
             dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist,star_int = data
+            print("STAR:", dcname, cat_dist)
             #cp = update_center_radec(cal_file,cp,json_conf)
             all_stars.append((cal_fn, cp['center_az'], cp['center_el'], cp['ra_center'], cp['dec_center'], cp['position_angle'], cp['pixscale'], dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist,star_int))
             if SHOW == 1:
@@ -2760,7 +2764,7 @@ def deep_calib(cam, json_conf):
    star_db['autocal_stars'] = all_stars
    star_db['all_stars'] = all_stars
    print("DONE LOADING CAL STARS.")
-
+   input()
    # GET MORE STARS FROM METEOR IMAGES
    star_db['meteor_stars'] = []
    # GET METEOR STARS
@@ -2790,6 +2794,7 @@ def deep_calib(cam, json_conf):
          multi = 10 
       else:
          multi = 4
+      std_dist = 6
       if cat_dist < std_dist * multi:
          best_stars.append(star)
       else:
@@ -3232,10 +3237,15 @@ def get_cal_files(meteor_file=None, cam=None):
       cal_dirs = glob.glob("/mnt/ams2/cal/freecal/*" + cam + "*")
    for cd in cal_dirs:
       root_file = cd.split("/")[-1]
+      print(cd)
       if cfe(cd, 1) == 1:
          cp_files = glob.glob(cd + "/" + root_file + "*calparams.json")
+         print("FP", cp_files)
          if len(cp_files) == 1:
             cpf = cp_files[0]
+         else:
+            print("NO CALS:", cp_files, cam)
+            cpf = "NONE"
          if len(cp_files) > 1:
             if "stacked" in cp_files[0]:
                cpf = cp_files[0]
@@ -3994,14 +4004,17 @@ def review_cals(json_conf, cam=None):
    temp = sorted(cal_files, key=lambda x: x[0], reverse=False)
    cal_data = []
    for cam, file in temp:
-      cp_file = file.replace(".png", "-calparams.json")
-      print(cp_file)
+      if "png" in file:
+         cp_file = file.replace(".png", "-calparams.json")
+      else:
+         cp_file = file.replace(".jpg", "-calparams.json")
+      print("CP:", cp_file)
       try:
          cp = load_json_file(cp_file)
       except:
          print("Bad cal file.", cp_file)
       if "total_res_px" not in cp:
-         cp['total_res_px'] = 20
+         cp['total_res_px'] = 8
       cal_data.append((cam, file, cp['center_az'], cp['center_el'], cp['position_angle'], cp['pixscale'], cp['total_res_px']))
       save_json_file(cp_file, cp)
    med_data = find_meds(cal_data)
@@ -4128,9 +4141,9 @@ def review_cals(json_conf, cam=None):
                   print("SAVING CAL.")
                   save_json_file(cp_file, cp)
             cal_files.append((cam, file))
-            if "total_res_px" in cp and "cat_image_stars" in cp:
-               if cp['total_res_px'] < 10 and len(cp['cat_image_stars']) > 10:
-                  good_cal_files.append((cam, cp_file, cp['total_res_px']))
+            #if "total_res_px" in cp and "cat_image_stars" in cp:
+            #   if cp['total_res_px'] < 10 and len(cp['cat_image_stars']) > 10:
+            good_cal_files.append((cam, cp_file, cp['total_res_px']))
    print("CAL INDEX:", ci_dir + "cal_index-" + cam + ".json")
 
 
@@ -6387,7 +6400,7 @@ def minimize_poly_params_fwd(cal_params_file, cal_params,json_conf,show=0):
    cal_params['cal_params_file'] = cal_params_file
 
 
-   if res_px > 20:
+   if res_px > 40:
       print("Something is bad here. Abort!")
       return(0, cal_params)
    # do y poly 
@@ -6828,7 +6841,7 @@ def fn_dir(file):
 
 
 def minimize_poly_multi_star(merged_stars, json_conf,orig_ra_center=0,orig_dec_center=0,cam_id=None,master_file=None,mcp=None,show=0):
-   if len(merged_stars) < 30:
+   if len(merged_stars) < 10:
       print("not enough stars to multi fit!")
       return(0,0,0)
 
