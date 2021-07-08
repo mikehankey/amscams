@@ -25,7 +25,7 @@ from Classes.Calibration import Calibration
 from lib.PipeAutoCal import XYtoRADec
 from lib.PipeVideo import load_frames_simple
 from lib.PipeAutoCal import gen_cal_hist,update_center_radec, get_catalog_stars, pair_stars, scan_for_stars, calc_dist, minimize_fov, AzEltoRADec , HMS2deg, distort_xy, XYtoRADec, angularSeparation
-from lib.PipeUtil import load_json_file, save_json_file, cfe, convert_filename_to_date_cam,get_trim_num
+from lib.PipeUtil import load_json_file, save_json_file, cfe, convert_filename_to_date_cam,get_trim_num, fn_dir
 from lib.FFFuncs import best_crop_size, ffprobe, crop_video, splice_video, lower_bitrate
 import boto3
 import socket
@@ -3570,6 +3570,10 @@ class Meteor():
 
 
    def remote_reduce(self, station_id, meteor_video_file):
+      sd_video_file = meteor_video_file
+      mjf = meteor_video_file.replace(".mp4", ".json")
+      mjrf = meteor_video_file.replace(".mp4", "-reduced.json")
+      hd_video_file = "/home/ams/2021_07_04_04_52_01_000_011005-trim-250-HD-meteor.mp4"
       clip_start_datetime = self.starttime_from_file(meteor_video_file)
       (f_datetime, cam_id, f_date_str,fy,fmon,fd, fh, fm, fs) = convert_filename_to_date_cam(meteor_video_file)
       json_conf = load_json_file("/mnt/archive.allsky.tv/" + station_id + "/CAL/as6.json")
@@ -3726,7 +3730,7 @@ class Meteor():
          else:
             print(fn)
          cv2.imshow('pepe', frame)
-         cv2.waitKey(0)
+         cv2.waitKey(30)
 
       for fn in frame_data:
          if "hd_x" in frame_data[fn]:
@@ -3739,8 +3743,13 @@ class Meteor():
             print(fn)
       for data in mfd:
          print(data)
+      mj, mjr = self.make_meteor_jsons(station_id, sd_video_file, hd_video_file, mfd, mcp)
+      save_json_file(mjf, mj)
+      save_json_file(mjrf, mjr)
+      print(mjf)
+      print(mjrf)
 
-   def make_meteor_jsons(self, sd_video_file, hd_video_file, mfd):
+   def make_meteor_jsons(self, station_id, sd_video_file, hd_video_file, mfd, cp):
       mj = {}
       mjr = {}
       (f_datetime, cam, f_date_str,fy,fmin,fd, fh, fm, fs) = convert_filename_to_date_cam(sd_video_file)
@@ -3755,6 +3764,7 @@ class Meteor():
       mj["sd_video_file"] = mdir + sd_fn
       mj["sd_stack"] = mdir + stack_fn
       mj["sd_objects"] = []
+      mj["cp"] = cp
       if hd_video_file is not None:
          mj["hd_trim"] = mdir + hd_fn
          mj["hd_stack"] = mdir + hd_stack_fn
@@ -3765,7 +3775,7 @@ class Meteor():
 
       # reduce
       mjr['api_key'] = "123"
-      mjr['station_name'] = STATION_ID
+      mjr['station_name'] = station_id
       mjr['device_name'] = cam
       mjr["sd_video_file"] = mdir + sd_fn
       mjr["sd_stack"] = mdir + stack_fn
@@ -3775,6 +3785,7 @@ class Meteor():
       mjr["event_start_time"] = ""
       mjr["event_duration"] = ""
       mjr["peak_magnitude"] = ""
+      mjr["cal_params"] = cp
       mjr["start_az"] = ""
       mjr["start_el"] = ""
       mjr["end_az"] = ""
@@ -3785,7 +3796,7 @@ class Meteor():
       mjr["end_dec"] = ""
       mjr['meteor_frame_data'] = mfd
  
-
+      return(mj, mjr)
 
    def meteor_scan(self ):
       print("METEOR SCAN", self.meteor_file)
