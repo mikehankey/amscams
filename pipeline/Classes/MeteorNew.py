@@ -3576,6 +3576,8 @@ class Meteor():
       mcp = self.get_default_calib(station_id,cam_id)
       mcp = update_center_radec(meteor_video_file,mcp,json_conf)
 
+
+
       #cal_params = self.get_remote_calib(station_id,cam_id)
       # cam, date, date, az, el, pos, px
       #print(default_calib)
@@ -3663,6 +3665,8 @@ class Meteor():
       mc = 0
       hdm_x = 1920 / self.sd_frames[0].shape[1] 
       hdm_y = 1080 / self.sd_frames[0].shape[0] 
+      print("HDM:", hdm_x, hdm_y, self.sd_frames[0])
+      exit()
       mfd = []
       for fn in frame_data:
          frame = self.sd_frames[fn]
