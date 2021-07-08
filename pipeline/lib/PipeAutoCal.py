@@ -4289,6 +4289,8 @@ def autocal(image_file, json_conf, show = 0, heal_only=0):
    print("IMAGE FILE:", image_file)
    try:
       img = cv2.imread(image_file)
+      if img.shape[0] != 1080:
+         img = cv2.resize(img, (1920, 1080))
       gray_img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
    except:
       print("BAD FILE")
