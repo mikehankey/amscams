@@ -23,6 +23,11 @@ def status_report(meteor_file):
       return()
    
 
+def remote_reduce(station_id, meteor_video):
+
+   all_meteor = Meteor()
+   print(station_id, meteor_video)
+   all_meteor.remote_reduce(station_id, meteor_video)
 
 def make_media_for_day(meteor_date):
    print("Make media for day")
@@ -420,6 +425,7 @@ if __name__ == "__main__":
       print("   6) Debug Meteor ")
       print("   7) Sync Media for day")
       print("   8) Fix Media for day")
+      print("   9) Remote Reduce Meteor")
       cmd = input("Enter the command you want to run. ")
    if cmd == "1":
       cmd = "scan"
@@ -438,6 +444,17 @@ if __name__ == "__main__":
       cmd = "sync_day"
    if cmd == "8":
       cmd = "fix_media"
+   if cmd == "9":
+      cmd = "remote_reduce"
+      print("CMD", cmd)
+   if cmd == "remote_reduce":
+      if len(sys.argv) <= 3:
+         meteor_file = input("Enter full path to video file")
+         station_id = input("Enter Station ID")
+      else:
+         station_id = sys.argv[2]
+         meteor_file = sys.argv[3] 
+      remote_reduce(station_id, meteor_file)
 
    if cmd == "fix_media":
       if meteor_date is None:

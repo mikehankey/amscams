@@ -1489,6 +1489,8 @@ class Meteor():
 
       return(resp)
 
+
+
    def make_month_select(self,select_month):
       options = ""
       mon_hist = {}
@@ -3533,6 +3535,258 @@ class Meteor():
       cv2.imshow('roipepe', roi_img)
       cv2.waitKey(0)
 
+   def get_default_calib(self,station_id,cam_id):
+      mcp_file = "/mnt/archive.allsky.tv/" + station_id + "/CAL/DATA/mcp_" + station_id + "_" + cam_id + ".json"
+      print(mcp_file)
+      if cfe(mcp_file) == 1:
+         mcp = load_json_file(mcp_file)
+      
+      default_calib = load_json_file("/mnt/archive.allsky.tv/" + station_id + "/CAL/" + station_id + "_cal_range.json")
+      these_cals = []
+      for data in default_calib:
+         if data[0] == cam_id:
+            these_cals.append(data)
+      print(these_cals[0])
+      cam,date1,date2,az,el,pos,px,res = these_cals[0]
+      mcp['center_az'] = az
+      mcp['center_el'] = el
+      mcp['position_angle'] = pos
+      mcp['pixscale'] = px
+      return(mcp)
+
+   def get_remote_calib(self,station_id,cam_id):
+      calds = glob.glob("/mnt/archive.allsky.tv/" + station_id + "/CAL/SRC/CLOUD_CAL/*")
+      cal_dirs = []
+      for temp in calds:
+         if cam_id in temp:
+            cal_dirs.append(temp)
+      for cald in cal_dirs:
+         print("CAL DIR:", cald)
+         rf = cald.split("/")[-1]
+         cal_file = cald + "/" + rf + "-stacked-calparams.json"
+         cp = load_json_file(cal_file)
+         print(cal_file)
+      return(cp)
+
+
+   def remote_reduce(self, station_id, meteor_video_file):
+      clip_start_datetime = self.starttime_from_file(meteor_video_file)
+      (f_datetime, cam_id, f_date_str,fy,fmon,fd, fh, fm, fs) = convert_filename_to_date_cam(meteor_video_file)
+      json_conf = load_json_file("/mnt/archive.allsky.tv/" + station_id + "/CAL/as6.json")
+      mcp = self.get_default_calib(station_id,cam_id)
+      mcp = update_center_radec(meteor_video_file,mcp,json_conf)
+
+      #cal_params = self.get_remote_calib(station_id,cam_id)
+      # cam, date, date, az, el, pos, px
+      #print(default_calib)
+      #exit()
+      print("REMOTE REDUCE:", station_id, meteor_video_file)
+      frame_data = {}
+      self.load_frames(meteor_video_file)
+      fns = []
+      cxs = []
+      cys = []
+      xds = []
+      yds = []
+      fn = 0
+      last_cx = None
+      for frame in self.sd_frames:
+         sub = cv2.subtract(frame, self.sd_frames[0])
+         thresh_val = 100
+         gray_frame = cv2.cvtColor(sub, cv2.COLOR_BGR2GRAY)
+         show_frame = frame.copy()
+         _, thresh_frame = cv2.threshold(gray_frame.copy(), thresh_val, 255, cv2.THRESH_BINARY)
+         cnts = self.get_contours_simple(thresh_frame)
+         frame_data[fn] = {}
+         if len(cnts) >= 1:
+            frame_data[fn]['cnt'] = cnts[0]
+            cnts = sorted(cnts, key=lambda x: x[2]*x[3], reverse=True)  
+            x,y,w,h,intensity,px_avg = cnts[0]
+            cx = x + (w/2)
+            cy = y + (h/2)
+            frame_data[fn]['cx'] = cx
+            frame_data[fn]['cy'] = cy
+            cxs.append(cx)
+            cys.append(cy)
+            fns.append(fn)
+         
+         for i in range(0,len(cxs)):
+             
+            cv2.rectangle(show_frame, (int(cxs[i]-5), int(cys[i]-5)), (int(cxs[i]+5) , int(cys[i]+5)), (255, 255, 255), 1)
+               #cv2.rectangle(thresh_frame, (int(cx-5), int(cy-5)), (int(x+w) , int(y+h)), (255, 255, 255), 1)
+       
+
+         if len(cnts) >= 1:
+            if last_cx is not None:
+               xdiff = cx - last_cx
+               ydiff = cy - last_cy
+               xds.append(xdiff)
+               yds.append(ydiff)
+            else:
+               xdiff = 0
+               ydiff = 0
+               xds.append(xdiff)
+               yds.append(ydiff)
+
+            frame_data[fn]['xd'] = xdiff
+            frame_data[fn]['yd'] = ydiff
+            print(fn,x,y,w,h,cx,cy,intensity,px_avg, xdiff, ydiff)
+         else:
+            print(fn,"NO CNT")
+         fn += 1
+         cv2.imshow('pepe', show_frame)
+         cv2.waitKey(30)
+         if len(cnts) >= 1:
+            last_cx = cx
+            last_cy = cy
+
+      total_xd = (cxs[0] - cxs[-1] ) * -1
+      total_yd = (cys[0] - cys[-1] ) * -1
+      med_xd = total_xd / (fns[-1] - fns[0])
+      med_yd = total_yd / (fns[-1] - fns[0])
+
+      total_xd2 = (cxs[25] - cxs[-10] ) * -1
+      total_yd2 = (cys[25] - cys[-10] ) * -1
+
+      med_xd2 = total_xd2 / (fns[-10] - fns[25])
+      med_yd2 = total_yd2 / (fns[-10] - fns[25])
+
+      print("FIRST MED XY:", med_xd, med_yd)
+      i = 0
+      last_cx = None
+      first_cx = None
+
+      beg_cx = cxs[25]
+      beg_cy = cys[25]
+      beg_fn = fns[25]
+
+      mc = 0
+      hdm_x = 1920 / self.sd_frames[0].shape[1] 
+      hdm_y = 1080 / self.sd_frames[0].shape[0] 
+      mfd = []
+      for fn in frame_data:
+         frame = self.sd_frames[fn]
+         if "cnt" in frame_data[fn]:
+            if first_cx is None:
+               first_cx = frame_data[fn]['cx']
+               first_cy = frame_data[fn]['cy']
+               frame_data[fn]['hd_x'] = frame_data[fn]['cx'] * hdm_x
+               frame_data[fn]['hd_y'] = frame_data[fn]['cy'] * hdm_y
+               first_frame = fn
+            if last_cx is not None:
+               if mc < 25:
+                  est_x = frame_data[fn]['cx']
+                  est_y = frame_data[fn]['cy']
+               else:
+                  est_x = beg_cx + (med_xd2 * (fn - beg_fn))
+                  est_y = beg_cy + (med_yd2 * (fn - beg_fn))
+               frame_data[fn]['est_x'] = est_x
+               frame_data[fn]['est_y'] = est_y
+               frame_data[fn]['xd'] = frame_data[fn]['cx'] - last_cx
+               frame_data[fn]['yd'] = frame_data[fn]['cy'] - last_cy
+               frame_data[fn]['hd_x'] = frame_data[fn]['est_x'] * hdm_x
+               frame_data[fn]['hd_y'] = frame_data[fn]['est_y'] * hdm_y
+            else:
+               frame_data[fn]['est_x'] = frame_data[fn]['cx'] 
+               frame_data[fn]['est_y'] = frame_data[fn]['cy']
+               frame_data[fn]['hd_x'] = frame_data[fn]['cx'] * hdm_x
+               frame_data[fn]['hd_y'] = frame_data[fn]['cy'] * hdm_y
+
+
+            last_cx = frame_data[fn]['cx']
+            last_cy = frame_data[fn]['cy']
+            mc += 1
+         else:
+            error = 0
+         if "est_x" in frame_data[fn]:
+            err_x = frame_data[fn]['cx'] - frame_data[fn]['est_x']
+            err_y = frame_data[fn]['cy'] - frame_data[fn]['est_y']
+            print(fn, "CXY:", frame_data[fn]['cx'], frame_data[fn]['cy'], "ESTXY:", frame_data[fn]['est_x'], frame_data[fn]['est_y'],err_x,err_y )
+
+            frame_data[fn]['hd_x'] = frame_data[fn]['est_x'] * hdm_x
+            frame_data[fn]['hd_y'] = frame_data[fn]['est_y'] * hdm_y
+
+            ex1 = frame_data[fn]['est_x']-5
+            ey1 = frame_data[fn]['est_y']-5
+            ex2 = frame_data[fn]['est_x']+5
+            ey2 = frame_data[fn]['est_y']+5
+
+            cx1 = frame_data[fn]['cx']-5
+            cy1 = frame_data[fn]['cy']-5
+            cx2 = frame_data[fn]['cx']+5
+            cy2 = frame_data[fn]['cy']+5
+
+            cv2.rectangle(frame, (int(ex1), int(ey1)), (int(ex2) , int(ey2)), (255, 0, 255), 1)
+            cv2.rectangle(frame, (int(cx1), int(cy1)), (int(cx2) , int(cy2)), (255, 255, 255), 1)
+
+            extra_sec = int(fn) / 25
+            frame_time = clip_start_datetime + datetime.timedelta(0,extra_sec)
+            dt = datetime.datetime.now().strftime("%Y_%m_%d_%H_%M_%S.%f")
+            frame_data[fn]['dt'] = dt
+         else:
+            print(fn)
+         cv2.imshow('pepe', frame)
+         cv2.waitKey(0)
+
+      for fn in frame_data:
+         if "hd_x" in frame_data[fn]:
+            hd_x = frame_data[fn]['hd_x']
+            hd_y = frame_data[fn]['hd_y']
+            tx, ty, ra ,dec , az, el = XYtoRADec(hd_x,hd_y,meteor_video_file,mcp,json_conf)
+            print("FINAL", fn, frame_data[fn]['hd_x'], frame_data[fn]['hd_y'], az,el) 
+            mfd.append((frame_data[fn]['dt'],fn,frame_data[fn]['est_x']-5,frame_data[fn]['est_y']-5, 5,5,99,ra,dec,az,el))
+         else:
+            print(fn)
+      for data in mfd:
+         print(data)
+
+   def make_meteor_jsons(self, sd_video_file, hd_video_file, mfd):
+      mj = {}
+      mjr = {}
+      (f_datetime, cam, f_date_str,fy,fmin,fd, fh, fm, fs) = convert_filename_to_date_cam(sd_video_file)
+      sd_fn, dir = fn_dir(sd_video_file)
+      if hd_video_file is not None:
+         hd_fn, dir = fn_dir(hd_video_file)
+         hd_stack_fn = hd_fn.replace(".mp4", "-stacked.jpg")
+      stack_fn = sd_fn.replace(".mp4", "-stacked.jpg")
+
+      date = sd_fn[0:10]
+      mdir = "/mnt/ams2/meteors/" + date + "/"
+      mj["sd_video_file"] = mdir + sd_fn
+      mj["sd_stack"] = mdir + stack_fn
+      mj["sd_objects"] = []
+      if hd_video_file is not None:
+         mj["hd_trim"] = mdir + hd_fn
+         mj["hd_stack"] = mdir + hd_stack_fn
+         mj["hd_video_file"] = mdir + hd_fn
+         mj["hd_trim"] = mdir + hd_fn
+         mj["hd_objects"] = []
+      mj["meteor"] = 1
+
+      # reduce
+      mjr['api_key'] = "123"
+      mjr['station_name'] = STATION_ID
+      mjr['device_name'] = cam
+      mjr["sd_video_file"] = mdir + sd_fn
+      mjr["sd_stack"] = mdir + stack_fn
+      if hd_video_file is not None:
+         mjr["hd_video_file"] = mdir + sd_fn
+         mjr["hd_stack"] = mdir + stack_fn
+      mjr["event_start_time"] = ""
+      mjr["event_duration"] = ""
+      mjr["peak_magnitude"] = ""
+      mjr["start_az"] = ""
+      mjr["start_el"] = ""
+      mjr["end_az"] = ""
+      mjr["end_el"] = ""
+      mjr["start_ra"] = ""
+      mjr["start_dec"] = ""
+      mjr["end_ra"] = ""
+      mjr["end_dec"] = ""
+      mjr['meteor_frame_data'] = mfd
+ 
+
+
    def meteor_scan(self ):
       print("METEOR SCAN", self.meteor_file)
       bad = 0
@@ -3923,31 +4177,26 @@ class Meteor():
       cnts = self.which_cnts(cnt_res)
       if len(cnts) > 25:
          thresh_val = 10 
-         print("THRESH VAL", thresh_val)
          _, thresh_img = cv2.threshold(sub.copy(), thresh_val, 255, cv2.THRESH_BINARY)
          cnt_res = cv2.findContours(thresh_img.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
          cnts = self.which_cnts(cnt_res)
       if len(cnts) > 25:
          thresh_val = 15 
-         print("THRESH VAL", thresh_val)
          _, thresh_img = cv2.threshold(sub.copy(), thresh_val, 255, cv2.THRESH_BINARY)
          cnt_res = cv2.findContours(thresh_img.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
          cnts = self.which_cnts(cnt_res)
       if len(cnts) > 25:
          thresh_val = 20
-         print("THRESH VAL", thresh_val)
          _, thresh_img = cv2.threshold(sub.copy(), thresh_val, 255, cv2.THRESH_BINARY)
          cnt_res = cv2.findContours(thresh_img.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
          cnts = self.which_cnts(cnt_res)
       if len(cnts) > 25:
          thresh_val = 25
-         print("THRESH VAL", thresh_val)
          _, thresh_img = cv2.threshold(sub.copy(), thresh_val, 255, cv2.THRESH_BINARY)
          cnt_res = cv2.findContours(thresh_img.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
          cnts = self.which_cnts(cnt_res)
       if len(cnts) > 25:
          thresh_val = 50 
-         print("THRESH VAL", thresh_val)
          _, thresh_img = cv2.threshold(sub.copy(), thresh_val, 255, cv2.THRESH_BINARY)
          cnt_res = cv2.findContours(thresh_img.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
          cnts = self.which_cnts(cnt_res)
@@ -3959,7 +4208,7 @@ class Meteor():
          intensity = int(np.sum(sub[y:y+h,x:x+w]))
          px_avg = intensity / (w*h)
          if w >= 1 and h >= 1 and px_avg > 5:
-            print("     ",x,y,w,h,intensity,px_avg)
+            #print("     ",x,y,w,h,intensity,px_avg)
             conts.append((x,y,w,h,intensity,px_avg))
       if self.show == 1:
          cv2.imshow('pepe', thresh_img)
