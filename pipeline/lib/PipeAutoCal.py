@@ -2663,7 +2663,6 @@ def deep_calib(cam, json_conf):
    #all_cal_files = deep_cal_report(cam, json_conf)
    year = datetime.now().strftime("%Y")
    print(all_cal_files)
-   input()
    #autocal_dir = "/mnt/ams2/meteor_archive/" + STATION_ID + "/CAL/AUTOCAL/" + year + "/solved/"
    #mcp_file = autocal_dir + "multi_poly-" + STATION_ID + "-" + cam + ".info"
    mcp_dir = "/mnt/ams2/cal/" 
@@ -2777,7 +2776,6 @@ def deep_calib(cam, json_conf):
    star_db['autocal_stars'] = all_stars
    star_db['all_stars'] = all_stars
    print("DONE LOADING CAL STARS.")
-   input()
    # GET MORE STARS FROM METEOR IMAGES
    star_db['meteor_stars'] = []
    # GET METEOR STARS
@@ -7296,7 +7294,6 @@ def reduce_fit_multi(this_poly,field, merged_stars, cal_params, fit_img, json_co
       ocat_x = new_cat_x 
       ocat_y = new_cat_y 
       if field == 'x_poly' or field == 'y_poly':
-         print("DISTORTING:", six, siy, new_cat_x, new_cat_y, ra_center, dec_center, ra, dec, x_poly, y_poly, position_angle, pixscale)
 
          new_cat_x, new_cat_y = distort_xy(0,0,ra,dec,float(ra_center), float(dec_center), x_poly, y_poly, float(1920), float(1080), float(position_angle),3600/float(pixscale))
          img_res = abs(calc_dist((six,siy),(new_cat_x,new_cat_y)))
