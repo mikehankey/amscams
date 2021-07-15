@@ -3598,7 +3598,7 @@ class Meteor():
       last_cx = None
       for frame in self.sd_frames:
          sub = cv2.subtract(frame, self.sd_frames[0])
-         thresh_val = 100
+         thresh_val = 80
          gray_frame = cv2.cvtColor(sub, cv2.COLOR_BGR2GRAY)
          show_frame = frame.copy()
          _, thresh_frame = cv2.threshold(gray_frame.copy(), thresh_val, 255, cv2.THRESH_BINARY)
@@ -3669,11 +3669,11 @@ class Meteor():
       mc = 0
       hdm_x = 1920 / self.sd_frames[0].shape[1] 
       hdm_y = 1080 / self.sd_frames[0].shape[0] 
-      print("HDM:", hdm_x, hdm_y, self.sd_frames[0])
-      exit()
+      print("HDM:", hdm_x, hdm_y, self.sd_frames[0].shape)
       mfd = []
       for fn in frame_data:
          frame = self.sd_frames[fn]
+         show_frame = frame.copy()
          if "cnt" in frame_data[fn]:
             if first_cx is None:
                first_cx = frame_data[fn]['cx']
@@ -3724,16 +3724,18 @@ class Meteor():
             cx2 = frame_data[fn]['cx']+5
             cy2 = frame_data[fn]['cy']+5
 
-            cv2.rectangle(frame, (int(ex1), int(ey1)), (int(ex2) , int(ey2)), (255, 0, 255), 1)
-            cv2.rectangle(frame, (int(cx1), int(cy1)), (int(cx2) , int(cy2)), (255, 255, 255), 1)
+            cv2.rectangle(show_frame, (int(ex1), int(ey1)), (int(ex2) , int(ey2)), (255, 0, 255), 1)
+            cv2.rectangle(show_frame, (int(cx1), int(cy1)), (int(cx2) , int(cy2)), (255, 255, 255), 1)
 
             extra_sec = int(fn) / 25
             frame_time = clip_start_datetime + datetime.timedelta(0,extra_sec)
-            dt = datetime.datetime.now().strftime("%Y_%m_%d_%H_%M_%S.%f")
+            print("FRAME TIME:", frame_time)
+            dt = frame_time.strftime("%Y_%m_%d_%H_%M_%S.%f")
+            print("DT:", dt)
             frame_data[fn]['dt'] = dt
          else:
             print(fn)
-         cv2.imshow('pepe', frame)
+         cv2.imshow('pepe', show_frame)
          cv2.waitKey(30)
 
       for fn in frame_data:
@@ -3742,7 +3744,12 @@ class Meteor():
             hd_y = frame_data[fn]['hd_y']
             tx, ty, ra ,dec , az, el = XYtoRADec(hd_x,hd_y,meteor_video_file,mcp,json_conf)
             print("FINAL", fn, frame_data[fn]['hd_x'], frame_data[fn]['hd_y'], az,el) 
-            mfd.append((frame_data[fn]['dt'],fn,frame_data[fn]['est_x']-5,frame_data[fn]['est_y']-5, 5,5,99,ra,dec,az,el))
+            mfd.append((frame_data[fn]['dt'],fn,hd_x,hd_y, 5,5,99,ra,dec,az,el))
+            frame = self.sd_frames[fn]
+            hd_frame = cv2.resize(frame, (1920,1080))
+            cv2.rectangle(hd_frame, (int(hd_x-5), int(hd_y-5)), (int(hd_x+5) , int(hd_y+5)), (0, 0, 255), 1)
+            cv2.imshow('HD', hd_frame)
+            cv2.waitKey(30)
          else:
             print(fn)
       for data in mfd:

@@ -1166,6 +1166,10 @@ class Meteor():
       self.move_area = [min_x,min_y,max_x,max_y]
       return(dom_dir, x_dir, y_dir,[min_x,min_y,max_x,max_y])
 
+
+   def remote_reduce(self, station_id, meteor_video_file):
+      print("REMOTE REDUCE:", station_id, meteor_video_file)
+
    def meteor_scan(self):
       print("   meteor scan.", self.meteor_dir + self.sd_vid)
       self.pos_meteors = []
