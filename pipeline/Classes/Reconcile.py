@@ -156,8 +156,12 @@ class Reconcile():
       for mfile in self.mfiles:
          mkey = self.station_id + "_" + mfile
          if mkey in cloud_index:
-            if cloud_index[mkey]['cloud_files'] == aws_dict[mkey]['ss']:
-               print("INSYNC!", mkey, cloud_index[mkey]['cloud_files'], aws_dict[mkey]['ss'] ) 
+            if mkey in aws_dict:
+               if cloud_index[mkey]['cloud_files'] == aws_dict[mkey]['ss']:
+                  print("INSYNC!", mkey, cloud_index[mkey]['cloud_files'], aws_dict[mkey]['ss'] ) 
+            else:
+               print("FILE NOT IN AWS DICT?", mkey)
+               input()
          else:
             print("NOT IN CLOUD INDEX", mkey)
 

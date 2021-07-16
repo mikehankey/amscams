@@ -23,12 +23,12 @@ def get_meteor_media_sync_status(station_id, sd_vid):
    # is the media fully uploaded to the cloud drive (tiny jpg, prev_jpg, prev_vid, final_vid)
    day = sd_vid[0:10]
    lcdir = "/mnt/ams2/meteors/" + day + "/cloud_files/"
-   cloud_dir = "/mnt/archive.allsky.tv/" + station_id + "/METEORS/" + day + "/"
+   cloud_dir = "/mnt/archive.allsky.tv/" + station_id + "/METEORS/" + day[0:4] + "/" + day + "/"
    cloud_files = []
    if True:
       wild = station_id + "_" + sd_vid.replace(".mp4", "")
       cfs = glob.glob(cloud_dir + wild + "*")
-      print(cloud_dir + wild + "*")
+      print("GLOB:", cloud_dir + wild + "*")
       for cf in cfs:
          el = cf.split("-")
          ext = el[-1]
@@ -80,23 +80,26 @@ def push_obs(api_key,station_id,meteor_file):
 def make_obs_data(station_id, date, meteor_file):
    update_time = datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
    mfn = meteor_file.split("/")[-1]
-   cloud_index_file = "/mnt/ams2/METEOR_SCAN/DATA/cloud_index_" + mfn[0:7] + ".json" 
-   if cfe(cloud_index_file) == 1 :
-      cloud_index = load_json_file(cloud_index_file)
-      ci_root_file = station_id + "_" + mfn.replace(".json", "")
-      ci_root_file = ci_root_file.replace(".mp4", "")
-      if ci_root_file in cloud_index:
-         sync_status = sorted(list(set(cloud_index[ci_root_file]['cloud_files'])))
-      else:
-         sync_status = []
-      print(ci_root_file, sync_status)
-   else:
-      cloud_index = {}
-      print("NO CLOUD_INDEX", cloud_index_file)
-      sync_status = []
+
+
+   #cloud_index_file = "/mnt/ams2/METEOR_SCAN/DATA/cloud_index_" + mfn[0:7] + ".json" 
+   #input(cloud_index_file)
+   #if cfe(cloud_index_file) == 1 :
+   #   cloud_index = load_json_file(cloud_index_file)
+   #   ci_root_file = station_id + "_" + mfn.replace(".json", "")
+   #   ci_root_file = ci_root_file.replace(".mp4", "")
+   #   if ci_root_file in cloud_index:
+   #      sync_status = sorted(list(set(cloud_index[ci_root_file]['cloud_files'])))
+   #   else:
+   #      sync_status = []
+   #   print(ci_root_file, sync_status)
+   #else:
+   #   cloud_index = {}
+   #   print("NO CLOUD_INDEX", cloud_index_file)
+   sd_vid = mfn.replace(".json", ".mp4")
+   sync_status = get_meteor_media_sync_status(station_id, sd_vid)
 
    print("SYNC STATUS:", sync_status)
-
 
    if cfe(meteor_file) == 1:
       red_file = meteor_file.replace(".json", "-reduced.json")

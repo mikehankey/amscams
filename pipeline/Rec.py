@@ -30,5 +30,8 @@ if __name__ == "__main__":
    if cmd == "rec_day":
       year, mon, day = sys.argv[2].split("_")
       R = Reconcile(year, mon)
+      os.system("python3 Meteor.py 8 " + sys.argv[2])
+      os.system("python3 Meteor.py 1 " + sys.argv[2])
       R.reconcile_day(sys.argv[2])
+      os.system("python3 AWS.py sd " + sys.argv[2])
 
