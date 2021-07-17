@@ -1,4 +1,5 @@
 from Classes.SyncAWS import SyncAWS 
+import os
 import datetime
 import glob
 from lib.PipeUtil import load_json_file, cfe, save_json_file
@@ -21,7 +22,7 @@ def push_obs_day(day):
       if "import" not in json_file and "report" not in json_file and "reduced" not in json_file and "calparams" not in json_file and "manual" not in json_file and "starmerge" not in json_file and "master" not in json_file:
 
          jfn = json_file.split("/")[-1]
-         cmd = "python3 AWS.py push_obs " + jfn
+         cmd = "python3 pushAWS.py push_obs " + jfn
          print(cmd)
          os.system(cmd)
 
@@ -55,16 +56,16 @@ def sync_day(day):
 
 
    mdir = "/mnt/ams2/meteors/" + day + "/"
-   SAWS.sync_meteor_day(day)
+   #SAWS.sync_meteor_day(day)
 
 
    old = 0
    if old == 1:
       # SYNC MEDIA FUNCS
       SAWS.delete_aws_meteors(day)
-      SAWS.delete_cloud_media(day)
+      #SAWS.delete_cloud_media(day)
       SAWS.get_mfiles(mdir)
-   #   SAWS.sync_meteor_media(SAWS.mfiles)
+   #  SAWS.sync_meteor_media(SAWS.mfiles)
       #SAWS.upload_cloud_media(day, SAWS.mfiles)
       for sd_vid in SAWS.mfiles:
          SAWS.sync_meteor(sd_vid)

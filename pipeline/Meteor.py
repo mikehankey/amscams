@@ -73,7 +73,7 @@ def scan_day(meteor_date,force=0):
 
    all_meteor.mdir = "/mnt/ams2/meteors/" + meteor_date + "/"
    all_meteor.get_mfiles(all_meteor.mdir)
-   all_meteor.update_events_obs()
+   #all_meteor.update_events_obs()
 
    for mfile in all_meteor.mfiles:
       meteor_file = mfile.replace(".mp4", ".json")
@@ -81,7 +81,7 @@ def scan_day(meteor_date,force=0):
       all_meteor.meteor_status_report(meteor_file,force)
 
 
-   all_meteor.update_events_obs()
+   #all_meteor.update_events_obs()
    #all_meteor.scan_data = scan_data
    #all_meteor.check_scan_status_month(meteor_date)
    #all_meteor.make_media_for_day(meteor_date)

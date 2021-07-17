@@ -17,6 +17,8 @@ import datetime as ddtt
 
 class Reconcile():
    def __init__(self, year=None,month=None):
+      self.year = year
+      self.month = month
       self.API_URL = "https://kyvegys798.execute-api.us-east-1.amazonaws.com/api/allskyapi"
       self.data_dir = "/mnt/ams2/METEOR_SCAN/DATA/"
       if cfe(self.data_dir,1) == 0:
@@ -81,8 +83,8 @@ class Reconcile():
          last_month = mon
 
       print("GETTING SCAN MEDIA...", year, month)
-      self.get_scan_media(year,month)
-      self.get_cloud_media(year)
+      #self.get_scan_media(year,month)
+      #self.get_cloud_media(year)
       new = 1
       if new >= 1:    
          print("saving " + year + " data")
@@ -97,8 +99,8 @@ class Reconcile():
             print("   ",mfile)
             deleted_meteors.append(root_file)
       for root_file in deleted_meteors:
-         print("   INFO: REMOVED FILE FROM INDEX", root_file) 
-         print(self.rec_data.keys())
+         #print("   INFO: REMOVED FILE FROM INDEX", root_file) 
+         #print(self.rec_data.keys())
          if root_file in self.rec_data['meteor_index']: 
             del(self.rec_data['meteor_index'][root_file])
          if root_file in self.rec_data['mfiles']: 
@@ -107,6 +109,7 @@ class Reconcile():
          #   del(self.rec_data['needs_review'][root_file])
          #if root_file in self.rec_data['corrupt_json']: 
          #   del(self.rec_data['corrupt_json'][root_file])
+      save_json_file(self.rec_file, self.rec_data)
 
    def get_aws_obs(self,day):
       url = self.API_URL + "?cmd=get_obs_for_day&station_id=" + self.station_id + "&day=" + day
@@ -159,14 +162,35 @@ class Reconcile():
             if mkey in aws_dict:
                if cloud_index[mkey]['cloud_files'] == aws_dict[mkey]['ss']:
                   print("INSYNC!", mkey, cloud_index[mkey]['cloud_files'], aws_dict[mkey]['ss'] ) 
+               else:
+                  print("NOT IN SYNC!", mkey, cloud_index[mkey]['cloud_files'], aws_dict[mkey]['ss'] ) 
             else:
                print("FILE NOT IN AWS DICT?", mkey)
-               input()
          else:
             print("NOT IN CLOUD INDEX", mkey)
 
 
 
+
+   def rec_report(self ) :
+      sum_rpt = {}
+      sum_rpt['status'] = {}
+      sum_rpt['days'] = {}
+      print("REC REPORT FOR ", self.station_id, self.year, self.month)
+      for key in sorted(self.rec_data['meteor_index'].keys(), reverse=True):
+         print(key, self.rec_data['meteor_index'][key]['obs_data'].keys())
+         scan_status = self.rec_data['meteor_index'][key]['obs_data']['scan_status']['status']
+         print("SCAN STATUS:",  self.rec_data['meteor_index'][key]['obs_data']['scan_status'])
+
+         if scan_status not in sum_rpt['status']:
+            sum_rpt['status'][scan_status] = 0
+         else:
+            sum_rpt['status'][scan_status] += 1 
+      for key in sum_rpt['status']:
+         print(key, sum_rpt['status'][key])
+
+
+      save_json_file(self.rec_file, self.rec_data)
 
 
 
@@ -273,6 +297,7 @@ class Reconcile():
             print("   INFO: NEED TO GET SCAN STATUS!")
             scan_status = self.get_scan_status(root_file)
             self.rec_data['meteor_index'][root_file]['obs_data']['scan_status'] = scan_status
+         scan_status = self.rec_data['meteor_index'][root_file]['obs_data']['scan_status']
          print(root_file, mfd, peak_int, scan_status )
       print("FILES NEEDING MANUAL REVIEW!")
       for root_file in self.rec_data['needs_review']:
@@ -282,11 +307,14 @@ class Reconcile():
             scan_status = 0
          print(root_file, scan_status)
 
+
    def get_scan_status(self, root_file):
       mfile = "/mnt/ams2/meteors/" + root_file[0:10] + "/" + root_file + ".json"
       scan_status = {}
       scan_status['jobs'] = [] 
       scan_status['mets'] = [] 
+      scan_status['status'] = ""
+      scan_status['problems'] = []
       meteor_scan_run = 0
       meteor_scan_meteors = 0
       meteor_crop_scan_run = 0
@@ -301,6 +329,11 @@ class Reconcile():
             mj = self.remake_mj(root_file)
             resave_mj = 1
             #exit()
+         roi_good = 0
+         if "roi" in mj:
+            if sum(mj['roi']) > 0:
+               roi_good = 1
+
          if "meteor_scan_meteors" in mj:
             meteor_scan_run = 1
             meteor_scan_meteors = len(mj['meteor_scan_meteors'])
@@ -330,6 +363,24 @@ class Reconcile():
             meteor_hd_crop_scan_meteors = len(mj['meteor_scan_hd_crop_scan'])
          scan_status['jobs'] = [meteor_scan_run, meteor_crop_scan_run, meteor_hd_crop_scan_run] 
          scan_status['mets'] = [meteor_scan_meteors, meteor_crop_scan_meteors, meteor_hd_crop_scan_meteors] 
+         if sum(scan_status['jobs']) == 3 and sum(scan_status['mets']) == 3 and roi_good == 1:
+            scan_status['status'] = "GOOD"
+         elif sum(scan_status['jobs']) == 0:
+            scan_status['status'] = "SCAN NOT RUN"
+         elif 0 < sum(scan_status['jobs']) < 3:
+            if meteor_scan_run == 0:
+               scan_status['problems'].append("METEOR SCAN HAS NOT RUN")
+            if meteor_crop_scan_run == 0:
+               scan_status['problems'].append("CROP SCAN HAS NOT RUN")
+               scan_status['status'] = "NEEDS REVIEW"
+            if meteor_hd_crop_scan_run == 0:
+               scan_status['problems'].append("HD CROP HAS NOT RUN")
+               scan_status['status'] = "NEEDS REVIEW"
+         else:
+            scan_status['status'] = "NEEDS REVIEW"
+         if roi_good == 0:
+            scan_status['problems'].append("NO ROI")
+
          mj['scan_status'] = scan_status
          save_json_file(mfile, mj)
       else: 

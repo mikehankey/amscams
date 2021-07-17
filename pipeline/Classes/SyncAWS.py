@@ -248,6 +248,7 @@ class SyncAWS():
 
       
       url = self.API_URL + "?cmd=get_obs_for_day&station_id=" + self.station_id + "&day=" + day
+      print(url)
       response = requests.get(url)
       content = response.content.decode()
       content = content.replace("\\", "")
@@ -786,7 +787,6 @@ class SyncAWS():
       mdir = "/mnt/ams2/meteors/" + day + "/" 
       if "all_vals" not in data:
          print("ERROR all_vals missing?", data)
-         input()
 
       for row in data['all_vals']:
          if "vid" not in row:
