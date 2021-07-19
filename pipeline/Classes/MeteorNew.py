@@ -173,7 +173,7 @@ class Meteor():
       mon = felm[1]
       dom = felm[2]
 
-      prev_img = sd_vid.replace(".mp4", "-PREV.jpg")
+      prev_img = sd_vid.replace(".mp4", "-prev.jpg")
       prev_img = self.station_id + "_" + prev_img
       stack_thumb = sd_vid.replace(".mp4", "-stacked-tn.jpg")
 
@@ -215,7 +215,7 @@ class Meteor():
             print(key)
          roi = data['roi']
          roi_file = meteor_scan_dir+ self.station_id + "_" + root_file + "-ROI.jpg"
-         prev_file = meteor_scan_dir+ self.station_id + "_" + root_file + "-PREV.jpg"
+         prev_file = meteor_scan_dir+ self.station_id + "_" + root_file + "-prev.jpg"
          if cfe(roi_file) == 1:
             img_file = meteor_scan_dir+ self.station_id + "_" + root_file + "-ROI.jpg"
             print("USE ROI:", roi_file)
@@ -493,7 +493,7 @@ class Meteor():
 
       # MAKE AND SAVE PREV IMG
       prev_img = cv2.resize(self.sd_stack, (320,180))
-      cv2.imwrite(base_file + "-PREV.jpg", prev_img,[cv2.IMWRITE_JPEG_QUALITY, 90])
+      cv2.imwrite(base_file + "-prev.jpg", prev_img,[cv2.IMWRITE_JPEG_QUALITY, 90])
 
       #frames_img = final_sd_vid.replace(".mp4", "-FRMS.jpg")
       #if cfe(frames_img) == 0 or True:
@@ -755,9 +755,14 @@ class Meteor():
          if root_file not in root_files:
             bad_local_files[lf] = "No meteor.json for this resource"
 
-         if "prev-vid.mp4" in lf or "PREV.jpg" in lf or "txt" in lf or "info" in lf:
+         if "prev-vid.mp4" in lf or "txt" in lf or "info" in lf:
             continue
-
+         if "prev.jpg" in lf:
+            lft = lf.replace("PREV", "prev")
+            if lft not in cloud_files:
+               cmd = "cp " + local_dir + lft + " " + cloud_dir + lft
+               print(cmd)
+               os.system(cmd)
 
          if lf not in cloud_files:
             if "HD" not in lf and root_file in root_files:
@@ -811,7 +816,7 @@ class Meteor():
       print("RKEY:", rkey)
       # needed media files
       # preview image / cropped thumbs
-      final_media['prev_img'] = ms_dir + self.station_id + "_" + root + "-PREV.jpg"
+      final_media['prev_img'] = ms_dir + self.station_id + "_" + root + "-prev.jpg"
       final_media['roi_img'] = ms_dir + self.station_id + "_" + root + "-ROI.jpg"
       final_media['roi_hd_img'] = ms_dir + self.station_id + "_" + root + "-ROIHD.jpg"
       # preview / cropped videos
@@ -2308,7 +2313,7 @@ class Meteor():
             continue
 
          # preview image / cropped thumbs
-         final_media['prev_img'] = self.station_id + "_" + root + "-PREV.jpg"
+         final_media['prev_img'] = self.station_id + "_" + root + "-prev.jpg"
          final_media['roi_img'] = self.station_id + "_" + root + "-ROI.jpg"
          final_media['roihd_img'] = self.station_id + "_" + root + "-ROIHD.jpg" 
          # preview / cropped videos
@@ -2942,7 +2947,7 @@ class Meteor():
          else:
             mshdc_meteors = 0
          roi_file = "/mnt/ams2/METEOR_SCAN/" + key[0:10] + "/" + self.station_id + "_" + key + "-ROI.jpg"
-         prev_file = "/mnt/ams2/METEOR_SCAN/" + key[0:10] + "/" + self.station_id + "_" + key + "-PREV.jpg"
+         prev_file = "/mnt/ams2/METEOR_SCAN/" + key[0:10] + "/" + self.station_id + "_" + key + "-prev.jpg"
          if cfe(roi_file) == 1:
             roi_img = "<img width=180 height=180 src=" + roi_file.replace("/mnt/ams2", "") + ">"
          else:
