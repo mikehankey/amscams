@@ -181,21 +181,26 @@ class Reconcile():
          if "scan_status" in self.rec_data['meteor_index'][key]['obs_data']:
             scan_status = self.rec_data['meteor_index'][key]['obs_data']['scan_status']['status']
          else:
-            scan_status = "NO SCAN STATUS"
-         #else:
-         #   scan_status = self.get_scan_status(key)
+            scan_status = self.get_scan_status(key)
+            self.rec_data['meteor_index'][key]['obs_data']['scan_status'] = scan_status
+            scan_status = scan_status['status']
 
          if scan_status not in sum_rpt['status']:
             sum_rpt['status'][scan_status] = 0
          else:
             sum_rpt['status'][scan_status] += 1 
+         
       for key in sum_rpt['status']:
          print(key, sum_rpt['status'][key])
 
 
       save_json_file(self.rec_file, self.rec_data)
       print("SAVING:", self.rec_file)
-      print("KES:", self.rec_data.keys())
+      print("KEYS:", self.rec_data.keys())
+      for key in self.rec_data.keys():
+         print(key,len(self.rec_data[key]))
+      for key in self.rec_data['meteor_index']:
+         print(key, self.rec_data['meteor_index'][key]['obs_data']['scan_status'] )
 
 
    def reconcile_all_aws_obs(self):
