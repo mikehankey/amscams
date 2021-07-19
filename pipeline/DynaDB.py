@@ -518,7 +518,10 @@ def search_events(dynamodb, date, stations, nocache=0):
       os.makedirs(dyn_cache)
    if nocache == 0:
       all_events_file = dyn_cache + date + "_ALL_EVENTS.json"   
-      aed = load_json_file(all_events_file)
+      if cfe(all_events_file) == 1:
+         aed = load_json_file(all_events_file)
+      else :
+         aed = {}
       return(aed)
 
    # This area should really only be used by the update dyna cache calls
@@ -1053,10 +1056,14 @@ def do_dyna_day(dynamodb, day):
    #print(cmd)
    os.system(cmd)
 
-   #cmd = "./DynaDB.py sync_db_day " + day
-   cmd = "/usr/bin/python3 AWS.py sd " + day
-   print(cmd)
+   cmd = "python3 ./Rec.py rec_day " + day
+
    os.system(cmd)
+
+   #cmd = "./DynaDB.py sync_db_day " + day
+   #cmd = "/usr/bin/python3 AWS.py sd " + day
+   #print(cmd)
+   #os.system(cmd)
 
    cmd = "./DynaDB.py cd " + day
    print(cmd)
@@ -1066,17 +1073,17 @@ def do_dyna_day(dynamodb, day):
    print(cmd)
    os.system(cmd)
 
-   cmd = "./Process.py sync_prev_all " + day
-   print(cmd)
-   os.system(cmd)
+   #cmd = "./Process.py sync_prev_all " + day
+   #print(cmd)
+   #os.system(cmd)
 
-   cmd = "./Process.py sync_final_day " + day
-   print(cmd)
-   os.system(cmd)
+   #cmd = "./Process.py sync_final_day " + day
+   #print(cmd)
+   #os.system(cmd)
 
-   cmd = "./DynaDB.py cd " + day
-   print(cmd)
-   os.system(cmd)
+   #cmd = "./DynaDB.py cd " + day
+   #print(cmd)
+   #os.system(cmd)
 
 
 def update_mj_events(dynamodb, date):

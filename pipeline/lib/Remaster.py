@@ -155,7 +155,7 @@ def remaster_month(wild,json_conf):
          remaster_day(day, json_conf)
 
 def remaster_day(day,json_conf):
-
+   return()
    print("REMASTER DAY:", day)
    mfs = []
    files = glob.glob("/mnt/ams2/meteors/" + day + "/*.json")
