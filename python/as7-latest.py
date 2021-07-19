@@ -102,6 +102,7 @@ def log_weather(datetime_str):
    data['wind'] = wind 
    data['mi'] = wind_speed
    data['moon_phase'] = moon_phase
+   data['datetime'] = datetime_str
    wjs = outfile.replace(".txt", ".json") 
    save_json_file(wjs, data)
    #print(location, status, temp, wind, wind_speed, moon_phase) 
