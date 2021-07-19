@@ -671,6 +671,8 @@ class Meteor():
       good_files = {}
       bad_files = {}
 
+      print("MFILES:", len(self.mfiles))
+
       for mfile in self.mfiles:
          root_file = mfile.replace(".mp4", "")
          root_files[root_file] = {}
@@ -757,7 +759,7 @@ class Meteor():
 
          if "prev-vid.mp4" in lf or "txt" in lf or "info" in lf:
             continue
-         if "prev.jpg" in lf:
+         if "prev.jpg" in lf and lf not in bad_local_files:
             lft = lf.replace("PREV", "prev")
             if lft not in cloud_files:
                cmd = "cp " + local_dir + lft + " " + cloud_dir + lft
@@ -963,7 +965,6 @@ class Meteor():
          
       if ("meteor_scan_hd_crop_scan" not in mj and "run_hd_crop_scan" not in mj) or "rerun_hd_crop_scan" in mj :
 
-         #input("HD SCAN Waiting...", mj['meteor_scan_hd_crop_scan'], mj['run_hd_crop_scan'])
          if "roi" in mj:
             hx1,hy1,hx2,hy2 = self.sd_to_hd_roi(mj['roi'], self.sd_stack.shape[1], self.sd_stack.shape[0])
             mj['roi_hd'] = [hx1,hy1,hx2,hy2]
@@ -988,7 +989,6 @@ class Meteor():
                mj['meteor_scan_hd_crop_scan'] = self.dict_to_array(mj['meteor_scan_hd_crop_scan'])
 
       if "msc_meteors" not in mj:
-         #input("MSC METEORS MISSING Waiting...")
          missing.append("msc_meteors")
       else:
          if (type(mj['msc_meteors']) == dict): 
@@ -1022,7 +1022,6 @@ class Meteor():
 
       if len(missing) > 0:
          print("MISSING:", missing)
-         #input("MISSING FILES...")
       if "final_trim" not in mj or len(missing) > 0:
          #input("FINAL TRIM NOT IN MJ!...")
          print("REMAKE VIDEOS SOMETHING IS MISSING!", missing)
@@ -3597,7 +3596,6 @@ class Meteor():
       #cal_params = self.get_remote_calib(station_id,cam_id)
       # cam, date, date, az, el, pos, px
       #print(default_calib)
-      #exit()
       print("REMOTE REDUCE:", station_id, meteor_video_file)
       frame_data = {}
       self.load_frames(meteor_video_file)
