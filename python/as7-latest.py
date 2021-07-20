@@ -72,6 +72,11 @@ def log_weather(datetime_str):
       location = city + ", " + state + " " + country
    else:
       location = city + ", " + country
+   outdir = "/mnt/ams2/latest/" + date_str + "/" 
+   if cfe(outdir,1) == 0:
+      os.makedirs(outdir)
+   if cfe(cloud_dir,1) == 0:
+      os.makedirs(cloud_dir)
    outfile = "/mnt/ams2/latest/" + date_str + "/" + datetime_str + ".txt"
 
    url = "wttr.in/" + str(lat) + "," + str(lng) + "?0T --output " + outfile
