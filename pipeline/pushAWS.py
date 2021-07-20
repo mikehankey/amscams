@@ -143,13 +143,17 @@ def make_obs_data(station_id, date, meteor_file):
 
       if "cp" in mj:
          cp = mj['cp']
-         if "total_res_px" not in cp:
-            cp['total_res_px'] = 9999
-         if "cat_image_stars" not in cp:
-            cp['cat_image_stars'] = []
-         if math.isnan(cp['total_res_px']):
-            cp['total_res_px'] = 9999
-         calib = [cp['ra_center'], cp['dec_center'], cp['center_az'], cp['center_el'], cp['position_angle'], cp['pixscale'], float(len(cp['cat_image_stars'])), float(cp['total_res_px'])]
+         if type(cp) == "dict":
+            if "total_res_px" not in cp:
+               cp['total_res_px'] = 9999
+            if "cat_image_stars" not in cp:
+               cp['cat_image_stars'] = []
+            if math.isnan(cp['total_res_px']):
+               cp['total_res_px'] = 9999
+         if cp is not None and cp != 0:
+            calib = [cp['ra_center'], cp['dec_center'], cp['center_az'], cp['center_el'], cp['position_angle'], cp['pixscale'], float(len(cp['cat_image_stars'])), float(cp['total_res_px'])]
+         else:
+            calib = [] 
       else:
          calib = []
       if cfe(red_file) == 1:
@@ -212,8 +216,11 @@ def make_obs_data(station_id, date, meteor_file):
    else:
       dfv = 1
    if "cp" in mj:
-      if "cat_image_stars" in mj['cp']:
-         cat_image_stars = mj['cp']['cat_image_stars']
+      if cp is not None and cp != 0:
+         if "cat_image_stars" in mj['cp']:
+            cat_image_stars = mj['cp']['cat_image_stars']
+         else:
+            cat_image_stars = []
       else:
          cat_image_stars = []
    else:

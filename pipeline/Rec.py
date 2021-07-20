@@ -43,7 +43,7 @@ if __name__ == "__main__":
       date = sys.argv[2]
       year, mon, day = sys.argv[2].split("_")
       R = Reconcile(year, mon)
-
+      os.system("./Process.py purge_meteors")
       SAWS = SyncAWS(R.station_id, api_key)
       SAWS.delete_aws_meteors(date)
       os.system("python3 Meteor.py 8 " + sys.argv[2])
