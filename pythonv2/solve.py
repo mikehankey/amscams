@@ -1,4 +1,6 @@
 #!/usr/bin/python3
+
+import pickle
 from lib.FileIO import load_json_file, save_json_file, cfe
 import matplotlib
 import matplotlib.pyplot as plt
@@ -43,6 +45,26 @@ from sympy import Point3D, Line3D, Segment3D, Plane
 
 
 json_conf = load_json_file("../conf/as6.json")
+
+def todict(obj, classkey=None):
+    if isinstance(obj, dict):
+        data = {}
+        for (k, v) in obj.items():
+            data[k] = todict(v, classkey)
+        return data
+    elif hasattr(obj, "_ast"):
+        return todict(obj._ast())
+    elif hasattr(obj, "__iter__") and not isinstance(obj, str):
+        return [todict(v, classkey) for v in obj]
+    elif hasattr(obj, "__dict__"):
+        data = dict([(key, todict(value, classkey)) 
+            for key, value in obj.__dict__.items() 
+            if not callable(value) and not key.startswith('_')])
+        if classkey is not None and hasattr(obj, "__class__"):
+            data[classkey] = obj.__class__.__name__
+        return data
+    else:
+        return obj
 
 def get_template(file):
    fp = open(file, "r")
@@ -410,18 +432,64 @@ def report_html(event_id):
 
 def vida_plots(event_id):
    year = event_id[0:4]
-   day = event_id[0:10]
+   mon = event_id[4:6]
+   day = event_id[6:8]
+
+   
    station_id = json_conf['site']['ams_id']
-   event_dir = "/mnt/ams2/meteor_archive/" + station_id + "/EVENTS/" + year + "/" + day + "/" + event_id + "/"
-   event_file = event_dir + event_id + ".json" 
+   event_dir = "/mnt/archive.allsky.tv/EVENTS/" + year + "/" + mon + "/" + day + "/" + event_id + "/"
+   local_event_dir = "/mnt/ams2/EVENTS/" + year + "/" + mon + "/" + day + "/" + event_id + "/"
+   event_file = event_dir + event_id + "-event.json" 
    plot_json_out = event_dir + event_id + "-plots.json" 
+   print("EF:", event_file)
+   event_data = load_json_file(event_file)
 
-   jsons = glob.glob(event_dir + "*report.json")
-   print(event_dir + "*report.json")
+   event_obs = {}
+   for station_id in event_data['obs']:
+       for vid_file in event_data['obs'][station_id]:
+          evd = event_data['obs'][station_id][vid_file]
+          obs = {}
+          obs['station_id'] = station_id
+          obs['sd_video_file'] = vid_file
+          obs['loc'] = evd['loc']
+          obs['calib'] = evd['calib']
+          obs['times'] = evd['times']
+          obs['fns'] = evd['fns']
+          obs['xs'] = evd['xs']
+          obs['ys'] = evd['ys']
+          obs['azs'] = evd['azs']
+          obs['els'] = evd['els']
+          obs['ras'] = evd['ras']
+          obs['decs'] = evd['decs']
+          obs['ints'] = evd['ints']
+          obs['gc_azs'] = evd['gc_azs']
+          obs['gc_els'] = evd['gc_els']
+          event_obs[station_id] = obs
+
+   jsons = glob.glob(event_dir + "*.json")
+   print(event_dir + "*.json")
    print(jsons )
+   print(event_dir)
+   print(jsons)
    vida_report = jsons[0]
+   pickle_file = local_event_dir + event_id + "_trajectory.pickle"
+   print("P:", pickle_file)
+   if cfe(pickle_file) == 1 :
+      with open(pickle_file, 'rb') as handle:
+         vida_data = pickle.load(handle)
+         print(vida_report)
+   else:
+      print("NO PICKLE FILE:", local_event_dir)
+      exit()
 
+   vida_data = todict(vida_data)
+   vida_file = local_event_dir + event_id + "_trajectory.json"
+   vida_cloud_file = event_dir + event_id + "_trajectory.json"
 
+   json_data = json.dumps(vida_data, default=convert)
+   #save_json_file(vida_file, json_data)
+   #os.system("cp " + vida_file + " " + vida_cloud_file)
+   print(vida_data['orbit'].keys())
 
    #build arrays for res error plots (per-station res, all station res, all station ang res)
 
@@ -430,11 +498,10 @@ def vida_plots(event_id):
    basic_shapes = ['square-dot', 'circle-dot', 'triangle-up-dot']
    bc = 0
    bs = 0
-   vida_data = load_json_file(vida_report)
-
+   #vida_data = load_json_file(vida_report)
    # build orbit plot / iframe
-   qs = vida_data['orbit']['orbit']
-   orbit_iframe = "http://orbit.allskycams.com/index_emb.php?name={:s}&&epoch={:s}&a={:s}&M={:s}&e={:s}&I={:s}&Peri={:s}&Node={:s}&P={:s}&q={:s}&T={:s}".format( str(event_id), str(qs['jd_ref']), str(qs['a']), str(qs['M']), str(qs['e']), str(qs['i']), str(qs['peri']), str(qs['node']), str(qs['T']), str(qs['q']), str(qs['jd_ref']))
+   qs = vida_data['orbit']
+   orbit_iframe = "https://orbit.allskycams.com/index_emb.php?name={:s}&&epoch={:s}&a={:s}&M={:s}&e={:s}&I={:s}&Peri={:s}&Node={:s}&P={:s}&q={:s}&T={:s}".format( str(event_id), str(qs['jd_ref']), str(qs['a']), str(qs['mean_anomaly']), str(qs['e']), str(qs['i']), str(qs['peri']), str(qs['node']), str(qs['T']), str(qs['q']), str(qs['jd_ref']))
    orbit_iframe = orbit_iframe.replace(" ", "")
 
    observer_data = {}
@@ -442,16 +509,25 @@ def vida_plots(event_id):
    obs_vectors= []
    obs_names= []
 
-   for obs_key in vida_data['observations']:
+   for obs_data in vida_data['observations']:
+      print("OBS DATA KEYS:", obs_data.keys())
+      print("OBS DATA:", obs_data)
+      obs_key = obs_data['station_id']
       if obs_key not in observer_data:
          observer_data[obs_key] = {}
-         lon = vida_data['observations'][obs_key]['station_info'][2].replace(" ", "")
-         lat = vida_data['observations'][obs_key]['station_info'][3].replace(" ", "")
-         alt = vida_data['observations'][obs_key]['station_info'][4].replace(" ", "")
-         start_az = vida_data['observations'][obs_key]['point_info'][0]['model_azim']
-         start_el = vida_data['observations'][obs_key]['point_info'][0]['model_elev']
-         end_az = vida_data['observations'][obs_key]['point_info'][-1]['model_azim']
-         end_el = vida_data['observations'][obs_key]['point_info'][-1]['model_elev']
+         lon = np.degrees(obs_data['lon'])
+         lat = np.degrees(obs_data['lat'])
+         alt = obs_data['ele']
+         print(lat,lon,alt)
+         #lat = vida_data['observations'][obs_key]['station_info'][3].replace(" ", "")
+         #alt = vida_data['observations'][obs_key]['station_info'][4].replace(" ", "")
+         meas1 = np.degrees(obs_data['meas1'][0])
+         meas2 = np.degrees(obs_data['meas2'][0])
+         start_el = np.degrees(obs_data['model_elev'][0])
+         start_az = np.degrees(obs_data['model_azim'][0])
+         start_el = np.degrees(obs_data['model_elev'][0])
+         end_az = np.degrees(obs_data['model_azim'][-1])
+         end_el = np.degrees(obs_data['model_elev'][-1])
          observer_data[obs_key]['location'] = [lat,lon,alt]
          obs_points.append([lat,lon])
          obs_names.append(obs_key)
@@ -459,6 +535,8 @@ def vida_plots(event_id):
          observer_data[obs_key]['end_az_el'] = [end_az,end_el]
       if obs_key not in plot_data:
          plot_data[obs_key] = {}
+         plot_data[obs_key]['xs'] = []
+         plot_data[obs_key]['ys'] = []
          plot_data[obs_key]['hres'] = []
          plot_data[obs_key]['vres'] = []
          plot_data[obs_key]['ang_res'] = []
@@ -471,19 +549,25 @@ def vida_plots(event_id):
          plot_data[obs_key]['az_el'] = []
          plot_data[obs_key]['ra_dec'] = []
          plot_data[obs_key]['time_data'] = []
-      for pd in vida_data['observations'][obs_key]['point_info']:
-         plot_data[obs_key]['hres'].append(pd['h_residuals'])
-         plot_data[obs_key]['vres'].append(pd['v_residuals'])
-         plot_data[obs_key]['ang_res'].append(pd['ang_res'])
-         plot_data[obs_key]['lag'].append(pd['lag'])
-         plot_data[obs_key]['velocity'].append(pd['velocity']/1000)
-         plot_data[obs_key]['length'].append(pd['length'])
-         plot_data[obs_key]['height'].append(pd['model_ht'])
-         plot_data[obs_key]['time_data'].append(pd['time_data'])
-         plot_data[obs_key]['state_vect_dist'].append(pd['state_vect_dist']/1000)
-         plot_data[obs_key]['points'].append((pd['model_lat'],pd['model_lon'], pd['model_ht']))
-         plot_data[obs_key]['az_el'].append((pd['model_azim'],pd['model_elev']))
-         plot_data[obs_key]['ra_dec'].append((pd['model_ra'],pd['model_dec']))
+      for i in range(0, len(obs_data['model_azim'])-1 ):
+         print("HRES:", obs_data['h_residuals'][i])
+         print("HRES:", obs_data['v_residuals'][i])
+         pd = obs_data
+         plot_data[obs_key]['xs'].append(np.degrees(pd['model_azim'][i]))
+         plot_data[obs_key]['ys'].append(np.degrees(pd['model_elev'][i]))
+         plot_data[obs_key]['hres'].append(pd['h_residuals'][i])
+         plot_data[obs_key]['vres'].append(pd['v_residuals'][i])
+         plot_data[obs_key]['ang_res'].append(np.degrees(pd['ang_res'][i])*60)
+         plot_data[obs_key]['lag'].append(pd['lag'][i])
+         plot_data[obs_key]['velocity'].append(pd['velocities'][i]/1000)
+         plot_data[obs_key]['length'].append(pd['length'][i])
+         plot_data[obs_key]['height'].append(pd['model_ht'][i])
+         print("H:", pd['model_ht'][i])
+         plot_data[obs_key]['time_data'].append(pd['time_data'][i])
+         plot_data[obs_key]['state_vect_dist'].append(pd['state_vect_dist'][i]/1000)
+         plot_data[obs_key]['points'].append((np.degrees(pd['model_lat'][i]),np.degrees(pd['model_lon'][i]), np.degrees(pd['model_ht'][i])))
+         plot_data[obs_key]['az_el'].append((np.degrees(pd['model_azim'][i]),np.degrees(pd['model_elev'][i])))
+         plot_data[obs_key]['ra_dec'].append((np.degrees(pd['model_ra'][i]),np.degrees(pd['model_dec'][i])))
 
    plots = []
    plot = {}
@@ -496,7 +580,7 @@ def vida_plots(event_id):
    # make 2D observer and ground track map
    plot = {}
    plot['plot_id'] = "ground_track"
-   plot['scope'] = "north america"
+   plot['scope'] = "europe"
    plot['plot_name'] = "Ground Track"
    plot['plot_type'] = "map"
    plot['x_label'] = "Latitude"
@@ -562,7 +646,7 @@ def vida_plots(event_id):
    plot['plot_id'] = "los_residuals_all"
    plot['plot_name'] = "Observed vs. Radiant LoS Residuals, all stations"
    plot['x_label'] = "Time (s)"
-   plot['y_label'] = "Angle (arcsec)"
+   plot['y_label'] = "Angle (arc min)"
    series_c = 1
    for obs_key in plot_data:
       x_field = "x" + str(series_c) + "_vals"
@@ -754,6 +838,7 @@ def vida_plots(event_id):
    
    # make the spatial res graph for each station
    for obs_key in plot_data:
+      # first do the res
       plot = {}
       plot['plot_id'] = "res_station" + "_" + obs_key 
       #plot['plot_type'] = "xy_scatter"
@@ -790,12 +875,67 @@ def vida_plots(event_id):
       #plot['x1_symbol'] = basic_shapes[0]
       #plot['x2_symbol'] = basic_shapes[1]
       plots.append(plot)
+      # NOW do the xy position
+      plot = {}
+      plot['plot_id'] = "Meteor_Position" + "_" + obs_key
+      #plot['plot_type'] = "xy_scatter"
+      #plot['plot_subtype'] = "station_res_err"
+      plot['plot_name'] = "Meteor X,Y Position, station " + obs_key
+      plot['plot_type'] = "xy_scatter"
+      plot['plot_scaling'] = 0
+      plot['opts'] = "meteor_pos"
+      plot['plot_y_axis_reverse'] = 0
+      plot['x_axis_position'] = "bottom"
+      plot['y_axis_position'] = "left"
+      plot['y_label'] = "Y"
+      plot['x_label'] = "X"
+      plot['y1_reverse'] = 1
+      plot['y1_axis_scaleanchor'] = "x"
+      plot['y1_axis_scaleratio'] = 1 
+      #avg_h_res = find_avg_abs_val(plot_data[obs_key]['hres'])
+      #avg_v_res = find_avg_abs_val(plot_data[obs_key]['vres'])
+      #plot['x1_data_label'] = obs_key + " Horizontal, RMSD = " + str(avg_h_res) + " m"
+      #plot['x2_data_label'] = obs_key + " Vertical, RMSD = " + str(avg_v_res) + " m"
+      #plot['x1_symbol'] = ""
+      #plot['x2_symbol'] = ""
+      #plot['x1_symbol_size'] = "3"
+      #plot['x2_symbol_size'] = "3"
+      #plot['x1_color'] = basic_colors[0]
+      #plot['x2_color'] = basic_colors[1]
+      event_obs_data = event_obs[obs_key]
+      plot['x1_vals'] = event_obs_data['xs']
+      plot['y1_vals'] = event_obs_data['ys']
+      #plot['x1_vals'] = plot_data[obs_key]['xs']
+      #plot['y1_vals'] = plot_data[obs_key]['ys']
+      plot['x2_vals'] = []
+      plot['y2_vals'] = []
+      if bc >= len(basic_colors):
+         bc = 0
+      color_idx = bc
+      # figure out y vals (time)
+      for i in range(0, len(plot['y1_vals'])):
+         #plot['x1_vals'].append(i/25)
+         #plot['x2_vals'].append(i/25)
+         plot['x1_vals'].append(i)
+         #plot['x2_vals'].append(i)
+
+      #plot['x1_symbol'] = basic_shapes[0]
+      #plot['x2_symbol'] = basic_shapes[1]
+      plots.append(plot)
       print(plot) 
    bs = bs + 1
    fplots = {}
    fplots['plots'] = plots
    save_json_file(plot_json_out, fplots)
    print("SAVED:", plot_json_out)
+   print("saved:", vida_file)
+
+def convert(o):
+    print (type(o))
+    if isinstance(o, numpy.int64): return int(o)  
+    if isinstance(o, numpy.uint8): return int(o)  
+    if isinstance(o, datetime.datetime): return o.strftime("%Y-%m-%d %H:%M:%S")  
+    raise TypeError
 
 def lineFunc(x, m, k):
     """ A line function.
