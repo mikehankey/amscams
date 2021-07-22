@@ -579,11 +579,11 @@ def solve_day(day, cores=20):
       print("DY EV:", event['event_id'])
       go = 1
       if "solve_status" in event:
-         print("Solve Status.", event['solve_status'] )
          if event['solve_status'] == "SUCCESS" or event['solve_status'] == 'WMPL FAILED.':
             go = 0
          if event['solve_status'] == "unsolved":
             go = 1
+         print("Solve Status.", event['solve_status'] , go)
 
       #go = 1
       if go == 1:
@@ -595,7 +595,7 @@ def solve_day(day, cores=20):
              running = check_running("solveWMPL.py")
              print("RUNNING:", running)
              if running < cores:
-                cmd = "./solveWMPL.py se " + event['event_id'] + " > /dev/null &"
+                cmd = "./solveWMPL.py se " + event['event_id'] + " &"
                 os.system(cmd)
                 print(cmd)
              while running >= cores:
@@ -755,7 +755,6 @@ def solve_event(event_id, force=1, time_sync=1):
     print("EVID:", event_id)
 
 
-
     json_conf = load_json_file("../conf/as6.json")
     ams_id = json_conf['site']['ams_id']
     solve_dir = local_event_dir 
@@ -797,7 +796,7 @@ def solve_event(event_id, force=1, time_sync=1):
 
 
     obs = {}
-    ignore_stations = []
+    ignore_stations = ['AMS105']
     #ignore_stations = ['AMS59', 'AMS61']
     if event is None:
        print("EVENT IS NONE!")
@@ -826,11 +825,14 @@ def solve_event(event_id, force=1, time_sync=1):
           obs_data = convert_dy_obs(dy_obs_data, obs )
 
 
-    extra_obs_data = []
-    if len(extra_obs) > 0:
-       for efile in extra_obs:
-          edata = parse_extra_obs(efile)
-          extra_obs_data.append(edata)
+    extra_obs_data = None
+    if False:
+       extra_obs = ["/home/ams/2021_07_04_DFN26.ecsv"]
+       extra_obs_data = []
+       if len(extra_obs) > 0:
+          for efile in extra_obs:
+             edata = parse_extra_obs(efile)
+             extra_obs_data.append(edata)
 
 
     # get WMPL ID (lowest start time)
@@ -879,8 +881,8 @@ def solve_event(event_id, force=1, time_sync=1):
        #os.system("rmdir " + solve_dir )
 
     sol = simple_solvev2(obs_data)
-
-    obs_data = add_extra_obs(extra_obs_data, obs_data)
+    if extra_obs_data is not None:
+       obs_data = add_extra_obs(extra_obs_data, obs_data)
 
     save_json_file(local_event_dir + "/" + event_id + "-simple.json", sol)
     save_json_file(local_event_dir + "/" + event_id + "-obs.json", obs)
@@ -1036,8 +1038,9 @@ def check_event_status(event):
    local_event_dir = "/mnt/ams2/EVENTS/" + year + "/" + month + "/" + day + "/" + event['event_id'] + "/" 
    if "solution" in event:
       if "solution" in event:
-         if "sol_dir" in event['solution']:
-            legacy_event_dir = event['solution']['sol_dir'] + "/" 
+         if event['solution'] != 0:
+            if "sol_dir" in event['solution']:
+               legacy_event_dir = event['solution']['sol_dir'] + "/" 
 
       print("LOCAL DIR:", local_event_dir)
       print("CLOUD DIR:", cloud_event_dir)
@@ -1782,6 +1785,48 @@ def make_kml(kml_file, points, lines):
    kml.save(kml_file)
    print("saved", kml_file)
 
+def check_fix_plots(event_id):
+   
+   year = event_id[0:4]
+   month = event_id[4:6]
+   day = event_id[6:8]
+   event_dir = "/mnt/archive.allsky.tv/EVENTS/" + year + "/" + month + "/" + day + "/" + event_id + "/"
+   local_event_dir = "/mnt/ams2/EVENTS/" + year + "/" + month + "/" + day + "/" + event_id + "/"
+   print("EVENT ID:", event_id)
+   print("EVDIR:", event_dir)
+   print("LOCAL:", local_event_dir)
+
+   if cfe(event_dir,1) == 1:
+      ev_files = glob.glob(event_dir + "*")
+      for ev_file in ev_files:
+         if "index.html" in ev_file or "gz" in ev_file or "ALL" in ev_file:
+            continue
+         ev_fn = ev_file.split("/")[-1]
+         pl_id = ev_fn[0:15]
+         if pl_id != event_id:
+            print("PROB:", ev_fn, pl_id)
+            new_file = ev_file.replace(pl_id, event_id)
+            cmd = "mv " + ev_file + " " + new_file
+            print("MOVE2", cmd)
+            os.system(cmd)
+         else:
+            print("Good:", ev_fn, pl_id)
+   if cfe(local_event_dir,1) == 1:
+      ev_files = glob.glob(local_event_dir + "*")
+      for ev_file in ev_files:
+         if "index.html" in ev_file or "gz" in ev_file or "ALL" in ev_file:
+            continue
+         ev_fn = ev_file.split("/")[-1]
+         pl_id = ev_fn[0:15]
+         if pl_id != event_id:
+            print("PROB:", ev_fn, pl_id)
+            new_file = ev_file.replace(pl_id, event_id)
+            cmd = "mv " + ev_file + " " + new_file
+            print("MOVE3")
+            print(cmd)
+            os.system(cmd)
+         else:
+            print("Good:", ev_fn, pl_id)
 
 
 
@@ -1789,6 +1834,13 @@ def event_report(solve_dir, event_final_dir, obs):
     print("EVREPORT:")
     print("SOLVE DIR:", solve_dir)
     print("FINAL DIR:", event_final_dir)
+
+    final_event_id = event_final_dir.split("/")[-1]
+    if final_event_id == "":
+       final_event_id = event_final_dir.split("/")[-2]
+    print("FINAL ID:", final_event_id)
+
+
     json_conf = load_json_file("../conf/as6.json")
     remote_urls = {}
     if "remote_urls" in json_conf['site']:
@@ -1827,6 +1879,8 @@ def event_report(solve_dir, event_final_dir, obs):
 
     jpgs = []
     for sf in solved_files:
+       if final_event_id not in sf:
+          print("EVENT ID MISMATCH:", sf, final_event_id)
        if "report" in sf:
           fp = open(sf, "r")
           for line in fp:
@@ -1842,6 +1896,8 @@ def event_report(solve_dir, event_final_dir, obs):
           else:
              print(jpg_f, " already made.")
 
+    check_fix_plots(final_event_id)
+
     print("MOVE THE WMPL FILES TO THE FINAL EVENT DIR!")
     final_jpgs = []
     for sf in solved_files:
@@ -1849,12 +1905,13 @@ def event_report(solve_dir, event_final_dir, obs):
        fn = fn.replace(".png", ".jpg")
        new_file = event_final_dir + fn 
        cmd = "mv " + sf + " " + event_final_dir
-       print(cmd)
-       os.system(cmd)
+
+       if sf != event_final_dir + fn:
+          print("MOVE11:", cmd)
+          os.system(cmd)
        if "jpg" in fn:
           final_jpgs.append(new_file)
        print(cmd)
-      
     for jpg in final_jpgs:
        jpg = jpg.replace("/mnt/ams2/meteor_archive/", "")
        html += "<img src=" + jpg + ">"
@@ -1894,9 +1951,12 @@ def WMPL_solve(event_id, obs,time_sync=1):
         else:
            for bfile in obs[station_id]:
                file = bfile
-
-        if len(obs[station_id][file]['times']) > 0:
-           start_times.append(obs[station_id][file]['times'][0])   
+        print(station_id, obs[station_id][file])
+        if "times" in obs[station_id][file]:
+           if len(obs[station_id][file]['times']) > 0:
+              start_times.append(obs[station_id][file]['times'][0])   
+        if "times" not in obs[station_id][file] and "start_datetime" in obs[station_id][file]:
+           obs[station_id][file]['times'] = obs[station_id][file]['start_datetime']
 
     event_start = sorted(start_times)[0]
      
@@ -1907,7 +1967,9 @@ def WMPL_solve(event_id, obs,time_sync=1):
     e_dir = e_dir.replace(" ", "_")
 #    solve_dir 
 
-
+    if "_" in event_start:
+       ty,tm,td,th,tmm,ts = event_start.split("_")
+       event_start = ty + "-" + tm + "-" + td + " " + th + ":" + tmm + ":" + ts
     event_start_dt = datetime.datetime.strptime(event_start, "%Y-%m-%d %H:%M:%S.%f")
     jd_ref = trajconv.datetime2JD(event_start_dt)
 
@@ -2088,6 +2150,9 @@ if cmd == "define_events" or cmd == "de":
    define_events(meteor_file)
 if cmd == "delete_events_day" :
    delete_events_day(meteor_file)
+if cmd == "cfp" :
+   print(cmd)
+   check_fix_plots(sys.argv[2])
 if cmd == "events_report" or cmd == "er":
    if len(sys.argv) > 2:
       events_report(meteor_file, sys.argv[2])

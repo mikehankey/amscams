@@ -577,26 +577,37 @@ def vida_plots(event_id):
    plot['plot_url'] = orbit_iframe
    plots.append(plot)
 
+   track_iframe = "https://archive.allsky.tv/APPS/dist/maps/index.html?mf=/EVENTS/{:s}/{:s}/{:s}/{:s}/{:s}-map.kml&lat={:s}&lon={:s}&zoom=4".format(year,mon,day,event_id,event_id,str(np.degrees(vida_data['rbeg_lat'])),str(np.degrees(vida_data['rbeg_lon'])))
+
    # make 2D observer and ground track map
+   if False:
+      plot = {}
+      plot['plot_id'] = "ground_track"
+      plot['scope'] = "europe"
+      plot['plot_name'] = "Ground Track"
+      plot['plot_type'] = "map"
+      plot['x_label'] = "Latitude"
+      plot['y_label'] = "Longitude"
+      plot['points'] = obs_points
+      plot['point_names'] = obs_names 
+      plot['lines'] = obs_vectors
+ 
+      ts_lat = float(np.degrees(vida_data['rbeg_lat']))
+      ts_lon = float(np.degrees(vida_data['rbeg_lon']))
+      te_lat = float(np.degrees(vida_data['rend_lat']))
+      te_lon = float(np.degrees(vida_data['rend_lon']))
+ 
+      plot['lines'].append((ts_lat,ts_lon,te_lat,te_lon))
+
+      plots.append(plot)
+   # use iframe for ground track
    plot = {}
    plot['plot_id'] = "ground_track"
-   plot['scope'] = "europe"
    plot['plot_name'] = "Ground Track"
-   plot['plot_type'] = "map"
-   plot['x_label'] = "Latitude"
-   plot['y_label'] = "Longitude"
-   plot['points'] = obs_points
-   plot['point_names'] = obs_names 
-   plot['lines'] = obs_vectors
- 
-   ts_lat = float(np.degrees(vida_data['rbeg_lat']))
-   ts_lon = float(np.degrees(vida_data['rbeg_lon']))
-   te_lat = float(np.degrees(vida_data['rend_lat']))
-   te_lon = float(np.degrees(vida_data['rend_lon']))
- 
-   plot['lines'].append((ts_lat,ts_lon,te_lat,te_lon))
-
+   plot['plot_type'] = "iframe"
+   plot['plot_url'] = track_iframe
    plots.append(plot)
+   
 
    # make 3D observer and ground track map
    plot = {}
