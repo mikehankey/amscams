@@ -7,10 +7,19 @@ import time
 import datetime
 import os
 import redis
-import json
+import simplejson as json
+import boto3
+from decimal import Decimal
+
+class DecimalEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, Decimal):
+            return float(obj)
+        return json.JSONEncoder.default(self, obj)
 
 class EventRunner():
    def __init__(self, cmd=None, day=None, month=None,year=None,date=None, use_cache=0):
+      self.dynamodb = boto3.resource('dynamodb')
       admin_conf = load_json_file("admin_conf.json")
       self.r = redis.Redis(admin_conf['redis_host'], port=6379, decode_responses=True)
       self.cmd = cmd
@@ -38,6 +47,7 @@ class EventRunner():
          self.cloud_all_events_index_file = "/mnt/archive.allsky.tv/EVENTS/" + self.year + "/" + self.month + "/" + self.day + "/" + self.date + "_ALL_EVENTS_INDEX.json"  
          self.cloud_all_obs_file = "/mnt/archive.allsky.tv/EVENTS/" + self.year + "/" + self.month + "/" + self.day + "/" + self.date + "_ALL_OBS.json"  
          self.cloud_all_stations_file = "/mnt/archive.allsky.tv/EVENTS/" + self.year + "/" + self.month + "/" + self.day + "/" + self.date + "_ALL_STATIONS.json"  
+         self.cloud_single_stations_file = "/mnt/archive.allsky.tv/EVENTS/" + self.year + "/" + self.month + "/" + self.day + "/" + self.date + "_ALL_SINGLE_STATION_METEORS.json"  
 
 
          if cfe(self.all_events_file) == 1:
@@ -55,7 +65,6 @@ class EventRunner():
          if use_cache == 0:
             os.system("./DynaDB.py udc " + self.date)
 
-
          if cfe(self.all_events_index_file) == 1:
             self.all_events_index = load_json_file(self.all_events_index_file)
          else:
@@ -65,12 +74,10 @@ class EventRunner():
          else:
             self.all_obs = None
          if cfe(self.all_stations_file) == 1:
-            print(self.all_stations_file)
             self.all_stations = load_json_file(self.all_stations_file)
          else:
             self.all_stations = None
 
-         print(len(self.all_stations), "TOTAL STATIONS")
 
          self.station_loc = {}
          for data in self.all_stations:
@@ -79,12 +86,423 @@ class EventRunner():
             lon = data[2]
             self.station_loc[sid] = [lat,lon]
 
+   def make_vida_plots(self, date):
+      dates = date.replace("_", "")
+      events = self.r.keys("E:" + dates + "*")
+      for ev in events:
+         rval = json.loads(self.r.get(ev) )
+         if "solve_status" in rval: 
+            print(ev, rval['solve_status'])
+            if rval['solve_status'] == "SUCCESS":
+               cmd = "cd ../pythonv2/; ./solve.py vida_plots " + ev.replace("E:", "")
+               print(cmd)
+               os.system(cmd)
+
+
+   def update_station_event_ids(self,date):
+      dates = date.replace("_", "")
+      events = self.r.keys("E:" + dates + "*")
+      print("E:" + dates + "*")
+      
+      for ev in events:
+         rval = json.loads(self.r.get(ev) )
+         print(ev, rval['stations'])
+         self.update_obs_event_id(rval)
+
+   def update_obs_event_id(self, event_data):
+      # update all impacted obs
+      event_id = event_data['event_id']
+      if "solve_status" in event_data:
+         solve_status = event_data['solve_status']
+      else:
+         solve_status = "UNSOLVED"
+      if self.dynamodb is None:
+         self.dynamodb = boto3.resource('dynamodb')
+      for i in range(0, len(event_data['stations'])):
+         # setup vars/values
+         station_id = event_data['stations'][i]
+         sd_video_file = event_data['files'][i]
+         if "solve_status" in event_data:
+            solve_status = event_data['solve_status']
+         else:
+            solve_status = "UNSOLVED"
+         event_id_val = event_id + ":" + solve_status
+
+         # setup redis keys for obs and get vals
+         okey = "O:" + station_id + ":" + sd_video_file
+         oikey = "OI:" + station_id + ":" + sd_video_file
+         ro_val = self.r.get(okey)
+         roi_val = self.r.get(oikey)
+         if ro_val is not None:
+            ro_val = json.loads(ro_val)
+            ro_val['event_id'] = event_id_val
+            ro_val = json.dumps(ro_val, cls=DecimalEncoder)
+            self.r.set(okey, ro_val)
+         if roi_val is not None:
+            roi_val = json.loads(roi_val)
+            roi_val['ei'] = event_id_val
+            roi_val = json.dumps(roi_val, cls=DecimalEncoder)
+            self.r.set(oikey, roi_val)
+
+         # update DYNA OBS with EVENT ID
+
+         table = self.dynamodb.Table('meteor_obs')
+         response = table.update_item(
+            Key = {
+               'station_id': station_id,
+               'sd_video_file': sd_video_file
+            },
+         UpdateExpression="set event_id = :event_id_val",
+         ExpressionAttributeValues={
+            ':event_id_val': event_id_val,
+         },
+         ReturnValues="UPDATED_NEW"
+      )
+
+   def make_all_obs_index(self, date):
+      # this will make a key-only file of ALL obs in the redis DB (which should also include all obs in the dynadb
+      # this file can be used for fast indexing of UIs and also reconciliation jobs on the host machines 
+      if date is None:
+         oi_keys = self.r.keys("OI:*2021_07*")
+      else:
+         oi_keys = self.r.keys("OI:*" + date + "*")
+      all_obs_by_station ={}
+      all_obs_by_day ={}
+      c = 0
+      for key in oi_keys:
+         #key = key.replace("OI:", "")
+         val = self.r.get(key)
+         if val is not None:
+            val = json.loads(val)
+         else:
+            continue
+         #{'ei': 0, 't': '01:37:31.960', 'rv': 1, 'ss': 0, 'pi': 164025, 'du': 0, 'rs': 79.97, 'st': 2}
+         rdata = []
+         rsdata = []
+         elm = key.split(":")
+         station_id = int(elm[1].replace("AMS",""))
+            
+         
+         root_file = elm[2]
+         root_file = root_file.replace(".mp4", "")
+         day = root_file[0:10]
+         if day not in all_obs_by_day:
+            all_obs_by_day[day] = {}
+            all_obs_by_day[day]['obs'] = []
+         if station_id not in all_obs_by_station:
+            all_obs_by_station[station_id] = {}
+            all_obs_by_station[station_id]['obs'] = []
+         short_root = str(station_id) + "_" + root_file.replace(day + "_", "")
+         rdata = [station_id, root_file, val['ei'],val['t'],val['rv'],val['ss'],val['pi'],val['du'],val['rs'],val['st']]
+         rsdata = [short_root, val['ei'],val['t'],val['rv'],val['ss'],val['pi'],val['du'],val['rs'],val['st']]
+         #if int(station_id) == 1:
+         #   print("RVAL:", val)
+         all_obs_by_station[station_id]['obs'].append(rdata)
+         all_obs_by_day[day]['obs'].append(rdata)
+         c += 1
+         if c % 1000 == 0:
+            print(c)
+      print("DONE BUILD. SAVING...")
+      #save_json_file("/mnt/ams2/EVENTS/OBS/ALL_OBS_BY_STATION.json", all_obs_by_station)
+      #save_json_file("/mnt/ams2/EVENTS/OBS/ALL_OBS_BY_DAY.json", all_obs_by_day)
+
+      # NOW MAKE 1 FILE FOR EACH DAY AND 1 FILE FOR EACH STATION
+      day_dir = "/mnt/ams2/EVENTS/OBS/DAYS/"
+      station_dir = "/mnt/ams2/EVENTS/OBS/STATIONS/"
+      cloud_day_dir = "/mnt/archive.allsky.tv/EVENTS/OBS/DAYS/"
+      cloud_station_dir = "/mnt/archive.allsky.tv/EVENTS/OBS/STATIONS/"
+      if cfe(day_dir,1) == 0:
+         os.makedirs(day_dir)
+      if cfe(station_dir,1) == 0:
+         os.makedirs(station_dir)
+
+      if cfe(cloud_day_dir,1) == 0:
+         os.makedirs(cloud_day_dir)
+      if cfe(cloud_station_dir,1) == 0:
+         os.makedirs(cloud_station_dir)
+
+      #for key in all_obs_by_station:
+      #   station_file = station_dir + "AMS" + str(key) + ".json"
+      #   save_json_file(station_file, all_obs_by_station[key]['obs'], True)
+      #   print("Saving...", station_file)
+
+      for key in all_obs_by_day:
+         day_file = day_dir + key + ".json"
+         date = key
+         save_json_file(day_file, all_obs_by_day[key]['obs'], True)
+         print("Saving...", day_file)
+
+         if date is not None:
+            cmd = "cp " + day_dir + "*" + date + "*" + " " + cloud_day_dir
+            print(cmd)
+            os.system(cmd)
+      #cmd = "cp " + station_dir + "*" + " " + cloud_station_dir
+      #os.system(cmd)
+
+   def update_all_events_index(self):
+      all_events = [] 
+      dynamodb = boto3.resource('dynamodb')
+      ####
+      #
+      # GET EVENTS
+      #
+      ###
+
+      table = dynamodb.Table('x_meteor_event')
+      response = table.scan()
+      data = response['Items']
+      for item in response['Items']:
+         item = json.loads(json.dumps(item), parse_float=Decimal)
+         key = "E:" + item['event_id']
+         ev_idx = self.event_to_ev_index(item) 
+         ikey = "EI:" + item['event_id'] + ":" + ev_idx['ss'] 
+         #if 'solve_status' in item:
+         #   print(ev_idx['id'], ev_idx['ss'], )
+         if ev_idx['ss'] == 'S':
+            print("EV IDX:", ev_idx)
+         if "obs" in item:
+            del (item['obs'])
+         vals = json.dumps(ev_idx)
+         self.r.set(ikey,vals)
+         all_events.append(ev_idx)
+         print("SETTING:", ikey)
+
+      while 'LastEvaluatedKey' in response:
+         response = table.scan(ExclusiveStartKey=response['LastEvaluatedKey'])
+         for item in response['Items']:
+            key = "E:" + item['event_id']
+            ev_idx = self.event_to_ev_index(item) 
+            ikey = "EI:" + item['event_id'] + ":" + ev_idx['ss'] 
+            #if 'solve_status' in item:
+            #   print(ev_idx['id'], ev_idx['ss'], )
+            if "obs" in item:
+               del (item['obs'])
+            vals = json.dumps(ev_idx)
+            self.r.set(ikey,vals)
+            #print("SETTING:", ikey)
+            all_events.append(ev_idx)
+
+      save_json_file("/mnt/ams2/EVENTS/ALL_EVENTS_INDEX.json", all_events, True)
+      print("saved /mnt/ams2/EVENTS/ALL_EVENTS_INDEX.json")
+      unsolved = []
+      failed = []
+      solved = []
+      for event in all_events:
+         if event['ss'] == "S":
+            solved.append(event)
+         if event['ss'] == "U":
+            unsolved.append(event)
+         if event['ss'] == "F":
+            failed.append(event)
+      save_json_file("/mnt/ams2/EVENTS/ALL_EVENTS_INDEX_SOLVED.json", solved, True)
+      save_json_file("/mnt/ams2/EVENTS/ALL_EVENTS_INDEX_FAILED.json", failed, True)
+      save_json_file("/mnt/ams2/EVENTS/ALL_EVENTS_INDEX_UNSOLVED.json", unsolved, True)
+      cmd = "cp /mnt/ams2/EVENTS/ALL_EVENTS* /mnt/archive.allsky.tv/EVENTS/"
+      print(cmd)
+      os.system(cmd)
+
+      #exit()
+
+   def all_event_stats(self):
+      all_events_file = "/mnt/ams2/EVENTS/ALL_EVENTS_INDEX.json"
+      event_orb_file = "/mnt/ams2/EVENTS/ALL_EVENTS_INDEX_ORBS.json"
+
+      solved_events_file = "/mnt/ams2/EVENTS/ALL_EVENTS_INDEX_SOLVED.json"
+      failed_events_file = "/mnt/ams2/EVENTS/ALL_EVENTS_INDEX_FAILED.json"
+      unsolved_events_file= "/mnt/ams2/EVENTS/ALL_EVENTS_INDEX_UNSOLVED.json"
+
+      solved_ids_file = "/mnt/ams2/EVENTS/ALL_EVENTS_IDS_SOLVED.json"
+      failed_ids_file = "/mnt/ams2/EVENTS/ALL_EVENTS_IDS_FAILED.json"
+      unsolved_ids_file= "/mnt/ams2/EVENTS/ALL_EVENTS_IDS_UNSOLVED.json"
+
+      event_stats_file = "/mnt/ams2/EVENTS/ALL_EVENTS_INDEX_STATS.json"
+      solved = load_json_file(solved_events_file)
+      unsolved = load_json_file(unsolved_events_file)
+      failed = load_json_file(failed_events_file)
+      stats = {}
+      orbs = []
+      orb = []
+      stats['solved'] = len(solved)
+      stats['unsolved'] = len(unsolved)
+      stats['failed'] = len(failed)
+
+      ids = {}
+      ids['solved']  = []
+      ids['unsolved']  = []
+      ids['failed']  = []
+      for event in solved:
+         orb = []
+         ids['solved'].append(event['id'])
+         stations = []
+         #if "st" not in event:
+         for st in event['st']:
+            st = st.replace("AMS", "")
+            stations.append(st)
+
+         if event['a'] != 0:
+            # still need shower!
+            orb.append(event['id'])
+            orb.append(stations)
+            orb.append(event['dr'])
+            if "vl" in event:
+               orb.append(event['vl'])
+            else:
+               orb.append(0)
+            if "ee" in event:
+               orb.append(event['ee'])
+            else:
+               orb.append(0)
+            #orbs.append(event['sr'])
+            orb.append(event['a'])
+            orb.append(event['e'])
+            orb.append(event['i'])
+            orb.append(event['pr'])
+            orb.append(event['q'])
+            orb.append(event['nd'])
+            orb.append(event['la_sun'])
+            orb.append(event['T'])
+            orb.append(event['ma'])
+            orb.append(event['rd'][0])
+            orb.append(event['rd'][1])
+            orb.append(event['rd'][2])
+            orb.append(event['rd'][3])
+            # id, dur, vel, ele, a, e, i, pr, q, nd, la_sun, T, ma, a_rad_ra, a_rad_dec,h_rad_ra,h_rad_dec
+            orbs.append(orb)
+
+#      solved_ids_file 
+#      failed_ids_file 
+#      unsolved_ids_file
+
+      for event in unsolved:
+         ids['unsolved'].append(event['id'])
+      for event in failed:
+         ids['failed'].append(event['id'] )
+      stats['ids'] = ids
+      save_json_file(event_orb_file, orbs, True)
+      save_json_file(event_stats_file, stats, True)
+
+
+      save_json_file(solved_ids_file, ids['solved'], True)
+      save_json_file(unsolved_ids_file, ids['unsolved'], True)
+      save_json_file(failed_ids_file, ids['failed'], True)
+
+      solved_ids_file = "/mnt/ams2/EVENTS/ALL_EVENTS_IDS_SOLVED.json"
+      failed_ids_file = "/mnt/ams2/EVENTS/ALL_EVENTS_IDS_FAILED.json"
+      unsolved_ids_file= "/mnt/ams2/EVENTS/ALL_EVENTS_IDS_UNSOLVED.json"
+
+
+   def event_to_ev_index(self,item):
+      # we want orbit vars
+      # traj - vel, end alt, 
+      # unq list of stations
+      # max brightness
+      # duration
+      # status
+      ev_idx = {}
+      ev_idx['id'] = item['event_id']
+      ev_idx['fl'] = []
+      ev_idx['st'] = []
+      if "stations" in item:
+         for st in item['stations']:
+            ev_idx['st'].append(st.replace("AMS", ""))
+         for tfile in item['files']:
+            tday = tfile[0:10]
+            tfile = tfile.replace(tday, "")
+            tfile = tfile.replace(".mp4", "")
+            ev_idx['fl'].append(tfile)
+         ev_idx['dt'] = min(item['start_datetime'])
+      else:
+         print("No stations in item?")
+      if "solve_status" in item:
+         ev_idx['ss'] = item['solve_status']
+      else:
+         ev_idx['ss'] = "U"
+         return(ev_idx)
+     
+      if "FAIL" in ev_idx['ss'] :
+         ev_idx['ss'] = "F"
+         return(ev_idx)
+      if "SUCCESS" in ev_idx['ss'] :
+         ev_idx['ss'] = "S"
+      if ev_idx['ss'] is None:
+         ev_idx['ss'] = "U"
+
+      elif "solution" in item and ev_idx['ss'] == 'S':
+         sol = item['solution']
+         
+         ev_idx['dr'] = sol['duration']
+         if "rad" in sol:
+            if sol['rad']['apparent_ECI']['ra'] !=0 and  sol['rad']['apparent_ECI']['ra'] is not None and sol['rad']['ecliptic_helio']['L_h']is not None:
+               ap_ra =  np.radians(np.degrees(float(sol['rad']['apparent_ECI']['ra']))-180)
+               ap_dec =  np.radians(np.degrees(float(sol['rad']['apparent_ECI']['dec']))-180)
+
+               hl_dec = np.degrees(float(sol['rad']['ecliptic_helio']['B_h']))
+               hl_ra = np.degrees(float(sol['rad']['ecliptic_helio']['L_h']))
+            else:
+               ap_ra,ap_dec,hl_ra,hl_dec = [0,0,0,0]
+         else:
+            ap_ra,ap_dec,hl_ra,hl_dec = [0,0,0,0]
+         ev_idx['rd'] = [ap_ra,ap_dec,hl_dec,hl_ra]
+
+         if "shower" in item['solution']:
+            ev_idx['sr'] = item['solution']['shower']['shower_code']
+            if ev_idx['sr'] == "...":
+               ev_idx['sr'] = ""
+         if "orb" in item['solution']:
+            orb = item['solution']['orb']
+            if orb['a'] is not None:
+               ev_idx['a'] = round(float(orb['a']),2)
+               ev_idx['e'] = round(float(orb['e']),2)
+               ev_idx['i'] = round(float(orb['i']),2)
+               ev_idx['pr'] = round(float(orb['peri']),2)
+               ev_idx['q'] = round(float(orb['q']),2)
+               ev_idx['nd'] = round(float(orb['node']),2)
+               ev_idx['la_sun'] = round(float(orb['la_sun']),2)
+               ev_idx['T'] = round(float(orb['T']),2)
+               ev_idx['ma'] = round(float(orb['mean_anomaly']),2)
+            else:
+               ev_idx['a'] = 0
+               ev_idx['e'] = 0
+               ev_idx['i'] = 0
+               ev_idx['pr'] = 0
+               ev_idx['q'] = 0
+               ev_idx['nd'] = 0
+               ev_idx['la_sun'] = 0
+               ev_idx['T'] = 0
+               ev_idx['ma'] = 0
+
+         if "traj" in item:
+            traj = item['traj']
+            ev_idx['vl'] = round(float(item['traj']['v_init'])/1000, 2)
+            ev_idx['ee'] = round(float(item['traj']['end_ele'])/1000,2)
+         most_max_int = 0
+         return(ev_idx)
+
+      elif "soluion" not in item:
+         ev_idx['ss'] = "U"
+         return(ev_idx)
+      else:
+         ev_idx['ss'] = "F"
+      
+
+
+      # OINT NOT IN CURRENT OBS SO WE CAN'T DO THIS!
+      #if "obs" in item:
+      #   for obs in item['obs']:
+      #      for ofile in item['obs'][obs]:
+      #         print(item['obs'][obs][ofile])
+      #         max_int = max(item['obs'][obs][ofile]['oint'])
+      #         if max_int > most_max_int:
+      #            most_max_int = max_int
+      #   ev_idx['max_int'] = most_max_int
+      #print(ev_idx)
+      #exit()
+
    def update_missing_wmpl_keys(self):
-      ev_keys = self.r.keys("E*")
+      ev_keys = self.r.keys("E:*")
       for ev_key in sorted(ev_keys, reverse=True):
          event_id = ev_key.replace("E:", "")
          evdata = self.r.get(ev_key)
-         #print(ev_key, evdata)
          if evdata is not None:
             evdata = json.loads(evdata)
             if "wmpl_id" in evdata:
@@ -109,7 +527,6 @@ class EventRunner():
                         vel_elm = elm[8].split("_")
                         wmpl_id = vel_elm[0] + "_" + vel_elm[1]
                         evdata['wmpl_id'] = wmpl_id
-                        print("EV:", evdata['wmpl_id'])
                         self.r.set(ev_key, json.dumps(evdata))
                      except:
                         print("COULDNT RECOVER ID", vel_file)
@@ -126,7 +543,6 @@ class EventRunner():
       ev_keys = self.r.keys("E*")
       for ev_key in ev_keys:
          evdata = self.r.get(ev_key)
-         #print(ev_key, evdata)
          if evdata is not None:
             evdata = json.loads(evdata)
          else:
@@ -140,10 +556,8 @@ class EventRunner():
          else:
             solve_status = 0
 
-         print(ev_key, evdata.keys())
          if "stations" not in evdata:
-            print("PROBLEM EVENT:", ev_key, evdata)
-            #input()
+            print("PROBLEM EVENT:", ev_key )
             continue
          for i in range(0,len(evdata['stations'])):
             this_station = evdata['stations'][i]
@@ -163,7 +577,6 @@ class EventRunner():
          os.system("cp " + stjsf_zip +" " + cloud_dir)
          fn = stjsf_zip.split("/")[-1]
          print("SAVED:", cloud_dir + fn)
-
             
 
    def list_events_for_day(self):
@@ -182,7 +595,6 @@ class EventRunner():
             event['solve_status'] = "SINGLE STATION" 
          for file in event['files']:
             self.file_index[file] = event['event_id']
-         print(event['event_id'], event['solve_status'])
          ec += 1
 
       self.single_station_obs = []
@@ -208,11 +620,9 @@ class EventRunner():
       print("SS OBS:", len(self.single_station_obs))
 
    def update_events_for_day(self):
-      print("SINGLE :", self.single_station_obs)
       new_events = []
       for ob in self.single_station_obs:
          found_existing = self.check_existing_event(ob) 
-         print(ob['station_id'], found_existing)
          if found_existing is not None:
             print("AN EVENT FOR THIS OBS WAS FOUND:", found_existing) 
          else: 
@@ -275,7 +685,7 @@ class EventRunner():
          cmd = "cp " + self.all_stations_file + " " + self.cloud_all_stations_file
          print(cmd)
          os.system(cmd)
-         cmd = "cp " + self.single_station_file + " " + self.cloud_all_stations_file
+         cmd = "cp " + self.single_station_file + " " + self.cloud_single_stations_file
          print(cmd)
          os.system(cmd)
 
@@ -554,8 +964,9 @@ class EventRunner():
             ev_dt = datetime.datetime.strptime(min(event['start_datetime']), "%Y-%m-%d %H:%M:%S.%f") 
          else:
             ev_dt = datetime.datetime.strptime(min(event['start_datetime']), "%Y-%m-%d %H:%M:%S") 
-         print("START TIME!:", ob['event_start_time'])
-
+         if "event_start_time" not in ob:
+            print("NO EVENT TIME!")
+            continue
          if "_" in ob['event_start_time']:
             el = ob['event_start_time'].split("_")
             print("BAD TIME!", el)
@@ -567,9 +978,7 @@ class EventRunner():
             ob['event_start_time'] = y + "-" + m + "-" + d + " " + h + ":" + mn + ":" + s
 
          if ob['event_start_time'] == "" or ob['event_start_time'] == " " :
-            print("EVENT START TIME IS BLANK!", ob)
             ob_dt = self.starttime_from_file(ob['sd_video_file'])
-            print("OBDT:", ob_dt)
             ob['event_start_time'] = ob_dt.strftime( "%Y-%m-%d %H:%M:%S.%f")
          #if " " not in ob['event_start_time']:
          #   # no date on time var add it
@@ -579,7 +988,6 @@ class EventRunner():
          #   date = date.replace("_", "-")
          #   ob['event_start_time'] = date + " " + ob['event_start_time']
          if "." in ob['event_start_time']:
-            print(ob['event_start_time'])
             if " " not in ob['event_start_time']:
                date = ob['sd_video_file'][0:10]
                date = date.replace("_", "-")
@@ -590,14 +998,13 @@ class EventRunner():
             if ob['event_start_time'] == "":
                ob_dt = self.starttime_from_file(ob['sd_video_file'])
             else:
-               print("EVS:", ob['event_start_time'])
                ob_dt = datetime.datetime.strptime(ob['event_start_time'], "%Y-%m-%d %H:%M:%S")
          time_diff = (ob_dt - ev_dt).total_seconds() 
          if -5 <= time_diff < 5:
             in_range = self.obs_inrange(event, ob)
             if in_range != 0:
                found_event = event['event_id']
-               print("EV RANGE/TIME:", in_range, time_diff, ob['event_start_time'], min(event['start_datetime']))
+               #print("EV RANGE/TIME:", in_range, time_diff, ob['event_start_time'], min(event['start_datetime']))
       return(found_event)
 
    
@@ -615,6 +1022,9 @@ class EventRunner():
       return(inrange)
 
    def get_obs_datetime(self, obs):
+      if "meteor_frame_data" not in obs:
+         obs_dt = self.starttime_from_file(obs['sd_video_file'])
+         obs['meteor_frame_data'] = []
       if len(obs['meteor_frame_data']) > 0:
          obs_time = obs['meteor_frame_data'][0][0]
          if "_" in obs_time:
@@ -702,7 +1112,6 @@ class EventRunner():
                   return(events)
          ec += 1
 
-      #inp = input("A NEW EVENT NEEDS TO BE MADE!" )
       # if we got this far it must be a new obs not related to any existing events
       # so make a new event and add it to the list
       if True:

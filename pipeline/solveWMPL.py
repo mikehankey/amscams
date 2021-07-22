@@ -528,6 +528,31 @@ def delete_events_day(date):
    for event in events: 
       delete_event(None, event['event_day'], event['event_id'])
 
+def make_vida_plots(day):
+   date = day
+   year, mon, dom = date.split("_")
+   day_dir = "/mnt/ams2/EVENTS/" + year + "/" + mon + "/" + dom + "/"
+   dyn_cache = day_dir
+   #cmd = "./DynaDB.py udc " + day + " events"
+   #print(cmd)
+   #os.system(cmd)
+
+   print("Solve day", day)
+   dynamodb = boto3.resource('dynamodb')
+   json_conf = load_json_file("../conf/as6.json")
+   my_station = json_conf['site']['ams_id']
+   stations = json_conf['site']['multi_station_sync']
+   if my_station not in stations:
+      stations.append(my_station)
+
+   #events = search_events(dynamodb, day, stations)
+
+   obs_file = dyn_cache + date + "_ALL_OBS.json"
+   events_file = dyn_cache + date + "_ALL_EVENTS.json"
+   evd = load_json_file(events_file)
+   for key in evd:
+      print(key)
+
 def solve_day(day, cores=20):
    date = day
    year, mon, dom = date.split("_")
@@ -2153,6 +2178,8 @@ if cmd == "delete_events_day" :
 if cmd == "cfp" :
    print(cmd)
    check_fix_plots(sys.argv[2])
+if cmd == "vida_plots" :
+   make_vida_plots(meteor_file)
 if cmd == "events_report" or cmd == "er":
    if len(sys.argv) > 2:
       events_report(meteor_file, sys.argv[2])

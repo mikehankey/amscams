@@ -456,6 +456,8 @@ def update_dyna_cache_for_day(dynamodb, date, stations, utype=None):
    # get station list of stations that could have shared obs
    # don't use the API anymore, it times out. Read direct from redis
    all_stations = glob.glob("/mnt/ams2/STATIONS/CONF/*")
+   #for st in sorted(all_stations):
+   #   print(st)
    API_URL = "https://kyvegys798.execute-api.us-east-1.amazonaws.com/api/allskyapi?cmd=get_stations"
    response = requests.get(API_URL)
    content = response.content.decode()
@@ -466,24 +468,32 @@ def update_dyna_cache_for_day(dynamodb, date, stations, utype=None):
    jdata = json.loads(content)
    all_stations = jdata['all_vals']
    clusters = make_station_clusters(all_stations)
+   #for cluster in clusters:
+   #   print(cluster)
    cluster_stations = []
    stations = []
    for data in clusters:
       #('AMS8', 32.654, -99.844, 'Hawley', [])
       station, lat, lon, city, partners = data
+      #if station == "AMS110" or station == "AMS105" or station == "AMS20":
+      #   print("ID ??", data)
       if len(partners) > 1:
          cluster_stations.append(data)
    save_json_file(stations_file, clusters)
    cloud_stations_file = stations_file.replace("/mnt/ams2/", "/mnt/archive.allsky.tv/")
    os.system("cp " + stations_file + " " + cloud_stations_file)
+   #print(stations_file)
 
    # get the obs for each station for this day
+   print("DOOBS:", do_obs)
+   print("cluset:", len(cluster_stations))
    if do_obs == 1:
       os.system("rm " + obs_file ) 
       all_obs = []
       unq_stations = {}
       for data in cluster_stations:
          station_id = data[0]
+         print("STA:", station_id)
          unq_stations[station_id] = 1
          stations.append(station_id)
          obs = search_obs(dynamodb, station_id, date, 1)
@@ -493,6 +503,7 @@ def update_dyna_cache_for_day(dynamodb, date, stations, utype=None):
       save_json_file(obs_file, all_obs)
       cloud_obs_file = obs_file.replace("/mnt/ams2/", "/mnt/archive.allsky.tv/")
       os.system("cp " + obs_file + " " + cloud_obs_file)
+      print("cp " + obs_file + " " + cloud_obs_file)
 
    if do_events == 1:
       os.system("rm " + event_file ) 
@@ -573,7 +584,7 @@ def make_station_clusters(all_stations):
          if sid == station_id :
             continue
          dist = dist_between_two_points(lat, lon, tlat, tlon)
-         if dist < 450:
+         if dist < 600:
             matches.append((sid, dist))
       cluster_data.append((station_id, lat,lon,city,matches))
 

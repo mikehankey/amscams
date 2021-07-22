@@ -1,4 +1,5 @@
 import datetime
+from decimal import Decimal
 import Classes.Events
 from Classes.Events import Events
 from Classes.EventRunner import EventRunner 
@@ -16,9 +17,9 @@ if __name__ == "__main__":
    EVR = EventRunner(date=sys.argv[1],use_cache=0)
    print("LIST EVENTS")
    EVR.list_events_for_day()
-
    print("UPDATE EVENTS")
    EVR.update_events_for_day()
    print("EOD REPORT ")
+   EVR.update_station_event_ids(sys.argv[1])
    EVR.EOD_report(sys.argv[1])
-   #EV.make_missing_data_list()
+   EV.make_missing_data_list()
