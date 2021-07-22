@@ -86,6 +86,19 @@ class EventRunner():
             lon = data[2]
             self.station_loc[sid] = [lat,lon]
 
+   def make_vida_plots(self, date):
+      dates = date.replace("_", "")
+      events = self.r.keys("E:" + dates + "*")
+      for ev in events:
+         rval = json.loads(self.r.get(ev) )
+         if "solve_status" in rval: 
+            print(ev, rval['solve_status'])
+            if rval['solve_status'] == "SUCCESS":
+               cmd = "cd ../pythonv2/; ./solve.py vida_plots " + ev.replace("E:", "")
+               print(cmd)
+               os.system(cmd)
+
+
    def update_station_event_ids(self,date):
       dates = date.replace("_", "")
       events = self.r.keys("E:" + dates + "*")
@@ -285,6 +298,7 @@ class EventRunner():
       save_json_file("/mnt/ams2/EVENTS/ALL_EVENTS_INDEX_FAILED.json", failed, True)
       save_json_file("/mnt/ams2/EVENTS/ALL_EVENTS_INDEX_UNSOLVED.json", unsolved, True)
       cmd = "cp /mnt/ams2/EVENTS/ALL_EVENTS* /mnt/archive.allsky.tv/EVENTS/"
+      print(cmd)
       os.system(cmd)
 
       #exit()
