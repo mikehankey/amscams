@@ -475,6 +475,11 @@ def vida_plots(event_id):
    pickle_file = local_event_dir + event_id + "_trajectory.pickle"
    cloud_pickle_file = event_dir + event_id + "_trajectory.pickle"
    print("P:", pickle_file)
+   if cfe(pickle_file) == 0 :
+      if cfe(cloud_pickle_file) == 1:
+         if cfe(local_event_dir,1) == 0:
+            os.makedirs(local_event_dir)
+         os.system("cp " + cloud_pickle_file + " " + pickle_file)
    if cfe(pickle_file) == 1 :
       with open(pickle_file, 'rb') as handle:
          vida_data = pickle.load(handle)
