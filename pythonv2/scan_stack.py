@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-
+import subprocess
 from PIL import ImageFont, ImageDraw, Image, ImageChops
 from datetime import datetime
 import datetime as dt
@@ -23,6 +23,54 @@ hdm_y = 1080 / SD_H
 
 json_conf = load_json_file("../conf/as6.json")
 
+def ffprobe(video_file):
+   default = [704,576]
+   try:
+   #if True:
+      cmd = "/usr/bin/ffprobe " + video_file + " > /tmp/ffprobe72.txt 2>&1"
+      output = subprocess.check_output(cmd, shell=True).decode("utf-8")
+   except:
+       print("Couldn't probe.")
+       print(cmd)
+       return(0,0,0,0)
+
+   #try:
+   #time.sleep(2)
+   output = None
+   if True:
+      fpp = open("/tmp/ffprobe72.txt", "r")
+      for line in fpp:
+         if "Duration" in line:
+            el = line.split(",")
+            dur = el[0]
+            dur = dur.replace("Duration: ", "")
+            el = dur.split(":")
+            tsec = el[2]
+            tmin = el[1]
+            tmin_sec = float(tmin) * 60
+            total_frames = (float(tsec)+tmin_sec) * 25
+         if "Stream" in line:
+            output = line
+      fpp.close()
+      if output is None:
+         print("FFPROBE PROBLEM:", video_file)
+         return(0,0,0,0)
+
+      el = output.split(",")
+      for ee in el:
+         if "x" in ee and "Stream" not in ee:
+            dim = ee
+            if "SAR" in el[2]:
+               ddel = el[2].split(" ")
+               for i in range(0, len(ddel)):
+                  if "x" in ddel[i]:
+                     el[2] = ddel[i]
+         if "kb/s" in ee :
+            bitrate = ee
+            bitrate  = bitrate.split(" ")[1]
+
+      w, h = dim.split("x")
+   return(w,h, bitrate, int(total_frames))
 
 def day_or_night(capture_date, json_conf):
 
@@ -143,6 +191,10 @@ def batch_ss(wildcard=None):
          new_files.append(file)
 
    for file in sorted(new_files, reverse=True)[0:1000]:
+      ffp = ffprobe(file)
+      if ffp[3] == 0:
+         print("corrupt file")
+         continue
       (f_datetime, cam, f_date_str,fy,fmin,fd, fh, fm, fs) = convert_filename_to_date_cam(file)
       sun_status = day_or_night(f_date_str, json_conf)
       cur_time = int(time.time())
