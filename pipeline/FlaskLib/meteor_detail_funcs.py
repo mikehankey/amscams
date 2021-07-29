@@ -540,20 +540,21 @@ def detail_page(amsid, date, meteor_file):
 
    else:
       dur = len(mj['best_meteor']['ofns']) / 25 
-      template = template.replace("{START_TIME}", mj['best_meteor']['dt'][0])
-      template = template.replace("{DURATION}", str(dur)[0:4])
-      template = template.replace("{MAX_INTENSE}", str(max(mj['best_meteor']['oint'])))
+      if "azs" in mj['best_meteor']:
+         template = template.replace("{START_TIME}", mj['best_meteor']['dt'][0])
+         template = template.replace("{DURATION}", str(dur)[0:4])
+         template = template.replace("{MAX_INTENSE}", str(max(mj['best_meteor']['oint'])))
 
-      template = template.replace("{START_AZ}", str(mj['best_meteor']['azs'][0])[0:5])
-      template = template.replace("{END_AZ}", str(mj['best_meteor']['azs'][-1])[0:5])
-      template = template.replace("{START_RA}", str(mj['best_meteor']['ras'][0])[0:5])
-      template = template.replace("{END_RA}", str(mj['best_meteor']['ras'][-1])[0:5])
-      template = template.replace("{START_DEC}", str(mj['best_meteor']['decs'][0])[0:5])
-      template = template.replace("{END_DEC}", str(mj['best_meteor']['decs'][-1])[0:5])
-      template = template.replace("{START_EL}", str(mj['best_meteor']['els'][0])[0:5])
-      template = template.replace("{END_EL}", str(mj['best_meteor']['els'][-1])[0:5])
-      template = template.replace("{ANG_VEL}", str(mj['best_meteor']['report']['ang_vel'])[0:5])
-      template = template.replace("{ANG_SEP}", str(mj['best_meteor']['report']['ang_dist'])[0:5])
+         template = template.replace("{START_AZ}", str(mj['best_meteor']['azs'][0])[0:5])
+         template = template.replace("{END_AZ}", str(mj['best_meteor']['azs'][-1])[0:5])
+         template = template.replace("{START_RA}", str(mj['best_meteor']['ras'][0])[0:5])
+         template = template.replace("{END_RA}", str(mj['best_meteor']['ras'][-1])[0:5])
+         template = template.replace("{START_DEC}", str(mj['best_meteor']['decs'][0])[0:5])
+         template = template.replace("{END_DEC}", str(mj['best_meteor']['decs'][-1])[0:5])
+         template = template.replace("{START_EL}", str(mj['best_meteor']['els'][0])[0:5])
+         template = template.replace("{END_EL}", str(mj['best_meteor']['els'][-1])[0:5])
+         template = template.replace("{ANG_VEL}", str(mj['best_meteor']['report']['ang_vel'])[0:5])
+         template = template.replace("{ANG_SEP}", str(mj['best_meteor']['report']['ang_dist'])[0:5])
 
       if "cp" in mj['best_meteor']:
          cp = mj['best_meteor']['cp']
@@ -562,30 +563,31 @@ def detail_page(amsid, date, meteor_file):
 
       if "cp" in mj:
          cp = mj['cp']
-
-         print(cp)
-         template = template.replace("{RA}", str(cp['ra_center'])[0:5])
-         template = template.replace("{DEC}", str(cp['dec_center'])[0:5])
-         template = template.replace("{AZ}", str(cp['center_az'])[0:5])
-         template = template.replace("{EL}", str(cp['center_el'])[0:5])
-         template = template.replace("{POSITION_ANGLE}", str(cp['position_angle'])[0:5])
-         template = template.replace("{PIXSCALE}", str(cp['pixscale'])[0:5])
-         template = template.replace("{IMG_STARS}", str(len(cp['user_stars'])))
-         if "cat_image_stars" in cp:
-            template = template.replace("{CAT_STARS}", str(len(cp['cat_image_stars'])))
-         else:
-            template = template.replace("{CAT_STARS}", "")
-         if "total_res_px" in cp:
-            template = template.replace("{RES_PX}", str(cp['total_res_px'])[0:5])
-            if "total_res_deg" in cp:
-               template = template.replace("{RES_DEG}", str(cp['total_res_deg'])[0:5])
+         if cp is not None:
+            print(cp)
+            template = template.replace("{RA}", str(cp['ra_center'])[0:5])
+            template = template.replace("{DEC}", str(cp['dec_center'])[0:5])
+            template = template.replace("{AZ}", str(cp['center_az'])[0:5])
+            template = template.replace("{EL}", str(cp['center_el'])[0:5])
+            template = template.replace("{POSITION_ANGLE}", str(cp['position_angle'])[0:5])
+            template = template.replace("{PIXSCALE}", str(cp['pixscale'])[0:5])
+            template = template.replace("{IMG_STARS}", str(len(cp['user_stars'])))
+            if "cat_image_stars" in cp:
+               template = template.replace("{CAT_STARS}", str(len(cp['cat_image_stars'])))
             else:
-               template = template.replace("{RES_DEG}", "")
-         else:
-            template = template.replace("{RES_PX}", "")
-            template = template.replace("{RES_DEG}", "")
-            cp['total_res_px'] = 99
-            cp['total_res_deg'] = 99
+               template = template.replace("{CAT_STARS}", "")
+            if "total_res_px" in cp:
+               template = template.replace("{RES_PX}", str(cp['total_res_px'])[0:5])
+               if "total_res_deg" in cp:
+                  template = template.replace("{RES_DEG}", str(cp['total_res_deg'])[0:5])
+               else:
+                  template = template.replace("{RES_DEG}", "")
+      else:
+
+         template = template.replace("{RES_PX}", "")
+         template = template.replace("{RES_DEG}", "")
+         cp['total_res_px'] = 99
+         cp['total_res_deg'] = 99
 
    #if "total_res_px" not in cp:
    #   cp['total_res_px'] = 99
@@ -601,25 +603,35 @@ def detail_page(amsid, date, meteor_file):
       os.system(cmd)
    print("CACHE:", CACHE_VDIR) 
 
+   cal_params_js_var = "var cal_params = []"
    if cfe(mjrf) == 1:
       mjr = load_json_file(mjrf)
       print("LOADING REDUCE FILE:", mjrf)
       if "cal_params" in mjr:
-         if "total_res_px" not in mjr['cal_params']:
-            mjr['cal_params']['total_res_px'] = 99
-            mjr['cal_params']['total_res_deg'] = 99
-            mjr['cal_params']['cat_image_stars'] = []
+         if mjr['cal_params'] is not None:
+            if "total_res_px" not in mjr['cal_params']:
+               mjr['cal_params']['total_res_px'] = 99
+               mjr['cal_params']['total_res_deg'] = 99
+               mjr['cal_params']['cat_image_stars'] = []
+            else:
+               cal_params_js_var = "var cal_params = []"
+
+         else:
+            cal_params_js_var = "var cal_params = []"
+
       else:
          mjr['cal_params'] = mj['cp']
 
 
-      if np.isnan(mjr['cal_params']['total_res_px']) or mjr['cal_params']['total_res_px'] is None or len(mjr['cal_params']['cat_image_stars']) == 0:
-         mjr['cal_params']['total_res_px'] = 9999
-         mjr['cal_params']['total_res_deg'] = 9999
+         if np.isnan(mjr['cal_params']['total_res_px']) or mjr['cal_params']['total_res_px'] is None or len(mjr['cal_params']['cat_image_stars']) == 0:
+            mjr['cal_params']['total_res_px'] = 9999
+            mjr['cal_params']['total_res_deg'] = 9999
 
 
       frame_table_rows = frames_table(mjr, base_name, CACHE_VDIR)
-      cal_params_js_var = "var cal_params = " + str(mjr['cal_params'])
+      if mjr is not None:
+         if mjr['cal_params'] is not None:
+            cal_params_js_var = "var cal_params = " + str(mjr['cal_params'])
       mfd_js_var = "var meteor_frame_data = " + str(mjr['meteor_frame_data'])
       crop_box_js_var = "var crop_box = " + str(mjr['crop_box'])
    else:
