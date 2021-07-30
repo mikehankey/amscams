@@ -44,10 +44,12 @@ class RegisterDevice():
       data = json.loads(get("http://ip.jsontest.com/").text)
       self.public_ip = data["ip"]
       json_conf = load_json_file("../conf/as6.json")
+
+      json_conf['mac_addr'] = self.mac_addr
       json_conf['api_key'] = self.mac_addr
       station_data = self.json_conf2_dyna_station(json_conf)
       station_data['mac_addr'] = self.mac_addr
-      station_data['mac_addr'] = ""
+      station_data['api_key'] = self.mac_addr
       station_data['public_ip'] = self.public_ip
       station_data['registration'] = {}
       station_data['registration']['register_date'] = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
@@ -56,6 +58,7 @@ class RegisterDevice():
       payload['in_station_data'] = station_data
       payload['cmd'] = "register_device" 
       headers = {'Content-type': 'application/json'}
+
       response = requests.post(self.API_URL, data=json.dumps(payload), headers=headers)
       #, headers=headers)
 
