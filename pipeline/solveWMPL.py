@@ -553,7 +553,7 @@ def make_vida_plots(day):
    for key in evd:
       print(key)
 
-def solve_day(day, cores=20):
+def solve_day(day, cores=5):
    date = day
    year, mon, dom = date.split("_")
    day_dir = "/mnt/ams2/EVENTS/" + year + "/" + mon + "/" + dom + "/" 
@@ -945,6 +945,8 @@ def solve_event(event_id, force=1, time_sync=1):
        else:
           update_event_sol(None, event_id, solution, obs_data, "WMPL FAILED.")
 
+       cmd = "cd ../pythonv2; ./solve.py vida_failed_plots " + event_id
+       os.system(cmd)
        return(0)
     solution,as_obs = resp
 
@@ -970,6 +972,8 @@ def solve_event(event_id, force=1, time_sync=1):
     print(cmd)
     os.system(cmd)
 
+    cmd = "cd ../pythonv2; ./solve.py vida_plots " + event_id
+    os.system(cmd)
 
 
     #update_event(dynamodb, event_id, simple_status, wmpl_status, solve_dir)

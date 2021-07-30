@@ -14,6 +14,7 @@ if __name__ == "__main__":
       yest = yest.strftime('%Y_%m_%d')
       sys.argv[1] = yest 
    print(sys.argv[1])
+   EV = Events()
    EVR = EventRunner(date=sys.argv[1],use_cache=0)
    print("LIST EVENTS")
    EVR.list_events_for_day()

@@ -97,6 +97,14 @@ class EventRunner():
                cmd = "cd ../pythonv2/; ./solve.py vida_plots " + ev.replace("E:", "")
                print(cmd)
                os.system(cmd)
+            else:
+               cmd = "cd ../pythonv2/; ./solve.py vida_failed_plots " + ev.replace("E:", "")
+               print(cmd)
+               os.system(cmd)
+         else:
+            cmd = "cd ../pythonv2/; ./solve.py vida_failed_plots " + ev.replace("E:", "")
+            print(cmd)
+            os.system(cmd)
 
 
    def update_station_event_ids(self,date):
@@ -238,6 +246,27 @@ class EventRunner():
             os.system(cmd)
       #cmd = "cp " + station_dir + "*" + " " + cloud_station_dir
       #os.system(cmd)
+
+
+   def update_events_index_day(self, date):
+      all_events = []
+      from DynaDB import search_events
+      dynamodb = boto3.resource('dynamodb')
+      stations = None
+      events = search_events(dynamodb, date, stations, nocache=0)
+      for item in events:
+         item = json.loads(json.dumps(item), parse_float=Decimal)
+         key = "E:" + item['event_id']
+         ev_idx = self.event_to_ev_index(item)
+         ikey = "EI:" + item['event_id'] + ":" + ev_idx['ss']
+         if ev_idx['ss'] == 'S':
+            print("EV IDX:", ikey)
+         if "obs" in item:
+            del (item['obs'])
+         vals = json.dumps(ev_idx)
+         self.r.set(ikey,vals)
+         all_events.append(ev_idx)
+         print("SETTING:", ikey)
 
    def update_all_events_index(self):
       all_events = [] 
@@ -956,7 +985,6 @@ class EventRunner():
          print(event_id, "insert_meteor_event(None, event_id, event)")
          insert_meteor_event(None, event_id, event)
 
-
    def check_existing_event(self, ob=None):
       found_event = None
       for event in self.all_events:
@@ -1006,8 +1034,6 @@ class EventRunner():
                found_event = event['event_id']
                #print("EV RANGE/TIME:", in_range, time_diff, ob['event_start_time'], min(event['start_datetime']))
       return(found_event)
-
-   
 
    def obs_inrange(self, event, ob):
       inrange = 0

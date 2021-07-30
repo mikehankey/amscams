@@ -10,13 +10,16 @@ if __name__ == "__main__":
    if len(sys.argv) == 1:
       sys.argv.append("help")
 
-   for arg in sys.argv[1:]:
+   print("SYS:", sys.argv)
+   for arg in sys.argv[2:]:
+      print("ARG:", arg)
       extra_args.append(arg)
-
-      PLT = Plotter(cmd=sys.argv[1], extra_args=extra_args)
-      PLT.controller()
-      PLT.plot_all_rad()
-      exit()
+      
+   PLT = Plotter(cmd=sys.argv[1], extra_args=extra_args)
+   PLT.controller()
+   PLT.plot_all_rad()
+   exit()
+   if False:
       cat_stars = PLT.get_catalog_stars()
       blank_image = np.zeros((1080,1920,3),dtype=np.uint8)
       ras = []

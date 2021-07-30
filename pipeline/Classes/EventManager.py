@@ -185,7 +185,7 @@ class EventManager():
       for year_dir in temp:
          if "DAYS" in year_dir:
             continue
-         if cfe(year_dir, 1) == 1:
+         if cfe(year_dir, 1) == 1 and "OBS" not in year_dir and "DAYS" not in year_dir:
 
              year = year_dir.split("/")[-1]
              years.append(year)
@@ -200,6 +200,7 @@ class EventManager():
             num_days = calendar.monthrange(int(self.year), i)[1]
             days = [datetime.date(int(self.year), int(i), day) for day in range(1, num_days+1)]
             for day_dt in days:
+               print("DAY:", day_dt)
                if year == nyear: 
                   end_dt = datetime.date.today()
                   #.strftime("%Y_%m_%d")
