@@ -19,7 +19,7 @@ events = sorted(events, key=lambda x: (x['id']), reverse=True)
 for ev in events:
    id =ev['id']
    running = check_running("solveWMPL.py")
-   while(running > 20):
+   while(running > 5):
       time.sleep(30)
       running = check_running("solveWMPL.py")
 

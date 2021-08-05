@@ -44,6 +44,11 @@ if date_arg == "today":
    print(cmd)
    os.system(cmd)
 
+   # run the events again
+   cmd = "python3 EVRun.py " + yest
+   print(cmd)
+   os.system(cmd)
+
    #print(cmd)
    #cmd = "python3 EM.py aei " + today
 elif date_arg == "yest":
@@ -68,6 +73,11 @@ elif date_arg == "yest":
    cmd = "python3 PLT.py all_rad " + yest 
    print(cmd)
    os.system(cmd)
+
+   # run the events again
+   cmd = "python3 EVRun.py " + yest
+   print(cmd)
+   os.system(cmd)
 else:
    # run the events
    cmd = "python3 EVRun.py " + date_arg 
@@ -88,6 +98,11 @@ else:
    os.system(cmd)
 
    cmd = "python3 PLT.py all_rad " + date_arg 
+   print(cmd)
+   os.system(cmd)
+
+   # run the events again
+   cmd = "python3 EVRun.py " + date_arg 
    print(cmd)
    os.system(cmd)
 

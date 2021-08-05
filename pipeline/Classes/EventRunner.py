@@ -891,7 +891,7 @@ class EventRunner():
       mc_report = []
       for key in rstations:
          hr = []
-         for m in range(0,23):
+         for m in range(0,24):
             if str(m) in rstations[key]:
                hr.append(rstations[key][str(m)])
             else:
@@ -902,15 +902,20 @@ class EventRunner():
          mc_report.append((key,rstations[key],int(np.sum(rstations[key]))))
       print("TOTAL", mc_ys)
       mc_report.append(("TOTAL",mc_ys,int(np.sum(mc_ys))))
+      mc_report_html = "<center><h2>Meteor Counts from reporting stations on " + date + "</h2>" 
+      mc_report_html += "<table width=80%>"
+      mc_report_html += "<tr><th>Station</th>"
+      for d in range(0,24):
+         mc_report_html += "<th>" + str(d) + "</th>"
+      mc_report_html += "<th>Total</th></tr>"
 
-      mc_report_html = "<table>"
       for row in mc_report:
          sid, hours, total = row
          hour_cells = ""
          for hour in hours:
-            hour_cells += "<td>" + str(hour) + "</td>"
+            hour_cells += "<td width=3%>" + str(hour) + "</td>"
          mc_report_html += "<tr><td>" + sid + "</td>" + hour_cells + "<td>" + str(total) + "</td></tr>"
-      mc_report_html = "</table>"
+      mc_report_html += "</table>"
 
       save_json_file(self.event_dir + self.date + "_METEOR_COUNTS.json", mc_report)
       print(self.event_dir + self.date + "_METEOR_COUNTS.json")
@@ -922,8 +927,58 @@ class EventRunner():
       plt.savefig("meteor_counts.png")
       cloud_dir = self.event_dir.replace("/mnt/ams2", "/mnt/archive.allsky.tv")
 
+      solved_ev = []
+      unsolved_ev = []
+      failed_ev = []
+      out = ""
+      for row in msd:
+         print(row.keys())
+         if "solution" not in row:
+            print("NO SOLUTION")
+            unsolved_ev.append(row)
+         else:
+            if row['solve_status'] == "SUCCESS": 
+               print("SOLVED!")
+               solved_ev.append(row)
+            else:
+               print("FAILED!")
+               failed_ev.append(row)
+      print("Solved:", len(solved_ev))
+      print("Un-Solved:", len(unsolved_ev))
+      print("Failed:", len(failed_ev))
 
+      mse_list_html = self.make_mse_solved_html(solved_ev)
+      mse_list_html += "<p>&nbsp;</p><h3>Observations for Solved Meteor Events </h3><p>Some of these observations might still need help with point refinement and/or astrometric calibration. </p>" + self.make_mse_failed_html(solved_ev, "green")
+
+      mse_list_html += "<p>&nbsp;</p><h3>Observations for Failed Meteor Events</h3><p>These observations need help with point picking and/or astrometric calibration. </p>" + self.make_mse_failed_html(failed_ev,"red")
+      mse_list_html += "<p>&nbsp;</p><h3>Observations for Unsolved Events</h3> <p>These observations have not been run or could not be run. Some might not be meteors at all. </p>" + self.make_mse_failed_html(unsolved_ev, "red")
+
+      #ssd = sorted(ssd, key=lambda x: x['start_datetime'][0], reverse=False)
+      ssd = sorted(ssd, key=lambda x: x['stations'][0], reverse=False)
+
+      sse_list_html = "<p>&nbsp;</p><h3>Single Station Meteor Observations</h3> <p>Some of these observations might not be meteors. </p>" + self.make_sse_group_html(ssd, "white")
+
+      mse_stats = """
+      <p> &nbsp; </p>
+      <h2>Multi-Station Events for """ + date + """</h2>
+       <div id='mse_stats'>
+          Total Multi-Station Events: """ + str(len(msd)) + """
+          Solved: """ + str(len(solved_ev)) + """
+          Failed: """ + str(len(failed_ev)) + """
+          Unsolved: """ + str(len(unsolved_ev)) + """
+       </div>
+
+      """
+      mse_report_html = "" + mse_stats + mse_list_html
+      #for row in solved_ev:
+      #   print(row.keys())
+      for row in ssd:
+         print(row)
+
+      print("Meteor Count REPORT", mc_report_html)
       report_template = report_template.replace("{MC_REPORT}", mc_report_html)
+      report_template = report_template.replace("{MSE_LIST}", mse_report_html)
+      report_template = report_template.replace("{SSE_LIST}", sse_list_html)
       out = open(self.edir + "report.html", "w")
       out.write(report_template)
       print(self.edir + "report.html")
@@ -933,13 +988,144 @@ class EventRunner():
       #print(cmd)
       #os.system(cmd)
 
-      cmd = "rsync -auv " + self.event_dir + "* " + cloud_dir 
+      # make multi station events report
+      # make single station obs report
+
+      cmd = "cp " + self.edir + "report.html " + cloud_dir 
       print(cmd)
       os.system(cmd)
+      print("YOYO")
+      #MIKE!!!
+      cmd = "rsync -auv " + self.event_dir + "* " + cloud_dir 
+      #os.system(cmd)
       
       #plt.show()
          
       # STATION TOTAL OBS TOTAL SSE TOTAL MSE
+   def make_mse_solved_html (self, solved_ev):
+      #dict_keys(['start_datetime', 'files', 'lats', 'solve_status', 'stations', 'lons', 'event_id', 'event_day', 'solution', 'obs', 'total_stations'])
+      #dict_keys(['duration', 'traj', 'shower', 'event_id', 'rad', 'plot', 'sol_dir', 'simple_solve', 'kml', 'orb'])
+      out = "<h3>Successfully Solved </h3>"
+      out += "<table width=80%>"
+      out += "<tr> <th>Event ID</th> <th>Stations</th> <th>Dur</th> <th>Vel</th> <th>End Alt</th> <th>Shower</th> <th>a</th> <th>e</th> <th>i</th> <th>peri</th> <th>q</th> <th>ls</th> <th>M</th> <th>P</th></tr>"
+      for ev in solved_ev:
+         ev_id = ev['event_id']
+         stations = list(set(ev['stations']))
+         st_str = ""
+         for st in sorted(stations):
+            st = st.replace("AMS", "")
+            if st_str != "":
+               st_str += st + ","
+         sol = ev['solution']
+         traj = ev['solution']['traj']
+         orb = ev['solution']['orb']
+         shower = ev['solution']['shower']
+         v_init = str(int(traj['v_init']/1000))  + " km/s"
+         e_alt = str(int(traj['end_ele']/1000))  + " km"
+         shower_code = shower['shower_code']
+         dur = sol['duration']
+         if orb['a'] is None or orb['a'] == "":
+            orb['a'] = 0
+            orb['e'] = 0
+            orb['i'] = 0
+            orb['peri'] = 0
+            orb['q'] = 0
+            orb['la_sun'] = 0
+            orb['mean_anomaly'] = 0
+            orb['T'] = 0
+         ev_row = "<tr> <td>{:s}</td> <td>{:s}</td> <td>{:s}</td> <td>{:s}</td> <td>{:s}</td> <td>{:s}</td> <td>{:0.2f}</td> <td>{:0.2f}</td> <td>{:0.2f}</td> <td>{:0.2f}</td> <td>{:0.2f}</td> <td>{:0.2f}</td> <td>{:0.2f}</td> <td>{:0.2f}</td></tr>".format(ev_id, st_str, str(dur), str(v_init), str(e_alt), str(shower_code),float(orb['a']),float(orb['e']),float(orb['i']),float(orb['peri']),float(orb['q']),float(orb['la_sun']),float(orb['mean_anomaly']),float(orb['T']))
+         out += ev_row
+      out += "</table>"
+
+
+      return(out)
+
+   def make_sse_group_html (self, events, border_color):
+      out = "<div class='container'>"
+      for ev in events:
+
+         stations = sorted(list(set(ev['stations'])))
+         st_str = ""
+         for st in stations:
+            if st_str != "":
+               st_str += ", "
+            st_str += st
+
+         obs = ""
+         obs_images = ""
+         fc = 0
+         for i in range(0,len(ev['stations'])):
+            station = ev['stations'][i]
+            obs_file = ev['files'][i]
+            if True:
+               if obs != "":
+                  obs += ", "
+               obs += station + "_" + obs_file + " "
+               if fc == 0 and "event_id" in ev:
+                  print("EV:", ev)
+                  desc_text = ev['event_id']
+               else:
+                  desc_text = ""
+               prev_file, prev_html = self.make_obs_image(station, obs_file, border_color, desc_text)
+               obs_images += prev_html
+               fc += 1
+         out += obs_images 
+     
+      out += "</div>"
+      return(out)
+
+   def make_mse_failed_html (self, events, border_color):
+      out = "<table width=80%>"
+      for ev in events:
+         
+         stations = sorted(list(set(ev['stations'])))
+         st_str = ""
+         for st in stations:
+            if st_str != "":
+               st_str += ", "
+            st_str += st
+
+         obs = ""
+         obs_images = ""
+         fc = 0
+         for i in range(0,len(ev['stations'])):
+            station = ev['stations'][i]
+            obs_file = ev['files'][i]
+            if True:
+               if obs != "":
+                  obs += ", "
+               obs += station + "_" + obs_file + " " 
+               if fc == 0 and "event_id" in ev:
+                  print("EV:", ev)
+                  desc_text = ev['event_id']
+               else:
+                  desc_text = ""
+               prev_file, prev_html = self.make_obs_image(station, obs_file, border_color, desc_text)
+               obs_images += prev_html
+               fc += 1
+         out += "<tr><td>" + obs_images + "</td></tr>"
+      out += "</table>"
+      return(out)
+
+   def make_obs_image(self, station_id,sd_video_file,border_color,desc_text):
+      year = sd_video_file[0:4]
+      day = sd_video_file[0:10]
+      img_link = "https://archive.allsky.tv/" + station_id + "/METEORS/" + year + "/" + day + "/" + station_id + "_" + sd_video_file
+      img_link = img_link.replace(".mp4", "-prev.jpg")
+      roi_link = img_link.replace(".mp4", "-ROI.jpg")
+      data_id = station_id + ":" + sd_video_file
+      img_html = """
+         <div class='obs_thumb' data-id='""" + data_id + """' style="float: left; border: 1px """ + border_color + """ solid; padding: 0px; margin: 10px; solid; background-image: url('""" + img_link + """'); background-repeat: no-repeat; background-size: 100%; height: 180px; width: 320px; "><span style='text-shadow: 2px 2px #000000; color: #FFFFFF; font-size: 10px;'>""" + station_id + " " + desc_text +  """</p></div>
+      """
+
+
+      return(img_link, img_html)
+
+   def make_mse_unsolved_html (self, events):
+      out = "<h3>Unsolved Events</h3>"
+      for ev in events:
+         print(ev.keys)
+      return(out)
 
    def find_bin(self, date_str):
       d,t = date_str.split(" ")

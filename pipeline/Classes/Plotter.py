@@ -27,9 +27,11 @@ from lib.FFFuncs import best_crop_size, ffprobe
 class Plotter():
    def __init__(self, cmd=None, extra_args=[]):
       self.cmd = cmd
+      print("ARGS:", cmd, extra_args)
       if "_" in extra_args[0] :
          print(extra_args)
-         y,m,d = extra_argv[0].split("_")
+         y,m,d = extra_args[0].split("_")
+         self.date_desc = m + "/" + d + "/" + y
          self.event_dir = "/mnt/ams2/EVENTS/" + y + "/" + m + "/" + d + "/" 
          self.all_radiants_file = self.event_dir + "ALL_RADIANTS.json"
          self.all_radiants = load_json_file(self.all_radiants_file)
@@ -39,6 +41,7 @@ class Plotter():
          self.all_radiants_file = "/mnt/ams2/EVENTS/ALL_RADIANTS.json"
          self.all_radiants = load_json_file(self.all_radiants_file)
          self.extra_args = extra_args
+         self.date_desc = ""
 
    def plot_all_rad(self):
       import matplotlib
@@ -55,7 +58,7 @@ class Plotter():
       hl_decs = []
 
       plot_data = {
-         "t": "Sun Centered geocentric ecliptic coordinates <br>Jan 1, 2021 - Apr 9, 2021",
+         "t": "Sun Centered geocentric ecliptic coordinates <br> " + self.date_desc ,
          "x": [],
          "y": [],
          "c": [],
@@ -77,7 +80,7 @@ class Plotter():
 
          if day not in rads_by_day:
             rads_by_day[day] = {
-               "t": "Sun Centered geocentric ecliptic coordinates <br>Jan 1, 2021 - Apr 9, 2021",
+               "t": "Sun Centered geocentric ecliptic coordinates <br> " + self.date_desc ,
                "x": [],
                "y": [],
                "c": [],
@@ -135,8 +138,11 @@ class Plotter():
       #os.system(cmd)
       for day in rads_by_day:
          save_file = "/mnt/ams2/EVENTS/DAYS/" + day + "_PLOTS_ALL_RADIANTS.json"
+         cloud_file = save_file.replace("ams2", "archive.allsky.tv")
          print(save_file)
          save_json_file(save_file, rads_by_day[day])
+        
+         os.system("cp " + save_file + " " + cloud_file)
 
       #fig = plt.figure(figsize=(12,9))
       #ax = fig.add_subplot(111, projection="mollweide")
@@ -165,7 +171,7 @@ class Plotter():
          print("Need help?")
          print("python3 PLT.py all_rad")
       if self.cmd == "all_rad":
-         self.all_rad() 
+         self.plot_all_rad() 
 
 
    def get_catalog_stars(self, cal_params=None):
