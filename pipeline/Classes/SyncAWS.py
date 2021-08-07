@@ -82,7 +82,6 @@ class SyncAWS():
       for json_file in temp:
           if "reduced" not in json_file and "calparams" not in json_file and "manual" not in json_file and "starmerge" not in json_file and "master" not in json_file:
             vfn = json_file.split("/")[-1].replace(".json", ".mp4")
-            print("JSF:", json_file) 
             self.mfiles.append(vfn)
 
    def push_obs_OLD(self, api_key,station_id,meteor_file,mj=None):
@@ -252,7 +251,6 @@ class SyncAWS():
       response = requests.get(url)
       content = response.content.decode()
       content = content.replace("\\", "")
-      print(content)
       if "nothing" not in content:
          jdata = json.loads(content)
       else: 
@@ -260,7 +258,6 @@ class SyncAWS():
          jdata['all_vals'] = []
          jdata['total_records'] = 0
       if jdata is not None:
-         print(jdata)
          data = jdata['all_vals']
       else: 
          data = []
@@ -279,15 +276,13 @@ class SyncAWS():
             response = requests.get(url)
             content = response.content.decode()
             
-         else:
-            print("AWS METEOR IS GOOD!")
       # delete local meteors that are tagged in AWS as deletes
       url = self.API_URL + "?cmd=get_del_obs&station_id=" + self.station_id + "&date=" + day
-      #print(url)
+      print(url)
       response = requests.get(url)
       content = response.content.decode()
       content = content.replace("\\", "")
-      print(content)
+      print("AWS DELETED:", content)
       jdata = json.loads(content)
       data = jdata
       print("DEL:", data)
@@ -305,14 +300,14 @@ class SyncAWS():
       print("AWS DELETE METEORS DONE.")
       print(len(aws_obs), "AWS METEORS ")
       self.get_mfiles("/mnt/ams2/meteors/" + day + "/")
-      print("MF:", self.mfiles)
       print(len(self.mfiles), "LOCAL STATION METEORS")
-      for mf in self.mfiles:
-         mff = "/mnt/ams2/meteors/" + day + "/" + mf.replace(".mp4", ".json") 
-         if cfe(mff) == 1:
-            print("JSON YES", mf)
-         else:
-            print("JSON NO", mf)
+
+      #for mf in self.mfiles:
+      #   mff = "/mnt/ams2/meteors/" + day + "/" + mf.replace(".mp4", ".json") 
+      #   if cfe(mff) == 1:
+      #      print("JSON YES", mf)
+      #   else:
+      #      print("JSON NO", mf)
       if need > 0:
          os.system("./Process.py purge_meteors")
 

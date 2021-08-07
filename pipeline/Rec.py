@@ -42,10 +42,13 @@ if __name__ == "__main__":
    if cmd == "rec_day":
       date = sys.argv[2]
       year, mon, day = sys.argv[2].split("_")
+      os.system("./Process.py purge_meteors")
+      os.system("python3 ./Filter.py fd " + year + "_" + mon)
       R = Reconcile(year, mon)
       os.system("./Process.py purge_meteors")
       SAWS = SyncAWS(R.station_id, api_key)
       SAWS.delete_aws_meteors(date)
+      exit()
       os.system("python3 Meteor.py 8 " + sys.argv[2])
       os.system("python3 Meteor.py 1 " + sys.argv[2])
       os.system("python3 Meteor.py 8 " + sys.argv[2])
