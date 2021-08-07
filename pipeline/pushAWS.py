@@ -22,7 +22,7 @@ def get_meteor_media_sync_status(station_id, sd_vid):
    # does the meteor exist in dynamo with the right version?
    # is the media fully uploaded to the cloud drive (tiny jpg, prev_jpg, prev_vid, final_vid)
    day = sd_vid[0:10]
-   lcdir = "/mnt/ams2/meteors/" + day + "/cloud_files/"
+   lcdir = "/mnt/ams2/METEOR_SCAN/" + day + "/"
    cloud_dir = "/mnt/archive.allsky.tv/" + station_id + "/METEORS/" + day[0:4] + "/" + day + "/"
    cloud_files = []
    if True:

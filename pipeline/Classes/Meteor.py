@@ -2999,6 +2999,82 @@ class Meteor():
       cap.release()
       return
 
+   def get_scan_status(self, root_file):
+      mfile = "/mnt/ams2/meteors/" + root_file[0:10] + "/" + root_file + ".json"
+      scan_status = {}
+      scan_status['jobs'] = []
+      scan_status['mets'] = []
+      scan_status['status'] = ""
+      scan_status['problems'] = []
+      meteor_scan_run = 0
+      meteor_scan_meteors = 0
+      meteor_crop_scan_run = 0
+      meteor_crop_scan_meteors = 0
+      meteor_hd_crop_scan_run = 0
+      meteor_hd_crop_scan_meteors = 0
+      resave_mj = 0
+      if cfe(mfile) == 1:
+         try:
+            mj = load_json_file(mfile)
+         except:
+            mj = self.remake_mj(root_file)
+            resave_mj = 1
+            #exit()
+         roi_good = 0
+         if "roi" in mj:
+            if sum(mj['roi']) > 0:
+               roi_good = 1
+
+         if "meteor_scan_meteors" in mj:
+            meteor_scan_run = 1
+            meteor_scan_meteors = len(mj['meteor_scan_meteors'])
+         if "msc_meteors" in mj:
+            meteor_crop_scan_run = 1
+            if type(mj['msc_meteors']) == dict :
+               mj['msc_meteors'] = self.fix_hd_scan_data(mj['msc_meteors'])
+               print("FIXED MSC METEORS!")
+
+
+            meteor_crop_scan_meteors = len(mj['msc_meteors'])
+
+         if "meteor_scan_hd_crop_scan" in mj:
+            if "meteors" in mj['meteor_scan_hd_crop_scan']:
+               print("TYPE IS:",  type(mj['meteor_scan_hd_crop_scan']))
+               mj['meteor_scan_hd_crop_scan'] = self.fix_hd_scan_data(mj['meteor_scan_hd_crop_scan']['meteors'])
+               print("FIXED 1:", mfile)
+            elif type(mj['meteor_scan_hd_crop_scan']) == dict :
+               mj['meteor_scan_hd_crop_scan'] = self.fix_hd_scan_data(mj['meteor_scan_hd_crop_scan'])
+               print("FIXED 2:", mfile)
+            elif len(mj['meteor_scan_hd_crop_scan']) > 1:
+               mj['meteor_scan_hd_crop_scan'] = self.only_meteors(mj['meteor_scan_hd_crop_scan'])
+
+            meteor_hd_crop_scan_run = 1
+            meteor_hd_crop_scan_meteors = len(mj['meteor_scan_hd_crop_scan'])
+         scan_status['jobs'] = [meteor_scan_run, meteor_crop_scan_run, meteor_hd_crop_scan_run]
+         scan_status['mets'] = [meteor_scan_meteors, meteor_crop_scan_meteors, meteor_hd_crop_scan_meteors]
+         if sum(scan_status['jobs']) == 3 and sum(scan_status['mets']) == 3 and roi_good == 1:
+            scan_status['status'] = "GOOD"
+         elif sum(scan_status['jobs']) == 0:
+            scan_status['status'] = "SCAN NOT RUN"
+         elif 0 < sum(scan_status['jobs']) < 3:
+            if meteor_scan_run == 0:
+               scan_status['problems'].append("METEOR SCAN HAS NOT RUN")
+            if meteor_crop_scan_run == 0:
+               scan_status['problems'].append("CROP SCAN HAS NOT RUN")
+               scan_status['status'] = "NEEDS REVIEW"
+            if meteor_hd_crop_scan_run == 0:
+               scan_status['problems'].append("HD CROP HAS NOT RUN")
+               scan_status['status'] = "NEEDS REVIEW"
+         else:
+            scan_status['status'] = "NEEDS REVIEW"
+         if roi_good == 0:
+            scan_status['problems'].append("NO ROI")
+
+         mj['scan_status'] = scan_status
+         save_json_file(mfile, mj)
+      else:
+         print("   ERROR MF NOT FOUND:", mfile )
+      return(scan_status)
 
 
 
@@ -3068,3 +3144,4 @@ if __name__ == "__main__":
             #   my_meteor.meteor_scan_crop()
             #my_meteor.report_objects(my_meteor.sd_objects)
       print("FINISHED THE SCAN FOR ", day)
+

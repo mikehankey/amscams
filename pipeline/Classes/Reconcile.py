@@ -355,8 +355,6 @@ class Reconcile():
 
             meteor_crop_scan_meteors = len(mj['msc_meteors'])
 
-
-
          if "meteor_scan_hd_crop_scan" in mj:
             if "meteors" in mj['meteor_scan_hd_crop_scan']:
                print("TYPE IS:",  type(mj['meteor_scan_hd_crop_scan']))

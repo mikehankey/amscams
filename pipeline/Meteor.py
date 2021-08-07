@@ -11,17 +11,10 @@ from datetime import datetime as dt
 from lib.FFFuncs import ffprobe
 
 
-def status_report(meteor_file):
+def status_report(meteor_date):
    all_meteor = Meteor()
    mdir = "/mnt/ams2/meteors/" + meteor_date[0:10] + "/" 
-   mfile = mdir + meteor_date 
-   if cfe(mfile) == 1:
-      all_meteor.meteor_status_report(meteor_file)
-   else:
-      print("Meteor file doesn't exist in local dir. Must have been deleted.") 
-      print(mfile)
-      return()
-   
+   all_meteor.qc_report(meteor_date) 
 
 def remote_reduce(station_id, meteor_video):
 
