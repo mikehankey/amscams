@@ -35,6 +35,9 @@ from boto3.dynamodb.conditions import Key
 
 import time
 from wmpl.Utils.TrajConversions import equatorialCoordPrecession_vect, J2000_JD
+import redis
+admin_conf = load_json_file("admin_conf.json")
+r = redis.Redis(admin_conf['redis_host'], port=6379, decode_responses=True)
 
 def get_aws_events(day):
    day = day.replace("_", "")
@@ -553,7 +556,7 @@ def make_vida_plots(day):
    for key in evd:
       print(key)
 
-def solve_day(day, cores=5):
+def solve_day(day, cores=0):
    date = day
    year, mon, dom = date.split("_")
    day_dir = "/mnt/ams2/EVENTS/" + year + "/" + mon + "/" + dom + "/" 
@@ -845,8 +848,17 @@ def solve_event(event_id, force=1, time_sync=1):
              cloud_file = "/mnt/archive.allsky.tv/" + t_station + "/CAL/as6.json" 
              if cfe(local_file) == 0:
                 os.system("cp "  + cloud_file + " " + local_file)
-             jsi = load_json_file(local_file)
-             dy_obs_data['loc'] = [jsi['site']['device_lat'], jsi['site']['device_lng'], jsi['site']['device_alt']]
+             red_key = "ST:" + t_station
+             red_val = r.get(red_key)
+             if red_val is not None:
+                red_val = json.loads(red_val)
+                lat = red_val['lat']
+                lon = red_val['lon']
+                alt = red_val['alt']
+                dy_obs_data['loc'] = [lat,lon,alt]
+             else:
+                jsi = load_json_file(local_file)
+                dy_obs_data['loc'] = [jsi['site']['device_lat'], jsi['site']['device_lng'], jsi['site']['device_alt']]
           obs_data = convert_dy_obs(dy_obs_data, obs )
 
 
