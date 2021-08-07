@@ -48,7 +48,6 @@ if __name__ == "__main__":
       os.system("./Process.py purge_meteors")
       SAWS = SyncAWS(R.station_id, api_key)
       SAWS.delete_aws_meteors(date)
-      exit()
       os.system("python3 Meteor.py 8 " + sys.argv[2])
       os.system("python3 Meteor.py 1 " + sys.argv[2])
       os.system("python3 Meteor.py 8 " + sys.argv[2])
