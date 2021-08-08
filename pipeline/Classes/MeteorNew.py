@@ -63,7 +63,7 @@ class Meteor():
       }
 
 
-      self.show = 1
+      self.show = 0
       self.DF = DisplayFrame()
       self.SCAN_DIR = "/mnt/ams2/METEOR_SCAN/"
       self.SCAN_REPORT_DIR = "/mnt/ams2/METEOR_SCAN/REPORTS/"
@@ -143,6 +143,14 @@ class Meteor():
 
       # load mask images
       self.mask_imgs, self.sd_mask_imgs = load_mask_imgs(self.json_conf)
+
+   def only_meteors(self, objects):
+      final_meteors = []
+      for obj in objects:
+         if "report" in obj :
+            if obj['report']['class'] == "meteor":
+               final_meteors.append(obj)
+      return(final_meteors)
 
    def sd_to_hd_roi(self, sd_roi, iw,ih):
       hdm_x = 1920 / iw
@@ -957,7 +965,18 @@ class Meteor():
          mj['meteor_scan_meteors'] = self.meteor_scan_meteors
          vid_w = mj['ffp']['sd'][0] 
          vid_h = mj['ffp']['sd'][1] 
-         roi = self.define_roi( mj['best_meteor']['oxs'],mj['best_meteor']['oys'], int(vid_w),int(vid_h))
+         red_file = meteor_file.replace(".json", "-reduced.json")
+         print("RED", red_file) 
+         if "best_meteor" in mj:
+            roi = self.define_roi( mj['best_meteor']['oxs'],mj['best_meteor']['oys'], int(vid_w),int(vid_h))
+         elif "confirmed_meteors" in mj:
+            if len(mj['confirmed_meteors']) >= 1:
+               roi = self.define_roi( mj['confirmed_meteors'][0]['oxs'],mj['confirmed_meteors'][0]['oys'], int(vid_w),int(vid_h))
+         else: 
+            print("We could not figure out the ROI!", meteor_file)
+            roi = [0,0,0,0]
+            exit() 
+   
          if sum(roi) != 0:
             mj['roi'] = roi
             save_json_file(mfile, mj)
