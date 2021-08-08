@@ -3984,7 +3984,10 @@ class Meteor():
       (f_datetime, cam, f_date_str,fy,fmon,fd, fh, fm, fs) = convert_filename_to_date_cam(self.meteor_file)
       self.cam_id = cam
       print(self.cam_id )
-      mask_img = self.mask_imgs[self.cam_id]
+      if self.cam_id in self.mask_imgs:
+         mask_img = self.mask_imgs[self.cam_id]
+      else:
+         mask_img = np.zeros((self.sd_frames[0].shape[0],self.sd_frames[0].shape[1],2),dtype=np.uint8)
       print("MASK ", mask_img.shape)
       if len(mask_img.shape) == 3:
          mask_img_bw = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)

@@ -258,7 +258,11 @@ class SyncAWS():
          jdata['all_vals'] = []
          jdata['total_records'] = 0
       if jdata is not None:
-         data = jdata['all_vals']
+         print(jdata)
+         if "all_vals" in jdata:
+            data = jdata['all_vals']
+         else:
+            data = []
       else: 
          data = []
       aws_obs = data
@@ -288,6 +292,9 @@ class SyncAWS():
       print("DEL:", data)
       need = 0
       for row in data:
+         if row == "message":
+            continue
+
          print("NEED TO DELETE", row)
          need += 1
          url = self.API_URL + "?cmd=del_obs_commit&station_id=" + self.station_id + "&sd_video_file=" + row['vid'] + "&api_key=" + self.json_conf['api_key']
