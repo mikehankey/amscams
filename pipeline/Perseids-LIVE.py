@@ -3,16 +3,22 @@ import glob
 import datetime
 from datetime import datetime as dt
 import os
+from lib.FFFuncs import lower_bitrate 
 from random import seed
 from random import random
 from random import randrange 
 
-from lib.PipeUtil import load_json_file, cfe
+from lib.PipeUtil import load_json_file, cfe, get_file_info
 json_conf = load_json_file("../conf/as6.json")
 station_id = json_conf['site']['ams_id']
 all_cams = {}
 now = dt.now()
 cur_date = now.strftime("%Y_%m_%d")
+peak_dates = ['2021_08_10', '2021_08_11', '2021_08_12']
+
+if cur_date not in peak_dates:
+   print("Perseids Peak is over! EXIT", cur_date)
+   exit()
 cur_hour = now.strftime("%H")
 cur_min = now.strftime("%M")
 if int(cur_hour) > 0:
@@ -36,6 +42,7 @@ os.system("cp /mnt/archive.allsky.tv/LIVE/Perseids2021.json ./")
 os.system("cp /mnt/archive.allsky.tv/LIVE/photo_credits.json ./")
 print("cp /mnt/archive.allsky.tv/LIVE/photo_credits.json ./")
 photo_credits = load_json_file("photo_credits.json")
+credits = photo_credits[station_id]
 schedule = load_json_file("Perseids2021.json")
 
 if station_id in schedule:
@@ -44,22 +51,22 @@ if station_id in schedule:
    if "best_cams" in my_schedule:
       my_cams = my_schedule['best_cams']
    else:
-      my_cams = [1,2,3,4,5]
+      my_cams = [4]
 
    print("MY SCHEDULE:", my_schedule)
 else:
    print("This station is not broadcasting.")
    exit()
 
-cam_idx = randrange(len(my_cams)) + 1
-selected_cam = all_cams[cam_idx]
+cam_idx = randrange(len(my_cams)) 
 print("ALL CAMS:", all_cams)
 print("CAM IDX:", cam_idx)
-print("SELECTED CAM:", all_cams[cam_idx])
+my_cam_idx = my_cams[cam_idx]
+selected_cam = all_cams[my_cam_idx]
+print("SELECTED CAM:", all_cams[my_cam_idx])
 print("BROADCAST PARAMS")
 print("Current time:", cur_date, cur_hour, cur_min)
 print(station_id, my_cams, my_minutes)
-
 copy_files = []
 
 for smin in my_minutes:
@@ -106,21 +113,34 @@ if cfe(LIVE_CACHE_DIR, 1) == 0:
    os.makedirs(LIVE_CACHE_DIR)
 if cfe(LIVE_CLOUD_DIR, 1) == 0:
    os.makedirs(LIVE_CLOUD_DIR)
-
+scale_x = "640"
+scale_y = "360"
+text_x1 = "10"
+text_y1 = "335"
+text_x2 = "500"
+text_y2 = "335"
+# find current files that match the requested minutes 
 for cf in copy_files:
    fn = cf.split("/")[-1]
    cache_file = LIVE_CACHE_DIR + fn
    temp_file = cache_file.replace(".mp4", "-TEMP.mp4")
    if cfe(cache_file) == 0:
-      cmd = """ffmpeg -i """ + cf + """  -c:v libx264 -pix_fmt yuv420p -vf 'scale=1280:720' -codec:a copy """ + temp_file 
-      print(cmd)
-      os.system(cmd)
+      sz, tdiff = get_file_info(cf)
+      if float(tdiff) < 1.1:
 
-      cmd = """ffmpeg -i """ + temp_file + """  -c:v libx264 -pix_fmt yuv420p -vf 'scale=640:360' -vf "drawtext=fontfile=/usr/share/fonts/truetype/lato/Lato-Medium.ttf:text='""" + credits + """':fontcolor=white:fontsize=18:box=1:boxcolor=black@0.5:boxborderw=5:x=10:y=690,drawtext=fontfile=/usr/share/fonts/truetype/lato/Lato-Medium.ttf:text='""" + date_str + """':fontcolor=white:fontsize=18:box=1:boxcolor=black@0.5:boxborderw=5:x=1020:y=690" -codec:a copy """ + cache_file 
+         print("FILE NOT DONE YET.", info)
+         continue
+      date_str = fn[0:16] + " UTC"
+      cmd = """ffmpeg -i """ + cf + """  -c:v libx264 -pix_fmt yuv420p -crf 30 -vf "scale=640:360,drawtext=fontfile=/usr/share/fonts/truetype/lato/Lato-Medium.ttf:text='""" + credits + """':fontcolor=white:fontsize=12:box=1:boxcolor=black@0.5:boxborderw=5:x=""" + text_x1 + """:y=""" + text_y1 + """,drawtext=fontfile=/usr/share/fonts/truetype/lato/Lato-Medium.ttf:text='""" + date_str + """':fontcolor=white:fontsize=12:box=1:boxcolor=black@0.5:boxborderw=5:x=""" + text_x2 + """:y=""" + text_y2 + """" -codec:a copy """ + cache_file 
       print(cmd)
       os.system(cmd)
-      exit()
-# find current files that match the requested minutes 
+      
+      cloud_file = LIVE_CLOUD_DIR + fn
+      if cfe(cloud_file) == 0:
+         cmd = "cp " + cache_file + " " + cloud_file
+         print(cmd)
+         os.system(cmd)
+
 
 
 
