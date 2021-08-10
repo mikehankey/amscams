@@ -8,8 +8,35 @@ from random import seed
 from random import random
 from random import randrange 
 
-from lib.PipeUtil import load_json_file, cfe, get_file_info
+from lib.PipeUtil import load_json_file, cfe, get_file_info, day_or_night, convert_filename_to_date_cam
 json_conf = load_json_file("../conf/as6.json")
+def get_weather(lat,lng):
+   outfile = "weather.txt"
+   url = "wttr.in/" + str(lat) + "," + str(lng) + "?0T --output " + outfile
+   print(url)
+   os.system("curl " + url)
+   fp = open(outfile)
+   lc = 0
+   for line in fp:
+      line = line.replace("\n", "")
+      if lc == 2:
+         status = line[16:]
+      if lc == 3:
+         temp = line[16:]
+      if lc == 4:
+         wind = line[16:]
+      if lc == 5:
+         wind_speed = line[16:]
+      lc += 1
+   weather_desc = "Forecast\: " + str(status) + " " + str(temp) 
+   
+   return(status, weather_desc)
+ 
+
+
+weather_status, weather_desc = get_weather(json_conf['site']['device_lat'],json_conf['site']['device_lng'])
+print(weather_desc)
+
 station_id = json_conf['site']['ams_id']
 all_cams = {}
 now = dt.now()
@@ -116,13 +143,25 @@ if cfe(LIVE_CLOUD_DIR, 1) == 0:
 scale_x = "640"
 scale_y = "360"
 text_x1 = "10"
-text_y1 = "335"
+text_y1 = "320"
 text_x2 = "500"
-text_y2 = "335"
+text_y2 = "340"
+text_x3 = "10"
+text_y3 = "340"
 # find current files that match the requested minutes 
 for cf in copy_files:
    fn = cf.split("/")[-1]
-   cache_file = LIVE_CACHE_DIR + fn
+   (f_datetime, cam, f_date_str,fy,fmon,fd, fh, fm, fs) = convert_filename_to_date_cam(cf)
+   date_str = f_date_str[0:-3] + " UTC"
+   date_str = date_str.replace(":", "\\:")
+   print(date_str)
+   sun_status, sun_az, sun_el = day_or_night(f_date_str, json_conf,1) 
+
+   extra_text = date_str + " " + weather_desc + " Solar Elevation \:" + str(sun_el) + "° " + sun_status + " time"
+   extra_file_info = "_" + station_id + "-" + sun_status + "-" + weather_status.lower()  + ".mp4"
+   extra_file_info = extra_file_info.replace(" ", "")
+   cache_file = LIVE_CACHE_DIR + fn.replace(".mp4", extra_file_info)
+
    temp_file = cache_file.replace(".mp4", "-TEMP.mp4")
    if cfe(cache_file) == 0:
       if cfe(cf) == 1: 
@@ -132,16 +171,18 @@ for cf in copy_files:
             continue
       else:
          continue
-      date_str = fn[0:16] + " UTC"
-      cmd = """ffmpeg -i """ + cf + """  -c:v libx264 -pix_fmt yuv420p -crf 30 -vf "scale=640:360,drawtext=fontfile=/usr/share/fonts/truetype/lato/Lato-Medium.ttf:text='""" + credits + """':fontcolor=white:fontsize=12:box=1:boxcolor=black@0.5:boxborderw=5:x=""" + text_x1 + """:y=""" + text_y1 + """,drawtext=fontfile=/usr/share/fonts/truetype/lato/Lato-Medium.ttf:text='""" + date_str + """':fontcolor=white:fontsize=12:box=1:boxcolor=black@0.5:boxborderw=5:x=""" + text_x2 + """:y=""" + text_y2 + """" -codec:a copy """ + cache_file 
+      nothing = ""
+      cmd = """ffmpeg -i """ + cf + """  -c:v libx264 -pix_fmt yuv420p -crf 30 -vf "scale=640:360,drawtext=fontfile=/usr/share/fonts/truetype/lato/Lato-Medium.ttf:text='""" + credits + """':fontcolor=white:fontsize=12:box=1:boxcolor=black@0.5:boxborderw=5:x=""" + text_x1 + """:y=""" + text_y1 + """,drawtext=fontfile=/usr/share/fonts/truetype/lato/Lato-Medium.ttf:text='""" + nothing + """':fontcolor=white:fontsize=12:box=1:boxcolor=black@0.5:boxborderw=5:x=""" + text_x2 + """:y=""" + text_y2 + """,drawtext=fontfile=/usr/share/fonts/truetype/lato/Lato-Medium.ttf:text='""" + extra_text + """':fontcolor=white:fontsize=12:box=1:boxcolor=black@0.5:boxborderw=5:x=""" + text_x3 + """:y=""" + text_y3 + """" -codec:a copy """ + cache_file 
       print(cmd)
       os.system(cmd)
       
       cloud_file = LIVE_CLOUD_DIR + fn
+      cloud_file = LIVE_CLOUD_DIR + fn.replace(".mp4", extra_file_info)
       if cfe(cloud_file) == 0:
          cmd = "cp " + cache_file + " " + cloud_file
          print(cmd)
          os.system(cmd)
+
 
 
 
