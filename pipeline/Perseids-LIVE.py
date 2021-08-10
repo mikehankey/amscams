@@ -125,10 +125,12 @@ for cf in copy_files:
    cache_file = LIVE_CACHE_DIR + fn
    temp_file = cache_file.replace(".mp4", "-TEMP.mp4")
    if cfe(cache_file) == 0:
-      sz, tdiff = get_file_info(cf)
-      if float(tdiff) < 1.1:
-
-         print("FILE NOT DONE YET.", info)
+      if cfe(cf) == 1: 
+         sz, tdiff = get_file_info(cf)
+         if float(tdiff) < 1.1:
+            print("FILE NOT DONE YET." )
+            continue
+      else:
          continue
       date_str = fn[0:16] + " UTC"
       cmd = """ffmpeg -i """ + cf + """  -c:v libx264 -pix_fmt yuv420p -crf 30 -vf "scale=640:360,drawtext=fontfile=/usr/share/fonts/truetype/lato/Lato-Medium.ttf:text='""" + credits + """':fontcolor=white:fontsize=12:box=1:boxcolor=black@0.5:boxborderw=5:x=""" + text_x1 + """:y=""" + text_y1 + """,drawtext=fontfile=/usr/share/fonts/truetype/lato/Lato-Medium.ttf:text='""" + date_str + """':fontcolor=white:fontsize=12:box=1:boxcolor=black@0.5:boxborderw=5:x=""" + text_x2 + """:y=""" + text_y2 + """" -codec:a copy """ + cache_file 
