@@ -172,7 +172,7 @@ for cf in copy_files:
       else:
          continue
       nothing = ""
-      cmd = """ffmpeg -i """ + cf + """  -c:v libx264 -pix_fmt yuv420p -crf 30 -vf "scale=640:360,drawtext=fontfile=/usr/share/fonts/truetype/lato/Lato-Medium.ttf:text='""" + credits + """':fontcolor=white:fontsize=12:box=1:boxcolor=black@0.5:boxborderw=5:x=""" + text_x1 + """:y=""" + text_y1 + """,drawtext=fontfile=/usr/share/fonts/truetype/lato/Lato-Medium.ttf:text='""" + nothing + """':fontcolor=white:fontsize=12:box=1:boxcolor=black@0.5:boxborderw=5:x=""" + text_x2 + """:y=""" + text_y2 + """,drawtext=fontfile=/usr/share/fonts/truetype/lato/Lato-Medium.ttf:text='""" + extra_text + """':fontcolor=white:fontsize=12:box=1:boxcolor=black@0.5:boxborderw=5:x=""" + text_x3 + """:y=""" + text_y3 + """" -codec:a copy """ + cache_file 
+      cmd = """/usr/bin/ffmpeg -i """ + cf + """  -c:v libx264 -pix_fmt yuv420p -crf 30 -vf "scale=640:360,drawtext=fontfile=/usr/share/fonts/truetype/lato/Lato-Medium.ttf:text='""" + credits + """':fontcolor=white:fontsize=12:box=1:boxcolor=black@0.5:boxborderw=5:x=""" + text_x1 + """:y=""" + text_y1 + """,drawtext=fontfile=/usr/share/fonts/truetype/lato/Lato-Medium.ttf:text='""" + nothing + """':fontcolor=white:fontsize=12:box=1:boxcolor=black@0.5:boxborderw=5:x=""" + text_x2 + """:y=""" + text_y2 + """,drawtext=fontfile=/usr/share/fonts/truetype/lato/Lato-Medium.ttf:text='""" + extra_text + """':fontcolor=white:fontsize=12:box=1:boxcolor=black@0.5:boxborderw=5:x=""" + text_x3 + """:y=""" + text_y3 + """" -codec:a copy """ + cache_file 
       print(cmd)
       os.system(cmd)
       
