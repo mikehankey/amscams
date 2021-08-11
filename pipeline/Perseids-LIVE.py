@@ -30,6 +30,7 @@ def do_hd_requests():
       print(req)
       if req not in hd_log:
          # copy media for this file! 
+         root_file = req.replace(".mp4", "")
          hd_log[req] = 1
          date = req[0:10]
          mdir ="/mnt/ams2/meteors/" + date + "/" 
@@ -40,13 +41,19 @@ def do_hd_requests():
          print("GET:", mfile)
          if cfe(mfile) == 1:
             mj = load_json_file(mfile)
+            print(mj.keys())
             if "hd_trim" in mj:
                if cfe(mj['hd_trim']) == 1:
-                  if cfe(cloud_dir + mj['hd_trim']) == 0:
-                     print("cp " + mj['hd_trim'] + " " + cloud_dir)
-                     os.system("cp " + mj['hd_trim'] + " " + cloud_dir)
+                  if cfe(cloud_dir + root_file + "-HD.mp4") == 0:
+                     os.system("cp " + mj['hd_trim'] + " " + cloud_dir + root_file + "-HD.mp4")
                   else:
                      print("File already saved.")
+                  if cfe(cloud_dir + mj['sd_video_file']) == 0:
+                     os.system("cp " + mj['sd_video_file'] + " " + cloud_dir)
+                  if cfe(cloud_dir  + root_file + ".jpg") == 0:
+                     os.system("cp " + mj['sd_stack'] + " " + cloud_dir + root_file + ".jpg")
+                  if cfe(cloud_dir  + root_file + "-HD.jpg") == 0:
+                     os.system("cp " + mj['hd_stack'] + " " + cloud_dir + root_file + "-HD.jpg")
             hd_log[req] = 1
    save_json_file("hd_req_log.json", hd_log)
             
