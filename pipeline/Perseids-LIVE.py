@@ -50,6 +50,8 @@ cur_hour = now.strftime("%H")
 cur_min = now.strftime("%M")
 if int(cur_hour) > 0:
    last_hour = int(cur_hour) - 1
+else:
+   last_hour = 23
 if last_hour < 10:
    last_hour = "0" + str(last_hour)
 else:
