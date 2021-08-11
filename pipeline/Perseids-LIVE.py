@@ -8,9 +8,49 @@ from random import seed
 from random import random
 from random import randrange 
 
-from lib.PipeUtil import load_json_file, cfe, get_file_info, day_or_night, convert_filename_to_date_cam
+from lib.PipeUtil import load_json_file, cfe, get_file_info, day_or_night, convert_filename_to_date_cam, save_json_file
 os.system("git pull")
 json_conf = load_json_file("../conf/as6.json")
+
+def do_hd_requests():
+   station_id = json_conf['site']['ams_id']
+   os.system("cp /mnt/archive.allsky.tv/LIVE/hd-requests.json ./")
+   print("cp /mnt/archive.allsky.tv/LIVE/hd-requests.json ./")
+   if cfe("hd_req_log.json") == 1:
+      hd_log = load_json_file("./hd_req_log.json")
+   else:
+      hd_log = {}
+   data = load_json_file("./hd-requests.json")
+   if station_id in data:
+      hd_requests = data[station_id]
+   else: 
+      print("NO HD REQUESTS.")
+      return
+   for req in hd_requests['hd_requests']:
+      print(req)
+      if req not in hd_log:
+         # copy media for this file! 
+         hd_log[req] = 1
+         date = req[0:10]
+         mdir ="/mnt/ams2/meteors/" + date + "/" 
+         cloud_dir = "/mnt/archive.allsky.tv/" + station_id + "/MEDIA/" + date + "/" 
+         if cfe(cloud_dir, 1) == 0:
+            os.makedirs(cloud_dir)
+         mfile = mdir + req.replace(".mp4", ".json")
+         print("GET:", mfile)
+         if cfe(mfile) == 1:
+            mj = load_json_file(mfile)
+            if "hd_trim" in mj:
+               if cfe(mj['hd_trim']) == 1:
+                  if cfe(cloud_dir + mj['hd_trim']) == 0:
+                     print("cp " + mj['hd_trim'] + " " + cloud_dir)
+                     os.system("cp " + mj['hd_trim'] + " " + cloud_dir)
+                  else:
+                     print("File already saved.")
+            hd_log[req] = 1
+   save_json_file("hd_req_log.json", hd_log)
+            
+
 def get_weather(lat,lng):
    outfile = "weather.txt"
    url = "wttr.in/" + str(lat) + "," + str(lng) + "?0T --output " + outfile
@@ -34,7 +74,7 @@ def get_weather(lat,lng):
    return(status, weather_desc)
  
 
-
+do_hd_requests()
 weather_status, weather_desc = get_weather(json_conf['site']['device_lat'],json_conf['site']['device_lng'])
 print(weather_desc)
 
