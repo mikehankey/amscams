@@ -9,6 +9,7 @@ from random import random
 from random import randrange 
 
 from lib.PipeUtil import load_json_file, cfe, get_file_info, day_or_night, convert_filename_to_date_cam
+os.system("git pull")
 json_conf = load_json_file("../conf/as6.json")
 def get_weather(lat,lng):
    outfile = "weather.txt"
