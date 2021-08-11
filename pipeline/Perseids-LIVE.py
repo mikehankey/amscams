@@ -48,12 +48,12 @@ def do_hd_requests():
                      os.system("cp " + mj['hd_trim'] + " " + cloud_dir + root_file + "-HD.mp4")
                   else:
                      print("File already saved.")
-                  if cfe(cloud_dir + mj['sd_video_file']) == 0:
-                     os.system("cp " + mj['sd_video_file'] + " " + cloud_dir)
-                  if cfe(cloud_dir  + root_file + ".jpg") == 0:
-                     os.system("cp " + mj['sd_stack'] + " " + cloud_dir + root_file + ".jpg")
-                  if cfe(cloud_dir  + root_file + "-HD.jpg") == 0:
-                     os.system("cp " + mj['hd_stack'] + " " + cloud_dir + root_file + "-HD.jpg")
+            if cfe(cloud_dir + mj['sd_video_file']) == 0:
+               os.system("cp " + mj['sd_video_file'] + " " + cloud_dir)
+            if cfe(cloud_dir  + root_file + ".jpg") == 0:
+               os.system("cp " + mj['sd_stack'] + " " + cloud_dir + root_file + ".jpg")
+            if cfe(cloud_dir  + root_file + "-HD.jpg") == 0:
+               os.system("cp " + mj['hd_stack'] + " " + cloud_dir + root_file + "-HD.jpg")
             hd_log[req] = 1
    save_json_file("hd_req_log.json", hd_log)
             
