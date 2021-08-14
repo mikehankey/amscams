@@ -325,8 +325,9 @@ def meteor_night_stacks(date, json_conf):
                continue
             if "hd_stack" in mj:
                img = cv2.imread(mj['hd_stack'])
+               img = cv2.resize(img,(1920,1080))
                images.append(img)
-            elif "sd_stack" in mj:
+            if "sd_stack" in mj:
                img = cv2.imread(mj['sd_stack'])
                img = cv2.resize(img,(1920,1080))
                images.append(img)
