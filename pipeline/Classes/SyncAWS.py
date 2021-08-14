@@ -300,7 +300,6 @@ class SyncAWS():
          print("ROW:", row)
          print(self.json_conf.keys())
 
-         print(row.keys())
          url = self.API_URL + "?cmd=del_obs_commit&station_id=" + self.station_id + "&sd_video_file=" + row['vid'] + "&api_key=" + self.json_conf['api_key']
          response = requests.get(url)
          content = response.content.decode()
