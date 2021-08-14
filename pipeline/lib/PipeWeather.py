@@ -305,9 +305,13 @@ def meteor_night_stacks_all(json_conf):
 def meteor_night_stacks(date, json_conf):
    mdir = "/mnt/ams2/meteors/" + date + "/"
    stack_imgs = {}
+   station_id = json_conf['site']['ams_id']
+   cloud_dir = "/mnt/archive.allsky.tv/" + station_id + "/METEORS/" + date[0:4] + "/" + date + "/" 
+
    for cam in json_conf['cameras']:
       cams_id = json_conf['cameras'][cam]['cams_id']
       outfile = mdir + cams_id + "_meteors.jpg"
+      cloud_outfile = cloud_dir + cams_id + "_meteors.jpg"
       if cfe(outfile) == 1:
          print("SKIP DONE!", outfile)
          #continue
@@ -329,6 +333,7 @@ def meteor_night_stacks(date, json_conf):
          stack_imgs[cams_id] = meteor_stack_image
          print("SAVED:", outfile)
          cv2.imwrite(outfile, meteor_stack_image)
+         os.system("cp " + outfile + " " + cloud_outfile)
          try:
             tn_img = cv2.resize(meteor_stack_image,(320,180))
             tn_out = outfile.replace(".jpg", "-tn.jpg")
@@ -431,7 +436,9 @@ def meteor_night_stacks(date, json_conf):
    cv2.imwrite(outfile, comp)
    outfile_t = mdir + json_conf['site']['ams_id'] + "_" + date + "_meteors_title.jpg"
    cv2.imwrite(outfile, comp)
+   os.system("cp " + outfile + " " + cloud_dir)
    cv2.imwrite(outfile_t, comp_titled)
+   os.system("cp " + outfile_t + " " + cloud_dir)
    print("Saved:", outfile)
    
 def hourly_stacks(date, json_conf):
