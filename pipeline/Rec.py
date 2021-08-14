@@ -8,6 +8,7 @@ station_id = json_conf['site']['ams_id']
 api_key = json_conf['site']['api_key']
 
 if __name__ == "__main__":
+   os.system("python3 Register.py")
    print(len(sys.argv))
    cmd = sys.argv[1]
    if cmd == "rec":
