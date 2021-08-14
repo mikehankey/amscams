@@ -319,7 +319,10 @@ def meteor_night_stacks(date, json_conf):
       images = []
       for mf in files:
          if "reduced" not in mf and "stars" not in mf and "man" not in mf and "star" not in mf and "import" not in mf and "archive" not in mf:
-            mj = load_json_file(mf)
+            try:
+               mj = load_json_file(mf)
+            except:
+               continue
             if "hd_stack" in mj:
                img = cv2.imread(mj['hd_stack'])
                images.append(img)
