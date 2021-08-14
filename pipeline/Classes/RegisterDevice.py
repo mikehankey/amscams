@@ -41,7 +41,8 @@ class RegisterDevice():
          exit()
 
       #
-      data = json.loads(get("http://ip.jsontest.com/").text)
+      #data = json.loads(get("http://ip.jsontest.com/").text)
+      data['ip'] = "0.0.0.0"
       self.public_ip = data["ip"]
       json_conf = load_json_file("../conf/as6.json")
 
