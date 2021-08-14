@@ -411,6 +411,11 @@ def meteor_night_stacks(date, json_conf):
       textX = int((comp_titled.shape[1] - textsize[0]) / 2)
       cont = input("Put text y" + str(mh))
       cv2.putText(comp_titled, str(title),  (textX,mh + 60), cv2.FONT_HERSHEY_SIMPLEX, 2, (255, 255, 255), 1) 
+   if "location" not in json_conf:
+      try:
+         location = json_conf['site']['city'] + json_conf['site']['state'] + ", " + json_conf['site']['country']
+      except:
+         location = ""
 
    subtitle = json_conf['site']['obs_name'] + " " + json_conf['site']['location']
    textsize = cv2.getTextSize(subtitle, font, 1.2,2)[0]
