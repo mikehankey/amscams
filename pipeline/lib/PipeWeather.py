@@ -414,9 +414,9 @@ def meteor_night_stacks(date, json_conf):
 
    if "location" not in json_conf:
       try:
-         json_conf['location'] = json_conf['site']['city'] + json_conf['site']['state'] + ", " + json_conf['site']['country']
+         json_conf['site']['location'] = json_conf['site']['city'] + json_conf['site']['state'] + ", " + json_conf['site']['country']
       except:
-         json_conf['location'] = ""
+         json_conf['site']['location'] = ""
    
 
    subtitle = json_conf['site']['obs_name'] + " " + json_conf['site']['location']
