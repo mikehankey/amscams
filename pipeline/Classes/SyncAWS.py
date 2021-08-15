@@ -281,7 +281,7 @@ class SyncAWS():
             content = response.content.decode()
             
       # delete local meteors that are tagged in AWS as deletes
-      url = self.API_URL + "?cmd=get_del_obs&station_id=" + self.station_id + "&date=" + day
+      url = self.API_URL + "?cmd=get_del_obs&station_id=" + self.station_id + "&date=" + day + "&api_key=" + self.json_conf['api_key']
       print(url)
       response = requests.get(url)
       content = response.content.decode()
@@ -297,6 +297,9 @@ class SyncAWS():
 
          print("NEED TO DELETE", row)
          need += 1
+         print("ROW:", row)
+         print(self.json_conf.keys())
+
          url = self.API_URL + "?cmd=del_obs_commit&station_id=" + self.station_id + "&sd_video_file=" + row['vid'] + "&api_key=" + self.json_conf['api_key']
          response = requests.get(url)
          content = response.content.decode()
