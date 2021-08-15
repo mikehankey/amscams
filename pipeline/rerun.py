@@ -18,7 +18,7 @@ if years == 0:
          end_days = int(current_day)
       else:
          end_days = int(monthrange(int(current_year), mon)[1])
-      for day in range(1,end_days + 1) :
+      for day in range(1,end_days + 2) :
          if mon < 10:
             smon = "0" + str(mon)
          else:
@@ -29,17 +29,9 @@ if years == 0:
             sday = str(day)
          all_days.append((current_year + "_" +  smon + "_" + sday))
 
-for day in sorted(all_days,reverse=True):
-#   solve_cmd = "./solveWMPL.py sd " + day
-#   os.system(solve_cmd)
+for day in sorted(all_days,reverse=True)[0:30]:
+   print(day)
+   cmd = "python3 Meteor.py 10 " + day
+   print(cmd)
+   os.system(cmd)
 
-#   ev_run_cmd = "python3 EVRun.py " + day
-   #os.system(ev_run_cmd)
-   #print(day)
-
-#   udc_cmd = "./DynaDB.py udc " + day + " events"
-#   os.system(udc_cmd)
-   #print(day)
-   if "2021_05" in day:
-      rec = "python3 Rec.py rec_day " + day 
-      os.system(rec)
