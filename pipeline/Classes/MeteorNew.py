@@ -144,6 +144,77 @@ class Meteor():
       # load mask images
       self.mask_imgs, self.sd_mask_imgs = load_mask_imgs(self.json_conf)
 
+   def get_cloud_files(self, day):
+      cloud_dir = "/mnt/archive.allsky.tv/" + self.station_id + "/METEORS/" + day[0:4] + "/" + day + "/" 
+      wild = cloud_dir + "*" 
+      files = glob.glob(wild)
+      cloud_files = {}
+      met_media = {}
+      for ff in files:
+         fn = ff.split("/")[-1]
+         el = fn.split("-")
+         root_file = el[0]
+         ext = fn.replace(self.station_id + "_" + root_file + "-", "")
+         cloud_files[fn] = {}
+         ext = fn.replace(root_file + "-", "")
+         el2 = ext.split("-")
+         ext = el2[-1]
+         root_file = fn.replace("-" + ext, "")
+         root_file = root_file.replace("-prev", "")
+         if root_file not in met_media:
+            met_media[root_file] = []
+         met_media[root_file].append(ext)
+         cloud_files[fn] = {}
+      return(cloud_files, met_media)
+
+   def fast_sync(self, day):
+      # this will JUST push the thumbs and json data for each meteor file for 1 day
+      mdir = "/mnt/ams2/meteors/" + day + "/" 
+      mscan_dir = "/mnt/ams2/METEOR_SCAN/" + day + "/" 
+      cloud_dir = "/mnt/archive.allsky.tv/" + self.station_id + "/METEORS/" + day[0:4] + "/" + day + "/" 
+      cloud_files,met_media = self.get_cloud_files(day)
+      #print(cloud_files)
+      print(met_media)
+
+      print(mscan_dir)
+      print(cloud_dir)
+      self.get_mfiles(mdir)
+      print("Fast")
+      for mfile in self.mfiles:
+         prev_file = mscan_dir + self.station_id + "_" + mfile.replace(".mp4", "-prev.jpg")
+         cloud_file = cloud_dir + self.station_id + "_" + mfile.replace(".mp4", "-prev.jpg")
+         stack_file = mdir + mfile.replace(".mp4", "-stacked.jpg")
+         prev_fn = prev_file.split("/")[-1]
+       
+         # 320x180
+         if cfe(prev_file) == 1:
+            print("GOOD:", prev_file)
+         else:
+            print("MISSING:", prev_file)
+            simg = cv2.imread(stack_file)
+            simg = cv2.resize(simg, (320,180))
+            cv2.imwrite(prev_file, simg, [int(cv2.IMWRITE_JPEG_QUALITY), 70])
+         if prev_fn not in cloud_files:
+            cmd = "cp " + prev_file + " " + cloud_file
+            os.system(cmd)
+         
+      cloud_files,met_media = self.get_cloud_files(day)
+      for root_file in met_media:
+         print(root_file, met_media[root_file])
+         mfile = root_file.replace(self.station_id + "_" , "") + ".json"
+         if cfe(mdir + mfile) == 1:
+            print("UPDATE JSON:", mdir + mfile)
+            mj = load_json_file(mdir + mfile)
+            mj['sync_status'] = met_media[root_file]
+            save_json_file(mdir + mfile, mj)
+         else:
+            print("NO MJ FOR THIS FILE!", mdir + mfile)
+      # make sure all met files have the sync status updated
+      for mfile in self.mfiles:
+         cmd = "./pushAWS.py push_obs " + mfile.replace(".mp4", ".json")
+         print(cmd)
+
+   
    def only_meteors(self, objects):
       final_meteors = []
       for obj in objects:
