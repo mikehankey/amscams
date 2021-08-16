@@ -577,6 +577,7 @@ def event_stats(events):
       stats[ss] += 1
    for ss in stats:
       print(ss, stats[ss])
+   exit()
 
 def solve_day(day, cores=30):
    date = day
