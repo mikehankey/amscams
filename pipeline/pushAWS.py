@@ -73,7 +73,9 @@ def push_obs(api_key,station_id,meteor_file):
    #aws_post_data = json.loads(json.dumps(obs_data), parse_float=Decimal) 
    headers = {'Content-type': 'application/json'}
    
+   print(obs_data)
    response = requests.post(API_URL, data=json.dumps(obs_data) , headers=headers)
+   print("response:", response.content.decode())
    #response = requests.get("https://kyvegys798.execute-api.us-east-1.amazonaws.com/api/allskyapi?cmd=get_event&event_date=2021_04_23&event_id=20210423_013032")
 
 

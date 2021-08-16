@@ -25,6 +25,10 @@ def remote_reduce(station_id, meteor_video):
 def make_media_for_day(meteor_date):
    print("Make media for day")
 
+def fast_sync(day):
+   all_meteor = Meteor()
+   all_meteor.fast_sync(day)
+
 def fix_media(day):
    all_meteor = Meteor()
    all_meteor.check_fix_cloud_media_for_day(day)
@@ -419,7 +423,10 @@ if __name__ == "__main__":
       print("   7) Sync Media for day")
       print("   8) Fix Media for day")
       print("   9) Remote Reduce Meteor")
+      print("   10) Fast Sync Day ")
       cmd = input("Enter the command you want to run. ")
+   if cmd == "10":
+      cmd = "fast_sync"
    if cmd == "1":
       cmd = "scan"
    if cmd == "2":
@@ -449,6 +456,10 @@ if __name__ == "__main__":
          meteor_file = sys.argv[3] 
       remote_reduce(station_id, meteor_file)
 
+   if cmd == "fast_sync":
+      if meteor_date is None:
+         meteor_date = input("Enter Date")
+      fast_sync(meteor_date)
    if cmd == "fix_media":
       if meteor_date is None:
          meteor_date = input("Enter Date")

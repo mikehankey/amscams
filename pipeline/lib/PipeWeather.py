@@ -305,9 +305,13 @@ def meteor_night_stacks_all(json_conf):
 def meteor_night_stacks(date, json_conf):
    mdir = "/mnt/ams2/meteors/" + date + "/"
    stack_imgs = {}
+   station_id = json_conf['site']['ams_id']
+   cloud_dir = "/mnt/archive.allsky.tv/" + station_id + "/METEORS/" + date[0:4] + "/" + date + "/" 
+
    for cam in json_conf['cameras']:
       cams_id = json_conf['cameras'][cam]['cams_id']
       outfile = mdir + cams_id + "_meteors.jpg"
+      cloud_outfile = cloud_dir + cams_id + "_meteors.jpg"
       if cfe(outfile) == 1:
          print("SKIP DONE!", outfile)
          #continue
@@ -315,11 +319,15 @@ def meteor_night_stacks(date, json_conf):
       images = []
       for mf in files:
          if "reduced" not in mf and "stars" not in mf and "man" not in mf and "star" not in mf and "import" not in mf and "archive" not in mf:
-            mj = load_json_file(mf)
+            try:
+               mj = load_json_file(mf)
+            except:
+               continue
             if "hd_stack" in mj:
                img = cv2.imread(mj['hd_stack'])
+               img = cv2.resize(img,(1920,1080))
                images.append(img)
-            elif "sd_stack" in mj:
+            if "sd_stack" in mj:
                img = cv2.imread(mj['sd_stack'])
                img = cv2.resize(img,(1920,1080))
                images.append(img)
@@ -329,6 +337,7 @@ def meteor_night_stacks(date, json_conf):
          stack_imgs[cams_id] = meteor_stack_image
          print("SAVED:", outfile)
          cv2.imwrite(outfile, meteor_stack_image)
+         os.system("cp " + outfile + " " + cloud_outfile)
          try:
             tn_img = cv2.resize(meteor_stack_image,(320,180))
             tn_out = outfile.replace(".jpg", "-tn.jpg")
@@ -407,6 +416,13 @@ def meteor_night_stacks(date, json_conf):
       cont = input("Put text y" + str(mh))
       cv2.putText(comp_titled, str(title),  (textX,mh + 60), cv2.FONT_HERSHEY_SIMPLEX, 2, (255, 255, 255), 1) 
 
+   if "location" not in json_conf:
+      try:
+         json_conf['site']['location'] = json_conf['site']['city'] + json_conf['site']['state'] + ", " + json_conf['site']['country']
+      except:
+         json_conf['site']['location'] = ""
+   
+
    subtitle = json_conf['site']['obs_name'] + " " + json_conf['site']['location']
    textsize = cv2.getTextSize(subtitle, font, 1.2,2)[0]
    textX = int((comp_titled.shape[1] - textsize[0]) / 2)
@@ -431,7 +447,9 @@ def meteor_night_stacks(date, json_conf):
    cv2.imwrite(outfile, comp)
    outfile_t = mdir + json_conf['site']['ams_id'] + "_" + date + "_meteors_title.jpg"
    cv2.imwrite(outfile, comp)
+   os.system("cp " + outfile + " " + cloud_dir)
    cv2.imwrite(outfile_t, comp_titled)
+   os.system("cp " + outfile_t + " " + cloud_dir)
    print("Saved:", outfile)
    
 def hourly_stacks(date, json_conf):
