@@ -37,14 +37,22 @@ import time
 from wmpl.Utils.TrajConversions import equatorialCoordPrecession_vect, J2000_JD
 import redis
 admin_conf = load_json_file("admin_conf.json")
-r = redis.Redis(admin_conf['redis_host'], port=6379, decode_responses=True)
+json_conf = load_json_file("../conf/as6.json")
+station_id = json_conf['site']['ams_id']
+api_key = json_conf['api_key']
+
+if "local_mode" in admin_conf:
+   r = redis.Redis(admin_conf['redis_host'], port=6379, decode_responses=True)
+
 
 def get_aws_events(day):
    day = day.replace("_", "")
-   url = "https://kyvegys798.execute-api.us-east-1.amazonaws.com/api/allskyapi?cmd=get_events&date=" + day
+   url = "https://kyvegys798.execute-api.us-east-1.amazonaws.com/api/allskyapi?cmd=get_events&date=" + day + "&station_id=" + station_id + "&api_key=" + api_key
+   print("GET AWS EVENTS:", url)
    response = requests.get(url)
    content = response.content.decode()
    events =json.loads(content)
+   print(response)
    return(events)
 
 def check_make_events(obs_time, obs, events):
@@ -556,7 +564,21 @@ def make_vida_plots(day):
    for key in evd:
       print(key)
 
-def solve_day(day, cores=8):
+def event_stats(events):
+   stats = {}
+   for ev in events:
+      if "solve_status" in ev:
+         ss = ev['solve_status']
+      else:
+         ss = "UNSOLVED"
+      if ss not in stats:
+         stats[ss] = 0
+      
+      stats[ss] += 1
+   for ss in stats:
+      print(ss, stats[ss])
+
+def solve_day(day, cores=30):
    date = day
    year, mon, dom = date.split("_")
    day_dir = "/mnt/ams2/EVENTS/" + year + "/" + mon + "/" + dom + "/" 
@@ -592,8 +614,9 @@ def solve_day(day, cores=8):
    # get events from FILE ( no api) (events file is generated on cloud VM 1x per hour for current and passed day. It is faster / better cost to grab the event file from wasabi, than aws. 
    # it has all the info needed to deal with that day's events. 
    # we should also have the index file, with abbr version for faster client / display downloads
+   print(events_file)
    events = load_json_file(events_file)
-
+   event_stats(events)
    # get events from API
    #events = get_aws_events(day)
    #exit()
@@ -637,8 +660,9 @@ def solve_day(day, cores=8):
              print("RUNNING:", running)
              if running < cores:
                 cmd = "./solveWMPL.py se " + event['event_id'] + " &"
-                os.system(cmd)
                 print(cmd)
+                os.system(cmd)
+                time.sleep(2)
              while running >= cores:
                 time.sleep(5)
                 running = check_running("solveWMPL.py")
@@ -649,7 +673,6 @@ def solve_day(day, cores=8):
    #print(cmd)
    #os.system(cmd)
 
-   exit()
 
 def parse_extra_obs(extra):
    print("EXTRA OBS FILE:", extra)
@@ -735,11 +758,18 @@ def parse_extra_obs(extra):
    print(e_obs)
    return(e_obs)
 
-def get_event_data(date, event_id):
-   url = "https://kyvegys798.execute-api.us-east-1.amazonaws.com/api/allskyapi?cmd=get_event&event_date=" + date + "&event_id=" + event_id
+def get_event_data(date, event_id,json_conf=None):
+
+   if json_conf is None:
+      json_conf = load_json_file("../conf/as6.json")
+   station_id = json_conf['site']['ams_id']
+   api_key = json_conf['api_key']
+   url = "https://kyvegys798.execute-api.us-east-1.amazonaws.com/api/allskyapi?cmd=get_event&event_date=" + date + "&event_id=" + event_id + "&station_id=" + station_id + "&api_key=" + api_key
+   print("GET EVENT_DATA:", url)
    if True:
       response = requests.get(url)
       content = response.content.decode()
+      print(content)
       #content = content.replace("\\", "")
       print(content)
       print()
@@ -755,6 +785,7 @@ def get_event_data(date, event_id):
       else:
          data = json.loads(content)
          data['aws_status'] = True
+      print("GOT EVENT DATA")
       return(data)
 
 def get_event_data_old(date, event_id):
@@ -779,6 +810,32 @@ def solve_event(event_id, force=1, time_sync=1):
     date = year + "_" + mon + "_" + day
     local_event_dir = "/mnt/ams2/EVENTS/" + year + "/" + mon + "/" + day + "/" + event_id + "/" 
     cloud_event_dir = "/mnt/archive.allsky.tv/EVENTS/" + year + "/" + mon + "/" + day + "/" + event_id + "/" 
+    local_events_dir = "/mnt/ams2/EVENTS/" 
+   # + year + "/" + mon + "/" + day + "/" 
+    cloud_events_dir = "/mnt/archive.allsky.tv/EVENTS/" 
+    #+ year + "/" + mon + "/" + day + "/" 
+
+    if cfe(local_events_dir,1) == 0:
+       os.makedirs(local_events_dir)
+    if cfe(cloud_events_dir,1) == 0:
+       os.makedirs(cloud_events_dir)
+
+    # get stations file for this day
+    cloud_stations_file = cloud_events_dir + "ALL_STATIONS.json"
+    local_stations_file = local_events_dir + "ALL_STATIONS.json"
+    #if cfe(local_stations_file) == 0:
+    os.system("cp " + cloud_stations_file + " " + local_stations_file)
+    all_stations_ar = load_json_file(local_stations_file)
+    all_stations = {}
+    print("ALL ST:", all_stations_ar)
+    for data in all_stations_ar:
+       print(data)
+       st_id = data['station_id']
+       all_stations[st_id] = data
+    #print("AS:", all_stations[0])
+
+
+
     if cfe(cloud_event_dir, 1) == 0:
        os.makedirs(cloud_event_dir)
        cloud_event_files = []
@@ -861,10 +918,15 @@ def solve_event(event_id, force=1, time_sync=1):
              cloud_file = "/mnt/archive.allsky.tv/" + t_station + "/CAL/as6.json" 
              if cfe(local_file) == 0:
                 os.system("cp "  + cloud_file + " " + local_file)
-             red_key = "ST:" + t_station
-             red_val = r.get(red_key)
+
+             # LOCAL REMOTE MODE FIX
+             #red_key = "ST:" + t_station
+             #red_val = r.get(red_key)
+             red_val = all_stations[t_station]
+             print("RED VAL:", red_val)
+
              if red_val is not None:
-                red_val = json.loads(red_val)
+                #red_val = json.loads(red_val)
                 lat = red_val['lat']
                 lon = red_val['lon']
                 alt = red_val['alt']
@@ -2068,7 +2130,7 @@ def WMPL_solve(event_id, obs,time_sync=1):
             for i in range(0,len(azs)):
                 times.append(i/25)
         
-            # Set input points for the first site
+            # Set points for the first site
             traj_solve.infillTrajectory(azs, els, times, np.radians(float(lat)), np.radians(float(lon)), alt, station_id=station_id)
             print("-----")
 
