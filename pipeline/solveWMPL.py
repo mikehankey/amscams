@@ -556,7 +556,7 @@ def make_vida_plots(day):
    for key in evd:
       print(key)
 
-def solve_day(day, cores=0):
+def solve_day(day, cores=8):
    date = day
    year, mon, dom = date.split("_")
    day_dir = "/mnt/ams2/EVENTS/" + year + "/" + mon + "/" + dom + "/" 
@@ -603,6 +603,19 @@ def solve_day(day, cores=0):
    ec = 0
 
    #for event in events_index:
+   stats = {}
+   for event in events:
+      if "solve_status" in event:
+         ss = event['solve_status']
+      else:
+         ss = "unsolved" 
+      if ss in stats:
+         stats[ss] += 1
+      else:
+         stats[ss] = 0
+   for ss in stats:
+      print(ss, stats[ss])
+
    for event in events:
       print("DY EV:", event['event_id'])
       go = 1
@@ -895,6 +908,7 @@ def solve_event(event_id, force=1, time_sync=1):
        print("UPDATE DYNA SOL:", event_id) # , solution, obs, status)
        print("BAD OBS!:", event)
        print("BAD OBS!:", len(obs))
+       status = "WMPL FAILED."
        update_event_sol(None, event_id, solution, obs, status)
        return()
 

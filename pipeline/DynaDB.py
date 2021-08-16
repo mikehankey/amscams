@@ -27,11 +27,14 @@ class DecimalEncoder(json.JSONEncoder):
         return json.JSONEncoder.default(self, obj)
 
 def quick_event_report(date, dynamodb, json_conf):
+   year, mon, day = date.split("_")
    r = redis.Redis("allsky-redis.d2eqrc.0001.use1.cache.amazonaws.com", port=6379, decode_responses=True)
+   cloud_dir = "/mnt/archive.allsky.tv/EVENTS/" + year + "/" + mon + "/" + day + "/"
    sdate = date.replace("_", "")
    keys = r.keys("E:" + sdate + "*")
    print("E:" + sdate)
    stats = {}
+   print("KEYS:", len(keys))
    for key in keys:
       rval = json.loads(r.get(key))
       if "solve_status" in rval:
@@ -40,6 +43,12 @@ def quick_event_report(date, dynamodb, json_conf):
       else:
          print(key, "UNSOLVED")
          ss = "UNSOLVED"
+      event_id = rval['event_id']
+      event_dir = cloud_dir + event_id + "/"
+      if ss == "UNSOLVED":
+         print("UNSOLVED EVENT:", event_dir) 
+         exit()
+
       if ss not in stats:
          stats[ss] = 0
       stats[ss] += 1
