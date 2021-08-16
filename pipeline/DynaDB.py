@@ -434,7 +434,9 @@ def get_all_events(dynamodb):
 
 
 def update_dyna_cache_for_day(dynamodb, date, stations, utype=None):
-
+   json_conf = load_json_file("../conf/as6.json")
+   station_id = json_conf['site']['ams_id']
+   api_key = json_conf['api_key']
    if utype is None:
       do_obs = 1
       do_events = 1
@@ -458,7 +460,8 @@ def update_dyna_cache_for_day(dynamodb, date, stations, utype=None):
    all_stations = glob.glob("/mnt/ams2/STATIONS/CONF/*")
    #for st in sorted(all_stations):
    #   print(st)
-   API_URL = "https://kyvegys798.execute-api.us-east-1.amazonaws.com/api/allskyapi?cmd=get_stations"
+   API_URL = "https://kyvegys798.execute-api.us-east-1.amazonaws.com/api/allskyapi?cmd=get_stations&station_id=" + station_id + "&api_key=" + api_key
+   print("GET ST:", API_URL)
    response = requests.get(API_URL)
    content = response.content.decode()
    content = content.replace("\\", "")
@@ -466,6 +469,8 @@ def update_dyna_cache_for_day(dynamodb, date, stations, utype=None):
       content = content[1:]
       content = content[0:-1]
    jdata = json.loads(content)
+   save_json_file("/mnt/ams2/EVENTS/ALL_STATIONS.json", jdata['all_vals'])
+
    all_stations = jdata['all_vals']
    clusters = make_station_clusters(all_stations)
    #for cluster in clusters:
@@ -696,8 +701,13 @@ def get_event(dynamodb, event_id, nocache=1):
       return([])
 
 def get_obs(station_id, sd_video_file):
+   json_conf = load_json_file("../conf/as6.json")
+   admin_station_id = json_conf['site']['ams_id']
+   api_key = json_conf['api_key']
    if True:
-      url = API_URL + "?cmd=get_obs&station_id=" + station_id + "&sd_video_file=" + sd_video_file
+      url = API_URL + "?cmd=get_obs&station_id=" + station_id + "&sd_video_file=" + sd_video_file 
+     # + "&station_id=" + station_id + "&api_key=" + api_key
+      print("GET OBS URL:", url) 
       response = requests.get(url)
       content = response.content.decode()
       content = content.replace("\\", "")
@@ -951,6 +961,10 @@ def update_meteor_obs(dynamodb, station_id, sd_video_file, obs_data=None):
    print(response)
 
 def update_event_sol(dynamodb, event_id, sol_data, obs_data, status):
+   json_conf = load_json_file("../conf/as6.json")
+   station_id =json_conf['site']['ams_id']
+   api_key =json_conf['api_key']
+
    sol_data = json.loads(json.dumps(sol_data), parse_float=Decimal)
    #obs_data_save = json.loads(json.dumps(obs_data), parse_float=Decimal)
    if dynamodb is None:
@@ -994,7 +1008,7 @@ def update_event_sol(dynamodb, event_id, sol_data, obs_data, status):
    )
          #':obs_data': obs_data,
    print("UPDATED EVENT WITH SOLUTION.")
-   url = API_URL + "?recache=1&cmd=get_event&event_id=" + event_id
+   url = API_URL + "?recache=1&cmd=get_event&event_id=" + event_id + "&station_id=" + station_id + "&api_key=" + api_key
    response = requests.get(url)
    content = response.content.decode()
    content = content.replace("\\", "")
