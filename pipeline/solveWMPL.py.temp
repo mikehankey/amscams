@@ -1053,9 +1053,9 @@ def solve_event(event_id, force=1, time_sync=1):
     cloud_dir = solve_dir.replace("/mnt/ams2/", "/mnt/archive.allsky.tv/")
     if cfe(cloud_dir,1) == 0:
        os.makedirs(cloud_dir)
-    #cmd = "rm " + solve_dir + "/*.png"
-    #print(cmd)
-    #os.system(cmd)
+    cmd = "rm " + solve_dir + "/*.png"
+    print(cmd)
+    os.system(cmd)
     cmd = "rsync -auv " + solve_dir + "* " + cloud_dir 
     print(cmd)
     os.system(cmd)
