@@ -270,6 +270,7 @@ class Meteor():
       for mfile in self.mfiles:
          cmd = "./pushAWS.py push_obs " + mfile.replace(".mp4", ".json")
          print(cmd)
+         os.system(cmd)
 
       sync_log[day]['last_updated'] = datetime.datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
       save_json_file(sync_log_file, sync_log) 
