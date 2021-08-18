@@ -57,6 +57,7 @@ class EventRunner():
                self.event_dict[event['event_id']] = event
          else:
             print("ERROR: NOT FOUND:", self.all_events_file)
+            input()
             self.all_events = []
 
          # DOWNLOAD DYNA DATA IF IT DOESN'T EXIST
@@ -87,6 +88,14 @@ class EventRunner():
             lat = data[1]
             lon = data[2]
             self.station_loc[sid] = [lat,lon]
+
+   def station_kml_for_day(self,date):
+      cloud_stations_file = self.all_stations_file.replace("/mnt/ams2/", "/mnt/archive.allsky.tv/")
+      st_data = load_json_file(self.all_stations_file)
+      for st in st_data:
+         print(st)
+
+
 
    def make_vida_plots(self, date):
       dates = date.replace("_", "")
