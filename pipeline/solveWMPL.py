@@ -575,10 +575,10 @@ def event_stats(events):
          stats[ss] = 0
       
       stats[ss] += 1
+      print(ev['event_id'], ss)
    for ss in stats:
       print(ss, stats[ss])
-   exit()
-
+   #exit()
 def solve_day(day, cores=30):
    date = day
    year, mon, dom = date.split("_")

@@ -1107,6 +1107,7 @@ def update_event_sol(dynamodb, event_id, sol_data, obs_data, status):
          #':obs_data': obs_data,
    print("UPDATED EVENT WITH SOLUTION.")
    url = API_URL + "?recache=1&cmd=get_event&event_id=" + event_id + "&station_id=" + station_id + "&api_key=" + api_key
+   print("RECACHE REDIS:", url)
    response = requests.get(url)
    content = response.content.decode()
    content = content.replace("\\", "")
