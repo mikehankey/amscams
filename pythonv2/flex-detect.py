@@ -1763,9 +1763,13 @@ def apply_calib(obj , frames=None , user_station = None):
       json_file = obj['trim_clip'].replace(".mp4", ".json")
       lbf = json_file.split("/")[-1]
       station_id = json_conf['site']['ams_id']
+      last_best_dir = "/mnt/ams2/meteor_archive/" + station_id + "/CAL/last_best/"
+      if cfe(last_best_dir,1) == 0:
+         os.makedirs(last_best_dir)
       last_best_file = "/mnt/ams2/meteor_archive/" + station_id + "/CAL/last_best/" + lbf 
       last_best_file = last_best_file.replace("-SD", "")
       print("SAVING LAST BEST CALIB.",last_best_file)
+    
       save_json_file(last_best_file, last_best)
 
    
