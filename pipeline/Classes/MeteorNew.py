@@ -186,6 +186,10 @@ class Meteor():
       mscan_dir = "/mnt/ams2/METEOR_SCAN/" + day + "/" 
       cloud_dir = "/mnt/archive.allsky.tv/" + self.station_id + "/METEORS/" + day[0:4] + "/" + day + "/" 
       cloud_files,met_media = self.get_cloud_files(day)
+      if cfe(mscan_dir,1) == 0:
+         os.makedirs(mscan_dir)
+      if cfe(cloud_dir,1) == 0:
+         os.makedirs(cloud_dir)
       #print(cloud_files)
       #print(met_media)
 
