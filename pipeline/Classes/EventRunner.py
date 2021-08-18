@@ -1,6 +1,6 @@
 from lib.PipeUtil import cfe, load_json_file, save_json_file, convert_filename_to_date_cam, get_trim_num
 from lib.PipeManager import dist_between_two_points
-from DynaDB import get_event, get_obs, search_events, update_event, update_event_sol, insert_meteor_event, delete_event
+from DynaDB import get_event, get_obs, search_events, update_event, update_event_sol, insert_meteor_event, delete_event, search_trash
 import numpy as np
 import subprocess
 import time
@@ -24,6 +24,7 @@ class EventRunner():
       self.r = redis.Redis(admin_conf['redis_host'], port=6379, decode_responses=True)
       self.cmd = cmd
       self.date = date 
+      self.rejects = {}
       if date is not None:
          year,month,day = date.split("_")
       self.event_dict = {}
@@ -64,6 +65,7 @@ class EventRunner():
          if cfe(self.all_events_file) == 0:
             print("ERROR MISSING:", self.all_events_index_file) 
          if use_cache == 0:
+            #print("SKIP CACE")
             os.system("./DynaDB.py udc " + self.date)
 
          if cfe(self.all_events_index_file) == 1:
@@ -637,6 +639,22 @@ class EventRunner():
 
       self.single_station_obs = []
       self.multi_station_obs = []
+
+      self.get_rejected_meteors(self.date)
+      #self.rejected_meteors =  search_trash(self.dynamodb, station_id, date, no_cache=0)
+      for key in self.rejects:
+         obj = self.rejects[key]
+      good_obs = []
+      print("LEN OBS:", len(self.all_obs))
+      for ob in self.all_obs:
+         st_id = ob['station_id']
+         vid = ob['sd_video_file']
+         key = st_id + "_" + vid
+         if key not in self.rejects:
+            good_obs.append(ob)
+      self.all_obs = good_obs
+      print("LEN OBS AFTER DELETES:", len(self.all_obs))
+
       for ob in self.all_obs:
          if ob['sd_video_file'] in self.file_index:
             event_id = self.file_index[ob['sd_video_file']]
@@ -657,14 +675,31 @@ class EventRunner():
       print("MS OBS:", len(self.multi_station_obs))
       print("SS OBS:", len(self.single_station_obs))
 
+   def get_rejected_meteors(self, date):
+      self.rejects = {}
+      #for station_id in self.all_stations:
+      #   print(station_id)
+      #   input()
+      for station_row in self.all_stations:
+         station_id = station_row[0]
+         print("DATE:", date)
+         temp = search_trash(self.dynamodb, station_id, date, no_cache=0)
+         for obj in temp:
+
+            sd_vid = obj['sd_video_file']
+            obs_key = station_id + "_" + sd_vid
+            self.rejects[obs_key] = 1
+
    def update_events_for_day(self):
       new_events = []
       for ob in self.single_station_obs:
          found_existing = self.check_existing_event(ob) 
          if found_existing is not None:
             print("AN EVENT FOR THIS OBS WAS FOUND:", found_existing) 
+            input()
          else: 
             obs_time = self.get_obs_datetime(ob)
+            print("EXISTING EVENT NOT FOUND FOR THIS OB.")
 
             if ob['station_id'] in self.station_loc:
                ob['lat'] = self.station_loc[ob['station_id']][0]
@@ -672,7 +707,6 @@ class EventRunner():
                new_events = self.check_make_events(obs_time, ob, new_events)
             else:
                print("STATION MISSING FROM SELF.station_loc", ob['station_id'])
-
       new_mse = []
       new_sse = []
       for ne in new_events:
@@ -736,6 +770,20 @@ class EventRunner():
 
    def EOD_report(self, date):
       report_template_file = "allsky.tv/event_template.html"
+      print("OI:*" + date + "*") 
+      good_obs = self.r.keys("OI:*" + date + "*") 
+      print("GOOD OBS:", len(good_obs))
+      y,m,d = date.split("_")
+      good_obs_data = load_json_file("/mnt/ams2/EVENTS/" + y + "/" + m + "/" + d + "/" + date + "_ALL_OBS.json")
+      self.good_obs_keys = {}
+      for data in good_obs_data:
+         st = data['station_id']
+         vid = data['sd_video_file']
+         obs_key = st + "_" + vid
+         self.good_obs_keys[obs_key] = data
+      print("GOOD OBS FILE:", len(good_obs_data))
+      print("/mnt/ams2/EVENTS/" + y + "/" + m + "/" + d + "/" + date + "_ALL_OBS.json")
+      sdate = date.replace("_", "")
       fp = open(report_template_file)
       report_template = ""
       for line in fp:
@@ -781,6 +829,7 @@ class EventRunner():
       station_report = {}
       obs = load_json_file(self.all_obs_file)
       ssd = load_json_file(self.single_station_file)
+      print("ALL EVENTS FILE:", self.all_events_file)
       msd = load_json_file(self.all_events_file)
       print(len(obs) , "total observations.")
       print(len(ssd) , "single station events.")
@@ -912,11 +961,11 @@ class EventRunner():
       print("TOTAL", mc_ys)
       mc_report.append(("TOTAL",mc_ys,int(np.sum(mc_ys))))
       mc_report_html = "<center><h2>Meteor Counts from reporting stations on " + date + "</h2>" 
-      mc_report_html += "<table width=80%>"
+      mc_report_html += "<table id='meteor_count_list' class='display' width=80%><thead>"
       mc_report_html += "<tr><th>Station</th>"
       for d in range(0,24):
          mc_report_html += "<th>" + str(d) + "</th>"
-      mc_report_html += "<th>Total</th></tr>"
+      mc_report_html += "<th>Total</th></tr></thead><tbody>"
 
       for row in mc_report:
          sid, hours, total = row
@@ -924,7 +973,7 @@ class EventRunner():
          for hour in hours:
             hour_cells += "<td width=3%>" + str(hour) + "</td>"
          mc_report_html += "<tr><td>" + sid + "</td>" + hour_cells + "<td>" + str(total) + "</td></tr>"
-      mc_report_html += "</table>"
+      mc_report_html += "</tbody></table>"
 
       save_json_file(self.event_dir + self.date + "_METEOR_COUNTS.json", mc_report)
       print(self.event_dir + self.date + "_METEOR_COUNTS.json")
@@ -957,10 +1006,10 @@ class EventRunner():
       print("Failed:", len(failed_ev))
 
       mse_list_html = self.make_mse_solved_html(solved_ev)
-      mse_list_html += "<p>&nbsp;</p><h3>Observations for Solved Meteor Events </h3><p>Some of these observations might still need help with point refinement and/or astrometric calibration. </p>" + self.make_mse_failed_html(solved_ev, "green")
+      mse_list_solved_html = "<p>&nbsp;</p><h3>Observations for Solved Meteor Events </h3><p>Some of these observations might still need help with point refinement and/or astrometric calibration. </p>" + self.make_mse_failed_html(solved_ev, "green")
 
-      mse_list_html += "<p>&nbsp;</p><h3>Observations for Failed Meteor Events</h3><p>These observations need help with point picking and/or astrometric calibration. </p>" + self.make_mse_failed_html(failed_ev,"red")
-      mse_list_html += "<p>&nbsp;</p><h3>Observations for Unsolved Events</h3> <p>These observations have not been run or could not be run. Some might not be meteors at all. </p>" + self.make_mse_failed_html(unsolved_ev, "red")
+      mse_list_failed_html = "<p>&nbsp;</p><h3>Observations for Failed Meteor Events</h3><p>These observations need help with point picking and/or astrometric calibration. </p>" + self.make_mse_failed_html(failed_ev,"red")
+      mse_list_unsolved_html = "<p>&nbsp;</p><h3>Observations for Unsolved Events</h3> <p>These observations have not been run or could not be run. Some might not be meteors at all. </p>" + self.make_mse_failed_html(unsolved_ev, "red")
 
       #ssd = sorted(ssd, key=lambda x: x['start_datetime'][0], reverse=False)
       ssd = sorted(ssd, key=lambda x: x['stations'][0], reverse=False)
@@ -979,15 +1028,43 @@ class EventRunner():
 
       """
       mse_report_html = "" + mse_stats + mse_list_html
+     # + mse_list_html
       #for row in solved_ev:
       #   print(row.keys())
       for row in ssd:
          print(row)
 
       print("Meteor Count REPORT", mc_report_html)
+      js = """
+             <script>
+
+                $('#date_nav').change(function()
+                {
+                val = $('#date_nav').val()
+                el = val.split("-")
+                year = el[0]
+                mon = el[1]
+                day = el[2]
+                url = "/EVENTS/" + year + "/" + mon + "/" + day + "/report.html"
+                window.location.href = url
+                });
+
+             $(document).ready( function () {
+                $('table.display').dataTable();
+
+             })
+
+
+             </script>
+      """
       report_template = report_template.replace("{MC_REPORT}", mc_report_html)
-      report_template = report_template.replace("{MSE_LIST}", mse_report_html)
-      report_template = report_template.replace("{SSE_LIST}", sse_list_html)
+      report_template = report_template.replace("{MSE_REPORT}", mse_report_html)
+
+      #report_template = report_template.replace("{SSE_LIST}", sse_list_html)
+      sdate = date.replace("_","-")
+      report_template = report_template.replace("{DATE}", sdate)
+      report_template = report_template.replace("{JS}", js)
+
       out = open(self.edir + "report.html", "w")
       out.write(report_template)
       print(self.edir + "report.html")
@@ -1015,8 +1092,8 @@ class EventRunner():
       #dict_keys(['start_datetime', 'files', 'lats', 'solve_status', 'stations', 'lons', 'event_id', 'event_day', 'solution', 'obs', 'total_stations'])
       #dict_keys(['duration', 'traj', 'shower', 'event_id', 'rad', 'plot', 'sol_dir', 'simple_solve', 'kml', 'orb'])
       out = "<h3>Successfully Solved </h3>"
-      out += "<table width=80%>"
-      out += "<tr> <th>Event ID</th> <th>Stations</th> <th>Dur</th> <th>Vel</th> <th>End Alt</th> <th>Shower</th> <th>a</th> <th>e</th> <th>i</th> <th>peri</th> <th>q</th> <th>ls</th> <th>M</th> <th>P</th></tr>"
+      out += "<table id='event_list' class='display'><thead>"
+      out += "<tr> <th>Event ID</th> <th>Stations</th> <th>Dur</th> <th>Vel</th> <th>End Alt</th> <th>Shower</th> <th>a</th> <th>e</th> <th>i</th> <th>peri</th> <th>q</th> <th>ls</th> <th>M</th> <th>P</th></tr></thead><tbody>"
       for ev in solved_ev:
          ev_id = ev['event_id']
          stations = list(set(ev['stations']))
@@ -1044,13 +1121,14 @@ class EventRunner():
             orb['T'] = 0
          ev_row = "<tr> <td>{:s}</td> <td>{:s}</td> <td>{:s}</td> <td>{:s}</td> <td>{:s}</td> <td>{:s}</td> <td>{:0.2f}</td> <td>{:0.2f}</td> <td>{:0.2f}</td> <td>{:0.2f}</td> <td>{:0.2f}</td> <td>{:0.2f}</td> <td>{:0.2f}</td> <td>{:0.2f}</td></tr>".format(ev_id, st_str, str(dur), str(v_init), str(e_alt), str(shower_code),float(orb['a']),float(orb['e']),float(orb['i']),float(orb['peri']),float(orb['q']),float(orb['la_sun']),float(orb['mean_anomaly']),float(orb['T']))
          out += ev_row
-      out += "</table>"
+      out += "</tbody></table>"
 
 
       return(out)
 
    def make_sse_group_html (self, events, border_color):
-      out = "<div class='container'>"
+      out = "<div class='container-fluid'>"
+      last_station = None
       for ev in events:
 
          stations = sorted(list(set(ev['stations'])))
@@ -1066,6 +1144,14 @@ class EventRunner():
          for i in range(0,len(ev['stations'])):
             station = ev['stations'][i]
             obs_file = ev['files'][i]
+            if last_station != station:
+               out += "<div style='clear:both'></div>"
+               if last_station is None:
+                  out += "<h4>" + station + "</h4><div>" 
+               else:
+                  out += "</div><div style='clear:both'></div>"
+                  out += "<h4>" + station + "</h4><div>" 
+            print("THIS ? LAST:", station, last_station)
             if True:
                if obs != "":
                   obs += ", "
@@ -1078,9 +1164,11 @@ class EventRunner():
                prev_file, prev_html = self.make_obs_image(station, obs_file, border_color, desc_text)
                obs_images += prev_html
                fc += 1
-         out += obs_images 
+
+            last_station = station
+            out += obs_images 
      
-      out += "</div>"
+      out += "</div><div style='clear:both'></div>"
       return(out)
 
    def make_mse_failed_html (self, events, border_color):
@@ -1123,8 +1211,13 @@ class EventRunner():
       img_link = img_link.replace(".mp4", "-prev.jpg")
       roi_link = img_link.replace(".mp4", "-ROI.jpg")
       data_id = station_id + ":" + sd_video_file
+      obs_key = station_id + "_" + sd_video_file
+      if obs_key not in self.good_obs_keys or obs_key in self.rejects:
+         opacity = ".5"
+      else:
+         opacity = "1"
       img_html = """
-         <div class='obs_thumb' data-id='""" + data_id + """' style="float: left; border: 1px """ + border_color + """ solid; padding: 0px; margin: 10px; solid; background-image: url('""" + img_link + """'); background-repeat: no-repeat; background-size: 100%; height: 180px; width: 320px; "><span style='text-shadow: 2px 2px #000000; color: #FFFFFF; font-size: 10px;'>""" + station_id + " " + desc_text +  """</p></div>
+         <div class='obs_thumb' data-id='""" + data_id + """' style="float: left; opacity: """ + opacity + """; border: 1px """ + border_color + """ solid; padding: 0px; margin: 10px; solid; background-image: url('""" + img_link + """'); background-repeat: no-repeat; background-size: 100%; height: 180px; width: 320px; "><span style='text-shadow: 2px 2px #000000; color: #FFFFFF; font-size: 10px;'>""" + station_id + " " + desc_text +  """</p></div>
       """
 
 
@@ -1188,8 +1281,13 @@ class EventRunner():
          else:
             ev_dt = datetime.datetime.strptime(min(event['start_datetime']), "%Y-%m-%d %H:%M:%S") 
          if "event_start_time" not in ob:
-            print("NO EVENT TIME!")
-            continue
+            ob_dt = self.starttime_from_file(ob['sd_video_file'])
+            ob['event_start_time'] = ob_dt.strftime( "%Y-%m-%d %H:%M:%S.%f")
+            ev_dt = ob_dt 
+            #ob['event_status_time'] = ob_dt
+            #print("NO EVENT TIME!", event['event_id'], ob_dt, ob)
+            #input("CHECK EXISTING...")
+            #continue
          if "_" in ob['event_start_time']:
             el = ob['event_start_time'].split("_")
             print("BAD TIME!", el)

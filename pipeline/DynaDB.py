@@ -1170,8 +1170,9 @@ def do_dyna_day(dynamodb, day):
    #print(cmd)
    os.system(cmd)
 
-   cmd = "python3 ./Rec.py rec_day " + day
-
+   #cmd = "python3 ./Rec.py rec_day " + day
+   # FAST SYNC
+   cmd = "python3 ./Meteor.py 10 " + day
    os.system(cmd)
 
    #cmd = "./DynaDB.py sync_db_day " + day
@@ -1179,13 +1180,13 @@ def do_dyna_day(dynamodb, day):
    #print(cmd)
    #os.system(cmd)
 
-   cmd = "./DynaDB.py cd " + day
-   print(cmd)
-   os.system(cmd)
+   #cmd = "./DynaDB.py cd " + day
+   #print(cmd)
+   #os.system(cmd)
 
-   cmd = "./Process.py ded " + day
-   print(cmd)
-   os.system(cmd)
+   #cmd = "./Process.py ded " + day
+   #print(cmd)
+   #os.system(cmd)
 
    #cmd = "./Process.py sync_prev_all " + day
    #print(cmd)
