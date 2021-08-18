@@ -168,23 +168,74 @@ class Meteor():
       return(cloud_files, met_media)
 
    def fast_sync(self, day):
-      # this will JUST push the thumbs and json data for each meteor file for 1 day
+      sync_log_file  = "../conf/sync_log.json" 
+      if cfe(sync_log_file) == 1:
+         sync_log = load_json_file(sync_log_file)
+      else:
+         sync_log = {}
+      if day not in sync_log:
+         sync_log[day] = {}
+      # this will JUST push the thumbs and 360p vid and json data for each meteor file for 1 day
+      # del bad files first and aws deleted files
+      peak_dates = ['08_14', '08_13', '08_12', '08_11', '08_10', '12_13', '12_14', '12_15']
+      y,m,d = day.split("_")
+      md = m + "_" + d
+      print("python3 Rec.py del_aws_day " + day) 
+      os.system("python3 Rec.py del_aws_day " + day) 
       mdir = "/mnt/ams2/meteors/" + day + "/" 
       mscan_dir = "/mnt/ams2/METEOR_SCAN/" + day + "/" 
       cloud_dir = "/mnt/archive.allsky.tv/" + self.station_id + "/METEORS/" + day[0:4] + "/" + day + "/" 
       cloud_files,met_media = self.get_cloud_files(day)
       #print(cloud_files)
-      print(met_media)
+      #print(met_media)
 
-      print(mscan_dir)
-      print(cloud_dir)
+      #print(mscan_dir)
+      #print(cloud_dir)
       self.get_mfiles(mdir)
       print("Fast")
+      if len(self.mfiles) > 120 and md not in peak_dates:
+         print("THERE ARE TOO MANY DETECTIONS FOR THIS DAY! SYNC ABORTED")
+         exit()
       for mfile in self.mfiles:
          prev_file = mscan_dir + self.station_id + "_" + mfile.replace(".mp4", "-prev.jpg")
+         mjf = mdir + mfile.replace(".mp4", ".json")
+         mj = load_json_file(mjf)
+         hd_file = None
+         if "hd_trim" in mj:
+            if mj['hd_trim'] is not None:
+               hd_file = mj['hd_trim']
+         if hd_file is not None:
+            hd_fn = hd_file.split("/")[-1]
+            cloud_hd_file = cloud_dir + self.station_id + "_" + mfile.replace(".mp4", "-1080p.mp4")
+            local_hd_file = mscan_dir + self.station_id + "_" + mfile.replace(".mp4", "-1080p.mp4")
+            if cfe(local_hd_file) == 0:
+               cmd = """/usr/bin/ffmpeg -i """ + hd_file + """  -c:v libx264 -pix_fmt yuv420p -crf 30 -vf "scale=1920:1080" -codec:a copy """ + local_hd_file 
+               print(cmd)
+               os.system(cmd)
+
+         orig_vid = mscan_dir + self.station_id + "_" + mfile.replace(".mp4", "-360p.mp4")
+         prev_vid = mscan_dir + self.station_id + "_" + mfile.replace(".mp4", "-180p.mp4")
+         cloud_prev_vid = cloud_dir + self.station_id + "_" + mfile.replace(".mp4", "-180p.mp4")
+         cloud_orig_vid = cloud_dir + self.station_id + "_" + mfile.replace(".mp4", "-360p.mp4")
          cloud_file = cloud_dir + self.station_id + "_" + mfile.replace(".mp4", "-prev.jpg")
          stack_file = mdir + mfile.replace(".mp4", "-stacked.jpg")
          prev_fn = prev_file.split("/")[-1]
+
+         if cfe(orig_vid) == 1:
+            print("GOOD:", orig_vid)
+         else:
+            ifile = mdir + mfile
+            cmd = """/usr/bin/ffmpeg -i """ + ifile + """  -c:v libx264 -pix_fmt yuv420p -crf 30 -vf "scale=640:360" -codec:a copy """ + orig_vid 
+            print(cmd)
+            os.system(cmd)
+
+         if cfe(prev_vid) == 1:
+            print("GOOD:", prev_vid )
+         else:
+            ifile = mdir + mfile
+            cmd = """/usr/bin/ffmpeg -i """ + ifile + """  -c:v libx264 -pix_fmt yuv420p -crf 30 -vf "scale=320:180" -codec:a copy """ + prev_vid 
+            print(cmd)
+            os.system(cmd)
        
          # 320x180
          if cfe(prev_file) == 1:
@@ -194,6 +245,7 @@ class Meteor():
             simg = cv2.imread(stack_file)
             simg = cv2.resize(simg, (320,180))
             cv2.imwrite(prev_file, simg, [int(cv2.IMWRITE_JPEG_QUALITY), 70])
+          
          if prev_fn not in cloud_files:
             cmd = "cp " + prev_file + " " + cloud_file
             os.system(cmd)
@@ -210,10 +262,13 @@ class Meteor():
          else:
             print("NO MJ FOR THIS FILE!", mdir + mfile)
       # make sure all met files have the sync status updated
+      
       for mfile in self.mfiles:
          cmd = "./pushAWS.py push_obs " + mfile.replace(".mp4", ".json")
          print(cmd)
 
+      sync_log[day]['last_updated'] = datetime.datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
+      save_json_file(sync_log_file, sync_log) 
    
    def only_meteors(self, objects):
       final_meteors = []

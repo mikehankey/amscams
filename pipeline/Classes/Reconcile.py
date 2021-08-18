@@ -114,7 +114,7 @@ class Reconcile():
       save_json_file(self.rec_file, self.rec_data)
 
    def get_aws_obs(self,day):
-      url = self.API_URL + "?cmd=get_obs_for_day&station_id=" + self.station_id + "&day=" + day
+      url = self.API_URL + "?cmd=get_obs_for_day&station_id=" + self.station_id + "&day=" + day + "&api_key=" + self.json_conf['api_key']
       response = requests.get(url)
       content = response.content.decode()
       content = content.replace("\\", "")
