@@ -1182,6 +1182,7 @@ def update_event_sol(dynamodb, event_id, sol_data, obs_data, status):
          #':obs_data': obs_data,
    print("UPDATED EVENT WITH SOLUTION.")
    url = API_URL + "?recache=1&cmd=get_event&event_id=" + event_id + "&station_id=" + station_id + "&api_key=" + api_key
+   print("RECACHE REDIS:", url)
    response = requests.get(url)
    content = response.content.decode()
    content = content.replace("\\", "")
@@ -1244,8 +1245,9 @@ def do_dyna_day(dynamodb, day):
    #print(cmd)
    os.system(cmd)
 
-   cmd = "python3 ./Rec.py rec_day " + day
-
+   #cmd = "python3 ./Rec.py rec_day " + day
+   # FAST SYNC
+   cmd = "python3 ./Meteor.py 10 " + day
    os.system(cmd)
 
    #cmd = "./DynaDB.py sync_db_day " + day
@@ -1253,13 +1255,13 @@ def do_dyna_day(dynamodb, day):
    #print(cmd)
    #os.system(cmd)
 
-   cmd = "./DynaDB.py cd " + day
-   print(cmd)
-   os.system(cmd)
+   #cmd = "./DynaDB.py cd " + day
+   #print(cmd)
+   #os.system(cmd)
 
-   cmd = "./Process.py ded " + day
-   print(cmd)
-   os.system(cmd)
+   #cmd = "./Process.py ded " + day
+   #print(cmd)
+   #os.system(cmd)
 
    #cmd = "./Process.py sync_prev_all " + day
    #print(cmd)
