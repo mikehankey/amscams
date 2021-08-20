@@ -15,7 +15,7 @@ class Filters():
       self.station_id = self.json_conf['site']['ams_id']
       # if there are more than this many detections on 1 day, more strict filters will be applied to the meteors 
 
-      self.max_detect_thresh = 125
+      self.max_detect_thresh = 25
 
       self.mfiles = []
 
@@ -62,7 +62,7 @@ class Filters():
             hour_caps[hour_file] += 1
 
       for hkey in hour_caps:
-         print("HOUR COUNT:", hkey, hour_caps)   
+         print("HOUR COUNT:", hkey, hour_caps[hkey])   
       exit()
       # deal with the bad detects
       for bd in bad_detects:
