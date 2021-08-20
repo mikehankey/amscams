@@ -34,6 +34,7 @@ class Filters():
       shower_day = day.replace(year + "_", "")
       bad_detects = {}
       min_caps = {}
+      hour_caps = {}
       print("CHECK DAY", shower_day)
       self.mfiles = []
       self.get_mfiles("/mnt/ams2/meteors/" + day + "/")
@@ -43,18 +44,36 @@ class Filters():
       else:
          print("THIS DAY IS OK", len(self.mfiles))
          return()
-      # first define captures by minute. numerous caps in the same minute are a sign of errors, rain, fireflys, fast clouds/lightening, rain         
+      # first define captures by minute and hour by cam. numerous caps in the same minute are a sign of errors, rain, fireflys, fast clouds/lightening, rain         
       for mf in self.mfiles:
          root_file = mf.split("-trim")[0]
          el = root_file.split("_")
          y,m,d,h,mm,s,ms,cam = el
-         min_file = y + "_" + m + "_" + d + "_" + h + "_" + mm + "_" #+ cam 
+         min_file = y + "_" + m + "_" + d + "_" + h + "_" + mm + "_" + cam 
+         hour_file = y + "_" + m + "_" + d + "_" + h + "_" + cam 
 
          if min_file not in min_caps:
             min_caps[min_file] = 1
          else:
             min_caps[min_file] += 1
+         if hour_file not in hour_caps:
+            hour_caps[hour_file] = 1
+         else:
+            hour_caps[hour_file] += 1
 
+      for hkey in hour_caps:
+         print("HOUR COUNT:", hkey, hour_caps)   
+      exit()
+      # deal with the bad detects
+      for bd in bad_detects:
+         print("BAD:", bd, bad_detects[bd])
+         self.purge_meteor(bd)
+      print(len(self.mfiles), "total detects") 
+      print(len(bad_detects), "bad detects") 
+
+
+
+   def firefly_filter():
       # firefly filter?
       maybe = 0
       bad_mets = 0
@@ -118,11 +137,6 @@ class Filters():
 
                      bad_detects[rf]['reason'] = 'Ransac Failed.' + str(rans_perc)
                   print("   BAD", bad)
-      for bd in bad_detects:
-         print("BAD:", bd, bad_detects[bd])
-         self.purge_meteor(bd)
-      print(len(self.mfiles), "total detects") 
-      print(len(bad_detects), "bad detects") 
 
    def purge_meteor(self, root_file):
       print("DELETE THIS METEOR!", root_file)
