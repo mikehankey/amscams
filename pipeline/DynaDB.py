@@ -27,6 +27,8 @@ class DecimalEncoder(json.JSONEncoder):
         return json.JSONEncoder.default(self, obj)
 
 def quick_event_report(date, dynamodb, json_conf):
+
+   table = dynamodb.Table('x_meteor_event')
    year, mon, day = date.split("_")
    r = redis.Redis("allsky-redis.d2eqrc.0001.use1.cache.amazonaws.com", port=6379, decode_responses=True)
    cloud_dir = "/mnt/archive.allsky.tv/EVENTS/" + year + "/" + mon + "/" + day + "/"
@@ -36,7 +38,28 @@ def quick_event_report(date, dynamodb, json_conf):
    stats = {}
    print("KEYS:", len(keys))
    for key in keys:
-      rval = json.loads(r.get(key))
+      event_id = key.replace("E:", "")
+      rval = r.get(key)
+      if rval is not None:
+         rval = json.loads(rval)
+      else:
+         continue
+      if event_id != rval['event_id']:
+         rval['event_id'] = event_id
+         print("PROBLEM:", key, okey, event_id)
+         input()
+         if False:
+            r.delete(key)
+            okey = key.replace("A", "")
+            r.delete(okey)
+            print("DELETING: ", key, okey)
+
+            # Need to delete from dynamo too
+            delete_event(dynamodb, date, event_id)
+            delete_event(dynamodb, date, event_id.replace("A", ""))
+
+            print("DELETED:", key, okey, event_id)
+
       if "solve_status" in rval:
          print(key, rval['solve_status'])
          ss = rval['solve_status']
@@ -47,7 +70,7 @@ def quick_event_report(date, dynamodb, json_conf):
       event_dir = cloud_dir + event_id + "/"
       if ss == "UNSOLVED":
          print("UNSOLVED EVENT:", event_dir) 
-         exit()
+    #     exit()
 
       if ss not in stats:
          stats[ss] = 0
@@ -232,6 +255,28 @@ def insert_meteor_event(dynamodb=None, event_id=None, event_data=None):
       import redis
       r = redis.Redis(admin_conf['redis_host'], port=6379, decode_responses=True)
       admin = 1
+   if "A" in event_id: 
+      event_data['event_id'] = event_id
+   # first check if this event exists, if it does we don't want to wipe out the existing status!
+   rkey = "E:" + event_id
+   rval = r.get(rkey)
+   if rval is not None:
+      rval = json.loads(rval)
+      print("THIS EVENT ALREADY EXISTS!", event_id)
+      print("CURRENT DATA:", event_data)
+      print("EXISTING DATA:", rval)
+      event_id += "A"
+      event_data['event_id'] = event_id
+      rkey = "E:" + event_id
+      rval = r.get(rkey)
+      if rval is None:
+         print("NEW SIMULTANEOUS EVENT DETECTED.", event_id)
+      else:
+         print("SIMULTANEOUS EVENT A ALREADY EXISTS.", event_id)
+
+
+
+
 
    if dynamodb is None:
       dynamodb = boto3.resource('dynamodb')
@@ -355,6 +400,20 @@ def insert_meteor_obs(dynamodb, station_id, meteor_file):
    mj['last_update'] = update_time
    save_json_file(meteor_file, mj)
 
+def update_station(dynamodb, station_id,json_conf):
+    table = dynamodb.Table('station')
+
+    try:
+        response = table.get_item(Key={'station_id': station_id})
+    except ClientError as e:
+        print(e.response['Error']['Message'])
+    else:
+        station_data = json.loads(json.dumps(response['Item']), parse_float=Decimal)
+        rkey = "ST:" + station_id 
+        rval = json.dumps(station_data)
+        r.set(rkey, rval)
+        print("SET:", rkey, rval)
+
 def insert_station(dynamodb, station_id):
 
    conf_file = "/mnt/ams2/STATIONS/CONF/" + station_id + "_as6.json"
@@ -397,7 +456,7 @@ def delete_event(dynamodb=None, event_day=None, event_id=None):
 
    if dynamodb is None:
       dynamodb = boto3.resource('dynamodb')
-
+   print("DELETE DYN EVENT:", event_day, event_id)
    table = dynamodb.Table('x_meteor_event')
    response = table.delete_item(
       Key= {
@@ -405,6 +464,8 @@ def delete_event(dynamodb=None, event_day=None, event_id=None):
          "event_id": event_id
      }
    )
+   print("AWS DYN RESP:", response)
+   input()
 
 def delete_obs(dynamodb, station_id, sd_video_file):
    table = dynamodb.Table('meteor_obs')
@@ -1057,6 +1118,20 @@ def update_meteor_obs(dynamodb, station_id, sd_video_file, obs_data=None):
 
 
 
+def update_event_id(dynamodb, event_id,event_day ):
+   table = dynamodb.Table('x_meteor_event')
+   response = table.update_item(
+      Key = {
+         'event_day': event_day ,
+         'event_id': event_id
+      },
+      UpdateExpression="set event_id=:event_id ",
+      ExpressionAttributeValues={
+         ':event_id': event_id
+      },
+      ReturnValues="UPDATED_NEW"
+   )
+   
 
 def update_event_sol(dynamodb, event_id, sol_data, obs_data, status):
    json_conf = load_json_file("../conf/as6.json")
@@ -1365,6 +1440,9 @@ if __name__ == "__main__":
    if cmd == "select_obs_files":
       # station_id and then date please
       select_obs_files(dynamodb, sys.argv[2], sys.argv[3])
+   if cmd == "update_station":
+      # station_id and then date please
+      update_station(dynamodb, sys.argv[2], json_conf)
 
    if cmd == "quick_event":
       # station_id and then date please
