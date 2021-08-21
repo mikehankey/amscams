@@ -1364,7 +1364,10 @@ def orbs_for_day(date,json_conf):
    print("saved.", orbs_file)
  
 if __name__ == "__main__":
-   dynamodb = boto3.resource('dynamodb')
+   try:
+      dynamodb = boto3.resource('dynamodb')
+   except:
+      dynamodb = None
    json_conf = load_json_file("../conf/as6.json")
    cmd = sys.argv[1]
    if cmd == "sync_db_day" or cmd == "sdd":
