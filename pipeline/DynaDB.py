@@ -1229,31 +1229,79 @@ def do_dyna_day(dynamodb, day):
    # and then also download event data for this site
    # and update the mse info in the json for each site
    # also sync prev imgs for mse events
-   cmd = "./Process.py reject_masks " + day
-   print(cmd)
-   os.system(cmd)
 
-   cmd = "./Process.py reject_planes " + day
-   print(cmd)
-   os.system(cmd)
+   if cfe("dyn.log") == 0:
+      dyn_log = {}
+   else:
+      dyn_log = load_json_file("dyn.log")
    
-   cmd = "./Process.py confirm " + day
-   print(cmd)
-   os.system(cmd)
+   today = datetime.now().strftime("%Y_%m_%d")
+   if today != day:
+      if day not in dyn_log:
+         dyn_log[day] = {}
+   else:
+      dyn_log[day] = {}
 
+   if "reject_masks" not in dyn_log[day] or today == day:
+      cmd = "./Process.py reject_masks " + day
+      print(cmd)
+      os.system(cmd)
+   else:
+      print("Already rejected masks for this day.", day)
 
-   cmd = "python3 Filter.py fd " + day
-   print(cmd)
-   os.system(cmd)
+   if today != day:
+      if "reject_masks" not in dyn_log[day]:
+         dyn_log[day]['reject_masks'] = 1
+
+   if "reject_masks" not in dyn_log[day] or today == day:
+      cmd = "./Process.py reject_planes " + day
+      print(cmd)
+      os.system(cmd)
+   else:
+      print("Already rejected planes for this day.", day)
+
+   if today != day:
+      if "reject_planes" not in dyn_log[day] or today == day:
+         dyn_log[day]['reject_planes'] = 1
+
+   
+   if "confirm" not in dyn_log[day] or today == day:
+      cmd = "./Process.py confirm " + day
+      print(cmd)
+      os.system(cmd)
+   else:
+      print("already confirmed for this day.", day)
+
+   if today != day:
+      if "confirm" not in dyn_log[day]:
+         dyn_log[day]['confirm'] = 1
+
+   if "filter" not in dyn_log[day] or today == day:
+      cmd = "python3 Filter.py fd " + day
+      print(cmd)
+      os.system(cmd)
+   else:
+      print("already filtered for this day.", day)
+
+   if today != day:
+      if "filter" not in dyn_log[day]:
+         dyn_log[day]['filter'] = 1
 
    cmd = "./Process.py ded " + day
    print(cmd)
    os.system(cmd)
 
-   #cmd = "python3 ./Rec.py rec_day " + day
+
    # FAST SYNC
    cmd = "python3 ./Meteor.py 10 " + day
    os.system(cmd)
+ 
+   save_json_file("dyn.log", dyn_log)
+
+   os.system("./rerun.py")
+   # ROI / Meteor Scan Sync
+   #cmd = "python3 ./Rec.py rec_day " + day
+   #os.system(cmd)
 
 
    #cmd = "./DynaDB.py sync_db_day " + day
