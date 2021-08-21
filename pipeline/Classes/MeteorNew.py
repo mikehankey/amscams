@@ -222,8 +222,10 @@ class Meteor():
          cloud_prev_vid = cloud_dir + self.station_id + "_" + mfile.replace(".mp4", "-180p.mp4")
          cloud_orig_vid = cloud_dir + self.station_id + "_" + mfile.replace(".mp4", "-360p.mp4")
          cloud_file = cloud_dir + self.station_id + "_" + mfile.replace(".mp4", "-prev.jpg")
+         prev_vid_cloud_file = cloud_dir + self.station_id + "_" + mfile.replace(".mp4", "-180p.mp4")
          stack_file = mdir + mfile.replace(".mp4", "-stacked.jpg")
          prev_fn = prev_file.split("/")[-1]
+         prev_vid_fn = prev_vid.split("/")[-1]
 
          if cfe(orig_vid) == 1:
             print("GOOD:", orig_vid)
@@ -252,6 +254,11 @@ class Meteor():
           
          if prev_fn not in cloud_files:
             cmd = "cp " + prev_file + " " + cloud_file
+            print(cmd)
+            os.system(cmd)
+         if prev_vid_fn not in cloud_files:
+            cmd = "cp " + prev_vid + " " + prev_vid_cloud_file
+            print(cmd)
             os.system(cmd)
          
       cloud_files,met_media = self.get_cloud_files(day)

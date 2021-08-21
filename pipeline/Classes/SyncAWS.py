@@ -246,7 +246,7 @@ class SyncAWS():
       # TODO / FUTURE -- 1) this needs to be locked down with perms 2) Delete commits should move the deleted data to trash. 
 
       
-      url = self.API_URL + "?cmd=get_obs_for_day&station_id=" + self.station_id + "&day=" + day
+      url = self.API_URL + "?cmd=get_obs_for_day&station_id=" + self.station_id + "&day=" + day + "&api_key=" + self.json_conf['api_key']
       print(url)
       response = requests.get(url)
       content = response.content.decode()
