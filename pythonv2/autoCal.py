@@ -576,7 +576,10 @@ def meteor_index(json_conf, day = None, extra_cmd = ""):
                trim_num = get_trim_num(meteor)
                print("TRIM NUM:", trim_num)
                extra_start_file_sec = int(trim_num) / 25
-               event_start_fn = obj['history'][0][0]
+               if "history" in obj:
+                  event_start_fn = obj['history'][0][0]
+               else:
+                  event_start_fn = 0
                print("EVENT START FN:", event_start_fn, meteor)
                (file_date, cam_id, f_date_str,fy,fm,fd, fh, fmin, fs) = convert_filename_to_date_cam(meteor)
                extra_sec = (int(event_start_fn) / 25) + extra_start_file_sec
