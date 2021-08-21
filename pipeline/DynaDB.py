@@ -1243,6 +1243,10 @@ def do_dyna_day(dynamodb, day):
 
    cmd = "./Process.py remaster_day " + day
    #print(cmd)
+   #os.system(cmd)
+
+   cmd = "python3 Filter.py fd " + day
+   print(cmd)
    os.system(cmd)
 
    #cmd = "python3 ./Rec.py rec_day " + day
