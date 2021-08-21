@@ -1,0 +1,5 @@
+ssh-keygen -t rsa -b 4096 -C "mike.hankey@gmail.com"
+eval "$(ssh-agent -s)"
+git config --add --local core.sshCommand 'ssh -i ~/.ssh/id_rsa'
+
+remote set-url origin git@github.com:mikehankey/amscams.git
