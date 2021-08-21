@@ -203,7 +203,10 @@ class Meteor():
       for mfile in self.mfiles:
          prev_file = mscan_dir + self.station_id + "_" + mfile.replace(".mp4", "-prev.jpg")
          mjf = mdir + mfile.replace(".mp4", ".json")
-         mj = load_json_file(mjf)
+         if cfe(mjf) == 1:
+            mj = load_json_file(mjf)
+         else:
+            continue
          hd_file = None
          if "hd_trim" in mj:
             if mj['hd_trim'] is not None:
