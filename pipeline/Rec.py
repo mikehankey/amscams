@@ -30,15 +30,19 @@ if __name__ == "__main__":
 
 
    if cmd == "del_aws_all":
-      R = Reconcile(year, mon)
-      R.reconcile_all_aws_obs()
-   if cmd == "del_aws_day":
-      #os.system("./Process.py purge_meteors")
       date = sys.argv[2]
       year, mon, day = date.split("_")
       R = Reconcile(year, mon)
+      R.reconcile_all_aws_obs()
+   if cmd == "del_aws_day":
+      js_conf = load_json_file("../conf/as6.json")
+      station_id = js_conf['site']['ams_id']
+      #os.system("./Process.py purge_meteors")
+      date = sys.argv[2]
+      year, mon, day = date.split("_")
+      #R = Reconcile(year, mon)
       os.system("./Process.py purge_meteors")
-      SAWS = SyncAWS(R.station_id, api_key)
+      SAWS = SyncAWS(station_id, api_key)
       SAWS.delete_aws_meteors(date)
 
    if cmd == "rpt":

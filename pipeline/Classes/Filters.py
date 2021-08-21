@@ -19,6 +19,29 @@ class Filters():
 
       self.mfiles = []
 
+   def fn_gaps(self,obj):
+      for i in range(0, len(obj['ofns'])):
+         if i > 0:
+            fn = obj['ofns'][i]
+            fn_gaps = fn - obj['ofns'][i-1]
+      return(fn_gaps)
+
+   def get_weather_for_hour(self,day):
+      self.weather_hours = {}
+      wd = "/mnt/ams2/latest/2021_08_18/"
+      wfs = glob.glob(wd + "*.json")
+      for wf in wfs:
+         wfn = wf.split("/")[-1]
+         print("WFN:", wfn)
+         whour = wfn[0:13]
+         print(wf)
+         weather = load_json_file(wf)
+         print(wfn, whour, weather)
+         print("WH", whour)
+         if whour not in self.weather_hours:
+            self.weather_hours[whour] = weather
+      save_json_file(wd + day + ".weather", self.weather_hours)
+
    def filter_month(self, mon):
       dirs = glob.glob("/mnt/ams2/meteors/" + mon + "*")
       for md in sorted(dirs, reverse=True):
@@ -26,7 +49,34 @@ class Filters():
          print("Checking", day)
          self.check_day(day)
 
+   def check_segs(self,obj):
+      segs = obj['report']['line_segments'][1:]
+      pos_segs = []
+      neg_segs = 0
+      for seg in segs:
+         if seg > 0:
+            pos_segs.append(seg)
+         else:
+            neg_segs += 1
+      if len(pos_segs) > 0:
+         avg_seg = np.mean(pos_segs)
+      else:
+         avg_segs = 0
+      good = 0
+      if avg_seg > 0:
+         for seg in segs:
+            seg_diff = avg_seg - abs(seg)
+            if seg_diff < 10:
+               good += 1
+      good = good - neg_segs
+      if good > 0:
+         good_perc = good / len(segs)
+      else:
+         good_perc = 0
+      return(good_perc)
+
    def check_day(self,day):
+      self.get_weather_for_hour(day)
       trash_dir = "/mnt/ams2/trash/" + day + "/" 
       if cfe(trash_dir, 1) == 0:
          os.makedirs("/mnt/ams2/trash/" + day)
@@ -37,6 +87,7 @@ class Filters():
       hour_caps = {}
       print("CHECK DAY", shower_day)
       self.mfiles = []
+      self.mdir = "/mnt/ams2/meteors/" + day + "/"
       self.get_mfiles("/mnt/ams2/meteors/" + day + "/")
       if len(self.mfiles) > self.max_detect_thresh and shower_day not in self.exp_dates:
          print("WOA WE HAVE A LOT OF CAPTURES. MIGHT BE A PROBLEM!", day, len(self.mfiles))
@@ -51,6 +102,8 @@ class Filters():
          y,m,d,h,mm,s,ms,cam = el
          min_file = y + "_" + m + "_" + d + "_" + h + "_" + mm + "_" + cam 
          hour_file = y + "_" + m + "_" + d + "_" + h + "_" + cam 
+         hour_key = y + "_" + m + "_" + d + "_" + h 
+ 
 
          if min_file not in min_caps:
             min_caps[min_file] = 1
@@ -62,8 +115,121 @@ class Filters():
             hour_caps[hour_file] += 1
 
       for hkey in hour_caps:
-         print("HOUR COUNT:", hkey, hour_caps[hkey])   
-      exit()
+         hour_key = hkey[0:13]
+         if hour_key in self.weather_hours:
+            cur_weather = self.weather_hours[hour_key]['conditions']
+         else:
+            cur_weather = None
+         print("HOUR COUNT:", hour_key, hkey, cur_weather, hour_caps[hkey])   
+
+      # main filter loop. 
+      # bad flags = 
+      # Bad Weather conditions : Overcast, = +1 
+      # Frequency : More than X in the hour = +1 
+      #             More than X in the minute = +1 
+      # Point Analysis: 3 points and a bad score >= 2 = reject
+      #                 Failed ransac and a badscore >= 2 reject
+      #                 Bad line segs and a badscore >= 2
+      # define bad scores
+      bad_scores = {}
+      bad_items = {}
+      for mf in self.mfiles:
+         if mf not in bad_items:
+            bad_items[mf] = []
+         rf = mf.replace(".mp4", "")
+         bad = 0
+         root_file = mf.split("-trim")[0]
+         el = root_file.split("_")
+         y,m,d,h,mm,s,ms,cam = el
+         min_file = y + "_" + m + "_" + d + "_" + h + "_" + mm + "_" + cam 
+         hour_file = y + "_" + m + "_" + d + "_" + h + "_" + cam 
+         hour_key = y + "_" + m + "_" + d + "_" + h 
+         if hour_key in self.weather_hours:
+            cur_weather = self.weather_hours[hour_key]['conditions']
+         else:
+            cur_weather = None
+         if min_caps[min_file] > 3:
+            if mf not in bad_scores:
+               bad_scores[mf] = 1   
+            else:
+               bad_scores[mf] += 1   
+            bad_items[mf].append("Min cap thresh " + str(min_caps[min_file])) 
+         if hour_caps[hour_file] > 9:
+            if mf not in bad_scores:
+               bad_scores[mf] = 1   
+            else:
+               bad_scores[mf] += 1   
+            bad_items[mf].append("Hour cap thresh " + str(hour_caps[hour_file])) 
+         if hour_caps[hour_file] > 50:
+            if mf not in bad_scores:
+               bad_scores[mf] = 2 
+            else:
+               bad_scores[mf] += 2   
+            bad_items[mf].append("Hour cap thresh " + str(hour_caps[hour_file])) 
+         if cur_weather is not None and cur_weather == "Overcast":
+            if mf not in bad_scores:
+               bad_scores[mf] = 1   
+            else:
+               bad_scores[mf] += 1   
+            bad_items[mf].append("Bad weather" + str(cur_weather)) 
+
+       
+      for mf in sorted(bad_scores) :
+         mjf = mf.replace(".mp4", ".json")
+         if cfe(self.mdir + mjf) == 1:
+            mj = load_json_file(self.mdir + mjf)
+ 
+
+            if "confirmed_meteors" in mj:
+               confirmed_meteors = len(mj['confirmed_meteors'])
+            else:
+               confirmed_meteors = 0
+            if confirmed_meteors > 3:
+               if mf not in bad_scores:
+                  bad_scores[mf] = 1   
+               else:
+                  bad_scores[mf] += 1   
+               
+               bad_items[mf].append("too many confirmed meteors " + str(confirmed_meteors))
+
+            if confirmed_meteors > 0:
+               for obj in mj['confirmed_meteors']:
+                  fn_gaps = self.fn_gaps(obj)
+                  seg_good_perc = self.check_segs(obj)
+
+                  if seg_good_perc <  .6:
+                     if mf not in bad_scores:
+                        bad_scores[mf] = 1   
+                     else:
+                        bad_scores[mf] += 1   
+                     bad_items[mf].append("Bad seg perc" + str(seg_good_perc)) 
+                  if fn_gaps > 4:
+                     if mf not in bad_scores:
+                        bad_scores[mf] = 1   
+                     else:
+                        bad_scores[mf] += 1   
+                     bad_items[mf].append("Bad FN Gaps" + str(fn_gaps)) 
+
+
+                  try:
+                     IN_XS,IN_YS,OUT_XS,OUT_YS,line_X,line_Y,line_y_ransac,inlier_mask,outlier_mask = self.ransac_outliers(obj['oxs'], obj['oys'])
+                  except:
+                     IN_XS = []
+                     IN_YS = []
+                  rans_good_perc = len(IN_XS) / len(obj['ofns'])
+                  if rans_good_perc < .66:
+                     bad_items[mf].append("Bad Ransac Perc" + str(rans_good_perc)) 
+            print("BAD SCORE:",mf, bad_scores[mf])
+
+      for mf in sorted(self.mfiles):
+         if mf in bad_scores:
+            print("BAD SCORE:",mf, bad_scores[mf], bad_items[mf])
+            if bad_scores[mf] > 4:
+               bad_detects[mf] = bad_scores[mf] 
+         else:
+            print("GOOD MF:", mf)
+                
+
       # deal with the bad detects
       for bd in bad_detects:
          print("BAD:", bd, bad_detects[bd])
@@ -139,6 +305,8 @@ class Filters():
                   print("   BAD", bad)
 
    def purge_meteor(self, root_file):
+      if ".mp4" in root_file:
+         root_file = root_file.replace(".mp4", "")
       print("DELETE THIS METEOR!", root_file)
       meteor_dir = "/mnt/ams2/meteors/" + root_file[0:10] + "/" 
       meteor_scan_dir = "/mnt/ams2/METEOR_SCAN/" + root_file[0:10] + "/" 
