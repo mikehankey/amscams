@@ -81,7 +81,7 @@ class Reconcile():
 
          c += 1
          last_month = mon
-      self.reconcile_scan_media(year,month)
+      #self.reconcile_scan_media(year,month)
 
    def reconcile_scan_media(self, year, month):
       print("GETTING SCAN MEDIA...", year, month)
