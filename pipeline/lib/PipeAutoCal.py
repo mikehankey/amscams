@@ -4317,7 +4317,16 @@ def autocal(image_file, json_conf, show = 0, heal_only=0):
    if SHOW == 1:
       cv2.imshow("SCAN STARS DONE.", img)
       cv2.waitKey(30)
-
+   # check out dirs make if needed
+   if True:
+      if cfe(cdir,1) == 0:
+         os.makedirs(cdir)
+      if cfe(cdir + "/bad/",1 ) == 0:
+         os.makedirs(cdir + "/bad/")
+      if cfe(cdir + "/solved/",1 ) == 0:
+         os.makedirs(cdir + "/solved/")
+      if cfe(cdir + "/temp/",1 ) == 0:
+         os.makedirs(cdir + "/temp/")
 
    # if not enough stars abort / clean up
    if len(stars) < 10:
