@@ -1241,11 +1241,12 @@ def do_dyna_day(dynamodb, day):
    print(cmd)
    os.system(cmd)
 
-   cmd = "./Process.py remaster_day " + day
-   #print(cmd)
-   #os.system(cmd)
 
    cmd = "python3 Filter.py fd " + day
+   print(cmd)
+   os.system(cmd)
+
+   cmd = "./Process.py ded " + day
    print(cmd)
    os.system(cmd)
 
@@ -1253,6 +1254,7 @@ def do_dyna_day(dynamodb, day):
    # FAST SYNC
    cmd = "python3 ./Meteor.py 10 " + day
    os.system(cmd)
+
 
    #cmd = "./DynaDB.py sync_db_day " + day
    #cmd = "/usr/bin/python3 AWS.py sd " + day
@@ -1263,9 +1265,10 @@ def do_dyna_day(dynamodb, day):
    #print(cmd)
    #os.system(cmd)
 
-   #cmd = "./Process.py ded " + day
+   #cmd = "./Process.py remaster_day " + day
    #print(cmd)
    #os.system(cmd)
+
 
    #cmd = "./Process.py sync_prev_all " + day
    #print(cmd)
