@@ -154,6 +154,18 @@ class Filters():
             else:
                bad_scores[mf] += 1   
             bad_items[mf].append("Min cap thresh " + str(min_caps[min_file])) 
+         if min_caps[min_file] > 5:
+            if mf not in bad_scores:
+               bad_scores[mf] = 1   
+            else:
+               bad_scores[mf] += 1   
+            bad_items[mf].append("Min cap thresh " + str(min_caps[min_file])) 
+         if min_caps[min_file] > 10:
+            if mf not in bad_scores:
+               bad_scores[mf] = 1   
+            else:
+               bad_scores[mf] += 1   
+            bad_items[mf].append("Min cap thresh " + str(min_caps[min_file])) 
          if hour_caps[hour_file] > 9:
             if mf not in bad_scores:
                bad_scores[mf] = 1   
@@ -224,7 +236,7 @@ class Filters():
       for mf in sorted(self.mfiles):
          if mf in bad_scores:
             print("BAD SCORE:",mf, bad_scores[mf], bad_items[mf])
-            if bad_scores[mf] > 4:
+            if bad_scores[mf] >= 4:
                bad_detects[mf] = bad_scores[mf] 
          else:
             print("GOOD MF:", mf)

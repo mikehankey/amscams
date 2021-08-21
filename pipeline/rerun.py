@@ -31,7 +31,17 @@ if years == 0:
 
 for day in sorted(all_days,reverse=True)[0:30]:
    print(day)
-   cmd = "python3 Meteor.py 10 " + day
+
+   cmd = "python3 DynaDB.py ddd " + day
    print(cmd)
    os.system(cmd)
+
+
+
+   #cmd = "python3 Filter.py fd " + day
+   #print(cmd)
+   #os.system(cmd)
+   #cmd = "python3 Meteor.py 10 " + day
+   #print(cmd)
+   #os.system(cmd)
 
