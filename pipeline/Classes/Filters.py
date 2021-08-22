@@ -28,7 +28,7 @@ class Filters():
 
    def get_weather_for_hour(self,day):
       self.weather_hours = {}
-      wd = "/mnt/ams2/latest/2021_08_18/"
+      wd = "/mnt/ams2/latest/" + day + "/"
       wfs = glob.glob(wd + "*.json")
       for wf in wfs:
          wfn = wf.split("/")[-1]
@@ -76,6 +76,12 @@ class Filters():
       return(good_perc)
 
    def check_day(self,day):
+      date = day
+      os.system("python3 Rec.py del_aws_meteors " + day)
+      os.system("./Process.py purge_meteors")
+      os.system("./Process.py mmi_day " + date)
+      os.system("cd ../pythonv2/; batch_jobs fi")
+
       self.get_weather_for_hour(day)
       trash_dir = "/mnt/ams2/trash/" + day + "/" 
       if cfe(trash_dir, 1) == 0:
@@ -91,7 +97,6 @@ class Filters():
       self.get_mfiles("/mnt/ams2/meteors/" + day + "/")
       if len(self.mfiles) > self.max_detect_thresh and shower_day not in self.exp_dates:
          print("WOA WE HAVE A LOT OF CAPTURES. MIGHT BE A PROBLEM!", day, len(self.mfiles))
-         #input() 
       else:
          print("THIS DAY IS OK", len(self.mfiles))
          return()
@@ -145,9 +150,14 @@ class Filters():
          hour_file = y + "_" + m + "_" + d + "_" + h + "_" + cam 
          hour_key = y + "_" + m + "_" + d + "_" + h 
          if hour_key in self.weather_hours:
+            print("WEATH KEYS:", self.weather_hours.keys())
+            print("HOUR KEY:", hour_key)
             cur_weather = self.weather_hours[hour_key]['conditions']
          else:
             cur_weather = None
+            print("NO WEATHER FOR HOUR! WEATH KEYS:", self.weather_hours.keys())
+            print("HOUR KEY:", hour_key)
+
          if min_caps[min_file] > 3:
             if mf not in bad_scores:
                bad_scores[mf] = 1   
@@ -178,13 +188,18 @@ class Filters():
             else:
                bad_scores[mf] += 2   
             bad_items[mf].append("Hour cap thresh " + str(hour_caps[hour_file])) 
-         if cur_weather is not None and cur_weather == "Overcast":
+         if cur_weather is not None and (cur_weather == "Overcast" or cur_weather == "Heavy rain"):
             if mf not in bad_scores:
-               bad_scores[mf] = 1   
+               bad_scores[mf] = 2   
             else:
-               bad_scores[mf] += 1   
+               bad_scores[mf] += 2   
+            if hour_caps[hour_file] > 25:
+               bad_scores[mf] += 2   
+               bad_items[mf].append("Bad weather + high hour cap" + str(cur_weather) + " " + str(hour_caps[hour_file])) 
+        
             bad_items[mf].append("Bad weather" + str(cur_weather)) 
-
+         else:
+            print("CUIR WEATHER:", cur_weather)
        
       for mf in sorted(bad_scores) :
          mjf = mf.replace(".mp4", ".json")
@@ -246,6 +261,9 @@ class Filters():
       for bd in bad_detects:
          print("BAD:", bd, bad_detects[bd])
          self.purge_meteor(bd)
+      os.system("./Process.py purge_meteors")
+      os.system("./Process.py mmi_day " + date)
+      os.system("cd ../pythonv2/; batch_jobs fi")
       print(len(self.mfiles), "total detects") 
       print(len(bad_detects), "bad detects") 
 
