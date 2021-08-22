@@ -204,7 +204,10 @@ class Filters():
       for mf in sorted(bad_scores) :
          mjf = mf.replace(".mp4", ".json")
          if cfe(self.mdir + mjf) == 1:
-            mj = load_json_file(self.mdir + mjf)
+            try:
+               mj = load_json_file(self.mdir + mjf)
+            except:
+               print("CORRUPT JSON FILE:", self.mdir + mjf)
  
 
             if "confirmed_meteors" in mj:

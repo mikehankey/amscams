@@ -15,6 +15,7 @@ from lib.FFFuncs import ffprobe as ffprobe4, imgs_to_vid
 from lib.PipeAutoCal import fn_dir, get_cal_files, get_image_stars, get_catalog_stars, pair_stars, update_center_radec, cat_star_report, minimize_fov, XYtoRADec, poly_fit_check
 from lib.PipeVideo import ffmpeg_splice, find_hd_file, load_frames_fast, find_crop_size, ffprobe
 from lib.PipeUtil import load_json_file, save_json_file, cfe, get_masks, convert_filename_to_date_cam, buffered_start_end, get_masks, compute_intensity , bound_cnt, day_or_night
+import json
 from lib.DEFAULTS import *
 from lib.PipeMeteorTests import big_cnt_test, calc_line_segments, calc_dist, unq_points, analyze_intensity, calc_obj_dist, meteor_direction, meteor_direction_test, check_pt_in_mask, filter_bad_objects, obj_cm, meteor_dir_test, ang_dist_vel, gap_test, best_fit_slope_and_intercept
 from lib.PipeImage import stack_frames
@@ -563,6 +564,34 @@ def make_meteor_index_all(json_conf):
    save_json_file(amf, all_meteors)
    print("Saved:", amf)
 
+def fix_corrupt_meteor_json(json_file):
+   fp = open(json_file, "r")
+   json_data = ""
+   on = 1
+   lines = []
+   for line in fp:
+      if "cp" in line:
+         on = 0
+      if on == 1:
+         lines.append(line)
+   try:
+      print("LAST LINE:", lines[-1])
+      lines[-1] = lines[-1].replace(",", "}")
+      print("LAST LINE:", lines[-1])
+      temp = ""
+      for line in lines:
+         temp += line 
+      #temp += "]}}"
+      print("TEMP:", temp, "TEMP")
+      mj = json.loads(temp)
+      if "cp" in mj:
+         del mj['cp']
+   except:
+      print("COULD NOT FIX THE JSON!" )
+      print("COULD NOT FIX", json_file)
+      mj = None
+   return(mj)
+
 def make_meteor_index_day(day, json_conf):
 
    if "redis" in json_conf:
@@ -604,8 +633,14 @@ def make_meteor_index_day(day, json_conf):
       try:
          mj = load_json_file(meteor)
       except:
-         print("CORRUPT FILE.", mf)
-         continue
+         print("CORRUPT FILE.", meteor)
+         mj = fix_corrupt_meteor_json(meteor)
+         if mj is None:
+            print("CORRUPT FILE CANT BE FIXED.", meteor)
+            continue
+         else:
+            print("CORRUPT FILE WAS FIXED.", meteor)
+            save_json_file(meteor, mj)
       meteor_red = meteor.replace(".json", "-reduced.json")
       mfn,mdd = fn_dir(meteor)
       lcfile = mdd + "cloud_files/" + amsid + "_" + mfn
@@ -1942,6 +1977,8 @@ def make_roi_video_mfd(video_file, json_conf):
       mj['user_mods'] = {}
    used = {}
    vh,vw = hd_color_frames[0].shape[:2]
+   if mjr is None:
+      mjr = {}
    if "meteor_frame_data" in mjr:
       mjr['meteor_frame_data'] = sorted(mjr['meteor_frame_data'], key=lambda x: (x[1]), reverse=False)
       for row in mjr['meteor_frame_data']:
