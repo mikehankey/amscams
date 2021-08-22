@@ -4259,6 +4259,7 @@ def make_cal_obj(az,el,pos,px,stars,cat_image_stars,res):
    return(cp)
 
 def autocal(image_file, json_conf, show = 0, heal_only=0):
+   station_id = json_conf['site']['ams_id']
    orig_image_file = image_file
    update_defaults(json_conf)
    cp = None
@@ -4319,6 +4320,7 @@ def autocal(image_file, json_conf, show = 0, heal_only=0):
       cv2.waitKey(30)
    # check out dirs make if needed
    if True:
+      cdir = "/mnt/ams2/meteor_archive/" + station_id + "/CAL/AUTO_CAL/"
       if cfe(cdir,1) == 0:
          os.makedirs(cdir)
       if cfe(cdir + "/bad/",1 ) == 0:
