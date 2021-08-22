@@ -878,7 +878,11 @@ def reject_mask_detects(date, json_conf):
          objects = {}
          fn = 0
          (f_datetime, cam, f_date_str,fy,fmin,fd, fh, fm, fs) = convert_filename_to_date_cam(mf)
-         mask = sd_mask_imgs[cam]
+         if cam in sd_mask_imgs:
+            mask = sd_mask_imgs[cam]
+         else:
+            mask = np.zeros((subframes[0].shape[0],subframes[0].shape[1]),dtype=np.uint8))
+
          if mask.shape[0] != subframes[0].shape[0]:
             mask = cv2.resize(mask, (subframes[0].shape[1], subframes[0].shape[0]))
          if len(mask.shape) == 3:
