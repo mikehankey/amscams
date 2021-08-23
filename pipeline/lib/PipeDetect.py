@@ -2358,12 +2358,14 @@ def fireball(video_file, json_conf, nomask=0):
       if gap_test_res is not None and gap_test_res == 0:
          jdata['gap_test_info'] = gap_test_info
 
-      if "x_poly" in jdata['cp']:
-         if type(jdata['cp']['x_poly']) is not list:
-            jdata['cp']['x_poly'] = jdata['cp']['x_poly'].tolist()
-            jdata['cp']['y_poly'] = jdata['cp']['y_poly'].tolist()
-            jdata['cp']['x_poly_fwd'] = jdata['cp']['x_poly_fwd'].tolist()
-            jdata['cp']['y_poly_fwd'] = jdata['cp']['y_poly_fwd'].tolist()
+      if "cp" in jdata:
+         if jdata['cp'] is not None:
+            if "x_poly" in jdata['cp']:
+               if type(jdata['cp']['x_poly']) is not list:
+                  jdata['cp']['x_poly'] = jdata['cp']['x_poly'].tolist()
+                  jdata['cp']['y_poly'] = jdata['cp']['y_poly'].tolist()
+                  jdata['cp']['x_poly_fwd'] = jdata['cp']['x_poly_fwd'].tolist()
+                  jdata['cp']['y_poly_fwd'] = jdata['cp']['y_poly_fwd'].tolist()
 
       save_json_file(jsf, jdata)
       print("No meteor detected.", jsf)
@@ -2491,8 +2493,8 @@ def fireball(video_file, json_conf, nomask=0):
    print("SAVEING MJR AFTER ROI VID:", len(mjr['meteor_frame_data']))
    mjr['meteor_frame_data'] = sorted(mjr['meteor_frame_data'], key=lambda x: (x[1]), reverse=False)
    save_json_file(jsfr, mjr)
-   os.system("./Process.py refit_meteor " + mj)
-   os.system("./Process.py refine " + mj)
+   os.system("./Process.py refit_meteor " + jsfr)
+   os.system("./Process.py refine " + jsfr)
    #best_meteor = fireball_decel(video_file, json_conf, jsf, jdata, best_meteor, nomask, hd_frames, hd_color_frames, median_frame, mask_img,5)
 
 def make_base_meteor_json(video_file, hd_video_file,best_meteor=None ,cp=None):
@@ -2572,10 +2574,17 @@ def make_base_meteor_json(video_file, hd_video_file,best_meteor=None ,cp=None):
             w = int(best_meteor['ows'][i] * hdm_x_sd)
             h = int(best_meteor['ohs'][i] * hdm_y_sd)
          if "ras" in best_meteor:
-            ra = best_meteor['ras'][i]
-            dec = best_meteor['decs'][i]
-            az = best_meteor['azs'][i]
-            el = best_meteor['els'][i]
+            if len(best_meteor['ras']) > i:
+               print(i, best_meteor['ras'])
+               ra = best_meteor['ras'][i]
+               dec = best_meteor['decs'][i]
+               az = best_meteor['azs'][i]
+               el = best_meteor['els'][i]
+            else:
+               ra = 0
+               dec = 0
+               az = 0
+               el = 0
          else:
             ra = 0
             dec = 0
@@ -3755,11 +3764,12 @@ def apply_calib(video_file, best_meteor, cp,json_conf):
          est_y = best_meteor['est_ys'][i]
       cx = best_meteor['ccxs'][i]
       cy = best_meteor['ccys'][i]
-      tx, ty, ra ,dec , az, el = XYtoRADec(cx,cy,video_file,cp,json_conf)
-      best_meteor['ras'].append(ra) 
-      best_meteor['decs'].append(dec) 
-      best_meteor['azs'].append(az) 
-      best_meteor['els'].append(el) 
+      if cp is not None:
+         tx, ty, ra ,dec , az, el = XYtoRADec(cx,cy,video_file,cp,json_conf)
+         best_meteor['ras'].append(ra) 
+         best_meteor['decs'].append(dec) 
+         best_meteor['azs'].append(az) 
+         best_meteor['els'].append(el) 
    return(best_meteor)
   
 def make_meteor_frame(frame, cx,cy, fn=None, circles=None, rects=None, text_info=None, new_xs=None, new_ys=None):
