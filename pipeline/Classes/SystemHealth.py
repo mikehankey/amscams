@@ -16,7 +16,6 @@ class SystemHealth():
       print("SYSTEM HEALTH REPORT")
       pings = self.ping_cams()
       print("PINGS:", pings)
-      exit()
       df_data, mounts = self.run_df()
       print("DF DATA:", df_data)
       print("MOUNTS:", mounts)
