@@ -1,4 +1,6 @@
 import subprocess
+import os
+import glob
 from lib.PipeUtil import cfe, load_json_file, save_json_file
 
 class SystemHealth():
@@ -29,7 +31,27 @@ class SystemHealth():
             used = used.replace("K", "")
             self.data_dirs[tdir]['used_size'] = int(float(used))
             quota_perc = self.data_dirs[tdir]['used_size'] / self.data_dirs[tdir]['max_size']
-            print("QUOTA:", tdir, quota_perc)
+            over_quota = 1 - quota_perc
+            if over_quota < 0:
+               print("OVER QUOTA:", tdir, quota_perc, abs(over_quota))
+            input()
+            self.purge_dir(tdir, over_quota)
+
+   def purge_dir(self, tdir, over_quota):
+      if "HD" in tdir:
+         all_files = []
+         temp = glob.glob(tdir + "/*.mp4")
+         for tfile in temp:
+            if "trim" not in tfile:
+               all_files.append(tfile)
+         print("ALL HD FILES:", len(all_files))
+         delete_count = int(len(all_files) * abs(over_quota))
+         print("DELETE ", (abs(over_quota*100)), "% of HD FILES FROM ", tdir, delete_count," files")
+         for hd_file in sorted(all_files)[0:delete_count]:
+            print("Delete this file:", hd_file)
+            os.system("rm " + hd_file)
+          
+
             
 
 

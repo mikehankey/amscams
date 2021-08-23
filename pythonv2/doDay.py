@@ -128,6 +128,8 @@ def run_df():
    return(df_data, mounts)
 
 def check_disk():
+   hd_thresh = 2.5
+   sd_days = 35
    df_data, mounts = run_df()
    if "data_dir" in json_conf:
       data_dir = json_conf['data_dir']
@@ -144,6 +146,15 @@ def check_disk():
       if mounts[data_dir] > 80:
          print("Data volume /mnt/ams2 is greater than 80%!", mounts[data_dir]) 
          del_needed = 1
+      if mounts[data_dir] > 90:
+         print("Data volume /mnt/ams2 is greater than 90%!", mounts[data_dir]) 
+         hd_thresh = 2
+         sd_days = 25
+         del_needed = 1
+      if mounts[data_dir] > 95:
+         print("Data volume /mnt/ams2 is greater than 95%!", mounts[data_dir]) 
+         hd_thresh = 1 
+         sd_days = 21
    if mounts["/"] > 80:
       print("Root volume / is greater than 80%!", mounts["/"]) 
       del_needed = 1
@@ -175,7 +186,7 @@ def check_disk():
          elp = hd_datetime - datetime.now()
          days_old = abs(elp.total_seconds()) / 86400
          if "meteor" not in file:
-            if days_old > 2.5:
+            if days_old > hd_thresh:
                print("RM OLD:", file, days_old)
                os.system("rm " + file)
          else:
@@ -201,7 +212,7 @@ def check_disk():
             days_old = abs(elp.total_seconds()) / 86400
             print("day dir:", fn, days_old)
 
-            if days_old > 37:
+            if days_old > sd_days:
                print("This file is ", int(days_old), " days old.")
                cmd = "rm -rf " + file
                print(cmd)
