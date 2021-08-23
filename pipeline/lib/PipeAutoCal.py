@@ -846,7 +846,10 @@ def refit_meteor(meteor_file, json_conf,force=0):
       mjr = load_json_file(red_file)
    else:
       mjr = None
-   cp = mj['cp']
+   if "cp" in mj:
+      cp = mj['cp']
+   else:
+      return()
    starting_res = cp['total_res_px']
    print(starting_res)
    if starting_res > 5:
@@ -4225,8 +4228,16 @@ def find_meds(cal_data):
 
 def cal_all(json_conf):
    year = datetime.now().strftime("%Y")
-   cal_dir = ARC_DIR + "CAL/AUTOCAL/" + year + "/*.png"
-   files = glob.glob(cal_dir)
+   cal_dir = ARC_DIR + "CAL/AUTOCAL/" + year + "/"
+   if cfe(cal_dir, 1) == 0:
+      os.makedirs(cal_dir)
+   if cfe(cal_dir + "temp", 1) == 0:
+      os.makedirs(cal_dir + "temp")
+   if cfe(cal_dir + "bad", 1) == 0:
+      os.makedirs(cal_dir + "bad")
+   if cfe(cal_dir + "solved", 1) == 0:
+      os.makedirs(cal_dir + "solved")
+   files = glob.glob(cal_dir + "*.png")
    print(cal_dir)
    for file in sorted(files):
       print("TRYING.", file)
