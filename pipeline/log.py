@@ -1,5 +1,6 @@
 #!/usr/bin/python3
-
+import os
+import time
 import glob
 from decimal import Decimal
 import simplejson as json
@@ -9,7 +10,11 @@ import requests
 from lib.FFFuncs import ffprobe
 from lib.PipeUtil import load_json_file, save_json_file,cfe
 import sys
-from lib.DEFAULTS import API_URL 
+try:
+   from lib.DEFAULTS import API_URL 
+except:
+   os.system("echo 'API_URL = \"https://kyvegys798.execute-api.us-east-1.amazonaws.com/api/allskyapi\"' >> lib/DEFAULTS.py")
+   API_URL = "https://kyvegys798.execute-api.us-east-1.amazonaws.com/api/allskyapi"
 
 def push_log(msg):
    json_conf = load_json_file("../conf/as6.json")
