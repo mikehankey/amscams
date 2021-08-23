@@ -99,6 +99,31 @@ def stacks_main(amsid, data) :
             """
          out += "</div>"
 
+         out += """ <div class='gallery gal-resize row text-center text-lg-left mb-5'>"""
+         for cam in json_conf['cameras']:
+            cams_id = json_conf['cameras'][cam]['cams_id']
+            day_stack_file = vdir + "/" + cams_id + "-day-stack.jpg"
+            print("DAY STACK FILE!", day_stack_file)
+            if cfe("/mnt/ams2/" + day_stack_file) == 0:
+               print("NOT FOUND")
+               day_stack_file = None
+            else:
+               print("FOUND")
+            if cams_id in data:
+               minutes = data[cams_id]
+            else:
+               minutes = ""
+            if day_stack_file is not None:
+               out += """
+                  <div class='preview'>
+                     <a class='mtt' href='/stacks_day/""" + amsid + "/" + date + """/' title='Browse all day'>
+                     <img width=320 height=180 alt='""" + date + """' class='img-fluid ns lz' src='""" + day_stack_file + """'>
+                     </a><span class='pre-b'>Cam #""" + cams_id + " " + str(minutes) + """ minutes</span>
+                  </div>
+               """
+         out += "</div>"
+
+
    out += "</div><!--main container!--> <div class='page_h'><!--Page  " + format(page) + "/" +  format(pagination[2]) + "--></div></div> <!-- ADD EXTRA FOR ENDING MAIN PROPERLY. --> <div>"
    out += pagination[0]
 
