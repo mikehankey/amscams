@@ -1298,7 +1298,7 @@ def do_dyna_day(dynamodb, day):
  
    save_json_file("dyn.log", dyn_log)
 
-   os.system("./rerun.py")
+   #os.system("./rerun.py")
    # ROI / Meteor Scan Sync
    #cmd = "python3 ./Rec.py rec_day " + day
    #os.system(cmd)
@@ -1412,6 +1412,12 @@ def orbs_for_day(date,json_conf):
    print("saved.", orbs_file)
  
 if __name__ == "__main__":
+   # check running if it is already running abort.
+   running= check_running("DynaDB.py")
+   print("RUNNING:", running)
+   if running > 3:
+      exit()
+
    try:
       dynamodb = boto3.resource('dynamodb')
    except:
