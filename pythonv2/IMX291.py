@@ -88,7 +88,7 @@ def sense_up(cam, cam_ip):
    if cfe(outdir, 1) == 0:
       os.makedirs(outdir)
 
-   cmd = "/usr/bin/ffmpeg -y -i '" + cam_url + "' -vframes 1 " +outfile + " >/dev/null 2>&1"
+   cmd = "/usr/bin/ffmpeg -hide_banner -y -i '" + cam_url + "' -vframes 1 " +outfile + " >/dev/null 2>&1"
    os.system(cmd)
 
 
@@ -127,8 +127,14 @@ def day_night_settings(cam, cam_ip, type):
 
 def encode(cam, cam_ip):
    enc_info = cam.get_info("Simplify.Encode")
+   print(type(enc_info))
    print(enc_info)
-   #cam.set_info("Simplify.Encode", cam_info)
+   print("SD QUALITY:", enc_info[0]['ExtraFormat']['Video']['Quality'])
+   print("HD QUALITY:", enc_info[0]['MainFormat']['Video']['Quality'])
+   enc_info[0]['ExtraFormat']['Video']['Quality'] = 3
+   enc_info[0]['MainFormat']['Video']['Quality'] = 3
+   cam.set_info("Simplify.Encode", enc_info)
+   print("SET:", enc_info)
    cam.close()
 
 def test(cam, cam_ip):
