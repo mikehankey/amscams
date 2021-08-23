@@ -48,7 +48,7 @@ class SystemHealth():
             over_quota = 1 - quota_perc
             #if over_quota < 0:
             #   print("OVER QUOTA:", tdir, quota_perc, abs(over_quota))
-            self.purge_dir(tdir, over_quota)
+               self.purge_dir(tdir, over_quota)
 
    def purge_dir(self, tdir, over_quota):
       if "HD" in tdir:
