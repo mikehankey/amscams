@@ -28,6 +28,8 @@ class SystemHealth():
             used = used.replace("M", "")
             used = used.replace("K", "")
             self.data_dirs[tdir]['used_size'] = int(float(used))
+            quota_perc = self.data_dirs[tdir]['used_size'] / self.data_dirs[tdir]['max_size']
+            print("QUOTA:", tdir, quota_perc)
             
 
 
