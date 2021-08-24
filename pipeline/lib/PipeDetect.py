@@ -617,7 +617,12 @@ def make_meteor_index_day(day, json_conf):
    for mf in files:
       if "reduced" not in mf and "stars" not in mf and "man" not in mf and "star" not in mf and "import" not in mf and "archive" not in mf and "cal" not in mf and "frame" not in mf and "event" not in mf:
          meteors.append(mf)
+      else:
+         print("SKIP:", mf)
 
+
+   print("METEORS:", len(meteors))
+   input()
    for meteor in meteors:
       mi[meteor] = {}
       fn, dir = fn_dir(meteor)

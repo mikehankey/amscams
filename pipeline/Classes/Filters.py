@@ -61,12 +61,14 @@ class Filters():
       for x in obj['oxs']:
          if last_x is not None:
             x_dir = x - last_x
-            if x_dir < 0:
+            if x_dir == 0:
+               foo = 1
+            elif x_dir < 0:
                x_dir = "R2L"
             else:
                x_dir = "L2R"
          if x_dir is not None:
-            if last_x_dir != x_dir and last_x_dir is not None:
+            if last_x_dir != x_dir and last_x_dir is not None and x_dir != 0:
                 change_x += 1
             last_x_dir = x_dir
          print(x_dir, last_x_dir, change_x )
@@ -74,12 +76,15 @@ class Filters():
       for y in obj['oys']:
          if last_y is not None:
             y_dir = y - last_y
-            if y_dir < 0:
+          
+            if y_dir == 0:
+               foo = 1
+            elif y_dir < 0:
                y_dir = "B2T"
             else:
                y_dir = "T2B"
          if y_dir is not None:
-            if last_y_dir != y_dir and last_y_dir is not None:
+            if last_y_dir != y_dir and last_y_dir is not None and y_dir != 0:
                 change_y += 1
             last_y_dir = y_dir
          print(y_dir, last_y_dir, change_y)
@@ -106,6 +111,7 @@ class Filters():
       pos_segs = []
       neg_segs = 0
       for seg in segs:
+         print("SEG:", seg)
          if seg > 0:
             pos_segs.append(seg)
          else:
@@ -125,6 +131,8 @@ class Filters():
          good_perc = good / len(segs)
       else:
          good_perc = 0
+      if len(segs) <= 3:
+         good_perc = 1
       return(good_perc)
 
    def check_day(self,day):
@@ -278,6 +286,15 @@ class Filters():
             except:
                print("CORRUPT JSON FILE:", self.mdir + mjf)
                continue
+            if "multi_station_event" in mj or "hc" in mj :
+               print("WHITE LISTED METEOR 1!", mf)
+               print(mj.keys())
+               continue
+            if "user_mods" in mj:
+               if len(mj['user_mods'].keys()) > 0:
+                  print("WHITE LISTED METEOR 2!", mf)
+                  print(mj['user_mods'].keys())
+                  continue
 
  
 
@@ -337,7 +354,6 @@ class Filters():
                         bad_scores[mf] = 1   
                      else:
                         bad_scores[mf] += 1   
-                     met_multi[mf] += 1
                      bad_items[mf].append("Too many direction changes.") 
 
                   if seg_good_perc <=  .6:
@@ -380,7 +396,7 @@ class Filters():
                      IN_YS = []
                   rans_good_perc = len(IN_XS) / len(obj['ofns'])
                   print("GOOD RANSC:", rans_good_perc)
-                  if rans_good_perc < .66:
+                  if rans_good_perc < .66 and rans_good_perc != 0:
                      met_multi[mf] += 1
                      if mf not in bad_scores:
                         bad_scores[mf] = 1   
@@ -388,12 +404,6 @@ class Filters():
                         bad_scores[mf] += 1   
                      bad_items[mf].append("Bad Ransac Perc" + str(rans_good_perc)) 
 
-                  if rans_good_perc < .5:
-                     if mf not in bad_scores:
-                        bad_scores[mf] = 1   
-                     else:
-                        bad_scores[mf] += 1   
-                     bad_items[mf].append("Bad Ransac Perc" + str(rans_good_perc)) 
                   if "oxs" in obj:
                      if len(obj['oxs']) <= 3:
                         bad_items[mf].append("short duration" + str(len(obj['oxs']))) 
@@ -410,6 +420,9 @@ class Filters():
 
          bad_scores[mf] = bad_scores[mf] * met_multi[mf]
          print("BAD SCORE:",cur_weather, mf, bad_scores[mf], bad_items[mf], met_multi[mf])
+         if bad_scores[mf] >= 4:
+
+            input("IS BAD")
 
       for mf in sorted(self.mfiles):
          if mf in bad_scores:

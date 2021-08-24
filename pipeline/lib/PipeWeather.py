@@ -23,6 +23,9 @@ from lib.DEFAULTS import *
 import glob
 from lib.PipeImage import stack_frames
 
+import matplotlib
+matplotlib.use('Agg')
+
 from matplotlib import pyplot as plt
 from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 from matplotlib.figure import Figure
