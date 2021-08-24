@@ -47,7 +47,7 @@ def quick_event_report(date, dynamodb, json_conf):
       if event_id != rval['event_id']:
          rval['event_id'] = event_id
          print("PROBLEM:", key, okey, event_id)
-         input()
+         #input()
          if False:
             r.delete(key)
             okey = key.replace("A", "")
@@ -465,7 +465,7 @@ def delete_event(dynamodb=None, event_day=None, event_id=None):
      }
    )
    print("AWS DYN RESP:", response)
-   input()
+   #input()
 
 def delete_obs(dynamodb, station_id, sd_video_file):
    table = dynamodb.Table('meteor_obs')
@@ -1260,9 +1260,6 @@ def do_dyna_day(dynamodb, day):
    else:
       print("Already rejected planes for this day.", day)
 
-   if today != day:
-      if "reject_planes" not in dyn_log[day] or today == day:
-         dyn_log[day]['reject_planes'] = 1
 
    
    if "confirm" not in dyn_log[day] or today == day:
@@ -1271,6 +1268,10 @@ def do_dyna_day(dynamodb, day):
       os.system(cmd)
    else:
       print("already confirmed for this day.", day)
+
+   if today != day:
+      if "reject_planes" not in dyn_log[day] or today == day:
+         dyn_log[day]['reject_planes'] = 1
 
    if today != day:
       if "confirm" not in dyn_log[day]:

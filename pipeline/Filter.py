@@ -11,7 +11,6 @@ def all_bad(F):
          all_files = get_files(mdir )
          if len(all_files) > 50:
             print("SHOULD WE FILTER?", mdir, len(all_files))
-            input
 
 def get_files(mdir):
    temp = glob.glob(mdir + "/*.json")
