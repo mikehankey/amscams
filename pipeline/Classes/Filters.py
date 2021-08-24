@@ -420,9 +420,8 @@ class Filters():
 
          bad_scores[mf] = bad_scores[mf] * met_multi[mf]
          print("BAD SCORE:",cur_weather, mf, bad_scores[mf], bad_items[mf], met_multi[mf])
-         if bad_scores[mf] >= 4:
-
-            input("IS BAD")
+         #if bad_scores[mf] >= 4:
+         #   input("IS BAD")
 
       for mf in sorted(self.mfiles):
          if mf in bad_scores:
