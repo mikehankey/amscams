@@ -10,7 +10,7 @@ from sklearn.datasets import make_regression
 
 class Filters():
    def __init__(self ):
-      self.exp_dates = ['08_10', '08_11', '08_12', '08_13', '08_14', '12_12', '12_13', '12_14']
+      self.exp_dates = ['08_11', '08_12', '08_13', '08_14', '12_12', '12_13', '12_14']
       self.json_conf = load_json_file("../conf/as6.json")
       self.station_id = self.json_conf['site']['ams_id']
       # if there are more than this many detections on 1 day, more strict filters will be applied to the meteors 
@@ -48,6 +48,58 @@ class Filters():
          day = md.split("/")[-1]
          print("Checking", day)
          self.check_day(day)
+
+   def dir_change(self,obj):
+      last_x = None
+      last_y = None
+      x_dir = None
+      y_dir = None
+      last_x_dir = None
+      last_y_dir = None
+      change_x = 0
+      change_y = 0
+      for x in obj['oxs']:
+         if last_x is not None:
+            x_dir = x - last_x
+            if x_dir < 0:
+               x_dir = "R2L"
+            else:
+               x_dir = "L2R"
+         if x_dir is not None:
+            if last_x_dir != x_dir and last_x_dir is not None:
+                change_x += 1
+            last_x_dir = x_dir
+         print(x_dir, last_x_dir, change_x )
+         last_x = x
+      for y in obj['oys']:
+         if last_y is not None:
+            y_dir = y - last_y
+            if y_dir < 0:
+               y_dir = "B2T"
+            else:
+               y_dir = "T2B"
+         if y_dir is not None:
+            if last_y_dir != y_dir and last_y_dir is not None:
+                change_y += 1
+            last_y_dir = y_dir
+         print(y_dir, last_y_dir, change_y)
+         last_y = y
+      tchange = (change_x + change_y) / 2
+      if tchange > 0:
+         perc_change = tchange / len(obj['oxs'])
+      else:
+         perc_change = 0
+      frames_left  = len(obj['oxs']) - tchange
+      print("DIR CHANGE %:", perc_change)
+      print("FRAMES LEFT%:", frames_left)
+      status = 1
+      if perc_change > .4:
+         status = 0
+      if frames_left < 3:
+         status = 0
+      if frames_left <= 3 and perc_change >= .33:
+         status = 0
+      return(status)
 
    def check_segs(self,obj):
       segs = obj['report']['line_segments'][1:]
@@ -138,7 +190,13 @@ class Filters():
       # define bad scores
       bad_scores = {}
       bad_items = {}
+      met_multi = {}
+      all_weather = {}
       for mf in self.mfiles:
+
+         met_multi[mf] = 1
+         if mf not in bad_scores:
+            bad_scores[mf] = 0
          if mf not in bad_items:
             bad_items[mf] = []
          rf = mf.replace(".mp4", "")
@@ -154,9 +212,17 @@ class Filters():
             print("HOUR KEY:", hour_key)
             cur_weather = self.weather_hours[hour_key]['conditions']
          else:
-            cur_weather = None
+            cur_weather = "" 
             print("NO WEATHER FOR HOUR! WEATH KEYS:", self.weather_hours.keys())
             print("HOUR KEY:", hour_key)
+         bad_items[mf].append("Current Weather: " + cur_weather) 
+         all_weather[mf] = cur_weather
+         if cur_weather is not None and (cur_weather == "Overcast" or cur_weather == "Heavy rain" or "rain" in cur_weather or "drizzle" in cur_weather):
+            if mf not in bad_scores:
+               bad_scores[mf] = 1   
+            else:
+               bad_scores[mf] += 1   
+            bad_items[mf].append("Bad Weather: " + cur_weather) 
 
          if min_caps[min_file] > 3:
             if mf not in bad_scores:
@@ -188,11 +254,11 @@ class Filters():
             else:
                bad_scores[mf] += 2   
             bad_items[mf].append("Hour cap thresh " + str(hour_caps[hour_file])) 
-         if cur_weather is not None and (cur_weather == "Overcast" or cur_weather == "Heavy rain"):
+         if cur_weather is not None and (cur_weather == "Overcast" or cur_weather == "Heavy rain" or "rain" in cur_weather or "drizzel" in cur_weather):
             if mf not in bad_scores:
-               bad_scores[mf] = 2   
+               bad_scores[mf] = 3   
             else:
-               bad_scores[mf] += 2   
+               bad_scores[mf] += 3   
             if hour_caps[hour_file] > 25:
                bad_scores[mf] += 2   
                bad_items[mf].append("Bad weather + high hour cap" + str(cur_weather) + " " + str(hour_caps[hour_file])) 
@@ -200,20 +266,28 @@ class Filters():
             bad_items[mf].append("Bad weather" + str(cur_weather)) 
          else:
             print("CUIR WEATHER:", cur_weather)
-       
+      
+      hot_zones = []
+      
       for mf in sorted(bad_scores) :
          mjf = mf.replace(".mp4", ".json")
+         cur_weather = all_weather[mf]
          if cfe(self.mdir + mjf) == 1:
             try:
                mj = load_json_file(self.mdir + mjf)
             except:
                print("CORRUPT JSON FILE:", self.mdir + mjf)
+               continue
+
  
 
             if "confirmed_meteors" in mj:
                confirmed_meteors = len(mj['confirmed_meteors'])
             else:
                confirmed_meteors = 0
+               print("CONFIRMED METEORS NOT IN MJ?")
+            if confirmed_meteors == 0:
+               print("NO CONFIRMED METEORS?")
             if confirmed_meteors > 3:
                if mf not in bad_scores:
                   bad_scores[mf] = 1   
@@ -225,14 +299,61 @@ class Filters():
             if confirmed_meteors > 0:
                for obj in mj['confirmed_meteors']:
                   fn_gaps = self.fn_gaps(obj)
+                  if fn_gaps > 25:
+                     met_multi[mf] += 1
                   seg_good_perc = self.check_segs(obj)
+                  if seg_good_perc < .4:
+                     met_multi[mf] += 1
 
-                  if seg_good_perc <  .6:
+                  print("SEGS GOOD %:", seg_good_perc)
+                  x1 = min(obj['oxs'])
+                  x2 = max(obj['oxs'])
+                  y1 = min(obj['oys'])
+                  y2 = max(obj['oys'])
+                  avg_x = np.mean(obj['oxs'])
+                  avg_y = np.mean(obj['oys'])
+                  hot_zone_hits = 0
+                  for hx1,hy1,hx2,hy2 in hot_zones:
+                     if hx1 <= avg_x <= hx2 and hy1 <= avg_y <= hy2: 
+                        hot_zone_hits += 1
+                  hot_zones.append((x1,y1,x2,y2))
+                  print(obj['oxs'])
+                  print(obj['oys'])
+                  print(obj['ows'])
+                  print(obj['ohs'])
+                  print(obj['oint'])
+                  print("HOT ZONE HITS:", hot_zone_hits)
+                  if hot_zone_hits > 2:
+                     if mf not in bad_scores:
+                        bad_scores[mf] = 1   
+                     else:
+                        bad_scores[mf] +=  hot_zone_hits  
+                     met_multi[mf] += 1
+                     bad_items[mf].append("Hot zone hits:" + str(hot_zone_hits)) 
+ 
+                  dc_status = self.dir_change(obj)
+                  if dc_status == 0:
+                     if mf not in bad_scores:
+                        bad_scores[mf] = 1   
+                     else:
+                        bad_scores[mf] += 1   
+                     met_multi[mf] += 1
+                     bad_items[mf].append("Too many direction changes.") 
+
+                  if seg_good_perc <=  .6:
                      if mf not in bad_scores:
                         bad_scores[mf] = 1   
                      else:
                         bad_scores[mf] += 1   
                      bad_items[mf].append("Bad seg perc" + str(seg_good_perc)) 
+                  if seg_good_perc <=  .5:
+                     if mf not in bad_scores:
+                        bad_scores[mf] = 1   
+                     else:
+                        bad_scores[mf] += 1   
+                     bad_items[mf].append("Bad seg perc" + str(seg_good_perc)) 
+
+                  print("FN GAPS:", fn_gaps)
                   if fn_gaps > 4:
                      if mf not in bad_scores:
                         bad_scores[mf] = 1   
@@ -240,6 +361,17 @@ class Filters():
                         bad_scores[mf] += 1   
                      bad_items[mf].append("Bad FN Gaps" + str(fn_gaps)) 
 
+                  # check if the detection is near the bottom of the frame
+                  min_y = min(obj['oys'])
+                  max_y = max(obj['oys'])
+                  print("MIN Y:", min_y)
+                  if max_y > 300:
+                     if mf not in bad_scores:
+                        bad_scores[mf] = 1   
+                     else:
+                        bad_scores[mf] += 1   
+                     bad_items[mf].append("Lower field hit max_y = " + str(max_y)) 
+                  
 
                   try:
                      IN_XS,IN_YS,OUT_XS,OUT_YS,line_X,line_Y,line_y_ransac,inlier_mask,outlier_mask = self.ransac_outliers(obj['oxs'], obj['oys'])
@@ -247,9 +379,37 @@ class Filters():
                      IN_XS = []
                      IN_YS = []
                   rans_good_perc = len(IN_XS) / len(obj['ofns'])
+                  print("GOOD RANSC:", rans_good_perc)
                   if rans_good_perc < .66:
+                     met_multi[mf] += 1
+                     if mf not in bad_scores:
+                        bad_scores[mf] = 1   
+                     else:
+                        bad_scores[mf] += 1   
                      bad_items[mf].append("Bad Ransac Perc" + str(rans_good_perc)) 
-            print("BAD SCORE:",mf, bad_scores[mf])
+
+                  if rans_good_perc < .5:
+                     if mf not in bad_scores:
+                        bad_scores[mf] = 1   
+                     else:
+                        bad_scores[mf] += 1   
+                     bad_items[mf].append("Bad Ransac Perc" + str(rans_good_perc)) 
+                  if "oxs" in obj:
+                     if len(obj['oxs']) <= 3:
+                        bad_items[mf].append("short duration" + str(len(obj['oxs']))) 
+                        if mf not in bad_scores:
+                           bad_scores[mf] = 1   
+                        else:
+                           bad_scores[mf] += 1   
+
+                     print(obj['oxs'])
+                     print(obj['oys'])
+                     print(obj['ows'])
+                     print(obj['ohs'])
+                     print(obj['oint'])
+
+         bad_scores[mf] = bad_scores[mf] * met_multi[mf]
+         print("BAD SCORE:",cur_weather, mf, bad_scores[mf], bad_items[mf], met_multi[mf])
 
       for mf in sorted(self.mfiles):
          if mf in bad_scores:
@@ -258,7 +418,6 @@ class Filters():
                bad_detects[mf] = bad_scores[mf] 
          else:
             print("GOOD MF:", mf)
-                
 
       # deal with the bad detects
       for bd in bad_detects:
@@ -266,7 +425,7 @@ class Filters():
          self.purge_meteor(bd)
       os.system("./Process.py purge_meteors")
       os.system("./Process.py mmi_day " + date)
-      os.system("cd ../pythonv2/; batch_jobs fi")
+      os.system("cd ../pythonv2/; ./batchJobs.py fi")
       print(len(self.mfiles), "total detects") 
       print(len(bad_detects), "bad detects") 
 
