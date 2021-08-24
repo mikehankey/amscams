@@ -621,8 +621,6 @@ def make_meteor_index_day(day, json_conf):
          print("SKIP:", mf)
 
 
-   print("METEORS:", len(meteors))
-   input()
    for meteor in meteors:
       mi[meteor] = {}
       fn, dir = fn_dir(meteor)
