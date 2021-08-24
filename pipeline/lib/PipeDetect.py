@@ -2026,12 +2026,15 @@ def make_roi_video_mfd(video_file, json_conf):
                    #rx2 = rx1 + xsz
                    print("ROIP2:", px1, px2, ry1, ry2, rx1,rx2)
                    print("ROIP3:", xsz,ysz)
-                   roi_p[0:50,px1:px2] = of[ry1:ry2,rx1:rx2]
+                   try:
+                      roi_p[0:50,px1:px2] = of[ry1:ry2,rx1:rx2]
 
-                   #cv2.imshow("ROI", roi_p)
-                   #cv2.waitKey(0)
-                   roi_img = roi_p
-                   use_roi_p = 1
+                      roi_img = roi_p
+                      use_roi_p = 1
+                   except:
+                      roi_img = None 
+                      use_roi_p = 0
+                      roi_size = 0
 
             if ry2 - ry1 != roi_size * 2:
                print("PROBLEM AT THE Y EDGE! height is only", ry2-ry1 )
