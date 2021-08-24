@@ -751,7 +751,11 @@ def confirm_meteors(date ):
          meteors.append(mf)
    for meteor in meteors:
       meteor_vid = meteor.replace(".json", ".mp4")
-      mj = load_json_file(meteor)
+      try:
+         mj = load_json_file(meteor)
+      except:
+         print("CORRUPT MJ:", mj)
+         continue
       red = meteor.replace(".json", "-reduced.json")
       if "rejected" in mj or "best_meteor" in mj and cfe(red) != 0:
          print("ALREADY DONE.")
