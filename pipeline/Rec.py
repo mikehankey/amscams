@@ -11,6 +11,11 @@ if __name__ == "__main__":
    os.system("python3 Register.py")
    print(len(sys.argv))
    cmd = sys.argv[1]
+
+   if cmd == "rec_aws_all":
+      # function to reconcile deletes and file indexes between AWS and local station
+      
+
    if cmd == "rec":
       year = sys.argv[2]
       mon = sys.argv[3]

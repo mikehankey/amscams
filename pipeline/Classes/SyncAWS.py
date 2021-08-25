@@ -65,9 +65,73 @@ class SyncAWS():
       if cfe(self.AWS_DIR,1) == 0:
          os.makedirs(self.AWS_DIR)
 
-  
+   def commit_aws_del(self,vid):
+      url = self.API_URL + "?cmd=del_obs_commit&station_id=" + self.station_id + "&sd_video_file=" + vid + "&api_key=" + self.json_conf['api_key']
+      response = requests.get(url)
+      content = response.content.decode()
+      content = content.replace("\\", "")
+      print(content)
+      print(url)
 
-   def rebuild_meteor_index(self,):
+   def rec_aws_all(self):
+      # function to reconcile deletes and file indexes between AWS and local station
+      cloud_dir = "/mnt/archive.allsky.tv/EVENTS/OBS/STATIONS/"
+      local_dir = "/mnt/archive.allsky.tv/EVENTS/OBS/STATIONS/"
+
+      # first grab AWS tagged deletes and commit 
+      # later reject anything that has man points or hc human confirmed or user_points
+      aws_log_file = local_dir + self.station_id + "AWS_SYNC.json"
+      if cfe(aws_log_file) == 1:
+         aws_log = load_json_file(aws_log_file)
+      else:
+         aws_log = {}
+      if "deleted_meteors" not in aws_log:
+         aws_log['deleted_meteors'] = {}
+
+      if cfe(local_dir,1) == 0:
+         os.makedirs(local_dir)
+      cmd = "cp " + cloud_dir + self.station_id + "*.json" + " " + local_dir
+      os.system(cmd)
+      deletes = load_json_file(local_dir + self.station_id + "_DEL.json")
+      
+      print("DELETES TO CONFIRM:", len(deletes) )
+      for delete_row in deletes:
+         vid, label, commit = delete_row
+         if vid in aws_log:
+            print("SKIP")
+            continue
+         if vid not in aws_log['deleted_meteors']:
+            mjf = "/mnt/ams2/meteors/" + vid[0:10] + "/" + vid.replace(".mp4", "")
+            mjf += ".json"
+            if cfe(mjf) == 1:
+               if label != "":
+                  print(mjf, cfe(mjf), label, commit)
+                  self.commit_aws_del(vid)
+                  self.delete_local_meteor(vid)
+                  aws_log[vid] = 1
+                  #exit()
+      save_json_file(aws_log_file, aws_log)
+
+      # now loop over each aws meteor. if it does not exist locally then it should be deleted from AWS
+      aws_meteors = load_json_file(local_dir + self.station_id + ".json")
+      print("There are ", len(aws_meteors), " AWS meteor detections logged for ", self.station_id)
+      
+      for data in sorted(aws_meteors, reverse=True):
+         root_file = data[1].replace(".mp4", "")
+         root_file = root_file.replace(".json", "")
+         mdir = "/mnt/ams2/meteors/" + root_file[0:10] + "/" 
+         mjf = mdir + root_file + ".json"
+         if vid not in aws_log['deleted_meteors']:
+            if cfe(mjf) == 0:
+               print("AWS FILE DOES NOT EXIST LOCALLY AND NEEDS TO BE DELETED.", root_file)
+               vid = root_file + ".mp4"
+               self.commit_aws_del(root_file + ".mp4")
+               aws_log[vid] = 1
+            #exit()
+
+      save_json_file(aws_log_file, aws_log)
+
+   def rebuild_meteor_index(self):
       mdirs = self.get_mdirs()
 
    def get_mdirs(self):
