@@ -76,7 +76,7 @@ class SyncAWS():
    def rec_aws_all(self):
       # function to reconcile deletes and file indexes between AWS and local station
       cloud_dir = "/mnt/archive.allsky.tv/EVENTS/OBS/STATIONS/"
-      local_dir = "/mnt/archive.allsky.tv/EVENTS/OBS/STATIONS/"
+      local_dir = "/mnt/ams2/EVENTS/OBS/STATIONS/"
 
       # first grab AWS tagged deletes and commit 
       # later reject anything that has man points or hc human confirmed or user_points
