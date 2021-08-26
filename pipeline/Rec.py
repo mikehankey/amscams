@@ -12,8 +12,14 @@ if __name__ == "__main__":
    print(len(sys.argv))
    cmd = sys.argv[1]
 
-   if cmd == "rec_aws_all":
+   #if cmd == "rec_aws_all":
       # function to reconcile deletes and file indexes between AWS and local station
+      
+   if cmd == "rec_media":
+      year = sys.argv[2]
+      mon = sys.argv[3]
+      R = Reconcile(year,mon)
+      R.rec_media(year,mon)
       
 
    if cmd == "rec":
