@@ -131,14 +131,14 @@ class AS7Setup():
       Screen().input("This program will check all system dependencies and install those that are missing. Press [ENTER] to continue.")
       cmd = "apt-get --yes --allow-downgrades --allow-remove-essential --allow-change-held-packages update"
       print(cmd)
-      #os.system(cmd)
+      os.system(cmd)
       # install/update apt packages 
       oneline = "apt-get --yes --allow-downgrades --allow-remove-essential --allow-change-held-packages install " 
       for apt in self.apt_list:
          cmd = "apt-get --yes --allow-downgrades --allow-remove-essential --allow-change-held-packages install " + apt + " " 
          oneline += apt + " " 
          print(cmd)
-         #os.system(cmd)
+         os.system(cmd)
          all_cmds += cmd + "\n"
 
       oneline += "\n"
@@ -148,7 +148,7 @@ class AS7Setup():
          cmd = "pip3 install --upgrade " + pip
          print(cmd)
          oneline += pip + " " 
-         #os.system(cmd)
+         os.system(cmd)
          all_cmds += cmd + "\n"
 
       for cust in self.custom_list:
