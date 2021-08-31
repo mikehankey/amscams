@@ -1,2 +1,1 @@
-cd /home/ams/amscams/install;
-sudo python3 AS7Setup.py
+sudo python3 /home/ams/amscams/install/AS7Setup.py

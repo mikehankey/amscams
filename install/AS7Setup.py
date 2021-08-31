@@ -2,8 +2,15 @@
 import json
 from pathlib import Path
 import os
-from consolemenu import *
-from consolemenu.items import *
+try:
+   from consolemenu import *
+   from consolemenu.items import *
+except:
+   os.system("pip3 install consolemenu")
+   os.system("pip3 install console-menu")
+   from consolemenu import *
+   from consolemenu.items import *
+
 import getpass
 import netifaces as ni
 
@@ -26,9 +33,28 @@ class AS7Setup():
       menu = ConsoleMenu("ALLSKY OBSERVING SOFTWARE - INSTALLER AND SETUP ", "SELECT OPTION")
       check_install = FunctionItem("INSTALL/UPDATE PACKAGES", self.check_install )
       network_int = FunctionItem("SETUP NETWORK INTERFACES", self.network_install)
+      data_disk_setup = FunctionItem("FORMAT/SETUP DATA DISK", self.data_disk_install)
+      backup_disk_setup = FunctionItem("SETUP DATA-BACKUP DISK", self.backup_disk_install)
+      register_setup = FunctionItem("REGISTER STATION", self.register_station)
+      menu.append_item(register_setup)
       menu.append_item(check_install)
       menu.append_item(network_int)
+      menu.append_item(data_disk_setup)
       menu.show()      
+
+   def data_disk_install(self):
+      Screen().input("DATA DISK MANAGER.")
+
+   def backup_disk_install(self):
+      Screen().input("DATA DISK MANAGER.")
+
+   def register_station(self):
+      print("REGISTER/SETUP STATION")
+      ams_id = Screen().input("ENTER THE AMS ID ASSIGNED TO YOUR STATION.")
+      pin_code = Screen().input("ENTER THE PIN CODE GIVEN TO YOU WITH YOUR AMS ID.")
+      print("AMS ID:", ams_id)
+      print("PIN CODE:", pin_code)
+      input("Press enter to continue")
 
    def network_install(self):
       interfaces = os.listdir("/sys/class/net/") 
