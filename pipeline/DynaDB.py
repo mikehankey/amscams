@@ -1,20 +1,22 @@
 #!/usr/bin/python3
+from decimal import Decimal
 import redis
 import requests
 from lib.PipeManager import dist_between_two_points
 import math
 import os
 from datetime import datetime
-import json
+import datetime as dt
+import simplejson as json
 from decimal import Decimal
 import sys
 import glob
-from lib.PipeUtil import cfe, load_json_file, save_json_file, check_running
+from lib.PipeUtil import cfe, load_json_file, save_json_file, check_running, get_trim_num
 import boto3
 import socket
 import subprocess
 from boto3.dynamodb.conditions import Key, Attr
-from lib.PipeUtil import get_file_info, fn_dir
+from lib.PipeUtil import get_file_info, fn_dir, convert_filename_to_date_cam
 from Classes.SyncAWS import SyncAWS
 
 r = redis.Redis("allsky-redis.d2eqrc.0001.use1.cache.amazonaws.com", port=6379, decode_responses=True)
@@ -25,6 +27,49 @@ class DecimalEncoder(json.JSONEncoder):
         if isinstance(obj, Decimal):
             return float(obj)
         return json.JSONEncoder.default(self, obj)
+
+def all_deletes(dynamodb, json_conf):
+   # build file for each station of all AWS deleted meteor detects
+   table = dynamodb.Table('meteor_delete')
+   response = table.scan()
+   data = response['Items']
+   c = 0
+   all_items = []
+   for item in response['Items']:
+      all_items.append(item)
+
+   while 'LastEvaluatedKey' in response:
+      print("WHILE UPDATING ITEMS.", len(all_items))
+      response = table.scan(ExclusiveStartKey=response['LastEvaluatedKey'])
+      for item in response['Items']:
+         all_items.append(item)
+   save_json_file("/mnt/ams2/EVENTS/ALL_DELETES.json", all_items, True)
+
+   deletes_by_station = {}
+   for item in all_items:
+      station_id = item['station_id']
+      sd_video_file = item['sd_video_file']
+      if "delete_committed" in item:
+         delete_committed = item['delete_committed']
+      else:
+         delete_committed = 0
+      if "label" in item:
+         label = item['label']
+      else:
+         label = ""
+      if station_id not in deletes_by_station:
+         deletes_by_station[station_id] = []
+      deletes_by_station[station_id].append((sd_video_file,label,delete_committed))
+   out_dir = "/mnt/ams2/EVENTS/OBS/STATIONS/"
+   cloud_out_dir = "/mnt/archive.allsky.tv/EVENTS/OBS/STATIONS/"
+   for st in deletes_by_station:
+      save_json_file(out_dir + st + "_DEL.json", deletes_by_station[st])
+      cmd = "cp " + out_dir + st + "_DEL.json " + cloud_out_dir
+      print(cmd)
+      os.system(cmd)
+
+
+
 
 def quick_event_report(date, dynamodb, json_conf):
 
@@ -47,7 +92,6 @@ def quick_event_report(date, dynamodb, json_conf):
       if event_id != rval['event_id']:
          rval['event_id'] = event_id
          print("PROBLEM:", key, okey, event_id)
-         input()
          if False:
             r.delete(key)
             okey = key.replace("A", "")
@@ -453,7 +497,7 @@ def load_stations(dynamodb):
 
 
 def delete_event(dynamodb=None, event_day=None, event_id=None):
-
+   r.delete("E:" + event_id)
    if dynamodb is None:
       dynamodb = boto3.resource('dynamodb')
    print("DELETE DYN EVENT:", event_day, event_id)
@@ -464,8 +508,10 @@ def delete_event(dynamodb=None, event_day=None, event_id=None):
          "event_id": event_id
      }
    )
-   print("AWS DYN RESP:", response)
-   input()
+   rkey = "E:" + event_id
+   r.delete(rkey)
+
+   #print("AWS DYN RESP:", response)
 
 def delete_obs(dynamodb, station_id, sd_video_file):
    table = dynamodb.Table('meteor_obs')
@@ -535,6 +581,7 @@ def select_obs_files(dynamodb, station_id, event_day):
          all_items.append(it)
    return(all_items)
 
+
 def get_all_events(dynamodb):
    table = dynamodb.Table("x_meteor_event")
    response = table.scan()
@@ -562,6 +609,7 @@ def update_dyna_cache_for_day(dynamodb, date, stations, utype=None):
    if cfe(dyn_cache, 1) == 0:
       os.makedirs(dyn_cache)
 
+   del_file = dyn_cache + date + "_ALL_DEL.json" 
    obs_file = dyn_cache + date + "_ALL_OBS.json" 
    print("OBS:", do_obs, obs_file)
    event_file = dyn_cache + date + "_ALL_EVENTS.json" 
@@ -585,9 +633,34 @@ def update_dyna_cache_for_day(dynamodb, date, stations, utype=None):
    print(content)
    jdata = json.loads(content)
    save_json_file("/mnt/ams2/EVENTS/ALL_STATIONS.json", jdata['all_vals'])
-
    all_stations = jdata['all_vals']
+
+   # load the deletes
+   all_deletes = []
+   del_keys = {}
+   for data in all_stations:
+      station_id = data['station_id']
+      deletes = get_station_deletes(dynamodb, station_id, date)
+      for del_item in deletes:
+         all_deletes.append(del_item)
+         obs_key = del_item['station_id'] + "_" + del_item['sd_video_file']
+         print(del_item.keys())
+         if "label" in del_item:
+            label = del_item['label']
+         else:
+            label = ""
+         del_keys[obs_key] = label
+   print("Loaded deletes.", len(all_deletes))
+   save_json_file(del_file, del_keys)
+   cloud_del_file = del_file.replace("/ams2/", "/archive.allsky.tv/")
+   os.system("cp " + del_file + " " + cloud_del_file)
+   print("SAVED:", del_file)
+
+   # now purge any events that match these keys
+
    clusters = make_station_clusters(all_stations)
+
+
    #for cluster in clusters:
    #   print(cluster)
    cluster_stations = []
@@ -620,7 +693,14 @@ def update_dyna_cache_for_day(dynamodb, date, stations, utype=None):
          print("OBS TOTAL:", station_id, len(obs))
          unq_stations[station_id] = len(obs)
          for data in obs:
-            all_obs.append(data)
+            obs_key =  data['station_id'] + "_" +  data['sd_video_file']
+            if obs_key in del_keys:
+               print("THIS OBS KEY IS DELETED!")
+            else:
+               all_obs.append(data)
+
+      update_redis_obs(date, all_obs)
+
       save_json_file(obs_file, all_obs)
       print("SAVED:", obs_file)
       cloud_obs_file = obs_file.replace("/mnt/ams2/", "/mnt/archive.allsky.tv/")
@@ -631,12 +711,133 @@ def update_dyna_cache_for_day(dynamodb, date, stations, utype=None):
       os.system("rm " + event_file ) 
       # get all of the events for this day 
       events = search_events(dynamodb, date, stations, 1)
+      ev_keys = {}
+      deleted_events = {}
+      for event in events:
+         ev_keys[event['event_id']] = event
+         for i in range(0, len(event['stations'])):
+            st = event['stations'][i]
+            vid = event['files'][i]
+            obs_key = st + "_" + vid
+            if obs_key in del_keys:
+               print("THIS EVENT OBS HAS BEEN DELETED!", obs_key, event.keys())
+               deleted_events[event['event_id']] = 1
+               delete_event(dynamodb, event['event_id'], date)
+
+      for evid in deleted_events:
+         print("DELETE THIS EVENT!", evid, ev_keys[evid].keys() )
 
       save_json_file(event_file, events)
+      print("Saved:", event_file)
       cloud_event_file = event_file.replace("/mnt/ams2/", "/mnt/archive.allsky.tv/")
       os.system("cp " + event_file + " " + cloud_event_file)
       print("saved" + cloud_event_file)
 
+def starttime_from_file( filename):
+   (f_datetime, cam, f_date_str,fy,fmon,fd, fh, fm, fs) = convert_filename_to_date_cam(filename)
+   trim_num = get_trim_num(filename)
+   extra_sec = int(trim_num) / 25
+   extra_sec += 2
+   event_start_time = f_datetime + dt.timedelta(0,extra_sec)
+   return(event_start_time)
+
+def update_redis_obs(date, obs_data):
+
+    rkeys = r.keys("OI:*" + date + "*")
+    for key in rkeys:
+       print("DEL:", key)
+       r.delete(key)
+        
+
+    print("TOTAL OBS IN FILE:", len(obs_data))
+    if True:
+      c = 0
+      for item in obs_data:
+          if True:
+            if "deleted" in item:
+               continue
+            if "dur" in item:
+               dur = float(item['dur'])
+            else:
+               dur = 0
+            if "sync_status" in item:
+               station_sync = item['sync_status']
+            else:
+               station_sync = 0
+            if "event_id" in item:
+               event_id = item['event_id']
+            else:
+               event_id = 0
+            if "revision" in item:
+               revision = item['revision']
+            else:
+               revision = 0
+            if "calib" in item:
+               calib = item['calib']
+               res = 0
+               stars = 0
+               if len(calib) > 0:
+                  res = float(calib[-1])
+                  stars = int(calib[-2])
+            else:
+               prev_vid = 0
+               res = 9999
+               stars = 0
+            if "peak_int" in item:
+               pi = float(item['peak_int'])
+            else:
+               pi = 0
+
+            if "event_start_time" in item:
+               temp = item['event_start_time'].split(" ")
+            else:
+               temp = []
+            if len(temp) == 2:
+               event_time = temp[1]
+            else:
+               event_time = starttime_from_file(item['sd_video_file'])
+               event_time = event_time.strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]
+               temp = event_time.split(" ")
+               if len(temp) == 2:
+                  event_time = temp[1]
+            key = "OI:" + item['station_id'] + ":" + item['sd_video_file']
+            val = {}
+            val['ei'] = event_id
+            val['t'] = event_time
+            val['rv'] = revision
+            val['ss'] = station_sync
+            val['pi'] = pi
+            val['du'] = dur
+            val['rs'] = float("{:0.2f}".format(res))
+            val['st'] = stars
+
+            r.set(key, json.dumps(val))
+            print("SETTING:", c, key)
+            c += 1
+
+
+def delete_events_day(dynamodb, date):
+   print("DATE?", date)
+   table = dynamodb.Table('x_meteor_event')
+   response = table.query(
+      KeyConditionExpression='event_day= :date',
+      ExpressionAttributeValues={
+         ':date': date,
+      } 
+   )
+   event_ids = []
+   for item in response['Items']:
+      event_ids.append(item['event_id'])
+   for event_id in event_ids:
+
+      event_day = event_id[0:8]
+      y = event_day[0:4]
+      m = event_day[4:6]
+      d = event_day[6:8]
+      event_day = y + "_" + m + "_" + d
+
+      print(event_day, event_id)
+      delete_event(dynamodb, event_day, event_id)
 
 
 def search_events(dynamodb, date, stations, nocache=0):
@@ -756,6 +957,40 @@ def search_trash(dynamodb, station_id, date, no_cache=0   ):
    #   st = item['station_id']:
    #   for row in 
    return(response['Items'])
+
+def get_station_deletes(dynamodb, station_id, date ):
+   all_items = []
+   if dynamodb is None:
+      dynamodb = boto3.resource('dynamodb')
+   table = dynamodb.Table('meteor_delete')
+   print("INPUT:", station_id, date)
+   response = table.query(
+
+      KeyConditionExpression='station_id = :station_id AND begins_with(sd_video_file, :date)',
+      ExpressionAttributeValues={
+         ':station_id': station_id,
+         ':date': date,
+      } ,
+      Limit=100 
+   )
+   for item in response['Items']:
+      all_items.append(item)
+   while 'LastEvaluatedKey' in response:
+      response = table.query(
+         KeyConditionExpression='station_id = :station_id AND begins_with(sd_video_file, :date)',
+         ExpressionAttributeValues={
+            ':station_id': station_id,
+            ':date': date,
+         } ,
+         Limit=100 ,
+         ExclusiveStartKey=response['LastEvaluatedKey']
+      )
+      for it in response['Items']:
+         all_items.append(it)
+
+
+   print("DELETES FOR ", station_id, len(all_items))
+   return(all_items)
 
 def search_obs(dynamodb, station_id, date, no_cache=0):
    all_items = []
@@ -1443,6 +1678,15 @@ if __name__ == "__main__":
    if cmd == "update_station":
       # station_id and then date please
       update_station(dynamodb, sys.argv[2], json_conf)
+   if cmd == "insert_station":
+      # station_id and then date please
+      insert_station(dynamodb, sys.argv[2] )
+   if cmd == "all_deletes":
+      # station_id and then date please
+      all_deletes(dynamodb, json_conf)
+   if cmd == "delete_events_day":
+      # station_id and then date please
+      delete_events_day(dynamodb, sys.argv[2])
 
    if cmd == "quick_event":
       # station_id and then date please
