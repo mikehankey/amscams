@@ -1998,8 +1998,11 @@ def make_roi_video_mfd(video_file, json_conf):
       mjr['meteor_frame_data'] = sorted(mjr['meteor_frame_data'], key=lambda x: (x[1]), reverse=False)
       for row in mjr['meteor_frame_data']:
          (dt, fn, x, y, w, h, oint, ra, dec, az, el) = row
-         print("ROW:", row)
-         frame = hd_color_frames[fn]
+         print("ROW:", row, len(hd_color_frames))
+         if fn < len( hd_color_frames):
+            frame = hd_color_frames[fn]
+         else:
+            continue
          of = cv2.resize(frame, (1920,1080))
          sfn = str(fn)
          if sfn in ufd:
