@@ -328,7 +328,8 @@ class AS7Setup():
             return(0)
 
 NETPLAN_FILE = "/etc/netplan/00-installer-config.yaml"
-os.system("cp " + NETPLAN_FILE + "~")
+if os.path.isfile("/home/ams/netplan.backup") == 0 and os.path.isfile("/etc/netplan/00-installer-config.yaml") == 0:
+   os.system("cp " + NETPLAN_FILE + " /home/ams/netplan.backup")
 NETPLAN = """
 network:
   version: 2
