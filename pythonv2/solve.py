@@ -1,5 +1,6 @@
 #!/usr/bin/python3
-
+import decimal
+from decimal import Decimal
 import pickle
 from lib.FileIO import load_json_file, save_json_file, cfe
 import matplotlib
@@ -8,7 +9,7 @@ from mpl_toolkits.mplot3d import Axes3D
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 import simplekml
 import sys
-import json
+import simplejson as json
 from lib.REDUCE_VARS import *
 from lib.Video_Tools_cv_pos import *
 from lib.Video_Tools_cv import *
@@ -42,9 +43,21 @@ from lib.MeteorTests import meteor_test_cm_gaps
 import pymap3d as pm
 
 from sympy import Point3D, Line3D, Segment3D, Plane
+from boto3.dynamodb.conditions import Key, Attr
+
+import boto3
 
 
 json_conf = load_json_file("../conf/as6.json")
+
+class DecimalEncoder(json.JSONEncoder):
+    def default(self, o):
+        if isinstance(o, decimal.Decimal):
+            # wanted a simple yield str(o) in the next line,
+            # but that would mean a yield on the line with super(...),
+            # which wouldn't work (see my comment below), so...
+            return (str(o) for o in [o])
+        return super(DecimalEncoder, self).default(o)
 
 def todict(obj, classkey=None):
     if isinstance(obj, dict):
@@ -430,6 +443,284 @@ def report_html(event_id):
    print(cmd)
    print(html_report_file)
 
+def vida_failed_plots(event_id):
+   import redis
+   dynamodb = boto3.resource('dynamodb')
+   rkey = "E:" + event_id
+   r = redis.Redis("allsky-redis.d2eqrc.0001.use1.cache.amazonaws.com", port=6379, decode_responses=True)
+   event_data = r.get(rkey)
+   print("V PLOTS FAILED.")
+   year = event_id[0:4]
+   mon = event_id[4:6]
+   day = event_id[6:8]
+   station_id = json_conf['site']['ams_id']
+   event_dir = "/mnt/archive.allsky.tv/EVENTS/" + year + "/" + mon + "/" + day + "/" + event_id + "/"
+   if cfe(event_dir,1) == 0:
+      os.makedirs(event_dir)
+   local_event_dir = "/mnt/ams2/EVENTS/" + year + "/" + mon + "/" + day + "/" + event_id + "/"
+   if cfe(local_event_dir,1) == 0:
+      os.makedirs(local_event_dir)
+   event_file = event_dir + event_id + "-event.json"
+   kml_file = event_dir + event_id + "-obs.kml"
+   plot_json_out = event_dir + event_id + "-plots.json"
+   print("EF:", event_file)
+   if cfe(plot_json_out) == 1 and cfe(event_file) == 0:
+      print("PLOTS DONE ALREADY FOR THIS EVENT!", plot_json_out )
+      return()
+
+   else:
+      print("NO EVENT FILE!", event_file)
+      #return()
+   if cfe(event_file) == 1: 
+      event_file_data = load_json_file(event_file)
+   if event_data is not None:
+      event_data = json.loads(event_data)
+   print("EVENT DATA:", event_data)
+   dyna_obs_data = {}
+   for i in range(0, len(event_data['stations'])):
+      st_id = event_data['stations'][i]
+      vid = event_data['files'][i]
+      obs_key =st_id + "_" + vid
+      ev_data = get_dyna_obs(dynamodb, st_id, vid)
+      ev_data = json.loads((json.dumps(ev_data, use_decimal=True)))
+      dyna_obs_data[obs_key] = ev_data
+      dyna_obs_data[obs_key]['lat'] = event_data['lats'][i]
+      dyna_obs_data[obs_key]['lon'] = event_data['lons'][i]
+   plots = []
+
+   avg_lat = np.mean(event_data['lats'])
+   avg_lon = np.mean(event_data['lons'])
+
+
+   plot = {}
+   plot['plot_type'] = "html_block"
+   text = """
+                <div class="container" style="color: #cccccc">
+                <h2 style="color: #cccccc">Event Failure Report for """ + event_id + """ </h2>
+                </div>
+   """
+   plot['plot_html'] = text
+   plots.append(plot)
+
+   plot = {}
+   plot['plot_type'] = "html_block"
+   text = """
+                <div class="container" style="color: #cccccc">
+                <h2 style="color: #cccccc">Azimuth Start and End Lines</h2>
+                </div>
+   """
+   plot['plot_html'] = text
+   plots.append(plot)
+   # use iframe for ground track
+
+   track_iframe = "https://archive.allsky.tv/APPS/dist/maps/index.html?mf=/EVENTS/{:s}/{:s}/{:s}/{:s}/{:s}-obs.kml&lat={:s}&lon={:s}&zoom=4".format(year,mon,day,event_id,event_id,str(avg_lat),str(avg_lon))
+
+   plot = {}
+   plot['plot_id'] = "ground_track"
+   plot['plot_name'] = "Ground Track"
+   plot['plot_type'] = "iframe"
+   plot['plot_url'] = track_iframe
+   plots.append(plot)
+
+   for key in dyna_obs_data:
+      plot = {}
+      plot['plot_type'] = "html_block"
+      az1 = 0
+      el1 = 0
+      az2 = 0
+      el2 = 0
+      xs = []
+      ys = []
+      azs = []
+      els = []
+
+      #print(key, len(dyna_obs_data[key]['meteor_frame_data']),len(dyna_obs_data[key]['calib']))
+      #print(dyna_obs_data[key])
+      frame_rows = " NO FRAME DATA"
+      if "meteor_frame_data" in dyna_obs_data[key]:
+         if len(dyna_obs_data[key]['meteor_frame_data']) >= 3:
+            lat = dyna_obs_data[key]['lat']
+            lon = dyna_obs_data[key]['lon']
+            az1 = dyna_obs_data[key]['meteor_frame_data'][0][9]
+            el1 = dyna_obs_data[key]['meteor_frame_data'][0][10]
+            az2 = dyna_obs_data[key]['meteor_frame_data'][-1][9]
+            el2 = dyna_obs_data[key]['meteor_frame_data'][-1][10]
+            az_lat_lon1 = find_point_from_az_dist(lat,lon,az1,300)
+            az_lat_lon2 = find_point_from_az_dist(lat,lon,az2,300)
+            start_az_line = [[lat,lon],[az_lat_lon1[0], az_lat_lon1[1]]]
+            end_az_line = [[lat,lon],[az_lat_lon2[0], az_lat_lon2[1]]]
+            dyna_obs_data[key]['start_az_line'] = start_az_line
+            dyna_obs_data[key]['end_az_line'] = end_az_line
+         print("AZ1/2:", key, az1,az2)
+         frame_rows = '<table class="table table-dark table-striped table-hover td-al-m mb-2 pr-5">'
+         frame_rows += """ <thead><tr>
+               <th>Datetime</th> <th>#</th> <th>x</th> <th>y</th> <th>int</th>
+               <th>ra</th> <th>dec</th> <th>az</th><th>el</th></tr></thead><tbody>
+               """
+         for row in dyna_obs_data[key]['meteor_frame_data']:
+            (dt, frn, x, y, w, h, oint, ra, dec, az, el) = row
+            frame_rows += """
+               <tr> 
+               <td>{:s}</td> <td>{:s}</td> <td>{:s}</td> <td>{:s}</td> <td>{:s}</td> 
+               <td>{:0.1f}</td> <td>{:0.1f}</td> <td>{:0.1f}</td><td>{:0.1f}</td></tr>
+            """.format (dt, str(frn), str(x), str(y), str(oint), ra, dec, az, el)
+            xs.append(x)
+            ys.append(y)
+            azs.append(az)
+            els.append(el)
+         frame_rows += "</tbody></table>"
+         dyna_obs_data[key]['frame_rows'] = frame_rows
+         
+
+      text = """
+                <div class="container" style="color: #cccccc">
+                <h2 style="color: #cccccc">""" + key + """</h2>
+                </div>
+      """ 
+      plot['plot_html'] = text
+      plots.append(plot)
+
+      # add meteor image / canvas
+      plot = {}
+      plot['plot_name'] = "Meteor image " + obs_key
+      plot['plot_type'] = "meteor_image"
+      plot['plot_vid'] = dyna_obs_data[key]['sd_video_file']
+      plot['media'] = get_meteor_media(dyna_obs_data[key]['station_id'], dyna_obs_data[key]['sd_video_file'])
+      plot['station_id'] = dyna_obs_data[key]['station_id']
+      plot['plot_xs'] = xs
+      plot['plot_ys'] = ys
+      if "SD.jpg" in plot['media']:
+         plots.append(plot)
+      else:
+         print("NO SD IMG FOR OBS!")
+
+      # NOW and Frame table 
+      plot = {}
+      plot['plot_type'] = "html_block"
+      if "frame_rows" in dyna_obs_data[key]:
+         text = """
+                <div class="container" style="color: #cccccc">
+                <h2 style="color: #cccccc">Meteor Frame Data</h2> """ + dyna_obs_data[key]['frame_rows'] + """
+                </div>
+         """ 
+      else:
+         text = """
+                <div class="container" style="color: #cccccc">
+                <h2 style="color: #cccccc">Meteor Frame Data is missing!</h2> </div>""" 
+      print(text) 
+      plot['plot_html'] = text
+      plots.append(plot)
+
+      # NOW do the xy position
+      plot = {}
+      plot['plot_id'] = "Meteor_Position" + "_" + obs_key
+      plot['plot_name'] = "Meteor X,Y Position, station " + obs_key
+      plot['plot_type'] = "xy_scatter"
+      plot['plot_scaling'] = 0
+      plot['opts'] = "meteor_pos"
+      plot['plot_y_axis_reverse'] = 0
+      plot['x_axis_position'] = "bottom"
+      plot['y_axis_position'] = "left"
+      plot['y_label'] = "Y"
+      plot['x_label'] = "X"
+      plot['y1_reverse'] = 1
+      plot['y1_axis_scaleanchor'] = "x"
+      plot['y1_axis_scaleratio'] = 1
+      plot['x1_vals'] = xs
+      plot['y1_vals'] = ys 
+      plots.append(plot)
+
+
+   fplots = {}
+   fplots['plots'] = plots
+   print(fplots['plots'])
+   save_json_file(plot_json_out, fplots)
+   print("Saved:", plot_json_out)
+
+   # make kml for failed obs
+   points = {}
+   lines = {}
+   polys = {}
+   for obs_key in dyna_obs_data:
+      el = obs_key.split("_")
+      st_id = el[0]
+      print(obs_key, dyna_obs_data[obs_key]['lat'])
+      print(obs_key, dyna_obs_data[obs_key]['lon'])
+      #print("FAZ:", obs_key, dyna_obs_data[obs_key]['start_az_line'])
+      #print("FAZ2:", obs_key, dyna_obs_data[obs_key]['end_az_line'])
+      if "start_az_line" in dyna_obs_data[obs_key]:
+         line_key = obs_key + "start"
+         lines[line_key] = {}
+         lines[line_key]['start_lat'] = dyna_obs_data[obs_key]['start_az_line'][0][0]
+         lines[line_key]['start_lon'] = dyna_obs_data[obs_key]['start_az_line'][0][1]
+         lines[line_key]['start_alt'] = 100
+         lines[line_key]['end_lat'] = dyna_obs_data[obs_key]['start_az_line'][1][0]
+         lines[line_key]['end_lon'] = dyna_obs_data[obs_key]['start_az_line'][1][1]
+         lines[line_key]['end_alt'] = 100000 
+         lines[line_key]['desc'] = "Start " + st_id 
+
+         line_key = obs_key + "end"
+         lines[line_key] = {}
+         lines[line_key]['start_lat'] = dyna_obs_data[obs_key]['start_az_line'][0][0]
+         lines[line_key]['start_lon'] = dyna_obs_data[obs_key]['start_az_line'][0][1]
+         lines[line_key]['start_alt'] = 100
+         lines[line_key]['end_lat'] = dyna_obs_data[obs_key]['start_az_line'][1][0]
+         lines[line_key]['end_lon'] = dyna_obs_data[obs_key]['start_az_line'][1][1]
+         lines[line_key]['end_alt'] = 100000 
+         lines[line_key]['desc'] = "End " + st_id 
+
+
+      points[obs_key] = {}
+      points[obs_key]['lat'] = dyna_obs_data[obs_key]['lat']
+      points[obs_key]['lon'] = dyna_obs_data[obs_key]['lon']
+      points[obs_key]['alt'] = 500
+      points[obs_key]['desc'] = st_id 
+
+   print("LINES:", lines)
+   make_easykml(kml_file, points, lines, polys)
+
+
+def get_meteor_media(station_id, sd_video_file):
+   year = sd_video_file[0:4]
+   date = sd_video_file[0:10]
+   cloud_dir = "/mnt/archive.allsky.tv/" + station_id + "/METEORS/" + year + "/" + date + "/" 
+   root_file = cloud_dir + station_id + "_" + sd_video_file.replace(".mp4", "")
+   media_files = glob.glob(root_file + "*")
+   media = {}
+   for med in media_files:
+      if "-" in med:
+         el = med.split("-")
+         ext1 = el[-1]
+         ext2 = el[-2]
+         media[ext1] = med.replace("/mnt/", "https://")
+   return(media)
+def get_dyna_obs(dynamodb, station_id, sd_video_file):
+   if dynamodb is None:
+      dynamodb = boto3.resource('dynamodb')
+   table = dynamodb.Table('meteor_obs')
+   response = table.query(
+      KeyConditionExpression='station_id = :station_id AND sd_video_file = :sd_video_file',
+      ExpressionAttributeValues={
+         ':station_id': station_id,
+         ':sd_video_file': sd_video_file,
+      }
+   )
+   if len(response['Items']) > 0:
+      return(response['Items'][0])
+   else:
+      return(None)
+
+
+
+def get_file_info(file):
+   cur_time = int(time.time())
+   st = os.stat(file)
+   size = st.st_size
+   mtime = st.st_mtime
+   tdiff = cur_time - mtime
+   tdiff = tdiff / 60
+   return(size, tdiff)
+
 def vida_plots(event_id):
    year = event_id[0:4]
    mon = event_id[4:6]
@@ -442,7 +733,23 @@ def vida_plots(event_id):
    event_file = event_dir + event_id + "-event.json" 
    plot_json_out = event_dir + event_id + "-plots.json" 
    print("EF:", event_file)
+   if cfe(event_file) == 1:
+      if cfe(plot_json_out) == 1:
+         ev_size, ev_age = get_file_info(event_file)
+         plt_size, plt_age = get_file_info(plot_json_out)
+         if plt_age < ev_age:
+            print("PLOTS DONE ALREADY FOR THIS EVENT!", plt_age, ev_age)
+            return()
+
+   else:
+      print("NO EVENT FILE!", event_file)
+      return()
+
    event_data = load_json_file(event_file)
+
+   # check if this has been done already. 
+
+
 
    event_obs = {}
    for station_id in event_data['obs']:
@@ -504,6 +811,8 @@ def vida_plots(event_id):
 
    #build arrays for res error plots (per-station res, all station res, all station ang res)
 
+
+
    plot_data = {}
    basic_colors = ['red', 'blue', 'green', 'orange', 'white']
    basic_shapes = ['square-dot', 'circle-dot', 'triangle-up-dot']
@@ -512,7 +821,8 @@ def vida_plots(event_id):
    #vida_data = load_json_file(vida_report)
    # build orbit plot / iframe
    qs = vida_data['orbit']
-   orbit_iframe = "https://orbit.allskycams.com/index_emb.php?name={:s}&&epoch={:s}&a={:s}&M={:s}&e={:s}&I={:s}&Peri={:s}&Node={:s}&P={:s}&q={:s}&T={:s}".format( str(event_id), str(qs['jd_ref']), str(qs['a']), str(qs['mean_anomaly']), str(qs['e']), str(qs['i']), str(qs['peri']), str(qs['node']), str(qs['T']), str(qs['q']), str(qs['jd_ref']))
+   print(qs)
+   orbit_iframe = "https://orbit.allskycams.com/index_emb.php?name={:s}&&epoch={:s}&a={:s}&M={:s}&e={:s}&I={:s}&Peri={:s}&Node={:s}&P={:s}&q={:s}&T={:s}".format( str(event_id), str(qs['jd_ref']), str(qs['a']), str(math.degrees(qs['mean_anomaly'])), str(qs['e']), str(math.degrees(qs['i'])), str(math.degrees(qs['peri'])), str(math.degrees(qs['node'])), str(qs['T']), str(qs['q']), str(qs['jd_ref']))
    orbit_iframe = orbit_iframe.replace(" ", "")
 
    observer_data = {}
@@ -581,6 +891,28 @@ def vida_plots(event_id):
          plot_data[obs_key]['ra_dec'].append((np.degrees(pd['model_ra'][i]),np.degrees(pd['model_dec'][i])))
 
    plots = []
+
+   plot = {}
+   plot['plot_type'] = "html_block"
+   text = """ 
+                <div class="container" style="color: #cccccc">
+                <h1 style="color: #cccccc">AllSky7 Event - """ + event_id + """</h1>
+                </div>
+   """
+   plot['plot_html'] = text 
+   plots.append(plot)
+
+   plot = {}
+   plot['plot_type'] = "html_block"
+   text = """
+                <div class="container" style="color: #cccccc">
+                <h2 style="color: #cccccc">Orbit </h2>
+                </div>
+   """
+   plot['plot_html'] = text
+   plots.append(plot)
+
+
    plot = {}
    plot['plot_id'] = "iorbit"
    plot['plot_name'] = "Orbit"
@@ -612,13 +944,33 @@ def vida_plots(event_id):
 
       plots.append(plot)
    # use iframe for ground track
+   track_iframe = "https://archive.allsky.tv/APPS/dist/maps/index.html?mf=/EVENTS/{:s}/{:s}/{:s}/{:s}/{:s}-map.kml&lat={:s}&lon={:s}&zoom=4".format(year,mon,day,event_id,event_id,str(np.degrees(vida_data['rbeg_lat'])),str(np.degrees(vida_data['rbeg_lon'])))
+   plot = {}
+   plot['plot_type'] = "html_block"
+   text = """
+                <div class="container" style="color: #cccccc">
+                <h2 style="color: #cccccc">Ground Track</h2>
+                </div>
+   """
+   plot['plot_html'] = text
+   plots.append(plot)
+
    plot = {}
    plot['plot_id'] = "ground_track"
    plot['plot_name'] = "Ground Track"
    plot['plot_type'] = "iframe"
    plot['plot_url'] = track_iframe
    plots.append(plot)
-   
+
+   plot = {}
+   plot['plot_type'] = "html_block"
+   text = """
+                <div class="container" style="color: #cccccc">
+                <h2 style="color: #cccccc">Event Plots</h2>
+                </div>
+   """
+   plot['plot_html'] = text
+   plots.append(plot)
 
    # make 3D observer and ground track map
    plot = {}
@@ -857,46 +1209,44 @@ def vida_plots(event_id):
 
 
    plots.append(plot)
-   
+  
+   plot = {}
+   plot['plot_type'] = "html_block"
+   text = """
+                <div class="container" style="color: #cccccc">
+                <h2 style="color: #cccccc">Observations</h2>
+                </div>
+   """
+   plot['plot_html'] = text
+   plots.append(plot)
+
    # make the spatial res graph for each station
    for obs_key in plot_data:
-      # first do the res
-      plot = {}
-      plot['plot_id'] = "res_station" + "_" + obs_key 
-      #plot['plot_type'] = "xy_scatter"
-      #plot['plot_subtype'] = "station_res_err"
-      plot['plot_name'] = "Residuals, station " + obs_key 
-      plot['plot_scaling'] = 0
-      plot['plot_y_axis_reverse'] = 0
-      plot['x_axis_position'] = "bottom"
-      plot['y_axis_position'] = "left"
-      plot['y_label'] = "Residuals (m)"
-      plot['x_label'] = "Time (s)"
-      avg_h_res = find_avg_abs_val(plot_data[obs_key]['hres'])
-      avg_v_res = find_avg_abs_val(plot_data[obs_key]['vres'])
-      plot['x1_data_label'] = obs_key + " Horizontal, RMSD = " + str(avg_h_res) + " m" 
-      plot['x2_data_label'] = obs_key + " Vertical, RMSD = " + str(avg_v_res) + " m"
-      #plot['x1_symbol'] = ""
-      #plot['x2_symbol'] = ""
-      #plot['x1_symbol_size'] = "3"
-      #plot['x2_symbol_size'] = "3"
-      #plot['x1_color'] = basic_colors[0] 
-      #plot['x2_color'] = basic_colors[1] 
-      plot['x1_vals'] = []
-      plot['y1_vals'] = plot_data[obs_key]['hres']
-      plot['x2_vals'] = []
-      plot['y2_vals'] = plot_data[obs_key]['vres']
-      if bc >= len(basic_colors):
-         bc = 0
-      color_idx = bc
       # figure out y vals (time)
-      for i in range(0, len(plot['y1_vals'])):
-         plot['x1_vals'].append(i/25)
-         plot['x2_vals'].append(i/25)
-
-      #plot['x1_symbol'] = basic_shapes[0]
-      #plot['x2_symbol'] = basic_shapes[1]
+      event_obs_data = event_obs[obs_key]
+ 
+      plot = {}
+      plot['plot_type'] = "html_block"
+      text = """
+                <div class="container" style="color: #cccccc">
+                <h3 style="color: #cccccc">""" + event_obs_data['station_id'] + """</h3>
+                </div>
+      """
+      plot['plot_html'] = text
       plots.append(plot)
+
+      # add meteor image / canvas
+      plot = {}
+      plot['plot_name'] = "Meteor image " + obs_key
+      plot['plot_type'] = "meteor_image"
+      plot['plot_vid'] = event_obs_data['sd_video_file']
+      plot['station_id'] = event_obs_data['station_id']
+      plot['plot_xs'] = event_obs_data['xs']
+      plot['plot_ys'] = event_obs_data['ys']
+      plots.append(plot)
+
+
+
       # NOW do the xy position
       plot = {}
       plot['plot_id'] = "Meteor_Position" + "_" + obs_key
@@ -924,7 +1274,6 @@ def vida_plots(event_id):
       #plot['x2_symbol_size'] = "3"
       #plot['x1_color'] = basic_colors[0]
       #plot['x2_color'] = basic_colors[1]
-      event_obs_data = event_obs[obs_key]
       plot['x1_vals'] = event_obs_data['xs']
       plot['y1_vals'] = event_obs_data['ys']
       #plot['x1_vals'] = plot_data[obs_key]['xs']
@@ -935,16 +1284,51 @@ def vida_plots(event_id):
          bc = 0
       color_idx = bc
       # figure out y vals (time)
-      for i in range(0, len(plot['y1_vals'])):
-         #plot['x1_vals'].append(i/25)
-         #plot['x2_vals'].append(i/25)
-         plot['x1_vals'].append(i)
-         #plot['x2_vals'].append(i)
 
       #plot['x1_symbol'] = basic_shapes[0]
       #plot['x2_symbol'] = basic_shapes[1]
       plots.append(plot)
-      print(plot) 
+      print("EVOBS", event_obs_data) 
+      # first do the res
+      plot = {}
+      plot['plot_id'] = "res_station" + "_" + obs_key
+      #plot['plot_type'] = "xy_scatter"
+      #plot['plot_subtype'] = "station_res_err"
+      plot['plot_name'] = "Residuals, station " + obs_key
+      plot['plot_scaling'] = 0
+      plot['plot_y_axis_reverse'] = 0
+      plot['x_axis_position'] = "bottom"
+      plot['y_axis_position'] = "left"
+      plot['y_label'] = "Residuals (m)"
+      plot['x_label'] = "Time (s)"
+      avg_h_res = find_avg_abs_val(plot_data[obs_key]['hres'])
+      avg_v_res = find_avg_abs_val(plot_data[obs_key]['vres'])
+      plot['x1_data_label'] = obs_key + " Horizontal, RMSD = " + str(avg_h_res) + " m"
+      plot['x2_data_label'] = obs_key + " Vertical, RMSD = " + str(avg_v_res) + " m"
+      #plot['x1_symbol'] = ""
+      #plot['x2_symbol'] = ""
+      #plot['x1_symbol_size'] = "3"
+      #plot['x2_symbol_size'] = "3"
+      #plot['x1_color'] = basic_colors[0]
+      #plot['x2_color'] = basic_colors[1]
+      plot['x1_vals'] = []
+      plot['y1_vals'] = plot_data[obs_key]['hres']
+      plot['x2_vals'] = []
+      plot['y2_vals'] = plot_data[obs_key]['vres']
+      if bc >= len(basic_colors):
+         bc = 0
+      color_idx = bc
+
+      for i in range(0, len(plot['y1_vals'])):
+         plot['x1_vals'].append(i/25)
+         plot['x2_vals'].append(i/25)
+
+      plot['x1_symbol'] = basic_shapes[0]
+      plot['x2_symbol'] = basic_shapes[1]
+
+      plots.append(plot)
+
+
    bs = bs + 1
    fplots = {}
    fplots['plots'] = plots
@@ -2787,6 +3171,28 @@ def sync_ms_previews(year):
                print(cmd)
                os.system(cmd)
 
+def find_point_from_az_dist(lat,lon,az,dist):
+   import math
+
+   R = 6378.1 #Radius of the Earth
+   brng = math.radians(az) #Bearing is 90 degrees converted to radians.
+   d = dist #Distance in km
+
+
+   lat1 = math.radians(lat) #Current lat point converted to radians
+   lon1 = math.radians(lon) #Current long point converted to radians
+
+   lat2 = math.asin( math.sin(lat1)*math.cos(d/R) +
+     math.cos(lat1)*math.sin(d/R)*math.cos(brng))
+
+   lon2 = lon1 + math.atan2(math.sin(brng)*math.sin(d/R)*math.cos(lat1),
+             math.cos(d/R)-math.sin(lat1)*math.sin(lat2))
+
+   lat2 = math.degrees(lat2)
+   lon2 = math.degrees(lon2)
+
+   return(lat2, lon2)
+
 
 if sys.argv[1] == "file":
    find_multi_station_matches(sys.argv[2])
@@ -2810,6 +3216,8 @@ if sys.argv[1] == "smp":
    sync_ms_previews(sys.argv[2])
 if sys.argv[1] == "run_detects":
    run_detects(sys.argv[2])
+if sys.argv[1] == "vida_failed_plots":
+   vida_failed_plots(sys.argv[2])
 if sys.argv[1] == "vida_plots":
    vida_plots(sys.argv[2])
 if sys.argv[1] == "report_html":
