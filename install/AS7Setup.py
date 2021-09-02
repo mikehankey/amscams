@@ -1,4 +1,5 @@
 #!/usr/bin/python3
+import requests
 import json
 from pathlib import Path
 import os
@@ -18,16 +19,32 @@ class AS7Setup():
 
    def __init__(self):
       username = getpass.getuser()
+      self.setup_file = "/home/ams/amscams/conf/setup.json"
+      if self.cfe(self.setup_file) == 1:
+         self.user_data = self.load_json_file(self.setup_file)
+      else:
+         self.user_data = {}
       print(username)
+      self.API_URL = "https://kyvegys798.execute-api.us-east-1.amazonaws.com/api/allskyapi"
       if username != "root":
          print("""THIS SCRIPT MUST BE RUN AS ROOT! use "sudo"
          sudo python3 AS7Setup.py
          """)
+         os.system("sudo python3 AS7Setup.py")
+
          exit()
       if self.cfe("setup.json") == 0:
          self.setup_data = {}
       else:
          self.setup_data = self.load_json_file("setup.json")
+
+   def auth_station(self):
+      url = self.API_URL + "?cmd=setup_device&station_id=" + self.station_id + "&pin_code=" + self.pin_code 
+      response = requests.get(url)
+      content = response.content.decode()
+      content = content.replace("\\", "")
+      content = json.loads(content)
+      return(content)
 
    def UI(self):
       menu = ConsoleMenu("ALLSKY OBSERVING SOFTWARE - INSTALLER AND SETUP ", "SELECT OPTION")
@@ -35,12 +52,28 @@ class AS7Setup():
       network_int = FunctionItem("SETUP NETWORK INTERFACES", self.network_install)
       data_disk_setup = FunctionItem("FORMAT/SETUP DATA DISK", self.data_disk_install)
       backup_disk_setup = FunctionItem("SETUP DATA-BACKUP DISK", self.backup_disk_install)
+      allsky_account_setup = FunctionItem("ALLSKY NETWORK ACCOUNT SIGNUP", self.allsky_account_signup)
       register_setup = FunctionItem("REGISTER STATION", self.register_station)
+      menu.append_item(allsky_account_setup)
       menu.append_item(register_setup)
       menu.append_item(check_install)
       menu.append_item(network_int)
       menu.append_item(data_disk_setup)
       menu.show()      
+
+   def save_setup(self):
+      for item in self.user_data:
+         print("SAVE:", item)
+      self.save_json_file(self.setup_file, self.user_data)
+      input("Saved setup config. Press [ENTER] to continue.")
+
+   def allsky_account_signup(self):
+      print("ALLSKY NETWORK ACCOUNT SIGNUP")
+      print("To register your station(s) you must first have an ALLSKY NETWORK ACCOUNT. ")
+      print("Answer these questions to complete the process.")
+      Screen().input("Press [ENTER] to continue.")
+
+      new_allsky = self.setup_allsky_account()
 
    def data_disk_install(self):
       Screen().input("DATA DISK MANAGER.")
@@ -50,11 +83,74 @@ class AS7Setup():
 
    def register_station(self):
       print("REGISTER/SETUP STATION")
-      ams_id = Screen().input("ENTER THE AMS ID ASSIGNED TO YOUR STATION.")
-      pin_code = Screen().input("ENTER THE PIN CODE GIVEN TO YOU WITH YOUR AMS ID.")
-      print("AMS ID:", ams_id)
-      print("PIN CODE:", pin_code)
-      input("Press enter to continue")
+      self.station_id = Screen().input("ENTER THE AMS ID ASSIGNED TO YOUR STATION.")
+      self.pin_code = Screen().input("ENTER THE PIN CODE GIVEN TO YOU WITH YOUR AMS ID.")
+      print("AMS ID:", self.station_id)
+      print("PIN CODE:", self.pin_code)
+      resp = self.auth_station()
+      if (resp['msg']) != "Station PIN Matched":
+         input("Register Station Failed. Please try again or contact support.")
+         return()
+      else:
+         if "username" not in resp['station_data']:
+            new_allsky = 1
+         elif resp['station_data']['username'] == "unclaimed":
+            new_allsky = 1
+         else:
+            new_allsky = 0
+         if new_allsky == 1:
+            new_allsky = self.setup_allsky_account()
+ 
+         print("Register Message:", resp['msg'])
+         print("Current Station Data:" )
+         for key in resp['station_data']:
+            if key != 'cameras' and key != 'monitor' and key != 'registration':         
+               print(key, resp['station_data'][key])
+         print("NEW ALLSKY SETUP? ", new_allsky, resp['station_data']['username']) 
+         input("Review current station info. If it is incomplete or incorrect update it in the web admin config area.")
+
+   def setup_allsky_account(self):
+      print("ALLSKY NETWORK ACCOUNT SETUP") 
+      if len(self.user_data) > 0:
+         print("DATA FROM PREVIOUS SESSION IS SAVED.")
+         for key in self.user_data:
+            print(key, self.user_data[key])
+         if "submit_status" not in self.user_data:
+            print("This data has not been submitted yet.")
+            choice = input("Press [1] to edit the data or [2] to submit it for registration.")
+      if choice == "1":      
+         print("Enter a username to identify yourself on the network and use as a login for all stations and restricted areas of the network. For example: jsmith ") 
+         self.user_data['username'] = input("ALLSKY NETWORK USERNAME:")
+         print("Enter a strong password to use for your account.") 
+         self.user_data['password'] = input("ALLSKY NETWORK PASSWORD:")
+         self.user_data['email'] = input("YOUR EMAIL")
+         self.user_data['phone_number'] = input("YOUR CELL PHONE INCLUDING COUNTRY CODE STARTING WITH +")
+         self.user_data['operator_name'] = input("YOUR FULL NAME (FOR PHOTO CREDITS)")
+         self.save_setup()
+      else:
+         print("Submitting account setup data to ALLSKY NETWORK CLOUD.")
+         self.submit_allsky_account_signup()
+         input("Press [ENTER] to continue")
+
+   def submit_allsky_account_signup(self):
+      api_url = "https://www.allsky.tv/app/API/" + self.user_data['username'] + "/submit_signup"
+      if "station_id" not in self.user_data:
+         self.user_data['station_id'] = ""
+      method = "POST"
+      data = {
+         'username': self.user_data['username'],
+         'password': self.user_data['password'],
+         'name':  self.user_data['operator_name'],
+         'station_id': self.user_data['station_id'],
+         'email': self.user_data['email'],
+         'phone_number': self.user_data['phone_number'],
+         'terms': "0"
+      }
+      print("SUB MIT DATA:", data)
+      headers = {'Content-type': 'application/json', 'Accept': 'text/plain'}
+      response = requests.post(api_url, data=json.dumps(data) , headers=headers)
+      print(response.content.decode())
+      input()
 
    def network_install(self):
       interfaces = os.listdir("/sys/class/net/") 
@@ -236,6 +332,7 @@ os.system("cp " + NETPLAN_FILE + "~")
 NETPLAN = """
 network:
   version: 2
+  renderer: NetworkManager
   ethernets:
      INT_NET:
         dhcp4: true

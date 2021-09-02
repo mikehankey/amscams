@@ -4,7 +4,11 @@ import tkinter.messagebox as tkMessageBox
 from tkinter import ttk
 import os
 
-#window = Tk()
+window = Tk()
+window.geometry("10x10")
+
+os.system("cd /home/ams/amscams && git pull")
+
 
 if os.path.isfile("/home/ams/amscams/install_complete.txt") == 0:
    
