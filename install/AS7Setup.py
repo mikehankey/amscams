@@ -30,13 +30,19 @@ class AS7Setup():
          print("""THIS SCRIPT MUST BE RUN AS ROOT! use "sudo"
          sudo python3 AS7Setup.py
          """)
-         os.system("sudo python3 AS7Setup.py")
+         os.system("cd /home/ams/amscams/install && sudo python3 AS7Setup.py")
 
          exit()
-      if self.cfe("setup.json") == 0:
+      print("RUN AS ROOT")
+      input()
+      if self.cfe(self.setup_file) == 0:
          self.setup_data = {}
       else:
-         self.setup_data = self.load_json_file("setup.json")
+         try:
+            input("Trying" + self.setup_file)
+            self.setup_data = self.load_json_file(self.setup_file)
+         except:
+            input("Failed to load" + self.setup_file)
 
    def auth_station(self):
       url = self.API_URL + "?cmd=setup_device&station_id=" + self.station_id + "&pin_code=" + self.pin_code 
