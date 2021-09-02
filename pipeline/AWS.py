@@ -27,6 +27,8 @@ def push_obs_day(day):
          os.system(cmd)
 
 
+def rec_aws_all(): 
+   SAWS.rec_aws_all()
 
 def index_local_meteors(): 
    SAWS.get_mdirs()
@@ -121,4 +123,6 @@ else:
       sync_day_data_only(sys.argv[2]) 
    if sys.argv[1] == "push_day":
       push_obs_day(sys.argv[2]) 
+   if sys.argv[1] == "rec_aws_all":
+      rec_aws_all() 
 

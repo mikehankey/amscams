@@ -576,7 +576,10 @@ def meteor_index(json_conf, day = None, extra_cmd = ""):
                trim_num = get_trim_num(meteor)
                print("TRIM NUM:", trim_num)
                extra_start_file_sec = int(trim_num) / 25
-               event_start_fn = obj['history'][0][0]
+               if "history" in obj:
+                  event_start_fn = obj['history'][0][0]
+               else:
+                  event_start_fn = 0
                print("EVENT START FN:", event_start_fn, meteor)
                (file_date, cam_id, f_date_str,fy,fm,fd, fh, fmin, fs) = convert_filename_to_date_cam(meteor)
                extra_sec = (int(event_start_fn) / 25) + extra_start_file_sec
@@ -3143,11 +3146,27 @@ def meteor_cal(date,json_conf, show=0):
       md = load_json_file(meteor_file)
       np_cal_params = None
       no_poly_cat_stars = {}
+
+      if 'cal_params' in md:
+         if md['cal_params'] == None:
+            print("NO cal. lets try to add it.")
+            poss = get_active_cal_file(meteor_file)
+            print(poss)
+            cal_params_file = poss[0][0]
+            cal_params = load_json_file(cal_params_file)
+            md['cal_params'] = cal_params
+            #except:
+            #   print("Couldn't find a cal file for this camera. Skip for now.")
+            #   continue
+
       if 'cal_params' in md:
          np_cal_params = md['cal_params']
-         total_res_px = md['cal_params']['total_res_px']
+         if md['cal_params'] != None:
+            total_res_px = md['cal_params']['total_res_px']
+         else:
+            total_res_px = 999
          if total_res_px > 2 or len(md['cal_params']['cat_image_stars']) < 15:
-            print("Skip this file!")
+            print("Skip this file!", total_res_px)
             continue
          np_cal_params['x_poly'] = np.zeros(shape=(15,), dtype=np.float64)
          np_cal_params['y_poly'] = np.zeros(shape=(15,), dtype=np.float64)

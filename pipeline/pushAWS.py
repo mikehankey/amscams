@@ -28,7 +28,7 @@ def get_meteor_media_sync_status(station_id, sd_vid):
    if True:
       wild = station_id + "_" + sd_vid.replace(".mp4", "")
       cfs = glob.glob(cloud_dir + wild + "*")
-      print("GLOB:", cloud_dir + wild + "*")
+      print("PUSHGLOB:", cloud_dir + wild + "*")
       for cf in cfs:
          el = cf.split("-")
          ext = el[-1]
@@ -125,7 +125,10 @@ def make_obs_data(station_id, date, meteor_file):
          reprobe = 1
 
       if reprobe == 1:
-         sd_vid = mj['sd_video_file']
+         if "sd_video_file" in mj:
+            sd_vid = mj['sd_video_file']
+         else: 
+            sd_vid = None
          if "hd_trim" in mj:
             hd_vid = mj['hd_trim']
          else:
@@ -136,8 +139,9 @@ def make_obs_data(station_id, date, meteor_file):
             ffp['hd'] = ffprobe(hd_vid)
          else:
             hd_vid = None
-         if cfe(sd_vid) == 1:
-            ffp['sd'] = ffprobe(sd_vid)
+         if sd_vid is not None:
+            if cfe(sd_vid) == 1:
+               ffp['sd'] = ffprobe(sd_vid)
          mj['ffp'] = ffp
          save_json_file(meteor_file, mj)
 

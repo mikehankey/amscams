@@ -15,6 +15,7 @@ from lib.FFFuncs import ffprobe as ffprobe4, imgs_to_vid
 from lib.PipeAutoCal import fn_dir, get_cal_files, get_image_stars, get_catalog_stars, pair_stars, update_center_radec, cat_star_report, minimize_fov, XYtoRADec, poly_fit_check
 from lib.PipeVideo import ffmpeg_splice, find_hd_file, load_frames_fast, find_crop_size, ffprobe
 from lib.PipeUtil import load_json_file, save_json_file, cfe, get_masks, convert_filename_to_date_cam, buffered_start_end, get_masks, compute_intensity , bound_cnt, day_or_night
+import json
 from lib.DEFAULTS import *
 from lib.PipeMeteorTests import big_cnt_test, calc_line_segments, calc_dist, unq_points, analyze_intensity, calc_obj_dist, meteor_direction, meteor_direction_test, check_pt_in_mask, filter_bad_objects, obj_cm, meteor_dir_test, ang_dist_vel, gap_test, best_fit_slope_and_intercept
 from lib.PipeImage import stack_frames
@@ -563,6 +564,34 @@ def make_meteor_index_all(json_conf):
    save_json_file(amf, all_meteors)
    print("Saved:", amf)
 
+def fix_corrupt_meteor_json(json_file):
+   fp = open(json_file, "r")
+   json_data = ""
+   on = 1
+   lines = []
+   for line in fp:
+      if "cp" in line:
+         on = 0
+      if on == 1:
+         lines.append(line)
+   try:
+      print("LAST LINE:", lines[-1])
+      lines[-1] = lines[-1].replace(",", "}")
+      print("LAST LINE:", lines[-1])
+      temp = ""
+      for line in lines:
+         temp += line 
+      #temp += "]}}"
+      print("TEMP:", temp, "TEMP")
+      mj = json.loads(temp)
+      if "cp" in mj:
+         del mj['cp']
+   except:
+      print("COULD NOT FIX THE JSON!" )
+      print("COULD NOT FIX", json_file)
+      mj = None
+   return(mj)
+
 def make_meteor_index_day(day, json_conf):
 
    if "redis" in json_conf:
@@ -588,6 +617,9 @@ def make_meteor_index_day(day, json_conf):
    for mf in files:
       if "reduced" not in mf and "stars" not in mf and "man" not in mf and "star" not in mf and "import" not in mf and "archive" not in mf and "cal" not in mf and "frame" not in mf and "event" not in mf:
          meteors.append(mf)
+      else:
+         print("SKIP:", mf)
+
 
    for meteor in meteors:
       mi[meteor] = {}
@@ -604,8 +636,14 @@ def make_meteor_index_day(day, json_conf):
       try:
          mj = load_json_file(meteor)
       except:
-         print("CORRUPT FILE.", mf)
-         continue
+         print("CORRUPT FILE.", meteor)
+         mj = fix_corrupt_meteor_json(meteor)
+         if mj is None:
+            print("CORRUPT FILE CANT BE FIXED.", meteor)
+            continue
+         else:
+            print("CORRUPT FILE WAS FIXED.", meteor)
+            save_json_file(meteor, mj)
       meteor_red = meteor.replace(".json", "-reduced.json")
       mfn,mdd = fn_dir(meteor)
       lcfile = mdd + "cloud_files/" + amsid + "_" + mfn
@@ -711,7 +749,11 @@ def confirm_meteors(date ):
          meteors.append(mf)
    for meteor in meteors:
       meteor_vid = meteor.replace(".json", ".mp4")
-      mj = load_json_file(meteor)
+      try:
+         mj = load_json_file(meteor)
+      except:
+         print("CORRUPT MJ:", mj)
+         continue
       red = meteor.replace(".json", "-reduced.json")
       if "rejected" in mj or "best_meteor" in mj and cfe(red) != 0:
          print("ALREADY DONE.")
@@ -807,7 +849,11 @@ def reject_mask_detects(date, json_conf):
       if "reduced" not in mf and "stars" not in mf and "man" not in mf and "star" not in mf and "import" not in mf and "archive" not in mf and "frame" not in mf:
          if cfe(mf) == 0:
             continue
-         mj = load_json_file(mf) 
+         try:
+            mj = load_json_file(mf) 
+         except:
+            print("CORRUPT MJ", mf)
+            continue
          if "multi_station_event" in mj:
             print("SKIP MULTI-STATION CONFIRMED.")
             continue
@@ -843,7 +889,11 @@ def reject_mask_detects(date, json_conf):
          objects = {}
          fn = 0
          (f_datetime, cam, f_date_str,fy,fmin,fd, fh, fm, fs) = convert_filename_to_date_cam(mf)
-         mask = sd_mask_imgs[cam]
+         if cam in sd_mask_imgs:
+            mask = sd_mask_imgs[cam]
+         else:
+            mask = np.zeros(subframes[0].shape[0],subframes[0].shape[1],dtype=np.uint8)
+
          if mask.shape[0] != subframes[0].shape[0]:
             mask = cv2.resize(mask, (subframes[0].shape[1], subframes[0].shape[0]))
          if len(mask.shape) == 3:
@@ -1942,12 +1992,17 @@ def make_roi_video_mfd(video_file, json_conf):
       mj['user_mods'] = {}
    used = {}
    vh,vw = hd_color_frames[0].shape[:2]
+   if mjr is None:
+      mjr = {}
    if "meteor_frame_data" in mjr:
       mjr['meteor_frame_data'] = sorted(mjr['meteor_frame_data'], key=lambda x: (x[1]), reverse=False)
       for row in mjr['meteor_frame_data']:
          (dt, fn, x, y, w, h, oint, ra, dec, az, el) = row
-         print("ROW:", row)
-         frame = hd_color_frames[fn]
+         print("ROW:", row, len(hd_color_frames))
+         if fn < len( hd_color_frames):
+            frame = hd_color_frames[fn]
+         else:
+            continue
          of = cv2.resize(frame, (1920,1080))
          sfn = str(fn)
          if sfn in ufd:
@@ -1976,12 +2031,15 @@ def make_roi_video_mfd(video_file, json_conf):
                    #rx2 = rx1 + xsz
                    print("ROIP2:", px1, px2, ry1, ry2, rx1,rx2)
                    print("ROIP3:", xsz,ysz)
-                   roi_p[0:50,px1:px2] = of[ry1:ry2,rx1:rx2]
+                   try:
+                      roi_p[0:50,px1:px2] = of[ry1:ry2,rx1:rx2]
 
-                   #cv2.imshow("ROI", roi_p)
-                   #cv2.waitKey(0)
-                   roi_img = roi_p
-                   use_roi_p = 1
+                      roi_img = roi_p
+                      use_roi_p = 1
+                   except:
+                      roi_img = None 
+                      use_roi_p = 0
+                      roi_size = 0
 
             if ry2 - ry1 != roi_size * 2:
                print("PROBLEM AT THE Y EDGE! height is only", ry2-ry1 )
@@ -2317,12 +2375,14 @@ def fireball(video_file, json_conf, nomask=0):
       if gap_test_res is not None and gap_test_res == 0:
          jdata['gap_test_info'] = gap_test_info
 
-      if "x_poly" in jdata['cp']:
-         if type(jdata['cp']['x_poly']) is not list:
-            jdata['cp']['x_poly'] = jdata['cp']['x_poly'].tolist()
-            jdata['cp']['y_poly'] = jdata['cp']['y_poly'].tolist()
-            jdata['cp']['x_poly_fwd'] = jdata['cp']['x_poly_fwd'].tolist()
-            jdata['cp']['y_poly_fwd'] = jdata['cp']['y_poly_fwd'].tolist()
+      if "cp" in jdata:
+         if jdata['cp'] is not None:
+            if "x_poly" in jdata['cp']:
+               if type(jdata['cp']['x_poly']) is not list:
+                  jdata['cp']['x_poly'] = jdata['cp']['x_poly'].tolist()
+                  jdata['cp']['y_poly'] = jdata['cp']['y_poly'].tolist()
+                  jdata['cp']['x_poly_fwd'] = jdata['cp']['x_poly_fwd'].tolist()
+                  jdata['cp']['y_poly_fwd'] = jdata['cp']['y_poly_fwd'].tolist()
 
       save_json_file(jsf, jdata)
       print("No meteor detected.", jsf)
@@ -2450,8 +2510,8 @@ def fireball(video_file, json_conf, nomask=0):
    print("SAVEING MJR AFTER ROI VID:", len(mjr['meteor_frame_data']))
    mjr['meteor_frame_data'] = sorted(mjr['meteor_frame_data'], key=lambda x: (x[1]), reverse=False)
    save_json_file(jsfr, mjr)
-   os.system("./Process.py refit_meteor " + mj)
-   os.system("./Process.py refine " + mj)
+   os.system("./Process.py refit_meteor " + jsfr)
+   os.system("./Process.py refine " + jsfr)
    #best_meteor = fireball_decel(video_file, json_conf, jsf, jdata, best_meteor, nomask, hd_frames, hd_color_frames, median_frame, mask_img,5)
 
 def make_base_meteor_json(video_file, hd_video_file,best_meteor=None ,cp=None):
@@ -2531,10 +2591,17 @@ def make_base_meteor_json(video_file, hd_video_file,best_meteor=None ,cp=None):
             w = int(best_meteor['ows'][i] * hdm_x_sd)
             h = int(best_meteor['ohs'][i] * hdm_y_sd)
          if "ras" in best_meteor:
-            ra = best_meteor['ras'][i]
-            dec = best_meteor['decs'][i]
-            az = best_meteor['azs'][i]
-            el = best_meteor['els'][i]
+            if len(best_meteor['ras']) > i:
+               print(i, best_meteor['ras'])
+               ra = best_meteor['ras'][i]
+               dec = best_meteor['decs'][i]
+               az = best_meteor['azs'][i]
+               el = best_meteor['els'][i]
+            else:
+               ra = 0
+               dec = 0
+               az = 0
+               el = 0
          else:
             ra = 0
             dec = 0
@@ -3714,11 +3781,12 @@ def apply_calib(video_file, best_meteor, cp,json_conf):
          est_y = best_meteor['est_ys'][i]
       cx = best_meteor['ccxs'][i]
       cy = best_meteor['ccys'][i]
-      tx, ty, ra ,dec , az, el = XYtoRADec(cx,cy,video_file,cp,json_conf)
-      best_meteor['ras'].append(ra) 
-      best_meteor['decs'].append(dec) 
-      best_meteor['azs'].append(az) 
-      best_meteor['els'].append(el) 
+      if cp is not None:
+         tx, ty, ra ,dec , az, el = XYtoRADec(cx,cy,video_file,cp,json_conf)
+         best_meteor['ras'].append(ra) 
+         best_meteor['decs'].append(dec) 
+         best_meteor['azs'].append(az) 
+         best_meteor['els'].append(el) 
    return(best_meteor)
   
 def make_meteor_frame(frame, cx,cy, fn=None, circles=None, rects=None, text_info=None, new_xs=None, new_ys=None):

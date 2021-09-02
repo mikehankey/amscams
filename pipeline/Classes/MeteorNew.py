@@ -203,7 +203,10 @@ class Meteor():
       for mfile in self.mfiles:
          prev_file = mscan_dir + self.station_id + "_" + mfile.replace(".mp4", "-prev.jpg")
          mjf = mdir + mfile.replace(".mp4", ".json")
-         mj = load_json_file(mjf)
+         if cfe(mjf) == 1:
+            mj = load_json_file(mjf)
+         else:
+            continue
          hd_file = None
          if "hd_trim" in mj:
             if mj['hd_trim'] is not None:
@@ -222,8 +225,10 @@ class Meteor():
          cloud_prev_vid = cloud_dir + self.station_id + "_" + mfile.replace(".mp4", "-180p.mp4")
          cloud_orig_vid = cloud_dir + self.station_id + "_" + mfile.replace(".mp4", "-360p.mp4")
          cloud_file = cloud_dir + self.station_id + "_" + mfile.replace(".mp4", "-prev.jpg")
+         prev_vid_cloud_file = cloud_dir + self.station_id + "_" + mfile.replace(".mp4", "-180p.mp4")
          stack_file = mdir + mfile.replace(".mp4", "-stacked.jpg")
          prev_fn = prev_file.split("/")[-1]
+         prev_vid_fn = prev_vid.split("/")[-1]
 
          if cfe(orig_vid) == 1:
             print("GOOD:", orig_vid)
@@ -252,6 +257,11 @@ class Meteor():
           
          if prev_fn not in cloud_files:
             cmd = "cp " + prev_file + " " + cloud_file
+            print(cmd)
+            os.system(cmd)
+         if prev_vid_fn not in cloud_files:
+            cmd = "cp " + prev_vid + " " + prev_vid_cloud_file
+            print(cmd)
             os.system(cmd)
          
       cloud_files,met_media = self.get_cloud_files(day)

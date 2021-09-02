@@ -42,6 +42,14 @@ def gitpull(json_conf):
 
 
 def run_jobs(json_conf):
+
+   running = check_running("DynaDB.py")
+   if running > 0:
+      os.system("kill -9 $(ps aux | grep 'rerun.py' | awk '{print $2}')")
+   running = check_running("rerun.py")
+   if running > 0:
+      os.system("kill -9 $(ps aux | grep 'DynaDB' | awk '{print $2}')")
+
    msg = "info:run_jobs:Run jobs ended"
    cmd = "./log.py '" + msg + "'"
    os.system(cmd)
@@ -87,6 +95,10 @@ def run_jobs(json_conf):
 
    # Once every 5 hours run the events for yesterday and today, IF WMPL is installed
    if "dynamodb" in json_conf:
+      running = check_running("DynaDB.py")
+      if running > 0:
+         os.system("kill -9 $(ps aux | grep 'rerun.py' | awk '{print $2}')")
+         os.system("kill -9 $(ps aux | grep 'DynaDB' | awk '{print $2}')")
       run_load = 0
       if cfe("/home/ams/loaded_last.txt") == 0:
          run_load = 1

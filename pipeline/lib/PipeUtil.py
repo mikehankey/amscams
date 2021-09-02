@@ -13,7 +13,8 @@ import cv2
 #from PIL import ImageFont, ImageDraw, Image, ImageChops
 import numpy as np
 import ephem
-import simplejson as json
+#import simplejson as json
+import json
 import glob
 
 
@@ -181,6 +182,7 @@ def cfe(file,dir = 0):
 def load_json_file(json_file):  
    #try:
    if True:
+      print("Trying:", json_file)
       with open(json_file, 'r' ) as infile:
          json_data = json.load(infile)
    #except:

@@ -289,6 +289,7 @@ def get_day_stats(day, day_dir, json_conf):
    print("TRASH:", trash_dir, len(failed_files))
    tmp_meteor_files = glob.glob(meteor_dir)
    tmp_meteor_files2 = glob.glob(data_dir)
+   tmp_meteor_files2 = []
    meteor_files = []
    umeteor_files = {}
    temp = []

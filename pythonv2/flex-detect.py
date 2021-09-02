@@ -10620,8 +10620,32 @@ def detect_in_vals(vals_file, cam_size_info):
 
    #print("End first vals profile", last_i )
    print("EVENTS FOUND:", len(events))
+   print("REMOVE BAD ONES FIRST")
+   ps_events = []
+   before_ev = len(events)
+   if len(events) > 25:
+      for ev in events:
+         dur_frames = ev['frames'][1] - ev['frames'][0]
+         bp = 0
+         for i in range(0, len(ev['max_vals'])):
+            if ev['max_vals'][i] > 25:
+               bp += 1
+         perc = bp / len(ev['max_vals'])
+         print(perc )
+         if perc > .6:
+            ps_events.append(ev)
+      events = ps_events
+   else:
+      for ev in events:
+         dur_frames = ev['frames'][1] - ev['frames'][0]
+         print(dur_frames)
+         print(ev['max_vals'])
+         print(ev)
+   print(before_ev, len(events), "ev")
+
    for ev in events:
-      {'frames': [1, 8], 'pos_vals': [[504, 472], [564, 420], [538, 426], [654, 392], [548, 424], [682, 354], [134, 418]], 'max_vals': [14.0, 14.0, 13.0, 16.0, 12.0, 17.0, 12.0], 'sum_vals': [0.0, 0.0, 0.0, 255.0, 0.0, 510.0, 0.0]}
+      #{'frames': [1, 8], 'pos_vals': [[504, 472], [564, 420], [538, 426], [654, 392], [548, 424], [682, 354], [134, 418]], 'max_vals': [14.0, 14.0, 13.0, 16.0, 12.0, 17.0, 12.0], 'sum_vals': [0.0, 0.0, 0.0, 255.0, 0.0, 510.0, 0.0]}
+      print(ev['frames'])
       start_frame = ev['frames'][0]
       ff = 0
       for point in ev['pos_vals']:

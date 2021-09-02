@@ -3,9 +3,6 @@
 Autocal functions
 
 """
-#import matplotlib
-#matplotlib.use('Agg')
-#import matplotlib.pyplot as plt
 import time
 
 import pickle
@@ -849,7 +846,10 @@ def refit_meteor(meteor_file, json_conf,force=0):
       mjr = load_json_file(red_file)
    else:
       mjr = None
-   cp = mj['cp']
+   if "cp" in mj:
+      cp = mj['cp']
+   else:
+      return()
    starting_res = cp['total_res_px']
    print(starting_res)
    if starting_res > 5:
@@ -4228,8 +4228,16 @@ def find_meds(cal_data):
 
 def cal_all(json_conf):
    year = datetime.now().strftime("%Y")
-   cal_dir = ARC_DIR + "CAL/AUTOCAL/" + year + "/*.png"
-   files = glob.glob(cal_dir)
+   cal_dir = ARC_DIR + "CAL/AUTOCAL/" + year + "/"
+   if cfe(cal_dir, 1) == 0:
+      os.makedirs(cal_dir)
+   if cfe(cal_dir + "temp", 1) == 0:
+      os.makedirs(cal_dir + "temp")
+   if cfe(cal_dir + "bad", 1) == 0:
+      os.makedirs(cal_dir + "bad")
+   if cfe(cal_dir + "solved", 1) == 0:
+      os.makedirs(cal_dir + "solved")
+   files = glob.glob(cal_dir + "*.png")
    print(cal_dir)
    for file in sorted(files):
       print("TRYING.", file)
@@ -4259,6 +4267,7 @@ def make_cal_obj(az,el,pos,px,stars,cat_image_stars,res):
    return(cp)
 
 def autocal(image_file, json_conf, show = 0, heal_only=0):
+   station_id = json_conf['site']['ams_id']
    orig_image_file = image_file
    update_defaults(json_conf)
    cp = None
@@ -4317,7 +4326,17 @@ def autocal(image_file, json_conf, show = 0, heal_only=0):
    if SHOW == 1:
       cv2.imshow("SCAN STARS DONE.", img)
       cv2.waitKey(30)
-
+   # check out dirs make if needed
+   if True:
+      cdir = "/mnt/ams2/meteor_archive/" + station_id + "/CAL/AUTO_CAL/"
+      if cfe(cdir,1) == 0:
+         os.makedirs(cdir)
+      if cfe(cdir + "/bad/",1 ) == 0:
+         os.makedirs(cdir + "/bad/")
+      if cfe(cdir + "/solved/",1 ) == 0:
+         os.makedirs(cdir + "/solved/")
+      if cfe(cdir + "/temp/",1 ) == 0:
+         os.makedirs(cdir + "/temp/")
 
    # if not enough stars abort / clean up
    if len(stars) < 10:
