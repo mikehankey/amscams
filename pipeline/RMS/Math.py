@@ -6,7 +6,6 @@ from numpy.core.umath_tests import inner1d
 
 def angularSeparation(ra1, dec1, ra2, dec2):
     """ Calculates the angle between two points on a sphere. 
-    
     Arguments:
         ra1: [float] Right ascension 1 (radians).
         dec1: [float] Declination 1 (radians).

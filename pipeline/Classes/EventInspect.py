@@ -8,7 +8,7 @@ import redis
 import simplejson as json
 import glob
 import cv2
-from lib.PipeUtil import cfe, load_json_file, convert_filename_to_date_cam, save_json_file, calc_dist
+from lib.PipeUtil import cfe, load_json_file, convert_filename_to_date_cam, save_json_file, calc_dist,fn_dir
 #from lib.PipeAutoCal import get_catalog_stars, update_center_radec
 import numpy as np
 from lib.cognito import signup_new_user, verify_new_user
@@ -23,7 +23,9 @@ class DecimalEncoder(json.JSONEncoder):
         return json.JSONEncoder.default(self, obj)
 
 class EventInspect():
-    def __init__(self, ):
+    def __init__(self, event_id):
+        self.data = {}
+        self.data['event_id'] = event_id
         self.home_dir = os.getcwd() + "/" 
         self.cloud_missing_data_file = "/mnt/archive.allsky.tv/EVENTS/ALL_MISSING_DATA.json"
         self.missing_data_file = "/mnt/ams2/EVENTS/ALL_MISSING_DATA.json"
@@ -31,12 +33,27 @@ class EventInspect():
         self.dynamodb = boto3.resource('dynamodb')
         self.r = redis.Redis("allsky-redis.d2eqrc.0001.use1.cache.amazonaws.com", port=6379, decode_responses=True)
         self.API_URL = "https://kyvegys798.execute-api.us-east-1.amazonaws.com/api/allskyapi"
+        event_day = self.data['event_id'][0:8]
+        self.y = event_day[0:4]
+        self.m = event_day[4:6]
+        self.d = event_day[6:8]
+        self.event_day = self.y + "_" + self.m + "_" + self.d
+        self.event_dir = "/mnt/ams2/EVENTS/" + self.y + "/" + self.m + "/" + self.d + "/" + self.data['event_id'] + "/"
+        self.cloud_event_dir = "/mnt/archive.allsky.tv/EVENTS/" + self.y + "/" + self.m + "/" + self.d + "/" + self.data['event_id'] + "/"
+
+
           
     def event_inspect(self):
        print("DATA:", self.data)
        print("INSPECT EVENT")
+       inspect_file = self.event_dir +  self.data['event_id'] + "-INSPECT.json"
+       if cfe(inspect_file) == 1:
+          inspect_data = load_json_file(inspect_file)
+       else:
+          inspect_data = {} 
        event_data = self.get_dyna_event()
        obs_data = []
+       station_data = {}
        for i in range(0,len(event_data['stations'])):
           print(event_data.keys())
           stid = event_data['stations'][i]
@@ -49,14 +66,19 @@ class EventInspect():
           obs['lat'] = lat
           obs['lon'] = lon
           obs_data.append(obs)
+          if stid not in station_data:
+             station_data[stid] = obs
        print("EVD:", event_data)
 
        obs_lines = [] 
        station_points = {}
        obs_dirs = []
+       bad_obs = []
        for obs in obs_data:
           obs_good = 0
           station_id = obs['station_id']
+          sd_video_file = obs['sd_video_file']
+          obs_key = station_id + "_" + sd_video_file
           if "meteor_frame_data" in obs:
              if len(obs["meteor_frame_data"]) >= 3:
                 print("OBS:", obs.keys())
@@ -70,6 +92,11 @@ class EventInspect():
                 az2 = obs['meteor_frame_data'][-1][9]
                 el2 = obs['meteor_frame_data'][-1][10]
                 print(az1,el1,az2,el2)
+                if (az1 == 0 and el1 == 0 ) or (az2 == 0 or el2 == 0):
+                   print("BAD OBS!")
+                   obs['bad'] = "NO METEOR FRAME DATA."
+                   bad_obs.append(obs_key)
+                   continue
                 obs_dirs.append((obs['station_id'], obs['sd_video_file'], lat,lon,alt,az1,el1,az2,el2)) 
                 start_lat2, start_lon2, start_alt2 = self.find_point_from_az_dist(lat,lon,az1,el1,100)
                 end_lat2, end_lon2, end_alt2 = self.find_point_from_az_dist(lat,lon,az2,el2,100)
@@ -78,7 +105,11 @@ class EventInspect():
                 obs_lines.append((obs_key,"end",lat,lon,0,end_lat2,end_lon2,end_alt2))
 
        obs_points = []
+       #if "best_plane_points" in inspect_data:
+       #   all_plane_points = inspect_data['best_plane_points']
+       #else:
        all_plane_points = self.plane_point_intersections(obs_dirs)
+
        bad_plane_points = []
        good_plane_points = []
        for row in all_plane_points:
@@ -92,43 +123,165 @@ class EventInspect():
        all_plane_points = good_plane_points
        for row in bad_plane_points:
           print("BAD:", row)
-       for row in all_plane_points:
-          obs_points.append((row[2],row[3],row[4],""))
-          obs_points.append((row[5],row[6],row[7],""))
-          print("GOOD:", row)
+
+
+       mobs = self.column(all_plane_points,0)
+       sobs = self.column(all_plane_points,1)
        start_lats = self.column(all_plane_points,2)
        start_lons = self.column(all_plane_points,3)
        start_alts = self.column(all_plane_points,4)
        end_lats = self.column(all_plane_points,5)
        end_lons = self.column(all_plane_points,6)
        end_alts = self.column(all_plane_points,7)
+
+       std_start_lat = np.std(start_lats)
+       std_start_lon = np.std(start_lons)
+       std_start_alts = np.std(start_alts)
+
+       std_end_lat = np.std(end_lats)
+       std_end_lon = np.std(end_lons)
+       std_end_alts = np.std(end_alts)
+
+
        print("START LAT,LON,ALT", np.median(start_lats), np.median(start_lons), np.median(start_alts))
+       print("START STD", np.std(start_lats), np.std(start_lons), np.std(start_alts))
+       print("SLATS:", start_lats)
+       print("SLONS:", start_lons)
+       print("SALTS:", start_alts)
        print("END LAT,LON,ALT", np.median(end_lats), np.median(end_lons), np.median(end_alts))
-       obs_points.append((np.median(start_lats), np.median(start_lons), np.median(start_alts), "START"))
-       obs_points.append((np.median(end_lats), np.median(end_lons), np.median(end_alts), "END"))
+       print("END STD", np.std(end_lats), np.std(end_lons), np.std(end_alts))
+       print("ELATS:", end_lats)
+       print("ELONS:", end_lons)
+       print("EALTS:", end_alts)
+       c = 0
+       for i in range(0,len(start_lats)):
+          slat = start_lats[i]
+          slon = start_lons[i]
+          salt = start_alts[i]
+          elat = end_lats[i]
+          elon = end_lons[i]
+          ealt = end_alts[i]
+          s_lat_diff = abs(slat - np.median(start_lats))
+          s_lon_diff = abs(slon - np.median(start_lons))
+          s_alt_diff = abs(salt - np.median(start_alts))
+          e_lat_diff = abs(elat - np.median(end_lats))
+          e_lon_diff = abs(elon - np.median(end_lons))
+          e_alt_diff = abs(ealt - np.median(end_alts))
+          if s_lat_diff >= np.std(start_lats) or s_lon_diff > np.std(start_lons) or s_alt_diff > np.std(start_alts) or e_lat_diff > np.std(end_lats) or e_lon_diff > np.std(end_lons) or e_alt_diff > np.std(end_alts) :
+             print("*** OUTLIER", lat, lon, alt, mobs[c],sobs[c])
+             print("*** SDIFFS", s_lat_diff, s_lon_diff, s_alt_diff)
+             print("*** S STDs", np.std(start_lats) , np.std(start_lons) , np.std(start_alts))
+             print("*** eDIFFS", e_lat_diff, e_lon_diff, e_alt_diff)
+             print("*** E STDs", np.std(end_lats) , np.std(end_lons) , np.std(end_alts))
+             bad_obs.append(mobs[c])
+             bad_obs.append(sobs[c])
+
+
+          #else:
+          #   print("SLAT INLIER", lat, diff, mobs[c], sobs[c])
+          c += 1
+
+       bad_dict = {}
+       for bobs in bad_obs:
+          print(bobs)
+          el = bobs.split("_")
+          station_id = el[0]
+          sd_video_file = bobs.replace(station_id + "_", "")
+          if bobs not in bad_dict:
+             bad_dict[bobs] = 1
+          else:
+             bad_dict[bobs] += 1
+
+       bad_scores = []
+       for bkey in bad_dict:
+          print("BAD OBS:", bkey, bad_dict[bkey])
+          bad_scores.append(bad_dict[bkey])
+       med_bad_score = np.median(bad_scores)
+
+       ignore_obs = {}
+       for bkey in bad_dict:
+          el = bkey.split("_")
+          st_id = el[0]
+          if bad_dict[bkey] >= (med_bad_score * 2):
+             ignore_obs[bkey] = bad_dict[bkey]
+             print("IGNORE:", med_bad_score, bkey, bad_dict[bkey])
+             obs_points.append((station_data[st_id]['lat'],station_data[st_id]['lon'],0,"BAD" + st_id, "ff0000ff"))
+
+
+       best_plane_points = []
+       for row in all_plane_points:
+          mob = row[0]
+          sob = row[1]
+          if mob in ignore_obs or sob in ignore_obs:
+             print("IGNORE:", mob, sob)
+          else:
+             obs_points.append((row[2],row[3],row[4],"", "ff00ff00"))
+             obs_points.append((row[5],row[6],row[7],"", "ff0000ff"))
+             print("GOOD:", row)
+             best_plane_points.append(row)
+
+       all_plane_points = best_plane_points
+
+
+       obs_points.append((np.median(start_lats), np.median(start_lons), np.median(start_alts), "START", "FF154360"))
+       obs_points.append((np.median(end_lats), np.median(end_lons), np.median(end_alts), "END", "FF7E5109"))
+
+       obs_lines.append(("AS7 Trajectory", "traj", np.median(start_lats), np.median(start_lons), np.median(start_alts)/1000,np.median(end_lats), np.median(end_lons), np.median(end_alts)/1000))
+
     
        resp = {} 
        resp['event_data'] = event_data
        resp['obs_data'] = obs_data
        resp['obs_lines'] = obs_lines
        resp['obs_points'] = obs_points
+       resp['ignore_obs'] = ignore_obs
+       resp['best_plane_points'] = best_plane_points
 
+       save_json_file(inspect_file, resp)
        kml_file = self.event_dir +  self.event_id + "-OBS.kml"
        kml_cloud_file = kml_file.replace("ams2", "archive.allsky.tv")
        resp['kml_link'] = "https://" + kml_cloud_file.replace("/mnt/", "")
 
-       for st in station_points:
-          lat,lon = station_points[st]
-          obs_points.append((lat,lon,0,st))
+       #for st in station_points:
+       #   lat,lon = station_points[st]
+       #   obs_points.append((lat,lon,0,st,"white"))
          
 
-       self.make_easykml(kml_file, obs_points, obs_lines, {})
+       self.make_easykml(kml_file, obs_points, obs_lines, {}, "AS7 Inspector")
        kml_cloud_file = kml_file.replace("ams2", "archive.allsky.tv")
        os.system("cp " + kml_file + " " + kml_cloud_file)
        print(kml_file)
        return(resp)
 
-    def make_easykml(self,kml_file, points={}, lines={}, polys={}):
+    def make_final_kml(self):
+       kml_files = glob.glob(self.event_dir + "*.kml")
+       all_kml = ""
+       kml_c = 0
+       print("KML FIELS:", kml_files)
+       for kml_file in kml_files:
+          if "merged" in kml_file:
+             continue
+          fp = open(kml_file)
+          lc = 0
+          for line in fp:
+             if kml_c == 0 :
+                if "</Document>" not in line and "</kml>" not in line :
+                   # first
+                   all_kml += line
+             elif kml_c > 0 and kml_c < len(kml_files) - 1 and lc > 2 and ("</Document>" not in line and "</kml>" not in line):
+                all_kml += line
+                # middle
+             elif lc > 2:
+                all_kml += line
+                #last kml
+             lc += 1
+          kml_c += 1
+       fpout = open(self.event_dir + self.data['event_id'] + "-merged.kml", "w")
+       fpout.write(all_kml)
+       fpout.close()
+       print(self.event_dir + self.data['event_id'] + "-merged.kml")
+
+    def make_easykml(self,kml_file, points={}, lines={}, polys={}, main_folder_name="main"):
        colors = [
           'FF641E16',
           'FF512E5F',
@@ -145,7 +298,7 @@ class EventInspect():
        ]
 
        kml = simplekml.Kml()
-
+       folder = kml.newfolder(name=main_folder_name)
        cc = 0
        for data in lines:
           #slat,slon,salt,sdesc =lines[key]['start_lat'], lines[key]['start_lon'],lines[key]['start_alt'], lines[key]['desc']
@@ -153,10 +306,12 @@ class EventInspect():
           sdesc, ltype, slat,slon,salt,elat,elon,ealt = data
           salt = salt * 1000
           ealt = ealt * 1000
-          line = kml.newlinestring(name=sdesc + "_" + ltype  , description="", coords=[(slon,slat,salt),(elon,elat,ealt)])
+          line = folder.newlinestring(name=sdesc + "_" + ltype  , description="", coords=[(slon,slat,salt),(elon,elat,ealt)])
           line.altitudemode = simplekml.AltitudeMode.relativetoground
           if ltype == "start":
              line.linestyle.color = colors[0]
+          elif ltype == "traj":
+             line.linestyle.color = "ff0000ff"
           else:
              line.linestyle.color = colors[1]
           line.linestyle.width=  5
@@ -167,9 +322,20 @@ class EventInspect():
 
        for data in points:
           #lat,lon,alt,desc =points[key]['lat'], points[key]['lon'],points[key]['alt'], points[key]['desc']
-          lat,lon,alt,desc = data
-          point = kml.newpoint(name=desc,coords=[(lon,lat,alt)])
-          point.style.iconstyle.icon.href = 'http://maps.google.com/mapfiles/kml/shapes/placemark_circle.png'
+          lat,lon,alt,desc,color = data
+          if "BAD" in desc:
+             status = "BAD"
+             desc = desc.replace("BAD", "")
+          else:
+             status = "GOOD"
+
+
+          point = folder.newpoint(name=desc,coords=[(lon,lat,alt)])
+          if status == "BAD":
+             point.style.iconstyle.icon.href = 'http://maps.google.com/mapfiles/kml/shapes/forbidden.png'
+          else:
+             point.style.iconstyle.icon.href = 'http://maps.google.com/mapfiles/kml/shapes/placemark_circle.png'
+          point.style.iconstyle.color=color
        kml.save(kml_file)
 
     def plane_point_intersections(self, obs):
@@ -298,6 +464,7 @@ class EventInspect():
     def get_dyna_event(self):
        dynamodb = boto3.resource('dynamodb')
        table = dynamodb.Table('x_meteor_event')
+       print("SELF.DATA:", self.data)
        event_day = self.data['event_id'][0:8]
        y = event_day[0:4]
        m = event_day[4:6]

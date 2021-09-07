@@ -637,7 +637,7 @@ def meteors_last_night_for_cam(date, cams_id, json_conf):
 
     meteors_last_night_detect_data(date, cams_id, json_conf, hd_meteors)
     mdata_file = mdir + json_conf['site']['ams_id'] + "_" + date + "_" + cams_id + "_meteor_data.info"
-    exit()
+    #exit()
     #meteors_last_night_detect_data(date, cams_id, json_conf, hd_meteors)
     #exit()
 

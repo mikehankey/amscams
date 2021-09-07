@@ -403,17 +403,82 @@ def define_events(date):
 
    events_report(date)
 
+def sanity_check_obs(obs):
+   ignore = {}
+   best_obs = {}
+   for station_id in obs:
+      if len(obs[station_id]) > 1:
+         best_file = get_best_obs(obs[station_id])
+         for vid in obs[station_id]:
+            if vid == best_file:
+               print(station_id, vid)
+               data = obs[station_id][vid]
+               obs[station_id][vid]['best'] = 1
+               if "meteor_frame_data" in data:
+                  print(data['meteor_frame_data'])
+            else:
+               ignore[station_id + "_" + vid] = 1
+               obs[station_id][vid]['ignore'] = 1
+      else:
+         best_file = obs[station_id].keys()
+         for key in obs[station_id].keys():
+            best_file = key
+      print("BEST FILE:", station_id, best_file)
+      best_obs[station_id] = {} 
+      best_obs[station_id][best_file] = obs[station_id][best_file]
+      print(best_obs[station_id][best_file]['gc_azs'])
+      print(best_obs[station_id][best_file]['gc_els'])
+   return(best_obs)
 
-def GC_az_el(azs, els):
+
+def sanity_check_points(azs,els, ras, decs):
+   from RMS.Math import angularSeparation
+   bad_is = []
+   for i in range(0,len(ras)):
+      if i > 0:
+         dist_to_last = angularSeparation(ras[i],decs[i], ras[i-1], decs[i-1])
+      else:
+         dist_to_last = 0
+      if i != 0 and dist_to_last == 0:
+         bad_is.append(i)
+      print(i, ras[i], decs[i], dist_to_last)
+   temp_azs = []
+   temp_els = []
+
+   print("BAD IS:", bad_is)
+   good_azs = []
+   good_els= []
+   for i in range(0,len(azs)):
+      if i in bad_is:
+         print(i, "BAD", azs[i], els[i])
+      else:
+         print(i, "GOOD", azs[i], els[i])
+         good_azs.append(azs[i])
+         good_els.append(els[i])
+
+   print("BEFORE :", azs)
+   print("BEFORE :", els)
+
+   print("AFTER :", good_azs)
+   print("AFTER :", good_els)
+
+
+   return(good_azs,good_els)
+
+def GC_az_el(azs, els, ras,decs):
 
    import RMS.GreatCircle
-   from RMS.Math import polarToCartesian, cartesianToPolar
+   from RMS.Math import polarToCartesian, cartesianToPolar, angularSeparation
    import numpy as np
    from RMS import GreatCircle
 
 
+   azs,els= sanity_check_points(azs,els,ras, decs)
+
+
    azim = np.array(azs)
    elev = np.array(els)
+
 
    ### Fit a great circle to Az/Alt measurements and compute model beg/end RA and Dec ###
 
@@ -579,10 +644,13 @@ def event_stats(events):
    for ss in stats:
       print(ss, stats[ss])
    #exit()
+
 def solve_day(day, cores=30):
    date = day
    year, mon, dom = date.split("_")
    day_dir = "/mnt/ams2/EVENTS/" + year + "/" + mon + "/" + dom + "/" 
+   if cfe(day_dir,1) == 0:
+      os.makedirs(day_dir)
    dyn_cache = day_dir 
    #cmd = "./DynaDB.py udc " + day + " events"
    #print(cmd)
@@ -606,10 +674,14 @@ def solve_day(day, cores=30):
    else:
       size = 0
       tdiff = 0
+
+   
+
    if cfe(events_file) == 0 or tdiff > 120:
       cf = events_file.replace("/mnt/ams2", "/mnt/archive.allsky.tv")
       cmd = "cp " + cf + " " + events_file
       os.system(cmd)
+
 
    #events_index = load_json_file(events_index_file)
    # get events from FILE ( no api) (events file is generated on cloud VM 1x per hour for current and passed day. It is faster / better cost to grab the event file from wasabi, than aws. 
@@ -812,6 +884,20 @@ def solve_event(event_id, force=1, time_sync=1):
     local_event_dir = "/mnt/ams2/EVENTS/" + year + "/" + mon + "/" + day + "/" + event_id + "/" 
     cloud_event_dir = "/mnt/archive.allsky.tv/EVENTS/" + year + "/" + mon + "/" + day + "/" + event_id + "/" 
     local_events_dir = "/mnt/ams2/EVENTS/" 
+    inspect_file = local_event_dir +  event_id + "-INSPECT.json"
+    if cfe(inspect_file) == 1:
+       inspect_data = load_json_file(inspect_file)
+    else:
+       os.system("python3 Inspect.py " + event_id)
+
+       inspect_data = load_json_file(inspect_file)
+    if "ignore_obs" in inspect_data:
+       ignore_obs = inspect_data['ignore_obs']
+    else:
+       ignore_obs = {}
+    print(inspect_file, inspect_data.keys())
+    print(inspect_data['ignore_obs'])
+
    # + year + "/" + mon + "/" + day + "/" 
     cloud_events_dir = "/mnt/archive.allsky.tv/EVENTS/" 
     #+ year + "/" + mon + "/" + day + "/" 
@@ -895,7 +981,8 @@ def solve_event(event_id, force=1, time_sync=1):
 
 
     obs = {}
-    ignore_stations = ['AMS105']
+    #ignore_stations = ['AMS52', 'AMS56', 'AMS59', 'AMS73']
+    ignore_stations = []
     #ignore_stations = ['AMS59', 'AMS61']
     if event is None:
        print("EVENT IS NONE!")
@@ -907,9 +994,12 @@ def solve_event(event_id, force=1, time_sync=1):
     bad_obs = []
     for i in range(0, len(event['stations'])):
        t_station = event['stations'][i]
-       if t_station in ignore_stations:
-          continue
        t_file = event['files'][i]
+       obs_key = t_station + "_" + t_file
+       if obs_key in ignore_obs:
+          print("IGNORE:", obs_key)
+
+          continue
        dy_obs_data = get_obs(t_station, t_file)
        if dy_obs_data is not None:
           if t_station in nsinfo:
@@ -923,6 +1013,8 @@ def solve_event(event_id, force=1, time_sync=1):
              # LOCAL REMOTE MODE FIX
              #red_key = "ST:" + t_station
              #red_val = r.get(red_key)
+             if t_station not in all_stations:
+                continue
              red_val = all_stations[t_station]
              print("RED VAL:", red_val)
 
@@ -937,7 +1029,10 @@ def solve_event(event_id, force=1, time_sync=1):
                 dy_obs_data['loc'] = [jsi['site']['device_lat'], jsi['site']['device_lng'], jsi['site']['device_alt']]
           obs_data = convert_dy_obs(dy_obs_data, obs )
 
-
+    # sanity check the obs!
+    print("USING THESE OBS:")
+    for obs in obs_data:
+       print(obs)
     extra_obs_data = None
     if False:
        extra_obs = ["/home/ams/2021_07_04_DFN26.ecsv"]
@@ -948,18 +1043,23 @@ def solve_event(event_id, force=1, time_sync=1):
              extra_obs_data.append(edata)
 
 
+    #obs = sanity_check_obs(obs)
+
     # get WMPL ID (lowest start time)
     start_times = []
-    for station_id in obs:
-        if len(obs[station_id].keys()) > 1:
-           file = get_best_obs(obs[station_id])
+    for ob in obs_data:
+       print(ob)
+    for station_id in obs_data:
+        print("OBS STATION_ID", obs)
+        if len(obs_data[station_id].keys()) > 1:
+           file = get_best_obs(obs_data[station_id])
         else:
-           for bfile in obs[station_id]:
+           for bfile in obs_data[station_id]:
                file = bfile
 
 
-        if len(obs[station_id][file]['times']) > 0:
-           start_times.append(obs[station_id][file]['times'][0])
+        if len(obs_data[station_id][file]['times']) > 0:
+           start_times.append(obs_data[station_id][file]['times'][0])
         else:
            bad_obs.append(station_id + " missing reduction.")
 
@@ -972,7 +1072,7 @@ def solve_event(event_id, force=1, time_sync=1):
        print("BAD OBS!:", event)
        print("BAD OBS!:", len(obs))
        status = "WMPL FAILED."
-       update_event_sol(None, event_id, solution, obs, status)
+       update_event_sol(None, event_id, solution, obs_data, status)
        return()
 
     event_start = sorted(start_times)[0]
@@ -999,7 +1099,7 @@ def solve_event(event_id, force=1, time_sync=1):
        obs_data = add_extra_obs(extra_obs_data, obs_data)
 
     save_json_file(local_event_dir + "/" + event_id + "-simple.json", sol)
-    save_json_file(local_event_dir + "/" + event_id + "-obs.json", obs)
+    save_json_file(local_event_dir + "/" + event_id + "-obs.json", obs_data)
     print("SAVED FILES IN:", solve_dir)
     if len(bad_obs) > 4:
        obs_data = {}
@@ -1022,7 +1122,7 @@ def solve_event(event_id, force=1, time_sync=1):
        simple_status = 1
        wmpl_status = 0
 
-    resp = make_event_json(event_id, solve_dir)
+    resp = make_event_json(event_id, solve_dir,ignore_obs)
     
     if resp == 0:
        print("FAILED TO SOLVE!")
@@ -1035,6 +1135,7 @@ def solve_event(event_id, force=1, time_sync=1):
           update_event_sol(None, event_id, solution, obs_data, "WMPL FAILED.")
 
        cmd = "cd ../pythonv2; ./solve.py vida_failed_plots " + event_id
+       print(cmd)
        os.system(cmd)
        return(0)
     solution,as_obs = resp
@@ -1054,6 +1155,13 @@ def solve_event(event_id, force=1, time_sync=1):
     cloud_dir = solve_dir.replace("/mnt/ams2/", "/mnt/archive.allsky.tv/")
     if cfe(cloud_dir,1) == 0:
        os.makedirs(cloud_dir)
+
+    cmd = "cd ../pythonv2; ./solve.py vida_plots " + event_id
+    os.system(cmd)
+
+    cmd = "python3 Inspect.py merge " + event_id
+    os.system(cmd)
+
     #cmd = "rm " + solve_dir + "/*.png"
     #print(cmd)
     #os.system(cmd)
@@ -1061,8 +1169,6 @@ def solve_event(event_id, force=1, time_sync=1):
     print(cmd)
     os.system(cmd)
 
-    cmd = "cd ../pythonv2; ./solve.py vida_plots " + event_id
-    os.system(cmd)
 
 
     #update_event(dynamodb, event_id, simple_status, wmpl_status, solve_dir)
@@ -1193,7 +1299,7 @@ def make_event_html(event_json_file ):
    obs_file = event_json_file.replace("-event.json", "-obs.json")
    print("LOADING:", event_json_file)
    event_data = load_json_file(event_json_file)
- 
+   print("EVENT DATA:", event_data.keys()) 
 
    event_id = event_data['event_id']
 
@@ -1238,10 +1344,12 @@ def make_event_html(event_json_file ):
    print("EVENT ID IS:", event_id)
    print("SOL DIR IS:", solve_dir)
    #obs_data = load_json_file(obs_file)
-   obs_data = event['obs']
+   obs_data = event_data['obs']
    # make the obs part
+   print("OBSDATA:", obs_data)
    sum_html = make_sum_html(event_id, event, solve_dir, obs_data)
 
+   event['obs'] = obs_data
    obs_html = make_obs_html(event_id, event, solve_dir, obs_data)
 
    center_lat, center_lon = center_obs(obs_data)
@@ -1251,7 +1359,7 @@ def make_event_html(event_json_file ):
    map_html = "<div style='clear: both'> &nbsp; </div>"
    map_html += "<div>"
    map_html += "<h2>Trajectory</h2>"
-   map_html += "<iframe src=\"https://archive.allsky.tv/APPS/dist/maps/index.html?mf=" + kml_file + "&lat=" + str(center_lat) + "&lon=" + str(center_lon) + "\" width=800 height=440></iframe><br><a href=" + kml_file + ">KML</a><br>"
+   map_html += "<iframe src=\"https://archive.allsky.tv/APPS/dist/maps/index.html?mf=" + kml_file + "zoom=5&&lat=" + str(center_lat) + "&lon=" + str(center_lon) + "\" width=800 height=440></iframe><br><a href=" + kml_file + ">KML</a><br>"
 
    map_html += "</div>"
 
@@ -1363,9 +1471,13 @@ def make_sum_html(event_id, event, solve_dir, obs):
    return(html)
 
 def make_obs_html(event_id, event, solve_dir, obs):
+
+
+   print("MAKE OBS HTML:", obs)
    html = "<h2>Observations</h2>"
    html += "<div>"
-
+   print("EVENT STATIONS:", event['stations'])
+   print("EVENT OBS STATIONS:", event['obs'].keys())
    if True:
 
       blocks = []
@@ -1380,6 +1492,7 @@ def make_obs_html(event_id, event, solve_dir, obs):
          #link = remote_urls[station_id] + "/meteors/" + station_id + "/" + day + "/" + file + "/"
          if station_id not in event['obs']:
              print("ERROR: STATION DATA MISSING FROM EVENT OBS!", station_id)
+             print("EVENT KEYS:", event['obs'].keys())
              continue
          print("EVENT:", event['obs'][station_id])
          if file in event['obs'][station_id] : 
@@ -1449,7 +1562,7 @@ def add_extra_obs(extra_obs, obs):
       obs[station][obs_file]['els'] = els
       obs[station][obs_file]['start_datetime'] = times
       obs[station][obs_file]['loc'] = loc
-      obs[station][obs_file]['gc_azs'], obs[station][obs_file]['gc_els'] = GC_az_el(obs[station][obs_file]['azs'], obs[station][obs_file]['els'])
+      obs[station][obs_file]['gc_azs'], obs[station][obs_file]['gc_els'] = GC_az_el(obs[station][obs_file]['azs'], obs[station][obs_file]['els'], obs[station][obs_file]['ras'],obs[station][obs_file]['decs'] )
    return(obs)
 
 def convert_dy_obs(dy_obs_data, obs):
@@ -1499,7 +1612,7 @@ def convert_dy_obs(dy_obs_data, obs):
          obs[station][fn]['ras'].append(float(ra))
          obs[station][fn]['decs'].append(float(dec))
          obs[station][fn]['ints'].append(float(oint))
-      obs[station][fn]['gc_azs'], obs[station][fn]['gc_els'] = GC_az_el(obs[station][fn]['azs'], obs[station][fn]['els'])
+      obs[station][fn]['gc_azs'], obs[station][fn]['gc_els'] = GC_az_el(obs[station][fn]['azs'], obs[station][fn]['els'],  obs[station][fn]['ras'], obs[station][fn]['decs'])
    else:
       del obs[station]
       
@@ -1520,7 +1633,7 @@ def make_orbit_link(event_id, orb):
    #   link = ""
    return(link)
 
-def make_event_json(event_id, solve_dir):
+def make_event_json(event_id, solve_dir,ignore_obs):
 
    import pickle
    jpgs = glob.glob(solve_dir + "/*.jpg")
@@ -1557,14 +1670,20 @@ def make_event_json(event_id, solve_dir):
    station_data = {}
    for station_id in as_obs:
       for file in as_obs[station_id]:
+         obs_key = station_id + "_" + file
+         if obs_key in ignore_obs:
+            status = "BAD"
+         else:
+            status = ""
          if station_id not in station_data:
             obs_data = as_obs[station_id][file]
             print(station_id)
             lat, lon, alt = obs_data['loc']
             station_data[station_id] = obs_data['loc']
-            points.append((lon,lat,alt,station_id))
+            points.append((lon,lat,alt,status + station_id))
 
    durs = []
+   ss_lines = []
    for ss in simple_solve:
       print(ss)
       sol_key, start_lat, start_lon, start_ele, end_lat, end_lon, end_ele, dist, dur, vel = ss 
@@ -1576,12 +1695,12 @@ def make_event_json(event_id, solve_dir):
       ol_start_lon = station_data[station2][1]
       ol_start_alt = station_data[station2][2]
       line_desc = "OL:" + sol_key
-      lines.append((ol_start_lon,ol_start_lat,ol_start_alt,start_lon,start_lat,start_ele,line_desc))
-      lines.append((ol_start_lon,ol_start_lat,ol_start_alt,end_lon,end_lat,end_ele,line_desc))
+      ss_lines.append((ol_start_lon,ol_start_lat,ol_start_alt,start_lon,start_lat,start_ele,line_desc))
+      ss_lines.append((ol_start_lon,ol_start_lat,ol_start_alt,end_lon,end_lat,end_ele,line_desc))
 
       line_desc = "SS:" + sol_key
       
-      lines.append((start_lon,start_lat,start_ele,end_lon,end_lat,end_ele,line_desc))
+      ss_lines.append((start_lon,start_lat,start_ele,end_lon,end_lat,end_ele,line_desc))
 
    if len(durs) > 0:
       duration = float(max(durs) / 25)
@@ -1681,8 +1800,8 @@ def make_event_json(event_id, solve_dir):
 
 
 
-
-   make_kml(kml_file, points, lines)
+   folder_name = "WMPL Solver"
+   make_kml(kml_file, points, lines, folder_name)
    #print("SHOWER:" , traj.orbit.la_sun, traj.orbit.L_g, traj.orbit.B_g, traj.orbit.v_g)
    if traj.orbit.la_sun is not None:
       shower_obj = associateShower(traj.orbit.la_sun, traj.orbit.L_g, traj.orbit.B_g, traj.orbit.v_g)
@@ -1813,9 +1932,10 @@ def make_event_json(event_id, solve_dir):
    print("SAVED EVENT FILE:", event_file)
    return(solution,as_obs)
 
-def make_kml(kml_file, points, lines):
+def make_kml(kml_file, points, lines, folder_name):
    import simplekml
    kml = simplekml.Kml()
+   main_folder = kml.newfolder(name=folder_name)
    used = {}
 
    pc = 0
@@ -1826,16 +1946,25 @@ def make_kml(kml_file, points, lines):
 
    for point in points:
       lon,lat,alt,station = point
+      if "BAD" in station:
+         status = "BAD"
+         station = station.replace("BAD", "")
+      else:
+         status = "GOOD"
       if station not in used and "3DP:" not in station:
-         station_folders[station] = kml.newfolder(name=station)
+         station_folders[station] = main_folder.newfolder(name=station)
          color = colors[pc]
          pnt = station_folders[station].newpoint(name=station, coords=[(lon,lat,alt)])
          pnt.description = station
          pnt.style.labelstyle.color=color
 #simplekml.Color.darkgoldenrod
          pnt.style.labelstyle.scale = 1
-         pnt.style.iconstyle.icon.href = 'https://maps.google.com/mapfiles/kml/shapes/placemark_circle.png'
-         pnt.style.iconstyle.color=color
+         if status == "BAD":
+            pnt.style.iconstyle.icon.href = 'http://maps.google.com/mapfiles/kml/shapes/forbidden.png'
+            pnt.style.iconstyle.color='ff0000ff'
+         else:
+            pnt.style.iconstyle.icon.href = 'https://maps.google.com/mapfiles/kml/shapes/placemark_circle.png'
+            pnt.style.iconstyle.color=color
          pnt.altitudemode = simplekml.AltitudeMode.relativetoground
 
          used[station] = color
@@ -1874,7 +2003,7 @@ def make_kml(kml_file, points, lines):
          if pc >= len(colors):
             pc = 0
    print("NOT USED STATIONS:", not_used)
-   line_folder = kml.newfolder(name="Trajectory")
+   line_folder = main_folder.newfolder(name="Trajectory")
    for line in lines:
       (lon1,lat1,alt1,lon2,lat2,alt2,line_desc) = line
       if "vect" in line_desc:
@@ -2024,7 +2153,7 @@ def event_report(solve_dir, event_final_dir, obs):
        new_file = event_final_dir + fn 
        cmd = "mv " + sf + " " + event_final_dir
 
-       if sf != event_final_dir + fn:
+       if sf != event_final_dir + fn and "png" not in fn:
           print("MOVE11:", cmd)
           os.system(cmd)
        if "jpg" in fn:
@@ -2039,6 +2168,12 @@ def event_report(solve_dir, event_final_dir, obs):
     fp = open(solve_dir + "/index.html", "w")
     fp.write(html)
     print("SAVED INDEX:", event_final_dir + "/index.html")
+
+    # delete PNGS
+    pngs = glob.glob(event_final_dir + "*.png")
+    for png in pngs:
+       cmd = "rm " + png
+       os.system(cmd)
 
     # sync data to cloud
     cloud_final_dir = event_final_dir.replace("/mnt/ams2/", "/mnt/archive.allsky.tv/")
@@ -2146,7 +2281,11 @@ def WMPL_solve(event_id, obs,time_sync=1):
 
     solved_files = glob.glob(solve_dir + "*")
     if len(solved_files) == 0:
-       print("FAILED TO SOLVE.")
+       print("FAILED TO SOLVE. No files in solve dir:", solve_dir )
+       cmd = "cd ../pythonv2; ./solve.py vida_failed_plots " + event_id
+       print(cmd)
+       os.system(cmd)
+ 
        for station_id in obs:
           if len(obs[station_id].keys()) > 1:
              file = get_best_obs(obs[station_id])
@@ -2167,8 +2306,10 @@ def center_obs(obs_data):
    for st in obs_data:
       for fn in obs_data[st]:
          lat,lon,alt = obs_data[st][fn]['loc']
+         print("LAT LON:", lat,lon,alt)
       lats.append(float(lat))
       lons.append(float(lon))
+  
    return(np.mean(lats),np.mean(lons))
 
 def menu():
