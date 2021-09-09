@@ -20,6 +20,7 @@ if __name__ == "__main__":
       mon = sys.argv[3]
       R = Reconcile(year,mon)
       R.rec_media(year,mon)
+      exit()
       
 
    if cmd == "rec":

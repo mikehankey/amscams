@@ -18,7 +18,7 @@ from lib.PipeAutoCal import get_best_cal, get_cal_files, fn_dir
 import os
 from lib.PipeAutoCal import fn_dir
 from lib.PipeVideo import ffmpeg_splice, find_hd_file, load_frames_fast, find_crop_size, ffprobe, load_frames_simple
-from lib.PipeUtil import load_json_file, save_json_file, cfe, get_masks, convert_filename_to_date_cam, buffered_start_end, get_masks, compute_intensity , bound_cnt, day_or_night, calc_dist
+from lib.PipeUtil import load_json_file, save_json_file, cfe, get_masks, convert_filename_to_date_cam, buffered_start_end, get_masks, compute_intensity , bound_cnt, day_or_night, calc_dist, get_file_info
 from lib.DEFAULTS import *
 import glob
 from lib.PipeImage import stack_frames
@@ -201,7 +201,21 @@ def make_all_hourly_stacks(json_conf):
          os.system(cmd)
          print(cmd)
 
+def all_hourly_stacks_html(json_conf):
+   night_stack_main_dir = "/mnt/ams2/meteor_archive/" + STATION_ID + "/STACKS/" 
+   nsdirs = []
+   dirs = glob.glob(night_stack_main_dir + "*")
+   for sdir in dirs:
+      if cfe(sdir,1) == 1:
+         nsdirs.append(sdir) 
+   for nsdir in sorted(nsdirs,reverse=True):
+      date = nsdir.split("/")[-1]
+      print("HSHA DATE:", date)
+      hourly_stacks_html(date, json_conf)
+
 def hourly_stacks_html(date, json_conf):
+   # DAY NIGHT STACKS ARE MADE IN HERE
+   # ./Process.py hsh YYYY_MM_DD
    work_dir = "/mnt/ams2/SD/proc2/" + date + "/images/"
    night_stack_dir = "/mnt/ams2/meteor_archive/" + STATION_ID + "/STACKS/" + date + "/"
    hour_files = glob.glob(night_stack_dir + "*.jpg")
@@ -209,6 +223,8 @@ def hourly_stacks_html(date, json_conf):
  
    night_images = {}
    day_images = {}
+   dawn_images = {}
+   dusk_images = {}
    
    cam_ids = []
    for cam_num in json_conf['cameras']:
@@ -218,19 +234,17 @@ def hourly_stacks_html(date, json_conf):
    for id in cam_ids:
       night_images[id] = [] 
       day_images[id] = [] 
+      dawn_images[id] = [] 
+      dusk_images[id] = [] 
 
 
 
    for file in sorted(hour_files, reverse=True):
-      print(file)
       (f_datetime, cam, f_date_str,fy,fm,fd, fh, fmin, fs) = convert_filename_to_date_cam(file)
       sun_status, sun_az, sun_el = day_or_night(f_date_str, json_conf,1)
-      if float(sun_el) > -15:
-         print("DAYTIME FILE:", sun_el)
 
       fn, dir = fn_dir(file)
-      if "night" not in file and "day" not in file:
-         print("FILE:", file)
+      if "night" not in file and "day" not in file and "dusk" not in file and "dawn" not in file:
          el = fn.split("_")
          hour = el[3]
          cam = el[4].replace(".jpg", "")
@@ -253,13 +267,34 @@ def hourly_stacks_html(date, json_conf):
                (y, m, d, h, c ) = fn.split("_")
                fdate = y + "/" + m + "/" + d + " " + h + ":00:00"
                sun_status, sun_az, sun_el = day_or_night(fdate, json_conf,1)
-               print("SUN EL:",  sun_status, sun_az, sun_el)
-               img = cv2.imread(html_data[hk][cid])
-               if float(sun_el) < -2:
-                  night_images[cid].append(img)
+               sun_el = float(sun_el)
+               sun_az = float(sun_az)
+               if sun_el <= -20:
+                  sun_status = "night"
+               elif 5 > sun_el > -20 and (180 - sun_az < 0):
+                  sun_status = "dusk"
+               elif 5 > sun_el > -20 and (180 - sun_az > 0):
+                  sun_status = "dawn"
                else:
+                  sun_status = "day"
+
+
+               print("SUN AZ EL:", sun_status, sun_az, sun_el, 180 - sun_az)
+               #print("SUN EL:",  sun_status, sun_az, sun_el, 180 - sun_az)
+               img = cv2.imread(html_data[hk][cid])
+               if sun_status == "night":
+                  print("NIGHT:", sun_el)
+                  night_images[cid].append(img)
+               elif sun_status == "dusk":
+                  print("DUSK:", sun_el)
+                  dusk_images[cid].append(img)
+               elif sun_status == "dawn":
+                  print("DAWN:", sun_el)
+                  dawn_images[cid].append(img)
+               else :
                   day_images[cid].append(img)
-                  print("SKIP DAWN/DUSK:", sun_el)
+                  print("DAY:", sun_el)
+
                link = "/pycgi/webUI.py?cmd=browse_day&cams_id=" + cid + "&day=" + str(date) + "&hour=" + str(hour)
                html += "<td><a href=" + link + "><img src=" + html_data[hk][cid] + "></a></td>"
               
@@ -270,37 +305,92 @@ def hourly_stacks_html(date, json_conf):
       html += "</tr>"
 
    html += "</table>"
+   all_stack_images = []
    for cam_id in day_images:
 
       if len(day_images[cam_id]) == 0:
          day_images[cam_id] = day_images[cam_id]
       day_stack_image = stack_frames(day_images[cam_id], 1, None, "day")
-      day_stack_file = "/mnt/ams2/SD/proc2/" + date + "/images/" + cam_id + "-day-stack.png"
+      #day_stack_file = "/mnt/ams2/SD/proc2/" + date + "/images/" + cam_id + "-day-stack.png"
       day_stack_file_jpg = "/mnt/ams2/meteor_archive/" + STATION_ID + "/STACKS/" + date + "/" + cam_id + "-day-stack.jpg"
+      all_stack_images.append(day_stack_file_jpg)
       try:
-         cv2.imwrite(day_stack_file, day_stack_image)
+      #   cv2.imwrite(day_stack_file, day_stack_image)
          cv2.imwrite(day_stack_file_jpg, day_stack_image)
          print(day_stack_file_jpg)
       except:
-         print("Problem saving day stack file ", day_stack_file)
+         print("Problem saving day stack file ", day_stack_file , day_stack_image.shape)
+         print(len(day_images[cam_id]), "images") 
+         blank_image = np.zeros((180,360,3),dtype=np.uint8)
+         cv2.imwrite(day_stack_file_jpg, blank_image)
 
 
    for cam_id in night_images:
       print("NIGHT IMAGES:", cam_id, len(night_images[cam_id]))
 
-      if len(night_images[cam_id]) == 0:
-         night_images[cam_id] = day_images[cam_id] 
+      #if len(night_images[cam_id]) == 0:
+      #   night_images[cam_id] = day_images[cam_id] 
       night_stack_image = stack_frames(night_images[cam_id], 1, None, "night")
-      night_stack_file = "/mnt/ams2/SD/proc2/" + date + "/images/" + cam_id + "-night-stack.png"
+      #night_stack_file = "/mnt/ams2/SD/proc2/" + date + "/images/" + cam_id + "-night-stack.png"
       night_stack_file_jpg = "/mnt/ams2/meteor_archive/" + STATION_ID + "/STACKS/" + date + "/" + cam_id + "-night-stack.jpg"
+      all_stack_images.append(night_stack_file_jpg)
       try:
-         cv2.imwrite(night_stack_file, night_stack_image)
+         #cv2.imwrite(night_stack_file, night_stack_image)
          cv2.imwrite(night_stack_file_jpg, night_stack_image)
          print(night_stack_file_jpg)
       except:
-         print("Problem saving night stack file ", night_stack_file)
+         print("Problem saving night stack file ", night_stack_file, night_stack_image.shape)
+         print(len(night_images[cam_id]))
+         blank_image = np.zeros((180,360,3),dtype=np.uint8)
+         cv2.imwrite(night_stack_file_jpg, blank_image)
 
-      print(night_stack_file)
+
+   for cam_id in dusk_images:
+      print("DUSK IMAGES:", cam_id, len(dusk_images[cam_id]))
+
+      #if len(dusk_images[cam_id]) == 0:
+      #   dusk_images[cam_id] = day_images[cam_id] 
+      dusk_stack_image = stack_frames(dusk_images[cam_id], 1, None, "dusk")
+      #dusk_stack_file = "/mnt/ams2/SD/proc2/" + date + "/images/" + cam_id + "-dusk-stack.png"
+      dusk_stack_file_jpg = "/mnt/ams2/meteor_archive/" + STATION_ID + "/STACKS/" + date + "/" + cam_id + "-dusk-stack.jpg"
+      all_stack_images.append(dusk_stack_file_jpg)
+      try:
+      #   cv2.imwrite(dusk_stack_file, dusk_stack_image)
+         cv2.imwrite(dusk_stack_file_jpg, dusk_stack_image)
+         print(dusk_stack_file_jpg)
+      except:
+         print("Problem saving dusk stack file ", dusk_stack_file_jpg, dusk_stack_image.shape)
+         print(len(dusk_images[cam_id]))
+         blank_image = np.zeros((180,360,3),dtype=np.uint8)
+         cv2.imwrite(dusk_stack_file_jpg, blank_image)
+
+
+   for cam_id in dawn_images:
+      print("DAWN IMAGES:", cam_id, len(dawn_images[cam_id]))
+
+      #if len(dusk_images[cam_id]) == 0:
+      #   dusk_images[cam_id] = day_images[cam_id] 
+      dawn_stack_image = stack_frames(dusk_images[cam_id], 1, None, "dawn")
+      #dawn_stack_file = "/mnt/ams2/SD/proc2/" + date + "/images/" + cam_id + "-dawn-stack.png"
+      dawn_stack_file_jpg = "/mnt/ams2/meteor_archive/" + STATION_ID + "/STACKS/" + date + "/" + cam_id + "-dawn-stack.jpg"
+      all_stack_images.append(dawn_stack_file_jpg)
+      try:
+      #   cv2.imwrite(dawn_stack_file, dawn_stack_image)
+         cv2.imwrite(dawn_stack_file_jpg, dawn_stack_image)
+         print(dawn_stack_file_jpg)
+      except:
+         print("Problem saving dawn stack file ", dawn_stack_file, dawn_stack_iamge.shape)
+         print(len(dawn_images[cam_id]))
+         blank_image = np.zeros((180,360,3),dtype=np.uint8)
+         cv2.imwrite(dawn_stack_file_jpg, blank_image)
+
+
+   blank_image = np.zeros((180,360,3),dtype=np.uint8)
+   for sf in all_stack_images:
+      tsize, tdiff = get_file_info(sf)
+      if cfe(sf) == 0 or tsize == 0:
+         print("MAKE BLANK IMAGE", sf)
+         cv2.imwrite(sf, blank_image)
 
    fp = open(night_stack_dir + "hours.html", "w")
    fp.write(html)
@@ -515,7 +605,7 @@ def hourly_stacks(date, json_conf):
          print("SOLAR HOUR:", solar_hours[int(fh)])
          if int(fh) in solar_hours:
             sun_status, sun_az, sun_el = solar_hours[int(fh)]
-            if float(sun_el) > -10:
+            if float(sun_el) > -20:
                sun_status = "day"
          else:
             print("MISSING SOLAOR HOUR", int(fh))

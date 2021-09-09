@@ -65,7 +65,9 @@ def stacks_main(amsid, data) :
             non_meteors = data['failed_files']
          else:
             print("NO data for this day.")
-            continue
+            #continue
+            non_meteors = "???"
+            mets = "???"
          date = stack_day
          dsp_date = date.replace("_", "/")
          out += """
@@ -74,6 +76,7 @@ def stacks_main(amsid, data) :
                - <a class='btn btn-primary' href=/meteor/""" + amsid + "/?start_day=" + date + ">" + str(mets) + """ Meteors </a>
 	      </h2><p><a href=/trash/""" + amsid + "/?start_day=" + date + """>""" + str(non_meteors) + """ Non-Meteors </a>  </a>
          </div>
+         Night Stacks
          <div class='gallery gal-resize row text-center text-lg-left mb-5'>
          """
 
@@ -90,16 +93,49 @@ def stacks_main(amsid, data) :
                minutes = data[cams_id]
             else:
                minutes = ""
+            
             out += """
 	       <div class='preview'>
 	          <a class='mtt' href='/stacks_day/""" + amsid + "/" + date + """/' title='Browse all day'>
-                  <img width=320 height=180 alt='""" + date + """' class='img-fluid ns lz' src='""" + night_stack_file + """'>
+                  <img width=320 height=180 alt='""" + date + """' class='img-fluid ns lz' src='""" + night_stack_file + """?bb'>
                   </a><span class='pre-b'>Cam #""" + cams_id + " " + str(minutes) + """ minutes</span>
                </div>
             """
          out += "</div>"
 
-         out += """ <div class='gallery gal-resize row text-center text-lg-left mb-5'>"""
+         # Dusk
+         out += """
+         Dusk Stacks
+         <div class='gallery gal-resize row text-center text-lg-left mb-5'>
+         """
+
+
+         for cam in json_conf['cameras']:
+            cams_id = json_conf['cameras'][cam]['cams_id']
+            dusk_stack_file = vdir + "/" + cams_id + "-dusk-stack.jpg"
+            print("NIGHT STACK FILE!", night_stack_file)
+            if cfe("/mnt/ams2/" + dusk_stack_file) == 0:
+               print("NOT FOUND")
+               dusk_stack_file = "/none.png"               
+            else:
+               print("FOUND")
+            if cams_id in data:
+               minutes = data[cams_id]
+            else:
+               minutes = ""
+            
+            out += """
+	       <div class='preview'>
+	          <a class='mtt' href='/stacks_day/""" + amsid + "/" + date + """/' title='Browse all day'>
+                  <img width=320 height=180 alt='""" + date + """' class='img-fluid ns lz' src='""" + dusk_stack_file + """?bb'>
+                  </a><span class='pre-b'>Cam #""" + cams_id + " " + str(minutes) + """ minutes</span>
+               </div>
+            """
+         out += "</div>"
+
+
+
+         out += """ Day Stacks <div class='gallery gal-resize row text-center text-lg-left mb-5'>"""
          for cam in json_conf['cameras']:
             cams_id = json_conf['cameras'][cam]['cams_id']
             day_stack_file = vdir + "/" + cams_id + "-day-stack.jpg"
@@ -117,10 +153,40 @@ def stacks_main(amsid, data) :
                out += """
                   <div class='preview'>
                      <a class='mtt' href='/stacks_day/""" + amsid + "/" + date + """/' title='Browse all day'>
-                     <img width=320 height=180 alt='""" + date + """' class='img-fluid ns lz' src='""" + day_stack_file + """'>
+                     <img width=320 height=180 alt='""" + date + """' class='img-fluid ns lz' src='""" + day_stack_file + """?bb'>
                      </a><span class='pre-b'>Cam #""" + cams_id + " " + str(minutes) + """ minutes</span>
                   </div>
                """
+         out += "</div>"
+
+         # Dawn
+         out += """
+         Dawn Stacks
+         <div class='gallery gal-resize row text-center text-lg-left mb-5'>
+         """
+
+
+         for cam in json_conf['cameras']:
+            cams_id = json_conf['cameras'][cam]['cams_id']
+            dawn_stack_file = vdir + "/" + cams_id + "-dawn-stack.jpg"
+            print("DAWN STACK FILE!", dawn_stack_file)
+            if cfe("/mnt/ams2/" + dawn_stack_file) == 0:
+               print("DAWN STACK NOT FOUND")
+               dawn_stack_file = "/none.png"               
+            else:
+               print("DAWN STACK FOUND", "/mnt/ams2/" + dawn_stack_file)
+            if cams_id in data:
+               minutes = data[cams_id]
+            else:
+               minutes = ""
+            
+            out += """
+	       <div class='preview'>
+	          <a class='mtt' href='/stacks_day/""" + amsid + "/" + date + """/' title='Browse all day'>
+                  <img width=320 height=180 alt='""" + date + """' class='img-fluid ns lz' src='""" + dawn_stack_file + """?bb'>
+                  </a><span class='pre-b'>Cam #""" + cams_id + " " + str(minutes) + """ minutes</span>
+               </div>
+            """
          out += "</div>"
 
 

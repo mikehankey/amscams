@@ -2004,6 +2004,7 @@ def refit_fov(cal_file, json_conf):
    (f_datetime, cam, f_date_str,year,m,d, h, mm, s) = convert_filename_to_date_cam(cal_file)
    this_cam = cam
    cal_params = load_json_file(cal_file)
+   cp = cal_params
    image_file = cal_file.replace("-calparams.json", ".png")
    img = cv2.imread(image_file)
    orig_img = img.copy()
@@ -2306,6 +2307,7 @@ def refit_fov(cal_file, json_conf):
    save_json_file(cal_file, cal_params)
 
    short_bright_stars = []
+
    if "cat_image_stars" in cp: 
       for star in cp['cat_image_stars']:
 

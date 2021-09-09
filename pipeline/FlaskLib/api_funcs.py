@@ -220,7 +220,7 @@ def restore_meteor(jsid, data):
    meteor_dir = "/mnt/ams2/meteors/" + day + "/" 
    mj = load_json_file("/mnt/ams2/trash/" + day + "/" + json_file)
    mj['hc'] = 1
-   save_json_file("/mnt/ams2/trash/" + day + "/" + json_file)
+   save_json_file("/mnt/ams2/trash/" + day + "/" + json_file, mj)
    if "hd_trim" in mj:
       hd_root, hd_dir = fn_dir(mj['hd_trim'])
       hd_root = hd_root.replace(".mp4", "")
