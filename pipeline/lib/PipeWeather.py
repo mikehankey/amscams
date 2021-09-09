@@ -370,7 +370,7 @@ def hourly_stacks_html(date, json_conf):
 
       #if len(dusk_images[cam_id]) == 0:
       #   dusk_images[cam_id] = day_images[cam_id] 
-      dawn_stack_image = stack_frames(dusk_images[cam_id], 1, None, "dawn")
+      dawn_stack_image = stack_frames(dawn_images[cam_id], 1, None, "dawn")
       #dawn_stack_file = "/mnt/ams2/SD/proc2/" + date + "/images/" + cam_id + "-dawn-stack.png"
       dawn_stack_file_jpg = "/mnt/ams2/meteor_archive/" + STATION_ID + "/STACKS/" + date + "/" + cam_id + "-dawn-stack.jpg"
       all_stack_images.append(dawn_stack_file_jpg)
