@@ -219,7 +219,7 @@ def restore_meteor(jsid, data):
    trash_dir = "/mnt/ams2/trash/" + day + "/" 
    meteor_dir = "/mnt/ams2/meteors/" + day + "/" 
    mj = load_json_file("/mnt/ams2/trash/" + day + "/" + json_file)
-   mh['hc'] = 1
+   mj['hc'] = 1
    save_json_file("/mnt/ams2/trash/" + day + "/" + json_file)
    if "hd_trim" in mj:
       hd_root, hd_dir = fn_dir(mj['hd_trim'])
