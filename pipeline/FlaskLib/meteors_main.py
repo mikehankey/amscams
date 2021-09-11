@@ -190,6 +190,13 @@ def meteors_by_day(amsid, in_data):
 
 def trash_page (amsid, in_data) :
    start_day = in_data['start_day']
+   if "rebuild" in in_data:
+      print("REBUILD METEOR INDEX")
+      os.system("./Process.py purge_meteors ")
+      os.system("./Process.py mmi_day " + start_day)
+      msg = "Meteor Index for " + start_day + " was rebuilt." 
+   else:
+      msg = ""
    date = start_day
    json_conf = load_json_file("../conf/as6.json")
    trash_dir = "/mnt/ams2/trash/" + start_day + "/" 
@@ -201,7 +208,10 @@ def trash_page (amsid, in_data) :
          trash_files.append(tj)
    template = make_default_template(amsid, "meteors_main.html", json_conf)
 
-   out = """
+   rebuild_link = "<a href=/trash/" + amsid + "/?start_day=" + start_day + "&rebuild=1>Rebuild Meteor Index After Restoring Files</a><br>" + msg + "<br>"
+
+   out = rebuild_link + """
+   
       <div id='main_container' class='container-fluid h-100 mt-4 lg-l'>
       <div class='gallery gal-resize reg row text-center text-lg-left'>
       <div class='list-onl'>

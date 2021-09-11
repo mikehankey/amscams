@@ -432,7 +432,10 @@ def trash_pg(amsid ):
    req = {}
    start_day = request.args.get('start_day')
    end_day = request.args.get('end_day')
+   rebuild = request.args.get('rebuild')
    req = {}
+   if rebuild is not None:
+      req['rebuild'] = 1
    req['start_day'] = start_day
    req['end_day'] = end_day
    out = trash_page(amsid, req)

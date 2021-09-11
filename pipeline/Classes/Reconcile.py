@@ -7,7 +7,7 @@ from pushAWS import make_obs_data
 import glob
 from datetime import datetime
 import datetime as ddtt
-
+import numpy as np
 """
  Reconcile -- Class for reconciling meteor data with latest detection, redis storage, calib, media, cloud, backup/archive and AWS. 
 
@@ -76,12 +76,197 @@ class Reconcile():
          if root_file not in self.rec_data['meteor_index']:
             self.rec_data['meteor_index'][root_file] = {}
             self.rec_data['meteor_index'][root_file]['last_update'] = datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
+            print("LOADING FILE INTO REC DATA:", root_file)
             self.rec_data['meteor_index'][root_file]['obs_data'] = make_obs_data(self.station_id, date, meteor_file) 
             new = new + 1
 
          c += 1
          last_month = mon
+      save_json_file(self.rec_file, self.rec_data )
       #self.reconcile_scan_media(year,month)
+
+   def media_make_roi_jpg(self,root_file):
+      day = root_file[0:10]
+      year = root_file[0:4]
+      self.mdir = "/mnt/ams2/meteors/" + day + "/"
+      self.scan_dir = "/mnt/ams2/METEOR_SCAN/" + day + "/" 
+      self.cloud_dir = "/mnt/archive.allsky.tv/" + self.station_id + "/" + year + "/" + day + "/"
+      roi_file = self.station_id + "_" + root_file + "-ROI.jpg"
+      if cfe(roi_file) == 0:
+         print("Make local ROI.jpg")
+         mjf = self.mdir + root_file + ".json"
+         mjrf = self.mdir + root_file + "-reduced.json"
+         hd_roi = None
+         if cfe(mjrf) == 1:
+            mjr = load_json_file(mjrf)
+            mj = load_json_file(mj)
+            if "meteor_frame_data" in mjr:
+               if len(mjr["meteor_frame_data"]) > 0:
+                  hd_roi = self.mfd_roi(mjr["meteor_frame_data"])
+                  self.make_roi_media(root_file,x1,y1,x2,y2,mj)
+                  
+               else:
+                  print("MFD = 0")
+            else:
+               print("NO MFD ")
+         else:
+            print("NO RED FILE!", mjrf)
+         if hd_roi is not None:
+            print("HD ROI IS:", hd_roi)
+
+          
+      if cfe(cloud_dir + root_file + "-ROI.jpg") == 0:
+         print("Copy ROI.jpg to cloud")
+
+   def make_roi_media(self, mfd):
+      print("MAKE ROI MEDIA")
+
+   def mfd_roi(self, mfd):
+      xs = [row[2] for row in mfd]
+      ys = [row[3] for row in mfd]
+      cx = np.mean(xs)
+      cy = np.mean(ys)
+      min_x = min(xs)
+      max_x = max(xs)
+      min_y = min(ys)
+      max_y = max(ys)
+      print("MFD AREA:", min_x, min_y, max_x, max_y)
+      print("xs", xs)
+      print("ys", ys)
+      w = max_x - min_x
+      h = max_y - min_y
+      print("DIM:", w,h)
+      if w > h:
+         roi_size = int(w * 1.25)
+      else:
+         roi_size = int(h * 1.25)
+      print(roi_size)
+
+      x1 = int(cx - int(roi_size/2))
+      x2 = int(cx + int(roi_size/2))
+      y1 = int(cy - int(roi_size/2))
+      y2 = int(cy + int(roi_size/2))
+      print("HD ROI:", x1,y1,x2,y2)
+      roi_w = x2 - x1
+      roi_h = y2 - y1
+      print("HD ROI W/H:", roi_w, roi_h)
+      if roi_w != roi_h:
+         print("HD ROI PROBLEM? W/H SHOULD BE THE SAME?")
+         if roi_w < roi_h:
+            roi_size = roi_w
+         else:
+            roi_size = roi_h
+      else:
+         roi_size = roi_w 
+      if roi_size > 1070:
+         print("METEOR IS TOO BIG TO MAKE AN ROI!")
+         hd_roi = [0,0,1920,1080]
+         return(hd_roi)
+      # check if the ROI BOX extends offframe
+      off_frame = self.check_off_frame(x1,y1,x2,y2,1920,1080) 
+      if len(off_frame) > 0:
+         x1,y1,x2,y2 = self.fix_off_frame(x1,y1,x2,y2,1920,1080, off_frame) 
+      return(x1,y1,x2,y2)
+
+   def fix_off_frame(self,x1,y1,x2,y2,w,h,off_frame):
+      print("*********************************************")
+      print("*            OFF FRAME ROI DETECTED         *")
+      print("*********************************************")
+      print(x1,y1,x2,y2,w,h,off_frame)
+      input()
+      w = x2 - x1
+      h = y2 - y1
+      roi_size = w
+      if h > w:
+         roi_size = h
+      if len(off_frame) > 0:
+         for off in off_frame:
+            if off == "left": 
+               x1 = 0 
+               x2 = roi_size
+            if off == "right": 
+               x1 = 1919 - roi_size 
+               x2 = 1919 
+            if off == "top": 
+               y1 = 0
+               y2 = roi_size
+            if off == "bottom": 
+               y1 = 1079 - roi_size
+               y2 = 1079 
+ 
+      return(x1,y1,x2,y2)
+
+   def check_off_frame(self,x1,y1,x2,y2,w,h):
+      off_frame = []
+      
+      print("check_off_frame", x1,y1,x2,y2,w,h)
+      if x1 < 0: 
+         print("X1 < 0")
+         off_frame.append('left')
+      if x2 > w - 1: 
+         print("X2 > W", x2, w)
+         off_frame.append('right')
+      if y1 < 0: 
+         print("Y1 < 0")
+         off_frame.append('top')
+      if y2 > h - 1: 
+         print("Y2 > H", y2, h)
+         off_frame.append('bottom')
+      print("OFF FRAME:", off_frame)
+      return(off_frame)
+
+   def rec_media(self,year,month):
+      missing_media = {}
+      self.get_cloud_media(year)
+      for root_file in self.rec_data['meteor_index']:
+         if root_file in self.rec_data['meteor_index']:
+            if "cloud_files" in self.rec_data['meteor_index'][root_file]:
+               print("CLOUD FILE:", root_file, self.rec_data['meteor_index'][root_file]['cloud_files'])
+               if "prev.jpg" not in self.rec_data['meteor_index'][root_file]['cloud_files']:
+                  print("MISSING PREV:", root_file)
+                  if root_file not in missing_media:
+                     missing_media[root_file] = {}
+                  missing_media[root_file]['prev.jpg'] = 1
+               if "ROI.jpg" not in self.rec_data['meteor_index'][root_file]['cloud_files']:
+                  print("MISSING ROI JPG:", root_file)
+                  if root_file not in missing_media:
+                     missing_media[root_file] = {}
+                  missing_media[root_file]['ROI.jpg'] = 1
+               if "SD.mp4" not in self.rec_data['meteor_index'][root_file]['cloud_files']:
+                  print("MISSING SD MP4:", root_file)
+                  if root_file not in missing_media:
+                     missing_media[root_file] = {}
+                  missing_media[root_file]['SD.mp4'] = 1
+               if "SD.jpg" not in self.rec_data['meteor_index'][root_file]['cloud_files']:
+                  print("MISSING SD MP4:", root_file)
+                  if root_file not in missing_media:
+                     missing_media[root_file] = {}
+                  missing_media[root_file]['SD.jpg'] = 1
+
+
+               if "ROI.mp4" not in self.rec_data['meteor_index'][root_file]['cloud_files']:
+                  print("MISSING ROI MP4:", root_file)
+                  if root_file not in missing_media:
+                     missing_media[root_file] = {}
+                  missing_media[root_file]['ROI.jpg'] = 1
+               if "360p.mp4" not in self.rec_data['meteor_index'][root_file]['cloud_files']:
+                  print("MISSING 360p MP4:", root_file)
+                  if root_file not in missing_media:
+                     missing_media[root_file] = {}
+                  missing_media[root_file]['360p.mp4'] = 1
+            else:
+               print("NO CLOUD FILES DATA STRUCTURE FOR ROOT FILE?", root_file)
+         else:
+            print("NO ROOT FILE in meteor_index?", root_file)
+
+      # FIRST PUT IN THE ROI FILES
+      for root_file in missing_media:
+         for ext in missing_media[root_file]:
+            if ext == "ROI.jpg":
+               print("MAKE ROI FOR ", root_file)
+
+               self.media_make_roi_jpg(root_file)
+         #print(root_file, missing_media[root_file])
 
    def reconcile_scan_media(self, year, month):
       print("GETTING SCAN MEDIA...", year, month)
@@ -421,7 +606,8 @@ class Reconcile():
    def get_cloud_media(self, year):
       cloud_files_file = "/mnt/ams2/METEOR_SCAN/DATA/cloud_files_" + year + ".txt"
       cloud_wild = "/mnt/archive.allsky.tv/" + self.station_id + "/METEORS/" + year + "/" 
-      if cfe(cloud_files_file) == 0:
+      size, tdiff = get_file_info(cloud_files_file)
+      if cfe(cloud_files_file) == 0 or tdiff > 2000:
          print("GETTING CLOUD FILES....")
          print ("find " + cloud_wild + " > " + cloud_files_file)
          os.system("find " + cloud_wild + " > " + cloud_files_file)
