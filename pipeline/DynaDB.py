@@ -1108,9 +1108,11 @@ def get_obs(station_id, sd_video_file):
       if "not found" in content:
          data = {}
          data['aws_status'] = False
+         print("FETCH FAILED")
       else:
          data = json.loads(content)
          data['aws_status'] = True
+         print("FETCH GOOD")
       return(data)
 
 def get_obs_old2(dynamodb, station_id, sd_video_file):
@@ -1464,6 +1466,11 @@ def do_dyna_day(dynamodb, day):
    # and then also download event data for this site
    # and update the mse info in the json for each site
    # also sync prev imgs for mse events
+   # check if the latest day,dawn,dusk,night stacks have been made. if not run that. 
+   if cfe("../conf/hsha.txt") == 0:
+      os.system("./Process.py hsha")
+      os.system("touch ../conf/hsha.txt")
+   
 
    if cfe("dyn.log") == 0:
       dyn_log = {}
