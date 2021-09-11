@@ -233,7 +233,11 @@ def ffprobe(video_file):
             bitrate = ee
             bitrate  = bitrate.split(" ")[1]
 
-      w, h = dim.split("x")
+      try:
+         w, h = dim.split("x")
+      except:
+         w = 0
+         h = 0
    return(w,h, bitrate, int(total_frames))
 
 def best_crop_size(oxs, oys, vw,vh):

@@ -265,7 +265,11 @@ def define_events(date):
       all_events = load_json_file(events_file)
 
    all_obs = load_json_file(obs_file)
-   stations = load_json_file(stations_file)
+   if cfe(stations_file) == 1:
+      stations = load_json_file(stations_file)
+   else:
+      print("NO STATIONS FILE!?")
+      exit()
    station_loc = {}
    meteor_min = {}
    for data in stations:
@@ -645,7 +649,7 @@ def event_stats(events):
       print(ss, stats[ss])
    #exit()
 
-def solve_day(day, cores=30):
+def solve_day(day, cores=10):
    date = day
    year, mon, dom = date.split("_")
    day_dir = "/mnt/ams2/EVENTS/" + year + "/" + mon + "/" + dom + "/" 
@@ -677,7 +681,7 @@ def solve_day(day, cores=30):
 
    
 
-   if cfe(events_file) == 0 or tdiff > 120:
+   if cfe(events_file) == 0 or tdiff > 5:
       cf = events_file.replace("/mnt/ams2", "/mnt/archive.allsky.tv")
       cmd = "cp " + cf + " " + events_file
       os.system(cmd)
@@ -723,8 +727,12 @@ def solve_day(day, cores=30):
          print("Solve Status.", event['solve_status'] , go)
 
       #go = 1
+      #cores = 0
       if go == 1:
          print("Not Solved yet, try to solve", event['event_id'])
+         print(event.keys())
+         if "solve_status" in event:
+            print("SS", event['solve_status'])
          if cores == 0:
             solve_event(event['event_id'])
          else:
@@ -732,8 +740,10 @@ def solve_day(day, cores=30):
              running = check_running("solveWMPL.py")
              print("RUNNING:", running)
              if running < cores:
+                
                 cmd = "./solveWMPL.py se " + event['event_id'] + " &"
                 print(cmd)
+                print("SKIP RUN!")
                 os.system(cmd)
                 time.sleep(2)
              while running >= cores:
@@ -842,12 +852,8 @@ def get_event_data(date, event_id,json_conf=None):
    if True:
       response = requests.get(url)
       content = response.content.decode()
-      print(content)
+      #print(content)
       #content = content.replace("\\", "")
-      print(content)
-      print()
-      print()
-      print()
       #if content[0] == "\"":
       #   content = content[1:]
       #   content = content[0:-1]
@@ -858,7 +864,6 @@ def get_event_data(date, event_id,json_conf=None):
       else:
          data = json.loads(content)
          data['aws_status'] = True
-      print("GOT EVENT DATA")
       return(data)
 
 def get_event_data_old(date, event_id):
@@ -885,6 +890,7 @@ def solve_event(event_id, force=1, time_sync=1):
     cloud_event_dir = "/mnt/archive.allsky.tv/EVENTS/" + year + "/" + mon + "/" + day + "/" + event_id + "/" 
     local_events_dir = "/mnt/ams2/EVENTS/" 
     inspect_file = local_event_dir +  event_id + "-INSPECT.json"
+    print("INSPECT FILE:", inspect_file)
     if cfe(inspect_file) == 1:
        inspect_data = load_json_file(inspect_file)
     else:
@@ -911,7 +917,13 @@ def solve_event(event_id, force=1, time_sync=1):
     cloud_stations_file = cloud_events_dir + "ALL_STATIONS.json"
     local_stations_file = local_events_dir + "ALL_STATIONS.json"
     #if cfe(local_stations_file) == 0:
-    os.system("cp " + cloud_stations_file + " " + local_stations_file)
+    if cfe(cloud_stations_file) == 1:
+       os.system("cp " + cloud_stations_file + " " + local_stations_file)
+    else:
+       print("NO CLOUD STATIONS FILE?", cloud_stations_file)
+   
+    print("LOCAL STATIONS FILE:", local_stations_file)
+
     all_stations_ar = load_json_file(local_stations_file)
     all_stations = {}
     print("ALL ST:", all_stations_ar)
@@ -1001,10 +1013,9 @@ def solve_event(event_id, force=1, time_sync=1):
 
           continue
        dy_obs_data = get_obs(t_station, t_file)
+       print("DY OBS DATA:", dy_obs_data)
        if dy_obs_data is not None:
-          if t_station in nsinfo:
-             dy_obs_data['loc'] = nsinfo[t_station]['loc']
-          else:
+          if True:
              local_file = "/mnt/ams2/STATIONS/CONF/" + t_station + "_as6.json" 
              cloud_file = "/mnt/archive.allsky.tv/" + t_station + "/CAL/as6.json" 
              if cfe(local_file) == 0:
@@ -1014,6 +1025,7 @@ def solve_event(event_id, force=1, time_sync=1):
              #red_key = "ST:" + t_station
              #red_val = r.get(red_key)
              if t_station not in all_stations:
+                print("MISSING STATION IN FOR ", t_station)
                 continue
              red_val = all_stations[t_station]
              print("RED VAL:", red_val)
@@ -1028,9 +1040,12 @@ def solve_event(event_id, force=1, time_sync=1):
                 jsi = load_json_file(local_file)
                 dy_obs_data['loc'] = [jsi['site']['device_lat'], jsi['site']['device_lng'], jsi['site']['device_alt']]
           obs_data = convert_dy_obs(dy_obs_data, obs )
+          print("OBS DATA:", obs_data)
+       else:
+          print("DYNA OBS DATA IS NONE!")
 
     # sanity check the obs!
-    print("USING THESE OBS:")
+    print("USING THESE OBS:", obs_data)
     for obs in obs_data:
        print(obs)
     extra_obs_data = None
@@ -1165,6 +1180,7 @@ def solve_event(event_id, force=1, time_sync=1):
     #cmd = "rm " + solve_dir + "/*.png"
     #print(cmd)
     #os.system(cmd)
+    print("RSYNC EVENT CONTENT")
     cmd = "rsync -auv " + solve_dir + "* " + cloud_dir 
     print(cmd)
     os.system(cmd)
@@ -1722,6 +1738,9 @@ def make_event_json(event_id, solve_dir,ignore_obs):
 
    if len(pks) == 0:
       print("WMPL FAILED. NO EVENT JSON MADE.")
+      cloud_dir = solve_dir.replace("/ams2/", "/archive.allsky.tv/")
+      cmd = "rsync -auv " + solve_dir + "* " + cloud_dir 
+      os.system(cmd)
       return(0)
 
    f = open(pks[0], 'rb')

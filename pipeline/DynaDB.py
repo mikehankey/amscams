@@ -1108,9 +1108,11 @@ def get_obs(station_id, sd_video_file):
       if "not found" in content:
          data = {}
          data['aws_status'] = False
+         print("FETCH FAILED")
       else:
          data = json.loads(content)
          data['aws_status'] = True
+         print("FETCH GOOD")
       return(data)
 
 def get_obs_old2(dynamodb, station_id, sd_video_file):

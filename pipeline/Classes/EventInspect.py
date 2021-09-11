@@ -276,6 +276,8 @@ class EventInspect():
                 #last kml
              lc += 1
           kml_c += 1
+       if "</kml>" not in all_kml:
+          all_kml += "</Document></kml>"
        fpout = open(self.event_dir + self.data['event_id'] + "-merged.kml", "w")
        fpout.write(all_kml)
        fpout.close()
@@ -350,10 +352,14 @@ class EventInspect():
           m_sveX, m_sveY, m_sveZ, m_svlat, m_svlon,m_svalt = self.find_vector_point(float(m_lat), float(m_lon), float(m_alt), m_az1, m_el1, 1000000)
           m_eveX, m_eveY, m_eveZ, m_evlat, m_evlon,m_evalt = self.find_vector_point(float(m_lat), float(m_lon), float(m_alt), m_az2, m_el2, 1000000) 
 
-          plane = Plane( \
-            Point3D(m_x,m_y,m_z), \
-            Point3D(m_sveX,m_sveY,m_sveZ), \
-            Point3D(m_eveX,m_eveY,m_eveZ))
+          try:
+             plane = Plane( \
+                Point3D(m_x,m_y,m_z), \
+                Point3D(m_sveX,m_sveY,m_sveZ), \
+                Point3D(m_eveX,m_eveY,m_eveZ))
+          except:
+             continue
+             
           for row in obs:
              s_station_id, s_sd_video_file, s_lat,s_lon,s_alt,s_az1,s_el1,s_az2,s_el2 = row
              if s_station_id == m_station_id:
@@ -480,6 +486,7 @@ class EventInspect():
        except ClientError as e:
           print(e.response['Error']['Message'])
        #event_data = json.loads(json.dumps(response['Item']), parse_float=Decimal)
+       print(response)
        response['Item'] = json.loads(json.dumps(response['Item'],cls=DecimalEncoder))
        return(response['Item'])
 
