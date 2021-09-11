@@ -309,14 +309,14 @@ def insert_meteor_event(dynamodb=None, event_id=None, event_data=None):
       print("THIS EVENT ALREADY EXISTS!", event_id)
       print("CURRENT DATA:", event_data)
       print("EXISTING DATA:", rval)
-      event_id += "A"
-      event_data['event_id'] = event_id
-      rkey = "E:" + event_id
-      rval = r.get(rkey)
-      if rval is None:
-         print("NEW SIMULTANEOUS EVENT DETECTED.", event_id)
-      else:
-         print("SIMULTANEOUS EVENT A ALREADY EXISTS.", event_id)
+      #event_id += "A"
+      #event_data['event_id'] = event_id
+      #rkey = "E:" + event_id
+      #rval = r.get(rkey)
+      #if rval is None:
+      #   print("NEW SIMULTANEOUS EVENT DETECTED.", event_id)
+      #else:
+      #   print("SIMULTANEOUS EVENT A ALREADY EXISTS.", event_id)
 
 
 
@@ -451,7 +451,7 @@ def update_station(dynamodb, station_id,json_conf):
         response = table.get_item(Key={'station_id': station_id})
     except ClientError as e:
         print(e.response['Error']['Message'])
-    else:
+    if True:
         station_data = json.loads(json.dumps(response['Item']), parse_float=Decimal)
         rkey = "ST:" + station_id 
         rval = json.dumps(station_data)
@@ -700,7 +700,7 @@ def update_dyna_cache_for_day(dynamodb, date, stations, utype=None):
                all_obs.append(data)
 
       update_redis_obs(date, all_obs)
-
+      all_obs = json.loads(json.dumps(all_obs,cls=DecimalEncoder))
       save_json_file(obs_file, all_obs)
       print("SAVED:", obs_file)
       cloud_obs_file = obs_file.replace("/mnt/ams2/", "/mnt/archive.allsky.tv/")
@@ -726,7 +726,7 @@ def update_dyna_cache_for_day(dynamodb, date, stations, utype=None):
 
       for evid in deleted_events:
          print("DELETE THIS EVENT!", evid, ev_keys[evid].keys() )
-
+      events = sorted(events, key=lambda x: (x['event_id']), reverse=False) 
       save_json_file(event_file, events)
       print("Saved:", event_file)
       cloud_event_file = event_file.replace("/mnt/ams2/", "/mnt/archive.allsky.tv/")

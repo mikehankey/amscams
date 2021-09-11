@@ -645,7 +645,7 @@ def event_stats(events):
       print(ss, stats[ss])
    #exit()
 
-def solve_day(day, cores=30):
+def solve_day(day, cores=4):
    date = day
    year, mon, dom = date.split("_")
    day_dir = "/mnt/ams2/EVENTS/" + year + "/" + mon + "/" + dom + "/" 
