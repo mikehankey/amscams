@@ -649,7 +649,7 @@ def event_stats(events):
       print(ss, stats[ss])
    #exit()
 
-def solve_day(day, cores=4):
+def solve_day(day, cores=32):
    date = day
    year, mon, dom = date.split("_")
    day_dir = "/mnt/ams2/EVENTS/" + year + "/" + mon + "/" + dom + "/" 
@@ -681,7 +681,8 @@ def solve_day(day, cores=4):
 
    
 
-   if cfe(events_file) == 0 or tdiff > 5:
+   if cfe(events_file) == 0 or tdiff > 1:
+      print("COPY MASTER EVENTS FILE FOR DAY", day)
       cf = events_file.replace("/mnt/ams2", "/mnt/archive.allsky.tv")
       cmd = "cp " + cf + " " + events_file
       os.system(cmd)
@@ -719,9 +720,13 @@ def solve_day(day, cores=4):
    for event in events:
       print("DY EV:", event['event_id'])
       go = 1
+      time_sync = 1
       if "solve_status" in event:
-         if event['solve_status'] == "SUCCESS" or event['solve_status'] == 'WMPL FAILED.':
+         if event['solve_status'] == "SUCCESS":
             go = 0
+         if event['solve_status'] == 'WMPL FAILED.':
+            go = 1
+            time_sync = 0
          if event['solve_status'] == "unsolved":
             go = 1
          print("Solve Status.", event['solve_status'] , go)
@@ -741,7 +746,7 @@ def solve_day(day, cores=4):
              print("RUNNING:", running)
              if running < cores:
                 
-                cmd = "./solveWMPL.py se " + event['event_id'] + " &"
+                cmd = "./solveWMPL.py se " + event['event_id'] + " " + str(time_sync) + " &"
                 print(cmd)
                 print("SKIP RUN!")
                 os.system(cmd)
@@ -1086,7 +1091,9 @@ def solve_event(event_id, force=1, time_sync=1):
        print("UPDATE DYNA SOL:", event_id) # , solution, obs, status)
        print("BAD OBS!:", event)
        print("BAD OBS!:", len(obs))
-       status = "WMPL FAILED."
+       status = "WMPL FAILED. BAD OBS DATA."
+       for obs in obs_data:
+          print("OBS:", obs)
        update_event_sol(None, event_id, solution, obs_data, status)
        return()
 
@@ -1119,6 +1126,7 @@ def solve_event(event_id, force=1, time_sync=1):
     if len(bad_obs) > 4:
        obs_data = {}
        solution = {}
+       print("BAD OBS > 4!?")
        update_event_sol(None, event_id, solution, obs_data, str(bad_obs))
        return()
     else: 
@@ -1144,11 +1152,19 @@ def solve_event(event_id, force=1, time_sync=1):
        solution = {}
        #solution['obs'] = obs_data
        solution['plots'] = solved_files
+       #if time_sync == 0:
+       #   update_event_sol(None, event_id, solution, obs_data, "WMPL FAILED. TIME SYNC FAILED.")
+       #else:
        if time_sync == 0:
-          update_event_sol(None, event_id, solution, obs_data, "WMPL FAILED. TIME SYNC FAILED.")
+          update_event_sol(None, event_id, solution, obs_data, "WMPL FAILEDx2")
        else:
           update_event_sol(None, event_id, solution, obs_data, "WMPL FAILED.")
-
+       for obs in obs_data:
+          print("OBS:", obs)
+          for vid in obs_data[obs]:
+             print("\t", vid)
+             print("\t\tAZS:", obs_data[obs][vid]['azs'])
+             print("\t\tELS:", obs_data[obs][vid]['els'])
        cmd = "cd ../pythonv2; ./solve.py vida_failed_plots " + event_id
        print(cmd)
        os.system(cmd)
@@ -1160,7 +1176,7 @@ def solve_event(event_id, force=1, time_sync=1):
     if time_sync == 1:
        update_event_sol(None, event_id, solution, as_obs, "SUCCESS")
     if time_sync == 0:
-       update_event_sol(None, event_id, solution, as_obs, "TIME SYNC FAIL")
+       update_event_sol(None, event_id, solution, as_obs, "SUCCESS")
 
     event_file = solve_dir + "/" + event_id + "-event.json"
 
@@ -2290,7 +2306,9 @@ def WMPL_solve(event_id, obs,time_sync=1):
             print("-----")
 
 
-    traj_solve.run()
+    resp = traj_solve.run()
+    print("RESP:", resp)
+
 
 
 
@@ -2413,7 +2431,11 @@ if cmd == "report":
 if cmd == "wiz":
    day_wizard(meteor_file)
 if cmd == "se":
-   solve_event(meteor_file)
+   if len(sys.argv) > 3:
+      time_sync = 0
+   else:
+      time_sync = 1
+   solve_event(meteor_file, 1, time_sync)
 if cmd == "sd":
    solve_day(meteor_file)
 if cmd == "mej":
