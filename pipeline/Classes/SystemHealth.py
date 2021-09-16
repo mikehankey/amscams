@@ -46,8 +46,8 @@ class SystemHealth():
             self.data_dirs[tdir]['used_size'] = int(float(used))
             quota_perc = self.data_dirs[tdir]['used_size'] / self.data_dirs[tdir]['max_size']
             over_quota = 1 - quota_perc
-            #if over_quota < 0:
-            #   print("OVER QUOTA:", tdir, quota_perc, abs(over_quota))
+            if over_quota < 0:
+               print("OVER QUOTA:", tdir, quota_perc, abs(over_quota))
                self.purge_dir(tdir, over_quota)
 
    def purge_dir(self, tdir, over_quota):
