@@ -226,7 +226,10 @@ def make_ms_html(amsid, meteor_file, mj):
    #ms_html += "<tr><td>Station</td><td>Start Datetime</td><td>File</td></tr>"
    if cfe("../conf/network_station_info.json") == 0:
       os.system("./Process.py get_network_info")
-   nsinfo = load_json_file("../conf/network_station_info.json")
+   if cfe("../conf/network_station_info.json"):
+      nsinfo = load_json_file("../conf/network_station_info.json")
+   else:
+      nsinfo = {}
 
    obs = make_obs_object(mj,mse, nsinfo)
 
