@@ -447,8 +447,18 @@ def vida_failed_plots(event_id):
    import redis
    dynamodb = boto3.resource('dynamodb')
    rkey = "E:" + event_id
-   r = redis.Redis("allsky-redis.d2eqrc.0001.use1.cache.amazonaws.com", port=6379, decode_responses=True)
-   event_data = r.get(rkey)
+   try:
+      r = redis.Redis("allsky-redis.d2eqrc.0001.use1.cache.amazonaws.com", port=6379, decode_responses=True)
+   except:
+      r = None
+   try:
+      event_data = r.get(rkey)
+      if event_data is not None:
+         event_data = json.loads(event_data)
+   except:
+      event_data = get_dyna_event(dynamodb, event_id)
+   print("EV:", event_data)
+
    print("V PLOTS FAILED.")
    year = event_id[0:4]
    mon = event_id[4:6]
@@ -473,8 +483,6 @@ def vida_failed_plots(event_id):
       #return()
    if cfe(event_file) == 1: 
       event_file_data = load_json_file(event_file)
-   if event_data is not None:
-      event_data = json.loads(event_data)
    print("EVENT DATA:", event_data)
    dyna_obs_data = {}
    for i in range(0, len(event_data['stations'])):
@@ -694,6 +702,29 @@ def get_meteor_media(station_id, sd_video_file):
          ext2 = el[-2]
          media[ext1] = med.replace("/mnt/", "https://")
    return(media)
+
+def get_dyna_event(dynamodb, event_id):
+   if dynamodb is None:
+      dynamodb = boto3.resource('dynamodb')
+
+
+   table = dynamodb.Table('x_meteor_event')
+   event_day = event_id[0:8]
+   y = event_day[0:4]
+   m = event_day[4:6]
+   d = event_day[6:8]
+   event_day = y + "_" + m + "_" + d
+
+   try:
+       response = table.get_item(Key={'event_day': event_day, 'event_id': event_id})
+   except ClientError as e:
+       print(e.response['Error']['Message'])
+   else:
+       event_data = json.loads(json.dumps(response['Item']), parse_float=Decimal)
+
+   return(event_data)
+
+
 def get_dyna_obs(dynamodb, station_id, sd_video_file):
    if dynamodb is None:
       dynamodb = boto3.resource('dynamodb')
@@ -822,7 +853,10 @@ def vida_plots(event_id):
    # build orbit plot / iframe
    qs = vida_data['orbit']
    print(qs)
-   orbit_iframe = "https://orbit.allskycams.com/index_emb.php?name={:s}&&epoch={:s}&a={:s}&M={:s}&e={:s}&I={:s}&Peri={:s}&Node={:s}&P={:s}&q={:s}&T={:s}".format( str(event_id), str(qs['jd_ref']), str(qs['a']), str(math.degrees(qs['mean_anomaly'])), str(qs['e']), str(math.degrees(qs['i'])), str(math.degrees(qs['peri'])), str(math.degrees(qs['node'])), str(qs['T']), str(qs['q']), str(qs['jd_ref']))
+   try:
+      orbit_iframe = "https://orbit.allskycams.com/index_emb.php?name={:s}&&epoch={:s}&a={:s}&M={:s}&e={:s}&I={:s}&Peri={:s}&Node={:s}&P={:s}&q={:s}&T={:s}".format( str(event_id), str(qs['jd_ref']), str(qs['a']), str(math.degrees(qs['mean_anomaly'])), str(qs['e']), str(math.degrees(qs['i'])), str(math.degrees(qs['peri'])), str(math.degrees(qs['node'])), str(qs['T']), str(qs['q']), str(qs['jd_ref']))
+   except:
+      orbit_iframe = "" 
    orbit_iframe = orbit_iframe.replace(" ", "")
 
    observer_data = {}

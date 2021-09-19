@@ -645,7 +645,6 @@ class EventRunner():
       for key in self.rejects:
          obj = self.rejects[key]
       good_obs = []
-      print("LEN OBS:", len(self.all_obs))
       for ob in self.all_obs:
          st_id = ob['station_id']
          vid = ob['sd_video_file']
@@ -1336,7 +1335,7 @@ class EventRunner():
          s_lat = self.station_loc[ob['station_id']][0]
          s_lon = self.station_loc[ob['station_id']][1]
          station_dist = dist_between_two_points(s_lat, s_lon, lat, lon)
-         if station_dist < 500:
+         if station_dist < 350:
             inrange = 1
       return(inrange)
 
@@ -1419,7 +1418,7 @@ class EventRunner():
             if abs(time_diff) < 5:
              
                station_dist = dist_between_two_points(obs['lat'], obs['lon'], lat, lon)
-               if station_dist < 500:
+               if station_dist < 350:
                   new_event = dict(event)
                   new_event['stations'].append(obs['station_id'])
                   new_event['files'].append(obs['sd_video_file'])

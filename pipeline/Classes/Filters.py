@@ -104,7 +104,7 @@ class Filters():
          status = 0
       if frames_left <= 3 and perc_change >= .33:
          status = 0
-      return(status)
+      return(status, perc_change)
 
    def check_segs(self,obj):
       segs = obj['report']['line_segments'][1:]
@@ -348,7 +348,7 @@ class Filters():
                      met_multi[mf] += 1
                      bad_items[mf].append("Hot zone hits:" + str(hot_zone_hits)) 
  
-                  dc_status = self.dir_change(obj)
+                  dc_status,dc_perc = self.dir_change(obj)
                   if dc_status == 0:
                      if mf not in bad_scores:
                         bad_scores[mf] = 1   
