@@ -483,6 +483,8 @@ def insert_station(dynamodb, station_id):
       "passwd" : js['pwd']
    }
    table.put_item(Item=station_data)
+   rkey = "ST:" + station_id
+   r.set(rkey, json.dumps(station_data))
    #   "local_ip" : ip,
    #   "vpn_ip" : js['vpn_ip'],
    #   "mac_addr" : js['mac_addr'],
@@ -521,6 +523,10 @@ def delete_obs(dynamodb, station_id, sd_video_file):
          "sd_video_file": sd_video_file
      }
    )
+   r = redis.Redis("allsky-redis.d2eqrc.0001.use1.cache.amazonaws.com", port=6379, decode_responses=True)
+   rkey = "OI:" + station_id + ":" + sd_video_file
+   r.delete(rkey)
+
 
 def event_report(dynamodb, r, date):
    events = search_events(dynamodb, date, "" )

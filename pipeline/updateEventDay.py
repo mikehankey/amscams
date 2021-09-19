@@ -29,7 +29,7 @@ if date_arg == "today":
    # run the solver
    cmd = "python3 solveWMPL.py sd " + today
    print(cmd)
-   os.system(cmd)
+   #os.system(cmd)
    # update the stations
 
    cmd = "python3 EVStations.py " + today
@@ -45,7 +45,7 @@ if date_arg == "today":
    os.system(cmd)
 
    # run the events again
-   cmd = "python3 EVRun.py " + yest
+   cmd = "python3 EVRun.py " + today 
    print(cmd)
    os.system(cmd)
 
@@ -59,7 +59,7 @@ elif date_arg == "yest":
    # run the solver
    cmd = "python3 solveWMPL.py sd " + yest 
    print(cmd)
-   os.system(cmd)
+   #os.system(cmd)
    # update the stations
 
    cmd = "python3 EVStations.py " + yest  
@@ -86,7 +86,7 @@ else:
    # run the solver
    cmd = "python3 solveWMPL.py sd " + date_arg 
    print(cmd)
-   os.system(cmd)
+   #os.system(cmd)
    # update the stations
 
    cmd = "python3 EVStations.py " + date_arg 

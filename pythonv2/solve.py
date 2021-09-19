@@ -654,8 +654,8 @@ def vida_failed_plots(event_id):
          lines[line_key]['start_lat'] = dyna_obs_data[obs_key]['start_az_line'][0][0]
          lines[line_key]['start_lon'] = dyna_obs_data[obs_key]['start_az_line'][0][1]
          lines[line_key]['start_alt'] = 100
-         lines[line_key]['end_lat'] = dyna_obs_data[obs_key]['start_az_line'][1][0]
-         lines[line_key]['end_lon'] = dyna_obs_data[obs_key]['start_az_line'][1][1]
+         lines[line_key]['end_lat'] = dyna_obs_data[obs_key]['end_az_line'][1][0]
+         lines[line_key]['end_lon'] = dyna_obs_data[obs_key]['end_az_line'][1][1]
          lines[line_key]['end_alt'] = 100000 
          lines[line_key]['desc'] = "Start " + st_id 
 
@@ -664,8 +664,8 @@ def vida_failed_plots(event_id):
          lines[line_key]['start_lat'] = dyna_obs_data[obs_key]['start_az_line'][0][0]
          lines[line_key]['start_lon'] = dyna_obs_data[obs_key]['start_az_line'][0][1]
          lines[line_key]['start_alt'] = 100
-         lines[line_key]['end_lat'] = dyna_obs_data[obs_key]['start_az_line'][1][0]
-         lines[line_key]['end_lon'] = dyna_obs_data[obs_key]['start_az_line'][1][1]
+         lines[line_key]['end_lat'] = dyna_obs_data[obs_key]['end_az_line'][1][0]
+         lines[line_key]['end_lon'] = dyna_obs_data[obs_key]['end_az_line'][1][1]
          lines[line_key]['end_alt'] = 100000 
          lines[line_key]['desc'] = "End " + st_id 
 
@@ -2379,11 +2379,6 @@ def plot_obs_traj(meteor, event_file):
    print("Saved:", kml_file)
 
 def make_easykml(kml_file, points={}, lines={}, polys={}):
-   print("Making KML", kml_file)
-   print("Points:", points)
-   print("LINES:", lines)
-   print("Polys:", polys)
-   
    colors = [
       'FF641E16',
       'FF512E5F',
@@ -2398,7 +2393,6 @@ def make_easykml(kml_file, points={}, lines={}, polys={}):
       'FF186A3B',
       'FF7E5109'
    ]
-
 
    kml = simplekml.Kml()
 
@@ -2420,8 +2414,6 @@ def make_easykml(kml_file, points={}, lines={}, polys={}):
       cc = cc + 1
       if cc >= len(colors):
          cc = 0
-
-
    for key in points:
       lat,lon,alt,desc =points[key]['lat'], points[key]['lon'],points[key]['alt'], points[key]['desc']
       point = kml.newpoint(name=desc,coords=[(lon,lat,alt)])
@@ -2429,8 +2421,6 @@ def make_easykml(kml_file, points={}, lines={}, polys={}):
           point.style.iconstyle.icon.href = points[key]['icon']
       else:
           point.style.iconstyle.icon.href = 'http://maps.google.com/mapfiles/kml/shapes/placemark_circle.png'
-
-   print("SAVED KML:", kml_file)
    kml.save(kml_file)
 
 
