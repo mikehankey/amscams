@@ -16,13 +16,15 @@ print("RUNNING:", running)
 
 events = load_json_file(local_unsolved)
 for eid in sorted(events, reverse=True):
-   running = check_running("solveWMPL.py")
-   while(running > 5):
-      time.sleep(30)
-      running = check_running("solveWMPL.py")
-
-   cmd = "./solveWMPL.py se " + eid + " &"
+   #running = check_running("solveWMPL.py")
+   #while(running > 5):
+   #   time.sleep(30)
+   #   running = check_running("solveWMPL.py")
+ 
+   cmd = "./solveWMPL.py se " + eid 
 
    print(cmd)
-   #os.system(cmd)
-
+   if "20210911" in eid:
+      os.system(cmd)
+   else:  
+      exit()
