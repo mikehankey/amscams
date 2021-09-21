@@ -226,8 +226,9 @@ def gen_cal_hist(json_conf):
       for cf in sorted(cal_files):
          (f_datetime, this_cam, f_date_str,y,m,d, h, mm, s) = convert_filename_to_date_cam(cf)
          cfs = glob.glob(cf + "/*calparams.json")
-         if cfe(cfs[0]) == 0:
-           
+         if len(cfs) == 0:
+            continue
+         elif cfe(cfs[0]) == 0:
             continue
          print(cfs[0])
          try:
