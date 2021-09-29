@@ -569,18 +569,12 @@ def scan_meteor_video(meteor_video_file,json_conf,mj = None, station_id = None):
 
 
    print("FINAL CP:")
-
-
    if mj['cp'] is None:
       print("Calparams not found:", mj['cp']) 
 
    else:
-      if math.isnan(mj['cp']['total_res_px']) is True:
-         mj['cp']['total_res_px'] = 0
-         mj['cp']['total_res_deg'] = 0
       print("Calparams found:", mj['cp']) 
-      print("PX:", math.isnan(mj['cp']['total_res_px']))
-      input() 
+
    # make grid
    star_img_file = stack_file.replace("-stacked.jpg", "-stars.jpg")
    grid_img_file = stack_file.replace("-stacked.jpg", "-grid.jpg")
@@ -612,11 +606,10 @@ def scan_meteor_video(meteor_video_file,json_conf,mj = None, station_id = None):
       if remote == 0:
          meteor_dir = "/mnt/ams2/meteors/" + mj['sd_trim'].split("/")[-1][0:10] + "/" 
       else:
-         meteor_dir = "/mnt/ams2/MANUAL/" + mj['station_id'] + "_" + mj['sd_trim'].split("/")[-1].replace(".mp4", "") + "/" 
+         meteor_dir = "/mnt/ams2/MANUAL/" + mj['sd_trim'].split("/")[-1].replace(".mp4", "") + "/" 
       if cfe(meteor_dir,1) == 0:
          os.makedirs(meteor_dir)
       print("METEOR DIR:", meteor_dir)
-      input("WAIT")
       mfn = mj['sd_trim'].split("/")[-1]
       day = mj['sd_trim'].split("/")[-1][0:10]
       if remote == 0:
@@ -691,7 +684,6 @@ def scan_meteor_video(meteor_video_file,json_conf,mj = None, station_id = None):
       cmd = "cp " + cloud_dir + "* " + local_meteor_dir
       print("Or just copy everything.")
       print(cmd) 
-   cloud_copy(mj,json_conf)
 
 def stack_vid(video):
    print("Stacking video:", video)
@@ -888,9 +880,8 @@ def cloud_copy(mj,json_conf):
    local_station_id = local_json_conf['site']['ams_id']
 
    if yes_no == "y" or yes_no == "Y":
-      cloud_dir = "/mnt/archive.allsky.tv/" + local_station_id + "/MANUAL/" + mj['station_id'] + "_" + mj['meteor_video_file'].split("/")[-1].replace(".mp4", "") + "/"
-      local_dir = mj['man_dir']
-     # "/mnt/ams2/MANUAL/" + mj['meteor_video_file'].replace(".mp4", "").split("/")[-1] + "/"
+      cloud_dir = "/mnt/archive.allsky.tv/" + local_station_id + "/MANUAL/" + mj['meteor_video_file'].split("/")[-1].replace(".mp4", "") + "/"
+      local_dir = "/mnt/ams2/MANUAL/" + mj['meteor_video_file'].replace(".mp4", "").split("/")[-1] + "/"
       if cfe(cloud_dir,1) == 0:
          os.makedirs(cloud_dir)
       cmd = "cp " + local_dir + "*.jpg " + cloud_dir
@@ -1120,10 +1111,6 @@ def find_default_cal(station_id, cam_id, cal_hist, mcp, meteor_date):
       cp['pixscale'] = best_cal[7]
       cp['total_res_px'] = best_cal[8]
       cp['total_res_deg'] = (best_cal[8] * best_cal[7] ) / 3600
-      if math.isnan(cp['total_res_px']) is True:
-         cp['total_res_px'] = 0
-         cp['total_res_deg'] = 0
-
       if mcp is not None:
          cp['x_poly'] = mcp['x_poly']
          cp['y_poly'] = mcp['y_poly']
@@ -1143,11 +1130,6 @@ def make_mj_mjr(man_mj):
    print("MAKE FINAL MJ FILES")
    mj = {}
    mjr = {}
-
-   if "cp" in man_mj:
-      if math.isnan(man_mj['cp']['total_res_px']) is True:
-         man_mj['cp']['total_res_px'] = 0
-         man_mj['cp']['total_res_deg'] = 0
 
    mfn = man_mj['sd_trim'].split("/")[-1]
    date = mfn[0:10]
@@ -1226,7 +1208,7 @@ def make_mj_mjr(man_mj):
    mjr['ang_sep'] = man_mj['ang_sep']
    mjr['ang_vel'] = man_mj['ang_vel']
    mjr['crop_box'] = man_mj['hd_roi']
-   mjr['cal_params'] = man_mj['cp']
+   mjr['cp'] = man_mj['cp']
 
    return(mj, mjr)
 
