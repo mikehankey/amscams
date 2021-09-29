@@ -475,6 +475,7 @@ def detail_page(amsid, date, meteor_file):
          simg  = cv2.resize(simg,(960,540))
          cv2.imwrite(METEOR_DIR + half_stack,  simg)
          print("SAVED HALF", METEOR_DIR + half_stack, simg.shape)
+         print("HALF SOURCE " + METEOR_DIR + sd_stack)
       else:
          print("NO SD ", sd_stack)
  

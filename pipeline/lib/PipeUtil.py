@@ -20,12 +20,16 @@ import glob
 
 def get_file_info(file):
    cur_time = int(time.time())
-   st = os.stat(file)
-   size = st.st_size
-   mtime = st.st_mtime
-   tdiff = cur_time - mtime
-   tdiff = tdiff / 60
-   return(size, tdiff)
+   if cfe(file) == 0:
+      st = os.stat(file)
+
+      size = st.st_size
+      mtime = st.st_mtime
+      tdiff = cur_time - mtime
+      tdiff = tdiff / 60
+      return(size, tdiff)
+   else:
+      return(0,0)
 
 
 def remove_corrupt_files(json_conf):
@@ -193,6 +197,7 @@ def save_json_file(json_file, json_data, compress=False):
    if "cp" in json_data:
       if json_data['cp'] is not None:
          for key in json_data['cp']:
+            print(key, type(json_data['cp']))
             if type(json_data['cp'][key]) == np.ndarray:
                json_data['cp'][key] = json_data['cp'][key].tolist()
 
