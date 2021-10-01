@@ -32,7 +32,10 @@ if __name__ == "__main__":
 
    #EVR.del_bad_obs_from_events(sys.argv[1])
    #print("LIST EVENTS")
+   EVR.obs_by_minute()
+   exit()
    EVR.list_events_for_day()
+   input("Wait")
    print("UPDATE EVENTS")
    EVR.update_events_for_day()
 
