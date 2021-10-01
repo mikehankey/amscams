@@ -705,7 +705,7 @@ def update_dyna_cache_for_day(dynamodb, date, stations, utype=None):
             else:
                all_obs.append(data)
 
-      update_redis_obs(date, all_obs)
+      #update_redis_obs(date, all_obs)
       all_obs = json.loads(json.dumps(all_obs,cls=DecimalEncoder))
       save_json_file(obs_file, all_obs)
       print("SAVED:", obs_file)
