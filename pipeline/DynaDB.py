@@ -1528,7 +1528,7 @@ def do_dyna_day(dynamodb, day):
    if "filter" not in dyn_log[day] or today == day:
       cmd = "python3 Filter.py fd " + day
       print(cmd)
-      os.system(cmd)
+      #os.system(cmd)
    else:
       print("already filtered for this day.", day)
 
