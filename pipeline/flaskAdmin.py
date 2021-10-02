@@ -17,7 +17,7 @@ from FlaskLib.min_detail import min_detail_main
 from FlaskLib.live import live_view
 from FlaskLib.TL import tl_menu 
 from FlaskLib.man_reduce import meteor_man_reduce , save_man_reduce
-from FlaskLib.man_detect import man_detect 
+from FlaskLib.man_detect import man_detect , import_meteor
 from FlaskLib.meteors_main_redis import meteors_main_redis
 #from FlaskLib.Maps import make_map 
 from flask import redirect, url_for, abort
@@ -267,6 +267,20 @@ def meteor_man_red():
       last_frame = int(last_frame)
    out = meteor_man_reduce(meteor_file, x,y,w,h,step,first_frame,last_frame,ScaleFactor)
    return out
+
+
+@app.route('/import_meteor/', methods=['GET', 'POST'])
+@auth.login_required
+def import_meteor_cntl():
+   data = {}
+   import_file = request.args.get('import_file')
+   import_station = request.args.get('import_station')
+   step = request.args.get('step')
+   data['import_file'] = import_file
+   data['import_station'] = import_station
+   data['step'] = step
+   out = import_meteor(data)
+   return(out)
 
 @app.route('/man_detect/<min_file>/', methods=['GET', 'POST'])
 @auth.login_required
