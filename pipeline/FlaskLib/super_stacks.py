@@ -170,8 +170,8 @@ def stacks_main(amsid, data) :
          for cam in json_conf['cameras']:
             cams_id = json_conf['cameras'][cam]['cams_id']
             dawn_stack_file = vdir + "/" + cams_id + "-dawn-stack.jpg"
-            print("DAWN STACK FILE!", dawn_stack_file)
-            fsize, ftime = get_file_info("/mnt/ams" + dawn_stack_file) 
+            print("DAWN STACK FILE!", "/mnt/ams2/" + dawn_stack_file)
+            fsize, ftime = get_file_info("/mnt/ams2" + dawn_stack_file) 
             if cfe("/mnt/ams2/" + dawn_stack_file) == 0 or fsize == 0:
                print("DAWN STACK NOT FOUND")
                dawn_stack_file = "/blank.jpg"               
