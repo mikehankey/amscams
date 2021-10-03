@@ -708,10 +708,12 @@ def update_dyna_cache_for_day(dynamodb, date, stations, utype=None):
       #update_redis_obs(date, all_obs)
       all_obs = json.loads(json.dumps(all_obs,cls=DecimalEncoder))
       save_json_file(obs_file, all_obs)
+      obs_file_zip = obs_file.replace(".json", ".json.gz")  
+      os.system("gzip -k -f " + obs_file )
       print("SAVED:", obs_file)
-      cloud_obs_file = obs_file.replace("/mnt/ams2/", "/mnt/archive.allsky.tv/")
-      os.system("cp " + obs_file + " " + cloud_obs_file)
-      print("cp " + obs_file + " " + cloud_obs_file)
+      cloud_obs_file = obs_file_zip.replace("/mnt/ams2/", "/mnt/archive.allsky.tv/")
+      os.system("cp " + obs_file_zip + " " + cloud_obs_file)
+      print("cp " + obs_file_zip + " " + cloud_obs_file)
 
    if do_events == 1:
       os.system("rm " + event_file ) 
@@ -862,14 +864,15 @@ def search_events(dynamodb, date, stations, nocache=0):
 
    #use_cache = 0
    all_events = []
-   r = redis.Redis("allsky-redis.d2eqrc.0001.use1.cache.amazonaws.com", port=6379, decode_responses=True)
-   rkey = "E:" + date.replace("_", "") + "*"
-   keys = r.keys(rkey)
-   for key in keys:
-      rval = json.loads(r.get(key))
-      all_events.append(rval)   
-
    if False:
+      r = redis.Redis("allsky-redis.d2eqrc.0001.use1.cache.amazonaws.com", port=6379, decode_responses=True)
+      rkey = "E:" + date.replace("_", "") + "*"
+      keys = r.keys(rkey)
+      for key in keys:
+         rval = json.loads(r.get(key))
+         all_events.append(rval)   
+
+   if True:
       if dynamodb is None:
          dynamodb = boto3.resource('dynamodb')
 
