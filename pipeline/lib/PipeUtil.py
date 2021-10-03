@@ -20,7 +20,7 @@ import glob
 
 def get_file_info(file):
    cur_time = int(time.time())
-   if cfe(file) == 0:
+   if cfe(file) == 1:
       st = os.stat(file)
 
       size = st.st_size

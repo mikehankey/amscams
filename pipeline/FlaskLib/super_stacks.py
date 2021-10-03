@@ -1,10 +1,10 @@
 from flask import Flask, request
 from FlaskLib.FlaskUtils import get_template
 from FlaskLib.Pagination import get_pagination
-
+import time
 
 import glob
-from lib.PipeUtil import load_json_file, save_json_file, cfe
+from lib.PipeUtil import load_json_file, save_json_file, cfe, get_file_info
 from lib.PipeAutoCal import fn_dir
 
 def stacks_main(amsid, data) :
@@ -55,6 +55,7 @@ def stacks_main(amsid, data) :
    nav = get_template("FlaskTemplates/nav.html")
    template = get_template("FlaskTemplates/super_stacks_main.html")
    json_conf = load_json_file("../conf/as6.json")
+   rand = str(time.time())
    for sdir in sorted(sdirs, reverse=True)[start_ind:end_ind]:
       vdir = sdir.replace("/mnt/ams2", "")
       if cfe(sdir,1) == 1:
@@ -85,19 +86,18 @@ def stacks_main(amsid, data) :
             night_stack_file = vdir + "/" + cams_id + "-night-stack.jpg"
             print("NIGHT STACK FILE!", night_stack_file)
             if cfe("/mnt/ams2/" + night_stack_file) == 0:
-               print("NOT FOUND")
-               night_stack_file = "/none.png"               
+               print("NOT FOUND NIGHT", "/mnt/ams2/" + night_stack_file)
+               night_stack_file = "/blank.jpg"               
             else:
-               print("FOUND")
+               print("FOUND", "/mnt/ams2/" + night_stack_file)
             if cams_id in data:
                minutes = data[cams_id]
             else:
                minutes = ""
-            
             out += """
 	       <div class='preview'>
 	          <a class='mtt' href='/stacks_day/""" + amsid + "/" + date + """/' title='Browse all day'>
-                  <img width=320 height=180 alt='""" + date + """' class='img-fluid ns lz' src='""" + night_stack_file + """?bc4'>
+                  <img width=320 height=180 alt='""" + date + """' class='img-fluid ns lz' src='""" + night_stack_file + """?""" + rand + """'>
                   </a><span class='pre-b'>Cam #""" + cams_id + " " + str(minutes) + """ minutes</span>
                </div>
             """
@@ -113,12 +113,12 @@ def stacks_main(amsid, data) :
          for cam in json_conf['cameras']:
             cams_id = json_conf['cameras'][cam]['cams_id']
             dusk_stack_file = vdir + "/" + cams_id + "-dusk-stack.jpg"
-            print("NIGHT STACK FILE!", night_stack_file)
+            print("DUSK STACK FILE!", dusk_stack_file)
             if cfe("/mnt/ams2/" + dusk_stack_file) == 0:
-               print("NOT FOUND")
-               dusk_stack_file = "/none.png"               
+               print("NOT FOUND DUSK" + dusk_stack_file)
+               dusk_stack_file = "/blank.jpg" 
             else:
-               print("FOUND")
+               print("FOUND", dusk_stack_file)
             if cams_id in data:
                minutes = data[cams_id]
             else:
@@ -127,7 +127,7 @@ def stacks_main(amsid, data) :
             out += """
 	       <div class='preview'>
 	          <a class='mtt' href='/stacks_day/""" + amsid + "/" + date + """/' title='Browse all day'>
-                  <img width=320 height=180 alt='""" + date + """' class='img-fluid ns lz' src='""" + dusk_stack_file + """?bc4'>
+                  <img width=320 height=180 alt='""" + date + """' class='img-fluid ns lz' src='""" + dusk_stack_file + """?""" + rand + """'>
                   </a><span class='pre-b'>Cam #""" + cams_id + " " + str(minutes) + """ minutes</span>
                </div>
             """
@@ -140,11 +140,12 @@ def stacks_main(amsid, data) :
             cams_id = json_conf['cameras'][cam]['cams_id']
             day_stack_file = vdir + "/" + cams_id + "-day-stack.jpg"
             print("DAY STACK FILE!", day_stack_file)
-            if cfe("/mnt/ams2/" + day_stack_file) == 0:
-               print("NOT FOUND")
-               day_stack_file = None
+            fsize, tdiff = get_file_info("/mnt/ams2" + day_stack_file)
+            if cfe("/mnt/ams2" + day_stack_file) == 0 or fsize == 0:
+               print("NOT FOUND DAY", "/mnt/ams2/" + day_stack_file + " " + str(fsize))
+               day_stack_file = "/blank.jpg" 
             else:
-               print("FOUND")
+               print("FOUND", day_stack_file)
             if cams_id in data:
                minutes = data[cams_id]
             else:
@@ -153,7 +154,7 @@ def stacks_main(amsid, data) :
                out += """
                   <div class='preview'>
                      <a class='mtt' href='/stacks_day/""" + amsid + "/" + date + """/' title='Browse all day'>
-                     <img width=320 height=180 alt='""" + date + """' class='img-fluid ns lz' src='""" + day_stack_file + """?bc4'>
+                     <img width=320 height=180 alt='""" + date + """' class='img-fluid ns lz' src='""" + day_stack_file + """?""" + rand + """'>
                      </a><span class='pre-b'>Cam #""" + cams_id + " " + str(minutes) + """ minutes</span>
                   </div>
                """
@@ -169,10 +170,11 @@ def stacks_main(amsid, data) :
          for cam in json_conf['cameras']:
             cams_id = json_conf['cameras'][cam]['cams_id']
             dawn_stack_file = vdir + "/" + cams_id + "-dawn-stack.jpg"
-            print("DAWN STACK FILE!", dawn_stack_file)
-            if cfe("/mnt/ams2/" + dawn_stack_file) == 0:
+            print("DAWN STACK FILE!", "/mnt/ams2/" + dawn_stack_file)
+            fsize, ftime = get_file_info("/mnt/ams2" + dawn_stack_file) 
+            if cfe("/mnt/ams2/" + dawn_stack_file) == 0 or fsize == 0:
                print("DAWN STACK NOT FOUND")
-               dawn_stack_file = "/none.png"               
+               dawn_stack_file = "/blank.jpg"               
             else:
                print("DAWN STACK FOUND", "/mnt/ams2/" + dawn_stack_file)
             if cams_id in data:
@@ -183,7 +185,7 @@ def stacks_main(amsid, data) :
             out += """
 	       <div class='preview'>
 	          <a class='mtt' href='/stacks_day/""" + amsid + "/" + date + """/' title='Browse all day'>
-                  <img width=320 height=180 alt='""" + date + """' class='img-fluid ns lz' src='""" + dawn_stack_file + """?bc4'>
+                  <img width=320 height=180 alt='""" + date + """' class='img-fluid ns lz' src='""" + dawn_stack_file + """?""" + rand + """'>
                   </a><span class='pre-b'>Cam #""" + cams_id + " " + str(minutes) + """ minutes</span>
                </div>
             """
