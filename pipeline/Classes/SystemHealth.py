@@ -1,11 +1,12 @@
 import subprocess
 import os
 import glob
-from lib.PipeUtil import cfe, load_json_file, save_json_file
+from lib.PipeUtil import cfe, load_json_file, save_json_file, get_file_info
 
 class SystemHealth():
    def __init__(self):
       self.json_conf = load_json_file("../conf/as6.json")
+      self.station_id = self.json_conf['site']['ams_id']
       self.data_dirs = {}
       self.data_dirs["/mnt/ams2/HD"] = {}
       self.data_dirs["/mnt/ams2/HD"]['max_size'] = 400
@@ -19,9 +20,20 @@ class SystemHealth():
       df_data, mounts = self.run_df()
       print("DF DATA:", df_data)
       print("MOUNTS:", mounts)
-      self.check_quotas()
+      #self.check_quotas()
       for dd in self.data_dirs:
          print("DD:", dd, self.data_dirs[dd])
+      self.pending_SD_files = glob.glob("/mnt/ams2/SD/*")
+      latest_files = glob.glob("/mnt/archive.allsky.tv/" + self.station_id + "/LATEST/*.jpg")
+      if len(latest_files) > 0:
+         info = get_file_info(latest_files[0])
+         print("INFO:", latest_files[0])
+         fsize, self.last_latest_file = get_file_info(latest_files[0])
+      else:
+         self.last_latest_file = None
+      print("Last latest file age:", self.last_latest_file)
+   
+      
 
    def ping_cams(self):
       pings = {}

@@ -12,10 +12,15 @@ if __name__ == "__main__":
    print(len(sys.argv))
    cmd = sys.argv[1]
 
-   #if cmd == "rec_aws_all":
+   if cmd == "index_all_meteors_aws":
       # function to reconcile deletes and file indexes between AWS and local station
+      R = Reconcile()
+      #R.get_cloud_media()
+      #exit()
+      R.index_all_meteors_aws()
       
    if cmd == "rec_media":
+
       year = sys.argv[2]
       mon = sys.argv[3]
       R = Reconcile(year,mon)

@@ -166,6 +166,8 @@ def run_jobs(json_conf):
 
 
    cmds = []
+   cmds.append(('all', "Night Stacks", "cd /home/ams/amscams/pipeline; ./Process.py hsh " + today + "" ))
+   cmds.append(('all', "Night Stacks", "cd /home/ams/amscams/pipeline; ./Process.py hsh " + yest + ""))
    cmds.append(('all', "Monitor", "cd /home/ams/amscams/pipeline; ./monitor.py "))
    cmds.append(('all', "Clean disk / Purge old files", "cd /home/ams/amscams/pythonv2; ./doDay.py cd"))
    cmds.append(('day', "Clean disk / Purge old files", "cd /home/ams/amscams/pipeline; ./Process.py rm_corrupt"))

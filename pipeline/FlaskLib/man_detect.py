@@ -12,6 +12,24 @@ import glob
 import numpy as np
 
 
+def import_meteor(data):
+   out = "<h1>MANUAL DETECT METEOR</h1>"
+   if data['step'] is None:
+      out += "<p>From here you can manually detect and import for your station or a remote station."
+      out += """
+           <form method=GET action="/import_meteor/">
+           Enter the meteor video local file and pathname or a URL for remote stations.<br>
+           <input type=text name=meteor_file size=50> <br>
+           If this is a remote station detection, enter the remote station ID, otherwise leave it blank.<br>
+           <input type=text nam=station_id><br>
+           <input type=submit value="Next">
+           <input type=hidden name=step value="2">
+           </form>
+      """
+   if data['step'] == "2":
+      out += "Step 2"
+   return(out)
+
 def man_detect(min_file, data):
    json_conf = load_json_file("../conf/as6.json")
    amsid = json_conf['site']['ams_id']
