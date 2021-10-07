@@ -198,8 +198,9 @@ class Meteor():
       self.get_mfiles(mdir)
       print("Fast")
       if len(self.mfiles) > 120 and md not in peak_dates:
-         print("THERE ARE TOO MANY DETECTIONS FOR THIS DAY! SYNC ABORTED")
-         exit()
+         if cfe(mdir + "day_confirmed.txt") == 0:
+            print("THERE ARE TOO MANY DETECTIONS FOR THIS DAY! SYNC ABORTED")
+            exit()
       for mfile in self.mfiles:
          prev_file = mscan_dir + self.station_id + "_" + mfile.replace(".mp4", "-prev.jpg")
          mjf = mdir + mfile.replace(".mp4", ".json")
