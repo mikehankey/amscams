@@ -735,6 +735,7 @@ def update_dyna_cache_for_day(dynamodb, date, stations, utype=None):
       for evid in deleted_events:
          print("DELETE THIS EVENT!", evid, ev_keys[evid].keys() )
       events = sorted(events, key=lambda x: (x['event_id']), reverse=False) 
+      events = json.loads(json.dumps(events,cls=DecimalEncoder))
       save_json_file(event_file, events)
       print("Saved:", event_file)
       cloud_event_file = event_file.replace("/mnt/ams2/", "/mnt/archive.allsky.tv/")
