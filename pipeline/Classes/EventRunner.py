@@ -1,4 +1,7 @@
-from lib.PipeUtil import cfe, load_json_file, save_json_file, convert_filename_to_date_cam, get_trim_num
+from lib.PipeUtil import cfe, load_json_file, save_json_file, convert_filename_to_date_cam, get_trim_num, get_file_info
+import threading
+from multiprocessing import Process
+import time
 from lib.kmlcolors import *
 import glob 
 import simplekml
@@ -14,7 +17,6 @@ import simplejson as json
 import boto3
 from decimal import Decimal
 from lib.solve import man_solve
-
 class DecimalEncoder(json.JSONEncoder):
     def default(self, obj):
         if isinstance(obj, Decimal):
@@ -23,12 +25,15 @@ class DecimalEncoder(json.JSONEncoder):
 
 class EventRunner():
    def __init__(self, cmd=None, day=None, month=None,year=None,date=None, use_cache=0):
+     # os.system("./DynaDB.py udc " + date + " events")
       self.dynamodb = boto3.resource('dynamodb')
       admin_conf = load_json_file("admin_conf.json")
+      self.admin_conf = admin_conf
       self.r = redis.Redis(admin_conf['redis_host'], port=6379, decode_responses=True)
       self.cmd = cmd
       self.date = date 
       self.rejects = {}
+      self.obs_event_ids = {}
       if date is not None:
          year,month,day = date.split("_")
       self.event_dict = {}
@@ -58,40 +63,77 @@ class EventRunner():
          self.cloud_all_stations_file = "/mnt/archive.allsky.tv/EVENTS/" + self.year + "/" + self.month + "/" + self.day + "/" + self.date + "_ALL_STATIONS.json"  
          self.cloud_single_stations_file = "/mnt/archive.allsky.tv/EVENTS/" + self.year + "/" + self.month + "/" + self.day + "/" + self.date + "_ALL_SINGLE_STATION_METEORS.json"  
 
-
          if cfe(self.all_events_file) == 1:
             print("LOADING EVENTS FILE!", self.all_events_file)
             self.all_events = load_json_file(self.all_events_file)
+            updated_events = []
             for event in self.all_events:
                if "event_id" in event:
                   self.event_dict[event['event_id']] = event
+                  updated_events.append(event)
                else:
+                  print("MISSING EVENT ID NEED TO MAKE IT!")
                   event['event_id'] = self.make_event_id(event)
+                  updated_events.append(event)
+            self.all_events = updated_events
+            save_json_file(self.all_events_file, self.all_events)
 
+            for ev in self.all_events:
+               ev_id = ev['event_id']
+               for i in range(0, len(ev['stations'])):
+                  st = ev['stations'][i]
+                  vid = ev['files'][i]
+                  oid = st + "_" + vid
+                  self.obs_event_ids[oid] = ev_id
+            cc = 0
+            self.obs_event_ids_file = self.all_events_file.replace("ALL_EVENTS", "ALL_OBS_IDS")
+            save_json_file(self.obs_event_ids_file, self.obs_event_ids)
+            print(self.obs_event_ids_file)
          else:
             print("ERROR: NOT FOUND:", self.all_events_file)
             self.all_events = []
+         if len(self.all_events) == 0:
+            print("0 events!")
          print("EVENT FILE:", self.all_events_file)
          # DOWNLOAD DYNA DATA IF IT DOESN'T EXIST
          # OR IF THE CACHE FILE IS OLDER THAN X MINUTES
-         if cfe(self.all_events_file) == 0:
+         if cfe(self.all_events_index_file) == 0:
             print("ERROR MISSING:", self.all_events_index_file) 
+            #exit()
          if use_cache == 0:
             #print("SKIP CACE")
-            os.system("./DynaDB.py udc " + self.date)
+            if "master" in self.admin_conf:
+               os.system("./DynaDB.py udc " + self.date)
 
          if cfe(self.all_events_index_file) == 1:
             self.all_events_index = load_json_file(self.all_events_index_file)
          else:
             self.all_events_index = None
-         if cfe(self.all_obs_file) == 1:
+         size, tdiff = get_file_info(self.all_obs_file)
+
+         print("OBS FILE:", self.all_obs_file)
+         print("TD:", tdiff)
+         if cfe(self.all_obs_file) == 1 :
             self.all_obs = load_json_file(self.all_obs_file)
          else:
             self.all_obs = None
-         if cfe(self.all_stations_file) == 1:
+            print("NO OBS FILE DOWNLOAD FROM CLOUD!", self.all_obs_file)
+            cf = self.all_obs_file.replace("/ams2", "/archive.allsky.tv")
+            cf += ".gz"
+
+            if cfe(cf) == 1:
+               os.system("cp " + cf + " " + self.all_obs_file + ".gz")
+               print("cp " + cf + " " + self.all_obs_file + ".gz")
+               os.system("gunzip " + self.all_obs_file + ".gz")
+            self.all_obs = load_json_file(self.all_obs_file)
+         if False: #cfe(self.all_stations_file) == 1:
             self.all_stations = load_json_file(self.all_stations_file)
          else:
             self.all_stations = None
+            cf = self.all_stations_file.replace("/ams2", "/archive.allsky.tv")
+            if cfe(cf) == 1:
+               os.system("cp " + cf + " " + self.all_stations_file)
+            self.all_stations = load_json_file(self.all_stations_file)
 
 
          self.station_loc = {}
@@ -102,22 +144,36 @@ class EventRunner():
             self.station_loc[sid] = [lat,lon]
       else:
          print("DAY IS NONE?")
+
+      print("OBS FILE:", self.all_obs_file)
+
       for ev in self.all_events:
+         event_id = ev['event_id']
+         year = event_id[0:4]
+         mon = event_id[4:6]
+         dom = event_id[6:8]
+         ev['event_day'] = year + "_" + mon + "_" + dom
          print(ev['event_id'], ev['stations'])
+      #   insert_meteor_event(None, ev['event_id'], ev)
 
    def obs_by_minute(self):
+      self.obs_dict = {}
       obs_by_min = {}
+
+
       for obs in self.all_obs:
          minute_str = obs['sd_video_file'][0:16]
          obs_key = obs['station_id'] + ":" + obs['sd_video_file']
+         self.obs_dict[obs_key] = obs
          if minute_str not in obs_by_min:
             obs_by_min[minute_str] = {}
-            obs_by_min[minute_str]['count'] = 0
+            obs_by_min[minute_str]['count'] = 1 
             obs_by_min[minute_str]['obs'] = []
+            obs_by_min[minute_str]['obs'].append(obs_key)
          else:
             obs_by_min[minute_str]['count'] += 1
             obs_by_min[minute_str]['obs'].append(obs_key)
-         print(obs['station_id'], obs['sd_video_file'])
+         print("OBM", obs['station_id'], obs['sd_video_file'])
       
       possible = []
       not_possible = []
@@ -127,7 +183,7 @@ class EventRunner():
             print("SC IS:", sc)
             obs_by_min[mr]['station_count'] = sc
             if sc > 1:
-               print(mr, sc, obs_by_min[mr]['obs'])
+               print("POSSIBLE?", mr, sc, obs_by_min[mr]['obs'])
                events,non_events = self.obs_to_events(obs_by_min[mr]['obs'])
                if len(events) > 0:
                   possible.append(events)
@@ -175,6 +231,7 @@ class EventRunner():
 
       colors = self.get_kml_colors()
       cc = 0
+      jobs = []
       for pr in possible:
          if cc > len(colors) - 1:
             cc = 0
@@ -188,41 +245,43 @@ class EventRunner():
             #ms_obs[obs2] = 1
             pc += 1
             gkey = "".join(sorted([obs1,obs2]))
-            if gkey not in self.plane_pairs:
-               try:
-                  result = self.plane_test(obs1, obs2)
-                  if result is not None:
-                     status, line1, line2 = result
-                     slat,slon,salt,elat,elon,ealt = line1
-                     track_distance = self.track_dist(slat,slon,salt,elat,elon,ealt)
-                     self.plane_pairs[gkey] = {}
-                     self.plane_pairs[gkey]['status'] = status
-                     self.plane_pairs[gkey]['2D_track_dist'] = track_distance
-                     self.plane_pairs[gkey]['line1'] = line1
-                     self.plane_pairs[gkey]['line2'] = line2
-                     self.plane_pairs[gkey]['color'] = color
-                     result = self.plane_pairs[gkey]
-               except:
-                  result = None
+            rkey = "EP:".join(sorted([obs1,obs2]))
+            if gkey not in self.plane_pairs and rkey not in self.plane_pairs:
+               print("KEY NOT IN PLANE PAIRS?")
+               jobs.append((obs1,obs2,color))
+
+      print("JOBS:", len(jobs))
+      self.run_jobs(jobs)
+      rkeys = self.r.keys("EP:*" + self.date + "*")
+      print("Finished run jobs") 
+      for gkey in rkeys:
+         rval = json.loads(self.r.get(gkey))
+         gkey = gkey.replace("EP:", "")
+         self.plane_pairs[gkey] = rval
+         if "event_id" not in self.plane_pairs[gkey]:
+            t, ob1, ob2 = gkey.split("AMS")
+            ob1 = "AMS" + ob1
+            ob1 = ob1.replace(":", "_")
+            ob2 = "AMS" + ob2
+            ob2 = ob1.replace(":", "_")
+            if ob1 in self.obs_event_ids:
+               event_id = self.obs_event_ids[ob1]
+               rval['event_id'] = event_id
+               print("EVENT ID FOUND FOR THIS COMBO:", event_id, ob1, ob2 )
+               self.r.set(gkey, json.dumps(rval))
+               self.plane_pairs[gkey] = rval
             else:
-               result = self.plane_pairs[gkey]
+               print("Event id not found.", ob1, ob2)
+         print("RED:", rval)
 
-
-            if result is None:
-               print("NO:", result)
-            elif result['status'] == "plane_solved":
-               print("YES:", result)
-            else:
-               print("NO:", result)
-
-
+       
+      print("Saving plane pairs file")
       save_json_file(self.plane_pairs_file, self.plane_pairs)
-      self.kml_plane_pairs()
-
 
       # Check make events only from the successful plane pair obs
       new_events = []
       bad_keys = []
+      print("Check Make Events")
       for gkey in self.plane_pairs:
          t, obs1,obs2 = gkey.split("AMS")
          obs_key1 = "AMS" + obs1
@@ -232,10 +291,6 @@ class EventRunner():
             continue
          ob1 = self.ms_obs[obs_key1] 
          ob2 = self.ms_obs[obs_key2] 
-         print(obs_key1)
-         print(obs_key2)
-         print(ob1)
-         print(ob2)
          if True:
             obs_time = self.get_obs_datetime(ob1)
             print("EXISTING EVENT NOT FOUND FOR THIS OB.")
@@ -243,6 +298,7 @@ class EventRunner():
             if ob1['station_id'] in self.station_loc:
                ob1['lat'] = self.station_loc[ob1['station_id']][0]
                ob1['lon'] = self.station_loc[ob1['station_id']][1]
+               print("CHECK MAKE EVENT:", obs_time, ob1)
                new_events = self.check_make_events(obs_time, ob1, new_events)
             else:
                print("STATION MISSING FROM SELF.station_loc", ob1['station_id'])
@@ -257,7 +313,7 @@ class EventRunner():
 
       final_events = []
       for ev in new_events:
-         print(ev.keys())
+         #print("EVENT KEYS:", ev.keys())
          if "start_datetime" in ev:
 
             str_times = []
@@ -275,11 +331,118 @@ class EventRunner():
 
 
             final_events.append(ev)
-         
+      
+      for ev in final_events:
+         print("INSERT NEW EVENT.")
+         print(ev)
+         self.insert_new_event(ev)
       save_json_file(self.all_events_file, final_events)
       cf = self.all_events_file.replace("ams2/", "archive.allsky.tv/")
       print("Saved:", self.all_events_file)
-      os.system("cp " + self.all_events_file + " " + cf)
+      cmd = "cp " + self.all_events_file + " " + cf
+      print(cmd)
+      os.system(cmd)
+
+
+      cf = self.plane_pairs_file.replace("ams2/", "archive.allsky.tv/")
+
+      save_json_file(self.plane_pairs_file, self.plane_pairs)
+      self.kml_plane_pairs()
+
+      cmd = "cp " + self.plane_pairs_file + " " + cf
+      print(cmd)
+      os.system(cmd)
+
+      self.all_obs_dict_file = self.all_obs_file.replace("ALL_OBS", "OBS_DICT")
+      save_json_file(self.all_obs_dict_file, self.obs_dict)
+
+      print("Saved:", self.plane_pairs_file)
+      print("Saved:", self.all_obs_dict_file)
+
+   def run_jobs(self, jobs):
+      # Multi-process/thread IP job runner. 
+      workers = 30
+      thread = {}
+      if len(jobs) > workers:
+         wp = int(len(jobs)/workers)
+      else:
+         wp = 1
+      print("WORKERS:", workers)
+      print("WORK PROCESSES:", wp)
+      print("JOBS :", len(jobs))
+      if len(jobs) > 0:
+         for i in range(0,wp):
+            start = i * wp
+            end = start + wp
+            print("Make thread with items :", start, end)
+            print(i, wp)
+            thread[i] = Process(target=self.worker, args=("thread1", jobs[start:end]))
+
+         for i in range(0,wp):
+            thread[i].start()
+            print(i, wp)
+            time.sleep(1)
+         for i in range(0,wp):
+            thread[i].join()
+            print(i, wp)
+            time.sleep(1)
+
+   
+   def worker(self, thread_name, jobs):
+      results = {}
+      for job in jobs:
+         obs1, obs2,color = job
+         jkey = "".join([obs1,obs2])
+         rkey = "EP:" + jkey
+         rval = self.r.get(rkey)
+         if rval is None:
+         #if True:
+            if True:
+
+           # try:
+               result = self.plane_test(obs1, obs2)
+               print("PLANE TEST RESULT:", result)
+
+               if result is not None:
+                  status, line1, line2 = result
+                  slat,slon,salt,elat,elon,ealt = line1
+                  track_distance = self.track_dist(slat,slon,salt,elat,elon,ealt)
+                  if obs1 in self.obs_event_ids:
+                     self.plane_pairs[jkey] = self.obs_event_ids[obs1] 
+
+                  self.plane_pairs[jkey] = {}
+                  self.plane_pairs[jkey]['status'] = status
+                  self.plane_pairs[jkey]['obs1'] = obs1 
+                  self.plane_pairs[jkey]['obs2'] = obs2
+                  self.plane_pairs[jkey]['2D_track_dist'] = track_distance
+                  self.plane_pairs[jkey]['line1'] = line1
+                  self.plane_pairs[jkey]['line2'] = line2
+                  self.plane_pairs[jkey]['color'] = color
+                  self.plane_pairs[jkey]['combo_key'] = jkey
+                  result = self.plane_pairs[jkey]
+                  results[jkey] = result
+               else:
+                  self.plane_pairs[jkey] = {}
+                  self.plane_pairs[jkey]['obs1'] = obs1 
+                  self.plane_pairs[jkey]['obs2'] = obs2
+                  self.plane_pairs[jkey]['combo_key'] = jkey
+                  self.plane_pairs[jkey]['color'] = color
+                  self.plane_pairs[jkey]['status'] = "plane_failed" 
+                  if obs1 in self.obs_event_ids:
+                     self.plane_pairs[jkey] = self.obs_event_ids[obs1] 
+                  result = self.plane_pairs[jkey]
+                  results[jkey] = result
+
+           # except:
+           #    results[jkey] = None
+            print(jkey, results[jkey])
+            # call_function
+            rval = json.dumps(results[jkey])
+            self.r.set(rkey, rval)
+            print("SETTING RVAL:", rkey, rval)
+         else:
+            self.plane_pairs[jkey] = json.loads(rval) 
+            print("Plane already in redis!", jkey, rval)
 
    def make_event_id(self,event):
       ev_str = str(min(event['start_datetime']))
@@ -321,28 +484,44 @@ class EventRunner():
       return(lat2, lon2)
 
    def kml_plane_pairs(self):
-      kml = simplekml.Kml()
+      self.all_events = load_json_file(self.all_events_file)
+      self.plane_pairs = load_json_file(self.plane_pairs_file)
 
-      obs_event_ids = {}
+      kml = simplekml.Kml()
+      fol_day = kml.newfolder(name=self.date + " Planes")
+      fol_sol = fol_day.newfolder(name='Solved Planes')
+
+      self.obs_event_ids = {}
+      print(len(self.all_events), " total events.")
       for ev in self.all_events:
          ev_id = ev['event_id']
          for i in range(0, len(ev['stations'])):
             st = ev['stations'][i]
             vid = ev['files'][i]
             oid = st + "_" + vid
-            obs_event_ids[oid] = ev_id
+            self.obs_event_ids[oid] = ev_id
       cc = 0
-      
+      self.obs_event_ids_file = self.all_events_file.replace("ALL_EVENTS", "ALL_OBS_IDS")
+      save_json_file(self.obs_event_ids_file, self.obs_event_ids)
+      print("PLANE PAIRS:", len(self.plane_pairs))
+
       for combo_key in self.plane_pairs:
-         el = combo_key.split("AMS")
-         ob1 = el[0]
-         ob2 = el[1]
+         o_combo_key = combo_key.replace("EP:", "")
+         print("COMBO KEY IS:", combo_key)
+         el = o_combo_key.split("AMS")
+         print("EL:", el)
+         ob1 = el[1]
+         ob2 = el[2]
          ob1 = "AMS" + ob1.replace(":", "_")
          ob2 = "AMS" + ob2.replace(":", "_")
-         if ob1 in obs_event_ids:
-            ev_id = obs_event_ids[ob1]
+         if ob1 in self.obs_event_ids:
+            ev_id = self.obs_event_ids[ob1]
          else:
             ev_id = "NO_EVENT_ID"
+            print("obs not in obs_id file!", ob1)
+         if "status" not in self.plane_pairs[combo_key]:
+            print("combo key NOT in plane_pairs file???")
+            continue
          print(ev_id, combo_key, self.plane_pairs[combo_key])
          if self.plane_pairs[combo_key]['status'] == "plane_solved":
             line1 = self.plane_pairs[combo_key]['line1']
@@ -350,21 +529,24 @@ class EventRunner():
             color = self.plane_pairs[combo_key]['color']
             slat,slon,salt,elat,elon,ealt = line1
 
-            line = kml.newlinestring(name=combo_key, description="", coords=[(slon,slat,salt),(elon,elat,ealt)])
+            line = fol_sol.newlinestring(name=combo_key, description="", coords=[(slon,slat,salt),(elon,elat,ealt)])
             line.altitudemode = simplekml.AltitudeMode.relativetoground
             line.linestyle.color = color
             line.linestyle.colormode = "normal" 
             line.linestyle.width = "3"
             slat,slon,salt,elat,elon,ealt = line2
-            line = kml.newlinestring(name=combo_key, description="", coords=[(slon,slat,salt),(elon,elat,ealt)])
+            line = fol_sol.newlinestring(name=combo_key, description="", coords=[(slon,slat,salt),(elon,elat,ealt)])
             line.altitudemode = simplekml.AltitudeMode.relativetoground
             line.linestyle.color = color 
             line.linestyle.colormode = "normal"
             line.linestyle.width = "3"
+         else:
+            print("BAD PP STATUS:", self.plane_pairs[combo_key]['status'])
       self.plane_kml_file = self.plane_pairs_file.replace(".json",".kml")
       kml.save(self.plane_kml_file)
       clf = self.plane_kml_file.replace("ams2/", "archive.allsky.tv/")
       print(self.plane_kml_file)
+
       os.system("cp " + self.plane_kml_file + " " + clf)
 
 
@@ -427,10 +609,13 @@ class EventRunner():
       values['sel2'] = el2s
       values['eel2'] = el2e
 
-      result = man_solve(values)
+      try:
+         result = man_solve(values)
+      except:
+         result = None
       if result is None:
          print("PLANE TEST FAILED FOR PAIR!", st1, st2)
-         return("plane_failed", [0,0,0], [0,0,0])
+         return("plane_failed", [0,0,0,0,0,0], [0,0,0,0,0,0])
       else:
          line1, line2 = result
          print("L1", line1)
@@ -1401,7 +1586,7 @@ class EventRunner():
                   time_str = ttt.strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]
                str_times.append(time_str)
             ne['start_datetime'] = str_times
-            print("INSERT NEW EVENT:" )
+            #print("INSERT NEW EVENT:" )
             self.insert_new_event(ne)
             new_mse.append(ne)
          else:
@@ -2060,10 +2245,12 @@ class EventRunner():
 
    def insert_new_event(self, event):
       print("INSERT NEW EVENT:", event)
-      if "event_id" in event:
+      #if "event_id" in event:
+      #   event_id = event['event_id']
+      #else:
+      #   event_id = None
+      if True:
          event_id = event['event_id']
-      else:
-         event_id = None
          ev_str = str(min(event['start_datetime']))
          if "." in ev_str:
             ev_dt = datetime.datetime.strptime(ev_str, "%Y-%m-%d %H:%M:%S.%f")
@@ -2298,3 +2485,5 @@ class EventRunner():
          events.append(event)
 
       return(events)
+
+

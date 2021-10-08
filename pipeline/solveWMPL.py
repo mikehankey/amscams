@@ -381,8 +381,8 @@ def define_events(date):
    cfn, cdir = fn_dir(cloud_events_index_file)
    if cfe(cdir,1) == 0:
       os.makedirs(cdir)
-   cmd = "cp " + events_index_file + " " + cloud_events_index_file
-   print("DISABLED!", cmd)
+   #cmd = "cp " + events_index_file + " " + cloud_events_index_file
+   #print("DISABLED!", cmd)
    #os.system(cmd)
    mins = []
    counts = []
@@ -673,19 +673,22 @@ def solve_day(day, cores=32):
    obs_file = dyn_cache + date + "_ALL_OBS.json"
    events_file = dyn_cache + date + "_ALL_EVENTS.json"
    events_index_file = dyn_cache + date + "_ALL_EVENTS_INDEX.json"
+   print("Trying...", events_file)
    if cfe(events_file) == 1:
       size, tdiff = get_file_info(events_file)
    else:
+      print("COULD NOT FIND EVENTS FILE!", events_file)
       size = 0
       tdiff = 0
 
    
-
-   if cfe(events_file) == 0 or tdiff > 1:
-      print("COPY MASTER EVENTS FILE FOR DAY", day)
-      cf = events_file.replace("/mnt/ams2", "/mnt/archive.allsky.tv")
-      cmd = "cp " + cf + " " + events_file
-      os.system(cmd)
+   print("TDIFF!", tdiff)
+   #if cfe(events_file) == 0:
+   #if True:
+   #   print("COPY MASTER EVENTS FILE FOR DAY", day)
+   #   cf = events_file.replace("/mnt/ams2", "/mnt/archive.allsky.tv")
+   #   cmd = "cp " + cf + " " + events_file
+   #   os.system(cmd)
 
 
    #events_index = load_json_file(events_index_file)
@@ -714,6 +717,13 @@ def solve_day(day, cores=32):
          stats[ss] += 1
       else:
          stats[ss] = 0
+      if ss == "unsolve":
+         if False:
+         #if cfe(day_dir + event['event_id'] + "/" + event['event_id'] + "-event.json") == 1:
+            stats[ss] -= 1
+            ss = "solved"
+            stats[ss] -= 1
+            event['solve_status'] = "SUCCESS"
    for ss in stats:
       print(ss, stats[ss])
 
@@ -743,6 +753,7 @@ def solve_day(day, cores=32):
          else:
              # this is a multi-core run so launch many threads and wait. 
              running = check_running("solveWMPL.py")
+             print("POSSIBLE CORES:", cores)
              print("RUNNING:", running)
              if running < cores:
                 
@@ -750,7 +761,7 @@ def solve_day(day, cores=32):
                 print(cmd)
                 print("SKIP RUN!")
                 os.system(cmd)
-                time.sleep(2)
+                #time.sleep(2)
              while running >= cores:
                 time.sleep(5)
                 running = check_running("solveWMPL.py")
@@ -847,6 +858,52 @@ def parse_extra_obs(extra):
    return(e_obs)
 
 def get_event_data(date, event_id,json_conf=None):
+   y,m,d = date.split("_")
+   event_file = "/mnt/ams2/EVENTS/" + y + "/" + m + "/" + d + "/" + y + "_" + m + "_" + d + "_ALL_EVENTS.json" 
+   event_dict_file = "/mnt/ams2/EVENTS/" + y + "/" + m + "/" + d + "/" + y + "_" + m + "_" + d + "_ALL_EVENTS_DICT.json" 
+   obs_dict_file = "/mnt/ams2/EVENTS/" + y + "/" + m + "/" + d + "/" + y + "_" + m + "_" + d + "_OBS_DICT.json" 
+   event_dict = {}
+   if cfe(event_dict_file) == 1:
+      event_dict = load_json_file(event_dict_file)
+   else:
+      event_dict = {}
+   if cfe(event_file) == 1:
+      events = load_json_file(event_file)
+      for ev in events:
+         ev_id = ev['event_id']
+         event_dict[ev_id] = ev
+            
+   save_json_file(event_dict_file, event_dict)
+
+   if event_id in event_dict:
+      event_data = event_dict[event_id]
+   else:
+      print("EVENT DOES NOT EXIST IN THE EVENT DICT!", event_id)
+      exit()
+
+
+   if cfe(obs_dict_file) == 1:
+      obs_dict = load_json_file(obs_dict_file)
+   else:
+      print("NO OBS DICT!", obs_dict_file)
+   
+
+   obs_data = {}
+   for i in range(0, len(event_data['stations'])):
+      st = event_data['stations'][i]
+      vid = event_data['files'][i]
+      obs_key = st + ":" + vid
+      obs_d = obs_dict[obs_key]
+      obs_data[obs_key] = obs_d
+   print("EVD:", event_data)
+   print("OBD:", obs_data)
+   resp = {}
+   resp['event_data'] = event_data
+   resp['obs_data'] = obs_data 
+   return(resp)
+
+
+def get_event_data_old2(date, event_id,json_conf=None):
 
    if json_conf is None:
       json_conf = load_json_file("../conf/as6.json")
@@ -894,20 +951,26 @@ def solve_event(event_id, force=1, time_sync=1):
     local_event_dir = "/mnt/ams2/EVENTS/" + year + "/" + mon + "/" + day + "/" + event_id + "/" 
     cloud_event_dir = "/mnt/archive.allsky.tv/EVENTS/" + year + "/" + mon + "/" + day + "/" + event_id + "/" 
     local_events_dir = "/mnt/ams2/EVENTS/" 
+    if cfe(local_event_dir + event_id + "-event.json") == 1:
+       print("Event already done")
+       return()
+
+    print (local_event_dir + event_id + "-event.json") 
     inspect_file = local_event_dir +  event_id + "-INSPECT.json"
     print("INSPECT FILE:", inspect_file)
-    if cfe(inspect_file) == 1:
-       inspect_data = load_json_file(inspect_file)
-    else:
-       os.system("python3 Inspect.py " + event_id)
+    if False:
+       if cfe(inspect_file) == 1:
+          inspect_data = load_json_file(inspect_file)
+       else:
+          os.system("python3 Inspect.py " + event_id)
 
-       inspect_data = load_json_file(inspect_file)
-    if "ignore_obs" in inspect_data:
-       ignore_obs = inspect_data['ignore_obs']
-    else:
-       ignore_obs = {}
-    print(inspect_file, inspect_data.keys())
-    print(inspect_data['ignore_obs'])
+          inspect_data = load_json_file(inspect_file)
+       if "ignore_obs" in inspect_data:
+          ignore_obs = inspect_data['ignore_obs']
+       else:
+          ignore_obs = {}
+       print(inspect_file, inspect_data.keys())
+       print(inspect_data['ignore_obs'])
 
    # + year + "/" + mon + "/" + day + "/" 
     cloud_events_dir = "/mnt/archive.allsky.tv/EVENTS/" 
@@ -965,6 +1028,7 @@ def solve_event(event_id, force=1, time_sync=1):
     dynamodb = boto3.resource('dynamodb')
     #event = get_event(dynamodb, event_id, 0)
     event_data =  get_event_data(date, event_id)
+
     event = event_data['event_data']
     eobs = event_data['obs_data']
     if event == None:
@@ -1008,6 +1072,7 @@ def solve_event(event_id, force=1, time_sync=1):
     if len(event) == 0:
        return()
 
+    ignore_obs = {}
     bad_obs = []
     for i in range(0, len(event['stations'])):
        t_station = event['stations'][i]
@@ -1017,7 +1082,7 @@ def solve_event(event_id, force=1, time_sync=1):
           print("IGNORE:", obs_key)
 
           continue
-       dy_obs_data = get_obs(t_station, t_file)
+       dy_obs_data = eobs[t_station + ":" + t_file]
        print("DY OBS DATA:", dy_obs_data)
        if dy_obs_data is not None:
           if True:
@@ -1391,7 +1456,7 @@ def make_event_html(event_json_file ):
    map_html = "<div style='clear: both'> &nbsp; </div>"
    map_html += "<div>"
    map_html += "<h2>Trajectory</h2>"
-   map_html += "<iframe src=\"https://archive.allsky.tv/APPS/dist/maps/index.html?mf=" + kml_file + "zoom=5&&lat=" + str(center_lat) + "&lon=" + str(center_lon) + "\" width=800 height=440></iframe><br><a href=" + kml_file + ">KML</a><br>"
+   map_html += "<iframe src=\"https://archive.allsky.tv/APPS/dist/maps/index.html?mf=" + kml_file + "&zoom=5&&lat=" + str(center_lat) + "&lon=" + str(center_lon) + "&zoom=5\" width=800 height=440></iframe><br><a href=" + kml_file + ">KML</a><br>"
 
    map_html += "</div>"
 
@@ -1445,14 +1510,26 @@ def make_sum_html(event_id, event, solve_dir, obs):
       duration = float(event['duration'])
    else:
       duration = float(0)
+   print("EVENT:", event)
+   if "start_datetime" not in event:
+      print("MISSING start_datetime!")
+      exit()
+   elif len(event['start_datetime']) < 2:
+      print("LESS THAN 2 start_datetime!")
+      exit()
+
+   
    shower_code = event['solution']['shower']['shower_code']
    html = "<h2>Event Summary</h2>"
    html += "<table border=0 padding=3><tr><td>"
    html += "<table border=0 padding=5>"
    html += "<tr><td>Event ID</td>"
    html += "<td>" + str(event_id) + "</td></tr>"
-   html += "<tr><td>Start Time</td>"
-   html += "<td>" + str(event['start_datetime'][0]) + "</td></tr>"
+   try:
+      html += "<tr><td>Start Time</td>"
+      html += "<td>" + str(event['start_datetime'][0]) + "</td></tr>"
+   except:
+      print("Missing Start datetime")
    html += "<tr><td>Duration</td>"
    html += "<td>" + str(duration) + "</td></tr>"
    html += "<tr><td>Start Height &nbsp; &nbsp; &nbsp; </td>"
@@ -1504,7 +1581,7 @@ def make_sum_html(event_id, event, solve_dir, obs):
 
 def make_obs_html(event_id, event, solve_dir, obs):
 
-
+   
    print("MAKE OBS HTML:", obs)
    html = "<h2>Observations</h2>"
    html += "<div>"
@@ -1570,6 +1647,8 @@ def make_obs_html(event_id, event, solve_dir, obs):
 
       #html += "</div>\n"
    html += "</div>"
+
+
 
    return(html)
 
@@ -2088,9 +2167,10 @@ def check_fix_plots(event_id):
          if pl_id != event_id:
             print("PROB:", ev_fn, pl_id)
             new_file = ev_file.replace(pl_id, event_id)
-            cmd = "mv " + ev_file + " " + new_file
-            print("MOVE2", cmd)
-            os.system(cmd)
+            if ev_file != new_file:
+               cmd = "mv " + ev_file + " " + new_file
+               print("MOVE2", cmd)
+               os.system(cmd)
          else:
             print("Good:", ev_fn, pl_id)
    if cfe(local_event_dir,1) == 1:
@@ -2103,10 +2183,11 @@ def check_fix_plots(event_id):
          if pl_id != event_id:
             print("PROB:", ev_fn, pl_id)
             new_file = ev_file.replace(pl_id, event_id)
-            cmd = "mv " + ev_file + " " + new_file
-            print("MOVE3")
-            print(cmd)
-            os.system(cmd)
+            if ev_file != new_file:
+               cmd = "mv " + ev_file + " " + new_file
+               print("MOVE3")
+               print(cmd)
+               os.system(cmd)
          else:
             print("Good:", ev_fn, pl_id)
 
@@ -2186,6 +2267,7 @@ def event_report(solve_dir, event_final_dir, obs):
        fn, xxx = fn_dir(sf)
        fn = fn.replace(".png", ".jpg")
        new_file = event_final_dir + fn 
+
        cmd = "mv " + sf + " " + event_final_dir
 
        if sf != event_final_dir + fn and "png" not in fn:
