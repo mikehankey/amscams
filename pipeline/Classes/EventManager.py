@@ -389,6 +389,12 @@ class EventManager():
       all_trajectories = []
       all_radiants = []
       all_showers = []
+
+      all_good = []
+      for ev in all_events:
+         if "event_id" in ev:
+            all_good.append(ev)
+      all_events = all_good   
       all_events = sorted(all_events, key=lambda x: (x['event_id']), reverse=True)
       for event in all_events:
          print(event['event_id'])

@@ -37,11 +37,16 @@ class EventRunner():
       if date is not None:
          year,month,day = date.split("_")
       self.event_dict = {}
+      print("DAY:", day)
       if day is not None:
-         self.day = day 
-         self.month = month 
-         self.year = year 
+         y,m,d = date.split("_")
+         self.day = d
+         self.month = m
+         self.year = y 
          self.event_dir = "/mnt/ams2/EVENTS/" + self.year + "/" + self.month + "/" + self.day + "/" 
+         if cfe(self.event_dir, 1) == 0:
+            os.makedirs(self.event_dir)
+
          self.cloud_event_dir = "/mnt/archive.allsky.tv/EVENTS/" + self.year + "/" + self.month + "/" + self.day + "/" 
          if cfe(self.event_dir, 1) == 0:
             os.makedirs(self.event_dir)
@@ -66,13 +71,17 @@ class EventRunner():
          if cfe(self.all_events_file) == 1:
             print("LOADING EVENTS FILE!", self.all_events_file)
             self.all_events = load_json_file(self.all_events_file)
+            if isinstance(self.all_events, str) is True:
+               self.all_events = json.loads(self.all_events)
+            print("ALL EV:", len(self.all_events))
             updated_events = []
             for event in self.all_events:
                if "event_id" in event:
                   self.event_dict[event['event_id']] = event
                   updated_events.append(event)
                else:
-                  print("MISSING EVENT ID NEED TO MAKE IT!")
+                  print(event)
+                  print("MISSING EVENT ID NEED TO MAKE IT!", event)
                   event['event_id'] = self.make_event_id(event)
                   updated_events.append(event)
             self.all_events = updated_events
@@ -1810,7 +1819,10 @@ class EventRunner():
       #print("OUT:", report_template) 
       station_report = {}
       obs = load_json_file(self.all_obs_file)
-      ssd = load_json_file(self.single_station_file)
+      if cfe(self.single_station_file) == 1:
+         ssd = load_json_file(self.single_station_file)
+      else:
+         ssd = {}
       print("ALL EVENTS FILE:", self.all_events_file)
       msd = load_json_file(self.all_events_file)
       print(len(obs) , "total observations.")
