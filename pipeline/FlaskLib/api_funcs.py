@@ -331,6 +331,7 @@ def show_cat_stars (video_file, hd_stack_file, points):
       print(cp['x_poly'])
       if "hd_stack" in mj:
          hd_img = cv2.imread(mj['hd_stack'], 0)
+         print("HD IMG:", mj['hd_stack'])
          print("HD IMG:", hd_img.shape)
       if "short_bright_stars" in cp:
          del (cp['short_bright_stars'])

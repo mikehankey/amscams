@@ -97,7 +97,7 @@ def stacks_main(amsid, data) :
             out += """
 	       <div class='preview'>
 	          <a class='mtt' href='/stacks_day/""" + amsid + "/" + date + """/' title='Browse all day'>
-                  <img width=320 height=180 alt='""" + date + """' class='img-fluid ns lz' src='""" + night_stack_file + """?bc'>
+                  <img width=320 height=180 alt='""" + date + """' class='img-fluid ns lz' src='""" + night_stack_file + """?bc4'>
                   </a><span class='pre-b'>Cam #""" + cams_id + " " + str(minutes) + """ minutes</span>
                </div>
             """
@@ -127,7 +127,7 @@ def stacks_main(amsid, data) :
             out += """
 	       <div class='preview'>
 	          <a class='mtt' href='/stacks_day/""" + amsid + "/" + date + """/' title='Browse all day'>
-                  <img width=320 height=180 alt='""" + date + """' class='img-fluid ns lz' src='""" + dusk_stack_file + """?bc'>
+                  <img width=320 height=180 alt='""" + date + """' class='img-fluid ns lz' src='""" + dusk_stack_file + """?bc4'>
                   </a><span class='pre-b'>Cam #""" + cams_id + " " + str(minutes) + """ minutes</span>
                </div>
             """
@@ -153,7 +153,7 @@ def stacks_main(amsid, data) :
                out += """
                   <div class='preview'>
                      <a class='mtt' href='/stacks_day/""" + amsid + "/" + date + """/' title='Browse all day'>
-                     <img width=320 height=180 alt='""" + date + """' class='img-fluid ns lz' src='""" + day_stack_file + """?bc'>
+                     <img width=320 height=180 alt='""" + date + """' class='img-fluid ns lz' src='""" + day_stack_file + """?bc4'>
                      </a><span class='pre-b'>Cam #""" + cams_id + " " + str(minutes) + """ minutes</span>
                   </div>
                """
@@ -183,7 +183,7 @@ def stacks_main(amsid, data) :
             out += """
 	       <div class='preview'>
 	          <a class='mtt' href='/stacks_day/""" + amsid + "/" + date + """/' title='Browse all day'>
-                  <img width=320 height=180 alt='""" + date + """' class='img-fluid ns lz' src='""" + dawn_stack_file + """?bc'>
+                  <img width=320 height=180 alt='""" + date + """' class='img-fluid ns lz' src='""" + dawn_stack_file + """?bc4'>
                   </a><span class='pre-b'>Cam #""" + cams_id + " " + str(minutes) + """ minutes</span>
                </div>
             """

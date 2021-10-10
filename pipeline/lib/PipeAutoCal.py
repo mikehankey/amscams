@@ -4886,13 +4886,14 @@ def find_stars_with_grid(img):
          #max_px, avg_px, px_diff,max_loc,star_int = eval_cnt(gimg.copy(), avg)
 
          # check if star has a blob
+         print("PX DIFF/AVG PX:", px_diff, avg_px)
 
          if px_diff < 20 :
             continue
 
-         if avg_px < 20:
+         #if avg_px < 20:
             #in mask area
-            continue
+         #   continue
         
          cny = gimg.shape[0] - 1
          cnx = gimg.shape[1] - 1
@@ -4999,7 +5000,11 @@ def check_star_blob(image):
 
    return(good)
 def get_image_stars(file=None,img=None,json_conf=None,show=0):
-
+   print(file, img)
+   if img is None:
+      img = cv2.imread(file)
+   if len(img.shape) == 3:
+      img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
    print("GET IMG STARS.")
    stars = []
    huge_stars = []
@@ -5033,6 +5038,7 @@ def get_image_stars(file=None,img=None,json_conf=None,show=0):
 
    best_stars = find_stars_with_grid(img)
    for star in best_stars:
+      print("BEST:", star)
       x,y,z = star
       cv2.circle(img, (int(x),int(y)), 5, (128,128,128), 1)
    cv2.imwrite("/mnt/ams2/temp.jpg", img)
