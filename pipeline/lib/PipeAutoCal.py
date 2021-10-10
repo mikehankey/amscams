@@ -881,6 +881,16 @@ def refit_meteor(meteor_file, json_conf,force=0):
 
       user_stars = get_image_stars(meteor_file, image, json_conf, 0)
       cp['user_stars'] = user_stars
+      good_stars = []
+      ih,iw = image.shape[:2]
+      for data in cp['user_stars']
+         x = data[0]
+         y = data[1]
+         if 100 < x < iw -100 and 100 < y < ih - 100:
+            good_stars.append(data)
+      user_stars = good_stars
+      cp['user_stars'] = good_stars
+
       for star in user_stars:
          cv2.circle(image,(star[0],star[1]), 4, (0,0,255), 1)
       cp = pair_stars(cp, meteor_file, json_conf, image)
