@@ -2431,6 +2431,8 @@ class EventRunner():
          event['start_datetime'].append(obs_time)
          event['lats'].append(obs['lat'])
          event['lons'].append(obs['lon'])
+         event = self.clean_event(event)
+
          events.append(event)
          return(events)
 
@@ -2486,4 +2488,50 @@ class EventRunner():
 
       return(events)
 
+   def clean_event(self, event):
+      #1 remove duplicate keys/obs
+      #2 make sure all obs in the event still exist
+      #3 Re-calculate the total number of stations
+      #4 Delete the event if it is no longer valid (<2 unique stations)
+      #4 return clean event
+      #['start_datetime', 'files', 'lats', 'solve_status', 'stations', 'lons',
+      print("ST:", event['stations'])
+      print("FILE:", event['files'])
+      print("DATES:", event['start_datetime'])
+      print("LATS:", event['lats'])
+      print("LONS:", event['lons'])
+      obs_keys = {}
+      for i in range(0, len(event['stations'])):
+         ok = event['stations'][i] + "_" + event['files'][i]
+         obs_keys[ok] = [event['start_datetime'][i], event['lats'][i], event['lons'][i]]
+
+      new_stations = []
+      new_files = []
+      new_start_datetime = []
+      new_lats = []
+      new_lons = []
+      for key in obs_keys:
+         el = key.split("_")
+         st = el[0]
+         vid = key.replace(st + "_", "")
+         sdt, lat, lon = obs_keys[key]
+         new_stations.append(st)
+         new_files.append(vid)
+         new_start_datetime.append(sdt)
+         new_lats.append(lat)
+         new_lons.append(lon)
+
+      print("BEFORE:", len(event['stations']))
+      print("AFTER:", len(new_stations))
+      print(new_stations)
+      print(new_files)
+      print(new_start_datetime)
+      print(event.keys())
+      event['total_stations'] = len(set(new_stations))
+      event['stations'] = new_stations
+      event['files'] = new_files
+      event['start_datetime'] = new_start_datetime
+      event['lats'] = new_lats
+      event['lons'] = new_lons
+      return(event)
 
