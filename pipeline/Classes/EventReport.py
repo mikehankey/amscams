@@ -1,0 +1,366 @@
+from lib.PipeUtil import cfe, load_json_file, save_json_file, convert_filename_to_date_cam, get_trim_num, get_file_info
+import threading
+from multiprocessing import Process
+import time
+from lib.kmlcolors import *
+import glob
+import simplekml
+from lib.PipeManager import dist_between_two_points
+from DynaDB import get_event, get_obs, search_events, update_event, update_event_sol, insert_meteor_event, delete_event, search_trash, delete_obs
+import numpy as np
+import subprocess
+import time
+import datetime
+import os
+import redis
+import simplejson as json
+import boto3
+from decimal import Decimal
+from lib.solve import man_solve
+from tabulate import tabulate
+
+class DecimalEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, Decimal):
+            return float(obj)
+        return json.JSONEncoder.default(self, obj)
+
+class EventReport():
+   def __init__(self, cmd=None, day=None, month=None,year=None,date=None, use_cache=0):
+      #os.system("./DynaDB.py udc " + date + " events")
+      self.dynamodb = boto3.resource('dynamodb')
+      admin_conf = load_json_file("admin_conf.json")
+      self.admin_conf = admin_conf
+      self.r = redis.Redis(admin_conf['redis_host'], port=6379, decode_responses=True)
+      self.cmd = cmd
+      self.date = date
+      self.Y, self.M, self.D =  date.split("_")
+      self.event_dir = "/mnt/ams2/EVENTS/" + self.Y + "/" + self.M + "/" + self.D + "/"
+
+      # FILES THAT HOLD DATA
+      # ALL_OBS
+      # ALL_EVENTS
+      # ALL_OBS_IDS
+      # OBS_DICT
+      # PLANE_PAIRS
+      # MIN_REPORT
+      # ALL_STATIONS
+      # ALL_DEL
+      self.all_obs_file = self.event_dir + self.date + "_ALL_OBS.json"
+      self.event_kml_file = self.event_dir + self.date + "_ALL_EVENTS.kml"
+      self.all_events_file = self.event_dir + self.date + "_ALL_EVENTS.json"
+      self.event_dict_file = self.event_dir + self.date + "_EVENT_DICT.json"
+      self.all_obs_ids_file = self.event_dir + self.date + "_ALL_OBS_IDS.json"
+      self.obs_dict_file = self.event_dir + self.date + "_OBS_DICT.json"
+      self.plane_pairs_file = self.event_dir + self.date + "_PLANE_PAIRS.json"
+      self.min_report_file = self.event_dir + self.date + "_MIN_REPORT.json"
+      self.all_stations_file = self.event_dir + self.date + "_ALL_STATIONS.json"
+      self.all_del_file = self.event_dir + self.date + "_ALL_DEL.json"
+
+      #if cfe(self.all_obs_file) == 1:
+      #   self.all_obs = load_json_file(self.all_obs_file)
+      #else:
+      #   self.all_obs = {}
+      if cfe(self.all_events_file) == 1:
+         self.all_events = load_json_file(self.all_events_file)
+      else:
+         self.all_events = []
+      if cfe(self.all_obs_ids_file) == 1:
+         self.all_obs_ids = load_json_file(self.all_obs_ids_file)
+      else:
+         self.all_obs_ids = {}
+
+      if cfe(self.obs_dict_file) == 1:
+         self.obs_dict = load_json_file(self.obs_dict_file)
+      else:
+         self.obs_dict = {}
+
+      if cfe(self.plane_pairs_file) == 1:
+         self.plane_pairs = load_json_file(self.plane_pairs_file)
+      else:
+         self.plane_pairs = []
+
+      if cfe(self.min_report_file) == 1:
+         self.min_report = load_json_file(self.min_report_file)
+      else:
+         self.min_report= []
+
+      if cfe(self.all_stations_file) == 1:
+         self.all_stations = load_json_file(self.all_stations_file)
+      else:
+         self.all_stations = []
+      self.event_dict = {}
+      for row in self.all_events:
+         self.event_dict[row['event_id']] = row
+
+      rkeys = self.r.keys("EP:*" + self.date + "*")
+      for gkey in rkeys:
+         rval = json.loads(self.r.get(gkey))
+         gkey = gkey.replace("EP:", "")
+         self.plane_pairs[gkey] = rval
+         if "event_id" not in self.plane_pairs[gkey]:
+            t, ob1, ob2 = gkey.split("AMS")
+            ob1 = "AMS" + ob1
+            ob1 = ob1.replace(":", "_")
+            ob2 = "AMS" + ob2
+            ob2 = ob1.replace(":", "_")
+            if ob1 in self.all_obs_ids:
+               event_id = self.all_obs_ids[ob1]
+               rval['event_id'] = event_id
+               print("EVENT ID FOUND FOR THIS COMBO:", event_id, ob1, ob2 )
+               self.r.set(gkey, json.dumps(rval))
+               self.plane_pairs[gkey] = rval
+            else:
+               print("Event id not found.", ob1, ob2)
+         print("RED:", rval)
+
+
+      table_header = ["File", "Rows"]
+      print("Data loaded for " + date)
+      table_data = []
+      table_data.append(("Stations", str(len(self.all_stations))))
+      table_data.append(("Obs", str(len(self.all_obs_ids.keys()))))
+      table_data.append(("Dict", str(len(self.obs_dict.keys()))))
+      table_data.append(("Planes", str(len(self.plane_pairs))))
+      table_data.append(("Events", str(len(self.all_events))))
+      table_data.append(("Minutes", str(len(self.min_report))))
+      print(tabulate(table_data,headers=table_header))
+
+   def report_events(self):
+      for plane_key in self.plane_pairs:
+         if "obs1" in self.plane_pairs[plane_key]:
+            obs1 = self.plane_pairs[plane_key]['obs1'].replace(":", "_")
+            obs2 = self.plane_pairs[plane_key]['obs2'].replace(":", "_")
+         else:
+            a,b,c = plane_key.split("AMS")
+            obs1 = "AMS" + b
+            obs2 = "AMS" + c
+            self.plane_pairs[plane_key]['obs1'] = obs1
+            self.plane_pairs[plane_key]['obs2'] = obs2
+         obs1_ev_id = None
+         obs2_ev_id = None
+         if obs1 in self.all_obs_ids:
+            print("OBS1:", self.all_obs_ids[obs1])
+            obs1_ev_id = self.all_obs_ids[obs1]
+         if obs2 in self.all_obs_ids:
+            print("OBS2:", self.all_obs_ids[obs2])
+            obs2_ev_id = self.all_obs_ids[obs2]
+         if "event_id" in self.plane_pairs[plane_key]:
+            if self.plane_pairs[plane_key]['event_id'] in self.event_dict:
+               minute = self.plane_pairs[plane_key]['obs1'].split(":")[1][0:16]
+               event_id = self.plane_pairs[plane_key]['event_id']
+               if "plane_pairs" not in self.event_dict[event_id] :
+                  self.event_dict[event_id]['plane_pairs'] = []
+               self.event_dict[event_id]['plane_pairs'].append(self.plane_pairs[plane_key])
+               print("PLANE EVENT ID FOUND", event_id, obs1_ev_id, obs2_ev_id, obs1,obs2)
+            else:
+               print("PLANE EVENT ID IS NOT IN THE EVENT DICT!?", event_id, obs1_ev_id, obs2_ev_id, obs1, obs2)
+
+      save_json_file (self.event_dict_file, self.event_dict)
+      print(self.event_dict_file)
+
+   def report_minutes(self):
+
+      for plane_key in self.plane_pairs:
+         print("PK", plane_key, self.plane_pairs[plane_key])
+         el = plane_key.split("AMS")
+         minute = el[1][0:16]
+         if minute in self.min_report:
+            if "plane_pairs" not in self.min_report[minute]:
+               self.min_report[minute]['plane_pairs'] = []
+               self.min_report[minute]['plane_pairs'].append(self.plane_pairs[plane_key])
+            else:
+               self.min_report[minute]['plane_pairs'].append(self.plane_pairs[plane_key])
+
+      for row in self.all_events:
+         if "files" not in row:
+            print("THERE ARE NO FILES IN THE EVENT!")
+            print(row)
+            continue
+         minute = row['files'][0][0:16]
+         if minute in self.min_report:
+            if "events" not in self.min_report[minute]:
+               self.min_report[minute]['events'] = []
+               self.min_report[minute]['events'].append(row['event_id'])
+            else:
+               self.min_report[minute]['events'].append(row['event_id'])
+
+      print("MULTI-STATION MINUTE REPORT!")
+ 
+      table_header = ["Minute", "Obs", "Stations", "Planes", "Events"]
+      table_data = []
+      for minute in sorted(self.min_report, reverse=True):
+         if "station_count" in self.min_report[minute]:
+            if self.min_report[minute]['station_count'] > 1:
+               if "plane_pairs" not in self.min_report[minute]:
+                  self.min_report[minute]['plane_pairs'] = []
+               if "events" not in self.min_report[minute]:
+                  self.min_report[minute]['events'] = []
+
+               table_data.append((minute, str(self.min_report[minute]['count']), str(self.min_report[minute]['station_count']), str(len(self.min_report[minute]['plane_pairs'])), str(len(self.min_report[minute]['events']))))
+ 
+      print(tabulate(table_data,headers=table_header))
+      save_json_file(self.min_report_file, self.min_report)
+
+
+
+   def kml_event_report(self):
+      kml = simplekml.Kml()
+      fol_day = kml.newfolder(name=self.date + " AS7 EVENTS")
+      for key in self.event_dict:
+         print("KML EVENT DICT KEY: ", key)
+         fol_sol = fol_day.newfolder(name=key)
+         if "solve_status" in self.event_dict[key]:
+            solve_status = self.event_dict[key]['solve_status']
+         else:
+            solve_status = "UNSOLVED"
+
+         # station start / end AZ 2D Lines
+
+         # For this folder add:
+         # point for each station
+         # the 3D WMPL trajectory if it exists
+
+         # a line for each of the plane pairs
+         if "plane_pairs" not in self.event_dict[key]:
+            self.event_dict[key]['plane_pairs'] = []
+         else:
+            print("NO PP FOR KEY!", key)
+
+         
+
+         for data in self.event_dict[key]['plane_pairs']:
+            print("PLANE:", data)
+            combo_key = data['combo_key']
+            o_combo_key = combo_key.replace("EP:", "")
+            el = o_combo_key.split("AMS")
+            ob1 = el[1]
+            ob2 = el[2]
+            ob1 = "AMS" + ob1.replace(":", "_")
+            ob2 = "AMS" + ob2.replace(":", "_")
+            if ob1 in self.all_obs_ids:
+               ev_id = self.all_obs_ids[ob1]
+            else:
+               ev_id = "NO_EVENT_ID"
+               print("obs not in obs_id file!", ob1)
+            if "status" not in data:
+               print("combo key NOT in plane_pairs file???")
+               continue
+            print(ev_id, combo_key, combo_key)
+            print("DATA:", data)
+            if data['status'] == "plane_solved":
+               line1 = data['line1']
+               line2 = data['line2']
+               color = data['color']
+               slat,slon,salt,elat,elon,ealt = line1
+
+               line = fol_sol.newlinestring(name=combo_key, description="", coords=[(slon,slat,salt),(elon,elat,ealt)])
+               line.altitudemode = simplekml.AltitudeMode.relativetoground
+               line.linestyle.color = color
+               line.linestyle.colormode = "normal"
+               line.linestyle.width = "3"
+
+               slat,slon,salt,elat,elon,ealt = line2
+               line = fol_sol.newlinestring(name=combo_key, description="", coords=[(slon,slat,salt),(elon,elat,ealt)])
+               line.altitudemode = simplekml.AltitudeMode.relativetoground
+               line.linestyle.color = color
+               line.linestyle.colormode = "normal"
+               line.linestyle.width = "3"
+
+         if "solution" in self.event_dict[key]:
+            go = False
+            if "traj" in self.event_dict[key]['solution']:
+               print("YO", key, solve_status, self.event_dict[key]['plane_pairs'])
+               traj = self.event_dict[key]['solution']['traj']
+               try:
+                  color = self.event_dict[key]['plane_pairs'][0]['color']
+               except:
+                  color = "FFFFFFFF"
+               go = True
+            if go is True:
+               print(traj)
+               line = fol_sol.newlinestring(name=key, description="", coords=[(traj['start_lon'],traj['start_lat'],traj['start_ele']),(traj['end_lon'],traj['end_lat'],traj['end_ele'])])
+               line.altitudemode = simplekml.AltitudeMode.relativetoground
+               line.linestyle.color = color
+               line.linestyle.colormode = "normal"
+               line.linestyle.width = "5"
+               line.extrude = 1
+            else:
+               print("THERE IS NO TRAJ!", self.event_dict[key])
+         else:
+            print("THERE IS NO TRAJ!", self.event_dict[key])
+
+
+      kml.save(self.event_kml_file)
+      print(self.event_kml_file)
+
+
+
+
+
+   def kml_plane_pairs(self):
+      self.all_events = load_json_file(self.all_events_file)
+      self.plane_pairs = load_json_file(self.plane_pairs_file)
+
+      kml = simplekml.Kml()
+      fol_day = kml.newfolder(name=self.date + " Planes")
+      fol_sol = fol_day.newfolder(name='Solved Planes')
+
+      self.obs_event_ids = {}
+      print(len(self.all_events), " total events.")
+      print("Waiting.")
+      for ev in self.all_events:
+         ev_id = ev['event_id']
+         for i in range(0, len(ev['stations'])):
+            st = ev['stations'][i]
+            vid = ev['files'][i]
+            oid = st + "_" + vid
+            self.obs_event_ids[oid] = ev_id
+      cc = 0
+      self.obs_event_ids_file = self.all_events_file.replace("ALL_EVENTS", "ALL_OBS_IDS")
+      save_json_file(self.obs_event_ids_file, self.obs_event_ids)
+      print("PLANE PAIRS:", len(self.plane_pairs))
+
+      for combo_key in self.plane_pairs:
+         o_combo_key = combo_key.replace("EP:", "")
+         print("COMBO KEY IS:", combo_key)
+         el = o_combo_key.split("AMS")
+         print("EL:", el)
+         ob1 = el[1]
+         ob2 = el[2]
+         ob1 = "AMS" + ob1.replace(":", "_")
+         ob2 = "AMS" + ob2.replace(":", "_")
+         if ob1 in self.obs_event_ids:
+            ev_id = self.obs_event_ids[ob1]
+         else:
+            ev_id = "NO_EVENT_ID"
+            print("obs not in obs_id file!", ob1)
+         if "status" not in self.plane_pairs[combo_key]:
+            print("combo key NOT in plane_pairs file???")
+            continue
+         print(ev_id, combo_key, self.plane_pairs[combo_key])
+         if self.plane_pairs[combo_key]['status'] == "plane_solved":
+            line1 = self.plane_pairs[combo_key]['line1']
+            line2 = self.plane_pairs[combo_key]['line2']
+            color = self.plane_pairs[combo_key]['color']
+            slat,slon,salt,elat,elon,ealt = line1
+
+            line = fol_sol.newlinestring(name=combo_key, description="", coords=[(slon,slat,salt),(elon,elat,ealt)])
+            line.altitudemode = simplekml.AltitudeMode.relativetoground
+            line.linestyle.color = color
+            line.linestyle.colormode = "normal"
+            line.linestyle.width = "3"
+            slat,slon,salt,elat,elon,ealt = line2
+            line = fol_sol.newlinestring(name=combo_key, description="", coords=[(slon,slat,salt),(elon,elat,ealt)])
+            line.altitudemode = simplekml.AltitudeMode.relativetoground
+            line.linestyle.color = color
+            line.linestyle.colormode = "normal"
+            line.linestyle.width = "3"
+         else:
+            print("BAD PP STATUS:", self.plane_pairs[combo_key]['status'])
+      self.plane_kml_file = self.plane_pairs_file.replace(".json",".kml")
+      kml.save(self.plane_kml_file)
+      clf = self.plane_kml_file.replace("ams2/", "archive.allsky.tv/")
+      print(self.plane_kml_file)
+
+      os.system("cp " + self.plane_kml_file + " " + clf)

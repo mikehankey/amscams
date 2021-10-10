@@ -142,10 +142,19 @@ def test(cam, cam_ip):
    print(sun, az,alt)
    #https://github.com/NeiroNx/python-dvr
    enc_info = cam.get_info("Simplify.Encode")
-   #test_info = cam.get_info("Camera.ParamEx")
-   #test_info = cam.get_info("NetWork.NetCommon")
-   #test_info = cam.get_info("NetWork.NetCommon")
-   print (enc_info)
+   cam_info2 = cam.get_info("Camera.ParamEx")
+   cam_info1 = cam.get_info("Camera.Param")
+   net_info = cam.get_info("NetWork.NetCommon")
+
+   # set slow shutter to OFF
+   #cam_info[0]['EsShutter'] = '0x00000000'
+   #cam.set_info("Camera.Param", cam_info)
+   print ("ENCODING:\n", enc_info)
+   print ("CAM PARAMS1:\n", cam_info1)
+   print ("CAM PARAMS2:\n", cam_info2)
+   print ("NETWORK:\n", net_info)
+
+   print("SLOW SHUTTER:", cam_info1[0]['EsShutter'])
    cam.close()
 
 def camera_settings():

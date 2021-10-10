@@ -319,27 +319,27 @@ def hourly_stacks_html(date, json_conf):
          cv2.imwrite(day_stack_file_jpg, day_stack_image)
          print(day_stack_file_jpg)
       except:
-         print("Problem saving day stack file ", day_stack_file , day_stack_image.shape)
+         print("Problem saving day stack file ", day_stack_file_jpg )
          print(len(day_images[cam_id]), "images") 
          blank_image = np.zeros((180,360,3),dtype=np.uint8)
          cv2.imwrite(day_stack_file_jpg, blank_image)
 
-
+   
    for cam_id in night_images:
       print("NIGHT IMAGES:", cam_id, len(night_images[cam_id]))
-
       #if len(night_images[cam_id]) == 0:
       #   night_images[cam_id] = day_images[cam_id] 
       night_stack_image = stack_frames(night_images[cam_id], 1, None, "night")
       #night_stack_file = "/mnt/ams2/SD/proc2/" + date + "/images/" + cam_id + "-night-stack.png"
       night_stack_file_jpg = "/mnt/ams2/meteor_archive/" + STATION_ID + "/STACKS/" + date + "/" + cam_id + "-night-stack.jpg"
       all_stack_images.append(night_stack_file_jpg)
+      #print("NSI:", night_stack_image.shape)
       try:
          #cv2.imwrite(night_stack_file, night_stack_image)
          cv2.imwrite(night_stack_file_jpg, night_stack_image)
          print(night_stack_file_jpg)
       except:
-         print("Problem saving night stack file ", night_stack_file, night_stack_image.shape)
+         print("Problem saving night stack file ", night_stack_file_jpg )
          print(len(night_images[cam_id]))
          blank_image = np.zeros((180,360,3),dtype=np.uint8)
          cv2.imwrite(night_stack_file_jpg, blank_image)
@@ -359,7 +359,7 @@ def hourly_stacks_html(date, json_conf):
          cv2.imwrite(dusk_stack_file_jpg, dusk_stack_image)
          print(dusk_stack_file_jpg)
       except:
-         print("Problem saving dusk stack file ", dusk_stack_file_jpg, dusk_stack_image.shape)
+         print("Problem saving dusk stack file ", dusk_stack_file_jpg )
          print(len(dusk_images[cam_id]))
          blank_image = np.zeros((180,360,3),dtype=np.uint8)
          cv2.imwrite(dusk_stack_file_jpg, blank_image)
@@ -376,10 +376,11 @@ def hourly_stacks_html(date, json_conf):
       all_stack_images.append(dawn_stack_file_jpg)
       try:
       #   cv2.imwrite(dawn_stack_file, dawn_stack_image)
+      #print("DAWN:", dawn_stack_image.shape)
          cv2.imwrite(dawn_stack_file_jpg, dawn_stack_image)
          print(dawn_stack_file_jpg)
       except:
-         print("Problem saving dawn stack file ", dawn_stack_file, dawn_stack_iamge.shape)
+         print("Problem saving dawn stack file ", dawn_stack_file_jpg )
          print(len(dawn_images[cam_id]))
          blank_image = np.zeros((180,360,3),dtype=np.uint8)
          cv2.imwrite(dawn_stack_file_jpg, blank_image)
@@ -387,10 +388,11 @@ def hourly_stacks_html(date, json_conf):
 
    blank_image = np.zeros((180,360,3),dtype=np.uint8)
    for sf in all_stack_images:
-      tsize, tdiff = get_file_info(sf)
-      if cfe(sf) == 0 or tsize == 0:
-         print("MAKE BLANK IMAGE", sf)
-         cv2.imwrite(sf, blank_image)
+      if cfe(sf) == 1:
+         tsize, tdiff = get_file_info(sf)
+      if cfe(sf) == 0 or tsize == 0 or tdiff :
+         print("MAKE BLANK IMAGE", sf, cfe(sf), tsize)
+         #cv2.imwrite(sf, blank_image)
 
    fp = open(night_stack_dir + "hours.html", "w")
    fp.write(html)

@@ -17,8 +17,10 @@ if __name__ == "__main__":
 
    EV = Events()
    EVR = EventRunner(date=sys.argv[1],use_cache=0)
-
    if len(sys.argv) > 2:
+      if sys.argv[2] == "kml":
+         EVR.kml_plane_pairs()
+
       if sys.argv[2] == "quick":
          print("QUICK REPORT")
          EVR.quick_report(sys.argv[1])
@@ -32,7 +34,11 @@ if __name__ == "__main__":
 
    #EVR.del_bad_obs_from_events(sys.argv[1])
    #print("LIST EVENTS")
+   EVR.obs_by_minute()
+   print("Done obs by minute")
+   exit()
    EVR.list_events_for_day()
+   input("Wait")
    print("UPDATE EVENTS")
    EVR.update_events_for_day()
 

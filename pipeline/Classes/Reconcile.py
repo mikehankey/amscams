@@ -30,11 +30,14 @@ class Reconcile():
          self.rec_file = self.data_dir + "reconcile_" + year + ".json"
       elif year is not None and month is not None:
          self.rec_file = self.data_dir + "reconcile_" + year + "_" + month + ".json"
+      else:
+         self.rec_file = self.data_dir + "reconcile_ALL.json"
       self.json_conf = load_json_file("../conf/as6.json")
       self.station_id = self.json_conf['site']['ams_id']
       self.cloud_dir = "/mnt/archive.allsky.tv/" + self.station_id + "/METEORS/" 
       if cfe(self.cloud_dir,1) == 0:
          os.makedirs(self.cloud_dir)
+
 
 
       if cfe(self.rec_file) == 1:
@@ -52,18 +55,29 @@ class Reconcile():
       if "needs_review" not in self.rec_data:
          self.rec_data['needs_review'] = []
       
-      if month is None:
-         self.get_all_meteor_files(year)
-      else:
-         self.get_all_meteor_files(year, month)
+      self.get_all_meteor_files(year, month)
 
-         self.rec_data['mfiles'] = self.mfiles
-         save_json_file(self.rec_file, self.rec_data, True)
+      self.rec_data['mfiles'] = self.mfiles
+      save_json_file(self.rec_file, self.rec_data, True)
+
       if "meteor_index" not in self.rec_data:
          self.rec_data['meteor_index'] = {}   
       c = 0
 
+      # Build master index of cloud files.
+      print("BUILDING CLOUD FILE INDEX!")
+      self.get_cloud_media()
+
       new = 0
+
+      print("REC DATA KEYS:", self.rec_data.keys()) 
+      for root_file in self.rec_data['mfiles']:
+         print("ROOT:", root_file)
+         if root_file in self.rec_data['meteor_index']:
+            print(root_file, self.rec_data['meteor_index'][root_file].keys())
+         else:
+            print("Root file not in meteor index.")
+
       for root_file in self.rec_data['mfiles']:
          date = root_file[0:10]
          meteor_file = "/mnt/ams2/meteors/" + date + "/" + root_file + ".json"
@@ -77,13 +91,32 @@ class Reconcile():
             self.rec_data['meteor_index'][root_file] = {}
             self.rec_data['meteor_index'][root_file]['last_update'] = datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
             print("LOADING FILE INTO REC DATA:", root_file)
-            self.rec_data['meteor_index'][root_file]['obs_data'] = make_obs_data(self.station_id, date, meteor_file) 
+            print("NEW FILE FOR REC DB:", self.rec_data['meteor_index'][root_file].keys())
+            if "cloud_files" in self.rec_data['meteor_index'][root_file]:
+               cloud_files = self.rec_data['meteor_index'][root_file]['cloud_files']
+            else:
+               cloud_files = []
+            self.rec_data['meteor_index'][root_file]['obs_data'] = make_obs_data(self.station_id, date, meteor_file,cloud_files) 
             new = new + 1
+         else:
+            # This file was already in the rec data.
+            print("FILE EXISTS IN REC DB:", self.rec_data['meteor_index'][root_file].keys())
+            if "obs_data" not in self.rec_data['meteor_index'][root_file]:
+               if "cloud_files" in self.rec_data['meteor_index'][root_file]:
+                  cloud_files = self.rec_data['meteor_index'][root_file]['cloud_files']
+               else:
+                  cloud_files = []
+               self.rec_data['meteor_index'][root_file]['obs_data'] = make_obs_data(self.station_id, date, meteor_file,cloud_files)
 
          c += 1
          last_month = mon
+      print("SAVING REC DATA FILE.")
       save_json_file(self.rec_file, self.rec_data )
       #self.reconcile_scan_media(year,month)
+
+   def index_all_meteors_aws(self):
+      for mfile in self.mfiles:
+         print(mfile)
 
    def media_make_roi_jpg(self,root_file):
       day = root_file[0:10]
@@ -603,24 +636,33 @@ class Reconcile():
       return(final_hd_meteors)
 
             
-   def get_cloud_media(self, year):
-      cloud_files_file = "/mnt/ams2/METEOR_SCAN/DATA/cloud_files_" + year + ".txt"
-      cloud_wild = "/mnt/archive.allsky.tv/" + self.station_id + "/METEORS/" + year + "/" 
-      size, tdiff = get_file_info(cloud_files_file)
-      if cfe(cloud_files_file) == 0 or tdiff > 2000:
+   def get_cloud_media(self, year=None):
+      if year is not None:
+         cloud_files_file = "/mnt/ams2/METEOR_SCAN/DATA/cloud_files_" + year + ".txt"
+         cloud_wild = "/mnt/archive.allsky.tv/" + self.station_id + "/METEORS/" + year + "/" 
+      else:
+         cloud_files_file = "/mnt/ams2/METEOR_SCAN/DATA/cloud_files_ALL.txt"
+         cloud_wild = "/mnt/archive.allsky.tv/" + self.station_id + "/METEORS/"  
+      if cfe(cloud_files_file) == 1:
+         size, tdiff = get_file_info(cloud_files_file)
+      if cfe(cloud_files_file) == 0 or tdiff > 10000:
          print("GETTING CLOUD FILES....")
          print ("find " + cloud_wild + " > " + cloud_files_file)
          os.system("find " + cloud_wild + " > " + cloud_files_file)
       fp = open(cloud_files_file)
       wild = year
       for line in fp:
-         if wild not in line:
-            continue
+         if wild is not None:
+            if wild not in line:
+               continue
          line = line.replace("\n", "")
          fn = line.split("/")[-1]
          fn = fn.replace(self.station_id + "_","")
          ext = fn.split("-")[-1]
          root = fn.replace("-" + ext, "")
+         if root not in self.rec_data['meteor_index']:
+            self.rec_data['meteor_index'][root] = {}
+            self.rec_data['meteor_index'][root]['cloud_files'] = []
          if root in self.rec_data['meteor_index']:
             if "cloud_files" not in self.rec_data['meteor_index'][root]:
                self.rec_data['meteor_index'][root]['cloud_files'] = []
@@ -654,7 +696,12 @@ class Reconcile():
 
 
    def update_cloud_index(self, year=None,month=None):
-      cloud_index_file = "/mnt/ams2/METEOR_SCAN/DATA/cloud_index_" + year + "_" + month + ".json"
+      if year is not None and month is not None:
+         cloud_index_file = "/mnt/ams2/METEOR_SCAN/DATA/cloud_index_" + year + "_" + month + ".json"
+      elif year is not None:
+         cloud_index_file = "/mnt/ams2/METEOR_SCAN/DATA/cloud_index_" + year + ".json"
+      else:
+         cloud_index_file = "/mnt/ams2/METEOR_SCAN/DATA/cloud_index_ALL.json"
       if cfe(cloud_index_file) == 1:
          cloud_index = load_json_file(cloud_index_file)
       else:
@@ -940,11 +987,13 @@ class Reconcile():
              
             self.rec_data['needs_review'].append(root_file)
 
-   def get_all_meteor_files(self, year, month ):
-      if month is not None:
+   def get_all_meteor_files(self, year=None, month=None ):
+      if month is not None and year is not None:
          mdirs = glob.glob("/mnt/ams2/meteors/" + year + "_" + month + "*")
-      else:
+      elif year is not None:
          mdirs = glob.glob("/mnt/ams2/meteors/" + year + "*")
+      else:
+         mdirs = glob.glob("/mnt/ams2/meteors/*")
       mds = []
       for md in mdirs:
          if cfe(md,1) == 1:

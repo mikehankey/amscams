@@ -499,7 +499,7 @@ def load_stations(dynamodb):
 
 
 def delete_event(dynamodb=None, event_day=None, event_id=None):
-   r.delete("E:" + event_id)
+   admin_conf = load_json_file("admin_conf.json")
    if dynamodb is None:
       dynamodb = boto3.resource('dynamodb')
    print("DELETE DYN EVENT:", event_day, event_id)
@@ -511,7 +511,10 @@ def delete_event(dynamodb=None, event_day=None, event_id=None):
      }
    )
    rkey = "E:" + event_id
-   r.delete(rkey)
+   if "master" in admin_conf:
+      r.delete(rkey)
+   else:
+      print("no access to redis")
 
    print("AWS DYN RESP:", response)
 
@@ -687,7 +690,7 @@ def update_dyna_cache_for_day(dynamodb, date, stations, utype=None):
    print("DOOBS:", do_obs)
    print("cluset:", len(cluster_stations))
    if do_obs == 1:
-      os.system("rm " + obs_file ) 
+      #os.system("rm " + obs_file ) 
       all_obs = []
       unq_stations = {}
       for data in cluster_stations:
@@ -705,22 +708,28 @@ def update_dyna_cache_for_day(dynamodb, date, stations, utype=None):
             else:
                all_obs.append(data)
 
-      update_redis_obs(date, all_obs)
+      #update_redis_obs(date, all_obs)
       all_obs = json.loads(json.dumps(all_obs,cls=DecimalEncoder))
       save_json_file(obs_file, all_obs)
+      obs_file_zip = obs_file.replace(".json", ".json.gz")  
+      os.system("gzip -k -f " + obs_file )
       print("SAVED:", obs_file)
-      cloud_obs_file = obs_file.replace("/mnt/ams2/", "/mnt/archive.allsky.tv/")
-      os.system("cp " + obs_file + " " + cloud_obs_file)
-      print("cp " + obs_file + " " + cloud_obs_file)
+      cloud_obs_file = obs_file_zip.replace("/mnt/ams2/", "/mnt/archive.allsky.tv/")
+      os.system("cp " + obs_file_zip + " " + cloud_obs_file)
+      print("cp " + obs_file_zip + " " + cloud_obs_file)
 
    if do_events == 1:
-      os.system("rm " + event_file ) 
+      #os.system("rm " + event_file ) 
       # get all of the events for this day 
       events = search_events(dynamodb, date, stations, 1)
       ev_keys = {}
       deleted_events = {}
       for event in events:
          ev_keys[event['event_id']] = event
+         if "stations" not in event:
+            print("EVENT MISSING STATIONS!", event)
+            #input("wait")
+            continue
          for i in range(0, len(event['stations'])):
             st = event['stations'][i]
             vid = event['files'][i]
@@ -733,6 +742,7 @@ def update_dyna_cache_for_day(dynamodb, date, stations, utype=None):
       for evid in deleted_events:
          print("DELETE THIS EVENT!", evid, ev_keys[evid].keys() )
       events = sorted(events, key=lambda x: (x['event_id']), reverse=False) 
+      events = json.loads(json.dumps(events,cls=DecimalEncoder))
       save_json_file(event_file, events)
       print("Saved:", event_file)
       cloud_event_file = event_file.replace("/mnt/ams2/", "/mnt/archive.allsky.tv/")
@@ -862,14 +872,15 @@ def search_events(dynamodb, date, stations, nocache=0):
 
    #use_cache = 0
    all_events = []
-   r = redis.Redis("allsky-redis.d2eqrc.0001.use1.cache.amazonaws.com", port=6379, decode_responses=True)
-   rkey = "E:" + date.replace("_", "") + "*"
-   keys = r.keys(rkey)
-   for key in keys:
-      rval = json.loads(r.get(key))
-      all_events.append(rval)   
-
    if False:
+      r = redis.Redis("allsky-redis.d2eqrc.0001.use1.cache.amazonaws.com", port=6379, decode_responses=True)
+      rkey = "E:" + date.replace("_", "") + "*"
+      keys = r.keys(rkey)
+      for key in keys:
+         rval = json.loads(r.get(key))
+         all_events.append(rval)   
+
+   if True:
       if dynamodb is None:
          dynamodb = boto3.resource('dynamodb')
 
@@ -903,6 +914,12 @@ def make_station_clusters(all_stations):
          else:
             city = ""
          if "alt" in station_data:
+            print("STATION DATA:", station_data)
+            if isinstance(station_data['alt'], str) is True:
+               if "meters" in station_data['alt']:
+                  station_data['alt'] = station_data['alt'].replace("meters", "")
+                  station_data['alt'] = station_data['alt'].replace(" ", "")
+                  station_data['alt'] = station_data['alt'].replace("m", "")
             alt = float(station_data['alt'])
             st_lat_lon.append((station_id, lat, lon, alt, city))
          else:
@@ -1528,7 +1545,7 @@ def do_dyna_day(dynamodb, day):
    if "filter" not in dyn_log[day] or today == day:
       cmd = "python3 Filter.py fd " + day
       print(cmd)
-      os.system(cmd)
+      #os.system(cmd)
    else:
       print("already filtered for this day.", day)
 

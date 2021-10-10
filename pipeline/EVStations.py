@@ -18,9 +18,8 @@ if __name__ == "__main__":
    #EVR.update_station_event_ids(date)
    #EVR.make_all_obs_index(date)
    #EVR.update_all_events_index()
-   #exit()
 
-   EVR = EventRunner()
+   EVR = EventRunner(date=date)
    if sys.argv[1] == "all_time":
       EVR.make_alltime_obs_index()
       os.system("./best_meteors.py")
@@ -38,7 +37,7 @@ if __name__ == "__main__":
    #exit()
    EVR.station_kml_for_day(date)
    EVR.make_all_obs_index(date)
-   
+   print("DONE") 
    #EVR.make_vida_plots(date)
    #EVR.update_all_events_index()
    #EVR.all_event_stats()

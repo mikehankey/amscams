@@ -797,7 +797,10 @@ def reject_planes(date, json_conf):
                      if plane == 0:
                         new_conf.append(obj_data)
                      else:
-                        mj['plane'] = 1
+                        if "hc" not in mj and "user_mods" not in mj:
+                           mj['plane'] = 1
+                        elif "plane" in mj:
+                           del mj['plane']
                   elif obj_data['report']['meteor'] == 1: 
                      new_conf.append(obj_data)
                mj['confirmed_meteors'] = new_conf 
@@ -810,7 +813,7 @@ def reject_planes(date, json_conf):
                   print("DEL:", root_file)
    
                save_json_file(mf, mj)
-         if 'plane' in mj:
+         if 'plane' in mj and "hc" not in mj and "user_mods" not in mj:
             fn, dir = fn_dir(mf)
             root_file = fn.replace(".json", "")
             del_data[root_file] = 1

@@ -25,6 +25,9 @@ def get_meteor_media_sync_status(station_id, sd_vid):
    lcdir = "/mnt/ams2/METEOR_SCAN/" + day + "/"
    cloud_dir = "/mnt/archive.allsky.tv/" + station_id + "/METEORS/" + day[0:4] + "/" + day + "/"
    cloud_files = []
+
+
+   # This will get it from the live file system but takes a long time! 
    if True:
       wild = station_id + "_" + sd_vid.replace(".mp4", "")
       cfs = glob.glob(cloud_dir + wild + "*")
@@ -43,6 +46,18 @@ def get_meteor_media_sync_status(station_id, sd_vid):
       print(sync_status)
       return(sync_status)
 
+def dict_to_array(dict_data):
+   adata = []
+   print("DICT DATA:", dict_data)
+
+   for key in dict_data:
+      if "obj_id" in dict_data[key]:
+         adata.append(dict_data[key])
+      else:
+         for obj_id in dict_data[key]:
+            adata.append(dict_data[key][obj_id])
+
+   return(adata)
 
 def push_obs(api_key,station_id,meteor_file):
    json_conf = load_json_file("../conf/as6.json")
@@ -79,7 +94,7 @@ def push_obs(api_key,station_id,meteor_file):
    #response = requests.get("https://kyvegys798.execute-api.us-east-1.amazonaws.com/api/allskyapi?cmd=get_event&event_date=2021_04_23&event_id=20210423_013032")
 
 
-def make_obs_data(station_id, date, meteor_file):
+def make_obs_data(station_id, date, meteor_file,cloud_files=None):
    update_time = datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
    mfn = meteor_file.split("/")[-1]
 
@@ -99,7 +114,10 @@ def make_obs_data(station_id, date, meteor_file):
    #   cloud_index = {}
    #   print("NO CLOUD_INDEX", cloud_index_file)
    sd_vid = mfn.replace(".json", ".mp4")
-   sync_status = get_meteor_media_sync_status(station_id, sd_vid)
+   if cloud_files is None:
+      sync_status = get_meteor_media_sync_status(station_id, sd_vid)
+   else:
+      sync_status = cloud_files
 
    print("SYNC STATUS:", sync_status)
 
@@ -149,7 +167,7 @@ def make_obs_data(station_id, date, meteor_file):
 
       if "cp" in mj:
          cp = mj['cp']
-         if type(cp) == "dict":
+         if isinstance(cp, dict) is True:
             if "total_res_px" not in cp:
                cp['total_res_px'] = 9999
             if "cat_image_stars" not in cp:
@@ -166,8 +184,17 @@ def make_obs_data(station_id, date, meteor_file):
          mjr = load_json_file(red_file)
       else:
          mjr = {}
-      sd_vid = mj['sd_video_file'].split("/")[-1]
-      hd_vid = mj['hd_trim'].split("/")[-1]
+      if "sd_video_file" in mj:
+         sd_vid = mj['sd_video_file'].split("/")[-1]
+      else:
+         sd_vid = None
+      if "hd_trim" in mj:
+         if mj['hd_trim'] is not None and mj['hd_trim'] != 0:
+            hd_vid = mj['hd_trim'].split("/")[-1]
+         else:
+            hd_vid = None
+      else:
+         hd_vid = None
       if "meteor_frame_data" in mjr:
          if len(mjr['meteor_frame_data']) > 0:
             meteor_frame_data = mjr['meteor_frame_data']
@@ -203,12 +230,28 @@ def make_obs_data(station_id, date, meteor_file):
       peak_int = 0
    if peak_int == 0:
       if "meteor_scan_meteors" in mj:
+         if isinstance(mj['meteor_scan_meteors'], dict) is True:
+            print("MSM:", type(mj['meteor_scan_meteors']), mj['meteor_scan_meteors'])
+            mj['meteor_scan_meteors'] = dict_to_array(mj['meteor_scan_meteors'])
+            save_json_file(meteor_file, mj)
+
          if len(mj['meteor_scan_meteors']) > 0:
             peak_int = max(mj['meteor_scan_meteors'][0]['oint'])
    if peak_int == 0:
       if "msc_meteors" in mj:
+         if isinstance(mj['msc_meteors'], dict) is True:
+            print("MSM:", type(mj['msc_meteors']), mj['msc_meteors'])
+            mj['msc_meteors'] = dict_to_array(mj['msc_meteors'])
+            save_json_file(meteor_file, mj)
          if len(mj['msc_meteors']) > 0:
-            peak_int = max(mj['msc_meteors'][0]['oint'])
+
+            if "oint" in mj['msc_meteors'][0]:
+               peak_int = max(mj['msc_meteors'][0]['oint'])
+      if peak_int == 0:
+         # grab peak int from the MFD if it exists
+         if mjr is not None:
+            if "meteor_frame_data" in mjr:
+               peak_int = max([row[-1] for row in mjr['meteor_frame_data']])
 
 
 
@@ -243,7 +286,7 @@ def make_obs_data(station_id, date, meteor_file):
       ffp = mj['ffp']
    else:
       ffp = {}
-   if 'sd' not in ffp:
+   if 'sd' not in ffp and sd_vid is not None:
       ffp = {}
       ffp['sd'] = ffprobe(sd_vid)
    if 'hd' not in ffp:
@@ -276,6 +319,8 @@ def make_obs_data(station_id, date, meteor_file):
       "sync_status": sync_status,
       "last_update": update_time
    }
+   #if hd_vid is None:
+   #   del (obs_data['hd_video_file'])
    if "human_points" in mj:
       obs_data['human_points'] = mj['human_points']
    if "hc" in mj:
