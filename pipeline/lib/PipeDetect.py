@@ -813,7 +813,7 @@ def reject_planes(date, json_conf):
                   print("DEL:", root_file)
    
                save_json_file(mf, mj)
-         if 'plane' in mj and "hc" not in mj and "user_mods" no in mj:
+         if 'plane' in mj and "hc" not in mj and "user_mods" not in mj:
             fn, dir = fn_dir(mf)
             root_file = fn.replace(".json", "")
             del_data[root_file] = 1
