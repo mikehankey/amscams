@@ -886,7 +886,9 @@ def refit_meteor(meteor_file, json_conf,force=0):
       for data in cp['user_stars']:
          x = data[0]
          y = data[1]
+         print(x,y,iw,ih)
          if 100 < x < iw -100 and 100 < y < ih - 100:
+            print("GOOD:", data)
             good_stars.append(data)
       user_stars = good_stars
       cp['user_stars'] = good_stars
