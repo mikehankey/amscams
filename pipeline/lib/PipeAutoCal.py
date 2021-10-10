@@ -883,7 +883,7 @@ def refit_meteor(meteor_file, json_conf,force=0):
       cp['user_stars'] = user_stars
       good_stars = []
       ih,iw = image.shape[:2]
-      for data in cp['user_stars']
+      for data in cp['user_stars']:
          x = data[0]
          y = data[1]
          if 100 < x < iw -100 and 100 < y < ih - 100:
