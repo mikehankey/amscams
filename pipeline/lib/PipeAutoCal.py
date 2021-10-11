@@ -2817,7 +2817,20 @@ def deep_calib2(cam, json_conf):
 
                all_stars.append((cal_fn, cp['center_az'], cp['center_el'], cp['ra_center'], cp['dec_center'], cp['position_angle'], cp['pixscale'], dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist,star_int))
 
+   all_stars = sorted(all_stars, key=lambda x: x[22], reverse=False)
+   best_all_stars = []
+   used_img = np.zeros((1080,1920),dtype=np.uint8) 
+   for data in all_stars:
+      cal_fn, cp['center_az'], cp['center_el'], cp['ra_center'], cp['dec_center'], cp['position_angle'], cp['pixscale'], dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist,star_int = data
+      val = used_img[int(siy),int(six)]
+      if val == 0:
+         cv2.circle(used_img,(int(six),int(siy)), 20, (255,255,255), -1)
+         best_all_stars.append(data)
+
+   all_stars = best_all_stars
+   cv2.imwrite("/mnt/ams2/test.jpg", used_img)
    print("SAVEING ALL STARS", len(all_stars))
+   input("wait")
    save_json_file("/mnt/ams2/cal/" + cam + "_ALL_STARS.json", all_stars)
    print("saved /mnt/ams2/cal/" + cam + "_ALL_STARS.json")
 
