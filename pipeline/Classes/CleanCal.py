@@ -130,3 +130,21 @@ class CleanCal():
             cont.append((x,y,w,h,cx,cy,adjx,adjy))
       return(cont)
 
+   def star_intensity(self, cam):
+      import matplotlib
+      matplotlib.use('Agg')
+      import matplotlib.pyplot as plt
+
+      star_file = "/mnt/ams2/cal/" + cam + "_ALL_STARS.json"
+      stars = load_json_file(star_file)
+      star_mags = []
+      star_ints = []
+      for data in stars:
+         cal_fn, center_az, center_el, ra_center, dec_center, position_angle, pixscale, dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist,star_int = data
+         star_mags.append(mag)
+         star_ints.append(star_int)
+      plt.scatter(star_mags, star_ints, marker='o')
+      plt.savefig("/mnt/ams2/test3.png")
+      print("SAVED: /mnt/ams2/test3.png")
+
+

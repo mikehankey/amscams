@@ -12,4 +12,5 @@ if __name__ == "__main__":
    CC = CleanCal(station_id = "AMS1")
    #CC.load_freecal_files()
    #CC.load_freecal_index()
-   CC.inspect_cal(sys.argv[1])
+   #CC.inspect_cal(sys.argv[1])
+   CC.star_intensity(sys.argv[1])
