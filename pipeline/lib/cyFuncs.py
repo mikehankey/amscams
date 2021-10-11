@@ -359,6 +359,8 @@ def cyraDecToXY(ra_data, \
                 + x_poly_rev[9]*y**3
                 + x_poly_rev[10]*x*r
                 + x_poly_rev[11]*y*r)
+            dx += x_poly_rev[12]*x*r**3
+            dx += x_poly_rev[13]*x*r**5
 
             # Calculate the distortion in Y direction
             dy = (y0
@@ -373,6 +375,8 @@ def cyraDecToXY(ra_data, \
                 + y_poly_rev[9]*y**3
                 + y_poly_rev[10]*y*r
                 + y_poly_rev[11]*x*r)
+            dy += y_poly_rev[12]*y*r**3
+            dy += y_poly_rev[13]*y*r**5
 
 
         # Apply a radial distortion
