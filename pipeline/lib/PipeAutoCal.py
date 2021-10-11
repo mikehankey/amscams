@@ -6204,6 +6204,8 @@ def XYtoRADec(img_x,img_y,cal_file,cal_params,json_conf):
       + x_poly_fwd[10]*x_det*math.sqrt(x_det**2 + y_det**2)
       + x_poly_fwd[11]*y_det*math.sqrt(x_det**2 + y_det**2))
 
+   dx += x_poly_fwd[12]*x_img*r**3
+   dx += x_poly_fwd[13]*x_img*r**5
    # Add the distortion correction
    x_pix = x_det + dx 
 
@@ -6219,6 +6221,10 @@ def XYtoRADec(img_x,img_y,cal_file,cal_params,json_conf):
       + y_poly_fwd[9]*y_det**3
       + y_poly_fwd[10]*y_det*math.sqrt(x_det**2 + y_det**2)
       + y_poly_fwd[11]*x_det*math.sqrt(x_det**2 + y_det**2))
+
+   dy += y_poly_fwd[12]*y_img*r**3
+   dy += y_poly_fwd[13]*y_img*r**5
+
 
    # Add the distortion correction
    y_pix = y_det + dy 
