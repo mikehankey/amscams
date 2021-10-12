@@ -852,7 +852,7 @@ def refit_meteor(meteor_file, json_conf,force=0):
       return()
    starting_res = cp['total_res_px']
    print(starting_res)
-   if starting_res > 5:
+   if starting_res > 10:
       mj = use_default_cal(meteor_file, mj,json_conf)
       save_json_file(meteor_file, mj)
       if mjr is not None:
