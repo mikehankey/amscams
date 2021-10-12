@@ -10,6 +10,9 @@ import datetime
 from datetime import datetime as dt
 from lib.FFFuncs import ffprobe
 
+def sync_event_data():
+   all_meteor = Meteor()
+   all_meteor.sync_station_events()
 
 def status_report(meteor_date):
    all_meteor = Meteor()
@@ -424,7 +427,10 @@ if __name__ == "__main__":
       print("   8) Fix Media for day")
       print("   9) Remote Reduce Meteor")
       print("   10) Fast Sync Day ")
+      print("   11) Sync Event Data")
       cmd = input("Enter the command you want to run. ")
+   if cmd == "11":
+      cmd = "sync_event_data"
    if cmd == "10":
       cmd = "fast_sync"
    if cmd == "1":
@@ -493,6 +499,8 @@ if __name__ == "__main__":
          meteor_date = input("Enter the meteor json filename with no path")
       debug_meteor(meteor_date)
 
+   if cmd == "sync_event_data":
+      sync_event_data()
 
    if cmd == "status_report":
 

@@ -116,10 +116,10 @@ def update_defaults(json_conf):
 def run_cal_defaults(json_conf):
    gen_cal_hist(json_conf)
    #sync_cal(json_conf)
-
+   amsid = json_conf['site']['amsid']
    default_hist = {}
    rdf = []
-   if cmd == "5":
+   if True:
       for cam in json_conf['cameras']:
          cams_id = json_conf['cameras'][cam]['cams_id']
          default_hist[cams_id] = make_default_cal(json_conf, cams_id)

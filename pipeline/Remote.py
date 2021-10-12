@@ -12,7 +12,7 @@ from lib.DEFAULTS import *
 import json
 import os
 from lib.PipeUtil import load_json_file, save_json_file, cfe
-from lib.PipeAutoCal import autocal , solve_field, cal_all, draw_star_image, freecal_copy, apply_calib, index_failed, deep_calib, deep_cal_report, blind_solve_meteors, guess_cal, flatten_image, project_many, project_snaps, review_cals, star_db_mag, cal_report, review_all_cals, reverse_map, cal_index, fn_dir, eval_cal, minimize_fov, get_image_stars, solve_field, make_plate_image, minimize_poly_multi_star
+from lib.PipeAutoCal import autocal , solve_field, cal_all, draw_star_image, freecal_copy, index_failed, deep_calib, deep_cal_report, blind_solve_meteors, guess_cal, flatten_image, project_many, project_snaps, review_cals, star_db_mag, cal_report, review_all_cals, reverse_map, cal_index, fn_dir, eval_cal, minimize_fov, get_image_stars, solve_field, make_plate_image, minimize_poly_multi_star
 
 CLOUD_ROOT = "/mnt/archive.allsky.tv/"
 LOCAL_ROOT = "/mnt/ams2/meteor_archive/"
@@ -55,6 +55,20 @@ def load_remote_conf(station_id):
 def sync_configs():
    adirs = glob.glob("/mnt/ams2/archive.allsky.tv") 
 
+def remote_process_meteor():
+   remote_station = input("Enter the station ID for the remote URL you are working with.")
+   remote_url = input("Enter URL for the meteor video file you want to process.")
+   mfn = remote_url.split("/")[-1]
+   remote_dir = "/mnt/ams2/REMOTE/" + remote_station + "/" + mfn.replace(".mp4", "") + "/"
+   local_file = remote_dir + mfn
+   if cfe(remote_dir,1) == 0:
+      
+      os.makedirs(remote_dir)
+   if cfe(local_file) == 0:
+      cmd = "wget " + remote_url + " -O " + local_file
+      os.system(cmd)
+      print(cmd)
+
 def menu():
    out = """
       Functions:
@@ -62,6 +76,7 @@ def menu():
          2) Remote Calibrate
          3) Sync Back Updated Cal Files 
          4) Batch Call All Cams 
+         5) Remote Process Meteor 
 
    """
    print(out)
@@ -73,6 +88,8 @@ def menu():
       sync_back_cals()
    if cmd == "4":
       batch_all()
+   if cmd == "5":
+      remote_process_meteor()
 
 
 def batch_all():

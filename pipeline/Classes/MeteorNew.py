@@ -25,8 +25,8 @@ from Classes.Calibration import Calibration
 from lib.PipeAutoCal import XYtoRADec
 from lib.PipeVideo import load_frames_simple
 from lib.PipeAutoCal import gen_cal_hist,update_center_radec, get_catalog_stars, pair_stars, scan_for_stars, calc_dist, minimize_fov, AzEltoRADec , HMS2deg, distort_xy, XYtoRADec, angularSeparation
-from lib.PipeUtil import load_json_file, save_json_file, cfe, convert_filename_to_date_cam,get_trim_num, fn_dir, load_mask_imgs
-from lib.FFFuncs import best_crop_size, ffprobe, crop_video, splice_video, lower_bitrate
+from lib.PipeUtil import load_json_file, save_json_file, cfe, convert_filename_to_date_cam,get_trim_num, fn_dir, load_mask_imgs, get_file_info
+from lib.FFFuncs import best_crop_size, ffprobe, crop_video, splice_video, lower_bitrate, resize_video
 import boto3
 import socket
 from pushAWS import get_meteor_media_sync_status
@@ -2241,6 +2241,319 @@ class Meteor():
       hue = red_to_green / 3.0
       r, g, b = colorsys.hsv_to_rgb(hue, 1, 1)
       return map(lambda x: int(255 * x), (r, g, b))
+
+   def sync_station_events(self):
+      cdir = "/mnt/archive.allsky.tv/EVENTS/STATIONS/";
+      ldir = "/mnt/ams2/EVENTS/STATIONS/";
+      if cfe(ldir + "worklist.json"):
+         work_list = load_json_file(ldir + "worklist.json")
+      else:
+         work_list = {}
+      if cfe(ldir + "event_days.json"):
+         event_days = load_json_file(ldir + "event_days.json")
+      else:
+         event_days = {}
+
+      if cfe(ldir,1) == 0:
+         os.makedirs(ldir)
+      if cfe(ldir + "ev_sync_hist.json") == 0:
+         self.sync_hist = {}
+      else:
+         self.sync_hist = load_json_file(ldir + "ev_sync_hist.json")
+      station_ev_file = cdir + "ALL_EVENTS_" + self.station_id + ".json.gz"
+      local_ev_file = ldir + "ALL_EVENTS_" + self.station_id + ".json.gz"
+      all_cloud_files_file = ldir + self.station_id + "_ALL_CLOUD_FILES.json"
+      print("cp " + station_ev_file + " " + local_ev_file)
+      os.system("cp " + station_ev_file + " " + local_ev_file)
+      os.system("gunzip -f " + local_ev_file)
+      local_ev_file = ldir + "ALL_EVENTS_" + self.station_id + ".json"
+      station_events = load_json_file(local_ev_file)
+      print("STATION EVENTS ", len(station_events['events']))
+      for ev_data in sorted(station_events['events']):
+         vid, event_id, event_status = ev_data.split(":")
+         if vid not in work_list:
+            status,work_list = self.check_update_meteor_sync(ev_data,work_list) 
+
+      save_json_file(ldir + "worklist.json", work_list)
+      print(ldir + "worklist.json")
+      for vid in work_list:
+         print(vid)
+         date = vid[0:10]
+         year,mon,day = date.split("_")
+         meteor_dir =  "/mnt/ams2/meteors/" + date + "/"
+         ms_dir = "/mnt/ams2/METEOR_SCAN/" + date + "/"
+         sd_file_name = meteor_dir + vid
+         prev_file_name = ms_dir + self.station_id + "_" + vid.replace(".mp4", "-prev.jpg")
+         vid_360p_file_name = ms_dir + self.station_id + "_" + vid.replace(".mp4", "-360p.mp4")
+         vid_180p_file_name = ms_dir + self.station_id + "_" + vid.replace(".mp4", "-180p.mp4")
+
+         stack_360p_file_name = ms_dir + self.station_id + "_" + vid.replace(".mp4", "-360p.jpg")
+         if date not in event_days:
+            event_days[date] = {}
+            event_days[date]['obs_count'] = 1
+         else:
+            event_days[date]['obs_count'] += 1
+         if work_list[vid]['media']['prev.jpg'] == 0 :
+            if cfe(prev_file_name) == 1:
+               print("FOUND", prev_file_name)
+               work_list[vid]['media']['prev.jpg'] = 1
+         if work_list[vid]['media']['360p.jpg'] == 0 :
+            if cfe(stack_360p_file_name) == 1:
+               work_list[vid]['media']['360p.jpg'] = 1
+               print("FOUND", stack_360p_file_name)
+            else:
+               print("NOT FOUND", stack_360p_file_name)
+         if work_list[vid]['media']['360p.mp4'] == 0 :
+            if cfe(vid_360p_file_name) == 1:
+               print("FOUND", vid_360p_file_name)
+               work_list[vid]['media']['360p.mp4'] = 1
+
+         if work_list[vid]['media']['180p.mp4'] == 0 :
+            if cfe(vid_180p_file_name) == 1:
+               print("FOUND", vid_360p_file_name)
+               work_list[vid]['media']['360p.mp4'] = 1
+
+         if work_list[vid]['media']['prev.jpg'] == 0 or work_list[vid]['media']['360p.jpg'] == 0:
+               print(work_list[vid]['media']['prev.jpg'], work_list[vid]['media']['360p.jpg'])
+               print(vid, "Prev or 360p image not made!",prev_file_name,stack_360p_file_name )
+               self.make_prev_image(vid)
+         else:
+            print("Prev & 360p images are made.")
+
+         if work_list[vid]['media']['180p.mp4'] == 0 :
+            print(vid, "180p video not made!")
+            self.make_180p_video(vid)
+            work_list[vid]['media']['180p.mp4'] = 1
+         else:
+            print("180p video is made.")
+
+
+         if work_list[vid]['media']['360p.mp4'] == 0 :
+            print(vid, "360p video not made!")
+            self.make_360p_video(vid)
+         else:
+            print("360p video is made.")
+      save_json_file(ldir + "worklist.json", work_list)
+      print(ldir + "worklist.json")
+      for date in sorted(event_days, reverse=True):
+         if "cloud_index_update" not in event_days[date]:
+            self.cloud_index(date)
+            event_days[date]['cloud_index_update'] = datetime.datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
+            save_json_file(ldir + "event_days.json", event_days)
+         else:
+            print("Cloud index is already made. Last update was.", event_days[date]['cloud_index_update'])
+
+      save_json_file(ldir + "event_days.json", event_days)
+      print(ldir + "event_days.json")
+
+      # now lets load all indexes into 1 master list 
+      if cfe(all_cloud_files_file) == 1:
+         all_cloud_files = load_json_file(all_cloud_files_file)
+      else:
+         all_cloud_files = {}
+      for date in sorted(event_days, reverse=True):
+         mdir = "/mnt/ams2/meteors/" + date + "/" 
+         if cfe(mdir + "cloud_index.json") == 1:
+            temp = load_json_file(mdir + "cloud_index.json")
+         else:
+            self.cloud_index(date)
+            temp = load_json_file(mdir + "cloud_index.json")
+
+         for cfile in temp:
+            all_cloud_files[cfile] = 1
+      print(len(all_cloud_files), " total cloud files!")
+      save_json_file(all_cloud_files_file, all_cloud_files)
+      print("saved", all_cloud_files_file)
+
+      # now loop over the worklist files.
+      # if the file does not exist inside the cloud index we should copy it to the cloud dir
+      # after checking to make sure it is not there (this could happen if cloud index is out of date)
+      for wfile in sorted(work_list.keys(), reverse=True):
+         print(wfile, work_list[wfile]['media'])
+         year = wfile[0:4]
+         date = wfile[0:10]
+         cdir = "/mnt/archive.allsky.tv/" + self.station_id + "/METEORS/" + year + "/" + date + "/" 
+         ms_dir = "/mnt/ams2/meteor_scan/" + date + "/" 
+         for ext in work_list[wfile]['media']:
+            if "1080p" in ext or "ROI" in ext:
+               continue
+            cfn = self.station_id + "_" + wfile.replace(".mp4", "-" + ext)
+            cfile = cdir + cfn
+            ms_file = ms_dir + cfn
+            if cfn in all_cloud_files:
+               print("IN CLOUD:", cfn)
+               work_list[wfile]['media'][ext] = 2
+            else:
+               print("NOT IN CLOUD:", cfn)
+               if cfe(ms_file) == 1:
+                  if cfe(cfile) == 0:
+                     print("cp " + ms_file + " " + cdir)
+                     os.system("cp " + ms_file + " " + cdir)
+                  else:
+                     print("CLOUD FILE EXISTS ALREADY! " + cfile)
+                  work_list[wfile]['media'][ext] = 2
+                  all_cloud_files[cfn] = 1
+               else:
+                  print("FILE DOES NOT EXIST LOCALLY:", ms_file)
+              
+
+
+      save_json_file(ldir + "worklist.json", work_list)
+      print(ldir + "worklist.json")
+      save_json_file(all_cloud_files_file, all_cloud_files)
+      print(all_cloud_files_file)
+
+   def cloud_index(self,day):
+      year = day[0:4]
+      lci_file = "/mnt/ams2/meteors/" + day + "/" + "cloud_index.json"
+      cci_file = "/mnt/archive.allsky.tv/" + self.station_id + "/" + year + "/" + day + "/" + "cloud_index.json"
+      cloud_dir = "/mnt/archive.allsky.tv/" + self.station_id + "/METEORS/" + year + "/" + day + "/" 
+      reindex = 1
+      if cfe(lci_file) == 0:
+         reindex = 1
+      else:
+         tsize, tdiff = get_file_info(lci_file)
+         print("TDIFF:", tdiff)
+         if tdiff > 1000:
+            reindex = 1
+
+      if reindex == 1:
+         print("We should re-index the cloud files for this day!", day)
+         cindex = {}
+         files = glob.glob(cloud_dir + "*")
+         print("GLOB:", cloud_dir + "*")
+         for ff in files:
+            fn = ff.split("/")[-1]
+            cindex[fn] = 1
+      else:
+         print("We DO NOT need to re-index the cloud files for this day!", day)
+      save_json_file(lci_file, cindex)
+      print("SAVED:", lci_file )
+
+   def make_360p_video(self,vid):
+      date = vid[0:10]
+      year,mon,day = date.split("_")
+      meteor_dir =  "/mnt/ams2/meteors/" + date + "/"
+      ms_dir = "/mnt/ams2/METEOR_SCAN/" + date + "/"
+      sd_file_name = meteor_dir + vid
+      vid_360p_file_name = ms_dir + self.station_id + "_" + vid.replace(".mp4", "-360p.mp4")
+      if cfe(vid_360p_file_name) == 0:
+         resize_video(sd_file_name, vid_360p_file_name, 640, 360, bit_rate=28)
+         print("SAVED:", vid_360p_file_name)
+         # FFMPEG RESIZE
+         # FFMPEG LOWER BIT RATE
+
+   def make_180p_video(self,vid):
+      date = vid[0:10]
+      year,mon,day = date.split("_")
+      meteor_dir =  "/mnt/ams2/meteors/" + date + "/"
+      ms_dir = "/mnt/ams2/METEOR_SCAN/" + date + "/"
+      sd_file_name = meteor_dir + vid
+      vid_180p_file_name = ms_dir + self.station_id + "_" + vid.replace(".mp4", "-360p.mp4")
+      if cfe(vid_180p_file_name) == 0:
+         resize_video(sd_file_name, vid_360p_file_name, 320, 180, bit_rate=28)
+         print("SAVED:", vid_180p_file_name)
+         # FFMPEG RESIZE
+
+   def make_prev_image(self,vid):
+      print(vid)
+      stack_img = None
+      date = vid[0:10]
+      year,mon,day = date.split("_")
+      meteor_dir =  "/mnt/ams2/meteors/" + date + "/"
+      ms_dir = "/mnt/ams2/METEOR_SCAN/" + date + "/"
+
+
+      stack_file = meteor_dir + vid.replace(".mp4", "-stacked.jpg")
+      prev_file_name = ms_dir + self.station_id + "_" + vid.replace(".mp4", "-prev.jpg")
+      stack_360p_file_name = ms_dir + self.station_id + "_" + vid.replace(".mp4", "-360p.jpg")
+      if cfe(ms_dir,1) == 0:
+         os.makedirs(ms_dir)
+       
+      if cfe(stack_file) == 1:
+         if cfe(prev_file_name) == 0:
+            stack_img = cv2.imread(stack_file)
+            prev_img = cv2.resize(stack_img, (320,180))
+            cv2.imwrite(prev_file_name, prev_img, [cv2.IMWRITE_JPEG_QUALITY, 60])
+            print("Saved Prev:", prev_file_name)
+         if cfe(stack_360p_file_name) == 0:
+            if stack_img is None:
+               stack_img = cv2.imread(stack_file)
+            stack_360_img = cv2.resize(stack_img, (640,360))
+            cv2.imwrite(stack_360p_file_name, stack_360_img, [cv2.IMWRITE_JPEG_QUALITY, 60])
+            print("Saved 360p:", stack_360p_file_name)
+
+      else:
+         print("NO STACK FILE?", stack_file)
+
+   def check_update_meteor_sync(self,ev_data,work_list):
+      vid, event_id, event_status = ev_data.split(":")
+      if vid not in self.sync_hist:
+         #print("EV VID SYNC HAS NOT BEEN DONE FOR ", vid)
+         date = vid[0:10]
+         mdir = "/mnt/ams2/meteors/" + date + "/" 
+         mscan_dir = "/mnt/ams2/METEOR_SCAN/" + date + "/" 
+         if cfe(mscan_dir,1) == 0:
+            os.makedirs(mscan_dir)
+         mfile = "/mnt/ams2/meteors/" + date + "/" + vid.replace(".mp4", ".json")
+         root_media_file = mscan_dir + vid.replace(".mp4", "")
+         if cfe(mfile) == 0:
+            print("METEOR FILE NO LONGER EXISTS!", mfile)
+            return("DELETED!", work_list) 
+         else:
+            try:
+               mj = load_json_file(mfile)
+            except:
+               return("BAD METEOR", work_list)
+
+         if "multi_station_event" not in mj:
+            mj['multi_station_event'] = {}
+         mj['multi_station_event']['event_id'] = event_id
+         mj['multi_station_event']['solve_status'] = event_status
+
+         if "sync_status" in mj:
+            print(mj['sync_status'])
+         else:
+            print("Missing sync status")
+
+         # MAKE AND SYNC MEDIA FOR MULTI_STATION EVENT!
+         # MIN = prev.jpg & prev-vid.mp4
+         # ROI = ROI.mp4, ROI.jpg
+         # SD  = 360p.mp4, 360p.jpg
+         # HD  = 1080p.mp4, 1080p.jpg ROI-HD.jpg
+         # FOR NOW WE JUST WANT TO MAKE SURE THE MIN AND SD ARE DONE
+         # IN THIS PART WE WILL MAKE A WORK LIST. WE CAN PROCESS IT LATER
+
+         work_list[vid] = {}
+         work_list[vid]['media'] = {}
+         l_roi_img = root_media_file + "-ROI.jpg"
+         l_roi_vid = root_media_file + "-ROI.mp4"
+         l_prev_img = root_media_file + "-prev.jpg"
+         l_prev_vid = root_media_file + "-180p.mp4"
+         l_360p_vid = root_media_file + "-360p.mp4"
+         l_360p_img = root_media_file + "-360p.jpg"
+         l_1080p_img = root_media_file + "-1080p.jpg"
+         l_1080p_vid = root_media_file + "-1080p.vid"
+         if cfe(l_prev_img) == 0:
+            work_list[vid]['media']['prev.jpg'] = 0 
+         if cfe(l_prev_vid) == 0:
+            work_list[vid]['media']['180p.mp4'] = 0 
+         if cfe(l_360p_vid) == 0:
+            work_list[vid]['media']['360p.mp4'] = 0 
+         if cfe(l_360p_img) == 0:
+            work_list[vid]['media']['360p.jpg'] = 0 
+         if cfe(l_1080p_img) == 0:
+            work_list[vid]['media']['1080p.jpg'] = 0 
+         if cfe(l_1080p_vid) == 0:
+            work_list[vid]['media']['1080p.mp4'] = 0 
+         if cfe(l_roi_vid) == 0:
+            work_list[vid]['media']['ROI.mp4'] = 0 
+         if cfe(l_roi_img) == 0:
+            work_list[vid]['media']['ROI.jpg'] = 0 
+
+
+      return("GOOD", work_list)          
+
 
    def sync_media_day(self, day):
       local_dir = "/mnt/ams2/METEOR_SCAN/" + day + "/"

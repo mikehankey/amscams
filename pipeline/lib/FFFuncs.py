@@ -91,6 +91,7 @@ def splice_video(in_file, start, end, outfile=None, type="frame"):
       outfile = in_file.replace(".mp4", "-trim-" + str(start) + ".mp4")
 
    cmd = "/usr/bin/ffmpeg -y -i  " + in_file + " -ss 00:00:" + str(start_sec) + " -t 00:00:" + str(dur) + " -c copy " + outfile
+   print(cmd)
    os.system(cmd)
    return(outfile)
 
