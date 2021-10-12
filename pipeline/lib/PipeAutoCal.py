@@ -872,6 +872,7 @@ def refit_meteor(meteor_file, json_conf,force=0):
          first_frame = cv2.resize(first_frame, (1920, 1080))
 
       image = first_frame
+      star_image = first_frame.copy()
       star_file = hd_vid.replace(".mp4", "-first.jpg")
       star_file_half = hd_vid.replace(".mp4", "-first-half.jpg")
       cv2.imwrite(star_file, first_frame)
@@ -889,6 +890,9 @@ def refit_meteor(meteor_file, json_conf,force=0):
          if 100 < x < iw -100 and 100 < y < ih - 100:
             print("GOOD:", data)
             good_stars.append(data)
+
+      #input()
+
       user_stars = good_stars
       cp['user_stars'] = good_stars
 
@@ -948,7 +952,37 @@ def refit_meteor(meteor_file, json_conf,force=0):
    print("DEFAULT CALIB:", def_cal)
    # test if the default cal is better than the current cal. 
 
-   cp['user_stars'] = clean_user_stars(cp['user_stars'],image)
+   #cp['user_stars'] = clean_user_stars(cp['user_stars'],image)
+   stars = cp['user_stars']
+   clean_stars =[]
+   for data in stars:
+      print("USER STARS ORIG:", data)
+      x,y,i = data
+      sx1 = int(x - 5)
+      sy1 = int(y - 5)
+      sx2 = int(x + 5)
+      sy2 = int(y + 5)
+      if sx1 < 0:
+         sx1 = 0
+         sx2 = 10
+      if sy1 < 0:
+         sy1 = 0
+         sy2 = 10
+      if sx2 > iw:
+         sx1 = iw - 10
+         sx2 = iw
+      if sy2 > ih:
+         sy1 = ih - 10
+         sy2 = ih
+
+      star_cnt = star_image[sy1:sy2,sx1:sx2]
+      data = inspect_star(star_cnt, data, None)
+      clean_stars.append(data)
+   cp['user_stars'] = clean_stars
+   for star in clean_stars:
+      print("CLEAN STAR:", star)
+
+
   # exit()
 
    if len(def_cal) > 0:
@@ -5418,6 +5452,7 @@ def check_star_blob(image):
    #cv2.waitKey(30)
 
    return(good)
+
 def get_image_stars(file=None,img=None,json_conf=None,show=0):
    print(file, img)
    if img is None:
@@ -5517,8 +5552,33 @@ def get_image_stars(file=None,img=None,json_conf=None,show=0):
       cv2.waitKey(20)
    
    stars = validate_stars(stars, raw_img)
+   clean_stars = [] 
+   for data in stars: 
+      print("USER STARS ORIG:", data)
+      x,y,i = data
+      sx1 = int(x - 5)
+      sy1 = int(y - 5)
+      sx2 = int(x + 5)
+      sy2 = int(y + 5)
+      if sx1 < 0:
+         sx1 = 0
+         sx2 = 10
+      if sy1 < 0:
+         sy1 = 0
+         sy2 = 10
+      if sx2 > iw:
+         sx1 = iw - 10
+         sx2 = iw
+      if sy2 > ih:
+         sy1 = ih - 10
+         sy2 = ih
 
-   return(stars)
+      star_cnt = raw_img[sy1:sy2,sx1:sx2]
+      data = inspect_star(star_cnt, data, None)
+      clean_stars.append(data)
+   for star in clean_stars:
+      print("CLEAN STAR:", star)
+   return(clean_stars)
 
 
 def eval_cnt(cnt_img, avg_px=5 ):
