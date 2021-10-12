@@ -882,7 +882,6 @@ def refit_meteor(meteor_file, json_conf,force=0):
       user_stars = get_image_stars(meteor_file, image, json_conf, 0)
       user_stars,cp = get_image_stars_with_catalog(meteor_file, image, cp, json_conf, None,  0)
       print("USER STARS WITH CAT!", user_stars)
-      input()
 
       cp['user_stars'] = user_stars
       good_stars = []
