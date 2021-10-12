@@ -881,23 +881,32 @@ def refit_meteor(meteor_file, json_conf,force=0):
 
       user_stars = get_image_stars(meteor_file, image, json_conf, 0)
       user_stars,cp = get_image_stars_with_catalog(meteor_file, image, cp, json_conf, None,  0)
-      print("USER STARS WITH CAT!", user_stars)
-
+      user_stars_cat,cp = get_image_stars_with_catalog(meteor_file, image, cp, json_conf, None,  0)
       cp['user_stars'] = user_stars
-      good_stars = []
+      for data in user_stars:
+         print("US:", data)
+      for data in user_stars_cat:
+         print("US CAT:", data)
+      
+      
+      print("USER STARS NORMAL:", len(user_stars))
+      print("USER STARS WITH CAT!", len(user_stars_cat))
+
       ih,iw = image.shape[:2]
-      for data in cp['user_stars']:
-         x = data[0]
-         y = data[1]
-         print(x,y,iw,ih)
-         if 100 < x < iw -100 and 100 < y < ih - 100:
-            print("GOOD:", data)
-            good_stars.append(data)
+      cp['user_stars'] = user_stars
+      #good_stars = []
+      #for data in cp['user_stars']:
+      #   x = data[0]
+      #   y = data[1]
+      #   print(x,y,iw,ih)
+      #   if 100 < x < iw -100 and 100 < y < ih - 100:
+      #      print("GOOD:", data)
+      #      good_stars.append(data)
 
       #input()
 
-      user_stars = good_stars
-      cp['user_stars'] = good_stars
+      #user_stars = good_stars
+      #cp['user_stars'] = good_stars
 
       for star in user_stars:
          cv2.circle(image,(star[0],star[1]), 4, (0,0,255), 1)
@@ -5123,7 +5132,7 @@ def get_image_stars_with_catalog(file, img, cp, json_conf, cat_stars=None, show 
    temp_img = img.copy()
    gray_img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
-   cat_stars = get_catalog_stars(cp)
+   cat_stars = get_catalog_stars(cp,1)
    console_image = np.zeros((720,1280),dtype=np.uint8)
 
    sc = 0
@@ -5133,6 +5142,7 @@ def get_image_stars_with_catalog(file, img, cp, json_conf, cat_stars=None, show 
    star_dict = {}
    all_points = []
    cat_image_stars = []
+   print("CAT STARS:", len(cat_stars))
    for cat_star in cat_stars:
       (name,mag,ra,dec,new_cat_x,new_cat_y) = cat_star
       if isinstance(name, str) is True:
@@ -5159,6 +5169,12 @@ def get_image_stars_with_catalog(file, img, cp, json_conf, cat_stars=None, show 
       status = star_cnt(star_img)
       max_px, avg_px, px_diff,max_loc,star_int = eval_cnt(star_img)
 
+      if SHOW == 1:
+         if px_diff > 9:
+            print(name, mag, max_px, star_int, px_diff)
+           # cv2.imshow('pepe', star_img)
+           # cv2.waitKey(0)
+
       six = new_cat_x - 10 + max_loc[0]
       siy = new_cat_y - 10 + max_loc[1]
       res_x = abs(new_cat_x - six)
@@ -5171,7 +5187,8 @@ def get_image_stars_with_catalog(file, img, cp, json_conf, cat_stars=None, show 
          avg = np.median(star_img)
          bg = avg * star_img.shape[0] * star_img.shape[1]
          intensity = flux - bg 
-         if intensity > 100 and status == 1 and intensity < 5000:
+         #if intensity > 100 and status == 1 and intensity < 5000:
+         if px_diff > 9:
             if SHOW == 1:
                desc = str(name) + " mag " + str(mag) + " " + str(int(intensity)) + "res x/y " + str(res_x) + " / " + str(res_y) 
                cv2.putText(console_image, desc,  (int(col_x+cw+25),int(row_y+12)), cv2.FONT_HERSHEY_SIMPLEX, .4, (255, 255, 255), 1)
@@ -6114,8 +6131,8 @@ def mag_report(stars, plot=0):
       plt.show()
    return(new_stars, bad_stars)
 
-def get_catalog_stars(cal_params):
-   if "short_bright_stars" not in cal_params:
+def get_catalog_stars(cal_params, force=0):
+   if "short_bright_stars" not in cal_params or force == 1:
       mybsd = bsd.brightstardata()
       bright_stars = mybsd.bright_stars
    else:
@@ -6159,32 +6176,23 @@ def get_catalog_stars(cal_params):
    for data in bright_stars_sorted:
       if len(data) == 5:
          bname, cname, ra, dec, mag = data
+         name = bname
       elif len(data) == 6:
-         bname, mag, ra, dec, cat_x, cat_y = data
-         cname = bname
+         name, mag, ra, dec, cat_x, cat_y = data
       elif len(data) == 17:
-         iname,mag,ra,dec,img_ra,img_dec,match_dist,cat_x,cat_y,img_az,img_el,old_cat_x,old_cat_y,six,siy,cat_dist,star_int  = data 
-         bname = iname
-         cname = iname
+         name,mag,ra,dec,img_ra,img_dec,match_dist,cat_x,cat_y,img_az,img_el,old_cat_x,old_cat_y,six,siy,cat_dist,star_int  = data 
       else:
          print("BAD DATA:", len(data))
          print("BAD DATA:", data)
          exit()
 
-      try:
-         dcname = cname.decode("utf-8")
-         dbname = bname.decode("utf-8")
-      except: 
-         dcname = cname
-         dbname = bname
-
-      if dcname == "":
-         name = bname
+      if isinstance(name, str) is True:
+         name = name 
       else:
-         name = cname
+         name = name.decode("utf-8")
 
       ang_sep = angularSeparation(ra,dec,RA_center,dec_center)
-      if ang_sep < fov_radius and float(mag) < 7:
+      if ang_sep < fov_radius and float(mag) < 4.5:
          sbs.append((bname, cname, ra, dec, mag))
          new_cat_x, new_cat_y = distort_xy(0,0,ra,dec,RA_center, dec_center, x_poly, y_poly, x_res, y_res, pos_angle_ref,F_scale)
 
@@ -6193,6 +6201,7 @@ def get_catalog_stars(cal_params):
 
    if len(catalog_stars) == 0:
       print("NO CATALOG STARS!?")
+   print("CATALOG STARS:", len(catalog_stars))
       
    return(catalog_stars)
 
