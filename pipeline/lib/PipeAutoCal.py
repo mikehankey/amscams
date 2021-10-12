@@ -880,6 +880,10 @@ def refit_meteor(meteor_file, json_conf,force=0):
       cv2.imwrite(star_file_half, first_frame_half)
 
       user_stars = get_image_stars(meteor_file, image, json_conf, 0)
+      user_stars,cp = get_image_stars_with_catalog(meteor_file, image, cp, json_conf, None,  0)
+      print("USER STARS WITH CAT!", user_stars)
+      input()
+
       cp['user_stars'] = user_stars
       good_stars = []
       ih,iw = image.shape[:2]
@@ -5132,8 +5136,12 @@ def get_image_stars_with_catalog(file, img, cp, json_conf, cat_stars=None, show 
    cat_image_stars = []
    for cat_star in cat_stars:
       (name,mag,ra,dec,new_cat_x,new_cat_y) = cat_star
-      dcname = str(name.decode("utf-8"))
-      dbname = dcname.encode("utf-8")
+      if isinstance(name, str) is True:
+         dcname = name
+         dbname = name
+      else:
+         dcname = str(name.decode("utf-8"))
+         dbname = dcname.encode("utf-8")
 
        
       new_cat_x = int(new_cat_x)
