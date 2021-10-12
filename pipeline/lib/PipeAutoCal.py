@@ -7549,14 +7549,17 @@ def minimize_poly_multi_star(merged_stars, json_conf,orig_ra_center=0,orig_dec_c
    all_res = [row[-2] for row in updated_merged_stars]
    med_res = np.median(all_res)
    # HERE WE MUST FIX... FOR FIRST RUNS.
-   if "calv3" not in mcp:
-      mcp['calv3'] = 1
-   if mcp is None:
-      med_res = 5
-   elif mcp['calv3'] < 3:
-      med_res = 4 
-   if mcp != None:
-      med_res = mcp['x_fun']
+   if mcp is not None:
+      if "calv3" not in mcp:
+         mcp['calv3'] = 1
+      if mcp is None:
+         med_res = 5
+      elif mcp['calv3'] < 3:
+         med_res = 4 
+      if mcp != None:
+         med_res = mcp['x_fun']
+   else:
+      med_res = 4
 
 
    for star in updated_merged_stars:
