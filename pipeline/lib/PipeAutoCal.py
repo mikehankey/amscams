@@ -879,6 +879,18 @@ def refit_meteor(meteor_file, json_conf,force=0):
       first_frame_half = cv2.resize(first_frame, (int(1920/2), int(1080/2)))
       cv2.imwrite(star_file_half, first_frame_half)
 
+      mask_file = MASK_DIR + cam + "_mask.png"
+
+      if cfe(mask_file) == 1:
+         mask_img = cv2.imread(mask_file)
+         mask_img = cv2.resize(mask_img, (1920,1080))
+
+      else:
+         mask_img = None
+
+      if mask_img is not None:
+         image = cv2.subtract(image, mask_img)
+
       user_stars = get_image_stars(meteor_file, image, json_conf, 0)
       user_stars,cp = get_image_stars_with_catalog(meteor_file, image, cp, json_conf, None,  0)
       user_stars_cat,cp = get_image_stars_with_catalog(meteor_file, image, cp, json_conf, None,  0)
@@ -894,14 +906,14 @@ def refit_meteor(meteor_file, json_conf,force=0):
 
       ih,iw = image.shape[:2]
       cp['user_stars'] = user_stars
-      #good_stars = []
-      #for data in cp['user_stars']:
-      #   x = data[0]
-      #   y = data[1]
-      #   print(x,y,iw,ih)
-      #   if 100 < x < iw -100 and 100 < y < ih - 100:
-      #      print("GOOD:", data)
-      #      good_stars.append(data)
+      good_stars = []
+      for data in cp['user_stars']:
+         x = data[0]
+         y = data[1]
+         print(x,y,iw,ih)
+         if 100 < x < iw -100 and 100 < y < ih - 100:
+            print("GOOD:", data)
+            good_stars.append(data)
 
       #input()
 
@@ -1047,11 +1059,6 @@ def refit_meteor(meteor_file, json_conf,force=0):
    if "more_stars" not in cp:
       cp['more_stars'] = 1
 
-   mask_file = MASK_DIR + this_cam + "_mask.png"
-   if cfe(mask_file) == 1:
-      mask_img = cv2.imread(mask_file)
-      mask_img = cv2.resize(mask_img, (image.shape[1],image.shape[0]))
-      image = cv2.subtract(image, mask_img)
 
    print("IMG:", image.shape)
    if False:
