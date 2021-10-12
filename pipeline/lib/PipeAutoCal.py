@@ -1904,7 +1904,7 @@ def check_all(json_conf, cam_id=None):
          print (cal_file, cp['total_res_px'], cp['total_res_deg'])
 
 def refit_all(json_conf, cam_id=None, type="all"):
-   cores = 32
+   cores = 1 
    if "limit" in type :
       tt, lim = type.split("_")
    if cam_id is not None and cam_id != 'all':
@@ -2834,7 +2834,10 @@ def deep_calib_init(cam,json_conf):
       cp = load_json_file(data['key'])
       cal_fn = data['key'].split("/")[-1]
       for data in cp ['cat_image_stars']:
-         dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist,star_int = data
+         try:
+            dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist,star_int = data
+         except:
+            continue
      
          all_stars.append((cal_fn, cp['center_az'], cp['center_el'], cp['ra_center'], cp['dec_center'], cp['position_angle'], cp['pixscale'], dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist,star_int))
       if len(all_stars) > 800:
@@ -7488,7 +7491,6 @@ def minimize_poly_multi_star(merged_stars, json_conf,orig_ra_center=0,orig_dec_c
       cat_dist = abs(calc_dist((six,siy),(new_cat_x,new_cat_y)))
       print(dcname, cat_dist)
    options = {}
-   input("WAIT.")
          
    mode = 0 
    res = scipy.optimize.minimize(reduce_fit_multi, x_poly, args=(field,new_merged_stars,cal_params,fit_img,json_conf,cam_id,mode,show), method='Nelder-Mead', options={})
