@@ -2814,8 +2814,9 @@ def deep_calib2(cam, json_conf):
       cal_file = data['cal_image_file'].replace(".png", "-calparams.json")
       print(cal_file)
       if first_time == 0:
-         if mcp['calv3'] > 1:
-            os.system("./Process.py refit " + cal_file)
+         if mcp['calv3'] > 3:
+            #os.system("./Process.py refit " + cal_file)
+            print("refit " + cal_file)
    #exit()
 
 
@@ -2908,7 +2909,6 @@ def deep_calib2(cam, json_conf):
    all_res = [row[-2] for row in all_stars]
    med_res = np.median(all_res)
    print("MED RES 2:", med_res)
-   input("WAIT")
 
    cv2.imwrite("/mnt/ams2/test.jpg", used_img)
    print("SAVEING ALL STARS", len(all_stars))
@@ -2917,7 +2917,6 @@ def deep_calib2(cam, json_conf):
 
    print("ALL STARS:", len(all_stars))
    print("MCP IS:", mcp)
-   input("WAIT")
    status, cal_params,merged_stars = minimize_poly_multi_star(all_stars, json_conf,0,0,cam,None,mcp,SHOW)
    if status == 0:
       print("Multi star min failed.")
@@ -7332,7 +7331,6 @@ def minimize_poly_multi_star(merged_stars, json_conf,orig_ra_center=0,orig_dec_c
       strict = 1
    else:
       print("MCP IS NONE!")
-      input("WAIT")
       first_run = 1
       x_poly = np.zeros(shape=(15,), dtype=np.float64)
       y_poly = np.zeros(shape=(15,), dtype=np.float64)
@@ -7372,25 +7370,29 @@ def minimize_poly_multi_star(merged_stars, json_conf,orig_ra_center=0,orig_dec_c
       med_res = 5
    elif mcp['calv3'] < 3:
       med_res = 4 
-
+   if mcp != None:
+      med_res = mcp['x_fun']
 
 
    for star in updated_merged_stars:
       (cal_file , center_az, center_el, ra_center, dec_center, position_angle, pixscale, dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist,star_int) = star
       cat_dist = abs(calc_dist((six,siy),(new_cat_x,new_cat_y)))
-      if cat_dist < med_res * 2:
+      if cat_dist < med_res * 5:
          print("KEEPING: ", cat_dist)
          new_merged_stars.append(star)
       else:
-         print("REMOVING: ", cat_dist)
+         print("REMOVING: ", med_res, cat_dist)
    merged_stars = new_merged_stars 
+
+   print("LEN STARS:", len(merged_stars))
+   input("wait")
 
    for star in new_merged_stars:
       (cal_file , center_az, center_el, ra_center, dec_center, position_angle, pixscale, dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist,star_int) = star
       cat_dist = abs(calc_dist((six,siy),(new_cat_x,new_cat_y)))
       print(dcname, cat_dist)
-   input("WAIT.")
    options = {}
+   input("WAIT.")
          
    mode = 0 
    res = scipy.optimize.minimize(reduce_fit_multi, x_poly, args=(field,new_merged_stars,cal_params,fit_img,json_conf,cam_id,mode,show), method='Nelder-Mead', options={})
@@ -7405,10 +7407,10 @@ def minimize_poly_multi_star(merged_stars, json_conf,orig_ra_center=0,orig_dec_c
    best_stars = []
    for star in new_merged_stars:
       (cal_file , center_az, center_el, ra_center, dec_center, position_angle, pixscale, dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist,star_int) = star
-      if cat_dist < med_res * 2:
+      if cat_dist < med_res * 3:
          best_stars.append(star)
       else:
-         print("REMOVING: ", star)
+         print("REMOVING: ", med_res, star)
    #merged_stars = best_stars 
    #new_merged_stars = best_stars 
 
