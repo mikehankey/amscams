@@ -5939,6 +5939,8 @@ def pair_stars(cal_params, cal_params_file, json_conf, cal_img=None, show = 0):
 
    cc = 0
    for data in cal_params['user_stars']:
+      if data is None:
+         continue
       if len(data) == 3:
          ix,iy,bp = data
       else:
