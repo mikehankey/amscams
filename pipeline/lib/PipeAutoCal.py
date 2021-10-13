@@ -825,6 +825,125 @@ def use_default_cal(meteor_file, mj,json_conf):
    return(mj)
 
 
+
+def custom_fit_meteor(meteor_file,json_conf,show=SHOW):
+   #make custom lens model specific for 1 image
+   (f_datetime, this_cam, f_date_str,y,m,d, h, mm, s) = convert_filename_to_date_cam(meteor_file)
+   video_file = meteor_file.replace(".json", ".mp4")
+   day = y + "_" + m + "_" + d
+   
+   mfile = "/mnt/ams2/meteors/" + day + "/" + meteor_file
+   cam = this_cam
+   cam_id = cam
+   mj = load_json_file(mfile)
+   cat_stars = []
+   all_stars = []
+   cp = mj['cp']
+   cal_fn = meteor_file
+
+   mcp_dir = "/mnt/ams2/cal/" 
+   mcp_file = mcp_dir + "multi_poly-" + STATION_ID + "-" + this_cam + ".info"
+
+   fit_img_file = mfile.replace(".json","-stacked.jpg")
+   if cfe(fit_img_file) == 1:
+      fit_img = cv2.imread(fit_img_file)
+      fit_img = cv2.resize(fit_img, (1920,1080))
+   else:
+      fit_img = np.zeros((1080,1920),dtype=np.uint8)
+
+
+   if "custom_lens" not in mj:
+      if cfe(mcp_file) == 1:
+         mcp = load_json_file(mcp_file)
+         if cp['x_poly'] == mcp['x_poly']:
+            already_fit = 1
+         else:
+            cp['x_poly'] = mcp['x_poly']
+            cp['y_poly'] = mcp['y_poly']
+            cp['x_poly_fwd'] = mcp['x_poly_fwd']
+            cp['y_poly_fwd'] = mcp['y_poly_fwd']
+            mj['cp'] = cp
+   else:
+      cp['x_poly'] = mj['custom_lens']['x_poly']
+      cp['y_poly'] = mj['custom_lens']['y_poly']
+      cp['x_poly_fwd'] = mj['custom_lens']['x_poly_fwd']
+      cp['y_poly_fwd'] = mj['custom_lens']['y_poly_fwd']
+      mj['cp'] = cp
+      
+
+
+   if "cp" in mj:
+      if "cat_image_stars" in mj['cp']:
+         cat_stars = mj['cp']['cat_image_stars']
+
+   for data in cp['cat_image_stars']:
+      try:
+         dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist,star_int = data
+      except:
+         continue
+     
+      all_stars.append((cal_fn, cp['center_az'], cp['center_el'], cp['ra_center'], cp['dec_center'], cp['position_angle'], cp['pixscale'], dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist,star_int))
+
+   for star in all_stars:
+      print(star)
+
+   # do x-poly 
+   merged_stars = all_stars 
+   cal_params = cp
+   mode = 0
+   field = 'x_poly'
+   res = scipy.optimize.minimize(reduce_fit_multi, cp['x_poly'], args=(field,merged_stars,cal_params,fit_img,json_conf,cam_id,mode,show), method='Nelder-Mead', options={})
+   x_poly = res['x']
+   x_fun = res['fun']
+   cal_params['x_poly'] = x_poly.tolist()
+   cal_params['x_fun'] = x_fun
+
+
+   # do y poly
+   field = 'y_poly'
+   res = scipy.optimize.minimize(reduce_fit_multi, cp['y_poly'], args=(field,merged_stars,cal_params,fit_img,json_conf,cam_id,mode,show), method='Nelder-Mead', options={})
+   y_poly = res['x']
+   y_fun = res['fun']
+   cal_params['y_poly'] = y_poly.tolist()
+   cal_params['y_fun'] = y_fun
+
+   # do x poly fwd
+   field = 'x_poly_fwd'
+   xa = .05
+   fa = .05
+   res = scipy.optimize.minimize(reduce_fit_multi, cp['x_poly_fwd'], args=(field,merged_stars,cal_params,fit_img,json_conf,cam_id,mode,show), method='Nelder-Mead'  )
+
+   x_poly_fwd = res['x']
+   x_fun_fwd = res['fun']
+   cal_params['x_poly_fwd'] = x_poly_fwd.tolist()
+   cal_params['x_fun_fwd'] = x_fun_fwd
+
+   # do y poly fwd
+   field = 'y_poly_fwd'
+   res = scipy.optimize.minimize(reduce_fit_multi, cp['y_poly_fwd'], args=(field,merged_stars,cal_params,fit_img,json_conf,cam_id,mode,show), method='Nelder-Mead')
+   y_poly_fwd = res['x']
+   y_fun_fwd = res['fun']
+   cal_params['y_poly_fwd'] = y_poly_fwd.tolist()
+   cal_params['y_fun_fwd'] = y_fun_fwd
+
+   mj['custom_lens'] = {}
+   mj['custom_lens']['x_poly'] = cal_params['x_poly']
+   mj['custom_lens']['y_poly'] = cal_params['y_poly']
+   mj['custom_lens']['x_poly_fwd'] = cal_params['x_poly_fwd']
+   mj['custom_lens']['y_poly_fwd'] = cal_params['y_poly_fwd']
+   mj['cp'] = cal_params
+
+   mj['cp'] = pair_stars(mj['cp'], mfile, json_conf, fit_img)
+
+   save_json_file(mfile, mj)
+   print(fit_img.shape)
+   marked_img = view_calib(mfile,json_conf,mj['cp'],fit_img)
+   mimg_file = mfile.replace(".json", "-fit.jpg")
+   cv2.imwrite(mimg_file,marked_img)
+
+
+
+
 def refit_meteor(meteor_file, json_conf,force=0):
 
    (f_datetime, this_cam, f_date_str,y,m,d, h, mm, s) = convert_filename_to_date_cam(meteor_file)
@@ -940,21 +1059,31 @@ def refit_meteor(meteor_file, json_conf,force=0):
    mcp_dir = "/mnt/ams2/cal/" 
    mcp_file = mcp_dir + "multi_poly-" + STATION_ID + "-" + this_cam + ".info"
    already_fit = 0
-   if cfe(mcp_file) == 1:
-      mcp = load_json_file(mcp_file)
-      if cp['x_poly'] == mcp['x_poly']:
-         already_fit = 1
+   if "custom_lens" not in mj:
+      if cfe(mcp_file) == 1:
+         mcp = load_json_file(mcp_file)
+         if cp['x_poly'] == mcp['x_poly']:
+            already_fit = 1
+         else:
+            cp['x_poly'] = mcp['x_poly']
+            cp['y_poly'] = mcp['y_poly']
+            cp['x_poly_fwd'] = mcp['x_poly_fwd']
+            cp['y_poly_fwd'] = mcp['y_poly_fwd']
+            mj['cp'] = cp
+            save_json_file(meteor_file, mj)
       else:
-         cp['x_poly'] = mcp['x_poly']
-         cp['y_poly'] = mcp['y_poly']
-         cp['x_poly_fwd'] = mcp['x_poly_fwd']
-         cp['y_poly_fwd'] = mcp['y_poly_fwd']
-         mj['cp'] = cp
-         save_json_file(meteor_file, mj)
+         print("NO MCP!", mcp_file)
+         os.system("cp /mnt/ams2/meteor_archive/" + STATION_ID + "/CAL/AUTOCAL/2020/solved/*.info /mnt/ams2/cal/" )
+         exit()
    else:
-      print("NO MCP!", mcp_file)
-      os.system("cp /mnt/ams2/meteor_archive/" + STATION_ID + "/CAL/AUTOCAL/2020/solved/*.info /mnt/ams2/cal/" )
-      exit()
+      cp = mj['cp']
+      cp['x_poly'] = mj['custom_lens']['x_poly']
+      cp['y_poly'] = mj['custom_lens']['y_poly']
+      cp['x_poly_fwd'] = mj['custom_lens']['x_poly_fwd']
+      cp['y_poly_fwd'] = mj['custom_lens']['y_poly_fwd']
+      mj['cp'] = cp
+      save_json_file(meteor_file, mj)
+
 
    if cfe(mj['hd_stack']) == 1:
       image = cv2.imread(mj['hd_stack'])
@@ -1180,13 +1309,21 @@ def refit_meteor(meteor_file, json_conf,force=0):
       print("RED:", red_data['cal_params']['pixscale'])
 
       
-      for star in cp['cat_image_stars']:
-         dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist,bp = star
-         if cat_dist < (cp['total_res_px'] * 1.5):
-            print("GOOD match: ", dcname, cat_dist)
-         else:
-            print("BAD match: ", dcname, cat_dist)
+   for star in cp['cat_image_stars']:
+      dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist,bp = star
+      match_dist = calc_dist((new_cat_x,new_cat_y), (six,siy))
+      print(dcname, cat_dist, match_dist)
+      if cat_dist < (cp['total_res_px'] * 1.5):
+         print("GOOD match: ", dcname, cat_dist)
+      else:
+         print("BAD match: ", dcname, cat_dist)
       #print("RES:", cp['total_res_px'])
+
+   marked_img = view_calib(meteor_file,json_conf,mj['cp'],image)
+   mimg_file = meteor_file.replace(".json", "-fit.jpg")
+   cv2.imwrite(mimg_file,marked_img)
+   print("saved.", mimg_file)
+
 
 
 
@@ -4773,7 +4910,7 @@ def autocal(image_file, json_conf, show = 0, heal_only=0):
    if True:
       for star in stars:
          (x,y,sint) = star
-         cv2.circle(img,(x,y), 10, (128,128,255), 1)
+         cv2.circle(img,(int(x),int(y)), 10, (128,128,255), 1)
       #cv2.imwrite(star_scan_file,img)
       #print("SAVED:", star_scan_file)
    if SHOW == 1:
@@ -7146,7 +7283,7 @@ def reduce_fit(this_poly,field, cal_params, cal_params_file, fit_img, json_conf,
       #cv2.rectangle(this_fit_img, (int(new_x)-2, int(new_y)-2), (int(new_x) + 2, int(new_y) + 2), (128, 128, 128), 1)
       cv2.rectangle(this_fit_img, (int(new_cat_x)-2, int(new_cat_y)-2), (int(new_cat_x) + 2, int(new_cat_y) + 2), (128, 128, 128), 1)
       #cv2.rectangle(this_fit_img, (six-4, siy-4), (six+4, siy+4), (128, 128, 128), 1)
-      cv2.circle(this_fit_img, (six,siy), 5, (128,128,128), 1)
+      cv2.circle(this_fit_img, (int(six),int(siy)), 5, (128,128,128), 1)
 
       total_res = total_res + img_res
    tries = tries + 1
@@ -7200,16 +7337,20 @@ def draw_star_image(img, cat_image_stars,cp=None) :
          dcname,mag,ra,dec,new_cat_x,new_cat_y,six,siy,cat_dist = star
       else:
          dcname,mag,ra,dec,img_ra,img_dec,match_dist,org_x,org_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist,star_int = star
+
+      match_dist = calc_dist((new_cat_x,new_cat_y), (six,siy))
       if cat_dist <= 1:
-         color = "#FF0000"
-      if 1 < cat_dist <= 2:
          color = "#00FF00"
-      if 2 < cat_dist <= 3:
-         color = "#999900"
-      if 3 < cat_dist <= 4:
-         color = "#FFA500"
-      if cat_dist > 4:
+      if 1 < cat_dist <= 2:
          color = "#0000FF"
+      if 2 < cat_dist <= 3:
+         color = "#FF00FF"
+      if 3 < cat_dist <= 4:
+         color = "#FF0000"
+      if cat_dist > 4:
+         color = "#ff0000"
+      print("DRAW:", cat_dist, match_dist, color)
+
       res_line = [(six,siy),(new_cat_x,new_cat_y)]
       draw.rectangle((new_cat_x-7, new_cat_y-7, new_cat_x + 7, new_cat_y + 7), outline=color)
       draw.ellipse((six-5, siy-5, six+7, siy+7),  outline ="white")
@@ -7240,9 +7381,9 @@ def draw_star_image(img, cat_image_stars,cp=None) :
          draw.text((200, 1000), str(text2), font = font, fill="white")
          draw.text((200, 1025), str(text3), font = font, fill="white")
          draw.text((200, 1050), str(text4), font = font, fill="white")
+   return_img = cv2.cvtColor(np.asarray(image), cv2.COLOR_RGB2BGR)
 
-
-   return(np.asarray(image))
+   return(return_img)
 
 
 
@@ -7645,8 +7786,6 @@ def minimize_poly_multi_star(merged_stars, json_conf,orig_ra_center=0,orig_dec_c
    y_fun = res['fun']
    cal_params['y_poly'] = y_poly.tolist()
    cal_params['y_fun'] = y_fun
-   
-
 
    # do x poly fwd
    field = 'x_poly_fwd'
