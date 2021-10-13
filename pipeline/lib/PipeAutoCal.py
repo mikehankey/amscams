@@ -116,7 +116,7 @@ def update_defaults(json_conf):
 def run_cal_defaults(json_conf):
    gen_cal_hist(json_conf)
    #sync_cal(json_conf)
-   amsid = json_conf['site']['amsid']
+   amsid = json_conf['site']['ams_id']
    default_hist = {}
    rdf = []
    if True:
@@ -7349,7 +7349,7 @@ def draw_star_image(img, cat_image_stars,cp=None) :
          color = "#FF0000"
       if cat_dist > 4:
          color = "#ff0000"
-      print("DRAW:", cat_dist, match_dist, color)
+      print("DRAW:", dcname, match_dist)
 
       res_line = [(six,siy),(new_cat_x,new_cat_y)]
       draw.rectangle((new_cat_x-7, new_cat_y-7, new_cat_x + 7, new_cat_y + 7), outline=color)
