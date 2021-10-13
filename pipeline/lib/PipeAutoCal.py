@@ -2508,6 +2508,11 @@ def refit_fov(cal_file, json_conf):
    os.system(cmd)
    print(cmd)
 
+   marked_img = view_calib(cal_file,json_conf,cp,img)
+   mimg_file = cal_file.replace("-calparams.json", "-fit.jpg")
+   cv2.imwrite(mimg_file,marked_img)
+   print("saved.", mimg_file)
+
 
 def heal_all(cam,json_conf):
 
@@ -3842,7 +3847,7 @@ def view_calib(cp_file,json_conf,nc,oimg, show = 1):
 
    img = draw_star_image(img, nc['cat_image_stars'], nc) 
    print("SHOW!")
-   if show == 1:
+   if SHOW == 1:
       dimg = cv2.resize(img, (1280,720))
       cv2.imshow('pepe', dimg)
       cv2.waitKey(30)
