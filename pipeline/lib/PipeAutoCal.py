@@ -900,7 +900,6 @@ def custom_fit_meteor(meteor_file,json_conf,show=SHOW):
    stars_image_file = fit_img_file.replace("first.jpg", "stars.jpg")
    cv2.imwrite(stars_image_file, stars_image)
    print("SAVED:", stars_image_file)
-   input()
  
    if "short_bright_stars" in cp:
       del(cp['short_bright_stars'])
@@ -5351,7 +5350,6 @@ def get_image_stars_with_catalog(file, img, cp, json_conf, cat_stars=None, show 
    temp_img = cv2.subtract(temp_img, mask_img)
    gray_img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
    print(mask_img.shape) 
-   input("GET IMAGE STARS WITH CATALOG MASK:" + mask_file)
    cat_stars = get_catalog_stars(cp,1)
    console_image = np.zeros((720,1280),dtype=np.uint8)
 
@@ -5734,7 +5732,6 @@ def get_image_stars(file=None,img=None,json_conf=None,show=0):
 
    if len(img.shape) > 2:
       img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-      input("MASK SUBTRACTED!")
    show_pic = img.copy()
    
 
