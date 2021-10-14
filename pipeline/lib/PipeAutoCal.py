@@ -888,7 +888,7 @@ def custom_fit_meteor(meteor_file,json_conf,show=SHOW):
 
 
    cp['user_stars'] = get_image_stars(fit_img_file, fit_img, json_conf, 0)
-   user_stars_cat,cp = get_image_stars_with_catalog(fit_img_file, fit_img, cp, json_conf, None,  0)
+   cp['user_stars_cat'],cp = get_image_stars_with_catalog(fit_img_file, fit_img, cp, json_conf, None,  0)
    stars_image = fit_img.copy()
 
    for data in cp['user_stars']:
