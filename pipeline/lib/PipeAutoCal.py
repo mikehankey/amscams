@@ -881,7 +881,7 @@ def custom_fit_meteor(meteor_file,json_conf,show=SHOW):
          mask_img = None
 
       if mask_img is not None:
-         first_frame = cv2.subtract(first_frame, mask_img)
+         fit_img = cv2.subtract(fit_img, mask_img)
          print("FIRST FRAME SUBTRACTED MASKFILE!!!")
          input()
 
