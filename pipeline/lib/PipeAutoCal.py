@@ -7374,7 +7374,7 @@ def draw_star_image(img, cat_image_stars,cp=None) :
       res_line = [(six,siy),(new_cat_x,new_cat_y)]
       draw.rectangle((new_cat_x-7, new_cat_y-7, new_cat_x + 7, new_cat_y + 7), outline=color)
       draw.rectangle((six-6, siy-6, six+6, siy+6), outline=color)
-      //draw.ellipse((six-5, siy-5, six+7, siy+7),  outline ="white")
+      #draw.ellipse((six-5, siy-5, six+7, siy+7),  outline ="white")
       draw.line(res_line, fill=color, width = 0) 
       draw.text((new_cat_x, new_cat_y), str(dcname), font = font, fill="white")
       if org_x is not None:
