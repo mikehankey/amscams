@@ -877,7 +877,8 @@ def custom_fit_meteor(meteor_file,json_conf,show=SHOW):
       cv2.circle(stars_image,(x,y), 5, (255,0,0), 1)
    stars_image_file = fit_img_file.replace("fit.jpg", "stars.jpg")
    cv2.imwrite(stars_image_file, stars_image)
-
+   print("SAVED:", stars_image_file)
+   input()
  
    if "short_bright_stars" in cp:
       del(cp['short_bright_stars'])
