@@ -875,7 +875,7 @@ def custom_fit_meteor(meteor_file,json_conf,show=SHOW):
    for data in user_stars_cat:
       x,y,val = data
       cv2.circle(stars_image,(x,y), 5, (255,0,0), 1)
-   stars_image_file = fit_img_file.replace("fit.jpg", "stars.jpg")
+   stars_image_file = fit_img_file.replace("first.jpg", "stars.jpg")
    cv2.imwrite(stars_image_file, stars_image)
    print("SAVED:", stars_image_file)
    input()
@@ -5316,6 +5316,14 @@ def get_image_stars_with_catalog(file, img, cp, json_conf, cat_stars=None, show 
    temp_img = img.copy()
    gray_img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
+
+   mask_file = MASK_DIR + cam + "_mask.png"
+
+   if cfe(mask_file) == 1:
+      mask_img = cv2.imread(mask_file)
+      mask_img = cv2.resize(mask_img, (1920,1080))
+
+
    cat_stars = get_catalog_stars(cp,1)
    console_image = np.zeros((720,1280),dtype=np.uint8)
 
@@ -5696,8 +5704,9 @@ def get_image_stars(file=None,img=None,json_conf=None,show=0):
    if mask_img is not None:
       mask_img = cv2.resize(mask_img, (img.shape[1],img.shape[0]))
       img = cv2.subtract(img, mask_img)
+      
    cv2.imwrite("/mnt/ams2/masked.jpg", img)
-
+   input("WAIT.")
    best_stars = find_stars_with_grid(img)
    for star in best_stars:
       print("BEST:", star)
