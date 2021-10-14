@@ -866,6 +866,11 @@ def custom_fit_meteor(meteor_file,json_conf,show=SHOW):
       fit_img = np.zeros((1080,1920),dtype=np.uint8)
 
    cp['user_stars'] = get_image_stars(fit_img_file, fit_img, json_conf, 0)
+   user_stars_cat,cp = get_image_stars_with_catalog(meteor_file, image, cp, json_conf, None,  0)
+
+   print("USER:", len(cp['user_stars']))
+   print("USER CAT:", len(user_stars_cat))
+
    cp = pair_stars(mj['cp'], mfile, json_conf, fit_img)
    
    if "custom_lens" not in mj:
