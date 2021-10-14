@@ -1025,15 +1025,6 @@ def refit_meteor(meteor_file, json_conf,force=0):
       first_frame = frames[0]
       if first_frame.shape[0] != '1080':
          first_frame = cv2.resize(first_frame, (1920, 1080))
-
-      image = first_frame
-      star_image = first_frame.copy()
-      star_file = hd_vid.replace(".mp4", "-first.jpg")
-      star_file_half = hd_vid.replace(".mp4", "-first-half.jpg")
-      cv2.imwrite(star_file, first_frame)
-      first_frame_half = cv2.resize(first_frame, (int(1920/2), int(1080/2)))
-      cv2.imwrite(star_file_half, first_frame_half)
-
       mask_file = MASK_DIR + cam + "_mask.png"
 
       if cfe(mask_file) == 1:
@@ -1044,7 +1035,19 @@ def refit_meteor(meteor_file, json_conf,force=0):
          mask_img = None
 
       if mask_img is not None:
-         image = cv2.subtract(image, mask_img)
+         first_frame = cv2.subtract(first_frame, mask_img)
+         print("SUBTRACTED MASKFILE!!!")
+         input()
+
+
+      image = first_frame
+      star_image = first_frame.copy()
+      star_file = hd_vid.replace(".mp4", "-first.jpg")
+      star_file_half = hd_vid.replace(".mp4", "-first-half.jpg")
+      cv2.imwrite(star_file, first_frame)
+      first_frame_half = cv2.resize(first_frame, (int(1920/2), int(1080/2)))
+      cv2.imwrite(star_file_half, first_frame_half)
+
 
       user_stars = get_image_stars(meteor_file, image, json_conf, 0)
       user_stars,cp = get_image_stars_with_catalog(meteor_file, image, cp, json_conf, None,  0)
