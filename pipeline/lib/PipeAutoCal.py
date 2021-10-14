@@ -5707,7 +5707,6 @@ def get_image_stars(file=None,img=None,json_conf=None,show=0):
       img = cv2.subtract(img, mask_img)
       
    cv2.imwrite("/mnt/ams2/masked.jpg", img)
-   input("WAIT.")
    best_stars = find_stars_with_grid(img)
    for star in best_stars:
       print("BEST:", star)
