@@ -5673,6 +5673,7 @@ def check_star_blob(image):
    return(good)
 
 def get_image_stars(file=None,img=None,json_conf=None,show=0):
+   (f_datetime, cam, f_date_str,y,m,d, h, mm, s) = convert_filename_to_date_cam(file)
    print(file, img)
 
    if True:
@@ -5708,7 +5709,6 @@ def get_image_stars(file=None,img=None,json_conf=None,show=0):
 
 
    raw_img = img.copy()
-   (f_datetime, cam, f_date_str,y,m,d, h, mm, s) = convert_filename_to_date_cam(file)
    cam = cam.replace(".png", "")
    #masks = get_masks(cam, json_conf,1)
    #img = mask_frame(img, [], masks, 5)
