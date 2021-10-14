@@ -1036,7 +1036,7 @@ def refit_meteor(meteor_file, json_conf,force=0):
 
       if mask_img is not None:
          first_frame = cv2.subtract(first_frame, mask_img)
-         print("SUBTRACTED MASKFILE!!!")
+         print("FIRST FRAME SUBTRACTED MASKFILE!!!")
          input()
 
 
