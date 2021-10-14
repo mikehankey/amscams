@@ -883,7 +883,6 @@ def custom_fit_meteor(meteor_file,json_conf,show=SHOW):
       if mask_img is not None:
          fit_img = cv2.subtract(fit_img, mask_img)
          print("FIRST FRAME SUBTRACTED MASKFILE!!!")
-         input()
 
 
 
@@ -894,7 +893,7 @@ def custom_fit_meteor(meteor_file,json_conf,show=SHOW):
    for data in cp['user_stars']:
       x,y,val = data
       cv2.circle(stars_image,(x,y), 4, (0,0,255), 1)
-   for data in user_stars_cat:
+   for data in cp['user_stars_cat']:
       x,y,val = data
       cv2.circle(stars_image,(x,y), 5, (255,0,0), 1)
    stars_image_file = fit_img_file.replace("first.jpg", "stars.jpg")
