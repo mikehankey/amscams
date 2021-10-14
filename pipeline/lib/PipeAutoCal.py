@@ -896,13 +896,15 @@ def custom_fit_meteor(meteor_file,json_conf,show=SHOW):
       try:
          dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist,star_int = data
       except:
+         print("problem data", data)
          continue
      
       all_stars.append((cal_fn, cp['center_az'], cp['center_el'], cp['ra_center'], cp['dec_center'], cp['position_angle'], cp['pixscale'], dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist,star_int))
-
+   c = 0
    for star in all_stars:
-      print(star)
-
+      print(c, star)
+      c += 1
+   input("wait")
    # do x-poly 
    merged_stars = all_stars 
    cal_params = cp
