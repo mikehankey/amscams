@@ -5404,7 +5404,8 @@ def get_image_stars_with_catalog(file, img, cp, json_conf, cat_stars=None, show 
             cat_dist = calc_dist((new_cat_x,new_cat_y), (six,siy))
             cat_image_stars.append((name,mag,ra,dec,ra,dec,match_dist,new_cat_x,new_cat_y,0,0,new_cat_x,new_cat_y,six,siy,cat_dist,star_int))
 
-   print("Done get img stars.")
+   print("Done get img stars. found", len(cat_image_stars) )
+   input("WAIT")
    cp['cat_image_stars'] = cat_image_stars
    return(good_stars, cp)
 
