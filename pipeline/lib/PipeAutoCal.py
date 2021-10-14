@@ -864,6 +864,28 @@ def custom_fit_meteor(meteor_file,json_conf,show=SHOW):
       fit_img = first_frame
    else:
       fit_img = np.zeros((1080,1920),dtype=np.uint8)
+      if len(frames) == 0:
+         frames =load_frames_simple(sd_vid, 2)
+
+      first_frame = frames[0]
+      if first_frame.shape[0] != '1080':
+         first_frame = cv2.resize(first_frame, (1920, 1080))
+   if True:
+      mask_file = MASK_DIR + cam + "_mask.png"
+
+      if cfe(mask_file) == 1:
+         mask_img = cv2.imread(mask_file)
+         mask_img = cv2.resize(mask_img, (1920,1080))
+
+      else:
+         mask_img = None
+
+      if mask_img is not None:
+         first_frame = cv2.subtract(first_frame, mask_img)
+         print("FIRST FRAME SUBTRACTED MASKFILE!!!")
+         input()
+
+
 
    cp['user_stars'] = get_image_stars(fit_img_file, fit_img, json_conf, 0)
    user_stars_cat,cp = get_image_stars_with_catalog(fit_img_file, fit_img, cp, json_conf, None,  0)
@@ -1037,7 +1059,6 @@ def refit_meteor(meteor_file, json_conf,force=0):
       if mask_img is not None:
          first_frame = cv2.subtract(first_frame, mask_img)
          print("FIRST FRAME SUBTRACTED MASKFILE!!!")
-         input()
 
 
       image = first_frame
