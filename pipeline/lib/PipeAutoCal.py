@@ -5363,6 +5363,7 @@ def get_image_stars_with_catalog(file, img, cp, json_conf, cat_stars=None, show 
    all_points = []
    cat_image_stars = []
    print("CAT STARS:", len(cat_stars))
+   print("name, mag, max_px, star_int, px_diff")
    for cat_star in cat_stars:
       (name,mag,ra,dec,new_cat_x,new_cat_y) = cat_star
       if isinstance(name, str) is True:
@@ -5388,9 +5389,10 @@ def get_image_stars_with_catalog(file, img, cp, json_conf, cat_stars=None, show 
       star_img = gray_img[new_cat_y-10:new_cat_y+10,new_cat_x-10:new_cat_x+10]
       status = star_cnt(star_img)
       max_px, avg_px, px_diff,max_loc,star_int = eval_cnt(star_img)
-      print("name, mag, max_px, star_int, px_diff")
       if px_diff > 9:
-         print(name, mag, max_px, star_int, px_diff)
+         print("*", name, mag, max_px, star_int, px_diff)
+      else:
+         print("NO", name, mag, max_px, star_int, px_diff)
 
       if SHOW == 1:
          cv2.imshow('pepe', star_img)
