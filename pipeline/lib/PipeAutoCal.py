@@ -5389,7 +5389,7 @@ def get_image_stars_with_catalog(file, img, cp, json_conf, cat_stars=None, show 
       status = star_cnt(star_img)
       max_px, avg_px, px_diff,max_loc,star_int = eval_cnt(star_img)
       if px_diff > 5:
-         print("*", name, mag, max_px, star_int, px_diff)
+         print("*", yes, name, mag, max_px, star_int, px_diff)
          yes += 1
       else:
          print("NO", name, mag, max_px, star_int, px_diff)
