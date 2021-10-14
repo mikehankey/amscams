@@ -5674,10 +5674,24 @@ def check_star_blob(image):
 
 def get_image_stars(file=None,img=None,json_conf=None,show=0):
    print(file, img)
+
+   if True:
+      mask_file = MASK_DIR + cam + "_mask.png"
+
+      if cfe(mask_file) == 1:
+         mask_img = cv2.imread(mask_file)
+         mask_img = cv2.resize(mask_img, (1920,1080))
+
+      else:
+         mask_img = None
+
+
    if img is None:
       img = cv2.imread(file)
    if len(img.shape) == 3:
       img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+   if mask_img is not None:
+      image = cv2.subtract(image, mask_img)
    print("GET IMG STARS.")
    stars = []
    huge_stars = []
@@ -5688,6 +5702,7 @@ def get_image_stars(file=None,img=None,json_conf=None,show=0):
 
    if len(img.shape) > 2:
       img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+      input("MASK SUBTRACTED!")
    show_pic = img.copy()
    
 
@@ -6389,7 +6404,7 @@ def get_catalog_stars(cal_params, force=0):
          name = name.decode("utf-8")
 
       ang_sep = angularSeparation(ra,dec,RA_center,dec_center)
-      if ang_sep < fov_radius and float(mag) < 6:
+      if ang_sep < fov_radius and float(mag) <= 5:
          sbs.append((bname, cname, ra, dec, mag))
          new_cat_x, new_cat_y = distort_xy(0,0,ra,dec,RA_center, dec_center, x_poly, y_poly, x_res, y_res, pos_angle_ref,F_scale)
 
