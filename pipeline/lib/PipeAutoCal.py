@@ -5313,8 +5313,6 @@ def make_fit_image(image, cat_image_stars) :
    return(marked_img)
 
 def get_image_stars_with_catalog(file, img, cp, json_conf, cat_stars=None, show = 0):
-   temp_img = img.copy()
-   gray_img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
 
    (f_datetime, cam, f_date_str,y,m,d, h, mm, s) = convert_filename_to_date_cam(file)
@@ -5323,8 +5321,12 @@ def get_image_stars_with_catalog(file, img, cp, json_conf, cat_stars=None, show 
    if cfe(mask_file) == 1:
       mask_img = cv2.imread(mask_file)
       mask_img = cv2.resize(mask_img, (1920,1080))
-
-
+   temp_img = img.copy()
+   img = cv2.subtract(img, mask_img)
+   temp_img = cv2.subtract(temp_img, mask_img)
+   gray_img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+   print(mask_img.shape) 
+   input("MASK:" + mask_file)
    cat_stars = get_catalog_stars(cp,1)
    console_image = np.zeros((720,1280),dtype=np.uint8)
 
