@@ -5347,10 +5347,11 @@ def get_image_stars_with_catalog(file, img, cp, json_conf, cat_stars=None, show 
       mask_img = cv2.resize(mask_img, (1920,1080))
    temp_img = img.copy()
    img = cv2.subtract(img, mask_img)
+
    temp_img = cv2.subtract(temp_img, mask_img)
    gray_img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
    print(mask_img.shape) 
-   input("MASK:" + mask_file)
+   input("GET IMAGE STARS WITH CATALOG MASK:" + mask_file)
    cat_stars = get_catalog_stars(cp,1)
    console_image = np.zeros((720,1280),dtype=np.uint8)
 
@@ -5387,10 +5388,11 @@ def get_image_stars_with_catalog(file, img, cp, json_conf, cat_stars=None, show 
       star_img = gray_img[new_cat_y-10:new_cat_y+10,new_cat_x-10:new_cat_x+10]
       status = star_cnt(star_img)
       max_px, avg_px, px_diff,max_loc,star_int = eval_cnt(star_img)
+      print("name, mag, max_px, star_int, px_diff")
+      if px_diff > 9:
+         print(name, mag, max_px, star_int, px_diff)
 
       if SHOW == 1:
-         if px_diff > 9:
-            print(name, mag, max_px, star_int, px_diff)
            # cv2.imshow('pepe', star_img)
            # cv2.waitKey(0)
 
