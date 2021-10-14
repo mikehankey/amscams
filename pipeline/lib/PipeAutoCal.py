@@ -844,6 +844,8 @@ def custom_fit_meteor(meteor_file,json_conf,show=SHOW):
    mcp_dir = "/mnt/ams2/cal/" 
    mcp_file = mcp_dir + "multi_poly-" + STATION_ID + "-" + this_cam + ".info"
 
+
+
    fit_img_file = mfile.replace(".json","-first.jpg")
    if cfe(fit_img_file) == 1:
       fit_img = cv2.imread(fit_img_file)
@@ -863,7 +865,9 @@ def custom_fit_meteor(meteor_file,json_conf,show=SHOW):
    else:
       fit_img = np.zeros((1080,1920),dtype=np.uint8)
 
-
+   cp['user_stars'] = get_image_stars(fit_img_file, fit_img, json_conf, 0)
+   cp = pair_stars(mj['cp'], mfile, json_conf, fit_img)
+   
    if "custom_lens" not in mj:
       if cfe(mcp_file) == 1:
          mcp = load_json_file(mcp_file)
