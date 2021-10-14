@@ -7378,7 +7378,7 @@ def draw_star_image(img, cat_image_stars,cp=None) :
       print("DRAW:", dcname, match_dist)
 
       res_line = [(six,siy),(new_cat_x,new_cat_y)]
-      draw.rectangle((six-7, siy-7, six+7, siy+7), outline=white)
+      draw.rectangle((six-7, siy-7, six+7, siy+7), outline='white')
       draw.rectangle((new_cat_x-7, new_cat_y-7, new_cat_x + 7, new_cat_y + 7), outline=color)
       #draw.ellipse((six-5, siy-5, six+7, siy+7),  outline ="white")
       draw.line(res_line, fill=color, width = 0) 
