@@ -5691,8 +5691,11 @@ def get_image_stars(file=None,img=None,json_conf=None,show=0):
       img = cv2.imread(file)
    if len(img.shape) == 3:
       img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+   if len(mask_img.shape) == 3:
+      mask_img = cv2.cvtColor(mask_img, cv2.COLOR_BGR2GRAY)
    if mask_img is not None:
       img = cv2.subtract(img, mask_img)
+
    print("GET IMG STARS.")
    stars = []
    huge_stars = []
