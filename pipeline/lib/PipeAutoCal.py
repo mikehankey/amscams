@@ -5393,8 +5393,8 @@ def get_image_stars_with_catalog(file, img, cp, json_conf, cat_stars=None, show 
          print(name, mag, max_px, star_int, px_diff)
 
       if SHOW == 1:
-           # cv2.imshow('pepe', star_img)
-           # cv2.waitKey(0)
+         cv2.imshow('pepe', star_img)
+         cv2.waitKey(0)
 
       six = new_cat_x - 10 + max_loc[0]
       siy = new_cat_y - 10 + max_loc[1]
