@@ -5398,8 +5398,6 @@ def get_image_stars_with_catalog(file, img, cp, json_conf, cat_stars=None, show 
          cv2.imshow('pepe', star_img)
          cv2.waitKey(0)
 
-      print("YES:", yes)
-      exit()
 
       six = new_cat_x - 10 + max_loc[0]
       siy = new_cat_y - 10 + max_loc[1]
@@ -5446,6 +5444,8 @@ def get_image_stars_with_catalog(file, img, cp, json_conf, cat_stars=None, show 
             all_points.append((six,siy))
          else: 
             cv2.rectangle(temp_img, (new_cat_x-10, new_cat_y-10), (new_cat_x + 10, new_cat_y + 10), (255, 0, 0), 1)
+   print("YES:", yes)
+   exit()
 
    good_stars = []
    for key in star_dict:
