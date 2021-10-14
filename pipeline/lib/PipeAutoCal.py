@@ -5692,7 +5692,7 @@ def get_image_stars(file=None,img=None,json_conf=None,show=0):
    if len(img.shape) == 3:
       img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
    if mask_img is not None:
-      image = cv2.subtract(image, mask_img)
+      img = cv2.subtract(img, mask_img)
    print("GET IMG STARS.")
    stars = []
    huge_stars = []
