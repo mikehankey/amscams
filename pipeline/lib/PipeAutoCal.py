@@ -886,11 +886,11 @@ def custom_fit_meteor(meteor_file,json_conf,show=SHOW):
 
 
 
-   cp['user_stars'] = get_image_stars(fit_img_file, fit_img, json_conf, 0)
-   cp['user_stars_cat'],cp = get_image_stars_with_catalog(fit_img_file, fit_img, cp, json_conf, None,  0)
+   orig_user_stars = get_image_stars(fit_img_file, fit_img, json_conf, 0)
+   cp['user_stars'],cp = get_image_stars_with_catalog(fit_img_file, fit_img, cp, json_conf, None,  0)
    stars_image = fit_img.copy()
 
-   for data in cp['user_stars']:
+   for data in orig_user_stars:
       x,y,val = data
       cv2.circle(stars_image,(x,y), 4, (0,0,255), 1)
    for data in cp['user_stars_cat']:
@@ -905,6 +905,7 @@ def custom_fit_meteor(meteor_file,json_conf,show=SHOW):
 
    print("USER:", len(cp['user_stars']))
    print("USER CAT:", len(cp['user_stars_cat']))
+   input("Wait...")
    cp = pair_stars(mj['cp'], mfile, json_conf, fit_img)
    
    if "custom_lens" not in mj:
