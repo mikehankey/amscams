@@ -5412,7 +5412,7 @@ def get_image_stars_with_catalog(file, img, cp, json_conf, cat_stars=None, show 
          bg = avg * star_img.shape[0] * star_img.shape[1]
          intensity = flux - bg 
          #if intensity > 100 and status == 1 and intensity < 5000:
-         if px_diff > 9:
+         if px_diff > 5:
             if SHOW == 1:
                desc = str(name) + " mag " + str(mag) + " " + str(int(intensity)) + "res x/y " + str(res_x) + " / " + str(res_y) 
                cv2.putText(console_image, desc,  (int(col_x+cw+25),int(row_y+12)), cv2.FONT_HERSHEY_SIMPLEX, .4, (255, 255, 255), 1)
@@ -5444,8 +5444,7 @@ def get_image_stars_with_catalog(file, img, cp, json_conf, cat_stars=None, show 
             all_points.append((six,siy))
          else: 
             cv2.rectangle(temp_img, (new_cat_x-10, new_cat_y-10), (new_cat_x + 10, new_cat_y + 10), (255, 0, 0), 1)
-   print("YES:", yes)
-   exit()
+
 
    good_stars = []
    for key in star_dict:
