@@ -5362,6 +5362,7 @@ def get_image_stars_with_catalog(file, img, cp, json_conf, cat_stars=None, show 
    cat_image_stars = []
    print("CAT STARS:", len(cat_stars))
    print("name, mag, max_px, star_int, px_diff")
+   yes = 0
    for cat_star in cat_stars:
       (name,mag,ra,dec,new_cat_x,new_cat_y) = cat_star
       if isinstance(name, str) is True:
@@ -5389,12 +5390,16 @@ def get_image_stars_with_catalog(file, img, cp, json_conf, cat_stars=None, show 
       max_px, avg_px, px_diff,max_loc,star_int = eval_cnt(star_img)
       if px_diff > 5:
          print("*", name, mag, max_px, star_int, px_diff)
+         yes += 1
       else:
          print("NO", name, mag, max_px, star_int, px_diff)
 
       if SHOW == 1:
          cv2.imshow('pepe', star_img)
          cv2.waitKey(0)
+
+      print("YES:", yes)
+      exit()
 
       six = new_cat_x - 10 + max_loc[0]
       siy = new_cat_y - 10 + max_loc[1]
