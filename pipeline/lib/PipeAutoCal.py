@@ -844,7 +844,7 @@ def custom_fit_meteor(meteor_file,json_conf,show=SHOW):
    mcp_dir = "/mnt/ams2/cal/" 
    mcp_file = mcp_dir + "multi_poly-" + STATION_ID + "-" + this_cam + ".info"
 
-   fit_img_file = mfile.replace(".json","-stacked.jpg")
+   fit_img_file = mfile.replace(".json","-first.jpg")
    if cfe(fit_img_file) == 1:
       fit_img = cv2.imread(fit_img_file)
       fit_img = cv2.resize(fit_img, (1920,1080))
