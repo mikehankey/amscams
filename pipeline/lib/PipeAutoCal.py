@@ -848,6 +848,18 @@ def custom_fit_meteor(meteor_file,json_conf,show=SHOW):
    if cfe(fit_img_file) == 1:
       fit_img = cv2.imread(fit_img_file)
       fit_img = cv2.resize(fit_img, (1920,1080))
+   elif "hd_trim" in mj:
+      hd_vid = mj['hd_trim']
+      sd_vid = mj['sd_video_file']
+      frames =load_frames_simple(hd_vid, 2)
+      if len(frames) == 0:
+         frames =load_frames_simple(sd_vid, 2)
+
+      first_frame = frames[0]
+      if first_frame.shape[0] != '1080':
+         first_frame = cv2.resize(first_frame, (1920, 1080))
+      cv2.imwrite(fit_img_file, first_frame)
+      fit_img = first_frame
    else:
       fit_img = np.zeros((1080,1920),dtype=np.uint8)
 
