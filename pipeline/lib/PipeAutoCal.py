@@ -867,6 +867,8 @@ def custom_fit_meteor(meteor_file,json_conf,show=SHOW):
 
    cp['user_stars'] = get_image_stars(fit_img_file, fit_img, json_conf, 0)
    user_stars_cat,cp = get_image_stars_with_catalog(fit_img_file, fit_img, cp, json_conf, None,  0)
+   if "short_bright_stars" in cp:
+      del(cp['short_bright_stars'])
 
    print("USER:", len(cp['user_stars']))
    print("USER CAT:", len(user_stars_cat))
