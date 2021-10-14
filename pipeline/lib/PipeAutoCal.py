@@ -904,7 +904,7 @@ def custom_fit_meteor(meteor_file,json_conf,show=SHOW):
       del(cp['short_bright_stars'])
 
    print("USER:", len(cp['user_stars']))
-   print("USER CAT:", len(cp['user_stars_cat']))
+   print("USER CAT:", len(cp['user_stars']))
    input("Wait...")
    cp = pair_stars(mj['cp'], mfile, json_conf, fit_img)
    
