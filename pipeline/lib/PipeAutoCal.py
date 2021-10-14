@@ -6387,7 +6387,7 @@ def get_catalog_stars(cal_params, force=0):
          name = name.decode("utf-8")
 
       ang_sep = angularSeparation(ra,dec,RA_center,dec_center)
-      if ang_sep < fov_radius and float(mag) < 4.5:
+      if ang_sep < fov_radius and float(mag) < 6:
          sbs.append((bname, cname, ra, dec, mag))
          new_cat_x, new_cat_y = distort_xy(0,0,ra,dec,RA_center, dec_center, x_poly, y_poly, x_res, y_res, pos_angle_ref,F_scale)
 
