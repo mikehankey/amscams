@@ -5317,6 +5317,7 @@ def get_image_stars_with_catalog(file, img, cp, json_conf, cat_stars=None, show 
    gray_img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
 
+   (f_datetime, cam, f_date_str,y,m,d, h, mm, s) = convert_filename_to_date_cam(file)
    mask_file = MASK_DIR + cam + "_mask.png"
 
    if cfe(mask_file) == 1:
