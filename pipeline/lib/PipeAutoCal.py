@@ -5388,7 +5388,7 @@ def get_image_stars_with_catalog(file, img, cp, json_conf, cat_stars=None, show 
       star_img = gray_img[new_cat_y-10:new_cat_y+10,new_cat_x-10:new_cat_x+10]
       status = star_cnt(star_img)
       max_px, avg_px, px_diff,max_loc,star_int = eval_cnt(star_img)
-      if px_diff > 5:
+      if px_diff > 4:
          print("*", yes, name, mag, max_px, star_int, px_diff)
          yes += 1
       else:
@@ -5412,7 +5412,7 @@ def get_image_stars_with_catalog(file, img, cp, json_conf, cat_stars=None, show 
          bg = avg * star_img.shape[0] * star_img.shape[1]
          intensity = flux - bg 
          #if intensity > 100 and status == 1 and intensity < 5000:
-         if px_diff > 5:
+         if px_diff > 4:
             if SHOW == 1:
                desc = str(name) + " mag " + str(mag) + " " + str(int(intensity)) + "res x/y " + str(res_x) + " / " + str(res_y) 
                cv2.putText(console_image, desc,  (int(col_x+cw+25),int(row_y+12)), cv2.FONT_HERSHEY_SIMPLEX, .4, (255, 255, 255), 1)
