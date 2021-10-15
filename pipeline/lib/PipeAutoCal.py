@@ -893,7 +893,7 @@ def custom_fit_meteor(meteor_file,json_conf,show=SHOW):
    for data in orig_user_stars:
       x,y,val = data
       cv2.circle(stars_image,(x,y), 4, (0,0,255), 1)
-   for data in cp['user_stars_cat']:
+   for data in cp['user_stars']:
       x,y,val = data
       cv2.circle(stars_image,(x,y), 5, (255,0,0), 1)
    stars_image_file = fit_img_file.replace("first.jpg", "stars.jpg")
@@ -3706,6 +3706,17 @@ def validate_stars(stars, stack):
    return(good_stars)
 
 def star_cnt(simg):
+
+
+   sh, sw = simg.shape[:2]
+   for hh in range(0,sh):
+      cdata = sum(simg[:hh])
+      print("HH:", cdata)
+   for ww in range(0,sw):
+      cdata = sum(simg[ww:])
+      print("WW:", cdata)
+
+
    status = 1
    avg = np.median(simg) 
    max_p = np.max(simg) 
@@ -5385,6 +5396,8 @@ def get_image_stars_with_catalog(file, img, cp, json_conf, cat_stars=None, show 
          continue
       if y1 < 0 or y2 >= gray_img.shape[0]:
          continue
+
+
       star_img = gray_img[new_cat_y-10:new_cat_y+10,new_cat_x-10:new_cat_x+10]
       status = star_cnt(star_img)
       max_px, avg_px, px_diff,max_loc,star_int = eval_cnt(star_img)
@@ -8607,6 +8620,8 @@ def inspect_star(star_cnt, user_star_data=None, cat_star_data=None, show=0):
    min_val, max_val, min_loc, (mx,my)= cv2.minMaxLoc(gray_star)
    thresh_val = max_val *.8
    _, thresh_img = cv2.threshold(gray_star.copy(), thresh_val, 255, cv2.THRESH_BINARY)
+
+
    if show == 1:
       star_cnt[my,mx] = [0,0,128]
       star_cnt[4,4] = [0,128,0]
