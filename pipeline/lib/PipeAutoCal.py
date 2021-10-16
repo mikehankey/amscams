@@ -6096,7 +6096,9 @@ def get_image_stars(file=None,img=None,json_conf=None,show=0):
    if len(mask_img.shape) == 3:
       mask_img = cv2.cvtColor(mask_img, cv2.COLOR_BGR2GRAY)
    if mask_img is not None:
-      mask_img = cv2.resize(mask_img, (1920,1080))
+      print("IMG:", img.shape)
+      print("MASK:", mask_img.shape)
+      mask_img = cv2.resize(mask_img, (img.shape[1],img.shape[0]))
       img = cv2.subtract(img, mask_img)
 
    print("GET IMG STARS.")
