@@ -169,6 +169,11 @@ def stack_index(json_conf):
    night_stack_dir = "/mnt/ams2/meteor_archive/" + STATION_ID + "/STACKS/" 
    day_dirs = glob.glob(night_stack_dir + "*")
    html = "<table>"
+   work_hist_file = night_stack_dir + "stack_hist.json"
+   if cfe(work_hist_file) == 1:
+      work_hist = load_json_file(work_hist_file)
+   else:
+      work_hist = {}
    for day_dir in sorted(day_dirs, reverse=True):
       if cfe(day_dir, 1) == 0:
          continue
@@ -178,14 +183,19 @@ def stack_index(json_conf):
       html += "<td>" + date + "</td>"
       for cam in sorted(cam_ids):
          file= day_dir + "/" + cam + "-night-stack.jpg"
-         if cfe(file) == 1:
-            url = day_dir + "/hours.html"
+         if file not in work_hist:
+            print("CHECKING FILE:", file)
+            if cfe(file) == 1:
+               url = day_dir + "/hours.html"
             
-            html += "<td><a href=" + url + "><img src=" + file + "></a></td>"  
-         else:
-            html += "<td>" + " " + "</td>"  
+               html += "<td><a href=" + url + "><img src=" + file + "></a></td>"  
+            else:
+               html += "<td>" + " " + "</td>"  
+            work_hist[file] = 1
       html += "</tr>"
    html += "</table>"
+   save_json_file(work_hist_file, work_hist)
+   print("SAVING STACK HTML")
    fp = open(night_stack_dir + "all.html", "w")
    fp.write(html)
    fp.close()

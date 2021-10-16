@@ -1017,14 +1017,12 @@ def refit_meteor(meteor_file, json_conf,force=0):
    video_file = meteor_file.replace(".json", ".mp4")
    day = y + "_" + m + "_" + d
    cam = this_cam
-   print("VF:", video_file)
    if "/mnt/ams2/meteors" not in meteor_file:
       day = meteor_file[0:10]
       meteor_file = meteor_file.replace(".mp4", "")
       meteor_file = meteor_file.replace(".json", "")
       meteor_file = "/mnt/ams2/meteors/" + day + "/" + meteor_file + ".json"
    
-   #print("Loading...", meteor_file)
    first_frame = None
    mj = load_json_file(meteor_file)
    red_file = meteor_file.replace(".json", "-reduced.json")
@@ -1037,7 +1035,6 @@ def refit_meteor(meteor_file, json_conf,force=0):
    else:
       return()
    starting_res = cp['total_res_px']
-   print(starting_res)
    if starting_res > 10:
       mj = use_default_cal(meteor_file, mj,json_conf)
       save_json_file(meteor_file, mj)
@@ -1048,7 +1045,6 @@ def refit_meteor(meteor_file, json_conf,force=0):
    if "hd_trim" in mj:
       hd_vid = mj['hd_trim']
       sd_vid = mj['sd_video_file']
-      print("HD VID:", hd_vid)
       frames =load_frames_simple(hd_vid, 2)
       if len(frames) == 0:
          frames =load_frames_simple(sd_vid, 2)
@@ -1083,14 +1079,6 @@ def refit_meteor(meteor_file, json_conf,force=0):
       user_stars,cp = get_image_stars_with_catalog(meteor_file, image, cp, json_conf, None,  0)
       user_stars_cat,cp = get_image_stars_with_catalog(meteor_file, image, cp, json_conf, None,  0)
       cp['user_stars'] = user_stars
-      for data in user_stars:
-         print("US:", data)
-      for data in user_stars_cat:
-         print("US CAT:", data)
-      
-      
-      print("USER STARS NORMAL:", len(user_stars))
-      print("USER STARS WITH CAT!", len(user_stars_cat))
 
       ih,iw = image.shape[:2]
       cp['user_stars'] = user_stars
@@ -1098,9 +1086,7 @@ def refit_meteor(meteor_file, json_conf,force=0):
       for data in cp['user_stars']:
          x = data[0]
          y = data[1]
-         print(x,y,iw,ih)
          if 100 < x < iw -100 and 100 < y < ih - 100:
-            print("GOOD:", data)
             good_stars.append(data)
 
 
@@ -1340,10 +1326,10 @@ def refit_meteor(meteor_file, json_conf,force=0):
       temp_cp['cat_image_stars'] = center_stars
       temp_cp['user_stars'] = center_user_stars
 
-      temp_cp['x_poly'] = np.zeros(shape=(15,), dtype=np.float64)
-      temp_cp['y_poly'] = np.zeros(shape=(15,), dtype=np.float64)
-      temp_cp['x_poly_fwd'] = np.zeros(shape=(15,), dtype=np.float64)
-      temp_cp['y_poly_fwd'] = np.zeros(shape=(15,), dtype=np.float64)
+      #temp_cp['x_poly'] = np.zeros(shape=(15,), dtype=np.float64)
+      #temp_cp['y_poly'] = np.zeros(shape=(15,), dtype=np.float64)
+      #temp_cp['x_poly_fwd'] = np.zeros(shape=(15,), dtype=np.float64)
+      #temp_cp['y_poly_fwd'] = np.zeros(shape=(15,), dtype=np.float64)
 
       print("ALL STARS:", len(cp['cat_image_stars']))
       print("CENTER STARS:", len(temp_cp['cat_image_stars']))
@@ -1371,10 +1357,23 @@ def refit_meteor(meteor_file, json_conf,force=0):
       if cfe(red) == 0:
          return()
       red_data = load_json_file(red)
+      if isinstance(cp['x_poly'], list) is not True:
+         print("CP PPOLY", cp['x_poly'])
+         cp['x_poly'] = cp['x_poly'].tolist()
+         cp['y_poly'] = cp['y_poly'].tolist()
+         cp['y_poly_fwd'] = cp['y_poly_fwd'].tolist()
+         cp['x_poly_fwd'] = cp['x_poly_fwd'].tolist()
+
+
+
       red_data['cal_params'] = cp
       best_meteor, meteor_frame_data = meteor_apply_calib(video_file, mj['best_meteor'], cp,json_conf)
       mj['best_meteor'] = best_meteor
       red_data['meteor_frame_data'] = meteor_frame_data
+      for key in red_data:
+         print(key, type(red_data))
+      print("RED FILE:", red)
+
 
       save_json_file(red, red_data)
       save_json_file(meteor_file, mj)
@@ -4573,7 +4572,8 @@ def eval_cal(cp_file,json_conf,nc=None,oimg=None, mask_img=None,batch_mode=None,
    print("EVAL RES", len(nc['cat_image_stars']), avg_res)
    if SHOW == 1:
       marked_img = view_calib(cp_file,json_conf,nc,oimg)
-   #marked_img = None
+   else:
+      marked_img = None
    if short_bright_stars is None:
       return(nc, bad_stars, marked_img)
    else:
@@ -6801,8 +6801,8 @@ def get_catalog_stars(cal_params, force=0):
       elif len(data) == 17:
          name,mag,ra,dec,img_ra,img_dec,match_dist,cat_x,cat_y,img_az,img_el,old_cat_x,old_cat_y,six,siy,cat_dist,star_int  = data 
       else:
-         print("BAD DATA:", len(data))
-         print("BAD DATA:", data)
+         #print("BAD DATA:", len(data))
+         #print("BAD DATA:", data)
          exit()
 
       if isinstance(name, str) is True:
@@ -6820,7 +6820,7 @@ def get_catalog_stars(cal_params, force=0):
 
    if len(catalog_stars) == 0:
       print("NO CATALOG STARS!?")
-   print("CATALOG STARS:", len(catalog_stars))
+   #print("CATALOG STARS:", len(catalog_stars))
       
    return(catalog_stars)
 

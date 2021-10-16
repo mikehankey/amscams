@@ -450,8 +450,8 @@ def events_for_day(day, json_conf):
          meteors.append((station,meteor, reduced, start_time, dur, ang_vel, ang_dist, hotspot, msm))
    meteors = sorted(meteors, key=lambda x: (x[3]), reverse=False)
    events = {}
-   for meteor in meteors:
-      id, events = check_make_event(meteor, events)
+   #for meteor in meteors:
+   #   id, events = check_make_event(meteor, events)
    msc = 1
    for event in events:
       ust = set(events[event]['stations'])
@@ -486,8 +486,8 @@ def events_for_day(day, json_conf):
          meteors.append((station,meteor, reduced, start_time, dur, ang_vel, ang_dist, hotspot, msm))
    meteors = sorted(meteors, key=lambda x: (x[3]), reverse=False)
    events = {}
-   for meteor in meteors:
-      id, events = check_make_event(meteor, events)
+   #for meteor in meteors:
+   #   id, events = check_make_event(meteor, events)
    msc = 1
    for event in events:
       ust = set(events[event]['stations'])
@@ -549,6 +549,7 @@ def check_make_event(data, events):
    if len(data) == 3:
       station,meteor, start_time = data
    else:
+      print("DATA:", data)
       station,meteor, final_vid, start_time = data
    if "." in start_time:
       start_datetime = datetime.datetime.strptime(start_time, "%Y-%m-%d %H:%M:%S.%f")
