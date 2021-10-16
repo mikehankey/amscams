@@ -2368,8 +2368,9 @@ def refit_fov(cal_file, json_conf, mov_frame_num=0):
       sx,sy,si = data 
       cv2.circle(show_img,(int(sx),int(sy)), 7, (128,128,128), 1)
       cv2.waitKey(30)
-   cv2.imshow("PERFECT USER STARS", show_img)
-   cv2.waitKey(30)
+   if SHOW == 1:
+      cv2.imshow("PERFECT USER STARS", show_img)
+      cv2.waitKey(30)
 
    cal_fn = cal_file.split("/")[-1]
    cv2.imwrite(MOVIE_DIR + cam + "_fov_fit" + cal_fn.replace(".json", "") + "_" + str(MOVIE_FN) + ".jpg", show_img)
