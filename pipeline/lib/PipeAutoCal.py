@@ -1004,9 +1004,7 @@ def custom_fit_meteor(meteor_file,json_conf,show=SHOW):
 
    save_json_file(mfile, mj)
    print(fit_img.shape)
-   if SHOW == 1:
-      marked_img = view_calib(mfile,json_conf,mj['cp'],fit_img)
-   else:
+   marked_img = view_calib(mfile,json_conf,mj['cp'],fit_img)
 
    mimg_file = mfile.replace(".json", "-fit.jpg")
    cv2.imwrite(mimg_file,marked_img)
