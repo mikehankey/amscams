@@ -4150,7 +4150,7 @@ def show_image(img, win, time=0):
       except:
          print("Bad image:", disp_img)
 
-def view_calib(cp_file,json_conf,nc,oimg, show = 1):
+def view_calib(cp_file,json_conf,nc,oimg, show = 0):
    (f_datetime, cam, f_date_str,y,m,d, h, mm, s) = convert_filename_to_date_cam(cp_file)
    img = oimg.copy()
    tres = 0
