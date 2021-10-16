@@ -1004,7 +1004,10 @@ def custom_fit_meteor(meteor_file,json_conf,show=SHOW):
 
    save_json_file(mfile, mj)
    print(fit_img.shape)
-   marked_img = view_calib(mfile,json_conf,mj['cp'],fit_img)
+   if SHOW == 1:
+      marked_img = view_calib(mfile,json_conf,mj['cp'],fit_img)
+   else:
+
    mimg_file = mfile.replace(".json", "-fit.jpg")
    cv2.imwrite(mimg_file,marked_img)
 
@@ -4571,7 +4574,10 @@ def eval_cal(cp_file,json_conf,nc=None,oimg=None, mask_img=None,batch_mode=None,
    nc['match_perc'] = match_perc
 
    print("EVAL RES", len(nc['cat_image_stars']), avg_res)
-   marked_img = view_calib(cp_file,json_conf,nc,oimg)
+   if SHOW == 1:
+      marked_img = view_calib(cp_file,json_conf,nc,oimg)
+   else:
+      marked_img =  np.zeros((1080,1920,3),dtype=np.uint8)
 
    if short_bright_stars is None:
       return(nc, bad_stars, marked_img)
