@@ -1075,15 +1075,20 @@ def refit_meteor(meteor_file, json_conf,force=0):
       cv2.imwrite(star_file_half, first_frame_half)
 
 
-      user_stars = get_image_stars(meteor_file, image, json_conf, 0)
-      user_stars,cp = get_image_stars_with_catalog(meteor_file, image, cp, json_conf, None,  0)
+      #user_stars = get_image_stars(meteor_file, image, json_conf, 0)
+      #print("USER STARS:", user_stars)
+      #user_stars,cp = get_image_stars_with_catalog(meteor_file, image, cp, json_conf, None,  0)
       user_stars_cat,cp = get_image_stars_with_catalog(meteor_file, image, cp, json_conf, None,  0)
-      cp['user_stars'] = user_stars
+      cp['user_stars'] = user_stars_cat
+      user_stars = user_stars_cat
+      print("CP STARS:", cp['user_stars'])
+      print("PERF STARS:", user_stars_cat)
+      #cp['user_stars'] = user_stars
 
       ih,iw = image.shape[:2]
-      cp['user_stars'] = user_stars
       good_stars = []
       for data in cp['user_stars']:
+         print("USER STARS:", data)
          x = data[0]
          y = data[1]
          if 100 < x < iw -100 and 100 < y < ih - 100:
@@ -1096,9 +1101,7 @@ def refit_meteor(meteor_file, json_conf,force=0):
       for star in user_stars:
          cv2.circle(image,(int(star[0]),int(star[1])), 4, (0,0,255), 1)
       cp = pair_stars(cp, meteor_file, json_conf, image)
-      print("cat stars:", len(cp['cat_image_stars']))
       cv2.imwrite("/mnt/ams2/test.jpg", image)
-
    #if "refit_info" in mj:
    #   if "runs" in mj['refit_info']:
    #      if mj['refit_info']['runs'] >= 1:
@@ -1150,7 +1153,6 @@ def refit_meteor(meteor_file, json_conf,force=0):
 
    result = get_calib_from_range(cam, day,json_conf)
    if result != None:
-      print(result)
       cam, sd, ed, med_az, med_el, med_pos, med_px, med_res = result
       def_cal = [med_az, med_el, med_pos, med_px, med_res]
    else:
@@ -1163,7 +1165,6 @@ def refit_meteor(meteor_file, json_conf,force=0):
    stars = cp['user_stars']
    clean_stars =[]
    for data in stars:
-      print("USER STARS ORIG:", data)
       x,y,i = data
       sx1 = int(x - 5)
       sy1 = int(y - 5)
@@ -1186,8 +1187,6 @@ def refit_meteor(meteor_file, json_conf,force=0):
       data = inspect_star(star_cnt, data, None)
       clean_stars.append(data)
    cp['user_stars'] = clean_stars
-   for star in clean_stars:
-      print("CLEAN STAR:", star)
 
 
   # exit()
@@ -1200,11 +1199,8 @@ def refit_meteor(meteor_file, json_conf,force=0):
 
 
       test1_cp , bad_stars, marked_img = test_cal(meteor_file, json_conf, acp, image, test_data1)
-      print("TEST1", test_data1, test1_cp['total_res_px'])
 
       test2_cp, bad_stars, marked_img = test_cal(meteor_file, json_conf, acp, image, test_data2)
-      print("TEST2", test_data2, test2_cp['total_res_px'])
-      print("TEST1", test_data1, test1_cp['total_res_px'])
 
       if test2_cp['total_res_px'] < test1_cp['total_res_px']:
          print("Update meteor cal with default it is better.")
@@ -1289,6 +1285,7 @@ def refit_meteor(meteor_file, json_conf,force=0):
       print("AFTER GET MORE:", len(cp['user_stars']), len(cp['cat_image_stars'])) 
       cp= pair_stars(cp, meteor_file, json_conf, image.copy())
       print("AFTER GET MORE & PAIR:", len(cp['user_stars']), len(cp['cat_image_stars'])) 
+      print(cp['cat_image_stars'])
    if len(cp['cat_image_stars']) < 3  :
       mj = use_default_cal(meteor_file, mj,json_conf)
       save_json_file(meteor_file, mj)
@@ -1318,6 +1315,7 @@ def refit_meteor(meteor_file, json_conf,force=0):
       center_user_stars = []
       for row in cp['cat_image_stars']:
          dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist,bp = row
+         print("CENTER STARS:", six, siy)
          if 0 <= six < 1920 and 0 <= siy <= 1080:
             center_stars.append(row)
             center_user_stars.append((six,siy,bp))
@@ -1334,7 +1332,7 @@ def refit_meteor(meteor_file, json_conf,force=0):
       print("ALL STARS:", len(cp['cat_image_stars']))
       print("CENTER STARS:", len(temp_cp['cat_image_stars']))
 
-
+      print("ALL STARS:", temp_cp['user_stars'])
 
       cp = minimize_fov(meteor_file, temp_cp, meteor_file ,image,json_conf )
 
@@ -4531,17 +4529,16 @@ def eval_cal(cp_file,json_conf,nc=None,oimg=None, mask_img=None,batch_mode=None,
    elif "user_stars" not in nc:
       nc['user_stars'] = get_image_stars(img_file, None, json_conf,0)
 
-   #print("NC:", nc['center_az'], nc['center_el'])
    nc = update_center_radec(cp_file,nc,json_conf,time_diff=3)
-   #for data in nc['user_stars']:
-   #   print("NC USER STARS:", data)
   
    if short_bright_stars is not None: 
       cat_stars,short_bright_stars = get_catalog_stars(nc,1,[])
    else:
       cat_stars = get_catalog_stars(nc)
- 
+
    nc = pair_stars(nc, cp_file, json_conf, gimg)
+
+
    if len(nc['user_stars']) > 0:
       match_perc = len(nc['cat_image_stars']) / len(nc['user_stars']) 
    else:
@@ -4554,6 +4551,7 @@ def eval_cal(cp_file,json_conf,nc=None,oimg=None, mask_img=None,batch_mode=None,
    for star in nc['cat_image_stars']:
       dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist,star_int = star
       tres += cat_dist
+      #print("EVAL:", six, siy)
    if len(nc['cat_image_stars']) == 0:
       avg_res = 9999
    else:
@@ -4561,6 +4559,7 @@ def eval_cal(cp_file,json_conf,nc=None,oimg=None, mask_img=None,batch_mode=None,
 
    for star in nc['cat_image_stars']:
       dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist,star_int = star
+      #print("EVAL:", six, siy)
       if cat_dist > avg_res * 2:
          bad_stars.append(star)
 
@@ -5535,7 +5534,6 @@ def debug_star_image(color_img, cat_stars, cal_file):
       orig_new_cat_y = new_cat_y
       new_cat_x = int(new_cat_x)
       new_cat_y = int(new_cat_y)
-      print(cat_star)
       x1 = int(new_cat_x-star_radius)
       x2 = int(new_cat_x+star_radius)
       y1 = int(new_cat_y-star_radius)
@@ -5565,7 +5563,6 @@ def debug_star_image(color_img, cat_stars, cal_file):
       enlarge = (star_radius*2) * magnify
       x_margin = int((1920 - enlarge - 1280) / 2)
       star_img = cv2.resize(star_img, (enlarge,enlarge))
-      print("SHAPE:", star_img.shape)
       cx, cy, star_big, star_big_thresh = find_blob_center(star_img)
   
       adj_x = (cx - (enlarge/2)) / magnify
@@ -5574,15 +5571,9 @@ def debug_star_image(color_img, cat_stars, cal_file):
       perfect_x = new_cat_x + adj_x
       perfect_y = new_cat_y + adj_y
 
-      print("C XY:", cx, cy)
-      print("ADJ XY:", adj_x, adj_y)
-      print("P XY:", perfect_x, perfect_y)
       p_res_x = abs(orig_new_cat_x - perfect_x)
       p_res_y = abs(orig_new_cat_y - perfect_y)
       p_res = (p_res_x+p_res_y) / 2
-      print("PERFECT RES X Y", p_res_x, p_res_y)
-      print("ADJXY:", adj_x, adj_y)
-      print("PIX DIF:", px_diff)
       if px_diff < 25:
          continue
       px1 = int(perfect_x-(star_radius))
@@ -5590,10 +5581,7 @@ def debug_star_image(color_img, cat_stars, cal_file):
 
       py1 = int(perfect_y-(star_radius))
       py2 = int(perfect_y+(star_radius))
-      print("PERFECT XY:", perfect_x, perfect_y)
-      print("PX1,PY1,PX2,PY2:", px1, py1, px2, py2)
 
-      print("BIG CENTER:", (perfect_x-px1)*magnify, (perfect_y-py1)*magnify)
       big_center_x = (perfect_x-px1)*magnify
       big_center_y = (perfect_y-py1)*magnify
 
@@ -5628,8 +5616,6 @@ def debug_star_image(color_img, cat_stars, cal_file):
 
       big_center_img = np.zeros((500,500,3),dtype=np.uint8)
 
-      print("BIG OFFSET:", big_offset_x, big_offset_y)
-      print("BIG CENTER:", big_center_x, big_center_y)
 
       #cv2.circle(perfect_star_img_big,(int(big_center_x),int(big_center_y)), 50, (0,0,255), 1)
 
@@ -5662,8 +5648,6 @@ def debug_star_image(color_img, cat_stars, cal_file):
       cv2.circle(show_img,(int(perfect_x),int(perfect_y)), 5, (128,255,255), 1)
       show_img_720 = cv2.resize(show_img, (1280,720))
 
-      print("CNS", console_img.shape)
-      print("SHOWIMG720", show_img_720.shape)
       console_img[0:720,0:1280] = show_img_720
       #cv2.rectangle(grid_img, (bx1, by1), (bx2, by2 ), (255, 255, 255), 1)
 
@@ -5688,10 +5672,10 @@ def debug_star_image(color_img, cat_stars, cal_file):
 
 
 
-   for star in perfect_stars:
-      print(star)
+   #for star in perfect_stars:
+   #   print(star)
    avg_res = tres / len(perfect_stars)
-   print("AVG RES:", avg_res)
+   #print("AVG RES:", avg_res)
 
    return(perfect_user_stars, perfect_stars)
 
@@ -5709,7 +5693,6 @@ def get_image_stars_with_catalog(file, img, cp, json_conf, cat_stars=None, show 
 
    temp_img = cv2.subtract(temp_img, mask_img)
    gray_img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-   print(mask_img.shape) 
    cat_stars = get_catalog_stars(cp,1)
    console_image = np.zeros((720,1280),dtype=np.uint8)
 
@@ -5720,8 +5703,8 @@ def get_image_stars_with_catalog(file, img, cp, json_conf, cat_stars=None, show 
    star_dict = {}
    all_points = []
    cat_image_stars = []
-   print("CAT STARS:", len(cat_stars))
-   print("name, mag, max_px, star_int, px_diff")
+   #print("CAT STARS:", len(cat_stars))
+   #print("name, mag, max_px, star_int, px_diff")
    yes = 0
 
    all_star_images = []
@@ -5761,10 +5744,10 @@ def get_image_stars_with_catalog(file, img, cp, json_conf, cat_stars=None, show 
       all_star_status.append(status)
       max_px, avg_px, px_diff,max_loc,star_int = eval_cnt(star_img)
       if px_diff > 4:
-         print("*", yes, name, mag, max_px, star_int, px_diff)
+         #print("*", yes, name, mag, max_px, star_int, px_diff)
          yes += 1
-      else:
-         print("NO", name, mag, max_px, star_int, px_diff)
+      #else:
+      #   print("NO", name, mag, max_px, star_int, px_diff)
 
       if SHOW == 1:
          cv2.imshow('pepe15', star_img)
@@ -5933,7 +5916,7 @@ def find_stars_with_grid(img):
          #max_px, avg_px, px_diff,max_loc,star_int = eval_cnt(gimg.copy(), avg)
 
          # check if star has a blob
-         print("PX DIFF/AVG PX:", px_diff, avg_px)
+         #print("PX DIFF/AVG PX:", px_diff, avg_px)
 
          if px_diff < 20 :
             continue
@@ -6033,6 +6016,9 @@ def find_stars_with_grid(img):
       cv2.circle(img, (int(x),int(y)), 10, (128,128,128), 1)
    cv2.imwrite("/mnt/ams2/temp2.jpg", img)
 
+   print("BRIGHT POINTS") 
+
+
    return(bright_points)
 
 def check_star_blob(image):
@@ -6076,7 +6062,6 @@ def check_star_blob(image):
 
 def get_image_stars(file=None,img=None,json_conf=None,show=0):
    (f_datetime, cam, f_date_str,y,m,d, h, mm, s) = convert_filename_to_date_cam(file)
-   print(file, img)
 
    if True:
       mask_file = MASK_DIR + cam + "_mask.png"
@@ -6096,12 +6081,9 @@ def get_image_stars(file=None,img=None,json_conf=None,show=0):
    if len(mask_img.shape) == 3:
       mask_img = cv2.cvtColor(mask_img, cv2.COLOR_BGR2GRAY)
    if mask_img is not None:
-      print("IMG:", img.shape)
-      print("MASK:", mask_img.shape)
       mask_img = cv2.resize(mask_img, (img.shape[1],img.shape[0]))
       img = cv2.subtract(img, mask_img)
 
-   print("GET IMG STARS.")
    stars = []
    huge_stars = []
    if img is None:
@@ -6133,7 +6115,7 @@ def get_image_stars(file=None,img=None,json_conf=None,show=0):
    cv2.imwrite("/mnt/ams2/masked.jpg", img)
    best_stars = find_stars_with_grid(img)
    for star in best_stars:
-      print("BEST:", star)
+      print("BEST STAR:", star)
       x,y,z = star
       cv2.circle(img, (int(x),int(y)), 5, (128,128,128), 1)
    cv2.imwrite("/mnt/ams2/temp.jpg", img)
@@ -6194,7 +6176,6 @@ def get_image_stars(file=None,img=None,json_conf=None,show=0):
    stars = validate_stars(stars, raw_img)
    clean_stars = [] 
    for data in stars: 
-      print("USER STARS ORIG:", data)
       x,y,i = data
       sx1 = int(x - 5)
       sy1 = int(y - 5)
@@ -6216,8 +6197,6 @@ def get_image_stars(file=None,img=None,json_conf=None,show=0):
       star_cnt = raw_img[sy1:sy2,sx1:sx2]
       data = inspect_star(star_cnt, data, None)
       clean_stars.append(data)
-   for star in clean_stars:
-      print("CLEAN STAR:", star)
    return(clean_stars)
 
 
@@ -6304,7 +6283,7 @@ def make_plate_image(image, file_stars):
       cent_w = int(1920/2)
       cent_h = int(1080/2)
       dist_to_center = calc_dist((x,y), (cent_w,cent_h))
-      print(cnt_img.shape)
+      #print(cnt_img.shape)
       #if dist_to_center > 500:
       #   continue
       if ch == 0 or cw == 0 :
@@ -6557,7 +6536,6 @@ def pair_stars(cal_params, cal_params_file, json_conf, cal_img=None, show = 0):
    for data in cal_params['user_stars']:
       if data is None:
          continue
-      print(data)
       if len(data) == 3:
          ix,iy,bp = data
       else:
@@ -6954,9 +6932,8 @@ def distort_xy(sx,sy,ra,dec,RA_center, dec_center, x_poly, y_poly, x_res, y_res,
 
 
 def find_close_stars(star_point, catalog_stars,dt=100):
-
    scx,scy = star_point
-   scx,scy = int(scx), int(scy)
+   #scx,scy = scx, scy
 
    center_dist = calc_dist((scx,scy),(960,540))
    if center_dist > 500:
