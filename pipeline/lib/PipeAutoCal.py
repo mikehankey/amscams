@@ -1661,7 +1661,9 @@ def reverse_map(json_conf):
    print(rev_save_js)
 
 def make_gnome_map(file, json_conf,asimg=None,ascp=None,maps=None):
+   asmap = []
    img = cv2.imread(file)
+   (f_datetime, this_cam, f_date_str,y,m,d, h, mm, s) = convert_filename_to_date_cam(file)
    small_img = cv2.resize(img, (int(1920/2), int(1080/2)))
    jd = datetime2JD(f_datetime, 0.0)
    hour_angle = JD2HourAngle(jd)
@@ -1784,6 +1786,9 @@ def flatten_image(file, json_conf,asimg=None,ascp=None,maps=None):
       pxscale_div = 1
       asimg, ascp = all_sky_image(file, cal_params.copy(), json_conf, pxscale_div)
 
+   if maps is None:
+      make_gnome_map(file, json_conf,None,None,None)
+      print("MAKE MAPS?")
 
    if cfe(save_file) == 1: 
       if this_cam not in maps :
