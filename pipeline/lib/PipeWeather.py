@@ -610,6 +610,15 @@ def hourly_stacks(date, json_conf):
        for hour in hour_data[cam]:
          images = []
          files = hour_data[cam][hour]['files']
+
+         hour_stack_file = night_stack_dir + fy + "_" + fm + "_" + fd + "_" + hour + "_" + cam + ".jpg"
+         if cfe(hour_stack_file) == 1 :
+            print("WE CAN SKIP!", hour_stack_file)
+            continue
+         else:
+            print("HOUR NOT DONE YET!", hour_stack_file)
+
+
          for file in files:
             (f_datetime, cam, f_date_str,fy,fm,fd, fh, fmin, fs) = convert_filename_to_date_cam(file)
             im = cv2.imread(file)
@@ -623,7 +632,14 @@ def hourly_stacks(date, json_conf):
             print("MISSING SOLAOR HOUR", int(fh))
             sun_status = "night"
          print("LAST HOUR/MIN SUN STATS:", fh, sun_status, len(images))
-         hour_stack_image = stack_frames(images, 1, None, sun_status )
+         hour_stack_file = night_stack_dir + fy + "_" + fm + "_" + fd + "_" + hour + "_" + cam + ".jpg"
+         if cfe(hour_stack_file) == 1 and len(images) > 55:
+            print("WE CAN SKIP!", hour_stack_file)
+            continue
+         else:
+            print("STACKING HOUR FRAMES")
+            hour_stack_image = stack_frames(images, 1, None, sun_status )
+         print("STACKED HOUR FRAMES")
          if hour_stack_image is not None:
             hour_stack_file = night_stack_dir + fy + "_" + fm + "_" + fd + "_" + hour + "_" + cam + ".jpg"
             print(hour_stack_file, hour_stack_image.shape)
