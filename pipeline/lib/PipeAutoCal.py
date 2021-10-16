@@ -2781,8 +2781,9 @@ def refit_fov(cal_file, json_conf, mov_frame_num=0):
 
    temp_cp, bad_stars, marked_img = eval_cal(cal_file,json_conf,cal_params,img, None)
    print("MARKED:", marked_img)
-   cv2.imshow("MARKED FINAL 1", marked_img)
-   cv2.waitKey(30)
+   if SHOW == 1 and marked_img is not None:
+      cv2.imshow("MARKED FINAL 1", marked_img)
+      cv2.waitKey(30)
 
 
    temp_cp, bad_stars, marked_img = eval_cal(image_file,json_conf,cal_params,color_img, None)
@@ -4570,10 +4571,8 @@ def eval_cal(cp_file,json_conf,nc=None,oimg=None, mask_img=None,batch_mode=None,
    nc['match_perc'] = match_perc
 
    print("EVAL RES", len(nc['cat_image_stars']), avg_res)
-   if SHOW == 1:
-      marked_img = view_calib(cp_file,json_conf,nc,oimg)
-   else:
-      marked_img = None
+   marked_img = view_calib(cp_file,json_conf,nc,oimg)
+
    if short_bright_stars is None:
       return(nc, bad_stars, marked_img)
    else:
