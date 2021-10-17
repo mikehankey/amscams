@@ -800,23 +800,34 @@ def cal_index(json_conf):
    # BUILD FREE CAL INDEX
 
    freecal_dirs = glob.glob("/mnt/ams2/cal/freecal/*")
-   cal_files = {}
+   if cfe("/mnt/ams2/cal/freecal_index.json") == 1:
+      cal_files = load_json_file("/mnt/ams2/cal/freecal_index.json")
+   else:
+      cal_files = {}
+   print("Scanning cal dirs")
+   total = len(freecal_dirs)
+   cc = 0
    for fc in freecal_dirs:
-      if cfe(fc, 1) == 1:
-         base_name = fc.split("/")[-1]
-         cp_file = fc + "/" + base_name + "-stacked-calparams.json"
-         print("CP:", cp_file)
-         if cfe(cp_file) == 1:
-            cal_files[cp_file] = {}
-            cal_files[cp_file]['base_dir'] = fc 
-         else:
-            cp_file = fc + "/" + base_name + "-calparams.json"
+      base_name = fc.split("/")[-1]
+      cp_file = fc + "/" + base_name + "-stacked-calparams.json"
+      if cc % 10 == 0:
+         print("   " + str(cc) + " / " + str(total))
+      if cp_file not in cal_files:
+         if cfe(fc, 1) == 1:
             if cfe(cp_file) == 1:
                cal_files[cp_file] = {}
                cal_files[cp_file]['base_dir'] = fc 
             else:
-               print("NOT FOUND:", cp_file)
-   for cp_file in cal_files:
+               cp_file = fc + "/" + base_name + "-calparams.json"
+               if cfe(cp_file) == 1:
+                  cal_files[cp_file] = {}
+                  cal_files[cp_file]['base_dir'] = fc 
+               else:
+                  print("NOT FOUND:", cp_file)
+      cc += 1
+
+   for cp_file in sorted(cal_files, reverse=True):
+      print("CHECKING : ", cp_file)
       cj = load_json_file(cp_file)
       (f_datetime, cam_id, f_date_str,fy,fm,fd, fh, fmin, fs) = convert_filename_to_date_cam(cp_file)
       if cj == 0:
@@ -829,8 +840,8 @@ def cal_index(json_conf):
          cj['center_el'] = el
          print("FIXING MISSING AZ/EL FROM CAL_PARMAS!")
          exit()
-      else:
-         print("CENTER AZ IS :", cj['center_az'], cj['center_el'])
+      #else:
+      #   print("CENTER AZ IS :", cj['center_az'], cj['center_el'])
 
       cal_files[cp_file]['cal_date'] = f_date_str
       cal_files[cp_file]['cam_id'] = cam_id 
@@ -845,9 +856,9 @@ def cal_index(json_conf):
          cal_image_file = cp_file.replace("-calparams.json", ".png")
       if cfe(cal_image_file) == 0:
          print("IMG NOT FOUND:" , cal_image_file)
-      cal_grid_file = cal_image_file.replace(".png", "-azgrid.png")
-      if cfe(cal_grid_file) == 0:
-         print("GRID NOT FOUND:" , cal_grid_file)
+      cal_grid_file = cal_image_file.replace(".png", "-azgrid.jpg")
+      #if cfe(cal_grid_file) == 0:
+      #   print("GRID NOT FOUND:" , cal_grid_file)
 
       cal_files[cp_file]['cal_image_file'] = cal_image_file 
       cal_files[cp_file]['cal_grid_file'] = cal_grid_file 
@@ -863,13 +874,13 @@ def cal_index(json_conf):
          print("NO CAT STARS:", cp_file)
          cal_files[cp_file]['cat_image_stars'] = []
          cal_files[cp_file]['total_stars'] = 0
-      if "x_fun" in cj:
-         cal_files[cp_file]['x_fun'] = cj['x_fun']
-         cal_files[cp_file]['y_fun'] = cj['y_fun']
-         cal_files[cp_file]['x_fun_fwd'] = cj['x_fun_fwd']
-         cal_files[cp_file]['y_fun_fwd'] = cj['y_fun_fwd']
-      else:
-         print("No xfun?", cal_files[cp_file]['base_dir'])
+      #if "x_fun" in cj:
+      #   cal_files[cp_file]['x_fun'] = cj['x_fun']
+      #   cal_files[cp_file]['y_fun'] = cj['y_fun']
+      #   cal_files[cp_file]['x_fun_fwd'] = cj['x_fun_fwd']
+      #   cal_files[cp_file]['y_fun_fwd'] = cj['y_fun_fwd']
+      #else:
+      #   print("No xfun?", cal_files[cp_file]['base_dir'])
          #cmd = "rm -rf " + cal_files[cp_file]['base_dir']
          #os.system(cmd)
          #print(cmd)
