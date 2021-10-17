@@ -2192,7 +2192,7 @@ def check_all(json_conf, cam_id=None):
          print (cal_file, cp['total_res_px'], cp['total_res_deg'])
 
 def refit_all(json_conf, cam_id=None, type="all"):
-   cores = 1 
+   cores = 1
    if "limit" in type :
       tt, lim = type.split("_")
    if cam_id is not None and cam_id != 'all':
@@ -3185,6 +3185,8 @@ def refit_best(cam,json_conf):
       os.system(cmd)
 
 def make_lens_model(cam, json_conf, merged_stars=None):
+   make_cal_plots(cam, json_conf)
+   exit()
    cal_dir = "/mnt/ams2/cal/"
    mcp_file = cal_dir + "multi_poly-" + STATION_ID + "-" + cam + ".info"
    mcp = load_json_file(mcp_file)
@@ -3306,6 +3308,154 @@ def deep_calib_init(cam,json_conf):
    print("SAVED:", mcp_file)
    print("SAVED:", star_db_file)
    make_lens_model(cam, json_conf, merged_stars)
+
+def make_cal_plots(in_cam_id, json_conf):
+   bad_cals = {}
+   temp = load_json_file("/mnt/ams2/cal/freecal_index.json")
+   day_log = {}
+   all_cals = []
+   for key in temp:
+      keyfn = key.split("/")[-1]
+      cal_id = key.split("/")[-2]
+      if "cam_id" not in temp[key]:
+         print("NO CAM ID:", temp[key])
+         bad_cals[cal_id] = {}
+         continue
+      cam_id = temp[key]['cam_id']
+      cal_date = keyfn[0:10] 
+      if cam_id not in day_log:
+         day_log[cam_id] = {}
+      if cal_date not in day_log[cam_id]:
+         day_log[cam_id][cal_date] = {}
+      stars = temp[key]['total_stars']
+      res_px = temp[key]['total_res_px']
+      az = temp[key]['center_az']
+      el = temp[key]['center_el']
+      pixscale = temp[key]['pixscale']
+      position_angle = temp[key]['position_angle']
+      if res_px > 0:
+         score = stars / res_px
+      else:
+         res_px = 9999
+
+      if stars == 0 or res_px == 0 or res_px > 20:
+         bad_cals[cal_id] = {}
+      else:
+         if cam_id == in_cam_id: 
+            all_cals.append((cal_id, cam_id, cal_date, az, el, pixscale, position_angle, stars, res_px, score))
+
+   all_cals = sorted(all_cals, key=lambda x: x[2], reverse=True)
+
+   dates = [row[2] for row in all_cals]
+   azs = [row[3] for row in all_cals]
+   els = [row[4] for row in all_cals]
+   pos = [row[6] for row in all_cals]
+   pix = [row[5] for row in all_cals]
+   strs = [row[7] for row in all_cals]
+   rez = [row[8] for row in all_cals]
+   print("DATES:", dates)
+
+   import matplotlib
+   matplotlib.use('Agg')
+   import matplotlib.pyplot as plt
+   from matplotlib.pyplot import figure
+   from mpl_toolkits.mplot3d import Axes3D
+   import matplotlib.dates as mdates
+
+   if cfe("/mnt/ams2/cal/plots/", 1) == 0:
+      os.makedirs("/mnt/ams2/cal/plots/")
+
+   fig, ax = plt.subplots(6)
+   fig.autofmt_xdate()
+   fig.set_figheight(13)
+   fig.tight_layout(pad=3)
+   #fig.suptitle(cam_id + " Calibration Values Over Time", fontsize=14)#KMeans
+   ax[0].scatter(dates, azs,
+          edgecolor="k" )
+   ax[0].set_title(in_cam_id + " Center Azimuth ")
+   ax[0].set_xticks(ax[0].get_xticks()[::50])
+   ax[0].fmt_xdata = mdates.DateFormatter('%Y_%m_%d')
+
+
+   ax[1].scatter(dates, els,
+          edgecolor="k" )
+   ax[1].set_title(in_cam_id + " Center Elevation ")
+   ax[1].set_xticks(ax[1].get_xticks()[::50])
+   ax[1].fmt_xdata = mdates.DateFormatter('%Y_%m_%d')
+
+   ax[2].scatter(dates, pos,
+          edgecolor="k" )
+   ax[2].set_title(in_cam_id + " Position Angle ")
+   ax[2].set_xticks(ax[2].get_xticks()[::50])
+   ax[2].fmt_xdata = mdates.DateFormatter('%Y_%m_%d')
+
+   ax[3].scatter(dates, pix,
+          edgecolor="k" )
+   ax[3].set_title(in_cam_id + " Pixel Scale ")
+   ax[3].set_xticks(ax[3].get_xticks()[::50])
+   ax[3].fmt_xdata = mdates.DateFormatter('%Y_%m_%d')
+
+   ax[4].scatter(dates, rez,
+          edgecolor="k" )
+   ax[4].set_title(in_cam_id + " Residual Error")
+   ax[4].set_xticks(ax[4].get_xticks()[::50])
+   ax[4].fmt_xdata = mdates.DateFormatter('%Y_%m_%d')
+
+   ax[5].scatter(dates, strs,
+          edgecolor="k" )
+   ax[5].set_title(in_cam_id + " Total Stars")
+   ax[5].set_xticks(ax[5].get_xticks()[::50])
+   ax[5].fmt_xdata = mdates.DateFormatter('%Y_%m_%d')
+
+
+
+   if cfe("/mnt/ams2/cal/plots/", 1) == 0:
+      os.makedirs("/mnt/ams2/cal/plots/")
+   plt.savefig("/mnt/ams2/cal/plots/" + in_cam_id + "_AZ-TIME.png")
+
+
+
+   print("SAVED /mnt/ams2/cal/plots/" + in_cam_id + "_AZ-TIME.png")
+
+
+def move_extra_cals(json_conf):
+   bad_dir = "/mnt/ams2/cal/bad_cals/"
+   extra_dir = "/mnt/ams2/cal/extra_cals/"
+   best_dir = "/mnt/ams2/cal/best_cals/"
+   if cfe(bad_dir,1) == 0:
+      os.makedirs(bad_dir)
+   if cfe(extra_dir,1) == 0:
+      os.makedirs(extra_dir)
+   if cfe(best_dir,1) == 0:
+      os.makedirs(best_dir)
+
+   temp = load_json_file("/mnt/ams2/cal/freecal_index.json")
+   all_cals = []
+   day_log = {}
+   bad_cals = {}
+   for key in temp:
+      keyfn = key.split("/")[-1]
+      cal_id = key.split("/")[-2]
+      if "cam_id" not in temp[key]:
+         print("NO CAM ID:", temp[key])
+         bad_cals[cal_id] = {}
+         continue
+      cam_id = temp[key]['cam_id']
+      cal_date = keyfn[0:10] 
+      if cam_id not in day_log:
+         day_log[cam_id] = {}
+      if cal_date not in day_log[cam_id]:
+         day_log[cam_id][cal_date] = {}
+
+
+   if cfe("/mnt/ams2/cal/plots/", 1) == 0:
+      os.makedirs("/mnt/ams2/cal/plots/")
+   plt.savefig("/mnt/ams2/cal/plots/" + in_cam_id + "_AZ-TIME.png")
+
+
+
+   print("SAVED /mnt/ams2/cal/plots/" + in_cam_id + "_AZ-TIME.png")
+
 
 def move_extra_cals(json_conf):
    bad_dir = "/mnt/ams2/cal/bad_cals/"
@@ -6713,8 +6863,8 @@ def pair_stars(cal_params, cal_params_file, json_conf, cal_img=None, show = 0):
 
          lxs = [ix,1920/2]
          lys = [iy,1080/2]
-         dist_to_line = poly_fit_check(lxs,lys, new_cat_x,new_cat_y)
-         dist_to_line2 = poly_fit_check(lxs,lys, new_x,new_y)
+         #dist_to_line = poly_fit_check(lxs,lys, new_cat_x,new_cat_y)
+         #dist_to_line2 = poly_fit_check(lxs,lys, new_x,new_y)
          #cv2.circle(temp_img,(six,siy), 7, (128,128,128), 1)
          #cv2.circle(temp_img,(int(new_cat_x),int(new_cat_y)), 7, (255,128,128), 1)
          #cv2.circle(temp_img,(int(new_x),int(new_y)), 7, (128,128,255), 1)
