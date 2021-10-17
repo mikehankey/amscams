@@ -2551,7 +2551,7 @@ def refit_fov(cal_file, json_conf, mov_frame_num=0):
    best_user_stars = []
    for data in cal_params['cat_image_stars']:
       dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist,bp = data 
-      if data[15] < np.median(rez) * 4:
+      if data[15] < np.median(rez) * 2:
          print("KEEP:", data)
          best_stars.append(data)
          best_user_stars.append((six,siy,bp))
