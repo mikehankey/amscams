@@ -1661,9 +1661,14 @@ def reverse_map(json_conf):
    print(rev_save_js)
 
 def make_gnome_map(file, json_conf,asimg=None,ascp=None,maps=None):
+   if maps is None:
+      maps = {}
+
    asmap = []
+   cc = 0
    img = cv2.imread(file)
    (f_datetime, this_cam, f_date_str,y,m,d, h, mm, s) = convert_filename_to_date_cam(file)
+
    small_img = cv2.resize(img, (int(1920/2), int(1080/2)))
    jd = datetime2JD(f_datetime, 0.0)
    hour_angle = JD2HourAngle(jd)
@@ -1736,7 +1741,8 @@ def make_gnome_map(file, json_conf,asimg=None,ascp=None,maps=None):
             if cc % 100000 == 0:
                print("100k pixels done.", cc)
             cc += 1
-
+   maps[cam] = asmap
+   return(asmap)
 
 
 
@@ -1787,7 +1793,7 @@ def flatten_image(file, json_conf,asimg=None,ascp=None,maps=None):
       asimg, ascp = all_sky_image(file, cal_params.copy(), json_conf, pxscale_div)
 
    if maps is None:
-      make_gnome_map(file, json_conf,None,None,None)
+      maps = make_gnome_map(file, json_conf,None,None,None)
       print("MAKE MAPS?")
 
    if cfe(save_file) == 1: 
@@ -6810,6 +6816,39 @@ def get_catalog_stars(cal_params, force=0):
    #print("CATALOG STARS:", len(catalog_stars))
       
    return(catalog_stars)
+
+def project_image(meteor_file, json_conf):
+   hd_datetime, hd_cam, hd_date, hd_y, hd_m, hd_d, hd_h, hd_M, hd_s = convert_filename_to_date_cam(meteor_file)
+
+   if cfe(meteor_file) == 1:
+      mj = load_json_file(meteor_file)
+      
+      img = cv2.imread(mj['hd_stack'])
+   
+   proj_dir = "/mnt/ams2/cal/proj/"
+   if cfe(proj_dir,1) == 0:
+      os.makedirs(proj_dir)
+   proj_file = proj_dir + hd_cam + "_proj.pkl"
+   #out = open(proj_file, "w")
+
+   hash_dict = {}
+   for ix in range(0,img.shape[1]):
+      for iy in range(0,img.shape[0]):
+         key = str(ix) + "_" + str(iy)
+         new_x, new_y, img_ra,img_dec, img_az, img_el = XYtoRADec(ix,iy,meteor_file,mj['cp'],json_conf)
+         hash_dict[key]  = [new_x, new_y, img_az, img_el ]
+         if iy % 100 == 0:
+            print(ix, iy, new_x, new_y, img_ra, img_dec, img_az, img_el)
+         
+         #data = [ix, iy, new_x, new_y, img_ra, img_dec, img_az, img_el]
+         #out.write(str(data) + "\n")
+   #out.close()         
+   save_hash(hash_dict,proj_file)
+   print("saved ", proj_file)
+
+def save_hash(obj, proj_file):
+   with open(proj_file, 'wb') as f:
+      pickle.dump(obj, f, pickle.HIGHEST_PROTOCOL) 
 
 def default_cal_params(cal_params,json_conf):
    
