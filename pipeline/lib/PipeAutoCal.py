@@ -3210,13 +3210,15 @@ def deep_calib_init(cam,json_conf):
             if math.isnan(data['total_res_px']) is False:
                cal_index.append(data)
 
-   cal_index = sorted(cal_index, key=lambda x: x['total_stars'], reverse=False)
+   cal_index = sorted(cal_index, key=lambda x: x['total_stars'], reverse=True)
 
    #try to get 100 stars and then be done
    all_stars = []
    max_try = 5
    for data in cal_index:
       #print(data, data['total_res_px'])
+      if cfe(data['key']) == 0:
+         continue
       cp = load_json_file(data['key'])
       print("./Process.py refit " + data['key'])
       #exit()
