@@ -186,7 +186,7 @@ def cfe(file,dir = 0):
 def load_json_file(json_file):  
    #try:
    if True:
-      print("Trying:", json_file)
+      #print("Trying:", json_file)
       with open(json_file, 'r' ) as infile:
          json_data = json.load(infile)
    #except:
