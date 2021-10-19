@@ -1,4 +1,5 @@
 #!/usr/bin/python3
+import subprocess
 import requests
 import json
 from pathlib import Path
@@ -22,6 +23,15 @@ class AS7Setup():
       self.setup_file = "/home/ams/amscams/conf/setup.json"
       if self.cfe(self.setup_file) == 1:
          self.user_data = self.load_json_file(self.setup_file)
+         if "pin_code" in self.user_data:
+            self.pin_code = self.user_data['pin_code']
+         else:
+            self.pin_code = None
+         if "station_id" in self.user_data:
+            self.station_id = self.user_data['station_id']
+         else:
+            self.station_id = None
+
       else:
          self.user_data = {}
       print(username)
@@ -33,16 +43,65 @@ class AS7Setup():
          os.system("cd /home/ams/amscams/install && sudo python3 AS7Setup.py")
 
          exit()
-      print("RUN AS ROOT")
-      input()
+      print("RUNNING AS ROOT")
       if self.cfe(self.setup_file) == 0:
          self.setup_data = {}
       else:
          try:
-            input("Trying" + self.setup_file)
+            #input("Trying" + self.setup_file)
             self.setup_data = self.load_json_file(self.setup_file)
          except:
-            input("Failed to load" + self.setup_file)
+            print("Failed to load" + self.setup_file)
+            exit()
+
+   def start_up(self):
+      # check a few things. 
+      # 1 - is this a new install or an existing install?
+      # 2 - is there any setup info available
+      # 3 - if the station_id and pin_code is not present ask for that first. 
+      if os.path.isfile("../conf/as6.json") == 1:
+         print("Local conf file exists.")
+         self.json_conf = self.load_json_file("../conf/as6.json")
+         needs_setup = 0
+      else:
+         self.json_conf = {}
+         self.json_conf['site'] = {}
+         self.json_conf['cameras'] = {}
+         self.json_conf['setup'] = {}
+      if "setup" not in self.json_conf:
+         print("MISSING SETUP")
+         needs_setup = 1
+      elif "pin_code" not in self.json_conf['setup']:
+         print("MISSING PIN")
+         needs_setup = 1
+
+      if "ams_id" not in self.json_conf['site'] or needs_setup == 1:
+         print("MISSING AMS ID")
+         print("JS:", self.json_conf)
+         self.station_id = input("Enter the station ID (AMS??):")
+         self.pin_code = input("Enter the station PIN code:")
+         self.user_data['pin_code'] = self.pin_code
+         self.user_data['station_id'] = self.station_id
+         self.json_conf['setup'] = {}
+         self.json_conf['setup']['pin_code'] = self.user_data['pin_code']
+         self.json_conf['setup']['station_id'] = self.user_data['station_id']
+         self.json_conf['site']['ams_id'] = self.user_data['station_id']
+         needs_setup = 1
+      else:
+         self.station_id = self.json_conf['site']['ams_id']
+         print("Station ID:", self.station_id)
+         self.json_conf['site']['ams_id'] = self.station_id
+      
+      if needs_setup == 1:
+         register_resp = self.register_station()
+         print(register_resp)
+         self.json_conf['register_resp'] = register_resp
+         self.save_json_file("../conf/as6.json", self.json_conf)
+      else:
+         print("Already registered.")
+      self.save_json_file("../conf/setup.json", self.user_data)
+      self.UI()
+   
 
    def auth_station(self):
       url = self.API_URL + "?cmd=setup_device&station_id=" + self.station_id + "&pin_code=" + self.pin_code 
@@ -60,11 +119,13 @@ class AS7Setup():
       backup_disk_setup = FunctionItem("SETUP DATA-BACKUP DISK", self.backup_disk_install)
       allsky_account_setup = FunctionItem("ALLSKY NETWORK ACCOUNT SIGNUP", self.allsky_account_signup)
       register_setup = FunctionItem("REGISTER STATION", self.register_station)
+      setup_dirs_and_config = FunctionItem("SETUP CONFIG", self.setup_dirs_and_config)
       menu.append_item(allsky_account_setup)
       menu.append_item(register_setup)
       menu.append_item(check_install)
       menu.append_item(network_int)
       menu.append_item(data_disk_setup)
+      menu.append_item(setup_dirs_and_config)
       menu.show()      
 
    def save_setup(self):
@@ -83,20 +144,231 @@ class AS7Setup():
 
    def data_disk_install(self):
       Screen().input("DATA DISK MANAGER.")
+      confirm = input("Do you want to format data drive (all data will be lost!) Must type YES.")
+      if confirm == "YES":
+         output = subprocess.check_output("lsblk | grep sd ", shell=True).decode("utf-8")
+         #Filesystem                 Size  Used Avail Use% Mounted on
+
+         for line in output.split("\n"):
+            print(line)
+         drive = input("Enter the drive label (sdX) to format. Should be the large size drive!")
+         cmd = "sudo mkfs -t ext4 /dev/" + drive
+         print(cmd)
+         confirm = input("are you sure you ant to run this command? (last chance to quit.)")
+         if confirm == "YES":
+            print("Formatting drive...")
+            os.system(cmd)
+            input("Press [ENTER] to continue")
+            output = subprocess.check_output("blkid | grep " + drive , shell=True).decode("utf-8")
+            if drive in output:
+               print("Drive added.")
+               print(output)
+               el = output.split("\"")
+               uuid = el[1]
+               fstab = "UUID=" + uuid + " /mnt/ams2               ext4    errors=continue 0       1"
+               print("**** ADD THIS LINE TO /etc/fstab ****")
+               cmd = "cat /etc/fstab |grep -v ams2 > temp-fstab"
+               print(cmd)
+               os.system(cmd)
+
+               cmd = "echo '" + fstab + "' >> ./temp-fstab"
+               print(cmd)
+               os.system(cmd)
+
+               cmd = "mv ./temp-fstab /etc/fstab " 
+               os.system(cmd)
+               print("Updated fstab, remounting drives.\n")
+               os.system("mount -a")
+               print("SHOWING ALL DRIVES. (You should see /mnt/ams2 in the list)")
+               os.system("df -h")
+               print("")
+
+         else:
+            print("Aborted. Should have typed YES")
+
+
+      else:
+         print("Aborted")
+
+      print("Completed disk format [ENTER] to continue..")
+      input()
+
+   def setup_as6_conf(self):
+      #ams_id = input("Enter the AMS ID for this install. (AMSX)")
+      #cam6_or7 = input("Is this a cam6 or cam7 install? (6 or 7)")
+      cam6_or7 = 7
+      if len(self.station_id) == 6:
+         starting_cams_id = "01" + self.station_id + "1"
+      if len(self.station_id) == 5:
+         starting_cams_id = "01" + self.station_id + "01"
+      if len(self.station_id) == 4:
+         starting_cams_id = "01" + self.station_id + "001"
+      starting_cams_id = int(starting_cams_id.replace("AMS", ""))
+
+      operator_name = input("Enter Operator Name")
+      operator_email = input("Enter Operator Email")
+      operator_city = input("Enter Operator City")
+      operator_state = input("Enter Operator State (or Region)")
+      operator_country = input("Enter Operator Country")
+      obs_name = input("Enter Operator Observatory Name")
+      device_lat = input("Enter Device Lat as decimal")
+      device_lon = input("Enter Device Lon as decimal")
+      device_alt = input("Enter Device Altitude above sea level in meters")
+      pwd = input("Enter Operator Password")
+
+      #json_conf = load_json_file("/home/ams/amscams/conf/as6.json.default")
+
+      self.json_conf['flask_admin'] = 1
+      self.json_conf['cloud_dir'] = "/mnt/archive.allsky.tv"
+      self.json_conf['cloud_latest'] = 1
+      self.json_conf['dynamodb'] = {}
+      self.json_conf['site']['API_HOST'] = "52.27.42.7"
+      self.json_conf['site']['api_key'] = "123"
+      self.json_conf['site']['pwd'] = pwd
+      self.json_conf['site']['ams_id'] = self.station_id
+      self.json_conf['site']['operator_name'] = operator_name
+      self.json_conf['site']['operator_email'] = operator_email
+      self.json_conf['site']['operator_city'] = operator_city
+      self.json_conf['site']['operator_state'] = operator_state
+      self.json_conf['site']['operator_country'] = operator_country
+      self.json_conf['site']['obs_name'] = obs_name
+      self.json_conf['site']['device_lat'] = device_lat
+      self.json_conf['site']['device_lng'] = device_lon
+      self.json_conf['site']['device_alt'] = device_alt
+
+      cameras = {}
+      cam_start = int(starting_cams_id)
+      total_cams = int(cam6_or7)
+      cc = 1
+      for cams_id in range(cam_start, cam_start + total_cams):
+         cam_id = '{:06d}'.format(cams_id)
+         print(cam_id)
+         ip_id = 70 + cc
+         cam_ip = "192.168.76." + str(ip_id)
+         key = "cam" + str(cc)
+         cameras[key] = {}
+         cameras[key]['cams_id'] = cam_id
+         cameras[key]['cam_version'] = "2"
+         cameras[key]['ip'] = cam_ip
+         cameras[key]['sd_url'] = "/user=admin&password=&channel=1&stream=1.sdp"
+         cameras[key]['hd_url'] = "/user=admin&password=&channel=1&stream=0.sdp"
+         cameras[key]['masks'] = {}
+         cameras[key]['masks']['mask0'] = "0,0,0,0"
+         cameras[key]['hd_masks'] = {}
+         cameras[key]['hd_masks']['hd_mask0'] = "0,0,0,0"
+         cc += 1
+         #if self.cfe("/home/ams/amscams/conf/mask-" + cam_id + ".txt") == 0:
+         #   os.system("echo '0,0,0,0' > /home/ams/amscams/conf/mask-" + cam_id + ".txt")
+
+      self.json_conf['cameras'] = cameras
+      save_file = input("Do you want to save the conf file?")
+      if save_file == "Y" or save_file == "y" or "Y" in save_file or "y" in save_file:
+         self.save_json_file("/home/ams/amscams/conf/as6.json", self.json_conf)
+         print("conf file saved.")
+
+   def setup_dirs_and_config(self):
+      # install crons
+      os.system("./update-cron.sh")
+      os.system("./update-flask-assets.sh")
+      if "proc_dir" not in self.json_conf['site']:
+         self.json_conf['site']['proc_dir'] = "/mnt/ams2/SD/proc2/"
+         self.save_json_file("../conf/as6.json", self.json_conf) 
+         input("UPDATED PROC DIR?")
+      ams_id = self.station_id
+      if self.cfe("/mnt/ams2",1) == 0:
+         os.makedirs("/mnt/ams2")
+      if self.cfe("/mnt/ams2/logs",1) == 0:
+         os.makedirs("/mnt/ams2/logs")
+      if self.cfe("/mnt/ams2/backup",1) == 0:
+         os.makedirs("/mnt/ams2/backup")
+      if self.cfe("/mnt/ams2/SD",1) == 0:
+         os.makedirs("/mnt/ams2/SD")
+      if self.cfe("/mnt/ams2/latest",1) == 0:
+         os.makedirs("/mnt/ams2/latest")
+      if self.cfe("/mnt/ams2/SD/proc2",1) == 0:
+         os.makedirs("/mnt/ams2/SD/proc2")
+      if self.cfe("/mnt/ams2/SD/proc2/daytime",1) == 0:
+         os.makedirs("/mnt/ams2/SD/proc2/daytime")
+      if self.cfe("/mnt/ams2/SD/proc2/json",1) == 0:
+         os.makedirs("/mnt/ams2/SD/proc2/json")
+      if self.cfe("/mnt/ams2/HD",1) == 0:
+         os.makedirs("/mnt/ams2/HD")
+      if self.cfe("/mnt/ams2/trash",1) == 0:
+         os.makedirs("/mnt/ams2/trash")
+      if self.cfe("/mnt/ams2/temp",1) == 0:
+         os.makedirs("/mnt/ams2/temp")
+      if self.cfe("/mnt/ams2/CAMS",1) == 0:
+         os.makedirs("/mnt/ams2/CAMS")
+      if self.cfe("/mnt/ams2/CAMS/queue",1) == 0:
+         os.makedirs("/mnt/ams2/CAMS/queue")
+      if self.cfe("/mnt/ams2/CACHE/",1) == 0:
+         os.makedirs("/mnt/ams2/CACHE")
+      if self.cfe("/mnt/ams2/meteor_archive/",1) == 0:
+         os.makedirs("/mnt/ams2/meteor_archive")
+      if self.cfe("/mnt/ams2/meteor_archive/" + ams_id ,1) == 0:
+         os.makedirs("/mnt/ams2/meteor_archive/" + ams_id)
+      if self.cfe("/mnt/ams2/meteor_archive/" + ams_id + "/METEOR",1) == 0:
+         os.makedirs("/mnt/ams2/meteor_archive/" + ams_id + "/METEOR")
+      if self.cfe("/mnt/ams2/meteor_archive/" + ams_id + "/CAL",1) == 0:
+         os.makedirs("/mnt/ams2/meteor_archive/" + ams_id + "/CAL")
+      if self.cfe("/mnt/ams2/meteor_archive/" + ams_id + "/DETECTS",1) == 0:
+         os.makedirs("/mnt/ams2/meteor_archive/" + ams_id + "/DETECTS")
+      if self.cfe("/mnt/ams2/meteor_archive/" + ams_id + "/NOAA",1) == 0:
+         os.makedirs("/mnt/ams2/meteor_archive/" + ams_id + "/DETECTS/MI")
+      if self.cfe("/mnt/ams2/meteor_archive/" + ams_id + "/NOAA",1) == 0:
+         os.makedirs("/mnt/ams2/meteor_archive/" + ams_id + "/DETECTS/PREVIEW")
+      if self.cfe("/mnt/ams2/meteor_archive/" + ams_id + "/NOAA",1) == 0:
+         os.makedirs("/mnt/ams2/meteor_archive/" + ams_id + "/NOAA")
+      print("MK2")
+      #if self.cfe("/mnt/archive.allsky.tv/", 1) == 0:
+      #   os.makedirs("/mnt/archive.allsky.tv")
+
+      if self.cfe("/mnt/ams2/cal/",1) == 0:
+         os.makedirs("/mnt/ams2/cal")
+      if self.cfe("/mnt/ams2/cal/hd_images",1) == 0:
+         os.makedirs("/mnt/ams2/cal/hd_images")
+      if self.cfe("/mnt/ams2/cal/freecal",1) == 0:
+         os.makedirs("/mnt/ams2/cal/freecal")
+      if self.cfe("/mnt/ams2/meteors",1) == 0:
+         os.makedirs("/mnt/ams2/meteors")
+      if self.cfe("/mnt/ams2/latest",1) == 0:
+         os.makedirs("/mnt/ams2/latest")
+      if self.cfe("/home/ams/tmpvids",1) == 0:
+         os.makedirs("/home/ams/tmpvids")
+      print("MK3")
+      #os.system("chown -R " + USER + ":" + GROUP  + " /mnt/ams2")
+      #os.system("chown -R " + USER + ":" + GROUP  + " /home/ams/tmpvids")
+      #os.system("chown -R " + USER + ":" + GROUP  + " /mnt/archive.allsky.tv")
+      print("Make index")
+      os.system("cd /home/ams/amscams/pythonv2; ./batchJobs.py fi")
+      os.system("cd /home/ams/amscams/pythonv2; python3 Create_Archive_Index.py 2020 ")
+      os.system("umount /mnt/archive.allsky.tv")
+      os.system("chown -R ams /mnt/ams2")
+      os.system("chown -R ams /home/ams")
+      os.system("chown -R ams /mnt/archive.allsky.tv")
+
+      print("FINISHED MAKING DATA DIRS.")
+      Screen().input("Press [ENTER] to continue.")
+      self.setup_as6_conf()
+      input("[ENTER] to continue")
 
    def backup_disk_install(self):
       Screen().input("DATA DISK MANAGER.")
 
-   def register_station(self):
+
+   def register_station(self ):
       print("REGISTER/SETUP STATION")
-      self.station_id = Screen().input("ENTER THE AMS ID ASSIGNED TO YOUR STATION.")
-      self.pin_code = Screen().input("ENTER THE PIN CODE GIVEN TO YOU WITH YOUR AMS ID.")
+
+      if self.station_id is None:
+         self.station_id = Screen().input("ENTER THE AMS ID ASSIGNED TO YOUR STATION.")
+      if self.pin_code is None:
+         self.pin_code = Screen().input("ENTER THE PIN CODE GIVEN TO YOU WITH YOUR AMS ID.")
       print("AMS ID:", self.station_id)
       print("PIN CODE:", self.pin_code)
       resp = self.auth_station()
       if (resp['msg']) != "Station PIN Matched":
          input("Register Station Failed. Please try again or contact support.")
-         return()
+         exit()
       else:
          if "username" not in resp['station_data']:
             new_allsky = 1
@@ -108,15 +380,18 @@ class AS7Setup():
             new_allsky = self.setup_allsky_account()
  
          print("Register Message:", resp['msg'])
-         print("Current Station Data:" )
-         for key in resp['station_data']:
-            if key != 'cameras' and key != 'monitor' and key != 'registration':         
-               print(key, resp['station_data'][key])
-         print("NEW ALLSKY SETUP? ", new_allsky, resp['station_data']['username']) 
-         input("Review current station info. If it is incomplete or incorrect update it in the web admin config area.")
+      return(resp) 
 
+         #print("Current Station Data:" )
+         #for key in resp['station_data']:
+         #   if key != 'cameras' and key != 'monitor' and key != 'registration':         
+         #      print(key, resp['station_data'][key])
+         #print("NEW ALLSKY SETUP? ", new_allsky, resp['station_data']['username']) 
+         #input("Review current station info. If it is incomplete or incorrect update it in the web admin config area.")
+      
    def setup_allsky_account(self):
       print("ALLSKY NETWORK ACCOUNT SETUP") 
+      choice = "1"
       if len(self.user_data) > 0:
          print("DATA FROM PREVIOUS SESSION IS SAVED.")
          for key in self.user_data:
@@ -124,6 +399,7 @@ class AS7Setup():
          if "submit_status" not in self.user_data:
             print("This data has not been submitted yet.")
             choice = input("Press [1] to edit the data or [2] to submit it for registration.")
+
       if choice == "1":      
          print("Enter a username to identify yourself on the network and use as a login for all stations and restricted areas of the network. For example: jsmith ") 
          self.user_data['username'] = input("ALLSKY NETWORK USERNAME:")
@@ -367,4 +643,8 @@ S = AS7Setup()
 S.NETPLAN = NETPLAN
 S.NETPLAN_WIFI = NETPLAN_WIFI
 S.NETPLAN_FILE = NETPLAN_FILE
+
+
+S.start_up()
+exit()
 S.UI()

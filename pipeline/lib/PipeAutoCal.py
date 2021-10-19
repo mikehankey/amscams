@@ -2449,7 +2449,7 @@ def refit_fov(cal_file, json_conf, mov_frame_num=0):
       print(cp)
       return()
    else:
-      print("CAT STARS:", len(cat_stars))
+      print("BEFORE PERFECT CAT STARS:", len(cat_stars))
    perfect_user_stars, perfect_cat_stars = debug_star_image(img, cat_stars, cal_file)
 
    cal_params['user_stars'] = perfect_user_stars
@@ -2606,6 +2606,11 @@ def refit_fov(cal_file, json_conf, mov_frame_num=0):
    cal_params = pair_stars(cal_params, image_file, json_conf, gray_img)
    # REMOVE THE WORST!
    rez = [row[15] for row in cal_params['cat_image_stars']]
+   std_res = np.std(rez)
+   mean_res = np.mean(rez)
+   print(rez)
+   print("STD RES:", std_res)
+   print("MEAN RES:", std_res)
    best_stars = []
    best_user_stars = []
    arez = np.median(rez)
@@ -2619,8 +2624,8 @@ def refit_fov(cal_file, json_conf, mov_frame_num=0):
       multi = 4 
    for data in cal_params['cat_image_stars']:
       dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist,bp = data 
-      #if data[15] < np.median(rez) * multi:
-      if True:
+      if data[15] < np.mean(rez) + std_res:
+      #if True:
          best_stars.append(data)
          best_user_stars.append((six,siy,bp))
 
@@ -4790,7 +4795,7 @@ def eval_cal_res(cp_file,json_conf,nc=None,oimg=None, mask_img=None,batch_mode=N
    #print(float(cal_params['dec_center']))
    #print(float(cal_params['position_angle']))
    #print(px_per_degree)
-
+   nc['no_match_stars'] = []
 
    for star in nc['cat_image_stars']:
       dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist,star_int = star
@@ -4808,6 +4813,8 @@ def eval_cal_res(cp_file,json_conf,nc=None,oimg=None, mask_img=None,batch_mode=N
    marked_img = None
    nc['match_perc'] = 1
    nc['total_res_px'] = float(np.mean(rez))
+   marked_img = view_calib(cp_file,json_conf,nc,oimg)
+
    #print("SUM REZ:", sum(rez))
    #print("MEAN REZ:", np.mean(rez))
    print("EVAL", len(nc['cat_image_stars']), nc['total_res_px'])
@@ -4853,6 +4860,10 @@ def eval_cal_res(cp_file,json_conf,nc=None,oimg=None, mask_img=None,batch_mode=N
    #print("SUM REZ:", sum(rez))
    #print("MEAN REZ:", np.mean(rez))
    print("EVAL", len(nc['cat_image_stars']), nc['total_res_px'])
+
+   #if SHOW == 1:
+
+
    return(nc, bad_stars, marked_img)
 
 def eval_cal(cp_file,json_conf,nc=None,oimg=None, mask_img=None,batch_mode=None,short_bright_stars=None):
@@ -5890,11 +5901,12 @@ def debug_star_image(color_img, cat_stars, cal_file):
    magnify = 25
    console_img = np.zeros((1080,1920,3),dtype=np.uint8)
    gray_img = cv2.cvtColor(color_img, cv2.COLOR_BGR2GRAY)
-   cat_stars = sorted(cat_stars, key=lambda x: x[1], reverse=False)[:100]
+   cat_stars = sorted(cat_stars, key=lambda x: x[1], reverse=False)[:300]
    gray_h, gray_w = gray_img.shape[:2]
    perfect_stars = []
    perfect_user_stars = []
    tres = 0
+   print("CAT STARS:", len(cat_stars))
    for cat_star in cat_stars:
       (name,mag,ra,dec,new_cat_x,new_cat_y) = cat_star
       orig_new_cat_x = new_cat_x
@@ -7164,7 +7176,7 @@ def get_catalog_stars(cal_params, force=0):
          name = name.decode("utf-8")
 
       ang_sep = angularSeparation(ra,dec,RA_center,dec_center)
-      if ang_sep < fov_radius and float(mag) <= 5.5:
+      if ang_sep < fov_radius and float(mag) <= 6:
          sbs.append((name, name, ra, dec, mag))
          new_cat_x, new_cat_y = distort_xy(0,0,ra,dec,RA_center, dec_center, x_poly, y_poly, x_res, y_res, pos_angle_ref,F_scale)
 
@@ -9504,7 +9516,7 @@ def get_contours_in_image(frame ):
       #   cv2.rectangle(show_img, (x, y), (x+w, y+h), (255, 0, 0), 1)
       #   cv2.imshow("GET CNT", show_img)
 
-      if w > 1 or h > 1:
+      if w >= 1 or h >= 1:
          cx = x + (w / 2)
          cy = y + (h / 2)
          adjx = cx - (iw/2)
