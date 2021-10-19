@@ -1979,7 +1979,6 @@ def guess_cal(cal_file, json_conf, cal_params = None):
          print("Minimize with these values!")
          guessing = 1
          cp = minimize_fov(cal_file, last_cal, cal_file,orig_img.copy(),json_conf )
-      print("Got input.")
       print("AZ:", az_guess)    
       print("EL:", el_guess)    
       print("POS:", pos_ang_guess)    
@@ -2228,10 +2227,11 @@ def thin_out_cal_files(json_conf,cam_id, cal_files):
    for bad in bad_cals:
       bdir = bad.split("/")[-2]
       cdir = "/mnt/ams/cal/freecal/" + bdir
+      print("check", cdir)
       if cfe(cdir,1) == 1:
          cmd = "mv " + cdir + " /mnt/ams/cal/freecal/bad_cals/"
          print(cmd)
-         os.system(cmd)
+         #os.system(cmd)
          print("BAD:", bc, bad, bad_cals[bad])
       else:
          print("ALREADY MOVED.", cdir)
@@ -2243,6 +2243,8 @@ def thin_out_cal_files(json_conf,cam_id, cal_files):
    print("MED REZ:", med_rez)
    print("MED PIXS:", med_pixs)
    print("MED STARS:", med_stars)
+   print("QUIT EARLY!")
+   exit()
    temp = load_json_file("/mnt/ams2/cal/freecal_index.json")
    for df in deleted:
       if df in temp:
@@ -2254,7 +2256,12 @@ def thin_out_cal_files(json_conf,cam_id, cal_files):
 
 def refit_all(json_conf, cam_id=None, type="all"):
    #cores = 32 
-   cores = 1
+   if cfe("cores.json") == 1:
+      temp = load_json_file("cores.json")
+      cores = temp['cores']
+      print("USING CUSTOM CORES:", cores)
+   else:
+      cores = 1
    if "limit" in type :
       tt, lim = type.split("_")
    if cam_id is not None and cam_id != 'all':
@@ -2276,7 +2283,7 @@ def refit_all(json_conf, cam_id=None, type="all"):
          cal_index.append(data)
 
    #thin_out_cal_files(json_conf, cam_id, cal_index)
-   #exit()
+
    #cal_index = sorted(cal_index, key=lambda x: x['total_res_px'], reverse=True)
    cal_index = sorted(cal_index, key=lambda x: x['total_res_px'], reverse=True)
 
@@ -2286,7 +2293,10 @@ def refit_all(json_conf, cam_id=None, type="all"):
       cal_files = []
       for data in cal_index:
          key = data['key']
-         cal_files.append((key,0))
+         #if data['total_res_px'] > 1:
+         if data['total_stars'] < 40:
+            print("LOW STARS :", data['total_stars'])
+            cal_files.append((key,0))
       #temp = sorted(cal_files, key=lambda x: x[0], reverse=True)
       temp = cal_files
       count = 0
@@ -2663,7 +2673,6 @@ def refit_fov(cal_file, json_conf, mov_frame_num=0):
    cal_params['total_res_px'] = float(np.mean(rez))
    print("FILE RES vs RECALC RES:", ocp['total_res_px'], cal_params['total_res_px'])
    print("CAT IMAGE STARS:", len(cal_params['cat_image_stars']))
-   #exit()
 
    usc = len( cal_params['user_stars'])
    cisc = len( cal_params['cat_image_stars'])
@@ -2711,7 +2720,6 @@ def refit_fov(cal_file, json_conf, mov_frame_num=0):
  
          print("GUESS:", az_guess, el_guess, pos_ang_guess, pix_guess, cal_params['total_res_px'])
          print("GUESS:", cal_params)
-      #exit()
 
    if type(cal_params['x_poly']) is not list:
       cal_params['x_poly'] = cal_params['x_poly'].tolist()
@@ -2734,7 +2742,6 @@ def refit_fov(cal_file, json_conf, mov_frame_num=0):
    # use short cat stars for speed
    cal_params['short_bright_stars'] = short_bright_stars
    print("SHORT BRIGHT STARS:", len(cal_params['short_bright_stars']))
-   #exit()
    orig_cp = cal_params.copy()
    temp_cp = cal_params
 
@@ -2843,7 +2850,6 @@ def heal_cal(cal_file,json_conf,ci_data=None):
       cal_params = pair_stars(cal_params, cal_img_file, json_conf, img)
       save_json_file(cal_file, cal_params)
 
-   exit()
 
    # try to find a better pre-exisitng cal for this cal, if it is messed up or heal is on
    cal_index_file = "/mnt/ams2/meteor_archive/" + STATION_ID + "/CAL/" + STATION_ID + "_" + cam + "_CAL_INDEX.json"
@@ -4290,7 +4296,7 @@ def get_cal_files (meteor_file=None, cam=None):
          if cam == ccam:
             time_diff = f_datetime - c_datetime
             time_diff = abs(time_diff.total_seconds())
-            pos_files.append((cpf, abs(time_diff.total_seconds())))
+            pos_files.append((cpf, abs(time_diff)))
       else:
          time_diff = 0 
          if cam is None:
@@ -6040,7 +6046,6 @@ def debug_star_image(color_img, cat_stars, cal_file):
       #   fwhm1 = fwhm(int(perfect_star_img_big.shape[1]/2)+i, int(perfect_star_img_big.shape[0]/2), raw_perfect_star_img_big, "X")
       #for i in range(-50,50):
       #   fwhm1 = fwhm(int(perfect_star_img_big.shape[1]/2), int(perfect_star_img_big.shape[0]/2)+i, raw_perfect_star_img_big, "Y")
-      #input("WAIT?")
       console_img[0:big_h, gray_w-big_w-x_margin:gray_w-x_margin] = star_big
       console_img[big_h:big_h+big_h, gray_w-big_w-x_margin:gray_w-x_margin] = perfect_star_img_big 
       cv2.rectangle(console_img, (gray_w-big_w-x_margin, 0), (gray_w-x_margin, big_h), (255, 255, 255), 1)
@@ -7792,7 +7797,6 @@ def get_device_lat_lon(json_conf):
 
 def reduce_fov_pos(this_poly, az,el,pos,pixscale, x_poly, y_poly, cal_params_file, oimage, json_conf, paired_stars, user_stars, min_run = 1, show=0, field = None, short_bright_stars = None):
    #print("SHORT", len(short_bright_stars))
-   #input()
 
    global tries
    tries = tries + 1

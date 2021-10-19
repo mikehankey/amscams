@@ -3114,6 +3114,7 @@ def fireball_phase1(hd_frames, hd_color_frames, subframes,sum_vals,max_vals,pos_
    else:
       mask_img = None
    if mask_img is None:
+      print(mask_imgs)
       print("no mask")
       exit()
    objects = {}
@@ -7009,9 +7010,12 @@ def find_contours_in_frame(frame, thresh=25 ):
 
 def load_mask_imgs(json_conf):
    mask_files = glob.glob("/mnt/ams2/meteor_archive/" + json_conf['site']['ams_id'] + "/CAL/MASKS/*mask*.png" )
+   print("/mnt/ams2/meteor_archive/" + json_conf['site']['ams_id'] + "/CAL/MASKS/*mask*.png" )
    mask_imgs = {}
    sd_mask_imgs = {}
+   print("MASK FILES:", mask_files)
    for mf in mask_files:
+      print("MASK FILE:", mf)
       mi = cv2.imread(mf, 0)
       omh, omw = mi.shape[:2]
       fn,dir = fn_dir(mf)
@@ -7020,4 +7024,5 @@ def load_mask_imgs(json_conf):
       sd = cv2.resize(mi, (omw, omh))
       mask_imgs[fn] = mi
       sd_mask_imgs[fn] = sd
+
    return(mask_imgs, sd_mask_imgs)
