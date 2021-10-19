@@ -804,6 +804,18 @@ def cal_index(json_conf):
       cal_files = load_json_file("/mnt/ams2/cal/freecal_index.json")
    else:
       cal_files = {}
+
+   for cf in cal_files:
+      c_root = cf.split("/")[-2]
+      cal_dir = "/mnt/ams2/cal/freecal/" + c_root
+      if cal_dir not in freecal_dirs:
+         print("DEL CAL DIR IT HAS BEEN MOVED.", cal_dir)
+         del cal_files[cf]
+      else:
+         print(cal_dir, "is good")
+
+   #print("FCD:", freecal_dirs[0])
+
    print("Scanning cal dirs")
    total = len(freecal_dirs)
    cc = 0
