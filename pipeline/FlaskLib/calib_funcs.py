@@ -245,6 +245,18 @@ def cal_file(amsid, calib_file):
 
    return(template)
 
+def calib_main_new(amsid,in_data):
+   if in_data['cam_id_filter'] is not None:
+      cam_id_filter = in_data['cam_id_filter']
+   else: 
+      cam_id_filter = None
+   json_conf = load_json_file("../conf/as6.json")
+   template = make_default_template(amsid, "calib.html", json_conf)
+   out = "<h1> NEW CALIB MENU</h1>"
+   template = template.replace("{MAIN_TABLE}", out)
+
+   return(template)
+
 def calib_main(amsid,in_data):
    if in_data['cam_id_filter'] is not None:
       cam_id_filter = in_data['cam_id_filter']

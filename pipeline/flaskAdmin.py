@@ -5,7 +5,7 @@ from FlaskLib.Learning import learning_meteors_dataset
 from FlaskLib.motion_detects import motion_detects
 from FlaskLib.FlaskUtils import get_template
 from FlaskLib.api_funcs import update_meteor_points, show_cat_stars, delete_meteor, restore_meteor, delete_meteors, reduce_meteor, delete_frame, crop_video
-from FlaskLib.calib_funcs import calib_main, cal_file, show_masks, del_calfile, lens_model, edit_mask, edit_mask_points
+from FlaskLib.calib_funcs import calib_main, cal_file, show_masks, del_calfile, lens_model, edit_mask, edit_mask_points, calib_main_new
 from lib.PipeUtil import cfe, load_json_file, save_json_file
 from lib.PipePwdProtect import login_page, check_pwd_ajax
 from lib.PipeAutoCal import fn_dir
@@ -371,6 +371,12 @@ def cfile(amsid, calfile):
    out = cal_file(amsid, calfile)
    return out
 
+@app.route('/calib_new/<amsid>/', methods=['GET', 'POST'])
+@auth.login_required
+def calib(amsid):
+   req = {}
+   req['cam_id_filter'] = request.args.get('cam_id_filter')
+   out = calib_main_new(amsid,req)
 
 @app.route('/calib/<amsid>/', methods=['GET', 'POST'])
 @auth.login_required
