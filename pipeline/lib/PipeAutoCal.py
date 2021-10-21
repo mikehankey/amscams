@@ -3251,7 +3251,7 @@ def make_cal_summary(cam,json_conf):
    print(v_cal_time)
    print(v_grid)
    print(v_lens)
-   exit()
+   #exit()
    img = np.zeros((1080,1920,3),dtype=np.uint8) 
    mj = {}
    mj['cp'] = mcp
@@ -3282,15 +3282,12 @@ def make_cal_summary(cam,json_conf):
    print("SAVING:", grid_file)
    cv2.imwrite(grid_file, grid_image, [int(cv2.IMWRITE_JPEG_QUALITY), 70])
    cv2.imwrite(grid_tn_file, grid_tn,  [int(cv2.IMWRITE_JPEG_QUALITY), 70])
-
+   print("DONECAL SUMMARY")
 
 
 def make_lens_model(cam, json_conf, merged_stars=None):
 
    station_id = json_conf['site']['ams_id']
-   make_cal_summary(cam, json_conf)
-   make_cal_plots(cam, json_conf)
-   #exit()
    cal_dir = "/mnt/ams2/cal/"
    mcp_file = cal_dir + "multi_poly-" + STATION_ID + "-" + cam + ".info"
    mcp = load_json_file(mcp_file)
@@ -3341,7 +3338,11 @@ def make_lens_model(cam, json_conf, merged_stars=None):
    cv2.imwrite("/mnt/ams2/cal/plots/" + station_id + "_" + cam_id + "_LENSMODEL-tn.jpg", tn_img,  [int(cv2.IMWRITE_JPEG_QUALITY), 70])
    cv2.imwrite("/mnt/ams2/cal/plots/" + station_id + "_" + cam_id + "_LENSMODEL.jpg", img,  [int(cv2.IMWRITE_JPEG_QUALITY), 70])
 
-   print("saved /mnt/ams2/cal/lens_model_" + cam + ".jpg")
+   print("saved /mnt/ams2/cal/plots/lens_model_" + cam + ".jpg")
+   print("MAKE CAL PLOTS")
+   make_cal_plots(cam, json_conf)
+   print("MAKE CAL SUMMARY")
+   make_cal_summary(cam, json_conf)
 
 def deep_calib_init(cam,json_conf):
    # make initial lens model from just 1 or 2 files.
@@ -3372,7 +3373,6 @@ def deep_calib_init(cam,json_conf):
          continue
       cp = load_json_file(data['key'])
       print("./Process.py refit " + data['key'])
-      #exit()
       #os.system("./Process.py refit " + data['key'])
       cp = load_json_file(data['key'])
       cal_fn = data['key'].split("/")[-1]
@@ -3756,7 +3756,6 @@ def deep_calib2(cam, json_conf):
       else:
          print("SKIP STAR HIGH RES:", cat_dist)
    all_stars = good_stars
-   #exit()
 
    for data in all_stars:
       cal_fn, cp['center_az'], cp['center_el'], cp['ra_center'], cp['dec_center'], cp['position_angle'], cp['pixscale'], dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist,star_int = data
@@ -3932,7 +3931,6 @@ def deep_calib(cam, json_conf):
       for star in star_db['meteor_stars']:
          all_stars.append(star)
       print("ALL STARS:", len(all_stars))
-      exit()
    #(cal_file,ra_center,dec_center,position_angle,pixscale,dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy, img_res,np_new_cat_x,np_new_cat_y) = star
 
    #remove the worste stars
