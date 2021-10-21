@@ -373,7 +373,7 @@ def cfile(amsid, calfile):
 
 @app.route('/calib_new/<amsid>/', methods=['GET', 'POST'])
 @auth.login_required
-def calib(amsid):
+def calib_new(amsid):
    req = {}
    req['cam_id_filter'] = request.args.get('cam_id_filter')
    out = calib_main_new(amsid,req)
