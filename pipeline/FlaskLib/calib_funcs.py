@@ -250,12 +250,21 @@ def calib_main_new(amsid,in_data):
       cam_id_filter = in_data['cam_id_filter']
    else: 
       cam_id_filter = None
+   out = ""
    json_conf = load_json_file("../conf/as6.json")
    template = make_default_template(amsid, "calib.html", json_conf)
    out = "<h1> NEW CALIB MENU</h1>"
+   json_conf = load_json_file("../conf/as6.json")
+   for cam_num in json_conf['cameras']:
+      cam_id = json_conf['cameras'][cams_id]
+      out += cal_cam_summary(ams_id, cam_id)
    template = template.replace("{MAIN_TABLE}", out)
 
    return(template)
+
+def cal_cam_summary(amsid, cam_id):
+   mcp_file = "/mnt/ams2/cal/freecal/multi_poly-" + amsid + "-" + cam_id + ".info"
+   return(mcp_file)
 
 def calib_main(amsid,in_data):
    if in_data['cam_id_filter'] is not None:
