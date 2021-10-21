@@ -3373,7 +3373,7 @@ def deep_calib_init(cam,json_conf):
          continue
       cp = load_json_file(data['key'])
       print("./Process.py refit " + data['key'])
-      #os.system("./Process.py refit " + data['key'])
+      os.system("./Process.py refit " + data['key'])
       cp = load_json_file(data['key'])
       cal_fn = data['key'].split("/")[-1]
       for data in cp ['cat_image_stars']:
