@@ -181,6 +181,7 @@ def sync_cal(json_conf):
                os.system(cmd)
             else:
                print("File already sync'd")
+   sync_best_cal_files(json_conf)
 
 def hd_night_cal(cam_num, json_conf, interval=30):
    ams_id = json_conf['site']['ams_id']
@@ -3184,13 +3185,60 @@ def refit_best(cam,json_conf):
       print(cmd)
       os.system(cmd)
 
+
+def cal_sum_html(json_conf):
+   station_id = json_conf['site']['ams_id']
+   cal_sum = {}
+   for cam_num in json_conf['cameras']:
+      cam_id = json_conf['cameras'][cam_num]['cams_id']
+      cal_sum_file = "/mnt/ams2/cal/" + station_id + "_" + cam_id + "_CAL_SUMMARY.json"
+      if cfe(cal_sum_file) == 1:
+         cal_sum[cam_id] = load_json_file(cal_sum_file)
+      else:
+         cal_sum[cam_id] = None
+
+   html = "<h1>Calibration Summary for " + station_id + "</h1>\n"
+   for cam_id in cal_sum:
+      if cal_sum[cam_id] != None:
+         html += "<h2>Camera: " + cam_id + "</h2>\n"
+         html += "<div>"
+         grid_fn = cal_sum[cam_id]['cal_grid_img'].split("/")[-1].replace(".jpg", "-tn.jpg")
+         html += "<div style='float:left'><a href=plots/" + grid_fn.replace("-tn", "") + "><img src=plots/" + grid_fn + "></a></div>"
+         lens_fn = cal_sum[cam_id]['cal_lens_img'].split("/")[-1].replace(".jpg", "-tn.jpg")
+         html += "<div style='float:left'><a href=plots/" + lens_fn.replace("-tn", "") + "><img src=plots/" + lens_fn + "></a></div>"
+
+         html += "<div style='clear: both'></div>"
+         html += "</div>"
+         html += "<table>\n"
+         for field in cal_sum[cam_id]:
+            html += "<tr><td>" + field + "</td><td>" + str(cal_sum[cam_id][field]) + "</td></tr>\n"
+
+            print(cam_id, field, cal_sum[cam_id][field])
+         html += "</table>\n"
+         plot_fn = cal_sum[cam_id]['cal_plot_img'].split("/")[-1]
+         html += "<img src=plots/" + plot_fn + "><br>"
+   print(html)      
+   cl_html = html.replace("plots/", "PLOTS/")
+   fp = open("/mnt/ams2/cal/" + station_id + "_CAL_SUM.html", "w")
+   fp.write(cl_html)
+   fp.close()
+   os.system("mv " + "/mnt/ams2/cal/" + station_id + "_CAL_SUM.html" + " /mnt/archive.allsky.tv/" + station_id + "/CAL/")
+   print("MADE: /mnt/archive.allsky.tv/" + station_id + "/CAL/")
+   fp = open("/mnt/ams2/cal/" + station_id + "_CAL_SUM.html", "w")
+   fp.write(html)
+   fp.close()
+   print("saved: /mnt/ams2/cal/" + station_id + "_CAL_SUM.html")
+
 def make_cal_summary(cam,json_conf):
+   cam_id = cam
    cal_dir = "/mnt/ams2/cal/"
    cal_index = load_json_file("/mnt/ams2/cal/freecal_index.json")
    station_id = json_conf['site']['ams_id']
    this_cal_index = []
    all_total_stars = 0
    rez = []
+
+
    for key in cal_index:
       obj = cal_index[key]
       print("OBJ:", obj)
@@ -3259,10 +3307,10 @@ def make_cal_summary(cam,json_conf):
    for key in mj['cp']:
       print("MJ CP:", key, mcp[key])
 
-   mj['cp']['center_az'] = np.mean(recent_azs)
-   mj['cp']['center_el'] = np.mean(recent_els)
-   mj['cp']['position_angle'] = np.mean(recent_pos)
-   mj['cp']['pixscale'] = np.mean(recent_pxs)
+   mj['cp']['center_az'] = np.median(recent_azs)
+   mj['cp']['center_el'] = np.median(recent_els)
+   mj['cp']['position_angle'] = np.median(recent_pos)
+   mj['cp']['pixscale'] = np.median(recent_pxs)
    mj['sd_trim'] = first_key 
    cp = update_center_radec(first_key,mj['cp'],json_conf,time_diff=0)
 
@@ -3284,6 +3332,83 @@ def make_cal_summary(cam,json_conf):
    cv2.imwrite(grid_file, grid_image, [int(cv2.IMWRITE_JPEG_QUALITY), 70])
    cv2.imwrite(grid_tn_file, grid_tn,  [int(cv2.IMWRITE_JPEG_QUALITY), 70])
    print("DONECAL SUMMARY")
+   cs = {}
+   cs['station_id'] = station_id
+   cs['cam_id'] = cam_id 
+   cs['med_az'] = mj['cp']['center_az']
+   cs['med_el'] = mj['cp']['center_el']
+   cs['med_pos'] = mj['cp']['position_angle']
+   cs['pixscale'] = mj['cp']['pixscale']
+   cs['total_cal_files'] = len(this_cal_index)
+   cs['total_cal_stars'] = all_total_stars
+   cs['total_lens_model_stars'] = len(star_db)
+   cs['mean_rez_all_files'] = round(np.mean(rez),2)
+   cs['lens_model_x_fun'] = x_fun
+   cs['lens_model_y_fun'] = y_fun
+   cs['lens_model_x_fun_fwd'] = x_fun_fwd
+   cs['lens_model_y_fun_fwd'] = y_fun_fwd
+   cs['cal_plot_img'] = v_cal_time 
+   cs['cal_grid_img'] = v_grid 
+   cs['cal_lens_img'] = v_lens
+   save_json_file("/mnt/ams2/cal/" + station_id + "_" + cam_id + "_CAL_SUMMARY.json", cs)
+   print("saved /mnt/ams2/cal/" + station_id + "_" + cam_id + "_CAL_SUMMARY.json" )
+   cal_sum_html(json_conf)
+
+
+def sync_best_cal_files(json_conf):
+   cal_sync_hist_file = "/mnt/ams2/cal/cal_sync_hist.json" 
+   if cfe(cal_sync_hist_file) == 0:
+      cal_sync_hist = {}
+   else:
+      cal_sync_hist = load_json_file(cal_sync_hist_file)
+
+   ucal_files = {}
+   for cam_num in json_conf['cameras']:
+      cams_id = json_conf['cameras'][cam_num]['cams_id']
+      as_file = "/mnt/ams2/cal/" + cams_id + "_ALL_STARS.json"
+      if cfe(as_file) == 1:
+         print("Load", as_file)
+         astars = load_json_file(as_file)
+      else:
+         print("NO FILE", as_file)
+         astars = []
+      for star in astars:
+         cf = star[0]
+         ucal_files[cf] = {}
+
+   cloud_cal_dir = "/mnt/archive.allsky.tv/" + json_conf['site']['ams_id'] + "/CAL/IMAGES/" 
+   for cf in ucal_files:
+      print("BEST CAL FILE:", cf)
+
+      cal_root = cf.split("-")[0]
+      cal_dir = "/mnt/ams2/cal/freecal/" + cal_root + "/"
+      cal_img_file = cal_dir + cf.replace("-calparams.json", ".png")
+      cal_json_file = cal_dir + cf
+      cal_img_jpg_file = cal_img_file.replace(".png", ".jpg")
+      if cfe(cal_img_jpg_file) == 0:
+         print("MAKE CAL JPG")
+         img = cv2.imread(cal_img_file)
+         try:
+            cv2.imwrite(cal_img_jpg_file, img, [int(cv2.IMWRITE_JPEG_QUALITY), 70])
+            print("MADE JPG:", cal_img_jpg_file)
+         except:
+            print("JPG MAKE FAILED!")
+            continue
+
+      cal_img_fn = cal_img_file.split("/")[-1]
+      cal_json_fn = cal_json_file.split("/")[-1]
+      print(cal_img_file)
+      print(cal_json_file)
+      print(cloud_cal_dir)
+      if cal_img_jpg_file not in cal_sync_hist:
+         cmd1 = "cp " + cal_img_jpg_file + " " + cloud_cal_dir
+         print(cmd1)
+         os.system(cmd1)
+      cmd2 = "cp " + cal_json_file + " " + cloud_cal_dir
+      print(cmd2)
+      os.system(cmd2)
+      cal_sync_hist[cal_img_jpg_file] = 1
+   save_json_file(cal_sync_hist_file, cal_sync_hist)      
 
 def sync_cal_files(json_conf):
    # FOR THE STATION ITSELF WE SHOULD COPY to the cloud dir:
@@ -3386,7 +3511,6 @@ def make_lens_model(cam, json_conf, merged_stars=None):
 
 def deep_calib_init(cam,json_conf):
    # make initial lens model from just 1 or 2 files.
-
 
    print("LENS MODEL INIT")
    temp = load_json_file("/mnt/ams2/cal/freecal_index.json")

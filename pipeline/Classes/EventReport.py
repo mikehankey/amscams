@@ -490,7 +490,7 @@ class EventReport():
             status = data['status']
          else:
             status = "none"
-         print(
+         print("???")
 
 
    def clean_event(self, event):

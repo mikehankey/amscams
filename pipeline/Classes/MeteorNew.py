@@ -2247,6 +2247,15 @@ class Meteor():
       ldir = "/mnt/ams2/EVENTS/STATIONS/";
       if cfe(ldir + "worklist.json"):
          work_list = load_json_file(ldir + "worklist.json")
+         sz, td = get_file_info(ldir + "worklist.json") 
+         print ("TD IS:", td)
+         input()
+         if td < 0:
+            print("TD:", td)
+            #self.push_worklist_files(work_list)
+            #return()
+
+
       else:
          work_list = {}
       if cfe(ldir + "event_days.json"):
@@ -2341,7 +2350,17 @@ class Meteor():
             event_days[date]['cloud_index_update'] = datetime.datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
             save_json_file(ldir + "event_days.json", event_days)
          else:
-            print("Cloud index is already made. Last update was.", event_days[date]['cloud_index_update'])
+            last_update_time = datetime.datetime.strptime(event_days[date]['cloud_index_update'], "%Y_%m_%d_%H_%M_%S")
+
+            elp = ((datetime.datetime.now() - last_update_time).total_seconds()) / 86400
+            print("Cloud index is already made. Last update was.", event_days[date]['cloud_index_update'], elp, " days ago")
+            if elp > 1:
+               print("WE SHOULD UPDATE THE CLOUD INDEX SINCE IT HAS BEEN A WHILE")
+               print("BUT WE SHOULD ONLY DO THIS IF THERE ARE STILL MISSING FILES IN THE WORKLIST!")
+               print("TO SAVE TIME, LETS BLOCK THESE DAYS THAT ARE ALREADY DONE FROM RERUNNING")
+               self.cloud_index(date)
+               event_days[date]['cloud_index_update'] = datetime.datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
+               save_json_file(ldir + "event_days.json", event_days)
 
       save_json_file(ldir + "event_days.json", event_days)
       print(ldir + "event_days.json")
@@ -2391,7 +2410,7 @@ class Meteor():
                      os.system("cp " + ms_file + " " + cdir)
                   else:
                      print("CLOUD FILE EXISTS ALREADY! " + cfile)
-                  work_list[wfile]['media'][ext] = 2
+                  work_list[wfile]['media'][ext] = 1 
                   all_cloud_files[cfn] = 1
                else:
                   print("FILE DOES NOT EXIST LOCALLY:", ms_file)
@@ -2402,6 +2421,16 @@ class Meteor():
       print(ldir + "worklist.json")
       save_json_file(all_cloud_files_file, all_cloud_files)
       print(all_cloud_files_file)
+      self.push_worklist_files(work_list)
+
+   def push_worklist_files(self, work_list):
+      for key in work_list:
+         print(key, work_list[key])
+         el = key.split("/")
+         for field in work_list[key]['media']:
+            if "1080" not in field: 
+               print("PUSH?", field, work_list[key]['media'][field])
+         input("WAIT")
 
    def cloud_index(self,day):
       year = day[0:4]
