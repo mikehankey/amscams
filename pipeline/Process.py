@@ -186,10 +186,10 @@ if __name__ == "__main__":
       if sys.argv[2] == "all":
          for cam in json_conf['cameras']:
             cams_id = json_conf['cameras'][cam]['cams_id']
-            deep_calib(cams_id, json_conf)
+            deep_calib_init(cams_id, json_conf)
 
       else:
-         deep_calib2(sys.argv[2], json_conf)
+         deep_calib_init(sys.argv[2], json_conf)
    if cmd == "dc_report":
       deep_cal_report(sys.argv[2], json_conf)
  

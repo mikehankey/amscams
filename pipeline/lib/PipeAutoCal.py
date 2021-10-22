@@ -15,7 +15,7 @@ import scipy.optimize
 import math
 import cv2
 import numpy as np
-from lib.PipeUtil import bound_cnt, cnt_max_px, cfe, load_json_file, save_json_file, convert_filename_to_date_cam, angularSeparation, calc_dist, date_to_jd, get_masks , find_angle, collinear, get_trim_num, day_or_night, check_running
+from lib.PipeUtil import bound_cnt, cnt_max_px, cfe, load_json_file, save_json_file, convert_filename_to_date_cam, angularSeparation, calc_dist, date_to_jd, get_masks , find_angle, collinear, get_trim_num, day_or_night, check_running, get_file_info
 from lib.PipeImage import mask_frame, quick_video_stack
 from lib.DEFAULTS import *
 import os
@@ -215,6 +215,11 @@ def hd_night_cal(cam_num, json_conf, interval=30):
 
 def gen_cal_hist(json_conf):
    all_files = {}
+
+   sz, td = get_file_info("/mnt/ams2/cal/cal_day_hist.json")
+   if td < 86400:
+      return()
+
    for cam in sorted(json_conf['cameras']):
       cams_id = json_conf['cameras'][cam]['cams_id']
       all_files[cams_id] = {}
@@ -366,8 +371,8 @@ def make_default_cal(json_conf, cam ):
       med_list = []
       for row in calibs:
          r_dt = datetime.strptime(row[1], "%Y_%m_%d")
-         if e_dt < r_dt < s_dt:
-            print("     CALIB IN RANGE ADD TO MED LIST.", r_dt, s_dt, e_dt)
+         #if e_dt < r_dt < s_dt:
+            #print("     CALIB IN RANGE ADD TO MED LIST.", r_dt, s_dt, e_dt)
       med_az, med_el, med_pos, med_px, med_res = calc_med_range(cam, s_dt, e_dt)
       print("RANGE:", cam, rng[0], rng[1], med_az, med_el, med_pos, med_px, med_res)
       range_data.append((cam, rng[0], rng[1], med_az, med_el, med_pos, med_px, med_res))
@@ -466,7 +471,6 @@ def get_default_calib_hist(this_day, cams_id, json_conf):
    cal_hist = []
    for row in cal_hist_all:
       (cam, day, azs, els, pos, pxs, res) = row
-      #print("DAY:", this_day_dt, day)
       day_dt = datetime.strptime(day, "%Y_%m_%d")
       if cam == cams_id:
          days_diff = abs((day_dt - this_day_dt).total_seconds() / 60 / 60 / 24)
@@ -526,13 +530,13 @@ def resolve_failed(cam_num, limit, star_lim, json_conf):
    AUTOCAL_ROOT = "/mnt/ams2/meteor_archive/" + STATION_ID + "/CAL/AUTOCAL/"
    year_dirs = glob.glob(AUTOCAL_ROOT + "*")
    for yd in year_dirs:
-      print(yd)
+      #print(yd)
       fail_files = glob.glob(yd + "/failed/*" + cams_id + "*.png")
       for fail in fail_files:
          all_files.append(fail)
    count = 0
-   print("ALL FILES:", len(all_files))
-   for file in all_files:
+   #print("ALL FILES:", len(all_files))
+   for file in sorted(all_files, reverse=True):
       fn, dd = fn_dir(file)
       root = fn.replace(".png", "")
       fcdir = "/mnt/ams2/cal/freecal/" + root
@@ -540,11 +544,11 @@ def resolve_failed(cam_num, limit, star_lim, json_conf):
       solved = cfe("/mnt/ams2/cal/freecal/" + root, 1)
       if count < int(limit) and solved == 0:
          gray_img = cv2.imread(file,0)
-         stars = get_image_stars(file, gray_img.copy(), json_conf, 0)
-         print("Trying:", fn, len(stars))
+         stars = find_stars_with_grid(gray_img.copy())
+         #print("Trying:", fn, len(stars))
          if len(stars) > int(star_lim):
             new_file = file.replace("failed/", "")
-            print(count, file,len(stars))
+            print("RECAL:", count, file,len(stars))
             cmd = "mv " + file + " " + new_file
             print(cmd)
             os.system(cmd)
@@ -2431,7 +2435,6 @@ def refit_fov(cal_file, json_conf, mov_frame_num=0):
       cal_dir = cal_file.replace(cfn, "")
       cmd = "mv " + cal_dir + " /mnt/ams2/cal/bad_cals/"
       #print(cmd)
-      #input("BAD CAL MOVE!" +  str(len(cal_params['cat_image_stars'])) + " " + str(cal_params['total_res_px']))
       #os.system(cmd)
       #return() 
 
@@ -2533,7 +2536,6 @@ def refit_fov(cal_file, json_conf, mov_frame_num=0):
       cal_dir = cal_file.replace(cfn, "")
       cmd = "mv " + cal_dir + " /mnt/ams2/cal/bad_cals/"
       #print(cmd)
-      #input("BAD CAL MOVE!" +  str(len(cal_params['cat_image_stars'])) + " " + str(cal_params['total_res_px']))
       #os.system(cmd)
       #return() 
 
@@ -2661,7 +2663,6 @@ def refit_fov(cal_file, json_conf, mov_frame_num=0):
       cal_dir = cal_file.replace(cfn, "")
       cmd = "mv " + cal_dir + " /mnt/ams2/cal/bad_cals/"
       print(cmd)
-      #input("BAD CAL MOVE!" +  str(len(cal_params['cat_image_stars'])) + " " + str(cal_params['total_res_px']))
       #os.system(cmd)
       #return() 
 
@@ -5551,6 +5552,7 @@ def find_meds(cal_data):
    return(med_data)
 
 def cal_all(json_conf):
+   print("CAL ALL")
    year = datetime.now().strftime("%Y")
    cal_dir = ARC_DIR + "CAL/AUTOCAL/" + year + "/"
    if cfe(cal_dir, 1) == 0:
@@ -5562,19 +5564,19 @@ def cal_all(json_conf):
    if cfe(cal_dir + "solved", 1) == 0:
       os.makedirs(cal_dir + "solved")
    files = glob.glob(cal_dir + "*.png")
-   print(cal_dir)
+   #print(cal_dir)
    for file in sorted(files):
-      print("TRYING.", file)
+      print("RUN AUTO CAL.", file)
  ##     last_cal['x_poly'] = cp['x_poly'].tolist()
  #     last_cal['y_poly'] = cp['y_poly'].tolist()
  #     last_cal['y_poly_fwd'] = cp['y_poly_fwd'].tolist()
  #     last_cal['x_poly_fwd'] = cp['x_poly_fwd'].tolist()
 
-      autocal(file, json_conf, 1)
       if cfe(file) == 1:
+         autocal(file, json_conf, 1)
      
          print("RAN:", file)
-         exit()
+         #exit()
 
 
 def make_cal_obj(az,el,pos,px,stars,cat_image_stars,res):
@@ -5640,7 +5642,8 @@ def autocal(image_file, json_conf, show = 0, heal_only=0):
    #   cv2.waitKey(30)
 
    # get stars / bright spots in image
-   stars = scan_for_stars(img)
+   #stars = scan_for_stars(img)
+   stars = find_stars_with_grid(img)
    if True:
       for star in stars:
          (x,y,sint) = star
@@ -6391,7 +6394,120 @@ def find_stars_with_grid_old(image):
    temp = sorted(best_stars, key=lambda x: x[2], reverse=True)
    return(temp)
 
+
 def find_stars_with_grid(img):
+   bad_points = []
+   raw_img = img.copy()
+   gsize = 50,50
+   ih,iw = img.shape[:2]
+   rows = int(int(ih) / gsize[1])
+   cols = int(int(iw) / gsize[0])
+   stars = []
+   bad_stars = []
+   bright_points = []
+   grids = []
+   pos_stars = []
+   for col in range(0,cols+1):
+      for row in range(0,rows+1):
+         x1 = col * gsize[0]
+         y1 = row * gsize[1]
+         x2 = x1 + gsize[0]
+         y2 = y1 + gsize[1]
+         grids.append((x1,y1,x2,y2))
+         if x2 >= iw:
+            x2 = iw
+         if y2 >= ih:
+            y2 = ih
+         gimg = img[y1:y2,x1:x2]
+         show_gimg = cv2.resize(gimg, (500,500))
+         show_img = img.copy()
+         if len(show_gimg.shape) == 3:
+            show_gimg = cv2.cvtColor(show_gimg, cv2.COLOR_BGR2GRAY)
+
+         avg_px = np.mean(show_gimg)
+         min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(show_gimg)
+         px_diff = max_val - avg_px
+         desc = " AVG PX" + str(avg_px) + " MAX VAL" + str(max_val) + "PX DIFF: " + str(px_diff)
+         if px_diff > 30:
+            _, thresh_img = cv2.threshold(show_gimg, max_val * .9, 255, cv2.THRESH_BINARY)
+            cnts = get_contours_in_crop(thresh_img)
+
+            if len(cnts) == 1:
+                for cnt in cnts:
+                    x,y,w,h,cx,cy,adj_x,adj_y = cnt
+                    cx = x1 + (cx / 10)
+                    cy = y1 + (cy / 10)
+                    pos_stars.append((cx,cy,0))
+            cv2.putText(show_img, str(desc),  (int(10),int(40)), cv2.FONT_HERSHEY_SIMPLEX, .8, (255, 255, 255), 1)
+
+
+         cv2.rectangle(show_img, (x1, y1), (x2, y2 ), (255, 255, 255), 1)
+         if len(pos_stars) > 0:
+            for star in pos_stars:
+               cv2.circle(show_img,(int(star[0]),int(star[1])), 20, (128,128,128), 1)
+             #cv2.imshow('preview', thresh_img)
+             #cv2.waitKey(3)
+
+   stars = []
+   clean_stars =[]
+   for data in pos_stars:
+       x,y,i = data
+       sx1 = int(x - 5)
+       sy1 = int(y - 5)
+       sx2 = int(x + 5)
+       sy2 = int(y + 5)
+       if sx1 < 0:
+          sx1 = 0
+          sx2 = 10
+       if sy1 < 0:
+          sy1 = 0
+          sy2 = 10
+       if sx2 > iw:
+          sx1 = iw - 10
+          sx2 = iw
+       if sy2 > ih:
+          sy1 = ih - 10
+          sy2 = ih
+
+       star_cnt = img[sy1:sy2,sx1:sx2]
+       data = inspect_star(star_cnt, data, None)
+       if data is not None:
+          clean_stars.append(data)
+   for star in clean_stars:
+       show_img = img.copy()
+   return(clean_stars)
+
+def get_contours_in_crop(frame ):
+   ih, iw = frame.shape[:2]
+   canny = cv2.Canny(frame,30,200)
+   #cv2.imshow("CANNY", canny)
+
+   cont = []
+   if len(frame.shape) > 2:
+      frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+   cnt_res = cv2.findContours(canny.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+   if len(cnt_res) == 3:
+      (_, cnts, xx) = cnt_res
+   elif len(cnt_res) == 2:
+      (cnts, xx) = cnt_res
+   for (i,c) in enumerate(cnts):
+      x,y,w,h = cv2.boundingRect(cnts[i])
+      #if SHOW == 1:
+      #   show_img = frame.copy()
+      #   cv2.rectangle(show_img, (x, y), (x+w, y+h), (255, 0, 0), 1)
+      #   cv2.imshow("GET CNT", show_img)
+
+      if w >= 1 or h >= 1:
+         cx = x + (w / 2)
+         cy = y + (h / 2)
+         adjx = cx - (iw/2)
+         adjy = cy - (ih/2)
+         cont.append((x,y,w,h,cx,cy,adjx,adjy))
+   return(cont)
+
+
+
+def find_stars_with_grid_old2(img):
    bad_points = []
    raw_img = img.copy()
    gsize = 50,50
@@ -6644,6 +6760,8 @@ def get_image_stars(file=None,img=None,json_conf=None,show=0):
    best_stars = find_stars_with_grid(img)
    for star in best_stars:
       #print("BEST STAR:", star)
+      if star is None:
+         continue
       x,y,z = star
       cv2.circle(img, (int(x),int(y)), 5, (128,128,128), 1)
    cv2.imwrite("/mnt/ams2/temp.jpg", img)
