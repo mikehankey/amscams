@@ -468,13 +468,16 @@ if __name__ == "__main__":
       refit_best(sys.argv[2],json_conf)
 
    if cmd == "refit_all" :
-      if len(sys.argv) ==4:
-         # only do bad ones
-         refit_all(json_conf, sys.argv[2], sys.argv[3])
-      elif len(sys.argv) ==3:
-         refit_all(json_conf, sys.argv[2])
+      if sys.argv[2] == "all":
+         for cam in json_conf['cameras']:
+            cams_id = json_conf['cameras'][cam]['cams_id']
+            refit_all(json_conf, cams_id)
       else:
-         refit_all(json_conf )
+         refit_all(json_conf, sys.argv[2])
+
+
+
+
    if cmd == 'reject_meteors':
       reject_meteors(sys.argv[2], json_conf)
    if cmd == 'check_all':
