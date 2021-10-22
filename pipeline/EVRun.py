@@ -34,6 +34,19 @@ if __name__ == "__main__":
 
    #EVR.del_bad_obs_from_events(sys.argv[1])
    #print("LIST EVENTS")
+
+   # EVENT LOGIC!
+   """
+      1) Make the OBS by minute file from ALL OBS for a given day (should use ALL_OBS_KEYS file currently does not exist) * Make this on AWS server 1x per hour or something...
+      2) From OBS by minute create the event_groups file
+      3) From event groups file run the planes check and make ALL_PLANES FILE
+      4) From the ALL_PLANES file create 'official' event IDs and event Files
+      5) For each Event ID run the solver
+      6) Once all events have been solved make the summary reports
+
+   """
+
+
    EVR.obs_by_minute()
    print("Done obs by minute")
    exit()

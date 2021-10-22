@@ -3285,6 +3285,45 @@ def make_cal_summary(cam,json_conf):
    cv2.imwrite(grid_tn_file, grid_tn,  [int(cv2.IMWRITE_JPEG_QUALITY), 70])
    print("DONECAL SUMMARY")
 
+def sync_cal_files(json_conf):
+   # FOR THE STATION ITSELF WE SHOULD COPY to the cloud dir:
+   # AMSX_cal_range.json 
+   # cal_history.json  (ADD STATION_ID!)
+   # For each camera we should copy to the cloud dir:
+   # multi_poly-AMS1-010005.info  
+   # star_db-AMS1-010002.info
+   # XXXXXX_ALL_STARS.json
+   # ALL FILES FROM PLOT DIRS
+   station_id = json_conf['site']['ams_id']
+   cloud_cal_dir = "/mnt/archive.allsky.tv/" + station_id + "/CAL/" 
+   cloud_plot_dir = "/mnt/archive.allsky.tv/" + station_id + "/CAL/PLOTS/" 
+   cloud_img_dir = "/mnt/archive.allsky.tv/" + station_id + "/CAL/IMAGES/" 
+   if cfe(cloud_plot_dir, 1) == 0:
+      os.makedirs(cloud_plot_dir)
+   if cfe(cloud_img_dir, 1) == 0:
+      os.makedirs(cloud_img_dir)
+   cmd = "cp /mnt/ams2/cal/" + station_id + "_cal_range.json " + cloud_cal_dir
+   print(cmd)
+   os.system(cmd)
+   cmd = "cp /mnt/ams2/cal/cal_history.json " + cloud_cal_dir + station_id + "_cal_history.json" 
+   print(cmd)
+   os.system(cmd)
+   for cam_num in json_conf['cameras']:
+      cams_id = json_conf['cameras'][cam_num]['cams_id']
+      cmd = "cp /mnt/ams2/cal/multi_poly-" + station_id + "-" + cams_id + ".info " + cloud_cal_dir + station_id + "_" + cams_id + "_LENS_MODEL.json"
+      print(cmd)
+      os.system(cmd)
+      cmd = "cp /mnt/ams2/cal/star_db-" + station_id + "-" + cams_id + ".info " + cloud_cal_dir + station_id + "_" + cams_id + "_STAR_DB.json"
+      print(cmd)
+      os.system(cmd)
+      cmd = "cp /mnt/ams2/cal/" + cams_id + "_ALL_STARS.json " + cloud_cal_dir + station_id + "_" + cams_id + "_ALL_STARS.json"
+      print(cmd)
+      os.system(cmd)
+   cal_plots = glob.glob("/mnt/ams2/cal/plots/*.jpg")
+   for cp in cal_plots:
+      cmd = "cp " + cp + " " + cloud_plot_dir 
+      os.system(cmd)
+      print(cmd)
 
 def make_lens_model(cam, json_conf, merged_stars=None):
 
@@ -3347,6 +3386,8 @@ def make_lens_model(cam, json_conf, merged_stars=None):
 
 def deep_calib_init(cam,json_conf):
    # make initial lens model from just 1 or 2 files.
+
+
    print("LENS MODEL INIT")
    temp = load_json_file("/mnt/ams2/cal/freecal_index.json")
    cal_index = []
