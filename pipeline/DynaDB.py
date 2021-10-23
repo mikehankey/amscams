@@ -676,7 +676,7 @@ def update_dyna_cache_for_day(dynamodb, date, stations, utype=None):
    stations = []
    for data in clusters:
       #('AMS8', 32.654, -99.844, 'Hawley', [])
-      station, lat, lon, city, partners = data
+      station, lat, lon, alt, city, partners = data
       #if station == "AMS110" or station == "AMS105" or station == "AMS20":
       #   print("ID ??", data)
       if len(partners) > 1:
