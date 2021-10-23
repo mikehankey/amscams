@@ -937,7 +937,7 @@ def make_station_clusters(all_stations):
          dist = dist_between_two_points(lat, lon, tlat, tlon)
          if dist < 600:
             matches.append((sid, dist))
-      cluster_data.append((station_id, lat,lon,city,matches))
+      cluster_data.append((station_id, lat,lon,alt,city,matches))
 
    return(cluster_data)
 
