@@ -4863,8 +4863,8 @@ def test_cal(cp_file,json_conf,cp, cal_img, cdata ):
    if "short_bright_stars" in cp:
       del cp['short_bright_stars']
    cp = update_center_radec(cp_file,cp,json_conf)
-   #cp, bad_stars, marked_img = eval_cal(cp_file,json_conf,cp,cal_img, None)
-   cp, bad_stars, marked_img = eval_cal_res(cp_file, json_conf, cp, cal_img,None,None,cp['cat_image_stars']) 
+   cp, bad_stars, marked_img = eval_cal(cp_file,json_conf,cp,cal_img, None)
+   #cp, bad_stars, marked_img = eval_cal_res(cp_file, json_conf, cp, cal_img,None,None,cp['cat_image_stars']) 
    tcp = dict(cp)
    #print("AZ,EL,RA,DEC,POS,PX:", az,el,pos,px,cp['ra_center'],cp['dec_center'])
    return(tcp, bad_stars, marked_img)
@@ -5114,6 +5114,8 @@ def eval_cal_res(cp_file,json_conf,nc=None,oimg=None, mask_img=None,batch_mode=N
    nc['no_match_stars'] = []
 
    for star in nc['cat_image_stars']:
+      print("STAR LEN:", len(star))
+      print(star)
       dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist,star_int = star
       new_x, new_y, img_ra,img_dec, img_az, img_el = XYtoRADec(six,siy,cp_file,nc,json_conf)
 
