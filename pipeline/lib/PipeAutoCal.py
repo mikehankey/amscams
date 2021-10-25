@@ -391,31 +391,24 @@ def get_calib_from_range(cam, t_day,json_conf):
    for row in adata:
       tcam, s_day, e_day, med_az, med_el, med_pos, med_px, med_res = row
       if tcam == cam:
+         print("AVAILABLE CAL RANGE:", tcam, s_day, e_day, med_az, med_el, med_pos, med_px, med_res)
          rdata.append((tcam, s_day, e_day, med_az, med_el, med_pos, med_px, med_res))
    
 
-   tcam, s_day, e_day, med_az, med_el, med_pos, med_px, med_res = rdata[0]
-   s_dt = datetime.strptime(s_day, "%Y_%m_%d")
-
-   if t_dt > s_dt:
-      return(rdata[0])
-
-   tcam, s_day, e_day, med_az, med_el, med_pos, med_px, med_res = rdata[-1]
-   e_dt = datetime.strptime(e_day, "%Y_%m_%d")
-
-   if t_dt < e_dt:
-      return(rdata[-1])
-
 
    for row in rdata:
-      print("ROW:", row)
+      print("RANGE ROW:", row)
       tcam, s_day, e_day, med_az, med_el, med_pos, med_px, med_res = row
       s_dt = datetime.strptime(s_day, "%Y_%m_%d")
       e_dt = datetime.strptime(e_day, "%Y_%m_%d")
-      if tcam == cam:
-         if e_dt < t_dt < s_dt:
-            print("THIS IS THE WAY:", row) 
-            return(row)
+      if s_dt <= t_dt <= e_dt:
+         print(s_dt, t_dt, e_dt)
+         print("THIS IS THE WAY:", row) 
+         return(row)
+   s_dt = datetime.strptime(row[1], "%Y_%m_%d")
+   if t_dt > s_dt:
+      print("THIS FILE IS MORE RECENT THAN OUR MOST RECENT CAL SO USE THAT!")
+      return(row)
    return(None)
        
 
@@ -1047,9 +1040,11 @@ def refit_meteor(meteor_file, json_conf,force=0):
          mjr['cal_params'] = mj['cp']
       print("Saved MJ using the default calib!", meteor_file)
       return()
+   print(mj['hd_trim'])
    if "hd_trim" in mj:
       hd_vid = mj['hd_trim']
       sd_vid = mj['sd_video_file']
+         
       frames =load_frames_simple(hd_vid, 2)
       if len(frames) == 0:
          frames =load_frames_simple(sd_vid, 2)
@@ -1147,21 +1142,22 @@ def refit_meteor(meteor_file, json_conf,force=0):
       save_json_file(meteor_file, mj)
 
 
-   if cfe(mj['hd_stack']) == 1:
-      image = cv2.imread(mj['hd_stack'])
-      if first_frame is not None:
-         image = first_frame 
-      hd_stack = mj['hd_stack']
-   else:
-      print("NO HD STACK!", mj['hd_stack'])
-      exit()
+   #if cfe(mj['hd_stack']) == 1:
+   #   image = cv2.imread(mj['hd_stack'])
+   #   if first_frame is not None:
+   #      image = first_frame 
+   #   hd_stack = mj['hd_stack']
+   #else:
+   #   print("NO HD STACK!", mj['hd_stack'])
+   #   exit()
 
    result = get_calib_from_range(cam, day,json_conf)
    if result != None:
       cam, sd, ed, med_az, med_el, med_pos, med_px, med_res = result
       def_cal = [med_az, med_el, med_pos, med_px, med_res]
+      print("Using default calib", def_cal)
    else:
-      print("Failed to get default med cal")   
+      print("Failed to get default med cal", cam, day)   
       def_cal = []
    print("DEFAULT CALIB:", def_cal)
    # test if the default cal is better than the current cal. 
@@ -1242,6 +1238,7 @@ def refit_meteor(meteor_file, json_conf,force=0):
    print("BEFORE MORE STARS:", len(cp['cat_image_stars']) )
    if "more_stars" not in cp:
       cp['more_stars'] = 1
+   print(image.shape)
 
 
    if False:
@@ -1262,10 +1259,14 @@ def refit_meteor(meteor_file, json_conf,force=0):
       #   cp = get_more_stars_with_catalog(meteor_file, cp, image, json_conf)
       print("CP:", cp)
    cp = update_center_radec(meteor_file,cp,json_conf)
+   print(image.shape)
    cp = pair_stars(cp, meteor_file, json_conf, image)
+   print(image.shape)
    # do batch mode
-   cp, bad_stars,marked_img = eval_cal(meteor_file,json_conf,cp,image)
+   cp, bad_stars, marked_img = eval_cal_res(meteor_file, json_conf, cp, image,None,None,cp['cat_image_stars']) 
+   #cp, bad_stars,marked_img = eval_cal_res(meteor_file,json_conf,cp,image)
 
+   print(image.shape)
    short_bright_stars = []
    if "cat_image_stars" in cp: 
       for star in cp['cat_image_stars']:
@@ -1287,6 +1288,7 @@ def refit_meteor(meteor_file, json_conf,force=0):
          del cp['short_bright_stars'] 
       #cp = get_more_stars_with_catalog(meteor_file, cp, image.copy(), json_conf)
       print("AFTER GET MORE:", len(cp['user_stars']), len(cp['cat_image_stars'])) 
+      print(image.shape)
       cp= pair_stars(cp, meteor_file, json_conf, image.copy())
       print("AFTER GET MORE & PAIR:", len(cp['user_stars']), len(cp['cat_image_stars'])) 
       print(cp['cat_image_stars'])
@@ -1320,7 +1322,7 @@ def refit_meteor(meteor_file, json_conf,force=0):
       for row in cp['cat_image_stars']:
          dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist,bp = row
          res_good = 1
-         if cat_dist > cp['total_res_px'] * 5:
+         if cat_dist > cp['total_res_px'] * 2:
             res_good = 0
          print("CENTER STARS:", six, siy)
          if 0 <= six < 1920 and 0 <= siy <= 1080 and res_good == 1:
@@ -1340,6 +1342,10 @@ def refit_meteor(meteor_file, json_conf,force=0):
       #print("CENTER STARS:", len(temp_cp['cat_image_stars']))
 
       #print("ALL STARS:", temp_cp['user_stars'])
+      print("IMAGE BEFORE MIN", image.shape)
+
+      # remove bad stars before minimize
+      best_stars = []
 
       cp = minimize_fov(meteor_file, temp_cp, meteor_file ,image,json_conf )
 
@@ -1350,7 +1356,8 @@ def refit_meteor(meteor_file, json_conf,force=0):
    if True:
       print("NEW RES IS BETTER!", cp['total_res_px'], org_res)
       cp = pair_stars(cp, meteor_file, json_conf, image)
-      cp, bad_stars,marked_img = eval_cal(meteor_file,json_conf,cp,image)
+      #cp, bad_stars,marked_img = eval_cal(meteor_file,json_conf,cp,image)
+      cp, bad_stars, marked_img = eval_cal_res(meteor_file, json_conf, cp, image,None,None,cp['cat_image_stars']) 
       mj['cp'] = cp
       # need to apply the new calib to the points now. 
       if "refit_info" not in mj:
@@ -4853,7 +4860,8 @@ def test_cal(cp_file,json_conf,cp, cal_img, cdata ):
    if "short_bright_stars" in cp:
       del cp['short_bright_stars']
    cp = update_center_radec(cp_file,cp,json_conf)
-   cp, bad_stars, marked_img = eval_cal(cp_file,json_conf,cp,cal_img, None)
+   #cp, bad_stars, marked_img = eval_cal(cp_file,json_conf,cp,cal_img, None)
+   cp, bad_stars, marked_img = eval_cal_res(cp_file, json_conf, cp, cal_img,None,None,cp['cat_image_stars']) 
    tcp = dict(cp)
    #print("AZ,EL,RA,DEC,POS,PX:", az,el,pos,px,cp['ra_center'],cp['dec_center'])
    return(tcp, bad_stars, marked_img)
@@ -7309,6 +7317,7 @@ def pair_stars(cal_params, cal_params_file, json_conf, cal_img=None, show = 0):
    if cal_img is None:
       img_file = cal_params_file.replace("-calparams.json", ".jpg")
       cal_img = cv2.imread(img_file)
+   print("CAL IMG IS:", cal_img)
    if len(cal_img.shape) > 2:
       cal_img = cv2.cvtColor(cal_img, cv2.COLOR_BGR2GRAY)
    if "x_poly" not in cal_params:
