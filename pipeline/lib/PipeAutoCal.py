@@ -3256,10 +3256,10 @@ def make_cal_summary(cam,json_conf):
       
       obj = cal_index[key]
       if obj['cam_id'] == cam:
-         recent_azs.append(obj['center_az'])
-         recent_els.append(obj['center_el'])
-         recent_pos.append(obj['position_angle'])
-         recent_pxs.append(obj['pixscale'])
+         recent_azs.append(float(obj['center_az']))
+         recent_els.append(float(obj['center_el']))
+         recent_pos.append(float(obj['position_angle']))
+         recent_pxs.append(float(obj['pixscale']))
 
    mcp_file = cal_dir + "multi_poly-" + STATION_ID + "-" + cam + ".info"
    star_file = cal_dir + "star_db-" + STATION_ID + "-" + cam + ".info"
