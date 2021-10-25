@@ -3249,6 +3249,9 @@ def make_cal_summary(cam,json_conf):
    for key in cal_index:
       obj = cal_index[key]
       print("OBJ:", obj)
+      if cam_id not in obj:
+         (f_datetime, cam_id, f_date_str,y,m,d, h, mm, s) = convert_filename_to_date_cam(obj['cal_image_file')
+
       if obj['cam_id'] == cam:
          this_cal_index.append(obj)
          all_total_stars += obj['total_stars']
