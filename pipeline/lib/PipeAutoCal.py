@@ -3249,7 +3249,9 @@ def make_cal_summary(cam,json_conf):
    for key in cal_index:
       obj = cal_index[key]
       print("OBJ:", obj)
-      if cam_id not in obj:
+      if "cam_id" not in obj and "cal_image_file" not in obj:
+         continue
+      if "cam_id" not in obj:
          print(obj.keys())
          (f_datetime, cam_id, f_date_str,y,m,d, h, mm, s) = convert_filename_to_date_cam(obj['cal_image_file'])
          obj['cam_id'] = cam_id
@@ -3265,6 +3267,8 @@ def make_cal_summary(cam,json_conf):
    recent_pxs = []
    first_key = sorted(cal_index, reverse=True)[0]
    for key in sorted(cal_index, reverse=True):
+      if "cam_id" not in obj and "cal_image_file" not in obj:
+         continue
       
       obj = cal_index[key]
       if obj['cam_id'] == cam:
