@@ -706,6 +706,16 @@ def update_dyna_cache_for_day(dynamodb, date, stations, utype=None):
             if obs_key in del_keys:
                print("THIS OBS KEY IS DELETED!")
             else:
+               if "cat_image_stars" in data:
+                  del data['cat_image_stars']
+               if "crop_box" in data:
+                  del data['crop_box']
+               if "revision" in data:
+                  del data['revision']
+               if "dfv" in data:
+                  del data['dfv']
+               if "final_trim" in data:
+                  del data['final_trim']
                all_obs.append(data)
 
       #update_redis_obs(date, all_obs)
