@@ -200,7 +200,7 @@ def stack_stack(new_frame, stack_frame):
    return(np.asarray(stacked_image))
 
 
-def make_az_grid(cal_image, mj,json_conf):
+def make_az_grid(cal_image, mj,json_conf,save_file=None):
    az_lines = []
    el_lines = []
    points = []
@@ -501,9 +501,10 @@ def scan_meteor_video(meteor_video_file,json_conf,mj = None, station_id = None):
       mj['sd_wh'] = [last_frame.shape[1],last_frame.shape[0]]
       mj['frame_data'] = frame_data
       mj['objects'] = objects 
-      cv2.imwrite(stack_file, stacked_frame) 
-      stacked_frame_tn = cv2.resize(stacked_frame, (300,180))
-      cv2.imwrite(stack_file_tn, stacked_frame_tn) 
+      if save_file is None:
+         cv2.imwrite(stack_file, stacked_frame) 
+         stacked_frame_tn = cv2.resize(stacked_frame, (300,180))
+         cv2.imwrite(stack_file_tn, stacked_frame_tn) 
    else:
       frame_data = mj['frame_data']
       objects = mj['objects']
@@ -1593,7 +1594,8 @@ def man_detect(meteor_video_file,json_conf):
       print("found file.", meteor_video_file)  
       data = scan_meteor_video(meteor_video_file,json_conf)
 
-if len(sys.argv) > 1:
-   man_detect(sys.argv[1], local_json_conf)
-else:
-   menu(local_json_conf)
+if __name__ == "__main__":
+   if len(sys.argv) > 1:
+      man_detect(sys.argv[1], local_json_conf)
+   else:
+      menu(local_json_conf)

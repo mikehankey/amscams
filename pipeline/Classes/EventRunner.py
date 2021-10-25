@@ -60,6 +60,8 @@ class EventRunner():
 
          self.plane_pairs_file = "/mnt/ams2/EVENTS/" + self.year + "/" + self.month + "/" + self.day + "/" + self.date + "_PLANE_PAIRS.json"  
          self.min_report = "/mnt/ams2/EVENTS/" + self.year + "/" + self.month + "/" + self.day + "/" + self.date + "_MIN_REPORT.json"  
+         self.possible = "/mnt/ams2/EVENTS/" + self.year + "/" + self.month + "/" + self.day + "/" + self.date + "_POSSIBLE.json"  
+         self.not_possible = "/mnt/ams2/EVENTS/" + self.year + "/" + self.month + "/" + self.day + "/" + self.date + "_NOT_POSSIBLE.json"  
 
 
          self.cloud_all_events_file = "/mnt/archive.allsky.tv/EVENTS/" + self.year + "/" + self.month + "/" + self.day + "/" + self.date + "_ALL_EVENTS.json"  
@@ -205,8 +207,48 @@ class EventRunner():
                print("STATION COUNT:", sc)
 
       save_json_file(self.min_report, obs_by_min)
+      save_json_file(self.possible, possible)
+      save_json_file(self.not_possible, not_possible)
       print("saved:", self.min_report)
+      print("saved:", self.possible)
+      print("saved:", self.not_possible)
 
+      run = input("DO COINCIENT EVENTS [Y]es?")
+      if run == "Y" or run == "y":
+         self.coin_events(possible)
+      run = input("DO DO PLANE PAIRS NEXT [Y]es?")
+      if run == "Y" or run == "y":
+         self.do_plane_pairs(obs_by_min, possible, not_possible)
+      run = input("DO EVENTS FROM PLANE PAIRS [Y]es? ")
+      if run == "Y" or run == "y":
+         self.events_from_plane_pairs()
+
+   def coin_events(self, possible):
+      pos_obs = {}
+      for data in possible:
+         print("POSSIBLE EVENT DATA:", data)
+         for row in data:
+            print("POS:", row[4], row[5])
+            obs1 = row[4].replace(":", "_")
+            obs2 = row[5].replace(":", "_")
+            pos_obs[obs1] = row
+            pos_obs[obs2] = row
+
+      ev_obs = []
+      for key in sorted(pos_obs,reverse=True):
+         station_id = key.split("_")[0]
+         obs_file = key.replace(station_id + "_", "")
+         ev_obs.append((station_id, obs_file))
+         print(station_id, obs_file)
+      ev_obs = sorted(ev_obs, key=lambda x: (x[1]), reverse=True)
+      for data in ev_obs:
+         print(data)
+
+   def do_plane_pairs(self, obs_by_min=None, possible=None, not_possible=None):
+      if obs_by_min is None:
+         obs_by_min = load_json_file(self.min_report)
+         possible = load_json_file(self.possible)
+         not_possible = load_json_file(self.not_possible)
       pc = 0
       for p in not_possible:
          print("NOT POSSIBLE", pc, p)
@@ -287,7 +329,10 @@ class EventRunner():
       print("Saving plane pairs file")
       save_json_file(self.plane_pairs_file, self.plane_pairs)
 
+
+   def events_from_plane_pairs(self):
       # Check make events only from the successful plane pair obs
+      self.plane_pairs = load_json_file(self.plane_pairs_file)
       new_events = []
       bad_keys = []
       print("Check Make Events")

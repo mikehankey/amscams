@@ -649,7 +649,7 @@ def event_stats(events):
       print(ss, stats[ss])
    #exit()
 
-def solve_day(day, cores=32):
+def solve_day(day, cores=16):
    date = day
    year, mon, dom = date.split("_")
    day_dir = "/mnt/ams2/EVENTS/" + year + "/" + mon + "/" + dom + "/" 
@@ -864,7 +864,11 @@ def get_event_data(date, event_id,json_conf=None):
    obs_dict_file = "/mnt/ams2/EVENTS/" + y + "/" + m + "/" + d + "/" + y + "_" + m + "_" + d + "_OBS_DICT.json" 
    event_dict = {}
    if cfe(event_dict_file) == 1:
-      event_dict = load_json_file(event_dict_file)
+      try:
+         event_dict = load_json_file(event_dict_file)
+      except:
+         print("CORRUPT EVENT DICT:", event_dict_file)
+         exit()
    else:
       event_dict = {}
    if cfe(event_file) == 1:

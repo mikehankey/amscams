@@ -15,9 +15,9 @@ if __name__ == "__main__":
 
    ER = EventReport(date=sys.argv[1],use_cache=0)
    ER.evaluate_event_planes()
-   exit()
    ER.report_minutes()
    ER.report_events()
    ER.kml_event_report()
+   exit()
 
    #ER.ops_report()
