@@ -3251,6 +3251,7 @@ def make_cal_summary(cam,json_conf):
       print("OBJ:", obj)
       if cam_id not in obj:
          (f_datetime, cam_id, f_date_str,y,m,d, h, mm, s) = convert_filename_to_date_cam(obj['cal_image_file')
+         obj['cam_id'] = cam_id
 
       if obj['cam_id'] == cam:
          this_cal_index.append(obj)
