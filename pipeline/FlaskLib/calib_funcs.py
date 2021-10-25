@@ -256,15 +256,19 @@ def calib_main_new(amsid,in_data):
    out = "<h1> NEW CALIB MENU</h1>"
    json_conf = load_json_file("../conf/as6.json")
    for cam_num in json_conf['cameras']:
-      cam_id = json_conf['cameras'][cams_id]
-      out += cal_cam_summary(ams_id, cam_id)
+      cam_id = json_conf['cameras'][cam_num]['cams_id']
+      out += cal_cam_summary(amsid, cam_id)
    template = template.replace("{MAIN_TABLE}", out)
 
    return(template)
 
 def cal_cam_summary(amsid, cam_id):
-   mcp_file = "/mnt/ams2/cal/freecal/multi_poly-" + amsid + "-" + cam_id + ".info"
-   return(mcp_file)
+   mcp_file = "/mnt/ams2/cal/multi_poly-" + amsid + "-" + cam_id + ".info"
+   if cfe(mcp_file) == 1:
+      out = "<table><tr><td>Calibration Summary for " + cam_id + "</td></tr></table>"
+   else:
+      out = "<table><tr><td>NO LENS MODEL INFO EXISTS YET FOR " + cam_id + " " + mcp_file + "</td></tr></table>"
+   return(out)
 
 def calib_main(amsid,in_data):
    if in_data['cam_id_filter'] is not None:
