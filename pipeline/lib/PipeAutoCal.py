@@ -3267,10 +3267,10 @@ def make_cal_summary(cam,json_conf):
    recent_pxs = []
    first_key = sorted(cal_index, reverse=True)[0]
    for key in sorted(cal_index, reverse=True):
-      if "cam_id" not in obj and "cal_image_file" not in obj:
-         continue
       
       obj = cal_index[key]
+      if "cam_id" not in obj and "cal_image_file" not in obj:
+         continue
       if obj['cam_id'] == cam:
          recent_azs.append(float(obj['center_az']))
          recent_els.append(float(obj['center_el']))
