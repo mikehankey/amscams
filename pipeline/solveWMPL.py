@@ -460,11 +460,11 @@ def sanity_check_points(azs,els, ras, decs):
          good_azs.append(azs[i])
          good_els.append(els[i])
 
-   print("BEFORE :", azs)
-   print("BEFORE :", els)
+   print("BEFORE SANITY AZ:", azs)
+   print("BEFORE SANITY EL:", els)
 
-   print("AFTER :", good_azs)
-   print("AFTER :", good_els)
+   print("AFTER SANITY AZ:", good_azs)
+   print("AFTER SANITY EL:", good_els)
 
 
    return(good_azs,good_els)
@@ -1754,6 +1754,9 @@ def make_event_json(event_id, solve_dir,ignore_obs):
    jpgs = glob.glob(solve_dir + "/*.jpg")
    jsons = glob.glob(solve_dir + "/*.json")
    pks = glob.glob(solve_dir + "/*.pickle")
+   event_file = solve_dir + event_id + "-event.json"
+   kml_file = solve_dir + event_id + "-event.kml"
+   obs_file = solve_dir + event_id + "_GOOD_OBS.json"
 
    print("looking in solve dir", solve_dir)
 
@@ -1765,18 +1768,18 @@ def make_event_json(event_id, solve_dir,ignore_obs):
          sol_file = js
 
 
-   print("SOL FILE:", sol_file)
-   print("KML FILE:", kml_file)
+   #print("SOL FILE:", sol_file)
+   #print("KML FILE:", kml_file)
 
-   simple_solve = load_json_file(sol_file)
-
+   #simple_solve = load_json_file(sol_file)
+   
 
    as_obs = load_json_file(obs_file)
 
-   event_file = sol_file.replace("-simple.json", "-event.json")
+   #event_file = sol_file.replace("-simple.json", "-event.json")
 
-   print("OBS:", as_obs) 
-   print("SIMPLE:", simple_solve) 
+   #print("OBS:", as_obs) 
+   #print("SIMPLE:", simple_solve) 
 
    points = []
    lines = []
@@ -1797,46 +1800,52 @@ def make_event_json(event_id, solve_dir,ignore_obs):
             station_data[station_id] = obs_data['loc']
             points.append((lon,lat,alt,status + station_id))
 
-   durs = []
-   ss_lines = []
-   for ss in simple_solve:
-      print(ss)
-      sol_key, start_lat, start_lon, start_ele, end_lat, end_lon, end_ele, dist, dur, vel = ss 
-      durs.append(dur)
-      (skey1,skey2) = sol_key.split("_")
-      station1,cam1 = skey1.split("-")
-      station2,cam2 = skey2.split("-")
-      ol_start_lat = station_data[station2][0]
-      ol_start_lon = station_data[station2][1]
-      ol_start_alt = station_data[station2][2]
-      line_desc = "OL:" + sol_key
-      ss_lines.append((ol_start_lon,ol_start_lat,ol_start_alt,start_lon,start_lat,start_ele,line_desc))
-      ss_lines.append((ol_start_lon,ol_start_lat,ol_start_alt,end_lon,end_lat,end_ele,line_desc))
+   if False:
+      durs = []
+      ss_lines = []
+      for ss in simple_solve:
+         print(ss)
+         sol_key, start_lat, start_lon, start_ele, end_lat, end_lon, end_ele, dist, dur, vel = ss 
+         durs.append(dur)
+         (   skey1,skey2) = sol_key.split("_")
+         station1,cam1 = skey1.split("-")
+         station2,cam2 = skey2.split("-")
+         ol_start_lat = station_data[station2][0]
+         ol_start_lon = station_data[station2][1]
+         ol_start_alt = station_data[station2][2]
+         line_desc = "OL:" + sol_key
+         ss_lines.append((ol_start_lon,ol_start_lat,ol_start_alt,start_lon,start_lat,start_ele,line_desc))
+         ss_lines.append((ol_start_lon,ol_start_lat,ol_start_alt,end_lon,end_lat,end_ele,line_desc))
 
-      line_desc = "SS:" + sol_key
+         line_desc = "SS:" + sol_key
       
-      ss_lines.append((start_lon,start_lat,start_ele,end_lon,end_lat,end_ele,line_desc))
+         ss_lines.append((start_lon,start_lat,start_ele,end_lon,end_lat,end_ele,line_desc))
 
-   if len(durs) > 0:
-      duration = float(max(durs) / 25)
-   else:
-      duration = float(0)
+      if len(durs) > 0:
+         duration = float(max(durs) / 25)
+      else:
+         duration = float(0)
 
    solution = {}
    solution['event_id'] = event_id
-   solution['duration'] = float(duration)
+   #solution['duration'] = float(duration)
    solution['sol_dir'] = solve_dir 
 #   solution['obs'] = as_obs
-   solution['simple_solve'] = simple_solve
+   #solution['simple_solve'] = simple_solve
    solution['traj'] = {}
    solution['orb'] = {}
    solution['rad'] = {}
-   solution['plot'] = {}
-   solution['kml'] = {}
+   solution['plot'] = glob.glob(solve_dir)
    solution['shower'] = {}
 
    if len(pks) == 0:
       print("WMPL FAILED. NO EVENT JSON MADE.")
+      fail_file = solve_dir + event_id + "-fail.json"
+      fail = {}
+      fail['failed'] = 1 
+      print("FAIL FILE:", fail_file)
+      save_json_file(fail_file, fail)
+
       cloud_dir = solve_dir.replace("/ams2/", "/archive.allsky.tv/")
       cmd = "rsync -auv " + solve_dir + "* " + cloud_dir 
       os.system(cmd)
@@ -1936,8 +1945,8 @@ def make_event_json(event_id, solve_dir,ignore_obs):
 
 
 
-   solution['kml']['points'] = points
-   solution['kml']['lines'] = lines
+   #solution['kml']['points'] = points
+   #solution['kml']['lines'] = lines
 
    solution['shower'] = {}
    solution['shower']['shower_no'] = float(shower_no)
@@ -2045,7 +2054,7 @@ def make_event_json(event_id, solve_dir,ignore_obs):
       print(obs.station_id, obs.time_data)
 
    solution['event_id'] = event_id
-   solution['obs'] = as_obs
+   #solution['obs'] = as_obs
    save_json_file(event_file, solution)
    print("SAVED EVENT FILE:", event_file)
    return(solution,as_obs)
@@ -2264,7 +2273,8 @@ def event_report(solve_dir, event_final_dir, obs):
              print(jpg_f, " already made.")
 
     check_fix_plots(final_event_id)
-
+    solved_files = glob.glob(solve_dir + "/*")
+    print("SOLVED FILES:", solved_files)
     print("MOVE THE WMPL FILES TO THE FINAL EVENT DIR!")
     final_jpgs = []
     for sf in solved_files:
@@ -2280,16 +2290,19 @@ def event_report(solve_dir, event_final_dir, obs):
        if "jpg" in fn:
           final_jpgs.append(new_file)
        print(cmd)
+    used = {}
     for jpg in final_jpgs:
        jpg = jpg.replace("/mnt/ams2/meteor_archive/", "")
-       html += "<img src=" + jpg + ">"
-       print(html)
+       jpg_fn = jpg.split("/")[-1]
+       if jpg_fn not in used:
+          html += "<img src=" + jpg_fn + ">"
+       print("HTML:", html)
+       used[jpg_fn] = 1
     html += "<p>"
     html += "<pre>" + report + "</pre>"
     fp = open(solve_dir + "/index.html", "w")
     fp.write(html)
     print("SAVED INDEX:", event_final_dir + "/index.html")
-
     # delete PNGS
     pngs = glob.glob(event_final_dir + "*.png")
     for png in pngs:
@@ -2303,7 +2316,7 @@ def event_report(solve_dir, event_final_dir, obs):
 
 
 
-def WMPL_solve(event_id, obs,time_sync=1):
+def WMPL_solve(event_id, obs,time_sync=1, force=0):
     json_conf = load_json_file("../conf/as6.json")
     ams_id  = json_conf['site']['ams_id']
 
@@ -2314,7 +2327,13 @@ def WMPL_solve(event_id, obs,time_sync=1):
 
     event_final_dir = "/mnt/ams2/EVENTS/" + year + "/" + mon + "/" + day + "/" + event_id + "/"
     solve_dir = "/mnt/ams2/EVENTS/" + year + "/" + mon + "/" + day + "/" + event_id + "/"
-    # Inputs are RA/Dec
+    solve_file = solve_dir + event_id + "-event.json"
+    fail_file = solve_dir + event_id + "-fail.json"
+    if (cfe(solve_file) == 1 or cfe(fail_file) == 1) and force == 0:
+       print("We already solved this event!")
+       return()
+    else:
+       print("EVENT NOT SOLVED?!", solve_file, fail_file)
     meastype = 2
 
     # Reference julian date
@@ -2402,12 +2421,17 @@ def WMPL_solve(event_id, obs,time_sync=1):
     #save_json_file(meteor_file, mj)
     #print("Saved:", meteor_file) 
 
-    solved_files = glob.glob(solve_dir + "*")
-    if len(solved_files) == 0:
+    #solved_files = glob.glob(solve_dir + "*")
+    if cfe(solve_file) == 1:
        print("FAILED TO SOLVE. No files in solve dir:", solve_dir )
        cmd = "cd ../pythonv2; ./solve.py vida_failed_plots " + event_id
        print(cmd)
        os.system(cmd)
+       fail_file = solve_dir + event_id + "-fail.json"
+       fail = {}
+       fail['failed'] = 1 
+       print("FAIL FILE:", fail_file)
+       save_json_file(fail_file, fail)
  
        for station_id in obs:
           if len(obs[station_id].keys()) > 1:
@@ -2418,9 +2442,10 @@ def WMPL_solve(event_id, obs,time_sync=1):
           print(station_id, file, obs[station_id][file]['times'])
     else:
        print(solve_dir )
-       for sf in solved_files:
-          print(sf)
+       #for sf in solved_files:
+       #   print(sf)
        event_report(solve_dir, event_final_dir, obs)
+       make_event_json(event_id, solve_dir,[])
 
 
 def center_obs(obs_data):
@@ -2495,54 +2520,57 @@ def day_wizard(day):
 
 
 
-print(len(sys.argv))
-if len(sys.argv) == 1:
-   print("RUN MENU.")
-   menu()
-   exit()
-
-cmd = sys.argv[1]
-meteor_file = sys.argv[2]
 
 #event_json_file = "/mnt/ams2/meteor_archive/AMS1/EVENTS/2021_01_03/20210103_074325.960/20210103_074323-event.json"
 #make_event_html(event_json_file)
 
+if __name__ == "__main__":
 
-if cmd == "solve":
-   mj = load_json_file(meteor_file)
-   obs = mj['multi_station_event']['obs']
-   WMPL_solve(obs)
-if cmd == "report":
-   WMPL_report(meteor_file)
-if cmd == "wiz":
-   day_wizard(meteor_file)
-if cmd == "se":
-   if len(sys.argv) > 3:
-      time_sync = 0
-   else:
-      time_sync = 1
-   solve_event(meteor_file, 1, time_sync)
-if cmd == "sd":
-   solve_day(meteor_file)
-if cmd == "mej":
-   make_event_json(meteor_file)
-if cmd == "meh":
-   make_event_html(meteor_file)
-if cmd == "sm":
-   solve_month(meteor_file)
-if cmd == "status":
-   solve_status(meteor_file)
-if cmd == "define_events" or cmd == "de":
-   define_events(meteor_file)
-if cmd == "delete_events_day" :
-   delete_events_day(meteor_file)
-if cmd == "cfp" :
-   print(cmd)
-   check_fix_plots(sys.argv[2])
-if cmd == "vida_plots" :
-   make_vida_plots(meteor_file)
-if cmd == "events_report" or cmd == "er":
-   if len(sys.argv) > 2:
-      events_report(meteor_file, sys.argv[2])
-   else:
-      events_report(meteor_file)
+   print(len(sys.argv))
+   if len(sys.argv) == 1:
+      print("RUN MENU.")
+      menu()
+      exit()
+
+   cmd = sys.argv[1]
+   meteor_file = sys.argv[2]
+
+
+   if cmd == "solve":
+      mj = load_json_file(meteor_file)
+      obs = mj['multi_station_event']['obs']
+      WMPL_solve(obs)
+   if cmd == "report":
+      WMPL_report(meteor_file)
+   if cmd == "wiz":
+      day_wizard(meteor_file)
+   if cmd == "se":
+      if len(sys.argv) > 3:
+         time_sync = 0
+      else:
+         time_sync = 1
+      solve_event(meteor_file, 1, time_sync)
+   if cmd == "sd":
+      solve_day(meteor_file)
+   if cmd == "mej":
+      make_event_json(meteor_file)
+   if cmd == "meh":
+      make_event_html(meteor_file)
+   if cmd == "sm":
+      solve_month(meteor_file)
+   if cmd == "status":
+      solve_status(meteor_file)
+   if cmd == "define_events" or cmd == "de":
+      define_events(meteor_file)
+   if cmd == "delete_events_day" :
+      delete_events_day(meteor_file)
+   if cmd == "cfp" :
+      print(cmd)
+      check_fix_plots(sys.argv[2])
+   if cmd == "vida_plots" :
+      make_vida_plots(meteor_file)
+   if cmd == "events_report" or cmd == "er":
+      if len(sys.argv) > 2:
+         events_report(meteor_file, sys.argv[2])
+      else:
+         events_report(meteor_file)

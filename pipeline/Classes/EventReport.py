@@ -36,6 +36,8 @@ class EventReport():
       self.date = date
       self.Y, self.M, self.D =  date.split("_")
       self.event_dir = "/mnt/ams2/EVENTS/" + self.Y + "/" + self.M + "/" + self.D + "/"
+      self.event_cloud_dir = "/mnt/ams2/EVENTS/" + self.Y + "/" + self.M + "/" + self.D + "/"
+      self.cloud_event_url = "https://archive.allsky.tv/EVENTS/" + self.Y + "/" + self.M + "/" + self.D + "/"
 
       # FILES THAT HOLD DATA
       # ALL_OBS
@@ -207,7 +209,15 @@ class EventReport():
    def kml_event_report(self):
       kml = simplekml.Kml()
       fol_day = kml.newfolder(name=self.date + " AS7 EVENTS")
+      total_colors = len(kml_colors.keys()) - 1
+      kcolors = []
+      for key in kml_colors:
+         kcolors.append(kml_colors[key])
+      ec = 0
       for key in self.event_dict:
+         if ec > total_colors:
+            ec = 0
+         color = kcolors[ec]
          print("KML EVENT DICT KEY: ", key)
          fol_sol = fol_day.newfolder(name=key)
          if "solve_status" in self.event_dict[key]:
@@ -229,29 +239,15 @@ class EventReport():
 
          
 
-         for data in self.event_dict[key]['plane_pairs']:
-            print("PLANE:", data)
-            combo_key = data['combo_key']
+         for pkey in self.event_dict[key]['planes']:
+            data = self.event_dict[key]['planes'][pkey] 
+            print("PLANE:", key, pkey)
+            status, line1, line2 = data
+            combo_key = key
             o_combo_key = combo_key.replace("EP:", "")
             el = o_combo_key.split("AMS")
-            ob1 = el[1]
-            ob2 = el[2]
-            ob1 = "AMS" + ob1.replace(":", "_")
-            ob2 = "AMS" + ob2.replace(":", "_")
-            if ob1 in self.all_obs_ids:
-               ev_id = self.all_obs_ids[ob1]
-            else:
-               ev_id = "NO_EVENT_ID"
-               print("obs not in obs_id file!", ob1)
-            if "status" not in data:
-               print("combo key NOT in plane_pairs file???")
-               continue
-            print(ev_id, combo_key, combo_key)
-            print("DATA:", data)
-            if data['status'] == "plane_solved":
-               line1 = data['line1']
-               line2 = data['line2']
-               color = data['color']
+            ob1, obs2 = pkey.split(":")
+            if status == "plane_solved":
                slat,slon,salt,elat,elon,ealt = line1
 
                line = fol_sol.newlinestring(name=combo_key, description="", coords=[(slon,slat,salt),(elon,elat,ealt)])
@@ -266,16 +262,14 @@ class EventReport():
                line.linestyle.color = color
                line.linestyle.colormode = "normal"
                line.linestyle.width = "3"
+            else:
+               print("Bad plane don't map.", status)
 
          if "solution" in self.event_dict[key]:
             go = False
             if "traj" in self.event_dict[key]['solution']:
                print("YO", key, solve_status, self.event_dict[key]['plane_pairs'])
                traj = self.event_dict[key]['solution']['traj']
-               try:
-                  color = self.event_dict[key]['plane_pairs'][0]['color']
-               except:
-                  color = "FFFFFFFF"
                go = True
             if go is True:
                print(traj)
@@ -292,6 +286,7 @@ class EventReport():
                print("THERE IS NO TRAJ!", self.event_dict[key])
          else:
             print("THERE IS NO TRAJ!", self.event_dict[key])
+         ec += 1
 
 
       kml.save(self.event_kml_file)
@@ -329,6 +324,15 @@ class EventReport():
          date = vid[0:10]
          prev_url = "https://archive.allsky.tv/" + st + "/METEORS/" + year + "/" + date + "/" + st + "_" + vid.replace(".mp4","-prev.jpg") 
          html += "<img src=" + prev_url + "><br>" + st + "-" + cam + " " + f_date_str + "<br>"
+
+      event_plots = glob.glob(self.event_dir + event['event_id'] + "/*.jpg")
+      html += "<h1>Plots</h1>"
+      for ep in event_plots:
+
+         pfn = ep.split("/")[-1]
+         plot_url = self.cloud_event_url + event['event_id'] + "/" + pfn
+         html += "<img src=" + plot_url + "><br>" 
+         print("PLOT:", plot_url)
 
       return(html, event)
 

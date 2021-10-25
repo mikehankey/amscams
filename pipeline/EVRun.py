@@ -45,10 +45,21 @@ if __name__ == "__main__":
       6) Once all events have been solved make the summary reports
 
    """
+  # EVR.sync_event_dir()
+  # exit()
+   #EVR.EOD_summary()
+   #exit()
+   EVR.plane_station_stats()
+   exit()
+   EVR.coin_events()
+   EVR.coin_solve()
+   EVR.run_solve_jobs()
+   EVR.make_events_file_from_coin()
+   EVR.sync_event_dir()
+   EVR.load_dyna_events()
+   print("FINISH SOLVE FOR DAY", sys.argv[1]) 
 
-
-   EVR.obs_by_minute()
-   print("Done obs by minute")
+   #EVR.obs_by_minute()
    exit()
    EVR.list_events_for_day()
    input("Wait")
