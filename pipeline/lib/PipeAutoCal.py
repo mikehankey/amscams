@@ -3589,6 +3589,9 @@ def deep_calib_init(cam,json_conf):
    status, cal_params,merged_stars = minimize_poly_multi_star(all_stars, json_conf,0,0,cam,None,mcp,SHOW)
    #print("BEST STARS:", len(best_stars))
    update_time = datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
+   if cal_params == 0:
+      print("MINIMIZE POLY FAILED!, something is wrong???")
+      exit()
    cal_params['last_updated'] = update_time
 
    save_json_file(mcp_file, cal_params)
