@@ -2821,6 +2821,8 @@ def refit_fov(cal_file, json_conf, mov_frame_num=0):
 
          cal_params['y_poly_fwd'] = mcp['y_poly_fwd']
 
+   if cal_params['position_angle'] <= 0 or cal_params['total_res_px'] >= 3:
+      cal_params = optimize_matchs(cal_file,json_conf,cal_params,img)
    if cal_params['position_angle'] <= 0 or cal_params['total_res_px'] >= 10:
       #cal_params = optimize_matchs(cal_file,json_conf,cal_params,img)
       #az_guess, el_guess, pos_ang_guess, pix_guess = get_cam_best_guess(cam, json_conf)
@@ -5064,15 +5066,15 @@ def optimize_matchs(cp_file,json_conf,nc,oimg):
          #nc = load_json_file(cp_file)
 
    # opt pos
-   s = 0
-   e = 360 
+   s = -5 
+   e = 5
    opos = nc['position_angle']
    best_pos = nc['position_angle']
    best_res = nc['total_res_px']
    best_score = best_res / best_match_perc 
    for i in range (s,e):
       a = i  
-      nc['position_angle'] = i
+      nc['position_angle'] += i
      
       print("NC P:", nc['position_angle'])
       cat_stars = get_catalog_stars(nc)
@@ -5092,8 +5094,8 @@ def optimize_matchs(cp_file,json_conf,nc,oimg):
    # opt az
    #s = int(nc['center_az']-10)
    #e = int(nc['center_az']+10)
-   s = -10
-   e = 10
+   s = -5
+   e = 5
    oaz = nc['center_az']
    best_az = nc['center_az']
    best_res = nc['total_res_px']
@@ -5119,8 +5121,8 @@ def optimize_matchs(cp_file,json_conf,nc,oimg):
 
    nc['center_az'] = best_az
 
-   s = -10
-   e = 10
+   s = -5
+   e = 5
    oel = nc['center_el']
    best_el = nc['center_el']
    best_res = nc['total_res_px']
@@ -5145,8 +5147,8 @@ def optimize_matchs(cp_file,json_conf,nc,oimg):
       view_calib(cp_file,json_conf,nc,oimg)
    nc['center_el'] = best_el
 
-   s = -10
-   e = 10
+   s = -5
+   e = 5
    ops = nc['pixscale']
    best_ps = nc['pixscale']
    best_res = nc['total_res_px']
