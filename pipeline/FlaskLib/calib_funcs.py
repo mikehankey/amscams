@@ -39,7 +39,7 @@ def lens_model(amsid):
       if "autocal_stars" in sdb:
          ts = len(sdb['autocal_stars'])
       else:
-         pf = 0
+         ts = 0
       out += "<div style='float: left' class='preview select-to norm'>"
       out += "<a href=" + vlens + "><img width=640 height=360 src=" + vlens + "></a><br>" 
       out += "<table>"
