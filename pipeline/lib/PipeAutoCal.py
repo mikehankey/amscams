@@ -1024,6 +1024,17 @@ def refit_meteor(meteor_file, json_conf,force=0):
    
    first_frame = None
    mj = load_json_file(meteor_file)
+   human_stars = None
+   if "user_mods" in mj:
+      if "user_stars" in mj['user_mods']:
+         if len(mj['user_mods']['user_stars']) > 3:
+            human_stars = mj['user_mods']['user_stars']
+            temp = []
+            for a,b,c in human_stars:
+               print("HUMAN:", a,b,c)
+               temp.append(( float(a), float(b), float(c)))
+            human_stars = temp
+            
    red_file = meteor_file.replace(".json", "-reduced.json")
    if cfe(red_file) == 1:
       mjr = load_json_file(red_file)
@@ -1095,17 +1106,32 @@ def refit_meteor(meteor_file, json_conf,force=0):
       #user_stars = get_image_stars(meteor_file, image, json_conf, 0)
       #print("USER STARS:", user_stars)
       #user_stars,cp = get_image_stars_with_catalog(meteor_file, image, cp, json_conf, None,  0)
-      user_stars_cat,cp = get_image_stars_with_catalog(meteor_file, image, cp, json_conf, None,  0)
+      if human_stars is not None:
+         user_stars_cat,cp = get_image_stars_with_catalog(meteor_file, image, cp, json_conf, None,  0)
+      else:
+         cp = pair_stars(cp, meteor_file, json_conf, image)
+         user_stars_cat = cp['cat_image_stars']
+      temp = []
       for data in user_stars_cat:
-         print(data)
-      cp['user_stars'] = user_stars_cat
-      user_stars = user_stars_cat
+         dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist,bp = data 
+         temp.append((float(six), float(siy), float(bp)))
+
+      cp['user_stars'] = temp 
+      user_stars = temp 
       print("CP STARS:", cp['user_stars'])
       print("PERF STARS:", user_stars_cat)
       #cp['user_stars'] = user_stars
 
       ih,iw = image.shape[:2]
       good_stars = []
+      temp = []
+      #for data in cp['user_stars']:
+      #   x = float(data[0])
+      #   y = float(data[1])
+      #   z = float(data[2])
+      #   temp.append((x,y,z))
+      
+
       for data in cp['user_stars']:
          print("USER STARS:", data)
          x = data[0]
