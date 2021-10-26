@@ -1045,7 +1045,15 @@ def refit_meteor(meteor_file, json_conf,force=0):
    else:
       return()
    starting_res = cp['total_res_px']
-   if starting_res > 10:
+   sun_status, sun_az, sun_el = day_or_night(f_date_str, json_conf,1)
+   sun_el = int(sun_el)
+   print("SUN EL:", sun_el)
+   nostars = False
+   if sun_el > -10:
+      cp['user_stars'] = []
+      cp['cat_image_stars'] = []
+      nostars = True
+   if starting_res > 10 or sun_el > -10:
       #mj = use_default_cal(meteor_file, mj,json_conf)
       result = get_calib_from_range(cam, day,json_conf)
       if result != None:
@@ -1067,7 +1075,7 @@ def refit_meteor(meteor_file, json_conf,force=0):
       if mjr is not None:
          mjr['cal_params'] = mj['cp']
       print("Saved MJ using the default calib!", meteor_file)
-      #return()
+      return()
    print(mj['hd_trim'])
    if "hd_trim" in mj:
       hd_vid = mj['hd_trim']
