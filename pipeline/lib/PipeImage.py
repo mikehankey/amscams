@@ -100,10 +100,12 @@ def stack_frames(frames, skip = 1, resize=None, sun_status="day"):
    print("FRAMES:", len(frames))
    print("SUN:", sun_status)
    for frame in frames:
+      if frame is None:
+         continue
       try:
          avg_px = np.mean(frame)
       except: 
-         print("FRAME PROB:", frame.shape)
+         print("FRAME PROB:", frame)
          avg_px = 255
       #print("AVG PX:", avg_px)
       #print("RES:", resize)
