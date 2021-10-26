@@ -405,10 +405,11 @@ def get_calib_from_range(cam, t_day,json_conf):
          print(s_dt, t_dt, e_dt)
          print("THIS IS THE WAY:", row) 
          return(row)
-   s_dt = datetime.strptime(row[1], "%Y_%m_%d")
+   s_dt = datetime.strptime(rdata[0][1], "%Y_%m_%d")
    if t_dt > s_dt:
       print("THIS FILE IS MORE RECENT THAN OUR MOST RECENT CAL SO USE THAT!")
-      return(row)
+      print("USING:", rdata[0])
+      return(rdata[0])
    return(None)
        
 
@@ -1034,12 +1035,28 @@ def refit_meteor(meteor_file, json_conf,force=0):
       return()
    starting_res = cp['total_res_px']
    if starting_res > 10:
-      mj = use_default_cal(meteor_file, mj,json_conf)
+      #mj = use_default_cal(meteor_file, mj,json_conf)
+      result = get_calib_from_range(cam, day,json_conf)
+      if result != None:
+         cam, sd, ed, med_az, med_el, med_pos, med_px, med_res = result
+         def_cal = [med_az, med_el, med_pos, med_px, med_res]
+         cp['center_az'] = med_az
+         cp['center_el'] = med_el
+         cp['position_angle'] = med_pos
+         cp['pixscale'] = med_px
+         cp = update_center_radec(meteor_file,cp,json_conf)
+         mj['cp'] = cp
+         print("Using default calib", def_cal)
+      else:
+         print("Failed to get default med cal", cam, day)   
+         def_cal = []
+      print("DEFAULT CALIB:", def_cal)
+
       save_json_file(meteor_file, mj)
       if mjr is not None:
          mjr['cal_params'] = mj['cp']
       print("Saved MJ using the default calib!", meteor_file)
-      return()
+      #return()
    print(mj['hd_trim'])
    if "hd_trim" in mj:
       hd_vid = mj['hd_trim']
@@ -1292,6 +1309,8 @@ def refit_meteor(meteor_file, json_conf,force=0):
       print("AFTER GET MORE:", len(cp['user_stars']), len(cp['cat_image_stars'])) 
       print(image.shape)
       cp= pair_stars(cp, meteor_file, json_conf, image.copy())
+      for row in cp['cat_image_stars']:
+         print(row)
       rez = [row[-2] for row in cp['cat_image_stars']]
       if len(rez) >= 3:
          mean_rez = np.median(rez)
@@ -1299,11 +1318,11 @@ def refit_meteor(meteor_file, json_conf,force=0):
          mean_rez = 2
       print("AFTER GET MORE & PAIR:", len(cp['user_stars']), len(cp['cat_image_stars'])) 
       print(cp['cat_image_stars'])
+  
    if len(cp['cat_image_stars']) < 5:
       mj = use_default_cal(meteor_file, mj,json_conf)
       save_json_file(meteor_file, mj)
       print("Not enough stars to refit. Updated cp using the default cal.")
-
       red_file = meteor_file.replace(".json", "-reduced.json")
       if cfe(red_file) == 1:
          mjr = load_json_file(red_file)
@@ -1329,12 +1348,20 @@ def refit_meteor(meteor_file, json_conf,force=0):
       for row in cp['cat_image_stars']:
          dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist,bp = row
          res_good = 1
-         if cat_dist < cp['total_res_px'] * 2:
+         if cat_dist > cp['total_res_px'] * 2:
+            print("RES BAD:", cat_dist, cp['total_res_px'] * 2)
             res_good = 0
+         else:
+            print("RES GOOD:", cat_dist, cp['total_res_px'] * 2)
+            res_good = 1
          print("CENTER STARS:", six, siy)
+         print("CENTER CAT STARS:", row)
          if 0 <= six < 1920 and 0 <= siy <= 1080 and res_good == 1:
+            print("ADD CENTER STAR", row)
             center_stars.append(row)
             center_user_stars.append((six,siy,bp))
+         else:
+            print("IGNORE NON CENTER STAR", six, siy, res_good, cat_dist, cp['total_res_px'])
 
       temp_cp = cp.copy()
       temp_cp['cat_image_stars'] = center_stars
@@ -1350,10 +1377,12 @@ def refit_meteor(meteor_file, json_conf,force=0):
 
       #print("ALL STARS:", temp_cp['user_stars'])
       print("IMAGE BEFORE MIN", image.shape)
-
+      
       # remove bad stars before minimize
       best_stars = []
-
+      print("TEMP CP CAT STARS:", temp_cp['cat_image_stars'])
+      for row in temp_cp['cat_image_stars']:
+         print("NEW CAT STARS", row)
       cp = minimize_fov(meteor_file, temp_cp, meteor_file ,image,json_conf )
 
 
