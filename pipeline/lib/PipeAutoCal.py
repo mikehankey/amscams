@@ -3435,10 +3435,12 @@ def sync_cal_files(json_conf):
    # star_db-AMS1-010002.info
    # XXXXXX_ALL_STARS.json
    # ALL FILES FROM PLOT DIRS
+   cal_sum_html(json_conf)
    station_id = json_conf['site']['ams_id']
    cloud_cal_dir = "/mnt/archive.allsky.tv/" + station_id + "/CAL/" 
    cloud_plot_dir = "/mnt/archive.allsky.tv/" + station_id + "/CAL/PLOTS/" 
    cloud_img_dir = "/mnt/archive.allsky.tv/" + station_id + "/CAL/IMAGES/" 
+   os.system("cp /mnt/ams2/cal/*.html " + cloud_cal_dir )
    if cfe(cloud_plot_dir, 1) == 0:
       os.makedirs(cloud_plot_dir)
    if cfe(cloud_img_dir, 1) == 0:
