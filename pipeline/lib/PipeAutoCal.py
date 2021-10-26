@@ -1079,6 +1079,8 @@ def refit_meteor(meteor_file, json_conf,force=0):
       #print("USER STARS:", user_stars)
       #user_stars,cp = get_image_stars_with_catalog(meteor_file, image, cp, json_conf, None,  0)
       user_stars_cat,cp = get_image_stars_with_catalog(meteor_file, image, cp, json_conf, None,  0)
+      for data in user_stars_cat:
+         print(data)
       cp['user_stars'] = user_stars_cat
       user_stars = user_stars_cat
       print("CP STARS:", cp['user_stars'])
@@ -5245,6 +5247,7 @@ def eval_cal(cp_file,json_conf,nc=None,oimg=None, mask_img=None,batch_mode=None,
    if SHOW ==0:
       gimg = None
 
+   print("GIMG IS :", gimg)
    nc = pair_stars(nc, cp_file, json_conf, gimg)
 
 
@@ -6536,7 +6539,8 @@ def get_image_stars_with_catalog(file, img, cp, json_conf, cat_stars=None, show 
             cv2.line(temp_img, (six,siy), (new_cat_x,new_cat_y), (128,128,128), 1)
             match_dist = calc_dist((new_cat_x,new_cat_y), (six,siy))
             cat_dist = calc_dist((new_cat_x,new_cat_y), (six,siy))
-            cat_image_stars.append((name,mag,ra,dec,ra,dec,match_dist,new_cat_x,new_cat_y,0,0,new_cat_x,new_cat_y,six,siy,cat_dist,star_int))
+            if cat_dist < 3:
+               cat_image_stars.append((name,mag,ra,dec,ra,dec,match_dist,new_cat_x,new_cat_y,0,0,new_cat_x,new_cat_y,six,siy,cat_dist,star_int))
 
    print("Done get img stars. found", len(cat_image_stars) )
    cp['cat_image_stars'] = cat_image_stars
@@ -7335,17 +7339,22 @@ def pair_stars(cal_params, cal_params_file, json_conf, cal_img=None, show = 0):
       img_file = cal_params_file.replace("-calparams.json", ".jpg")
       cal_img = cv2.imread(img_file)
    print("CAL IMG IS:", cal_img)
-   if len(cal_img.shape) > 2:
-      cal_img = cv2.cvtColor(cal_img, cv2.COLOR_BGR2GRAY)
+   if cal_img is not None:
+      if len(cal_img.shape) > 2:
+         cal_img = cv2.cvtColor(cal_img, cv2.COLOR_BGR2GRAY)
    if "x_poly" not in cal_params:
       cal_params['x_poly'] = np.zeros(shape=(15,), dtype=np.float64)
       cal_params['y_poly'] = np.zeros(shape=(15,), dtype=np.float64)
       cal_params['x_poly_fwd'] = np.zeros(shape=(15,), dtype=np.float64)
       cal_params['y_poly_fwd'] = np.zeros(shape=(15,), dtype=np.float64)
 
+   if cal_img is not None:
+      temp_img = cal_img.copy()
 
-   temp_img = cal_img.copy()
-   ih, iw= cal_img.shape[:2]
+      ih, iw= cal_img.shape[:2]
+   else:
+      iw = 1920
+      ih = 1080
    ra_center = cal_params['ra_center']
    dec_center = cal_params['dec_center']
    center_az = cal_params['center_az']
@@ -7404,8 +7413,8 @@ def pair_stars(cal_params, cal_params_file, json_conf, cal_img=None, show = 0):
          #dec_data = [cal_params['dec_center']]
          x_data, y_data = cyraDecToXY(ra_data, \
                dec_data,
-               jd, json_conf['site']['device_lat'], json_conf['site']['device_lng'], cal_img.shape[1], \
-               cal_img.shape[0], hour_angle, float(cal_params['ra_center']),  float(cal_params['dec_center']), \
+               jd, json_conf['site']['device_lat'], json_conf['site']['device_lng'], iw, \
+               ih, hour_angle, float(cal_params['ra_center']),  float(cal_params['dec_center']), \
                float(cal_params['position_angle']), \
                px_per_degree, \
                cal_params['x_poly'], cal_params['y_poly'], \
