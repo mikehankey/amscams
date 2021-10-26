@@ -175,6 +175,8 @@ if __name__ == "__main__":
 
    if cmd == "cal_sum_html":
       cal_sum_html(json_conf)
+   if cmd == "sync_cal_files":
+      sync_cal_files(json_conf)
 
    if cmd == "deep_init":
       if sys.argv[2] == "all":
