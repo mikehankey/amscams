@@ -1034,7 +1034,7 @@ def refit_meteor(meteor_file, json_conf,force=0):
                print("HUMAN:", a,b,c)
                temp.append(( float(a), float(b), float(c)))
             human_stars = temp
-            
+   print("HUMAN STARS:", human_stars)
    red_file = meteor_file.replace(".json", "-reduced.json")
    if cfe(red_file) == 1:
       mjr = load_json_file(red_file)
@@ -1107,10 +1107,20 @@ def refit_meteor(meteor_file, json_conf,force=0):
       #print("USER STARS:", user_stars)
       #user_stars,cp = get_image_stars_with_catalog(meteor_file, image, cp, json_conf, None,  0)
       if human_stars is not None:
-         user_stars_cat,cp = get_image_stars_with_catalog(meteor_file, image, cp, json_conf, None,  0)
+         user_stars_cat = human_stars
+         print("USING HUMAN STARS!", len(human_stars))
+         input("WAIT")
       else:
+         user_stars_cat,cp = get_image_stars_with_catalog(meteor_file, image, cp, json_conf, None,  0)
          cp = pair_stars(cp, meteor_file, json_conf, image)
-         user_stars_cat = cp['cat_image_stars']
+         temp = []
+         for data in cp['cat_image_stars']:
+            dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist,bp = data 
+            temp.append((float(six),float(siy),float(bp)))
+
+         user_stars_cat = temp
+
+
       temp = []
       for data in user_stars_cat:
          if len(data) == 3:
