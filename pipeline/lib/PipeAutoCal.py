@@ -1119,6 +1119,7 @@ def refit_meteor(meteor_file, json_conf,force=0):
 
          user_stars_cat = temp
 
+      print ("CAT IMAGE STARS A1", len(cp['cat_image_stars']))
 
       temp = []
       for data in user_stars_cat:
@@ -1198,6 +1199,7 @@ def refit_meteor(meteor_file, json_conf,force=0):
       mj['cp'] = cp
       save_json_file(meteor_file, mj)
 
+   print ("CAT IMAGE STARS A2", len(cp['cat_image_stars']))
 
    #if cfe(mj['hd_stack']) == 1:
    #   image = cv2.imread(mj['hd_stack'])
@@ -1217,6 +1219,7 @@ def refit_meteor(meteor_file, json_conf,force=0):
       print("Failed to get default med cal", cam, day)   
       def_cal = []
    print("DEFAULT CALIB:", def_cal)
+   print ("CAT IMAGE STARS A3", len(cp['cat_image_stars']))
    # test if the default cal is better than the current cal. 
 
    #cp['user_stars'] = clean_user_stars(cp['user_stars'],image)
@@ -1248,6 +1251,7 @@ def refit_meteor(meteor_file, json_conf,force=0):
 
 
   # exit()
+   print ("CAT IMAGE STARS A4", len(cp['cat_image_stars']))
 
    if len(def_cal) > 0:
       acp = dict(cp)
@@ -1287,6 +1291,7 @@ def refit_meteor(meteor_file, json_conf,force=0):
       mj['cp'] = cp
       save_json_file(meteor_file, mj)
       return()
+   print ("CAT IMAGE STARS A5", len(cp['cat_image_stars']))
 
    if already_fit == 1:
       print("Already fit.")
@@ -1298,6 +1303,7 @@ def refit_meteor(meteor_file, json_conf,force=0):
    print(image.shape)
 
 
+   print ("CAT IMAGE STARS A6", len(cp['cat_image_stars']))
    if False:
       temp_cp = optimize_var(meteor_file,json_conf,"center_az",cp,image)
       if temp_cp is not None:
@@ -1432,6 +1438,7 @@ def refit_meteor(meteor_file, json_conf,force=0):
       for row in temp_cp['cat_image_stars']:
          print("NEW CAT STARS", row)
       cp = minimize_fov(meteor_file, temp_cp, meteor_file ,image,json_conf )
+      print ("CAT IMAGE STARS A7", len(cp['cat_image_stars']))
 
 
 
