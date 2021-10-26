@@ -5345,7 +5345,6 @@ def eval_cal(cp_file,json_conf,nc=None,oimg=None, mask_img=None,batch_mode=None,
    if SHOW ==0:
       gimg = oimg 
 
-   print("GIMG IS :", gimg)
    nc = pair_stars(nc, cp_file, json_conf, gimg)
 
 
