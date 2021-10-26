@@ -10,17 +10,32 @@ from lib.PipeAutoCal import fn_dir
 def stacks_main(amsid, data) :
    remote = 1
    json_file = "/mnt/ams2/SD/proc2/json/" + "main-index.json"
+   json_conf = load_json_file("../conf/as6.json")
    if cfe("/mnt/ams2/meteors", 1) == 0:
       return("Problem: data drive is not mounted. ")
    if cfe(json_file) == 0:
       return("Problem: main index file doesn't exist. ")
    stats_data = load_json_file(json_file)
+
+   if data['stack_type'] is not None:
+      stack_type = data['stack_type']
+      json_conf['stack_type'] = stack_type
+      save_json_file("../conf/as6.json", json_conf)
+   else:
+      stack_type = "default"
+
+   if stack_type == "default":
+      toggle = "<a href=?stack_type=night>Show Night Stacks Only</a>"
+   else:
+      toggle = "<a href=?stack_type=default>Show All Stacks</a>"
+
    if stats_data == 0:
       return("Problem: main index file is corrupted. ")
 
    out = """
       <div class='h1_holder d-flex justify-content-between'>
-         <h1>Review Stacks by Day </h1>
+         <h1>Review Stacks by Day </h1>""" + toggle + """
+           
          <!--<input value='' type='text' data-display-format='YYYY/MM/DD'  data-action='reload' data-url-param='limit_day' data-send-format='YYYY_MM_DD' class='datepicker form-control'></h1>
          <div class='page_h'>Page  1/10</div>-->
       </div>
@@ -35,6 +50,9 @@ def stacks_main(amsid, data) :
       page = int(data['p'])
    else:
       page = 1
+
+
+
    sdirs = glob.glob("/mnt/ams2/meteor_archive/" + amsid + "/STACKS/*")
 
 
@@ -54,7 +72,14 @@ def stacks_main(amsid, data) :
       footer = get_template("FlaskTemplates/footer.html")
    nav = get_template("FlaskTemplates/nav.html")
    template = get_template("FlaskTemplates/super_stacks_main.html")
-   json_conf = load_json_file("../conf/as6.json")
+   if "stack_type" in json_conf:
+      stack_type = json_conf['stack_type']
+   else:
+      stack_type = default
+   if data['stack_type'] is not None:
+      stack_type = data['stack_type']
+
+
    rand = str(time.time())
    for sdir in sorted(sdirs, reverse=True)[start_ind:end_ind]:
       vdir = sdir.replace("/mnt/ams2", "")
@@ -102,94 +127,94 @@ def stacks_main(amsid, data) :
                </div>
             """
          out += "</div>"
-
-         # Dusk
-         out += """
-         Dusk Stacks
-         <div class='gallery gal-resize row text-center text-lg-left mb-5'>
-         """
-
-
-         for cam in json_conf['cameras']:
-            cams_id = json_conf['cameras'][cam]['cams_id']
-            dusk_stack_file = vdir + "/" + cams_id + "-dusk-stack.jpg"
-            print("DUSK STACK FILE!", dusk_stack_file)
-            if cfe("/mnt/ams2/" + dusk_stack_file) == 0:
-               print("NOT FOUND DUSK" + dusk_stack_file)
-               dusk_stack_file = "/blank.jpg" 
-            else:
-               print("FOUND", dusk_stack_file)
-            if cams_id in data:
-               minutes = data[cams_id]
-            else:
-               minutes = ""
-            
+         if stack_type == "default":
+            # Dusk
             out += """
-	       <div class='preview'>
-	          <a class='mtt' href='/stacks_day/""" + amsid + "/" + date + """/' title='Browse all day'>
-                  <img width=320 height=180 alt='""" + date + """' class='img-fluid ns lz' src='""" + dusk_stack_file + """?""" + rand + """'>
-                  </a><span class='pre-b'>Cam #""" + cams_id + " " + str(minutes) + """ minutes</span>
-               </div>
+               Dusk Stacks
+               <div class='gallery gal-resize row text-center text-lg-left mb-5'>
             """
-         out += "</div>"
 
 
-
-         out += """ Day Stacks <div class='gallery gal-resize row text-center text-lg-left mb-5'>"""
-         for cam in json_conf['cameras']:
-            cams_id = json_conf['cameras'][cam]['cams_id']
-            day_stack_file = vdir + "/" + cams_id + "-day-stack.jpg"
-            print("DAY STACK FILE!", day_stack_file)
-            fsize, tdiff = get_file_info("/mnt/ams2" + day_stack_file)
-            if cfe("/mnt/ams2" + day_stack_file) == 0 or fsize == 0:
-               print("NOT FOUND DAY", "/mnt/ams2/" + day_stack_file + " " + str(fsize))
-               day_stack_file = "/blank.jpg" 
-            else:
-               print("FOUND", day_stack_file)
-            if cams_id in data:
-               minutes = data[cams_id]
-            else:
-               minutes = ""
-            if day_stack_file is not None:
+            for cam in json_conf['cameras']:
+               cams_id = json_conf['cameras'][cam]['cams_id']
+               dusk_stack_file = vdir + "/" + cams_id + "-dusk-stack.jpg"
+               print("DUSK STACK FILE!", dusk_stack_file)
+               if cfe("/mnt/ams2/" + dusk_stack_file) == 0:
+                  print("NOT FOUND DUSK" + dusk_stack_file)
+                  dusk_stack_file = "/blank.jpg" 
+               else:
+                  print("FOUND", dusk_stack_file)
+               if cams_id in data:
+                  minutes = data[cams_id]
+               else:
+                  minutes = ""
+            
                out += """
+	          <div class='preview'>
+	             <a class='mtt' href='/stacks_day/""" + amsid + "/" + date + """/' title='Browse all day'>
+                     <img width=320 height=180 alt='""" + date + """' class='img-fluid ns lz' src='""" + dusk_stack_file + """?""" + rand + """'>
+                     </a><span class='pre-b'>Cam #""" + cams_id + " " + str(minutes) + """ minutes</span>
+                  </div>
+               """
+            out += "</div>"
+
+
+   
+            out += """ Day Stacks <div class='gallery gal-resize row text-center text-lg-left mb-5'>"""
+            for cam in json_conf['cameras']:
+               cams_id = json_conf['cameras'][cam]['cams_id']
+               day_stack_file = vdir + "/" + cams_id + "-day-stack.jpg"
+               print("DAY STACK FILE!", day_stack_file)
+               fsize, tdiff = get_file_info("/mnt/ams2" + day_stack_file)
+               if cfe("/mnt/ams2" + day_stack_file) == 0 or fsize == 0:
+                  print("NOT FOUND DAY", "/mnt/ams2/" + day_stack_file + " " + str(fsize))
+                  day_stack_file = "/blank.jpg" 
+               else:
+                  print("FOUND", day_stack_file)
+               if cams_id in data:
+                  minutes = data[cams_id]
+               else:
+                  minutes = ""
+               if day_stack_file is not None:
+                  out += """
                   <div class='preview'>
                      <a class='mtt' href='/stacks_day/""" + amsid + "/" + date + """/' title='Browse all day'>
                      <img width=320 height=180 alt='""" + date + """' class='img-fluid ns lz' src='""" + day_stack_file + """?""" + rand + """'>
                      </a><span class='pre-b'>Cam #""" + cams_id + " " + str(minutes) + """ minutes</span>
                   </div>
-               """
-         out += "</div>"
+                  """
+            out += "</div>"
 
-         # Dawn
-         out += """
-         Dawn Stacks
-         <div class='gallery gal-resize row text-center text-lg-left mb-5'>
-         """
-
-
-         for cam in json_conf['cameras']:
-            cams_id = json_conf['cameras'][cam]['cams_id']
-            dawn_stack_file = vdir + "/" + cams_id + "-dawn-stack.jpg"
-            print("DAWN STACK FILE!", "/mnt/ams2/" + dawn_stack_file)
-            fsize, ftime = get_file_info("/mnt/ams2" + dawn_stack_file) 
-            if cfe("/mnt/ams2/" + dawn_stack_file) == 0 or fsize == 0:
-               print("DAWN STACK NOT FOUND")
-               dawn_stack_file = "/blank.jpg"               
-            else:
-               print("DAWN STACK FOUND", "/mnt/ams2/" + dawn_stack_file)
-            if cams_id in data:
-               minutes = data[cams_id]
-            else:
-               minutes = ""
-            
+            # Dawn
             out += """
-	       <div class='preview'>
-	          <a class='mtt' href='/stacks_day/""" + amsid + "/" + date + """/' title='Browse all day'>
-                  <img width=320 height=180 alt='""" + date + """' class='img-fluid ns lz' src='""" + dawn_stack_file + """?""" + rand + """'>
-                  </a><span class='pre-b'>Cam #""" + cams_id + " " + str(minutes) + """ minutes</span>
-               </div>
+               Dawn Stacks
+               <div class='gallery gal-resize row text-center text-lg-left mb-5'>
             """
-         out += "</div>"
+
+
+            for cam in json_conf['cameras']:
+               cams_id = json_conf['cameras'][cam]['cams_id']
+               dawn_stack_file = vdir + "/" + cams_id + "-dawn-stack.jpg"
+               print("DAWN STACK FILE!", "/mnt/ams2/" + dawn_stack_file)
+               fsize, ftime = get_file_info("/mnt/ams2" + dawn_stack_file) 
+               if cfe("/mnt/ams2/" + dawn_stack_file) == 0 or fsize == 0:
+                  print("DAWN STACK NOT FOUND")
+                  dawn_stack_file = "/blank.jpg"               
+               else:
+                  print("DAWN STACK FOUND", "/mnt/ams2/" + dawn_stack_file)
+               if cams_id in data:
+                  minutes = data[cams_id]
+               else:
+                  minutes = ""
+            
+               out += """
+	          <div class='preview'>
+	             <a class='mtt' href='/stacks_day/""" + amsid + "/" + date + """/' title='Browse all day'>
+                     <img width=320 height=180 alt='""" + date + """' class='img-fluid ns lz' src='""" + dawn_stack_file + """?""" + rand + """'>
+                     </a><span class='pre-b'>Cam #""" + cams_id + " " + str(minutes) + """ minutes</span>
+                  </div>
+               """
+            out += "</div>"
 
 
    out += "</div><!--main container!--> <div class='page_h'><!--Page  " + format(page) + "/" +  format(pagination[2]) + "--></div></div> <!-- ADD EXTRA FOR ENDING MAIN PROPERLY. --> <div>"
