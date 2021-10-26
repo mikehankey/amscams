@@ -5112,6 +5112,7 @@ def optimize_matchs(cp_file,json_conf,nc,oimg):
       nc['match_perc'] = match_perc
       res = nc['total_res_px']
       score = res / match_perc 
+      print("AZ:",  nc['position_angle'], match_perc, res)
       if score < best_score :
          best_score = score 
          best_az = oaz + a
@@ -5139,6 +5140,7 @@ def optimize_matchs(cp_file,json_conf,nc,oimg):
       nc['match_perc'] = match_perc
       res = nc['total_res_px']
       score = res / match_perc
+      print("EL:",  nc['position_angle'], match_perc, res)
       if score < best_score :
          best_score = score
          best_el = oel + a
@@ -5165,6 +5167,7 @@ def optimize_matchs(cp_file,json_conf,nc,oimg):
       nc['match_perc'] = match_perc
       res = nc['total_res_px']
       score = res / match_perc
+      print("PIXS:",  nc['position_angle'], match_perc, res)
       if score < best_score :
          best_score = score
          best_ps = ops + a
