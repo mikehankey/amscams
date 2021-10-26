@@ -1113,7 +1113,10 @@ def refit_meteor(meteor_file, json_conf,force=0):
          user_stars_cat = cp['cat_image_stars']
       temp = []
       for data in user_stars_cat:
-         dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist,bp = data 
+         if len(data) == 3:
+            six, siy, bp = data:
+         else:
+            dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist,bp = data 
          temp.append((float(six), float(siy), float(bp)))
 
       cp['user_stars'] = temp 
