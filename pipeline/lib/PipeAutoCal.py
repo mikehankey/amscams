@@ -1395,6 +1395,8 @@ def refit_meteor(meteor_file, json_conf,force=0):
          else:
             print("RES GOOD:", cat_dist, cp['total_res_px'] * 2)
             res_good = 1
+         if human_stars is not None:
+            res_good = 1
          print("CENTER STARS:", six, siy)
          print("CENTER CAT STARS:", row)
          if 0 <= six < 1920 and 0 <= siy <= 1080 and res_good == 1:
@@ -1490,7 +1492,7 @@ def refit_meteor(meteor_file, json_conf,force=0):
       dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist,bp = star
       match_dist = calc_dist((new_cat_x,new_cat_y), (six,siy))
       print(dcname, cat_dist, match_dist)
-      if cat_dist < (cp['total_res_px'] * 1.5):
+      if cat_dist < (cp['total_res_px'] * 2):
          print("GOOD match: ", dcname, cat_dist)
       else:
          print("BAD match: ", dcname, cat_dist)
