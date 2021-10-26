@@ -32,8 +32,14 @@ def lens_model(amsid):
       y_fun = mp['y_fun']
       x_fun_fwd = mp['x_fun_fwd']
       y_fun_fwd = mp['y_fun_fwd']
-      pf = len(sdb['processed_files'])
-      ts = len(sdb['autocal_stars'])
+      if "processed_files" in sdb:
+         pf = len(sdb['processed_files'])
+      else:
+         pf = 0
+      if "autocal_stars" in sdb:
+         ts = len(sdb['autocal_stars'])
+      else:
+         pf = 0
       out += "<div style='float: left' class='preview select-to norm'>"
       out += "<a href=" + vlens + "><img width=640 height=360 src=" + vlens + "></a><br>" 
       out += "<table>"
