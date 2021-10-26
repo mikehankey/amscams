@@ -75,7 +75,7 @@ def stacks_main(amsid, data) :
    if "stack_type" in json_conf:
       stack_type = json_conf['stack_type']
    else:
-      stack_type = default
+      stack_type = "default"
    if data['stack_type'] is not None:
       stack_type = data['stack_type']
 
