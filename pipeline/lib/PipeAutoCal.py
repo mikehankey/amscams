@@ -3230,6 +3230,7 @@ def cal_sum_html(json_conf):
    fp.write(cl_html)
    fp.close()
    os.system("mv " + "/mnt/ams2/cal/" + station_id + "_CAL_SUM.html" + " /mnt/archive.allsky.tv/" + station_id + "/CAL/")
+   print("mv " + "/mnt/ams2/cal/" + station_id + "_CAL_SUM.html" + " /mnt/archive.allsky.tv/" + station_id + "/CAL/")
    print("MADE: /mnt/archive.allsky.tv/" + station_id + "/CAL/")
    fp = open("/mnt/ams2/cal/" + station_id + "_CAL_SUM.html", "w")
    fp.write(html)
