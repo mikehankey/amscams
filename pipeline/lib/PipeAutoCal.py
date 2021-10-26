@@ -1109,7 +1109,6 @@ def refit_meteor(meteor_file, json_conf,force=0):
       if human_stars is not None:
          user_stars_cat = human_stars
          print("USING HUMAN STARS!", len(human_stars))
-         input("WAIT")
       else:
          user_stars_cat,cp = get_image_stars_with_catalog(meteor_file, image, cp, json_conf, None,  0)
          cp = pair_stars(cp, meteor_file, json_conf, image)
