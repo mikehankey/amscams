@@ -1345,6 +1345,9 @@ def refit_meteor(meteor_file, json_conf,force=0):
 
       center_stars = []
       center_user_stars = []
+      if cp['total_res_px'] < 1:
+         cp['total_res_px'] = 1
+
       for row in cp['cat_image_stars']:
          dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist,bp = row
          res_good = 1
