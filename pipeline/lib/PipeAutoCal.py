@@ -5066,8 +5066,8 @@ def optimize_matchs(cp_file,json_conf,nc,oimg):
          #nc = load_json_file(cp_file)
 
    # opt pos
-   s = -5 
-   e = 5
+   s = -10 
+   e = 10
    opos = nc['position_angle']
    best_pos = nc['position_angle']
    best_res = nc['total_res_px']
@@ -5094,8 +5094,8 @@ def optimize_matchs(cp_file,json_conf,nc,oimg):
    # opt az
    #s = int(nc['center_az']-10)
    #e = int(nc['center_az']+10)
-   s = -5
-   e = 5
+   s = -10
+   e = 10
    oaz = nc['center_az']
    best_az = nc['center_az']
    best_res = nc['total_res_px']
@@ -5122,8 +5122,8 @@ def optimize_matchs(cp_file,json_conf,nc,oimg):
 
    nc['center_az'] = best_az
 
-   s = -5
-   e = 5
+   s = -10
+   e = 10
    oel = nc['center_el']
    best_el = nc['center_el']
    best_res = nc['total_res_px']
