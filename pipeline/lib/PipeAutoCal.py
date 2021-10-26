@@ -7433,7 +7433,7 @@ def pair_stars(cal_params, cal_params_file, json_conf, cal_img=None, show = 0):
    if cal_img is None:
       img_file = cal_params_file.replace("-calparams.json", ".jpg")
       cal_img = cv2.imread(img_file)
-   print("CAL IMG IS:", cal_img)
+   #print("CAL IMG IS:", cal_img)
    if cal_img is not None:
       if len(cal_img.shape) > 2:
          cal_img = cv2.cvtColor(cal_img, cv2.COLOR_BGR2GRAY)
