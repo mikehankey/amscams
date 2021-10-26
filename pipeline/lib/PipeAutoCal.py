@@ -1299,7 +1299,7 @@ def refit_meteor(meteor_file, json_conf,force=0):
          mean_rez = 2
       print("AFTER GET MORE & PAIR:", len(cp['user_stars']), len(cp['cat_image_stars'])) 
       print(cp['cat_image_stars'])
-   if len(cp['cat_image_stars']) > 5:
+   if len(cp['cat_image_stars']) < 5:
       mj = use_default_cal(meteor_file, mj,json_conf)
       save_json_file(meteor_file, mj)
       print("Not enough stars to refit. Updated cp using the default cal.")
