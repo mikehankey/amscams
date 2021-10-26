@@ -1389,7 +1389,7 @@ def refit_meteor(meteor_file, json_conf,force=0):
       for row in cp['cat_image_stars']:
          dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist,bp = row
          res_good = 1
-         if cat_dist > cp['total_res_px'] * 2 and human_stars is None:
+         if cat_dist > cp['total_res_px'] * 2 :
             print("RES BAD:", cat_dist, cp['total_res_px'] * 2)
             res_good = 0
          else:
