@@ -2821,8 +2821,8 @@ def refit_fov(cal_file, json_conf, mov_frame_num=0):
 
          cal_params['y_poly_fwd'] = mcp['y_poly_fwd']
 
-   if cal_params['position_angle'] <= 0 or cal_params['total_res_px'] >= 3:
-      cal_params = optimize_matchs(cal_file,json_conf,cal_params,img)
+   #if cal_params['position_angle'] <= 0 or cal_params['total_res_px'] >= 3:
+   #   cal_params = optimize_matchs(cal_file,json_conf,cal_params,img)
    if cal_params['position_angle'] <= 0 or cal_params['total_res_px'] >= 10:
       #cal_params = optimize_matchs(cal_file,json_conf,cal_params,img)
       #az_guess, el_guess, pos_ang_guess, pix_guess = get_cam_best_guess(cam, json_conf)
