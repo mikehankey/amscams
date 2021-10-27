@@ -218,8 +218,8 @@ def gen_cal_hist(json_conf):
    all_files = {}
 
    sz, td = get_file_info("/mnt/ams2/cal/cal_day_hist.json")
-   if td < 86400:
-      return()
+   #if td < 86400:
+   #   return()
 
    for cam in sorted(json_conf['cameras']):
       cams_id = json_conf['cameras'][cam]['cams_id']
@@ -401,7 +401,7 @@ def get_calib_from_range(cam, t_day,json_conf):
       tcam, s_day, e_day, med_az, med_el, med_pos, med_px, med_res = row
       s_dt = datetime.strptime(s_day, "%Y_%m_%d")
       e_dt = datetime.strptime(e_day, "%Y_%m_%d")
-      if s_dt <= t_dt <= e_dt:
+      if e_dt <= t_dt <= s_dt:
          print(s_dt, t_dt, e_dt)
          print("THIS IS THE WAY:", row) 
          return(row)
@@ -1058,7 +1058,11 @@ def refit_meteor(meteor_file, json_conf,force=0):
       nostars = True
    if starting_res > 10 or sun_el > -10:
       #mj = use_default_cal(meteor_file, mj,json_conf)
-      result = get_calib_from_range(cam, day,json_conf)
+      if "manual_cal" in mj:
+         result = mj['manual_cal']
+      else:
+         result = get_calib_from_range(cam, day,json_conf)
+
       if result != None:
          cam, sd, ed, med_az, med_el, med_pos, med_px, med_res = result
          def_cal = [med_az, med_el, med_pos, med_px, med_res]
