@@ -621,6 +621,10 @@ def detail_page(amsid, date, meteor_file):
                mjr['cal_params']['total_res_px'] = 99
                mjr['cal_params']['total_res_deg'] = 99
                mjr['cal_params']['cat_image_stars'] = []
+            elif mjr['cal_params']['total_res_px'] == "":
+               mjr['cal_params']['total_res_px'] = 99
+               mjr['cal_params']['total_res_deg'] = 99
+
             else:
                cal_params_js_var = "var cal_params = []"
 
