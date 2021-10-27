@@ -1075,9 +1075,10 @@ def refit_meteor(meteor_file, json_conf,force=0):
          mj['cp']['total_res_deg'] = 99
       save_json_file(meteor_file, mj)
       if mjr is not None:
-         print(mj['cp'])
          print(mjr)
          mjr['cal_params'] = mj['cp']
+         if mjr['cal_params']['total_res_deg'] == "" or math.isnan(mjr['cal_params']['total_res_deg']) is True:
+            mjr['cal_params']['total_res_deg'] = 99
 
       print("Saved MJ using the default calib!", meteor_file)
       return()
