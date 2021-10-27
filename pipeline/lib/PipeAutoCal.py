@@ -1024,6 +1024,9 @@ def refit_meteor(meteor_file, json_conf,force=0):
    
    first_frame = None
    mj = load_json_file(meteor_file)
+   red_file = meteor_file.replace(".json", "-reduced.json")
+   if cfe(red_file) == 1
+      mjr = load_json_file(red_file)
    human_stars = None
    if "user_mods" in mj:
       if "user_stars" in mj['user_mods']:
@@ -1076,6 +1079,7 @@ def refit_meteor(meteor_file, json_conf,force=0):
       save_json_file(meteor_file, mj)
       if mjr is not None:
          print(mjr)
+         input("MJR IS NT NONE")
          mjr['cal_params'] = mj['cp']
          if mjr['cal_params']['total_res_deg'] == "" or math.isnan(mjr['cal_params']['total_res_deg']) is True:
             mjr['cal_params']['total_res_deg'] = 99
