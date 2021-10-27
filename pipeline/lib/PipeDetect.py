@@ -2198,7 +2198,7 @@ def make_roi_video(video_file,bm, frames, json_conf):
             mod_x_720 = int(mod_x / hdm_x_720)
             mod_y_720 = int(mod_y / hdm_y_720)
             # some
-            print(i, len(bm['ccxs'])
+            print(i, len(bm['ccxs']))
             bm['ccxs'][i] = mod_x_720
             bm['ccys'][i] = mod_y_720
 
