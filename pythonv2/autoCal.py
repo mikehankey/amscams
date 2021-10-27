@@ -556,6 +556,8 @@ def meteor_index(json_conf, day = None, extra_cmd = ""):
          meteor_index[day][meteor] = {}
          rmeteor = meteor.replace(".json", "-reduced.json")
          meteor_data = load_json_file(meteor)
+         if meteor_data == 0:
+            continue
          if "archive_file" in meteor_data:
             if cfe(meteor_data['archive_file']) == 1:
                archived = 1
