@@ -1382,6 +1382,9 @@ def refit_meteor(meteor_file, json_conf,force=0):
          if "total_res_px" not in mjr['cal_params']:
             mjr['cal_params']['total_res_px'] = 99
             mjr['cal_params']['total_res_deg'] = 99
+         elif math.isnan(mjr['cal_params']['total_res_px']) is True:
+            mjr['cal_params']['total_res_px'] = 99
+            mjr['cal_params']['total_res_deg'] = 99
 
          save_json_file(red_file, mjr)
          print("Save red:", red_file)
