@@ -1074,7 +1074,7 @@ def refit_meteor(meteor_file, json_conf,force=0):
       save_json_file(meteor_file, mj)
       if mjr is not None:
          mjr['cal_params'] = mj['cp']
-      print("mj['cp']['total_res_px'])
+      print("REZ", mj['cp']['total_res_px'])
       print("Saved MJ using the default calib!", meteor_file)
       return()
    print(mj['hd_trim'])
