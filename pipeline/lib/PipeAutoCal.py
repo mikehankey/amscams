@@ -1071,7 +1071,7 @@ def refit_meteor(meteor_file, json_conf,force=0):
          def_cal = []
       print("DEFAULT CALIB:", def_cal)
       print("REZ", mj['cp']['total_res_px'], mj['cp']['total_res_deg'])
-      if mj['cp']['total_res_deg'] == "" or math.isnan(mj['cp']['total_res_deg'] is True:
+      if mj['cp']['total_res_deg'] == "" or math.isnan(mj['cp']['total_res_deg']) is True:
          mj['cp']['total_res_deg'] = 99
       save_json_file(meteor_file, mj)
       if mjr is not None:
