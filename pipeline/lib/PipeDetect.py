@@ -2199,8 +2199,11 @@ def make_roi_video(video_file,bm, frames, json_conf):
             mod_y_720 = int(mod_y / hdm_y_720)
             # some
             print(i, len(bm['ccxs']))
-            bm['ccxs'][i] = mod_x_720
-            bm['ccys'][i] = mod_y_720
+            try:
+               bm['ccxs'][i] = mod_x_720
+               bm['ccys'][i] = mod_y_720
+            except:
+               print("Not long enough?")
 
       #print("BEST", bm)
       if bm['ofns'][0] <= j < bm['ofns'][-1] :
