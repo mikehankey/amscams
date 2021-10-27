@@ -592,8 +592,8 @@ def detail_page(amsid, date, meteor_file):
                   template = template.replace("{RES_DEG}", "")
       else:
 
-         template = template.replace("{RES_PX}", "")
-         template = template.replace("{RES_DEG}", "")
+         template = template.replace("{RES_PX}", "99")
+         template = template.replace("{RES_DEG}", "99")
          cp['total_res_px'] = 99
          cp['total_res_deg'] = 99
 
