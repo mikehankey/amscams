@@ -2194,7 +2194,7 @@ def make_roi_video(video_file,bm, frames, json_conf):
 
       if fns in ufd:
          mod_x,mod_y = ufd[fns]  
-         if mod_x > 0 and mod_y > 0 and i < len(bm['ccxs']-1):
+         if mod_x > 0 and mod_y > 0 and i < len(bm['ccxs'])-1:
             mod_x_720 = int(mod_x / hdm_x_720)
             mod_y_720 = int(mod_y / hdm_y_720)
             # some
