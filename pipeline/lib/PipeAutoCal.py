@@ -1025,7 +1025,7 @@ def refit_meteor(meteor_file, json_conf,force=0):
    first_frame = None
    mj = load_json_file(meteor_file)
    red_file = meteor_file.replace(".json", "-reduced.json")
-   if cfe(red_file) == 1
+   if cfe(red_file) == 1:
       mjr = load_json_file(red_file)
    human_stars = None
    if "user_mods" in mj:
