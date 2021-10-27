@@ -400,8 +400,8 @@ def hourly_stacks_html(date, json_conf):
    for sf in all_stack_images:
       if cfe(sf) == 1:
          tsize, tdiff = get_file_info(sf)
-      if cfe(sf) == 0 or tsize == 0 or tdiff :
-         print("MAKE BLANK IMAGE", sf, cfe(sf), tsize)
+      #if cfe(sf) == 0 or tsize == 0 or tdiff :
+         #print("MAKE BLANK IMAGE", sf, cfe(sf), tsize)
          #cv2.imwrite(sf, blank_image)
 
    fp = open(night_stack_dir + "hours.html", "w")
