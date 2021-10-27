@@ -583,7 +583,7 @@ def detail_page(amsid, date, meteor_file):
                template = template.replace("{CAT_STARS}", "")
 
             if "total_res_px" in cp:
-               if math.nan(cp['total_res_px']) is True:
+               if math.isnan(cp['total_res_px']) is True:
                   cp['total_res_px'] = 99
                template = template.replace("{RES_PX}", str(cp['total_res_px'])[0:5])
                if "total_res_deg" in cp:
