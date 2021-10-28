@@ -807,14 +807,17 @@ def cal_index(json_conf):
    else:
       cal_files = {}
 
+   deleted = []
    for cf in cal_files:
       c_root = cf.split("/")[-2]
       cal_dir = "/mnt/ams2/cal/freecal/" + c_root
       if cal_dir not in freecal_dirs:
          print("DEL CAL DIR IT HAS BEEN MOVED.", cal_dir)
-         del cal_files[cf]
+         deleted.append(cf)
       else:
          print(cal_dir, "is good")
+   for d in deleted:
+      del cal_files[d]
 
    #print("FCD:", freecal_dirs[0])
 
