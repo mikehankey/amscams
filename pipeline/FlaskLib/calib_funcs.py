@@ -316,6 +316,9 @@ def cal_history(amsid, cam_id_filter=None, selector=None):
    else:
       out += "No calibrations have been completed yet."
       exit()
+   if cam_id_filter is None:
+      out += "Select camera to continue."
+      exit()
 
    cia = []
    for cf in sorted(ci, reverse=True):
