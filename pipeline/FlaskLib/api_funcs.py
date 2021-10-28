@@ -342,7 +342,7 @@ def update_meteor_points(sd_video_file,frames):
       "msg": "frames updated." 
    }
 
-
+   if True: 
       if "cp" in mj:
          cp = mj['cp']
       elif "best_meteor" in mj:
