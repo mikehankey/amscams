@@ -1080,10 +1080,14 @@ def refit_meteor(meteor_file, json_conf,force=0):
       print("REZ", mj['cp']['total_res_px'], mj['cp']['total_res_deg'], math.isnan(mj['cp']['total_res_deg']))
       if mj['cp']['total_res_deg'] == "" or math.isnan(mj['cp']['total_res_deg']) is True:
          mj['cp']['total_res_deg'] = 99
+      mj['cp']['cat_image_stars'] = []
+      mj['cp']['user_stars'] = []
+      mj['cp']['nostars'] = 1
       save_json_file(meteor_file, mj)
       if mjr is not None:
          print(mjr)
          mjr['cal_params'] = mj['cp']
+
          if mjr['cal_params']['total_res_deg'] == "" or math.isnan(mjr['cal_params']['total_res_deg']) is True:
             mjr['cal_params']['total_res_deg'] = 99
          save_json_file(red_file, mjr)
