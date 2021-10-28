@@ -315,10 +315,10 @@ def cal_history(amsid, cam_id_filter=None, selector=None):
       ci = load_json_file("/mnt/ams2/cal/freecal_index.json")
    else:
       out += "No calibrations have been completed yet."
-      exit()
+      return()
    if cam_id_filter is None:
       out += "Select camera to continue."
-      exit()
+      return()
 
    cia = []
    for cf in sorted(ci, reverse=True):
