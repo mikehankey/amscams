@@ -346,19 +346,19 @@ def cal_history(amsid, cam_id_filter=None, selector=None):
          link = ""
       if "total_res_deg" not in cf:
          cf['total_res_deg'] = 99
-      if float(cf['total_res_px']) > 3:
+      if float(cf['total_res_px']) > 5:
          color = "lv1"; #style='color: #ff0000'"
-      elif 2 < float(cf['total_res_px']) <= 3:
+      elif 4 < float(cf['total_res_px']) <= 5:
          color = "lv2"; #"style='color: #FF4500'"
-      elif 1 < float(cf['total_res_px']) <= 2:
+      elif 3 < float(cf['total_res_px']) <= 4:
          color = "lv3"; #"style='color: #FFFF00'"
-      elif .7 < float(cf['total_res_px']) <= 1:
+      elif 2 < float(cf['total_res_px']) <= 3:
          color = "lv4"; #"style='color: #00FF00'"
-      elif .5 < float(cf['total_res_px']) <= .7:
+      elif 1 < float(cf['total_res_px']) <= 2:
          color = "lv5"; #"style='color: #00ffff'"
-      elif .4 < float(cf['total_res_px']) <= .5:
+      elif .5 < float(cf['total_res_px']) <= 1:
          color = "lv8"; #"style='color: #0000ff'"
-      elif float(cf['total_res_px']) <= .4:
+      elif float(cf['total_res_px']) <= .5:
          color = "lv7"; #"style='color: #ffffff'"
       else:
          color = "lv7"
