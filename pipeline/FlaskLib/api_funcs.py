@@ -304,6 +304,45 @@ def show_cat_stars (video_file, hd_stack_file, points):
       mjrf = "/mnt/ams2/" + video_file.replace(".mp4", "-reduced.json")
       mj = load_json_file(mjf)
       mjr = load_json_file(mjrf)
+      if "nostars" in mj['cp'] or "nostars" in mj:
+         mj['cp']['user_stars'] = []
+         mj['cp']['cat_image_stars'] = []
+         resp['msg'] = "good - no stars in image"
+         resp['status'] = 1
+         resp['cp'] = mj['cp']
+         return(resp)
+
+
+def update_meteor_points(sd_video_file,frames):
+   json_conf = load_json_file("../conf/as6.json")
+   json_file = "/mnt/ams2/" + sd_video_file.replace(".mp4", ".json")
+   full_vid = "/mnt/ams2/" + sd_video_file
+   print("FV:", full_vid)
+   print("JS:", json_file)
+
+   rjson_file = json_file.replace(".json", "-reduced.json")
+ 
+   mj = load_json_file(json_file)
+   print("MJ LOADED:", mj)
+   if "user_mods" in  mj:
+      user_mods = mj['user_mods']
+   else:
+      user_mods = {}
+   if "frames" not in user_mods:
+      user_mods['frames'] = {}
+   for row in frames:
+ 
+      fn = row['fn']
+      x = row['x']
+      y = row['y']
+      user_mods['frames'][fn] = [x,y]
+   mj['user_mods'] = user_mods
+   save_json_file(json_file, mj)
+   resp = {
+      "msg": "frames updated." 
+   }
+
+
       if "cp" in mj:
          cp = mj['cp']
       elif "best_meteor" in mj:
