@@ -19,7 +19,8 @@ json_file = open('../conf/as6.json')
 json_str = json_file.read()
 json_conf = json.loads(json_str)
 proc_dir = json_conf['site']['proc_dir']
-base_cal_dir = json_conf['site']['cal_dir']
+base_cal_dir = "/mnt/ams2/cal/"
+
 
 def adjustLevels(img_array, minv, gamma, maxv, nbits=None):
     """ Adjusts levels on image with given parameters.

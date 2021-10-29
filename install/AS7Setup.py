@@ -235,6 +235,7 @@ class AS7Setup():
       self.json_conf['site']['device_lat'] = device_lat
       self.json_conf['site']['device_lng'] = device_lon
       self.json_conf['site']['device_alt'] = device_alt
+      self.json_conf['site']['cal_dir'] = "/mnt/ams2/cal/" 
 
       cameras = {}
       cam_start = int(starting_cams_id)
