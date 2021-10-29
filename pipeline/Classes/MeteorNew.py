@@ -2242,6 +2242,13 @@ class Meteor():
       r, g, b = colorsys.hsv_to_rgb(hue, 1, 1)
       return map(lambda x: int(255 * x), (r, g, b))
 
+
+   def sync_station_events_day(self, date):
+      y,m,d = date.split("_")
+      cloud_event_dir = "/mnt/archive.allsky.tv/EVENTS/" + y + "/" + m + "/" + d + "/"
+
+
+
    def sync_station_events(self):
       cdir = "/mnt/archive.allsky.tv/EVENTS/STATIONS/";
       ldir = "/mnt/ams2/EVENTS/STATIONS/";

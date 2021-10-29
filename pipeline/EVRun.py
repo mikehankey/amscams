@@ -16,6 +16,16 @@ if __name__ == "__main__":
    print(sys.argv[1])
 
    EV = Events()
+
+   if sys.argv[1] == "resolve":
+      date = sys.argv[2]
+      event_id = sys.argv[3]
+      EVR = EventRunner(date=date,use_cache=0)
+      #EVR.make_events_file_from_coin()
+      EVR.resolve_event(event_id)
+      exit()
+
+
    EVR = EventRunner(date=sys.argv[1],use_cache=0)
    if len(sys.argv) > 2:
       if sys.argv[2] == "kml":
@@ -49,15 +59,19 @@ if __name__ == "__main__":
   # exit()
    #EVR.EOD_summary()
    #exit()
-   EVR.plane_station_stats()
+   EVR.sync_event_dir()
+   print("DONE SYNC")
    exit()
+
    EVR.coin_events()
    EVR.coin_solve()
    EVR.run_solve_jobs()
    EVR.make_events_file_from_coin()
    EVR.sync_event_dir()
    EVR.load_dyna_events()
+   EVR.plane_station_stats()
    print("FINISH SOLVE FOR DAY", sys.argv[1]) 
+   #exit()
 
    #EVR.obs_by_minute()
    exit()

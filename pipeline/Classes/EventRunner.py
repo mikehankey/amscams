@@ -157,6 +157,7 @@ class EventRunner():
          self.station_loc = {}
          for data in self.all_stations:
             sid = data[0]
+            print("STATION_LOC:", sid)
             lat = data[1]
             lon = data[2]
             alt = data[3]
@@ -183,6 +184,9 @@ class EventRunner():
       if cfe(self.obs_dict_file) == 1:
          sz, tdiff1 = get_file_info(self.all_obs_file)
          sz, tdiff2 = get_file_info(self.obs_dict_file)
+      else:
+         tdiff1 = 9999
+         tdiff2 = 0
       if tdiff1 > tdiff2:
          print("OBS DICT IS GOOD TO GO.")
          try:
@@ -246,6 +250,239 @@ class EventRunner():
       print("saved:", self.min_report)
       print("saved:", self.possible)
       print("saved:", self.not_possible)
+
+
+
+   def find_point_from_az_dist(self, lat,lon,az,dist):
+      import math
+
+      R = 6378.1 #Radius of the Earth
+      brng = math.radians(az) #Bearing is 90 degrees converted to radians.
+      d = dist #Distance in km
+
+
+      lat1 = math.radians(lat) #Current lat point converted to radians
+      lon1 = math.radians(lon) #Current long point converted to radians
+
+      lat2 = math.asin( math.sin(lat1)*math.cos(d/R) +
+      math.cos(lat1)*math.sin(d/R)*math.cos(brng))
+
+      lon2 = lon1 + math.atan2(math.sin(brng)*math.sin(d/R)*math.cos(lat1),
+             math.cos(d/R)-math.sin(lat1)*math.sin(lat2))
+
+      lat2 = math.degrees(lat2)
+      lon2 = math.degrees(lon2)
+
+      return(lat2, lon2)
+
+   def make_plane_kml(self, event):
+      kml = simplekml.Kml()
+      colors = self.get_kml_colors()
+      fol_day = kml.newfolder(name=self.date + " AS7 EVENTS")
+      fol_obs = fol_day.newfolder(name=self.date + " AS7 EVENTS")
+      color = "FFFFFFFF"
+      for ob in event['obs']:
+         el = ob.split("_")
+         station_id = el[0]
+         if len(self.obs_dict[ob]['meteor_frame_data']) == 0:
+            print("NO FRAME DATA", ob)
+            continue
+         start_az = self.obs_dict[ob]['meteor_frame_data'][0][-2]
+         start_el = self.obs_dict[ob]['meteor_frame_data'][0][-1]
+         end_az = self.obs_dict[ob]['meteor_frame_data'][-1][-2]
+         end_el = self.obs_dict[ob]['meteor_frame_data'][-1][-1]
+         print(ob, start_az, start_el, end_az, end_el)
+         lat,lon,alt = self.station_loc[station_id][:3]
+         pnt = kml.newpoint(name=station_id, coords=[(round(lon,1),round(lat,1))])
+         dist = 300
+         start_az_end_pt = self.find_point_from_az_dist(lat,lon,start_az,dist)
+         end_az_end_pt = self.find_point_from_az_dist(lat,lon,end_az,dist)
+
+         kline = fol_obs.newlinestring(name=ob + " START", description="", coords=[(lon,lat,alt),(start_az_end_pt[1],start_az_end_pt[0],alt)])
+         kline.altitudemode = simplekml.AltitudeMode.clamptoground
+         kline.linestyle.color = colors[0] 
+         kline.linestyle.colormode = "normal"
+         kline.linestyle.width = "3"
+
+         kline2 = fol_obs.newlinestring(name=ob + " END", description="", coords=[(lon,lat,alt),(end_az_end_pt[1],end_az_end_pt[0],alt)])
+         kline2.altitudemode = simplekml.AltitudeMode.clamptoground
+         kline.linestyle.color = colors[2]
+         kline2.linestyle.colormode = "normal"
+         kline2.linestyle.width = "3"
+
+
+      for combo_key in event['planes']:
+         ev_id = 0
+         o_combo_key = combo_key.replace("EP:", "")
+         print("COMBO KEY IS:", combo_key)
+         ob1,ob2 = combo_key.split(":")
+         print(ev_id, combo_key, event['planes'][combo_key])
+         if event['planes'][combo_key][0] == "plane_solved":
+            line1 = event['planes'][combo_key][1]
+            line2 = event['planes'][combo_key][2]
+            #color = event['planes'][combo_key]['color']
+            color = "FFFFFFFF"
+            slat,slon,salt,elat,elon,ealt = line1
+
+            line = fol_day.newlinestring(name=combo_key, description="", coords=[(slon,slat,salt),(elon,elat,ealt)])
+            line.altitudemode = simplekml.AltitudeMode.relativetoground
+            line.linestyle.color = color
+            line.linestyle.colormode = "normal"
+            line.linestyle.width = "3"
+            slat,slon,salt,elat,elon,ealt = line2
+            line = fol_day.newlinestring(name=combo_key, description="", coords=[(slon,slat,salt),(elon,elat,ealt)])
+            line.altitudemode = simplekml.AltitudeMode.relativetoground
+            line.linestyle.color = color
+            line.linestyle.colormode = "normal"
+            line.linestyle.width = "3"
+         else:
+            print("BAD PP STATUS:", event['planes'][combo_key][0])
+      self.plane_kml_file = self.event_dir + "/" + event['event_id'] + "/" + event['event_id'] + "-planes.kml"
+      kml.save(self.plane_kml_file)
+      print(self.plane_kml_file)
+      print("SAVED:", self.plane_kml_file)
+
+   def resolve_event(self, event_id):
+      self.make_obs_dict()
+      custom_obs_file = self.event_dir + event_id + "/" + event_id + "-custom-obs.json"
+      print(custom_obs_file)
+      custom_obs = {}
+      if cfe(custom_obs_file) == 1:
+         co = load_json_file(custom_obs_file)
+         for o in co['custom_obs']:
+            custom_obs[o] = {}
+      else:
+         custom_obs = None
+      print("CUSTOM OBS:", custom_obs)
+      coin_events = load_json_file(self.coin_events_file) 
+      event = coin_events[event_id]
+      good_planes = {}
+      #print(event.keys())
+      print("EVOBS:", event['obs'])
+      if custom_obs is not None:
+         event['obs'] = custom_obs 
+
+         event = self.coin_event_to_dyn_event(event)
+
+
+      obs_report = ""
+
+      for obs in event['obs']:
+         print("OBS IS:", obs)
+         el = obs.split("_")
+         station_id = el[0]
+         video_file = obs.replace(station_id + "_", "")
+
+         dobs = get_obs(station_id, video_file)
+         self.obs_dict[obs] = dobs
+         #print (dobs.keys())
+         obs_report += station_id + " " + video_file 
+         obs_report += "\n"
+         print(dobs.keys())
+         for row in dobs['meteor_frame_data']:
+            obs_report += str(row) + "\n"
+
+      fp = open("obs.txt", "w")
+      fp.write(obs_report)
+      fp.write(str(event))
+      fp.close()
+
+      #get_obs(station_id, sd_video_file):
+      #event = self.do_planes_for_event(event, redo=1)
+      coin_events[event_id] = event
+      
+
+      save_json_file(self.coin_events_file, coin_events)
+      
+
+      plane_good = []
+      plane_bad = []
+      for plane in event['planes']:
+         status = (event['planes'][plane][0])
+         if "solved" in status:
+            plane_good.append((plane, event['planes'][plane]))
+         else:
+            plane_bad.append((plane,event['planes'][plane]))
+
+      self.make_plane_kml(event)
+      # LOAD THE LATEST OBS
+      # DELETE EXISTING PLANES
+      # REMAKE THE GOOD OBS
+      # RERUN THE SOLVE
+      #self.jobs.append(("WMPL_solve", event_id, good_obs, 1))
+
+
+      print("RESOLVE?")
+      if True:
+         good_obs = {}
+         good_planes = {}
+         bad_planes = {}
+         for plane in event['planes']:
+            obs1, obs2 = plane.split(":")
+            if event['planes'][plane][0] == "plane_solved":
+               if obs1 in good_planes:
+                  good_planes[obs1] += 1
+               else:
+                  good_planes[obs1] = 1
+               if obs2 in good_planes:
+                  good_planes[obs2] += 1
+               else:
+                  good_planes[obs2] = 1
+            else:
+               if obs1 in bad_planes:
+                  bad_planes[obs1] += 1
+               else:
+                  bad_planes[obs1] = 1
+               if obs2 in bad_planes:
+                  bad_planes[obs2] += 1
+               else:
+                  bad_planes[obs2] = 1
+
+
+         if True:
+            for gp in good_planes:
+               el = gp.split("_")
+               station_id = el[0]
+               s_lat = self.station_loc[station_id][0]
+               s_lon = self.station_loc[station_id][1]
+               s_alt = self.station_loc[station_id][2]
+               print("STATION ID IS:", station_id, s_lat, s_lon, s_alt)
+               self.obs_dict[gp]['loc'] = [s_lat,s_lon,s_alt] 
+               good_obs = convert_dy_obs(self.obs_dict[gp], good_obs)
+      if custom_obs is not None:
+         good_obs = {}
+         print("CUSTOM")
+         print("STATION LOCATION:", self.station_loc.keys())
+         for obs in event['obs']:
+            print("OBS IS:", obs)
+            el = obs.split("_")
+            station_id = el[0]
+            vid = obs.replace(station_id + "_", "")
+            s_lat = self.station_loc[station_id][0]
+            s_lon = self.station_loc[station_id][1]
+            s_alt = self.station_loc[station_id][2]
+            print("STATION ID IS:", station_id, s_lat, s_lon, s_alt)
+            self.obs_dict[obs]['loc'] = [s_lat,s_lon,s_alt] 
+            print("GOOD OBS:", len(good_obs))
+            good_obs = convert_dy_obs(self.obs_dict[obs], good_obs)
+            good_obs[station_id][vid]['loc'] =  [s_lat,s_lon,s_alt]
+            print(good_obs)
+            print("GOOD AFTER OBS:", len(good_obs))
+   
+      print("THE GOOD OBS!")
+      for station_id in good_obs:
+         for vid in good_obs[station_id]:
+            print(station_id, vid)
+            print(good_obs[station_id][vid]['loc'])
+      obs_file = self.event_dir + event_id + "/" + event_id + "_GOOD_OBS.json"
+      for st in good_obs:
+         for vid in good_obs[st]:
+            print("GOOD OBS:", st, vid)
+
+      save_json_file(obs_file, good_obs)
+      WMPL_solve(event_id, good_obs, 1, 1)
+
+
 
 
    def coin_solve(self):
@@ -507,13 +744,13 @@ class EventRunner():
          print(station_id, sd_vid, s_start_dt)
          new_event, events = self.get_make_event(events,station_id, sd_vid, s_start_dt)
 
-   def do_planes_for_event(self, event):
+   def do_planes_for_event(self, event, redo=0):
       planes = {}
       e_planes_file = self.event_dir + event['event_id'] + "/" + event['event_id'] + "-planes.json"
       if cfe(self.event_dir + event['event_id'],1) == 0:
          os.makedirs(self.event_dir + event['event_id'])
 
-      if cfe(e_planes_file) == 1:
+      if cfe(e_planes_file) == 1 and redo == 0:
          planes = load_json_file(e_planes_file)
          event['planes'] = planes
          return(event)
@@ -535,6 +772,8 @@ class EventRunner():
                   rkey = "IP:" + plane_key
                   rval = self.r.get(rkey)
                   #print("RVAL IS:", rval)
+                  if redo == 1:
+                     rval = None
                   if rval is None:
                      print("NO REDIS RESULT FOR:", rkey )
                      result = self.plane_test(obs1, obs2)
@@ -936,6 +1175,7 @@ class EventRunner():
          self.insert_new_event(ev)
 
    def sync_event_files(self, ev_id):
+
       local_files = glob.glob(self.event_dir + ev_id + "/*")
       cloud_dir = self.cloud_event_dir + ev_id + "/"
       if cfe(cloud_dir, 1) == 0:
@@ -949,9 +1189,55 @@ class EventRunner():
 
 
    def sync_event_dir(self):
+      coin_events = load_json_file(self.coin_events_file)
+
+      # fix bug dirs
+      for ev_id in coin_events:
+         mistake_dir = self.cloud_event_dir + ev_id + "/" + ev_id + "/"
+         if cfe(mistake_dir, 1) == 1:
+            print("MISTAKE DIR EXISTS", mistake_dir)
+            cmd = "mv " + mistake_dir + "*" + " " + self.cloud_event_dir + ev_id + "/"
+            print(cmd)
+            os.system(cmd)
+            cmd = "rmdir " + mistake_dir 
+            print(cmd)
+            os.system(cmd)
+      exit()
+
+      cmd = "find " + self.cloud_event_dir + " > " + self.event_dir + "cloud_files.txt"
+      print(cmd)
+
+      cmd = "find " + self.event_dir + " > " + self.event_dir + "local_files.txt"
+      print(cmd)
+      #os.system(cmd)
+
+      lf = {}
+      cf = {}
+      fp = open(self.event_dir + "cloud_files.txt", "r")
+      for line in fp:
+         line = line.replace("\n", "")
+         cf[line] = {}
+      fp.close()
+
+      fp = open(self.event_dir + "local_files.txt", "r")
+      for line in fp:
+         line = line.replace("\n", "")
+         lf[line] = {}
+      fp.close()
+
+      # check local files not on the cloud
+      lc = 0
+      for lfile in lf:
+         cfile = lfile.replace("/ams2", "/archive.allsky.tv")
+         if cfile not in cf:
+            print(lc, "NEED TO PUSH:", lfile, cfile)
+            lc+=1 
+
+      #for cfile in cf:
+      exit()
+
       event_dir_files = glob.glob(self.event_dir + "*")
       cloud_event_dir_files = glob.glob(self.cloud_event_dir + "*")
-      coin_events = load_json_file(self.coin_events_file)
       event_dirs = []
       cloud_dirs = []
       local_dict = {}
@@ -1141,7 +1427,7 @@ class EventRunner():
          event_id = job[1]
          good_obs = job[2]
          WMPL_solve(event_id, good_obs, 1)
-         cmd = "rsync -auv " + self.event_dir + event_id + "* " +  self.cloud_event_dir + event_id 
+         cmd = "rsync -auv " + self.event_dir + event_id + "/* " +  self.cloud_event_dir + event_id 
          print(cmd)
          os.system(cmd)
 
@@ -1246,7 +1532,7 @@ class EventRunner():
          colors.append(kml_colors[key])
       return(colors)
 
-   def find_point_from_az_dist(lat,lon,az,dist):
+   def find_point_from_az_dist(self, lat,lon,az,dist):
       import math
 
       R = 6378.1 #Radius of the Earth

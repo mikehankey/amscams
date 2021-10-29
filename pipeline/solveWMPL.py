@@ -108,7 +108,6 @@ def check_make_events(obs_time, obs, events):
             #   print("REJECT STATION DIST!", station_dist)
       ec += 1
 
-   #inp = input("A NEW EVENT NEEDS TO BE MADE!" )
    # if we got this far it must be a new obs not related to any existing events
    # so make a new event and add it to the list
    if True:
@@ -477,7 +476,7 @@ def GC_az_el(azs, els, ras,decs):
    from RMS import GreatCircle
 
 
-   azs,els= sanity_check_points(azs,els,ras, decs)
+   #azs,els= sanity_check_points(azs,els,ras, decs)
 
 
    azim = np.array(azs)
@@ -1234,9 +1233,9 @@ def solve_event(event_id, force=1, time_sync=1):
              print("\t", vid)
              print("\t\tAZS:", obs_data[obs][vid]['azs'])
              print("\t\tELS:", obs_data[obs][vid]['els'])
-       cmd = "cd ../pythonv2; ./solve.py vida_failed_plots " + event_id
-       print(cmd)
-       os.system(cmd)
+       #cmd = "cd ../pythonv2; ./solve.py vida_failed_plots " + event_id
+       #print(cmd)
+       #os.system(cmd)
        return(0)
     solution,as_obs = resp
 
@@ -1256,8 +1255,8 @@ def solve_event(event_id, force=1, time_sync=1):
     if cfe(cloud_dir,1) == 0:
        os.makedirs(cloud_dir)
 
-    cmd = "cd ../pythonv2; ./solve.py vida_plots " + event_id
-    os.system(cmd)
+    #cmd = "cd ../pythonv2; ./solve.py vida_plots " + event_id
+    #os.system(cmd)
 
     cmd = "python3 Inspect.py merge " + event_id
     os.system(cmd)
@@ -1681,14 +1680,13 @@ def add_extra_obs(extra_obs, obs):
    return(obs)
 
 def convert_dy_obs(dy_obs_data, obs):
-   print("DYO:", dy_obs_data)
    if "station_id" not in dy_obs_data:
+      print("MISSING STATION ID!!!!")
+      exit()
       return(obs)
-   print("DY OBS DATA:", dy_obs_data.keys())
-   print("OBS DATA:", dy_obs_data.keys())
-   print("STATION:", dy_obs_data['station_id'])
    station = dy_obs_data['station_id']
    fn = dy_obs_data['sd_video_file']
+   print("CONVERT:", station, fn, len(obs))
    if station not in obs:
       obs[station] = {}
    if fn not in obs[station]:
@@ -1699,6 +1697,7 @@ def convert_dy_obs(dy_obs_data, obs):
    else:
       dy_obs_data['calib'] = {}
       calib = {}
+   print("ADD OBS:", station, fn)
    obs[station][fn]['loc'] = dy_obs_data['loc']
    obs[station][fn]['calib'] = dy_obs_data['calib']
    obs[station][fn]['times'] = []
@@ -1729,12 +1728,12 @@ def convert_dy_obs(dy_obs_data, obs):
          obs[station][fn]['ints'].append(float(oint))
       obs[station][fn]['gc_azs'], obs[station][fn]['gc_els'] = GC_az_el(obs[station][fn]['azs'], obs[station][fn]['els'],  obs[station][fn]['ras'], obs[station][fn]['decs'])
    else:
+      print("DELETE OBS FROM STATION NO FRAME DATA!!!!", station)
       del obs[station]
       
 
 
 
-   #print("OBS:", obs)
    return(obs)
 
 def make_orbit_link(event_id, orb):
@@ -1761,19 +1760,18 @@ def make_event_json(event_id, solve_dir,ignore_obs):
    print("looking in solve dir", solve_dir)
 
    for js in jsons:
-      if "obs.json" in js:
+      if "GOOD_OBS.json" in js :
          obs_file = js
-         kml_file = js.replace("-obs.json", "-map.kml")
+         kml_file = js.replace("GOOD_OBS.json", "-map.kml")
       if "simple.json" in js:
          sol_file = js
-
 
    #print("SOL FILE:", sol_file)
    #print("KML FILE:", kml_file)
 
    #simple_solve = load_json_file(sol_file)
    
-
+   print("MAKE EVENT JSON OBS FILE:", obs_file)
    as_obs = load_json_file(obs_file)
 
    #event_file = sol_file.replace("-simple.json", "-event.json")
@@ -1787,6 +1785,7 @@ def make_event_json(event_id, solve_dir,ignore_obs):
 
    station_data = {}
    for station_id in as_obs:
+      print("STATION ID:", station_id)
       for file in as_obs[station_id]:
          obs_key = station_id + "_" + file
          if obs_key in ignore_obs:
@@ -1794,8 +1793,8 @@ def make_event_json(event_id, solve_dir,ignore_obs):
          else:
             status = ""
          if station_id not in station_data:
-            obs_data = as_obs[station_id][file]
             print(station_id)
+            obs_data = as_obs[station_id][file]
             lat, lon, alt = obs_data['loc']
             station_data[station_id] = obs_data['loc']
             points.append((lon,lat,alt,status + station_id))
@@ -2320,6 +2319,11 @@ def WMPL_solve(event_id, obs,time_sync=1, force=0):
     json_conf = load_json_file("../conf/as6.json")
     ams_id  = json_conf['site']['ams_id']
 
+    for st in obs:
+       for vid in obs[st]:
+          print("WMPL:", st, vid)
+
+
     year = event_id[0:4]
     mon = event_id[4:6]
     day = event_id[6:8]
@@ -2413,16 +2417,18 @@ def WMPL_solve(event_id, obs,time_sync=1, force=0):
 
     resp = traj_solve.run()
     print("RESP:", resp)
+    print("SOLVE FILE:", solve_file)
 
 
-
+    event_report(solve_dir, event_final_dir, obs)
+    make_event_json(event_id, solve_dir,[])
 
     #mj['wmpl'] = e_dir
     #save_json_file(meteor_file, mj)
     #print("Saved:", meteor_file) 
 
     #solved_files = glob.glob(solve_dir + "*")
-    if cfe(solve_file) == 1:
+    if cfe(solve_file) == 0:
        print("FAILED TO SOLVE. No files in solve dir:", solve_dir )
        cmd = "cd ../pythonv2; ./solve.py vida_failed_plots " + event_id
        print(cmd)
