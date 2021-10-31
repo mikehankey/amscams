@@ -89,7 +89,10 @@ class SystemHealth():
          cmd = "ping -i 0.2 -c 1 " + self.json_conf['cameras'][key]['ip']
          #cmd = "nmap -sP --max-retries=1 --host-timeout=1500ms " + self.json_conf['cameras'][key]['ip']
          print(cmd)
-         response = subprocess.check_output(cmd, shell=True).decode("utf-8")
+         try:
+            response = subprocess.check_output(cmd, shell=True).decode("utf-8")
+         except:
+            response = "down"
          print("RESP:", response)
          if "bytes from" in response :
             pings[key] = "UP"
