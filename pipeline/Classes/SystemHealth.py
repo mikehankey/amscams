@@ -1,4 +1,5 @@
 import subprocess
+from datetime import datetime
 import os
 import glob
 from lib.PipeUtil import cfe, load_json_file, save_json_file, get_file_info
@@ -7,22 +8,24 @@ class SystemHealth():
    def __init__(self):
       self.json_conf = load_json_file("../conf/as6.json")
       self.station_id = self.json_conf['site']['ams_id']
+      self.cloud_dir = "/mnt/archive.allsky.tv/" + self.station_id + "/" 
       self.data_dirs = {}
       self.data_dirs["/mnt/ams2/HD"] = {}
       self.data_dirs["/mnt/ams2/HD"]['max_size'] = 400
       self.data_dirs["/mnt/ams2/SD/proc2"] = {}
       self.data_dirs["/mnt/ams2/SD/proc2"]['max_size'] = 350
+      print("Check for zombies...")
       self.python_procs = self.kill_python_zombies()
 
    def kill_python_zombies(self):
-      cmd = "ps -eo pid,cmd,etime |grep python3 > p3procs.txt" 
+      cmd = "ps -eo pid,cmd,user,etime |grep python3 | grep ams | grep -v grep > p3procs.txt" 
       os.system(cmd)
       running_procs = []
       fp = open("p3procs.txt", "r")
       for line in fp:
          el = line.split(" ")
          time = el[-1]
-         running_procs.append((el[0],el[1],el[2],el[-1]))
+         running_procs.append((el[0],el[1],el[2],el[3],el[4],el[5],el[-1]))
          if "-" in time:
             print("PROCESS RUNNING FOR DAYS! KILL IT!")
             cmd = "kill -9 " + el[0]
@@ -40,12 +43,17 @@ class SystemHealth():
 
    def make_report(self):
       print("SYSTEM HEALTH REPORT")
+      print("Ping cams...")
       pings = self.ping_cams()
       print("PINGS:", pings)
+      print("Run df...")
       df_data, mounts = self.run_df()
       print("DF DATA:", df_data)
       print("MOUNTS:", mounts)
       system_health_report = {}
+      system_health_report['last_update'] = datetime.now().strftime("%Y_%m_%d_%H_%M_%S") 
+      system_health_report['uptime'] = subprocess.check_output("uptime", shell=True).decode("utf-8")
+
       system_health_report['pings'] = pings 
       system_health_report['df_data'] = df_data
       system_health_report['mounts'] = mounts
@@ -67,6 +75,10 @@ class SystemHealth():
          self.last_latest_file = None
       print("Last latest file age:", self.last_latest_file)
       save_json_file("../conf/" + self.station_id + "_system_health.json", system_health_report)
+      cmd = "cp ../conf/" + self.station_id + "_system_health.json " + self.cloud_dir 
+      print(cmd)
+      os.system(cmd)
+
       print("../conf/" + self.station_id + "_system_health.json")
    
       
@@ -74,10 +86,12 @@ class SystemHealth():
    def ping_cams(self):
       pings = {}
       for key in self.json_conf['cameras']:
-         #cmd = "ping -i 0.2 -c 1 " + self.json_conf['cameras'][key]['ip']
-         cmd = "nmap -sP --max-retries=1 --host-timeout=1500ms " + self.json_conf['cameras'][key]['ip']
+         cmd = "ping -i 0.2 -c 1 " + self.json_conf['cameras'][key]['ip']
+         #cmd = "nmap -sP --max-retries=1 --host-timeout=1500ms " + self.json_conf['cameras'][key]['ip']
+         print(cmd)
          response = subprocess.check_output(cmd, shell=True).decode("utf-8")
-         if "1 host up" in response :
+         print("RESP:", response)
+         if "bytes from" in response :
             pings[key] = "UP"
          else:
             pings[key] = "DOWN"

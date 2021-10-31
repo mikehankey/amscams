@@ -157,18 +157,6 @@ cloud_dir = "/mnt/archive.allsky.tv/" + amsid + "/LATEST/"
 cloud_arc_dir = cloud_dir + cur_day + "/" 
 log_weather(cur_day_hm)
 
-if True:
-   print("HOUR/MIN", cur_hour, cur_min)
-   if int(cur_hour) % 4 == 0:
-      if int(cur_min) <= 10:
-         # run system health 1x per 3 hours
-         cmd = "cd /home/ams/amscams/pipeline; ./system_health.py"
-         print(cmd)
-         os.system(cmd)
-
-         cmd = "cd /home/ams/amscams/; git pull"
-         print(cmd)
-         os.system(cmd)
 
 
 for cam in cameras:
@@ -206,3 +194,15 @@ for cam in cameras:
       # copy to cloud
    #exit()
       
+if True:
+   print("HOUR/MIN", cur_hour, cur_min)
+   if int(cur_hour) % 4 == 0:
+      if int(cur_min) <= 10:
+         # run system health 1x per 3 hours
+         cmd = "cd /home/ams/amscams/pipeline; ./system_health.py"
+         print(cmd)
+         os.system(cmd)
+
+         cmd = "cd /home/ams/amscams/; git pull"
+         print(cmd)
+         os.system(cmd)
