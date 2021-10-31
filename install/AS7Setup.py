@@ -143,7 +143,7 @@ class AS7Setup():
       new_allsky = self.setup_allsky_account()
 
    def data_disk_install(self):
-      Screen().input("DATA DISK MANAGER.")
+      Screen().input("DATA DISK MANAGER. [ENTER] TO CONTINUE.")
       confirm = input("Do you want to format data drive (all data will be lost!) Must type YES.")
       if confirm == "YES":
          output = subprocess.check_output("lsblk | grep sd ", shell=True).decode("utf-8")
@@ -236,7 +236,14 @@ class AS7Setup():
       self.json_conf['site']['device_lng'] = device_lon
       self.json_conf['site']['device_alt'] = device_alt
       self.json_conf['site']['cal_dir'] = "/mnt/ams2/cal/" 
-
+      self.json_conf['site']['sd_video_dir'] = "/mnt/ams2/SD/" 
+      self.json_conf['site']['hd_video_dir'] = "/mnt/ams2/HD/" 
+      self.json_conf['site']['cams_queue_dir'] = "/mnt/ams2/CAMS/queue/"
+      self.json_conf['site']['cams_pwd'] = "" 
+      self.json_conf['site']['cams_dir'] = "/home/ams/amscams/" 
+      self.json_conf['site']['mac_addr'] = ""
+      self.json_conf['camera_settingsv1'] = {}
+      os.system("echo " + self.station_id + " > /etc/hostname")
       cameras = {}
       cam_start = int(starting_cams_id)
       total_cams = int(cam6_or7)
@@ -262,19 +269,20 @@ class AS7Setup():
          #   os.system("echo '0,0,0,0' > /home/ams/amscams/conf/mask-" + cam_id + ".txt")
 
       self.json_conf['cameras'] = cameras
-      save_file = input("Do you want to save the conf file?")
+      save_file = input("Do you want to save the conf file? [Y]")
       if save_file == "Y" or save_file == "y" or "Y" in save_file or "y" in save_file:
          self.save_json_file("/home/ams/amscams/conf/as6.json", self.json_conf)
          print("conf file saved.")
 
    def setup_dirs_and_config(self):
       # install crons
-      os.system("./update-cron.sh")
-      os.system("./update-flask-assets.sh")
+      self.setup_as6_conf()
       if "proc_dir" not in self.json_conf['site']:
          self.json_conf['site']['proc_dir'] = "/mnt/ams2/SD/proc2/"
          self.save_json_file("../conf/as6.json", self.json_conf) 
          input("UPDATED PROC DIR?")
+      if "camera_settingsv1" not in self.json_conf['site']:
+         self.json_conf['camera_settingsv1'] = {}
       ams_id = self.station_id
       if self.cfe("/mnt/ams2",1) == 0:
          os.makedirs("/mnt/ams2")
@@ -350,11 +358,12 @@ class AS7Setup():
 
       print("FINISHED MAKING DATA DIRS.")
       Screen().input("Press [ENTER] to continue.")
-      self.setup_as6_conf()
+      os.system("./update-cron.sh")
+      os.system("./update-flask-assets.sh")
       input("[ENTER] to continue")
 
    def backup_disk_install(self):
-      Screen().input("DATA DISK MANAGER.")
+      Screen().input("DATA DISK MANAGER. [ENTER] TO CONTINUE")
 
 
    def register_station(self ):
