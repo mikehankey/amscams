@@ -77,7 +77,7 @@ class AS7Setup():
 
       if "ams_id" not in self.json_conf['site'] or needs_setup == 1:
          print("MISSING AMS ID")
-         print("JS:", self.json_conf)
+         #print("JS:", self.json_conf)
          self.station_id = input("Enter the station ID (AMS??):")
          self.pin_code = input("Enter the station PIN code:")
          self.user_data['pin_code'] = self.pin_code
@@ -154,7 +154,7 @@ class AS7Setup():
          drive = input("Enter the drive label (sdX) to format. Should be the large size drive!")
          cmd = "sudo mkfs -t ext4 /dev/" + drive
          print(cmd)
-         confirm = input("are you sure you ant to run this command? (last chance to quit.)")
+         confirm = input("are you sure you ant to run this command? (last chance to quit.) confirm YES spelled out. ")
          if confirm == "YES":
             print("Formatting drive...")
             os.system(cmd)
@@ -377,8 +377,8 @@ class AS7Setup():
             new_allsky = 1
          else:
             new_allsky = 0
-         if new_allsky == 1:
-            new_allsky = self.setup_allsky_account()
+         #if new_allsky == 1:
+         #   new_allsky = self.setup_allsky_account()
  
          print("Register Message:", resp['msg'])
       return(resp) 
@@ -416,6 +416,16 @@ class AS7Setup():
          input("Press [ENTER] to continue")
 
    def submit_allsky_account_signup(self):
+      if "username" not in self.user_data:
+         self.user_data['username'] = "unclaimed"   
+      if "password" not in self.user_data:
+         self.user_data['password'] = "unclaimed"   
+      if "operator_name" not in self.user_data:
+         self.user_data['operator_name'] = ""   
+      if "email" not in self.user_data:
+         self.user_data['email'] = ""   
+      if "phone_number" not in self.user_data:
+         self.user_data['phone_number'] = ""   
       api_url = "https://www.allsky.tv/app/API/" + self.user_data['username'] + "/submit_signup"
       if "station_id" not in self.user_data:
          self.user_data['station_id'] = ""
@@ -461,7 +471,7 @@ class AS7Setup():
          (interface, ip, ntype) = row
          print(str(c) + ")", interface, ip, ntype)
          c += 1
-      net_i= input("Select the interface to use for the internet.")
+      net_i= input("Select the interface to use for the internet. (It should have an IP address already that matches your network.)")
       cams_i = input("Select the interface to use for the cameras")
       network_interface = ints[int(net_i)-1][0]
       cams_interface = ints[int(cams_i)-1][0]
