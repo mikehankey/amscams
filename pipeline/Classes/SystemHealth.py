@@ -65,6 +65,7 @@ class SystemHealth():
          system_health_report['data_dirs'][dd] = self.data_dirs[dd]
       self.pending_SD_files = glob.glob("/mnt/ams2/SD/*")
       system_health_report['pending_files'] = len(self.pending_SD_files)
+      print("Get latest file from cloud.")
       latest_files = glob.glob("/mnt/archive.allsky.tv/" + self.station_id + "/LATEST/*.jpg")
       if len(latest_files) > 0:
          info = get_file_info(latest_files[0])
