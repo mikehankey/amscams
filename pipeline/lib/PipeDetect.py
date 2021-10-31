@@ -545,24 +545,32 @@ def make_meteor_index_day_all(json_conf):
 
 def make_meteor_index_all(json_conf):
    amsid = json_conf['site']['ams_id']
+   station_id = amsid
    mr_dir = "/mnt/ams2/meteors/"
    mdirs = []
    all_meteors = []
    files = glob.glob(mr_dir + "*")
+   obs_ids = []
+   obs_ids_file = "/mnt/ams2/meteors/" + station_id + "OBS_IDS.json"
    for mdir in files:
       #print(mdir)
       day, dir = fn_dir(mdir)
       if cfe(mdir, 1) == 1:
          mi_file = mdir + "/" + day + "-" + amsid + ".meteors"
-         print("MMIF:", mi_file)
          mi_file, mdata = make_meteor_index_day(day, json_conf)
+         print("MMIF:", mi_file)
          for data in mdata:
             print("ADDING:", day, len(mdata))
             all_meteors.append(data)
+            mfn = data[0].split("/")[-1]
+            obs_id = station_id + mfn
+            obs_ids.append((obs_id, data[2]))
    amf = mr_dir + amsid + "-meteors.info"    
    all_meteors = sorted(all_meteors, key=lambda x: (x[0]), reverse=True)
    save_json_file(amf, all_meteors)
+   save_json_file(obs_ids, obs_ids_file)
    print("Saved:", amf)
+   print("Saved:", obs_ids_file)
 
 def fix_corrupt_meteor_json(json_file):
    fp = open(json_file, "r")
