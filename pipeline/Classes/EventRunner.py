@@ -1,4 +1,7 @@
 from lib.PipeUtil import cfe, load_json_file, save_json_file, convert_filename_to_date_cam, get_trim_num, get_file_info
+import pymap3d as pm
+wgs84 = pm.Ellipsoid('wgs84');
+from numba import jit
 from solveWMPL import convert_dy_obs, WMPL_solve
 import threading
 from multiprocessing import Process
@@ -27,6 +30,7 @@ class DecimalEncoder(json.JSONEncoder):
 class EventRunner():
    def __init__(self, cmd=None, day=None, month=None,year=None,date=None, use_cache=0):
      # os.system("./DynaDB.py udc " + date + " events")
+      self.cloud_host = "https://archive.allsky.tv/"
       self.dynamodb = boto3.resource('dynamodb')
       admin_conf = load_json_file("admin_conf.json")
       self.admin_conf = admin_conf
@@ -284,6 +288,9 @@ class EventRunner():
       for ob in event['obs']:
          el = ob.split("_")
          station_id = el[0]
+         if "meteor_frame_data" not in self.obs_dict[ob]:
+            print(ob, "MISSING MFD!")
+            continue
          if len(self.obs_dict[ob]['meteor_frame_data']) == 0:
             print("NO FRAME DATA", ob)
             continue
@@ -379,8 +386,12 @@ class EventRunner():
          obs_report += station_id + " " + video_file 
          obs_report += "\n"
          print(dobs.keys())
-         for row in dobs['meteor_frame_data']:
-            obs_report += str(row) + "\n"
+         if "meteor_frame_data" in dobs:
+            for row in dobs['meteor_frame_data']:
+               obs_report += str(row) + "\n"
+         else:
+            obs_report += "OBS Missing MFD data!\n"
+
 
       fp = open("obs.txt", "w")
       fp.write(obs_report)
@@ -529,31 +540,33 @@ class EventRunner():
             good_obs = load_json_file(obs_file)
          else:
             for gp in good_planes:
-               print("GOOD PLANES:", gp, good_planes[gp])
+               if gp not in self.obs_dict:
+                  print(gp, "not in obs dict!")
+                  continue
                station_id = gp.split("_")[0]
-               print("LOC:", self.station_loc[station_id])
+               #print("LOC:", self.station_loc[station_id])
                s_lat = self.station_loc[station_id][0]
                s_lon = self.station_loc[station_id][1]
                s_alt = self.station_loc[station_id][2]
                self.obs_dict[gp]['loc'] = [s_lat,s_lon,s_alt] 
                good_obs = convert_dy_obs(self.obs_dict[gp], good_obs)
-               print("GOOD OBS?", good_obs)
+               #print("GOOD OBS?", good_obs)
                print("SAVING:", obs_file)
                save_json_file(obs_file, good_obs)
 
-         print("WMPL READY?", good_obs)
+         #print("WMPL READY?", good_obs)
          all_good_obs[event_id] = good_obs
          for st in good_obs:
             for vid in good_obs[st]:
-               print("ST VID", st, vid)
-               print("GOOD OBS?", good_obs[st][vid])
+               print("   ST VID", st, vid)
+               #print("GOOD OBS?", good_obs[st][vid])
          # TRY WITH TIME SYNC ON
          #WMPL_solve(event_id, good_obs, 1)
          self.jobs.append(("WMPL_solve", event_id, good_obs, 1))
-         for ob in good_obs:
-            print(ob)
+         #for ob in good_obs:
+         #   print(ob)
          for gp in bad_planes:
-            print("BAD PLANES:", gp, bad_planes[gp])
+            print("BAD PLANES:", gp) #, bad_planes[gp])
          all_good_obs[event_id] = good_obs
       save_json_file(self.solve_jobs_file, self.jobs)
       save_json_file(self.all_good_obs_file, all_good_obs)
@@ -616,7 +629,18 @@ class EventRunner():
       for row in fail_rpt:
          print(row)
 
-         
+   def meteor_preview_html(self, obs_id):
+      station_id = obs_id.split("_")[0]
+      sd_vid = obs_id.replace(station_id + "_", "")
+      year = sd_vid[0:4]
+      day = sd_vid[0:10]
+      img_thumb_url = self.cloud_host + station_id + "/METEORS/" + year + "/" + day + "/" + obs_id.replace(".mp4", "-prev.jpg")
+      html = """
+          <div class='meteor_thumb' style='float:left'>
+          <img src=""" + img_thumb_url + """ onerror='this.style.display = "none"'><br>
+          </div>
+      """
+      return(html)
 
    def EOD_summary(self):
       #self.obs_event_ids
@@ -705,7 +729,6 @@ class EventRunner():
          else:
             ndt = []
             for dt in self.events[ev_id]['start_times']:
-               print(dt)
                ndt.append(dt.strftime('%Y-%m-%d %H:%M:%S.%f')[:-3])
             self.events[ev_id]['start_times'] = ndt
 
@@ -806,7 +829,6 @@ class EventRunner():
       #result = self.plane_test(obs1, obs2)
       return(event)
 
-
    def get_make_event(self, events, station_id, sd_vid, s_start_dt):
       obs_id = station_id + "_" + sd_vid
       s_lat = self.station_loc[station_id][0]
@@ -832,19 +854,17 @@ class EventRunner():
 
          #print(s_lat, s_lon, s2_lat, s2_lon, tdiff, min_dist)
          if abs(tdiff) < 3 and min_dist < 300:
-            print("ADD TO EXISTING EVENT!")
-            print("OBS MATCH INFO:", obs_id, tdiff, min_dist)
-            print("EXISTING EVENT OBS:", event['obs'])
+            print("ADD TO EXISTING EVENT!", event_id)
+            #print("OBS MATCH INFO:", obs_id, tdiff, min_dist)
+            #print("EXISTING EVENT OBS:", event['obs'])
             event_found = 1
             new_event = event 
             new_event['obs'][obs_id] = {}
             new_event['stations'][station_id] = {}
             new_event['start_times'].append(s_start_dt) #.strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]
             events[event_id] = new_event 
-            print("NEW EV:", event_id, new_event)
             return(new_event, events)
       if event_found == 0:
-         print("MAKE NEW EVENT!")
          new_event = {}
          new_event['start_times'] = []
          new_event['event_id'] = s_start_dt.strftime('%Y%m%d_%H%M%S')
@@ -855,7 +875,7 @@ class EventRunner():
          new_event['obs'][obs_id] = {}
       event_id = new_event['event_id']
       events[event_id] = new_event 
-      print(event_id, new_event)
+      print("MAKE NEW EVENT:", event_id )
       return(new_event, events)
 
 
@@ -1005,6 +1025,7 @@ class EventRunner():
          print("INSERT NEW EVENT.")
          print(ev)
          self.insert_new_event(ev)
+
       save_json_file(self.all_events_file, final_events)
       cf = self.all_events_file.replace("ams2/", "archive.allsky.tv/")
       print("Saved:", self.all_events_file)
@@ -1192,38 +1213,41 @@ class EventRunner():
       coin_events = load_json_file(self.coin_events_file)
 
       # fix bug dirs
-      for ev_id in coin_events:
-         mistake_dir = self.cloud_event_dir + ev_id + "/" + ev_id + "/"
-         if cfe(mistake_dir, 1) == 1:
-            print("MISTAKE DIR EXISTS", mistake_dir)
-            cmd = "mv " + mistake_dir + "*" + " " + self.cloud_event_dir + ev_id + "/"
-            print(cmd)
-            os.system(cmd)
-            cmd = "rmdir " + mistake_dir 
-            print(cmd)
-            os.system(cmd)
-      exit()
+      if False:
+         for ev_id in coin_events:
+            mistake_dir = self.cloud_event_dir + ev_id + "/" + ev_id + "/"
+            if cfe(mistake_dir, 1) == 1:
+               print("MISTAKE DIR EXISTS", mistake_dir)
+               cmd = "mv " + mistake_dir + "*" + " " + self.cloud_event_dir + ev_id + "/"
+               print(cmd)
+               os.system(cmd)
+               cmd = "rmdir " + mistake_dir 
+               print(cmd)
+               os.system(cmd)
 
       cmd = "find " + self.cloud_event_dir + " > " + self.event_dir + "cloud_files.txt"
       print(cmd)
+      os.system(cmd)
 
       cmd = "find " + self.event_dir + " > " + self.event_dir + "local_files.txt"
       print(cmd)
-      #os.system(cmd)
+      os.system(cmd)
 
       lf = {}
       cf = {}
-      fp = open(self.event_dir + "cloud_files.txt", "r")
-      for line in fp:
-         line = line.replace("\n", "")
-         cf[line] = {}
-      fp.close()
+      if cfe(self.event_dir + "cloud_fiels.txt") == 1:
+         fp = open(self.event_dir + "cloud_files.txt", "r")
+         for line in fp:
+            line = line.replace("\n", "")
+            cf[line] = {}
+         fp.close()
 
-      fp = open(self.event_dir + "local_files.txt", "r")
-      for line in fp:
-         line = line.replace("\n", "")
-         lf[line] = {}
-      fp.close()
+      if cfe(self.event_dir + "cloud_fiels.txt") == 1:
+         fp = open(self.event_dir + "local_files.txt", "r")
+         for line in fp:
+            line = line.replace("\n", "")
+            lf[line] = {}
+         fp.close()
 
       # check local files not on the cloud
       lc = 0
@@ -1335,6 +1359,8 @@ class EventRunner():
       event_day = ""
       event_id = ""
       for obs_id in event['obs']:
+         if obs_id not in self.obs_dict:
+            continue
          if "meteor_frame_data" in self.obs_dict[obs_id]:
             ob_mfd = self.obs_dict[obs_id]['meteor_frame_data']
          else:
@@ -1427,9 +1453,13 @@ class EventRunner():
          event_id = job[1]
          good_obs = job[2]
          WMPL_solve(event_id, good_obs, 1)
-         cmd = "rsync -auv " + self.event_dir + event_id + "/* " +  self.cloud_event_dir + event_id 
-         print(cmd)
-         os.system(cmd)
+         #cmd = "rsync -auv " + self.event_dir + event_id + "/* " +  self.cloud_event_dir + event_id 
+         #print(cmd)
+         #os.system(cmd)
+
+         fp = open(self.event_dir + "rsync.jobs", "a")
+         fp.write ("rsync -auv " + self.event_dir + event_id + "/* " + self.cloud_event_dir + event_id + "\n")
+         fp.close()
 
    def run_jobs_old(self, jobs):
       # Multi-process/thread IP job runner. 
@@ -1472,7 +1502,23 @@ class EventRunner():
 
            # try:
                result = self.plane_test(obs1, obs2)
-               print("PLANE TEST RESULT:", result)
+
+               # TRY USING JIT?
+               obs1_key = obs1['obs_id']
+               obs2_key = obs2['obs_id']
+               st1 = obs1['station_id']
+               st2 = obs2['station_id']
+               sdv1 = obs1['sd_video_file']
+               sdv2 = obs2['sd_video_file']
+               lat1 = self.station_loc[st1][0]
+               lon1 = self.station_loc[st1][1]
+               lat2 = self.station_loc[st2][0]
+               lon2 = self.station_loc[st2][1]
+               mfd1 = self.obs_dict[obs1_key]['meteor_frame_data']
+               mfd2 = self.obs_dict[obs2_key]['meteor_frame_data']
+
+               #result = self.plane_test_jit(obs1_key, obs2_key, sdv1, sdv2, lat1,lon1,lat2,lon2,mfd1,mfd2)
+               #print("PLANE TEST RESULT:", result)
 
                if result is not None:
                   status, line1, line2 = result
@@ -1629,8 +1675,68 @@ class EventRunner():
       a = Point(slat, slon, 0)
       b = Point(elat, elon, 0)
       dist = distance(a, b).km
-      print("DIST!", dist)
       return(dist)
+
+   @jit(nopython=True)
+   def plane_test_jit(self, obs1_key, obs2_key, sdv1, sdv2, lat1,lon1,lat2,lon2,mfd1,mfd2):
+      if len(mfd1) > 1:
+         az1s = mfd1[0][9]
+         el1s = mfd1[0][10]
+         az1e = mfd1[-1][9]
+         el1e = mfd1[-1][10]
+      else:
+         return("obs1 missing_mfd_data", [0,0,0,0,0,0], [0,0,0,0,0,0])
+         return(None)
+
+      if len(mfd2) > 1:
+         az2s = mfd2[0][9]
+         el2s = mfd2[0][10]
+         az2e = mfd2[-1][9]
+         el2e = mfd2[-1][10]
+      else:
+         return("obs2 missing_mfd_data", [0,0,0,0,0,0], [0,0,0,0,0,0])
+
+      if (az1s == 0 and el1s == 0) or (az2s == 0 or el2s == 0):
+         return("missing_mfd_data", [0,0,0,0,0,0], [0,0,0,0,0,0])
+
+      #station_dist = dist_between_two_points(s_lat, s_lon, lat, lon)
+      alt = 0
+      (sveX,sveY,sveZ,s1vlat,s1vlon,s1valt) = self.find_vector_point(lat1,lon1,alt,az1s,el1s,factor=1000000)
+      values = {}
+      values['lat1'] = lat1 
+      values['lon1'] = lon1 
+
+      values['saz1'] = az1s
+      values['eaz1'] = az1e
+      values['sel1'] = el1s 
+      values['eel1'] = el1e
+
+      values['lat2'] = lat2 
+      values['lon2'] = lon2
+
+      values['saz2'] = az2s
+      values['eaz2'] = az2e
+      values['sel2'] = el2s
+      values['eel2'] = el2e
+
+      try:
+         result = man_solve(values)
+      except:
+         result = None
+      if result is None:
+         print("PLANE TEST FAILED FOR PAIR!", st1, st2)
+         return("plane_failed", [0,0,0,0,0,0], [0,0,0,0,0,0])
+      else:
+         line1, line2 = result
+
+         slat,slon,salt,elat,elon,ealt = line1
+         track_distance = self.track_dist(slat,slon,salt,elat,elon,ealt)
+
+
+         if 50000 <= line1[2] <= 150000 and 50000 <= line2[2] <= 150000 and track_distance <500:
+            return("plane_solved", line1, line2)
+         else:
+            return("plane_invalid", line1, line2)
 
    def plane_test(self, obs1, obs2):
       #st1, sdv1 = obs1.split(":")
@@ -1755,9 +1861,7 @@ class EventRunner():
 
 
    def find_vector_point(self, lat,lon,alt,az,el,factor=1000000):
-      import pymap3d as pm
 
-      wgs84 = pm.Ellipsoid('wgs84');
       sveX, sveY, sveZ = pm.aer2ecef(az,el,200000, lat, lon, alt, wgs84)
       svlat, svlon, svalt = pm.ecef2geodetic(float(sveX), float(sveY), float(sveZ), wgs84)
       return(sveX,sveY,sveZ,svlat,svlon,svalt)
@@ -2824,7 +2928,75 @@ class EventRunner():
       for k in rpt:
          print(k, rpt[k])
 
-  
+ 
+   def EOD_coin_report(self):
+      #self.coin_events_file = "/mnt/ams2/EVENTS/" + self.year + "/" + self.month + "/" + self.day + "/" + self.date + "_COIN_EVENTS.json"  
+      self.coin_events = load_json_file(self.coin_events_file)
+      print("COIN EVENTS:", len(self.coin_events))
+      print("ALL EVENTS:", len(self.all_events))
+      stats = {} 
+      for event_id in self.coin_events:
+         solve_status = "UNSOLVED"
+         if event_id in self.event_dict:
+            ev_run_status = "SOLVER_RAN"
+            if "solve_status" in self.event_dict[event_id]:
+               solve_status = self.event_dict[event_id]['solve_status']
+         else:
+            ev_run_status = "UNSOLVED"
+         print(event_id, ev_run_status, solve_status) # self.event_dict[event_id].keys())
+         if solve_status not in stats:
+            stats[solve_status] = {}
+            stats[solve_status]['count'] = 1
+            stats[solve_status]['event_ids'] = []
+            stats[solve_status]['event_ids'].append(event_id)
+
+         else:
+            stats[solve_status]['count'] += 1
+            stats[solve_status]['event_ids'].append(event_id)
+
+      event_html = {}
+      #meteor_preview_html(obs_id)
+
+      fp_solved = open(self.event_dir + self.date + "_EVENTS_SOLVED.html", "w")
+      fp_failed = open(self.event_dir + self.date + "_EVENTS_FAILED.html", "w")
+      fp_invalid = open(self.event_dir + self.date + "_EVENTS_INVALID.html", "w")
+      fp_unsolved = open(self.event_dir + self.date + "_EVENTS_UNSOLVED.html", "w")
+
+      for status in stats:
+         print(status, stats[status]['count'])
+         for eid in stats[status]['event_ids']:
+            if eid not in event_html:
+               event_html[eid] = {}
+               event_html[eid]['status'] = status 
+               event_html[eid]['html'] = "<h1>" + eid + "</h1>" + "<h2>Preview</h2><div>"
+            if eid in self.event_dict:
+               print("   ", eid, sorted(set(self.event_dict[eid]['stations'])), self.event_dict[eid]['solve_status'], self.coin_events[eid]['obs'].keys() )
+               for obs_id in self.coin_events[eid]['obs'].keys():
+                  event_html[eid]['html'] += self.meteor_preview_html(obs_id)
+               event_html[eid]['html'] += "</div><div style='clear: both'></div>"
+               event_html[eid]['html'] += "<h2>Observations</h2><ul>"
+               for obs_id in self.coin_events[eid]['obs'].keys():
+                  event_html[eid]['html'] += "<li>" + obs_id + "</li>"
+               event_html[eid]['html'] += "</ul>"
+            else:
+               print("   ", eid, "not in event dict!", self.coin_events[eid]['obs'])
+
+      print("Done coin report")
+      for eid in event_html:
+         print(eid, event_html[eid]['status'], event_html[eid]['html'])
+         if "SUCCESS" in event_html[eid]['status'] and "UNSOLVED" not in event_html[eid]['status']:
+            fp_solved.write(event_html[eid]['html'])
+         if "FAIL" in event_html[eid]['status']:
+            fp_failed.write(event_html[eid]['html'])
+         if "INVALID" in event_html[eid]['status']:
+            fp_invalid.write(event_html[eid]['html'])
+         if "UNSOLVED" in event_html[eid]['status']:
+            fp_unsolved.write(event_html[eid]['html'])
+            cmd = "python3 EVRun.py resolve " + self.date + " " + eid
+            print(cmd)
+            os.system(cmd)
+      exit()
+
 
    def EOD_report(self, date):
       report_template_file = "allsky.tv/event_template.html"

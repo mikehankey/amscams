@@ -12,6 +12,31 @@ class SystemHealth():
       self.data_dirs["/mnt/ams2/HD"]['max_size'] = 400
       self.data_dirs["/mnt/ams2/SD/proc2"] = {}
       self.data_dirs["/mnt/ams2/SD/proc2"]['max_size'] = 350
+      self.python_procs = self.kill_python_zombies()
+
+   def kill_python_zombies(self):
+      cmd = "ps -eo pid,cmd,etime |grep python3 > p3procs.txt" 
+      os.system(cmd)
+      running_procs = []
+      fp = open("p3procs.txt", "r")
+      for line in fp:
+         el = line.split(" ")
+         time = el[-1]
+         running_procs.append((el[0],el[1],el[2],el[-1]))
+         if "-" in time:
+            print("PROCESS RUNNING FOR DAYS! KILL IT!")
+            cmd = "kill -9 " + el[0]
+            print(cmd)
+            os.system(cmd)
+
+         else:
+            hhh = time.split(":") 
+            print("Process running", hhh[0], "hours", line)
+            if int(hhh[0]) >= 4:
+               cmd = "kill -9 " + el[0]
+               print(cmd)
+               os.system(cmd)
+      return(running_procs)
 
    def make_report(self):
       print("SYSTEM HEALTH REPORT")
@@ -20,18 +45,29 @@ class SystemHealth():
       df_data, mounts = self.run_df()
       print("DF DATA:", df_data)
       print("MOUNTS:", mounts)
+      system_health_report = {}
+      system_health_report['pings'] = pings 
+      system_health_report['df_data'] = df_data
+      system_health_report['mounts'] = mounts
+      system_health_report['python_procs'] = self.python_procs
       #self.check_quotas()
+      system_health_report['data_dirs'] = {}
       for dd in self.data_dirs:
          print("DD:", dd, self.data_dirs[dd])
+         system_health_report['data_dirs'][dd] = self.data_dirs[dd]
       self.pending_SD_files = glob.glob("/mnt/ams2/SD/*")
+      system_health_report['pending_files'] = len(self.pending_SD_files)
       latest_files = glob.glob("/mnt/archive.allsky.tv/" + self.station_id + "/LATEST/*.jpg")
       if len(latest_files) > 0:
          info = get_file_info(latest_files[0])
          print("INFO:", latest_files[0])
          fsize, self.last_latest_file = get_file_info(latest_files[0])
+         system_health_report['latest_file_age'] = self.last_latest_file
       else:
          self.last_latest_file = None
       print("Last latest file age:", self.last_latest_file)
+      save_json_file("../conf/" + self.station_id + "_system_health.json", system_health_report)
+      print("../conf/" + self.station_id + "_system_health.json")
    
       
 
@@ -61,6 +97,7 @@ class SystemHealth():
             if over_quota < 0:
                print("OVER QUOTA:", tdir, quota_perc, abs(over_quota))
                self.purge_dir(tdir, over_quota)
+               os.system("cd /home/ams/amscams/pythonv2; ./doDay.py cd")
 
    def purge_dir(self, tdir, over_quota):
       if "HD" in tdir:

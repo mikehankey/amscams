@@ -1,4 +1,5 @@
 #!/usr/bin/python3
+from numba import jit
 import decimal
 from decimal import Decimal
 import pickle
@@ -720,7 +721,10 @@ def get_dyna_event(dynamodb, event_id):
    except ClientError as e:
        print(e.response['Error']['Message'])
    else:
-       event_data = json.loads(json.dumps(response['Item']), parse_float=Decimal)
+       if "Item" in response:
+          event_data = json.loads(json.dumps(response['Item']), parse_float=Decimal)
+       else:
+          event_data = None
 
    return(event_data)
 
@@ -1960,7 +1964,6 @@ def find_vector_point(lat,lon,alt,az,el,factor=1000000):
    return(sveX,sveY,sveZ,svlat,svlon,svalt)
 
 def man_solve(values):
-   print(values)
    wgs84 = pm.Ellipsoid('wgs84');
    lat1 = values['lat1']
    lon1 = values['lon1']
@@ -1995,6 +1998,8 @@ def man_solve(values):
    Point3D(x1,y1,z1), \
    Point3D(sveX1,sveY1,sveZ1), \
    Point3D(eveX1,eveY1,eveZ1))
+
+   #print("POINT3D 2:", eveX2, eveY2, eveZ2)
 
    obs2 = Plane( \
    Point3D(x2,y2,z2), \

@@ -24,6 +24,9 @@ if __name__ == "__main__":
       #EVR.make_events_file_from_coin()
       EVR.resolve_event(event_id)
       exit()
+   if sys.argv[1] == "EOD":
+      EVR = EventRunner(date=sys.argv[2],use_cache=0)
+      EVR.EOD_coin_report()
 
 
    EVR = EventRunner(date=sys.argv[1],use_cache=0)
@@ -59,15 +62,12 @@ if __name__ == "__main__":
   # exit()
    #EVR.EOD_summary()
    #exit()
-   EVR.sync_event_dir()
-   print("DONE SYNC")
-   exit()
 
    EVR.coin_events()
    EVR.coin_solve()
    EVR.run_solve_jobs()
    EVR.make_events_file_from_coin()
-   EVR.sync_event_dir()
+   #EVR.sync_event_dir()
    EVR.load_dyna_events()
    EVR.plane_station_stats()
    print("FINISH SOLVE FOR DAY", sys.argv[1]) 

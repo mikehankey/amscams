@@ -155,7 +155,7 @@ def events_report(date, type="all"):
          exit()
 
 
-   exit()
+   return()
    rpt_s = ""
    rpt_u = ""
    rpt_f = ""
@@ -646,7 +646,6 @@ def event_stats(events):
       print(ev['event_id'], ss)
    for ss in stats:
       print(ss, stats[ss])
-   #exit()
 
 def solve_day(day, cores=16):
    date = day
@@ -699,7 +698,6 @@ def solve_day(day, cores=16):
    event_stats(events)
    # get events from API
    #events = get_aws_events(day)
-   #exit()
    print("TOTAL EVENTS:", len(events))
    #print("TOTAL INDEX:", len(events_index))
    total_events = len(events)
@@ -1258,16 +1256,26 @@ def solve_event(event_id, force=1, time_sync=1):
     #cmd = "cd ../pythonv2; ./solve.py vida_plots " + event_id
     #os.system(cmd)
 
-    cmd = "python3 Inspect.py merge " + event_id
-    os.system(cmd)
-
-    #cmd = "rm " + solve_dir + "/*.png"
-    #print(cmd)
+    #cmd = "python3 Inspect.py merge " + event_id
     #os.system(cmd)
-    print("RSYNC EVENT CONTENT")
-    cmd = "rsync -auv " + solve_dir + "* " + cloud_dir 
+
+    cmd = "rm " + solve_dir + "/*.png"
     print(cmd)
     os.system(cmd)
+
+    print("RSYNC EVENT CONTENT (BUFFERED/DELAYED RSYNC)")
+
+    #cloud_dir = solve_dir.replace("/ams2", "/archive.allsky.tv")
+    #fp = open(solve_dir + "/rsync.jobs", "a")
+    #fp.write ("rsync -auv " + solve_dir + "* " + cloud_dir + "\n")
+    #print("BUFFERED WRITE: rsync -auv " + solve_dir + "* " + cloud_dir + "\n")
+    #fp.close()
+
+    # uncommet for live rsync
+    #cmd = "rsync -auv " + solve_dir + "* " + cloud_dir + "\n"
+    #print(cmd)
+    #os.system(cmd)
+
 
 
 
@@ -1686,7 +1694,6 @@ def convert_dy_obs(dy_obs_data, obs):
       return(obs)
    station = dy_obs_data['station_id']
    fn = dy_obs_data['sd_video_file']
-   print("CONVERT:", station, fn, len(obs))
    if station not in obs:
       obs[station] = {}
    if fn not in obs[station]:
@@ -1697,7 +1704,7 @@ def convert_dy_obs(dy_obs_data, obs):
    else:
       dy_obs_data['calib'] = {}
       calib = {}
-   print("ADD OBS:", station, fn)
+   print("   ADD OBS:", station, fn)
    obs[station][fn]['loc'] = dy_obs_data['loc']
    obs[station][fn]['calib'] = dy_obs_data['calib']
    obs[station][fn]['times'] = []
@@ -1845,9 +1852,16 @@ def make_event_json(event_id, solve_dir,ignore_obs):
       print("FAIL FILE:", fail_file)
       save_json_file(fail_file, fail)
 
-      cloud_dir = solve_dir.replace("/ams2/", "/archive.allsky.tv/")
-      cmd = "rsync -auv " + solve_dir + "* " + cloud_dir 
-      os.system(cmd)
+      #cloud_dir = solve_dir.replace("/ams2/", "/archive.allsky.tv/")
+      #cmd = "rsync -auv " + solve_dir + "* " + cloud_dir 
+      #os.system(cmd)
+
+      #cloud_dir = solve_dir.replace("/ams2", "/archive.allsky.tv")
+      #fp = open(solve_dir + "rsync.jobs", "a")
+      #fp.write ("rsync -auv " + solve_dir + "* " + cloud_dir + "\n")
+      #print("BUFFERED WRITE: rsync -auv " + solve_dir + "* " + cloud_dir + "\n")
+      #fp.close()
+
       return(0)
 
    f = open(pks[0], 'rb')
@@ -2309,9 +2323,17 @@ def event_report(solve_dir, event_final_dir, obs):
        os.system(cmd)
 
     # sync data to cloud
-    cloud_final_dir = event_final_dir.replace("/mnt/ams2/", "/mnt/archive.allsky.tv/")
-    cmd = "rsync -auv " + event_final_dir + " " + cloud_final_dir
-    print(cmd)
+    #cloud_final_dir = event_final_dir.replace("/mnt/ams2/", "/mnt/archive.allsky.tv/")
+    #cmd = "rsync -auv " + event_final_dir + " " + cloud_final_dir
+    #print(cmd)
+
+    #cloud_dir = solve_dir.replace("/ams2", "/archive.allsky.tv")
+    #fp = open(solve_dir + "rsync.jobs", "a")
+    #cloud_dir = solve_dir.replace("/ams2", "/archive.allsky.tv")
+    #fp.write ("rsync -auv " + event_final_dir + "* " + cloud_final_dir + "\n")
+    #print("BUFFERED WRITE: rsync -auv " + event_final_dir + "* " + cloud_final_dir + "\n")
+    #fp.close()
+
 
 
 
@@ -2354,6 +2376,67 @@ def WMPL_solve(event_id, obs,time_sync=1, force=0):
               start_times.append(obs[station_id][file]['times'][0])   
         if "times" not in obs[station_id][file] and "start_datetime" in obs[station_id][file]:
            obs[station_id][file]['times'] = obs[station_id][file]['start_datetime']
+
+    if len(start_times) == 0:
+       print("THERE ARE NO OBS FOR THIS EVENT!")
+
+       fail_file = solve_dir + event_id + "-fail.json"
+       fail = {}
+       fail['failed'] = 1 
+       fail['no_obs_data'] = 1 
+       print("FAIL FILE:", fail_file)
+       save_json_file(fail_file, fail)
+       return() 
+       for station_id in obs:
+          if len(obs[station_id].keys()) > 1:
+             file = get_best_obs(obs[station_id])
+          else:
+             for bfile in obs[station_id]:
+                file = bfile
+          print(station_id, file, obs[station_id][file]['times'])
+    else:
+       print(solve_dir )
+       #for sf in solved_files:
+       #   print(sf)
+       event_report(solve_dir, event_final_dir, obs)
+       make_event_json(event_id, solve_dir,[])
+
+
+def center_obs(obs_data):
+   lats = []
+   lons = []
+   for st in obs_data:
+      for fn in obs_data[st]:
+         lat,lon,alt = obs_data[st][fn]['loc']
+         print("LAT LON:", lat,lon,alt)
+      lats.append(float(lat))
+      lons.append(float(lon))
+  
+   return(np.mean(lats),np.mean(lons))
+
+def menu():
+    valid_opt = ['1', '3', '4', '5']
+    command = ""
+    date = input("Enter the date you want to work on (YYYY_MM_DD): ")
+
+    menu = """
+      EVENT SOLVING OPTIONS FOR {:s}
+      1) Update DYNA CACHE 
+      2) Solve Status 
+      3) Define Events 
+      4) Solve All Events 
+      5) Solve Single Event 
+      q) Quit
+    """.format(date)
+
+    while command != "q" and command not in valid_opt:
+      print(menu)
+      command = input("enter command function\n")
+      if command == "2":
+         print("Solve Status")
+         solve_status(date)
+
+
 
     event_start = sorted(start_times)[0]
      
@@ -2432,7 +2515,7 @@ def WMPL_solve(event_id, obs,time_sync=1, force=0):
        print("FAILED TO SOLVE. No files in solve dir:", solve_dir )
        cmd = "cd ../pythonv2; ./solve.py vida_failed_plots " + event_id
        print(cmd)
-       os.system(cmd)
+       #os.system(cmd)
        fail_file = solve_dir + event_id + "-fail.json"
        fail = {}
        fail['failed'] = 1 
