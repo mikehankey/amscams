@@ -100,6 +100,8 @@ class AS7Setup():
       else:
          print("Already registered.")
       self.save_json_file("../conf/setup.json", self.user_data)
+
+      self.check_setup_defaults()
       self.UI()
    
 
@@ -127,6 +129,21 @@ class AS7Setup():
       menu.append_item(data_disk_setup)
       menu.append_item(setup_dirs_and_config)
       menu.show()      
+
+   def check_setup_defaults(self):
+      print("CHECK DEF")
+      new_defaults = ""
+      if self.cfe("/home/ams/amscams/pipeline/lib/DEFAULTS.py") == 0:
+         fp = open("/home/ams/amscams/pipeline/lib/DEFAULTS.py.default")
+         for line in fp:
+            new_defaults += line
+         new_defaults = new_defaults.replace("AMSXXX", self.station_id)
+         fpout = open("/home/ams/amscams/pipeline/lib/DEFAULTS.py", "w")
+         fpout.write(new_defaults)
+         fpout.close()
+         os.system("chown -R ams:ams /home/ams/amscams/*")
+         print("WROTE DEFAULTS.")
+            
 
    def save_setup(self):
       for item in self.user_data:
@@ -204,17 +221,17 @@ class AS7Setup():
       if len(self.station_id) == 4:
          starting_cams_id = "01" + self.station_id + "001"
       starting_cams_id = int(starting_cams_id.replace("AMS", ""))
-
-      operator_name = input("Enter Operator Name")
-      operator_email = input("Enter Operator Email")
-      operator_city = input("Enter Operator City")
-      operator_state = input("Enter Operator State (or Region)")
-      operator_country = input("Enter Operator Country")
-      obs_name = input("Enter Operator Observatory Name")
-      device_lat = input("Enter Device Lat as decimal")
-      device_lon = input("Enter Device Lon as decimal")
-      device_alt = input("Enter Device Altitude above sea level in meters")
-      pwd = input("Enter Operator Password")
+      print("Note you can change this information later in the admin, so don't worry about perfect values or mistakes.")
+      operator_name = input("Enter Operator Name: ")
+      operator_email = input("Enter Operator Email: ")
+      operator_city = input("Enter Operator City: ")
+      operator_state = input("Enter Operator State (or Region): ")
+      operator_country = input("Enter Operator Country: ")
+      obs_name = input("Enter Operator Observatory Name: ")
+      device_lat = input("Enter Device Lat as decimal: ")
+      device_lon = input("Enter Device Lon as decimal (west use negative - ): ")
+      device_alt = input("Enter Device Altitude above sea level in meters: ")
+      pwd = input("Enter Operator Password (for station web admin): ")
 
       #json_conf = load_json_file("/home/ams/amscams/conf/as6.json.default")
 
@@ -280,7 +297,6 @@ class AS7Setup():
       if "proc_dir" not in self.json_conf['site']:
          self.json_conf['site']['proc_dir'] = "/mnt/ams2/SD/proc2/"
          self.save_json_file("../conf/as6.json", self.json_conf) 
-         input("UPDATED PROC DIR?")
       if "camera_settingsv1" not in self.json_conf['site']:
          self.json_conf['camera_settingsv1'] = {}
       ams_id = self.station_id
