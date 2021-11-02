@@ -2355,7 +2355,7 @@ def WMPL_solve(event_id, obs,time_sync=1, force=0):
     solve_dir = "/mnt/ams2/EVENTS/" + year + "/" + mon + "/" + day + "/" + event_id + "/"
     solve_file = solve_dir + event_id + "-event.json"
     fail_file = solve_dir + event_id + "-fail.json"
-    if (cfe(solve_file) == 1 or cfe(fail_file) == 1) and force == 0:
+    if cfe(solve_file) == 1: # or cfe(fail_file) == 1) and force == 0:
        print("We already solved this event!")
        return()
     else:
@@ -2400,43 +2400,6 @@ def WMPL_solve(event_id, obs,time_sync=1, force=0):
        #   print(sf)
        event_report(solve_dir, event_final_dir, obs)
        make_event_json(event_id, solve_dir,[])
-
-
-def center_obs(obs_data):
-   lats = []
-   lons = []
-   for st in obs_data:
-      for fn in obs_data[st]:
-         lat,lon,alt = obs_data[st][fn]['loc']
-         print("LAT LON:", lat,lon,alt)
-      lats.append(float(lat))
-      lons.append(float(lon))
-  
-   return(np.mean(lats),np.mean(lons))
-
-def menu():
-    valid_opt = ['1', '3', '4', '5']
-    command = ""
-    date = input("Enter the date you want to work on (YYYY_MM_DD): ")
-
-    menu = """
-      EVENT SOLVING OPTIONS FOR {:s}
-      1) Update DYNA CACHE 
-      2) Solve Status 
-      3) Define Events 
-      4) Solve All Events 
-      5) Solve Single Event 
-      q) Quit
-    """.format(date)
-
-    while command != "q" and command not in valid_opt:
-      print(menu)
-      command = input("enter command function\n")
-      if command == "2":
-         print("Solve Status")
-         solve_status(date)
-
-
 
     event_start = sorted(start_times)[0]
      
@@ -2537,6 +2500,9 @@ def menu():
        make_event_json(event_id, solve_dir,[])
 
 
+
+
+# 1
 def center_obs(obs_data):
    lats = []
    lons = []

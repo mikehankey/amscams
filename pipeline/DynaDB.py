@@ -602,7 +602,7 @@ def get_all_events(dynamodb):
    save_json_file(outfile, items)
 
 
-def update_dyna_cache_for_day(dynamodb, date, stations, utype=None):
+def update_dyna_cache_for_day(dynamodb, date, stations, utype=None, cloud_copy=0):
    json_conf = load_json_file("../conf/as6.json")
    station_id = json_conf['site']['ams_id']
    api_key = json_conf['api_key']
@@ -724,9 +724,10 @@ def update_dyna_cache_for_day(dynamodb, date, stations, utype=None):
       obs_file_zip = obs_file.replace(".json", ".json.gz")  
       os.system("gzip -k -f " + obs_file )
       print("SAVED:", obs_file)
-      cloud_obs_file = obs_file_zip.replace("/mnt/ams2/", "/mnt/archive.allsky.tv/")
-      os.system("cp " + obs_file_zip + " " + cloud_obs_file)
-      print("cp " + obs_file_zip + " " + cloud_obs_file)
+      if cloud_copy == 1:
+         cloud_obs_file = obs_file_zip.replace("/mnt/ams2/", "/mnt/archive.allsky.tv/")
+         os.system("cp " + obs_file_zip + " " + cloud_obs_file)
+         print("cp " + obs_file_zip + " " + cloud_obs_file)
 
    if do_events == 1:
       #os.system("rm " + event_file ) 

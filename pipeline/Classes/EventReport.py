@@ -289,8 +289,9 @@ class EventReport():
          ec += 1
 
 
-      kml.save(self.event_kml_file)
-
+      kml.savekmz(self.event_kml_file.replace(".kml", ".kmz"), format=False)
+      kml.save(self.event_kml_file, format=False)
+      
       cf = self.event_kml_file.replace("/ams2","/archive.allsky.tv")
 
       print(self.event_kml_file)

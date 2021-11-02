@@ -4,6 +4,7 @@ import Classes.Events
 from Classes.Events import Events
 from Classes.EventRunner import EventRunner 
 import sys
+import os
 
 if __name__ == "__main__":
    import sys
@@ -27,7 +28,9 @@ if __name__ == "__main__":
    if sys.argv[1] == "EOD":
       EVR = EventRunner(date=sys.argv[2],use_cache=0)
       EVR.EOD_coin_report()
-
+      os.system("python3 ER.py " + sys.argv[2])
+      print("python3 ER.py " + sys.argv[2])
+      exit()
 
    EVR = EventRunner(date=sys.argv[1],use_cache=0)
    if len(sys.argv) > 2:
@@ -43,7 +46,6 @@ if __name__ == "__main__":
    if len(sys.argv) > 2:
       if sys.argv[2] == "EOD":
          EVR.EOD_report(sys.argv[1])
-         exit()
 
    #EVR.del_bad_obs_from_events(sys.argv[1])
    #print("LIST EVENTS")
@@ -73,6 +75,8 @@ if __name__ == "__main__":
    print("FINISH SOLVE FOR DAY", sys.argv[1]) 
    #exit()
 
+   EVR.EOD_report(sys.argv[1])
+   os.system("python3 ER.py " + sys.argv[1])
    #EVR.obs_by_minute()
    exit()
    EVR.list_events_for_day()

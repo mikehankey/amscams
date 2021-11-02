@@ -1,4 +1,4 @@
-from lib.PipeUtil import cfe, load_json_file, save_json_file, convert_filename_to_date_cam, get_trim_num, get_file_info
+from lib.PipeUtil import cfe, load_json_file, save_json_file, convert_filename_to_date_cam, get_trim_num, get_file_info, calc_dist
 import pymap3d as pm
 wgs84 = pm.Ellipsoid('wgs84');
 from numba import jit
@@ -361,8 +361,8 @@ class EventRunner():
       else:
          custom_obs = None
       print("CUSTOM OBS:", custom_obs)
-      coin_events = load_json_file(self.coin_events_file) 
-      event = coin_events[event_id]
+      self.coin_events = load_json_file(self.coin_events_file) 
+      event = self.coin_events[event_id]
       good_planes = {}
       #print(event.keys())
       print("EVOBS:", event['obs'])
@@ -375,6 +375,9 @@ class EventRunner():
       obs_report = ""
 
       for obs in event['obs']:
+         qc_check = self.qc_obs_points(obs)
+         print("QC CHECK:", obs, qc_check)
+         event['obs'][obs]['qc'] = qc_check
          print("OBS IS:", obs)
          el = obs.split("_")
          station_id = el[0]
@@ -385,25 +388,27 @@ class EventRunner():
          #print (dobs.keys())
          obs_report += station_id + " " + video_file 
          obs_report += "\n"
-         print(dobs.keys())
          if "meteor_frame_data" in dobs:
             for row in dobs['meteor_frame_data']:
                obs_report += str(row) + "\n"
          else:
             obs_report += "OBS Missing MFD data!\n"
-
+         if qc_check['status_code'] == 0:
+            obs_report += "FAILED QC! " + qc_check['desc']
+         else:
+            obs_report += "PASSED QC! " + qc_check['desc']
 
       fp = open("obs.txt", "w")
       fp.write(obs_report)
       fp.write(str(event))
       fp.close()
-
+      exit()
       #get_obs(station_id, sd_video_file):
       #event = self.do_planes_for_event(event, redo=1)
-      coin_events[event_id] = event
+      self.coin_events[event_id] = event
       
 
-      save_json_file(self.coin_events_file, coin_events)
+      save_json_file(self.coin_events_file, self.coin_events)
       
 
       plane_good = []
@@ -452,14 +457,21 @@ class EventRunner():
 
          if True:
             for gp in good_planes:
+               qc = self.coin_events[event_id]['obs'][gp]['qc']
+               print("QC:", gp, qc)
                el = gp.split("_")
                station_id = el[0]
                s_lat = self.station_loc[station_id][0]
                s_lon = self.station_loc[station_id][1]
                s_alt = self.station_loc[station_id][2]
                print("STATION ID IS:", station_id, s_lat, s_lon, s_alt)
+               print("GP IS:", gp) 
                self.obs_dict[gp]['loc'] = [s_lat,s_lon,s_alt] 
+               if "station_id" not in self.obs_dict[gp]:
+                  print("no data in obs dict for ", gp, self.obs_dict[gp])
+                  continue
                good_obs = convert_dy_obs(self.obs_dict[gp], good_obs)
+
       if custom_obs is not None:
          good_obs = {}
          print("CUSTOM")
@@ -475,10 +487,14 @@ class EventRunner():
             print("STATION ID IS:", station_id, s_lat, s_lon, s_alt)
             self.obs_dict[obs]['loc'] = [s_lat,s_lon,s_alt] 
             print("GOOD OBS:", len(good_obs))
-            good_obs = convert_dy_obs(self.obs_dict[obs], good_obs)
-            good_obs[station_id][vid]['loc'] =  [s_lat,s_lon,s_alt]
-            print(good_obs)
-            print("GOOD AFTER OBS:", len(good_obs))
+            if obs not in self.obs_dict:
+               print("OBS IS NOT IN TEHE OBS DICT!", obs)
+            else:
+               print("OBS IS IN THE OBS DICT!", obs)
+               good_obs = convert_dy_obs(self.obs_dict[obs], good_obs)
+               good_obs[station_id][vid]['loc'] =  [s_lat,s_lon,s_alt]
+               print(good_obs)
+               print("GOOD AFTER OBS:", len(good_obs))
    
       print("THE GOOD OBS!")
       for station_id in good_obs:
@@ -494,7 +510,84 @@ class EventRunner():
       WMPL_solve(event_id, good_obs, 1, 1)
 
 
+   def qc_obs_points(self, obs):
+      print("OBS IS:", obs)
+      obs_data = self.obs_dict[obs]
+      if "meteor_frame_data" in obs_data:
+         last_x = None
+         last_y = None
+         first_x = obs_data['meteor_frame_data'][0][2]
+         first_y = obs_data['meteor_frame_data'][0][3]
+         last_dist_from_start = 0
+         dist_from_start = 0
+         qc_data = []
+         for row in obs_data['meteor_frame_data']:
+            (frame_time_str, fn, hd_x, hd_y, sd_w, sd_h, oint, ra, dec, az, el) = row
+            if last_x is not None:
+               last_dist = calc_dist((last_x,last_y), (hd_x,hd_y))
+               dist_from_start = calc_dist((first_x, first_y), (hd_x, hd_y))
+            else:
+               last_dist = 0
+               dist_from_start = 0
+            seg_len = dist_from_start - last_dist_from_start
+            #print(obs, "MFD:", hd_x, hd_y, last_dist, dist_from_start, seg_len)
+            qc_data.append((obs, hd_x,hd_y,last_dist, dist_from_start, seg_len))
+            last_x = hd_x
+            last_y = hd_y
+            last_dist_from_start = dist_from_start
+         qc_resp = self.eval_qc_data(qc_data)
+         return(qc_resp)
+      else:
+         qc_response = {}
+         qc_response['status_code'] = 0
+         qc_response['desc'] = "FAILED QC: No MFD"
+         
+         return(qc_resp)
 
+   def eval_qc_data(self, qc_data):
+      segs = [row[5] for row in qc_data]
+      med_seg = np.median(segs)
+      if med_seg == 0:
+         qc_response = {}
+         qc_response['status_code'] = 0
+         qc_response['desc'] = "FAILED QC: 0 median seg len"
+         print("FAILED QC: 0 med seg len") 
+         return(qc_response)
+
+      bad = 0
+      good = 0
+      rc = 0
+      print("QC CHECK")
+      print("--------")
+      for row in qc_data:
+         med_seg_diff = abs(row[5] - med_seg)
+         if (med_seg_diff > 5 or row[5] > med_seg * 2) and rc > 0 :
+            ok = 0
+            bad += 1
+            print("   ", rc, row[1], row[2], "BAD MFD SEG", row )
+         else:
+            ok = 1
+            good += 1
+            print("   ", rc, row[1], row[2], "GOOD MFD SEG", row )
+         #print(ok, "MED SEG DIFF:", med_seg, med_seg_diff, row)
+         rc += 1
+      if bad > 0 and good > 0:
+         perc_good = 1 - (bad / good)
+      elif good == 0:
+         perc_good = 0
+      else:
+         perc_good = 1
+      print("PERC GOOD:", perc_good)
+      if perc_good < .5:
+         qc_response = {}
+         qc_response['status_code'] = 0
+         qc_response['desc'] = "FAILED QC: " + str(int(perc_good*100)) + " % passed seg."
+         return(qc_response)
+      else:
+         qc_response = {}
+         qc_response['status_code'] = 1
+         qc_response['desc'] = "PASSED QC"
+         return(qc_response)
 
    def coin_solve(self):
       #self.event_dir + 
@@ -1258,7 +1351,7 @@ class EventRunner():
             lc+=1 
 
       #for cfile in cf:
-      exit()
+      #exit()
 
       event_dir_files = glob.glob(self.event_dir + "*")
       cloud_event_dir_files = glob.glob(self.cloud_event_dir + "*")
@@ -2963,12 +3056,13 @@ class EventRunner():
       fp_unsolved = open(self.event_dir + self.date + "_EVENTS_UNSOLVED.html", "w")
 
       for status in stats:
-         print(status, stats[status]['count'])
+         #print(status, stats[status]['count'])
          for eid in stats[status]['event_ids']:
+            ev_link = self.event_dir.replace("/mnt/ams2", "") + eid + "/index.html" 
             if eid not in event_html:
                event_html[eid] = {}
                event_html[eid]['status'] = status 
-               event_html[eid]['html'] = "<h1>" + eid + "</h1>" + "<h2>Preview</h2><div>"
+               event_html[eid]['html'] = "<h1><a href=" + ev_link + ">" + eid + "</a></h1>" + "<h2>Preview</h2><div>"
             if eid in self.event_dict:
                print("   ", eid, sorted(set(self.event_dict[eid]['stations'])), self.event_dict[eid]['solve_status'], self.coin_events[eid]['obs'].keys() )
                for obs_id in self.coin_events[eid]['obs'].keys():
@@ -2982,20 +3076,49 @@ class EventRunner():
                print("   ", eid, "not in event dict!", self.coin_events[eid]['obs'])
 
       print("Done coin report")
+      counts = {}
+      counts['SOLVED'] = 0
+      counts['FAILED'] = 0
+      counts['INVALID'] = 0
+      counts['UNSOLVED'] = 0
+
       for eid in event_html:
          print(eid, event_html[eid]['status'], event_html[eid]['html'])
          if "SUCCESS" in event_html[eid]['status'] and "UNSOLVED" not in event_html[eid]['status']:
+            counts['SOLVED'] += 1 
             fp_solved.write(event_html[eid]['html'])
          if "FAIL" in event_html[eid]['status']:
+            counts['FAILED'] += 1 
             fp_failed.write(event_html[eid]['html'])
          if "INVALID" in event_html[eid]['status']:
+            counts['INVALID'] += 1 
             fp_invalid.write(event_html[eid]['html'])
          if "UNSOLVED" in event_html[eid]['status']:
+            counts['UNSOLVED'] += 1 
             fp_unsolved.write(event_html[eid]['html'])
-            cmd = "python3 EVRun.py resolve " + self.date + " " + eid
-            print(cmd)
-            os.system(cmd)
-      exit()
+            #cmd = "python3 EVRun.py resolve " + self.date + " " + eid
+            #print(cmd)
+            #os.system(cmd)
+      clat = 40 
+      clon = 40
+      map_file = "https://archive.allsky.tv/EVENTS/" + self.year + "/" + self.month + "/" + self.day + "/" + self.date + "_ALL_EVENTS.kml"
+      main_html = "<h1>Meteor Ops Report for " + self.date + "</h1>"
+      main_html += """
+         <iframe width=100% height=450 src="https://archive.allsky.tv/APPS/dist/maps/index.html?mf={:s}&lat={:s}&lon=-{:s}&zoom=3"></iframe>
+            <div class="carousel-caption d-none d-md-block">
+               <p><a href="{:s}">KML Download</a></p>
+            </div>
+         </div>
+      """.format(map_file, str(clat), str(clon), map_file)
+      mfp = open(self.event_dir + "/index.html", "w")
+      mfp.write(main_html)
+      for status in counts:
+         link = self.date + "_EVENTS_" + status + ".html"
+         mfp.write("<a href=" + link + ">" + status + "</a> " + str(counts[status]) + "<br>")
+      mfp.close()
+      print(self.event_dir + "/index.html")
+
+      #exit()
 
 
    def EOD_report(self, date):
