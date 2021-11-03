@@ -2,7 +2,7 @@
 import os
 
 gst_desktop_temp = """
-gst-launch-1.0 rtspsrc location="rtsp://192.168.76.XXX/user=admin&password=&channel=0&stream=1.sdp" latency=100 ! queue ! rtph264depay  ! avdec_h264 ! videoconvert ! video/x-raw ! autovideosink
+/usr/bin/gst-launch-1.0 rtspsrc location="rtsp://192.168.76.XXX/user=admin&password=&channel=0&stream=1.sdp" latency=100 ! queue ! rtph264depay  ! avdec_h264 ! videoconvert ! video/x-raw ! autovideosink
 """
 
 vlc_desktop_temp = """
@@ -46,6 +46,7 @@ for i in range(1, 8):
    os.system("chmod +x " + desk_file)
 
    os.system("sudo chown -R ams /home/ams")
+   os.system("ln -s /snap/bin/vlc /usr/bin/vlc ")
 
 
 
