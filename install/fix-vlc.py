@@ -19,7 +19,7 @@ StartupNotify=false
 
 """
 
-if False:
+if True:
    os.system("sudo apt remove vlc")
    os.system("sudo apt install gstreamer1.0-libav")
    os.system("sudo apt purge vlc")
@@ -46,7 +46,8 @@ for i in range(1, 8):
    os.system("chmod +x " + desk_file)
 
    os.system("sudo chown -R ams /home/ams")
-   os.system("ln -s /snap/bin/vlc /usr/bin/vlc ")
+   if os.path.exists("/usr/bin/vlc") is False:
+      os.system("ln -s /snap/bin/vlc /usr/bin/vlc ")
 
 
 
