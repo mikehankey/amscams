@@ -11,7 +11,7 @@ Version=1.0
 Type=Application
 Name=Cam1
 Comment=
-Exec=/usr/bin/vlc rtsp://192.168.76.XXX:554//user=admin_password=_channel=1_stream=0.sdp?real_stream
+Exec=/usr/bin/vlc rtsp://192.168.76.XXX:554/user=admin_password=_channel=1_stream=0.sdp
 Icon=vlc
 Path=
 Terminal=false
