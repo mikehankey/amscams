@@ -11169,7 +11169,7 @@ def verify_meteor(meteor_json_file):
 
 
       if sd_meteors is not None: 
-         if hd_x2 - hdx1 < 700:
+         if hd_x2 - hd_x1 < 700:
             hd_motion_objects,hd_meteor_frames = detect_meteor_in_clip(hd_crop_file, None, 0,hd_x1,hd_y1,1)
             hd_meteors = only_meteors(hd_motion_objects)
          else:
