@@ -19,7 +19,7 @@ def import_meteor(trim_file, hd_trim):
 
 
 print("Enter the full path to the SD trim file")
-print("make sure trim number is in the file name correctly or time will be off. trim-number = 25 * start second of clip"
+print("make sure trim number is in the file name correctly or time will be off. trim-number = 25 * start second of clip")
 trim_file = input("ENTER SD TRIM FILE PATH")
 hd_trim = input("ENTER HD TRIM FILE PATH")
 
