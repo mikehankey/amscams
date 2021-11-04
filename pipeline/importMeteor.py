@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-
+import cv2
 import os
 from lib.PipeUtil import save_json_file
 from lib.PipeDetect import make_base_meteor_json
@@ -24,3 +24,8 @@ trim_file = input("ENTER SD TRIM FILE PATH:")
 hd_trim = input("ENTER HD TRIM FILE PATH:")
 
 import_meteor(trim_file, hd_trim)
+#make thumb
+
+stack_img = cv2.imread(mj['sd_video_file'].replace(".mp4", "-stacked.jpg"))
+tn = stack_img.resize(stack_img, (320,180))
+cv2.imwrite(mj['sd_video_file'].replace(".mp4", "-stacked-tn.jpg"))
