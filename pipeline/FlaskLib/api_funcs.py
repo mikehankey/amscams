@@ -313,35 +313,6 @@ def show_cat_stars (video_file, hd_stack_file, points):
          return(resp)
 
 
-def update_meteor_points(sd_video_file,frames):
-   json_conf = load_json_file("../conf/as6.json")
-   json_file = "/mnt/ams2/" + sd_video_file.replace(".mp4", ".json")
-   full_vid = "/mnt/ams2/" + sd_video_file
-   print("FV:", full_vid)
-   print("JS:", json_file)
-
-   rjson_file = json_file.replace(".json", "-reduced.json")
- 
-   mj = load_json_file(json_file)
-   print("MJ LOADED:", mj)
-   if "user_mods" in  mj:
-      user_mods = mj['user_mods']
-   else:
-      user_mods = {}
-   if "frames" not in user_mods:
-      user_mods['frames'] = {}
-   for row in frames:
- 
-      fn = row['fn']
-      x = row['x']
-      y = row['y']
-      user_mods['frames'][fn] = [x,y]
-   mj['user_mods'] = user_mods
-   save_json_file(json_file, mj)
-   resp = {
-      "msg": "frames updated." 
-   }
-
    if True: 
       if "cp" in mj:
          cp = mj['cp']
