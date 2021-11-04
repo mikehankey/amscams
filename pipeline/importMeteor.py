@@ -2,7 +2,7 @@
 
 import os
 from lib.PipeUtil import save_json_file
-
+from lib.PipeDetect import make_base_meteor_json
 def import_meteor(trim_file, hd_trim):
 
    mj, mjr = make_base_meteor_json(trim_file,hd_trim, None, None)
