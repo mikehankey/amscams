@@ -324,8 +324,11 @@ def show_cat_stars (video_file, hd_stack_file, points):
          if "cp" in mj['best_meteor']:
             mj['cp'] = mj['best_meteor']['cp']
             cp = mj['cp']
-      elif "cal_params" in mjr:
-         cp = mjr['cal_params']
+      elif mjr is not None: 
+         if "cal_params" in mjr:
+            cp = mjr['cal_params']
+      else:
+         print("THERE ARE NO CAL PARAMS!")
 
       cp = update_center_radec(video_file,cp,json_conf)
       print(cp['center_az'])
