@@ -303,7 +303,9 @@ def show_cat_stars (video_file, hd_stack_file, points):
       mjf = "/mnt/ams2/" + video_file.replace(".mp4", ".json")
       mjrf = "/mnt/ams2/" + video_file.replace(".mp4", "-reduced.json")
       mj = load_json_file(mjf)
-      mjr = load_json_file(mjrf)
+      if os.path.exists(mjrf) is True:
+         mjr = load_json_file(mjrf)
+      else: mjr = None
 
       #if "nostars" in mj['cp'] or "nostars" in mj:
       #   mj['cp']['user_stars'] = []
