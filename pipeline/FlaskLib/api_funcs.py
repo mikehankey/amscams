@@ -329,6 +329,11 @@ def show_cat_stars (video_file, hd_stack_file, points):
             cp = mjr['cal_params']
       else:
          print("THERE ARE NO CAL PARAMS!")
+         resp = {}
+         resp['msg'] = "good - no stars in image"
+         resp['status'] = 1
+         resp['cp'] = mj['cp']
+         return(resp)
 
       cp = update_center_radec(video_file,cp,json_conf)
       print(cp['center_az'])
