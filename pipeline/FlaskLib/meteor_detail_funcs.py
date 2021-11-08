@@ -436,6 +436,7 @@ def detail_page(amsid, date, meteor_file):
    CACHE_DIR = "/mnt/ams2/CACHE/" + year + "/" + mon + "/" + base_name + "/"
    CACHE_VDIR = CACHE_DIR.replace("/mnt/ams2", "")
    mjf = METEOR_DIR + meteor_file.replace(".mp4", ".json")
+   print("MJF IS:", mjf)
    mjvf = METEOR_VDIR + meteor_file.replace(".mp4", ".json")
    if "mp4" in meteor_file:
       mjrf = METEOR_DIR + meteor_file.replace(".mp4", "-reduced.json")
@@ -449,8 +450,13 @@ def detail_page(amsid, date, meteor_file):
 
    sd_trim = meteor_file
    if "hd_trim" in mj:
-      hd_trim,hdir  = fn_dir(mj['hd_trim'])
-      hd_stack = hd_trim.replace(".mp4", "-stacked.jpg")
+      print(mj['hd_trim'])
+      if mj['hd_trim'] is not None and mj['hd_trim'] != 0:
+         hd_trim,hdir  = fn_dir(mj['hd_trim'])
+         hd_stack = hd_trim.replace(".mp4", "-stacked.jpg")
+      else:
+         hd_trim = None
+         hd_stack = None
    else:
       hd_trim = None
       hd_stack = None

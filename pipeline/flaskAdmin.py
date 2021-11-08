@@ -1,7 +1,7 @@
 import base64
 import os
 from flask import Flask, request, Response, make_response
-from FlaskLib.Learning import learning_meteors_dataset
+from FlaskLib.Learning import learning_meteors_dataset, learning_meteors_tag
 from FlaskLib.motion_detects import motion_detects
 from FlaskLib.FlaskUtils import get_template
 from FlaskLib.api_funcs import update_meteor_points, show_cat_stars, delete_meteor, restore_meteor, delete_meteors, reduce_meteor, delete_frame, crop_video
@@ -523,12 +523,22 @@ def meteor_detail_page(amsid, date, meteor_file):
    out = detail_page(amsid, date, meteor_file )
    return out
 
-@app.route('/LEARNING/METEORS/<amsid>', methods=['GET', 'POST'])
+
+@app.route('/LEARNING/TAG/<label>', methods=['GET', 'POST'])
 @auth.login_required
-def lrn_meteors(amsid):
+def lrn_tag(label):
+   req = {}
+   req['learning_file'] = request.args.get('learning_file')
+   out = learning_meteors_tag(label, req)
+   return out
+
+@app.route('/LEARNING/<amsid>/<label>', methods=['GET', 'POST'])
+@auth.login_required
+def lrn_meteors(amsid,label ):
    req = {}
    req['p'] = request.args.get('p')
    req['ipp'] = request.args.get('ipp')
+   req['label'] = label
    out = learning_meteors_dataset(amsid, req)
    return out
 

@@ -5096,7 +5096,7 @@ class Meteor():
    def get_mfiles(self, mdir):
       temp = glob.glob(mdir + "/*.json")
       for json_file in temp:
-          if "import" not in json_file and "report" not in json_file and "reduced" not in json_file and "calparams" not in json_file and "manual" not in json_file and "starmerge" not in json_file and "master" not in json_file:
+          if "cloud" not in json_file and "import" not in json_file and "report" not in json_file and "reduced" not in json_file and "calparams" not in json_file and "manual" not in json_file and "starmerge" not in json_file and "master" not in json_file:
             vfn = json_file.split("/")[-1].replace(".json", ".mp4")
             self.mfiles.append(vfn)
 
