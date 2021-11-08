@@ -305,7 +305,8 @@ def show_cat_stars (video_file, hd_stack_file, points):
       mj = load_json_file(mjf)
       if os.path.exists(mjrf) is True:
          mjr = load_json_file(mjrf)
-      else: mjr = None
+      else: 
+         mjr = None
 
       #if "nostars" in mj['cp'] or "nostars" in mj:
       #   mj['cp']['user_stars'] = []
@@ -330,9 +331,8 @@ def show_cat_stars (video_file, hd_stack_file, points):
       else:
          print("THERE ARE NO CAL PARAMS!")
          resp = {}
-         resp['msg'] = "good - no stars in image"
-         resp['status'] = 1
-         resp['cp'] = mj['cp']
+         resp['msg'] = "bad - no cal params!"
+         resp['status'] = 0
          return(resp)
 
       cp = update_center_radec(video_file,cp,json_conf)
