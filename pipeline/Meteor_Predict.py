@@ -114,7 +114,7 @@ def load_meteors_for_day(date, station_id):
 
 
 if __name__ == "__main__":
-   json_conf = load_json_file("Conf/as6.json")
+   json_conf = load_json_file("../conf/as6.json")
    station_id = json_conf['site']['ams_id']
    date = sys.argv[1]
 
