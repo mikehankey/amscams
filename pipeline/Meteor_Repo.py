@@ -3,6 +3,7 @@ import glob
 from lib.PipeUtil import load_json_file,save_json_file, mfd_roi
 import os
 import sys
+import cv2
 # SCRIPT TO BATCH BUILD ALL ROI FILES AND POPULATE
 # THE LEARNING REPO FOR METEORS
 
