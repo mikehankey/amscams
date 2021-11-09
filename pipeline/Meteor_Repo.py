@@ -63,12 +63,14 @@ def load_meteors_for_day(date, station_id):
       if os.path.exists(msdir + roi_file) is True:
          roi_files.append(msdir + roi_file)
    learn_dir = "/mnt/ams2/datasets/images/repo/meteors/"
+   non_met_learn_dir = "/mnt/ams2/datasets/images/repo/nonmeteors/"
    if os.path.isdir(learn_dir) is False:
       os.makedirs(learn_dir)
    for rf in roi_files:
       fn = rf.split("/")[-1]
       learn_file = learn_dir + fn
-      if os.path.exists(learn_file) is True:
+      non_m_learn_file = non_met_learn_dir + fn
+      if os.path.exists(learn_file) is True or os.path.exists(non_m_learn_file) is True:
          print("Learn file exists.", learn_file)
       else:
          print("Learn file not found.", learn_file)
