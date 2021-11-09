@@ -1,7 +1,8 @@
-
+import pandas as pd
+from sklearn.cluster import k_means
 import sys
 import glob
-from MinFile import MinFile
+from Classes.MinFile import MinFile
 import datetime
 from lib.PipeUtil import cfe, load_json_file, save_json_file, fn_dir, load_mask_imgs
 import cv2
@@ -104,10 +105,28 @@ def run_scan_and_stack(day, cam, file_limit=10):
       elp = (end - start).total_seconds()
       print("Elapsed:", elp)
 
+def k_means_cluster_objs(moving_obs):
+   all_xs = []
+   all_ys = []
+   for data in moving_objs:
+      for i in range(0,len(data['oxs'])):
+         all_xs.append(data['oxs'][i])
+         all_ys.append(data['oys'][i])
+   x = {'X': all_xs, 'Y': all_ys}
+   df = pd.DataFrame(x)
+   print(x)
+   km = k_means(df,n_clusters=5)
+   for d in km:
+      print("KM:", d)
 
 # Usage : python3 scan_stack.py YYYY_MM_DD CAM_ID
-day = sys.argv[1]
-cam = sys.argv[2]
-run_scan_and_stack(day,cam)
-run_analyzer(day,cam)
+if len(sys.argv) == 3:
+   day = sys.argv[1]
+   cam = sys.argv[2]
+   run_scan_and_stack(day,cam)
+   run_analyzer(day,cam)
+if len(sys.argv) == 2:
+   MF = MinFile(sys.argv[1])
+   detect_info, moving_objs = MF.scan_and_stack()
+   k_means_cluster_objs(moving_objs)
 

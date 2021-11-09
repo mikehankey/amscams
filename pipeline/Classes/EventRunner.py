@@ -1288,6 +1288,106 @@ class EventRunner():
          
          self.insert_new_event(ev)
 
+   def sync_event_day(self):
+      coin_events = load_json_file(self.coin_events_file)
+      for ev_id in coin_events:
+         pickle_file = self.event_dir + ev_id + "/" + ev_id + "_trajectory.pickle"
+         planes_file = self.event_dir + ev_id + "/" + ev_id + "-planes.kml"
+         good_obs_file = self.event_dir + ev_id + "/" + ev_id + "_GOOD_OBS.json"
+         event_file = self.event_dir + ev_id + "/" + ev_id + "-event.json"
+         event_kml = self.event_dir + ev_id + "/" + ev_id + "-event.kml"
+         event_index = self.event_dir + ev_id + "/" + "index.html"
+
+         c_pickle_file = pickle_file.replace("ams2", "archive.allsky.tv")
+         c_planes_file = planes_file.replace("ams2", "archive.allsky.tv")
+         c_good_obs_file = good_obs_file.replace("ams2", "archive.allsky.tv")
+         c_event_file = event_file.replace("ams2", "archive.allsky.tv")
+         c_event_kml = event_kml.replace("ams2", "archive.allsky.tv")
+         c_event_index = event_index.replace("ams2", "archive.allsky.tv")
+
+         if ev_id not in self.event_dict:
+            print(ev_id, "not in event_dict")
+            continue
+         if "solve_status" not in self.event_dict[ev_id]:
+            ss = "UNSOLVED" 
+         else:
+            ss = self.event_dict[ev_id]['solve_status'] 
+         print(ss, self.event_dir + ev_id + "/")
+         if True:
+            if cfe(self.cloud_event_dir + ev_id, 1) == 0:
+               os.makedirs(self.cloud_event_dir + ev_id)
+            if cfe(planes_file) == 1:
+               if cfe(c_planes_file) == 0:
+                  cp = "cp " + planes_file + " " + self.cloud_event_dir + ev_id + "/"
+                  print(cp)
+                  os.system(cp)
+
+            if cfe(good_obs_file) == 1:
+               if cfe(c_good_obs_file) == 0:
+                  cp = "cp " + good_obs_file + " " + self.cloud_event_dir + ev_id + "/"
+                  print(cp)
+                  os.system(cp)
+
+
+            if cfe(pickle_file) == 1:
+               if cfe(c_pickle_file) == 0:
+                  cp = "cp " + pickle_file + " " + self.cloud_event_dir + ev_id + "/"
+                  print(cp)
+                  os.system(cp)
+            if cfe(event_file) == 1:
+               if cfe(c_event_file) == 0:
+                  cp = "cp " + event_file + " " + self.cloud_event_dir + ev_id + "/"
+                  print(cp)
+                  os.system(cp)
+            if cfe(event_kml) == 1:
+               if cfe(c_event_kml) == 0:
+                  cp = "cp " + event_kml + " " + self.cloud_event_dir + ev_id + "/"
+                  print(cp)
+                  os.system(cp)
+            if cfe(event_index) == 1:
+               if cfe(c_event_index) == 0:
+                  cp = "cp " + event_index + " " + self.cloud_event_dir + ev_id + "/"
+                  print(cp)
+                  os.system(cp)
+
+            if cfe(self.cloud_event_dir + ev_id + "/" + ev_id, 1) == 1:
+               print("rm " + self.cloud_event_dir + ev_id + "/" + ev_id)
+               os.system("rm -rf " + self.cloud_event_dir + ev_id + "/" + ev_id)
+
+
+
+   def sync_event_trash(self):
+      coin_events = load_json_file(self.coin_events_file)
+      cflog = self.event_dir + "cloud_files.txt"
+      l_log = self.event_dir + "local_files.txt"
+      print("CFLOG:", cflog)
+      if cfe(cflog) == 0:
+         print("find " + self.cloud_event_dir + "* >" + cflog)
+         os.system("find " + self.cloud_event_dir + "* >" + cflog)
+      else:
+         sz, td = get_file_info(cflog)
+         if td > 300:
+            os.system("find " + self.event_dir + "*" > l_log)
+
+      fp = open(cflog)
+      cloud_files = {}
+      local_files = {}
+      for line in fp:
+         line = line.replace("archive.allsky.tv", "ams2")
+         cloud_files[line] = 1
+      fp = open(l_log)
+      cloud_files = {}
+      for line in fp:
+         line = line.replace("archive.allsky.tv", "ams2")
+         local_files[line] = 1
+
+      for lf in local_files:
+         if lf in cloud_files:
+            print ("EXISTS IN CLOUD:", lf)
+         else:
+            print ("MISSING IN CLOUD:", lf)
+
+
    def sync_event_files(self, ev_id):
 
       local_files = glob.glob(self.event_dir + ev_id + "/*")

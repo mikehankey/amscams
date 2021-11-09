@@ -17,6 +17,9 @@ def import_meteor(trim_file, hd_trim):
    os.system("./stackVideo.py " + mj['sd_video_file'])
    os.system("./stackVideo.py " + mj['hd_trim'])
 
+   stack_img = cv2.imread(mj['sd_video_file'].replace(".mp4", "-stacked.jpg"))
+   tn = cv2.resize(stack_img, (320,180))
+   cv2.imwrite(mj['sd_video_file'].replace(".mp4", "-stacked-tn.jpg"), tn)
 
 print("Enter the full path to the SD trim file")
 print("make sure trim number is in the file name correctly or time will be off. trim-number = 25 * start second of clip")
@@ -26,6 +29,3 @@ hd_trim = input("ENTER HD TRIM FILE PATH:")
 import_meteor(trim_file, hd_trim)
 #make thumb
 
-stack_img = cv2.imread(mj['sd_video_file'].replace(".mp4", "-stacked.jpg"))
-tn = stack_img.resize(stack_img, (320,180))
-cv2.imwrite(mj['sd_video_file'].replace(".mp4", "-stacked-tn.jpg"))

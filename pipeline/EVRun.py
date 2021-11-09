@@ -25,6 +25,11 @@ if __name__ == "__main__":
       #EVR.make_events_file_from_coin()
       EVR.resolve_event(event_id)
       exit()
+
+   if sys.argv[1] == "sync":
+      EVR = EventRunner(date=sys.argv[2],use_cache=0)
+      EVR.sync_event_day()
+      exit()
    if sys.argv[1] == "EOD":
       EVR = EventRunner(date=sys.argv[2],use_cache=0)
       EVR.EOD_coin_report()

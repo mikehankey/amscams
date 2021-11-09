@@ -8,7 +8,7 @@ from PIL import ImageFont, ImageDraw, Image, ImageChops
 
 
 from lib.PipeUtil import cfe, load_json_file, save_json_file, fn_dir, load_mask_imgs
-from Detector import Detector
+from Classes.Detector import Detector
 
 class MinFile:
    def __init__(self, sd_filename):
@@ -85,7 +85,7 @@ class MinFile:
       bg_stack = None
       if cfe(self.detect_file) == 1 and cfe(self.stack_thumb) == 1:
          print("This detect file is already done.")
-         return()
+         #return()
       cap = cv2.VideoCapture(self.sd_filename)
       fc = 0
       active_mask = None
@@ -167,7 +167,10 @@ class MinFile:
       for i in range(0, len(self.pos_vals)):
          if len(self.pos_vals[i]) > 0:
             for fn,x,y,w,h,intensity in self.pos_vals[i]:
-               oid, objects = Detector.find_objects(fn,x,y,w,h,intensity,objects, 20)
+               cx = x + (w/2)
+               cy = y + (h/2)
+               #(fn,x,y,w,h,cx,cy,intensity,objects,dist_thresh=50,lx=None,ly=None)
+               oid, objects = Detector.find_objects(fn,x,y,w,h,cx,cy,intensity,objects, 20)
 
       moving_objs = []
       non_moving_objs = []
@@ -208,7 +211,7 @@ class MinFile:
          print("Saved motion detection.", self.moving_file)
          save_json_file(self.moving_file, moving_objs)
       save_json_file(self.detect_file, detect_info)
-
+      return(detect_info, moving_objs)
 # MAIN SCRIPT
 if __name__ == "__main__":
    vfile = sys.argv[1]
@@ -216,6 +219,7 @@ if __name__ == "__main__":
    #print("MIN FILE:", min_file.fn, min_file.cam_id, min_file.moving_objects, min_file.processed)
    #for key in min_file.__dict__:
    #   print(key )
+
    for obj in min_file.moving_objects:
      # print(obj['report'])
       print("FNS:", obj['ofns']) 
