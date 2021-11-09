@@ -97,8 +97,8 @@ def load_meteors_for_day(date, station_id):
             img = cv2.resize(img, (1920,1080))
             roi_img = img[y1:y2,x1:x2]
             try:
-               cv2.imshow('pepe', roi_img)
-               cv2.waitKey(30)
+               #cv2.imshow('pepe', roi_img)
+               #cv2.waitKey(30)
                cv2.imwrite(msdir + roi_file, roi_img)
             except:
                continue
