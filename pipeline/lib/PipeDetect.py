@@ -503,11 +503,13 @@ def reduce_in_crop(video_file, json_conf):
       print("NOTHING?")
 
 def make_meteor_index_day_all(json_conf):
+   # MAKES INDEX OF STACKS FOR ALL METEORS FOR DAY?
    if "redis" in json_conf:
       redis_on = 1
    else:
       redis_on = 0
    cams = []
+   obs_ids = []
    for cam in json_conf['cameras']:
       cams_id = json_conf['cameras'][cam]['cams_id']
       cams.append(cams_id)
@@ -551,8 +553,8 @@ def make_meteor_index_all(json_conf):
    all_meteors = []
    files = glob.glob(mr_dir + "*")
    obs_ids = []
-   obs_ids_file = "/mnt/ams2/meteors/" + station_id + "OBS_IDS.json"
-   for mdir in files:
+   obs_ids_file = "/mnt/ams2/meteors/" + station_id + "_OBS_IDS.json"
+   for mdir in sorted(files):
       #print(mdir)
       day, dir = fn_dir(mdir)
       if cfe(mdir, 1) == 1:
@@ -563,14 +565,19 @@ def make_meteor_index_all(json_conf):
             print("ADDING:", day, len(mdata))
             all_meteors.append(data)
             mfn = data[0].split("/")[-1]
-            obs_id = station_id + mfn
+            obs_id = station_id + "_" + mfn
             obs_ids.append((obs_id, data[2]))
    amf = mr_dir + amsid + "-meteors.info"    
    all_meteors = sorted(all_meteors, key=lambda x: (x[0]), reverse=True)
-   save_json_file(amf, all_meteors)
-   save_json_file(obs_ids, obs_ids_file)
+   save_json_file(amf, all_meteors, True)
+   save_json_file(obs_ids_file, obs_ids, True)
    print("Saved:", amf)
    print("Saved:", obs_ids_file)
+   os.system("gzip -f -k " + obs_ids_file)
+   cloud_dir = "/mnt/archive.allsky.tv/" + station_id + "/METEORS/" 
+   cmd = "cp " + obs_ids_file + " " + cloud_dir
+   print(cmd)
+   os.system(cmd)
 
 def fix_corrupt_meteor_json(json_file):
    fp = open(json_file, "r")
@@ -627,7 +634,7 @@ def make_meteor_index_day(day, json_conf):
          meteors.append(mf)
       else:
          print("SKIP:", mf)
-
+   obs_ids = []
 
    for meteor in meteors:
       mi[meteor] = {}
@@ -673,8 +680,14 @@ def make_meteor_index_day(day, json_conf):
             start_time = str(mj['best_meteor']['dt'][0])
          dur = str(len(mj['best_meteor']['ofns']) / 25)[0:4]
          report = mj['best_meteor']['report']
-         ang_vel = report['ang_vel']
-         ang_dist = report['ang_dist']
+         if "ang_vel" in report:
+            ang_vel = report['ang_vel']
+         else:
+            ang_vel = 0
+         if "ang_dist" in report:
+            ang_dist = report['ang_dist']
+         else:
+            ang_dist = 0
             
       else:
          reduced = 0
@@ -716,7 +729,9 @@ def make_meteor_index_day(day, json_conf):
                save_json_file(lcfile, mdata)
                print("SAVED:", lcfile)
       meteor_data.append((meteor, reduced, start_time, dur, ang_vel, ang_dist, hotspot,msm))
+      mfn = meteor.split("/")[-1].replace(".json", "")
 
+      obs_ids.append((mfn, start_time))
       if redis_on == 1:
          fn, dir = fn_dir(meteor)
          key = "mi:" + fn
@@ -729,8 +744,19 @@ def make_meteor_index_day(day, json_conf):
 
    mid = sorted(meteor_data, key=lambda x: (x[0]), reverse=True)
    mi_file = mdir + day + "-" + amsid + ".meteors"
+   obs_file = mdir + amsid + "_" + day + "_OBS_IDS.info"
+   obs_cloud_dir = "/mnt/archive.allsky.tv/" + amsid + "/METEORS/"  + day[0:4] + "/" + day + "/" 
+   if cfe(obs_cloud_dir, 1) == 0:
+      os.makedirs(obs_cloud_dir)
+   obs_cloud_file = obs_cloud_dir + day + "_OBS_IDS.info"
    #mi_detail_file = mdir + day + "-" + amsid + "-detail.meteors"
-   save_json_file(mi_file, mid)
+   save_json_file(mi_file, mid, True)
+   save_json_file(obs_file, obs_ids, True)
+   cmd = "cp " + obs_file + " " + obs_cloud_file
+   os.system(cmd)
+   print("SAVED:", obs_file )
+   print("SAVED:", obs_cloud_file)
+
    #save_json_file(mi_detail_file, mi)
    os.system("gzip -f -k " + mi_file)
    #os.system("gzip -f -k " + mi_detail_file)

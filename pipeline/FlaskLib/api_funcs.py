@@ -303,14 +303,19 @@ def show_cat_stars (video_file, hd_stack_file, points):
       mjf = "/mnt/ams2/" + video_file.replace(".mp4", ".json")
       mjrf = "/mnt/ams2/" + video_file.replace(".mp4", "-reduced.json")
       mj = load_json_file(mjf)
-      mjr = load_json_file(mjrf)
-      if "nostars" in mj['cp'] or "nostars" in mj:
-         mj['cp']['user_stars'] = []
-         mj['cp']['cat_image_stars'] = []
-         resp['msg'] = "good - no stars in image"
-         resp['status'] = 1
-         resp['cp'] = mj['cp']
-         return(resp)
+      if os.path.exists(mjrf) is True:
+         mjr = load_json_file(mjrf)
+      else: 
+         mjr = None
+
+      #if "nostars" in mj['cp'] or "nostars" in mj:
+      #   mj['cp']['user_stars'] = []
+      #   mj['cp']['cat_image_stars'] = []
+      #   resp = {}
+      #   resp['msg'] = "good - no stars in image"
+      #   resp['status'] = 1
+      #   resp['cp'] = mj['cp']
+      #   return(resp)
 
 
    if True: 
@@ -320,8 +325,15 @@ def show_cat_stars (video_file, hd_stack_file, points):
          if "cp" in mj['best_meteor']:
             mj['cp'] = mj['best_meteor']['cp']
             cp = mj['cp']
-      elif "cal_params" in mjr:
-         cp = mjr['cal_params']
+      elif mjr is not None: 
+         if "cal_params" in mjr:
+            cp = mjr['cal_params']
+      else:
+         print("THERE ARE NO CAL PARAMS!")
+         resp = {}
+         resp['msg'] = "bad - no cal params!"
+         resp['status'] = 0
+         return(resp)
 
       cp = update_center_radec(video_file,cp,json_conf)
       print(cp['center_az'])

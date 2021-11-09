@@ -1056,7 +1056,7 @@ def refit_meteor(meteor_file, json_conf,force=0):
       cp['user_stars'] = []
       cp['cat_image_stars'] = []
       nostars = True
-   if starting_res > 10 or sun_el > -10:
+   if sun_el > -10:
       #mj = use_default_cal(meteor_file, mj,json_conf)
       if "manual_cal" in mj:
          result = mj['manual_cal']
