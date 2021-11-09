@@ -82,6 +82,6 @@ def load_meteors_for_day(date, station_id):
 json_conf = load_json_file("../conf/as6.json")
 mdirs = glob.glob("/mnt/ams2/meteors/*")
 for md in mdirs:
-   if os.path.is_dir(md) is True:
+   if os.path.isdir(md) is True:
       date = md.split("/")[-1]
       load_meteors_for_day(date, json_conf['site']['ams_id'])
