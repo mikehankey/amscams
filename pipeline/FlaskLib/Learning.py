@@ -263,7 +263,7 @@ def learning_meteors_dataset(amsid, in_data):
    if os.path.exists(machine_data_file) is True:
       machine_data = load_json_file(machine_data_file)
    else:
-      machine_data_file = {}
+      machine_data = {}
 
    template = make_default_template(amsid, "live.html", json_conf)
    page = in_data['p']
