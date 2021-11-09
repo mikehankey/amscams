@@ -35,7 +35,10 @@ def learning_meteors_tag(label, req):
    lfn = learning_file.split("/")[-1]
    new_dir = "/mnt/ams2/datasets/images/repo/" + label.lower() + "/"
    human_data_file = "/mnt/ams2/datasets/human_data.json"
-   human_data = load_json_file(human_data_file)
+   if os.path.exists(human_data_file) is True:
+      human_data = load_json_file(human_data_file)
+   else:
+      human_data = {}
    human_data[lfn] = label
    save_json_file(human_data_file, human_data)
    cmd = "mv " + learning_file + " " + new_dir 
@@ -51,6 +54,45 @@ def js_learn_funcs():
    #vid_html = vid_html + " - <a href=javascript:SwapDivLearnDetail('" + div1 + "','" + learn_img + "','" + crop_vid + "',2)>Full</a>"
 
    JS_SWAP_DIV_WITH_CLICK = """
+
+   $(document).ready(function() {
+    $("img").on("click", function(event) {
+        var x = event.pageX - this.offsetLeft;
+        var y = event.pageY - this.offsetTop;
+        alert("X Coordinate: " + x + " Y Coordinate: " + y);
+    });
+   });
+   function click_pic(event) {
+       alert(event)
+   }
+   function click_icon(cmd, roi_file) {
+      div_id = "#" + roi_file.replace("-ROI.jpg", "")
+      div_id = div_id.replace(/-/g, "")
+      div_id = div_id.replace(/_/g, "")
+      cur_html = $(div_id).html()
+      el = roi_file.split("_")
+      station_id = el[0]
+      stack_fn = roi_file.replace(station_id + "_", "")
+      stack_fn = stack_fn.replace("-ROI.jpg", "-stacked.jpg")
+      date = stack_fn.substr(0,10)
+      stack_url = "/meteors/" + date + "/" + stack_fn
+
+      $(div_id).css("width", "640px");
+      $(div_id).css("height", "360px");
+      $(div_id).css("background-size", "640px 360px");
+      $(div_id).css("background-image", "url(" + stack_url + ")");
+      new_html = `<a href="#"><img class="ximg" width=640 height=360 src="` + stack_url + `" ismap></a>`
+
+
+      $(div_id).html(new_html)
+
+      $("img").on("click", function(event) {
+        var x = event.pageX - this.offsetLeft;
+        var y = event.pageY - this.offsetTop;
+        alert("X Coordinate: " + x + " Y Coordinate: " + y);
+      });
+
+   }
 
    // call : javascript:SwapDivsWithClick('div_id1','crop_img', 'vid_url',play_vid)
    function callAPI(api_url, method, data, callback,error_callback) {
@@ -140,14 +182,93 @@ def js_learn_funcs():
    return(JS_SWAP_DIV_WITH_CLICK)
 
 
+def meteor_ai_scan(in_data, json_conf):
+   machine_data = load_json_file("/mnt/ams2/datasets/machine_data_meteors.json")
+   human_data = load_json_file("/mnt/ams2/datasets/human_data.json")
+
+   ams_id = in_data['ams_id']
+   all_meteors = load_json_file("/mnt/ams2/meteors/" + ams_id + "_OBS_IDS.json")
+
+   page = in_data['p']
+   uc_label = in_data['label']
+   label = in_data['label'].lower()
+   items_per_page = in_data['ipp']
+   template = make_default_template(ams_id, "live.html", json_conf)
+   print("IPP:", items_per_page)
+   out = ""
+
+   js_code = js_learn_funcs()
+   out += "<script>" + js_code + "</script>"
+
+   if page is None:
+      page = 1
+   else:
+      page = int(page)
+   if items_per_page is None:
+      items_per_page = 1000
+   else:
+      items_per_page = int(items_per_page) 
+   si = (page-1) * items_per_page
+   ei = si + items_per_page
+   all_files = []
+   #for lfile in sorted(machine_data, reverse=True):
+   for lfile,ltime in all_meteors :
+      rfile = lfile.replace(".json", "-ROI.jpg")
+      if rfile in machine_data:
+         tlabel, tscore = machine_data[rfile]
+      else:
+         tlabel = "UNKNOWN"
+         tscore = 98
+      roi_file = lfile.split("/")[-1].replace(".json", "-ROI.jpg")
+      print("CHECK HUMAN:", roi_file)
+      if roi_file in human_data:
+         tlabel = human_data[roi_file]    
+         print("HUMAN DATA FOUND!", roi_file, human_data[roi_file])
+
+
+      if (label == "NONMETEORS" or label == "nonmeteors") and "NON" in tlabel:
+         all_files.append((roi_file, tlabel, tscore))
+      if (label == "METEORS" or label == "meteors") and "NON" not in tlabel and "UNKNOWN" not in tlabel:
+         all_files.append((roi_file, tlabel, tscore))
+      if (label == "UNKNOWN" or label == "unknown") and "UNKOWN" in tlabel:
+         all_files.append((roi_file, tlabel, tscore))
+
+
+   print("ALLFILES:", len(all_files), label)
+   out += str(len(all_files)) + " AI items classified as " + label
+   out += "<div>"
+   for row in sorted(all_files, key=lambda x: (x[2]), reverse=True)[si:ei]:
+      lfile, tlabel, tscore = row
+      crop_img = "/METEOR_SCAN/" + lfile[5:15] + "/" + lfile.replace(".json", "-ROI.jpg")
+      controls = ""
+
+      controls = make_trash_icon(lfile,"#FFFFFF","20") 
+      div_id = lfile.replace("-ROI.jpg", "")
+      div_id = div_id.replace("-", "")
+      div_id = div_id.replace("_", "")
+      out += """
+             <div id='""" + div_id + """' class="meteor_gallery" style="background-color: #000000; background-image: url('""" + crop_img + """?ad1'); background-repeat: no-repeat; background-size: 180px; width: 180px; height: 180px; border: 1px #000000 solid; float: left; color: #fcfcfc; margin:5px "> """ + controls + """ </div>
+      """
+   out += "</div>"
+
+   pagination = get_pagination(page, len(all_files), "/LEARNING/" + ams_id + "/AI_SCAN/" + uc_label + "?ipp=" + str(items_per_page) , items_per_page)
+   out += "<div style='clear: both'></div>" 
+   out += pagination[0]
+    
+   template = template.replace("{MAIN_TABLE}", out)
+   return(template)
+   
 
 def learning_meteors_dataset(amsid, in_data):
    rand = str(time.time())
    json_conf = load_json_file("../conf/as6.json")
-   machine_data = load_json_file("/mnt/ams2/datasets/machine_data_meteors.json")
+   machine_data_file = "/mnt/ams2/datasets/machine_data_meteors.json"
+   if os.path.exists(machine_data_file) is True:
+      machine_data = load_json_file(machine_data_file)
+   else:
+      machine_data = {}
 
    template = make_default_template(amsid, "live.html", json_conf)
-   js_code = js_learn_funcs()
    page = in_data['p']
    uc_label = in_data['label']
    label = in_data['label'].lower()
@@ -181,6 +302,7 @@ def learning_meteors_dataset(amsid, in_data):
 
 
    total = len(all_files)
+   js_code = js_learn_funcs()
    out = "<script>" + js_code + "</script>"
    out += "<div id='main_container' class='container-fluid h-100 mt-4 lg-l'>"
    out += "<h1>Machine Learning Data Set " + str(total) + " " + label + "</h1>"
@@ -260,3 +382,25 @@ def learning_meteors_dataset(amsid, in_data):
    template = template.replace("{MAIN_TABLE}", out)
     
    return(template)
+
+def make_trash_icon(roi_file,color,size) :
+               #class="bi bi-dash-square" title="confirm meteor" id="reclass_meteor_roi_file"></i>
+   trash_icons = """
+        <a href="javascript:click_icon('reclass_meteor', '""" + roi_file + """')">
+            <i style="padding: 5px; color: """ + color + """; font-size: """ + size + """px;" 
+               class="fas fa-meteor" title="confirm meteor" id="reclass_meteor_roi_file"></i>
+        </a>
+        <a href="javascript:click_icon('reclass_trash', '""" + roi_file + """')">
+            <i style="padding: 5px; color: """ + color + """; font-size: """ + size + """px;" 
+               class="bi bi-trash" title="non-meteor" id='reclass_nonmeteor_""" + roi_file + """'></i>
+        </a>
+        <a href="javascript:click_icon('expand', '""" + roi_file + """')">
+            <i style="padding: 5px; color: """ + color + """; font-size: """ + size + """px;" 
+               class="bi bi-arrows-fullscreen" title="expand" id='expand_""" + roi_file + """'></i>
+        </a>
+   """
+
+
+
+   return(trash_icons)
+

@@ -40,6 +40,8 @@ def load_meteors_for_day(date, station_id):
          print("NO ROI!", msdir + roi_file)
          if os.path.exists(mdir + mjrf):
             mjr = load_json_file(mdir + mjrf)
+            if "meteor_frame_data" not in mjr:
+               continue
             print("MFD:", len(mjr['meteor_frame_data']))
             if len(mjr['meteor_frame_data']) == 0:
                continue
