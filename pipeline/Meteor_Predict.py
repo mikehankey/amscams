@@ -65,8 +65,8 @@ def mfd_roi(mfd=None, xs=None, ys=None):
    return(x1,y1,x2,y2)
 
 def load_meteors_for_day(date, station_id):
-   mdir = "Y:/meteors/" + date + "/"
-   msdir = "Y:/METEOR_SCAN/" + date + "/"
+   mdir = "/mnt/ams2/meteors/" + date + "/"
+   msdir = "/mnt/ams2/METEOR_SCAN/" + date + "/"
    if os.path.isdir(msdir) is False:
       os.makedirs(msdir)
    mfiles = get_mfiles(mdir)
@@ -118,7 +118,7 @@ if __name__ == "__main__":
    station_id = json_conf['site']['ams_id']
    date = sys.argv[1]
 
-   all_days = glob.glob("Y:/meteors/*")
+   all_days = glob.glob("/mnt/ams2/meteors/*")
    for daydir in sorted(all_days, reverse=True):
       print(daydir)
       if os.path.isdir(daydir) is True:
