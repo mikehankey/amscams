@@ -418,3 +418,50 @@ def load_mask_imgs(json_conf):
       mask_imgs[fn] = mi
       sd_mask_imgs[fn] = sd
    return(mask_imgs, sd_mask_imgs)
+
+def mfd_roi(mfd=None, xs=None, ys=None):
+   if mfd is not None:
+      if len(mfd) == 0:
+         return(0,0,1080,1080)
+      xs = [row[2] for row in mfd]
+      ys = [row[3] for row in mfd]
+   x1 = min(xs)
+   y1 = min(ys)
+   x2 = max(xs)
+   y2 = max(ys)
+   mx = int(np.mean(xs))
+   my = int(np.mean(ys))
+   w = x2 - x1
+   h = y2 - y1
+   if w >= h:
+      h = w
+   else:
+      w = h
+   if w < 150 or h < 150:
+      w = 150
+      h = 150
+   if w > 1079 or h > 1079 :
+      w = 1060
+      h = 1060
+   x1 = mx - int(w / 2)
+   x2 = mx + int(w / 2)
+   y1 = my - int(h / 2)
+   y2 = my + int(h / 2)
+   w = x2 - x1
+   h = y2 - y1
+   print("WH:", w,h)
+   print("WH:", w,h)
+
+   if x1 < 0:
+      x1 = 0
+      x2 = w
+   if y1 < 0:
+      y1 = 0
+      y2 = h
+   if x2 >= 1920:
+      x2 = 1919
+      x1 = 1919 - w
+   if y2 >= 1080:
+      y2 = 1079
+      y1 = 1079 - h
+   return(x1,y1,x2,y2)

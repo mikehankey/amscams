@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 import glob
-from lib.PipeUtil import load_json_file,save_json_file
+from lib.PipeUtil import load_json_file,save_json_file, mfd_roi
 import os
 import sys
 # SCRIPT TO BATCH BUILD ALL ROI FILES AND POPULATE
