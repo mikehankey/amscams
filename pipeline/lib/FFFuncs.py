@@ -21,8 +21,11 @@ def snap_video_new(in_file, outfile):
    os.system(cmd)
    print(outfile)
    img = cv2.imread(outfile)
-   print(outfile.shape)
-   cv2.imwrite(outfile, img, [cv2.IMWRITE_JPEG_QUALITY, 40])
+   try:
+      print(outfile.shape)
+      cv2.imwrite(outfile, img, [cv2.IMWRITE_JPEG_QUALITY, 40])
+   except:
+      print("bad iamge")
 
 def snap_video(in_file):
    (f_datetime, cam, f_date_str,fy,fm,fd, fh, fmin, fs) = convert_filename_to_date_cam(in_file)

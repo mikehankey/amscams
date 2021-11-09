@@ -80,6 +80,9 @@ def make_snap_files(cam_id, date_str, hd=1, mod=1):
       if c % mod == 0:
 
          outfile = outdir + vid_fn.replace(".mp4", ".jpg")
+         if cfe(outfile) == 1:
+            print("SKIP DONE.")
+            continue
          print(vid, outfile)
          try:
             snap_video_new(vid, outfile)
