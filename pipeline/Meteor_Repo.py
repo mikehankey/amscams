@@ -48,9 +48,9 @@ def load_meteors_for_day(date, station_id):
             x1,y1,x2,y2 = mfd_roi(mjr['meteor_frame_data'])
             img = cv2.imread(mdir + stack_file)
             print(mdir + stack_file)
-            img = cv2.resize(img, (1920,1080))
-            roi_img = img[y1:y2,x1:x2]
             try:
+               img = cv2.resize(img, (1920,1080))
+               roi_img = img[y1:y2,x1:x2]
                #cv2.imshow('pepe', roi_img)
                #cv2.waitKey(30)
                cv2.imwrite(msdir + roi_file, roi_img)
