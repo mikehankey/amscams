@@ -259,7 +259,11 @@ def meteor_ai_scan(in_data, json_conf):
 def learning_meteors_dataset(amsid, in_data):
    rand = str(time.time())
    json_conf = load_json_file("../conf/as6.json")
-   machine_data = load_json_file("/mnt/ams2/datasets/machine_data_meteors.json")
+   machine_data_file = "/mnt/ams2/datasets/machine_data_meteors.json"
+   if os.path.exists(machine_data_file) is True:
+      machine_data = load_json_file(machine_data_file)
+   else:
+      machine_data_file = {}
 
    template = make_default_template(amsid, "live.html", json_conf)
    page = in_data['p']
