@@ -80,4 +80,8 @@ def load_meteors_for_day(date, station_id):
    #predict_images(roi_files, model, label )
 
 json_conf = load_json_file("../conf/as6.json")
-load_meteors_for_day(sys.argv[1], json_conf['site']['ams_id'])
+mdirs = glob.glob("/mnt/ams2/meteors/*")
+for md in mdirs:
+   if os.path.is_dir(md) is True:
+      date = md.split("/")[-1]
+      load_meteors_for_day(date, json_conf['site']['ams_id'])
