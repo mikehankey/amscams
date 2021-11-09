@@ -35,7 +35,10 @@ def learning_meteors_tag(label, req):
    lfn = learning_file.split("/")[-1]
    new_dir = "/mnt/ams2/datasets/images/repo/" + label.lower() + "/"
    human_data_file = "/mnt/ams2/datasets/human_data.json"
-   human_data = load_json_file(human_data_file)
+   if os.path.exists(human_data_file) is True:
+      human_data = load_json_file(human_data_file)
+   else:
+      human_data = {}
    human_data[lfn] = label
    save_json_file(human_data_file, human_data)
    cmd = "mv " + learning_file + " " + new_dir 
