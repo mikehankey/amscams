@@ -1,6 +1,4 @@
-import keras
 import os
-from keras.models import *
 from Lib.Utils import load_json_file, save_json_file
 import cv2
 import numpy as np
@@ -10,6 +8,8 @@ import shutil
 
 Tensor = False
 if Tensor is True:
+   import keras
+   from keras.models import *
    import keras
    from keras.models import load_model
    from keras.models import Sequential
