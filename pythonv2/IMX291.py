@@ -133,6 +133,7 @@ def encode(cam, cam_ip):
    print("HD QUALITY:", enc_info[0]['MainFormat']['Video']['Quality'])
    enc_info[0]['ExtraFormat']['Video']['Quality'] = 3
    enc_info[0]['MainFormat']['Video']['Quality'] = 3
+   enc_info[0]['MainFormat']['Video']['BitRate'] = 3072
    cam.set_info("Simplify.Encode", enc_info)
    print("SET:", enc_info)
    cam.close()
