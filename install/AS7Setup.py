@@ -114,6 +114,8 @@ class AS7Setup():
       return(content)
 
    def UI(self):
+
+      self.setup_defaults()
       menu = ConsoleMenu("ALLSKY OBSERVING SOFTWARE - INSTALLER AND SETUP ", "SELECT OPTION")
       check_install = FunctionItem("INSTALL/UPDATE PACKAGES", self.check_install )
       network_int = FunctionItem("SETUP NETWORK INTERFACES", self.network_install)
@@ -290,6 +292,19 @@ class AS7Setup():
       if save_file == "Y" or save_file == "y" or "Y" in save_file or "y" in save_file:
          self.save_json_file("/home/ams/amscams/conf/as6.json", self.json_conf)
          print("conf file saved.")
+
+   def setup_defaults(self):
+      defaults_file_temp = "/home/ams/amscams/pipeline/lib/DEFAULTS.py.default"
+      defaults_file = "/home/ams/amscams/pipeline/lib/DEFAULTS.py"
+      blob = ""
+      fp = open(defaults_file_temp)
+      for line in fp:
+         blob += line
+      blob = blob.replace("AMSXXX", self.station_id)
+      out = open(defaults_file, "w")
+      out.write(blob)
+      out.close()
+      print("SAVED:", defaults_file)
 
    def setup_dirs_and_config(self):
       # install crons
