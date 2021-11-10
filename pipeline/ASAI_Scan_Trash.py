@@ -160,6 +160,7 @@ def get_trash_rois():
                   cv2.imwrite(roi_file,roi_img)
             else:
                roi_file = DATA_DIR + "datasets/images/repo/nonmeteors/" + stack_fn.replace("-stacked.jpg", "-ROI" + str(cc) + ".jpg")
+               print("SAVED:" roi_file)
                cv2.imwrite(roi_file,roi_img)
             cc += 1
 
