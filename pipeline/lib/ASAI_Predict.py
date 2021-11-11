@@ -1,19 +1,19 @@
-import keras
 import os
-from keras.models import *
 from lib.PipeUtil import load_json_file, save_json_file
-import keras
-from keras.models import load_model
-from keras.models import Sequential
+from tensorflow import keras
+from tensorflow.keras.models import *
+from tensorflow.keras.models import load_model
+from tensorflow.keras.models import Sequential
 import cv2
 import numpy as np
-from keras.preprocessing.image import ImageDataGenerator, array_to_img, img_to_array, load_img
+from tensorflow.keras.preprocessing.image import ImageDataGenerator, array_to_img, img_to_array, load_img
 import glob
 SHOW = 0
 
 def predict_images(imgs, model_file, label):
    print("MODEL:", model_file)
-   repo_dir = "Y:/datasets/images/repo/" 
+   #repo_dir = "Y:/datasets/images/repo/" 
+   repo_dir = "/mnt/ams2/datasets/images/repo/" 
    model = Sequential()
    
    #model =load_model('first_try_model.h5')
@@ -22,8 +22,8 @@ def predict_images(imgs, model_file, label):
                  optimizer='rmsprop',
                  metrics=['accuracy'])
    
-   human_data_file = "Y:/datasets/human_data.json"
-   machine_data_file = "Y:/datasets/machine_data_" + label + ".json"
+   human_data_file = "/mnt/ams2/datasets/human_data.json"
+   machine_data_file = "/mnt/ams2/datasets/machine_data_" + label + ".json"
    if os.path.exists(human_data_file):
       human_data = load_json_file(human_data_file)
    else:

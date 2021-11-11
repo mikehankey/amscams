@@ -81,12 +81,24 @@ def load_meteors_for_day(date, station_id):
       roi_file = station_id + "_" + ff.replace(".mp4", "-ROI.jpg")
       stack_file = ff.replace(".mp4", "-stacked.jpg")
       mjrf = json_file.replace(".json", "-reduced.json")
-
-      if os.path.exists(msdir + roi_file) is False:
+      remake_roi = 0
+      if os.path.exists(msdir + roi_file) is True:
+         roi = cv2.imread(msdir + roi_file)
+         if roi.shape[0] < 150 or roi.shape[1] < 150:
+            print("BAD ROI SHAPE REMAKE!")
+            remake_roi = 1
+         if roi.shape[0] != roi.shape[1]:
+            remake_roi = 1
+            print("BAD SHAPE:", msdir + roi_file)
+      if remake_roi == 1:
+         print("REMAKE ROI:", msdir + roi_file)
+      if os.path.exists(msdir + roi_file) is False or remake_roi == 1:
          print("NO ROI!", msdir + roi_file)
          if os.path.exists(mdir + mjrf):
             mjr = load_json_file(mdir + mjrf)      
-            print("MFD:", len(mjr['meteor_frame_data']))
+            if "meteor_frame_data" not in mjr:
+               continue
+            #print("MFD:", len(mjr['meteor_frame_data']))
             if len(mjr['meteor_frame_data']) == 0:
                continue
                
@@ -94,8 +106,12 @@ def load_meteors_for_day(date, station_id):
             x1,y1,x2,y2 = mfd_roi(mjr['meteor_frame_data'])
             img = cv2.imread(mdir + stack_file)
             print(mdir + stack_file)
-            img = cv2.resize(img, (1920,1080))
-            roi_img = img[y1:y2,x1:x2]
+            try:
+               img = cv2.resize(img, (1920,1080))
+               roi_img = img[y1:y2,x1:x2]
+            except:
+               continue
+ 
             try:
                #cv2.imshow('pepe', roi_img)
                #cv2.waitKey(30)
@@ -111,6 +127,7 @@ def load_meteors_for_day(date, station_id):
    model = "./first_try_model.h5"
    label = "meteors"
    predict_images(roi_files, model, label )
+   #exit()
 
 
 if __name__ == "__main__":
