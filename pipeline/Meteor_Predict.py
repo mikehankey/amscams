@@ -184,7 +184,10 @@ def load_meteors_for_day(date, station_id):
          print("REMAKE ROI:", msdir + roi_file)
       if os.path.exists(msdir + roi_file) is False or remake == 1:
          if os.path.exists(mdir + mjrf):
-            mjr = load_json_file(mdir + mjrf)      
+            try:
+               mjr = load_json_file(mdir + mjrf)      
+            except:
+               continue
             if "meteor_frame_data" not in mjr:
                continue
             #print("MFD:", len(mjr['meteor_frame_data']))
