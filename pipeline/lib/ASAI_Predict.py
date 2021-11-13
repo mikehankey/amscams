@@ -36,13 +36,13 @@ def predict_images(imgs, model_file, label):
    if SHOW == 1: 
       cv2.namedWindow("pepe")
       cv2.moveWindow("pepe", 2000,100)
-   
+   cc = 0 
    for imgfile in imgs:
       img_fn = imgfile.split("/")[-1]
       if img_fn in machine_data:
          label, score = machine_data[img_fn]
-         if score < .5 or label == "METEOR":
-            continue
+         #if score < .5 or label == "METEOR":
+         #   continue
 
       
       oimg = cv2.imread(imgfile)
@@ -56,32 +56,36 @@ def predict_images(imgs, model_file, label):
       img /= 255.
       img = np.expand_dims(img, axis = 0)
       classes = model.predict(img)
-      
-      if classes[0][0] > .5:
+      if img_fn in human_data:
+         human_label = human_data[img_fn]
+      else:
+         human_label = None
+      if (classes[0][0] > .5 or human_label == "NONMETEORS") and (human_label != "METEORS" or human_label != "METEOR"):
          #cv2.putText(oimg, "NONMETEOR", (20,20), cv2.FONT_HERSHEY_SIMPLEX, .5, (0, 0, 255), 1)
-         print ("NON METEOR:", classes)
+         print ("NON METEOR:", cc, classes)
          #cv2.imshow('pepe', oimg)
          #key = cv2.waitKey(5)
          predict = "NONMETEOR"
          repo_file = repo_dir + "nonmeteors/" + img_fn
          #if os.path.exists(repo_file) is False:
          #if False:
-         #   cv2.imwrite(repo_file, orig_img)
+         cv2.imwrite(repo_file, orig_img)
             #print("SAVED:", repo_file)
 
-      else:
+      elif human_label != "NONMETEORS":
          #cv2.putText(oimg, "METEOR", (20,20), cv2.FONT_HERSHEY_SIMPLEX, .5, (0, 255, 0), 1)
-         print("METEOR:", classes)
+         print("METEOR:", cc, classes)
          #cv2.imshow('pepe', oimg)
          #key = cv2.waitKey(5)
          predict = "METEOR"
          repo_file = repo_dir + "meteors/" + img_fn
          #if os.path.exists(repo_file) is False:
          #if False:
-         #   cv2.imwrite(repo_file, orig_img)
-            #print("SAVED:", repo_file)
+         cv2.imwrite(repo_file, orig_img)
+         #print("SAVED:", repo_file)
    
       machine_data[img_fn] = [predict, float(classes[0][0])]
+      cc += 1
    
          
    

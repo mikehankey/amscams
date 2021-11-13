@@ -1,4 +1,5 @@
 #!/usr/bin/python3
+from lib.ASAI_Predict import predict_images
 import glob
 from lib.PipeUtil import load_json_file,save_json_file, mfd_roi
 import os
@@ -82,8 +83,8 @@ def load_meteors_for_day(date, station_id):
    model = "./first_try_model.h5"
    label = "meteors"
 
-   #predict_images(roi_files, model, label )
-
+   predict_images(roi_files, model, label )
+   #exit()
 json_conf = load_json_file("../conf/as6.json")
 mdirs = glob.glob("/mnt/ams2/meteors/*")
 for md in sorted(mdirs,reverse=True):
