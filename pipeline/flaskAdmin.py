@@ -554,6 +554,9 @@ def lrn_tag(label):
 @auth.login_required
 def lrn_meteors(amsid,label ):
    req = {}
+   req['sort'] = request.args.get('sort')
+   req['filter_date'] = request.args.get('filter_date')
+   req['filter_station'] = request.args.get('filter_station')
    req['p'] = request.args.get('p')
    req['ipp'] = request.args.get('ipp')
    req['label'] = label

@@ -272,6 +272,9 @@ def learning_meteors_dataset(amsid, in_data):
    page = in_data['p']
    uc_label = in_data['label']
    label = in_data['label'].lower()
+   sort_by = in_data['sort']
+   filter_station = in_data['filter_station']
+   filter_date = in_data['filter_date']
    items_per_page = in_data['ipp']
    print("IPP:", items_per_page)
    if page is None:
@@ -291,7 +294,18 @@ def learning_meteors_dataset(amsid, in_data):
    T_DIR = "/mnt/ams2/datasets/images/repo/" + label + "/"
    #V_DIR = "/mnt/ams2/datasets/images/validation/" + label + "/"
    all_files = []
-   meteor_training_files = glob.glob(T_DIR + "*")
+   if filter_station is not None and filter_date is not None:
+      wild = filter_station + "*" + filter_date
+      meteor_training_files = glob.glob(T_DIR + wild)
+   elif filter_station is not None
+      wild = filter_station + "*" 
+      meteor_training_files = glob.glob(T_DIR + wild)
+   elif filter_date is not None
+      wild = "*" + filter_date + "*" 
+      meteor_training_files = glob.glob(T_DIR + wild)
+   else:
+      wild = "*" 
+      meteor_training_files = glob.glob(T_DIR + wild)
    #meteor_validation_files = glob.glob(V_DIR + "*")
    for lfile in meteor_training_files:
       all_files.append(lfile)
@@ -318,7 +332,10 @@ def learning_meteors_dataset(amsid, in_data):
          mdata = "UNKNOWN"
          score = "99" 
       all_files_score.append((file, mdata, float(score)))
-   all_files_score =  sorted(all_files_score, key=lambda x: (x[2]), reverse=True) 
+   if sort_by is None:
+      all_files_score =  sorted(all_files_score, key=lambda x: (x[2]), reverse=True) 
+   elif sort_by == "date"
+      all_files_score =  sorted(all_files_score, key=lambda x: (x[0]), reverse=True) 
    all_files = []
    for data in all_files_score:
     
