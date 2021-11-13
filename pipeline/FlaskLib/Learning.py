@@ -297,10 +297,10 @@ def learning_meteors_dataset(amsid, in_data):
    if filter_station is not None and filter_date is not None:
       wild = filter_station + "*" + filter_date
       meteor_training_files = glob.glob(T_DIR + wild)
-   elif filter_station is not None
+   elif filter_station is not None:
       wild = filter_station + "*" 
       meteor_training_files = glob.glob(T_DIR + wild)
-   elif filter_date is not None
+   elif filter_date is not None:
       wild = "*" + filter_date + "*" 
       meteor_training_files = glob.glob(T_DIR + wild)
    else:
