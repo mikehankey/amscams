@@ -333,6 +333,7 @@ def learning_meteors_dataset(amsid, in_data):
          score = "99" 
       print("ROI FILE:", roi_file, mdata)
       all_files_score.append((file, mdata, float(score)))
+   # GERD DO YOU SEE THIS?
    if sort_by is None:
       all_files_score =  sorted(all_files_score, key=lambda x: (x[2]), reverse=True) 
    elif sort_by == "date":
