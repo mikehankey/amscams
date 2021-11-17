@@ -295,14 +295,15 @@ def learning_meteors_dataset(amsid, in_data):
    #V_DIR = "/mnt/ams2/datasets/images/validation/" + label + "/"
    all_files = []
    if filter_station is not None and filter_date is not None:
-      wild = filter_station + "*" + filter_date
+      wild = filter_station + "*" + filter_date + "*"
       meteor_training_files = glob.glob(T_DIR + wild)
-   elif filter_station is not None
+   elif filter_station is not None:
       wild = filter_station + "*" 
       meteor_training_files = glob.glob(T_DIR + wild)
-   elif filter_date is not None
+   elif filter_date is not None:
       wild = "*" + filter_date + "*" 
       meteor_training_files = glob.glob(T_DIR + wild)
+      print("WILD:", T_DIR + wild)
    else:
       wild = "*" 
       meteor_training_files = glob.glob(T_DIR + wild)
@@ -324,17 +325,17 @@ def learning_meteors_dataset(amsid, in_data):
    all_files_score = []
    for file in sorted(all_files, reverse=True):
       roi_file = file.split("/")[-1]
-      print("ROI FILE:", roi_file)
       if roi_file in machine_data:
          mdata = machine_data[roi_file]
-         score = str(mdata[1])[0:4]
+         score = round(float(mdata[1]),3)
       else:
          mdata = "UNKNOWN"
          score = "99" 
+      print("ROI FILE:", roi_file, mdata)
       all_files_score.append((file, mdata, float(score)))
    if sort_by is None:
       all_files_score =  sorted(all_files_score, key=lambda x: (x[2]), reverse=True) 
-   elif sort_by == "date"
+   elif sort_by == "date":
       all_files_score =  sorted(all_files_score, key=lambda x: (x[0]), reverse=True) 
    all_files = []
    for data in all_files_score:
@@ -389,8 +390,13 @@ def learning_meteors_dataset(amsid, in_data):
              <div class="meteor_gallery" style="background-color: #000000; background-image: url('""" + crop_img + """?ad1'); background-repeat: no-repeat; background-size: 150px; width: 150px; height: 150px; border: 1px #000000 solid; float: left; color: #fcfcfc; margin:5px "> """ + controls + """ </div>
       """
    out += "</div>"
+   extra_vars = "&"
+   if filter_station is not None:
+      extra_vars += "&filter_station=" + filter_station
+   if filter_date is not None:
+      extra_vars += "&filter_date=" + filter_date
 
-   pagination = get_pagination(page, len(all_files), "/LEARNING/" + amsid + "/" + uc_label + "?ipp=" + str(items_per_page) , items_per_page)
+   pagination = get_pagination(page, len(all_files), "/LEARNING/" + amsid + "/" + uc_label + "?ipp=" + str(items_per_page) + extra_vars, items_per_page)
    out += "<div style='clear: both'></div>" 
    out += pagination[0]
 
