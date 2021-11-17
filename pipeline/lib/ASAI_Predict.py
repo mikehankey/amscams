@@ -47,7 +47,11 @@ def predict_images(imgs, model_file, label):
       
       oimg = cv2.imread(imgfile)
       orig_img = oimg.copy()
-      oimg = cv2.resize(oimg,(150,150))
+      try:
+         oimg = cv2.resize(oimg,(150,150))
+      except:
+         cmd = "mv " + imgfile + " /mnt/ams2/datasets/bad/"
+         os.system(cmd)
    
       img = np.reshape(oimg,[1,150,150,3])
       img_size = [150,150]
