@@ -285,7 +285,7 @@ def check_disk():
          for dd in day_dirs:
             print("CACHE DIR:", dd)
             sz, tdiff = get_file_info(dd)
-            days_old = tdiff / 5000 
+            days_old = tdiff / 1400 
             print("TDIFF / DAYS",tdiff, days_old)
 
             if os.path.isdir(dd) is True:
