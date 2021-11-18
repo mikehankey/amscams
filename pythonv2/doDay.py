@@ -1,5 +1,7 @@
 #!/usr/bin/python3
 
+import time
+
 """
 This script is the work manager for each day. 
   * Run this script through the day to keep data up to date and in sync.
@@ -48,6 +50,15 @@ ARCHIVE_RELATIVE_PATH = "/mnt/archive.allsky.tv/"
  
 PATH_TO_CONF_JSON = "/home/ams/amscams/conf/as6.json" 
 json_conf = load_json_file(PATH_TO_CONF_JSON)
+
+def get_file_info(file):
+   cur_time = int(time.time())
+   st = os.stat(file)
+   size = st.st_size
+   mtime = st.st_mtime
+   tdiff = cur_time - mtime
+   tdiff = tdiff / 60
+   return(size, tdiff)
 
 def analyse_report_file(file_name):
    # I REALLY DO NOT LIKE THIS APPROACH. IT IS MUCH TOO CONFUSING. A FEW IFS IS ALL THAT IS NEEDED. 
@@ -254,7 +265,7 @@ def check_disk():
          elp = dir_date - datetime.now()
          days_old = abs(elp.total_seconds()) / 86400
          print("TRASH", fn, days_old)
-         if days_old > 14:
+         if days_old > 30:
             cmd = "rm -rf " + td
             os.system(cmd)
             print(cmd)
@@ -265,27 +276,28 @@ def check_disk():
    now = datetime.now()
    this_year = now.strftime("%Y")
    this_month = now.strftime("%m")
-   cache_dir = "/mnt/ams2/CACHE/" + json_conf['site']['ams_id'] + "/" 
+   cache_dir = "/mnt/ams2/CACHE/"  # + json_conf['site']['ams_id'] + "/" 
    years = glob.glob(cache_dir + "*")
    for y in years:
       mon_dirs = glob.glob(y + "/*") 
       for md in mon_dirs:
-         print(md)
          day_dirs = glob.glob(md + "/*") 
          for dd in day_dirs:
-            cy = dd.split("/")[-3]
-            cm = dd.split("/")[-2]
-            cd = dd.split("/")[-1]
-            cdate = cy + "_" + cm + "_" + cd
-            dir_date = datetime.strptime(cdate , "%Y_%m_%d")
-            elp = dir_date - datetime.now()
-            days_old = abs(elp.total_seconds()) / 86400
-            if days_old > 15:
-               cmd = "rm -rf " + dd
-               print(cmd)
-               os.system(cmd)
-               print(dd, days_old)
+            print("CACHE DIR:", dd)
+            sz, tdiff = get_file_info(dd)
+            days_old = tdiff / 5000 
+            print("TDIFF / DAYS",tdiff, days_old)
 
+            if os.path.isdir(dd) is True:
+               if days_old > 15:
+                  cmd = "rm -rf " + dd
+                  print("CACHE:", cmd)
+                  os.system(cmd)
+                  print(dd, days_old)
+               else:
+                  print("This file is still new?")
+            else:
+               print("NOT A DIR? BUT A FILE ? ", dd)
 
 
    # purge out old files from daytime dir
