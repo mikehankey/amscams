@@ -147,17 +147,17 @@ def mfd_roi_old(mfd=None, xs=None, ys=None):
 
 def load_meteors_for_day(date, station_id):
    dataset_dir = "/mnt/ams2/datasets/"
-   if path.os.isdir(dataset_dir) is False:
+   if os.path.isdir(dataset_dir) is False:
       os.makedirs(dataset_dir)
-   if path.os.isdir(dataset_dir + "/images/") is False:
+   if os.path.isdir(dataset_dir + "/images/") is False:
       os.makedirs(dataset_dir + "/images/")
-   if path.os.isdir(dataset_dir + "/images/repo/") is False:
+   if os.path.isdir(dataset_dir + "/images/repo/") is False:
       os.makedirs(dataset_dir + "/images/repo/")
-   if path.os.isdir(dataset_dir + "/images/repo/meteors/") is False:
+   if os.path.isdir(dataset_dir + "/images/repo/meteors/") is False:
       os.makedirs(dataset_dir + "/images/repo/meteors/")
-   if path.os.isdir(dataset_dir + "/images/repo/nonmeteors/") is False:
+   if os.path.isdir(dataset_dir + "/images/repo/nonmeteors/") is False:
       os.makedirs(dataset_dir + "/images/repo/nonmeteors/")
-   if path.os.isdir(dataset_dir + "/images/repo/trash/") is False:
+   if os.path.isdir(dataset_dir + "/images/repo/trash/") is False:
       os.makedirs(dataset_dir + "/images/repo/trash/")
    
 
