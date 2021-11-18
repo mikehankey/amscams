@@ -62,6 +62,11 @@ class AS7Setup():
       if os.path.isfile("../conf/as6.json") == 1:
          print("Local conf file exists.")
          self.json_conf = self.load_json_file("../conf/as6.json")
+         if "api_key" not in self.json_conf:
+            self.json_conf['api_key'] = "123"
+         if "multi_station_sync" not in self.json_conf['site']:
+            self.json_conf['site']['multi_station_sync'] = []
+
          needs_setup = 0
       else:
          self.json_conf = {}
