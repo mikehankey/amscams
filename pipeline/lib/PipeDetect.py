@@ -6982,6 +6982,7 @@ def get_contours_in_image(frame ):
    elif len(cnt_res) == 2:
       (cnts, xx) = cnt_res
    for (i,c) in enumerate(cnts):
+      print("CNTS:", cnts[i])
       x,y,w,h = cv2.boundingRect(cnts[i])
       if w > 1 or h > 1:
          cont.append((x,y,w,h))
