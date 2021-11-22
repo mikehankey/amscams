@@ -34,3 +34,6 @@ cmd = "sudo python3.6 -m pip install tensorboard"
 os.system(cmd)
 cmd = "sudo python3.6 -m pip install tb-nightly"
 os.system(cmd)
+
+cmd = "sudo python3 -m pip install --upgrade pillow"
+os.system(cmd)
