@@ -157,6 +157,10 @@ def roi_from_stack(stack_file):
       stack_img = cv2.subtract(stack_img, mask_img)
    gray =  cv2.cvtColor(stack_img, cv2.COLOR_BGR2GRAY) 
    min_val, max_val, min_loc, (mx,my)= cv2.minMaxLoc(gray)
+   avg_val = np.mean(gray)
+   if max_val * 1.2 >= avg_val:
+      max_val = avg_val * 2
+
    _, threshold = cv2.threshold(gray.copy(), max_val * .8, 255, cv2.THRESH_BINARY)
    cnts = get_contours_in_image(threshold)
    mfd = []
