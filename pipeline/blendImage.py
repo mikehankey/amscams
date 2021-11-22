@@ -1,5 +1,7 @@
 #!/usr/bin/python3
 
+# blend
+
 import cv2
 import sys
 
@@ -14,3 +16,4 @@ img2 = cv2.resize(img2, (1920,1080))
 blend_image = cv2.addWeighted(img1, .5, img2, .5,0)
 blendf = img1f.replace(".jpg", "-blend.jpg")
 cv2.imwrite(blendf, blend_image)
+
