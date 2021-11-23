@@ -407,7 +407,7 @@ if __name__ == "__main__":
             if "\\" in daydir:
                date = daydir.split("\\")[-1]
             print(date)
-            cmd = "python3 AI_Scan_Meteors.py " + date
+            cmd = "python3.6 AI_Scan_Meteors.py " + date
             print(cmd)
             os.system(cmd)
             #roi_files = load_meteors_for_day(date, station_id)
