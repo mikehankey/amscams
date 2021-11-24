@@ -23,8 +23,24 @@ data_dir = "/mnt/ams2/datasets/learning/scan_results/" + selected_class + "/"
 
 # LABELS
 class_names = [
-'bugs','cars','clouds','meteors_bright','meteors_fireballs','meteors_long','meteors_medium','meteors_short','noise','planes','raindrops'
-]
+'birds',
+'bugs',
+'cars',
+'clouds',
+'meteors_bright',
+'meteors_faint',
+'meteors_fireballs',
+'meteors_long',
+'meteors_medium',
+'meteors_short',
+'moon',
+'noise',
+'planes',
+'raindrops',
+'stars',
+'trees',
+        ]
+class_names = sorted(class_names)
 
 def load_my_model(model_file = None):
    if model_file is None:
