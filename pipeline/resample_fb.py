@@ -254,7 +254,7 @@ def resample_fireballs():
             (min_x, min_y, max_x, max_y, size) = cnt
             min_x,min_y,max_x,max_y = bound_cnt(min_x,min_y,max_x,max_y,img)
             roi_img = img[min_y:max_y,min_x:max_x] 
-            if t_station_id not in resample_file:
+            if t_station_id not in stack_file:
                resample_file = t_station_id + "_" + stack_file.replace("-stacked.jpg", "-RESAMP-" + str(ddd) + ".jpg")
             else:
                resample_file = stack_file.replace("-stacked.jpg", "-RESAMP-" + str(ddd) + ".jpg")
