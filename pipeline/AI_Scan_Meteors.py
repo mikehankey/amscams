@@ -424,9 +424,37 @@ if __name__ == "__main__":
             if "\\" in daydir:
                date = daydir.split("\\")[-1]
             print(date)
-            cmd = "python3.6 AI_Scan_Meteors.py " + date
-            print(cmd)
-            os.system(cmd)
+           # cmd = "python3.6 AI_Scan_Meteors.py " + date
+           # print(cmd)
+           # os.system(cmd)
+
+            machine_data_file = "/mnt/ams2/datasets/" + station_id + "_ML_DATA.json"
+            #human_data_file = "/mnt/ams2/datasets/human_data.json"
+            if os.path.exists(machine_data_file) is True:
+               machine_data = load_json_file(machine_data_file)
+            else:
+               machine_data = {}
+
+            roi_files = load_meteors_for_day(date, station_id)
+            for roi_file in roi_files:
+               predict_class = predict_image(roi_file, model)
+
+               tdir = data_dir + predict_class + "/"
+               roi_fn = roi_file.split("/")[-1]
+               new_file = tdir + roi_fn
+               if os.path.exists(tdir) is False:
+                  os.makedirs(tdir)
+                  print("mkdir", tdir)
+               cmd = "cp " + roi_file + " " + new_file
+               os.system(cmd)
+               print(cmd)
+               print(roi_file, predict_class)
+               machine_data[roi_fn] = predict_class
+            save_json_file(machine_data_file, machine_data)
+            print("saved:", machine_data_file)
+
+
+
             #roi_files = load_meteors_for_day(date, station_id)
             #for roi_file in roi_files:
             #   print(roi_file)
