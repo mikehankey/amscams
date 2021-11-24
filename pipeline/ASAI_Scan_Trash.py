@@ -36,8 +36,24 @@ station_id = json_conf['site']['ams_id']
 img_height=150
 img_width=150
 class_names = [
-'bugs','cars','clouds','meteors_bright','meteors_fireballs','meteors_long','meteors_medium','meteors_short','noise','planes','raindrops'
-]
+'birds',
+'bugs',
+'cars',
+'clouds',
+'meteors_bright',
+'meteors_faint',
+'meteors_fireballs',
+'meteors_long',
+'meteors_medium',
+'meteors_short',
+'moon',
+'noise',
+'planes',
+'raindrops',
+'stars',
+'trees',
+        ]
+class_names = sorted(class_names)
 
 OS_SYS = platform.system()
 if OS_SYS == "Windows":
@@ -102,11 +118,13 @@ def get_trash_rois():
       stack_file = js.replace(".json", "-stacked.jpg")
       mj = load_json_file(js)
       roi_file = stack_file.replace("-stacked.jpg", "-ROI_T" + str(0) +".jpg")
-      if os.path.exists(roi_file) is False:
+      #if os.path.exists(roi_file) is False:
+      if True:
          roi_imgs = roi_from_stack(stack_file)
       else:
          roi_imgs = []
       cc = 0
+      print("ROI IMGS:", len(roi_imgs))
       if roi_imgs is not None:
          for roi_img in roi_imgs:
             roi_file = stack_file.replace("-stacked.jpg", "-ROI_T" + str(cc) +".jpg")
@@ -141,11 +159,13 @@ def get_trash_rois():
 
 
 def roi_from_stack(stack_file):
+   print("YO")
    (f_datetime, cam, f_date_str,fy,fmon,fd, fh, fm, fs) =  convert_filename_to_date_cam(stack_file)
    mask_file = "/mnt/ams2/meteor_archive/" + station_id + "/CAL/MASKS/" + cam + "_mask.png"
    if os.path.exists(stack_file) is True:
       stack_img = cv2.imread(stack_file)
    if stack_img is None:
+      print("NO STACK IMG!")
       return(None)
    sh,sw = stack_img.shape[:2]
    if os.path.exists(mask_file) is True:
@@ -160,7 +180,7 @@ def roi_from_stack(stack_file):
    avg_val = np.mean(gray)
    if max_val * 1.2 >= avg_val:
       max_val = avg_val * 2
-
+   print("THRESH VAL:", max_val * .8)
    _, threshold = cv2.threshold(gray.copy(), max_val * .9, 255, cv2.THRESH_BINARY)
    threshold = cv2.dilate(threshold.copy(), None , iterations=4)
    cnts = get_contours_in_image(threshold)
@@ -170,14 +190,22 @@ def roi_from_stack(stack_file):
    objects = {}
    fn = 1
    for cx,cy,cw,ch in cnts:
+      if cw < 50 or ch < 50:
+         continue
       obj, objects = find_object(objects, fn,cx, cy, cw, ch, 0, 0, 0, None)
       fn += 1
+      if fn > 10:
+         continue
 
    roi_imgs = []
+   oc = 0
    for obj_id in objects:
       x1,y1,x2,y2 = mfd_roi(None, objects[obj_id]['oxs'], objects[obj_id]['oys'])
       roi_img = stack_img[y1:y2,x1:x2]
+      if oc > 5:
+         continue
       roi_imgs.append(roi_img)
+      oc += 1
 
 
       #cv2.rectangle(threshold, (int(x1), int(y1)), (int(x2) , int(y2) ), (255, 255, 255), 1)
@@ -232,7 +260,7 @@ def predict_images(roi_files,model=None):
       img_fn = imgfile.split("/")[-1]
       if "img_fn" in machine_data:
          print("ALREADY DONE:", img_fn)
-         continue
+         #continue
       predict_class = predict_image(imgfile, model)
       print(imgfile, predict_class)
       tdir = data_dir + predict_class + "/" 
@@ -249,6 +277,7 @@ def predict_images(roi_files,model=None):
    save_json_file(machine_data_file, machine_data)
 
 roi_files = get_trash_rois()
+print("ROI:", len(roi_files))
 model = load_my_model()
 predict_images(roi_files, model)
 for roi_file in roi_files:
