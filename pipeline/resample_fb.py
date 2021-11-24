@@ -261,8 +261,8 @@ def resample_fireballs():
                   #cv2.imshow('pepe', roi_img)
                   #cv2.waitKey(0)
                if t_station_id not in resample_file:
-                  resample_file += t_station_id + "_" + resample_file
-               print("WROTE", resample_dir + resample_file )
+                  resample_file = t_station_id + "_" + resample_file
+               print("WROTE", t_station_id, resample_dir + resample_file )
                cv2.imwrite(resample_dir + resample_file, roi_img)
                predict_class = predict_image(resample_dir + resample_file , model)
                print("P:", predict_class)
