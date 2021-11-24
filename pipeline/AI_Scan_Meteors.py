@@ -21,6 +21,7 @@ img_width = 150
 selected_class = "meteors"
 data_dir = "/mnt/ams2/datasets/learning/scan_results/" + selected_class + "/"
 
+# LABELS
 class_names = [
 'bugs','cars','clouds','meteors_bright','meteors_fireballs','meteors_long','meteors_medium','meteors_short','noise','planes','raindrops'
 ]
