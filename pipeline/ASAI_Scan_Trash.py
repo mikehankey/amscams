@@ -161,7 +161,8 @@ def roi_from_stack(stack_file):
    if max_val * 1.2 >= avg_val:
       max_val = avg_val * 2
 
-   _, threshold = cv2.threshold(gray.copy(), max_val * .8, 255, cv2.THRESH_BINARY)
+   _, threshold = cv2.threshold(gray.copy(), max_val * .9, 255, cv2.THRESH_BINARY)
+   threshold = cv2.dilate(threshold.copy(), None , iterations=4)
    cnts = get_contours_in_image(threshold)
    mfd = []
    cxs = []
