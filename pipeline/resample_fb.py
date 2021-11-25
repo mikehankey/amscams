@@ -164,7 +164,10 @@ def resample_fireballs():
    ml_dir = "/mnt/ams2/datasets/COMBINED_REPO/" + t_station_id + "/"
    resample_dir = "/mnt/ams2/datasets/COMBINED_REPO/" + t_station_id + "/resample_fireball/"
    station_dir = "/mnt/ams2/datasets/COMBINED_REPO/" + t_station_id + "/"
-  
+ 
+   if os.path.exists("all_samples.json") is False:
+      os.system("cp /mnt/archive.allsky.tv/AMS1/ML/all_samples.json.gz .")
+      os.system("gunzip all_samples.json.gz")
    temp = load_json_file("all_samples.json")
    fireballs = temp['meteors_fireballs']
 
@@ -184,7 +187,7 @@ def resample_fireballs():
       stack_file = mdir + roi_file.replace("-ROI.jpg", "-stacked.jpg")
       video_file = stack_file.replace("-stacked.jpg", ".mp4")
       print("./stackVideo.py " + video_file)
-      #os.system("./stackVideo.py " + video_file)
+      os.system("./stackVideo.py " + video_file)
 
       if "\\" in stack_file:
          stack_fn = roi_file.split("\\")[-1]
