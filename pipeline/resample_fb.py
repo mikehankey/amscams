@@ -163,6 +163,7 @@ def resample_fireballs():
  
    ml_dir = "/mnt/ams2/datasets/COMBINED_REPO/" + t_station_id + "/"
    resample_dir = "/mnt/ams2/datasets/COMBINED_REPO/" + t_station_id + "/resample_fireball/"
+   station_dir = "/mnt/ams2/datasets/COMBINED_REPO/" + t_station_id + "/"
   
    temp = load_json_file("all_samples.json")
    fireballs = temp['meteors_fireballs']
@@ -181,6 +182,10 @@ def resample_fireballs():
       mdir = "/mnt/ams2/meteors/" + day + "/"
       #mdir = "Y://meteors/" + day + "/"
       stack_file = mdir + roi_file.replace("-ROI.jpg", "-stacked.jpg")
+      video_file = stack_file.replace("-stacked.jpg", ".mp4")
+      print("./stackVideo.py " + video_file)
+      #os.system("./stackVideo.py " + video_file)
+
       if "\\" in stack_file:
          stack_fn = roi_file.split("\\")[-1]
       else:
@@ -229,6 +234,9 @@ def resample_fireballs():
       
       show_img = img.copy()
       ddd = 0
+      hdm_x = 1920 / img.shape[1]
+      hdm_y = 1080 / img.shape[0]
+      hd_img = cv2.resize(img, (1920,1080))
       for obj_id in objects:
          obj = objects[obj_id]
          print(objects[obj_id])
@@ -245,40 +253,102 @@ def resample_fireballs():
             min_y = min(ys)
             max_x = max(xs)
             max_y = max(ys)
+
+            
             size = (max_x - min_x) * (max_y - min_y)
             all_cnts.append((min_x,min_y,max_x,max_y,size))
          all_cnts = sorted(all_cnts, key=lambda x: (x[4]), reverse=True)
          #all_cnts = merge_cnts(all_cnts)
+          
          for cnt in all_cnts:
 
             (min_x, min_y, max_x, max_y, size) = cnt
             min_x,min_y,max_x,max_y = bound_cnt(min_x,min_y,max_x,max_y,img)
+
+            hd_min_x = int(min_x * hdm_x)
+            hd_max_x = int(max_x * hdm_x)
+            hd_min_y = int(min_y * hdm_y)
+            hd_max_y = int(max_y * hdm_y)
+
+
             roi_img = img[min_y:max_y,min_x:max_x] 
+            hd_roi_img = hd_img[hd_min_y:hd_max_y,hd_min_x:hd_max_x] 
             resample_file = stack_file.replace("-stacked.jpg", "-RESAMP-" + str(ddd) + ".jpg")
+            hd_resample_file = stack_file.replace("-stacked.jpg", "-HDRESAMP-" + str(ddd) + ".jpg")
+
             resample_file = resample_file.split("/")[-1]
+            hd_resample_file = hd_resample_file.split("/")[-1]
             #size = (max_x - min_x) * (max_y - min_y)
-            try:
+            predict_class = None
+            if True:
                   #cv2.imshow('pepe', roi_img)
                   #cv2.waitKey(0)
                if t_station_id not in resample_file:
                   resample_file = t_station_id + "_" + resample_file
+               print("X1:", min_x,min_y,max_x,max_y)
                print("WROTE", t_station_id, resample_dir + resample_file )
-               cv2.imwrite(resample_dir + resample_file, roi_img)
-               predict_class = predict_image(resample_dir + resample_file , model)
-               print("P:", predict_class)
-               cv2.putText(show_img, predict_class, (min_x,max_y), cv2.FONT_HERSHEY_SIMPLEX, .3, (0, 0, 255), 1)
-            except:
-               print("FAILED TO WRITE ROI FILE!", min_x,min_y,max_x,max_y)
-               continue
+               if os.path.exists(resample_dir) is False:
+                  os.makedirs(resample_dir)
+               #cv2.imwrite(resample_dir + resample_file, roi_img)
+               cv2.imwrite(resample_dir + hd_resample_file, hd_roi_img)
+               
+               try:
+                  xxx = hd_roi_img.shape[:2]
+               except:
+                  if os.path.exists(resample_dir + hd_resample_file) is True:
+                     os.remove(resample_dir + hd_resample_file)
+                     continue
+
+               if os.path.exists(resample_dir + hd_resample_file) is True:
+                  
+                  #print(resample_dir + resample_file)
+                  try:
+                     predict_class = predict_image(resample_dir + hd_resample_file , model)
+                     print("P:", predict_class)
+                     cv2.putText(show_img, predict_class, (min_x,max_y), cv2.FONT_HERSHEY_SIMPLEX, .3, (0, 0, 255), 1)
+                  except:
+                     print("BAd roi", resample_dir + hd_resample_file)
+                     
+                     if os.path.exists(resample_dir + resample_file) is True:
+                         os.remove(resample_dir + resample_file  )
+                     if os.path.exists(resample_dir + hd_resample_file) is True:
+                         os.remove(resample_dir + hd_resample_file  )
+               else:
+                  print("BAD ROI?")
+                  continue
+            #try:
+            #except:
+            #   print("FAILED TO WRITE ROI FILE!", min_x,min_y,max_x,max_y, resample_dir + resample_file) 
+            #   continue
+            if predict_class is None:
+               predict_class = predict_image(resample_dir + hd_resample_file , model)
             print("RES", resample_dir + resample_file)
             print("MAKE REC!",min_x,min_y,max_x,max_y)
+            print("Class", predict_class)
             cv2.rectangle(show_img, (min_x,min_y), (max_x, max_y) , (255, 255, 255), 1)
-            if "meteors" not in predict_class:
-               os.remove(resample_dir + resample_file)
+            if "meteors" not in predict_class and predict_class is not None:
+               l_resample_dir = resample_dir + predict_class + "/"
+               new_file = l_resample_dir + resample_file
+               hd_new_file = l_resample_dir + hd_resample_file
+               if os.path.exists(l_resample_dir) is False:
+                  os.makedirs(l_resample_dir)
+               print("MOVE TO:", new_file)
+               #os.rename(resample_dir + resample_file, new_file)
+               os.rename(resample_dir + hd_resample_file, hd_new_file)
             ddd += 1
 
-      #cv2.imshow('pepe', show_img)
-      #cv2.waitKey(0)
+   # tar it up
+   #cv2.imshow('pepe', show_img)
+   #cv2.waitKey(0)
+   tar_cmd = "tar -cvf " + station_dir + t_station_id + "_ML_RESAMPLE_FB.tar " + resample_dir + "*" 
+   os.system(tar_cmd)
+   arc_dir = "/mnt/archive.allsky.tv/" + t_station_id + "/ML/" 
+   tar_cmd = "tar -cvf " + station_dir + t_station_id + "_ML_RESAMPLE_FB.tar *" 
+   tar_file = station_dir + t_station_id + "_ML_RESAMPLE_FB.tar"
+   os.system("gzip " + tar_file)
+   os.system("cp " + tar_file + ".gz" + " " + arc_dir )
+   print("cp " + tar_file + ".gz" + " " + arc_dir )
+
 
 def group_objects(XS,YS):
    resp = ransac_outliers(XS,YS,"")
