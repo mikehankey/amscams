@@ -453,12 +453,12 @@ if __name__ == "__main__":
             save_json_file(machine_data_file, machine_data)
             print("saved:", machine_data_file)
 
-      cmd = "cd /mnt/ams2/datasets/learning/scan_results; tar -cvf " + station_id + "_ML_METEORS.tar; gzip -f " + station_id + "_ML_METEORS.tar"
+      cmd = "cd /mnt/ams2/datasets/learning/; tar -cvf " + station_id + "_ML_REPO.tar; gzip -f " + station_id + "_ML_REPO.tar"
       print(cmd)
       os.system(cmd)
       if os.path.exists("/mnt/archive.allsky.tv/" + station_id + "/ML/") is False:
          os.makedirs("/mnt/archive.allsky.tv/" + station_id + "/ML/")
-      cmd = "cd /mnt/ams2/datasets/learning/scan_results; cp -cvf " + station_id + "_ML_METEORS.tar.gz /mnt/archive.allsky.tv/" + station_id + "/ML/"
+      cmd = "cd /mnt/ams2/datasets/learning/; cp -cvf " + station_id + "_ML_REPO.tar.gz /mnt/archive.allsky.tv/" + station_id + "/ML/"
       print(cmd)
       os.system(cmd)
  
