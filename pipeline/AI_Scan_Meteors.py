@@ -453,6 +453,15 @@ if __name__ == "__main__":
             save_json_file(machine_data_file, machine_data)
             print("saved:", machine_data_file)
 
+      cmd = "cd /mnt/ams2/datasets/learning/scan_results; tar -cvf " + station_id + "_ML_METEORS.tar; gzip -f " + station_id + "_ML_METEORS.tar"
+      print(cmd)
+      os.system(cmd)
+      if os.path.exists("/mnt/archive.allsky.tv/" + station_id + "/ML/") is False:
+         os.makedirs("/mnt/archive.allsky.tv/" + station_id + "/ML/")
+      cmd = "cd /mnt/ams2/datasets/learning/scan_results; cp -cvf " + station_id + "_ML_METEORS.tar.gz /mnt/archive.allsky.tv/" + station_id + "/ML/"
+      print(cmd)
+      os.system(cmd)
+ 
 
 
             #roi_files = load_meteors_for_day(date, station_id)
@@ -506,6 +515,8 @@ if __name__ == "__main__":
       print(len(all_repo_nonmeteors), " METEOR ROI FILES READY TO ANALYZE")
       label = "nonmeteors"
       predict_images(all_repo_nonmeteors, model, label )
+
+
       
    else:
       #load_meteors_for_day(date, station_id)
