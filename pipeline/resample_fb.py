@@ -110,7 +110,7 @@ def merge_cnts(cnts):
          ucnts.append((x,y,w,h,size))
    return(ucnts)   
 
-def bound_cnt(x1,y1,x2,y2,img):
+def bound_cnt(x1,y1,x2,y2,img, margin=.5):
    ih,iw = img.shape[:2]
    rw = x2 - x1
    rh = y2 - y1
@@ -118,8 +118,8 @@ def bound_cnt(x1,y1,x2,y2,img):
       rh = rw
    else:
       rw = rh
-   rw += int(rw * .3)
-   rh += int(rh * .3)
+   rw += int(rw )
+   rh += int(rh )
    if rw >= ih or rh >= ih:
       rw = int(ih*.95)
       rh = int(ih*.95)
