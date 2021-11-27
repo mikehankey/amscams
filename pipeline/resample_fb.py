@@ -348,7 +348,7 @@ def resample_fireballs():
    arc_dir = "/mnt/archive.allsky.tv/" + t_station_id + "/ML/" 
    tar_cmd = "tar -cvf " + station_dir + t_station_id + "_ML_RESAMPLE_FB.tar *" 
    tar_file = station_dir + t_station_id + "_ML_RESAMPLE_FB.tar"
-   os.system("gzip " + tar_file)
+   os.system("gzip -f " + tar_file)
    os.system("cp " + tar_file + ".gz" + " " + arc_dir )
    print("cp " + tar_file + ".gz" + " " + arc_dir )
 
