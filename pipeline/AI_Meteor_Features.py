@@ -163,7 +163,7 @@ for label in all_samples:
          sample = sample.replace("-ROI.jpg", "")
          ai_labels[sample] = label
 
-lines="filename,label,durt,ang_vel,ran_perc,avg_px,max_val,avg_max_diff,green_max,blue_max,red_max,min_int,max_int,peak_times,max_y,min_y,dc_perc,total_gaps,gap_events"
+lines="filename,label,durt,ang_vel,ran_perc,avg_px,max_val,avg_max_diff,green_max,blue_max,red_max,min_int,max_int,peak_times,min_x,max_x,min_y,max_y,dc_perc,total_gaps,gap_events\n"
 if os.path.exists(feature_data_file) is False:
    feature_data = []
 else:
@@ -189,5 +189,5 @@ for filename, datetime in meteor_ids:
          line += "\n"
          lines += line
          print(line)
-out = open("/mnt/ams2/meteors/" + station_id + "_meteor_features.json", "w")
+out = open("/mnt/ams2/meteors/" + station_id + "_meteor_features.csv", "w")
 out.write(lines)
