@@ -37,3 +37,9 @@ os.system(cmd)
 
 cmd = "sudo python3 -m pip install --upgrade pillow"
 os.system(cmd)
+
+cmd = "sudo python3.6 -m pip install sklearn"
+os.system(cmd)
+
+cmd = "sudo python3.6 -m pip install scikit-image"
+os.system(cmd)
