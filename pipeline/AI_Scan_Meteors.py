@@ -458,7 +458,7 @@ if __name__ == "__main__":
       os.system(cmd)
       if os.path.exists("/mnt/archive.allsky.tv/" + station_id + "/ML/") is False:
          os.makedirs("/mnt/archive.allsky.tv/" + station_id + "/ML/")
-      cmd = "cd /mnt/ams2/datasets/learning/; cp -cvf " + station_id + "_ML_REPO.tar.gz /mnt/archive.allsky.tv/" + station_id + "/ML/"
+      cmd = "cd /mnt/ams2/datasets/learning/; cp " + station_id + "_ML_REPO.tar.gz /mnt/archive.allsky.tv/" + station_id + "/ML/"
       print(cmd)
       os.system(cmd)
  
