@@ -43,3 +43,9 @@ os.system(cmd)
 
 cmd = "sudo python3.6 -m pip install scikit-image"
 os.system(cmd)
+
+sudo python3 -m pip install --upgrade markupsafe
+sudo python3 -m pip install --upgrade flask
+sudo python3 -m pip install --upgrade Click
+sudo python3 -m pip install --upgrade six
+sudo python3 -m pip install --upgrade requests
