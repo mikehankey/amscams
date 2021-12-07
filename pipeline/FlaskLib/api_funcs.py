@@ -298,7 +298,7 @@ def show_cat_stars (video_file, hd_stack_file, points):
       app_type = "meteor"
    else:
       app_type = "calib"
-
+   hd_img = None
    if app_type == "meteor":
       mjf = "/mnt/ams2/" + video_file.replace(".mp4", ".json")
       mjrf = "/mnt/ams2/" + video_file.replace(".mp4", "-reduced.json")
@@ -373,6 +373,10 @@ def show_cat_stars (video_file, hd_stack_file, points):
       cpf = cps[0]
       cp = load_json_file(cpf)
       hd_img = cv2.imread(stack_file, 0)
+   
+   if hd_img is None:
+      hd_img = cv2.imread(stack_file, 0)
+      hd_img = cv2.resize(stack_file,(1920,1080))
 
    if cp is None:
       resp = {
@@ -391,6 +395,7 @@ def show_cat_stars (video_file, hd_stack_file, points):
       sy = int(float(sy)) + 5
       sx = int(float(sx)) * 2
       sy = int(float(sy)) * 2
+     
       rx1,ry1,rx2,ry2 = bound_cnt(sx,sy,hd_img.shape[1],hd_img.shape[0], 10)
       cnt_img = hd_img[ry1:ry2, rx1:rx2]
       #cv2.imwrite("/mnt/ams2/test.jpg", cnt_img)
