@@ -301,6 +301,7 @@ def show_cat_stars (video_file, hd_stack_file, points):
    hd_img = None
    if app_type == "meteor":
       mjf = "/mnt/ams2/" + video_file.replace(".mp4", ".json")
+      stack_file = "/mnt/ams2/" + video_file.replace(".mp4", "-stacked.jpg")
       mjrf = "/mnt/ams2/" + video_file.replace(".mp4", "-reduced.json")
       mj = load_json_file(mjf)
       if os.path.exists(mjrf) is True:
@@ -376,7 +377,7 @@ def show_cat_stars (video_file, hd_stack_file, points):
    
    if hd_img is None:
       hd_img = cv2.imread(stack_file, 0)
-      hd_img = cv2.resize(stack_file,(1920,1080))
+      hd_img = cv2.resize(hd_img,(1920,1080))
 
    if cp is None:
       resp = {
