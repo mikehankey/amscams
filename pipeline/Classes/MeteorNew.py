@@ -2594,12 +2594,17 @@ class Meteor():
    def sync_media_day(self, day):
       local_dir = "/mnt/ams2/METEOR_SCAN/" + day + "/"
       cloud_dir = "/mnt/archive.allsky.tv/" + self.station_id + "/METEORS/" + day + "/"
+      
+      if cfe(local_dir, 1) == 0:
+         print(local_dir)
+         os.makedirs(local_dir)
 
       if cfe(cloud_dir, 1) == 0:
          print(cloud_dir)
          os.makedirs(cloud_dir)
       cmd = "ls -l " + cloud_dir + " > " + local_dir + "cloudfiles.txt"
       os.system(cmd)
+
       fp = open(local_dir + "cloudfiles.txt")
       for line in fp:
          print(line)
