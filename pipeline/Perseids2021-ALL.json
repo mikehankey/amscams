@@ -15,6 +15,10 @@
       "name": "George F, FL",
       "minutes": [4,5,14,15,24,25,34,35,44,45,54,55 ]
    },
+   "AMS10": {
+      "name": "Pat Branch, SC",
+      "minutes": [6,16,26,36,46,56]
+   },
 
    "AMS70": {
       "best_cams": [5],
@@ -49,11 +53,6 @@
    },
    "AMS41": {
       "minutes": [6,16,26,36,46,56]
-   },
-   "AMS10": {
-      "best_cams": [3],
-      "name": "Pat Branch, SC",
-      "minutes": [0,10,20,30,40,50]
    },
    "AMS24": {
       "name": "Bob L, CA",
