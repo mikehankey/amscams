@@ -81,7 +81,7 @@ def get_weather(lat,lng):
    return(status, weather_desc)
  
 
-do_hd_requests()
+#do_hd_requests()
 weather_status, weather_desc = get_weather(json_conf['site']['device_lat'],json_conf['site']['device_lng'])
 print(weather_desc)
 
@@ -89,10 +89,10 @@ station_id = json_conf['site']['ams_id']
 all_cams = {}
 now = dt.now()
 cur_date = now.strftime("%Y_%m_%d")
-peak_dates = ['2021_08_10', '2021_08_11', '2021_08_12']
+peak_dates = ['2021_12_13', '2021_12_14']
 
 if cur_date not in peak_dates:
-   print("Perseids Peak is over! EXIT", cur_date)
+   print("Shower Peak is over! EXIT", cur_date)
    exit()
 cur_hour = now.strftime("%H")
 cur_min = now.strftime("%M")
@@ -120,7 +120,7 @@ os.system("cp /mnt/archive.allsky.tv/LIVE/photo_credits.json ./")
 print("cp /mnt/archive.allsky.tv/LIVE/photo_credits.json ./")
 photo_credits = load_json_file("photo_credits.json")
 credits = photo_credits[station_id]
-schedule = load_json_file("Perseids2021.json")
+schedule = load_json_file("Perseids2021-ALL.json")
 
 if station_id in schedule:
    my_schedule = schedule[station_id]
