@@ -19,6 +19,14 @@
       "name": "Pat Branch, SC",
       "minutes": [6,16,26,36,46,56]
    },
+   "AMS42": {
+      "name": "Cedar Amateur Astronomers, IA",
+      "minutes": [7,17,27,37,47,57]
+   },
+   "AMS48": {
+      "name": "Jim Hannon, IA",
+      "minutes": [8,9,18,19,28,29,38,39,48,49,58,59]
+   },
 
    "AMS70": {
       "best_cams": [5],
