@@ -32,6 +32,7 @@
    },
    "AMS15": {
       "name": "Peter Deterline - Douglassville, PA",
+      "best_cams": [1],
       "minutes": [0,10,20,30,40,50]
    }
 }
