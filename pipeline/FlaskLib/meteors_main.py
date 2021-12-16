@@ -297,8 +297,23 @@ def meteors_main (amsid, in_data) :
    if in_data['start_day'] is None:
       in_data['start_day'] = dt.now().strftime("%Y_%m_%d")
    print("get_meteors_in_range")
-   tmeteors = get_meteors_in_range(amsid, in_data['start_day'], in_data['end_day'],del_data, in_data['filter'])
-   print("done get_meteors_in_range")
+   if in_data['ai_list'] is None:
+      tmeteors = get_meteors_in_range(amsid, in_data['start_day'], in_data['end_day'],del_data, in_data['filter'])
+   else:
+      temp_meteors = load_json_file("/mnt/ams2/datasets/" + amsid + "_AI_METEOR_INDEX.json")
+      tmeteors = []
+      for data in temp_meteors:
+         meteor_file, reduced, start_time, dur, ang_vel, ang_dist, hotspot,msm,mlabel,hlabel = data 
+         if "ams2" not in meteor_file:
+            station_id = meteor_file.split("/")[0]
+            meteor_file = meteor_file.replace(station_id + "_", "")
+            meteor_file = "/mnt/ams2/meteors/" + meteor_file[0:10] + "/" + meteor_file
+         if in_data['ai_list'] in mlabel or in_data['ai_list'] in hlabel:
+            tmeteors.append((meteor_file, reduced, start_time, dur, ang_vel, ang_dist, hotspot,msm,mlabel,hlabel))
+
+
+      
+   print("done get_meteors_in_range", len(tmeteors))
 
    if in_data['p'] is None:
       page = 1
@@ -337,6 +352,8 @@ def meteors_main (amsid, in_data) :
          print("METEOR:", msm)
          if msm == 1:
             msc += 1
+      if len(meteor) == 10:
+         meteor_file, reduced, start_time, dur, ang_vel, ang_dist, hotspot,msm,mlabel,hlabel = meteor 
    if msc > 0:
        link = "<a href='/meteor/" + amsid + "/?start_day=" + start_day + "&filter=multi'>"
        filter_display += "<span style='margin: 25px'>" + link + str(msc) + " multi-station meteors detected</a></span>"
@@ -390,6 +407,14 @@ def meteors_main (amsid, in_data) :
          meteor_file, reduced, start_time, dur, ang_vel, ang_dist, hotspot = meteor 
       elif len(meteor) == 8:
          meteor_file, reduced, start_time, dur, ang_vel, ang_dist, hotspot,msm = meteor 
+      elif len(meteor) == 10:
+         meteor_file, reduced, start_time, dur, ang_vel, ang_dist, hotspot,msm,mlabel,hlabel = meteor 
+         print("BEF", meteor_file)
+         if "ams2" not in meteor_file:
+            station_id = meteor_file.split("/")[0]
+            meteor_file = meteor_file.replace(station_id + "_", "")
+            meteor_file = "/mnt/ams2/meteors/" + meteor_file[0:10] + "/" + meteor_file
+         print("AFT", meteor_file)
       red_file = meteor_file.replace(".json", "-reduced.json")
       if cfe(red_file) == 1:
          reduced = 1

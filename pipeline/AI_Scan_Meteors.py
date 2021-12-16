@@ -2,7 +2,7 @@
 
 import numpy as np
 import sys
-from lib.PipeUtil import load_json_file, save_json_file , mfd_roi
+from lib.PipeUtil import load_json_file, save_json_file , mfd_roi, get_file_info
 import os
 import cv2
 from lib.ASAI_Predict import predict_images
@@ -22,25 +22,8 @@ selected_class = "meteors"
 data_dir = "/mnt/ams2/datasets/learning/scan_results/" + selected_class + "/"
 
 # LABELS
-class_names = [
-'birds',
-'bugs',
-'cars',
-'clouds',
-'meteors_bright',
-'meteors_faint',
-'meteors_fireballs',
-'meteors_long',
-'meteors_medium',
-'meteors_short',
-'moon',
-'noise',
-'planes',
-'raindrops',
-'stars',
-'trees',
-        ]
-class_names = sorted(class_names)
+labels = load_json_file("labels.json")
+class_names = sorted(labels['labels'])
 
 def load_my_model(model_file = None):
    if model_file is None:
@@ -66,8 +49,45 @@ def predict_image(imgfile, model):
    predictions = model.predict(img_array)
 
    score = tf.nn.softmax(predictions[0])
+
+   score_list = np.argsort(-score)
+
+
+   #confidence = int(100 * np.max(score))
+
+
+
+   print("SCORE:", score_list)
+
    predicted_class = class_names[np.argmax(score)]
-   return(predicted_class)
+
+   predicted_class_one = class_names[score_list[0]]
+   predicted_class_two = class_names[score_list[1]]
+   predicted_class_three = class_names[score_list[2]]
+
+   conf1 = int(100 * score[score_list[0]])
+   conf2 = int(100 * score[score_list[1]])
+   conf3 = int(100 * score[score_list[2]])
+
+
+   print("0", predicted_class,  int(100 * np.max(score)))
+
+   print(predicted_class_one, conf1)
+   print(predicted_class_two, conf2)
+   print(predicted_class_three, conf3)
+
+   confidence = int(100 * np.max(score))
+
+   print(
+       "This image most likely belongs to {} with a {:.2f} percent confidence."
+       .format(class_names[np.argmax(score)], 100 * np.max(score))
+   )
+   resp_data = [
+      [predicted_class_one, conf1],
+      [predicted_class_two, conf2],
+      [predicted_class_three, conf3]
+   ]
+   return(resp_data)
 
 def which_cnts(cnt_res):
    if len(cnt_res) == 3:
@@ -322,7 +342,7 @@ def load_meteors_for_day(date, station_id):
 
    human_data_file = "/mnt/ams2/datasets/human_data.json"
    label = "meteors"
-   machine_data_file = "/mnt/ams2/datasets/machine_data_" + label + ".json"
+   machine_data_file = "/mnt/ams2/datasets/machine_data.json"
    if os.path.exists(human_data_file):
       human_data = load_json_file(human_data_file)
    else:
@@ -330,9 +350,22 @@ def load_meteors_for_day(date, station_id):
 
    mdir = "/mnt/ams2/meteors/" + date + "/"
    msdir = "/mnt/ams2/METEOR_SCAN/" + date + "/"
+
+   ai_day_file = mdir + station_id + "_" + date + "_AI_SCAN.info"
+   if os.path.exists(ai_day_file):
+      ai_day_data = load_json_file(ai_day_file)
+   else:
+      ai_day_data = {}
+
+
    if os.path.isdir(msdir) is False:
       os.makedirs(msdir)
    mfiles = get_mfiles(mdir)
+   if len(ai_day_data) == len(mfiles):
+      print("This day has already been completed!")
+      return([])
+
+
    roi_files = []
    for ff in sorted(mfiles, reverse=True):
       print(ff)
@@ -342,12 +375,21 @@ def load_meteors_for_day(date, station_id):
          ff = ff.split("\\")[-1]
       json_file = ff.replace(".mp4", ".json")
       roi_file = station_id + "_" + ff.replace(".mp4", "-ROI.jpg")
+       
+      if roi_file in machine_data:
+         print("DONE ALREADY, DOING AGAIN!", roi_file)
+         #continue
+      else:
+         print(roi_file, " NOT IN machine data!")
       stack_file = ff.replace(".mp4", "-stacked.jpg")
       mjrf = json_file.replace(".json", "-reduced.json")
       remake = 0
       roi = None
       if os.path.exists(msdir + roi_file) is True:
          roi = cv2.imread(msdir + roi_file)
+         if roi is None:
+            print("BAD ROI IMAGE!")
+            continue
          if roi.shape[0] < 150 or roi.shape[1] < 150:
             print("BAD ROI SHAPE REMAKE!")
             remake = 1
@@ -378,6 +420,9 @@ def load_meteors_for_day(date, station_id):
             img = cv2.imread(mdir + stack_file)
             nw = x2 - x1
             nh = y2 - y1
+            if roi_file not in ai_day_data:
+               ai_day_data[roi_file] = {}
+               ai_day_data[roi_file]['roi'] = [x1,y1,x2,y2]
             if nw != nh:
                print("W/H CROP PROBLEM!", msdir + roi_file)
                input("wait")
@@ -404,7 +449,8 @@ def load_meteors_for_day(date, station_id):
    model = "./first_try_model.h5"
    label = "meteors"
    print(len(roi_files), " ROI FILES READY TO ANALYZE")
-   return(roi_files)
+   save_json_file(ai_day_file, ai_day_data)
+   return(roi_files, ai_day_data)
    #predict_images(roi_files, model, label )
 
 
@@ -424,20 +470,35 @@ if __name__ == "__main__":
             if "\\" in daydir:
                date = daydir.split("\\")[-1]
             print(date)
+            mdir = "/mnt/ams2/meteors/" + date + "/"
+            ai_day_file = mdir + station_id + "_" + date + "_AI_SCAN.info"
+
+
            # cmd = "python3.6 AI_Scan_Meteors.py " + date
            # print(cmd)
            # os.system(cmd)
 
             machine_data_file = "/mnt/ams2/datasets/" + station_id + "_ML_DATA.json"
             #human_data_file = "/mnt/ams2/datasets/human_data.json"
+            print(machine_data_file)
             if os.path.exists(machine_data_file) is True:
                machine_data = load_json_file(machine_data_file)
             else:
                machine_data = {}
 
-            roi_files = load_meteors_for_day(date, station_id)
+            roi_files,ai_day_data = load_meteors_for_day(date, station_id)
             for roi_file in roi_files:
-               predict_class = predict_image(roi_file, model)
+               try:
+                  predict_top3 = predict_image(roi_file, model)
+                  predict_class, confidence = predict_top3[0] 
+                  predict_class2, confidence2 = predict_top3[1] 
+                  predict_class3, confidence3 = predict_top3[2] 
+               except: 
+                  predict_class = "BAD_IMAGE"
+               roi_fn = roi_file.split("/")[-1]
+               if roi_fn not in ai_day_data:
+                  ai_day_data[roi_fn] = {}
+               ai_day_data[roi_fn]['predict_top3'] = predict_top3 
 
                tdir = data_dir + predict_class + "/"
                roi_fn = roi_file.split("/")[-1]
@@ -451,16 +512,18 @@ if __name__ == "__main__":
                print(roi_file, predict_class)
                machine_data[roi_fn] = predict_class
             save_json_file(machine_data_file, machine_data)
+            save_json_file(ai_day_file, ai_day_data)
             print("saved:", machine_data_file)
+            print("saved:", ai_day_file)
 
       cmd = "cd /mnt/ams2/datasets/learning/; tar -cvf " + station_id + "_ML_REPO.tar * ; gzip -f " + station_id + "_ML_REPO.tar"
       print(cmd)
-      os.system(cmd)
+      #os.system(cmd)
       if os.path.exists("/mnt/archive.allsky.tv/" + station_id + "/ML/") is False:
          os.makedirs("/mnt/archive.allsky.tv/" + station_id + "/ML/")
       cmd = "cd /mnt/ams2/datasets/learning/; cp " + station_id + "_ML_REPO.tar.gz /mnt/archive.allsky.tv/" + station_id + "/ML/"
       print(cmd)
-      os.system(cmd)
+      #os.system(cmd)
  
 
 
@@ -477,7 +540,7 @@ if __name__ == "__main__":
       print("GET ALL REPO METEOR FILES...")
       human_data_file = "/mnt/ams2/datasets/human_data.json"
       label = "meteors"
-      machine_data_file = "/mnt/ams2/datasets/machine_data_" + label + ".json"
+      machine_data_file = "/mnt/ams2/datasets/" + station_id + "_ML_DATA.json"
       if os.path.exists(human_data_file):
          human_data = load_json_file(human_data_file)
       else:
@@ -519,6 +582,14 @@ if __name__ == "__main__":
 
       
    else:
+
+      mdir = "/mnt/ams2/meteors/" + date + "/" 
+      ai_day_file = mdir + station_id + "_" + date + "_AI_SCAN.info"
+      if os.path.exists(ai_day_file):
+         ai_day_data = load_json_file(ai_day_file)
+      else:
+         ai_day_data = {}
+
       #load_meteors_for_day(date, station_id)
       machine_data_file = "/mnt/ams2/datasets/" + station_id + "_ML_DATA.json"
       #human_data_file = "/mnt/ams2/datasets/human_data.json"
@@ -527,9 +598,20 @@ if __name__ == "__main__":
       else:
          machine_data = {}
 
-      roi_files = load_meteors_for_day(date, station_id)
+      roi_files, ai_day_data = load_meteors_for_day(date, station_id)
       for roi_file in roi_files:
-         predict_class = predict_image(roi_file, model)
+         print(roi_file)
+         roi_fn = roi_file.split("/")[-1]
+         predict_top3 = predict_image(roi_file, model)
+         predict_class, confidence = predict_top3[0] 
+         predict_class2, confidence2 = predict_top3[1] 
+         predict_class3, confidence3 = predict_top3[2] 
+
+
+         if roi_fn not in ai_day_data:
+            ai_day_data[roi_fn] = {}
+         ai_day_data[roi_fn]['predict_top3'] = predict_top3 
+
 
          tdir = data_dir + predict_class + "/"
          roi_fn = roi_file.split("/")[-1]
@@ -543,6 +625,7 @@ if __name__ == "__main__":
          print(roi_file, predict_class)
          machine_data[roi_fn] = predict_class
       save_json_file(machine_data_file, machine_data)
+      save_json_file(ai_day_file, ai_day_data)
       print("saved:", machine_data_file)
 
 

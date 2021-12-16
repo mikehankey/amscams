@@ -1,4 +1,5 @@
 import glob
+import cv2
 import os
 from lib.PipeAutoCal import fn_dir
 from FlaskLib.Pagination import get_pagination
@@ -6,13 +7,243 @@ from flask import Flask, request
 from FlaskLib.FlaskUtils import get_template, make_default_template
 import time
 import glob
-from lib.PipeUtil import load_json_file, save_json_file, cfe
+from lib.PipeUtil import load_json_file, save_json_file, cfe, bound_cnt_new, calc_dist
+
 from lib.PipeAutoCal import fn_dir
 
 TEST = """
       /*
       */
 """
+
+def learn_main(station_id):
+
+   machine_data_file = "/mnt/ams2/datasets/" + station_id + "_ML_DATA.json"
+   human_data_file = "/mnt/ams2/datasets/" + station_id + "_human_data.json"
+   ai_summary_file = "/mnt/ams2/datasets/" + station_id + "_AI_SUMMARY.json"
+   obs_ids_file = "/mnt/ams2/meteors/" + station_id + "_OBS_IDS.json"
+   if os.path.exists(machine_data_file) is False:
+      machine_data = {}
+   else:
+      machine_data = load_json_file(machine_data_file)
+   if os.path.exists(human_data_file) is False:
+      human_data = {}
+   else:
+      human_data = load_json_file(human_data_file)
+   if os.path.exists(obs_ids_file) is False:
+      obs_ids = {}
+   else:
+      obs_ids = load_json_file(human_data_file)
+   if os.path.exists(ai_summary_file) is False:
+      ai_sum = {}
+   else:
+      ai_sum = load_json_file(ai_summary_file)
+   out = ""
+   for key in ai_sum:
+      out += key + " " + str(ai_sum[key]) +  "<br>"
+   print(ai_summary_file)
+   print("MD:", len(machine_data)) 
+   print("HD:", len(human_data)) 
+   print("OBS IDS:", len(obs_ids)) 
+
+   return(out)
+
+def learning_review_day(station_id, review_date):
+   header = """
+<!doctype html>
+<html lang="en">
+        <head>
+
+                <style>
+                        @import url("https://cdn.jsdelivr.net/npm/bootstrap-icons@1.4.1/font/bootstrap-icons.css");
+                        @import url("https://cdn.datatables.net/1.10.25/css/jquery.dataTables.min.css");
+                </style>
+                <noscript><meta http-equiv="refresh" content="0; url=/no-js.html" /></noscript>
+
+
+      <!-- Required meta tags -->
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1">
+      <title>AllSky.com </title>
+               <script src="https://cdn.plot.ly/plotly-2.2.0.min.js"></script>
+
+      <script src="https://kit.fontawesome.com/25faff154f.js" crossorigin="anonymous"></script>
+      <!-- Bootstrap CSS -->
+      <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-eOJMYsd53ii+scO/bJGFsiCZc+5NDVN2yr8+0RDqr0Ql0h+rP48ckxlpbzKgwra6" crossorigin="anonymous">
+      <link rel="alternate" type="application/rss+xml" title="RSS 2.0" href="https://www.datatables.net/rss.xml">
+      <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+      <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/js/bootstrap.bundle.min.js" integrity="sha384-JEW9xMcG8R+pH31jmWH6WWP0WintQrMb4s7ZOdauHnUtxwoG2vI5DkLtS3qm9Ekf" crossorigin="anonymous"></script>
+      <script type="text/javascript" language="javascript" src="https://cdn.datatables.net/1.10.24/js/jquery.dataTables.min.js"></script>
+
+      <script>
+
+      all_classes = ['meteor', 'cloud', 'bolt', 'cloud-moon', 'cloud-rain',  'tree', 'plane', 'car-side', 'satellite', 'crow', 'bug','chess-board','question']
+      labels = ['meteor', 'cloud', 'lightening', 'cloud-moon', 'rain', 'tree', 'plane', 'car-side', 'satellite', 'bird', 'firefly','noise','notsure']
+
+
+      function click_review_button() {
+         $(".selected" ).each(function( index ) {
+            console.log( index + ": " + this.id );
+         });
+      }
+
+      function click_icon(icon_type, resource_id) {
+           for (var i in all_classes) {
+              var tdiv_id = "#reclass_" + all_classes[i] + "_" + resource_id
+              console.log(i, tdiv_id)
+              $(tdiv_id).attr('style', 'color: #cdcdcd !important; padding: 2px; ');
+           }
+           // set the icon for the
+           var div_id = "#" + icon_type + "_" + resource_id
+           console.log(i, tdiv_id)
+           if (icon_type == "reclass_meteor") {
+              $(div_id).attr('style', 'color: lime !important;padding: 2px');
+           }
+           else {
+              $(div_id).attr('style', 'color: red !important;padding: 2px');
+           }
+           // write the detection to the jobs/local edits storage list
+      }
+      </script>
+
+   """
+   ai_file = "/mnt/ams2/meteors/" + review_date + "/" + station_id + "_" + review_date + "_AI_SCAN.info"
+   msvdir = "/METEOR_SCAN/" + review_date + "/"
+   ai_data = load_json_file(ai_file)
+   out_nm = ""
+   out = ""
+   for fn in ai_data:
+      resource_id = fn.replace("-ROI.jpg", "")
+      img = "<img id='" + resource_id + "' width=180 height=180 src=" + msvdir + fn + ">"
+      if "predict_top3" in ai_data[fn]:
+         top3 = ai_data[fn]['predict_top3'] 
+         pclass1 = top3[0][0]
+         el = pclass1.split("_")
+         if len(el) > 0: 
+            main_class = pclass1.split("_")[0]
+         if len(el) > 1: 
+            sub_class = el[1]
+         else:
+            sub_class = ""
+
+         pconf1 = top3[0][1]
+         desc = main_class + " " + str(pconf1) + "%" 
+      else:
+         desc = "not scanned"
+      buttons = make_buttons(fn,main_class)
+      desc = buttons
+      if "meteor" in pclass1:
+         out += "<div style='margin: 5px; float: left'>" + img + "<br>" + desc + "</div>\n"
+      else:
+         out_nm += "<div style='margin: 5px; float: left'>" + img + "<br>" + desc + "</div>\n"
+   final_out = header 
+   review_button = """
+      <button onclick="javascript: click_review_button()">Review Button</button>
+   """
+   final_out += review_button
+   final_out += "<h1>Non-Meteor Detections?</h1>\n"
+   final_out += "<p>The AI has a classified the following detections as NON-meteors. These detections will not be included in the archives unless they are part of a multi-station event OR human confirmed. </p>\n" + out_nm
+   final_out += "<div style='clear: both'></div>"
+   final_out += "<p> &nbsp; </p><h1>Meteor AI Confirmed Detections</h1>\n"
+   final_out += "<p>The AI has classified the following detections as meteors. These detects will be archived as meteors. Please remove non-meteor detections that are mis-classified. </p>\n" + out
+
+
+   return(final_out)
+
+def make_buttons(roi_file=None, selected=None):
+   icons = ['meteor', 'cloud', 'bolt', 'cloud-moon', 'cloud-rain',  'tree', 'plane', 'car-side', 'satellite', 'crow', 'bug','chess-board','question']
+   labels = ['meteor', 'cloud', 'lightening', 'cloud-moon', 'rain', 'tree', 'plane', 'car-side', 'satellite', 'bird', 'firefly','noise','notsure']
+   color = "#000000"
+   resource_id = roi_file.replace("-ROI.jpg", "")
+   buttons = "<table width=180><tr><td>"
+   for i in range(0,len(icons)):
+      icon = icons[i]
+      label = labels[i]
+      if selected == label and selected == "meteor":
+         color = "lime" 
+         extra_class = "selected"
+      elif selected == label :
+         color = "#ff0000" 
+         extra_class = "selected"
+         print("SL", selected, label, color)
+      else:
+         print("NOT SL", selected, label, color)
+         extra_class = "not_selected"
+         color = "#cdcdcd" 
+      buttons += """
+         <a href="javascript:click_icon('reclass_{:s}', '{:s}')"><i style="padding: 2px; color: {:s}" class="fas fa-{:s} icon-link {:s}" title="{:s}" id="reclass_{:s}_{:s}"></i></a> 
+      """.format(label, resource_id , color, icon, extra_class, label, label, resource_id)
+   buttons += "</td></tr></table>"
+   return(buttons)
+
+def recrop_roi(station_id, stack_fn, div_id, click_x, click_y,size=150,margin=.2):
+
+   from Classes.ASAI import AllSkyAI
+   # remake the ROI based on the filename and center click x,y
+   stack_file = "/mnt/ams2/meteors/" + stack_fn[0:10] + "/" + stack_fn
+   roi_file = "/mnt/ams2/METEOR_SCAN/" + stack_fn[0:10] + "/" + station_id + "_" + stack_fn.replace("-stacked.jpg", "-ROI.jpg")
+   roi_url = "/METEOR_SCAN/" + stack_fn[0:10] + "/" + station_id + "_" + stack_fn.replace("-stacked.jpg", "-ROI.jpg?" + str(click_x))
+   print("STATION_ID", station_id)
+   ASAI = AllSkyAI()
+   (img, img_gray, img_thresh, img_dilate, avg_val, max_val, thresh_val) = ASAI.ai_open_image(stack_file)
+   img_dilate = cv2.resize(img_dilate,(1920,1080))
+   cnts = ASAI.get_contours(img_dilate)
+
+   stack_img = cv2.resize(img, (640,360))
+   hd_stack_img = cv2.resize(img, (1920,1080))
+
+   hdm_x = 1920 / 640 
+   hdm_y = 1080 / 360
+   click_x = int(click_x*hdm_x)
+   click_y = int(click_y*hdm_y)
+
+   cdist = 9999
+   for x,y,w,h in cnts:
+      cx = x + (w/2)
+      cy = y + (h/2)
+      dist = calc_dist((click_x, click_y),(cx,cy))
+      print("CNT:", click_x, click_y, cx,cy, cdist, dist)
+      cv2.rectangle(img_dilate, (x,y), (x+w, y+h) , (255, 255, 255), 1)
+      if dist < cdist:
+         cdist = dist
+         best_cnt = [x,y,w,h] 
+   
+   x,y,w,h = best_cnt   
+   cv2.rectangle(img_dilate, (x,y), (x+w, y+h) , (0, 255, 255), 1)
+   cv2.imwrite("/mnt/ams2/test33.jpg", img_dilate)
+
+   if w > h:
+      size = int(w )
+   else:
+      size = int(h )
+   cx = x + (w/2)
+   cy = y + (h/2)
+   size = int(size * .8)
+   if size < 150:
+      size = 150
+   x1 = int(cx - int(size / 2))
+   x2 = int(cx + int(size / 2))
+   y1 = int(cy - int(size / 2))
+   y2 = int(cy + int(size / 2))
+   print(x1,y1,x2,y2)
+   x1, y1, x2, y2 = bound_cnt_new(x1,y1,x2,y2,hd_stack_img,.25)
+   print(x1,y1,x2,y2)
+   print("W:", x2 - x1)
+   print("H:", y2 - y1)
+   roi_img = hd_stack_img[y1:y2,x1:x2]
+   print("SAVING:", roi_file)
+   cv2.imwrite(roi_file, roi_img)
+   resp = {}
+   resp['msg'] = "OK"
+   resp['div_id'] = div_id 
+   resp['roi_url'] = roi_url 
+   print(x1,y1,x2,y2)
+
+
+
+
+
+   return(resp)
 
 def learn_footer(url, items, cur_page, ipp):
    nav = """
@@ -57,14 +288,35 @@ def js_learn_funcs():
 
    $(document).ready(function() {
     $("img").on("click", function(event) {
-        var x = event.pageX - this.offsetLeft;
-        var y = event.pageY - this.offsetTop;
-        alert("X Coordinate: " + x + " Y Coordinate: " + y);
+        //var id = this.data("id");
+        //alert(id)
+        //var x = event.pageX - this.offsetLeft;
+        //var y = event.pageY - this.offsetTop;
+        //alert("X Coordinate: " + x + " Y Coordinate: " + y);
+
     });
    });
-   function click_pic(event) {
-       alert(event)
+   function make_trash_icons(roi_file, size, color) {
+      trash_icons = `
+        <a href="javascript:click_icon('reclass_meteor', '` + roi_file + `')">
+            <i style="padding: 5px; color: ` + color + `; font-size: ` + size + `px;"
+               class="fas fa-meteor" title="confirm meteor" id="reclass_meteor_roi_file"></i>
+        </a>
+        <a href="javascript:click_icon('reclass_trash', '` + roi_file + `')">
+            <i style="padding: 5px; color: ` + color + `; font-size: ` + size + `px;"
+               class="bi bi-trash" title="non-meteor" id='reclass_nonmeteor_` + roi_file + `'></i>
+        </a>
+        <a href="javascript:click_icon('expand', '` + roi_file + `')">
+            <i style="padding: 5px; color: ` + color + `; font-size: ` + size + `px;"
+               class="bi bi-arrows-fullscreen" title="expand" id='expand_` + roi_file + `'></i>
+        </a>
+      `
+   return (trash_icons)
    }
+
+
+
+
    function click_icon(cmd, roi_file) {
       div_id = "#" + roi_file.replace("-ROI.jpg", "")
       div_id = div_id.replace(/-/g, "")
@@ -81,15 +333,30 @@ def js_learn_funcs():
       $(div_id).css("height", "360px");
       $(div_id).css("background-size", "640px 360px");
       $(div_id).css("background-image", "url(" + stack_url + ")");
-      new_html = `<a href="#"><img class="ximg" width=640 height=360 src="` + stack_url + `" ismap></a>`
+      new_html = `<a href="#` + stack_fn + `"><img data-id="` + stack_fn + `" class="ximg" width=640 height=360 src="` + stack_url + `" ismap></a>`
 
 
       $(div_id).html(new_html)
 
       $("img").on("click", function(event) {
+        var id = $(this).data("id");
+        alert(id)
         var x = event.pageX - this.offsetLeft;
         var y = event.pageY - this.offsetTop;
         alert("X Coordinate: " + x + " Y Coordinate: " + y);
+        //api_data = "stack_fn=" + id + "click_x=" + x + "&click_y=" + y 
+        api_data = {}
+        api_data['cmd'] = "recrop_roi"
+        api_data['stack_fn'] = id
+        api_data['click_x'] = x
+        api_data['click_y'] = y
+        api_data['div_id'] = div_id
+        console.log(api_data)
+        api_url = "/LEARNING/" + station_id + "/RECROP/" 
+        alert(api_url)
+        method = "POST"
+        callAPI(api_url, method, api_data, callbackROI,error_callback)
+
       });
 
    }
@@ -131,8 +398,33 @@ def js_learn_funcs():
                         })
                 }
         }
+
+
+   function callbackROI(resp) {
+      alert(resp['roi_url'])
+      alert(resp['div_id'])
+      el = resp['roi_url'].split("/")
+      roi_file = el.at(-1)
+
+      controls = make_trash_icons(roi_file,"#FFFFFF","20") 
+      div_id = resp['div_id']
+      $(div_id).css("width", "180px");
+      $(div_id).css("height", "180px");
+      $(div_id).css("background-size", "180px 180px");
+      $(div_id).css("background-image", "url(" + resp['roi_url'] + ")");
+      new_html = controls
+       //`<a href="#` + stack_fn + `"><img data-id="` + stack_fn + `" class="ximg" width=150 height=150 src="` + stack_url + `" ismap></a>`
+
+
+      $(div_id).html(new_html)
+
+
+      console.log(resp)
+   }
+
  
    function callback(resp) {
+      alert(resp)
       console.log(resp)
    }
    function error_callback(resp) {
@@ -183,6 +475,8 @@ def js_learn_funcs():
 
 
 def meteor_ai_scan(in_data, json_conf):
+
+   rand = str(time.time())
    machine_data = load_json_file("/mnt/ams2/datasets/machine_data_meteors.json")
    human_data = load_json_file("/mnt/ams2/datasets/human_data.json")
 
@@ -247,7 +541,7 @@ def meteor_ai_scan(in_data, json_conf):
       div_id = div_id.replace("-", "")
       div_id = div_id.replace("_", "")
       out += """
-             <div id='""" + div_id + """' class="meteor_gallery" style="background-color: #000000; background-image: url('""" + crop_img + """?ad1'); background-repeat: no-repeat; background-size: 180px; width: 180px; height: 180px; border: 1px #000000 solid; float: left; color: #fcfcfc; margin:5px "> """ + controls + """ </div>
+             <div id='""" + div_id + """' class="meteor_gallery" style="background-color: #000000; background-image: url('""" + crop_img + """?""" + rand + """'); background-repeat: no-repeat; background-size: 180px; width: 180px; height: 180px; border: 1px #000000 solid; float: left; color: #fcfcfc; margin:5px "> """ + controls + """ </div>
       """
    out += "</div>"
 
@@ -260,6 +554,7 @@ def meteor_ai_scan(in_data, json_conf):
    
 
 def learning_meteors_dataset(amsid, in_data):
+
    rand = str(time.time())
    json_conf = load_json_file("../conf/as6.json")
    machine_data_file = "/mnt/ams2/datasets/machine_data_meteors.json"
@@ -386,9 +681,8 @@ def learning_meteors_dataset(amsid, in_data):
       date_str = orig_meteor[5:7]
       controls += date_str
      
-
       out += """
-             <div class="meteor_gallery" style="background-color: #000000; background-image: url('""" + crop_img + """?ad1'); background-repeat: no-repeat; background-size: 150px; width: 150px; height: 150px; border: 1px #000000 solid; float: left; color: #fcfcfc; margin:5px "> """ + controls + """ </div>
+             <div class="meteor_gallery" style="background-color: #000000; background-image: url('""" + crop_img + """?""" + rand + """'); background-repeat: no-repeat; background-size: 150px; width: 150px; height: 150px; border: 1px #000000 solid; float: left; color: #fcfcfc; margin:5px "> """ + controls + """ </div>
       """
    out += "</div>"
    extra_vars = "&"
