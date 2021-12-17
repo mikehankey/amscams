@@ -38,6 +38,12 @@ def load_my_model(model_file = None):
    return(model)
 
 def predict_image(imgfile, model):
+   firefly_months = ['6', '7', '8']
+   firefly_stations = ['AMS1', 'AMS7', 'AMS9', 'AMS15', 'AMS41', 'AMS42', 'AMS48']
+   fel = imgfile.split("_")
+   img_month = fel[2] 
+   station_id = fel[0] 
+
    #img = keras.utils.load_img(
    img = load_img(
       imgfile, target_size=(img_height, img_width)
@@ -69,6 +75,11 @@ def predict_image(imgfile, model):
    conf2 = int(100 * score[score_list[1]])
    conf3 = int(100 * score[score_list[2]])
 
+   if predicted_class_one == "fireflies" or predicted_class_one == "firefilies":
+      if img_month not in firefly_months:
+         predicted_class_one = "meteor_bright_dashed"
+      if station_id not in firefly_stations:
+         predicted_class_one = "meteor_bright_dashed"
 
    print("0", predicted_class,  int(100 * np.max(score)))
 
