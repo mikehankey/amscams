@@ -467,3 +467,46 @@ def mfd_roi(mfd=None, xs=None, ys=None, ex=0, ey=0):
       y2 = 1079
       y1 = 1079 - h
    return(x1,y1,x2,y2)
+
+
+def bound_cnt_new(x1,y1,x2,y2,img, margin=.5):
+   ih,iw = img.shape[:2]
+   rw = x2 - x1
+   rh = y2 - y1
+   if rw > rh:
+      rh = rw
+   else:
+      rw = rh
+   rw += int(rw )
+   rh += int(rh )
+   if rw >= ih or rh >= ih:
+      rw = int(ih*.95)
+      rh = int(ih*.95)
+   if rw < 100 or rh < 100:
+      rw = 100
+      rh = 100
+
+   cx = int((x1 + x2)/2)
+   cy = int((y1 + y2)/2)
+   nx1 = cx - int(rw / 2)
+   nx2 = cx + int(rw / 2)
+   ny1 = cy - int(rh / 2)
+   ny2 = cy + int(rh / 2)
+   if nx1 <= 0:
+      nx1 = 0
+      nx2 = rw
+   if ny1 <= 0:
+      ny1 = 0
+      ny2 = rh
+   if nx2 >= iw:
+      nx1 = iw-rw-1
+      nx2 = iw-1
+   if ny2 >= ih:
+      ny2 = ih-1
+      ny1 = ih-rh-1
+   if ny1 <= 0:
+      ny1 = 0
+   if nx1 <= 0:
+      nx1 = 0
+   print("NX", nx1,ny1,nx2,ny2)
+   return(nx1,ny1,nx2,ny2)
