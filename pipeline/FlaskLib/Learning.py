@@ -16,6 +16,38 @@ TEST = """
       */
 """
 
+def batch_update_labels(station_id, label_data):
+   update_data = {}
+   for row in label_data:
+      rel = row.split("_")
+      cmd = rel[0]
+      new_class = rel[1]
+      t_station_id = rel[2]
+      year = rel[3]
+      month = rel[4]
+      dom = rel[5]
+      date = year + "_" + month + "_" + dom 
+      fn = row.replace("reclass_" + new_class + "_", "")
+      if "-ROI.jpg" not in fn:
+         fn += "-ROI.jpg"
+      if date not in update_data:
+         update_data[date] = {}
+      update_data[date][fn] = new_class
+   for date in update_data:
+      print("UPDATE FILES ON THIS DAY:", date)
+      ai_data_file = "/mnt/ams2/meteors/" + date + "/" + station_id + "_" + date + "_AI_SCAN.info"
+      ai_data = load_json_file(ai_data_file)
+
+      for fn in update_data[date]:
+         print("UPDATE ", fn, " TO ", update_data[date][fn])
+         if fn in ai_data:
+            print("FOUND ", fn)
+            ai_data[fn]['human_label'] = update_data[date][fn]
+         else:
+            print("NOT FOUND ", fn)
+      save_json_file(ai_data_file, ai_data)
+   return("OK")
+
 def learn_main(station_id):
 
    machine_data_file = "/mnt/ams2/datasets/" + station_id + "_ML_DATA.json"
@@ -80,26 +112,116 @@ def learning_review_day(station_id, review_date):
       all_classes = ['meteor', 'cloud', 'bolt', 'cloud-moon', 'cloud-rain',  'tree', 'plane', 'car-side', 'satellite', 'crow', 'bug','chess-board','question']
       labels = ['meteor', 'cloud', 'lightening', 'cloud-moon', 'rain', 'tree', 'plane', 'car-side', 'satellite', 'bird', 'firefly','noise','notsure']
 
+      function click_mark_all_as(icon_type) {
+         $(".gal_img" ).each(function( index ) {
+           resource_id = this.id
+           for (var i in all_classes) {
+              var tdiv_id = "#reclass_" + labels[i] + "_" + resource_id
+              console.log("RESET:", i, tdiv_id)
+              $(tdiv_id).attr('style', 'color: #cdcdcd !important; padding: 2px; ');
+              if ($(tdiv_id).hasClass('selected')) {
+                 console.log("REMOVE SELECTED:", tdiv_id)
+                 $(tdiv_id).toggleClass('selected')
+              }
+           }
 
-      function click_review_button() {
-         $(".selected" ).each(function( index ) {
+           var tdiv_id = "#" + icon_type + "_" + resource_id
+           if (icon_type == "reclass_meteor") {
+              $(tdiv_id).toggleClass('selected')
+              $(tdiv_id).attr('style', 'color: lime !important;padding: 2px');
+           }
+           else {
+              $(tdiv_id).toggleClass('selected')
+              $(tdiv_id).attr('style', 'color: red !important;padding: 2px');
+           }
+
             console.log( index + ": " + this.id );
+            
          });
       }
 
+
+   // call : javascript:SwapDivsWithClick('div_id1','crop_img', 'vid_url',play_vid)
+   function callAPI(api_url, method, data, callback,error_callback) {
+                if (method == "GET") {
+                        $.ajax({
+                         url: api_url,
+                         type: method,
+                         dataType: "json",
+                         crossDomain: true,
+                         contentType: "application/json",
+
+                         success: function(response){
+                            callback(response)
+                         },
+                        error: function(response){
+                             error_callback(response)
+                         },
+                        })
+                }
+                if (method == "POST") {
+                        data = JSON.stringify(data)
+                        $.ajax({
+                         url: api_url,
+                         type: method,
+                         data: data,
+                         dataType: "json",
+                         crossDomain: true,
+                         contentType: "application/json",
+
+                         success: function(response){
+                            callback(response)
+                         },
+                         error: function(response){
+                             error_callback(response)
+                         },
+                        })
+                }
+        }
+
+      function click_save_tags(station_id) {
+         data = []
+
+         $(".selected" ).each(function( index ) {
+            data.push(this.id)
+         });
+         console.log(data)
+         alert("Saving data...")
+         api_url = "/LEARNING/" + station_id + "/BATCH_UPDATE/" 
+         alert(api_url)
+         method = "POST"
+         api_data = {}
+         api_data['label_data'] = data
+         callAPI(api_url, method, api_data, callbackBatchUpdate,error_callback)
+      }
+
+   function callbackBatchUpdate(resp) {
+      alert(resp)
+   }
+   function error_callback(resp) {
+      alert(resp)
+      console.log("ERROR" + resp)
+   }
+
       function click_icon(icon_type, resource_id) {
            for (var i in all_classes) {
-              var tdiv_id = "#reclass_" + all_classes[i] + "_" + resource_id
-              console.log(i, tdiv_id)
+              var tdiv_id = "#reclass_" + labels[i] + "_" + resource_id
+              console.log("RESET:", i, tdiv_id)
               $(tdiv_id).attr('style', 'color: #cdcdcd !important; padding: 2px; ');
+              if ($(tdiv_id).hasClass('selected')) {
+                 console.log("REMOVE SELECTED:", tdiv_id)
+                 $(tdiv_id).toggleClass('selected')
+              }
            }
            // set the icon for the
            var div_id = "#" + icon_type + "_" + resource_id
            console.log(i, tdiv_id)
            if (icon_type == "reclass_meteor") {
+              $(div_id).toggleClass('selected')
               $(div_id).attr('style', 'color: lime !important;padding: 2px');
            }
            else {
+              $(div_id).toggleClass('selected')
               $(div_id).attr('style', 'color: red !important;padding: 2px');
            }
            // write the detection to the jobs/local edits storage list
@@ -109,12 +231,20 @@ def learning_review_day(station_id, review_date):
    """
    ai_file = "/mnt/ams2/meteors/" + review_date + "/" + station_id + "_" + review_date + "_AI_SCAN.info"
    msvdir = "/METEOR_SCAN/" + review_date + "/"
-   ai_data = load_json_file(ai_file)
+   if os.path.exists(ai_file) is True:
+      ai_data = load_json_file(ai_file)
+   else:
+      ai_data = {}
    out_nm = ""
    out = ""
+
+   day_labels = labels_for_day(station_id, review_date, ai_data)
+
    for fn in ai_data:
       resource_id = fn.replace("-ROI.jpg", "")
-      img = "<img id='" + resource_id + "' width=180 height=180 src=" + msvdir + fn + ">"
+      img = "<img class='gal_img' id='" + resource_id + "' width=180 height=180 src=" + msvdir + fn + ">"
+      main_class = "notsure"
+      pclass1 = "notsure"
       if "predict_top3" in ai_data[fn]:
          top3 = ai_data[fn]['predict_top3'] 
          pclass1 = top3[0][0]
@@ -130,17 +260,24 @@ def learning_review_day(station_id, review_date):
          desc = main_class + " " + str(pconf1) + "%" 
       else:
          desc = "not scanned"
+      if "human_label" in ai_data[fn]:
+         main_class = ai_data[fn]['human_label']
       buttons = make_buttons(fn,main_class)
-      desc = buttons
+      desc = pclass1 + "<br>" + buttons
       if "meteor" in pclass1:
          out += "<div style='margin: 5px; float: left'>" + img + "<br>" + desc + "</div>\n"
       else:
          out_nm += "<div style='margin: 5px; float: left'>" + img + "<br>" + desc + "</div>\n"
    final_out = header 
    review_button = """
-      <button onclick="javascript: click_review_button()">Review Button</button>
+      <button onclick="javascript: click_save_tags('""" + station_id + """')">Save Tags</button>
    """
-   final_out += review_button
+
+   mark_all_button = """
+      <button onclick="javascript: click_mark_all_as('reclass_meteor')">Mark All As Meteor</button>
+   """
+
+   final_out += review_button + mark_all_button + day_labels
    final_out += "<h1>Non-Meteor Detections?</h1>\n"
    final_out += "<p>The AI has a classified the following detections as NON-meteors. These detections will not be included in the archives unless they are part of a multi-station event OR human confirmed. </p>\n" + out_nm
    final_out += "<div style='clear: both'></div>"
@@ -149,6 +286,29 @@ def learning_review_day(station_id, review_date):
 
 
    return(final_out)
+
+def labels_for_day (station_id, date, ai_data ):
+   cats = {}
+   for fn in ai_data:
+      resource_id = fn.replace("-ROI.jpg", "")
+      if "predict_top3" in ai_data[fn]:
+         top3 = ai_data[fn]['predict_top3'] 
+         pclass1 = top3[0][0]
+         el = pclass1.split("_")
+         if len(el) > 0: 
+            main_class = pclass1.split("_")[0]
+      else:
+         main_class = "not_scanned"
+      if main_class not in cats:
+         cats[main_class] = 1
+      else:
+         cats[main_class] += 1
+
+   html_nav = ""
+   for cat in cats:
+      html_nav += "<a href=/LEARNING/" + station_id + "/review?date=" + date + "&main_cat=" + cat + ">" + cat + " (" + str(cats[cat]) + ")</a> - "
+   return(html_nav) 
+
 
 def make_buttons(roi_file=None, selected=None):
    icons = ['meteor', 'cloud', 'bolt', 'cloud-moon', 'cloud-rain',  'tree', 'plane', 'car-side', 'satellite', 'crow', 'bug','chess-board','question']
@@ -399,6 +559,9 @@ def js_learn_funcs():
                 }
         }
 
+   function callbackBatchUpdate(resp) {
+      alert(resp)
+   }
 
    function callbackROI(resp) {
       alert(resp['roi_url'])

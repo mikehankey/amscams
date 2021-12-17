@@ -1,7 +1,7 @@
 import base64
 import os
 from flask import Flask, request, Response, make_response
-from FlaskLib.Learning import learning_meteors_dataset, learning_meteors_tag, meteor_ai_scan
+from FlaskLib.Learning import learning_meteors_dataset, learning_meteors_tag, meteor_ai_scan, recrop_roi, learn_main, learning_review_day, batch_update_labels
 from FlaskLib.motion_detects import motion_detects
 from FlaskLib.FlaskUtils import get_template
 from FlaskLib.api_funcs import update_meteor_points, show_cat_stars, delete_meteor, restore_meteor, delete_meteors, reduce_meteor, delete_frame, crop_video
@@ -473,6 +473,7 @@ def rmeteors(amsid ):
    meteor_per_page = request.args.get('meteor_per_page')
    sort_by = request.args.get('sort_by')
    filterd = request.args.get('filter')
+   ai_list = request.args.get('ai_list')
    p = request.args.get('p')
 
    req['start_day'] = start_day
@@ -481,6 +482,7 @@ def rmeteors(amsid ):
    req['p'] = p
    req['sort_by'] = sort_by 
    req['filter'] = filterd
+   req['ai_list'] = ai_list
 
    out = meteors_main_redis(amsid,req, json_conf)
 
@@ -496,6 +498,7 @@ def meteors(amsid ):
    meteor_per_page = request.args.get('meteor_per_page')
    sort_by = request.args.get('sort_by')
    filter = request.args.get('filter')
+   ai_list = request.args.get('ai_list')
    p = request.args.get('p')
 
    req['start_day'] = start_day
@@ -504,6 +507,7 @@ def meteors(amsid ):
    req['p'] = p
    req['sort_by'] = sort_by 
    req['filter'] = filter
+   req['ai_list'] = ai_list
    out = meteors_main(amsid,req)
 
    return out
@@ -523,6 +527,37 @@ def meteor_detail_page(amsid, date, meteor_file):
    out = detail_page(amsid, date, meteor_file )
    return out
 
+@app.route('/LEARNING/<amsid>/', methods=['GET', 'POST'])
+@auth.login_required
+def lrn_main(amsid):
+   out = learn_main(amsid)
+   return(out)
+
+@app.route('/LEARNING/<amsid>/BATCH_UPDATE/', methods=['GET', 'POST'])
+@auth.login_required
+def lrn_batch_up(amsid):
+   jdata = request.get_json()
+   label_data = jdata['label_data']
+   print(label_data) 
+   out = batch_update_labels(amsid, label_data)
+   out = "OK"
+   return(out)
+
+
+
+@app.route('/LEARNING/<amsid>/RECROP/', methods=['GET', 'POST'])
+@auth.login_required
+def lrn_recrop(amsid):
+   jdata = request.get_json()
+   stack_fn = jdata['stack_fn']
+   div_id = jdata['div_id']
+   click_x = jdata['click_x']
+   click_y = jdata['click_y']
+   print("DATA", amsid, stack_fn, div_id, click_x, click_y)
+   out = recrop_roi(amsid, stack_fn, div_id, click_x, click_y)
+   return(out)
+
+
 @app.route('/LEARNING/<ams_id>/AI_SCAN/<label>', methods=['GET', 'POST'])
 @auth.login_required
 def lrn_ai_scan(ams_id, label):
@@ -541,6 +576,16 @@ def lrn_ai_scan(ams_id, label):
    req['label'] = label 
    out = meteor_ai_scan(req, json_conf)
    return out
+
+
+@app.route('/LEARNING/<amsid>/review/', methods=['GET', 'POST'])
+@auth.login_required
+def lrn_review(amsid):
+   req = {}
+   req['date'] = request.args.get('date')
+   out = learning_review_day(amsid, req['date'])
+   return out
+
 
 @app.route('/LEARNING/TAG/<label>', methods=['GET', 'POST'])
 @auth.login_required
