@@ -36,6 +36,10 @@ def scan_meteors_for_day(station_id, date):
    print("NON REDUCED METEORS:", len(non_reduced_files))
    print("AI DATA:", len(ai_data.keys()))
    print("AI DATA KEYS:", ai_data.keys())
+   for mfile in non_reduced_files:
+      print(mfile)
+      ai_data[mfile] = {} 
+   exit()
    for roi_f in roi_files:
       roi_fn = roi_f.split("/")[-1]
       #print(key, ai_data[key])
