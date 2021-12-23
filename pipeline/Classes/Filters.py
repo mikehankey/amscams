@@ -71,7 +71,6 @@ class Filters():
             if last_x_dir != x_dir and last_x_dir is not None and x_dir != 0:
                 change_x += 1
             last_x_dir = x_dir
-         print(x_dir, last_x_dir, change_x )
          last_x = x
       for y in obj['oys']:
          if last_y is not None:
@@ -87,7 +86,6 @@ class Filters():
             if last_y_dir != y_dir and last_y_dir is not None and y_dir != 0:
                 change_y += 1
             last_y_dir = y_dir
-         print(y_dir, last_y_dir, change_y)
          last_y = y
       tchange = (change_x + change_y) / 2
       if tchange > 0:
@@ -95,8 +93,6 @@ class Filters():
       else:
          perc_change = 0
       frames_left  = len(obj['oxs']) - tchange
-      print("DIR CHANGE %:", perc_change)
-      print("FRAMES LEFT%:", frames_left)
       status = 1
       if perc_change > .4:
          status = 0
@@ -111,7 +107,6 @@ class Filters():
       pos_segs = []
       neg_segs = 0
       for seg in segs:
-         print("SEG:", seg)
          if seg > 0:
             pos_segs.append(seg)
          else:

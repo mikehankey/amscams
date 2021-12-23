@@ -402,7 +402,8 @@ class EventRunner():
       fp.write(obs_report)
       fp.write(str(event))
       fp.close()
-      exit()
+
+      #exit()
       #get_obs(station_id, sd_video_file):
       #event = self.do_planes_for_event(event, redo=1)
       self.coin_events[event_id] = event

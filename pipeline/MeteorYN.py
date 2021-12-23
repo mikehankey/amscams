@@ -1,7 +1,10 @@
 from Classes.ASAI import AllSkyAI 
+import subprocess
+import shutil
 import glob
 import cv2
-from lib.PipeUtil import mfd_roi , load_json_file
+#from lib.PipeUtil import mfd_roi , load_json_file
+from Lib.Utils import load_json_file, save_json_file
 import os
 import sys
 ASAI = AllSkyAI()
@@ -12,21 +15,99 @@ ASAI.check_update_install()
 
 if len(sys.argv) == 1:
    print("NO ARGS PASSED IN!?")
-   wish = input("Do you want to run the command [M]enu or see the [H]elp list for supported arguments?")
+#   wish = input("Do you want to run the command [M]enu or see the [H]elp list for supported arguments?")
+
+
+ai_db_file = "ai_db.json"
+if os.path.exists(ai_db_file) is True:
+   ai_db = load_json_file(ai_db_file)
+else:
+   ai_db = {}
+
+if len(sys.argv) > 1:
+   run_label = sys.argv[1]
+else:
+   run_label = None
+
 
 if True:
+
+
+
    ASAI.load_all_models()
 
 
-   roi_dir = "/mnt/ams2/METEOR_SCAN/2021_12_14/"
-   roi_files = glob.glob(roi_dir + "*ROI.jpg") 
-   for roi_file in roi_files:
-      roi_fn = roi_file.split("/")[-1]
-      img = cv2.imread(roi_file)
-      resp = ASAI.meteor_yn(img)
-      resp['roi_file'] = roi_fn
-      print(resp)
+   main_dir = "D:/MRH/learning/WORK/re_train/"
+   review_dir = "D:/MRH/learning/WORK/review/"
+   labels = os.listdir(main_dir)
 
+   # start new process for each label type! 
+   #for label in labels:
+   #   if run_label is None:
+   #      cmd = "python MeteorYN.py " + label + " "
+   #      print(cmd)
+         #os.system(cmd)
+         #subprocess.Popen(["python", "MeteorYN.py", "label"]) 
+         #exit()
+
+   tc = 0
+   if run_label is not None:
+      labels = [run_label]
+
+   for label in labels:
+      roi_dir = "D:/MRH/learning/WORK/re_train/" + label + "/"
+      roi_files = glob.glob(roi_dir + "*ROI.jpg") 
+      for roi_file in roi_files:
+         if roi_file in ai_db:
+            print("SKIP DONE!")
+            #continue
+         if "\\" in roi_file:
+            roi_file = roi_file.replace("\\", "/")
+         roi_fn = roi_file.split("/")[-1]
+
+         #img = cv2.imread(roi_file)
+         #resp = ASAI.meteor_yn(roi_file, img)
+         resp = ASAI.meteor_yn(roi_file)
+         print(resp)
+         confidence = resp['mc_confidence'] 
+
+         print("CONFIDENCE:", confidence)
+         if resp is None:
+            print("BAD FILE???:", roi_file)
+            continue
+         resp['roi_file'] = roi_fn
+         file1 = roi_file
+         ai_db[roi_fn] = resp
+         if resp['meteor_yn'] is True or resp['meteor_fireball_yn'] is True:
+            if "meteor" not in label:
+               print("DETECTED METEOR IN NON_METEOR DIR! MOVE IT OUT.")
+               file2 = review_dir + "non_meteor_meteor/" + roi_fn
+               os.rename(file1,file2)
+         if resp['meteor_yn'] is False and resp['meteor_fireball_yn'] is False and "meteor" in label:
+            print("FALSE METEOR INSIDE METEOR DIR. MOVE IT OUT.") 
+            file2 = review_dir + "meteor_non_meteor/" + roi_fn
+            os.rename(file1,file2)
+         else:
+            # copy to the high, mid or low confidence dirs.
+            if confidence >= 90:
+               file2 = file1.replace("re_train", "retrain_high")
+            elif 60 < confidence < 90:
+               file2 = file1.replace("re_train", "retrain_mid")
+            else:
+               file2 = file1.replace("re_train", "retrain_low")
+            rt_dir = file2.replace(roi_fn, "")
+            if os.path.exists(rt_dir) is False:
+               os.makedirs(rt_dir)
+            try:
+               shutil.copyfile(file1, file2)
+            except:
+               print("PROBLEM!?")
+               continue
+
+         if tc % 1000 == 0:
+            save_json_file(ai_db_file, ai_db)
+         tc += 1
+         print(label, resp)
 
 
 # OLDER TESTS STILL IMPORTANT!

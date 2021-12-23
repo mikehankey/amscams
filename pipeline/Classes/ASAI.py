@@ -2,6 +2,8 @@ import cv2
 import os
 import numpy as np
 from PIL import ImageFont, ImageDraw, Image, ImageChops
+
+#from lib.PipeUtil import load_json_file, save_json_file , get_file_info
 from lib.PipeUtil import load_json_file, save_json_file , get_file_info
 import tensorflow as tf
 import os
@@ -20,8 +22,14 @@ class AllSkyAI():
       self.meteor_dir = "/mnt/ams2/meteors/"
       self.meteor_scan_dir = "/mnt/ams2/METEOR_SCAN/"
       self.ai_data_dir = "/mnt/ams2/datasets/"
-      self.json_conf = load_json_file("../conf/as6.json")
-      self.station_id = self.json_conf['site']['ams_id']
+      if os.path.exists("../conf/as6.json") is True:
+         self.json_conf = load_json_file("../conf/as6.json")
+      else:
+         self.json_conf = None
+      if self.json_conf is not None:
+         self.station_id = self.json_conf['site']['ams_id']
+      else:
+         self.station_id = "AMSX"
       self.meteor_delete_file = self.ai_data_dir + self.station_id + "_METEOR_DELETE.json"
       self.machine_data_file = self.ai_data_dir + self.station_id + "_ML_DATA.json"
       self.human_data_file = self.ai_data_dir + self.station_id + "_human_data.json"
@@ -50,25 +58,46 @@ class AllSkyAI():
          self.ai_meteor_index = load_json_file(self.ai_meteor_index_file)
       else:
          self.ai_meteor_index = {}
-      self.class_names = [
-         'birds',
-         'bugs',
-         'cars',
-         'clouds',
-         'meteors_bright',
-         'meteors_faint',
-         'meteors_fireballs',
-         'meteors_long',
-         'meteors_medium',
-         'meteors_short',
-         'moon',
-         'noise',
-         'planes',
-         'raindrops',
-         'stars',
-         'trees'
-      ]
+      temp = load_json_file("labels.json")
+      self.class_names = temp['labels']
       self.class_names = sorted(self.class_names)
+
+   def check_update_install(self):
+      # does the AI File exist? If not then we are not at the v1.0 update yet! Do what is needed.
+      ai_conf_file = "../conf/ai_conf.json"
+      update_needed = False
+      if os.path.exists(ai_conf_file) is False:
+         ai_conf = {}
+      else:
+         ai_conf = load_json_file(ai_conf_file)
+      if "version" not in ai_conf:
+         update_needed = True
+
+      if update_needed is True:
+         # make sure we have the latest model versions
+         ai_conf['version'] = 1
+         cmd = "cp /mnt/archive.allsky.tv/AMS1/ML/*.h5 ./"
+         print(cmd)
+         os.system(cmd)
+
+
+      # make python3.6 and tensor flow is installed!  
+      if 'tf_installed' not in ai_conf:
+         cmd = "echo 'INSTALL TENSOR FLOW & PYTHON 3.6!'"
+         print(cmd)
+         os.system(cmd)
+         try:
+            import tensorflow
+            ai_conf['tf_installed'] = 1
+         except:
+            ai_conf['tf_installed'] = 0
+      else:
+         if ai_conf['tf_installed'] == 1:
+            print("Tensor flow is installed.")
+         else:
+            print("PROBLEM: Tensor flow is NOT installed.")
+      save_json_file(ai_conf_file, ai_conf)
+
 
    def load_config(self):
       print("Loading AllSkyAI config...")
@@ -87,6 +116,32 @@ class AllSkyAI():
 
    def stop_server_process(self):
       print("Stopping AllSkyAI server...")
+
+   def load_all_models(self):
+      """
+         3 Primary Models Currently:
+            meteor_yn_model.h5
+            meteor_fireball_yn_model.h5
+            multi_class_model.h5
+      """
+      self.model_meteor_yn = Sequential()
+      self.model_meteor_fireball_yn = Sequential()
+      self.model_multi_class = Sequential()
+
+      self.model_meteor_yn =load_model('meteor_yn_model.h5')
+      self.model_meteor_yn.compile(loss='binary_crossentropy',
+              optimizer='rmsprop',
+              metrics=['accuracy'])
+
+      self.model_meteor_fireball_yn =load_model('meteor_fireball_yn_model.h5')
+      self.model_meteor_fireball_yn.compile(loss='binary_crossentropy',
+              optimizer='rmsprop',
+              metrics=['accuracy'])
+
+      self.model_multi_class =load_model("multi_class_model.h5")
+      self.model_multi_class.compile(loss='categorical_crossentropy',
+         optimizer='rmsprop',
+         metrics=['accuracy'])
 
    def load_my_model(self, model_file = None):
       if model_file is None:
@@ -115,8 +170,105 @@ class AllSkyAI():
 
       score = tf.nn.softmax(predictions[0])
       predicted_class = self.class_names[np.argmax(score)]
-      print("CLASS:", np.argmax(score), predicted_class)
       return(predicted_class)
+
+
+   def predict_yn(self,oimg,model,size):
+      imgfile = "temp.jpg"
+      oimg = cv2.resize(oimg,(150,150))
+      cv2.imwrite(imgfile, oimg)
+      img = oimg.copy()
+      img = cv2.resize(img,(128,128))
+      img = np.reshape(img,[1,128,128,3])
+      img_size = [128,128]
+
+      img = load_img(imgfile, target_size = img_size)
+      img = img_to_array(img).astype(np.float32)
+      img /= 255.
+      img = np.expand_dims(img, axis = 0)
+
+      # check meteor yn
+      pred_yn_class = model.predict(img)
+      if pred_yn_class[0][0] > .5:
+         # NON METEOR DETECTED!
+         pred_yn = False 
+      else:
+         # METEOR DETECTED
+         pred_yn = True 
+      return(pred_yn)
+
+
+   def meteor_yn(self,roi_file=None,oimg=None):
+      # FOR METEOR Y/N PREDICT AND FIREBALL PREDICT!
+      if roi_file is not None:
+         oimg = cv2.imread(roi_file)
+         imgfile = roi_file
+      else:
+         imgfile = "temp.jpg"
+
+
+      try:
+         oimg = cv2.resize(oimg,(150,150))
+      except:
+         return(None)
+      if roi_file is None:
+         imgfile = "temp.jpg"
+         cv2.imwrite(imgfile, oimg)
+      img = oimg.copy()
+      img = cv2.resize(img,(128,128))
+      img = np.reshape(img,[1,128,128,3])
+      img_size = [128,128]
+      #img = keras.preprocessing.image.load_img(imgfile, target_size = img_size)
+      #img = keras.preprocessing.image.img_to_array(img).astype(np.float32)
+
+      img = load_img(imgfile, target_size = img_size)
+      img = img_to_array(img).astype(np.float32)
+      img /= 255.
+      img = np.expand_dims(img, axis = 0)
+
+      # check meteor yn
+      meteor_yn_class = self.model_meteor_yn.predict(img)
+      meteor_yn_confidence = meteor_yn_class[0][0]
+      if meteor_yn_class[0][0] > .5:
+         # NON METEOR DETECTED!
+         meteor_yn = False 
+      else:
+         # METEOR DETECTED
+         meteor_yn = True 
+
+      # check fireball yn
+      fireball_yn_class = self.model_meteor_fireball_yn.predict(img)
+      meteor_fireball_yn_confidence = fireball_yn_class[0][0]
+      if fireball_yn_class[0][0] > .5:
+         # NON METEOR DETECTED!
+         meteor_fireball_yn = False 
+      else:
+         # METEOR DETECTED
+         meteor_fireball_yn = True 
+
+      # check multi class
+      mc_w = 150
+      mc_h = 150
+      mc_img = load_img(
+         imgfile, target_size=(mc_h, mc_w)
+      )
+      img_array = img_to_array(mc_img)
+      img_array = tf.expand_dims(img_array, 0) # Create a batch
+
+      predictions = self.model_multi_class.predict(img_array)
+
+      score = tf.nn.softmax(predictions[0])
+      predicted_class = self.class_names[np.argmax(score)]
+
+      response = {}
+      response['meteor_yn'] = meteor_yn
+      response['meteor_yn_confidence'] = float(meteor_yn_confidence)
+      response['meteor_fireball_yn'] = meteor_fireball_yn
+      response['meteor_fireball_yn_confidence'] = float(meteor_fireball_yn_confidence)
+      response['mc_class'] = predicted_class
+      print("MAX SCORE:", np.max(score))
+      response['mc_confidence'] = int(100 * np.max(score))
+      return(response)
 
 
    def detect_objects_in_stack(self, stack_file):
@@ -325,3 +477,7 @@ class AllSkyAI():
 
    def save_files(self):
       save_json_file(self.machine_data_file, self.machine_data)
+
+   def predict_meteor_yn(self,img_file, model=None):
+      if model is None:
+         model = "meteor_yn_model.h5"

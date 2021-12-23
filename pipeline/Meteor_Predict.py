@@ -27,14 +27,14 @@ def check_roi(roi_img, roi_file):
    mjrf = meteor_file.replace(".json", "-reduced.json")
    stack_file = mjrf.replace("-reduced.json", "-stacked.jpg")
    if os.path.exists(mdir + mjrf) is False:
-      print("NO FILE:", mdir + mjrf)
+      #print("NO FILE:", mdir + mjrf)
       return()
    mjr = load_json_file(mdir + mjrf)
    if "meteor_frame_data" not in mjr:
-      print("NO MFD!")
+      #print("NO MFD!")
       return()   
    if len(mjr['meteor_frame_data']) == 0:
-      print("0 FRAME MFD!")
+      #print("0 FRAME MFD!")
       return()   
    x1,y1,x2,y2 = mfd_roi(mjr['meteor_frame_data'])
 
@@ -47,7 +47,7 @@ def check_roi(roi_img, roi_file):
    thresh_val = max_val * .7
    _, thresh_img = cv2.threshold(gray.copy(), thresh_val, 255, cv2.THRESH_BINARY)
    cv2.imwrite("/mnt/ams2/test.jpg", thresh_img)
-   print("MAX VAL:", max_val)
+   #print("MAX VAL:", max_val)
    if True:
       xs = []
       ys = []
@@ -74,19 +74,19 @@ def check_roi(roi_img, roi_file):
    x_right_margin = w - max_x 
    y_top_margin = min_y
    y_bottom_margin = h - max_y 
-   print("MARGIN X:", x_left_margin, x_right_margin)
-   print("MARGIN Y:", y_top_margin, y_bottom_margin)
-   print("CONT:", conts)
+   #print("MARGIN X:", x_left_margin, x_right_margin)
+   #print("MARGIN Y:", y_top_margin, y_bottom_margin)
+   #print("CONT:", conts)
    if x_left_margin >= 10 and x_right_margin >= 10 and y_top_margin > 10 and y_bottom_margin > 10:
-      print("ROI MARGINS GOOD!")
+    #  print("ROI MARGINS GOOD!")
       if "trim-0308" in roi_file:
-         print("ROI:", roi_file)
+         #print("ROI:", roi_file)
          exit()
       
       return(roi_img)
    else:
-      print("ROI MARGIN IS TOO SMALL!")
-      print("ORG X1,Y1,X2,Y2:", x1,y1,x2,y2)
+      #print("ROI MARGIN IS TOO SMALL!")
+      #print("ORG X1,Y1,X2,Y2:", x1,y1,x2,y2)
       ex = int(w * .25)
       ey = int(h * .25)
       if ex >= ey:
@@ -94,18 +94,16 @@ def check_roi(roi_img, roi_file):
       else:
          ex = ey
       x1,y1,x2,y2 = mfd_roi(mjr['meteor_frame_data'], None, None, ex, ey)
-      print("EX EY:", ex, ey)
-      print("NEW X1,Y1,X2,Y2:", x1,y1,x2,y2)
+      #print("EX EY:", ex, ey)
+      #print("NEW X1,Y1,X2,Y2:", x1,y1,x2,y2)
       # Add a buffer of 25 px to the MFD and remake the x1,y1
-      print("READ ", mdir +stack_file)
+      #print("READ ", mdir +stack_file)
       img = cv2.imread(mdir + stack_file)
       img = cv2.resize(img, (1920,1080))
       roi_img = img[y1:y2,x1:x2]
       cv2.imwrite("/mnt/ams2/test2.jpg", roi_img)
-      print("SAVED NEW ROI FILE")
+      #print("SAVED NEW ROI FILE")
       cv2.imwrite(roi_file, roi_img)
-      if "trim-0296" in roi_file:
-         print("ROI:", roi_file)
 
       #cv2.imwrite(learning_file, roi_img)
       return(roi_img)
