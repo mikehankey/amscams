@@ -148,7 +148,7 @@ class AllSkyAI():
          model_file = "multi_class_model.h5"
 
       model = Sequential()
-      print("MF:", model_file)
+      #print("MF:", model_file)
       model =load_model(model_file)
       model.compile(loss='categorical_crossentropy',
          optimizer='rmsprop',
@@ -210,6 +210,7 @@ class AllSkyAI():
       try:
          oimg = cv2.resize(oimg,(150,150))
       except:
+         print("BAD IMAGE!", roi_file)
          return(None)
       if roi_file is None:
          imgfile = "temp.jpg"
@@ -266,10 +267,27 @@ class AllSkyAI():
       response['meteor_fireball_yn'] = meteor_fireball_yn
       response['meteor_fireball_yn_confidence'] = float(meteor_fireball_yn_confidence)
       response['mc_class'] = predicted_class
-      print("MAX SCORE:", np.max(score))
       response['mc_confidence'] = int(100 * np.max(score))
       return(response)
 
+   def format_response(self, resp):
+      descs = []
+      color = [128,128,128]
+      if resp is not None:
+         if resp['meteor_yn'] is True:
+            desc = "Meteor "  + str((1 - resp['meteor_yn_confidence']) * 100)[0:4] + "%"
+            color = (0,255,0)
+         else:
+            desc = "Non Meteor "  + str((1 - resp['meteor_yn_confidence']) * 100)[0:4] + "%"
+            color = (0,0,255)
+            if resp['meteor_fireball_yn'] is True:
+               desc = "Fireball Meteor "  + str((1 - resp['meteor_fireball_yn_confidence']) * 100)[0:4] + "%"
+               color = (0,255,0)
+         desc2 = resp['mc_class']
+         desc2 += " " + str(resp['mc_confidence']) + "%"
+      return((desc,desc2),color)
+
+      
 
    def detect_objects_in_stack(self, stack_file):
       # open image, find max val, set thresh val, dilate, 
@@ -402,7 +420,7 @@ class AllSkyAI():
             continue
          mif = self.meteor_dir + mday + "/" + mday + "-" + self.station_id + ".meteors"
          if os.path.exists(mif):
-            print("found", mif)
+            #print("found", mif)
             data = load_json_file(mif)
             temp.extend(data)
          else:
@@ -481,3 +499,45 @@ class AllSkyAI():
    def predict_meteor_yn(self,img_file, model=None):
       if model is None:
          model = "meteor_yn_model.h5"
+
+   def bound_cnt(self, x1,y1,x2,y2,img, margin=.5):
+      ih,iw = img.shape[:2]
+      rw = x2 - x1
+      rh = y2 - y1
+      if rw > rh:
+         rh = rw
+      else:
+         rw = rh
+      rw += int(rw*margin )
+      rh += int(rh*margin )
+      if rw >= ih or rh >= ih:
+         rw = int(ih*.95)
+         rh = int(ih*.95)
+      if rw < 180 or rh < 180:
+         rw = 180
+         rh = 180
+
+      cx = int((x1 + x2)/2)
+      cy = int((y1 + y2)/2)
+      nx1 = cx - int(rw / 2)
+      nx2 = cx + int(rw / 2)
+      ny1 = cy - int(rh / 2)
+      ny2 = cy + int(rh / 2)
+      if nx1 <= 0:
+         nx1 = 0
+         nx2 = rw
+      if ny1 <= 0:
+         ny1 = 0
+         ny2 = rh
+      if nx2 >= iw:
+         nx1 = iw-rw-1
+         nx2 = iw-1
+      if ny2 >= ih:
+         ny2 = ih-1
+         ny1 = ih-rh-1
+      if ny1 <= 0:
+         ny1 = 0
+      if nx1 <= 0:
+         nx1 = 0
+      #print("NX", nx1,ny1,nx2,ny2)
+      return(nx1,ny1,nx2,ny2)
