@@ -193,11 +193,18 @@ class AllSkyDB():
 
       
 
-   def load_all_meteors(self):
-      dirs = os.listdir(self.meteor_dir)
+   def load_all_meteors(self, selected_day = None):
+      print("SDAY:", selected_day)
+      if selected_day is None:
+         dirs = os.listdir(self.meteor_dir)
+      else:
+         dirs = [selected_day]
       self.mdirs = []
       self.mfiles = []
-      for ddd in sorted(dirs,reverse=True)[99:]:
+      print("DIRS:", dirs)
+
+      for ddd in sorted(dirs,reverse=True):
+         print("DAY:", ddd)
          if os.path.isdir(self.meteor_dir + ddd):
             self.mdirs.append(self.meteor_dir + ddd + "/")
 
@@ -331,7 +338,7 @@ class AllSkyDB():
 
 
    def connect_database(self,station_id):
-      con = sqlite3.connect(station_id + "_AllSky.db")
+      con = sqlite3.connect(station_id + "_ALLSKY.db")
       con.row_factory = sqlite3.Row
       return(con)
 
