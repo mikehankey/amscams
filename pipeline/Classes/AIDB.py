@@ -227,7 +227,7 @@ class AllSkyDB():
                print("COULD NOT LOAD THE MJF:", mjf)
                continue
          if 'in_sql' in mj:
-            print("MJ already loaded into SQL!")
+            print("XXX MJ already loaded into SQL!")
             #continue
 
          mfd = ""
