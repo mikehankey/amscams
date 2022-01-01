@@ -198,8 +198,8 @@ class AllSkyDB():
       self.mdirs = []
       self.mfiles = []
       for ddd in sorted(dirs,reverse=True)[99:]:
-         if os.path.isdir(meteor_dir + ddd):
-            self.mdirs.append(meteor_dir + ddd + "/")
+         if os.path.isdir(self.meteor_dir + ddd):
+            self.mdirs.append(self.meteor_dir + ddd + "/")
 
       for mdir in sorted(self.mdirs):
          mfiles = self.get_mfiles(mdir )
@@ -211,8 +211,8 @@ class AllSkyDB():
          print(mfile.replace(".mp4", ""))
          mdir = mfile[0:10]
          el = mfile.split("_")
-         mjf = meteor_dir + mdir + "/" + mfile.replace(".mp4", ".json")
-         mjrf = meteor_dir + mdir + "/" + mfile.replace(".mp4", "-reduced.json")
+         mjf = self.meteor_dir + mdir + "/" + mfile.replace(".mp4", ".json")
+         mjrf = self.meteor_dir + mdir + "/" + mfile.replace(".mp4", "-reduced.json")
          start_time = None
          if os.path.exists(mjf) is True:
             try:
