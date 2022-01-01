@@ -110,6 +110,9 @@ class MainFrame(wx.Frame):
             except IOError:
                print("Problem.")
 
+    def OnRadioBox(self,e): 
+        print self.rbox.GetStringSelection(),' is clicked from Radio Box'
+
     def OnReview(self,e):
        print("OK")   
        datestr = "2021"
