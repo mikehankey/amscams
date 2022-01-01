@@ -48,6 +48,7 @@ class AllSkyDB():
       root_data_dir = "Y:/"
       fields = "root_fn"
       table = "meteors"
+      key_press = ""
       where = ""
       order_by = "ORDER BY root_fn"
       self.cur.execute("""
@@ -147,7 +148,6 @@ class AllSkyDB():
             stack_img_org = cv2.imread(stack_file)
             stack_img = cv2.resize(stack_img_org, (1280,720))
             cv2.imshow('pepe', stack_img)
-            key_press = cv2.waitKeyEx(0)
 
             (roi, new_rois, stack_img) = self.handle_keypress(root_fn, stack_img_org, key_press, roi, new_rois)
             if len(roi) == 4:
