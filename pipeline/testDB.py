@@ -23,8 +23,9 @@ if False:
       print(row[0], row[1])
    cur.close()
 
-
-AIDB.load_all_meteors()
+if False:
+   # This will load up the DB with the lastest files
+   AIDB.load_all_meteors()
 
 
 if True and noUI is not False :
