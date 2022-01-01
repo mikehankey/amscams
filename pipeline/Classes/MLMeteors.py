@@ -20,13 +20,22 @@ class MLMeteors():
 
    def __init__(self):
       print("ML Meteors.")
+      if os.name == 'nt':
+         win_conf = load_json_file("windows.json")
+         self.root_data_dir = win_conf['windows_root_data_dir']
+      else:
+         self.root_data_dir = "/mnt/ams2/"
 
 
    def disable_meteor(self, meteor_file):
       print("Disable meteor")
       meteor_day = meteor_file[0:10]
-      meteor_dir = "/mnt/ams2/meteors/" + meteor_day + "/"
-      non_meteor_dir = "/mnt/ams2/non_meteors/" + meteor_day + "/"
+      meteor_dir = self.root_data_dir + "meteors/" + meteor_day + "/"
+      non_meteor_dir = self.root_data_dir + "non_meteors/" + meteor_day + "/"
+      if os.name is 'nt':
+         
+         meteor_dir = "Y:/meteors/" + meteor_day + "/"
+         non_meteor_dir = "Y:/non_meteors/" + meteor_day + "/"
       if os.path.exists(non_meteor_dir) is False:
          os.makedirs(non_meteor_dir)
       mjf = meteor_dir + meteor_file
@@ -52,8 +61,8 @@ class MLMeteors():
    def enable_meteor(self, meteor_file):
       print("Enable meteor")
       meteor_day = meteor_file[0:10]
-      meteor_dir = "/mnt/ams2/meteors/" + meteor_day + "/"
-      non_meteor_dir = "/mnt/ams2/non_meteors/" + meteor_day + "/"
+      meteor_dir = self.root_data_dir + "meteors/" + meteor_day + "/"
+      non_meteor_dir = self.root_data_dir + "non_meteors/" + meteor_day + "/"
       if os.path.exists(meteor_dir) is False:
          os.makedirs(meteor_dir)
       mjf = non_meteor_dir + meteor_file
@@ -81,7 +90,7 @@ class MLMeteors():
    
 
    def load_meteors_for_day(self, date, station_id):
-      dataset_dir = "/mnt/ams2/datasets/"
+      dataset_dir = self.root_data_dir + "datasets/"
       if os.path.isdir(dataset_dir) is False:
          os.makedirs(dataset_dir)
       if os.path.isdir(dataset_dir + "/images/") is False:
@@ -96,16 +105,16 @@ class MLMeteors():
          os.makedirs(dataset_dir + "/images/repo/trash/")
    
    
-      human_data_file = "/mnt/ams2/datasets/human_data.json"
+      human_data_file = self.root_data_dir + "datasets/human_data.json"
       label = "meteors"
-      machine_data_file = "/mnt/ams2/datasets/machine_data.json"
+      machine_data_file = self.root_data_dir + "datasets/machine_data.json"
       if os.path.exists(human_data_file):
          human_data = load_json_file(human_data_file)
       else:
          human_data = {}
    
-      mdir = "/mnt/ams2/meteors/" + date + "/"
-      msdir = "/mnt/ams2/METEOR_SCAN/" + date + "/"
+      mdir = self.root_data_dir + "meteors/" + date + "/"
+      msdir = self.root_data_dir + "METEOR_SCAN/" + date + "/"
    
       ai_day_file = mdir + station_id + "_" + date + "_AI_SCAN.info"
       if os.path.exists(ai_day_file):
@@ -204,13 +213,15 @@ class MLMeteors():
 
       print(len(roi_files), " ROI FILES READY TO ANALYZE")
       save_json_file(ai_day_file, ai_day_data)
-      return(roi_files, non_reduced_files, ai_day_data, ai_day_file)
+      return(mfiles, roi_files, non_reduced_files, ai_day_data, ai_day_file)
       #predict_images(roi_files, model, label )
    
    def get_mfiles(self, mdir):
       temp = glob.glob(mdir + "/*.json")
       mfiles = []
       for json_file in temp:
+         if "\\" in json_file:
+            json_file = json_file.replace("\\", "/")
          if "import" not in json_file and "report" not in json_file and "reduced" not in json_file and "calparams" not in json_file and "manual" not in json_file and "starmerge" not in json_file and "master" not in json_file:
             vfn = json_file.split("/")[-1].replace(".json", ".mp4")
             mfiles.append(vfn)
