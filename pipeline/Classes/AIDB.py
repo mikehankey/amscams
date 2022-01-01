@@ -53,7 +53,7 @@ class AllSkyDB():
       self.cur.execute("""
          SELECT M.root_fn, M.roi, MS.roi_fn, MS.meteor_yn, MS.meteor_yn_conf, MS.multi_class, MS.multi_class_conf, M.human_confirmed 
             FROM meteors as M LEFT JOIN ml_samples as MS ON M.root_fn = MS.root_fn 
-            ORDER BY M.root_fn DESC limit 5000
+            ORDER BY M.root_fn DESC limit 50000
       """)
       rows = self.cur.fetchall()
 
@@ -204,7 +204,6 @@ class AllSkyDB():
       print("DIRS:", dirs)
 
       for ddd in sorted(dirs,reverse=True):
-         print("DAY:", ddd)
          if os.path.isdir(self.meteor_dir + ddd):
             self.mdirs.append(self.meteor_dir + ddd + "/")
 
@@ -225,8 +224,10 @@ class AllSkyDB():
             try:
                mj = load_json_file(mjf)
             except:
+               print("COULD NOT LOAD THE MJF:", mjf)
                continue
          if 'in_sql' in mj:
+            print("MJ already loaded into SQL!")
             continue
 
          mfd = ""
