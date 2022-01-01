@@ -5,6 +5,7 @@
 # it will compile a list of files and results in each dir called AMSXX_YYYY_MM_DD_AI_SCAN.info
 #
 
+from Classes.AIDB import AllSkyDB
 import numpy as np
 import sys
 from lib.PipeUtil import load_json_file, save_json_file , mfd_roi, get_file_info, calc_dist
@@ -184,6 +185,11 @@ def eval_frame_data(frame_data):
    return(resp)
 
 def scan_meteors_for_day(station_id, date):
+
+   AIDB = AllSkyDB()
+   con = AIDB.connect_database(station_id)
+   cur = con.cursor()
+
    make_movie = False
    if os.name == "nt":
       windows = True
@@ -195,6 +201,7 @@ def scan_meteors_for_day(station_id, date):
    ASAI = AllSkyAI()
    AID = ASAI_Detect()
    mc_model = AID.load_my_model("multi_class_model.h5")
+   labels = load_json_file("labels.json")
 
    ASAI.load_all_models()
    MLM = MLMeteors()
@@ -211,7 +218,15 @@ def scan_meteors_for_day(station_id, date):
    print("AI DATA:", len(ai_data.keys()))
    print("AI DATA KEYS:", ai_data.keys())
 
-
+   # clean AI data file make sure there are not ROIs as keys!
+   del_keys = []
+   for key in ai_data:
+      if "ROI" in key:
+         del_keys.append(key)
+   for key in del_keys:
+      print("DELETE OLD ROI BASED KEY!", key)
+      del ai_data[key]
+   tcc = 0
    for mfile in mfiles:
       show_frames = []
       if mfile not in ai_data:
@@ -220,33 +235,76 @@ def scan_meteors_for_day(station_id, date):
          ai_data[mfile]['rois'] = []
       else:
          if "meteor_found" in ai_data[mfile]:
-            print("SKIP DONE THIS ALREADY", mfile, "Meteor:", ai_data[mfile]['meteor_found'])
-            continue
+            # make sure we are 100% done before skipping! 
+            msf1 = root_dir + "datasets/meteor_yn/marked_stacks/meteor/" + station_id + "_" + mfile.replace(".mp4", "-marked.jpg")
+            msf2 = root_dir + "datasets/meteor_yn/marked_stacks/non_meteor/" + station_id + "_" + mfile.replace(".mp4", "-marked.jpg")
+            files_made = 0
+            if os.path.exists(msf1) is True:
+               print("EXISTS:", msf1)
+               files_made = 1
+            if os.path.exists(msf2) is True:
+               print("EXISTS:", msf2)
+               files_made = 1
+            if files_made == 1:
+               print("SKIP DONE THIS ALREADY", mfile, "Meteor:", ai_data[mfile]['meteor_found'])
+               continue
+            else:
+               print("We are not fully complete with this yet.")
+
+      print("Continuing anyway!!!")
+
       mdir = root_dir + "meteors/" + mfile[0:10] + "/"
       sd_video_file = mdir + station_id + "_" + mfile
       stack_file = mdir + mfile.replace(".mp4", "-stacked.jpg")
 
       #img = cv2.imread(stack_file)
-      detect_img, roi_imgs, roi_vals = AID.detect_in_stack(stack_file, mc_model)
+      try:
+         detect_img, roi_imgs, roi_vals = AID.detect_in_stack(stack_file, mc_model, labels)
+      except:
+         print("FAILED TO DETECT IN STACK!")
+         continue
+      try:
+         if len(roi_imgs) == 0:
+            print("NO ROIs found in this file!!!")
+      except:
+         print("Detect in stack failed!")
+         #continue
+
+
+      print("DETECT IN STACK COMPLETE WITH:", len(roi_imgs), " ROI IMG")
+      print("ROI:", len(roi_imgs))
+      print("ROIV:", len(roi_vals))
+      cv2.imshow('pepe', detect_img)
+      cv2.waitKey(30)
 
       ai_resp = []
-      cc = 0
       show_stack = cv2.imread(stack_file)
       show_stack = cv2.resize(show_stack,(1920,1080))
       frames = None
       meteor_found = False
       ric = 0
+      if len(roi_imgs) == 0:
+         print("NO ROI IMGS FOUND!!!")
+
+      cc = 0
       for rimg in roi_imgs:
-         resp = ASAI.meteor_yn(None, rimg)
-         x1, y1, x2, y2 = roi_vals[cc]
+         #try:
+         if True:
+            resp = ASAI.meteor_yn(None, rimg)
+
+            x1, y1, x2, y2 = roi_vals[cc]
+         #except:
+         #   continue
          roi_fn = mfile.replace(".mp4", "-RX_")
          roi_fn = roi_fn + str(x1) + "_" + str(y1) + "_" + str(x2) + "_" + str(y2) + ".jpg"
-         x1,y1,x2,y2 = ASAI.bound_cnt(x1,y1,x2,y2,show_stack, margin=.5)
+         if x2 - x1 != y2 - y1:
+            x1,y1,x2,y2 = ASAI.bound_cnt(x1,y1,x2,y2,show_stack, margin=.5)
          if frames is None:
             frames, roi_frames, roi_sub_frames, frame_data = AID.make_roi_video(mdir + mfile, x1,y1,x2,y2, frames=None)
          else:
             frames, roi_frames, roi_sub_frames, frame_data = AID.make_roi_video(mdir + mfile, x1,y1,x2,y2, frames)
          # Now what do we do with this ROI INFO???
+
          eval_report = eval_frame_data(frame_data)
 
          resp['frame_data'] = frame_data
@@ -384,8 +442,35 @@ def scan_meteors_for_day(station_id, date):
 
                   cv2.imshow('pepe', show_frame)
                   cv2.waitKey(30)
+
+         #insert into the ROI DB!!!
+         in_data = {}
+         el = mfile.split("_")
+         ext = el[-1]
+         camera_id = ext.split("-")[0]
+         in_data['station_id']  = station_id
+         in_data['camera_id']  = camera_id
+         in_data['root_fn'] = mfile.replace(".mp4", "") 
+         in_data['roi_fn'] = roi_fn
+         in_data['meteor_yn_final'] = final_meteor_yn
+         in_data['meteor_yn_final_conf'] = final_confidence
+         in_data['main_class'] = ""
+         in_data['sub_class'] = ""
+         in_data['meteor_yn'] = resp['meteor_yn']
+         in_data['meteor_yn_conf'] = resp['meteor_yn_confidence']
+         in_data['fireball_yn'] = resp['meteor_fireball_yn']
+         in_data['fireball_yn_conf'] = resp['meteor_fireball_yn_confidence']
+         in_data['multi_class'] = resp['mc_class']
+         in_data['multi_class_conf'] = resp['mc_confidence']
+         in_data['human_confirmed'] = 0 
+         in_data['human_label'] = ""
+         in_data['suggest_class'] = ""
+         in_data['ignore'] = ""
+         print(in_data)
+         AIDB.dynamic_insert(con, cur, "ml_samples", in_data)
          ric += 1
          cc += 1
+
       show_stack = cv2.resize(show_stack,(1280,720))
 
       if os.path.exists(root_dir + "datasets/meteor_yn/marked_stacks/meteor/") is False:
@@ -408,6 +493,11 @@ def scan_meteors_for_day(station_id, date):
       ai_data[mfile]['meteor_found'] = meteor_found
       cv2.imshow('pepe', show_stack)
       cv2.waitKey(60)
+
+      if tcc % 50 == 0:
+         save_json_file(ai_data_file, ai_data)
+      tcc += 1
+ 
 
    #save_json_file(ms_data_file, ai_data)
    save_json_file(ai_data_file, ai_data)
@@ -441,13 +531,13 @@ def scan_meteors_for_day(station_id, date):
       print(ai_data[roi_fn])
       if resp is not None: 
          if resp['meteor_yn'] is True:
-            desc = "Meteor "  + str((1 - resp['meteor_yn_confidence']) * 100)[0:4] + "%"
+            desc = "Meteor "  + str((1 - resp['meteor_yn_confidence'])) + "%"
             color = (0,255,0)
          else:
-            desc = "Non Meteor "  + str((1 - resp['meteor_yn_confidence']) * 100)[0:4] + "%"
+            desc = "Non Meteor "  + str((1 - resp['meteor_yn_confidence']))[0:4] + "%"
             color = (0,0,255)
          if resp['meteor_fireball_yn'] is True:
-            desc = "Fireball Meteor "  + str((1 - resp['meteor_fireball_yn_confidence']) * 100)[0:4] + "%"
+            desc = "Fireball Meteor "  + str((1 - resp['meteor_fireball_yn_confidence']))[0:4] + "%"
             color = (0,255,0)
          desc2 = resp['mc_class']
          desc2 += " " + str(resp['mc_confidence']) + "%"
