@@ -228,7 +228,7 @@ class AllSkyDB():
                continue
          if 'in_sql' in mj:
             print("MJ already loaded into SQL!")
-            continue
+            #continue
 
          mfd = ""
          if os.path.exists(mjrf) is True:
