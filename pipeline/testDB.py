@@ -33,7 +33,7 @@ if cmd == "load":
 
    AIDB.load_all_meteors(selected_day)
 
-if True and noUI is False :
+if cmd == "run" and noUI is False :
    AIUI.startup()
 
 
