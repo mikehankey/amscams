@@ -130,7 +130,7 @@ class MainFrame(wx.Frame):
 
        hbox2 = wx.BoxSizer(wx.HORIZONTAL)
        # LABEL
-       l2 = wx.StaticText(panel, -1, "Date String")
+       l2 = wx.StaticText(panel, -1, "Camera ID")
        hbox2.Add(l2, 1, wx.EXPAND|wx.ALIGN_LEFT|wx.ALL,5)
        #FIELD
        self.t2_datestr = wx.TextCtrl(panel, value=datestr)
@@ -138,6 +138,12 @@ class MainFrame(wx.Frame):
        # BIND
        self.t2_datestr.Bind(wx.EVT_TEXT,self.OnKeyTyped)
        vbox.Add(hbox2)
+
+       iblList = ['Reduced', 'Not Reduced', 'Both']
+       self.rbox = wx.RadioBox(pnl,label = 'RadioBox', pos = (80,10), choices = lblList , majorDimension = 1, style = wx.RA_SPECIFY_ROWS)
+       self.rbox.Bind(wx.EVT_RADIOBOX,self.onRadioBox)
+       vbox.Add(self.rbox)
+
 
 
 
