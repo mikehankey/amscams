@@ -12,6 +12,12 @@ class AllSkyDB():
 
    def __init__(self):
       print("ASAI Detect")
+      if os.path.exists("windows.json") is True:
+         self.win_config = load_json_file("windows.json")
+         self.meteor_dir = self.win_config['meteor_dir'] 
+      else:
+         self.meteor_dir = "/mnt/ams2/meteors/"
+      self.meteor_dir = "/mnt/ams2/meteors/"
       self.json_conf = load_json_file("../conf/as6.json")
       self.station_id = self.json_conf['site']['ams_id']
       self.con = self.connect_database(self.station_id)
@@ -189,8 +195,7 @@ class AllSkyDB():
       
 
    def load_all_meteors(self):
-      meteor_dir = "/mnt/ams2/meteors/"
-      dirs = os.listdir(meteor_dir)
+      dirs = os.listdir(self.meteor_dir)
       self.mdirs = []
       self.mfiles = []
       for ddd in sorted(dirs,reverse=True)[99:]:
