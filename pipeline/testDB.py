@@ -27,8 +27,7 @@ if False:
    # This will load up the DB with the lastest files
    AIDB.load_all_meteors()
 
-
-if True and noUI is not False :
+if True and noUI is False :
    print("YO")
    AIUI.startup()
    #app = wx.App(False)
