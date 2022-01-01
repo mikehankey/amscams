@@ -17,7 +17,6 @@ class AllSkyDB():
          self.meteor_dir = self.win_config['meteor_dir'] 
       else:
          self.meteor_dir = "/mnt/ams2/meteors/"
-      self.meteor_dir = "/mnt/ams2/meteors/"
       self.json_conf = load_json_file("../conf/as6.json")
       self.station_id = self.json_conf['site']['ams_id']
       self.con = self.connect_database(self.station_id)
