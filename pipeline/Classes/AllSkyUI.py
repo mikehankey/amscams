@@ -158,7 +158,7 @@ class MainFrame(wx.Frame):
 
        self.SetSize(wx.Size(500,800))
        self.Show()
-
+       filters = {} 
        self.AIDB.review_meteors(filters)
 
     def OnObs(self,e):
