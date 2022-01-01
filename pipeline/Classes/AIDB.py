@@ -42,7 +42,7 @@ class AllSkyDB():
             mfiles.append(vfn)
       return(mfiles)
 
-   def review_meteors(self):
+   def review_meteors(self, filters=None):
       hdm_x = 1920 / 1280
       hdm_y = 1080 / 720
       root_data_dir = "Y:/"

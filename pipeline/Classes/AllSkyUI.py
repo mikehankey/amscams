@@ -1,4 +1,8 @@
-import wx
+
+try:
+   import wx
+except:
+   print("WX ENV NOT INSTALLED CAN'T RUN THE UI!")
 from lib.conversions import datetime2JD
 from PIL import ImageFont, ImageDraw, Image, ImageChops
 import cv2
@@ -108,7 +112,17 @@ class MainFrame(wx.Frame):
 
     def OnReview(self,e):
        print("OK")   
-       self.AIDB.review_meteors()
+
+
+       panel.SetSizer(vbox)
+       self.Centre()
+       self.Show()
+       self.Fit()
+
+       self.SetSize(wx.Size(500,800))
+       self.Show()
+
+       self.AIDB.review_meteors(filters)
 
     def OnObs(self,e):
         dataDir = "D:\\mrh\\ALLSKYOS\\Data"
