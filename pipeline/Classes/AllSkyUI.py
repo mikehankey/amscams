@@ -128,6 +128,20 @@ class MainFrame(wx.Frame):
        self.t1_datestr.Bind(wx.EVT_TEXT,self.OnKeyTyped)
        vbox.Add(hbox1)
 
+       hbox2 = wx.BoxSizer(wx.HORIZONTAL)
+       # LABEL
+       l2 = wx.StaticText(panel, -1, "Date String")
+       hbox2.Add(l2, 1, wx.EXPAND|wx.ALIGN_LEFT|wx.ALL,5)
+       #FIELD
+       self.t2_datestr = wx.TextCtrl(panel, value=datestr)
+       hbox2.Add(self.t2_datestr,1,wx.EXPAND|wx.ALIGN_LEFT|wx.ALL,5)
+       # BIND
+       self.t2_datestr.Bind(wx.EVT_TEXT,self.OnKeyTyped)
+       vbox.Add(hbox2)
+
+
+
+
        panel.SetSizer(vbox)
        self.Centre()
        self.Show()
