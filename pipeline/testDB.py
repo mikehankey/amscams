@@ -1,4 +1,5 @@
 from Classes.AIDB import AllSkyDB
+import sys
 try:
    from Classes.AllSkyUI import AllSkyUI
    noUI = False
@@ -12,6 +13,10 @@ if noUI is False:
 con = AIDB.connect_database("AMS1")
 cur = con.cursor()
 
+if len(sys.argv) > 1:
+   cmd = sys.argv[1]
+   if cmd == "load":
+      selected_day = sys.argv[2]
 
 if False:
    sql = "SELECT Substr(root_fn,0,11) as day, count(*) from ml_samples group by day order by day desc"
@@ -23,23 +28,12 @@ if False:
       print(row[0], row[1])
    cur.close()
 
-if False:
+if cmd == "load":
    # This will load up the DB with the lastest files
-   AIDB.load_all_meteors()
+
+   AIDB.load_all_meteors(selected_day)
 
 if True and noUI is False :
-   print("YO")
    AIUI.startup()
-   #app = wx.App(False)
-   #frame = MainFrame(None, "ALLSKY STATION SOFTWARE")
-   #frame.Centre()
-   #frame.Show()
-   #app.MainLoop()
 
 
-#    app = wx.App(False)
-
-# THIS WILL LOAD ALL METEORS INTO SQL 
-if False: 
-   print("LOAD:")
-   AIDB.load_all_meteors()
