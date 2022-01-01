@@ -112,7 +112,21 @@ class MainFrame(wx.Frame):
 
     def OnReview(self,e):
        print("OK")   
+       datestr = "2021"
 
+       panel = wx.Panel(self)
+       vbox = wx.BoxSizer(wx.VERTICAL)
+       hbox1 = wx.BoxSizer(wx.HORIZONTAL)
+
+       # LABEL
+       l1 = wx.StaticText(panel, -1, "Date String")
+       hbox1.Add(l1, 1, wx.EXPAND|wx.ALIGN_LEFT|wx.ALL,5)
+       #FIELD
+       self.t1_datestr = wx.TextCtrl(panel, value=datestr)
+       hbox1.Add(self.t1_datestr,1,wx.EXPAND|wx.ALIGN_LEFT|wx.ALL,5)
+       # BIND
+       self.t1_datestr.Bind(wx.EVT_TEXT,self.OnKeyTyped)
+       vbox.Add(hbox1)
 
        panel.SetSizer(vbox)
        self.Centre()
