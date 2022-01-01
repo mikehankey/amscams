@@ -29,6 +29,7 @@ if False:
 
 
 if True and noUI is not False :
+   print("YO")
    AIUI.startup()
    #app = wx.App(False)
    #frame = MainFrame(None, "ALLSKY STATION SOFTWARE")
