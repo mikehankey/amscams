@@ -46,6 +46,13 @@ def check_running():
    return(int(output))
 
 # check if flask admin is enabled and make sure it is runnniing if it is
+
+if os.path.exists("vpn.run") is True:
+   print("VPN SCRIPT RUNNING ALREADY!")
+   exit()
+else:
+   os.system("touch vpn.run")
+
 if "flask_admin" in json_conf:
    cmd = "ps -aux |grep \"wsgi\" | grep -v grep | wc -l"
    print(cmd)
@@ -102,6 +109,7 @@ if int(vpn_connect) == 0 and int(running) >= 1:
    os.system(cmd)
    #cmd ="ip link delete tun0"
    #os.system(cmd)
-      
 
+if os.path.exists("vpn.run") is True:
+   os.system("rm vpn.run")
 
