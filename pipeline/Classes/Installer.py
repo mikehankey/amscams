@@ -7,7 +7,7 @@ import numpy
 class Installer():
    def __init__(self):
       self.now = datetime.datetime.now()
-      self.pip_command = "pip3 install"
+      self.pip_command = "pip install"
       self.apt_command = "apt-get install --yes --allow-downgrades --allow-remove-essential --allow-change-held-packages redis-server"
       self.pip_packages = [ 'numpy', 'daemon', 'pyephem', 'netifaces', 'pathlib', 'fitsio', 'pyfits', 'pillow', 'numpy', 'scipy', 'pandas', 'matplotlib', 'requests', 'scikit-image', 'sklearn', 'wand', 'pytesseract', 'pycrypto', 'astropy', 'sympy', 'vtk', 'ephem', 'suntime', 'flask', 'psutil', 'shapely', 'geopy', 'cartopy', 'pymap3d', 'simplekml', 'boto3', 'simplejson', 'flask_httpauth', 'flask-dynamo' ]
       self.apt_packages = []

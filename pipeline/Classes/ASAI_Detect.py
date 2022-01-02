@@ -139,19 +139,32 @@ class ASAI_Detect():
       img = roi_img.copy()
       imgfile = "temp_img.png"
       cv2.imwrite(imgfile, roi_img)
-      img = cv2.resize(img,(150,150)) 
-      img = np.reshape(img,[1,150,150,3])
-      img_size = [150,150]
-      img = keras.preprocessing.image.load_img(imgfile, target_size = img_size)
-      img = keras.preprocessing.image.img_to_array(img).astype(np.float32)
-      img /= 255.
-      img = np.expand_dims(img, axis = 0)
-      classes = self.model.predict(img)
-   
-      if classes[0][0] > .5:
-         return("NONMETEOR")
-      else:
-         return("METEOR")
+
+
+      #img = cv2.resize(img,(150,150)) 
+      #img = np.reshape(img,[1,150,150,3])
+      #img_size = [150,150]
+      #img = keras.preprocessing.image.load_img(imgfile, target_size = img_size)
+      #img = keras.preprocessing.image.img_to_array(img).astype(np.float32)
+      #img /= 255.
+      #img = np.expand_dims(img, axis = 0)
+
+
+      img_height = 150
+      img_width = 150
+      #img = keras.utils.load_img(
+      img = load_img(
+         imgfile, target_size=(img_height, img_width)
+      )
+      img_array = img_to_array(img)
+      img_array = tf.expand_dims(img_array, 0) # Create a batch
+
+      predictions = self.model.predict(img_array)
+
+      score = tf.nn.softmax(predictions[0])
+      predicted_class = self.class_names[np.argmax(score)]
+
+      return(predicted_class)
 
    def merge_cnts(self,cnts):
       parents = []
@@ -211,8 +224,9 @@ class ASAI_Detect():
 
       return(final_cnts)
    
-   def detect_in_stack(self,stack_file, model):
+   def detect_in_stack(self,stack_file, model, labels):
       self.model = model
+      self.class_names = labels['labels']
       video_file = stack_file.replace("-stacked.jpg", ".mp4")
 
       first_frame = self.make_first_frame(video_file)

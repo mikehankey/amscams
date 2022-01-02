@@ -11,7 +11,7 @@ import glob
 class AllSkyDB():
 
    def __init__(self):
-      print("ASAI Detect")
+      print("ASAI DB")
       if os.path.exists("windows.json") is True:
          self.win_config = load_json_file("windows.json")
          self.meteor_dir = self.win_config['meteor_dir'] 
@@ -42,6 +42,32 @@ class AllSkyDB():
             mfiles.append(vfn)
       return(mfiles)
 
+   def play_video(self, root_fn, stack_img_org):
+      frames = self.load_video_frames(root_fn, stack_img_org)
+      for frame in frames:
+         frame = cv2.resize(frame, (1280,720))
+         cv2.imshow('pepe', frame)
+         cv2.waitKey(30)
+         
+
+   def load_video_frames(self,root_fn, stack_img_org):
+
+      root_f = root_fn.replace(self.station_id + "_", "")
+      video_file = self.meteor_dir + root_f[0:10] + "/" + root_fn + ".mp4"
+      cap = cv2.VideoCapture(video_file)
+      grabbed = True
+      last_frame = None
+      stacked_frame = None
+
+      frames = []
+      if True:
+         while grabbed is True:
+            grabbed, frame = cap.read()
+            if not grabbed :
+               break
+            frames.append(frame)
+      return(frames)
+
    def review_meteors(self, filters=None):
       hdm_x = 1920 / 1280
       hdm_y = 1080 / 720
@@ -59,17 +85,17 @@ class AllSkyDB():
       rows = self.cur.fetchall()
 
       i = 0
-      new_rois = {}
+      self.new_rois = {}
       while True:
          delete_this = False
          non_meteor = False
          human_confirm = False
    
          root_fn = rows[i][0]
-         if root_fn not in new_rois:
+         if root_fn not in self.new_rois:
             roi = rows[i][1]
          else:
-            roi = new_rois[root_fn]
+            roi = self.new_rois[root_fn]
 
          roi_fn = rows[i][2]
 
@@ -149,7 +175,7 @@ class AllSkyDB():
             stack_img = cv2.resize(stack_img_org, (1280,720))
             cv2.imshow('pepe', stack_img)
 
-            (roi, new_rois, stack_img) = self.handle_keypress(root_fn, stack_img_org, key_press, roi, new_rois)
+            (roi, self.new_rois, stack_img) = self.handle_keypress(root_fn, roi_fn, stack_img_org, key_press, roi, self.new_rois)
             if len(roi) == 4:
                x1,y1,x2,y2 = roi
                x1 = int(x1 / hdm_x)
@@ -430,7 +456,7 @@ class AllSkyDB():
       cv2.waitKey(0)
 
 
-   def handle_keypress(self,root_fn, stack_img_org, key_press, roi, new_rois):
+   def handle_keypress(self,root_fn, roi_fn, stack_img_org, key_press, roi, new_rois):
       modded = False
       x1,y1,x2,y2 = 0,0,0,0
       mod_x1 = 0
@@ -438,6 +464,7 @@ class AllSkyDB():
       mod_y1 = 0
       mod_y2 = 0
       stack_img = cv2.resize(stack_img_org, (1280,720))
+      new_roi_img = stack_img_org[y1:y2,x1:x2]
       hdm_x = 1920 / 1280
       hdm_y = 1080 / 720
       print("KEY:", key_press) 
@@ -488,7 +515,10 @@ class AllSkyDB():
          mod_x1 = 10
          mod_y2 = 10
          modded = True
-
+      if key_press == 112:
+         # [p] play
+         self.play_video(root_fn, stack_img_org)
+         
       if modded is True:
          if root_fn in new_rois:
             x1,y1,x2,y2 = new_rois[root_fn]
@@ -501,6 +531,11 @@ class AllSkyDB():
          x2 += mod_x2
          y2 += mod_y2
 
+         new_roi_img = stack_img_org[y1:y2,x1:x2]
+         new_roi_img_filename =  root_fn + "-RX_" + str(x1) + "_" + str(y1) + "_" + str(x2) + "_" + str(y2) + ".jpg"
+         print("OLD ROI FILE:", roi_fn)
+         print("NEW ROI IMG:", new_roi_img_filename)
+         
          x1 = int(x1/hdm_x)
          y1 = int(y1/hdm_y)
          x2 = int(x2/hdm_x)

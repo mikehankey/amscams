@@ -443,8 +443,11 @@ def meteor_night_stacks(date, json_conf):
                continue
             if "hd_stack" in mj:
                img = cv2.imread(mj['hd_stack'])
-               img = cv2.resize(img,(1920,1080))
-               images.append(img)
+               try:
+                  img = cv2.resize(img,(1920,1080))
+                  images.append(img)
+               except:
+                  print("Failed")
             if "sd_stack" in mj:
                img = cv2.imread(mj['sd_stack'])
                img = cv2.resize(img,(1920,1080))
@@ -560,15 +563,17 @@ def meteor_night_stacks(date, json_conf):
    textX = int((comp_titled.shape[1] - textsize[0]) / 2)
    cv2.putText(comp_titled, str(op_name),  (textX,mh +170), cv2.FONT_HERSHEY_SIMPLEX, 1.2, (255, 255, 255), 1) 
 
-
-   outfile = mdir + json_conf['site']['ams_id'] + "_" + date + "_meteors.jpg"
-   cv2.imwrite(outfile, comp)
-   outfile_t = mdir + json_conf['site']['ams_id'] + "_" + date + "_meteors_title.jpg"
-   cv2.imwrite(outfile, comp)
-   os.system("cp " + outfile + " " + cloud_dir)
-   cv2.imwrite(outfile_t, comp_titled)
-   os.system("cp " + outfile_t + " " + cloud_dir)
-   print("Saved:", outfile)
+   try:
+      outfile = mdir + json_conf['site']['ams_id'] + "_" + date + "_meteors.jpg"
+      cv2.imwrite(outfile, comp)
+      outfile_t = mdir + json_conf['site']['ams_id'] + "_" + date + "_meteors_title.jpg"
+      cv2.imwrite(outfile, comp)
+      os.system("cp " + outfile + " " + cloud_dir)
+      cv2.imwrite(outfile_t, comp_titled)
+      os.system("cp " + outfile_t + " " + cloud_dir)
+      print("Saved:", outfile)
+   except:
+      print("failed to save.")
    
 def hourly_stacks(date, json_conf):
    hour_data = {}

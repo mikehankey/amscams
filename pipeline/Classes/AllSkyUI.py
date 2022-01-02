@@ -111,11 +111,11 @@ class MainFrame(wx.Frame):
                print("Problem.")
 
     def OnRadioBox(self,e): 
-        print self.rbox.GetStringSelection(),' is clicked from Radio Box'
+        print (self.rbox.GetStringSelection(),' is clicked from Radio Box')
 
     def OnReview(self,e):
        print("OK")   
-       datestr = "2021"
+    
 
        panel = wx.Panel(self)
        vbox = wx.BoxSizer(wx.VERTICAL)
@@ -125,7 +125,7 @@ class MainFrame(wx.Frame):
        l1 = wx.StaticText(panel, -1, "Date String")
        hbox1.Add(l1, 1, wx.EXPAND|wx.ALIGN_LEFT|wx.ALL,5)
        #FIELD
-       self.t1_datestr = wx.TextCtrl(panel, value=datestr)
+       self.t1_datestr = wx.TextCtrl(panel, value="2021")
        hbox1.Add(self.t1_datestr,1,wx.EXPAND|wx.ALIGN_LEFT|wx.ALL,5)
        # BIND
        self.t1_datestr.Bind(wx.EVT_TEXT,self.OnKeyTyped)
@@ -136,19 +136,39 @@ class MainFrame(wx.Frame):
        l2 = wx.StaticText(panel, -1, "Camera ID")
        hbox2.Add(l2, 1, wx.EXPAND|wx.ALIGN_LEFT|wx.ALL,5)
        #FIELD
-       self.t2_datestr = wx.TextCtrl(panel, value=datestr)
+       self.t2_datestr = wx.TextCtrl(panel, value="")
        hbox2.Add(self.t2_datestr,1,wx.EXPAND|wx.ALIGN_LEFT|wx.ALL,5)
        # BIND
        self.t2_datestr.Bind(wx.EVT_TEXT,self.OnKeyTyped)
        vbox.Add(hbox2)
 
-       iblList = ['Reduced', 'Not Reduced', 'Both']
-       self.rbox = wx.RadioBox(pnl,label = 'RadioBox', pos = (80,10), choices = lblList , majorDimension = 1, style = wx.RA_SPECIFY_ROWS)
-       self.rbox.Bind(wx.EVT_RADIOBOX,self.onRadioBox)
+       # Reduced Filter
+       iblList = ['Both', 'Yes', 'No']
+       self.rbox = wx.RadioBox(panel,label = 'Meteor Reduced', pos = (80,10), choices = iblList , majorDimension = 1, style = wx.RA_SPECIFY_ROWS)
+       self.rbox.Bind(wx.EVT_RADIOBOX,self.OnRadioBox)
        vbox.Add(self.rbox)
 
+       # AI Label Detections
+       iblList2 = ['Both', 'Yes', 'No']
+       self.rbox2 = wx.RadioBox(panel,label = 'AI Meteor YN Prediction', pos = (80,10), choices = iblList2 , majorDimension = 1, style = wx.RA_SPECIFY_ROWS)
+       self.rbox2.Bind(wx.EVT_RADIOBOX,self.OnRadioBox)
+       vbox.Add(self.rbox2)
 
+       # Human Confirmed Detections
+       iblList3 = ['Both','Yes', 'No']
+       self.rbox3 = wx.RadioBox(panel,label = 'Meteor Human Confirmed', pos = (80,10), choices = iblList3 , majorDimension = 1, style = wx.RA_SPECIFY_ROWS)
+       self.rbox3.Bind(wx.EVT_RADIOBOX,self.OnRadioBox)
+       vbox.Add(self.rbox3)
+       
+       # Multi Station
+       iblList4 = ['Both','Yes', 'No']
+       self.rbox4 = wx.RadioBox(panel,label = 'Multi Station Meteors', pos = (80,10), choices = iblList4 , majorDimension = 1, style = wx.RA_SPECIFY_ROWS)
+       self.rbox4.Bind(wx.EVT_RADIOBOX,self.OnRadioBox)
+       vbox.Add(self.rbox4)
 
+       self.btn = wx.Button(panel, -1, "click Me")
+       vbox.Add(self.btn)
+       self.btn.Bind(wx.EVT_BUTTON,self.OnReviewClicked) 
 
 
        panel.SetSizer(vbox)
@@ -160,6 +180,9 @@ class MainFrame(wx.Frame):
        self.Show()
        filters = {} 
        self.AIDB.review_meteors(filters)
+
+    def OnReviewClicked(self):
+       print("CLICKED")
 
     def OnObs(self,e):
         dataDir = "D:\\mrh\\ALLSKYOS\\Data"
