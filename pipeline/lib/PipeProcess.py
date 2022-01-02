@@ -6,6 +6,89 @@ import datetime as dt
 import os
 import subprocess
 
+
+
+def check_sync_cal_ai_db(json_conf):
+   # make sure the recent as6.json is copied up the cloud
+   # make sure the masks are in the cloud
+   # make sure the cal summary files etc are in the cloud? this should already be happening
+   # make sure / copy up JPG versions of the source calibration files (LATER we only need a subset not all of them. Really the 'best' per some time frequency 4x per month? 
+   # for now we will check / add masks
+   # but first, check the json conf to see if we are already done with all this anyway.
+   print("Check sync Cal")
+   do_sync = 0
+   station_id = json_conf['site']['ams_id']
+   if "sync_cal" not in json_conf:
+      print("No sync cal in json conf", json_conf.keys())
+      do_sync = 1
+   else:
+      if "mask_files" not in json_conf['sync_cal']:
+         do_sync = 1
+         print("No mask files in cal in json conf sync cal")
+   if do_sync == 1:      
+      if True:
+         print("Sync mask files.")
+         cloud_mask_dir = "/mnt/archive.allsky.tv/" + station_id + "/CAL/MASKS/"
+         local_mask_dir = "/mnt/ams2/meteor_archive/" + station_id + "/CAL/MASKS/"
+         if os.path.exists(cloud_mask_dir) is False:
+            os.makedirs(cloud_mask_dir)
+        
+         cmd = "cp " + local_mask_dir + "*mask* " + cloud_mask_dir
+         print(cmd)
+         os.system(cmd)
+         json_conf['sync_cal'] = {}
+         json_conf['sync_cal']['mask_files'] = {}
+         print("SAVE json conf")
+         save_json_file("../conf/as6.json", json_conf)      
+   else:
+      print("Mask files are already sync'd")
+
+   # CHECK IF AI IS INSTALLED ALREADY
+   if "ml" not in json_conf:
+      json_conf['ml'] = {}
+      py36 = "/usr/bin/python3.6"
+      if os.path.exists(py36) is True:
+         print("Python 3.6 is installed.")
+         json_conf['ml']['python36'] = True
+      else: 
+         print("*** Python 3.6 is NOT installed.")
+         json_conf['ml']['python36'] = False 
+      try:
+         import tensorflow as tf
+         print("Tensor Flow IS installed.")
+         json_conf['ml']['tensor_flow'] = True
+      except:
+         print("*** Tensor Flow IS NOT installed.")
+         json_conf['ml']['tensor_flow'] = False 
+      save_json_file("../conf/as6.json", json_conf)      
+   else:
+      print("ML already setup.")
+
+   # check if the SQL DB is created yet.
+   db_file = station_id + "_ALLSKY.db"
+   if os.path.exists(db_file) is False:
+      print("*** DB FILE DOESN'T EXIST:", db_file)
+      cmd = "cat ALLSKYDB.sql | sqlite3 " + db_file
+      print(cmd)
+      os.system(cmd)
+      cmd = "python3 testDB.py load ALL" 
+      os.system(cmd)
+   else: 
+      print("DB FILE EXIST:", db_file)
+      today = datetime.now().strftime("%Y_%m_%d")
+      cmd = "python3 testDB.py load " + today
+      os.system(cmd)
+
+      os.system("gzip -kf " + db_file) 
+      cloud_db_dir = "/mnt/archive.allsky.tv/" + station_id + "/DB/" 
+      if os.path.exists(cloud_db_dir) is False:
+         os.makedirs(cloud_db_dir)
+      dbfile_2021 = db_file.replace(".db", "-2021.db.gz")
+      if os.path.exists(cloud_db_dir + dbfile_2021) is False:
+         os.system("cp " + db_file + ".gz " + cloud_db_dir + dbfile_2021 ) 
+   #print("EXIT")   
+   #exit()
+         
 def gitpull(json_conf):
    print("git pull > /home/ams/lastpull.txt")
    os.system("git pull > /home/ams/lastpull.txt")
@@ -50,6 +133,10 @@ def run_jobs(json_conf):
    if running > 0:
       os.system("kill -9 $(ps aux | grep 'DynaDB' | awk '{print $2}')")
 
+   check_sync_cal_ai_db(json_conf)
+   #print("EXIT")
+   #exit()
+
    msg = "info:run_jobs:Run jobs ended"
    cmd = "./log.py '" + msg + "'"
    os.system(cmd)
@@ -90,6 +177,8 @@ def run_jobs(json_conf):
    # check to make sure the cloud drive is setup and cal sync'd
    cloud_conf_dir = "/mnt/archive.allsky.tv/" + amsid + "/CAL/"
    cloud_conf_file = cloud_conf_dir + "as6.json"
+
+
    if cfe(cloud_conf_dir,1) == 0:
       os.makedirs(cloud_conf_dir)
    if cfe(cloud_conf_file) == 0:

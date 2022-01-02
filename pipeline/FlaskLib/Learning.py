@@ -110,7 +110,7 @@ def learning_review_day(station_id, review_date):
       <script>
 
       all_classes = ['meteor', 'cloud', 'bolt', 'cloud-moon', 'cloud-rain',  'tree', 'plane', 'car-side', 'satellite', 'crow', 'bug','chess-board','question']
-      labels = ['meteor', 'cloud', 'lightening', 'cloud-moon', 'rain', 'tree', 'plane', 'car-side', 'satellite', 'bird', 'firefly','noise','notsure']
+      labels = ['meteor', 'clouds', 'lightening', 'moon', 'rain', 'tree', 'planes', 'cars', 'satellite', 'BIRDS', 'fireflies','noise','notsure']
 
       function click_mark_all_as(icon_type) {
          $(".gal_img" ).each(function( index ) {
@@ -204,7 +204,7 @@ def learning_review_day(station_id, review_date):
    }
 
       function click_icon(icon_type, resource_id) {
-           for (var i in all_classes) {
+           for (var i in labels) {
               var tdiv_id = "#reclass_" + labels[i] + "_" + resource_id
               console.log("RESET:", i, tdiv_id)
               $(tdiv_id).attr('style', 'color: #cdcdcd !important; padding: 2px; ');
@@ -245,26 +245,26 @@ def learning_review_day(station_id, review_date):
       img = "<img class='gal_img' id='" + resource_id + "' width=180 height=180 src=" + msvdir + fn + ">"
       main_class = "notsure"
       pclass1 = "notsure"
-      if "predict_top3" in ai_data[fn]:
-         top3 = ai_data[fn]['predict_top3'] 
-         pclass1 = top3[0][0]
-         el = pclass1.split("_")
-         if len(el) > 0: 
-            main_class = pclass1.split("_")[0]
-         if len(el) > 1: 
-            sub_class = el[1]
-         else:
-            sub_class = ""
-
-         pconf1 = top3[0][1]
-         desc = main_class + " " + str(pconf1) + "%" 
+      print("AI", ai_data[fn])
+      if "classes" in ai_data[fn]:
+         if "mc_class" in ai_data[fn]['classes']:
+            mc_class = ai_data[fn]['classes']['mc_class']
+            main_class = mc_class.split("_")[0]
+            desc = main_class 
+            print("MC FOUND!", mc_class)
+         if "meteor" not in main_class:
+            if ai_data[fn]['classes']['meteor_yn'] is True or ai_data[fn]['classes']['meteor_fireball_yn'] is True:
+               main_class = "meteor"   
       else:
+         print("MC NOT FOUND!")
          desc = "not scanned"
+         main_class = "not_scanned"
       if "human_label" in ai_data[fn]:
          main_class = ai_data[fn]['human_label']
+         print("HUMAN LABEL FOUND!")
       buttons = make_buttons(fn,main_class)
-      desc = pclass1 + "<br>" + buttons
-      if "meteor" in pclass1:
+      desc = main_class + "<br>" + buttons
+      if "meteor" in main_class:
          out += "<div style='margin: 5px; float: left'>" + img + "<br>" + desc + "</div>\n"
       else:
          out_nm += "<div style='margin: 5px; float: left'>" + img + "<br>" + desc + "</div>\n"
@@ -311,8 +311,9 @@ def labels_for_day (station_id, date, ai_data ):
 
 
 def make_buttons(roi_file=None, selected=None):
+   print("BUTTON SELECTED:", selected)
    icons = ['meteor', 'cloud', 'bolt', 'cloud-moon', 'cloud-rain',  'tree', 'plane', 'car-side', 'satellite', 'crow', 'bug','chess-board','question']
-   labels = ['meteor', 'cloud', 'lightening', 'cloud-moon', 'rain', 'tree', 'plane', 'car-side', 'satellite', 'bird', 'firefly','noise','notsure']
+   labels = ['meteor', 'clouds', 'lightening', 'cloud-moon', 'rain', 'tree', 'planes', 'cars', 'satellite', 'BIRDS', 'fireflies','noise','notsure']
    color = "#000000"
    resource_id = roi_file.replace("-ROI.jpg", "")
    buttons = "<table width=180><tr><td>"

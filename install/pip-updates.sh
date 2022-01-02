@@ -3,6 +3,7 @@ apt-get install --yes --allow-downgrades --allow-remove-essential --allow-change
 apt-get install --yes --allow-downgrades --allow-remove-essential --allow-change-held-packages libgeos-dev
 apt-get install --yes --allow-downgrades --allow-remove-essential --allow-change-held-packages libproj-dev
 apt-get install --yes --allow-downgrades --allow-remove-essential --allow-change-held-packages redis-server
+apt-get install --yes --allow-downgrades --allow-remove-essential --allow-change-held-packages sqlite3
 
 apt install imagemagick
 pip3 install suntime

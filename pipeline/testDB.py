@@ -1,10 +1,9 @@
 from Classes.AIDB import AllSkyDB
 import sys
-from Classes.AllSkyUI import AllSkyUI
-noUI = False
-#try:
-#except:
-#   noUI = True
+try:
+   from Classes.AllSkyUI import AllSkyUI
+except:
+   noUI = True 
 
 AIDB = AllSkyDB()
 if noUI is False:
@@ -22,7 +21,8 @@ print("HELLO", cmd, noUI)
 
 if cmd == "load":
    # This will load up the DB with the lastest files
-
+   if selected_day == "ALL":   
+      selected_day = None
    AIDB.load_all_meteors(selected_day)
 
 if cmd == "run" and noUI is False:

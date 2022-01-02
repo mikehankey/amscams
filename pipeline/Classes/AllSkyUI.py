@@ -2,6 +2,7 @@
 try:
    import wx
 except:
+   wx = None
    print("WX ENV NOT INSTALLED CAN'T RUN THE UI!")
 from lib.conversions import datetime2JD
 from PIL import ImageFont, ImageDraw, Image, ImageChops
