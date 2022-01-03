@@ -54,7 +54,7 @@ def check_sync_cal_ai_db(json_conf):
          print("*** Python 3.6 is NOT installed.")
          json_conf['ml']['python36'] = False 
       try:
-         import tensorflow as tf
+         #import tensorflow as tf
          print("Tensor Flow IS installed.")
          json_conf['ml']['tensor_flow'] = True
       except:
