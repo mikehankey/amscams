@@ -133,7 +133,6 @@ def run_jobs(json_conf):
    if running > 0:
       os.system("kill -9 $(ps aux | grep 'DynaDB' | awk '{print $2}')")
 
-   check_sync_cal_ai_db(json_conf)
    #print("EXIT")
    #exit()
 
@@ -172,6 +171,7 @@ def run_jobs(json_conf):
 
       gitpull(json_conf)
 
+   check_sync_cal_ai_db(json_conf)
    print("checking cloud dir") 
    amsid = json_conf['site']['ams_id']
    # check to make sure the cloud drive is setup and cal sync'd
