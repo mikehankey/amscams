@@ -44,6 +44,9 @@ os.system(cmd)
 cmd = "sudo python3.6 -m pip install scikit-image"
 os.system(cmd)
 
+cmd = "sudo python3.6 -m pip install opencv-python"
+os.system(cmd)
+
 cmd = "sudo python3 -m pip install --upgrade markupsafe"
 os.system(cmd)
 cmd = "sudo python3 -m pip install --upgrade flask"
