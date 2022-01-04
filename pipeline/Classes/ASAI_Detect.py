@@ -3,7 +3,7 @@ import numpy as np
 import os
 from tensorflow.keras.models import *
 from lib.PipeUtil import load_json_file, save_json_file, calc_dist
-import keras
+import tensorflow.keras
 from tensorflow.keras.models import load_model
 from tensorflow.keras.models import Sequential
 import cv2
