@@ -861,6 +861,7 @@ def reject_mask_detects(date, json_conf):
    if cfe(del_log) == 1:
       try:
          del_data = load_json_file(del_log)
+         os.system("rm " + del_log)
       except:
          del_data = {}
    else:
