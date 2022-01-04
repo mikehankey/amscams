@@ -7,11 +7,11 @@ if os.path.exists("tensorflow-2.4.4-cp36-cp36m-linux_x86_64.whl") is False:
    os.system(cmd)
 if os.path.exists("/usr/bin/python3.6") is False:
    print("NO PYTHON3.6 INSTALL IT.")
-   cmd = "sudo add-apt-repository ppa:deadsnakes/ppa"
+   cmd = "sudo add-apt-repository -y ppa:deadsnakes/ppa"
    os.system(cmd)
    cmd = "sudo apt-get update"
    os.system(cmd)
-   cmd = "sudo apt-get install python3.6"
+   cmd = "sudo apt-get -y install python3.6"
    os.system(cmd)
    cmd = "wget https://bootstrap.pypa.io/get-pip.py"
    os.system(cmd)
