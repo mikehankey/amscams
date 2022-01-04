@@ -26,9 +26,12 @@ from Classes.MLMeteors import MLMeteors
 from Classes.ASAI import AllSkyAI 
 from Classes.ASAI_Detect import ASAI_Detect 
 from lib.FFFuncs import ffprobe
+SHOW = 0
+
 if os.name == "nt":
    windows = True
    root_dir = "Y:/"
+   SHOW = 1
 else:
    windows = False 
    root_dir = "/mnt/ams2/"
@@ -274,8 +277,9 @@ def scan_meteors_for_day(station_id, date):
       print("DETECT IN STACK COMPLETE WITH:", len(roi_imgs), " ROI IMG")
       print("ROI:", len(roi_imgs))
       print("ROIV:", len(roi_vals))
-      cv2.imshow('pepe', detect_img)
-      cv2.waitKey(30)
+      if SHOW == 1:
+         cv2.imshow('pepe', detect_img)
+         cv2.waitKey(30)
 
       ai_resp = []
       show_stack = cv2.imread(stack_file)
@@ -434,14 +438,15 @@ def scan_meteors_for_day(station_id, date):
          if ric < 2 and make_movie is True:
             for ll in range(0,looper):
                for fn in eval_report['fns']:
-                  show_frame = show_stack.copy()
+                  if SHOW == 1:
+                     show_frame = show_stack.copy()
 
-                  cv2.rectangle(show_frame, (x1,y1), (x2, y2) , (detect_color), 3)
-                  show_frame[y1:y2,x1:x2] = roi_frames[fn]
-                  show_frame = cv2.resize(show_frame,(640,360))
-
-                  cv2.imshow('pepe', show_frame)
-                  cv2.waitKey(30)
+                     cv2.rectangle(show_frame, (x1,y1), (x2, y2) , (detect_color), 3)
+                     show_frame[y1:y2,x1:x2] = roi_frames[fn]
+                     show_frame = cv2.resize(show_frame,(640,360))
+                   
+                     cv2.imshow('pepe', show_frame)
+                     cv2.waitKey(30)
 
          #insert into the ROI DB!!!
          in_data = {}
@@ -491,8 +496,9 @@ def scan_meteors_for_day(station_id, date):
       cv2.imwrite(marked_stack_file, show_stack)
 
       ai_data[mfile]['meteor_found'] = meteor_found
-      cv2.imshow('pepe', show_stack)
-      cv2.waitKey(60)
+      if SHOW == 1:
+         cv2.imshow('pepe', show_stack)
+         cv2.waitKey(60)
 
       if tcc % 50 == 0:
          save_json_file(ai_data_file, ai_data)
@@ -513,8 +519,9 @@ def scan_meteors_for_day(station_id, date):
       img = cv2.imread(stack_file)
       detect_img, detect_cnts = AID.detect_in_stack(stack_file, mc_model)
       print("DETECT INFO:", detect_cnts)
-      cv2.imshow('pepe', img)
-      cv2.waitKey(0)
+      if SHOW == 1:
+         cv2.imshow('pepe', img)
+         cv2.waitKey(0)
 
       ai_data[mfile] = {} 
 
@@ -550,11 +557,12 @@ def scan_meteors_for_day(station_id, date):
          desc3 = "not reviewed."
       cv2.putText(img, desc3,  (0, img.shape[0]-10), cv2.FONT_HERSHEY_SIMPLEX, .3, (128,255,255), 1)
 
-      try:
-         cv2.imshow('pepe', img)
-         cv2.waitKey(0)
-      except:
-         print("Problem with image:", roi_file)
+      if SHOW == 1:
+         try:
+            cv2.imshow('pepe', img)
+            cv2.waitKey(0)
+         except:
+            print("Problem with image:", roi_file)
    
    print("saved:", ai_data_file)
    save_json_file(ai_data_file, ai_data)
