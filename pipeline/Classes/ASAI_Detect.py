@@ -1,16 +1,18 @@
+
 import cv2
 import numpy as np
 import os
-from tensorflow.keras.models import *
-from lib.PipeUtil import load_json_file, save_json_file, calc_dist
-import tensorflow.keras
-from tensorflow.keras.models import load_model
-from tensorflow.keras.models import Sequential
-import cv2
-import numpy as np
-from tensorflow.keras.preprocessing.image import ImageDataGenerator, array_to_img, img_to_array, load_img
 import glob
 import sys
+
+import tensorflow as tf
+import tensorflow.keras
+from tensorflow.keras.models import *
+from tensorflow.keras.models import load_model
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.preprocessing.image import ImageDataGenerator, array_to_img, img_to_array, load_img
+
+from lib.PipeUtil import load_json_file, save_json_file, calc_dist
 #sys.setrecursionlimit(10000)
 
 
