@@ -859,7 +859,10 @@ def reject_planes(date, json_conf):
 def reject_mask_detects(date, json_conf):
    del_log = "/mnt/ams2/SD/proc2/json/" + json_conf['site']['ams_id'] + ".del"
    if cfe(del_log) == 1:
-      del_data = load_json_file(del_log)
+      try:
+         del_data = load_json_file(del_log)
+      except:
+         del_data = {}
    else:
       del_data = {} 
    mdir = "/mnt/ams2/meteors/" + date + "/" 
@@ -2497,8 +2500,8 @@ def fireball(video_file, json_conf, nomask=0):
          mjr = base_jsr
       print("saved:", jsfr)
       print("Small meteor don't need to refine", max(best_meteor['oint']))
-      print("CCXS:", best_meteor['ccxs'])
-      print("CCYS:", best_meteor['ccys'])
+      #print("CCXS:", best_meteor['ccxs'])
+      #print("CCYS:", best_meteor['ccys'])
 
       print("SAVEING MJR BEFORE ROI VID:", len(base_jsr['meteor_frame_data']))
 
@@ -3449,7 +3452,7 @@ def fireball_phase2(video_file, json_conf, jsf, jdata, best_meteor, nomask,hd_fr
          cx = x + int(w/2)
          cy = y + int(h/2)
       else:
-         print("CCXS:", i, best_meteor['ccxs'])
+         #print("CCXS:", i, best_meteor['ccxs'])
          x = int(best_meteor['oxs'][i] * hdm_x)
          y = int(best_meteor['oys'][i] * hdm_y)
          w = int(best_meteor['ows'][i] * hdm_x)
@@ -4571,9 +4574,9 @@ def refine_meteor(meteor_file, json_conf):
          else:
             x_seg = np.mean(x_segs[0:i])
             y_seg = np.mean(y_segs[0:i])
-         print("FN:",  i) 
-         print("XS:", x_segs)
-         print("YS:", y_segs)
+         #print("FN:",  i) 
+         #print("XS:", x_segs)
+         #print("YS:", y_segs)
 
          if True:
             est_x = int(last_x + x_seg)
