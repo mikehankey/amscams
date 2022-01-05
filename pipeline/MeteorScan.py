@@ -396,6 +396,7 @@ def scan_meteors_for_day(station_id, date):
             resp['frame_data'] = frame_data
             resp['motion_eval'] = eval_report
          else:
+            eval_report = {}
             eval_report['mscore'] = 2
          resp['roi'] = [x1,y1,x2,y2]
 
