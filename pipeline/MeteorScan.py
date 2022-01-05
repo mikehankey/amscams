@@ -383,6 +383,7 @@ def scan_meteors_for_day(station_id, date):
          roi_fn = roi_fn + str(x1) + "_" + str(y1) + "_" + str(x2) + "_" + str(y2) + ".jpg"
          if x2 - x1 != y2 - y1:
             x1,y1,x2,y2 = ASAI.bound_cnt(x1,y1,x2,y2,show_stack, margin=.5)
+         do_video = False
          if do_video is True:
             if frames is None:
                frames, roi_frames, roi_sub_frames, frame_data = AID.make_roi_video(mdir + mfile, x1,y1,x2,y2, frames=None)
