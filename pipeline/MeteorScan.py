@@ -500,9 +500,10 @@ def scan_meteors_for_day(station_id, date):
 
          learn_file = learn_dir + station_id + "_" + roi_fn
          roi_video_file = roi_video_dir + station_id + "_" + roi_fn.replace(".jpg", ".mp4")
-         save_video_frames(roi_frames, roi_video_file, 180,180)
-         #save_crop_video(sd_video_file, roi_video_file, x1,y1,x2,y2,180,180)
-         print("Saved.", roi_video_file)
+         if do_video is True:
+            save_video_frames(roi_frames, roi_video_file, 180,180)
+            #save_crop_video(sd_video_file, roi_video_file, x1,y1,x2,y2,180,180)
+            print("Saved.", roi_video_file)
          
          if os.path.exists(learn_dir) is False:
             os.makedirs(learn_dir)
