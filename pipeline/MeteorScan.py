@@ -340,8 +340,8 @@ def scan_meteors_for_day(station_id, date):
       stack_file = mdir + mfile.replace(".mp4", "-stacked.jpg")
 
       #img = cv2.imread(stack_file)
-      detect_img, roi_imgs, roi_vals = AID.detect_in_stack(stack_file, mc_model, labels)
       try:
+         detect_img, roi_imgs, roi_vals = AID.detect_in_stack(stack_file, mc_model, labels)
          print("TEST")
       except:
          print("FAILED TO DETECT IN STACK!")
