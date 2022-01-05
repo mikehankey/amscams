@@ -383,17 +383,21 @@ def scan_meteors_for_day(station_id, date):
          roi_fn = roi_fn + str(x1) + "_" + str(y1) + "_" + str(x2) + "_" + str(y2) + ".jpg"
          if x2 - x1 != y2 - y1:
             x1,y1,x2,y2 = ASAI.bound_cnt(x1,y1,x2,y2,show_stack, margin=.5)
-         if frames is None:
-            frames, roi_frames, roi_sub_frames, frame_data = AID.make_roi_video(mdir + mfile, x1,y1,x2,y2, frames=None)
+         if do_video is True:
+            if frames is None:
+               frames, roi_frames, roi_sub_frames, frame_data = AID.make_roi_video(mdir + mfile, x1,y1,x2,y2, frames=None)
+            else:
+               frames, roi_frames, roi_sub_frames, frame_data = AID.make_roi_video(mdir + mfile, x1,y1,x2,y2, frames)
+            # Now what do we do with this ROI INFO???
+
+            eval_report = eval_frame_data(frame_data)
+
+            resp['frame_data'] = frame_data
+            resp['motion_eval'] = eval_report
          else:
-            frames, roi_frames, roi_sub_frames, frame_data = AID.make_roi_video(mdir + mfile, x1,y1,x2,y2, frames)
-         # Now what do we do with this ROI INFO???
-
-         eval_report = eval_frame_data(frame_data)
-
-         resp['frame_data'] = frame_data
+            eval_report['mscore'] = 2
          resp['roi'] = [x1,y1,x2,y2]
-         resp['motion_eval'] = eval_report
+
          cv2.rectangle(show_stack, (x1,y1), (x2, y2) , (255, 255, 255), 1)
          descs,color = ASAI.format_response(resp)
 
