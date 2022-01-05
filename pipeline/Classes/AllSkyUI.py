@@ -1,3 +1,4 @@
+from ephem import stars
 
 try:
    import wx
@@ -9,6 +10,7 @@ from PIL import ImageFont, ImageDraw, Image, ImageChops
 import cv2
 from lib.Calibration import find_stars_with_grid  , make_default_cal_params, get_catalog_stars, fetch_calib_data, update_center_radec,  get_image_stars, pair_stars, distort_xy, AzEltoRADec,HMS2deg, minimize_fov, XYtoRADec, find_stars_with_grid, draw_star_image, cat_star_report, minimize_fov
 
+import simplejson as json
 
 import datetime
 from lib.Utils import convert_filename_to_date_cam, load_json_file, save_json_file
@@ -221,7 +223,7 @@ class MainFrame(wx.Frame):
        for star in self.cp['cat_image_stars']:
           dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist,star_int = star
           print("STAR:", dcname, new_cat_x,new_cat_y,six,siy,cat_dist)
-          if cat_dist <= 10:
+          if cat_dist <= 50:
              good_stars.append(star)
        self.cp['cat_image_stars'] = good_stars
        self.cp['cat_image_stars'], res_px,res_deg = cat_star_report(self.cp['cat_image_stars'], 4)
@@ -298,7 +300,8 @@ class MainFrame(wx.Frame):
 
             self.stars = self.get_stars()
 
-
+  
+           
 
         self.fn = 0
         self.stack_img = stacked_frame.copy() 
@@ -694,20 +697,20 @@ class MainFrame(wx.Frame):
 
           if os.path.exists(station_conf_file) == 0:
              remote_file = "https://archive.allsky.tv/" + station_id + "/CAL/as6.json"
-             remote_conf = fetch_url(remote_file, json=1)
-             try:
-                remote_conf = json.loads(remote_conf)
-             except:
-                print("Couldn't read the json file?")
+             remote_conf = fetch_url(remote_file)   
+             remote_conf = json.loads(remote_conf)
+             print("REMOTE CONF:", remote_conf.keys())
              save_json_file(station_conf_file, remote_conf)
+         
+             
              print("REMOTE CONF:", remote_conf)
           else:
              remote_conf = load_json_file(station_conf_file)
           lat = remote_conf['site']['device_lat']
           lon = remote_conf['site']['device_lng']
           alt = remote_conf['site']['device_alt']
-
-       print(station_dict.keys())
+       self.json_conf = remote_conf
+       #print(station_dict.keys())
        (f_datetime, cam_id, f_date_str,fy,fmon,fd, fh, fm, fs) = convert_filename_to_date_cam(temp_file)
 
        for cam_num in remote_conf['cameras']:
@@ -876,21 +879,54 @@ class MainFrame(wx.Frame):
        #t1 = wx.TextCtrl(self) 
 
        default_cp = make_default_cal_params(station_id, cam_id)
+       self.meteor_video_file = image_fn.replace(".jpg", ".mp4")
+       self.load_calib()
        #cat_stars = get_catalog_stars(default_cp)
        #for star in cat_stars:
        #   print(star)
 
        #find_stars_with_grid(cv2_image)
+       self.frames = []
+       self.frames.append(cv2_image)
+       #self.cp = default_cp
+       self.meteor_fn = image_fn.replace(station_id + "_", "")
+       self.get_stars()
+       print("DRAW")
+       marked = draw_star_image(cv2_image, self.cp['cat_image_stars'], self.cp)
 
        cv2.startWindowThread()
        cv2.namedWindow("preview")
-       cv2.imshow('preview', cv2_image)
-       cv2.waitKey()
+       show_img = cv2.resize(marked, (1280,720))
+       cv2.imshow('preview', show_img)
+       key_press = cv2.waitKey()
+       while True:
+          cv2.imshow('preview', show_img)
+          key_press = cv2.waitKey()
+          print("PRESSED KEY:", key_press)
+          print("AZ:", self.cp['center_az'])
+          print("EL:", self.cp['center_el'])
+          print("POS:", self.cp['position_angle'])
+          print("pixscale:", self.cp['pixscale'])
+          if key_press == 102:
+             #A 
+             self.cp['center_az'] -= .05
+          if key_press == 97:
+             #F 
+             self.cp['center_az'] += .05
+          if key_press == 100:
+             #D 
+             self.cp['center_el'] += .05
+          if key_press == 115:
+             #s 
+             self.cp['center_el'] -= .05
+          if key_press == 113:
+             exit()
 
        #sizer = wx.BoxSizer()
        #sizer.Add(image)
        #self.SetSizerAndFit(sizer)
-
+    
+    
     def OnShowStars(self,e):
         print("SHOW CAT STARS!")
         print("ST:", self.t1_station_id.GetValue())
@@ -1043,7 +1079,8 @@ class MainFrame(wx.Frame):
     def load_calib(self):
         if "/" in self.meteor_video_file:
            meteor_fn = self.meteor_video_file.split("/")[-1]
-        
+        else:
+           meteor_fn = self.meteor_video_file
         el = meteor_fn.split("_")
         self.year = el[1]
         self.month = el[2]
@@ -1061,7 +1098,7 @@ class MainFrame(wx.Frame):
         self.trim_num = self.trim_num.replace(".mp4", "")
         self.cals_in_range = []
         self.extra_cals = []
-
+      
         station_id = el[0]
 
         self.station_id = station_id
@@ -1082,12 +1119,13 @@ class MainFrame(wx.Frame):
            if camera == self.camera_id:
               if self.obs_date_datetime > edt:
                  greater_than_end = 1
+                 self.cals_in_range.append((center_az, center_el,center_pos,center_pix))
               if sdt <= self.obs_date_datetime <= edt:
                  print("CAL IN RANGE!")
                  in_range = 1
                  self.cals_in_range.append((center_az, center_el,center_pos,center_pix))
               else:
-                 print("CAL NOT IN RANGE!")
+                 print("CAL NOT IN RANGE!", self.obs_date_datetime, sdt, edt, greater_than_end)
                  self.extra_cals.append((center_az, center_el,center_pos,center_pix))
               # check if the file date is inside the range
               print(greater_than_end, in_range, row)
@@ -1106,7 +1144,9 @@ class MainFrame(wx.Frame):
            cp = update_center_radec(self.meteor_fn,cp,self.json_conf)
            self.cp = cp
            print("RA DEC CENTER:???", cp['ra_center'], cp['dec_center'])
-
+        else:
+           print("NO CALS AVAILABLE!?")
+           exit()
 
 
 

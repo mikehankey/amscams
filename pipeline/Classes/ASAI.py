@@ -123,10 +123,17 @@ class AllSkyAI():
             meteor_yn_model.h5
             meteor_fireball_yn_model.h5
             multi_class_model.h5
+
+            meteor_or_plane_model.h5
+            meteor_or_bird_model.h5
+            meteor_or_firefly_model.h5
       """
       self.model_meteor_yn = Sequential()
       self.model_meteor_fireball_yn = Sequential()
       self.model_multi_class = Sequential()
+      self.model_meteor_or_plane = Sequential()
+      self.model_meteor_or_bird = Sequential()
+      self.model_meteor_or_firefly = Sequential()
 
       self.model_meteor_yn =load_model('meteor_yn_model.h5')
       self.model_meteor_yn.compile(loss='binary_crossentropy',
@@ -137,6 +144,22 @@ class AllSkyAI():
       self.model_meteor_fireball_yn.compile(loss='binary_crossentropy',
               optimizer='rmsprop',
               metrics=['accuracy'])
+
+      self.model_meteor_or_plane =load_model('meteor_or_plane_model.h5')
+      self.model_meteor_or_plane.compile(loss='binary_crossentropy',
+              optimizer='rmsprop',
+              metrics=['accuracy'])
+
+      self.model_meteor_or_bird =load_model('meteor_or_bird_model.h5')
+      self.model_meteor_or_bird.compile(loss='binary_crossentropy',
+              optimizer='rmsprop',
+              metrics=['accuracy'])
+
+      self.model_meteor_or_firefly =load_model('meteor_or_firefly_model.h5')
+      self.model_meteor_or_firefly.compile(loss='binary_crossentropy',
+              optimizer='rmsprop',
+              metrics=['accuracy'])
+
 
       self.model_multi_class =load_model("multi_class_model.h5")
       self.model_multi_class.compile(loss='categorical_crossentropy',
@@ -229,7 +252,7 @@ class AllSkyAI():
 
       # check meteor yn
       meteor_yn_class = self.model_meteor_yn.predict(img)
-      meteor_yn_confidence = meteor_yn_class[0][0]
+      meteor_yn_confidence = (1 - meteor_yn_class[0][0]) * 100
       if meteor_yn_class[0][0] > .5:
          # NON METEOR DETECTED!
          meteor_yn = False 
@@ -239,13 +262,46 @@ class AllSkyAI():
 
       # check fireball yn
       fireball_yn_class = self.model_meteor_fireball_yn.predict(img)
-      meteor_fireball_yn_confidence = fireball_yn_class[0][0]
+      meteor_fireball_yn_confidence = (1 - fireball_yn_class[0][0]) * 100
       if fireball_yn_class[0][0] > .5:
          # NON METEOR DETECTED!
          meteor_fireball_yn = False 
       else:
          # METEOR DETECTED
          meteor_fireball_yn = True 
+
+      # check meteor_or_plane 
+      meteor_or_plane_class = self.model_meteor_or_plane.predict(img)
+      meteor_or_plane_confidence = (1 - meteor_or_plane_class[0][0]) * 100
+      if meteor_or_plane_class[0][0] > .5:
+         # NON METEOR DETECTED!
+         meteor_or_plane_yn = False 
+      else:
+         # METEOR DETECTED
+         meteor_or_plane_yn = True 
+
+      # check meteor_or_bird
+      meteor_or_bird_class = self.model_meteor_or_bird.predict(img)
+      meteor_or_bird_confidence = (1 - meteor_or_bird_class[0][0]) * 100
+      if meteor_or_bird_class[0][0] > .5:
+         # NON METEOR DETECTED!
+         meteor_or_bird_yn = False 
+      else:
+         # METEOR DETECTED
+         meteor_or_bird_yn = True 
+
+      # check meteor_or_firefly
+      meteor_or_firefly_class = self.model_meteor_or_firefly.predict(img)
+      meteor_or_firefly_confidence = (1 - meteor_or_firefly_class[0][0]) * 100
+      if meteor_or_firefly_class[0][0] > .5:
+         # NON METEOR DETECTED!
+         meteor_or_firefly_yn = False 
+      else:
+         # METEOR DETECTED
+         meteor_or_firefly_yn = True 
+
+
+
 
       # check multi class
       mc_w = 150
@@ -266,6 +322,13 @@ class AllSkyAI():
       response['meteor_yn_confidence'] = float(meteor_yn_confidence)
       response['meteor_fireball_yn'] = meteor_fireball_yn
       response['meteor_fireball_yn_confidence'] = float(meteor_fireball_yn_confidence)
+      response['meteor_or_plane_yn'] = meteor_or_plane_yn
+      response['meteor_or_plane_confidence'] = float(meteor_or_plane_confidence)
+      response['meteor_or_bird_yn'] = meteor_or_bird_yn
+      response['meteor_or_bird_confidence'] = float(meteor_or_bird_confidence)
+      response['meteor_or_firefly_yn'] = meteor_or_firefly_yn
+      response['meteor_or_firefly_confidence'] = float(meteor_or_firefly_confidence)
+
       response['mc_class'] = predicted_class
       response['mc_confidence'] = int(100 * np.max(score))
       return(response)

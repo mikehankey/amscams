@@ -187,6 +187,85 @@ def eval_frame_data(frame_data):
    resp['cys'] = fns 
    return(resp)
 
+def display_roi_img(img, info):
+#{'meteor_yn': True, 'meteor_yn_confidence': 85.99309027194977, 'meteor_fireball_yn': False, 'meteor_fireball_yn_confidence': 27.001702785491943, 'meteor_or_plane_yn': True, 'meteor_or_plane_confidence': 99.19724194332957, 'meteor_or_bird_yn': False, 'meteor_or_bird_confidence': 0.0, 'meteor_or_firefly_yn': False, 'meteor_or_firefly_confidence': 3.6711394786834717, 'mc_class': 'meteor_dim_solid_med', 'mc_confidence': 93}
+   if info['meteor_yn'] is True:
+      detect_color = [0,255,0]
+   else:
+      detect_color = [0,0,255]
+   if info['meteor_yn'] is True:
+      desc = "Meteor: Y " + str(info['meteor_yn_confidence'])[0:5]
+   else:
+      desc = "Meteor: N " + str(info['meteor_yn_confidence'])[0:5]
+   cv2.putText(img, desc,  (5, 20 ), cv2.FONT_HERSHEY_SIMPLEX, .3, detect_color, 1)
+
+   if info['meteor_fireball_yn'] is True:
+      desc = "Fireball: Y " + str(info['meteor_fireball_yn_confidence'])[0:5]
+   else:
+      desc = "Fireball: N " + str(info['meteor_fireball_yn_confidence'])[0:5]
+   cv2.putText(img, desc,  (5, 30 ), cv2.FONT_HERSHEY_SIMPLEX, .3, detect_color, 1)
+
+   if info['meteor_or_plane_yn'] is True:
+      desc = "Plane: Y " + str(info['meteor_or_plane_confidence'])[0:5]
+   else:
+      desc = "Plane: N " + str(info['meteor_or_plane_confidence'])[0:5]
+   cv2.putText(img, desc,  (5, 40 ), cv2.FONT_HERSHEY_SIMPLEX, .3, detect_color, 1)
+
+   if info['meteor_or_bird_yn'] is True:
+      desc = "Bird: Y " + str(info['meteor_or_bird_confidence'])[0:5]
+   else:
+      desc = "Bird: N " + str(info['meteor_or_bird_confidence'])[0:5]
+   cv2.putText(img, desc,  (5, 50 ), cv2.FONT_HERSHEY_SIMPLEX, .3, detect_color, 1)
+
+   if info['meteor_or_firefly_yn'] is True:
+      desc = "Firefly: Y " + str(info['meteor_or_firefly_confidence'])[0:5]
+   else:
+      desc = "Firefly: N " + str(info['meteor_or_firefly_confidence'])[0:5] 
+   cv2.putText(img, desc,  (5, 60 ), cv2.FONT_HERSHEY_SIMPLEX, .3, detect_color, 1)
+
+   desc = "Class: " + str(info['mc_class']) + " " + str(info['mc_confidence'])[0:5]
+   cv2.putText(img, desc,  (5, 70 ), cv2.FONT_HERSHEY_SIMPLEX, .3, detect_color, 1)
+
+   cv2.imshow('pep', img)
+   cv2.moveWindow('pep',500,200)
+
+   cv2.waitKey(30)
+   
+
+def scan_roi_dir(station_id, roi_dir):
+
+   AIDB = AllSkyDB()
+   con = AIDB.connect_database(station_id)
+   cur = con.cursor()
+
+   make_movie = False
+   if os.name == "nt":
+      windows = True
+      root_dir = "Y:/"
+   else:
+      windows = False
+      root_dir = "/mnt/ams2/"
+
+   ASAI = AllSkyAI()
+   AID = ASAI_Detect()
+   mc_model = AID.load_my_model("multi_class_model.h5")
+   labels = load_json_file("labels.json")
+
+   ASAI.load_all_models()
+   MLM = MLMeteors()
+   msdir = root_dir + "METEOR_SCAN/" + date + "/"
+   #mfiles, roi_files, non_reduced_files, ai_data, ai_data_file = MLM.load_meteors_for_day(date, station_id)
+   #ms_data_file = ai_data_file.replace("AI_SCAN", "MS_DATA")
+
+   roi_files = glob.glob(roi_dir + "*")
+   print("ROI FILES:", roi_dir + "*")
+   for roi_file in roi_files:
+      print(roi_file)
+      rimg = cv2.imread(roi_file)
+      resp = ASAI.meteor_yn(None, rimg)
+      display_roi_img(rimg, resp)
+      print(resp)
+
 def scan_meteors_for_day(station_id, date):
 
    AIDB = AllSkyDB()
@@ -572,6 +651,11 @@ meteor_dir = root_dir + "meteors/"
 
 station_id = json_conf['site']['ams_id']
 date = sys.argv[1]
+if date == "roi_dir":
+   roi_dir = sys.argv[2]
+   scan_roi_dir(station_id, roi_dir)
+   print("DONE SCAN")
+   exit()
 if date != "ALL":
    scan_meteors_for_day(station_id, date)
 else:

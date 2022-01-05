@@ -1,7 +1,9 @@
 from Classes.AIDB import AllSkyDB
 import sys
+
 try:
    from Classes.AllSkyUI import AllSkyUI
+   noUI = False 
 except:
    noUI = True 
 
