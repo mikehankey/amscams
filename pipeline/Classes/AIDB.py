@@ -109,6 +109,7 @@ class AllSkyDB():
       print("BAD FILES:", bad)
 
    def update_summary(self):
+      # This function will just update the stats in the main summary table
 
       # get total number of METEORS in the systems 
       sql = "SELECT count(*) as ccc from meteors"
@@ -213,13 +214,12 @@ class AllSkyDB():
          print(len(meteor_roots) , "loaded")
 
 
-         exit()
-         for mr in meteor_roots:
-            sql = """SELECT roi_fn from ml_samples where root_fn = ? and (meteor_yn_conf > 50 or fireball_yn_conf > 50 or multi_class like "%meteor%") """
-            bind_vars = [mr]
-            self.cur.execute(sql, bind_vars)
-            rows = self.cur.fetchall()
-            print(mr, len(rows))
+         #for mr in meteor_roots:
+         #   sql = """SELECT roi_fn from ml_samples where root_fn = ? and (meteor_yn_conf > 50 or fireball_yn_conf > 50 or multi_class like "%meteor%") """
+         #   bind_vars = [mr]
+         #   self.cur.execute(sql, bind_vars)
+         #   rows = self.cur.fetchall()
+         #   print(mr, len(rows))
         
 
       
