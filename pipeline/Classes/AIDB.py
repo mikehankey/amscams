@@ -7,6 +7,7 @@ import os
 from lib.PipeUtil import load_json_file, convert_filename_to_date_cam, get_trim_num, mfd_roi, save_json_file, bound_cnt
 import sys
 import glob
+from Classes.ASAI import AllSkyAI 
 
 class AllSkyDB():
 
@@ -21,8 +22,211 @@ class AllSkyDB():
       self.station_id = self.json_conf['site']['ams_id']
       self.con = self.connect_database(self.station_id)
       self.cur = self.con.cursor()
+      self.ASAI = AllSkyAI()
+      self.ASAI.load_all_models()
+      self.check_update_status()
 
-  
+   def check_update_status(self):
+      print("Check update scan status...")
+      # check to make sure the ml_samples table has the lastest patch
+      if os.path.exists("../conf/sqlite.json") is True:
+         sql_conf = load_json_file("../conf/sqlite.json")
+      else:
+         sql_conf = {}
+         sql_conf['updates'] = {}
+
+      # Do alters / db updates / table adds
+      if "ml_samples_alter" not in sql_conf['updates']:
+         try:
+            sql = "ALTER TABLE ml_samples ADD COLUMN meteor_or_plane real"
+            self.cur.execute(sql)
+            sql = "ALTER TABLE ml_samples ADD COLUMN meteor_or_bird real"
+            self.cur.execute(sql)
+            sql = "ALTER TABLE ml_samples ADD COLUMN meteor_or_firefly real"
+            self.cur.execute(sql)
+            sql = "ALTER TABLE ml_samples ADD COLUMN scan_version real"
+            self.cur.execute(sql)
+         except:
+            print("ml_samples Table already altered")
+            sql_conf['updates']['ml_samples_alter'] = {}
+
+      # Check if summary table exists, if not make it and populate it. 
+      if "station_summary_table" not in sql_conf['updates']:
+         try:
+            sql = """
+               CREATE TABLE "station_summary" (
+	       "station_id"	TEXT,
+	       "total_meteor_obs"	INTEGER,
+	       "total_fireball_obs"	INTEGER,
+	       "total_meteors_human_confirmed"	INTEGER,
+	       "first_day_scanned"	TEXT,
+	       "last_day_scanned"	TEXT,
+	       "total_days_scanned"	INTEGER,
+	       "ai_meteor_yes"	INTEGER,
+	       "ai_meteor_no"	INTEGER,
+	       "ai_meteor_samples"	INTEGER,
+	       "ai_non_meteor_samples"	INTEGER
+               );
+            """
+            self.cur.execute(sql)
+         except:
+            print("station_summary Table already altered")
+            sql_conf['updates']['station_summary_table'] = {}
+         save_json_file("../conf/sqlite.json", sql_conf) 
+
+      self.purge_deleted_meteors()
+      print("END PURGE:")
+      exit()
+      sql = "SELECT * from station_summary" 
+      rows = self.cur.fetchall()
+
+
+      print("STATION SUMMARY", len(rows))
+      update_summary = 0
+      if len(rows) == 0:
+         update_summary = 1
+      if update_summary == 1:
+         self.update_summary()
+      exit()
+
+   def purge_deleted_meteors(self):
+      # this will check each meteor in the DB. 
+      # if it does not exist on the file system it will be removed from the DB
+      sql = "SELECT root_fn, roi, mfd from meteors WHERE meteor_yn = '' order by root_fn desc"
+      self.cur.execute(sql)
+      rows = self.cur.fetchall()
+      found = 0
+      not_found = 0
+      good = 0
+      bad = 0
+      for row in rows:
+         root_file = row[0]
+         mfile = "/mnt/ams2/meteors/" + root_file[0:10] + "/" + root_file + ".json"
+         if os.path.exists(mfile) is True:
+            good += 1
+         else:
+            bad += 1
+            print("NOT FOUND!:", mfile)
+      print("GOOD FILES:", good)
+      print("BAD FILES:", bad)
+
+   def update_summary(self):
+
+      # get total number of METEORS in the systems 
+      sql = "SELECT count(*) as ccc from meteors"
+      self.cur.execute(sql)
+      rows = self.cur.fetchall()
+      total_meteor_obs = rows[0][0]
+
+      # get total number of METEORS in the system marked as meteor_yn = 1
+      sql = "SELECT count(*) as ccc from meteors WHERE meteor_yn = 1"
+      self.cur.execute(sql)
+      rows = self.cur.fetchall()
+      total_meteor_obs_yes = rows[0][0]
+
+      # get total number of METEORS in the system marked as meteor_yn = 0
+      sql = "SELECT count(*) as ccc from meteors WHERE meteor_yn = 0"
+      self.cur.execute(sql)
+      rows = self.cur.fetchall()
+      total_meteor_obs_no = rows[0][0]
+
+      # get total number of METEORS in the system marked as meteor_yn = 0
+      sql = "SELECT count(*) as ccc from meteors WHERE meteor_yn = ''"
+      self.cur.execute(sql)
+      rows = self.cur.fetchall()
+      total_meteor_obs_not_run = rows[0][0]
+
+      # get total number of METEORS in the system marked as human = 1
+      sql = "SELECT count(*) as ccc from meteors WHERE human_confirmed = 1"
+      self.cur.execute(sql)
+      rows = self.cur.fetchall()
+      total_meteor_human_confirmed = rows[0][0]
+
+
+      # get total number of METEORS in the system marked as reduced = 1
+      sql = "SELECT count(*) as ccc from meteors WHERE reduced = 1"
+      self.cur.execute(sql)
+      rows = self.cur.fetchall()
+      total_meteor_reduced = rows[0][0]
+
+
+      print("Total Meteor Obs:", total_meteor_obs)
+      print("Total Meteor Obs AI Yes:", total_meteor_obs_yes)
+      print("Total Meteor Obs AI No:", total_meteor_obs_no)
+      print("Total Meteor Obs AI Not Run:", total_meteor_obs_not_run)
+      print("Total Meteor Human Confirmed:", total_meteor_human_confirmed)
+      print("Total Meteors Reduced:", total_meteor_reduced)
+
+      if True:
+         meteor_roots = []
+         print("Do a quick update to make sure the old detects just need to be updated...")
+         sql = "SELECT root_fn, roi, mfd from meteors WHERE meteor_yn = '' order by root_fn desc"
+         self.cur.execute(sql)
+         rows = self.cur.fetchall()
+         found = 0
+         not_found = 0
+         for row in rows:
+            root = row[0]
+            roi = row[1]
+            mfd = row[2]
+            if isinstance(roi,str) is True and "[" in roi:
+               roi = eval(roi)
+            else:
+               roi = None
+
+
+            if "AMS" not in root:
+               date = root[0:10]
+               mdir = "/mnt/ams2/meteors/" + date + "/" 
+               msdir = "/mnt/ams2/METEOR_SCAN/" + date + "/" 
+               roi_file = msdir + self.station_id + "_" + root + "-ROI.jpg"
+               print("ROI FILE:", roi_file)
+               if os.path.exists(roi_file) is True:
+                  roi_exists = 1
+                  roi_img = cv2.imread(roi_file)
+                  #print(found, "ROI FILE FOUND!", roi_file)
+                  found += 1
+                  try:
+                     resp = self.ASAI.meteor_yn(None,roi_img)
+                  except:
+                     resp = None
+                  if resp is not None:
+                     sql = """ UPDATE meteors 
+                        SET meteor_yn = ?,
+                            meteor_yn_conf = ?
+                        WHERE sd_vid = ? """
+                     task = [resp['final_meteor_yn'],resp['final_meteor_yn_conf'],root + ".mp4"]
+
+                     #cur = con.cursor()
+                     self.cur.execute(sql, task)
+                     print("SQL:", sql)
+                     print("TASK:", task)
+                     self.con.commit()
+
+                     print("UPDATE", task)
+               else:
+                  #print(not_found, "ROI FILE NOT FOUND!", roi_file)
+                  roi_exists = 0
+                  not_found += 1
+            else:
+               print("ROOT:", root)
+
+            meteor_roots.append(root)
+         print(len(meteor_roots) , "loaded")
+
+
+         exit()
+         for mr in meteor_roots:
+            sql = """SELECT roi_fn from ml_samples where root_fn = ? and (meteor_yn_conf > 50 or fireball_yn_conf > 50 or multi_class like "%meteor%") """
+            bind_vars = [mr]
+            self.cur.execute(sql, bind_vars)
+            rows = self.cur.fetchall()
+            print(mr, len(rows))
+        
+
+      
+
+   
    def starttime_from_file(self, filename):
       (f_datetime, cam, f_date_str,fy,fmon,fd, fh, fm, fs) = convert_filename_to_date_cam(filename)
       trim_num = get_trim_num(filename)

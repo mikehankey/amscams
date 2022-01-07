@@ -1,4 +1,5 @@
 import glob
+import sqlite3
 import cv2
 import os
 from lib.PipeAutoCal import fn_dir
@@ -72,13 +73,66 @@ def learn_main(station_id):
       ai_sum = load_json_file(ai_summary_file)
    out = ""
    for key in ai_sum:
-      out += key + " " + str(ai_sum[key]) +  "<br>"
+      #img = "<img src="/datasets/meteor_yn/"
+      out += key + " " + str(ai_sum[key]) +  "<br>\n"
    print(ai_summary_file)
    print("MD:", len(machine_data)) 
    print("HD:", len(human_data)) 
    print("OBS IDS:", len(obs_ids)) 
 
    return(out)
+
+
+def html_page_header(station_id):
+
+   header = """
+<!doctype html>
+<html lang="en">
+        <head>
+
+                <style>
+                        @import url("https://cdn.jsdelivr.net/npm/bootstrap-icons@1.4.1/font/bootstrap-icons.css");
+                        @import url("https://cdn.datatables.net/1.10.25/css/jquery.dataTables.min.css");
+
+.show_hider {
+   color: transparent;
+}
+.show_hider:hover {
+   color: #FCFCFC;
+}
+
+.navbar-fixed-top, .navbar-fixed-bottom {
+    /*position: fixed;*/
+    right: 0;
+    left: 0;
+    z-index: 1030;
+    margin-bottom: 0;
+}
+                </style>
+                <noscript><meta http-equiv="refresh" content="0; url=/no-js.html" /></noscript>
+    
+
+      <!-- Required meta tags -->
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1">
+      <title>AllSky.com </title>
+               <script src="https://cdn.plot.ly/plotly-2.2.0.min.js"></script>
+
+      <script src="https://kit.fontawesome.com/25faff154f.js" crossorigin="anonymous"></script>
+      <!-- Bootstrap CSS -->
+      <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-eOJMYsd53ii+scO/bJGFsiCZc+5NDVN2yr8+0RDqr0Ql0h+rP48ckxlpbzKgwra6" crossorigin="anonymous">
+      <link rel="alternate" type="application/rss+xml" title="RSS 2.0" href="https://www.datatables.net/rss.xml">
+      <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+      <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/js/bootstrap.bundle.min.js" integrity="sha384-JEW9xMcG8R+pH31jmWH6WWP0WintQrMb4s7ZOdauHnUtxwoG2vI5DkLtS3qm9Ekf" crossorigin="anonymous"></script>
+      <script type="text/javascript" language="javascript" src="https://cdn.datatables.net/1.10.24/js/jquery.dataTables.min.js"></script>
+
+      <script>
+
+      all_classes = ['meteor', 'cloud', 'bolt', 'cloud-moon', 'cloud-rain',  'tree', 'plane', 'car-side', 'satellite', 'crow', 'bug','chess-board','question']
+      labels = ['meteor', 'clouds', 'lightening', 'moon', 'rain', 'tree', 'planes', 'cars', 'satellite', 'BIRDS', 'fireflies','noise','notsure']
+      </script>
+   """
+   return(header)
 
 def learning_review_day(station_id, review_date):
    header = """
@@ -196,14 +250,15 @@ def learning_review_day(station_id, review_date):
       }
 
    function callbackBatchUpdate(resp) {
-      alert(resp)
+      //alert(resp)
    }
    function error_callback(resp) {
-      alert(resp)
+      //alert(resp)
       console.log("ERROR" + resp)
    }
 
       function click_icon(icon_type, resource_id) {
+           //alert("YO OLD?")
            for (var i in labels) {
               var tdiv_id = "#reclass_" + labels[i] + "_" + resource_id
               console.log("RESET:", i, tdiv_id)
@@ -422,20 +477,40 @@ def learn_footer(url, items, cur_page, ipp):
 #<li class='page-item'><a class='page-link' href='/meteor/AMS1/?meteor_per_page=100&start_day=2021_11_07&end_day=2021_11_07&p=2'>2</a></li><li class='page-item'><a class='page-link' href='/meteor/AMS1/?meteor_per_page=100&start_day=2021_11_07&end_day=2021_11_07&p=2'>Next &raquo;</a></li></ul></nav> 
 
 
-def learning_meteors_tag(label, req):
-   learning_file = "/mnt/ams2" + req['learning_file']
-   lfn = learning_file.split("/")[-1]
-   new_dir = "/mnt/ams2/datasets/images/repo/" + label.lower() + "/"
-   human_data_file = "/mnt/ams2/datasets/human_data.json"
-   if os.path.exists(human_data_file) is True:
-      human_data = load_json_file(human_data_file)
+def learning_meteors_tag(label, req, station_id = None):
+   print(label)
+   roi_file = req['learning_file']
+   if station_id is None:
+      json_conf = load_json_file("../conf/as6.json")
+      station_id = json_conf['site']['ams_id']
+
+   db_file = station_id + "_ALLSKY.db"
+   con = sqlite3.connect(db_file)
+   cur = con.cursor()
+
+   sql = """ UPDATE ml_samples 
+             SET human_confirmed = ?,
+                 human_label = ?,
+                 meteor_yn = ?,
+                 meteor_yn_conf = ?,
+                 fireball_yn = ?,
+                 fireball_yn_conf = ?,
+                 multi_class = ?,
+                 multi_class_conf = ?
+             WHERE roi_fn = ? """
+   print(sql)
+   print(roi_file)
+
+   if label == "METEOR": 
+      task = [1,"METEOR",1,99,0,0,'meteor',99,roi_file + ".jpg"]
    else:
-      human_data = {}
-   human_data[lfn] = label
-   save_json_file(human_data_file, human_data)
-   cmd = "mv " + learning_file + " " + new_dir 
-   print(cmd)
-   os.system(cmd)
+      task = [0,"NON_METEOR",0,0,0,0,'non',99,roi_file + ".jpg"]
+
+   cur = con.cursor()
+   cur.execute(sql, task)
+   con.commit()
+
+
    resp = {}
    resp['msg'] = "OK"
 
@@ -465,7 +540,7 @@ def js_learn_funcs():
         </a>
         <a href="javascript:click_icon('reclass_trash', '` + roi_file + `')">
             <i style="padding: 5px; color: ` + color + `; font-size: ` + size + `px;"
-               class="bi bi-trash" title="non-meteor" id='reclass_nonmeteor_` + roi_file + `'></i>
+               class="bi bi-trash" title="non-meteor" id='reclass_trash_` + roi_file + `'></i>
         </a>
         <a href="javascript:click_icon('expand', '` + roi_file + `')">
             <i style="padding: 5px; color: ` + color + `; font-size: ` + size + `px;"
@@ -475,36 +550,89 @@ def js_learn_funcs():
    return (trash_icons)
    }
 
-
+   function swap_html(div_id, new_html, width, height) {
+         $(div_id).html(new_html)
+         $(div_id).css("width", width);
+         $(div_id).css("height", height);
+         $(div_id).css("background-size", width + " " + height);
+         //$(div_id).css("background-image", "url(" + img_url + ")");
+   }
 
 
    function click_icon(cmd, roi_file) {
-      div_id = "#" + roi_file.replace("-ROI.jpg", "")
-      div_id = div_id.replace(/-/g, "")
-      div_id = div_id.replace(/_/g, "")
-      cur_html = $(div_id).html()
-      el = roi_file.split("_")
-      station_id = el[0]
-      stack_fn = roi_file.replace(station_id + "_", "")
-      stack_fn = stack_fn.replace("-ROI.jpg", "-stacked.jpg")
-      date = stack_fn.substr(0,10)
-      stack_url = "/meteors/" + date + "/" + stack_fn
+      root_file = ""
+      if (roi_file.includes("-RX_") == true) {
+         el = roi_file.split("-RX_")
+         div_id = "#" + roi_file.replace(".jpg", "")
+         root_file = el[0]
+ 
+      } else {
+         div_id = "#" + roi_file.replace("-ROI.jpg", "")
+         div_id = div_id.replace(/-/g, "")
+         div_id = div_id.replace(/_/g, "")
+      }
+      if (cmd == "reclass_meteor" || cmd == "reclass_trash") {
 
-      $(div_id).css("width", "640px");
-      $(div_id).css("height", "360px");
-      $(div_id).css("background-size", "640px 360px");
-      $(div_id).css("background-image", "url(" + stack_url + ")");
-      new_html = `<a href="#` + stack_fn + `"><img data-id="` + stack_fn + `" class="ximg" width=640 height=360 src="` + stack_url + `" ismap></a>`
+           var tdiv_id = "#reclass_meteor_" + roi_file.replace(".jpg", "")
+           var odiv_id = "#reclass_trash_" + roi_file.replace(".jpg", "")
+           if (cmd == "reclass_meteor") {
+              //$(tdiv_id).toggleClass('selected')
+              $(tdiv_id).attr('style', 'color: lime !important;padding: 2px');
+              $(odiv_id).attr('style', 'color: white !important;padding: 2px');
+           }
+           if (cmd == "reclass_trash") {
+              //$(odiv_id).toggleClass('selected')
+              $(odiv_id).attr('style', 'color: red !important;padding: 2px');
+              $(tdiv_id).attr('style', 'color: white !important;padding: 2px');
+           }
+
+         if (cmd == "reclass_meteor") {
+            ReLabel(div_id,roi_file,"METEOR",2)
+         } else {
+            ReLabel(div_id,roi_file,"NON_METEOR",2)
+         }
+      }
 
 
-      $(div_id).html(new_html)
+      if (cmd == "expand") {
+         cur_html = $(div_id).html()
+         
+         if (root_file != "") {
+            roi_file = root_file + "-ROI.jpg"
+         }
+    
+         if (roi_file.includes("AMS_") == true) { 
+            el = roi_file.split("_")
+            station_id = el[0]
+            stack_fn = roi_file.replace(station_id + "_", "")
+         } 
+         else {
+            stack_fn = roi_file
+         }
+         stack_fn = stack_fn.replace("-ROI.jpg", "-stacked.jpg")
+         date = stack_fn.substr(0,10)
+         stack_url = "/meteors/" + date + "/" + stack_fn
 
+         $(div_id).css("width", "640px");
+         $(div_id).css("height", "360px");
+         $(div_id).css("background-size", "640px 360px");
+         $(div_id).css("background-image", "url(" + stack_url + ")");
+         //ismap
+         //new_html = `<a href="#` + stack_fn + `"></a><img data-id="` + stack_fn + `" class="ximg" width=640 height=360 src="` + stack_url + `" ismap></a>`
+         new_html = `<a href="javascript:swap_html(div_id, cur_html, '180px', '180px' )">
+              <img data-id="` + stack_fn + `" class="ximg" width=640 height=360 src="` + stack_url + `" ></a>`
+         
+
+         $(div_id).html(new_html)
+      }
+    
+      /*
       $("img").on("click", function(event) {
         var id = $(this).data("id");
-        alert(id)
+        //alert(id)
         var x = event.pageX - this.offsetLeft;
         var y = event.pageY - this.offsetTop;
-        alert("X Coordinate: " + x + " Y Coordinate: " + y);
+        //alert("X Coordinate: " + x + " Y Coordinate: " + y);
         //api_data = "stack_fn=" + id + "click_x=" + x + "&click_y=" + y 
         api_data = {}
         api_data['cmd'] = "recrop_roi"
@@ -513,12 +641,13 @@ def js_learn_funcs():
         api_data['click_y'] = y
         api_data['div_id'] = div_id
         console.log(api_data)
-        api_url = "/LEARNING/" + station_id + "/RECROP/" 
-        alert(api_url)
+        //api_url = "/LEARNING/" + station_id + "/RECROP/" 
+        //alert(api_url)
         method = "POST"
-        callAPI(api_url, method, api_data, callbackROI,error_callback)
+        //callAPI(api_url, method, api_data, callbackROI,error_callback)
 
       });
+      */
 
    }
 
@@ -561,12 +690,12 @@ def js_learn_funcs():
         }
 
    function callbackBatchUpdate(resp) {
-      alert(resp)
+      //alert(resp)
    }
 
    function callbackROI(resp) {
-      alert(resp['roi_url'])
-      alert(resp['div_id'])
+      //alert(resp['roi_url'])
+      //alert(resp['div_id'])
       el = resp['roi_url'].split("/")
       roi_file = el.at(-1)
 
@@ -588,7 +717,7 @@ def js_learn_funcs():
 
  
    function callback(resp) {
-      alert(resp)
+     // alert(resp)
       console.log(resp)
    }
    function error_callback(resp) {
@@ -599,6 +728,7 @@ def js_learn_funcs():
       api_url = "/LEARNING/TAG/" + label + "?learning_file=" + learn_img
       data = {}
       method = "GET"
+      //alert(api_url)
       callAPI(api_url, method, data, callback,error_callback)
    }
    function SwapDivLearnDetail(div1,learn_img, orig_meteor,play_vid)
@@ -700,7 +830,7 @@ def meteor_ai_scan(in_data, json_conf):
       crop_img = "/METEOR_SCAN/" + lfile[5:15] + "/" + lfile.replace(".json", "-ROI.jpg")
       controls = ""
 
-      controls = make_trash_icon(lfile,"#FFFFFF","20") 
+      controls = make_trash_icon(lfile,"#ffffff","20") 
       div_id = lfile.replace("-ROI.jpg", "")
       div_id = div_id.replace("-", "")
       div_id = div_id.replace("_", "")
@@ -715,7 +845,247 @@ def meteor_ai_scan(in_data, json_conf):
     
    template = template.replace("{MAIN_TABLE}", out)
    return(template)
-   
+  
+def learning_db_dataset(ams_id, in_data):
+   # SQL REPORT FROM ML_SAMPLES TABLE
+   header = html_page_header(ams_id)
+   rand = str(time.time())
+   label = "meteor"
+   order_by = "MS.roi_fn"
+
+
+   if in_data['label'] == "METEORS" or in_data['label'] == 'METEOR':
+      label = "meteor"
+   else:
+      label = "non_meteor"
+
+   high_conf = 0
+   low_conf = 0
+   if in_data['conf'] == "high" and label == 'meteor':
+      print("High conf meteors") 
+      high_conf = 1
+
+   elif in_data['conf'] == "high" and label == 'non_meteor':
+      print("High conf non meteors") 
+      high_conf = 1
+   elif in_data['conf'] == "low" and label == 'meteor':
+      print("low conf meteors") 
+      low_conf = 1
+
+
+
+   if in_data['sort'] == "score_asc":
+      sort_by = "score"
+      order_by = "score ASC"
+      sort_opt = "<option value=date >Date</option>"
+      sort_opt += "<option value=score_asc selected>Score ASC</option>"
+      sort_opt += "<option value=score_desc >Score DESC</option>"
+   elif in_data['sort'] == "score_desc":
+      sort_by = "score"
+      order_by = "score DESC"
+      sort_opt = "<option value=date >Date</option>"
+      sort_opt += "<option value=score_asc >Score ASC</option>"
+      sort_opt += "<option value=score_desc selected >Score DESC</option>"
+   else:
+      sort_by = "date"
+      order_by = "MS.roi_fn"
+      sort_opt = "<option value=date selected>Date</option>"
+      sort_opt += "<option value=score_asc >Score ASC</option>"
+      sort_opt += "<option value=score_desc >Score DESC</option>"
+
+   print(str(in_data) + "<BR>")
+   station_id = ams_id
+   db_file = ams_id + "_ALLSKY.db"
+   con = sqlite3.connect(db_file)
+   if in_data['ipp'] is None:
+      in_data['ipp'] = 100
+
+   limit = int(in_data['ipp'])
+
+   limits = [25,100,250,500,1000]
+   per_page_opt = ""
+   for ll in limits:
+      if int(ll) == int(limit):
+         per_page_opt += "<option selected value='" + str(ll) + "'>" + str(ll) + "</option>"
+      else:
+         per_page_opt += "<option value='" + str(ll) + "'>" + str(ll) + "</option>"
+
+   if in_data['p'] is None:
+      offset = 0
+      page_num = 0
+   else:
+      page_num = in_data['p']
+      offset = int(in_data['p']) * int(in_data['ipp'])
+      
+   cur = con.cursor()
+   if label == "meteor":
+      if high_conf == 1:
+         plus_where = " WHERE ((MS.meteor_yn = 1 OR MS.fireball_yn = 1 or MS.human_confirmed == 1) AND MS.multi_class LIKE '%meteor%' or MS.human_confirmed == 1"
+      elif low_conf == 1:
+         plus_where = " WHERE ((MS.meteor_yn = 1 OR MS.fireball_yn = 1 or MS.human_confirmed == 1) AND (MS.meteor_yn_conf < 50 and MS.fireball_yn_conf < 50)) OR (MS.meteor_yn = 1 OR MS.fireball_yn = 1) AND MS.multi_class NOT LIKE '%meteor%'  "
+         print("PLUS WHERE!")
+      else:
+         plus_where = " WHERE MS.meteor_yn = 1 OR MS.fireball_yn = 1 OR MS.multi_class LIKE '%meteor%' "
+   else:
+      plus_where = " WHERE MS.meteor_yn = 0 AND MS.fireball_yn = 0 AND MS.multi_class NOT LIKE '%meteor%' "
+
+   #order_by = "M.root_fn "
+   #order_by = "MS.meteor_yn_conf "
+   #cur.execute("""
+   #      SELECT M.root_fn, M.roi, MS.roi_fn, MS.meteor_yn, MS.meteor_yn_conf, MS.multi_class, MS.multi_class_conf, M.human_confirmed
+   #         FROM meteors as M LEFT JOIN ml_samples as MS ON M.root_fn = MS.root_fn
+   #         """ + plus_where + """
+   #         ORDER BY """ + order_by + """ DESC LIMIT """ + str(limit) + """ OFFSET """ + str(offset)
+   #   )
+
+   cur.execute("""
+         SELECT MS.root_fn, MS.roi_fn, MS.meteor_yn, MS.meteor_yn_conf, MS.multi_class, MS.multi_class_conf, MS.human_confirmed
+            FROM ml_samples MS
+            """ + plus_where 
+      )
+   rows = cur.fetchall()
+   total_rows = len(rows)
+
+   start_row = int(limit) * int(page_num)
+   end_row = int(start_row) + int(limit)
+   #row_desc = "page num " +  str(page_num) + " offset:" + str(offset) + "<br>"
+   row_desc = "showing " + str(start_row) + " to " + str(end_row)
+
+   cur.execute("""
+         SELECT MS.root_fn, MS.roi_fn, MS.meteor_yn, MS.meteor_yn_conf, MS.fireball_yn, MS.fireball_yn_conf, MS.multi_class, MS.multi_class_conf, MS.human_confirmed,
+            (MS.meteor_yn_conf + MS.fireball_yn_conf + MS.multi_class_conf) AS score
+
+            FROM ml_samples MS
+            """ + plus_where + """
+            ORDER BY """ + order_by + """ LIMIT """ + str(limit) + """ OFFSET """ + str(offset)
+      )
+   rows = cur.fetchall()
+   out = header
+
+   js_code = js_learn_funcs()
+   out += "<script>" + js_code + "</script>"
+
+   #out +=str( in_data)
+
+   #out += str(in_data)
+   if label == "meteor":
+      type_opt = "<option value=meteor selected>Meteors</option>"
+      type_opt += "<option value=non_meteor >Non Meteors</option>"
+   else:
+      type_opt = "<option value=meteor >Meteors</option>"
+      type_opt += "<option value=non_meteor selected>Non Meteors</option>"
+
+
+   out += """
+    <script>
+       function go(station_id) {
+           select_type = document.getElementById('meteor_yn')
+           var mtype = select_type.options[select_type.selectedIndex].value
+
+           datestr = document.getElementById('datestr').value
+
+           select_order_by = document.getElementById('order_by')
+
+           var order_by = select_order_by.options[select_order_by.selectedIndex].value
+           select_human = document.getElementById('human_confirmed')
+           var human_conf = select_human.options[select_human.selectedIndex].value
+           
+           select_ipp = document.getElementById('ipp')
+           var ipp = select_ipp.options[select_ipp.selectedIndex].value
+
+
+           new_url = "/LEARNING/" + station_id + "/" + mtype.toUpperCase() + "?datestr=" + datestr + "&sort=" + order_by + "&human_confirmed=" + human_conf + "&ipp=" + ipp
+
+           window.location.href = new_url
+           
+
+       }
+    </script>
+    <div class='container'>
+    <form name=search id='search'>
+    Show <select id=meteor_yn name="meteor_yn">""" + type_opt + """ </select>
+    Date Str <input id=datestr type="date_str" value="">
+    Order By <select id='order_by' name="order_by">""" + sort_opt + """ </select>
+    Confirmed <select id='human_confirmed' name="human_confirmed">
+       <option value=all>Show All</option>
+       uoption value=confirmed>Confirmed Only</option>
+       <option value=non_confirmed>Non Confirmed </option>
+</select>
+    Items Per Page <select id='ipp' name="ipp">""" + per_page_opt + """ </select>
+    <button onclick="javascript: go('""" + station_id + """'); return false;">Go</button>
+    </form>
+    </div>
+    <div class='container'> """ + str(total_rows) + """ """ + label + """ rows found matching criteria <br> """ + row_desc + """ </div>
+   """
+
+   root_img_dir = "/mnt/ams2/datasets/meteor_yn/"
+
+   out += " <div class='container'>"
+   for row in rows:
+      print("ROW:", row)
+      root_fn = row[0]
+      roi_fn = row[1]
+      #roi = row[1]
+      meteor_yn = row[2]
+      meteor_yn_conf = row[3]
+      meteor_fireball_yn = row[4]
+      meteor_fireball_yn_conf = row[5]
+      multi_class = row[6]
+      multi_class_conf = row[7]
+      if meteor_yn is False or meteor_yn == 0:
+         meteor_yn_text = "Non Meteor"
+      else:
+         meteor_yn_text = "Meteor"
+      if meteor_fireball_yn is False or meteor_fireball_yn == 0:
+         meteor_fireball_yn_text = "Non Fireball"
+      else:
+         meteor_fireball_yn_text = "Fireball"
+      if roi_fn is not None:
+         print(station_id, roi_fn, root_img_dir)
+         img_file = find_img_loc(station_id + "_" + roi_fn, root_img_dir)  
+         div_id = roi_fn.replace(".jpg", "")
+         if img_file is not None:
+            
+            buttons = make_trash_icon(roi_fn,"#ffffff","20") 
+            controls = "<div class='show_hider'>"
+            controls += buttons
+            controls += str(root_fn)[0:10] + "<br>"
+            controls += str(meteor_yn_text) + " " + str(meteor_yn_conf)[0:4] + "<br>"
+            controls += str(meteor_fireball_yn_text) + " " + str(meteor_fireball_yn_conf)[0:4] + "<br>"
+            controls += str(multi_class) + " " + str(multi_class_conf)[0:4] + "<br>"
+            controls += "</div>"
+            print(img_file, meteor_yn, meteor_yn_conf, roi_fn)
+            img_uri = img_file.replace("/mnt/ams2", "")
+            #out += "<img src=" + img_uri + ">"
+            out += """ <div id='""" + div_id + """' class="meteor_gallery" style="background-color: #000000; background-image: url('""" + img_uri + """?""" + rand + """'); background-repeat: no-repeat; background-size: 180px; width: 180px; height: 180px; border: 1px #000000 solid; float: left; color: #fcfcfc; margin:5px "> """ + controls + """ </div> """
+
+
+         else:
+            print("NO IMG:", img_file)
+      else:
+         print("NO ROI FILE.")
+
+   out += " </div>"
+
+   return(out)
+
+def find_img_loc(img_name,root_dir):
+   img_f = root_dir + "high/meteor/" + img_name
+   print(img_f)
+   if os.path.exists(img_f) is True:
+      return(img_f)
+   img_f = root_dir + "high/non_meteor/" + img_name
+   print(img_f)
+   if os.path.exists(img_f) is True:
+      return(img_f)
+   img_f = root_dir + "med/meteor/" + img_name
+   print(img_f)
+   if os.path.exists(img_f) is True:
+      return(img_f)
+   img_f = root_dir + "med/non_meteor/" + img_name
+   print(img_f)
+   if os.path.exists(img_f) is True:
+      return(img_f)
 
 def learning_meteors_dataset(amsid, in_data):
 
@@ -866,21 +1236,29 @@ def learning_meteors_dataset(amsid, in_data):
    return(template)
 
 def make_trash_icon(roi_file,color,size) :
-               #class="bi bi-dash-square" title="confirm meteor" id="reclass_meteor_roi_file"></i>
    trash_icons = """
-        <a href="javascript:click_icon('reclass_meteor', '""" + roi_file + """')">
+        <a href="javascript:click_icon('reclass_meteor', '""" + roi_file.replace(".jpg", "") + """')">
             <i style="padding: 5px; color: """ + color + """; font-size: """ + size + """px;" 
-               class="fas fa-meteor" title="confirm meteor" id="reclass_meteor_roi_file"></i>
-        </a>
-        <a href="javascript:click_icon('reclass_trash', '""" + roi_file + """')">
+               class="fas fa-meteor" title="confirm meteor" id='reclass_meteor_""" + roi_file.replace(".jpg", "") + """'></i></a>
+        <a href="javascript:click_icon('reclass_trash', '""" + roi_file.replace(".jpg", "") + """')">
             <i style="padding: 5px; color: """ + color + """; font-size: """ + size + """px;" 
-               class="bi bi-trash" title="non-meteor" id='reclass_nonmeteor_""" + roi_file + """'></i>
-        </a>
-        <a href="javascript:click_icon('expand', '""" + roi_file + """')">
+               class="bi bi-trash" title="non-meteor" id='reclass_trash_""" + roi_file.replace(".jpg", "") + """'></i></a>
+        <a href="javascript:click_icon('expand', '""" + roi_file.replace(".jpg", "") + """')">
             <i style="padding: 5px; color: """ + color + """; font-size: """ + size + """px;" 
-               class="bi bi-arrows-fullscreen" title="expand" id='expand_""" + roi_file + """'></i>
-        </a>
+               class="bi bi-arrows-fullscreen" title="expand" id='expand_""" + roi_file.replace(".jpg", "") + """'></i></a>
    """
+
+   trash_icons_test = """
+        <a class="show_hider" href="javascript:click_icon('reclass_meteor', '""" + roi_file.replace(".jpg", "") + """')">
+            <i  
+               class="fas fa-meteor " title="confirm meteor" id='reclass_meteor_""" + roi_file.replace(".jpg", "") + """'></i></a>
+
+        <a href="javascript:click_icon('reclass_trash', '""" + roi_file.replace(".jpg", "") + """')">
+            <i class="bi bi-trash" title="non-meteor" id='reclass_trash_""" + roi_file.replace(".jpg", "") + """'></i></a>
+        <a href="javascript:click_icon('expand', '""" + roi_file.replace(".jpg", "") + """')">
+            <i class="bi bi-arrows-fullscreen" title="expand" id='expand_""" + roi_file.replace(".jpg", "") + """'></i></a>
+   """
+
 
 
 

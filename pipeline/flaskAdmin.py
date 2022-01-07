@@ -1,7 +1,7 @@
 import base64
 import os
 from flask import Flask, request, Response, make_response
-from FlaskLib.Learning import learning_meteors_dataset, learning_meteors_tag, meteor_ai_scan, recrop_roi, learn_main, learning_review_day, batch_update_labels
+from FlaskLib.Learning import learning_meteors_dataset, learning_meteors_tag, meteor_ai_scan, recrop_roi, learn_main, learning_review_day, batch_update_labels, learning_db_dataset
 from FlaskLib.motion_detects import motion_detects
 from FlaskLib.FlaskUtils import get_template
 from FlaskLib.api_funcs import update_meteor_points, show_cat_stars, delete_meteor, restore_meteor, delete_meteors, reduce_meteor, delete_frame, crop_video
@@ -73,6 +73,48 @@ def verify_password(username,password):
 def tlm(amsid):
    out = tl_menu(amsid)
    return(out)
+
+
+@app.route('/astroAPI/', methods=['POST', 'GET'])
+def astAPI():
+   from werkzeug.utils import secure_filename
+   from werkzeug.datastructures import  FileStorage
+
+   temp_dir = "/mnt/ams2/astroTemp/"
+   if os.path.exists(temp_dir) is False:
+      os.makedirs(temp_dir)
+   app.config['UPLOAD_FOLDER'] = "/mnt/ams2/astroTEMP/"
+
+   if request.method == 'POST':
+      f = request.files['file']
+      print("FILE:", f.filename)
+      f.save(secure_filename(f.filename))
+      os.system("mv " + f.filename + " " + temp_dir)
+      out = 'file uploaded successfully <br><img src=/astroTemp/' + f.filename + '>'
+      plate_file = temp_dir + f.filename
+      solved_file = temp_dir + f.filename + ".solved"
+      astrout = temp_dir + f.filename + ".txt"
+      HD_W = "1920"
+      HD_H = "1080"
+      cmd = "/usr/local/astrometry/bin/solve-field " + plate_file + " --crpix-center --cpulimit=30 --verbose --no-delete-temp --overwrite --width=" + str(HD_W) + " --height=" + str(HD_H) + " -d 1-40 --scale-units dw --scale-low 60 --scale-high 120 -S " + solved_file + " >" + astrout
+      out += "<br>"
+      out += cmd
+      return(out)
+   else:
+      out = """
+         <html>
+            <body>
+               Upload a star file.  NOTE: Star file must follow naming convention starting with AMSXX_YYYY_MM_DD_HH_SS_MM_000_CAMID-trim-####.png (or jpg). 
+               <form action = "/astroAPI/" method = "POST" 
+                  enctype = "multipart/form-data">
+                  <input type = "file" name = "file" /><br>
+                  <input type = "submit"/>
+               </form>   
+            </body>
+         </html>
+      """
+   return(out)
+
 
 
 @app.route('/msapi/', methods=['GET', 'POST'])
@@ -602,10 +644,14 @@ def lrn_meteors(amsid,label ):
    req['sort'] = request.args.get('sort')
    req['filter_date'] = request.args.get('filter_date')
    req['filter_station'] = request.args.get('filter_station')
+   req['conf'] = request.args.get('conf')
    req['p'] = request.args.get('p')
    req['ipp'] = request.args.get('ipp')
    req['label'] = label
-   out = learning_meteors_dataset(amsid, req)
+   #out = learning_meteors_dataset(amsid, req)
+   out = learning_db_dataset(amsid, req)
+
+
    return out
 
 

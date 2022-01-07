@@ -340,8 +340,8 @@ def scan_meteors_for_day(station_id, date):
       stack_file = mdir + mfile.replace(".mp4", "-stacked.jpg")
 
       #img = cv2.imread(stack_file)
-      detect_img, roi_imgs, roi_vals = AID.detect_in_stack(stack_file, mc_model, labels)
       try:
+         detect_img, roi_imgs, roi_vals = AID.detect_in_stack(stack_file, mc_model, labels)
          print("TEST")
       except:
          print("FAILED TO DETECT IN STACK!")
@@ -383,6 +383,7 @@ def scan_meteors_for_day(station_id, date):
          roi_fn = roi_fn + str(x1) + "_" + str(y1) + "_" + str(x2) + "_" + str(y2) + ".jpg"
          if x2 - x1 != y2 - y1:
             x1,y1,x2,y2 = ASAI.bound_cnt(x1,y1,x2,y2,show_stack, margin=.5)
+         do_video = False
          if do_video is True:
             if frames is None:
                frames, roi_frames, roi_sub_frames, frame_data = AID.make_roi_video(mdir + mfile, x1,y1,x2,y2, frames=None)
@@ -395,6 +396,8 @@ def scan_meteors_for_day(station_id, date):
             resp['frame_data'] = frame_data
             resp['motion_eval'] = eval_report
          else:
+            eval_report = {}
+            eval_report['fns'] = [0,1,2,3,4,5,6,7]
             eval_report['mscore'] = 2
          resp['roi'] = [x1,y1,x2,y2]
 
@@ -497,9 +500,10 @@ def scan_meteors_for_day(station_id, date):
 
          learn_file = learn_dir + station_id + "_" + roi_fn
          roi_video_file = roi_video_dir + station_id + "_" + roi_fn.replace(".jpg", ".mp4")
-         save_video_frames(roi_frames, roi_video_file, 180,180)
-         #save_crop_video(sd_video_file, roi_video_file, x1,y1,x2,y2,180,180)
-         print("Saved.", roi_video_file)
+         if do_video is True:
+            save_video_frames(roi_frames, roi_video_file, 180,180)
+            #save_crop_video(sd_video_file, roi_video_file, x1,y1,x2,y2,180,180)
+            print("Saved.", roi_video_file)
          
          if os.path.exists(learn_dir) is False:
             os.makedirs(learn_dir)
