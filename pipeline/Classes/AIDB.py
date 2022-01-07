@@ -74,8 +74,13 @@ class AllSkyDB():
             sql_conf['updates']['station_summary_table'] = {}
          save_json_file("../conf/sqlite.json", sql_conf) 
 
+      self.purge_deleted_meteors()
+      print("END PURGE:")
+      exit()
       sql = "SELECT * from station_summary" 
       rows = self.cur.fetchall()
+
+
       print("STATION SUMMARY", len(rows))
       update_summary = 0
       if len(rows) == 0:
@@ -83,6 +88,27 @@ class AllSkyDB():
       if update_summary == 1:
          self.update_summary()
       exit()
+
+   def purge_deleted_meteors(self):
+      # this will check each meteor in the DB. 
+      # if it does not exist on the file system it will be removed from the DB
+      sql = "SELECT root_fn, roi, mfd from meteors WHERE meteor_yn = '' order by root_fn desc"
+      self.cur.execute(sql)
+      rows = self.cur.fetchall()
+      found = 0
+      not_found = 0
+      good = 0
+      bad = 0
+      for row in rows:
+         root_file = row[0]
+         mfile = "/mnt/ams2/meteors/" + root_file[0:10] + "/" + root_file + ".json"
+         if os.path.exists(mfile) is True:
+            good += 1
+         else:
+            bad += 1
+            print("NOT FOUND!:", mfile)
+      print("GOOD FILES:", good)
+      print("BAD FILES:", bad)
 
    def update_summary(self):
 
