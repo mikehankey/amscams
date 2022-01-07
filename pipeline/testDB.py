@@ -25,6 +25,7 @@ if cmd == "load":
    # This will load up the DB with the lastest files
    if selected_day == "ALL":   
       selected_day = None
+   print("LOADING METEORS ", selected_day) 
    AIDB.load_all_meteors(selected_day)
 
 if cmd == "run" and noUI is False:
