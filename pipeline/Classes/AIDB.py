@@ -181,6 +181,8 @@ class AllSkyDB():
                   #print(not_found, "ROI FILE NOT FOUND!", roi_file)
                   roi_exists = 0
                   not_found += 1
+            else:
+               print("ROOT:", root)
 
             meteor_roots.append(root)
          print(len(meteor_roots) , "loaded")
