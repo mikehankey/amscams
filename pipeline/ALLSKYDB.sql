@@ -192,28 +192,6 @@ CREATE TABLE IF NOT EXISTS "event_observations" (
 	"ignore"	INTEGER,
 	PRIMARY KEY("station_id","camera_id","event_id")
 );
-DROP TABLE IF EXISTS "ml_samples";
-CREATE TABLE IF NOT EXISTS "ml_samples" (
-	"station_id"	TEXT,
-	"camera_id"	TEXT,
-	"root_fn"	TEXT,
-	"roi_fn"	INTEGER,
-	"meteor_yn_final"	INTEGER,
-	"meteor_yn_final_conf"	REAL,
-	"main_class"	TEXT,
-	"sub_class"	TEXT,
-	"meteor_yn"	INTEGER,
-	"meteor_yn_conf"	REAL,
-	"fireball_yn"	INTEGER COLLATE NOCASE,
-	"fireball_yn_conf"	REAL,
-	"multi_class"	INTEGER,
-	"multi_class_conf"	REAL,
-	"human_confirmed"	INTEGER,
-	"human_label"	TEXT,
-	"human_roi"	TEXT,
-	"suggest_class"	TEXT,
-	"ignore"	INTEGER
-);
 DROP TABLE IF EXISTS "station_summary";
 CREATE TABLE IF NOT EXISTS "station_summary" (
 	"station_id"	TEXT,
@@ -238,6 +216,8 @@ CREATE TABLE IF NOT EXISTS "meteors" (
 	"start_datetime"	TEXT,
 	"meteor_yn"	INTEGER,
 	"meteor_yn_conf"	REAL,
+	"fireball_yn"	INTEGER,
+	"ai_resp"	TEXT,
 	"human_confirmed"	INTEGER,
 	"reduced"	INTEGER,
 	"multi_station"	INTEGER,
@@ -260,7 +240,29 @@ CREATE TABLE IF NOT EXISTS "meteors" (
 	"ints"	INTEGER,
 	"sizes"	INTEGER,
 	"threshs"	INTEGER,
-	"ai_resp"	TEXT,
 	PRIMARY KEY("sd_vid")
+);
+DROP TABLE IF EXISTS "ml_samples";
+CREATE TABLE IF NOT EXISTS "ml_samples" (
+	"station_id"	TEXT,
+	"camera_id"	TEXT,
+	"root_fn"	TEXT,
+	"roi_fn"	INTEGER,
+	"meteor_yn_final"	INTEGER,
+	"meteor_yn_final_conf"	REAL,
+	"main_class"	TEXT,
+	"sub_class"	TEXT,
+	"meteor_yn"	INTEGER,
+	"meteor_yn_conf"	REAL,
+	"fireball_yn"	INTEGER COLLATE NOCASE,
+	"fireball_yn_conf"	REAL,
+	"multi_class"	INTEGER,
+	"multi_class_conf"	REAL,
+	"human_confirmed"	INTEGER,
+	"human_label"	TEXT,
+	"human_roi"	TEXT,
+	"suggest_class"	TEXT,
+	"ignore"	INTEGER,
+	PRIMARY KEY("roi_fn")
 );
 COMMIT;
