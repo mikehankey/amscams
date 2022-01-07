@@ -76,6 +76,11 @@ else:
 amsid = json_conf['site']['ams_id'].upper()
 auto_update()
 
+# remove update lock script before continue
+if os.path.exists("vpn.run") is True:
+   os.system("rm vpn.run")
+
+
 # check if a VPN connect request exists
 # and then connect if it does
 
@@ -110,6 +115,4 @@ if int(vpn_connect) == 0 and int(running) >= 1:
    #cmd ="ip link delete tun0"
    #os.system(cmd)
 
-if os.path.exists("vpn.run") is True:
-   os.system("rm vpn.run")
 
