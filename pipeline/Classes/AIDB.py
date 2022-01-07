@@ -76,7 +76,6 @@ class AllSkyDB():
 
       self.purge_deleted_meteors()
       print("END PURGE:")
-      exit()
       sql = "SELECT * from station_summary" 
       rows = self.cur.fetchall()
 
@@ -87,7 +86,6 @@ class AllSkyDB():
          update_summary = 1
       if update_summary == 1:
          self.update_summary()
-      exit()
 
    def purge_deleted_meteors(self):
       # this will check each meteor in the DB. 
