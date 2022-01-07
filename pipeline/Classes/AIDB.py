@@ -154,6 +154,7 @@ class AllSkyDB():
                mdir = "/mnt/ams2/meteors/" + date + "/" 
                msdir = "/mnt/ams2/METEOR_SCAN/" + date + "/" 
                roi_file = msdir + self.station_id + "_" + root + "-ROI.jpg"
+               print("ROI FILE:", roi_file)
                if os.path.exists(roi_file) is True:
                   roi_exists = 1
                   roi_img = cv2.imread(roi_file)
