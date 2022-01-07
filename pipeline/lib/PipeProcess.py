@@ -76,7 +76,7 @@ def check_sync_cal_ai_db(json_conf):
    else: 
       print("DB FILE EXIST:", db_file)
       today = datetime.now().strftime("%Y_%m_%d")
-      cmd = "python3 testDB.py load " + today
+      cmd = "python3.6 testDB.py load " + today
       os.system(cmd)
 
       os.system("gzip -kf " + db_file) 
