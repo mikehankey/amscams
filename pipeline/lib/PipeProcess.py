@@ -71,7 +71,7 @@ def check_sync_cal_ai_db(json_conf):
       cmd = "cat ALLSKYDB.sql | sqlite3 " + db_file
       print(cmd)
       os.system(cmd)
-      cmd = "python3 testDB.py load ALL" 
+      cmd = "python3.6 testDB.py load ALL" 
       os.system(cmd)
    else: 
       print("DB FILE EXIST:", db_file)
