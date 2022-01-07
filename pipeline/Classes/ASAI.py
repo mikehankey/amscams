@@ -328,9 +328,23 @@ class AllSkyAI():
       response['meteor_or_bird_confidence'] = float(meteor_or_bird_confidence)
       response['meteor_or_firefly_yn'] = meteor_or_firefly_yn
       response['meteor_or_firefly_confidence'] = float(meteor_or_firefly_confidence)
-
       response['mc_class'] = predicted_class
       response['mc_confidence'] = int(100 * np.max(score))
+
+      final_yn_conf = max([meteor_yn,meteor_fireball_yn])
+      if "meteor" in response['mc_class']:
+         final_yn_conf += response['mc_confidence']
+      else: 
+         final_yn_conf -= (response['mc_confidence']/2)
+
+      if meteor_yn is True or meteor_fireball_yn is True or "meteor" in response['mc_class']:
+         final_yn = True
+      else:
+         final_yn = False 
+
+      response['final_meteor_yn'] = final_yn 
+      response['final_meteor_yn_conf'] = final_yn_conf
+
       return(response)
 
    def format_response(self, resp):
@@ -505,6 +519,12 @@ class AllSkyAI():
             ms_dir = "/mnt/ams2/METEOR_SCAN/" + date + "/"
             if os.path.exists(ms_dir + roi_file) is True:
                print("ROI FILE FOUND:", ms_dir + roi_file)
+               img = cv2.imread(roi_file)
+               resp = self.ASAI.meteor_yn(None, img)
+               print("FINAL:", resp['final_meteor_yn']) 
+               print("FINAL:", resp['final_meteor_yn_conf']) 
+      
+               print(resp)
             else:
                print("ROI FILE NOT FOUND:", self.station_id, ms_dir + roi_file)
 
