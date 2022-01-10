@@ -57,7 +57,6 @@ def main_loop():
          mjf = mf.replace(".mp4", ".json")
          try:
             mj = load_json_file(mdir + mjf)
-            print("MJ LOADED")
             if "hd_trim" in mj:
                if mj['hd_trim'] is not None:
                   if mj['hd_trim'] != 0:

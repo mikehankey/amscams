@@ -36,6 +36,7 @@ else:
    windows = False 
    root_dir = "/mnt/ams2/"
 
+
 def make_first_frame(video_file):
    cap = cv2.VideoCapture(video_file)
    grabbed , frame = cap.read()
@@ -489,10 +490,10 @@ def scan_meteors_for_day(station_id, date):
          ai_data[mfile]['meteor_yn_confidence'] = final_confidence
          print("FINAL METEOR YN:", final_meteor_yn)
          if final_meteor_yn == "meteor": 
-            learn_dir = root_dir + "datasets/meteor_yn/" + final_confidence + "/meteor/"
+            learn_dir = root_dir + "datasets/meteor_yn/meteor/"
             roi_video_dir = root_dir + "datasets/meteor_yn/roi_vids/" + "/meteor/"
          else:
-            learn_dir = root_dir + "datasets/meteor_yn/" + final_confidence + "/non_meteor/"
+            learn_dir = root_dir + "datasets/meteor_yn/non_meteor/"
             roi_video_dir = root_dir + "datasets/meteor_yn/roi_vids/" + "/non_meteor/"
 
          if os.path.exists(roi_video_dir) is False:
@@ -557,12 +558,19 @@ def scan_meteors_for_day(station_id, date):
          in_data['multi_class_conf'] = resp['mc_confidence']
          in_data['human_confirmed'] = 0 
          in_data['human_label'] = ""
+         in_data['human_roi'] = ""
          in_data['suggest_class'] = ""
          in_data['ignore'] = ""
          print(in_data)
          AIDB.dynamic_insert(con, cur, "ml_samples", in_data)
          ric += 1
          cc += 1
+
+         # WE SHOULD UPDATE THE MAIN METEOR TABLE HERE WITH THE RESULTS OF THE SCAN?
+         #root_fn = mfile.replace(".mp4", "")
+         #AIDB.update_meteor_ai_result(root_fn, resp)
+         #print("UPDATED", root_fn)
+
 
       show_stack = cv2.resize(show_stack,(1280,720))
 
@@ -654,8 +662,14 @@ def scan_meteors_for_day(station_id, date):
    
    print("saved:", ai_data_file)
    save_json_file(ai_data_file, ai_data)
+
 json_conf = load_json_file("../conf/as6.json")
 meteor_dir = root_dir + "meteors/"
+
+AIDB = AllSkyDB()
+con = AIDB.connect_database(json_conf['site']['ams_id'])
+cur = con.cursor()
+
 
 station_id = json_conf['site']['ams_id']
 date = sys.argv[1]
@@ -665,10 +679,12 @@ if date == "roi_dir":
    print("DONE SCAN")
    exit()
 if date != "ALL":
+   AIDB.load_all_meteors(date)
    scan_meteors_for_day(station_id, date)
 else:
    all_dirs = os.listdir(meteor_dir)
    for date in sorted(all_dirs, reverse=True):
       print(date)
       if os.path.isdir(meteor_dir + date) is True:
+         AIDB.load_all_meteors(date)
          scan_meteors_for_day(station_id, date)

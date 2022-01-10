@@ -1,7 +1,7 @@
 import base64
 import os
 from flask import Flask, request, Response, make_response
-from FlaskLib.Learning import learning_meteors_dataset, learning_meteors_tag, meteor_ai_scan, recrop_roi, learn_main, learning_review_day, batch_update_labels, learning_db_dataset
+from FlaskLib.Learning import learning_meteors_dataset, learning_meteors_tag, meteor_ai_scan, recrop_roi, recrop_roi_confirm, learn_main, learning_review_day, batch_update_labels, learning_db_dataset
 from FlaskLib.motion_detects import motion_detects
 from FlaskLib.FlaskUtils import get_template
 from FlaskLib.api_funcs import update_meteor_points, show_cat_stars, delete_meteor, restore_meteor, delete_meteors, reduce_meteor, delete_frame, crop_video
@@ -591,13 +591,27 @@ def lrn_batch_up(amsid):
 @auth.login_required
 def lrn_recrop(amsid):
    jdata = request.get_json()
+   print("JDATA:", jdata)
    stack_fn = jdata['stack_fn']
    div_id = jdata['div_id']
    click_x = jdata['click_x']
    click_y = jdata['click_y']
+   size = jdata['size']
    print("DATA", amsid, stack_fn, div_id, click_x, click_y)
-   out = recrop_roi(amsid, stack_fn, div_id, click_x, click_y)
+   out = recrop_roi(amsid, stack_fn, div_id, click_x, click_y,size)
    return(out)
+
+
+@app.route('/LEARNING/<amsid>/RECROP_CONFIRM/', methods=['GET', 'POST'])
+@auth.login_required
+def lrn_recrop_confirm(amsid):
+   jdata = request.get_json()
+   station_id = jdata['station_id']
+   root_file = jdata['root_file']
+   roi = jdata['roi']
+   out = recrop_roi_confirm(station_id, root_file, roi)
+   return(out)
+
 
 
 @app.route('/LEARNING/<ams_id>/AI_SCAN/<label>', methods=['GET', 'POST'])
@@ -648,6 +662,16 @@ def lrn_meteors(amsid,label ):
    req['p'] = request.args.get('p')
    req['ipp'] = request.args.get('ipp')
    req['label'] = label
+   req['station_id'] = amsid
+   req['datestr'] = request.args.get('datestr')
+   req['human_confirmed'] = request.args.get('human_confirmed')
+   req['station_id'] = amsid
+
+   if req['p'] is None:
+      req['p'] = 0
+   if req['ipp'] is None:
+      req['ipp'] = 100
+
    #out = learning_meteors_dataset(amsid, req)
    out = learning_db_dataset(amsid, req)
 

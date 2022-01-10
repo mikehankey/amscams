@@ -1,4 +1,6 @@
 import glob
+import math
+import simplejson as json
 import sqlite3
 import cv2
 import os
@@ -95,10 +97,14 @@ def html_page_header(station_id):
                         @import url("https://cdn.datatables.net/1.10.25/css/jquery.dataTables.min.css");
 
 .show_hider {
-   color: transparent;
+   opacity: 0;
+   color: #FFFFFF;
+   font-size: 10px;
 }
 .show_hider:hover {
-   color: #FCFCFC;
+   opacity: 1;
+   color: #FFFFFF;
+   font-size: 10px;
 }
 
 .navbar-fixed-top, .navbar-fixed-bottom {
@@ -165,6 +171,8 @@ def learning_review_day(station_id, review_date):
 
       all_classes = ['meteor', 'cloud', 'bolt', 'cloud-moon', 'cloud-rain',  'tree', 'plane', 'car-side', 'satellite', 'crow', 'bug','chess-board','question']
       labels = ['meteor', 'clouds', 'lightening', 'moon', 'rain', 'tree', 'planes', 'cars', 'satellite', 'BIRDS', 'fireflies','noise','notsure']
+
+
 
       function click_mark_all_as(icon_type) {
          $(".gal_img" ).each(function( index ) {
@@ -240,9 +248,7 @@ def learning_review_day(station_id, review_date):
             data.push(this.id)
          });
          console.log(data)
-         alert("Saving data...")
          api_url = "/LEARNING/" + station_id + "/BATCH_UPDATE/" 
-         alert(api_url)
          method = "POST"
          api_data = {}
          api_data['label_data'] = data
@@ -250,15 +256,12 @@ def learning_review_day(station_id, review_date):
       }
 
    function callbackBatchUpdate(resp) {
-      //alert(resp)
    }
    function error_callback(resp) {
-      //alert(resp)
       console.log("ERROR" + resp)
    }
 
       function click_icon(icon_type, resource_id) {
-           //alert("YO OLD?")
            for (var i in labels) {
               var tdiv_id = "#reclass_" + labels[i] + "_" + resource_id
               console.log("RESET:", i, tdiv_id)
@@ -317,7 +320,6 @@ def learning_review_day(station_id, review_date):
       if "human_label" in ai_data[fn]:
          main_class = ai_data[fn]['human_label']
          print("HUMAN LABEL FOUND!")
-      buttons = make_buttons(fn,main_class)
       desc = main_class + "<br>" + buttons
       if "meteor" in main_class:
          out += "<div style='margin: 5px; float: left'>" + img + "<br>" + desc + "</div>\n"
@@ -392,7 +394,106 @@ def make_buttons(roi_file=None, selected=None):
    buttons += "</td></tr></table>"
    return(buttons)
 
-def recrop_roi(station_id, stack_fn, div_id, click_x, click_y,size=150,margin=.2):
+def recrop_roi_confirm(station_id, root_file, roi):
+   db_file = station_id + "_ALLSKY.db"
+   con = sqlite3.connect(db_file)
+   cur = con.cursor()
+
+   # save the status in the DB
+   # mv the ROITEMP file to the REAL ROI FILE
+   # That's it!
+   sql = """UPDATE meteors 
+               SET human_roi = ?,
+                   roi = ?,
+                   reprocess = 1
+             WHERE sd_vid = ?
+         """
+   task = (roi,roi,root_file + ".mp4")
+   cur.execute(sql, task)
+   print(sql,task)
+   con.commit()
+
+   # move the temp file to the real file. 
+
+   ms_file1 = "/mnt/ams2/METEOR_SCAN/" + root_file[0:10] + "/" + station_id + "_" + root_file + "-ROITEMP.jpg"
+   ms_file2 = "/mnt/ams2/METEOR_SCAN/" + root_file[0:10] + "/" + station_id + "_" + root_file + "-ROI.jpg"
+   cmd = "mv " + ms_file1 + " " + ms_file2 
+   print("MOVING", cmd)
+   os.system(cmd)
+
+   resp = {}
+   resp['msg'] = "OK"
+   return(resp) 
+   
+
+def recrop_roi(station_id, stack_fn, div_id, click_x, click_y,size,margin=.2):
+   rand = str(time.time())
+   div_id = div_id.replace("#", "")
+   out= {}
+   out['station_id'] = station_id
+   out['click_x'] = click_x
+   out['click_y'] = click_y
+   out['div_id'] = "#" + div_id
+   roi_url = "/METEOR_SCAN/" + div_id[0:10] + "/" + div_id + "-ROI.jpg"
+   vs_dir = "/METEOR_SCAN/" + div_id[0:10] + "/" 
+   msdir = "/mnt/ams2/METEOR_SCAN/" + div_id[0:10] + "/" 
+   mdir = "/mnt/ams2/meteors/" + div_id[0:10] + "/" 
+   stack_file = mdir + div_id + "-stacked.jpg"
+   stack_img = cv2.imread(stack_file)
+   print("Stack file:", stack_file)
+   #stack_img = cv2.resize(stack_img, (640,360))
+   stack_img = cv2.resize(stack_img, (1920,1080))
+
+   # convert click x to 1080p from 360p (3x)
+   hd_click_x = int(int(click_x)*3)
+   hd_click_y = int(int(click_y)*3)
+   size = int(size)
+   x1 = int(hd_click_x) - int(size/2)
+   y1 = int(hd_click_y) - int(size/2)
+   x2 = int(hd_click_x) + int(size/2)
+   y2 = int(hd_click_y) + int(size/2)
+   if x1 < 0:
+      x1 = 0
+      x2 = size
+   if y1 < 0:
+      y1 = 0
+      y2 = size
+   if x1 >= 1920:
+      print("X1 out of bounds!!!", x1,size)
+      x1 = 1919 - size 
+      x2 = 1919
+   if y1 >= 1080:
+      print("Y1 out of bounds!!!",y1,size)
+      y1 = 1080 - size 
+      y2 = 1079 
+
+   roi = [x1,y1,x2,y2]
+   print("X1Y1:", x1,y1,x2,y2)
+   print("SIZE:", size)
+   roi_img = stack_img[y1:y2,x1:x2]
+   roi_v_temp_file = vs_dir + station_id + "_" + div_id + "-ROITEMP.jpg"
+   roi_temp_file = msdir + station_id + "_" + div_id + "-ROITEMP.jpg"
+   print("SAVING:", roi_temp_file)
+   cv2.imwrite(roi_temp_file, roi_img)
+
+   out['roi_url'] = roi_url
+   out['stack_fn'] = stack_fn
+   out['size'] = size  
+   big_size = int(size) + 50
+   small_size = int(size) - 50
+   out['margin'] = margin
+
+   # bigger / smaller func:  recrop_roi(station_id, stack_fn, div_id, click_x, click_y,size=150,margin=.2)
+   out['html'] = """
+      <img width=150 height=150 src='"""  + roi_v_temp_file + """?""" + rand + """'><br>
+      <a href="javascript:confirmROI('""" + station_id + """','""" + div_id + """','""" + str(roi) + """')">Keep</a> - 
+      <a href="javascript:recrop_roi('""" + station_id + """','""" + stack_fn + """','""" + div_id + """','""" + str(click_x) + """','""" + str(click_y) + """','""" + str(int(big_size)) + """','""" + str(margin) + """')">Bigger</a> - 
+      <a href="javascript:recrop_roi('""" + station_id + """','""" + stack_fn + """','""" + div_id + """','""" + str(click_x) + """','""" + str(click_y) + """','""" + str(int(small_size)) + """','""" + str(margin) + """')">Smaller</a> 
+   """ 
+   out['msg'] = "recropped"
+   return(out)
+
+def recrop_roi_old(station_id, stack_fn, div_id, click_x, click_y,size=150,margin=.2):
 
    from Classes.ASAI import AllSkyAI
    # remake the ROI based on the filename and center click x,y
@@ -488,35 +589,28 @@ def learning_meteors_tag(label, req, station_id = None):
    con = sqlite3.connect(db_file)
    cur = con.cursor()
 
-   sql = """ UPDATE ml_samples 
+   sql = """ UPDATE meteors
              SET human_confirmed = ?,
-                 human_label = ?,
                  meteor_yn = ?,
-                 meteor_yn_conf = ?,
-                 fireball_yn = ?,
-                 fireball_yn_conf = ?,
-                 multi_class = ?,
-                 multi_class_conf = ?
-             WHERE roi_fn = ? """
+                 meteor_yn_conf = ?
+             WHERE sd_vid = ? """
    print(sql)
    print(roi_file)
 
    if label == "METEOR": 
-      task = [1,"METEOR",1,99,0,0,'meteor',99,roi_file + ".jpg"]
+      task = [1,1,99,roi_file + ".mp4"]
    else:
-      task = [0,"NON_METEOR",0,0,0,0,'non',99,roi_file + ".jpg"]
+      task = [-1,0,0,roi_file + ".mp4"]
 
-   cur = con.cursor()
+   #cur = con.cursor()
    cur.execute(sql, task)
    con.commit()
-
-
    resp = {}
    resp['msg'] = "OK"
 
    return(resp)
 
-def js_learn_funcs():
+def js_learn_funcs(station_id):
 
    #vid_html = vid_html + " - <a href=javascript:SwapDivLearnDetail('" + div1 + "','" + learn_img + "','" + crop_vid + "',2)>Full</a>"
 
@@ -524,14 +618,55 @@ def js_learn_funcs():
 
    $(document).ready(function() {
     $("img").on("click", function(event) {
-        //var id = this.data("id");
-        //alert(id)
+        //var id = $(this).data("id");
         //var x = event.pageX - this.offsetLeft;
         //var y = event.pageY - this.offsetTop;
-        //alert("X Coordinate: " + x + " Y Coordinate: " + y);
 
     });
    });
+
+   // ROI FUNCS
+   function confirmROI(station_id, root_file, roi) {
+      api_data = {}
+      api_data['cmd'] = "confirm_roi"
+      api_data['station_id'] = station_id
+      api_data['root_file'] = root_file 
+      api_data['roi'] = roi
+      api_url = "/LEARNING/" + station_id + "/RECROP_CONFIRM/"
+      console.log("CONFIRM ROI:", api_data)
+      method = "POST"
+
+      callAPI(api_url, method, api_data, callbackROI,error_callback)
+
+
+   }
+   function recrop_roi(station_id, stack_fn, div_id, click_x, click_y,size,margin) {
+
+         var x = click_x
+         var y = click_y
+         var id = $(this).data("id");
+         $(div_id).html(cur_html)
+         //div_id = "#" + id
+         api_data = {}
+         api_data['cmd'] = "recrop_roi"
+         api_data['station_id'] = station_id
+         api_data['stack_fn'] = stack_fn 
+         api_data['click_x'] = x
+         api_data['click_y'] = y
+         api_data['div_id'] = div_id
+         api_data['size'] = size
+         api_data['margin'] = margin
+         console.log("API DATA", api_data)
+         api_url = "/LEARNING/" + station_id + "/RECROP/"
+         method = "POST"
+         callAPI(api_url, method, api_data, callbackROI,error_callback)
+
+         //$(div_id).css("width", "320px");
+         //$(div_id).css("height", "180px");
+         //$(div_id).css("background-size", "320px 180px");
+      }
+
+
    function make_trash_icons(roi_file, size, color) {
       trash_icons = `
         <a href="javascript:click_icon('reclass_meteor', '` + roi_file + `')">
@@ -556,11 +691,15 @@ def js_learn_funcs():
          $(div_id).css("height", height);
          $(div_id).css("background-size", width + " " + height);
          //$(div_id).css("background-image", "url(" + img_url + ")");
+         // reset the cap div
+         cap_div_id = div_id + "_caption"
+         $(cap_div_id).html("")
+
    }
 
 
    function click_icon(cmd, roi_file) {
-      root_file = ""
+      root_file = roi_file
       if (roi_file.includes("-RX_") == true) {
          el = roi_file.split("-RX_")
          div_id = "#" + roi_file.replace(".jpg", "")
@@ -571,32 +710,51 @@ def js_learn_funcs():
          div_id = div_id.replace(/-/g, "")
          div_id = div_id.replace(/_/g, "")
       }
+      div_id = "#" + roi_file
       if (cmd == "reclass_meteor" || cmd == "reclass_trash") {
 
            var tdiv_id = "#reclass_meteor_" + roi_file.replace(".jpg", "")
            var odiv_id = "#reclass_trash_" + roi_file.replace(".jpg", "")
            if (cmd == "reclass_meteor") {
               //$(tdiv_id).toggleClass('selected')
-              $(tdiv_id).attr('style', 'color: lime !important;padding: 2px');
-              $(odiv_id).attr('style', 'color: white !important;padding: 2px');
+              $(tdiv_id).attr('style', 'font-size: 20px; color: lime !important;padding: 5px');
+              $(odiv_id).attr('style', 'font-size: 20px; color: white !important;padding: 5px');
            }
            if (cmd == "reclass_trash") {
               //$(odiv_id).toggleClass('selected')
-              $(odiv_id).attr('style', 'color: red !important;padding: 2px');
-              $(tdiv_id).attr('style', 'color: white !important;padding: 2px');
+              $(odiv_id).attr('style', 'font-size: 20px; color: red !important;padding: 2px');
+              $(tdiv_id).attr('style', 'font-size: 20px; color: white !important;padding: 2px');
            }
 
          if (cmd == "reclass_meteor") {
-            ReLabel(div_id,roi_file,"METEOR",2)
+            ReLabel(div_id,roi_file,"METEOR",5)
          } else {
-            ReLabel(div_id,roi_file,"NON_METEOR",2)
+            ReLabel(div_id,roi_file,"NON_METEOR",5)
          }
       }
+      if (cmd == "play") {
+         cur_html = $(div_id).html()
+         video_file = root_file + ".mp4"
+         date = video_file.substr(0,10)
+         video_url = "/meteors/" + date + "/" + video_file
 
+
+         vid_html = "<div style='opacity: .8; width=704; height=576; border: 3px #ffffff solid;'><video id='player' width=700 height=572 controls autoplay loop><source src='"+ video_url + "'></video></div>"
+         close_html = `<div><a href="javascript:swap_html(div_id, cur_html, '320px', '180px' )">close</a><br></div>`
+         cap_div_id = "#" + root_file + "_caption"
+         $(cap_div_id).html(close_html)
+
+         $(div_id).css("width", "704px");
+         $(div_id).css("height", "576px");
+         $(div_id).css("background-size", "704px 576px");
+         //$(div_id).css("background-image", "url(" + stack_url + ")");
+         // DIV SWAP  
+         $(div_id).html(vid_html)
+
+      }
 
       if (cmd == "expand") {
          cur_html = $(div_id).html()
-         
          if (root_file != "") {
             roi_file = root_file + "-ROI.jpg"
          }
@@ -608,8 +766,15 @@ def js_learn_funcs():
          } 
          else {
             stack_fn = roi_file
+            station_id = '"""  + station_id + """'
          }
-         stack_fn = stack_fn.replace("-ROI.jpg", "-stacked.jpg")
+
+         if (roi_file.includes("ROI.jpg")) {
+            stack_fn = roi_file.replace("-ROI.jpg", "-stacked.jpg")
+         }
+         else {
+            stack_fn = roi_file + "-stacked.jpg"
+         } 
          date = stack_fn.substr(0,10)
          stack_url = "/meteors/" + date + "/" + stack_fn
 
@@ -619,20 +784,43 @@ def js_learn_funcs():
          $(div_id).css("background-image", "url(" + stack_url + ")");
          //ismap
          //new_html = `<a href="#` + stack_fn + `"></a><img data-id="` + stack_fn + `" class="ximg" width=640 height=360 src="` + stack_url + `" ismap></a>`
-         new_html = `<a href="javascript:swap_html(div_id, cur_html, '180px', '180px' )">
-              <img data-id="` + stack_fn + `" class="ximg" width=640 height=360 src="` + stack_url + `" ></a>`
-         
-
+         //new_html = `<a href="javascript:swap_html(div_id, cur_html, '320px', '180px' )">
+         new_html = ` <a href="javascript:void(0)">
+              <img ismap data-id="` + root_file + `" class="ximg" width=640 height=360 src="` + stack_url + `" ></a>`
+         // DIV SWAP  
          $(div_id).html(new_html)
       }
+      $(".ximg").on("click", function(event) {
+         var x = event.pageX - this.offsetLeft;
+         var y = event.pageY - this.offsetTop;
+         console.log("THIS", this)
+         console.log("event", event)
+         var id = $(this).data("id"); 
+         $(div_id).html(cur_html)
+         div_id = "#" + id 
+         api_data = {}
+         api_data['cmd'] = "recrop_roi"
+         api_data['stack_fn'] = id
+         api_data['click_x'] = x
+         api_data['click_y'] = y
+         api_data['div_id'] = div_id
+         api_data['size'] = 150
+         console.log(api_data)
+         api_url = "/LEARNING/" + station_id + "/RECROP/" 
+         method = "POST"
+         callAPI(api_url, method, api_data, callbackROI,error_callback)
+
+         //$(div_id).css("width", "320px");
+         //$(div_id).css("height", "180px");
+         //$(div_id).css("background-size", "320px 180px");
+
+      })
     
       /*
       $("img").on("click", function(event) {
         var id = $(this).data("id");
-        //alert(id)
         var x = event.pageX - this.offsetLeft;
         var y = event.pageY - this.offsetTop;
-        //alert("X Coordinate: " + x + " Y Coordinate: " + y);
         //api_data = "stack_fn=" + id + "click_x=" + x + "&click_y=" + y 
         api_data = {}
         api_data['cmd'] = "recrop_roi"
@@ -642,7 +830,6 @@ def js_learn_funcs():
         api_data['div_id'] = div_id
         console.log(api_data)
         //api_url = "/LEARNING/" + station_id + "/RECROP/" 
-        //alert(api_url)
         method = "POST"
         //callAPI(api_url, method, api_data, callbackROI,error_callback)
 
@@ -690,26 +877,22 @@ def js_learn_funcs():
         }
 
    function callbackBatchUpdate(resp) {
-      //alert(resp)
    }
 
    function callbackROI(resp) {
-      //alert(resp['roi_url'])
-      //alert(resp['div_id'])
-      el = resp['roi_url'].split("/")
-      roi_file = el.at(-1)
+      console.log("CB DIV ID " + resp['div_id'])
 
-      controls = make_trash_icons(roi_file,"#FFFFFF","20") 
+      //controls = make_trash_icons(roi_file,"#FFFFFF","20") 
       div_id = resp['div_id']
       $(div_id).css("width", "180px");
       $(div_id).css("height", "180px");
       $(div_id).css("background-size", "180px 180px");
       $(div_id).css("background-image", "url(" + resp['roi_url'] + ")");
-      new_html = controls
+      //new_html = controls
        //`<a href="#` + stack_fn + `"><img data-id="` + stack_fn + `" class="ximg" width=150 height=150 src="` + stack_url + `" ismap></a>`
 
 
-      $(div_id).html(new_html)
+      $(div_id).html(resp['html'])
 
 
       console.log(resp)
@@ -717,7 +900,6 @@ def js_learn_funcs():
 
  
    function callback(resp) {
-     // alert(resp)
       console.log(resp)
    }
    function error_callback(resp) {
@@ -728,7 +910,6 @@ def js_learn_funcs():
       api_url = "/LEARNING/TAG/" + label + "?learning_file=" + learn_img
       data = {}
       method = "GET"
-      //alert(api_url)
       callAPI(api_url, method, data, callback,error_callback)
    }
    function SwapDivLearnDetail(div1,learn_img, orig_meteor,play_vid)
@@ -775,6 +956,7 @@ def meteor_ai_scan(in_data, json_conf):
    human_data = load_json_file("/mnt/ams2/datasets/human_data.json")
 
    ams_id = in_data['ams_id']
+   station_id = ams_id
    all_meteors = load_json_file("/mnt/ams2/meteors/" + ams_id + "_OBS_IDS.json")
 
    page = in_data['p']
@@ -785,7 +967,7 @@ def meteor_ai_scan(in_data, json_conf):
    print("IPP:", items_per_page)
    out = ""
 
-   js_code = js_learn_funcs()
+   js_code = js_learn_funcs(station_id)
    out += "<script>" + js_code + "</script>"
 
    if page is None:
@@ -830,7 +1012,8 @@ def meteor_ai_scan(in_data, json_conf):
       crop_img = "/METEOR_SCAN/" + lfile[5:15] + "/" + lfile.replace(".json", "-ROI.jpg")
       controls = ""
 
-      controls = make_trash_icon(lfile,"#ffffff","20") 
+
+      controls = make_trash_icon(lfile,"#ffffff","20",selected) 
       div_id = lfile.replace("-ROI.jpg", "")
       div_id = div_id.replace("-", "")
       div_id = div_id.replace("_", "")
@@ -845,8 +1028,328 @@ def meteor_ai_scan(in_data, json_conf):
     
    template = template.replace("{MAIN_TABLE}", out)
    return(template)
-  
+
+def search_form(in_data):
+   print("IN:", in_data)
+   station_id = in_data['station_id']
+   datestr = in_data['datestr']
+   human_conf = in_data['human_confirmed']
+   ipp = in_data['ipp']
+   mtype = in_data['label']
+   if in_data['sort'] == "score_asc":
+      sort_by = "score"
+      order_by = "score ASC"
+      sort_opt = "<option value=date >Date</option>"
+      sort_opt += "<option value=score_asc selected>Score ASC</option>"
+      sort_opt += "<option value=score_desc >Score DESC</option>"
+   elif in_data['sort'] == "score_desc":
+      sort_by = "score"
+      order_by = "score DESC"
+      sort_opt = "<option value=date >Date</option>"
+      sort_opt += "<option value=score_asc >Score ASC</option>"
+      sort_opt += "<option value=score_desc selected >Score DESC</option>"
+   else:
+      sort_by = "date"
+      order_by = "MS.roi_fn"
+      sort_opt = "<option value=date selected>Date</option>"
+      sort_opt += "<option value=score_asc >Score ASC</option>"
+      sort_opt += "<option value=score_desc >Score DESC</option>"
+   if in_data['ipp'] is None:
+      in_data['ipp'] = "100"
+
+   limit = int(in_data['ipp'])
+   limits = [25,100,250,500,1000]
+   per_page_opt = ""
+   for ll in limits:
+      if int(ll) == int(limit):
+         per_page_opt += "<option selected value='" + str(ll) + "'>" + str(ll) + "</option>"
+      else:
+         per_page_opt += "<option value='" + str(ll) + "'>" + str(ll) + "</option>"
+
+   if in_data['p'] is None:
+      offset = 0
+      page_num = 0
+   else:
+      page_num = in_data['p']
+      offset = int(in_data['p']) * int(in_data['ipp'])
+
+   if in_data['label'] == "METEOR" or in_data['label'] == 'meteor':
+      type_opt = "<option value=meteor selected>Meteors</option>"
+      type_opt += "<option value=non_meteor >Non Meteors</option>"
+   else:
+      type_opt = "<option value=meteor >Meteors</option>"
+      type_opt += "<option value=non_meteor selected>Non Meteors</option>"
+
+   if "human_confirmed" not in in_data: 
+      in_data['human_confirmed'] = "all"
+
+   if in_data['human_confirmed'] == "confirmed" :
+      human_opt = "<option value=all>All</option>"
+      human_opt += "<option value=non_confirmed>Not Confirmed</option>"
+      human_opt += "<option value=confirmed selected>Confirmed</option>"
+   elif in_data['human_confirmed'] == "non_confirmed":
+      human_opt = "<option value=all >All</option>"
+      human_opt += "<option value=non_confirmed selected>Not Confirmed</option>"
+      human_opt += "<option value=confirmed>Confirmed</option>"
+   else:
+      human_opt = "<option value=all selected>All</option>"
+      human_opt += "<option value=non_confirmed>Not Confirmed</option>"
+      human_opt += "<option value=confirmed>Confirmed</option>"
+
+   script = """
+    <script>
+       function go(station_id) {
+           select_type = document.getElementById('meteor_yn')
+           var mtype = select_type.options[select_type.selectedIndex].value
+
+           datestr = document.getElementById('datestr').value
+
+           select_order_by = document.getElementById('order_by')
+
+           var order_by = select_order_by.options[select_order_by.selectedIndex].value
+
+           select_human = document.getElementById('human_confirmed')
+           var human_conf = select_human.options[select_human.selectedIndex].value
+
+           select_ipp = document.getElementById('ipp')
+           var ipp = select_ipp.options[select_ipp.selectedIndex].value
+
+
+           new_url = "/LEARNING/" + station_id + "/" + mtype.toUpperCase() + "?datestr=" + datestr + "&sort=" + order_by + "&human_confirmed=" + human_conf + "&ipp=" + ipp
+           window.location.href = new_url
+
+
+       }
+    </script>
+   """
+   if datestr is None:
+      datestr = ""
+   print("STATION ID IS:", station_id, per_page_opt, datestr)
+   form = """
+    <div class='container'>
+    <form name=search id='search' action="#" METHOD="GET">
+    Show <select id=meteor_yn name="meteor_yn">""" + type_opt + """ </select>
+    Date <input id=datestr type="date_str" value='""" + datestr + """' size=12>
+    Order By <select id='order_by' name="order_by">""" + sort_opt + """ </select> """
+
+   form += """ Confirmed <select id='human_confirmed' name="human_confirmed"> + """ + human_opt + """
+    </select> """
+   form += """ Items Per Page <select id='ipp' name="ipp">""" + per_page_opt + """ </select>"""
+
+   form += """
+    <button onclick="javascript: go('""" + station_id + """'); return false;">Go</button>
+    </form>
+    </div>
+
+   """ 
+   if order_by is None:
+      order_by = "date"
+   if human_conf is None:
+      human_conf = "all"
+
+   base_url = "/LEARNING/" + station_id + "/" + mtype.upper() + "?datestr=" + datestr + "&sort=" + order_by + "&human_confirmed=" + human_conf + "&ipp=" + str(ipp) + "&p="
+
+   final = script + form
+   return(final, base_url)
+
 def learning_db_dataset(ams_id, in_data):
+   db_file = ams_id + "_ALLSKY.db"
+   con = sqlite3.connect(db_file)
+   cur = con.cursor()
+   station_id = ams_id
+
+   search_form_html,base_url = search_form(in_data)
+   header = html_page_header(ams_id)
+   js_code = js_learn_funcs(station_id)
+   header += "<script>" + js_code + "</script>"
+   header += search_form_html
+
+   if in_data['ipp'] is None:
+      ipp = 100
+   else:
+      ipp = int(in_data['ipp'])
+   limit = ipp
+   if in_data['p'] is None:
+      p = 0
+   else:
+      p = int(in_data['p'])
+   
+   # SORTING
+   if in_data['sort'] == 'date':
+      order_by = "root_fn DESC"
+   elif in_data['sort'] == 'score_desc':
+      order_by = "meteor_yn_conf DESC"
+   elif in_data['sort'] == 'score_asc':
+      order_by = "meteor_yn_conf asc"
+   else:
+      order_by = "root_fn DESC"
+  
+   # LIMIT / PAGE
+   offset = p * ipp 
+   where_clause = ""
+   print("IN", in_data)
+   sql_terms = []
+   if in_data['datestr'] is not None:
+      where_clause = "sd_vid like ? "
+      sql_terms.append(in_data['datestr'] + "%")
+   else:
+      where_clause = "sd_vid like ? "
+      sql_terms.append("20%")
+
+   if in_data['label'] == "METEOR":
+      where_clause += " AND meteor_yn = 1 "
+   elif in_data['label'] == "NON_METEOR":
+      where_clause += " AND meteor_yn = 0 "
+   else:
+      meteor_yn = 0
+      where_clause += " AND (1 = 1) "
+
+   if in_data['human_confirmed'] == "confirmed":
+      if in_data['label'] == "METEOR":
+         where_clause += " AND human_confirmed = 1 "
+      elif in_data['label'] == "NON_METEOR":
+         where_clause += " AND human_confirmed = -1 "
+
+   if in_data['human_confirmed'] == "non_confirmed":
+      where_clause += " AND human_confirmed = '0'"
+
+   # TOTALS QUERY
+   sql = """
+         SELECT count(*)
+            FROM meteors 
+           WHERE """ + where_clause 
+   cur.execute(sql, sql_terms)
+   rows = cur.fetchall()
+   total_count = rows[0][0]
+
+   # ROWS QUERY
+   sql = """
+         SELECT root_fn, meteor_yn, ai_resp, human_confirmed, reduced, duration, ang_velocity, meteor_yn_conf
+            FROM meteors 
+           WHERE """ + where_clause + """
+           ORDER BY """ + order_by + """ LIMIT """ + str(limit) + """ OFFSET """ + str(offset)
+
+   cur.execute(sql, sql_terms)
+   print(sql)
+   rows = cur.fetchall()
+   out = header
+   cc = 0
+
+   page_links, page_links_html = make_page_links(base_url, p, total_count, ipp)
+   
+   out += "<div class='container'>" + str(total_count) + " records matching search critera. Show " + str(ipp) + " items per page.</div>"
+   out += "<div class='container clearfix'>" + page_links_html + "</div>"
+   out += "<div class='container-fluid justify-content-center'>"
+   for row in rows:
+      out += meteor_image(cc, ams_id, row[0], row[1], row[2], row[3], row[4], row[5], row[6] )
+      cc += 1
+   out += "</div>"
+   return(out)
+ 
+def make_page_links(base_url, current_item, total_items, items_per_page):
+   #pagination
+   total_pages = math.ceil(total_items / items_per_page)
+   links = []
+   html = "\n<nav aria-label='Pages'><ul class='pagination'>\n"
+   for c in range (0, total_pages + 1):
+      show_c = str(c + 1)
+      if c == current_item:
+         active = "active"
+      else:
+         active = ""
+      link = "<li class='page-item " + active + "'><a class='page-link' href=" + base_url + str(c) + ">" + show_c + "</a></li> \n"
+      links.append(link)
+      #html += "<a href=" + base_url + str(c) + ">" + show_c + "</a> "
+      html += link
+   html += "</ul>"
+   html += "</nav>"
+   return(links, html)
+
+def meteor_image(count, station_id, root_fn, final_meteor_yn, ai_resp, human_confirmed, reduced, duration, ang_vel):
+   rand = str(time.time())
+   meteor_dir = "/mnt/ams2/meteors/" + root_fn[0:10] + "/"
+   stack_file = meteor_dir + root_fn + "-stacked-tn.jpg"
+   meteor_scan_dir = "/mnt/ams2/METEOR_SCAN/" + root_fn[0:10] + "/"
+   roi_file = meteor_scan_dir + station_id + "_" + root_fn + "-ROI.jpg"
+   roi_html = " NO ROI FILE? " + roi_file
+   if os.path.exists(roi_file) is True:
+      roi_img_url = roi_file.replace("/mnt/ams2", "") + "?" + rand
+      roi_img_width="180"
+      roi_img_height="180"
+      roi_html = """<img width=120 height=120 style="border: 2px solid #ffffff" src=""" + roi_img_url + """>"""
+   else:
+      roi_html = ""
+   if True:
+      stack_url = stack_file.replace("/mnt/ams2", "")
+      img_width="320"
+      img_height="180"
+
+   main_class = ""
+   if human_confirmed == 1:
+      selected = "meteor"
+   elif human_confirmed == -1:
+      selected = "trash"
+   else:
+      selected = None
+ 
+ 
+   buttons = make_trash_icon(root_fn,"#ffffff","20",selected) 
+
+   date_str = root_fn[0:19]
+   ai_text = ""
+
+   if reduced == 1:
+      border_color = "gold"
+   else:
+      border_color = "yellow"
+
+   if final_meteor_yn == 0:
+      border_color = "red"
+
+   if ai_resp is not None:
+      ai_resp = json.loads(ai_resp)
+      print(ai_resp)
+      if ai_resp["final_meteor_yn"] == 1:
+         ai_text += "Meteor Final: " + str(ai_resp['final_meteor_yn_conf'])[0:4] + "<br>"
+      if ai_resp["final_meteor_yn"] == 0:
+         ai_text += "Non Meteor Final: " + str(ai_resp['final_meteor_yn_conf'])[0:4] + "<br>"
+      if ai_resp["meteor_yn"] is True:
+         ai_text += "Meteor : " + str(ai_resp['meteor_yn_confidence'])[0:4] + "<br>"
+      if ai_resp["meteor_yn"] is False:
+         ai_text += "Non Meteor : " + str(ai_resp['meteor_yn_confidence'])[0:4] + "<br>"
+      if ai_resp["meteor_fireball_yn"] is True:
+         ai_text += "Fireball : " + str(ai_resp['meteor_fireball_yn_confidence'])[0:4] + "<br>"
+      ai_text += "MC: " + ai_resp['mc_class'] + " " + str(ai_resp['mc_confidence'])[0:4] + "<br>"
+   else:
+      ai_text = ""
+   ai_text += "Dur: " + str(duration)[0:4] + "<br>"
+   ai_text += "Ang Vel: " + str(ang_vel)[0:4] + "<br>"
+
+   roi_div = "<div><div style='float: left'>" + roi_html + "</div><div style='float:left'>" + ai_text + "</div></div><div style='clear: both'></div>"
+   
+
+   html = """
+      <div style='float: left'>
+      <div id="{:s}" style=" 
+        background-image: url('{:s}'); 
+        background-repeat: no-repeat; 
+        background-size: {:s}px; 
+        width: {:s}px; height: {:s}px; 
+        border: 3px {:s} solid; 
+        margin:5px "> 
+        <div class="show_hider">
+           
+           {:s} {:s} {:s} <br>
+           {:s}
+        </div>
+      </div> 
+      <div id="{:s}_caption">&nbsp;</div>
+      </div>
+   """.format(root_fn, stack_url, img_width, img_width, img_height, border_color, buttons, date_str, str(count), roi_div, root_fn)
+   return(html)
+ 
+def learning_samples_db_dataset(ams_id, in_data):
+   # SHOW METEORS & NON METEORS FROM THE LIVE METEOR ARCHIVE.
    # SQL REPORT FROM ML_SAMPLES TABLE
    header = html_page_header(ams_id)
    rand = str(time.time())
@@ -978,7 +1481,7 @@ def learning_db_dataset(ams_id, in_data):
 
    out += """
     <script>
-       function go(station_id) {
+       function go2(station_id) {
            select_type = document.getElementById('meteor_yn')
            var mtype = select_type.options[select_type.selectedIndex].value
 
@@ -995,7 +1498,6 @@ def learning_db_dataset(ams_id, in_data):
 
 
            new_url = "/LEARNING/" + station_id + "/" + mtype.toUpperCase() + "?datestr=" + datestr + "&sort=" + order_by + "&human_confirmed=" + human_conf + "&ipp=" + ipp
-
            window.location.href = new_url
            
 
@@ -1019,7 +1521,7 @@ def learning_db_dataset(ams_id, in_data):
    """
 
    root_img_dir = "/mnt/ams2/datasets/meteor_yn/"
-
+   out += "ROWS:" + str(len(rows))
    out += " <div class='container'>"
    for row in rows:
       print("ROW:", row)
@@ -1043,6 +1545,8 @@ def learning_db_dataset(ams_id, in_data):
       if roi_fn is not None:
          print(station_id, roi_fn, root_img_dir)
          img_file = find_img_loc(station_id + "_" + roi_fn, root_img_dir)  
+         if img_file is None:
+            print("NO IMG FILE:", img_file)
          div_id = roi_fn.replace(".jpg", "")
          if img_file is not None:
             
@@ -1070,22 +1574,12 @@ def learning_db_dataset(ams_id, in_data):
    return(out)
 
 def find_img_loc(img_name,root_dir):
-   img_f = root_dir + "high/meteor/" + img_name
+   img_f = root_dir + "meteor/" + img_name
    print(img_f)
    if os.path.exists(img_f) is True:
       return(img_f)
-   img_f = root_dir + "high/non_meteor/" + img_name
+   img_f = root_dir + "non_meteor/" + img_name
    print(img_f)
-   if os.path.exists(img_f) is True:
-      return(img_f)
-   img_f = root_dir + "med/meteor/" + img_name
-   print(img_f)
-   if os.path.exists(img_f) is True:
-      return(img_f)
-   img_f = root_dir + "med/non_meteor/" + img_name
-   print(img_f)
-   if os.path.exists(img_f) is True:
-      return(img_f)
 
 def learning_meteors_dataset(amsid, in_data):
 
@@ -1235,20 +1729,39 @@ def learning_meteors_dataset(amsid, in_data):
     
    return(template)
 
-def make_trash_icon(roi_file,color,size) :
-   trash_icons = """
-        <a href="javascript:click_icon('reclass_meteor', '""" + roi_file.replace(".jpg", "") + """')">
+def make_trash_icon(roi_file,ocolor,size,selected=None) :
+   color = ocolor
+   items = ['meteor', 'trash'] 
+   trash_icons = ""
+   for item in items:
+      if selected == item:
+         if item == 'meteor':
+            color = 'lime'
+         else:
+            color = 'red'
+      else:
+         color = ocolor
+      trash_icons += """
+        <a href="javascript:click_icon('reclass_""" + item + """', '""" + roi_file.replace(".jpg", "") + """')">
             <i style="padding: 5px; color: """ + color + """; font-size: """ + size + """px;" 
-               class="fas fa-meteor" title="confirm meteor" id='reclass_meteor_""" + roi_file.replace(".jpg", "") + """'></i></a>
-        <a href="javascript:click_icon('reclass_trash', '""" + roi_file.replace(".jpg", "") + """')">
-            <i style="padding: 5px; color: """ + color + """; font-size: """ + size + """px;" 
-               class="bi bi-trash" title="non-meteor" id='reclass_trash_""" + roi_file.replace(".jpg", "") + """'></i></a>
+               class='fas fa-""" + item + """' title='confirm '""" + item + """' id='reclass_""" + item + """_""" + roi_file.replace(".jpg", "") + """'></i></a>
+
+      """ 
+   color = ocolor   
+   trash_icons += """
         <a href="javascript:click_icon('expand', '""" + roi_file.replace(".jpg", "") + """')">
             <i style="padding: 5px; color: """ + color + """; font-size: """ + size + """px;" 
                class="bi bi-arrows-fullscreen" title="expand" id='expand_""" + roi_file.replace(".jpg", "") + """'></i></a>
+        <a href="javascript:click_icon('play', '""" + roi_file.replace(".jpg", "") + """')">
+            <i style="padding: 5px; color: """ + color + """; font-size: """ + size + """px;" 
+               class="fas fa-play-circle" title="expand" id='play_""" + roi_file.replace(".jpg", "") + """'></i></a>
    """
 
    trash_icons_test = """
+        <a href="javascript:click_icon('reclass_trash', '""" + roi_file.replace(".jpg", "") + """')">
+            <i style="padding: 5px; color: """ + color + """; font-size: """ + size + """px;" 
+               class="bi bi-trash" title="non-meteor" id='reclass_trash_""" + roi_file.replace(".jpg", "") + """'></i></a>
+
         <a class="show_hider" href="javascript:click_icon('reclass_meteor', '""" + roi_file.replace(".jpg", "") + """')">
             <i  
                class="fas fa-meteor " title="confirm meteor" id='reclass_meteor_""" + roi_file.replace(".jpg", "") + """'></i></a>

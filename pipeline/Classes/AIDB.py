@@ -1,4 +1,5 @@
 import sqlite3
+from datetime import datetime
 import numpy as np
 import cv2
 import json
@@ -13,6 +14,12 @@ class AllSkyDB():
 
    def __init__(self):
       print("ASAI DB")
+      self.home_dir = "/home/ams/amscams/"
+      self.data_root = "/mnt/ams2"
+      self.msdir = self.data_root + "/METEOR_SCAN/"
+      self.mdir = self.data_root + "/meteors/"
+      
+      self.today = datetime.now().strftime("%Y_%m_%d")
       if os.path.exists("windows.json") is True:
          self.win_config = load_json_file("windows.json")
          self.meteor_dir = self.win_config['meteor_dir'] 
@@ -20,13 +27,40 @@ class AllSkyDB():
          self.meteor_dir = "/mnt/ams2/meteors/"
       self.json_conf = load_json_file("../conf/as6.json")
       self.station_id = self.json_conf['site']['ams_id']
+      self.db_file = self.home_dir + "/pipeline/" + self.station_id + "_ALLSKY.db"
+      if os.path.exists(self.db_file ) is False:
+         self.make_fresh_db()
+
       self.con = self.connect_database(self.station_id)
       self.cur = self.con.cursor()
+
       self.ASAI = AllSkyAI()
       self.ASAI.load_all_models()
       self.check_update_status()
+      #self.reconcile_db()
 
-   def check_update_status(self):
+   def make_fresh_db(self):
+      # check if the SQL DB is created yet.
+      if os.path.exists(self.db_file) is False:
+         print("*** DB FILE DOESN'T EXIST:", self.db_file)
+         cmd = "cat ALLSKYDB.sql | sqlite3 " + self.db_file
+         print(cmd)
+         os.system(cmd)
+         #cmd = "python3.6 testDB.py load ALL"
+         #os.system(cmd)
+         confirm = input("Load all meteors? [Y]es or any key to quit.")
+         if confirm == "Y":
+            self.load_all_meteors()
+         else:
+            exit()
+      else:
+         print("DB FILE ALREADY EXIST:", self.db_file)
+         today = datetime.now().strftime("%Y_%m_%d")
+         #cmd = "python3.6 testDB.py load " + today
+         #os.system(cmd)
+
+   def check_update_status(self, in_date = None):
+
       print("Check update scan status...")
       # check to make sure the ml_samples table has the lastest patch
       if os.path.exists("../conf/sqlite.json") is True:
@@ -35,44 +69,20 @@ class AllSkyDB():
          sql_conf = {}
          sql_conf['updates'] = {}
 
-      # Do alters / db updates / table adds
-      if "ml_samples_alter" not in sql_conf['updates']:
-         try:
-            sql = "ALTER TABLE ml_samples ADD COLUMN meteor_or_plane real"
-            self.cur.execute(sql)
-            sql = "ALTER TABLE ml_samples ADD COLUMN meteor_or_bird real"
-            self.cur.execute(sql)
-            sql = "ALTER TABLE ml_samples ADD COLUMN meteor_or_firefly real"
-            self.cur.execute(sql)
-            sql = "ALTER TABLE ml_samples ADD COLUMN scan_version real"
-            self.cur.execute(sql)
-         except:
-            print("ml_samples Table already altered")
-            sql_conf['updates']['ml_samples_alter'] = {}
+      if os.path.exists("db_backups") is False:
+         os.makedirs("db_backups")
+       
+      # if the DB exists but is not the latest version start over. 
+      if "db_version" not in sql_conf:
+         # this is an old DB, start over.
+         if os.path.exists(self.db_file):
+            cmd = "mv " + self.db_file + " db_backups/" + self.db_file + self.today
+            print(cmd)
+            os.system(cmd)
+         sql_conf['db_version'] = 1
+         save_json_file("../conf/sqlite.json", sql_conf)
 
-      # Check if summary table exists, if not make it and populate it. 
-      if "station_summary_table" not in sql_conf['updates']:
-         try:
-            sql = """
-               CREATE TABLE "station_summary" (
-	       "station_id"	TEXT,
-	       "total_meteor_obs"	INTEGER,
-	       "total_fireball_obs"	INTEGER,
-	       "total_meteors_human_confirmed"	INTEGER,
-	       "first_day_scanned"	TEXT,
-	       "last_day_scanned"	TEXT,
-	       "total_days_scanned"	INTEGER,
-	       "ai_meteor_yes"	INTEGER,
-	       "ai_meteor_no"	INTEGER,
-	       "ai_meteor_samples"	INTEGER,
-	       "ai_non_meteor_samples"	INTEGER
-               );
-            """
-            self.cur.execute(sql)
-         except:
-            print("station_summary Table already altered")
-            sql_conf['updates']['station_summary_table'] = {}
-         save_json_file("../conf/sqlite.json", sql_conf) 
+         self.make_fresh_db()
 
       self.purge_deleted_meteors()
       print("END PURGE:")
@@ -81,7 +91,7 @@ class AllSkyDB():
 
 
       print("STATION SUMMARY", len(rows))
-      update_summary = 0
+      update_summary = 1
       if len(rows) == 0:
          update_summary = 1
       if update_summary == 1:
@@ -156,34 +166,48 @@ class AllSkyDB():
       print("Total Meteor Human Confirmed:", total_meteor_human_confirmed)
       print("Total Meteors Reduced:", total_meteor_reduced)
 
+
+
+   def reconcile_db(self, in_date=None):
+      #AIDB.load_all_meteors(date)
+      # Figure out where we are with AI scans, what is not loaded yet and what has not been scanned.
+      # then load / scan data that is missing. 
+      # Essentially bring the database up to date with file system data and not done ai/scanning
+      # This includes making ROI files as needed (should replace all MeteorScan Functions!)
+      # This includes 'scan-in-stack' for non-reduced or problem captures
+      print("LOADING ALL...")
+      self.load_all_meteors()
+      print("DONE LOADING ALL...")
+      
       if True:
          meteor_roots = []
-         print("Do a quick update to make sure the old detects just need to be updated...")
-         sql = "SELECT root_fn, roi, mfd from meteors WHERE meteor_yn = '' order by root_fn desc"
+         sql = "SELECT root_fn, meteor_yn, meteor_yn_conf from meteors order by root_fn desc"
          self.cur.execute(sql)
-         rows = self.cur.fetchall()
+         #rows = self.cur.fetchall()
          found = 0
          not_found = 0
-         for row in rows:
+         for row in self.cur.fetchall():
+            print("ROW::", row[0],row[1],row[2])
+            if row[1] == 1 or row[1] == 0:
+               print("SKIP DONE:", row[0])
+               continue
             root = row[0]
-            roi = row[1]
-            mfd = row[2]
-            if isinstance(roi,str) is True and "[" in roi:
-               roi = eval(roi)
-            else:
-               roi = None
-
-
+            meteor_yn = row[1]
+            meteor_yn_conf = row[2]
+            print("ROW:", root, meteor_yn, meteor_yn_conf)
+            #if isinstance(roi,str) is True and "[" in roi:
+            #   roi = eval(roi)
+            #else:
+            #   roi = None
             if "AMS" not in root:
                date = root[0:10]
                mdir = "/mnt/ams2/meteors/" + date + "/" 
                msdir = "/mnt/ams2/METEOR_SCAN/" + date + "/" 
                roi_file = msdir + self.station_id + "_" + root + "-ROI.jpg"
-               print("ROI FILE:", roi_file)
+            if True:
                if os.path.exists(roi_file) is True:
                   roi_exists = 1
                   roi_img = cv2.imread(roi_file)
-                  #print(found, "ROI FILE FOUND!", roi_file)
                   found += 1
                   try:
                      resp = self.ASAI.meteor_yn(None,roi_img)
@@ -192,17 +216,21 @@ class AllSkyDB():
                   if resp is not None:
                      sql = """ UPDATE meteors 
                         SET meteor_yn = ?,
-                            meteor_yn_conf = ?
+                            meteor_yn_conf = ?,
+                            ai_resp = ?
                         WHERE sd_vid = ? """
-                     task = [resp['final_meteor_yn'],resp['final_meteor_yn_conf'],root + ".mp4"]
+                     if resp['final_meteor_yn'] is False:
+                        resp['final_meteor_yn'] = 0
+                     elif resp['final_meteor_yn'] is True:
+                        resp['final_meteor_yn'] = 1
+                     else:
+                        resp['final_meteor_yn'] = 0
+                     
+                     task = [resp['final_meteor_yn'],resp['final_meteor_yn_conf'],json.dumps(resp),root + ".mp4"]
 
-                     #cur = con.cursor()
                      self.cur.execute(sql, task)
-                     print("SQL:", sql)
-                     print("TASK:", task)
                      self.con.commit()
-
-                     print("UPDATE", task)
+                     print("UPDATED:", task)
                else:
                   #print(not_found, "ROI FILE NOT FOUND!", roi_file)
                   roi_exists = 0
@@ -211,7 +239,7 @@ class AllSkyDB():
                print("ROOT:", root)
 
             meteor_roots.append(root)
-         print(len(meteor_roots) , "loaded")
+         print(len(meteor_roots) , " meteors not processed")
 
 
          #for mr in meteor_roots:
@@ -222,7 +250,18 @@ class AllSkyDB():
          #   print(mr, len(rows))
         
 
-      
+   def update_meteor_ai_result(self, root, resp):   
+
+      if resp is not None:
+         sql = """ UPDATE meteors
+                      SET meteor_yn = ?,
+                          meteor_yn_conf = ?
+                    WHERE sd_vid = ? """
+         task = [resp['final_meteor_yn'],resp['final_meteor_yn_conf'],root + ".mp4"]
+         self.cur.execute(sql, task)
+         print("SQL:", sql)
+         print("TASK:", task)
+         self.con.commit()
 
    
    def starttime_from_file(self, filename):
@@ -304,7 +343,6 @@ class AllSkyDB():
          if roi_fn is not None:
             if "RX" in roi_fn:
                rx = roi_fn.split("-RX_")
-               print(rx)
                rx = rx[-1].replace(".jpg", "")
                x1,y1,x2,y2 = rx.split("_")
                roi = [int(x1),int(y1),int(x2),int(y2)]
@@ -360,7 +398,6 @@ class AllSkyDB():
          else:
             desc = "not scanned"
             desc2 = root_fn + " "  + str(i) + " / " + str(len(rows))
-         print("ROI:", roi)
          if isinstance(roi, str) is True:
             if roi != "":
                roi = eval(roi)
@@ -394,7 +431,6 @@ class AllSkyDB():
 
             if key_press == 113:
                cv2.destroyAllWindows()
-               print("QUIT!")
                return()
             if key_press == 102:
                i += 1
@@ -413,37 +449,128 @@ class AllSkyDB():
             if key_press == 113:
                cv2.destroyAllWindows()
 
-               print("QUIT!")
                return()
             if key_press == 102:
                i += 1
             if key_press == 97:
                i -= 1
 
+   def verify_media_day(self, selected_day):
+      sql = "SELECT sd_vid, hd_vid, roi, sync_status from meteors where sd_vid like ?" 
+      self.cur.execute(sql, [selected_day + "%"])
+      rows = self.cur.fetchall()
+      loaded_meteors = {}
+      for row in rows:
+         loaded_meteors[row[0]] = 1
+         sd_vid = row[0]
+         hd_vid = row[1]
+         root_file = sd_vid.replace(".mp4", "")
+         roi = json.loads(row[2])
+         print(row[3])
+         if row[3] != "":
+            try:
+               sync_status = json.loads(row[3])
+            except:
+               print("No current sync status.")
+         else:
+            sync_status = []
+         
+         self.verify_media(root_file, hd_vid, roi, sync_status)
       
 
+   def verify_media(self, root_file, hd_vid, roi, sync_status):
+      # Multi-level checks here. Starting with...
+      # LOCAL MEDIA (files on this HD)
+      # roi file
+      if roi == "":
+         roi = None 
+      else:
+         x1,y1,x2,y2 = roi
+     
+      if roi is not None: 
+         roi_file = self.msdir + root_file[0:10] + "/" + self.station_id + "_" + root_file + "-ROI.jpg"
+
+         if "roi_jpg" not in sync_status:
+            if isinstance(sync_status, str) is True:
+               try: 
+                  sync_status = json.loads(sync_status)
+               except:
+                  sync_status = []
+            print("SS", sync_status)
+            sync_status.append('ROI.jpg')
+            sync_status = sorted(list(set(sync_status)))
+
+         if os.path.exists(roi_file) is True:
+            print("ROI JPG GOOD!", roi_file)
+            sync_status.append('ROI.jpg')
+            sync_status = sorted(list(set(sync_status)))
+         else:
+            print("NEED TO MAKE ROI JPG!", roi_file)
+            stack_file = self.mdir + root_file[0:10] + "/" + root_file + "-stacked.jpg"
+            if os.path.exists(stack_file) is True:
+               stack_img = cv2.imread(stack_file)
+               stack_img = cv2.resize(stack_img,(1920,1080))
+               roi_img = stack_img[y1:y2,x1:x2]  
+               roi_file = self.msdir + root_file[0:10] + "/" + self.station_id + "_" + root_file + "-ROI.jpg"
+               cv2.imwrite(roi_file, roi_img)
+               print("SAVED ROI FILE:", roi_file)
+            sync_status.append('ROI.jpg')
+            sync_status = sorted(list(set(sync_status)))
+      else:
+         print("We can't make an ROI image because there is no ROI defined! What should we do?")
+         print("1) Check for a reduced file again? Maybe it is not updated?")
+         print("3) Check the stack image for AI detects?")
+         print("3a) Then run those through video detection and reduction?")
+         print("3b) Then if they are meteors accept them")
+         print("3c) Else accept the most prominent object?")
+
+
+      # UPDATE THE DB WITH LATEST MEDIA SYNC STATUS (Local & Cloud)
+      # Status : Key Not Found = Local & Cloud media not exist; 1 = local media exists; 2 = local and cloud media exists
+      # Rules: Only push cloud media if: Human confirmed is True, or Multi-Station Confirmed is True, or AI Meteor is True (and high?)
+ 
+
+      # CLOUD MEDIA (files on wasabi drive)
+ 
+
    def load_all_meteors(self, selected_day = None):
-      print("SDAY:", selected_day)
+      print("Load meteors for day:", selected_day)
+      if selected_day is not None:
+         sql = "SELECT sd_vid from meteors where sd_vid like ?" 
+         self.cur.execute(sql, [selected_day + "%"])
+      else:
+         sql = "SELECT sd_vid from meteors " 
+         self.cur.execute(sql)
+
+      rows = self.cur.fetchall()
+      loaded_meteors = {}
+      for row in rows:
+         print("PRELOAD:", row[0])
+         loaded_meteors[row[0]] = 1
+
+
+
       if selected_day is None:
          dirs = os.listdir(self.meteor_dir)
       else:
          dirs = [selected_day]
       self.mdirs = []
       self.mfiles = []
-      print("DIRS:", dirs)
 
       for ddd in sorted(dirs,reverse=True):
          if os.path.isdir(self.meteor_dir + ddd):
             self.mdirs.append(self.meteor_dir + ddd + "/")
 
-      for mdir in sorted(self.mdirs):
+      for mdir in sorted(self.mdirs):  
          mfiles = self.get_mfiles(mdir )
          print(len(mfiles), mdir)
          self.mfiles.extend(mfiles)
  
-      print("MFILES:", len(self.mfiles))
       for mfile in sorted(self.mfiles, reverse=True):
-         print(mfile.replace(".mp4", ""))
+         if mfile in loaded_meteors:
+            print("SKIP LOADED", mfile)
+            continue
+         #print(mfile.replace(".mp4", ""))
          mdir = mfile[0:10]
          el = mfile.split("_")
          mjf = self.meteor_dir + mdir + "/" + mfile.replace(".mp4", ".json")
@@ -453,10 +580,10 @@ class AllSkyDB():
             try:
                mj = load_json_file(mjf)
             except:
-               print("COULD NOT LOAD THE MJF:", mjf)
+               #print("COULD NOT LOAD THE MJF:", mjf)
                continue
-         if 'in_sql' in mj:
-            print("XXX MJ already loaded into SQL!")
+         #if 'in_sql' in mj:
+         #   print("XXX MJ already loaded into SQL!")
             #continue
 
          mfd = ""
@@ -498,8 +625,11 @@ class AllSkyDB():
  
         
          if "user_mods" in mj :
-            human_confirmed = 1
-            user_mods = mj['user_mods']
+            if len(mj['user_mods'].keys()) > 0:
+               human_confirmed = 1
+               user_mods = mj['user_mods']
+            else:
+               user_mods = ""
          else:
             user_mods = ""
          ang_vel = 0
@@ -542,6 +672,9 @@ class AllSkyDB():
 
          ext = el[-1]
          camera_id = ext.split("-")[0]
+
+         #self.verify_media(self.station_id, mfile.replace(".mp4", ""))
+
          in_data = {}
          in_data['station_id'] = self.station_id
          in_data['camera_id'] = camera_id
@@ -591,8 +724,8 @@ class AllSkyDB():
       vlist = ""
       flist = "" 
       for key in in_data:
-         print("KEY IS:", key)
-         print("FLIST IS:", flist)
+         #print("KEY IS:", key)
+         #print("FLIST IS:", flist)
          if flist != "":
             flist += ","
             vlist += ","
@@ -604,11 +737,11 @@ class AllSkyDB():
       flist += ")"
       vlist += ")"
       sql += flist + " VALUES (" + vlist 
-      print("SQL", sql)
-      print("FIELDS", fields)
-      print("VALUES", values)
-      print(len(fields))
-      print(len(values))
+      #print("SQL", sql)
+      #print("FIELDS", fields)
+      #print("VALUES", values)
+      #print(len(fields))
+      #print(len(values))
       cur.execute(sql, values)
       con.commit()
       return(cur.lastrowid)
@@ -619,7 +752,7 @@ class AllSkyDB():
         INSERT OR REPLACE INTO ml_samples(station_id,camera_id,root_fn,roi_fn, meteor_yn_final, meteor_yn_final_conf, main_class, sub_class, meteor_yn, meteor_yn_conf, fireball_yn, fireball_yn_conf, multi_class, multi_class_conf, human_confirmed, human_label, suggest_class, ignore)
         VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)
       '''
-      print("INSERTED:", in_data)
+      print("INSERTED ML SAMPLE:", in_data)
       cur.execute(sql, in_data)
       con.commit()
       return(cur.lastrowid)
