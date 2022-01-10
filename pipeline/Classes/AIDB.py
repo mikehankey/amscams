@@ -613,7 +613,7 @@ class AllSkyDB():
 
          if 'multi_station_event' in mj:
             mse = 1
-            if "event_id" in mj['multi_station_event']
+            if "event_id" in mj['multi_station_event']:
                event_id = mj['multi_station_event']['event_id']
             else:
                event_id = 0
