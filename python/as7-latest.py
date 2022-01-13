@@ -20,7 +20,7 @@ try:
    tf = TimezoneFinder()
 except:
    print("COULDN'T RUN ZIMEZONE!")
-   exit()
+   #exit()
 
 
 dec = decimal.Decimal
