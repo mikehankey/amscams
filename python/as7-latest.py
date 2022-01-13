@@ -20,7 +20,6 @@ try:
    tf = TimezoneFinder()
 except:
    print("COULDN'T RUN ZIMEZONE!")
-   #exit()
 
 
 dec = decimal.Decimal
@@ -358,7 +357,6 @@ for cam in cameras:
    cv2.imwrite(marked_file, naked_img)
    print("MARKED:", marked_file)
 
-   exit()
 
    if cloud_on == 1:
       cmd = "cp /mnt/ams2/latest/" + cur_day + "/" + amsid + "_" + cams_id + "_" + cur_day_hm + ".jpg " + cloud_dir + cams_id + ".jpg"
