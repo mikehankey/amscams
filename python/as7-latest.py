@@ -282,15 +282,21 @@ for cam in cameras:
    # add txt to image
 
    yy, mm, dd, h,m = wdata['datetime'].split("_")
-   datestr = yy + "/" + mm + "/" + dd + " " + h + ":" + m + " UTC"
+   if local_time_str is not None:
+      datestr = local_time_str
+   else:
+      datestr = yy + "/" + mm + "/" + dd + " " + h + ":" + m + " UTC"
    datestr2 = yy + "/" + mm + "/" + dd + " " + h + ":" + m 
+   print("LS", local_time_str)
+   print("DS", datestr)
 
    # 
    (sun_status, saz, sun_alt, sun_rise, sun_set, moon_az, moon_alt, moon_rise, moon_set) = ephem_info(json_conf['site']['device_lat'], json_conf['site']['device_lng'], datestr2)
 
 
    desc1 = json_conf['site']['ams_id'] + " - " + json_conf['site']['operator_name'] + " " + wdata['location'] + " " + datestr + " - ALLSKY7.NET "
-   
+  
+   print("DESC1", desc1) 
    temp = wdata['temp'].split(" ")[0] + "\u00B0"
    temp = wdata['temp'].replace("  ", "")
    #.split(" ")[0] + "\u00B0"
@@ -321,17 +327,21 @@ for cam in cameras:
 #{'station_id': 'AMS1', 'location': 'Monkton, MD US', 'conditions': 'Sunny', 'temp': '30(26) °F      ', 'wind': '↘ 3 mph        ', 'mi': '6 mi           ', 'moon_phase': 'Waxing Gibbous (0.325)', 'datetime': '2022_01_12_12_10'}
 
    #(sun_status, saz, sun_alt, sun_rise, sun_set, moon_az, moon_alt, moon_rise, moon_set)
+   print("SUN STATUS", sun_status, "|")
    if sun_status == "day":
-      sun_status == "Daytime"
+      print("YES DAY")
+      sun_status = "Daytime"
       if int(saz) < 180 and 0 <= int(sun_alt) < 5:
          sun_status = "Morning"
       if int(saz) < 180 and -10 <= int(sun_alt) < 0:
          sun_status = "Dawn"
    else:
-      sun_status == "Nightime"
+      sun_status = "Nightime"
       if int(saz) < 180 and -10 <= int(sun_alt) < 5:
          sun_status = "Dusk"
 
+   print("SUN STATUS", sun_status)
+   #exit()
    desc2 = sun_status + " " + wdata['conditions'] + " " + temp + " " + "Solar elv: " + str(sun_alt) + " " + new_moon + " " + str(moon_alt) + " elv"
 
 
@@ -359,7 +369,8 @@ for cam in cameras:
 
 
    if cloud_on == 1:
-      cmd = "cp /mnt/ams2/latest/" + cur_day + "/" + amsid + "_" + cams_id + "_" + cur_day_hm + ".jpg " + cloud_dir + cams_id + ".jpg"
+      #cmd = "cp /mnt/ams2/latest/" + cur_day + "/" + amsid + "_" + cams_id + "_" + cur_day_hm + ".jpg " + cloud_dir + cams_id + ".jpg"
+      cmd = "cp " + marked_file + " " + cloud_dir + cams_id + ".jpg"
       print("2", cmd)
       os.system(cmd)
 
