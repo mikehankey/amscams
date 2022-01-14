@@ -1,4 +1,8 @@
 #!/usr/bin/python3 
+import ephem 
+import numpy as np
+from PIL import Image, ImageDraw, ImageFont
+import cv2
 import json
 import os
 from detectlib import cfe
@@ -7,9 +11,86 @@ from datetime import datetime
 #import datetime as dt
 import datetime as dt
 import math, decimal 
+
+try:
+    
+   from timezonefinder import TimezoneFinder 
+   from pytz import timezone, utc
+   # TIME ZONE!
+   tf = TimezoneFinder()
+except:
+   print("COULDN'T RUN ZIMEZONE!")
+
+
 dec = decimal.Decimal
 jsc = load_json_file("../conf/as6.json")
+json_conf = jsc
 amsid = jsc['site']['ams_id']
+
+def ephem_info(device_lat, device_lng, capture_date):
+
+   obs = ephem.Observer()
+
+   obs.pressure = 0
+   obs.horizon = '-0:34'
+   obs.lat = device_lat
+   obs.lon = device_lng
+   obs.date = capture_date
+
+   sun = ephem.Sun()
+   moon = ephem.Moon()
+
+   sun_rise = obs.previous_rising(sun)
+   sun_set = obs.next_setting(moon)
+   moon_rise = obs.previous_rising(sun)
+   moon_set = obs.next_setting(moon)
+   sun.compute(obs)
+   moon.compute(obs)
+
+   (sun_alt, x,y) = str(sun.alt).split(":")
+   (moon_alt, x,y) = str(moon.alt).split(":")
+
+   saz = str(sun.az)
+   moon_az = str(moon.az)
+   (sun_az, x,y) = saz.split(":")
+   (moon_az, x,y) = moon_az.split(":")
+   if int(sun_alt) < -1:
+      sun_status = "night"
+   else:
+      sun_status = "day"
+
+   print("STATUS:", sun_status)
+   print("SUN", sun_az, sun_alt, sun_rise, sun_set)
+   print("Moon", moon_az, moon_alt, moon_rise, moon_set)
+   return(sun_status, sun_az, sun_alt, sun_rise, sun_set, moon_az, moon_alt, moon_rise, moon_set)
+
+def pil_add_text(cv2img, x,y, text, font, color ):
+   image = Image.fromarray(cv2img)
+   draw = ImageDraw.Draw(image)
+
+   if font is None:
+      #font = ImageFont.truetype("/usr/share/fonts/truetype/DejaVuSans.ttf", 20, encoding="unic" )
+      font = ImageFont.truetype("DejaVuSans.ttf", 12, encoding="unic" )
+   draw.text((x, y), str(text), font = font, fill=color)
+   return cv2.cvtColor(np.asarray(image), cv2.COLOR_RGB2BGR)
+
+def get_offset(*, lat, lng):
+    """
+    returns a location's time zone offset from UTC in minutes.
+    local_time = today - dt.timedelta(hours = hour_offset)
+    """
+
+
+    today = datetime.now()
+    tz_target = timezone(tf.certain_timezone_at(lng=lng, lat=lat))
+    # ATTENTION: tz_target could be None! handle error case
+    today_target = tz_target.localize(today)
+    today_utc = utc.localize(today)
+
+    offset_min = (today_utc - today_target).total_seconds() / 60
+    offset_hour = offset_min / 60
+    local_time = today + dt.timedelta(hours = offset_hour)
+    return (today_utc - today_target).total_seconds() / 60, today, local_time
 
 
 def save_json_file(json_file, json_data):
@@ -122,6 +203,7 @@ def log_weather(datetime_str):
    cmd = "cp " + wjs + " " + cloud_day_dir + datetime_str + ".json"
    print(cmd)
    os.system(cmd)
+   return(data)
 
 def ping_cam(cam_num, config=None):
    #config = read_config("conf/config-" + str(cam_num) + ".txt")
@@ -146,6 +228,20 @@ if "cloud_latest" in jsc:
 else: 
    cloud_on = 0 
 
+try:
+   tz = tf.timezone_at(lng=float(jsc['site']['device_lng']), lat=float(jsc['site']['device_lat']))
+   bergamo = {"lat": float(jsc['site']['device_lat']), "lng": float(jsc['site']['device_lng'])}
+   #minute_offset, utc_time, local_time = get_offset(**bergamo)
+   minute_offset, utc_time, local_time = get_offset(**bergamo)
+   print("OFFSET:", minute_offset/60)
+   local_time_str = local_time.strftime('%Y-%m-%d %H:%M') + " (UTC " + str(minute_offset/60) + ")"
+   print("LOCAL TIME:", local_time_str)
+except:
+   print("NEED TO INSTALL: sudo python3 -m pip install timezonefinder")
+   tz = ""
+   local_time_str = None
+
+
 
 cameras = jsc['cameras']
 
@@ -155,7 +251,7 @@ cur_hour = datetime.now().strftime("%H")
 cur_min = datetime.now().strftime("%M")
 cloud_dir = "/mnt/archive.allsky.tv/" + amsid + "/LATEST/" 
 cloud_arc_dir = cloud_dir + cur_day + "/" 
-log_weather(cur_day_hm)
+wdata = log_weather(cur_day_hm)
 
 
 
@@ -179,8 +275,102 @@ for cam in cameras:
    print("1", cmd)
    os.system(cmd)
 
+   naked_file = "/mnt/ams2/latest/" + cur_day + "/" + amsid + "_" + cams_id + "_" + cur_day_hm + ".jpg"
+   naked_img = cv2.imread(naked_file)
+   marked_file = "/mnt/ams2/latest/" + amsid + "_" + cams_id + ".jpg"
+
+   # add txt to image
+
+   yy, mm, dd, h,m = wdata['datetime'].split("_")
+   if local_time_str is not None:
+      datestr = local_time_str
+   else:
+      datestr = yy + "/" + mm + "/" + dd + " " + h + ":" + m + " UTC"
+   datestr2 = yy + "/" + mm + "/" + dd + " " + h + ":" + m 
+   print("LS", local_time_str)
+   print("DS", datestr)
+
+   # 
+   (sun_status, saz, sun_alt, sun_rise, sun_set, moon_az, moon_alt, moon_rise, moon_set) = ephem_info(json_conf['site']['device_lat'], json_conf['site']['device_lng'], datestr2)
+
+
+   desc1 = json_conf['site']['ams_id'] + " - " + json_conf['site']['operator_name'] + " " + wdata['location'] + " " + datestr + " - ALLSKY7.NET "
+  
+   print("DESC1", desc1) 
+   temp = wdata['temp'].split(" ")[0] + "\u00B0"
+   temp = wdata['temp'].replace("  ", "")
+   #.split(" ")[0] + "\u00B0"
+   moond = wdata['moon_phase'].split("(")
+   moon = moond[0]
+   moon_perc = moond[1]
+   moon_perc = moon_perc.replace(")", "")
+   moon_perc = str(int(float(moon_perc) * 100)) + "% full"
+
+   new_moon = moon + "Moon " + moon_perc
+
+   if False:
+      logo = cv2.imread("allsky_logo.png")
+      #print(logo.shape)
+      logo = cv2.cvtColor(logo, cv2.COLOR_RGBA2BGRA)
+      h,w = logo.shape[:2]
+      #434 107
+      w = 217
+      h = 54
+      logo = cv2.resize(logo, (w,h))
+   
+
+
+   if local_time_str is not None:
+      datestr = local_time_str
+
+
+#{'station_id': 'AMS1', 'location': 'Monkton, MD US', 'conditions': 'Sunny', 'temp': '30(26) °F      ', 'wind': '↘ 3 mph        ', 'mi': '6 mi           ', 'moon_phase': 'Waxing Gibbous (0.325)', 'datetime': '2022_01_12_12_10'}
+
+   #(sun_status, saz, sun_alt, sun_rise, sun_set, moon_az, moon_alt, moon_rise, moon_set)
+   print("SUN STATUS", sun_status, "|")
+   if sun_status == "day":
+      print("YES DAY")
+      sun_status = "Daytime"
+      if int(saz) < 180 and 0 <= int(sun_alt) < 5:
+         sun_status = "Morning"
+      if int(saz) < 180 and -10 <= int(sun_alt) < 0:
+         sun_status = "Dawn"
+   else:
+      sun_status = "Nightime"
+      if int(saz) < 180 and -10 <= int(sun_alt) < 5:
+         sun_status = "Dusk"
+
+   print("SUN STATUS", sun_status)
+   #exit()
+   desc2 = sun_status + " " + wdata['conditions'] + " " + temp + " " + "Solar elv: " + str(sun_alt) + " " + new_moon + " " + str(moon_alt) + " elv"
+
+
+   #cv2.putText(naked_img, desc1,   (10,10), cv2.FONT_HERSHEY_SIMPLEX, .4, (255), 1)
+   #cv2.putText(naked_img, desc2,   (10,30), cv2.FONT_HERSHEY_SIMPLEX, .4, (255), 1)
+   naked_img = pil_add_text(naked_img, 10,10, desc1, None, "white")
+   naked_img = pil_add_text(naked_img, 10,30, desc2, None, "white")
+
+   print("D1", desc1)
+   print("D2", desc2)
+   print("T:", temp)
+   #434 107
+   if False:
+      y1 = naked_img.shape[0] - logo.shape[0]
+      y2 = naked_img.shape[0] 
+      x1 = 0
+      x2 = logo.shape[1]
+      print("X1:", x1,x2,y1,y2)
+
+      #naked_img = cv2.cvtColor(naked_img, cv2.COLOR_RGBA2BGRA)
+
+      naked_img[y1:y2,x1:x2] = logo
+   cv2.imwrite(marked_file, naked_img)
+   print("MARKED:", marked_file)
+
+
    if cloud_on == 1:
-      cmd = "cp /mnt/ams2/latest/" + cur_day + "/" + amsid + "_" + cams_id + "_" + cur_day_hm + ".jpg " + cloud_dir + cams_id + ".jpg"
+      #cmd = "cp /mnt/ams2/latest/" + cur_day + "/" + amsid + "_" + cams_id + "_" + cur_day_hm + ".jpg " + cloud_dir + cams_id + ".jpg"
+      cmd = "cp " + marked_file + " " + cloud_dir + cams_id + ".jpg"
       print("2", cmd)
       os.system(cmd)
 

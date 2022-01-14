@@ -197,7 +197,7 @@ def save_json_file(json_file, json_data, compress=False):
    if "cp" in json_data:
       if json_data['cp'] is not None:
          for key in json_data['cp']:
-            print(key, type(json_data['cp']))
+            #print(key, type(json_data['cp']))
             if type(json_data['cp'][key]) == np.ndarray:
                json_data['cp'][key] = json_data['cp'][key].tolist()
 
@@ -451,8 +451,6 @@ def mfd_roi(mfd=None, xs=None, ys=None, ex=0, ey=0):
    y2 = my + int(h / 2)
    w = x2 - x1
    h = y2 - y1
-   print("WH:", w,h)
-   print("WH:", w,h)
 
    if x1 < 0:
       x1 = 0
