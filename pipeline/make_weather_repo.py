@@ -10,6 +10,14 @@ this script will scan files in /mnt/ams2/latest and crop/sort them into the weat
 
 """
 
+def index_weather_conditions():
+   wc_day_dir = "/mnt/ams2/datasets/weather_conditions/"
+   wc_night_dir = "/mnt/ams2/datasets/weather_conditions_night/"
+   # do day
+   day_dirs = os.listdir(wc_day_dir)
+   for dd in sorted(day_dirs):
+      print(dd)
+
 def extract_images(img_file, this_repo_dir, repo_label):
    print("EXTRACT", img_file) #, this_repo_dir, repo_label)
   
@@ -32,10 +40,12 @@ def extract_images(img_file, this_repo_dir, repo_label):
             x2 = x1 + 180 
             y1 = row * 180
             y2 = y1 + 180 
+            
             learning_img = img[y1:y2,x1:x2] 
-            cv2.imwrite(learning_file, learning_img)
-            print("Saved learning file:", x1,y1,x2,y2, row, col, learning_file)
-            lcc += 1
+            if learning_img.shape[0] == learning_img.shape[1]:
+               cv2.imwrite(learning_file, learning_img)
+               print("Saved learning file:", x1,y1,x2,y2, row, col, learning_file)
+               lcc += 1
       
    else:
       print("FAIL:", img_file)
@@ -132,7 +142,11 @@ repo_dir = "/mnt/ams2/datasets/weather/"
 if os.path.exists(repo_dir) is False:
    os.makedirs(repo_dir)
 
-temp = os.listdir(latest_dir)
-for day in sorted(temp,reverse=True):
-   if os.path.isdir(latest_dir + day ) is True:
-      do_weather_day(day, latest_dir + day + "/", cam_ids, json_conf)
+if False:
+   # First procedure pulls latest images based on day / night and forecast
+   temp = os.listdir(latest_dir)
+   for day in sorted(temp,reverse=True):
+      if os.path.isdir(latest_dir + day ) is True:
+         do_weather_day(day, latest_dir + day + "/", cam_ids, json_conf)
+if True:
+   index_weather_conditions()

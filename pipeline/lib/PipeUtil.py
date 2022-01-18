@@ -17,6 +17,42 @@ import ephem
 import json
 import glob
 
+def ephem_info(device_lat, device_lng, capture_date):
+
+   obs = ephem.Observer()
+
+   obs.pressure = 0
+   obs.horizon = '-0:34'
+   obs.lat = device_lat
+   obs.lon = device_lng
+   obs.date = capture_date
+
+   sun = ephem.Sun()
+   moon = ephem.Moon()
+
+   sun_rise = obs.previous_rising(sun)
+   sun_set = obs.next_setting(moon)
+   moon_rise = obs.previous_rising(sun)
+   moon_set = obs.next_setting(moon)
+   sun.compute(obs)
+   moon.compute(obs)
+
+   (sun_alt, x,y) = str(sun.alt).split(":")
+   (moon_alt, x,y) = str(moon.alt).split(":")
+
+   saz = str(sun.az)
+   moon_az = str(moon.az)
+   (sun_az, x,y) = saz.split(":")
+   (moon_az, x,y) = moon_az.split(":")
+   if int(sun_alt) < -1:
+      sun_status = "night"
+   else:
+      sun_status = "day"
+
+   print("STATUS:", sun_status)
+   print("SUN", sun_az, sun_alt, sun_rise, sun_set)
+   print("Moon", moon_az, moon_alt, moon_rise, moon_set)
+   return(sun_status, saz, sun_alt, sun_rise, sun_set, moon_az, moon_alt, moon_rise, moon_set)
 
 def get_file_info(file):
    cur_time = int(time.time())
