@@ -11,9 +11,28 @@ from lib.FFFuncs import ffprobe
 import sys
 
 WW = Weather()
-if len(sys.argv) == 1:
+
+cmd = sys.argv[1]
+day = sys.argv[2]
+if "_" in day :
+   day = day.replace("_", "-")
+
+if cmd == "load_metar":
+   start_time = day + "T00:00:00+0000"
+   end_time = day + "T23:00:00+0000"
+   lat = 39.589
+   lon = -76.584
+   metar_records = WW.get_metar_records(start_time, end_time, lat, lon, .35)
+   exit()
+
+
+if cmd == "load_weather":
    WW.index_weather_snaps_all()
-else:
-   if sys.argv[1] == 'stack_index':
-      WW.index_local_stacks()
+   WW.load_database()
+elif cmd == 'stack_index':
+   WW.index_local_stacks()
+elif cmd == 'process_snap':
+   WW.process_weather_snap(sys.argv[2])
+elif cmd == 'process_all':
+   WW.process_weather_snap_all()
    

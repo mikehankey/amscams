@@ -16,6 +16,68 @@ import ephem
 #import simplejson as json
 import json
 import glob
+import decimal
+dec = decimal.Decimal
+
+def get_localtime_offset(lat,lng,in_datetime):
+
+
+   #tz = tf.timezone_at(float(lng), float(lat))
+   bergamo = {"lat": float(lat), "lng": float(lng), "in_datetime": in_datetime}
+   #minute_offset, utc_time, local_time = get_offset(**bergamo)
+   minute_offset, utc_time, local_time = get_offset(**bergamo)
+   local_time_str = local_time.strftime('%Y-%m-%d %H:%M') + " (UTC " + str(minute_offset/60) + ")"
+   return(local_time_str, minute_offset/60)
+
+def get_offset(*, lat, lng,in_datetime):
+    """
+    returns a location's time zone offset from UTC in minutes.
+    local_time = today - dt.timedelta(hours = hour_offset)
+    """
+    import datetime as dt
+
+    try:
+       from timezonefinder import TimezoneFinder
+       from pytz import timezone, utc
+       # TIME ZONE!
+       tf = TimezoneFinder()
+    except:
+       print("COULDN'T RUN ZIMEZONE!")
+       exit()
+    today = in_datetime 
+    tz_target = timezone(tf.certain_timezone_at(lng=lng, lat=lat))
+    # ATTENTION: tz_target could be None! handle error case
+    today_target = tz_target.localize(today)
+    today_utc = utc.localize(today)
+
+    offset_min = (today_utc - today_target).total_seconds() / 60
+    offset_hour = offset_min / 60
+    local_time = today + dt.timedelta(hours = offset_hour)
+    return (today_utc - today_target).total_seconds() / 60, today, local_time
+
+def get_moon_phase(in_date= None, lat=None, lon=None):
+   try:
+      import pylunar
+   except:
+      print("pylunar not installed!")
+      return(None)
+
+   # set lat/lon (in hours minutes seconds!)
+   # convert lat/lon decimal to hms
+   i,d = str(lat).split(".")
+   gi,gd = str(lon).split(".")
+
+   # just need the whole/lat lon for moon phase!
+   mi = pylunar.MoonInfo((i,0,0), (gi,0,0))
+
+   # set the UTC time
+   year,month,day,hour,minute,second = in_date.split("_")
+   mi.update((int(year),int(month),int(day),int(hour),int(minute),int(second)))
+   moon_age = mi.age()
+   fractional_phase = mi.fractional_phase()
+   phase_name = mi.phase_name()
+   return(moon_age, fractional_phase, phase_name)
+
 
 def ephem_info(device_lat, device_lng, capture_date):
 
@@ -26,14 +88,17 @@ def ephem_info(device_lat, device_lng, capture_date):
    obs.lat = device_lat
    obs.lon = device_lng
    obs.date = capture_date
+   my_day = capture_date.split(" ")[0]
 
    sun = ephem.Sun()
    moon = ephem.Moon()
 
-   sun_rise = obs.previous_rising(sun)
-   sun_set = obs.next_setting(moon)
-   moon_rise = obs.previous_rising(sun)
-   moon_set = obs.next_setting(moon)
+
+   sun_rise = str(obs.previous_rising(sun))
+   sun_set = str(obs.next_setting(moon))
+   moon_rise = str(obs.previous_rising(sun))
+   moon_set = str(obs.next_setting(moon))
+
    sun.compute(obs)
    moon.compute(obs)
 
@@ -42,6 +107,8 @@ def ephem_info(device_lat, device_lng, capture_date):
 
    saz = str(sun.az)
    moon_az = str(moon.az)
+
+   #print("SUN/MOON:", saz, moon_az)
    (sun_az, x,y) = saz.split(":")
    (moon_az, x,y) = moon_az.split(":")
    if int(sun_alt) < -1:
@@ -49,10 +116,14 @@ def ephem_info(device_lat, device_lng, capture_date):
    else:
       sun_status = "day"
 
-   print("STATUS:", sun_status)
-   print("SUN", sun_az, sun_alt, sun_rise, sun_set)
-   print("Moon", moon_az, moon_alt, moon_rise, moon_set)
-   return(sun_status, saz, sun_alt, sun_rise, sun_set, moon_az, moon_alt, moon_rise, moon_set)
+   if -15 < int(sun_alt) < 1:
+      if int(sun_az) < 180:
+         sun_status = "dawn"
+      else:
+         sun_status = "dusk"
+
+
+   return(sun_status, sun_az, sun_alt, sun_rise, sun_set, moon_az, moon_alt, moon_rise, moon_set)
 
 def get_file_info(file):
    cur_time = int(time.time())
