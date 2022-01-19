@@ -226,16 +226,24 @@ class ASAI_Detect():
 
       return(final_cnts)
    
-   def detect_in_stack(self,stack_file, model, labels):
+   def detect_in_stack(self,stack_file, model=None, labels=None):
       self.model = model
-      self.class_names = labels['labels']
+      if labels is not None:
+         self.class_names = labels['labels']
       video_file = stack_file.replace("-stacked.jpg", ".mp4")
 
       first_frame = self.make_first_frame(video_file)
 
       stack_img = cv2.imread(stack_file)
-      stack_img = cv2.resize(stack_img, (1920,1080))
-      first_frame = cv2.resize(first_frame, (stack_img.shape[1], stack_img.shape[0]))
+      try:
+         stack_img = cv2.resize(stack_img, (1920,1080))
+      except:
+         return(None,None,None)
+
+      try:
+         first_frame = cv2.resize(first_frame, (stack_img.shape[1], stack_img.shape[0]))
+      except:
+         return(None,None,None)
       stack_img_sub = cv2.subtract(stack_img, first_frame)
       #cv2.imshow('pepe2', stack_img_sub)
       #cv2.waitKey(0)
@@ -286,14 +294,15 @@ class ASAI_Detect():
    
          cv2.rectangle(show_img, (x1,y1), (x2 , y2) , (255, 255, 255), 1)
          roi_img = stack_1080[y1:y2,x1:x2] 
-         detect_class = self.detect_roi(roi_img)
          roi_imgs.append(roi_img)
          roi_vals.append((x1,y1,x2,y2))
-         if detect_class == "NONMETEOR":
-            color = [0,0,255]
-         else:
-            color = [0,255,0]
-         cv2.putText(show_img, detect_class, (x1,y2), cv2.FONT_HERSHEY_SIMPLEX, .5, color, 1)
+         if model is not None:    
+            detect_class = self.detect_roi(roi_img)
+            if detect_class == "NONMETEOR":
+               color = [0,0,255]
+            else:
+               color = [0,255,0]
+            cv2.putText(show_img, detect_class, (x1,y2), cv2.FONT_HERSHEY_SIMPLEX, .5, color, 1)
       show_img = cv2.resize(show_img,(1280,720)) 
       return(show_img, roi_imgs, roi_vals)
    

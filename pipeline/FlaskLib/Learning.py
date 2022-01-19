@@ -19,6 +19,90 @@ TEST = """
       */
 """
 
+def timelapse_main(station_id, date,cam_num,json_conf):
+
+   main_header = html_page_header(station_id)
+   cam_id = json_conf['cameras']['cam' + str(cam_num)]['cams_id']
+      
+  #<script src="https://code.jquery.com/jquery-1.11.3.min.js"></script>
+   tl_header = main_header + """
+  <title>Time Lapse</title>
+  <script type='text/javascript' src='/src/js/functions/mTimeLapse.js'></script>
+  <style>
+    * {
+      margin:0px;
+      padding:0px;
+      font-family:sans-serif;
+    }
+
+    body {
+      text-align: center;
+    }
+
+    input {
+      background-color: slategray;
+      padding:4px 12px;
+      margin:4px;
+      width:100px;
+      color: rgb(250,252,255);
+      border:0px;
+    }
+
+    input:hover {
+      cursor: pointer;
+      color:white;
+    }
+
+    #frames {
+      width:98%;
+    }
+
+    #frame_front,
+    #frame_back {
+      position: absolute;
+      top:10px;
+      left:10px;
+      width:50%;
+    }
+
+    #controls {
+      width:50%;
+      position: fixed;
+      bottom: 60px;
+      left:10px;
+      color:slategray;
+      margin:10px auto;
+    }
+
+    #data_stamp {
+      font-family: monospace;
+    }
+
+    #mTimeLapse {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div >
+  <div id="mTimeLapse">
+   """
+   files = sorted(glob.glob("/mnt/ams2/latest/" + date + "/" + "*" + cam_id + "*"))
+   out = ""
+   for filename in files:
+      desc = filename.split("/")[-1].replace(".jpg", "")   + "<br>&nbsp;<br>"
+      desc = desc.replace("-marked", "")
+      out += '''<img src="''' + filename.replace("/mnt/ams2", "") + '''" data-stamp="''' + desc  + '''">'''
+   out += """  </div>
+      </div> 
+      </div>
+      </body>
+      </html>
+   """
+   final_out= tl_header + out
+   return(final_out)
+
+
 def batch_update_labels(station_id, label_data):
    update_data = {}
    for row in label_data:
@@ -1151,6 +1235,123 @@ def search_form(in_data):
 
    final = script + form
    return(final, base_url)
+
+def weather_header(ams_id, in_data):
+   header = """
+   <div class='nav'>
+   ALLSKY : Learning : Weather 
+   </div> 
+   """
+   return(header)
+
+def learning_weather(station_id, in_data):
+   header = html_page_header(station_id)
+   js_code = js_learn_funcs(station_id)
+   wheader = weather_header(station_id, in_data)
+
+   db_file = station_id + "_WEATHER.db"
+   con = sqlite3.connect(db_file)
+   cur = con.cursor()
+
+   out = header 
+   out += "<script>" + js_code + "</script>"
+   out += wheader
+
+   if  in_data['label'] == "main":
+      out += """
+         <h2>Learning Samples</h2>
+         <ul>
+         <li><a href=/LEARNING/""" + station_id + "/WEATHER/WC" + """>Weather Condition Samples</a>
+         <li><a href=/LEARNING/""" + station_id + "/WEATHER/CT" + """>Cloud Type Samples</a>
+         <li><a href=/LEARNING/""" + station_id + "/WEATHER/SW" + """>Severe Weather Samples</a>
+         </ul>
+      """
+
+   if in_data['label'] == "WC":
+      counts = sample_counts("WC", station_id, con, cur)
+      out += """
+         <h2>Weather Condition Samples</h2>
+         <ul>
+      """
+      for row in counts:
+         ss, lab, cc = row
+         tag = ss.lower() + "_" + lab
+
+         out += "<li><a href=/LEARNING/" + station_id + "/WEATHER/" + tag + ">" + tag + "</a> " +  str(cc) + "</li>"
+   elif "DAWN" in in_data['label'] or "DUSK" in in_data['label'] or "DAY" in in_data['label'] or "NIGHT" in in_data['label']:
+      el = in_data['label'].split("_")
+      sun_status = el[0]
+      ai_weather_condition = in_data['label'].replace(sun_status + "_", "")
+      data = select_samples(sun_status, ai_weather_condition, con, cur)
+      for row in data:
+         img_fn = row[0]
+         el = img_fn.split("_")
+         st_id = el[0]
+         cam_id = el[1]
+         year = el[2]
+         mon = el[3]
+         day = el[4]
+         hour = el[5]
+         mintemp = el[6]
+         minute, picid = mintemp.split("-")
+         img_file = "/mnt/ams2/datasets/weather/" + sun_status.upper() + "_" + ai_weather_condition + "/" + img_fn
+         img_url = img_file.replace("/mnt/ams2", "")
+         out += "<div style='float: left'><img src=" + img_url + "></div>"
+
+   return(out) 
+
+def select_samples(sun_status, ai_weather_condition, con, cur):
+   if True:
+      sql = """
+         SELECT filename ,
+                WC.sun_status, 
+                WS.ai_sky_condition  
+           FROM ml_weather_samples WS 
+     INNER JOIN weather_conditions WC 
+             ON WC.local_datetime_key = WS.local_datetime_key 
+          WHERE WC.sun_status = ? 
+            AND WS.ai_sky_condition = ?
+       ORDER BY filename DESC 
+      """
+
+      
+      sel_vals = [sun_status.lower(), ai_weather_condition]
+      print(sql)
+      print(sel_vals)
+      cur.execute(sql, sel_vals)
+      rows = cur.fetchall()
+      my_data = []
+      print("LEN:", len(rows))
+      for row in rows:
+         print(row)
+         my_data.append(row)
+      return(my_data)      
+
+
+def sample_counts(sample_type, station_id, con, cur):
+   # TOTALS QUERY
+   resp = []
+   if sample_type == "WC":
+
+      sql = """
+         SELECT count(*), 
+                WC.sun_status, 
+                WS.ai_sky_condition  
+           FROM ml_weather_samples WS 
+     INNER JOIN weather_conditions WC 
+             ON WC.local_datetime_key = WS.local_datetime_key 
+       GROUP BY sun_status, ai_sky_condition
+      """
+      print(sql)
+      cur.execute(sql)
+      rows = cur.fetchall()
+      for row in rows:
+  
+         rcount = row[0]
+         sun_status = row[1]
+         sky_condition = row[2]
+         resp.append((sun_status, sky_condition, rcount))
+   return(resp)
 
 def learning_db_dataset(ams_id, in_data):
    db_file = ams_id + "_ALLSKY.db"

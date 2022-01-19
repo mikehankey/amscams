@@ -1,7 +1,7 @@
 import base64
 import os
 from flask import Flask, request, Response, make_response
-from FlaskLib.Learning import learning_meteors_dataset, learning_meteors_tag, meteor_ai_scan, recrop_roi, recrop_roi_confirm, learn_main, learning_review_day, batch_update_labels, learning_db_dataset
+from FlaskLib.Learning import learning_meteors_dataset, learning_meteors_tag, meteor_ai_scan, recrop_roi, recrop_roi_confirm, learn_main, learning_review_day, batch_update_labels, learning_db_dataset, timelapse_main, learning_weather
 from FlaskLib.motion_detects import motion_detects
 from FlaskLib.FlaskUtils import get_template
 from FlaskLib.api_funcs import update_meteor_points, show_cat_stars, delete_meteor, restore_meteor, delete_meteors, reduce_meteor, delete_frame, crop_video
@@ -67,12 +67,6 @@ def verify_password(username,password):
       return(username)
 
 
-
-@app.route('/TL/<amsid>/', methods=['GET', 'POST'])
-@auth.login_required
-def tlm(amsid):
-   out = tl_menu(amsid)
-   return(out)
 
 
 @app.route('/astroAPI/', methods=['POST', 'GET'])
@@ -569,6 +563,13 @@ def meteor_detail_page(amsid, date, meteor_file):
    out = detail_page(amsid, date, meteor_file )
    return out
 
+
+@app.route('/TL/<amsid>/<date>/<cam_num>/', methods=['GET', 'POST'])
+@auth.login_required
+def tl_main(amsid,date,cam_num):
+   out = timelapse_main(amsid,date,cam_num, json_conf)
+   return(out)
+
 @app.route('/LEARNING/<amsid>/', methods=['GET', 'POST'])
 @auth.login_required
 def lrn_main(amsid):
@@ -651,6 +652,16 @@ def lrn_tag(label):
    out = learning_meteors_tag(label, req)
    return out
 
+
+@app.route('/LEARNING/<amsid>/WEATHER/<label>', methods=['GET', 'POST'])
+@auth.login_required
+def lrn_weather(amsid,label ):
+   req = {}
+   req['label'] = label
+   out = learning_weather(amsid, req)
+   return out
+   
+
 @app.route('/LEARNING/<amsid>/<label>', methods=['GET', 'POST'])
 @auth.login_required
 def lrn_meteors(amsid,label ):
@@ -674,8 +685,6 @@ def lrn_meteors(amsid,label ):
 
    #out = learning_meteors_dataset(amsid, req)
    out = learning_db_dataset(amsid, req)
-
-
    return out
 
 

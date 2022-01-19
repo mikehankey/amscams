@@ -9,6 +9,7 @@ from lib.PipeUtil import load_json_file, convert_filename_to_date_cam, get_trim_
 import sys
 import glob
 from Classes.ASAI import AllSkyAI 
+from Classes.ASAI_Detect import ASAI_Detect 
 
 class AllSkyDB():
 
@@ -36,6 +37,7 @@ class AllSkyDB():
 
       self.ASAI = AllSkyAI()
       self.ASAI.load_all_models()
+      self.ASD = ASAI_Detect()
       self.check_update_status()
       #self.reconcile_db()
 
@@ -178,19 +180,48 @@ class AllSkyDB():
       print("LOADING ALL...")
       self.load_all_meteors()
       print("DONE LOADING ALL...")
-      
+   
+
+      print("RECONCILE DB.")
+
       if True:
          meteor_roots = []
-         sql = "SELECT root_fn, meteor_yn, meteor_yn_conf from meteors order by root_fn desc"
+         if in_date is None:
+            sql = "SELECT root_fn, meteor_yn, meteor_yn_conf,roi, sync_status, hd_vid,reduced from meteors where ai_resp is null order by root_fn desc"
+         else:
+            sql = "SELECT root_fn, meteor_yn, meteor_yn_conf,roi, sync_status, hd_vid,reduced from meteors where ai_resp is null and sd_vid like '" + in_date + "%' order by root_fn desc"
+
+
+         print(sql)
          self.cur.execute(sql)
          #rows = self.cur.fetchall()
          found = 0
          not_found = 0
          for row in self.cur.fetchall():
             print("ROW::", row[0],row[1],row[2])
-            if row[1] == 1 or row[1] == 0:
-               print("SKIP DONE:", row[0])
-               continue
+            
+            roi = row[3]
+            if roi != "":
+               try:
+                  roi = json.loads(roi)
+               except:
+                  roi = []
+
+            sync_status = row[4]
+            hd_vid = row[5]
+            reduced = row[6]
+            try:
+               sync_status = json.loads(sync_status)
+            except:
+               print("No current sync status.")
+               sync_status = []
+
+            root_fn = row[0]
+
+            #if row[1] == 1 or row[1] == 0:
+            #   print("SKIP DONE:", row[0])
+            #   continue
+            
             root = row[0]
             meteor_yn = row[1]
             meteor_yn_conf = row[2]
@@ -210,8 +241,9 @@ class AllSkyDB():
                   roi_img = cv2.imread(roi_file)
                   found += 1
                   try:
-                     resp = self.ASAI.meteor_yn(None,roi_img)
+                     resp = self.ASAI.meteor_yn(root_fn, None,roi_img, roi)
                   except:
+                     print("meteor_yn failed!", root) 
                      resp = None
                   if resp is not None:
                      sql = """ UPDATE meteors 
@@ -232,15 +264,15 @@ class AllSkyDB():
                      self.con.commit()
                      print("UPDATED:", task)
                else:
-                  #print(not_found, "ROI FILE NOT FOUND!", roi_file)
+                  print(not_found, "ROI FILE NOT FOUND!", roi_file)
+                  print("TRY TO MAKE ROI???")
+                  self.verify_media(root_fn, hd_vid, roi, sync_status, reduced)
                   roi_exists = 0
                   not_found += 1
-            else:
-               print("ROOT:", root)
 
             meteor_roots.append(root)
          print(len(meteor_roots) , " meteors not processed")
-
+         print("roi not found")
 
          #for mr in meteor_roots:
          #   sql = """SELECT roi_fn from ml_samples where root_fn = ? and (meteor_yn_conf > 50 or fireball_yn_conf > 50 or multi_class like "%meteor%") """
@@ -250,14 +282,49 @@ class AllSkyDB():
          #   print(mr, len(rows))
         
 
+
+
+   def insert_ml_sample(self, resp):
+      print("INSERT ML SAMPLE!")
+      #insert into the ROI DB!!!
+      in_data = {}
+      el = resp['root_fn'].split("_")
+      ext = el[-1]
+      camera_id = ext.split("-")[0]
+      in_data['station_id']  = self.station_id
+      in_data['camera_id']  = camera_id
+      in_data['root_fn'] = resp['root_fn']
+      in_data['roi_fn'] = resp['roi_fn']
+      in_data['meteor_yn_final'] = resp['final_meteor_yn']
+      in_data['meteor_yn_final_conf'] = resp['final_meteor_yn_conf']
+      in_data['main_class'] = ""
+      in_data['sub_class'] = ""
+      in_data['meteor_yn'] = resp['meteor_yn']
+      in_data['meteor_yn_conf'] = resp['meteor_yn_confidence']
+      in_data['fireball_yn'] = resp['meteor_fireball_yn']
+      in_data['fireball_yn_conf'] = resp['meteor_fireball_yn_confidence']
+      in_data['multi_class'] = resp['mc_class']
+      in_data['multi_class_conf'] = resp['mc_confidence']
+      in_data['human_confirmed'] = 0 
+      in_data['human_label'] = ""
+      in_data['human_roi'] = ""
+      in_data['suggest_class'] = ""
+      in_data['ignore'] = 0
+      #print(in_data)
+      try:
+         self.dynamic_insert(self.con, self.cur, "ml_samples", in_data)
+      except:
+         print("INSERT FAILED.")
+
    def update_meteor_ai_result(self, root, resp):   
 
       if resp is not None:
          sql = """ UPDATE meteors
                       SET meteor_yn = ?,
-                          meteor_yn_conf = ?
+                          meteor_yn_conf = ?,
+                          roi = ?
                     WHERE sd_vid = ? """
-         task = [resp['final_meteor_yn'],resp['final_meteor_yn_conf'],root + ".mp4"]
+         task = [resp['final_meteor_yn'],resp['final_meteor_yn_conf'], json.dumps(resp['roi']),root + ".mp4"]
          self.cur.execute(sql, task)
          print("SQL:", sql)
          print("TASK:", task)
@@ -456,7 +523,7 @@ class AllSkyDB():
                i -= 1
 
    def verify_media_day(self, selected_day):
-      sql = "SELECT sd_vid, hd_vid, roi, sync_status from meteors where sd_vid like ?" 
+      sql = "SELECT sd_vid, hd_vid, roi, sync_status from meteors where sd_vid like ? " #and meteor_yn = ''" 
       self.cur.execute(sql, [selected_day + "%"])
       rows = self.cur.fetchall()
       loaded_meteors = {}
@@ -465,6 +532,11 @@ class AllSkyDB():
          sd_vid = row[0]
          hd_vid = row[1]
          root_file = sd_vid.replace(".mp4", "")
+         red_file = "/mnt/ams2/meteors/" + root_file[0:10] + "/" + root_file + "-reduced.json" 
+         if os.path.exists(red_file) is True:
+            reduced = 1
+         else:
+            reduced = 0
          roi = json.loads(row[2])
          print(row[3])
          if row[3] != "":
@@ -475,22 +547,27 @@ class AllSkyDB():
          else:
             sync_status = []
          
-         self.verify_media(root_file, hd_vid, roi, sync_status)
+         self.verify_media(root_file, hd_vid, roi, sync_status,reduced,red_file)
+      print("Finished verify media")
       
 
-   def verify_media(self, root_file, hd_vid, roi, sync_status):
+   def verify_media(self, root_file, hd_vid, roi, sync_status,reduced=1,red_file=None):
       # Multi-level checks here. Starting with...
       # LOCAL MEDIA (files on this HD)
       # roi file
       if roi == "":
          roi = None 
       else:
-         x1,y1,x2,y2 = roi
+         roi_el = str(roi).split(",")
+         if len(roi_el) != 4:
+            roi = None
+         else:
+            x1,y1,x2,y2 = roi
      
       if roi is not None: 
          roi_file = self.msdir + root_file[0:10] + "/" + self.station_id + "_" + root_file + "-ROI.jpg"
 
-         if "roi_jpg" not in sync_status:
+         if "roi_jpg" not in sync_status :
             if isinstance(sync_status, str) is True:
                try: 
                   sync_status = json.loads(sync_status)
@@ -517,12 +594,58 @@ class AllSkyDB():
             sync_status.append('ROI.jpg')
             sync_status = sorted(list(set(sync_status)))
       else:
-         print("We can't make an ROI image because there is no ROI defined! What should we do?")
-         print("1) Check for a reduced file again? Maybe it is not updated?")
-         print("3) Check the stack image for AI detects?")
-         print("3a) Then run those through video detection and reduction?")
-         print("3b) Then if they are meteors accept them")
-         print("3c) Else accept the most prominent object?")
+         print("We can't make an ROI image because there is no ROI defined! What should we do? ")
+         print("1) Check for a reduced file again? Maybe it is not updated? red=", reduced )
+         print("2) Check the stack image for AI detects?")
+         print("2a) Then run those through video detection and reduction?")
+         print("2b) Then if they are meteors accept them")
+         print("2c) Else accept the most prominent object?")
+
+         # Check the stack for objects
+         if reduced == 1:
+            print("MAKE ROI FROM REDUCED FILE")
+            if os.path.exists(red_file) is True:
+               red_data = load_json_file(red_file)
+               if "meteor_frame_data" in red_data:
+                  mfd = red_data['meteor_frame_data']
+             
+                  x1,y1,x2,y2 = mfd_roi(mfd)
+                  stack_file = self.mdir + root_file[0:10] + "/" + root_file + "-stacked.jpg"
+                  stack_img = cv2.imread(stack_file)
+                  print(x1,y1,x2,y2)
+                  roi_img = stack_img[y1:y2,x1:x2]
+                  roi_file = self.msdir + root_file[0:10] + "/" + self.station_id + "_" + root_file + "-ROI.jpg"
+                  cv2.imwrite(roi_file,roi_img)
+                  print("Saved:", roi_file) 
+
+         else:
+      
+            stack_file = self.mdir + root_file[0:10] + "/" + root_file + "-stacked.jpg"
+            if os.path.exists(stack_file) is True:
+               detect_img, roi_imgs, roi_vals = self.ASD.detect_in_stack(stack_file )
+               print("NEW ROI IMGS FOUND:", len(roi_imgs), roi_vals)
+               if roi_imgs is not None:
+                  if len(roi_imgs) > 0:
+                     for i in range(0, len(roi_imgs)):
+                        roi_img = roi_imgs[i]
+                        roi_val = roi_vals[i]
+                        resp = self.ASAI.meteor_yn(root_file, None,roi_img,roi_val)
+                        self.insert_ml_sample(resp)
+
+                        self.update_meteor_ai_result(root_file, resp)
+
+                        print(resp)
+                        #YOYO
+
+                     #try:
+                     #except: 
+                     #   print("FAILED AI.meteor_yn CHECK!", roi_val)
+
+            else:
+               print("NO STACK FILE FOUND!", stack_file)
+         #try:
+         #except:
+         #   print("FAILED TO DETECT IN STACK!")
 
 
       # UPDATE THE DB WITH LATEST MEDIA SYNC STATUS (Local & Cloud)
@@ -670,9 +793,10 @@ class AllSkyDB():
             hd_roi = mj['hd_roi']
          if mjr is not None:
             if "meteor_frame_data" in mjr:
-               x1,y1,x2,y2 = mfd_roi(mjr['meteor_frame_data'])
+               x1,y1,x2,y2 = mfd_roi(mfd)
                mj['hd_roi'] = [x1,y1,x2,y2]
                hd_roi = [x1,y1,x2,y2]
+   
 
          ext = el[-1]
          camera_id = ext.split("-")[0]
@@ -721,15 +845,15 @@ class AllSkyDB():
       # Pass in the table name 
       # and a dict of key=value pairs
       # then the dict will be converted to sql and insert or replaced into the table. 
+      
    
       values = []
       fields = []
-      sql = "INSERT OR REPLACE INTO " + table_name + " ( "
+      sql = "INSERT INTO " + table_name + " ( "
       vlist = ""
       flist = "" 
       for key in in_data:
-         #print("KEY IS:", key)
-         #print("FLIST IS:", flist)
+         print("KEY/VAL IS:", key, in_data[key])
          if flist != "":
             flist += ","
             vlist += ","
@@ -746,20 +870,14 @@ class AllSkyDB():
       #print("VALUES", values)
       #print(len(fields))
       #print(len(values))
+
+      print("SQL:", sql)
+      print("VALS:", values)
       cur.execute(sql, values)
       con.commit()
       return(cur.lastrowid)
 
 
-   def insert_ml_sample(self,con, cur, in_data):
-      sql = '''
-        INSERT OR REPLACE INTO ml_samples(station_id,camera_id,root_fn,roi_fn, meteor_yn_final, meteor_yn_final_conf, main_class, sub_class, meteor_yn, meteor_yn_conf, fireball_yn, fireball_yn_conf, multi_class, multi_class_conf, human_confirmed, human_label, suggest_class, ignore)
-        VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)
-      '''
-      print("INSERTED ML SAMPLE:", in_data)
-      cur.execute(sql, in_data)
-      con.commit()
-      return(cur.lastrowid)
 
    def help(self, stack_img_org, stack_img):
       help_items = [] 

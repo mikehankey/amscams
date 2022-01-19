@@ -22,6 +22,13 @@ class AllSkyAI():
       self.meteor_dir = "/mnt/ams2/meteors/"
       self.meteor_scan_dir = "/mnt/ams2/METEOR_SCAN/"
       self.ai_data_dir = "/mnt/ams2/datasets/"
+      self.img_repo_dir = self.ai_data_dir + "meteor_yn/"
+      if os.path.exists(self.img_repo_dir + "meteor/") is False:
+         os.makedirs(self.img_repo_dir + "meteor")
+      if os.path.exists(self.img_repo_dir + "non_meteor/") is False:
+         os.makedirs(self.img_repo_dir + "non_meteor")
+      
+
       if os.path.exists("../conf/as6.json") is True:
          self.json_conf = load_json_file("../conf/as6.json")
       else:
@@ -221,14 +228,20 @@ class AllSkyAI():
       return(pred_yn)
 
 
-   def meteor_yn(self,roi_file=None,oimg=None):
+   def meteor_yn(self,root_fn,roi_file=None,oimg=None,roi=None):
       # FOR METEOR Y/N PREDICT AND FIREBALL PREDICT!
+      if roi is not None:
+         x1, y1,x2,y2 = roi
+      else:
+         x1,y1,x2,y2 = 0,0,0,0
+      
       if roi_file is not None:
          oimg = cv2.imread(roi_file)
          imgfile = roi_file
       else:
          imgfile = "temp.jpg"
 
+      
 
       try:
          oimg = cv2.resize(oimg,(150,150))
@@ -319,6 +332,7 @@ class AllSkyAI():
 
       response = {}
       response['meteor_yn'] = meteor_yn
+      response['roi'] = roi
       response['meteor_yn_confidence'] = float(meteor_yn_confidence)
       response['meteor_fireball_yn'] = meteor_fireball_yn
       response['meteor_fireball_yn_confidence'] = float(meteor_fireball_yn_confidence)
@@ -331,11 +345,11 @@ class AllSkyAI():
       response['mc_class'] = predicted_class
       response['mc_confidence'] = int(100 * np.max(score))
 
-      final_yn_conf = max([meteor_yn,meteor_fireball_yn])
-      if "meteor" in response['mc_class']:
-         final_yn_conf += response['mc_confidence']
-      else: 
-         final_yn_conf -= (response['mc_confidence']/2)
+      final_yn_conf = max([meteor_yn_confidence,meteor_fireball_yn_confidence])
+      #if "meteor" in response['mc_class']:
+      #   final_yn_conf += response['mc_confidence']
+      #else: 
+      #   final_yn_conf -= (response['mc_confidence']/2)
 
       if meteor_yn is True or meteor_fireball_yn is True or "meteor" in response['mc_class']:
          final_yn = True
@@ -344,6 +358,16 @@ class AllSkyAI():
 
       response['final_meteor_yn'] = final_yn 
       response['final_meteor_yn_conf'] = final_yn_conf
+      if final_yn is True:
+         # save sample
+         roi_file = self.img_repo_dir + "meteor/" + self.station_id + "_" + root_fn + "-ROI.jpg"
+      else:
+         roi_file = self.img_repo_dir + "non_meteor/" + self.station_id + "_" + root_fn + "-RX_" + str(x1) + "_" + str(y1) + "_" + str(x2) + "_" + str(y2) + ".jpg"
+      print("saved", roi_file)
+      cv2.imwrite(roi_file, oimg)
+      response['roi_fn'] = roi_file.split("/")[-1]
+      response['root_fn'] = root_fn
+         
 
       return(response)
 
@@ -508,6 +532,7 @@ class AllSkyAI():
          meteor_file, reduced, start_time, dur, ang_vel, ang_dist, hotspot, msm = dd
          meteor_file = meteor_file.split("/")[-1]
          roi_file = self.station_id + "_" + meteor_file.replace(".json", "-ROI.jpg")
+         root_fn = meteor_file.replace(".json", "-ROI.jpg")
 
          if roi_file in self.machine_data:
             mlabel = self.machine_data[roi_file]
@@ -520,7 +545,7 @@ class AllSkyAI():
             if os.path.exists(ms_dir + roi_file) is True:
                print("ROI FILE FOUND:", ms_dir + roi_file)
                img = cv2.imread(roi_file)
-               resp = self.ASAI.meteor_yn(None, img)
+               resp = self.ASAI.meteor_yn(root_fn, None, img)
                print("FINAL:", resp['final_meteor_yn']) 
                print("FINAL:", resp['final_meteor_yn_conf']) 
       
