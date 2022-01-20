@@ -32,3 +32,6 @@ pip3 install simplejson
 pip3 install flask_httpauth
 pip3 install flask-dynamo
 pip3 install timezonefinder
+pip3 install pylunar
+pip3 install lxml
+pip3 install beautifulsoup4
