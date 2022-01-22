@@ -74,7 +74,12 @@ def az_grid(cal_file,cal_params,cal_image,iw,ih,show =0):
       end_az = 355
    else:
       start_az = center_az - wd
+
       end_az = center_az + wd
+      if start_az < 0:
+         start_az += 360
+         end_az += 360
+
       start_el = center_el - hd
       end_el = center_el + hd
       print("USEING:" , start_az, end_az, center_az, wd)
