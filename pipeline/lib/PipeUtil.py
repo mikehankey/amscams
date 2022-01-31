@@ -19,6 +19,30 @@ import glob
 import decimal
 dec = decimal.Decimal
 
+
+def dist_between_two_points(lat1,lon1,lat2,lon2):
+   from math import radians, sin, cos, atan2, sqrt
+   R = 6373.0
+   lat1 = radians(lat1)
+   lon1 = radians(lon1)
+   lat2 = radians(lat2)
+   lon2 = radians(lon2)
+   dlon = lon2 - lon1
+   dlat = lat2 - lat1
+   a = (sin(dlat/2))**2 + cos(lat1) * cos(lat2) * (sin(dlon/2))**2
+   c = 2 * atan2(sqrt(a), sqrt(1-a))
+   distance = R * c
+
+   return(distance)
+
+def starttime_from_file(filename):
+   (f_datetime, cam, f_date_str,fy,fmon,fd, fh, fm, fs) = convert_filename_to_date_cam(filename)
+   trim_num = get_trim_num(filename)
+   extra_sec = int(trim_num) / 25
+   event_start_time = f_datetime + datetime.timedelta(0,extra_sec)
+   return(event_start_time)
+
+
 def get_localtime_offset(lat,lng,in_datetime):
 
 

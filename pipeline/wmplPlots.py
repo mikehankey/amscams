@@ -43,14 +43,13 @@ import numpy as np
 import scipy.optimize
 import scipy.interpolate
 import scipy.stats
-
+import seaborn as sns
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 from matplotlib.pyplot import cm
 from wmpl.Utils.OSTools import importBasemap
 Basemap = importBasemap()
-
 
 from wmpl.Trajectory.Orbit import calcOrbit
 from wmpl.Utils.Math import vectNorm, vectMag, meanAngle, findClosestPoints, RMSD, \
@@ -113,19 +112,33 @@ class wmplPlots():
         t0 = min([obs['time_data'][0] for obs in self.observations])
         print("YO1")
         # Plot spatial residuals per observing station
+
         for obs in self.observations:
 
+            sns.set_style("ticks")
+            #plt.style.use('dark_background')
             ### PLOT SPATIAL RESIDUALS PER STATION ###
             ##################################################################################################
 
             # Plot vertical residuals
-            plt.scatter(obs['time_data'], obs['v_residuals'], c='r', \
-                label='Vertical, RMSD = {:.2f} m'.format(obs['v_res_rms']), zorder=3, s=4, marker='o')
+            #plt.scatter(obs['time_data'], obs['v_residuals'], c='r', \
+            #    label='Vertical, RMSD = {:.2f} m'.format(obs['v_res_rms']), zorder=3, s=4, marker='o')
+
+            sns.scatterplot(obs['time_data'], obs['v_residuals'],  \
+                    label='Vertical, RMSD = {:.2f} m'.format(obs['v_res_rms']), zorder=3, s=20, marker='o', )
+            
+            #.set_title("Residuals", fontdict={'fontsize': 30})
+
+            plt.title('Residuals, station ' + str(obs['station_id']))
+            plt.xlabel('Time (s)')
+            plt.ylabel('Residuals (m)')
 
             # Plot horizontal residuals
-            plt.scatter(obs['time_data'], obs['h_residuals'], c='b', \
-                label='Horizontal, RMSD = {:.2f} m'.format(obs['h_res_rms']), zorder=3, s=20, marker='+')
+            #plt.scatter(obs['time_data'], obs['h_residuals'], c='b', \
+            #    label='Horizontal, RMSD = {:.2f} m'.format(obs['h_res_rms']), zorder=3, s=20, marker='+')
 
+            sns.scatterplot(obs['time_data'], obs['h_residuals'], \
+                label='Horizontal, RMSD = {:.2f} m'.format(obs['h_res_rms']), zorder=3, s=20, marker='+', palette='inferno')
             # Mark ignored points
             print("IGNORE LIST", obs['ignore_list'])
             if np.any(obs['ignore_list']):
@@ -155,16 +168,22 @@ class wmplPlots():
                 #ignored_v_res = obs['v_residuals'][obs['ignore_list'] > 0]
                 #ignored_h_res = obs['h_residuals'][obs['ignore_list'] > 0]
 
-                plt.scatter(ignored_times, ignored_v_res, facecolors='none', edgecolors='k', marker='o', \
-                    zorder=3, s=20, label='Ignored points')
-                plt.scatter(ignored_times, ignored_h_res, facecolors='none', edgecolors='k', marker='o', 
-                    zorder=3, s=20)
+                #plt.scatter(ignored_times, ignored_v_res, facecolors='none', edgecolors='k', marker='o', \
+                #    zorder=3, s=20, label='Ignored points')
+                #plt.scatter(ignored_times, ignored_h_res, facecolors='none', edgecolors='k', marker='o', 
+                #    zorder=3, s=20)
+
+                sns.scatterplot(ignored_times, ignored_v_res, facecolors='none', edgecolors='k', marker='o', \
+                    zorder=3, s=20, label='Ignored points', palette='inferno')
+                sns.scatterplot(ignored_times, ignored_h_res, facecolors='none', edgecolors='k', marker='o', 
+                    zorder=3, s=20, palette='inferno')
+
 
             print("YO1")
 
-            plt.title('Residuals, station ' + str(obs['station_id']))
-            plt.xlabel('Time (s)')
-            plt.ylabel('Residuals (m)')
+            #plt.title('Residuals, station ' + str(obs['station_id']))
+            #plt.xlabel('Time (s)')
+            #plt.ylabel('Residuals (m)')
             print("YO3")
 
             plt.grid()
@@ -187,7 +206,8 @@ class wmplPlots():
             if self.save_results:
                 savePlot(plt, file_name + '_' + str(obs['station_id']) + '_spatial_residuals.' \
                     + self.plot_file_type, output_dir)
-
+            print(file_name + '_' + str(obs['station_id']) + '_spatial_residuals.' \
+                    + self.plot_file_type, output_dir)
             if show_plots:
                 print("SHOW")
                 #plt.show()

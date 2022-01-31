@@ -1,3 +1,5 @@
+#!/usr/bin/python3
+import seaborn as sns
 import pickle
 from lib.PipeUtil import cfe
 import sys
@@ -34,7 +36,12 @@ def evdir_from_event_id(eid):
    evdir = "/mnt/ams2/EVENTS/" + Y + "/" + M + "/" + D + "/" + eid + "/"
    return(evdir)
 
+
+
 event_id = sys.argv[1]
+
+   
+
 ev_dir = evdir_from_event_id(event_id)
 
 pickle_file = ev_dir + event_id + "_trajectory.pickle"
@@ -80,8 +87,19 @@ for key in traj_dict:
          print(okey)
 
 output_dir = "test/"
-file_name = "test"
+year = event_id[0:4]
+month = event_id[4:6]
+day = event_id[6:8]
+cloud_dir = "/mnt/archive.allsky.tv/EVENTS/" + year + "/" + month + "/" + day + "/" + event_id + "/" 
+file_name = event_id
+
 wmplPlots.savePlots(output_dir, file_name, show_plots=False, ret_figs=False)
+exit()
+
+try:
+   wmplPlots.savePlots(output_dir, file_name, show_plots=False, ret_figs=False)
+except:
+   print("error saveing plots")
 plt_files = glob.glob(output_dir + "*.png")
 plot_html = ""
 html_sec = {}
@@ -113,13 +131,14 @@ for p in sorted(plt_files):
    j = p.replace(".png", ".jpg")
    ph,pw = jpg.shape[:2]
    if "orb" in fn:
-      nw = int(pw * .4)
-      nh = int(ph * .4)
+      nw = int(pw * .3)
+      nh = int(ph * .3)
    else:
-      nw = int(pw * .5)
-      nh = int(ph * .5)
+      nw = int(pw * .3)
+      nh = int(ph * .3)
    jpg = cv2.resize(jpg, (nw,nh))
-   print(nw, nh)
+   print("NEW WIDTH HEIGHT", nw, nh)
+
    cv2.imwrite(j, jpg, [int(cv2.IMWRITE_JPEG_QUALITY), 70])
    os.system("rm " + p)
 plot_html += "<h2>Trajectory</h2>"
@@ -135,8 +154,11 @@ plot_html += "<h2>All Station Residuals</h2>"
 plot_html += html_sec['all']
 plot_html += "<h2>Per Station Residuals</h2>"
 plot_html += html_sec['res']
-fp = open("test/plots.html", "w")
+fp = open("test/" + event_id + "_plots.html", "w")
 fp.write(plot_html)
 fp.close()
 
-
+print("MOVE TO CLOUD DIR!", cloud_dir)
+cmd = "mv " + output_dir + event_id + "*"  + " " + cloud_dir
+print(cmd)
+os.system(cmd)

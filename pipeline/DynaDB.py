@@ -602,7 +602,12 @@ def get_all_events(dynamodb):
    save_json_file(outfile, items)
 
 
-def update_dyna_cache_for_day(dynamodb, date, stations, utype=None, cloud_copy=0):
+def update_dyna_cache_for_day(dynamodb, date, stations, utype=None, cloud_copy=1):
+   year, mon, day = date.split("_")
+   cloud_dir = "/mnt/archive.allsky.tv/EVENTS/" + year + "/" + mon + "/" + day + "/"
+   if cfe(cloud_dir, 1) == 0:
+      os.makedirs(cloud_dir)
+
    json_conf = load_json_file("../conf/as6.json")
    station_id = json_conf['site']['ams_id']
    api_key = json_conf['api_key']
@@ -918,8 +923,11 @@ def make_station_clusters(all_stations):
       #jc = load_json_file(stc)
       station_id = station_data['station_id']
       if "lat" in station_data:
-         lat = float(station_data['lat'])
-         lon = float(station_data['lon'])
+         try:
+            lat = float(station_data['lat'])
+            lon = float(station_data['lon'])
+         except:
+            continue
          if "city" in station_data:
             city = station_data['city']
          else:
@@ -931,7 +939,10 @@ def make_station_clusters(all_stations):
                   station_data['alt'] = station_data['alt'].replace("meters", "")
                   station_data['alt'] = station_data['alt'].replace(" ", "")
                   station_data['alt'] = station_data['alt'].replace("m", "")
-            alt = float(station_data['alt'])
+            try:
+               alt = float(station_data['alt'])
+            except:
+               alt = 100
             st_lat_lon.append((station_id, lat, lon, alt, city))
          else:
             print("NO ALT FOR THIS STATION?", station_data)

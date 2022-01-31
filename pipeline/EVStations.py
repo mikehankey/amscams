@@ -41,5 +41,5 @@ if __name__ == "__main__":
    #EVR.make_vida_plots(date)
    #EVR.update_all_events_index()
    #EVR.all_event_stats()
-   #EVR.update_all_stations_events()
+#   EVR.update_all_stations_events()
 

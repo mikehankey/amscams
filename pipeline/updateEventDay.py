@@ -21,12 +21,36 @@ for i in range (1, 45):
 
 date_arg = sys.argv[1]
 
+
 if date_arg == "today":
-   # run the events
-   cmd = "python3 EVRun.py " + today
-   print(cmd)
-   os.system(cmd)
+   date_val = today
+elif date_arg == "yest":
+   date_val = yest 
+else:
+   date_val = date_arg 
+
+
+# run the events
+cmd = "python3 EVRun.py " + date_val 
+print(cmd)
+os.system(cmd)
+
+year, month, day = date_val.split("_")
+cmd = "bash /mnt/ams2/EVENTS/" + year + "/" + month + "/" + day + "/rsync.jobs"
+os.system(cmd)
+
+cmd = "./plot_event_month.py " + date_val 
+print(cmd)
+os.system(cmd)
+
+year, month, day = date_val.split("_")
+os.system("rsync -auv /mnt/ams2/EVENTS/" + year + "/" + month + "/" + day + "/*.json /mnt/archive.allsky.tv/EVENTS/" + year + "/" + month + "/" + day + "/")
+
+
+exit()
    # run the solver
+
+if False:
    cmd = "python3 solveWMPL.py sd " + today
    print(cmd)
    #os.system(cmd)
@@ -51,63 +75,5 @@ if date_arg == "today":
 
    #print(cmd)
    #cmd = "python3 EM.py aei " + today
-elif date_arg == "yest":
-   # run the events
-   cmd = "python3 EVRun.py " + yest 
-   print(cmd)
    os.system(cmd)
-   # run the solver
-   cmd = "python3 solveWMPL.py sd " + yest 
-   print(cmd)
-   #os.system(cmd)
-   # update the stations
-
-   cmd = "python3 EVStations.py " + yest  
-   print(cmd)
-   os.system(cmd)
-   # update the EM Files 
-   cmd = "python3 EM.py aer " + yest 
-   print(cmd)
-   os.system(cmd)
-
-   cmd = "python3 PLT.py all_rad " + yest 
-   print(cmd)
-   os.system(cmd)
-
-   # run the events again
-   cmd = "python3 EVRun.py " + yest
-   print(cmd)
-   os.system(cmd)
-else:
-   # run the events
-   cmd = "python3 EVRun.py " + date_arg 
-   print(cmd)
-   os.system(cmd)
-   # run the solver
-   cmd = "python3 solveWMPL.py sd " + date_arg 
-   print(cmd)
-   #os.system(cmd)
-   # update the stations
-
-   cmd = "python3 EVStations.py " + date_arg 
-   print(cmd)
-   os.system(cmd)
-   # update the EM Files
-   cmd = "python3 EM.py aer " + date_arg 
-   print(cmd)
-   os.system(cmd)
-
-   cmd = "python3 PLT.py all_rad " + date_arg 
-   print(cmd)
-   os.system(cmd)
-
-   # run the events again
-   cmd = "python3 EVRun.py " + date_arg 
-   print(cmd)
-   os.system(cmd)
-
-if date_arg == 'reindex':
-   year = sys.argv[2]
-   print("REINDEX " + year)
-
 

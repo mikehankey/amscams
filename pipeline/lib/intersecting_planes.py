@@ -82,30 +82,31 @@ def intersecting_planes(obs1,obs2):
     A0 = (B1 * C2) - (B2 * C1)
     B0 = (A2 * C1) - (A1 * C2)
     C0 = (A1 * B2) - (A2 * B1)
-    
+
+    solution = []
     for a in range(0,10):
        alt = a * 10
        lat, lon, alt = threeDTrackPoint(lat1,lon1,alt, MeteorX, MeteorY,A0,B0, C0)
-       print(lat,lon,alt)
+       solution.append((lat,lon,alt))
+    return(solution)       
        
-       
+if __name__ == "__main__":
+   lat1 = 39.9196600
+   lon1 = -76.7474100
+   alt1 = 0.3
+   az1_start =  101.5083300
+   el1_start =  36.13333
+   az1_end = 87.5908300
+   el1_end = 24.736380
 
-lat1 = 39.9196600
-lon1 = -76.7474100
-alt1 = 0.3
-az1_start =  101.5083300
-el1_start =  36.13333
-az1_end = 87.5908300
-el1_end = 24.736380
+   lat2 = 39.676883
+   lon2 = -76.679617
+   alt2 = .3
+   az2_start = 56.91667
+   el2_start = 27.3667
+   az2_end = 56.51667
+   el2_end = 26.6333
 
-lat2 = 39.676883
-lon2 = -76.679617
-alt2 = .3
-az2_start = 56.91667
-el2_start = 27.3667
-az2_end = 56.51667
-el2_end = 26.6333
-
-obs1 = (lat1, lon1, alt1, az1_start, el1_start, az1_end,el1_end) 
-obs2 = (lat2, lon2, alt2, az2_start, el2_start, az2_end,el2_end) 
-intersecting_planes(obs1,obs2)
+   obs1 = (lat1, lon1, alt1, az1_start, el1_start, az1_end,el1_end) 
+   obs2 = (lat2, lon2, alt2, az2_start, el2_start, az2_end,el2_end) 
+   intersecting_planes(obs1,obs2)

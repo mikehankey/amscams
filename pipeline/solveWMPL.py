@@ -1259,6 +1259,7 @@ def solve_event(event_id, force=1, time_sync=1):
     #cmd = "python3 Inspect.py merge " + event_id
     #os.system(cmd)
 
+    print("REMOVEING PNGS?")
     cmd = "rm " + solve_dir + "/*.png"
     print(cmd)
     os.system(cmd)
@@ -1425,7 +1426,7 @@ def make_event_html(event_json_file ):
 
    event_file = solve_dir + event_id + "-event.json"
    event_index_file = solve_dir + "index.html" 
-   kml_file = solve_dir + event_id + "-map.kml"
+   kml_file = solve_dir + event_id + "_map.kml"
    print("KML FILE:", kml_file)
 
    sd = solve_dir.split("/")[-1]
@@ -1482,11 +1483,12 @@ def make_event_html(event_json_file ):
    plot_html = "<h2>Plots</h2>"
    plot_html += "<div>\n"
    sol_jpgs = glob.glob(solve_dir + "/*.jpg")
+   rand = str(time.time())
    for img in sorted(sol_jpgs):
       print("PLOT IMAGE:", img)
       img = img.replace("/mnt/ams2/", "https://archive.allsky.tv/")
       if "ground" not in img and "orbit" not in img:
-         plot_html += "<div style='float:left; padding: 3px'><img width=600 height=480 src=" + img + "></div>\n"
+         plot_html += "<div style='float:left; padding: 3px'><img width=600 height=480 src=" + img + "?" + rand + "></div>\n"
 
    plot_html += "</div>"
 
@@ -1769,7 +1771,7 @@ def make_event_json(event_id, solve_dir,ignore_obs):
    for js in jsons:
       if "GOOD_OBS.json" in js :
          obs_file = js
-         kml_file = js.replace("GOOD_OBS.json", "-map.kml")
+         kml_file = js.replace("GOOD_OBS.json", "map.kml")
       if "simple.json" in js:
          sol_file = js
 
@@ -2185,6 +2187,7 @@ def check_fix_plots(event_id):
 
    if cfe(event_dir,1) == 1:
       ev_files = glob.glob(event_dir + "*")
+      print("EVENT FILES:", ev_files)
       for ev_file in ev_files:
          if "index.html" in ev_file or "gz" in ev_file or "ALL" in ev_file:
             continue
@@ -2199,6 +2202,7 @@ def check_fix_plots(event_id):
                os.system(cmd)
          else:
             print("Good:", ev_fn, pl_id)
+
    if cfe(local_event_dir,1) == 1:
       ev_files = glob.glob(local_event_dir + "*")
       for ev_file in ev_files:
@@ -2284,7 +2288,6 @@ def event_report(solve_dir, event_final_dir, obs):
              os.system(cmd)
           else:
              print(jpg_f, " already made.")
-
     check_fix_plots(final_event_id)
     solved_files = glob.glob(solve_dir + "/*")
     print("SOLVED FILES:", solved_files)
@@ -2308,9 +2311,9 @@ def event_report(solve_dir, event_final_dir, obs):
        jpg = jpg.replace("/mnt/ams2/meteor_archive/", "")
        jpg_fn = jpg.split("/")[-1]
        if jpg_fn not in used:
-          html += "<img src=" + jpg_fn + ">"
-       print("HTML:", html)
+          html += "<img src=" + jpg_fn + "?" + str(time.time()) + ">\n"
        used[jpg_fn] = 1
+    print("HTML:", html)
     html += "<p>"
     html += "<pre>" + report + "</pre>"
     fp = open(solve_dir + "/index.html", "w")
@@ -2320,6 +2323,7 @@ def event_report(solve_dir, event_final_dir, obs):
     pngs = glob.glob(event_final_dir + "*.png")
     for png in pngs:
        cmd = "rm " + png
+       print(cmd)
        os.system(cmd)
 
     # sync data to cloud
@@ -2355,9 +2359,9 @@ def WMPL_solve(event_id, obs,time_sync=1, force=0):
     solve_dir = "/mnt/ams2/EVENTS/" + year + "/" + mon + "/" + day + "/" + event_id + "/"
     solve_file = solve_dir + event_id + "-event.json"
     fail_file = solve_dir + event_id + "-fail.json"
-    if cfe(solve_file) == 1: # or cfe(fail_file) == 1) and force == 0:
+    if cfe(solve_file) == 1 and force == 0:
        print("We already solved this event!")
-       return()
+       #return()
     else:
        print("EVENT NOT SOLVED?!", solve_file, fail_file)
     meastype = 2
@@ -2398,8 +2402,8 @@ def WMPL_solve(event_id, obs,time_sync=1, force=0):
        print(solve_dir )
        #for sf in solved_files:
        #   print(sf)
-       event_report(solve_dir, event_final_dir, obs)
-       make_event_json(event_id, solve_dir,[])
+       #event_report(solve_dir, event_final_dir, obs)
+       #make_event_json(event_id, solve_dir,[])
 
     event_start = sorted(start_times)[0]
      
@@ -2464,17 +2468,18 @@ def WMPL_solve(event_id, obs,time_sync=1, force=0):
     resp = traj_solve.run()
     print("RESP:", resp)
     print("SOLVE FILE:", solve_file)
+    
 
-
-    event_report(solve_dir, event_final_dir, obs)
-    make_event_json(event_id, solve_dir,[])
+    #event_report(solve_dir, event_final_dir, obs)
+    #make_event_json(event_id, solve_dir,[])
 
     #mj['wmpl'] = e_dir
     #save_json_file(meteor_file, mj)
     #print("Saved:", meteor_file) 
 
     #solved_files = glob.glob(solve_dir + "*")
-    if cfe(solve_file) == 0:
+    solve_files = os.listdir(solve_dir)
+    if len(solve_files) == 0:
        print("FAILED TO SOLVE. No files in solve dir:", solve_dir )
        cmd = "cd ../pythonv2; ./solve.py vida_failed_plots " + event_id
        print(cmd)
@@ -2499,7 +2504,7 @@ def WMPL_solve(event_id, obs,time_sync=1, force=0):
        event_report(solve_dir, event_final_dir, obs)
        make_event_json(event_id, solve_dir,[])
 
-
+    print("DONE SOLVE")
 
 
 # 1
