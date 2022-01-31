@@ -110,13 +110,13 @@ def stack_frames(frames, skip = 1, resize=None, sun_status="day"):
       #print("AVG PX:", avg_px)
       #print("RES:", resize)
       go = 1
-      if sun_status == 'night' and avg_px >= 200:
+      if sun_status == 'night' and avg_px >= 240:
          print("TOO BRIGHT!", avg_px, sun_status)
          go = 0
       elif avg_px > 200:     
          go = 0
 
-      if avg_px >= 200:
+      if avg_px >= 240:
          print("TOO BRIGHT!", avg_px)
          go = 0
       if go == 1:

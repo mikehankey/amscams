@@ -34,11 +34,13 @@ class RegisterDevice():
       for key in self.mac_info:
          if "ip" in self.mac_info[key]:
             if self.mac_info[key]['ip'] == "192.168.76.1" :
-               self.mac_addr = self.mac_info[key]['mac_addr']
+               self.cams_mac_addr = self.mac_info[key]['mac_addr']
+               self.mac_addr = self.cams_mac_addr
          else:
             self.mac_info[key]['ip'] = "" 
-            self.mac_addr = self.mac_info[key]['mac_addr']
-      print("CAMS MAC:", self.mac_addr)
+            self.network_mac_addr = self.mac_info[key]['mac_addr']
+      print("CAMS MAC:", self.cams_mac_addr)
+      print("NETWORK MAC:", self.network_mac_addr)
       if self.mac_addr is None:
          print("CAMS ETH INTERFACE NOT FOUND")
          exit()

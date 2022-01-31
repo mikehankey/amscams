@@ -170,7 +170,11 @@ class Meteor():
    def fast_sync(self, day):
       sync_log_file  = "../conf/sync_log.json" 
       if cfe(sync_log_file) == 1:
-         sync_log = load_json_file(sync_log_file)
+         print(sync_log_file)
+         try:
+            sync_log = load_json_file(sync_log_file)
+         except:
+            sync_log = {}
       else:
          sync_log = {}
       if day not in sync_log:
