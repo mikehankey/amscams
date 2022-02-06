@@ -19,7 +19,6 @@ from FlaskLib.TL import tl_menu
 from FlaskLib.man_reduce import meteor_man_reduce , save_man_reduce
 from FlaskLib.man_detect import man_detect , import_meteor
 from FlaskLib.meteors_main_redis import meteors_main_redis
-from FlaskLib.Dashboard import Dashboard
 #from FlaskLib.Maps import make_map 
 from flask import redirect, url_for, abort
 import json
@@ -576,25 +575,36 @@ def tl_main(amsid,date,cam_num):
 @app.route('/DASHBOARD/<amsid>/<subcmd>', methods=['GET', 'POST'])
 @auth.login_required
 def lrn_dash_sub(amsid, subcmd):
+   from FlaskLib.Dashboard import Dashboard
    from FlaskLib.DashMeteors import MeteorDash
+   from FlaskLib.DashWeather import WeatherDash
+   from FlaskLib.DashLearning import LearningDash
+   from FlaskLib.DashCalibration import CalibrationDash
+   from FlaskLib.DashSystem import SystemDash
+   from FlaskLib.DashConfig import ConfigDash 
    in_data = {}
    for key, value in request.args.items():
       in_data[key] = value
    if "cmd" not in in_data:
       in_data['cmd'] = None 
-   if in_data['cmd'] == "METEORS":
+   if subcmd == "METEORS":
       MD = MeteorDash()
       return(MD.meteors_main(in_data))
-   if in_data['cmd'] == "Weather":
+   if subcmd == "WEATHER":
       WT = WeatherDash()
       return(WT.weather_main(in_data))
-   if in_data['cmd'] == "Calibration":
+   if subcmd == "LEARNING":
+      LRN = LearningDash()
+      return(LRN.learning_main(in_data))
+
+
+   if subcmd == "CALIBRATION":
       CB = Calibration()
       return(CB.calibration_main(in_data))
-   if in_data['cmd'] == "System":
+   if subcmd == "SYSTEM":
       SYS = System()
       return(SYS.system_main(in_data))
-   if in_data['cmd'] == "Config":
+   if subcmd == "CONFIG":
       CFG = Config()
       return(CFG.config_main(in_data))
 
