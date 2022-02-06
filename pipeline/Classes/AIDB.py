@@ -174,8 +174,12 @@ class AllSkyDB():
       sql = "SELECT count(*), substr(root_fn,0,11) as sdd from meteors GROUP BY sdd ORDER BY sdd DESC"
       self.cur.execute(sql)
       rows = self.cur.fetchall()
-      last_day_scanned = rows[0][1]
-      first_day_scanned = rows[-1][1]
+      if len(rows) > 0:
+         last_day_scanned = rows[0][1]
+         first_day_scanned = rows[-1][1]
+      else:
+         last_day_scanned = None
+         first_day_scanned = None
       total_days_scanned = len(rows)
 
       # get total METEOR samples BY DAY 
