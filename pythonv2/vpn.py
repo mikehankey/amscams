@@ -11,6 +11,18 @@ import time
 import json
 json_conf = load_json_file("../conf/as6.json")
 
+def get_file_info(file):
+   cur_time = int(time.time())
+   if cfe(file) == 1:
+      st = os.stat(file)
+
+      size = st.st_size
+      mtime = st.st_mtime
+      tdiff = cur_time - mtime
+      tdiff = tdiff / 60
+      return(size, tdiff)
+   else:
+      return(0,0)
 
 def auto_update():
    update_needed = 0
@@ -47,11 +59,6 @@ def check_running():
 
 # check if flask admin is enabled and make sure it is runnniing if it is
 
-if os.path.exists("vpn.run") is True:
-   print("VPN SCRIPT RUNNING ALREADY!")
-   exit()
-else:
-   os.system("touch vpn.run")
 
 if "flask_admin" in json_conf:
    cmd = "ps -aux |grep \"wsgi\" | grep -v grep | wc -l"
@@ -71,6 +78,14 @@ else:
    print("Flask admin not enabled.")
 
 
+if os.path.exists("vpn.run") is True:
+   print("VPN SCRIPT RUNNING ALREADY!")
+   ss, tt = get_file_info("vpn.run")
+   if tt < 1200:
+      # exit in case there is some other update going...
+      exit()
+else:
+   os.system("touch vpn.run")
 
 
 amsid = json_conf['site']['ams_id'].upper()
