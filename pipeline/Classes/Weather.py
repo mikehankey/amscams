@@ -1,7 +1,7 @@
 import sqlite3
 from datetime import datetime as dt
 import requests
-
+import time
 from decimal import Decimal
 import pickle
 import glob
@@ -31,6 +31,7 @@ from lib.FFFuncs import best_crop_size, ffprobe
 import boto3
 import socket
 import sys
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras.models import *
@@ -46,6 +47,7 @@ class Weather():
       self.show = 1
       self.weather_learning_dir = "/mnt/ams2/datasets/weather/"
       json_conf = load_json_file("../conf/as6.json")
+      self.json_conf = json_conf
       self.weather_condition_classes = sorted(load_json_file("weather_condition_classes.json"))
 
 
@@ -73,12 +75,139 @@ class Weather():
       self.model.compile(loss='categorical_crossentropy',
          optimizer='rmsprop',
          metrics=['accuracy'])
+      self.weather_check_config()
+
+   def help(self):
+      print("""
+
+  ____  _      _      _____ __  _  __ __ 
+ /    || |    | |    / ___/|  |/ ]|  |  |
+|  o  || |    | |   (   \_ |  ' / |  |  |
+|     || |___ | |___ \__  ||    \ |  ~  |
+|  _  ||     ||     |/  \ ||     ||___, |
+|  |  ||     ||     |\    ||  .  ||     |
+|__|__||_____||_____| \___||__|\_||____/ 
+                                         
+AllSky.com/ALLSKY7 - ALLSKYOS STATION SOFTWARE 
+Copywrite Mike Hankey LLC 2016-2022 
+Use permitted for licensed users only.
+Contact mike.hankey@gmail.com
+
+This program is an interface for runnin the various weather features of the ALLKSKY7 
+
+usage: python3.6 Weather.py [COMMAND] [EXTRA ARGUMENTS]
+
+Supported command line arguments
+         
+load_weather - this will create the weather DB
+               and then load all past historical
+               images through the 'processing'. 
+               includes: weather data condition 
+               creation for sun status and forecast. 
+               This loads all images / history from 
+               /mnt/ams2/latest on the first run
+               and then only the new data on subseqent 
+               runs.
+
+process_all -  this will take whatever 'snaps' exist 
+               in the DB that have not yet been processed 
+               and then process them through the ML pipeline. 
+               This includes making 6 sample images 180x180 
+               from the original SNAP, running those through 
+               the weather predictor, saving the results, 
+               making final AI WEATHER OBS REPORT and logging 
+               that with the network. 
+
+process_snap - this does all of the processing for a single 
+               picture vs all outstanding
+
+
+load_metar   - this will load forecast data from the METAR 
+               office(s) to the local machine 
+               (needed to maintain weather history)
+
+stack_index  - this will re-index the existing stacks so they 
+               can be used in the AI for history
+
+Future Commands
+
+status       - reports current active weather status across all cameras
+               and available info. This should run automatically 
+               at least 1 x 15 minutes (or faster) 
+               via cronjob for as7-latest.py
+
+station_info - report the current weather database 
+               and processing status (last run, % complete, errors/notes)
+
+What does this program do? -- it loads or creates weather data from APIs and functions and then makes sure all of the weather SNAPS are loaded into the db, run through the AI and reported to the network.
+      """)
+
+   def weather_check_config(self):
+      # check some basic setup/config things about this station so we can perform all weather tasks!
+
+      # 3 - do we have the "weather_config" val in as6.json
+      # 4 - do we have the weather_db setup
+      # 5 - have we scaned our past weather history
+      # 6 - have we run the AI detect up to the most recent day
+      # 7 - have we sync'd out our weather repo
+
+      # 1 - do we have tensor flow, libs , models and class files installed? If not then no point in continuing!
+      if "ml" in self.json_conf:
+         if "tensor_flow" not in self.json_conf['ml']:
+            print("Tensor flow not installed?")
+            print("Problem with tensor flow install? exiting...")
+         elif self.json_conf['ml']['tensor_flow'] is not True:
+            print("Problem with tensor flow install? exiting...")
+            exit()
+
+      # 2 - are we running python3.6 (currently required)
+      import platform
+      running_py = platform.python_version()
+      if "3.6" not in str(running_py):
+         print("PyV:", running_py)
+         print("error/exit not running python 2.6")
+         exit()
+ 
+      if "weather" not in self.json_conf:
+         print("NEED TO UPDATE THE WEATHER CONFIG!")
+         # 1 - what is the metar station(s)
+         # 2 - is the station in the US / NOAA servicable area?
+         #   - if yes what is the GRID X,Y
+         # 3 - If non-US, what alternative for forecast shall we use?
+         print("Please add weather block to as6.json and include:")
+         print("metar: YOUR_STATION")
+         print("NOAA:forecastOffice YOUR_OFFICE")
+         print("NOAA:gridX YOURX")
+         print("NOAA:gridY YOURY")
+      else:
+         if "NOAA" in self.json_conf['weather']:
+            self.NOAA = True
+            self.forecastOffice = self.json_conf['weather']['NOAA']['forecastOffice']
+            self.NOAA_GRID_X = self.json_conf['weather']['NOAA']['gridX']
+            self.NOAA_GRID_Y = self.json_conf['weather']['NOAA']['gridY']
+         else:
+            self.NOAA = False
+
+         #print("Basic weather setup is good")
+
+   def status(self):
+      print("CURRENT WEATHER STATUS...")
+      # check and insert the free API thing we have
+      # check and insert the METAR if possible
+      # get the latest pics and run them through the AI (if not already done)
+      # insert those results
+      # log txt data with network or update wasabi? (pics are already there) 
 
    def weather_predict(self, img_file=None, img=None):
+      import random
+      rand = random.randint(0,100)
       img_height = 150
       img_width = 150
-      if img_file is None:
-         temp_file = "temp.jpg"
+      if img is not None :
+         if img_file is not None:
+            temp_file = img_file.split("/")[-1]
+         else:
+            temp_file = "temp" + str(rand) + ".jpg"
          cv2.imwrite(temp_file, img)
       else:
          img = cv2.imread(img_file)
@@ -93,11 +222,17 @@ class Weather():
       predictions = self.model.predict(img_array)
 
       score = tf.nn.softmax(predictions[0])
+
       predicted_class = self.weather_condition_classes[np.argmax(score)]
-      print(
-       "This image most likely belongs to {} with a {:.2f} percent confidence."
-       .format(self.weather_condition_classes[np.argmax(score)], 100 * np.max(score))
-      )
+      if img_file is not None:
+         img_fn = img_file.split("/")[-1]
+      else:
+         img_fn = ""
+      print("\r                                                                                                                                       ", end = "")
+      string = "{} most likely belongs to {} with a {:.2f} % confidence.".format(img_fn, self.weather_condition_classes[np.argmax(score)], 100 * np.max(score))
+      print("\r" + string, end= "")
+      os.system("rm " + temp_file)
+      
       return(predicted_class, 100 * np.max(score))
          #cv2.imwrite(img_file, img)
 
@@ -244,8 +379,9 @@ class Weather():
 
 
    def process_weather_snap_all(self):
+      os.system("clear")
       sql = "SELECT filename from ml_weather_snaps where samples_done != 1"
-      sql = "select A.filename, A.local_datetime_key, sun_status, moon_status, forecast, A.ai_final from ml_weather_snaps A INNER JOIN weather_conditions B on A.local_datetime_key = B.local_datetime_key where A.samples_done != 1";
+      sql = "select A.filename, A.local_datetime_key, sun_status, moon_status, forecast, A.ai_final from ml_weather_snaps A INNER JOIN weather_conditions B on A.local_datetime_key = B.local_datetime_key where A.samples_done != 1 order by A.filename DESC limit 100";
       self.cur.execute(sql)
       rows = self.cur.fetchall()
       for row in rows:
@@ -256,19 +392,21 @@ class Weather():
          #try:
          #except:
          #   print("FAILED:", filename)
-         print("FILE:", filename)
+         #print("FILE:", filename)
 
 
-   def process_weather_snap(self, snap_file, local_datetime_key, sun_status):
+   def process_weather_snap(self, snap_file, local_datetime_key, sun_status,nodb=False):
       # Here we will get the relevant meta data about the weather at this time
       # then we will cut the image into 6 sqaures/crops
       # then for each crop we will do weather_detect on it to get the class and confidence
       # then we will make the repo_label_dir which will be
       # {day_night_status}-{label} 
       # then save the weather square in the image folder
+ 
 
 
-      print("SNAP:", snap_file)
+
+      #print("SNAP:", snap_file)
 
       station_id, cam, year, month, day, hour, minute = snap_file.split("_")
 
@@ -278,6 +416,7 @@ class Weather():
       lcc = 0
       marked_img = img.copy()
       sc = 0
+      resp = []
       if img is not None:
          for row in range(0,2):
             for col in range(0,4):
@@ -292,46 +431,63 @@ class Weather():
                learning_img = img[y1:y2,x1:x2]
 
                #predict_class, predict_conf = predict_weather(self.mc_model, learning_img)
-               predict_class, predict_conf = self.weather_predict(None, learning_img)
-               el = predict_class.split("_")
-               predict_name = el[0] 
-               try:
-                  ver = int(el[1]) 
-               except:
-                  predict_name += el[1] 
+               learning_fn = img_file.split("/")[-1].replace(".jpg", "-" + str(lcc) + ".jpg")
+               predict_class, predict_conf = self.weather_predict(learning_fn, learning_img)
+               predict_name = predict_class
+               resp.append((learning_fn, predict_class, predict_conf))
+
                if sc != 3 and sc != 7:
                   cv2.putText(marked_img, predict_name ,  (x1+11, y1+21), cv2.FONT_HERSHEY_SIMPLEX, .5, (0, 0, 0), 1) 
                   cv2.putText(marked_img, predict_name ,  (x1+10, y1+20), cv2.FONT_HERSHEY_SIMPLEX, .5, (150, 150, 150), 1) 
                   cv2.rectangle(marked_img, (x1, y1), (x2,y2), (128, 128, 128), 2)
                #print("PRED:", x1, y1, predict_class, predict_conf)
 
-               learning_dir = self.weather_learning_dir + "/" + sun_status.upper() + "_" + predict_class + "/" 
+               learning_dir = self.weather_learning_dir + predict_class + "/" 
                if os.path.exists(learning_dir) is False:
                   os.makedirs(learning_dir)
-               learning_file = learning_dir + "/" + img_file.split("/")[-1].replace(".jpg", "-" + str(lcc) + ".jpg")
+               learning_file = learning_dir + img_file.split("/")[-1].replace(".jpg", "-" + str(lcc) + ".jpg")
                #if os.path.exists(learning_file):
                #   continue
 
 
                if learning_img.shape[0] == learning_img.shape[1]:
                   cv2.imwrite(learning_file, learning_img)
-                  print("Saved learning file:", x1,y1,x2,y2, row, col, learning_file)
+                  #print("Saved learning file:", x1,y1,x2,y2, row, col, learning_file)
                   learning_fn = learning_file.split("/")[-1]
                   try:
-                     self.insert_ml_weather_sample(learning_fn, station_id, cam, local_datetime_key, predict_class, predict_conf)
-                     print("INSERTED", img_file)
+                  #if True:
+                     if nodb is False:
+                        self.insert_ml_weather_sample(learning_fn, station_id, cam, local_datetime_key, predict_class, predict_conf)
                   except:
-                     print("INsert failed.")
+                     foo = "bar"
                   lcc += 1
                sc += 1
          marked_file = img_file.replace(".jpg", "-marked.jpg")
-         print("Saved:", marked_file)
+         if nodb is False:
+            sql = "UPDATE ml_weather_snaps set samples_done = 1 where filename = ?"
+            update_vals = [snap_file]
+            #print("UPDATE:", sql, update_vals)
+            self.cur.execute(sql, update_vals)
+            self.con.commit()
+
+         #print("Saved:", marked_file)
          cv2.imwrite(marked_file, marked_img)
+      return(resp)
+
+   def update_weather_snaps_sample_status(self,filename):
+      sql = "UPDATE ml_weather_snaps set samples_done = 1 where filename = ?"
+      update_vals = [filename]
+      self.cur.execute(sql, update_vals)
+      self.con.commit()
+
+   def load_database(self, in_day=None):
+      if os.path.exists("worklog.json") is True:
+         worklog = load_json_file("worklog.json")
       else:
-         print("FAIL:", img_file)
-
-
-   def load_database(self):
+         worklog = {}
+         worklog['weather'] = {}
+         worklog['weather']['days'] = {}
+     
       self.db_keys = {}
       self.db_keys_snaps = {}
       sql = "SELECT local_datetime_key from weather_conditions order by local_datetime_key desc"
@@ -353,12 +509,26 @@ class Weather():
       days = os.listdir(ldir)
 
       for day in sorted(days,reverse=True):
+
+         ts = time.time()
          if os.path.isdir(ldir + day) is False:
             continue
+
+         day_dt = datetime.datetime.strptime(day, "%Y_%m_%d")
+         days_old = datetime.datetime.now() - day_dt 
+         days_old = int(days_old.total_seconds()/86400)
+         if day in worklog['weather']['days'] and days_old > 2:
+            #print("We already did this day skip it!", day)
+            continue
+
+
          hist_file = ldir + day + "/history.json"
          hist = load_json_file(hist_file)
 
          for kk in hist:
+            #print("KK", kk)
+            #print("HIST KK", hist[kk])
+
             for cam in sorted(hist[kk]):
                if "snap_file" not in hist[kk][cam]:
                   continue
@@ -386,7 +556,6 @@ class Weather():
                if localtime in self.db_keys:
                   print("Skip got it already.", localtime)
                else :
-
                   # get forecast if it exists
                   if os.path.exists(forecast_file) is True:
                      try:
@@ -406,15 +575,14 @@ class Weather():
                   self.con.commit()
                   self.db_keys[localtime] = 1
 
-                  print("FILE:", snap_file)
-                  print("EP:", ep_info)
-                  print("FORECAST", forecast)
-                  print("MOON:", moon_phase, fractional_phase, percent_full)
-                  print("LOCALTIME:", localtime, utc_offset)
+                  #print("ADDED NEW WEATHER CONDITION:", localtime, ep_info, forecast)
+                  #print("FORECAST", forecast)
+                  #print("MOON:", moon_phase, fractional_phase, percent_full)
+                  #print("LOCALTIME:", localtime, utc_offset)
 
                # this is for the snap image
                if snap_file in self.db_keys_snaps:
-                  print("DONE ALRD", snap_file)
+                  print("SNAP INSDIDE DB ALREADY", snap_file)
                   
                else:
                   insert_vals = [station_id, snap_file, cam_id, localtime, "", 0]
@@ -422,9 +590,11 @@ class Weather():
                   self.cur.execute(sql, insert_vals)
                   self.con.commit()
                   self.db_keys[localtime] = 1
-                  print(sql)
-                  print(insert_vals)
-
+                  #print("INSERTED WEATHER SNAP:", snap_file)
+         elp = time.time() - ts
+         print("LOOP ELP:", elp)
+         worklog['weather']['days'][day] = {}
+         save_json_file("worklog.json", worklog)
 
    def index_weather_snaps_all(self):
       dirs = glob.glob("/mnt/ams2/latest/*")
@@ -459,15 +629,12 @@ class Weather():
       final_index = {}
       for key in sorted(index.keys(), reverse=True):
          final_index[key] = {}
-         print("IND", index[key])
          for cam in sorted(self.cams):
             if cam in index[key]:
-               print("YES", key, cam, index[key][cam])
                final_index[key][cam] = index[key][cam]
             else:
                final_index[key][cam] = ""
 
-         print(key, index[key])
       save_file = day_dir + "/history.json"
       save_json_file(save_file, final_index)
       cloud_file = save_file.replace("/mnt/ams2", "/mnt/archive.allsky.tv/" + self.station_id )
@@ -477,20 +644,10 @@ class Weather():
       os.system(cmd)
 
    def insert_ml_weather_sample(self, filename, station_id, camera_id, local_datetime_key, predict_class, predict_conf):
-       sql = "INSERT INTO ml_weather_samples (filename, station_id, camera_id, local_datetime_key, ai_sky_condition, ai_sky_condition_conf) VALUES(?,?,?,?,?,?)"
+       sql = "INSERT OR REPLACE INTO ml_weather_samples (filename, station_id, camera_id, local_datetime_key, ai_sky_condition, ai_sky_condition_conf) VALUES(?,?,?,?,?,?)"
        insert_vals = [filename, station_id, camera_id, local_datetime_key, predict_class, predict_conf]
        self.cur.execute(sql, insert_vals)
        self.con.commit()
-       print(sql)
-       print("INSERTED:", self.cur.lastrowid)
-
-       sql = "UPDATE ml_weather_snaps set samples_done = 1 where filename = ?"
-       insert_vals = [filename]
-       print("UPDATE:", sql)
-       print(insert_vals)
-       self.cur.execute(sql, insert_vals)
-       self.con.commit()
-       exit()
 
 
 
@@ -529,7 +686,7 @@ class Weather():
        print(len(insert_vals))
        self.cur.execute(sql_stmt, insert_vals)
        self.con.commit()
-       print("INSERTED:", self.cur.lastrowid)
+       #print("INSERTED:", self.cur.lastrowid)
 
    def get_metar_records(self, start_time, end_time, lat, lon, size=1):
        records = []

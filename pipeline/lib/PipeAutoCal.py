@@ -5253,10 +5253,6 @@ def eval_cal_res(cp_file,json_conf,nc=None,oimg=None, mask_img=None,batch_mode=N
    rez = []
    new_cat_stars = []
 
-   #print(float(cal_params['ra_center']))
-   #print(float(cal_params['dec_center']))
-   #print(float(cal_params['position_angle']))
-   #print(px_per_degree)
    nc['no_match_stars'] = []
 
    for star in nc['cat_image_stars']:
@@ -5276,10 +5272,7 @@ def eval_cal_res(cp_file,json_conf,nc=None,oimg=None, mask_img=None,batch_mode=N
    marked_img = None
    nc['match_perc'] = 1
    nc['total_res_px'] = float(np.mean(rez))
-   #marked_img = view_calib(cp_file,json_conf,nc,oimg)
 
-   #print("SUM REZ:", sum(rez))
-   #print("MEAN REZ:", np.mean(rez))
    print("EVAL", len(nc['cat_image_stars']), nc['total_res_px'])
    return(nc, bad_stars, marked_img)
 

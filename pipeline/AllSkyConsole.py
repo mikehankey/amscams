@@ -10,6 +10,13 @@ class AllSkyConsole():
    def __init__(self):
       self.retro()
 
+   def help(self):
+      print("""
+
+      config - display current configuration  
+      status - display current software status
+      quit   - exit this program 
+   """)
 
    def retro(self):
       self.header = """
@@ -38,5 +45,10 @@ if __name__ == "__main__":
    cmd = None
    while cmd != "quit":
       cmd = input("allsky>")
-      print("you entered:", cmd)
+      if cmd == "help":
+         Console.help()
+      elif cmd == "quit" or cmd == "q" or cmd == "exit":
+         exit()
+      else: 
+         print("you entered a non-supported command:", cmd)
 

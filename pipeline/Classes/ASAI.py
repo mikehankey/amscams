@@ -18,7 +18,7 @@ from tensorflow.keras.preprocessing.image import ImageDataGenerator, array_to_im
 class AllSkyAI():
 
    def __init__(self):
-      print("AllSkyAI is self aware.")
+      print("\rAllSkyAI is self aware.", end="")
       self.meteor_dir = "/mnt/ams2/meteors/"
       self.meteor_scan_dir = "/mnt/ams2/METEOR_SCAN/"
       self.ai_data_dir = "/mnt/ams2/datasets/"
@@ -202,7 +202,6 @@ class AllSkyAI():
       predicted_class = self.class_names[np.argmax(score)]
       return(predicted_class)
 
-
    def predict_yn(self,oimg,model,size):
       imgfile = "temp.jpg"
       oimg = cv2.resize(oimg,(150,150))
@@ -227,11 +226,15 @@ class AllSkyAI():
          pred_yn = True 
       return(pred_yn)
 
-
    def meteor_yn(self,root_fn,roi_file=None,oimg=None,roi=None):
+
       # FOR METEOR Y/N PREDICT AND FIREBALL PREDICT!
       if roi is not None:
-         x1, y1,x2,y2 = roi
+         print(roi)
+         try:
+            x1, y1,x2,y2 = roi
+         except:
+            x1,y1,x2,y2 = 0,0,0,0
       else:
          x1,y1,x2,y2 = 0,0,0,0
       
@@ -240,8 +243,6 @@ class AllSkyAI():
          imgfile = roi_file
       else:
          imgfile = "temp.jpg"
-
-      
 
       try:
          oimg = cv2.resize(oimg,(150,150))
@@ -333,6 +334,7 @@ class AllSkyAI():
       response = {}
       response['meteor_yn'] = meteor_yn
       response['roi'] = roi
+      response['ai_version'] = 1
       response['meteor_yn_confidence'] = float(meteor_yn_confidence)
       response['meteor_fireball_yn'] = meteor_fireball_yn
       response['meteor_fireball_yn_confidence'] = float(meteor_fireball_yn_confidence)
@@ -363,13 +365,14 @@ class AllSkyAI():
          roi_file = self.img_repo_dir + "meteor/" + self.station_id + "_" + root_fn + "-ROI.jpg"
       else:
          roi_file = self.img_repo_dir + "non_meteor/" + self.station_id + "_" + root_fn + "-RX_" + str(x1) + "_" + str(y1) + "_" + str(x2) + "_" + str(y2) + ".jpg"
-      print("saved", roi_file)
+      #print("saved", roi_file)
       cv2.imwrite(roi_file, oimg)
       response['roi_fn'] = roi_file.split("/")[-1]
       response['root_fn'] = root_fn
-         
+      
 
       return(response)
+
 
    def format_response(self, resp):
       descs = []

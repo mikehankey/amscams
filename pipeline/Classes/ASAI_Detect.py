@@ -19,7 +19,7 @@ from lib.PipeUtil import load_json_file, save_json_file, calc_dist
 class ASAI_Detect():
 
    def __init__(self):
-      print("ASAI Detect")
+      print("\rASAI Detect", end="")
 
    def which_cnts(self, cnt_res):
       if len(cnt_res) == 3:
@@ -116,7 +116,6 @@ class ASAI_Detect():
         
          if len(cnts) > 0:
             frame_data.append((int(fn), int(cm), int(nomo), int(avg), int(np.sum(sub_roi)), float(factor), cnts))
-            #print(first_event_frame, last_event_frame, det, fn, cm, nomo, avg, np.sum(sub_roi), factor, cnts)
          #cv2.imshow('pepe', sub_roi)
          #cv2.waitKey(30)
          fn += 1
@@ -186,8 +185,6 @@ class ASAI_Detect():
          else:
             children.append((parent_x,parent_y,cx,cy,w/2,h/2))
 
-      #print("P", parents)
-      #print("C", children)
 
       groups = {}
       for row in children:
@@ -250,7 +247,7 @@ class ASAI_Detect():
       try:
          stack_gray =  cv2.cvtColor(stack_img_sub, cv2.COLOR_BGR2GRAY)
       except:
-         print("BAD STACK IMAGE", stack_file)
+         print("\rBAD STACK IMAGE " + stack_file, end="")
          exit()
       min_val, max_val, min_loc, (mx,my)= cv2.minMaxLoc(stack_gray)
 
@@ -290,7 +287,6 @@ class ASAI_Detect():
             x1,y1,x2,y2 = row
 
          x1,y1,x2,y2 = self.bound_cnt( x1,y1,x2,y2,stack_1080, .5)
-         #print("X1Y1:", x1,y1,x2,y2)
    
          cv2.rectangle(show_img, (x1,y1), (x2 , y2) , (255, 255, 255), 1)
          roi_img = stack_1080[y1:y2,x1:x2] 
@@ -358,7 +354,6 @@ class ASAI_Detect():
       model = Sequential()
    
       #model =load_model('first_try_model.h5')
-      #print(model_file)
       model =load_model(model_file)
       model.compile(loss='binary_crossentropy',
                     optimizer='rmsprop',
@@ -404,7 +399,6 @@ class ASAI_Detect():
          ny1 = 0
       if nx1 <= 0:
          nx1 = 0
-      #print("NX", nx1,ny1,nx2,ny2)
       return(nx1,ny1,nx2,ny2)
   
 if __name__ == '__main__':

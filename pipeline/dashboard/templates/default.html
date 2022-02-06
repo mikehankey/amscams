@@ -71,25 +71,25 @@ $( document ).ready(function() {
         <a class="nav-link" data-widget="pushmenu" href="#" role="button"><i class="fas fa-bars"></i></a>
       </li>
       <li class="nav-item d-none d-sm-inline-block">
-        <a href="/DASHBOARD/{{station_id|safe}}" class="nav-link {{active_home}}">Home</a>
+        <a href="/DASHBOARD/{{station_id|safe}}" class="nav-link ">Home</a>
       </li>
       <li class="nav-item d-none d-sm-inline-block">
-        <a href="#" class="nav-link {{active_meteors}}">Meteors</a>
+        <a href="/DASHBOARD/{{station_id|safe}}/METEORS" class="nav-link {{active_meteors|safe}}">Meteors</a>
       </li>
       <li class="nav-item d-none d-sm-inline-block">
-        <a href="#" class="nav-link {{active_weather}}">Weather</a>
+        <a href="/DASHBOARD/{{station_id|safe}}/WEATHER" class="nav-link {{active_weather|safe}}">Weather</a>
       </li>
       <li class="nav-item d-none d-sm-inline-block">
-        <a href="#" class="nav-link {{active_learning}}">Learning</a>
+        <a href="/DASHBOARD/{{station_id|safe}}/LEARNING" class="nav-link {{active_learning|safe}}">Learning</a>
       </li>
       <li class="nav-item d-none d-sm-inline-block">
-        <a href="#" class="nav-link {{active_calibration}}">Calibration</a>
+        <a href="/DASHBOARD/{{station_id|safe}}/CALIBRATION" class="nav-link {{active_calibration|safe}}">Calibration</a>
       </li>
       <li class="nav-item d-none d-sm-inline-block">
-        <a href="#" class="nav-link {{active_system}}">System</a>
+        <a href="/DASHBOARD/{{station_id|safe}}/SYSTEM" class="nav-link {{active_system|safe}}">System</a>
       </li>
       <li class="nav-item d-none d-sm-inline-block">
-        <a href="#" class="nav-link {{active_config}}">Config</a>
+        <a href="/DASHBOARD/{{station_id|safe}}/CONFIG" class="nav-link {{active_config|safe}}">Config</a>
       </li>
     </ul>
 
@@ -290,7 +290,6 @@ $( document ).ready(function() {
 
 
         <!-- END MAIN CONTENT-->
-       </div> <!-- not sure about this one??-->
 
       </div><!-- /.container-fluid -->
     <!-- /.content -->

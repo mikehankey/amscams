@@ -1,4 +1,3 @@
-from Classes.Weather import Weather
 import math
 import cv2
 import glob
@@ -10,12 +9,27 @@ from datetime import datetime as dt
 from lib.FFFuncs import ffprobe
 import sys
 
+
+from Classes.Weather import Weather
 WW = Weather()
 
-cmd = sys.argv[1]
-day = sys.argv[2]
+if len(sys.argv) <= 1:
+   WW.help()
+   exit()     
+   exit()     
+elif len(sys.argv) == 2:
+   cmd = sys.argv[1]
+   day = datetime.datetime.now().strftime("%Y_%m_%d")
+
+elif len(sys.argv) == 3:
+   cmd = sys.argv[1]
+   day = sys.argv[2]
+
 if "_" in day :
    day = day.replace("_", "-")
+
+
+
 
 if cmd == "load_metar":
    start_time = day + "T00:00:00+0000"
@@ -26,7 +40,8 @@ if cmd == "load_metar":
    exit()
 
 
-if cmd == "load_weather":
+if cmd == "load_weather" or cmd == "":
+   os.system("python3.6 Weather.py load_metar")
    WW.index_weather_snaps_all()
    WW.load_database()
 elif cmd == 'stack_index':
@@ -34,5 +49,7 @@ elif cmd == 'stack_index':
 elif cmd == 'process_snap':
    WW.process_weather_snap(sys.argv[2])
 elif cmd == 'process_all':
+   os.system("clear")
+   print("please wait...")
    WW.process_weather_snap_all()
    

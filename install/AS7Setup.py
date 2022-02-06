@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 import subprocess
+import time
 import requests
 import json
 from pathlib import Path
@@ -119,9 +120,11 @@ class AS7Setup():
       return(content)
 
    def UI(self):
-
+      self.retro()
+      print(self.header)
+      time.sleep(3)
       self.setup_defaults()
-      menu = ConsoleMenu("ALLSKY OBSERVING SOFTWARE - INSTALLER AND SETUP ", "SELECT OPTION")
+      menu = ConsoleMenu("ALLSKY OBSERVING SOFTWARE SETUP", "SELECT OPTION")
       check_install = FunctionItem("INSTALL/UPDATE PACKAGES", self.check_install )
       network_int = FunctionItem("SETUP NETWORK INTERFACES", self.network_install)
       data_disk_setup = FunctionItem("FORMAT/SETUP DATA DISK", self.data_disk_install)
@@ -129,8 +132,8 @@ class AS7Setup():
       allsky_account_setup = FunctionItem("ALLSKY NETWORK ACCOUNT SIGNUP", self.allsky_account_signup)
       register_setup = FunctionItem("REGISTER STATION", self.register_station)
       setup_dirs_and_config = FunctionItem("SETUP CONFIG", self.setup_dirs_and_config)
-      menu.append_item(allsky_account_setup)
-      menu.append_item(register_setup)
+      #menu.append_item(allsky_account_setup)
+      #menu.append_item(register_setup)
       menu.append_item(check_install)
       menu.append_item(network_int)
       menu.append_item(data_disk_setup)
@@ -629,6 +632,23 @@ class AS7Setup():
 
       Screen().input("We are done. [ENTER] to continue.")
 
+   def retro(self):
+      os.system("clear")
+      self.header = """
+  ____  _      _      _____ __  _  __ __
+ /    || |    | |    / ___/|  |/ ]|  |  |
+|  o  || |    | |   (   \_ |  ' / |  |  |
+|     || |___ | |___ \__  ||    \ |  ~  |
+|  _  ||     ||     |/  \ ||     ||___, |
+|  |  ||     ||     |\    ||  .  ||     |
+|__|__||_____||_____| \___||__|\_||____/
+** O B S E R V I N G   S O F T W A R E **
+
+AllSky.com/ALLSKY7 - (C) Mike Hankey LLC 2016-2022
+Licensed use permitted. Terms and conditions apply.
+
+Loading...
+      """
 
    def load_json_file(self, json_file):
       #try:

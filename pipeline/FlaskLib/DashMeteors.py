@@ -76,10 +76,8 @@ class MeteorDash(Dashboard):
             <input type='hidden' name=cmd value='metgal'>
             <div class="row">
               <div class="col-2">
-  
                   <label for="view_type">Select View Type </label>
                   <select class="custom-select rounded-0" id="view_type" name="view_type">""" + view_options + """
-                  
                   </select>
                </div>
                <div class="col-2">
@@ -91,17 +89,13 @@ class MeteorDash(Dashboard):
                   <label for="red_status">Reduction Status</label>
                   <select class="custom-select rounded-0" id="red_status" name="red_status">""" + red_options + """
                   </select>
-
                </div>
                <div class="col-2">
-
                   <label for="ipp">Items Per Page</label>
                   <select class="custom-select rounded-0" id="ipp" name="ipp">""" + ipp_options + """
                   </select>
-
                </div>
                <div class="col-2">
-
                   <label for="sort_by">Sort By</label>
                 <div class="input-group input-group-md">
                   <select class="custom-select rounded-0" id="sort_by" name="sort_by">""" + sort_options + """
@@ -109,7 +103,6 @@ class MeteorDash(Dashboard):
                     <button type="submit" class="btn btn-info btn-flat">Go!</button>
                  </div>
                </div>
-
              </div> 
            </div> 
          </div> 

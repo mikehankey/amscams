@@ -54,7 +54,7 @@ def timelapse_main(station_id, date,cam_num,json_conf):
     }
 
     #frames {
-      width:98%;
+      width:100%;
     }
 
     #frame_front,
@@ -62,17 +62,29 @@ def timelapse_main(station_id, date,cam_num,json_conf):
       position: absolute;
       top:10px;
       left:10px;
-      width:50%;
+      width:95%;
     }
 
     #controls {
-      width:50%;
+      opacity: .05;
+      width:100%;
       position: fixed;
-      bottom: 60px;
+      bottom: 30px;
       left:10px;
       color:slategray;
       margin:10px auto;
     }
+
+    #controls:hover {
+      opacity: .8;
+      width:100%;
+      position: fixed;
+      bottom: 30px;
+      left:10px;
+      color:slategray;
+      margin:10px auto;
+    }
+
 
     #data_stamp {
       font-family: monospace;
@@ -85,23 +97,31 @@ def timelapse_main(station_id, date,cam_num,json_conf):
 </head>
 <body>
   <div >
-  <div id="mTimeLapse">
    """
-   files = sorted(glob.glob("/mnt/ams2/latest/" + date + "/" + "*" + cam_id + "*"))
-   out = ""
-   for filename in files:
-      desc = filename.split("/")[-1].replace(".jpg", "")   + "<br>&nbsp;<br>"
-      desc = desc.replace("-marked", "")
-      out += '''<img src="''' + filename.replace("/mnt/ams2", "") + '''" data-stamp="''' + desc  + '''">'''
-   out += """  </div>
-      </div> 
+   tl_div1 = tl_div(date,cam_id)
+   divs = tl_div1 
+   divs += """
       </div>
       </body>
       </html>
+
    """
-   final_out= tl_header + out
+   final_out= tl_header + divs 
    return(final_out)
 
+def tl_div(date,cam_id):
+   out = """ <div id="mTimeLapse"> """
+   files = sorted(glob.glob("/mnt/ams2/latest/" + date + "/" + "*" + cam_id + "*"))
+   for filename in files:
+      if "mark" in filename:
+         continue
+      desc = filename.split("/")[-1].replace(".jpg", "")   + "<br>&nbsp;<br>"
+      desc = desc.replace("-marked", "")
+      out += '''<img src="''' + filename.replace("/mnt/ams2", "") + '''" data-stamp="''' + desc  + '''">\n'''
+
+   out += """  </div>
+   """
+   return(out)
 
 def batch_update_labels(station_id, label_data):
    update_data = {}
@@ -522,6 +542,8 @@ def recrop_roi(station_id, stack_fn, div_id, click_x, click_y,size,margin=.2):
    vs_dir = "/METEOR_SCAN/" + div_id[0:10] + "/" 
    msdir = "/mnt/ams2/METEOR_SCAN/" + div_id[0:10] + "/" 
    mdir = "/mnt/ams2/meteors/" + div_id[0:10] + "/" 
+   if os.path.exists(msdir) is False:
+      os.makedirs(msdir)
    stack_file = mdir + div_id + "-stacked.jpg"
    stack_img = cv2.imread(stack_file)
    print("Stack file:", stack_file)
@@ -529,8 +551,8 @@ def recrop_roi(station_id, stack_fn, div_id, click_x, click_y,size,margin=.2):
    stack_img = cv2.resize(stack_img, (1920,1080))
 
    # convert click x to 1080p from 360p (3x)
-   hd_click_x = int(int(click_x)*3)
-   hd_click_y = int(int(click_y)*3)
+   hd_click_x = int(int(float(click_x))*3)
+   hd_click_y = int(int(float(click_y))*3)
    size = int(size)
    x1 = int(hd_click_x) - int(size/2)
    y1 = int(hd_click_y) - int(size/2)
@@ -553,8 +575,8 @@ def recrop_roi(station_id, stack_fn, div_id, click_x, click_y,size,margin=.2):
 
    roi = [x1,y1,x2,y2]
    print("X1Y1:", x1,y1,x2,y2)
-   print("SIZE:", size)
    roi_img = stack_img[y1:y2,x1:x2]
+   print("SIZE:", roi_img.shape)
    roi_v_temp_file = vs_dir + station_id + "_" + div_id + "-ROITEMP.jpg"
    roi_temp_file = msdir + station_id + "_" + div_id + "-ROITEMP.jpg"
    print("SAVING:", roi_temp_file)
@@ -1275,13 +1297,13 @@ def learning_weather(station_id, in_data):
       """
       for row in counts:
          ss, lab, cc = row
-         tag = ss.lower() + "_" + lab
+         tag = lab
 
          out += "<li><a href=/LEARNING/" + station_id + "/WEATHER/" + tag + ">" + tag + "</a> " +  str(cc) + "</li>"
    elif "DAWN" in in_data['label'] or "DUSK" in in_data['label'] or "DAY" in in_data['label'] or "NIGHT" in in_data['label']:
       el = in_data['label'].split("_")
       sun_status = el[0]
-      ai_weather_condition = in_data['label'].replace(sun_status + "_", "")
+      ai_weather_condition = in_data['label'] #.replace(sun_status + "_", "")
       data = select_samples(sun_status, ai_weather_condition, con, cur)
       for row in data:
          img_fn = row[0]
@@ -1294,7 +1316,7 @@ def learning_weather(station_id, in_data):
          hour = el[5]
          mintemp = el[6]
          minute, picid = mintemp.split("-")
-         img_file = "/mnt/ams2/datasets/weather/" + sun_status.upper() + "_" + ai_weather_condition + "/" + img_fn
+         img_file = "/mnt/ams2/datasets/weather/" + ai_weather_condition + "/" + img_fn
          img_url = img_file.replace("/mnt/ams2", "")
          out += "<div style='float: left'><img src=" + img_url + "></div>"
 
@@ -1309,13 +1331,12 @@ def select_samples(sun_status, ai_weather_condition, con, cur):
            FROM ml_weather_samples WS 
      INNER JOIN weather_conditions WC 
              ON WC.local_datetime_key = WS.local_datetime_key 
-          WHERE WC.sun_status = ? 
-            AND WS.ai_sky_condition = ?
+          WHERE WS.ai_sky_condition = ?
        ORDER BY filename DESC 
       """
 
       
-      sel_vals = [sun_status.lower(), ai_weather_condition]
+      sel_vals = [ai_weather_condition]
       print(sql)
       print(sel_vals)
       cur.execute(sql, sel_vals)
