@@ -19,6 +19,7 @@ from FlaskLib.TL import tl_menu
 from FlaskLib.man_reduce import meteor_man_reduce , save_man_reduce
 from FlaskLib.man_detect import man_detect , import_meteor
 from FlaskLib.meteors_main_redis import meteors_main_redis
+from FlaskLib.Dashboard import Dashboard
 #from FlaskLib.Maps import make_map 
 from flask import redirect, url_for, abort
 import json
@@ -568,6 +569,47 @@ def meteor_detail_page(amsid, date, meteor_file):
 @auth.login_required
 def tl_main(amsid,date,cam_num):
    out = timelapse_main(amsid,date,cam_num, json_conf)
+   return(out)
+
+
+
+@app.route('/DASHBOARD/<amsid>/<subcmd>', methods=['GET', 'POST'])
+@auth.login_required
+def lrn_dash_sub(amsid, subcmd):
+   from FlaskLib.DashMeteors import MeteorDash
+   in_data = {}
+   for key, value in request.args.items():
+      in_data[key] = value
+   if "cmd" not in in_data:
+      in_data['cmd'] = None 
+   if in_data['cmd'] == "METEORS":
+      MD = MeteorDash()
+      return(MD.meteors_main(in_data))
+   if in_data['cmd'] == "Weather":
+      WT = WeatherDash()
+      return(WT.weather_main(in_data))
+   if in_data['cmd'] == "Calibration":
+      CB = Calibration()
+      return(CB.calibration_main(in_data))
+   if in_data['cmd'] == "System":
+      SYS = System()
+      return(SYS.system_main(in_data))
+   if in_data['cmd'] == "Config":
+      CFG = Config()
+      return(CFG.config_main(in_data))
+
+@app.route('/DASHBOARD/<amsid>/', methods=['GET', 'POST'])
+@auth.login_required
+def lrn_dash(amsid):
+   Dash = Dashboard()
+
+
+   in_data = {}
+   for key, value in request.args.items():
+      in_data[key] = value
+   in_data['station_id'] = amsid
+
+   out = Dash.controller(in_data)
    return(out)
 
 @app.route('/LEARNING/<amsid>/', methods=['GET', 'POST'])

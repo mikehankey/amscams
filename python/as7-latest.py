@@ -376,8 +376,8 @@ for cam in cameras:
 
       if cfe(cloud_arc_dir, 1) == 0:
          os.makedirs(cloud_arc_dir)
-
-      cmd = "cp " + cloud_dir + cams_id + ".jpg " + cloud_arc_dir + amsid + "_" + cams_id + "_" + cur_day_hm + ".jpg"
+      # this should be the clean file not the marked file...
+      cmd = "cp " + naked_file + " " + cloud_arc_dir + amsid + "_" + cams_id + "_" + cur_day_hm + ".jpg"
       print("3", cmd)
       os.system(cmd)
 
