@@ -878,8 +878,8 @@ class AllSkyDB():
 
    def load_all_meteors(self, selected_day = None):
       os.system("clear")
-      print("\rLoad meteors for day: " + selected_day, end= "")
       if selected_day is not None:
+         print("\rLoad meteors for day: " + selected_day, end= "")
          sql = "SELECT sd_vid, reduced from meteors where sd_vid like ?" 
          self.cur.execute(sql, [selected_day + "%"])
       else:
