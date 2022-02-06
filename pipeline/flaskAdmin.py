@@ -611,6 +611,14 @@ def lrn_dash_sub(amsid, subcmd):
 @app.route('/DASHBOARD/<amsid>/', methods=['GET', 'POST'])
 @auth.login_required
 def lrn_dash(amsid):
+   from FlaskLib.Dashboard import Dashboard
+   from FlaskLib.DashMeteors import MeteorDash
+   from FlaskLib.DashWeather import WeatherDash
+   from FlaskLib.DashLearning import LearningDash
+   from FlaskLib.DashCalibration import CalibrationDash
+   from FlaskLib.DashSystem import SystemDash
+   from FlaskLib.DashConfig import ConfigDash
+
    Dash = Dashboard()
 
 
