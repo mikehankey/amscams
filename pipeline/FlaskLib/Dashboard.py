@@ -9,8 +9,8 @@ import os
 from lib.PipeUtil import load_json_file, convert_filename_to_date_cam, get_trim_num, mfd_roi, save_json_file, bound_cnt
 import sys
 import glob
-from Classes.ASAI import AllSkyAI
-from Classes.ASAI_Detect import ASAI_Detect
+#from Classes.ASAI import AllSkyAI
+#from Classes.ASAI_Detect import ASAI_Detect
 
 from jinja2 import Environment, PackageLoader, select_autoescape
 
@@ -637,3 +637,12 @@ class Dashboard():
 
       out += """<h6 class="card-title"><a href=#>More</a></h6>"""
       return(out)
+
+   def make_options(self,opt_data, selected_val):
+      options = ""
+      for val, label in opt_data:
+         if val == selected_val:
+            options += "<option value='" + val + "' selected>" + label + "</option>"
+         else:
+            options += "<option value='" + val + "'>" + label + "</option>"
+      return(options)
