@@ -40,10 +40,23 @@ def ephem_info(device_lat, device_lng, capture_date):
    sun = ephem.Sun()
    moon = ephem.Moon()
 
-   sun_rise = obs.previous_rising(sun)
-   sun_set = obs.next_setting(moon)
-   moon_rise = obs.previous_rising(sun)
-   moon_set = obs.next_setting(moon)
+   try:
+      sun_rise = obs.previous_rising(sun)
+   except:
+      sun_rise = "na"
+
+   try:
+      sun_set = obs.next_setting(sun)
+   except:
+      sun_set = "na"
+   try:
+      moon_rise = obs.previous_rising(sun)
+   except:
+      moon_rise = "na"
+   try:
+      moon_set = obs.next_setting(moon)
+   except:
+      moon_set = "na"
    sun.compute(obs)
    moon.compute(obs)
 
@@ -292,6 +305,7 @@ for cam in cameras:
 
    # 
    (sun_status, saz, sun_alt, sun_rise, sun_set, moon_az, moon_alt, moon_rise, moon_set) = ephem_info(json_conf['site']['device_lat'], json_conf['site']['device_lng'], datestr2)
+
 
 
    desc1 = json_conf['site']['ams_id'] + " - " + json_conf['site']['operator_name'] + " " + wdata['location'] + " " + datestr + " - ALLSKY7.NET "
