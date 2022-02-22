@@ -280,7 +280,8 @@ if cmd == "sense_all":
       CameraIP = json_conf['cameras'][camera]['ip']
       CameraPassword = get_cam_passwd(CameraIP)
       cam = DVRIPCam(CameraIP,CameraUserName,CameraPassword)
-      try cam.login():
+      try:
+         cam.login()
          print ("Success! Connected to " + CameraIP)
       except:
          print ("Failure. Could not connect to camera!")
