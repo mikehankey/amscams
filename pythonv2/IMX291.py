@@ -288,7 +288,10 @@ if cmd == "sense_all":
 
 
       print("Sense up ", CameraIP)
-      sense_up(cam, CameraIP)
+      try:
+         sense_up(cam, CameraIP)
+      except:
+         print("Could not acquire images for camera:", cam)
 
 if cmd == "test":
    cam = DVRIPCam(CameraIP,CameraUserName,CameraPassword)
