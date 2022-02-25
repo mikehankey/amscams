@@ -497,7 +497,8 @@ class AS7Setup():
       interfaces = os.listdir("/sys/class/net/") 
       ints = []
       for i in interfaces:
-         if i != "lo" :
+         if i != "lo" and ("eth" in i or "en" in i or "wl" in i) :
+            print(i)
             ni.ifaddresses(i)
             try:
                ip = ni.ifaddresses(i)[ni.AF_INET][0]['addr']
@@ -525,6 +526,9 @@ class AS7Setup():
       cams_interface = ints[int(cams_i)-1][0]
       wifi = "No"
 
+      self.NETPLAN = self.NETPLAN.replace("INT_NET", network_interface)
+      self.NETPLAN = self.NETPLAN.replace("INT_CAMS", cams_interface)
+
       if "w" in network_interface:
          print("You selected a wifi interface to connect to the internet.")
          net_i = input("First, select the WIRED ethernet interface that will not be used.")
@@ -533,14 +537,14 @@ class AS7Setup():
          wifi_pass = input("Enter the WIFI Password")
          wifi = "Yes"
 
+
+
       if wifi == "Yes":
          self.NETPLAN_WIFI = self.NETPLAN_WIFI.replace("INT_WIFI", wifi_interface)
          self.NETPLAN_WIFI = self.NETPLAN_WIFI.replace("WIFI_SSID", wifi_ssid)
          self.NETPLAN_WIFI = self.NETPLAN_WIFI.replace("WIFI_PASS", wifi_pass)
 
-      self.NETPLAN = self.NETPLAN.replace("INT_NET", network_interface)
-      self.NETPLAN = self.NETPLAN.replace("INT_CAMS", cams_interface)
-      self.NETPLAN += self.NETPLAN_WIFI
+         self.NETPLAN += self.NETPLAN_WIFI
 
       print("This is your network setup configuration:")
       print("Network Interface:", network_interface)
@@ -688,6 +692,12 @@ Loading...
 NETPLAN_FILE = "/etc/netplan/00-installer-config.yaml"
 if os.path.isfile("/home/ams/netplan.backup") == 0 and os.path.isfile("/etc/netplan/00-installer-config.yaml") == 0:
    os.system("cp " + NETPLAN_FILE + " /home/ams/netplan.backup")
+
+        #routes:
+        #   - to: 0.0.0.0/0
+        #     via: 192.168.1.1
+        #     metric: 100
+
 NETPLAN = """
 network:
   version: 2
@@ -700,10 +710,6 @@ network:
         addresses: [192.168.76.1/24]
         nameservers:
            addresses: [8.8.8.8,8.8.4.4]
-        routes:
-           - to: 0.0.0.0/0
-             via: 192.168.1.1
-             metric: 100
         optional: true
 """
 NETPLAN_WIFI = """
