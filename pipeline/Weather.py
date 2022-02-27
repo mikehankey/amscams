@@ -1,7 +1,7 @@
 import math
 import cv2
 import glob
-from lib.PipeUtil import cfe, convert_filename_to_date_cam
+from lib.PipeUtil import cfe, convert_filename_to_date_cam, check_running
 import pickle
 import os
 import datetime
@@ -11,8 +11,17 @@ import sys
 
 
 from Classes.Weather import Weather
-WW = Weather()
 
+# make sure it is not already running
+running = check_running("Weather.py")
+if running > 2:
+   print("Weather program is already running...")
+   #cmd = "/bin/echo 'ABORT WEATHER RUNNING:" + str(running) + "'>run.txt"
+   #os.system(cmd)
+   exit()
+
+
+WW = Weather()
 if len(sys.argv) <= 1:
    WW.help()
    exit()     
