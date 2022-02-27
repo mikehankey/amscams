@@ -70,7 +70,7 @@ class AllSkyAI():
       self.class_names = temp['labels']
       self.class_names = sorted(self.class_names)
 
-      self.become_aware():
+      self.become_aware()
 
    def become_aware(self):
       # initialization routine for the ALLSKY AI MAIN BRAIN
