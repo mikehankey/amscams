@@ -70,6 +70,27 @@ class AllSkyAI():
       self.class_names = temp['labels']
       self.class_names = sorted(self.class_names)
 
+      self.become_aware():
+
+   def become_aware(self):
+      # initialization routine for the ALLSKY AI MAIN BRAIN
+      # The main brain is the primary task manager for the system
+      # and is designed to track all "things", a thing being a task
+      # date, data file, status, process, routine, etc. 
+    
+      # we can start by defining all things
+      all_things = {}
+      # system related things, client config, disk space, cameras rolling 
+      # versions of databases, installed programs and so on
+
+      all_things['system'] = {}
+      all_things['ai_version'] = 2
+      all_things['disks'] {}
+      all_things['disks']['os'] = {}
+      all_things['disks']['data'] = {}
+      all_things['disks']['backup'] = {}
+      all_things['disks']['cloud'] = {}
+
    def check_update_install(self):
       # does the AI File exist? If not then we are not at the v1.0 update yet! Do what is needed.
       ai_conf_file = "../conf/ai_conf.json"
@@ -180,7 +201,7 @@ class AllSkyAI():
       self.model_multi_class.compile(loss='categorical_crossentropy',
          optimizer='rmsprop',
          metrics=['accuracy'])
-      self.multi_class_labels = pickle.loads(open("models/moving_objects.labels", "rb").read())
+      self.multi_class_labels = pickle.loads(open("models/moving_objects_i64.labels", "rb").read())
       #self.lb = pickle.loads(open(label_file_path, "rb").read())
 
 
