@@ -85,7 +85,7 @@ class AllSkyAI():
 
       all_things['system'] = {}
       all_things['ai_version'] = 2
-      all_things['disks'] {}
+      all_things['disks'] = {}
       all_things['disks']['os'] = {}
       all_things['disks']['data'] = {}
       all_things['disks']['backup'] = {}
