@@ -9,13 +9,19 @@ yest = today - dt.timedelta(days=1)
 yest = yest.strftime("%Y_%m_%d")
 today = datetime.now().strftime("%Y_%m_%d")
 
-print("\rInit DB Starting",end="")
+print("Init DB Starting.")
 AIDB = AllSkyDB()
+AIDB.load_stations()
+#exit()
+
 if len(sys.argv) > 1:
    date = sys.argv[1]
 else:
    date = today
-print("\rDate:" + date, end="")
+if date == "today":
+   date = today
+if date == "yest":
+   date = yest 
 meteor_dir = "/mnt/ams2/meteors/"
 if date == "ALL" or date == "all":
    mdirs = os.listdir(meteor_dir)
@@ -23,14 +29,18 @@ if date == "ALL" or date == "all":
       if os.path.isdir(meteor_dir + md) is True:
          date = md
          AIDB.load_all_meteors(date)
+         AIDB.verify_media_day(date)
          AIDB.reconcile_db(date)
+         os.system("python3 myEvents.py " + date)
    AIDB.check_update_status(date)
 
 else:
    AIDB.load_all_meteors(date)
    AIDB.verify_media_day(date)
    AIDB.reconcile_db(date)
-
+   os.system("python3 myEvents.py " + date)
+   print(date)
+   exit()
    AIDB.reducer(date)
    AIDB.check_update_status(date)
    #print("\rDONE DAY:" + date + "                                   ",end="" )

@@ -1,3 +1,4 @@
+import pickle
 import cv2
 import os
 import numpy as np
@@ -138,40 +139,50 @@ class AllSkyAI():
       self.model_meteor_yn = Sequential()
       self.model_meteor_fireball_yn = Sequential()
       self.model_multi_class = Sequential()
-      self.model_meteor_or_plane = Sequential()
-      self.model_meteor_or_bird = Sequential()
-      self.model_meteor_or_firefly = Sequential()
 
-      self.model_meteor_yn =load_model('meteor_yn_model.h5')
+      if False:
+         self.model_meteor_or_plane = Sequential()
+         self.model_meteor_or_bird = Sequential()
+         self.model_meteor_or_firefly = Sequential()
+
+      self.model_meteor_yn =load_model('models/meteor_yn_i64.h5')
+      #self.meteor_yn_labels = pickle.loads(open("models/meteor_yn.labels", "rb").read())
       self.model_meteor_yn.compile(loss='binary_crossentropy',
               optimizer='rmsprop',
               metrics=['accuracy'])
 
-      self.model_meteor_fireball_yn =load_model('meteor_fireball_yn_model.h5')
+      self.model_meteor_yn.summary()
+
+      self.model_meteor_fireball_yn =load_model('models/fireball_yn_i64.h5')
+      #self.fireball_yn_labels = pickle.loads(open("models/fireball_yn.labels", "rb").read())
       self.model_meteor_fireball_yn.compile(loss='binary_crossentropy',
               optimizer='rmsprop',
               metrics=['accuracy'])
 
-      self.model_meteor_or_plane =load_model('meteor_or_plane_model.h5')
-      self.model_meteor_or_plane.compile(loss='binary_crossentropy',
-              optimizer='rmsprop',
-              metrics=['accuracy'])
+      
+      #self.model_meteor_or_plane =load_model('meteor_or_plane_model.h5')
+      #self.model_meteor_or_plane.compile(loss='binary_crossentropy',
+      #        optimizer='rmsprop',
+      #        metrics=['accuracy'])
 
-      self.model_meteor_or_bird =load_model('meteor_or_bird_model.h5')
-      self.model_meteor_or_bird.compile(loss='binary_crossentropy',
-              optimizer='rmsprop',
-              metrics=['accuracy'])
+      #self.model_meteor_or_bird =load_model('meteor_or_bird_model.h5')
+      #self.model_meteor_or_bird.compile(loss='binary_crossentropy',
+      #        optimizer='rmsprop',
+      #        metrics=['accuracy'])
 
-      self.model_meteor_or_firefly =load_model('meteor_or_firefly_model.h5')
-      self.model_meteor_or_firefly.compile(loss='binary_crossentropy',
-              optimizer='rmsprop',
-              metrics=['accuracy'])
+      #self.model_meteor_or_firefly =load_model('meteor_or_firefly_model.h5')
+      #self.model_meteor_or_firefly.compile(loss='binary_crossentropy',
+      #        optimizer='rmsprop',
+      #        metrics=['accuracy'])
 
 
-      self.model_multi_class =load_model("multi_class_model.h5")
+      self.model_multi_class =load_model("models/moving_objects_i64.h5")
       self.model_multi_class.compile(loss='categorical_crossentropy',
          optimizer='rmsprop',
          metrics=['accuracy'])
+      self.multi_class_labels = pickle.loads(open("models/moving_objects.labels", "rb").read())
+      #self.lb = pickle.loads(open(label_file_path, "rb").read())
+
 
    def load_my_model(self, model_file = None):
       if model_file is None:
@@ -207,9 +218,9 @@ class AllSkyAI():
       oimg = cv2.resize(oimg,(150,150))
       cv2.imwrite(imgfile, oimg)
       img = oimg.copy()
-      img = cv2.resize(img,(128,128))
-      img = np.reshape(img,[1,128,128,3])
-      img_size = [128,128]
+      img = cv2.resize(img,(224,224))
+      img = np.reshape(img,[1,224,224,3])
+      img_size = [224,224]
 
       img = load_img(imgfile, target_size = img_size)
       img = img_to_array(img).astype(np.float32)
@@ -226,8 +237,35 @@ class AllSkyAI():
          pred_yn = True 
       return(pred_yn)
 
-   def meteor_yn(self,root_fn,roi_file=None,oimg=None,roi=None):
+   def image_64(self,image):
+      # grab the brightest pixel spot and make a crop 64x64 around that
 
+      gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+      ih,iw = image.shape[:2]
+      min_val, max_val, min_loc, (mx,my)= cv2.minMaxLoc(gray)
+      x1 = mx - 32
+      x2 = mx + 32
+      y1 = my - 32
+      y2 = my + 32
+      if x1 < 0:
+         x1 = 0
+         x2 = 64
+      if y1 < 0:
+         y1 = 0
+         y2 = 64
+      if x2 > iw:
+         x2 =iw -1
+         x1 = iw - 1 - 64
+      if y2 > ih:
+         y2 =ih -1
+         y1 = ih - 1 - 64
+      i64 = image[y1:y2,x1:x2]
+      return(i64)
+ 
+
+   def meteor_yn(self,root_fn,roi_file=None,oimg=None,roi=None):
+      width = 64
+      height = 64
       # FOR METEOR Y/N PREDICT AND FIREBALL PREDICT!
       if roi is not None:
          print(roi)
@@ -244,29 +282,43 @@ class AllSkyAI():
       else:
          imgfile = "temp.jpg"
 
-      try:
-         oimg = cv2.resize(oimg,(150,150))
-      except:
-         print("BAD IMAGE!", roi_file)
-         return(None)
+      #try:
+      #   oimg = cv2.resize(oimg,(width,height))
+      #except:
+      #   print("BAD IMAGE!", roi_file)
+      #   return(None)
+
       if roi_file is None:
          imgfile = "temp.jpg"
          cv2.imwrite(imgfile, oimg)
-      img = oimg.copy()
-      img = cv2.resize(img,(128,128))
-      img = np.reshape(img,[1,128,128,3])
-      img_size = [128,128]
+      try:
+         img = oimg.copy()
+      except:
+         return(None)
+      img = cv2.resize(img,(224,224))
+      img = self.image_64(img)
+
+      # save/load the i64 image
+      if "ROI" in imgfile:
+         imgfile = imgfile.replace("ROI", "I64")
+      cv2.imwrite(imgfile, img)
+
+
+      img = np.reshape(img,[1,width,height,3])
+      img_size = [width,height]
       #img = keras.preprocessing.image.load_img(imgfile, target_size = img_size)
       #img = keras.preprocessing.image.img_to_array(img).astype(np.float32)
-
+      print("FILE:", imgfile)
       img = load_img(imgfile, target_size = img_size)
-      img = img_to_array(img).astype(np.float32)
-      img /= 255.
+      img = img_to_array(img).astype(np.float32) / 255.0 
+   #   img = img_to_array(img).astype(np.float32)
+     # img /= 255.
       img = np.expand_dims(img, axis = 0)
 
       # check meteor yn
       meteor_yn_class = self.model_meteor_yn.predict(img)
       meteor_yn_confidence = (1 - meteor_yn_class[0][0]) * 100
+      print("DONE METEOR YN", meteor_yn_confidence)
       if meteor_yn_class[0][0] > .5:
          # NON METEOR DETECTED!
          meteor_yn = False 
@@ -277,6 +329,7 @@ class AllSkyAI():
       # check fireball yn
       fireball_yn_class = self.model_meteor_fireball_yn.predict(img)
       meteor_fireball_yn_confidence = (1 - fireball_yn_class[0][0]) * 100
+      print("DONE FIREBALL YN", meteor_fireball_yn_confidence)
       if fireball_yn_class[0][0] > .5:
          # NON METEOR DETECTED!
          meteor_fireball_yn = False 
@@ -284,68 +337,87 @@ class AllSkyAI():
          # METEOR DETECTED
          meteor_fireball_yn = True 
 
-      # check meteor_or_plane 
-      meteor_or_plane_class = self.model_meteor_or_plane.predict(img)
-      meteor_or_plane_confidence = (1 - meteor_or_plane_class[0][0]) * 100
-      if meteor_or_plane_class[0][0] > .5:
-         # NON METEOR DETECTED!
-         meteor_or_plane_yn = False 
-      else:
-         # METEOR DETECTED
-         meteor_or_plane_yn = True 
+      if False:
+         # check meteor_or_plane 
+         meteor_or_plane_class = self.model_meteor_or_plane.predict(img)
+         meteor_or_plane_confidence = (1 - meteor_or_plane_class[0][0]) * 100
+         if meteor_or_plane_class[0][0] > .5:
+            # NON METEOR DETECTED!
+            meteor_or_plane_yn = False 
+         else:
+            # METEOR DETECTED
+            meteor_or_plane_yn = True 
 
-      # check meteor_or_bird
-      meteor_or_bird_class = self.model_meteor_or_bird.predict(img)
-      meteor_or_bird_confidence = (1 - meteor_or_bird_class[0][0]) * 100
-      if meteor_or_bird_class[0][0] > .5:
-         # NON METEOR DETECTED!
-         meteor_or_bird_yn = False 
-      else:
-         # METEOR DETECTED
-         meteor_or_bird_yn = True 
+         # check meteor_or_bird
+         meteor_or_bird_class = self.model_meteor_or_bird.predict(img)
+         meteor_or_bird_confidence = (1 - meteor_or_bird_class[0][0]) * 100
+         if meteor_or_bird_class[0][0] > .5:
+            # NON METEOR DETECTED!
+            meteor_or_bird_yn = False 
+         else:
+            # METEOR DETECTED
+            meteor_or_bird_yn = True 
 
-      # check meteor_or_firefly
-      meteor_or_firefly_class = self.model_meteor_or_firefly.predict(img)
-      meteor_or_firefly_confidence = (1 - meteor_or_firefly_class[0][0]) * 100
-      if meteor_or_firefly_class[0][0] > .5:
-         # NON METEOR DETECTED!
-         meteor_or_firefly_yn = False 
-      else:
-         # METEOR DETECTED
-         meteor_or_firefly_yn = True 
+         # check meteor_or_firefly
+         meteor_or_firefly_class = self.model_meteor_or_firefly.predict(img)
+         meteor_or_firefly_confidence = (1 - meteor_or_firefly_class[0][0]) * 100
+         if meteor_or_firefly_class[0][0] > .5:
+            # NON METEOR DETECTED!
+            meteor_or_firefly_yn = False 
+         else:
+            # METEOR DETECTED
+            meteor_or_firefly_yn = True 
 
 
 
 
       # check multi class
-      mc_w = 150
-      mc_h = 150
+      mc_w = width 
+      mc_h = height
       mc_img = load_img(
          imgfile, target_size=(mc_h, mc_w)
       )
       img_array = img_to_array(mc_img)
       img_array = tf.expand_dims(img_array, 0) # Create a batch
 
-      predictions = self.model_multi_class.predict(img_array)
+      pred_result = self.model_multi_class.predict(img)
 
-      score = tf.nn.softmax(predictions[0])
-      predicted_class = self.class_names[np.argmax(score)]
+      #predictions = self.model_multi_class.predict(img_array)
+      #score = tf.nn.softmax(predictions[0])
+      #predicted_class = self.class_names[np.argmax(score)]
+      #print("MC:", predicted_class, score)
+
+
+      # Multi class i64
+      # extract the class label which has the highest corresponding probability
+      i = pred_result.argmax(axis=1)[0]
+      label = self.multi_class_labels.classes_[i]
+      predicted_class = label
+      confidence = pred_result[0][i] * 100
+
+      print("DONE MULTI :", predicted_class, confidence)
 
       response = {}
-      response['meteor_yn'] = meteor_yn
       response['roi'] = roi
-      response['ai_version'] = 1
+      response['ai_version'] = 2
+      response['meteor_yn'] = meteor_yn
       response['meteor_yn_confidence'] = float(meteor_yn_confidence)
+
+      if "fireball" in predicted_class or float(meteor_fireball_yn_confidence) > float(meteor_yn_confidence) :
+         meteor_fireball_yn = "Y"
+
       response['meteor_fireball_yn'] = meteor_fireball_yn
       response['meteor_fireball_yn_confidence'] = float(meteor_fireball_yn_confidence)
-      response['meteor_or_plane_yn'] = meteor_or_plane_yn
-      response['meteor_or_plane_confidence'] = float(meteor_or_plane_confidence)
-      response['meteor_or_bird_yn'] = meteor_or_bird_yn
-      response['meteor_or_bird_confidence'] = float(meteor_or_bird_confidence)
-      response['meteor_or_firefly_yn'] = meteor_or_firefly_yn
-      response['meteor_or_firefly_confidence'] = float(meteor_or_firefly_confidence)
       response['mc_class'] = predicted_class
-      response['mc_confidence'] = int(100 * np.max(score))
+      response['mc_class_confidence'] = confidence # int(100 * np.max(score))
+
+      #response['meteor_or_plane_yn'] = meteor_or_plane_yn
+      #response['meteor_or_plane_confidence'] = float(meteor_or_plane_confidence)
+      #response['meteor_or_bird_yn'] = meteor_or_bird_yn
+      #response['meteor_or_bird_confidence'] = float(meteor_or_bird_confidence)
+      #response['meteor_or_firefly_yn'] = meteor_or_firefly_yn
+      #response['meteor_or_firefly_confidence'] = float(meteor_or_firefly_confidence)
+
 
       final_yn_conf = max([meteor_yn_confidence,meteor_fireball_yn_confidence])
       #if "meteor" in response['mc_class']:
@@ -376,7 +448,7 @@ class AllSkyAI():
 
    def format_response(self, resp):
       descs = []
-      color = [128,128,128]
+      color = [224,224,224]
       if resp is not None:
          if resp['meteor_yn'] is True:
             desc = "Meteor "  + str((1 - resp['meteor_yn_confidence']) * 100)[0:4] + "%"

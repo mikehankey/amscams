@@ -229,6 +229,7 @@ class ASAI_Detect():
          self.class_names = labels['labels']
       video_file = stack_file.replace("-stacked.jpg", ".mp4")
 
+      print("Make first frame.")
       first_frame = self.make_first_frame(video_file)
 
       stack_img = cv2.imread(stack_file)
@@ -300,6 +301,7 @@ class ASAI_Detect():
                color = [0,255,0]
             cv2.putText(show_img, detect_class, (x1,y2), cv2.FONT_HERSHEY_SIMPLEX, .5, color, 1)
       show_img = cv2.resize(show_img,(1280,720)) 
+      print("FINISHED DETECT IN STACK.")
       return(show_img, roi_imgs, roi_vals)
    
    

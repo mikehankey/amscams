@@ -1,4 +1,5 @@
 import sqlite3
+import requests
 from datetime import datetime
 import numpy as np
 import cv2
@@ -29,6 +30,10 @@ class AllSkyDB():
       else:
          self.meteor_dir = "/mnt/ams2/meteors/"
       self.json_conf = load_json_file("../conf/as6.json")
+      self.lat = float(self.json_conf['site']['device_lat'])
+      self.lon = float(self.json_conf['site']['device_lng'])
+      self.alt = float(self.json_conf['site']['device_alt'])
+
       self.station_id = self.json_conf['site']['ams_id']
       self.db_file = self.home_dir + "/pipeline/" + self.station_id + "_ALLSKY.db"
 
@@ -255,8 +260,8 @@ class AllSkyDB():
             if ai_r != "" and ai_r is not None:
                ai_r = json.loads(ai_r)
                if "ai_version" in ai_r: 
-                  print("\rSkip at latest AI already.",end="")
-                  if ai_r['ai_version'] >= 1:
+                  if ai_r['ai_version'] >= 2:
+                     print("\rSkip at latest AI already.",end="")
                      continue
             roi = row[3]
             if roi != "":
@@ -315,9 +320,11 @@ class AllSkyDB():
                         SET meteor_yn = ?,
                             meteor_yn_conf = ?,
                             fireball_yn = ?,
+                            fireball_yn_conf = ?,
                             mc_class = ?,
-                            ai_resp = ?,
-                            reduced = ?
+                            mc_class_conf = ?,
+                            reduced = ?,
+                            ai_resp = ?
                         WHERE sd_vid = ? """
                      if resp['meteor_yn'] is False and resp['meteor_fireball_yn'] is False:
                         resp['final_meteor_yn'] = 0
@@ -326,12 +333,12 @@ class AllSkyDB():
                      else:
                         resp['final_meteor_yn'] = 0
  
-                     if resp['meteor_fireball_yn_confidence'] > 90 and resp['mc_class'] == "meteor_fireball":
+                     if resp['meteor_fireball_yn_confidence'] > 50 and resp['mc_class'] == "meteor_fireball" and resp['meteor_fireball_yn_confidence'] > resp['meteor_yn_confidence']:
                         resp['meteor_fireball_yn'] = 1
                      else:
                         resp['meteor_fireball_yn'] = 0
                      
-                     task = [resp['final_meteor_yn'],resp['final_meteor_yn_conf'],resp['meteor_fireball_yn'], resp['mc_class'], json.dumps(resp),reduced, root + ".mp4"]
+                     task = [resp['meteor_yn'],resp['meteor_yn_confidence'],resp['meteor_fireball_yn'], resp['meteor_fireball_yn_confidence'], resp['mc_class'], resp['mc_class_confidence'], reduced, json.dumps(resp) , root + ".mp4"]
 
                      self.cur.execute(sql, task)
                      self.con.commit()
@@ -376,7 +383,7 @@ class AllSkyDB():
       in_data['fireball_yn'] = resp['meteor_fireball_yn']
       in_data['fireball_yn_conf'] = resp['meteor_fireball_yn_confidence']
       in_data['multi_class'] = resp['mc_class']
-      in_data['multi_class_conf'] = resp['mc_confidence']
+      in_data['multi_class_conf'] = resp['mc_class_confidence']
       in_data['human_confirmed'] = 0 
       in_data['human_label'] = ""
       in_data['human_roi'] = ""
@@ -386,7 +393,7 @@ class AllSkyDB():
              INSERT OR REPLACE INTO ml_samples(station_id, camera_id, root_fn, roi_fn, meteor_yn_final, meteor_yn_final_conf, main_class, sub_class, meteor_yn, meteor_yn_conf, fireball_yn, fireball_yn_conf, multi_class, multi_class_conf, human_confirmed, human_label, human_roi, suggest_class, ignore) 
              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?)
       """
-      ivals = [self.station_id, camera_id, resp['root_fn'], resp['roi_fn'], resp['final_meteor_yn'], resp['final_meteor_yn_conf'], "", "",  resp['meteor_yn'],  resp['meteor_yn_confidence'], resp['meteor_fireball_yn'], resp['meteor_fireball_yn_confidence'], resp['mc_class'], resp['mc_confidence'], 0 , "", "", "", 0]
+      ivals = [self.station_id, camera_id, resp['root_fn'], resp['roi_fn'], resp['final_meteor_yn'], resp['final_meteor_yn_conf'], "", "",  resp['meteor_yn'],  resp['meteor_yn_confidence'], resp['meteor_fireball_yn'], resp['meteor_fireball_yn_confidence'], resp['mc_class'], resp['mc_class_confidence'], 0 , "", "", "", 0]
       self.cur.execute(sql, ivals)
       self.con.commit()
 
@@ -771,6 +778,8 @@ class AllSkyDB():
                   sync_status = json.loads(sync_status)
                except:
                   sync_status = []
+            if isinstance(sync_status, dict) is True:
+               sync_status = []
             sync_status.append('ROI.jpg')
             sync_status = sorted(list(set(sync_status)))
 
@@ -826,13 +835,17 @@ class AllSkyDB():
             if os.path.exists(stack_file) is True:
                print("\r *** DETECT IN STACK " + root_file, end="")
                detect_img, roi_imgs, roi_vals = self.ASD.detect_in_stack(stack_file )
+               print("DONE DETECT IN STACK.")
                meteor_found = False 
                if roi_imgs is not None:
                   if len(roi_imgs) > 0:
                      for i in range(0, len(roi_imgs)):
+                        print("Working on roi img", roi_imgs[i].shape)
                         roi_img = roi_imgs[i]
                         roi_val = roi_vals[i]
+                        print("Try YN")
                         resp = self.ASAI.meteor_yn(root_file, None,roi_img,roi_val)
+                        print("END YN")
                         if resp is not None:
                            self.insert_ml_sample(resp)
                            if resp['meteor_yn'] is True or resp['meteor_yn'] == 1 or resp['meteor_fireball_yn'] is True or resp['meteor_fireball_yn'] == 1:
@@ -874,7 +887,39 @@ class AllSkyDB():
  
 
       # CLOUD MEDIA (files on wasabi drive)
- 
+
+   def load_stations(self):
+      my_network = {}
+      from lib.PipeUtil import dist_between_two_points
+      url = "https://archive.allsky.tv/EVENTS/ALL_STATIONS.json"
+      response = requests.get(url)
+      content = response.content.decode()
+      stations =json.loads(content)
+      for station in stations:
+         t_station_id = station['station_id']
+         try:
+            slat = float(station['lat'])
+            slon = float(station['lon'])
+            alt = float(station['alt'])
+         except:
+            slat = 0
+            slon = 0
+         dist = int(dist_between_two_points(self.lat, self.lon, slat, slon))
+         if dist < 300:
+            print("***", t_station_id, dist) 
+            my_network[t_station_id] = {}
+            my_network[t_station_id]['dist_to_me'] = dist
+            my_network[t_station_id]['lat'] = slat
+            my_network[t_station_id]['lon'] = slon
+            my_network[t_station_id]['alt'] = alt
+            my_network[t_station_id]['operator'] = station['operator_name']
+            my_network[t_station_id]['city'] = station['city']
+         else:
+            print(t_station_id, dist) 
+         self.json_conf['my_network'] = my_network
+      save_json_file("../conf/as6.json", self.json_conf)
+      return(stations)
+     
 
    def load_all_meteors(self, selected_day = None):
       os.system("clear")
@@ -1043,9 +1088,12 @@ class AllSkyDB():
          in_data['mfd'] = json.dumps(mfd)
          in_data['user_mods'] = json.dumps(user_mods)
          if mfile in loaded_meteors:
+            del (in_data['human_confirmed'])
             self.update_meteor(in_data)
+            #print("UPDATE EXISTING")
          else: 
             self.dynamic_insert(self.con, self.cur, "meteors", in_data)
+            #print("INSERT NEW")
          mj['in_sql'] = 1
          save_json_file(mjf, mj)
 

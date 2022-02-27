@@ -1,4 +1,5 @@
 import glob
+import simplejson as json
 import time
 import math
 import os
@@ -8,6 +9,7 @@ import datetime, calendar
 import cv2
 from sklearn import linear_model, datasets
 from skimage.measure import ransac, LineModelND, CircleModel
+import requests
 
 from sklearn.linear_model import RANSACRegressor
 from sklearn.datasets import make_regression
@@ -34,6 +36,88 @@ class Events():
       self.event_dir = "/mnt/ams2/EVENTS/"
       self.cloud_event_dir = "/mnt/archive.allsky.tv/EVENTS/"
       self.all_events_file = self.event_dir + "ALL_EVENTS.json"
+      self.json_conf = load_json_file("../conf/as6.json")
+      self.station_id = self.json_conf['site']['ams_id']
+      self.cloud_host = "https://archive.allsky.tv/"
+
+   def do_ms_day(self, date):
+      obs_ids = {}
+      network = self.json_conf['my_network']
+      min_cnt = {}
+      min_cnt_file = "/mnt/ams2/meteors/" + date + "/" + self.station_id + "_" + date + "_EVENTS.info"
+      for station_id in network:
+         year = date.split("_")[0]
+         day_url = "{:s}{:s}/METEORS/{:s}/{:s}/{:s}_OBS_IDS.info".format(self.cloud_host,station_id,year,date,date)
+         print(day_url)
+
+         response = requests.get(day_url)
+         content = response.content.decode()
+         try:
+            obs_ids[station_id] = json.loads(content)
+         except:
+            print("No file.", day_url)
+
+      for station_id in sorted(obs_ids):
+         print(station_id, len(obs_ids[station_id]))
+         obs_data = sorted(obs_ids[station_id], key=lambda x: (x[1]), reverse=False)
+         for obs in obs_data:
+            day, time = obs[1].split(" ")
+            hour_min = time[0:5]
+            print("   ", hour_min, time)
+            if hour_min not in min_cnt:
+               min_cnt[hour_min] = {} 
+               min_cnt[hour_min]['stations'] = [] 
+               min_cnt[hour_min]['obs'] = [] 
+               min_cnt[hour_min]['times'] = [] 
+               min_cnt[hour_min]['total_stations'] = 0 
+            min_cnt[hour_min]['stations'].append(station_id)
+            min_cnt[hour_min]['obs'].append(obs[0])
+            min_cnt[hour_min]['times'].append(time)
+            min_cnt[hour_min]['total_stations'] = len(set(min_cnt[hour_min]['stations']))
+       
+
+      for hour_min in min_cnt:
+         if min_cnt[hour_min]['total_stations'] >= 2:
+            if "pairs" not in min_cnt[hour_min]:
+               min_cnt[hour_min]['pairs'] = {}
+            min_cnt[hour_min]['pairs'] = self.find_make_pairs(min_cnt[hour_min], min_cnt[hour_min]['pairs'])
+            if len(min_cnt[hour_min]['pairs']) >= 1:
+               print(hour_min, len(min_cnt[hour_min]['pairs'].keys()), min_cnt[hour_min]['pairs'].keys()) 
+
+      try:
+         save_json_file(min_cnt_file, min_cnt)
+         print(min_cnt_file)
+      except:
+         print("nothing to save")
+ 
+   def find_make_pairs(self, ev_data, pairs):
+      for i in range(0, len(ev_data['times'])):
+         station = ev_data['stations'][i]
+         obs = ev_data['obs'][i]
+         time = ev_data['times'][i]
+         h,m,s = time.split(":")
+         for j in range(0, len(ev_data['times'])):
+            jobs = ev_data['obs'][j]
+            jstation = ev_data['stations'][j]
+            if station == jstation:
+               continue
+            jtime = ev_data['times'][j]
+            jh,jm,js = jtime.split(":")
+
+            ob1 = station + "_" + obs 
+            ob2 = jstation + "_" + jobs 
+
+            temp = [ob1, ob2]
+            temp = sorted(temp)
+            key = temp[0] + "__" + temp[1]
+
+
+            if key not in pairs:
+               time_diff = abs(float(s) - float(js))
+               if time_diff < 2:
+                  pairs[key] = {} 
+                  pairs[key]['time_diff'] = time_diff 
+      return(pairs)        
 
    def status(self):
       self.all_events = load_json_file("/mnt/ams2/EVENTS/ALL_EVENTS.json")

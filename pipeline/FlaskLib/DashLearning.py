@@ -101,6 +101,8 @@ class LearningDash(Dashboard):
          out = self.weather_samples_date(in_data)
       elif in_data['cmd'] == "weather_samples":
          out = self.weather_samples(in_data)
+      elif in_data['cmd'] == "learning_help":
+         out = self.learning_help(in_data)
       else:
          out = "Command not found." + in_data['cmd']
 
@@ -108,6 +110,52 @@ class LearningDash(Dashboard):
       template = self.env.get_template("default.html")
       tout = template.render(station_id=self.station_id, sidebar=self.render_side_nav(),DEFAULT_CONTENT=out, active_learning="active")
       return(tout) 
+
+   def learning_help(self,in_data=None):
+      out = """
+         <div class="card">
+            <div class="card-header">
+               <h3 class="card-title">ALL SKY MACHINE LEARNING README </h3>
+            </div>
+            <div class="card-body">
+               This page is intended to explain the core machine learning concepts and functionality of the ALLSKY system. 
+               <h4>Learning Concepts, Explanation and Tasks</h4>
+                <ul>
+                   <li>Image Features
+                   <li>Data Preparation
+                   <li>Labeling
+                   <li>Detection
+                      <ul>
+                         <li>Binary (Yes/No)
+                         <li>Categorical (Multi-class)
+                      </ul>
+                   <li>Models
+                   <li>Training 
+                   <li>Human Review
+                   <li>Re-training
+                </ul>
+               <p></p>
+               <h4>Weather Learning</h4>
+                  <p>Weather samples are labeled or tagged in 5 dimensions:
+                  <ul>
+                     <li>Time of day: Day, Night, Twilight</li>
+                     <li>Weather Condition: Clear, Mostly Clear, Partly Cloud, Cloudy, Overcast</li>
+                     <li>Cloud Type: Cumulus, Cirrus, Stratus... </li>
+                     <li>Precipitation: Raining, Snowing, Sleeting, Hail...</li>
+                     <li>Phenomena: Rainbow, Sunset, Smoke, Tornado...</li>
+                  </ul>
+               <p></p>
+               <h4>Meteor Learning</h4>
+               <p></p>
+               <h4>Non-Meteor Learning</h4>
+               <p></p>
+            </div>
+         </div>
+      """
+
+      #template = self.env.get_template("default.html")
+      #tout = template.render(station_id=self.station_id, sidebar=self.render_side_nav(),DEFAULT_CONTENT=out, active_learning="active")
+      return(out) 
 
    def learning_main_menu(self, in_data=None):
       mout = ""
@@ -137,12 +185,19 @@ class LearningDash(Dashboard):
                 <a class="btn btn-app">
                   <i class="fas fa-plane"></i> Non-Meteor Samples
                 </a>
-
-
          Review and relabel non-meteor learning samples .
       """
+
       mout += self.render_widget("non_meteor_samples", "<a href=?cmd=non_meteor_samples>Non Meteor Learning Samples</a>", html_non_meteor_samples, 12)
 
+      learning_help = """
+                <a class="btn btn-app">
+                  <i class="fas fa-question"></i> Read Me
+                </a>
+               
+      """
+
+      mout += self.render_widget("learning_help", "<a href=?cmd=learning_help>Help & Explaination</a>", learning_help, 12)
 
 
       return(mout)

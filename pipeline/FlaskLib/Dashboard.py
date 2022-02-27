@@ -412,9 +412,9 @@ class Dashboard():
             ai_text += "Meteor : " + str(ai_resp['meteor_yn_confidence'])[0:4] + "<br>"
          if ai_resp["meteor_yn"] is False:
             ai_text += "Non Meteor : " + str(ai_resp['meteor_yn_confidence'])[0:4] + "<br>"
-         if ai_resp["meteor_fireball_yn"] is True:
-            ai_text += "Fireball : " + str(ai_resp['meteor_fireball_yn_confidence'])[0:4] + "<br>"
-         ai_text += "MC: " + ai_resp['mc_class'] + " " + str(ai_resp['mc_confidence'])[0:4] + "<br>"
+         #if ai_resp["meteor_fireball_yn"] is True:
+         ai_text += "Fireball : " + str(ai_resp['meteor_fireball_yn_confidence'])[0:4] + "<br>"
+         ai_text += "MC: " + ai_resp['mc_class'] + " " + str(ai_resp['mc_class_confidence'])[0:4] + "<br>"
       else:
          ai_text = ""
       ai_text += "Dur: " + str(duration)[0:4] + "<br>"

@@ -37,7 +37,11 @@ class MeteorDash(Dashboard):
       opt_confirm_status = [["all", "All"], ["confirmed_meteor", "Human Confirmed Meteor"], ["confirmed_non_meteor", "Human Confirmed Non-Meteor"], ["not_confirmed", "Not Human Confirmed"]]
       opt_red_status = [["all", "All"], ["reduced", "Reduced"], ["not_reduced", "Not Reduced"]]
       opt_items_per_page = [["50", "50"], ["100", "100"], ["250", "250"], ["500", "500"], ["1000", "1000"]]
-      opt_sort_by = [ ["date_desc", "Date (Newest First)"], ["date_asc", "Date (Oldest First)"], ["meteor_conf_desc", "Meteor Confidence (Highest First)"], ["meteor_conf_asc", "Meteor Confidence (Lowest First)"]]
+      opt_sort_by = [ ["date_desc", "Date (Newest First)"], ["date_asc", "Date (Oldest First)"], 
+["meteor_conf_desc", "Meteor Confidence (Highest First)"], ["meteor_conf_asc", "Meteor Confidence (Lowest First)"],
+["fireball_conf_desc", "Fireball Confidence (Highest First)"], ["fireball_conf_asc", "Fireball Confidence (Lowest First)"],
+["mc_conf_desc", "Multi Class Confidence (Highest First)"], ["mc_conf_asc", "Multi Class Confidence (Lowest First)"],
+]
 
       if "view_type" in in_data:
          view_options = self.make_options(opt_view_types, in_data['view_type'])
@@ -207,13 +211,13 @@ class MeteorDash(Dashboard):
       if view_type == "all":
          where += ""
       elif view_type == "ai_meteors":
-         where += where_cl + " meteor_yn = 1 "
+         where += where_cl + " (meteor_yn = 1 or fireball_yn = 1 or mc_class like '%meteor%') and human_confirmed != -1 "
          where_cl = "AND"
       elif view_type == "ai_non_meteors":
-         where += where_cl + " meteor_yn = 0 "
+         where += where_cl + " (meteor_yn = 0 and fireball_yn = 0 and mc_class not like '%meteor%') and human_confirmed != 1 "
          where_cl = "AND"
       elif view_type == "ai_fireballs":
-         where += where_cl + " fireball_yn = 1 "
+         where += where_cl + " (fireball_yn = 1 and mc_class like '%fireball%' and fireball_yn_conf > meteor_yn_conf) and human_confirmed != -1 "
          where_cl = "AND"
       else:
          where += ""
@@ -254,6 +258,26 @@ class MeteorDash(Dashboard):
          sql_order_by = "meteor_yn_conf ASC"
          where += where_cl + " meteor_yn_conf is not NULL and meteor_yn_conf != ''"
          where_cl = " AND "
+      elif sort_by == "fireball_conf_desc":
+         sql_order_by = "fireball_yn_conf DESC"
+         where += where_cl + " fireball_yn_conf is not NULL and fireball_yn_conf != ''"
+         where_cl = " AND "
+      elif sort_by == "fireball_conf_asc":
+         sql_order_by = "fireball_yn_conf ASC"
+         where += where_cl + " fireball_yn_conf is not NULL and fireball_yn_conf != ''"
+         where_cl = " AND "
+      elif sort_by == "mc_conf_desc":
+         sql_order_by = "mc_class_conf DESC"
+         where += where_cl + " mc_class_conf is not NULL and mc_class_conf != ''"
+         where_cl = " AND "
+      elif sort_by == "mc_conf_asc":
+         sql_order_by = "mc_class_conf ASC"
+         where += where_cl + " mc_class_conf is not NULL and mc_class_conf != ''"
+         where_cl = " AND "
+
+
+
+
       else:
          sql_order_by = "root_fn DESC"
      
