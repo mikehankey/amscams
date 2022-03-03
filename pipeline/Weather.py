@@ -1,7 +1,7 @@
 import math
 import cv2
 import glob
-from lib.PipeUtil import cfe, convert_filename_to_date_cam, check_running
+from lib.PipeUtil import cfe, convert_filename_to_date_cam, check_running, load_json_file
 import pickle
 import os
 import datetime
@@ -11,6 +11,11 @@ import sys
 
 
 from Classes.Weather import Weather
+json_conf = load_json_file("../conf/as6.json")
+
+station_id = json_conf['site']['ams_id']
+lat = json_conf['site']['device_lat']
+lon = json_conf['site']['device_lng']
 
 # make sure it is not already running
 running = check_running("Weather.py")
