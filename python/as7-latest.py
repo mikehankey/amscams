@@ -178,6 +178,10 @@ def log_weather(datetime_str):
    os.system("curl " + url)
    fp = open(outfile)
    lc = 0
+   status = ""
+   temp = ""
+   wind = ""
+   wind_speed = ""
    for line in fp:
       line = line.replace("\n", "")
       if lc == 2:
