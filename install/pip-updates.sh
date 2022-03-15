@@ -10,11 +10,9 @@ pip3 install suntime
 pip3 install flask
 pip3 install psutil
 pip3 install uwsgi
-#cartopy
 #pip3 install --upgrade cython numpy pyshp six
 pip3 install shapely --no-binary shapely
 pip3 install geopy
-pip3 install cartopy
 pip3 install pymap3d
 
 # REDIS SETUP

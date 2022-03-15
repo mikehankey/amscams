@@ -13,6 +13,10 @@ except:
    os.system("pip3 install console-menu")
    from consolemenu import *
    from consolemenu.items import *
+try:
+   from tabulate import tabulate
+except:
+   os.system("pip3 install tabulate")
 
 import getpass
 import netifaces as ni
@@ -493,12 +497,129 @@ class AS7Setup():
       print(response.content.decode())
       input()
 
+
    def network_install(self):
-      interfaces = os.listdir("/sys/class/net/") 
+      import psutil
+      temp = psutil.net_if_addrs()
+      wired_interfaces = []
+      wifi_interfaces = []
+      os.system("clear")
+
+      print("Wired interfaces on this PC.")
+      for tt in temp:
+         if "lo" not in tt and "w" not in tt:
+            wired_interfaces.append(tt)
+         if "w" in tt:
+            wifi_interfaces.append(tt)
+
+      c = 1
+      lookup = {}
+      nums = []
+
+      NETPLAN = """
+network:
+  version: 2
+  renderer: NetworkManager
+  ethernets:
+ """
+
+
+      for i in sorted(wired_interfaces):
+         ni.ifaddresses(i)
+         try:
+            ip = ni.ifaddresses(i)[ni.AF_INET][0]['addr']
+         except:
+            ip = None
+         print(c, ") WIRED:", i, ip)
+         lookup[str(c)] = i
+         nums.append(c)
+         c += 1
+
+      options = str(nums)
+      cams_ind = input("Select the wired interface to use with the cameras." + options)
+      cams_interface = lookup[cams_ind]
+
+      for i in sorted(wired_interfaces):
+         if i != cams_interface:
+            NETPLAN += """
+     {:s}:
+        dhcp4: true
+        optional: true
+        """.format(i)
+
+         else:
+            NETPLAN += """
+     {:s}:
+        addresses: [192.168.76.1/24]
+        nameservers:
+           addresses: [8.8.8.8,8.8.4.4]
+        optional: true """.format(cams_interface)
+
+
+      wifi_yn = input("Do you want to setup the wifi interface?")
+      if wifi_yn == "Y" or wifi_yn == "y":
+
+         wifi_ssid = input("Enter wifi SSID: ")
+         wifi_pwd= input("Enter wifi Pass: ")
+         NETPLAN += """
+  wifis:
+     {:s}:
+        dhcp4: yes 
+        access-points:
+           "{:s}":
+              password: "{:s}" """.format(wifi_interfaces[0], wifi_ssid, wifi_pwd)
+
+
+      print("NETPLAN FILE WILL BE:")
+      print(NETPLAN)
+      
+      confirm2 = input("Apply changes to netplan config files? " + self.NETPLAN_FILE + " (Y/N)")
+      if confirm2 == "Y" or confirm2 == "y":
+         netout = open(self.NETPLAN_FILE,"w")
+         netout.write(NETPLAN)
+         netout.close()
+         os.system("netplan apply")
+      else:
+         print("The netplan file was NOT saved.")
+
+      Screen().input("We are done. [ENTER] to continue.")
+
+    
+
+
+      for i in sorted(wifi_interfaces):
+         ni.ifaddresses(i)
+         try:
+            ip = ni.ifaddresses(i)[ni.AF_INET][0]['addr']
+         except:
+            ip = None
+         #print(c, "WIFI", i, ip)
+         #c += 1
+      exit()
+
+   def network_install_old(self):
+      import psutil
+      temp = psutil.net_if_addrs()
+      interfaces = []
+      alts = {}
+      for i in temp:
+         interfaces.append(i)
+         if "wlo" in i:
+            print("WLO FOUND!")
+            os.system("ip a |grep altname > tmp.txt")
+            fp = open("tmp.txt")
+            for line in fp:
+               alt = line.replace("altname", "")
+               alt = alt.replace(" ", "")
+               alt = alt.replace("\n", "")
+               alts[i] = alt
+
+      #print(interfaces)
+      #interfaces = os.listdir("/sys/class/net/") 
       ints = []
       for i in interfaces:
+         print(i)
          if i != "lo" and ("eth" in i or "en" in i or "wl" in i) :
-            print(i)
             ni.ifaddresses(i)
             try:
                ip = ni.ifaddresses(i)[ni.AF_INET][0]['addr']
@@ -514,10 +635,15 @@ class AS7Setup():
             if "w" in i :
                ntype = "WIFI"
                wifi_interface = i
+               if i in alts:
+                  wifi_interface = alts[i]
+
             ints.append((i, ip,ntype))
       c = 1
       for row in ints:
          (interface, ip, ntype) = row
+         if "wlo" in interface :
+            interface = alts[interface]
          print(str(c) + ")", interface, ip, ntype)
          c += 1
       net_i= input("Select the interface to use for the internet. (It should have an IP address already that matches your network.)")
@@ -531,15 +657,20 @@ class AS7Setup():
 
       if "w" in network_interface:
          print("You selected a wifi interface to connect to the internet.")
-         net_i = input("First, select the WIRED ethernet interface that will not be used.")
+         net_i = input("Select the WIRED ethernet interface that will not be used: ")
          network_interface = ints[int(net_i)-1][0]
-         wifi_ssid = input("Enter the WIFI SSID")
-         wifi_pass = input("Enter the WIFI Password")
+
+         if "wlo" in network_interface :
+            network_interface = alts[network_interface]
+
+         wifi_ssid = input("Enter the WIFI SSID: ")
+         wifi_pass = input("Enter the WIFI Password: ")
          wifi = "Yes"
 
 
 
       if wifi == "Yes":
+         print("WIFI INTERFACE IS:", wifi_interface)
          self.NETPLAN_WIFI = self.NETPLAN_WIFI.replace("INT_WIFI", wifi_interface)
          self.NETPLAN_WIFI = self.NETPLAN_WIFI.replace("WIFI_SSID", wifi_ssid)
          self.NETPLAN_WIFI = self.NETPLAN_WIFI.replace("WIFI_PASS", wifi_pass)
