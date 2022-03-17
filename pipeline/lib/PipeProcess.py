@@ -90,8 +90,13 @@ def check_sync_cal_ai_db(json_conf):
    #exit()
          
 def gitpull(json_conf):
+   print("TEMP GIT CHECKOUT...")
+   os.system("git checkout /home/ams/amscams/install/astrometry-install.sh")
    print("git pull > /home/ams/lastpull.txt")
    os.system("git pull > /home/ams/lastpull.txt")
+
+
+
    print("update flask.")
    os.system("cd /home/ams/amscams/install; ./update-flask-assets.sh ")
    return()
