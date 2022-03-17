@@ -91,7 +91,7 @@ def check_sync_cal_ai_db(json_conf):
          
 def gitpull(json_conf):
    print("TEMP GIT CHECKOUT...")
-   os.system("git checkout /home/ams/amscams/install/astrometry-install.sh")
+   os.system("cd /home/ams/amscams/install; git checkout astrometry-install.sh")
    print("git pull > /home/ams/lastpull.txt")
    os.system("git pull > /home/ams/lastpull.txt")
 
