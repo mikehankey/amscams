@@ -35,9 +35,15 @@ for year in years :
             sday = str(day)
          all_days.append((year + "_" +  smon + "_" + sday))
 
-for day in sorted(all_days,reverse=True)[0:30]:
+for day in sorted(all_days,reverse=True)[0:27]:
    #cmd = "./updateEventDay.py " + day #+ ">ev_run_log.txt 2>&1 "
    cmd =  "python3 AllSkyNetwork.py day_load_sql " + day
+   print(cmd)
+   os.system(cmd)
+   cmd =  "python3 AllSkyNetwork.py day_load_sql " + day
+   print(cmd)
+   os.system(cmd)
+   cmd =  "python3 AllSkyNetwork.py resolve_failed_day " + day
    print(cmd)
    os.system(cmd)
 
