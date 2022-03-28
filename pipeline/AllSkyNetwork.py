@@ -16,6 +16,10 @@ if len(sys.argv) < 1:
    ASN.help()
    exit()
 
+if cmd == "help":
+   print("CMD:", cmd)
+   ASN.help()
+
 if cmd == "resolve_failed_day":
    ASN.help()
    event_day = sys.argv[2].replace("_", "")

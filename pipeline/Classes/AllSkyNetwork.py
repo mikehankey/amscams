@@ -6,6 +6,7 @@ import numpy as np
 import datetime
 import simplejson as json
 import os
+import platform
 from lib.PipeUtil import load_json_file, save_json_file, get_trim_num, convert_filename_to_date_cam, starttime_from_file, dist_between_two_points, get_file_info
 from lib.intersecting_planes import intersecting_planes
 from DynaDB import search_events, insert_meteor_event
@@ -19,9 +20,16 @@ from sklearn.preprocessing import StandardScaler
 class AllSkyNetwork():
    def __init__(self):
       self.solving_node = "AWSB1"
-      self.home_dir = "/home/ubuntu"
-      self.amscams_dir = "/home/ubuntu/amscams"
-      self.db_dir = "/home/ubuntu/amscams/pipeline"
+      self.errors = []
+      self.user =  os.environ.get("USERNAME")
+      if self.user is None:
+         self.user =  os.environ.get("USER")
+      self.platform = platform.system()
+
+      self.home_dir = "/home/" + self.user + "/" 
+      self.amscams_dir = self.home_dir + "amscams/"
+      self.db_dir = self.amscams_dir + "pipeline"
+
       self.local_event_dir = "/mnt/ams2/EVENTS"
       self.cloud_event_dir = "/mnt/archive.allsky.tv/EVENTS"
       self.s3_event_dir = "/mnt/allsky-s3/EVENTS"
@@ -1331,13 +1339,14 @@ class AllSkyNetwork():
       if os.path.exists(self.s3_evdir) is True:
          s3_files = os.listdir(self.s3_evdir)
       else:
-         local_files = []
+         s3_files = []
 
 
       if os.path.exists(self.cloud_evdir) is True:
          cloud_files = os.listdir(self.cloud_evdir)
       else:
          cloud_files = []
+
       print(self.allsky_console)
       print("Date                   :   ", self.date)
       print("Local Files            :   ", len(local_files))
@@ -1409,7 +1418,11 @@ class AllSkyNetwork():
          else:
             reported_obs = 0
          #print(data['station_id'], data['operator_name'], data['city'], data['country'], data['op_status'], reported_obs, total_events)
-         day_report['station_summary'].append((data['station_id'], data['operator_name'], data['city'], data['country'], data['op_status'], reported_obs, total_events))
+         print(data)
+         if "op_status" not in data:
+            self.errors.append(("STATION_MISSING_STATUS", data['station_id']))
+         else:
+            day_report['station_summary'].append((data['station_id'], data['operator_name'], data['city'], data['country'], data['op_status'], reported_obs, total_events))
       report_file = self.local_evdir + date + "_day_report.json" 
       save_json_file(report_file, day_report)
       print("\n\nsaved:", report_file)
