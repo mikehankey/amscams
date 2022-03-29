@@ -45,7 +45,6 @@ class AllSkyNetwork():
       self.API_URL = "https://kyvegys798.execute-api.us-east-1.amazonaws.com/api/allskyapi"
       self.dynamodb = boto3.resource('dynamodb')
 
-
       self.help()
 
    def sync_dyna_day(self, date):
@@ -69,8 +68,6 @@ class AllSkyNetwork():
             #print(event_id, "not in dynadb")
             #print(event_data)
             insert_meteor_event(self.dynamodb, event_id, event_data)
-
-
 
    def load_stations_file(self):
       self.stations = load_json_file(self.local_event_dir + "/ALL_STATIONS.json")
@@ -112,6 +109,7 @@ class AllSkyNetwork():
    def day_coin_events(self,date,force=0):
 
       self.plane_file = self.local_evdir + "/" + date + "_PLANE_PAIRS.json"
+      self.min_events_file = self.local_evdir + "/" + date + "_MIN_EVENTS.json"
       if os.path.exists(self.plane_file) is True:
          self.plane_pairs = load_json_file(self.plane_file)
       else:
@@ -147,125 +145,74 @@ class AllSkyNetwork():
       ecp = 0
       ecf = 0
 
-
+      all_min_events = {}
       for minute in ocounts:
-         if minute != "2022_03_26_02_55":
-            continue
+         #if minute != "2022_03_26_02_55":
+         #   continue
          if ocounts[minute]['count'] > 1:
             odata = self.get_station_obs_count(minute)
             print("trying " + str(minute) + "...", len(odata), "stations this minute")
-            if len(odata) > 30:
-               min_obs = self.get_obs (minute)
-               good_events, bad_events = self.min_obs_to_events(min_obs)
-               print("MINUTE OBS:", minute, len(min_obs), len(good_events), len(bad_events))
-               for gd in good_events:
-                  print("   GOOD:", gd)
-               for bd in bad_events:
-                  print("   BAD:", bd)
+
+            min_obs = self.get_obs (minute)
+            min_events = self.min_obs_to_events(min_obs)
+            all_min_events[minute] = min_events
+            print("MINUTE OBS:", minute, len(min_obs), len(min_events.keys()))
+
+
+
+
+      save_json_file(self.plane_file, self.plane_pairs)
+      save_json_file(self.min_events_file, all_min_events)
+
+      c = 0
+      for minute in all_min_events:
+         for event_id in all_min_events[minute]:
+            event = all_min_events[minute][event_id]
+            print(c, "FINAL EVENTS:", event)
+            score_data = self.score_obs(event['plane_pairs'])
+            for score, key in score_data[0:100]:
+               ob1, ob2 = key.split("__")
+               gd = ["GOOD", key, ob1, ob2, event['stime'], "", "", ""]
+               if len(list(set(event['stations']))) > 1:
+                  self.insert_event(event)
+               print("Skip single station events.")
+            #print(c, "Good planes:", gd[2], gd[3],result[0])
+            c += 1
+            
       exit()
 
 
-      for minute in ocounts:
-         if ocounts[minute]['count'] > 1:
-            odata = self.get_station_obs_count(minute)
-            if len(odata) > 1:
-               min_obs = self.get_obs (minute)
-               good_events, bad_events = self.min_obs_to_events(min_obs)
+   def insert_event(self, event):
 
-               if len(good_events) > 0:
-                  for gd in good_events:
-                     # solve the pair? 
-                     solved = 0
-                     sanity = 5
-                     print("GD IS :", gd)
-                     result = self.plane_solve(gd)
-                     if len(result) ==2 :
-                        sanity = result[1]
-                        if sanity <= 1:
-                           solved = 1
-                     if solved == 1:
-                        #print(ec, minute, odata)
-                        print(ecp, "/", ecf, "plane solved:", solved, sanity, gd )
-                        ecp += 1
-                        self.good_planes.append((gd,result))
-                     else:
-                        print(ecp, "/", ecf, "plane failed:", solved, sanity, gd )
-                        ecf += 1
-                        self.bad_planes.append((gd,result))
-      c = 1
+      event_id = event['stime'].replace("-", "")
+      event_id = event_id.replace(":", "")
+      event_id = event_id.replace(" ", "_")
+      if "." in event_id:
+         event_id = event_id.split(".")[0]
+      event['event_id'] = event_id
 
-      save_json_file(self.plane_file, self.plane_pairs)
+      print("EVENT:", event)
+      event_minute = event['stime'].replace("-", "_")[0:15]
+      event_minute = event_minute.replace(":", "_")
+      event_minute = event_minute.replace(" ", "_")
+      event['event_day'] = event_minute[0:10] 
 
-      for gd,result in self.bad_planes:
-         print(c, "Bad planes:", gd )
-         c += 1
-      c = 1
-      for gd,result in self.good_planes:
-         print(c, "Good planes:", gd[2], gd[3],result[0])
-         self.get_or_make_event(gd, result[0])
-         c += 1
-
-   def get_or_make_event(self,gd, planes):
-      (status, pair, obs1_id, obs2_id, station_dist, obs1_datetime, obs2_datetime, time_diff) = gd
-
-      st1 = obs1_id.split("_")[0] 
-      st2 = obs2_id.split("_")[0] 
-
-      lat1 = float(self.station_dict[st1]['lat'])
-      lon1 = float(self.station_dict[st1]['lon'])
-      alt1 = float(self.station_dict[st1]['alt'])
-      lat2 = float(self.station_dict[st2]['lat'])
-      lon2 = float(self.station_dict[st2]['lon'])
-      alt2 = float(self.station_dict[st2]['alt'])
-
-      event_min = obs1_id.replace(st1 + "_", "")[0:16]
-      
-      event_start_dt = self.avg_datetime([obs1_datetime, obs2_datetime])
-      event_start_str = event_start_dt.strftime('%Y_%m_%d_%H_%M_%S.%f')[:-3]
-      event_id = event_start_dt.strftime('%Y%m%d_%H%M%S')
-      sdt1 = obs1_datetime.strftime('%Y_%m_%d_%H_%M_%S.%f')[:-3]
-      sdt2 = obs2_datetime.strftime('%Y_%m_%d_%H_%M_%S.%f')[:-3]
-
-      ivals = [event_id , event_min, 1, json.dumps([st1,st2]), json.dumps([obs1_id, obs2_id]), event_start_str, json.dumps([sdt1, sdt2]), json.dumps([lat1,lat2]), json.dumps([lon1,lon2]), 'NEW', '', 0] 
-      
-
-
-      # select all of the events where the minute file is the same
-      # then for each one if the distance from this pair is within range add the event
-      # if no event is found then create a new one
-      # re-avg the lat/lon after each update
-      table = """
-       CREATE TABLE IF NOT EXISTS "events" (
-        "event_id"      TEXT,
-        "event_minute"      TEXT,
-        "revision"      INTEGER,
-        "stations"      TEXT,
-        "event_start_times"      TEXT,
-        "obs_ids"  TEXT,
-        "lats"  TEXT,
-        "lons"  TEXT,
-        "event_status"  TEXT,
-        "run_date"      TEXT,
-        "run_times"     INTEGER,
-        PRIMARY KEY("event_id","revision")
-        );
-       """
-
+      print("EVENT ID:", event_id)
+      print("EVENT MIN:", event_minute)
       sql = """
           SELECT event_id, event_minute, revision, stations, obs_ids, event_start_time, event_start_times,  
                  lats, lons, event_status, run_date, run_times
             FROM events 
-            WHERE event_minute like ?
-            OR event_id = ?
+            WHERE event_id = ?
       """
 
-      svals = [event_min + "%", event_id]
+      svals = [event_id]
       self.cur.execute(sql, svals)
       rows = self.cur.fetchall()
 
       
       if len(rows) == 0:
-         print("No events matching this minute exist!", event_min)
+         print("No events matching this minute exist!", event_minute)
          # make a new event!
          sql = """
             INSERT INTO events (event_id, event_minute, revision, 
@@ -273,6 +220,13 @@ class AllSkyNetwork():
                         lats, lons, event_status, run_date, run_times)
                  VALUES (?,?,?,?,?,?,?,?,?,?,?,?)
          """
+         revision = 1
+         run_times = 1
+         run_date = datetime.datetime.now().strftime("%Y_%m_%d")
+
+         ivals = [event_id, event_minute, revision, \
+                        json.dumps(event['stations']), json.dumps(event['files']), event['stime'], json.dumps(event['start_datetime']),  \
+                        json.dumps(event['lats']), json.dumps(event['lons']), "PENDING", run_date, run_times]
          print("ADD NEW EVENT!", event_id, len(ivals))
          self.cur.execute(sql, ivals)
          self.con.commit()
@@ -281,11 +235,10 @@ class AllSkyNetwork():
 
       else:
          updated_existing = False
-         for row in rows:
-
+         if True:
             #(status, pair, obs1_id, obs2_id, station_dist, obs1_datetime, obs2_datetime, time_diff) = gd
             (event_id, event_minute, revision, stations, obs_ids, event_start_time, event_start_times, \
-                 lats, lons, event_status, run_date, run_times) = row
+                 lats, lons, event_status, run_date, run_times) = rows[0]
 
 
 
@@ -295,51 +248,9 @@ class AllSkyNetwork():
             lats = json.loads(lats)
             lons = json.loads(lons)
 
-            dist_to_avg = dist_between_two_points(np.mean(lats),np.mean(lons), lat1, lon1)
-            if dist_to_avg > 300:
-               print("TOO FAR!")
-               continue
-            dist_to_avg = dist_between_two_points(np.mean(lats),np.mean(lons), lat2, lon2)
-            if dist_to_avg > 300:
-               print("TOO FAR!")
-               continue
-
-            # FIRST CHECK IF THE FOUND ROW IS WITHIN THE DISTANCE AND TIME FRAME OF THE CURRENT PAIR!
-            # IF NOT CONTINUE AND THEN WE WILL INSERT A NEW ONE
-
-
-
-            print("EVENT FOUND! UPDATE EXISTING EVENT:", event_id)
-            # check if obs1 or obs2 is already in the event. If it is do nothing, 
-            # otherwise add it to the arrays 
-            if obs1_id not in obs_ids:
-               print("ADD NEW OBS1 DATA FOR UPDATE")
-               print("EXISTING:", obs_ids)
-               print("NEW:", obs1_id)
-               obs_ids.append(obs1_id)
-               event_start_times.append(sdt1)
-               stations.append(st1)
-               lats.append(lat1)
-               lons.append(lon1)
-               ivals = [event_minute, revision, json.dumps(stations), json.dumps(obs_ids), json.dumps(event_start_times), \
+            ivals = [event_minute, revision, json.dumps(stations), json.dumps(obs_ids), json.dumps(event_start_times), \
                  json.dumps(lats), json.dumps(lons), event_status, run_date, run_times, event_id]
-               self.update_event(ivals) 
-            else:
-               print("OBS1 ALREADY TAGGED TO THIS EVENT")
-            if obs2_id not in obs_ids:
-               print("ADD NEW OBS2 DATA FOR UPDATE" )
-               print("EXISTING:", obs_ids)
-               print("NEW:", obs2_id)
-               obs_ids.append(obs2_id)
-               stations.append(st2)
-               event_start_times.append(sdt2)
-               lats.append(lat2)
-               lons.append(lon2)
-               ivals = [event_minute, revision, json.dumps(stations), json.dumps(obs_ids), json.dumps(event_start_times), \
-                 json.dumps(lats), json.dumps(lons), event_status, run_date, run_times, event_id]
-               self.update_event(ivals) 
-            else:
-               print("OBS2 ALREADY TAGGED TO THIS EVENT")
+            #self.update_event(ivals) 
 
       print("DONE")
 
@@ -380,8 +291,10 @@ class AllSkyNetwork():
 
       #plane test all events in this minute
       pc = 0
-      plane_pairs = {}
+      print("Plane testing...")
       for me in min_events:
+         print("EVENT:", me)
+         min_events[me]['plane_pairs'] = {}
          for i in range(0, len(min_events[me]['stations'])):
             st_1 = min_events[me]['stations'][i]
             obs_file_1 = min_events[me]['files'][i]
@@ -393,7 +306,7 @@ class AllSkyNetwork():
 
                obs_file_2 = min_events[me]['files'][j]
                key = "__".join(sorted([obs_file_1, obs_file_2]))
-               if key not in plane_pairs:
+               if key not in  min_events[me]['plane_pairs'] :
                   gd = ["GOOD", key, obs_file_1, obs_file_2]
                   result = self.plane_solve(gd)
                   if len(result) == 2:
@@ -401,13 +314,14 @@ class AllSkyNetwork():
                   else:
                      res = {}
                      sanity = 0
-                  print(pc, obs_file_1, obs_file_2 )
-                  print(res, sanity)
-                  plane_pairs[key] = [res, sanity]
+                  #print(pc, obs_file_1, obs_file_2 )
+                  #print(res, sanity)
+                  min_events[me]['plane_pairs'][key] = [res, sanity]
                   pc += 1
+               print("\r" + str(pc) , end="")
 
-
-
+      save_json_file("min_events.json", min_events)
+      return(min_events)
 
       #good.append(("(GOOD)", key, obs_id_1, obs_id_2, station_dists[key]['min_dist'], start_time_1, start_time_2, time_diff))
 
@@ -555,66 +469,6 @@ class AllSkyNetwork():
        );
       """
 
-   def dbscan_cluster(self, X):
-      db = DBSCAN(eps=3, min_samples=5).fit(X)
-      core_samples_mask = np.zeros_like(db.labels_, dtype=bool)
-      core_samples_mask[db.core_sample_indices_] = True
-      labels = db.labels_
-
-      # Number of clusters in labels, ignoring noise if present.
-      n_clusters_ = len(set(labels)) - (1 if -1 in labels else 0)
-      n_noise_ = list(labels).count(-1)
-
-      print("Estimated number of clusters: %d" % n_clusters_)
-      print("Estimated number of noise points: %d" % n_noise_)
-      #print("Homogeneity: %0.3f" % metrics.homogeneity_score(labels_true, labels))
-      #print("Completeness: %0.3f" % metrics.completeness_score(labels_true, labels))
-      #print("V-measure: %0.3f" % metrics.v_measure_score(labels_true, labels))
-      #print("Adjusted Rand Index: %0.3f" % metrics.adjusted_rand_score(labels_true, labels))
-      #print(
-      #    "Adjusted Mutual Information: %0.3f"
-      #    % metrics.adjusted_mutual_info_score(labels_true, labels)
-      #)
-      # print("Silhouette Coefficient: %0.3f" % metrics.silhouette_score(X, labels))
-
-      # #############################################################################
-      # Plot result
-      import matplotlib.pyplot as plt
-
-      # Black removed and is used for noise instead.
-      unique_labels = set(labels)
-      colors = [plt.cm.Spectral(each) for each in np.linspace(0, 1, len(unique_labels))]
-      for k, col in zip(unique_labels, colors):
-          if k == -1:
-              # Black used for noise.
-              col = [0, 0, 0, 1]
-
-          class_member_mask = labels == k
-
-          xy = X[class_member_mask & core_samples_mask]
-          plt.plot(
-              xy[:, 0],
-              xy[:, 1],
-              "o",
-              markerfacecolor=tuple(col),
-              markeredgecolor="k",
-              markersize=14,
-          )
-
-          xy = X[class_member_mask & ~core_samples_mask]
-          plt.plot(
-              xy[:, 0],
-              xy[:, 1],
-              "o",
-              markerfacecolor=tuple(col),
-              markeredgecolor="k",
-              markersize=6,
-          )
-
-      plt.title("Estimated number of clusters: %d" % n_clusters_)
-      plt.savefig("dbscan.png")
-
-   
 
    def average_times(self, times):
       tt = []
@@ -743,13 +597,19 @@ class AllSkyNetwork():
 
 
       print("MIN EVENTS:")
-      min_events = self.plane_test_min_events(min_events)
+      min_events_new = self.plane_test_min_events(min_events)
+
+      for me in min_events:
+         print("MIN EVENT:", me)
+         print(" Stations:", len(min_events[me]['stations']))
+         print("   Planes:", len(min_events[me]['plane_pairs']))
+         print("      Obs:", len(min_events[me]['files']))
 
       # good.append(("(GOOD)", key, obs_id_1, obs_id_2, station_dists[key]['min_dist'], start_time_1, start_time_2, time_diff))
 
+      return(min_events)
 
       exit()
-
       for mo_1 in min_obs:
                  
          station_id_1 = mo_1[0]
@@ -1042,6 +902,7 @@ class AllSkyNetwork():
                temp_obs[st_id] = {}
             if vid not in temp_obs[st_id]:
                #try:
+               print("STATION ID:", st_id)
                self.obs_dict[dict_key]['loc'] = [float(self.station_dict[st_id]['lat']), float(self.station_dict[st_id]['lon']), float(self.station_dict[st_id]['alt'])]
                temp_obs = convert_dy_obs(self.obs_dict[dict_key], temp_obs)
                #except:
@@ -1135,6 +996,7 @@ class AllSkyNetwork():
       # is the event in the sql db ?
       # is the event in the dynamodb ?
       # are there duplicates of this event on the local file system, s3f3, in sql or in dyanomdb
+
       event_data = {}
       event_day = self.event_id_to_date(event_id)
       y,m,d = event_day.split("_")
@@ -1150,6 +1012,7 @@ class AllSkyNetwork():
 
       self.s3_dir_exists = os.path.exists(self.s3_event_id_dir)
       self.local_dir_exists = os.path.exists(self.local_event_id_dir)
+      self.cloud_dir_exists = os.path.exists(self.cloud_event_id_dir)
 
       if self.s3_dir_exists is True:
          self.s3_files = os.listdir(self.s3_event_id_dir)
@@ -1162,10 +1025,9 @@ class AllSkyNetwork():
          self.local_files = []
 
       if self.cloud_dir_exists is True:
-         self.cloud_files = os.listdir(self.local_event_id_dir)
+         self.cloud_files = os.listdir(self.cloud_event_id_dir)
       else:
          self.cloud_files = []
-
 
       if "failed" in self.local_files or "failed" in self.s3_files:
          self.event_status = "FAILED"
@@ -1176,7 +1038,8 @@ class AllSkyNetwork():
 
       if len(self.s3_files) == len(self.local_files) or len(self.s3_files) > len(self.local_files):
          self.event_archived = True
-
+      else:
+         self.event_archived = False
 
       if os.path.exists(self.local_event_id_dir + event_id + "-fail.json") is True:
          self.event_fail_json = load_json_file(self.local_event_id_dir + event_id + "-fail.json")
@@ -1199,7 +1062,6 @@ class AllSkyNetwork():
          self.good_obs_json = load_json_file(self.s3_event_id_dir + event_id + "_GOOD_OBS.json")
       else:
          self.good_obs_json = None 
-
              
       print("Dirs :", self.local_event_id_dir, self.s3_event_id_dir)
       print("Local:", self.local_dir_exists, len(self.local_files))
@@ -1219,8 +1081,12 @@ class AllSkyNetwork():
       #   print(i, sql_data[i])
 
       dyna_data = self.get_dyna_event(event_id)
-      print("Dynamodb:", dyna_data)
-
+      if dyna_data is None:
+         return(None)
+      elif "solve_status" in dyna_data:
+         return(dyna_data['solve_status'])
+      else:
+         return(None)
 
    def good_obs_to_event(self, date, event_id):
       event = {}
@@ -1255,13 +1121,14 @@ class AllSkyNetwork():
       
 
       return(event)
-   
               
    def solve_event(self,event_id, temp_obs, time_sync, force):
 
-      check_event_status(self, event_id)
+      event_status = self.check_event_status(event_id)
       print("CURRENT STATUS FOR EVENT.", self.event_status)
-      exit()
+      if (event_status is "SOLVED" or event_status is "FAILED") and force != 1:
+         print("Already done this.")
+         return() 
 
       # flag2 is force?
       #self.check_event_status(event_id)
@@ -1300,7 +1167,17 @@ class AllSkyNetwork():
          status = "PENDING"
 
       if status == "SOLVED" and new_run is True:
+         event_data = load_json_file(pass_file) 
+         if "event_day" not in event_data:
+            event_day = self.event_id_to_date(event_id)
+            event_data['event_day'] = event_day
+         print(event_data)
 
+         temp = self.good_obs_to_event(event_day, event_id)
+         for key in temp:
+            event_data[key] = temp[key]
+
+         insert_meteor_event(self.dynamodb, event_id, event_data)
          cmd = "./plotTraj.py " + event_id
          print(cmd)
          os.system(cmd)
@@ -1321,6 +1198,8 @@ class AllSkyNetwork():
       uvals = [status, now_dt, event_id]
       self.cur.execute(sql,uvals)
       self.con.commit()
+
+
 
    def event_status_day(self, date=None):
       print("Event status day!")
@@ -1489,3 +1368,108 @@ Supported functions :
 
 status [date]   -    Show network status report for that day.
       """
+   def score_obs(self, planes):
+
+      #min_data = load_json_file(min_file)
+      #planes = min_data["1"]['plane_pairs']
+
+      print(len(planes.keys()), "plane pairs")
+      start_points = []
+      end_points = []
+      for key in planes:
+         result, score = planes[key]
+         if len(result) >= 2:
+            end = result[0]
+            start = result[-1]
+            print(key, start, end)
+            start_points.append(start)
+            end_points.append(end)
+
+      start_lats = [row[0] for row in start_points]
+      start_lons = [row[1] for row in start_points]
+      end_lats = [row[0] for row in end_points]
+      end_lons = [row[1] for row in end_points]
+
+      med_start_lat = np.median(start_lats)
+      med_start_lon = np.median(start_lons)
+      med_end_lat = np.median(end_lats)
+      med_end_lon = np.median(end_lons)
+
+      med_lat = (med_start_lat + med_end_lat) / 2
+      med_lon = (med_start_lon + med_end_lon) / 2
+
+      # NOW FILTER THE LIST OF POINTS TO MEDIAN STD
+      best_start_points = []
+      best_end_points = []
+      score_data = []
+      for key in planes:
+         result, score = planes[key]
+         if len(result) >= 2:
+            end = result[0]
+            start = result[-1]
+            print(key, start, end)
+            start_lat_diff = abs(med_start_lat - start[0])
+            start_lon_diff = abs(med_start_lon - start[1])
+            end_lat_diff = abs(med_end_lat - start[0])
+            end_lon_diff = abs(med_end_lon - start[1])
+            score = start_lat_diff + start_lon_diff + end_lat_diff + end_lon_diff
+            score_data.append((score, key))
+            print("START DIFF:", start_lat_diff, start_lon_diff, end_lat_diff, end_lon_diff)
+            start_points.append(start)
+            end_points.append(end)
+
+      score_data = sorted(score_data, key=lambda x: x[0])
+      return(score_data)
+
+      # No longer used below here
+
+      scores = [row[0] for row in score_data]
+      med_score = np.median(scores)
+      std_score = np.std(scores)
+
+      good_stations = {}
+      good_obs = {}
+      if len(score_data) > 100:
+         top_5_percent = int(len(score_data) * .05)
+         ic = 1
+         for row in score_data[0:top_5_percent]:
+            ob1,ob2 = row[1].split("__")
+            st1 = ob1.split("_")[0]
+            st2 = ob2.split("_")[0]
+            if ob1 not in good_obs:
+               good_obs[ob1] = 0
+            if ob2 not in good_obs:
+               good_obs[ob2] = 0
+            if st1 not in good_stations:
+               good_stations[st1] = 0
+            if st2 not in good_stations:
+               good_stations[st2] = 0
+            good_stations[st1] += 1
+            good_stations[st2] += 1
+            good_obs[ob1] += 1
+            good_obs[ob2] += 1
+            print(ic, row)
+            ic += 1
+
+
+      for row in score_data[0:top_5_percent]:
+         key = row[1]
+         result, score = planes[key]
+         if len(result) >= 2:
+            end = result[0]
+            start = result[-1]
+            print(key, start, end)
+            best_start_points.append(start)
+            best_end_points.append(end)
+
+      start_lats = [row[0] for row in best_start_points]
+      start_lons = [row[1] for row in best_start_points]
+
+      end_lats = [row[0] for row in best_end_points]
+      end_lons = [row[1] for row in best_end_points]
+
+      print("START LAT: ", start_lats)
+      print("START LON: ", start_lons)
+      print("END LAT: ", end_lats)
+      print("END LON: ", end_lons)
+      return(score_data)

@@ -32,12 +32,22 @@ if cmd == "resolve_event":
    ASN.resolve_event(sys.argv[2])
 
 
+if cmd == "day_solve":
+   event_day = sys.argv[2]
+   ASN.help()
+   ASN.set_dates(event_day)
+   force = 0
+   ASN.day_solve(event_day,force)
+   print("Done solve")
+
+
 if cmd == "coin_events":
    event_day = sys.argv[2]
    ASN.help()
    ASN.set_dates(event_day)
    force = 0
    ASN.day_coin_events(event_day,force)
+
 
 if cmd == "day_load_solve_results":
    ASN.help()
@@ -55,7 +65,8 @@ if cmd == "day_load_sql":
    if date == "yest":
       date = yest 
 
-   os.system("./DynaDB.py udc " + date)
+   # don't load every time, this call takes a while!
+   #os.system("./DynaDB.py udc " + date)
 
    ASN.day_load_sql(date, force)
    print("Done load")

@@ -345,6 +345,8 @@ class EventRunner():
          else:
             print("BAD PP STATUS:", event['planes'][combo_key][0])
       self.plane_kml_file = self.event_dir + "/" + event['event_id'] + "/" + event['event_id'] + "-planes.kml"
+      if os.path.exists(self.event_dir + "/" + event['event_id']) is False:
+         os.makedirs(self.event_dir + "/" + event['event_id'])
       kml.save(self.plane_kml_file)
       print(self.plane_kml_file)
       print("SAVED:", self.plane_kml_file)
@@ -361,6 +363,12 @@ class EventRunner():
       else:
          custom_obs = None
       print("CUSTOM OBS:", custom_obs)
+      if os.path.exists(self.coin_events_file) is False:
+         cl_file = self.coin_events_file.replace("ams2/", "archive.allsky.tv/")
+         if os.path.exists(cl_file) is True:
+            os.system("cp " + cl_file + " " + self.coin_events_file)
+            
+      
       self.coin_events = load_json_file(self.coin_events_file) 
       event = self.coin_events[event_id]
       good_planes = {}
@@ -508,7 +516,7 @@ class EventRunner():
             print("GOOD OBS:", st, vid)
 
       save_json_file(obs_file, good_obs)
-      WMPL_solve(event_id, good_obs, 1, 1)
+      WMPL_solve(event_id, good_obs, 0, 1)
 
 
    def qc_obs_points(self, obs):
@@ -1931,6 +1939,46 @@ class EventRunner():
             return("plane_solved", line1, line2)
          else:
             return("plane_invalid", line1, line2)
+
+   def plane_test_fast(self, obs1, obs2):
+      from intersecting_planes import intersecting_planes
+      obs1_key = obs1['obs_id']
+      obs2_key = obs2['obs_id']
+      st1 = obs1['station_id']
+      st2 = obs2['station_id']
+      sdv1 = obs1['sd_video_file']
+      sdv2 = obs2['sd_video_file']
+      lat1 = self.station_loc[st1][0]
+      lon1 = self.station_loc[st1][1]
+      lat2 = self.station_loc[st2][0]
+      lon2 = self.station_loc[st2][1]
+      mfd1 = self.obs_dict[obs1_key]['meteor_frame_data']
+      mfd2 = self.obs_dict[obs2_key]['meteor_frame_data']
+      if len(mfd1) > 1:
+         az1s = mfd1[0][9]
+         el1s = mfd1[0][10]
+         az1e = mfd1[-1][9]
+         el1e = mfd1[-1][10]
+      else:
+         return("obs1 missing_mfd_data", [0,0,0,0,0,0], [0,0,0,0,0,0])
+         return(None)
+
+      if len(mfd2) > 1:
+         az2s = mfd2[0][9]
+         el2s = mfd2[0][10]
+         az2e = mfd2[-1][9]
+         el2e = mfd2[-1][10]
+      else:
+         return("obs2 missing_mfd_data", [0,0,0,0,0,0], [0,0,0,0,0,0])
+
+      if (az1s == 0 and el1s == 0) or (az2s == 0 or el2s == 0):
+         return("missing_mfd_data", [0,0,0,0,0,0], [0,0,0,0,0,0])
+      ob1 = (lat1, lon1, alt1, az1s, el1s, az1e,el1e) 
+      ob1 = (lat2, lon2, alt2, az2s, el2s, az2e,el2e) 
+      ip_line1 = intersecting_planes(ob1,ob2)
+      ip_line2 = intersecting_planes(ob2,ob1)
+
+      return("plane_solved", line1, line2)
 
    def plane_test(self, obs1, obs2):
       #st1, sdv1 = obs1.split(":")
