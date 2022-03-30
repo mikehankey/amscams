@@ -2130,6 +2130,7 @@ class EventRunner():
       print(html_row)
       html += html_row
       html += "</tbody></table>"
+
       fp = open("/mnt/ams2/EVENTS/METEOR_OBS_STATS.html", "w")
       fp.write(html)
       fp.close()
