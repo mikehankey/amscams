@@ -41,12 +41,23 @@ class Filters():
          if whour not in self.weather_hours:
             self.weather_hours[whour] = weather
       save_json_file(wd + day + ".weather", self.weather_hours)
+   
+   
+   def check_ai_day(self, day):
+      if "ml" in self.json_conf:
+         print("ML EXISTS")
+         os.system("python3.6 MeteorScan.py " + day)
+         exit()
+      else:
+         print("NO ML")
+      exit() 
 
    def filter_month(self, mon):
       dirs = glob.glob("/mnt/ams2/meteors/" + mon + "*")
       for md in sorted(dirs, reverse=True):
          day = md.split("/")[-1]
          print("Checking", day)
+         self.check_ai_day(day)
          self.check_day(day)
 
    def dir_change(self,obj):

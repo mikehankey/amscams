@@ -20,7 +20,6 @@ from lib.FFFuncs import  resize_video, crop_video
 FLT = Filters()
 
 def mfd_roi(mjr):
-   print("MFD")
    xs = [row[2] for row in mjr['meteor_frame_data']]
    ys = [row[3] for row in mjr['meteor_frame_data']]
    ws = [row[4] for row in mjr['meteor_frame_data']]
@@ -98,7 +97,7 @@ def make_roi_video(mjf):
    resize_video(video_file, video_file_360p, 640, 360, 28)
    final_sd_crop_vid = video_file_360p.replace("-360p.mp4", "-ROI.mp4")
    crop_video(video_file_360p, final_sd_crop_vid, crop_box)
-   print(video_file_360p, final_sd_crop_vid, crop_box)
+   #print(video_file_360p, final_sd_crop_vid, crop_box)
 
 def make_summary_html():
    if cfe("meteor_features_dict.json") == 1:
@@ -158,15 +157,15 @@ def get_met_data(mjf):
          if x2 >= img.shape[1]:
             x2 = img.shape[1]-1
 
-         print(x1,y1,x2,y2)
-         print(mjr['meteor_frame_data'])
+         #print(x1,y1,x2,y2)
+         #print(mjr['meteor_frame_data'])
          durf = len(mjr['meteor_frame_data'])
          durt = durf / 25
          croi_img = cimg[y1:y2,x1:x2]
          roi_img =  cv2.cvtColor(croi_img, cv2.COLOR_BGR2GRAY)
          cv2.imwrite(roi_file, croi_img)
-         print(roi_file)
-         print("ROI SHAPE:", croi_img.shape)
+         #print(roi_file)
+         #print("ROI SHAPE:", croi_img.shape)
          avg_px = np.mean(roi_img)
          blue_sum = float(np.sum(croi_img[0]))
          try:
@@ -275,7 +274,7 @@ exit()
 feature_names = ["Duration Time", "Angular Separation", "Angular Velocity", "Max Int", "Min Int", "Peak Factor", "Ransac Percentage", "Direction Perc", "Total Gaps", "Gap Events", "Min Y", "Max Y"]
 
 all_dirs = glob.glob("/mnt/ams2/meteors/" + sys.argv[1][0:8] + "*")
-print("/mnt/ams2/meteors/" + sys.argv[1][0:8] + "*")
+#print("/mnt/ams2/meteors/" + sys.argv[1][0:8] + "*")
 all_features = []
 if cfe("meteor_features_dict.json") == 1:
    features_dict = load_json_file("meteor_features_dict.json")
