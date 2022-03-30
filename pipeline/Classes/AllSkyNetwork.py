@@ -6,10 +6,11 @@ import numpy as np
 import datetime
 import simplejson as json
 import os
+import shutil
 import platform
 from lib.PipeUtil import load_json_file, save_json_file, get_trim_num, convert_filename_to_date_cam, starttime_from_file, dist_between_two_points, get_file_info
 from lib.intersecting_planes import intersecting_planes
-from DynaDB import search_events, insert_meteor_event
+from DynaDB import search_events, insert_meteor_event, delete_event
 
 from sklearn.cluster import DBSCAN
 from sklearn import metrics
@@ -86,13 +87,39 @@ class AllSkyNetwork():
       self.local_evdir = self.local_event_dir + "/" + self.year + "/" + self.month + "/" + self.day  + "/"
       self.cloud_evdir = self.cloud_event_dir + "/" + self.year + "/" + self.month + "/" + self.day   + "/"
       self.s3_evdir = self.s3_event_dir + "/" + self.year + "/" + self.month + "/" + self.day   + "/"
-      self.obs_dict_file = self.local_evdir + "/" + self.date + "_OBS_DICT.json"
-      self.all_obs_file = self.local_evdir + "/" + self.date + "_ALL_OBS.json"
+      self.obs_dict_file = self.local_evdir + self.date + "_OBS_DICT.json"
+      self.all_obs_file = self.local_evdir + self.date + "_ALL_OBS.json"
+      self.all_obs_gz_file = self.local_evdir + self.date + "_ALL_OBS.json.gz"
+      self.cloud_all_obs_file = self.cloud_evdir + self.date + "_ALL_OBS.json"
+      self.cloud_all_obs_gz_file = self.cloud_evdir + self.date + "_ALL_OBS.json.gz"
 
       print(self.local_evdir + "/" + self.date + "_OBS_DICT.json")
 
-      if os.path.exists(self.all_obs_file) is False: 
-         os.system("./DynaDB.py udc " + date)
+      local_size, tdd = get_file_info(self.all_obs_file + ".gz") 
+      cloud_size, tdd = get_file_info(self.cloud_all_obs_file + ".gz") 
+
+      if os.path.exists(self.all_obs_gz_file) is False and os.path.exists(self.cloud_all_obs_gz_file) is True: 
+         print("COPY FILE:", self.cloud_all_obs_gz_file, self.all_obs_gz_file)
+         shutil.copyfile(self.cloud_all_obs_gz_file, self.all_obs_gz_file)
+         print("Unzipping ", self.all_obs_gz_file)
+         os.system("gunzip -k " + self.all_obs_gz_file )
+      elif local_size < cloud_size:
+         print("COPY/UPDATE FILE:", self.cloud_all_obs_gz_file, self.all_obs_gz_file)
+         shutil.copyfile(self.cloud_all_obs_gz_file, self.all_obs_gz_file )
+         print("Unzipping ", self.all_obs_gz_file )
+         os.system("gunzip -k -f " + self.all_obs_gz_file )
+      elif local_size >= cloud_size:
+         print("Obs are in-sync")
+      else:
+         print("FAIL!!!", local_size, cloud_size)
+         exit()
+         # this will only work for ADMINS with AWS Credentials
+         #os.system("./DynaDB.py udc " + date)
+
+
+
+      #if os.path.exists(self.all_obs_file) is False: 
+      #   os.system("./DynaDB.py udc " + date)
 
       if os.path.exists(self.obs_dict_file) is True: 
          self.obs_dict = load_json_file(self.local_evdir + "/" + self.date + "_OBS_DICT.json")
@@ -105,6 +132,99 @@ class AllSkyNetwork():
          self.make_obs_dict()
          self.obs_dict = load_json_file(self.local_evdir + "/" + self.date + "_OBS_DICT.json")
       print("OBS DICT:", len(self.obs_dict))
+
+   def validate_events(self, date):
+      event_day = date
+      self.min_events_file = self.local_evdir + "/" + date + "_MIN_EVENTS.json"
+      self.all_events_file = self.local_evdir + "/" + date + "_ALL_EVENTS.json"
+      mc_events = {}
+      if os.path.exists(self.min_events_file) is True:
+         min_events_data = load_json_file(self.min_events_file)
+      else:
+         min_events_data = {}
+      if os.path.exists(self.all_events_file) is True:
+         all_events_data = load_json_file(self.all_events_file)
+      else:
+         all_events_data = []
+
+      sql_ids = {}
+      sql_events = self.sql_select_events(date.replace("_", ""))
+      for i in range(0,len(sql_events)):
+         ev_id = sql_events[i][0]
+         sql_ids[ev_id] = {}
+
+      print("ALL EVENTS   :", len(all_events_data))
+      print("MINUTES      :", len(min_events_data))
+      ec = 0
+      for minute in min_events_data:
+         for eid in min_events_data[minute]:
+            estime = min_events_data[minute][eid]['stime']
+            if "." in estime:
+               event_id = estime.split(".")[0]
+            else:
+               event_id = estime
+            event_id = event_id.replace("-", "")
+            event_id = event_id.replace(":", "")
+            event_id = event_id.replace(" ", "_")
+            num_stations = len(set(min_events_data[minute][eid]['stations']))
+            if num_stations > 1:
+               print(ec, event_id, num_stations)
+               mc_events[event_id] = min_events_data[minute][eid]
+               ec += 1
+
+      # check the event dirs on local system. remove those not in the mc_events dict 
+      local_dirs = []
+      temp = os.listdir(self.local_evdir)
+      for tt in temp:
+         if os.path.isdir(self.local_evdir + tt):
+            local_dirs.append(tt)
+      cloud_dirs = []
+      temp = os.listdir(self.cloud_evdir)
+      for tt in temp:
+         if os.path.isdir(self.cloud_evdir + tt):
+            cloud_dirs.append(tt)
+
+      for ld in local_dirs:
+         if ld not in mc_events:
+            print("DEL LOCAL DIR:", self.local_evdir + ld)
+            os.system("rm -rf " + self.local_evdir + ld)
+      for ed in cloud_dirs:
+         if ed not in mc_events:
+            print("DEL CLOUD DIR:", self.cloud_evdir + ed)
+            os.system("rm -rf " + self.cloud_evdir + ed)
+
+      dyna_ids = {}
+      for ev in all_events_data:
+         ev_id = ev['event_id']
+         if ev_id not in mc_events:
+            print("DEL DYNAMO EVENT:", ev_id)
+            delete_event(self.dynamodb, event_day, ev_id)
+         else:
+            dyna_ids[ev_id] = ev
+
+      mcc = 0
+      for mc_id in mc_events:
+         if mc_id not in dyna_ids:
+             print(mcc, "ADD EVENT TO DYNAMO:", mc_id)
+             self.dyna_insert_meteor_event(event_id, mc_events[mc_id])
+             exit()
+
+             mcc += 1
+      print(len(all_events_data), "existing DYNA events")
+
+      for mc_id in mc_events:
+         if mc_id not in sql_ids:
+            print("MC ID NOT IN LOCAL SQL:", mc_id)
+            event = mc_events[mc_id]
+            self.insert_event(event)
+
+      for sql_id in sql_ids:
+         if sql_id not in mc_events:
+            print("SQL ID NOT IN MCE", sql_id)
+
+      
+      # check the event dirs on cloud system. remove those not in the mc_events dict 
+
 
    def day_coin_events(self,date,force=0):
 
@@ -735,9 +855,9 @@ class AllSkyNetwork():
        );
       """
       print(self.allsky_console)
-      print("\rDATE:    " + date, end="")
       self.set_dates(date)
       # load all obs from the available ALL OBS file
+
       if os.path.exists(self.all_obs_file) is True: 
          self.all_obs = load_json_file(self.all_obs_file)
       ic = 0
@@ -865,7 +985,7 @@ class AllSkyNetwork():
 
          self.solve_event(event_id, temp_obs, 1, 1)
 
-      cmd = "rsync -av --update " + self.local_evdir + "/" + event_id + "/* " + self.cloud_evdir + "/"
+      cmd = "rsync -av --update " + self.local_evdir + "/" + event_id + "/* " + self.cloud_evdir + "/" + event_id + "/"
       print(cmd)
       os.system(cmd)
       
@@ -883,8 +1003,8 @@ class AllSkyNetwork():
       vals = [date + "%"]
       self.cur.execute(sql, vals)
       rows = self.cur.fetchall()
-      print("ROWS:", len(rows))
-      print("OBS DICT:", len(self.obs_dict.keys()))
+      #print("ROWS:", len(rows))
+      #print("OBS DICT:", len(self.obs_dict.keys()))
       for row in rows:
          (event_id, event_minute, revision, stations, obs_ids, event_start_time, event_start_times,  \
                  lats, lons, event_status, run_date, run_times) = row
@@ -974,7 +1094,10 @@ class AllSkyNetwork():
       vals = [event_id]
       self.cur.execute(sql, vals)
       rows = self.cur.fetchall()
-      return(rows[0])
+      if len(rows) > 0:
+         return(rows[0])
+      else:
+         return([])
 
    def sql_select_events(self, event_day):
 
@@ -997,6 +1120,9 @@ class AllSkyNetwork():
       # is the event in the dynamodb ?
       # are there duplicates of this event on the local file system, s3f3, in sql or in dyanomdb
 
+      # when we are done we should have the full event data object that goes to DYNA and also goes in the event.json file
+      # if the event failed, or the event is pending we should still return the compele event.json data as best as we can.
+
       event_data = {}
       event_day = self.event_id_to_date(event_id)
       y,m,d = event_day.split("_")
@@ -1005,7 +1131,6 @@ class AllSkyNetwork():
 
       self.cloud_event_day_dir = "/mnt/archive.allsky.tv/EVENTS/" + y + "/" + m + "/" + d + "/"
       self.cloud_event_id_dir = self.cloud_event_day_dir + event_id + "/"
-
 
       self.local_event_day_dir = "/mnt/ams2/EVENTS/" + y + "/" + m + "/" + d + "/"
       self.local_event_id_dir = self.local_event_day_dir + event_id + "/"
@@ -1048,7 +1173,6 @@ class AllSkyNetwork():
       else:
          self.event_fail_json = None 
 
-
       if os.path.exists(self.local_event_id_dir + event_id + "-event.json") is True:
          self.event_json = load_json_file(self.local_event_id_dir + event_id + "-event.json")
       elif os.path.exists(self.s3_event_id_dir + event_id + "-event.json") is True:
@@ -1073,15 +1197,20 @@ class AllSkyNetwork():
          print(self.event_json.keys())
 
       sql_data = self.sql_select_event(event_id)
-      print("SQL:", len(sql_data))
       if len(sql_data) > 0:
          self.event_in_sql = True
+      else:
+         self.event_in_sql = False
 
+      print("Event in SQL:", self.event_in_sql)
       #for i in range(0,len(sql_data)):
       #   print(i, sql_data[i])
 
       dyna_data = self.get_dyna_event(event_id)
+
+
       if dyna_data is None:
+         print("NO DYNA DATA:", self.event_in_sql)
          return(None)
       elif "solve_status" in dyna_data:
          return(dyna_data['solve_status'])
@@ -1110,6 +1239,9 @@ class AllSkyNetwork():
                event['lats'].append(lat)
                event['lons'].append(lon)
                event['alts'].append(alt)
+      else:
+         print("good obs json is NONE!", self.local_event_id_dir + event_id + "_GOOD_OBS.json")
+         exit()
 
       if self.event_json is not None:
          event['solution'] = self.event_json
@@ -1163,6 +1295,17 @@ class AllSkyNetwork():
          status = "SOLVED"
       elif os.path.exists(fail_file) is True:
          status = "FAILED"
+         event_data = {}
+         event_day = self.event_id_to_date(event_id)
+         event_data['event_day'] = event_day
+
+         temp = self.good_obs_to_event(event_day, event_id)
+         for key in temp:
+            event_data[key] = temp[key]
+
+         insert_meteor_event(self.dynamodb, event_id, event_data)
+
+
       else:
          status = "PENDING"
 
@@ -1204,6 +1347,22 @@ class AllSkyNetwork():
    def event_status_day(self, date=None):
       print("Event status day!")
 
+      report_file = self.local_evdir + date + "_day_report.json" 
+      save_json_file(report_file, day_report)
+
+   def publish_day(self, date=None):
+      print("Publish Day", date)
+      self.load_stations_file()
+      self.set_dates(date)
+      self.date = date
+      self.help()
+
+      report_file = self.local_evdir + date + "_day_report.json" 
+      report_data = load_json_file(report_file)
+      print(report_file)
+      print(report_data.keys())
+
+
    def day_status(self, date=None):
       os.system("clear")
       self.load_stations_file()
@@ -1225,7 +1384,6 @@ class AllSkyNetwork():
          cloud_files = os.listdir(self.cloud_evdir)
       else:
          cloud_files = []
-
       print(self.allsky_console)
       print("Date                   :   ", self.date)
       print("Local Files            :   ", len(local_files))
@@ -1254,10 +1412,41 @@ class AllSkyNetwork():
 
       sql_events = self.sql_select_events(self.date.replace("_", ""))
 
+      failed_events = []
+      solved_events = []
+      pending_events = []
+      for i in range(0, len(sql_events)):
+         event_id, event_minute, revision, event_start_time, event_start_times, stations, obs_ids, lats, lons, event_status, run_date, run_times = sql_events[i]
+
+         if event_status == "SOLVED":
+            solved_events.append(event_id)
+         elif event_status == "FAILED":
+            failed_events.append(event_id)
+         else:
+            pending_events.append(event_id)
+
+
       print("Multi Station Events   :   ", len(sql_events))
+
+
+      meta = {}
+      meta['report_date'] = self.date
+      meta['local_files'] = len(local_files)
+      meta['s3_files'] = len(s3_files)
+      meta['cloud_files'] = len(cloud_files)
+      meta['total_stations'] = len(self.stations)
+      meta['total_stations_reporting'] = len(station_stats.keys())
+      meta['total_obs'] = len(self.obs_dict.keys())
+      meta['event_status'] = {}
+
+
       for status in sql_event_day_stats:
+          ev_status = status.replace("STATUS_", "")
+          meta['event_status'][ev_status] = sql_event_day_stats[status]
+
           if "NEW" in status:
              print(status.replace("STATUS_", "   ") + "                 :   ", sql_event_day_stats[status])
+
           else:
              print(status.replace("STATUS_", "   ") + "              :   ", sql_event_day_stats[status])
 
@@ -1284,6 +1473,9 @@ class AllSkyNetwork():
       day_report['obs_events'] = obs_events
       day_report['station_events'] = station_events
       day_report['station_summary'] = []
+      day_report['failed_events'] = failed_events
+      day_report['solved_events'] = solved_events
+      day_report['pending_events'] = pending_events
 
       #print("station_id, operator_name, city, country, op_status, reported_obs, total_events")
       for data in self.stations:
@@ -1301,7 +1493,16 @@ class AllSkyNetwork():
          if "op_status" not in data:
             self.errors.append(("STATION_MISSING_STATUS", data['station_id']))
          else:
-            day_report['station_summary'].append((data['station_id'], data['operator_name'], data['city'], data['country'], data['op_status'], reported_obs, total_events))
+            st1 = data['station_id']
+            try:
+               lat1 = float(self.station_dict[st1]['lat'])
+               lon1 = float(self.station_dict[st1]['lon'])
+               alt1 = float(self.station_dict[st1]['alt'])
+            except:
+               self.errors.append(("STATION_MISSING_GEO", data['station_id']))
+            day_report['station_summary'].append((data['station_id'], data['operator_name'], data['city'], data['country'], data['op_status'], lat1, lon1, alt1, reported_obs, total_events))
+      day_report['station_errors'] = self.errors
+      day_report['meta'] = meta
       report_file = self.local_evdir + date + "_day_report.json" 
       save_json_file(report_file, day_report)
       print("\n\nsaved:", report_file)
@@ -1473,3 +1674,44 @@ status [date]   -    Show network status report for that day.
       print("END LAT: ", end_lats)
       print("END LON: ", end_lons)
       return(score_data)
+
+   def dyna_insert_meteor_event(self, event_id, mc_event_data):
+      print("MC:", mc_event_data)
+      self.check_event_status(event_id)
+      event_day = self.event_id_to_date(event_id)
+      pass_file = self.local_evdir + "/" + event_id + "/" + event_id + "-event.json"
+      fail_file = self.local_evdir + "/" + event_id + "/" + event_id + "-fail.json"
+      if os.path.exists(pass_file) is True:
+         status = "SOLVED"
+         event_data = {}
+
+      elif os.path.exists(fail_file) is True:
+         status = "FAILED"
+         event_data = {}
+         event_data['event_day'] = event_day
+
+      else:
+         status = "PENDING"
+         event_data = {}
+
+
+      temp = self.good_obs_to_event(event_day, event_id)
+      print("TEMP:", temp)
+      for key in temp:
+         event_data[key] = temp[key]
+      event_data['event_status'] = status
+
+      if status == "SOLVED" :
+         solve_data = load_json_file(pass_file)
+         if "event_day" not in solve_data:
+            event_day = self.event_id_to_date(event_id)
+            solve__data['event_day'] = event_day
+
+         temp = self.good_obs_to_event(event_day, event_id)
+         for key in temp:
+            solve_data[key] = temp[key]
+         event_data = solve_data
+
+      print(event_data)
+      input("wait")
+      #insert_meteor_event(self.dynamodb, event_id, event_data)

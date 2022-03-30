@@ -31,6 +31,18 @@ if cmd == "resolve_event":
    ASN.help()
    ASN.resolve_event(sys.argv[2])
 
+if cmd == "publish_day":
+   event_day = sys.argv[2]
+   ASN.help()
+   ASN.publish_day(event_day)
+
+if cmd == "publish_event":
+   event_day = sys.argv[2]
+   ASN.help()
+   force = 0
+   ASN.publish_event(event_id)
+
+
 
 if cmd == "day_solve":
    event_day = sys.argv[2]
@@ -38,7 +50,29 @@ if cmd == "day_solve":
    ASN.set_dates(event_day)
    force = 0
    ASN.day_solve(event_day,force)
-   print("Done solve")
+
+if cmd == "validate_events":
+   event_day = sys.argv[2]
+   ASN.help()
+   ASN.set_dates(event_day)
+   force = 0
+   ASN.validate_events(event_day)
+
+
+if cmd == "day_load_solve_results":
+   ASN.help()
+   ASN.day_load_solve_results(sys.argv[2])
+
+if cmd == "load_day_sql":
+   force = 0
+   ASN.help()
+   date = sys.argv[2]
+   if date == "today":
+      date = today
+   if date == "yest":
+      date = yest 
+   ASN.day_load_sql(date, force)
+   print("Done load")
 
 
 if cmd == "coin_events":
@@ -53,7 +87,18 @@ if cmd == "day_load_solve_results":
    ASN.help()
    ASN.day_load_solve_results(sys.argv[2])
 
-if cmd == "day_load_sql":
+if cmd == "load_day_sql" :
+   force = 0
+   ASN.help()
+   date = sys.argv[2]
+   if date == "today":
+      date = today
+   if date == "yest":
+      date = yest 
+   ASN.day_load_sql(date, force)
+   print("Done load")
+
+if cmd == "do_all":
    ASN.help()
    if len(sys.argv) == 4:
       force = 1
