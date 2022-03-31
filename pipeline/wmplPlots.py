@@ -95,7 +95,9 @@ class wmplPlots():
 
         if file_name is None:
             file_name = 'blank'
-
+        legend_font_size = 6
+        if len(self.observations) > 10:
+           legend_font_size = 5
 
         # Dictionary which will hold figure handles for every plot
         fig_pickle_dict = {}
@@ -110,12 +112,12 @@ class wmplPlots():
 
         # Get the first reference time
         t0 = min([obs['time_data'][0] for obs in self.observations])
-        print("YO1")
         # Plot spatial residuals per observing station
-
         for obs in self.observations:
 
+            sns.set_theme()
             sns.set_style("ticks")
+            #sns.set_style("ticks")
             #plt.style.use('dark_background')
             ### PLOT SPATIAL RESIDUALS PER STATION ###
             ##################################################################################################
@@ -123,47 +125,40 @@ class wmplPlots():
             # Plot vertical residuals
             #plt.scatter(obs['time_data'], obs['v_residuals'], c='r', \
             #    label='Vertical, RMSD = {:.2f} m'.format(obs['v_res_rms']), zorder=3, s=4, marker='o')
-
-            sns.scatterplot(obs['time_data'], obs['v_residuals'],  \
-                    label='Vertical, RMSD = {:.2f} m'.format(obs['v_res_rms']), zorder=3, s=20, marker='o', )
+            plt.style.use('dark_background')
+            sns.scatterplot(x=obs['time_data'], y=obs['v_residuals'],  \
+                    label='Vertical, RMSD = {:.2f} m'.format(obs['v_res_rms']), zorder=3, s=20, marker='o', \
+                    palette='inferno', )
             
             #.set_title("Residuals", fontdict={'fontsize': 30})
 
             plt.title('Residuals, station ' + str(obs['station_id']))
             plt.xlabel('Time (s)')
             plt.ylabel('Residuals (m)')
-
             # Plot horizontal residuals
             #plt.scatter(obs['time_data'], obs['h_residuals'], c='b', \
             #    label='Horizontal, RMSD = {:.2f} m'.format(obs['h_res_rms']), zorder=3, s=20, marker='+')
 
-            sns.scatterplot(obs['time_data'], obs['h_residuals'], \
+            sns.scatterplot(x=obs['time_data'], y=obs['h_residuals'], \
                 label='Horizontal, RMSD = {:.2f} m'.format(obs['h_res_rms']), zorder=3, s=20, marker='+', palette='inferno')
             # Mark ignored points
-            print("IGNORE LIST", obs['ignore_list'])
             if np.any(obs['ignore_list']):
                 ignored_times = []
                 ignored_v_res = []
                 ignored_h_res = []
                 #for item in obs['ignore_list']:
                 for item in range(0, len(obs['ignore_list'])):
-                   print("ITEM", item)
                    if obs['ignore_list'][item] > 0:
                       ignored_times.append(obs['time_data'][item]) 
                 #for item in obs['ignore_list']:
                 for item in range(0, len(obs['ignore_list'])):
-                   print("ITEM2", item, obs['v_residuals'][item])
                    if obs['ignore_list'][item] > 0:
                       ignored_v_res.append(obs['v_residuals'][item]) 
                 #for item in obs['ignore_list']:
                 for item in range(0, len(obs['ignore_list'])):
-                   print("ITEM3", item, obs['h_residuals'][item])
                    #if obs['h_residuals'][item] > 0:
                    if obs['ignore_list'][item] > 0:
                       ignored_h_res.append(obs['h_residuals'][item]) 
-                print("1", ignored_times)
-                print("2", ignored_v_res)
-                print("3", ignored_h_res)
                 #ignored_times = obs['time_data'][obs['ignore_list'] > 0]
                 #ignored_v_res = obs['v_residuals'][obs['ignore_list'] > 0]
                 #ignored_h_res = obs['h_residuals'][obs['ignore_list'] > 0]
@@ -173,23 +168,20 @@ class wmplPlots():
                 #plt.scatter(ignored_times, ignored_h_res, facecolors='none', edgecolors='k', marker='o', 
                 #    zorder=3, s=20)
 
-                sns.scatterplot(ignored_times, ignored_v_res, facecolors='none', edgecolors='k', marker='o', \
+                sns.scatterplot(x=ignored_times, y=ignored_v_res, facecolors='none', edgecolors='k', marker='o', \
                     zorder=3, s=20, label='Ignored points', palette='inferno')
-                sns.scatterplot(ignored_times, ignored_h_res, facecolors='none', edgecolors='k', marker='o', 
+                sns.scatterplot(x=ignored_times, y=ignored_h_res, facecolors='none', edgecolors='k', marker='o', 
                     zorder=3, s=20, palette='inferno')
 
 
-            print("YO1")
 
             #plt.title('Residuals, station ' + str(obs['station_id']))
             #plt.xlabel('Time (s)')
             #plt.ylabel('Residuals (m)')
-            print("YO3")
 
             plt.grid()
 
-            plt.legend(prop={'size': 6})
-            print("YO4")
+            plt.legend(prop={'size': 9} )
 
             # Set the residual limits to +/-10m if they are smaller than that
             if (np.max(np.abs(obs['v_residuals'])) < 10) and (np.max(np.abs(obs['h_residuals'])) < 10):
@@ -202,14 +194,15 @@ class wmplPlots():
                     = pickle.dumps(plt.gcf(), protocol=2)
 
 
-            print("YO3")
             if self.save_results:
+                plt.rcParams["figure.figsize"] = (8,6)
                 savePlot(plt, file_name + '_' + str(obs['station_id']) + '_spatial_residuals.' \
                     + self.plot_file_type, output_dir)
             print(file_name + '_' + str(obs['station_id']) + '_spatial_residuals.' \
                     + self.plot_file_type, output_dir)
             if show_plots:
-                print("SHOW")
+                #print("SHOW")
+                foo = 1
                 #plt.show()
 
             else:
@@ -282,7 +275,8 @@ class wmplPlots():
 
             plt.grid()
 
-            plt.legend(prop={'size': 6})
+            #plt.legend(prop={'size': legend_font_size})
+            #plt.legend(prop={'size': legend_font_size})
 
             # Set the residual limits to +/-10m if they are smaller than that
             if np.max(np.abs(plt.gca().get_ylim())) < 10:
@@ -293,11 +287,12 @@ class wmplPlots():
                 fig_pickle_dict["all_spatial_residuals"] = pickle.dumps(plt.gcf(), protocol=2)
 
             if self.save_results:
+                plt.rcParams["figure.figsize"] = (8,6)
                 savePlot(plt, file_name + '_all_spatial_residuals.' + self.plot_file_type, output_dir)
 
             if show_plots:
-                print("SHOW")
                 #plt.show()
+                foo = 1
 
             else:
                 plt.clf()
@@ -335,17 +330,14 @@ class wmplPlots():
                     ignored_h_res = []
                     #for item in obs['ignore_list']:
                     for item in range(0, len(obs['ignore_list'])):
-                        print("ITEM", item)
                         if obs['ignore_list'][item] > 0:
                             ignored_length.append(svect_dist[item])
                     #for item in obs['ignore_list']:
                     for item in range(0, len(obs['ignore_list'])):
-                        print("ITEM2", item, obs['v_residuals'][item])
                         if obs['ignore_list'][item] > 0:
                             ignored_v_res.append(obs['v_residuals'][item])
                     #for item in obs['ignore_list']:
                     for item in range(0, len(obs['ignore_list'])):
-                        print("ITEM3", item, obs['h_residuals'][item])
                     #if obs['h_residuals'][item] > 0:
                         if obs['ignore_list'][item] > 0:
                             ignored_h_res.append(obs['h_residuals'][item])
@@ -362,7 +354,8 @@ class wmplPlots():
 
             plt.grid()
 
-            plt.legend(prop={'size': 6})
+            #plt.legend(prop={'size': legend_font_size})
+            #plt.legend(prop={'size': legend_font_size} )
 
             # Set the residual limits to +/-10m if they are smaller than that
             if np.max(np.abs(plt.gca().get_ylim())) < 10:
@@ -373,11 +366,12 @@ class wmplPlots():
                 fig_pickle_dict["all_spatial_residuals_length"] = pickle.dumps(plt.gcf(), protocol=2)
 
             if self.save_results:
+                plt.rcParams["figure.figsize"] = (8,6)
                 savePlot(plt, file_name + '_all_spatial_residuals_length.' + self.plot_file_type, output_dir)
 
             if show_plots:
-                print("SHOW")
                 #plt.show()
+                foo = 1
 
             else:
                 plt.clf()
@@ -401,8 +395,7 @@ class wmplPlots():
 
                 # Compute total residuals, take the signs from vertical residuals
                 tot_res = np.sign(obs['v_residuals'])*np.hypot(obs['v_residuals'], obs['h_residuals'])
-                print("TOT RES:", tot_res)
-                print("SVECT DIST:", svect_dist)
+
                 # Plot total residuals
                 plt.scatter(svect_dist, tot_res, marker=marker, s=10*size_multiplier, \
                     label='{:s}'.format(str(obs['station_id'])), zorder=3)
@@ -435,7 +428,8 @@ class wmplPlots():
 
             plt.grid()
 
-            plt.legend(prop={'size': 6})
+            #plt.legend(prop={'size': legend_font_size})
+            #plt.legend(prop={'size': legend_font_size} )
 
             # Set the residual limits to +/-10m if they are smaller than that
             if np.max(np.abs(plt.gca().get_ylim())) < 10:
@@ -446,12 +440,12 @@ class wmplPlots():
                 fig_pickle_dict["total_spatial_residuals_length"] = pickle.dumps(plt.gcf(), protocol=2)
 
             if self.save_results:
+                plt.rcParams["figure.figsize"] = (8,6)
                 savePlot(plt, file_name + '_total_spatial_residuals_length.' + self.plot_file_type, \
                     output_dir)
 
             if show_plots:
-               # plt.show()
-               print("SHOW")
+                foo = 1
 
             else:
                 plt.clf()
@@ -540,7 +534,8 @@ class wmplPlots():
 
                 plt.grid()
 
-                plt.legend(prop={'size': 6})
+                #plt.legend(prop={'size': legend_font_size})
+                #plt.legend(prop={'size': legend_font_size} )
 
                 # Set the residual limits to +/-10m if they are smaller than that
                 if np.max(np.abs(plt.gca().get_ylim())) < 10:
@@ -552,11 +547,13 @@ class wmplPlots():
                         protocol=2)
 
                 if self.save_results:
+                    plt.rcParams["figure.figsize"] = (8,6)
                     savePlot(plt, file_name + '_total_spatial_residuals_length_grav.' + self.plot_file_type, \
                         output_dir)
 
                 if show_plots:
-                    print("SHOW")
+                    #print("SHOW")
+                    foo = 1
                   #  plt.show()
 
                 else:
@@ -618,7 +615,8 @@ class wmplPlots():
 
         plt.grid()
 
-        plt.legend(prop={'size': 6})
+        #plt.legend(prop={'size': legend_font_size})
+        #plt.legend(prop={'size': legend_font_size} )
 
         # Set the residual limits to +/-10m if they are smaller than that
         if np.max(np.abs(plt.gca().get_xlim())) < 10:
@@ -629,12 +627,14 @@ class wmplPlots():
             fig_pickle_dict["all_spatial_total_residuals_height"] = pickle.dumps(plt.gcf(), protocol=2)
 
         if self.save_results:
+            plt.rcParams["figure.figsize"] = (8,6)
             savePlot(plt, file_name + '_all_spatial_total_residuals_height.' + self.plot_file_type, \
                 output_dir)
 
         if show_plots:
-           # plt.show()
-            print("SHOW")
+            # plt.show()
+            foo = 1
+            # print("SHOW")
 
         else:
             plt.clf()
@@ -678,7 +678,7 @@ class wmplPlots():
         #             label='Lag, ignored points')
 
             
-        #     ax1.legend(prop={'size': 6})
+        #     ax1.legend(prop={'size': legend_font_size})
 
         #     plt.title('Lag, station ' + str(obs['station_id']))
         #     ax1.set_xlabel('Lag (m)')
@@ -759,13 +759,10 @@ class wmplPlots():
                     if obs['ignore_list'][item] == 0:
                         used_times.append( obs['time_data'][item])
 
-            print("USED LAG:", obs['station_id'], used_lag)
-            print("USED TIMES:", used_times)
             # Choose the marker
             marker = plot_markers[i%len(plot_markers)]
 
             # Plot the lag
-            print("PLOT LAG:", obs['station_id'], used_lag, used_times, marker, colors[i])
             plt_handle = plt.plot(used_lag, used_times, marker=marker, label=str(obs['station_id']), 
                 zorder=3, markersize=3, color=colors[i], alpha=alpha)
 
@@ -802,7 +799,7 @@ class wmplPlots():
             
             #jacchia_fit[0], self.jacchia_fit[1]
             plt.plot(self.jacchiaLagFunc(time_jacchia, *jacchia_temp), time_jacchia, label='Jacchia fit', 
-                zorder=3, color='k', alpha=0.5, linestyle="dashed")
+                zorder=3, color='w', alpha=0.5, linestyle="dashed")
 
 
         plt.title('Lags, all stations')
@@ -810,7 +807,8 @@ class wmplPlots():
         plt.xlabel('Lag (m)')
         plt.ylabel('Time (s)')
 
-        plt.legend(prop={'size': 6})
+        #plt.legend(prop={'size': legend_font_size})
+        #plt.legend(prop={'size': legend_font_size} )
         plt.grid()
         plt.gca().invert_yaxis()
 
@@ -819,11 +817,11 @@ class wmplPlots():
             fig_pickle_dict["lags_all"] = pickle.dumps(plt.gcf(), protocol=2)
 
         if self.save_results:
+            plt.rcParams["figure.figsize"] = (8,6)
             savePlot(plt, file_name + '_lags_all.' + self.plot_file_type, output_dir)
 
         if show_plots:
-            print("SHOW")
-            #plt.show()
+            foo = 1
 
         else:
             plt.clf()
@@ -911,13 +909,13 @@ class wmplPlots():
         if self.show_jacchia:
             t_vel = np.linspace(t_min, t_max, 1000)
             ax1.plot(self.jacchiaVelocityFunc(t_vel, self.jacchia_fit[0], self.jacchia_fit[1], self.v_init)/1000, \
-                t_vel, label='Jacchia fit', alpha=0.5, color='k')
+                t_vel, label='Jacchia fit', alpha=0.5, color='w')
 
         plt.title('Velocity')
         ax1.set_xlabel('Velocity (km/s)')
         ax1.set_ylabel('Time (s)')
 
-        ax1.legend(prop={'size': 6})
+        #ax1.legend(prop={'size': legend_font_size})
         ax1.grid()
 
         # Set velocity limits to +/- 3 km/s
@@ -940,11 +938,11 @@ class wmplPlots():
             fig_pickle_dict["velocities"] = pickle.dumps(plt.gcf(), protocol=2)
 
         if self.save_results:
+            plt.rcParams["figure.figsize"] = (8,6)
             savePlot(plt, file_name + '_velocities.' + self.plot_file_type, output_dir)
 
         if show_plots:
-            print("SHOW")
-            #plt.show()
+            foo = 1
 
         else:
             plt.clf()
@@ -1027,7 +1025,7 @@ class wmplPlots():
         ax1.set_ylabel('Time (s)')
         ax1.set_xlabel('Distance from state vector (km)')
         
-        ax1.legend(prop={'size': 6})
+        #ax1.legend(prop={'size': legend_font_size})
         ax1.grid()
         
         # Set time axis limits
@@ -1045,12 +1043,12 @@ class wmplPlots():
             fig_pickle_dict["lengths"] = pickle.dumps(plt.gcf(), protocol=2)
 
         if self.save_results:
+            plt.rcParams["figure.figsize"] = (8,6)
             savePlot(plt, file_name + '_lengths.' + self.plot_file_type, output_dir)
 
 
         if show_plots:
-            print("SHOW")
-            plt.show()
+            foo = 1
 
         else:
             plt.clf()
@@ -1082,8 +1080,10 @@ class wmplPlots():
 
 
         # Init the map
-        m = GroundMap(lat_list, lon_list, border_size=50, color_scheme='light')
-
+        m = GroundMap(lat_list, lon_list, border_size=50, color_scheme='dark')
+        #m.drawcoastlines()
+        #m.drawmapboundary(fill_color='black')
+        #m.fillcontinents(color='white', lake_color='aqua')
 
         # Plot locations of all stations and measured positions of the meteor
         for i, obs in enumerate(self.observations):
@@ -1105,8 +1105,8 @@ class wmplPlots():
                     if obs['ignore_list'][item] == 0:
                         temp_lon.append(obs['meas_lon'][item] )
 
-
-            m.plot(temp_lat, temp_lon, c='r')
+            if len(temp_lat) > 0:
+               m.plot(temp_lat, temp_lon, c='r')
 
             ig_lat = []
             ig_lon = []
@@ -1120,8 +1120,6 @@ class wmplPlots():
                         ig_lon.append(obs['meas_lon'][item] )
 
             # Plot ignored points
-            print("IGLAT:", ig_lat)
-            print("IGLON:", ig_lon)
             if len(ig_lat) > 0:
                 if np.any(obs['ignore_list'] != 0):
                     m.scatter(ig_lat, ig_lon, c='k', \
@@ -1138,7 +1136,8 @@ class wmplPlots():
         if len(self.observations) >= 10:
             legend_font_size = 5
 
-        plt.legend(loc='upper left', prop={'size': legend_font_size})
+        #plt.legend(loc='upper left', prop={'size': legend_font_size})
+        #plt.legend(prop={'size': legend_font_size}, bbox_to_anchor=(1,.5) )
 
 
 
@@ -1147,10 +1146,11 @@ class wmplPlots():
             fig_pickle_dict["ground_track"] = pickle.dumps(plt.gcf(), protocol=2)
 
         if self.save_results:
+            plt.rcParams["figure.figsize"] = (8,6)
             savePlot(plt, file_name + '_ground_track.' + self.plot_file_type, output_dir)
 
         if show_plots:
-            print("SHOW")
+            foo = 1
             #plt.show()
 
         else:
@@ -1191,7 +1191,7 @@ class wmplPlots():
         #     plt.ylim(ymin=0)
 
         #     plt.grid()
-        #     plt.legend(prop={'size': 6})
+        #     plt.legend(prop={'size': legend_font_size})
 
         #     if self.save_results:
         #         savePlot(plt, file_name + '_' + str(obs['station_id']) + '_angular_residuals.' \
@@ -1260,18 +1260,18 @@ class wmplPlots():
         plt.ylim(ymin=0)
 
         plt.grid()
-        plt.legend(prop={'size': 6})
+        #plt.legend(prop={'size': legend_font_size} )
 
         # Pickle the figure
         if ret_figs:
             fig_pickle_dict["all_angular_residuals"] = pickle.dumps(plt.gcf(), protocol=2)
 
         if self.save_results:
+            plt.rcParams["figure.figsize"] = (8,6)
             savePlot(plt, file_name + '_all_angular_residuals.' + self.plot_file_type, output_dir)
 
         if show_plots:
-            print("SHOW")
-            #plt.show()
+            foo = 1
 
         else:
             plt.clf()
@@ -1318,7 +1318,7 @@ class wmplPlots():
 
             plt.gca().invert_yaxis()
 
-            plt.legend(prop={'size': 6})
+            plt.legend(prop={'size': legend_font_size} )
 
             plt.grid()
 
@@ -1327,11 +1327,11 @@ class wmplPlots():
                 fig_pickle_dict["abs_mag"] = pickle.dumps(plt.gcf(), protocol=2)
 
             if self.save_results:
+                plt.rcParams["figure.figsize"] = (8,6)
                 savePlot(plt, file_name + '_abs_mag.' + self.plot_file_type, output_dir)
 
             if show_plots:
-                print("SHOW")
-               # plt.show()
+                foo = 1
 
             else:
                 plt.clf()
@@ -1378,7 +1378,7 @@ class wmplPlots():
 
             plt.gca().invert_xaxis()
 
-            plt.legend(prop={'size': 6})
+            plt.legend(prop={'size': legend_font_size} )
 
             plt.grid()
 
@@ -1387,11 +1387,12 @@ class wmplPlots():
                 fig_pickle_dict["abs_mag_ht"] = pickle.dumps(plt.gcf(), protocol=2)
 
             if self.save_results:
+                plt.rcParams["figure.figsize"] = (8,6)
                 savePlot(plt, file_name + '_abs_mag_ht.' + self.plot_file_type, output_dir)
 
             if show_plots:
-                print("SHOW")
                 #plt.show()
+                foo = 1
 
             else:
                 plt.clf()
@@ -1425,7 +1426,7 @@ class wmplPlots():
 
                 # Run orbit plotting procedure
                 plotOrbits(orbit_params, jd2Date(self.dict['jdt_ref'], dt_obj=True), save_plots=save_results, \
-                    plot_path=plot_path, linewidth=1, color_scheme='light', \
+                    plot_path=plot_path, linewidth=1, color_scheme='dark', \
                     plot_file_type=self.plot_file_type)
 
 
@@ -1437,8 +1438,8 @@ class wmplPlots():
 
 
                 if show_plots:
-                    print("SHOW")
                     #plt.show()
+                    foo =1 
 
                 else:
                     plt.clf()
@@ -1602,8 +1603,4 @@ class wmplPlots():
     
         """
     
-        print("T", t)
-        print("A1", a1)
-        print("A2", a2)
-        print("VINIT", v_init)
         return v_init - np.abs(a1*a2)*np.exp(np.abs(a2)*t)
