@@ -238,32 +238,32 @@ class EventReport():
             print("NO PP FOR KEY!", key)
 
          
+         if "planes" in self.event_dict[key]:
+            for pkey in self.event_dict[key]['planes']:
+               data = self.event_dict[key]['planes'][pkey] 
+               print("PLANE:", key, pkey)
+               status, line1, line2 = data
+               combo_key = key
+               o_combo_key = combo_key.replace("EP:", "")
+               el = o_combo_key.split("AMS")
+               ob1, obs2 = pkey.split(":")
+               if status == "plane_solved":
+                  slat,slon,salt,elat,elon,ealt = line1
 
-         for pkey in self.event_dict[key]['planes']:
-            data = self.event_dict[key]['planes'][pkey] 
-            print("PLANE:", key, pkey)
-            status, line1, line2 = data
-            combo_key = key
-            o_combo_key = combo_key.replace("EP:", "")
-            el = o_combo_key.split("AMS")
-            ob1, obs2 = pkey.split(":")
-            if status == "plane_solved":
-               slat,slon,salt,elat,elon,ealt = line1
+                  line = fol_sol.newlinestring(name=combo_key, description="", coords=[(slon,slat,salt),(elon,elat,ealt)])
+                  line.altitudemode = simplekml.AltitudeMode.relativetoground
+                  line.linestyle.color = color
+                  line.linestyle.colormode = "normal"
+                  line.linestyle.width = "3"
 
-               line = fol_sol.newlinestring(name=combo_key, description="", coords=[(slon,slat,salt),(elon,elat,ealt)])
-               line.altitudemode = simplekml.AltitudeMode.relativetoground
-               line.linestyle.color = color
-               line.linestyle.colormode = "normal"
-               line.linestyle.width = "3"
-
-               slat,slon,salt,elat,elon,ealt = line2
-               line = fol_sol.newlinestring(name=combo_key, description="", coords=[(slon,slat,salt),(elon,elat,ealt)])
-               line.altitudemode = simplekml.AltitudeMode.relativetoground
-               line.linestyle.color = color
-               line.linestyle.colormode = "normal"
-               line.linestyle.width = "3"
-            else:
-               print("Bad plane don't map.", status)
+                  slat,slon,salt,elat,elon,ealt = line2
+                  line = fol_sol.newlinestring(name=combo_key, description="", coords=[(slon,slat,salt),(elon,elat,ealt)])
+                  line.altitudemode = simplekml.AltitudeMode.relativetoground
+                  line.linestyle.color = color
+                  line.linestyle.colormode = "normal"
+                  line.linestyle.width = "3"
+               else:
+                  print("Bad plane don't map.", status)
 
          if "solution" in self.event_dict[key]:
             go = False
@@ -271,6 +271,9 @@ class EventReport():
                print("YO", key, solve_status, self.event_dict[key]['plane_pairs'])
                traj = self.event_dict[key]['solution']['traj']
                go = True
+
+               if traj['start_ele'] > 200000:
+                  go = False
             if go is True:
                print(traj)
                line = fol_sol.newlinestring(name=key, description="", coords=[(traj['start_lon'],traj['start_lat'],traj['start_ele']),(traj['end_lon'],traj['end_lat'],traj['end_ele'])])

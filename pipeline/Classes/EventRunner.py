@@ -3174,6 +3174,7 @@ class EventRunner():
  
    def EOD_coin_report(self):
       #self.coin_events_file = "/mnt/ams2/EVENTS/" + self.year + "/" + self.month + "/" + self.day + "/" + self.date + "_COIN_EVENTS.json"  
+      return()
       self.coin_events = load_json_file(self.coin_events_file)
       print("COIN EVENTS:", len(self.coin_events))
       print("ALL EVENTS:", len(self.all_events))
