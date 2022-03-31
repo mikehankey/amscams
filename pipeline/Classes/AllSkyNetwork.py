@@ -1184,8 +1184,12 @@ class AllSkyNetwork():
          self.good_obs_json = load_json_file(self.local_event_id_dir + event_id + "_GOOD_OBS.json")
       elif os.path.exists(self.s3_event_id_dir + event_id + "_GOOD_OBS.json") is True:
          self.good_obs_json = load_json_file(self.s3_event_id_dir + event_id + "_GOOD_OBS.json")
+      elif os.path.exists(self.cloud_event_id_dir + event_id + "_GOOD_OBS.json") is True:
+         self.good_obs_json = load_json_file(self.cloud_event_id_dir + event_id + "_GOOD_OBS.json")
       else:
          self.good_obs_json = None 
+         print("GOOD OBS FILE NOT FOUND!", self.local_event_id_dir + event_id + "_GOOD_OBS.json" )
+         exit()
              
       print("Dirs :", self.local_event_id_dir, self.s3_event_id_dir)
       print("Local:", self.local_dir_exists, len(self.local_files))
@@ -1256,11 +1260,6 @@ class AllSkyNetwork():
               
    def solve_event(self,event_id, temp_obs, time_sync, force):
 
-      event_status = self.check_event_status(event_id)
-      print("CURRENT STATUS FOR EVENT.", self.event_status)
-      if (event_status is "SOLVED" or event_status is "FAILED") and force != 1:
-         print("Already done this.")
-         return() 
 
       # flag2 is force?
       #self.check_event_status(event_id)
@@ -1270,15 +1269,24 @@ class AllSkyNetwork():
       # Save good obs file!
       good_obs_file = ev_dir + "/" + event_id + "_GOOD_OBS.json"
 
+
       if os.path.exists(ev_dir) is False:
          os.makedirs(ev_dir)
 
       # only solve if it has not already been solved.
       failed_file = ev_dir + "/" + event_id + "-fail.json"
       solve_file = ev_dir + "/" + event_id + "-event.json"
+      save_json_file(good_obs_file, temp_obs)
+
+      event_status = self.check_event_status(event_id)
+      print("CURRENT STATUS FOR EVENT.", self.event_status)
+      if (event_status is "SOLVED" or event_status is "FAILED") and force != 1:
+         print("Already done this.")
+         return() 
+
+
       if (os.path.exists(failed_file) is False and os.path.exists(solve_file) is False) or force == 1:
          print("Saving:" ,good_obs_file)
-         save_json_file(good_obs_file, temp_obs)
          new_run = True
          try:
             WMPL_solve(event_id, temp_obs, time_sync, force)
