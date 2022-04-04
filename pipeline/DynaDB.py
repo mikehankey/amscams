@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/env python3
 from decimal import Decimal
 import redis
 import requests
@@ -43,7 +43,7 @@ def all_deletes(dynamodb, json_conf):
       response = table.scan(ExclusiveStartKey=response['LastEvaluatedKey'])
       for item in response['Items']:
          all_items.append(item)
-   save_json_file("/mnt/ams2/EVENTS/ALL_DELETES.json", all_items, True)
+   save_json_file("/mnt/f/EVENTS/ALL_DELETES.json", all_items, True)
 
    deletes_by_station = {}
    for item in all_items:
@@ -60,7 +60,7 @@ def all_deletes(dynamodb, json_conf):
       if station_id not in deletes_by_station:
          deletes_by_station[station_id] = []
       deletes_by_station[station_id].append((sd_video_file,label,delete_committed))
-   out_dir = "/mnt/ams2/EVENTS/OBS/STATIONS/"
+   out_dir = "/mnt/f/EVENTS/OBS/STATIONS/"
    cloud_out_dir = "/mnt/archive.allsky.tv/EVENTS/OBS/STATIONS/"
    for st in deletes_by_station:
       save_json_file(out_dir + st + "_DEL.json", deletes_by_station[st])
@@ -598,7 +598,7 @@ def get_all_events(dynamodb):
    while 'LastEvaluatedKey' in response:
       response = table.scan(ExclusiveStartKey=response['LastEvaluatedKey'])
       items.extend(response['Items'])
-   outfile = "/mnt/ams2/EVENTS/ALL_EVENTS.json"
+   outfile = "/mnt/f/EVENTS/ALL_EVENTS.json"
    save_json_file(outfile, items)
 
 
@@ -618,7 +618,7 @@ def update_dyna_cache_for_day(dynamodb, date, stations, utype=None, cloud_copy=1
       do_obs = 0
       do_events = 1
    year, mon, day = date.split("_")
-   day_dir = "/mnt/ams2/EVENTS/" + year + "/" + mon + "/" + day + "/"
+   day_dir = "/mnt/f/EVENTS/" + year + "/" + mon + "/" + day + "/"
    dyn_cache = day_dir
    if cfe(dyn_cache, 1) == 0:
       os.makedirs(dyn_cache)
@@ -646,7 +646,7 @@ def update_dyna_cache_for_day(dynamodb, date, stations, utype=None, cloud_copy=1
       content = content[0:-1]
    print(content)
    jdata = json.loads(content)
-   save_json_file("/mnt/ams2/EVENTS/ALL_STATIONS.json", jdata['all_vals'])
+   save_json_file("/mnt/f/EVENTS/ALL_STATIONS.json", jdata['all_vals'])
    all_stations = jdata['all_vals']
 
    # load the deletes
@@ -874,7 +874,7 @@ def delete_events_day(dynamodb, date):
 
 def search_events(dynamodb, date, stations, nocache=0):
    year, mon, day = date.split("_")
-   day_dir = "/mnt/ams2/EVENTS/" + year + "/" + mon + "/" + day + "/"
+   day_dir = "/mnt/f/EVENTS/" + year + "/" + mon + "/" + day + "/"
    dyn_cache = day_dir
    if cfe(dyn_cache, 1) == 0:
       os.makedirs(dyn_cache)
@@ -1040,7 +1040,7 @@ def get_station_deletes(dynamodb, station_id, date ):
 def search_obs(dynamodb, station_id, date, no_cache=0):
    all_items = []
    year, mon, day = date.split("_")
-   day_dir = "/mnt/ams2/EVENTS/" + year + "/" + mon + "/" + day + "/"
+   day_dir = "/mnt/f/EVENTS/" + year + "/" + mon + "/" + day + "/"
    dyn_cache = day_dir
    if cfe(dyn_cache, 1) == 0:
       os.makedirs(dyn_cache)
@@ -1084,7 +1084,7 @@ def get_event(dynamodb, event_id, nocache=1):
    date = year + "_" + mon + "_" + dom
 
 
-   day_dir = "/mnt/ams2/EVENTS/" + year + "/" + mon + "/" + dom + "/"
+   day_dir = "/mnt/f/EVENTS/" + year + "/" + mon + "/" + dom + "/"
    dyn_cache = day_dir
    if cfe(dyn_cache, 1) == 0:
       os.makedirs(dyn_cache)
@@ -1164,7 +1164,7 @@ def get_obs_old2(dynamodb, station_id, sd_video_file):
    date= sd_video_file[0:10]
    year, mon, day = date.split("_")
    obs_data = None
-   day_dir = "/mnt/ams2/EVENTS/" + year + "/" + mon + "/" + day + "/"
+   day_dir = "/mnt/f/EVENTS/" + year + "/" + mon + "/" + day + "/"
    cl_day_dir = "/mnt/archive.allsky.tv/EVENTS/" + year + "/" + mon + "/" + day + "/"
    dyn_cache = day_dir
    all_obs_file = dyn_cache + date + "_ALL_OBS.json"   
@@ -1628,7 +1628,7 @@ def update_mj_events(dynamodb, date):
       stations.append(amdid)
    events = search_events(dynamodb, date, stations)
    year, mon, day = date.split("_")
-   day_dir = "/mnt/ams2/EVENTS/" + year + "/" + mon + "/" + day + "/"
+   day_dir = "/mnt/f/EVENTS/" + year + "/" + mon + "/" + day + "/"
    dyn_cache = day_dir
    if cfe(dyn_cache, 1) == 0:
       os.makedirs(dyn_cache)

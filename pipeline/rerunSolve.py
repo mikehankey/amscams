@@ -1,10 +1,12 @@
 #!/usr/bin/python3
 
 # script to re-run back events and remake the event cache files in the wasabi dir
+import time
 import os
 from datetime import datetime
 from calendar import monthrange
 import datetime as dt
+from lib.PipeUtil import load_json_file, save_json_file
 today = (datetime.now() - dt.timedelta(days = 1)).strftime("%Y_%m_%d")
 current_year, current_month, current_day = today.split("_")
 years = ['2022', '2021']
@@ -35,15 +37,32 @@ for year in years :
             sday = str(day)
          all_days.append((year + "_" +  smon + "_" + sday))
 
-for day in sorted(all_days,reverse=True)[0:27]:
+if os.path.exists("solve-hist.json"):
+   solve_hist = load_json_file("solve-hist.json")
+else:
+   solve_hist = {}
+
+for day in sorted(all_days,)[-92:]:
    #cmd = "./updateEventDay.py " + day #+ ">ev_run_log.txt 2>&1 "
-   cmd =  "python3 AllSkyNetwork.py day_load_sql " + day
-   print(cmd)
-   os.system(cmd)
-   cmd =  "python3 AllSkyNetwork.py day_load_sql " + day
-   print(cmd)
-   os.system(cmd)
-   cmd =  "python3 AllSkyNetwork.py resolve_failed_day " + day
-   print(cmd)
-   os.system(cmd)
+   y,m,d = day.split("_")
+   cloud_evf = "/mnt/archive.allsky.tv/EVENTS/" + y + "/" + m + "/" + d + "/" + day + "_dbfiles.tar.gz"
+   if day not in solve_hist:
+      cmd =  "python3 AllSkyNetwork.py do_all " + day
+      print(cmd)
+      time.sleep(1)
+      os.system(cmd)
+      cmd =  "python3 RN.py " + day
+      print(cmd)
+      time.sleep(1)
+      #os.system(cmd)
+   else:
+      print("Skip day:", day)
+   solve_hist[day] = 1
+   save_json_file("solve-hist.json", solve_hist)
+   #cmd =  "python3 AllSkyNetwork.py day_load_sql " + day
+   ##print(cmd)
+   #os.system(cmd)
+   #cmd =  "python3 AllSkyNetwork.py resolve_failed_day " + day
+   #print(cmd)
+   #os.system(cmd)
 

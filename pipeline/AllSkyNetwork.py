@@ -20,8 +20,17 @@ if cmd == "help":
    print("CMD:", cmd)
    ASN.help()
 
+if cmd == "rsync_data":
+
+   print("CMD:", cmd)
+   event_day = sys.argv[2]
+   ASN.help()
+   ASN.set_dates(date)
+   ASN.rsync_data_only(event_day)
+
 if cmd == "resolve_failed_day":
    ASN.help()
+   ASN.set_dates(sys.argv[2])
    event_day = sys.argv[2].replace("_", "")
    event_day = event_day.replace("-", "")
    event_day = event_day.replace("/", "")
@@ -87,17 +96,6 @@ if cmd == "day_load_solve_results":
    ASN.help()
    ASN.day_load_solve_results(sys.argv[2])
 
-if cmd == "load_day_sql" :
-   force = 0
-   ASN.help()
-   date = sys.argv[2]
-   if date == "today":
-      date = today
-   if date == "yest":
-      date = yest 
-   ASN.day_load_sql(date, force)
-   print("Done load")
-
 if cmd == "do_all":
    ASN.help()
    if len(sys.argv) == 4:
@@ -111,7 +109,12 @@ if cmd == "do_all":
       date = yest 
 
    # don't load every time, this call takes a while!
+   # this should be handled in set_dates! need to test/confirm though
+   # this should be done on the AWS side and the gz file is all that should be 
+   # downloaded. However, this is not always the case!
    #os.system("./DynaDB.py udc " + date)
+
+   force = 1
 
    ASN.day_load_sql(date, force)
    print("Done load")
@@ -119,9 +122,10 @@ if cmd == "do_all":
    print("Done coin")
    ASN.day_solve(date,force)
    print("Done solve")
+   ASN.rsync_data_only(date)
 
 
-if cmd == "day_solve" or cmd == 'ds':
+if cmd == "day_solve" or cmd == 'ds' or cmd == "solve_day":
    ASN.help()
    force = 0
    date = sys.argv[2]
@@ -145,6 +149,8 @@ if cmd == "status":
    if len(sys.argv) < 2:
       print("No date provided!")
       print("USAGE: ./AllSkyNetwork status [YYYY_MM_DD]")
-
+   event_day = sys.argv[2]
    ASN.help()
+   ASN.set_dates(event_day)
+   ASN.update_all_event_status(sys.argv[2])
    ASN.day_status(sys.argv[2])
