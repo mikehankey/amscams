@@ -158,6 +158,7 @@ class AllSkyAI():
             meteor_or_firefly_model.h5
       """
       self.model_meteor_yn = Sequential()
+      self.model_meteor_prev_yn = Sequential()
       self.model_meteor_fireball_yn = Sequential()
       self.model_multi_class = Sequential()
 
@@ -167,6 +168,7 @@ class AllSkyAI():
          self.model_meteor_or_firefly = Sequential()
 
       self.model_meteor_yn =load_model('models/meteor_yn_i64.h5')
+      self.model_meteor_prev_yn =load_model('models/meteor_prev_yn.h5')
       #self.meteor_yn_labels = pickle.loads(open("models/meteor_yn.labels", "rb").read())
       self.model_meteor_yn.compile(loss='binary_crossentropy',
               optimizer='rmsprop',
@@ -318,17 +320,24 @@ class AllSkyAI():
       #img = self.image_64(img)
 
       img = cv2.resize(img,(64,64))
+      img38 = cv2.resize(img,(38,38))
 
 
 
-      img = np.reshape(img,[1,width,height,3])
-      img_size = [width,height]
+      #img = np.reshape(img,[1,width,height,3])
+      #img_size = [width,height]
 
       img = load_img(imgfile, target_size = img_size)
       img = img_to_array(img).astype(np.float32) / 255.0 
-      # img /= 255.
       img = np.expand_dims(img, axis = 0)
 
+      img38 = load_img(imgfile, target_size = (38,38))
+      img38 = img_to_array(img).astype(np.float32) / 255.0 
+      img38 = np.expand_dims(img, axis = 0)
+
+
+      
+      meteor_prev_yn = self.model_meteor_prev_yn.predict(img38)
       # check meteor yn
       meteor_yn_class = self.model_meteor_yn.predict(img)
       meteor_yn_confidence = (1 - meteor_yn_class[0][0]) * 100
@@ -413,6 +422,7 @@ class AllSkyAI():
       response['roi'] = roi
       response['ai_version'] = 2
       response['meteor_yn'] = meteor_yn
+      response['meteor_prev_yn'] = meteor_prev_yn
       response['meteor_yn_confidence'] = float(meteor_yn_confidence)
 
       if "fireball" in predicted_class or float(meteor_fireball_yn_confidence) > float(meteor_yn_confidence) :
