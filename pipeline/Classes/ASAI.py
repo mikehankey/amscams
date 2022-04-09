@@ -146,7 +146,7 @@ class AllSkyAI():
    def stop_server_process(self):
       print("Stopping AllSkyAI server...")
 
-   def load_all_models(self):
+   def load_all_models_OLD(self):
       """
          3 Primary Models Currently:
             meteor_yn_model.h5
@@ -171,6 +171,9 @@ class AllSkyAI():
       self.model_meteor_prev_yn =load_model('models/meteor_prev_yn.h5')
       #self.meteor_yn_labels = pickle.loads(open("models/meteor_yn.labels", "rb").read())
       self.model_meteor_yn.compile(loss='binary_crossentropy',
+              optimizer='rmsprop',
+              metrics=['accuracy'])
+      self.model_meteor_prev_yn.compile(loss='binary_crossentropy',
               optimizer='rmsprop',
               metrics=['accuracy'])
 
@@ -285,6 +288,23 @@ class AllSkyAI():
       i64 = image[y1:y2,x1:x2]
       return(i64)
  
+   def meteor_prev_yn(self,oimg):
+      # just check 1 small img for meteor YN and that is it. 
+      # speed is the goal here
+      width = 38
+      height = 38
+      imgfile = "temp.jpg"
+      if oimg.shape[0] != 38 or oimg.shape[1] != 38:
+         oimg = cv2.resize(oimg, (38,38))
+      cv2.imwrite(imgfile, oimg)
+
+      img38 = load_img(imgfile, target_size = (38,38))
+      img38 = img_to_array(img38).astype(np.float32) / 255.0 
+      img38 = np.expand_dims(img38, axis = 0)
+      meteor_prev_yn_class = self.model_meteor_prev_yn.predict(img38)
+      meteor_prev_yn = (1 - meteor_prev_yn_class[0][0]) * 100
+      return(meteor_prev_yn)
+
 
 
    def meteor_yn(self,root_fn,roi_file=None,oimg=None,roi=None):
@@ -325,19 +345,20 @@ class AllSkyAI():
 
 
       #img = np.reshape(img,[1,width,height,3])
-      #img_size = [width,height]
+      img_size = [int(width),int(height)]
 
       img = load_img(imgfile, target_size = img_size)
       img = img_to_array(img).astype(np.float32) / 255.0 
       img = np.expand_dims(img, axis = 0)
 
       img38 = load_img(imgfile, target_size = (38,38))
-      img38 = img_to_array(img).astype(np.float32) / 255.0 
-      img38 = np.expand_dims(img, axis = 0)
+      img38 = img_to_array(img38).astype(np.float32) / 255.0 
+      img38 = np.expand_dims(img38, axis = 0)
 
 
       
-      meteor_prev_yn = self.model_meteor_prev_yn.predict(img38)
+      meteor_prev_yn_class = self.model_meteor_prev_yn.predict(img38)
+      meteor_prev_yn = (1 - meteor_prev_yn_class[0][0]) * 100
       # check meteor yn
       meteor_yn_class = self.model_meteor_yn.predict(img)
       meteor_yn_confidence = (1 - meteor_yn_class[0][0]) * 100
@@ -379,6 +400,9 @@ class AllSkyAI():
          if meteor_fireball_yn_confidence >= confidence :
             predicted_class = "meteor_fireballs"
             confidence = meteor_fireball_yn_confidence
+         if meteor_prev_yn >= confidence :
+            predicted_class = "meteor"
+            confidence = meteor_prev_yn 
  
  
       # meteor or plane
@@ -445,13 +469,13 @@ class AllSkyAI():
       #response['meteor_or_firefly_confidence'] = float(meteor_or_firefly_confidence)
 
 
-      final_yn_conf = max([meteor_yn_confidence,meteor_fireball_yn_confidence])
+      final_yn_conf = max([meteor_yn_confidence,meteor_fireball_yn_confidence,meteor_prev_yn])
       #if "meteor" in response['mc_class']:
       #   final_yn_conf += response['mc_confidence']
       #else: 
       #   final_yn_conf -= (response['mc_confidence']/2)
 
-      if meteor_yn is True or meteor_fireball_yn is True or "meteor" in response['mc_class']:
+      if meteor_yn is True or meteor_fireball_yn is True or "meteor" in response['mc_class'] or meteor_prev_yn > 50:
          final_yn = True
       else:
          final_yn = False 
@@ -485,7 +509,6 @@ class AllSkyAI():
       height = 64
       # FOR METEOR Y/N PREDICT AND FIREBALL PREDICT!
       if roi is not None:
-         print(roi)
          try:
             x1, y1,x2,y2 = roi
          except:
@@ -956,6 +979,7 @@ class AllSkyAI():
             meteor_or_firefly_model.h5
       """
       self.model_meteor_yn = Sequential()
+      self.model_meteor_prev_yn = Sequential()
       self.model_meteor_fireball_yn = Sequential()
       self.model_meteor_or_plane = Sequential()
       self.model_fireball_or_plane = Sequential()
@@ -967,6 +991,12 @@ class AllSkyAI():
       self.model_meteor_yn.compile(loss='binary_crossentropy',
               optimizer='rmsprop',
               metrics=['accuracy'])
+
+      self.model_meteor_prev_yn =load_model('models/meteor_prev_yn.h5')
+      self.model_meteor_yn.compile(loss='binary_crossentropy',
+              optimizer='rmsprop',
+              metrics=['accuracy'])
+
 
       #self.model_meteor_yn.summary()
 

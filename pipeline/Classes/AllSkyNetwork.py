@@ -24,6 +24,14 @@ class AllSkyNetwork():
    def __init__(self):
       self.solving_node = "AWSB1"
       self.errors = []
+      if os.path.exists("admin_conf.json") is True:
+         self.admin_conf = load_json_file("admin_conf.json")
+         self.data_dir = self.admin_conf['data_dir']
+      else:
+         self.data_dir = "/mnt/ams2/"
+    
+  
+
       self.good_obs_json = None
       self.user =  os.environ.get("USERNAME")
       if self.user is None:
@@ -33,7 +41,7 @@ class AllSkyNetwork():
       self.home_dir = "/home/" + self.user + "/" 
       self.amscams_dir = self.home_dir + "amscams/"
 
-      self.local_event_dir = "/mnt/f/EVENTS"
+      self.local_event_dir = self.data_dir + "/EVENTS"
       self.db_dir = self.local_event_dir + "/DBS/"
       if os.path.exists(self.db_dir) is False:
          os.makedirs(self.db_dir)
@@ -54,7 +62,7 @@ class AllSkyNetwork():
       # once transmitted a remote URL will be hit to trigger an unzip process and upload to the S3FS from the AWS server
 
       # make / clean up the temp upload dir 
-      temp_dir = "/mnt/f/EVENTS/TEMP/"
+      temp_dir = self.data_dir + "/EVENTS/TEMP/"
       if os.path.exists(temp_dir) is False:
          os.makedirs(temp_dir)
       else:
@@ -130,7 +138,7 @@ class AllSkyNetwork():
       for ev in events:
          event_id = ev['event_id']
          event_dict[event_id] = ev
-      self.local_event_dir = "/mnt/f/EVENTS"
+      self.local_event_dir = self.data_dir + "/EVENTS"
 
       sql_events = self.sql_select_events(date.replace("_", ""))
       for row in sql_events:
@@ -172,6 +180,7 @@ class AllSkyNetwork():
 
       # DB FILE!
       self.db_file = self.db_dir + "/ALLSKYNETWORK_" + date + ".db"
+      print("DB FILE IS:", self.db_file)
       if os.path.exists(self.db_file) is False:
          os.system("cat ALLSKYNETWORK.sql | sqlite3 " + self.db_file)
       if os.path.exists(self.db_file) is False:
@@ -193,8 +202,11 @@ class AllSkyNetwork():
       local_size, tdd = get_file_info(self.all_obs_file + ".gz") 
       cloud_size, tdd = get_file_info(self.cloud_all_obs_file + ".gz") 
 
-      if os.path.exists(self.cloud_all_obs_gz_file) is False:
+      if os.path.exists(self.cloud_all_obs_gz_file) is False and os.path.exists(self.all_obs_file) is False:
+         print("Could not find:", self.cloud_all_obs_gz_file, "should we download it?")
+         input("Enter to continue (will start UDC process)")
          os.system("./DynaDB.py udc " + date)
+
       elif os.path.exists(self.all_obs_gz_file) is False and os.path.exists(self.cloud_all_obs_gz_file) is True: 
          print("COPY FILE:", self.cloud_all_obs_gz_file, self.all_obs_gz_file)
          shutil.copyfile(self.cloud_all_obs_gz_file, self.all_obs_gz_file)
@@ -385,14 +397,17 @@ class AllSkyNetwork():
       for minute in all_min_events:
          for event_id in all_min_events[minute]:
             event = all_min_events[minute][event_id]
-            print(c, "FINAL EVENTS:", event)
-            score_data = self.score_obs(event['plane_pairs'])
-            for score, key in score_data[0:100]:
-               ob1, ob2 = key.split("__")
-               gd = ["GOOD", key, ob1, ob2, event['stime'], "", "", ""]
-               if len(list(set(event['stations']))) > 1:
-                  self.insert_event(event)
-               print("Skip single station events.")
+            #ob1, ob2 = key.split("__")
+            if len(list(set(event['stations']))) > 1:
+               print(c, "FINAL EVENTS:", event)
+               self.insert_event(event)
+            #score_data = self.score_obs(event['plane_pairs'])
+            #for score, key in score_data[0:100]:
+            #   ob1, ob2 = key.split("__")
+            #   gd = ["GOOD", key, ob1, ob2, event['stime'], "", "", ""]
+            #   if len(list(set(event['stations']))) > 1:
+            #      self.insert_event(event)
+            #   print("Skip single station events.")
             #print(c, "Good planes:", gd[2], gd[3],result[0])
             c += 1
             
@@ -817,12 +832,14 @@ class AllSkyNetwork():
 
 
       print("MIN EVENTS:")
-      min_events = self.plane_test_min_events(min_events)
+      # maybe re-enable this later, but it takes too much time now
+      # should be parallel process later?
+      #min_events = self.plane_test_min_events(min_events)
 
       for me in min_events:
          print("MIN EVENT:", me)
          print(" Stations:", len(min_events[me]['stations']))
-         print("   Planes:", len(min_events[me]['plane_pairs']))
+         #print("   Planes:", len(min_events[me]['plane_pairs']))
          print("      Obs:", len(min_events[me]['files']))
 
       # good.append(("(GOOD)", key, obs_id_1, obs_id_2, station_dists[key]['min_dist'], start_time_1, start_time_2, time_diff))
@@ -1118,8 +1135,8 @@ class AllSkyNetwork():
       vals = [date + "%"]
       self.cur.execute(sql, vals)
       rows = self.cur.fetchall()
-      #print("ROWS:", len(rows))
-      #print("OBS DICT:", len(self.obs_dict.keys()))
+      print("ROWS:", len(rows))
+      print("OBS DICT:", len(self.obs_dict.keys()))
       for row in rows:
          (event_id, event_minute, revision, stations, obs_ids, event_start_time, event_start_times,  \
                  lats, lons, event_status, run_date, run_times) = row
@@ -1349,7 +1366,7 @@ class AllSkyNetwork():
       self.cloud_event_day_dir = "/mnt/archive.allsky.tv/EVENTS/" + y + "/" + m + "/" + d + "/"
       self.cloud_event_id_dir = self.cloud_event_day_dir + event_id + "/"
 
-      self.local_event_day_dir = "/mnt/f/EVENTS/" + y + "/" + m + "/" + d + "/"
+      self.local_event_day_dir = self.data_dir + "/EVENTS/" + y + "/" + m + "/" + d + "/"
       self.local_event_id_dir = self.local_event_day_dir + event_id + "/"
 
 
