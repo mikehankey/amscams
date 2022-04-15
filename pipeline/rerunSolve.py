@@ -37,7 +37,6 @@ for year in years :
             sday = str(day)
          all_days.append((year + "_" +  smon + "_" + sday))
 
-<<<<<<< HEAD
 for day in sorted(all_days,reverse=True)[27:100]:
    cmd =  "python3 AllSkyNetwork.py do_all " + day
    print(cmd)
