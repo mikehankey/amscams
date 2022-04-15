@@ -1,7 +1,7 @@
 from lib.PipeUtil import cfe, load_json_file, save_json_file, convert_filename_to_date_cam, get_trim_num, get_file_info, calc_dist
 import pymap3d as pm
 wgs84 = pm.Ellipsoid('wgs84');
-from numba import jit
+#from numba import jit
 from solveWMPL import convert_dy_obs, WMPL_solve
 import threading
 from multiprocessing import Process

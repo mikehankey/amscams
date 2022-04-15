@@ -12,6 +12,9 @@ from Classes.Detector import Detector
 
 class MinFile:
    def __init__(self, sd_filename):
+      self.json_conf = load_json_file("../conf/as6.json")
+      self.station_id = self.json_conf['site']['ams_id']
+      self.mask_img = None
       self.sd_filename = sd_filename
       self.fn = self.sd_filename.split("/")[-1]
       self.day = self.fn[0:10]
@@ -54,6 +57,13 @@ class MinFile:
       self.max_vals = []
       self.pos_vals = []
 
+   def get_mask(self):
+      self.mask_file = "/mnt/ams2/meteor_archive/" + self.station_id + "/CAL/MASKS/" + self.cam_id + "_mask.png"
+      if os.path.exists(self.mask_file) is True:
+         self.mask_img = cv2.imread(self.mask_file)
+      else:
+         self.mask_img = blank_image = np.zeros((1080,1920,3),dtype=np.uint8)
+
    def stack_stack(self, pic1, pic2):
       stacked_image=ImageChops.lighter(pic1,pic2)
       return(stacked_image)
@@ -79,6 +89,69 @@ class MinFile:
             noise += 1
       return(cont, noise)
 
+   def stack_only(self ):
+      if self.mask_img is None:
+         self.get_mask()
+      stacked_image = None
+      cap = cv2.VideoCapture(self.sd_filename)
+      active_mask = None
+      bg_stack = None
+      small_mask = None
+      last_frame = None
+      fc = 0
+      thresh_adj = 0
+      saved_frames = []
+      saved_frames_nums = []
+      while True:
+         grabbed , color_frame = cap.read()
+         if not grabbed and fc > 5:
+            break
+         frame = cv2.cvtColor(color_frame, cv2.COLOR_BGR2GRAY)
+         frame = cv2.resize(frame, (0,0),fx=.5, fy=.5)
+         if last_frame is not None:
+            sub = cv2.subtract(frame, last_frame)
+         else:
+            sub = cv2.subtract(frame, frame)
+
+         if active_mask is None and self.mask_img is not None:
+            active_mask = cv2.resize(self.mask_img,(frame.shape[1],frame.shape[0]))
+            active_mask = cv2.cvtColor(active_mask, cv2.COLOR_BGR2GRAY)
+            small_mask = cv2.resize(active_mask, (0,0),fx=.5, fy=.5)
+
+         
+         max_val = np.max(sub)
+         if max_val > 15 or fc < 10:
+            saved_frames.append(color_frame)
+            saved_frames_nums.append(fc)
+            #frame_pil = Image.fromarray(frame)
+            #if stacked_image is None:
+            #   stacked_image = self.stack_stack(frame_pil, frame_pil)
+            #else:
+            #   stacked_image = self.stack_stack(stacked_image, frame_pil)
+
+         #if fc <= 100:
+         #last_gray = gray
+         if fc % 100 == 0:
+            print(fc)
+         fc += 1
+         last_frame = frame
+
+
+      for img in saved_frames:
+         img_p = Image.fromarray(img)
+         if stacked_image is None:
+            stacked_image = self.stack_stack(img_p, img_p)
+         else:
+            stacked_image = self.stack_stack(stacked_image, img_p)
+
+      if stacked_image is not None:
+         stacked_image = np.asarray(stacked_image)
+         stacked_image = cv2.resize(stacked_image, (640,360))
+ 
+         cv2.imwrite(self.stack_file, np.asarray(stacked_image) ,[cv2.IMWRITE_JPEG_QUALITY, 70])
+         print("SF:", len(saved_frames))
+         print("Saved:", self.stack_file)
+
 
    def scan_and_stack(self, mask_img=None):
       stacked_image = None
@@ -100,6 +173,7 @@ class MinFile:
          #break when done
          if not grabbed and fc > 5:
             break
+         #frame = cv2.resize(frame, (640,360))
 
          # setup mask if it exists
          if active_mask is None and mask_img is not None:
@@ -211,6 +285,7 @@ class MinFile:
          print("Saved motion detection.", self.moving_file)
          save_json_file(self.moving_file, moving_objs)
       save_json_file(self.detect_file, detect_info)
+      print("Saved:", self.detect_file)
       return(detect_info, moving_objs)
 # MAIN SCRIPT
 if __name__ == "__main__":

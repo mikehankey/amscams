@@ -1,3 +1,5 @@
+#!/usr/bin/python3
+
 """ 
 
 This is the main stacker program and should be running all the time to stay ontop of the incoming data.
@@ -15,6 +17,8 @@ This program will only do a few things:
 
 """
 
+SHOW = 0
+
 from stack_fast import stack_only, get_patch_objects_in_stack, get_stars_in_stack
 import sqlite3
 import json
@@ -25,16 +29,18 @@ import sys
 from time import time
 from Classes.ASAI import AllSkyAI
 import cv2
+import datetime
 ASAI = AllSkyAI()
 ASAI.load_all_models()
+
 from get_contours import get_contours
 from collections import deque
 from Classes.Detector import Detector
 import socket
 DD = Detector()
 
-from Lib.Utils import save_json_file, load_json_file 
-#from lib.PipeUtil import save_json_file, load_json_file 
+#from Lib.Utils import save_json_file, load_json_file 
+from lib.PipeUtil import save_json_file, load_json_file 
 
 LEARNING_DIR = "F:/AI/DATASETS/MinFiles/"
 WEATHER_LEARNING_DIR = "F:/AI/DATASETS/MinFiles/"
@@ -63,7 +69,13 @@ def ai_client_program(roi_file=None):
    weather_condition = data['weather_condition']
    return(stars,non_stars, weather_condition)
 
-def track_objects(saved_frames, first_frame, blank_image, stack_image):
+def track_objects(root_fn, data_dir, saved_frames, first_frame, blank_image, stack_image):
+   print("TRACK OBJECTS:", data_dir, root_fn)
+   exit()
+   obj_dir = data_dir + "objects/"  
+   if os.path.exists(data_dir + "objects") is False:
+      os.makedirs(obj_dir)
+
    objects = {}
    for fn in saved_frames:
       show_frame = saved_frames[fn].copy()
@@ -72,15 +84,12 @@ def track_objects(saved_frames, first_frame, blank_image, stack_image):
       gray = cv2.cvtColor(sub_frame, cv2.COLOR_BGR2GRAY)
       _, thresh_img = cv2.threshold(gray, 15, 255, cv2.THRESH_BINARY)
 
-
       obj_cnts = get_contours(thresh_img)
       for x,y,w,h,intensity in obj_cnts:
          cv2.rectangle(thresh_img, (x,y), (x+w, y+h) , (128, 128, 128), 1)
          cx = x + (w/2)
          cy = y + (h/2)
          oid, objects = Detector.find_objects(fn,x,y,w,h,cx,cy,intensity,objects, 50)
-      #cv2.imshow('main', thresh_img)
-      #cv2.waitKey(30)
    good_objs = {}
    bad_objs = {}
    for obj_id in objects:
@@ -95,11 +104,21 @@ def track_objects(saved_frames, first_frame, blank_image, stack_image):
          h = max(objects[obj_id]['oys']) - min(objects[obj_id]['oys'])
          
          x1,y1,x2,y2, roi_img_1080p_224 = make_roi_img(x,y,w,h,224,stacked_image,thresh_img,(1920,1080))
+
+         # AI LOOKUP ON THE MOTION OBJECTS (KEEP THIS!?)
          resp = ASAI.meteor_yn("temp.jpg", None, roi_img_1080p_224)   
+         print(resp)
          objects[obj_id]['mc_class'] = resp['mc_class']
          objects[obj_id]['mc_class_confidence'] = resp['mc_class_confidence']
          objects[obj_id]['meteor_yn'] = resp['meteor_yn_confidence']
          objects[obj_id]['meteor_fireball_yn'] = resp['meteor_fireball_yn_confidence']
+
+         t_obj_dir = obj_dir + resp['mc_class'] + "/"
+         if os.path.exists(t_obj_dir) is False:
+            os.makedirs(t_obj_dir)
+         obj_file = t_obj_dir + root_fn + "_obj" + str(obj_id) + ".jpg" 
+         cv2.imwrite(obj_file,roi_img_1080p_224)
+         print("Saved ROI:", obj_file)
          if report['meteor_score'] > 0:
             good_objs[obj_id] = objects[obj_id]
             good_objs[obj_id]['report'] = report
@@ -155,15 +174,6 @@ def make_roi_img(x,y,w,h,roi_size,image,thresh_img, roi_src_image_size):
    temp_img = cv2.subtract(gray, thresh_gray)
 
    min_val, max_val, min_loc, (mx,my)= cv2.minMaxLoc(temp_img)       
-
-   #cv2.rectangle(temp_img, (x1,y1), (x2, y2) , (0, 0, 0), 1)
-   #cv2.imshow('main', temp_img)
-   #cv2.waitKey(30)
-
-   #x1 = int(mx - (roi_size / 2))
-   #y1 = int(my - (roi_size / 2))
-   #x2 = int(mx + (roi_size / 2))
-   #y2 = int(my + (roi_size / 2))
 
    if x1 < 0:
       x1 = 0 
@@ -224,10 +234,25 @@ def analyze_max_pxs(max_pxs):
    return(events)
 
 # MAIN PROGRAM HERE
+if len(sys.argv) <= 1:
+   date = datetime.datetime.now().strftime("%Y_%m_%d") 
+   vdir = "/mnt/ams2/SD/proc2/" + date + "/"
+   t_cam_id = "ALL"
+else:
+   date = sys.argv[1]
+   if date == "today":
+      date = datetime.datetime.now().strftime("%Y_%m_%d") 
+   if date == "yest":
+      date = datetime.datetime.today() - datetime.timedelta(days=1) 
 
-vdir = sys.argv[1]
-t_cam_id = sys.argv[2]
-cv2.namedWindow('main')
+   vdir = "/mnt/ams2/SD/proc2/" + date + "/"
+   if len(sys.argv) == 3:
+      t_cam_id = sys.argv[2]
+   else:
+      t_cam_id = "ALL"
+
+if SHOW == 1:
+   cv2.namedWindow('main')
 tfiles = os.listdir(vdir)
 
 if "\\" in vdir:
@@ -249,7 +274,7 @@ if date == "":
       - objects
 
 """
-data_dir = "Z:/"
+data_dir = "/mnt/ams2/"
 db_dir = data_dir + "/DBS/"
 db_file = db_dir + date + "_minfiles.db"
 
@@ -292,7 +317,7 @@ for tfile in sorted(mp4s):
    data['min_file'] = tfile
    vfile = vdir + tfile
    json_file = tfile.replace(".mp4", "-ai.json")
-
+   root_fn = tfile.replace(".mp4", "")
    if "trim" in vfile:
       print("Skip trim")
       continue
@@ -369,23 +394,24 @@ for tfile in sorted(mp4s):
             meteor_found = True
 
       #if last_blend is not None:
-      if False:
-         blend = cv2.addWeighted(clean_img, .5, marked_img, .5, .3)
-         lblend = cv2.addWeighted(blend, .5, last_blend, .5, .3)
-         show_pic = cv2.resize(lblend, (1280,720))
-         cv2.imshow('main', show_pic)
-         cv2.waitKey(30)
-      else:
-         blend = cv2.addWeighted(clean_img, .5, marked_img, .5, .3)
-         show_pic = cv2.resize(blend, (1280,720))
-
-         if meteor_found is True:
+      if SHOW == 1:
+         if False:
+            blend = cv2.addWeighted(clean_img, .5, marked_img, .5, .3)
+            lblend = cv2.addWeighted(blend, .5, last_blend, .5, .3)
+            show_pic = cv2.resize(lblend, (1280,720))
             cv2.imshow('main', show_pic)
             cv2.waitKey(30)
          else:
-            cv2.imshow('main', show_pic)
-            cv2.waitKey(30)
-      last_blend = blend
+            blend = cv2.addWeighted(clean_img, .5, marked_img, .5, .3)
+            show_pic = cv2.resize(blend, (1280,720))
+
+            if meteor_found is True:
+               cv2.imshow('main', show_pic)
+               cv2.waitKey(30)
+            else:
+               cv2.imshow('main', show_pic)
+               cv2.waitKey(30)
+         last_blend = blend
 
       continue
       # END FOLLOWUP BELOW HERE IS THE FIRST MIN STACK
@@ -465,19 +491,21 @@ for tfile in sorted(mp4s):
    # this is the dynamic mask to subtract from each frame to remove moon, stars and ground lights
    blank_image = first_frame
 
+   print("EVENTS:", len(events))
    if len(events) > 0:
       #input("before track objects")
-      meteor_objs, non_meteor_objs = track_objects(saved_frames, first_frame, blank_image, stacked_image)
+      meteor_objs, non_meteor_objs = track_objects(root_fn, vdir, saved_frames, first_frame, blank_image, stacked_image)
       #input("after track objects")
    else:
       meteor_objs = {}
       non_meteor_objs = {}
+   print("MOTION METEORS:", len(meteor_objs))
+   print("MOTION NON-METEORS:", len(non_meteor_objs))
 
    data['meteor_objs'] = meteor_objs
    data['non_meteor_objs'] = non_meteor_objs
    if len(meteor_objs) > 0:
       print("MOVING METEOR OBJECT FOUND!?")
-   SHOW = 0
    show_stacked_image = stacked_image.copy()
 
 

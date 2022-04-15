@@ -76,6 +76,18 @@ def update_all_obs_events(json_conf):
    save_json_file(update_log_file, update_log)
    save_json_file(corrupt_log_file, corrupt)
    print("SAVED:", update_log_file)
-      
 
-update_all_obs_events(json_conf)
+def update_events_for_day(json_conf, date):
+   station_id = json_conf['site']['ams_id']
+   mdir = "/mnt/ams2/meteors/" + date + "/" 
+   evfile = mdir + station_id + "_" + date + "_EVENTS.info"
+   if os.path.exists(evfile) is True:
+      my_events = load_json_file(evfile)
+      for ev in my_events:
+         print(my_events[ev])
+   print(evfile)
+      
+#old way?
+#update_all_obs_events(json_conf)
+day = sys.argv[1]
+update_events_for_day(json_conf,day)

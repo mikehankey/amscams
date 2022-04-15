@@ -33,6 +33,7 @@ class Events():
       self.day = None 
       #self.date = year + "_" + month + "_" + day
       self.fv = fv
+      self.meteor_dir = "/mnt/ams2/meteors/"
       self.event_dir = "/mnt/ams2/EVENTS/"
       self.cloud_event_dir = "/mnt/archive.allsky.tv/EVENTS/"
       self.all_events_file = self.event_dir + "ALL_EVENTS.json"
@@ -47,8 +48,8 @@ class Events():
       min_cnt_file = "/mnt/ams2/meteors/" + date + "/" + self.station_id + "_" + date + "_EVENTS.info"
       for station_id in network:
          year = date.split("_")[0]
+         self.year = year 
          day_url = "{:s}{:s}/METEORS/{:s}/{:s}/{:s}_OBS_IDS.info".format(self.cloud_host,station_id,year,date,date)
-         print(day_url)
 
          response = requests.get(day_url)
          content = response.content.decode()
@@ -58,12 +59,12 @@ class Events():
             print("No file.", day_url)
 
       for station_id in sorted(obs_ids):
-         print(station_id, len(obs_ids[station_id]))
+         #print(station_id, len(obs_ids[station_id]))
          obs_data = sorted(obs_ids[station_id], key=lambda x: (x[1]), reverse=False)
          for obs in obs_data:
+           
             day, time = obs[1].split(" ")
             hour_min = time[0:5]
-            print("   ", hour_min, time)
             if hour_min not in min_cnt:
                min_cnt[hour_min] = {} 
                min_cnt[hour_min]['stations'] = [] 
@@ -74,21 +75,61 @@ class Events():
             min_cnt[hour_min]['obs'].append(obs[0])
             min_cnt[hour_min]['times'].append(time)
             min_cnt[hour_min]['total_stations'] = len(set(min_cnt[hour_min]['stations']))
-       
 
+       
+      my_ms_obs = []
+      my_events = []
       for hour_min in min_cnt:
          if min_cnt[hour_min]['total_stations'] >= 2:
+            print("EVENT STATIONS:", min_cnt[hour_min]['stations'])
+            print("EVENT OBS:", min_cnt[hour_min]['obs'])
+            for i in range(0, len(min_cnt[hour_min]['stations'])):
+               st = min_cnt[hour_min]['stations'][i]
+               ob = min_cnt[hour_min]['obs'][i]
+               if st == self.station_id:
+                  print("MSOB:", ob)
+                  my_ms_obs.append(ob)
             if "pairs" not in min_cnt[hour_min]:
                min_cnt[hour_min]['pairs'] = {}
             min_cnt[hour_min]['pairs'] = self.find_make_pairs(min_cnt[hour_min], min_cnt[hour_min]['pairs'])
             if len(min_cnt[hour_min]['pairs']) >= 1:
                print(hour_min, len(min_cnt[hour_min]['pairs'].keys()), min_cnt[hour_min]['pairs'].keys()) 
 
+      mc = 0
+      for min in min_cnt:
+         mind = min_cnt[min]['total_stations']
+         if mind >= 2:
+            print(mc, min, min_cnt[min]['stations'])
+            mc += 1
+
+      save_data = {}
+      save_data['min_cnt'] = min_cnt
+      save_data['ms_obs'] = my_ms_obs
+
       try:
          save_json_file(min_cnt_file, min_cnt)
          print(min_cnt_file)
       except:
          print("nothing to save")
+
+      self.my_ms_obs = my_ms_obs
+      self.min_cnt = min_cnt
+
+      self.update_ms_obs(my_ms_obs)
+
+   def update_ms_obs(self, my_ms_obs):
+      
+      for min in self.min_cnt:
+         print(min)
+
+      for ob in my_ms_obs:
+         dt = ob[0:10]
+         
+         mfile = self.meteor_dir + dt + "/" + ob + ".json"
+         print(mfile)
+
+         # OPEN THIS FILE AND ADD THE OBS ID!
+      
  
    def find_make_pairs(self, ev_data, pairs):
       for i in range(0, len(ev_data['times'])):

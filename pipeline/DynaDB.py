@@ -1583,7 +1583,17 @@ def do_dyna_day(dynamodb, day):
    # FAST SYNC
    cmd = "python3 ./Meteor.py 10 " + day
    os.system(cmd)
- 
+
+   # sync up dyna deletes with local deletes 
+   cmd = "python3 Rec.py del_aws_day " + day 
+   print(cmd)
+   os.system(cmd) 
+
+   # run my events!
+   cmd = "python3 myEvents.py " + day 
+   print(cmd)
+   os.system(cmd) 
+
    save_json_file("dyn.log", dyn_log)
 
    #os.system("./rerun.py")
