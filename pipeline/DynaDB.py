@@ -1520,7 +1520,10 @@ def do_dyna_day(dynamodb, day):
    if cfe("dyn.log") == 0:
       dyn_log = {}
    else:
-      dyn_log = load_json_file("dyn.log")
+      try:
+         dyn_log = load_json_file("dyn.log")
+      except:
+         dyn_log = {}
    
    today = datetime.now().strftime("%Y_%m_%d")
    if today != day:
