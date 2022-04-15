@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/env python3
 allsky_console = """
   ____  _      _      _____ __  _  __ __
  /    || |    | |    / ___/|  |/ ]|  |  |

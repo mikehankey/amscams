@@ -146,7 +146,7 @@ class AllSkyAI():
    def stop_server_process(self):
       print("Stopping AllSkyAI server...")
 
-   def load_all_models(self):
+   def load_all_models_OLD(self):
       """
          3 Primary Models Currently:
             meteor_yn_model.h5
@@ -158,6 +158,7 @@ class AllSkyAI():
             meteor_or_firefly_model.h5
       """
       self.model_meteor_yn = Sequential()
+      self.model_meteor_prev_yn = Sequential()
       self.model_meteor_fireball_yn = Sequential()
       self.model_multi_class = Sequential()
 
@@ -167,8 +168,12 @@ class AllSkyAI():
          self.model_meteor_or_firefly = Sequential()
 
       self.model_meteor_yn =load_model('models/meteor_yn_i64.h5')
+      self.model_meteor_prev_yn =load_model('models/meteor_prev_yn.h5')
       #self.meteor_yn_labels = pickle.loads(open("models/meteor_yn.labels", "rb").read())
       self.model_meteor_yn.compile(loss='binary_crossentropy',
+              optimizer='rmsprop',
+              metrics=['accuracy'])
+      self.model_meteor_prev_yn.compile(loss='binary_crossentropy',
               optimizer='rmsprop',
               metrics=['accuracy'])
 
@@ -283,13 +288,227 @@ class AllSkyAI():
       i64 = image[y1:y2,x1:x2]
       return(i64)
  
+   def meteor_prev_yn(self,oimg):
+      # just check 1 small img for meteor YN and that is it. 
+      # speed is the goal here
+      width = 38
+      height = 38
+      imgfile = "temp.jpg"
+      if oimg.shape[0] != 38 or oimg.shape[1] != 38:
+         oimg = cv2.resize(oimg, (38,38))
+      cv2.imwrite(imgfile, oimg)
+
+      img38 = load_img(imgfile, target_size = (38,38))
+      img38 = img_to_array(img38).astype(np.float32) / 255.0 
+      img38 = np.expand_dims(img38, axis = 0)
+      meteor_prev_yn_class = self.model_meteor_prev_yn.predict(img38)
+      meteor_prev_yn = (1 - meteor_prev_yn_class[0][0]) * 100
+      return(meteor_prev_yn)
+
+
 
    def meteor_yn(self,root_fn,roi_file=None,oimg=None,roi=None):
       width = 64
       height = 64
       # FOR METEOR Y/N PREDICT AND FIREBALL PREDICT!
       if roi is not None:
-         print(roi)
+         try:
+            x1, y1,x2,y2 = roi
+         except:
+            x1,y1,x2,y2 = 0,0,0,0
+      else:
+         x1,y1,x2,y2 = 0,0,0,0
+      
+      if roi_file is not None:
+         oimg = cv2.imread(roi_file)
+         imgfile = roi_file
+      else:
+         imgfile = "temp.jpg"
+
+
+      imgfile_224 = imgfile.replace(".jpg", "224.jpg")
+
+      if roi_file is None:
+         imgfile = "temp.jpg"
+         cv2.imwrite(imgfile, oimg)
+      try:
+         img = oimg.copy()
+      except:
+         return(None)
+      img = cv2.resize(img,(224,224))
+      img_org = img.copy()
+      #img = self.image_64(img)
+
+      img = cv2.resize(img,(64,64))
+      img38 = cv2.resize(img,(38,38))
+
+
+
+      #img = np.reshape(img,[1,width,height,3])
+      img_size = [int(width),int(height)]
+
+      img = load_img(imgfile, target_size = img_size)
+      img = img_to_array(img).astype(np.float32) / 255.0 
+      img = np.expand_dims(img, axis = 0)
+
+      img38 = load_img(imgfile, target_size = (38,38))
+      img38 = img_to_array(img38).astype(np.float32) / 255.0 
+      img38 = np.expand_dims(img38, axis = 0)
+
+
+      
+      meteor_prev_yn_class = self.model_meteor_prev_yn.predict(img38)
+      meteor_prev_yn = (1 - meteor_prev_yn_class[0][0]) * 100
+      # check meteor yn
+      meteor_yn_class = self.model_meteor_yn.predict(img)
+      meteor_yn_confidence = (1 - meteor_yn_class[0][0]) * 100
+      if meteor_yn_class[0][0] > .5:
+         # NON METEOR DETECTED!
+         meteor_yn = False 
+      else:
+         # METEOR DETECTED
+         meteor_yn = True 
+
+
+
+      # check fireball yn
+      fireball_yn_class = self.model_meteor_fireball_yn.predict(img)
+      meteor_fireball_yn_confidence = (1 - fireball_yn_class[0][0]) * 100
+      if fireball_yn_class[0][0] > .5:
+         # NON METEOR DETECTED!
+         meteor_fireball_yn = False 
+      else:
+         # METEOR DETECTED
+         meteor_fireball_yn = True 
+
+      # check multi class
+
+      pred_result = self.model_multi_class.predict(img)
+
+      # Multi class i64
+      # extract the class label which has the highest corresponding probability
+      i = pred_result.argmax(axis=1)[0]
+      label = self.multi_class_labels.classes_[i]
+      predicted_class = label
+      confidence = pred_result[0][i] * 100
+
+      if False:
+         # Over-ride the mc_class on some conditions???
+         if meteor_yn_confidence >= confidence :
+            predicted_class = "meteor"
+            confidence = meteor_yn_confidence
+         if meteor_fireball_yn_confidence >= confidence :
+            predicted_class = "meteor_fireballs"
+            confidence = meteor_fireball_yn_confidence
+         if meteor_prev_yn >= confidence :
+            predicted_class = "meteor"
+            confidence = meteor_prev_yn 
+ 
+ 
+      # meteor or plane
+      if "meteor" in predicted_class or "plane" in predicted_class or "bird" in predicted_class or "bug" in predicted_class:
+         meteor_or_plane_class = self.model_meteor_or_plane.predict(img)
+         meteor_or_plane_confidence = (1 - meteor_or_plane_class[0][0]) * 100
+
+         if meteor_or_plane_class[0][0] > .5:
+            meteor_or_plane = ["PLANE", meteor_or_plane_confidence]
+         else:
+            meteor_or_plane = ["METEOR" , meteor_or_plane_confidence]
+      else:
+         meteor_or_plane = "" 
+
+      if "fireball" in predicted_class or "plane" in predicted_class or "bird" in predicted_class or "bug" in predicted_class:
+         fireball_or_plane_class = self.model_fireball_or_plane.predict(img)
+         fireball_or_plane_confidence = (1 - fireball_or_plane_class[0][0]) * 100
+
+         if fireball_or_plane_class[0][0] > .5:
+            fireball_or_plane = ["FIREBALL", fireball_or_plane_confidence]
+            #if fireball_or_plane_confidence >= .99:
+            #   predicted_class = "planes"
+         else:
+            fireball_or_plane = ["PLANE" , fireball_or_plane_confidence]
+            #if fireball_or_plane_confidence <= .01:
+            #   predicted_class = "meteor_fireball"
+      else:
+         fireball_or_plane = "" 
+
+      # determine final confidence for meteors, fireballs and planes!
+      final_conf = confidence
+
+      if predicted_class == "meteor" or predicted_class == 'meteor_fireballs':
+         # perfect score
+         if confidence > 98 and (meteor_yn_confidence  >= 99  or meteor_fireball_yn_confidence >= 99) and (meteor_or_plane[0] == "METEOR" or fireball_or_plane[0] == "FIREBALL"):
+            final_conf = 100
+      #if predicted_class == "meteor_fireball":
+      #if predicted_class == "plane":
+
+      response = {}
+      response['roi'] = roi
+      response['ai_version'] = 2
+      response['meteor_yn'] = meteor_yn
+      response['meteor_prev_yn'] = meteor_prev_yn
+      response['meteor_yn_confidence'] = float(meteor_yn_confidence)
+
+      if "fireball" in predicted_class or float(meteor_fireball_yn_confidence) > float(meteor_yn_confidence) :
+         meteor_fireball_yn = "Y"
+
+      response['meteor_fireball_yn'] = meteor_fireball_yn
+      response['meteor_fireball_yn_confidence'] = float(meteor_fireball_yn_confidence)
+      response['mc_class'] = predicted_class
+      response['mc_class_confidence'] = confidence # int(100 * np.max(score))
+
+      response['meteor_or_plane'] = meteor_or_plane 
+      response['fireball_or_plane'] = fireball_or_plane 
+      response['final_conf'] = final_conf
+
+      #response['meteor_or_plane_yn'] = meteor_or_plane_yn
+      #response['meteor_or_plane_confidence'] = float(meteor_or_plane_confidence)
+      #response['meteor_or_bird_yn'] = meteor_or_bird_yn
+      #response['meteor_or_bird_confidence'] = float(meteor_or_bird_confidence)
+      #response['meteor_or_firefly_yn'] = meteor_or_firefly_yn
+      #response['meteor_or_firefly_confidence'] = float(meteor_or_firefly_confidence)
+
+
+      final_yn_conf = max([meteor_yn_confidence,meteor_fireball_yn_confidence,meteor_prev_yn])
+      #if "meteor" in response['mc_class']:
+      #   final_yn_conf += response['mc_confidence']
+      #else: 
+      #   final_yn_conf -= (response['mc_confidence']/2)
+
+      if meteor_yn is True or meteor_fireball_yn is True or "meteor" in response['mc_class'] or meteor_prev_yn > 50:
+         final_yn = True
+      else:
+         final_yn = False 
+
+      response['final_meteor_yn'] = final_yn 
+      response['final_meteor_yn_conf'] = final_yn_conf
+      if final_yn is True:
+         # save sample
+         roi_file = self.img_repo_dir + "meteor/" + self.station_id + "_" + root_fn + "-ROI.jpg"
+      else:
+         roi_file = self.img_repo_dir + "non_meteor/" + self.station_id + "_" + root_fn + "-RX_" + str(x1) + "_" + str(y1) + "_" + str(x2) + "_" + str(y2) + ".jpg"
+
+      cv2.imwrite(roi_file, oimg)
+      response['roi_fn'] = roi_file.split("/")[-1]
+      response['root_fn'] = root_fn
+    
+      if False:
+         show_img = cv2.resize(oimg,(400,400))
+         desc = response['mc_class']
+         cv2.putText(show_img, desc,  (10,20), cv2.FONT_HERSHEY_SIMPLEX, .3, (255,255,255), 1)
+         cv2.imshow('AI', show_img)
+         cv2.waitKey(30)
+
+      return(response)
+
+
+
+
+   def meteor_yn_OLD(self,root_fn,roi_file=None,oimg=None,roi=None):
+      width = 64
+      height = 64
+      # FOR METEOR Y/N PREDICT AND FIREBALL PREDICT!
+      if roi is not None:
          try:
             x1, y1,x2,y2 = roi
          except:
@@ -424,8 +643,8 @@ class AllSkyAI():
       response['meteor_yn'] = meteor_yn
       response['meteor_yn_confidence'] = float(meteor_yn_confidence)
 
-      if "fireball" in predicted_class or float(meteor_fireball_yn_confidence) > float(meteor_yn_confidence) :
-         meteor_fireball_yn = "Y"
+      if "fireball" in predicted_class and (float(meteor_fireball_yn_confidence) > float(meteor_yn_confidence)) :
+         meteor_fireball_yn = True
 
       response['meteor_fireball_yn'] = meteor_fireball_yn
       response['meteor_fireball_yn_confidence'] = float(meteor_fireball_yn_confidence)
@@ -745,3 +964,72 @@ class AllSkyAI():
          nx1 = 0
       #print("NX", nx1,ny1,nx2,ny2)
       return(nx1,ny1,nx2,ny2)
+      
+      
+
+   def load_all_models(self):
+      """
+         3 Primary Models Currently:
+            meteor_yn_model.h5
+            meteor_fireball_yn_model.h5
+            multi_class_model.h5
+
+            meteor_or_plane_model.h5
+            meteor_or_bird_model.h5
+            meteor_or_firefly_model.h5
+      """
+      self.model_meteor_yn = Sequential()
+      self.model_meteor_prev_yn = Sequential()
+      self.model_meteor_fireball_yn = Sequential()
+      self.model_meteor_or_plane = Sequential()
+      self.model_fireball_or_plane = Sequential()
+      self.model_multi_class = Sequential()
+      self.model_weather_condition = Sequential()
+
+
+      self.model_meteor_yn =load_model('models/meteor_yn_i64.h5')
+      self.model_meteor_yn.compile(loss='binary_crossentropy',
+              optimizer='rmsprop',
+              metrics=['accuracy'])
+
+      self.model_meteor_prev_yn =load_model('models/meteor_prev_yn.h5')
+      self.model_meteor_yn.compile(loss='binary_crossentropy',
+              optimizer='rmsprop',
+              metrics=['accuracy'])
+
+
+      #self.model_meteor_yn.summary()
+
+      self.model_meteor_fireball_yn =load_model('models/fireball_yn_i64.h5')
+      self.model_meteor_fireball_yn.compile(loss='binary_crossentropy',
+              optimizer='rmsprop',
+              metrics=['accuracy'])
+
+      self.model_meteor_or_plane =load_model('models/meteor_or_plane_i64.h5')
+      self.model_meteor_or_plane.compile(loss='binary_crossentropy',
+              optimizer='rmsprop',
+              metrics=['accuracy'])
+
+      self.model_fireball_or_plane =load_model('models/fireball_or_plane_i64.h5')
+      self.model_fireball_or_plane.compile(loss='binary_crossentropy',
+              optimizer='rmsprop',
+              metrics=['accuracy'])
+
+      mo_lib = "moving_objects_i64"   
+      print("models/" + mo_lib + ".h5")
+      self.model_multi_class =load_model("models/" + mo_lib + ".h5")
+      self.model_multi_class.compile(loss='categorical_crossentropy',
+         optimizer='rmsprop',
+         metrics=['accuracy'])
+      self.multi_class_labels = pickle.loads(open("models/" + mo_lib + ".labels", "rb").read())
+
+
+      self.model_weather_condition =load_model("models/weather_condition.h5")
+      self.model_weather_condition.compile(loss='categorical_crossentropy',
+         optimizer='rmsprop',
+         metrics=['accuracy'])
+      self.weather_condition_classes = pickle.loads(open("models/weather_condition.labels", "rb").read())
+
+
+
+
