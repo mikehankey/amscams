@@ -1011,7 +1011,7 @@ class AllSkyAI():
 
       if os.path.exists("models/meteor_prev_yn.h5") is True:
          self.model_meteor_prev_yn =load_model('models/meteor_prev_yn.h5')
-         self.model_meteor_yn.compile(loss='binary_crossentropy',
+         self.model_meteor_prev_yn.compile(loss='binary_crossentropy',
               optimizer='rmsprop',
               metrics=['accuracy'])
       else:
