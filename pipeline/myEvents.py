@@ -66,7 +66,10 @@ def do_day(EV, date):
    ms_vdir = "/METEOR_SCAN/" + ev_date + "/"
    cloud_dir = "/mnt/archive.allsky.tv/" + EV.station_id + "/METEORS/" + EV.year + "/" + EV.date + "/"
    print("CLOUD DIR:", cloud_dir)
-   cloud_files = os.listdir(cloud_dir)
+   if os.path.exists(cloud_dir) is True:
+      cloud_files = os.listdir(cloud_dir)
+   else:
+      cloud_files = []
    for mso in EV.my_ms_obs:
       print("Multi Station Obs:", mso )
       MSO.load_obs(mso)
