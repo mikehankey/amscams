@@ -42,7 +42,7 @@ if os.path.exists("solve-hist.json"):
 else:
    solve_hist = {}
 
-for day in sorted(all_days,)[-92:]:
+for day in sorted(all_days,)[-15:]:
    #cmd = "./updateEventDay.py " + day #+ ">ev_run_log.txt 2>&1 "
    y,m,d = day.split("_")
    cloud_evf = "/mnt/archive.allsky.tv/EVENTS/" + y + "/" + m + "/" + d + "/" + day + "_dbfiles.tar.gz"
@@ -51,10 +51,10 @@ for day in sorted(all_days,)[-92:]:
       print(cmd)
       time.sleep(1)
       os.system(cmd)
-      cmd =  "python3 RN.py " + day
+      cmd =  "python3 RN.py RN " + day
       print(cmd)
       time.sleep(1)
-      #os.system(cmd)
+      os.system(cmd)
    else:
       print("Skip day:", day)
    solve_hist[day] = 1

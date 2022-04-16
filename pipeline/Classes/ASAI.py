@@ -303,7 +303,13 @@ class AllSkyAI():
       img38 = np.expand_dims(img38, axis = 0)
       meteor_prev_yn_class = self.model_meteor_prev_yn.predict(img38)
       meteor_prev_yn = (1 - meteor_prev_yn_class[0][0]) * 100
-      return(meteor_prev_yn)
+
+      meteor_or_star_class = self.model_meteor_or_star.predict(img38)
+      meteor_or_star = (1 - meteor_or_star_class[0][0]) * 100
+
+
+
+      return(meteor_prev_yn, meteor_or_star)
 
 
 
@@ -980,6 +986,8 @@ class AllSkyAI():
       """
       self.model_meteor_yn = Sequential()
       self.model_meteor_prev_yn = Sequential()
+      self.model_meteor_or_star = Sequential()
+
       self.model_meteor_fireball_yn = Sequential()
       self.model_meteor_or_plane = Sequential()
       self.model_fireball_or_plane = Sequential()
@@ -993,6 +1001,11 @@ class AllSkyAI():
               metrics=['accuracy'])
 
       self.model_meteor_prev_yn =load_model('models/meteor_prev_yn.h5')
+      self.model_meteor_yn.compile(loss='binary_crossentropy',
+              optimizer='rmsprop',
+              metrics=['accuracy'])
+
+      self.model_meteor_or_star =load_model('models/meteor_or_star.h5')
       self.model_meteor_yn.compile(loss='binary_crossentropy',
               optimizer='rmsprop',
               metrics=['accuracy'])
