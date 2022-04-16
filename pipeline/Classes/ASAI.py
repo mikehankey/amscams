@@ -167,9 +167,6 @@ class AllSkyAI():
          self.model_meteor_or_bird = Sequential()
          self.model_meteor_or_firefly = Sequential()
 
-      if os.path.exists("models/meteor_prev_yn.h5") is False:
-         print("Fetch meteor_prev_yn model")
-         os.system("cp /mnt/archive.allsky.tv/AMS1/ML/meteor_prev_yn.h5 ./models/")
 
       self.model_meteor_yn =load_model('models/meteor_yn_i64.h5')
       self.model_meteor_prev_yn =load_model('models/meteor_prev_yn.h5')
@@ -990,6 +987,17 @@ class AllSkyAI():
       self.model_multi_class = Sequential()
       self.model_weather_condition = Sequential()
 
+      if os.path.exists("models/meteor_prev_yn.h5") is False:
+         print("Fetch meteor_prev_yn model")
+         os.system("cp /mnt/archive.allsky.tv/AMS1/ML/meteor_prev_yn.h5 ./models/")
+
+      if os.path.exists("models/meteor_or_plane_i64.h5") is False:
+         print("Fetch meteor_prev_yn model")
+         os.system("cp /mnt/archive.allsky.tv/AMS1/ML/meteor_or_plane.h5 ./models/")
+
+      if os.path.exists("models/fireball_or_plane_i64.h5") is False:
+         print("Fetch meteor_prev_yn model")
+         os.system("cp /mnt/archive.allsky.tv/AMS1/ML/fireball_or_plane_i64.h5 ./models/")
 
       self.model_meteor_yn =load_model('models/meteor_yn_i64.h5')
       self.model_meteor_yn.compile(loss='binary_crossentropy',
