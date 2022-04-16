@@ -1028,15 +1028,21 @@ class AllSkyAI():
       else:
          self.model_meteor_fireball_yn = None
 
-      self.model_meteor_or_plane =load_model('models/meteor_or_plane_i64.h5')
-      self.model_meteor_or_plane.compile(loss='binary_crossentropy',
+      if os.path.exists("models/meteor_or_plane_i64.h5") is True:
+         self.model_meteor_or_plane =load_model('models/meteor_or_plane_i64.h5')
+         self.model_meteor_or_plane.compile(loss='binary_crossentropy',
               optimizer='rmsprop',
               metrics=['accuracy'])
+      else:
+         self.model_meteor_or_plane = None
 
-      self.model_fireball_or_plane =load_model('models/fireball_or_plane_i64.h5')
-      self.model_fireball_or_plane.compile(loss='binary_crossentropy',
+      if os.path.exists("models/meteor_or_plane_i64.h5") is True:
+         self.model_fireball_or_plane =load_model('models/fireball_or_plane_i64.h5')
+         self.model_fireball_or_plane.compile(loss='binary_crossentropy',
               optimizer='rmsprop',
               metrics=['accuracy'])
+      else:
+         self.model_fireball_or_plane = None
 
       mo_lib = "moving_objects_i64"   
       print("models/" + mo_lib + ".h5")
