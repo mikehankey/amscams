@@ -11,6 +11,14 @@ today = datetime.now().strftime("%Y_%m_%d")
 
 print("Init DB Starting.")
 AIDB = AllSkyDB()
+if len(sys.argv) > 2:
+   cmd = sys.argv[2]
+   if cmd == "report":
+      date = sys.argv[1]
+      AIDB.report_day(date)
+      exit()
+
+
 AIDB.load_stations()
 #exit()
 
@@ -18,6 +26,7 @@ if len(sys.argv) > 1:
    date = sys.argv[1]
 else:
    date = today
+
 if date == "today":
    date = today
 if date == "yest":
@@ -35,6 +44,7 @@ if date == "ALL" or date == "all":
    AIDB.check_update_status(date)
 
 else:
+
    AIDB.load_all_meteors(date)
    AIDB.verify_media_day(date)
    AIDB.reconcile_db(date)
@@ -44,3 +54,4 @@ else:
    AIDB.reducer(date)
    AIDB.check_update_status(date)
    #print("\rDONE DAY:" + date + "                                   ",end="" )
+   AIDB.check_update_status(date)

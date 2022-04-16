@@ -51,6 +51,16 @@ class AllSkyDB():
       self.check_update_status()
       #self.reconcile_db()
 
+   def report_day(self,date):
+      sql = "SELECT root_fn, hd_vid, meteor_yn, meteor_yn_conf,fireball_yn_conf,mc_class, roi, ai_resp from meteors where sd_vid like ?"
+      ivals = [date + "%"]
+      self.cur.execute(sql, ivals)
+      rows = self.cur.fetchall()
+      for row in rows:
+         root_fn, hd_vid, meteor_yn, meteor_yn_conf,fireball_yn_conf, mc_class, roi, ai_resp = row
+         print(root_fn, hd_vid, meteor_yn_conf, fireball_yn_conf, mc_class, ai_resp)
+ 
+
    def make_fresh_db(self):
       # check if the SQL DB is created yet.
       if os.path.exists(self.db_file) is False:
@@ -260,7 +270,7 @@ class AllSkyDB():
             if ai_r != "" and ai_r is not None:
                ai_r = json.loads(ai_r)
                if "ai_version" in ai_r: 
-                  if ai_r['ai_version'] >= 2:
+                  if ai_r['ai_version'] >= 3:
                      print("\rSkip at latest AI already.",end="")
                      continue
             roi = row[3]
@@ -304,6 +314,7 @@ class AllSkyDB():
                if os.path.exists(roi_file) is True:
                   roi_exists = 1
                   roi_img = cv2.imread(roi_file)
+                  roi_img = cv2.resize(roi_img,(64,64))
                   found += 1
                   if True:
                      resp = self.ASAI.meteor_yn(root_fn, None,roi_img, roi)
@@ -317,28 +328,15 @@ class AllSkyDB():
                   #   resp = None
                   if resp is not None:
                      sql = """ UPDATE meteors 
-                        SET meteor_yn = ?,
-                            meteor_yn_conf = ?,
-                            fireball_yn = ?,
+                        SET meteor_yn_conf = ?,
                             fireball_yn_conf = ?,
                             mc_class = ?,
                             mc_class_conf = ?,
                             reduced = ?,
                             ai_resp = ?
                         WHERE sd_vid = ? """
-                     if resp['meteor_yn'] is False and resp['meteor_fireball_yn'] is False:
-                        resp['final_meteor_yn'] = 0
-                     elif resp['meteor_yn'] is True or resp['meteor_fireball_yn'] is True:
-                        resp['final_meteor_yn'] = 1
-                     else:
-                        resp['final_meteor_yn'] = 0
- 
-                     if resp['meteor_fireball_yn_confidence'] > 50 and resp['mc_class'] == "meteor_fireball" and resp['meteor_fireball_yn_confidence'] > resp['meteor_yn_confidence']:
-                        resp['meteor_fireball_yn'] = 1
-                     else:
-                        resp['meteor_fireball_yn'] = 0
                      
-                     task = [resp['meteor_yn'],resp['meteor_yn_confidence'],resp['meteor_fireball_yn'], resp['meteor_fireball_yn_confidence'], resp['mc_class'], resp['mc_class_confidence'], reduced, json.dumps(resp) , root + ".mp4"]
+                     task = [resp['meteor_yn'],resp['fireball_yn'], resp['mc_class'], resp['mc_class_conf'], reduced, json.dumps(resp), resp['root_fn'] + ".mp4"]
 
                      self.cur.execute(sql, task)
                      self.con.commit()
@@ -373,27 +371,21 @@ class AllSkyDB():
       in_data['station_id']  = self.station_id
       in_data['camera_id']  = camera_id
       in_data['root_fn'] = resp['root_fn']
-      in_data['roi_fn'] = resp['roi_fn']
-      in_data['meteor_yn_final'] = resp['final_meteor_yn']
-      in_data['meteor_yn_final_conf'] = resp['final_meteor_yn_conf']
+      x1,y1,x2,y2 = resp['roi']
+      in_data['roi_fn'] = resp['root_fn'] + "_" + str(x1) + "_" + str(y1) + "_" + str(x2) + "_" + str(y2) + ".jpg"
+      if "roi_fn" not in resp:
+         resp['roi_fn'] = in_data['roi_fn']
       in_data['main_class'] = ""
       in_data['sub_class'] = ""
-      in_data['meteor_yn'] = resp['meteor_yn']
-      in_data['meteor_yn_conf'] = resp['meteor_yn_confidence']
-      in_data['fireball_yn'] = resp['meteor_fireball_yn']
-      in_data['fireball_yn_conf'] = resp['meteor_fireball_yn_confidence']
+      in_data['meteor_yn_conf'] = resp['meteor_yn']
+      in_data['fireball_yn_conf'] = resp['fireball_yn']
       in_data['multi_class'] = resp['mc_class']
-      in_data['multi_class_conf'] = resp['mc_class_confidence']
-      in_data['human_confirmed'] = 0 
-      in_data['human_label'] = ""
-      in_data['human_roi'] = ""
-      in_data['suggest_class'] = ""
-      in_data['ignore'] = 0
+      in_data['multi_class_conf'] = resp['mc_class_conf']
       sql = """
-             INSERT OR REPLACE INTO ml_samples(station_id, camera_id, root_fn, roi_fn, meteor_yn_final, meteor_yn_final_conf, main_class, sub_class, meteor_yn, meteor_yn_conf, fireball_yn, fireball_yn_conf, multi_class, multi_class_conf, human_confirmed, human_label, human_roi, suggest_class, ignore) 
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?)
+             INSERT OR REPLACE INTO ml_samples(station_id, camera_id, root_fn, roi_fn, meteor_yn_conf, fireball_yn_conf, multi_class, multi_class_conf) 
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?)
       """
-      ivals = [self.station_id, camera_id, resp['root_fn'], resp['roi_fn'], resp['final_meteor_yn'], resp['final_meteor_yn_conf'], "", "",  resp['meteor_yn'],  resp['meteor_yn_confidence'], resp['meteor_fireball_yn'], resp['meteor_fireball_yn_confidence'], resp['mc_class'], resp['mc_class_confidence'], 0 , "", "", "", 0]
+      ivals = [self.station_id, camera_id, resp['root_fn'], resp['roi_fn'], resp['meteor_yn'], resp['fireball_yn'], resp['mc_class'], resp['mc_class_conf']]
       self.cur.execute(sql, ivals)
       self.con.commit()
 

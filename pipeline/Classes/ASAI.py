@@ -47,7 +47,6 @@ class AllSkyAI():
       self.corrupt_json_file = self.ai_data_dir + self.station_id + "_corrupt_json.json"
       self.ai_missing_file = self.ai_data_dir + self.station_id + "_ai_missing.json"
 
-
       if os.path.exists(self.machine_data_file) is True:
          self.machine_data = load_json_file(self.machine_data_file)
       else:
@@ -146,71 +145,6 @@ class AllSkyAI():
    def stop_server_process(self):
       print("Stopping AllSkyAI server...")
 
-   def load_all_models_OLD(self):
-      """
-         3 Primary Models Currently:
-            meteor_yn_model.h5
-            meteor_fireball_yn_model.h5
-            multi_class_model.h5
-
-            meteor_or_plane_model.h5
-            meteor_or_bird_model.h5
-            meteor_or_firefly_model.h5
-      """
-      self.model_meteor_yn = Sequential()
-      self.model_meteor_prev_yn = Sequential()
-      self.model_meteor_fireball_yn = Sequential()
-      self.model_multi_class = Sequential()
-
-      if False:
-         self.model_meteor_or_plane = Sequential()
-         self.model_meteor_or_bird = Sequential()
-         self.model_meteor_or_firefly = Sequential()
-
-
-      self.model_meteor_yn =load_model('models/meteor_yn_i64.h5')
-      self.model_meteor_prev_yn =load_model('models/meteor_prev_yn.h5')
-      #self.meteor_yn_labels = pickle.loads(open("models/meteor_yn.labels", "rb").read())
-      self.model_meteor_yn.compile(loss='binary_crossentropy',
-              optimizer='rmsprop',
-              metrics=['accuracy'])
-      self.model_meteor_prev_yn.compile(loss='binary_crossentropy',
-              optimizer='rmsprop',
-              metrics=['accuracy'])
-
-      self.model_meteor_yn.summary()
-
-      self.model_meteor_fireball_yn =load_model('models/fireball_yn_i64.h5')
-      #self.fireball_yn_labels = pickle.loads(open("models/fireball_yn.labels", "rb").read())
-      self.model_meteor_fireball_yn.compile(loss='binary_crossentropy',
-              optimizer='rmsprop',
-              metrics=['accuracy'])
-
-      
-      #self.model_meteor_or_plane =load_model('meteor_or_plane_model.h5')
-      #self.model_meteor_or_plane.compile(loss='binary_crossentropy',
-      #        optimizer='rmsprop',
-      #        metrics=['accuracy'])
-
-      #self.model_meteor_or_bird =load_model('meteor_or_bird_model.h5')
-      #self.model_meteor_or_bird.compile(loss='binary_crossentropy',
-      #        optimizer='rmsprop',
-      #        metrics=['accuracy'])
-
-      #self.model_meteor_or_firefly =load_model('meteor_or_firefly_model.h5')
-      #self.model_meteor_or_firefly.compile(loss='binary_crossentropy',
-      #        optimizer='rmsprop',
-      #        metrics=['accuracy'])
-
-
-      self.model_multi_class =load_model("models/moving_objects_i64.h5")
-      self.model_multi_class.compile(loss='categorical_crossentropy',
-         optimizer='rmsprop',
-         metrics=['accuracy'])
-      self.multi_class_labels = pickle.loads(open("models/moving_objects_i64.labels", "rb").read())
-      #self.lb = pickle.loads(open(label_file_path, "rb").read())
-
-
    def load_my_model(self, model_file = None):
       if model_file is None:
          model_file = "multi_class_model.h5"
@@ -304,19 +238,103 @@ class AllSkyAI():
       img38 = np.expand_dims(img38, axis = 0)
       meteor_prev_yn_class = self.model_meteor_prev_yn.predict(img38)
       meteor_prev_yn = (1 - meteor_prev_yn_class[0][0]) * 100
-
-      meteor_or_star_class = self.model_meteor_or_star.predict(img38)
-      meteor_or_star = (1 - meteor_or_star_class[0][0]) * 100
+ 
+      if model_meteor_or_star is not None:
+         meteor_or_star_class = self.model_meteor_or_star.predict(img38)
+         meteor_or_star = (1 - meteor_or_star_class[0][0]) * 100
+      else:
+         meteor_or_star = None
 
 
 
       return(meteor_prev_yn, meteor_or_star)
 
-
-
    def meteor_yn(self,root_fn,roi_file=None,oimg=None,roi=None):
+      # input - root_fn (orig fn for file ROI)
+      # roi_file - direct link to input roi
+      # oimg - cv img var - alternative to passing in roi_file
+      # roi - [x1,y1,x2,y2] 
+      # returns :
+      # ai_resp object containing meteor_yn,fireball_yn,mc_class,mc_conf
+      ai_resp = {}
+      ai_resp['ai_version'] = 3
+      ai_resp['root_fn'] = root_fn
+      ai_resp['meteor_yn'] = 0
+      ai_resp['fireball_yn'] = 0
+      ai_resp['mc_class'] = ""
+      ai_resp['mc_class_conf'] = 0
+      if roi is not None:
+         try:
+            x1, y1,x2,y2 = roi
+         except:
+            x1,y1,x2,y2 = 0,0,0,0
+      else:
+         x1,y1,x2,y2 = 0,0,0,0
+      ai_resp['roi'] = [x1,y1,x2,y2] 
+      
+      if roi_file is not None:
+         oimg = cv2.imread(roi_file)
+         imgfile = roi_file
+      else:
+         imgfile = "temp.jpg"
+
+      if roi_file is None:
+         imgfile = "temp.jpg"
+         cv2.imwrite(imgfile, oimg)
+      try:
+         img = oimg.copy()
+      except:
+         return(None)
+
+      img = load_img(imgfile, target_size = (64,64))
+      img = img_to_array(img).astype(np.float32) / 255.0 
+      img = np.expand_dims(img, axis = 0)
+
+      img38 = load_img(imgfile, target_size = (38,38))
+      img38 = img_to_array(img38).astype(np.float32) / 255.0 
+      img38 = np.expand_dims(img38, axis = 0)
+
+      if "meteor_prev_yn" in self.models:
+         print("Trying Prev:", img38.shape)
+         meteor_prev_yn_class = self.models['meteor_prev_yn'].predict(img38)
+         meteor_prev_yn = (1 - meteor_prev_yn_class[0][0]) * 100
+         ai_resp['meteor_yn'] = meteor_prev_yn
+
+      # check meteor yn
+      if "meteor_yn_i64" in self.models:
+         print("Trying YN:", img.shape)
+         meteor_yn_class = self.models['meteor_yn_i64'].predict(img)
+         meteor_yn_confidence = (1 - meteor_yn_class[0][0]) * 100
+         ai_resp['meteor_yn'] = meteor_yn_confidence
+
+      # check fireball yn
+      if "fireball_yn_i64" in self.models:
+         meteor_yn_class = self.models['fireball_yn_i64'].predict(img)
+         meteor_yn_confidence = (1 - meteor_yn_class[0][0]) * 100
+         ai_resp['fireball_yn'] = meteor_yn_confidence
+
+      # check multi class
+
+      if "moving_objects_i64" in self.models:
+         pred_result = self.models['moving_objects_i64'].predict(img)
+
+         # Multi class i64
+         # extract the class label which has the highest corresponding probability
+         i = pred_result.argmax(axis=1)[0]
+         label = self.multi_class_labels.classes_[i]
+         predicted_class = label
+         confidence = pred_result[0][i] * 100
+         ai_resp['mc_class'] = predicted_class 
+         ai_resp['mc_class_conf'] = confidence
+      print("METEOR YN RESP:", ai_resp)
+      input("Waiting")
+      return(ai_resp)
+
+   def meteor_yn_last(self,root_fn,roi_file=None,oimg=None,roi=None):
       width = 64
       height = 64
+      meteor_or_plane = ""
+      fireball_or_plane = ""
       # FOR METEOR Y/N PREDICT AND FIREBALL PREDICT!
       if roi is not None:
          try:
@@ -367,6 +385,10 @@ class AllSkyAI():
       meteor_prev_yn_class = self.model_meteor_prev_yn.predict(img38)
       meteor_prev_yn = (1 - meteor_prev_yn_class[0][0]) * 100
       # check meteor yn
+      if self.model_meteor_yn is None:
+         print("Models are not fully loaded. can't run.")
+         exit()
+         return(None)
       meteor_yn_class = self.model_meteor_yn.predict(img)
       meteor_yn_confidence = (1 - meteor_yn_class[0][0]) * 100
       if meteor_yn_class[0][0] > .5:
@@ -425,7 +447,7 @@ class AllSkyAI():
                meteor_or_plane = ["METEOR" , meteor_or_plane_confidence]
 
       if "fireball" in predicted_class or "plane" in predicted_class or "bird" in predicted_class or "bug" in predicted_class:
-         if fireball_or_plane is not None:
+         if self.model_fireball_or_plane is not None:
             fireball_or_plane_class = self.model_fireball_or_plane.predict(img)
             fireball_or_plane_confidence = (1 - fireball_or_plane_class[0][0]) * 100
 
@@ -972,10 +994,45 @@ class AllSkyAI():
          nx1 = 0
       #print("NX", nx1,ny1,nx2,ny2)
       return(nx1,ny1,nx2,ny2)
-      
-      
 
    def load_all_models(self):
+      self.models = {}
+      self.multi_class_labels = pickle.loads(open("models/moving_objects_i64.labels", "rb").read())
+      bin_model_files = ["meteor_prev_yn","meteor_yn_i64", "fireball_yn_i64"]
+      cat_model_files = ["moving_objects_i64", "weather_condition"]
+      for mf in bin_model_files:
+         if os.path.exists("models/" + mf + ".h5") is False:
+            os.system("cp /mnt/archive.allsky.tv/AMS1/ML/" + mf + ".h5 ./models/" + mf)
+         if os.path.exists('models/' + mf + '.h5') is True:
+            try:
+               self.models[mf] = load_model('models/' + mf + '.h5')
+               self.models[mf].compile(loss='binary_crossentropy',
+                  optimizer='rmsprop',
+                  metrics=['accuracy'])
+               print("loaded models/" + mf)
+            except:
+               print("loading exception/" + mf)
+         else:
+            print("not found models/" + mf + ".h5")
+            self.models[mf] = None
+
+      for mf in cat_model_files:
+         if os.path.exists("models/" + mf + ".h5") is False:
+            os.system("cp /mnt/archive.allsky.tv/AMS1/ML/" + mf + ".h5 ./models/" + mf)
+         if True:
+            try:
+               self.models[mf] = load_model("models/" + mf + ".h5")
+               self.models[mf].compile(loss='binary_crossentropy',
+                  optimizer='rmsprop',
+                  metrics=['accuracy'])
+               print("loaded models/" + mf)
+            except:
+               self.models[mf] = None
+               print("not found models/" + mf)
+      print("Loaded models: ", self.models.keys())
+         
+
+   def load_all_models_old(self):
       """
          3 Primary Models Currently:
             meteor_yn_model.h5
@@ -986,76 +1043,88 @@ class AllSkyAI():
             meteor_or_bird_model.h5
             meteor_or_firefly_model.h5
       """
+      # binary yn meteor models 
       self.model_meteor_yn = Sequential()
       self.model_meteor_prev_yn = Sequential()
-      self.model_meteor_or_star = Sequential()
 
-      self.model_meteor_fireball_yn = Sequential()
-      self.model_meteor_or_plane = Sequential()
-      self.model_fireball_or_plane = Sequential()
+      # binary A or B meteor models 
+      # self.model_meteor_or_star = Sequential()
+      # self.model_meteor_or_plane = Sequential()
+      # self.model_fireball_or_plane = Sequential()
+
+      # Multi class object and weather models 
       self.model_multi_class = Sequential()
       self.model_weather_condition = Sequential()
 
-      if os.path.exists("models/meteor_prev_yn.h5") is False:
-         print("Fetch meteor_prev_yn model")
-         os.system("cp /mnt/archive.allsky.tv/AMS1/ML/meteor_prev_yn.h5 ./models/")
+      model_files = ["meteor_prev_yn.h5","meteor_yn_i64.h5", "meteor_or_plane_i64.h5", "fireball_or_plane_i64.h5", "meteor_or_star.h5", "moving_objects_i64.h5", "weather_condition.h5"]
+      # copy model files if they don't exist already!
+      #if os.path.exists("models/meteor_prev_yn.h5") is False:
+      #   print("Fetch meteor_prev_yn model")
+      #   os.system("cp /mnt/archive.allsky.tv/AMS1/ML/meteor_prev_yn.h5 ./models/")
 
-      if os.path.exists("models/meteor_or_plane_i64.h5") is False:
-         print("Fetch meteor_prev_yn model")
-         os.system("cp /mnt/archive.allsky.tv/AMS1/ML/meteor_or_plane.h5 ./models/")
-
-      if os.path.exists("models/fireball_or_plane_i64.h5") is False:
-         print("Fetch meteor_prev_yn model")
-         os.system("cp /mnt/archive.allsky.tv/AMS1/ML/fireball_or_plane_i64.h5 ./models/")
-
-
-      if os.path.exists("models/fireball_or_plane_i64.h5") is True:
-         self.model_meteor_yn =load_model('models/meteor_yn_i64.h5')
-         self.model_meteor_yn.compile(loss='binary_crossentropy',
+      if False:
+         # these models we don't use anymore?
+         if os.path.exists("models/fireball_or_plane_i64.h5") is True:
+            self.model_meteor_yn =load_model('models/meteor_yn_i64.h5')
+            self.model_meteor_yn.compile(loss='binary_crossentropy',
               optimizer='rmsprop',
               metrics=['accuracy'])
-      else:
-         self.model_meteor_yn = None
+            print("loaded fireball_or_plane_i64.h5")
+         else:
+            self.model_meteor_yn = None
+            print("Not found: models/meteor_meteor_yn.h5") 
 
-      if os.path.exists("models/meteor_prev_yn.h5") is True:
-         self.model_meteor_prev_yn =load_model('models/meteor_prev_yn.h5')
-         self.model_meteor_prev_yn.compile(loss='binary_crossentropy',
+         if os.path.exists("models/meteor_prev_yn.h5") is True:
+            self.model_meteor_prev_yn =load_model('models/meteor_prev_yn.h5')
+            self.model_meteor_prev_yn.compile(loss='binary_crossentropy',
               optimizer='rmsprop',
               metrics=['accuracy'])
-      else:
-         self.model_meteor_prev_yn = None
+            print("loaded meteor_prev_yn.h5")
+         else:
+            self.model_meteor_prev_yn = None
+            print("Not found: models/meteor_prev_yn.h5") 
 
-      self.model_meteor_or_star =load_model('models/meteor_or_star.h5')
-      self.model_meteor_yn.compile(loss='binary_crossentropy',
+         if os.path.exists("models/meteor_or_star.h5") is True:
+            self.model_meteor_or_star =load_model('models/meteor_or_star.h5')
+            self.model_meteor_yn.compile(loss='binary_crossentropy',
               optimizer='rmsprop',
               metrics=['accuracy'])
+            print("loaded meteor_or_star.h5")
+         else:
+            self.model_meteor_or_star = None
+            print("Not found: models/meteor_or_star.h5") 
 
 
-      #self.model_meteor_yn.summary()
 
-      if os.path.exists("models/fireball_or_plane_i64.h5") is True:
-         self.model_meteor_fireball_yn =load_model('models/fireball_yn_i64.h5')
-         self.model_meteor_fireball_yn.compile(loss='binary_crossentropy',
+         if os.path.exists("models/fireball_or_plane_i64.h5") is True:
+            self.model_meteor_fireball_yn =load_model('models/fireball_yn_i64.h5')
+            self.model_meteor_fireball_yn.compile(loss='binary_crossentropy',
               optimizer='rmsprop',
               metrics=['accuracy'])
-      else:
-         self.model_meteor_fireball_yn = None
+            print("loaded fireball_yn_i64.h5")
+         else:
+            self.model_meteor_fireball_yn = None
+            print("Not found: models/meteor_or_fireball_yn.h5") 
 
-      if os.path.exists("models/meteor_or_plane_i64.h5") is True:
-         self.model_meteor_or_plane =load_model('models/meteor_or_plane_i64.h5')
-         self.model_meteor_or_plane.compile(loss='binary_crossentropy',
+         if os.path.exists("models/meteor_or_plane_i64.h5") is True:
+            self.model_meteor_or_plane =load_model('models/meteor_or_plane_i64.h5')
+            self.model_meteor_or_plane.compile(loss='binary_crossentropy',
+                 optimizer='rmsprop',
+                 metrics=['accuracy'])
+         else:
+            self.model_meteor_or_plane = None
+            print("Not found: models/meteor_or_plane.h5") 
+            print("loaded meteor_or_plane.h5")
+
+         if os.path.exists("models/meteor_or_plane_i64.h5") is True:
+            self.model_fireball_or_plane =load_model('models/fireball_or_plane_i64.h5')
+            self.model_fireball_or_plane.compile(loss='binary_crossentropy',
               optimizer='rmsprop',
               metrics=['accuracy'])
-      else:
-         self.model_meteor_or_plane = None
-
-      if os.path.exists("models/meteor_or_plane_i64.h5") is True:
-         self.model_fireball_or_plane =load_model('models/fireball_or_plane_i64.h5')
-         self.model_fireball_or_plane.compile(loss='binary_crossentropy',
-              optimizer='rmsprop',
-              metrics=['accuracy'])
-      else:
-         self.model_fireball_or_plane = None
+         else:
+            self.model_fireball_or_plane = None
+            print("Not found: models/fireball_or_plane.h5") 
+            print("loaded fireball_or_plane.h5")
 
       mo_lib = "moving_objects_i64"   
       print("models/" + mo_lib + ".h5")
@@ -1072,10 +1141,13 @@ class AllSkyAI():
             optimizer='rmsprop',
             metrics=['accuracy'])
          self.weather_condition_classes = pickle.loads(open("models/weather_condition.labels", "rb").read())
+         print("loaded weather_condition.h5")
       else:
          self.model_weather_condition = None
+         print("Not found: models/weather_condition.h5") 
 
 
-
+      print("Models loaded")
+      input("waiting")
 
 
