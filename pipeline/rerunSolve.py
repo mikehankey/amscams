@@ -37,6 +37,14 @@ for year in years :
             sday = str(day)
          all_days.append((year + "_" +  smon + "_" + sday))
 
+for day in sorted(all_days,reverse=True)[27:100]:
+   cmd =  "python3 AllSkyNetwork.py do_all " + day
+   print(cmd)
+   os.system(cmd)
+   cmd =  "python3 RN.py RN " + day
+   print(cmd)
+   os.system(cmd)
+
 if os.path.exists("solve-hist.json"):
    solve_hist = load_json_file("solve-hist.json")
 else:

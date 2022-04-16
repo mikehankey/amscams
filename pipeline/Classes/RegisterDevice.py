@@ -39,8 +39,36 @@ class RegisterDevice():
          else:
             self.mac_info[key]['ip'] = "" 
             self.network_mac_addr = self.mac_info[key]['mac_addr']
-      print("CAMS MAC:", self.cams_mac_addr)
-      print("NETWORK MAC:", self.network_mac_addr)
+      try:
+         print("CAMS MAC:", self.cams_mac_addr)
+      except:
+         self.cams_mac_addr = None
+      try:
+         print("NET MAC:", self.network_mac_addr)
+      except:
+         self.network_mac_addr= None
+      if self.network_mac_addr is None:
+         print("CAMS ETH INTERFACE NOT FOUND")
+         exit()
+
+      #
+      #data = json.loads(get("http://ip.jsontest.com/").text)
+      data = {}
+      data['ip'] = "0.0.0.0"
+      self.public_ip = data["ip"]
+      json_conf = load_json_file("../conf/as6.json")
+
+      json_conf['mac_addr'] = self.mac_addr
+      json_conf['api_key'] = self.mac_addr
+      station_data = self.json_conf2_dyna_station(json_conf)
+      station_data['mac_addr'] = self.mac_addr
+      station_data['api_key'] = self.mac_addr
+      station_data['public_ip'] = self.public_ip
+      station_data['registration'] = {}
+      station_data['registration']['register_date'] = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+      json_conf['registration'] = station_data['registration']
+
+
       if self.mac_addr is None:
          print("CAMS ETH INTERFACE NOT FOUND")
          exit()

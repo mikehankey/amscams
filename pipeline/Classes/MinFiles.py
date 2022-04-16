@@ -1,14 +1,15 @@
 import sys
 import os
 import glob
-#import cv2
+import cv2
 import numpy as np
 from PIL import ImageFont, ImageDraw, Image, ImageChops
 
 
 
 from lib.PipeUtil import cfe, load_json_file, save_json_file, fn_dir, load_mask_imgs
-from Classes.Detector import Detector
+from Detector import Detector
+
 
 class MinFiles:
    def __init__(self):
@@ -87,3 +88,4 @@ class MinFiles:
       time_est2 = int(((files_left * 4) / 60)/60)
       print("Time Estimate @ 8 seconds per file: ", time_est, "hours")
       print("Time Estimate @ 4 seconds per file: ", time_est2, "hours")
+>>>>>>> 90c103db209317cac2b41b58b9d9af01c61fab77
