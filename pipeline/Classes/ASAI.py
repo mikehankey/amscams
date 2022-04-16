@@ -1053,7 +1053,7 @@ class AllSkyAI():
       self.multi_class_labels = pickle.loads(open("models/" + mo_lib + ".labels", "rb").read())
 
 
-      if os.path.exits("models/weather_condition.h5") is True:
+      if os.path.exists("models/weather_condition.h5") is True:
          self.model_weather_condition =load_model("models/weather_condition.h5")
          self.model_weather_condition.compile(loss='categorical_crossentropy',
             optimizer='rmsprop',
