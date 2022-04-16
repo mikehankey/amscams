@@ -77,6 +77,8 @@ def do_day(EV, date):
       # for each MSO we should make sure ALL content is uploaded 
       # We should also check the AI?
    print(ev_html)
+   if os.path.exists("/mnt/ams2/" + ms_vdir) is False:
+      os.makedirs("/mnt/ams2/" + ms_vdir)
    fp = open("/mnt/ams2/" + ms_vdir + "events.html", "w")
    fp.write(ev_html)
    print("saved /mnt/ams2/" + ms_vdir + "events.html")
