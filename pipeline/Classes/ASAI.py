@@ -407,31 +407,32 @@ class AllSkyAI():
  
  
       # meteor or plane
+      meteor_or_plane = "" 
       if "meteor" in predicted_class or "plane" in predicted_class or "bird" in predicted_class or "bug" in predicted_class:
-         meteor_or_plane_class = self.model_meteor_or_plane.predict(img)
-         meteor_or_plane_confidence = (1 - meteor_or_plane_class[0][0]) * 100
+         if meteor_or_plane is not None:
+            meteor_or_plane_class = self.model_meteor_or_plane.predict(img)
+            meteor_or_plane_confidence = (1 - meteor_or_plane_class[0][0]) * 100
 
-         if meteor_or_plane_class[0][0] > .5:
-            meteor_or_plane = ["PLANE", meteor_or_plane_confidence]
-         else:
-            meteor_or_plane = ["METEOR" , meteor_or_plane_confidence]
-      else:
-         meteor_or_plane = "" 
+            if meteor_or_plane_class[0][0] > .5:
+               meteor_or_plane = ["PLANE", meteor_or_plane_confidence]
+            else:
+               meteor_or_plane = ["METEOR" , meteor_or_plane_confidence]
 
       if "fireball" in predicted_class or "plane" in predicted_class or "bird" in predicted_class or "bug" in predicted_class:
-         fireball_or_plane_class = self.model_fireball_or_plane.predict(img)
-         fireball_or_plane_confidence = (1 - fireball_or_plane_class[0][0]) * 100
+         if fireball_or_plane is not None:
+            fireball_or_plane_class = self.model_fireball_or_plane.predict(img)
+            fireball_or_plane_confidence = (1 - fireball_or_plane_class[0][0]) * 100
 
-         if fireball_or_plane_class[0][0] > .5:
-            fireball_or_plane = ["FIREBALL", fireball_or_plane_confidence]
-            #if fireball_or_plane_confidence >= .99:
-            #   predicted_class = "planes"
+            if fireball_or_plane_class[0][0] > .5:
+               fireball_or_plane = ["FIREBALL", fireball_or_plane_confidence]
+               #if fireball_or_plane_confidence >= .99:
+               #   predicted_class = "planes"
+            else:
+               fireball_or_plane = ["PLANE" , fireball_or_plane_confidence]
+               #if fireball_or_plane_confidence <= .01:
+               #   predicted_class = "meteor_fireball"
          else:
-            fireball_or_plane = ["PLANE" , fireball_or_plane_confidence]
-            #if fireball_or_plane_confidence <= .01:
-            #   predicted_class = "meteor_fireball"
-      else:
-         fireball_or_plane = "" 
+            fireball_or_plane = "" 
 
       # determine final confidence for meteors, fireballs and planes!
       final_conf = confidence
@@ -999,10 +1000,14 @@ class AllSkyAI():
          print("Fetch meteor_prev_yn model")
          os.system("cp /mnt/archive.allsky.tv/AMS1/ML/fireball_or_plane_i64.h5 ./models/")
 
-      self.model_meteor_yn =load_model('models/meteor_yn_i64.h5')
-      self.model_meteor_yn.compile(loss='binary_crossentropy',
+
+      if os.path.exists("models/fireball_or_plane_i64.h5") is True:
+         self.model_meteor_yn =load_model('models/meteor_yn_i64.h5')
+         self.model_meteor_yn.compile(loss='binary_crossentropy',
               optimizer='rmsprop',
               metrics=['accuracy'])
+      else:
+         self.model_meteor_yn = None
 
       self.model_meteor_prev_yn =load_model('models/meteor_prev_yn.h5')
       self.model_meteor_yn.compile(loss='binary_crossentropy',
@@ -1012,10 +1017,13 @@ class AllSkyAI():
 
       #self.model_meteor_yn.summary()
 
-      self.model_meteor_fireball_yn =load_model('models/fireball_yn_i64.h5')
-      self.model_meteor_fireball_yn.compile(loss='binary_crossentropy',
+      if os.path.exists("models/fireball_or_plane_i64.h5") is True:
+         self.model_meteor_fireball_yn =load_model('models/fireball_yn_i64.h5')
+         self.model_meteor_fireball_yn.compile(loss='binary_crossentropy',
               optimizer='rmsprop',
               metrics=['accuracy'])
+      else:
+         self.model_meteor_fireball_yn = None
 
       self.model_meteor_or_plane =load_model('models/meteor_or_plane_i64.h5')
       self.model_meteor_or_plane.compile(loss='binary_crossentropy',
