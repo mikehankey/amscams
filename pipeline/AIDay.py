@@ -50,6 +50,13 @@ if date == "ALL" or date == "all":
    for md in sorted(mdirs,reverse=True):
 
       if os.path.isdir(meteor_dir + md) is True:
+
+         if os.path.exists(RN.learning_repo + md + "/METEOR/") is False:
+            os.makedirs(RN.learning_repo + md + "/METEOR/")
+         if os.path.exists(RN.learning_repo + md + "/NON_METEOR/") is False:
+            os.makedirs(RN.learning_repo + md + "/NON_METEOR/")
+         if os.path.exists(RN.learning_repo + md + "/UNSURE/") is False:
+            os.makedirs(RN.learning_repo + md + "/UNSURE/")
          ai_file = meteor_dir + md + "/" + AIDB.station_id + "_" + md + "_AI_DATA.info"
          print("AIFILE:", ai_file)
          #exit()
@@ -67,6 +74,12 @@ if date == "ALL" or date == "all":
 
 else:
 
+   if os.path.exists(RN.learning_repo + date + "/METEOR/") is False:
+      os.makedirs(RN.learning_repo + date + "/METEOR/")
+   if os.path.exists(RN.learning_repo + date + "/NON_METEOR/") is False:
+      os.makedirs(RN.learning_repo + date + "/NON_METEOR/")
+   if os.path.exists(RN.learning_repo + date + "/UNSURE/") is False:
+      os.makedirs(RN.learning_repo + date + "/UNSURE/")
    AIDB.load_all_meteors(date)
    AIDB.verify_media_day(date)
    AIDB.reconcile_db(date)
