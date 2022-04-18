@@ -819,7 +819,10 @@ class AllSkyDB():
                   roi_val = [x1,y1,x2,y2]
                   roi_img = stack_img[y1:y2,x1:x2]
                   roi_file = self.msdir + root_file[0:10] + "/" + self.station_id + "_" + root_file + "-ROI.jpg"
-                  cv2.imwrite(roi_file,roi_img)
+                  try:
+                     cv2.imwrite(roi_file,roi_img)
+                  except:
+                     print("BAD ROI IMG WRITE")
                   #print("Saved:", roi_file) 
                   print("FIXED ROI FROM REDUCED FILE!")
 
