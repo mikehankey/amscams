@@ -14,10 +14,10 @@ class ReviewNetwork():
       if ASAI is None:
          self.ASAI = AllSkyAI()
          self.ASAI.load_all_models()
-      self.local_event_dir = "/mnt/f/EVENTS"
+      self.local_event_dir = "/mnt/ams2/EVENTS"
       self.cloud_event_dir = "/mnt/archive.allsky.tv/EVENTS"
       self.cloud_dir = "/mnt/archive.allsky.tv/"
-      self.learning_repo = "/mnt/f/AI/DATASETS/NETWORK_PREV/"
+      self.learning_repo = "/mnt/ams2/AI/DATASETS/NETWORK_PREV/"
 
    def get_stack_img_from_root_fn(self, root_fn):
       
