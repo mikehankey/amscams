@@ -12,6 +12,11 @@ def non_meteor_report():
    os.system(cmd)
    out = ""
 
+   
+   fp = open("header.html")
+   for line in fp:
+      out += line
+
    fp = open(nm_data_file)
    for line in fp:
       line = line.replace("\n", "")
