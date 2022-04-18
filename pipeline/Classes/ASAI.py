@@ -236,18 +236,18 @@ class AllSkyAI():
       img38 = load_img(imgfile, target_size = (38,38))
       img38 = img_to_array(img38).astype(np.float32) / 255.0 
       img38 = np.expand_dims(img38, axis = 0)
-      meteor_prev_yn_class = self.model_meteor_prev_yn.predict(img38)
+      meteor_prev_yn_class = self.models['meteor_prev_yn'].predict(img38)
       meteor_prev_yn = (1 - meteor_prev_yn_class[0][0]) * 100
  
-      if model_meteor_or_star is not None:
-         meteor_or_star_class = self.model_meteor_or_star.predict(img38)
+      if "meteor_or_star" in self.models:
+         meteor_or_star_class = self.models['meteor_or_star'].predict(img38)
          meteor_or_star = (1 - meteor_or_star_class[0][0]) * 100
       else:
          meteor_or_star = None
 
 
 
-      return(meteor_prev_yn, meteor_or_star)
+      return(meteor_prev_yn)
 
    def meteor_yn(self,root_fn,roi_file=None,oimg=None,roi=None):
       # input - root_fn (orig fn for file ROI)
@@ -327,7 +327,6 @@ class AllSkyAI():
          ai_resp['mc_class'] = predicted_class 
          ai_resp['mc_class_conf'] = confidence
       print("METEOR YN RESP:", ai_resp)
-      input("Waiting")
       return(ai_resp)
 
    def meteor_yn_last(self,root_fn,roi_file=None,oimg=None,roi=None):
@@ -1148,6 +1147,5 @@ class AllSkyAI():
 
 
       print("Models loaded")
-      input("waiting")
 
 

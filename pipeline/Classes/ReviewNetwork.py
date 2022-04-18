@@ -9,14 +9,33 @@ import cv2
 from Classes.ASAI import AllSkyAI
 
 class ReviewNetwork():
-   def __init__(self):
+   def __init__(self,ASAI=None):
       print("Review Network Meteors")
-      self.ASAI = AllSkyAI()
-      self.ASAI.load_all_models()
+      if ASAI is None:
+         self.ASAI = AllSkyAI()
+         self.ASAI.load_all_models()
       self.local_event_dir = "/mnt/f/EVENTS"
       self.cloud_event_dir = "/mnt/archive.allsky.tv/EVENTS"
       self.cloud_dir = "/mnt/archive.allsky.tv/"
       self.learning_repo = "/mnt/f/AI/DATASETS/NETWORK_PREV/"
+
+   def get_stack_img_from_root_fn(self, root_fn):
+      
+      if "AMS" in root_fn:
+         st = root_fn.split("_")[0]
+         root_fn = root_fn.replace(st + "_", "")
+      date = root_fn[0:10] 
+      mdir = "/mnt/ams2/meteors/" + date + "/" 
+      stack_file = mdir + root_fn + "-stacked.jpg"
+      #json_file = mdir + root_fn + ".json"
+      if os.path.exists(stack_file) is True:
+         stack_img = cv2.imread(stack_file)
+         stack_img = cv2.resize(stack_img,(1920,1080))  
+      else:
+         #stack_img = np.zeros((1080,1920),dtype=np.uint8) 
+         stack_img = None
+      print("STACK FILE:", stack_file) 
+      return(stack_img)
 
 
    def review_meteors(self,date,auto=True):

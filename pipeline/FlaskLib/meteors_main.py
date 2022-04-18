@@ -273,6 +273,57 @@ def trash_page (amsid, in_data) :
    template = template.replace("{RAND}", "v3.0000")
    return(template)
 
+def non_meteors_main (amsid, in_data) :
+   date = in_data['date']
+   ai_file = "/mnt/ams2/meteors/" + in_data['date'] + "/" + amsid + "_" + in_data['date'] + "_" + "AI_DATA.info"
+   out = ""
+   if os.path.exists(ai_file) is True:
+      ai_data = load_json_file(ai_file)
+      for row in ai_data:
+         decision, root_fn, hd_vid, roi, meteor_yn, fireball_yn, mc_class, mc_class_conf = row
+         if decision == "ACCEPT":
+            continue
+         out += str(row) + "<br>"
+         jsid = root_fn
+         vvid_link = "/non_meteors/" + date + "/" + jsid + ".mp4" 
+         meteor_detail_link = "#"
+         ht_class = ""
+         vothumbs = ""
+         show_datetime_cam = ""
+         vthumb = "/non_meteors/" + in_data['date'] + "/" + root_fn + "-stacked-tn.jpg"
+         vothumb = "/non_meteors/" + in_data['date'] + "/" + root_fn + "-stacked-tn.jpg"
+         out += """
+            <div id='""" + jsid + """' class='preview select-to """ + ht_class + """'>
+               <a class='mtt' href='""" + meteor_detail_link + """' data-obj='""" + vothumb + """' title='Go to Info Page'>
+                  <img alt='""" + show_datetime_cam + """' class='img-fluid ns lz' src='""" + vthumb + """'>
+                  <span>""" + show_datetime_cam + """</span>
+               </a>
+
+               <div class='list-onl'>
+                  <span>""" + show_datetime_cam + """</span>
+               </div>
+               <div class="list-onl sel-box">
+                  <div class="custom-control big custom-checkbox">
+                     <input type="checkbox" class="custom-control-input" id='chec_""" + jsid + """' name='chec_""" + jsid + """'>
+                     <label class="custom-control-label" for='chec_""" + jsid + """'></label>
+                  </div>
+               </div>
+
+               <div class='btn-toolbar'>
+                  <div class='btn-group'>
+                     <a class='vid_link_gal col btn btn-primary btn-sm' title='Play Video' href='/dist/video_player.html?video=""" + vvid_link + """&vid_id=""" + jsid + """'>
+                     <i class='icon-play'></i></a>
+                     <a class='delete_meteor_gallery col btn btn-danger btn-sm' title='Delete Detection' data-meteor='""" + jsid + """'><i class='icon-delete'></i></a>
+                  </div>
+               </div>
+            </div>
+         """
+
+
+   else:
+      out += "no ai data: " + ai_file
+   return(out)
+
 def meteors_main (amsid, in_data) :
    print("meteors_main")
    json_conf = load_json_file("../conf/as6.json")
@@ -346,6 +397,7 @@ def meteors_main (amsid, in_data) :
    total_meteors = len(sorted_meteors)
    filter_display = ""
    msc = 0   
+   ai_data = {}
    for meteor in these_meteors:
       if len(meteor) == 8:
          meteor_file, reduced, start_time, dur, ang_vel, ang_dist, hotspot,msm = meteor 

@@ -3,6 +3,7 @@ from datetime import datetime
 import datetime as dt
 import sys
 import os
+from Classes.ReviewNetwork import ReviewNetwork
 
 today = datetime.now()
 yest = today - dt.timedelta(days=1)
@@ -11,11 +12,23 @@ today = datetime.now().strftime("%Y_%m_%d")
 
 print("Init DB Starting.")
 AIDB = AllSkyDB()
+
+RN = ReviewNetwork()
+
 if len(sys.argv) > 2:
    cmd = sys.argv[2]
+   if cmd == "nm_report":
+      AIDB.non_meteor_report()
+      exit()
+
+
    if cmd == "report":
       date = sys.argv[1]
       AIDB.report_day(date)
+      exit()
+   if cmd == "reject":
+      date = sys.argv[1]
+      AIDB.auto_reject_day(date, RN)
       exit()
 
 
@@ -35,13 +48,22 @@ meteor_dir = "/mnt/ams2/meteors/"
 if date == "ALL" or date == "all":
    mdirs = os.listdir(meteor_dir)
    for md in sorted(mdirs,reverse=True):
+
       if os.path.isdir(meteor_dir + md) is True:
+         ai_file = meteor_dir + md + "/" + AIDB.station_id + "_" + md + "_AI_DATA.info"
+         print("AIFILE:", ai_file)
+         #exit()
+         if os.path.exists(ai_file) and date != today and date != yest:
+            print("AI DONE FOR THIS DAY ALREADY!")
+            continue 
          date = md
          AIDB.load_all_meteors(date)
          AIDB.verify_media_day(date)
          AIDB.reconcile_db(date)
          os.system("python3 myEvents.py " + date)
-   AIDB.check_update_status(date)
+         AIDB.auto_reject_day(date, RN)
+         print("DONE AIDay FOR " + date)
+         AIDB.check_update_status(date)
 
 else:
 
@@ -49,7 +71,8 @@ else:
    AIDB.verify_media_day(date)
    AIDB.reconcile_db(date)
    os.system("python3 myEvents.py " + date)
-   print(date)
+   AIDB.auto_reject_day(date, RN)
+   print("DONE AIDay FOR " + date)
    exit()
    AIDB.reducer(date)
    AIDB.check_update_status(date)

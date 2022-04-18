@@ -20,6 +20,7 @@ def pick_points_day(day, json_conf):
          files.append(file)
    out = ""
    for file in files:
+      
       mf = file.split("/")[-1]
       print(file)
       mj = load_json_file(file)
@@ -202,7 +203,26 @@ def make_obs_object(mj,mse, nsinfo):
 
    return(obs) 
 
+
 def make_ms_html(amsid, meteor_file, mj):
+   mse = mj['multi_station_event']
+   ms_html = "<h3>MULTI STATION EVENT<h3>"
+   date = meteor_file[0:10]
+   year,month, dom = date.split("_")
+   for i in range(0, len(mse['stations'])):
+      tstation = mse['stations'][i]
+      ff = mse['files'][i].replace(".mp4", "")
+      #local_dir = "/mnt/ams2/meteor_archive/" + tstation + "/METEORS/" + year + "/" + date + "/"
+      cloud_dir = "/mnt/archive.allsky.tv/" + tstation + "/METEORS/" + year + "/" + date + "/"
+      cloud_url = "https://archive.allsky.tv/" + tstation + "/METEORS/" + year + "/" + date + "/"
+      #if cfe(local_dir,1) == 0:
+      img_url = cloud_url + tstation + "_" + ff + "-prev.jpg"
+      ms_html += "<img src=" + img_url + ">"
+
+   return(ms_html)
+
+
+def make_ms_html_old(amsid, meteor_file, mj):
    mse = mj['multi_station_event']
 
 
@@ -278,6 +298,13 @@ def make_ms_html(amsid, meteor_file, mj):
 
    """
    active_stations = {}
+   if isinstance(mse['stations'], str) is True:
+      mse['stations'] = json.loads(mse['stations'])
+   if isinstance(mse['files'], str) is True:
+      mse['files'] = json.loads(mse['files'])
+   if isinstance(mse['start_datetime'], str) is True:
+      mse['start_datetime'] = json.loads(mse['start_datetime'])
+ 
    for i in range(0, len(mse['stations'])):
       file,dir = fn_dir(mse['files'][i])
       file = file.replace(".json", "")
@@ -331,12 +358,14 @@ def make_ms_html(amsid, meteor_file, mj):
          #ms_html += "<tr><td colspan=4>Meteor Not Reduced Yet.</td></tr>"
          #ms_html += "Meteor Not Reduced Yet."
       show_datetime_cam += "<br>" + az_desc
+      print("TSTATION", tstation)
+      print("SHOWD", show_datetime_cam)
       ms_html += """
          
          <div id='""" + jsid + """' class='preview select-to """ + ht_class + """'>
-            <a class='mtt' href='""" + meteor_detail_link + """' data-obj='""" + vothumb + """' title='Go to Info Page'>
-               <img alt='""" + show_datetime_cam + """' class='img-fluid ns lz' src='""" + vthumb + """'>
-               <span>""" + tstation + " " + show_datetime_cam + """</span>
+            <a class='mtt' href='""" + str(meteor_detail_link) + """' data-obj='""" + str(vothumb) + """' title='Go to Info Page'>
+               <img alt='""" + str(show_datetime_cam) + """' class='img-fluid ns lz' src='""" + str(vthumb) + """'>
+               <span>""" + str(tstation) + " " + str(show_datetime_cam) + """</span>
             </a>
 
 

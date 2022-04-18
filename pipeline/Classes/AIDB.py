@@ -27,8 +27,10 @@ class AllSkyDB():
       if os.path.exists("windows.json") is True:
          self.win_config = load_json_file("windows.json")
          self.meteor_dir = self.win_config['meteor_dir'] 
+         self.non_meteor_dir = self.win_config['non_meteor_dir'] 
       else:
          self.meteor_dir = "/mnt/ams2/meteors/"
+         self.non_meteor_dir = "/mnt/ams2/non_meteors/"
       self.json_conf = load_json_file("../conf/as6.json")
       self.lat = float(self.json_conf['site']['device_lat'])
       self.lon = float(self.json_conf['site']['device_lng'])
@@ -394,13 +396,14 @@ class AllSkyDB():
 
       if resp is not None:
          sql = """ UPDATE meteors
-                      SET meteor_yn = ?,
-                          meteor_yn_conf = ?,
+                      SET meteor_yn_conf = ?,
                           fireball_yn = ?,
+                          mc_class = ?,
+                          mc_class_conf = ?,
                           ai_resp = ?,
                           roi = ?
                     WHERE sd_vid = ? """
-         task = [resp['meteor_yn'],resp['meteor_yn_confidence'], resp['meteor_fireball_yn'], json.dumps(resp), json.dumps(resp['roi']),root + ".mp4"]
+         task = [resp['meteor_yn'], resp['fireball_yn'], resp['mc_class'], resp['mc_class_conf'], json.dumps(resp), json.dumps(resp['roi']),root + ".mp4"]
          print(sql)
          print(task)
          self.cur.execute(sql, task)
@@ -840,7 +843,7 @@ class AllSkyDB():
                         print("END YN")
                         if resp is not None:
                            self.insert_ml_sample(resp)
-                           if resp['meteor_yn'] is True or resp['meteor_yn'] == 1 or resp['meteor_fireball_yn'] is True or resp['meteor_fireball_yn'] == 1:
+                           if resp['meteor_yn'] >50 or resp['fireball_yn'] >50 or "meteor" in resp['mc_class']:
                               self.update_meteor_ai_result(root_file, resp)
                               # save the ROI image!
                               roi_file = self.msdir + root_file[0:10] + "/" + self.station_id + "_" + root_file + "-ROI.jpg"
@@ -1293,3 +1296,78 @@ class AllSkyDB():
          #cv2.waitKeyEx(0)
 
       return(roi, new_rois, stack_img)
+
+   def auto_reject_day(self, date, RN):
+      non_meteor_dir = self.non_meteor_dir + date
+      print("Auto reject:", date)
+      sql = "SELECT root_fn, hd_vid, meteor_yn_conf,fireball_yn_conf,mc_class, mc_class_conf, roi,ai_resp from meteors where sd_vid like ?"
+      ivals = [date + "%"]
+      self.cur.execute(sql, ivals)
+      rows = self.cur.fetchall()
+      ai_info = []
+      for row in rows:
+         root_fn, hd_vid, meteor_yn_conf,fireball_yn_conf, mc_class, mc_class_conf, roi,ai_resp = row
+         decision = "ACCEPT"
+         if meteor_yn_conf is None or fireball_yn_conf is None or mc_class is None:
+            continue
+         if meteor_yn_conf < 50 and fireball_yn_conf < 50 and "meteor" not in mc_class:
+            decision = "REJECT"
+            print("AI REJECT CURRENT ROI", root_fn, hd_vid, meteor_yn_conf, fireball_yn_conf, mc_class, mc_class_conf )
+            print("AI seeking alternative ROI...")
+            img = RN.get_stack_img_from_root_fn(root_fn)
+            if img is not None:
+               objects = RN.detect_objects_in_stack(self.station_id, root_fn, img.copy())
+            else:
+               objects = []
+            meteor_found = False
+            for oo in objects:
+               if oo[0] > 50:
+                  print("METEOR OBJ FOUND HERE:", oo)
+                  meteor_found = True 
+                  new_roi = oo[1]
+                  print("OBJECTS AI ACCEPT", root_fn, hd_vid, oo[0], oo[0], "meteor", oo[0], new_roi)
+                  roi = new_roi
+                  fireball_yn_conf = oo[0]
+                  meteor_yn_conf = oo[0]
+                  mc_class_conf = oo[0]
+                  mc_class = "meteor"
+                  print("Need to reduce new location!")
+                  decision = "ACCEPT"
+         else:
+            print("AI ACCEPT", root_fn, hd_vid, meteor_yn_conf, fireball_yn_conf, mc_class, mc_class_conf )
+            decision = "ACCEPT"
+         ai_info.append((decision, root_fn, hd_vid, roi, meteor_yn_conf, fireball_yn_conf, mc_class, mc_class_conf ))
+      rejects = []
+      for aid in ai_info:
+         print(aid)     
+         if aid[0] == "REJECT":
+            rejects.append(aid)
+      save_json_file(self.mdir + date + "/" + self.station_id + "_" + date + "_AI_DATA.info", ai_info)
+      print("saved:", self.mdir + date + "/" + self.station_id + "_" + date + "_AI_DATA.info")
+      print("REJECTS:", len(rejects))
+      
+      if len(rejects) > 0:
+         if os.path.exists(non_meteor_dir) is False:
+            os.makedirs(non_meteor_dir)
+         for data in rejects:
+            sd_root = data[1].replace(".mp4", "")
+            hd_root = data[2].replace(".mp4", "")
+            # reject these files and move to non-meteor dir unless
+            # it is a MSE event or human / manual confirm exists
+            mjf = self.meteor_dir + date + "/" + sd_root + ".json"
+            print("MJF", mjf)
+            if os.path.exists(mjf):
+               mj = load_json_file(mjf)
+               if "multi_station_event" in mj or "human_confirmed" in mj or "hc" in mj or "manual" in mj or "human_points" in mj:
+                  print("Multi station or Human confirmed already")
+                  continue
+               else:
+                  print("REJECT:", self.mdir + sd_root, self.mdir + hd_root)
+                  cmd = "mv " + self.mdir + date + "/" + sd_root + "* " + non_meteor_dir + "/"
+                  print(cmd)
+                  os.system(cmd)
+                  cmd = "mv " + self.mdir + date + "/" + hd_root + "* " + non_meteor_dir + "/"
+                  print(cmd)
+                  os.system(cmd)
+      print("Finished auto_reject_day !")
+
