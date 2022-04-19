@@ -998,8 +998,8 @@ class AllSkyAI():
       self.models = {}
       if os.path.exists("models/") is False:
          os.makedirs("models/")
-      if os.path.exists("models/moving_objects_i64.labels") is False:
-         os.system("cp /mnt/archive.allsky.tv/AMS1/ML/moving_objects_i64.labels" ./models/moving_objects_i64.labels")
+      #if os.path.exists("models/moving_objects_i64.labels") is False:
+      #   os.system("cp /mnt/archive.allsky.tv/AMS1/ML/moving_objects_i64.labels ./models/moving_objects_i64.labels")
 
 
       self.multi_class_labels = pickle.loads(open("models/moving_objects_i64.labels", "rb").read())
