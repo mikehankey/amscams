@@ -206,7 +206,7 @@ class AllSkyDB():
       ai_meteor_learning_samples = rows[0][0]
 
       # get total NON METEOR samples BY DAY 
-      sql = "SELECT count(*) as ccc from ml_samples WHERE meteor_yn_conf <= 50"
+      sql = "SELECT count(*) as ccc from ml_samples WHERE meteor_yn_conf <= 50 AND fireball_yn_conf <=50 AND mc_class != 'meteor' "
       self.cur.execute(sql)
       rows = self.cur.fetchall()
       ai_non_meteor_learning_samples = rows[0][0]
