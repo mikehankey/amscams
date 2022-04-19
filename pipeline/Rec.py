@@ -56,11 +56,20 @@ if __name__ == "__main__":
       station_id = js_conf['site']['ams_id']
       #os.system("./Process.py purge_meteors")
       date = sys.argv[2]
-      year, mon, day = date.split("_")
-      #R = Reconcile(year, mon)
-      os.system("./Process.py purge_meteors")
-      SAWS = SyncAWS(station_id, api_key)
-      SAWS.delete_aws_meteors(date)
+      if date != "all":
+         year, mon, day = date.split("_")
+         #R = Reconcile(year, mon)
+         os.system("./Process.py purge_meteors")
+         SAWS = SyncAWS(station_id, api_key)
+         SAWS.delete_aws_meteors(date)
+      else:
+         mds = os.listdir("/mnt/ams2/meteors/")
+         SAWS = SyncAWS(station_id, api_key)
+         for md in sorted(mds, reverse=True):
+            if md == "2022" or md == "2021":
+               print("Doing AWS Delete for", md)
+               SAWS.delete_aws_meteors(md)
+        
 
    if cmd == "rpt":
       year = sys.argv[2]

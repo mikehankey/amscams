@@ -334,7 +334,10 @@ class SyncAWS():
 
       # delete AWS meteors that don't exist locally
       for row in data:
-         vid = row['vid']
+         if "vid" in row:
+            vid = row['vid']
+         if "sd_video_file" in row:
+            vid = row['sd_video_file']
          json_file = vid.replace(".mp4", ".json")
          if cfe(mdir + json_file) == 0:
             print("AWS METEOR EXISTS BUT NOT ON LOCAL STATION. IT MUST BE DELETED?")
@@ -343,17 +346,16 @@ class SyncAWS():
 
             response = requests.get(url)
             content = response.content.decode()
+         else:
+            print("AWS AND LOCAL FILE GOOD.")
             
       # delete local meteors that are tagged in AWS as deletes
       url = self.API_URL + "?cmd=get_del_obs&station_id=" + self.station_id + "&date=" + day + "&api_key=" + self.json_conf['api_key']
-      print(url)
       response = requests.get(url)
       content = response.content.decode()
       content = content.replace("\\", "")
-      print("AWS DELETED:", content)
       jdata = json.loads(content)
       data = jdata
-      print("DEL:", data)
       need = 0
       for row in data:
          if row == "message":
@@ -361,20 +363,21 @@ class SyncAWS():
 
          print("NEED TO DELETE", row)
          need += 1
-         print("ROW:", row)
-         print(self.json_conf.keys())
+         #print(self.json_conf.keys())
 
          url = self.API_URL + "?cmd=del_obs_commit&station_id=" + self.station_id + "&sd_video_file=" + row['vid'] + "&api_key=" + self.json_conf['api_key']
          response = requests.get(url)
          content = response.content.decode()
          content = content.replace("\\", "")
-         print(content)
-         print(url)
          self.delete_local_meteor(row['vid'])
       print("AWS DELETE METEORS DONE.")
-      print(len(aws_obs), "AWS METEORS ")
       self.get_mfiles("/mnt/ams2/meteors/" + day + "/")
       print(len(self.mfiles), "LOCAL STATION METEORS")
+      print(len(aws_obs), "AWS METEORS ")
+      dc = 0
+      for dd in aws_obs:
+         print("DD:", dc, dd['sd_video_file'])
+         dc += 1
 
       #for mf in self.mfiles:
       #   mff = "/mnt/ams2/meteors/" + day + "/" + mf.replace(".mp4", ".json") 

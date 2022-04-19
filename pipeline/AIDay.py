@@ -70,6 +70,7 @@ if date == "ALL" or date == "all":
          os.system("python3 myEvents.py " + date)
          AIDB.auto_reject_day(date, RN)
          print("DONE AIDay FOR " + date)
+         os.system("python3 Rec.py del_aws_day " + md)
          AIDB.check_update_status(date)
 
 else:
@@ -85,8 +86,9 @@ else:
    AIDB.reconcile_db(date)
    os.system("python3 myEvents.py " + date)
    AIDB.auto_reject_day(date, RN)
+   os.system("python3 Rec.py del_aws_day " + date)
    print("DONE AIDay FOR " + date)
-   exit()
+   #exit()
    AIDB.reducer(date)
    AIDB.check_update_status(date)
    #print("\rDONE DAY:" + date + "                                   ",end="" )

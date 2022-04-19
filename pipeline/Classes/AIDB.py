@@ -364,6 +364,17 @@ class AllSkyDB():
       sql = """SELECT root_fn, meteor_yn, meteor_yn_conf, fireball_yn, mc_class, ai_resp
              FROM meteors order by root_fn desc limit 100;"""
 
+   def delete_sql_meteor(self, root_fn):
+
+      sql = """DELETE FROM meteors 
+                WHERE root_fn = ?
+            """ 
+      ivals = [root_fn]
+      self.cur.execute(sql, ivals)
+      print("DELETE:", sql, ivals )
+      self.con.commit()
+     
+
    def insert_ml_sample(self, resp):
       #insert into the ROI DB!!!
       in_data = {}
@@ -953,12 +964,13 @@ class AllSkyDB():
       for mdir in sorted(self.mdirs):  
          mfiles = self.get_mfiles(mdir )
          self.mfiles.extend(mfiles)
- 
+
+      # Main file loop here. 1 iter per meteor 
       for mfile in sorted(self.mfiles, reverse=True):
          if mfile in loaded_meteors :
             if loaded_meteors[mfile] == 1:
                foo = 1
-               #continue
+               continue
          mdir = mfile[0:10]
          el = mfile.split("_")
          mjf = self.meteor_dir + mdir + "/" + mfile.replace(".mp4", ".json")
@@ -1358,8 +1370,8 @@ class AllSkyDB():
             # reject these files and move to non-meteor dir unless
             # it is a MSE event or human / manual confirm exists
             mjf = self.meteor_dir + date + "/" + sd_root + ".json"
-            print("MJF", mjf)
             if os.path.exists(mjf):
+               print("MJF EXISTS", mjf)
                mj = load_json_file(mjf)
                if "multi_station_event" in mj or "human_confirmed" in mj or "hc" in mj or "manual" in mj or "human_points" in mj:
                   print("Multi station or Human confirmed already")
@@ -1372,5 +1384,12 @@ class AllSkyDB():
                   cmd = "mv " + self.mdir + date + "/" + hd_root + "* " + non_meteor_dir + "/"
                   print(cmd)
                   os.system(cmd)
+            else:
+               print("MJF DOES NOT EXIST", mjf)
+               print("DELETE", mjf.replace(".json", ""))
+               root_fn = mjf.split("/")[-1].replace(".json", "")
+               self.delete_sql_meteor(root_fn)
+      else:
+         print("There no meteors worthy of rejection.")
       print("Finished auto_reject_day !")
 
