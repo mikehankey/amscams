@@ -169,7 +169,7 @@ class AllSkyDB():
       total_meteor_obs_no = rows[0][0]
 
       # get total number of METEORS in the system marked as meteor_yn = 0
-      sql = "SELECT count(*) as ccc from meteors WHERE meteor_yn = ''"
+      sql = "SELECT count(*) as ccc from meteors WHERE meteor_yn_conf = ''"
       self.cur.execute(sql)
       rows = self.cur.fetchall()
       total_meteor_obs_not_run = rows[0][0]
@@ -200,7 +200,7 @@ class AllSkyDB():
       total_days_scanned = len(rows)
 
       # get total METEOR samples BY DAY 
-      sql = "SELECT count(*) as ccc from ml_samples WHERE meteor_yn = 1"
+      sql = "SELECT count(*) as ccc from ml_samples WHERE meteor_yn_conf >= 50"
       self.cur.execute(sql)
       rows = self.cur.fetchall()
       ai_meteor_learning_samples = rows[0][0]
@@ -212,7 +212,7 @@ class AllSkyDB():
       ai_non_meteor_learning_samples = rows[0][0]
 
       # get total FIREBALLS BY DAY 
-      sql = "SELECT count(*) as ccc from meteors WHERE fireball_yn = 1"
+      sql = "SELECT count(*) as ccc from meteors WHERE fireball_yn_conf >= 50 "
       self.cur.execute(sql)
       rows = self.cur.fetchall()
       total_fireball_obs = rows[0][0]
