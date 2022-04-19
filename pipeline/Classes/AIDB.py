@@ -157,7 +157,7 @@ class AllSkyDB():
       total_meteor_obs = rows[0][0]
 
       # get total number of METEORS in the system marked as meteor_yn_conf >= 50 
-      sql = "SELECT count(*) as ccc from meteors WHERE meteor_yn = 1"
+      sql = "SELECT count(*) as ccc from meteors WHERE meteor_yn_conf >= 50 or fireball_yn_conf >= 50 or mc_class = 'meteor'"
       self.cur.execute(sql)
       rows = self.cur.fetchall()
       total_meteor_obs_yes = rows[0][0]
