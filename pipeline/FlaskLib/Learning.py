@@ -1531,17 +1531,9 @@ def meteor_image(count, station_id, root_fn, final_meteor_yn, ai_resp, human_con
    if ai_resp is not None:
       ai_resp = json.loads(ai_resp)
       print(ai_resp)
-      if ai_resp["final_meteor_yn"] == 1:
-         ai_text += "Meteor Final: " + str(ai_resp['final_meteor_yn_conf'])[0:4] + "<br>"
-      if ai_resp["final_meteor_yn"] == 0:
-         ai_text += "Non Meteor Final: " + str(ai_resp['final_meteor_yn_conf'])[0:4] + "<br>"
-      if ai_resp["meteor_yn"] is True:
-         ai_text += "Meteor : " + str(ai_resp['meteor_yn_confidence'])[0:4] + "<br>"
-      if ai_resp["meteor_yn"] is False:
-         ai_text += "Non Meteor : " + str(ai_resp['meteor_yn_confidence'])[0:4] + "<br>"
-      if ai_resp["meteor_fireball_yn"] is True:
-         ai_text += "Fireball : " + str(ai_resp['meteor_fireball_yn_confidence'])[0:4] + "<br>"
-      ai_text += "MC: " + ai_resp['mc_class'] + " " + str(ai_resp['mc_confidence'])[0:4] + "<br>"
+      #if ai_resp["final_meteor_yn"] == 1:
+      #   ai_text += "Meteor Final: " + str(ai_resp['final_meteor_yn_conf'])[0:4] + "<br>"
+      ai_text += "MC: " + ai_resp['mc_class'] + " " + str(ai_resp['mc_class_conf'])[0:4] + "<br>"
    else:
       ai_text = ""
    ai_text += "Dur: " + str(duration)[0:4] + "<br>"

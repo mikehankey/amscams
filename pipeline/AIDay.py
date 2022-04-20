@@ -27,6 +27,9 @@ if len(sys.argv) > 2:
       exit()
    if cmd == "reject":
       date = sys.argv[1]
+      AIDB.mc_rejects()
+      exit()
+
       RN = ReviewNetwork(date)
       AIDB.auto_reject_day(date, RN)
       exit()
