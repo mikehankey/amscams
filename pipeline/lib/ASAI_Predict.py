@@ -30,9 +30,11 @@ def predict_images(imgs, model_file, label):
       human_data = {}
    if os.path.exists(machine_data_file):
       machine_data = load_json_file(machine_data_file)
+
    else:
       machine_data = {}
-   
+   print("MD:", machine_data_file)
+   exit()
    if SHOW == 1: 
       cv2.namedWindow("pepe")
       cv2.moveWindow("pepe", 2000,100)
@@ -87,7 +89,7 @@ def predict_images(imgs, model_file, label):
          #if False:
          cv2.imwrite(repo_file, orig_img)
          #print("SAVED:", repo_file)
-   
+      print("PRED:", float(classes[0][0])) 
       machine_data[img_fn] = [predict, float(classes[0][0])]
       cc += 1
    

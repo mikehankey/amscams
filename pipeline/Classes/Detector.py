@@ -27,7 +27,7 @@ class Detector():
       report['x_dist'] = []
       report['y_dist'] = []
       cls = "unknown"
-      report['max_dist'] = calc_dist((obj['oxs'][0], obj['oys'][0]), (obj['oxs'][-1] + obj['ows'][-1], obj['ccys'][-1] + obj['ohs'][-1]))
+      report['max_dist'] = calc_dist((obj['oxs'][0], obj['oys'][0]), (obj['oxs'][-1] + obj['ows'][-1], obj['oys'][-1] + obj['ohs'][-1]))
 
       report['elapsed_frames'] = max(obj['ofns']) - min(obj['ofns'])
       report['plane_score'] = 0
@@ -55,11 +55,11 @@ class Detector():
       # determine unq points
       up = {}
       for i in range(0, len(obj['ofns'])):
-         key = str(obj['ccxs'][i]) + "." + str(obj['ccys'][i])
+         key = str(obj['oxs'][i]) + "." + str(obj['oys'][i])
          up[key] = 1
       report['unq_points'] = len(up.keys())
-      obj['ccxs']
-      obj['ccys']
+      #obj['oxs']
+      #obj['oys']
 
       print("OFNS:", obj['ofns'])
       print("UNIQUE POINTS:", report['unq_points'])

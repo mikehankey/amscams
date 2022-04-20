@@ -44,8 +44,6 @@ CREATE TABLE IF NOT EXISTS "event_planes" (
         PRIMARY KEY("plane_pair")
 );
 
-
-
 DROP TABLE IF EXISTS "event_obs";
 CREATE TABLE IF NOT EXISTS "event_obs" (
         "event_id"      TEXT,
@@ -61,8 +59,21 @@ CREATE TABLE IF NOT EXISTS "event_obs" (
         "ints"  TEXT,
         "status"        TEXT,
         "ignore"        INTEGER,
+        "ai_confirmed"        REAL,
+        "human_confirmed"        INTEGER,
+        "ai_data"        TEXT,
+        "prev_uploaded"        INTEGER,
         PRIMARY KEY("obs_id")
 );
+
+DROP TABLE IF EXISTS "rejected_obs";
+CREATE TABLE IF NOT EXISTS "rejected_obs" (
+        "obs_id"      TEXT,
+        "reject_desc"      TEXT,
+        PRIMARY KEY("obs_id")
+);
+
+
 
 DROP TABLE IF EXISTS "station";
 CREATE TABLE IF NOT EXISTS "station" (

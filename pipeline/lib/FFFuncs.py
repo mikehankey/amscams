@@ -129,9 +129,11 @@ def vid_to_imgs(file, out_dir, suffix=None, resize=None):
 def imgs_to_vid (in_dir, out_file, wild="", fps=25, crf=20, img_type= "jpg"):
    wild = "*" + wild + "*." + img_type
    cmd = "/usr/bin/ffmpeg -framerate " + str(fps) + " -pattern_type glob -i '" + in_dir + wild + "' -c:v libx264 -pix_fmt yuv420p -y " + out_file + " >/dev/null 2>&1"
+   print(cmd)
    os.system(cmd)
    outfile_lr = out_file.replace(".mp4", "-lr.mp4")
    cmd = "/usr/bin/ffmpeg -i " + out_file + " -vcodec libx264 -crf " + str(crf) + " -framerate " + str(fps) + " -y " + outfile_lr
+   print(cmd)
    os.system(cmd)
    cmd = "mv " + outfile_lr + " " + out_file
    os.system(cmd)

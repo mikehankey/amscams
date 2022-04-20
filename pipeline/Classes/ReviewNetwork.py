@@ -276,12 +276,13 @@ class ReviewNetwork():
          marked_frames = []
          flat_frames = []
          for frame in self.all_frames[vid_fn]:
-            print("OVERLAY STACK ON IMAGES!", stack_img.shape, root_fn)
+            #print("OVERLAY STACK ON IMAGES!", stack_img.shape, root_fn)
             if stack_img is not None:
                print("STACKING", stack_img.shape)
                marked_frame = cv2.addWeighted(frame, .95, stack_img, .05, .5)
             else:
                print("NOT STACKING")
+               marked_frame = frame
             marked_frames.append(marked_frame)
             flat_frames.append(frame)
          self.all_frames[vid_fn] = flat_frames 
@@ -1116,12 +1117,12 @@ class ReviewNetwork():
 
             result['multi_station'] = multi_station
 
-            if "meteor" in result['mc_class'] or (result['meteor_yn_confidence'] > 80 or result['meteor_fireball_yn_confidence'] > 80) or multi_station is True:
-               label = "METEOR:" + result['mc_class'] + " / " + str(round(result['meteor_yn_confidence'],1)) + "% Meteor " + str(round(result['meteor_fireball_yn_confidence'],1)) + "% Fireball"
+            if "meteor" in result['mc_class'] or (result['meteor_yn'] > 80 or result['fireball_yn'] > 80) or multi_station is True:
+               label = "METEOR:" + result['mc_class'] + " / " + str(round(result['meteor_yn'],1)) + "% Meteor " + str(round(result['fireball_yn'],1)) + "% Fireball"
                cv2.putText(bimg, label,  (aix1,aiy2), cv2.FONT_HERSHEY_SIMPLEX, .6, (0,255,0), 1)
                save_dir = self.learning_repo_yes
             else:
-               label = "NON_METEOR:" + result['mc_class'] + " / " + str(round(result['meteor_yn_confidence'],1)) + "% Meteor " + str(round(result['meteor_fireball_yn_confidence'],1)) + "% Fireball"
+               label = "NON_METEOR:" + result['mc_class'] + " / " + str(round(result['meteor_yn'],1)) + "% Meteor " + str(round(result['fireball_yn'],1)) + "% Fireball"
                cv2.putText(bimg, label,  (aix1,aiy2), cv2.FONT_HERSHEY_SIMPLEX, .6, (0,0,255), 1)
                save_dir = self.learning_repo_no
             
@@ -1205,7 +1206,8 @@ class ReviewNetwork():
             roi_file = "test.jpg"
             cv2.imwrite("test.jpg", roi_img)
    
-            meteor_prev_yn,meteor_or_star_perc = self.ASAI.meteor_prev_yn(roi_img)
+            #meteor_prev_yn,meteor_or_star_perc = self.ASAI.meteor_prev_yn(roi_img)
+            meteor_prev_yn = self.ASAI.meteor_prev_yn(roi_img)
 
             aix1,aiy1,aix2,aiy2 = roi
             show_img = cv2.rectangle(show_img, (aix1-2,aiy1-2), (aix2+2, aiy2+2) , (128, 255, 255), 1)

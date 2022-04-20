@@ -2459,7 +2459,10 @@ def WMPL_solve(event_id, obs,time_sync=1, force=0):
                 file = bfile
          
         if True:
-            lat,lon,alt = obs[station_id][file]['loc']
+            try:
+               lat,lon,alt = obs[station_id][file]['loc']
+            except:
+               continue
             lat,lon,alt = float(lat), float(lon), float(alt)
             if "azs_gc" in obs[station_id][file]:
                azs = np.radians(obs[station_id][file]['azs_gc'])
@@ -2522,7 +2525,6 @@ def WMPL_solve(event_id, obs,time_sync=1, force=0):
           else:
              for bfile in obs[station_id]:
                 file = bfile
-          print("TIMING FAILED", station_id, file, obs[station_id][file]['times'])
     else:
        print(solve_dir )
        #for sf in solved_files:

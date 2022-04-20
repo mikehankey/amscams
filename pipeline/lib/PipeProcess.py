@@ -324,5 +324,5 @@ def run_jobs(json_conf):
 
    msg = "info:run_jobs:Run jobs ended"
    cmd = "./log.py '" + msg + "'"
-   os.system(cmd)
+   #os.system(cmd)
    

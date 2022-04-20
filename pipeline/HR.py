@@ -21,6 +21,24 @@ if os.path.exists(final_yes) is False:
 if os.path.exists(final_no) is False:
    os.makedirs(final_no)
 
+def clean_repo(rdir):
+   files = os.listdir(rdir)
+   c = 0
+   for ff in files:
+      try:
+         img = cv2.imread(rdir + ff)
+         h,w = img.shape[:2]
+         if h != w:
+            print("REMOVE!", h,w)
+            os.remove(rdir + ff)
+      except:
+         os.remove(rdir + ff)
+         print("REMOVE BAD!")
+      c+= 1
+      if c % 100 == 0:
+         print("Checked ", c)
+   
+
 def verify_video(ai_file, stack_img=None, roi=None):
    if roi is not None:
       x1,y1,x2,y2 = roi
@@ -118,27 +136,94 @@ def analyze_crop_frames(crop_frames):
    plt.scatter(cs, net_bps)
    plt.show()
 
-def build_prev_repo_from_yn():
+
+def build_prev_meteor_or_star():
    limit = 10000
+   star_src = "/mnt/f/AI/DATASETS/AA_SOURCE/moving_objects/stars/"
+   meteor_src = "/mnt/f/AI/DATASETS/AA_SOURCE/moving_objects/meteor/"
+   out_dir = "/mnt/f/AI/DATASETS/METEOR_OR_STAR/"
+   if os.path.exists(out_dir + "STARS/") is False:
+      os.makedirs(out_dir + "STARS/") 
+   if os.path.exists(out_dir + "METEORS/") is False:
+      os.makedirs(out_dir + "METEORS/") 
+
+   stars = os.listdir(star_src)
+   mets = os.listdir(meteor_src)
+   random.shuffle(stars)
+   random.shuffle(mets)
+   for i in range(0, limit):
+      fn = stars[i]
+      star_img = cv2.imread(star_src + fn)
+      star_img = cv2.resize(star_img, (38,38))
+      star_img = cv2.resize(star_img, (224,224))
+      star_img = cv2.resize(star_img, (38,38))
+      ofile = out_dir + "STARS/" + fn 
+      if star_img.shape[0] == star_img.shape[1]:
+         cv2.imwrite(ofile, star_img)
+   for i in range(0, limit):
+      fn = mets[i]
+      star_img = cv2.imread(meteor_src + fn)
+      star_img = cv2.resize(star_img, (38,38))
+      star_img = cv2.resize(star_img, (224,224))
+      star_img = cv2.resize(star_img, (38,38))
+      ofile = out_dir + "METEORS/" + fn 
+      if star_img.shape[0] == star_img.shape[1]:
+         cv2.imwrite(ofile, star_img)
+
+
+
+def build_prev_repo_from_yn():
+   limit = 116000
+   yes_fb_dir = "/mnt/f/AI/DATASETS/FIREBALL_YN/fireball/"
    yes_dir = "/mnt/f/AI/DATASETS/METEOR_YN/meteors/"
    no_dir = "/mnt/f/AI/DATASETS/METEOR_YN/non_meteors/"
    yes_files = os.listdir(yes_dir)
    no_files = os.listdir(no_dir)
+
+   fireballs = os.listdir(yes_fb_dir)
+   for fb in fireballs:
+      ofile = final_yes + fb 
+      if os.path.exists(ofile) is False:
+         print(yes_fb_dir + fb)
+         yes_img = cv2.imread(yes_fb_dir + fb)
+         yes_img = cv2.resize(yes_img, (38,38))
+         yes_img = cv2.resize(yes_img, (224,224))
+         yes_img = cv2.resize(yes_img, (38,38))
+         if yes_img.shape[0] == yes_img.shape[1]:
+            cv2.imwrite(ofile, yes_img)
+
+
+   final_mets = os.listdir(final_yes)
+   final_non_mets = os.listdir(final_no)
+
+   mets_needed = limit - len(final_mets) 
+   non_mets_needed = limit - len(final_non_mets) 
    random.shuffle(yes_files)
    random.shuffle(no_files)
-   for i in range(0, limit):
+   if non_mets_needed < 0:
+      non_mets_needed = 0
+   if mets_needed < 0:
+      mets_needed = 0
+   print("FINAL METS:", len(final_mets))
+   print("FINAL NON METS:", len(final_non_mets))
+   print("METS NEEDED:", mets_needed)
+   print("NON METS NEEDED:", non_mets_needed)
+   for i in range(0, mets_needed):
       yes_img = cv2.imread(yes_dir + yes_files[i])
       yes_img = cv2.resize(yes_img, (38,38))
       yes_img = cv2.resize(yes_img, (224,224))
       yes_img = cv2.resize(yes_img, (38,38))
-      cv2.imwrite(final_yes+ yes_files[i], yes_img)
-      print("saving:", final_yes + yes_files[i])
+      if yes_img.shape[0] == yes_img.shape[1]:
+         cv2.imwrite(final_yes+ yes_files[i], yes_img)
+         print("saving:", final_yes + yes_files[i])
 
+   for i in range(0, non_mets_needed):
       no_img = cv2.imread(no_dir + no_files[i])
       no_img = cv2.resize(no_img, (38,38))
       no_img = cv2.resize(no_img, (224,224))
       no_img = cv2.resize(no_img, (38,38))
-      cv2.imwrite(final_no+ no_files[i], no_img)
+      if no_img.shape[0] == no_img.shape[1]:
+         cv2.imwrite(final_no+ no_files[i], no_img)
       print("saving:", final_no+ no_files[i])
 
 
@@ -559,6 +644,12 @@ else:
 #ev_review_dir = "/mnt/f/EVENTS/" + y + "/" + m + "/" + d + "/" 
 #ev_review_file = "/mnt/f/EVENTS/" + y + "/" + m + "/" + d + "/" + date + "_OBS_REVIEWS.json"
 
+
+#clean_repo(final_yes)
+#clean_repo(final_no)
+#exit()
+build_prev_meteor_or_star()
+exit()
 
 build_prev_repo_from_yn()
 exit()

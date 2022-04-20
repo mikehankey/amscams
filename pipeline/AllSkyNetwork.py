@@ -20,6 +20,12 @@ if cmd == "help":
    print("CMD:", cmd)
    ASN.help()
 
+if cmd == "day_load_solves":
+   event_day = sys.argv[2]
+   ASN.help()
+   ASN.set_dates(event_day)
+   ASN.day_load_solves(event_day)
+
 if cmd == "rsync_data":
 
    print("CMD:", cmd)
@@ -28,7 +34,7 @@ if cmd == "rsync_data":
    ASN.set_dates(date)
    ASN.rsync_data_only(event_day)
 
-if cmd == "resolve_failed_day":
+if cmd == "resolve_failed_day" or cmd == "rerun_failed":
    ASN.help()
    ASN.set_dates(sys.argv[2])
    event_day = sys.argv[2].replace("_", "")
@@ -68,9 +74,6 @@ if cmd == "validate_events":
    ASN.validate_events(event_day)
 
 
-if cmd == "day_load_solve_results":
-   ASN.help()
-   ASN.day_load_solve_results(sys.argv[2])
 
 if cmd == "load_day_sql":
    force = 0
