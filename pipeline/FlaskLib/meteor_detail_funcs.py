@@ -205,13 +205,13 @@ def make_obs_object(mj,mse, nsinfo):
 
 
 def make_ms_html(amsid, meteor_file, mj):
-   mse = mj['multi_station_event']
-   ms_html = "<h3>MULTI STATION EVENT<h3>"
+   mse = mj['ev_data']
+   ms_html = "<h3>MULTI STATION OBSERVATIONS<h3>"
    date = meteor_file[0:10]
    year,month, dom = date.split("_")
-   for i in range(0, len(mse['stations'])):
+   for i in range(0, len(mse['obs'])):
       tstation = mse['stations'][i]
-      ff = mse['files'][i].replace(".mp4", "")
+      ff = mse['obs'][i].replace(".mp4", "")
       #local_dir = "/mnt/ams2/meteor_archive/" + tstation + "/METEORS/" + year + "/" + date + "/"
       cloud_dir = "/mnt/archive.allsky.tv/" + tstation + "/METEORS/" + year + "/" + date + "/"
       cloud_url = "https://archive.allsky.tv/" + tstation + "/METEORS/" + year + "/" + date + "/"
@@ -489,15 +489,26 @@ def detail_page(amsid, date, meteor_file):
    else:
       hd_trim = None
       hd_stack = None
-   if "multi_station_event" in mj:
+
+   if "ev_data" in mj:
+      print("YOYOYOYO")
+      ms_html = make_ms_html(amsid, meteor_file, mj)
       otherobs = """
                 <li class="nav-item">
-                    <a class="nav-link" id="multi-tab-l" data-toggle="tab" href="#multi-tab" role="tab" aria-controls="multi" aria-selected="false"><span id="str_cnt"></span>Event Solution</a>
+                    <a class="nav-link" id="multi-tab-l" data-toggle="tab" href="#multi-tab" role="tab" aria-controls="multi" aria-selected="false"><span id="str_cnt"></span>Multi Station Obs</a>
+                </li>
+      """
+   elif "multi_station_event" in mj :
+      otherobs = """
+                <li class="nav-item">
+                    <a class="nav-link" id="multi-tab-l" data-toggle="tab" href="#multi-tab" role="tab" aria-controls="multi" aria-selected="false"><span id="str_cnt"></span>Multi Station Event</a>
                 </li>
       """
       ms_html = str(mj['multi_station_event'])
-      ms_html = make_ms_html(amsid, meteor_file, mj)
+      ms_html = make_ms_html_old(amsid, meteor_file, mj)
    else:
+      print("NOOOOOO")
+      print(mj.keys())
       otherobs = ""
       ms_html = ""
 

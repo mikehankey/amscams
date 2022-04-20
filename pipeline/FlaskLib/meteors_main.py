@@ -5,6 +5,7 @@ import glob
 from lib.PipeUtil import load_json_file, save_json_file, cfe, get_file_info
 from lib.PipeAutoCal import fn_dir
 import datetime 
+from datetime import timedelta
 from datetime import datetime as dt
 import os
 
@@ -59,6 +60,11 @@ def get_meteors_in_range(station_id, start_date, end_date,del_data,filters=None)
 
    start_dt = datetime.datetime.strptime(start_date + "_00_00_00", "%Y_%m_%d_%H_%M_%S") 
    end_dt = datetime.datetime.strptime(end_date + "_23_59_59", "%Y_%m_%d_%H_%M_%S") 
+   # load AI and event files between the date range:
+   delta = end_dt - start_dt 
+   days = [start_dt + timedelta(days=i) for i in range(delta.days + 1)]
+   for day in days:
+      print("DAY:", day)
 
    if start_date == end_date:
       # get meteors from that days index file after building it on the fly!
@@ -116,6 +122,8 @@ def get_meteors_in_range(station_id, start_date, end_date,del_data,filters=None)
    if days_in_range == 0:
       days_in_range = 1
    #if days_in_range <= 180:
+   ai_dict = {}
+   mso_dict = {}
    if True:
       for day_plus in range(0, days_in_range):
          this_date = start_dt + datetime.timedelta(days = day_plus)  
@@ -123,13 +131,29 @@ def get_meteors_in_range(station_id, start_date, end_date,del_data,filters=None)
          #if deleted == 1:
          #   os.system("./Process.py mmi_day " + this_day)
          mif = "/mnt/ams2/meteors/" + this_day + "/" + this_day + "-" + station_id + ".meteors"
+         ai_file = "/mnt/ams2/meteors/" + this_day + "/" + station_id + "_" + this_day + "_AI_DATA.info"
+         events_file = "/mnt/ams2/meteors/" + this_day + "/" + station_id + "_" + this_day + "_EVENTS.info"
+         ms_obs_file = "/mnt/ams2/meteors/" + this_day + "/" + this_day + "_MY_MS_OBS.info" 
+         print("LOADING AI:", ai_file)
+         if os.path.exists(ai_file) is True:
+            temp = load_json_file(ai_file)
+            for row in temp:
+               ai_dict[row[1]] = row
+         if os.path.exists(ms_obs_file) is True:
+            temp = load_json_file(ms_obs_file)
+            for row in temp:
+               mso_dict[row] = {}
          print("This day:", this_day, mif)
          if cfe(mif) == 1:
             mit = load_json_file(mif)
             print("ADDING METEORS FOR DAY:", mif)
             for dd in mit:
+               meteor_file, reduced, start_time, dur, ang_vel, ang_dist, hotspot, msm = dd 
+               root_fn = meteor_file.split("/")[-1].replace(".json", "")
+               print(root_fn)
+               print(mso_dict)
                if nored == 1:
-                  meteor_file, reduced, start_time, dur, ang_vel, ang_dist, hotspot, msm = dd 
+               #   meteor_file, reduced, start_time, dur, ang_vel, ang_dist, hotspot, msm = dd 
                   rf = meteor_file.replace(".json", "-reduced.json")
                   if cfe(rf) == 1:
                      reduced = 1
@@ -137,10 +161,13 @@ def get_meteors_in_range(station_id, start_date, end_date,del_data,filters=None)
                      print("NORED")
                      continue
                if hotspot_filter == 1:
-                  meteor_file, reduced, start_time, dur, ang_vel, ang_dist, hotspot, msm = dd 
+               #   meteor_file, reduced, start_time, dur, ang_vel, ang_dist, hotspot, msm = dd 
                   print("HOSPOT VALUE", hotspot)
                   if hotspot <= 5:
                      continue
+               if root_fn in mso_dict:
+                  msm = 1
+                  dd = [meteor_file, reduced, start_time, dur, ang_vel, ang_dist, hotspot, msm] 
                mi.append(dd)
          else:
             print("NO MIF:", mif)

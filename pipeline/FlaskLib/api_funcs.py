@@ -237,12 +237,30 @@ def restore_meteor(jsid, data):
 
 def delete_meteor(jsid, data):
    resp = {}
+   print("DELETE:", jsid, data)
    json_conf = load_json_file("../conf/as6.json")
    amsid = json_conf['site']['ams_id']
    video_file = parse_jsid(jsid)
    json_file = video_file.replace(".mp4", ".json")
    trash_file = json_file.replace(".json", ".trash")
    print("VID:", video_file)
+
+   vid_fn = video_file.split("/")[-1]
+   date = vid_fn[0:10]
+   nmc_dir = "/mnt/ams2/non_meteors_confirmed/" + date + "/"
+   if os.path.exists(nmc_dir) is False:
+      os.makedirs(nmc_dir)
+   # for non meteors copy stack_thumb, stack_file and orig sd_vid
+   # for training reasons only
+   cmd = "cp " + video_file + " " + nmc_dir
+   os.system(cmd)
+
+   cmd = "cp " + video_file.replace(".mp4", "-stacked.jpg") + " " + nmc_dir
+   os.system(cmd)
+
+   cmd = "cp " + video_file.replace(".mp4", "-stacked-tn.jpg") + " " + nmc_dir
+   os.system(cmd)
+
    resp['msg'] = "deleted."
    delete_log = "/mnt/ams2/SD/proc2/json/" + amsid + ".del"
    if cfe(delete_log) == 1:
