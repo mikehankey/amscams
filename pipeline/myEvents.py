@@ -42,14 +42,17 @@ def sync_meteor(EV, root_fn, cloud_files, mdir, cloud_dir):
                else:
                   print("NEED TO MAKE!", ms_dir + media_file)
                   if "360p.jpg" in media_file :
+
                      stack_file = media_file.replace("-360p.jpg", "-stacked.jpg")
+                     stack_file = stack_file.replace(EV.station_id + "_", "")
                      stack_file = stack_file.replace("METEOR_SCAN", "meteors")
-                     sd_stack_img = cv2.imread(stack_file)
-                     try:
-                        cv2.imwrite(ms_dir + media_file,sd_stack_img,[cv2.IMWRITE_JPEG_QUALITY, 80])
-                        print("saved", ms_dir + media_file)
-                     except:
-                        print("Could not save image.")
+                     print("LOADING:", mdir + stack_file)
+                     sd_stack_img = cv2.imread(mdir + stack_file)
+                     #try:
+                     cv2.imwrite(ms_dir + media_file,sd_stack_img,[cv2.IMWRITE_JPEG_QUALITY, 80])
+                     print("saved", ms_dir + media_file)
+                     #except:
+                     #   print("Could not save image.")
 
                   if "1080p.jpg" in media_file :
                    
