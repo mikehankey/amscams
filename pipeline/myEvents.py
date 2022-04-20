@@ -6,6 +6,16 @@ from lib.PipeUtil import load_json_file, save_json_file
 
 import sys
 
+def update_mj(root_fn, ev_data):
+   date = root_fn[0:10]
+   mjf = "/mnt/ams2/meteors/" + date + "/" + root_fn + ".json"
+   mj = load_json_file(mjf)
+   mj['ev_data'] = ev_data
+   save_json_file(mjf, mj)
+   print("Saved", mjf)
+   print("EV:", ev_data)
+   print(root_fn)
+
 def sync_meteor(EV, root_fn, cloud_files, mdir, cloud_dir):
    ms_dir = mdir.replace("/meteors/", "/METEOR_SCAN/")
    types = ["prev.jpg", "180p.mp4", "360p.jpg", "360p.mp4", "1080p.jpg", "1080p.mp4"]
@@ -98,6 +108,7 @@ def do_day(EV, date):
             if st == EV.station_id:
                obs_file = EV.min_cnt[mm]['obs'][i]
                sync_meteor(EV, obs_file, cloud_files,mdir, cloud_dir)
+               update_mj(obs_file, EV.min_cnt[mm])
 
 
 EV = Events()
