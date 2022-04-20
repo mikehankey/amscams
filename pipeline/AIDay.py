@@ -13,7 +13,6 @@ today = datetime.now().strftime("%Y_%m_%d")
 print("Init DB Starting.")
 AIDB = AllSkyDB()
 
-RN = ReviewNetwork()
 
 if len(sys.argv) > 2:
    cmd = sys.argv[2]
@@ -28,6 +27,7 @@ if len(sys.argv) > 2:
       exit()
    if cmd == "reject":
       date = sys.argv[1]
+      RN = ReviewNetwork(date)
       AIDB.auto_reject_day(date, RN)
       exit()
 
@@ -68,6 +68,9 @@ if date == "ALL" or date == "all":
          AIDB.verify_media_day(date)
          AIDB.reconcile_db(date)
          os.system("python3 myEvents.py " + date)
+
+         RN = ReviewNetwork(date)
+
          AIDB.auto_reject_day(date, RN)
          print("DONE AIDay FOR " + date)
          os.system("python3 Rec.py del_aws_day " + md)
@@ -75,6 +78,7 @@ if date == "ALL" or date == "all":
 
 else:
 
+   RN = ReviewNetwork(date)
    if os.path.exists(RN.learning_repo + date + "/METEOR/") is False:
       os.makedirs(RN.learning_repo + date + "/METEOR/")
    if os.path.exists(RN.learning_repo + date + "/NON_METEOR/") is False:

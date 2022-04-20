@@ -26,8 +26,10 @@ class ReviewNetwork():
       if os.path.exists("admin_conf.json") is True:
          self.admin_conf = load_json_file("admin_conf.json")
          self.data_dir = self.admin_conf['data_dir']
+         self.learning_repo = "/mnt/f/AI/DATASETS/NETWORK_PREV/"
       else:
          self.data_dir = "/mnt/ams2/"
+         self.learning_repo = "/mnt/ams2/AI/DATASETS/NETWORK_PREV/"
 
       print("Review Network Meteors")
       self.ASAI = AllSkyAI()
@@ -35,7 +37,6 @@ class ReviewNetwork():
       self.local_event_dir = "/mnt/f/EVENTS"
       self.cloud_event_dir = "/mnt/archive.allsky.tv/EVENTS"
       self.cloud_dir = "/mnt/archive.allsky.tv/"
-      self.learning_repo = "/mnt/f/AI/DATASETS/NETWORK_PREV/"
 
 
       self.year, self.month, self.day = date.split("_")

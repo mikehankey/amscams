@@ -1357,7 +1357,9 @@ class AllSkyDB():
             decision = "REJECT"
             print("AI REJECT CURRENT ROI", root_fn, hd_vid, meteor_yn_conf, fireball_yn_conf, mc_class, mc_class_conf )
             print("AI seeking alternative ROI...")
-            img = RN.get_stack_img_from_root_fn(root_fn)
+            stack_file = "/mnt/ams2/meteors/" + root_fn[0:10] + "/" + root_fn + "-stacked.jpg"
+            img = cv2.imread(stack_file)
+            #img = RN.get_stack_img_from_root_fn(root_fn)
             if img is not None:
                objects = RN.detect_objects_in_stack(self.station_id, root_fn, img.copy())
             else:
