@@ -50,6 +50,7 @@ if date == "ALL" or date == "all":
    for md in sorted(mdirs,reverse=True):
 
       if os.path.isdir(meteor_dir + md) is True:
+         RN = ReviewNetwork(md)
 
          if os.path.exists(RN.learning_repo + md + "/METEOR/") is False:
             os.makedirs(RN.learning_repo + md + "/METEOR/")
