@@ -1353,7 +1353,7 @@ class AllSkyDB():
          decision = "ACCEPT"
          if meteor_yn_conf is None or fireball_yn_conf is None or mc_class is None:
             continue
-         if (meteor_yn_conf < 50 and fireball_yn_conf < 50 and "meteor" not in mc_class) or (meteor_yn_conf < 70 and "meteor" not in mc_class and mc_class_conf >= 99):
+         if (meteor_yn_conf < 50 and fireball_yn_conf < 50 and "meteor" not in mc_class) or (meteor_yn_conf < 70 and "meteor" not in mc_class and mc_class_conf >= 98):
             decision = "REJECT"
             print("AI REJECT CURRENT ROI", root_fn, hd_vid, meteor_yn_conf, fireball_yn_conf, mc_class, mc_class_conf )
             print("AI seeking alternative ROI...")
@@ -1366,16 +1366,16 @@ class AllSkyDB():
                objects = []
             meteor_found = False
             for oo in objects:
-               if oo[0] > 50:
+               if oo[0] > 90:
                   print("METEOR OBJ FOUND HERE:", oo)
                   meteor_found = True 
                   new_roi = oo[1]
                   print("OBJECTS AI ACCEPT", root_fn, hd_vid, oo[0], oo[0], "meteor", oo[0], new_roi)
                   roi = new_roi
-                  fireball_yn_conf = oo[0]
-                  meteor_yn_conf = oo[0]
-                  mc_class_conf = oo[0]
-                  mc_class = "meteor"
+                  #fireball_yn_conf = oo[0]
+                  #meteor_yn_conf = oo[0]
+                  #mc_class_conf = oo[0]
+                  #mc_class = "meteor"
                   print("Need to reduce new location!")
                   decision = "ACCEPT"
          else:
