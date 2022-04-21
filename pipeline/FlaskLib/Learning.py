@@ -1,4 +1,5 @@
 import glob
+
 import math
 import simplejson as json
 import sqlite3
@@ -1992,8 +1993,19 @@ def make_trash_icon(roi_file,ocolor,size,selected=None) :
    return(trash_icons)
 
 
-def ai_review(station_id, options):
-   out = ""
+def ai_review(station_id, options,json_conf):
+   out = """
+      <div id='main_container' class='container-fluid h-100 mt-4 lg-l'>
+      <div class='gallery gal-resize reg row text-center text-lg-left'>
+      <div class='list-onl'>
+      <div class='filter-header d-flex flex-row-reverse '>
+      <button id="sel-all" title="Select All" class="btn btn-primary ml-3"><i class="icon-checkbox-checked"></i></button>
+      <button id="del-all" class="del-all btn btn-danger"><i class="icon-delete"></i> Delete <span class="sel-ctn">All</span> Selected</button>
+     </div>
+     </div>
+
+   """
+   template = make_default_template(station_id, "meteors_main.html", json_conf)
    con = sqlite3.connect(station_id + "_ALLSKY.db")
    con.row_factory = sqlite3.Row
    cur = con.cursor()
@@ -2017,15 +2029,15 @@ def ai_review(station_id, options):
       """
       cur.execute(sql)
       rows = cur.fetchall()
-      out += "We've detected the following entries and suspect they could be non-meteors. Please review and purge as needed."
+      out += "<div style='width: 100%'>We've detected the following entries and suspect they could be non-meteors. Please review and purge as needed.</div>"
       out += "<ul>"
       for row in rows:
          mc_class, ccc = row
          out += "<li><a href=/AIREVIEW/" + station_id + "/?mc_class=" + mc_class + ">" + mc_class + "</a> (" + str(ccc) + ")</li>"
    else:
-      out += "<p>The following meteors are low confidence and could actually be " + options['mc_class'] + " or something else."
+      out += "<div style='width: 100%'><p>The following captures are classified as low confidence meteors and are more likely " + options['mc_class'] + " or something else."
       out += "<br>To reconcile this list, first review and human confirm any meteors you see in the list."
-      out += "<br>When complete, select the button at the bottom that says, 'confirm all as NON-METEOR.'"
+      out += "<br>When complete, select the button at the bottom that says, 'confirm all as NON-METEOR.'</div>"
       sql = """
             SELECT station_id, sd_vid, meteor_yn_conf, fireball_yn_conf, mc_class, mc_class_conf 
               FROM meteors 
@@ -2041,38 +2053,58 @@ def ai_review(station_id, options):
       """
       cur.execute(sql, [options['mc_class']])
       rows = cur.fetchall()
+      need_to_del = [] 
       for row in rows:
          station_id, sd_vid, meteor_yn, fireball_yn, mc_class, mc_class_conf = row
-         cell = meteor_cell_html(sd_vid)
-         out += cell
+         root_fn = sd_vid.replace(".mp4", "")
+         thumb_url = "/meteors/" + root_fn[0:10] + "/" + root_fn + "-stacked-tn.jpg"
+         json_file = "/mnt/ams2/meteors/" + root_fn[0:10] + "/" + root_fn + ".json"
+         if os.path.exists(json_file):
+            ai_info = str(int(meteor_yn)) + "% Meteor"
+            ai_info += str(int(fireball_yn)) + "% Fireball - "
+            ai_info += str(int(mc_class_conf)) + "% " + mc_class
+            cell = meteor_cell_html(root_fn, thumb_url, ai_info)
+            out += cell
+         else:
+            print("record no longer exists. already deleted?")
+            need_to_del.append(sd_vid)
          #out += "<li>" + sd_vid + " " + str(meteor_yn) + " " + str(fireball_yn) + " " + mc_class + " " + str(mc_class_conf)
-   return(out)
+   template = template.replace("{MAIN_TABLE}", out)
+   return(template)
 
-def meteor_cell_html(sd_vid):
-   print("ID:", sd_vid)
-   year = sd_vid.split("_")[0]
-   month = sd_vid.split("_")[1]
-   dom = sd_vid.split("_")[2]
-   day = year + "_" + month + "_" + dom
-   div_id = sd_vid.replace(".mp4", "")
-   disp_text = sd_vid + "<br>"
+def meteor_cell_html(root_fn, thumb_url, ai_info):
+   jsid = root_fn.replace("_", "")
+   datecam = ai_info
+   click_link = "#"
+   video_url = thumb_url.replace("-stacked-tn.jpg",".mp4")
+   met_html = """
+         <div id='{:s}' class='preview select-to norm'>
+            <a class='mtt' href='{:s}' data-obj='{:s}' title='Go to Info Page'>
+               <img alt='{:s}' class='img-fluid ns lz' src='{:s}'>
+               <span>{:s}</span>
+            </a>
 
-   prev_img_file = "/mnt/ams2/meteors/" + day + "/" + sd_vid.replace(".mp4", "-stacked-tn.jpg")
-   prev_img_url = "/meteors/" + day + "/" + sd_vid.replace(".mp4", "-stacked-tn.jpg")
+            <div class='list-onl'>
+               <span>{:s}<span>
+            </div>
+            <div class="list-onl sel-box">
+               <div class="custom-control big custom-checkbox">
+                  <input type="checkbox" class="custom-control-input" id='chec_{:s}' name='chec_{:s}'>
+                  <label class="custom-control-label" for='chec_{:s}'></label>
+               </div>
+            </div>
 
-   if os.path.exists(prev_img_file) is True:
-      html = """
-         <div id="{:s}" style="
-              background-image: url('{:s}');
-              background-repeat: no-repeat;
-              background-size: 320px;
-              width: 320px;
-              height: 180px;
-              margin: 5px ">
-              <div class="show_hider"> {:s} </div>
+            <div class='btn-toolbar'>
+               <div class='btn-group'>
+                  <a class='vid_link_gal col btn btn-primary btn-sm' title='Play Video' href='/dist/video_player.html?video={:s}'>
+                  <i class='icon-play'></i></a>
+                  <a class='delete_meteor_gallery col btn btn-danger btn-sm' title='Delete Detection' data-meteor='{:s}'><i class='icon-delete'></i></a>
+                  <a class='confirm_meteor col btn btn-secondary btn-sm' title='Confirm Meteor' data-meteor='{:s}'><i class='icon-arrow-up'></i></a>
+               </div>
+            </div>
          </div>
-      """.format(div_id, prev_img_url, disp_text)
-   else:
-      html = ""
-      #station_id + " " + obs_id.replace(".mp4", "")
+
+   """.format(jsid, click_link, thumb_url, datecam, thumb_url, datecam, datecam, jsid,jsid,jsid, video_url,jsid, jsid)
+   return(met_html)
+
    return(html)

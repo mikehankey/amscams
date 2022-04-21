@@ -155,7 +155,12 @@ def make_obs_object(mj,mse, nsinfo):
    obs = {}
    for i in range(0, len(mse['stations'])):
       station = mse['stations'][i] 
-      file = mse['files'][i] 
+      if "files" in mse:
+         file = mse['files'][i] 
+      elif "obs" in mse:
+         file = mse['obs'][i] 
+      else:
+         continue
       fn, dir = fn_dir(file)
       
       if station not in obs:
@@ -205,7 +210,10 @@ def make_obs_object(mj,mse, nsinfo):
 
 
 def make_ms_html(amsid, meteor_file, mj):
-   mse = mj['ev_data']
+   if "ev_data" in mj:
+      mse = mj['ev_data']
+   elif "multi_station_event" in mj:
+      mse = mj['multi_station_event']
    ms_html = "<h3>MULTI STATION OBSERVATIONS<h3>"
    date = meteor_file[0:10]
    year,month, dom = date.split("_")
@@ -505,7 +513,8 @@ def detail_page(amsid, date, meteor_file):
                 </li>
       """
       ms_html = str(mj['multi_station_event'])
-      ms_html = make_ms_html_old(amsid, meteor_file, mj)
+      #ms_html = make_ms_html_old(amsid, meteor_file, mj)
+      ms_html = make_ms_html(amsid, meteor_file, mj)
    else:
       print("NOOOOOO")
       print(mj.keys())

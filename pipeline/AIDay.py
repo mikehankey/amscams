@@ -1,4 +1,5 @@
 from Classes.AIDB import AllSkyDB
+from Classes.ASAI import AllSkyAI 
 from datetime import datetime 
 import datetime as dt
 import sys

@@ -652,7 +652,7 @@ def air(amsid):
    options = {}
    for key, value in request.args.items():
       options[key] = value
-   out = ai_review(amsid, options)
+   out = ai_review(amsid, options, json_conf)
    return(out)
 
 
