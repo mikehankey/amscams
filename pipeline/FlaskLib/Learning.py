@@ -2021,7 +2021,7 @@ def ai_review(station_id, options):
       out += "<ul>"
       for row in rows:
          mc_class, ccc = row
-         out += "<li><a href=/AIREVIEW/AMS1/?mc_class=" + mc_class + ">" + mc_class + "</a> (" + str(ccc) + ")</li>"
+         out += "<li><a href=/AIREVIEW/" + station_id + "/?mc_class=" + mc_class + ">" + mc_class + "</a> (" + str(ccc) + ")</li>"
    else:
       out += "<p>The following meteors are low confidence and could actually be " + options['mc_class'] + " or something else."
       out += "<br>To reconcile this list, first review and human confirm any meteors you see in the list."
