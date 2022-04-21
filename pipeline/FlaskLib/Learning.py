@@ -1991,3 +1991,87 @@ def make_trash_icon(roi_file,ocolor,size,selected=None) :
 
    return(trash_icons)
 
+
+def ai_review(station_id, options):
+   out = ""
+   con = sqlite3.connect(station_id + "_ALLSKY.db")
+   con.row_factory = sqlite3.Row
+   cur = con.cursor()
+
+   if "mc_class" not in options:
+      sql = """
+         SELECT mc_class, count(*) 
+           FROM meteors
+          WHERE (
+                mc_class != 'meteor'
+            AND mc_class != 'fireball')
+            AND (
+                mc_class_conf >  meteor_yn_conf
+             OR mc_class_conf > fireball_yn_conf)
+            AND mc_class_conf >= 98
+            AND meteor_yn_conf <= 70
+            AND fireball_yn_conf <= 70
+            AND mc_class not like 'meteor%'
+            AND human_confirmed != 1
+            GROUP BY mc_class
+      """
+      cur.execute(sql)
+      rows = cur.fetchall()
+      out += "We've detected the following entries and suspect they could be non-meteors. Please review and purge as needed."
+      out += "<ul>"
+      for row in rows:
+         mc_class, ccc = row
+         out += "<li><a href=/AIREVIEW/AMS1/?mc_class=" + mc_class + ">" + mc_class + "</a> (" + str(ccc) + ")</li>"
+   else:
+      out += "<p>The following meteors are low confidence and could actually be " + options['mc_class'] + " or something else."
+      out += "<br>To reconcile this list, first review and human confirm any meteors you see in the list."
+      out += "<br>When complete, select the button at the bottom that says, 'confirm all as NON-METEOR.'"
+      sql = """
+            SELECT station_id, sd_vid, meteor_yn_conf, fireball_yn_conf, mc_class, mc_class_conf 
+              FROM meteors 
+             WHERE mc_class = ? 
+               AND human_confirmed != 1
+               AND (
+                   mc_class_conf >  meteor_yn_conf
+                OR mc_class_conf > fireball_yn_conf)
+               AND mc_class_conf >= 98
+               AND meteor_yn_conf <= 70
+               AND fireball_yn_conf <= 70
+      """
+      cur.execute(sql, [options['mc_class']])
+      rows = cur.fetchall()
+      for row in rows:
+         station_id, sd_vid, meteor_yn, fireball_yn, mc_class, mc_class_conf = row
+         cell = meteor_cell_html(sd_vid)
+         out += cell
+         #out += "<li>" + sd_vid + " " + str(meteor_yn) + " " + str(fireball_yn) + " " + mc_class + " " + str(mc_class_conf)
+   return(out)
+
+def meteor_cell_html(sd_vid):
+   print("ID:", sd_vid)
+   year = sd_vid.split("_")[0]
+   month = sd_vid.split("_")[1]
+   dom = sd_vid.split("_")[2]
+   day = year + "_" + month + "_" + dom
+   div_id = sd_vid.replace(".mp4", "")
+   disp_text = sd_vid + "<br>"
+
+   prev_img_file = "/mnt/ams2/meteors/" + day + "/" + sd_vid.replace(".mp4", "-stacked-tn.jpg")
+   prev_img_url = "/meteors/" + day + "/" + sd_vid.replace(".mp4", "-stacked-tn.jpg")
+
+   if os.path.exists(prev_img_file) is True:
+      html = """
+         <div id="{:s}" style="
+              background-image: url('{:s}');
+              background-repeat: no-repeat;
+              background-size: 320px;
+              width: 320px;
+              height: 180px;
+              margin: 5px ">
+              <div class="show_hider"> {:s} </div>
+         </div>
+      """.format(div_id, prev_img_url, disp_text)
+   else:
+      html = ""
+      #station_id + " " + obs_id.replace(".mp4", "")
+   return(html)
