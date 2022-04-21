@@ -2030,13 +2030,14 @@ def ai_review(station_id, options):
             SELECT station_id, sd_vid, meteor_yn_conf, fireball_yn_conf, mc_class, mc_class_conf 
               FROM meteors 
              WHERE mc_class = ? 
-               AND human_confirmed != 1
                AND (
                    mc_class_conf >  meteor_yn_conf
                 OR mc_class_conf > fireball_yn_conf)
                AND mc_class_conf >= 98
                AND meteor_yn_conf <= 70
                AND fireball_yn_conf <= 70
+               AND human_confirmed != 1
+               ORDER BY meteor_yn_conf DESC
       """
       cur.execute(sql, [options['mc_class']])
       rows = cur.fetchall()
