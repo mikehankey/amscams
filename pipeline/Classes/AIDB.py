@@ -1470,4 +1470,4 @@ class AllSkyDB():
          else:
             print("DELETE:", sd_vid, hd_vid, meteor_yn_conf, fireball_yn_conf, mc_class, mc_class_conf)
 
- 
+      print("Done mc rejects.") 

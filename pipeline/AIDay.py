@@ -28,6 +28,7 @@ if len(sys.argv) > 2:
    if cmd == "reject":
       date = sys.argv[1]
       AIDB.mc_rejects()
+      print("DONE MC REJECTS.")
       exit()
 
       RN = ReviewNetwork(date)

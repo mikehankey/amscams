@@ -10,7 +10,7 @@ def update_mj(root_fn, ev_data):
    date = root_fn[0:10]
    mjf = "/mnt/ams2/meteors/" + date + "/" + root_fn + ".json"
    mj = load_json_file(mjf)
-   mj['ev_data'] = ev_data
+   mj['multi_station_event'] = ev_data
    save_json_file(mjf, mj)
    print("Saved", mjf)
    print("EV:", ev_data)
