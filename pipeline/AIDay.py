@@ -80,7 +80,7 @@ if date == "ALL" or date == "all":
          AIDB.auto_reject_day(date, RN)
          print("DONE AIDay FOR " + date)
          os.system("python3 Rec.py del_aws_day " + md)
-         AIDB.check_update_status(date)
+         #AIDB.check_update_status(date)
 
 else:
 
@@ -98,8 +98,5 @@ else:
    AIDB.auto_reject_day(date, RN)
    os.system("python3 Rec.py del_aws_day " + date)
    print("DONE AIDay FOR " + date)
-   #exit()
    AIDB.reducer(date)
-   AIDB.check_update_status(date)
-   #print("\rDONE DAY:" + date + "                                   ",end="" )
-   AIDB.check_update_status(date)
+   #AIDB.check_update_status(date)

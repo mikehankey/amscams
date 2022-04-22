@@ -579,6 +579,26 @@ def make_meteor_index_all(json_conf):
    print(cmd)
    os.system(cmd)
 
+   # make an obs_id file per year and sync the past years if they aren't already sync'd
+   by_year = {}
+   for row in obs_ids:
+      obs_id, start_time = row
+      el = split("_")
+      year = el[1]
+      if year not in by_year:
+         by_year[year] = []
+      by_year[year].append((obs_id, start_time))
+   for year in by_year:
+      obs_ids_file = "/mnt/ams2/meteors/" + station_id + "_OBS_IDS_" + year + ".json"
+      save_json_file(obs_ids_file, by_year[year])
+      print("saved:", obs_ids_file)
+      os.system("gzip " + obs_ids_file)
+      obfn = obs_ids_file.split("/")[-1]
+      cloud_file = "/mnt/archive.allsky.tv/" + station_id + "/" + "/METEORS/"  + obfn
+      if os.path.exists(cloud_file) is False:
+         cmd = "cp " + obs_id_file + " " + cloud_file 
+         print(cmd)
+
 def fix_corrupt_meteor_json(json_file):
    fp = open(json_file, "r")
    json_data = ""
