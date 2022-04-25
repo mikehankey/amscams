@@ -554,36 +554,40 @@ def make_meteor_index_all(json_conf):
    files = glob.glob(mr_dir + "*")
    obs_ids = []
    obs_ids_file = "/mnt/ams2/meteors/" + station_id + "_OBS_IDS.json"
-   for mdir in sorted(files):
-      #print(mdir)
-      day, dir = fn_dir(mdir)
-      if cfe(mdir, 1) == 1:
-         mi_file = mdir + "/" + day + "-" + amsid + ".meteors"
-         mi_file, mdata = make_meteor_index_day(day, json_conf)
-         print("MMIF:", mi_file)
-         for data in mdata:
-            print("ADDING:", day, len(mdata))
-            all_meteors.append(data)
-            mfn = data[0].split("/")[-1]
-            obs_id = station_id + "_" + mfn
-            obs_ids.append((obs_id, data[2]))
-   amf = mr_dir + amsid + "-meteors.info"    
-   all_meteors = sorted(all_meteors, key=lambda x: (x[0]), reverse=True)
-   save_json_file(amf, all_meteors, True)
-   save_json_file(obs_ids_file, obs_ids, True)
-   print("Saved:", amf)
-   print("Saved:", obs_ids_file)
-   os.system("gzip -f -k " + obs_ids_file)
-   cloud_dir = "/mnt/archive.allsky.tv/" + station_id + "/METEORS/" 
-   cmd = "cp " + obs_ids_file + " " + cloud_dir
-   print(cmd)
-   os.system(cmd)
+   #if False:
+   if os.path.exists(obs_ids_file) is False:
+      for mdir in sorted(files):
+         #print(mdir)
+         day, dir = fn_dir(mdir)
+         if cfe(mdir, 1) == 1:
+            mi_file = mdir + "/" + day + "-" + amsid + ".meteors"
+            mi_file, mdata = make_meteor_index_day(day, json_conf)
+            print("MMIF:", mi_file)
+            for data in mdata:
+               print("ADDING:", day, len(mdata))
+               all_meteors.append(data)
+               mfn = data[0].split("/")[-1]
+               obs_id = station_id + "_" + mfn
+               obs_ids.append((obs_id, data[2]))
+      amf = mr_dir + amsid + "-meteors.info"    
+      all_meteors = sorted(all_meteors, key=lambda x: (x[0]), reverse=True)
+      save_json_file(amf, all_meteors, True)
+      save_json_file(obs_ids_file, obs_ids, True)
+      print("Saved:", amf)
+      print("Saved:", obs_ids_file)
+      os.system("gzip -f -k " + obs_ids_file)
+      cloud_dir = "/mnt/archive.allsky.tv/" + station_id + "/METEORS/" 
+      cmd = "cp " + obs_ids_file + " " + cloud_dir
+      print(cmd)
+      os.system(cmd)
+   else:
+      obs_ids = load_json_file(obs_ids_file)
 
    # make an obs_id file per year and sync the past years if they aren't already sync'd
    by_year = {}
    for row in obs_ids:
       obs_id, start_time = row
-      el = split("_")
+      el = obs_id.split("_")
       year = el[1]
       if year not in by_year:
          by_year[year] = []
@@ -592,11 +596,11 @@ def make_meteor_index_all(json_conf):
       obs_ids_file = "/mnt/ams2/meteors/" + station_id + "_OBS_IDS_" + year + ".json"
       save_json_file(obs_ids_file, by_year[year])
       print("saved:", obs_ids_file)
-      os.system("gzip " + obs_ids_file)
+      os.system("gzip -f -k " + obs_ids_file)
       obfn = obs_ids_file.split("/")[-1]
       cloud_file = "/mnt/archive.allsky.tv/" + station_id + "/" + "/METEORS/"  + obfn
       if os.path.exists(cloud_file) is False:
-         cmd = "cp " + obs_id_file + " " + cloud_file 
+         cmd = "cp " + obs_ids_file + " " + cloud_file 
          print(cmd)
 
 def fix_corrupt_meteor_json(json_file):

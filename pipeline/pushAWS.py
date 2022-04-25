@@ -278,8 +278,11 @@ def make_obs_data(station_id, date, meteor_file,cloud_files=None):
       if mj['multi_station_event'] != 0:
          if "solve_status" not in mj['multi_station_event']:
             mj['multi_station_event']['solve_status'] = "UNSOLVED"
-         print(mj['multi_station_event']['event_id'] , mj['multi_station_event']['solve_status']) 
-         event_id = str(mj['multi_station_event']['event_id']) + ":" + str(mj['multi_station_event']['solve_status'])
+         #print(mj['multi_station_event']['event_id'] , mj['multi_station_event']['solve_status']) 
+         if "event_id" in mj['multi_station_event']:
+            event_id = str(mj['multi_station_event']['event_id']) + ":" + str(mj['multi_station_event']['solve_status'])
+         else:
+            event_id = ""
    else:
       event_id = 0
    if "ffp" in mj:

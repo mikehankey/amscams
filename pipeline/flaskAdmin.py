@@ -11,7 +11,7 @@ from lib.PipePwdProtect import login_page, check_pwd_ajax
 from lib.PipeAutoCal import fn_dir
 from FlaskLib.meteor_detail_funcs import detail_page , pick_points, pick_points_day 
 from FlaskLib.config_funcs import config_vars 
-from FlaskLib.meteors_main import meteors_main , meteors_by_day, trash_page, non_meteors_main
+from FlaskLib.meteors_main import meteors_main , meteors_by_day, trash_page, non_meteors_main, confirm_non_meteors
 from FlaskLib.super_stacks import stacks_main, stacks_day_hours, stacks_hour
 from FlaskLib.min_detail import min_detail_main
 from FlaskLib.live import live_view
@@ -524,14 +524,25 @@ def rmeteors(amsid ):
 
    return(out)
 
-# MAIN METEOR PAGE
-@app.route('/non_meteor/<amsid>/', methods=['GET', 'POST'])
+# MAIN NON METEOR PAGE
+
+@app.route('/confirm_non_meteors/', methods=['GET', 'POST'])
+@auth.login_required
+def cnon_meteors():
+   req = {}
+   all_ids = request.args.get('all_ids')
+   if all_ids is None:
+      all_ids = request.form.get('all_ids')
+   out = confirm_non_meteors(all_ids, json_conf)
+   return(out)
+
+@app.route('/non_meteors/<amsid>/', methods=['GET', 'POST'])
 @auth.login_required
 def non_meteors(amsid ):
    req = {}
    date = request.args.get('date')
    req['date'] = date 
-   out = non_meteors_main(amsid,req)
+   out = non_meteors_main(amsid,req,json_conf)
    return out
    
 

@@ -300,7 +300,87 @@ def trash_page (amsid, in_data) :
    template = template.replace("{RAND}", "v3.0000")
    return(template)
 
-def non_meteors_main (amsid, in_data) :
+def confirm_non_meteors(all_ids,json_conf):
+   confirm_file = "/mnt/ams2/non_meteors/non_meteors_confirm.json"
+   if os.path.exists(confirm_file) is False:
+      conf_data = {}
+   else:
+      conf_data = load_json_file(confirm_file)
+   ids = all_ids.split(",")[:-1]
+   out = ""
+   for fn in ids:
+      out += fn + "<br>"
+      conf_data[fn] = {}
+   
+   save_json_file(confirm_file,conf_data)
+   return(out)
+
+def non_meteors_main (amsid, in_data,json_conf) :
+   out = """
+   <script>
+         $(function() {
+            $('.restore_meteor').click(function() {
+               restore_meteor($(this).attr('data-meteor'))
+            })
+         })
+   </script>
+   """
+   out += """
+      <div id='main_container' class='container-fluid h-100 mt-4 lg-l'>
+      <div class='gallery gal-resize reg row text-center text-lg-left'>
+      <div class='list-onl'>
+      <div class='filter-header d-flex flex-row-reverse '>
+      <button id="sel-all" title="Select All" class="btn btn-primary ml-3"><i class="icon-checkbox-checked"></i></button>
+      <button id="del-all" class="del-all btn btn-danger"><i class="icon-delete"></i> Delete <span class="sel-ctn">All</span> Selected</button>
+     </div>
+     </div>
+   """
+
+   non_meteors = []
+   nm_data_file = "/mnt/ams2/non_meteors/non_meteors.txt"
+   confirm_file = "/mnt/ams2/non_meteors/non_meteors_confirm.json"
+   if os.path.exists(confirm_file) is False:
+      conf_data = {}
+   else:
+      conf_data = load_json_file(confirm_file)
+
+   fp = open(nm_data_file)
+   for line in fp:
+      line = line.replace("\n", "")
+      non_meteors.append(line)
+
+   all_files_str = ""
+   c = 0
+   for nmf in sorted(non_meteors, reverse=True):
+      fn = nmf.split("/")[-1]
+      if fn in conf_data:
+         continue
+      if c > 100:
+         break
+      imgf = nmf.replace(".json", "-stacked-tn.jpg")
+
+      all_files_str += fn + ","
+      if os.path.exists(imgf):
+         img_url = imgf.replace("/mnt/ams2", "")
+         cell = meteor_cell(fn.replace(".json", ""), img_url)
+         out += cell
+         #out += "<img src=" + img_url + ">\n"
+      c+= 1
+   #print(out)
+   out += "</div></div>"
+   out += """
+   <div style='width: 100%; border: 1px #000000 solid; text-align: center;'>
+   <form method=post action="/confirm_non_meteors/" style='display: inline-block;'>
+      <input type=hidden name="all_ids" value="{}">
+      <input type=submit name="submit" value="Confirm All As Non Meteor">
+   </form>
+   <div>
+   """.format(all_files_str)
+   template = make_default_template(amsid, "meteors_main.html", json_conf)
+   template = template.replace("{MAIN_TABLE}", out)
+   return(template)
+
+def non_meteors_main_old (amsid, in_data) :
    date = in_data['date']
    ai_file = "/mnt/ams2/meteors/" + in_data['date'] + "/" + amsid + "_" + in_data['date'] + "_" + "AI_DATA.info"
    out = ""
@@ -588,3 +668,41 @@ def meteors_main (amsid, in_data) :
 
 
    return(template)
+
+
+def meteor_cell(root_fn, thumb_url):
+   jsid = root_fn #.replace("_", "")
+   datecam = ""
+   click_link = "#"
+   video_url = thumb_url.replace("-stacked-tn.jpg", ".mp4")
+   met_html = """
+         <div id='{:s}' class='preview select-to norm'>
+            <a class='mtt' href='{:s}' data-obj='{:s}' title='Go to Info Page'>
+               <img alt='{:s}' class='img-fluid ns lz' src='{:s}'>
+               <span>{:s}</span>
+            </a>
+
+            <div class='list-onl'>
+               <span>{:s}<span>
+            </div>
+            <div class="list-onl sel-box">
+               <div class="custom-control big custom-checkbox">
+                  <input type="checkbox" class="custom-control-input" id='chec_{:s}' name='chec_{:s}'>
+                  <label class="custom-control-label" for='chec_{:s}'></label>
+               </div>
+            </div>
+
+            <div class='btn-toolbar'>
+               <div class='btn-group'>
+                  <a class='vid_link_gal col btn btn-primary btn-sm' title='Play Video' href='/dist/video_player.html?video={:s}'>
+                  <i class='icon-play'></i></a>
+                  <a class='restore_meteor col btn btn-danger btn-sm' title='Restore Meteor' data-meteor='{:s}'>
+                  <i class="fas fa-meteor"></i>
+</a>
+
+               </div>
+            </div>
+         </div>
+
+   """.format(jsid, click_link, thumb_url, datecam, thumb_url, datecam, datecam, jsid,jsid,jsid, video_url,jsid)
+   return(met_html)

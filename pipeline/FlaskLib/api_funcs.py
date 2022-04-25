@@ -217,17 +217,30 @@ def restore_meteor(jsid, data):
    sd_root = jsid
    day = jsid[0:10]
    trash_dir = "/mnt/ams2/trash/" + day + "/" 
+   non_meteor_dir = "/mnt/ams2/non_meteors/" + day + "/" 
    meteor_dir = "/mnt/ams2/meteors/" + day + "/" 
-   mj = load_json_file("/mnt/ams2/trash/" + day + "/" + json_file)
+   print("JSON FILE IS ", day, json_file)
+   print("T", trash_dir + json_file)
+   print("NM", non_meteor_dir + json_file)
+   if os.path.exists(trash_dir + json_file) is True:
+      rest_dir = trash_dir
+      rest_file = rest_dir + json_file
+   elif os.path.exists(non_meteor_dir + json_file) is True:
+      rest_dir = non_meteor_dir
+      rest_file = rest_dir + json_file
+   else:
+      rest_file = None
+   print(rest_file)
+   mj = load_json_file(rest_file)
    mj['hc'] = 1
-   save_json_file("/mnt/ams2/trash/" + day + "/" + json_file, mj)
+   save_json_file(rest_dir + json_file, mj)
    if "hd_trim" in mj:
       hd_root, hd_dir = fn_dir(mj['hd_trim'])
       hd_root = hd_root.replace(".mp4", "")
-      hd_cmd = "mv " + trash_dir + hd_root + "* " + meteor_dir
+      hd_cmd = "mv " + rest_dir + hd_root + "* " + meteor_dir
       os.system(hd_cmd)
       print(hd_cmd)
-   sd_cmd = "mv " + trash_dir + sd_root + "* " + meteor_dir
+   sd_cmd = "mv " + rest_dir + sd_root + "* " + meteor_dir
    os.system(sd_cmd)
    print(sd_cmd)
 
