@@ -20,7 +20,7 @@ def get_mfiles(mdir):
    return(mfiles)
 
 def insert_meteors_for_day(con, cur, station_id, date):
-   ai_data_file = "/mnt/ams2/meteors/" + date + "/" + station_id + "_" + date + "_AI_SCAN.info"
+   ai_data_file = "/mnt/ams2/meteors/" + date + "/" + station_id + "_" + date + "_AI_DATA.info"
    mdir = "/mnt/ams2/meteors/" + date + "/"
    mfiles = get_mfiles(mdir)
    json_conf = load_json_file("../conf/as6.json")

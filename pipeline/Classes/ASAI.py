@@ -257,7 +257,7 @@ class AllSkyAI():
       # returns :
       # ai_resp object containing meteor_yn,fireball_yn,mc_class,mc_conf
       ai_resp = {}
-      ai_resp['ai_version'] = 3
+      ai_resp['ai_version'] = 3.1
       ai_resp['root_fn'] = root_fn
       ai_resp['meteor_yn'] = 0
       ai_resp['fireball_yn'] = 0
@@ -321,7 +321,7 @@ class AllSkyAI():
          # Multi class i64
          # extract the class label which has the highest corresponding probability
          i = pred_result.argmax(axis=1)[0]
-         label = self.multi_class_labels.classes_[i]
+         label = self.multi_class_labels['moving_objects_i64'].classes_[i]
          predicted_class = label
          confidence = pred_result[0][i] * 100
          ai_resp['mc_class'] = predicted_class 
@@ -416,7 +416,7 @@ class AllSkyAI():
       # Multi class i64
       # extract the class label which has the highest corresponding probability
       i = pred_result.argmax(axis=1)[0]
-      label = self.multi_class_labels.classes_[i]
+      label = self.multi_class_labels['moving_objects_i64'].classes_[i]
       predicted_class = label
       confidence = pred_result[0][i] * 100
 
@@ -660,7 +660,7 @@ class AllSkyAI():
       # Multi class i64
       # extract the class label which has the highest corresponding probability
       i = pred_result.argmax(axis=1)[0]
-      label = self.multi_class_labels.classes_[i]
+      label = self.multi_class_labels['moving_objects_i64'].classes_[i]
       predicted_class = label
       confidence = pred_result[0][i] * 100
 
@@ -996,13 +996,14 @@ class AllSkyAI():
 
    def load_all_models(self):
       self.models = {}
+      self.multi_class_labels = {}
       if os.path.exists("models/") is False:
          os.makedirs("models/")
       #if os.path.exists("models/moving_objects_i64.labels") is False:
       #   os.system("cp /mnt/archive.allsky.tv/AMS1/ML/moving_objects_i64.labels ./models/moving_objects_i64.labels")
 
 
-      self.multi_class_labels = pickle.loads(open("models/moving_objects_i64.labels", "rb").read())
+      self.multi_class_labels['moving_objects_i64'] = pickle.loads(open("models/moving_objects_i64.labels", "rb").read())
       bin_model_files = ["meteor_prev_yn","meteor_yn_i64", "fireball_yn_i64"]
       cat_model_files = ["moving_objects_i64", "weather_condition"]
       for mf in bin_model_files:
@@ -1030,12 +1031,13 @@ class AllSkyAI():
                self.models[mf].compile(loss='categorical_crossentropy',
                   optimizer='rmsprop',
                   metrics=['accuracy'])
-               self.multi_class_labels = pickle.loads(open("models/" + mf + ".labels", "rb").read())
+               self.multi_class_labels[mf] = pickle.loads(open("models/" + mf + ".labels", "rb").read())
 
                print("loaded models/" + mf)
             except:
                self.models[mf] = None
                print("not found models/" + mf)
+               exit()
       print("Loaded models: ", self.models.keys())
          
 
@@ -1139,7 +1141,7 @@ class AllSkyAI():
       self.model_multi_class.compile(loss='categorical_crossentropy',
          optimizer='rmsprop',
          metrics=['accuracy'])
-      self.multi_class_labels = pickle.loads(open("models/" + mo_lib + ".labels", "rb").read())
+      self.multi_class_labels[mo_lib] = pickle.loads(open("models/" + mo_lib + ".labels", "rb").read())
 
 
       if os.path.exists("models/weather_condition.h5") is True:

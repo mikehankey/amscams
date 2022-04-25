@@ -286,9 +286,9 @@ class AllSkyDB():
       if True:
          meteor_roots = []
          if in_date is None:
-            sql = "SELECT root_fn, meteor_yn, meteor_yn_conf,roi, sync_status, hd_vid,reduced, ai_resp from meteors order by root_fn desc"
+            sql = "SELECT root_fn, meteor_yn, meteor_yn_conf,roi, sync_status, hd_vid,reduced, ai_resp, mc_class from meteors order by root_fn desc"
          else:
-            sql = "SELECT root_fn, meteor_yn, meteor_yn_conf,roi, sync_status, hd_vid,reduced, ai_resp from meteors where sd_vid like '" + in_date + "%' order by root_fn desc"
+            sql = "SELECT root_fn, meteor_yn, meteor_yn_conf,roi, sync_status, hd_vid,reduced, ai_resp, mc_class from meteors where sd_vid like '" + in_date + "%' order by root_fn desc"
 
 
          self.cur.execute(sql)
@@ -297,10 +297,11 @@ class AllSkyDB():
          not_found = 0
          for row in self.cur.fetchall():
             ai_r = row[7]
+            mc_class = row[8]
             if ai_r != "" and ai_r is not None:
                ai_r = json.loads(ai_r)
                if "ai_version" in ai_r: 
-                  if ai_r['ai_version'] >= 3:
+                  if ai_r['ai_version'] >= 3.1 and mc_class is not None :
                      print("\rSkip at latest AI already.",end="")
                      continue
             roi = row[3]
@@ -777,7 +778,7 @@ class AllSkyDB():
          if ai_resp is not None and ai_resp != "":
             ai_resp = json.loads(ai_resp)
             if "ai_version" in ai_resp:
-               if ai_resp['ai_version'] >= 1 and os.path.exists(roi_file) is True:
+               if ai_resp['ai_version'] >= 3.1 and os.path.exists(roi_file) is True:
                   print("\rSKIP DONE!",end="")
                   continue
          
@@ -1360,14 +1361,24 @@ class AllSkyDB():
       print("Auto reject:", date)
       sql = "SELECT root_fn, hd_vid, meteor_yn_conf,fireball_yn_conf,mc_class, mc_class_conf, roi,ai_resp from meteors where sd_vid like ?"
       ivals = [date + "%"]
+      print("SQL:", sql, ivals)
       self.cur.execute(sql, ivals)
       rows = self.cur.fetchall()
       ai_info = []
+         
       for row in rows:
          root_fn, hd_vid, meteor_yn_conf,fireball_yn_conf, mc_class, mc_class_conf, roi,ai_resp = row
          decision = "ACCEPT"
          if meteor_yn_conf is None or fireball_yn_conf is None or mc_class is None:
-            continue
+            decision = "ACCEPT"
+            print("MISSING AI DATA FOR", root_fn, meteor_yn_conf, fireball_yn_conf, mc_class, mc_class_conf)
+            if mc_class is None:
+               mc_class = "unknown"
+            if meteor_yn_conf is None:
+               meteor_yn_conf = 50
+            if fireball_yn_conf is None:
+               fireball_yn_conf = 50
+            #continue
          if (meteor_yn_conf < 50 and fireball_yn_conf < 50 and "meteor" not in mc_class) or (meteor_yn_conf < 70 and "meteor" not in mc_class and mc_class_conf >= 98):
             decision = "REJECT"
             print("AI REJECT CURRENT ROI", root_fn, hd_vid, meteor_yn_conf, fireball_yn_conf, mc_class, mc_class_conf )
@@ -1462,7 +1473,7 @@ class AllSkyDB():
          if ai_resp is not None:
             ai_resp = json.loads(ai_resp)
             print(ai_resp['ai_version'])
-            if int(ai_resp['ai_version']) < 3:
+            if int(ai_resp['ai_version']) < 3.1:
                continue
          mdir = "/mnt/ams2/meteors/" + sd_vid[0:10] + "/" 
          if os.path.exists(mdir  + sd_vid) is True:

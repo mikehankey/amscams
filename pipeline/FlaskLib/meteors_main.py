@@ -67,6 +67,14 @@ def get_meteors_in_range(station_id, start_date, end_date,del_data,filters=None)
       print("DAY:", day)
 
    if start_date == end_date:
+      ai_dict = {}
+      ai_file = "/mnt/ams2/meteors/" + start_date + "/" + amsid + "_" + start_date + "_" + "AI_DATA.info"
+      if os.path.exists(ai_file) is True:
+         temp = load_json_file(ai_file)
+         for row in temp:
+            ai_dict[row[1]] = row
+      else:
+         ai_dict = {}
       # get meteors from that days index file after building it on the fly!
       mif = "/mnt/ams2/meteors/" + start_date + "/" + start_date + "-" + station_id + ".meteors"
       if cfe(mif) == 1:
@@ -82,7 +90,7 @@ def get_meteors_in_range(station_id, start_date, end_date,del_data,filters=None)
  
       if hotspot_filter == 0 and nored == 0 and cam_filter == 0 and multi_filter == 0:
          print("NO FILTERS ON")
-         return(mi)
+         return(mi, ai_dict)
       elif hotspot_filter == 1:
          filtered_index = []
          print("HOTSPOT FILTERS ON")
@@ -107,7 +115,7 @@ def get_meteors_in_range(station_id, start_date, end_date,del_data,filters=None)
 
       filtered_index = sorted(filtered_index, key=lambda x: (x[6]), reverse=False)
 
-      return(filtered_index)
+      return(filtered_index, ai_dict)
    
 
    # check to see how many days in the range
@@ -174,7 +182,7 @@ def get_meteors_in_range(station_id, start_date, end_date,del_data,filters=None)
    
 
 
-   return(mi)
+   return(mi, ai_dict)
 def day_count(md, amsid, day,mc,rc,del_data):
    jsons = glob.glob(md + day + "/*.json")
    for js in jsons:
@@ -454,9 +462,8 @@ def meteors_main (amsid, in_data) :
       in_data['end_day'] = dt.now().strftime("%Y_%m_%d")
    if in_data['start_day'] is None:
       in_data['start_day'] = dt.now().strftime("%Y_%m_%d")
-   print("get_meteors_in_range")
    if in_data['ai_list'] is None:
-      tmeteors = get_meteors_in_range(amsid, in_data['start_day'], in_data['end_day'],del_data, in_data['filter'])
+      tmeteors,ai_dict = get_meteors_in_range(amsid, in_data['start_day'], in_data['end_day'],del_data, in_data['filter'])
    else:
       temp_meteors = load_json_file("/mnt/ams2/datasets/" + amsid + "_AI_METEOR_INDEX.json")
       tmeteors = []
@@ -594,7 +601,25 @@ def meteors_main (amsid, in_data) :
       show_datetime_cam = stime + " - " + cam
       if reduced == 1:
          show_datetime_cam += "<BR>Ang Vel: " + str(ang_vel)[0:4] + " Duration: " + str(dur) 
-   
+
+      root_fn = meteor[0].split("/")[-1]
+      root_fn = root_fn.replace("-stacked-tn.jpg", "")
+      root_fn = root_fn.replace(".json", "")
+      if root_fn in ai_dict:
+         print("AI", ai_dict[root_fn])
+#I ['ACCEPT', '2022_04_25_02_35_00_000_010001-trim-0092', '2022_04_25_02_35_00_000_010001-trim-92-HD-meteor.mp4', '[182, 195, 332, 345]', 96.77115678787231, 1.502394676208496, '', 0.0]
+         ai_text = str(round(ai_dict[root_fn][4],1)) + "% Meteor "
+         ai_text += str(round(ai_dict[root_fn][5],1)) + "% Fireball "
+         ai_text += str(round(ai_dict[root_fn][7],1)) + "% "
+         ai_text += str(ai_dict[root_fn][6]) 
+      else:
+         print("NOAI", root_fn )
+         ai_text = ""
+ 
+      if ai_text != "": 
+         temp = ai_text + "<br>" + show_datetime_cam
+         show_datetime_cam = temp 
+ 
       meteor_dt = datetime.datetime.strptime(stime, "%Y-%m-%d %H:%M:%S")
       mdate, mtime = stime.split(" ")
       mdate = mdate.replace("-", "_")
