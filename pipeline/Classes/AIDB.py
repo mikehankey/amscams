@@ -1379,7 +1379,7 @@ class AllSkyDB():
             if fireball_yn_conf is None:
                fireball_yn_conf = 50
             #continue
-         if (meteor_yn_conf < 50 and fireball_yn_conf < 50 and "meteor" not in mc_class) or (meteor_yn_conf < 70 and "meteor" not in mc_class and mc_class_conf >= 98):
+         if (int(meteor_yn_conf) < 50 and int(fireball_yn_conf) < 50 and "meteor" not in mc_class) or (int(meteor_yn_conf) < 70 and "meteor" not in mc_class and int(mc_class_conf) >= 98):
             decision = "REJECT"
             print("AI REJECT CURRENT ROI", root_fn, hd_vid, meteor_yn_conf, fireball_yn_conf, mc_class, mc_class_conf )
             print("AI seeking alternative ROI...")
