@@ -1340,6 +1340,21 @@ class AllSkyDB():
 
       return(roi, new_rois, stack_img)
 
+   def auto_reject_mc(self):
+      sql = """SELECT root_fn, hd_vid, meteor_yn_conf,fireball_yn_conf,mc_class, mc_class_conf, roi,ai_resp 
+                 FROM meteors 
+                WHERE (
+                      mc_class != 'meteor' 
+                  AND mc_class != 'fireball')
+                  AND (
+                      mc_class_conf >  meteor_yn_conf 
+                   OR mc_class_conf > fireball_yn_conf)
+                  AND mc_class_conf >= 98 
+                  AND meteor_yn_conf <= 70
+                  AND fireball_yn_conf <= 70
+            """
+ 
+
    def auto_reject_day(self, date, RN):
       non_meteor_dir = self.non_meteor_dir + date
       print("Auto reject:", date)
@@ -1353,27 +1368,29 @@ class AllSkyDB():
          decision = "ACCEPT"
          if meteor_yn_conf is None or fireball_yn_conf is None or mc_class is None:
             continue
-         if meteor_yn_conf < 50 and fireball_yn_conf < 50 and "meteor" not in mc_class:
+         if (meteor_yn_conf < 50 and fireball_yn_conf < 50 and "meteor" not in mc_class) or (meteor_yn_conf < 70 and "meteor" not in mc_class and mc_class_conf >= 98):
             decision = "REJECT"
             print("AI REJECT CURRENT ROI", root_fn, hd_vid, meteor_yn_conf, fireball_yn_conf, mc_class, mc_class_conf )
             print("AI seeking alternative ROI...")
-            img = RN.get_stack_img_from_root_fn(root_fn)
+            stack_file = "/mnt/ams2/meteors/" + root_fn[0:10] + "/" + root_fn + "-stacked.jpg"
+            img = cv2.imread(stack_file)
+            #img = RN.get_stack_img_from_root_fn(root_fn)
             if img is not None:
                objects = RN.detect_objects_in_stack(self.station_id, root_fn, img.copy())
             else:
                objects = []
             meteor_found = False
             for oo in objects:
-               if oo[0] > 50:
+               if oo[0] > 90:
                   print("METEOR OBJ FOUND HERE:", oo)
                   meteor_found = True 
                   new_roi = oo[1]
                   print("OBJECTS AI ACCEPT", root_fn, hd_vid, oo[0], oo[0], "meteor", oo[0], new_roi)
                   roi = new_roi
-                  fireball_yn_conf = oo[0]
-                  meteor_yn_conf = oo[0]
-                  mc_class_conf = oo[0]
-                  mc_class = "meteor"
+                  #fireball_yn_conf = oo[0]
+                  #meteor_yn_conf = oo[0]
+                  #mc_class_conf = oo[0]
+                  #mc_class = "meteor"
                   print("Need to reduce new location!")
                   decision = "ACCEPT"
          else:
@@ -1421,3 +1438,36 @@ class AllSkyDB():
          print("There no meteors worthy of rejection.")
       print("Finished auto_reject_day !")
 
+   def mc_rejects(self):
+      # select and reject rows matching the MC reject case
+      reject_dir = "/mnt/ams2/non_meteors/classes/"
+      sql = """SELECT sd_vid,hd_vid, meteor_yn_conf, fireball_yn_conf,mc_class,mc_class_conf,ai_resp FROM meteors
+                WHERE (
+                      mc_class_conf >  meteor_yn_conf
+                  AND mc_class_conf > fireball_yn_conf)
+                  AND mc_class_conf >= 98
+                  AND meteor_yn <= 60 
+                  AND fireball_yn <= 60 
+                  AND mc_class not like 'meteor%'
+                  AND mc_class not like 'orion%'
+                  AND root_fn not like '2019%'
+                  AND human_confirmed != 1
+                  AND multi_station != 1
+            """
+      self.cur.execute(sql)
+      rows = self.cur.fetchall()
+      ai_info = []
+      for row in rows:
+         sd_vid,hd_vid,meteor_yn_conf,fireball_yn_conf, mc_class,mc_class_conf,ai_resp = row
+         if ai_resp is not None:
+            ai_resp = json.loads(ai_resp)
+            print(ai_resp['ai_version'])
+            if int(ai_resp['ai_version']) < 3:
+               continue
+         mdir = "/mnt/ams2/meteors/" + sd_vid[0:10] + "/" 
+         if os.path.exists(mdir  + sd_vid) is True:
+            print("REJECT:", sd_vid, hd_vid, meteor_yn_conf, fireball_yn_conf, mc_class, mc_class_conf)
+         else:
+            print("DELETE:", sd_vid, hd_vid, meteor_yn_conf, fireball_yn_conf, mc_class, mc_class_conf)
+
+      print("Done mc rejects.") 

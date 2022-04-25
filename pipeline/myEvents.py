@@ -3,14 +3,27 @@ import cv2
 import os
 from Classes.MultiStationObs import MultiStationObs
 from lib.PipeUtil import load_json_file, save_json_file
-
+from Classes.AIDB import AllSkyDB 
 import sys
+
+def all_days(year):
+   mdir = "/mnt/ams2/meteors/"
+   mdirs = os.listdir(mdir)
+   for md in sorted(mdirs,reverse=True):
+      print(md)
+      if year in md:
+         if os.path.isdir(mdir + md) is True:
+            cmd = "python3 myEvents.py " + md
+            os.system(cmd)
 
 def update_mj(root_fn, ev_data):
    date = root_fn[0:10]
    mjf = "/mnt/ams2/meteors/" + date + "/" + root_fn + ".json"
    mj = load_json_file(mjf)
-   mj['ev_data'] = ev_data
+   mj['multi_station_event'] = ev_data
+   mj['event_id'] = ""
+   mj['solve_status'] = ""
+   
    save_json_file(mjf, mj)
    print("Saved", mjf)
    print("EV:", ev_data)
@@ -42,14 +55,17 @@ def sync_meteor(EV, root_fn, cloud_files, mdir, cloud_dir):
                else:
                   print("NEED TO MAKE!", ms_dir + media_file)
                   if "360p.jpg" in media_file :
+
                      stack_file = media_file.replace("-360p.jpg", "-stacked.jpg")
+                     stack_file = stack_file.replace(EV.station_id + "_", "")
                      stack_file = stack_file.replace("METEOR_SCAN", "meteors")
-                     sd_stack_img = cv2.imread(stack_file)
-                     try:
-                        cv2.imwrite(ms_dir + media_file,sd_stack_img,[cv2.IMWRITE_JPEG_QUALITY, 80])
-                        print("saved", ms_dir + media_file)
-                     except:
-                        print("Could not save image.")
+                     print("LOADING:", mdir + stack_file)
+                     sd_stack_img = cv2.imread(mdir + stack_file)
+                     #try:
+                     cv2.imwrite(ms_dir + media_file,sd_stack_img,[cv2.IMWRITE_JPEG_QUALITY, 80])
+                     print("saved", ms_dir + media_file)
+                     #except:
+                     #   print("Could not save image.")
 
                   if "1080p.jpg" in media_file :
                    
@@ -112,6 +128,11 @@ def do_day(EV, date):
 
 
 EV = Events()
+AIDB = AllSkyDB()
+AIDB.load_stations()
 MSO = MultiStationObs()
 ev_date = sys.argv[1]
-do_day(EV, ev_date)
+if ev_date == "all":
+   all_days("2022")
+else:
+   do_day(EV, ev_date)
