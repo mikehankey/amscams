@@ -224,9 +224,13 @@ def make_ms_html(amsid, meteor_file, mj):
       cloud_dir = "/mnt/archive.allsky.tv/" + tstation + "/METEORS/" + year + "/" + date + "/"
       cloud_url = "https://archive.allsky.tv/" + tstation + "/METEORS/" + year + "/" + date + "/"
       #if cfe(local_dir,1) == 0:
+      caption = mse['stations'][i] + " " + mse['times'][i]
       img_url = cloud_url + tstation + "_" + ff + "-prev.jpg"
-      ms_html += "<img src=" + img_url + ">"
-
+      #ms_html += "<img src=" + img_url + ">"
+      ms_html += """
+              <a style="background:url({});" class='vid-link' href="/dist/video_player.html?video={}&butt=no">{}</a><br>
+      """.format(img_url, img_url.replace("-prev.jpg", "-180p.mp4"), caption)
+   #ms_html += "<div style='clear: both'></div>"
    return(ms_html)
 
 
@@ -499,7 +503,6 @@ def detail_page(amsid, date, meteor_file):
       hd_stack = None
 
    if "ev_data" in mj:
-      print("YOYOYOYO")
       ms_html = make_ms_html(amsid, meteor_file, mj)
       otherobs = """
                 <li class="nav-item">
@@ -509,7 +512,7 @@ def detail_page(amsid, date, meteor_file):
    elif "multi_station_event" in mj :
       otherobs = """
                 <li class="nav-item">
-                    <a class="nav-link" id="multi-tab-l" data-toggle="tab" href="#multi-tab" role="tab" aria-controls="multi" aria-selected="false"><span id="str_cnt"></span>Multi Station Event</a>
+                    <a class="nav-link" id="multi-tab-l" data-toggle="tab" href="#multi-tab" role="tab" aria-controls="multi" aria-selected="false"><span id="str_cnt"></span>Multi Station Obs</a>
                 </li>
       """
       ms_html = str(mj['multi_station_event'])
