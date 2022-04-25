@@ -1374,6 +1374,7 @@ class AllSkyDB():
             print("MISSING AI DATA FOR", root_fn, meteor_yn_conf, fireball_yn_conf, mc_class, mc_class_conf)
             if mc_class is None:
                mc_class = "unknown"
+               mc_class_conf = 50
             if meteor_yn_conf is None:
                meteor_yn_conf = 50
             if fireball_yn_conf is None:
