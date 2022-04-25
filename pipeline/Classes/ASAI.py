@@ -1036,6 +1036,7 @@ class AllSkyAI():
             except:
                self.models[mf] = None
                print("not found models/" + mf)
+               input("WAITING.")
       print("Loaded models: ", self.models.keys())
          
 
