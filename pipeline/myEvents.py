@@ -61,6 +61,7 @@ def sync_meteor(EV, root_fn, cloud_files, mdir, cloud_dir):
                      stack_file = stack_file.replace("METEOR_SCAN", "meteors")
                      print("LOADING:", mdir + stack_file)
                      sd_stack_img = cv2.imread(mdir + stack_file)
+                     sd_stack_img = cv2.resize(sd_stack_img, (640,360))
                      #try:
                      cv2.imwrite(ms_dir + media_file,sd_stack_img,[cv2.IMWRITE_JPEG_QUALITY, 80])
                      print("saved", ms_dir + media_file)
