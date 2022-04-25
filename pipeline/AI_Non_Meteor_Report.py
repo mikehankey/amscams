@@ -2,7 +2,6 @@ from lib.PipeUtil import save_json_file, load_json_file
 import sys
 import os
 
-
 def meteor_cell(root_fn, thumb_url):
    jsid = root_fn.replace("_", "")
    datecam = ""
@@ -36,6 +35,7 @@ def meteor_cell(root_fn, thumb_url):
 
    """.format(jsid, click_link, thumb_url, datecam, thumb_url, datecam, datecam, jsid,jsid,jsid, video_url,jsid)
    return(met_html)
+
 def non_meteor_report():
    # update the non-meteor report for ALL days:
    non_meteors = []   

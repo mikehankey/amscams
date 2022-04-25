@@ -1022,9 +1022,9 @@ class AllSkyAI():
             self.models[mf] = None
 
       for mf in cat_model_files:
-         if os.path.exists("models/" + mf + ".h5") is False:
-            os.system("cp /mnt/archive.allsky.tv/AMS1/ML/" + mf + ".h5 ./models/" + mf)
-         if True:
+         if os.path.exists("models/" + mf + ".h5") is True:
+         #   os.system("cp /mnt/archive.allsky.tv/AMS1/ML/" + mf + ".h5 ./models/" + mf)
+         #if True:
             try:
                self.model_multi_class =load_model("models/" + mf + ".h5")
                self.model_multi_class.compile(loss='categorical_crossentropy',
