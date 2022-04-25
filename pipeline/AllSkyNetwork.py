@@ -26,8 +26,15 @@ if cmd == "day_load_solves":
    ASN.set_dates(event_day)
    ASN.day_load_solves(event_day)
 
-if cmd == "rsync_data":
 
+if cmd == "report":
+   print("CMD:", cmd)
+   event_day = sys.argv[2]
+   ASN.help()
+   ASN.set_dates(event_day)
+   ASN.quick_report(event_day)
+
+if cmd == "rsync_data":
    print("CMD:", cmd)
    event_day = sys.argv[2]
    ASN.help()

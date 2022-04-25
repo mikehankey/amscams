@@ -19,6 +19,7 @@ from sklearn import metrics
 from sklearn.datasets import make_blobs
 from sklearn.preprocessing import StandardScaler
 from multiprocessing import Process
+import cv2
 
 class AllSkyNetwork():
    def __init__(self):
@@ -53,6 +54,24 @@ class AllSkyNetwork():
       self.dynamodb = boto3.resource('dynamodb')
 
       self.help()
+
+   def quick_report(self, date):
+      stats = {}
+      for ob in self.obs_dict:
+         st_id = self.obs_dict[ob]['station_id']
+         if st_id not in stats:
+            stats[st_id] = 1
+         else:
+            stats[st_id] += 1
+      c = 1 
+      temp = []
+      for st in stats:
+         sti = int(st.replace("AMS", ""))
+         temp.append((sti,stats[st]))
+      for row in sorted(temp, key=lambda x: x[0], reverse=False):
+         ams_id = "AMS{0:03d}".format(row[0])
+         print(c, ams_id, row[1])
+         c += 1
 
    def rsync_data_only(self, date):
       #self.set_dates(date)
@@ -177,7 +196,7 @@ class AllSkyNetwork():
       self.all_obs_gz_file = self.local_evdir + self.date + "_ALL_OBS.json.gz"
       self.cloud_all_obs_file = self.cloud_evdir + self.date + "_ALL_OBS.json"
       self.cloud_all_obs_gz_file = self.cloud_evdir + self.date + "_ALL_OBS.json.gz"
-
+      self.obs_review_file = self.local_evdir + date + "_OBS_REVIEWS.json"
       # DB FILE!
       self.db_file = self.db_dir + "/ALLSKYNETWORK_" + date + ".db"
       print("DB FILE IS:", self.db_file)
@@ -189,8 +208,6 @@ class AllSkyNetwork():
       self.con = sqlite3.connect(self.db_file)
       self.con.row_factory = sqlite3.Row
       self.cur = self.con.cursor()
-
-
 
       if os.path.exists(self.local_evdir) is False:
          os.makedirs(self.local_evdir)
@@ -204,7 +221,7 @@ class AllSkyNetwork():
 
       if os.path.exists(self.cloud_all_obs_gz_file) is False and os.path.exists(self.all_obs_file) is False:
          print("Could not find:", self.cloud_all_obs_gz_file, "should we download it?")
-         input("Enter to continue (will start UDC process)")
+         #input("Enter to continue (will start UDC process)")
          os.system("./DynaDB.py udc " + date)
 
       elif os.path.exists(self.all_obs_gz_file) is False and os.path.exists(self.cloud_all_obs_gz_file) is True: 
@@ -337,6 +354,7 @@ class AllSkyNetwork():
 
    def day_coin_events(self,date,force=0):
 
+      self.get_min_obs_dict(date)
       self.plane_file = self.local_evdir + "/" + date + "_PLANE_PAIRS.json"
       self.min_events_file = self.local_evdir + "/" + date + "_MIN_EVENTS.json"
       if os.path.exists(self.plane_file) is True:
@@ -382,7 +400,8 @@ class AllSkyNetwork():
             odata = self.get_station_obs_count(minute)
             print("trying " + str(minute) + "...", len(odata), "stations this minute")
 
-            min_obs = self.get_obs (minute)
+            #min_obs = self.get_obs (minute)
+            min_obs = self.min_obs_dict[minute]
             min_events = self.min_obs_to_events(min_obs)
             all_min_events[minute] = min_events
             print("MINUTE OBS:", minute, len(min_obs), len(min_events.keys()))
@@ -917,6 +936,21 @@ class AllSkyNetwork():
       print("MINUTE GOOD/BAD EVENTS:", len(good), len(bad))
       return(good, bad)
 
+   def get_min_obs_dict(self, date):
+      self.min_obs_dict = {}
+      sql = """
+         SELECT station_id, event_id, event_minute, obs_id, fns, times, xs, ys, azs, els, ints, status, ignore 
+           FROM event_obs
+          WHERE obs_id like ?
+      """
+      vals = ["%" + date + "%"]
+      self.cur.execute(sql, vals)
+      rows = self.cur.fetchall()
+      for row in rows:
+         station_id, event_id, event_minute, obs_id, fns, times, xs, ys, azs, els, ints, status, ignore = row
+         if event_minute not in self.min_obs_dict:
+            self.min_obs_dict[event_minute] = []
+         self.min_obs_dict[event_minute].append((station_id, event_id, event_minute, obs_id, fns, times, xs, ys, azs, els, ints, status, ignore))
 
    def get_obs(self, wild):   
       obs_data = []
@@ -1010,32 +1044,6 @@ class AllSkyNetwork():
       print("")
 
 
-   def day_load_solve_results(self, date=None):
-      # check all SQL events for the day
-      # update the EV status and solution 
-      # based on file system results
-      self.set_dates(date)
-      self.load_stations_file()
-      sql = """
-
-            SELECT event_id, event_minute, revision, stations, obs_ids, event_start_time, event_start_times,  
-                   lats, lons, event_status, run_date, run_times
-              FROM events
-             WHERE event_minute like ?
-      """
-      self.cur.execute(sql, [date + "%"])
-      rows = self.cur.fetchall()
-      for row in rows:
-         (event_id, event_minute, revision, stations, obs_ids, event_start_time, event_start_times,  \
-                 lats, lons, event_status, run_date, run_times) = row
-         ev_dir = self.local_evdir + "/" + event_id + "/"
-         if os.path.exists(ev_dir + event_id + "-event.json") is True:
-            status = "SOLVED"
-         elif os.path.exists(ev_dir + event_id + "-fail.json") is True:
-            status = "FAILED"
-         else:
-            status = "PENDING"
-         print(event_id, stations, status, ev_dir)
       
    def event_id_to_date(self, event_id):
       year = event_id[0:4]
@@ -1045,6 +1053,7 @@ class AllSkyNetwork():
       print(date)
       return(date)
 
+      
 
    def resolve_failed_day(self, event_day):
       sql = """
@@ -1117,9 +1126,218 @@ class AllSkyNetwork():
          self.solve_event(event_id, temp_obs, 1, 1)
 
       cmd = "rsync -av --update " + self.local_evdir + "/" + event_id + "/* " + self.cloud_evdir + "/" + event_id + "/"
-      print(cmd)
-      os.system(cmd)
-      
+      print("SKIPPING (for now)", cmd)
+      #os.system(cmd)
+
+   def day_load_solves(self, date):
+
+      solve_jobs = []
+      self.set_dates(date)
+      self.load_stations_file()
+      self.errors = []
+      if os.path.exists(self.obs_review_file) is True:
+         self.ai_data = load_json_file(self.obs_review_file)
+      else:
+         self.ai_data = {}
+      sql = """
+            SELECT event_id, event_minute, revision, stations, obs_ids, event_start_time, event_start_times,  
+                   lats, lons, event_status, run_date, run_times
+              FROM events
+             WHERE event_minute like ?
+      """
+      vals = [date + "%"]
+      self.cur.execute(sql, vals)
+      rows = self.cur.fetchall()
+      print("ROWS:", len(rows))
+      print("OBS DICT:", len(self.obs_dict.keys()))
+      c = 1
+      self.temp_obs = {}
+      self.event_sol_data = {}
+      self.event_sql_data = {}
+
+      for row in rows:
+         (event_id, event_minute, revision, stations, obs_ids, event_start_time, event_start_times,  \
+                 lats, lons, event_status, run_date, run_times) = row
+         self.event_sql_data[event_id] = (event_id, event_minute, revision, stations,  obs_ids, \
+                 event_start_time, event_start_times, lats, lons, event_status, run_date, run_times)
+         # decode json saved data
+         stations = json.loads(stations)
+         obs_ids = json.loads(obs_ids)
+         event_start_times = json.loads(event_start_times)
+         lats = json.loads(lons)
+
+         #loop over obs and check for dupes
+         for ob_id in obs_ids:
+            if ob_id not in self.temp_obs :
+               self.temp_obs[ob_id] = 0
+            self.temp_obs[ob_id] += 1
+            if self.temp_obs[ob_id] > 1:
+               print("DUPE OBS USED!", ob_id, event_id)
+         print("EV:",c,  event_id, event_status )
+         c += 1
+
+         # load the event.json
+
+         ev_json_file = self.local_evdir + event_id + "/" + event_id + "-event.json"
+         if os.path.exists(ev_json_file) is True:
+            ev_data = load_json_file(ev_json_file)
+            
+         else:
+            print(ev_json_file, "NOT FOUND!")
+            ev_data = None
+         self.event_sol_data[event_id] = ev_data
+
+      # now all data is loaded into the arrays.
+      # first make sure the SQL summary / event status is accurate 
+      # to what is on the file system. Update as needed. 
+      for event_id in self.event_sql_data:
+         (tevent_id, event_minute, revision, stations,  obs_ids, event_start_time, event_start_times, 
+                 lats, lons, event_status, run_date, run_times) = self.event_sql_data[event_id]
+         if event_id in self.event_sol_data:
+            sol_data = self.event_sol_data[event_id]
+         else:
+            sol_data = None
+            self.event_sol_data[event_id] = None
+         if sol_data is not None:
+            sol_data['event_status'] = event_status
+            (sol_status, v_init, v_avg, start_ele, end_ele, a, e) = self.eval_sol(sol_data)
+            self.event_sol_data[event_id]['sol_status'] = sol_status
+            if "BAD" in sol_status:
+               self.event_sol_data[event_id]['event_status'] = "BAD"
+            self.view_obs_ids(date, obs_ids)
+            self.update_obs_ids(event_id,obs_ids)
+            #print(event_status, sol_data.keys())
+
+   def update_obs_ids(self, event_id, obs_ids):
+      if isinstance(obs_ids, str) is True:
+         obs_ids = json.loads(obs_ids)
+
+
+      for ob_id in obs_ids:
+         sql = "UPDATE event_obs set event_id = ? WHERE obs_id = ?"
+         vals = [event_id, ob_id]
+         print(sql, vals)
+         self.cur.execute(sql, vals)
+         self.con.commit()
+
+   def eval_sol(self, data):
+      event_status = data['event_status']
+      v_init = round(data['traj']['v_init'] / 1000,2)
+      v_avg = round(data['traj']['v_avg'] /1000,2)
+      end_ele = round(data['traj']['end_ele']  / 1000,2)
+      start_ele = round(data['traj']['start_ele'] / 1000,2)
+
+      if "orb" in data:
+         if data['orb'] is not None:
+            if data['orb']['a'] is not None:
+               a = data['orb']['a'] 
+               e = data['orb']['e'] 
+            else:
+               a = -1
+               e = 99
+         else:
+            a = -1
+            e = 99
+      else:
+         a = -1
+         e = 99
+      sol_status = ""
+      if v_init > 100 or v_avg > 100:
+         sol_status += "BAD_VEL;"
+      if start_ele >= 200 or start_ele < 0:
+         sol_status += "BAD_TRAJ_START;"
+      if end_ele >= 200 or end_ele < 0:
+         sol_status += "BAD_TRAJ_END;"
+      if a < 0:
+         sol_status += "BAD_ORB_a;"
+      if e > 1:
+         sol_status += "BAD_ORB_e;"
+      if sol_status == "":
+         sol_status = "GOOD"
+
+      return(sol_status, v_init, v_avg, start_ele, end_ele, a, e)
+
+   def check_ai(self, ai_data):
+      print(ai_data)
+      meteor_obj_conf = 0
+      meteor_prev_conf = 0
+      if "objects" in ai_data:
+         for row in ai_data['objects']:
+            con = row[0]
+            if con > 50:
+               meteor_obj_conf = con
+      if "ai" in ai_data:
+         meteor_prev_conf = ai_data['ai']['meteor_prev_yn']
+      print("METEOR OBJ FOUND:", meteor_obj_conf)
+      print("METEOR PREV FOUND:", meteor_prev_conf)
+      return(meteor_obj_conf, meteor_prev_conf)
+
+   def view_obs_ids(self, date, obs_ids):
+      year = date[0:4]
+      imgs = []
+      self.missing_prev_files = {}
+      if isinstance(obs_ids, str) is True:
+         obs_ids = json.loads(obs_ids)
+
+      for ob_id in obs_ids:
+         if "AMS" in ob_id:
+            st_id = ob_id.split("_")[0]
+         sd_vid = ob_id.replace(st_id + "_", "") + ".mp4" 
+         if sd_vid in self.ai_data:
+            label_data = self.ai_data[sd_vid]
+            conf1, conf2 = self.check_ai(label_data)
+         else:
+            label_data = None
+            
+            cloud_prev_file = "/mnt/archive.allsky.tv/" + st_id + "/METEORS/" + year + "/" + date + "/" + ob_id + "-prev.jpg"
+            local_prev_file = self.local_evdir + "OBS/" + ob_id + "-prev.jpg"
+            local_prev_file_alt = self.local_evdir + sd_vid.replace(".mp4", "-prev.jpg")
+            if os.path.exists(local_prev_file_alt) is True:
+               cmd = "mv " + local_prev_file_alt + " " + local_prev_file
+               print("MOVE MIS_NAMED LOCAL FILE!")
+               print(cmd)
+               os.command(cmd)
+               #input("WAIT")
+
+            print(cloud_prev_file)
+            print("NO AI DATA!!!")
+            if os.path.exists(local_prev_file) is False:
+               print("NO LOCAL PREV FILE!", local_prev_file)
+               if os.path.exists(cloud_prev_file) is False:
+                  print("NO CLOUD PREV FILE!", cloud_prev_file)
+                  self.missing_prev_files[ob_id] = cloud_prev_file
+                  self.reject_obs(st_id, ob_id, "NO PREV FILE")
+               else:
+                  cmd = "cp " + cloud_prev_file + " " + local_prev_file
+                  print("COPY THE FILE!", cmd)
+                  os.system(cmd)
+
+         ev_file = self.local_evdir + "OBS/" + ob_id + "-prev.jpg"
+         if os.path.exists(ev_file) is False:
+            ev_file = ev_file.replace(st_id + "_", "")         
+         if os.path.exists(ev_file) is True:
+            img = cv2.imread(ev_file)
+            imgs.append(img)
+            print("LABELS:", label_data)
+            cv2.imshow('pepe', img)
+            cv2.waitKey(30)
+         print(ev_file)
+      print("MISSING PREV FILES:", len(self.missing_prev_files.keys()))
+
+   def reject_obs(self, st_id, ob_id, reject_desc):
+      sql = "INSERT OR REPLACE INTO rejected_obs (obs_id, reject_desc) VALUES(?,?)" 
+      if st_id not in ob_id:
+         ob_id = st_id + "_" + ob_id
+      vals = [ob_id, reject_desc]
+      self.cur.execute(sql, vals)
+      self.con.commit()
+      print("REJECTED:", st_id, ob_id, reject_desc)
+
+      sql = "UPDATE event_obs set ignore = 1, status = ? WHERE obs_id = ?"
+      vals = [reject_desc, ob_id]
+      self.cur.execute(sql, vals)
+      self.con.commit()
+
 
    def day_solve(self, date=None,force=0):
       solve_jobs = []
@@ -1146,6 +1364,8 @@ class AllSkyNetwork():
          event_start_times = json.loads(event_start_times)
          lats = json.loads(lons)
          temp_obs = {}
+         if event_status == "SOLVED":
+            continue
          for obs_id in obs_ids:
             st_id = obs_id.split("_")[0]
             vid = obs_id.replace(st_id + "_", "") + ".mp4"
@@ -1167,6 +1387,8 @@ class AllSkyNetwork():
                print(temp_obs[st][vd].keys())
 
          print("FORCE:", force)
+      
+
          solve_jobs.append((event_id, event_status, temp_obs))
 
          #self.solve_event(event_id, temp_obs, 1, force)
@@ -1174,8 +1396,8 @@ class AllSkyNetwork():
       cmd = "rsync -auv " + self.local_evdir + "/* " + self.cloud_evdir + "/"
       print(cmd)
       #os.system(cmd)
-
-
+      for job in solve_jobs:
+         print("JOB:", job[0], job[1])
       self.run_jobs(solve_jobs)
       #for job in solve_jobs:
       #   print(job[0], job[1])
@@ -1574,7 +1796,9 @@ class AllSkyNetwork():
       
 
       return(event)
-              
+
+
+
    def solve_event(self,event_id, temp_obs, time_sync, force):
 
 

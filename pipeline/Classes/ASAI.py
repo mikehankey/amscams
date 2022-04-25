@@ -1026,10 +1026,12 @@ class AllSkyAI():
             os.system("cp /mnt/archive.allsky.tv/AMS1/ML/" + mf + ".h5 ./models/" + mf)
          if True:
             try:
-               self.models[mf] = load_model("models/" + mf + ".h5")
-               self.models[mf].compile(loss='binary_crossentropy',
+               self.model_multi_class =load_model("models/" + mf + ".h5")
+               self.model_multi_class.compile(loss='categorical_crossentropy',
                   optimizer='rmsprop',
                   metrics=['accuracy'])
+               self.multi_class_labels = pickle.loads(open("models/" + mf + ".labels", "rb").read())
+
                print("loaded models/" + mf)
             except:
                self.models[mf] = None
