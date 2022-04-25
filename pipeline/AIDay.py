@@ -73,7 +73,7 @@ if date == "ALL" or date == "all":
          AIDB.load_all_meteors(date)
          AIDB.verify_media_day(date)
          AIDB.reconcile_db(date)
-         os.system("python3 myEvents.py " + date)
+         os.system("python3.6 myEvents.py " + date)
 
          RN = ReviewNetwork(date)
 
@@ -94,7 +94,7 @@ else:
    AIDB.load_all_meteors(date)
    AIDB.verify_media_day(date)
    AIDB.reconcile_db(date)
-   os.system("python3 myEvents.py " + date)
+   os.system("python3.6 myEvents.py " + date)
    AIDB.auto_reject_day(date, RN)
    os.system("python3 Rec.py del_aws_day " + date)
    print("DONE AIDay FOR " + date)
