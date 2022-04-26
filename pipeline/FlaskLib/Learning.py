@@ -2109,8 +2109,8 @@ def ai_rejects(station_id, options, json_conf):
              WHERE (
                    mc_class_conf >  meteor_yn_conf
                AND mc_class_conf > fireball_yn_conf)
-               AND meteor_yn_conf <= 2
-               AND fireball_yn_conf <= 2 
+               AND meteor_yn_conf <= 1 
+               AND fireball_yn_conf <= 1 
                AND mc_class not like 'meteor%'
                AND mc_class not like 'orion%'
                AND root_fn not like '2019%'
