@@ -2034,8 +2034,8 @@ def ai_rejects(station_id, options, json_conf):
       #out += "{} {} {} {} {}<br>".format(sd_vid, meteor_yn_conf, fireball_yn_conf, mc_class, mc_class_conf)
       if ai_resp is not None:
          ai_resp = json.loads(ai_resp)
-         if int(ai_resp['ai_version']) < 3.1:
-            continue
+         #if int(ai_resp['ai_version']) < 3.1:
+         #   continue
       mdir = "/mnt/ams2/meteors/" + sd_vid[0:10] + "/"
 
 
