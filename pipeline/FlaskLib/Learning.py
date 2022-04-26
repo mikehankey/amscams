@@ -1992,9 +1992,102 @@ def make_trash_icon(roi_file,ocolor,size,selected=None) :
 
    return(trash_icons)
 
-def ai_rejects(station_id, options, json_conf):
 
+def confirm_non_meteor(station_id, root_fn):
+   db_file = station_id + "_ALLSKY.db"
+   con = sqlite3.connect(db_file)
+   cur = con.cursor()
+   date = root_fn[0:10]
+   mfile = "/mnt/ams2/meteors/" + date + "/" + root_fn + ".json"
+   if os.path.exists(mfile):
+      mj = load_json_file(mfile)
+      mj['hc'] =  -1
+      save_json_file(mfile, mj)
+      sql = "UPDATE meteors set human_confirmed = '-1' WHERE root_fn = ?"
+      task = [root_fn]
+      cur.execute(sql, task)
+      print(sql,task)
+      con.commit()
+   else:
+      return("ERROR: NO METEOR FILE! " + root_fn)
+   return("Human confirmed non meteor " + root_fn)
+
+
+def confirm_meteor(station_id, root_fn):
+   db_file = station_id + "_ALLSKY.db"
+   con = sqlite3.connect(db_file)
+   cur = con.cursor()
+   date = root_fn[0:10]
+   mfile = "/mnt/ams2/meteors/" + date + "/" + root_fn + ".json"
+   if os.path.exists(mfile):
+      mj = load_json_file(mfile)
+      mj['hc'] = 1
+      save_json_file(mfile, mj)
+      sql = "UPDATE meteors set human_confirmed = '1' WHERE root_fn = ?"
+      task = [root_fn]
+      cur.execute(sql, task)
+      print(sql,task)
+      con.commit()
+   else:
+      return("ERROR: NO METEOR FILE! " + root_fn)
+   return("Human confirmed meteor " + root_fn)
+
+def ai_rejects(station_id, options, json_conf):
    out = """
+   <script>
+         $(function() {
+            $('.confirm_non_meteor').click(function() {
+               confirm_non_meteor($(this).attr('data-meteor'))
+            })
+         })
+         $(function() {
+            $('.confirm_meteor').click(function() {
+               confirm_meteor($(this).attr('data-meteor'))
+            })
+         })
+         function confirm_meteor(data) {
+             api_url = "/confirm_meteor/" + data
+             method="GET"
+             $.ajax({
+                url: api_url,
+                type: method,
+                crossDomain: true,
+                contentType: "application/json",
+
+                success: function(response){
+                   div_id = data.replaceAll("_", "") 
+                   $("#" + div_id).fadeOut(300, function() { $("#" + div_id).remove(); });
+                    console.log(response)
+                 },
+                 error: function(response){
+                    console.log(response)
+                    alert("ERR with confirm meteor")
+                 },
+              })
+         }
+         function confirm_non_meteor(data) {
+             api_url = "/confirm_non_meteor/" + data
+             method="GET"
+             $.ajax({
+                url: api_url,
+                type: method,
+                crossDomain: true,
+                contentType: "application/json",
+
+                success: function(response){
+                   div_id = data.replaceAll("_", "") 
+                   $("#" + div_id).fadeOut(300, function() { $("#" + div_id).remove(); });
+                    console.log(response)
+                 },
+                 error: function(response){
+                    console.log(response)
+                    alert("FAILED")
+                 },
+              })
+         }
+   </script>
+   """
+   out += """
       <div id='main_container' class='container-fluid h-100 mt-4 lg-l'>
       <div class='gallery gal-resize reg row text-center text-lg-left'>
       <div class='list-onl'>
@@ -2012,7 +2105,7 @@ def ai_rejects(station_id, options, json_conf):
 
    # select and reject rows matching the MC reject case
    reject_dir = "/mnt/ams2/non_meteors/classes/"
-   sql = """SELECT sd_vid,hd_vid, meteor_yn_conf, fireball_yn_conf,mc_class,mc_class_conf,ai_resp FROM meteors
+   sql = """SELECT sd_vid,hd_vid, meteor_yn_conf, fireball_yn_conf,mc_class,mc_class_conf,ai_resp,camera_id, start_datetime FROM meteors
              WHERE (
                    mc_class_conf >  meteor_yn_conf
                AND mc_class_conf > fireball_yn_conf)
@@ -2022,6 +2115,7 @@ def ai_rejects(station_id, options, json_conf):
                AND mc_class not like 'orion%'
                AND root_fn not like '2019%'
                AND human_confirmed != 1
+               AND human_confirmed != -1
                AND multi_station != 1
          """
    cur.execute(sql)
@@ -2029,7 +2123,7 @@ def ai_rejects(station_id, options, json_conf):
    ai_info = []
    tc = 0
    for row in rows:
-      sd_vid,hd_vid,meteor_yn,fireball_yn, mc_class,mc_class_conf,ai_resp = row
+      sd_vid,hd_vid,meteor_yn,fireball_yn, mc_class,mc_class_conf,ai_resp,camera_id,start_datetime = row
       #out += "{} {} {} {} {}<br>".format(sd_vid, meteor_yn_conf, fireball_yn_conf, mc_class, mc_class_conf)
       if ai_resp is not None:
          ai_resp = json.loads(ai_resp)
@@ -2052,7 +2146,8 @@ def ai_rejects(station_id, options, json_conf):
          if os.path.exists(json_file):
             ai_info = str(int(meteor_yn)) + "% Meteor"
             ai_info += str(int(fireball_yn)) + "% Fireball - "
-            ai_info += str(int(mc_class_conf)) + "% " + mc_class
+            ai_info += str(int(mc_class_conf)) + "% " + mc_class + "<br>"
+            ai_info += camera_id + " " + start_datetime 
             cell = meteor_cell_html(root_fn, thumb_url, ai_info)
             out += cell
 
@@ -2140,6 +2235,7 @@ def ai_review(station_id, options,json_conf):
    return(template)
 
 def meteor_cell_html(root_fn, thumb_url, ai_info):
+   thumb_ourl = thumb_url.replace("-tn.jpg", "-obj-tn.jpg")
    jsid = root_fn.replace("_", "")
    datecam = ai_info
    click_link = "#"
@@ -2165,13 +2261,14 @@ def meteor_cell_html(root_fn, thumb_url, ai_info):
                <div class='btn-group'>
                   <a class='vid_link_gal col btn btn-primary btn-sm' title='Play Video' href='/dist/video_player.html?video={:s}'>
                   <i class='icon-play'></i></a>
-                  <a class='delete_meteor_gallery col btn btn-danger btn-sm' title='Delete Detection' data-meteor='{:s}'><i class='icon-delete'></i></a>
-                  <a class='confirm_meteor col btn btn-secondary btn-sm' title='Confirm Meteor' data-meteor='{:s}'><i class='icon-arrow-up'></i></a>
+                  <a class='confirm_non_meteor col btn btn-danger btn-sm' title='Confirm NON Meteor' data-meteor='{:s}'><i class='fas fa-ban'></i></a>
+                  <a class='confirm_meteor col btn btn-secondary btn-sm' title='Confirm Meteor' data-meteor='{:s}'><i class="fas fa-meteor"></i></a>
                </div>
             </div>
          </div>
 
-   """.format(jsid, click_link, thumb_url, datecam, thumb_url, datecam, datecam, jsid,jsid,jsid, video_url,jsid, jsid)
+   """.format(jsid, click_link, thumb_ourl, datecam, thumb_url, datecam, datecam, jsid,jsid,jsid, video_url,root_fn, root_fn)
    return(met_html)
+                  #<!--<a class='delete_meteor_gallery col btn btn-danger btn-sm' title='Delete Detection' data-meteor='{:s}'><i class='icon-delete'></i></a>-->
 
    return(html)

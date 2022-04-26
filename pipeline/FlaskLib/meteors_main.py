@@ -406,7 +406,7 @@ def non_meteors_main_old (amsid, in_data) :
          vothumbs = ""
          show_datetime_cam = ""
          vthumb = "/non_meteors/" + in_data['date'] + "/" + root_fn + "-stacked-tn.jpg"
-         vothumb = "/non_meteors/" + in_data['date'] + "/" + root_fn + "-stacked-tn.jpg"
+         vothumb = "/non_meteors/" + in_data['date'] + "/" + root_fn + "-stacked-obj-tn.jpg"
          out += """
             <div id='""" + jsid + """' class='preview select-to """ + ht_class + """'>
                <a class='mtt' href='""" + meteor_detail_link + """' data-obj='""" + vothumb + """' title='Go to Info Page'>
@@ -696,6 +696,7 @@ def meteors_main (amsid, in_data) :
 
 
 def meteor_cell(root_fn, thumb_url):
+   thumb_ourl = thumb_url.replace("-tn.jpg", "-obj-tn.jpg")
    jsid = root_fn #.replace("_", "")
    datecam = ""
    click_link = "#"
@@ -729,5 +730,5 @@ def meteor_cell(root_fn, thumb_url):
             </div>
          </div>
 
-   """.format(jsid, click_link, thumb_url, datecam, thumb_url, datecam, datecam, jsid,jsid,jsid, video_url,jsid)
+   """.format(jsid, click_link, thumb_ourl, datecam, thumb_url, datecam, datecam, jsid,jsid,jsid, video_url,jsid)
    return(met_html)
