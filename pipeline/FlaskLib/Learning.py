@@ -1993,6 +1993,13 @@ def make_trash_icon(roi_file,ocolor,size,selected=None) :
    return(trash_icons)
 
 
+def batch_confirm_non_meteors(station_id, data_str):
+   data_list = data_str.split(",")[:-1]
+   for dd in data_list:
+      print(dd)
+
+
+
 def confirm_non_meteor(station_id, root_fn):
    db_file = station_id + "_ALLSKY.db"
    con = sqlite3.connect(db_file)
@@ -2033,6 +2040,7 @@ def confirm_meteor(station_id, root_fn):
    return("Human confirmed meteor " + root_fn)
 
 def ai_rejects(station_id, options, json_conf):
+   print("OPTIONS:", options)
    out = """
    <script>
          $(function() {
@@ -2106,22 +2114,23 @@ def ai_rejects(station_id, options, json_conf):
    # select and reject rows matching the MC reject case
    reject_dir = "/mnt/ams2/non_meteors/classes/"
    sql = """SELECT sd_vid,hd_vid, meteor_yn_conf, fireball_yn_conf,mc_class,mc_class_conf,ai_resp,camera_id, start_datetime FROM meteors
-             WHERE (
-                   mc_class_conf >  meteor_yn_conf
-               AND mc_class_conf > fireball_yn_conf)
-               AND meteor_yn_conf <= 1 
-               AND fireball_yn_conf <= 1 
-               AND mc_class not like 'meteor%'
-               AND mc_class not like 'orion%'
+             WHERE meteor_yn_conf <= 5
+               AND fireball_yn_conf <= 5 
                AND root_fn not like '2019%'
                AND human_confirmed != 1
                AND human_confirmed != -1
-               AND multi_station != 1
+          ORDER BY meteor_yn_conf ASC
          """
+                   #mc_class_conf >  meteor_yn_conf
+               #AND mc_class_conf > fireball_yn_conf)
+               #AND multi_station != 1
+               #AND mc_class not like 'meteor%'
+               #AND mc_class not like 'orion%'
    cur.execute(sql)
    rows = cur.fetchall()
    ai_info = []
    tc = 0
+   data_str = ""
    for row in rows:
       sd_vid,hd_vid,meteor_yn,fireball_yn, mc_class,mc_class_conf,ai_resp,camera_id,start_datetime = row
       #out += "{} {} {} {} {}<br>".format(sd_vid, meteor_yn_conf, fireball_yn_conf, mc_class, mc_class_conf)
@@ -2140,6 +2149,7 @@ def ai_rejects(station_id, options, json_conf):
 
       if True:
          root_fn = sd_vid.replace(".mp4", "")
+         data_str += root_fn + ","
          thumb_url = "/meteors/" + root_fn[0:10] + "/" + root_fn + "-stacked-tn.jpg"
          json_file = "/mnt/ams2/meteors/" + root_fn[0:10] + "/" + root_fn + ".json"
          print(json_file)
@@ -2151,8 +2161,23 @@ def ai_rejects(station_id, options, json_conf):
             cell = meteor_cell_html(root_fn, thumb_url, ai_info)
             out += cell
 
-      tc += 1
-   print("Done mc rejects.")
+            tc += 1
+   print("Done mc rejects.", tc)
+   if tc == 0:
+      out = "You have confirmed all low confidence captures. Check back again tomorrow." 
+   else:
+      out += """
+      <h2 style='width: 100%'>Mark ALL on this page as</h2>
+      <form method=post action=/batch_confirm/{}>
+      <select name="mark_as">
+         <option value="non_meteors">NON METEORS
+         <option value="meteors">METEORS
+      </select>
+      <input type="hidden" name=data_str value="{}">
+      <input type="submit" name=button value="Batch Mark ALL">
+      </form>
+      """.format(station_id, data_str)
+
    template = template.replace("{MAIN_TABLE}", out)
    return(template)
 
