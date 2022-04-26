@@ -1375,9 +1375,9 @@ class AllSkyDB():
             if mc_class is None:
                mc_class = "unknown"
                mc_class_conf = 50
-            if meteor_yn_conf is None:
+            if meteor_yn_conf is None or meteor_yn_conf == "":
                meteor_yn_conf = 50
-            if fireball_yn_conf is None:
+            if fireball_yn_conf is None or fireball_yn_conf == "":
                fireball_yn_conf = 50
             #continue
          if (int(meteor_yn_conf) < 50 and int(fireball_yn_conf) < 50 and "meteor" not in mc_class) or (int(meteor_yn_conf) < 70 and "meteor" not in mc_class and int(mc_class_conf) >= 98):
