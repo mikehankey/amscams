@@ -1,7 +1,7 @@
 import base64
 import os
 from flask import Flask, request, Response, make_response
-from FlaskLib.Learning import learning_meteors_dataset, learning_meteors_tag, meteor_ai_scan, recrop_roi, recrop_roi_confirm, learn_main, learning_review_day, batch_update_labels, learning_db_dataset, timelapse_main, learning_weather, ai_review
+from FlaskLib.Learning import learning_meteors_dataset, learning_meteors_tag, meteor_ai_scan, recrop_roi, recrop_roi_confirm, learn_main, learning_review_day, batch_update_labels, learning_db_dataset, timelapse_main, learning_weather, ai_review, ai_rejects
 from FlaskLib.motion_detects import motion_detects
 from FlaskLib.FlaskUtils import get_template
 from FlaskLib.api_funcs import update_meteor_points, show_cat_stars, delete_meteor, restore_meteor, delete_meteors, reduce_meteor, delete_frame, crop_video
@@ -665,6 +665,16 @@ def air(amsid):
       options[key] = value
    out = ai_review(amsid, options, json_conf)
    return(out)
+
+@app.route('/AIREJECTS/<amsid>/', methods=['GET', 'POST'])
+@auth.login_required
+def airej(amsid):
+   options = {}
+   for key, value in request.args.items():
+      options[key] = value
+   out = ai_rejects(amsid, options, json_conf)
+   return(out)
+
 
 
 @app.route('/LEARNING/<amsid>/BATCH_UPDATE/', methods=['GET', 'POST'])

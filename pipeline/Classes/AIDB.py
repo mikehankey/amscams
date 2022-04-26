@@ -1471,9 +1471,9 @@ class AllSkyDB():
       ai_info = []
       for row in rows:
          sd_vid,hd_vid,meteor_yn_conf,fireball_yn_conf, mc_class,mc_class_conf,ai_resp = row
+         print(sd_vid, meteor_yn_conf, fireball_yn_conf, mc_class, mc_class_conf)
          if ai_resp is not None:
             ai_resp = json.loads(ai_resp)
-            print(ai_resp['ai_version'])
             if int(ai_resp['ai_version']) < 3.1:
                continue
          mdir = "/mnt/ams2/meteors/" + sd_vid[0:10] + "/" 
