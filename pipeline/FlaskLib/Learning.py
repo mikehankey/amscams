@@ -1992,6 +1992,75 @@ def make_trash_icon(roi_file,ocolor,size,selected=None) :
 
    return(trash_icons)
 
+def ai_rejects(station_id, options, json_conf):
+
+   out = """
+      <div id='main_container' class='container-fluid h-100 mt-4 lg-l'>
+      <div class='gallery gal-resize reg row text-center text-lg-left'>
+      <div class='list-onl'>
+      <div class='filter-header d-flex flex-row-reverse '>
+      <button id="sel-all" title="Select All" class="btn btn-primary ml-3"><i class="icon-checkbox-checked"></i></button>
+      <button id="del-all" class="del-all btn btn-danger"><i class="icon-delete"></i> Delete <span class="sel-ctn">All</span> Selected</button>
+     </div>
+     </div>
+   """
+   template = make_default_template(station_id, "meteors_main.html", json_conf)
+
+   db_file = station_id + "_ALLSKY.db"
+   con = sqlite3.connect(db_file)
+   cur = con.cursor()
+
+   # select and reject rows matching the MC reject case
+   reject_dir = "/mnt/ams2/non_meteors/classes/"
+   sql = """SELECT sd_vid,hd_vid, meteor_yn_conf, fireball_yn_conf,mc_class,mc_class_conf,ai_resp FROM meteors
+             WHERE (
+                   mc_class_conf >  meteor_yn_conf
+               AND mc_class_conf > fireball_yn_conf)
+               AND mc_class_conf >= 98
+               AND meteor_yn <= 60
+               AND fireball_yn <= 60
+               AND mc_class not like 'meteor%'
+               AND mc_class not like 'orion%'
+               AND root_fn not like '2019%'
+               AND human_confirmed != 1
+               AND multi_station != 1
+         """
+   cur.execute(sql)
+   rows = cur.fetchall()
+   ai_info = []
+   tc = 0
+   for row in rows:
+      sd_vid,hd_vid,meteor_yn,fireball_yn, mc_class,mc_class_conf,ai_resp = row
+      #out += "{} {} {} {} {}<br>".format(sd_vid, meteor_yn_conf, fireball_yn_conf, mc_class, mc_class_conf)
+      if ai_resp is not None:
+         ai_resp = json.loads(ai_resp)
+         if int(ai_resp['ai_version']) < 3.1:
+            continue
+      mdir = "/mnt/ams2/meteors/" + sd_vid[0:10] + "/"
+
+
+
+      if os.path.exists(mdir  + sd_vid) is True:
+         print("REJECT:", sd_vid, hd_vid, meteor_yn, fireball_yn, mc_class, mc_class_conf)
+      else:
+         print("DELETE:", sd_vid, hd_vid, meteor_yn , fireball_yn, mc_class, mc_class_conf)
+
+      if True:
+         root_fn = sd_vid.replace(".mp4", "")
+         thumb_url = "/meteors/" + root_fn[0:10] + "/" + root_fn + "-stacked-tn.jpg"
+         json_file = "/mnt/ams2/meteors/" + root_fn[0:10] + "/" + root_fn + ".json"
+         print(json_file)
+         if os.path.exists(json_file):
+            ai_info = str(int(meteor_yn)) + "% Meteor"
+            ai_info += str(int(fireball_yn)) + "% Fireball - "
+            ai_info += str(int(mc_class_conf)) + "% " + mc_class
+            cell = meteor_cell_html(root_fn, thumb_url, ai_info)
+            out += cell
+
+      tc += 1
+   print("Done mc rejects.")
+   template = template.replace("{MAIN_TABLE}", out)
+   return(template)
 
 def ai_review(station_id, options,json_conf):
    out = """
@@ -2003,7 +2072,6 @@ def ai_review(station_id, options,json_conf):
       <button id="del-all" class="del-all btn btn-danger"><i class="icon-delete"></i> Delete <span class="sel-ctn">All</span> Selected</button>
      </div>
      </div>
-
    """
    template = make_default_template(station_id, "meteors_main.html", json_conf)
    con = sqlite3.connect(station_id + "_ALLSKY.db")
