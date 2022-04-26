@@ -983,7 +983,8 @@ class AllSkyDB():
          dirs = [selected_day]
       self.mdirs = []
       self.mfiles = []
-
+      
+      errors = {}
       for ddd in sorted(dirs,reverse=True):
          if os.path.isdir(self.meteor_dir + ddd):
             self.mdirs.append(self.meteor_dir + ddd + "/")
@@ -1009,6 +1010,7 @@ class AllSkyDB():
             try:
                mj = load_json_file(mjf)
             except:
+               errors[mjf] = "couldn't open json file"
                continue
 
          mfd = ""
@@ -1156,6 +1158,7 @@ class AllSkyDB():
             vals += field + " = '" + in_data[field] + "'"
             
       sql += vals + " WHERE root_fn = '" + in_data['root_fn'] + "'"
+      print(sql)
       print("\r updating: " + in_data['root_fn'] , end="")
       self.cur.execute(sql)
       self.con.commit()
