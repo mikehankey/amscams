@@ -302,11 +302,57 @@ def trash_page (amsid, in_data) :
       """
 
 
-
+   out += """
+      </div>
+      <div class="container">&nbsp</div>
+      <form action="/confirm_all_trash/AMS1/{}/">
+      <input class='btn btn-primary btn-lg' type=submit name="submit" value="Confirm All TRASH items on this Day are NON METEORS">
+      </form>
+      <div>
+   """.format(date)
 
    template = template.replace("{MAIN_TABLE}", out)
    template = template.replace("{RAND}", "v3.0000")
    return(template)
+
+def confirm_all_trash(station_id, date):
+   out = ""
+   import sqlite3
+   from AIpurge import check_update_non_meteor_table
+   db_file = station_id + "_ALLSKY.db"
+   con = sqlite3.connect(db_file)
+   cur = con.cursor()
+
+   check_update_non_meteor_table(con,cur)
+
+   nmdir = "/mnt/ams2/non_meteors_confirmed/" + date + "/"
+   trash_dir = "/mnt/ams2/trash/" + date + "/"
+   if os.path.exists(nmdir) is False:
+      os.makedirs(nmdir)
+   files = glob.glob(trash_dir + "*")
+   out += "<pre>learning from trash files..."
+   fns = []
+   for ff in files:
+      if "HD" in ff:
+         cmd = "rm " + ff
+         print(cmd)
+         os.system(cmd)
+      else:
+         cmd = "mv " + ff + " " + nmdir
+         print(cmd)
+         os.system(cmd)
+      if ".json" in ff and "reduced" not in ff:
+         root_fn = ff.split("/")[-1].replace(".json", "")
+         fns.append(root_fn)
+   for root_fn in fns:
+
+      sql = "INSERT OR REPLACE INTO non_meteor_confirmed (sd_vid) VALUES(?)"
+      task = (root_fn + ".mp4")
+      out += root_fn + "<br>\n"
+      #cur.execute(sql, task)
+   #con.commit()
+
+   return(out)
 
 def confirm_non_meteors(all_ids,json_conf):
    confirm_file = "/mnt/ams2/non_meteors/non_meteors_confirm.json"
