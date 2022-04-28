@@ -17,8 +17,15 @@ AIDB = AllSkyDB()
 
 if len(sys.argv) > 2:
    cmd = sys.argv[2]
+   if cmd == "load_all":
+      AIDB.load_all_meteors()
+      exit()
    if cmd == "nm_report":
       AIDB.non_meteor_report()
+      exit()
+   if cmd == "purge":
+      date = sys.argv[1]
+      AIDB.purge()
       exit()
 
 

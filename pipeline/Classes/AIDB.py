@@ -1486,3 +1486,31 @@ class AllSkyDB():
             print("DELETE:", sd_vid, hd_vid, meteor_yn_conf, fireball_yn_conf, mc_class, mc_class_conf)
 
       print("Done mc rejects.") 
+
+   def purge():
+      # move confirmed non-meteors still in the meteor dir to the non-meteor dir
+      # remove the meteors database record
+      # insert non-meteor record in non_meteors table
+      sql = """
+               SELECT sd_vid, hd_vid 
+                 FROM meteors 
+                WHERE human_confirmed = -1 
+      """
+      self.cur.execute(sql)
+      rows = self.cur.fetchall()
+      dds = {}
+      for row in rows:
+         sd_vid, hd_vid = row
+         mdir = "/mnt/ams2/meteors/" + sd_vid[0:10] + "/"
+         nmdir = "/mnt/ams2/non_meteors/" + sd_vid[0:10] + "/"
+         if nmdir not in dds:
+            if os.path.exists(nmdir) is False:
+               os.makedirs(nmdir)
+               dds[nmdir] = 1
+         gfiles_sd = glob.glob(mdir + sd_vid.replace(".mp4", "*"))
+         gfiles_hd = glob.glob(mdir + sd_vid.replace(".mp4", "*"))
+         print(gfiles_sd)
+         print(gfiles_hd)
+         exit()
+
+

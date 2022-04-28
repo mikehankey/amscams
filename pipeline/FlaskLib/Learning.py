@@ -2039,8 +2039,94 @@ def confirm_meteor(station_id, root_fn):
       return("ERROR: NO METEOR FILE! " + root_fn)
    return("Human confirmed meteor " + root_fn)
 
+def ai_stats_summary(cur):
+
+   stats = {}
+
+   #total_meteors
+   sql = """
+            SELECT count(*) 
+              FROM meteors
+         """
+   cur.execute(sql)
+   rows = cur.fetchall()
+   for row in rows:
+      count = row[0]
+      stats['sql_meteors'] = count
+
+   #conf status
+   sql = """
+            SELECT count(*), human_confirmed
+              FROM meteors
+          GROUP BY human_confirmed
+         """
+   cur.execute(sql)
+   rows = cur.fetchall()
+   stats['conf_status'] = {}
+   for row in rows:
+      count, conf_status = row
+      stats['conf_status'][conf_status] = count
+
+   #low conf meteors <50%
+   sql = """
+            SELECT count(*) 
+              FROM meteors
+             WHERE meteor_yn_conf < 50
+               AND fireball_yn_conf < 50
+         """
+   cur.execute(sql)
+   rows = cur.fetchall()
+   for row in rows:
+      count = row
+      stats['low_conf_meteors'] = count
+
+   #high conf meteors >50%
+   sql = """
+            SELECT count(*) 
+              FROM meteors
+             WHERE meteor_yn_conf > 50
+                OR fireball_yn_conf > 50
+         """
+   cur.execute(sql)
+   rows = cur.fetchall()
+   for row in rows:
+      count = row
+      stats['high_conf_meteors'] = count
+
+
+   # by class
+   sql = """
+            SELECT count(*) , mc_class
+              FROM meteors
+             WHERE human_confirmed != -1
+               AND human_confirmed != 1
+               AND (deleted is null or deleted != 1)
+          GROUP BY mc_class
+         """
+   cur.execute(sql)
+   rows = cur.fetchall()
+   stats['by_class'] = {}
+   for row in rows:
+      count,mc_class = row
+      stats['by_class'][mc_class] = count
+
+
+   return(stats)
+
 def ai_rejects(station_id, options, json_conf):
    print("OPTIONS:", options)
+   if "list" in options:
+      list_type = options['list']
+   else:
+      list_type = "default"
+   if "label" in options:
+      label = options['label']
+   else:
+      label = None
+   if "confirmed_status" in options:
+      conf_status = options['conf_status']
+   else:
+      conf_status = None
    out = """
    <script>
          $(function() {
@@ -2064,7 +2150,7 @@ def ai_rejects(station_id, options, json_conf):
 
                 success: function(response){
                    div_id = data.replaceAll("_", "") 
-                   $("#" + div_id).fadeOut(300, function() { $("#" + div_id).remove(); });
+                   $("#" + div_id).fadeOut(1000, function() { $("#" + div_id).remove(); });
                     console.log(response)
                  },
                  error: function(response){
@@ -2084,15 +2170,33 @@ def ai_rejects(station_id, options, json_conf):
 
                 success: function(response){
                    div_id = data.replaceAll("_", "") 
-                   $("#" + div_id).fadeOut(300, function() { $("#" + div_id).remove(); });
+                   $("#" + div_id).fadeOut(1000, function() { $("#" + div_id).remove(); });
                     console.log(response)
+                    //console.log($(".mtt").length)
+
                  },
+
                  error: function(response){
                     console.log(response)
                     alert("FAILED")
                  },
               })
          }
+      function batch_all(con_type) {
+         $(".mtt").each(function(i,item) {
+            temp = $(item).data("obj")
+            root_fn = temp.split(/[/]+/).pop();
+            root_fn = root_fn.replace("-stacked-obj-tn.jpg","")
+            if (con_type == 'non_meteors') { 
+               confirm_non_meteor(root_fn)
+            }
+            if (con_type == 'meteors') { 
+               confirm_meteor(root_fn)
+            }
+            console.log(root_fn)
+         })
+         //alert("ok")
+      }
    </script>
    """
    out += """
@@ -2110,23 +2214,74 @@ def ai_rejects(station_id, options, json_conf):
    db_file = station_id + "_ALLSKY.db"
    con = sqlite3.connect(db_file)
    cur = con.cursor()
+   stats = ai_stats_summary(cur)
+   print(stats)
+   ai_out = """
+      <div class="container">
+      <table>
+      <tr><td><i class="fas fa-meteor"></i>Total Detections</td><td> {} </i> </td></tr>
+      <tr><td><i class="fas fa-meteor"></i>Confirmed Meteors</td><td> {} </i> </td></tr>
+      <tr><td><i class="fas fa-ban"></i>Total Non Meteors</td><td> {} </i> </td></tr>
+   """.format(stats['sql_meteors'], stats['conf_status'][1], stats['conf_status'][-1])
+   ai_out += """<tr><td>Detections By AI Classification</td><td>   </td></tr>"""
+   for bc in stats['by_class']:
+      ai_out += """
+      <tr><td><i class="fas fa-ban"></i><a href=/AIREJECTS/{}/?list=by_class&label={}>{}</a></td><td> {} </i> </td></tr>
 
+      """.format(station_id, bc, bc, stats['by_class'][bc])
+
+   ai_out += """
+      </table>
+      </div>
+   """
    # select and reject rows matching the MC reject case
    reject_dir = "/mnt/ams2/non_meteors/classes/"
-   sql = """SELECT sd_vid,hd_vid, meteor_yn_conf, fireball_yn_conf,mc_class,mc_class_conf,ai_resp,camera_id, start_datetime FROM meteors
-             WHERE meteor_yn_conf <= 5
-               AND fireball_yn_conf <= 5 
+   if list_type == "by_class" and label is None or label == "None":
+      label = ""
+      sql = """SELECT sd_vid,hd_vid, meteor_yn_conf, fireball_yn_conf,mc_class,mc_class_conf,ai_resp,camera_id, start_datetime FROM meteors
+             WHERE (mc_class = ?
+                OR mc_class is NULL)
+               AND human_confirmed != 1
+               AND human_confirmed != -1
+               AND (deleted is null or deleted != 1)
+          ORDER BY meteor_yn DESC
+             LIMIT 40
+         """
+   elif list_type == "by_class" :
+      sql = """SELECT sd_vid,hd_vid, meteor_yn_conf, fireball_yn_conf,mc_class,mc_class_conf,ai_resp,camera_id, start_datetime FROM meteors
+             WHERE mc_class = ?
+               AND human_confirmed != 1
+               AND human_confirmed != -1
+               AND (deleted is null or deleted != 1)
+          ORDER BY meteor_yn DESC
+             LIMIT 40
+         """
+
+   else:
+      sql = """SELECT sd_vid,hd_vid, meteor_yn_conf, fireball_yn_conf,mc_class,mc_class_conf,ai_resp,camera_id, start_datetime FROM meteors
+             WHERE meteor_yn_conf <= ?
+               AND fireball_yn_conf <= ?
                AND root_fn not like '2019%'
                AND human_confirmed != 1
                AND human_confirmed != -1
+               AND (deleted is null or deleted != 1)
           ORDER BY meteor_yn_conf ASC
+             LIMIT 25
          """
+      print(sql)
                    #mc_class_conf >  meteor_yn_conf
                #AND mc_class_conf > fireball_yn_conf)
                #AND multi_station != 1
                #AND mc_class not like 'meteor%'
                #AND mc_class not like 'orion%'
-   cur.execute(sql)
+   met_conf = 10
+   fb_conf = 10
+   if list_type == "by_class":
+      vals = [label]
+   else:
+      vals = [met_conf, fb_conf]
+   print(sql, vals)
+   cur.execute(sql, vals)
    rows = cur.fetchall()
    ai_info = []
    tc = 0
@@ -2154,30 +2309,51 @@ def ai_rejects(station_id, options, json_conf):
          json_file = "/mnt/ams2/meteors/" + root_fn[0:10] + "/" + root_fn + ".json"
          print(json_file)
          if os.path.exists(json_file):
-            ai_info = str(int(meteor_yn)) + "% Meteor"
-            ai_info += str(int(fireball_yn)) + "% Fireball - "
-            ai_info += str(int(mc_class_conf)) + "% " + mc_class + "<br>"
+            if meteor_yn is None or meteor_yn == "":
+               meteor_yn = -1
+            if fireball_yn is None or fireball_yn == "":
+               fireball_yn = -1
+            if mc_class_conf is None or mc_class_conf == "":
+               mc_class_conf = -1
+            if mc_class is None :
+               mc_class = "unknown"
+
+            ai_info = str(int(float(meteor_yn))) + "% Meteor"
+            ai_info += str(int(float(fireball_yn))) + "% Fireball - "
+            ai_info += str(int(float(mc_class_conf))) + "% " + mc_class + "<br>"
             ai_info += camera_id + " " + start_datetime 
             cell = meteor_cell_html(root_fn, thumb_url, ai_info)
             out += cell
 
             tc += 1
+         else:
+
+            sql = "UPDATE meteors set deleted = '1' WHERE root_fn = ?"
+            task = [root_fn]
+            print(sql, root_fn)
+            cur.execute(sql, task)
+            #out += "Done already" + str(tc)
+   con.commit()
    print("Done mc rejects.", tc)
    if tc == 0:
-      out = "You have confirmed all low confidence captures. Check back again tomorrow." 
+      out = """
+            <div class="alert alert-primary" role="alert">You have confirmed all captures for this watchlist. Select another list or come back later for more confirmations.</div>
+      """ 
    else:
       out += """
       <h2 style='width: 100%'>Mark ALL on this page as</h2>
       <form method=post action=/batch_confirm/{}>
-      <select name="mark_as">
-         <option value="non_meteors">NON METEORS
-         <option value="meteors">METEORS
-      </select>
       <input type="hidden" name=data_str value="{}">
-      <input type="submit" name=button value="Batch Mark ALL">
+      <input type="button" name=button value="Mark ALL As NON Meteors" onclick="javascript:batch_all('non_meteors')">
+       <br>
+      <input type="button" name=button value="Mark ALL As Meteors" onclick="javascript:batch_all('meteors')">
+       <br>
+
+      <input type="button" name=button value="Reload" onclick="javascript:location.reload()">
       </form>
       """.format(station_id, data_str)
 
+   out += ai_out
    template = template.replace("{MAIN_TABLE}", out)
    return(template)
 
