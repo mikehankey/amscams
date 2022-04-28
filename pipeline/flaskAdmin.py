@@ -11,7 +11,7 @@ from lib.PipePwdProtect import login_page, check_pwd_ajax
 from lib.PipeAutoCal import fn_dir
 from FlaskLib.meteor_detail_funcs import detail_page , pick_points, pick_points_day 
 from FlaskLib.config_funcs import config_vars 
-from FlaskLib.meteors_main import meteors_main , meteors_by_day, trash_page, non_meteors_main, confirm_non_meteors
+from FlaskLib.meteors_main import meteors_main , meteors_by_day, trash_page, non_meteors_main, confirm_non_meteors, confirm_all_trash
 from FlaskLib.super_stacks import stacks_main, stacks_day_hours, stacks_hour
 from FlaskLib.min_detail import min_detail_main
 from FlaskLib.live import live_view
@@ -525,6 +525,11 @@ def rmeteors(amsid ):
    return(out)
 
 # MAIN NON METEOR PAGE
+@app.route('/confirm_all_trash/<station_id>/<date>/', methods=['GET', 'POST'])
+@auth.login_required
+def ctrash(station_id, date):
+   out = confirm_all_trash(station_id, date)
+   return(out)
 
 @app.route('/confirm_non_meteors/', methods=['GET', 'POST'])
 @auth.login_required
