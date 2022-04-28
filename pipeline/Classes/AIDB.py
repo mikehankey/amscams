@@ -1359,7 +1359,7 @@ class AllSkyDB():
             """
  
 
-   def auto_reject_day(self, date, RN):
+   def auto_reject_day(self, date, RN=None ):
       non_meteor_dir = self.non_meteor_dir + date
       print("Auto reject:", date)
       sql = "SELECT root_fn, hd_vid, meteor_yn_conf,fireball_yn_conf,mc_class, mc_class_conf, roi,ai_resp from meteors where sd_vid like ?"
@@ -1390,8 +1390,11 @@ class AllSkyDB():
             stack_file = "/mnt/ams2/meteors/" + root_fn[0:10] + "/" + root_fn + "-stacked.jpg"
             img = cv2.imread(stack_file)
             #img = RN.get_stack_img_from_root_fn(root_fn)
-            if img is not None:
-               objects = RN.detect_objects_in_stack(self.station_id, root_fn, img.copy())
+            if RN is not None:
+               if img is not None:
+                  objects = RN.detect_objects_in_stack(self.station_id, root_fn, img.copy())
+               else:
+                  objects = []
             else:
                objects = []
             meteor_found = False
