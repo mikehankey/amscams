@@ -31,7 +31,7 @@ def update_mj(root_fn, ev_data):
 
 def sync_meteor(EV, root_fn, cloud_files, mdir, cloud_dir):
    ms_dir = mdir.replace("/meteors/", "/METEOR_SCAN/")
-   types = ["prev.jpg", "180p.mp4", "360p.jpg", "360p.mp4", "1080p.jpg", "1080p.mp4"]
+   types = ["prev.jpg", "180p.mp4", "360p.jpg", "360p.mp4"] #, "1080p.jpg", "1080p.mp4"]
    missing = []
    cmds = []
    #print("CLOUD FILES:", cloud_files)
@@ -106,7 +106,6 @@ def do_day(EV, date):
       ev_html += "<img src=" + ms_vdir + EV.station_id + "_" + mso + "-ROI.jpg>\n"
       # for each MSO we should make sure ALL content is uploaded 
       # We should also check the AI?
-   print(ev_html)
    if os.path.exists("/mnt/ams2/" + ms_vdir) is False:
       os.makedirs("/mnt/ams2/" + ms_vdir)
    fp = open("/mnt/ams2/" + ms_vdir + "events.html", "w")
