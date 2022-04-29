@@ -2477,9 +2477,15 @@ def ai_rejects(station_id, options, json_conf):
       """
       if hc is True:
          sql += """
-               AND human_confirmed != 1
-               AND human_confirmed != -1
+               AND (human_confirmed == 1
+               or human_confirmed == -1)
           """
+      else:
+         sql += """
+               AND (human_confirmed != 1
+               AND human_confirmed != -1)
+         """
+
       sql += """
           ORDER BY meteor_yn_conf ASC
              LIMIT {}, {}
