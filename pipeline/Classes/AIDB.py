@@ -1482,7 +1482,8 @@ class AllSkyDB():
          print(sd_vid, meteor_yn_conf, fireball_yn_conf, mc_class, mc_class_conf)
          if ai_resp is not None:
             ai_resp = json.loads(ai_resp)
-            if int(ai_resp['ai_version']) < 3.1:
+            if int(ai_resp['ai_version']) <= 3.1:
+               print("SKIP DONE")
                continue
          mdir = "/mnt/ams2/meteors/" + sd_vid[0:10] + "/" 
          if os.path.exists(mdir  + sd_vid) is True:
