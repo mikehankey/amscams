@@ -1392,7 +1392,9 @@ class AllSkyDB():
             #img = RN.get_stack_img_from_root_fn(root_fn)
             if RN is not None:
                if img is not None:
-                  objects = RN.detect_objects_in_stack(self.station_id, root_fn, img.copy())
+                  #objects = RN.detect_objects_in_stack(self.station_id, root_fn, img.copy())
+                  objects = []
+
                else:
                   objects = []
             else:

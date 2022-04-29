@@ -4,7 +4,8 @@ from datetime import datetime
 import datetime as dt
 import sys
 import os
-from Classes.ReviewNetwork import ReviewNetwork
+
+#from Classes.ReviewNetwork import ReviewNetwork
 
 today = datetime.now()
 yest = today - dt.timedelta(days=1)
@@ -13,6 +14,8 @@ today = datetime.now().strftime("%Y_%m_%d")
 
 print("Init DB Starting.")
 AIDB = AllSkyDB()
+print("Init DB Started.")
+input("[enter] to continue")
 
 
 if len(sys.argv) > 2:
@@ -39,8 +42,8 @@ if len(sys.argv) > 2:
       #print("DONE MC REJECTS.")
       #exit()
 
-      RN = ReviewNetwork(date)
-      AIDB.auto_reject_day(date, RN)
+      #RN = ReviewNetwork(date)
+      #AIDB.auto_reject_day(date )
       exit()
 
 
@@ -62,14 +65,14 @@ if date == "ALL" or date == "all":
    for md in sorted(mdirs,reverse=True):
 
       if os.path.isdir(meteor_dir + md) is True:
-         RN = ReviewNetwork(md)
+         #RN = ReviewNetwork(md)
 
-         if os.path.exists(RN.learning_repo + md + "/METEOR/") is False:
-            os.makedirs(RN.learning_repo + md + "/METEOR/")
-         if os.path.exists(RN.learning_repo + md + "/NON_METEOR/") is False:
-            os.makedirs(RN.learning_repo + md + "/NON_METEOR/")
-         if os.path.exists(RN.learning_repo + md + "/UNSURE/") is False:
-            os.makedirs(RN.learning_repo + md + "/UNSURE/")
+         #if os.path.exists(RN.learning_repo + md + "/METEOR/") is False:
+         #   os.makedirs(RN.learning_repo + md + "/METEOR/")
+         #if os.path.exists(RN.learning_repo + md + "/NON_METEOR/") is False:
+         #   os.makedirs(RN.learning_repo + md + "/NON_METEOR/")
+         #if os.path.exists(RN.learning_repo + md + "/UNSURE/") is False:
+         #   os.makedirs(RN.learning_repo + md + "/UNSURE/")
          ai_file = meteor_dir + md + "/" + AIDB.station_id + "_" + md + "_AI_DATA.info"
          print("AIFILE:", ai_file)
          #exit()
@@ -82,27 +85,28 @@ if date == "ALL" or date == "all":
          AIDB.reconcile_db(date)
          os.system("python3.6 myEvents.py " + date)
 
-         RN = ReviewNetwork(date)
+         #RN = ReviewNetwork(date)
 
-         AIDB.auto_reject_day(date, RN)
+         #AIDB.auto_reject_day(date, RN)
          print("DONE AIDay FOR " + date)
          os.system("python3 Rec.py del_aws_day " + md)
          #AIDB.check_update_status(date)
 
 else:
 
-   RN = ReviewNetwork(date)
-   if os.path.exists(RN.learning_repo + date + "/METEOR/") is False:
-      os.makedirs(RN.learning_repo + date + "/METEOR/")
-   if os.path.exists(RN.learning_repo + date + "/NON_METEOR/") is False:
-      os.makedirs(RN.learning_repo + date + "/NON_METEOR/")
-   if os.path.exists(RN.learning_repo + date + "/UNSURE/") is False:
-      os.makedirs(RN.learning_repo + date + "/UNSURE/")
+   #RN = ReviewNetwork(date)
+   #if os.path.exists(RN.learning_repo + date + "/METEOR/") is False:
+   #   os.makedirs(RN.learning_repo + date + "/METEOR/")
+   #if os.path.exists(RN.learning_repo + date + "/NON_METEOR/") is False:
+   #   os.makedirs(RN.learning_repo + date + "/NON_METEOR/")
+   #if os.path.exists(RN.learning_repo + date + "/UNSURE/") is False:
+   #   os.makedirs(RN.learning_repo + date + "/UNSURE/")
    AIDB.load_all_meteors(date)
    AIDB.verify_media_day(date)
    AIDB.reconcile_db(date)
    os.system("python3.6 myEvents.py " + date)
-   AIDB.auto_reject_day(date, RN)
+   #AIDB.auto_reject_day(date, RN)
+
    os.system("python3 Rec.py del_aws_day " + date)
    print("DONE AIDay FOR " + date)
    AIDB.reducer(date)

@@ -1999,6 +1999,21 @@ def batch_confirm_non_meteors(station_id, data_str):
       print(dd)
 
 
+def confirm_non_meteor_label(station_id, root_fn,label):
+   # confirm non meteor mc label
+   if ".mp4" not in root_fn:
+      root_fn += ".mp4"
+   db_file = station_id + "_ALLSKY.db"
+   con = sqlite3.connect(db_file)
+   cur = con.cursor()
+   date = root_fn[0:10]
+   sql = "UPDATE non_meteors_confirmed set human_label = ? WHERE sd_vid = ?"
+   task = [label, root_fn]
+   cur.execute(sql, task)
+   print("SQL:", sql,task)
+   con.commit()
+   print("ROOTFN,LABEL", root_fn, label)
+   return("Human confirmed label for non meteor " + root_fn + " " + label)
 
 def confirm_non_meteor(station_id, root_fn):
    db_file = station_id + "_ALLSKY.db"
@@ -2008,7 +2023,7 @@ def confirm_non_meteor(station_id, root_fn):
    mfile = "/mnt/ams2/meteors/" + date + "/" + root_fn + ".json"
    if os.path.exists(mfile):
       mj = load_json_file(mfile)
-      mj['hc'] =  -1
+      mj['hc'] = 1
       save_json_file(mfile, mj)
       sql = "UPDATE meteors set human_confirmed = '-1' WHERE root_fn = ?"
       task = [root_fn]
@@ -2017,7 +2032,7 @@ def confirm_non_meteor(station_id, root_fn):
       con.commit()
    else:
       return("ERROR: NO METEOR FILE! " + root_fn)
-   return("Human confirmed non meteor " + root_fn)
+   return("Human confirmed NON meteor " + root_fn)
 
 
 def confirm_meteor(station_id, root_fn):
@@ -2110,11 +2125,61 @@ def ai_stats_summary(cur):
       count,mc_class = row
       stats['by_class'][mc_class] = count
 
+   # non confirmed non meteors by class
+   sql = """
+            SELECT count(*) , multi_class
+              FROM non_meteors_confirmed
+             WHERE human_label = ""  
+               OR human_label is NULL
+          GROUP BY multi_class 
+         """
+   cur.execute(sql)
+   rows = cur.fetchall()
+   stats['nc_non_meteors_by_class'] = {}
+   for row in rows:
+      count,mc_class = row
+      stats['nc_non_meteors_by_class'][mc_class] = count
 
+   # non_meteors human confirmed and labeled by class
+   sql = """
+            SELECT count(*) , human_label 
+              FROM non_meteors_confirmed
+             WHERE human_label != ""  
+               AND human_label is not NULL
+          GROUP BY human_label 
+         """
+   cur.execute(sql)
+   rows = cur.fetchall()
+   stats['confirmed_non_meteors_by_class'] = {}
+   for row in rows:
+      count,mc_class = row
+      stats['confirmed_non_meteors_by_class'][mc_class] = count
    return(stats)
 
 def ai_rejects(station_id, options, json_conf):
-   print("OPTIONS:", options)
+
+   if "p" in options:
+      page = int(options['p'])
+   else:
+      page = 1
+   lpage = page - 1
+
+   if "rc" in options:
+      row_count = int(options['rc'])
+   else:
+      row_count = 25
+
+   offset = row_count * lpage
+
+
+   if "ctype" in options:
+      ctype = options['ctype']
+   else:
+      ctype = "meteor"
+
+   hc = False
+   if "hc" in options:
+      hc = True
    if "list" in options:
       list_type = options['list']
    else:
@@ -2130,6 +2195,58 @@ def ai_rejects(station_id, options, json_conf):
    out = """
    <script>
          $(function() {
+            $('.confirm_bird').click(function() {
+               confirm_multi_class($(this).attr('data-meteor'), "bird")
+            })
+         })
+         $(function() {
+            $('.confirm_car').click(function() {
+               confirm_multi_class($(this).attr('data-meteor'), "car")
+            })
+         })
+         $(function() {
+            $('.confirm_cloud').click(function() {
+               confirm_multi_class($(this).attr('data-meteor'), "cloud")
+            })
+         })
+         $(function() {
+            $('.confirm_ground').click(function() {
+               confirm_multi_class($(this).attr('data-meteor'), "ground")
+            })
+         })
+         $(function() {
+            $('.confirm_moon').click(function() {
+               confirm_multi_class($(this).attr('data-meteor'), "moon")
+            })
+         })
+         $(function() {
+            $('.confirm_plane').click(function() {
+               confirm_multi_class($(this).attr('data-meteor'), "plane")
+            })
+         })
+         $(function() {
+            $('.confirm_rain').click(function() {
+               confirm_multi_class($(this).attr('data-meteor'), "rain")
+            })
+         })
+         $(function() {
+            $('.confirm_satellite').click(function() {
+               confirm_multi_class($(this).attr('data-meteor'), "satellite")
+            })
+         })
+         $(function() {
+            $('.confirm_snow').click(function() {
+               confirm_multi_class($(this).attr('data-meteor'), "snow")
+            })
+         })
+
+
+         $(function() {
+            $('.confirm_bug').click(function() {
+               confirm_multi_class($(this).attr('data-meteor'), "bug")
+            })
+         })
+         $(function() {
             $('.confirm_non_meteor').click(function() {
                confirm_non_meteor($(this).attr('data-meteor'))
             })
@@ -2139,6 +2256,29 @@ def ai_rejects(station_id, options, json_conf):
                confirm_meteor($(this).attr('data-meteor'))
             })
          })
+
+         function confirm_multi_class(data, label) {
+             msg = data + " is " + label
+             api_url = "/confirm_non_meteor_label/" + data + "?label=" + label
+             method="GET"
+             $.ajax({
+                url: api_url,
+                type: method,
+                crossDomain: true,
+                contentType: "application/json",
+
+                success: function(response){
+                   div_id = data.replaceAll("_", "") 
+                   $("#" + div_id).fadeOut(1000, function() { $("#" + div_id).remove(); });
+                    console.log(response)
+                 },
+                 error: function(response){
+                    console.log(response)
+                    alert("ERR with confirm meteor")
+                 },
+              })
+         }
+
          function confirm_meteor(data) {
              api_url = "/confirm_meteor/" + data
              method="GET"
@@ -2190,10 +2330,13 @@ def ai_rejects(station_id, options, json_conf):
             if (con_type == 'non_meteors') { 
                confirm_non_meteor(root_fn)
             }
-            if (con_type == 'meteors') { 
+            else if (con_type == 'meteors') { 
                confirm_meteor(root_fn)
             }
-            console.log(root_fn)
+            else {
+               confirm_multi_class(root_fn, con_type)
+            }
+            console.log(root_fn, con_type)
          })
          //alert("ok")
       }
@@ -2216,14 +2359,18 @@ def ai_rejects(station_id, options, json_conf):
    cur = con.cursor()
    stats = ai_stats_summary(cur)
    print(stats)
+   non_confirmed_meteors = stats['sql_meteors'] - stats['conf_status'][1]
    ai_out = """
       <div class="container">
+      <div>
       <table>
+      <tr><td colspan=2>Active Meteor Database</td></tr>
       <tr><td><i class="fas fa-meteor"></i>Total Detections</td><td> {} </i> </td></tr>
       <tr><td><i class="fas fa-meteor"></i>Confirmed Meteors</td><td> {} </i> </td></tr>
-      <tr><td><i class="fas fa-ban"></i>Total Non Meteors</td><td> {} </i> </td></tr>
-   """.format(stats['sql_meteors'], stats['conf_status'][1], stats['conf_status'][-1])
-   ai_out += """<tr><td>Detections By AI Classification</td><td>   </td></tr>"""
+      <tr><td><i class="fas fa-meteor"></i>Non-Confirmed Meteors</td><td> {} </i> </td></tr>
+      <tr><td><i class="fas fa-ban"></i>Confirmed Non Meteors</td><td> {} </i> </td></tr>
+   """.format(stats['sql_meteors'], stats['conf_status'][1], non_confirmed_meteors, stats['conf_status'][-1])
+   ai_out += """<tr><td>Non Confirmed Detections By AI Classification</td><td>   </td></tr>"""
    for bc in stats['by_class']:
       ai_out += """
       <tr><td><i class="fas fa-ban"></i><a href=/AIREJECTS/{}/?list=by_class&label={}>{}</a></td><td> {} </i> </td></tr>
@@ -2232,42 +2379,111 @@ def ai_rejects(station_id, options, json_conf):
 
    ai_out += """
       </table>
+      <div>
+      <div>
+      <table>
+      <tr><td colspan=2>Non-Meteor Database Pending Confirmation</td></tr>
+   """
+   for bc in stats['nc_non_meteors_by_class']:
+      if bc in  stats['confirmed_non_meteors_by_class']:
+         conf_labeled = str(stats['confirmed_non_meteors_by_class'][bc])
+      else:
+         conf_labeled = "0"
+      ai_out += """
+      <tr><td><i class="fas fa-ban"></i> {} </td><td><a href=/AIREJECTS/{}/?ctype=non_meteor_confirmed&list=non_meteors_by_class&label={}>{}</a> </td><td><a href=/AIREJECTS/{}/?hc=1&ctype=non_meteor_confirmed&list=non_meteors_by_class&label={}>{}</a></td></tr>
+
+      """.format(bc, station_id, bc, stats['nc_non_meteors_by_class'][bc] , station_id, bc, conf_labeled)
+   """
+      </table>
       </div>
    """
    # select and reject rows matching the MC reject case
+   print("HUMAN CONFIRMED IS???", hc)
    reject_dir = "/mnt/ams2/non_meteors/classes/"
-   if list_type == "by_class" and label is None or label == "None":
-      label = ""
-      sql = """SELECT sd_vid,hd_vid, meteor_yn_conf, fireball_yn_conf,mc_class,mc_class_conf,ai_resp,camera_id, start_datetime FROM meteors
-             WHERE (mc_class = ?
-                OR mc_class is NULL)
-               AND human_confirmed != 1
-               AND human_confirmed != -1
-               AND (deleted is null or deleted != 1)
-          ORDER BY meteor_yn DESC
-             LIMIT 40
+   if list_type == "non_meteors_by_class" :
+      sql = """SELECT sd_vid, roi, meteor_yn, fireball_yn, multi_class, multi_class_conf, human_label, last_updated 
+                 FROM non_meteors_confirmed
+            """
+      if hc is True:
+         sql += "WHERE human_label like ?"
+      else:
+         sql += "WHERE multi_class like ?"
+                 
+      if hc is True:
+         sql += """
+               AND (human_label != "" and human_label is not NULL)
          """
-   elif list_type == "by_class" :
-      sql = """SELECT sd_vid,hd_vid, meteor_yn_conf, fireball_yn_conf,mc_class,mc_class_conf,ai_resp,camera_id, start_datetime FROM meteors
-             WHERE mc_class = ?
-               AND human_confirmed != 1
-               AND human_confirmed != -1
+      else:
+         sql += """
+               AND (human_label = "" or human_label is NULL)
+          """
+
+      sql += """
+          ORDER BY multi_class_conf ASC
+          LIMIT {},{}
+         """.format(str(offset), str(row_count))
+      
+
+   elif list_type == "by_class" and (label is None or label == "None"):
+      label = ""
+      sql = """SELECT sd_vid,hd_vid, meteor_yn_conf, fireball_yn_conf,mc_class,mc_class_conf,ai_resp,camera_id, start_datetime, human_confirmed FROM meteors
+             WHERE (mc_class = ""
+                OR mc_class is NULL)
                AND (deleted is null or deleted != 1)
+      """
+      if hc is True:
+         sql += """
+               AND (human_confirmed == 1
+               or human_confirmed == -1)
+          """
+      else:
+         sql += """
+               AND (human_confirmed != 1
+               AND human_confirmed != -1)
+         """
+      sql += """
           ORDER BY meteor_yn DESC
-             LIMIT 40
+             LIMIT {},{}
+         """.format(str(offset), str(row_count))
+
+
+
+   elif list_type == "by_class" :
+      sql = """SELECT sd_vid,hd_vid, meteor_yn_conf, fireball_yn_conf,mc_class,mc_class_conf,ai_resp,camera_id, start_datetime, human_confirmed FROM meteors
+             WHERE mc_class like ?
+               AND (deleted is null or deleted != 1)
+      """
+      if hc is True:
+         sql += """
+               AND (human_confirmed == 1
+               or human_confirmed == -1)
+          """
+      else:
+         sql += """
+               AND (human_confirmed != 1
+               AND human_confirmed != -1)
          """
 
+      sql += """
+          ORDER BY meteor_yn DESC
+             LIMIT {}, {}
+         """.format(str(offset), str(row_count))
    else:
-      sql = """SELECT sd_vid,hd_vid, meteor_yn_conf, fireball_yn_conf,mc_class,mc_class_conf,ai_resp,camera_id, start_datetime FROM meteors
+      sql = """SELECT sd_vid,hd_vid, meteor_yn_conf, fireball_yn_conf,mc_class,mc_class_conf,ai_resp,camera_id, start_datetime, human_confirmed FROM meteors
              WHERE meteor_yn_conf <= ?
                AND fireball_yn_conf <= ?
                AND root_fn not like '2019%'
+               AND (deleted is null or deleted != 1)
+      """
+      if hc is True:
+         sql += """
                AND human_confirmed != 1
                AND human_confirmed != -1
-               AND (deleted is null or deleted != 1)
+          """
+      sql += """
           ORDER BY meteor_yn_conf ASC
-             LIMIT 25
-         """
+             LIMIT {}, {}
+         """.format(str(offset), str(row_count))
       print(sql)
                    #mc_class_conf >  meteor_yn_conf
                #AND mc_class_conf > fireball_yn_conf)
@@ -2276,39 +2492,68 @@ def ai_rejects(station_id, options, json_conf):
                #AND mc_class not like 'orion%'
    met_conf = 10
    fb_conf = 10
-   if list_type == "by_class":
-      vals = [label]
+   if list_type == "by_class" and (label is None or label == "None" or label == ""):
+      vals = []
+   elif list_type == "by_class" or list_type == "non_meteors_by_class":
+      vals = [label + "%"]
    else:
       vals = [met_conf, fb_conf]
+   print("LIST:", list_type, label)
+
    print(sql, vals)
-   cur.execute(sql, vals)
+   if len(vals) == 0:
+      cur.execute(sql)
+   else:
+      cur.execute(sql, vals)
    rows = cur.fetchall()
    ai_info = []
    tc = 0
    data_str = ""
    for row in rows:
-      sd_vid,hd_vid,meteor_yn,fireball_yn, mc_class,mc_class_conf,ai_resp,camera_id,start_datetime = row
+      if list_type == "non_meteors_by_class":
+         sd_vid, roi, meteor_yn, fireball_yn, mc_class, mc_class_conf, human_label, last_updated = row
+         camera_id = ""
+         start_datetime = ""
+         hd_vid = ""
+         if human_label != "" and human_label is not None: 
+            human_confirmed = -1 
+         else:
+            human_label = "none"
+      else:
+         sd_vid,hd_vid,meteor_yn,fireball_yn, mc_class,mc_class_conf,ai_resp,camera_id,start_datetime, human_confirmed = row
+         if human_confirmed == 1 :
+            human_label = "meteor"
+         elif human_confirmed == -1:
+            human_label = "non_meteor"
+         else:
+            human_label = "no_human_label"
       #out += "{} {} {} {} {}<br>".format(sd_vid, meteor_yn_conf, fireball_yn_conf, mc_class, mc_class_conf)
-      if ai_resp is not None:
-         ai_resp = json.loads(ai_resp)
+      #if ai_resp is not None:
+      #   ai_resp = json.loads(ai_resp)
          #if int(ai_resp['ai_version']) < 3.1:
          #   continue
-      mdir = "/mnt/ams2/meteors/" + sd_vid[0:10] + "/"
+      if list_type == "non_meteors_by_class":
+         mdir = "/mnt/ams2/non_meteors_confirmed/" + sd_vid[0:10] + "/"
+      else:
+         mdir = "/mnt/ams2/meteors/" + sd_vid[0:10] + "/"
 
 
 
       if os.path.exists(mdir  + sd_vid) is True:
-         print("REJECT:", sd_vid, hd_vid, meteor_yn, fireball_yn, mc_class, mc_class_conf)
+         print("MEDIA GOOD:", sd_vid, hd_vid, meteor_yn, fireball_yn, mc_class, mc_class_conf)
       else:
-         print("DELETE:", sd_vid, hd_vid, meteor_yn , fireball_yn, mc_class, mc_class_conf)
+         print("MEDIA BAD:", sd_vid, hd_vid, meteor_yn , fireball_yn, mc_class, mc_class_conf)
 
       if True:
          root_fn = sd_vid.replace(".mp4", "")
          data_str += root_fn + ","
-         thumb_url = "/meteors/" + root_fn[0:10] + "/" + root_fn + "-stacked-tn.jpg"
-         json_file = "/mnt/ams2/meteors/" + root_fn[0:10] + "/" + root_fn + ".json"
-         print(json_file)
-         if os.path.exists(json_file):
+         if list_type == "non_meteors_by_class":
+            thumb_url = "/non_meteors_confirmed/" + root_fn[0:10] + "/" + root_fn + "-stacked-tn.jpg"
+            json_file = "/mnt/ams2/non_meteors_confirmed/" + root_fn[0:10] + "/" + root_fn + ".json"
+         else:
+            thumb_url = "/meteors/" + root_fn[0:10] + "/" + root_fn + "-stacked-tn.jpg"
+            json_file = "/mnt/ams2/meteors/" + root_fn[0:10] + "/" + root_fn + ".json"
+         if os.path.exists(mdir + sd_vid):
             if meteor_yn is None or meteor_yn == "":
                meteor_yn = -1
             if fireball_yn is None or fireball_yn == "":
@@ -2318,20 +2563,32 @@ def ai_rejects(station_id, options, json_conf):
             if mc_class is None :
                mc_class = "unknown"
 
-            ai_info = str(int(float(meteor_yn))) + "% Meteor"
-            ai_info += str(int(float(fireball_yn))) + "% Fireball - "
+            if human_confirmed == 1:
+               ico = """<i class="fas fa-meteor" style="size: 16px"></i>"""
+            elif human_confirmed == -1:
+
+               ico = find_ico(human_label)
+            else:
+               #ico = "no_icon"
+               ico = """<i class="fas fa-question">"""
+            print("HUMAN CONFIRMED IS:", human_confirmed)
+            print("ICO:", ico)
+            ai_info = str(int(float(meteor_yn))) + "% Meteor / "
+            ai_info += str(int(float(fireball_yn))) + "% Fireball / "
             ai_info += str(int(float(mc_class_conf))) + "% " + mc_class + "<br>"
-            ai_info += camera_id + " " + start_datetime 
-            cell = meteor_cell_html(root_fn, thumb_url, ai_info)
+            ai_info += camera_id + " " + start_datetime  + " Human:" + human_label
+            cell = meteor_cell_html(root_fn, thumb_url, ai_info,ico, ctype)
             out += cell
 
             tc += 1
          else:
-
-            sql = "UPDATE meteors set deleted = '1' WHERE root_fn = ?"
-            task = [root_fn]
-            print(sql, root_fn)
-            cur.execute(sql, task)
+            print("PROBLEM: THE VIDEO IS NOT FOUND!!!", sd_vid)
+            out += "MISSING:" + sd_vid
+            if list_type != "non_meteors_by_class":
+               sql = "UPDATE meteors set deleted = '1' WHERE root_fn = ?"
+               task = [root_fn]
+               print(sql, root_fn)
+               cur.execute(sql, task)
             #out += "Done already" + str(tc)
    con.commit()
    print("Done mc rejects.", tc)
@@ -2339,6 +2596,29 @@ def ai_rejects(station_id, options, json_conf):
       out = """
             <div class="alert alert-primary" role="alert">You have confirmed all captures for this watchlist. Select another list or come back later for more confirmations.</div>
       """ 
+   elif list_type == "non_meteors_by_class":
+      lb_types, icons = mc_types()
+      out += """
+         <h2 style='width: 100%'>Mark ALL on this page as</h2>
+         <form method=post action=/batch_confirm/{}>
+         <input type="hidden" name=data_str value="{}">
+      """ 
+
+      for i in range(0, len(lb_types)):
+         out += """
+            <button type="button" class="btn btn-dark" onclick="javascript:batch_all('{}')">
+            <i class='fas fa-{}'> </i> 
+             Mark all on page as: {}
+            </button>
+
+            <br>
+         """.format(lb_types[i], icons[i], lb_types[i])
+
+      out += """
+         <input type="button" name=button value="Load New Items" onclick="javascript:location.reload()">
+         </form>
+      """
+
    else:
       out += """
       <h2 style='width: 100%'>Mark ALL on this page as</h2>
@@ -2353,9 +2633,22 @@ def ai_rejects(station_id, options, json_conf):
       </form>
       """.format(station_id, data_str)
 
+
    out += ai_out
    template = template.replace("{MAIN_TABLE}", out)
    return(template)
+
+def find_ico(this_label):
+   lb_types, icons = mc_types()
+   ico = "no icon found for " + this_label
+   for i in range(0, len(lb_types)):
+      icon = icons[i]
+      if lb_types[i] == this_label:
+         ico = """<i class="fas fa-{}" style="size: 16px"></i>""".format(icon)
+         return(ico)
+      print(lb_types[i], this_label, ico)
+   return(ico)
+
 
 def ai_review(station_id, options,json_conf):
    out = """
@@ -2435,15 +2728,26 @@ def ai_review(station_id, options,json_conf):
    template = template.replace("{MAIN_TABLE}", out)
    return(template)
 
-def meteor_cell_html(root_fn, thumb_url, ai_info):
+def mc_types():
+   labels = ['bird', 'bug', 'car', 'cloud', 'ground', 'moon', 'meteor', 'meteor_fireball', 'planes', 'rain', 'satellite', 'star']
+   icons = ['crow', 'bug', 'car', 'cloud', 'tree', 'moon', 'meteor', 'meteor', 'plane', 'cloud-rain', 'satellite', 'star']
+   return(labels, icons)
+
+def meteor_cell_html(root_fn, thumb_url, ai_info, ico=None, ctype="meteor"):
+   if ico is None:
+      ico = ""
    thumb_ourl = thumb_url.replace("-tn.jpg", "-obj-tn.jpg")
+   if os.path.exists("/mnt/ams2/" + thumb_ourl) is False:
+      thumb_ourl = thumb_url
    jsid = root_fn.replace("_", "")
-   datecam = ai_info
-   click_link = "#"
+   datecam = """
+    <div><table width=100%><tr><td>{}</td><td>{}</td></tr> </table></div>
+   """.format(ico, ai_info)
+   click_link = thumb_url.replace("-stacked-tn.jpg", ".mp4")
    video_url = thumb_url.replace("-stacked-tn.jpg",".mp4")
    met_html = """
          <div id='{:s}' class='preview select-to norm'>
-            <a class='mtt' href='{:s}' data-obj='{:s}' title='Go to Info Page'>
+            <a class='vid_link_gal mtt' href='/dist/video_player.html?video={:s}' data-obj='{:s}' title='Go to Info Page'>
                <img alt='{:s}' class='img-fluid ns lz' src='{:s}'>
                <span>{:s}</span>
             </a>
@@ -2457,18 +2761,47 @@ def meteor_cell_html(root_fn, thumb_url, ai_info):
                   <label class="custom-control-label" for='chec_{:s}'></label>
                </div>
             </div>
-
             <div class='btn-toolbar'>
+            TOOLS {}
+
+   """.format(jsid, video_url, thumb_ourl, datecam , thumb_url, datecam, datecam, jsid, jsid,jsid, ctype)
+   if ctype == "meteor":
+      met_html += """
+               <!-- only display this if we are on the meteor page-->
+
                <div class='btn-group'>
                   <a class='vid_link_gal col btn btn-primary btn-sm' title='Play Video' href='/dist/video_player.html?video={:s}'>
                   <i class='icon-play'></i></a>
                   <a class='confirm_non_meteor col btn btn-danger btn-sm' title='Confirm NON Meteor' data-meteor='{:s}'><i class='fas fa-ban'></i></a>
-                  <a class='confirm_meteor col btn btn-secondary btn-sm' title='Confirm Meteor' data-meteor='{:s}'><i class="fas fa-meteor"></i></a>
+                  <a class='confirm_meteor col btn btn-success btn-sm' title='Confirm Meteor' data-meteor='{:s}'><i class="fas fa-meteor"></i></a>
                </div>
-            </div>
-         </div>
+      """.format(video_url, root_fn, root_fn)
+   if ctype == "non_meteor_confirmed":
+      met_html += """
 
-   """.format(jsid, click_link, thumb_ourl, datecam, thumb_url, datecam, datecam, jsid,jsid,jsid, video_url,root_fn, root_fn)
+               <!-- only display this if we are on the confirmed-non-meteor page-->
+               <div class='btn-group'>
+                  <a class='confirm_bird col btn btn-secondary btn-sm' title='Bird' data-meteor='{:s}'><i class='fas fa-crow'></i></a>
+                  <a class='confirm_bug col btn btn-secondary btn-sm' title='Bug' data-meteor='{:s}'><i class='fas fa-bug'></i></a>
+                  <a class='confirm_car col btn btn-secondary btn-sm' title='Car' data-meteor='{:s}'><i class='fas fa-car'></i></a>
+                  <a class='confirm_plane col btn btn-secondary btn-sm' title='Plane' data-meteor='{:s}'><i class='fas fa-plane'></i></a>
+                  <a class='confirm_satellite col btn btn-secondary btn-sm' title='Satellite' data-meteor='{:s}'><i class='fas fa-satellite'></i></a>
+               </div>
+               <div class='btn-group'>
+                  <a class='confirm_cloud col btn btn-secondary btn-sm' title='Cloud' data-meteor='{:s}'><i class='fas fa-cloud'></i></a>
+                  <a class='confirm_ground col btn btn-secondary btn-sm' title='Ground' data-meteor='{:s}'><i class='fas fa-tree'></i></a>
+                  <a class='confirm_moon col btn btn-secondary btn-sm' title='Moon' data-meteor='{:s}'><i class='fas fa-moon'></i></a>
+                  <a class='confirm_rain col btn btn-secondary btn-sm' title='Rain' data-meteor='{:s}'><i class='fas fa-cloud-rain'></i></a>
+                  <a class='confirm_snow col btn btn-secondary btn-sm' title='Snow ' data-meteor='{:s}'><i class='fas fa-snowflake'></i></a>
+               </div>
+      """.format(root_fn, root_fn, root_fn,root_fn, root_fn,root_fn,root_fn, root_fn, root_fn, root_fn)
+
+   met_html += """
+            </div>
+      </div>
+   """
+   
+   #.format(jsid, click_link, thumb_ourl, datecam, thumb_url, datecam, datecam, jsid,jsid,jsid, video_url,root_fn, root_fn, root_fn, root_fn, root_fn,root_fn, root_fn,root_fn,root_fn, root_fn, root_fn, root_fn)
    return(met_html)
                   #<!--<a class='delete_meteor_gallery col btn btn-danger btn-sm' title='Delete Detection' data-meteor='{:s}'><i class='icon-delete'></i></a>-->
 

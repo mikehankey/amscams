@@ -1,7 +1,7 @@
 import base64
 import os
 from flask import Flask, request, Response, make_response
-from FlaskLib.Learning import learning_meteors_dataset, learning_meteors_tag, meteor_ai_scan, recrop_roi, recrop_roi_confirm, learn_main, learning_review_day, batch_update_labels, learning_db_dataset, timelapse_main, learning_weather, ai_review, ai_rejects, confirm_meteor, confirm_non_meteor
+from FlaskLib.Learning import learning_meteors_dataset, learning_meteors_tag, meteor_ai_scan, recrop_roi, recrop_roi_confirm, learn_main, learning_review_day, batch_update_labels, learning_db_dataset, timelapse_main, learning_weather, ai_review, ai_rejects, confirm_meteor, confirm_non_meteor, confirm_non_meteor_label 
 from FlaskLib.motion_detects import motion_detects
 from FlaskLib.FlaskUtils import get_template
 from FlaskLib.api_funcs import update_meteor_points, show_cat_stars, delete_meteor, restore_meteor, delete_meteors, reduce_meteor, delete_frame, crop_video
@@ -11,7 +11,7 @@ from lib.PipePwdProtect import login_page, check_pwd_ajax
 from lib.PipeAutoCal import fn_dir
 from FlaskLib.meteor_detail_funcs import detail_page , pick_points, pick_points_day 
 from FlaskLib.config_funcs import config_vars 
-from FlaskLib.meteors_main import meteors_main , meteors_by_day, trash_page, non_meteors_main, confirm_non_meteors, confirm_all_trash
+from FlaskLib.meteors_main import meteors_main , meteors_by_day, trash_page, non_meteors_main, confirm_non_meteors, confirm_all_trash 
 from FlaskLib.super_stacks import stacks_main, stacks_day_hours, stacks_hour
 from FlaskLib.min_detail import min_detail_main
 from FlaskLib.live import live_view
@@ -531,6 +531,9 @@ def ctrash(station_id, date):
    out = confirm_all_trash(station_id, date)
    return(out)
 
+
+
+
 @app.route('/confirm_non_meteors/', methods=['GET', 'POST'])
 @auth.login_required
 def cnon_meteors():
@@ -690,6 +693,13 @@ def hconfirm(root_fn):
 @auth.login_required
 def confirm_nm(root_fn):
    out = confirm_non_meteor(json_conf['site']['ams_id'], root_fn )
+   return(out)
+
+@app.route('/confirm_non_meteor_label/<root_fn>/', methods=['GET'] )
+@auth.login_required
+def conf_mc(root_fn):
+   label = request.args.get('label')
+   out = confirm_non_meteor_label(json_conf['site']['ams_id'], root_fn , label)
    return(out)
 
 
