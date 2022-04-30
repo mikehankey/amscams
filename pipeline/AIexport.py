@@ -60,31 +60,28 @@ def export_meteors(con,cur):
       #if rc > 5:
       #   exit()
       rc += 1
-      ai_file = meteor_export_dir + root_fn + "-AI.jpg"
+      ai_file = meteor_export_dir + station_id + "_" + root_fn + "-AI.jpg"
       stack_file = meteor_dir + root_fn[0:10] + "/" + root_fn + "-stacked.jpg"
       print(ai_file, stack_file, roi)
       if os.path.exists(stack_file) is False:
          print("MISSING:", stack_file)
          #return()
 
-
-      print(stack_file, roi, os.path.exists(stack_file))
       if roi is not None and os.path.exists(ai_file) is False and os.path.exists(stack_file) is True :
          x1,y1,x2,y2 = roi
          img = cv2.imread(stack_file)
          img = cv2.resize(img, (1920,1080))
-         print(img.shape)
          roi_img = img[y1:y2,x1:x2]
-         print(roi_img.shape)
          roi_img = cv2.resize(roi_img, (64,64))
          cv2.imwrite(ai_file, roi_img)
+
       elif os.path.exists(stack_file) is False:
          print("No stack file:", stack_file)
       else:
          print("Skip done.", ai_file)
 
       if os.path.exists(ai_file) is True:
-         ff = root_fn + "-AI.jpg"
+         ff = ai_file.split("/")[-1]
          iurl = ff
          mp4 = ff.replace("-AI.jpg", ".mp4")
          date = ff[0:10]
@@ -169,5 +166,5 @@ if __name__ == "__main__":
    con = sqlite3.connect(json_conf['site']['ams_id']+ "_ALLSKY.db")
    con.row_factory = sqlite3.Row
    cur = con.cursor()
-   #export_meteors(con, cur)
+   export_meteors(con, cur)
    export_non_meteors(con, cur)
