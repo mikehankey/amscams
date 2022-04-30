@@ -2078,6 +2078,9 @@ def ai_stats_summary(cur):
    cur.execute(sql)
    rows = cur.fetchall()
    stats['conf_status'] = {}
+   stats['conf_status'][1] = 0
+   stats['conf_status'][-1] = 0
+   stats['conf_status'][0] = 0
    for row in rows:
       count, conf_status = row
       stats['conf_status'][conf_status] = count
