@@ -2445,7 +2445,7 @@ def ai_rejects(station_id, options, json_conf):
                AND human_confirmed != -1)
          """
       sql += """
-          ORDER BY meteor_yn DESC
+          ORDER BY meteor_yn_conf DESC
              LIMIT {},{}
          """.format(str(offset), str(row_count))
 
@@ -2468,7 +2468,7 @@ def ai_rejects(station_id, options, json_conf):
          """
 
       sql += """
-          ORDER BY meteor_yn DESC
+          ORDER BY meteor_yn_conf DESC
              LIMIT {}, {}
          """.format(str(offset), str(row_count))
    else:
