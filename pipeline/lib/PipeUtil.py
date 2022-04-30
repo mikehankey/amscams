@@ -569,9 +569,9 @@ def mfd_roi(mfd=None, xs=None, ys=None, ex=0, ey=0):
       h = w
    else:
       w = h
-   if w < 150 or h < 150:
-      w = 150
-      h = 150
+   if w < 224 or h < 224:
+      w = 224 
+      h = 224 
    if w > 1079 or h > 1079 :
       w = 1060
       h = 1060

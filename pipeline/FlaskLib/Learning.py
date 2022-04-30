@@ -2587,7 +2587,9 @@ def ai_rejects(station_id, options, json_conf):
             ai_info += str(int(float(fireball_yn))) + "% Fireball / "
             ai_info += str(int(float(mc_class_conf))) + "% " + mc_class + "<br>"
             ai_info += camera_id + " " + start_datetime  + " Human:" + human_label
-            cell = meteor_cell_html(root_fn, thumb_url, ai_info,ico, ctype)
+            color = get_color(100-float(meteor_yn))
+
+            cell = meteor_cell_html(root_fn, thumb_url, ai_info,ico, ctype, color)
             out += cell
 
             tc += 1
@@ -2743,7 +2745,7 @@ def mc_types():
    icons = ['crow', 'bug', 'car', 'cloud', 'tree', 'moon', 'meteor', 'meteor', 'plane', 'cloud-rain', 'satellite', 'star']
    return(labels, icons)
 
-def meteor_cell_html(root_fn, thumb_url, ai_info, ico=None, ctype="meteor"):
+def meteor_cell_html(root_fn, thumb_url, ai_info, ico=None, ctype="meteor", color="#ffffff"):
    if ico is None:
       ico = ""
    thumb_ourl = thumb_url.replace("-tn.jpg", "-obj-tn.jpg")
@@ -2756,7 +2758,7 @@ def meteor_cell_html(root_fn, thumb_url, ai_info, ico=None, ctype="meteor"):
    click_link = thumb_url.replace("-stacked-tn.jpg", ".mp4")
    video_url = thumb_url.replace("-stacked-tn.jpg",".mp4")
    met_html = """
-         <div id='{:s}' class='preview select-to norm'>
+         <div id='{:s}' class='preview select-to norm' style="border-top: 4px {} solid;">
             <a class='vid_link_gal mtt' href='/dist/video_player.html?video={:s}' data-obj='{:s}' title='Go to Info Page'>
                <img alt='{:s}' class='img-fluid ns lz' src='{:s}'>
                <span>{:s}</span>
@@ -2774,7 +2776,7 @@ def meteor_cell_html(root_fn, thumb_url, ai_info, ico=None, ctype="meteor"):
             <div class='btn-toolbar'>
             TOOLS {}
 
-   """.format(jsid, video_url, thumb_ourl, datecam , thumb_url, datecam, datecam, jsid, jsid,jsid, ctype)
+   """.format(jsid, color, video_url, thumb_ourl, datecam , thumb_url, datecam, datecam, jsid, jsid,jsid, ctype)
    if ctype == "meteor":
       met_html += """
                <!-- only display this if we are on the meteor page-->
@@ -2796,13 +2798,15 @@ def meteor_cell_html(root_fn, thumb_url, ai_info, ico=None, ctype="meteor"):
                   <a class='confirm_car col btn btn-secondary btn-sm' title='Car' data-meteor='{:s}'><i class='fas fa-car'></i></a>
                   <a class='confirm_plane col btn btn-secondary btn-sm' title='Plane' data-meteor='{:s}'><i class='fas fa-plane'></i></a>
                   <a class='confirm_satellite col btn btn-secondary btn-sm' title='Satellite' data-meteor='{:s}'><i class='fas fa-satellite'></i></a>
+                  <a class='confirm_meteor col btn btn-secondary btn-sm' title='Meteor' data-meteor='{:s}'><i class='fas fa-meteor'></i></a>
                </div>
                <div class='btn-group'>
                   <a class='confirm_cloud col btn btn-secondary btn-sm' title='Cloud' data-meteor='{:s}'><i class='fas fa-cloud'></i></a>
-                  <a class='confirm_ground col btn btn-secondary btn-sm' title='Ground' data-meteor='{:s}'><i class='fas fa-tree'></i></a>
-                  <a class='confirm_moon col btn btn-secondary btn-sm' title='Moon' data-meteor='{:s}'><i class='fas fa-moon'></i></a>
                   <a class='confirm_rain col btn btn-secondary btn-sm' title='Rain' data-meteor='{:s}'><i class='fas fa-cloud-rain'></i></a>
+                  <a class='confirm_ground col btn btn-secondary btn-sm' title='Ground' data-meteor='{:s}'><i class='fas fa-tree'></i></a>
                   <a class='confirm_snow col btn btn-secondary btn-sm' title='Snow ' data-meteor='{:s}'><i class='fas fa-snowflake'></i></a>
+                  <a class='confirm_moon col btn btn-secondary btn-sm' title='Moon' data-meteor='{:s}'><i class='fas fa-moon'></i></a>
+                  <a class='confirm_star col btn btn-secondary btn-sm' title='Moon' data-meteor='{:s}'><i class='fas fa-star'></i></a>
                </div>
       """.format(root_fn, root_fn, root_fn,root_fn, root_fn,root_fn,root_fn, root_fn, root_fn, root_fn)
 
@@ -2816,3 +2820,12 @@ def meteor_cell_html(root_fn, thumb_url, ai_info, ico=None, ctype="meteor"):
                   #<!--<a class='delete_meteor_gallery col btn btn-danger btn-sm' title='Delete Detection' data-meteor='{:s}'><i class='icon-delete'></i></a>-->
 
    return(html)
+
+def get_color(n):
+   print("COLOR FOR N:", n)
+   R = int((255 * n) / 100)
+   G = int((255 * (100 - n)) / 100 )
+   B = int(0)
+   rgb = (R,G,B)
+   print("RGB:", rgb)
+   return '#%02x%02x%02x' % rgb
