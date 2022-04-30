@@ -2525,6 +2525,7 @@ def ai_rejects(station_id, options, json_conf):
             human_confirmed = -1 
          else:
             human_label = "none"
+            human_confirmed = None
       else:
          sd_vid,hd_vid,meteor_yn,fireball_yn, mc_class,mc_class_conf,ai_resp,camera_id,start_datetime, human_confirmed = row
          if human_confirmed == 1 :
@@ -2735,7 +2736,7 @@ def ai_review(station_id, options,json_conf):
    return(template)
 
 def mc_types():
-   labels = ['bird', 'bug', 'car', 'cloud', 'ground', 'moon', 'meteor', 'meteor_fireball', 'planes', 'rain', 'satellite', 'star']
+   labels = ['bird', 'bug', 'cars', 'cloud', 'ground', 'moon', 'meteor', 'meteor_fireball', 'planes', 'rain', 'satellite', 'star']
    icons = ['crow', 'bug', 'car', 'cloud', 'tree', 'moon', 'meteor', 'meteor', 'plane', 'cloud-rain', 'satellite', 'star']
    return(labels, icons)
 

@@ -15,7 +15,6 @@ today = datetime.now().strftime("%Y_%m_%d")
 print("Init DB Starting.")
 AIDB = AllSkyDB()
 print("Init DB Started.")
-input("[enter] to continue")
 
 
 if len(sys.argv) > 2:
