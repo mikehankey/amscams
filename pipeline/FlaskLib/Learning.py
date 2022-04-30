@@ -239,7 +239,7 @@ def html_page_header(station_id):
 
       <script>
 
-      all_classes = ['meteor', 'cloud', 'bolt', 'cloud-moon', 'cloud-rain',  'tree', 'plane', 'car-side', 'satellite', 'crow', 'bug','chess-board','question']
+      all_classes = ['meteor', 'cloud', 'bolt', 'cloud-moon', 'cloud-rain',  'tree', 'planes', 'car-side', 'satellite', 'crow', 'bug','chess-board','question']
       labels = ['meteor', 'clouds', 'lightening', 'moon', 'rain', 'tree', 'planes', 'cars', 'satellite', 'BIRDS', 'fireflies','noise','notsure']
       </script>
    """
@@ -274,7 +274,7 @@ def learning_review_day(station_id, review_date):
 
       <script>
 
-      all_classes = ['meteor', 'cloud', 'bolt', 'cloud-moon', 'cloud-rain',  'tree', 'plane', 'car-side', 'satellite', 'crow', 'bug','chess-board','question']
+      all_classes = ['meteor', 'cloud', 'bolt', 'cloud-moon', 'cloud-rain',  'tree', 'planes', 'car-side', 'satellite', 'crow', 'bug','chess-board','question']
       labels = ['meteor', 'clouds', 'lightening', 'moon', 'rain', 'tree', 'planes', 'cars', 'satellite', 'BIRDS', 'fireflies','noise','notsure']
 
 
@@ -2196,12 +2196,12 @@ def ai_rejects(station_id, options, json_conf):
    <script>
          $(function() {
             $('.confirm_bird').click(function() {
-               confirm_multi_class($(this).attr('data-meteor'), "bird")
+               confirm_multi_class($(this).attr('data-meteor'), "birds")
             })
          })
          $(function() {
             $('.confirm_car').click(function() {
-               confirm_multi_class($(this).attr('data-meteor'), "car")
+               confirm_multi_class($(this).attr('data-meteor'), "cars")
             })
          })
          $(function() {
@@ -2221,7 +2221,7 @@ def ai_rejects(station_id, options, json_conf):
          })
          $(function() {
             $('.confirm_plane').click(function() {
-               confirm_multi_class($(this).attr('data-meteor'), "plane")
+               confirm_multi_class($(this).attr('data-meteor'), "planes")
             })
          })
          $(function() {
@@ -2736,7 +2736,7 @@ def ai_review(station_id, options,json_conf):
    return(template)
 
 def mc_types():
-   labels = ['bird', 'bug', 'cars', 'cloud', 'ground', 'moon', 'meteor', 'meteor_fireball', 'planes', 'rain', 'satellite', 'star']
+   labels = ['birds', 'bugs', 'cars', 'cloud', 'ground', 'moon', 'meteor', 'meteor_fireball', 'planes', 'rain', 'satellite', 'star']
    icons = ['crow', 'bug', 'car', 'cloud', 'tree', 'moon', 'meteor', 'meteor', 'plane', 'cloud-rain', 'satellite', 'star']
    return(labels, icons)
 
