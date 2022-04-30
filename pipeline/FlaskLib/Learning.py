@@ -2808,7 +2808,7 @@ def meteor_cell_html(root_fn, thumb_url, ai_info, ico=None, ctype="meteor", colo
                   <a class='confirm_moon col btn btn-secondary btn-sm' title='Moon' data-meteor='{:s}'><i class='fas fa-moon'></i></a>
                   <a class='confirm_star col btn btn-secondary btn-sm' title='Moon' data-meteor='{:s}'><i class='fas fa-star'></i></a>
                </div>
-      """.format(root_fn, root_fn, root_fn,root_fn, root_fn,root_fn,root_fn, root_fn, root_fn, root_fn)
+      """.format(root_fn, root_fn, root_fn,root_fn, root_fn,root_fn,root_fn, root_fn, root_fn, root_fn, root_fn, root_fn)
 
    met_html += """
             </div>
