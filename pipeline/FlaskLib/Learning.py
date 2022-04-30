@@ -2141,6 +2141,8 @@ def ai_stats_summary(cur):
    stats['nc_non_meteors_by_class'] = {}
    for row in rows:
       count,mc_class = row
+      if mc_class is None:
+         mc_class = ""
       stats['nc_non_meteors_by_class'][mc_class] = count
 
    # non_meteors human confirmed and labeled by class
@@ -2156,7 +2158,12 @@ def ai_stats_summary(cur):
    stats['confirmed_non_meteors_by_class'] = {}
    for row in rows:
       count,mc_class = row
+      if mc_class is None:
+         mc_class = ""
       stats['confirmed_non_meteors_by_class'][mc_class] = count
+
+      if mc_class not in stats['nc_non_meteors_by_class']: 
+         stats['nc_non_meteors_by_class'][mc_class] = 0
    return(stats)
 
 def ai_rejects(station_id, options, json_conf):
@@ -2387,7 +2394,7 @@ def ai_rejects(station_id, options, json_conf):
       <table>
       <tr><td colspan=2>Non-Meteor Database Pending Confirmation</td></tr>
    """
-   for bc in stats['nc_non_meteors_by_class']:
+   for bc in sorted(stats['nc_non_meteors_by_class']):
       if bc in  stats['confirmed_non_meteors_by_class']:
          conf_labeled = str(stats['confirmed_non_meteors_by_class'][bc])
       else:
@@ -2645,6 +2652,7 @@ def ai_rejects(station_id, options, json_conf):
       </form>
       """.format(station_id, data_str)
 
+   ym_nav = year_mon_nav(con,cur)
 
    out += ai_out
    template = template.replace("{MAIN_TABLE}", out)
@@ -2829,3 +2837,18 @@ def get_color(n):
    rgb = (R,G,B)
    print("RGB:", rgb)
    return '#%02x%02x%02x' % rgb
+
+def year_mon_nav(con,cur):
+   sql = """
+      SELECT substr(root_fn, 0,8) as mdd, count(*) 
+        FROM meteors 
+    GROUP BY mdd
+    ORDER BY mdd desc
+   """
+   cur.execute(sql)
+   rows = cur.fetchall()
+   for row in rows:
+      date = row[0]
+      count = row[1]
+      year, month = date.split("_")
+      print(year, month, count)
