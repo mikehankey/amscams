@@ -113,6 +113,7 @@ def export_non_meteors(con,cur):
    rows = cur.fetchall()
    non_meteor_data = {}
 
+   mc_meteor_export_dir = export_dir + "MULTI_CLASS/"
    non_meteor_export_dir = export_dir + "NON_METEORS/"
    if os.path.exists(non_meteor_export_dir) is False:
       os.makedirs(non_meteor_export_dir)
@@ -126,6 +127,9 @@ def export_non_meteors(con,cur):
       roi = json.loads(roi)
       if last_mc != human_label:
          out += "<h1>" + human_label + "</h1><br>"
+      mc_dir = mc_meteor_export_dir + human_label + "/"
+      if os.path.exists(mc_dir) is False:
+         os.makedirs(mc_dir)
 
       mjrf = non_meteor_dir + root_fn[0:10] + "/" + root_fn + "-reduced.json" 
       if os.path.exists(mjrf):
@@ -137,7 +141,9 @@ def export_non_meteors(con,cur):
       stack_file = non_meteor_dir + sd_vid[0:10] + "/" + root_fn + "-stacked.jpg"
       non_meteor_data[root_fn] = [roi, meteor_yn, fireball_yn, multi_class, multi_class_conf, human_label]
       ai_file = non_meteor_export_dir + station_id + "_"  + root_fn + "-AI.jpg"
-      if os.path.exists(ai_file) is False:
+      mc_ai_file = mc_dir + station_id + "_"  + root_fn + "-AI.jpg"
+
+      if os.path.exists(ai_file) is False or os.path.exists(mc_ai_file) is False:
          if os.path.exists(stack_file) is True:
             img = cv2.imread(stack_file)
             img = cv2.resize(img, (1920,1080))
@@ -146,6 +152,7 @@ def export_non_meteors(con,cur):
             roi_img = img[y1:y2,x1:x2]
             roi_img = cv2.resize(roi_img,(64,64))
             cv2.imwrite(ai_file, roi_img)
+            cv2.imwrite(mc_ai_file, roi_img)
             print("WROTE************")
          else:
             print("MIS:", stack_file)
