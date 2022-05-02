@@ -84,7 +84,9 @@ def export_meteors(con,cur):
          ff = ai_file.split("/")[-1]
          iurl = ff
          mp4 = ff.replace("-AI.jpg", ".mp4")
-         date = ff[0:10]
+         mp4 = mp4.replace(station_id + "_", "")
+         temp = ff.split("_")
+         date = temp[1] + "_" + temp[2] + "_" + temp[3]
          ilink = "<a href=/meteor/{}/{}/{}/>".format(station_id, date, mp4)
          out += ilink 
          out += "<img alt='{}' src={}></a>".format(str(meteor_yn), iurl)
