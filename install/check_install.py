@@ -1,7 +1,50 @@
 #!/usr/bin/python3
 import os
 import json
+import requests
 #
+
+
+def get_page(url):
+   response = requests.get(url)
+   content = response.content.decode()
+   content = content.replace("\\", "")
+   #content = json.loads(content)
+   return(content)
+
+
+
+def check_install_wasabi_key(station_id):
+   url = "https://archive.allsky.tv/" + station_id + "/cmd/wasabirff.txt"
+   wasabi = get_page(url)
+   if "Error" in wasabi:
+      print("No remote wasabi.")
+      return()
+
+   fp = open("/home/ams/amscams/conf/wasabi.txt", "w")
+   fp.write(wasabi)
+   fp.close()
+   os.system("chmod 600 /home/ams/amscams/conf/wasabi.txt")
+   os.system("cd /home/ams/amscams/pythonv2; ./wasabi.py mnt")
+   if os.path.exists("/home/ams/amscams/conf/wasabi.txt"):
+      cmd = "rm /mnt/archive.allsky.tv/" + station_id + "/cmd/wasabi.txt"
+      print(cmd)
+      os.system(cmd)
+
+
+def check_install_vpn(station_id):
+   url = "https://archive.allsky.tv/" + station_id + "/cmd/" + station_id + ".ovpn"
+   vpn = get_page(url)
+   print(vpn)
+   fp = open("/etc/openvpn/" + station_id + ".ovpn", "w")
+   fp.write(vpn)
+   fp.close()
+   if os.path.exists("/etc/openvpn/" + station_id + ".ovpn"):
+      cmd = "rm /mnt/archive.allsky.tv/" + station_id + "/cmd/" + station_id + ".ovpn"
+      print(cmd)
+      os.system(cmd)
+
+   
 
 def load_json_file(json_file):
    try:
@@ -26,12 +69,19 @@ json_conf = load_json_file("/home/ams/amscams/conf/as6.json")
 station_id = json_conf['site']['ams_id']
 vpn_file = "/etc/openvpn/" + station_id + ".ovpn"
 os.system("df -h > df.txt")
+
+#test = get_page("https://archive.allsky.tv/444.html")
+#print(test)
+#exit()
+
 fp = open("df.txt")
 data_drive = ""
 root_drive = ""
 cloud_drive = ""
 for line in fp:
+
    el = line.split()
+   print("DRIVE:", el)
    mnt = el[-1]
    if "/mnt/ams2" in mnt:
       data_drive = el[-2] 
@@ -52,6 +102,6 @@ Cloud Drive : {:s}
 # save results and last attempt time
 if cloud_drive == "":
    print("Cloud Drive is not attached.")
-   check_install_wasabi_key()
+   check_install_wasabi_key(station_id)
 if os.path.exists(vpn_file) is False:
-   check_install_vpn()
+   check_install_vpn(station_id)
