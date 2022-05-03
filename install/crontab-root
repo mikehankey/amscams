@@ -2,3 +2,4 @@
 * * * * * cd /home/ams/amscams/pythonv2 ; ./vpn.py > /tmp/vpn.txt
 52 * * * * cd /home/ams/amscams/pythonv2 ; ./time.sh >> /tmp/time.txt
 #@reboot cd /home/ams/amscams/pipeline/; ./run-uwsgi-ssl
+@reboot cd /home/ams/amscams/install/; ./reboot.sh; 

@@ -15,7 +15,7 @@ def get_page(url):
 
 
 def check_install_wasabi_key(station_id):
-   url = "https://archive.allsky.tv/" + station_id + "/cmd/wasabirff.txt"
+   url = "https://archive.allsky.tv/" + station_id + "/cmd/wasabi.txt"
    wasabi = get_page(url)
    if "Error" in wasabi:
       print("No remote wasabi.")
@@ -25,6 +25,7 @@ def check_install_wasabi_key(station_id):
    fp.write(wasabi)
    fp.close()
    os.system("chmod 600 /home/ams/amscams/conf/wasabi.txt")
+   os.system("chown ams:ams /home/ams/amscams/conf/wasabi.txt")
    os.system("cd /home/ams/amscams/pythonv2; ./wasabi.py mnt")
    if os.path.exists("/home/ams/amscams/conf/wasabi.txt"):
       cmd = "rm /mnt/archive.allsky.tv/" + station_id + "/cmd/wasabi.txt"
