@@ -1,4 +1,5 @@
 #!/usr/bin/python3
+import time
 import os
 import json
 import requests
@@ -35,6 +36,7 @@ def check_install_wasabi_key(station_id):
 
 def check_install_vpn(station_id):
    url = "https://archive.allsky.tv/" + station_id + "/cmd/" + station_id + ".ovpn"
+   print(url)
    vpn = get_page(url)
    print(vpn)
 
@@ -75,6 +77,18 @@ json_conf = load_json_file("/home/ams/amscams/conf/as6.json")
 station_id = json_conf['site']['ams_id']
 vpn_file = "/etc/openvpn/" + station_id + ".ovpn"
 os.system("df -h > df.txt")
+
+
+# wait until we are online.
+
+for i in range(0,30):
+   res = os.system("ping -c1 google.com > /dev/null 2>&1")
+   print("PING:", res)
+   if res == 0:
+      break
+   time.sleep(1)
+
+
 
 #test = get_page("https://archive.allsky.tv/444.html")
 #print(test)
