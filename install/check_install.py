@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 import os
 import json
+#
 
 def load_json_file(json_file):
    try:
