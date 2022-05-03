@@ -37,6 +37,11 @@ def check_install_vpn(station_id):
    url = "https://archive.allsky.tv/" + station_id + "/cmd/" + station_id + ".ovpn"
    vpn = get_page(url)
    print(vpn)
+
+   if "Error" in vpn:
+      print("No remote vpn.")
+      return()
+
    fp = open("/etc/openvpn/" + station_id + ".ovpn", "w")
    fp.write(vpn)
    fp.close()
