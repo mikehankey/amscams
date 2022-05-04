@@ -42,7 +42,7 @@ if len(sys.argv) > 2:
       #exit()
 
       #RN = ReviewNetwork(date)
-      #AIDB.auto_reject_day(date )
+      AIDB.auto_reject_day(date )
       exit()
 
 
@@ -86,7 +86,7 @@ if date == "ALL" or date == "all":
 
          #RN = ReviewNetwork(date)
 
-         #AIDB.auto_reject_day(date, RN)
+         AIDB.auto_reject_day(date )
          print("DONE AIDay FOR " + date)
          os.system("python3 Rec.py del_aws_day " + md)
          #AIDB.check_update_status(date)
@@ -104,7 +104,7 @@ else:
    AIDB.verify_media_day(date)
    AIDB.reconcile_db(date)
    os.system("python3.6 myEvents.py " + date)
-   #AIDB.auto_reject_day(date, RN)
+   AIDB.auto_reject_day(date )
 
    os.system("python3 Rec.py del_aws_day " + date)
    print("DONE AIDay FOR " + date)

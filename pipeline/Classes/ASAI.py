@@ -1018,6 +1018,7 @@ class AllSkyAI():
                print("loaded models/" + mf)
             except:
                print("loading exception/" + mf)
+               exit()
          else:
             print("not found models/" + mf + ".h5")
             self.models[mf] = None

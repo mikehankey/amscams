@@ -22,11 +22,8 @@ For now, slowly we will take over these batch jobs :
 """
 
 def ai_task_manager(AIA):
-
-
-
     while True:
-        with open("/tmp/current_time.txt", "w") as f:
+        with open("/tmp/current_time.txt", "a") as f:
             f.write("The time is now " + time.ctime())
         time.sleep(5)
 
@@ -38,19 +35,7 @@ if __name__ == "__main__":
     running = check_running("AIAgent.py")
     AIA = AIAgent()
     AIA.index_archive_tasks()
-    for day in AIA.all_days:
-       # sync up AWS if it is not done yet!
-       if AIA.all_days[day]['jobs']['aws_sync'] is False:
-          cmd = "python3 Rec.py del_aws_day " + day
-          if "2022" in day or "2021" in day:
-             print(cmd)
-        
-             os.system(cmd)
 
-       #cmd = "python3.6 AIDay.py " + day
-       #print(cmd)
-       #os.system(cmd)
-    exit()
     if running < 2:
        print("PROCESSES RUNNING:", running)
        run(AIA)

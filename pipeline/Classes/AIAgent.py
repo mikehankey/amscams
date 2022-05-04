@@ -61,8 +61,6 @@ class AIAgent():
 
    def create_jobs_table(self):
 
-
-
       # Drop the GEEK table if already exists.
       cursor_obj.execute("DROP TABLE IF EXISTS GEEK")
 
@@ -76,4 +74,122 @@ class AIAgent():
 
       cursor_obj.execute(table)
       print("Table is Ready")
+
+   def job_list(self):
+      """ -- Highlevel jobs: 
+                      - record 24/7
+                      - scan_stack videos
+                      - check / purge disk 
+                      - detect / meteors (val detect and verify meteors)
+                      - validate / reduce meteor 
+                      - upload / network sync meteor
+                      - download network data update station
+                      - calibrate system
+
+      """
+
+      # Core functional operations (recording and video processing)
+      jobs = [] 
+      job = {
+              "job_name": "watch_dog.py", 
+              "job_cat": "video_recording", 
+              "user": "ams", 
+              "frequency": "1_1_minute", 
+              "exec_dir": "/home/ams/amscams/pythonv2/", 
+              "exec": "watch_dog.py",
+              "last_run": 0
+      }
+      jobs.append(job)
+
+      job = {
+              "job_name": "scan_stack.py", 
+              "job_cat": "video_processing", 
+              "user": "ams", 
+              "frequency": "1_5_minute", 
+              "exec_dir": "/home/ams/amscams/pythonv2/", 
+              "exec": "watch_dog.py",
+              "last_run": 0
+      }
+      jobs.append(job)
+
+
+      job = {
+              "job_name": "detect_verify.py", 
+              "job_cat": "meteors", 
+              "user": "ams", 
+              "frequency": "1_1_hour", 
+              "exec_dir": "/home/ams/amscams/pythonv2/", 
+              "exec": "detect_verify.py",
+              "last_run": 0
+      }
+      jobs.append(job)
+
+      job = {
+              "job_name": "do_network_day.py", 
+              "job_cat": "meteors", 
+              "user": "ams", 
+              "frequency": "1_8_hour", 
+              "exec_dir": "/home/ams/amscams/pythonv2/", 
+              "exec": "detect_verify.py",
+              "last_run": 0
+      }
+      jobs.append(job)
+
+      job = {
+              "job_name": "as7latest.py", 
+              "job_cat": "weather", 
+              "user": "ams", 
+              "frequency": "1_15_minutes", 
+              "exec_dir": "/home/ams/amscams/pythonv/", 
+              "exec": "as7latest.py",
+              "last_run": 0
+      }
+      jobs.append(job)
+
+      # system, uptime, disk management, updates, logging 
+      job = {
+              "job_name": "check_disk.py", 
+              "job_cat": "system", 
+              "user": "ams", 
+              "frequency": "1_1_hour", 
+              "exec_dir": "/home/ams/amscams/pythonv2/", 
+              "exec": "watch_dog.py",
+              "last_run": 0
+      }
+      jobs.append(job)
+
+      job = {
+              "job_name": "system_updates", 
+              "job_cat": "system", 
+              "desc": "install and update packages and pull latest git", 
+              "frequency": "1_1_day", 
+              "user": "root", 
+              "exec_dir": "/home/ams/amscams/install/", 
+              "exec": "system_updates.py",
+              "last_run": 0
+      }
+      jobs.append(job)
+
+      job = {
+              "job_name": "review_system_errors", 
+              "job_cat": "system", 
+              "desc": "review error log and respond as needed", 
+              "frequency": "1_1_hour", 
+              "user": "ams", 
+              "exec_dir": "/home/ams/amscams/install/", 
+              "exec": "review_system_errors.py",
+              "last_run": 0
+      }
+      jobs.append(job)
+
+
+
+
+
+        
+      while(True):
+         print("Task manager main")
+         time.sleep(30)
+
+
 

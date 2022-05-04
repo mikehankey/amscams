@@ -221,6 +221,11 @@ class AS7Setup():
       else:
          print("Aborted")
 
+      os.system("mount -av")
+      if os.path.exists("/mnt/ams2") is False:
+         os.makedirs("/mnt/ams2")
+      os.system("chown -R ams:ams /mnt/ams2")
+
       print("Completed disk format [ENTER] to continue..")
       input()
 

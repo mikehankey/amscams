@@ -18,3 +18,4 @@ sudo apt-get install gstreamer-pb*
 sudo apt install libopencv-dev python3-opencv
 sudo apt-get install tshark
 sudo apt install traceroute
+sudo apt install sqlite3
