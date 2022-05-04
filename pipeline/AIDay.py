@@ -82,7 +82,7 @@ if date == "ALL" or date == "all":
          AIDB.load_all_meteors(date)
          AIDB.verify_media_day(date)
          AIDB.reconcile_db(date)
-         os.system("python3.6 myEvents.py " + date)
+         os.system("/usr/bin/python3.6 myEvents.py " + date)
 
          #RN = ReviewNetwork(date)
 
