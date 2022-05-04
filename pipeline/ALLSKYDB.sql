@@ -284,3 +284,16 @@ CREATE TABLE IF NOT EXISTS "station_stats" (
 	"total_multi_station_success"	INTEGER,
 	PRIMARY KEY("station_id")
 );
+
+CREATE TABLE IF NOT EXISTS "non_meteors_confirmed" (
+        "sd_vid"     INTEGER,
+        "hd_vid"     INTEGER,
+        "roi"   TEXT,
+        "meteor_yn"        REAL,
+        "fireball_yn"       REAL,
+        "multi_class"   TEXT,
+        "multi_class_conf"      REAL,
+        "human_confirmed"   INTEGER,
+        "human_label"   TEXT,
+        "last_updated"   INTEGER
+       );
