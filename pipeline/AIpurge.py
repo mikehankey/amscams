@@ -46,8 +46,8 @@ def purge():
    dds = {}
    rc = 0
    for row in rows:
-      if rc > 10:
-         exit()
+      #if rc > 10:
+      #   exit()
       rc += 1
       sd_vid, hd_vid, roi, meteor_yn_conf, fireball_yn_conf, mc_class, mc_class_conf, human_confirmed = row
       mdir = "/mnt/ams2/meteors/" + sd_vid[0:10] + "/"
@@ -86,7 +86,6 @@ def purge():
 
       con.commit()
 
-      #exit()
 if __name__ == "__main__":
    json_conf = load_json_file("../conf/as6.json")
    con = sqlite3.connect(json_conf['site']['ams_id']+ "_ALLSKY.db")
