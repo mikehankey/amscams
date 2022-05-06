@@ -2182,6 +2182,13 @@ def ai_rejects(station_id, options, json_conf):
    if order_by == "meteor_yn_asc":
       order_by = "ORDER BY meteor_yn_conf asc"
 
+   if "multi" in options:
+      multi_where = True
+      multi_and = " AND multi_station = 1"
+   else:
+      multi_where = False
+      multi_and = ""
+   print("MULTI:", multi_where, multi_and)
    if "p" in options:
       page = int(options['p'])
    else:
@@ -2382,7 +2389,6 @@ def ai_rejects(station_id, options, json_conf):
    con = sqlite3.connect(db_file)
    cur = con.cursor()
    stats = ai_stats_summary(cur)
-   print(stats)
    non_confirmed_meteors = stats['sql_meteors'] - stats['conf_status'][1]
    ai_out = """
       <div class="container">
@@ -2425,7 +2431,7 @@ def ai_rejects(station_id, options, json_conf):
    print("HUMAN CONFIRMED IS???", hc)
    reject_dir = "/mnt/ams2/non_meteors/classes/"
    if list_type == "non_meteors_by_class" :
-      sql = """SELECT sd_vid, roi, meteor_yn, fireball_yn, multi_class, multi_class_conf, human_label, last_updated 
+      sql = """SELECT sd_vid, roi, meteor_yn, fireball_yn, multi_class, multi_class_conf, human_label, last_updated  
                  FROM non_meteors_confirmed
             """
       if hc is True:
@@ -2441,7 +2447,6 @@ def ai_rejects(station_id, options, json_conf):
          sql += """
                AND (human_label = "" or human_label is NULL)
           """
-
       sql += """
           {}
           LIMIT {},{}
@@ -2450,7 +2455,7 @@ def ai_rejects(station_id, options, json_conf):
 
    elif list_type == "by_class" and (label is None or label == "None"):
       label = ""
-      sql = """SELECT sd_vid,hd_vid, meteor_yn_conf, fireball_yn_conf,mc_class,mc_class_conf,ai_resp,camera_id, start_datetime, human_confirmed FROM meteors
+      sql = """SELECT sd_vid,hd_vid, meteor_yn_conf, fireball_yn_conf,mc_class,mc_class_conf,ai_resp,camera_id, start_datetime, human_confirmed, multi_station FROM meteors
              WHERE (mc_class = ""
                 OR mc_class is NULL)
                AND (deleted is null or deleted != 1)
@@ -2465,6 +2470,7 @@ def ai_rejects(station_id, options, json_conf):
                AND (human_confirmed != 1
                AND human_confirmed != -1)
          """
+      sql += multi_and
       sql += """
              {}
              LIMIT {},{}
@@ -2473,7 +2479,7 @@ def ai_rejects(station_id, options, json_conf):
 
 
    elif list_type == "by_class" :
-      sql = """SELECT sd_vid,hd_vid, meteor_yn_conf, fireball_yn_conf,mc_class,mc_class_conf,ai_resp,camera_id, start_datetime, human_confirmed FROM meteors
+      sql = """SELECT sd_vid,hd_vid, meteor_yn_conf, fireball_yn_conf,mc_class,mc_class_conf,ai_resp,camera_id, start_datetime, human_confirmed,multi_station FROM meteors
              WHERE mc_class like ?
                AND (deleted is null or deleted != 1)
       """
@@ -2488,12 +2494,13 @@ def ai_rejects(station_id, options, json_conf):
                AND human_confirmed != -1)
          """
 
+      sql += multi_and
       sql += """
              {}
              LIMIT {}, {}
          """.format(str(order_by), str(offset), str(row_count))
    else:
-      sql = """SELECT sd_vid,hd_vid, meteor_yn_conf, fireball_yn_conf,mc_class,mc_class_conf,ai_resp,camera_id, start_datetime, human_confirmed FROM meteors
+      sql = """SELECT sd_vid,hd_vid, meteor_yn_conf, fireball_yn_conf,mc_class,mc_class_conf,ai_resp,camera_id, start_datetime, human_confirmed, multi_station FROM meteors
              WHERE meteor_yn_conf <= ?
                AND fireball_yn_conf <= ?
                AND root_fn not like '2019%'
@@ -2510,6 +2517,7 @@ def ai_rejects(station_id, options, json_conf):
                AND human_confirmed != -1)
          """
 
+      sql += multi_and
       sql += """
              {}
              LIMIT {}, {}
@@ -2554,7 +2562,7 @@ def ai_rejects(station_id, options, json_conf):
             human_label = "none"
             human_confirmed = None
       else:
-         sd_vid,hd_vid,meteor_yn,fireball_yn, mc_class,mc_class_conf,ai_resp,camera_id,start_datetime, human_confirmed = row
+         sd_vid,hd_vid,meteor_yn,fireball_yn, mc_class,mc_class_conf,ai_resp,camera_id,start_datetime, human_confirmed,multi_station = row
          if human_confirmed == 1 :
             human_label = "meteor"
          elif human_confirmed == -1:
@@ -2613,7 +2621,7 @@ def ai_rejects(station_id, options, json_conf):
             ai_info += camera_id + " " + start_datetime  + " Human:" + human_label
             color = get_color(100-float(meteor_yn))
 
-            cell = meteor_cell_html(root_fn, thumb_url, ai_info,ico, ctype, color)
+            cell = meteor_cell_html(root_fn, thumb_url, ai_info,ico, ctype, color, multi_station)
             out += cell
 
             tc += 1
@@ -2772,7 +2780,7 @@ def mc_types():
    icons = ['crow', 'bug', 'car', 'cloud', 'tree', 'moon', 'meteor', 'meteor', 'plane', 'cloud-rain', 'satellite', 'star']
    return(labels, icons)
 
-def meteor_cell_html(root_fn, thumb_url, ai_info, ico=None, ctype="meteor", color="#ffffff"):
+def meteor_cell_html(root_fn, thumb_url, ai_info, ico=None, ctype="meteor", color="#ffffff",multi=0):
    if ico is None:
       ico = ""
    thumb_ourl = thumb_url.replace("-tn.jpg", "-obj-tn.jpg")
@@ -2784,10 +2792,14 @@ def meteor_cell_html(root_fn, thumb_url, ai_info, ico=None, ctype="meteor", colo
    """.format(ico, ai_info)
    click_link = thumb_url.replace("-stacked-tn.jpg", ".mp4")
    video_url = thumb_url.replace("-stacked-tn.jpg",".mp4")
+   if multi == 1:
+      ms_style = "border-bottom: 4px lime solid;"
+   else:
+      ms_style = ""
    met_html = """
-         <div id='{:s}' class='preview select-to norm' style="border-top: 4px {} solid;">
+         <div id='{:s}' class='preview select-to norm' style="border-top: 4px {} solid; ">
             <a class='vid_link_gal mtt' href='/dist/video_player.html?video={:s}' data-obj='{:s}' title='Go to Info Page'>
-               <img alt='{:s}' class='img-fluid ns lz' src='{:s}'>
+               <img alt='{:s}' class='img-fluid ns lz' src='{:s}' style="{}">
                <span>{:s}</span>
             </a>
 
@@ -2801,9 +2813,9 @@ def meteor_cell_html(root_fn, thumb_url, ai_info, ico=None, ctype="meteor", colo
                </div>
             </div>
             <div class='btn-toolbar'>
-            TOOLS {}
+           {} 
 
-   """.format(jsid, color, video_url, thumb_ourl, datecam , thumb_url, datecam, datecam, jsid, jsid,jsid, ctype)
+   """.format(jsid ,color, video_url, thumb_ourl, datecam , thumb_url, ms_style, datecam, datecam, jsid, jsid,jsid, multi)
    if ctype == "meteor":
       met_html += """
                <!-- only display this if we are on the meteor page-->
