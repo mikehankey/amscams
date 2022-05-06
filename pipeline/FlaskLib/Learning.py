@@ -2031,6 +2031,11 @@ def confirm_non_meteor(station_id, root_fn):
       print(sql,task)
       con.commit()
    else:
+      sql = "UPDATE meteors set human_confirmed = '-1' WHERE root_fn = ?"
+      task = [root_fn]
+      cur.execute(sql, task)
+      print(sql,task)
+      con.commit()
       return("ERROR: NO METEOR FILE! " + root_fn)
    return("Human confirmed NON meteor " + root_fn)
 
@@ -2167,6 +2172,15 @@ def ai_stats_summary(cur):
    return(stats)
 
 def ai_rejects(station_id, options, json_conf):
+
+   if "order_by" in options:
+      order_by = options['order_by']
+   else:
+      order_by = "ORDER BY mc_class_conf desc"
+   if order_by == "meteor_yn_desc":
+      order_by = "ORDER BY meteor_yn_conf desc"
+   if order_by == "meteor_yn_asc":
+      order_by = "ORDER BY meteor_yn_conf asc"
 
    if "p" in options:
       page = int(options['p'])
@@ -2429,9 +2443,9 @@ def ai_rejects(station_id, options, json_conf):
           """
 
       sql += """
-          ORDER BY multi_class_conf ASC
+          {}
           LIMIT {},{}
-         """.format(str(offset), str(row_count))
+         """.format(str(order_by), str(offset), str(row_count))
       
 
    elif list_type == "by_class" and (label is None or label == "None"):
@@ -2452,9 +2466,9 @@ def ai_rejects(station_id, options, json_conf):
                AND human_confirmed != -1)
          """
       sql += """
-          ORDER BY meteor_yn_conf DESC
+             {}
              LIMIT {},{}
-         """.format(str(offset), str(row_count))
+         """.format(str(order_by), str(offset), str(row_count))
 
 
 
@@ -2475,9 +2489,9 @@ def ai_rejects(station_id, options, json_conf):
          """
 
       sql += """
-          ORDER BY meteor_yn_conf DESC
+             {}
              LIMIT {}, {}
-         """.format(str(offset), str(row_count))
+         """.format(str(order_by), str(offset), str(row_count))
    else:
       sql = """SELECT sd_vid,hd_vid, meteor_yn_conf, fireball_yn_conf,mc_class,mc_class_conf,ai_resp,camera_id, start_datetime, human_confirmed FROM meteors
              WHERE meteor_yn_conf <= ?
@@ -2497,9 +2511,9 @@ def ai_rejects(station_id, options, json_conf):
          """
 
       sql += """
-          ORDER BY meteor_yn_conf ASC
+             {}
              LIMIT {}, {}
-         """.format(str(offset), str(row_count))
+         """.format(str(order_by), str(offset), str(row_count))
       print(sql)
                    #mc_class_conf >  meteor_yn_conf
                #AND mc_class_conf > fireball_yn_conf)
@@ -2521,6 +2535,9 @@ def ai_rejects(station_id, options, json_conf):
       cur.execute(sql)
    else:
       cur.execute(sql, vals)
+   out += "<PRE>{}</PRE>".format(sql)
+
+
    rows = cur.fetchall()
    ai_info = []
    tc = 0
@@ -2602,7 +2619,9 @@ def ai_rejects(station_id, options, json_conf):
             tc += 1
          else:
             print("PROBLEM: THE VIDEO IS NOT FOUND!!!", sd_vid)
-            out += "MISSING:" + sd_vid
+            #out += "MISSING:" + sd_vid
+            # if meteor no longer exists on file system update it as deleted
+            # the purge will later remove it. 
             if list_type != "non_meteors_by_class":
                sql = "UPDATE meteors set deleted = '1' WHERE root_fn = ?"
                task = [root_fn]
@@ -2725,8 +2744,8 @@ def ai_review(station_id, options,json_conf):
                AND meteor_yn_conf <= 70
                AND fireball_yn_conf <= 70
                AND human_confirmed != 1
-               ORDER BY meteor_yn_conf DESC
-      """
+               {}
+      """.format(order_by)
       cur.execute(sql, [options['mc_class']])
       rows = cur.fetchall()
       need_to_del = [] 
