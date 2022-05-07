@@ -2059,6 +2059,69 @@ def confirm_meteor(station_id, root_fn):
       return("ERROR: NO METEOR FILE! " + root_fn)
    return("Human confirmed meteor " + root_fn)
 
+def stats_by_month(cur):
+   mon_stats = {}
+
+   #total_meteors
+   sql = """
+            SELECT substr(root_fn,0,8) as month, count(*)
+              FROM meteors
+             WHERE deleted != 1
+          GROUP BY month
+          ORDER BY month desc
+         """
+   cur.execute(sql)
+   rows = cur.fetchall()
+   for row in rows:
+      month, count = row
+      if month not in mon_stats:
+         mon_stats[month] = {}
+         mon_stats[month]['confirmed'] = 0
+         mon_stats[month]['non_confirmed'] = 0
+         mon_stats[month]['total'] = 0
+      mon_stats[month]['total'] = count
+
+   sql = """
+            SELECT substr(root_fn,0,8) as month, count(*)
+              FROM meteors
+             WHERE human_confirmed = 1 or human_confirmed = -1 
+               AND deleted != 1
+          GROUP BY month
+          ORDER BY month desc
+         """
+   cur.execute(sql)
+   rows = cur.fetchall()
+   for row in rows:
+      month, count = row
+      if month not in mon_stats:
+         mon_stats[month] = {}
+         mon_stats[month]['confirmed'] = 0
+         mon_stats[month]['non_confirmed'] = 0
+         mon_stats[month]['total'] = 0
+      mon_stats[month]['confirmed'] = count
+
+   sql = """
+            SELECT substr(root_fn,0,8) as month, count(*)
+              FROM meteors
+             WHERE (human_confirmed != 1 and human_confirmed != -1 )
+               AND (deleted != 1 or deleted is NULL)
+          GROUP BY month
+          ORDER BY month desc
+         """
+   cur.execute(sql)
+   rows = cur.fetchall()
+   for row in rows:
+      month, count = row
+      if month not in mon_stats:
+         mon_stats[month] = {}
+         mon_stats[month]['confirmed'] = 0
+         mon_stats[month]['non_confirmed'] = 0
+         mon_stats[month]['total'] = 0
+      mon_stats[month]['non_confirmed'] = count
+
+
+   return(mon_stats)
+
 def ai_stats_summary(cur):
 
    stats = {}
@@ -2188,12 +2251,17 @@ def ai_rejects(station_id, options, json_conf):
    else:
       multi_where = False
       multi_and = ""
-   print("MULTI:", multi_where, multi_and)
+
    if "p" in options:
       page = int(options['p'])
    else:
       page = 1
    lpage = page - 1
+
+   if "in_date" in options:
+      in_date = options['in_date']
+
+
 
    if "rc" in options:
       row_count = int(options['rc'])
@@ -2374,7 +2442,7 @@ def ai_rejects(station_id, options, json_conf):
    </script>
    """
    out += """
-      <div id='main_container' class='container-fluid h-100 mt-4 lg-l'>
+      <div id='main_container' class='container-fluid h-100 mt-4 ' style="border: 1px #000000 solid">
       <div class='gallery gal-resize reg row text-center text-lg-left'>
       <div class='list-onl'>
       <div class='filter-header d-flex flex-row-reverse '>
@@ -2391,7 +2459,7 @@ def ai_rejects(station_id, options, json_conf):
    stats = ai_stats_summary(cur)
    non_confirmed_meteors = stats['sql_meteors'] - stats['conf_status'][1]
    ai_out = """
-      <div class="container">
+      <div class="container" style='border: 1px #000000 solid'>
       <div>
       <table>
       <tr><td colspan=2>Active Meteor Database</td></tr>
@@ -2423,7 +2491,19 @@ def ai_rejects(station_id, options, json_conf):
       <tr><td><i class="fas fa-ban"></i> {} </td><td><a href=/AIREJECTS/{}/?ctype=non_meteor_confirmed&list=non_meteors_by_class&label={}>{}</a> </td><td><a href=/AIREJECTS/{}/?hc=1&ctype=non_meteor_confirmed&list=non_meteors_by_class&label={}>{}</a></td></tr>
 
       """.format(bc, station_id, bc, stats['nc_non_meteors_by_class'][bc] , station_id, bc, conf_labeled)
+   ai_out += """
+      </table>
+      <table>
    """
+
+   month_stats = stats_by_month(cur)
+   for month in month_stats:
+      ai_out += """
+           <tr><td>{}</td><td><a href=/AIREJECTS/{}/?list=by_date&in_date={}>{}</a> </td><td> {} </td></tr>
+      """.format(month, station_id, month, month_stats[month]['confirmed'], month_stats[month]['non_confirmed'])
+
+
+   ai_out += """
       </table>
       </div>
    """
@@ -2451,7 +2531,29 @@ def ai_rejects(station_id, options, json_conf):
           {}
           LIMIT {},{}
          """.format(str(order_by), str(offset), str(row_count))
+      print(sql)
       
+   elif list_type == "by_date":
+      sql = """SELECT sd_vid,hd_vid, meteor_yn_conf, fireball_yn_conf,mc_class,mc_class_conf,ai_resp,camera_id, start_datetime, human_confirmed, multi_station FROM meteors
+             WHERE root_fn like ? 
+             AND (deleted is null or deleted != 1)
+      """
+      if hc is True:
+         sql += """
+               AND (human_confirmed == 1
+               or human_confirmed == -1)
+          """
+      else:
+         sql += """
+               AND (human_confirmed != 1
+               AND human_confirmed != -1)
+         """
+      sql += multi_and
+      sql += """
+             {}
+             LIMIT {},{}
+         """.format(str(order_by), str(offset), str(row_count))
+
 
    elif list_type == "by_class" and (label is None or label == "None"):
       label = ""
@@ -2532,6 +2634,9 @@ def ai_rejects(station_id, options, json_conf):
    fb_conf = 10
    if list_type == "by_class" and (label is None or label == "None" or label == ""):
       vals = []
+   elif list_type == "by_date":
+      print("INDATE:", in_date)
+      vals = [in_date + "%"]
    elif list_type == "by_class" or list_type == "non_meteors_by_class":
       vals = [label + "%"]
    else:
@@ -2543,7 +2648,7 @@ def ai_rejects(station_id, options, json_conf):
       cur.execute(sql)
    else:
       cur.execute(sql, vals)
-   out += "<PRE>{}</PRE>".format(sql)
+   #out += "<PRE>{}</PRE>".format(sql)
 
 
    rows = cur.fetchall()
@@ -2681,7 +2786,7 @@ def ai_rejects(station_id, options, json_conf):
 
    ym_nav = year_mon_nav(con,cur)
 
-   out += ai_out
+   out += ai_out  
    template = template.replace("{MAIN_TABLE}", out)
    return(template)
 
