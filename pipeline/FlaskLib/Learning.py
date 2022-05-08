@@ -2534,7 +2534,7 @@ def ai_rejects(station_id, options, json_conf):
       print(sql)
       
    elif list_type == "by_date":
-      sql = """SELECT sd_vid,hd_vid, meteor_yn_conf, fireball_yn_conf,mc_class,mc_class_conf,ai_resp,camera_id, start_datetime, human_confirmed, multi_station FROM meteors
+      sql = """SELECT sd_vid,hd_vid, meteor_yn_conf, fireball_yn_conf,mc_class,mc_class_conf,ai_resp,camera_id, start_datetime, human_confirmed, multi_station, ang_velocity, duration, peak_intensity FROM meteors
              WHERE root_fn like ? 
              AND (deleted is null or deleted != 1)
       """
@@ -2557,7 +2557,7 @@ def ai_rejects(station_id, options, json_conf):
 
    elif list_type == "by_class" and (label is None or label == "None"):
       label = ""
-      sql = """SELECT sd_vid,hd_vid, meteor_yn_conf, fireball_yn_conf,mc_class,mc_class_conf,ai_resp,camera_id, start_datetime, human_confirmed, multi_station FROM meteors
+      sql = """SELECT sd_vid,hd_vid, meteor_yn_conf, fireball_yn_conf,mc_class,mc_class_conf,ai_resp,camera_id, start_datetime, human_confirmed, multi_station, ang_velocity, duration, peak_intensity FROM meteors
              WHERE (mc_class = ""
                 OR mc_class is NULL)
                AND (deleted is null or deleted != 1)
@@ -2581,7 +2581,7 @@ def ai_rejects(station_id, options, json_conf):
 
 
    elif list_type == "by_class" :
-      sql = """SELECT sd_vid,hd_vid, meteor_yn_conf, fireball_yn_conf,mc_class,mc_class_conf,ai_resp,camera_id, start_datetime, human_confirmed,multi_station FROM meteors
+      sql = """SELECT sd_vid,hd_vid, meteor_yn_conf, fireball_yn_conf,mc_class,mc_class_conf,ai_resp,camera_id, start_datetime, human_confirmed,multi_station, ang_velocity, duration, peak_intensity FROM meteors
              WHERE mc_class like ?
                AND (deleted is null or deleted != 1)
       """
@@ -2602,7 +2602,7 @@ def ai_rejects(station_id, options, json_conf):
              LIMIT {}, {}
          """.format(str(order_by), str(offset), str(row_count))
    else:
-      sql = """SELECT sd_vid,hd_vid, meteor_yn_conf, fireball_yn_conf,mc_class,mc_class_conf,ai_resp,camera_id, start_datetime, human_confirmed, multi_station FROM meteors
+      sql = """SELECT sd_vid,hd_vid, meteor_yn_conf, fireball_yn_conf,mc_class,mc_class_conf,ai_resp,camera_id, start_datetime, human_confirmed, multi_station, ang_velocity, duration, peak_intensity FROM meteors
              WHERE meteor_yn_conf <= ?
                AND fireball_yn_conf <= ?
                AND root_fn not like '2019%'
@@ -2667,7 +2667,7 @@ def ai_rejects(station_id, options, json_conf):
             human_label = "none"
             human_confirmed = None
       else:
-         sd_vid,hd_vid,meteor_yn,fireball_yn, mc_class,mc_class_conf,ai_resp,camera_id,start_datetime, human_confirmed,multi_station = row
+         sd_vid,hd_vid,meteor_yn,fireball_yn, mc_class,mc_class_conf,ai_resp,camera_id,start_datetime, human_confirmed,multi_station,ang_velocity,duration,peak_intensity = row
          if human_confirmed == 1 :
             human_label = "meteor"
          elif human_confirmed == -1:
@@ -2723,7 +2723,7 @@ def ai_rejects(station_id, options, json_conf):
             ai_info = str(int(float(meteor_yn))) + "% Meteor / "
             ai_info += str(int(float(fireball_yn))) + "% Fireball / "
             ai_info += str(int(float(mc_class_conf))) + "% " + mc_class + "<br>"
-            ai_info += camera_id + " " + start_datetime  + " Human:" + human_label
+            ai_info += start_datetime  + " vel:" + str(round(ang_velocity,2)) + " dur:" + str(round(duration,2)) 
             color = get_color(100-float(meteor_yn))
 
             cell = meteor_cell_html(root_fn, thumb_url, ai_info,ico, ctype, color, multi_station)
