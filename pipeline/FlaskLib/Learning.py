@@ -2511,6 +2511,7 @@ def ai_rejects(station_id, options, json_conf):
    print("HUMAN CONFIRMED IS???", hc)
    reject_dir = "/mnt/ams2/non_meteors/classes/"
    if list_type == "non_meteors_by_class" :
+      order_by = order_by.replace("mc_class_conf", "multi_class_conf")
       sql = """SELECT sd_vid, roi, meteor_yn, fireball_yn, multi_class, multi_class_conf, human_label, last_updated  
                  FROM non_meteors_confirmed
             """
