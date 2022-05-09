@@ -165,8 +165,8 @@ What does this program do? -- it loads or creates weather data from APIs and fun
       running_py = platform.python_version()
       if "3.6" not in str(running_py):
          print("PyV:", running_py)
-         print("error/exit not running python 2.6")
-         exit()
+         print("Warning: not running python 3.6")
+         #exit()
  
       if "weather" not in self.json_conf:
          print("NEED TO UPDATE THE WEATHER CONFIG!")
