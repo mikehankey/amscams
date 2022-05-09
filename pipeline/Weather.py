@@ -55,7 +55,7 @@ if cmd == "load_metar":
 
 
 if cmd == "load_weather" or cmd == "":
-   os.system("python3.6 Weather.py load_metar")
+   os.system("/usr/bin/python3.6 Weather.py load_metar")
    WW.index_weather_snaps_all()
    WW.load_database()
 elif cmd == 'stack_index':
