@@ -1015,7 +1015,10 @@ class AllSkyDB():
 
          mfd = ""
          if os.path.exists(mjrf) is True:
-            mjr = load_json_file(mjrf)
+            try:
+               mjr = load_json_file(mjrf)
+            except:
+               mjr = None
             if mjr is not None:
                if "meteor_frame_data" in mjr :
                   if len(mjr['meteor_frame_data']) > 0:
