@@ -1,10 +1,50 @@
 from Classes.Events import Events
+import json
+import requests
 import cv2
 import os
 from Classes.MultiStationObs import MultiStationObs
 from lib.PipeUtil import load_json_file, save_json_file
 from Classes.AIDB import AllSkyDB 
 import sys
+
+
+
+def load_stations():
+   my_network = {}
+   json_conf = load_json_file("../conf/as6.json")
+   my_lat = float(json_conf['site']['device_lat'])
+   my_lon = float(json_conf['site']['device_lng'])
+   from lib.PipeUtil import dist_between_two_points
+   url = "https://archive.allsky.tv/EVENTS/ALL_STATIONS.json"
+   response = requests.get(url)
+   content = response.content.decode()
+   stations =json.loads(content)
+   for station in stations:
+      t_station_id = station['station_id']
+      try:
+         slat = float(station['lat'])
+         slon = float(station['lon'])
+         alt = float(station['alt'])
+      except:
+         slat = 0
+         slon = 0
+
+      dist = int(dist_between_two_points(my_lat, my_lon, slat, slon))
+      if dist < 300:
+         print("***", t_station_id, dist)
+         my_network[t_station_id] = {}
+         my_network[t_station_id]['dist_to_me'] = dist
+         my_network[t_station_id]['lat'] = slat
+         my_network[t_station_id]['lon'] = slon
+         my_network[t_station_id]['alt'] = alt
+         my_network[t_station_id]['operator'] = station['operator_name']
+         my_network[t_station_id]['city'] = station['city']
+      else:
+         print(t_station_id, dist)
+      json_conf['my_network'] = my_network
+   save_json_file("../conf/as6.json", json_conf)
+   return(stations)
 
 def all_days(year):
    mdir = "/mnt/ams2/meteors/"
@@ -85,6 +125,17 @@ def sync_meteor(EV, root_fn, cloud_files, mdir, cloud_dir):
    #for mf in missing:
    #   print("MISSING:", mf)
 
+def valid_events(ev_data):
+   valid_events = {}
+   print("VALID EV:", ev_data)
+   if isinstance(ev_data['stations'], str) is True:
+      ev_data['stations'] = json.loads(ev_data['stations'])
+   if isinstance(ev_data['obs'], str) is True:
+      ev_data['obs'] = json.loads(ev_data['obs'])
+   for i in range(0,len(ev_data['stations'])):
+      station = ev_data['stations'][i]
+      obs_file = ev_data['obs'][i]
+
 def do_day(EV, date):
    EV.do_ms_day(date)
    EV.date = ev_date
@@ -113,6 +164,7 @@ def do_day(EV, date):
    print("saved /mnt/ams2/" + ms_vdir + "events.html")
    save_json_file("/mnt/ams2/meteors/" + ev_date + "/" + ev_date + "_MY_MS_OBS.info", EV.my_ms_obs)
    for mm in sorted(EV.min_cnt):
+      valid_events(mm)
       if isinstance(EV.min_cnt[mm]['times'], str) is True:
          EV.min_cnt[mm]['times'] = json.loads(EV.min_cnt[mm]['times'])
       if isinstance(EV.min_cnt[mm]['stations'], str) is True:
@@ -128,8 +180,8 @@ def do_day(EV, date):
 
 
 EV = Events()
-AIDB = AllSkyDB()
-AIDB.load_stations()
+#AIDB = AllSkyDB()
+load_stations()
 MSO = MultiStationObs()
 ev_date = sys.argv[1]
 if ev_date == "all":
