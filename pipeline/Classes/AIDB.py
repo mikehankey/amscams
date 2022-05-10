@@ -848,7 +848,10 @@ class AllSkyDB():
          if reduced == 1 and red_file is not None:
             #print("MAKE ROI FROM REDUCED FILE")
             if os.path.exists(red_file) is True:
-               red_data = load_json_file(red_file)
+               try:
+                  red_data = load_json_file(red_file)
+               except:
+                  red_data = {}
                if "meteor_frame_data" in red_data:
                   mfd = red_data['meteor_frame_data']
              
