@@ -2578,6 +2578,7 @@ def ai_rejects(station_id, options, json_conf):
              {}
              LIMIT {},{}
          """.format(str(order_by), str(offset), str(row_count))
+      out += sql
 
 
 
