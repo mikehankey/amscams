@@ -2725,9 +2725,9 @@ def ai_rejects(station_id, options, json_conf):
             ai_info = str(int(float(meteor_yn))) + "% Meteor / "
             ai_info += str(int(float(fireball_yn))) + "% Fireball / "
             ai_info += str(int(float(mc_class_conf))) + "% " + mc_class + "<br>"
-            ai_info += start_datetime  + " vel:" + str(round(ang_velocity,2)) + " dur:" + str(round(duration,2)) 
+            ai_info += start_datetime  #+ " vel:" + str(round(ang_velocity,2)) + " dur:" + str(round(duration,2)) 
             color = get_color(100-float(meteor_yn))
-
+            multi_station = 0
             cell = meteor_cell_html(root_fn, thumb_url, ai_info,ico, ctype, color, multi_station)
             out += cell
 
