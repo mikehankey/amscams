@@ -39,7 +39,7 @@ os.system(cmd)
 cmd = "sudo python3.6 -m pip install tb-nightly"
 os.system(cmd)
 
-cmd = "sudo python3 -m pip install --upgrade pillow"
+cmd = "sudo python3.6 -m pip install pillow"
 os.system(cmd)
 
 cmd = "sudo python3.6 -m pip install sklearn"
@@ -51,15 +51,19 @@ os.system(cmd)
 cmd = "sudo python3.6 -m pip install opencv-python"
 os.system(cmd)
 
-cmd = "sudo python3 -m pip install --upgrade markupsafe"
+cmd = "sudo python3 -m pip install --force-reinstall --upgrade pillow"
 os.system(cmd)
-cmd = "sudo python3 -m pip install --upgrade flask"
+cmd = "sudo python3 -m pip install --force-reinstall --upgrade markupsafe"
 os.system(cmd)
-cmd = "sudo python3 -m pip install --upgrade Click" 
+cmd = "sudo python3 -m pip install --force-reinstall --upgrade flask"
 os.system(cmd)
-cmd = "sudo python3 -m pip install --upgrade six"
+cmd = "sudo python3 -m pip install --force-reinstall --upgrade Click" 
 os.system(cmd)
-cmd = "sudo python3 -m pip install --upgrade requests"
+cmd = "sudo python3 -m pip install --force-reinstall --upgrade six"
+os.system(cmd)
+cmd = "sudo python3 -m pip install --force-reinstall --upgrade requests"
+os.system(cmd)
+cmd = "sudo python3 -m pip install --force-reinstall --upgrade flask_httpauth"
 os.system(cmd)
 
 cmd = "touch tensorflow-installed.txt"
