@@ -332,7 +332,7 @@ else:
       archive_snap_files()
    if sys.argv[1] == 'make_snap_files':
       hd = 1
-      mod = 15
+      mod = 1
       cam = sys.argv[2]
       date_str = sys.argv[3]   
       print(cam,date_str)
