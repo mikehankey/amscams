@@ -201,7 +201,7 @@ class Meteor():
       #print(cloud_dir)
       self.get_mfiles(mdir)
       print("Fast")
-      if len(self.mfiles) > 120 and md not in peak_dates:
+      if len(self.mfiles) > 220 and md not in peak_dates:
          if cfe(mdir + "day_confirmed.txt") == 0:
             print("THERE ARE TOO MANY DETECTIONS FOR THIS DAY! SYNC ABORTED")
             exit()
