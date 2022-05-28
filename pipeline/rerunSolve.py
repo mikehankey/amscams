@@ -37,36 +37,54 @@ for year in years :
             sday = str(day)
          all_days.append((year + "_" +  smon + "_" + sday))
 
-for day in sorted(all_days,reverse=True)[27:100]:
-   cmd =  "python3 AllSkyNetwork.py do_all " + day
-   print(cmd)
-   os.system(cmd)
-   cmd =  "python3 RN.py RN " + day
-   print(cmd)
-   os.system(cmd)
 
 if os.path.exists("solve-hist.json"):
    solve_hist = load_json_file("solve-hist.json")
 else:
    solve_hist = {}
 
-for day in sorted(all_days,)[-30:]:
+days = sorted(all_days)[-8:]
+
+for day in sorted(days,reverse=True):
    #cmd = "./updateEventDay.py " + day #+ ">ev_run_log.txt 2>&1 "
    y,m,d = day.split("_")
-   cloud_evf = "/mnt/archive.allsky.tv/EVENTS/" + y + "/" + m + "/" + d + "/" + day + "_dbfiles.tar.gz"
-   if day not in solve_hist:
-      cmd =  "python3 AllSkyNetwork.py do_all " + day
-      print(cmd)
-      time.sleep(1)
-      os.system(cmd)
-      cmd =  "python3 RN.py RN " + day
-      print(cmd)
-      time.sleep(1)
-      os.system(cmd)
+   cloud_evf = "/mnt/archive.allsky.tv/EVENTS/" + y + "/" + m + "/" + d + "/" + day + "_OBS_GOOD.html"
+   #if day not in solve_hist and os.path.exists(cloud_evf) is False:
+   if True: 
+      if False:
+         cmd =  "python3 AllSkyNetwork.py do_all " + day
+         print(cmd)
+         os.system(cmd)
+
+
+      if False:
+         cmd =  "python3 AllSkyNetwork.py solve_day " + day
+         print(cmd)
+         os.system(cmd)
+
+         cmd =  "python3 AllSkyNetwork.py day_load_solves " + day
+         print(cmd)
+         os.system(cmd)
+
+      if True:
+         cmd =  "python3 AllSkyNetwork.py load_solves_day " + day
+         print(cmd)
+         os.system(cmd)
+
+         cmd =  "python3 AllSkyNetwork.py publish_day " + day
+         print(cmd)
+         os.system(cmd)
+
+
+      #cmd =  "python3 RN.py RN " + day
+      #print(cmd)
+      #time.sleep(1)
+      #os.system(cmd)
    else:
       print("Skip day:", day)
+
    solve_hist[day] = 1
-   save_json_file("solve-hist.json", solve_hist)
+   #save_json_file("solve-hist.json", solve_hist)
    #cmd =  "python3 AllSkyNetwork.py day_load_sql " + day
    ##print(cmd)
    #os.system(cmd)

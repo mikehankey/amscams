@@ -3,7 +3,7 @@ import time
 import requests
 import boto3
 import redis
-from solveWMPL import convert_dy_obs, WMPL_solve
+from solveWMPL import convert_dy_obs, WMPL_solve, make_event_json
 import numpy as np
 import datetime
 import simplejson as json
@@ -24,6 +24,7 @@ import cv2
 class AllSkyNetwork():
    def __init__(self):
       self.solving_node = "AWSB1"
+      self.plane_pairs = {}
       self.errors = []
       if os.path.exists("admin_conf.json") is True:
          self.admin_conf = load_json_file("admin_conf.json")
@@ -49,7 +50,8 @@ class AllSkyNetwork():
       self.cloud_event_dir = "/mnt/archive.allsky.tv/EVENTS"
       self.s3_event_dir = "/mnt/allsky-s3/EVENTS"
 
-      self.r = redis.Redis("allsky-redis.d2eqrc.0001.use1.cache.amazonaws.com", port=6379, decode_responses=True)
+      self.aws_r = redis.Redis("allsky-redis.d2eqrc.0001.use1.cache.amazonaws.com", port=6379, decode_responses=True)
+      self.r = redis.Redis("localhost", port=6379, decode_responses=True)
       self.API_URL = "https://kyvegys798.execute-api.us-east-1.amazonaws.com/api/allskyapi"
       self.dynamodb = boto3.resource('dynamodb')
 
@@ -72,6 +74,8 @@ class AllSkyNetwork():
          ams_id = "AMS{0:03d}".format(row[0])
          print(c, ams_id, row[1])
          c += 1
+
+      
 
    def rsync_data_only(self, date):
       #self.set_dates(date)
@@ -134,10 +138,11 @@ class AllSkyNetwork():
       cmd = "cd " + temp_dir +"; tar -cvf " + self.local_evdir + date + "_dbfiles.tar" + " "  + "*"
       os.system(cmd)
 
-      cmd = "gzip -f " + self.local_evdir + date + "_dbfiles.tar" 
+      #cmd = "gzip -f " + self.local_evdir + date + "_dbfiles.tar" 
+      cmd = "7z a " + self.local_evdir + date + "_dbfiles.tar.7z " + self.local_evdir + date + "_dbfiles.tar"
       os.system(cmd)
       
-      cmd = "cp " + self.local_evdir + date + "_dbfiles.tar.gz " + self.cloud_evdir + date + "_dbfiles.tar.gz "
+      cmd = "cp " + self.local_evdir + date + "_dbfiles.tar.7z " + self.cloud_evdir + date + "_dbfiles.tar.7z "
       os.system(cmd)
 
       cmd = "cp " + self.local_evdir + date + "_MIN_EVENTS.json " + self.cloud_evdir + date + "_MIN_EVENTS.json"
@@ -530,6 +535,7 @@ class AllSkyNetwork():
    def OLD_avg_times(self, datetimes):
       times = []
 
+   def run_plane_jobs_OLDER(self, jobs):
       for dt in datetimes:
          timestamp = datetime.datetime.timestamp(dt)
          times.append(timestamp)
@@ -605,7 +611,7 @@ class AllSkyNetwork():
 
       obs1_data = obs1_data[0]
       obs2_data = obs2_data[0]
-
+      #print("OBS1 DATA:", obs1_data)
       azs1 = obs1_data[8]
       els1 = obs1_data[9]
       if azs1 != "":
@@ -696,6 +702,7 @@ class AllSkyNetwork():
       return(res, sanity)
 
    def insert_plane_pair(self,ivals):
+      return()
       sql = """
          INSERT OR REPLACE INTO event_planes (plane_pair, status, sanity, 
             start_lat, start_lon, start_alt, end_lat, end_lon, end_alt)
@@ -953,6 +960,8 @@ class AllSkyNetwork():
          self.min_obs_dict[event_minute].append((station_id, event_id, event_minute, obs_id, fns, times, xs, ys, azs, els, ints, status, ignore))
 
    def get_obs(self, wild):   
+      if wild in self.obs_dict:
+         return((self.obs_edict[wild]))
       obs_data = []
       sql = """
          SELECT station_id, event_id, event_minute, obs_id, fns, times, xs, ys, azs, els, ints, status, ignore 
@@ -960,6 +969,7 @@ class AllSkyNetwork():
           WHERE obs_id like ?
       """
       vals = ["%" + wild + "%"]
+      #print(sql, vals)
       self.cur.execute(sql, vals)
       rows = self.cur.fetchall()
       for row in rows:
@@ -967,6 +977,30 @@ class AllSkyNetwork():
          obs_data.append((station_id, event_id, event_minute, obs_id, fns, times, xs, ys, azs, els, ints, status, ignore))
       return(obs_data)
 
+   def get_all_obs(self, wild):   
+      obs_data = []
+      self.obs_edict = {}
+      sql = """
+         SELECT station_id, event_id, event_minute, obs_id, fns, times, xs, ys, azs, els, ints, status, ignore 
+           FROM event_obs
+          WHERE obs_id like ?
+      """
+      vals = ["%" + wild + "%"]
+      #print(sql, vals)
+      self.cur.execute(sql, vals)
+      rows = self.cur.fetchall()
+      for row in rows:
+         station_id, event_id, event_minute, obs_id, fns, times, xs, ys, azs, els, ints, status, ignore = row
+         fns = json.loads(fns)
+         times = json.loads(times)
+         xs = json.loads(xs)
+         ys = json.loads(ys)
+         azs = json.loads(azs)
+         els = json.loads(els)
+         ints = json.loads(ints)
+         obs_data.append((station_id, event_id, event_minute, obs_id, fns, times, xs, ys, azs, els, ints, status, ignore))
+         self.obs_edict[obs_id] = ((station_id, event_id, event_minute, obs_id, fns, times, xs, ys, azs, els, ints, status, ignore))
+      return(obs_data)
           
 
    def get_station_obs_count(self, wild):
@@ -1202,9 +1236,21 @@ class AllSkyNetwork():
             sol_data['event_status'] = event_status
             (sol_status, v_init, v_avg, start_ele, end_ele, a, e) = self.eval_sol(sol_data)
             self.event_sol_data[event_id]['sol_status'] = sol_status
+            print(event_id, sol_status)
+            if "GOOD" in sol_status:
+               event_status = "SOLVED:GOOD"
+            else:
+               event_status = "SOLVED:BAD"
+            sql = "UPDATE events set event_status = ? WHERE event_id = ?"
+            vals = [event_status, event_id]
+            self.cur.execute(sql, vals)
+            self.con.commit()
+
+
             if "BAD" in sol_status:
                self.event_sol_data[event_id]['event_status'] = "BAD"
-            self.view_obs_ids(date, obs_ids)
+            # OBS STUFF / AI?
+            #self.view_obs_ids(date, obs_ids)
             self.update_obs_ids(event_id,obs_ids)
             #print(event_status, sol_data.keys())
 
@@ -1288,6 +1334,9 @@ class AllSkyNetwork():
             conf1, conf2 = self.check_ai(label_data)
          else:
             label_data = None
+            local_prev_dir = self.local_evdir + "OBS/" 
+            if os.path.exists(local_prev_dir) is False:
+               os.makedirs(local_prev_dir)
             
             cloud_prev_file = "/mnt/archive.allsky.tv/" + st_id + "/METEORS/" + year + "/" + date + "/" + ob_id + "-prev.jpg"
             local_prev_file = self.local_evdir + "OBS/" + ob_id + "-prev.jpg"
@@ -1388,8 +1437,8 @@ class AllSkyNetwork():
 
          print("FORCE:", force)
       
-
-         solve_jobs.append((event_id, event_status, temp_obs))
+         if event_status == "PENDING":
+            solve_jobs.append((event_id, event_status, temp_obs))
 
          #self.solve_event(event_id, temp_obs, 1, force)
          
@@ -1445,7 +1494,7 @@ class AllSkyNetwork():
          end = start + jobs_per_proc + 1
          if end > len(jobs):
             end = len(jobs)
-         print(i, start, end)
+         #print(i, start, end)
          # CHANGE THIS LINE FOR DIFFERENT JOB
          thread[i] = Process(target=self.plane_worker, args=("thread" + str(i), jobs[start:end]))
 
@@ -1455,21 +1504,30 @@ class AllSkyNetwork():
          thread[i].join()
 
    def plane_worker(self, thread_number, job_list):
-      #print("JOBS:", job_list)
       for i in range(0,len(job_list)):
-         print("WORKEr:", thread_number, job_list[i][0], job_list[i][1])
-         event_id = job_list[i][0] 
-         event_status = job_list[i][1] 
-         temp_obs = job_list[i][2] 
-         force = 1
-         # plane test here
-         self.solve_event(event_id, temp_obs, 1, force)
+         event_id = job_list[i][0]
+         key = job_list[i][1]
+         ekey = event_id + "_" + key
+         ob1 = job_list[i][2]
+         ob2 = job_list[i][3]
+         gd = ["GOOD", key, ob1, ob2]
+         temp = self.r.get(ekey)
+         if temp is None:
+            temp = self.plane_solve(gd)
+            if len(temp) == 2:
+               result,sanity = temp
+            else:
+               result = 99
+               sanity = 99
+            self.r.set(ekey, json.dumps([result,sanity]))
+         else:
+            result, sanity = json.loads(temp)
+         #self.solve_event(event_id, temp_obs, 1, force)
 
 
    def wmpl_worker(self, thread_number, job_list):
-      #print("JOBS:", job_list)
       for i in range(0,len(job_list)):
-         print("WORKEr:", thread_number, job_list[i][0], job_list[i][1])
+         #print("WORKEr:", thread_number, job_list[i][0], job_list[i][1])
          event_id = job_list[i][0] 
          event_status = job_list[i][1] 
          temp_obs = job_list[i][2] 
@@ -1926,18 +1984,518 @@ class AllSkyNetwork():
       report_file = self.local_evdir + date + "_day_report.json" 
       save_json_file(report_file, day_report)
 
+   def plane_test_day(self, date):
+      self.load_stations_file()
+      qc_report = {}
+      valid_obs = {}
+      all_obs = {}
+      sql = """
+         SELECT event_id, event_status, stations, event_start_times, obs_ids 
+           FROM events
+          WHERE event_id like ?
+      """
+      orig_date = date
+      date = date.replace("_", "")
+      ivals = [date + "%"]
+      self.cur.execute(sql,ivals)
+      rows = self.cur.fetchall()
+      final_data = []
+      for row in rows:
+         event_id, event_status, stations, start_times, obs_ids = row
+         stations = json.loads(stations)
+         start_times = json.loads(start_times)
+         obs_ids = json.loads(obs_ids)
+         ev_dir = self.local_evdir + event_id + "/"
+         if os.path.exists(ev_dir) is False:
+            os.makedirs(ev_dir)
+         plane_file = ev_dir + event_id + "_PLANES.json"
+         if os.path.exists(plane_file) is False:
+            plane_report = self.plane_test_event(obs_ids, event_id, event_status)
+            save_json_file(plane_file, plane_report)
+         else:
+            plane_report = load_json_file(plane_file)
+         for ekey in plane_report['results']:
+            sanity,res = plane_report['results'][ekey] 
+            tempkey = ekey.replace(event_id + "_", "")
+            ob1, ob2 = tempkey.split("__")
+            all_obs[ob1] = 0
+            all_obs[ob2] = 0
+            if sanity == 0:
+               valid_obs[ob1] = 1
+               valid_obs[ob2] = 1
+               all_obs[ob1] = 1
+               all_obs[ob2] = 1
+         good_planes,total_planes = self.check_planes(plane_report['results'])
+         print(event_id, event_status, str(good_planes) + " / " + str(total_planes) + " good planes")
+         if "BAD" in event_status and good_planes == 0:
+            event_status += ":INVALID"
+         final_data.append((event_id, event_status, good_planes, total_planes))
+      final_data = sorted(final_data, key=lambda x: x[1])
+      print("Event solving status and plane status report")
+      for row in final_data:
+         (event_id, event_status, good_planes, total_planes) = row
+         try:
+            print(event_id, event_status, good_planes, total_planes, round((good_planes/total_planes)*100,1), "%")
+         except:
+            print("ERR:", good_planes,  total_planes)
+      qc_report['final_data'] = final_data
+
+      st_stats = {}
+      for ob in all_obs:
+         st = ob.split("_")[0]
+         if st not in st_stats:
+            st_stats[st] = {}
+            st_stats[st]['GOOD'] = 0 
+            st_stats[st]['BAD'] = 0 
+         if ob in valid_obs:
+            print("GOOD OBS:", ob)
+            st_stats[st]['GOOD'] += 1
+            all_obs[ob] = 1
+         else:
+            print(" BAD OBS:", ob)
+            st_stats[st]['BAD'] += 1
+            all_obs[ob] = 0
+      for st in st_stats:
+         good = st_stats[st]['GOOD']
+         bad = st_stats[st]['BAD']
+         total = good + bad
+         print(st, good, bad, round((good/total)*100,1))
+
+      qc_report['st_stats'] = st_stats
+      qc_report['valid_obs'] = all_obs
+      save_json_file(self.local_evdir + orig_date + "_QC.json", qc_report)
+      print(self.local_evdir + orig_date + "_QC.json")
+
+      failed_obs_html = ""
+      for obs_id in all_obs:
+         print("OBS:", obs_id, all_obs[obs_id])
+         if all_obs[obs_id] == 0:
+            failed_obs_html += self.meteor_cell_html(obs_id)
+      fpo = open(self.local_evdir + orig_date + "_FAILED_OBS.html", "w")
+      fpo.write(failed_obs_html)
+      fpo.close()
+
+   def check_planes(self, planes):
+      good = 0
+      total = 0
+      for ekey in planes:
+         row = planes[ekey]
+         x,y = row
+         if x == 0:
+            good += 1
+         total += 1
+      return(good, total)
+
+   def update_meteor_days(self, selected_day=None):
+      if selected_day is None:
+         selected_day =  datetime.datetime.now().strftime("%Y_%m_%d")
+      nav = self.make_day_nav(selected_day)
+      fpout = open("/mnt/ams2/network_meteor_days.html", "w")
+      fpout.write(nav)
+      fpout.close()
+      cmd = "cp /mnt/ams2/network_meteor_days.html /mnt/archive.allsky.tv/APPS/network_meteor_days.html"
+      print(cmd)
+      os.system(cmd)
+
+   def make_day_nav(self, selected_day=None):
+
+      files = os.listdir("/mnt/f/EVENTS/DBS/")
+
+      date_selector = """
+            <script>
+$(document).ready(function () {
+  $("#select-opt").change(function() {
+    var base_url = "F:/"
+    var $option = $(this).find(':selected');
+    var url = $option.val();
+    if (url != "") {
+      //url += "?text=" + encodeURIComponent($option.text());
+      // Show URL rather than redirect
+      //$("#output").text(url);
+      window.location.href = base_url + url;
+    }
+  });
+});
+            </script>
+            <form>
+            <select id="select-opt" class="selected_date" data-style="btn-primary">
+      """
+      for day in sorted(files, reverse=True):
+         day = day.replace("ALLSKYNETWORK_", "")
+         day = day.replace(".db", "") 
+         if "journal" in day:
+            continue
+         y,m,d = day.split("_")
+         url = "/EVENTS/" + y + "/" + m + "/" + d + "/" + day + "_OBS_GOOD.html"
+
+         if day == selected_day:
+            
+            date_selector += "<option selected value=" + url + ">" + day + "</option>"
+         else:
+            date_selector += "<option value=" + url + ">" + day + "</option>"
+
+      date_selector += """
+            </select>
+            </form>
+
+
+      """
+      return(date_selector)
+
    def publish_day(self, date=None):
+
+      #day_nav = self.make_day_nav(selected_day=date)
+
+      day_nav = """
+                <input id='select-opt' value="{}" type="text" data-display-format="YYYY/MM/DD" data-action="reload" data-url-param="start_day" data-send-format="YYYY_MM_DD" class="datepicker form-control">
+      """.format(date)
+
       print("Publish Day", date)
       self.load_stations_file()
       self.set_dates(date)
       self.date = date
       self.help()
 
-      report_file = self.local_evdir + date + "_day_report.json" 
-      report_data = load_json_file(report_file)
-      print(report_file)
-      print(report_data.keys())
+      self.get_all_obs(date)   
 
+      template = ""
+      tt = open("./FlaskTemplates/allsky-template-v2.html")
+      for line in tt:
+         template += line
+      tempalte = template.replace("AllSkyCams.com", "AllSky.com")
+      self.local_evdir = self.local_event_dir + "/" + self.year + "/" + self.month + "/" + self.day  + "/"
+      out_file_good = self.local_evdir + date + "_OBS_GOOD.html"
+      out_file_bad = self.local_evdir + date + "_OBS_BAD.html"
+
+      if os.path.exists(self.cloud_evdir) is False:
+         os.makedirs(self.cloud_evdir)
+
+
+      report_file = self.local_evdir + date + "_day_report.json" 
+      #report_data = load_json_file(report_file)
+      #print(report_file)
+      #print(report_data.keys())
+
+      sql = """
+         SELECT event_id, event_status, stations, event_start_times, obs_ids 
+           FROM events
+          WHERE event_id like ?
+      """
+      date = date.replace("_", "")
+      ivals = [date + "%"]
+      self.cur.execute(sql,ivals)
+      rows = self.cur.fetchall()
+      style = """
+      <style>
+       .center {
+          margin: auto;
+          width: 80%;
+          padding: 10px;
+          border: 2px solid #000000 ;
+       }
+      </style>
+      """
+
+      good_ev = 0
+      bad_ev = 0
+      fail_ev = 0
+      pending_ev = 0
+      for row in rows:
+         event_id, event_status, stations, start_times, obs_ids = row
+         print(event_status)
+         if "GOOD" in event_status:
+            good_ev += 1
+         elif "BAD" in event_status:
+            bad_ev += 1
+         elif "FAIL" in event_status:
+            fail_ev += 1
+         else:
+            pending_ev += 1
+      stats_nav = """
+           <script>
+             function goto_ev(t) {
+              url = window.location.href
+              let result = url.includes("GOOD")
+              if (result > 0) {
+                 // WE ARE ON THE GOOD PAGE
+                 if (t == "good") {
+                    // do nothing!
+                 }
+                 else {
+                    url = url.replace("GOOD", "BAD")
+                    window.location.replace(url)
+                 }
+              } 
+              else {
+                 // WE ARE ON THE BAD PAGE
+                 if (t == "good") {
+                    url = url.replace("BAD", "GOOD")
+                    window.location.replace(url)
+                 }
+                 else {
+                    // do nothing!
+                 }
+              }
+             }
+           </script>
+      """
+
+      stats_nav += " <a href=javascript:goto_ev('good')>Good " + str(good_ev) + "</a> - "
+      stats_nav += " <a href=javascript:goto_ev('bad')>Bad " + str(bad_ev) + "</a> </p><p> "
+      stats_nav += "Fail " + str(fail_ev)
+      stats_nav += " - " + "Pending " + str(pending_ev)
+      stats_nav += """
+         </p>
+         <P>
+          <span class="fa-layers fa-fw fa-2xl" style="background:black; padding: 5px">
+             <i class="fa-solid fa-map-location-dot"></i>
+             <span class="fa-layers-text fa-inverse" data-fa-transform="shrink-8 down-3" style="font-weight:900">Trajectories</span>
+          </span>
+
+          <span class="fa-layers fa-fw fa-2xl" style="background:black; padding: 5px">
+             <i class="fa-solid fa-solar-system"></i>
+             <span class="fa-layers-text fa-inverse" data-fa-transform="shrink-8 down-3" style="font-weight:900">Orbits</span>
+          </span>
+
+          <span class="fa-layers fa-fw fa-2xl" style="background:black; padding: 5px">
+             <i class="fa-solid fa-star-shooting"></i>
+             <span class="fa-layers-text fa-inverse" data-fa-transform="shrink-8 down-3" style="font-weight:900">Radiants</span>
+          </span>
+
+          <span class="fa-layers fa-fw fa-2xl" style="background:black; padding: 5px">
+             <i class="fa-solid fa-table-list"></i>
+             <span class="fa-layers-text fa-inverse" data-fa-transform="shrink-8 down-3" style="font-weight:900">Data Table</span>
+          </span>
+
+          <span class="fa-layers fa-fw fa-2xl" style="background:black; padding: 5px">
+             <i class="fa-solid fa-gallery-thumbnails"></i>
+             <span class="fa-layers-text fa-inverse" data-fa-transform="shrink-8 down-3" style="font-weight:900">Gallery</span>
+          </span>
+
+         </P>
+      """
+      good_html = ""
+      bad_html = "" 
+
+      good_html += style
+      good_html += "<h3>Meteor Archive for " + date + " " + day_nav + "</h3>" 
+      good_html += "<h4>Solved Events (GOOD)</h4>"
+      good_html += "<p>" + stats_nav + "</p>"
+
+      bad_html += "<h3>Meteor Archive for " + date + " " + day_nav + "</h3>"
+      bad_html += "<h4>Failed Events (BAD)</h4>"
+      bad_html += "<p>" + stats_nav + "</p>"
+
+      stats = {}
+      plane_desc = {}
+      for row in rows:
+         event_id, event_status, stations, start_times, obs_ids = row
+         stations = json.loads(stations)
+         start_times = json.loads(start_times)
+         obs_ids = json.loads(obs_ids)
+         ev_dir = self.local_evdir + event_id + "/"
+         if os.path.exists(ev_dir) is False:
+            os.makedirs(ev_dir)
+
+         ev_file = ev_dir + event_id + "-event.json"
+         if os.path.exists(ev_file) is False:
+            pick_file = ev_file.replace("-event.json", "_trajectory.pickle")
+            # this should make the event.json if the pickle exists
+            if os.path.exists(pick_file) is True:
+               resp = make_event_json(event_id, ev_dir ,{})
+
+         if os.path.exists(ev_file) is False:
+            ev_sum = "<h3>No event solve file: {}</h3>".format(ev_file)
+         else:
+            ev_data = load_json_file(ev_file)
+            if ev_data['orb']['a'] is not None:
+               print("EVENT FILE FOUND:", ev_file)
+               #print(ev_data['traj'].keys())
+               #print(ev_data['orb'].keys())
+               #print(ev_data['rad'].keys())
+               #print(ev_data['shower'].keys())
+               ev_sum = """
+               <center>
+               <table border=1 cellpadding=5 cellspacing=5>
+               <tr>
+                  <th>Start Alt</th>
+                  <th>End Alt</th>
+                  <th>Vel</th>
+                  <th>a</th>
+                  <th>e</th>
+                  <th>i</th>
+                  <th>q</th>
+                  <th>Shower</th>
+               </tr>
+               <tr>
+                  <th>{} km</th>
+                  <th>{} km</th>
+                  <th>{} km/s</th>
+                  <th>{} </th>
+                  <th>{}</th>
+                  <th>{}</th>
+                  <th>{}</th>
+                  <th>{}</th>
+               </tr>
+               </table>
+               </center>
+
+               """.format(int(ev_data['traj']['start_ele']/1000), int(ev_data['traj']['end_ele']/1000), int(ev_data['traj']['v_init']/1000), round(ev_data['orb']['a'],4), round(ev_data['orb']['e'],4), round(ev_data['orb']['i'],4), round(ev_data['orb']['q'],4), ev_data['shower']['shower_code'])
+            else:
+               ev_sum = "Bad solve."
+
+
+
+         if "BAD" not in event_status:
+            good_html += "<div class='center'>"
+            plane_file = ev_dir + event_id + "_PLANES.json"
+            if os.path.exists(plane_file) is False:
+               plane_report = self.plane_test_event(obs_ids, event_id, event_status)
+               save_json_file(plane_file, plane_report)
+            else:
+               plane_report = load_json_file(plane_file)
+            good_planes,total_planes = self.check_planes(plane_report['results'])
+            plane_desc[event_id] = str(good_planes) + " / " + str(total_planes) + " PLANES"
+
+            good_html += "<h3>" + event_id + " - " + event_status + " " 
+            good_html += plane_desc[event_id] + "</h3>"
+            good_html += ev_sum
+
+            for i in range(0,len(obs_ids)):
+
+               st = stations[i]
+               if st not in stats:
+                  stats[st] = {}
+                  stats[st]['good'] = 1
+                  stats[st]['bad'] = 0
+               stats[st]['good'] += 1
+               obs_id = obs_ids[i]
+               etime = start_times[i]
+               #good_html += self.obs_id_to_img_html(obs_id)
+
+               good_html += self.meteor_cell_html(obs_id,etime)
+
+               good_html += "\n"
+            good_html += "<div style='clear: both'></div>"
+            good_html += "</div>"
+         else:
+            bad_html += "<div>"
+
+            # TEST BAD PLANES! 
+            plane_file = ev_dir + event_id + "_PLANES.json"
+            if os.path.exists(plane_file) is False:
+               plane_report = self.plane_test_event(obs_ids, event_id, event_status)
+               save_json_file(plane_file, plane_report)
+            else:
+               plane_report = load_json_file(plane_file)
+            good_planes,total_planes = self.check_planes(plane_report['results'])
+            plane_desc[event_id] = str(good_planes) + " / " + str(total_planes) + " PLANES"
+
+            bad_html += "<h3>" + event_id + " - " + event_status + " " 
+            bad_html += plane_desc[event_id] + "</h3>"
+            #self.plane_test_event(obs_ids)
+            for i in range(0,len(obs_ids)):
+               st = stations[i]
+               if st not in stats:
+                  stats[st] = {}
+                  stats[st]['good'] = 0
+                  stats[st]['bad'] = 1
+               stats[st]['bad'] += 1
+             
+               obs_id = obs_ids[i]
+               etime = start_times[i]
+               #bad_html += self.obs_id_to_img_html(obs_id)
+               bad_html += self.meteor_cell_html(obs_id, etime)
+               bad_html += "\n"
+
+            bad_html += "<div style='clear: both'></div>"
+            bad_html += "</div>"
+
+
+
+
+      fpo = open(out_file_good, "w")
+      temp = template.replace("{MAIN_CONTENT}", good_html)
+      fpo.write(temp)
+      fpo.close()
+      temp = template.replace("{MAIN_CONTENT}", bad_html)
+      fpo = open(out_file_bad, "w")
+      fpo.write(temp)
+      fpo.close()
+      rpt_data = []
+      for st in stats:
+         g = stats[st]['good']
+         b = stats[st]['bad']
+         t = g + b
+         bad_perc = b / t
+
+         rpt_data.append((int(st.replace("AMS","")), bad_perc, g,b, t))
+      rpt_data = sorted(rpt_data, key=lambda x: (x[1]), reverse=False)
+
+      for row in rpt_data:
+         st, bad_perc, g,b,t = row
+         st_id = "AMS{:03}".format(st)
+         #print(st_id + " " + str(round(bad_perc*100,1)) + "% of solves failed (" + str(b) + "/" + str(t) + " events)".format(st)  )
+
+
+      # PUSH FINAL HTML TO CLOUD
+      push_cmd = "cp " + self.local_evdir + "*.html " + self.cloud_evdir
+      print(push_cmd)
+      os.system(push_cmd)
+
+      
+
+   def plane_test_event(self, obs_ids, event_id, event_status):
+
+      jobs = []
+
+      results = {}
+      good = 0
+      bad = 0
+      st_stats = {}
+      ob_stats = {}
+      good_planes = {}
+      bad_planes = {}
+      for ob1 in obs_ids:
+         for ob2 in obs_ids:
+            st1 = ob1.split("_")[0]
+            st2 = ob2.split("_")[0]
+            if ob1 != ob2 and st1 != st2:
+               key = ob1 + "__" +ob2  
+               gd = [event_id, key, ob1, ob2]
+               jobs.append(gd)
+
+      print(event_id, event_status, "PLANE JOBS:", len(jobs))
+      self.run_plane_jobs(jobs)
+
+      plane_report = {}
+      rkeys = self.r.keys(event_id + "*")
+      for key in rkeys:
+         temp = self.r.get(key)
+         if temp is not None:
+            result, sanity = json.loads(temp)
+            results[key] = (sanity, result)
+
+      plane_report['results'] = results
+
+      return(plane_report)
+
+   def obs_id_to_img_html(self,obs_id):
+      el = obs_id.split("_")
+      st = el[0]
+      ff = obs_id.replace(st + "_", "")
+      cloud_url = "https://archive.allsky.tv/" + st + "/METEORS/" + ff[0:4] + "/" + ff[0:10] + "/" + st + "_" + ff + "-prev.jpg"
+      play_link = """ <a href="javascript:click_icon('play', '""" + obs_id.replace(".jpg", "") + """')"> """
+      html = play_link + "<img src=" + cloud_url + "></a>"
+      return(html)
+
+   def make_event_obs_html(self,row):
+      event_id, event_status, stations, start_times, obs_ids = row
+      out = """
+         <div>
+
+         </div>
+      """
 
    def day_status(self, date=None):
       os.system("clear")
@@ -2156,7 +2714,6 @@ status [date]   -    Show network status report for that day.
          if len(result) >= 2:
             end = result[0]
             start = result[-1]
-            print(key, start, end)
             start_points.append(start)
             end_points.append(end)
 
@@ -2182,14 +2739,12 @@ status [date]   -    Show network status report for that day.
          if len(result) >= 2:
             end = result[0]
             start = result[-1]
-            print(key, start, end)
             start_lat_diff = abs(med_start_lat - start[0])
             start_lon_diff = abs(med_start_lon - start[1])
             end_lat_diff = abs(med_end_lat - start[0])
             end_lon_diff = abs(med_end_lon - start[1])
             score = start_lat_diff + start_lon_diff + end_lat_diff + end_lon_diff
             score_data.append((score, key))
-            print("START DIFF:", start_lat_diff, start_lon_diff, end_lat_diff, end_lon_diff)
             start_points.append(start)
             end_points.append(end)
 
@@ -2223,7 +2778,6 @@ status [date]   -    Show network status report for that day.
             good_stations[st2] += 1
             good_obs[ob1] += 1
             good_obs[ob2] += 1
-            print(ic, row)
             ic += 1
 
 
@@ -2289,3 +2843,54 @@ status [date]   -    Show network status report for that day.
       print(event_data)
       input("wait")
       #insert_meteor_event(self.dynamodb, event_id, event_data)
+      
+   def meteor_cell_html(self, obs_id,edatetime=None):
+      if edatetime is not None:
+         edate, etime = edatetime.split(" ")
+      else:
+         edate = ""
+         etime = ""
+      if "prev.jpg" not in obs_id:
+         obs_id += "-prev.jpg"
+      cloud_root  = "/mnt/archive.allsky.tv/"
+      cloud_vroot = "https://archive.allsky.tv/"
+      station_id = obs_id.split("_")[0]
+      year = obs_id.split("_")[1]
+      month = obs_id.split("_")[2]
+      dom = obs_id.split("_")[3]
+      hour = obs_id.split("_")[4]
+      minute = obs_id.split("_")[5]
+      second = obs_id.split("_")[6]
+      mili_second = obs_id.split("_")[7]
+      cam = obs_id.split("_")[8].split("-")[0]
+
+      day = year + "_" + month + "_" + dom
+      cloud_dir = cloud_root + station_id + "/METEORS/" + year + "/" + day + "/"
+      cloud_vdir = cloud_vroot + station_id + "/METEORS/" + year + "/" + day + "/"
+      prev_img_file = cloud_dir + obs_id.replace(".mp4","-prev.jpg")
+      prev_img_url = cloud_vdir + obs_id.replace(".mp4","-prev.jpg")
+      div_id = obs_id.replace(".mp4", "")
+      div_id = div_id.replace("-prev.jpg", "")
+
+      disp_text = station_id + " - " + cam + " - " +  etime #+ "<br>"
+      video_url = prev_img_url.replace("-prev.jpg", "-180p.mp4")
+      disp_text += """ <a href="javascript:play_video('{}','{}')"><i style='font-size: 12px' class="fas fa-play "></i></a>""".format(div_id, video_url)
+      #if os.path.exists(prev_img_file) is True:
+      if True:
+         html = """
+         <div id="{:s}" style="
+              float: left;
+              background-image: url('{:s}');
+              background-repeat: no-repeat;
+              background-size: 320px;
+              width: 320px;
+              height: 180px;
+              margin: 25px; 
+              ">
+              <div class="show_hider"> {:s} </div>
+         </div>
+         """.format(div_id, prev_img_url, disp_text)
+      else:
+         html = ""
+         #station_id + " " + obs_id.replace(".mp4", "")
+      return(html)

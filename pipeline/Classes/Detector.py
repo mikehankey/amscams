@@ -1,7 +1,7 @@
 
 import numpy as np
 from sklearn import linear_model, datasets
-from skimage.measure import ransac, LineModelND, CircleModel
+#from skimage.measure import ransac, LineModelND, CircleModel
 
 from lib.PipeUtil import cfe, load_json_file, save_json_file, fn_dir, load_mask_imgs, calc_dist
 from lib.PipeMeteorTests import obj_cm
