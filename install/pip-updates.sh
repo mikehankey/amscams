@@ -33,3 +33,4 @@ pip3 install timezonefinder
 pip3 install pylunar
 pip3 install lxml
 pip3 install beautifulsoup4
+pip3 install photutils
