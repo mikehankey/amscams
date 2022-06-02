@@ -143,13 +143,6 @@ def run_jobs(json_conf):
    #print("EXIT")
    #exit()
 
-   if True and os.path.exists("/mnt/ams2/trash/62fix.txt") is False:
-      os.system("./DynaDB.py ddd 2022_05_28")
-      os.system("./DynaDB.py ddd 2022_05_29")
-      os.system("./DynaDB.py ddd 2022_05_30")
-      os.system("./DynaDB.py ddd 2022_05_31")
-      os.system("./DynaDB.py ddd 2022_06_01")
-      os.system("./DynaDB.py ddd 2022_06_02")
 
 
    msg = "info:run_jobs:Run jobs ended"
@@ -159,6 +152,16 @@ def run_jobs(json_conf):
    if running >= 3:
       print("Already running.")
       return()
+
+   if True and os.path.exists("/mnt/ams2/trash/62fix.txt") is False:
+      os.system("./DynaDB.py ddd 2022_05_28")
+      os.system("./DynaDB.py ddd 2022_05_29")
+      os.system("./DynaDB.py ddd 2022_05_30")
+      os.system("./DynaDB.py ddd 2022_05_31")
+      os.system("./DynaDB.py ddd 2022_06_01")
+      os.system("./DynaDB.py ddd 2022_06_02")
+
+
    today = datetime.now().strftime("%Y_%m_%d")
    yest = (datetime.now() - dt.timedelta(days = 1)).strftime("%Y_%m_%d")
    three_day = (datetime.now() - dt.timedelta(days = 2)).strftime("%Y_%m_%d")
