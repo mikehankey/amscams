@@ -131,6 +131,15 @@ def gitpull(json_conf):
 
 def run_jobs(json_conf):
 
+   # one time fix put in on 6/2 remove by 6/4 
+   if True and os.path.exists("/mnt/ams2/trash/62fix.txt") is False:
+      os.system("./DynaDB.py ddd 2022_05_28")
+      os.system("./DynaDB.py ddd 2022_05_29")
+      os.system("./DynaDB.py ddd 2022_05_30")
+      os.system("./DynaDB.py ddd 2022_05_31")
+      os.system("./DynaDB.py ddd 2022_06_01")
+      os.system("./DynaDB.py ddd 2022_06_02")
+
    running = check_running("DynaDB.py")
    if running > 0:
       os.system("kill -9 $(ps aux | grep 'rerun.py' | awk '{print $2}')")
