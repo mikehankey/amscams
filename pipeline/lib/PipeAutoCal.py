@@ -3794,8 +3794,8 @@ def deep_calib_init(cam,json_conf):
             continue
      
          all_stars.append((cal_fn, cp['center_az'], cp['center_el'], cp['ra_center'], cp['dec_center'], cp['position_angle'], cp['pixscale'], dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist,star_int))
-      if len(all_stars) > 2000:
-         # min star filter
+      if len(all_stars) > 800:
+         # min star filter LIMIT STARS
          print("WE ARE DONE GETTING STARS!")
          break
    for data in all_stars:
@@ -3804,13 +3804,19 @@ def deep_calib_init(cam,json_conf):
    all_rez = [row[-2] for row in all_stars]
    med_rez = np.median(all_rez)
    best_stars = []
+   bad_stars = []
    print("ALL STAR MED REZ:", med_rez)
    # stars filtering here! 
+   # mean square * 2
    for data in all_stars:
-      best_stars.append(data)
-      #if data[-2] < med_rez * 10:
-      #else:
-      #   print("not good.", data[-2])
+      if data[-2] < ((med_rez ** 2) *2) :
+         best_stars.append(data)
+      else:
+         bad_stars.append(data)
+   print("BEST STARS:", len(best_stars))
+   print("BAD STARS:", len(bad_stars))
+   input("wait...")
+
    all_stars = best_stars
    mcp_dir = "/mnt/ams2/cal/" 
    mcp_file = mcp_dir + "multi_poly-" + STATION_ID + "-" + cam + ".info"
@@ -4160,18 +4166,22 @@ def deep_calib2(cam, json_conf):
 
    #all_stars = []
    good_stars = []
+   bad_stars = []
    all_res = [row[-2] for row in all_stars]
    med_res = np.median(all_res)
    print("MED RES:", med_res)
    for data in all_stars:
       cal_fn, cp['center_az'], cp['center_el'], cp['ra_center'], cp['dec_center'], cp['position_angle'], cp['pixscale'], dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist,star_int = data
       # FILTERING / filter
-      if cat_dist < med_res * 15:
+      if cat_dist < (med_res ** 2) :
          good_stars.append(data)
       else:
+         bad_stars.append(data)
          print("SKIP STAR HIGH RES:", cat_dist)
    all_stars = good_stars
    print("LEN ALL STARS:", len(all_stars))
+   print("GOOD", len(good_stars))
+   print("BAD", len(bad_stars))
 
    for data in all_stars:
       cal_fn, cp['center_az'], cp['center_el'], cp['ra_center'], cp['dec_center'], cp['position_angle'], cp['pixscale'], dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist,star_int = data
@@ -7155,7 +7165,7 @@ def get_image_stars(file=None,img=None,json_conf=None,show=0):
          mask_img = cv2.resize(mask_img, (1920,1080))
 
       else:
-         mask_img = None
+         mask_img = np.zeros((1080,1920,3),dtype=np.uint8)
 
 
    if img is None:
