@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-from numba import jit
+#from numba import jit
 import decimal
 from decimal import Decimal
 import pickle
@@ -41,7 +41,7 @@ import ephem
 
 #from lib.MeteorTests import meteor_test_cm_gaps
 
-import pymap3d as pm
+#import pymap3d as pm
 
 from sympy import Point3D, Line3D, Segment3D, Plane
 from boto3.dynamodb.conditions import Key, Attr

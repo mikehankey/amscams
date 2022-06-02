@@ -8,8 +8,8 @@ from PIL import Image
 #from mpl_toolkits.basemap import Basemap
 import matplotlib.pyplot as plt
 import math
-from geopy.distance import distance
-from geopy.point import Point
+#from geopy.distance import distance
+#from geopy.point import Point
 
 
 

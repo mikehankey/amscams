@@ -1,6 +1,6 @@
 from lib.PipeUtil import cfe, load_json_file, save_json_file, convert_filename_to_date_cam, get_trim_num, get_file_info, calc_dist
-import pymap3d as pm
-wgs84 = pm.Ellipsoid('wgs84');
+#import pymap3d as pm
+#wgs84 = pm.Ellipsoid('wgs84');
 #from numba import jit
 from solveWMPL import convert_dy_obs, WMPL_solve
 import threading
@@ -30,6 +30,7 @@ class DecimalEncoder(json.JSONEncoder):
 class EventRunner():
    def __init__(self, cmd=None, day=None, month=None,year=None,date=None, use_cache=0):
      # os.system("./DynaDB.py udc " + date + " events")
+      self.DATA_DIR = "/mnt/f/"
       self.cloud_host = "https://archive.allsky.tv/"
       self.dynamodb = boto3.resource('dynamodb')
       admin_conf = load_json_file("admin_conf.json")
@@ -48,7 +49,7 @@ class EventRunner():
          self.day = d
          self.month = m
          self.year = y 
-         self.event_dir = "/mnt/ams2/EVENTS/" + self.year + "/" + self.month + "/" + self.day + "/" 
+         self.event_dir = self.DATA_DIR + "EVENTS/" + self.year + "/" + self.month + "/" + self.day + "/" 
          if cfe(self.event_dir, 1) == 0:
             os.makedirs(self.event_dir)
 
@@ -57,21 +58,21 @@ class EventRunner():
             os.makedirs(self.event_dir)
          if cfe(self.cloud_event_dir, 1) == 0:
             os.makedirs(self.cloud_event_dir)
-         self.coin_events_file = "/mnt/ams2/EVENTS/" + self.year + "/" + self.month + "/" + self.day + "/" + self.date + "_COIN_EVENTS.json"  
-         self.all_good_obs_file = "/mnt/ams2/EVENTS/" + self.year + "/" + self.month + "/" + self.day + "/" + self.date + "_ALL_GOOD_OBS.json"  
-         self.solve_jobs_file = "/mnt/ams2/EVENTS/" + self.year + "/" + self.month + "/" + self.day + "/" + self.date + "_SOLVE_JOBS.json"  
-         self.ss_events_file = "/mnt/ams2/EVENTS/" + self.year + "/" + self.month + "/" + self.day + "/" + self.date + "_SS_EVENTS.json"  
-         self.all_events_file = "/mnt/ams2/EVENTS/" + self.year + "/" + self.month + "/" + self.day + "/" + self.date + "_ALL_EVENTS.json"  
-         self.all_events_index_file = "/mnt/ams2/EVENTS/" + self.year + "/" + self.month + "/" + self.day + "/" + self.date + "_ALL_EVENTS_INDEX.json"  
-         self.all_obs_file = "/mnt/ams2/EVENTS/" + self.year + "/" + self.month + "/" + self.day + "/" + self.date + "_ALL_OBS.json"  
+         self.coin_events_file = self.DATA_DIR + "EVENTS/" + self.year + "/" + self.month + "/" + self.day + "/" + self.date + "_COIN_EVENTS.json"  
+         self.all_good_obs_file = self.DATA_DIR + "EVENTS/" + self.year + "/" + self.month + "/" + self.day + "/" + self.date + "_ALL_GOOD_OBS.json"  
+         self.solve_jobs_file = self.DATA_DIR + "EVENTS/" + self.year + "/" + self.month + "/" + self.day + "/" + self.date + "_SOLVE_JOBS.json"  
+         self.ss_events_file = self.DATA_DIR + "EVENTS/" + self.year + "/" + self.month + "/" + self.day + "/" + self.date + "_SS_EVENTS.json"  
+         self.all_events_file = self.DATA_DIR + "EVENTS/" + self.year + "/" + self.month + "/" + self.day + "/" + self.date + "_ALL_EVENTS.json"  
+         self.all_events_index_file = self.DATA_DIR + "EVENTS/" + self.year + "/" + self.month + "/" + self.day + "/" + self.date + "_ALL_EVENTS_INDEX.json"  
+         self.all_obs_file = self.DATA_DIR + "EVENTS/" + self.year + "/" + self.month + "/" + self.day + "/" + self.date + "_ALL_OBS.json"  
          self.obs_dict_file = self.all_obs_file.replace("ALL_OBS", "OBS_DICT")
-         self.all_stations_file = "/mnt/ams2/EVENTS/" + self.year + "/" + self.month + "/" + self.day + "/" + self.date + "_ALL_STATIONS.json"  
+         self.all_stations_file = self.DATA_DIR + "EVENTS/" + self.year + "/" + self.month + "/" + self.day + "/" + self.date + "_ALL_STATIONS.json"  
          self.single_station_file =  self.event_dir + self.date + "_ALL_SINGLE_STATION_METEORS.json"
 
-         self.plane_pairs_file = "/mnt/ams2/EVENTS/" + self.year + "/" + self.month + "/" + self.day + "/" + self.date + "_PLANE_PAIRS.json"  
-         self.min_report = "/mnt/ams2/EVENTS/" + self.year + "/" + self.month + "/" + self.day + "/" + self.date + "_MIN_REPORT.json"  
-         self.possible = "/mnt/ams2/EVENTS/" + self.year + "/" + self.month + "/" + self.day + "/" + self.date + "_POSSIBLE.json"  
-         self.not_possible = "/mnt/ams2/EVENTS/" + self.year + "/" + self.month + "/" + self.day + "/" + self.date + "_NOT_POSSIBLE.json"  
+         self.plane_pairs_file = self.DATA_DIR + "EVENTS/" + self.year + "/" + self.month + "/" + self.day + "/" + self.date + "_PLANE_PAIRS.json"  
+         self.min_report = self.DATA_DIR + "EVENTS/" + self.year + "/" + self.month + "/" + self.day + "/" + self.date + "_MIN_REPORT.json"  
+         self.possible = self.DATA_DIR + "EVENTS/" + self.year + "/" + self.month + "/" + self.day + "/" + self.date + "_POSSIBLE.json"  
+         self.not_possible = self.DATA_DIR + "EVENTS/" + self.year + "/" + self.month + "/" + self.day + "/" + self.date + "_NOT_POSSIBLE.json"  
 
 
          self.cloud_all_events_file = "/mnt/archive.allsky.tv/EVENTS/" + self.year + "/" + self.month + "/" + self.day + "/" + self.date + "_ALL_EVENTS.json"  
@@ -1629,7 +1630,7 @@ class EventRunner():
          cores = temp['cores']
       else:
          cores = 1
-      self.solve_jobs = load_json_file("/mnt/ams2/EVENTS/" + self.year + "/" + self.month + "/" + self.day + "/" + self.date + "_SOLVE_JOBS.json")
+      self.solve_jobs = load_json_file(self.DATA_DIR + "EVENTS/" + self.year + "/" + self.month + "/" + self.day + "/" + self.date + "_SOLVE_JOBS.json")
       print(type(self.solve_jobs))
       jobs_per_proc = int(len(self.solve_jobs) / cores)
        
@@ -1879,7 +1880,7 @@ class EventRunner():
       dist = distance(a, b).km
       return(dist)
 
-   @jit(nopython=True)
+   #@jit(nopython=True)
    def plane_test_jit(self, obs1_key, obs2_key, sdv1, sdv2, lat1,lon1,lat2,lon2,mfd1,mfd2):
       if len(mfd1) > 1:
          az1s = mfd1[0][9]
@@ -2109,7 +2110,7 @@ class EventRunner():
       return(sveX,sveY,sveZ,svlat,svlon,svalt)
 
    def aws_stats(self):
-      obs_files = glob.glob("/mnt/ams2/EVENTS/OBS/DAYS/*.json")
+      obs_files = glob.glob(self.DATA_DIR + "EVENTS/OBS/DAYS/*.json")
       stats_by_day = {}
       for obf in sorted(obs_files, reverse=True):
          day = obf.split("/")[-1].replace(".json", "")
@@ -2128,12 +2129,12 @@ class EventRunner():
 
           
          print(day, len(stats_by_day[day]['station_stats'].keys()), len(obd))
-      save_json_file("/mnt/ams2/EVENTS/ALL_STATS_BY_DAY.json", stats_by_day)
-      print("/mnt/ams2/EVENTS/ALL_STATS_BY_DAY.json" )
+      save_json_file(self.DATA_DIR + "EVENTS/ALL_STATS_BY_DAY.json", stats_by_day)
+      print(self.DATA_DIR + "EVENTS/ALL_STATS_BY_DAY.json" )
       self.make_stats_html()
 
    def make_stats_html(self):
-      stats_by_day = load_json_file("/mnt/ams2/EVENTS/ALL_STATS_BY_DAY.json")
+      stats_by_day = load_json_file(self.DATA_DIR + "EVENTS/ALL_STATS_BY_DAY.json")
       all_stations = {}
       for day in sorted(stats_by_day.keys(), reverse=True):
          for station in sorted(stats_by_day[day]['station_stats'].keys(), reverse=True):
@@ -2179,7 +2180,7 @@ class EventRunner():
       html += html_row
       html += "</tbody></table>"
 
-      fp = open("/mnt/ams2/EVENTS/METEOR_OBS_STATS.html", "w")
+      fp = open(self.DATA_DIR + "EVENTS/METEOR_OBS_STATS.html", "w")
       fp.write(html)
       fp.close()
       cmd = "cp /mnt/ams2/EVENTS/METEOR_OBS_STATS.html /mnt/archive.allsky.tv/EVENTS/METEOR_OBS_STATS.html"
@@ -2196,7 +2197,7 @@ class EventRunner():
          all_stations.append(rval)
 
       kml = simplekml.Kml()
-      self.all_stations_file = "/mnt/ams2/EVENTS/ALL_STATIONS3.kml"
+      self.all_stations_file = self.DATA_DIR + "EVENTS/ALL_STATIONS3.kml"
       for data in all_stations:
         if "lat" in data:
            lat = float(data['lat'])
@@ -2230,7 +2231,7 @@ class EventRunner():
       kml = simplekml.Kml()
       self.date = date
       self.year, self.month, self.day = date.split("_")
-      self.all_stations_file = "/mnt/ams2/EVENTS/" + self.year + "/" + self.month + "/" + self.day + "/" + self.date + "_ALL_STATIONS.json"
+      self.all_stations_file = self.DATA_DIR + "EVENTS/" + self.year + "/" + self.month + "/" + self.day + "/" + self.date + "_ALL_STATIONS.json"
       self.all_stations_kml = self.all_stations_file.replace(".json", ".kml")
       self.cloud_stations_kml = self.all_stations_kml.replace("ams2", "archive.allsky.tv")
       st_data = load_json_file(self.all_stations_file)
@@ -2352,12 +2353,12 @@ class EventRunner():
          c += 1
          if c % 1000 == 0:
             print(c)
-      save_json_file("/mnt/ams2/EVENTS/ALL_OBS.json", all_obs)
+      save_json_file(self.DATA_DIR + "EVENTS/ALL_OBS.json", all_obs)
 
    def make_all_obs_index(self, date):
       # USE DYNCACH INSTEAD OF REDIS!
       year,mon,day = date.split("_")
-      day_dir = "/mnt/ams2/EVENTS/" + year + "/" + mon + "/" + day + "/"
+      day_dir = self.DATA_DIR + "EVENTS/" + year + "/" + mon + "/" + day + "/"
       cl_day_dir = "/mnt/archive.allsky.tv/EVENTS/" + year + "/" + mon + "/" + day + "/"
       dyn_cache = day_dir
       all_obs_file = dyn_cache + date + "_ALL_OBS.json"
@@ -2452,12 +2453,12 @@ class EventRunner():
          if c % 1000 == 0:
             print(c)
       print("DONE BUILD. SAVING...")
-      #save_json_file("/mnt/ams2/EVENTS/OBS/ALL_OBS_BY_STATION.json", all_obs_by_station)
-      #save_json_file("/mnt/ams2/EVENTS/OBS/ALL_OBS_BY_DAY.json", all_obs_by_day)
+      #save_json_file(self.DATA_DIR + "EVENTS/OBS/ALL_OBS_BY_STATION.json", all_obs_by_station)
+      #save_json_file(self.DATA_DIR + "EVENTS/OBS/ALL_OBS_BY_DAY.json", all_obs_by_day)
 
       # NOW MAKE 1 FILE FOR EACH DAY AND 1 FILE FOR EACH STATION
-      day_dir = "/mnt/ams2/EVENTS/OBS/DAYS/"
-      station_dir = "/mnt/ams2/EVENTS/OBS/STATIONS/"
+      day_dir = self.DATA_DIR + "EVENTS/OBS/DAYS/"
+      station_dir = self.DATA_DIR + "EVENTS/OBS/STATIONS/"
       cloud_day_dir = "/mnt/archive.allsky.tv/EVENTS/OBS/DAYS/"
       cloud_station_dir = "/mnt/archive.allsky.tv/EVENTS/OBS/STATIONS/"
       if cfe(day_dir,1) == 0:
@@ -2480,7 +2481,7 @@ class EventRunner():
          day_file = day_dir + key + ".json"
          date = key
          if in_date is None:
-            day_file = "/mnt/ams2/EVENTS/ALL_OBS.json"
+            day_file = self.DATA_DIR + "EVENTS/ALL_OBS.json"
          save_json_file(day_file, all_obs_by_day[key]['obs'], True)
          print("Saving...", day_file)
 
@@ -2555,7 +2556,7 @@ class EventRunner():
             #print("SETTING:", ikey)
             all_events.append(ev_idx)
       all_events = json.loads(json.dumps(all_events), parse_float=Decimal)
-      save_json_file("/mnt/ams2/EVENTS/ALL_EVENTS_INDEX.json", all_events, True)
+      save_json_file(self.DATA_DIR + "EVENTS/ALL_EVENTS_INDEX.json", all_events, True)
       print("saved /mnt/ams2/EVENTS/ALL_EVENTS_INDEX.json")
       unsolved = []
       failed = []
@@ -2567,9 +2568,9 @@ class EventRunner():
             unsolved.append(event)
          if event['ss'] == "F":
             failed.append(event)
-      save_json_file("/mnt/ams2/EVENTS/ALL_EVENTS_INDEX_SOLVED.json", solved, True)
-      save_json_file("/mnt/ams2/EVENTS/ALL_EVENTS_INDEX_FAILED.json", failed, True)
-      save_json_file("/mnt/ams2/EVENTS/ALL_EVENTS_INDEX_UNSOLVED.json", unsolved, True)
+      save_json_file(self.DATA_DIR + "EVENTS/ALL_EVENTS_INDEX_SOLVED.json", solved, True)
+      save_json_file(self.DATA_DIR + "EVENTS/ALL_EVENTS_INDEX_FAILED.json", failed, True)
+      save_json_file(self.DATA_DIR + "EVENTS/ALL_EVENTS_INDEX_UNSOLVED.json", unsolved, True)
       cmd = "cp /mnt/ams2/EVENTS/ALL_EVENTS* /mnt/archive.allsky.tv/EVENTS/"
       print(cmd)
       os.system(cmd)
@@ -2598,10 +2599,10 @@ class EventRunner():
          c += 1
          if c % 1000 == 0:
             print(c)
-      save_json_file("/mnt/ams2/EVENTS/UNSOLVED_IDS.json", unsolved)
-      save_json_file("/mnt/ams2/EVENTS/FAILED_IDS.json", failed)
-      save_json_file("/mnt/ams2/EVENTS/SOLVED_IDS.json", solved)
-      print("/mnt/ams2/EVENTS/SOLVED_IDS.json")
+      save_json_file(self.DATA_DIR + "EVENTS/UNSOLVED_IDS.json", unsolved)
+      save_json_file(self.DATA_DIR + "EVENTS/FAILED_IDS.json", failed)
+      save_json_file(self.DATA_DIR + "EVENTS/SOLVED_IDS.json", solved)
+      print(self.DATA_DIR + "EVENTS/SOLVED_IDS.json")
 
    def purge_dead_meteors(self):
       all_obs_keys = self.r.keys("OI:*")
@@ -2630,18 +2631,18 @@ class EventRunner():
          c += 1
 
    def all_event_stats(self):
-      all_events_file = "/mnt/ams2/EVENTS/ALL_EVENTS_INDEX.json"
-      event_orb_file = "/mnt/ams2/EVENTS/ALL_EVENTS_INDEX_ORBS.json"
+      all_events_file = self.DATA_DIR + "EVENTS/ALL_EVENTS_INDEX.json"
+      event_orb_file = self.DATA_DIR + "EVENTS/ALL_EVENTS_INDEX_ORBS.json"
 
-      solved_events_file = "/mnt/ams2/EVENTS/ALL_EVENTS_INDEX_SOLVED.json"
-      failed_events_file = "/mnt/ams2/EVENTS/ALL_EVENTS_INDEX_FAILED.json"
-      unsolved_events_file= "/mnt/ams2/EVENTS/ALL_EVENTS_INDEX_UNSOLVED.json"
+      solved_events_file = self.DATA_DIR + "EVENTS/ALL_EVENTS_INDEX_SOLVED.json"
+      failed_events_file = self.DATA_DIR + "EVENTS/ALL_EVENTS_INDEX_FAILED.json"
+      unsolved_events_file= self.DATA_DIR + "EVENTS/ALL_EVENTS_INDEX_UNSOLVED.json"
 
-      solved_ids_file = "/mnt/ams2/EVENTS/ALL_EVENTS_IDS_SOLVED.json"
-      failed_ids_file = "/mnt/ams2/EVENTS/ALL_EVENTS_IDS_FAILED.json"
-      unsolved_ids_file= "/mnt/ams2/EVENTS/ALL_EVENTS_IDS_UNSOLVED.json"
+      solved_ids_file = self.DATA_DIR + "EVENTS/ALL_EVENTS_IDS_SOLVED.json"
+      failed_ids_file = self.DATA_DIR + "EVENTS/ALL_EVENTS_IDS_FAILED.json"
+      unsolved_ids_file= self.DATA_DIR + "EVENTS/ALL_EVENTS_IDS_UNSOLVED.json"
 
-      event_stats_file = "/mnt/ams2/EVENTS/ALL_EVENTS_INDEX_STATS.json"
+      event_stats_file = self.DATA_DIR + "EVENTS/ALL_EVENTS_INDEX_STATS.json"
       solved = load_json_file(solved_events_file)
       unsolved = load_json_file(unsolved_events_file)
       failed = load_json_file(failed_events_file)
@@ -2712,9 +2713,9 @@ class EventRunner():
       save_json_file(unsolved_ids_file, ids['unsolved'], True)
       save_json_file(failed_ids_file, ids['failed'], True)
 
-      solved_ids_file = "/mnt/ams2/EVENTS/ALL_EVENTS_IDS_SOLVED.json"
-      failed_ids_file = "/mnt/ams2/EVENTS/ALL_EVENTS_IDS_FAILED.json"
-      unsolved_ids_file= "/mnt/ams2/EVENTS/ALL_EVENTS_IDS_UNSOLVED.json"
+      solved_ids_file = self.DATA_DIR + "EVENTS/ALL_EVENTS_IDS_SOLVED.json"
+      failed_ids_file = self.DATA_DIR + "EVENTS/ALL_EVENTS_IDS_FAILED.json"
+      unsolved_ids_file= self.DATA_DIR + "EVENTS/ALL_EVENTS_IDS_UNSOLVED.json"
 
 
    def event_to_ev_index(self,item):
@@ -2893,10 +2894,10 @@ class EventRunner():
                all_station_events[this_station]['events'] = []
             obs_ev_data = this_file + ":" + str(event_id) + ":" + str(solve_status)
             all_station_events[this_station]['events'].append(obs_ev_data)
-      save_json_file("/mnt/ams2/EVENTS/ALL_STATIONS_EVENTS.json", all_station_events, True)
+      save_json_file(self.DATA_DIR + "EVENTS/ALL_STATIONS_EVENTS.json", all_station_events, True)
       for station_id in all_station_events:
-         stjsf = "/mnt/ams2/EVENTS/ALL_EVENTS_" + station_id + ".json"
-         stjsf_zip = "/mnt/ams2/EVENTS/ALL_EVENTS_" + station_id + ".json.gz"
+         stjsf = self.DATA_DIR + "EVENTS/ALL_EVENTS_" + station_id + ".json"
+         stjsf_zip = self.DATA_DIR + "EVENTS/ALL_EVENTS_" + station_id + ".json.gz"
          cloud_dir = "/mnt/archive.allsky.tv/EVENTS/STATIONS/" 
          save_json_file(stjsf, all_station_events[station_id], True)
          os.system("gzip -f " + stjsf)
@@ -3128,7 +3129,7 @@ class EventRunner():
          station_html[station_id] += img_html + "\n"
          print(obs_key, img_link)
  
-      outdir = "/mnt/ams2/EVENTS/" + year + "/" + month + "/" + day + "/OBS/" 
+      outdir = self.DATA_DIR + "EVENTS/" + year + "/" + month + "/" + day + "/OBS/" 
       cloud_outdir = "/mnt/archive.allsky.tv/EVENTS/" + year + "/" + month + "/" + day + "/OBS/" 
       if cfe(outdir, 1)== 0:
          os.makedirs(outdir)
@@ -3173,7 +3174,7 @@ class EventRunner():
 
  
    def EOD_coin_report(self):
-      #self.coin_events_file = "/mnt/ams2/EVENTS/" + self.year + "/" + self.month + "/" + self.day + "/" + self.date + "_COIN_EVENTS.json"  
+      #self.coin_events_file = self.DATA_DIR + "EVENTS/" + self.year + "/" + self.month + "/" + self.day + "/" + self.date + "_COIN_EVENTS.json"  
       return()
       self.coin_events = load_json_file(self.coin_events_file)
       print("COIN EVENTS:", len(self.coin_events))
@@ -3284,14 +3285,14 @@ class EventRunner():
       year = y
       month = m
       day = d
-      good_obs_data = load_json_file("/mnt/ams2/EVENTS/" + y + "/" + m + "/" + d + "/" + date + "_ALL_OBS.json")
+      good_obs_data = load_json_file(self.DATA_DIR + "EVENTS/" + y + "/" + m + "/" + d + "/" + date + "_ALL_OBS.json")
       for data in good_obs_data:
          st = data['station_id']
          vid = data['sd_video_file']
          obs_key = st + "_" + vid
          self.good_obs_keys[obs_key] = data
       print("GOOD OBS FILE:", len(good_obs_data))
-      print("/mnt/ams2/EVENTS/" + y + "/" + m + "/" + d + "/" + date + "_ALL_OBS.json")
+      print(self.DATA_DIR + "EVENTS/" + y + "/" + m + "/" + d + "/" + date + "_ALL_OBS.json")
       sdate = date.replace("_", "")
       fp = open(report_template_file)
       report_template = ""

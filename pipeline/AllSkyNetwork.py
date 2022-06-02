@@ -16,6 +16,17 @@ if len(sys.argv) < 1:
    ASN.help()
    exit()
 
+if cmd == "refresh_day":
+   force = 0
+   event_day = sys.argv[2]
+   ASN.set_dates(event_day)
+   ASN.day_solve(event_day,force)
+   ASN.day_load_solves(event_day)
+   ASN.publish_day(event_day)
+
+if cmd == "update_meteor_days":
+   ASN.update_meteor_days()
+
 if cmd == "help":
    print("CMD:", cmd)
    ASN.help()
@@ -26,6 +37,12 @@ if cmd == "day_load_solves":
    ASN.set_dates(event_day)
    ASN.day_load_solves(event_day)
 
+if cmd == "plane_test_day":
+   print("CMD:", cmd)
+   event_day = sys.argv[2]
+   ASN.help()
+   ASN.set_dates(event_day)
+   ASN.plane_test_day(event_day)
 
 if cmd == "report":
    print("CMD:", cmd)
@@ -37,6 +54,7 @@ if cmd == "report":
 if cmd == "rsync_data":
    print("CMD:", cmd)
    event_day = sys.argv[2]
+   date = event_day
    ASN.help()
    ASN.set_dates(date)
    ASN.rsync_data_only(event_day)
@@ -131,8 +149,14 @@ if cmd == "do_all":
    ASN.day_coin_events(date,force)
    print("Done coin")
    ASN.day_solve(date,force)
+
+   ASN.day_load_solves(date)
+
+   ASN.plane_test_day(date)
+
    print("Done solve")
    ASN.rsync_data_only(date)
+   ASN.publish_day(date)
 
 
 if cmd == "day_solve" or cmd == 'ds' or cmd == "solve_day":

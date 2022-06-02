@@ -1800,7 +1800,10 @@ def make_event_json(event_id, solve_dir,ignore_obs):
    #simple_solve = load_json_file(sol_file)
    
    print("MAKE EVENT JSON OBS FILE:", obs_file)
-   as_obs = load_json_file(obs_file)
+   if os.path.exists(obs_file):
+      as_obs = load_json_file(obs_file)
+   else:
+      as_obs = {}
 
    #event_file = sol_file.replace("-simple.json", "-event.json")
 
@@ -2294,9 +2297,12 @@ def event_report(solve_dir, event_final_dir, obs):
        if final_event_id not in sf:
           print("EVENT ID MISMATCH:", sf, final_event_id)
        if "report" in sf:
-          fp = open(sf, "r")
-          for line in fp:
-             report += line
+          try:
+             fp = open(sf, "r")
+             for line in fp:
+                report += line
+          except:
+             print("Failed to read report!")
        if "png" in sf:
           jpg_f = sf.replace(".png", ".jpg")
           jpgs.append(jpg_f)

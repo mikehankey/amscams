@@ -84,10 +84,12 @@ def intersecting_planes(obs1,obs2):
     C0 = (A1 * B2) - (A2 * B1)
 
     solution = []
-    for a in range(0,10):
-       alt = a * 10
-       lat, lon, alt = threeDTrackPoint(lat1,lon1,alt, MeteorX, MeteorY,A0,B0, C0)
-       solution.append((lat,lon,alt))
+    #for a in range(0,10):
+    #   alt = a * 10
+    lat, lon, alt = threeDTrackPoint(lat1,lon1,100, MeteorX, MeteorY,A0,B0, C0)
+    solution.append((lat,lon,alt))
+    lat, lon, alt = threeDTrackPoint(lat1,lon1,0, MeteorX, MeteorY,A0,B0, C0)
+    solution.append((lat,lon,alt))
     return(solution)       
        
 if __name__ == "__main__":
