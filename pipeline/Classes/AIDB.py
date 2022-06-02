@@ -298,6 +298,7 @@ class AllSkyDB():
          for row in self.cur.fetchall():
             ai_r = row[7]
             mc_class = row[8]
+            print(ai_r) 
             if ai_r != "" and ai_r is not None:
                ai_r = json.loads(ai_r)
                if "ai_version" in ai_r: 
@@ -975,7 +976,9 @@ class AllSkyDB():
 
       rows = self.cur.fetchall()
       loaded_meteors = {}
+      print("Rows:", len(rows))
       for row in rows:
+         print("ROW:", row[0])
          loaded_meteors[row[0]] = row[1]
 
 

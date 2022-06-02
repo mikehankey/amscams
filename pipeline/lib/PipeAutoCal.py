@@ -1383,8 +1383,9 @@ def refit_meteor(meteor_file, json_conf,force=0):
       for row in cp['cat_image_stars']:
          print(row)
       rez = [row[-2] for row in cp['cat_image_stars']]
+      # MEAN SQUARE RES! mean square res
       if len(rez) >= 3:
-         mean_rez = np.median(rez)
+         mean_rez = (np.median(rez) ** 2) * 2
       else:
          mean_rez = 2
       print("AFTER GET MORE & PAIR:", len(cp['user_stars']), len(cp['cat_image_stars'])) 
@@ -4173,7 +4174,7 @@ def deep_calib2(cam, json_conf):
    for data in all_stars:
       cal_fn, cp['center_az'], cp['center_el'], cp['ra_center'], cp['dec_center'], cp['position_angle'], cp['pixscale'], dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist,star_int = data
       # FILTERING / filter
-      if cat_dist < (med_res ** 2) :
+      if cat_dist < (med_res ** 2) * 2 :
          good_stars.append(data)
       else:
          bad_stars.append(data)
@@ -6622,6 +6623,8 @@ def debug_star_image(color_img, cat_stars, cal_file):
       #   fwhm1 = fwhm(int(perfect_star_img_big.shape[1]/2)+i, int(perfect_star_img_big.shape[0]/2), raw_perfect_star_img_big, "X")
       #for i in range(-50,50):
       #   fwhm1 = fwhm(int(perfect_star_img_big.shape[1]/2), int(perfect_star_img_big.shape[0]/2)+i, raw_perfect_star_img_big, "Y")
+      if len(star_big.shape) == 2:
+         star_big = cv2.cvtColor(star_big, cv2.COLOR_GRAY2BGR)
       console_img[0:big_h, gray_w-big_w-x_margin:gray_w-x_margin] = star_big
       console_img[big_h:big_h+big_h, gray_w-big_w-x_margin:gray_w-x_margin] = perfect_star_img_big 
       cv2.rectangle(console_img, (gray_w-big_w-x_margin, 0), (gray_w-x_margin, big_h), (255, 255, 255), 1)

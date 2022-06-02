@@ -143,20 +143,36 @@ if cmd == "do_all":
    #os.system("./DynaDB.py udc " + date)
 
    force = 1
-
+   print("Loading day SQL.")
    ASN.day_load_sql(date, force)
    print("Done load")
+   input("Finished load obs")
+   print("Do Coin events.")
    ASN.day_coin_events(date,force)
+   input("Finished coin")
    print("Done coin")
+   print("Do Solve .")
    ASN.day_solve(date,force)
+   input("Finished solve")
 
+   print("Load Solves .")
    ASN.day_load_solves(date)
+   input("Finished load solve")
 
+   print("Plane test day.")
    ASN.plane_test_day(date)
+   input("Finished plane test")
 
    print("Done solve")
+   print("Rysnc Data  .")
    ASN.rsync_data_only(date)
+   input("Finished rsync test")
+   print("Publish day.")
    ASN.publish_day(date)
+   input("Finished publish days")
+   print("Update Meteor Days.")
+   ASN.update_meteor_days()
+   input("Finished update meteor days")
 
 
 if cmd == "day_solve" or cmd == 'ds' or cmd == "solve_day":

@@ -138,7 +138,10 @@ def dyna_events_for_day(date, json_conf):
          cmd = "cp " + cloud_event_dir + data_file + " " + local_event_dir
          print(cmd)
          os.system(cmd)
-   events = load_json_file(local_event_dir + data_files[0])
+   if os.path.exists (local_event_dir + data_files[0]) is True:
+      events = load_json_file(local_event_dir + data_files[0])
+   else:
+      events = []
    for event in events:
       for i in range(0, len(event['stations'])):
          station = event['stations'][i]

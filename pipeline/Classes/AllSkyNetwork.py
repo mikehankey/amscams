@@ -233,7 +233,7 @@ class AllSkyNetwork():
          print("COPY FILE:", self.cloud_all_obs_gz_file, self.all_obs_gz_file)
          shutil.copyfile(self.cloud_all_obs_gz_file, self.all_obs_gz_file)
          print("Unzipping ", self.all_obs_gz_file)
-         os.system("gunzip -k " + self.all_obs_gz_file )
+         os.system("gunzip -k -f " + self.all_obs_gz_file )
          # this will only work for ADMINS with AWS Credentials
       elif local_size < cloud_size:
          print("COPY/UPDATE FILE:", self.cloud_all_obs_gz_file, self.all_obs_gz_file)
@@ -369,8 +369,8 @@ class AllSkyNetwork():
       self.good_planes = []
       self.bad_planes = []
       self.load_stations_file()
-      for data in self.stations:
-         print(data.keys())
+      #for data in self.stations:
+      #   print(data.keys())
 
       sql = """
          SELECT event_minute, count(*) as ccc 
@@ -392,7 +392,7 @@ class AllSkyNetwork():
          ocounts[minute]['obs_ids'] = []
          if obs_count > 1:
             mcm += 1
-            print(mcm, minute, obs_count)
+            print("MIN COUNT:", mcm, minute, obs_count)
       ec = 0
       ecp = 0
       ecf = 0
@@ -410,8 +410,9 @@ class AllSkyNetwork():
             min_events = self.min_obs_to_events(min_obs)
             all_min_events[minute] = min_events
             print("MINUTE OBS:", minute, len(min_obs), len(min_events.keys()))
+       
 
-
+      input("WAIT")
 
 
       save_json_file(self.plane_file, self.plane_pairs)
@@ -419,7 +420,9 @@ class AllSkyNetwork():
 
       c = 0
       for minute in all_min_events:
+         print("MINUTE:", minute)
          for event_id in all_min_events[minute]:
+            print("EVENT ID :",  event_id)
             event = all_min_events[minute][event_id]
             #ob1, ob2 = key.split("__")
             if len(list(set(event['stations']))) > 1:
@@ -1052,6 +1055,7 @@ class AllSkyNetwork():
          # 'roi', 'sd_video_file', 'sync_status', 'ffp', 'meteor_frame_data', 'event_start_time', 'calib', 'event_id', 'hc']) 
          # dt, fn, x, y, w, h, oint, ra, dec, az, el
          # set the initial event_id to the minute of the capture
+
 
          temp_ev_id = obs['sd_video_file'][0:16]
          datetimes = [row[0] for row in obs['meteor_frame_data']]
