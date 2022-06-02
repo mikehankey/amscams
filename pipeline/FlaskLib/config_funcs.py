@@ -12,6 +12,152 @@ import os
 import subprocess
 
 
+
+def submit_allsky_account_signup(user_data):
+   if True:
+      if "username" not in user_data:
+         user_data['username'] = "unclaimed"
+      if "password" not in user_data:
+         user_data['password'] = "unclaimed"
+      if "operator_name" not in user_data:
+         user_data['operator_name'] = ""
+      if "email" not in user_data:
+         user_data['email'] = ""
+      if "phone_number" not in user_data:
+         user_data['phone_number'] = ""
+      api_url = "https://www.allsky.tv/app/API/" + user_data['username'] + "/submit_signup"
+      if "station_id" not in user_data:
+         user_data['station_id'] = ""
+      method = "POST"
+      data = {
+         'username': user_data['username'],
+         'password': user_data['password'],
+         'name':  user_data['operator_name'],
+         'station_id': user_data['station_id'],
+         'email': user_data['email'],
+         'phone_number': user_data['phone_number'],
+         'terms': "0"
+      }
+      headers = {'Content-type': 'application/json', 'Accept': 'text/plain'}
+      response = requests.post(api_url, data=json.dumps(data) , headers=headers)
+      resp = response.content.decode()
+      try:
+         resp = json.loads(resp)
+      except:
+         resp_fail = {}
+         resp_fail['resp'] = resp
+         return(resp_fail) 
+   return(resp) 
+
+def network_setup(amsid, data=None):
+
+   jc = load_json_file("../conf/as6.json")
+   station_id = jc['site']['ams_id']
+   out = """
+      <script>
+       $(document).ready(function () {
+         $('#s1a').unbind('click').click(function() {
+            $("#step1").fadeOut(1000, function() { } );
+            $("#step2a").fadeIn(1000, function() { } );
+         });
+         $('#s1b').unbind('click').click(function() {
+            $("#step1").fadeOut(1000, function() { } );
+            $("#step2b").fadeIn(1000, function() { } );
+         });
+       })
+      </script>
+   """
+
+   if "method" in data:
+      try:
+         import bcrypt
+      except:
+         out = "You need to install some libraries for this to work. In the terminal on your ALLSKY7 host machine type:" 
+         out += "sudo python3 -m pip install bcrypt"
+         return(out)
+      out = " you posted some data"
+      hashedPassword = bcrypt.hashpw(data['password'].encode('utf-8'), bcrypt.gensalt())
+      if data['act'] == 'use_existing':
+         print("LOGIN:", data['username'], data['password'], hashedPassword.decode('utf-8'))
+      else:
+         print(data)
+         print("SIGNUP:", data['username'], data['password'], hashedPassword.decode('utf-8'), data['phone'], data['email'])
+
+
+      user_data = {
+         'username': data['username'],
+         'password': data['password'],
+         'name':  data['operator_name'],
+         'station_id': data['station_id'],
+         'email': data['email'],
+         'phone_number': data['phone'],
+         'terms' : 0
+      }
+      resp = submit_allsky_account_signup(user_data)
+      if "error" in resp:
+         out =  resp['message']
+
+
+   elif "network_setup" not in jc:
+      new = True
+      out += "<h1>Network Setup for " + station_id + "</h1>"
+      out += """<div id='main_container' class='container-fluid h-100 mt-4 ' style="border: 1px #000000 solid">"""
+
+      out += """
+         <div id='step1' class='text-lg-left' style='display:block'>
+               To register your station on the ALLSKY.COM GLOBAL NETWORK you first need a user account. <br>
+               If you already have one, <br>
+               <button class="btn-primary" id="s1a">Associate {} with existing ALLSKY account</button>
+               <p>
+               Otherwise, if you don't already have an account <br>
+               <button class="btn-primary" id="s1b">Create new ALLSKY ACCOUNT</button>
+         </div>
+      """.format(station_id)
+
+      out += """
+         <div id='step2a' class='text-lg-left' style='display:none'>
+               <form method=POST>
+               <input type='hidden' name='act' value='use_existing'>
+               Enter the ALLSKY.COM login you wish to assoicate {} with. <p>
+               Username<br>
+               <input type='text' name='username' id='username'><p>
+               Enter a password <br>
+               <input type='text' name='password' id='password'><p>
+               <button type='submit' class="btn-primary" id="s1b">Continue</button>
+               </form>
+
+         </div>
+         <div id='step2b' class='text-lg-left' style='display:none'>
+               <form method=POST>
+               <input type='hidden' name='act' value='new_acct'>
+               Full Name of person associated with this user account <br>
+               <input type='text' name='operator_name' id='operator_name'><p>
+
+               <input type='hidden' name='act' value='new_acct'>
+               Enter a username that will identify YOU on the network
+               <br>(You will share this username across all stations you operate.)<br>
+               <input type='text' name='username' id='username'><p>
+               Enter a password <br>
+               <input type='text' name='password' id='password'><p>
+               Enter your phone number starting with the + and your country code <br>
+               (for example +1 in the USA)<br>
+               <input type='text' name='phone' id='phone'><p>
+               Enter your email <br>
+               <input type='text' name='email' id='email'><p>
+               <input type='hidden' name='station_id' value='{}'><p>
+               <button type='submit' class="btn-primary" id="s1b">Continue</button>
+               </form>
+         </div>
+      </div>
+      """.format(station_id, station_id)
+   else:
+      new = False
+      out += "<h1>Network Setup Is Good</h1>"
+
+   template = make_default_template(amsid, "live.html", jc)
+   template = template.replace("{MAIN_TABLE}", out)
+   return(template)
+
 def config_vars(amsid, data=None):
 
   

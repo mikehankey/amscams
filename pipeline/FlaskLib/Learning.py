@@ -2804,6 +2804,30 @@ def find_ico(this_label):
    return(ico)
 
 
+
+
+def ai_main(station_id, json_conf):
+
+   template = make_default_template(station_id, "meteors_main.html", json_conf)
+   out = "<h1>AllSkyAI Dashboard</h1>"
+   if "ml" not in json_conf:
+      out = "It looks like the AllSkyAI package has not been installed on your system yet."
+   else:
+      out += "<div class=container>AllSkyAI has been installed and is running."
+      out += "<ul>"
+      out += "<li><a href=/AIREJECTS/{}>AI Rejects</a>".format(station_id) 
+      out += "Use this tool to confirm meteors and non-meteors " 
+      out += "<li><a href=/AIREVIEW/{}>AI Review</a>".format(station_id) 
+      out += "Use this tool to review auto rejected meteors before they are purged from the system" 
+      out += "<li><a href=/LEARNING/{}/METEOR?>AI Search </a>".format(station_id)
+      out += "Use this tool to search the meteor archive." 
+
+      out += "</ul>"
+
+      out += "</div>"
+   template = template.replace("{MAIN_TABLE}", out)
+   return(template)
+
 def ai_review(station_id, options,json_conf):
    out = """
       <div id='main_container' class='container-fluid h-100 mt-4 lg-l'>

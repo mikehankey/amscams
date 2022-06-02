@@ -3,6 +3,7 @@
 basic utility functions 
 
 '''
+import requests
 import os
 import time
 import subprocess
@@ -18,6 +19,17 @@ import json
 import glob
 import decimal
 dec = decimal.Decimal
+
+def fetch_url(url, save_file=None, json=None):
+    r = requests.get(url)
+    if save_file is None:
+       if json == 1:
+          return(r.json())
+       else:
+          return(r.text)
+
+    else:
+       open(save_file, 'wb').write(r.content)
 
 
 def dist_between_two_points(lat1,lon1,lat2,lon2):

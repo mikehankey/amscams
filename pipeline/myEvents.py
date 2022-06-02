@@ -128,6 +128,7 @@ def sync_meteor(EV, root_fn, cloud_files, mdir, cloud_dir):
 def valid_events(ev_data):
    valid_events = {}
    print("VALID EV:", ev_data)
+
    if isinstance(ev_data['stations'], str) is True:
       ev_data['stations'] = json.loads(ev_data['stations'])
    if isinstance(ev_data['obs'], str) is True:
@@ -164,7 +165,7 @@ def do_day(EV, date):
    print("saved /mnt/ams2/" + ms_vdir + "events.html")
    save_json_file("/mnt/ams2/meteors/" + ev_date + "/" + ev_date + "_MY_MS_OBS.info", EV.my_ms_obs)
    for mm in sorted(EV.min_cnt):
-      valid_events(mm)
+      valid_events(EV.min_cnt[mm])
       if isinstance(EV.min_cnt[mm]['times'], str) is True:
          EV.min_cnt[mm]['times'] = json.loads(EV.min_cnt[mm]['times'])
       if isinstance(EV.min_cnt[mm]['stations'], str) is True:

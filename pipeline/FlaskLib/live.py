@@ -19,3 +19,4 @@ def live_view(amsid):
    template = template.replace("{MAIN_TABLE}", out)
    return(template)
 
+

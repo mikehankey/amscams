@@ -8,6 +8,21 @@ def get_template(file):
    fp.close()
    return(out)
 
+def network_nav(json_conf): 
+   net_nav = """
+        <li class="nav-item"><a class="nav-link" href="/NETWORK/{AMSID}">NETWORK</a></li>
+            <!--
+        <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="/NETWORK/" id="network" data-toggle="dropdown">Network</a>
+            <div class="dropdown-menu dropdown-menu-right">
+              <a class="dropdown-item" href="/NETWORK/MAP/{AMSID}/">Network Map</a>
+              <a class="dropdown-item" href="/NETWORK/METEORS/{AMSID}/">Meteor Events</a>
+              <a class="dropdown-item" href="/NETWORK/LIVE/{AMSID}/">Live View</a>
+            </div>
+        </li>
+            -->
+   """
+   return(net_nav)
 
 def make_default_template(amsid, main_template, json_conf):
    remote = 1
@@ -17,7 +32,18 @@ def make_default_template(amsid, main_template, json_conf):
    else:
       header = get_template("FlaskTemplates/header.html")
       footer = get_template("FlaskTemplates/footer.html")
+
    nav = get_template("FlaskTemplates/nav.html")
+
+   if "my_network" in json_conf:
+      print("YES NETWORK!")
+      net_nav = network_nav(json_conf)
+      print("NET:",net_nav)
+      nav = nav.replace("<!--NETWORK-->", net_nav)
+   else:
+      print("NO NETWORK!")
+
+
    template = get_template("FlaskTemplates/" + main_template  )
    template = template.replace("{HEADER}", header)
    template = template.replace("{FOOTER}", footer)
@@ -37,7 +63,6 @@ def make_default_template(amsid, main_template, json_conf):
 
 
 def parse_jsid(jsid):
-   #print("JSID:", jsid)
    year = jsid[0:4]
    month = jsid[4:6]
    day = jsid[6:8]
