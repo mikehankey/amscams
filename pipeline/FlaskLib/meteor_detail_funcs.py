@@ -217,19 +217,20 @@ def make_ms_html(amsid, meteor_file, mj):
    ms_html = "<h3>MULTI STATION OBSERVATIONS<h3>"
    date = meteor_file[0:10]
    year,month, dom = date.split("_")
-   for i in range(0, len(mse['obs'])):
-      tstation = mse['stations'][i]
-      ff = mse['obs'][i].replace(".mp4", "")
-      #local_dir = "/mnt/ams2/meteor_archive/" + tstation + "/METEORS/" + year + "/" + date + "/"
-      cloud_dir = "/mnt/archive.allsky.tv/" + tstation + "/METEORS/" + year + "/" + date + "/"
-      cloud_url = "https://archive.allsky.tv/" + tstation + "/METEORS/" + year + "/" + date + "/"
+   if "obs" in mse:
+      for i in range(0, len(mse['obs'])):
+         tstation = mse['stations'][i]
+         ff = mse['obs'][i].replace(".mp4", "")
+         #local_dir = "/mnt/ams2/meteor_archive/" + tstation + "/METEORS/" + year + "/" + date + "/"
+         cloud_dir = "/mnt/archive.allsky.tv/" + tstation + "/METEORS/" + year + "/" + date + "/"
+         cloud_url = "https://archive.allsky.tv/" + tstation + "/METEORS/" + year + "/" + date + "/"
       #if cfe(local_dir,1) == 0:
-      caption = mse['stations'][i] + " " + mse['times'][i]
-      img_url = cloud_url + tstation + "_" + ff + "-prev.jpg"
+         caption = mse['stations'][i] + " " + mse['times'][i]
+         img_url = cloud_url + tstation + "_" + ff + "-prev.jpg"
       #ms_html += "<img src=" + img_url + ">"
-      ms_html += """
+         ms_html += """
               <a style="background:url({});" class='vid-link' href="/dist/video_player.html?video={}&butt=no">{}</a><br>
-      """.format(img_url, img_url.replace("-prev.jpg", "-180p.mp4"), caption)
+         """.format(img_url, img_url.replace("-prev.jpg", "-180p.mp4"), caption)
    #ms_html += "<div style='clear: both'></div>"
    return(ms_html)
 

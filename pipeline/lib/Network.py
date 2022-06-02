@@ -1,6 +1,6 @@
 import requests
 import os
-from lib.Utils import load_json_file, save_json_file
+from lib.Utils import load_json_file, save_json_file 
 
 def fetch_url(url, save_file=None, json=None):
     r = requests.get(url)

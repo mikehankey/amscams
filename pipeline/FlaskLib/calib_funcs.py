@@ -7,16 +7,31 @@ from FlaskLib.FlaskUtils import parse_jsid, make_default_template, get_template
 import glob
 import time
 
-def lens_model(amsid):
-   lms = glob.glob("/mnt/ams2/cal/lens*")
-   json_conf = load_json_file("../conf/as6.json")
+def lens_model(amsid, json_conf):
    out = ""
-
-   out += """   <div id="main_container" class="container-fluid h-100 mt-4 lg-l"> """
+   cal_sum_file = "/mnt/ams2/cal/" + amsid + "_CAL_SUM.html"
+   if os.path.exists(cal_sum_file) is False:
+      out = "<h1>Lens models have not been created yet!</h1>"
+      out += "Missing " + cal_sum_file
+   else:
+      #out = "<h1>Lens models for " + amsid + "</h1>"
+      fp = open(cal_sum_file, "r")
+      for line in fp:
+         line = line.replace("src=plots", "src=/cal/plots")
+         line = line.replace("href=plots", "href=/cal/plots")
+         out += line
+   template = make_default_template(amsid, "calib.html", json_conf)
+       
+   lms = glob.glob("/mnt/ams2/cal/plots/lens*")
+   json_conf = load_json_file("../conf/as6.json")
    
    template = make_default_template(amsid, "calib.html", json_conf)
+   template = template.replace("{MAIN_TABLE}", out)
+   return(template)
 
-
+   out = ""
+   out += """   <div id="main_container" class="container-fluid h-100 mt-4 lg-l"> """
+   # old code not used!
    for lens in sorted(lms):
       if "grid" in lens:
          continue
@@ -51,7 +66,6 @@ def lens_model(amsid):
    out += "</div>"
 
    template = template.replace("{MAIN_TABLE}", out)
-
    return(template)
 
 

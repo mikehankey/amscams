@@ -1,7 +1,7 @@
 import base64
 import os
 from flask import Flask, request, Response, make_response
-from FlaskLib.Learning import learning_meteors_dataset, learning_meteors_tag, meteor_ai_scan, recrop_roi, recrop_roi_confirm, learn_main, learning_review_day, batch_update_labels, learning_db_dataset, timelapse_main, learning_weather, ai_review, ai_rejects, confirm_meteor, confirm_non_meteor, confirm_non_meteor_label 
+from FlaskLib.Learning import learning_meteors_dataset, learning_meteors_tag, meteor_ai_scan, recrop_roi, recrop_roi_confirm, learn_main, learning_review_day, batch_update_labels, learning_db_dataset, timelapse_main, learning_weather, ai_review, ai_rejects, confirm_meteor, confirm_non_meteor, confirm_non_meteor_label , ai_main
 from FlaskLib.motion_detects import motion_detects
 from FlaskLib.FlaskUtils import get_template
 from FlaskLib.api_funcs import update_meteor_points, show_cat_stars, delete_meteor, restore_meteor, delete_meteors, reduce_meteor, delete_frame, crop_video
@@ -10,7 +10,7 @@ from lib.PipeUtil import cfe, load_json_file, save_json_file
 from lib.PipePwdProtect import login_page, check_pwd_ajax
 from lib.PipeAutoCal import fn_dir
 from FlaskLib.meteor_detail_funcs import detail_page , pick_points, pick_points_day 
-from FlaskLib.config_funcs import config_vars 
+from FlaskLib.config_funcs import config_vars , network_setup
 from FlaskLib.meteors_main import meteors_main , meteors_by_day, trash_page, non_meteors_main, confirm_non_meteors, confirm_all_trash 
 from FlaskLib.super_stacks import stacks_main, stacks_day_hours, stacks_hour
 from FlaskLib.min_detail import min_detail_main
@@ -19,6 +19,7 @@ from FlaskLib.TL import tl_menu
 from FlaskLib.man_reduce import meteor_man_reduce , save_man_reduce
 from FlaskLib.man_detect import man_detect , import_meteor
 from FlaskLib.meteors_main_redis import meteors_main_redis
+from FlaskLib.network import network_main , network_map, network_meteors
 #from FlaskLib.Maps import make_map 
 from flask import redirect, url_for, abort
 import json
@@ -368,7 +369,7 @@ def del_meteors():
 @app.route('/cal/lensmodel/<amsid>/', methods=['GET', 'POST'])
 @auth.login_required
 def lens_mod(amsid):
-   out = lens_model(amsid)
+   out = lens_model(amsid, json_conf)
    return out
 
 
@@ -381,6 +382,23 @@ def op_vars(amsid):
       data = None
    out = config_vars(amsid,data)
    return out
+
+
+@app.route('/network/setup/<amsid>/', methods=['GET', 'POST'])
+@auth.login_required
+def net_set(amsid):
+   print("M", request.method)
+   if request.method == "POST":
+      data = {} 
+      for key, value in request.form.items():
+         data[key] = value
+      data['method'] = "POST"
+   else:
+      data = {} 
+   out = network_setup(amsid,data)
+   return out
+
+
 
 @app.route('/cal/masks/<amsid>/', methods=['GET', 'POST'])
 @auth.login_required
@@ -659,6 +677,30 @@ def lrn_dash(amsid):
    out = Dash.controller(in_data)
    return(out)
 
+
+@app.route('/NETWORK/<amsid>/', methods=['GET', 'POST'])
+@auth.login_required
+def net_main(amsid):
+   out = network_main(amsid, json_conf)
+   return(out)
+
+@app.route('/NETWORK/MAP/<amsid>/', methods=['GET', 'POST'])
+@auth.login_required
+def net_map(amsid):
+   out = network_map(amsid, json_conf)
+   return(out)
+
+@app.route('/NETWORK/METEORS/<amsid>/', methods=['GET', 'POST'])
+@auth.login_required
+def net_met(amsid):
+   day = request.args.get("day")
+   in_data = {}
+   in_data['day'] = day
+   out = network_meteors(amsid, json_conf, in_data)
+   return(out)
+
+
+
 @app.route('/LEARNING/<amsid>/', methods=['GET', 'POST'])
 @auth.login_required
 def lrn_main(amsid):
@@ -672,6 +714,12 @@ def air(amsid):
    for key, value in request.args.items():
       options[key] = value
    out = ai_review(amsid, options, json_conf)
+   return(out)
+
+@app.route('/AI/MAIN/<amsid>/', methods=['GET', 'POST'])
+@auth.login_required
+def aimain(amsid):
+   out = ai_main(amsid, json_conf)
    return(out)
 
 @app.route('/AIREJECTS/<amsid>/', methods=['GET', 'POST'])

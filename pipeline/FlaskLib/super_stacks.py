@@ -1,5 +1,5 @@
 from flask import Flask, request
-from FlaskLib.FlaskUtils import get_template
+from FlaskLib.FlaskUtils import get_template, make_default_template
 from FlaskLib.Pagination import get_pagination
 import time
 
@@ -64,14 +64,10 @@ def stacks_main(amsid, data) :
       end_ind = len(sdirs)
 
 
-   if remote == 1:
-      footer = get_template("FlaskTemplates/footer-remote.html")
-      header = get_template("FlaskTemplates/header-remote.html")
-   else:
-      header = get_template("FlaskTemplates/header.html")
-      footer = get_template("FlaskTemplates/footer.html")
-   nav = get_template("FlaskTemplates/nav.html")
-   template = get_template("FlaskTemplates/super_stacks_main.html")
+
+   template = make_default_template(amsid, "super_stacks_main.html", json_conf)
+
+
    if "stack_type" in json_conf:
       stack_type = json_conf['stack_type']
    else:
@@ -90,7 +86,6 @@ def stacks_main(amsid, data) :
             mets = data['meteor_files']
             non_meteors = data['failed_files']
          else:
-            print("NO data for this day.")
             #continue
             non_meteors = "???"
             mets = "???"
@@ -224,10 +219,10 @@ def stacks_main(amsid, data) :
          #for img in all_stacks:
          #   out += img + "<BR>"
 
-   template = template.replace("{HEADER}", header)
+   #template = template.replace("{HEADER}", header)
    template = template.replace("{MAIN_TABLE}", out)
-   template = template.replace("{FOOTER}", footer)
-   template = template.replace("{NAV}", nav)
+   #template = template.replace("{FOOTER}", footer)
+   #template = template.replace("{NAV}", nav)
    template = template.replace("{AMSID}", amsid)
    if "obs_name" in json_conf:
       template = template.replace("{OBS_NAME}", json_conf['site']['obs_name'])
@@ -237,7 +232,6 @@ def stacks_main(amsid, data) :
       template = template.replace("{LOCATION}", json_conf['site']['location'])
    else:
       template = template.replace("{LOCATION}", "")
-         
    return(template)
 
 def stacks_day_hours(amsid, day, req):
@@ -365,7 +359,7 @@ def stacks_hour(amsid, day, hour):
 
    return(template)
 
-def make_default_template(amsid, main_template, json_conf):
+def make_default_template_old(amsid, main_template, json_conf):
    header = get_template("FlaskTemplates/header.html")
    footer = get_template("FlaskTemplates/footer.html")
    nav = get_template("FlaskTemplates/nav.html")
