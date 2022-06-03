@@ -153,13 +153,6 @@ def run_jobs(json_conf):
       print("Already running.")
       return()
 
-   if True and os.path.exists("/mnt/ams2/trash/62fix.txt") is False:
-      os.system("./DynaDB.py ddd 2022_05_28")
-      os.system("./DynaDB.py ddd 2022_05_29")
-      os.system("./DynaDB.py ddd 2022_05_30")
-      os.system("./DynaDB.py ddd 2022_05_31")
-      os.system("./DynaDB.py ddd 2022_06_01")
-      os.system("./DynaDB.py ddd 2022_06_02")
 
 
    today = datetime.now().strftime("%Y_%m_%d")
@@ -189,6 +182,11 @@ def run_jobs(json_conf):
    if update_code == 1:
 
       gitpull(json_conf)
+
+   if True and os.path.exists("/mnt/ams2/trash/62redfix.txt") is False:
+      os.system("./red-fix.py")
+      os.system("touch /mnt/ams2/trash/62redfix.txt")
+
 
    check_sync_cal_ai_db(json_conf)
    print("checking cloud dir") 
