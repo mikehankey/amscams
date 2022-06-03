@@ -1506,6 +1506,7 @@ def update_event(dynamodb, event_id, simple_status, wmpl_status, sol_dir):
    return response
 
 def do_dyna_day(dynamodb, day):
+   json_conf = load_json_file("../conf/as6.json")
    # do everything to prep and load meteors
    # to get them ready for solving
    # and then also download event data for this site
@@ -1531,7 +1532,6 @@ def do_dyna_day(dynamodb, day):
          dyn_log[day] = {}
    else:
       dyn_log[day] = {}
-
    if "reject_masks" not in dyn_log[day] or today == day:
       cmd = "./Process.py reject_masks " + day
       print(cmd)
@@ -1630,6 +1630,11 @@ def do_dyna_day(dynamodb, day):
    #cmd = "./DynaDB.py cd " + day
    #print(cmd)
    #os.system(cmd)
+   if "ml" in json_conf:
+      cmd = "python3.6 ./AIDay.py " + day
+      print(cmd)
+      os.system(cmd)
+      
 
 
 def update_mj_events(dynamodb, date):
