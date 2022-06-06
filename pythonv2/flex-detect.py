@@ -1,5 +1,6 @@
 #!/usr/bin/python3
-
+import json
+import requests
 import subprocess
 import copy
 from lib.VIDEO_VARS import PREVIEW_W, PREVIEW_H, SD_W, SD_H
@@ -10659,7 +10660,7 @@ def detect_in_vals(vals_file, cam_size_info):
          masked = check_pt_in_mask(masks, px, py)
          if masked == 0:
             object, objects = find_object(objects, fn,px, py, 10, 10, max_val, 0, 0, None,0)
-            print("EV OBJ:", object, px, py, cam, max_val, sum_val, objects[object]['ofns'], objects[object]['oint'])
+            #print("EV OBJ:", object, px, py, cam, max_val, sum_val, objects[object]['ofns'], objects[object]['oint'])
          #else:
          #   print("MASKED POINT!")
 
@@ -10981,9 +10982,194 @@ def verify_toomany(file):
       os.system(cmd)
       return(0)
 
+def sd_to_hd_roi(sd_x, sd_y, iw,ih):
+
+   if True:
+      hdm_x = 1920 / iw
+      hdm_y = 1080/ ih
+      #x1,y1,x2,y2 = sd_roi
+      hdx = int((sd_x * hdm_x) )
+      hdy = int((sd_y * hdm_y) )
+
+      hx1 = (sd_x * hdm_x) - (224/2)
+      hy1 = (sd_y * hdm_y) - (224/2)
+      hx2 = (sd_x * hdm_x) + (224/2)
+      hy2 = (sd_y * hdm_y) + (224/2)
+
+      hw = hx2 - hx1
+      hh = hy2 - hy1
+      if hw > hh :
+         hh = hw
+      else:
+         hw = hh
+
+      cx = (hx1 + hx2) / 2
+      cy = (hy1 + hy2) / 2
+
+      hx1 = int(cx - (hw/2))
+      hx2 = int(cx + (hw/2))
+      hy1 = int(cy - (hh/2))
+      hy2 = int(cy + (hh/2))
+      if hx1 < 0:
+         hx1 = 0
+         hx2 = 224
+      if hy1 < 0:
+         hy1 = 0
+         hy2 = 224
+      if hx2 >= 1920:
+         hx1 = 1919 - 224
+         hx2 = 1919
+      if hy2 >= 1080:
+         hy1 = 1079 - 224
+         hy2 = 1079
+
+   return(hx1,hy1,hx2,hy2, hdx, hdy)
+
+def check_ai(roi_file):
+
+   url = "http://localhost:5000/AI/METEOR_ROI/?file={}".format(roi_file)
+   print("URL:", url)
+   try:
+      response = requests.get(url)
+      content = response.content.decode()
+      content = json.loads(content)
+      print(content)
+   except Exception as e:
+      print("HTTP ERR:", e)
+      content = {}
+   return(content)
+
+def verify_meteors_ai(day=None):
+   from stack_full import stack_full
+
+   # check / load ai_data file
+   proc_dir = "/mnt/ams2/SD/proc2/" + day + "/"
+   ai_data_file = proc_dir + "data/AI_DATA.json" 
+   if os.path.exists(ai_data_file) is True:
+      ai_data = load_json_file(ai_data_file)
+   else:
+      ai_data = {}
+
+   # test the AI server if not running start it and sleep for 30 seconds
+   url = "http://localhost:5000/"
+   try:
+      response = requests.get(url)
+      content = response.content.decode()
+      print(content)
+   except Exception as e:
+      if "HTTP" in str(e):
+         print("HTTP ERR:", e)
+         os.system("cd /home/ams/amscams/pipeline; /usr/bin/python3.6 AIServer.py > /home/ams/ailog.txt 2>&1 & ")
+         print("Starting AI Sleep for 40 seconds.")
+         time.sleep(90)
+
+
+   os.system("./flex-detect.py vtms " + day)
+   glob_dir = "/mnt/ams2/SD/proc2/" + day + "/data/*maybe-meteors.json"
+   files = glob.glob(glob_dir)
+   print("AI VERIFY:", day)
+   for file in files:
+      (f_datetime, cam_id, f_date_str,fy,fmin,fd,fh, fm, fs) = parse_file_data(file)
+      maybe = load_json_file(file)
+      sun_status = day_or_night(f_datetime)
+      print(file, sun_status)
+      data_file = file.replace("-maybe-meteors.json", "-max-px.json")
+      full_stack_file = file.replace("-maybe-meteors.json", "-stacked.jpg")
+      full_stack_file = full_stack_file.replace("data", "images")
+      first_image_file = full_stack_file.replace("-stacked.jpg", "-first.jpg")
+      marked_stack_file = full_stack_file.replace("-stacked.jpg", "-marked.jpg")
+      if os.path.exists(marked_stack_file) is True:
+         print("Skip done")
+         continue 
+      mp4_file = file.replace("-maybe-meteors.json", ".mp4")
+      mp4_file = mp4_file.replace("data/", "")
+      stacked_image, first_image, max_pxs, saved_frames, fc = stack_full(mp4_file)
+      save_json_file(data_file, max_pxs)
+      print(full_stack_file)
+      print(marked_stack_file)
+      print(first_image_file)
+      print(data_file)
+      marked_stack = cv2.resize(stacked_image.copy(), (1920,1080))
+      temp_stack = cv2.resize(stacked_image.copy(), (1920,1080))
+      
+      for obj_id in maybe['objects']:
+         obj = maybe['objects'][obj_id]
+         ax = int(np.mean(obj['oxs']))
+         ay = int(np.mean(obj['oys']))
+
+         hx1, hy1, hx2, hy2,hx,hy = sd_to_hd_roi(ax, ay, stacked_image.shape[1],stacked_image.shape[0])
+         cv2.circle(marked_stack,(hx,hy), 25, (0,255,0), 2)
+         cv2.rectangle(marked_stack, (hx1, hy1), (hx2, hy2), (255, 0, 0), 2)
+         roi_img = temp_stack[hy1:hy2,hx1:hx2]
+         roi_txt = str(hx1) + "_" + str(hy1) + "_" + str(hx2) + "_" + str(hy2)
+         roi_file = full_stack_file.replace("-stacked.jpg", "-ROI_" + roi_txt + ".jpg")
+         cv2.imwrite(roi_file, roi_img)
+         print("WROTE:", roi_file)
+
+      cv2.imwrite(full_stack_file, stacked_image)
+      cv2.imwrite(first_image_file, first_image)
+      marked_stack = cv2.resize(marked_stack, (640,360))
+      cv2.imwrite(marked_stack_file, marked_stack)
+   img_dir = "/mnt/ams2/SD/proc2/" + day + "/images/"  
+   img_vdir = "/SD/proc2/" + day + "/images/"  
+   roi_rpt = ""
+   files = os.listdir(img_dir) 
+   roi_files = []
+   for ff in files:
+      if "ROI" in ff:
+         roi_files.append(img_dir + ff)
+   
+   good_ai = ""
+   bad_ai = ""
+   bad_files = []
+   for rf in roi_files:
+      rfn = rf.split("/")[-1]
+      vrf = rf.replace("/mnt/ams2", "")
+      root_fn = rfn.split("-ROI")[0]
+      if rfn in ai_data:
+         print("Did AI already.")
+         #ai_resp = check_ai(rf)
+         ai_resp = ai_data[rfn]
+      else:
+         ai_resp = check_ai(rf)
+      if "mc_class" in ai_resp:
+
+          ai_info = str(int(ai_resp['meteor_yn'])) + " " + str(int(ai_resp['fireball_yn'])) + " " + str((ai_resp['mc_class'])) + " " + str(int(ai_resp['mc_class_conf']))
+          ai_data[rfn] = ai_resp
+          status = 1
+          if ("meteor" not in ai_resp['mc_class'] and (ai_resp['mc_class_conf'] > ai_resp['meteor_yn'] and ai_resp['mc_class_conf'] > ai_resp['fireball_yn'])) and ai_resp['meteor_yn'] < 50:
+             status = 0
+          if ai_resp['meteor_yn'] > 50 or ai_resp['fireball_yn'] > 50:
+             status = 1
+          if status == 0:
+             bad_ai += "<div style='float:left; border: 1px #FF0000 solid;'><img src={} alt='{}'><br>{}</div>".format(vrf, ai_info, ai_info)
+             bad_files.append(root_fn)
+          else:
+             good_ai += "<div style='float:left; border: 1px #00FF00 solid;'><img src={} alt='{}'><br>{}</div>".format(vrf, ai_info, ai_info)
+      else:
+         print("MISSING mc_class", ai_resp)
+   fp = open(img_dir + "rois.html", "w")
+   fp.write(good_ai)
+   fp.write(bad_ai)
+   save_json_file(ai_data_file, ai_data)
+
+   bad_dir = proc_dir + "ai_bad/"
+   if os.path.exists(bad_dir) is False:
+      os.makedirs(bad_dir)
+   for bf in bad_files:
+      bff = proc_dir + "data/" + bf
+      cmd = "mv " + bff + "-maybe-meteors.json " + bad_dir
+      print(cmd)
+      os.system(cmd)
+   
+   print(img_vdir + "roi.html")
 
 def verify_meteors(day=None):
-   print("Verify Meteors")
+   json_conf = load_json_file("../conf/as6.json")
+   if "ml" in json_conf:
+      print("AI Verify Meteors")
+      verify_meteors_ai(day)
+
    if day == None:
       days = glob.glob("/mnt/ams2/SD/proc2/*")
       for day in days:
@@ -10997,7 +11183,7 @@ def verify_meteors(day=None):
                sun_status = day_or_night(f_datetime)
 
                if "trim" not in file:
-                  #print("VERIFY:", sun_status, file)
+                  print("VERIFY:", sun_status, file)
                   verify_meteor(file)
                #else: 
                #   print("SKIP:", file)
@@ -11006,11 +11192,14 @@ def verify_meteors(day=None):
       os.system("./flex-detect.py vtms " + day)
       glob_dir = "/mnt/ams2/SD/proc2/" + day + "/data/*maybe-meteors.json"
       files = glob.glob(glob_dir)
+      fc = 0
       for file in files:
          (f_datetime, cam_id, f_date_str,fy,fmin,fd,fh, fm, fs) = parse_file_data(file)
          sun_status = day_or_night(f_datetime)
          if "trim" not in file:
+            print("VERIFY:", fc, file)
             verify_meteor(file)
+            fc += 1
          else:
             os.system("rm " + file)
   
