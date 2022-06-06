@@ -183,9 +183,9 @@ def run_jobs(json_conf):
 
       gitpull(json_conf)
 
-   if True and os.path.exists("/mnt/ams2/trash/62redfix.txt") is False:
-      os.system("./red-fix.py")
-      os.system("touch /mnt/ams2/trash/62redfix.txt")
+   #if True and os.path.exists("/mnt/ams2/trash/62redfix.txt") is False:
+   #   os.system("./red-fix.py")
+   #   os.system("touch /mnt/ams2/trash/62redfix.txt")
 
 
    check_sync_cal_ai_db(json_conf)
