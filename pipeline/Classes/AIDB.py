@@ -1,4 +1,5 @@
 import sqlite3
+import time
 import requests
 from datetime import datetime
 import numpy as np
@@ -22,6 +23,7 @@ class AllSkyDB():
       self.data_root = "/mnt/ams2"
       self.msdir = self.data_root + "/METEOR_SCAN/"
       self.mdir = self.data_root + "/meteors/"
+      self.models_loaded = False 
       
       self.today = datetime.now().strftime("%Y_%m_%d")
       if os.path.exists("windows.json") is True:
@@ -48,38 +50,34 @@ class AllSkyDB():
       self.cur = self.con.cursor()
 
       self.ASAI = AllSkyAI()
-      self.ASAI.load_all_models()
+      #self.ASAI.load_all_models()
       self.ASD = ASAI_Detect()
       self.check_update_status()
       #self.reconcile_db()
 
-   def create_jobs_table(self):
 
- 
-      # Connecting to sqlite
-      # connection object
-      connection_obj = sqlite3.connect('geek.db')
+   def check_make_tables(self):
 
-      # cursor object
-      cursor_obj = connection_obj.cursor()
- 
       # Drop the GEEK table if already exists.
-      cursor_obj.execute("DROP TABLE IF EXISTS GEEK")
- 
-      # Creating table
-      table = """ CREATE TABLE GEEK (
-            Email VARCHAR(255) NOT NULL,
-            First_Name CHAR(25) NOT NULL,
-            Last_Name CHAR(25),
-            Score INT
-      ); """
- 
-      cursor_obj.execute(table)
- 
-      print("Table is Ready")
- 
-      # Close the connection
-      connection_obj.close()
+      try:
+         self.cur.execute("SELECT * FROM deleted_meteors")
+         self.cur.fetchone()
+      except sqlite3.OperationalError as e:
+         if e.args[0].startswith('no such table'):
+
+            print("deleted_meteors table does not exist")
+            # Creating table
+            table = """ CREATE TABLE deleted_meteors (
+               sd_vid TEXT,
+               hd_vid TEXT,
+               PRIMARY KEY("sd_vid")
+            )
+      
+            """
+            print("deleted_meteors table created")   
+            print(table)
+            self.cur.execute(table)
+
 
    def report_day(self,date):
       sql = "SELECT root_fn, hd_vid, meteor_yn, meteor_yn_conf,fireball_yn_conf,mc_class, roi, ai_resp from meteors where sd_vid like ?"
@@ -452,6 +450,7 @@ class AllSkyDB():
 
    
    def starttime_from_file(self, filename):
+      print("FILE:", filename)
       (f_datetime, cam, f_date_str,fy,fmon,fd, fh, fm, fs) = convert_filename_to_date_cam(filename)
       trim_num = get_trim_num(filename)
       extra_sec = int(trim_num) / 25
@@ -964,6 +963,10 @@ class AllSkyDB():
      
 
    def load_all_meteors(self, selected_day = None):
+      if self.models_loaded is False:
+         self.ASAI.load_all_models()
+         self.models_loaded = True
+
       os.system("clear")
       if selected_day is not None:
          print("\rLoad meteors for day: " + selected_day, end= "")
@@ -1502,30 +1505,77 @@ class AllSkyDB():
 
       print("Done mc rejects.") 
 
-   def purge():
+   def check_file_location(self, root_file):
+      date = root_file[0:10]
+      wild = root_file + "*"
+      mdir = "/mnt/ams2/meteors/{}/".format(date)
+      msdir = "/mnt/ams2/METEOR_SCAN/{}/".format(date)
+      nmdir = "/mnt/ams2/non_meteors/{}/".format(date)
+      nmcdir = "/mnt/ams2/non_meteors_colnfirmed/{}/".format(date)
+
+      meteor_files = glob.glob(mdir + wild)
+      meteor_scan_files = glob.glob(msdir + wild)
+      non_meteor_files = glob.glob(nmdir + wild)
+      non_meteor_confirmed_files = glob.glob(nmcdir + wild)
+      #print("FILES:", root_file, meteor_files, meteor_scan_files, non_meteor_files, non_meteor_confirmed_files)
+      return(meteor_files, meteor_scan_files, non_meteor_files, non_meteor_confirmed_files)
+
+
+   def purge(self):
       # move confirmed non-meteors still in the meteor dir to the non-meteor dir
       # remove the meteors database record
       # insert non-meteor record in non_meteors table
       sql = """
-               SELECT sd_vid, hd_vid 
+               SELECT sd_vid, hd_vid, roi, meteor_yn, fireball_yn, mc_class, mc_class_conf, 
+                      human_confirmed 
                  FROM meteors 
                 WHERE human_confirmed = -1 
+                   OR deleted = 1
       """
       self.cur.execute(sql)
       rows = self.cur.fetchall()
       dds = {}
+
       for row in rows:
-         sd_vid, hd_vid = row
-         mdir = "/mnt/ams2/meteors/" + sd_vid[0:10] + "/"
-         nmdir = "/mnt/ams2/non_meteors/" + sd_vid[0:10] + "/"
-         if nmdir not in dds:
-            if os.path.exists(nmdir) is False:
-               os.makedirs(nmdir)
-               dds[nmdir] = 1
-         gfiles_sd = glob.glob(mdir + sd_vid.replace(".mp4", "*"))
-         gfiles_hd = glob.glob(mdir + sd_vid.replace(".mp4", "*"))
-         print(gfiles_sd)
-         print(gfiles_hd)
+         sd_vid, hd_vid, roi, meteor_yn, fireball_yn, mc_class, mc_class_conf, human_confirmed = row
+        
+
+         root_fn = sd_vid.replace(".mp4", "")
+         hd_root_fn = sd_vid.replace(".mp4", "")
+         mf, msf, nmf, nmcf = self.check_file_location(root_fn)
+         if len(mf) > 0 or len(msf) > 0 or len(nmf) > 0:
+            print("Need to move files!", root_fn) 
+         elif (len(mf) == 0 and len(msf) == 0 and len(nmf) == 0): 
+            print("All Files moved!") 
+         elif (len(nmcf) == 0):
+            print("All Files moved!") 
+         else :
+            print("No files found.") 
+
+         mf, msf, nmf, nmcf = self.check_file_location(hd_root_fn)
+         if len(mf) > 0 or len(msf) > 0 or len(nmf) > 0:
+            print("Need to move HD files!", hd_root_fn) 
+         elif (len(mf) == 0 and len(msf) == 0 and len(nmf) == 0): 
+            print("All HD Files moved!") 
+         elif (len(nmcf) == 0):
+            print("All Files moved!") 
+         else :
+            print("No files found.") 
+
+         isql = """INSERT OR REPLACE INTO non_meteors_confirmed (sd_vid, hd_vid, roi, meteor_yn, fireball_yn, multi_class, 
+                                                               multi_class_conf, human_confirmed, last_updated)
+                                                       VALUES (?,?,?,?, ?, ?, ?, ?, ?)"""
+         ivals = [ sd_vid, hd_vid, roi, meteor_yn, fireball_yn, mc_class, mc_class_conf, human_confirmed, time.time()]
+         self.cur.execute(isql, ivals)
+         dsql = "DELETE FROM meteors WHERE sd_vid = ?"
+         dvals = [sd_vid]
+         self.cur.execute(dsql, dvals)
+         print(isql, ivals)
+         print(dsql, dvals)
+         self.con.commit()
+
          exit()
+
+
 
 

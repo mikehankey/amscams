@@ -14,6 +14,7 @@ today = datetime.now().strftime("%Y_%m_%d")
 
 print("Init DB Starting.")
 AIDB = AllSkyDB()
+AIDB.check_make_tables()
 print("Init DB Started.")
 
 
@@ -75,9 +76,9 @@ if date == "ALL" or date == "all":
          ai_file = meteor_dir + md + "/" + AIDB.station_id + "_" + md + "_AI_DATA.info"
          print("AIFILE:", ai_file)
          #exit()
-         if os.path.exists(ai_file) and date != today and date != yest:
+         if os.path.exists(ai_file) and date != today and date != yest and "2022_05" not in date:
             print("AI DONE FOR THIS DAY ALREADY!")
-            continue 
+            #continue 
          date = md
          AIDB.load_all_meteors(date)
          AIDB.verify_media_day(date)

@@ -2,8 +2,8 @@
 import os
 from lib.PipeVideo import ffmpeg_cats
 
-clip1 = "/mnt/ams2/HD/2021_03_21_04_25_00_000_010050.mp4"
-clip2 = "/mnt/ams2/HD/2021_03_21_04_26_00_000_010050.mp4"
+clip1 = "/mnt/ams2/HD/2021_03_21_04_25_00_000_010001.mp4"
+clip2 = "/mnt/ams2/HD/2021_03_21_04_26_00_000_010001.mp4"
 c2fn = clip2.split("/")[-1]
 join_file = clip1.replace(".mp4", "__")
 join_file += c2fn 

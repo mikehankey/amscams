@@ -1,6 +1,10 @@
-from flask import Flask
+import os
+import json
+import cv2
+from flask import Flask, request, Response, make_response
 from lib.asciiart import *
-app = Flask(__name__)
+app = Flask(__name__, static_url_path='/static')
+
 from random import randrange
 
 from Classes.ASAI import AllSkyAI
@@ -8,7 +12,57 @@ from Classes.ASAI import AllSkyAI
 ASAI = AllSkyAI()
 ASAI.load_all_models()
 
-#res = ASAI.meteor_yn(root_fn,roi_file,oimg,roi)
+
+@app.route('/AI/METEOR_ROI/', methods=['POST', 'GET'])
+def mroi():
+   out = "METEOR ROI"
+   in_file = request.args.get('file')
+   if os.path.exists(in_file):
+      roi_img = cv2.imread(in_file)
+      roi_img = cv2.resize(roi_img, (224,224))
+      vurl = in_file.replace("/mnt/ams2", "")
+      resp = ASAI.meteor_yn("temp.jpg", None, roi_img)
+      # determine the auto-action (really bad auto rejects)
+      auto_reject = 0
+      if resp['meteor_yn'] <= 1: 
+         auto_reject += 1
+      if resp['fireball_yn'] <= 25 and resp['meteor_yn'] <= 25: 
+         auto_reject += 1
+      if resp['meteor_yn'] <= 25: 
+         auto_reject += 1
+      if "meteor" not in resp['mc_class'] and resp['mc_class_conf'] >= 99: 
+         auto_reject += 1
+      resp['auto_reject'] = auto_reject
+
+
+
+      host = request.url_root.replace(":5000", "")
+      resp['img'] = "<img src={}>".format(host + vurl)
+   else:
+      resp = {}
+      resp['status'] = 0
+      resp['msg'] = "Input file not found"
+
+   out = json.dumps(resp)
+
+   return(out)
+
+@app.route('/AI/METEOR_OBJECT_SCAN/', methods=['POST', 'GET'])
+def moscan():
+   out = "METEOR OBJECT SCAN"
+   return(out)
+
+@app.route('/AI/WEATHER_ROI/', methods=['POST', 'GET'])
+def wtroi():
+   out = "WEATHER ROI"
+   return(out)
+
+@app.route('/AI/WEATHER_SCAN/', methods=['POST', 'GET'])
+def wtscan():
+   out = "WEATHER SCAN"
+   return(out)
+
+
 
 
 @app.route('/')

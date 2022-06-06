@@ -1,7 +1,8 @@
 import base64
 import os
 from flask import Flask, request, Response, make_response
-from FlaskLib.Learning import learning_meteors_dataset, learning_meteors_tag, meteor_ai_scan, recrop_roi, recrop_roi_confirm, learn_main, learning_review_day, batch_update_labels, learning_db_dataset, timelapse_main, learning_weather, ai_review, ai_rejects, confirm_meteor, confirm_non_meteor, confirm_non_meteor_label , ai_main
+from FlaskLib.Learning import learning_meteors_dataset, learning_meteors_tag, meteor_ai_scan, recrop_roi, recrop_roi_confirm, learn_main, learning_review_day, batch_update_labels, learning_db_dataset, timelapse_main, learning_weather, ai_review, ai_rejects, confirm_meteor, confirm_non_meteor, confirm_non_meteor_label , ai_main , ai_dict
+#from FlaskLib.AI_API import ai_api
 from FlaskLib.motion_detects import motion_detects
 from FlaskLib.FlaskUtils import get_template
 from FlaskLib.api_funcs import update_meteor_points, show_cat_stars, delete_meteor, restore_meteor, delete_meteors, reduce_meteor, delete_frame, crop_video
@@ -34,6 +35,9 @@ auth = HTTPBasicAuth()
 # Main controller for AllSkyCams UI application.
 
 json_conf = load_json_file("../conf/as6.json")
+
+
+
 if "dynamodb" in json_conf:
    dynDB = 1
    from flask_dynamo import Dynamo
@@ -716,6 +720,27 @@ def air(amsid):
    out = ai_review(amsid, options, json_conf)
    return(out)
 
+
+@app.route('/AI/API/<amsid>/', methods=['GET', 'POST'])
+@auth.login_required
+def aiapi(amsid):
+
+   for key, value in request.args.items():
+      options[key] = value
+   out = ai_api(amsid, options, json_conf, ASAI)
+   return(out)
+
+@app.route('/AI/DICT/<amsid>/<date>/', methods=['GET', 'POST'])
+@auth.login_required
+def aidict(amsid, date):
+   options = {}
+   for key, value in request.args.items():
+      options[key] = value
+   out = ai_dict(amsid, date, options, json_conf)
+   return(out)
+
+
+
 @app.route('/AI/MAIN/<amsid>/', methods=['GET', 'POST'])
 @auth.login_required
 def aimain(amsid):
@@ -730,6 +755,8 @@ def airej(amsid):
       options[key] = value
    out = ai_rejects(amsid, options, json_conf)
    return(out)
+
+
 
 @app.route('/confirm_meteor/<root_fn>/', methods=['GET'] )
 @auth.login_required
