@@ -1610,16 +1610,14 @@ class AllSkyDB():
             print(ivals)
             self.cur.execute(isql, ivals)
 
-         if  False: 
+         if  True: 
 
             dsql = "DELETE FROM meteors WHERE sd_vid = ?"
             dvals = [sd_vid]
             self.cur.execute(dsql, dvals)
-            print(isql, ivals)
             print(dsql, dvals)
          self.con.commit()
 
-         exit()
 
 
 

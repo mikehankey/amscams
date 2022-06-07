@@ -68,3 +68,12 @@ os.system(cmd)
 
 cmd = "touch tensorflow-installed.txt"
 os.system(cmd)
+
+if os.path.exists("../pipeline/models") is False:
+   os.makedirs("../pipeline/models")
+
+if os.path.exists("/home/ams/amscams/pipeline/models/ASAI-v2.7z") is False:
+   cmd = "cp /mnt/archive.allsky.tv/AMS1/ML/ASAI-v2.7z ../pipeline/models/"
+   os.system(cmd)
+   cmd = "7z e /home/ams/amscams/pipeline/models/ASAI-v2.7z"
+   os.system(cmd)
