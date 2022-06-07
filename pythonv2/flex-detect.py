@@ -11040,7 +11040,7 @@ def check_ai(roi_file):
    return(content)
 
 def verify_meteors_ai(day=None):
-   from stack_full import stack_full
+   from stack_fast import stack_only
 
    # check / load ai_data file
    proc_dir = "/mnt/ams2/SD/proc2/" + day + "/"
@@ -11083,7 +11083,7 @@ def verify_meteors_ai(day=None):
          continue 
       mp4_file = file.replace("-maybe-meteors.json", ".mp4")
       mp4_file = mp4_file.replace("data/", "")
-      stacked_image, first_image, max_pxs, saved_frames, fc = stack_full(mp4_file)
+      stacked_image, first_image, max_pxs, saved_frames, fc = stack_only(mp4_file)
       save_json_file(data_file, max_pxs)
       print(full_stack_file)
       print(marked_stack_file)
@@ -11162,13 +11162,15 @@ def verify_meteors_ai(day=None):
       print(cmd)
       os.system(cmd)
    
-   print(img_vdir + "roi.html")
+   print(img_vdir + "rois.html")
 
 def verify_meteors(day=None):
    json_conf = load_json_file("../conf/as6.json")
    if "ml" in json_conf:
       print("AI Verify Meteors")
-      verify_meteors_ai(day)
+      cmd = "python3.6 ./flex-detect.py vms_ai " + day
+      os.system(cmd)
+      #verify_meteors_ai(day)
 
    if day == None:
       days = glob.glob("/mnt/ams2/SD/proc2/*")
@@ -12314,3 +12316,5 @@ if cmd == "fam" or cmd == 'fix_arc_meteor':
    fix_arc_meteor(sys.argv[2])
 if cmd == "man" :
    man_detect(sys.argv[2]) 
+if cmd == "vms_ai" :
+   verify_meteors_ai(sys.argv[2]) 

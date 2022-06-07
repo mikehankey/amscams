@@ -18,7 +18,7 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 class AllSkyDB():
 
    def __init__(self):
-      os.system("clear")
+      #os.system("clear")
       self.home_dir = "/home/ams/amscams/"
       self.data_root = "/mnt/ams2"
       self.msdir = self.data_root + "/METEOR_SCAN/"
@@ -49,7 +49,10 @@ class AllSkyDB():
       self.con = self.connect_database(self.station_id)
       self.cur = self.con.cursor()
 
+      self.check_make_tables()
+
       self.ASAI = AllSkyAI()
+      self.update_summary()
       #self.ASAI.load_all_models()
       self.ASD = ASAI_Detect()
       self.check_update_status()
@@ -57,11 +60,22 @@ class AllSkyDB():
 
 
    def check_make_tables(self):
+      print("CHECK MAKE TABLES")
+      try:
+         self.cur.execute("SELECT fireball_yn_conf FROM meteors limit 1")
+         self.cur.fetchone()
+         print("meteor table ok")
+      except sqlite3.OperationalError as e:
+         #if e.args[0].startswith('no such table'):
+         print("METEOR TABLE NEEDS TO BE UPDATED!")
+         cmd = "mv " + self.db_file + " " + self.db_file + ".bak"
+         os.system(cmd)
+         self.make_fresh_db()
 
-      # Drop the GEEK table if already exists.
       try:
          self.cur.execute("SELECT * FROM deleted_meteors")
          self.cur.fetchone()
+         print("deleted meteors table ok")
       except sqlite3.OperationalError as e:
          if e.args[0].startswith('no such table'):
 
@@ -77,7 +91,7 @@ class AllSkyDB():
             print("deleted_meteors table created")   
             print(table)
             self.cur.execute(table)
-
+      print("check make tables good")
 
    def report_day(self,date):
       sql = "SELECT root_fn, hd_vid, meteor_yn, meteor_yn_conf,fireball_yn_conf,mc_class, roi, ai_resp from meteors where sd_vid like ?"
@@ -98,11 +112,11 @@ class AllSkyDB():
          os.system(cmd)
          #cmd = "python3.6 testDB.py load ALL"
          #os.system(cmd)
-         confirm = input("Load all meteors? [Y]es or any key to quit.")
-         if confirm == "Y":
-            self.load_all_meteors()
-         else:
-            exit()
+         #confirm = input("Load all meteors? [Y]es or any key to quit.")
+         #if confirm == "Y":
+         #   self.load_all_meteors()
+         #else:
+         #   exit()
       else:
          print("DB FILE ALREADY EXIST:", self.db_file)
          today = datetime.now().strftime("%Y_%m_%d")
