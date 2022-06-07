@@ -11137,8 +11137,8 @@ def verify_meteors_ai(day=None):
           ai_info = str(int(ai_resp['meteor_yn'])) + " " + str(int(ai_resp['fireball_yn'])) + " " + str((ai_resp['mc_class'])) + " " + str(int(ai_resp['mc_class_conf']))
           ai_data[rfn] = ai_resp
           status = 1
-          if ("meteor" not in ai_resp['mc_class'] and (ai_resp['mc_class_conf'] > ai_resp['meteor_yn'] and ai_resp['mc_class_conf'] > ai_resp['fireball_yn'])) and ai_resp['meteor_yn'] < 50:
-             status = 0
+
+
           if ai_resp['meteor_yn'] > 50 or ai_resp['fireball_yn'] > 50:
              status = 1
           if status == 0:
