@@ -187,7 +187,7 @@ class AllSkyNetwork():
          self.station_dict[sid] = data
 
    def day_prep(self, date):
-      os.system("clear")
+      print("ok")
 
    def set_dates(self, date):
       print("SET DATES FOR:", date)
@@ -2644,10 +2644,11 @@ $(document).ready(function () {
       print("\n\nsaved:", report_file)
 
    def day_publish(self, date):
-      os.system("clear")
+
+      print("ok")
 
    def day_load(self, date):
-      os.system("clear")
+      print("ok")
 
    def make_obs_dict(self):
       #if cfe(self.obs_dict_file) == 1:

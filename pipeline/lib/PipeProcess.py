@@ -1,4 +1,5 @@
 from datetime import datetime
+import time
 import glob
 from lib.PipeUtil import cfe, save_json_file, convert_filename_to_date_cam, load_json_file, day_or_night   , get_file_info
 from lib.PipeUtil import day_or_night, check_running
@@ -131,8 +132,8 @@ def gitpull(json_conf):
 
 def run_jobs(json_conf):
 
-   # one time fix put in on 6/2 remove by 6/4 
-
+   rj_start = time.time()
+   # make sure DynaDB is not already running. If it is kill it.
    running = check_running("DynaDB.py")
    if running > 0:
       os.system("kill -9 $(ps aux | grep 'rerun.py' | awk '{print $2}')")
@@ -140,12 +141,9 @@ def run_jobs(json_conf):
    if running > 0:
       os.system("kill -9 $(ps aux | grep 'DynaDB' | awk '{print $2}')")
 
-   #print("EXIT")
-   #exit()
 
-
-
-   msg = "info:run_jobs:Run jobs ended"
+   # log heartbeat with network
+   msg = "info:run_jobs:Run jobs started"
    cmd = "./log.py '" + msg + "'"
    os.system(cmd)
    running = check_running("Process.py run_jobs")
@@ -183,13 +181,10 @@ def run_jobs(json_conf):
 
       gitpull(json_conf)
 
-   #if True and os.path.exists("/mnt/ams2/trash/62redfix.txt") is False:
-   #   os.system("./red-fix.py")
-   #   os.system("touch /mnt/ams2/trash/62redfix.txt")
 
-
-   check_sync_cal_ai_db(json_conf)
+   # Sync cal files to the cloud as needed
    print("checking cloud dir") 
+   check_sync_cal_ai_db(json_conf)
    amsid = json_conf['site']['ams_id']
    # check to make sure the cloud drive is setup and cal sync'd
    cloud_conf_dir = "/mnt/archive.allsky.tv/" + amsid + "/CAL/"
@@ -219,9 +214,14 @@ def run_jobs(json_conf):
          print("Last Loaded Data :", tdiff/60, "hours ago")
          if int(tdiff) / 60 > 5:
             run_load = 1 
+
+
       if run_load == 1:
-         os.system("./DynaDB.py ddd " + yest + "")
-         os.system("./DynaDB.py ddd " + today + "")
+
+         print("./DynaDB.py ddd " + yest + "")
+         os.system("./DynaDB.py ddd " + yest + " > /home/ams/ddd.txt")
+         print("./DynaDB.py ddd " + today + "")
+         os.system("./DynaDB.py ddd " + today + " >> /home/ams/ddd.txt")
          os.system("touch /home/ams/loaded_last.txt")
 
    if "WMPL" in json_conf:
@@ -243,7 +243,7 @@ def run_jobs(json_conf):
             #os.system("./solveWMPL.py sd " + today + "")
             os.system("touch /home/ams/solved_last.txt")
 
-   # check on scan stack
+   # Remove old files in the SD dir likely corrupted) 
    sd_files = glob.glob("/mnt/ams2/SD/*.mp4")
    for file in sd_files:
       (f_datetime, cam, f_date_str,fy,fmin,fd, fh, fm, fs) = convert_filename_to_date_cam(file)
@@ -299,28 +299,32 @@ def run_jobs(json_conf):
    cmds.append(('all', "Batch Meteor Thumbs", "cd /home/ams/amscams/pythonv2; ./batchJobs.py bmt"))
    cmds.append(('all', "Run Vals Detector", "cd /home/ams/amscams/pythonv2; ./flex-detect.py bv " + today))
    cmds.append(('all', "Run Vals Detector", "cd /home/ams/amscams/pythonv2; ./flex-detect.py bv " + yest))
+
+   cmds.append(('all', "Run Verify Meteor", "cd /home/ams/amscams/pythonv2; ./flex-detect.py vms " + today))
+   cmds.append(('all', "Run Verify Meteor", "cd /home/ams/amscams/pythonv2; ./flex-detect.py vms " + yest))
+
    cmds.append(('all', "Run Vals Detector", "cd /home/ams/amscams/pythonv2; ./flex-detect.py bv " + three_day))
    cmds.append(('all', "Run Vals Detector", "cd /home/ams/amscams/pythonv2; ./flex-detect.py bv " + four_day))
    cmds.append(('all', "Run Vals Detector", "cd /home/ams/amscams/pythonv2; ./flex-detect.py bv " + five_day))
-   cmds.append(('all', "Run Verify Meteor", "cd /home/ams/amscams/pythonv2; ./flex-detect.py vms " + today))
-   cmds.append(('all', "Run Verify Meteor", "cd /home/ams/amscams/pythonv2; ./flex-detect.py vms " + yest))
    cmds.append(('all', "Run Verify Meteor", "cd /home/ams/amscams/pythonv2; ./flex-detect.py vms " + three_day))
    cmds.append(('all', "Run Verify Meteor", "cd /home/ams/amscams/pythonv2; ./flex-detect.py vms " + four_day))
    cmds.append(('all', "Run Verify Meteor", "cd /home/ams/amscams/pythonv2; ./flex-detect.py vms " + five_day))
-   cmds.append(('day', "Run Reject Filters", "cd /home/ams/amscams/pipeline; ./Process.py reject_masks " + today))
-   cmds.append(('day', "Run Reject Filters", "cd /home/ams/amscams/pipeline; ./Process.py reject_masks " + yest))
+   
+   #cmds.append(('day', "Run Reject Filters", "cd /home/ams/amscams/pipeline; ./Process.py reject_masks " + today))
+   #cmds.append(('day', "Run Reject Filters", "cd /home/ams/amscams/pipeline; ./Process.py reject_masks " + yest))
    # run it 2x to get rid of hotspots
-   cmds.append(('day', "Run Reject Filters", "cd /home/ams/amscams/pipeline; ./Process.py reject_masks " + today))
-   cmds.append(('day', "Run Reject Filters", "cd /home/ams/amscams/pipeline; ./Process.py reject_masks " + yest))
-   cmds.append(('day', "Run Reject Filters", "cd /home/ams/amscams/pipeline; ./Process.py reject_planes " + today))
-   cmds.append(('day', "Run Reject Filters", "cd /home/ams/amscams/pipeline; ./Process.py reject_planes " + yest))
-   cmds.append(('day', "Reduce / Confirm Meteors", "cd /home/ams/amscams/pipeline; ./Process.py confirm " + today))
-   cmds.append(('day', "Reduce / Confirm Meteors", "cd /home/ams/amscams/pipeline; ./Process.py confirm " + yest))
-   cmds.append(('day', "Meteor Prep", "cd /home/ams/amscams/pipeline; ./Process.py meteor_prep " + today))
-   cmds.append(('day', "Meteor Prep", "cd /home/ams/amscams/pipeline; ./Process.py meteor_prep " + yest))
+   #cmds.append(('day', "Run Reject Filters", "cd /home/ams/amscams/pipeline; ./Process.py reject_masks " + today))
+   #cmds.append(('day', "Run Reject Filters", "cd /home/ams/amscams/pipeline; ./Process.py reject_masks " + yest))
+   #cmds.append(('day', "Run Reject Filters", "cd /home/ams/amscams/pipeline; ./Process.py reject_planes " + today))
+   #cmds.append(('day', "Run Reject Filters", "cd /home/ams/amscams/pipeline; ./Process.py reject_planes " + yest))
+   #cmds.append(('day', "Reduce / Confirm Meteors", "cd /home/ams/amscams/pipeline; ./Process.py confirm " + today))
+   #cmds.append(('day', "Reduce / Confirm Meteors", "cd /home/ams/amscams/pipeline; ./Process.py confirm " + yest))
+
+   #cmds.append(('day', "Meteor Prep", "cd /home/ams/amscams/pipeline; ./Process.py meteor_prep " + today))
+   #cmds.append(('day', "Meteor Prep", "cd /home/ams/amscams/pipeline; ./Process.py meteor_prep " + yest))
    #cmds.append(('day', "Cal Wiz", "cd /home/ams/amscams/pipeline; ./Process.py cal_wiz"))
-   cmds.append(('day', "Meteor Prep", "cd /home/ams/amscams/pipeline; ./Process.py meteor_prep " + today + " 2" ))
-   cmds.append(('day', "Meteor Prep", "cd /home/ams/amscams/pipeline; ./Process.py meteor_prep " + yest + " 2"))
+   #cmds.append(('day', "Meteor Prep", "cd /home/ams/amscams/pipeline; ./Process.py meteor_prep " + today + " 2" ))
+   #cmds.append(('day', "Meteor Prep", "cd /home/ams/amscams/pipeline; ./Process.py meteor_prep " + yest + " 2"))
    #cmds.append(('day', "Cal Init", "cd /home/ams/amscams/pipeline; ./auto_run_cal.py"))
 
    #cmds.append(('all', "Run Audit", "cd /home/ams/amscams/pipeline; ./Process.py audit " + today))
@@ -328,13 +332,23 @@ def run_jobs(json_conf):
    for cmd in cmds :
       if sun == "day":
          print(cmd[2])
-         os.system(cmd[2])
+         st = time.time()
+         os.system(cmd[2] + " > /home/ams/run_jobs.txt 2>&1")
+         elp = time.time() - st
+         print("ELP:", elp)
       else:
          if cmd[0] == 'all':
             print(cmd[2])
-            os.system(cmd[2])
+            st = time.time()
+            os.system(cmd[2]  + " > /home/ams/run_jobs.txt 2>&1")
+            elp = time.time() - st
+            print("ELP:", elp)
 
    msg = "info:run_jobs:Run jobs ended"
    cmd = "./log.py '" + msg + "'"
    #os.system(cmd)
+   rj_elp = time.time() - rj_start
+   print("RJ ELP:", rj_elp)
+   cmd = "echo 'elapsed run time: " + str(rj_elp) + " ' >> /home/ams/run_jobs.txt "
+   os.system(cmd)
    

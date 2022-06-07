@@ -2667,6 +2667,9 @@ def build_query(options, cur):
    # determine the underlying table first
    if "db" not in options:
       options['db'] = "meteor_db"
+
+   if options['db'] == "meteor_db":
+
       table = "meteors"
       sql = """SELECT sd_vid,hd_vid, meteor_yn_conf, fireball_yn_conf,mc_class,mc_class_conf,ai_resp,camera_id, start_datetime, 
                       human_confirmed, multi_station, ang_velocity, duration, peak_intensity FROM meteors"""
@@ -2735,8 +2738,15 @@ def build_query(options, cur):
       order_msg = "ordering by " + order_short
       order_by = options['order_by']
    else:
-      order_by = "ORDER BY mc_class, mc_class_conf desc"
-      order_msg = "ordering by class confidence " 
+      order_by = "ORDER BY sd_vid desc"
+      order_msg = "ordering by date desc (new to old)" 
+
+   if order_by == "date_desc":
+      order_by = "ORDER BY sd_vid desc"
+      order_msg = "ordering by date desc (new to old)" 
+   if order_by == "date_asc":
+      order_by = "ORDER BY sd_vid asc"
+      order_msg = "ordering by date asc (old to new)" 
 
    if order_by == "meteor_yn_desc":
       order_by = "ORDER BY meteor_yn_conf desc"
@@ -2793,17 +2803,64 @@ def build_query(options, cur):
 
    return(sql_stmt, where_vals, total_rows, order_msg)
 
+def ai_scan_review(station_id, options, json_conf):
+   out = ""
+   good_ai = ""
+   bad_ai = ""
+   if "date" not in options:
+      out = "add &date= to querry!"
+      return(out)
+   ai_file = "/mnt/ams2/SD/proc2/{}/data/".format(options['date']) + "/AI_DATA.json"
+   roi_dir = "/mnt/ams2/SD/proc2/{}/images/".format(options['date'])
+   files = glob.glob(roi_dir + "*ROI*")
+   bad_files = []
+   print("AIFILE:", ai_file)
+   if os.path.exists(ai_file ) is True:
+      ai_data = load_json_file(ai_file) 
+   else:
+      ai_data = {}
+
+   for ff in files:
+      vf = ff.replace("/mnt/ams2", "")
+      vfn = vf.split("/")[-1]
+      root_fn = vfn.split("-ROI")[0]
+      if vfn in ai_data:
+         ai_resp = ai_data[vfn]
+      else:
+         ai_resp = {}
+
+      if "mc_class" in ai_resp:
+          ai_info = str(int(ai_resp['meteor_yn'])) + " " + str(int(ai_resp['fireball_yn'])) + " " + str((ai_resp['mc_class'])) + " " + str(int(ai_resp['mc_class_conf']))
+          ai_data[vfn] = ai_resp
+          status = 1
+          if ("meteor" not in ai_resp['mc_class'] and (ai_resp['mc_class_conf'] > ai_resp['meteor_yn'] and ai_resp['mc_class_conf'] > ai_resp['fireball_yn'])) and ai_resp['meteor_yn'] < 50:
+             status = 0
+          if ai_resp['meteor_yn'] > 50 or ai_resp['fireball_yn'] > 50:
+             status = 1
+          if status == 0:
+             bad_ai += "<div style='float:left; border: 1px #FF0000 solid;'><img src={} alt='{}'><br>{}</div>".format(vf, ai_info, ai_info)
+             bad_files.append(root_fn)
+          else:
+             good_ai += "<div style='float:left; border: 1px #00FF00 solid;'><img src={} alt='{}'><br>{}</div>".format(vf, ai_info, ai_info)
+         
+   out = good_ai + "<hr>" + bad_ai
+
+   return(out)
+
+
 
 def ai_rejects(station_id, options, json_conf):
    db_file = station_id + "_ALLSKY.db"
    con = sqlite3.connect(db_file)
    cur = con.cursor()
 
+   if "in_date" not in options:
+      options['in_date'] = "20"
    if "db" not in options:
       options['db'] = "meteor_db"
 
    if options['db'] == "meteor_db":
-      ctype = "meteors"
+      ctype = "meteor"
    else:
       ctype = "non_meteors_confirmed"
    if "hc" in options:
@@ -2913,6 +2970,7 @@ def ai_rejects(station_id, options, json_conf):
             human_label = "none"
             human_confirmed = None
       else:
+         print("ROW:", row)
          sd_vid,hd_vid,meteor_yn,fireball_yn, mc_class,mc_class_conf,ai_resp,camera_id,start_datetime, human_confirmed,multi_station,ang_velocity,duration,peak_intensity = row
          if human_confirmed == 1 :
             human_label = "meteor"
@@ -3184,7 +3242,7 @@ def mc_types():
    return(labels, icons)
 
 def meteor_cell_html(root_fn, thumb_url, ai_info, ico=None, ctype="meteor", color="#ffffff",multi=0, human_confirmed=None, human_label=None):
-
+   print("CTYPE:", ctype)
    if ico is None:
       ico = ""
    if human_confirmed is None or human_confirmed == 0:

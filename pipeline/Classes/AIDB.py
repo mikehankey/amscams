@@ -18,7 +18,6 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 class AllSkyDB():
 
    def __init__(self):
-      #os.system("clear")
       self.home_dir = "/home/ams/amscams/"
       self.data_root = "/mnt/ams2"
       self.msdir = self.data_root + "/METEOR_SCAN/"
@@ -61,6 +60,38 @@ class AllSkyDB():
 
    def check_make_tables(self):
       print("CHECK MAKE TABLES")
+
+      try:
+         self.cur.execute("SELECT fireball_yn FROM non_meteors_confirmed limit 1")
+         self.cur.fetchone()
+         print("meteor table ok")
+      except sqlite3.OperationalError as e:
+         #if e.args[0].startswith('no such table'):
+         print("NON_METEOR_CONFIRMED TABLE NEEDS TO BE UPDATED!")
+         if True:
+            # Creating table
+            table = """ 
+                CREATE TABLE IF NOT EXISTS "non_meteors_confirmed" (
+                    "sd_vid"     TEXT,
+                    "hd_vid"     TEXT,
+                    "roi"   TEXT,
+                    "meteor_yn"        REAL,
+                    "fireball_yn"       REAL,
+                    "multi_class"   TEXT,
+                    "multi_class_conf"      REAL,
+                    "human_confirmed"   INTEGER,
+                    "human_label"   TEXT,
+                    "last_updated"   INTEGER,
+                    PRIMARY KEY("sd_vid")
+                ); 
+            """
+            print("non_meteors_confirmed table created")   
+            print(table)
+            self.cur.execute(table)
+
+
+
+
       try:
          self.cur.execute("SELECT fireball_yn_conf FROM meteors limit 1")
          self.cur.fetchone()
@@ -124,7 +155,6 @@ class AllSkyDB():
          #os.system(cmd)
 
    def check_update_status(self, in_date = None):
-      os.system("clear")
       print("\rCheck update scan status...",end="")
       # check to make sure the ml_samples table has the lastest patch
       if os.path.exists("../conf/sqlite.json") is True:
@@ -148,7 +178,7 @@ class AllSkyDB():
 
          self.make_fresh_db()
 
-      self.purge_deleted_meteors()
+      #self.purge_deleted_meteors()
       sql = "SELECT * from station_summary" 
       rows = self.cur.fetchall()
 
@@ -159,35 +189,8 @@ class AllSkyDB():
       if update_summary == 1:
          self.update_summary()
 
-   def purge_deleted_meteors(self):
-      #os.system("clear")
-      # this will check each meteor in the DB. 
-      # if it does not exist on the file system it will be removed from the DB
-      sql = "SELECT root_fn, roi, mfd from meteors WHERE meteor_yn = '' order by root_fn desc"
-      self.cur.execute(sql)
-      rows = self.cur.fetchall()
-      found = 0
-      not_found = 0
-      good = 0
-      bad = 0
-      for row in rows:
-         root_file = row[0]
-         mfile = "/mnt/ams2/meteors/" + root_file[0:10] + "/" + root_file + ".json"
-         trash_file = "/mnt/ams2/trash/" + root_file[0:10] + "/" + root_file + ".json"
-         if os.path.exists(mfile) is True:
-            good += 1
-         elif os.path.exists(trash_file) is True: 
-            print("\rFound in trash! DELETE", end="")
-            sql = "DELETE FROM meteors WHERE root_fn = '" + root_file + "'"
-            self.cur.execute(sql)
-            self.con.commit()
-
-         else:
-            bad += 1
-            print("\rNOT FOUND!:" + mfile, end="")
 
    def update_summary(self):
-      os.system("clear")
       # This function will just update the stats in the main summary table
 
       # get total number of METEORS in the systems 
@@ -279,7 +282,6 @@ class AllSkyDB():
 
 
    def reconcile_db(self, in_date=None):
-      os.system("clear")
       print("Reconcile DB")
       #AIDB.load_all_meteors(date)
       # Figure out where we are with AI scans, what is not loaded yet and what has not been scanned.
@@ -981,7 +983,6 @@ class AllSkyDB():
          self.ASAI.load_all_models()
          self.models_loaded = True
 
-      os.system("clear")
       if selected_day is not None:
          print("\rLoad meteors for day: " + selected_day, end= "")
          sql = "SELECT sd_vid, reduced from meteors where sd_vid like ?" 
@@ -1555,37 +1556,67 @@ class AllSkyDB():
         
 
          root_fn = sd_vid.replace(".mp4", "")
-         hd_root_fn = sd_vid.replace(".mp4", "")
-         mf, msf, nmf, nmcf = self.check_file_location(root_fn)
-         if len(mf) > 0 or len(msf) > 0 or len(nmf) > 0:
-            print("Need to move files!", root_fn) 
-         elif (len(mf) == 0 and len(msf) == 0 and len(nmf) == 0): 
-            print("All Files moved!") 
-         elif (len(nmcf) == 0):
-            print("All Files moved!") 
-         else :
-            print("No files found.") 
+         hd_root_fn = hd_vid.replace(".mp4", "")
+         date = root_fn[0:10]
+         nm_dir = "/mnt/ams2/non_meteors_confirmed/" + date + "/" 
+         m_dir = "/mnt/ams2/meteors/" + date + "/" 
+         if os.path.exists(nm_dir) is False:
+            os.makedirs(nm_dir)
 
-         mf, msf, nmf, nmcf = self.check_file_location(hd_root_fn)
-         if len(mf) > 0 or len(msf) > 0 or len(nmf) > 0:
-            print("Need to move HD files!", hd_root_fn) 
-         elif (len(mf) == 0 and len(msf) == 0 and len(nmf) == 0): 
-            print("All HD Files moved!") 
-         elif (len(nmcf) == 0):
-            print("All Files moved!") 
-         else :
-            print("No files found.") 
+         if False:
+            mf, msf, nmf, nmcf = self.check_file_location(root_fn)
+            if len(mf) > 0 or len(msf) > 0 or len(nmf) > 0:
+               print("Need to move files!", root_fn) 
+            elif (len(mf) == 0 and len(msf) == 0 and len(nmf) == 0): 
+               print("All Files moved!") 
+            elif (len(nmcf) == 0):
+               print("All Files moved!") 
+            else :
+               print("No files found.") 
 
-         isql = """INSERT OR REPLACE INTO non_meteors_confirmed (sd_vid, hd_vid, roi, meteor_yn, fireball_yn, multi_class, 
+            mf, msf, nmf, nmcf = self.check_file_location(hd_root_fn)
+            if len(mf) > 0 or len(msf) > 0 or len(nmf) > 0:
+               print("Need to move HD files!", hd_root_fn) 
+            elif (len(mf) == 0 and len(msf) == 0 and len(nmf) == 0): 
+               print("All HD Files moved!") 
+            elif (len(nmcf) == 0):
+               print("All Files moved!") 
+            else :
+               print("No files found.") 
+         cmd = "mv " + m_dir + root_fn + "* " + nm_dir
+         print(cmd)
+         os.system(cmd)
+         cmd = "mv " + m_dir + hd_root_fn + "* " + nm_dir
+         print(cmd)
+         os.system(cmd)
+
+         if True: 
+            isql = """INSERT OR REPLACE INTO non_meteors_confirmed (sd_vid, hd_vid, roi, meteor_yn, fireball_yn, multi_class, 
                                                                multi_class_conf, human_confirmed, last_updated)
                                                        VALUES (?,?,?,?, ?, ?, ?, ?, ?)"""
-         ivals = [ sd_vid, hd_vid, roi, meteor_yn, fireball_yn, mc_class, mc_class_conf, human_confirmed, time.time()]
-         self.cur.execute(isql, ivals)
-         dsql = "DELETE FROM meteors WHERE sd_vid = ?"
-         dvals = [sd_vid]
-         self.cur.execute(dsql, dvals)
-         print(isql, ivals)
-         print(dsql, dvals)
+            ivals = [ sd_vid, hd_vid, roi, meteor_yn, fireball_yn, mc_class, mc_class_conf, human_confirmed, time.time()]
+            print(isql)
+            print(ivals)
+            try:
+               self.cur.execute(isql, ivals)
+            except:
+               print("sql issue")
+
+         if  True: 
+            isql = """INSERT OR REPLACE INTO deleted_meteors(sd_vid, hd_vid)
+                                                       VALUES (?,?)"""
+            ivals = [ sd_vid, hd_vid]
+            print(isql)
+            print(ivals)
+            self.cur.execute(isql, ivals)
+
+         if  False: 
+
+            dsql = "DELETE FROM meteors WHERE sd_vid = ?"
+            dvals = [sd_vid]
+            self.cur.execute(dsql, dvals)
+            print(isql, ivals)
+            print(dsql, dvals)
          self.con.commit()
 
          exit()

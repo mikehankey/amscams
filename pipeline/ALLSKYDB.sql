@@ -286,8 +286,8 @@ CREATE TABLE IF NOT EXISTS "station_stats" (
 );
 
 CREATE TABLE IF NOT EXISTS "non_meteors_confirmed" (
-        "sd_vid"     INTEGER,
-        "hd_vid"     INTEGER,
+        "sd_vid"     TEXT,
+        "hd_vid"     TEXT,
         "roi"   TEXT,
         "meteor_yn"        REAL,
         "fireball_yn"       REAL,
@@ -295,5 +295,12 @@ CREATE TABLE IF NOT EXISTS "non_meteors_confirmed" (
         "multi_class_conf"      REAL,
         "human_confirmed"   INTEGER,
         "human_label"   TEXT,
-        "last_updated"   INTEGER
+        "last_updated"   INTEGER,
+	PRIMARY KEY("sd_vid")
        );
+
+CREATE TABLE deleted_meteors (
+               sd_vid TEXT,
+               hd_vid TEXT,
+               PRIMARY KEY("sd_vid")
+            )
