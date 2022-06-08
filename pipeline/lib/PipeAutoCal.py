@@ -3802,7 +3802,6 @@ def deep_calib_init(cam,json_conf):
          bad_stars.append(data)
    print("BEST STARS:", len(best_stars))
    print("BAD STARS:", len(bad_stars))
-   input("wait...")
 
    all_stars = best_stars
    mcp_dir = "/mnt/ams2/cal/" 
