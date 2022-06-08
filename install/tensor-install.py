@@ -51,6 +51,12 @@ os.system(cmd)
 cmd = "sudo python3.6 -m pip install opencv-python"
 os.system(cmd)
 
+cmd = "sudo python3.6 -m pip install --force-reinstall --upgrade flask"
+os.system(cmd)
+cmd = "sudo python3.6 -m pip install --force-reinstall --upgrade flask_httpauth"
+os.system(cmd)
+
+
 cmd = "sudo python3 -m pip install --force-reinstall --upgrade pillow"
 os.system(cmd)
 cmd = "sudo python3 -m pip install --force-reinstall --upgrade markupsafe"
