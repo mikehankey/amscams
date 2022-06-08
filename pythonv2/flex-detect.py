@@ -11136,11 +11136,14 @@ def verify_meteors_ai(day=None):
 
           ai_info = str(int(ai_resp['meteor_yn'])) + " " + str(int(ai_resp['fireball_yn'])) + " " + str((ai_resp['mc_class'])) + " " + str(int(ai_resp['mc_class_conf']))
           ai_data[rfn] = ai_resp
-          status = 1
+          status = 0
 
 
           if ai_resp['meteor_yn'] > 50 or ai_resp['fireball_yn'] > 50:
              status = 1
+          if ai_resp['mc_class_conf'] >= 99 and "meteor" not in ai_resp['mc_class']:
+             status = 0
+             
           if status == 0:
              bad_ai += "<div style='float:left; border: 1px #FF0000 solid;'><img src={} alt='{}'><br>{}</div>".format(vrf, ai_info, ai_info)
              bad_files.append(root_fn)
