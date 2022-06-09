@@ -1,4 +1,4 @@
-from stack_fast import stack_only, get_objects_in_stack
+from stack_fast import stack_only, get_patch_objects_in_stack, get_stars_in_stack
 import os
 import numpy as np 
 import sys
@@ -9,8 +9,12 @@ ASAI.load_all_models()
 
 
 vdir = sys.argv[1]
+if "mp4" in vdir:
+   files = [vdir]
+else:
+   files = os.listdir(vdir)
 
-for tfile in os.listdir(vdir):
+for tfile in files :
    vfile = vdir + tfile
    print("VFILE:", vfile)
    if "trim" in vfile:
@@ -21,6 +25,7 @@ for tfile in os.listdir(vdir):
       continue 
    jfile = vfile.replace(".mp4", "-stacked.jpg")
    if os.path.exists(jfile) is True:
+      print("STACK EXISTS")
       continue
 
    cam_id = vfile.split("_")[-1].replace(".mp4", "")
@@ -35,7 +40,7 @@ for tfile in os.listdir(vdir):
    stack_file = vfile.replace(".mp4", "-stacked.jpg")
 
    t = time()
-   get_objects_in_stack(stack_file, ASAI)
+   get_patch_objects_in_stack(stack_file, ASAI)
    print(stack_file)
    e = time() - t 
    print("E2:", e)
