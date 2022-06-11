@@ -26,6 +26,12 @@ from datetime import datetime
 import datetime as dt
 import glob
 from PIL import ImageFont, ImageDraw, Image, ImageChops
+
+if os.path.exists("/usr/local/astrometry/bin/solve-field") is True:
+   AST_BIN = "/usr/local/astrometry/bin/"
+elif os.path.exists("/usr/bin/solve-field") is True:
+   AST_BIN = "/usr/bin/"
+
 tries = 0
 MOVIE = 0
 MOVIE_FN = 0
@@ -1079,6 +1085,7 @@ def refit_meteor(meteor_file, json_conf,force=0):
       mj['cp']['cat_image_stars'] = []
       mj['cp']['user_stars'] = []
       mj['cp']['nostars'] = 1
+
       save_json_file(meteor_file, mj)
       if mjr is not None:
          mjr['cal_params'] = mj['cp']
@@ -1182,6 +1189,20 @@ def refit_meteor(meteor_file, json_conf,force=0):
    #            return()
 
    org_res = cp['total_res_px']
+   print("TOTAL RES PX:", cp['total_res_px'])
+   if cp['total_res_px'] >= 8:
+      print("BAD FILE RESET AND USE DEFAULT INSTEAD!")
+      cp['cat_image_stars'] = []
+      cp['user_stars'] = []
+      mj['cp'] = cp
+      save_json_file(meteor_file, mj)
+      if mjr is not None:
+         
+         mjr['cal_params'] = cp
+         if "cp" in mjr:
+            del mjr['cp']
+         save_json_file(red_file, mjr)
+         return()
 
    # load MCP data and update CP poly
    year = datetime.now().strftime("%Y")
@@ -4936,7 +4957,7 @@ def solve_field(image_file, image_stars=[], json_conf={}):
    image_file = idir + ifn
 
    # solve field
-   cmd = "/usr/local/astrometry/bin/solve-field " + plate_file + " --crpix-center --cpulimit=30 --verbose --no-delete-temp --overwrite --width=" + str(HD_W) + " --height=" + str(HD_H) + " -d 1-40 --scale-units dw --scale-low 60 --scale-high 120 -S " + solved_file + " >" + astrout
+   cmd = AST_BIN + "solve-field " + plate_file + " --crpix-center --cpulimit=30 --verbose --no-delete-temp --overwrite --width=" + str(HD_W) + " --height=" + str(HD_H) + " -d 1-40 --scale-units dw --scale-low 60 --scale-high 120 -S " + solved_file + " >" + astrout
    print(cmd)
    astr = cmd
    print(cmd)
@@ -4949,10 +4970,10 @@ def solve_field(image_file, image_stars=[], json_conf={}):
       cmd = "/usr/bin/jpegtopnm " + plate_file + "|/usr/local/astrometry/bin/plot-constellations -w " + wcs_file + " -o " + grid_file + " -i - -N -C -G 600 > /dev/null 2>&1 "
       os.system(cmd)
 
-      cmd = "/usr/local/astrometry/bin/wcsinfo " + wcs_file + " > " + wcs_info_file
+      cmd = AST_BIN + "wcsinfo " + wcs_file + " > " + wcs_info_file
       os.system(cmd)
 
-      os.system("grep Mike " + astrout + " >" +star_data_file + " 2>&1" )
+      #os.system("grep Mike " + astrout + " >" +star_data_file + " 2>&1" )
 
       cal_params = save_cal_params(wcs_file,json_conf)
       cal_params = default_cal_params(cal_params, json_conf)
