@@ -13,12 +13,12 @@ import glob
 from Classes.ASAI import AllSkyAI 
 from Classes.ASAI_Detect import ASAI_Detect 
 
-AI_VERSION = 3.2
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3' 
 
 class AllSkyDB():
 
    def __init__(self):
+      self.AI_VERSION = 3.2
       self.home_dir = "/home/ams/amscams/"
       self.data_root = "/mnt/ams2"
       self.msdir = self.data_root + "/METEOR_SCAN/"
@@ -324,7 +324,7 @@ class AllSkyDB():
             if ai_r != "" and ai_r is not None:
                ai_r = json.loads(ai_r)
                if "ai_version" in ai_r: 
-                  if ai_r['ai_version'] >= 3.1 and mc_class is not None :
+                  if ai_r['ai_version'] >= self.AI_VERSION and mc_class is not None :
                      print("\rSkip at latest AI already.",end="")
                      continue
             roi = row[3]
