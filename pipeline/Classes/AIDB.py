@@ -776,7 +776,7 @@ class AllSkyDB():
          sd_vid, hd_vid, roi, sync_status, ai_resp = row
          root_fn = sd_vid.split("/")[-1].replace(".mp4", "")
          self.check_make_roi(root_fn, roi)
-      exit()
+      #exit()
 
 
       for row in rows:
