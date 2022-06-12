@@ -293,7 +293,6 @@ class AllSkyDB():
 
     
       if self.models_loaded is False :
-         self.load_all_models()
          self.models_loaded = True
          self.ASAI.load_all_models()
 
