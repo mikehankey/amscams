@@ -13,6 +13,7 @@ import glob
 from Classes.ASAI import AllSkyAI 
 from Classes.ASAI_Detect import ASAI_Detect 
 
+AI_VERSION = 3.2
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3' 
 
 class AllSkyDB():
@@ -289,6 +290,14 @@ class AllSkyDB():
       # Essentially bring the database up to date with file system data and not done ai/scanning
       # This includes making ROI files as needed (should replace all MeteorScan Functions!)
       # This includes 'scan-in-stack' for non-reduced or problem captures
+
+    
+      if self.models_loaded is False :
+         self.load_all_models()
+         self.models_loaded = True
+         self.ASAI.load_all_models()
+
+
       if in_date is None:
          self.load_all_meteors()
       else:
