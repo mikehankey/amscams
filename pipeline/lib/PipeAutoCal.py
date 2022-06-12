@@ -76,6 +76,7 @@ def cal_manager(json_conf):
       5) Make Default Cal
       6) HD Night Cal 
       7) Sync Cal Files
+      8) Meteor Cal 
 
    """
 
@@ -90,6 +91,7 @@ def cal_manager(json_conf):
       limit = input("How many do you want to try (5,10,20,all):")
       star_lim = input("Minimum stars required (10,15,20):")
       resolve_failed(cam_num, limit, star_lim, json_conf) 
+      print("Finished Resolve Failed:", cam_num, limit, star_lim, json_conf)
    if cmd == "4":
       gen_cal_hist(json_conf) 
    if cmd == "6":
@@ -98,6 +100,8 @@ def cal_manager(json_conf):
       hd_night_cal(cam_num, json_conf, int(interval))
    if cmd == "7":
       sync_cal(json_conf) 
+   if cmd == "8":
+      met_cal(json_conf) 
 
    default_hist = {}
    rdf = []
@@ -381,8 +385,9 @@ def make_default_cal(json_conf, cam ):
          #if e_dt < r_dt < s_dt:
             #print("     CALIB IN RANGE ADD TO MED LIST.", r_dt, s_dt, e_dt)
       med_az, med_el, med_pos, med_px, med_res = calc_med_range(cam, s_dt, e_dt)
-      print("RANGE:", cam, rng[0], rng[1], med_az, med_el, med_pos, med_px, med_res)
-      range_data.append((cam, rng[0], rng[1], med_az, med_el, med_pos, med_px, med_res))
+      if np.isnan(med_az ) is False:
+         print("RANGE:", cam, rng[0], rng[1], med_az, med_el, med_pos, med_px, med_res)
+         range_data.append((cam, rng[0], rng[1], med_az, med_el, med_pos, med_px, med_res))
    cam_hist = {}
    cam_hist['calibs'] = calibs
    cam_hist['cam_moved'] = cam_moved
@@ -519,6 +524,67 @@ def find_cal_group(cam, cal_data, cal_groups):
       cal_groups[cam][group_id]['start_day'] = min_day
       cal_groups[cam][group_id]['end_day'] = max_day
       return(group_id, cal_groups)
+
+
+
+def met_cal(json_conf):
+   cam_num = input("Which cam do you want to try: [1-7] or blank for all")
+   total_needed = input("How many total cals do you want to obtain [0-50]?")
+   date_wild = input("Enter date YYYY_MM to match or leave blank for most recent")
+   mdirs = []
+   meteor_dir = "/mnt/ams2/meteors/"
+   dirs = os.listdir(meteor_dir)
+   for d in sorted(dirs, reverse=True) :
+      if date_wild != "" and date_wild in d:
+         mdirs.append(d)
+      elif date_wild == "":
+         mdirs.append(d)
+
+   if cam_num != "all":
+
+      cam_id = json_conf['cameras']['cam' + cam_num]['cams_id']
+   else:
+      cam_id = "xxx"
+
+   hd_meteors = []
+   for md in mdirs:
+      mdir = meteor_dir + md + "/"
+
+      if os.path.isdir(mdir) is True:
+         if os.path.isdir(mdir + "cal/") is False:
+            os.makedirs(mdir + "cal/") 
+
+         hd_files = glob.glob(mdir + "*HD*stacked.jpg")
+         for hdf in hd_files:
+            hdf = hdf.replace("-stacked.jpg", ".mp4")
+            if os.path.exists(hdf):
+               if cam_num == "all" or cam_id in hdf:
+                  hd_meteors.append(hdf)
+            else:
+               print("not found", hdf)
+   if total_needed == "":
+      total_needed=len(hd_meteors)
+   else:
+      ttt = int(total_needed)
+
+   for hdm in hd_meteors[0:ttt]:
+      hdfn = hdm.split("/")[-1]
+      hd_dir = hdm.replace(hdm, "")
+      med_file = hd_dir + "cal/" + hdm.replace(".mp4", "-med.jpg")
+      if os.path.exists(med_file) is False:
+         med_image = make_med_image_from_video(hdm)
+         print(med_image.shape)
+         cv2.imwrite(med_file, med_image)
+
+   print("HD METEORS", len(hd_meteors))
+
+
+def make_med_image_from_video(vid_file):
+   frames = load_frames_simple(vid_file)
+   median_img = cv2.convertScaleAbs(np.median(np.array(frames[0:25]), axis=0))
+   return(median_img) 
+
+
 
 def resolve_failed(cam_num, limit, star_lim, json_conf):
    if len(cam_num) > 1:
@@ -4957,7 +5023,8 @@ def solve_field(image_file, image_stars=[], json_conf={}):
    image_file = idir + ifn
 
    # solve field
-   cmd = AST_BIN + "solve-field " + plate_file + " --crpix-center --cpulimit=30 --verbose --no-delete-temp --overwrite --width=" + str(HD_W) + " --height=" + str(HD_H) + " -d 1-40 --scale-units dw --scale-low 60 --scale-high 120 -S " + solved_file + " >" + astrout
+   #cmd = AST_BIN + "solve-field " + plate_file + " --crpix-center --cpulimit=30 --verbose --overwrite --width=" + str(HD_W) + " --height=" + str(HD_H) + " -d 1-40 --scale-units dw --scale-low 60 --scale-high 120 -S " + solved_file + " >" + astrout
+   cmd = AST_BIN + "solve-field " + plate_file + " --cpulimit=30 --verbose --overwrite -S " + solved_file + " >" + astrout
    print(cmd)
    astr = cmd
    print(cmd)
@@ -4966,23 +5033,23 @@ def solve_field(image_file, image_stars=[], json_conf={}):
 
    if cfe(solved_file) == 1:
       # get WCS info
-      print("Solve passed.", solved_file)
-      cmd = "/usr/bin/jpegtopnm " + plate_file + "|/usr/local/astrometry/bin/plot-constellations -w " + wcs_file + " -o " + grid_file + " -i - -N -C -G 600 > /dev/null 2>&1 "
-      os.system(cmd)
+      #print("Solve passed.", solved_file)
+      #cmd = "/usr/bin/jpegtopnm " + plate_file + "|/usr/local/astrometry/bin/plot-constellations -w " + wcs_file + " -o " + grid_file + " -i - -N -C -G 600 > /dev/null 2>&1 "
+      #os.system(cmd)
 
       cmd = AST_BIN + "wcsinfo " + wcs_file + " > " + wcs_info_file
       os.system(cmd)
-
       #os.system("grep Mike " + astrout + " >" +star_data_file + " 2>&1" )
 
       cal_params = save_cal_params(wcs_file,json_conf)
       cal_params = default_cal_params(cal_params, json_conf)
       cal_params['user_stars'] = image_stars
-
+      print("CP", cal_params)
+      print("Solved field success.")
       return(1, cal_params, wcs_file) 
    else:
-      print("Solve failed.", solved_file)
       print(astr) 
+      print("Solve failed.", solved_file)
       return(0, {}, "")
    
 def show_image(img, win, time=0):
@@ -5889,10 +5956,11 @@ def review_cals(json_conf, cam=None):
             print("BEFORE RES:", cp['total_res_px'])
             for st in bad_stars:
                print(st)
-            if False:
+            #if False:
             #if 'refit' in cp and cp['total_res_px'] < 3):
-               print("SKIP REFIT!")
-            else:
+            #   print("SKIP REFIT!")
+
+            if True:
                start_res = cp['total_res_px']
                if "refit" in cp:
                   cp['refit'] = 1
@@ -5987,6 +6055,8 @@ def find_meds(cal_data):
       med_data[cam]['std_ps'] = np.std(med_data[cam]['ps'])
    return(med_data)
 
+
+
 def cal_all(json_conf):
    print("CAL ALL")
    year = datetime.now().strftime("%Y")
@@ -6000,6 +6070,7 @@ def cal_all(json_conf):
    if cfe(cal_dir + "solved", 1) == 0:
       os.makedirs(cal_dir + "solved")
    files = glob.glob(cal_dir + "*.png")
+   print("CAL DIR:", cal_dir)
    #print(cal_dir)
    for file in sorted(files):
       print("RUN AUTO CAL.", file)
@@ -6009,9 +6080,14 @@ def cal_all(json_conf):
  #     last_cal['x_poly_fwd'] = cp['x_poly_fwd'].tolist()
 
       if cfe(file) == 1:
-         autocal(file, json_conf, 1)
-     
-         print("RAN:", file)
+         img = cv2.imread(file)
+         avg_px = np.mean(img)
+         print("PIC AVG:", avg_px)
+         if avg_px < 100:
+            autocal(file, json_conf, 1)
+            print("RAN:", file)
+         else:
+            print("DAY PIC DELETE:", avg_px, file)
          #exit()
 
 
@@ -6890,8 +6966,8 @@ def find_stars_with_grid(img):
                     cy = y1 + (cy / 10)
                     pos_stars.append((cx,cy,0))
             cv2.putText(show_img, str(desc),  (int(10),int(40)), cv2.FONT_HERSHEY_SIMPLEX, .8, (255, 255, 255), 1)
-         else:
-            print("SKIP LOW PXDIFF", px_diff)
+         #else:
+         #   print("SKIP LOW PXDIFF", px_diff)
 
 
          cv2.rectangle(show_img, (x1, y1), (x2, y2 ), (255, 255, 255), 1)
@@ -6901,8 +6977,8 @@ def find_stars_with_grid(img):
                cv2.circle(show_img,(int(star[0]),int(star[1])), 20, (128,128,128), 1)
              #cv2.imshow('preview', thresh_img)
              #cv2.waitKey(3)
-         else:
-            print(x1,y1,x2,y2)
+         #else:
+         #   print(x1,y1,x2,y2)
    cv2.imwrite("/mnt/ams2/test.jpg", show_img)
 
    stars = []
@@ -7178,6 +7254,9 @@ def get_image_stars(file=None,img=None,json_conf=None,show=0):
 
    if img is None:
       img = cv2.imread(file)
+   if img is None:
+      print("Bad image:", file)
+      exit()
    if len(img.shape) == 3:
       img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
    if mask_img is not None:
@@ -7222,7 +7301,7 @@ def get_image_stars(file=None,img=None,json_conf=None,show=0):
    best_stars = find_stars_with_grid(img)
    print("FIND STARS WITH GRID:", len(best_stars))
    for star in best_stars:
-      print("BEST STAR:", star)
+      #print("BEST STAR:", star)
       if star is None:
          continue
       x,y,z = star

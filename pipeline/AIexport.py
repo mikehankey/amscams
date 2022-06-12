@@ -17,6 +17,63 @@ export_dir = "/mnt/ams2/AI/DATASETS/EXPORT/"
 meteor_dir = "/mnt/ams2/meteors/"
 non_meteor_dir = "/mnt/ams2/non_meteors_confirmed/"
 
+
+def export_scan_rois():
+   scan_dir = "/mnt/ams2/SD/proc2/"
+   scan_export_dir = export_dir + "/scan_stack_rois/"
+   all_ai_data_file = scan_export_dir + station_id + "_ALL_AI_DATA.json"
+   if os.path.exists(scan_export_dir) is False:
+      os.makedirs(scan_export_dir)
+   if os.path.exists(all_ai_data_file) is True:
+      all_ai_data = load_json_file(all_ai_data_file)
+   else:
+      all_ai_data = {}
+     
+   dirs = os.listdir(scan_dir)
+   for dd in dirs:
+      if os.path.exists(scan_dir + dd):
+         print(scan_dir + dd + "/AI_DATA.json") 
+         if os.path.exists(scan_dir + dd + "/data/AI_DATA.json") and "20" in dd:
+  
+            data = load_json_file(scan_dir + dd + "/data/AI_DATA.json")
+            for key in data:
+               if key not in all_ai_data:
+                  ofile = scan_dir + dd + "/images/" + key
+                  print(key, ofile, data[key]['mc_class'], data[key]['mc_class_conf'])
+                  exp_fdir = scan_export_dir + data[key]['mc_class'] + "/"
+                  efile = exp_fdir + station_id + "_" + key
+                  if os.path.exists(efile) is False:
+                     cmd = "cp " + ofile + " " + efile 
+                     print(cmd)
+                     os.system(cmd)
+                  if os.path.exists(exp_fdir) is False:
+                     os.makedirs(exp_fdir)
+                  all_ai_data[key] = data[key]
+   save_json_file(all_ai_data_file, all_ai_data)
+
+   export_html(scan_export_dir)
+
+def export_html(scan_export_dir):
+   #sexport_dir = "/mnt/ams2/datasets/scan_stack_rois/"
+   dirs = os.listdir(scan_export_dir)
+   main = ""
+   for dd in dirs:
+      if os.path.isdir(scan_export_dir + dd) is True:
+         main +=  "<a href={}/index.html>{}</a><br>".format(dd, dd)
+         html = ""
+         files = os.listdir(scan_export_dir + dd)
+         for ff in files:
+            html += """<img src={} style="float: left">""".format(ff)
+            print(ff)
+         fp = open(scan_export_dir + dd + "/index.html", "w")
+         fp.write(html)
+         fp.close()
+         print("Saved:", scan_export_dir + dd + "/index.html")
+
+   fp = open(scan_export_dir + "/index.html", "w")
+   fp.write(main)
+   fp.close()
+
 def export_ai_image(root_fn):
     mjrf = meteor_dir + root_fn[0:10] + "/" + root_fn + "-reduced.json" 
     if os.path.exists(mjrf):
@@ -124,7 +181,10 @@ def export_non_meteors(con,cur):
 
       sd_vid, roi, meteor_yn, fireball_yn, multi_class, multi_class_conf, human_label = row
       root_fn = sd_vid.replace(".mp4", "")
-      roi = json.loads(roi)
+      if roi is not None:
+         roi = json.loads(roi)
+      else:
+         continue
       if last_mc != human_label:
          out += "<h1>" + human_label + "</h1><br>"
       mc_dir = mc_meteor_export_dir + human_label + "/"
@@ -175,5 +235,7 @@ if __name__ == "__main__":
    con = sqlite3.connect(json_conf['site']['ams_id']+ "_ALLSKY.db")
    con.row_factory = sqlite3.Row
    cur = con.cursor()
-   export_meteors(con, cur)
+
+   #export_meteors(con, cur)
    export_non_meteors(con, cur)
+   export_scan_rois()

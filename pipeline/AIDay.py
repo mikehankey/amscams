@@ -105,6 +105,8 @@ else:
    AIDB.load_all_meteors(date)
    print("Verify Media", date)
    AIDB.verify_media_day(date)
+
+   input("WAIT") 
    print("Reconcile DB", date)
    AIDB.reconcile_db(date)
    print("My Events", date)

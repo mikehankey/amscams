@@ -280,19 +280,23 @@ def run_jobs(json_conf):
    cmds.append(('all', "Night Stacks", "cd /home/ams/amscams/pipeline; ./Process.py hsh " + yest + ""))
    cmds.append(('all', "Monitor", "cd /home/ams/amscams/pipeline; ./monitor.py "))
    cmds.append(('all', "Clean disk / Purge old files", "cd /home/ams/amscams/pythonv2; ./doDay.py cd"))
-   cmds.append(('day', "Clean disk / Purge old files", "cd /home/ams/amscams/pipeline; ./Process.py rm_corrupt"))
+   cmds.append(('all', "Clean disk / Purge old files", "cd /home/ams/amscams/pipeline; ./Process.py rm_corrupt"))
+   cmds.append(('all', "Make Meteor Index", "cd /home/ams/amscams/pipeline; ./Process.py mmi_day " + today))
+   cmds.append(('all', "Make Meteor Index", "cd /home/ams/amscams/pipeline; ./Process.py mmi_day " + yest))
+
+
    cmds.append(('day', "Make Meteor Index", "cd /home/ams/amscams/pipeline; ./Process.py mmi_all"))
    cmds.append(('day', "Move Day Files", "cd /home/ams/amscams/pythonv2; ./move_day_files.py"))
    cmds.append(('all', "Update the proc index", "cd /home/ams/amscams/pythonv2; ./ASDaemon.py proc_index"))
    cmds.append(('all', "Update the file index", "cd /home/ams/amscams/pythonv2; ./batchJobs.py fi"))
    cmds.append(('all', "Run Master Stacks for Current Night", "cd /home/ams/amscams/pipeline; ./Process.py hs " + today))
    cmds.append(('all', "Run Master Stacks for Last Night", "cd /home/ams/amscams/pipeline; ./Process.py hs " + yest))
-   cmds.append(('day', "Run Master Stacks for Current Night", "cd /home/ams/amscams/pythonv2; ./autoCal.py meteor_index"))
+   cmds.append(('all', "Run Master Stacks for Current Night", "cd /home/ams/amscams/pythonv2; ./autoCal.py meteor_index"))
 
-   cmds.append(('day', "Run Master Stacks for Current Night", "cd /home/ams/amscams/pythonv2; ./autoCal.py cal_index"))
-   cmds.append(('day', "(Update default cal)", "cd /home/ams/amscams/pipeline; ./Process.py cal_defaults"))
+   cmds.append(('all', "Run Master Stacks for Current Night", "cd /home/ams/amscams/pythonv2; ./autoCal.py cal_index"))
+   cmds.append(('all', "(Update default cal)", "cd /home/ams/amscams/pipeline; ./Process.py cal_defaults"))
    #cmds.append(('day', "(Fixup any bad cal files)", "cd /home/ams/amscams/pipeline; ./Process.py refit_all all bad "))
-   cmds.append(('day', "Run Calibs (if daytime)", "cd /home/ams/amscams/pipeline; ./Process.py ca"))
+   cmds.append(('all', "Run Calibs (if daytime)", "cd /home/ams/amscams/pipeline; ./Process.py ca"))
    #cmds.append(('day', "Super Cal", "cd /home/ams/amscams/pipeline; ./Process.py super_cal"))
    #cmds.append(('all', "Run Master Stacks for Current Night", "cd /home/ams/amscams/pythonv2; ./batchJobs.py sna 1"))
 

@@ -11160,10 +11160,14 @@ def verify_meteors_ai(day=None):
    if os.path.exists(bad_dir) is False:
       os.makedirs(bad_dir)
    for bf in bad_files:
+      if bf in ai_data:
+         if "human_confirmed_meteor" in ai_data[bf]:
+            continue
       bff = proc_dir + "data/" + bf
-      cmd = "mv " + bff + "-maybe-meteors.json " + bad_dir
-      print(cmd)
-      os.system(cmd)
+      if os.path.exists(bff + "-maybe-meteors.json") is True:
+         cmd = "mv " + bff + "-maybe-meteors.json " + bad_dir
+         print(cmd)
+         os.system(cmd)
    
    print(img_vdir + "rois.html")
 
