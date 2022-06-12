@@ -1,5 +1,7 @@
 #!/usr/bin/python3
-
+import glob
+import numpy as np
+import cv2
 import sys
 from dvrip import DVRIPCam
 from time import sleep
@@ -50,6 +52,13 @@ def get_cam_passwd(ip):
    return(CameraPassword)
 
 def sense_up(cam, cam_ip):
+   if "cal_options" in json_conf:
+      cal_options = json_conf['cal_options']
+   else:
+      cal_options = {}
+      cal_options['bw'] = True
+      cal_options['cal_median'] = True
+      cal_options['sense_up'] = True
    print("Sense up for : ", cam_ip)
    # put cam into slow shutter. 
    # sleep 3 seconds
@@ -72,30 +81,77 @@ def sense_up(cam, cam_ip):
 
 
    # set slow shutter on 
-   print(cam_info)
-   cam_info[0]['EsShutter'] = '0x00000002'
+   if "sense_up" not in cal_options:
+      cam_info[0]['EsShutter'] = '0x00000002'
+      #cam.set_info("Camera.Param", cam_info)
+      ##print("Slow shutter on.")
+      time.sleep(5)
+   elif cal_options['sense_up'] is True:
+      cam_info[0]['EsShutter'] = '0x00000002'
+      #cam.set_info("Camera.Param", cam_info)
+      #print("Slow shutter on.")
+      #time.sleep(5)
+
+   if "bw" in cal_options:
+
+      print("BW FLAG")
+      if cal_options['bw'] is True:
+         cam_info[0]['DayNightColor'] = '0x00000002'
+         #cam.set_info("Camera.Param", cam_info)
+         print("SET BW FLAG")
+         #time.sleep(3)
+      else:
+         print("BW FLAG False")
+   else:
+      print("NO BW FLAG")
+         
    cam.set_info("Camera.Param", cam_info)
    print("Slow shutter on.")
-   time.sleep(3)
+   time.sleep(5)
 
-   print("Getting picture.")
+
+   print("Getting pictures...")
    print(cam_url)
-
 
    outdir = "/mnt/ams2/meteor_archive/" + json_conf['site']['ams_id'] + "/CAL/AUTOCAL/" + year + "/" 
    outfile = outdir + dom + "_" + hms + "_000_" + cams_id + ".png"
-   print("OUT:", outfile)
-   if cfe(outdir, 1) == 0:
-      os.makedirs(outdir)
 
-   cmd = "/usr/bin/ffmpeg -hide_banner -y -i '" + cam_url + "' -vframes 1 " +outfile + " >/dev/null 2>&1"
-   os.system(cmd)
+   # signle frame
+   if "cal_median" in cal_options:
+      cal_temp = "/mnt/ams2/cal/temp/"
+      if os.path.exists(cal_temp) is False :
+         os.makedirs(cal_temp) 
+      else:
+         os.system("rm " + cal_temp + "*.jpg") 
+
+      temp_file = cal_temp + "temp%d.jpg"
+      cmd = "/usr/bin/ffmpeg -hide_banner -y -i '" + cam_url + "' -vframes 10 " +temp_file + " >/dev/null 2>&1"
+      print(cmd)
+      os.system(cmd)
+
+      files = glob.glob(cal_temp + "*.jpg")
+      meds = []
+      for ff in files:
+         img = cv2.imread(ff)
+         meds.append(img)
+      med_img = cv2.convertScaleAbs(np.median(np.array(meds), axis=0))
+      cv2.imwrite(outfile, med_img)
+      print("WROTE MEDIAN:", outfile)
+
+
+
+   else:
+      print("OUT:", outfile)
+      if cfe(outdir, 1) == 0:
+         os.makedirs(outdir)
+
+      cmd = "/usr/bin/ffmpeg -hide_banner -y -i '" + cam_url + "' -vframes 1 " +outfile + " >/dev/null 2>&1"
+      print(cmd)
+      os.system(cmd)
 
 
    # set slow shutter off
    cam_info[0]['EsShutter'] = '0x00000000'
-   cam.set_info("Camera.Param", cam_info)
-   print("slow shutter is off")
 
 
 
@@ -105,9 +161,15 @@ def sense_up(cam, cam_ip):
    #cam.set_info("Camera.ParamEx", cam_info)
 
    cam_info[0]['LowLuxMode'] = 0 
+
+   if "bw" in cal_options:
+      if cal_options['bw'] is True:
+         cam_info[0]['DayNightColor'] = '0x00000001'
+         print("RESET CAM TO COLOR!", cam_info)
+
+   print("slow shutter is off")
+   cam.set_info("Camera.Param", cam_info)
    cam.set_info("Camera.ParamEx", cam_info)
-
-
    #print ("\r\n")
    cam.close()
 
@@ -147,6 +209,11 @@ def test(cam, cam_ip):
    cam_info1 = cam.get_info("Camera.Param")
    net_info = cam.get_info("NetWork.NetCommon")
 
+   # disable cloud
+   cloudEnabled = False
+   sys_info = cam.set_info("NetWork.Nat", {"NatEnable" : cloudEnabled } )
+   sys_info = cam.get_info("NetWork.Nat")
+
    # set slow shutter to OFF
    #cam_info[0]['EsShutter'] = '0x00000000'
    #cam.set_info("Camera.Param", cam_info)
@@ -154,6 +221,7 @@ def test(cam, cam_ip):
    print ("CAM PARAMS1:\n", cam_info1)
    print ("CAM PARAMS2:\n", cam_info2)
    print ("NETWORK:\n", net_info)
+   print ("SYS:\n", sys_info)
 
    print("SLOW SHUTTER:", cam_info1[0]['EsShutter'])
    cam.close()
@@ -228,11 +296,8 @@ else:
    print("Usage: ./IMX291 [command] [IP ADDRESS of CAM]")
    exit()
 
-if cmd == "sense_up" or cmd == "sense_all":
-   sun, az, alt  = day_or_night(datetime.now(), json_conf)
-   if int(alt) >= -10:
-      print("SUN:", sun, az, alt, "abort")
-      exit()
+#if cmd == "sense_up" or cmd == "sense_all":
+      #exit()
 
 if len(sys.argv) > 1:
     CameraIP = str(sys.argv[2])
@@ -286,6 +351,16 @@ if cmd == "sense_all":
       except:
          print ("Failure. Could not connect to camera!")
 
+
+      # make sure remote cloud is disabled 
+      cloudEnabled = False
+      sys_info = cam.set_info("NetWork.Nat", {"NatEnable" : cloudEnabled } )
+
+      sun, az, alt  = day_or_night(datetime.now(), json_conf)
+      if int(alt) >= -10:
+         print("SUN:", sun, az, alt, "abort")
+         cam.close()
+         continue
 
       print("Sense up ", CameraIP)
       try:
