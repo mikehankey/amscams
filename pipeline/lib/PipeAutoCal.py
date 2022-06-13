@@ -525,8 +525,6 @@ def find_cal_group(cam, cal_data, cal_groups):
       cal_groups[cam][group_id]['end_day'] = max_day
       return(group_id, cal_groups)
 
-
-
 def met_cal(json_conf):
    cam_num = input("Which cam do you want to try: [1-7] or blank for all")
    total_needed = input("How many total cals do you want to obtain [0-50]?")
@@ -566,17 +564,49 @@ def met_cal(json_conf):
       total_needed=len(hd_meteors)
    else:
       ttt = int(total_needed)
+   
 
    for hdm in hd_meteors[0:ttt]:
       hdfn = hdm.split("/")[-1]
-      hd_dir = hdm.replace(hdm, "")
-      med_file = hd_dir + "cal/" + hdm.replace(".mp4", "-med.jpg")
-      if os.path.exists(med_file) is False:
+      year = hdfn[0:4]
+      hd_dir = hdm.replace(hdfn, "")
+      med_file = hd_dir + "cal/" + hdfn.replace(".mp4", "-med.jpg")
+      new_fn = convert_trim_file_to_min_file(hdfn)
+      cal_fn = "/mnt/ams2/meteor_archive/" + json_conf['site']['ams_id'] + "/CAL/AUTOCAL/" + year + "/" + new_fn
+      print("CAL FN:", cal_fn)
+      if True: #os.path.exists(med_file) is False:
          med_image = make_med_image_from_video(hdm)
          print(med_image.shape)
          cv2.imwrite(med_file, med_image)
+         print("SAVE:", med_file)
+
+         stars = find_stars_with_grid(med_image.copy())
+         print("STARS:", len(stars))
+         cv2.imwrite(cal_fn, med_image)
+         print("SAVE:", cal_fn)
 
    print("HD METEORS", len(hd_meteors))
+   for hdm in hd_meteors[0:ttt]:
+      print(hdm)
+
+def convert_trim_file_to_min_file(trim_file):
+   # add seconds in trim num to filename (for calib)
+   (f_datetime, this_cam, f_date_str,y,m,d, h, mm, s) = convert_filename_to_date_cam(trim_file)
+   prefix = trim_file.split("-")[0]
+   rest = trim_file.replace(prefix, "")
+   rest = rest.replace("-HD-meteor.mp4", "")
+   rest = rest.replace("-trim", "")
+   rest = rest.replace("-", "")
+   rest = rest.replace("-", ".mp4")
+   extra_sec = int(rest)/25
+   adj_date = f_datetime + dt.timedelta(seconds=extra_sec) 
+   print("REST:", rest)
+   print("ORIG:", f_datetime)
+   print("ADJ:", adj_date)
+   df = adj_date.strftime("%Y_%m_%d_%H_%M_%S_000")
+   new_file = df + "_" + this_cam + ".png"
+   return(new_file)
+   
 
 
 def make_med_image_from_video(vid_file):
@@ -6066,6 +6096,7 @@ def cal_all(json_conf):
    print("CAL ALL")
    year = datetime.now().strftime("%Y")
    cal_dir = ARC_DIR + "CAL/AUTOCAL/" + year + "/"
+   update_defaults(json_conf)
    if cfe(cal_dir, 1) == 0:
       os.makedirs(cal_dir)
    if cfe(cal_dir + "temp", 1) == 0:
@@ -6112,7 +6143,6 @@ def make_cal_obj(az,el,pos,px,stars,cat_image_stars,res):
 def autocal(image_file, json_conf, show = 0, heal_only=0):
    station_id = json_conf['site']['ams_id']
    orig_image_file = image_file
-   update_defaults(json_conf)
    cp = None
    best_cp = None
    star_scan_file = image_file.replace(".png", "_star_scan.jpg")
@@ -6959,7 +6989,7 @@ def find_stars_with_grid(img):
          px_diff = max_val - avg_px
          desc = " AVG PX" + str(avg_px) + " MAX VAL" + str(max_val) + "PX DIFF: " + str(px_diff)
          #print("MIN VAL, MAX VAL", min_val, max_val)
-         if px_diff > 6 and min_val != 0:
+         if px_diff > 25 and min_val != 0:
             thresh_val = max_val * .9
             _, thresh_img = cv2.threshold(show_gimg, thresh_val, 255, cv2.THRESH_BINARY)
             cnts = get_contours_in_crop(thresh_img)
