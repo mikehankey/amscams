@@ -5024,7 +5024,7 @@ def solve_field(image_file, image_stars=[], json_conf={}):
 
    # solve field
    #cmd = AST_BIN + "solve-field " + plate_file + " --crpix-center --cpulimit=30 --verbose --overwrite --width=" + str(HD_W) + " --height=" + str(HD_H) + " -d 1-40 --scale-units dw --scale-low 60 --scale-high 120 -S " + solved_file + " >" + astrout
-   cmd = AST_BIN + "solve-field " + plate_file + " --cpulimit=30 --verbose --overwrite -S " + solved_file + " >" + astrout
+   cmd = AST_BIN + "solve-field " + plate_file + " --cpulimit=30 --verbose --overwrite --crpix-center -d 1-40 --scale-units dw --scale-low 60 --scale-high 120 -S " + solved_file + " >" + astrout
    print(cmd)
    astr = cmd
    print(cmd)
@@ -6953,18 +6953,24 @@ def find_stars_with_grid(img):
          min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(show_gimg)
          px_diff = max_val - avg_px
          desc = " AVG PX" + str(avg_px) + " MAX VAL" + str(max_val) + "PX DIFF: " + str(px_diff)
-         if px_diff > 3:
-            thresh_val = max_val * .8
-
+         #print("MIN VAL, MAX VAL", min_val, max_val)
+         if px_diff > 6 and min_val != 0:
+            thresh_val = max_val * .9
             _, thresh_img = cv2.threshold(show_gimg, thresh_val, 255, cv2.THRESH_BINARY)
             cnts = get_contours_in_crop(thresh_img)
+            if len(cnts) == 0:
+               thresh_val = max_val * .8
+               _, thresh_img = cv2.threshold(show_gimg, thresh_val, 255, cv2.THRESH_BINARY)
+               cnts = get_contours_in_crop(thresh_img)
 
-            if len(cnts) == 1:
-                for cnt in cnts:
+            if len(cnts) <= 5:
+                for cnt in cnts[0:1]:
                     x,y,w,h,cx,cy,adj_x,adj_y = cnt
                     cx = x1 + (cx / 10)
                     cy = y1 + (cy / 10)
                     pos_stars.append((cx,cy,0))
+            #else:
+            #   print("CNT REJECTED!", len(cnts))
             cv2.putText(show_img, str(desc),  (int(10),int(40)), cv2.FONT_HERSHEY_SIMPLEX, .8, (255, 255, 255), 1)
          #else:
          #   print("SKIP LOW PXDIFF", px_diff)
@@ -6979,7 +6985,8 @@ def find_stars_with_grid(img):
              #cv2.waitKey(3)
          #else:
          #   print(x1,y1,x2,y2)
-   cv2.imwrite("/mnt/ams2/test.jpg", show_img)
+   cv2.imwrite("/mnt/ams2/test-find_stars_with_grid.jpg", show_img)
+   print("saved /mnt/ams2/test-find_stars_with_grid.jpg")
 
    stars = []
    clean_stars =[]
@@ -7007,8 +7014,8 @@ def find_stars_with_grid(img):
        #data = inspect_star(star_cnt, data, None)
        if data is not None:
           clean_stars.append(data)
-   for star in clean_stars:
-       show_img = img.copy()
+
+
    return(clean_stars)
 
 def get_contours_in_crop(frame ):
@@ -7459,8 +7466,14 @@ def make_plate_image(image, file_stars):
    star_points = []
    for file_star in file_stars:
       (ix,iy,bp) = file_star
-         
       x,y = int(ix),int(iy)
+      # remove edge stars from the image as they mess up the plate solver
+      if x < 200 or x > 1720:
+         continue
+      if y < 200 or y > 880:
+         continue
+
+         
       #cv2.circle(hd_stack_img_an, (int(x),int(y)), 5, (128,128,128), 1)
       y1 = y - 15
       y2 = y + 15
