@@ -3911,6 +3911,11 @@ def deep_calib_init(cam,json_conf):
       return()
    cal_params['last_updated'] = update_time
 
+   if "lens_model_version" in cal_params:
+      cal_params['lens_model_version'] += 1
+   else:
+      cal_params['lens_model_version'] = 1
+
    save_json_file(mcp_file, cal_params)
    star_db_file = mcp_file.replace("multi_poly", "star_db")
    save_json_file(star_db_file, merged_stars)
