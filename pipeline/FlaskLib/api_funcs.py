@@ -350,7 +350,7 @@ def show_cat_stars (video_file, hd_stack_file, points):
       #   return(resp)
 
 
-   if True: 
+   #if True: 
       if "cp" in mj:
          cp = mj['cp']
       elif "best_meteor" in mj:
