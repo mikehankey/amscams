@@ -7455,7 +7455,11 @@ def eval_cnt(cnt_img, avg_px=5 ):
    return(max_px, avg_px,px_diff,(blob_x,blob_y),star_int)
 
 def make_plate_image(image, file_stars): 
-   ih, iw = image.shape[:2]
+   try:
+      ih, iw = image.shape[:2]
+   except:
+      print("BAD IMAGE!")
+      return(False, False)
    if len(image.shape) > 2:
       image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
       
