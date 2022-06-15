@@ -52,6 +52,8 @@ def get_cam_passwd(ip):
    return(CameraPassword)
 
 def sense_up(cam, cam_ip):
+   station_id = json_conf['site']['ams_id']
+   station_num = int(station_id.replace("AMS", ""))
    if "cal_options" in json_conf:
       cal_options = json_conf['cal_options']
    else:
@@ -164,7 +166,10 @@ def sense_up(cam, cam_ip):
 
    if "bw" in cal_options:
       if cal_options['bw'] is True:
-         cam_info[0]['DayNightColor'] = '0x00000001'
+         if 150 <= station_num <= 165:
+            cam_info[0]['DayNightColor'] = '0x00000000'
+         else:
+            cam_info[0]['DayNightColor'] = '0x00000001'
          print("RESET CAM TO COLOR!", cam_info)
 
    print("slow shutter is off")
