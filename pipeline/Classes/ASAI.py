@@ -249,6 +249,20 @@ class AllSkyAI():
 
       return(meteor_prev_yn)
 
+
+   def star_yn(self,oimg=None):
+     
+      cv2.imwrite("stemp.png", oimg)
+
+      img = load_img("stemp.png", target_size = (32,32))
+      img = img_to_array(img).astype(np.float32) / 255.0 
+      img = np.expand_dims(img, axis = 0)
+
+      star_yn = self.models['star_yn'].predict(img)
+      star_yn_conf = (1 - star_yn[0][0]) * 100
+      return(star_yn_conf)
+
+
    def meteor_yn(self,root_fn,roi_file=None,oimg=None,roi=None):
       # input - root_fn (orig fn for file ROI)
       # roi_file - direct link to input roi
@@ -1004,7 +1018,7 @@ class AllSkyAI():
 
 
       self.multi_class_labels['moving_objects_i64'] = pickle.loads(open("models/moving_objects_i64.labels", "rb").read())
-      bin_model_files = ["meteor_prev_yn","meteor_yn_i64", "fireball_yn_i64"]
+      bin_model_files = ["meteor_prev_yn","meteor_yn_i64", "fireball_yn_i64", "star_yn"]
       cat_model_files = ["moving_objects_i64", "weather_condition"]
       for mf in bin_model_files:
          if os.path.exists("models/" + mf + ".h5") is False:
