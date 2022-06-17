@@ -1,7 +1,7 @@
 import base64
 import os
 from flask import Flask, request, Response, make_response
-from FlaskLib.Learning import learning_meteors_dataset, learning_meteors_tag, meteor_ai_scan, recrop_roi, recrop_roi_confirm, learn_main, learning_review_day, batch_update_labels, learning_db_dataset, timelapse_main, learning_weather, ai_review, ai_rejects, confirm_meteor, confirm_non_meteor, confirm_non_meteor_label , ai_main , ai_dict
+from FlaskLib.Learning import learning_meteors_dataset, learning_meteors_tag, meteor_ai_scan, recrop_roi, recrop_roi_confirm, learn_main, learning_review_day, batch_update_labels, learning_db_dataset, timelapse_main, learning_weather, ai_review, ai_rejects, confirm_meteor, confirm_non_meteor, confirm_non_meteor_label , ai_main , ai_dict, ai_scan_review,ai_non_meteors 
 #from FlaskLib.AI_API import ai_api
 from FlaskLib.motion_detects import motion_detects
 from FlaskLib.FlaskUtils import get_template
@@ -18,6 +18,7 @@ from FlaskLib.min_detail import min_detail_main
 from FlaskLib.live import live_view
 from FlaskLib.TL import tl_menu 
 from FlaskLib.man_reduce import meteor_man_reduce , save_man_reduce
+from FlaskLib.man_reduce_v2 import meteor_man_reduce_v2 , save_man_reduce_v2
 from FlaskLib.man_detect import man_detect , import_meteor
 from FlaskLib.meteors_main_redis import meteors_main_redis
 from FlaskLib.network import network_main , network_map, network_meteors
@@ -306,8 +307,57 @@ def meteor_man_red():
       first_frame = int(first_frame)
    if last_frame is not None:
       last_frame = int(last_frame)
-   out = meteor_man_reduce(meteor_file, x,y,w,h,step,first_frame,last_frame,ScaleFactor)
+   out = meteor_man_reduce_v2(meteor_file, x,y,w,h,step,first_frame,last_frame,ScaleFactor)
    return out
+
+@app.route('/save_man_reduce_v2/', methods=['GET', 'POST'])
+@auth.login_required
+def save_man_redv2():
+   data = {}
+   data['frame_data'] = request.form.get('frame_data')
+   data['sd_video_file'] = request.form.get('sd_video_file')
+   data['x'] = request.form.get('x')
+   data['y'] = request.form.get('y')
+   data['w'] = request.form.get('w')
+   data['h'] = request.form.get('h')
+   data['ow'] = request.form.get('ow')
+   data['oh'] = request.form.get('oh')
+   data['ScaleFactor'] = request.form.get('ScaleFactor')
+   out = save_man_reduce_v2(data)
+   return(out)   
+
+@app.route('/meteor_man_reduce_v2/', methods=['GET', 'POST'])
+@auth.login_required
+def meteor_man_redv2():
+  
+   meteor_file = request.args.get('file')
+   x = int(request.args.get('x'))
+   y = int(request.args.get('y'))
+   w = int(request.args.get('w'))
+   h = int(request.args.get('h'))
+   ScaleFactor = request.args.get('ScaleFactor')
+   if ScaleFactor is None:
+      ScaleFactor = 5
+   else:
+      ScaleFactor = int(ScaleFactor)
+   step = request.args.get('step')
+   if step is not None:
+      step = int(step)   
+   first_frame = request.args.get('first_frame')
+   last_frame = request.args.get('last_frame')
+   if first_frame is not None:
+      first_frame = int(first_frame)
+   if last_frame is not None:
+      last_frame = int(last_frame)
+   out = meteor_man_reduce_v2(meteor_file, x,y,w,h,step,first_frame,last_frame,ScaleFactor)
+   return out
+
+
+
+
+
+
+
 
 
 @app.route('/import_meteor/', methods=['GET', 'POST'])
@@ -740,6 +790,14 @@ def aidict(amsid, date):
    return(out)
 
 
+@app.route('/AI/SS/<amsid>/', methods=['GET', 'POST'])
+@auth.login_required
+def aiss(amsid):
+   options = {}
+   for key, value in request.args.items():
+      options[key] = value
+   out = ai_scan_review(amsid, options, json_conf)
+   return(out)
 
 @app.route('/AI/MAIN/<amsid>/', methods=['GET', 'POST'])
 @auth.login_required
@@ -755,6 +813,16 @@ def airej(amsid):
       options[key] = value
    out = ai_rejects(amsid, options, json_conf)
    return(out)
+
+@app.route('/AI/NON_METEORS/<amsid>/', methods=['GET', 'POST'])
+@auth.login_required
+def ainm(amsid):
+   options = {}
+   for key, value in request.args.items():
+      options[key] = value
+   out = ai_non_meteors(amsid, options, json_conf)
+   return(out)
+
 
 
 

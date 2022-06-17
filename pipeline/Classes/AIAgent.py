@@ -62,14 +62,12 @@ class AIAgent():
    def create_jobs_table(self):
 
       # Drop the GEEK table if already exists.
-      cursor_obj.execute("DROP TABLE IF EXISTS GEEK")
+      cursor_obj.execute("DROP TABLE IF EXISTS jobs")
 
       # Creating table
-      table = """ CREATE TABLE GEEK (
-            Email VARCHAR(255) NOT NULL,
-            First_Name CHAR(25) NOT NULL,
-            Last_Name CHAR(25),
-            Score INT
+      table = """ CREATE TABLE jobs (
+            job_id  text,
+            job_desc  text,
       ); """
 
       cursor_obj.execute(table)

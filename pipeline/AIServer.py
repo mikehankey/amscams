@@ -47,6 +47,22 @@ def mroi():
 
    return(out)
 
+
+@app.route('/AI/STAR_YN/', methods=['POST', 'GET'])
+def starscan():
+   star_file = request.args.get('file')
+   out = {}
+   if os.path.exists(star_file) is False:
+      out['status'] = 0
+      out['msg'] = "file not found"
+      return(out)
+   img = cv2.imread(star_file)
+   star_yn = ASAI.star_yn(img)
+   out['star_yn'] = star_yn
+
+   return(out)
+
+
 @app.route('/AI/METEOR_OBJECT_SCAN/', methods=['POST', 'GET'])
 def moscan():
    out = "METEOR OBJECT SCAN"

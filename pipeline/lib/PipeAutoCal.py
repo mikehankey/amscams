@@ -4,6 +4,7 @@ Autocal functions
 
 """
 import time
+import simplejson as json
 
 import pickle
 from lib.conversions import datetime2JD
@@ -2866,6 +2867,18 @@ def refit_fov(cal_file, json_conf, mov_frame_num=0):
          cal_params['cat_stars_no_model'].append(star)
 
    cal_params['user_stars'], cal_params['cat_pairs'], cal_params['not_found'], short_bright_stars = get_stars_no_model(orig_img.copy(), cal_params)
+
+ 
+   #try:
+   if True:
+      img_fn = image_file.split("/")[-1]
+      cal_params['user_stars'], bad_stars,ai_stars = ai_check_stars(orig_img, img_fn, cal_params['user_stars'])
+      cal_params['ai_stars'] = ai_stars
+      if len(cal_params['user_stars']) == 0:
+         return 
+   #except:
+   #   print("AI stars did not work. Maybe AI or star model not installed?")
+
    cal_params['no_model_stars'] = cal_params['user_stars']
    print("NO MODEL STARS:", len(cal_params['user_stars']))
 
@@ -6091,6 +6104,82 @@ def find_meds(cal_data):
    return(med_data)
 
 
+
+
+def ai_check_stars(image, img_fn, stars):
+   repo_dir_yes = "/mnt/ams2/AI/DATASETS/CAL_STARS/stars/"
+   repo_dir_no = "/mnt/ams2/AI/DATASETS/CAL_STARS/xnon_stars/"
+   if os.path.exists(repo_dir_yes) is False:
+      os.makedirs(repo_dir_yes) 
+   if os.path.exists(repo_dir_no) is False:
+      os.makedirs(repo_dir_no) 
+
+   import requests
+   ai_stars = {}
+   print("AI CHECK STARS", len(stars))
+   good_stars = []
+   bad_stars = []
+   
+   for star in stars:
+      #dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist,bp = star
+      six = star[0]
+      siy = star[1]
+      x1 = int(six - 16)
+      x2 = int(six + 16)
+      y1 = int(siy - 16)
+      y2 = int(siy + 16)
+
+      if x1 <= 0 or x2 >= 1920 or y1 < 0 or y2 >= 1080:
+         print("SKIP!", x1,y1,x2,y2)
+         continue
+      star_img = image[y1:y2,x1:x2]
+      temp_file = "/mnt/ams2/startemp.jpg"
+      cv2.imwrite(temp_file, star_img)
+      star_key = img_fn.replace(".png", "")
+      star_key = star_key.replace(".jpg", "")
+      star_key += "_" + str(x1) + "_" + str(y1) + "_" + str(x2) + "_" + str(y2) 
+      if os.path.exists(repo_dir_yes + star_key + ".jpg") is False and os.path.exists(repo_dir_no + star_key + ".jpg") is False:
+         url = "http://localhost:5000/AI/STAR_YN/?file={}".format(temp_file)
+         try:
+         #if True:
+            response = requests.get(url)
+            content = response.content.decode()
+            resp = json.loads(content)
+            print(resp)
+            ai_stars[star_key] = resp['star_yn']
+            if resp['star_yn'] > 20:
+               star_file = repo_dir_yes + star_key + ".jpg"
+               good_stars.append(star)
+            else:
+               star_file = repo_dir_no + star_key + ".jpg"
+               bad_stars.append(star)
+            cmd = "mv " + temp_file + " " + star_file
+            print(cmd)
+            os.system(cmd)
+         except:
+            print("AI FAIL!")
+      else:
+         if os.path.exists(repo_dir_yes + star_key + ".jpg") is True: 
+            good_stars.append(star)
+
+         elif os.path.exists(repo_dir_no + star_key + ".jpg") is False:
+            bad_stars.append(star)
+
+   sfiles = os.listdir(repo_dir_yes)
+   nsfiles = os.listdir(repo_dir_no)
+   shtml = ""
+   nhtml = ""
+   for ns in nsfiles:
+      nhtml += "<img src=" + ns + ">"
+   for ns in sfiles:
+      shtml += "<img src=" + ns + ">"
+   fp = open(repo_dir_yes + "index.html", "w")
+   fp.write(shtml)
+   fp.close()
+   fp = open(repo_dir_no + "index.html", "w")
+   fp.write(nhtml)
+
+   return(good_stars, bad_stars, ai_stars)
 
 def cal_all(json_conf):
    print("CAL ALL")

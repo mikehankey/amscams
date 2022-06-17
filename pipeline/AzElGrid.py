@@ -129,6 +129,8 @@ def az_grid(cal_file,cal_params,cal_image,iw,ih,show =0):
 
       
    print("START AZ, END AZ", start_az, end_az)
+   print("AZ DIFF!", end_az - start_az)
+
    #for az in range(int(start_az),int(end_az)):
       #for el in range(int(start_el),int(end_el)+30):
          #if az % 10 == 0 and el % 10 == 0:
