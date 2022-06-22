@@ -307,7 +307,7 @@ def meteor_man_red():
       first_frame = int(first_frame)
    if last_frame is not None:
       last_frame = int(last_frame)
-   out = meteor_man_reduce_v2(meteor_file, x,y,w,h,step,first_frame,last_frame,ScaleFactor)
+   out = meteor_man_reduce(meteor_file, x,y,w,h,step,first_frame,last_frame,ScaleFactor)
    return out
 
 @app.route('/save_man_reduce_v2/', methods=['GET', 'POST'])

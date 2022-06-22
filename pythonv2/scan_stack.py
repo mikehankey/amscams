@@ -265,6 +265,11 @@ def scan_and_stack_fast(file, sun_status = 0, vals = []):
    threshold = None
 
    (f_datetime, cam, f_date_str,fy,fm,fd, fh, fmin, fs) = convert_filename_to_date_cam(file)
+   if int(fh) % 2 == 0 and (int(fmin) == 32 or int(fmin) == 33):
+      sense_up = True
+   else:
+      sense_up = False
+
    if cam in mask_imgs:
       mask_img = mask_imgs[cam]
    else:
@@ -308,6 +313,7 @@ def scan_and_stack_fast(file, sun_status = 0, vals = []):
    small_thresh = None
    while True:
       grabbed , frame = cap.read()
+      ignore_stack = False
       if fc < len(vals):
          if vals[fc] == 0  and fc > 20:
             print("SKIP FRAME:", fc, vals[fc])
@@ -376,6 +382,11 @@ def scan_and_stack_fast(file, sun_status = 0, vals = []):
             if sum_val > 5000:
                fb += 1
                print("FIREBALL:", fc, sum_val)
+            if sum_val > 100000 and sense_up is True:
+               fb += 1
+               print("SENSE UP?:", fc, sum_val)
+               ignore_stack = True
+
             mx = mx * 2
             my = my * 2
             sum_vals.append(sum_val)
@@ -394,7 +405,8 @@ def scan_and_stack_fast(file, sun_status = 0, vals = []):
             if stacked_image is None:
                stacked_image = stack_stack(frame_pil, frame_pil)
             else:
-               stacked_image = stack_stack(stacked_image, frame_pil)
+               if ignore_stack is not True:
+                  stacked_image = stack_stack(stacked_image, frame_pil)
          sum_vals.append(0)
          max_vals.append(0)
          pos_vals.append((0,0))
@@ -413,7 +425,9 @@ def scan_and_stack_fast(file, sun_status = 0, vals = []):
                   stacked_image = stack_stack(frame_pil, frame_pil)
                   stacked_sub = stack_stack(sub_pil, sub_pil)
                else:
-                  stacked_image = stack_stack(stacked_image, frame_pil)
+
+                  if ignore_stack is not True:
+                     stacked_image = stack_stack(stacked_image, frame_pil)
                   stacked_sub = stack_stack(stacked_sub, sub_pil)
                stacked_sub_np = np.array(stacked_sub)
                #cv2.imshow('pepe', stacked_sub_np)
