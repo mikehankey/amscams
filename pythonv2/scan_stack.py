@@ -384,7 +384,7 @@ def scan_and_stack_fast(file, sun_status = 0, vals = []):
                print("FIREBALL:", fc, sum_val)
             if sum_val > 100000 and sense_up is True:
                fb += 1
-               print("SENSE UP?:", fc, sum_val)
+               print("SENSE UP??:", fc, sum_val)
                ignore_stack = True
 
             mx = mx * 2
