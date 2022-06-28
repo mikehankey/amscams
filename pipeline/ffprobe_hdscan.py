@@ -7,8 +7,14 @@ import sys
 
 date = sys.argv[1]
 cam_id = sys.argv[2]
+time_of_day = sys.argv[3]
 
-wild = "/mnt/ams2/SD/proc2/{}/*{}*.mp4".format(sys.argv[1], sys.argv[2])
+if time_of_day == "night"
+   tod = ""
+else:
+   tod = "daytime"
+
+wild = "/mnt/ams2/SD/{}/proc2/{}/*{}*.mp4".format(sys.argv[1], sys.argv[2], tod)
 
 files = sorted(glob.glob(wild), reverse=True)
 c = 0
