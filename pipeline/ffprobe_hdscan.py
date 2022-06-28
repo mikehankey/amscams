@@ -14,7 +14,7 @@ if time_of_day == "night":
 else:
    tod = "daytime"
 
-wild = "/mnt/ams2/SD/{}/proc2/{}/*{}*.mp4".format(tod, date, cam_id)
+wild = "/mnt/ams2/SD/proc2/{}/{}/*{}*.mp4".format(tod, date, cam_id)
 
 files = sorted(glob.glob(wild), reverse=True)
 c = 0
