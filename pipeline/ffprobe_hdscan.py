@@ -6,7 +6,7 @@ from lib.FFFuncs import ffprobe
 import sys
 
 cam_id = sys.argv[1]
-files = sorted(glob.glob("/mnt/ams2/SD/proc2/2022_06_28/*" + cam_id + "*.mp4"), reverse=True)
+files = sorted(glob.glob("/mnt/ams2/SD/proc2/2022_06_27/*" + cam_id + "*.mp4"), reverse=True)
 c = 0
 data = {}
 for file in sorted(files[20:]):
