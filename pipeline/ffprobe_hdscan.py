@@ -15,7 +15,7 @@ else:
    tod = "daytime"
 
 wild = "/mnt/ams2/SD/proc2/{}/{}/*{}*.mp4".format(tod, date, cam_id)
-
+print(wild)
 files = sorted(glob.glob(wild), reverse=True)
 c = 0
 data = {}
