@@ -9,7 +9,7 @@ date = sys.argv[1]
 cam_id = sys.argv[2]
 time_of_day = sys.argv[3]
 
-if time_of_day == "night"
+if time_of_day == "night":
    tod = ""
 else:
    tod = "daytime"
