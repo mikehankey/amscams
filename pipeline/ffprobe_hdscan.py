@@ -2,16 +2,13 @@
 
 import glob
 import os
+from lib.FFFuncs import ffprobe
 
-files = sorted(glob.glob("/mnt/ams2/HD/2021_04_*.mp4"), reverse=True)
+files = sorted(glob.glob("/mnt/ams2/SD/proc2/2022_06_28/*.mp4"), reverse=True)
 c = 0
 for file in files[20:]:
    if "trim" in file:
       continue
-   cmd = "/usr/bin/ffprobe " + file + " 2>&1 |grep fps"
-   print(cmd)
-   os.system(cmd)
-   if c > 100:
-      exit()
-   c += 1
 
+   resp = ffprobe(file)
+   print(resp, file)
