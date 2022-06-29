@@ -210,9 +210,9 @@ def reduce_fov_pos(this_poly,az,el,pos,pixscale, x_poly, y_poly, x_poly_fwd, y_p
    new_position_angle = pos + (this_poly[2]*pos)
    new_pixscale = pixscale + (this_poly[3]*pixscale)
 
-   print("THIS POLY:", this_poly)
-   print("REDUCE VALS:", az,el,pos,pixscale)
-   print("NEW REDUCE VALS:", new_az,new_el,new_position_angle,new_pixscale)
+   #print("THIS POLY:", this_poly)
+   #print("REDUCE VALS:", az,el,pos,pixscale)
+   #print("NEW REDUCE VALS:", new_az,new_el,new_position_angle,new_pixscale)
 
    lat,lng,alt = json_conf['site']['device_lat'], json_conf['site']['device_lng'], json_conf['site']['device_alt']
 
@@ -235,7 +235,7 @@ def reduce_fov_pos(this_poly,az,el,pos,pixscale, x_poly, y_poly, x_poly_fwd, y_p
    temp_cal_params['cat_image_stars'] = cat_image_stars 
    temp_cal_params = update_center_radec(cal_fn,temp_cal_params,json_conf)
 
-   print("NEW REDUCE VALS:", new_az,new_el,new_position_angle,new_pixscale)
+   #print("NEW REDUCE VALS:", new_az,new_el,new_position_angle,new_pixscale)
 
    all_res = []
    new_cat_image_stars = []
@@ -252,8 +252,8 @@ def reduce_fov_pos(this_poly,az,el,pos,pixscale, x_poly, y_poly, x_poly_fwd, y_p
    mean_res = np.mean(all_res)
    temp_cal_params['cat_image_stars'] = new_cat_image_stars 
    temp_cal_params['total_res_px'] = mean_res
-   star_img = draw_star_image(image, new_cat_image_stars,temp_cal_params) 
    if SHOW == 1:
+      star_img = draw_star_image(image, new_cat_image_stars,temp_cal_params) 
       cv2.imshow('pepe', star_img)
       cv2.waitKey(30)
    print("CENTER FOV RES:", mean_res)
