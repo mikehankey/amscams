@@ -331,7 +331,7 @@ def cal_status_report(cam_id, con, cur, json_conf):
    station_id = json_conf['site']['ams_id']
 
    if os.path.exists(station_id + "_CALIB.db") is False:
-      cmd = "cat CALIB.sql |sqlite3 " + station_id + "_CALIB.db"
+      cmd = "cat CALDB.sql |sqlite3 " + station_id + "_CALIB.db"
       os.system(cmd)
 
    autocal_dir = "/mnt/ams2/cal/"
