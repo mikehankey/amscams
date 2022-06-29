@@ -3441,9 +3441,9 @@ def characterize_best(cam_id, con, cur, json_conf,limit=800, cal_fns=None):
       #   cv2.putText(base_image, str(int(res_px)),  (int(new_x),int(new_y)), cv2.FONT_HERSHEY_SIMPLEX, .4, (255,255,255), 1)
       ic += 1
 
-
-   cv2.imshow('pepe', base_image)
-   cv2.waitKey(00)
+   if SHOW == 1:
+      cv2.imshow('pepe', base_image)
+      cv2.waitKey(00)
 
 
    print("CAM ID:", cam_id)
@@ -3515,8 +3515,10 @@ def plot_star_chart(base_image, cat_stars, zp_cat_stars):
    cv2.circle(base_image, (int(1920/2),int(1080/2)), 600, (128,128,128),1)
    cv2.circle(base_image, (int(1920/2),int(1080/2)), 800, (128,128,128),1)
    cv2.circle(base_image, (int(1920/2),int(1080/2)), 1000, (128,128,128),1)
-   cv2.imshow('pepe', base_image)
-   cv2.waitKey(30)
+
+   if SHOW == 1:
+      cv2.imshow('pepe', base_image)
+      cv2.waitKey(30)
 
 
 def characterize_fov(cam_id, con, cur, json_conf):
@@ -3695,9 +3697,9 @@ def characterize_fov(cam_id, con, cur, json_conf):
       uvals = [cal_fn, img_x, img_y]
       cur.execute(sql, uvals )
       
-
-   cv2.imshow("pepper", grid_img)
-   cv2.waitKey(90)
+   if SHOW == 1:
+      cv2.imshow("pepper", grid_img)
+      cv2.waitKey(90)
    cv2.imwrite("/mnt/ams2/cal/plots/" + station_id + "_" + cam_id + "_ALL_GOOD_STARS.jpg", grid_img)
    print("saved all stars image /mnt/ams2/cal/plots/" + station_id + "_" + cam_id + "_ALL_GOOD_STARS.jpg")
    save_json_file("/mnt/ams2/cal/" + station_id + "_" + cam_id + "_ALL_GOOD_STARS.json", all_good_stars)
