@@ -27,7 +27,7 @@ import scipy.optimize
 
 import lib.brightstardata as bsd
 from lib.PipeUtil import load_json_file, save_json_file,angularSeparation, calc_dist, convert_filename_to_date_cam 
-from lib.PipeAutoCal import distort_xy, insert_calib, minimize_poly_multi_star, view_calib, cat_star_report , update_center_radec, XYtoRADec, draw_star_image
+from lib.PipeAutoCal import distort_xy, insert_calib, minimize_poly_multi_star, view_calib, cat_star_report , update_center_radec, XYtoRADec, draw_star_image, make_lens_model
 import sqlite3 
 from lib.DEFAULTS import *
 tries = 0
@@ -3950,7 +3950,9 @@ def wizard(cam_id, con, cur, json_conf):
 
    # lens_model_final_report()
    lens_model_report(cam_id, con, cur, json_conf)
-
+   merged_star_file = "/mnt/ams2/cal/" + station_id + "_" + cam_id + "_MERGED_STARS.json"
+   merged_stars = load_json_file(merged_star_file)
+   make_lens_model(cam_id, json_conf, merged_stars)
 
 
 def lens_model_report(cam_id, con, cur, json_conf):
