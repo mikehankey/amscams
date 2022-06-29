@@ -4096,7 +4096,12 @@ if __name__ == "__main__":
       batch_review(cam_id, con, cur, json_conf)
    if cmd == "wiz" :
       cam_id = sys.argv[2]
-      wizard(cam_id, con, cur, json_conf)
+      if cam_id == "all":
+         for cam_num in json_conf['cameras']:
+            cam_id = json_conf['cameras']['cams_id']
+            wizard(cam_id, con, cur, json_conf)
+      else:
+         wizard(cam_id, con, cur, json_conf)
 
    if cmd == "status" :
       cam_id = sys.argv[2]
