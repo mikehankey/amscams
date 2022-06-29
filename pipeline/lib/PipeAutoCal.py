@@ -9665,7 +9665,8 @@ def draw_star_image(img, cat_image_stars,cp=None,json_conf=None,extra_text=None)
          dcname,mag,ra,dec,new_cat_x,new_cat_y,six,siy,cat_dist = star
       else:
          dcname,mag,ra,dec,img_ra,img_dec,match_dist,org_x,org_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist,star_int = star
-      img[int(siy),int(six)] = [0,0,255]
+      if 0 <= six <= 1920 and 0 <= siy <= 1080:
+         img[int(siy),int(six)] = [0,0,255]
 
    image = Image.fromarray(img)
    draw = ImageDraw.Draw(image)
