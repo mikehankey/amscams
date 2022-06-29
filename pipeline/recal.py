@@ -3866,7 +3866,7 @@ def lens_model(cam_id, con, cur, json_conf):
 
    if cal_params == 0:
       print("LENS MODEL MAKE FAILED")
-      exit()
+      return() 
 
    if "cal_version" not in cal_params and mcp is None:
       cal_params['cal_version'] = 1 
@@ -3902,7 +3902,9 @@ def lens_model(cam_id, con, cur, json_conf):
          new_merged_stars.append((cal_file , center_az, center_el, ra_center, dec_center, position_angle, pixscale, name,mag,ra,dec,ra,dec,match_dist,new_cat_x,new_cat_y,center_az,center_el,new_cat_x,new_cat_y,img_x,img_y,res_px,star_flux))
       else:
          print("SKIP", res_px, med_rez)
-   save_json_file("/mnt/ams2/cal/" + station_id + "_" + cam_id + "_MERGED_STARS.json", new_merged_stars)
+  
+   if len(new_merged_stars) > 500:
+      save_json_file("/mnt/ams2/cal/" + station_id + "_" + cam_id + "_MERGED_STARS.json", new_merged_stars)
 
    rez = [row[-2] for row in new_merged_stars] 
    mean_rez = np.mean(rez) 
