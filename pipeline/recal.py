@@ -422,7 +422,7 @@ def cal_status_report(cam_id, con, cur, json_conf):
    tb.add_row(["Calfiles loaded in DB", len(calfiles_data.keys())])
    tb.add_row(["Calfiles with star data", len(calfile_paired_star_stats.keys())])
    tb.add_row(["Freecal source files", len(freecal_index.keys())])
-   rr = str(round(avg_res),2) + "/" + str(round(avg_res),2) 
+   rr = str(round(avg_res,2)) + "/" + str(round(avg_res,2) )
    tb.add_row(["Average Res", rr])
 
 
