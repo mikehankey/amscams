@@ -4103,7 +4103,7 @@ if __name__ == "__main__":
       cam_id = sys.argv[2]
       if cam_id == "all":
          for cam_num in json_conf['cameras']:
-            cam_id = json_conf['cameras']['cams_id']
+            cam_id = json_conf['cameras'][cam_num]['cams_id']
             wizard(cam_id, con, cur, json_conf)
       else:
          wizard(cam_id, con, cur, json_conf)
