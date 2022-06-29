@@ -3880,7 +3880,12 @@ def lens_model(cam_id, con, cur, json_conf):
    new_merged_stars = []
 
    rez = [row[-2] for row in merged_stars] 
-   med_rez = np.mean(rez) 
+   if len(merged_stars) > 1000:
+      med_rez = np.mean(rez) 
+   else:
+      med_rez = np.mean(rez) ** 2
+
+
    for star in merged_stars:
       (cal_file , center_az, center_el, ra_center, dec_center, position_angle, pixscale, name,mag,ra,dec,ra,dec,match_dist,new_cat_x,new_cat_y,center_az,center_el,new_cat_x,new_cat_y,img_x,img_y,res_px,star_flux) = star
       cal_params['center_az'] = center_az
