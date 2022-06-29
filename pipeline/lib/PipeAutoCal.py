@@ -5722,7 +5722,9 @@ def test_cal(cp_file,json_conf,cp, cal_img, cdata ):
       del cp['short_bright_stars']
    cp = update_center_radec(cp_file,cp,json_conf)
    #cp, bad_stars, marked_img = eval_cal(cp_file,json_conf,cp,cal_img, None)
+   print(cp['cat_image_stars'])
    cp, bad_stars, marked_img = eval_cal_res(cp_file, json_conf, cp, cal_img,None,None,cp['cat_image_stars']) 
+
    tcp = dict(cp)
    #print("AZ,EL,RA,DEC,POS,PX:", az,el,pos,px,cp['ra_center'],cp['dec_center'])
    return(tcp, bad_stars, marked_img)
@@ -5972,6 +5974,7 @@ def eval_cal_res(cp_file,json_conf,nc=None,oimg=None, mask_img=None,batch_mode=N
 
    med_rez = []
    for star in nc['cat_image_stars']:
+      print("STAR:", star)
       dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist,star_int = star
       med_rez.append(cat_dist)
    med_res = np.median(med_rez)
@@ -6639,7 +6642,8 @@ def make_cal_obj(az,el,pos,px,stars,cat_image_stars,res):
    cp['position_angle'] = pos
    cp['pixscale'] = px
    cp['user_stars'] = stars
-   cp['cat_image_stars'] = cat_image_stars
+   cp['cat_image_stars'] = []
+   #cat_image_stars
    cp['total_res_px'] = res
    cp['imagew'] = 1920
    cp['imageh'] = 1080
@@ -6741,7 +6745,9 @@ def autocal(image_file, json_conf, show = 0, heal_only=0):
          cp['y_poly'] = mcp['y_poly']
          cp['x_poly_fwd'] = mcp['x_poly_fwd']
          cp['y_poly_fwd'] = mcp['y_poly_fwd']
+
       tcp , bad_stars, marked_img = test_cal(image_file, json_conf, cp, img, data)
+
       print("TEST CAL RES:", tcp['total_res_px'])
       if last_best_res is None:
          last_best_res = tcp['total_res_px']
