@@ -37,7 +37,7 @@ CREATE TABLE IF NOT EXISTS "calibration_files" (
 	"station_id"	INTEGER,
 	"camera_id"	INTEGER,
 	"calib_fn"	TEXT,
-	"cal_datetime"	NUMERIC,
+	"cal_datetime"	INTEGER,
 	"az"	REAL,
 	"el"	REAL,
 	"ra"	REAL,
@@ -53,6 +53,9 @@ CREATE TABLE IF NOT EXISTS "calibration_files" (
 	"y_poly_fwd"	BLOB NOT NULL,
 	"res_px"	REAL,
 	"res_deg"	REAL
+        "ai_weather"     TEXT,
+        "ai_weather_conf"     REAL,
+	PRIMARY KEY("calib_fn")
 );
 DROP TABLE IF EXISTS "non_meteors";
 CREATE TABLE IF NOT EXISTS "non_meteors" (
@@ -80,7 +83,7 @@ CREATE TABLE IF NOT EXISTS "all_stations" (
 	"operator_name"	INTEGER,
 	"operator_city"	INTEGER,
 	"operator_state"	INTEGER,
-	"operator_country"	NUMERIC,
+	"operator_country"	INTEGER,
 	"photo_credit"	INTEGER,
 	"op_status"	INTEGER,
 	PRIMARY KEY("station_id")
@@ -217,7 +220,7 @@ CREATE TABLE IF NOT EXISTS "ml_samples" (
 );
 DROP TABLE IF EXISTS "meteors";
 CREATE TABLE IF NOT EXISTS "meteors" (
-	"station_id"	NUMERIC,
+	"station_id"	INTEGER,
 	"camera_id"	TEXT,
 	"root_fn"	TEXT,
 	"sd_vid"	TEXT,
@@ -235,13 +238,13 @@ CREATE TABLE IF NOT EXISTS "meteors" (
 	"multi_station"	INTEGER,
 	"event_id"	TEXT,
 	"other_obs"	TEXT,
-	"ang_velocity"	NUMERIC,
+	"ang_velocity"	INTEGER,
 	"duration"	REAL,
 	"peak_intensity"	REAL,
 	"magnitude"	INTEGER,
 	"roi"	TEXT,
-	"sync_status"	NUMERIC,
-	"calib"	NUMERIC,
+	"sync_status"	INTEGER,
+	"calib"	INTEGER,
 	"mfd"	TEXT,
 	"user_mods"	TEXT,
 	"dts"	TEXT,
@@ -304,3 +307,36 @@ CREATE TABLE deleted_meteors (
                hd_vid TEXT,
                PRIMARY KEY("sd_vid")
             )
+
+CREATE TABLE calibration_stars (
+        "star_key"     TEXT,
+        "filename"     TEXT,
+        "stardate"     REAL,
+        "file_type"     TEXT,
+        "cal_ra"     REAL,
+        "cal_dec"     REAL,
+        "cal_pos"     REAL,
+        "cal_pxs"     REAL,
+        "cal_az"     REAL,
+        "cal_el"     REAL,
+        "cal_res"     REAL,
+        "star_name"     TEXT,
+        "mag"     REAL,
+        "ra"     REAL,
+        "dec"     REAL,
+        "img_x"     REAL,
+        "img_y"     REAL,
+        "cat_x"     REAL,
+        "cat_y"     REAL,
+        "img_intensity"     REAL,
+        "res_px_zero"     REAL,
+        "res_px"     REAL,
+        "res_deg"     REAL,
+        "star_radius"     REAL,
+        "ai_class"     TEXT,
+        "ai_class_conf"     TEXT,
+        "location"     TEXT,
+        "geo_quality"     TEXT,
+        "slope"     real,
+	PRIMARY KEY("star_key")
+)

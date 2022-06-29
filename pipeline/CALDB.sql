@@ -85,6 +85,7 @@ CREATE TABLE calfile_paired_stars (
             PRIMARY KEY(cal_fn,img_x,img_y)
 );
 
+DROP TABLE IF EXISTS catalog_stars; 
 CREATE TABLE catalog_stars (
    hip_id integer NOT NULL,
    name_ascii text,
@@ -102,9 +103,10 @@ CREATE TABLE catalog_stars (
    PRIMARY KEY(hip_id)
 );
 
+DROP TABLE IF EXISTS constellation_lines; 
 CREATE TABLE constellation_lines (
    constellation text,
-   star_1 text,
-   star_2 text,
-   PRIMARY KEY(star_1, star_2)
+   star_1 integer,
+   star_2 integer,
+   PRIMARY KEY(constellation, star_1, star_2)
 );
