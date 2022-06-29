@@ -330,12 +330,6 @@ def start_calib(cal_fn, json_conf, calfiles_data, mcp=None):
 def cal_status_report(cam_id, con, cur, json_conf): 
    station_id = json_conf['site']['ams_id']
 
-   if os.path.exists(station_id + "_CALIB.db") is False:
-      cmd = "cat CALDB.sql |sqlite3 " + station_id + "_CALIB.db"
-      print(cmd)
-      os.system(cmd)
-   else:
-      print("CAL DB EXISTS ALREADY")
 
    autocal_dir = "/mnt/ams2/cal/"
    # get all call files for this cam
@@ -4012,6 +4006,14 @@ if __name__ == "__main__":
    station_id = json_conf['site']['ams_id']
    db_file = station_id + "_CALIB.db" 
    #con = sqlite3.connect(":memory:")
+
+   if os.path.exists(db_file) is False:
+      cmd = "cat CALDB.sql |sqlite3 " + db_file
+      print(cmd)
+      os.system(cmd)
+   else:
+      print("CAL DB EXISTS ALREADY")
+
    con = sqlite3.connect(db_file)
    cur = con.cursor()
 
