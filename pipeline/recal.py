@@ -332,7 +332,10 @@ def cal_status_report(cam_id, con, cur, json_conf):
 
    if os.path.exists(station_id + "_CALIB.db") is False:
       cmd = "cat CALDB.sql |sqlite3 " + station_id + "_CALIB.db"
+      print(cmd)
       os.system(cmd)
+   else:
+      print("CAL DB EXISTS ALREADY")
 
    autocal_dir = "/mnt/ams2/cal/"
    # get all call files for this cam
