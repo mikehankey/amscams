@@ -253,8 +253,9 @@ def reduce_fov_pos(this_poly,az,el,pos,pixscale, x_poly, y_poly, x_poly_fwd, y_p
    temp_cal_params['cat_image_stars'] = new_cat_image_stars 
    temp_cal_params['total_res_px'] = mean_res
    star_img = draw_star_image(image, new_cat_image_stars,temp_cal_params) 
-   cv2.imshow('pepe', star_img)
-   cv2.waitKey(30)
+   if SHOW == 1:
+      cv2.imshow('pepe', star_img)
+      cv2.waitKey(30)
    print("CENTER FOV RES:", mean_res)
    return(mean_res)
 
@@ -586,8 +587,9 @@ def batch_review(cam_id, con, cur, json_conf, limit=100):
       # Need to modes here?
 
       star_img = draw_star_image(oimg, cal_params['cat_image_stars'],cal_params) 
-      cv2.imshow('pepe', star_img)
-      cv2.waitKey(30)
+      if SHOW == 1:
+         cv2.imshow('pepe', star_img)
+         cv2.waitKey(30)
 
       new_cal_params = minimize_fov(cal_fn, cal_params, cal_image_file,oimg,json_conf)
 
@@ -782,9 +784,9 @@ def catalog_image(cal_fn, con, cur, json_conf,mcp=None, add_more=False,del_more=
 
    # final after delete
    cal_params, report_txt, show_img = cal_params_report(cal_fn, cal_params, json_conf, clean_cal_img.copy(), 30, mcp)
-
-   cv2.imshow('pepe', show_img)
-   cv2.waitKey(30)
+   if SHOW == 1:
+      cv2.imshow('pepe', show_img)
+      cv2.waitKey(30)
 
    print("BEFORE UPDATE RES:", cal_fn, cal_params['total_res_px'], cal_params['total_res_deg'])
    cal_params = update_center_radec(cal_fn,cal_params,json_conf)
@@ -916,8 +918,9 @@ def catalog_image(cal_fn, con, cur, json_conf,mcp=None, add_more=False,del_more=
             continue
             #cv2.putText(cat_show_img, str(round(res_px,1)) + "px",  (int(new_cat_x + 5),int(new_cat_y)), cv2.FONT_HERSHEY_SIMPLEX, .4, (0,0,255), 1)
             cv2.rectangle(cat_show_img, (int(rx1), int(ry1)), (int(rx2) , int(ry2) ), (64,64, 128), 1)
-         cv2.imshow('pepe', cat_show_img)
-         cv2.waitKey(10)
+         if SHOW == 1:
+            cv2.imshow('pepe', cat_show_img)
+            cv2.waitKey(10)
 
 
    update_calibration_file(cal_fn, cal_params, con,cur,json_conf,mcp)
@@ -925,12 +928,12 @@ def catalog_image(cal_fn, con, cur, json_conf,mcp=None, add_more=False,del_more=
 
    save_json_file(cal_dir + cal_fn, cal_params)
 
-         
-   cv2.imshow('pepe', blend_img)
-   cv2.waitKey(100)
+   if SHOW == 1:      
+      cv2.imshow('pepe', blend_img)
+      cv2.waitKey(100)
 
-   cv2.imshow('pepe', cat_show_img)
-   cv2.waitKey(30)
+      cv2.imshow('pepe', cat_show_img)
+      cv2.waitKey(30)
 
 
 
@@ -1393,8 +1396,9 @@ def apply_calib (cal_file, calfiles_data, json_conf, mcp):
 
       print("VIEW CAL APPLY:", cal_fn)
       cal_img, cal_params = view_calfile(cam_id, cal_fn, con, cur, json_conf,None,None,mcp)
-      cv2.imshow('pepe', cal_img)
-      cv2.resizeWindow("pepe", 1920, 1080)
+      if SHOW == 1:
+         cv2.imshow('pepe', cal_img)
+         cv2.resizeWindow("pepe", 1920, 1080)
 
       cv2.waitKey(30)
       if mcp is not None:
@@ -1449,9 +1453,9 @@ def apply_calib (cal_file, calfiles_data, json_conf, mcp):
       print("--------------")
       show_calparams(cal_params)      
 
-
-      cv2.imshow("pepe", cal_img)
-      cv2.waitKey(30)
+      if SHOW == 1:
+         cv2.imshow("pepe", cal_img)
+         cv2.waitKey(30)
       #view_calib(cal_fn,json_conf, cal_params,oimg, 1)
 
 def show_calparams(cal_params):
@@ -1798,8 +1802,9 @@ def repair_calfile_stars(cal_fn, con, cur, json_conf, mcp):
          cv2.putText(cal_img, "X",  (int(img_x),int(img_y)), cv2.FONT_HERSHEY_SIMPLEX, .4, (0,0,255), 1)
 
    print("DONE REDO")
-   cv2.imshow('pepe', cal_img)
-   cv2.waitKey(30)
+   if SHOW == 1:
+      cv2.imshow('pepe', cal_img)
+      cv2.waitKey(30)
    #get_image_stars(cal_dir + cal_image_file, con, cur, json_conf, True)
    #view_calfile(cal_fn, con,cur,json_conf)
    #exit()
@@ -1899,9 +1904,10 @@ def show_message(cal_img, message, px, py):
       temp_img = cal_img.copy()
       color = [val,val,val]
       cv2.putText(temp_img, message,  (px,py), cv2.FONT_HERSHEY_SIMPLEX, 1, color, 2)
-      cv2.resizeWindow("TWEEK CAL", 1920, 1080)
-      cv2.imshow("TWEEK CAL", temp_img)
-      cv2.waitKey(30)
+      if SHOW == 1:
+         cv2.resizeWindow("TWEEK CAL", 1920, 1080)
+         cv2.imshow("TWEEK CAL", temp_img)
+         cv2.waitKey(30)
 
 
 
@@ -1920,8 +1926,9 @@ def cat_view(cal_fn, con, cur, json_conf, mcp=None):
       clean_cal_img = cv2.imread(cal_dir + cal_img_fn)
 
    cat_stars, short_bright_stars, cat_image = get_catalog_stars(cal_params)
-   cv2.imshow('pepe', cat_image)
-   cv2.waitKey(30)
+   if SHOW == 1:
+      cv2.imshow('pepe', cat_image)
+      cv2.waitKey(30)
    for star in cat_stars:
       (name,mag,ra,dec,new_cat_x,new_cat_y,zp_cat_x,zp_cat_y) = star
       print(name,mag,new_cat_x,new_cat_y,zp_cat_x,zp_cat_y)
@@ -1955,9 +1962,9 @@ def manual_tweek_calib(cal_fn, con, cur, json_conf,mcp):
    cat_on = False
 
    while True:
-      if help_on is True:
+      if help_on is True and SHOW == 1:
          cv2.imshow("TWEEK CAL", help_img)
-      else:
+      elif SHOW == 1:
          cv2.imshow("TWEEK CAL", cal_img)
       key = cv2.waitKey(30)
       print("KEY:", key)
