@@ -284,10 +284,23 @@ def calib_main_new(amsid,in_data):
 
 def cal_cam_summary(amsid, cam_id):
    mcp_file = "/mnt/ams2/cal/multi_poly-" + amsid + "-" + cam_id + ".info"
+   out = """
+      <div id='main_container' class='container-fluid h-100 mt-4 ' style="border: 1px #000000 solid">
+
+      <div class='gallery gal-resize reg row text-center text-lg-left'>
+      <div class='list-onl'>
+      <div class='filter-header d-flex flex-row-reverse '>
+      <button id="sel-all" title="Select All" class="btn btn-primary ml-3"><i class="icon-checkbox-checked"></i></button>
+      <button id="del-all" class="del-all btn btn-danger"><i class="icon-delete"></i> Delete <span class="sel-ctn">All</span> Selected</button>
+     </div>
+     </div>
+   """
+
    if cfe(mcp_file) == 1:
-      out = "<table><tr><td>Calibration Summary for " + cam_id + "</td></tr></table>"
+      out += "<table><tr><td>Calibration Summary for " + cam_id + "</td></tr></table>"
    else:
-      out = "<table><tr><td>NO LENS MODEL INFO EXISTS YET FOR " + cam_id + " " + mcp_file + "</td></tr></table>"
+      out += "<table><tr><td>NO LENS MODEL INFO EXISTS YET FOR " + cam_id + " " + mcp_file + "</td></tr></table>"
+   out += "</div></div>"
    return(out)
 
 def calib_main(amsid,in_data):
