@@ -8908,9 +8908,6 @@ def AzEltoRADec(az,el,cal_file,cal_params,json_conf,time_diff=0):
 
    ra,dec = obs.radec_of(azr,elr)
    
-   #print("UPDATE RA/DEC CENTER USING DATE/LAT/LON:", obs.date , device_lat, device_lng, device_alt)
-   #print("AZ/EL IN:", az,el )
-   #print("OUT RESULT:", ra,dec)
 
    return(ra,dec)
 
@@ -9297,7 +9294,6 @@ def reduce_fov_pos(this_poly, az,el,pos,pixscale, x_poly, y_poly, cal_params_fil
    rah = str(rah).replace(":", " ")
    dech = str(dech).replace(":", " ")
    ra_center,dec_center = HMS2deg(str(rah),str(dech))
-   print("RA/DEC CENTER:", ra_center,dec_center)
    temp_cal_params = {}
    temp_cal_params['position_angle'] = new_position_angle
    temp_cal_params['ra_center'] = ra_center
