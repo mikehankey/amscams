@@ -84,15 +84,13 @@ def sense_up(cam, cam_ip):
 
    # set slow shutter on 
    if "sense_up" not in cal_options:
-      cam_info[0]['EsShutter'] = '0x00000002'
+      print("No sense up")
+      #cam_info[0]['EsShutter'] = '0x00000002'
       #cam.set_info("Camera.Param", cam_info)
       ##print("Slow shutter on.")
-      time.sleep(5)
    elif cal_options['sense_up'] is True:
       cam_info[0]['EsShutter'] = '0x00000002'
-      #cam.set_info("Camera.Param", cam_info)
-      #print("Slow shutter on.")
-      #time.sleep(5)
+      print("Slow shutter on.")
 
    if "bw" in cal_options:
 
@@ -109,7 +107,7 @@ def sense_up(cam, cam_ip):
          
    cam.set_info("Camera.Param", cam_info)
    print("Slow shutter on.")
-   time.sleep(5)
+   time.sleep(7)
 
 
    print("Getting pictures...")
