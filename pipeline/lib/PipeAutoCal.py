@@ -215,6 +215,7 @@ def ai_check_stars(image, img_fn, stars):
       star_key += "_" + str(x1) + "_" + str(y1) + "_" + str(x2) + "_" + str(y2)
       if os.path.exists(repo_dir_yes + star_key + ".jpg") is False and os.path.exists(repo_dir_no + star_key + ".jpg") is False :
          url = "http://localhost:5000/AI/STAR_YN/?file={}".format(temp_file)
+         print("TRYING AI SERVER", url)
          try:
          #if True:
             response = requests.get(url)
@@ -233,11 +234,16 @@ def ai_check_stars(image, img_fn, stars):
             os.system(cmd)
          except:
             print("AI FAIL!")
+            # if AI is down or not installed just accept the star
+            good_stars.append(star)
+            continue
       else:
          if os.path.exists(repo_dir_yes + star_key + ".jpg") is True:
+            print("YES FILE EXISTS", repo_dir_yes + star_key + ".jpg")
             good_stars.append(star)
 
          elif os.path.exists(repo_dir_no + star_key + ".jpg") is False:
+            print("NO FILE EXISTS", repo_dir_no + star_key + ".jpg")
             bad_stars.append(star)
 
    sfiles = os.listdir(repo_dir_yes)
@@ -3150,9 +3156,10 @@ def ai_refit_fov(cal_file, json_conf):
 
 
 
-def refit_fov(cal_file, json_conf, mov_frame_num=0, zero_poly=True):
+def refit_fov(cal_file, json_conf, mov_frame_num=0, zero_poly=False):
    #ai_refit_fov(cal_file, json_conf)
    #exit()
+   zp_option = False
    global MOVIE_FN
    if SHOW == 1:
       cv2.namedWindow('pepe')
@@ -3168,6 +3175,7 @@ def refit_fov(cal_file, json_conf, mov_frame_num=0, zero_poly=True):
    this_cam = cam
    cal_params = load_json_file(cal_file)
    zp_option = True
+
    if "zero_poly_calib" in cal_params and "ai_stars" in cal_params:
       print("Zero poly calib has already been done!", cal_params['zero_poly_calib'])
       zp_option = False
@@ -3179,6 +3187,8 @@ def refit_fov(cal_file, json_conf, mov_frame_num=0, zero_poly=True):
       mcp = load_json_file(mcp_file)
    else:
       mcp = None 
+
+   print("MCP:", mcp)
 
    if mcp is not None:
       if mcp != 0:
@@ -3204,9 +3214,11 @@ def refit_fov(cal_file, json_conf, mov_frame_num=0, zero_poly=True):
    if "total_res_px" not in cal_params:
       cal_params['total_res_px'] = 1
    elif math.isnan(cal_params['total_res_px']) is True:
+      print("NAN RES ERR")
       return()
 
    if "center_az" not in cal_params:
+      print("NO CENTER AZ")
       return()
 
    image_file = cal_file.replace("-calparams.json", ".png")
@@ -3259,7 +3271,8 @@ def refit_fov(cal_file, json_conf, mov_frame_num=0, zero_poly=True):
       img_fn = image_file.split("/")[-1]
       cal_params['user_stars'], bad_stars,ai_stars = ai_check_stars(orig_img, img_fn, cal_params['user_stars'])
       cal_params['ai_stars'] = ai_stars
-      if len(cal_params['user_stars']) <= 20:
+      if len(cal_params['user_stars']) <= 7:
+         print("NOT ENOUGH USER STARS!", len(cal_params['user_stars']))
          return
 
 
@@ -3997,22 +4010,42 @@ def cal_sum_html(json_conf):
       if cal_sum[cam_id] != None:
          html += "<h2>Camera: " + cam_id + "</h2>\n"
          html += "<div>"
+
+
+         # az grid
          grid_fn = cal_sum[cam_id]['cal_grid_img'].split("/")[-1].replace(".jpg", "-tn.jpg")
-         html += "<div style='float:left'><a href=plots/" + grid_fn.replace("-tn", "") + "><img src=plots/" + grid_fn + "></a></div>"
+         html += "<div style='float:left; padding: 2px;'><a href=plots/" + grid_fn.replace("-tn", "") + "><img src=plots/" + grid_fn + "></a></div>"
+         # lens model 
          lens_fn = cal_sum[cam_id]['cal_lens_img'].split("/")[-1].replace(".jpg", "-tn.jpg")
-         html += "<div style='float:left'><a href=plots/" + lens_fn.replace("-tn", "") + "><img src=plots/" + lens_fn + "></a></div>"
+         html += "<div style='float:left; padding: 2px;'><a href=plots/" + lens_fn.replace("-tn", "") + "><img src=plots/" + lens_fn + "></a></div>"
+
+         # good stars
+         good_stars_fn = station_id + "_" + cam_id + "_ALL_GOOD_STARS.jpg" 
+         html += "<div style='float:left; padding: 2px;'><a href=plots/" + good_stars_fn.replace("-tn", "") + "><img width=320 height=180 src=plots/" + good_stars_fn + "></a></div>"
+
+         # multi-fit
+         multi_fn = station_id + "_" + cam_id + "_MULTI_FIT.jpg" 
+         html += "<div style='float:left; padding: 2px;'><a href=plots/" + multi_fn.replace("-tn", "") + "><img width=320 height=180 src=plots/" + multi_fn + "></a></div>"
+
+
 
          html += "<div style='clear: both'></div>"
          html += "</div>"
-         html += "<table>\n"
+         html += "<table style='padding: 5px;'>\n"
          for field in cal_sum[cam_id]:
             html += "<tr><td>" + field + "</td><td>" + str(cal_sum[cam_id][field]) + "</td></tr>\n"
 
-            print(cam_id, field, cal_sum[cam_id][field])
+            #print(cam_id, field, cal_sum[cam_id][field])
          html += "</table>\n"
+
+         # 
+
          plot_fn = cal_sum[cam_id]['cal_plot_img'].split("/")[-1]
-         html += "<img src=plots/" + plot_fn + "><br>"
-   print(html)      
+         html += "Plot 1 <br> <img src=plots/" + plot_fn + "><br><hr>"
+
+         plot_fn2 = station_id + "_" + cam_id + "_MAG_FLUX.png" 
+         html += "Plot 2 <br> <img src=plots/" + plot_fn2 + "><br><hr>"
+
    cl_html = html.replace("plots/", "PLOTS/")
    fp = open("/mnt/ams2/cal/" + station_id + "_CAL_SUM.html", "w")
    fp.write(cl_html)
@@ -4540,7 +4573,6 @@ def deep_calib_init(cam,json_conf):
    bad_stars = []
 
    print("SHOULD HAVE ALL GOOD STARS AND POINTING INFO NOW.")
-   exit()
 
    #mid_x, mid_y = find_center(all_stars_img)
    #all_stars = all_stars_check_slope(all_stars, mid_x, mid_y)
@@ -4603,6 +4635,7 @@ def make_cal_plots(in_cam_id, json_conf):
    temp = load_json_file("/mnt/ams2/cal/freecal_index.json")
    day_log = {}
    all_cals = []
+   title_prefix = station_id + "-" + in_cam_id
    for key in temp:
       keyfn = key.split("/")[-1]
       cal_id = key.split("/")[-2]
@@ -4632,7 +4665,7 @@ def make_cal_plots(in_cam_id, json_conf):
          bad_cals[cal_id] = {}
       else:
          if cam_id == in_cam_id: 
-            all_cals.append((cal_id, cam_id, cal_date, az, el, pixscale, position_angle, stars, res_px, score))
+            all_cals.append((cal_id, cam_id, cal_date, float(az), float(el), float(pixscale), float(position_angle), stars, res_px, score))
 
    all_cals = sorted(all_cals, key=lambda x: x[2], reverse=True)
 
@@ -4658,42 +4691,48 @@ def make_cal_plots(in_cam_id, json_conf):
       os.makedirs("/mnt/ams2/cal/plots/")
 
    fig, ax = plt.subplots(6)
+   fig.suptitle(title_prefix + " Most Recent Calibration Values ")
    fig.autofmt_xdate()
-   fig.set_figheight(13)
+   fig.set_figheight(14)
    fig.tight_layout(pad=3)
    #fig.suptitle(cam_id + " Calibration Values Over Time", fontsize=14)#KMeans
-   ax[0].scatter(dates, azs,
+
+   r = -90
+
+   ax[0].scatter(dates[r:], azs[r:],
           edgecolor="k" )
    ax[0].set_title(in_cam_id + " Center Azimuth ")
    ax[0].set_xticks(ax[0].get_xticks()[::50])
    ax[0].fmt_xdata = mdates.DateFormatter('%Y_%m_%d')
 
 
-   ax[1].scatter(dates, els,
+   ax[1].scatter(dates[r:], els[r:],
           edgecolor="k" )
    ax[1].set_title(in_cam_id + " Center Elevation ")
    ax[1].set_xticks(ax[1].get_xticks()[::50])
    ax[1].fmt_xdata = mdates.DateFormatter('%Y_%m_%d')
 
-   ax[2].scatter(dates, pos,
+   ax[2].scatter(dates[r:], pos[r:],
           edgecolor="k" )
    ax[2].set_title(in_cam_id + " Position Angle ")
    ax[2].set_xticks(ax[2].get_xticks()[::50])
    ax[2].fmt_xdata = mdates.DateFormatter('%Y_%m_%d')
 
-   ax[3].scatter(dates, pix,
+   print(dates)
+   print(pix)
+   ax[3].scatter(dates[r:], pix[r:],
           edgecolor="k" )
    ax[3].set_title(in_cam_id + " Pixel Scale ")
    ax[3].set_xticks(ax[3].get_xticks()[::50])
    ax[3].fmt_xdata = mdates.DateFormatter('%Y_%m_%d')
 
-   ax[4].scatter(dates, rez,
+   ax[4].scatter(dates[r:], rez[r:],
           edgecolor="k" )
    ax[4].set_title(in_cam_id + " Residual Error")
    ax[4].set_xticks(ax[4].get_xticks()[::50])
    ax[4].fmt_xdata = mdates.DateFormatter('%Y_%m_%d')
 
-   ax[5].scatter(dates, strs,
+   ax[5].scatter(dates[r:], strs[r:],
           edgecolor="k" )
    ax[5].set_title(in_cam_id + " Total Stars")
    ax[5].set_xticks(ax[5].get_xticks()[::50])
@@ -4708,7 +4747,7 @@ def make_cal_plots(in_cam_id, json_conf):
    cv2.imwrite("/mnt/ams2/cal/plots/" + station_id + "_" + in_cam_id + "_CALTIME.jpg", plot,  [int(cv2.IMWRITE_JPEG_QUALITY), 70])
    plot_tn = cv2.resize(plot, (320,180))
    cv2.imwrite("/mnt/ams2/cal/plots/" + station_id + "_" + in_cam_id + "_CALTIME-tn.jpg", plot_tn,  [int(cv2.IMWRITE_JPEG_QUALITY), 70])
-
+   plt.show()
 
 
    print("SAVED /mnt/ams2/cal/plots/" + station_id + "_" + in_cam_id + "_CALTIME.png")
@@ -6464,8 +6503,8 @@ def review_cals(json_conf, cam=None):
                stars_matched = len(cp['cat_image_stars']) / len(cp['user_stars'])
             else:
                continue
-            print("STARS MATCHED:", stars_matched)
-            print("CP:", cp_file, cp['center_az'], cp['center_el'], cp['position_angle'], cp['pixscale'])
+            #print("STARS MATCHED:", stars_matched)
+            #print("CP:", cp_file, cp['center_az'], cp['center_el'], cp['position_angle'], cp['pixscale'])
             if cp['total_res_px'] > 15:
                #cp = get_best_cal_new(cp_file, json_conf)
                #cp = optimize_matchs(cp_file,json_conf,cp,cal_img)
@@ -8810,7 +8849,7 @@ def find_close_stars(star_point, catalog_stars,dt=100, show_img = None):
 
       center_dist = calc_dist((scx,scy), (1920/2,1080/2))
 
-      print("MATCH:", center_dist, scx, scy, match, slope, cat_star_dist)
+      #print("MATCH:", center_dist, scx, scy, match, slope, cat_star_dist)
 
        
       #DEBUG SHOW MATCHES! 
@@ -9639,27 +9678,30 @@ def reduce_fit(this_poly,field, cal_params, cal_params_file, fit_img, json_conf,
    return(avg_res)
 
 def draw_star_image(img, cat_image_stars,cp=None,json_conf=None,extra_text=None) :
+   photo_credit = ""
    station_id = ""
    name = ""
    city = ""
    state = ""
    country = ""
+   #print(cp.keys())
+   #print(json_conf.keys())
    if json_conf is not None:
       station_id = json_conf['site']['ams_id']
-      if "operator_name" in json_conf:
+      if "operator_name" in json_conf['site']:
          name = json_conf['site']['operator_name']
-      if "operator_country" in json_conf:
-         city = json_conf['site']['operator_city']
-      if "operator_state" in json_conf:
-         state = json_conf['site']['operator_state']
-      if "operator_country" in json_conf:
-         country = json_conf['site']['operator_country']
-   if "US" in country or "United States" in country:
-      country = "US"
-      photo_credit = station_id + " - " + name + city + "," + state + " " + country
-   else:
-      photo_credit = station_id + " - " + name + city + ", " + country
 
+      if "operator_country" in json_conf['site']:
+         city = json_conf['site']['operator_city']
+      if "operator_state" in json_conf['site']:
+         state = json_conf['site']['operator_state']
+      if "operator_country" in json_conf['site']:
+         country = json_conf['site']['operator_country']
+      if "US" in country or "United States" in country:
+         country = "US"
+         photo_credit = station_id + " - " + name + ", " + city + ", " + state + " " + country
+      else:
+         photo_credit = station_id + " - " + name + ", " + city + ", " + country
    for star in cat_image_stars:
       if len(star) == 9:
          dcname,mag,ra,dec,new_cat_x,new_cat_y,six,siy,cat_dist = star
@@ -9696,7 +9738,6 @@ def draw_star_image(img, cat_image_stars,cp=None,json_conf=None,extra_text=None)
          color = "#ff0000"
 
       dist = calc_dist((six,siy), (new_cat_x,new_cat_y))
-      #print("RES LINE:", six, siy, new_cat_x, new_cat_y, dist)
       res_line = [(six,siy),(new_cat_x,new_cat_y)]
       draw.rectangle((six-7, siy-7, six+7, siy+7), outline='white')
       draw.rectangle((new_cat_x-7, new_cat_y-7, new_cat_x + 7, new_cat_y + 7), outline=color)
@@ -9708,16 +9749,19 @@ def draw_star_image(img, cat_image_stars,cp=None,json_conf=None,extra_text=None)
          draw.rectangle((org_x-5, org_y-5, org_x + 5, org_y + 5), outline="gray")
          draw.line(org_res_line, fill="gray", width = 0) 
       if cp is not None:
-         ltext0 = "Res Px:" 
-         text0 =  str(cp['total_res_px'])[0:7] 
+         ltext0 = "Images / Res Px:" 
+         text0 =  str(len(cp['cat_image_stars'])) + " / " + str(cp['total_res_px'])[0:7] 
          ltext1 = "Center RA/DEC:" 
-         text1 =  str(cp['ra_center'])[0:6] + "/" + str(cp['dec_center'])[0:6]
+         text1 =  str(cp['ra_center'])[0:7] + " / " + str(cp['dec_center'])[0:7]
          ltext2 = "Center AZ/EL:" 
-         text2 =  str(cp['center_az'])[0:6] + "/" + str(cp['center_el'])[0:6]
+         text2 =  str(cp['center_az'])[0:7] + " / " + str(cp['center_el'])[0:7]
          ltext3 = "Position Angle:" 
-         text3 =  str(cp['position_angle'])[0:6]
+         text3 =  str(cp['position_angle'])[0:7]
          ltext4 = "Pixel Scale:" 
-         text4 =  str(cp['pixscale'])[0:6]
+         text4 =  str(cp['pixscale'])[0:7]
+         draw.text((800, 20), str(extra_text), font = font, fill="white")
+
+
          draw.text((20, 950), str(ltext0), font = font, fill="white")
          draw.text((20, 975), str(ltext1), font = font, fill="white")
          draw.text((20, 1000), str(ltext2), font = font, fill="white")
@@ -9728,6 +9772,8 @@ def draw_star_image(img, cat_image_stars,cp=None,json_conf=None,extra_text=None)
          draw.text((200, 1000), str(text2), font = font, fill="white")
          draw.text((200, 1025), str(text3), font = font, fill="white")
          draw.text((200, 1050), str(text4), font = font, fill="white")
+
+         draw.text((1520, 1050), str(photo_credit), font = font, fill="white")
    return_img = cv2.cvtColor(np.asarray(image), cv2.COLOR_RGB2BGR)
 
    return(return_img)
@@ -9915,16 +9961,16 @@ def fn_dir(file):
 """
 
 
-def quality_stars(merged_stars, mpc = None, factor = 2, gsize=50):
+def quality_stars(merged_stars, mcp = None, factor = 2, gsize=50):
    merged_stars = sorted(merged_stars, key=lambda x: x[-2], reverse=False)
-   if mpc is None:
+   if mcp is None:
       print("FIRST TIME CAL!") 
       gsize = 80 
       factor = 2
       max_dist = 35
    else:
-      print("MULTI-X CAL!", mpc['cal_version']) 
-      if mpc['cal_version'] < 3:
+      print("MULTI-X CAL!", mcp['cal_version']) 
+      if mcp['cal_version'] < 3:
          gsize= 100
          factor = 2 
          max_dist = 5 
@@ -9932,9 +9978,10 @@ def quality_stars(merged_stars, mpc = None, factor = 2, gsize=50):
          gsize= 100
          factor = 1 
          max_dist = 5 
-   
-   print("CAL", mpc['cal_version'])
-   input("Continue")
+  
+   if mcp is not None:
+      print("CAL", mcp['cal_version'])
+   input("Quality Stars Start Continue")
    all_res = [row[-2] for row in merged_stars]
    res1 = []
    res2 = []
@@ -9969,8 +10016,8 @@ def quality_stars(merged_stars, mpc = None, factor = 2, gsize=50):
             if y2 > 1080:
                y2 = 1080
             grid_key = str(x1) + "_" + str(y1) + "_" + str(x2) + "_" + str(y2)
-            if grid_key in grid:
-               continue
+            if grid_key not in grid:
+               grid[grid_key] = [] 
 
 
 
@@ -9986,22 +10033,38 @@ def quality_stars(merged_stars, mpc = None, factor = 2, gsize=50):
                   res_limit = med_res1 
 
                  
-               if grid_key in grid:
-                  continue
-
-               if x1 <= six <= x2 and y1 <= siy <= y2 and cat_dist < res_limit:
+               #if grid_key in grid:
+               #   continue
+               if x1 <= six <= x2 and y1 <= siy <= y2 : #and cat_dist < res_limit:
                   print("FOUND:", grid_key, cat_dist, med_res ) 
                   qual_stars.append(star) 
-                  grid[grid_key] = star
-                  break 
-            print("GRID NOT FOUND")
+                  grid[grid_key].append(star)
+                  #break 
+            #print("GRID NOT FOUND")
 
    print("med res1:", med_res1)
    print("med res2:", med_res2)
-   print("MS:", len(merged_stars))
-   print("QS:", len(qual_stars))
-   input("")
+   print("Merged Stars:", len(merged_stars))
+   print("Qual Stars:", len(qual_stars))
+   input("Quality Stars End Continue")
+   for gkey in grid:
+      print(gkey, len(grid[gkey]))
+   star_grid_image = draw_star_grid(grid)
+   input("DONE QUAL...")
    return(qual_stars)
+
+def draw_star_grid(grid):
+   star_grid_img = np.zeros((1080,1920,3),dtype=np.uint8)
+   for gkey in grid:
+      x1,y1,x2,y2 = gkey.split("_")
+      for star in grid[gkey]:
+         (cal_file , center_az, center_el, ra_center, dec_center, position_angle, pixscale, dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist,star_int) = star
+         cv2.rectangle(star_grid_img, (int(x1), int(y1)), (int(x2), int(y2)), (255,255,255), 2)
+         cv2.line(star_grid_img, (int(six),int(siy)), (int(new_cat_x),int(new_cat_y)), (255,255,255), 2)
+         cv2.imshow('pepe', star_grid_img)
+         cv2.waitKey(30)
+         print(new_x, new_y, six, siy)
+   cv2.waitKey(0)
 
 def minimize_poly_multi_star(merged_stars, json_conf,orig_ra_center=0,orig_dec_center=0,cam_id=None,master_file=None,mcp=None,show=0):
    if show == 1 :
@@ -10081,9 +10144,9 @@ def minimize_poly_multi_star(merged_stars, json_conf,orig_ra_center=0,orig_dec_c
          color = [0,0,255]
    cv2.imwrite("/mnt/ams2/test.png", this_fit_img)
    simg = cv2.resize(this_fit_img, (960,540))
-   if SHOW == 1:
-      cv2.imshow(cam_id, simg)
-      cv2.waitKey(30)
+   #if SHOW == 1:
+   #   cv2.imshow(cam_id, simg)
+   #   cv2.waitKey(30)
 
 
    # do x poly 
@@ -10371,7 +10434,6 @@ def clean_pairs(merged_stars, cam_id = "", inc_limit = 5,first_run=1,show=0):
                y2 = 1080
             cv2.rectangle(img, (int(x1), int(y1)), (int(x2) , int(y2) ), (50, 50, 50), 1)
             matches = (np_ms[np.where((np_ms[:,2] > x1) & (np_ms[:,2] < x2) & (np_ms[:,3] > y1) & (np_ms[:,3] < y2)      )  ])
-            print("MATCHES:", matches)
             if len(matches) > 0:
                bad = 0
                matches = sorted(matches, key=lambda x: x[4], reverse=False)
@@ -10551,12 +10613,17 @@ def reduce_fit_multi(this_poly,field, merged_stars, cal_params, fit_img, json_co
 
    #print("Total Residual Error:",field, total_res )
    #print("Total Stars:", total_stars)
-   print("Avg Residual Error:", cam_id, field, total_stars, avg_res )
+   print("Avg Residual Error:", tries, cam_id, field, total_stars, avg_res )
    #print("Show:", show)
    tries = tries + 1
    if mode == 0: 
       return(avg_res)
    else:
+      fit_file = "/mnt/ams2/cal/plots/" + json_conf['site']['ams_id'] + "_" + cam_id + "_MULTI_FIT.jpg" 
+      cv2.imwrite(fit_file, this_fit_img) 
+      print("SAVED:", fit_file)
+
+
       return(avg_res, new_merged_stars)
 
 def calc_starlist_res(ms):
