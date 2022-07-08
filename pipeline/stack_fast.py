@@ -55,7 +55,7 @@ def stack_only(sd_filename, mask_img):
    first_file = stack_file.replace("-stacked", "-first")
 
    cv2.imwrite(stack_file, stacked_image, [int(cv2.IMWRITE_JPEG_QUALITY), 70])
-   #print("SAVE STACK FILE", stack_file)
+   print("SAVE STACK FILE", stack_file)
    cv2.imwrite(first_file, first_image, [int(cv2.IMWRITE_JPEG_QUALITY), 70])
    return(stacked_image, first_image, max_pxs, saved_frames, fc)
 
@@ -296,3 +296,4 @@ if __name__ == "__main__":
    t = time.time()
    stack_only(vfile, mask_img )
    e = time.time() - t
+
