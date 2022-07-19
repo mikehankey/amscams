@@ -1442,7 +1442,6 @@ class AllSkyDB():
       self.cur.execute(sql, ivals)
       rows = self.cur.fetchall()
       ai_info = []
-      input("1")  
       for row in rows:
          root_fn, hd_vid, meteor_yn_conf,fireball_yn_conf, mc_class, mc_class_conf, roi,ai_resp = row
          decision = "ACCEPT"
@@ -1511,7 +1510,11 @@ class AllSkyDB():
             mjf = self.meteor_dir + date + "/" + sd_root + ".json"
             if os.path.exists(mjf):
                print("MJF EXISTS", mjf)
-               mj = load_json_file(mjf)
+               try:
+                  mj = load_json_file(mjf)
+               except:
+                  print("BAD MJF:", mjf)
+                  continue
                if "multi_station_event" in mj or "human_confirmed" in mj or "hc" in mj or "manual" in mj or "human_points" in mj:
                   print("Multi station or Human confirmed already")
                   continue
