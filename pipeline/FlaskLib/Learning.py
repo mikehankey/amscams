@@ -3238,7 +3238,7 @@ def find_ico(this_label, hc=0):
 
 def ai_non_meteors(station_id, options, json_conf):
    data_file = "/mnt/ams2/non_meteors/nm.info"
-   cmd = "cd /mnt/ams2/non_meteors/; find . |grep json |grep -v redu > " + data_file
+   cmd = "cd /mnt/ams2/non_meteors/; find . |grep json |grep -v redu | sort -r > " + data_file
    os.system(cmd)
    header_msg = "These detections have been auto rejected! If you see good meteors here use the button to restore them. Once there are NO good meteors on the page, press the button 'Confirm All As Non-Meteors'."
    out = ui_javascript()

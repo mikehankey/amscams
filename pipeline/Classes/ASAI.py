@@ -270,6 +270,11 @@ class AllSkyAI():
       # roi - [x1,y1,x2,y2] 
       # returns :
       # ai_resp object containing meteor_yn,fireball_yn,mc_class,mc_conf
+      print("AI METEOR YN:", root_fn, roi_file)
+      if oimg is not None:
+         print("OIMG:", oimg.shape)
+      if roi is not None:
+         print("ROI IMG", roi)
       ai_resp = {}
       ai_resp['ai_version'] = 3.1
       ai_resp['root_fn'] = root_fn

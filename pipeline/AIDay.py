@@ -17,6 +17,14 @@ AIDB = AllSkyDB()
 AIDB.check_make_tables()
 print("Init DB Started.")
 
+if sys.argv[1] == "last":
+   days = int(sys.argv[2])
+   for d in range(0,days):
+      run_day = (datetime.now() - dt.timedelta(days = d)).strftime("%Y_%m_%d")
+      print(run_day)
+      cmd = "python3 AIDay.py " + run_day
+      os.system(cmd)
+
 
 if len(sys.argv) > 2:
    cmd = sys.argv[2]
@@ -31,19 +39,19 @@ if len(sys.argv) > 2:
       AIDB.purge()
       exit()
 
-
    if cmd == "report":
       date = sys.argv[1]
       AIDB.report_day(date)
       exit()
    if cmd == "reject":
       date = sys.argv[1]
+      AIDB.auto_reject_day(date )
       #AIDB.mc_rejects()
       #print("DONE MC REJECTS.")
       #exit()
 
       #RN = ReviewNetwork(date)
-      AIDB.auto_reject_day(date )
+      #AIDB.auto_reject_day(date )
       exit()
 
 
@@ -106,13 +114,13 @@ else:
    print("Verify Media", date)
    AIDB.verify_media_day(date)
 
-   input("WAIT") 
    print("Reconcile DB", date)
    AIDB.reconcile_db(date)
    print("My Events", date)
    os.system("/usr/bin/python3.6 myEvents.py " + date)
    print("Auto reject day")
    AIDB.auto_reject_day(date )
+   AIDB.purge()
 
    print("Del Aws", date)
    os.system("/usr/bin/python3 Rec.py del_aws_day " + date)

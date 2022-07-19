@@ -295,6 +295,7 @@ class AllSkyDB():
       if self.models_loaded is False :
          self.models_loaded = True
          self.ASAI.load_all_models()
+         self.models = {}
 
 
       if in_date is None:
@@ -303,7 +304,7 @@ class AllSkyDB():
          self.load_all_meteors(in_date)
    
 
-      print("\rRECONCILE DB.",end="")
+      print("RECONCILE DB.")
 
       if True:
          meteor_roots = []
@@ -364,23 +365,25 @@ class AllSkyDB():
                reduced = 1
             else:
                reduced = 0
-
+            print("RED:", red_file, reduced)
             if True:
                if os.path.exists(roi_file) is True:
+                  print("ROI FILE FOUND.", roi_file)
                   roi_exists = 1
                   roi_img = cv2.imread(roi_file)
                   try:
                      roi_img = cv2.resize(roi_img,(64,64))
+                     found += 1
                   except:
                      print("ROI BAD:", roi_file)
                      os.system("rm " + roi_file)
-                  found += 1
                   if True:
                      resp = self.ASAI.meteor_yn(root_fn, None,roi_img, roi)
                      if resp is not None:
+                        print("AI RESP:", resp)
                         self.insert_ml_sample(resp)
                      else:
-                        print("\rWe should delete this meteor! " + root_fn, end="")
+                        print("AI RESP IS NONE! " + root_fn)
                   #try:
                   #except:
                   #   print("meteor_yn failed!", root) 
@@ -415,7 +418,8 @@ class AllSkyDB():
          #   self.cur.execute(sql, bind_vars)
          #   rows = self.cur.fetchall()
          #   print(mr, len(rows))
-        
+      print("END RECONCILE DB")
+      exit() 
 
    def qc_day(self, day):
       sql = """SELECT root_fn, meteor_yn, meteor_yn_conf, fireball_yn, mc_class, ai_resp
@@ -841,6 +845,7 @@ class AllSkyDB():
       # Multi-level checks here. Starting with...
       # LOCAL MEDIA (files on this HD)
       # roi file
+      print("VERIFY MEDIA")
  
       roi_exists = False
 
@@ -913,6 +918,7 @@ class AllSkyDB():
                   print("   NEW ROI:!", x1,y1,x2,y2)
                   stack_file = self.mdir + root_file[0:10] + "/" + root_file + "-stacked.jpg"
                   stack_img = cv2.imread(stack_file)
+                  stack_img = cv2.resize(stack_img, (1920,1080))
                   #print(x1,y1,x2,y2)
                   roi_val = [x1,y1,x2,y2]
                   roi_img = stack_img[y1:y2,x1:x2]
@@ -922,11 +928,13 @@ class AllSkyDB():
                   except:
                      print("BAD ROI IMG WRITE")
                   #print("Saved:", roi_file) 
-                  print("FIXED ROI FROM REDUCED FILE!")
+                  print("STACK SIZE!", stack_img.shape)
+                  print("ROI SIZE!", roi_img.shape)
+                  print("FIXED ROI FROM REDUCED FILE!", roi_file)
 
          else:
       
-            print("NOT REDUCED FILE!")
+            print("REDUCED FILE NOT FOUND!!", red_file)
             stack_file = self.mdir + root_file[0:10] + "/" + root_file + "-stacked.jpg"
             if os.path.exists(stack_file) is True:
                print("\r *** DETECT IN STACK " + root_file, end="")
@@ -959,8 +967,8 @@ class AllSkyDB():
                                  print("SAVE NEW METEOR ROI:", roi_file)
                                  cv2.imwrite(roi_file, roi_img)
                         else:
-                           print("We should delete this meteor!", root_file)
-                        print(resp)
+                           print("AI RESP IS NONE!")
+                        print("AI RESP:", resp)
                         #YOYO
 
                      #try:
@@ -1430,14 +1438,12 @@ class AllSkyDB():
 
    def auto_reject_day(self, date, RN=None ):
       non_meteor_dir = self.non_meteor_dir + date
-      print("Auto reject:", date)
       sql = "SELECT root_fn, hd_vid, meteor_yn_conf,fireball_yn_conf,mc_class, mc_class_conf, roi,ai_resp from meteors where sd_vid like ?"
       ivals = [date + "%"]
-      print("SQL:", sql, ivals)
       self.cur.execute(sql, ivals)
       rows = self.cur.fetchall()
       ai_info = []
-         
+      input("1")  
       for row in rows:
          root_fn, hd_vid, meteor_yn_conf,fireball_yn_conf, mc_class, mc_class_conf, roi,ai_resp = row
          decision = "ACCEPT"
