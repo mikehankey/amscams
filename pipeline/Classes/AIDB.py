@@ -419,7 +419,6 @@ class AllSkyDB():
          #   rows = self.cur.fetchall()
          #   print(mr, len(rows))
       print("END RECONCILE DB")
-      exit() 
 
    def qc_day(self, day):
       sql = """SELECT root_fn, meteor_yn, meteor_yn_conf, fireball_yn, mc_class, ai_resp
