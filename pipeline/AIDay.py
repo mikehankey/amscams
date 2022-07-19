@@ -22,7 +22,7 @@ if sys.argv[1] == "last":
    for d in range(0,days):
       run_day = (datetime.now() - dt.timedelta(days = d)).strftime("%Y_%m_%d")
       print(run_day)
-      cmd = "python3 AIDay.py " + run_day
+      cmd = "python3.6 AIDay.py " + run_day
       os.system(cmd)
 
 
