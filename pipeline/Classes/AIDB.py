@@ -1026,9 +1026,9 @@ class AllSkyDB():
      
 
    def load_all_meteors(self, selected_day = None):
-      #if self.models_loaded is False:
-      #   self.ASAI.load_all_models()
-      #   self.models_loaded = True
+      if self.models_loaded is False:
+         self.ASAI.load_all_models()
+         self.models_loaded = True
 
       if selected_day is not None:
          print("\rLoad meteors for day: " + selected_day, end= "")
