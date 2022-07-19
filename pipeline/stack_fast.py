@@ -11,6 +11,10 @@ from PIL import ImageFont, ImageDraw, Image, ImageChops
 import cython
 
 def stack_only(sd_filename, mask_img):
+   if os.path.exists(sd_filename) is False:
+      print("not found", sd_filename)
+      exit()
+
    if "\\" in sd_filename:
       sd_filename = sd_filename.replace("\\", "/")
    stack_file = sd_filename.replace(".mp4", "-stacked.jpg") 
@@ -26,6 +30,7 @@ def stack_only(sd_filename, mask_img):
    frames = []
    while True:
       grabbed,color_frame = cap.read() # non-blocking
+      print("FC:", fc)
       if not grabbed :
          fc += 1
          if fc > 5:
@@ -49,7 +54,8 @@ def stack_only(sd_filename, mask_img):
  
       last_small_frame = small_frame
       fc += 1
-  
+ 
+
    stacked_image = np.asarray(stacked_image)
 
    first_file = stack_file.replace("-stacked", "-first")
