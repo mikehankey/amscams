@@ -14,9 +14,10 @@ if os.path.exists("/usr/bin/python3.6") is False and os.path.exists("/usr/local/
    os.system(cmd)
    cmd = "sudo apt-get -y install python3.6"
    os.system(cmd)
-   cmd = "wget https://bootstrap.pypa.io/get-pip.py"
+   #ERROR: This script does not work on Python 3.6 The minimum supported Python version is 3.7. Please use https://bootstrap.pypa.io/pip/3.6/get-pip.py instead.
+   cmd = "wget https://bootstrap.pypa.io/pip/3.6/get-pip.py -O /home/ams/amscams/install/get-pip36.py"
    os.system(cmd)
-   cmd = "sudo python3.6 get-pip.py"
+   cmd = "sudo python3.6 get-pip36.py"
    os.system(cmd)
    #cmd = "sudo python3.6 -m pip uninstall pillow"
    #os.system(cmd)
@@ -83,3 +84,8 @@ if os.path.exists("/home/ams/amscams/pipeline/models/ASAI-v2.7z") is False:
    os.system(cmd)
    cmd = "7z e /home/ams/amscams/pipeline/models/ASAI-v2.7z"
    os.system(cmd)
+   cmd = "chown -R ams:ams /mnt/ams/amscams/models"
+   os.system(cmd)
+
+cmd = "pip3 install requests"
+os.system(cmd)

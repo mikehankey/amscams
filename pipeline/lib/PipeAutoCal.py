@@ -4500,7 +4500,7 @@ def deep_calib_init(cam,json_conf):
       if data['cam_id'] != cam:
          continue
       if "total_res_px" in data and "total_stars" in data:
-         if data['total_res_px'] != 9999 and data['total_res_px'] != 0 and data['total_stars'] > 35:
+         if data['total_res_px'] != 9999 and data['total_res_px'] != 0 and data['total_stars'] > 15:
             if math.isnan(data['total_res_px']) is False:
                cal_index.append(data)
 
