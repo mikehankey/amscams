@@ -307,6 +307,7 @@ def cal_manager(json_conf):
       for cam in json_conf['cameras']:
          cams_id = json_conf['cameras'][cam]['cams_id']
          default_hist[cams_id] = make_default_cal(json_conf, cams_id)
+         print("DEFAULT HIST:", cams_id, default_hist[cams_id])
 
       for cams_id in default_hist:
          try:
@@ -315,6 +316,12 @@ def cal_manager(json_conf):
                   rdf.append(row)
          except:
             print("no data for", cams_id)
+         #if True:
+         #   for row in default_hist[cams_id]['range_data']:
+         #      rdf.append(row)
+         #try:
+         #except:
+         #   print("no data for", cams_id)
       save_json_file("/mnt/ams2/cal/" + amsid + "_cal_range.json", rdf)
       print("SAVED: /mnt/ams2/cal/" + amsid + "_cal_range.json", rdf)
 
@@ -584,9 +591,13 @@ def make_default_cal(json_conf, cam ):
          #if e_dt < r_dt < s_dt:
             #print("     CALIB IN RANGE ADD TO MED LIST.", r_dt, s_dt, e_dt)
       med_az, med_el, med_pos, med_px, med_res = calc_med_range(cam, s_dt, e_dt)
-      if np.isnan(med_az ) is False:
-         print("RANGE:", cam, rng[0], rng[1], med_az, med_el, med_pos, med_px, med_res)
+      #print("MED AZ", med_az, type(med_az), np.isnan(med_az))
+      if np.isnan(med_az) is True:
+         print("BAD RANGE NAN!", med_az, np.isnan(med_az))
+      else:
+         #print("RANGE:", cam, rng[0], rng[1], med_az, med_el, med_pos, med_px, med_res)
          range_data.append((cam, rng[0], rng[1], med_az, med_el, med_pos, med_px, med_res))
+
    cam_hist = {}
    cam_hist['calibs'] = calibs
    cam_hist['cam_moved'] = cam_moved
