@@ -310,8 +310,9 @@ def cal_manager(json_conf):
 
       for cams_id in default_hist:
          try:
-            for row in default_hist[cams_id]['range_data']:
-               rdf.append(row)
+            if "range_data" in default_hist[cams_id]:
+               for row in default_hist[cams_id]['range_data']:
+                  rdf.append(row)
          except:
             print("no data for", cams_id)
       save_json_file("/mnt/ams2/cal/" + amsid + "_cal_range.json", rdf)
