@@ -5,7 +5,7 @@ import cv2
 import os
 from Classes.MultiStationObs import MultiStationObs
 from lib.PipeUtil import load_json_file, save_json_file
-from Classes.AIDB import AllSkyDB 
+#from Classes.AIDB import AllSkyDB 
 import sys
 
 
