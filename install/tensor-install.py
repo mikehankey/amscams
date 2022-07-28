@@ -2,6 +2,8 @@
 import os
 import sys
 
+os.system("sudo python3 -m pip install --upgrade pip")
+
 if os.path.exists("tensorflow-installed.txt") :
    print("python3.6 with tensorflow is already installed.")
    exit()
@@ -19,6 +21,9 @@ if os.path.exists("/usr/bin/python3.6") is False and os.path.exists("/usr/local/
    os.system(cmd)
    cmd = "sudo python3.6 get-pip36.py"
    os.system(cmd)
+
+   os.system("sudo python3.6 -m pip install --upgrade pip")
+
    #cmd = "sudo python3.6 -m pip uninstall pillow"
    #os.system(cmd)
    cmd = "sudo python3.6 -m pip install --upgrade pillow"
