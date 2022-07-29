@@ -483,13 +483,10 @@ def update_meteor_points(sd_video_file,frames):
    json_conf = load_json_file("../conf/as6.json")
    json_file = "/mnt/ams2/" + sd_video_file.replace(".mp4", ".json")
    full_vid = "/mnt/ams2/" + sd_video_file
-   print("FV:", full_vid)
-   print("JS:", json_file)
 
    rjson_file = json_file.replace(".json", "-reduced.json")
  
    mj = load_json_file(json_file)
-   print("MJ LOADED:", mj)
    if "user_mods" in  mj:
       user_mods = mj['user_mods']
    else:
@@ -521,6 +518,8 @@ def update_meteor_points(sd_video_file,frames):
    if "cal_params" in mj:
       resp['calib'] = mj['cal_params']
    if "cp" in mj:
+      if "total_res_deg" in mj['cp'] :
+         del(mj['cp']['total_res_deg'])
       resp['calib'] = mj['cp']
    if "meteor_frame_data" in mj:
       resp['frames'] = mjr['meteor_frame_data']
@@ -529,7 +528,7 @@ def update_meteor_points(sd_video_file,frames):
    #cmd = "./DynamoDB.py update_obs " + vid_fn + " >/mnt/ams2/tmp/api.points 2>&1 &"
    #print("COMMAND:", cmd)
    #os.system(cmd)
-
+   print("RESPONSE XXX:", resp)
    return(resp)
    #for frame in frames:
 

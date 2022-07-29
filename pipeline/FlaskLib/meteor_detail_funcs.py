@@ -702,6 +702,11 @@ def detail_page(amsid, date, meteor_file):
       frame_table_rows = frames_table(mjr, base_name, CACHE_VDIR)
       if mjr is not None:
          if mjr['cal_params'] is not None:
+            if "res_px" in mjr['cal_params']:
+               del(mjr['cal_params']['res_px'])
+            if "res_deg" in mjr['cal_params']:
+               del(mjr['cal_params']['res_deg'])
+
             cal_params_js_var = "var cal_params = " + str(mjr['cal_params'])
       mfd_js_var = "var meteor_frame_data = " + str(mjr['meteor_frame_data'])
       crop_box_js_var = "var crop_box = " + str(mjr['crop_box'])
@@ -717,6 +722,7 @@ def detail_page(amsid, date, meteor_file):
    fn, vdir = fn_dir(meteor_file)
    div_id = fn.replace(".mp4", "")
    jsid = div_id.replace("_", "")
+   cal_params_js_var = cal_params_js_var.replace("nan", "999")
 
    template = template.replace("{JSID}", jsid)
    template = template.replace("{CROP_BOX}", crop_box_js_var)

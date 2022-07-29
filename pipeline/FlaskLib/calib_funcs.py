@@ -1,4 +1,4 @@
-from lib.PipeUtil import load_json_file, save_json_file, cfe, bound_cnt
+from lib.PipeUtil import load_json_file, save_json_file, cfe, bound_cnt, convert_filename_to_date_cam
 from lib.PipeAutoCal import get_image_stars, get_catalog_stars , pair_stars, eval_cnt, update_center_radec, fn_dir
 from lib.PipeDetect import fireball, apply_frame_deletes
 import os
@@ -7,8 +7,26 @@ from FlaskLib.FlaskUtils import parse_jsid, make_default_template, get_template
 import glob
 import time
 
+def get_mcp(station_id, cam_id) :
+
+   autocal_dir = "/mnt/ams2/cal/"
+   mcp_file = autocal_dir + "multi_poly-" + station_id + "-" + cam_id + ".info"
+   if os.path.exists(mcp_file) == 1:
+      mcp = load_json_file(mcp_file)
+      if "cal_version" not in mcp:
+         mcp['cal_version'] = 0
+   else:
+      mcp = None
+   if mcp is None:
+      print("Can't update until the MCP is made!")
+   return(mcp)
+
 def lens_model(amsid, json_conf):
-   out = ""
+
+   out = """
+      <div id='main_container' class='container-fluid h-100 mt-4 ' style="border: 0px #ff0000 solid">
+   """
+
    cal_sum_file = "/mnt/ams2/cal/" + amsid + "_CAL_SUM.html"
    if os.path.exists(cal_sum_file) is False:
       out = "<h1>Lens models have not been created yet!</h1>"
@@ -24,7 +42,9 @@ def lens_model(amsid, json_conf):
        
    lms = glob.glob("/mnt/ams2/cal/plots/lens*")
    json_conf = load_json_file("../conf/as6.json")
-   
+
+   out += "</div>"
+
    template = make_default_template(amsid, "calib.html", json_conf)
    template = template.replace("{MAIN_TABLE}", out)
    return(template)
@@ -172,10 +192,15 @@ def show_masks(amsid):
 
 def cal_file(amsid, calib_file):
    json_conf = load_json_file("../conf/as6.json")
+   station_id = amsid
    
    caldir = "/mnt/ams2/cal/freecal/" + calib_file + "/"
    caldir = caldir.replace("-stacked.png", "")
    caldir = caldir.replace(".png", "")
+
+   hd_datetime, cam_id, hd_date, hd_y, hd_m, hd_d, hd_h, hd_M, hd_s = convert_filename_to_date_cam(calib_file)
+   mcp = get_mcp(station_id, cam_id)
+
 
    cps = glob.glob(caldir + "*cal*.json")
    print ("GLOB:", caldir + "*cal*.json")
@@ -209,6 +234,14 @@ def cal_file(amsid, calib_file):
       return(template)
  
    cp = load_json_file(cps[0])
+   if mcp is not None:
+      cp['x_poly'] = mcp['x_poly']
+      cp['y_poly'] = mcp['y_poly']
+      cp['x_poly_fwd'] = mcp['x_poly_fwd']
+      cp['y_poly_fwd'] = mcp['y_poly_fwd']
+
+
+
    hs = hss[0]
    st = hs.replace("half-stack", "stacked")
    if len(azs) == 0 :
@@ -260,6 +293,8 @@ def cal_file(amsid, calib_file):
    cd_template = cd_template.replace("{AZ_GRID}", azs[0])
    cd_template = cd_template.replace("{USER_STARS}", "")
    print("AZS:", azs[0])
+   print("CP:", cp.keys())
+   print("POLY:", cp['x_poly'])
    template = template.replace("{MAIN_TABLE}", cd_template)
    template = template.replace("{STAR_ROWS}", star_rows)
 
@@ -286,14 +321,7 @@ def cal_cam_summary(amsid, cam_id):
    mcp_file = "/mnt/ams2/cal/multi_poly-" + amsid + "-" + cam_id + ".info"
    out = """
       <div id='main_container' class='container-fluid h-100 mt-4 ' style="border: 1px #000000 solid">
-
       <div class='gallery gal-resize reg row text-center text-lg-left'>
-      <div class='list-onl'>
-      <div class='filter-header d-flex flex-row-reverse '>
-      <button id="sel-all" title="Select All" class="btn btn-primary ml-3"><i class="icon-checkbox-checked"></i></button>
-      <button id="del-all" class="del-all btn btn-danger"><i class="icon-delete"></i> Delete <span class="sel-ctn">All</span> Selected</button>
-     </div>
-     </div>
    """
 
    if cfe(mcp_file) == 1:
