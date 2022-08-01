@@ -16,6 +16,11 @@ if os.path.exists("/usr/bin/python3.6") is False and os.path.exists("/usr/local/
    os.system(cmd)
    cmd = "sudo apt-get -y install python3.6"
    os.system(cmd)
+
+   cmd = "sudo apt-get -y install python3.6-distutils"
+   os.system(cmd)
+  
+
    #ERROR: This script does not work on Python 3.6 The minimum supported Python version is 3.7. Please use https://bootstrap.pypa.io/pip/3.6/get-pip.py instead.
    cmd = "wget https://bootstrap.pypa.io/pip/3.6/get-pip.py -O /home/ams/amscams/install/get-pip36.py"
    os.system(cmd)
@@ -50,6 +55,10 @@ os.system(cmd)
 
 cmd = "sudo python3.6 -m pip install sklearn"
 os.system(cmd)
+
+cmd = "sudo python3.6 -m pip install pyephem"
+os.system(cmd)
+
 
 cmd = "sudo python3.6 -m pip install scikit-image"
 os.system(cmd)
