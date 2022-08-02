@@ -1565,7 +1565,7 @@ def do_dyna_day(dynamodb, day):
    if "strict" not in dyn_log[day] or today == day:
       cmd = "python3 ./meteors_strict.py " + day
       print(cmd)
-      os.system(cmd)
+      #os.system(cmd)
    else:
       print("Already did strict rules for this day.", day)
    
