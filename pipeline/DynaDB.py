@@ -565,10 +565,16 @@ def cache_day(dynamodb, date, json_conf):
       stations.append(json_conf['site']['ams_id'])
    events = search_events(dynamodb, date, stations)
    event_file = le_dir + date + "_events.json"
+   # DECIMAL ENCODE
+   events = json.loads(json.dumps(events,cls=DecimalEncoder))
+   for key in events:
+      print(key) #, type(events[key]))
+
    save_json_file(event_file, events)
    for station in stations:
       obs = search_obs(dynamodb, station, date)
       obs_file = le_dir + station + "_" + date + ".json"
+      obs = json.loads(json.dumps(obs,cls=DecimalEncoder))
       save_json_file(obs_file, obs)
 
 def select_obs_files(dynamodb, station_id, event_day):
@@ -1551,6 +1557,18 @@ def do_dyna_day(dynamodb, day):
       print("Already rejected planes for this day.", day)
 
 
+   # reject meteors not matching strict rules
+   if today != day:
+      if "strict" not in dyn_log[day]:
+         dyn_log[day]['strict'] = 1
+
+   if "strict" not in dyn_log[day] or today == day:
+      cmd = "python3 ./meteors_strict.py " + day
+      print(cmd)
+      os.system(cmd)
+   else:
+      print("Already did strict rules for this day.", day)
+   
    
    if "confirm" not in dyn_log[day] or today == day:
       cmd = "./Process.py confirm " + day
