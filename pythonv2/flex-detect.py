@@ -5060,6 +5060,10 @@ def anal_int(ints):
    return(max_times, pos_neg_perc, perc_val)
 
 def analyze_object(object, hd = 0, sd_multi = 1, final=0):
+   # 1st analyzer used by the system
+   # if you want to block bad meteors before they get in
+   # this is where you do it! 
+
    # HD scale pix is .072 degrees per px
    # SD scale pix is .072 * sd_multi
    pix_scale = .072  # for HD
@@ -5094,6 +5098,28 @@ def analyze_object(object, hd = 0, sd_multi = 1, final=0):
       return(object)
 
    px_dist = calc_dist((min(xs),min(ys)), (max(xs),max(ys)))
+
+   # Minimum pixel distance!
+   try:
+      if "min_px_dist" in json_conf:
+         min_px_dist = json_conf['min_px_dist']
+      else:
+         min_px_dist = 4
+   except:
+      min_px_dist = 4
+
+   try:
+      if "min_frames" in json_conf:
+         min_frames = json_conf['min_frames']
+      else:
+         min_frames = 4
+   except:
+      min_frames = 4
+
+
+   print("MIN PX DIST MIN FRAMES:", min_px_dist, min_frames)
+   input("WAIT")
+
    if px_dist < 4:
       if "report" not in object:
          object['report'] = {}
@@ -5105,7 +5131,9 @@ def analyze_object(object, hd = 0, sd_multi = 1, final=0):
    last_fn = object['ofns'][-1]
 
    unq_perc = unq_points(object)
-   if len(object['oxs']) >= 3 and unq_perc > .6:
+
+
+   if len(object['oxs']) >= min_frames and unq_perc > .6:
       if len(object['oxs']) < 10:
          #print("START CALC LEG SEGS", object['oxs'])
          object = calc_leg_segs(object)
