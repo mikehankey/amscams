@@ -43,7 +43,12 @@ for met in meteors:
       by_min[min_key] = 0
    else:
       by_min[min_key] += 1
-   mj = load_json_file(mdir + met + ".json")
+   if os.path.exists(mdir + met + ".json") is True and os.path.exists(mdir + met + ".trash") is False :
+      print(mdir + met + ".json")
+      mj = load_json_file(mdir + met + ".json")
+   else:
+      print("No MJ?", mdir + met + ".json")
+      continue 
    oc = 1 
    for obj in mj['sd_objects']:
       last_y = 0
@@ -116,6 +121,7 @@ for met in meteors:
       except:
          print("RAN FAILED")
          rfailed = True
+         ratio = 0
      
       print("Changes Failed", changes_failed,  xdir_changes + ydir_changes )
       print("RANSAC RATIO/FAIL STATUS", ratio, rfailed)
