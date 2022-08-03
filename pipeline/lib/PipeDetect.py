@@ -2536,9 +2536,10 @@ def fireball(video_file, json_conf, nomask=0):
 
       base_jsr['meteor_frame_data'] = sorted(base_jsr['meteor_frame_data'], key=lambda x: (x[1]), reverse=False)
       save_json_file(jsfr, base_jsr)
-     
-      os.system("./Process.py refit_meteor " + jsf)
-      os.system("./Process.py refine " + jsf)
+    
+      # turned off to optimize time 8/2/2022
+      #os.system("./Process.py refit_meteor " + jsf)
+      #os.system("./Process.py refine " + jsf)
 
 
       return(jdata,base_jsr)
@@ -7010,7 +7011,7 @@ def get_contours_in_image(frame ):
    elif len(cnt_res) == 2:
       (cnts, xx) = cnt_res
    for (i,c) in enumerate(cnts):
-      print("CNTS:", cnts[i])
+      #print("CNTS:", cnts[i])
       x,y,w,h = cv2.boundingRect(cnts[i])
       if w > 1 or h > 1:
          cont.append((x,y,w,h))
