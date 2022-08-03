@@ -2192,7 +2192,7 @@ def make_roi_video_mfd(video_file, json_conf):
    if "dynamodb" in json_conf:
       mfn, xxx = fn_dir(mjf)
       #cmd = "./DynaDB.py add_obs " + mfn
-      cmd = "./pushAWS.py push_obs " + mfn
+      cmd = "./pushAWS.py push_obs " + mfn + " > /dev/null 2>&1 &"
       print("PUSH:", cmd)
       os.system(cmd)
    else:
