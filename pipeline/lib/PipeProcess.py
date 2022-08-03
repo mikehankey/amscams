@@ -132,6 +132,7 @@ def gitpull(json_conf):
 
 def run_jobs(json_conf):
 
+   os.system("killall flex-detect.py")
    rj_start = time.time()
    # make sure DynaDB is not already running. If it is kill it.
    running = check_running("DynaDB.py")
