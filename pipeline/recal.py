@@ -1,3 +1,5 @@
+#!/usr/bin/python3
+
 """
 
 2022 - recalibration script -- fixes / updates calibration
@@ -27,7 +29,7 @@ from photutils.aperture import aperture_photometry
 import scipy.optimize
 from PIL import ImageFont, ImageDraw, Image, ImageChops
 import lib.brightstardata as bsd
-from lib.PipeUtil import load_json_file, save_json_file,angularSeparation, calc_dist, convert_filename_to_date_cam 
+from lib.PipeUtil import load_json_file, save_json_file,angularSeparation, calc_dist, convert_filename_to_date_cam , check_running
 from lib.PipeAutoCal import distort_xy, insert_calib, minimize_poly_multi_star, view_calib, cat_star_report , update_center_radec, XYtoRADec, draw_star_image, make_lens_model, make_az_grid, make_cal_summary, quality_stars, make_cal_plots, find_stars_with_grid
 import sqlite3 
 from lib.DEFAULTS import *
@@ -35,6 +37,13 @@ from lib.PipeVideo import load_frames_simple
 from Classes.MovieMaker import MovieMaker 
 
 tries = 0
+
+running = check_running("recal.py")
+if running > 2:
+   print("ALREADY RUNNING:", running)
+   cmd = "echo " + str(running) + " >x"
+   os.system(cmd)
+   exit()
 
 def star_track(cam_id, con, cur, json_conf ):
    MM = MovieMaker()

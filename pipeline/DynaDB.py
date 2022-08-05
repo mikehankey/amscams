@@ -1519,6 +1519,11 @@ def do_dyna_day(dynamodb, day):
    # and update the mse info in the json for each site
    # also sync prev imgs for mse events
    # check if the latest day,dawn,dusk,night stacks have been made. if not run that. 
+
+
+   # do cal status
+   os.system("./recal.py status all > /home/ams/recal.txt &")
+
    if cfe("../conf/hsha.txt") == 0:
       os.system("./Process.py hsha")
       os.system("touch ../conf/hsha.txt")
