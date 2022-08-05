@@ -1,3 +1,5 @@
+#!/usr/bin/python3
+
 """
 
 2022 - recalibration script -- fixes / updates calibration
@@ -27,7 +29,7 @@ from photutils.aperture import aperture_photometry
 import scipy.optimize
 from PIL import ImageFont, ImageDraw, Image, ImageChops
 import lib.brightstardata as bsd
-from lib.PipeUtil import load_json_file, save_json_file,angularSeparation, calc_dist, convert_filename_to_date_cam 
+from lib.PipeUtil import load_json_file, save_json_file,angularSeparation, calc_dist, convert_filename_to_date_cam , check_running
 from lib.PipeAutoCal import distort_xy, insert_calib, minimize_poly_multi_star, view_calib, cat_star_report , update_center_radec, XYtoRADec, draw_star_image, make_lens_model, make_az_grid, make_cal_summary, quality_stars, make_cal_plots, find_stars_with_grid
 import sqlite3 
 from lib.DEFAULTS import *
@@ -35,6 +37,13 @@ from lib.PipeVideo import load_frames_simple
 from Classes.MovieMaker import MovieMaker 
 
 tries = 0
+
+running = check_running("recal.py")
+if running > 2:
+   print("ALREADY RUNNING:", running)
+   cmd = "echo " + str(running) + " >x"
+   os.system(cmd)
+   exit()
 
 def star_track(cam_id, con, cur, json_conf ):
    MM = MovieMaker()
@@ -759,6 +768,8 @@ def cal_status_report(cam_id, con, cur, json_conf):
    #print("IN FOLDER :", len(freecal_index.keys()) )
    print(tb)
    print(tb2)
+
+   batch_apply(cam_id, con,cur, json_conf, 30)
 
 def import_cal_file(cal_fn, cal_dir, mcp):
 
@@ -2831,21 +2842,23 @@ def get_mcp(cam_id) :
       print("Can't update until the MCP is made!")
    return(mcp)
 
-def batch_apply(cam_id, con,cur, json_conf):
+def batch_apply(cam_id, con,cur, json_conf, last=None):
    # apply the latest MCP Poly to each cal file and then recenter them
    autocal_dir = "/mnt/ams2/cal/"
    station_id = json_conf['site']['ams_id']
-   cv2.namedWindow("pepe")
-   cv2.resizeWindow("pepe", 1920, 1080)
-
+   if SHOW == 1:
+      cv2.namedWindow("pepe")
+      cv2.resizeWindow("pepe", 1920, 1080)
 
    #if cam_id == "all":
    if True:
       for cam_num in json_conf['cameras']:
          cam_id = json_conf['cameras'][cam_num]['cams_id']
 
-
-         calfiles_data = load_cal_files(cam_id, con, cur)
+         if last is None:
+            calfiles_data = load_cal_files(cam_id, con, cur)
+         else:
+            calfiles_data = load_cal_files(cam_id, con, cur, False, last)
 
          mcp_file = autocal_dir + "multi_poly-" + station_id + "-" + cam_id + ".info"
          if os.path.exists(mcp_file) == 1:
@@ -2860,6 +2873,8 @@ def batch_apply(cam_id, con,cur, json_conf):
          cff = 0
          last_cal_params = None
          rc = 0
+
+
          for cf in calfiles_data:
             extra_text = cf + " " + str(rc) + " of " + str(len(calfiles_data))
             last_cal_params = apply_calib (cf, calfiles_data, json_conf, mcp, last_cal_params, extra_text)
@@ -2923,7 +2938,8 @@ def get_image_stars_with_catalog(obs_id, cal_params, show_img):
                if y2 > 1080:
                   y2 = 1080
                   y1 = 1080 - 32
-               star_obj = eval_star_crop(clean_img[y1:y2,x1:x2], cal_fn, x1, y1, x2, y2)
+               crop_img = clean_img[y1:y2,x1:x2]
+               star_obj = eval_star_crop(crop_img, cal_fn, x1, y1, x2, y2)
                #print(star_obj)
 
                new_x, new_y, img_ra,img_dec, img_az, img_el = XYtoRADec(new_cat_x,new_cat_y,obs_id,cal_params,json_conf)
@@ -4440,6 +4456,7 @@ def insert_paired_star_full(cat_image_star, cal_fn, cal_params, mcp, json_conf):
       star_obj["zp_res_px"] = zp_res_px
       star_obj["res_deg"] = res_deg
       insert_paired_star(cal_fn, star_obj, con, cur, json_conf )
+   con.commit()
 
 def insert_paired_star(cal_fn, star_obj, con, cur, json_conf):
    # Do an insert here into calfile_paired_stars table
@@ -4476,7 +4493,7 @@ def insert_paired_star(cal_fn, star_obj, con, cur, json_conf):
    #print(ivals)
    try:
       cur.execute(sql, ivals)
-      con.commit()
+      #con.commit()
    except:
       print("record already exists.")
 
@@ -4879,7 +4896,8 @@ def eval_star_crop(crop_img, cal_fn, x1, y1,x2,y2, star_cat_info=None ):
    #thresh_val = max_val * .8
 
    thresh_val = find_best_thresh(gray_img)
-
+   if thresh_val is None:
+      thresh_val = 100
    _, crop_thresh = cv2.threshold(gray_img, thresh_val, 255, cv2.THRESH_BINARY)
    cnts = get_contours_in_image(crop_thresh)
 
@@ -5656,7 +5674,7 @@ def characterize_fov(cam_id, con, cur, json_conf):
    if mcp is not None:
       make_lens_model(cam_id, json_conf, merged_stars)
  
-def load_cal_files(cam_id, con, cur, single=False):
+def load_cal_files(cam_id, con, cur, single=False,last=None):
    sql = """
       SELECT station_id,
              camera_id,
@@ -5696,9 +5714,13 @@ def load_cal_files(cam_id, con, cur, single=False):
          WHERE cal_fn = ?
       """
       uvals = [ cam_id  ]
+
    sql += """
-    ORDER BY res_px desc
+    ORDER BY cal_fn DESC
    """
+   if last is not None:
+      sql += " LIMIT " + str(last)
+
    #print(sql)
    #print(uvals)
    cur.execute(sql, uvals )

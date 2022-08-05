@@ -1533,6 +1533,9 @@ def do_dyna_day(dynamodb, day):
 
    print("meteor files / reduced files on", day, len(meteor_files), len(red_files))
 
+   # do cal status
+   os.system("./recal.py status all > /home/ams/recal.txt &")
+
    if cfe("../conf/hsha.txt") == 0:
       os.system("./Process.py hsha")
       os.system("touch ../conf/hsha.txt")
