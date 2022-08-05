@@ -5118,7 +5118,6 @@ def analyze_object(object, hd = 0, sd_multi = 1, final=0):
 
 
    print("MIN PX DIST MIN FRAMES:", min_px_dist, min_frames)
-   input("WAIT")
 
    if px_dist < 4:
       if "report" not in object:
