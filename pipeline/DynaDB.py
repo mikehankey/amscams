@@ -1519,6 +1519,20 @@ def do_dyna_day(dynamodb, day):
    # and update the mse info in the json for each site
    # also sync prev imgs for mse events
    # check if the latest day,dawn,dusk,night stacks have been made. if not run that. 
+
+   mdir = "/mnt/ams2/meteors/" + day + "/" 
+   meteor_files = [] 
+   red_files = [] 
+   temp = os.listdir(mdir)
+
+   for mf in temp:
+      if "json" in mf and "reduced" not in mf:
+         meteor_files.append(mf)
+      elif "json" in mf and "reduced" in mf:
+         red_files.append(mf)
+
+   print("meteor files / reduced files on", day, len(meteor_files), len(red_files))
+
    if cfe("../conf/hsha.txt") == 0:
       os.system("./Process.py hsha")
       os.system("touch ../conf/hsha.txt")
@@ -1558,14 +1572,15 @@ def do_dyna_day(dynamodb, day):
 
 
    # reject meteors not matching strict rules
-   if today != day:
-      if "strict" not in dyn_log[day]:
-         dyn_log[day]['strict'] = 1
+   if len(meteor_files) > 200:
+      if today != day:
+         if "strict" not in dyn_log[day]:
+            dyn_log[day]['strict'] = 1
 
-   if "strict" not in dyn_log[day] or today == day:
-      cmd = "python3 ./meteors_strict.py " + day
-      print(cmd)
-      #os.system(cmd)
+      if "strict" not in dyn_log[day] or today == day:
+         cmd = "python3 ./meteors_strict.py " + day
+         print(cmd)
+         os.system(cmd)
    else:
       print("Already did strict rules for this day.", day)
    
