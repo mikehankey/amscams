@@ -29,16 +29,16 @@ def make_default_template(amsid, main_template, json_conf):
    if remote == 1:
       header = get_template("FlaskTemplates/header-remote.html")
       footer = get_template("FlaskTemplates/footer-remote.html")
+      print("YO")
    else:
       header = get_template("FlaskTemplates/header.html")
       footer = get_template("FlaskTemplates/footer.html")
+      print("YO2")
 
    nav = get_template("FlaskTemplates/nav.html")
 
    if "my_network" in json_conf:
-      print("YES NETWORK!")
       net_nav = network_nav(json_conf)
-      print("NET:",net_nav)
       nav = nav.replace("<!--NETWORK-->", net_nav)
    else:
       print("NO NETWORK!")
