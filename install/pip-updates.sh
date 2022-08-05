@@ -6,14 +6,14 @@ apt-get install --yes --allow-downgrades --allow-remove-essential --allow-change
 apt-get install --yes --allow-downgrades --allow-remove-essential --allow-change-held-packages sqlite3
 
 apt install imagemagick
-pip3 install suntime
-pip3 install flask
-pip3 install psutil
-pip3 install uwsgi
-#pip3 install --upgrade cython numpy pyshp six
-pip3 install shapely --no-binary shapely
-pip3 install geopy
-pip3 install pymap3d
+python3 -m pip install suntime
+python3 -m pip install flask
+python3 -m pip install psutil
+python3 -m pip install uwsgi
+#python3 -m pip install --upgrade cython numpy pyshp six
+python3 -m pip install shapely --no-binary shapely
+python3 -m pip install geopy
+python3 -m pip install pymap3d
 
 # REDIS SETUP
 #supervised systemd
@@ -23,17 +23,17 @@ pip3 install pymap3d
 
 
 # edit conf add service
-pip3 install redis
-pip3 install simplekml
-pip3 install boto3 
-pip3 install simplejson
-pip3 install flask_httpauth
-pip3 install flask-dynamo
-pip3 install timezonefinder
-pip3 install pylunar
-pip3 install lxml
-pip3 install beautifulsoup4
-pip3 install photutils
-pip3 install prettytable
-pip3 install requests
-pip3 install imutils
+python3 -m pip install redis
+python3 -m pip install simplekml
+python3 -m pip install boto3 
+python3 -m pip install simplejson
+python3 -m pip install flask_httpauth
+python3 -m pip install flask-dynamo
+python3 -m pip install timezonefinder
+python3 -m pip install pylunar
+python3 -m pip install lxml
+python3 -m pip install beautifulsoup4
+python3 -m pip install photutils
+python3 -m pip install prettytable
+python3 -m pip install requests
+python3 -m pip install imutils
