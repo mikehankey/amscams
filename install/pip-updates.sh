@@ -36,3 +36,4 @@ pip3 install beautifulsoup4
 pip3 install photutils
 pip3 install prettytable
 pip3 install requests
+pip3 install imutils
