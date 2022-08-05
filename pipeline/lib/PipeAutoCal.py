@@ -5497,7 +5497,12 @@ def get_cal_files (meteor_file=None, cam=None):
    if meteor_file is not None:
       (f_datetime, cam, f_date_str,y,m,d, h, mm, s) = convert_filename_to_date_cam(meteor_file)
    pos_files = []
-   temp = load_json_file("/mnt/ams2/cal/freecal_index.json")
+   try:
+      temp = load_json_file("/mnt/ams2/cal/freecal_index.json")
+   except:
+      os.system("rm /mnt/ams2/cal/freecal_index.json")
+      temp = {}
+
    for cpf in sorted(temp.keys(), reverse=True):
       (c_datetime, ccam, c_date_str,cy,cm,cd, ch, cmm, cs) = convert_filename_to_date_cam(cpf)
       if meteor_file is not None:
@@ -6038,10 +6043,6 @@ def eval_cal_res(cp_file,json_conf,nc=None,oimg=None, mask_img=None,batch_mode=N
 
       new_cat_x, new_cat_y = distort_xy(0,0,ra,dec,float(cal_params['ra_center']), float(cal_params['dec_center']), cal_params['x_poly'], cal_params['y_poly'], float(cal_params['imagew']), float(cal_params['imageh']), float(cal_params['position_angle']),3600/float(cal_params['pixscale']))
       cat_dist = calc_dist((six,siy),(new_cat_x,new_cat_y))
-      #if cat_dist < med_res:
-      #   print("OK:", med_res, cat_dist)
-      #else:
-      #   print("NOT OK:", med_res, cat_dist)
 
       rez.append(cat_dist)
       new_cat_stars.append((dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist,star_int))
@@ -8880,10 +8881,11 @@ def find_close_stars(star_point, catalog_stars,dt=100, show_img = None):
 
 
 def AzEltoRADec(az,el,cal_file,cal_params,json_conf,time_diff=0):
+
+   #print("AZ/EL TO RA/DEC:", az, el, cal_file)
    azr = np.radians(az)
    elr = np.radians(el)
    hd_datetime, hd_cam, hd_date, hd_y, hd_m, hd_d, hd_h, hd_M, hd_s = convert_filename_to_date_cam(cal_file)
-
    if "trim" in cal_file:
       # add extra sec from trim num
       try:
@@ -8909,6 +8911,8 @@ def AzEltoRADec(az,el,cal_file,cal_params,json_conf,time_diff=0):
       device_lng = json_conf['site']['device_lng']
       device_alt = json_conf['site']['device_alt']
 
+   #print("DEVICE LAT/LON", device_lat, device_lng, device_alt)
+
    obs = ephem.Observer()
 
 
@@ -8920,7 +8924,7 @@ def AzEltoRADec(az,el,cal_file,cal_params,json_conf,time_diff=0):
 
    ra,dec = obs.radec_of(azr,elr)
    
-
+   #print("HD DATETIME:", hd_datetime, az, el, ra, dec)
    return(ra,dec)
 
 
@@ -9692,8 +9696,6 @@ def draw_star_image(img, cat_image_stars,cp=None,json_conf=None,extra_text=None)
    city = ""
    state = ""
    country = ""
-   #print(cp.keys())
-   #print(json_conf.keys())
    if json_conf is not None:
       station_id = json_conf['site']['ams_id']
       if "operator_name" in json_conf['site']:
@@ -9757,7 +9759,7 @@ def draw_star_image(img, cat_image_stars,cp=None,json_conf=None,extra_text=None)
          draw.rectangle((org_x-5, org_y-5, org_x + 5, org_y + 5), outline="gray")
          draw.line(org_res_line, fill="gray", width = 0) 
       if cp is not None:
-         ltext0 = "Images / Res Px:" 
+         ltext0 = "Stars / Res Px:" 
          text0 =  str(len(cp['cat_image_stars'])) + " / " + str(cp['total_res_px'])[0:7] 
          ltext1 = "Center RA/DEC:" 
          text1 =  str(cp['ra_center'])[0:7] + " / " + str(cp['dec_center'])[0:7]
@@ -9805,7 +9807,6 @@ def draw_star_image(img, cat_image_stars,cp=None,json_conf=None,extra_text=None)
    c_dist = []
    m_dist = []
    if len(cal_params['cat_image_stars']) == 0:
-      #print("CAT IMAGE STARS 0!")
       exit()
    for star in cal_params['cat_image_stars']:
       dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist,star_int = star
@@ -9842,7 +9843,7 @@ def freecal_copy(cal_params_file, json_conf):
       os.makedirs(fc_dir)
    cmd = "cp " + cpd + cpf + " " + fc_dir + cprf + "-stacked-calparams.json"
    os.system(cmd)
-   print(cmd)
+   #print(cmd)
    js = {}
    js['user_stars'] = user_stars
 
