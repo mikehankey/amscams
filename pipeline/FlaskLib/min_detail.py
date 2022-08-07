@@ -9,7 +9,7 @@ from lib.PipeUtil import load_json_file, save_json_file, cfe, day_or_night, conv
 
 from lib.PipeAutoCal import fn_dir
 
-def min_detail_main(amsid, day, min_file):
+def min_detail_main(amsid, day, min_file, label):
 
    json_conf = load_json_file("../conf/as6.json")
 
