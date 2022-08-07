@@ -4985,7 +4985,6 @@ def find_stars_with_catalog(cal_fn, con, cur, json_conf,mcp=None, cp=None, cal_i
    if SHOW == 1:
       cv2.imshow('pepe', show_img)
       cv2.waitKey(30)
-   cv2.waitKey(30)
 
 
 
