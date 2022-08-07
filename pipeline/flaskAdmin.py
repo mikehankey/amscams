@@ -503,7 +503,8 @@ def live(amsid):
 @app.route('/min_detail/<amsid>/<date>/<min_file>/', methods=['GET', 'POST'])
 @auth.login_required
 def min_detail(amsid, date, min_file):
-   out = min_detail_main(amsid, date, min_file)
+   label = request.args.get('label')
+   out = min_detail_main(amsid, date, min_file, label)
    return out
 
 
