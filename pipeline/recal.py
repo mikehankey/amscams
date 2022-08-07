@@ -130,6 +130,9 @@ def refit_meteor(meteor_file, con, cur, json_conf, mcp = None, last_best_dict = 
       mj = check_for_nan(json_file, mj)
       if "cp" not in mj:
          cp = get_default_cal_for_file(cam_id, meteor_file, None, con, cur, json_conf)
+         if cp is None:
+            print("CAN'T REFIT!")
+            return(None) 
          mj['cp'] = cp
          
 
@@ -5392,8 +5395,11 @@ def get_default_cal_for_file(cam_id, obs_file, img, con, cur, json_conf):
    else:
       mcp = None
 
-
-   range_data = get_cal_range(obs_file, img, con, cur, json_conf)
+   try:
+      range_data = get_cal_range(obs_file, img, con, cur, json_conf)
+   except:
+      print("No range data! for camera.")
+      return(None)
    print("RANGE DATA")
 
    for row in range_data:
@@ -6637,6 +6643,8 @@ if __name__ == "__main__":
       for ff in all_files:
          (f_datetime, cam_id, f_date_str,fy,fmin,fd, fh, fm, fs) = convert_filename_to_date_cam(ff)
          last_cp = refit_meteor(ff, con, cur, json_conf, None, last_best)
+         if last_cp is None:
+            continue
          print("REFITTED") 
          last_cp = refit_meteor(ff, con, cur, json_conf, None, last_best)
          print("2x REFITTED") 
