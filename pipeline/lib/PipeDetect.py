@@ -2536,10 +2536,12 @@ def fireball(video_file, json_conf, nomask=0):
 
       base_jsr['meteor_frame_data'] = sorted(base_jsr['meteor_frame_data'], key=lambda x: (x[1]), reverse=False)
       save_json_file(jsfr, base_jsr)
-    
+   
+      # REFIT METEOR / refit meteor
       # turned off to optimize time 8/2/2022
-      #os.system("./Process.py refit_meteor " + jsf)
-      #os.system("./Process.py refine " + jsf)
+      # turned back on 8/6/2022
+      os.system("./Process.py refit_meteor " + jsf)
+      os.system("./Process.py refine " + jsf)
 
 
       return(jdata,base_jsr)
