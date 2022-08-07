@@ -3287,8 +3287,8 @@ def apply_calib (cal_file, calfiles_data, json_conf, mcp, last_cal_params=None, 
       if SHOW == 1:
          cv2.imshow('pepe', cal_img)
          cv2.resizeWindow("pepe", 1920, 1080)
-
-      cv2.waitKey(30)
+     
+         cv2.waitKey(30)
       if mcp is not None:
          cal_params['x_poly'] = mcp['x_poly']
          cal_params['y_poly'] = mcp['y_poly']
