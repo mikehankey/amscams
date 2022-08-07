@@ -391,6 +391,9 @@ def check_for_nan(mjf, mj):
                #   print("NAN", np.isnan(val) )
                   nan_found = True
 
+   if "cp" in mj:
+      if mj['cp'] is None:
+         del(mj['cp'] )
 
    if "cp" in mj:
       for field in mj['cp']:
