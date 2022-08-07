@@ -897,8 +897,10 @@ def cal_status_report(cam_id, con, cur, json_conf):
          mcp['cal_version'] = 0
    else:
       mcp = None
+
    if mcp is None:
       print("Can't update until the MCP is made!")
+      return()
 
    # get all paired stars by file 
    cal_files = []
