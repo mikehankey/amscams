@@ -3,11 +3,7 @@
 
 
 
-<div id="footer">
-    &copy; American Meteor Society / AllSkycams.com
-</div>
 
-</div>
 <!--version-->
 <!-- Other scripts (see gulpfile.js?{RAND} > js) -->
 
@@ -87,7 +83,26 @@
 <script src="https://archive.allsky.tv/APPS/src/js/functions/delete_calibration-flask.js?{RAND}"></script>
 <script src="https://archive.allsky.tv/APPS/src/js/functions/update_meteor_points_flask.js?{RAND}"></script>
 <script src="https://archive.allsky.tv/APPS/src/js/functions/man_reduce-flask.js?{RAND}"></script>
-	<script>
+
+  <script src="https://unpkg.com/jquery.terminal/js/jquery.terminal.min.js"></script>
+  <link href="https://unpkg.com/jquery.terminal/css/jquery.terminal.min.css" rel="stylesheet"/>
+<script>
+
+String.prototype.strip = function(char) {
+    return this.replace(new RegExp("^" + char + "*"), '').
+        replace(new RegExp(char + "*$"), '');
+}
+
+$.extend_if_has = function(desc, source, array) {
+    for (var i=array.length;i--;) {
+        if (typeof source[array[i]] != 'undefined') {
+            desc[array[i]] = source[array[i]];
+        }
+    }
+    return desc;
+};
+
+
 (function($) {
     $.fn.tilda = function(eval, options) {
         if ($('body').data('tilda')) {
@@ -99,11 +114,11 @@
             term.echo("you don't set eval for tilda");
         };
         var settings = {
-            prompt: 'tilda> ',
+            prompt: 'ASOS> ',
             name: 'tilda',
             height: 100,
             enabled: false,
-            greetings: 'Quake like console',
+            greetings: 'Hello there, welcome to the All Sky OS terminal. ',
             keypress: function(e) {
                 if (e.which == 96) {
                     return false;
@@ -115,14 +130,15 @@
         }
         this.append('<div class="td"></div>');
         var self = this;
-        self.terminal = this.find('.td').terminal(eval,
-                                               settings);
+        self.terminal = this.find('.td').terminal(eval, settings);
         var focus = false;
         $(document.documentElement).keypress(function(e) {
-            if (e.charCode == 96) {
+            if (e.which == 96) {
                 self.slideToggle('fast');
-                self.terminal.command_line.set('');
                 self.terminal.focus(focus = !focus);
+                self.terminal.attr({
+                    scrollTop: self.terminal.attr("scrollHeight")
+                });
             }
         });
         $('body').data('tilda', this);
@@ -130,6 +146,35 @@
         return self;
     };
 })(jQuery);
-	</script>
+
+//--------------------------------------------------------------------------
+jQuery(document).ready(function($) {
+
+    $('#tilda').tilda(function(command, terminal) {
+	args = command.split(" ")
+	command = args[0]
+	var len_args = args.length
+        terminal.echo('you type command "' + command + '"');
+	if (command == "hello") {
+           console.log(command, terminal)
+           terminal.echo('hi back at you.');
+	}
+	else if (command == "help" && len_args == 1) {
+           $("#consoleModal").modal('show');
+	   $("#console-content").html("<p>hello there...</p>")
+           $('#tilda').hide();
+           //$('body').data('tilda', this);
+           //this.hide();
+           //return self;
+	}
+	// fetch content or API and put it in the modal
+
+
+    });
+});
+
+</script>
+
+<div>...</div>
 
 </html>
