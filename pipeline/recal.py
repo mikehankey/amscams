@@ -2082,7 +2082,8 @@ def get_star_points(cal_fn, oimg, cp, station_id, cam_id, json_conf):
                      cv2.waitKey(1)
             c += 1
 
-   cv2.waitKey(100)
+   if SHOW == 1:
+      cv2.waitKey(100)
    #show_img = oimg.copy()
    return(star_points, show_img )
 
