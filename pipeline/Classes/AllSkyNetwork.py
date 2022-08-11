@@ -1,16 +1,32 @@
 import sqlite3
+import boto3
+from boto3.dynamodb.conditions import Key
+from RMS.Math import angularSeparation
+from lib.PipeAutoCal import XYtoRADec 
+from recal import get_catalog_stars, get_star_points, get_xy_for_ra_dec, minimize_fov
+from lib.PipeAutoCal import update_center_radec
+from lib.Map import make_map,geo_intersec_point 
+from lib.PipeEvent import get_trim_num
+from prettytable import PrettyTable as pt
+import matplotlib
+import matplotlib.pyplot as plt
+from recal import do_photo
+from lib.PipeDetect import get_contours_in_image, find_object, analyze_object
+from lib.kmlcolors import *
+from lib.PipeImage import stack_frames
+import simplekml
 import time
 import requests
 import boto3
 import redis
-from solveWMPL import convert_dy_obs, WMPL_solve, make_event_json
+from solveWMPL import convert_dy_obs, WMPL_solve, make_event_json, event_report
 import numpy as np
 import datetime
 import simplejson as json
 import os
 import shutil
 import platform
-from lib.PipeUtil import load_json_file, save_json_file, get_trim_num, convert_filename_to_date_cam, starttime_from_file, dist_between_two_points, get_file_info
+from lib.PipeUtil import load_json_file, save_json_file, get_trim_num, convert_filename_to_date_cam, starttime_from_file, dist_between_two_points, get_file_info, calc_dist, check_running
 from lib.intersecting_planes import intersecting_planes
 from DynaDB import search_events, insert_meteor_event, delete_event
 
@@ -20,18 +36,24 @@ from sklearn.datasets import make_blobs
 from sklearn.preprocessing import StandardScaler
 from multiprocessing import Process
 import cv2
+from lib.PipeVideo import load_frames_simple
+from Classes.RenderFrames import RenderFrames 
 
 class AllSkyNetwork():
    def __init__(self):
+      self.RF = RenderFrames()
       self.solving_node = "AWSB1"
       self.plane_pairs = {}
       self.errors = []
+      self.custom_points = {}
+      self.deleted_points = {}
       if os.path.exists("admin_conf.json") is True:
          self.admin_conf = load_json_file("admin_conf.json")
          self.data_dir = self.admin_conf['data_dir']
       else:
          self.data_dir = "/mnt/ams2/"
     
+      self.check_start_ai_server()
   
 
       self.good_obs_json = None
@@ -43,10 +65,12 @@ class AllSkyNetwork():
       self.home_dir = "/home/" + self.user + "/" 
       self.amscams_dir = self.home_dir + "amscams/"
 
-      self.local_event_dir = self.data_dir + "/EVENTS"
+      self.local_event_dir = self.data_dir + "/EVENTS/"
       self.db_dir = self.local_event_dir + "/DBS/"
       if os.path.exists(self.db_dir) is False:
          os.makedirs(self.db_dir)
+      
+      self.cloud_dir = "/mnt/archive.allsky.tv/"
       self.cloud_event_dir = "/mnt/archive.allsky.tv/EVENTS"
       self.s3_event_dir = "/mnt/allsky-s3/EVENTS"
 
@@ -54,6 +78,13 @@ class AllSkyNetwork():
       self.r = redis.Redis("localhost", port=6379, decode_responses=True)
       self.API_URL = "https://kyvegys798.execute-api.us-east-1.amazonaws.com/api/allskyapi"
       self.dynamodb = boto3.resource('dynamodb')
+
+      self.station_data = load_json_file("stations.json")
+      self.rurls = {}
+      for data in self.station_data['stations']:
+         station = data['name']
+         url = data['url']
+         self.rurls[station] = url
 
       self.help()
 
@@ -185,6 +216,7 @@ class AllSkyNetwork():
       for data in self.stations:
          sid = data['station_id']
          self.station_dict[sid] = data
+         print(data)
 
    def day_prep(self, date):
       print("ok")
@@ -192,16 +224,28 @@ class AllSkyNetwork():
    def set_dates(self, date):
       print("SET DATES FOR:", date)
       self.year, self.month, self.day = date.split("_")
+      self.dom = self.day
       self.date = date
       self.local_evdir = self.local_event_dir + "/" + self.year + "/" + self.month + "/" + self.day  + "/"
       self.cloud_evdir = self.cloud_event_dir + "/" + self.year + "/" + self.month + "/" + self.day   + "/"
       self.s3_evdir = self.s3_event_dir + "/" + self.year + "/" + self.month + "/" + self.day   + "/"
       self.obs_dict_file = self.local_evdir + self.date + "_OBS_DICT.json"
       self.all_obs_file = self.local_evdir + self.date + "_ALL_OBS.json"
+      self.sync_log_file = self.local_evdir + "/" + date + "_SYNC_LOG.json"
+      self.min_events_file = self.local_evdir + "/" + date + "_MIN_EVENTS.json"
+      self.all_events_file = self.local_evdir + "/" + date + "_ALL_EVENTS.json"
       self.all_obs_gz_file = self.local_evdir + self.date + "_ALL_OBS.json.gz"
       self.cloud_all_obs_file = self.cloud_evdir + self.date + "_ALL_OBS.json"
       self.cloud_all_obs_gz_file = self.cloud_evdir + self.date + "_ALL_OBS.json.gz"
       self.obs_review_file = self.local_evdir + date + "_OBS_REVIEWS.json"
+      self.all_stations_file = self.local_event_dir + "/" + self.year + "/" + self.month + "/" + self.day + "/" + self.date + "_ALL_STATIONS.json"
+      self.all_stations = load_json_file(self.all_stations_file)
+      self.station_loc = {}
+      for row in self.all_stations:
+         st_id , lat, lon, alt, city, network = row
+         self.station_loc[st_id] = [lat,lon,alt]
+
+
       # DB FILE!
       self.db_file = self.db_dir + "/ALLSKYNETWORK_" + date + ".db"
       print("DB FILE IS:", self.db_file)
@@ -412,7 +456,6 @@ class AllSkyNetwork():
             print("MINUTE OBS:", minute, len(min_obs), len(min_events.keys()))
        
 
-      input("WAIT")
 
 
       save_json_file(self.plane_file, self.plane_pairs)
@@ -742,6 +785,7 @@ class AllSkyNetwork():
 
  
    def check_make_events(self, min_events, station_id, obs_file, stime):
+      # see if this one obs is part of an event or new
       match_time = 0
       match_dist = 0
       matches = []
@@ -775,14 +819,20 @@ class AllSkyNetwork():
             s_datestamp, s_timestamp = self.date_str_to_datetime(stime)
             t_datestamp, t_timestamp = self.date_str_to_datetime(this_time)
             time_diff = s_timestamp - t_timestamp
+            #if the event start is within 3 seconds
             if -3 <= time_diff <= 3:
                avg_lat = np.mean(min_events[eid]['lats'])
                avg_lon = np.mean(min_events[eid]['lons'])
                match_dist = dist_between_two_points(avg_lat, avg_lon, lat, lon)
                print("Time diff in range. Check Distance??", time_diff, match_dist)
+               #if the dist between avg stations and this station is < 900 km
+               match_time = 1
                if match_dist < 900:
-                  match_time = 1
                   match_dist = 1
+
+
+
+                  # before adding we should see if the points intersect!? or no?
                   matches.append((eid, match_time, match_dist))
       if len(matches) > 0:
          eid = matches[0][0]
@@ -829,6 +879,10 @@ class AllSkyNetwork():
       return(dt, ts)
 
    def min_obs_to_events(self, min_obs):
+      # This is where we group obs into events! 
+      # IT should be close in time and distance
+      # and the lines should intersect 
+
       station_dists = {}
       #   SELECT station_id, event_id, event_minute, obs_id, fns, times, xs, ys, azs, els, ints, status, ignore 
 
@@ -1074,9 +1128,11 @@ class AllSkyNetwork():
 
          ivals = [0,temp_ev_id,obs['station_id'],obs_id, json.dumps(fns), json.dumps(datetimes), json.dumps(xs), json.dumps(ys), json.dumps(azs), json.dumps(els), json.dumps(ints), 0,0]
          self.cur.execute(sql, ivals)
-         self.con.commit()
-         print("\r" + str(ic) + " " +  obs_id, end="")
+         print("INSERT", sql)
+         print("VALUES", ivals)
          ic += 1
+
+      self.con.commit()
 
       print("\rTotal OBS for " + date + " : " + str(len(self.all_obs)) + "                                        ",end="")
       print("")
@@ -1088,7 +1144,6 @@ class AllSkyNetwork():
       mon = event_id[4:6]
       day = event_id[6:8]
       date = year + "_" + mon + "_" + day
-      print(date)
       return(date)
 
       
@@ -1109,6 +1164,2174 @@ class AllSkyNetwork():
          print("Resolving:", event_id)
          self.resolve_event(event_id)
 
+   def show_edits(self):
+      for sd_vid in self.edits['sd_clips']:
+         print("EDIT:", self.edits['sd_clips'][sd_vid]['status'], sd_vid, self.edits['sd_clips'][sd_vid].keys())
+
+   def purge_invalid_events(self, event_day):
+      self.set_dates(event_day)
+      ev_dirs = os.listdir(self.local_evdir )
+
+      invalid_event_file = self.local_evdir + "/" + event_day + "_INVALID_EVENTS.json"
+      if os.path.exists(invalid_event_file) is True: 
+         invalid_events = load_json_file(invalid_event_file)
+      else:
+         invalid_events = {}
+
+      for evd in ev_dirs:
+         if os.path.isdir(self.local_evdir + evd):
+            if os.path.exists(self.local_evdir + evd + "/" + evd + "-fail.json") and os.path.exists(self.local_evdir + evd + "/" + evd + "-event.json") is False:
+               print("Failed file found with no event file found for :", evd)
+               if os.path.exists(self.local_evdir + evd + "/" + evd + "_GOOD_OBS.json") :
+                  # make sure there are actually good obs for this file. If there are not at least 2 then the event is invalid! 
+                  good_obs = load_json_file(self.local_evdir + evd + "/" + evd + "_GOOD_OBS.json")
+                  gdso = 0
+                  for station in good_obs: 
+                     go = 0
+                     for key in good_obs[station]:
+                        go+= 1
+                     if go >= 1:
+                        gdso += 1
+
+                  if gdso == 0:
+                     print("THERE ARE NO GOOD OBS FOR THIS EVENT IT SHOULD BE DELETED!", evd)
+                     invalid_events[evd] = 1
+                     cmd = "rm -rf " + self.local_evdir + evd
+                     print(cmd)
+                     os.system(cmd)
+      for event_id in invalid_events:
+         sql = "DELETE FROM EVENTS WHERE event_id = ?"
+         print(sql)
+         self.cur.execute(sql, [event_id])
+      self.con.commit()
+      save_json_file(self.local_evdir + "/" + event_day + "_INVALID_EVENTS.json", invalid_events)
+
+   def quick_day_status(self, event_day):
+      print("Quick event stats!")
+      obs_dict = load_json_file(self.obs_dict_file)
+      all_obs = load_json_file(self.all_obs_file)
+      min_events = load_json_file(self.min_events_file)
+      all_events = load_json_file(self.all_events_file)
+      db_events = {}
+      sql = """
+         SELECT event_id,stations from events order by event_id 
+      """
+      self.cur.execute(sql)
+      rows = self.cur.fetchall()
+      for row in rows:
+         event_id = row[0]
+         print(row[0], row[1])
+         db_events[event_id] = {}
+
+
+      print("ALL OBS", len(all_obs))
+      print("OBS DICT", len(obs_dict.keys()))
+      print("MINUTE EVENTS", len(min_events.keys()))
+      print("ALL EVENTS", len(all_events))
+      print("DB EVENTS", len(db_events.keys()))
+
+      all_good_events = []
+      for data in all_events:
+         if len(set(data['stations'])) >= 2:
+         #   print("GOOD", len(data['stations']), data['event_id'], data['solve_status'], data.keys())
+            all_good_events.append(data)
+         #else:
+         #   print("BAD", len(data['stations']), data['event_id'], data['solve_status'], data.keys())
+      if len(all_good_events) != len(all_events):
+         print("SAVE ALL EVENT FILE.")
+         save_json_file(self.all_events_file, all_good_events)
+
+   def event_day_status(self, event_day):
+      self.set_dates(event_day)
+
+      event_day_stats = self.sql_select_event_day_stats(self.date)
+
+      by_station = ""
+      for row in event_day_stats["by_station"]:
+         st, cc = row
+         by_station += "<li> {:s} {:s}".format(st, str(cc))
+
+      event_dict = {} 
+
+      good = """
+      <table>
+         <thead>
+            <tr>
+               <th>
+                  Event ID 
+               </th>
+               <th>
+                  2D Intersections 
+               </th>
+               <th>
+                  3D Planes 
+               </th>
+               <th>
+                  WMPL Status 
+               </th>
+               <th>
+                  AI Meteors 
+               </th>
+            </tr>
+         </thead>
+         <tbody>
+      """
+      for ev_data in event_day_stats["all_events"]:
+         event_id, event_status, event_data = ev_data
+         good += "<tr><td> {:s}</td><td>{:s}</td></tr> ".format(event_id, event_status)
+
+         #solve_file = self.local_evdir + ev + "/" + ev + "-event.json" 
+         print("DATA", ev_data)
+
+
+
+      good += "</tbody></table>"
+
+
+      out_file = self.local_evdir + "/" + event_day + "_log.html"
+
+      self.all_obs_file = self.local_evdir + self.date + "_ALL_OBS.json"
+      self.all_events_file = self.local_evdir + self.date + "_ALL_EVENTS.json"
+      if os.path.exists(self.all_obs_file):
+         all_obs = load_json_file(self.all_obs_file)
+      else:
+         all_obs = {}
+
+      if os.path.exists(self.all_events_file):
+         all_events = load_json_file(self.all_events_file)
+      else:
+         all_events = {}
+
+      stats = ""
+      for key in event_day_stats:
+         if stats != "":
+            stats += " AND " 
+         stats += str(event_day_stats[key]) + " " + str(key) + " events "
+         
+      report = """
+      <html lang="en-US">
+         <head>
+              <meta charset="UTF-8" />
+              <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+              <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+              <meta name="msapplication-TileColor" content="#ffffff" />
+              <meta name="msapplication-TileImage" content="/favicon/ms-icon-144x144.png" />
+              <meta name="theme-color" content="#ffffff" /> <title>ALLSKY7 {:s} REPORT</title>
+              <meta name="description" content="A modern and minimal CSS framework for terminal lovers."/>
+        </head>
+        <link rel="stylesheet" href="https://unpkg.com/terminal.css@0.7.2/dist/terminal.min.css" />
+        <body class="terminal">
+        <div class="container">
+            <h1>AllSky7 Event Report for {:s}</h1>
+            <section>
+
+               <div class="terminal-card">
+               <header>Database Reconciliation</header>
+                  The network database contains {:s} observations spanning {:s} events. <br>
+                  The solving node database database contains {:s} successful events, {:s} failed events and {:s} total observations.
+                  
+               </div>
+
+               <div class="terminal-card">
+               <header>Obs By Station</header>
+               {:s}
+               </div>
+
+               <div class="terminal-card">
+               <header>All Multi-Station Events</header>
+               {:s}
+               </div>
+
+
+
+
+            </section>
+         </body>
+      </html>
+      """.format(event_day, event_day, str(len(all_obs)), str(len(all_events)), str(event_day_stats['STATUS_SOLVED']), str(event_day_stats['STATUS_FAILED']), str(event_day_stats['TOTAL_OBS']), by_station, good )
+
+      print(report)
+      out = open( out_file, "w")
+      out.write(report)
+      print(out_file)
+
+       
+   def resolve_event_day(self, event_day):
+      temp = load_json_file("cores.json")
+      cores = temp['cores']
+      self.set_dates(event_day)
+      self.quick_day_status(event_day)
+      sql = """
+         SELECT event_id from events order by event_id 
+      """
+      self.cur.execute(sql)
+      rows = self.cur.fetchall()
+      for row in rows:
+         running = check_running("python")
+
+         while running > 32:
+            print("Wait 10 seconds, already have", running, "processes")
+            time.sleep(10)
+            running = check_running("python")
+            
+         event_id = row[0]
+         # if it has already solved or failed skip it
+         ev_file = self.local_evdir + event_id + "/" + event_id + "_REVIEW.jpg"
+         if os.path.exists(ev_file) is False:
+            cmd = "python3 AllSkyNetwork.py resolve_event " + event_id + " > /dev/null 2>&1 &" 
+            print(cmd)
+            os.system(cmd)
+
+
+   def review_event_day(self, event_day):
+      self.set_dates(event_day)
+      self.quick_day_status(event_day)
+      #self.obs_timeline (event_day)
+      if os.path.exists(self.sync_log_file):
+         self.sync_log = load_json_file(self.sync_log_file)
+      else:
+         self.sync_log = {}
+       
+      sql = """
+         SELECT event_id from events order by event_id 
+      """
+      self.cur.execute(sql)
+      rows = self.cur.fetchall()
+      all_cmds = []
+ 
+      print(len(rows), " events on this day", event_day)
+      print("Sync'ing media please wait...")
+      if True:
+         for row in rows:
+            event_id = row[0]
+            wget_cmds = self.get_event_media(event_id)
+            all_cmds.extend(wget_cmds)
+         all_cmds = sorted(all_cmds)
+
+         print("Fetching media:", len(all_cmds))
+         self.fast_cmds(all_cmds)
+         save_json_file(self.sync_log_file, self.sync_log)
+
+      print("All media downloaded. Ready to review events.")
+
+      exit()
+      for row in rows:
+         event_id = row[0]
+         print("Get event media for :", event_id)
+         wget_cmds = self.get_event_media(event_id)
+         self.review_event(event_id)
+
+         (review_image, map_img, obs_imgs, marked_images, event_data, obs_data) = self.review_event_step2()
+
+         if "2d_status" not in event_data:
+            event_data = self.get_2d_status(event_data, obs_data)
+
+
+
+         self.echo_event_data(event_data, obs_data)  
+
+         #cv2.imshow("pepe", map_img)
+         #cv2.waitKey(0)
+         event_data_file = self.local_evdir + self.event_id + "/" + self.event_id + "_EVENT_DATA.json"
+         obs_data_file = self.local_evdir + self.event_id + "/" + self.event_id + "_OBS_DATA.json"
+         save_json_file(event_data_file, event_data)
+         save_json_file(obs_data_file, obs_data)
+
+         if review_image is not None:
+            cv2.imshow("pepe", review_image)
+            cv2.waitKey(150)
+         else:
+            print("REVIEW IMAGE IS NONE!", review_image)
+
+
+   def get_event_media(self, event_id):
+
+      event_day = self.event_id_to_date(event_id)
+      self.event_id = event_id
+      self.edits_file = self.local_event_dir + self.event_id + "_EDITS.json"
+      if os.path.exists(self.edits_file) is True:
+         self.edits = load_json_file(self.edits_file)
+      else:
+         self.edits = {}
+         self.edits['sd_clips'] = {} 
+
+      self.show_edits()
+
+      #print("Loaded:", self.edits_file)
+
+      #if "sd_clips" in self.edits:
+      #   for sd_vid in self.edits['sd_clips']:
+      #      if "deleted_points" in self.edits['sd_clips'][sd_vid]:
+      #         print("DEL:", self.edits['sd_clips'][sd_vid]['deleted_points'])
+      #      if "custom_points" in self.edits['sd_clips'][sd_vid]:
+      #         print("CUS:", self.edits['sd_clips'][sd_vid]['deleted_points'])
+
+      #print("EDITS:", self.edits['sd_clips'].keys())
+
+      #cv2.namedWindow('pepe')
+      #cv2.resizeWindow("pepe", 1920, 1080)
+      #cv2.moveWindow("pepe", 1400,100)
+      #self.RF = RenderFrames()
+
+
+      #sd = load_json_file("stations.json")
+      #rurls = {}
+      #for data in sd['stations']:
+      #   station = data['name']
+      #   url = data['url']
+      #   rurls[station] = url
+
+      event_day = self.event_id_to_date(event_id)
+      self.year = event_day[0:4]
+      self.month = event_day[5:7]
+      self.dom = event_day[8:10]
+      self.date = self.year + "_" + self.month + "_" + self.dom
+      
+
+
+      self.sd_clips = {}
+
+      # load event related files
+      review_data = {}
+      review_data['cloud_files'] = []
+      local_event_dir = "/mnt/f/EVENTS/" + self.year + "/" + self.month + "/" + self.dom + "/" + self.event_id + "/" 
+      self.ev_dir = local_event_dir 
+      #self.local_event_dir = local_event_dir 
+      event_file = self.ev_dir + event_id + "-event.json"
+      good_obs_file = self.ev_dir + event_id + "_GOOD_OBS.json"
+      planes_file = self.ev_dir + event_id + "_PLANES.json"
+
+      event_data, obs_data, planes_data = None,None,None
+      if os.path.exists(event_file):
+         event_data = load_json_file(event_file)
+      if os.path.exists(good_obs_file):
+         obs_data = load_json_file(good_obs_file)
+      if os.path.exists(planes_file):
+         planes_data = load_json_file(planes_file)
+
+      #if event_data is not None:
+         #print("Event")
+      #   for key in event_data:
+            #print("   ", key)
+      #      if key == "traj" or key == "orb" or key == "rad" or key == "plot" or key == "shower":
+      #         for skey in event_data[key]:
+      #            print("   ", key, skey)
+      #else:
+      #   print("none for event_data")
+
+      # now if there are any saved edits apply them to the data set. Then we will be ready to work on the file!
+
+      #for sd_vid in self.edits['sd_clips']:
+      #   print(sd_vid, self.edits['sd_clips'][sd_vid].keys())
+
+      #if "sd_clips" in self.edits:
+      #   for sd_vid in self.edits['sd_clips']:
+      #      if sd_vid in self.edits['sd_clips']:
+      #         print("LOADING EDITS FOR :", sd_vid)
+      #         self.sd_clips[sd_vid] = self.edits['sd_clips'][sd_vid]
+      #      else:
+      #         print("NO EDITS FOR :", sd_vid)
+
+      # Syncronize source media from host station or allsky archive
+      missing_files = []
+      wget_cmds = []
+      if obs_data is not None:
+         for station in obs_data:
+            print(station)
+            cloud_meteor_dir = "/mnt/archive.allsky.tv/" + station + "/METEORS/" + self.year + "/" + self.date + "/" 
+            cloud_files_file = local_event_dir + station + "_CLOUDFILES.json"
+            cloud_cal_dir = "/mnt/archive.allsky.tv/" + station + "/CAL/" 
+
+
+
+
+            if os.path.exists(cloud_files_file) is False:
+               cloud_files = os.listdir(cloud_meteor_dir) 
+               save_json_file(cloud_files_file, cloud_files)
+            else:
+               cloud_files = load_json_file(cloud_files_file)
+
+            for ofile in obs_data[station]:
+               skip_remote = 0
+               base_str = ofile.replace(".mp4", "")
+               obs_id = station + "_" + ofile
+               out_file = station + "_" + ofile
+               if obs_id in self.sync_log:
+                  self.sd_clips[out_file] = {} 
+                  self.sd_clips[out_file]['status'] = True
+                  continue
+
+               if station in self.rurls:
+                  rmp4 = self.rurls[station] + "/meteors/" + self.date +  "/" + ofile
+               else:
+                  skip_remote = 1
+               # get the SD MP$
+               out_file = station + "_" + ofile
+               json_file = ofile.replace(".mp4", ".json")
+               red_json_file = ofile.replace(".mp4", "-reduced.json")
+
+               out_json_file = station + "_" + json_file
+               out_red_json_file = station + "_" + red_json_file
+
+               if skip_remote == 0:
+                  rjson = self.rurls[station] + "/meteors/" + self.date +  "/" + json_file 
+                  rred= self.rurls[station] + "/meteors/" + self.date +  "/" + red_json_file 
+
+        
+               # POOLING WGETS! 
+
+               # REMOTE JSON FILE
+               #if skip_remote == 0 and os.path.exists( local_event_dir + "/" + out_json_file) is False and \
+               #        os.path.exists( local_event_dir + "/" + out_json_file + ".failed") is False:
+               #   cmd = "wget " + rjson + " --timeout=1 --waitretry=0 --tries=1 --no-check-certificate -O " + local_event_dir + "/" + out_json_file
+                  #print(cmd)
+                  #os.system(cmd)
+               #   wget_cmds.append(cmd)
+               #   if os.path.exists( local_event_dir + "/" + out_json_file) is False:
+               #      cmd = "touch " + local_event_dir + "/" + out_json_file + ".failed"
+                     #os.system(cmd)
+               #else:
+               #   print("Already have the file?")
+
+               # red file
+               #if skip_remote == 0 and os.path.exists( local_event_dir + "/" + out_red_json_file) is False and os.path.exists( local_event_dir + "/" + out_red_json_file + ".failed") is False:
+               #   cmd = "wget " + rred + "  --timeout=1 --waitretry=0 --tries=1 --no-check-certificate -O " + local_event_dir + "/" + out_red_json_file
+                  #print(cmd)
+                  #os.system(cmd)
+               #   wget_cmds.append(cmd)
+               #   if os.path.exists( local_event_dir + "/" + out_red_json_file) is False:
+               #      cmd = "touch " + local_event_dir + "/" + out_red_json_file + ".failed"
+                  #   os.system(cmd)
+               #else:
+               #   print("Already have the file?")
+
+               # we only need the mp4 file -- everything else can be made
+
+               if skip_remote == 0 and os.path.exists( local_event_dir + "/" + out_file) is False and os.path.exists( local_event_dir + "/" + out_file + ".failed") is False:
+                  cmd = "wget " + rmp4 + "  --timeout=1 --waitretry=0 --tries=1 --no-check-certificate -O " + local_event_dir + "/" + out_file
+                  #print(cmd)
+                  #os.system(cmd)
+                  wget_cmds.append(cmd)
+                  if os.path.exists( local_event_dir + "/" + out_file) is False:
+                     cmd = "touch " + local_event_dir + "/" + out_file + ".failed"
+                  #   os.system(cmd)
+               #else:
+               #   print("Already have the file?")
+
+               if os.path.exists( local_event_dir + "/" + out_file) is True:
+                  if out_file not in self.sd_clips:
+                     self.sd_clips[out_file] = {} 
+                  self.sd_clips[out_file]['status'] = True
+                  if out_file not in self.sync_log:
+                     self.sync_log[out_file] = {} 
+                  self.sync_log[out_file]['status'] = "GOOD"
+               else:
+                  if out_file not in self.sd_clips:
+                     self.sd_clips[out_file] = {} 
+                  if out_file not in self.sync_log:
+                     self.sync_log[out_file] = {} 
+                  self.sync_log[out_file]['status'] = "SYNC_FAILED"
+                  self.sd_clips[out_file]['status'] = False 
+                  missing_files.append(out_file)
+      #else:
+      #   print("none for ", good_obs_file)
+
+
+      return(wget_cmds)
+
+   def review_event(self, event_id):
+      self.event_id = event_id
+      # Now we have at least sync'd all remote files locally
+      stack_imgs = []
+
+      event_day = self.event_id_to_date(event_id)
+
+      local_event_dir = "/mnt/f/EVENTS/" + self.year + "/" + self.month + "/" + self.dom + "/" + self.event_id + "/" 
+
+      # now load frames and make stacks
+      for out_file in self.sd_clips:
+         sfile = out_file.replace(".mp4", "-stacked.jpg")
+
+         if out_file in self.edits['sd_clips']:
+            #print(out_file, "EDITS:", self.edits['sd_clips'][out_file].keys())
+            if "custom_points" in  self.edits['sd_clips'][out_file]:
+               self.sd_clips[out_file]['custom_points'] = self.edits['sd_clips'][out_file]['custom_points']
+            if "deleted_points" in  self.edits['sd_clips'][out_file]:
+               self.sd_clips[out_file]['deleted_points'] = self.edits['sd_clips'][out_file]['deleted_points']
+            if "frame_data" in  self.edits['sd_clips'][out_file]:
+               self.sd_clips[out_file]['frame_data'] = self.edits['sd_clips'][out_file]['frame_data']
+
+         if os.path.exists(local_event_dir + sfile) is False:
+            frames = load_frames_simple(local_event_dir + out_file)
+            if len(frames) > 5:
+               red_file = local_event_dir + out_file.replace(".mp4", "-reduced.json")
+               if os.path.exists(red_file) is True:
+                  try:
+                     red_data = load_json_file(red_file) 
+                  except:
+                     red_data = {}
+                     red_data['meteor_frame_data'] = []
+                  self.sd_clips[out_file]['mfd'] = red_data['meteor_frame_data']
+
+               print("FRAMES:", len(frames))
+               simg = stack_frames(frames)
+               cv2.imwrite(local_event_dir + sfile, simg)
+               self.sd_clips[out_file]['stack_img'] = simg 
+               self.sd_clips[out_file]['frames'] = frames 
+               self.sd_clips[out_file]['status'] = True
+               stack_imgs.append(simg)
+            else:
+               self.sd_clips[out_file]['status'] = False
+         else:
+            self.sd_clips[out_file]['stack_img'] = cv2.imread(local_event_dir + sfile)
+            stack_imgs.append(self.sd_clips[out_file]['stack_img'])
+            #self.sd_clips[out_file]['frames'] = load_frames_simple(local_event_dir + out_file)
+            self.sd_clips[out_file]['frames'] = []
+            self.sd_clips[out_file]['status'] = True
+ 
+  
+      #self.all_imgs = self.RF.frame_template("1920_4p", stack_imgs)
+      #cv2.imshow('pepe', self.all_imgs) 
+      #cv2.waitKey(50)
+      return() 
+
+
+      if False:
+         if planes_data is not None:
+            print("PLANES")
+            for key in planes_data['results']:
+               print(" ", key)
+         else:
+            print("none for planes_data", planes_file)
+
+      # now should have all mp4s local and jsons and data loaded into self.sd_clips array
+      
+
+      #self.update_all_obs_xys(event_id, self.sd_clips, local_event_dir)
+      exit()
+
+   def get_media_urls(self, event_data, obs_data):
+      print("DOWNLOAD MEDIA DAY")
+
+
+   def obs_images_panel(self, map_img, event_data, obs_data, obs_imgs,marked_imgs):
+
+      gimg = np.zeros((1080,1920,3),dtype=np.uint8)
+      cc = 0
+      rc = 0
+      for obs_id in obs_imgs:
+         img = obs_imgs[obs_id]
+         x1 = cc * 320
+         x2 = x1 + 320
+         y1 = rc * 180
+         y2 = y1 + 180
+         if x2 > 1920:
+            rc += 1
+            y1 += 180
+            y2 += 180
+            x1 = 0
+            x2 = 320
+            cc = 1
+         else: 
+            cc += 1
+         try:
+            thumb = cv2.resize(img, (320,180))
+         except:
+            thumb = np.zeros((180,320,3),dtype=np.uint8)
+         print("THUMB SHAPE:", thumb.shape)
+         print("XYS:", x1,y1,x2,y2)
+         gimg[y1:y2,x1:x2] = thumb
+         cv2.imshow('pepe', gimg)
+         cv2.waitKey(40)
+
+
+      simg = np.zeros((1080,1920,3),dtype=np.uint8)
+      map_img = cv2.resize(map_img, (1280,720))
+      # do layout based on number of images availbable
+      if len(obs_imgs) == 2:
+         map_img = cv2.resize(map_img, (960,540))
+         i = 0
+         # map center would be (1920 / 2 ) - (960/2)
+         x1 =  int((1920 / 2 ) - (960/2))
+         x2 =  int((1920 / 2 ) + (960/2))
+         simg[540:1080,x1:x2] = map_img
+         for key in obs_imgs:
+            obs_id = key
+            show_img = cv2.resize(marked_imgs[key], (1920,1080))
+            rx1,ry1,rx2,ry2 = self.get_roi(obs_data[key]['xs'], obs_data[key]['ys'])
+     
+
+            cv2.imshow('pepe', show_img)
+            cv2.waitKey(40)
+
+
+
+            #obs_imgs[key] = cv2.resize(obs_imgs[key], (960,540))
+            obs_imgs[key] = cv2.resize(show_img, (960,540))
+            #marked_imgs[key] = cv2.resize(show_img, (960,540))
+            station_id = obs_id.split("_")[0]
+            obs_datetime = obs_data[obs_id]['times'][0]
+            label = station_id + " " + obs_datetime
+            if i == 0:
+               x1 = 0
+               x2 = 960 
+               y1 = 0
+               y2 = 540
+               simg[y1:y2,x1:x2] = cv2.resize(show_img, ((x2-x1), (y2-y1)))
+               cv2.putText(simg, label,  (x1,y2-10), cv2.FONT_HERSHEY_SIMPLEX, .6, (0,255,0), 1)
+            if i == 1:
+               x1 = 960
+               x2 = 1920 
+               y1 = 0
+               y2 = 540
+               simg[y1:y2,x1:x2] = cv2.resize(show_img, ((x2-x1), (y2-y1)))
+               cv2.putText(simg, label,  (x1, y2-10), cv2.FONT_HERSHEY_SIMPLEX, .6, (0,255,0), 1)
+            i+= 1
+      
+      elif len(obs_imgs) == 3:
+         map_img = cv2.resize(map_img, (960,540))
+         i = 0
+         # map center would be (1920 / 2 ) - (960/2)
+         x1 = 960 
+         x2 = 1920 
+         y1 = 540
+         y2 = 1080 
+
+         simg[y1:y2,x1:x2] = map_img
+         for key in obs_imgs:
+            obs_id = key
+
+            rx1,ry1,rx2,ry2 = self.get_roi(obs_data[key]['xs'], obs_data[key]['ys'])
+            show_img = cv2.resize(marked_imgs[key].copy(), (1920,1080))
+            cv2.rectangle(show_img, (int(rx1), int(ry1)), (int(rx2) , int(ry2) ), (255, 255, 255), 2)
+            cv2.imshow('pepe', show_img)
+            cv2.waitKey(40)
+
+
+            obs_imgs[key] = cv2.resize(obs_imgs[key], (960,540))
+            marked_imgs[key] = cv2.resize(show_img, (960,540))
+            station_id = obs_id.split("_")[0]
+            obs_datetime = obs_data[obs_id]['times'][0]
+            label = station_id + " " + obs_datetime
+            if i == 0:
+               x1 = 0
+               x2 = 960 
+               y1 = 0
+               y2 = 540
+               #simg[y1:y2,x1:x2] = obs_imgs[key]
+               simg[y1:y2,x1:x2] = cv2.resize(show_img, ((x2-x1), (y2-y1)))
+               cv2.putText(simg, label,  (x1,y2-10), cv2.FONT_HERSHEY_SIMPLEX, .6, (0,255,0), 1)
+            if i == 1:
+               x1 = 960
+               x2 = 1920 
+               y1 = 0
+               y2 = 540
+               #simg[y1:y2,x1:x2] = obs_imgs[key]
+               simg[y1:y2,x1:x2] = cv2.resize(show_img, ((x2-x1), (y2-y1)))
+               cv2.putText(simg, label,  (x1, y2-10), cv2.FONT_HERSHEY_SIMPLEX, .6, (0,255,0), 1)
+            if i == 2:
+               x1 = 0 
+               x2 = 960 
+               y1 = 540
+               y2 = 1080 
+               #simg[y1:y2,x1:x2] = obs_imgs[key]
+               simg[y1:y2,x1:x2] = cv2.resize(show_img, ((x2-x1), (y2-y1)))
+               cv2.putText(simg, label,  (x1, y2-10), cv2.FONT_HERSHEY_SIMPLEX, .6, (0,255,0), 1)
+            i+= 1
+
+      else:
+         map_img = cv2.resize(map_img, (1280,720))
+         simg[0:720,0:1280] = map_img
+         x1 = 1280
+         x2 = 1920
+         y1 = 0
+         y2 = 360
+         i = 0
+         for key in obs_imgs:
+            obs_id = key
+
+            rx1,ry1,rx2,ry2 = self.get_roi(obs_data[key]['xs'], obs_data[key]['ys'])
+            show_img = cv2.resize(marked_imgs[key].copy(), (1920,1080))
+            cv2.rectangle(show_img, (int(rx1), int(ry1)), (int(rx2) , int(ry2) ), (255, 255, 255), 2)
+            cv2.imshow('pepe', show_img)
+            cv2.waitKey(40)
+
+            try:
+               obs_imgs[key] = cv2.resize(obs_imgs[key], (960,540))
+            except:
+               src_img = np.zeros((540,960,3),dtype=np.uint8)
+            try:
+               marked_imgs[key] = cv2.resize(show_img, (960,540))
+            except:
+               marked_imgs[key] = np.zeros((540,960,3),dtype=np.uint8)
+            station_id = obs_id.split("_")[0]
+            obs_datetime = obs_data[obs_id]['times'][0]
+            label = station_id + " " + obs_datetime
+
+            if obs_imgs[key] is None:
+               obs_imgs[key] = np.zeros((360,640,3),dtype=np.uint8)
+
+            if obs_imgs[key].shape[0] != 360:
+               obs_imgs[key] = cv2.resize(obs_imgs[key], (640,360))
+            if i == 0:
+               #simg[y1:y2,x1:x2] = obs_imgs[key]
+               simg[y1:y2,x1:x2] = cv2.resize(show_img, ((x2-x1), (y2-y1)))
+               cv2.putText(simg, label,  (x1,y2-10), cv2.FONT_HERSHEY_SIMPLEX, .6, (0,255,0), 1)
+            if i == 1:
+               #simg[y1+360:y2+360,x1:x2] = obs_imgs[key]
+               simg[y1+360:y2+360,x1:x2] = cv2.resize(show_img, ((x2-x1), (y2-y1)))
+               cv2.putText(simg, label,  (x1,y2+360-10), cv2.FONT_HERSHEY_SIMPLEX, .6, (0,255,0), 1)
+            if i == 2:
+               #simg[y1+720:y2+720,x1:x2] = obs_imgs[key]
+               simg[y1+720:y2+720,x1:x2] = cv2.resize(show_img, ((x2-x1), (y2-y1)))
+               cv2.putText(simg, label,  (x1,y2+720-10), cv2.FONT_HERSHEY_SIMPLEX, .6, (0,255,0), 1)
+            if i == 3:
+               #simg[720:1080,0:640] = obs_imgs[key]
+               y1 = 720
+               y2 = 1080
+               x1 = 0
+               x2 = 640
+               simg[y1:y2,x1:x2] = cv2.resize(show_img, ((x2-x1), (y2-y1)))
+               cv2.putText(simg, label,  (10, y2+720-10), cv2.FONT_HERSHEY_SIMPLEX, .6, (0,255,0), 1)
+            if i == 4:
+               y1 = 720
+               y2 = 1080
+               x1 = 640
+               x2 = 1280 
+               #simg[720:1080,640:1280] = obs_imgs[key]
+               simg[y1:y2,x1:x2] = cv2.resize(show_img, ((x2-x1), (y2-y1)))
+               cv2.putText(simg, label,  (640+10, y2+720-10), cv2.FONT_HERSHEY_SIMPLEX, .6, (0,255,0), 1)
+            i += 1
+
+      print("LEN OBS IMGS:", len(obs_imgs))
+      simg = self.RF.watermark_image(simg, self.RF.logo_320, 1590, 10, .5, []) 
+      return(simg)
+
+   def get_roi(self, xs, ys):
+      w = (max(xs) - min(xs)) + 50
+      h = (max(ys) - min(ys)) + 50
+      if w > h:
+         h = w
+      else:
+         w = h
+      x1 = int(np.mean(xs) - int(w/2) )
+      y1 = int(np.mean(ys) - int(h/2) )
+
+      if x1 < 0:
+         x1 = 0
+      if y1 < 0:
+         y1 = 0
+      x2 = int(x1 + w)
+      y2 = int(y1 + h)
+      if x2 > 1920:
+         x2 = 1920 
+         x1 = 1920 - w
+      if y2 > 1080:
+         y2 = 1080 
+         y1 = 1080 - h
+      return(x1,y1,x2,y2)
+
+
+   def load_obs_images(self, obs_data):
+      obs_imgs = {}
+      marked_imgs = {}
+      roi_imgs = {}
+      ai_imgs = {}
+      found = False
+      for obs_id in obs_data:
+         skip = False
+         marked_file = obs_data[obs_id]['image_file'].replace(".jpg", "-marked.jpg")
+         roi_file = obs_data[obs_id]['image_file'].replace(".jpg", "-roi.jpg")
+
+
+         if os.path.exists(obs_data[obs_id]['image_file']) :
+            obs_imgs[obs_id] = cv2.imread(obs_data[obs_id]['image_file'])
+            found = True
+            obs_data[obs_id]['media_res'] = "360p" 
+         elif os.path.exists(obs_data[obs_id]['image_file'].replace("-stacked.jpg","-prev.jpg")):
+            obs_imgs[obs_id] = cv2.imread(obs_data[obs_id]['image_file'].replace("-stacked.jpg","-prev.jpg"))
+            found = True
+            obs_data[obs_id]['media_res'] = "180p" 
+
+
+
+         if os.path.exists(marked_file) is True:
+            marked_imgs[obs_id] = cv2.imread(marked_file) 
+            roi_imgs[obs_id] = cv2.imread(roi_file) 
+            skip = True
+            print("DONE ALREADY!")
+
+         # only do this if the marked image is not already done!
+         if found is True and skip is False:
+
+            if obs_id in obs_imgs:
+               try:
+                  src_img = cv2.resize(obs_imgs[obs_id].copy(), (1920,1080))
+                  show_img = src_img.copy()
+               except:
+                  src_img = np.zeros((1080,1920,3),dtype=np.uint8)
+                  show_img = np.zeros((1080,1920,3),dtype=np.uint8)
+            else:
+               src_img = np.zeros((1080,1920,3),dtype=np.uint8)
+               show_img = np.zeros((1080,1920,3),dtype=np.uint8)
+
+            # get roi (this should be the entire area of meteor only). 
+            rx1,ry1,rx2,ry2 = self.get_roi(obs_data[obs_id]['xs'], obs_data[obs_id]['ys'])
+            mx = int(np.mean(obs_data[obs_id]['xs']))
+            my = int(np.mean(obs_data[obs_id]['ys']))
+
+
+            roi_img = src_img[ry1:ry2,rx1:rx2] 
+            cv2.imwrite(roi_file, roi_img)
+
+            gray_img =  cv2.cvtColor(src_img, cv2.COLOR_BGR2GRAY)
+
+            gray_roi = gray_img[ry1:ry2,rx1:rx2] 
+            min_val, max_val, min_loc, (mx,my)= cv2.minMaxLoc(gray_roi)
+      
+            # V2 ROI is 64/64
+            # V1 ROI is 224/224!
+
+            ax1 = rx1 + mx - 112
+            ax2 = rx1 + mx + 112
+            ay1 = ry1 + my - 112
+            ay2 = ry1 + my + 112
+
+            w = ax2 - ax1
+            h = ay2 - ay1
+            if ax1 < 0:
+               ax1 = 0
+               ax2 = w
+            if ay1 < 0:
+               ay1 = 0
+               ay2 = h
+            if ax2 > 1920:
+               ax2 = 1920
+               ax1 = 1920 - w
+            if ay2 > 1080:
+               ay2 = 1080 
+               ay1 = 1080 - h
+
+
+            ai_img = src_img[ay1:ay2,ax1:ax2] 
+            ai_imgs[obs_id] = ai_img
+            roi_imgs[obs_id] = roi_img
+            print("OBS IMG", ai_img.shape)
+            print("AI IMG", ax1, ay1, ax2, ay2, ai_img.shape)
+
+            # image or image_file
+            ai_resp = self.check_ai_img(ai_img, None)
+            if ai_resp['meteor_prev_yn'] > ai_resp['meteor_yn']:
+               ai_resp['meteor_yn'] = ai_resp['meteor_prev_yn']
+
+            class_data =  [
+                ['Meteor', ai_resp['meteor_yn']], 
+                ['Fireball', ai_resp['fireball_yn']], 
+                [ai_resp['mc_class'], ai_resp['mc_class_conf']] 
+                ]
+
+
+            class_data = sorted(class_data, key=lambda x: (x[1]), reverse=True)
+            print("AI RESP:", ai_resp) 
+            print("AI CLASSIFICATION:", class_data) 
+            obs_data[obs_id]['ai_resp'] = ai_resp
+            obs_data[obs_id]['ai_class'] = class_data
+
+            # save off all files and results for future learning?
+            st = obs_id.split("_")[0]
+            temp = obs_id.replace(st + "_", "")
+
+            date = temp[0:10]
+            self.learning_dir = "/mnt/f/AI/DATASETS/NETWORK/" + date + "/" + class_data[0][0] + "/"
+            if os.path.exists(self.learning_dir) is False:
+               os.makedirs(self.learning_dir)
+            learn_file = obs_id.replace(".mp4", "") + "_" + str(ax1) + "_" + str(ay1) + "_" + str(ax2) + "_" + str(ay2) + ".jpg"
+            cv2.imwrite(self.learning_dir + learn_file, ai_img)
+            print("SAVING:", self.learning_dir + learn_file)
+
+
+
+
+            cv2.rectangle(show_img, (int(rx1), int(ry1)), (int(rx2) , int(ry2) ), (255, 255, 255), 2)
+
+            if "ai_class" in obs_data[obs_id]:
+               rc = 0
+               for row in obs_data[obs_id]['ai_class']:
+                  label, perc = row
+                  offset = rc * 30
+                  text = label.upper() + " " + str(round(perc,1)) + "%"
+                  cv2.putText(show_img, text,  (rx2+20,ry1+10+offset), cv2.FONT_HERSHEY_SIMPLEX, .8, (0,255,0), 2)
+                  rc += 1
+
+
+            #cv2.imshow('pepe', show_img)
+            #cv2.waitKey(520)
+            marked_imgs[obs_id] = show_img
+            cv2.imwrite(marked_file, show_img, [cv2.IMWRITE_JPEG_QUALITY, 70])
+
+
+
+
+
+      return(obs_imgs, marked_imgs, roi_imgs, ai_imgs, obs_data)
+
+   def review_event_step2(self):
+      # drive this 100% from DB
+      # get all current obs data
+      # load stack imgs while you go
+
+      # purpose here is to make the map file and multi-image review
+      # if it is already done we can just return?
+      # we should load it and return it though?
+
+      obs_data_file = self.local_evdir + self.event_id + "/" + self.event_id + "_OBS_DATA.json"
+      event_data_file = self.local_evdir + self.event_id + "/" + self.event_id + "_EVENT_DATA.json"
+      map_img_file = self.local_evdir + self.event_id + "/" + self.event_id + "_MAP_FOV.jpg"
+      review_img_file = self.local_evdir + self.event_id + "/" + self.event_id + "_REVIEW.jpg"
+
+      os.system("rm " + map_img_file)
+      os.system("rm " + review_img_file)
+
+      if os.path.exists(obs_data_file) is True and os.path.exists(event_data_file) is True and os.path.exists(review_img_file) is True:
+         print("FOUND", obs_data_file)
+         print("FOUND", event_data_file)
+         obs_data = load_json_file(obs_data_file)
+         event_data = load_json_file(event_data_file)
+         map_img = cv2.imread(map_img_file)
+         review_img = cv2.imread(review_img_file)
+         #event_data, obs_data, map_img,obs_imgs = self.get_event_obs()
+         
+         obs_imgs, marked_imgs, roi_imgs, ai_imgs, obs_data = self.load_obs_images(obs_data) 
+         print("REVIEW:", review_img_file)
+         return(review_img, map_img, obs_imgs, marked_imgs, event_data, obs_data)
+      else:
+         print("NOT FOUND", obs_data_file)
+         print("NOT FOUND", event_data_file)
+         event_data, obs_data, map_img, obs_imgs = self.get_event_obs()
+         obs_imgs, marked_imgs, roi_imgs, ai_imgs, obs_data = self.load_obs_images(obs_data) 
+         save_json_file(event_data_file, event_data)
+         save_json_file(obs_data_file, obs_data)
+         cv2.imwrite(map_img_file, map_img, [cv2.IMWRITE_JPEG_QUALITY, 70])
+         print("SAVING:", event_data_file)
+         print("SAVING:", obs_data_file)
+         print("SAVING:", map_img_file)
+         #input("MADE OBS DATA AND EVENT DATA FOR FIRST TIME WAITING")
+
+      if "2d_status" not in event_data:
+         print("GET 2D status")
+         event_data = self.get_2d_status(event_data, obs_data)
+
+
+      #for key in obs_data:
+      #   print("OBS DATA KEYS:", key, obs_data.keys())
+
+      simg = self.obs_images_panel(map_img, event_data, obs_data, obs_imgs, marked_imgs)
+
+
+      if "traj" in event_data:
+         (sol_status, v_init, v_avg, start_ele, end_ele, a, e) = self.eval_sol(event_data)
+         event_data['event_statuis'] = sol_status
+
+      if event_data['2d_status'] == "FAILED":
+         cv2.putText(simg, "INVALID 2D EVENT",  (20,20), cv2.FONT_HERSHEY_SIMPLEX, .8, (0,0,255), 2)
+      else:
+         cv2.putText(simg, "VALID 2D EVENT",  (20,20), cv2.FONT_HERSHEY_SIMPLEX, .8, (0,255,0), 2)
+      if "BAD" in event_data['event_status'] :
+         cv2.putText(simg, event_data['event_status'],  (20,60), cv2.FONT_HERSHEY_SIMPLEX, .8, (0,0,255), 2)
+      else:
+         cv2.putText(simg, event_data['event_status'],  (20,60), cv2.FONT_HERSHEY_SIMPLEX, .8, (0,255,0), 2)
+
+      cv2.imwrite(review_img_file, 255*simg, [int(cv2.IMWRITE_JPEG_QUALITY), 70])
+      print("SAVING:", review_img_file)
+
+
+      print("DONE STEP2")
+      #cv2.imshow('pepe', simg)
+      #cv2.waitKey(0)
+
+      return(simg, map_img, obs_imgs, marked_imgs, event_data, obs_data)
+      # THIS IS OLD AND NO LONGER USED!
+
+      sql = """SELECT event_id, station_id, obs_id, fns, times, xs, ys, azs, els, ints, 
+                    status, ignore, ai_confirmed, human_confirmed, ai_data, prev_uploaded 
+               FROM event_obs
+              WHERE event_id = ?
+           ORDER BY obs_id
+           """
+      vals = [self.event_id]
+      print(sql, vals)
+      self.cur.execute(sql, vals)
+      rows = self.cur.fetchall()
+      obs_db = []
+      stack_imgs = []
+      not_found = []
+      stack_imgs_dict = {}
+      for row in rows:
+         (event_id, station_id, obs_id, fns, times, xs, ys, azs, els, ints, \
+            status, ignore, ai_confirmed, human_confirmed, ai_data, prev_uploaded ) = row
+         obs_db.append((event_id, station_id, obs_id, fns, times, xs, ys, azs, els, ints, \
+            status, ignore, ai_confirmed, human_confirmed, ai_data, prev_uploaded ))
+         sd_vid_file = self.ev_dir + obs_id + ".mp4"
+         stack_file = self.ev_dir + obs_id + "-stacked.jpg"
+         print(obs_id, fns, xs, ys)
+         if os.path.exists(sd_vid_file):
+            print("FOUND!", sd_vid_file) 
+         else:
+            print("NOT FOUND!", sd_vid_file) 
+         if os.path.exists(stack_file):
+            print("FOUND!", stack_file) 
+            simg = cv2.imread(stack_file)
+            cv2.resize(simg, (1920,1080))
+            stack_imgs.append((stack_file, simg))
+            stack_imgs_dict[obs_id] = simg
+         else:
+            print("NOT FOUND!", stack_file) 
+            simg = np.zeros((1080,1920,3),dtype=np.uint8)
+            stack_imgs_dict[obs_id] = simg
+            not_found.append((stack_file, simg))
+         #cv2.imshow('pepe', simg)
+         #cv2.waitKey(0)
+
+
+      # decide default thumb size
+      stack_count = len(stack_imgs)
+      if len(stack_imgs) > 0:
+         pxs_per_img = (1920 * 1080) / len(stack_imgs)
+      else:
+         print("No stacks!" )
+         exit()
+      print("NOT FOUND", len(not_found))
+      print("PXPI:", pxs_per_img) 
+      dimen = [ [1920,1080], [1920/2,1080/2], [1920/3,1080/3], [1920/4,1080/4], [1920/4,1080/5], [1920/4,1080/6], [1920/4,1080/8], [1920/4,1080/10] ]
+      for dim in dimen:
+         avail = pxs_per_img / (dim[0] * dim[1])
+         if avail > 1:
+            iw, ih = int(dim[0]), int(dim[1])
+            break
+      print("RECOMMENDED SIZE:", iw, ih)
+
+      exit()
+
+      # make summary image of all obs
+      cc = 0
+      rc = 0
+      comp_img = np.zeros((1080,1920,3),dtype=np.uint8)
+ 
+      # define max rows/cols
+      for sfile, img in stack_imgs:
+         x1 = iw * cc 
+         x2 = x1 + iw
+         y1 = ih * rc 
+         y2 = y1 + ih
+         cc += 1
+         if y2 >= 1920:
+            cc = 0
+         if iw * cc >= 1920:
+            max_cols = cc
+            cc = 0
+            rc += 1
+
+      max_rows = rc 
+      cc = 0
+      rc = 0
+      for sfile, img in stack_imgs:
+         if cc < 0:
+            cc = max_cols - 1
+         if cc > max_cols:
+            cc = 0 
+         thumb = cv2.resize(img, (iw,ih))
+         x1 = iw * cc 
+         x2 = x1 + iw
+         y1 = ih * rc 
+         y2 = y1 + ih
+         cc += 1
+         if iw * cc >= 1920:
+            cc = 0
+            rc += 1
+         if rc > max_rows:
+            rc = 0
+         comp_img[y1:y2,x1:x2] = thumb
+         show_img = self.RF.frame_template("1920_1p", [comp_img])
+         cv2.imshow("pepe", show_img)
+         cv2.waitKey(30)
+      cv2.waitKey(30)
+      go = True
+      oshow_img = show_img.copy()
+
+      idx_keys = []
+      for sd_vid in self.sd_clips:
+         if self.sd_clips[sd_vid]['status'] is True:
+            idx_keys.append(sd_vid)
+
+
+
+      # display obs selector menu
+      sc = 0
+      cc = 0
+      rc = 0
+      idx = 0
+      key = ""
+      while go is True:
+         show_img = oshow_img.copy()
+         
+         x1 = iw * cc 
+         x2 = x1 + iw
+         y1 = ih * rc 
+         y2 = y1 + ih
+
+         print("ST", idx, key, cc, rc, x1,y1,x2,y2)
+
+         cv2.rectangle(show_img, (int(x1), int(y1)), (int(x2) , int(y2) ), (255, 255, 255), 2)
+
+         cv2.imshow("pepe", show_img)
+         key = cv2.waitKey(0)
+         print("KEY PUSHED:", key)
+
+         if key == 27:
+            # esc 
+            exit() 
+         if key == 97:
+            # left 
+            cc -= 1
+            if cc < 0:
+              cc = max_cols - 1
+              rc -= 1
+            if rc < 0:
+               rc = 0
+               cc = 0
+         if key == 102:
+            # right 
+            cc += 1
+            if cc >= max_cols:
+              cc = 0 
+              rc += 1
+         if key == 100:
+            # down
+            rc += 1
+            if rc > max_rows:
+               rc = 0
+         if key == 115:
+            # down
+            print("DOWN")
+            rc -= 1
+            if rc < 0:
+               rc = max_rows 
+         idx = (rc * max_cols) + 1 + cc
+      
+         if key == 32:
+            # esc 
+            sd_vid = idx_keys[idx]
+            self.sd_clips[sd_vid]['frame_data'],self.sd_clips[sd_vid]['subs'] = self.build_frame_data(sd_vid, self.sd_clips[sd_vid]['frames'])
+            self.review_data()
+
+            self.sd_clips[sd_vid]['frame_data'], self.sd_clips[sd_vid]['deleted_points'], self.sd_clips[sd_vid]['custom_points'] = self.play_video(sd_vid, self.RF )
+
+
+         if idx > len(stack_imgs):
+            cc = 0
+            rc = 0
+         if idx < 0 :
+            idx = 0
+            cc = 0
+            rc = 0
+         print(idx, key, cc, rc, x1,y1,x2,y2)
+
+
+   def get_2d_status(self, event_data, obs_data):
+      bad_obs = 0
+      good_obs = 0
+      for obs_id in obs_data:
+         if obs_data[obs_id]['ignore'] is True:
+            bad_obs+= 1
+         else: 
+            good_obs += 1
+      if good_obs <= 1:
+         event_data['2d_status'] = "FAILED"
+      else:
+         event_data['2d_status'] = str(good_obs) + " GOOD 2D STATIONS"
+
+      print(event_data)
+      return(event_data)
+
+   def make_event_summary_image(self, edited_files, good_files, ignored_files, missing_files):
+      print(edited_files)
+      print(good_files)
+      print(ignored_files)
+      print(missing_files)
+      edited_imgs = []
+      good_imgs = []
+      ignore_imgs = []
+      missing_imgs = []
+      for sd_vid in edited_files:
+         print("EDITED:", sd_vid)
+         stack_file = self.ev_dir + sd_vid.replace(".mp4", "-stacked.jpg")
+         if os.path.exists(stack_file) is True:
+            stack_img = cv2.imread(stack_file)
+            edited_imgs.append(stack_img)
+            print("EDITED FOUND", stack_file)
+         else:
+            print("EDITED missing stack", stack_file)
+
+      for sd_vid in good_files:
+         print("GOOD:", sd_vid)
+         stack_file = self.ev_dir + sd_vid.replace(".mp4", "-stacked.jpg")
+         if os.path.exists(stack_file) is True:
+            stack_img = cv2.imread(stack_file)
+            good_imgs.append(stack_img)
+            print("GOOD FOUND", stack_file)
+         else:
+            print("GOOD missing", stack_file)
+      for sd_vid in ignored_files:
+         print("IGNORE:", sd_vid)
+         stack_file = self.ev_dir + sd_vid.replace(".mp4", "-stacked.jpg")
+         if os.path.exists(stack_file) is True:
+            stack_img = cv2.imread(stack_file)
+            ignore_imgs.append(stack_img)
+            print("IGNORE FOUND", stack_file)
+         else:
+            print("IGNORE missing", stack_file)
+      for sd_vid in missing_files:
+         stack_file = self.ev_dir + sd_vid.replace(".mp4", "-stacked.jpg")
+         print("MISSING:", sd_vid)
+         if os.path.exists(stack_file) is True:
+            stack_img = cv2.imread(stack_file)
+            missing_imgs.append(stack_img)
+         else:
+            print("missing", stack_file)
+
+      print(len(edited_imgs))
+      print(len(good_imgs))
+      print(len(ignore_imgs))
+      for img in edited_imgs:
+         img = cv2.resize(img, (640,360))
+         cv2.rectangle(img, (int(1), int(1)), (int(639) , int(359) ), (0, 0, 255), 2)
+         cv2.imshow('pepe', img)
+         cv2.waitKey(0)
+      for img in good_imgs:
+         img = cv2.resize(img, (640,360))
+         cv2.rectangle(img, (int(1), int(1)), (int(639) , int(359) ), (128, 128, 128), 2)
+         cv2.imshow('pepe', img)
+         cv2.waitKey(0)
+      for img in ignore_imgs:
+         img = cv2.resize(img, (640,360))
+         cv2.rectangle(img, (int(1), int(1)), (int(639) , int(359) ), (0, 0, 128), 2)
+         cv2.imshow('pepe', img)
+         cv2.waitKey(0)
+
+   def update_all_obs_xys(self, event_id, local_event_dir, RF, all_img):
+      #for each SD clip get the contour and brightest pixels from the sub
+      # show this vs the reduction info
+      # allow operator to update points
+      # allow operator to ignore obs
+      if "ignore_obs" not in self.edits:
+         self.edits['ignore_obs'] = {}
+
+      go = True
+      idx_keys = []
+      for sd_vid in self.sd_clips:
+         if self.sd_clips[sd_vid]['status'] is True:
+            idx_keys.append(sd_vid)
+
+      idx = -1
+      while go is True:
+         if idx == -1:
+            show_img = all_img.copy()
+
+
+            cv2.putText(show_img, event_id,  (10,1070), cv2.FONT_HERSHEY_SIMPLEX, .6, (0,255,0), 1)
+            cv2.imshow('pepe', show_img)
+            key = cv2.waitKey(0)
+            # show all
+            if key == 115:
+               # S / NEXT
+               idx += 1
+            if key == 100:
+               # D / PREV 
+               idx = len(idx_keys) - 1
+
+
+         else:
+            # show stack image of 1 obs 
+            sd_vid = idx_keys[idx]
+            if self.sd_clips[sd_vid]['status'] is True:
+               show_img = self.sd_clips[sd_vid]['stack_img'].copy() 
+               #text_data = [[20,20,1,2,[255,255,255],"mike was here!"]]
+               text_data = []
+               show_frame = RF.frame_template("1920_1p", [show_img.copy()], text_data)
+               if sd_vid in self.edits['ignore_obs']:
+                  if self.edits['ignore_obs'][sd_vid] is True:
+                     cv2.putText(show_frame, "IGNORE OBS",  (900,25), cv2.FONT_HERSHEY_SIMPLEX, .6, (0,0,255), 1)
+
+               cv2.putText(show_frame, event_id + " : " + sd_vid.replace(".mp4", ""),  (1100,1070), cv2.FONT_HERSHEY_SIMPLEX, .6, (0,255,0), 1)
+
+               cv2.putText(show_frame, str(idx),  (1900,25), cv2.FONT_HERSHEY_SIMPLEX, 1, (255,255,255), 1)
+               if "frame_data" in self.sd_clips[sd_vid]:
+                  for fd in self.sd_clips[sd_vid]['frame_data']:
+                     print("FD", self.sd_clips[sd_vid]['frame_data'][fd])
+
+                  exit()
+               cv2.imshow('pepe', show_frame)
+               key = cv2.waitKey(0)
+               if key == 115:
+                  # S / NEXT
+                  print("PRESS S")
+                  idx += 1
+               elif key == 100:
+                  # D / PREV 
+                  print("PRESS D")
+                  idx -= 1
+               elif key == 27:
+                  # [ESC]
+                  self.save_edits()
+                  print("EXIT!")
+                  exit()
+               elif key == 112:
+                  # [P] - Play Video
+                  if "frame_data" not in self.sd_clips[sd_vid]:
+                     self.sd_clips[sd_vid]['frame_data'] = {}
+
+                  #if "frame_data" not in self.sd_clips[sd_vid] :
+                  if True:
+                     self.sd_clips[sd_vid]['frame_data'],self.sd_clips[sd_vid]['subs'] = self.build_frame_data(sd_vid, self.sd_clips[sd_vid]['frames'])
+                     print(sd_vid, self.sd_clips[sd_vid].keys())
+
+
+                  #self.sd_clips[sd_vid]['frame_data'], self.sd_clips[sd_vid]['deleted_points'], self.sd_clips[sd_vid]['custom_points'] = self.play_video(sd_vid, self.sd_clips[sd_vid]['frames'], self.sd_clips[sd_vid]['subs'], RF, self.sd_clips[sd_vid]['frame_data'], self.sd_clips[sd_vid]['stack_img'])
+                  self.sd_clips[sd_vid]['frame_data'], self.sd_clips[sd_vid]['deleted_points'], self.sd_clips[sd_vid]['custom_points'] = self.play_video(sd_vid, RF )
+
+               elif key == 120:
+                  # X / TOGGLE IGNORE  
+                  sd_vid = idx_keys[idx]
+                  if sd_vid in self.edits['ignore_obs']:
+                     if self.edits['ignore_obs'][sd_vid] is True:
+                        self.edits['ignore_obs'][sd_vid] = True
+                        cv2.putText(show_img, "IGNORE OBS",  (900,25), cv2.FONT_HERSHEY_SIMPLEX, .6, (0,0,255), 1)
+                     else:
+                        self.edits['ignore_obs'][sd_vid] = False 
+                  else:
+                     self.edits['ignore_obs'][sd_vid] = True
+                     cv2.putText(show_img, "IGNORE OBS",  (900,25), cv2.FONT_HERSHEY_SIMPLEX, .6, (0,0,255), 1)
+
+
+
+            else:
+               idx += 1
+
+            print("KEY/IDX:", key, idx)
+            if idx >= len(idx_keys):
+               idx = -1
+               print("END OF LIST RESET")
+               
+         continue
+
+         for sd_vid in self.sd_clips:
+            if self.sd_clips[sd_vid]['status'] is False:
+               continue 
+            sfile = sd_vid.replace(".mp4", "-stacked.jpg")
+            self.sd_clips[sd_vid]['sub_frames'] = []
+            self.sd_clips[sd_vid]['cnts'] = []
+
+            if self.sd_clips[sd_vid]['status'] is True :
+   
+               show_frame = RF.frame_template("1920_1p", [self.sd_clips[sd_vid]['stack_img']])
+               cv2.waitKey(0)
+               temp = []
+               for frame in self.sd_clips[sd_vid]['frames'][0:25]:
+                  bw_frame =  cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+                  temp.append(bw_frame)
+               med_frame = cv2.convertScaleAbs(np.median(np.array(temp), axis=0))
+
+               for frame in self.sd_clips[sd_vid]['frames']:
+                  bw_frame =  cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+                  sub = cv2.subtract(bw_frame,med_frame)
+                  self.sd_clips[sd_vid]['sub_frames'].append(sub)
+
+                  show_frame = RF.frame_template("1920_1p", [frame])
+
+                  cv2.imshow('pepe_sub', sub)
+                  cv2.imshow('pepe', show_frame)
+                  key = cv2.waitKey(0)
+                  print("KEY", key)
+            else:
+               print("BAD OR MISSING VIDEO:", sd_vid)
+
+      print("OK - OK")
+
+   def save_edits(self):
+      self.edits_data = {}
+      for key in self.edits_data:
+         dtype = type(self.edits_data[key])
+         print(key, dtype)
+         if str(dtype) == "list" or str(dtype) == "dict":
+            print("LIST OR DICT HERE!")
+            for skey in self.edits_data[key]: 
+               print(skey, type(skey))
+      for sd_vid in self.sd_clips:
+         if "subs" in self.sd_clips[sd_vid]:
+            del(self.sd_clips[sd_vid]['subs'])
+         if "frames" in self.sd_clips[sd_vid]:
+            del(self.sd_clips[sd_vid]['frames'])
+         if "stack_img" in self.sd_clips[sd_vid]:
+            del(self.sd_clips[sd_vid]['stack_img'])
+
+      self.edits_data['sd_clips'] = dict(self.sd_clips)
+      self.edits_data['ignore_obs'] = dict(self.edits['ignore_obs'])
+      save_json_file(self.edits_file, self.edits_data)
+      print("SAVED", self.edits_file )
+
+   def frame_data_to_objects(self, frame_data):
+      objects = {}
+      xs = []
+      ys = []
+      for fc in frame_data:
+         if "cnts" in frame_data[fc]:
+            cnts = frame_data[fc]['cnts']
+            for cnt in cnts:
+               #x,y,w,h,meteor_flux,meteor_intensity = cnt
+               x1,y1,x2,y2,cx,cy,radius,meteor_int,meteor_flux = cnt
+               w = x2 - x1
+               h = y2 - y1
+               obj_id, objects = find_object(objects, fc,cx, cy, w, h, meteor_flux, 0, 0, None)
+      meteor_objects = {} 
+      non_meteor_objects = {} 
+      last_biggest = None
+      last_big = 0
+      for obj in objects:
+         objects[obj] = analyze_object(objects[obj], 1)
+         if len(objects[obj]['oxs']) > last_big:
+            last_biggest = obj
+            last_big = len(objects[obj]['oxs'])
+         print("OBJECT", obj, len(objects[obj]['oxs']), objects[obj]['report']['meteor'], objects[obj]['report']['bad_items'])
+      best = {}
+      best["1"] = objects[last_biggest]
+      return(best)
+
+   def graph_xys(self,xs,ys):
+
+      plt.scatter(xs,ys) 
+      #plt.gca().invert_yaxis()
+      plt.savefig("temp.png")
+      img = cv2.imread("temp.png")
+      img = cv2.resize(img, (int(img.shape[1]*.5), int(img.shape[0]*.5)))
+      cv2.imshow('graph', img)
+      cv2.waitKey(30)
+
+   def build_frame_data(self, sd_vid, frames):
+      print("BUILD FRAME DATA FOR :", sd_vid) 
+
+      if sd_vid in self.edits['sd_clips']:
+         if "deleted_points" in self.edits['sd_clips'][sd_vid]:
+            self.sd_clips[sd_vid]['deleted_points'] =  self.edits['sd_clips'][sd_vid]['deleted_points']
+         if "custom_points" in self.edits['sd_clips'][sd_vid]:
+            self.sd_clips[sd_vid]['custom_points'] =  self.edits['sd_clips'][sd_vid]['custom_points']
+
+      if "custom_points" not in self.sd_clips[sd_vid]:
+         self.sd_clips[sd_vid]['custom_points'] = {}
+      if "deleted_points" not in self.sd_clips[sd_vid]:
+         self.sd_clips[sd_vid]['deleted_points'] = {}
+
+      print("D:", self.sd_clips[sd_vid]['deleted_points'])
+      print("C:", self.sd_clips[sd_vid]['custom_points'])
+      print("SD CLIPS:", self.sd_clips[sd_vid].keys())
+      print("SD E CLIPS:", self.edits['sd_clips'].keys())
+
+      frame_data = {}
+      fc = 0
+      temp = []
+      subs = {}
+      hdm_x = 1920 / 640
+      hdm_y = 1080 / 360
+      for frame in frames[0:10]:
+         bw_frame = cv2.resize(frame, (640,360))
+         bw_frame =  cv2.cvtColor(bw_frame, cv2.COLOR_BGR2GRAY)
+         temp.append(bw_frame)
+
+      med_frame = cv2.convertScaleAbs(np.median(np.array(temp), axis=0))
+
+      for frame in frames:
+         frame = cv2.resize(frame, (640,360))
+         frame_data[fc] = {}
+         bw_frame =  cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+         sub = cv2.subtract(bw_frame,med_frame)
+         min_val, max_val, min_loc, (mx,my)= cv2.minMaxLoc(sub)
+         subs[fc] = sub
+         thresh_val = int(max_val * .6)
+         _, thresh_image = cv2.threshold(sub, thresh_val, 255, cv2.THRESH_BINARY)
+         cnts = get_contours_in_image(thresh_image)
+
+         if len(cnts) >= 1:
+            cnts = sorted(cnts, key=lambda x: x[2] * x[3], reverse=True)
+            cnts = [cnts[0]]
+
+         # if the frame exists inside the custom points 
+         # override the default cnt with those values 
+         print("BEFORE OVERRIDE CNTS:", cnts)
+         if fc in self.sd_clips[sd_vid]['custom_points'] :
+            x = int(self.sd_clips[sd_vid]['custom_points'][fc][0] / hdm_x )
+            y = int(self.sd_clips[sd_vid]['custom_points'][fc][1] / hdm_y)
+            w = int(self.sd_clips[sd_vid]['custom_points'][fc][2] / hdm_y)
+            h = w
+            cnts = [[x,y,w,h]]
+         elif str(fc) in self.sd_clips[sd_vid]['custom_points']:
+            sfc = str(fc)
+            w = int(self.sd_clips[sd_vid]['custom_points'][sfc][2] / hdm_x)
+            x = int(self.sd_clips[sd_vid]['custom_points'][sfc][0] / hdm_x ) - (w/2)
+            y = int(self.sd_clips[sd_vid]['custom_points'][sfc][1] / hdm_y) - (w/2)
+           
+
+            cnts = [[x,y,w,w]]
+         if fc in self.sd_clips[sd_vid]['deleted_points'] or str(fc) in self.sd_clips[sd_vid]['deleted_points']:
+            cnts = []
+            print(fc, "found in deleted points!")
+            print("DELETE POINTS IS:", self.sd_clips[sd_vid]['deleted_points'])
+         else:
+            print(fc, "NOT found in deleted points!")
+            print("DELETE POINTS IS:", self.sd_clips[sd_vid]['deleted_points'])
+
+         print("AFTER OVERRIDE CNTS:", cnts)
+
+         for cnt in cnts:
+            x,y,w,h = cnt 
+            if w > h:
+               h = w
+            else:
+               w = h
+
+            x1 = int(cnt[0] * hdm_x)
+            y1 = int(cnt[1] * hdm_y)
+            x2 = int(cnt[0] * hdm_x) + int(w * hdm_x)
+            y2 = int(cnt[1] * hdm_y) + int(h * hdm_y)
+            cx = ((x1 + x2) / 2) 
+            cy = ((y1 + y2) / 2)
+            if x2 - x1 > y2 - y1:
+               radius = x2 - x1
+            else:
+               radius = y2 - y1
+            meteor_int = np.sum(sub[y1:y2,x1:x2])
+            if radius < 2:
+               radius = 2
+
+            if True:
+               # for flux
+               px1 = int((x1+x2)/2) - 50 
+               px2 = int((x1+x2)/2) + 50 
+               py1 = int((y1+y2)/2) - 50 
+               py2 = int((y1+y2)/2) + 50 
+
+
+               if px1 < 0:
+                  px1 = 0
+               if px2 > 1920:
+                  px2 = 1920
+               if py1 < 0:
+                  py1 = 0
+               if py2 > 1080:
+                  py2 = 1080 
+               pcx = ((px1 + px2) / 2) - px1
+               pcy = ((py1 + py2) / 2) - py1
+               temp = cv2.resize(subs[fc], (1920,1080))
+               sub = cv2.resize(sub, (1920,1080))
+               meteor_flux = do_photo(sub[py1:py2,px1:px2], (pcx,pcy), radius+1)
+               if np.isnan(meteor_flux):
+                  meteor_flux = 0
+               if np.isnan(meteor_int):
+                  meteor_int= 0
+
+               # if this frame is insdie the deleted points or custom point fix it. 
+               if fc in self.sd_clips[sd_vid]['deleted_points'] or str(fc) is self.sd_clips[sd_vid]['deleted_points']:
+                  print("FRAME DELETED!")
+               else:
+                  frame_data[fc]['cnts'] = [[int(x1),int(y1),int(x2),int(y2),float(cx),float(cy),int(radius),int(meteor_int),int(meteor_flux)]]
+               #print("FD:", frame_data[fc])
+         print("BUILD FRAME DATA", fc, sd_vid)
+         fc += 1
+
+      #print("FD:", frame_data)
+      return(frame_data, subs)
+
+
+   #self.play_video(sd_vid, self.sd_clips[sd_vid]['frames'], self.sd_clips[sd_vid]['subs'], RF, self.sd_clips[sd_vid]['frame_data'], self.sd_clips[sd_vid]['stack_img'])
+   #def play_video(self, sd_vid, frames, subs, RF, frame_data ,stack_img):
+
+   def get_event_obs(self):
+      # get event info frirst
+      sql = """
+            SELECT event_id, event_minute, revision, event_start_time, event_start_times, stations, obs_ids, lats, lons, event_status, run_date, run_times
+              FROM events
+             WHERE event_id = ?
+      """
+      svals = [self.event_id]
+      self.cur.execute(sql, svals)
+      rows = self.cur.fetchall()
+      data = []
+      #print(sql, svals)
+      event_data = {}
+      obs_data = {}
+      for row in rows:
+         (event_id, event_minute, revision, event_start_time, event_start_times, stations, obs_ids, lats, lons, event_status, run_date, run_times ) = row
+         event_data['event_id'] = event_id
+         event_data['event_minute'] = event_minute
+         event_data['revision'] = revision 
+         event_data['event_start_time'] = event_start_time
+         event_data['event_start_times'] = json.loads(event_start_times)
+         event_data['stations'] = json.loads(stations)
+         event_data['obs_ids'] = json.loads(obs_ids )
+         event_data['lats'] = json.loads(lats )
+         event_data['lons'] = json.loads(lons )
+         event_data['event_status'] = event_status 
+         event_data['run_date'] = run_date 
+         event_data['run_times'] = run_times
+
+      lc = 0 
+      st_pts = {}
+      st_az_pts = {}
+      obs_imgs = {}
+
+      # THIS IS A BUG!!! OBS NEED TO BE UPDATED SOMEWHERE / SOMEHOW WHAT DO WE DO NOW!
+      print("EVENT DATA:", event_data.keys())
+      for obs_id in event_data['obs_ids']:
+         sql = """
+            SELECT event_id, event_minute, station_id, obs_id, fns, times, xs, ys, azs, els, ints, status, ignore 
+              FROM event_obs
+             WHERE obs_id = ?
+            """
+         svals = [obs_id]
+         self.cur.execute(sql, svals)
+         rows = self.cur.fetchall()
+         for row in rows:
+            (event_id, event_minute, station_id, obs_id, fns, times, xs, ys, azs, els, ints, status, ignore ) = row
+            lat,lon,alt = self.station_loc[station_id][:3]
+            obs_data[obs_id] = {}
+            obs_data[obs_id]['event_id'] = event_data['event_id']
+            obs_data[obs_id]['event_minute'] = event_data['event_minute']
+            obs_data[obs_id]['station_id'] = station_id
+            obs_data[obs_id]['obs_id'] = obs_id
+            obs_data[obs_id]['lat'] = lat
+            obs_data[obs_id]['lon'] = lon
+            st_pts[station_id] = [lat,lon,station_id.replace("AMS", "")]
+
+            obs_data[obs_id]['fns'] = json.loads(fns)
+            obs_data[obs_id]['times'] = json.loads(times)
+            obs_data[obs_id]['xs'] = json.loads(xs)
+            obs_data[obs_id]['ys'] = json.loads(ys)
+            obs_data[obs_id]['azs'] = json.loads(azs)
+            obs_data[obs_id]['els'] = json.loads(els)
+            obs_data[obs_id]['ints'] = json.loads(ints)
+            obs_data[obs_id]['status'] = status 
+            obs_data[obs_id]['ignore'] = ignore 
+            obs_data[obs_id]['image_file'] =  self.local_evdir + self.event_id + "/" + obs_id + "-stacked.jpg"
+
+            obs_data[obs_id]['az_start_point'] = self.find_point_from_az_dist(lat,lon,float(json.loads(azs)[0]),400)
+            obs_data[obs_id]['az_end_point'] = self.find_point_from_az_dist(lat,lon,float(json.loads(azs)[-1]),400)
+            st_az_pts[station_id] = [obs_data[obs_id]['az_start_point'], obs_data[obs_id]['az_end_point']]
+            st_az_pts[obs_id] = [obs_data[obs_id]['az_start_point'], obs_data[obs_id]['az_end_point']]
+            if os.path.exists( obs_data[obs_id]['image_file']):
+               print("YES, FOUND:", obs_data[obs_id]['image_file'])
+               obs_img = cv2.imread(obs_data[obs_id]['image_file'])
+               obs_img = cv2.resize(obs_img, (640,360))
+               obs_imgs[obs_id] = obs_img
+            else:
+               print("OBS ID IS:", obs_id)
+               # as a fallback copy the cloud prev file if it is not already copied
+               date = obs_id.replace(station_id + "_", "")[0:10]
+               year = date[0:4]
+               cloud_prev_file = self.cloud_dir + station_id + "/METEORS/" + year + "/" + date + "/" + obs_id + "-prev.jpg"
+               local_prev_file = self.local_evdir + self.event_id + "/" + obs_id + "-prev.jpg"
+               if os.path.exists(local_prev_file) is False:
+                  if os.path.exists(cloud_prev_file) is True:
+                     cmd = "cp " + cloud_prev_file + " " + local_prev_file
+                     os.system(cmd)
+                     #wget_cmds.append(cmd)
+                  else:
+                     print("No cloud file found!", cloud_prev_file)
+               if os.path.exists(local_prev_file) is True:
+                  print("Using prev image", local_prev_file)
+                  prev_img = cv2.imread(local_prev_file)
+                  try:
+                     prev_img = cv2.resize(prev_img, (1920,1080))
+                     obs_imgs[obs_id] = prev_img 
+                  except:
+                     print("No image could be found for:", obs_id)
+               else:
+                   print("No image could be found for:", obs_id)
+
+
+               
+         lc += 1
+
+      # here we should check how things intersect and mark obs that don't 
+      # lat/lon & bearing of 2 stations
+      ipoints = {}
+      points = [] 
+      lines = [] 
+      failed_combos = [] 
+      for obs_id_1 in obs_data:
+         if "obs_start_points" not in obs_data[obs_id_1]:
+            obs_data[obs_id_1]['obs_start_points'] = []
+            obs_data[obs_id_1]['obs_end_points'] = []
+         for obs_id_2 in obs_data:
+            if "obs_start_points" not in obs_data[obs_id_2]:
+               obs_data[obs_id_2]['obs_start_points'] = []
+               obs_data[obs_id_2]['obs_end_points'] = []
+            station1 = obs_data[obs_id_1]['station_id']
+            station2 = obs_data[obs_id_2]['station_id']
+            if station1 == station2:
+               continue
+            itemp = sorted([obs_id_1, obs_id_2])
+            ikey = itemp[0] + "__" + itemp[1]
+            if ikey in ipoints:
+               continue
+
+            x1 = obs_data[obs_id_1]['lon'] 
+            y1 = obs_data[obs_id_1]['lat'] 
+            brng1 = obs_data[obs_id_1]['azs'][0]
+
+            x2 = obs_data[obs_id_2]['lon'] 
+            y2 = obs_data[obs_id_2]['lat'] 
+            brng2 = obs_data[obs_id_2]['azs'][0]
+
+            #start point
+            ipoint = geo_intersec_point(x1, y1, brng1, x2, y2, brng2)
+
+
+
+            #end point
+            brng1 = obs_data[obs_id_1]['azs'][-1]
+            brng2 = obs_data[obs_id_2]['azs'][-1]
+            end_ipoint = geo_intersec_point(x1, y1, brng1, x2, y2, brng2)
+
+
+            if ipoint[0] == True or end_ipoint[0] == True:
+               failed_combos.append(ikey)
+               # intersect failed...
+            else:
+               # intersect passed
+               end_failed = False
+               start_failed = False
+               start_station_dist = dist_between_two_points(y1, x1, ipoint[1]['y3'], ipoint[1]['x3']) 
+               print("COMBO:", obs_id_1, obs_id_2)
+               print("SSD:", start_station_dist)
+
+               end_station_dist = dist_between_two_points(y1, x1, end_ipoint[1]['y3'], ipoint[1]['x3']) 
+               print("ESD:", end_station_dist)
+
+               # only add a point if its within < 800 km away
+               if end_station_dist > 800 and start_station_dist > 800:
+                  start_failed = True
+                  end_failed = True
+
+               if start_failed is False and end_failed is False:
+                  print("ADD POINT:", obs_id_1, obs_id_2, ipoint[1]['x3'], ipoint[1]['y3'])
+                  obs_data[obs_id_1]['obs_start_points'].append(( ipoint[1]['y3'], ipoint[1]['x3']))
+                  obs_data[obs_id_2]['obs_start_points'].append(( ipoint[1]['y3'], ipoint[1]['x3']))
+
+                  print(end_ipoint)
+                  obs_data[obs_id_1]['obs_end_points'].append(( end_ipoint[1]['y3'], end_ipoint[1]['x3']))
+                  obs_data[obs_id_2]['obs_end_points'].append(( end_ipoint[1]['y3'], end_ipoint[1]['x3']))
+                  #points.append((ipoint[1]['x3'], ipoint[1]['y3'], 'i'))
+            if len(obs_data[obs_id_1]['obs_end_points']) == 0 or len(obs_data[obs_id_1]['obs_start_points']) == 0:
+               obs_data[obs_id_1]['status'] = "INVALID"
+               obs_data[obs_id_1]['ignore'] = True
+            else:
+               obs_data[obs_id_1]['status'] = "VALID"
+               obs_data[obs_id_1]['ignore'] = False 
+
+            if len(obs_data[obs_id_2]['obs_end_points']) == 0 or len(obs_data[obs_id_2]['obs_start_points']) == 0:
+               obs_data[obs_id_2]['status'] = "INVALID"
+               obs_data[obs_id_2]['ignore'] = True
+            else:
+               obs_data[obs_id_2]['status'] = "VALID"
+               obs_data[obs_id_2]['ignore'] = False 
+
+
+            ipoints[ikey] = ipoint
+            #print("IPOINT:", ikey, ipoint)
+
+      # determine which stations are valid or not based on successful intersects
+      valid_stations = {}
+      for obs_id in obs_data:
+         station_id = obs_id.split("_")[0]
+         if station_id not in valid_stations:
+            valid_stations[station_id] = {}
+            valid_stations[station_id]['good_obs'] = 0
+            valid_stations[station_id]['bad_obs'] = 0
+         if obs_data[obs_id]['ignore'] is True:
+            valid_stations[station_id]['bad_obs'] += 1
+         else:
+            valid_stations[station_id]['good_obs'] += 1
+
+      for st in valid_stations:
+         if valid_stations[st]['good_obs'] > 0:
+            print("VALID STATIONS:", st, valid_stations[st])
+         if valid_stations[st]['good_obs'] > 0 :
+            valid_stations[station_id]['good_ratio'] = valid_stations[st]['good_obs'] / valid_stations[st]['good_obs'] + valid_stations[st]['bad_obs']
+            print("GOOD RATIO:", st, valid_stations[station_id]['good_ratio'])
+         else:
+            valid_stations[station_id]['good_ratio'] = 0
+
+         
+
+      self.echo_event_data(event_data, obs_data)
+
+      #input("Waiting")
+      if True:
+         for st in st_pts:
+            sp, ep = st_az_pts[st]
+            station = st 
+            slat = st_pts[st][0]
+            slon = st_pts[st][1]
+        
+            if valid_stations[station_id]['good_ratio'] > 0:
+               points.append((slat,slon,station,"green","o"))
+            else:
+               points.append((slat,slon,station,"red","x"))
+
+            lines.append((st_pts[st][0], st_pts[st][1], st_az_pts[st][0][0] , st_az_pts[st][0][1], 'green'))
+            lines.append((st_pts[st][0], st_pts[st][1], st_az_pts[st][1][0] , st_az_pts[st][1][1], 'orange'))
+
+
+      for obs_id in obs_data:
+         for row in obs_data[obs_id_1]['obs_start_points']:
+            points.append((row[0], row[1], "s"))
+         for row in obs_data[obs_id_1]['obs_end_points']:
+            points.append((row[0], row[1], "e"))
+         st = obs_id.split("_")[0]
+         med_end_lat = np.mean([row[0] for row in obs_data[obs_id_1]['obs_end_points']])
+         med_end_lon = np.mean([row[1] for row in obs_data[obs_id_1]['obs_end_points']])
+         med_start_lat = np.mean([row[0] for row in obs_data[obs_id_1]['obs_start_points']])
+         med_start_lon = np.mean([row[1] for row in obs_data[obs_id_1]['obs_start_points']])
+         lines.append((st_pts[st][0], st_pts[st][1], med_start_lat, med_start_lon, 'pink'))
+         lines.append((st_pts[st][0], st_pts[st][1], med_end_lat, med_end_lon, 'purple'))
+
+
+      #lat1, lon1,lat2,lon2,cl
+      try:
+         map_img = make_map(points, lines)
+      except:
+         print("FAILED TO MAP:", points, lines)
+         map_img = np.zeros((1080,1920,3),dtype=np.uint8)
+         print("POINTS:", points)
+         print("LINES:", lines)
+         input("MAP FAILED WHY!")
+
+         map_img = make_map(points, lines)
+
+      x1 = int(map_img.shape[1] / 2) - 960 
+      x2 = int(map_img.shape[1] / 2) + 960 
+      y1 = int(map_img.shape[0] / 2) - 540 
+      y2 = int(map_img.shape[0] / 2) + 540 
+      new_img = map_img[y1:y2,x1:x2]
+      return(event_data, obs_data, new_img, obs_imgs)
+
+   def echo_event_data(self,event_data, obs_data):
+      tb = pt()
+      tb.field_names = ['Field', 'Value']
+      for key in event_data:
+         print(key, event_data[key])
+         if isinstance(event_data[key], list) is False:
+            tb.add_row([key, event_data[key]])
+         else:
+            tb.add_row([key, len(event_data[key])])
+      report = str(tb)
+      report += "\n\n"
+
+      for obs_id in obs_data:
+         tb = pt()
+         tb.field_names = ['Field', 'Value']
+         for key in obs_data[obs_id]:
+            if isinstance(obs_data[obs_id][key], list) is False:
+               tb.add_row([key, obs_data[obs_id][key]])
+            elif "points" in key: 
+               tb.add_row([key, obs_data[obs_id][key]])
+            else:
+               if key == "azs" or key == "els":
+                  tb.add_row([key, str( round(obs_data[obs_id][key][0],2)) + " / " + str( round(obs_data[obs_id][key][-1],2 )) ])
+               else:
+                  tb.add_row([key, str( obs_data[obs_id][key][0]) + " / " + str( obs_data[obs_id][key][-1] ) ])
+         report += str(tb)
+         report += "\n"
+      print(report)
+
+      # MFD FOR EACH
+      print ("METEOR FRAME DATA")
+      for obs_id in obs_data:
+         print("OBS:", obs_id, len(obs_data[obs_id]['fns']), "frames")
+         #for i in range(0, len(obs_data[obs_id]['fns'])):
+         #   print("{} {} {} {} {} ".format(obs_id, obs_data[obs_id]['fns'][i], obs_data[obs_id]['times'][i], obs_data[obs_id]['azs'][i], obs_data[obs_id]['els'][i]))
+
+
+
+
+   def find_point_from_az_dist(self,lat,lon,az,dist):
+      import math
+
+      R = 6378.1 #Radius of the Earth
+      brng = math.radians(az) #Bearing is 90 degrees converted to radians.
+      d = dist #Distance in km
+
+
+      lat1 = math.radians(lat) #Current lat point converted to radians
+      lon1 = math.radians(lon) #Current long point converted to radians
+
+      lat2 = math.asin( math.sin(lat1)*math.cos(d/R) +
+      math.cos(lat1)*math.sin(d/R)*math.cos(brng))
+
+      lon2 = lon1 + math.atan2(math.sin(brng)*math.sin(d/R)*math.cos(lat1),
+             math.cos(d/R)-math.sin(lat1)*math.sin(lat2))
+
+      lat2 = math.degrees(lat2)
+      lon2 = math.degrees(lon2)
+
+      return(lat2, lon2)
+
+
+   def play_edit_video(self, sd_vid):
+      print("VID:", sd_vid)
+      event_data, obs_data, map_img,obs_imgs = self.get_event_obs(sd_vid.replace(".mp4", ""))
+      cv2.imshow('pepe', map_img)
+      cv2.waitKey(30)
+      for key in obs_imgs:
+         cv2.imshow('pepe', obs_imgs[key])
+         cv2.waitKey(30)
+
+      print("OBS DATA",sd_vid, obs_data) 
+
+
+   def play_video(self, sd_vid, RF):
+      # edits should go into the DB!
+      self.play_edit_video(sd_vid)
+      return()
+
+      frames = self.sd_clips[sd_vid]['frames']
+
+      subs = self.sd_clips[sd_vid]['subs']
+      frame_data = self.sd_clips[sd_vid]['frame_data']
+      stack_img = self.sd_clips[sd_vid]['stack_img']
+      if "custom_points" in self.sd_clips[sd_vid]:
+         custom_points = self.sd_clips[sd_vid]['custom_points']
+      else:
+         custom_points = {}
+      if "deleted_points" in self.sd_clips[sd_vid]:
+         deleted_points = self.sd_clips[sd_vid]['deleted_points']
+      else:
+         deleted_points = {}
+
+      print("SDCD", self.sd_clips[sd_vid].keys())
+
+      temp = []
+      cv2.namedWindow('pepe')
+      cv2.setMouseCallback('pepe',self.meteor_mouse_click)
+      hdm_x = 3
+      hdm_y = 3
+      go = True
+      self.fc = 0
+      self.deleted_points = {}
+      self.custom_points = {}
+      if sd_vid in self.sd_clips:
+         if "custom_points" in self.sd_clips[sd_vid]:
+            self.custom_points = self.sd_clips[sd_vid]['custom_points']
+         if "deleted_points" in self.sd_clips[sd_vid]:
+            self.deleted_points = self.sd_clips[sd_vid]['deleted_points']
+      else:
+         print(sd_vid, "not found in sd_clips data")
+
+      print("CUSTOM", self.custom_points)
+      print("DEL", self.deleted_points)
+      stack_img= cv2.resize(stack_img, (1920,1080))
+      print("KEYS FROM SD_CLIPS", self.sd_clips[sd_vid].keys())
+
+      while go == True:
+         
+         if self.fc >= len(frames) or self.fc < 0:
+            self.fc = 0
+         frame = frames[self.fc]
+         orig_frame = cv2.resize(frame.copy(), (1920,1080))
+         self.active_frame = cv2.resize(frame.copy(), (1920,1080))
+
+         frame = cv2.resize(frame, (1920,1080))
+         show_frame = RF.frame_template("1920_pip1_tl", [frame])
+         cnts = []
+         if self.fc in self.custom_points:
+            if len(self.custom_points[self.fc]) == 3:
+               x,y,size = self.custom_points[self.fc]
+               x1 = x - size
+               x2 = x + size
+               y1 = y - size
+               y2 = y + size
+               radius = size 
+               meteor_int = 0
+               meteor_flux = 0
+               cx = int((x1 + x2) / 2)
+               cy = int((y1 + y2) / 2)
+
+               px1 = int((x1+x2)/2) - 50 
+               px2 = int((x1+x2)/2) + 50 
+               py1 = int((y1+y2)/2) - 50 
+               py2 = int((y1+y2)/2) + 50 
+
+               if px1 < 0:
+                  px1 = 0
+               if px2 > 1920:
+                  px2 = 1920
+               if py1 < 0:
+                  py1 = 0
+               if py2 > 1080:
+                  py2 = 1080 
+               pcx = ((px1 + px2) / 2) - px1
+               pcy = ((py1 + py2) / 2) - py1
+               temp = cv2.resize(subs[self.fc], (1920,1080))
+               meteor_flux = do_photo(temp[py1:py2,px1:px2], (pcx,pcy), radius+1)
+
+               frame_data[self.fc]['cnts'] = [[x1,y1,x2,y2,cx,cy,radius,meteor_int,meteor_flux]]
+
+         if self.fc in frame_data:
+            print(self.fc, frame_data[self.fc])
+            if "cnts" in frame_data[self.fc]:
+               cnts = frame_data[self.fc]['cnts']
+         if len(cnts) >= 1 and self.fc not in self.deleted_points : #and self.fc not in self.custom_points:
+               print("CNTS:", cnts[0])
+               (x1,y1,x2,y2,cx,cy,radius,meteor_int,meteor_flux) = cnts[0]
+               
+               px1 = int((x1+x2)/2) - 50 
+               px2 = int((x1+x2)/2) + 50 
+               py1 = int((y1+y2)/2) - 50 
+               py2 = int((y1+y2)/2) + 50 
+
+               if px1 < 0:
+                  px1 = 0
+               if px2 > 1920:
+                  px2 = 1920
+               if py1 < 0:
+                  py1 = 0
+               if py2 > 1080:
+                  py2 = 1080 
+               pcx = ((px1 + px2) / 2) - px1
+               pcy = ((py1 + py2) / 2) - py1
+
+               crop_img = orig_frame[py1:py2,px1:px2]
+               cv2.rectangle(frame, (int(x1), int(y1)), (int(x2) , int(y2) ), (255, 255, 255), 1)
+               #if np.isnan(meteor_flux) is False:
+               cv2.putText(frame, "FLUX" + str(int(meteor_flux)),  (x1,y2+10), cv2.FONT_HERSHEY_SIMPLEX, .6, (0,255,0), 1)
+               cv2.putText(frame, "INT" + str(int(meteor_int)),  (x1,y2+20), cv2.FONT_HERSHEY_SIMPLEX, .6, (0,128,0), 1)
+               crop_img = cv2.resize(crop_img,(400,400))
+               cv2.line(crop_img , (int(200),int(0)), (int(200),int(400)), (255,255,255), 1)
+               cv2.line(crop_img , (int(0),int(200)), (int(400),int(200)), (255,255,255), 1)
+               show_frame = RF.frame_template("1920_pip1_tl", [frame, crop_img])
+
+         else:
+            print("NO OBJECTS!")
+            show_frame = RF.frame_template("1920_pip1_tl", [frame])
+
+         cv2.putText(show_frame, str(self.fc) + "",  (1800,25), cv2.FONT_HERSHEY_SIMPLEX, 1, (255,255,255), 1)
+         cv2.imshow('pepe', show_frame)
+         self.key = cv2.waitKey(0)
+         if self.key == 102:
+            print("NEXT", self.fc)
+            self.fc += 1
+         elif self.key == 97:
+            print("PREV", self.fc)
+            self.fc -= 1
+         elif self.key == 27:
+            go = False 
+         elif self.key == 120:
+            print("DELETE FRAME DATA", self.fc, frame_data[self.fc])
+            self.deleted_points[self.fc] = True
+               # delete frame data 
+            if self.fc in self.custom_points:
+               del self.custom_points[self.fc]
+            frame_data[self.fc]['cnts'] = []
+            print("AFTER DELETE FRAME DATA", frame_data[self.fc])
+            self.fc += 1
+         elif self.key == 27:
+            go = False
+
+      # END WHILE LOOP
+
+      objects = self.frame_data_to_objects(frame_data)
+      ints = []
+      f = plt.figure()
+
+      show_img = RF.frame_template("1920_1p", [stack_img])
+
+      for obj in objects:
+         xs = []
+         ys = []
+         if len(objects[obj]['oxs']) < 3:
+            continue
+         
+         mx = int(np.mean(objects[obj]['oxs']))
+         my = int(np.mean(objects[obj]['oys']))
+         if max((objects[obj]['oxs'])) - min((objects[obj]['oxs'])) > max(objects[obj]['oys']) - min(objects[obj]['oys']):
+            radius = max((objects[obj]['oxs'])) - min((objects[obj]['oxs']))
+         else:
+            radius = max((objects[obj]['oys'])) - min((objects[obj]['oys']))
+         print("RAD:", mx,my, radius)
+         cv2.circle(show_img, (mx,my), int(radius), (128,128,128),1)
+         cv2.putText(show_img, str(obj),  (mx,my), cv2.FONT_HERSHEY_SIMPLEX, .8, (0,255,0), 1)
+         cv2.imshow('pepe', show_img)
+         cv2.waitKey(30)
+      cv2.waitKey(30)
+      
+      return(frame_data, self.deleted_points, self.custom_points)
+
+   def meteor_mouse_click(self,event,x,y,flags,param):
+      if event == cv2.EVENT_LBUTTONDBLCLK:
+         global mouseX, mouseY
+         mouseX, mouseY = x,y 
+         if self.fc in self.deleted_points:
+            del self.deleted_points[self.fc]
+         temp = self.active_frame.copy()
+         bw_temp =  cv2.cvtColor(temp, cv2.COLOR_BGR2GRAY)
+
+         # get roi around click
+         x1 = x - 50
+         x2 = x + 50
+         y1 = y - 50
+         y2 = y + 50
+         if x1 < 0:
+            x1 = 0
+         if x2 > 1920 :
+            x2 = 1920 
+         if y1 < 0:
+            y1 = 0
+         if y2 > 1080:
+            y2 = 1080  
+         temp_crop = temp[y1:y2,x1:x2]
+         bw_temp_crop =  cv2.cvtColor(temp_crop, cv2.COLOR_BGR2GRAY)
+         max_val = bw_temp[y,x]
+         thresh_val = int(max_val * .5)
+
+         print("VALS:", mouseX,mouseY, self.fc, max_val, thresh_val)
+
+         _, thresh_image = cv2.threshold(bw_temp_crop, thresh_val, 255, cv2.THRESH_BINARY)
+         cv2.imshow('ccc', thresh_image)
+         cv2.waitKey(30)
+         cnts = get_contours_in_image(thresh_image)
+         if len(cnts) > 1:
+            cnts = sorted(cnts, key=lambda x: x[2] * x[3], reverse=True)
+            cnts = cnts[0:1]
+
+         for xx,yy,ww,hh in cnts:
+            cv2.rectangle(temp, (int(x1+xx), int(y1+yy)), (int(x1+xx+ww) , int(y1+yy+hh) ), (255, 255, 255), 1)
+         if ww > hh:
+            hh = ww
+         else:
+            ww = hh
+
+         self.custom_points[self.fc] = [int(mouseX),int(mouseY),int(ww)]
+         cv2.circle(temp, (int(x),int(y)), int(ww), (128,128,128),1)
+         cv2.imshow('pepe', temp)
+
+
+   def review_data(self):
+      # quick review!
+      for sd_vid in self.sd_clips:
+         print(sd_vid, self.sd_clips[sd_vid].keys())
+         if "custom_points" in self.sd_clips[sd_vid]:
+            print(self.sd_clips[sd_vid]['custom_points'])
+      input("ENTER TO CONT")
+
+
    def resolve_event(self, event_id):
       date = self.event_id_to_date(event_id)
       self.set_dates(date)
@@ -1118,11 +3341,18 @@ class AllSkyNetwork():
                    lats, lons, event_status, run_date, run_times
               FROM events
              WHERE event_id = ?
+          ORDER BY run_date desc 
+             LIMIT 1
+
       """
       vals = [event_id]
       self.cur.execute(sql, vals)
       rows = self.cur.fetchall()
       for row in rows:
+         print("EVENT ROWS:", row[0])
+      xx = 0
+      for row in rows:
+         
          (event_id, event_minute, revision, stations, obs_ids, event_start_time, event_start_times,  \
                  lats, lons, event_status, run_date, run_times) = row
 
@@ -1140,13 +3370,16 @@ class AllSkyNetwork():
             if vid not in temp_obs[st_id]:
                if dict_key in self.obs_dict:
                   self.obs_dict[dict_key]['loc'] = [float(self.station_dict[st_id]['lat']), float(self.station_dict[st_id]['lon']), float(self.station_dict[st_id]['alt'])]
+                  # HERE WE SHOULD GET NEW OBS DATA DIRECT FROM DYNA DB OR REFRESH THE OBS DICT?
+
                   temp_obs = convert_dy_obs(self.obs_dict[dict_key], temp_obs)
+                  print("OBS DICT FOR:", dict_key, self.obs_dict[dict_key])
+                  print("TEMP OBS KEYS:", dict_key, temp_obs.keys())
                else:
                   print(dict_key, "not in obsdict. try deleting the file.")
                   print( self.obs_dict_file)
-                  exit()
+                  #exit()
 
-         print("READY TO SOLVE??")
          self.good_obs = temp_obs
          for st in temp_obs:
             print("STATION:", st)
@@ -1158,14 +3391,24 @@ class AllSkyNetwork():
          if os.path.exists(ev_dir) is False:
             os.makedirs(ev_dir)
          good_obs_file = ev_dir + "/" + event_id + "_GOOD_OBS.json"
-         if os.path.exists(good_obs_file) is False:
-            save_json_file(good_obs_file, temp_obs)
-
+         #if os.path.exists(good_obs_file) is False:
+         save_json_file(good_obs_file, temp_obs)
+         print("RESOLVING EVENT:", event_id)
          self.solve_event(event_id, temp_obs, 1, 1)
+         xx += 1
 
       cmd = "rsync -av --update " + self.local_evdir + "/" + event_id + "/* " + self.cloud_evdir + "/" + event_id + "/"
       print("SKIPPING (for now)", cmd)
       #os.system(cmd)
+
+   def make_event_page(self, event_id):
+      event_day = self.event_id_to_date(event_id)
+      self.set_dates(event_day)
+      good_obs_file = self.local_evdir + event_id + "/" + event_id + "_GOOD_OBS.json"   
+      temp_obs = load_json_file(good_obs_file)
+      dynamodb = boto3.resource('dynamodb')
+      solve_dir = self.local_evdir + event_id + "/" 
+      event_report(dynamodb, event_id, solve_dir, solve_dir, temp_obs)
 
    def day_load_solves(self, date):
 
@@ -1350,7 +3593,6 @@ class AllSkyNetwork():
                print("MOVE MIS_NAMED LOCAL FILE!")
                print(cmd)
                os.command(cmd)
-               #input("WAIT")
 
             print(cloud_prev_file)
             print("NO AI DATA!!!")
@@ -1456,6 +3698,37 @@ class AllSkyNetwork():
       #   print(job[0], job[1])
       print("FINISHED RUN JOBS!", len(solve_jobs))
 
+   def fast_cmds(self, jobs):
+      # parallel process list of system cmds
+      thread = {}
+      if os.path.exists("cores.json") == 1:
+         temp = load_json_file("cores.json")
+         cores = temp['cores']
+      else:
+         cores = 4
+      if cores > len(jobs):
+         cores = 4
+      cc = 0
+
+      jobs_per_proc = int(len(jobs)/(cores-1))
+      for i in range(0,cores):
+         start = i * jobs_per_proc
+         end = start + jobs_per_proc + 1
+         if end > len(jobs):
+            end = len(jobs)
+         print(i, start, end)
+         thread[i] = Process(target=self.cmd_runner, args=("thread" + str(i), jobs[start:end]))
+
+      for i in range(0,cores):
+         thread[i].start()
+      for i in range(0,cores):
+         thread[i].join()
+
+   def cmd_runner(self, thread_number, cmds):
+      for cmd in cmds:
+         print("RUN", thread_number, cmd)
+         os.system(cmd)
+
    def run_jobs(self, jobs):
       thread = {}
       if os.path.exists("cores.json") == 1:
@@ -1559,6 +3832,8 @@ class AllSkyNetwork():
          return(None)
 
 
+
+
    def sql_select_event_day_stats(self, event_day):
       stats_data = {}
       event_day = event_day.replace("_", "")
@@ -1579,6 +3854,62 @@ class AllSkyNetwork():
          event_count = row[0]
          event_status = row[1]
          stats_data["STATUS_" + event_status] = event_count
+
+      station_data = {}
+
+      sql = """
+         SELECT count(*) 
+           FROM event_obs
+      """
+
+      vals = [event_day + "%"]
+      self.cur.execute(sql)
+      rows = self.cur.fetchall()
+      stats_data["TOTAL_OBS"] = rows[0][0]
+
+      stats_data["by_station"] = []
+      sql = """
+         select station_id, count(*) from event_obs group by station_id;
+      """
+      self.cur.execute(sql)
+      rows = self.cur.fetchall()
+
+      for row in rows:
+         st, count = row
+
+
+         stats_data["by_station"].append((st,count))
+
+      stats_data["all_events"] = []
+      sql = """
+         select event_id from events 
+      """
+      self.cur.execute(sql)
+      rows = self.cur.fetchall()
+
+      for row in rows:
+         event_id = row[0]
+
+         failed_file = self.local_evdir + event_id + "/" + event_id + "-fail.json"
+         solve_file = self.local_evdir + event_id + "/" + event_id + "-event.json"
+         if os.path.exists(solve_file) is True:
+            status = "SOLVED"
+            event_data = load_json_file(solve_file)
+         elif os.path.exists(failed_file) is True:
+            status = "FAILED"
+            event_data = load_json_file(failed_file)
+         else:
+            status = "PENDING"
+            event_data = {}
+
+         print(status, solve_file)
+         stats_data["all_events"].append((event_id,status, event_data))
+
+
+
+
+
+
       return(stats_data)
 
    def sql_select_event(self, event_id):
@@ -1672,7 +4003,6 @@ class AllSkyNetwork():
                #return(self.status_data['solve_status'])
 
          except:
-            print("Continue")
             print(sql_data[9])
             input("Something is not right, status load from sql failed..." )
 
@@ -1824,7 +4154,6 @@ class AllSkyNetwork():
                print("FAILED TO LOAD:", self.local_event_id_dir + event_id + "_GOOD_OBS.json")
          print("STATUS DATA?", self.status_data)
       
-      #exit()
       if self.good_obs_json is not None:
          for station in self.good_obs_json:
             for ofile in self.good_obs_json[station]:
@@ -1896,9 +4225,12 @@ class AllSkyNetwork():
          new_run = True
          # debug only!
          solve_status = WMPL_solve(event_id, temp_obs, time_sync, force)
+         self.make_event_page(event_id)
+
          try:
             print("RUNNING WMPL...")
             solve_status = WMPL_solve(event_id, temp_obs, time_sync, force)
+            self.make_event_page(event_id)
          except:
             print("WMPL FAILED TO RUN!")
             status = "FAILED"
@@ -1910,8 +4242,10 @@ class AllSkyNetwork():
       print("WMPL SOLVE STATUS:", solve_status)
       if solve_status == "FAILED":
          time_sync=0
-         solve_status = WMPL_solve(event_id, temp_obs, time_sync, force)
-         print("TRIED A SECOND TIME WITHOUT TIME SYNC!", solve_status)
+         print("IT LOOKS LIKE THE TIME SYNC FAILED. WE WILL RESOLVE")
+         #input("OK???")
+         #solve_status = WMPL_solve(event_id, temp_obs, time_sync, force)
+         #print("TRIED A SECOND TIME WITHOUT TIME SYNC!", solve_status)
 
       # determine solve status and update the DB
       pass_file = self.local_evdir + "/" + event_id + "/" + event_id + "-event.json"
@@ -1982,17 +4316,17 @@ class AllSkyNetwork():
 
 
 
-   def event_status_day(self, date=None):
-      print("Event status day!")
-
-      report_file = self.local_evdir + date + "_day_report.json" 
-      save_json_file(report_file, day_report)
 
    def plane_test_day(self, date):
+      # for each event this day
+      # check planes for each unique combo of obs
+
       self.load_stations_file()
       qc_report = {}
       valid_obs = {}
       all_obs = {}
+
+      # select events for this day
       sql = """
          SELECT event_id, event_status, stations, event_start_times, obs_ids 
            FROM events
@@ -2004,6 +4338,8 @@ class AllSkyNetwork():
       self.cur.execute(sql,ivals)
       rows = self.cur.fetchall()
       final_data = []
+
+      # for each event on this day
       for row in rows:
          event_id, event_status, stations, start_times, obs_ids = row
          stations = json.loads(stations)
@@ -2013,11 +4349,17 @@ class AllSkyNetwork():
          if os.path.exists(ev_dir) is False:
             os.makedirs(ev_dir)
          plane_file = ev_dir + event_id + "_PLANES.json"
+
+         # if the plane report has not been created yet
+         # go ahead and make it
+
          if os.path.exists(plane_file) is False:
             plane_report = self.plane_test_event(obs_ids, event_id, event_status)
             save_json_file(plane_file, plane_report)
          else:
             plane_report = load_json_file(plane_file)
+
+         # summarize and report on all planes
          for ekey in plane_report['results']:
             sanity,res = plane_report['results'][ekey] 
             tempkey = ekey.replace(event_id + "_", "")
@@ -2031,11 +4373,20 @@ class AllSkyNetwork():
                all_obs[ob2] = 1
          good_planes,total_planes = self.check_planes(plane_report['results'])
          print(event_id, event_status, str(good_planes) + " / " + str(total_planes) + " good planes")
+
+         # determine the final status
+         # update event status here?! At least put results in the event file
+         
+
+         # if WMPL STATUS IS BAD AND THERE ARE NO GOOD PLANES 
+         # IT IS AN INVALID EVENT
          if "BAD" in event_status and good_planes == 0:
             event_status += ":INVALID"
          final_data.append((event_id, event_status, good_planes, total_planes))
       final_data = sorted(final_data, key=lambda x: x[1])
       print("Event solving status and plane status report")
+
+      # just print out the results
       for row in final_data:
          (event_id, event_status, good_planes, total_planes) = row
          try:
@@ -2044,6 +4395,7 @@ class AllSkyNetwork():
             print("ERR:", good_planes,  total_planes)
       qc_report['final_data'] = final_data
 
+      # make station stats
       st_stats = {}
       for ob in all_obs:
          st = ob.split("_")[0]
@@ -2059,22 +4411,27 @@ class AllSkyNetwork():
             print(" BAD OBS:", ob)
             st_stats[st]['BAD'] += 1
             all_obs[ob] = 0
+
+      # print out station stats
       for st in st_stats:
          good = st_stats[st]['GOOD']
          bad = st_stats[st]['BAD']
          total = good + bad
          print(st, good, bad, round((good/total)*100,1))
 
+      # save QC report
       qc_report['st_stats'] = st_stats
       qc_report['valid_obs'] = all_obs
       save_json_file(self.local_evdir + orig_date + "_QC.json", qc_report)
       print(self.local_evdir + orig_date + "_QC.json")
 
+
+      # SAVE FAILED OBS REPORT 
       failed_obs_html = ""
-      for obs_id in all_obs:
+      for obs_id in sorted(all_obs):
          print("OBS:", obs_id, all_obs[obs_id])
          if all_obs[obs_id] == 0:
-            failed_obs_html += self.meteor_cell_html(obs_id)
+            failed_obs_html += self.meteor_cell_html(obs_id, None)
       fpo = open(self.local_evdir + orig_date + "_FAILED_OBS.html", "w")
       fpo.write(failed_obs_html)
       fpo.close()
@@ -2160,13 +4517,18 @@ $(document).ready(function () {
       self.date = date
       self.help()
 
+      qc_report = self.local_evdir + date + "_QC.json"
+      qc_data = load_json_file(qc_report)
+      print(qc_data.keys())
+      all_obs = qc_data['valid_obs']
+
       self.get_all_obs(date)   
 
       template = ""
       tt = open("./FlaskTemplates/allsky-template-v2.html")
       for line in tt:
          template += line
-      tempalte = template.replace("AllSkyCams.com", "AllSky.com")
+      template = template.replace("AllSkyCams.com", "AllSky.com")
       self.local_evdir = self.local_event_dir + "/" + self.year + "/" + self.month + "/" + self.day  + "/"
       out_file_good = self.local_evdir + date + "_OBS_GOOD.html"
       out_file_bad = self.local_evdir + date + "_OBS_BAD.html"
@@ -2215,6 +4577,7 @@ $(document).ready(function () {
             fail_ev += 1
          else:
             pending_ev += 1
+
       stats_nav = """
            <script>
              function goto_ev(t) {
@@ -2302,14 +4665,18 @@ $(document).ready(function () {
             os.makedirs(ev_dir)
 
          ev_file = ev_dir + event_id + "-event.json"
+         ev_fail_file = ev_dir + event_id + "-fail.json"
          if os.path.exists(ev_file) is False:
             pick_file = ev_file.replace("-event.json", "_trajectory.pickle")
             # this should make the event.json if the pickle exists
             if os.path.exists(pick_file) is True:
                resp = make_event_json(event_id, ev_dir ,{})
 
-         if os.path.exists(ev_file) is False:
-            ev_sum = "<h3>No event solve file: {}</h3>".format(ev_file)
+         if os.path.exists(ev_file) is False and os.path.exists(ev_fail_file) is True:
+            ev_sum = "<h3>Solve failed for event {}</h3>".format(event_id)
+         elif os.path.exists(ev_file) is False and os.path.exists(ev_fail_file) is False: 
+            ev_sum = "<h3>Solve for event {} has not been run.</h3>".format(event_id)
+
          else:
             ev_data = load_json_file(ev_file)
             if ev_data['orb']['a'] is not None:
@@ -2409,7 +4776,10 @@ $(document).ready(function () {
                obs_id = obs_ids[i]
                etime = start_times[i]
                #bad_html += self.obs_id_to_img_html(obs_id)
-               bad_html += self.meteor_cell_html(obs_id, etime)
+
+               obs_status = all_obs[obs_id]
+               print("OBS STATUS:", obs_status)
+               bad_html += self.meteor_cell_html(obs_id, etime, obs_status)
                bad_html += "\n"
 
             bad_html += "<div style='clear: both'></div>"
@@ -2527,7 +4897,7 @@ $(document).ready(function () {
       print("Local Files            :   ", len(local_files))
       print("AWS S3 Files           :   ", len(s3_files))
       print("Cloud Files            :   ", len(cloud_files))
-
+      
       if os.path.exists(self.obs_dict_file) is True: 
          self.obs_dict = load_json_file(self.local_evdir + "/" + self.date + "_OBS_DICT.json")
       else:
@@ -2547,6 +4917,7 @@ $(document).ready(function () {
 
 
       sql_event_day_stats = self.sql_select_event_day_stats(self.date)
+
 
       sql_events = self.sql_select_events(self.date.replace("_", ""))
 
@@ -2674,6 +5045,7 @@ $(document).ready(function () {
          print("TDIFF OBS DICT:", tdiff2)
 
       self.obs_dict = {}
+      print("ALL OBS FILE:", self.all_obs_file)
       self.all_obs = load_json_file(self.all_obs_file)
       for obs in self.all_obs:
          obs_key = obs['station_id'] + "_" + obs['sd_video_file']
@@ -2838,7 +5210,7 @@ status [date]   -    Show network status report for that day.
          solve_data = load_json_file(pass_file)
          if "event_day" not in solve_data:
             event_day = self.event_id_to_date(event_id)
-            solve__data['event_day'] = event_day
+            solve_data['event_day'] = event_day
 
          temp = self.good_obs_to_event(event_day, event_id)
          for key in temp:
@@ -2846,10 +5218,13 @@ status [date]   -    Show network status report for that day.
          event_data = solve_data
 
       print(event_data)
-      input("wait")
+
       #insert_meteor_event(self.dynamodb, event_id, event_data)
       
-   def meteor_cell_html(self, obs_id,edatetime=None):
+   def meteor_cell_html(self, obs_id,edatetime=None,status=None):
+
+      print("METEOR CELL:", status)
+
       if edatetime is not None:
          edate, etime = edatetime.split(" ")
       else:
@@ -2877,6 +5252,13 @@ status [date]   -    Show network status report for that day.
       div_id = obs_id.replace(".mp4", "")
       div_id = div_id.replace("-prev.jpg", "")
 
+      if status is None:
+         opacity = "1"
+      elif status is 1:
+         opacity = "1"
+      else:
+         opacity = ".33"
+
       disp_text = station_id + " - " + cam + " - " +  etime #+ "<br>"
       video_url = prev_img_url.replace("-prev.jpg", "-180p.mp4")
       disp_text += """ <a href="javascript:play_video('{}','{}')"><i style='font-size: 12px' class="fas fa-play "></i></a>""".format(div_id, video_url)
@@ -2891,11 +5273,850 @@ status [date]   -    Show network status report for that day.
               width: 320px;
               height: 180px;
               margin: 25px; 
+              opacity: {:s}; 
               ">
               <div class="show_hider"> {:s} </div>
          </div>
-         """.format(div_id, prev_img_url, disp_text)
+         """.format(div_id, prev_img_url, opacity, disp_text)
       else:
          html = ""
          #station_id + " " + obs_id.replace(".mp4", "")
       return(html)
+
+
+   def make_plane_kml(self, event, planes):
+      kml = simplekml.Kml()
+      colors = self.get_kml_colors()
+      fol_day = kml.newfolder(name=self.date + " AS7 EVENTS")
+      fol_obs = fol_day.newfolder(name=self.date + " AS7 EVENTS")
+      color = "FFFFFFFF"
+      for ob in event['obs']:
+         el = ob.split("_")
+         station_id = el[0]
+         if "meteor_frame_data" not in self.obs_dict[ob]:
+            print(ob, "MISSING MFD!")
+            continue
+         if len(self.obs_dict[ob]['meteor_frame_data']) == 0:
+            print("NO FRAME DATA", ob)
+            continue
+         start_az = self.obs_dict[ob]['meteor_frame_data'][0][-2]
+         start_el = self.obs_dict[ob]['meteor_frame_data'][0][-1]
+         end_az = self.obs_dict[ob]['meteor_frame_data'][-1][-2]
+         end_el = self.obs_dict[ob]['meteor_frame_data'][-1][-1]
+         print(ob, start_az, start_el, end_az, end_el)
+         lat,lon,alt = self.station_loc[station_id][:3]
+         pnt = kml.newpoint(name=station_id, coords=[(round(lon,1),round(lat,1))])
+         dist = 300
+         start_az_end_pt = self.find_point_from_az_dist(lat,lon,start_az,dist)
+         end_az_end_pt = self.find_point_from_az_dist(lat,lon,end_az,dist)
+
+         kline = fol_obs.newlinestring(name=ob + " START", description="", coords=[(lon,lat,alt),(start_az_end_pt[1],start_az_end_pt[0],alt)])
+         kline.altitudemode = simplekml.AltitudeMode.clamptoground
+         kline.linestyle.color = colors[0]
+         kline.linestyle.colormode = "normal"
+         kline.linestyle.width = "3"
+
+         kline2 = fol_obs.newlinestring(name=ob + " END", description="", coords=[(lon,lat,alt),(end_az_end_pt[1],end_az_end_pt[0],alt)])
+         kline2.altitudemode = simplekml.AltitudeMode.clamptoground
+         kline.linestyle.color = colors[2]
+         kline2.linestyle.colormode = "normal"
+         kline2.linestyle.width = "3"
+
+
+
+      for combo_key in event['planes']:
+         ev_id = 0
+         o_combo_key = combo_key.replace("EP:", "")
+         print("COMBO KEY IS:", combo_key)
+         ob1,ob2 = combo_key.split(":")
+         print(ev_id, combo_key, event['planes'][combo_key])
+         if event['planes'][combo_key][0] == "plane_solved":
+            line1 = event['planes'][combo_key][1]
+            line2 = event['planes'][combo_key][2]
+            #color = event['planes'][combo_key]['color']
+            color = "FFFFFFFF"
+            slat,slon,salt,elat,elon,ealt = line1
+
+            line = fol_day.newlinestring(name=combo_key, description="", coords=[(slon,slat,salt),(elon,elat,ealt)])
+            line.altitudemode = simplekml.AltitudeMode.relativetoground
+            line.linestyle.color = color
+            line.linestyle.colormode = "normal"
+            line.linestyle.width = "3"
+            slat,slon,salt,elat,elon,ealt = line2
+            line = fol_day.newlinestring(name=combo_key, description="", coords=[(slon,slat,salt),(elon,elat,ealt)])
+            line.altitudemode = simplekml.AltitudeMode.relativetoground
+            line.linestyle.color = color
+            line.linestyle.colormode = "normal"
+            line.linestyle.width = "3"
+         else:
+            print("BAD PP STATUS:", event['planes'][combo_key][0])
+      self.plane_kml_file = self.event_dir + "/" + event['event_id'] + "/" + event['event_id'] + "-planes.kml"
+      if os.path.exists(self.event_dir + "/" + event['event_id']) is False:
+         os.makedirs(self.event_dir + "/" + event['event_id'])
+      kml.save(self.plane_kml_file)
+      print(self.plane_kml_file)
+      print("SAVED:", self.plane_kml_file)
+
+   def get_kml_colors(self):
+      colors = []
+      for key in kml_colors:
+         colors.append(kml_colors[key])
+      return(colors)
+
+
+
+
+   def check_start_ai_server(self):
+      # test the AI server if not running start it and sleep for 30 seconds
+
+      url = "http://localhost:5000/"
+      try:
+         response = requests.get(url)
+         content = response.content.decode()
+         print(content)
+      except Exception as e:
+         if "HTTP" in str(e):
+            print("HTTP ERR:", e)
+            cmd = "/usr/bin/python3.6 AIServer.py > /dev/null 2>&1 & "
+            #cmd = "/usr/bin/python3.6 AIServer.py " #> /dev/null 2>&1 & "
+            print("Starting AI Sleep for 40 seconds.")
+            print(cmd)
+            os.system(cmd)
+            time.sleep(20)
+
+   def check_ai_img(self, ai_image=None, ai_file=None):
+      if ai_image is not None and ai_file is None:
+         print(ai_image.shape)
+         cv2.imwrite("/mnt/ams2/temp.jpg", ai_image)
+         ai_file = "/mnt/ams2/temp.jpg"
+
+      if True:
+         url = "http://localhost:5000/AI/METEOR_ROI/?file={}".format(ai_file)
+         try:
+            response = requests.get(url)
+            content = response.content.decode()
+            content = json.loads(content)
+            print(content)
+         except Exception as e:
+            print("HTTP ERR:", e)
+      
+      return(content)
+
+   def obs_timeline (self, event_date):
+      html = """
+
+  <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+  <script type="text/javascript">
+  google.charts.load("current", {packages:["timeline"]});
+  google.charts.setOnLoadCallback(drawChart);
+  function drawChart() {
+
+    var container = document.getElementById('example5.1');
+    var chart = new google.visualization.Timeline(container);
+    var dataTable = new google.visualization.DataTable();
+    dataTable.addColumn({ type: 'string', id: 'Room' });
+    dataTable.addColumn({ type: 'string', id: 'Name' });
+    dataTable.addColumn({ type: 'date', id: 'Start' });
+    dataTable.addColumn({ type: 'date', id: 'End' });
+    dataTable.addRows([
+     """
+      sql = """
+        SELECT obs_id FROM event_obs ORDER BY station_id;
+      """
+      self.cur.execute(sql)
+      rows = self.cur.fetchall()
+
+      js_rows = ""
+      for row in rows:
+         obs_id = row[0]
+         elm = obs_id.split("_")
+         st = elm[0]  
+         hour = elm[4]  
+         minute = elm[5]  
+         second = elm[6]  
+         ehour = hour
+         eminute = minute 
+         esec = str(int(second) + 5)
+         if int(esec) >= 60:
+            esec = str(int(esec) - 60)
+            eminute = int(minute) + 1
+            if int(minute) >= 60:
+               eminute = "0"
+               ehour = str(int(hour)+1)
+
+            else:
+               eminute = str(eminute)
+         if js_rows != "":
+            js_rows += ","
+
+         js_rows += """[ '{:s}', '{:s}', new Date({:s}, {:s}, {:s}, {:s}, {:s}, {:s}), new Date({:s}, {:s}, {:s}, {:s}, {:s}, {:s})]""".format(st, st, "0","0","0",hour, minute, second,"0","0","0",ehour,eminute,esec)
+
+         print(obs_id, hour, minute, second)
+      html += js_rows + "]);"
+
+      html += """
+
+    var options = {
+      timeline: { colorByRowLabel: true }
+    };
+
+    chart.draw(dataTable, options);
+  }
+
+  </script>
+
+  <div id="example5.1" style="height: 100px;"></div>
+
+   """
+
+      print(html)
+
+   def make_obs_object(self, obs_id):
+      obj = {}   
+      obj['obs_id'] = obs_id  
+      obj['station_id'] = obs_id.split("_")[0]
+      obj['primary'] = True
+      obj['ignore'] = False
+      obj['media_files'] = {}
+      obj['data_files'] = {}
+      obj['calibration'] = {}
+      return(obs_id)
+
+   def edit_event(self, event_id):
+      event_day = self.event_id_to_date(event_id)
+      year, month, day_of_month = event_day.split("_")
+      self.local_event_id_dir = self.local_event_dir + year + "/" + month + "/" + day_of_month + "/" + event_id + "/"
+      all_files = os.listdir(self.local_event_id_dir)
+
+      obs_data = {}
+
+      for ev in all_files:
+         ftype = ""
+         root_file = ""
+         obs_id = ""
+         trim_num = ""
+         if "AMS" == ev[0:3]:
+            if ".mp4" in ev:
+               ftype = "mp4"
+            if ".jpg" in ev:
+               ftype = "jpg"
+            if ".json" in ev:
+               ftype = "json"
+            if ".html" in ev:
+               ftype = "html"
+
+            felm = ev.split("-")
+            if "CLOUDFILES" in ev:
+               ftype = "json"
+               root_file = felm[0] 
+               obs_id = felm[0] 
+            elif len(felm) >= 3:
+               trim_num = felm[2]
+               root_file = felm[0] 
+               obs_id = root_file + "-trim-" + felm[2] 
+            elif len(felm) == 1:
+               ftype = "min_file"
+               root_file = felm[0] 
+               obs_id = root_file 
+            else:
+               ftype = "min_file"
+               root_file = ev 
+               obs_id = root_file 
+
+            station_id = ev.split("_")[0]
+            if station_id not in obs_data:
+               obs_data[station_id] = {}
+               obs_data[station_id]['obs'] = {}
+            if root_file not in obs_data[station_id]['obs']:
+               obs_data[station_id]['obs'][root_file] = {}
+               obs_data[station_id]['obs'][root_file]['files'] = {}
+            obs_data[station_id]['obs'][root_file]['files'][ev] = {} 
+            print("STATION FILE:", station_id, root_file, obs_id, ev, ftype)
+         else:
+            print("EVENT FILE:", ev, ftype)
+
+      for station in obs_data:
+         print(station)
+         for obs_id in obs_data[station]['obs']:
+            if "mp4" in obs_id:
+               gtype = "* MIN FILE"
+            else:
+               gtype = ""
+            print("   ", obs_id, gtype)
+            if "files" in obs_data[station]['obs'][obs_id]:
+               for ofile in obs_data[station]['obs'][obs_id]['files']:
+                  print("      ", ofile) #, obs_data[station]['obs'][obs_id]['files'][ofile])
+            else:
+               print("NO FILES")
+
+   def remote_reducer(self, event_id):
+      # this will reduce all files in this directory 
+      # per the latest calibs and standards
+      # regardless of the stations
+      # works with SD or HD files
+      date = self.event_id_to_date(event_id)
+      self.set_dates(date)
+      event_dir = self.local_event_dir + "/" + self.year + "/" + self.month + "/" + self.day  + "/" + event_id + "/"
+      hd_files = os.listdir(event_dir + "HD/")
+      for hdf in hd_files:
+         station_id = hdf.split("_")[0]
+         (f_datetime, cam_id, f_date_str,fy,fmin,fd, fh, fm, fs) = convert_filename_to_date_cam(hdf.replace(station_id + "_" , ""))
+         trim_num = get_trim_num(hdf)
+         extra_sec = int(trim_num) / 25
+         start_trim_frame_time = f_datetime + datetime.timedelta(0,extra_sec)
+         oframes = load_frames_simple(event_dir + "HD/" + hdf)
+         frames = []
+         if len(oframes) == 0:
+            print("NO FRAMES")
+            continue 
+
+         for frame in oframes:
+            if oframes[0].shape[0] != 1080:
+               frame = cv2.resize(frame, (1920,1080))
+            frames.append(frame)
+     
+         med_frame = cv2.convertScaleAbs(np.median(np.array(frames[0:10]), axis=0))
+         # auto mask
+         if len(oframes) == 0:
+            print("NO FRAMES!", hdf)
+            continue
+         bw_med =  cv2.cvtColor(med_frame, cv2.COLOR_BGR2GRAY)
+         min_val, max_val, min_loc, (mx,my)= cv2.minMaxLoc(bw_med)
+         thresh_val = int(max_val * .8)
+         cal_params = self.get_remote_cal_params(station_id, cam_id, hdf, f_datetime,med_frame)
+         show_img = med_frame.copy()
+         for star in cal_params['cat_image_stars']:
+            name,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,star_x,star_y,res_px,flux = star
+            cv2.circle(show_img, (int(star_x),int(star_y)), int(5), (0,255,0),2)
+            cv2.circle(show_img, (int(new_cat_x),int(new_cat_y)), int(5), (128,255,0),2)
+            cv2.imshow('calib', show_img)
+            cv2.waitKey(30)
+
+         cv2.waitKey(30)
+         #cat_stars, short_bright_stars, cat_image = get_catalog_stars(cal_params)
+
+         avg_val = np.mean(bw_med)
+         if thresh_val < avg_val * 1.5:
+            thresh_val = avg_val * 1.5
+
+
+         _, mask_image = cv2.threshold(bw_med, thresh_val, 255, cv2.THRESH_BINARY)
+
+         mask_image = cv2.dilate(mask_image, None, iterations=8)
+         cnts = get_contours_in_image(mask_image)
+         for x,y,w,h in cnts:
+            mask_image[y:y+h,x:x+w] = 255
+
+         mask_image_bgr = cv2.cvtColor(mask_image, cv2.COLOR_GRAY2BGR)
+
+         fc = 0
+         objects = {}
+
+         for frame in frames:
+            frame = cv2.subtract(frame, mask_image_bgr)
+            extra_sec = fc / 25
+            frame_time = start_trim_frame_time + datetime.timedelta(0,extra_sec)
+            frame_time_str = frame_time.strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]
+            sub = cv2.subtract(frame, med_frame)
+
+            bw_sub =  cv2.cvtColor(sub, cv2.COLOR_BGR2GRAY)
+            bw_sub = cv2.subtract(bw_sub, mask_image)
+            min_val, max_val, min_loc, (mx,my)= cv2.minMaxLoc(bw_sub)
+            avg_val = np.mean(bw_sub)
+            thresh_val = int(max_val * .6)
+            if thresh_val < 50:
+               thresh_val = 50
+            if thresh_val < avg_val:
+               thresh_val = avg_val * 1.5
+            _, thresh_image = cv2.threshold(bw_sub, thresh_val, 255, cv2.THRESH_BINARY)
+
+            cnts = get_contours_in_image(thresh_image)
+            for x,y,w,h in cnts:
+               mx = int(x + (w / 2))
+               my = int(y + (h / 2))
+               obj_id, objects = self.get_object(objects, fc, x,y,w,h)
+
+               cv2.rectangle(thresh_image, (int(mx-25), int(my-25)), (int(mx+25) , int(my+25) ), (255, 255, 255), 2)
+               cv2.putText(thresh_image, str(obj_id),  (mx-30,my-30), cv2.FONT_HERSHEY_SIMPLEX, .6, (255,255,255), 1)
+
+            cv2.imshow('tracking', frame)
+            cv2.putText(sub, frame_time_str,  (20,1060), cv2.FONT_HERSHEY_SIMPLEX, .6, (0,255,0), 1)
+
+            cv2.imshow('original', thresh_image)
+            cv2.waitKey(30)
+            fc += 1
+         
+        
+
+   def get_object(self, objects, fn,mx,my,mw,mh):
+      if True:
+         if len(objects.keys()) == 0:
+            # make new there are none!
+            objects[1] = {}
+            objects[1]['cnts'] = [[fn,mx,my,mw,mh]]
+            print("Make 1st obj")
+            return(1, objects)
+
+         # check existing
+         cmx = mx + (mw/2)
+         cmy = my + (mh/2)
+         for oid in objects:
+            for cnt in objects[oid]['cnts']:
+               fn,ox,oy,ow,oh = cnt
+               cox = ox + (ow/2)
+               coy = oy + (oh/2)
+               dist = calc_dist((cmx,cmy), (cox,coy))
+               print("DIST:", cmx,cmy,cox,coy,dist)
+               if dist < 250:
+                  objects[oid]['cnts'].append([fn,mx,my,mw,mh])
+                  return(oid, objects)
+         # none found so far. make new
+         oid = max(objects.keys()) + 1
+         objects[oid] = {}
+         objects[oid]['cnts'] = [[fn,mx,my,mw,mh]]
+         return(oid, objects)
+
+
+   def remote_cal_one(self, full_file):
+
+      if "\\" in full_file:
+         full_file = full_file.replace("\\", "/")
+
+    
+      input_file = full_file.split("/")[-1]
+      station_id = input_file.split("_")[0]
+
+      print("FULL FILE:", full_file)
+      print("REMOTE CAL ONE FILE:", input_file)
+      print("STATION:", station_id)
+
+      (f_datetime, cam_id, f_date_str,fy,fmin,fd, fh, fm, fs) = convert_filename_to_date_cam(input_file.replace(station_id + "_" , ""))
+      img = cv2.imread(full_file)
+
+      star_points,stars_image = get_star_points(input_file, img, {}, station_id, cam_id, {})
+      star_points = sorted(star_points, key=lambda x: (x[2]), reverse=True)
+
+      cal_params,json_conf = self.get_remote_cal_params(station_id, cam_id, input_file.replace(station_id + "_", ""), f_datetime,img, star_points)
+
+  
+
+
+      text1 = str(cal_params['center_az'])[0:4] + " / " \
+         + str(cal_params['center_el'])[0:4] + " ::: " \
+         + str(cal_params['ra_center'])[0:4] + " / " \
+         + str(cal_params['dec_center'])[0:4] + " ::: " \
+         + str(cal_params['position_angle'])[0:4] + " ::: " \
+         + str(cal_params['pixscale'])[0:4] + " ::: " 
+
+      # draw img stars on image
+      if len(img.shape) == 2:
+         img =  cv2.cvtColor(img, cv2.COLOR_GRAY2BGR)
+
+      show_img = img.copy()
+      if True:
+         # draw cat_image_stars on image
+         for star in cal_params['cat_image_stars']:
+            name,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,star_x,star_y,res_px,flux = star
+            cv2.circle(show_img, (int(star_x),int(star_y)), int(5), (0,255,0),2)
+            cv2.rectangle(show_img, (int(new_cat_x-10), int(new_cat_y-10)), (int(new_cat_x+10) , int(new_cat_y+10) ), (255, 255, 255), 1)
+            cv2.imshow('calib', show_img)
+            cv2.waitKey(30)
+
+      for row in star_points[0:50]:
+         mx, my, inten = row
+         #cv2.circle(show_img, (int(mx),int(my)), int(5), (128,128,128),2)
+         #cv2.imshow('calib', stars_image)
+         #cv2.waitKey(30)
+         #print(row)
+
+      extra_text = "Hello there..." 
+
+      ifile = input_file.replace(station_id + "_", "")
+      new_cp = minimize_fov(ifile, cal_params, ifile,img.copy(),json_conf, False,cal_params, extra_text, show=1)
+
+      new_cp = minimize_fov(ifile, new_cp, ifile,img.copy(),json_conf, False,cal_params, extra_text, show=1)
+
+      cv2.putText(img, str(text1),  (int(20),int(20)), cv2.FONT_HERSHEY_SIMPLEX, .6, (255,255,255), 1)
+      cv2.imshow('calib', show_img)
+      cv2.waitKey(30)
+
+
+   def insert_last_best_cal(self, cp ):
+      ivals = [ cp['station_id'], cp['camera_id'], cp['cal_fn'], cp['cal_datetime'], cp['cal_timestamp'], cp['center_az'], cp['center_el'], cp['ra'], cp['dec'], cp['position_angle'], cp['pixel_scale'], json.dumps(cp['user_stars']), json.dumps(cp['cat_time_stars']), json.dumps(cp['x_poly']), json.dumps(cp['y_poly']), json.dumps(cp['x_poly_fwd']), json.dumps(cp['y_poly_fwd']) ]
+      ivals = {}
+      isql = """INSERT INTO last_best_cal
+                (station_id, camera_id, calib_fn, cal_datetime, cal_timestamp, az, el, ra, dec, position_angle, 
+                 pixel_scale, user_stars, cat_image_stars, x_poly, ypoly,x_poly_fwd, y_poly_fwd) 
+                VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+             """
+      self.cal_cur.execute(isql, ivals)
+      self.cal_con.commit()
+
+
+
+   def get_remote_cal_params(self, station_id, cam_id, obs_id, cal_date, show_img, star_points = []):
+
+
+      self.cal_con = sqlite3.connect("ALLSKYNETWORK_CALIBS.db")
+      self.cal_con.row_factory = sqlite3.Row
+      self.cal_cur = self.con.cursor()
+      sql = """
+         SELECT station_id, camera_id, calib_fn, cal_datetime, cal_timestamp, az, el, ra, dec, position_angle, pixel_scale, user_stars, cat_image_stars, x_poly, y_poly,x_poly_fwd,y_poly_fwd,res_px,res_deg 
+           FROM last_best_cal 
+          WHERE station_id = ?
+            AND camera_id = ?
+      """
+
+      vals = [station_id, cam_id]
+      self.cur.execute(sql, vals)
+      rows = self.cur.fetchall()
+
+      obs_dt = cal_date #datetime.datetime.strptime(cal_date, "%Y-%m-%d %H:%M:%S.%f")
+      cal_timestamp = datetime.datetime.timestamp(obs_dt)
+      print(obs_dt, cal_timestamp)
+      for row in rows:
+         print("LAST BEST:", row)
+
+      orig_img = show_img.copy()
+      this_range = []
+      cloud_cal_dir = "/mnt/archive.allsky.tv/" + station_id + "/CAL/"
+      local_cal_dir = "/mnt/f/EVENTS/STATIONS/" + station_id + "/CAL/"
+      remote_json_conf_file = local_cal_dir + "as6.json"
+      if os.path.exists(remote_json_conf_file) is True:
+         remote_json_conf = load_json_file(remote_json_conf_file)
+         json_conf = remote_json_conf 
+      if os.path.exists(local_cal_dir) is False:
+         os.makedirs(local_cal_dir)
+      print("CLOUD:", cloud_cal_dir)
+      remote_cal_files = os.listdir(cloud_cal_dir) 
+      #print("REMOTE CAL FILES")
+
+      best_res = 99999
+      best_calib = None
+
+
+
+      for rf in remote_cal_files:
+         remote_file = cloud_cal_dir + rf
+         local_file = local_cal_dir + rf
+         if os.path.exists(local_file) is False and os.path.isdir(remote_file) is False:
+            cmd = "cp " + remote_file + " " + local_file
+            print(cmd)
+            os.system(cmd)
+      #print("All files should be sync'd")
+      cal_range_file = local_cal_dir + station_id + "_cal_range.json"
+      remote_json_conf = load_json_file(remote_json_conf_file)
+      #print(cal_range_file)
+      lens_file = local_cal_dir + station_id + "_" + cam_id + "_LENS_MODEL.json"
+      if os.path.exists(lens_file) is True: 
+         lens_model = load_json_file(lens_file)
+      else:
+         print("NO LENS MODEL!")
+
+      if os.path.exists(cal_range_file) is True:
+         cal_range_data = load_json_file(cal_range_file)
+      else:
+         print("NO CAL RANGE FOR ", station_id, cam_id, obs_id)
+         cal_range_data = []
+
+      match_range_data = []
+      for row in cal_range_data:
+         rcam_id, rend_date, rstart_date, az, el, pos, pxs, res = row
+
+         if np.isnan(az) is True:
+            print("NAN SKIP")
+            continue
+         else:
+            print(az, np.isnan(az))
+            #exit()
+
+         rcam_id = row[0]
+         rend_date = row[1]
+         rstart_date = row[2]
+
+         rend_dt = datetime.datetime.strptime(rend_date, "%Y_%m_%d")
+         rstart_dt = datetime.datetime.strptime(rstart_date, "%Y_%m_%d")
+
+         if rcam_id == cam_id and np.isnan(az) == False:
+            print("CAL RANGE MATCH:", az, el, pos, pxs, np.isnan(az) )
+            elp = abs((cal_date - rend_dt).total_seconds()) / 86400
+            match_range_data.append(( cal_date, rend_dt, rstart_dt, elp, az, el, pos, pxs, res))
+
+      for mdata in match_range_data:
+         show_img = orig_img.copy()
+
+
+
+         rcam_id, best_rend_date, best_rstart_date, elp, best_az, best_el, best_pos, best_pxs, res = mdata
+
+         lens_model['center_az'] = best_az 
+         lens_model['center_el'] = best_el
+         lens_model['position_angle'] = best_pos 
+         lens_model['pixscale'] = best_pxs 
+         temp = obs_id.replace(station_id + "_", "") 
+         print("BEST:", best_az, best_el, best_pos, best_pxs)
+
+         print("BEFORE:", lens_model['ra_center'], lens_model['dec_center'])
+         cal_params = update_center_radec(temp,lens_model,remote_json_conf)
+         print("AFTER:", cal_params['ra_center'], cal_params['dec_center'])
+
+         print("CHOOSE CAL PARAMS.", best_az, best_el)
+
+         for key in cal_params:
+            print(key, cal_params[key])
+         for key in remote_json_conf:
+            print(key, remote_json_conf[key])
+         cat_stars, short_bright_stars, cat_image = get_catalog_stars(cal_params)
+         used = {}
+         if True:
+            for ix,iy,ii in star_points[0:50]:
+               cv2.circle(show_img, (ix,iy), int(5), (0,255,0),1)
+
+         all_res = []
+         cat_image_stars = []
+         for star in cat_stars[0:25]:
+            print("STAR:", star)
+            (name,mag,ra,dec,new_cat_x,new_cat_y,zp_cat_x,zp_cat_y) = star
+            print("STAR2:", new_cat_x, new_cat_y)
+            cv2.putText(show_img, str(name),  (int(new_cat_x-25),int(new_cat_y-25)), cv2.FONT_HERSHEY_SIMPLEX, .6, (255,255,255), 1)
+            cv2.rectangle(show_img, (int(new_cat_x-25), int(new_cat_y-25)), (int(new_cat_x+25) , int(new_cat_y+25) ), (255, 255, 255), 1)
+
+            # find closest image star! 
+            dist_arr = []
+            for ix,iy,ii in star_points[0:50]:
+               print("IX:", ix,iy, new_cat_x, new_cat_y)
+               this_dist = calc_dist((ix,iy),(new_cat_x,new_cat_y))
+               if this_dist < 20:
+                  dist_arr.append((this_dist, star, ii))
+            dist_arr = sorted(dist_arr, key=lambda x: x[0], reverse=False)
+            if len(dist_arr) > 0:
+               closest_star = dist_arr[0][1]
+               print("CLOSE:", closest_star)
+               star_x = closest_star[4]
+               star_y = closest_star[5]
+               flux = dist_arr[0][2]
+               res = dist_arr[0][0]
+               all_res.append(res)
+
+               new_x, new_y, img_ra,img_dec, img_az, img_el = XYtoRADec(new_cat_x,new_cat_y,obs_id,cal_params,json_conf)
+               img_new_cat_x, img_new_cat_y = get_xy_for_ra_dec(cal_params, img_ra, img_dec)
+               match_dist = angularSeparation(ra,dec,img_ra,img_dec)
+               #cat_image_stars.append((name_ascii,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,x,y,res_px,flux))
+               print("PRINT STAR X,YS:", star_x, star_y, new_cat_x, new_cat_y)
+               res_px = calc_dist((star_x,star_y), (new_cat_x,new_cat_y))
+               cat_image_stars.append((name,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,star_x,star_y,res_px,flux))
+               print("CLOSEST MATCH:", res, closest_star)
+
+
+         #print(cat_stars)
+         if len(all_res) > 0:
+            avg_res = np.mean(all_res)
+         else:
+            avg_res = 999
+         print("RES:", avg_res)
+         if avg_res <= best_res :
+            print("*** BEST RES BEAT:", best_res, avg_res)
+            best_res = avg_res
+            best_calib = cal_params
+            best_calib['cat_image_stars'] = cat_image_stars
+            best_calib['total_res_px'] = avg_res 
+         cv2.imshow('calib', show_img)
+         cv2.waitKey(30)
+
+      print("FINAL BEST CALIB:", best_calib)
+      print("FINAL BEST RES IS:", best_res)
+
+      best_calib = update_center_radec(obs_id,best_calib,json_conf)
+
+      obs_dt = cal_date #datetime.datetime.strptime(cal_date, "%Y-%m-%d %H:%M:%S.%f")
+
+      cal_timestamp = datetime.datetime.timestamp(obs_dt)
+      best_calib['cal_timestamp'] = cal_timestamp
+      best_calib['cal_fn'] = obs_id
+      best_calib['camera_id'] = cam_id
+
+      insert_last_best_cal(self, best_calib, con, cur)
+      input("INSERTER")
+      return(best_calib, json_conf)
+
+
+
+
+   def merge_obs(self, event_id ):
+      event_day = self.event_id_to_date(event_id)
+      self.event_id = event_id
+      self.set_dates(event_day)
+
+      good_obs_file = self.local_evdir + self.event_id + "/" + self.event_id + "_GOOD_OBS.json"
+      good_obs = load_json_file(good_obs_file)
+      time_matrix = {}
+      for station in good_obs:
+
+         if len(good_obs[station]) > 1:
+            print("NEED TO MERGE!", station, len(good_obs[station]), "obs")
+            for obs_id in good_obs[station]:
+               (f_datetime, cam_id, f_date_str,fy,fmin,fd, fh, fm, fs) = convert_filename_to_date_cam(obs_id.replace(station + "_" , ""))
+               print(obs_id, good_obs[station][obs_id].keys())
+               for i in range(0, len(good_obs[station][obs_id]['fns'])):
+                  print(obs_id, i, good_obs[station][obs_id]['times'][i])
+                  time_key = good_obs[station][obs_id]['times'][i]
+                  if station not in time_matrix:
+                     time_matrix[station] = {}
+                  if time_key not in time_matrix[station]:
+                     time_matrix[station][time_key] = {}
+                     time_matrix[station][time_key]['fns'] = []
+                     time_matrix[station][time_key]['azs'] = []
+                     time_matrix[station][time_key]['els'] = []
+                     time_matrix[station][time_key]['gc_azs'] = []
+                     time_matrix[station][time_key]['gc_els'] = []
+                     time_matrix[station][time_key]['cam_ids'] = []
+                  time_matrix[station][time_key]['fns'].append(good_obs[station][obs_id]['fns'][i])
+                  time_matrix[station][time_key]['azs'].append(good_obs[station][obs_id]['azs'][i])
+                  time_matrix[station][time_key]['els'].append(good_obs[station][obs_id]['els'][i])
+                  time_matrix[station][time_key]['gc_azs'].append(good_obs[station][obs_id]['gc_azs'][i])
+                  time_matrix[station][time_key]['gc_els'].append(good_obs[station][obs_id]['gc_els'][i])
+                  time_matrix[station][time_key]['cam_ids'].append(cam_id)
+            #for obs_id in good_obs[station]:
+      for station in time_matrix:
+         for time_key in time_matrix[station]:
+            print(station, time_key, time_matrix[station][time_key] )
+
+
+
+
+
+
+
+   def video_preview_html_js(self, video_urls):
+      text_vars = ""
+      for url in video_urls:
+         if text_vars != "":
+            text_vars += ",\n"
+         text_vars += """'{:s}'""".format(url)
+
+      js = """
+      <div id="videoContainer" style="display:inline-block"></div>
+      <b id="output" style="vertical-align:top"></b>
+      <script>
+      var videoContainer = document.getElementById('videoContainer'),
+          output = document.getElementById('output'),
+          nextVideo,
+          videoObjects =
+          [
+              document.createElement('video'),
+              document.createElement('video')
+          ],
+          vidSources =
+          [
+              {:s}
+          ],
+          nextActiveVideo = Math.floor((Math.random() * vidSources.length));
+      
+      videoObjects[0].inx = 0; //set index
+      videoObjects[1].inx = 1;
+      
+      initVideoElement(videoObjects[0]);
+      initVideoElement(videoObjects[1]);
+      
+      videoObjects[0].autoplay = true;
+      videoObjects[0].src = vidSources[nextActiveVideo];
+      videoContainer.appendChild(videoObjects[0]);
+      
+      videoObjects[1].style.display = 'none';
+      videoContainer.appendChild(videoObjects[1]);
+      
+      function initVideoElement(video)
+      {
+          video.playsinline = true;
+          video.muted = false;
+          video.preload = 'auto'; //but do not set autoplay, because it deletes preload
+      
+          video.onplaying = function(e)
+          {
+              output.innerHTML = 'Current video source index: ' + nextActiveVideo;
+              nextActiveVideo = ++nextActiveVideo % vidSources.length;
+              if(this.inx == 0)
+                  nextVideo = videoObjects[1];
+              else
+                  nextVideo = videoObjects[0];
+              nextVideo.src = vidSources[nextActiveVideo];
+              nextVideo.pause();
+          };
+      
+          video.onended = function(e)
+          {
+              this.style.display = 'none';
+              nextVideo.style.display = 'block';
+              nextVideo.play();
+          };
+      }
+      </script> 
+      """.format(text_vars)
+      
+      return(js)      
+
+   def slideshow(self, event_day):
+      self.set_dates(event_day)
+      print(self.local_evdir)
+      sdirs = os.listdir(self.local_evdir)
+      image_list = """      
+         <!-- EVENT IMAGES LIST -->
+         <div class="slideshow-container">
+      """
+
+      dots = """
+         <div style="text-align:center">
+      """
+      dc = 1 
+
+#<!-- The dots/circles -->
+#<div style="text-align:center">
+
+      for evd in sdirs:
+         if os.path.exists(self.local_evdir + evd + "/" + evd + "_REVIEW.jpg") is True: 
+            print (self.local_evdir + evd + "/" + evd + "_REVIEW.jpg") 
+            image_list += """      
+            <div class="mySlides fade">
+               <div class="numbertext">1 / 3</div>
+               <img src="{:s}/{:s}_REVIEW.jpg" style="width:100%">
+               <div class="text">{:s}</div>
+            </div>
+            """.format(evd, evd, evd)
+            dots += """
+            <span class="dot" onclick="currentSlide({:s})"></span>
+            """.format(str(dc))
+            dc += 1
+
+      dots += "</div>"
+
+      image_list += """      
+         </div>
+      """
+
+      image_list += dots
+
+      fp = open("slideshow.html", "r")
+      slide_html = ""
+      for line in fp:
+         slide_html += line
+      slide_html = slide_html.replace("IMAGE_LIST", image_list)
+
+
+      out = open(self.local_evdir + "slideshow.html", "w")
+      out.write(slide_html)
+      out.close()
+      print("saved slide show:", self.local_evdir + "slideshow.html")
+      
+
+   def min_file_size(self, event_day):
+      self.set_dates(event_day)
+      os.system("find " + self.local_evdir + " | grep .jpg > jpgs.txt")
+      fp = open("jpgs.txt")
+      for line in fp:
+         line = line.replace("\n", "")
+         if "MAP_FOV" in line or "REVIEW" in line or "marked" in line:
+            img = cv2.imread(line)
+            cv2.imwrite(line, img, [int(cv2.IMWRITE_JPEG_QUALITY), 70])
+         print(line)
+
+

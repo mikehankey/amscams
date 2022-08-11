@@ -6,6 +6,7 @@ review / clean excess false meteors using strict rules
 from ransac_lib import ransac_outliers
 from lib.PipeUtil import load_json_file, save_json_file, calc_dist
 import os
+import cv2
 
 import sys
 
@@ -76,19 +77,21 @@ for met in meteors:
          else:
             last_d = calc_dist((last_x, last_y), (x,y))
          last_dx = x - last_x
-         if last_dx > 0:
+         if last_dx >= 0:
             x_dir = 1
          else: 
             x_dir = 0
 
-         if last_dy > 0:
+         if last_dy >= 0:
             y_dir = 1
          else: 
             y_dir = 0
          
          if y_dir != last_y_dir: 
+            print("YDIR CHANGE:", y_dir, last_y_dir)
             ydir_changes += 1
          if x_dir != last_x_dir: 
+            print("XDIR CHANGE:", x_dir, last_x_dir)
             xdir_changes += 1
 
 
@@ -105,6 +108,7 @@ for met in meteors:
          changes_failed = True
       rfailed = False
       try:
+      #if True:
          resp = ransac_outliers(XS,YS,"")
          #(IN_XS,IN_YS,OUT_XS,OUT_YS,line_X,line_Y,line_y_ransac.tolist(),inlier_mask.tolist(),outlier_mask.tolist())
          inx = resp[0]
@@ -125,16 +129,27 @@ for met in meteors:
      
       print("Changes Failed", changes_failed,  xdir_changes + ydir_changes )
       print("RANSAC RATIO/FAIL STATUS", ratio, rfailed)
-      if changes_failed is True or rfailed is True or short_fail is True:
+      if short_fail is True:
+         reason = "SHORT FRAMES FAIL"
+      else: 
+         reason = "FAILED RANSAC AND DIR CHANGES TESTS" 
+      if (changes_failed is True and rfailed is True) or short_fail is True:
          rejects += 1
-         print("REJECT", mj['sd_video_file'])
+         img = cv2.imread(mj['sd_video_file'].replace(".mp4", "-stacked.jpg"))
+         #if img is not None:
+         #   cv2.imshow('pepe', img)
+         #   cv2.waitKey(0)
+
+         print("REJECT", reason, mj['sd_video_file'])
          cmd = "mv " + mj['sd_video_file'].replace(".mp4", "*") + " " + trash_dir
+
          print(cmd)
-         os.system(cmd)
+         #os.system(cmd)
          print("REJECT", mj['hd_trim'])
          cmd = "mv " + mj['hd_trim'].replace(".mp4", "*") + " " + trash_dir
          print(cmd)
-         os.system(cmd)
+         #os.system(cmd)
+         input("WAIT")
       else:
          keep += 1
       print("REJECTED SO FAR:", rejects)

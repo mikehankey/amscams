@@ -279,6 +279,7 @@ class AllSkyAI():
       ai_resp['ai_version'] = 3.1
       ai_resp['root_fn'] = root_fn
       ai_resp['meteor_yn'] = 0
+      ai_resp['meteor_prev_yn'] = 0
       ai_resp['fireball_yn'] = 0
       ai_resp['mc_class'] = ""
       ai_resp['mc_class_conf'] = 0
@@ -317,7 +318,8 @@ class AllSkyAI():
          print("Trying Prev:", img38.shape)
          meteor_prev_yn_class = self.models['meteor_prev_yn'].predict(img38)
          meteor_prev_yn = (1 - meteor_prev_yn_class[0][0]) * 100
-         ai_resp['meteor_yn'] = meteor_prev_yn
+         ai_resp['meteor_prev_yn'] = meteor_prev_yn
+      
 
       # check meteor yn
       if "meteor_yn_i64" in self.models:

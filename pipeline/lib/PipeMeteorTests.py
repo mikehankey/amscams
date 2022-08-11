@@ -179,9 +179,9 @@ def one_dir_test(object):
 def big_cnt_test(object,hd=0):
    sizes = []
    big = 0
-   sz_thresh = 20
+   sz_thresh = 40
    if hd == 1:
-      sz_thresh = 40
+      sz_thresh = 100
 
    for i in range(0, len(object['ofns'])):
       w = object['ows'][i]

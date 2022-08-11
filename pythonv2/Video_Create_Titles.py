@@ -9,7 +9,7 @@ if __name__ == "__main__":
     
    if(len(sys.argv)>1):
       cmd = sys.argv[1] 
-      os.system("clear")
+      #os.system("clear")
    else:
       print("SELECT AN OPTION: main_title, title, allskycams or operators")
       sys.exit()
@@ -29,7 +29,7 @@ if __name__ == "__main__":
  
       print("Creating the video...")
       create_title_video(_title,_credits,_output_path,_color,_with_ams_logo_animation,_with_line_animation)
-      os.system("clear")
+      #os.system("clear")
 
       _add_intro =  'y'
       
@@ -52,7 +52,7 @@ if __name__ == "__main__":
          cmd = "mv " + filename +  " " + _output_path
          os.system(cmd)  
 
-      os.system("clear")
+      #os.system("clear")
       print("FILE CREATED: " + _output_path)
        
 
@@ -74,14 +74,14 @@ if __name__ == "__main__":
          cmd = "mv " + filename +  " " + _output_path
          os.system(cmd)  
 
-      os.system("clear")
+      #os.system("clear")
       print("FILE CREATED: " + _output_path)
 
 
    elif(cmd=='allskycams'):
 
-      _title         = "Visit Allskycams.com"
-      _subtitle      = "for more information about our all sky cameras"
+      _title         = "Title"
+      _subtitle      = "subtitle"
       _duration      = input("Enter duration in seconds:")
       _duration      = int(_duration)*25 #In frames at 25fps
       _size          = input("Type 1 for 1920x108 or 2 for 1280x720: ") or "1"
@@ -98,7 +98,7 @@ if __name__ == "__main__":
             os.system(cmd)  
 
 
-      os.system("clear")
+      #os.system("clear")
       print("FILE CREATED: " + _output_path)
    
    elif(cmd== 'operators'):
@@ -124,5 +124,5 @@ if __name__ == "__main__":
             cmd = "mv " + filename +  " " + _output_path
             os.system(cmd)  
                   
-      os.system("clear")
+      #os.system("clear")
       print("FILE CREATED: " + _output_path)

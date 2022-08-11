@@ -2,6 +2,9 @@ from lib.PipeUtil import cfe, load_json_file, save_json_file, convert_filename_t
 #import pymap3d as pm
 #wgs84 = pm.Ellipsoid('wgs84');
 #from numba import jit
+
+import pymap3d as pm
+
 from solveWMPL import convert_dy_obs, WMPL_solve
 import threading
 from multiprocessing import Process
@@ -517,6 +520,9 @@ class EventRunner():
             print("GOOD OBS:", st, vid)
 
       save_json_file(obs_file, good_obs)
+
+      print("JUST SAVED GOOD OBS! OBS FILE", gbs_file)
+      print(good_obs.keys())
       WMPL_solve(event_id, good_obs, 0, 1)
 
 

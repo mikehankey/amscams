@@ -11,7 +11,8 @@ from lib.VideoLib import load_video_frames, make_movie_from_frames
 
 TITLE_1280x720 = "/home/ams/amscams/dist/vids/ams_intro/1280x720.mp4"
 DEFAULT_TITLE = TITLE_1280x720
-ALL_SKY_CAMS_FRAME = "/home/ams/amscams/dist/vids/allskycams.png"
+#ALL_SKY_CAMS_FRAME = "/home/ams/amscams/dist/vids/allskycams.png"
+ALL_SKY_CAMS_FRAME = "/home/ams/amscams/pipeline/ALLSKY7_LOGO_BLACK.png"
 
 # Add big text centered 
 def add_big_text(background,text,y,color,size, the_font=VIDEO_FONT_BOLD):
@@ -265,7 +266,7 @@ def create_allskycams_video(text1,text2,duration,output):
     cap.release()
     
     # Add top text
-    new_frame = add_big_text(frames[0],"All meteor videos recorded with the All Sky 6 Camera System", 50, (255,255,255,255), 30)
+    new_frame = add_big_text(frames[0],"", 50, (255,255,255,255), 30)
 
     # Add text 1
     new_frame = add_big_text(new_frame,text1,520, (255,255,255,255), 40)

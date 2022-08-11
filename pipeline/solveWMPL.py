@@ -1,4 +1,5 @@
 #!/usr/bin/python3
+from lib.JSFuncs import video_preview_html_js
 import requests
 from lib.PipeManager import dist_between_two_points
 import time
@@ -1425,9 +1426,7 @@ def make_event_html(event_json_file ):
    css = make_css()
    dynamodb = None
    obs_file = event_json_file.replace("-event.json", "-obs.json")
-   print("LOADING:", event_json_file)
    event_data = load_json_file(event_json_file)
-   print("EVENT DATA:", event_data.keys()) 
 
    event_id = event_data['event_id']
 
@@ -1437,7 +1436,6 @@ def make_event_html(event_json_file ):
    date = year + "_" + mon + "_" + day
    #HHHH
    solve_dir = local_event_dir 
-   print("SOLVE DIR IS #1:", solve_dir)
    xxx = solve_dir.split("/")[-1]
 
 
@@ -1445,8 +1443,8 @@ def make_event_html(event_json_file ):
 
    event_file = solve_dir + event_id + "-event.json"
    event_index_file = solve_dir + "index.html" 
+   kml_url = vdir + event_id + "_map.kml"
    kml_file = solve_dir + event_id + "_map.kml"
-   print("KML FILE:", kml_file)
 
    sd = solve_dir.split("/")[-1]
    if "." in sd:
@@ -1464,17 +1462,11 @@ def make_event_html(event_json_file ):
       if event["solution"] == 0:
          print("solve failed.")
          return(0)
-   print("EVENT:", event)
-   print("EVENT SOL:", event['solution'])
 
    orb_link = event['solution']['orb']['link']
 
-   print("EVENT ID IS:", event_id)
-   print("SOL DIR IS:", solve_dir)
-   #obs_data = load_json_file(obs_file)
    obs_data = event_data['obs']
-   # make the obs part
-   print("OBSDATA:", obs_data)
+
    sum_html = make_sum_html(event_id, event, solve_dir, obs_data)
 
    event['obs'] = obs_data
@@ -1482,18 +1474,18 @@ def make_event_html(event_json_file ):
 
    center_lat, center_lon = center_obs(obs_data)
 
-   kml_file = kml_file.replace("/meteor_archive/", "https://archive.allsky.tv/")
+   #kml_file = kml_file.replace("/meteor_archive/", "https://archive.allsky.tv/")
    
    map_html = "<div style='clear: both'> &nbsp; </div>"
    map_html += "<div>"
    map_html += "<h2>Trajectory</h2>"
-   map_html += "<iframe src=\"https://archive.allsky.tv/APPS/dist/maps/index.html?mf=" + kml_file + "&zoom=5&&lat=" + str(center_lat) + "&lon=" + str(center_lon) + "&zoom=5\" width=800 height=440></iframe><br><a href=" + kml_file + ">KML</a><br>"
+   map_html += "<iframe border=0 src=\"https://archive.allsky.tv/APPS/dist/maps/index.html?mf=" + kml_url + "&zoom=5&&lat=" + str(center_lat) + "&lon=" + str(center_lon) + "&zoom=5\" width=800 height=440></iframe><br><a href=" + kml_url + ">KML DOWNLOAD</a><br>"
 
    map_html += "</div>"
 
    if orb_link != "" and orb_link != "#":
       orb_html = "<h2>Orbit</h2>"
-      orb_html += "<iframe border=0 src=\"" + orb_link + "\" width=800 height=440></iframe><br><a href=" + orb_link + ">Orbit</a><br>"
+      orb_html += "<iframe border=0 src=\"" + orb_link + "\" width=800 height=440></iframe><br><a href=" + orb_link + ">Full Screen</a><br>"
    else:
       orb_html = ""
 
@@ -1504,7 +1496,6 @@ def make_event_html(event_json_file ):
    sol_jpgs = glob.glob(solve_dir + "/*.jpg")
    rand = str(time.time())
    for img in sorted(sol_jpgs):
-      print("PLOT IMAGE:", img)
       img = img.replace("/mnt/f/", "https://archive.allsky.tv/")
       if "ground" not in img and "orbit" not in img:
          plot_html += "<div style='float:left; padding: 3px'><img width=600 height=480 src=" + img + "?" + rand + "></div>\n"
@@ -1515,9 +1506,9 @@ def make_event_html(event_json_file ):
    if cfe(report_file) == 1:
       rpt = open(report_file) 
       rpt_out = "<div style='clear:both'> &nbsp; </div><br>"
+
       rpt_out += "<h2>WMPL Report</h2><div><pre>"
       for line in rpt:
-         print("LINE:", line)
          rpt_out += line
       rpt_out += "</pre></div>"
    else:
@@ -1532,9 +1523,12 @@ def make_event_html(event_json_file ):
    fp.write(plot_html)
    fp.write(rpt_out)
    fp.close() 
-
+   input("SAVED THE EVENT HTML!")
 
 def make_sum_html(event_id, event, solve_dir, obs):
+
+   # DEAD FUNCTION??? NOT USED!!! OLD !!! 
+
    XXX = "xxx"
    tj = event['solution']['traj']
    ob = event['solution']['orb']
@@ -1617,8 +1611,7 @@ def make_obs_html(event_id, event, solve_dir, obs):
    print("MAKE OBS HTML:", obs)
    html = "<h2>Observations</h2>"
    html += "<div>"
-   print("EVENT STATIONS:", event['stations'])
-   print("EVENT OBS STATIONS:", event['obs'].keys())
+
    if True:
 
       blocks = []
@@ -2245,15 +2238,122 @@ def check_fix_plots(event_id):
 
 
 
-def event_report(solve_dir, event_final_dir, obs):
+def event_report(dynamodb, event_id, solve_dir, event_final_dir, obs):
+
+    #orb_link = event['solution']['orb']['link']
+
+    template = ""
+    solve_dir = solve_dir.replace("//", "/")
+    tt = open("./FlaskTemplates/allsky-template-v2.html")
+    for line in tt:
+       template += line
+
+    template = template.replace("AllSkyCams.com", "AllSky.com")
+    template = template.replace("{TITLE}", "ALLSKY EVENT " + event_id)
+
     print("EVREPORT:")
     print("SOLVE DIR:", solve_dir)
     print("FINAL DIR:", event_final_dir)
 
+
     final_event_id = event_final_dir.split("/")[-1]
     if final_event_id == "":
        final_event_id = event_final_dir.split("/")[-2]
+       event_id = final_event_id
+    if final_event_id == "":
+       final_event_id = event_final_dir.split("/")[-2]
+    event_id = final_event_id
+
     print("FINAL ID:", final_event_id)
+    print("EVENT ID:", event_id)
+ 
+    event_data_file = solve_dir + event_id + "-event.json"
+    failed_data_file = solve_dir + event_id + "-fail.json"
+    if os.path.exists(event_data_file):
+       event_json = load_json_file(event_data_file)
+
+       if "orb" in event_json:
+          wmpl_status = "SOLVED"
+    elif os.path.exists(failed_data_file) is True:
+       event_json = {}
+       wmpl_status = "FAILED"
+    else:
+       event_json = {}
+       wmpl_status = "PENDING"
+
+    event = {}
+    event['solution'] = event_json
+
+    #event = get_event(dynamodb, event_id, 0)
+
+
+
+    print("EVENT:", event)
+    if len(event) == 0:
+       print("EVENT SOLUTION NOT FOUND!?")
+       orb_link = ""
+    else:
+       if "orb" in event['solution']:
+          orb_link = event['solution']['orb']['link']
+       else:
+          orb_link = ""
+
+    obs_data_file = solve_dir + event_id + "_OBS_DATA.json"
+    planes_data_file = solve_dir + event_id + "_PLANES.json"
+
+    if os.path.exists(obs_data_file) is True:
+       zobs_data = load_json_file(obs_data_file)
+    else:
+       zobs_data = []
+    if os.path.exists(obs_data_file) is True:
+       planes_data = load_json_file(planes_data_file)
+    else:
+       planes_data = {}
+
+    plane_points = []
+    if "results" in planes_data:
+       for pk in planes_data['results']:
+          score, points = planes_data['results'][pk]
+          if len(points) == 2:
+             start_point, end_point = points
+             plane_points.append((start_point, end_point))
+
+    print(plane_points)
+    if len(plane_points) > 0:
+       status_3d = "Passed with " +  str(len(plane_points)) + " planes"
+    else:
+       status_3d = "Failed with " +  str(len(plane_points)) + " planes"
+
+
+    
+    good_2d = []
+
+    for obs_id in zobs_data:
+       #if "az_start_point, az_end_point obs_start_points obs_end_points
+       print(obs_id, zobs_data[obs_id]['obs_start_points'],  zobs_data[obs_id]['obs_end_points'])
+       if "obs_start_points" in zobs_data[obs_id] and "obs_end_points" in zobs_data[obs_id]:
+          if len(zobs_data[obs_id]) > 0 and len(zobs_data[obs_id]) > 0: 
+             print("GOOD?")
+             good_2d.append(obs_id)
+
+    if len(good_2d) > 0:
+       status_2d = "Passed with " + str(len(good_2d)) + " Intersections"
+    else: 
+       status_2d = "Failed with " + str(len(good_2d)) + " Intersections"
+
+    #solve_dir = solve_dir.replace("/mnt/f/", "")
+    vdir = "https://archive.allsky.tv/" + solve_dir.replace("/mnt/f/", "") 
+    #kml_file = solve_dir + event_id + "_map.kml"
+    kml_file = vdir + event_id + "_map.kml"
+    print("KML", kml_file)
+
+    if orb_link != "" and orb_link != "#":
+       #orb_html = "<div><h2>Orbit</h2>"
+       orb_html = """<div style="width:80%; margin:0 auto; margin-top: 100px;">"""
+       orb_html += "<h2>Orbit</h2>" 
+       orb_html += "<iframe border=0 src=\"" + orb_link + "\" width=100% height=440></iframe><br><a href=" + orb_link + ">Full Screen</a><br></div>"
+    else:
+       orb_html = ""
 
 
     json_conf = load_json_file("../conf/as6.json")
@@ -2271,38 +2371,76 @@ def event_report(solve_dir, event_final_dir, obs):
     solved_files = glob.glob(solve_dir + "/*")
     print(solve_dir + "*", solved_files)
     html = ""
-    report = ""
+    #html = """</div>\n"""
+    html += """<div style='clear: both'> &nbsp;</div>\n"""
+    html = """<div style="width:80%; margin:0 auto; margin-top: 100px;">"""
+    
+    #html += """<div>\n"""
 
+    html += """<div style='clear: both; '> &nbsp;</div>\n"""
+
+    #obs_html = """<div> <!-- start obs container-->\n"""
+    obs_html = """<h2 style="margin-top: 100px">Observations</h2>\n"""
+
+    obs_html += """<div style="width:80%; margin:0 auto; 100px; background: black; border: 1px #ffffff solid;">"""
+
+    video_links = []
+
+    temp =  {}
+    st_list = ""
     for station_id in obs:
-        if len(obs[station_id].keys()) > 1:
-            file = get_best_obs(obs[station_id])
-        else:
-            for bfile in obs[station_id]:
-                file = bfile
-        prev_file = file.replace(".mp4", "-prev.jpg")
-        year = file[0:4]
-        day = file[0:10]
-        if station_id in remote_urls:
-           link = remote_urls[station_id] + "/meteors/" + station_id + "/" + day + "/" + file + "/"
-        else:
-           link = ""
-        html += "<h1>" + station_id + " " + file + "</h1>"
-        #html += "<a href=" + link + ">"
-        html += "<img src=https://archive.allsky.tv/" + station_id + "/METEORS/" + year + "/" + day + "/" + station_id + "_" + prev_file + "></a>"
-        html += "<hr>"
+       if st_list != "":
+          st_list += ", "
+       if station_id not in temp:
+          st_list += station_id 
+       temp[station_id] = 1
+
+ 
+    for station_id in obs:
+       for obs_file in obs[station_id]:
+          if len(obs[station_id].keys()) > 1:
+             best_file = get_best_obs(obs[station_id])
+          else:
+             best_file = obs_file 
+
+          prev_file = obs_file.replace(".mp4", "-prev.jpg")
+          year = obs_file[0:4]
+          day = obs_file[0:10]
+          if station_id in remote_urls:
+             link = remote_urls[station_id] + "/meteors/" + station_id + "/" + day + "/" + obs_file + "/"
+          else:
+             link = ""
+          img_id = station_id + "_" + prev_file.replace(".jpg", "")
+          img_link = "https://archive.allsky.tv/" + station_id + "/METEORS/" + year + "/" + day + "/" + station_id + "_" + prev_file 
+          video_link = "https://archive.allsky.tv/" + station_id + "/METEORS/" + year + "/" + day + "/" + station_id + "_" + prev_file.replace("-prev.jpg", "-180p.mp4") 
+          video_links.append(video_link)
+          obs_html += """
+           <div id="{:s}" style="
+              float: left;
+              background: black;
+              background-image: url('{:s}');
+              background-repeat: no-repeat;
+              background-size: 320px;
+              width: 320px;
+              height: 180px;
+              margin: 25px; 
+              opacity: 1; 
+              ">
+              {:s} {:s}
+           </div>
+          """.format(img_id, img_link, station_id, obs_file)
+          #html += "<img src=https://archive.allsky.tv/" + station_id + "/METEORS/" + year + "/" + day + "/" + station_id + "_" + prev_file + "></a>"
+          #html += "<hr>"
+          #obs_html += """<div style='clear: both'> &nbsp;</div>\n"""
+
+    obs_html += "\n</div> <!-- END OBS-->"
 
 
     jpgs = []
     for sf in solved_files:
+       print("SOLVED FILE:", sf)
        if final_event_id not in sf:
           print("EVENT ID MISMATCH:", sf, final_event_id)
-       if "report" in sf:
-          try:
-             fp = open(sf, "r")
-             for line in fp:
-                report += line
-          except:
-             print("Failed to read report!")
        if "png" in sf:
           jpg_f = sf.replace(".png", ".jpg")
           jpgs.append(jpg_f)
@@ -2318,7 +2456,10 @@ def event_report(solve_dir, event_final_dir, obs):
     print("SOLVED FILES:", solved_files)
     print("MOVE THE WMPL FILES TO THE FINAL EVENT DIR!")
     final_jpgs = []
+
+    # move png to jpgs 
     for sf in solved_files:
+       print("SOLVED FILE:", sf)
        fn, xxx = fn_dir(sf)
        fn = fn.replace(".png", ".jpg")
        new_file = event_final_dir + fn 
@@ -2331,25 +2472,225 @@ def event_report(solve_dir, event_final_dir, obs):
        if "jpg" in fn:
           final_jpgs.append(new_file)
        print(cmd)
+
     used = {}
-    for jpg in final_jpgs:
+    prev_files = []
+    roi_files = []
+    marked_files = []
+    fov_files = []
+    review_files = []
+    all_prev_html = "<h2>All Observations</h2>"
+
+
+
+    # add map to html
+
+    center_lat, center_lon = center_obs(obs)
+ 
+
+    map_html = "<div style='clear: both'> &nbsp; </div>"
+   
+
+    #map_html += "<div>"
+    map_html = """<h2 style="margin-top: 100px">Trajectory</h2>"""
+    map_html += """<div style="border: 1px #ffffff solid; background: black; width:80%; margin:0 auto; ">"""
+    map_html += "<iframe border=0 src=\"https://archive.allsky.tv/APPS/dist/maps/index.html?mf=" + kml_file + "&zoom=5&&lat=" + str(center_lat) + "&lon=" + str(center_lon) + "&zoom=5\" width=100% height=440></iframe>"
+    map_html += "</div>"
+    map_html += "<a href=" + kml_file + ">KML Download</a><br>"
+
+
+    plot_html = """<h2 style="margin-top: 100px">Plots</h2>"""
+    plot_html += """<div style="width:80%; margin:0 auto; text-align: center; background: black; border: 1px #ffffff solid;">"""
+
+    trash_html = ""
+    for jpg in sorted(final_jpgs):
        jpg = jpg.replace("/mnt/f/meteor_archive/", "")
        jpg_fn = jpg.split("/")[-1]
-       if jpg_fn not in used:
-          html += "<img src=" + jpg_fn + "?" + str(time.time()) + ">\n"
+       ftype = None
+       if "prev" in jpg: 
+          ftype = "PREV"
+          #all_prev_html += """<img src=""" + jpg_fn + """?""" + str(time.time()) + ">\n"""
+          img_id = station_id + "_" + prev_file.replace(".jpg", "")
+          img_link = "https://archive.allsky.tv/" + station_id + "/METEORS/" + year + "/" + day + "/" + station_id + "_" + jpg_fn 
+          trash_html += """
+            <div id="{:s}" style="
+              float: left;
+              background-image: url('{:s}');
+              background-repeat: no-repeat;
+              background-size: 320px;
+              width: 320px;
+              height: 180px;
+              margin: 25px;
+              opacity: 1;
+              ">
+              {:s}
+            </div>
+          """.format(img_id, img_link, station_id)
+
+
+          prev_files.append(jpg)
+
+
+       elif "marked" in jpg: 
+          ftype = "MARKED"
+          marked_files = 1
+       elif "REVIEW" in jpg: 
+          ftype = "REV"
+          review_files = 1
+       elif "roi" in jpg: 
+          ftype = "ROI"
+          roi_files = 1
+       elif "FOV" in jpg: 
+          ftype = "FOV"
+          fov_files = 1
+       elif jpg_fn not in used:
+          ftype = "GRAPH"
+       if ftype == "GRAPH":
+           plot_html += """<div style="float:left; padding: 5px; text-align: center;"><img width="320" height=250 src=""" + jpg_fn + """?" + str(time.time()) + "></div>\n"""
        used[jpg_fn] = 1
-    print("HTML:", html)
-    html += "<p>"
-    html += "<pre>" + report + "</pre>"
+
+    plot_html += """</div><div style="clear:both; margin: 25px">&nbsp;</div>"""
+
+
+    report_file = solve_dir + event_id + "_report.txt"
+
+
+    report_html = """<div style="width:80%; margin:0 auto; margin-top: 200px">"""
+    report_html = "<h2>WMPL Report</h2>"
+    report = """<pre class='bash' style="height: 400px">"""
+    if os.path.exists(report_file) is True :
+       rpt = open(report_file)
+       for line in rpt:
+          report += line 
+    else:
+       print("REPORT FILE NOT FOUND!", report_file, "FAIL")
+       #exit()
+       report = "Event solution failed or has not run."
+    report += "</pre></div>"
+    print("REPORT:", report)
+
+    report_html += "<p>"
+    #html += "<pre> WMPL REPORT\n" + report + "</pre>"
+    report_html += report
+
+    start_time = ""
+    prev_video = video_preview_html_js(video_links)
+    results_2d = ""
+    planes_3d = ""
+    wmpl_status = ""
+
+    evs_html = "<h2>Event Summary </h2>\n"
+    if "start_datetime" in event:
+       all_start_time = min(event['start_datetime'])
+       all_all = []
+       for dd in all_start_time:
+          all_all.append(dd)
+          print(dd)
+       start_time = min(all_all) 
+       print("START TIME:", start_time) 
+    else:
+       start_time = ""
+
+
+    # Plane files
+
+    evs_html += """
+       <div style="border: 1px #ffffff solid; background: black">
+
+       <div style="float:left; background: black; color: white;">
+          <table class="table" width="100%" style="color: white;">
+       <tr>
+          <td>
+             Event ID :
+          </td>
+          <td>
+             {:s} 
+          </td>
+       </tr>
+       <tr>
+          <td>
+             Start Time:
+          </td>
+          <td>
+             {:s} 
+          </td>
+       </tr>
+       <tr>
+          <td>
+             Stations: 
+          </td>
+          <td>
+             {:s}
+          </td>
+       </tr>
+       <tr>
+          <td>
+             Status 2D: </td><td>{:s} </td>
+       </tr>
+       <tr>
+          <td>
+             3D Planes : </td><td> {:s} </td>
+       </tr>
+       <tr>
+          <td>
+             WMPL Solve Status: </td><td> {:s} </td>
+       </tr>
+       </table>
+       </div> 
+
+       <div style="float:left">
+
+       <!--
+       Ending Altitude : XXX <BR>
+       Velocity : XXX <BR>
+       Shower : XXX <BR>
+       a: XXX <BR>
+       e: XXX <BR>
+       i: XXX <BR>
+       q: XXX <BR>
+       Publishing Status: <BR>
+       -->
+
+
+       </div>
+       <div>
+       {:s}
+       </div>
+       </div>
+
+    """.format(event_id, str(start_time), st_list,  status_2d, status_3d, wmpl_status, prev_video)
+    evs_html += "</div>\n"
+
+    html += evs_html 
+
+    html += obs_html 
+    html += """<div style="clear: both;"> &nbsp; </div>"""
+
+    html += map_html
+    html += orb_html
+    html += plot_html
+    html += report_html 
+
+
+
+
     fp = open(solve_dir + "/index.html", "w")
-    fp.write(html)
+
+    final_html = template.replace("{MAIN_CONTENT}", html)
+
+    fp.write(final_html)
+
+
     print("SAVED INDEX:", event_final_dir + "/index.html")
+    print("REPORT IS :", report)
+    print("SOLVED FILES:", solved_files)
+    #input("SAVED HTML!!!" + solve_dir + "/index.html")
     # delete PNGS
     pngs = glob.glob(event_final_dir + "*.png")
     for png in pngs:
        cmd = "rm " + png
-       print(cmd)
        os.system(cmd)
+
 
     # sync data to cloud
     #cloud_final_dir = event_final_dir.replace("/mnt/f/", "/mnt/archive.allsky.tv/")
@@ -2365,8 +2706,10 @@ def event_report(solve_dir, event_final_dir, obs):
 
 
 
+def WMPL_solve(event_id, obs,time_sync=1, force=0, dynamodb=None):
+    if dynamodb is None:
+       dynamodb = boto3.resource('dynamodb')
 
-def WMPL_solve(event_id, obs,time_sync=1, force=0):
     json_conf = load_json_file("../conf/as6.json")
     ams_id  = json_conf['site']['ams_id']
 
@@ -2386,7 +2729,6 @@ def WMPL_solve(event_id, obs,time_sync=1, force=0):
     fail_file = solve_dir + event_id + "-fail.json"
     if cfe(solve_file) == 1 and force == 0:
        print("We already solved this event!")
-       #return()
     else:
        print("EVENT NOT SOLVED?!", solve_file, fail_file)
     meastype = 2
@@ -2419,6 +2761,7 @@ def WMPL_solve(event_id, obs,time_sync=1, force=0):
        fail['no_obs_data'] = 1 
        print("FAIL FILE:", fail_file)
        save_json_file(fail_file, fail)
+
        return() 
        for station_id in obs:
           if len(obs[station_id].keys()) > 1:
@@ -2535,12 +2878,16 @@ def WMPL_solve(event_id, obs,time_sync=1, force=0):
        print(solve_dir )
        #for sf in solved_files:
        #   print(sf)
-       event_report(solve_dir, event_final_dir, obs)
        make_event_json(event_id, solve_dir,[])
+       print("MADE EVENT JONS")
        solve_status = "SOLVED"
 
-    print("DONE SOLVE")
+       #event_report(dynamodb, event_id, solve_dir, event_final_dir, obs)
+       print("MADE EVENT REPORT")
 
+       print("DONE SOLVE")
+
+    print("DONE SOLVE")
     return(solve_status)
 
 # 1
@@ -2651,6 +2998,7 @@ if __name__ == "__main__":
    if cmd == "mej":
       make_event_json(meteor_file)
    if cmd == "meh":
+      # make_event_html(event_json_file )
       make_event_html(meteor_file)
    if cmd == "sm":
       solve_month(meteor_file)

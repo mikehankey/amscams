@@ -1,8 +1,10 @@
 from Classes.AllSkyNetwork import AllSkyNetwork
+import cv2
 import os
 import sys
 import datetime as dt
 from datetime import datetime
+from lib.PipeUtil import get_file_info
 
 cmd = sys.argv[1]
 
@@ -67,9 +69,45 @@ if cmd == "resolve_failed_day" or cmd == "rerun_failed":
    event_day = event_day.replace("/", "")
    ASN.resolve_failed_day(event_day)
 
+if cmd == "review_event_day":
+   ASN.help()
+   date = sys.argv[2]
+   if date == "today":
+      date = today
+   if date == "yest":
+      date = yest 
+
+
+   ASN.review_event_day(date)
+
 if cmd == "resolve_event":
    ASN.help()
+   event_id = sys.argv[2]
+   event_day = ASN.event_id_to_date(event_id)
+   ASN.set_dates(event_day)
+   ASN.sync_log = {}
+   wget_cmds = ASN.get_event_media(event_id)
+   ASN.review_event(sys.argv[2])
+   (review_image, map_img, obs_imgs, marked_images, event_data, obs_data) = ASN.review_event_step2()
+
+   if "2d_status" not in event_data:
+      event_data = ASN.get_2d_status(event_data, obs_data)
+
+   ASN.echo_event_data(event_data, obs_data)
+
+         #cv2.imshow("pepe", map_img)
+         #cv2.waitKey(0)
+   event_data_file = ASN.local_evdir + ASN.event_id + "/" + ASN.event_id + "_EVENT_DATA.json"
+   obs_data_file = ASN.local_evdir + ASN.event_id + "/" + ASN.event_id + "_OBS_DATA.json"
+
+   if review_image is not None:
+      cv2.imshow("pepe", review_image)
+      cv2.waitKey(30)
+   else:
+      print("REVIEW IMAGE IS NONE!", review_image)
+    
    ASN.resolve_event(sys.argv[2])
+   exit()
 
 if cmd == "publish_day":
    event_day = sys.argv[2]
@@ -140,39 +178,57 @@ if cmd == "do_all":
    # this should be handled in set_dates! need to test/confirm though
    # this should be done on the AWS side and the gz file is all that should be 
    # downloaded. However, this is not always the case!
-   #os.system("./DynaDB.py udc " + date)
+
+   year, month, day = date.split("_")
+   evdir = "/mnt/f/EVENTS/" + year + "/" + month + "/" + day + "/" 
+   obs_file = evdir + date + "_ALL_OBS.json"
+   obs_dict_file = evdir + date + "_OBS_DICT.json"
+   obs_file_old = 0
+   obs_dict_old = 0
+   if os.path.exists(obs_file):
+      ss, obs_file_old = get_file_info(obs_file)
+      print(ss, obs_file_old)
+   if os.path.exists(obs_dict_file):
+      ss, obs_dict_old = get_file_info(obs_dict_file)
+      print(ss, obs_dict_old)
+
+   # if this file is > 24 hours old re make it
+   if os.path.exists(obs_file) is False or obs_file_old > (60*24):
+      os.system("./DynaDB.py udc " + date)
+
+   # if obs dict file is > 24 hours old re make it 
+   if os.path.exists(obs_dict_file) is True and obs_dict_old > (60*24) :
+      os.system("rm " + obs_dict_file)
+   #and older than or older than obs file
+   if obs_dict_old > obs_file_old :
+      os.system("rm " + obs_dict_file)
+
 
    force = 1
    print("Loading day SQL.")
    ASN.day_load_sql(date, force)
    print("Done load")
-   input("Finished load obs")
+
    print("Do Coin events.")
    ASN.day_coin_events(date,force)
-   input("Finished coin")
    print("Done coin")
    print("Do Solve .")
+
    ASN.day_solve(date,force)
-   input("Finished solve")
 
    print("Load Solves .")
    ASN.day_load_solves(date)
-   input("Finished load solve")
 
    print("Plane test day.")
    ASN.plane_test_day(date)
-   input("Finished plane test")
 
    print("Done solve")
    print("Rysnc Data  .")
    ASN.rsync_data_only(date)
-   input("Finished rsync test")
    print("Publish day.")
    ASN.publish_day(date)
-   input("Finished publish days")
    print("Update Meteor Days.")
    ASN.update_meteor_days()
-   input("Finished update meteor days")
 
 
 if cmd == "day_solve" or cmd == 'ds' or cmd == "solve_day":
@@ -204,3 +260,52 @@ if cmd == "status":
    ASN.set_dates(event_day)
    ASN.update_all_event_status(sys.argv[2])
    ASN.day_status(sys.argv[2])
+
+if cmd == "purge_invalid":
+   event_day = sys.argv[2]
+   ASN.purge_invalid_events(event_day)
+
+if cmd == "edit_event":
+   event_id = sys.argv[2]
+   ASN.edit_event(event_id)
+
+if cmd == "remote_reducer":
+   event_id = sys.argv[2]
+   ASN.remote_reducer(event_id)
+
+if cmd == "remote_cal_one":
+   cal_image_file = sys.argv[2]
+   ASN.remote_cal_one(cal_image_file)
+
+if cmd == "merge_obs":
+   event_id = sys.argv[2]
+   ASN.merge_obs(event_id)
+
+if cmd == "event_page":
+   event_id = sys.argv[2]
+   ASN.make_event_page(event_id)
+
+if cmd == "sync_event":
+   event_id = sys.argv[2]
+   ASN.sync_event(event_id)
+
+if cmd == "resolve_event_day":
+   event_day = sys.argv[2]
+   ASN.resolve_event_day(event_day)
+
+if cmd == "slideshow":
+   event_day = sys.argv[2]
+   ASN.slideshow(event_day)
+
+if cmd == "min_file_size":
+   event_day = sys.argv[2]
+   ASN.min_file_size(event_day)
+
+if cmd == "event_day_status":
+   event_day = sys.argv[2]
+   ASN.event_day_status(event_day)
+  
+# to solve 1 day: 
+# do_all
+# resolve_event_day
+# review_event_day

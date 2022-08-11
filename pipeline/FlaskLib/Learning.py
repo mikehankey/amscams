@@ -3275,7 +3275,23 @@ def ai_non_meteors(station_id, options, json_conf):
    template = template.replace("{MAIN_TABLE}", out)
    return(template)
 
+
+def ai_stats(station_id, json_conf):
+
+   con = sqlite3.connect(station_id + "_ALLSKY.db")
+   con.row_factory = sqlite3.Row
+   cur = con.cursor()
+
+   # get total meteors in the system
+   sql = "SELECT count(*) from meteors"
+   cur.execute(sql)
+   rows = cur.fetchall()
+   total_meteors_in_db = rows[0][0]
+   print("TOTAL METS:", total_meteors_in_db)
+
 def ai_main(station_id, json_conf):
+
+   ai_stats(station_id, json_conf)
 
    template = make_default_template(station_id, "meteors_main.html", json_conf)
    out = "<h1>AllSkyAI Dashboard</h1>"

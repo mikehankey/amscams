@@ -21,6 +21,8 @@ CREATE TABLE IF NOT EXISTS "events" (
         "lats"  TEXT,
         "lons"  TEXT,
         "event_status"  TEXT,
+        "event_status_2d"  TEXT,
+        "event_status_3d"  TEXT,
         "run_date"      TEXT,
         "run_times"     INTEGER,
         PRIMARY KEY("event_id")
@@ -32,6 +34,7 @@ CREATE TABLE IF NOT EXISTS "events" (
 
 DROP TABLE IF EXISTS "event_planes";
 CREATE TABLE IF NOT EXISTS "event_planes" (
+        "event_id"      TEXT,
         "plane_pair"      TEXT,
         "status"      TEXT,
         "sanity"      INTEGER,

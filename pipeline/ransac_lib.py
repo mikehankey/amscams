@@ -36,7 +36,7 @@ def ransac_outliers(XS,YS,title):
 
    # make plot for ransac filter
    import matplotlib
-   matplotlib.use('TkAgg')
+   matplotlib.use('Agg')
    from matplotlib import pyplot as plt
    title += " " + str(len(RXS)) + " / " + str(len(XS))
 

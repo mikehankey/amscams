@@ -436,7 +436,7 @@ def check_running(progname, sec_grep = None):
     
    output = subprocess.check_output(cmd, shell=True).decode("utf-8")
    #print(cmd)
-   #print(output)
+   print(output)
    output = int(output.replace("\n", ""))
    if int(output) > 0:
       return(output)

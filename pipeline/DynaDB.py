@@ -1561,6 +1561,7 @@ def do_dyna_day(dynamodb, day):
       os.system(cmd)
    else:
       print("Already rejected masks for this day.", day)
+   save_json_file("dyn.log", dyn_log)
 
    if today != day:
       if "reject_masks" not in dyn_log[day]:
@@ -1572,6 +1573,7 @@ def do_dyna_day(dynamodb, day):
       os.system(cmd)
    else:
       print("Already rejected planes for this day.", day)
+   save_json_file("dyn.log", dyn_log)
 
 
    # reject meteors not matching strict rules
@@ -1586,6 +1588,7 @@ def do_dyna_day(dynamodb, day):
          os.system(cmd)
    else:
       print("Already did strict rules for this day.", day)
+   save_json_file("dyn.log", dyn_log)
    
    
    if "confirm" not in dyn_log[day] or today == day:
@@ -1594,6 +1597,7 @@ def do_dyna_day(dynamodb, day):
       os.system(cmd)
    else:
       print("already confirmed for this day.", day)
+   save_json_file("dyn.log", dyn_log)
 
    if today != day:
       if "reject_planes" not in dyn_log[day] or today == day:
@@ -1613,15 +1617,18 @@ def do_dyna_day(dynamodb, day):
    if today != day:
       if "filter" not in dyn_log[day]:
          dyn_log[day]['filter'] = 1
+   save_json_file("dyn.log", dyn_log)
 
    cmd = "./Process.py ded " + day
    print(cmd)
    os.system(cmd)
 
+   save_json_file("dyn.log", dyn_log)
 
    # FAST SYNC
    cmd = "python3 ./Meteor.py 10 " + day
    os.system(cmd)
+   save_json_file("dyn.log", dyn_log)
 
    # sync up dyna deletes with local deletes 
    cmd = "python3 Rec.py del_aws_day " + day 
