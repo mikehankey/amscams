@@ -183,11 +183,23 @@ def day_night_settings(cam, cam_ip, type):
       cam.set_info("Camera.ParamEx", cam_info)
       print("Set camera settings for night")
 
+      cam_info = cam.get_info("Camera.Param")
+      cam_info[0]['BroadTrends']['AutoGain'] = 0
+      cam.set_info("Camera.ParamEx", cam_info)
+      print("Set camera settings for night")
+
+
    if type == 'day':
       cam_info = cam.get_info("Camera.ParamEx")
       cam_info[0]['BroadTrends']['AutoGain'] = 1
       cam.set_info("Camera.ParamEx", cam_info)
       print("Set camera settings for day")
+
+      cam_info = cam.get_info("Camera.Param")
+      cam_info[0]['BroadTrends']['AutoGain'] = 1
+      cam.set_info("Camera.Param", cam_info)
+      print("Set camera settings for day")
+
      
 
 def encode(cam, cam_ip):
