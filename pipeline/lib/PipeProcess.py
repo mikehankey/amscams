@@ -200,7 +200,8 @@ def run_jobs(json_conf):
       print("Cloud conf file is good.")
 
    # Once every 5 hours run the events for yesterday and today, IF WMPL is installed
-   if "dynamodb" in json_conf:
+   #if "dynamodb" in json_conf:
+   if True:
       running = check_running("DynaDB.py")
       if running > 0:
          os.system("kill -9 $(ps aux | grep 'rerun.py' | awk '{print $2}')")
