@@ -89,10 +89,10 @@ station_id = json_conf['site']['ams_id']
 all_cams = {}
 now = dt.now()
 cur_date = now.strftime("%Y_%m_%d")
-peak_dates = ['2021_12_13', '2021_12_14']
+peak_dates = ['2022_08_11', '2022_08_12', '2022_08_13']
 
 if cur_date not in peak_dates:
-   print("Shower Peak is over! EXIT", cur_date)
+   print("Shower Peak is over! EXIT", cur_date, peak_dates)
    exit()
 cur_hour = now.strftime("%H")
 cur_min = now.strftime("%M")
