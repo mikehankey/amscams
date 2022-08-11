@@ -103,10 +103,16 @@ def star_track(cam_id, con, cur, json_conf ):
       exit()
 
 def refit_meteor(meteor_file, con, cur, json_conf, mcp = None, last_best_dict = None):
-
+   # meteor_file should end with .json and have no path info
+   if "/" in meteor_file:
+      meteor_file = meteor_file.split("/")[-1]
+   if ".mp4" in meteor_file:
+      meteor_file = meteor_file.replace(".mp4", ".json")
+   
    (f_datetime, cam_id, f_date_str,fy,fmin,fd, fh, fm, fs) = convert_filename_to_date_cam(meteor_file)
 
    default_cp = get_default_cal_for_file(cam_id, meteor_file, None, con, cur, json_conf)
+   print(default_cp)
    
    extra_text = "Refit " +  meteor_file
    if last_best_dict is None:
@@ -120,7 +126,7 @@ def refit_meteor(meteor_file, con, cur, json_conf, mcp = None, last_best_dict = 
 
    day = meteor_file[0:10]
    mdir = "/mnt/ams2/meteors/" + day + "/" 
-   fit_img_file = mdir + day + "/" + meteor_file.replace(".json", "-rfit.jpg")
+   fit_img_file = mdir + meteor_file.replace(".json", "-rfit.jpg")
    sd_vid = "/mnt/ams2/meteors/" + day + "/" + meteor_file
    json_file = "/mnt/ams2/meteors/" + day + "/" + meteor_file #.replace(".mp4", ".json")
    orig_res = 999
@@ -148,7 +154,12 @@ def refit_meteor(meteor_file, con, cur, json_conf, mcp = None, last_best_dict = 
             return(None) 
          mj['cp'] = cp
          
-
+      red_file = json_file.replace(".json", "-reduced.json")
+      if os.path.exists(red_file):
+         red = load_json_file(red_file)
+      else:
+         red = {}
+      print("LOADED:", red_file)
       if "total_res_px" not in mj['cp']:
          # There are no stars so there is no res??
          mj['cp']['total_res_px'] = 999
@@ -224,8 +235,8 @@ def refit_meteor(meteor_file, con, cur, json_conf, mcp = None, last_best_dict = 
       #print("RANGE FAILED")
       range_data = []
 
-   default_cp = mcp
-   default_cp['user_stars'] = stars
+   #default_cp = mcp
+   #default_cp['user_stars'] = stars
    #print(default_cp)
    #print("XPOLY:", default_cp['x_poly'])
 
@@ -352,6 +363,16 @@ def refit_meteor(meteor_file, con, cur, json_conf, mcp = None, last_best_dict = 
       print("NOT ENOUGH STARS TO CUSTOM FIT. USE DEFAULT CAL!")
       mj['cp'] = default_cp
       mj['cat_image_stars'] = []
+
+      red['cal_params'] = default_cp
+      red['cal_params']['cat_image_stars'] = []
+
+      print("DEFAULT CP:", default_cp)
+
+      if "cp" in red:
+         del(red['cp'])
+      save_json_file(red_file, red)
+      print("SAVED RED:", red_file)
    else:
       temp_cp = minimize_fov(meteor_file, mj['cp'], meteor_file,median_frame.copy(),json_conf, False,mcp, "", SHOW)
       if temp_cp['total_res_px'] <= mj['cp']['total_res_px']: 
@@ -386,13 +407,22 @@ def refit_meteor(meteor_file, con, cur, json_conf, mcp = None, last_best_dict = 
 
    mj['cp']['cat_image_stars'] = new_cat_image_stars
    # now apply the new cp to the existing points!
-   red_file = json_file.replace(".json", "-reduced.json")
+
+   
    if os.path.exists(red_file) is True:
-      red = load_json_file(red_file)
+      if "meteor_frame_data" in red:
+         red = update_mfd(meteor_file, red, cp)
+         print("NEW RED")
+   for row in red['meteor_frame_data']:
+      print(row)
+   if os.path.exists(red_file) is True:
       red['cal_params'] = mj['cp']
+      print(red_file, red)
       save_json_file(red_file, red)      
    if "cp" not in mj:
       mj['cp'] = get_default_cal_for_file(cam_id, meteor_file, None, con, cur, json_conf)
+      red['cal_params'] = mj['cp']
+      save_json_file(red_file, red)      
 
    save_json_file(json_file, mj)      
    if False:
@@ -411,20 +441,16 @@ def refit_meteor(meteor_file, con, cur, json_conf, mcp = None, last_best_dict = 
 
    return(mj['cp'])
 
-      #(dcname,mag,ra,dec,img_ra,img_dec,match_dist,up_cat_x,up_cat_y,img_az,img_el,up_cat_x,up_cat_y,six,siy,res_px,bp) = star
-      #new_cat_x, new_cat_y = get_xy_for_ra_dec(temp_cal_params, ra, dec)
-      #res_px = calc_dist((six,siy),(new_cat_x,new_cat_y))
+def update_mfd(meteor_file, mjr, cp):
 
-      #new_x, new_y, img_ra,img_dec, img_az, img_el = XYtoRADec(six,siy,cal_fn,temp_cal_params,json_conf)
-      #match_dist = angularSeparation(ra,dec,img_ra,img_dec)
-      #real_res_px = res_px
-      #if only_center is True:
-      #   center_dist = calc_dist((960,540),(six,siy))
-      #   if center_dist > 800:
-      #      real_res_px = res_px
-      #      res_px = 0
-
-      #all_res.append(res_px)
+   mjr['meteor_frame_data'] = sorted(mjr['meteor_frame_data'], key=lambda x: (x[1]), reverse=False)
+   updated_frame_data = []
+   for row in mjr['meteor_frame_data']:
+      (dt, fn, x, y, w, h, oint, ra, dec, az, el) = row
+      tx, ty, ra ,dec , az, el = XYtoRADec(x,y,meteor_file,mjr['cal_params'],json_conf)
+      updated_frame_data.append((dt, int(fn), x, y, w, h, oint, ra, dec, az, el))
+   mjr['meteor_frame_data'] = updated_frame_data
+   return(mjr)
 
 def check_for_nan(mjf, mj):
    mjrf = mjf.replace(".json", "-reduced.json")
@@ -937,6 +963,7 @@ def cal_status_report(cam_id, con, cur, json_conf):
 
    autocal_dir = "/mnt/ams2/cal/"
    # get all call files for this cam
+   print("LOAD CAL FILES :", cam_id)
    calfiles_data = load_cal_files(cam_id, con, cur)
 
    mcp_file = autocal_dir + "multi_poly-" + station_id + "-" + cam_id + ".info"
@@ -1009,7 +1036,7 @@ def cal_status_report(cam_id, con, cur, json_conf):
 
    print("All files loaded...")
 
-   os.system("clear")
+   #os.system("clear")
 
 
    sql = """
@@ -1169,6 +1196,9 @@ def batch_review(station_id, cam_id, con, cur, json_conf, limit=50, work_type="m
    # styles/work type = most_recent , top_20, best, worst
    last_cal = None
    autocal_dir = "/mnt/ams2/cal/"
+
+   print("LOAD CAL FILES :", cam_id)
+
    calfiles_data = load_cal_files(cam_id, con, cur)
 
    mcp_file = autocal_dir + "multi_poly-" + station_id + "-" + cam_id + ".info"
@@ -3147,9 +3177,16 @@ def batch_apply(cam_id, con,cur, json_conf, last=None):
       cv2.resizeWindow("pepe", 1920, 1080)
 
    #if cam_id == "all":
-   if True:
+   if cam_id == "all":
+      cams_list = []
       for cam_num in json_conf['cameras']:
          cam_id = json_conf['cameras'][cam_num]['cams_id']
+         cams_list.append(cam_id)
+   else:
+      cams_list = [cam_id]
+   if True:
+      for cam_id in cams_list:
+         #cam_id = json_conf['cameras'][cam_num]['cams_id']
 
          if last is None:
             calfiles_data = load_cal_files(cam_id, con, cur)
@@ -3284,7 +3321,6 @@ def get_image_stars_with_catalog(obs_id, cal_params, show_img):
 
 
 def apply_calib (cal_file, calfiles_data, json_conf, mcp, last_cal_params=None, extra_text= ""):
-      print("XX", len(calfiles_data))
       (station_id, camera_id, cal_fn, cal_ts, az, el, ra, dec, position_angle,\
          pixel_scale, zp_az, zp_el, zp_ra, zp_dec, zp_position_angle, zp_pixel_scale, x_poly, \
          y_poly, x_poly_fwd, y_poly_fwd, res_px, res_deg, ai_weather, ai_weather_conf, cal_version, last_update) = calfiles_data[cal_file]
@@ -3541,7 +3577,6 @@ def recenter_fov(cal_fn, cal_params, cal_img, stars, json_conf, extra_text=""):
    nc['total_res_px'] = res['fun']
 
 
-   #XXXX BUG!!!!????
    nc = update_center_radec(cal_fn,nc,json_conf)
    #print(""" FINAL!  AZ/EL {} {} RA/DEC {} {} POS {} PIX {} RES {}
    #""".format(nc['center_az'], nc['center_el'], nc['ra_center'], nc['dec_center'], nc['position_angle'], nc['pixscale'] , nc['total_res_px']))
@@ -4923,7 +4958,9 @@ def find_stars_with_catalog(cal_fn, con, cur, json_conf,mcp=None, cp=None, cal_i
       crop_image_draw.text((20, 10), str(crop_text), font = font, fill="white")
       crop_image_draw.text((20, 475), str(crop_text2), font = font, fill="white")
 
-      crop_img_big = cv2.cvtColor(np.asarray(crop_image_pil), cv2.COLOR_RGB2BGR)
+      crop_img_big = np.asarray(crop_image_pil) 
+      if len(crop_img_big.shape) == 3:
+         crop_img_big = cv2.cvtColor(crop_image_pil, cv2.COLOR_RGB2BGR)
 
 
       if len(star_obj['cnts']) >= 1:
@@ -5478,9 +5515,21 @@ def get_default_cal_for_file(cam_id, obs_file, img, con, cur, json_conf):
    """
 
    year_month = obs_file[0:7] 
+   ivals = [year_month + "%", "%" + cam_id + "%"]
 
-   cur.execute(sql, [year_month + "%", "%" + cam_id + "%"])
+   print(sql, ivals)
+   cur.execute(sql, ivals)
    rows = cur.fetchall()
+
+   if len(rows) == 0:
+      print("this method will not work. need to revert back to the range file", obs_file)
+      default_cp = get_default_cal_for_file_with_range (cam_id, obs_file, None, con, cur, json_conf)
+      return(default_cp)
+   else:
+      print("ROWS:", len(rows))
+
+   exit()
+
    best = []
    best_dict = {}
    dates = []
@@ -5531,6 +5580,7 @@ def get_default_cal_for_file(cam_id, obs_file, img, con, cur, json_conf):
    best_med_pxs = np.median(best_pxs)
    best_med_res = np.median(best_ress)
 
+   print("MED/BEST")
    print(med_az, best_med_az)
    print(med_el, best_med_el)
    print(med_pos, best_med_pos)
@@ -5551,12 +5601,14 @@ def get_default_cal_for_file(cam_id, obs_file, img, con, cur, json_conf):
    mcp['position_angle'] = best_med_pos
    mcp['pixscale'] = best_med_pxs
    mcp['cat_image_stars'] = []
-   mcp['total_res_px'] = 999
-   mcp['total_res_deg'] = 999
+   mcp['user_stars'] = []
    mcp = update_center_radec(obs_file,mcp,json_conf)
+   mcp['total_res_px'] = 0 
+   mcp['total_res_deg'] = 0
+   exit()
    return(mcp)
 
-def get_default_cal_for_file_old(cam_id, obs_file, img, con, cur, json_conf):
+def get_default_cal_for_file_with_range(cam_id, obs_file, img, con, cur, json_conf):
    # use this function to get a default cal when no stars or info 
    # is present
 
@@ -6225,8 +6277,8 @@ def load_cal_files(cam_id, con, cur, single=False,last=None):
    if last is not None:
       sql += " LIMIT " + str(last)
 
-   #print(sql)
-   #print(uvals)
+   print(sql)
+   print(uvals)
    cur.execute(sql, uvals )
 
    rows = cur.fetchall()
@@ -6793,12 +6845,13 @@ if __name__ == "__main__":
 
    if cmd == "status" :
       cam_id = sys.argv[2]
-
+      print("CAM:", cam_id)
       if cam_id == "all":
          for cam_num in json_conf['cameras']:
             cam_id = json_conf['cameras'][cam_num]['cams_id']
             cal_status_report(cam_id, con, cur, json_conf)
       else:
+         print("CAM:", cam_id)
          cal_status_report(cam_id, con, cur, json_conf)
 
 
