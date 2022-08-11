@@ -214,7 +214,7 @@ def run_jobs(json_conf):
       else:
          size, tdiff = get_file_info("/home/ams/loaded_last.txt")
          print("Last Loaded Data :", tdiff/60, "hours ago")
-         if int(tdiff) / 60 > 5:
+         if int(tdiff) / 60 > 1:
             run_load = 1 
 
 
