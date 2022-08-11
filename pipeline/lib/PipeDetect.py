@@ -2189,7 +2189,9 @@ def make_roi_video_mfd(video_file, json_conf):
 
    # WE SHOULD NOW UPDATE DYNAMO DB WITH THIS METEOR IF IT IS ENABLED
    
-   if "dynamodb" in json_conf:
+   #if "dynamodb" in json_conf:
+   #if "dynamodb" in json_conf:
+   if True:
       mfn, xxx = fn_dir(mjf)
       #cmd = "./DynaDB.py add_obs " + mfn
       cmd = "./pushAWS.py push_obs " + mfn + " > /dev/null 2>&1 &"
