@@ -115,12 +115,12 @@ for cam_num in json_conf['cameras']:
 # Files are then rotated through in the stream
 
 # Minutes network wide are defined in the master file
-os.system("cp /mnt/archive.allsky.tv/LIVE/Perseids2021.json ./")
+os.system("cp /mnt/archive.allsky.tv/LIVE/Perseids2022.json ./")
 os.system("cp /mnt/archive.allsky.tv/LIVE/photo_credits.json ./")
 print("cp /mnt/archive.allsky.tv/LIVE/photo_credits.json ./")
 photo_credits = load_json_file("photo_credits.json")
 credits = photo_credits[station_id]
-schedule = load_json_file("Perseids2021-ALL.json")
+schedule = load_json_file("Perseids2022-ALL.json")
 
 if station_id in schedule:
    my_schedule = schedule[station_id]
