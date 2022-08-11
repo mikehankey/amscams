@@ -89,10 +89,10 @@ station_id = json_conf['site']['ams_id']
 all_cams = {}
 now = dt.now()
 cur_date = now.strftime("%Y_%m_%d")
-peak_dates = ['2021_12_13', '2021_12_14']
+peak_dates = ['2022_08_11', '2022_08_12', '2022_08_13']
 
 if cur_date not in peak_dates:
-   print("Shower Peak is over! EXIT", cur_date)
+   print("Shower Peak is over! EXIT", cur_date, peak_dates)
    exit()
 cur_hour = now.strftime("%H")
 cur_min = now.strftime("%M")
@@ -115,12 +115,12 @@ for cam_num in json_conf['cameras']:
 # Files are then rotated through in the stream
 
 # Minutes network wide are defined in the master file
-os.system("cp /mnt/archive.allsky.tv/LIVE/Perseids2021.json ./")
+os.system("cp /mnt/archive.allsky.tv/LIVE/Perseids2022.json ./")
 os.system("cp /mnt/archive.allsky.tv/LIVE/photo_credits.json ./")
 print("cp /mnt/archive.allsky.tv/LIVE/photo_credits.json ./")
 photo_credits = load_json_file("photo_credits.json")
 credits = photo_credits[station_id]
-schedule = load_json_file("Perseids2021-ALL.json")
+schedule = load_json_file("Perseids2022.json")
 
 if station_id in schedule:
    my_schedule = schedule[station_id]

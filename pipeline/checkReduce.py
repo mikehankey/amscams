@@ -46,12 +46,17 @@ else:
 days = sorted(all_days)[-60:]
 
 checker = {}
+redos = []
+good = []
 for day in sorted(days,reverse=True):
    mdir = "/mnt/ams2/meteors/" + day + "/"
+   if os.path.isdir(mdir) is False:
+      continue
    files = os.listdir(mdir)
    for ff in files:
       if "json" not in ff:
          continue
+
       if "reduced" in ff:
          root_fn = ff.replace("-reduced.json", "")
          reduced = 1
@@ -60,12 +65,19 @@ for day in sorted(days,reverse=True):
          root_fn = ff.replace(".json", "")
          if root_fn not in checker:
             checker[root_fn] = 0
-   for check in checker:
-      print(check, checker[check])
-      if checker[check] == 0:
-         cmd = "./Process.py fireball " + check + ".mp4"
-         print(cmd)
-         os.system(cmd)
-   exit()
-      
+
+
+for check in checker:
+   print(check, checker[check])
+   if checker[check] == 0:
+      cmd = "./Process.py fireball " + check + ".mp4"
+      redos.append(cmd)
+      print(cmd)
+      os.system(cmd)
+   else: 
+      good.append(check)
+
+
+print(len(redos), "need are missing reduce in last", len(days), "days") 
+print(len(good), "are reduced in last", len(days), "days") 
 
