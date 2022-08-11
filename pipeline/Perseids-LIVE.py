@@ -120,7 +120,7 @@ os.system("cp /mnt/archive.allsky.tv/LIVE/photo_credits.json ./")
 print("cp /mnt/archive.allsky.tv/LIVE/photo_credits.json ./")
 photo_credits = load_json_file("photo_credits.json")
 credits = photo_credits[station_id]
-schedule = load_json_file("Perseids2022-ALL.json")
+schedule = load_json_file("Perseids2022.json")
 
 if station_id in schedule:
    my_schedule = schedule[station_id]
