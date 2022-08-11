@@ -2407,15 +2407,22 @@ def fireball(video_file, json_conf, nomask=0):
       base_js, base_jsr = make_base_meteor_json(video_file, hd_trim,best_meteor)
       jdata = base_js
       #jdata = None
+
    print("JDATA:", jdata)
+   print("VIDEO_FILE:", video_file) 
+
    hd_frames,hd_color_frames,subframes,sum_vals,max_vals,pos_vals = load_frames_fast(video_file, json_conf, 0, 0, 1, 1,[])
+   print("FRAMES:", len(hd_frames))
    tracking_updates = {}
    print("FIREBALL2!")
 
    #make_roi_video(video_file,best_meteor, hd_color_frames, json_conf)
    #exit()
    print("LEN :", len(hd_frames))
+
    fh, fw = hd_frames[0].shape[:2]
+   #fh = 1080
+   #fw = 1920
    hdm_x_720 = 1280 / fw
    hdm_y_720 = 720 / fh
    print("BP1")
@@ -2540,7 +2547,10 @@ def fireball(video_file, json_conf, nomask=0):
       # REFIT METEOR / refit meteor
       # turned off to optimize time 8/2/2022
       # turned back on 8/6/2022
-      os.system("./Process.py refit_meteor " + jsf)
+      #os.system("./Process.py refit_meteor " + jsf)
+      print("./recal.py refit_meteor " + jsf)
+      os.system("./recal.py refit_meteor " + jsf)
+
       os.system("./Process.py refine " + jsf)
 
 
