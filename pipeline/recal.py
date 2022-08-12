@@ -5818,15 +5818,18 @@ def get_default_cal_for_file_with_range(cam_id, obs_file, img, con, cur, json_co
       print(row)
    ( rcam_id, rend_dt, rstart_dt, elp, az, el, pos, pxs, res) = range_data[0]
 
-   mcp['center_az'] = az
-   mcp['center_el'] = el
-   mcp['center_pos'] = pos
-   mcp['center_pxs'] = pxs 
-   mcp['user_stars'] = []
-   mcp['cat_image_stars'] = []
-   mcp = update_center_radec(obs_file,mcp,json_conf)
-   mcp['total_res_px'] = 999
-   mcp['total_res_deg'] = 999
+   if mcp is None:
+      mcp = {}
+   if mcp is not None:
+      mcp['center_az'] = az
+      mcp['center_el'] = el
+      mcp['center_pos'] = pos
+      mcp['center_pxs'] = pxs 
+      mcp['user_stars'] = []
+      mcp['cat_image_stars'] = []
+      mcp = update_center_radec(obs_file,mcp,json_conf)
+      mcp['total_res_px'] = 999
+      mcp['total_res_deg'] = 999
 
    return(mcp)
 
