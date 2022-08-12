@@ -3292,7 +3292,10 @@ def get_image_stars_with_catalog(obs_id, cal_params, show_img):
 
                new_x, new_y, img_ra,img_dec, img_az, img_el = XYtoRADec(new_cat_x,new_cat_y,obs_id,cal_params,json_conf)
                img_new_cat_x, img_new_cat_y = get_xy_for_ra_dec(cal_params, img_ra, img_dec)
-               match_dist = angularSeparation(ra,dec,img_ra,img_dec)
+               try:
+                  match_dist = angularSeparation(ra,dec,img_ra,img_dec)
+               except:
+                  match_dist = 9999
                #cat_image_stars.append((name_ascii,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,x,y,res_px,flux))
                #print("PRINT STAR X,YS:", star_x, star_y, new_cat_x, new_cat_y)
                cv2.circle(show_img, (int(star_x),int(star_y)), 20, (255,0,0),2)
