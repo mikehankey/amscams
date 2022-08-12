@@ -84,7 +84,7 @@ def insert_calib(cal_file, con, cur, json_conf):
    cal_fn = cal_file.split("/")[-1]
    
    sql = """
-            INSERT INTO calibration_files (station_id, 
+            INSERT OR REPLACE INTO calibration_files (station_id, 
                                             camera_id, 
                                                cal_fn, 
                                                cal_ts, 
@@ -117,8 +117,8 @@ def insert_calib(cal_file, con, cur, json_conf):
          """
 
    station_id = json_conf['site']['ams_id']
-   if "cal_version" not in cp:
-      cp['cal_version'] = 0
+   #if "cal_version" not in cp:
+   cp['cal_version'] = 0
 
 
    ivals = [  station_id, 
@@ -147,12 +147,14 @@ def insert_calib(cal_file, con, cur, json_conf):
               "",
               cp['cal_version'],
               nowts]
-   #if True:
-   try:
+   if True:
+      print(sql)
+      print(ivals)
       cur.execute(sql, ivals)
       con.commit()
-   except:
-      print("Done already")
+   #try:
+   #except:
+   #   print("Done already")
 
 def load_frames_simple(trim_file, limit=0):
    cap = cv2.VideoCapture(trim_file)
