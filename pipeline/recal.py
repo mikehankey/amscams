@@ -1180,7 +1180,6 @@ def import_cal_file(cal_fn, cal_dir, mcp):
          star_obj["res_px"] = res_px
          star_obj["zp_res_px"] = zp_res_px
          star_obj["res_deg"] = res_deg
-         print("INSERT:", star_obj)
          insert_paired_star(cal_fn, star_obj, con, cur, json_conf)
          sc += 1
          
@@ -3460,8 +3459,9 @@ def apply_calib (cal_file, calfiles_data, json_conf, mcp, last_cal_params=None, 
       #   print(cal_fn, "needs update!", cal_version, mcp['cal_version'])
 
       cat_stars, short_bright_stars, cat_image = get_catalog_stars(cal_params)
-      cv2.imshow('pepe', cat_image)
-      cv2.waitKey(30)
+      if SHOW == 1:
+         cv2.imshow('pepe', cat_image)
+         cv2.waitKey(30)
     
       print("PXSCALE:", cal_params['pixscale'])
 
@@ -3533,12 +3533,10 @@ def apply_calib (cal_file, calfiles_data, json_conf, mcp, last_cal_params=None, 
 
       #print(cal_dir + cal_fn)
 
-      cv2.imshow("pepe", cal_img)
-      cv2.waitKey(30)
 
       if SHOW == 1:
          cv2.imshow("pepe", cal_img)
-         cv2.waitKey(100)
+         cv2.waitKey(30)
       #view_calib(cal_fn,json_conf, cal_params,oimg, 1)
       print("DONE APPLY")
       return(cal_params)
