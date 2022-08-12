@@ -5780,7 +5780,11 @@ def get_default_cal_for_file(cam_id, obs_file, img, con, cur, json_conf):
       if "cal_version" not in mcp:
          mcp['cal_version'] = 0
    else:
-      mcp = None
+      mcp = {} 
+      mcp['x_poly'] = np.zeros(shape=(15,), dtype=np.float64)
+      mcp['y_poly'] = np.zeros(shape=(15,), dtype=np.float64)
+      mcp['x_poly_fwd'] = np.zeros(shape=(15,), dtype=np.float64)
+      mcp['y_poly_fwd'] = np.zeros(shape=(15,), dtype=np.float64)
 
    mcp['center_az'] = best_med_az
    mcp['center_el'] = best_med_el
@@ -5791,6 +5795,8 @@ def get_default_cal_for_file(cam_id, obs_file, img, con, cur, json_conf):
    mcp = update_center_radec(obs_file,mcp,json_conf)
    mcp['total_res_px'] = 0 
    mcp['total_res_deg'] = 0
+
+
    #exit()
    return(mcp)
 
@@ -5805,7 +5811,11 @@ def get_default_cal_for_file_with_range(cam_id, obs_file, img, con, cur, json_co
       if "cal_version" not in mcp:
          mcp['cal_version'] = 0
    else:
-      mcp = None
+      mcp = {} 
+      mcp['x_poly'] = np.zeros(shape=(15,), dtype=np.float64)
+      mcp['y_poly'] = np.zeros(shape=(15,), dtype=np.float64)
+      mcp['x_poly_fwd'] = np.zeros(shape=(15,), dtype=np.float64)
+      mcp['y_poly_fwd'] = np.zeros(shape=(15,), dtype=np.float64)
 
    try:
       range_data = get_cal_range(obs_file, img, con, cur, json_conf)
