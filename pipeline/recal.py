@@ -1594,8 +1594,9 @@ def re_pair_stars(cal_fn, cp, json_conf, show_img, con, cur,mcp):
             cv2.line(show_img, (int(new_cat_x),int(new_cat_y)), (int(x),int(y)), (128,128,128), 1)
             cv2.circle(show_img, (int(x),int(y)), 5, (255,255,255),1)
             cv2.circle(show_img, (int(new_cat_x),int(new_cat_y)), 5, (128,128,255),1)
-            cv2.imshow('pepe', show_img)
-            cv2.waitKey(10)
+            if SHOW == 1:
+               cv2.imshow('pepe', show_img)
+               cv2.waitKey(10)
             star_cat_dict[ra_key] = star
             star_img_dict[img_key] = star
       matches = sorted(matches, key=lambda x: x[1], reverse=False)
@@ -1649,8 +1650,9 @@ def make_plate(cal_fn, json_conf, con, cur):
       plate_img[y1:y2,x1:x2] = gray_img[y1:y2,x1:x2]
       if x1 <= 0 or x2 >= 1920 or y1 < 0 or y2 >= 1080:
          continue
-   cv2.imshow('pepe', plate_img)
-   cv2.waitKey(30)
+   if SHOW == 1:
+      cv2.imshow('pepe', plate_img)
+      cv2.waitKey(30)
    print(plate_file)
    cv2.imwrite(plate_file, plate_img)
 
@@ -1845,8 +1847,9 @@ def star_points_report(cam_id, json_conf, con, cur):
          final_img[360:720,1280:1920] = sub_frame_img_2
          final_img[720:1080,1280:1920] = console_frame 
        
-         cv2.imshow('pepe', final_img)
-         cv2.waitKey(30)
+         if SHOW == 1:
+            cv2.imshow('pepe', final_img)
+            cv2.waitKey(30)
 
          center_stars = cp['cat_image_stars']
 
@@ -1952,8 +1955,9 @@ def star_points_all(cam_id, json_conf, con, cur):
       else:
          print("WE did everything for this file already")
          img = cv2.imread(star_pairs_image_file)
-         cv2.imshow('pepe', img)
-         cv2.waitKey(30)
+         if SHOW == 1:
+            cv2.imshow('pepe', img)
+            cv2.waitKey(30)
    cv2.imwrite(zp_image_file, zp_image)
 
 def pair_points(cal_fn, star_points, star_pairs_file, star_pairs_image_file, cal_params,star_image, zp_image):
