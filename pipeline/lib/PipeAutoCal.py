@@ -4316,7 +4316,6 @@ def make_lens_model(cam, json_conf, merged_stars=None):
    cam_id = cam
    img = np.zeros((1080,1920,3),dtype=np.uint8) 
    for star in merged_stars:
-      #print("LEN STAR:", len(star))
       print(star[-2])
       (cal_file , center_az, center_el, ra_center, dec_center, position_angle, pixscale, dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist,star_int) = star
 
@@ -4982,7 +4981,7 @@ def deep_calib(cam, json_conf):
          for data in cp['cat_image_stars']:
    
             dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist,star_int = data
-            print("STAR:", dcname, cat_dist, six, siy)
+            #print("STAR:", dcname, cat_dist, six, siy)
             #cp = update_center_radec(cal_file,cp,json_conf)
             all_stars.append((cal_fn, cp['center_az'], cp['center_el'], cp['ra_center'], cp['dec_center'], cp['position_angle'], cp['pixscale'], dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist,star_int))
             if SHOW == 1:
@@ -6032,7 +6031,7 @@ def eval_cal_res(cp_file,json_conf,nc=None,oimg=None, mask_img=None,batch_mode=N
 
    med_rez = []
    for star in nc['cat_image_stars']:
-      print("STAR:", star)
+      #print("STAR:", star)
       dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist,star_int = star
       med_rez.append(cat_dist)
    med_res = np.median(med_rez)
