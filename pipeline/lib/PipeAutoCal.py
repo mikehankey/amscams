@@ -9345,9 +9345,9 @@ def reduce_fov_pos(this_poly, az,el,pos,pixscale, x_poly, y_poly, cal_params_fil
    before = time.time()
 
    # IMPORTANT AREA
-   #temp_cal_params, bad_stars, marked_img = eval_cal_res(cal_params_file, json_conf, temp_cal_params, oimage,None,None,cat_stars) 
+   temp_cal_params, bad_stars, marked_img = eval_cal_res(cal_params_file, json_conf, temp_cal_params, oimage,None,None,cat_stars) 
 
-   temp_cal_params, bad_stars, marked_img = eval_cal(cal_params_file, json_conf, temp_cal_params, oimage,None,None,cat_stars) 
+   #temp_cal_params, bad_stars, marked_img = eval_cal(cal_params_file, json_conf, temp_cal_params, oimage,None,None,cat_stars) 
    elp = time.time() - before
    #temp_cal_params, bad_stars, marked_img = eval_cal(cal_params_file, json_conf, temp_cal_params, oimage,None,None,cat_stars) 
    tstars = len(temp_cal_params['cat_image_stars'])
