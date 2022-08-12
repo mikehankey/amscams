@@ -3578,7 +3578,7 @@ def update_calfiles(cam_id, con,cur, json_conf):
          manual_tweek_calib(cal_fn, con, cur, json_conf, mcp, calfiles_data)
 
          #redo_calfile(cal_fn, con, cur, json_conf)
-         cv2.waitKey(30)
+         #cv2.waitKey(30)
          print("ENDED HERE")
          #repair_calfile_stars(cal_fn, con, cur, json_conf, mcp)
       else:
@@ -4858,10 +4858,12 @@ def get_image_stars(cal_image_file, con, cur, json_conf,force=False):
 
 
       gray_img[y1:y2,x1:x2] = 0
-      cv2.imshow("calview", show_img)
-      cv2.waitKey(10)
+      if SHOW == 1:
+         cv2.imshow("calview", show_img)
+         cv2.waitKey(10)
 
-   cv2.waitKey(30)
+   if SHOW == 1:
+      cv2.waitKey(30)
 
    print("NOW LETS PAIR THE STARS!")
    for star_obj in image_stars:
@@ -4930,7 +4932,8 @@ def get_image_stars(cal_image_file, con, cur, json_conf,force=False):
 
 
       print("IMG STAR:", star_obj['x'], star_obj['y'])
-   cv2.waitKey(30)
+   if SHOW == 1:
+      cv2.waitKey(30)
    con.commit()
 
 
@@ -6826,8 +6829,9 @@ def fix_cal(cal_fn, con, cur,json_conf):
 
 
       star_img = draw_star_image(show_img, cp['cat_image_stars'],cp, json_conf, extra_text) 
-      cv2.imshow('pepe', star_img)
-      cv2.waitKey(30)
+      if SHOW == 1:
+         cv2.imshow('pepe', star_img)
+         cv2.waitKey(30)
 
    
 
