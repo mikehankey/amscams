@@ -5781,10 +5781,11 @@ def get_default_cal_for_file(cam_id, obs_file, img, con, cur, json_conf):
          mcp['cal_version'] = 0
    else:
       mcp = {} 
-      mcp['x_poly'] = np.zeros(shape=(15,), dtype=np.float64)
-      mcp['y_poly'] = np.zeros(shape=(15,), dtype=np.float64)
-      mcp['x_poly_fwd'] = np.zeros(shape=(15,), dtype=np.float64)
-      mcp['y_poly_fwd'] = np.zeros(shape=(15,), dtype=np.float64)
+      mcp['x_poly'] = np.zeros(shape=(15,), dtype=np.float64).tolist()
+      mcp['y_poly'] = np.zeros(shape=(15,), dtype=np.float64).tolist()
+      mcp['x_poly_fwd'] = np.zeros(shape=(15,), dtype=np.float64).tolist()
+      mcp['y_poly_fwd'] = np.zeros(shape=(15,), dtype=np.float64).tolist()
+
 
    mcp['center_az'] = best_med_az
    mcp['center_el'] = best_med_el
@@ -5812,10 +5813,10 @@ def get_default_cal_for_file_with_range(cam_id, obs_file, img, con, cur, json_co
          mcp['cal_version'] = 0
    else:
       mcp = {} 
-      mcp['x_poly'] = np.zeros(shape=(15,), dtype=np.float64)
-      mcp['y_poly'] = np.zeros(shape=(15,), dtype=np.float64)
-      mcp['x_poly_fwd'] = np.zeros(shape=(15,), dtype=np.float64)
-      mcp['y_poly_fwd'] = np.zeros(shape=(15,), dtype=np.float64)
+      mcp['x_poly'] = np.zeros(shape=(15,), dtype=np.float64).tolist()
+      mcp['y_poly'] = np.zeros(shape=(15,), dtype=np.float64).tolist()
+      mcp['x_poly_fwd'] = np.zeros(shape=(15,), dtype=np.float64).tolist()
+      mcp['y_poly_fwd'] = np.zeros(shape=(15,), dtype=np.float64).tolist()
 
    try:
       range_data = get_cal_range(obs_file, img, con, cur, json_conf)
