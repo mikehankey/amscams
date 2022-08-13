@@ -7,7 +7,6 @@ wild = wild.replace("%", "*")
 print("WILD:", wild, "END")
 files = glob.glob(wild)
 print("FILES:", files)
-input("DONE 0")
 for f in files:
    if ".mp4" not in f:
       continue
@@ -20,7 +19,6 @@ for f in files:
       print("Already done", outf)
 
 
-input("DONE 1")
 wel = wild.split("/")
 fn = wel[-1]
 wdir = wild.replace(fn, "")
