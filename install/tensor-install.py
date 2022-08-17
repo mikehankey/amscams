@@ -3,6 +3,8 @@ import os
 import sys
 
 os.system("sudo python3 -m pip install --upgrade pip")
+cmd = "sudo apt-get -y install python3.6-distutils"
+os.system(cmd)
 
 if os.path.exists("tensorflow-installed.txt") :
    print("python3.6 with tensorflow is already installed.")
@@ -17,8 +19,6 @@ if os.path.exists("/usr/bin/python3.6") is False and os.path.exists("/usr/local/
    cmd = "sudo apt-get -y install python3.6"
    os.system(cmd)
 
-   cmd = "sudo apt-get -y install python3.6-distutils"
-   os.system(cmd)
   
 
    #ERROR: This script does not work on Python 3.6 The minimum supported Python version is 3.7. Please use https://bootstrap.pypa.io/pip/3.6/get-pip.py instead.
@@ -36,6 +36,8 @@ if os.path.exists("/usr/bin/python3.6") is False and os.path.exists("/usr/local/
    cmd = "sudo python3.6 -m pip install --upgrade opencv-python"
    os.system(cmd)
    cmd = "sudo python3.6 -m pip install --upgrade ephem"
+   os.system(cmd)
+   cmd = "sudo python3.6 -m pip install --upgrade requests"
    os.system(cmd)
 
 
