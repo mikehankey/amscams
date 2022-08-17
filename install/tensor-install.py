@@ -92,7 +92,7 @@ os.system(cmd)
 cmd = "touch tensorflow-installed.txt"
 os.system(cmd)
 
-cmd = "sudo chown -R ams:ams /mnt/ams/amscams/models"
+cmd = "sudo chown -R ams:ams /home/ams/amscams/models"
 os.system(cmd)
 
 if os.path.exists("../pipeline/models") is False:
