@@ -55,7 +55,7 @@ os.system(cmd)
 cmd = "sudo python3.6 -m pip install pillow"
 os.system(cmd)
 
-cmd = "sudo python3.6 -m pip install sklearn"
+cmd = "sudo python3.6 -m pip install scikit-learn"
 os.system(cmd)
 
 cmd = "sudo python3.6 -m pip install pyephem"
