@@ -58,6 +58,9 @@ os.system(cmd)
 cmd = "sudo python3.6 -m pip install scikit-learn"
 os.system(cmd)
 
+cmd = "sudo python3.6 -m pip install scikit-image"
+os.system(cmd)
+
 cmd = "sudo python3.6 -m pip install pyephem"
 os.system(cmd)
 
