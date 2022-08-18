@@ -14,5 +14,5 @@ if os.path.exists("/home/ams/amscams/pipeline/models/ASAI-v2.7z") is False:
    cmd = "chown -R ams:ams /home/ams/amscams/pipeline/models"
    os.system(cmd)
 
-cmd = "pip3 install requests"
+cmd = "python3.6 -m pip install requests"
 os.system(cmd)
