@@ -1152,6 +1152,9 @@ class AllSkyDB():
          if "cp" in mj:
             cp = mj['cp']
             if cp is not None:
+               if "cat_image_stars" not in cp:
+                  cp['cat_image_stars'] = []
+                  cp['user_stars'] = []
                calib = [cp['ra_center'], cp['dec_center'], cp['center_az'], cp['center_el'], cp['position_angle'], cp['pixscale'], float(len(cp['cat_image_stars'])), float(cp['total_res_px'])]
                mj['calib'] = calib
 
