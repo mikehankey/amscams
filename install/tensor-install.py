@@ -6,6 +6,9 @@ os.system("sudo python3 -m pip install --upgrade pip")
 cmd = "sudo apt-get -y install python3.6-distutils"
 os.system(cmd)
 
+cmd = "sudo apt-get install p7zip-full"
+os.system(cmd)
+
 if os.path.exists("tensorflow-installed.txt") :
    print("python3.6 with tensorflow is already installed.")
    exit()
