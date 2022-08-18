@@ -1,4 +1,5 @@
 import os
+
 if os.path.exists("../pipeline/models") is False:
    os.makedirs("../pipeline/models")
 
@@ -10,7 +11,7 @@ if os.path.exists("/home/ams/amscams/pipeline/models/ASAI-v2.7z") is False:
    os.system(cmd)
    cmd = "cd /home/ams/amscams/pipeline/models; 7z e /home/ams/amscams/pipeline/models/ASAI-v2.7z"
    os.system(cmd)
-   cmd = "chown -R ams:ams /mnt/ams/amscams/models"
+   cmd = "chown -R ams:ams /home/ams/amscams/pipeline/models"
    os.system(cmd)
 
 cmd = "pip3 install requests"
