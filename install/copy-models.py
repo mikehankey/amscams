@@ -1,4 +1,4 @@
-
+import os
 if os.path.exists("../pipeline/models") is False:
    os.makedirs("../pipeline/models")
 
