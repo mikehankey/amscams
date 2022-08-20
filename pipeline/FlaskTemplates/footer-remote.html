@@ -167,6 +167,16 @@ jQuery(document).ready(function($) {
            //this.hide();
            //return self;
 	}
+	else if (command == "events") {
+	   alert("hi")
+           $.get( "https://archive.allsky.tv/EVENTS/2022/07/29/2022_07_29_OBS_GOOD.html", function( data ) {
+           $("#consoleModal").modal('show');
+	   $("#console-content").html(data)
+           $('#tilda').hide();
+
+           });
+        } 
+
 	// fetch content or API and put it in the modal
 
 

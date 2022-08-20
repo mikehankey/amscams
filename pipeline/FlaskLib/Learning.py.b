@@ -1,7 +1,5 @@
 import glob
 
-
-from  lib.insert_meteor_json import insert_meteor_json
 import math
 import simplejson as json
 import sqlite3
@@ -503,7 +501,7 @@ def make_buttons(roi_file=None, selected=None):
 
 def recrop_roi_confirm(station_id, root_file, roi):
    db_file = station_id + "_ALLSKY.db"
-   con = sqlite3.connect(db_file, connect_args={'timeout': 15})
+   con = sqlite3.connect(db_file)
    cur = con.cursor()
 
    # save the status in the DB
@@ -695,7 +693,7 @@ def learning_meteors_tag(label, req, station_id = None):
       station_id = json_conf['site']['ams_id']
 
    db_file = station_id + "_ALLSKY.db"
-   con = sqlite3.connect(db_file, connect_args={'timeout': 15})
+   con = sqlite3.connect(db_file)
    cur = con.cursor()
 
    sql = """ UPDATE meteors
@@ -1278,7 +1276,7 @@ def learning_weather(station_id, in_data):
    wheader = weather_header(station_id, in_data)
 
    db_file = station_id + "_WEATHER.db"
-   con = sqlite3.connect(db_file, connect_args={'timeout': 15})
+   con = sqlite3.connect(db_file)
    cur = con.cursor()
 
    out = header 
@@ -1382,7 +1380,7 @@ def sample_counts(sample_type, station_id, con, cur):
 
 def learning_db_dataset(ams_id, in_data):
    db_file = ams_id + "_ALLSKY.db"
-   con = sqlite3.connect(db_file, connect_args={'timeout': 15})
+   con = sqlite3.connect(db_file)
    cur = con.cursor()
    station_id = ams_id
 
@@ -1619,7 +1617,7 @@ def learning_samples_db_dataset(ams_id, in_data):
    print(str(in_data) + "<BR>")
    station_id = ams_id
    db_file = ams_id + "_ALLSKY.db"
-   con = sqlite3.connect(db_file, connect_args={'timeout': 15})
+   con = sqlite3.connect(db_file)
    if in_data['ipp'] is None:
       in_data['ipp'] = 100
 
@@ -2009,7 +2007,7 @@ def confirm_non_meteor_label(station_id, root_fn,label):
    if ".mp4" not in root_fn:
       root_fn += ".mp4"
    db_file = station_id + "_ALLSKY.db"
-   con = sqlite3.connect(db_file, connect_args={'timeout': 15})
+   con = sqlite3.connect(db_file)
    cur = con.cursor()
    date = root_fn[0:10]
    sql = "UPDATE non_meteors_confirmed set human_label = ? WHERE sd_vid = ?"
@@ -2022,13 +2020,10 @@ def confirm_non_meteor_label(station_id, root_fn,label):
 
 def confirm_non_meteor(station_id, root_fn):
    db_file = station_id + "_ALLSKY.db"
-   con = sqlite3.connect(db_file, connect_args={'timeout': 15})
+   con = sqlite3.connect(db_file)
    cur = con.cursor()
    date = root_fn[0:10]
    mfile = "/mnt/ams2/meteors/" + date + "/" + root_fn + ".json"
-   nmfile = "/mnt/ams2/non_meteors/" + date + "/" + root_fn + ".json"
-
-   print("MFILE:", mfile)
    if os.path.exists(mfile):
       mj = load_json_file(mfile)
       mj['hc'] = 1
@@ -2036,135 +2031,35 @@ def confirm_non_meteor(station_id, root_fn):
       sql = "UPDATE meteors set human_confirmed = '-1' WHERE root_fn = ?"
       task = [root_fn]
       cur.execute(sql, task)
+      print(sql,task)
       con.commit()
-
-      # moving / del should happen by purge script
-   elif os.path.exists(nmfile):
-      # in non_meteor dir?
-      mj = load_json_file(nmfile)
-      print(mj.keys())
-      sd_vid = mj['sd_video_file'].split("/")[-1]
-      if "hd_trim" in mj:
-         hd_vid = mj['hd_trim'].split("/")[-1]
-      else:
-         hd_vid = sd_vid
-
-      nm_conf_dir = "/mnt/ams2/non_meteors_confirmed/" + sd_vid[0:10] + "/" 
-      nm_dir = "/mnt/ams2/non_meteors/" + sd_vid[0:10] + "/" 
-
-      sd_wild = nm_dir + sd_vid.replace(".mp4", "*")
-      hd_wild = nm_dir + hd_vid.replace(".mp4", "*")
-      human_confirmed = -1 
-      if os.path.exists(nm_conf_dir) is False:
-         os.makedirs(nm_conf_dir)
-
-      cmd = "mv " + sd_wild + " " + nm_conf_dir
-      print(cmd)
-      os.system(cmd)
-      cmd = "mv " + hd_wild + " " + nm_conf_dir
-      print(cmd)
-      os.system(cmd)
-      #isql = """INSERT OR REPLACE INTO non_meteors_confirmed (sd_vid, hd_vid, roi, meteor_yn, fireball_yn, multi_class,
-      #                                                         multi_class_conf, human_confirmed, last_updated)
-      #                                                 VALUES (?,?,?,?, ?, ?, ?, ?, ?)"""
-
-      isql = """INSERT OR REPLACE INTO non_meteors_confirmed (sd_vid, hd_vid, human_confirmed, last_updated)
-                                                               VALUES (?,?,?,?)"""
-
-      ivals = [ sd_vid, hd_vid, 1, time.time()] 
-      cur.execute(isql, ivals)
-      print(isql,ivals)
+   else:
+      sql = "UPDATE meteors set human_confirmed = '-1' WHERE root_fn = ?"
+      task = [root_fn]
+      cur.execute(sql, task)
+      print(sql,task)
       con.commit()
+      return("ERROR: NO METEOR FILE! " + root_fn)
    return("Human confirmed NON meteor " + root_fn)
 
 
 def confirm_meteor(station_id, root_fn):
    db_file = station_id + "_ALLSKY.db"
-   con = sqlite3.connect(db_file, connect_args={'timeout': 15})
+   con = sqlite3.connect(db_file)
    cur = con.cursor()
    date = root_fn[0:10]
-   hd_root = None
-   out = ""
-   mdir = "/mnt/ams2/meteors/" + date + "/" 
-   nmdir = "/mnt/ams2/non_meteors/" + date + "/" 
-   nmcdir = "/mnt/ams2/non_meteors_confirmed/" + date  + "/"
-
-
    mfile = "/mnt/ams2/meteors/" + date + "/" + root_fn + ".json"
-   nmfile = "/mnt/ams2/non_meteors/" + date + "/" + root_fn + ".json"
-   nmcfile = "/mnt/ams2/non_meteors_confirmed/" + date + "/" + root_fn + ".json"
-
-   # Meteor files are in non meteor dir
-   if os.path.exists(nmfile):
-      print("FILE FOUND IN NON METEOR DIR!", nmfile)
-      # TAG AND MOVE BACK
-      mj = load_json_file(nmfile)
-      mj['hc'] = 1
-      if "hd_trim" in mj:
-         if mj['hd_trim'] is not None and mj['hd_trim'] != "" and mj['hd_trim'] != 0:
-            hd_root = mj['hd_trim'].split("/")[-1].replace(".mp4", "")
-      sd_root = root_fn
-      save_json_file(nmfile, mj)
-
-      cmd = "mv " + nmdir  + root_fn + "* " + mdir 
-      out += cmd + "<br>"
-      print(cmd)
-      os.system(cmd)
-      if hd_root is not None:
-         cmd = "mv " + nmdir  + hd_root + "* " + mdir 
-         out += cmd + "<br>"
-         print(cmd)
-         os.system(cmd)
-      print("SAVED JSON FILE WITH HC", mfile)
-
-
-   elif os.path.exists(nmcfile):
-      # TAG AND MOVE BACK
-      mj = load_json_file(nmcfile)
-      mj['hc'] = 1
-      save_json_file(mfile, mj)
-      # RELOAD SQL / DELETE NMC
-
-      cmd = "mv " + nmcdir  + root_fn + "* " + mdir 
-      out += cmd + "<br>"
-      print(cmd)
-      os.system(cmd)
-
-      if hd_root is not None:
-         cmd = "mv " + nmcdir  + hd_root + "* " + mdir 
-         out += cmd + "<br>"
-         print(cmd)
-         os.system(cmd)
-
-
-      #move!
-   elif os.path.exists(mfile):
+   if os.path.exists(mfile):
       mj = load_json_file(mfile)
       mj['hc'] = 1
       save_json_file(mfile, mj)
       sql = "UPDATE meteors set human_confirmed = '1' WHERE root_fn = ?"
       task = [root_fn]
       cur.execute(sql, task)
-
+      print(sql,task)
+      con.commit()
    else:
       return("ERROR: NO METEOR FILE! " + root_fn)
-
-   if True:
-      # DELETE DELETED RECORDS / METEOR WILL BE RE_inserted on the next run
-      sql = "delete from non_meteors WHERE meteor_fn like ?"
-      task = [root_fn + "%"]
-      cur.execute(sql, task)
-
-      sql = "delete from non_meteors_confirmed WHERE sd_vid like ?"
-      task = [root_fn + "%"]
-      cur.execute(sql, task)
-
-      sql = "delete from deleted_meteors WHERE sd_vid like ?"
-      task = [root_fn + "%"]
-      cur.execute(sql, task)
-
-
-   con.commit()
    return("Human confirmed meteor " + root_fn)
 
 def stats_by_month(cur):
@@ -2476,49 +2371,6 @@ def ui_javascript():
                confirm_meteor($(this).attr('data-meteor'))
             })
          })
-         $(function() {
-            $('.confirm_fireball').click(function() {
-               confirm_meteor($(this).attr('data-meteor'))
-            })
-         })
-
-         $(function() {
-            $('.confirm_spectra').click(function() {
-               confirm_multi_class($(this).attr('data-meteor'), "spectra")
-            })
-         })
-         $(function() {
-            $('.confirm_rocket').click(function() {
-               confirm_multi_class($(this).attr('data-meteor'), "rocket")
-            })
-         })
-         $(function() {
-            $('.confirm_noise').click(function() {
-               confirm_multi_class($(this).attr('data-meteor'), "noise")
-            })
-         })
-         $(function() {
-            $('.confirm_chimney_smoke').click(function() {
-               confirm_multi_class($(this).attr('data-meteor'), "chimney_smoke")
-            })
-         })
-         $(function() {
-            $('.confirm_smoke').click(function() {
-               confirm_multi_class($(this).attr('data-meteor'), "smoke")
-            })
-         })
-         $(function() {
-            $('.confirm_empty').click(function() {
-               confirm_multi_class($(this).attr('data-meteor'), "empty")
-            })
-         })
-         $(function() {
-            $('.confirm_unsure').click(function() {
-               confirm_multi_class($(this).attr('data-meteor'), "unsure")
-            })
-         })
-
-
 
          function confirm_multi_class(data, label) {
              msg = data + " is " + label
@@ -2622,7 +2474,6 @@ def options_form(station_id, options):
                var db = $("#db").val()
                var in_date = $("#in_date").val().replace(/-/g, "_")
                var order_by = $("#order_by").val()
-               var label = $("#label").val()
                var msg = station_id + " " + in_date + " " + hc + " " + db + " " + rc 
                var url = "/AIREJECTS/" + station_id + "/?"
                if (in_date == "") {
@@ -2647,10 +2498,6 @@ def options_form(station_id, options):
 
                   }
                }
-               if (label != "" && label !== undefined) {
-                  url += "label=" + label + "&"
-           
-               }
                url += "rc=" + rc + "&"
                url += "order_by=" + order_by + "&"
                var temp = window.location.href.split("/")
@@ -2662,26 +2509,11 @@ def options_form(station_id, options):
         })
         </script>
    """
-   lb_types, icons = mc_types()
-   lb_types = sorted(lb_types)
-   label_opt = ""
-   if "label" not in options:
-      options['label'] = ""
-   label_opt += "<option selected value=''>AI Label</option>"
-   for i in range(0, len(lb_types)):
-      code = lb_types[i]
-      icon = icons[i]
-      if code == options['label']:
-         label_opt += "<option selected value='{}'>{}</option>".format(code,code)
-      else:
-         label_opt += "<option value='{}'>{}</option>".format(code,code)
 
 
    ord_op = [
          ['meteor_yn_asc', "Meteor YN Score Asc (low to high)"],
          ['meteor_yn_desc', "Meteor YN Score Desc (high to low)"],
-         ['fireball_yn_asc', "Fireball YN Score Asc (low to high)"],
-         ['fireball_yn_desc', "Fireball YN Score Desc (high to low)"],
          ['mc_class_conf_asc', "Label Confidence Asc (low to high)"],
          ['mc_class_conf_desc', "Label Confidence Desc (high to low)"],
          ['date_asc', "Date Asc (old to new)"],
@@ -2724,6 +2556,7 @@ def options_form(station_id, options):
       else:
          rc_opt += "<option value=" + str(oo) + ">" + str(oo) + "</option>"
 
+
    if "hc" in options: 
       hc_switch = """
       <div class="custom-control custom-switch">
@@ -2758,15 +2591,12 @@ def options_form(station_id, options):
             Date     
          </div>
          <div class="col-2">
-            Label 
-         </div>
-         <div class="col-2">
             Human Confirmed 
          </div>
          <div class="col-2">
             Items Per Page
          </div>
-         <div class="col-1">
+         <div class="col-2">
             Sort 
          </div>
       </div>
@@ -2780,11 +2610,6 @@ def options_form(station_id, options):
             <input type=date name=in_date value={} id="in_date">
          </div>
 
-         <div class="col-2">
-            <select name=label id="label">
-            {}
-            </select>
-         </div>
 
          <div class="col-2">
             {}
@@ -2794,7 +2619,7 @@ def options_form(station_id, options):
                {}
             </select>
          </div>
-         <div class="col-1">
+         <div class="col-2">
             <select name=order_by id="order_by">
             {}
             </select>
@@ -2805,10 +2630,10 @@ def options_form(station_id, options):
    </form>
    {}
 
-   """.format(station_id, db_opt, in_date_str, label_opt, hc_switch, rc_opt, ord_opt, javascript )
+   """.format(station_id, db_opt, in_date_str, hc_switch, rc_opt, ord_opt, javascript )
    return(form)
 
-def build_query(options, cur):
+def build_query(options):
 
    header_msg = ""
    order_msg = ""
@@ -2818,9 +2643,6 @@ def build_query(options, cur):
    # determine the underlying table first
    if "db" not in options:
       options['db'] = "meteor_db"
-
-   if options['db'] == "meteor_db":
-
       table = "meteors"
       sql = """SELECT sd_vid,hd_vid, meteor_yn_conf, fireball_yn_conf,mc_class,mc_class_conf,ai_resp,camera_id, start_datetime, 
                       human_confirmed, multi_station, ang_velocity, duration, peak_intensity FROM meteors"""
@@ -2848,14 +2670,8 @@ def build_query(options, cur):
          where_item = "mc_class like ?"
          where_items.append(where_item)
       else:
-         # non_meteors
-         
-         if "hc" in options:
-            where_item = "human_label like ?"
-            where_items.append(where_item)
-         else:
-            where_item = "multi_class like ?"
-            where_items.append(where_item)
+         where_item = "multi_class like ?"
+         where_items.append(where_item)
 
       where_vals.append(options['label'] + "%" )
 
@@ -2895,22 +2711,8 @@ def build_query(options, cur):
       order_msg = "ordering by " + order_short
       order_by = options['order_by']
    else:
-      order_by = "ORDER BY sd_vid desc"
-      order_msg = "ordering by date desc (new to old)" 
-
-   if order_by == "date_desc":
-      order_by = "ORDER BY sd_vid desc"
-      order_msg = "ordering by date desc (new to old)" 
-   if order_by == "date_asc":
-      order_by = "ORDER BY sd_vid asc"
-      order_msg = "ordering by date asc (old to new)" 
-
-   if order_by == "mc_class_conf_desc":
-      order_by = "ORDER BY mc_class_conf desc"
-      order_msg = "ordering by multi class confidence descending (best to worst)" 
-   if order_by == "mc_class_conf_asc":
-      order_by = "ORDER BY mc_class_conf asc"
-      order_msg = "ordering by multi class confidence descending (best to worst)" 
+      order_by = "ORDER BY mc_class, mc_class_conf desc"
+      order_msg = "ordering by class confidence " 
 
    if order_by == "meteor_yn_desc":
       order_by = "ORDER BY meteor_yn_conf desc"
@@ -2918,13 +2720,6 @@ def build_query(options, cur):
    if order_by == "meteor_yn_asc":
       order_by = "ORDER BY meteor_yn_conf asc"
       order_msg = "ordering by meteor yn confidence ascending (worst to best)" 
-   if order_by == "fireball_yn_desc":
-      order_by = "ORDER BY fireball_yn_conf desc"
-      order_msg = "ordering by fireball yn confidence descending (best to worst)" 
-   if order_by == "fireball_yn_asc":
-      order_by = "ORDER BY fireball_yn_conf asc"
-      order_msg = "ordering by meteor yn confidence ascending (worst to best)" 
-
    if table != "meteors":
       order_by = order_by.replace("meteor_yn_conf", "meteor_yn")
       order_by = order_by.replace("fireball_yn_conf", "fireball_yn")
@@ -2959,92 +2754,102 @@ def build_query(options, cur):
       """.format(str(order_by), str(offset), str(row_count))
 
 
-   sql_stmt = sql + sql_where 
-
-   if len(where_vals) == 0:
-      cur.execute(sql_stmt)
-   else:
-      cur.execute(sql_stmt, where_vals)
-   rows = cur.fetchall()
-   total_rows = len(rows)
-
-   
-   sql_stmt += sql_end
+   sql_stmt = sql + sql_where + sql_end
    print("SQL:", sql)
 
-   return(sql_stmt, where_vals, total_rows, order_msg)
-
-def ai_scan_review(station_id, options, json_conf):
-   out = ""
-   good_ai = ""
-   bad_ai = ""
-   if "date" not in options:
-      out = "add &date= to querry!"
-      return(out)
-   ai_file = "/mnt/ams2/SD/proc2/{}/data/".format(options['date']) + "/AI_DATA.json"
-   roi_dir = "/mnt/ams2/SD/proc2/{}/images/".format(options['date'])
-   files = glob.glob(roi_dir + "*ROI*")
-   bad_files = []
-   print("AIFILE:", ai_file)
-   if os.path.exists(ai_file ) is True:
-      ai_data = load_json_file(ai_file) 
-   else:
-      ai_data = {}
-
-   for ff in files:
-      vf = ff.replace("/mnt/ams2", "")
-      vfn = vf.split("/")[-1]
-      root_fn = vfn.split("-ROI")[0]
-      if vfn in ai_data:
-         ai_resp = ai_data[vfn]
-      else:
-         ai_resp = {}
-
-      if "mc_class" in ai_resp:
-          ai_info = str(int(ai_resp['meteor_yn'])) + " " + str(int(ai_resp['fireball_yn'])) + " " + str((ai_resp['mc_class'])) + " " + str(int(ai_resp['mc_class_conf']))
-          ai_data[vfn] = ai_resp
-          status = 1
-          if ("meteor" not in ai_resp['mc_class'] and (ai_resp['mc_class_conf'] > ai_resp['meteor_yn'] and ai_resp['mc_class_conf'] > ai_resp['fireball_yn'])) and ai_resp['meteor_yn'] < 50:
-             status = 0
-          if ai_resp['meteor_yn'] > 50 or ai_resp['fireball_yn'] > 50:
-             status = 1
-          if status == 0:
-             bad_ai += "<div style='float:left; border: 1px #FF0000 solid;'><img src={} alt='{}'><br>{}</div>".format(vf, ai_info, ai_info)
-             bad_files.append(root_fn)
-          else:
-             good_ai += "<div style='float:left; border: 1px #00FF00 solid;'><img src={} alt='{}'><br>{}</div>".format(vf, ai_info, ai_info)
-         
-   out = good_ai + "<hr>" + bad_ai
-
-   return(out)
-
+   return(sql_stmt, where_vals, order_msg)
 
 
 def ai_rejects(station_id, options, json_conf):
-   db_file = station_id + "_ALLSKY.db"
-   con = sqlite3.connect(db_file, connect_args={'timeout': 15})
-   cur = con.cursor()
 
-   if "in_date" not in options:
-      options['in_date'] = "20"
+
    if "db" not in options:
       options['db'] = "meteor_db"
 
-   if options['db'] == "meteor_db":
-      ctype = "meteor"
-   else:
-      ctype = "non_meteors_confirmed"
-   if "hc" in options:
-      hc_msg = "confirmed"
-   else:
+   sql_stmt, sql_vals,order_msg = build_query(options)
+   #out = sql + "<br>" + str(sql_vals)
+
+
+   #options_form(station_id, options)
+   header_msg = ""
+   if False:
+      order_msg = ""
+      if "order_by" in options:
+         order_short = options['order_by']
+         order_msg = "ordering by " + order_short
+         order_by = options['order_by']
+      else:
+         order_by = "ORDER BY mc_class, mc_class_conf desc"
+         order_msg = "ordering by class confidence " 
+
+      if order_by == "meteor_yn_desc":
+         order_by = "ORDER BY meteor_yn_conf desc"
+         order_msg = "ordering by meteor yn confidence descending (best to worst)" 
+      if order_by == "meteor_yn_asc":
+         order_by = "ORDER BY meteor_yn_conf asc"
+         order_msg = "ordering by meteor yn confidence ascending (worst to best)" 
+
+      if "multi" in options:
+         multi_where = True
+         multi_and = " AND multi_station = 1"
+      else:
+         multi_where = False
+         multi_and = ""
+
+      if "p" in options:
+         page = int(options['p'])
+      else:
+         page = 1
+      lpage = page - 1
+
+      hc = False
       hc_msg = "non-confirmed"
+      if "hc" in options:
+         hc_msg = "confirmed"
+         hc = True
 
-   sql_stmt, sql_vals,total_rows, order_msg = build_query(options, cur)
 
-   header_msg = """<div class="alert alert-secondary">Showing TC of {} {} {} matching date {} {} </div>""".format(total_rows, hc_msg, ctype, options['in_date'], order_msg)
-   header_msg += options_form(station_id, options)
+      if "in_date" in options:
+         if "ctype" in options:
+            ctype = options['ctype']
+         else:
+            ctype = "meteors"
+         header_msg = """<div class="alert alert-secondary">Showing TC {} {} matching date {} {} </div>""".format(hc_msg, ctype, options['in_date'], order_msg)
+         in_date = options['in_date']
+         header_msg += options_form(station_id, options)
 
-   # KEEP
+      if "rc" in options:
+         row_count = int(options['rc'])
+      else:
+         row_count = 25
+
+      offset = row_count * lpage
+
+
+      if "ctype" in options:
+         ctype = options['ctype']
+      else:
+         ctype = "meteor"
+
+      if "db" in options:
+         if options['db'] == "non_meteor_db":
+            ctype = "non_meteor_confirmed"
+            options['ctype'] = ctype
+            options['list'] = "non_meteors_by_class"
+
+
+      if "list" in options:
+         list_type = options['list']
+      else:
+         list_type = "default"
+      if "label" in options:
+         label = options['label']
+      else:
+         label = None
+      if "confirmed_status" in options:
+         conf_status = options['conf_status']
+      else:
+         conf_status = None
 
    out = ui_javascript()
    out += """
@@ -3060,6 +2865,9 @@ def ai_rejects(station_id, options, json_conf):
    """.format(header_msg)
    template = make_default_template(station_id, "meteors_main.html", json_conf)
 
+   db_file = station_id + "_ALLSKY.db"
+   con = sqlite3.connect(db_file)
+   cur = con.cursor()
    stats = ai_stats_summary(cur)
    non_confirmed_meteors = stats['sql_meteors'] - stats['conf_status'][1]
    ai_out = """
@@ -3113,25 +2921,169 @@ def ai_rejects(station_id, options, json_conf):
    """
    # select and reject rows matching the MC reject case
    reject_dir = "/mnt/ams2/non_meteors/classes/"
+   if False: 
+   #if list_type == "non_meteors_by_class" :
+      order_by = order_by.replace("mc_class_conf", "multi_class_conf")
+      order_by = order_by.replace("mc_class", "multi_class")
+      sql = """SELECT sd_vid, roi, meteor_yn, fireball_yn, multi_class, multi_class_conf, human_label, last_updated  
+                 FROM non_meteors_confirmed
+            """
+      if hc is True:
+         sql += "WHERE human_label like ?"
+      else:
+         sql += "WHERE multi_class like ?"
+                 
+      if hc is True:
+         sql += """
+               AND (human_label != "" and human_label is not NULL)
+         """
+      else:
+         sql += """
+               AND (human_label = "" or human_label is NULL)
+          """
+      sql += """
+          {}
+          LIMIT {},{}
+         """.format(str(order_by), str(offset), str(row_count))
+      print(sql)
+      
+   elif False and list_type == "by_date":
+      sql = """SELECT sd_vid,hd_vid, meteor_yn_conf, fireball_yn_conf,mc_class,mc_class_conf,ai_resp,camera_id, start_datetime, human_confirmed, multi_station, ang_velocity, duration, peak_intensity FROM meteors
+             WHERE root_fn like ? 
+             AND (deleted is null or deleted != 1)
+      """
+      if label is not None:
+         sql += """
+            AND (mc_class = '{}')
+         """.format(label)
 
-   ### KEEP KEEP ###
 
+      if hc is True:
+         sql += """
+               AND (human_confirmed == 1
+               or human_confirmed == -1)
+          """
+      else:
+         sql += """
+               AND (human_confirmed != 1
+               AND human_confirmed != -1)
+         """
+      sql += multi_and
+      sql += """
+             {}
+             LIMIT {},{}
+         """.format(str(order_by), str(offset), str(row_count))
+
+
+   elif False and list_type == "by_class" and (label is None or label == "None"):
+      label = ""
+      sql = """SELECT sd_vid,hd_vid, meteor_yn_conf, fireball_yn_conf,mc_class,mc_class_conf,ai_resp,camera_id, start_datetime, human_confirmed, multi_station, ang_velocity, duration, peak_intensity FROM meteors
+             WHERE (mc_class = ""
+                OR mc_class is NULL)
+               AND (deleted is null or deleted != 1)
+      """
+      if hc is True:
+         sql += """
+               AND (human_confirmed == 1
+               or human_confirmed == -1)
+          """
+      else:
+         sql += """
+               AND (human_confirmed != 1
+               AND human_confirmed != -1)
+         """
+      sql += multi_and
+      sql += """
+             {}
+             LIMIT {},{}
+         """.format(str(order_by), str(offset), str(row_count))
+      out += sql
+
+
+
+   elif False and list_type == "by_class" :
+      sql = """SELECT sd_vid,hd_vid, meteor_yn_conf, fireball_yn_conf,mc_class,mc_class_conf,ai_resp,camera_id, start_datetime, human_confirmed,multi_station, ang_velocity, duration, peak_intensity FROM meteors
+             WHERE mc_class like ?
+               AND (deleted is null or deleted != 1)
+      """
+      if hc is True:
+         sql += """
+               AND (human_confirmed == 1
+               or human_confirmed == -1)
+          """
+      else:
+         sql += """
+               AND (human_confirmed != 1
+               AND human_confirmed != -1)
+         """
+
+      sql += multi_and
+      sql += """
+             {}
+             LIMIT {}, {}
+         """.format(str(order_by), str(offset), str(row_count))
+   elif False:
+      sql = """SELECT sd_vid,hd_vid, meteor_yn_conf, fireball_yn_conf,mc_class,mc_class_conf,ai_resp,camera_id, start_datetime, human_confirmed, multi_station, ang_velocity, duration, peak_intensity FROM meteors
+             WHERE meteor_yn_conf <= ?
+               AND fireball_yn_conf <= ?
+               AND root_fn not like '2019%'
+               AND (deleted is null or deleted != 1)
+      """
+      if hc is True:
+         sql += """
+               AND (human_confirmed == 1
+               or human_confirmed == -1)
+          """
+      else:
+         sql += """
+               AND (human_confirmed != 1
+               AND human_confirmed != -1)
+         """
+
+      sql += multi_and
+      sql += """
+             {}
+             LIMIT {}, {}
+         """.format(str(order_by), str(offset), str(row_count))
+      print(sql)
+                   #mc_class_conf >  meteor_yn_conf
+               #AND mc_class_conf > fireball_yn_conf)
+               #AND multi_station != 1
+               #AND mc_class not like 'meteor%'
+               #AND mc_class not like 'orion%'
+   met_conf = 10
+   fb_conf = 10
+   if False and list_type == "by_class" and (label is None or label == "None" or label == ""):
+      vals = []
+   elif False and list_type == "by_date":
+      print("INDATE:", in_date)
+      vals = [in_date + "%"]
+   elif False and list_type == "by_class" or list_type == "non_meteors_by_class":
+      sql = sql.replace("meteor_yn_conf", "meteor_yn")
+      sql = sql.replace("mc_class_conf", "multi_class_conf")
+      if label is None:
+         label = ""
+      vals = [label + "%"]
+   elif False:
+      vals = [met_conf, fb_conf]
 
    print("---------------------------------------------------------")
-   print("SQL:", sql_stmt)
+   print("SQL:", sql)
    print("---------------------------------------------------------")
 
    if len(sql_vals) == 0:
       cur.execute(sql_stmt)
    else:
       cur.execute(sql_stmt, sql_vals)
+   #out += "<PRE>{}</PRE>".format(sql)
+
 
    rows = cur.fetchall()
    ai_info = []
    tc = 0
    data_str = ""
    for row in rows:
-      if options['db'] == "non_meteor_db":
+      if list_type == "non_meteors_by_class":
          sd_vid, roi, meteor_yn, fireball_yn, mc_class, mc_class_conf, human_label, last_updated = row
          camera_id = ""
          start_datetime = ""
@@ -3142,7 +3094,6 @@ def ai_rejects(station_id, options, json_conf):
             human_label = "none"
             human_confirmed = None
       else:
-         print("ROW:", row)
          sd_vid,hd_vid,meteor_yn,fireball_yn, mc_class,mc_class_conf,ai_resp,camera_id,start_datetime, human_confirmed,multi_station,ang_velocity,duration,peak_intensity = row
          if human_confirmed == 1 :
             human_label = "meteor"
@@ -3150,7 +3101,12 @@ def ai_rejects(station_id, options, json_conf):
             human_label = "non_meteor"
          else:
             human_label = "no_human_label"
-      if options['db'] == "non_meteor_db":
+      #out += "{} {} {} {} {}<br>".format(sd_vid, meteor_yn_conf, fireball_yn_conf, mc_class, mc_class_conf)
+      #if ai_resp is not None:
+      #   ai_resp = json.loads(ai_resp)
+         #if int(ai_resp['ai_version']) < 3.1:
+         #   continue
+      if list_type == "non_meteors_by_class":
          mdir = "/mnt/ams2/non_meteors_confirmed/" + sd_vid[0:10] + "/"
       else:
          mdir = "/mnt/ams2/meteors/" + sd_vid[0:10] + "/"
@@ -3165,7 +3121,7 @@ def ai_rejects(station_id, options, json_conf):
       if True:
          root_fn = sd_vid.replace(".mp4", "")
          data_str += root_fn + ","
-         if options['db'] == "non_meteor_db":
+         if list_type == "non_meteors_by_class":
             thumb_url = "/non_meteors_confirmed/" + root_fn[0:10] + "/" + root_fn + "-stacked-tn.jpg"
             json_file = "/mnt/ams2/non_meteors_confirmed/" + root_fn[0:10] + "/" + root_fn + ".json"
          else:
@@ -3188,30 +3144,16 @@ def ai_rejects(station_id, options, json_conf):
                conf_color = "red"
                ico = """<i class="fas fa-ban" style="size: 16px; color: red;"></i>"""
                if human_label != 'non_meteor':  
-                  if human_label != "" and human_label != None:
-                     ico = find_ico(human_label, 1)
-                  else:
-                     ico = find_ico(human_label, 0)
+                  ico = find_ico(human_label)
             else:
                conf_color = None
                #ico = "no_icon"
                ico = """<i class="fas fa-question">"""
-            print("HUMAN CONFIRMED,LABEL IS:", human_confirmed, human_label)
+            print("HUMAN CONFIRMED IS:", human_confirmed)
             print("ICO:", ico)
-            try:
-               ai_info = str(int(float(meteor_yn))) + "% Meteor / "
-            except:
-               ai_info = "ai problem"
-            try:
-               ai_info += str(int(float(fireball_yn))) + "% Fireball / "
-            except:
-               ai_info = "ai problem"
-
-            try:
-               ai_info += str(int(float(mc_class_conf))) + "% " + mc_class + "<br>"
-            except:
-               ai_info = "ai problem"
-
+            ai_info = str(int(float(meteor_yn))) + "% Meteor / "
+            ai_info += str(int(float(fireball_yn))) + "% Fireball / "
+            ai_info += str(int(float(mc_class_conf))) + "% " + mc_class + "<br>"
             ai_info += start_datetime  #+ " vel:" + str(round(ang_velocity,2)) + " dur:" + str(round(duration,2)) 
             if conf_color is None:
                color = get_color(100-float(meteor_yn))
@@ -3220,8 +3162,7 @@ def ai_rejects(station_id, options, json_conf):
 
             multi_station = "HC: " + str(human_confirmed)
 
-            print("DEBUIG:(ctype, color, human_confirmed, human_label)", ctype, color, human_confirmed, human_label, ico)
-            cell = meteor_cell_html(root_fn, thumb_url, ai_info,ico, ctype, color, multi_station, human_confirmed, human_label )
+            cell = meteor_cell_html(root_fn, thumb_url, ai_info,ico, ctype, color, multi_station, human_confirmed )
             out += cell
 
             tc += 1
@@ -3230,7 +3171,7 @@ def ai_rejects(station_id, options, json_conf):
             #out += "MISSING:" + sd_vid
             # if meteor no longer exists on file system update it as deleted
             # the purge will later remove it. 
-            if options['db'] != "non_meteor_db":
+            if list_type != "non_meteors_by_class":
                sql = "UPDATE meteors set deleted = '1' WHERE root_fn = ?"
                task = [root_fn]
                print(sql, root_fn)
@@ -3256,7 +3197,7 @@ def ai_rejects(station_id, options, json_conf):
       old = """
             <div class="alert alert-primary" role="alert">You have confirmed all captures for this watchlist. Select another list or come back later for more confirmations.</div>
       """ 
-   elif options['db'] == "non_meteor_db":
+   elif list_type == "non_meteors_by_class":
       lb_types, icons = mc_types()
       out += """
          <h2 style='width: 100%'>Mark ALL on this page as</h2>
@@ -3299,83 +3240,21 @@ def ai_rejects(station_id, options, json_conf):
    template = template.replace("{MAIN_TABLE}", out)
    return(template)
 
-def find_ico(this_label, hc=0):
+def find_ico(this_label):
    lb_types, icons = mc_types()
    ico = "no icon found for " + this_label
-   print("FIND ICO HC=", hc)
-
    for i in range(0, len(lb_types)):
       icon = icons[i]
-      if lb_types[i] in this_label:
-         if hc == 0:
-            ico = """<i class="fas fa-{}" style="size: 16px; "></i>""".format(icon)
-         else:
-            ico = """<i class="fas fa-{}" style="size: 16px; color: red"></i>""".format(icon)
-
+      if lb_types[i] == this_label:
+         ico = """<i class="fas fa-{}" style="size: 16px"></i>""".format(icon)
          return(ico)
-      #print(lb_types[i], this_label, ico)
+      print(lb_types[i], this_label, ico)
    return(ico)
 
 
 
-def ai_non_meteors(station_id, options, json_conf):
-   data_file = "/mnt/ams2/non_meteors/nm.info"
-   cmd = "cd /mnt/ams2/non_meteors/; find . |grep json |grep -v redu | sort -r > " + data_file
-   os.system(cmd)
-   header_msg = "These detections have been auto rejected! If you see good meteors here use the button to restore them. Once there are NO good meteors on the page, press the button 'Confirm All As Non-Meteors'."
-   out = ui_javascript()
-   out += """
-      <div id='main_container' class='container-fluid h-100 mt-4 ' style="border: 1px #000000 solid">
-      {}
-      <div class='gallery gal-resize reg row text-center text-lg-left'>
-      <div class='list-onl'>
-      <div class='filter-header d-flex flex-row-reverse '>
-      <button id="sel-all" title="Select All" class="btn btn-primary ml-3"><i class="icon-checkbox-checked"></i></button>
-      <button id="del-all" class="del-all btn btn-danger"><i class="icon-delete"></i> Delete <span class="sel-ctn">All</span> Selected</button>
-     </div>
-     </div>
-   """.format(header_msg)
-
-
-
-   if os.path.exists(data_file) :
-      fp = open(data_file, "r")
-      for line in fp:
-         if "non_meteors_confirm.json" in line:
-            continue
-         line = line.replace("\n", "")
-         line = line.replace("./", "")
-         vurl = "/non_meteors/" + line.replace(".json", "-stacked-tn.jpg")
-         root_fn = line.split("/")[-1].replace(".json", "")
-         ai_info = ""
-         cell = meteor_cell_html(root_fn, vurl, ai_info)
-         out += cell 
-         #"<img src=" + vurl + ">" + vurl + "<br>"
-         
-   else:
-      out = data_file + " not found"
-
-   template = make_default_template(station_id, "meteors_main.html", json_conf)
-   template = template.replace("{MAIN_TABLE}", out)
-   return(template)
-
-
-def ai_stats(station_id, json_conf):
-
-   con = sqlite3.connect(station_id + "_ALLSKY.db", connect_args={'timeout': 15})
-   con.row_factory = sqlite3.Row
-   cur = con.cursor()
-
-   # get total meteors in the system
-   sql = "SELECT count(*) from meteors"
-   cur.execute(sql)
-   rows = cur.fetchall()
-   total_meteors_in_db = rows[0][0]
-   print("TOTAL METS:", total_meteors_in_db)
 
 def ai_main(station_id, json_conf):
-
-   ai_stats(station_id, json_conf)
 
    template = make_default_template(station_id, "meteors_main.html", json_conf)
    out = "<h1>AllSkyAI Dashboard</h1>"
@@ -3384,12 +3263,12 @@ def ai_main(station_id, json_conf):
    else:
       out += "<div class=container>AllSkyAI has been installed and is running."
       out += "<ul>"
-      out += "<li><a href=/AIREJECTS/{}>AI Confirm</a> ".format(station_id) 
+      out += "<li><a href=/AIREJECTS/{}>AI Rejects</a>".format(station_id) 
       out += "Use this tool to confirm meteors and non-meteors " 
-      out += "<li><a href=/AI/NON_METEORS/{}>AI Auto Rejected Meteor Review</a> ".format(station_id) 
+      out += "<li><a href=/AIREVIEW/{}>AI Review</a>".format(station_id) 
       out += "Use this tool to review auto rejected meteors before they are purged from the system" 
-#      out += "<li><a href=/LEARNING/{}/METEOR?>AI Search</a> ".format(station_id)
-#      out += "Use this tool to search the meteor archive." 
+      out += "<li><a href=/LEARNING/{}/METEOR?>AI Search </a>".format(station_id)
+      out += "Use this tool to search the meteor archive." 
 
       out += "</ul>"
 
@@ -3409,7 +3288,7 @@ def ai_review(station_id, options,json_conf):
      </div>
    """
    template = make_default_template(station_id, "meteors_main.html", json_conf)
-   con = sqlite3.connect(station_id + "_ALLSKY.db", connect_args={'timeout': 15})
+   con = sqlite3.connect(station_id + "_ALLSKY.db")
    con.row_factory = sqlite3.Row
    cur = con.cursor()
 
@@ -3441,8 +3320,6 @@ def ai_review(station_id, options,json_conf):
       out += "<div style='width: 100%'><p>The following captures are classified as low confidence meteors and are more likely " + options['mc_class'] + " or something else."
       out += "<br>To reconcile this list, first review and human confirm any meteors you see in the list."
       out += "<br>When complete, select the button at the bottom that says, 'confirm all as NON-METEOR.'</div>"
-
-      order_by = " ORDER BY mc_class, mc_class_conf desc"
       sql = """
             SELECT station_id, sd_vid, meteor_yn_conf, fireball_yn_conf, mc_class, mc_class_conf 
               FROM meteors 
@@ -3456,7 +3333,6 @@ def ai_review(station_id, options,json_conf):
                AND human_confirmed != 1
                {}
       """.format(order_by)
-      print(sql)
       cur.execute(sql, [options['mc_class']])
       rows = cur.fetchall()
       need_to_del = [] 
@@ -3479,12 +3355,11 @@ def ai_review(station_id, options,json_conf):
    return(template)
 
 def mc_types():
-   labels = ['bird', 'bug', 'car', 'cloud', 'ground', 'moon', 'meteor', 'meteor_fireball', 'non_meteor', 'plane', 'rain', 'satellite', 'snow', 'star', 'unsure', 'rocket', 'noise', 'chimney-smoke', 'smoke', 'empty', 'spectra']
-   icons = ['crow', 'bug', 'car', 'cloud', 'tree', 'moon', 'meteor', 'meteor', 'ban', 'plane', 'cloud-rain', 'satellite', 'snowflake', 'star', 'question-circle', 'rocket-launch', 'noise', 'chimney' , 'fire-smoke', 'empty', 'arrow-up-wide-short']
+   labels = ['non_meteor', 'birds', 'bugs', 'cars', 'cloud', 'ground', 'moon', 'meteor', 'meteor_fireball', 'planes', 'rain', 'satellite', 'star']
+   icons = ['ban', 'crow', 'bug', 'car', 'cloud', 'tree', 'moon', 'meteor', 'meteor', 'plane', 'cloud-rain', 'satellite', 'star']
    return(labels, icons)
 
-def meteor_cell_html(root_fn, thumb_url, ai_info, ico=None, ctype="meteor", color="#ffffff",multi=0, human_confirmed=None, human_label=None):
-   print("CTYPE:", ctype)
+def meteor_cell_html(root_fn, thumb_url, ai_info, ico=None, ctype="meteor", color="#ffffff",multi=0, human_confirmed=None):
    if ico is None:
       ico = ""
    if human_confirmed is None or human_confirmed == 0:
@@ -3543,20 +3418,17 @@ def meteor_cell_html(root_fn, thumb_url, ai_info, ico=None, ctype="meteor", colo
                   <a class='confirm_meteor col btn btn-success btn-sm' title='Confirm Meteor' data-meteor='{:s}'><i class="fas fa-meteor"></i></a>
                </div>
       """.format(video_url, root_fn, root_fn )
-
-   labels = ['bird', 'bug', 'car', 'cloud', 'ground', 'moon', 'meteor', 'meteor_fireball', 'non_meteor', 'plane', 'rain', 'satellite', 'snow', 'star', 'unsure']
-   icons = ['crow', 'bug', 'car', 'cloud', 'tree', 'moon', 'meteor', 'meteor', 'ban', 'plane', 'cloud-rain', 'satellite', 'snowflake', 'star', 'question-circle']
-
-   if ctype == "non_meteors_confirmed":
+   if ctype == "non_meteor_confirmed":
       met_html += """
+
+               <!-- only display this if we are on the confirmed-non-meteor page-->
                <div class='btn-group'>
                   <a class='confirm_bird col btn btn-secondary btn-sm' title='Bird' data-meteor='{:s}'><i class='fas fa-crow'></i></a>
                   <a class='confirm_bug col btn btn-secondary btn-sm' title='Bug' data-meteor='{:s}'><i class='fas fa-bug'></i></a>
                   <a class='confirm_car col btn btn-secondary btn-sm' title='Car' data-meteor='{:s}'><i class='fas fa-car'></i></a>
                   <a class='confirm_plane col btn btn-secondary btn-sm' title='Plane' data-meteor='{:s}'><i class='fas fa-plane'></i></a>
                   <a class='confirm_satellite col btn btn-secondary btn-sm' title='Satellite' data-meteor='{:s}'><i class='fas fa-satellite'></i></a>
-                  <a class='confirm_meteor col btn btn-secondary btn-sm' title='Meteor' data-meteor='{:s}'><i class="fa-solid fa-comet"></i></a>
-                  <a class='confirm_meteor col btn btn-secondary btn-sm' title='Fireball' data-meteor='{:s}'><i class='fas fa-meteor'></i></a>
+                  <a class='confirm_meteor col btn btn-secondary btn-sm' title='Meteor' data-meteor='{:s}'><i class='fas fa-meteor'></i></a>
                </div>
                <div class='btn-group'>
                   <a class='confirm_cloud col btn btn-secondary btn-sm' title='Cloud' data-meteor='{:s}'><i class='fas fa-cloud'></i></a>
@@ -3565,28 +3437,19 @@ def meteor_cell_html(root_fn, thumb_url, ai_info, ico=None, ctype="meteor", colo
                   <a class='confirm_snow col btn btn-secondary btn-sm' title='Snow ' data-meteor='{:s}'><i class='fas fa-snowflake'></i></a>
                   <a class='confirm_moon col btn btn-secondary btn-sm' title='Moon' data-meteor='{:s}'><i class='fas fa-moon'></i></a>
                   <a class='confirm_star col btn btn-secondary btn-sm' title='Star' data-meteor='{:s}'><i class='fas fa-star'></i></a>
-                  <a class='confirm_unsure col btn btn-secondary btn-sm' title='Unsure' data-meteor='{:s}'><i class='fas fa-question-circle'></i></a>
                </div>
-               <div class='btn-group'>
-                  <a class='confirm_trash col btn btn-secondary btn-sm' title='Trash/Delete' data-meteor='{:s}'><i class='fas fa-trash'></i></a>
-                  <a class='confirm_spectra col btn btn-secondary btn-sm' title='Spectra' data-meteor='{:s}'><i class="fa-solid fa-arrow-up-wide-short"></i></a>
-                  <a class='confirm_rocket col btn btn-secondary btn-sm' title='Rocket' data-meteor='{:s}'><i class="fa-solid fa-rocket-launch"></i></a>
-                  <a class='confirm_noise col btn btn-secondary btn-sm' title='Noise' data-meteor='{:s}'><i class="fa-solid fa-speakers"></i></a>
-                  <a class='confirm_chimney_smoke col btn btn-secondary btn-sm' title='Chimney Smoke' data-meteor='{:s}'><i class="fa-solid fa-chimney"></i></a>
-                  <a class='confirm_smoke col btn btn-secondary btn-sm' title='Fire Smoke' data-meteor='{:s}'><i class="fa-solid fa-fire-smoke"></i></a>
-                  <a class='confirm_empty col btn btn-secondary btn-sm' title='Empty' data-meteor='{:s}'><i class="fa-solid fa-empty-set"></i></a>
-               </div>
-
-
-      """.format(root_fn, root_fn, root_fn, root_fn, root_fn, root_fn, root_fn, root_fn, root_fn, root_fn, root_fn, root_fn, root_fn, root_fn, root_fn, root_fn, root_fn, root_fn, root_fn, root_fn, root_fn, root_fn)
+      """.format(root_fn, root_fn, root_fn,root_fn, root_fn,root_fn,root_fn, root_fn, root_fn, root_fn, root_fn, root_fn)
 
    met_html += """
             </div>
       </div>
    """
    
+   #.format(jsid, click_link, thumb_ourl, datecam, thumb_url, datecam, datecam, jsid,jsid,jsid, video_url,root_fn, root_fn, root_fn, root_fn, root_fn,root_fn, root_fn,root_fn,root_fn, root_fn, root_fn, root_fn)
    return(met_html)
+                  #<!--<a class='delete_meteor_gallery col btn btn-danger btn-sm' title='Delete Detection' data-meteor='{:s}'><i class='icon-delete'></i></a>-->
 
+   return(html)
 
 def get_color(n):
    print("COLOR FOR N:", n)

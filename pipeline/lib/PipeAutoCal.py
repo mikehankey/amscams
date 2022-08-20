@@ -8407,6 +8407,8 @@ def pair_stars(cal_params, cal_params_file, json_conf, cal_img=None, show = 0):
          #cv2.circle(temp_img,(int(new_cat_x),int(new_cat_y)), 7, (255,128,128), 1)
          #cv2.circle(temp_img,(int(new_x),int(new_y)), 7, (128,128,255), 1)
          used_key = str(ra) + "-" + str(dec)
+
+         print("MATCH DIST:", name,  match_dist)
          if match_dist >= 30 or used_key in used:
             bad = 1
             if used_key in used:
@@ -8462,7 +8464,8 @@ def pair_stars(cal_params, cal_params_file, json_conf, cal_img=None, show = 0):
          good_stars.append(star)
 
    my_close_stars = good_stars
-
+   print("RES:", total_res_px)
+   print("MY CLOSE STARS:", my_close_stars )
    cal_params['cat_image_stars'] = my_close_stars
    if total_matches > 0:
       cal_params['total_res_deg'] = total_match_dist / total_matches
@@ -8840,7 +8843,8 @@ def find_close_stars(star_point, catalog_stars,dt=100, show_img = None):
       if center_dist < 800 and cat_star_dist > 20:
          valid = False
 
-      if cat_x - dt < scx < cat_x + dt and cat_y -dt < scy < cat_y + dt and valid is True:
+      print("FIND CLOSE STARS:", cat_x, cat_y, scx, scy, cat_star_dist)
+      if cat_star_dist < 20:
          matches.append((dcname,mag,ra,dec,cat_x,cat_y,scx,scy,cat_star_dist))
       else:
          nomatches.append((dcname,mag,ra,dec,cat_x,cat_y,scx,scy,cat_star_dist))
@@ -8875,7 +8879,7 @@ def find_close_stars(star_point, catalog_stars,dt=100, show_img = None):
    #if show_img is not None:
    #   cv2.imshow('pepe', show_img)
    #   cv2.waitKey(30)
-   if len(matches) == 1:
+   if len(matches) >= 1:
       return(matches[0:1])
    else:
       return([])
