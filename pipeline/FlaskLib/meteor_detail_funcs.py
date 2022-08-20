@@ -650,7 +650,8 @@ def detail_page(amsid, date, meteor_file):
                else:
                   template = template.replace("{RES_DEG}", "")
       else:
-
+         cp = {}
+         # We should just apply the default calib here????
          template = template.replace("{RES_PX}", "99")
          template = template.replace("{RES_DEG}", "99")
          cp['total_res_px'] = 99
@@ -709,7 +710,11 @@ def detail_page(amsid, date, meteor_file):
 
             cal_params_js_var = "var cal_params = " + str(mjr['cal_params'])
       mfd_js_var = "var meteor_frame_data = " + str(mjr['meteor_frame_data'])
-      crop_box_js_var = "var crop_box = " + str(mjr['crop_box'])
+      if "crop_box" in mjr:
+         crop_box_js_var = "var crop_box = " + str(mjr['crop_box'])
+      else:
+         crop_box_js_var = "var crop_box = [0,10,0,10]"
+
    else:
       cal_params_js_var = ""
       mfd_js_var = ""
@@ -744,6 +749,8 @@ def frames_table(mjr, base_name, CACHE_VDIR):
       #dt, fn, x, y, w, h, oint, ra, dec, az, el
       #frames_table = "<table border=1><tr><td></td><td>Time</td><td>Frame</td><td>X</td><td>Y</td><td>W</td><td>H</td><td>Int</td><td>Ra</td><td>Dec</td><td>Az</td><td>El</td></tr>"
       frames_table = "\n"
+      if "meteor_frame_data" not in mjr:
+         mjr['meteor_frame_data'] = []
       for mfd in mjr['meteor_frame_data']:
          dt, fn, x, y, w, h, oint, ra, dec, az, el = mfd
          print("MFD:", dt)

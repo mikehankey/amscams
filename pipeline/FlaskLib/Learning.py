@@ -2026,6 +2026,8 @@ def confirm_non_meteor(station_id, root_fn):
    cur = con.cursor()
    date = root_fn[0:10]
    mfile = "/mnt/ams2/meteors/" + date + "/" + root_fn + ".json"
+
+   print("MFILE:", mfile)
    if os.path.exists(mfile):
       mj = load_json_file(mfile)
       mj['hc'] = 1
@@ -2061,7 +2063,10 @@ def confirm_meteor(station_id, root_fn):
    mfile = "/mnt/ams2/meteors/" + date + "/" + root_fn + ".json"
    nmfile = "/mnt/ams2/non_meteors/" + date + "/" + root_fn + ".json"
    nmcfile = "/mnt/ams2/non_meteors_confirmed/" + date + "/" + root_fn + ".json"
+
+   # Meteor files are in non meteor dir
    if os.path.exists(nmfile):
+      print("FILE FOUND IN NON METEOR DIR!", nmfile)
       # TAG AND MOVE BACK
       mj = load_json_file(nmfile)
       mj['hc'] = 1
@@ -2069,7 +2074,8 @@ def confirm_meteor(station_id, root_fn):
          if mj['hd_trim'] is not None and mj['hd_trim'] != "" and mj['hd_trim'] != 0:
             hd_root = mj['hd_trim'].split("/")[-1].replace(".mp4", "")
       sd_root = root_fn
-      save_json_file(mfile, mj)
+      save_json_file(nmfile, mj)
+
       cmd = "mv " + nmdir  + root_fn + "* " + mdir 
       out += cmd + "<br>"
       print(cmd)
@@ -2085,6 +2091,7 @@ def confirm_meteor(station_id, root_fn):
          out += cmd + "<br>"
          print(cmd)
          os.system(cmd)
+      print("SAVED JSON FILE WITH HC", mfile)
 
 
    elif os.path.exists(nmcfile):
