@@ -1,0 +1,163 @@
+<html lang="en-US">
+<head>
+    <meta charset="UTF-8">
+    <title>{TITLE}</title>
+    <meta content="AllSkyCams" name="description">
+    <meta content="meteor shower, meteor, fireball, meteorite, video, detection, reduction, asteroid, meteoroid" name="keywords">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Styles and js includes -->
+    <link rel="stylesheet" href="https://archive.allsky.tv/APPS/dist/css/main.css?c=1.3"/>
+    <script src="https://archive.allsky.tv/APPS/dist/js/amscam.min.js"></script>
+
+
+<div class="modal fade bd-example-modal-xl" tabindex="-1" role="dialog" aria-labelledby="myExtraLargeModalLabel" aria-hidden="true" id="myModal">
+  <div class="modal-dialog modal-xl">
+    <div class="modal-content">
+            <h1>This is my modal!</h1>
+    </div>
+  </div>
+</div>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;900&display=swap" rel="stylesheet">
+        <!-- PAID VERSION-->
+        <script src="https://kit.fontawesome.com/f3f9f77a06.js" crossorigin="anonymous"></script>
+
+        <style>
+pre.bash {
+  background-color: black;
+  color: white;
+  font-size: medium ; 
+  font-family: Consolas,Monaco,Lucida Console,Liberation Mono,DejaVu Sans Mono,Bitstream Vera Sans Mono,Courier New, monospace;
+  width: 100%;
+  display: inline-block;
+}
+
+            html,body {
+                margin: 0;
+                font-family: 'Poppins', sans-serif;;
+            }
+            #main {
+                position: relative;
+                color: #fff;
+                width: 100%;
+                min-height: 100vh;
+                z-index: 1;
+                background-image: url(https://www.allsky.com/bg3.jpg);
+                background-position: 50% 50%;
+                background-size: cover;
+                display: flex;
+                text-align: center;
+                align-items: center;
+                justify-content: center;
+                flex-flow: column;
+            }
+	    a {
+		color: #fff;
+                font-weight: 900;
+                font-size: 2rem;
+                line-height: 1;
+
+	    }
+            h2 {
+                font-weight: 900;
+                font-size: 2rem;
+                line-height: 1;
+            }
+            @media (min-width: 576px) { h2 { font-size: 4rem;} }
+            #logo {
+                width: 90vw;
+                max-width: 40rem;
+            }
+        </style>
+	<script>
+            function play_video(div_id,video_url) {
+	       temp_html = $("#" + div_id).html()
+	       $("#" + div_id).css("width", "640px");
+	       $("#" + div_id).css("height", "360px");
+	       $("#" + div_id).css("background-size", "640px 360px");
+               sessionStorage.setItem(div_id, temp_html)
+               vid_html = "<div style='opacity: .99; width=640; height=320; border: 0px #ffffff solid;'><video id='player' width=640 height=360 controls autoplay loop><source src='"+ video_url + "'></video></div>"
+	       //close_html = `<div><a href="javascript:swap_html('` + div_id + `', '', '320px', '180px' )"><i title="Back to image" class="fas fa-image"></i></a>  <a href="javascript:swap_html('` + div_id + `', '', '320px', '180px' )"><i title="Confirm valid meteor" class="fas fa-meteor"></i></a> <a href="javascript:swap_html('` + div_id + `', '', '320px', '180px' )"> <span class="fa-stack"> <i class="fa-solid fa-meteor fa-stack-1x"></i> <i class="fa-solid fa-ban fa-stack-2x" style="color:Tomato"></i> </span> </a> <br></div>`
+	       close_html = `<div><a href="javascript:swap_html('` + div_id + `', '', '320px', '180px' )"><i title="Close" class="fas circle-xmark"></i>Close </i></a> <br></div>` 
+               $("#" + div_id).html(vid_html + close_html)
+	       console.log(div_id)
+	       console.log("LAST HTML:" + sessionStorage.getItem(div_id))
+	       console.log("TEMP HTML:" + temp_html)
+	       console.log(vid_html)
+	    }
+            function swap_html(div_id, new_html, width, height) {
+	
+	       new_html = sessionStorage.getItem(div_id)
+	       console.log(div_id)
+               console.log( $("#" + div_id).html())
+	       console.log(new_html)
+	       $("#" + div_id).html(new_html)
+	       $("#" + div_id).css("width", width);
+	       $("#" + div_id).css("height", height);
+	       $("#" + div_id).css("background-size", width + " " + height);
+	       //$(div_id).css("background-image", "url(" + img_url");
+	       // reset the cap div
+	       cap_div_id = div_id + "_caption"
+	       $("#" + cap_div_id).html("")
+	    }
+
+            $(document).ready(function () {
+	       $("#logo").click(function() {
+                  $("#myModal").modal('show');
+	       })
+            })
+	</script>
+
+	
+      <style>
+       .center {
+          margin: auto;
+          width: 80%;
+          padding: 10px;
+          border: 2px solid #000000 ;
+       }
+      </style>
+
+
+
+</head>
+
+<body>
+	<!--NAV-->
+
+   <div id="main">
+      <img src="https://www.allsky.com/logo.svg" alt="AllSky.com" id="logo"/>
+	    {MAIN_CONTENT}
+   </div>
+
+
+<div class="modal fade bd-example-modal-xl" tabindex="-1" role="dialog" aria-labelledby="myExtraLargeModalLabel" aria-hidden="true" id="myModal">
+  <div class="modal-dialog modal-xl">
+    <div class="modal-content">
+    </div>
+  </div>
+</div>
+<script src="https://archive.allsky.tv/APPS/src/js/functions/date_picker.js?1652465245"></script>
+<div style="width:80%; margin:0 auto; text-align: center; margin-top: 100px">
+	<h2>Credits, Allowable Use and Copywrite </h2>
+	We request papers or other academic use of data for this event to please credit :
+	AllSky7 Global Network, Mike Hankey, Core Team Members and Operators who observed the event  (dynamic text here)
+	<p>
+        This text will indicate the sharing / confidentiality statement relating to the current event as: Private & Confidential, Public Preliminary & Unreviewed, Final and Published 
+	<p>
+	If the event is an active meteorite fall it will be locked to only MWG members, and some text about confidentiality will be placed here. 
+	<p>
+	Press/Media statement regarding use/replay of videos, media or event information. (FREE, License Required, etc). Link to press page. 
+
+
+
+<p>
+A statement about data ownership, copyright etc will be here. 
+&copy; ALLSKY INC
+</p>
+
+</body>
+</html>

@@ -746,7 +746,7 @@ def frames_table(mjr, base_name, CACHE_VDIR):
       frames_table = "\n"
       for mfd in mjr['meteor_frame_data']:
          dt, fn, x, y, w, h, oint, ra, dec, az, el = mfd
-         print(dt)
+         print("MFD:", dt)
          if " " in dt:
             date, dtime = dt.split(" ")
          else:
