@@ -2088,6 +2088,7 @@ def confirm_meteor(station_id, root_fn):
    mdir = "/mnt/ams2/meteors/" + date + "/" 
    nmdir = "/mnt/ams2/non_meteors/" + date + "/" 
    nmcdir = "/mnt/ams2/non_meteors_confirmed/" + date  + "/"
+   print("Confirm", root_fn)
 
 
    mfile = "/mnt/ams2/meteors/" + date + "/" + root_fn + ".json"
@@ -2110,6 +2111,12 @@ def confirm_meteor(station_id, root_fn):
       out += cmd + "<br>"
       print(cmd)
       os.system(cmd)
+
+      sql = "UPDATE meteors set human_confirmed = '1' WHERE root_fn = ?"
+      task = [root_fn]
+      cur.execute(sql, task)
+
+
       if hd_root is not None:
          cmd = "mv " + nmdir  + hd_root + "* " + mdir 
          out += cmd + "<br>"
@@ -2165,6 +2172,7 @@ def confirm_meteor(station_id, root_fn):
 
 
    con.commit()
+   print("CONFIRM", root_fn)
    return("Human confirmed meteor " + root_fn)
 
 def stats_by_month(cur):

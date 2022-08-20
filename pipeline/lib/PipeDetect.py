@@ -2017,16 +2017,13 @@ def make_roi_video_mfd(video_file, json_conf):
    cache_dir_frames = "/mnt/ams2/CACHE/" + year + "/" + mon + "/" + vid_base + "_frms/"
    prefix = cache_dir + vid_base + "-frm"
    if cfe(cache_dir, 1) == 0:
-      print("CACHE DIR:", cache_dir)
       os.makedirs(cache_dir)
    if cfe(cache_dir_frames, 1) == 0:
-      print("CACHE DIR:", cache_dir_frames)
       os.makedirs(cache_dir_frames)
 
    cache_frames = glob.glob(cache_dir_frames + "*.jpg")
-   print(cache_dir_frames)
-   print(cache_frames)
    if len(cache_frames) == 0:
+      print("LOADING FRAMES!")
       hd_frames,hd_color_frames,subframes,sum_vals,max_vals,pos_vals = load_frames_fast(video_file, json_conf, 0, 0, 1, 1,[])
       i = 0
       for ff in hd_color_frames:
@@ -2036,6 +2033,7 @@ def make_roi_video_mfd(video_file, json_conf):
          i += 1
    else:
       hd_color_frames = []
+      print("USING CACHE FRAMES!")
       for cf in sorted(cache_frames):
          cfi = cv2.imread(cf)
          hd_color_frames.append(cfi)
@@ -3390,7 +3388,7 @@ def fireball_phase1(hd_frames, hd_color_frames, subframes,sum_vals,max_vals,pos_
             #desc = str(obj)
             #cv2.putText(sframe, desc,  (10,70), cv2.FONT_HERSHEY_SIMPLEX, .4, (255, 255, 255), 1)
             cv2.imshow('pepe', sframe)
-            cv2.waitKey(30)
+            cv2.waitKey(0)
          i += 1
       frame_num = frame_num + 1
 
@@ -6036,13 +6034,13 @@ def find_object(objects, fn, cnt_x, cnt_y, cnt_w, cnt_h, intensity=0, hd=0, sd_m
                   abs_diff = abs(last_seg_dist - this_seg_dist)
                   #print("THIS/LAST SEG:", obj, this_seg_dist, last_seg_dist, abs_diff)
                   last_fn_diff = fn - objects[obj]['ofns'][-1]
-                  if abs_diff > 20 or this_seg_dist > 20 or last_fn_diff > 7:
+                  if abs_diff > 40 or this_seg_dist > 40 or last_fn_diff > 7:
                      # don't add points to meteors if they are more than 5x farther away than the last seg dist
                   #   cont = input("ABORTED MATCH DUE TO ABS_DIFF." + str( abs_diff) + " " + str( last_seg_dist * 5))
                      continue
                   # if this cnt_x, y is the same as the last one, don't add!
-                  if last_x == cnt_x and last_y == cnt_y:
-                     continue
+                  #if last_x == cnt_x and last_y == cnt_y:
+                  #   continue
                if objects[obj]['report']['class'] == "star":
                   # only match object if dist is within 5 px
                   if dist > 5:
