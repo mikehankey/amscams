@@ -1788,8 +1788,25 @@ def make_flat(cam,day,json_conf):
          if int(sun_el) < -10:
             img = cv2.imread(file)
             night_images.append(img)
+   
+      temp = []
+      for ddd in night_images:
+         try:
+            xx = cv2.resize(ddd, (704,576))
+            if xx.shape[0] == 180 and xx.shape[1] == 320:
+               temp.append(xxx)
+         except:
+            print("pic errr")
+         print("SHAPE:", xx.shape)
+      night_images = temp[0:30]
       
-      median_night = cv2.convertScaleAbs(np.median(np.array(night_images), axis=0))
+
+      try:
+         median_night = cv2.convertScaleAbs(np.median(np.array(night_images), axis=0))
+         print("MED FAILED USE MEAN")
+      except:
+
+         median_night = cv2.convertScaleAbs(np.mean(np.array(night_images), axis=0))
 
       med_show = cv2.resize(median_night, (1280,720))
       if len(med_show.shape) == 3:
