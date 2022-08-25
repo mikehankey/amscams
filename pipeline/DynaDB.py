@@ -643,16 +643,18 @@ def update_dyna_cache_for_day(dynamodb, date, stations, utype=None, cloud_copy=1
    #for st in sorted(all_stations):
    #   print(st)
    API_URL = "https://kyvegys798.execute-api.us-east-1.amazonaws.com/api/allskyapi?cmd=get_stations&api_key=" + json_conf['api_key'] + "&station_id=" + json_conf['site']['ams_id']
-   print(API_URL)
+
    response = requests.get(API_URL)
    content = response.content.decode()
    content = content.replace("\\", "")
    if content[0] == "\"":
       content = content[1:]
       content = content[0:-1]
-   print(content)
+   #print(content)
    jdata = json.loads(content)
-   save_json_file("/mnt/f/EVENTS/ALL_STATIONS.json", jdata['all_vals'])
+   save_json_file("/mnt/f/EVENTS/ALL_STATIONS.json", jdata['all_vals'], True)
+   os.system("cp /mnt/f/EVENTS/ALL_STATIONS.json /mnt/archive.allsky.tv/EVENTS/ALL_STATIONS.json")
+   print("SAVED: /mnt/f/EVENTS/ALL_STATIONS.json")
    all_stations = jdata['all_vals']
 
    # load the deletes
@@ -671,7 +673,7 @@ def update_dyna_cache_for_day(dynamodb, date, stations, utype=None, cloud_copy=1
             label = ""
          del_keys[obs_key] = label
    print("Loaded deletes.", len(all_deletes))
-   save_json_file(del_file, del_keys)
+   save_json_file(del_file, del_keys, True)
    cloud_del_file = del_file.replace("/ams2/", "/archive.allsky.tv/")
    os.system("cp " + del_file + " " + cloud_del_file)
    print("SAVED:", del_file)
@@ -692,7 +694,7 @@ def update_dyna_cache_for_day(dynamodb, date, stations, utype=None, cloud_copy=1
       #   print("ID ??", data)
       if len(partners) > 1:
          cluster_stations.append(data)
-   save_json_file(stations_file, clusters)
+   save_json_file(stations_file, clusters, True)
    cloud_stations_file = stations_file.replace("/mnt/ams2/", "/mnt/archive.allsky.tv/")
    os.system("cp " + stations_file + " " + cloud_stations_file)
    #print(stations_file)
@@ -731,7 +733,7 @@ def update_dyna_cache_for_day(dynamodb, date, stations, utype=None, cloud_copy=1
 
       #update_redis_obs(date, all_obs)
       all_obs = json.loads(json.dumps(all_obs,cls=DecimalEncoder))
-      save_json_file(obs_file, all_obs)
+      save_json_file(obs_file, all_obs, True)
       obs_file_zip = obs_file.replace(".json", ".json.gz")  
       os.system("gzip -k -f " + obs_file )
       print("SAVED:", obs_file)
@@ -765,9 +767,9 @@ def update_dyna_cache_for_day(dynamodb, date, stations, utype=None, cloud_copy=1
          print("DELETE THIS EVENT!", evid, ev_keys[evid].keys() )
       events = sorted(events, key=lambda x: (x['event_id']), reverse=False) 
       events = json.loads(json.dumps(events,cls=DecimalEncoder))
-      save_json_file(event_file, events)
+      save_json_file(event_file, events, True)
       print("Saved:", event_file)
-      cloud_event_file = event_file.replace("/mnt/ams2/", "/mnt/archive.allsky.tv/")
+      cloud_event_file = event_file.replace("/mnt/f/", "/mnt/archive.allsky.tv/")
       os.system("cp " + event_file + " " + cloud_event_file)
       print("saved" + cloud_event_file)
 
@@ -1696,7 +1698,7 @@ def update_mj_events(dynamodb, date):
 
    if cfe(dyn_cache, 1) == 0:
       os.makedirs(dyn_cache)
-   save_json_file(dyn_cache + date + "_events.json",events)
+   save_json_file(dyn_cache + date + "_events.json",events, True)
    my_files = []
    for event in events:
       mse = {}
@@ -1724,7 +1726,7 @@ def update_mj_events(dynamodb, date):
       mse_db[file] = ev
       print("UPDATE LOCAL FILE:", file, ev)
 
-   save_json_file(mse_log, mse_db)
+   save_json_file(mse_log, mse_db, True)
    print("saved:", mse_log)
 
 def orbs_for_day(date,json_conf):
@@ -1757,7 +1759,7 @@ def orbs_for_day(date,json_conf):
             op['M'] = o['mean_anomaly']
             op['P'] = o['T']
             orbs[ev['event_id']] = op
-   save_json_file(orbs_file, orbs)
+   save_json_file(orbs_file, orbs, True)
    print("saved.", orbs_file)
  
 if __name__ == "__main__":
