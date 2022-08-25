@@ -746,6 +746,9 @@ network:
 
       oneline += "\n"
       oneline += "python3 -m pip install --upgrade " 
+      if os.path.exists("/usr/bin/pip3") is False:
+         # pip not installed!
+         os.system("./install-pip.sh")
       # install/update pip packages 
       for pip in self.pip_list:
          cmd = "python3 -m pip install --upgrade " + pip
