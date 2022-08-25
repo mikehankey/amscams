@@ -9,14 +9,14 @@ try:
    from consolemenu import *
    from consolemenu.items import *
 except:
-   os.system("pip3 install consolemenu")
-   os.system("pip3 install console-menu")
+   os.system("python3 -m pip install consolemenu")
+   os.system("python3 -m pip install console-menu")
    from consolemenu import *
    from consolemenu.items import *
 try:
    from tabulate import tabulate
 except:
-   os.system("pip3 install tabulate")
+   os.system("python3 -m pip install tabulate")
 
 import getpass
 import netifaces as ni
@@ -745,10 +745,10 @@ network:
          all_cmds += cmd + "\n"
 
       oneline += "\n"
-      oneline += "pip3 install --upgrade " 
+      oneline += "python3 -m pip install --upgrade " 
       # install/update pip packages 
       for pip in self.pip_list:
-         cmd = "pip3 install --upgrade " + pip
+         cmd = "python3 -m pip install --upgrade " + pip
          print(cmd)
          oneline += pip + " " 
          os.system(cmd)
