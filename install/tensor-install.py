@@ -38,6 +38,11 @@ if os.path.exists("/home/ams/amscams/install/get-pip36.py") is False:
    os.system(cmd)
 
    os.system("sudo python3.6 -m pip install --upgrade pip")
+else:
+   if "pip" not in installed:
+       cmd = "sudo python3.6 get-pip36.py"
+       print(cmd)
+       os.system(cmd)
    
    
    
