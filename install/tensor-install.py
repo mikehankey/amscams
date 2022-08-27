@@ -1,7 +1,7 @@
 
 import os
 import sys
-
+os.system("./install-pip.sh")
 os.system("sudo python3 -m pip install --upgrade pip")
 cmd = "sudo apt-get -y install python3.6-distutils"
 os.system(cmd)
@@ -23,7 +23,7 @@ if os.path.exists("/usr/bin/python3.6") is False and os.path.exists("/usr/local/
    os.system(cmd)
 
   
-
+if os.path.exists("/home/ams/amscams/install/get-pip36.py") is False:
    #ERROR: This script does not work on Python 3.6 The minimum supported Python version is 3.7. Please use https://bootstrap.pypa.io/pip/3.6/get-pip.py instead.
    cmd = "wget https://bootstrap.pypa.io/pip/3.6/get-pip.py -O /home/ams/amscams/install/get-pip36.py"
    os.system(cmd)
@@ -32,8 +32,7 @@ if os.path.exists("/usr/bin/python3.6") is False and os.path.exists("/usr/local/
 
    os.system("sudo python3.6 -m pip install --upgrade pip")
 
-   #cmd = "sudo python3.6 -m pip uninstall pillow"
-   #os.system(cmd)
+if True:
    cmd = "sudo python3.6 -m pip install --upgrade pillow"
    os.system(cmd)
    cmd = "sudo python3.6 -m pip install --upgrade opencv-python"
@@ -99,8 +98,8 @@ cmd = "touch tensorflow-installed.txt"
 os.system(cmd)
 
 
-if os.path.exists("../pipeline/models") is False:
-   os.makedirs("../pipeline/models")
+if os.path.exists("/home/ams/amscams/pipeline/models") is False:
+   os.makedirs("/home/ams/amscams/pipeline/models")
 
 cmd = "sudo chown -R ams:ams /home/ams/amscams/pipeline/models"
 os.system(cmd)
