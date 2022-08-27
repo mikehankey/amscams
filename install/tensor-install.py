@@ -24,7 +24,7 @@ if os.path.exists("/usr/bin/python3.6") is False and os.path.exists("/usr/local/
 
   
 if os.path.exists("/home/ams/amscams/install/get-pip36.py") is False:
-   #ERROR: This script does not work on Python 3.6 The minimum supported Python version is 3.7. Please use https://bootstrap.pypa.io/pip/3.6/get-pip.py instead.
+   print("GET PIP FOR PYTHON3.6")
    cmd = "wget https://bootstrap.pypa.io/pip/3.6/get-pip.py -O /home/ams/amscams/install/get-pip36.py"
    os.system(cmd)
    cmd = "sudo python3.6 get-pip36.py"
