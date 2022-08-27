@@ -99,12 +99,14 @@ def sync_meteor(EV, root_fn, cloud_files, mdir, cloud_dir):
                      stack_file = media_file.replace("-360p.jpg", "-stacked.jpg")
                      stack_file = stack_file.replace(EV.station_id + "_", "")
                      stack_file = stack_file.replace("METEOR_SCAN", "meteors")
-                     print("LOADING:", mdir + stack_file)
-                     sd_stack_img = cv2.imread(mdir + stack_file)
-                     sd_stack_img = cv2.resize(sd_stack_img, (640,360))
-                     #try:
-                     cv2.imwrite(ms_dir + media_file,sd_stack_img,[cv2.IMWRITE_JPEG_QUALITY, 80])
-                     print("saved", ms_dir + media_file)
+                     if os.path.exists(mdir + stack_file):
+                        print("LOADING:", mdir + stack_file)
+                        sd_stack_img = cv2.imread(mdir + stack_file)
+                        sd_stack_img = cv2.resize(sd_stack_img, (640,360))
+                        cv2.imwrite(ms_dir + media_file,sd_stack_img,[cv2.IMWRITE_JPEG_QUALITY, 80])
+                        print("saved", ms_dir + media_file)
+                     else:
+                        print("Failed to read stack:", mdir + stack_file)
                      #except:
                      #   print("Could not save image.")
 
@@ -156,7 +158,7 @@ def do_station_events(EV,date):
 
 def do_day(EV, date):
    do_station_events(EV, date)
-   exit()
+
    EV.do_ms_day(date)
    EV.date = ev_date
    EV.year = ev_date.split("_")[0]
