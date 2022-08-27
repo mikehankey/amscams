@@ -26,9 +26,10 @@ class EventInspect():
     def __init__(self, event_id):
         self.data = {}
         self.data['event_id'] = event_id
+        self.DATA_DIR = "/mnt/f/"
         self.home_dir = os.getcwd() + "/" 
         self.cloud_missing_data_file = "/mnt/archive.allsky.tv/EVENTS/ALL_MISSING_DATA.json"
-        self.missing_data_file = "/mnt/ams2/EVENTS/ALL_MISSING_DATA.json"
+        self.missing_data_file = self.DATA_DIR + "EVENTS/ALL_MISSING_DATA.json"
 
         self.dynamodb = boto3.resource('dynamodb')
         self.r = redis.Redis("allsky-redis.d2eqrc.0001.use1.cache.amazonaws.com", port=6379, decode_responses=True)
@@ -38,7 +39,7 @@ class EventInspect():
         self.m = event_day[4:6]
         self.d = event_day[6:8]
         self.event_day = self.y + "_" + self.m + "_" + self.d
-        self.event_dir = "/mnt/ams2/EVENTS/" + self.y + "/" + self.m + "/" + self.d + "/" + self.data['event_id'] + "/"
+        self.event_dir = self.DATA_DIR + "EVENTS/" + self.y + "/" + self.m + "/" + self.d + "/" + self.data['event_id'] + "/"
         self.cloud_event_dir = "/mnt/archive.allsky.tv/EVENTS/" + self.y + "/" + self.m + "/" + self.d + "/" + self.data['event_id'] + "/"
 
 
@@ -239,7 +240,7 @@ class EventInspect():
 
        save_json_file(inspect_file, resp)
        kml_file = self.event_dir +  self.event_id + "-OBS.kml"
-       kml_cloud_file = kml_file.replace("ams2", "archive.allsky.tv")
+       kml_cloud_file = kml_file.replace(self.DATA_DIR, "archive.allsky.tv")
        resp['kml_link'] = "https://" + kml_cloud_file.replace("/mnt/", "")
 
        #for st in station_points:
@@ -248,7 +249,7 @@ class EventInspect():
          
 
        self.make_easykml(kml_file, obs_points, obs_lines, {}, "AS7 Inspector")
-       kml_cloud_file = kml_file.replace("ams2", "archive.allsky.tv")
+       kml_cloud_file = kml_file.replace(self.DATA_DIR, "archive.allsky.tv")
        os.system("cp " + kml_file + " " + kml_cloud_file)
        print(kml_file)
        return(resp)
@@ -476,7 +477,7 @@ class EventInspect():
        m = event_day[4:6]
        d = event_day[6:8]
        event_day = y + "_" + m + "_" + d
-       self.event_dir = "/mnt/ams2/EVENTS/" + y + "/" + m + "/" + d + "/" + self.data['event_id'] + "/"
+       self.event_dir = self.DATA_DIR + "EVENTS/" + y + "/" + m + "/" + d + "/" + self.data['event_id'] + "/"
        if cfe(self.event_dir,1) == 0:
           os.makedirs(self.event_dir)
        self.event_id = self.data['event_id']

@@ -32,13 +32,14 @@ class Plotter():
          print(extra_args)
          y,m,d = extra_args[0].split("_")
          self.date_desc = m + "/" + d + "/" + y
-         self.event_dir = "/mnt/ams2/EVENTS/" + y + "/" + m + "/" + d + "/" 
+         self.DATA_DIR = "/mnt/f/"
+         self.event_dir = self.DATA_DIR + "EVENTS/" + y + "/" + m + "/" + d + "/" 
          self.all_radiants_file = self.event_dir + "ALL_RADIANTS.json"
          self.all_radiants = load_json_file(self.all_radiants_file)
 
       else:
-         self.event_dir = "/mnt/ams2/EVENTS/"
-         self.all_radiants_file = "/mnt/ams2/EVENTS/ALL_RADIANTS.json"
+         self.event_dir = self.DATA_DIR + "EVENTS/"
+         self.all_radiants_file = self.DATA_DIR + "EVENTS/ALL_RADIANTS.json"
          self.all_radiants = load_json_file(self.all_radiants_file)
          self.extra_args = extra_args
          self.date_desc = ""
@@ -131,18 +132,19 @@ class Plotter():
       ax.scatter(geo_ras, geo_decs, marker='.')
       ax.set_xticklabels(['14h','16h','18h','20h','22h','0h','2h','4h','6h','8h','10h'])
       ax.grid(True)
-      plt.savefig("/mnt/ams2/test2.png")
+      plt.savefig(self.DATA_DIR  + "EVENTS/DAYS/" + day + "_PLOTS_ALL_RADIANTS.png" )
       fig.clear()
       #save_json_file("/mnt/ams2/EVENTS/PLOTS_ALL_RADIANTS.json", plot_data)
       #cmd = "cp /mnt/ams2/EVENTS/PLOTS_ALL_RADIANTS.json /mnt/archive.allsky.tv/EVENTS/PLOTS_ALL_RADIANTS.json"
       #os.system(cmd)
       for day in rads_by_day:
-         save_file = "/mnt/ams2/EVENTS/DAYS/" + day + "_PLOTS_ALL_RADIANTS.json"
-         cloud_file = save_file.replace("ams2", "archive.allsky.tv")
-         print(save_file)
+         save_file = self.DATA_DIR + "EVENTS/DAYS/" + day + "_PLOTS_ALL_RADIANTS.json"
+         cloud_file = save_file.replace(self.DATA_DIR, "/mnt/archive.allsky.tv/")
          save_json_file(save_file, rads_by_day[day])
-        
+         save_file2 = save_file.replace(".json", ".png" )
+         cloud_file2 = cloud_file.replace(".json", ".png" )
          os.system("cp " + save_file + " " + cloud_file)
+         os.system("cp " + save_file2 + " " + cloud_file2)
 
       #fig = plt.figure(figsize=(12,9))
       #ax = fig.add_subplot(111, projection="mollweide")

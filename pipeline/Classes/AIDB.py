@@ -482,7 +482,7 @@ class AllSkyDB():
 
    
    def starttime_from_file(self, filename):
-      print("FILE:", filename)
+      print("START TIME FILE:", filename)
       (f_datetime, cam, f_date_str,fy,fmon,fd, fh, fm, fs) = convert_filename_to_date_cam(filename)
       trim_num = get_trim_num(filename)
       extra_sec = int(trim_num) / 25
@@ -1064,9 +1064,10 @@ class AllSkyDB():
       for mdir in sorted(self.mdirs):  
          mfiles = self.get_mfiles(mdir )
          self.mfiles.extend(mfiles)
-
       # Main file loop here. 1 iter per meteor 
       for mfile in sorted(self.mfiles, reverse=True):
+         if "STATION_EVENT" in mfile:
+            continue
          # each iter is 1 meteor json file getting loaded into the SQL.
          # break out into a function?
          if mfile in loaded_meteors :

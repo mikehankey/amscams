@@ -19,7 +19,7 @@ from lib.PipeManager import mln_report, mln_best, best_of , copy_super_stacks, s
 from lib.PipeFiles import get_pending_files
 from lib.PipeUtil import convert_filename_to_date_cam, day_or_night , load_json_file, save_json_file, cfe, remove_corrupt_files
 from lib.PipeVideo import scan_stack_file, make_preview_videos, load_frames_simple, ffmpeg_cat , ffmpeg_cats, ffmpeg_splice
-from lib.PipeDetect import detect_in_vals , obj_report, trim_events, detect_all, get_trim_num, trim_min_file, detect_meteor_in_clip, analyze_object, refine_meteor, refine_all_meteors, fireball, verify_meteor, re_detect, reduce_meteor, reject_meteors, confirm_meteors, make_roi_video_mfd, make_meteor_index_day, make_meteor_index_all,apply_frame_deletes, reduce_in_crop, batch_reduce, check_for_trailing_frames, remake_mfd, remake_mfd_all, reject_hotspots, reject_mask_detects, perfect_points, perfect_points_all, reject_planes
+from lib.PipeDetect import detect_in_vals , obj_report, trim_events, detect_all, get_trim_num, trim_min_file, detect_meteor_in_clip, analyze_object, refine_meteor, refine_all_meteors, fireball, verify_meteor, re_detect, reduce_meteor, reject_meteors, confirm_meteors, make_roi_video_mfd, make_meteor_index_day, make_meteor_index_all,apply_frame_deletes, reduce_in_crop, batch_reduce, check_for_trailing_frames, remake_mfd, remake_mfd_all, reject_hotspots, reject_mask_detects, perfect_points, perfect_points_all, reject_planes, perfect_points
 
 from lib.PipeSync import sync_day , sync_index_day, sync_meteor_preview, sync_meteor_preview_all, do_meteor_day_prep, prep_month
 from lib.PipeAutoCal import autocal , make_lens_model, solve_field, cal_all, draw_star_image, freecal_copy, apply_calib_old, index_failed, deep_calib_init, deep_calib, deep_cal_report, blind_solve_meteors, guess_cal, flatten_image, project_many, project_snaps, review_cals, star_db_mag, cal_report, review_all_cals, reverse_map, cal_index, sync_back_admin_cals, min_fov, fn_dir, refit_fov, refit_best, refit_all, super_cal, check_all, custom_fit_meteor, refit_meteor, refit_meteors, reapply_meteor_cal, cal_manager, heal_cal, heal_all, resolve_failed, cal_status, get_default_calib_hist, get_calib_from_range, run_cal_defaults, project_image, move_extra_cals, sync_cal_files, cal_sum_html, load_caldb
@@ -570,8 +570,8 @@ if __name__ == "__main__":
             refit_meteors(sys.argv[2], json_conf, 1)
          else:
             refit_meteors(sys.argv[2], json_conf, 0)
-   if cmd == "pp":
-      perfect_points(sys.argv[2], json_conf)
+   #if cmd == "pp":
+   #   perfect_points(sys.argv[2], json_conf)
    if cmd == "pp_all":
       perfect_points_all(sys.argv[2], json_conf)
    if cmd == "sync_prev":
@@ -681,3 +681,6 @@ if __name__ == "__main__":
             fast_aurora(sys.argv[2], cams_id, json_conf)
       else:
          fast_aurora(sys.argv[2], sys.argv[3], json_conf)
+   if cmd == "pp" :
+      # perfect points
+      perfect_points(sys.argv[2], json_conf)

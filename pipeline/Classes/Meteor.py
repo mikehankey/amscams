@@ -238,7 +238,11 @@ class Meteor():
          self.camera = Camera(cams_id = self.cams_id)
 
          if "multi_station_event" in self.mj:
-            self.event_id = self.mj['multi_station_event']['event_id']
+            if "event_id" in self.mj['multi_station_event']:
+               self.event_id = self.mj['multi_station_event']['event_id']
+            else:
+               self.event_id = None
+
          else:
             self.event_id = None
 
@@ -1171,12 +1175,16 @@ class Meteor():
       print("REMOTE REDUCE:", station_id, meteor_video_file)
 
    def meteor_scan(self):
+      # this should do frame subtract on frames
+      # track objects and id the meteor(s)
+      # then produce the final tracking/reduce file
       print("   meteor scan.", self.meteor_dir + self.sd_vid)
-      self.pos_meteors = []
-      mask2 = None
 
+      # load frames and setup init vars
       self.load_frames(self.meteor_dir + self.sd_vid)
       print(len(self.sd_frames), " frames loaded")
+      self.pos_meteors = []
+      mask2 = None
       self.fw = self.sd_frames[0].shape[1] 
       self.fh = self.sd_frames[0].shape[0] 
       self.hdm_x = 1920 / self.fw

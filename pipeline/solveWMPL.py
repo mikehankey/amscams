@@ -983,7 +983,7 @@ def solve_event(event_id, force=1, time_sync=1):
        if cfe(inspect_file) == 1:
           inspect_data = load_json_file(inspect_file)
        else:
-          os.system("python3 Inspect.py " + event_id)
+          os.system("python3.8 Inspect.py " + event_id)
 
           inspect_data = load_json_file(inspect_file)
        if "ignore_obs" in inspect_data:
@@ -992,6 +992,8 @@ def solve_event(event_id, force=1, time_sync=1):
           ignore_obs = {}
        print(inspect_file, inspect_data.keys())
        print(inspect_data['ignore_obs'])
+    print("YO:", inspect_data['ignore_obs'])
+    input("W")
 
    # + year + "/" + mon + "/" + day + "/" 
     cloud_events_dir = "/mnt/archive.allsky.tv/EVENTS/" 
@@ -1496,6 +1498,8 @@ def make_event_html(event_json_file ):
    sol_jpgs = glob.glob(solve_dir + "/*.jpg")
    rand = str(time.time())
    for img in sorted(sol_jpgs):
+      if "stacked" in img:
+         continue
       img = img.replace("/mnt/f/", "https://archive.allsky.tv/")
       if "ground" not in img and "orbit" not in img:
          plot_html += "<div style='float:left; padding: 3px'><img width=600 height=480 src=" + img + "?" + rand + "></div>\n"
@@ -2311,10 +2315,15 @@ def event_report(dynamodb, event_id, solve_dir, event_final_dir, obs):
        planes_data = {}
 
     plane_points = []
+    failed_combos = []
     if "results" in planes_data:
        for pk in planes_data['results']:
           score, points = planes_data['results'][pk]
-          if len(points) == 2:
+          print("POINTS:", points)
+          if type(points) == int:
+             failed_combos.append(pk)
+
+          elif len(points) == 2:
              start_point, end_point = points
              plane_points.append((start_point, end_point))
 
@@ -2504,6 +2513,9 @@ def event_report(dynamodb, event_id, solve_dir, event_final_dir, obs):
 
     trash_html = ""
     for jpg in sorted(final_jpgs):
+       if "stacked" in jpg:
+          continue
+
        jpg = jpg.replace("/mnt/f/meteor_archive/", "")
        jpg_fn = jpg.split("/")[-1]
        ftype = None
