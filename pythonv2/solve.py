@@ -464,10 +464,12 @@ def vida_failed_plots(event_id):
    mon = event_id[4:6]
    day = event_id[6:8]
    station_id = json_conf['site']['ams_id']
-   event_dir = "/mnt/archive.allsky.tv/EVENTS/" + year + "/" + mon + "/" + day + "/" + event_id + "/"
+   cloud_event_dir = "/mnt/archive.allsky.tv/EVENTS/" + year + "/" + mon + "/" + day + "/" + event_id + "/"
+   event_dir = "/mnt/f/EVENTS/" + year + "/" + mon + "/" + day + "/" + event_id + "/"
+
    if cfe(event_dir,1) == 0:
       os.makedirs(event_dir)
-   local_event_dir = "/mnt/ams2/EVENTS/" + year + "/" + mon + "/" + day + "/" + event_id + "/"
+   local_event_dir = "/mnt/f/EVENTS/" + year + "/" + mon + "/" + day + "/" + event_id + "/"
    if cfe(local_event_dir,1) == 0:
       os.makedirs(local_event_dir)
    event_file = event_dir + event_id + "-event.json"
@@ -759,10 +761,11 @@ def vida_plots(event_id):
 
    
    station_id = json_conf['site']['ams_id']
-   event_dir = "/mnt/archive.allsky.tv/EVENTS/" + year + "/" + mon + "/" + day + "/" + event_id + "/"
-   local_event_dir = "/mnt/ams2/EVENTS/" + year + "/" + mon + "/" + day + "/" + event_id + "/"
-   event_file = event_dir + event_id + "-event.json" 
-   plot_json_out = event_dir + event_id + "-plots.json" 
+   cloud_event_dir = "/mnt/archive.allsky.tv/EVENTS/" + year + "/" + mon + "/" + day + "/" + event_id + "/"
+   local_event_dir = "/mnt/f/EVENTS/" + year + "/" + mon + "/" + day + "/" + event_id + "/"
+   event_file = local_event_dir + event_id + "-event.json" 
+   obs_file = local_event_dir + event_id + "_GOOD_OBS.json" 
+   plot_json_out = local_event_dir + event_id + "-plots.json" 
    print("EF:", event_file)
    if cfe(event_file) == 1:
       if cfe(plot_json_out) == 1:
@@ -777,6 +780,10 @@ def vida_plots(event_id):
       return()
 
    event_data = load_json_file(event_file)
+   if os.path.exists(obs_file) is True:
+      event_data['obs'] = load_json_file(obs_file)
+   else:
+      event_data['obs'] = {}
 
    # check if this has been done already. 
 
@@ -804,14 +811,14 @@ def vida_plots(event_id):
           obs['gc_els'] = evd['gc_els']
           event_obs[station_id] = obs
 
-   jsons = glob.glob(event_dir + "*.json")
-   print(event_dir + "*.json")
+   jsons = glob.glob(local_event_dir + "*.json")
+   print(local_event_dir + "*.json")
    print(jsons )
-   print(event_dir)
+   print(local_event_dir)
    print(jsons)
    vida_report = jsons[0]
    pickle_file = local_event_dir + event_id + "_trajectory.pickle"
-   cloud_pickle_file = event_dir + event_id + "_trajectory.pickle"
+   cloud_pickle_file = cloud_event_dir + event_id + "_trajectory.pickle"
    print("P:", pickle_file)
    if cfe(pickle_file) == 0 :
       if cfe(cloud_pickle_file) == 1:
@@ -833,7 +840,7 @@ def vida_plots(event_id):
 
    vida_data = todict(vida_data)
    vida_file = local_event_dir + event_id + "_trajectory.json"
-   vida_cloud_file = event_dir + event_id + "_trajectory.json"
+   vida_cloud_file = cloud_event_dir + event_id + "_trajectory.json"
 
    json_data = json.dumps(vida_data, default=convert)
    #save_json_file(vida_file, json_data)

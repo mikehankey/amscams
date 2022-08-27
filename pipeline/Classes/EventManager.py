@@ -27,16 +27,17 @@ from lib.FFFuncs import best_crop_size, ffprobe
 class EventManager():
    def __init__(self, cmd=None, day=None, month=None,year=None):
       self.DF = DisplayFrame()
+      self.DATA_DIR = "/mnt/f/"
       self.cmd = cmd
       self.day = day
       self.month = month
       self.year = year
       self.date = None
-      self.data_dir = "/mnt/f/"
-      self.all_events_summary_file = self.data_dir + "/EVENTS/ALL_EVENTS_SUMMARY.json"
-      self.all_orbits_file = self.data_dir + "/EVENTS/ALL_ORBITS.json"
-      self.all_trajectories_file = self.data_dir + "/EVENTS/ALL_TRAJECTORIES.json"
-      self.all_radiants_file = self.data_dir + "/EVENTS/ALL_RADIANTS.json"
+      self.DATA_DIR = "/mnt/f/"
+      self.all_events_summary_file = self.DATA_DIR + "/EVENTS/ALL_EVENTS_SUMMARY.json"
+      self.all_orbits_file = self.DATA_DIR + "/EVENTS/ALL_ORBITS.json"
+      self.all_trajectories_file = self.DATA_DIR + "/EVENTS/ALL_TRAJECTORIES.json"
+      self.all_radiants_file = self.DATA_DIR + "/EVENTS/ALL_RADIANTS.json"
 
       if year is not None:
          self.batch_mode = "year"
@@ -54,18 +55,18 @@ class EventManager():
          self.date = day
          self.cloud_dir = "/mnt/archive.allsky.tv/EVENTS/" + self.year + "/" + self.month + "/" + self.day + "/"
          self.cloud_file_index = self.cloud_dir + "cloud_event_files_" + self.year + "_" + self.month + "_" + self.day  
-      self.local_dir = self.cloud_dir.replace("/archive.allsky.tv/", "/ams2/")
-      self.local_file_index = self.cloud_file_index.replace("/archive.allsky.tv/", "/ams2/")
+      self.local_dir = self.cloud_dir.replace("/mnt/archive.allsky.tv/", self.DATA_DIR)
+      self.local_file_index = self.cloud_file_index.replace("/mnt/archive.allsky.tv/", self.DATA_DIR)
       if self.date is None:
-         self.all_events_dir = self.data_dir + "EVENTS/"
-         self.all_events_traj = self.data_dir + "EVENTS/ALL_TRAJECTORIES.json"
-         self.all_events_traj_kml = self.data_dir + "EVENTS/ALL_TRAJECTORIES.kml"
+         self.all_events_dir = self.DATA_DIR + "EVENTS/"
+         self.all_events_traj = self.DATA_DIR + "EVENTS/ALL_TRAJECTORIES.json"
+         self.all_events_traj_kml = self.DATA_DIR + "EVENTS/ALL_TRAJECTORIES.kml"
          self.cloud_all_events_traj_kml = "/mnt/archive.allsky.tv/EVENTS/ALL_TRAJECTORIES.kml"
-         self.all_events_orb = self.data_dir + "EVENTS/ALL_ORBITS.json"
+         self.all_events_orb = self.DATA_DIR + "EVENTS/ALL_ORBITS.json"
          self.cloud_event_dir = "/mnt/archive.allsky.tv/EVENTS/"
       else:
          y,m,d = self.date.split("_")
-         self.all_events_dir = self.data_dir + "EVENTS/" + y + "/" + m + "/" + d + "/" 
+         self.all_events_dir = self.DATA_DIR + "EVENTS/" + y + "/" + m + "/" + d + "/" 
          self.cloud_event_dir = "/mnt/archive.allsky.tv/EVENTS/" + y + "/" + m + "/" + d + "/" 
          self.all_events_traj = self.all_events_dir + "ALL_TRAJECTORIES.json"
          self.all_events_traj_kml = self.all_events_dir + "ALL_TRAJECTORIES.kml"
@@ -181,7 +182,7 @@ class EventManager():
       years = []
       nyear = now[0:4]
       nmonth = now[5:7]
-      temp = glob.glob(self.data_dir + "/EVENTS/*")
+      temp = glob.glob(self.DATA_DIR + "/EVENTS/*")
       for year_dir in temp:
          fnd = year_dir.split("/")[-1]
          if fnd[0] != "2" :
@@ -217,15 +218,15 @@ class EventManager():
                if day_dt <= end_dt:
                   date_str = day_dt.strftime("%Y_%m_%d")
                   y,m,d = date_str.split("_")
-                  ev_dir = self.data_dir + "EVENTS/" + y + "/" + m + "/" + d + "/" 
+                  ev_dir = self.DATA_DIR + "EVENTS/" + y + "/" + m + "/" + d + "/" 
                   ev_file = ev_dir + date_str + "_ALL_EVENTS.json"
                   if cfe(ev_file) == 1:
                      print("THERE ARE EVENTS TODAY:", ev_file) 
                      ev_files.append(ev_file)
                   else:
                      print("THERE ARE NO EVENTS TODAY:", ev_file) 
-                     cloud_ev_file = ev_file.replace("/mnt/ams2", "/mnt/archive.allsky.tv")
-                     cloud_ev_dir = ev_dir.replace("/mnt/ams2", "/mnt/archive.allsky.tv")
+                     cloud_ev_file = ev_file.replace(self.DATA_DIR, "/mnt/archive.allsky.tv")
+                     cloud_ev_dir = ev_dir.replace(self.DATA_DIR, "/mnt/archive.allsky.tv")
                      if cfe(cloud_ev_file) == 1:
                         print("CLOUD EVENT FILE EXISTS. COPY THEM.")
                         if cfe(ev_dir, 1) == 0:
@@ -299,7 +300,7 @@ class EventManager():
          day = data['date']
          day_total = data['total_events']
          y,m,d = day.split("_")
-         ev_dir = self.data_dir + "EVENTS/" + y + "/" + m + "/" + d + "/"  
+         ev_dir = self.DATA_DIR + "EVENTS/" + y + "/" + m + "/" + d + "/"  
          if cfe(ev_dir, 1) == 0:
             print("NO EVENT DIR!", ev_dir)
          else:
@@ -318,10 +319,10 @@ class EventManager():
             solve_info['last_event_run'] = now
             print("SAVING SOLVE INFO FILES")
             save_json_file(solve_info_file, solve_info)
-      save_json_file(self.data_dir + "EVENTS/EVENTS_DAY_SUMMARY.json", day_summary)
-      save_json_file(self.data_dir + "EVENTS/ALL_EVENTS.json", all_events)
+      save_json_file(self.DATA_DIR + "EVENTS/EVENTS_DAY_SUMMARY.json", day_summary)
+      save_json_file(self.DATA_DIR + "EVENTS/ALL_EVENTS.json", all_events)
 
-      save_json_file(self.data_dir + "EVENTS/ALL_EVENTS_SUMMARY.json", events_summary)
+      save_json_file(self.DATA_DIR + "EVENTS/ALL_EVENTS_SUMMARY.json", events_summary)
 
 
    def make_all_traj_kml(self):
@@ -378,14 +379,14 @@ class EventManager():
       c = 0
       print("All events report")
       if self.date is None:
-         all_events_file = self.data_dir + "EVENTS/ALL_EVENTS.json"
+         all_events_file = self.DATA_DIR + "EVENTS/ALL_EVENTS.json"
       else:
          el = self.date.split("_")
          if len(el) == 3:
             y,m,d = self.date.split("_")
-            all_events_file = self.data_dir + "EVENTS/" + y + "/" + m + "/" + d + "/" + self.date + "_ALL_EVENTS.json"
+            all_events_file = self.DATA_DIR + "EVENTS/" + y + "/" + m + "/" + d + "/" + self.date + "_ALL_EVENTS.json"
          else:
-            all_events_file = self.data_dir + "EVENTS/ALL_EVENTS.json"
+            all_events_file = self.DATA_DIR + "EVENTS/ALL_EVENTS.json"
       print(self.day, all_events_file)
       all_events = load_json_file(all_events_file)
       print(len(all_events), "Total Events")
@@ -458,7 +459,7 @@ class EventManager():
                shower = ""
 
          e_year,e_month,e_day,e_hour,e_min,e_sec = self.parse_event_id(event['event_id'])
-         local_ev_dir = self.data_dir + "EVENTS/" + e_year + "/" + e_month + "/" + e_day + "/" + event['event_id'] + "/" 
+         local_ev_dir = self.DATA_DIR + "EVENTS/" + e_year + "/" + e_month + "/" + e_day + "/" + event['event_id'] + "/" 
          cloud_ev_dir = "/mnt/archive.allsky.tv/EVENTS/" + e_year + "/" + e_month + "/" + e_day + "/" + event['event_id'] + "/" 
          if "SUCCESS" or "SOLVE" in status:
             lvd_status = 1
@@ -488,14 +489,15 @@ class EventManager():
          #print(rpt)
          if c % 100 == 0:
             print("working", c)
-         events_summary.append( (status, event['event_id'], min(event['start_datetime']), sts, fls, shower, lvd_status, cvd_status))
+         events_summary.append( (status, event['event_id'], min(min(event['start_datetime'])), sts, fls, shower, lvd_status, cvd_status))
+         print("MIN DATE:", min(min(event['start_datetime'])))
          c += 1
 
       if self.date is None:
-         event_dir = self.data_dir + "EVENTS/"
+         event_dir = self.DATA_DIR + "EVENTS/"
          ce_dir = "/mnt/archive.allsky.tv/EVENTS/"
       else:
-         event_dir = self.data_dir + "EVENTS/" + y + "/" + m + "/" + d + "/"
+         event_dir = self.DATA_DIR + "EVENTS/" + y + "/" + m + "/" + d + "/"
          ce_dir = "/mnt/archive.allsky.tv/EVENTS/" + y + "/" + m + "/" + d + "/"
 
       save_json_file(event_dir + "ALL_EVENTS_SUMMARY.json", events_summary)
@@ -503,6 +505,8 @@ class EventManager():
       save_json_file(event_dir + "ALL_TRAJECTORIES.json", all_trajectories)
       save_json_file(event_dir + "ALL_SHOWERS.json", all_showers)
       save_json_file(event_dir + "ALL_RADIANTS.json", all_radiants)
+
+      #input("SAVED " + event_dir + "ALL_RADIANTS.json")
 
       cmd = "cp " + event_dir + "ALL_EVENTS_SUMMARY.json " + ce_dir  
       os.system(cmd)
@@ -566,7 +570,7 @@ class EventManager():
 
    def solve_unsolved_events(self):
       cores = 20
-      events = load_json_file(self.data_dir + "EVENTS/ALL_EVENTS_SUMMARY.json")
+      events = load_json_file(self.DATA_DIR + "EVENTS/ALL_EVENTS_SUMMARY.json")
       unsolved = []
       for event in events:
          status, event_id, statrt_datetime, stations, files, shower, lvd_status,cvd_status= event
@@ -591,10 +595,10 @@ class EventManager():
 
    def all_events_index(self):
       all_events = []
-      os.system("find /mnt/ams2/EVENTS/ | grep ALL_EVENTS.json > /mnt/ams2/EVENTS/ALL_EVENTS.txt")
-      fp = open(self.data_dir + "EVENTS/ALL_EVENTS.txt")
+      os.system("find " + self.DATA_DIR + "EVENTS/ | grep ALL_EVENTS.json > " + self.DATA_DIR + "EVENTS/ALL_EVENTS.txt")
+      fp = open(self.DATA_DIR + "EVENTS/ALL_EVENTS.txt")
       for line in fp:
-         if self.data_dir + "EVENTS/ALL_EVENTS" in line:
+         if self.DATA_DIR + "EVENTS/ALL_EVENTS" in line:
             continue
          line = line.replace("\n", "")
          print("LOADING:", line)
@@ -608,8 +612,8 @@ class EventManager():
          for data in ev_data:
             print("DATA:", data)
             all_events.append(data)
-      save_json_file(self.data_dir + "EVENTS/ALL_EVENTS.json", all_events)
-      print("Saved", self.data_dir + "EVENTS/ALL_EVENTS.json")
+      save_json_file(self.DATA_DIR + "EVENTS/ALL_EVENTS.json", all_events)
+      print("Saved", self.DATA_DIR + "EVENTS/ALL_EVENTS.json")
 
    def update_html_index(self):
       cloud_files = self.get_event_cloud_file_list()

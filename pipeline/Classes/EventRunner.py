@@ -2189,7 +2189,7 @@ class EventRunner():
       fp = open(self.DATA_DIR + "EVENTS/METEOR_OBS_STATS.html", "w")
       fp.write(html)
       fp.close()
-      cmd = "cp /mnt/ams2/EVENTS/METEOR_OBS_STATS.html /mnt/archive.allsky.tv/EVENTS/METEOR_OBS_STATS.html"
+      cmd = "cp " + self.DATA_DIR + "EVENTS/METEOR_OBS_STATS.html /mnt/archive.allsky.tv/EVENTS/METEOR_OBS_STATS.html"
       print(cmd)
       os.system(cmd) 
 
@@ -2563,7 +2563,6 @@ class EventRunner():
             all_events.append(ev_idx)
       all_events = json.loads(json.dumps(all_events), parse_float=Decimal)
       save_json_file(self.DATA_DIR + "EVENTS/ALL_EVENTS_INDEX.json", all_events, True)
-      print("saved /mnt/ams2/EVENTS/ALL_EVENTS_INDEX.json")
       unsolved = []
       failed = []
       solved = []
@@ -2577,7 +2576,7 @@ class EventRunner():
       save_json_file(self.DATA_DIR + "EVENTS/ALL_EVENTS_INDEX_SOLVED.json", solved, True)
       save_json_file(self.DATA_DIR + "EVENTS/ALL_EVENTS_INDEX_FAILED.json", failed, True)
       save_json_file(self.DATA_DIR + "EVENTS/ALL_EVENTS_INDEX_UNSOLVED.json", unsolved, True)
-      cmd = "cp /mnt/ams2/EVENTS/ALL_EVENTS* /mnt/archive.allsky.tv/EVENTS/"
+      cmd = "cp " + self.DATA_DIR + "EVENTS/ALL_EVENTS* /mnt/archive.allsky.tv/EVENTS/"
       print(cmd)
       os.system(cmd)
 
@@ -3216,7 +3215,8 @@ class EventRunner():
       for status in stats:
          #print(status, stats[status]['count'])
          for eid in stats[status]['event_ids']:
-            ev_link = self.event_dir.replace("/mnt/ams2", "") + eid + "/index.html" 
+            ev_link = self.event_dir.replace(self.DATA_DIR, "") + eid + "/index.html" 
+            ev_link = self.event_dir.replace(self.DATA_DIR, "") + eid + "/index.html" 
             if eid not in event_html:
                event_html[eid] = {}
                event_html[eid]['status'] = status 
@@ -3305,9 +3305,9 @@ class EventRunner():
       for line in fp:
          report_template += line
 
-      self.vdir = self.event_dir.replace("/mnt/ams2", "")
+      self.vdir = self.event_dir.replace(self.DATA_DIR, "")
       self.edir = self.event_dir
-      self.cdir = self.event_dir.replace("/mnt/ams2", "/mnt/archive.allsky.tv")
+      self.cdir = self.event_dir.replace(self.DATA_DIR, "/mnt/archive.allsky.tv")
 
       traj_file = self.edir + "ALL_TRAJECTORIES.kml"
       orb_file =  self.edir + "ALL_ORBITS.json"
@@ -3503,7 +3503,7 @@ class EventRunner():
       #plt.scatter(dom_obj['oxs'], dom_obj['oys'])
       plt.plot(mc_xs, mc_ys, c='red')
       plt.savefig("meteor_counts.png")
-      cloud_dir = self.event_dir.replace("/mnt/ams2", "/mnt/archive.allsky.tv")
+      cloud_dir = self.event_dir.replace(self.DATA_DIR, "/mnt/archive.allsky.tv")
 
       solved_ev = []
       unsolved_ev = []

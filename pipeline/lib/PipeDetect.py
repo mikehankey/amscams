@@ -43,7 +43,7 @@ def perfect_points_all(day, json_conf):
       #exit()
 
 
-def perfect_points(meteor_file, json_conf):
+def perfect_points_OLD(meteor_file, json_conf):
 
    if "/mnt/ams2/meteors" not in meteor_file:
       day = meteor_file[0:10]
@@ -4509,6 +4509,47 @@ def get_leading_edge(dom_dir, x_dir, y_dir, cnt_img):
    return(best_x, best_y)
 
 
+def perfect_points(meteor_file, json_conf):
+   # one function to make the points perfect???? IS IT POSSIBLE!?
+   if "/mnt/ams2" not in meteor_file:
+      dd = meteor_file[0:10]
+      meteor_file = "/mnt/ams2/meteors/" + dd + "/" + meteor_file
+      video_file = meteor_file.replace(".json", ".mp4")
+      red_file = meteor_file.replace(".json", "-reduced.json")
+   else:
+      video_file = meteor_file.replace(".json", ".mp4")
+      red_file = meteor_file.replace(".json", "-reduced.json")
+
+   mj = load_json_file(meteor_file)
+
+   if cfe(red_file) == 1:
+      mjr = load_json_file(red_file)
+   else:
+      print("NOT REDUCED ABORT!")
+      return(0)
+   frames,color_frames,subframes,sum_vals,max_vals,pos_vals = load_frames_fast(mj['sd_video_file'], json_conf, 0, 0, [], 1,[])
+   frame_data = {}
+   for row in mjr['meteor_frame_data']:
+      (dt, fn, hd_x, hd_y, w, h, oint, ra, dec, az, el) = row
+      frame_data[int(fn)] = row
+   
+   fc = 0
+   for frame in color_frames:
+      show_frame = cv2.resize(frame,(1920,1080))
+      if fc in frame_data:
+
+         (dt, fn, hd_x, hd_y, w, h, oint, ra, dec, az, el) = frame_data[fc] 
+         cv2.circle(show_frame,(hd_x,hd_y), 1, (255,0,255), 1)
+
+         cv2.imshow('pepe', show_frame)
+         cv2.waitKey(0)
+      else:
+         cv2.imshow('pepe', show_frame)
+         cv2.waitKey(30)
+      fc += 1
+
+
+
 def refine_meteor(meteor_file, json_conf):
    if "/mnt/ams2" not in meteor_file:
       dd = meteor_file[0:10]
@@ -4526,6 +4567,7 @@ def refine_meteor(meteor_file, json_conf):
    else:
       print("NOT REDUCED ABORT!")
       return(0)
+
    if "leading_edge" in mjr:
       return()
    mfd = mjr['meteor_frame_data']

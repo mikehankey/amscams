@@ -34,9 +34,10 @@ class EventReport():
       self.r = redis.Redis(admin_conf['redis_host'], port=6379, decode_responses=True)
       self.cmd = cmd
       self.date = date
+      self.DATA_DIR = "/mnt/f/"
       self.Y, self.M, self.D =  date.split("_")
-      self.event_dir = "/mnt/ams2/EVENTS/" + self.Y + "/" + self.M + "/" + self.D + "/"
-      self.event_cloud_dir = "/mnt/ams2/EVENTS/" + self.Y + "/" + self.M + "/" + self.D + "/"
+      self.event_dir = self.DATA_DIR + "EVENTS/" + self.Y + "/" + self.M + "/" + self.D + "/"
+      self.event_cloud_dir = "/mnt/archive.allsky.tv/EVENTS/" + self.Y + "/" + self.M + "/" + self.D + "/"
       self.cloud_event_url = "https://archive.allsky.tv/EVENTS/" + self.Y + "/" + self.M + "/" + self.D + "/"
 
       # FILES THAT HOLD DATA

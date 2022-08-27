@@ -137,7 +137,26 @@ def valid_events(ev_data):
       station = ev_data['stations'][i]
       obs_file = ev_data['obs'][i]
 
+def do_station_events(EV,date):
+   print("Station Events", date)
+   EV.date = ev_date
+   EV.year = ev_date.split("_")[0]
+   EV.month = ev_date.split("_")[1]
+   EV.day = ev_date.split("_")[2]
+   EV.cloud_event_dir = "/mnt/archive.allsky.tv/EVENTS/" + EV.year + "/" + EV.month + "/" + EV.day + "/"
+   mdir = "/mnt/ams2/meteors/" + ev_date + "/"
+   station_events_cloud_file = EV.cloud_event_dir + EV.date + "_STATION_EVENTS.info" 
+   station_events_local_file = mdir + EV.date + "_STATION_EVENTS.info" 
+   if os.path.exists(station_events_local_file) is False:
+      os.system("cp " + station_events_cloud_file + " " + station_events_local_file)
+   station_events_data = load_json_file(station_events_local_file)
+   if EV.station_id in station_events_data:
+      for obs_id in station_events_data[EV.station_id]:
+         print(EV.station_id, obs_id, station_events_data[EV.station_id][obs_id])
+
 def do_day(EV, date):
+   do_station_events(EV, date)
+   exit()
    EV.do_ms_day(date)
    EV.date = ev_date
    EV.year = ev_date.split("_")[0]
@@ -147,6 +166,8 @@ def do_day(EV, date):
    mdir = "/mnt/ams2/meteors/" + ev_date + "/"
    ms_vdir = "/METEOR_SCAN/" + ev_date + "/"
    cloud_dir = "/mnt/archive.allsky.tv/" + EV.station_id + "/METEORS/" + EV.year + "/" + EV.date + "/"
+
+
    print("CLOUD DIR:", cloud_dir)
    if os.path.exists(cloud_dir) is True:
       cloud_files = os.listdir(cloud_dir)

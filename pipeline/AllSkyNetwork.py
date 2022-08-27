@@ -80,6 +80,16 @@ if cmd == "review_event_day":
 
    ASN.review_event_day(date)
 
+
+if cmd == "review_event":
+   event_id = sys.argv[2]
+   event_day = ASN.event_id_to_date(event_id)
+   ASN.set_dates(event_day)
+   ASN.review_event(sys.argv[2])
+   (review_image, map_img, obs_imgs, marked_images, event_data, obs_data) = ASN.review_event_step2()
+   cv2.imshow('pwpw', review_image)
+   cv2.waitKey(0)
+
 if cmd == "resolve_event":
    ASN.help()
    event_id = sys.argv[2]
@@ -230,6 +240,29 @@ if cmd == "do_all":
    print("Update Meteor Days.")
    ASN.update_meteor_days()
 
+   cmd = "python3 ER.py " + date
+   print(cmd)
+   os.system(cmd)
+   
+   # all_events_report aer
+   cmd = "python3 EM.py aer " + date
+   print(cmd)
+   os.system(cmd)
+
+   cmd = "python3 PLT.py plot_all_rad " + date 
+   print(cmd)
+   os.system(cmd)
+
+   cmd = "python3 solveWMPL.py vida_plots " + date 
+   print(cmd)
+   os.system(cmd)
+
+   cmd = "python3 DynaDB.py udc " + date  + " events"
+   print(cmd)
+   os.system(cmd)
+
+
+
 
 if cmd == "day_solve" or cmd == 'ds' or cmd == "solve_day":
    ASN.help()
@@ -305,6 +338,11 @@ if cmd == "event_day_status":
    event_day = sys.argv[2]
    ASN.event_day_status(event_day)
   
+if cmd == "station_events":
+   # make station/event mapping for this day
+   event_day = sys.argv[2]
+   ASN.station_events(event_day)
+
 # to solve 1 day: 
 # do_all
 # resolve_event_day

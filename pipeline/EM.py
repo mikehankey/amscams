@@ -3,6 +3,8 @@ import sys
 
 if __name__ == "__main__":
    import sys
+   # command then date or partial date
+   # aer = all event report -- makes ALL_RADIANTS file and others
 
    if len(sys.argv) < 3:
       print("You need at least 2 args [CMD] [YYYY_MM_DD]. ")

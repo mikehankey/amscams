@@ -650,6 +650,7 @@ def update_dyna_cache_for_day(dynamodb, date, stations, utype=None, cloud_copy=1
    if content[0] == "\"":
       content = content[1:]
       content = content[0:-1]
+   #print(API_URL)
    #print(content)
    jdata = json.loads(content)
    save_json_file("/mnt/f/EVENTS/ALL_STATIONS.json", jdata['all_vals'], True)

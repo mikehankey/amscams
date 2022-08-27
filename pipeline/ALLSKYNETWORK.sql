@@ -144,3 +144,27 @@ CREATE TABLE IF NOT EXISTS "event_status" (
         "event_status_desc"      TEXT,
         PRIMARY KEY("event_id")
 );
+
+DROP TABLE IF EXISTS "last_best_cal";
+CREATE TABLE IF NOT EXISTS "last_best_cal" (
+        "station_id"    INTEGER,
+        "camera_id"     INTEGER,
+        "calib_fn"      TEXT,
+        "cal_datetime"  INTEGER,
+        "cal_timestamp"  INTEGER,
+        "az"    REAL,
+        "el"    REAL,
+        "ra"    REAL,
+        "dec"   REAL,
+        "position_angle"        REAL,
+        "pixel_scale"   REAL,
+        "user_stars"    BLOB,
+        "cat_image_stars"       BLOB,
+        "x_poly"        BLOB,
+        "y_poly"        BLOB,
+        "x_poly_fwd"    BLOB,
+        "y_poly_fwd"    BLOB NOT NULL,
+        "res_px"        REAL,
+        "res_deg"       REAL,
+        PRIMARY KEY("calib_fn")
+);

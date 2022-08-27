@@ -43,20 +43,22 @@ if os.path.exists("solve-hist.json"):
 else:
    solve_hist = {}
 
-days = sorted(all_days)[-60:]
+days = sorted(all_days)
 
-for day in sorted(days,reverse=True):
+for day in sorted(days,reverse=True)[27:360]:
    #cmd = "./updateEventDay.py " + day #+ ">ev_run_log.txt 2>&1 "
    y,m,d = day.split("_")
    cloud_evf = "/mnt/archive.allsky.tv/EVENTS/" + y + "/" + m + "/" + d + "/" + day + "_OBS_GOOD.html"
    #if day not in solve_hist and os.path.exists(cloud_evf) is False:
    if True: 
       if True:
-         #cmd =  "python3 AllSkyNetwork.py do_all " + day
-         #cmd =  "python3 AllSkyNetwork.py resolve_event_day " + day
-         cmd =  "python3 AllSkyNetwork.py review_event_day " + day
-         print(cmd)
+         cmd =  "python3 AllSkyNetwork.py do_all " + day
+         #cmd =  "python3 AllSkyNetwork.py publish_day " + day
          os.system(cmd)
+
+         #cmd =  "python3 AllSkyNetwork.py resolve_event_day " + day
+         #print(cmd)
+         #os.system(cmd)
 
 
       if False:
