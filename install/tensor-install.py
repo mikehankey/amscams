@@ -38,6 +38,11 @@ if os.path.exists("/home/ams/amscams/install/get-pip36.py") is False:
    os.system(cmd)
 
    os.system("sudo python3.6 -m pip install --upgrade pip")
+else:
+   if "pip" not in installed:
+       cmd = "sudo python3.6 get-pip36.py"
+       print(cmd)
+       os.system(cmd)
    
    
    
@@ -124,7 +129,6 @@ if os.path.exists("/home/ams/amscams/pipeline/models/ASAI-v2.7z") is False:
 else:
    print("MODELS UP TO DATE ALREADY?")
 
-input("ALL DONE. CONTINUE?")
 
 cmd = "sudo python3 pipper.py"
 print(cmd)
