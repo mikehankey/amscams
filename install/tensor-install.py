@@ -124,7 +124,6 @@ if os.path.exists("/home/ams/amscams/pipeline/models/ASAI-v2.7z") is False:
 else:
    print("MODELS UP TO DATE ALREADY?")
 
-input("ALL DONE. CONTINUE?")
 
 cmd = "sudo python3 pipper.py"
 print(cmd)
