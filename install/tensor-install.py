@@ -105,12 +105,16 @@ cmd = "sudo chown -R ams:ams /home/ams/amscams/pipeline/models"
 os.system(cmd)
 
 if os.path.exists("/home/ams/amscams/pipeline/models/ASAI-v2.7z") is False:
-   cmd = "cp /mnt/archive.allsky.tv/AMS1/ML/ASAI-v2.7z ../pipeline/models/"
+   cmd = "cp /mnt/archive.allsky.tv/AMS1/ML/ASAI-v2.7z /home/ams/amscams/pipeline/models/"
+   print(cmd)
    os.system(cmd)
    cmd = "cd /home/ams/amscams/pipeline/models; 7z e /home/ams/amscams/pipeline/models/ASAI-v2.7z"
+   print(cmd)
    os.system(cmd)
    cmd = "chown -R ams:ams /mnt/ams/amscams/models"
+   print(cmd)
    os.system(cmd)
-
+else:
+   print("MODELS UP TO DATE ALREADY?")
 cmd = "sudo python3.6 -m pip install requests"
 os.system(cmd)
