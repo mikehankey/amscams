@@ -1,7 +1,9 @@
 
 import os
 import sys
-os.system("./install-pip.sh")
+if os.path.exists("/usr/bin/pip3") is False:
+   os.system("./install-pip.sh")
+
 os.system("sudo python3 -m pip install --upgrade pip")
 cmd = "sudo apt-get -y install python3.6-distutils"
 os.system(cmd)
@@ -24,7 +26,7 @@ if os.path.exists("/usr/bin/python3.6") is False and os.path.exists("/usr/local/
 
   
 if os.path.exists("/home/ams/amscams/install/get-pip36.py") is False:
-   #ERROR: This script does not work on Python 3.6 The minimum supported Python version is 3.7. Please use https://bootstrap.pypa.io/pip/3.6/get-pip.py instead.
+   print("GET PIP FOR PYTHON3.6")
    cmd = "wget https://bootstrap.pypa.io/pip/3.6/get-pip.py -O /home/ams/amscams/install/get-pip36.py"
    os.system(cmd)
    cmd = "sudo python3.6 get-pip36.py"
@@ -105,12 +107,16 @@ cmd = "sudo chown -R ams:ams /home/ams/amscams/pipeline/models"
 os.system(cmd)
 
 if os.path.exists("/home/ams/amscams/pipeline/models/ASAI-v2.7z") is False:
-   cmd = "cp /mnt/archive.allsky.tv/AMS1/ML/ASAI-v2.7z ../pipeline/models/"
+   cmd = "cp /mnt/archive.allsky.tv/AMS1/ML/ASAI-v2.7z /home/ams/amscams/pipeline/models/"
+   print(cmd)
    os.system(cmd)
    cmd = "cd /home/ams/amscams/pipeline/models; 7z e /home/ams/amscams/pipeline/models/ASAI-v2.7z"
+   print(cmd)
    os.system(cmd)
    cmd = "chown -R ams:ams /mnt/ams/amscams/models"
+   print(cmd)
    os.system(cmd)
-
+else:
+   print("MODELS UP TO DATE ALREADY?")
 cmd = "sudo python3.6 -m pip install requests"
 os.system(cmd)
