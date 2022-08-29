@@ -20,6 +20,29 @@ import glob
 import decimal
 dec = decimal.Decimal
 
+import jwt
+
+def encode_jwt(payload, json_conf=None,secret = None):
+   if json_conf is None:
+      json_conf = load_json_file("../conf/as6.json")
+
+   station_id = json_conf['site']['ams_id']
+   if "api_key" in json_conf:
+      api_key = json_conf['api_key']
+   elif "api_key" in json_conf['site']:
+      api_key = json_conf['api_key']
+   else:
+      api_key = None 
+   if secret == None:
+      secret = station_id + ":" + api_key
+   encoded = jwt.encode(payload, secret, algorithm="HS256")
+   print(encoded)
+   decoded = jwt.decode(encoded, secret, algorithms="HS256")
+   print("DECODED:", decoded)
+   return(encoded)
+
+
+
 def fetch_url(url, save_file=None, json=None):
     r = requests.get(url)
     if save_file is None:
@@ -162,6 +185,7 @@ def ephem_info(device_lat, device_lng, capture_date):
    return(sun_status, sun_az, sun_alt, sun_rise, sun_set, moon_az, moon_alt, moon_rise, moon_set)
 
 def get_file_info(file):
+   # tdiff in minutes!
    cur_time = int(time.time())
    if cfe(file) == 1:
       st = os.stat(file)
@@ -327,7 +351,6 @@ def cfe(file,dir = 0):
          return(0)
 
 def load_json_file(json_file):  
-   print("LOADING:", json_file)
    #try:
    if True:
       #print("Trying:", json_file)
