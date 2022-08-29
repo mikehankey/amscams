@@ -5669,6 +5669,10 @@ def solve_field(image_file, image_stars=[], json_conf={}):
    print("SOLVED FILE:", solved_file)
    if len(image_stars) < 10:
       oimg = cv2.imread(image_file)
+      if oimg.shape[0] != 1080:
+         oimg = cv2.resize(oimg, (1920,1080))
+         cv2.imwrite(image_file, oimg)
+
       image_stars = get_image_stars(image_file, oimg, json_conf,0)
       plate_image, star_points = make_plate_image(oimg.copy(), image_stars)
       plate_file = image_file.replace(".png", ".jpg")
@@ -6798,6 +6802,9 @@ def cal_all(json_conf):
 
       if cfe(file) == 1:
          img = cv2.imread(file)
+         if img.shape[0] != 1080:
+            img = cv2.resize(img, (1920,1080)
+            cv2.imwrite(file, img)
          avg_px = np.mean(img)
          print("PIC AVG:", avg_px)
          if avg_px < 100:
