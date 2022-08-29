@@ -935,7 +935,13 @@ def cal_status(json_conf):
       st_db = cal_dir + "star_db-" + STATION_ID + "-" + cam + ".info"
       if cfe(st_db):
          sdb = load_json_file(st_db)
-         total_stars = len(sdb['autocal_stars'])
+         if sdb is not None: 
+            if "autocal_stars" in sdb:
+               total_stars = len(sdb['autocal_stars'])
+            else:
+               total_stars = 0
+         else:
+            total_stars = 0
          #total_files = len(sdb['processed_files'])
       else:
          total_stars = 0
