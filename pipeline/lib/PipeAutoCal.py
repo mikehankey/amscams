@@ -6399,6 +6399,20 @@ def cal_index(cam, json_conf, r_station_id = None):
       r_cal_dir = "/mnt/ams2/meteor_archive/" + r_station_id + "/CAL/BEST/"
    cloud_save_file = save_file.replace("ams2/meteor_archive", "archive.allsky.tv")
    cfn, cdir = fn_dir(cloud_save_file)
+   done = {}
+   print("save:", save_file)
+   if os.path.exists(save_file) is True:
+      sz, save_td = get_file_info(save_file) 
+
+      save_data = load_json_file(save_file)
+      save_index = {}
+      for row in save_data:
+         ff = row[0]
+         save_index[ff] = row
+         print(ff)
+   else:
+      print("No save file", save_file)
+
    if r_station_id is None:
       print("GET CAL FILES XX:")
       cal_files= get_cal_files(None, cam)
@@ -6414,6 +6428,17 @@ def cal_index(cam, json_conf, r_station_id = None):
          file, res = df
       else:
          file = df
+      sz, td = get_file_info(file)
+      if td - save_td > 0:
+         # file has not changed since last index use the old value to save time!
+         if file in save_index:
+            saved_row = save_index[file]
+            print("SKIP/DONE", file, td, save_td, td - save_td)
+            ci_data.append(saved_row)
+            continue
+
+      #exit()
+
       img_file = file.replace("-calparams.json", "-src.jpg")
       test_img = get_cal_img(img_file)
       if cfe(file) == 1 and cfe(img_file) == 1:
@@ -6439,7 +6464,7 @@ def cal_index(cam, json_conf, r_station_id = None):
             print("\r", "indexing: " + desc, end = "")
          else:
             print("\r", "err no res: " + desc, end = "")
-
+   exit()
    temp = sorted(ci_data, key=lambda x: x[0], reverse=True)
    save_json_file(save_file, temp)
    print(save_file)
