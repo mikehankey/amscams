@@ -6401,6 +6401,7 @@ def cal_index(cam, json_conf, r_station_id = None):
    cfn, cdir = fn_dir(cloud_save_file)
    done = {}
    print("save:", save_file)
+   save_td = None
    if os.path.exists(save_file) is True:
       sz, save_td = get_file_info(save_file) 
 
@@ -6421,6 +6422,7 @@ def cal_index(cam, json_conf, r_station_id = None):
       print("REMOTE CAL FILES:")
 
    ci_data = []
+   changed = 0
    for df in cal_files:
       xx = df[0].split("/")[-1]
       desc = xx.split("-")[0]
@@ -6429,13 +6431,14 @@ def cal_index(cam, json_conf, r_station_id = None):
       else:
          file = df
       sz, td = get_file_info(file)
-      if td - save_td > 0:
-         # file has not changed since last index use the old value to save time!
-         if file in save_index:
-            saved_row = save_index[file]
-            print("SKIP/DONE", file, td, save_td, td - save_td)
-            ci_data.append(saved_row)
-            continue
+      if save_td is not None:
+         if td - save_td > 0:
+            # file has not changed since last index use the old value to save time!
+            if file in save_index:
+               saved_row = save_index[file]
+               print("SKIP/DONE", file, td, save_td, td - save_td)
+               ci_data.append(saved_row)
+               continue
 
       #exit()
 
@@ -6460,16 +6463,23 @@ def cal_index(cam, json_conf, r_station_id = None):
             os.system(cmd)
          if "total_res_px" in cp:
             ci_data.append((file, cp['center_az'], cp['center_el'], cp['position_angle'], cp['pixscale'], len(cp['user_stars']), len(cp['cat_image_stars']), cp['total_res_px']))
+            changed += 1
             desc += " " + str(cp['total_res_px'])
             print("\r", "indexing: " + desc, end = "")
          else:
             print("\r", "err no res: " + desc, end = "")
-   exit()
+
+   print("CI DATA:", len(ci_data))
+   print("DID NOT SAVE!")
+   print("ROWS CHANGED:", changed)
+
    temp = sorted(ci_data, key=lambda x: x[0], reverse=True)
-   save_json_file(save_file, temp)
-   print(save_file)
-   if cfe(cdir, 1) == 1:
-      save_json_file(cloud_save_file, temp)
+   if changed > 0:
+      save_json_file(save_file, temp)
+      print("saving ", save_file)
+      if cfe(cdir, 1) == 1:
+         print("saving ", cloud_save_file)
+         save_json_file(cloud_save_file, temp)
    return(temp)
 
 #def get_med_cal_range(json_conf, cam, calibs=None, start_date= None, end_date=None):
