@@ -6,6 +6,7 @@ import pkg_resources
 # see what we have
 installed = {pkg.key for pkg in pkg_resources.working_set}
 
+os.system("sudo apt update")
 
 if os.path.exists("/usr/bin/pip3") is False and os.path.exists("/usr/local/bin/pip3") is False:
    os.system("./install-pip.sh")
