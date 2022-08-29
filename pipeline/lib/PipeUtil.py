@@ -19,8 +19,8 @@ import json
 import glob
 import decimal
 dec = decimal.Decimal
-
-import jwt
+#try
+#import jwt
 
 def encode_jwt(payload, json_conf=None,secret = None):
    if json_conf is None:
