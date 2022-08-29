@@ -8970,7 +8970,7 @@ def find_close_stars(star_point, catalog_stars,dt=100, show_img = None):
       if center_dist < 800 and cat_star_dist > 20:
          valid = False
 
-      print("FIND CLOSE STARS:", cat_x, cat_y, scx, scy, cat_star_dist)
+      #print("FIND CLOSE STARS:", cat_x, cat_y, scx, scy, cat_star_dist)
       if cat_star_dist < 20:
          matches.append((dcname,mag,ra,dec,cat_x,cat_y,scx,scy,cat_star_dist))
       else:
