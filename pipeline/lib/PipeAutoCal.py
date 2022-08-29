@@ -1020,6 +1020,26 @@ def cal_status(json_conf):
 #         - is the lens model's fun_fwd < .1, if not refit things and then rebuild it. Do this at least 3-5 times until the fun_fwd is < .1 or .05 at best. 
 #         - when total stars in the lens model exceed 500 and fun_fwd <= .05 the model is as good as it can be and we can stop trying to rebuild it. 
 #   """
+
+   # now what???
+   # try to refit bad or very bad files first
+
+   for cam in all_data:
+      very_bad_files = all_data[cam]['very_bad_files']
+      bad_files = all_data[cam]['bad_files']
+      for cal_file in very_bad_files:
+         cal_fn = cal_file.split("/")[-1]
+         cmd = "python3 recal.py apply_calib " + cal_fn 
+         print(cmd)
+         os.system(cmd)
+
+      for cal_file in bad_files:
+         cal_fn = cal_file.split("/")[-1]
+         cmd = "python3 recal.py apply_calib " + cal_fn 
+         print(cmd)
+         os.system(cmd)
+
+
    exit() 
    wiz_cmds = [] 
    for cam in all_data:
@@ -6390,7 +6410,6 @@ def cal_index(cam, json_conf, r_station_id = None):
    for df in cal_files:
       xx = df[0].split("/")[-1]
       desc = xx.split("-")[0]
-      print("\r", "indexing: " + desc, end = "")
       if len(df) == 2:
          file, res = df
       else:
@@ -6416,6 +6435,10 @@ def cal_index(cam, json_conf, r_station_id = None):
             os.system(cmd)
          if "total_res_px" in cp:
             ci_data.append((file, cp['center_az'], cp['center_el'], cp['position_angle'], cp['pixscale'], len(cp['user_stars']), len(cp['cat_image_stars']), cp['total_res_px']))
+            desc += " " + str(cp['total_res_px'])
+            print("\r", "indexing: " + desc, end = "")
+         else:
+            print("\r", "err no res: " + desc, end = "")
 
    temp = sorted(ci_data, key=lambda x: x[0], reverse=True)
    save_json_file(save_file, temp)
@@ -9222,7 +9245,7 @@ def XYtoRADecOLD(img_x,img_y,cal_file,cal_params,json_conf):
    # Convert declination to radians
    dec_rad = math.radians(dec_d)
 
-   # Precalculate some parameters
+   # Peecalculate some parameters
    sl = math.sin(math.radians(lat))
    cl = math.cos(math.radians(lat))
 
