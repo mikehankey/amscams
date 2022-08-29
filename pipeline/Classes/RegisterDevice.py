@@ -47,7 +47,7 @@ class RegisterDevice():
          print("NET MAC:", self.network_mac_addr)
       except:
          self.network_mac_addr= None
-      if self.network_mac_addr is None:
+      if self.cams_mac_addr is None:
          print("CAMS ETH INTERFACE NOT FOUND")
          exit()
 
