@@ -6803,7 +6803,7 @@ def cal_all(json_conf):
       if cfe(file) == 1:
          img = cv2.imread(file)
          if img.shape[0] != 1080:
-            img = cv2.resize(img, (1920,1080)
+            img = cv2.resize(img, (1920,1080))
             cv2.imwrite(file, img)
          avg_px = np.mean(img)
          print("PIC AVG:", avg_px)
