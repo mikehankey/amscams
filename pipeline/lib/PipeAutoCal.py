@@ -303,9 +303,31 @@ def cal_manager(json_conf):
    if cmd == "8":
       met_cal(json_conf) 
 
-   default_hist = {}
    rdf = []
    if cmd == "5":
+      make_cal_range_file(json_conf)
+
+      #for cam in json_conf['cameras']:
+      #   cams_id = json_conf['cameras'][cam]['cams_id']
+      #   default_hist[cams_id] = make_default_cal(json_conf, cams_id)
+      #   print("DEFAULT HIST:", cams_id, default_hist[cams_id])
+#
+#      for cams_id in default_hist:
+#         try:
+#            if "range_data" in default_hist[cams_id]:
+#               for row in default_hist[cams_id]['range_data']:
+#                  rdf.append(row)
+#         except:
+#            print("no data for", cams_id)
+
+#      save_json_file("/mnt/ams2/cal/" + amsid + "_cal_range.json", rdf)
+#      print("SAVED: /mnt/ams2/cal/" + amsid + "_cal_range.json", rdf)
+
+def make_cal_range_file(json_conf):
+   default_hist = {}
+   rdf = []
+   station_id = json_conf['site']['ams_id']
+   if True:
       for cam in json_conf['cameras']:
          cams_id = json_conf['cameras'][cam]['cams_id']
          default_hist[cams_id] = make_default_cal(json_conf, cams_id)
@@ -324,8 +346,33 @@ def cal_manager(json_conf):
          #try:
          #except:
          #   print("no data for", cams_id)
-      save_json_file("/mnt/ams2/cal/" + amsid + "_cal_range.json", rdf)
-      print("SAVED: /mnt/ams2/cal/" + amsid + "_cal_range.json", rdf)
+      save_json_file("/mnt/ams2/cal/" + station_id + "_cal_range.json", rdf)
+      print("SAVED: /mnt/ams2/cal/" + station_id + "_cal_range.json", rdf)
+      # copy to cloud too!
+      cmd = "cp /mnt/ams2/cal/" + station_id + "_cal_range.json /mnt/archive.allsky.tv/" + station_id + "/CAL/"
+      print(cmd)
+      os.system(cmd)
+
+def sync_cloud_cal_files(json_conf):
+   cloud_dir = "/mnt/archive.allsky.tv/" + json_conf['site']['ams_id'] + "/CAL/" 
+   if os.path.exists(cloud_dir) is False:
+      os.makedirs(cloud_dir)
+
+   cmd = "rsync -auv --exclude '*integrity*' --exclude '*ALL_STARS*' --exclude '*ALL_GOOD_STARS*' --exclude '*MERGED*' /mnt/ams2/cal/*.json " + cloud_dir 
+   print(cmd)
+   os.system(cmd)
+
+   cmd = "rsync -auv /mnt/ams2/cal/*.html " + cloud_dir 
+   print(cmd)
+   os.system(cmd)
+
+   cmd = "rsync -auv --exclude '*star_db*' /mnt/ams2/cal/*.info " + cloud_dir 
+   print(cmd)
+   os.system(cmd)
+
+   cmd = "rsync -auv /mnt/ams2/cal/plots " + cloud_dir 
+   print(cmd)
+   os.system(cmd)
 
 
 def update_defaults(json_conf):
@@ -458,7 +505,6 @@ def gen_cal_hist(json_conf):
             continue
          elif cfe(cfs[0]) == 0:
             continue
-         print(cfs[0])
          try:
             cp = load_json_file(cfs[0])
          except:
@@ -470,7 +516,9 @@ def gen_cal_hist(json_conf):
             continue
          if "total_res_px" not in cp:
             continue
-         print(cfs[0])
+         desc = cf.split("/")[-1]
+         desc = desc.split("-")[-1]
+         print("\r", "loading cal hist file:" + desc, end="")
          all_files[cams_id]['cal_files'].append(cf)
          all_files[cams_id]['dates'].append(f_date_str)
          all_files[cams_id]['azs'].append(cp['center_az'])
