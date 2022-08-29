@@ -16,7 +16,7 @@ fp = open("pip.conf")
 PYTHON_EXE = sys.executable 
 for line in fp:
    line = line.replace("\n", "")
-   if "3.6" in PYTHON_EXE and "pyfits" in line:
+   if "3.6" in PYTHON_EXE and "fitsio" in line:
       continue
    if line in installed:
       print("OK : ", line)
