@@ -922,6 +922,7 @@ def update_cal_index(json_conf):
 
    for cnum in json_conf['cameras']:
       cam = json_conf['cameras'][cnum]['cams_id']
+      print("Doing:", cam)
       cal_index(cam, json_conf, None)
    os.system("cd /home/ams/amscams/pythonv2/; ./autoCal.py cal_index")
 
@@ -963,15 +964,15 @@ def cal_status(json_conf):
          cal_file, center_az, center_el, position_angle, pixscale, user_stars, cat_stars, total_res_px = data
          #print(file, total_res_px)
          if total_res_px < 5:
-            good_files.append(file)
+            good_files.append(cal_file)
             good_azs.append(center_az)
             good_els.append(center_el)
             good_pos.append(position_angle)
             good_pix.append(float(pixscale))
          if 5 < total_res_px < 10:
-            bad_files.append(file)
+            bad_files.append(cal_file)
          if total_res_px > 10:
-            very_bad_files.append(file)
+            very_bad_files.append(cal_file)
       all_data[cam] = {}
       all_data[cam]['mcp_res'] = mcp_res
       all_data[cam]['total_files'] = len(good_files) + len(bad_files) + len(very_bad_files)
@@ -983,9 +984,11 @@ def cal_status(json_conf):
       all_data[cam]['good_els'] = good_els
       all_data[cam]['good_pos'] = good_pos
       all_data[cam]['good_pix'] = good_pix
-        
+       
+   from prettytable import PrettyTable as pt
+   tb = pt()
+   tb.field_names = ["Camera", "Good", "Bad", "Very Bad", "MCP Files", "MCP Stars", "MCP Res"]
    for cam in all_data:
-      print("")
       good_files = all_data[cam]['good_files']
       bad_files = all_data[cam]['bad_files']
       very_bad_files = all_data[cam]['very_bad_files']
@@ -1000,7 +1003,9 @@ def cal_status(json_conf):
          #print(cam, "Med AZ,EL,PS,PX:", str(np.median(good_azs))[0:5], str(np.median(good_els))[0:5], str(np.median(good_pos))[0:5], str(np.median(good_pix))[0:5])
       print(cam, "Cal Files", len(good_files), "good", len(bad_files), "bad", len(very_bad_files), "very bad")
       print(cam, "MCP Files,Stars,Res::", total_files, total_stars, mcp_res)
+      tb.add_row([cam, str(len(good_files)), str(len(bad_files)), str(len(very_bad_files)), str(total_files), str(total_stars), str(mcp_res)])
 
+   print(tb)
 #   out = """
 #      build wiz commands
 #         - do we have enough cal files for the cam, if not try to-resolve old file or blind solve meteors
@@ -1009,7 +1014,7 @@ def cal_status(json_conf):
 #         - is the lens model's fun_fwd < .1, if not refit things and then rebuild it. Do this at least 3-5 times until the fun_fwd is < .1 or .05 at best. 
 #         - when total stars in the lens model exceed 500 and fun_fwd <= .05 the model is as good as it can be and we can stop trying to rebuild it. 
 #   """
- 
+   exit() 
    wiz_cmds = [] 
    for cam in all_data:
       good_files = all_data[cam]['good_files']
@@ -6377,6 +6382,9 @@ def cal_index(cam, json_conf, r_station_id = None):
 
    ci_data = []
    for df in cal_files:
+      xx = df[0].split("/")[-1]
+      desc = xx.split("-")[0]
+      print("\r", "indexing: " + desc, end = "")
       if len(df) == 2:
          file, res = df
       else:
@@ -8463,7 +8471,7 @@ def pair_stars(cal_params, cal_params_file, json_conf, cal_img=None, show = 0):
                dd = "too far"
             #plt.plot(xs, ys)
             #plt.show()
-            print("TOO FAR!")
+            print(dd, match_dist)
          else:
             my_close_stars.append((name,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist,bp))
             total_match_dist = total_match_dist + match_dist
