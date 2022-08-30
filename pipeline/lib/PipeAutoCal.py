@@ -953,7 +953,7 @@ def cal_status(json_conf):
          #cp['y_poly'] = mcp['y_poly']
          #cp['x_poly_fwd'] = mcp['x_poly_fwd']
          #cp['y_poly_fwd'] = mcp['y_poly_fwd']
-         mcp_res = (mcp['x_fun_fwd'] + mcp['y_fun_fwd']) / 2
+         mcp_res = (mcp['x_fun'] + mcp['y_fun']) / 2
       else:
          mcp_res = 999
 
@@ -9819,7 +9819,7 @@ def reduce_fit(this_poly,field, cal_params, cal_params_file, fit_img, json_conf,
       cv2.waitKey(1)
 
    if tries % 100 == 0:
-      print("Avg Residual Error:", tries, field, avg_res )
+      print("\r", "Avg Residual Error:", tries, field, avg_res, end="")
  
    return(avg_res)
 
