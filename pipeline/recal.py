@@ -3394,7 +3394,10 @@ def apply_calib (cal_file, calfiles_data, json_conf, mcp, last_cal_params=None, 
       if res_px > 5:
          default_cp = get_default_cal_for_file(cam_id, cal_file, None, con, cur, json_conf)
          cal_params = default_cp
-         cal_params= update_center_radec(cal_file,cal_params,json_conf)
+         if cal_params is None:
+            print("NO CAL PARAMS!?", cam_id, cal_file)
+            cal_params= update_center_radec(cal_file,cal_params,json_conf )
+            return()
 
       cal_image_file = cal_file.replace("-calparams.json", ".png")
       oimg = cv2.imread(cal_dir + cal_image_file)
