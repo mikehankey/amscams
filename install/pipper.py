@@ -17,6 +17,7 @@ PYTHON_EXE = sys.executable
 for line in fp:
    line = line.replace("\n", "")
    if "3.6" in PYTHON_EXE and ("fitsio" in line or "pyfits" in line or "uwsgi" not in line):
+      print("SKIP:", line)
       continue
    if line in installed:
       print("OK : ", line)
