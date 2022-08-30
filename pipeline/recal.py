@@ -1091,7 +1091,7 @@ def cal_status_report(cam_id, con, cur, json_conf):
    print(tb)
    print(tb2)
 
-   batch_apply(cam_id, con,cur, json_conf, 30)
+   batch_apply(cam_id, con,cur, json_conf, 30, True)
 
 def import_cal_file(cal_fn, cal_dir, mcp):
 
