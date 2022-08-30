@@ -322,7 +322,8 @@ class SyncAWS():
          jdata['all_vals'] = []
          jdata['total_records'] = 0
       if jdata is not None:
-         save_json_file("/mnt/ams2/meteors/" + day + "/" + self.station_id + "_" + day + "_AWS_METEORS.info", jdata['all_vals'], True)
+         if "all_vals" in jdata:
+            save_json_file("/mnt/ams2/meteors/" + day + "/" + self.station_id + "_" + day + "_AWS_METEORS.info", jdata['all_vals'], True)
          if "all_vals" in jdata:
             data = jdata['all_vals']
          else:
