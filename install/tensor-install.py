@@ -52,8 +52,12 @@ else:
 if os.path.exists("tensorflow-2.4.4-cp36-cp36m-linux_x86_64.whl") is False:
    cmd = "wget https://archive.allsky.tv/AMS9/tensorflow-2.4.4-cp36-cp36m-linux_x86_64.whl"
    os.system(cmd)
+
+try:
    cmd = "sudo python3.6 -m pip install /home/ams/amscams/install/tensorflow-2.4.4-cp36-cp36m-linux_x86_64.whl"
    os.system(cmd)
+except:
+   print("FAILED TO INSTALL tensorflow!")
    
    
 if False:
