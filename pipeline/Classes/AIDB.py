@@ -378,7 +378,10 @@ class AllSkyDB():
                      print("ROI BAD:", roi_file)
                      os.system("rm " + roi_file)
                   if True:
-                     resp = self.ASAI.meteor_yn(root_fn, None,roi_img, roi)
+                     try:
+                        resp = self.ASAI.meteor_yn(root_fn, None,roi_img, roi)
+                     except:
+                        resp = None
                      if resp is not None:
                         print("AI RESP:", resp)
                         self.insert_ml_sample(resp)
