@@ -1,0 +1,317 @@
+{
+"job_types" : ["system", "recording", "stacking", "detection", "calibration", "indexing", "network", "qa"],
+"intervals" : ["always", "minute", "hour", "day", "month", "year"],
+"job_list" :  [
+      {
+         "name": "hour_stacks_today",
+         "desc": "Make the hour stacks for today.",
+         "home_dir": "amscams/pipeline/",
+         "exe": "./Process.py hs {today}",
+         "job_type": "stacking",
+         "interval": "hour",
+         "frequency": 3,
+         "priortiy": 1,
+         "notes": "# make all hourly stacks for today"
+      },
+      {
+         "name": "hour_stacks_yesterday",
+         "desc": "Make the hour stacks for yesterday.",
+         "home_dir": "amscams/pipeline/",
+         "exe": "./Process.py hs {yesterday}",
+         "job_type": "stacking",
+         "interval": "hour",
+         "frequency": 3,
+         "priortiy": 1,
+         "notes": "# make all hourly stacks for yesterday"
+      },
+      {
+         "name": "night_stacks_today",
+         "desc": "Make the all night stacks html for today.",
+         "home_dir": "amscams/pipeline/",
+         "exe": "./Process.py hsh {today}",
+         "job_type": "stacking",
+         "interval": "hour",
+         "frequency": 6,
+         "priortiy": 1,
+         "notes": "# make all night stacks for today"
+      },
+      {
+         "name": "night_stacks_yesterday",
+         "desc": "Make the all night stacks for today.",
+         "home_dir": "amscams/pipeline/",
+         "exe": "./Process.py hsh {yesterday}",
+         "job_type": "stacking",
+         "interval": "hour",
+         "frequency": 8,
+         "priortiy": 1,
+         "notes": "# make all night and hourly stacks for today"
+      },
+      {
+         "name": "monitor",
+         "desc": "Check the system monitor.",
+         "home_dir": "amscams/pipeline/",
+         "exe": "./monitor.py ",
+         "job_type": "stacking",
+         "interval": "hour",
+         "frequency": 1,
+         "priortiy": 1,
+         "notes": "check that things are ok with the system"
+      },
+      {
+         "name": "restart_scan_stack",
+         "desc": "Restart the scan-stack process in the event it is hung up (this happens sometimes).",
+         "home_dir": "amscams/pipeline/",
+         "exe": "TBD",
+         "job_type": "system",
+         "interval": "hour",
+         "frequency": 1,
+         "priortiy": 1,
+         "notes": ""
+      },
+      {
+         "name": "clean_disk",
+         "desc": "Cleanup space on the disk / delete old files",
+         "home_dir": "amscams/pythonv2/",
+         "exe": "./doDay.py cd",
+         "job_type": "system",
+         "interval": "hour",
+         "frequency": 1,
+         "priortiy": 1,
+         "notes": "ADD THE SD DIR! 5 day check"
+      },
+      {
+         "name": "rm_corrupt",
+         "desc": "Cleanup space on the disk / delete old files",
+         "home_dir": "amscams/pipeline/",
+         "exe": "./Process.py rm_corrupt",
+         "job_type": "system",
+         "interval": "hour",
+         "frequency": 8,
+         "priortiy": 1,
+         "notes": ""
+      },
+      {
+         "name": "dyna_day",
+         "desc": "Do Dyna Day",
+         "home_dir": "amscams/pipeline/",
+         "exe": "DynaDB.py ddd",
+         "job_type": "network",
+         "interval": "hour",
+         "frequency": 6,
+         "priortiy": 1,
+         "notes": ""
+      },
+      {
+         "name": "check_sync_cal_ai_db",
+         "desc": "sync calibration datasets with cloud",
+         "home_dir": "amscams/pipeline/",
+         "exe": "pending",
+         "job_type": "network",
+         "interval": "hour",
+         "frequency": 24,
+         "priortiy": 1,
+         "notes": ""
+      },
+      {
+         "name": "log",
+         "desc": "run jobs heart beat.",
+         "home_dir": "amscams/pipeline/",
+         "exe": "./log.py {msg}",
+         "job_type": "system",
+         "interval": "hour",
+         "frequency": 4,
+         "priortiy": 1,
+         "notes": ""
+      },
+      {
+         "name": "bv",
+         "desc": "detect motion objects from scan stack vals (batch vals)",
+         "home_dir": "amscams/pythonv2/",
+         "exe": "./flex-detect.py bv {today}",
+         "job_type": "detection",
+         "interval": "hour",
+         "frequency": 4,
+         "priortiy": 1,
+         "notes": ""
+      },      
+      {
+         "name": "vms",
+         "desc": "verify new meteor detects",
+         "home_dir": "amscams/pythonv2/",
+         "exe": "./flex-detect.py vms {today}",
+         "interval": "hour",
+         "frequency": 4,
+         "priortiy": 1,
+         "notes": ""
+      },      
+      {
+         "name": "meteor index",
+         "desc": "re-index all meteor files.",
+         "home_dir": "amscams/pythonv2/",
+         "exe": "./autoCal.py meteor_index ",
+         "job_type": "indexing",
+         "interval": "hour",
+         "frequency": 3,
+         "priortiy": 1,
+         "notes": "# make all hourly stacks for yesterday"
+      },
+      {
+         "name": "cal index",
+         "desc": "re-index all cal files.",
+         "home_dir": "amscams/pythonv2/",
+         "exe": "./autoCal.py cal_index ",
+         "job_type": "indexing",
+         "interval": "hour",
+         "frequency": 3,
+         "priortiy": 1,
+         "notes": "# make all hourly stacks for yesterday"
+      },
+      {
+         "name": "update default calibration",
+         "desc": "update cal defaults.",
+         "home_dir": "amscams/pipeline/",
+         "exe": "./Process.py cal_defaults",
+         "job_type": "calibration",
+         "interval": "hour",
+         "frequency": 12,
+         "priortiy": 1,
+         "notes": "# make all hourly stacks for yesterday"
+      },
+      {
+         "name": "cal all",
+         "desc": "update cal .",
+         "home_dir": "amscams/pipeline/",
+         "exe": "./Process.py ca",
+         "job_type": "calibration",
+         "interval": "hour",
+         "frequency": 24,
+         "priortiy": 1,
+         "notes": "# make all hourly stacks for yesterday"
+      },
+      {
+         "name": "bmt",
+         "desc": "batch meteor thumbs.",
+         "home_dir": "amscams/pythonv2/",
+         "exe": "./batchJobs.py bmt ",
+         "job_type": "detections",
+         "interval": "hour",
+         "frequency": 1,
+         "priortiy": 1,
+         "notes": "# make thumbs for new meteors. Not sure if this is still needed?"
+      },
+      {
+         "name": "spa",
+         "desc": "sync Prev All.",
+         "home_dir": "amscams/pipeline/",
+         "exe": "./Process.py sync_prev_all",
+         "job_type": "network",
+         "interval": "hour",
+         "frequency": 1,
+         "priortiy": 8,
+         "notes": ""
+      },
+      {
+         "name": "efd",
+         "desc": "events for day",
+         "home_dir": "amscams/pipeline/",
+         "exe": "./Process.py efd",
+         "job_type": "network",
+         "interval": "hour",
+         "frequency": 1,
+         "priortiy": 8,
+         "notes": ""
+      },
+      {
+         "name": "sid",
+         "desc": "sync index day",
+         "home_dir": "amscams/pipeline/",
+         "exe": "./Process.py sid {today}",
+         "job_type": "network",
+         "interval": "hour",
+         "frequency": 1,
+         "priortiy": 8,
+         "notes": ""
+      },
+      {
+         "name": "sid",
+         "desc": "sync index day",
+         "home_dir": "amscams/pipeline/",
+         "exe": "./Process.py sid {yesterday}",
+         "job_type": "network",
+         "interval": "hour",
+         "frequency": 1,
+         "priortiy": 8,
+         "notes": ""
+      },
+      {
+         "name": "fi",
+         "desc": "stack file index",
+         "home_dir": "amscams/pythonv2/",
+         "exe": "./batchJobs.py fi ",
+         "interval": "hour",
+         "frequency": 1,
+         "priortiy": 8,
+         "notes": ""
+      },      
+      {
+         "name": "mmi_day",
+         "desc": "make meteor index for today",
+         "home_dir": "amscams/pipeline/",
+         "exe": "./Process.py mmi_day {today} ",
+         "job_type": "indexing",
+         "interval": "hour",
+         "frequency": 6,
+         "priortiy": 1
+      },
+      {
+         "name": "mmi_day",
+         "desc": "make meteor index for yest ",
+         "home_dir": "amscams/pipeline/",
+         "exe": "./Process.py mmi_day {yesterday} ",
+         "job_type": "indexing",
+         "interval": "hour",
+         "frequency": 6,
+         "priortiy": 1
+      },
+      {
+         "name": "move_day_files",
+         "desc": "move day files",
+         "home_dir": "amscams/pythonv2/",
+         "exe": "./move_day_files.py ",
+         "job_type": "detection",
+         "interval": "hour",
+         "frequency": 1,
+         "priortiy": 1
+      },
+      {
+         "name": "proc_index",
+         "desc": "make proc index",
+         "home_dir": "amscams/pythonv2/",
+         "exe": "./ASDaemon.py proc_index",
+         "job_type": "indexing",
+         "interval": "hour",
+         "frequency": 1,
+         "priortiy": 1
+      },
+      {
+         "name": "file index",
+         "desc": "batch fi",
+         "home_dir": "amscams/pythonv2/",
+         "exe": "./batchJobs.py fi",
+         "job_type": "indexing",
+         "interval": "hour",
+         "frequency": 1,
+         "priortiy": 1
+      },
+      {
+         "name": "git pull",
+         "desc": "sync latest code",
+         "home_dir": "amscams/pipeline/",
+         "exe": "git pull ",
+         "job_type": "indexing",
+         "interval": "hour",
+         "frequency": 1,
+         "priortiy": 1
+      }
+   ]
+}
