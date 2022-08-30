@@ -160,7 +160,7 @@ def network_setup(amsid, data=None):
 
 def config_vars(amsid, data=None):
 
-  
+   print("YO") 
    jc = load_json_file("../conf/as6.json")
 
    fields =['operator_name', 'obs_name', 'operator_email', 'operator_state', 'operator_city', 'operator_country', 'operator_device', 'device_lat', 'device_lng', 'device_alt']
@@ -175,6 +175,11 @@ def config_vars(amsid, data=None):
             print("MISSING FIELD:", field )
             jc['site'][field] = ""
       save_json_file("../conf/as6.json", jc)
+
+
+  
+      print("./pushAWS.py push_station_data > /mnt/ams2/trash/aws.d 2>&1 &")
+      os.system("./pushAWS.py push_station_data > /mnt/ams2/trash/aws.d 2>&1 &")
 
    print(str(jc['site']))
 
