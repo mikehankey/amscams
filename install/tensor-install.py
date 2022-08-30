@@ -135,6 +135,11 @@ if os.path.exists("/home/ams/amscams/pipeline/models/ASAI-v2.7z") is False:
    cmd = """sudo su -c "cp /mnt/archive.allsky.tv/AMS1/ML/ASAI-v2.7z /home/ams/amscams/pipeline/models/" -s /bin/sh ams"""
    print(cmd)
    os.system(cmd)
+
+   cmd = """sudo su -c "cp /mnt/archive.allsky.tv/AMS1/ML/star_yn.h5 /home/ams/amscams/pipeline/models/" -s /bin/sh ams"""
+   print(cmd)
+   os.system(cmd)
+
    cmd = "cd /home/ams/amscams/pipeline/models; 7z e /home/ams/amscams/pipeline/models/ASAI-v2.7z"
    print(cmd)
    os.system(cmd)
