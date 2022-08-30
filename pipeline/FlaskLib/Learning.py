@@ -503,7 +503,7 @@ def make_buttons(roi_file=None, selected=None):
 
 def recrop_roi_confirm(station_id, root_file, roi):
    db_file = station_id + "_ALLSKY.db"
-   con = sqlite3.connect(db_file, connect_args={'timeout': 15})
+   con = sqlite3.connect(db_file)
    cur = con.cursor()
 
    # save the status in the DB
@@ -695,7 +695,7 @@ def learning_meteors_tag(label, req, station_id = None):
       station_id = json_conf['site']['ams_id']
 
    db_file = station_id + "_ALLSKY.db"
-   con = sqlite3.connect(db_file, connect_args={'timeout': 15})
+   con = sqlite3.connect(db_file)
    cur = con.cursor()
 
    sql = """ UPDATE meteors
@@ -1278,7 +1278,7 @@ def learning_weather(station_id, in_data):
    wheader = weather_header(station_id, in_data)
 
    db_file = station_id + "_WEATHER.db"
-   con = sqlite3.connect(db_file, connect_args={'timeout': 15})
+   con = sqlite3.connect(db_file)
    cur = con.cursor()
 
    out = header 
@@ -1382,7 +1382,7 @@ def sample_counts(sample_type, station_id, con, cur):
 
 def learning_db_dataset(ams_id, in_data):
    db_file = ams_id + "_ALLSKY.db"
-   con = sqlite3.connect(db_file, connect_args={'timeout': 15})
+   con = sqlite3.connect(db_file)
    cur = con.cursor()
    station_id = ams_id
 
@@ -1619,7 +1619,7 @@ def learning_samples_db_dataset(ams_id, in_data):
    print(str(in_data) + "<BR>")
    station_id = ams_id
    db_file = ams_id + "_ALLSKY.db"
-   con = sqlite3.connect(db_file, connect_args={'timeout': 15})
+   con = sqlite3.connect(db_file)
    if in_data['ipp'] is None:
       in_data['ipp'] = 100
 
@@ -2022,7 +2022,7 @@ def confirm_non_meteor_label(station_id, root_fn,label):
 
 def confirm_non_meteor(station_id, root_fn):
    db_file = station_id + "_ALLSKY.db"
-   con = sqlite3.connect(db_file, connect_args={'timeout': 15})
+   con = sqlite3.connect(db_file)
    cur = con.cursor()
    date = root_fn[0:10]
    mfile = "/mnt/ams2/meteors/" + date + "/" + root_fn + ".json"
@@ -2080,7 +2080,7 @@ def confirm_non_meteor(station_id, root_fn):
 
 def confirm_meteor(station_id, root_fn):
    db_file = station_id + "_ALLSKY.db"
-   con = sqlite3.connect(db_file, connect_args={'timeout': 15})
+   con = sqlite3.connect(db_file)
    cur = con.cursor()
    date = root_fn[0:10]
    hd_root = None
@@ -3030,7 +3030,7 @@ def ai_scan_review(station_id, options, json_conf):
 
 def ai_rejects(station_id, options, json_conf):
    db_file = station_id + "_ALLSKY.db"
-   con = sqlite3.connect(db_file, connect_args={'timeout': 15})
+   con = sqlite3.connect(db_file)
    cur = con.cursor()
 
    if "in_date" not in options:
@@ -3370,7 +3370,7 @@ def ai_non_meteors(station_id, options, json_conf):
 
 def ai_stats(station_id, json_conf):
 
-   con = sqlite3.connect(station_id + "_ALLSKY.db", connect_args={'timeout': 15})
+   con = sqlite3.connect(station_id + "_ALLSKY.db")
    con.row_factory = sqlite3.Row
    cur = con.cursor()
 
@@ -3417,7 +3417,7 @@ def ai_review(station_id, options,json_conf):
      </div>
    """
    template = make_default_template(station_id, "meteors_main.html", json_conf)
-   con = sqlite3.connect(station_id + "_ALLSKY.db", connect_args={'timeout': 15})
+   con = sqlite3.connect(station_id + "_ALLSKY.db")
    con.row_factory = sqlite3.Row
    cur = con.cursor()
 
