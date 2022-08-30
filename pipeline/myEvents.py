@@ -151,7 +151,10 @@ def do_station_events(EV,date):
    station_events_local_file = mdir + EV.date + "_STATION_EVENTS.info" 
    if os.path.exists(station_events_local_file) is False:
       os.system("cp " + station_events_cloud_file + " " + station_events_local_file)
-   station_events_data = load_json_file(station_events_local_file)
+   if os.path.exists(station_events_local_file):
+      station_events_data = load_json_file(station_events_local_file)
+   else:
+      station_events_data = {}
    if EV.station_id in station_events_data:
       for obs_id in station_events_data[EV.station_id]:
          print(EV.station_id, obs_id, station_events_data[EV.station_id][obs_id])
