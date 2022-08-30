@@ -17,6 +17,49 @@ import sys
 # EVENTS ARE ONLY ALLOWED TO BE PUSH WITH ADMIN KEYS
 API_URL = "https://kyvegys798.execute-api.us-east-1.amazonaws.com/api/allskyapi"
 
+def push_station_data(api_key, station_id, json_conf):
+   data = {}
+   data['station_id'] = json_conf['site']['ams_id']
+   data['api_key'] = json_conf['api_key']
+   data['lat'] = json_conf['site']['device_lat']
+   data['lon'] = json_conf['site']['device_lng']
+   data['alt'] = json_conf['site']['device_alt']
+
+   # cameras
+   data['cameras'] = {}
+   for cam_num in json_conf['cameras']:
+      dd = int(cam_num.replace("cam", ""))
+      data['cameras'][dd] = json_conf['cameras'][cam_num]['cams_id']
+   if "operator_city" in json_conf['site']:
+      data['city'] = json_conf['site']['operator_city']
+   if "operator_country" in json_conf['site']:
+      data['country'] = json_conf['site']['operator_country']
+   if "operator_email" in json_conf['site']:
+      data['email'] = json_conf['site']['operator_email']
+   if "mobile" in json_conf['site']:
+      data['mobile'] = json_conf['site']['mobile']
+   if "obs_name" in json_conf['site']:
+      data['obs_name'] = json_conf['site']['obs_name']
+   if "operator_name" in json_conf['site']:
+      data['operator_name'] = json_conf['site']['operator_name']
+   if "photo_credit" in json_conf['site']:
+      data['photo_credit'] = json_conf['site']['photo_credit']
+   if "operator_state" in json_conf['site']:
+      data['op_state'] = json_conf['site']['operator_state']
+   if "allsky_username" in json_conf['site']:
+      data['username'] = json_conf['site']['allsky_username']
+
+   data['cmd'] = "update_station_data"
+   data = json.loads(json.dumps(data), parse_float=Decimal)
+   headers = {
+      'content-type': 'application/json'
+   }
+   headers = {'Content-type': 'application/json'}
+   
+   response = requests.post(API_URL, data=json.dumps(data) , headers=headers)
+   print("response:", response.content.decode())
+   print(data)
+
 def get_meteor_media_sync_status(station_id, sd_vid):
    # determine the current sync status for this meteor.
    # does the meteor exist in dynamo with the right version?
@@ -349,6 +392,9 @@ if __name__ == "__main__":
    station_id = json_conf['site']['ams_id']
 
    cmd = sys.argv[1]
-   meteor_file = sys.argv[2]
+   if len(sys.argv) > 2:
+      meteor_file = sys.argv[2]
    if cmd == "push_obs":
       push_obs(api_key, station_id, meteor_file)
+   if cmd == "push_station_data":
+      push_station_data(api_key, station_id, json_conf)
