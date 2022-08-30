@@ -9,14 +9,14 @@ fp = open("apt.conf")
 for line in fp:
    cmd = APT_EXE + line
    print(cmd)
-   os.system(cmd)
+   #os.system(cmd)
 
 
 fp = open("pip.conf")
 PYTHON_EXE = sys.executable 
 for line in fp:
    line = line.replace("\n", "")
-   if "3.6" in PYTHON_EXE and "fitsio" in line:
+   if "3.6" in PYTHON_EXE and "fitsio" in line and "pyfits" not in line:
       continue
    if line in installed:
       print("OK : ", line)
