@@ -2009,7 +2009,7 @@ def confirm_non_meteor_label(station_id, root_fn,label):
    if ".mp4" not in root_fn:
       root_fn += ".mp4"
    db_file = station_id + "_ALLSKY.db"
-   con = sqlite3.connect(db_file, connect_args={'timeout': 15})
+   con = sqlite3.connect(db_file )
    cur = con.cursor()
    date = root_fn[0:10]
    sql = "UPDATE non_meteors_confirmed set human_label = ? WHERE sd_vid = ?"
