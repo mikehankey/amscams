@@ -361,6 +361,8 @@ class SyncAWS():
       for row in data:
          if row == "message":
             continue
+         if "vid" not in row:
+            continue
 
          print("NEED TO DELETE", row)
          need += 1
