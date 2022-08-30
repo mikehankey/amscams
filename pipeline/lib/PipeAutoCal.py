@@ -5669,6 +5669,10 @@ def solve_field(image_file, image_stars=[], json_conf={}):
    print("SOLVED FILE:", solved_file)
    if len(image_stars) < 10:
       oimg = cv2.imread(image_file)
+      if oimg.shape[0] != 1080:
+         oimg = cv2.resize(oimg, (1920,1080))
+         cv2.imwrite(image_file, oimg)
+
       image_stars = get_image_stars(image_file, oimg, json_conf,0)
       plate_image, star_points = make_plate_image(oimg.copy(), image_stars)
       plate_file = image_file.replace(".png", ".jpg")
@@ -6401,6 +6405,7 @@ def cal_index(cam, json_conf, r_station_id = None):
    cfn, cdir = fn_dir(cloud_save_file)
    done = {}
    print("save:", save_file)
+   save_td = None
    if os.path.exists(save_file) is True:
       sz, save_td = get_file_info(save_file) 
 
@@ -6421,6 +6426,7 @@ def cal_index(cam, json_conf, r_station_id = None):
       print("REMOTE CAL FILES:")
 
    ci_data = []
+   changed = 0
    for df in cal_files:
       xx = df[0].split("/")[-1]
       desc = xx.split("-")[0]
@@ -6429,13 +6435,14 @@ def cal_index(cam, json_conf, r_station_id = None):
       else:
          file = df
       sz, td = get_file_info(file)
-      if td - save_td > 0:
-         # file has not changed since last index use the old value to save time!
-         if file in save_index:
-            saved_row = save_index[file]
-            print("SKIP/DONE", file, td, save_td, td - save_td)
-            ci_data.append(saved_row)
-            continue
+      if save_td is not None:
+         if td - save_td > 0:
+            # file has not changed since last index use the old value to save time!
+            if file in save_index:
+               saved_row = save_index[file]
+               print("SKIP/DONE", file, td, save_td, td - save_td)
+               ci_data.append(saved_row)
+               continue
 
       #exit()
 
@@ -6460,16 +6467,23 @@ def cal_index(cam, json_conf, r_station_id = None):
             os.system(cmd)
          if "total_res_px" in cp:
             ci_data.append((file, cp['center_az'], cp['center_el'], cp['position_angle'], cp['pixscale'], len(cp['user_stars']), len(cp['cat_image_stars']), cp['total_res_px']))
+            changed += 1
             desc += " " + str(cp['total_res_px'])
             print("\r", "indexing: " + desc, end = "")
          else:
             print("\r", "err no res: " + desc, end = "")
-   exit()
+
+   print("CI DATA:", len(ci_data))
+   print("DID NOT SAVE!")
+   print("ROWS CHANGED:", changed)
+
    temp = sorted(ci_data, key=lambda x: x[0], reverse=True)
-   save_json_file(save_file, temp)
-   print(save_file)
-   if cfe(cdir, 1) == 1:
-      save_json_file(cloud_save_file, temp)
+   if changed > 0:
+      save_json_file(save_file, temp)
+      print("saving ", save_file)
+      if cfe(cdir, 1) == 1:
+         print("saving ", cloud_save_file)
+         save_json_file(cloud_save_file, temp)
    return(temp)
 
 #def get_med_cal_range(json_conf, cam, calibs=None, start_date= None, end_date=None):
@@ -6788,6 +6802,9 @@ def cal_all(json_conf):
 
       if cfe(file) == 1:
          img = cv2.imread(file)
+         if img.shape[0] != 1080:
+            img = cv2.resize(img, (1920,1080))
+            cv2.imwrite(file, img)
          avg_px = np.mean(img)
          print("PIC AVG:", avg_px)
          if avg_px < 100:
@@ -8517,6 +8534,8 @@ def pair_stars(cal_params, cal_params_file, json_conf, cal_img=None, show = 0):
          #cv2.circle(temp_img,(int(new_cat_x),int(new_cat_y)), 7, (255,128,128), 1)
          #cv2.circle(temp_img,(int(new_x),int(new_y)), 7, (128,128,255), 1)
          used_key = str(ra) + "-" + str(dec)
+
+         print("MATCH DIST:", name,  match_dist)
          if match_dist >= 30 or used_key in used:
             bad = 1
             if used_key in used:
@@ -8572,7 +8591,8 @@ def pair_stars(cal_params, cal_params_file, json_conf, cal_img=None, show = 0):
          good_stars.append(star)
 
    my_close_stars = good_stars
-
+   print("RES:", total_res_px)
+   print("MY CLOSE STARS:", my_close_stars )
    cal_params['cat_image_stars'] = my_close_stars
    if total_matches > 0:
       cal_params['total_res_deg'] = total_match_dist / total_matches
@@ -8950,7 +8970,8 @@ def find_close_stars(star_point, catalog_stars,dt=100, show_img = None):
       if center_dist < 800 and cat_star_dist > 20:
          valid = False
 
-      if cat_x - dt < scx < cat_x + dt and cat_y -dt < scy < cat_y + dt and valid is True:
+      #print("FIND CLOSE STARS:", cat_x, cat_y, scx, scy, cat_star_dist)
+      if cat_star_dist < 20:
          matches.append((dcname,mag,ra,dec,cat_x,cat_y,scx,scy,cat_star_dist))
       else:
          nomatches.append((dcname,mag,ra,dec,cat_x,cat_y,scx,scy,cat_star_dist))
@@ -8985,7 +9006,7 @@ def find_close_stars(star_point, catalog_stars,dt=100, show_img = None):
    #if show_img is not None:
    #   cv2.imshow('pepe', show_img)
    #   cv2.waitKey(30)
-   if len(matches) == 1:
+   if len(matches) >= 1:
       return(matches[0:1])
    else:
       return([])

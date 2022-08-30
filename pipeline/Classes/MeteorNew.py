@@ -221,7 +221,7 @@ class Meteor():
             cloud_hd_file = cloud_dir + self.station_id + "_" + mfile.replace(".mp4", "-1080p.mp4")
             local_hd_file = mscan_dir + self.station_id + "_" + mfile.replace(".mp4", "-1080p.mp4")
             if cfe(local_hd_file) == 0:
-               cmd = """/usr/bin/ffmpeg -i """ + hd_file + """  -c:v libx264 -pix_fmt yuv420p -crf 30 -vf "scale=1920:1080" -codec:a copy """ + local_hd_file 
+               cmd = """/usr/bin/ffmpeg -i -y """ + hd_file + """  -c:v libx264 -pix_fmt yuv420p -crf 30 -vf "scale=1920:1080" -codec:a copy """ + local_hd_file 
                print(cmd)
                os.system(cmd)
 
@@ -239,7 +239,7 @@ class Meteor():
             print("GOOD:", orig_vid)
          else:
             ifile = mdir + mfile
-            cmd = """/usr/bin/ffmpeg -i """ + ifile + """  -c:v libx264 -pix_fmt yuv420p -crf 30 -vf "scale=640:360" -codec:a copy """ + orig_vid 
+            cmd = """/usr/bin/ffmpeg -i -y """ + ifile + """  -c:v libx264 -pix_fmt yuv420p -crf 30 -vf "scale=640:360" -codec:a copy """ + orig_vid 
             print(cmd)
             os.system(cmd)
 
@@ -247,7 +247,7 @@ class Meteor():
             print("GOOD:", prev_vid )
          else:
             ifile = mdir + mfile
-            cmd = """/usr/bin/ffmpeg -i """ + ifile + """  -c:v libx264 -pix_fmt yuv420p -crf 30 -vf "scale=320:180" -codec:a copy """ + prev_vid 
+            cmd = """/usr/bin/ffmpeg -i -y """ + ifile + """  -c:v libx264 -pix_fmt yuv420p -crf 30 -vf "scale=320:180" -codec:a copy """ + prev_vid 
             print(cmd)
             os.system(cmd)
        

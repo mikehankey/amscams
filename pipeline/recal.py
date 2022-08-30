@@ -978,6 +978,9 @@ def cal_status_report(cam_id, con, cur, json_conf):
 
    if mcp is None:
       print("Can't update until the MCP is made!", cam_id)
+      cmd = "python3 Process.py deep_init " + cam_id
+      print(cmd)
+      os.system(cmd)
       return()
 
    # get all paired stars by file 
@@ -3617,7 +3620,7 @@ def recenter_fov(cal_fn, cal_params, cal_img, stars, json_conf, extra_text=""):
    this_poly = np.zeros(shape=(4,), dtype=np.float64)
    if cal_params['total_res_px'] < 1:
       this_poly = [.00001,.00001,.00001,.00001]
-   elif 1 <= cal_params['total_res_px'] < 2:
+   elif 1 <= cal_params['total_res_px'] < 10:
       this_poly = [.0001,.0001,.0001,.0001]
    else:
       this_poly = [.001,.001,.001,.001]

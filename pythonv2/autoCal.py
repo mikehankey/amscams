@@ -597,6 +597,9 @@ def meteor_index(json_conf, day = None, extra_cmd = ""):
       for meteor in meteor_index[day]:
          sort_meteor_index[day][meteor] = meteor_index[day][meteor]
 
+   print("SAVING /mnt/ams2/meteors/meteor_index.json")
+   save_json_file("/mnt/ams2/meteors/meteor_index.json", sort_meteor_index, False)
+   exit()
    if day is None:
       save_json_file("/mnt/ams2/cal/hd_images/meteor_index.json", sort_meteor_index, False)
 
@@ -609,6 +612,7 @@ def meteor_index(json_conf, day = None, extra_cmd = ""):
 
       cmd = "cp /mnt/ams2/cal/hd_images/meteor_index.json /mnt/ams2/meteor_archive/" + station_id + "/DETECTS/"
       os.system(cmd)
+      exit()
       cmd = "gzip -f /mnt/ams2/cal/hd_images/meteor_index.json"
       os.system(cmd)
       cmd = "cp /mnt/ams2/cal/hd_images/meteor_index.json.gz /mnt/ams2/meteor_archive/" + station_id + "/DETECTS/"
@@ -693,7 +697,11 @@ def get_az_el_from_arc(arc_file):
    els = []
    ints = []
    if arc_data != 0:
-      event_start_time = arc_data['frames'][0]['dt']
+
+      try: 
+         event_start_time = arc_data['frames'][0]['dt']
+      except:
+         return(azs,els,ints,event_start_time)
       for frame in arc_data['frames']:
          az = frame['az']
          el = frame['el']
@@ -844,7 +852,7 @@ def cal_index(json_conf):
       cc += 1
 
    for cp_file in sorted(cal_files, reverse=True):
-      print("CHECKING : ", cp_file)
+      print("\r", "CHECKING : " + cp_file, end="")
       cj = load_json_file(cp_file)
       (f_datetime, cam_id, f_date_str,fy,fm,fd, fh, fmin, fs) = convert_filename_to_date_cam(cp_file)
       if cj == 0:
