@@ -1,4 +1,6 @@
 import pickle
+import json
+import redis
 import cv2
 import os
 import numpy as np
@@ -20,7 +22,9 @@ class AllSkyAI():
 
    def __init__(self):
       print("\rAllSkyAI is self aware.", end="")
+      self.AI_VERSION = 3.2
       self.meteor_dir = "/mnt/ams2/meteors/"
+      self.r = redis.Redis("localhost", port=6379, decode_responses=True)
       self.meteor_scan_dir = "/mnt/ams2/METEOR_SCAN/"
       self.ai_data_dir = "/mnt/ams2/datasets/"
       self.img_repo_dir = self.ai_data_dir + "meteor_yn/"
@@ -270,13 +274,14 @@ class AllSkyAI():
       # roi - [x1,y1,x2,y2] 
       # returns :
       # ai_resp object containing meteor_yn,fireball_yn,mc_class,mc_conf
+
       print("AI METEOR YN:", root_fn, roi_file)
       if oimg is not None:
          print("OIMG:", oimg.shape)
       if roi is not None:
          print("ROI IMG", roi)
       ai_resp = {}
-      ai_resp['ai_version'] = 3.1
+      ai_resp['ai_version'] = self.AI_VERSION
       ai_resp['root_fn'] = root_fn
       ai_resp['meteor_yn'] = 0
       ai_resp['meteor_prev_yn'] = 0
@@ -291,6 +296,25 @@ class AllSkyAI():
       else:
          x1,y1,x2,y2 = 0,0,0,0
       ai_resp['roi'] = [x1,y1,x2,y2] 
+
+      red_key = "AI:" + root_fn + "_" + str(x1) + "_" + str(y1) + "_" + str(x2) + "_" + str(y2)
+      if "temp" not in red_key:
+         rcache = self.r.get(red_key)
+      else:
+         rcache = None
+
+      if rcache is not None:
+         meteor_yn, fireball_yn, mc_class, mc_class_conf = json.loads(rcache)
+
+         ai_resp['meteor_yn'] = meteor_yn 
+         ai_resp['fireball_yn'] = fireball_yn
+         ai_resp['mc_class'] = mc_class
+         ai_resp['mc_class_conf'] = mc_class_conf 
+         print("RED KEY", red_key)
+         print("RC:", rcache)
+         print("AI", ai_resp)
+         return(ai_resp)
+
       
       if roi_file is not None:
          oimg = cv2.imread(roi_file)
@@ -348,6 +372,10 @@ class AllSkyAI():
          ai_resp['mc_class'] = predicted_class 
          ai_resp['mc_class_conf'] = confidence
       print("METEOR YN RESP:", ai_resp)
+      payload = [ai_resp['meteor_yn'], ai_resp['fireball_yn'], ai_resp['mc_class'], ai_resp['mc_class_conf']]
+
+      self.r.set(red_key, json.dumps(payload))
+      print("SET REDIS!", red_key, payload)
       return(ai_resp)
 
    def meteor_yn_last(self,root_fn,roi_file=None,oimg=None,roi=None):
@@ -1016,6 +1044,8 @@ class AllSkyAI():
       return(nx1,ny1,nx2,ny2)
 
    def load_all_models(self):
+
+
       self.models = {}
       self.multi_class_labels = {}
       if os.path.exists("models/") is False:

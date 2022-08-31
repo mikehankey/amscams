@@ -58,6 +58,21 @@ class AllSkyDB():
       self.check_update_status()
       #self.reconcile_db()
 
+   def non_meteor_inventory(self):
+      """
+      Places non-meteors could be
+      ---------------------------
+         AUTO_NON_METEORS - Moved automatically by program need review before committed
+         FILESYSTEM : /mnt/ams2/non_meteors 
+         DATABASE: ???
+
+         CONFIRMED_NON_METEORS -- Human confirmed as a non-meteor. May be labeled or not. 
+         /mnt/ams2/non_meteors_confirmed
+
+         could be in before purge runs!?
+         /mnt/ams2/meteors
+
+      """
 
    def check_make_tables(self):
       print("CHECK MAKE TABLES")
@@ -329,7 +344,6 @@ class AllSkyDB():
                      print("\rSkip at latest AI already.",end="")
                      continue
             roi = row[3]
-            print("ROI:", roi)
             if roi != "":
                try:
                   roi = json.loads(roi)
@@ -378,10 +392,15 @@ class AllSkyDB():
                      print("ROI BAD:", roi_file)
                      os.system("rm " + roi_file)
                   if True:
+
+                     resp = self.ASAI.meteor_yn(root_fn, None,roi_img, roi)
+
                      try:
                         resp = self.ASAI.meteor_yn(root_fn, None,roi_img, roi)
                      except:
                         resp = None
+
+
                      if resp is not None:
                         print("AI RESP:", resp)
                         self.insert_ml_sample(resp)
@@ -823,7 +842,7 @@ class AllSkyDB():
          if ai_resp is not None and ai_resp != "":
             ai_resp = json.loads(ai_resp)
             if "ai_version" in ai_resp:
-               if ai_resp['ai_version'] >= 3.1 and os.path.exists(roi_file) is True:
+               if ai_resp['ai_version'] >= self.AI_VERSION and os.path.exists(roi_file) is True:
                   print("\rSKIP DONE!",end="")
                   continue
          
@@ -1568,7 +1587,7 @@ class AllSkyDB():
          print(sd_vid, meteor_yn_conf, fireball_yn_conf, mc_class, mc_class_conf)
          if ai_resp is not None:
             ai_resp = json.loads(ai_resp)
-            if int(ai_resp['ai_version']) <= 3.1:
+            if int(ai_resp['ai_version']) <= self.AI_VERSION:
                print("SKIP DONE")
                continue
          mdir = "/mnt/ams2/meteors/" + sd_vid[0:10] + "/" 
@@ -1796,6 +1815,7 @@ class AllSkyDB():
          if mjr is not None:
             if "meteor_frame_data" in mjr:
                x1,y1,x2,y2 = mfd_roi(mfd)
+               mj['roi'] = [x1,y1,x2,y2]
                mj['hd_roi'] = [x1,y1,x2,y2]
                hd_roi = [x1,y1,x2,y2]
 

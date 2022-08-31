@@ -126,6 +126,8 @@ else:
 
    print("Reconcile DB", date)
    AIDB.reconcile_db(date)
+
+   exit()
    print("My Events", date)
    os.system("/usr/bin/python3.6 myEvents.py " + date)
    print("Auto reject day")
@@ -138,4 +140,4 @@ else:
    #print("Reducer", date)
    #AIDB.reducer(date)
    #AIDB.check_update_status(date)
-   os.system("/usr/bin/python3.6 AIDay.py all 50" )
+   #os.system("/usr/bin/python3.6 AIDay.py all 50" )
