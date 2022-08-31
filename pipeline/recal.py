@@ -1165,6 +1165,8 @@ def import_cal_file(cal_fn, cal_dir, mcp):
          if mcp is None:
             star_obj["lens_model_version"] = 1
          else:
+            if "cal_version" not in mcp:
+               mcp['cal_version'] = 1
             star_obj["lens_model_version"] = mcp['cal_version']
          if new_cat_x == 0 or zp_cat_x == 0:
             continue
