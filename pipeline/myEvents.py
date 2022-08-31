@@ -19,7 +19,13 @@ def load_stations():
    url = "https://archive.allsky.tv/EVENTS/ALL_STATIONS.json"
    response = requests.get(url)
    content = response.content.decode()
-   stations =json.loads(content)
+
+   try:
+      stations =json.loads(content)
+   except:
+      print("Failed to load stations file. exit.")
+      exit()
+
    for station in stations:
       t_station_id = station['station_id']
       try:
@@ -204,7 +210,6 @@ def do_day(EV, date):
                obs_file = EV.min_cnt[mm]['obs'][i]
                sync_meteor(EV, obs_file, cloud_files,mdir, cloud_dir)
                update_mj(obs_file, EV.min_cnt[mm])
-
 
 EV = Events()
 #AIDB = AllSkyDB()
