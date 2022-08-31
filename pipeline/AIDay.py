@@ -138,3 +138,4 @@ else:
    #print("Reducer", date)
    #AIDB.reducer(date)
    #AIDB.check_update_status(date)
+   os.system("/usr/bin/python3.6 AIDay.py all 50" )
