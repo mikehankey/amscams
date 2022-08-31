@@ -20,12 +20,53 @@ For now, slowly we will take over these batch jobs :
       3) Sync AWS Deletes past days
       4) Past weather
 
+      {
+         "name": "hour_stacks_yesterday",
+         "desc": "Make the hour stacks for yesterday.",
+         "home_dir": "amscams/pipeline/",
+         "exe": "./Process.py hs {yesterday}",
+         "job_type": "stacking",
+         "interval": "hour",
+         "frequency": 3,
+         "priortiy": 1,
+         "notes": "# make all hourly stacks for yesterday"
+      },
 
 """
 
-def ai_task_manager(AIA):
-    run_job_data = load_json_file("run_jobs.json")
+def job_report(run_job_data):
+    job_intervals = run_job_data['job_intervals']
+    job_types = run_job_data['job_types']
     job_list = run_job_data['job_list']
+
+    report = {}
+    for jt in job_types:
+       report[jt] = {}
+    for row in job_list:
+       if "job_type" in row:
+          jt = row['job_type']
+       else:
+          jt = None
+       jname = row['name']
+       if jt is not None:
+          report[jt] = {}
+          report[jt][jname] = {}
+       print(jt, jname)
+    #print(report)   
+
+def ai_task_manager(AIA):
+    # this program will loop over all of the "jobs" and things that must be managed
+    # it will track the last time something was done and the status of completion 
+    # and report back as needed or do things as needed 
+
+    run_job_data = load_json_file("run_jobs.json")
+    job_intervals = run_job_data['job_intervals']
+    job_types = run_job_data['job_types']
+    job_list = run_job_data['job_list']
+
+    job_report(run_job_data)
+    exit()
+
     log = open("/home/ams/ai_agent.log", "w") 
     last_run = {}
     while True:
@@ -86,7 +127,7 @@ def run(AIA):
 if __name__ == "__main__":
     running = check_running("AIAgent.py")
     AIA = AIAgent()
-    AIA.index_archive_tasks()
+    #AIA.index_archive_tasks()
 
     if running < 2:
        print("PROCESSES RUNNING:", running)

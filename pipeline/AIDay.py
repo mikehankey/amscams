@@ -70,6 +70,12 @@ if date == "yest":
 meteor_dir = "/mnt/ams2/meteors/"
 if date == "ALL" or date == "all":
    mdirs = os.listdir(meteor_dir)
+   if len(sys.argv) >= 3:
+      end = int(sys.argv[2])
+   else:
+      end = len(mdirs)
+   print("END", end)
+   done = 0
    for md in sorted(mdirs,reverse=True):
 
       if os.path.isdir(meteor_dir + md) is True:
@@ -84,9 +90,13 @@ if date == "ALL" or date == "all":
          ai_file = meteor_dir + md + "/" + AIDB.station_id + "_" + md + "_AI_DATA.info"
          print("AIFILE:", ai_file)
          #exit()
-         if os.path.exists(ai_file) and date != today and date != yest and "2022_05" not in date:
+         if os.path.exists(ai_file) and date != today and date != yest :
             print("AI DONE FOR THIS DAY ALREADY!")
-            #continue 
+            continue 
+         done += 1
+         if done > end:
+            continue
+         
          date = md
          AIDB.load_all_meteors(date)
          AIDB.verify_media_day(date)
@@ -128,3 +138,4 @@ else:
    #print("Reducer", date)
    #AIDB.reducer(date)
    #AIDB.check_update_status(date)
+   os.system("/usr/bin/python3.6 AIDay.py all 50" )
