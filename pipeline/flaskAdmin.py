@@ -998,7 +998,8 @@ def main_api(cmd):
        
       sd_video_file = request.args.get('video_file')
       fn, dir = fn_dir(sd_video_file)
-      cmd = "./Process.py refit_meteor " + fn
+      #cmd = "./Process.py refit_meteor " + fn
+      cmd = "./recal.py refit_meteor " + fn
       os.system(cmd)
       resp = {}
       resp['status'] = 1
