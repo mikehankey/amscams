@@ -1502,6 +1502,8 @@ class AllSkyDB():
          print(aid)     
          if aid[0] == "REJECT":
             rejects.append(aid)
+      if os.path.exists(self.mdir + date) is False:
+         os.makedirs(self.mdir + date)
       save_json_file(self.mdir + date + "/" + self.station_id + "_" + date + "_AI_DATA.info", ai_info)
       print("saved:", self.mdir + date + "/" + self.station_id + "_" + date + "_AI_DATA.info")
       print("REJECTS:", len(rejects))
