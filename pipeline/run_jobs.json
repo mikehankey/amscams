@@ -1,7 +1,22 @@
 {
-"job_types" : ["system", "recording", "stacking", "detection", "calibration", "indexing", "network", "qa"],
-"intervals" : ["always", "minute", "hour", "day", "month", "year"],
+"job_types" : ["system", "recording", "stacking", "detection", "calibration", "indexing", "network", "qa", "events", "archiving"],
+"job_intervals" : ["always", "minute", "hour", "day", "month", "year"],
 "job_list" :  [
+
+      {
+         "name": "scan_stack",
+         "desc": "contiunuously scan and stack new video",
+         "home_dir": "amscams/pythonv2/",
+         "exe": "./scan_stack.py bs ",
+         "job_type": "stacking",
+         "interval": "minute",
+         "frequency": 5,
+         "priortiy": 1,
+         "background": 1,
+         "notes": "# should always be running, if it is not already"
+      },
+
+
       {
          "name": "hour_stacks_today",
          "desc": "Make the hour stacks for today.",
@@ -47,6 +62,20 @@
          "notes": "# make all night and hourly stacks for today"
       },
       {
+         "name": "watch-dig",
+         "desc": "checks video and restarts ffmpeg if needed",
+         "home_dir": "amscams/pipeline/",
+         "exe": "./watch-dog.py ",
+         "job_type": "stacking",
+         "interval": "hour",
+         "frequency": 1,
+         "priortiy": 1,
+         "background": 1,
+         "notes": "check that things are ok with the system"
+      },
+
+
+      {
          "name": "monitor",
          "desc": "Check the system monitor.",
          "home_dir": "amscams/pipeline/",
@@ -66,7 +95,7 @@
          "interval": "hour",
          "frequency": 1,
          "priortiy": 1,
-         "notes": ""
+         "notes": "check conditions (queued up sd files) and restart if needed."
       },
       {
          "name": "clean_disk",
