@@ -138,6 +138,72 @@ def run_df():
 
    return(df_data, mounts)
 
+def delete_more():
+
+   # routine to delete / purge / archive long term data
+
+   # remove excess trash
+   trash_dir = "/mnt/ams2/trash/"
+   trash_files = os.listdir(trash_dir)
+   for tf in trash_files:
+      if "AMS" in tf: 
+         continue
+      if os.path.isdir(trash_dir + tf) is False:
+         cmd = "rm " + trash_dir + tf
+         print(tf)
+
+   # remove old calibs 
+   cal_dir = "/mnt/ams2/meteor_archive/" + json_conf['site']['ams_id'] + "/CAL/AUTOCAL/" 
+   years = os.listdir(cal_dir)
+   for year in years:
+       ydir = cal_dir + year + "/" 
+       cmd = "du -h " + ydir 
+       os.system(cmd)
+
+       if os.path.exists(ydir + "failed") is True:
+          cmd = "rm " + ydir + "failed/*"
+          print(cmd)
+          os.system(cmd)
+
+       if os.path.exists(ydir + "temp") is True:
+          cmd = "rm " + ydir + "temp/*"
+          print(cmd)
+          os.system(cmd)
+
+       if os.path.exists(ydir + "solved") is True:
+          cmd = "rm " + ydir + "solved/*"
+          print(cmd)
+          os.system(cmd)
+
+   # remove remote sites from the meteor_archive
+   arc_dir = "/mnt/ams2/meteor_archive/" #+ json_conf['site']['ams_id'] + "/"
+   sites = os.listdir(arc_dir)
+   for ss in sites: 
+      if ss == "apps":
+         continue
+      if ss != json_conf['site']['ams_id']:
+         cmd = "rm " + arc_dir + ss
+         print(cmd)
+
+   # remove the meteor archive files -- no longer used / abandoned
+   arc_mdir = "/mnt/ams2/meteor_archive/" + json_conf['site']['ams_id'] + "/METEOR/"
+   cmd = "rm -rf " + arc_mdir
+   print(arc_mdir)
+   #os.system(arc_mdir)
+
+   # make sure cams are on default encode
+   cameras = json_conf['cameras']
+   for cam_num in cameras: 
+      cams_id = cameras[cam_num]['cams_id']
+      cam_ip = cameras[cam_num]['ip']
+      print(cam_num, cams_id)
+      cmd = "cd /home/ams/amscams/pythonv2/; ./IMX291.py encode " + cam_ip
+      print(cmd)
+      os.system(cmd)
+
+
+
+
 def check_disk():
    hd_thresh = 2.5
    sd_days = 35
@@ -810,3 +876,5 @@ if cmd == "batch":
    batch(sys.argv[2])
 if cmd == "cd":
    check_disk()
+if cmd == "purge":
+   delete_more()

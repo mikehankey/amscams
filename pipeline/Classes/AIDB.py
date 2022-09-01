@@ -1962,7 +1962,7 @@ class AllSkyDB():
             if os.path.exists(roi_file) is True:
                roi_img = cv2.imread(roi_file)
             else:
-               print("NO:", roi_file)
+               print("NO ROI FOUND:", roi_file)
                roi_img = None
 
             if roi_img is not None:
@@ -1975,6 +1975,8 @@ class AllSkyDB():
                #print(day, mfile, red_file)
                print("REMAKE ROI IMAGE!")
                roi_img = self.make_roi_from_mfd(red_file, roi_file)
+
+
             if os.path.exists(red_file) is False and roi_img is None:
                print( red_file, roi_file)
                continue

@@ -23,7 +23,7 @@ from lib.PipeVideo import scan_stack_file, make_preview_videos, load_frames_simp
 from lib.PipeDetect import detect_in_vals , obj_report, trim_events, detect_all, get_trim_num, trim_min_file, detect_meteor_in_clip, analyze_object, refine_meteor, refine_all_meteors, fireball, verify_meteor, re_detect, reduce_meteor, reject_meteors, confirm_meteors, make_roi_video_mfd, make_meteor_index_day, make_meteor_index_all,apply_frame_deletes, reduce_in_crop, batch_reduce, check_for_trailing_frames, remake_mfd, remake_mfd_all, reject_hotspots, reject_mask_detects, perfect_points, perfect_points_all, reject_planes, perfect_points
 
 from lib.PipeSync import sync_day , sync_index_day, sync_meteor_preview, sync_meteor_preview_all, do_meteor_day_prep, prep_month
-from lib.PipeAutoCal import autocal , make_lens_model, solve_field, cal_all, draw_star_image, freecal_copy, apply_calib_old, index_failed, deep_calib_init, deep_calib, deep_cal_report, blind_solve_meteors, guess_cal, flatten_image, project_many, project_snaps, review_cals, star_db_mag, cal_report, review_all_cals, reverse_map, cal_index, sync_back_admin_cals, min_fov, fn_dir, refit_fov, refit_best, refit_all, super_cal, check_all, custom_fit_meteor, refit_meteor, refit_meteors, reapply_meteor_cal, cal_manager, heal_cal, heal_all, resolve_failed, cal_status, get_default_calib_hist, get_calib_from_range, run_cal_defaults, project_image, move_extra_cals, sync_cal_files, cal_sum_html, load_caldb, sync_cloud_cal_files
+from lib.PipeAutoCal import autocal , make_lens_model, solve_field, cal_all, draw_star_image, freecal_copy, apply_calib_old, index_failed, deep_calib_init, deep_calib, deep_cal_report, blind_solve_meteors, guess_cal, flatten_image, project_many, project_snaps, review_cals, star_db_mag, cal_report, review_all_cals, reverse_map, cal_index, sync_back_admin_cals, min_fov, fn_dir, refit_fov, refit_best, refit_all, super_cal, check_all, custom_fit_meteor, refit_meteor, refit_meteors, reapply_meteor_cal, cal_manager, heal_cal, heal_all, resolve_failed, cal_status, get_default_calib_hist, get_calib_from_range, run_cal_defaults, project_image, move_extra_cals, sync_cal_files, cal_sum_html, load_caldb, sync_cloud_cal_files, update_cal_index
 from lib.PipeReport import autocal_report, detect_report 
 from lib.PipeLIVE import meteor_min_files, broadcast_live_meteors, broadcast_minutes, meteors_last_night, mln_final, pip_video, mln_sync, super_stacks, meteor_index, fix_missing_images, fflist, resize_video, minify_file, make_preview_meteor, make_preview_meteors, sync_preview_meteors
 from lib.PipeTimeLapse import make_tl_for_cam, video_from_images, six_cam_video, timelapse_all, tn_tl6, sync_tl_vids, multi_cam_tl, audit_min, purge_tl , plot_min_int, aurora_fast
@@ -613,7 +613,7 @@ if __name__ == "__main__":
       heal_all(sys.argv[2], json_conf)
    if cmd == "resolve_failed" :
       resolve_failed(sys.argv[2], sys.argv[3], sys.argv[4], json_conf)
-   if cmd == "cal_wiz" :
+   if cmd == "cal_wiz" or cmd == 'cal_status':
       cal_status(json_conf)
    if cmd == "station_list" :
       station_list()
@@ -676,9 +676,13 @@ if __name__ == "__main__":
       td = 9999
       if os.path.exists("/mnt/ams2/cal/cal_day_hist.json"):
          sz, td = get_file_info("/mnt/ams2/cal/cal_day_hist.json")
-      if td > 1400:
+      if td > 33:
+      #if td > 1400:
+         update_cal_index(json_conf)
+
          run_cal_defaults(json_conf)
          sync_cloud_cal_files(json_conf)
+         cal_status(json_conf)
       else:
          print("Skipping files are only ", td , "minutes old")
 

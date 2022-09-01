@@ -2023,7 +2023,11 @@ def confirm_non_meteor_label(station_id, root_fn,label):
       mj = load_json_file(nmfile) 
       sd_vid = mj['sd_video_file'].split("/")[-1]
       if "hd_trim" in mj:
-         hd_vid = mj['hd_trim'].split("/")[-1]
+         if mj['hd_trim'] != 0 and mj['hd_trim'] != None:
+            hd_vid = mj['hd_trim'].split("/")[-1]
+         else:
+            hd_vid = ""
+
       else:
          hd_vid = ""
       if "hd_roi" in mj:
@@ -2040,8 +2044,8 @@ def confirm_non_meteor_label(station_id, root_fn,label):
          mc_class_conf = -1
 
       # move files to the confirmed dir
-      if os.path.exists(nmdir) is False:
-         os.makedirs(nmdir)
+      if os.path.exists(nmcdir) is False:
+         os.makedirs(nmcdir)
 
       cmd = "mv " + nmdir + sd_vid.replace(".mp4", "*") + " " + nmcdir
       print(cmd)
@@ -3423,11 +3427,16 @@ def find_ico(this_label, hc=0):
 def ai_non_meteors(station_id, options, json_conf):
    data_file = "/mnt/ams2/non_meteors/nm.info"
    ai_data_file = "/mnt/ams2/non_meteors/NM_AI_DATA.info"
+
+   summary = {}
    if os.path.exists(ai_data_file) is True:
       ai_data = load_json_file(ai_data_file)
+   else:
+      ai_data = {}
+
    cmd = "cd /mnt/ams2/non_meteors/; find . |grep json |grep -v redu | grep -v star | sort -r > " + data_file
    os.system(cmd)
-   header_msg = str(len(ai_data)) + " detections have been auto rejected and should be reviewed and confirmed."
+   header_msg = "These detections have been auto rejected and should be reviewed and confirmed as non meteors or restored as real meteors."
    #If you see good meteors here use the button to restore them. Once there are NO good meteors on the page, press the button 'Confirm All As Non-Meteors'."
    out = ui_javascript()
    out += """
@@ -3459,25 +3468,45 @@ def ai_non_meteors(station_id, options, json_conf):
 
    if os.path.exists(data_file) :
       fp = open(data_file, "r")
+      data = []
+
       for line in fp:
          if "non_meteors_confirm.json" in line :
             continue
+         line = line.replace("\n", "")
+         line = line.replace("./", "")
+         data.append(line)
+         root_fn = line.split("/")[-1].replace(".json", "")
+
+         check_file = "/mnt/ams2/non_meteors/" + root_fn[0:10] + "/" + root_fn + ".json"
+         if os.path.exists(check_file) is False:
+            print("CHECK FILE NOT THERE:", check_file)
+            continue
+         else:
+            print("CHECK FILE GOOD:", check_file)
+
+         if station_id + "_" + root_fn in ai_data:
+            resp = ai_data[station_id + "_" + root_fn]
+            tlabel = resp['mc_class']
+            if tlabel not in summary:
+               summary[tlabel] = 1
+            else:
+               summary[tlabel] += 1
+
+      for line in data:
          if start <= lc <= end:
-            line = line.replace("\n", "")
-            line = line.replace("./", "")
             vurl = "/non_meteors/" + line.replace(".json", "-stacked-tn.jpg")
             root_fn = line.split("/")[-1].replace(".json", "")
             #if "AMS" not in root_fn:
             #   root_fn = station_id + "_" + root_fn
             if station_id + "_" + root_fn in ai_data:
-               print("ROOT FN FOUND IN AI DATA:", station_id + "_" + root_fn )
                resp = ai_data[station_id + "_" + root_fn]
                ai_info = "{}% Meteor {}% Fireball {} {}%".format(round(resp['meteor_yn'],1), round(resp['fireball_yn'],1), resp['mc_class'], round(resp['mc_class_conf'],2))
                color = get_color(100-float(resp['meteor_yn']))
                #ai_info = ai_resp
             else:
                color = "#FCFCFC"
-               print("ROOT FN NOT FOUND IN AI DATA:", station_id + "_" + root_fn , len(ai_data.keys()))
+               #print("ROOT FN NOT FOUND IN AI DATA:", station_id + "_" + root_fn , len(ai_data.keys()))
                ai_info = ""
             if label is not None: 
                if label not in resp['mc_class']:
@@ -3495,9 +3524,37 @@ def ai_non_meteors(station_id, options, json_conf):
          if lc > end:
             break
          lc += 1
-         
-   else:
-      out = data_file + " not found"
+      
+   if True:
+      out += "</div>"
+
+      out += "<h2>Auto Rejected Meteors Needing Review</h2>"
+      out += str(len(data)) + " non-meteor auto rejects remain in the non-meteor queue.<br>"
+      for label in summary:
+         out += "<a href=/AI/NON_METEORS/{}/?label={}&start=0&end=25>{}</a> ({}) ".format(station_id, label, label, str(summary[label]))
+
+      lb_types, icons = mc_types()
+      out += """
+         <h2 style='width: 100%'>Mark ALL on this page as</h2>
+         <form method=post action=/batch_confirm/{}>
+         <input type="hidden" name=data_str value="{}">
+      """
+
+      for i in range(0, len(lb_types)):
+         out += """
+            <button type="button" class="btn btn-dark" onclick="javascript:batch_all('{}')">
+            <i class='fas fa-{}'> </i>
+             Mark all on page as: {}
+            </button>
+
+            <br>
+         """.format(lb_types[i], icons[i], lb_types[i])
+
+      out += """
+         <input type="button" name=button value="Load New Items" onclick="javascript:location.reload()">
+         </form>
+      """
+
 
    template = make_default_template(station_id, "meteors_main.html", json_conf)
    template = template.replace("{MAIN_TABLE}", out)
@@ -3733,12 +3790,11 @@ def meteor_cell_html(root_fn, thumb_url, ai_info, ico=None, ctype="meteor", colo
 
 
 def get_color(n):
-   print("COLOR FOR N:", n)
+   #print("COLOR FOR N:", n)
    R = int((255 * n) / 100)
    G = int((255 * (100 - n)) / 100 )
    B = int(0)
    rgb = (R,G,B)
-   print("RGB:", rgb)
    return '#%02x%02x%02x' % rgb
 
 def year_mon_nav(con,cur):
