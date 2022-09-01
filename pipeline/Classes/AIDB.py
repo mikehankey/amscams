@@ -1988,12 +1988,13 @@ class AllSkyDB():
                   resp = ai_data[root_fn]
                else:
                   resp = self.ai_check(roi_file)
-               if "ai_saved" not in resp:
-                  resp['ai_saved'] = 1
-                  mj = load_json_file(nmdir + mfile)
-                  mj['ai'] = resp
-                  save_json_file(nmdir + mfile, mj)
-                  print("SAVED AI INTO JSON", mfile)
+               if resp is not None:
+                  if "ai_saved" not in resp:
+                     resp['ai_saved'] = 1
+                     mj = load_json_file(nmdir + mfile)
+                     mj['ai'] = resp
+                     save_json_file(nmdir + mfile, mj)
+                     print("SAVED AI INTO JSON", mfile)
 
                if resp is not None:
                   meteor_yes_no = max([resp['meteor_yn'], resp['fireball_yn']]) 
