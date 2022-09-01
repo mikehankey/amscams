@@ -2016,12 +2016,11 @@ class AllSkyDB():
                ai_data[root_fn] = resp
                if "meteor" in desc or (meteor_yes_no > 50 and "orion" in desc) or (meteor_yes_no > 50 and "star" in desc) :
                   self.reactivate_meteor(root_fn)
-                  input("REACTIVATED NON_METEOR AS METEOR!")
                if "meteor" in desc:
                   detect_color = [0,255,0]
                else:
                   detect_color = [0,0,255]
-               if "meteor" in desc:
+               if SHOW == 1 and "meteor" in desc:
                   cv2.putText(roi_img, desc,  (10, 20), cv2.FONT_HERSHEY_SIMPLEX, .6, detect_color, 1)
                   cv2.imshow('pepe', roi_img)
                   cv2.waitKey(30)
