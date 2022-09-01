@@ -2020,7 +2020,7 @@ class AllSkyDB():
                   detect_color = [0,255,0]
                else:
                   detect_color = [0,0,255]
-               if SHOW == 1 and "meteor" in desc:
+               if self.SHOW == 1 and "meteor" in desc:
                   cv2.putText(roi_img, desc,  (10, 20), cv2.FONT_HERSHEY_SIMPLEX, .6, detect_color, 1)
                   cv2.imshow('pepe', roi_img)
                   cv2.waitKey(30)
