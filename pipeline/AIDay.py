@@ -68,6 +68,13 @@ if date == "today":
 if date == "yest":
    date = yest 
 meteor_dir = "/mnt/ams2/meteors/"
+
+
+if date == "non_meteors":
+   print("FIX NON METEORS")
+   AIDB.fix_non_meteors()
+   exit()
+
 if date == "ALL" or date == "all":
    mdirs = os.listdir(meteor_dir)
    if len(sys.argv) >= 3:
@@ -127,7 +134,6 @@ else:
    print("Reconcile DB", date)
    AIDB.reconcile_db(date)
 
-   exit()
    print("My Events", date)
    os.system("/usr/bin/python3.6 myEvents.py " + date)
    print("Auto reject day")

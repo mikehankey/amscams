@@ -57,6 +57,7 @@ if __name__ == "__main__":
       #os.system("./Process.py purge_meteors")
       date = sys.argv[2]
       if date != "all":
+         print("DATE:", date)
          year, mon, day = date.split("_")
          #R = Reconcile(year, mon)
          os.system("./Process.py purge_meteors")

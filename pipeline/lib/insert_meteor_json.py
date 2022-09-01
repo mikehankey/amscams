@@ -1,8 +1,11 @@
+import json
 import sys
+import os
 import sqlite3
-from lib.PipeUtil import load_json_file, save_json_file, convert_filename_to_date_cam
+from lib.PipeUtil import load_json_file, save_json_file, convert_filename_to_date_cam, get_trim_num
+import datetime as dt
 
-def starttime_from_file(self, filename):
+def starttime_from_file(filename):
    print("FILE:", filename)
    (f_datetime, cam, f_date_str,fy,fmon,fd, fh, fm, fs) = convert_filename_to_date_cam(filename)
    trim_num = get_trim_num(filename)
@@ -19,7 +22,7 @@ def dynamic_insert(con, cur, table_name, in_data):
 
    values = []
    fields = []
-   sql = "INSERT INTO " + table_name + " ( "
+   sql = "INSERT OR REPLACE INTO " + table_name + " ( "
    vlist = ""
    flist = ""
    for key in in_data:
@@ -39,8 +42,15 @@ def dynamic_insert(con, cur, table_name, in_data):
    con.commit()
    return(cur.lastrowid)
 
-def insert_meteor_json(root_fn, con, cur):
-
+def insert_meteor_json(root_fn, con, cur, json_conf = None):
+   if json_conf is None:
+      json_conf = load_json_file("../conf/as6.json")
+   station_id = json_conf['site']['ams_id']
+   
+   print("ROOT FN:", root_fn)
+   if "/" in root_fn:
+      root_fn = root_fn.split("/")[-1]
+   loaded_meteors = {}
    date = root_fn[0:10]
 
    mdir = "/mnt/ams2/meteors/{}/".format(date)
@@ -56,14 +66,19 @@ def insert_meteor_json(root_fn, con, cur):
             foo = 1
       mdir = mfile[0:10]
       el = mfile.split("_")
-      mjf = meteor_dir + mdir + "/" + mfile.replace(".mp4", ".json")
-      mjrf = meteor_dir + mdir + "/" + mfile.replace(".mp4", "-reduced.json")
+      mjf = mfile.replace(".mp4", ".json")
+      mjrf = mfile.replace(".mp4", "-reduced.json")
       start_time = None
       if os.path.exists(mjf) is True:
          try:
             mj = load_json_file(mjf)
          except:
             errors[mjf] = "couldn't open json file"
+            print("NOMJ:", mjf)
+            exit()
+      else:
+         print("NO MJF:", mjf)
+         exit()
 
       mfd = ""
       if os.path.exists(mjrf) is True:
@@ -84,6 +99,7 @@ def insert_meteor_json(root_fn, con, cur):
       if start_time is None:
          start_time = starttime_from_file(mfile)
          start_time = start_time.strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]
+
       if "sd_video_file" not in mj:
          return() 
       sd_vid = mj['sd_video_file'].split("/")[-1]
@@ -164,7 +180,7 @@ def insert_meteor_json(root_fn, con, cur):
       #self.verify_media(self.station_id, mfile.replace(".mp4", ""))
 
       in_data = {}
-      in_data['station_id'] = self.station_id
+      in_data['station_id'] = station_id
       in_data['camera_id'] = camera_id
       in_data['root_fn'] = mfile.replace(".mp4", "")
       in_data['sd_vid'] = sd_vid

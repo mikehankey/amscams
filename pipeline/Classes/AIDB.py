@@ -1,4 +1,5 @@
 import sqlite3
+import os
 import time
 import requests
 from datetime import datetime
@@ -18,6 +19,8 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 class AllSkyDB():
 
    def __init__(self):
+      from lib.DEFAULTS import SHOW
+      self.SHOW = SHOW
       self.AI_VERSION = 3.2
       self.home_dir = "/home/ams/amscams/"
       self.data_root = "/mnt/ams2"
@@ -1856,3 +1859,201 @@ class AllSkyDB():
          mj['in_sql'] = 1
          save_json_file(mjf, mj)
          return(True, mjf + " loaded")
+
+
+   def ai_check(self, roi_file):
+      url = "http://localhost:5000/AI/METEOR_ROI/?file={}".format(roi_file)
+      print(url)
+      if os.path.exists(roi_file) is True:
+         print("ROI FILE EXISTS!", roi_file)
+
+         if True:
+            url = "http://localhost:5000/AI/METEOR_ROI/?file={}".format(roi_file)
+            try:
+               response = requests.get(url)
+               content = response.content.decode()
+               content = json.loads(content)
+               print(content)
+               return(content)
+            except Exception as e:
+               print("HTTP ERR:", e)
+      else:
+         print("NO ROI FILE EXISTS!", roi_file)
+
+   def reactivate_meteor(self, mjf):
+      from lib.insert_meteor_json import insert_meteor_json
+      mfn = mjf.split("/")[-1]
+      mfn = mfn.replace(self.station_id + "_", "")
+      mdir = "/mnt/ams2/meteors/" + mfn[0:10] + "/"
+      nmdir = "/mnt/ams2/non_meteors/" + mfn[0:10] + "/"
+      nmcdir = "/mnt/ams2/non_meteors_confirmed/" + mfn[0:10] + "/"
+      if os.path.exists(nmdir + mfn + ".json"):
+         hd_root_fn = None
+         try:
+            mj = load_json_file(nmdir + mfn + ".json")
+         except:
+            print("FAILED TO LOAD JSON!", nmdir + mfn + ".json")
+            return()
+         root_fn = mfn.replace(".json", "")
+         if "hd_trim" in mj:
+            if mj['hd_trim'] != 0 and mj['hd_trim'] is not None:
+               hd_root_fn = mj['hd_trim'].split("/")[-1].replace(".mp4", "")
+               print("HD:", hd_root_fn,mj['hd_trim'])
+            else:
+               print("NO HD")
+
+         else:
+            print("NO HD")
+            print("WILDS:", root_fn )
+
+         print("WILDS:", root_fn, hd_root_fn)
+         #move these from the nm dir to the meteor dir
+         cmd = "mv " + nmdir + root_fn + "* " + mdir 
+         print(cmd)
+         os.system(cmd)
+         if hd_root_fn is not None:
+            cmd = "mv " + nmdir + hd_root_fn + "* " + mdir 
+            print(cmd)
+            os.system(cmd)
+
+         if "/" in root_fn:
+            root_fn = root_fn.split("/")[-1]
+         insert_meteor_json(root_fn, self.con, self.cur )
+      else:
+         print("NO JS:", nmdir + mfn + ".json")
+
+
+
+
+   def fix_non_meteors(self):
+      # still need to ? add ai string to the json
+
+      # fix up / org non meteors
+      ai_data_file = "/mnt/ams2/non_meteors/NM_AI_DATA.info"
+      if os.path.exists(ai_data_file) is True:
+         ai_data = load_json_file(ai_data_file)
+      else:
+         ai_data = {}
+      data_file = "/mnt/ams2/non_meteors/nm.info"
+      cmd = "cd /mnt/ams2/non_meteors/; find . |grep json |grep -v redu | sort -r > " + data_file
+      print(cmd)
+      sz, td = get_file_info(data_file)
+      if td > 60 or td == 0 or os.path.exists(data_file) is False or True:
+         print("REMAKE NON METEOR INDEX:", td, data_file)
+         os.system(cmd)
+         time.sleep(1)
+      print("OPEN", data_file)
+      fp = open(data_file)
+      ai_files = {}
+      for line in fp:
+         line = line.replace("\n", "")
+         el = line.split("/")
+         if len(el) > 2:
+
+            day = el[1]
+            mfile = el[2]
+            mdir = "/mnt/ams2/meteors/" + day + "/" 
+            nmdir = "/mnt/ams2/non_meteors/" + day + "/" 
+            msdir = "/mnt/ams2/METEOR_SCAN/" + day + "/" 
+            red_file = nmdir + mfile.replace(".json", "-reduced.json")
+            roi_file = msdir + self.station_id + "_" + mfile.replace(".json", "-ROI.jpg")
+
+
+            if os.path.exists(roi_file) is True:
+               roi_img = cv2.imread(roi_file)
+            else:
+               print("NO:", roi_file)
+               roi_img = None
+
+            if roi_img is not None:
+               if roi_img.shape[0] != roi_img.shape[1]:
+                  print("ROI IMG SHAPE IS NOT EQUAL?", roi_img.shape)
+                  roi_img = None
+
+            if os.path.exists(red_file) is True and roi_img is None:
+               fo = 1
+               #print(day, mfile, red_file)
+               print("REMAKE ROI IMAGE!")
+               roi_img = self.make_roi_from_mfd(red_file, roi_file)
+            if os.path.exists(red_file) is False and roi_img is None:
+               print( red_file, roi_file)
+               continue
+
+            if roi_img is not None:
+               root_fn = roi_file.split("/")[-1].replace("-ROI.jpg", "") 
+               roi = [0,0,0,0]
+               if root_fn in ai_data:
+                  resp = ai_data[root_fn]
+               else:
+                  resp = self.ai_check(roi_file)
+               if "ai_saved" not in resp:
+                  resp['ai_saved'] = 1
+                  mj = load_json_file(nmdir + mfile)
+                  mj['ai'] = resp
+                  save_json_file(nmdir + mfile, mj)
+                  print("SAVED AI INTO JSON", mfile)
+
+               if resp is not None:
+                  meteor_yes_no = max([resp['meteor_yn'], resp['fireball_yn']]) 
+                  if resp['mc_class_conf'] > meteor_yes_no:
+                     final_class = resp['mc_class'] 
+                     final_conf = resp['mc_class_conf'] 
+                  else:
+                     final_class = "meteor"
+                     final_conf = meteor_yes_no
+                  resp['final_class'] = final_class
+                  resp['final_conf'] = final_conf
+                  print("METEOR YN  :", meteor_yes_no)
+                  print("MULTI CLASS:", resp['mc_class'], resp['mc_class_conf'])
+               else:
+                  print("AI FAILED!")
+                  input("WAIT")
+
+               desc = final_class + " " + str(final_conf)[0:4]
+               ai_data[root_fn] = resp
+               if "meteor" in desc or (meteor_yes_no > 50 and "orion" in desc) or (meteor_yes_no > 50 and "star" in desc) :
+                  self.reactivate_meteor(root_fn)
+                  input("REACTIVATED NON_METEOR AS METEOR!")
+               if "meteor" in desc:
+                  detect_color = [0,255,0]
+               else:
+                  detect_color = [0,0,255]
+               if "meteor" in desc:
+                  cv2.putText(roi_img, desc,  (10, 20), cv2.FONT_HERSHEY_SIMPLEX, .6, detect_color, 1)
+                  cv2.imshow('pepe', roi_img)
+                  cv2.waitKey(30)
+            else:
+               print("NO ROI IMG EXISTS OR IMG IS NONE", roi_file, mfile)
+               #input("WAIT")
+      save_json_file(ai_data_file, ai_data)
+
+      print("saved:", ai_data_file)
+
+   def make_roi_from_mfd(self, red_file, roi_file):
+      if self.SHOW == 1:
+         cv2.namedWindow('pepe')
+         cv2.resizeWindow("pepe", 1920, 1080)
+      rdata = load_json_file(red_file)
+      stack_file = red_file.replace("-reduced.json", "-stacked.jpg")
+      img = cv2.imread(stack_file)
+      img = cv2.resize(img, (1920,1080))
+      if "meteor_frame_data" in rdata:
+         mfd = rdata['meteor_frame_data']
+      else:
+         mfd = None
+      if mfd is not None and len(mfd) > 1:
+         x1,y1,x2,y2 = mfd_roi(mfd)
+         roi_img = img[y1:y2,x1:x2]
+         cv2.imwrite(roi_file, roi_img)
+
+      print(stack_file)
+      print(img.shape)
+      if self.SHOW == 1:
+         #cv2.rectangle(img, (x1,y1), (x2,y2), (255, 255, 255), 1)
+         #cv2.imshow('pepe', img)
+         #cv2.resizeWindow("pepe", 1920, 1080)
+         cv2.waitKey(30)
+         cv2.imshow('pepe', roi_img)
+         cv2.waitKey(30)
+      return(roi_img)
+

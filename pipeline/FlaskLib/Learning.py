@@ -2012,12 +2012,76 @@ def confirm_non_meteor_label(station_id, root_fn,label):
    con = sqlite3.connect(db_file )
    cur = con.cursor()
    date = root_fn[0:10]
-   sql = "UPDATE non_meteors_confirmed set human_label = ? WHERE sd_vid = ?"
-   task = [label, root_fn]
-   cur.execute(sql, task)
-   print("SQL:", sql,task)
-   con.commit()
-   print("ROOTFN,LABEL", root_fn, label)
+
+   # find the mj file is it in the non_meteor dir or the non_meteor_confirmed_dir?
+   nmdir = "/mnt/ams2/non_meteors/" + date + "/" 
+   nmcdir = "/mnt/ams2/non_meteors_confirmed/" + date + "/" 
+   nmfile = "/mnt/ams2/non_meteors/" + date + "/" + root_fn.replace(".mp4", ".json")
+   nmcfile = "/mnt/ams2/non_meteors_confirmed/" + date + "/" + root_fn.replace(".mp4", ".json")
+   roi = [0,0,0,0]
+   if os.path.exists(nmfile) is True:
+      mj = load_json_file(nmfile) 
+      sd_vid = mj['sd_video_file'].split("/")[-1]
+      if "hd_trim" in mj:
+         hd_vid = mj['hd_trim'].split("/")[-1]
+      else:
+         hd_vid = ""
+      if "hd_roi" in mj:
+         roi = mj['hd_roi']
+      if "ai" in mj:
+         meteor_yn = mj['ai']['meteor_yn']
+         fireball_yn = mj['ai']['fireball_yn']
+         mc_class = mj['ai']['mc_class']
+         mc_class_conf = mj['ai']['mc_class_conf']
+      else:
+         meteor_yn = -1
+         fireball_yn = -1
+         mc_class = ""
+         mc_class_conf = -1
+
+      # move files to the confirmed dir
+      if os.path.exists(nmdir) is False:
+         os.makedirs(nmdir)
+
+      cmd = "mv " + nmdir + sd_vid.replace(".mp4", "*") + " " + nmcdir
+      print(cmd)
+      os.system(cmd)
+      cmd = "mv " + nmdir + hd_vid.replace(".mp4", "*") + " " + nmcdir
+      print(cmd)
+      os.system(cmd)
+
+
+   elif os.path.exists(nmcfile) is True:
+      mj = load_json_file(nmcfile) 
+      print(mj.keys())
+      sd_vid = mj['sd_video_file'].split("/")[-1]
+      if "hd_trim" in mj:
+         hd_vid = mj['hd_trim'].split("/")[-1]
+      else:
+         hd_vid = ""
+
+   else:
+      print("NO METEOR FN?", nmfile, nmcfile)
+
+   # if the record doesn't already exist we should insert it. 
+   sql = "SELECT sd_vid from non_meteors_confirmed WHERE sd_vid like ?" 
+   cur.execute(sql, [root_fn + "%"])
+   rows = cur.fetchall()
+   if len(rows) == 0:
+
+      isql = """INSERT OR REPLACE INTO non_meteors_confirmed (sd_vid, hd_vid, roi, meteor_yn, fireball_yn, multi_class, multi_class_conf, human_confirmed, human_label, last_updated)
+                                                               VALUES (?,?,?,?,?,?,?,?,?,?)"""
+
+      ivals = [ sd_vid, hd_vid, json.dumps(roi), meteor_yn, fireball_yn, mc_class, mc_class_conf, 1, label, int(time.time()*1000)] 
+      print(isql,ivals)
+      cur.execute(isql, ivals)
+      con.commit()
+   else:
+
+      sql = "UPDATE non_meteors_confirmed set human_label = ? WHERE sd_vid = ?"
+      task = [label, root_fn]
+      cur.execute(sql, task)
+      con.commit()
    return("Human confirmed label for non meteor " + root_fn + " " + label)
 
 def confirm_non_meteor(station_id, root_fn):
@@ -2030,11 +2094,16 @@ def confirm_non_meteor(station_id, root_fn):
 
    print("MFILE:", mfile)
    if os.path.exists(mfile):
-      mj = load_json_file(mfile)
+      try:
+         mj = load_json_file(mfile)
+      except:
+         mj = {}
+         mj['sd_vid'] = root_fn + ".mp4"
       mj['hc'] = 1
       save_json_file(mfile, mj)
       sql = "UPDATE meteors set human_confirmed = '-1' WHERE root_fn = ?"
       task = [root_fn]
+      print(sql, task)
       cur.execute(sql, task)
       con.commit()
 
@@ -2042,10 +2111,12 @@ def confirm_non_meteor(station_id, root_fn):
    elif os.path.exists(nmfile):
       # in non_meteor dir?
       mj = load_json_file(nmfile)
-      print(mj.keys())
       sd_vid = mj['sd_video_file'].split("/")[-1]
       if "hd_trim" in mj:
-         hd_vid = mj['hd_trim'].split("/")[-1]
+         if mj['hd_trim'] is not None and mj['hd_trim'] != 0:
+            hd_vid = mj['hd_trim'].split("/")[-1]
+         else:
+            hd_vid = sd_vid
       else:
          hd_vid = sd_vid
 
@@ -2099,7 +2170,20 @@ def confirm_meteor(station_id, root_fn):
    if os.path.exists(nmfile):
       print("FILE FOUND IN NON METEOR DIR!", nmfile)
       # TAG AND MOVE BACK
-      mj = load_json_file(nmfile)
+      try:
+         mj = load_json_file(nmfile)
+      except:
+         # the mj is corrupted try to fix it. 
+         print("MJ BAD:", nmfile)
+         wild = nmfile.replace(".json", "*")
+         cmd = "mv " + wild + " " + mdir
+         os.system(cmd)
+         mfn = mfile.split("/")[-1]
+         cmd = "./Process.py fireball " + mfn + " &"
+         print(cmd)
+         os.system(cmd)
+
+
       mj['hc'] = 1
       if "hd_trim" in mj:
          if mj['hd_trim'] is not None and mj['hd_trim'] != "" and mj['hd_trim'] != 0:
@@ -2146,7 +2230,17 @@ def confirm_meteor(station_id, root_fn):
 
       #move!
    elif os.path.exists(mfile):
-      mj = load_json_file(mfile)
+      try:
+         mj = load_json_file(mfile)
+      except:
+         mj = {}
+         mj['sd_vid'] = mfile.replace(".json", ".mp4") 
+         mfn = mfile.split("/")[-1]
+         cmd = "./Process.py fireball " + mfn + " &"
+         print(cmd)
+         os.system(cmd)
+
+      # XXX 
       mj['hc'] = 1
       save_json_file(mfile, mj)
       sql = "UPDATE meteors set human_confirmed = '1' WHERE root_fn = ?"
@@ -3328,9 +3422,13 @@ def find_ico(this_label, hc=0):
 
 def ai_non_meteors(station_id, options, json_conf):
    data_file = "/mnt/ams2/non_meteors/nm.info"
-   cmd = "cd /mnt/ams2/non_meteors/; find . |grep json |grep -v redu | sort -r > " + data_file
+   ai_data_file = "/mnt/ams2/non_meteors/NM_AI_DATA.info"
+   if os.path.exists(ai_data_file) is True:
+      ai_data = load_json_file(ai_data_file)
+   cmd = "cd /mnt/ams2/non_meteors/; find . |grep json |grep -v redu | grep -v star | sort -r > " + data_file
    os.system(cmd)
-   header_msg = "These detections have been auto rejected! If you see good meteors here use the button to restore them. Once there are NO good meteors on the page, press the button 'Confirm All As Non-Meteors'."
+   header_msg = str(len(ai_data)) + " detections have been auto rejected and should be reviewed and confirmed."
+   #If you see good meteors here use the button to restore them. Once there are NO good meteors on the page, press the button 'Confirm All As Non-Meteors'."
    out = ui_javascript()
    out += """
       <div id='main_container' class='container-fluid h-100 mt-4 ' style="border: 1px #000000 solid">
@@ -3344,21 +3442,59 @@ def ai_non_meteors(station_id, options, json_conf):
      </div>
    """.format(header_msg)
 
+   lc = 0
+   if "start" in options:
+      start = int(options['start']) 
+   else:
+      start = 0
+   if "end" in options:
+      end = int(options['end'])
+   else:
+      end = 25
+   if "label" in options:
+      label = options['label']
+   else:
+      label = None
 
 
    if os.path.exists(data_file) :
       fp = open(data_file, "r")
       for line in fp:
-         if "non_meteors_confirm.json" in line:
+         if "non_meteors_confirm.json" in line :
             continue
-         line = line.replace("\n", "")
-         line = line.replace("./", "")
-         vurl = "/non_meteors/" + line.replace(".json", "-stacked-tn.jpg")
-         root_fn = line.split("/")[-1].replace(".json", "")
-         ai_info = ""
-         cell = meteor_cell_html(root_fn, vurl, ai_info)
-         out += cell 
-         #"<img src=" + vurl + ">" + vurl + "<br>"
+         if start <= lc <= end:
+            line = line.replace("\n", "")
+            line = line.replace("./", "")
+            vurl = "/non_meteors/" + line.replace(".json", "-stacked-tn.jpg")
+            root_fn = line.split("/")[-1].replace(".json", "")
+            #if "AMS" not in root_fn:
+            #   root_fn = station_id + "_" + root_fn
+            if station_id + "_" + root_fn in ai_data:
+               print("ROOT FN FOUND IN AI DATA:", station_id + "_" + root_fn )
+               resp = ai_data[station_id + "_" + root_fn]
+               ai_info = "{}% Meteor {}% Fireball {} {}%".format(round(resp['meteor_yn'],1), round(resp['fireball_yn'],1), resp['mc_class'], round(resp['mc_class_conf'],2))
+               color = get_color(100-float(resp['meteor_yn']))
+               #ai_info = ai_resp
+            else:
+               color = "#FCFCFC"
+               print("ROOT FN NOT FOUND IN AI DATA:", station_id + "_" + root_fn , len(ai_data.keys()))
+               ai_info = ""
+            if label is not None: 
+               if label not in resp['mc_class']:
+                  continue
+
+
+            #cell = meteor_cell_html(root_fn, vurl, ai_info)
+
+            #meteor_cell_html(root_fn, thumb_url, ai_info, ico=None, ctype="meteor", color="#ffffff",multi=0, human_confirmed=None, human_label=None):
+            cell = meteor_cell_html(root_fn, vurl, ai_info + " " + root_fn[0:10] ,None, "non_meteors_confirmed", color, 0, None, None )
+
+
+            out += cell 
+            #"<img src=" + vurl + ">" + vurl + "<br>"
+         if lc > end:
+            break
+         lc += 1
          
    else:
       out = data_file + " not found"
@@ -3617,5 +3753,7 @@ def year_mon_nav(con,cur):
    for row in rows:
       date = row[0]
       count = row[1]
-      year, month = date.split("_")
-      print(year, month, count)
+      el = date.split("_")
+      if len(el) == 2:
+         year, month = el
+         print(year, month, count)

@@ -14,6 +14,8 @@ yest = now - dt.timedelta(days=1)
 yest = yest.strftime("%Y_%m_%d")
 today = datetime.now().strftime("%Y_%m_%d")
 
+#print("USING:",  sys.executable)
+
 if len(sys.argv) < 1:
    ASN.help()
    exit()
@@ -25,6 +27,17 @@ if cmd == "refresh_day":
    ASN.day_solve(event_day,force)
    ASN.day_load_solves(event_day)
    ASN.publish_day(event_day)
+   cmd = "python3 EM.py aer " + event_day 
+   #print(cmd)
+   os.system(cmd)
+
+   cmd = "python3 DynaDB.py udc " + event_day + " events"
+   #print(cmd)
+   os.system(cmd)
+
+   ASN.rsync_data_only(event_day)
+
+
 
 if cmd == "update_meteor_days":
    ASN.update_meteor_days()
@@ -62,6 +75,7 @@ if cmd == "rsync_data":
    ASN.rsync_data_only(event_day)
 
 if cmd == "resolve_failed_day" or cmd == "rerun_failed":
+   print("RESOLVE FAILED DAY")
    ASN.help()
    ASN.set_dates(sys.argv[2])
    event_day = sys.argv[2].replace("_", "")
@@ -202,8 +216,8 @@ if cmd == "do_all":
       ss, obs_dict_old = get_file_info(obs_dict_file)
       print(ss, obs_dict_old)
 
-   # if this file is > 24 hours old re make it
-   if os.path.exists(obs_file) is False or obs_file_old > (60*24):
+   # if this file is > 12 hours old re make it
+   if os.path.exists(obs_file) is False or obs_file_old > (60*12):
       os.system("./DynaDB.py udc " + date)
 
    # if obs dict file is > 24 hours old re make it 
@@ -240,6 +254,11 @@ if cmd == "do_all":
    print("Update Meteor Days.")
    ASN.update_meteor_days()
 
+   cmd = "python3 DynaDB.py udc " + date  + " events"
+   print(cmd)
+   os.system(cmd)
+
+
    cmd = "python3 ER.py " + date
    print(cmd)
    os.system(cmd)
@@ -257,9 +276,7 @@ if cmd == "do_all":
    print(cmd)
    os.system(cmd)
 
-   cmd = "python3 DynaDB.py udc " + date  + " events"
-   print(cmd)
-   os.system(cmd)
+   ASN.rsync_data_only(date)
 
 
 
@@ -342,8 +359,7 @@ if cmd == "station_events":
    # make station/event mapping for this day
    event_day = sys.argv[2]
    ASN.station_events(event_day)
+if cmd == "alltime":
+   # make station/event mapping for this day
+   ASN.all_time_index()
 
-# to solve 1 day: 
-# do_all
-# resolve_event_day
-# review_event_day

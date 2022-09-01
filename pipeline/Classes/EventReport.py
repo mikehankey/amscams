@@ -309,7 +309,6 @@ class EventReport():
       event = self.clean_event(event)
       if event['total_stations'] < 2:
          print("THIS EVENT IS NO LONGER VALID!", event)
-         input("WAIT.")
       print(event['solution']['traj'].keys())
       traj = event['solution']['traj']
 

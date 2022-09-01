@@ -31,6 +31,7 @@ class Plotter():
       if "_" in extra_args[0] :
          print(extra_args)
          y,m,d = extra_args[0].split("_")
+         self.day = y + "_" + m + "_" + d
          self.date_desc = m + "/" + d + "/" + y
          self.DATA_DIR = "/mnt/f/"
          self.event_dir = self.DATA_DIR + "EVENTS/" + y + "/" + m + "/" + d + "/" 
@@ -132,7 +133,7 @@ class Plotter():
       ax.scatter(geo_ras, geo_decs, marker='.')
       ax.set_xticklabels(['14h','16h','18h','20h','22h','0h','2h','4h','6h','8h','10h'])
       ax.grid(True)
-      plt.savefig(self.DATA_DIR  + "EVENTS/DAYS/" + day + "_PLOTS_ALL_RADIANTS.png" )
+      plt.savefig(self.DATA_DIR  + "EVENTS/DAYS/" + self.day + "_PLOTS_ALL_RADIANTS.png" )
       fig.clear()
       #save_json_file("/mnt/ams2/EVENTS/PLOTS_ALL_RADIANTS.json", plot_data)
       #cmd = "cp /mnt/ams2/EVENTS/PLOTS_ALL_RADIANTS.json /mnt/archive.allsky.tv/EVENTS/PLOTS_ALL_RADIANTS.json"
@@ -143,6 +144,8 @@ class Plotter():
          save_json_file(save_file, rads_by_day[day])
          save_file2 = save_file.replace(".json", ".png" )
          cloud_file2 = cloud_file.replace(".json", ".png" )
+         print("cp " + save_file + " " + cloud_file)
+         print("cp " + save_file2 + " " + cloud_file2)
          os.system("cp " + save_file + " " + cloud_file)
          os.system("cp " + save_file2 + " " + cloud_file2)
 

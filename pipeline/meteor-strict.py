@@ -149,7 +149,6 @@ for met in meteors:
          cmd = "mv " + mj['hd_trim'].replace(".mp4", "*") + " " + trash_dir
          print(cmd)
          #os.system(cmd)
-         input("WAIT")
       else:
          keep += 1
       print("REJECTED SO FAR:", rejects)

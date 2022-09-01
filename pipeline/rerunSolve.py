@@ -45,16 +45,18 @@ else:
 
 days = sorted(all_days)
 
-for day in sorted(days,reverse=True)[27:360]:
+for day in sorted(days,reverse=True)[0:30]:
    #cmd = "./updateEventDay.py " + day #+ ">ev_run_log.txt 2>&1 "
    y,m,d = day.split("_")
    cloud_evf = "/mnt/archive.allsky.tv/EVENTS/" + y + "/" + m + "/" + d + "/" + day + "_OBS_GOOD.html"
    #if day not in solve_hist and os.path.exists(cloud_evf) is False:
    if True: 
       if True:
-         cmd =  "python3 AllSkyNetwork.py do_all " + day
-         #cmd =  "python3 AllSkyNetwork.py publish_day " + day
+         cmd =  "/usr/bin/python3 AllSkyNetwork.py do_all " + day
          os.system(cmd)
+
+         #cmd =  "python3 AllSkyNetwork.py refresh_day " + day
+         #os.system(cmd)
 
          #cmd =  "python3 AllSkyNetwork.py resolve_event_day " + day
          #print(cmd)

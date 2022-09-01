@@ -484,13 +484,16 @@ class EventManager():
             dur = event['duration']
          else:
             dur = 0
-          
-         rpt = "{:s} {:s} {:s} {:s} {:s} {:s} {:s} {:s}".format(status, str(event['event_id']), str(min(event['start_datetime'])), sts, fls, shower, str(lvd_status), str(dur))
+         
+         if len(event['start_datetime']) >= 1:
+            min_st = min(min(event['start_datetime']))
+         else:
+            min_st = ""
+         rpt = "{:s} {:s} {:s} {:s} {:s} {:s} {:s} {:s}".format(status, str(event['event_id']), str(min_st), sts, fls, shower, str(lvd_status), str(dur))
          #print(rpt)
          if c % 100 == 0:
             print("working", c)
-         events_summary.append( (status, event['event_id'], min(min(event['start_datetime'])), sts, fls, shower, lvd_status, cvd_status))
-         print("MIN DATE:", min(min(event['start_datetime'])))
+         events_summary.append( (status, event['event_id'], str(min_st), sts, fls, shower, lvd_status, cvd_status))
          c += 1
 
       if self.date is None:

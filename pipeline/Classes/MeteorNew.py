@@ -2441,7 +2441,6 @@ class Meteor():
          for field in work_list[key]['media']:
             if "1080" not in field: 
                print("PUSH?", field, work_list[key]['media'][field])
-         input("WAIT")
 
    def cloud_index(self,day):
       year = day[0:4]

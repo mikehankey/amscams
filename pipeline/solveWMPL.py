@@ -762,7 +762,6 @@ def solve_day(day, cores=16):
       #cores = 0
       if go == 1:
          print("Not Solved yet, try to solve", event['event_id'])
-         print(event.keys())
          if "solve_status" in event:
             print("SS", event['solve_status'])
          if cores == 0:
@@ -976,24 +975,18 @@ def solve_event(event_id, force=1, time_sync=1):
        print("Event already done")
        return()
 
-    print (local_event_dir + event_id + "-event.json") 
     inspect_file = local_event_dir +  event_id + "-INSPECT.json"
-    print("INSPECT FILE:", inspect_file)
     if False:
        if cfe(inspect_file) == 1:
           inspect_data = load_json_file(inspect_file)
        else:
-          os.system("python3.8 Inspect.py " + event_id)
+          os.system("/usr/bin/python3.8 Inspect.py " + event_id)
 
           inspect_data = load_json_file(inspect_file)
        if "ignore_obs" in inspect_data:
           ignore_obs = inspect_data['ignore_obs']
        else:
           ignore_obs = {}
-       print(inspect_file, inspect_data.keys())
-       print(inspect_data['ignore_obs'])
-    print("YO:", inspect_data['ignore_obs'])
-    input("W")
 
    # + year + "/" + mon + "/" + day + "/" 
     cloud_events_dir = "/mnt/archive.allsky.tv/EVENTS/" 
@@ -1630,9 +1623,7 @@ def make_obs_html(event_id, event, solve_dir, obs):
          #link = remote_urls[station_id] + "/meteors/" + station_id + "/" + day + "/" + file + "/"
          if station_id not in event['obs']:
              print("ERROR: STATION DATA MISSING FROM EVENT OBS!", station_id)
-             print("EVENT KEYS:", event['obs'].keys())
              continue
-         print("EVENT:", event['obs'][station_id])
          if file in event['obs'][station_id] : 
             if len(event['obs'][station_id][file]['azs']) >= 2:
                start_az =  event['obs'][station_id][file]['azs'][0]
@@ -1722,7 +1713,6 @@ def convert_dy_obs(dy_obs_data, obs):
    else:
       dy_obs_data['calib'] = {}
       calib = {}
-   print("   ADD OBS:", station, fn)
    obs[station][fn]['loc'] = dy_obs_data['loc']
    obs[station][fn]['calib'] = dy_obs_data['calib']
    obs[station][fn]['times'] = []
@@ -1813,7 +1803,6 @@ def make_event_json(event_id, solve_dir,ignore_obs):
 
    station_data = {}
    for station_id in as_obs:
-      print("STATION ID:", station_id)
       for file in as_obs[station_id]:
          obs_key = station_id + "_" + file
          if obs_key in ignore_obs:
@@ -2876,10 +2865,9 @@ def WMPL_solve(event_id, obs,time_sync=1, force=0, dynamodb=None):
        fail = {}
        fail['failed'] = 1 
        fail['timing_minimize'] = traj_solve.timing_minimization_successful
-       print("FAIL FILE:", fail_file)
+       #print("FAIL FILE:", fail_file)
        solve_status = "FAILED"
        save_json_file(fail_file, fail)
-       print(obs.keys()) 
        for station_id in obs:
           if len(obs[station_id].keys()) > 1:
              file = get_best_obs(obs[station_id])
@@ -2899,7 +2887,7 @@ def WMPL_solve(event_id, obs,time_sync=1, force=0, dynamodb=None):
 
        print("DONE SOLVE")
 
-    print("DONE SOLVE")
+    print("DONE SOLVE", solve_status)
     return(solve_status)
 
 # 1
@@ -2907,11 +2895,12 @@ def center_obs(obs_data):
    lats = []
    lons = []
    for st in obs_data:
-      for fn in obs_data[st]:
-         lat,lon,alt = obs_data[st][fn]['loc']
-         print("LAT LON:", lat,lon,alt)
-      lats.append(float(lat))
-      lons.append(float(lon))
+      if len(obs_data[st]) > 0:
+         for fn in obs_data[st]:
+            lat,lon,alt = obs_data[st][fn]['loc']
+            print("LAT LON:", lat,lon,alt)
+         lats.append(float(lat))
+         lons.append(float(lon))
   
    return(np.mean(lats),np.mean(lons))
 

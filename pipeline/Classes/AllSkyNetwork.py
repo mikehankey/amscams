@@ -1,10 +1,11 @@
 import sqlite3
+from prettytable import PrettyTable as pt
 import math
 import boto3
 from boto3.dynamodb.conditions import Key
 from RMS.Math import angularSeparation
 from lib.PipeAutoCal import XYtoRADec 
-from recal import get_catalog_stars, get_star_points, get_xy_for_ra_dec, minimize_fov
+from recal import get_catalog_stars, get_star_points, get_xy_for_ra_dec, minimize_fov, get_image_stars_with_catalog
 from lib.PipeAutoCal import update_center_radec
 from lib.Map import make_map,geo_intersec_point 
 from lib.PipeEvent import get_trim_num
@@ -83,7 +84,6 @@ class AllSkyNetwork():
       self.station_data = load_json_file("stations.json")
       self.rurls = {}
       for data in self.station_data['stations']:
-         print("ST:", data)
          station = data['name']
          url = data['url']
          operator = data['operator']
@@ -185,10 +185,26 @@ class AllSkyNetwork():
       cmd = "cp " + self.local_evdir + date + "_dbfiles.tar.7z " + self.cloud_evdir + date + "_dbfiles.tar.7z "
       os.system(cmd)
 
-      cmd = "cp " + self.local_evdir + date + "_MIN_EVENTS.json " + self.cloud_evdir + date + "_MIN_EVENTS.json"
+      #cmd = "cp " + self.local_evdir + date + "_MIN_EVENTS.json " + self.cloud_evdir + date + "_MIN_EVENTS.json"
+      #os.system(cmd)
+
+      #cmd = "cp " + self.local_evdir + date + "_plane_pairs.json " + self.cloud_evdir + date + "_PLANE_PAIRS.json"
+      #os.system(cmd)
+
+      cmd = "rsync -auv --exclude '*OBS_DICT*' --exclude '*ALL_OBS*' " + self.local_evdir + "*.json " + self.cloud_evdir 
+      print(cmd)
       os.system(cmd)
 
-      cmd = "cp " + self.local_evdir + date + "_plane_pairs.json " + self.cloud_evdir + date + "_PLANE_PAIRS.json"
+      cmd = "rsync -auv " + self.local_evdir + "*.info " + self.cloud_evdir 
+      print(cmd)
+      os.system(cmd)
+
+      cmd = "rsync -auv " + self.local_evdir + "*.kml " + self.cloud_evdir 
+      print(cmd)
+      os.system(cmd)
+
+      cmd = "rsync -auv " + self.local_evdir + "*.html " + self.cloud_evdir 
+      print(cmd)
       os.system(cmd)
 
          
@@ -227,9 +243,12 @@ class AllSkyNetwork():
       print("stations file syncd", td, "days ago")
 
       if td < 1:
-         response = requests.get(url)
-         content = json.loads(response.content.decode())
-         save_json_file(self.local_event_dir + "/ALL_STATIONS.json", content)
+         try:
+            response = requests.get(url)
+            content = json.loads(response.content.decode())
+            save_json_file(self.local_event_dir + "/ALL_STATIONS.json", content)
+         except:
+            print("FAILED " + url)
 
       self.stations = load_json_file(self.local_event_dir + "/ALL_STATIONS.json")
       self.station_dict = {}
@@ -277,7 +296,7 @@ class AllSkyNetwork():
             self.photo_credits[sid] = operator_name + " " + city + "," + country
          else:
             self.photo_credits[sid] = sid
-         print(sc, self.photo_credits[sid])
+         #print(sc, self.photo_credits[sid])
          sc += 1
 
    def day_prep(self, date):
@@ -888,7 +907,7 @@ class AllSkyNetwork():
                avg_lat = np.mean(min_events[eid]['lats'])
                avg_lon = np.mean(min_events[eid]['lons'])
                match_dist = dist_between_two_points(avg_lat, avg_lon, lat, lon)
-               print("Time diff in range. Check Distance??", time_diff, match_dist)
+               #print("Time diff in range. Check Distance??", time_diff, match_dist)
                #if the dist between avg stations and this station is < 900 km
                match_time = 1
                if match_dist < 900:
@@ -900,10 +919,10 @@ class AllSkyNetwork():
                   matches.append((eid, match_time, match_dist))
       if len(matches) > 0:
          eid = matches[0][0]
-         if len(matches) == 1:
-            print("We found a matching event. Add this obs to that event!")
-         else:
-            print("We found MORE THAN ONE matching event. Pick the best one! How???")
+         #if len(matches) == 1:
+         #   print("We found a matching event. Add this obs to that event!")
+         #else:
+         #   print("We found MORE THAN ONE matching event. Pick the best one! How???")
          min_events[eid]['stations'].append(station_id)
          min_events[eid]['lats'].append(lat)
          min_events[eid]['lons'].append(lon)
@@ -913,7 +932,7 @@ class AllSkyNetwork():
          avg_time = self.average_times(min_events[eid]['start_datetime'])
          min_events[eid]['stime'] = avg_time
       else:
-         print("we could not find a matching event. We should add a new one.")
+         #print("we could not find a matching event. We should add a new one.")
          eid = max(min_events.keys()) + 1 
          # first event
          min_events[eid] = {}
@@ -961,7 +980,7 @@ class AllSkyNetwork():
          obs_file = obs[3]
          station_id = obs[0]
          if stime is None:
-            print("NO REDUCTION!", station_id, obs[3])
+            #print("NO REDUCTION!", station_id, obs[3])
             continue
          try:
             lat = float(self.station_dict[station_id]['lat'])
@@ -978,16 +997,16 @@ class AllSkyNetwork():
          min_events = self.check_make_events(min_events, station_id, obs_file, stime)
 
 
-      print("MIN EVENTS:")
+      #print("MIN EVENTS:")
       # maybe re-enable this later, but it takes too much time now
       # should be parallel process later?
       #min_events = self.plane_test_min_events(min_events)
 
-      for me in min_events:
-         print("MIN EVENT:", me)
-         print(" Stations:", len(min_events[me]['stations']))
+      #for me in min_events:
+      #   print("MIN EVENT:", me)
+      #   print(" Stations:", len(min_events[me]['stations']))
          #print("   Planes:", len(min_events[me]['plane_pairs']))
-         print("      Obs:", len(min_events[me]['files']))
+      #   print("      Obs:", len(min_events[me]['files']))
 
       # good.append(("(GOOD)", key, obs_id_1, obs_id_2, station_dists[key]['min_dist'], start_time_1, start_time_2, time_diff))
 
@@ -1168,6 +1187,7 @@ class AllSkyNetwork():
       if os.path.exists(self.all_obs_file) is True: 
          self.all_obs = load_json_file(self.all_obs_file)
       ic = 0
+      print("Inserting all obs")
       for obs in self.all_obs:
          # dict_keys(['dur', 'station_id', 'peak_int', 'hd_video_file', 'hd_roi', 'last_update', 
          # 'roi', 'sd_video_file', 'sync_status', 'ffp', 'meteor_frame_data', 'event_start_time', 'calib', 'event_id', 'hc']) 
@@ -1192,8 +1212,8 @@ class AllSkyNetwork():
 
          ivals = [0,temp_ev_id,obs['station_id'],obs_id, json.dumps(fns), json.dumps(datetimes), json.dumps(xs), json.dumps(ys), json.dumps(azs), json.dumps(els), json.dumps(ints), 0,0]
          self.cur.execute(sql, ivals)
-         print("INSERT", sql)
-         print("VALUES", ivals)
+         #print("INSERT", sql)
+         #print("VALUES", ivals)
          ic += 1
 
       self.con.commit()
@@ -1218,11 +1238,14 @@ class AllSkyNetwork():
                    lats, lons, event_status, run_date, run_times
               FROM events
              WHERE event_id like ?
-               AND event_status != 'SOLVED'
+               AND event_status like 'FAIL%'
+               AND run_times < 4 
+          ORDER BY event_id desc
       """
       vals = [event_day + '%']
       self.cur.execute(sql, vals)
       rows = self.cur.fetchall()
+      print("ROWS:", len(rows))
       for row in rows:
          event_id = row[0]
          print("Resolving:", event_id)
@@ -1463,7 +1486,7 @@ class AllSkyNetwork():
          # if it has already solved or failed skip it
          ev_file = self.local_evdir + event_id + "/" + event_id + "_REVIEW.jpg"
          if os.path.exists(ev_file) is False:
-            cmd = "python3 AllSkyNetwork.py resolve_event " + event_id + " > /dev/null 2>&1 &" 
+            cmd = "/usr/bin/python3 AllSkyNetwork.py resolve_event " + event_id + " > /dev/null 2>&1 &" 
             print(cmd)
             os.system(cmd)
 
@@ -1700,9 +1723,9 @@ class AllSkyNetwork():
                   if os.path.exists( local_event_dir + "/" + out_file) is False:
                      cmd = "touch " + local_event_dir + "/" + out_file + ".failed"
                   #   os.system(cmd)
-               #else:
-               #   print("Already have the file?")
-
+               else:
+                  print("Already have the file?", local_event_dir + "/" + out_file)
+             
                if os.path.exists( local_event_dir + "/" + out_file) is True:
                   if out_file not in self.sd_clips:
                      self.sd_clips[out_file] = {} 
@@ -1734,7 +1757,11 @@ class AllSkyNetwork():
 
       local_event_dir = "/mnt/f/EVENTS/" + self.year + "/" + self.month + "/" + self.dom + "/" + self.event_id + "/" 
       wget_cmds = self.get_event_media(event_id)
+      print("WG", wget_cmds)
+      for cmd in wget_cmds:
+         print("CMD:", cmd)
       self.fast_cmds(wget_cmds)
+
 
       # now load frames and make stacks
       for out_file in self.sd_clips:
@@ -3095,6 +3122,7 @@ class AllSkyNetwork():
 
 
       #lat1, lon1,lat2,lon2,cl
+      #map_img = make_map(points, lines)
       try:
          map_img = make_map(points, lines)
       except:
@@ -3456,6 +3484,7 @@ class AllSkyNetwork():
       date = self.event_id_to_date(event_id)
       self.set_dates(date)
       self.load_stations_file()
+
       sql = """
             SELECT event_id, event_minute, revision, stations, obs_ids, event_start_time, event_start_times,
                    lats, lons, event_status, run_date, run_times
@@ -3483,7 +3512,8 @@ class AllSkyNetwork():
          temp_obs = {}
          
          #IGNORE:
-         ignore = ['AMS99']
+         #ignore = ['AMS99']
+         ignore = []
 
          for obs_id in obs_ids:
             ig = False
@@ -3492,32 +3522,37 @@ class AllSkyNetwork():
                   print("IGNORE:", obs_id)
                   ig = True
             if ig is True:
-               input("WAIT")
+               print("IGNORE:", ignore)
+               #input("IG IS TRUE? WAIT")
                continue
             st_id = obs_id.split("_")[0]
             vid = obs_id.replace(st_id + "_", "") + ".mp4"
             dict_key = obs_id + ".mp4"
             if st_id not in temp_obs:
                temp_obs[st_id] = {}
+
+            # here we should fetch the latest obs from AWS 
+            # to make sure we pick up any edits?
+
             if vid not in temp_obs[st_id]:
                if dict_key in self.obs_dict:
                   self.obs_dict[dict_key]['loc'] = [float(self.station_dict[st_id]['lat']), float(self.station_dict[st_id]['lon']), float(self.station_dict[st_id]['alt'])]
                   # HERE WE SHOULD GET NEW OBS DATA DIRECT FROM DYNA DB OR REFRESH THE OBS DICT?
 
                   temp_obs = convert_dy_obs(self.obs_dict[dict_key], temp_obs)
-                  print("OBS DICT FOR:", dict_key, self.obs_dict[dict_key])
-                  print("TEMP OBS KEYS:", dict_key, temp_obs.keys())
+                  #print("OBS DICT FOR:", dict_key, self.obs_dict[dict_key])
+                  #print("TEMP OBS KEYS:", dict_key, temp_obs.keys())
                else:
                   print(dict_key, "not in obsdict. try deleting the file.")
                   print( self.obs_dict_file)
                   #exit()
 
          self.good_obs = temp_obs
-         for st in temp_obs:
-            print("STATION:", st)
-            for vd in temp_obs[st]:
-               print("VID:", vd)
-               print(temp_obs[st][vd].keys())
+         #for st in temp_obs:
+         #   print("STATION:", st)
+         #   for vd in temp_obs[st]:
+         #      print("VID:", vd)
+         #      print(temp_obs[st][vd].keys())
 
          ev_dir = self.local_evdir + "/" + event_id
          if os.path.exists(ev_dir) is False:
@@ -3780,12 +3815,11 @@ class AllSkyNetwork():
       vals = [date + "%"]
       self.cur.execute(sql, vals)
       rows = self.cur.fetchall()
-      print("ROWS:", len(rows))
-      print("OBS DICT:", len(self.obs_dict.keys()))
       for row in rows:
          (event_id, event_minute, revision, stations, obs_ids, event_start_time, event_start_times,  \
                  lats, lons, event_status, run_date, run_times) = row
          
+         print("LOADING EVENT:", event_id, event_status)
          stations = json.loads(stations)
          obs_ids = json.loads(obs_ids)
          event_start_times = json.loads(event_start_times)
@@ -3801,19 +3835,16 @@ class AllSkyNetwork():
                temp_obs[st_id] = {}
             if vid not in temp_obs[st_id]:
                try:
-                  print("STATION ID:", st_id)
                   self.obs_dict[dict_key]['loc'] = [float(self.station_dict[st_id]['lat']), float(self.station_dict[st_id]['lon']), float(self.station_dict[st_id]['alt'])]
                   temp_obs = convert_dy_obs(self.obs_dict[dict_key], temp_obs)
                except:
                   print("Geo error with station!", st_id)
                   self.errors.append(("STATION GEO ERROR", st_id))
 
-         print("READY TO SOLVE??")
-         for st in temp_obs:
-            for vd in temp_obs[st]:
-               print(temp_obs[st][vd].keys())
+         #for st in temp_obs:
+         #   for vd in temp_obs[st]:
+         #      print(temp_obs[st][vd].keys())
 
-         print("FORCE:", force)
       
          if event_status == "PENDING":
             solve_jobs.append((event_id, event_status, temp_obs))
@@ -4229,8 +4260,8 @@ class AllSkyNetwork():
       self.status_data['cloud_event_id_dir'] = self.cloud_event_id_dir
       self.status_data['event_status'] = self.event_status
 
-      if self.event_json is not None:
-         print(self.event_json.keys())
+      #if self.event_json is not None:
+      #   print(self.event_json.keys())
 
 
       print("Event in SQL:", self.event_in_sql)
@@ -4375,7 +4406,7 @@ class AllSkyNetwork():
          new_run = False
          solve_status = "PENDING"
 
-      print("WMPL SOLVE STATUS:", solve_status)
+      print("WMPL SOLVE STATUS:", event_id, solve_status)
       if solve_status == "FAILED":
          time_sync=0
          print("IT LOOKS LIKE THE TIME SYNC FAILED. WE WILL RESOLVE")
@@ -4403,6 +4434,8 @@ class AllSkyNetwork():
 
       else:
          status = "PENDING"
+
+
 
       if status == "SOLVED" and new_run is True:
          event_data = load_json_file(pass_file) 
@@ -4450,7 +4483,7 @@ class AllSkyNetwork():
       self.cur.execute(sql,uvals)
       self.con.commit()
 
-
+      print("DONE", event_id)
 
 
    def plane_test_day(self, date):
@@ -4620,8 +4653,9 @@ $(document).ready(function () {
       for day in sorted(files, reverse=True):
          day = day.replace("ALLSKYNETWORK_", "")
          day = day.replace(".db", "") 
-         if "journal" in day:
+         if "journal" in day or "CALIBS" in day:
             continue
+         print("DAY:", day)
          y,m,d = day.split("_")
          url = "/EVENTS/" + y + "/" + m + "/" + d + "/" + day + "_OBS_GOOD.html"
 
@@ -4658,7 +4692,6 @@ $(document).ready(function () {
          qc_data = load_json_file(qc_report)
       else:
          qc_data = {}
-      print(qc_data.keys())
       all_obs = qc_data['valid_obs']
 
       self.get_all_obs(date)   
@@ -4775,8 +4808,8 @@ $(document).ready(function () {
       print(self.orb_link)
 
       self.map_link = """https://archive.allsky.tv/APPS/dist/maps/index.html?mf={:s}&lat={:s}&lon={:s}&zoom=3""".format(self.kml_link, str(self.center_lat), str(self.center_lon))
-      self.gallery_link = "#"
-      self.data_table_link = "#"
+      self.gallery_link = event_date + "_OBS_GOOD.html"
+      self.data_table_link = event_date + "_DATA_TABLE.html"
       short_date = event_date.replace("_", "")
       stats_nav += """
          </p>
@@ -4808,7 +4841,7 @@ $(document).ready(function () {
           </span>
 
          </P>
-      """.format(self.map_link, self.orb_link, self.data_table_link, self.gallery_link, short_date)
+      """.format(self.map_link, self.orb_link, short_date, self.data_table_link, self.gallery_link )
       good_html = ""
       bad_html = "" 
       fail_html = "" 
@@ -4861,10 +4894,6 @@ $(document).ready(function () {
             ev_data = load_json_file(ev_file)
             if ev_data['orb']['a'] is not None:
                print("EVENT FILE FOUND:", ev_file)
-               #print(ev_data['traj'].keys())
-               #print(ev_data['orb'].keys())
-               #print(ev_data['rad'].keys())
-               #print(ev_data['shower'].keys())
                ev_sum = """
                <center>
                <table border=1 cellpadding=5 cellspacing=5>
@@ -4959,7 +4988,6 @@ $(document).ready(function () {
                #bad_html += self.obs_id_to_img_html(obs_id)
 
                obs_status = all_obs[obs_id]
-               print("OBS STATUS:", obs_status)
                bad_html += self.meteor_cell_html(obs_id, etime, obs_status)
                bad_html += "\n"
 
@@ -4994,7 +5022,6 @@ $(document).ready(function () {
                #bad_html += self.obs_id_to_img_html(obs_id)
 
                obs_status = all_obs[obs_id]
-               print("OBS STATUS:", obs_status)
                fail_html += self.meteor_cell_html(obs_id, etime, obs_status)
                fail_html += "\n"
 
@@ -5029,7 +5056,6 @@ $(document).ready(function () {
                #bad_html += self.obs_id_to_img_html(obs_id)
 
                obs_status = all_obs[obs_id]
-               print("OBS STATUS:", obs_status)
                pending_html += self.meteor_cell_html(obs_id, etime, obs_status)
                pending_html += "\n"
 
@@ -5089,7 +5115,7 @@ $(document).ready(function () {
       push_cmd = "cp " + self.station_events_file + " " + self.cloud_evdir
       print(push_cmd)
       os.system(push_cmd)
-      cmd = "python3 EM.py aer " + event_date
+      cmd = "/usr/bin/python3 EM.py aer " + event_date
 
       
 
@@ -5359,7 +5385,6 @@ status [date]   -    Show network status report for that day.
       #min_data = load_json_file(min_file)
       #planes = min_data["1"]['plane_pairs']
 
-      print(len(planes.keys()), "plane pairs")
       start_points = []
       end_points = []
       for key in planes:
@@ -5528,9 +5553,9 @@ status [date]   -    Show network status report for that day.
       div_id = obs_id.replace(".mp4", "")
       div_id = div_id.replace("-prev.jpg", "")
 
-      if status is None:
+      if status == None:
          opacity = "1"
-      elif status is 1:
+      elif status == 1:
          opacity = "1"
       else:
          opacity = "1"
@@ -5889,7 +5914,7 @@ status [date]   -    Show network status report for that day.
          #for obs_fn in self.unq_obs:
             fimg = np.zeros((th,tw,3),dtype=np.uint8)
             if obs_fn in self.time_sync_data[key]: 
-               print("OBS ID FOUND:", obs_fn, self.time_sync_data[key].keys())
+               #print("OBS ID FOUND:", obs_fn, self.time_sync_data[key].keys())
                x1,y1,x2,y2 = self.unq_obs[obs_fn]
                if obs_fn in self.all_frames:
                   for fc in self.time_sync_data[key][obs_fn]:
@@ -5901,10 +5926,10 @@ status [date]   -    Show network status report for that day.
                            fimg = self.all_frames[obs_fn][int(fc)]
                            #cv2.imshow('pepe', fimg)
                           #cv2.waitKey(0)
-               else:
-                  print(obs_fn, "NOT FOUND IN ALL FRAMES", self.all_frames.keys())
-            else:
-               print("OBS FNMISSING:", obs_fn, self.time_sync_data[key].keys())
+               #else:
+               #   print(obs_fn, "NOT FOUND IN ALL FRAMES", self.all_frames.keys())
+            #else:
+            #   print("OBS FNMISSING:", obs_fn, self.time_sync_data[key].keys())
             fimg_tn = cv2.resize(fimg,(tw,th))
             main_frame[y1:y2,x1:x2] = fimg_tn
          cv2.imshow('pepe', main_frame)
@@ -6242,79 +6267,165 @@ status [date]   -    Show network status report for that day.
 
    def remote_cal_one(self, full_file):
 
+      # load up the med frame
+      if "mp4" in full_file:
+         frames = load_frames_simple(full_file)
+         med_frame = cv2.convertScaleAbs(np.median(np.array(frames[0:10]), axis=0))
+         med_file = full_file.replace(".mp4", "-med.jpg")
+         med_frame = cv2.resize(med_frame, (1920,1080))
+         cv2.imwrite(med_file, med_frame)
+         #cv2.imshow('pepe', med_frame)
+         #cv2.waitKey(0)
+
+         full_file = med_file
+
+      # connect to the main cal db
+      db_file = self.db_dir + "ALLSKYNETWORK_CALIBS.db"
+      print("DB FILE IS:", db_file)
+      if os.path.exists(db_file) is False:
+         print("DB FILE NOT FOUND.", db_file)
+         return ()
+      self.cal_con = sqlite3.connect(db_file)
+      self.cal_con.row_factory = sqlite3.Row
+      self.cal_cur = self.cal_con.cursor()
+
       if "\\" in full_file:
          full_file = full_file.replace("\\", "/")
-
     
       input_file = full_file.split("/")[-1]
       station_id = input_file.split("_")[0]
 
-      print("FULL FILE:", full_file)
-      print("REMOTE CAL ONE FILE:", input_file)
-      print("STATION:", station_id)
-
       (f_datetime, cam_id, f_date_str,fy,fmin,fd, fh, fm, fs) = convert_filename_to_date_cam(input_file.replace(station_id + "_" , ""))
-      img = cv2.imread(full_file)
 
+      # find / load the mask
+      self.set_dates(input_file.replace(station_id + "_", "")[0:10])
+      cloud_mask_file = "/mnt/archive.allsky.tv/" + station_id + "/CAL/MASKS/" + cam_id + "_mask.png"
+      local_mask_dir = "/mnt/f/EVENTS/STATIONS/" + station_id + "/MASKS/" 
+      local_mask_file = local_mask_dir + cam_id + "_mask.png"
+      if os.path.exists(local_mask_dir) is False:
+         os.makedirs(local_mask_dir)
+      if os.path.exists(local_mask_file) is False:
+         cmd = "cp " + cloud_mask_file + " " + local_mask_file
+         os.system(cmd)
+
+      if os.path.exists(local_mask_file) is True:
+         mask_img = cv2.imread(local_mask_file)
+         mask_img = cv2.resize(mask_img, (1920,1080))
+      else:
+         mask_img = np.zeros((1920,1080,3),dtype=np.uint8)
+
+      # subtract mask from star image
+      img = cv2.imread(full_file)
+      img = cv2.resize(img, (1920,1080))
+      img = cv2.subtract(img, mask_img)
+
+      # get star points
       star_points,stars_image = get_star_points(input_file, img, {}, station_id, cam_id, {})
       star_points = sorted(star_points, key=lambda x: (x[2]), reverse=True)
 
+      # get best defalt cal params
+      input("GET CAL PARAMS")
       cal_params,json_conf = self.get_remote_cal_params(station_id, cam_id, input_file.replace(station_id + "_", ""), f_datetime,img, star_points)
 
-  
+      cal_params['cat_image_stars'], cal_params['user_stars'] = get_image_stars_with_catalog(input_file.replace(station_id + "_", ""), cal_params, img)
 
+      input("DONE GET CAL PARAMS")
 
-      text1 = str(cal_params['center_az'])[0:4] + " / " \
-         + str(cal_params['center_el'])[0:4] + " ::: " \
-         + str(cal_params['ra_center'])[0:4] + " / " \
-         + str(cal_params['dec_center'])[0:4] + " ::: " \
-         + str(cal_params['position_angle'])[0:4] + " ::: " \
-         + str(cal_params['pixscale'])[0:4] + " ::: " 
+      if cal_params['total_res_px'] >= 999:
+         print("REMOTE CAL FAILED!", len(cal_params['user_stars']), len(cal_params['cat_image_stars']), cal_params['total_res_px'] )
+         cv2.imshow('pepe', img)
+         cv2.waitKey(0)
+         exit()
+
+      cal_params['user_stars'] = star_points
+     
+      if True:
+         show_img = stars_image.copy()
+         for star in cal_params['cat_image_stars']:
+            name,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,star_x,star_y,res_px,flux = star
+            cv2.circle(show_img, (int(star_x),int(star_y)), int(5), (0,255,0),2)
+            cv2.rectangle(show_img, (int(new_cat_x-10), int(new_cat_y-10)), (int(new_cat_x+10) , int(new_cat_y+10) ), (255, 255, 255), 1)
+            print("STAR FROM CAT STARS", star)
+            cv2.imshow('pepe', show_img)
+            cv2.waitKey(0)
+
+      if cal_params is None:
+         text1 = "NO CAL PARAMS FOUND!" 
+         return()
+      else:
+         text1 = str(cal_params['center_az'])[0:4] + " / " \
+            + str(cal_params['center_el'])[0:4] + " ::: " \
+            + str(cal_params['ra_center'])[0:4] + " / " \
+            + str(cal_params['dec_center'])[0:4] + " ::: " \
+            + str(cal_params['position_angle'])[0:4] + " ::: " \
+            + str(cal_params['pixscale'])[0:4] + " ::: " 
 
       # draw img stars on image
       if len(img.shape) == 2:
          img =  cv2.cvtColor(img, cv2.COLOR_GRAY2BGR)
-
       show_img = img.copy()
+
       if True:
          # draw cat_image_stars on image
          for star in cal_params['cat_image_stars']:
             name,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,star_x,star_y,res_px,flux = star
             cv2.circle(show_img, (int(star_x),int(star_y)), int(5), (0,255,0),2)
             cv2.rectangle(show_img, (int(new_cat_x-10), int(new_cat_y-10)), (int(new_cat_x+10) , int(new_cat_y+10) ), (255, 255, 255), 1)
-            cv2.imshow('calib', show_img)
-            cv2.waitKey(30)
+            cv2.imshow('pepe', show_img)
+            cv2.waitKey(0)
 
       for row in star_points[0:50]:
          mx, my, inten = row
-         #cv2.circle(show_img, (int(mx),int(my)), int(5), (128,128,128),2)
-         #cv2.imshow('calib', stars_image)
-         #cv2.waitKey(30)
-         #print(row)
+         cv2.circle(show_img, (int(mx),int(my)), int(5), (128,128,128),2)
+         cv2.imshow('pepe', stars_image)
+         cv2.waitKey(0)
+         print(row)
 
       extra_text = "Hello there..." 
-
+      
       ifile = input_file.replace(station_id + "_", "")
       new_cp = minimize_fov(ifile, cal_params, ifile,img.copy(),json_conf, False,cal_params, extra_text, show=1)
-
+      print(new_cp['center_az'], new_cp['center_el'], new_cp['total_res_px'])
+      input("MIN1 DONE")
+      exit()
       new_cp = minimize_fov(ifile, new_cp, ifile,img.copy(),json_conf, False,cal_params, extra_text, show=1)
+      print(new_cp['center_az'], new_cp['center_el'], new_cp['total_res_px'])
+      input("MIN2 DONE")
+      cal_params = new_cp
+      if True:
+         show_img = stars_image.copy()
+         for star in cal_params['cat_image_stars']:
+            name,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,star_x,star_y,res_px,flux = star
+
+            new_x, new_y, img_ra,img_dec, img_az, img_el = XYtoRADec(new_cat_x,new_cat_y,ifile,cal_params,json_conf)
+            img_new_cat_x, img_new_cat_y = get_xy_for_ra_dec(cal_params, img_ra, img_dec)
+            match_dist = angularSeparation(ra,dec,img_ra,img_dec)
+            #cat_image_stars.append((name_ascii,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,x,y,res_px,flux))
+            res_px = calc_dist((star_x,star_y), (new_cat_x,new_cat_y))
+            print("RES FINAL:", res_px)
+
+            cv2.circle(show_img, (int(star_x),int(star_y)), int(5), (0,255,0),2)
+            cv2.rectangle(show_img, (int(new_cat_x-10), int(new_cat_y-10)), (int(new_cat_x+10) , int(new_cat_y+10) ), (255, 255, 255), 1)
+            cv2.imshow('pepe', show_img)
+            cv2.waitKey(30)
+
 
       cv2.putText(img, str(text1),  (int(20),int(20)), cv2.FONT_HERSHEY_SIMPLEX, .6, (255,255,255), 1)
-      cv2.imshow('calib', show_img)
-      cv2.waitKey(30)
+      cv2.imshow('pepe', show_img)
+      cv2.waitKey(0)
 
 
    def insert_last_best_cal(self, cp ):
       if "user_stars" not in cp:
          cp['user_stars'] = [] 
-      ivals = [ cp['station_id'], cp['camera_id'], cp['cal_fn'], cp['cal_timestamp'], cp['center_az'], cp['center_el'], cp['ra_center'], cp['dec_center'], cp['position_angle'], cp['pixscale'], json.dumps(cp['user_stars']), json.dumps(cp['cat_image_stars']), json.dumps(cp['x_poly']), json.dumps(cp['y_poly']), json.dumps(cp['x_poly_fwd']), json.dumps(cp['y_poly_fwd']) ]
-      isql = """INSERT INTO last_best_cal
+      ivals = [ cp['station_id'], cp['camera_id'], cp['cal_fn'], cp['cal_timestamp'], cp['center_az'], cp['center_el'], cp['ra_center'], cp['dec_center'], cp['position_angle'], cp['pixscale'], json.dumps(cp['user_stars']), json.dumps(cp['cat_image_stars']), json.dumps(cp['x_poly']), json.dumps(cp['y_poly']), json.dumps(cp['x_poly_fwd']), json.dumps(cp['y_poly_fwd']), cp['total_res_px'] ]
+      isql = """INSERT OR REPLACE INTO last_best_cal
                 (station_id, camera_id, calib_fn, cal_timestamp, az, el, ra, dec, position_angle, pixel_scale, 
-                user_stars, cat_image_stars, x_poly, y_poly,x_poly_fwd, y_poly_fwd) 
-                VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+                user_stars, cat_image_stars, x_poly, y_poly,x_poly_fwd, y_poly_fwd, res_px) 
+                VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
              """
-      print(isql)
-      print(ivals)
+      #print(isql)
+      #print(ivals)
       self.cal_cur.execute(isql, ivals)
       self.cal_con.commit()
 
@@ -6322,10 +6433,7 @@ status [date]   -    Show network status report for that day.
 
    def get_remote_cal_params(self, station_id, cam_id, obs_id, cal_date, show_img, star_points = []):
 
-
-      self.cal_con = sqlite3.connect("ALLSKYNETWORK_CALIBS.db")
-      self.cal_con.row_factory = sqlite3.Row
-      self.cal_cur = self.con.cursor()
+      # get the last best cal value if it exists
       sql = """
          SELECT station_id, camera_id, calib_fn, cal_datetime, cal_timestamp, az, el, ra, dec, position_angle, pixel_scale, user_stars, cat_image_stars, x_poly, y_poly,x_poly_fwd,y_poly_fwd,res_px,res_deg 
            FROM last_best_cal 
@@ -6334,23 +6442,32 @@ status [date]   -    Show network status report for that day.
       """
 
       vals = [station_id, cam_id]
-      self.cur.execute(sql, vals)
+      self.cal_cur.execute(sql, vals)
       rows = self.cur.fetchall()
 
-      obs_dt = cal_date #datetime.datetime.strptime(cal_date, "%Y-%m-%d %H:%M:%S.%f")
+      obs_dt = cal_date 
       cal_timestamp = datetime.datetime.timestamp(obs_dt)
-      print(obs_dt, cal_timestamp)
-      for row in rows:
-         print("LAST BEST:", row)
 
       orig_img = show_img.copy()
       this_range = []
       cloud_cal_dir = "/mnt/archive.allsky.tv/" + station_id + "/CAL/"
       local_cal_dir = "/mnt/f/EVENTS/STATIONS/" + station_id + "/CAL/"
       remote_json_conf_file = local_cal_dir + "as6.json"
+      if os.path.isdir(local_cal_dir) is False:
+         os.makedirs(local_cal_dir)
       if os.path.exists(remote_json_conf_file) is True:
          remote_json_conf = load_json_file(remote_json_conf_file)
          json_conf = remote_json_conf 
+      else:
+         print("NO REMOTE JSON CONF FILE:", remote_json_conf_file)
+         # try to copy it?
+         cloud_file = cloud_cal_dir + "as6.json"
+         cmd = "cp " + cloud_file + " " + remote_json_conf_file
+         os.system(cmd)
+         remote_json_conf = load_json_file(remote_json_conf_file)
+         json_conf = remote_json_conf 
+
+         #exit()
       if os.path.exists(local_cal_dir) is False:
          os.makedirs(local_cal_dir)
       print("CLOUD:", cloud_cal_dir)
@@ -6372,7 +6489,7 @@ status [date]   -    Show network status report for that day.
       #print("All files should be sync'd")
       cal_range_file = local_cal_dir + station_id + "_cal_range.json"
       remote_json_conf = load_json_file(remote_json_conf_file)
-      #print(cal_range_file)
+      print(cal_range_file)
       lens_file = local_cal_dir + station_id + "_" + cam_id + "_LENS_MODEL.json"
       if os.path.exists(lens_file) is True: 
          lens_model = load_json_file(lens_file)
@@ -6408,6 +6525,7 @@ status [date]   -    Show network status report for that day.
             elp = abs((cal_date - rend_dt).total_seconds()) / 86400
             match_range_data.append(( cal_date, rend_dt, rstart_dt, elp, az, el, pos, pxs, res))
 
+
       for mdata in match_range_data:
          show_img = orig_img.copy()
 
@@ -6420,44 +6538,31 @@ status [date]   -    Show network status report for that day.
          lens_model['position_angle'] = best_pos 
          lens_model['pixscale'] = best_pxs 
          temp = obs_id.replace(station_id + "_", "") 
-         print("BEST:", best_az, best_el, best_pos, best_pxs)
 
-         print("BEFORE:", lens_model['ra_center'], lens_model['dec_center'])
          cal_params = update_center_radec(temp,lens_model,remote_json_conf)
-         print("AFTER:", cal_params['ra_center'], cal_params['dec_center'])
 
-         print("CHOOSE CAL PARAMS.", best_az, best_el)
-
-         for key in cal_params:
-            print(key, cal_params[key])
-         for key in remote_json_conf:
-            print(key, remote_json_conf[key])
          cat_stars, short_bright_stars, cat_image = get_catalog_stars(cal_params)
          used = {}
          if True:
-            for ix,iy,ii in star_points[0:50]:
+            for ix,iy,ii in star_points[0:250]:
                cv2.circle(show_img, (ix,iy), int(5), (0,255,0),1)
 
          all_res = []
          cat_image_stars = []
-         for star in cat_stars[0:25]:
-            print("STAR:", star)
+         for star in cat_stars[0:100]:
             (name,mag,ra,dec,new_cat_x,new_cat_y,zp_cat_x,zp_cat_y) = star
-            print("STAR2:", new_cat_x, new_cat_y)
             cv2.putText(show_img, str(name),  (int(new_cat_x-25),int(new_cat_y-25)), cv2.FONT_HERSHEY_SIMPLEX, .6, (255,255,255), 1)
             cv2.rectangle(show_img, (int(new_cat_x-25), int(new_cat_y-25)), (int(new_cat_x+25) , int(new_cat_y+25) ), (255, 255, 255), 1)
 
             # find closest image star! 
             dist_arr = []
             for ix,iy,ii in star_points[0:50]:
-               print("IX:", ix,iy, new_cat_x, new_cat_y)
                this_dist = calc_dist((ix,iy),(new_cat_x,new_cat_y))
                if this_dist < 20:
                   dist_arr.append((this_dist, star, ii))
             dist_arr = sorted(dist_arr, key=lambda x: x[0], reverse=False)
             if len(dist_arr) > 0:
                closest_star = dist_arr[0][1]
-               print("CLOSE:", closest_star)
                star_x = closest_star[4]
                star_y = closest_star[5]
                flux = dist_arr[0][2]
@@ -6468,28 +6573,31 @@ status [date]   -    Show network status report for that day.
                img_new_cat_x, img_new_cat_y = get_xy_for_ra_dec(cal_params, img_ra, img_dec)
                match_dist = angularSeparation(ra,dec,img_ra,img_dec)
                #cat_image_stars.append((name_ascii,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,x,y,res_px,flux))
-               print("PRINT STAR X,YS:", star_x, star_y, new_cat_x, new_cat_y)
                res_px = calc_dist((star_x,star_y), (new_cat_x,new_cat_y))
                cat_image_stars.append((name,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,star_x,star_y,res_px,flux))
-               print("CLOSEST MATCH:", res, closest_star)
+            #cv2.imshow('pepe', show_img)
+            #cv2.waitKey(30)
 
 
-         #print(cat_stars)
+
+         #print("CAT IMAGE STARS:", len(cat_image_stars))
          if len(all_res) > 0:
             avg_res = np.mean(all_res)
          else:
             avg_res = 999
          print("RES:", avg_res)
          if avg_res <= best_res :
-            print("*** BEST RES BEAT:", best_res, avg_res)
+            print("*** BEST RES BEAT:", best_res, avg_res, cal_params['center_az'], cal_params['center_el'])
             best_res = avg_res
             best_calib = cal_params
             best_calib['cat_image_stars'] = cat_image_stars
             best_calib['total_res_px'] = avg_res 
-         cv2.imshow('calib', show_img)
-         cv2.waitKey(30)
+         cv2.imshow('pepe', show_img)
+         cv2.waitKey(0)
 
-      print("FINAL BEST CALIB:", best_calib)
+
+
+      print("FINAL BEST CALIB:", best_calib['center_az'], best_calib['center_el'])
       print("FINAL BEST RES IS:", best_res)
       #print("REMOTE JSON CONF:", obs_id, best_calib, remote_json_conf)
       if best_calib is not None:
@@ -6505,6 +6613,8 @@ status [date]   -    Show network status report for that day.
 
 
          self.insert_last_best_cal(best_calib)
+
+
       return(best_calib, remote_json_conf)
 
 
@@ -6526,7 +6636,7 @@ status [date]   -    Show network status report for that day.
                (f_datetime, cam_id, f_date_str,fy,fmin,fd, fh, fm, fs) = convert_filename_to_date_cam(obs_id.replace(station + "_" , ""))
                print(obs_id, good_obs[station][obs_id].keys())
                for i in range(0, len(good_obs[station][obs_id]['fns'])):
-                  print(obs_id, i, good_obs[station][obs_id]['times'][i])
+                  #print(obs_id, i, good_obs[station][obs_id]['times'][i])
                   time_key = good_obs[station][obs_id]['times'][i]
                   if station not in time_matrix:
                      time_matrix[station] = {}
@@ -6766,3 +6876,114 @@ status [date]   -    Show network status report for that day.
    def invert_image(self, imagem):
       imagem = (255-imagem)
       return(imagem)
+
+   def all_time_index(self):
+      # make a link list / nav list of all days in the archive
+      # with status / summary info and link to event main page
+      # from there we go to the sub pages. 
+      # can oversee all from this page. 
+      # /EVENTS/index_all_time.html
+
+      
+      template = ""
+      tt = open("./FlaskTemplates/allsky-template-v2.html")
+      for line in tt:
+         template += line
+
+      template = template.replace("{TITLE}", "ALLSKY7 ALL TIME EVENTS " )
+      template = template.replace("AllSkyCams.com", "AllSky.com")
+
+      data_dir = "/mnt/f/EVENTS/DBS/"
+      dbs = os.listdir(data_dir)
+      by_year = {}
+
+
+      tb = pt()
+      tb.field_names = ['Date', "Total Stations", "Total Obs", "Solved Events", "Failed Events", "Pending Events"]
+      for db in sorted(dbs, reverse=True):
+
+
+         if "journal" in db or "ALLSKYNETWORK" not in db or "CALIBS" in db :
+            continue
+         db_file = data_dir + db
+         sqlite3.connect(db_file)
+         db_con = sqlite3.connect(db_file)
+         db_con.row_factory = sqlite3.Row
+         db_cur = db_con.cursor()
+
+
+         date = db.replace("ALLSKYNETWORK_", "")
+         date = date.replace(".db", "")
+         print(date)
+         y,m,d = date.split("_")
+         if y not in by_year:
+            by_year[y] = {}
+            by_year[y]['days'] = []
+         by_year[y]['days'].append(date)
+
+         sql = "SELECT station_id from event_obs "
+         db_cur.execute(sql)
+         rows = db_cur.fetchall()
+         status = {}
+         reporting_stations = {}
+         for row in rows:
+            st = row
+            reporting_stations[st] = 1
+
+         total_stations = len(reporting_stations.keys())
+
+         sql = "SELECT event_status, count(*) from events group by event_status"
+         db_cur.execute(sql)
+         rows = db_cur.fetchall()
+         status = {}
+         for row in rows:
+            st, count = row
+            status[st] = count
+
+
+         sql = "SELECT count(*) from event_obs "
+         db_cur.execute(sql)
+         rows = db_cur.fetchall()
+         obs_count = rows[0][0]
+
+
+
+         st = ""
+         print("")
+         solved = 0
+         failed = 0
+         pending = 0
+         for key in status:
+            if st != "":
+              st += ","
+            st += key + str(status[key])
+            if "FAIL" in st:
+               failed += status[key]
+            if "SOLVED" in st or "SUCCESS" in st:
+               solved += status[key]
+            if "PEND" in st:
+               pending += status[key]
+
+         print(db_file, obs_count, st)
+         tb.add_row( [date, total_stations, obs_count, solved, failed, pending])
+
+      print(tb)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

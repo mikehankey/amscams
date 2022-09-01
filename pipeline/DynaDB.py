@@ -1,4 +1,6 @@
-#!/usr/bin/env python3
+#!/usr/bin/python3
+
+### /usr/bin/env python3
 from decimal import Decimal
 import redis
 import requests
@@ -596,11 +598,24 @@ def select_obs_files(dynamodb, station_id, event_day):
          all_items.append(it)
    return(all_items)
 
+def purge_auth(dynamodb):
+   table = dynamodb.Table("authkeys")
+   response = table.scan()
+   items = response['Items']
+   while 'LastEvaluatedKey' in response:
+      response = table.scan(ExclusiveStartKey=response['LastEvaluatedKey'])
+      items.extend(response['Items'])
+   for item in items:
+      resp = table.delete_item(Key={'auth_token': item['auth_token']})
+      print(item['auth_token'], resp)
+
 
 def get_all_events(dynamodb):
    table = dynamodb.Table("x_meteor_event")
    response = table.scan()
    items = response['Items']
+
+
    while 'LastEvaluatedKey' in response:
       response = table.scan(ExclusiveStartKey=response['LastEvaluatedKey'])
       items.extend(response['Items'])
@@ -631,7 +646,6 @@ def update_dyna_cache_for_day(dynamodb, date, stations, utype=None, cloud_copy=1
 
    del_file = dyn_cache + date + "_ALL_DEL.json" 
    obs_file = dyn_cache + date + "_ALL_OBS.json" 
-   print("OBS:", do_obs, obs_file)
    event_file = dyn_cache + date + "_ALL_EVENTS.json" 
    stations_file = dyn_cache + date + "_ALL_STATIONS.json" 
 
@@ -641,7 +655,6 @@ def update_dyna_cache_for_day(dynamodb, date, stations, utype=None, cloud_copy=1
    # don't use the API anymore, it times out. Read direct from redis
    all_stations = glob.glob("/mnt/ams2/STATIONS/CONF/*")
    #for st in sorted(all_stations):
-   #   print(st)
    API_URL = "https://kyvegys798.execute-api.us-east-1.amazonaws.com/api/allskyapi?cmd=get_stations&api_key=" + json_conf['api_key'] + "&station_id=" + json_conf['site']['ams_id']
 
    response = requests.get(API_URL)
@@ -650,8 +663,6 @@ def update_dyna_cache_for_day(dynamodb, date, stations, utype=None, cloud_copy=1
    if content[0] == "\"":
       content = content[1:]
       content = content[0:-1]
-   #print(API_URL)
-   #print(content)
    jdata = json.loads(content)
    save_json_file("/mnt/f/EVENTS/ALL_STATIONS.json", jdata['all_vals'], True)
    os.system("cp /mnt/f/EVENTS/ALL_STATIONS.json /mnt/archive.allsky.tv/EVENTS/ALL_STATIONS.json")
@@ -667,13 +678,11 @@ def update_dyna_cache_for_day(dynamodb, date, stations, utype=None, cloud_copy=1
       for del_item in deletes:
          all_deletes.append(del_item)
          obs_key = del_item['station_id'] + "_" + del_item['sd_video_file']
-         print(del_item.keys())
          if "label" in del_item:
             label = del_item['label']
          else:
             label = ""
          del_keys[obs_key] = label
-   print("Loaded deletes.", len(all_deletes))
    save_json_file(del_file, del_keys, True)
    cloud_del_file = del_file.replace("/ams2/", "/archive.allsky.tv/")
    os.system("cp " + del_file + " " + cloud_del_file)
@@ -698,11 +707,10 @@ def update_dyna_cache_for_day(dynamodb, date, stations, utype=None, cloud_copy=1
    save_json_file(stations_file, clusters, True)
    cloud_stations_file = stations_file.replace("/mnt/ams2/", "/mnt/archive.allsky.tv/")
    os.system("cp " + stations_file + " " + cloud_stations_file)
-   #print(stations_file)
 
    # get the obs for each station for this day
-   print("DOOBS:", do_obs)
-   print("cluset:", len(cluster_stations))
+   #print("DOOBS:", do_obs)
+   #print("cluset:", len(cluster_stations))
    if do_obs == 1:
       #os.system("rm " + obs_file ) 
       all_obs = []
@@ -786,7 +794,6 @@ def update_redis_obs(date, obs_data):
 
     rkeys = r.keys("OI:*" + date + "*")
     for key in rkeys:
-       print("DEL:", key)
        r.delete(key)
         
 
@@ -926,6 +933,8 @@ def search_events(dynamodb, date, stations, nocache=0):
    print("ALL EVENTS:", len(all_events))
    return(all_events)
 
+
+
 def make_station_clusters(all_stations):
    st_lat_lon = []
    for station_data in all_stations:
@@ -942,7 +951,6 @@ def make_station_clusters(all_stations):
          else:
             city = ""
          if "alt" in station_data:
-            print("STATION DATA:", station_data)
             if isinstance(station_data['alt'], str) is True:
                if "meters" in station_data['alt']:
                   station_data['alt'] = station_data['alt'].replace("meters", "")
@@ -1868,6 +1876,8 @@ if __name__ == "__main__":
    if cmd == "delete_events_day":
       # station_id and then date please
       delete_events_day(dynamodb, sys.argv[2])
+   if cmd == "purge_auth":
+      purge_auth(dynamodb)
 
    if cmd == "quick_event":
       # station_id and then date please
