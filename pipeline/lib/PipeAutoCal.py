@@ -10744,7 +10744,7 @@ def reduce_fit_multi(this_poly,field, merged_stars, cal_params, fit_img, json_co
          else:
             color = [0,0,255]
 
-         if SHOW == 1:
+         if SHOW == 1 or mode != 0:
             desc = str(pixscale)[0:4]
             try:
                cv2.rectangle(this_fit_img, (int(new_cat_x)-10, int(new_cat_y)-10), (int(new_cat_x) + 10, int(new_cat_y) + 10), color, 1)
@@ -10773,10 +10773,10 @@ def reduce_fit_multi(this_poly,field, merged_stars, cal_params, fit_img, json_co
             color = [0,69,255]
          elif img_res > .3:
             color = [0,0,255]
-         if SHOW == 1:
+         if SHOW == 1 or mode != 0:
             cv2.rectangle(this_fit_img, (int(new_x)-10, int(new_y)-10), (int(new_x) + 10, int(new_y) + 10), color, 1)
             cv2.line(this_fit_img, (int(six),int(siy)), (int(new_x),int(new_y)), color, 2) 
-      if SHOW == 1:
+      if SHOW == 1 or mode != 0:
          cv2.circle(this_fit_img,(int(six),int(siy)), 12, (128,128,128), 1)
       new_merged_stars.append((cal_file , center_az, center_el, ra_center, dec_center, position_angle, pixscale, dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist,star_int))
       total_res = total_res + img_res

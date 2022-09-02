@@ -3184,6 +3184,56 @@ def get_mcp(cam_id) :
       
    return(mcp)
 
+def batch_apply_bad(cam_id, con, cur, json_conf):
+   
+   calfiles_data = load_cal_files(cam_id, con, cur)
+   mcp_file = "/mnt/ams2/cal/multi_poly-" + station_id + "-" + cam_id + ".info"
+   if os.path.exists(mcp_file) == 1:
+      mcp = load_json_file(mcp_file)
+      if "cal_version" not in mcp:
+         mcp['cal_version'] = 0
+   else:
+      mcp = None
+
+
+   # get avg res and avg stars
+   cal_files = []
+   sql = """
+      SELECT cal_fn, count(*) as ss, avg(res_px) as arp,  count(*) / avg(res_px) as score
+        FROM calfile_paired_stars
+       WHERE cal_fn like ?
+         AND res_px is not NULL
+       GROUP bY cal_fn
+    ORDER BY score DESC
+   """
+
+   dvals = ["%" + cam_id + "%"]
+   cur.execute(sql, dvals)
+   rows = cur.fetchall()
+   cal_fns = []
+
+   calfile_paired_star_stats = {}
+   stats_res = []
+   stats_stars = []
+   for row in rows:
+      cal_fn, total_stars, avg_res , score = row
+      cal_files.append((cal_fn, total_stars, avg_res , score))
+      calfile_paired_star_stats[cal_fn] = [cal_fn,total_stars,avg_res]
+      stats_res.append(avg_res)
+      stats_stars.append(total_stars)
+
+   avg_res = np.mean(stats_res)
+   avg_stars = np.mean(stats_stars)
+
+   cal_files = sorted(cal_files, key=lambda x: x[2], reverse=True)
+   for row in cal_files:
+      (cal_fn, total_stars, res , score) = row
+      if res > avg_res:
+         print("REDO:", cal_fn, total_stars, res)
+         last_cal_params = apply_calib (cal_fn, calfiles_data, json_conf, mcp )
+
+
+
 def batch_apply(cam_id, con,cur, json_conf, last=None, do_bad=False):
    print("DO BAD:", do_bad)
    # apply the latest MCP Poly to each cal file and then recenter them
@@ -7037,6 +7087,11 @@ if __name__ == "__main__":
 
       calfiles_data = load_cal_files(cam_id, con, cur)
       last_cal_params = apply_calib (cf, calfiles_data, json_conf, mcp, None, "")
+
+   if cmd == "batch_apply_bad" :
+      cam_id = sys.argv[2]
+      batch_apply_bad(cam_id, con, cur, json_conf)
+
 
    if cmd == "batch_apply" :
       cam_id = sys.argv[2]
