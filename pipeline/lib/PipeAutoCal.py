@@ -10384,14 +10384,17 @@ def minimize_poly_multi_star(merged_stars, json_conf,orig_ra_center=0,orig_dec_c
 
    res,updated_merged_stars = reduce_fit_multi(x_poly, "x_poly",merged_stars,cal_params,fit_img,json_conf,cam_id,1,show)
    print("RES:", res)
-   for star in merged_stars:
-      (cal_file , center_az, center_el, ra_center, dec_center, position_angle, pixscale, dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist,star_int) = star
-      cat_dist = calc_dist((six, siy), (new_cat_x,new_cat_y))
-      if cat_dist < res * 2:
-         new_merged_stars.append(star) 
-      else:
-         print("OVER RES!", cat_dist)
-   updated_merged_stars = new_merged_stars
+   if res < 1:
+      res = 1
+   if True:
+      for star in updated_merged_stars:
+         (cal_file , center_az, center_el, ra_center, dec_center, position_angle, pixscale, dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist,star_int) = star
+         cat_dist = calc_dist((six, siy), (new_cat_x,new_cat_y))
+         if cat_dist < res * 2:
+            new_merged_stars.append(star) 
+         else:
+            print("OVER RES!", cat_dist)
+      updated_merged_stars = new_merged_stars
    #exit()
 
    all_res = [row[-2] for row in updated_merged_stars]
@@ -10807,7 +10810,8 @@ def reduce_fit_multi(this_poly,field, merged_stars, cal_params, fit_img, json_co
 
    #print("Total Residual Error:",field, total_res )
    #print("Total Stars:", total_stars)
-   print("Avg Residual Error:", tries, cam_id, field, total_stars, avg_res )
+   #print("\r", "#", "cam", "poly", "stars", "res", end="")
+   print("\r", tries, cam_id, field, total_stars, avg_res, "                  ", end="")
    #print("Show:", show)
    tries = tries + 1
    if mode == 0: 

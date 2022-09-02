@@ -636,16 +636,16 @@ def draw_stars_on_image(img, cat_image_stars,cp=None,json_conf=None,extra_text=N
    return(return_img)
 
 
-def make_grid_stars(merged_stars, mpc = None, factor = 2, gsize=50, limit=3):
+def make_grid_stars(merged_stars, mcp = None, factor = 2, gsize=50, limit=3):
    merged_stars = sorted(merged_stars, key=lambda x: x[-2], reverse=False)
-   if mpc is None:
+   if mcp is None:
       print("FIRST TIME CAL!")
       gsize = 80
       factor = 2
       max_dist = 35
    else:
-      print("MULTI-X CAL!", mpc['cal_version'])
-      if mpc['cal_version'] < 3:
+      print("MULTI-X CAL!", mcp['cal_version'])
+      if mcp['cal_version'] < 3:
          gsize= 100
          factor = 2
          max_dist = 5
@@ -3185,6 +3185,21 @@ def get_mcp(cam_id) :
       
    return(mcp)
 
+def get_avg_res(cam_id, con, cur):
+
+   sql = """
+      SELECT avg(res_px) as arp
+        FROM calfile_paired_stars
+       WHERE cal_fn like ?
+         AND res_px is not NULL
+   """
+
+   dvals = ["%" + cam_id + "%"]
+   cur.execute(sql, dvals)
+   rows = cur.fetchall()
+   return(rows[0][0])
+
+
 def batch_apply_bad(cam_id, con, cur, json_conf):
    
    calfiles_data = load_cal_files(cam_id, con, cur)
@@ -4709,8 +4724,8 @@ def get_paired_stars(cal_fn, cal_params, con, cur):
       cal_fn, name, mag, star_yn, ra, dec, star_flux, img_x, img_y, new_cat_x, new_cat_y, zp_cat_x, zp_cat_y, res_px, zp_res_px, slope, zp_slope = row
       key = str(ra) + "_" + str(dec)
       if key not in used:
-         print("STARS ADD ROWS:", cal_fn, name)
-         print(cal_fn, name, mag, star_yn, ra, dec, star_flux, img_x, img_y, new_cat_x, new_cat_y, zp_cat_x, zp_cat_y, res_px, zp_res_px, slope, zp_slope)
+         print("\r", "Adding star:", name, "                 ", end="")
+         #print(cal_fn, name, mag, star_yn, ra, dec, star_flux, img_x, img_y, new_cat_x, new_cat_y, zp_cat_x, zp_cat_y, res_px, zp_res_px, slope, zp_slope)
 
          stars.append((cal_fn, name, mag, star_yn, ra, dec, star_flux, img_x, img_y, new_cat_x, new_cat_y, zp_cat_x, zp_cat_y, res_px, zp_res_px, slope, zp_slope))
          used[key] = 1
@@ -4734,10 +4749,6 @@ def get_paired_stars(cal_fn, cal_params, con, cur):
       if ra is not None:
          up_cat_image_stars.append((name,mag,ra,dec,img_ra,img_dec,match_dist,zp_cat_x,zp_cat_y,img_az,img_el,new_cat_x,new_cat_y,img_x,img_y,res_px,star_flux)) 
 
-   if len(stars) > 0:
-      print("STARS:", stars[0])
-   if len(up_cat_image_stars) > 0:
-      print("CATSTARS:", up_cat_image_stars[0])
    return(stars, up_cat_image_stars)
 
 
@@ -5969,13 +5980,12 @@ def get_best_cal_files(cam_id, con, cur, json_conf, limit=500):
 def characterize_best(cam_id, con, cur, json_conf,limit=500, cal_fns=None):
 
 
-   #(f_datetime, cam_id, f_date_str,fy,fmin,fd, fh, fm, fs) = convert_filename_to_date_cam(cal_fn)
-   # best 
    my_limit = limit
    limit = 500 
    calfiles_data  = load_cal_files(cam_id, con,cur)
 
    autocal_dir = "/mnt/ams2/cal/"
+   all_stars_image_file = autocal_dir + "plots/" + json_conf['site']['ams_id'] + "-" + cam_id + "_ALL_STARS.jpg"
    mcp_file = autocal_dir + "multi_poly-" + json_conf['site']['ams_id'] + "-" + cam_id + ".info"
    if os.path.exists(mcp_file) == 1:
       mcp = load_json_file(mcp_file)
@@ -5989,6 +5999,8 @@ def characterize_best(cam_id, con, cur, json_conf,limit=500, cal_fns=None):
    station_id = json_conf['site']['ams_id']
    all_cal_files, best_dict = get_best_cal_files(cam_id, con, cur, json_conf)
 
+   # determine current avg res
+
    sql = """
       SELECT cal_fn, count(*) AS ss, avg(res_px) as rs 
         FROM calfile_paired_stars 
@@ -5999,18 +6011,13 @@ def characterize_best(cam_id, con, cur, json_conf,limit=500, cal_fns=None):
     LIMIT {}
    """.format(limit)
    dvals = ["%" + cam_id + "%"]
-   #print(sql)
-   #print(dvals)
    cur.execute(sql, dvals)
    rows = cur.fetchall()
 
-   for row in rows:
-      print(row)
    if len(rows) == 0:
       print("FAILED no rows")
       exit()
 
-   print("CHAR ROWS:", len(rows))
    updated_stars = []
    updated_stars_zp = []
    res_0 = []
@@ -6026,8 +6033,9 @@ def characterize_best(cam_id, con, cur, json_conf,limit=500, cal_fns=None):
    #   rows = cal_fns
    good = 0
    bad = 0
+
+   # determine res at different differences
    for row in rows:
-      #print("ROW:", row)
       if row[2] is None:
          continue
       cal_fn = row[0]
@@ -6039,7 +6047,6 @@ def characterize_best(cam_id, con, cur, json_conf,limit=500, cal_fns=None):
          if resp is not False:
             (station_id, cal_dir, cal_json_file, cal_img_file, cal_params, cal_img, clean_cal_img, mask_file,mcp) = resp
          else:
-            print("STAR CALIB FAILED:", cal_fn)
             continue 
       # better way to do this
       if cal_fn in calfiles_data:
@@ -6090,11 +6097,6 @@ def characterize_best(cam_id, con, cur, json_conf,limit=500, cal_fns=None):
          updated_stars_zp.append((cal_fn,dcname,mag,ra,dec,zp_img_ra,zp_img_dec,zp_match_dist,zp_x,zp_y,zp_img_az,zp_img_el,zp_cat_x,zp_cat_y,img_x,img_y,zp_res_px,star_flux))
 
 
-         #print("NEW/ZP:", new_cat_x, zp_cat_x, new_cat_y, zp_cat_y)
-         #print("ZP CENTER/RES:", zp_center_dist, zp_res_px)
-
-      #plot_star_chart(clean_cal_img, updated_stars, updated_stars_zp)
-
    print("RES ZONES:")
    print("0-200", np.median(res_0))
    print("200-400", np.median(res_200))
@@ -6126,6 +6128,8 @@ def characterize_best(cam_id, con, cur, json_conf,limit=500, cal_fns=None):
       cv2.putText(base_image, str(int(np.median(res_1000))),  (55,30), cv2.FONT_HERSHEY_SIMPLEX, 1, (255,255,255), 1)
 
       cv2.line(base_image, (int(0),int(0)), (int(1920/2),int(1080/2)), [255,255,255], 1)
+
+   # select the best stars based on the dist/res
    best_stars = []
 
    ic = 0
@@ -6152,35 +6156,30 @@ def characterize_best(cam_id, con, cur, json_conf,limit=500, cal_fns=None):
       if .7 <= fact <= 1.3:
          good += 1
       else:
-         print("BAD Fact:", bad, res_px, limit, fact)
          bad += 1
       if .5 <= fact <= 1.5:
-      #if True:
-         #cv2.putText(base_image, str(int(res_px)),  (int(new_x),int(new_y)), cv2.FONT_HERSHEY_SIMPLEX, .4, (0,255,0), 1)
          cv2.line(base_image, (int(zp_cat_x),int(zp_cat_y)), (int(img_x),int(img_y)), (0,255,0), 2)
          (cal_fn,dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,img_x,img_y,res_px,star_flux) = updated_stars[ic]
          best_stars.append((cal_fn,dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,zp_cat_x,zp_cat_y,img_x,img_y,res_px,star_flux)) 
-      #else:
-      #   cv2.putText(base_image, str(int(res_px)),  (int(new_x),int(new_y)), cv2.FONT_HERSHEY_SIMPLEX, .4, (255,255,255), 1)
       ic += 1
 
    if SHOW == 1:
       cv2.imshow('pepe', base_image)
       cv2.waitKey(30)
-
+   cv2.imwrite(all_stars_image_file, base_image)
+   print(all_stars_image_file)
 
 
    merged_stars = []
    rez = [row[-2] for row in best_stars] 
    med_rez = np.median(rez) * 1.2
+
+   # only keep the best stars
    print("CAM ID/START REZ/BEST STARS:", cam_id, med_rez, len(best_stars))
 
    for star in best_stars:
 
       (cal_fn, name,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,img_x,img_y,res_px,star_flux) = star
-      #if cal_fn not in best_dict:
-         #print("MISSING CAL FN!", cal_fn)
-      #   continue
 
       if cal_fn in calfiles_data:
          #(cal_fn_ex, center_az,center_el, ra_center,dec_center, position_angle, pixscale) = calfiles_data[cal_fn]
@@ -6189,21 +6188,17 @@ def characterize_best(cam_id, con, cur, json_conf,limit=500, cal_fns=None):
             y_poly, x_poly_fwd, y_poly_fwd, a_res_px, a_res_deg, ai_weather, ai_weather_conf, cal_version, last_update) = calfiles_data[cal_fn]
 
 
-      #match_dist = zp_res_px
-
       match_dist = 9999
       if res_px < med_rez: 
-         print("KEEP", res_px, med_rez)
          merged_stars.append((cal_file , center_az, center_el, ra_center, dec_center, position_angle, pixscale, name,mag,ra,dec,ra,dec,match_dist,new_x,new_y,center_az,center_el,new_cat_x,new_cat_y,img_x,img_y,res_px,star_flux))
-      else:
-         print("SKIP", res_px, med_rez)
 
+   # select grid stars when we have more than 400
+   # this distributes out the stars across the fov 
 
    if len(merged_stars) > 400:
-      grid = make_grid_stars(merged_stars, mpc = None, factor = 2, gsize=50, limit=10)
+      grid = make_grid_stars(merged_stars, mcp , factor = 2, gsize=50, limit=10)
       best_stars = []
       for grid_key in grid:
-         print(grid_key, len(grid[grid_key]))
          just_data = sorted(grid[grid_key], key=lambda x: x[-2], reverse=False)
          rc = 0
          if len(just_data ) > 0:
@@ -6216,6 +6211,7 @@ def characterize_best(cam_id, con, cur, json_conf,limit=500, cal_fns=None):
    else:
       best_stars = merged_stars
 
+   # now we have our best stars to use for the model!
    print("BEST STARS:", len(best_stars))
 
    save_json_file("/mnt/ams2/cal/" + station_id + "_" + cam_id + "_MERGED_STARS.json", merged_stars)
@@ -6541,14 +6537,10 @@ def load_cal_files(cam_id, con, cur, single=False,last=None):
    if last is not None:
       sql += " LIMIT " + str(last)
 
-   print(sql)
-   print(uvals)
    cur.execute(sql, uvals )
 
    rows = cur.fetchall()
    calfiles_data = {}
-   #print(rows)
-   #print("NO CAL FILES DATA FOUND!?")
 
    for row in rows:
       failed = False
@@ -6597,7 +6589,7 @@ def batch_calib(cam_id, con, cur, json_conf):
       cal_json_file = cal_img_file.replace(".png", "-calparams.json")
       cal_json_fn = cal_json_file.split("/")[-1]
       if os.path.exists(cal_img_file):
-         print("JSON:", cal_json_fn)
+         #print("JSON:", cal_json_fn)
          loaded = check_calibration_file(cal_json_fn, con, cur)
          if loaded is False:
             get_image_stars(cal_img_file, con, cur, json_conf)
@@ -6613,7 +6605,7 @@ def best_stars(merged_stars, mcp, factor = 2, gsize=50):
 
 
    if True:
-      grid = make_grid_stars(merged_stars, mpc = None, factor = 2, gsize=50, limit=10)
+      grid = make_grid_stars(merged_stars, mcp = None, factor = 2, gsize=50, limit=10)
       best_stars = []
       for grid_key in grid:
          just_data = sorted(grid[grid_key], key=lambda x: x[-2], reverse=False)
@@ -6652,12 +6644,31 @@ def best_stars(merged_stars, mcp, factor = 2, gsize=50):
 def lens_model(cam_id, con, cur, json_conf):
    station_id = json_conf['site']['ams_id']
    limit = 1000
-   cal_fns = batch_review(station_id, cam_id, con, cur, json_conf, limit)
+   #cal_fns = batch_review(station_id, cam_id, con, cur, json_conf, limit)
+
+   avg_res = get_avg_res(cam_id, con, cur)
+
+   sql = """
+      SELECT cal_fn, res_px
+        FROM calibration_files 
+       WHERE cal_fn like ?
+         AND res_px < ?
+    ORDER BY res_px ASC 
+   """
+
+   dvals = ["%" + cam_id + "%", avg_res]
+   cur.execute(sql, dvals)
+   rows = cur.fetchall()
+   cal_fns = []
+   for row in rows:
+      print("\r", row[0], row[1], end="")
+      cal_fns.append(row[0])
+
+   print("Characterize FOV")
    characterize_best(cam_id, con, cur, json_conf, limit, cal_fns)
-   #lens_model_report(cam_id, con, cur, json_conf)
 
    mask_file = "/mnt/ams2/meteor_archive/{}/CAL/MASKS/{}_mask.png".format(station_id, cam_id)
-   print("MASK:", mask_file)
+
    if os.path.exists(mask_file) is True:
       mask = cv2.imread(mask_file)
       mask = cv2.cvtColor(mask, cv2.COLOR_BGR2GRAY)
@@ -6667,7 +6678,6 @@ def lens_model(cam_id, con, cur, json_conf):
 
    autocal_dir = "/mnt/ams2/cal/"
    station_id = json_conf['site']['ams_id']
-   print("LENS MODEL")
 
    mcp_file = autocal_dir + "multi_poly-" + station_id + "-" + cam_id + ".info"
 
