@@ -4900,6 +4900,7 @@ def move_extra_cals(json_conf):
    bad_dir = "/mnt/ams2/cal/bad_cals/"
    extra_dir = "/mnt/ams2/cal/extra_cals/"
    best_dir = "/mnt/ams2/cal/best_cals/"
+   daily = {}
    if cfe(bad_dir,1) == 0:
       os.makedirs(bad_dir)
    if cfe(extra_dir,1) == 0:
@@ -4945,13 +4946,23 @@ def move_extra_cals(json_conf):
    cal_index = sorted(all_cals, key=lambda x: x[4], reverse=False)
    gc = 0
    for row in cal_index:
-      if row[4] > med_res * 2:
-         print("BAD", gc, med_res, row)
-         bad_cals[row[0]] = {}
+      el = row[0].split("_")
+      #print(el)
+      key = el[7] + "_" + el[0] + "_" + el[1] 
+      if key not in daily:
+         daily[key] = 1
       else:
-         print("GOOD", gc, med_res, row)
+         daily[key] += 1
+      if row[4] > med_res * 2 and daily[key] > 15 :
+         print("BAD", gc, daily[key], med_res, row)
+         bad_cals[row[0]] = {}
+      #else:
+      #   print("GOOD", gc, daily[key], med_res, row)
       gc += 1
    bc = 0 
+
+   for key in daily:
+      print(key, daily[key])
 
    bad_dir = "/mnt/ams2/cal/freecal/extra_cals/" 
    if os.path.exists(bad_dir) is False:  
