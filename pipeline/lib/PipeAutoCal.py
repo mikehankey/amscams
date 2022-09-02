@@ -4213,6 +4213,7 @@ def make_cal_summary(cam,json_conf):
    else:
       mcp = {}
       star_db = {}
+      return()
    print(mcp.keys()) 
    if mcp is not None and "x_fun" in mcp:
       x_fun = mcp['x_fun']
