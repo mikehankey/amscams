@@ -4111,6 +4111,7 @@ def cal_sum_html(json_conf):
          cal_sum[cam_id] = None
 
    html = "<h1>Calibration Summary for " + station_id + "</h1>\n"
+   rand = str(time.time())
    for cam_id in cal_sum:
       if cal_sum[cam_id] != None:
          html += "<h2>Camera: " + cam_id + "</h2>\n"
@@ -4119,18 +4120,18 @@ def cal_sum_html(json_conf):
 
          # az grid
          grid_fn = cal_sum[cam_id]['cal_grid_img'].split("/")[-1].replace(".jpg", "-tn.jpg")
-         html += "<div style='float:left; padding: 2px;'><a href=plots/" + grid_fn.replace("-tn", "") + "><img src=plots/" + grid_fn + "></a></div>"
+         html += "<div style='float:left; padding: 2px;'><a href=plots/" + grid_fn.replace("-tn", "") + "><img src=plots/" + grid_fn + "?{:s}></a></div>".format(rand)
          # lens model 
          lens_fn = cal_sum[cam_id]['cal_lens_img'].split("/")[-1].replace(".jpg", "-tn.jpg")
-         html += "<div style='float:left; padding: 2px;'><a href=plots/" + lens_fn.replace("-tn", "") + "><img src=plots/" + lens_fn + "></a></div>"
+         html += "<div style='float:left; padding: 2px;'><a href=plots/" + lens_fn.replace("-tn", "") + "><img src=plots/" + lens_fn + "?{:s}></a></div>".format(rand)
 
          # good stars
          good_stars_fn = station_id + "_" + cam_id + "_ALL_GOOD_STARS.jpg" 
-         html += "<div style='float:left; padding: 2px;'><a href=plots/" + good_stars_fn.replace("-tn", "") + "><img width=320 height=180 src=plots/" + good_stars_fn + "></a></div>"
+         html += "<div style='float:left; padding: 2px;'><a href=plots/" + good_stars_fn.replace("-tn", "") + "><img width=320 height=180 src=plots/" + good_stars_fn + "?{:s}></a></div>".format(rand)
 
          # multi-fit
          multi_fn = station_id + "_" + cam_id + "_MULTI_FIT.jpg" 
-         html += "<div style='float:left; padding: 2px;'><a href=plots/" + multi_fn.replace("-tn", "") + "><img width=320 height=180 src=plots/" + multi_fn + "></a></div>"
+         html += "<div style='float:left; padding: 2px;'><a href=plots/" + multi_fn.replace("-tn", "") + "><img width=320 height=180 src=plots/" + multi_fn + "?{:s}></a></div>".format(rand)
 
 
 
@@ -10379,9 +10380,19 @@ def minimize_poly_multi_star(merged_stars, json_conf,orig_ra_center=0,orig_dec_c
    res,updated_merged_stars = reduce_fit_multi(x_poly, "x_poly",merged_stars,cal_params,fit_img,json_conf,cam_id,1,show)
 
    new_merged_stars = []
+   # here we should remove the worste stars 
 
    res,updated_merged_stars = reduce_fit_multi(x_poly, "x_poly",merged_stars,cal_params,fit_img,json_conf,cam_id,1,show)
-
+   print("RES:", res)
+   for star in merged_stars:
+      (cal_file , center_az, center_el, ra_center, dec_center, position_angle, pixscale, dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist,star_int) = star
+      cat_dist = calc_dist((six, siy), (new_cat_x,new_cat_y))
+      if cat_dist < res * 2:
+         new_merged_stars.append(star) 
+      else:
+         print("OVER RES!", cat_dist)
+   updated_merged_stars = new_merged_stars
+   #exit()
 
    all_res = [row[-2] for row in updated_merged_stars]
    med_res = np.median(all_res)

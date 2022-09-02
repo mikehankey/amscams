@@ -1100,7 +1100,8 @@ def import_cal_file(cal_fn, cal_dir, mcp):
    # load json, insert into main table, insert stars into pairs table
    delete_cal_file(cal_fn, con, cur, json_conf)
    
-   print("IMPORT:", cal_fn) 
+   print("IMPORT:", cal_dir + cal_fn) 
+   
    cal_img_file = cal_dir + cal_fn.replace("-calparams.json", ".png")
    if os.path.exists(cal_img_file) is True:
       cal_img = cv2.imread(cal_img_file)
@@ -6749,6 +6750,7 @@ def lens_model(cam_id, con, cur, json_conf):
    mean_rez = np.median(rez) 
    print("NEW STARS:", len(new_merged_stars))
    print("NEW REZ:", mean_rez)
+   lens_model_report(cam_id, con, cur, json_conf)
 
 
 def wizard(station_id, cam_id, con, cur, json_conf, limit=100):
@@ -6797,10 +6799,16 @@ def wizard(station_id, cam_id, con, cur, json_conf, limit=100):
 
 def lens_model_report(cam_id, con, cur, json_conf):
    import matplotlib.pyplot as plt
+   station_id = json_conf['site']['ams_id']
+   msfile = "/mnt/ams2/cal/" + station_id + "_" + cam_id + "_MERGED_STARS.json"
+   if os.path.exists(msfile) is True:
+      merged_stars = load_json_file(msfile)
    make_cal_summary(cam_id, json_conf)
    make_cal_plots(cam_id, json_conf)
+   make_lens_model(cam_id, json_conf, merged_stars)
+
+   #exit()
    print("ENDED AFTER SUM")
-   exit()
    grid_bg = np.zeros((1080,1920,3),dtype=np.uint8)
    autocal_dir = "/mnt/ams2/cal/"
    station_id = json_conf['site']['ams_id']
