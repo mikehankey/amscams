@@ -1073,8 +1073,10 @@ def cal_status_report(cam_id, con, cur, json_conf):
    print("CAL FILES:", cal_files)
    cal_files = sorted(cal_files, key=lambda x: x[0], reverse=True)
    for row in cal_files:
+      print("RECAL:", row)
       cal_fn, total_stars, avg_res , score = row
       if cal_fn not in calfiles_data:
+         print("MISSING FROM CALFILES DATA???", cal_fn)
          continue
       (station_id, camera_id, cal_fn, cal_ts, az, el, ra, dec, position_angle,\
          pixel_scale, zp_az, zp_el, zp_ra, zp_dec, zp_position_angle, zp_pixel_scale, x_poly, \
