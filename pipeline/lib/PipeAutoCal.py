@@ -125,6 +125,12 @@ def insert_calib(cal_file, con, cur, json_conf):
       cp['y_poly'] = np.zeros(shape=(15,), dtype=np.float64).tolist()
       cp['x_poly_fwd'] = np.zeros(shape=(15,), dtype=np.float64).tolist()
       cp['y_poly_fwd'] = np.zeros(shape=(15,), dtype=np.float64).tolist()
+   if "total_res_px" not in cp:
+      cp['total_res_px'] = 999
+   if "total_res_deg" not in cp:
+      cp['total_res_px'] = 999
+   if "cal_version" not in cp:
+      cp['cal_version'] = 1
 
 
    ivals = [  station_id, 
