@@ -6888,7 +6888,7 @@ def lens_model_report(cam_id, con, cur, json_conf):
 
    mj = {}
    mj['cp'] = mcp 
-   mj['sd_trim'] = cal_file 
+   #mj['sd_trim'] = cal_file 
 
 
    plt.scatter(mags,fluxs)
