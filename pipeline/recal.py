@@ -6652,6 +6652,8 @@ def best_stars(merged_stars, mcp, factor = 2, gsize=50):
 def lens_model(cam_id, con, cur, json_conf):
    station_id = json_conf['site']['ams_id']
 
+   lens_model_report(cam_id, con, cur, json_conf)
+
    mask_file = "/mnt/ams2/meteor_archive/{}/CAL/MASKS/{}_mask.png".format(station_id, cam_id)
    print("MASK:", mask_file)
    if os.path.exists(mask_file) is True:
