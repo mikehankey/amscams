@@ -4214,10 +4214,16 @@ def make_cal_summary(cam,json_conf):
       mcp = {}
       star_db = {}
    print(mcp.keys()) 
-   x_fun = mcp['x_fun']
-   y_fun = mcp['y_fun']
-   x_fun_fwd = mcp['x_fun_fwd']
-   y_fun_fwd = mcp['y_fun_fwd']
+   if mcp != "" and mcp is not None:
+      x_fun = mcp['x_fun']
+      y_fun = mcp['y_fun']
+      x_fun_fwd = mcp['x_fun_fwd']
+      y_fun_fwd = mcp['y_fun_fwd']
+   else:
+      x_fun = 999
+      y_fun = 999
+      x_fun_fwd = 999
+      y_fun_fwd = 999
    for key in mcp:
       print("MCP:", key, mcp[key])
 
