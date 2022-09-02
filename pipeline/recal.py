@@ -6651,8 +6651,10 @@ def best_stars(merged_stars, mcp, factor = 2, gsize=50):
 
 def lens_model(cam_id, con, cur, json_conf):
    station_id = json_conf['site']['ams_id']
-
-   lens_model_report(cam_id, con, cur, json_conf)
+   limit = 1000
+   cal_fns = batch_review(station_id, cam_id, con, cur, json_conf, limit)
+   characterize_best(cam_id, con, cur, json_conf, limit, cal_fns)
+   #lens_model_report(cam_id, con, cur, json_conf)
 
    mask_file = "/mnt/ams2/meteor_archive/{}/CAL/MASKS/{}_mask.png".format(station_id, cam_id)
    print("MASK:", mask_file)
