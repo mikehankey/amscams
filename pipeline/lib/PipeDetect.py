@@ -919,12 +919,12 @@ def reject_mask_detects(date, json_conf):
          except:
             print("CORRUPT MJ", mf)
             continue
-         if "multi_station_event" in mj:
-            print("SKIP MULTI-STATION CONFIRMED.")
-            continue
-         if "best_meteor" in mj:
-            print("SKIP BEST METEOR CONFIRMED.")
-            continue
+         #if "multi_station_event" in mj:
+         #   print("SKIP MULTI-STATION CONFIRMED.")
+         #   continue
+         #if "best_meteor" in mj:
+         #   print("SKIP BEST METEOR CONFIRMED.")
+         #   continue
          if "confirmed" in mj:
             if len(mj['confirmed_meteors']) > 0:
                print("SKIP CONFIRMED.")
