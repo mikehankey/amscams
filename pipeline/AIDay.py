@@ -4,13 +4,17 @@ from datetime import datetime
 import datetime as dt
 import sys
 import os
-
+from lib.PipeUtil import check_running
 #from Classes.ReviewNetwork import ReviewNetwork
 
 today = datetime.now()
 yest = today - dt.timedelta(days=1)
 yest = yest.strftime("%Y_%m_%d")
 today = datetime.now().strftime("%Y_%m_%d")
+
+running = check_running("AIServer.py")
+if running == 0:
+   os.system("/usr/bin/python3.6 AIServer.py  > /dev/null 2>&1 &")
 
 print("Init DB Starting.")
 AIDB = AllSkyDB()

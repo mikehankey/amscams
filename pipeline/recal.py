@@ -1090,10 +1090,14 @@ def cal_status_report(cam_id, con, cur, json_conf):
    #print("IN DB:", len(calfiles_data.keys()) )
    #print("WITH STAR DATA:", len(calfile_paired_star_stats.keys()))
    #print("IN FOLDER :", len(freecal_index.keys()) )
+
+   batch_apply(cam_id, con,cur, json_conf, 30, True)
+
    print(tb)
    print(tb2)
 
-   batch_apply(cam_id, con,cur, json_conf, 30, True)
+   os.system("./Process.py move_exta_cals")
+   os.system("cd /home/ams/amscams/pythonv2/; ./autoCal.py cal_index")
 
 def import_cal_file(cal_fn, cal_dir, mcp):
 

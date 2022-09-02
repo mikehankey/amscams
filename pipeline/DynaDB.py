@@ -1685,7 +1685,11 @@ def do_dyna_day(dynamodb, day):
    #print(cmd)
    #os.system(cmd)
    if "ml" in json_conf:
-      cmd = "python3.6 ./AIDay.py " + day
+      cmd = "/usr/bin/python3.6 ./AIDay.py " + day
+      print(cmd)
+      os.system(cmd)
+
+      cmd = "/usr/bin/python3.6 ./AIDay.py " + all + " 25 "
       print(cmd)
       os.system(cmd)
       

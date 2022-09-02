@@ -6,9 +6,13 @@ from lib.asciiart import *
 app = Flask(__name__, static_url_path='/static')
 
 from random import randrange
-
+from lib.PipeUtil import check_running
 from Classes.ASAI import AllSkyAI
 
+run = check_running("AIServer.py")
+if run > 1:
+   print("Already Running:", run)
+   exit()
 ASAI = AllSkyAI()
 ASAI.load_all_models()
 
