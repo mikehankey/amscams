@@ -4911,6 +4911,7 @@ def move_extra_cals(json_conf):
    all_cals = []
    day_log = {}
    bad_cals = {}
+   all_res = []
    for key in temp:
       keyfn = key.split("/")[-1]
       cal_id = key.split("/")[-2]
@@ -4926,6 +4927,10 @@ def move_extra_cals(json_conf):
          day_log[cam_id][cal_date] = {}
       stars = temp[key]['total_stars']
       res_px = temp[key]['total_res_px']
+      if math.isnan(res_px) is True:
+         bad_cals[cal_id] = {}
+      elif res_px != None:
+         all_res.append(res_px)
       if res_px > 0:
          score = stars / res_px
       else:
@@ -4934,11 +4939,17 @@ def move_extra_cals(json_conf):
          bad_cals[cal_id] = {}
       else:
          all_cals.append((cal_id, cam_id, cal_date, stars, res_px, score))
+   med_res = np.median(all_res)
+   print("MED RES:", med_res)
 
-   cal_index = sorted(all_cals, key=lambda x: x[5], reverse=True)
+   cal_index = sorted(all_cals, key=lambda x: x[4], reverse=False)
    gc = 0
    for row in cal_index:
-      print(gc, row)
+      if row[4] > med_res * 2:
+         print("BAD", gc, med_res, row)
+         bad_cals[row[0]] = {}
+      else:
+         print("GOOD", gc, med_res, row)
       gc += 1
    bc = 0 
 
@@ -4948,13 +4959,14 @@ def move_extra_cals(json_conf):
 
    for key in bad_cals:
       bad_dir = "/mnt/ams2/cal/freecal/extra_cals/" + key 
-      if cfe(bad_dir, 1) == 1:
-         print(bc, "BAD MOVE!", key)
+      if True:
+         print(bc, "MOVE TO EXTRA!", key)
          cmd = "mv /mnt/ams2/cal/freecal/" + key + " " + bad_dir 
-         print("MOVE DISABLED FOR NOW!", cmd)
+         print(cmd)
+         #print("MOVE DISABLED FOR NOW!", cmd)
          os.system(cmd)
          bc += 1
-
+   #os.system("cd ../pythonv2; ./autoCal.py cal_index")
 
 
 
