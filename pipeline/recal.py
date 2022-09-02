@@ -6833,6 +6833,9 @@ def lens_model_report(cam_id, con, cur, json_conf):
    mcp_file = autocal_dir + "multi_poly-" + station_id + "-" + cam_id + ".info"
    merged_star_file = "/mnt/ams2/cal/" + station_id + "_" + cam_id + "_MERGED_STARS.json"
 
+   if os.path.exists(merged_star_file) is False:
+      print("No star file :", cam_id)
+      return()
    mstars = load_json_file(merged_star_file)
    mcp = load_json_file(mcp_file)
    print(mcp.keys())
