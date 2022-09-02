@@ -3391,8 +3391,8 @@ def apply_calib (cal_file, calfiles_data, json_conf, mcp, last_cal_params=None, 
          temp_cal_params['pixscale'] = last_cal_params['pixscale']
 
       #show_calparams(cal_params)      
-      if do_bad == True and res_px < 2:
-         return(cal_params)
+      #if do_bad == True and res_px < 2:
+      #   return(cal_params)
 
       print("START RES", cal_file, res_px)
       if res_px > 5:
