@@ -128,7 +128,7 @@ def insert_calib(cal_file, con, cur, json_conf):
    if "total_res_px" not in cp:
       cp['total_res_px'] = 999
    if "total_res_deg" not in cp:
-      cp['total_res_px'] = 999
+      cp['total_res_deg'] = 999
    if "cal_version" not in cp:
       cp['cal_version'] = 1
 
