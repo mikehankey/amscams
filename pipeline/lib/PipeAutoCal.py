@@ -4942,7 +4942,9 @@ def move_extra_cals(json_conf):
       gc += 1
    bc = 0 
 
-   
+   bad_dir = "/mnt/ams2/cal/freecal/extra_cals/" 
+   if os.path.exists(bad_dir) is False:  
+      os.makedirs(bad_dir)
 
    for key in bad_cals:
       bad_dir = "/mnt/ams2/cal/freecal/extra_cals/" + key 
@@ -4950,7 +4952,7 @@ def move_extra_cals(json_conf):
          print(bc, "BAD MOVE!", key)
          cmd = "mv /mnt/ams2/cal/freecal/" + key + " " + bad_dir 
          print("MOVE DISABLED FOR NOW!", cmd)
-         #os.system(cmd)
+         os.system(cmd)
          bc += 1
 
 
