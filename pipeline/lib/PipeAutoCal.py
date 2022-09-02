@@ -4857,7 +4857,7 @@ def make_cal_plots(in_cam_id, json_conf):
    print("SAVED /mnt/ams2/cal/plots/" + station_id + "_" + in_cam_id + "_CALTIME.png")
 
 
-def move_extra_cals(json_conf):
+def move_extra_cals_OLD(json_conf):
    bad_dir = "/mnt/ams2/cal/bad_cals/"
    extra_dir = "/mnt/ams2/cal/extra_cals/"
    best_dir = "/mnt/ams2/cal/best_cals/"
@@ -4945,7 +4945,7 @@ def move_extra_cals(json_conf):
    
 
    for key in bad_cals:
-      bad_dir = "/mnt/ams2/cal/freecal/" + key 
+      bad_dir = "/mnt/ams2/cal/freecal/extra_cals/" + key 
       if cfe(bad_dir, 1) == 1:
          print(bc, "BAD MOVE!", key)
          cmd = "mv /mnt/ams2/cal/freecal/" + key + " " + bad_dir 
