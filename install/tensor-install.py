@@ -8,12 +8,13 @@ installed = {pkg.key for pkg in pkg_resources.working_set}
 
 os.system("sudo apt update")
 
+cmd = "sudo apt-get -y install python3.6-distutils"
+os.system(cmd)
+
 if os.path.exists("/usr/bin/pip3") is False and os.path.exists("/usr/local/bin/pip3") is False:
    os.system("./install-pip.sh")
 
 os.system("sudo python3 -m pip install --upgrade pip")
-cmd = "sudo apt-get -y install python3.6-distutils"
-os.system(cmd)
 
 cmd = "sudo apt-get -y install p7zip-full"
 os.system(cmd)
