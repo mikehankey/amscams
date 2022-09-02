@@ -7006,7 +7006,8 @@ def autocal(image_file, json_conf, show = 0, heal_only=0):
             #cmd = "./AzElGrid.py az_grid " + cpf
             #print(cmd)
             os.system(cmd)
-            cmd = "./Process.py refit " + cpf
+            #cmd = "./Process.py refit " + cpf
+            cmd = "./recal.py apply_calib " + cpf
             print(cmd)
             os.system(cmd)
      
@@ -7177,7 +7178,8 @@ def autocal(image_file, json_conf, show = 0, heal_only=0):
 
    #cmd = "./AzElGrid.py az_grid " + cal_img_file + ">/tmp/mike.txt 2>&1"
    #print(cmd)
-   cmd = "./Process.py refit " + cal_params_file 
+   #cmd = "./Process.py refit " + cal_params_file 
+   cmd = "./recal.py apply_calib " + cal_params_file 
    print(cmd)
    os.system(cmd)
    #os.system(cmd)
@@ -7225,7 +7227,8 @@ def autocal(image_file, json_conf, show = 0, heal_only=0):
 
    cmd = "mv " + tdir + saf + " " + sdir
    os.system(cmd)
-   cmd = "./Process.py refit " + new_cal_file
+   #cmd = "./Process.py refit " + new_cal_file
+   cmd = "./recal.py apply_calib " + new_cal_file 
    print(cmd)
    os.system(cmd)
 
