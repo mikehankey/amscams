@@ -2010,9 +2010,11 @@ class AllSkyDB():
                   print("MULTI CLASS:", resp['mc_class'], resp['mc_class_conf'])
                else:
                   print("AI FAILED!")
-                  input("WAIT")
-
-               desc = final_class + " " + str(final_conf)[0:4]
+                  final_class = None
+               if final_class is not None: 
+                  desc = final_class + " " + str(final_conf)[0:4]
+               else:
+                  desc = "NO AI"
                ai_data[root_fn] = resp
                if "meteor" in desc or (meteor_yes_no > 50 and "orion" in desc) or (meteor_yes_no > 50 and "star" in desc) :
                   self.reactivate_meteor(root_fn)
