@@ -6807,7 +6807,7 @@ def lens_model_report(cam_id, con, cur, json_conf):
       merged_stars = load_json_file(msfile)
    make_cal_summary(cam_id, json_conf)
    make_cal_plots(cam_id, json_conf)
-   make_lens_model(cam_id, json_conf, merged_stars)
+   #make_lens_model(cam_id, json_conf, merged_stars)
 
    #exit()
    print("ENDED AFTER SUM")
