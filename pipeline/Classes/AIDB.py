@@ -2010,8 +2010,11 @@ class AllSkyDB():
                   print("MULTI CLASS:", resp['mc_class'], resp['mc_class_conf'])
                else:
                   print("AI FAILED!")
-                  final_class = None
-               if final_class is not None: 
+                  final_class = "" 
+                  meteor_yn = -1 
+                  fireball_yn = -1 
+                  final_conf = -1 
+               if final_class is not None and final_class != "": 
                   desc = final_class + " " + str(final_conf)[0:4]
                else:
                   desc = "NO AI"
