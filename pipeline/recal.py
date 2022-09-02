@@ -6813,9 +6813,10 @@ def wizard(station_id, cam_id, con, cur, json_conf, limit=100):
    merged_stars = load_json_file(merged_star_file)
    #make_lens_model(cam_id, json_conf, merged_stars)
 
-   characterize_fov(cam_id, con, cur, json_conf)
+   #characterize_fov(cam_id, con, cur, json_conf)
 
 def lens_model_report(cam_id, con, cur, json_conf):
+   characterize_fov(cam_id, con, cur, json_conf)
    import matplotlib.pyplot as plt
    station_id = json_conf['site']['ams_id']
    msfile = "/mnt/ams2/cal/" + station_id + "_" + cam_id + "_MERGED_STARS.json"
