@@ -4956,6 +4956,9 @@ def move_extra_cals(json_conf):
       if row[4] > med_res * 2 and daily[key] > 15 :
          print("BAD", gc, daily[key], med_res, row)
          bad_cals[row[0]] = {}
+      elif daily[key] > 15 :
+         print("BAD", gc, daily[key], med_res, row)
+         bad_cals[row[0]] = {}
       #else:
       #   print("GOOD", gc, daily[key], med_res, row)
       gc += 1
