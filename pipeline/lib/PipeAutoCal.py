@@ -4207,8 +4207,12 @@ def make_cal_summary(cam,json_conf):
 
    mcp_file = cal_dir + "multi_poly-" + STATION_ID + "-" + cam + ".info"
    star_file = cal_dir + "star_db-" + STATION_ID + "-" + cam + ".info"
-   mcp = load_json_file(mcp_file)
-   star_db = load_json_file(star_file)
+   if os.path.exists:
+      mcp = load_json_file(mcp_file)
+      star_db = load_json_file(star_file)
+   else:
+      mcp = {}
+      star_db = load_json_file(star_file)
    print(mcp.keys()) 
    x_fun = mcp['x_fun']
    y_fun = mcp['y_fun']
