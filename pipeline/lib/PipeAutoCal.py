@@ -4980,7 +4980,7 @@ def move_extra_cals(json_conf):
          #print("MOVE DISABLED FOR NOW!", cmd)
          os.system(cmd)
          bc += 1
-   #os.system("cd ../pythonv2; ./autoCal.py cal_index")
+   os.system("cd ../pythonv2; ./autoCal.py cal_index")
 
 
 
