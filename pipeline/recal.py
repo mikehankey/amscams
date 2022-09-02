@@ -7179,7 +7179,12 @@ if __name__ == "__main__":
       prune(cam_id, con, cur, json_conf)
    if cmd == "lens_model_report" :
       cam_id = sys.argv[2]
-      lens_model_report(cam_id, con, cur, json_conf)
+      if cam_id == "all":
+         for cam_num in json_conf['cameras']:
+            cam_id = json_conf['cameras'][cam_num]['cams_id']
+            lens_model_report(cam_id, con, cur, json_conf)
+      else:
+         lens_model_report(cam_id, con, cur, json_conf)
    if cmd == "make_plate":
       cal_fn = sys.argv[2]
       make_plate(cal_fn, json_conf, con, cur)
