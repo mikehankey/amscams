@@ -7077,7 +7077,7 @@ if __name__ == "__main__":
       print("CAM:", cam_id)
       if cam_id == "all":
          for cam_num in json_conf['cameras']:
-            if json_conf['cameras']['cam_num'] > 7:
+            if json_conf['cameras'][cam_num] > 7:
                continue
             cam_id = json_conf['cameras'][cam_num]['cams_id']
             cal_status_report(cam_id, con, cur, json_conf)
