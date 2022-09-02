@@ -120,6 +120,11 @@ def insert_calib(cal_file, con, cur, json_conf):
    #if "cal_version" not in cp:
    cp['cal_version'] = 0
 
+   if "x_poly" not in temp_cp:
+      cp['x_poly'] = np.zeros(shape=(15,), dtype=np.float64)
+      cp['y_poly'] = np.zeros(shape=(15,), dtype=np.float64)
+      cp['x_poly_fwd'] = np.zeros(shape=(15,), dtype=np.float64)
+      cp['y_poly_fwd'] = np.zeros(shape=(15,), dtype=np.float64)
 
    ivals = [  station_id, 
               cam_id, 
