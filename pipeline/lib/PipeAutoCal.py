@@ -4212,7 +4212,7 @@ def make_cal_summary(cam,json_conf):
       star_db = load_json_file(star_file)
    else:
       mcp = {}
-      star_db = load_json_file(star_file)
+      star_db = {}
    print(mcp.keys()) 
    x_fun = mcp['x_fun']
    y_fun = mcp['y_fun']
