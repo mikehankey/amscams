@@ -6838,8 +6838,11 @@ def lens_model_report(cam_id, con, cur, json_conf):
       print("No star file :", cam_id)
       return()
    mstars = load_json_file(merged_star_file)
-   mcp = load_json_file(mcp_file)
-   print(mcp.keys())
+   if os.path.exists(mcp_file):
+      mcp = load_json_file(mcp_file)
+      print(mcp.keys())
+   else:
+      return()
 
 
 
