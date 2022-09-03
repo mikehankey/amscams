@@ -36,6 +36,7 @@ import sqlite3
 from lib.DEFAULTS import *
 from lib.PipeVideo import load_frames_simple
 from Classes.MovieMaker import MovieMaker 
+from prettytable import PrettyTable as pt
 
 tries = 0
 
@@ -1066,7 +1067,6 @@ def cal_status_report(cam_id, con, cur, json_conf):
 
 
   
-   from prettytable import PrettyTable as pt
    tb = pt()
    tb.field_names = ["Field", "Value"]
 
@@ -1140,7 +1140,6 @@ def import_cal_file(cal_fn, cal_dir, mcp):
       sc = 0
       for star in cal_params['cat_image_stars']:
          (dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,res_px,bp) = star
-         print("IMPORT STAR:", dcname)
          img_x = six
          img_y = siy
          ra_key = str(ra) + "_" + str(dec)
@@ -3345,7 +3344,6 @@ def get_image_stars_with_catalog(obs_id, cal_params, show_img):
             for ix,iy,ii in star_points[0:100]:
                this_dist = calc_dist((ix,iy),(new_cat_x,new_cat_y))
                if this_dist < 100:
-                  print("STAR POINTS DIST:", this_dist)
                   dist_arr.append((this_dist, star, ii))
             dist_arr = sorted(dist_arr, key=lambda x: x[0], reverse=False)
             if len(dist_arr) > 0:
@@ -3435,15 +3433,14 @@ def get_image_stars_with_catalog(obs_id, cal_params, show_img):
          rez = 1
       for row in cal_params['cat_image_stars']:
          if row[-2] < rez * 2:
-            print("add good res:", row[-2])
             temp.append(row)
-         else:
-            print("skip bad res:", row[-2])
+         #else:
+         #   print("skip bad res:", row[-2])
 
       cal_params['cat_image_stars'] = temp
 
-   for cat_star in cat_image_stars:
-      print("FINAL :", cat_star[-2])
+   #for cat_star in cat_image_stars:
+   #   print("FINAL :", cat_star[-2])
 
    return(cat_image_stars, user_stars)
 
@@ -4734,11 +4731,12 @@ def get_paired_stars(cal_fn, cal_params, con, cur):
    stars = []
    used = {}
    dupes = {}
+   counter = 0
    for row in rows:
       cal_fn, name, mag, star_yn, ra, dec, star_flux, img_x, img_y, new_cat_x, new_cat_y, zp_cat_x, zp_cat_y, res_px, zp_res_px, slope, zp_slope = row
       key = str(ra) + "_" + str(dec)
       if key not in used:
-         print("\r", "Adding star:", name, "                 ", end="")
+         print("\r", "Pairing star:", str(name), "                 ", end="")
          #print(cal_fn, name, mag, star_yn, ra, dec, star_flux, img_x, img_y, new_cat_x, new_cat_y, zp_cat_x, zp_cat_y, res_px, zp_res_px, slope, zp_slope)
 
          stars.append((cal_fn, name, mag, star_yn, ra, dec, star_flux, img_x, img_y, new_cat_x, new_cat_y, zp_cat_x, zp_cat_y, res_px, zp_res_px, slope, zp_slope))
@@ -4762,6 +4760,7 @@ def get_paired_stars(cal_fn, cal_params, con, cur):
       cat_dist = res_px 
       if ra is not None:
          up_cat_image_stars.append((name,mag,ra,dec,img_ra,img_dec,match_dist,zp_cat_x,zp_cat_y,img_az,img_el,new_cat_x,new_cat_y,img_x,img_y,res_px,star_flux)) 
+      counter += 1
 
    return(stars, up_cat_image_stars)
 
@@ -6034,6 +6033,7 @@ def characterize_best(cam_id, con, cur, json_conf,limit=500, cal_fns=None):
 
    updated_stars = []
    updated_stars_zp = []
+
    res_0 = []
    res_200 = []
    res_400 = []
@@ -6041,6 +6041,15 @@ def characterize_best(cam_id, con, cur, json_conf,limit=500, cal_fns=None):
    res_800 = []
    res_900 = []
    res_1000 = []
+
+   nres_0 = []
+   nres_200 = []
+   nres_400 = []
+   nres_600 = []
+   nres_800 = []
+   nres_900 = []
+   nres_1000 = []
+
    
    #for cal_fn in best_dict:
    #if cal_fns is not None:
@@ -6110,8 +6119,22 @@ def characterize_best(cam_id, con, cur, json_conf,limit=500, cal_fns=None):
          updated_stars.append((cal_fn,dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,img_x,img_y,res_px,star_flux))
          updated_stars_zp.append((cal_fn,dcname,mag,ra,dec,zp_img_ra,zp_img_dec,zp_match_dist,zp_x,zp_y,zp_img_az,zp_img_el,zp_cat_x,zp_cat_y,img_x,img_y,zp_res_px,star_flux))
 
+   tb = pt()
 
-   print("RES ZONES:")
+   print(station_id + "-" + cam_id)
+   print("NON CORRECTED CATALOG TO IMAGE STAR DISTANCE BY FOV ZONE")
+
+   tb.field_names = ["Dist from Center", "Catalog / Image Pixel Distance"]
+
+   tb.add_row(["0-200", np.median(res_0)])
+   tb.add_row(["200-400", np.median(res_200)])
+   tb.add_row(["400-600", np.median(res_400)])
+   tb.add_row(["600-800", np.median(res_600)])
+   tb.add_row(["800-900", np.median(res_800)])
+   tb.add_row(["900-1000", np.median(res_900)])
+   tb.add_row(["1000+", np.median(res_1000)])
+
+
    print("0-200", np.median(res_0))
    print("200-400", np.median(res_200))
    print("400-600", np.median(res_400))
@@ -6119,6 +6142,8 @@ def characterize_best(cam_id, con, cur, json_conf,limit=500, cal_fns=None):
    print("800-900", np.median(res_800))
    print("900-1000", np.median(res_900))
    print("1000+", np.median(res_1000))
+
+   print(tb)
 
    try:
       base_image = clean_cal_img.copy()
@@ -6790,6 +6815,8 @@ def lens_model(cam_id, con, cur, json_conf):
 
 def wizard(station_id, cam_id, con, cur, json_conf, limit=100):
 
+   os.system("clear")
+   print("ALLSKY7 LENS MODEL CALIBRATION WIZARD")
    
    # review / apply the current lens model 
    # and calibration on the best 10 files
@@ -7083,10 +7110,12 @@ if __name__ == "__main__":
 
    if os.path.exists(db_file) is False:
       cmd = "cat CALDB.sql |sqlite3 " + db_file
+      print("Making calibration database...")
+      
       print(cmd)
       os.system(cmd)
-   else:
-      print("CAL DB EXISTS ALREADY")
+   #else:
+   #   print("CAL DB EXISTS ALREADY")
 
    con = sqlite3.connect(db_file)
    cur = con.cursor()
