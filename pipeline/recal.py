@@ -6347,9 +6347,11 @@ def characterize_fov(cam_id, con, cur, json_conf):
                rows = cur.fetchall()
                dist_vals = []
                slope_vals = []
+
                for row in rows:
                   cal_fn = row[0] 
                   if cal_fn not in best_dict:
+                     print(cal_fn, "NOT IN BEST DICT!")
                      continue
 
                   dist_val = row[1] 
@@ -6394,16 +6396,19 @@ def characterize_fov(cam_id, con, cur, json_conf):
    sql = """
       SELECT cal_fn, name, mag, ra, dec, star_flux, img_x, img_y, new_cat_x, new_cat_y, zp_cat_x, zp_cat_y, zp_res_px, zp_slope
         FROM calfile_paired_stars
-       WHERE star_flux is not NULL
-         AND new_cat_x is not NULL
-         AND star_yn >= 99
+       WHERE 
+         new_cat_x is not NULL
          AND cal_fn like ?
    """
 
+       #star_flux is not NULL
+         #AND star_yn >= 99
    cur.execute(sql, ["%" + cam_id + "%"])
    rows = cur.fetchall()
    all_good_stars = []
+
    for row in rows:
+      print(row)
       cal_fn, name, mag, ra, dec, star_flux, img_x, img_y, new_cat_x, new_cat_y, zp_cat_x, zp_cat_y, zp_res_px, zp_slope = row
       med_flux = med_flux_db[mag]
       if cal_fn not in best_dict:
@@ -6458,6 +6463,7 @@ def characterize_fov(cam_id, con, cur, json_conf):
       cv2.imshow("pepper", grid_img)
       cv2.waitKey(90)
    cv2.imwrite("/mnt/ams2/cal/plots/" + station_id + "_" + cam_id + "_ALL_GOOD_STARS.jpg", grid_img)
+
    print("saved all stars image /mnt/ams2/cal/plots/" + station_id + "_" + cam_id + "_ALL_GOOD_STARS.jpg")
    save_json_file("/mnt/ams2/cal/" + station_id + "_" + cam_id + "_ALL_GOOD_STARS.json", all_good_stars)
    print("saved", "/mnt/ams2/cal/" + station_id + "_" + cam_id + "_ALL_GOOD_STARS.json")
@@ -6817,6 +6823,7 @@ def wizard(station_id, cam_id, con, cur, json_conf, limit=100):
 
 def lens_model_report(cam_id, con, cur, json_conf):
    characterize_fov(cam_id, con, cur, json_conf)
+   exit()
    characterize_best(cam_id, con, cur, json_conf)
    import matplotlib.pyplot as plt
    station_id = json_conf['site']['ams_id']
