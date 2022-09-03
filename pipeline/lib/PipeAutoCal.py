@@ -4418,6 +4418,7 @@ def make_lens_model(cam, json_conf, merged_stars=None):
       merged_stars = load_json_file(star_db_file) 
    cam_id = cam
    img = np.zeros((1080,1920,3),dtype=np.uint8) 
+   print("MERGED STARS ARE!", len(merged_stars))
    for star in merged_stars:
       print(star[-2])
       (cal_file , center_az, center_el, ra_center, dec_center, position_angle, pixscale, dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist,star_int) = star
@@ -10179,7 +10180,6 @@ def quality_stars(merged_stars, mcp = None, factor = 2, gsize=50):
   
    if mcp is not None:
       print("CAL", mcp['cal_version'])
-   input("Quality Stars Start Continue")
    all_res = [row[-2] for row in merged_stars]
    res1 = []
    res2 = []
@@ -10244,11 +10244,9 @@ def quality_stars(merged_stars, mcp = None, factor = 2, gsize=50):
    print("med res2:", med_res2)
    print("Merged Stars:", len(merged_stars))
    print("Qual Stars:", len(qual_stars))
-   input("Quality Stars End Continue")
    for gkey in grid:
       print(gkey, len(grid[gkey]))
    star_grid_image = draw_star_grid(grid)
-   input("DONE QUAL...")
    return(qual_stars)
 
 def draw_star_grid(grid):
