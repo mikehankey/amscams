@@ -3687,7 +3687,6 @@ def is_star_in_crop(img, star_name, star_mag, x,y,crop_size=64):
 
    crop_area = img[y1:y2,x1:x2]
    blob_status, cx, cy, star_big, star_big_thresh = find_blob_center(crop_area)
-   print("BLOB BIG CENTER:", cx, cy)
    ax = 0
    ay = 0
    # make sub pixel adjustment for the blob center
@@ -10403,15 +10402,15 @@ def minimize_poly_multi_star(merged_stars, json_conf,orig_ra_center=0,orig_dec_c
          (cal_file , center_az, center_el, ra_center, dec_center, position_angle, pixscale, dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist,star_int) = star
          cat_dist = calc_dist((six, siy), (new_cat_x,new_cat_y))
          center_dist = int(abs(calc_dist((six,siy),(1920/2,1080/2))))
-         print("CENTER:", center_dist, cat_dist)
-         if cat_dist < 700:
+         if center_dist < 700:
             factor = 2
          else:
             factor = 4
-         if cat_dist < res * 2:
+         if cat_dist < res * factor:
             new_merged_stars.append(star) 
+            print("GOOD RES CENTER:", center_dist, cat_dist, factor, res * factor)
          else:
-            print("OVER RES!", cat_dist)
+            print("BAD RES CENTER:", center_dist, cat_dist, factor, res * factor)
       updated_merged_stars = new_merged_stars
    #exit()
 
@@ -10454,14 +10453,17 @@ def minimize_poly_multi_star(merged_stars, json_conf,orig_ra_center=0,orig_dec_c
          else:
             print("REMOVING: ", med_res, cat_dist)
       merged_stars = new_merged_stars 
+
+   print("USING THESE STARS:", len(merged_stars))
    input("CONT")
    merged_stars = updated_merged_stars
    new_merged_stars = merged_stars 
 
-   for star in merged_stars:
-      (cal_file , center_az, center_el, ra_center, dec_center, position_angle, pixscale, dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist,star_int) = star
-      cat_dist = abs(calc_dist((six,siy),(new_cat_x,new_cat_y)))
-      print(dcname, cat_dist)
+   #for star in merged_stars:
+   #   (cal_file , center_az, center_el, ra_center, dec_center, position_angle, pixscale, dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist,star_int) = star
+   #   cat_dist = abs(calc_dist((six,siy),(new_cat_x,new_cat_y)))
+   #   print(dcname, cat_dist)
+
    options = {}
          
    mode = 0 
@@ -10474,15 +10476,16 @@ def minimize_poly_multi_star(merged_stars, json_conf,orig_ra_center=0,orig_dec_c
    # ok really remove bad stars now
    std_dist, avg_dist = calc_starlist_res(new_merged_stars)
 
-   best_stars = []
-   for star in new_merged_stars:
-      (cal_file , center_az, center_el, ra_center, dec_center, position_angle, pixscale, dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist,star_int) = star
-      if cat_dist < med_res * 3:
-         best_stars.append(star)
-      else:
-         print("REMOVING: ", med_res, star)
-   #merged_stars = best_stars 
-   #new_merged_stars = best_stars 
+   if False:
+      best_stars = []
+      for star in new_merged_stars:
+         (cal_file , center_az, center_el, ra_center, dec_center, position_angle, pixscale, dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist,star_int) = star
+         if cat_dist < med_res * 3:
+            best_stars.append(star)
+         else:
+            print("REMOVING: ", med_res, star)
+      #merged_stars = best_stars 
+      #   new_merged_stars = best_stars 
 
 
 
