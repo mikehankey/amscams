@@ -160,8 +160,8 @@ def insert_calib(cal_file, con, cur, json_conf):
               cp['cal_version'],
               nowts]
    if True:
-      print(sql)
-      print(ivals)
+      #print(sql)
+      #print(ivals)
       cur.execute(sql, ivals)
       con.commit()
    #try:
@@ -4929,7 +4929,7 @@ def move_extra_cals(json_conf):
       keyfn = key.split("/")[-1]
       cal_id = key.split("/")[-2]
       if "cam_id" not in temp[key]:
-         print("NO CAM ID:", temp[key])
+         #print("NO CAM ID:", temp[key])
          bad_cals[cal_id] = {}
          continue
       cam_id = temp[key]['cam_id']
@@ -4953,7 +4953,7 @@ def move_extra_cals(json_conf):
       else:
          all_cals.append((cal_id, cam_id, cal_date, stars, res_px, score))
    med_res = np.median(all_res)
-   print("MED RES:", med_res)
+   #print("MED RES:", med_res)
 
    cal_index = sorted(all_cals, key=lambda x: x[4], reverse=False)
    gc = 0
@@ -4976,8 +4976,8 @@ def move_extra_cals(json_conf):
       gc += 1
    bc = 0 
 
-   for key in daily:
-      print(key, daily[key])
+   #for key in daily:
+   #   print(key, daily[key])
 
    bad_dir = "/mnt/ams2/cal/freecal/extra_cals/" 
    if os.path.exists(bad_dir) is False:  
@@ -10408,9 +10408,9 @@ def minimize_poly_multi_star(merged_stars, json_conf,orig_ra_center=0,orig_dec_c
             factor = 4
          if cat_dist < res * factor:
             new_merged_stars.append(star) 
-            print("GOOD RES CENTER:", center_dist, cat_dist, factor, res * factor)
-         else:
-            print("BAD RES CENTER:", center_dist, cat_dist, factor, res * factor)
+            #print("GOOD RES CENTER:", center_dist, cat_dist, factor, res * factor)
+         #else:
+            #print("BAD RES CENTER:", center_dist, cat_dist, factor, res * factor)
       updated_merged_stars = new_merged_stars
    #exit()
 

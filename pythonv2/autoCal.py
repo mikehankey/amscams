@@ -543,7 +543,7 @@ def meteor_index(json_conf, day = None, extra_cmd = ""):
       meteor_dirs = ["/mnt/ams2/meteors/" + day + "/"]
    print("Got meteor dirs")
    for meteor_dir in meteor_dirs:
-      print("Scanning...", meteor_dir)
+      #print("Scanning...", meteor_dir)
       meteor_Data, rmeteor_data = get_meteors(meteor_dir, meteor_data, rmeteor_data)
    jobs = []
    jobs2 = []
@@ -822,21 +822,21 @@ def cal_index(json_conf):
       if cal_dir not in freecal_dirs:
          print("DEL CAL DIR IT HAS BEEN MOVED.", cal_dir)
          deleted.append(cf)
-      else:
-         print(cal_dir, "is good")
+      #else:
+      #   print(cal_dir, "is good")
    for d in deleted:
       del cal_files[d]
 
    #print("FCD:", freecal_dirs[0])
 
-   print("Scanning cal dirs")
+   print("Scanning cal dirs" + str(len(freecal_dirs)))
    total = len(freecal_dirs)
    cc = 0
    for fc in freecal_dirs:
       base_name = fc.split("/")[-1]
       cp_file = fc + "/" + base_name + "-stacked-calparams.json"
-      if cc % 10 == 0:
-         print("   " + str(cc) + " / " + str(total))
+      #if cc % 10 == 0:
+      #   print("   " + str(cc) + " / " + str(total))
       if cp_file not in cal_files:
          if cfe(fc, 1) == 1:
             if cfe(cp_file) == 1:
@@ -918,11 +918,11 @@ def cal_index(json_conf):
       else:
          cal_files[cp_file]['total_res_deg'] = 0
 
-   for cp_file in cal_files:
-      print(cp_file)
+   #for cp_file in cal_files:
+   #   print(cp_file)
       
       #print( cal_files[cp_file]['base_dir'], cal_files[cp_file]['cam_id'], cal_files[cp_file]['center_az'], cal_files[cp_file]['center_el'], cal_files[cp_file]['position_angle'], cal_files[cp_file]['pixscale'], cal_files[cp_file]['x_fun'], cal_files[cp_file]['y_fun'], cal_files[cp_file]['x_fun_fwd'], cal_files[cp_file]['y_fun_fwd'], cal_files[cp_file]['total_stars'] )
-     
+   print(len(cal_files), " calfiles")   
    print("saved : /mnt/ams2/cal/freecal_index.json")
    save_json_file("/mnt/ams2/cal/freecal_index.json", cal_files)
 
