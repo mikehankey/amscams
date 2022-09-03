@@ -1208,7 +1208,7 @@ def import_cal_file(cal_fn, cal_dir, mcp):
       return()
 
 
-def batch_review(station_id, cam_id, con, cur, json_conf, limit=50, work_type="most_recent"):
+def batch_review(station_id, cam_id, con, cur, json_conf, limit=50, work_type="last_done"):
 
    mask_file = "/mnt/ams2/meteor_archive/{}/CAL/MASKS/{}_mask.png".format(station_id, cam_id)
    if os.path.exists(mask_file) is True:
@@ -1238,18 +1238,26 @@ def batch_review(station_id, cam_id, con, cur, json_conf, limit=50, work_type="m
    all_stars = []
    all_res = []
    sql = """
-      SELECT cal_fn, count(*) as ss, avg(res_px) as arp,  (count(*) / avg(res_px)) as score
-        FROM calfile_paired_stars
-       WHERE cal_fn like ?
-         AND res_px is not NULL
+      SELECT a.cal_fn, b.last_update, count(*) as ss, avg(a.res_px) as arp
+        FROM calfile_paired_stars a, calibration_files b
+       WHERE a.cal_fn like ?
+         AND a.res_px is not NULL
+         AND a.cal_fn = b.cal_fn
    """
 
    sql += """
-       GROUP bY cal_fn
+       GROUP bY a.cal_fn
    """
-   if work_type == "most_recent":
+
+   if work_type == "last_done":
       sql += """
-         ORDER BY cal_fn DESC 
+         ORDER BY b.last_update DESC 
+         LIMIT {}
+      """.format(limit)
+
+   elif work_type == "most_recent":
+      sql += """
+         ORDER BY a.cal_fn DESC 
          LIMIT {}
       """.format(limit)
    elif work_type == "top":
@@ -1268,6 +1276,7 @@ def batch_review(station_id, cam_id, con, cur, json_conf, limit=50, work_type="m
          LIMIT {}
       """.format(limit)
 
+   print("SQL", sql)
    dvals = ["%" + cam_id + "%"]
    cur.execute(sql, dvals)
    rows = cur.fetchall()
