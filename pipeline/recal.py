@@ -6492,6 +6492,7 @@ def characterize_fov(cam_id, con, cur, json_conf):
       make_cal_plots(cam_id, json_conf)
 
    if mcp is not None:
+       
       make_lens_model(cam_id, json_conf, merged_stars)
  
 def load_cal_files(cam_id, con, cur, single=False,last=None):
@@ -6816,15 +6817,17 @@ def wizard(station_id, cam_id, con, cur, json_conf, limit=100):
    #characterize_fov(cam_id, con, cur, json_conf)
 
 def lens_model_report(cam_id, con, cur, json_conf):
-   characterize_fov(cam_id, con, cur, json_conf)
+   #characterize_fov(cam_id, con, cur, json_conf)
+   characterize_best(cam_id, con, cur, json_conf)
    import matplotlib.pyplot as plt
    station_id = json_conf['site']['ams_id']
    msfile = "/mnt/ams2/cal/" + station_id + "_" + cam_id + "_MERGED_STARS.json"
    if os.path.exists(msfile) is True:
       merged_stars = load_json_file(msfile)
+   print("MS", len(merged_stars))
    make_cal_summary(cam_id, json_conf)
    make_cal_plots(cam_id, json_conf)
-   #make_lens_model(cam_id, json_conf, merged_stars)
+   make_lens_model(cam_id, json_conf, merged_stars)
 
    #exit()
    print("ENDED AFTER SUM")
