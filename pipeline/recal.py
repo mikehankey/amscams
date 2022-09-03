@@ -6180,6 +6180,7 @@ def characterize_best(cam_id, con, cur, json_conf,limit=500, cal_fns=None):
    if SHOW == 1:
       cv2.imshow('pepe', base_image)
       cv2.waitKey(30)
+
    cv2.imwrite(all_stars_image_file, base_image)
    print(all_stars_image_file)
 
@@ -6684,8 +6685,8 @@ def lens_model(cam_id, con, cur, json_conf):
       print("\r", row[0], row[1], end="")
       cal_fns.append(row[0])
 
-   print("Characterize FOV")
-   characterize_best(cam_id, con, cur, json_conf, limit, cal_fns)
+   #print("Characterize FOV")
+   #characterize_best(cam_id, con, cur, json_conf, limit, cal_fns)
 
    mask_file = "/mnt/ams2/meteor_archive/{}/CAL/MASKS/{}_mask.png".format(station_id, cam_id)
 
@@ -6732,7 +6733,7 @@ def lens_model(cam_id, con, cur, json_conf):
    rez = [row[-2] for row in merged_stars]
    print("AFTER BEST STARS RES:", len(merged_stars), np.median(rez))
 
-
+   print("MERGED STARS IS:", len(merged_stars))
 
    status, cal_params,merged_stars = minimize_poly_multi_star(merged_stars, json_conf,0,0,cam_id,None,mcp,SHOW)
 
@@ -6793,15 +6794,37 @@ def wizard(station_id, cam_id, con, cur, json_conf, limit=100):
    # review / apply the current lens model 
    # and calibration on the best 10 files
 
-   cal_fns = batch_review(station_id, cam_id, con, cur, json_conf, limit)
+   if False:
+      cal_fns = batch_review(station_id, cam_id, con, cur, json_conf, limit)
+   else:
+      avg_res = get_avg_res(cam_id, con, cur)
+      cal_fns = []
+      sql = """
+             SELECT cal_fn, avg(res_px), count(*) 
+               FROM calfile_paired_stars
+              WHERE cal_fn = ?
+                AND res_px < ?
+           GROUP BY cal_fn
+      """
+      dvals = ["%" + cam_id + "%", avg_res]
+      cur.execute(sql, dvals)
+      rows = cur.fetchall()
+      for row in rows:
+         cal_fn, res, stars = row
+         print("USING:", cal_fn, res, stars)
+
+         cal_fns.append(cal_fn)
+
 
    # characterize the current lens model 
    # and define best merge star values
 
    characterize_best(cam_id, con, cur, json_conf, limit, cal_fns)
+   print("DONE CHAR BEST")
 
    # run lens model with current stars
    lens_model(cam_id, con, cur, json_conf)
+   exit()
 
    # run lens model a second time
    lens_model(cam_id, con, cur, json_conf)
