@@ -4863,7 +4863,7 @@ def make_cal_plots(in_cam_id, json_conf):
    cv2.imwrite("/mnt/ams2/cal/plots/" + station_id + "_" + in_cam_id + "_CALTIME.jpg", plot,  [int(cv2.IMWRITE_JPEG_QUALITY), 70])
    plot_tn = cv2.resize(plot, (320,180))
    cv2.imwrite("/mnt/ams2/cal/plots/" + station_id + "_" + in_cam_id + "_CALTIME-tn.jpg", plot_tn,  [int(cv2.IMWRITE_JPEG_QUALITY), 70])
-   plt.show()
+   #plt.show()
 
 
    print("SAVED /mnt/ams2/cal/plots/" + station_id + "_" + in_cam_id + "_CALTIME.png")
