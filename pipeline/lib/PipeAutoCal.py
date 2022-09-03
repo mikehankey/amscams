@@ -10429,11 +10429,18 @@ def minimize_poly_multi_star(merged_stars, json_conf,orig_ra_center=0,orig_dec_c
    # MORE - FINAL FILTER / FILTERING
    med_res_val = med_res ** 2 
    if med_res_val < 1:
-      med_res_val = 1
+      med_res = 1
    if False:
       for star in updated_merged_stars:
          (cal_file , center_az, center_el, ra_center, dec_center, position_angle, pixscale, dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist,star_int) = star
          cat_dist = abs(calc_dist((six,siy),(new_cat_x,new_cat_y)))
+
+         center_dist = int(abs(calc_dist((six,siy),(1920/2,1080/2))))
+         if center_dist > 800:
+            if med_res < 2:
+               med_res_val = 2 ** 2
+            else:
+               med_res_val = med_res ** 2
 
          if cat_dist <= med_res_val:
             print("KEEPING: ", cat_dist)
@@ -10444,7 +10451,6 @@ def minimize_poly_multi_star(merged_stars, json_conf,orig_ra_center=0,orig_dec_c
 
    merged_stars = updated_merged_stars
    new_merged_stars = merged_stars 
-   print("LEN STARS:", len(merged_stars))
 
    for star in merged_stars:
       (cal_file , center_az, center_el, ra_center, dec_center, position_angle, pixscale, dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist,star_int) = star
