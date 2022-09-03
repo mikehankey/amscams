@@ -751,6 +751,10 @@ def minimize_fov(cal_file, cal_params, image_file,img,json_conf,zero_poly=False,
       cal_params['y_poly'] = np.zeros(shape=(15,), dtype=np.float64)
       cal_params['x_poly_fwd'] = np.zeros(shape=(15,), dtype=np.float64)
       cal_params['y_poly_fwd'] = np.zeros(shape=(15,), dtype=np.float64)
+      x_poly = np.zeros(shape=(15,), dtype=np.float64)
+      y_poly = np.zeros(shape=(15,), dtype=np.float64)
+      x_poly_fwd = np.zeros(shape=(15,), dtype=np.float64)
+      y_poly_fwd = np.zeros(shape=(15,), dtype=np.float64)
 
    else:
       x_poly = mcp['x_poly']
