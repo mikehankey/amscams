@@ -6491,9 +6491,8 @@ def characterize_fov(cam_id, con, cur, json_conf):
       make_cal_summary(cam_id, json_conf)
       make_cal_plots(cam_id, json_conf)
 
-   if mcp is not None:
-       
-      make_lens_model(cam_id, json_conf, merged_stars)
+   #if mcp is not None:
+   #   make_lens_model(cam_id, json_conf, merged_stars)
  
 def load_cal_files(cam_id, con, cur, single=False,last=None):
    sql = """
