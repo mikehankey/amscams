@@ -638,12 +638,11 @@ def draw_stars_on_image(img, cat_image_stars,cp=None,json_conf=None,extra_text=N
 def make_grid_stars(merged_stars, mcp = None, factor = 2, gsize=50, limit=3):
    merged_stars = sorted(merged_stars, key=lambda x: x[-2], reverse=False)
    if mcp is None:
-      print("FIRST TIME CAL!")
+      print("NO MCP? FIRST TIME CAL?")
       gsize = 80
       factor = 2
       max_dist = 35
    else:
-      print("MULTI-X CAL!", mcp['cal_version'])
       if mcp['cal_version'] < 3:
          gsize= 100
          factor = 2
@@ -696,15 +695,10 @@ def make_grid_stars(merged_stars, mcp = None, factor = 2, gsize=50, limit=3):
                cat_dist = calc_dist((six,siy), (new_cat_x,new_cat_y))
 
                res_limit = med_res
-               #print("RES:", res_limit, cat_dist)
                if x1 <= six <= x2 and y1 <= siy <= y2 : #and cat_dist < res_limit:
                   grid[grid_key].append(star)
                   #break
    
-   print("med res1:", med_res1)
-   print("med res2:", med_res2)
-   print("MS:", len(merged_stars))
-   print("QS:", len(qual_stars))
 
 
    return(grid)
@@ -767,8 +761,6 @@ def minimize_fov(cal_file, cal_params, image_file,img,json_conf,zero_poly=False,
       cal_params['y_poly_fwd'] = mcp['y_poly_fwd']
 
 
-   print("ZERO:", zero_poly)
-   print(cal_params['x_poly'])
 
 
    # MINIMIZE!
@@ -789,21 +781,13 @@ def minimize_fov(cal_file, cal_params, image_file,img,json_conf,zero_poly=False,
       orig_res.append(res_px)
       orig_cat_image_stars.append((dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,res_px,bp)) 
    old_res = np.mean(orig_res)
-   # END CALC RES
-   #print("ORIG RES:", old_res) 
    orig_info = [cal_params['center_az'], cal_params['center_el'], cal_params['ra_center'], cal_params['dec_center'], cal_params['position_angle'], cal_params['pixscale'], old_res ]
-   #print(cal_params['x_poly'])
-   #print("ORIG INFO :", orig_info)
 
    check_cal_params, check_report_txt, check_show_img = cal_params_report(image_file, cal_params, json_conf, img.copy(), 30, mcp)
 
-   #print("ORIG RECALC'D INFO :", check_cal_params['total_res_px'])
    ores = check_cal_params['total_res_px']
 
-   #print(x_poly, y_poly)
-   #print("MCP:", mcp)
    res = scipy.optimize.minimize(reduce_fov_pos, this_poly, args=( az,el,pos,pixscale,x_poly, y_poly, x_poly_fwd, y_poly_fwd, image_file,img,json_conf, cal_params['cat_image_stars'],extra_text,0), method='Nelder-Mead')
-   #print(res)
 
    if isinstance(cal_params['x_poly'], list) is not True:
       cal_params['x_poly'] = x_poly.tolist()
@@ -813,14 +797,11 @@ def minimize_fov(cal_file, cal_params, image_file,img,json_conf,zero_poly=False,
 
    adj_az, adj_el, adj_pos, adj_px = res['x']
 
-   print("ADJUSTMENTS:", adj_az, adj_el, adj_pos, adj_px )
-   print("ORIG VALS:", az, el, pos, pixscale)
    new_az = az + (adj_az*az)
    new_el = el + (adj_el*el)
    new_position_angle = pos + (adj_pos*pos)
    new_pixscale = pixscale + (adj_px*pixscale)
 
-   print("NEW VALS:", new_az, new_el, new_position_angle, new_pixscale)
 
    cal_params['center_az'] =  new_az
    cal_params['center_el'] =  new_el
@@ -828,7 +809,6 @@ def minimize_fov(cal_file, cal_params, image_file,img,json_conf,zero_poly=False,
    cal_params['pixscale'] =  new_pixscale
    cal_params['total_res_px'] = res['fun']
    cal_params = update_center_radec(cal_file,cal_params,json_conf)
-   #print("NEW INFO :", cal_file, cal_params['center_az'], cal_params['center_el'], cal_params['ra_center'], cal_params['dec_center'], cal_params['position_angle'], cal_params['pixscale'], cal_params['total_res_px'] ) 
    return(cal_params)
 
 
@@ -3817,7 +3797,6 @@ def recenter_fov(cal_fn, cal_params, cal_img, stars, json_conf, extra_text=""):
 
    show_calparams(cal_params)
    res = scipy.optimize.minimize(reduce_fov_pos, this_poly, args=( np.float64(cal_params['center_az']),np.float64(cal_params['center_el']),np.float64(cal_params['position_angle']),np.float64(cal_params['pixscale']),cal_params['x_poly'], cal_params['y_poly'], cal_params['x_poly_fwd'], cal_params['y_poly_fwd'],cal_fn,cal_img,json_conf, center_stars, extra_text,0), method='Nelder-Mead')
-   #print("RES FROM MINIMIZE:", res)
 
    #adj_az, adj_el, adj_pos, adj_px = res['x']
    this_poly = res['x']
@@ -3903,7 +3882,6 @@ def recenter_cal_file(cal_fn, con, cur, json_conf, mcp):
 
 
          res = scipy.optimize.minimize(reduce_fov_pos, this_poly, args=( cal_params['center_az'],cal_params['center_el'],cal_params['position_angle'],cal_params['pixscale'],cal_params['x_poly'], cal_params['y_poly'], cal_image_file,oimg,json_conf, cal_params['cat_image_stars'],cal_params['user_stars'],1,SHOW,None,cal_params['short_bright_stars']), method='Nelder-Mead')
-         #print("RES FROM MINIMIZE:", res)
 
          adj_az, adj_el, adj_pos, adj_px = res['x']
 
@@ -6290,22 +6268,16 @@ def characterize_best(cam_id, con, cur, json_conf,limit=500, cal_fns=None):
          best_stars.append((cal_fn,dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,zp_cat_x,zp_cat_y,img_x,img_y,res_px,star_flux)) 
 
          cv2.line(base_image, (int(new_cat_x),int(new_cat_y)), (int(img_x),int(img_y)), (0,255,0), 2)
-         #print("KEEP", ic, fact, len(best_stars), res_px, limit)
-         print("KEEP RES/LIM/FACT:", res_px, limit, fact)
       else:
          (cal_fn,dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,img_x,img_y,res_px,star_flux) = updated_stars[ic]
          cv2.line(base_image, (int(new_cat_x),int(new_cat_y)), (int(img_x),int(img_y)), (0,0,255), 2)
-         print("REJECT RES/LIM/FACT:", res_px, new_cat_x, new_cat_y, img_x, img_y, res_px, limit, fact)
-
-         #print("REJECT", ic, fact, len(best_stars), res_px, limit)
 
       ic += 1
 
-   if SHOW == 1 or True:
+   if SHOW == 1 :
       cv2.imshow('pepe', base_image)
       cv2.waitKey(30)
    cv2.imwrite(all_stars_image_file, base_image)
-   print(all_stars_image_file)
 
 
    merged_stars = []
@@ -6313,7 +6285,6 @@ def characterize_best(cam_id, con, cur, json_conf,limit=500, cal_fns=None):
    med_rez = np.median(rez) * 1.2
 
    # only keep the best stars
-   print("CAM ID/START REZ/BEST STARS:", cam_id, med_rez, len(best_stars))
 
    for star in best_stars:
 
@@ -6353,14 +6324,13 @@ def characterize_best(cam_id, con, cur, json_conf,limit=500, cal_fns=None):
    base_image_good_stars = np.zeros((1080,1920,3),dtype=np.uint8)
    print("BEST STARS:", len(best_stars))
    for star in best_stars:
-      print(len(star))
 
       (cal_file , center_az, center_el, ra_center, dec_center, position_angle, pixscale, name,mag,ra,dec,ra,dec,match_dist,new_x,new_y,center_az,center_el,new_cat_x,new_cat_y,img_x,img_y,res_px,star_flux) = star
       #(cal_fn, name,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,img_x,img_y,res_px,star_flux) = star
       cv2.line(base_image, (int(new_x),int(new_y)), (int(img_x),int(img_y)), (255,255,255), 2)
       cv2.line(base_image_good_stars, (int(new_x),int(new_y)), (int(img_x),int(img_y)), (255,255,255), 2)
 
-   if SHOW == 1 or True:
+   if SHOW == 1 :
       cv2.imshow('pepe', base_image)
       cv2.waitKey(30)
 
@@ -6917,10 +6887,10 @@ def lens_model(cam_id, con, cur, json_conf):
       new_cat_x,new_cat_y = get_xy_for_ra_dec(cal_params, ra, dec)
       res_px = calc_dist((img_x,img_y),(new_cat_x,new_cat_y))
       if res_px <= med_rez:
-         print("KEEP", res_px, med_rez)
+         #print("KEEP", res_px, med_rez)
          new_merged_stars.append((cal_file , center_az, center_el, ra_center, dec_center, position_angle, pixscale, name,mag,ra,dec,ra,dec,match_dist,new_cat_x,new_cat_y,center_az,center_el,new_cat_x,new_cat_y,img_x,img_y,res_px,star_flux))
-      else:
-         print("SKIP", res_px, med_rez)
+      #else:
+         #print("SKIP", res_px, med_rez)
   
    if len(new_merged_stars) > 500:
       save_json_file("/mnt/ams2/cal/" + station_id + "_" + cam_id + "_MERGED_STARS.json", new_merged_stars)
@@ -6959,7 +6929,7 @@ def wizard(station_id, cam_id, con, cur, json_conf, limit=5):
       rows = cur.fetchall()
       for row in rows:
          cal_fn, res, stars = row
-         print("USING:", cal_fn, res, stars)
+         #print("USING:", cal_fn, res, stars)
 
          cal_fns.append(cal_fn)
 
@@ -6968,8 +6938,8 @@ def wizard(station_id, cam_id, con, cur, json_conf, limit=5):
    # and define best merge star values
 
    characterize_best(cam_id, con, cur, json_conf, limit, cal_fns)
-   print("DONE CHAR BEST")
    # run lens model with current stars
+
    lens_model(cam_id, con, cur, json_conf)
    #exit()
 
@@ -7010,13 +6980,13 @@ def lens_model_report(cam_id, con, cur, json_conf):
    msfile = "/mnt/ams2/cal/" + station_id + "_" + cam_id + "_MERGED_STARS.json"
    if os.path.exists(msfile) is True:
       merged_stars = load_json_file(msfile)
-   print("MS", len(merged_stars))
+   #print("MS", len(merged_stars))
    make_cal_summary(cam_id, json_conf)
    make_cal_plots(cam_id, json_conf)
    make_lens_model(cam_id, json_conf, merged_stars)
 
    #exit()
-   print("ENDED AFTER SUM")
+   #print("ENDED AFTER SUM")
    grid_bg = np.zeros((1080,1920,3),dtype=np.uint8)
    autocal_dir = "/mnt/ams2/cal/"
    station_id = json_conf['site']['ams_id']
