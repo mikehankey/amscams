@@ -4277,6 +4277,9 @@ def make_cal_summary(cam,json_conf):
       print("CP:", key, mj['cp'])
   # print("RAZ:", recent_azs)
    grid_image, blend_image = make_az_grid(img, mj, json_conf)
+   if SHOW == 1:
+      cv2.imshow('pepe', grid_image)
+      cv2.waitKey(0)
    grid_tn = cv2.resize(grid_image, (320,180))
    grid_file = "/mnt/ams2/cal/plots/" + station_id + "_" + cam + "_GRID.jpg"
    grid_tn_file = "/mnt/ams2/cal/plots/" + station_id + "_" + cam + "_GRID-tn.jpg"
