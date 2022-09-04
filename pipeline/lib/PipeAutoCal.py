@@ -4496,9 +4496,9 @@ def find_center(img):
          else:
             cv2.rectangle(oimg, (sx1,0), (sx2,400) , (255, 0, 0), 1)
             final = "BLUE"
-
-      cv2.imshow('pepe', oimg)
-      cv2.waitKey(30)
+      if SHOW == 1:
+         cv2.imshow('pepe', oimg)
+         cv2.waitKey(30)
       print(sx1, sx2, hh, dom, sum_r, sum_b)
       if final is not None:
          results_col.append((sx1, sx2, final))
@@ -4528,9 +4528,9 @@ def find_center(img):
          else:
             cv2.rectangle(oimg, (0,sy1), (400,sy2) , (255, 0, 0), 1)
             final = "BLUE"
-
-      cv2.imshow('pepe', oimg)
-      cv2.waitKey(30)
+      if SHOW == 1:
+         cv2.imshow('pepe', oimg)
+         cv2.waitKey(30)
       print(sy1, sy2, hh, dom, sum_r, sum_b)
       if final is not None:
          results_row.append((sy1, sy2, final))
@@ -4551,9 +4551,10 @@ def find_center(img):
          mid_x = int((x1+x2)/2)
       last_color = color
 
-   cv2.circle(oimg,(int(mid_x),int(mid_y)), 10, (0,0,255), 1)
-   cv2.imshow('pepe', oimg)
-   cv2.waitKey(30)
+   if SHOW == 1:
+      cv2.circle(oimg,(int(mid_x),int(mid_y)), 10, (0,0,255), 1)
+      cv2.imshow('pepe', oimg)
+      cv2.waitKey(30)
    return(mid_x,mid_y)
 
 def all_stars_check_slope(all_stars,mid_x,mid_y):
@@ -4597,9 +4598,9 @@ def all_stars_check_slope(all_stars,mid_x,mid_y):
             #good = 0 
       if good == 1:
          good_stars.append(star)
-        
-   cv2.imshow('pepe', all_stars_img)
-   cv2.waitKey(100)
+   if SHOW == 1: 
+      cv2.imshow('pepe', all_stars_img)
+      cv2.waitKey(100)
    return(good_stars)
 
 
