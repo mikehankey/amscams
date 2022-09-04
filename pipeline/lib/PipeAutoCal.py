@@ -41,12 +41,10 @@ if cfe(MOVIE_DIR, 1) == 0:
    os.makedirs(MOVIE_DIR)
 
 def load_caldb(json_conf):
-   print("Load caldb")
    import sqlite3
    DB_FILENAME = json_conf['site']['ams_id'] + "_CALIB.db" 
    if os.path.exists(DB_FILENAME) is False:
       cmd = "cat CALDB.sql | sqlite3 " + DB_FILENAME 
-      print(cmd)
       os.system(cmd)
 
    con = sqlite3.connect(json_conf['site']['ams_id']+ "_CALIB.db")
@@ -58,7 +56,6 @@ def load_caldb(json_conf):
    for cdd in caldirs:
       if os.path.isdir(cal_root + cdd):
          json_files = glob.glob(cal_root + cdd + "/*.json")
-         print(cal_root+cdd)
          if len(json_files) == 1:
             print("LOADING:", json_files[0])
             insert_calib(json_files[0], con, cur, json_conf)
@@ -160,13 +157,8 @@ def insert_calib(cal_file, con, cur, json_conf):
               cp['cal_version'],
               nowts]
    if True:
-      #print(sql)
-      #print(ivals)
       cur.execute(sql, ivals)
       con.commit()
-   #try:
-   #except:
-   #   print("Done already")
 
 def load_frames_simple(trim_file, limit=0):
    cap = cv2.VideoCapture(trim_file)
@@ -11412,7 +11404,6 @@ def make_az_grid(cal_image, mj,json_conf,save_file=None):
       end_az = cp['center_az'] + wd
       start_el = cp['center_el'] - hd
       end_el = cp['center_el'] + hd
-      print("USING:" , start_az, end_az, cp['center_az'], wd)
       if start_el < 0:
          start_el = 0
       if end_el >= 90:
@@ -11421,11 +11412,6 @@ def make_az_grid(cal_image, mj,json_conf,save_file=None):
       if cp['center_az'] - wd < 0:
          start_az = cp['center_az'] -wd
          end_az = start_az + (wd * 2)
-   print("GRID CENTER AZ:", cp['center_az'])
-   print("GRID CENTER EL:", cp['center_el'])
-   print("GRID START/END AZ:", start_az, end_az)
-   print("GRID START/END EL:", start_el, end_el)
-   print("CP PIXSCALE:", cp['pixscale'])
    F_scale = 3600/float(cp['pixscale'])
    start_az = 0 
    end_az = 361
@@ -11444,7 +11430,6 @@ def make_az_grid(cal_image, mj,json_conf,save_file=None):
             ra,dec = HMS2deg(str(rah),str(dech))
             new_cat_x, new_cat_y = distort_xy(0,0,ra,dec,cp['ra_center'], cp['dec_center'], cp['x_poly'], cp['y_poly'], float(cp['imagew']), float(cp['imageh']), cp['position_angle'],F_scale)
             new_cat_x,new_cat_y = int(new_cat_x),int(new_cat_y)
-            #print("F_SCALE/AZ/EL/RA/DEC/X/Y", cp['pixscale'], F_scale, az,el,ra,dec,new_cat_x,new_cat_y)
             if new_cat_x > -200 and new_cat_x < 2420 and new_cat_y > -200 and new_cat_y < 1480:
                cv2.rectangle(grid_img, (new_cat_x-2, new_cat_y-2), (new_cat_x + 2, new_cat_y + 2), (128, 128, 128), 1)
                if new_cat_x > 0 and new_cat_y > 0:
@@ -11480,7 +11465,6 @@ def make_az_grid(cal_image, mj,json_conf,save_file=None):
             ra,dec = HMS2deg(str(rah),str(dech))
             new_cat_x, new_cat_y = distort_xy(0,0,ra,dec,cp['ra_center'], cp['dec_center'], cp['x_poly'], cp['y_poly'], float(cp['imagew']), float(cp['imageh']), cp['position_angle'],F_scale)
             new_cat_x,new_cat_y = int(new_cat_x),int(new_cat_y)
-            print("F_SCALE/AZ/EL/RA/DEC/X/Y", cp['pixscale'], F_scale, az,el,ra,dec,new_cat_x,new_cat_y)
             if new_cat_x > -200 and new_cat_x < 2420 and new_cat_y > -200 and new_cat_y < 1480:
                #cv2.rectangle(grid_img, (new_cat_x-2, new_cat_y-2), (new_cat_x + 2, new_cat_y + 2), (128, 128, 128), 1)
                if new_cat_x > 0 and new_cat_y > 0:
@@ -11512,7 +11496,6 @@ def draw_grid_line(points, img, type, key, center_az, center_el, show_text = 1):
          az,el,x,y = point
          if el == key:
 
-            print("DRAW EL:", el)
             if pc > 0 :
                if el % 10 == 0:
                   cv2.line(img, (x,y), (last_x,last_y), (255,255,255), 2)
@@ -11532,18 +11515,15 @@ def draw_grid_line(points, img, type, key, center_az, center_el, show_text = 1):
          min_el = 0
       else:
          min_el = int(str(center_el - 22)[0] + "0")
-      print("MIN EL:", min_el)
       pc = 0
       for point in points:
          az,el,x,y = point
          if az == key:
-            #print("KEY/POINT/PC:", key, point,pc)
             if pc > 0 :
                if az % 10 == 0:
                   cv2.line(img, (x,y), (last_x,last_y), (255,255,255), 2)
                else:
                   cv2.line(img, (x,y), (last_x,last_y), (128,128,128), 1)
-               print("THIS EL:", el)
             if (min_el - 5 <= el <= min_el + 5) and show_text == 1:
                desc = str(az)
                cv2.putText(img, desc,  (x+5,y-5), cv2.FONT_HERSHEY_SIMPLEX, .4, (255, 255, 255), 1)
