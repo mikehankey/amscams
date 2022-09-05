@@ -6980,7 +6980,8 @@ def lens_model_report(cam_id, con, cur, json_conf):
    if os.path.exists(msfile) is True:
       merged_stars = load_json_file(msfile)
    #print("MS", len(merged_stars))
-   make_cal_summary(cam_id, json_conf)
+   #make_cal_summary(cam_id, json_conf)
+
    make_cal_plots(cam_id, json_conf)
    make_lens_model(cam_id, json_conf, merged_stars)
 
