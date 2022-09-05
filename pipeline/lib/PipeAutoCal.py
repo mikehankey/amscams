@@ -11413,10 +11413,10 @@ def make_az_grid(cal_image, mj,json_conf,save_file=None):
          start_az = cp['center_az'] -wd
          end_az = start_az + (wd * 2)
    F_scale = 3600/float(cp['pixscale'])
-   start_az = 0 
-   end_az = 361
+   start_az = start_az - 10 
+   end_az = end_az + 10 
    start_el = start_el - 10
-   end_el = end_el - 10
+   end_el = end_el + 10
    for az in range(int(start_az),int(end_az)):
       if az >= 370:
          az = az - 370
