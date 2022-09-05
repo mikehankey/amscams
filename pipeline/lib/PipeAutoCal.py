@@ -11483,7 +11483,7 @@ def make_az_grid(cal_image, mj,json_conf,save_file=None):
       if el % 1 == 0:
          if el not in show_el:
             grid_img = draw_grid_line(points, grid_img, "el", el, cp['center_az'], cp['center_el'], 0)
-   for az in range (0,390):
+   for az in range (-30,390):
       if az % 1 == 0:
          grid_img = draw_grid_line(points, grid_img, "az", az, cp['center_az'], cp['center_el'], 0)
 
