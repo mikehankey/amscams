@@ -6973,7 +6973,6 @@ def wizard(station_id, cam_id, con, cur, json_conf, limit=5):
 
 def lens_model_report(cam_id, con, cur, json_conf):
    characterize_fov(cam_id, con, cur, json_conf)
-   exit()
    characterize_best(cam_id, con, cur, json_conf)
    import matplotlib.pyplot as plt
    station_id = json_conf['site']['ams_id']
