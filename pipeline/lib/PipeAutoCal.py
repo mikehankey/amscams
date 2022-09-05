@@ -11417,6 +11417,30 @@ def make_az_grid(cal_image, mj,json_conf,save_file=None):
    end_az = end_az + 10 
    start_el = start_el - 10
    end_el = end_el + 10
+
+  
+   # deal with north view
+   if start_az < 0:
+      temp_start_az = 360 + start_az
+      temp_end_az = 360
+      for az in range(int(temp_start_az),int(temp_end_az)): 
+         for el in range(int(start_el),int(end_el)+30):
+            if az % 10 == 0 and el % 10 == 0:
+      
+               rah,dech = AzEltoRADec(az,el,mj['sd_trim'],cp,json_conf)
+               rah = str(rah).replace(":", " ")
+               dech = str(dech).replace(":", " ")
+               ra,dec = HMS2deg(str(rah),str(dech))
+               new_cat_x, new_cat_y = distort_xy(0,0,ra,dec,cp['ra_center'], cp['dec_center'], cp['x_poly'], cp['y_poly'], float(cp['imagew']), float(cp['imageh']), cp['position_angle'],F_scale)
+               new_cat_x,new_cat_y = int(new_cat_x),int(new_cat_y)
+               if new_cat_x > -200 and new_cat_x < 2420 and new_cat_y > -200 and new_cat_y < 1480:
+                  cv2.rectangle(grid_img, (new_cat_x-2, new_cat_y-2), (new_cat_x + 2, new_cat_y + 2), (128, 128, 128), 1)
+                  if new_cat_x > 0 and new_cat_y > 0:
+                     az_lines.append(az)
+                     el_lines.append(el)
+                  points.append((az,el,new_cat_x,new_cat_y))
+
+
    for az in range(int(start_az),int(end_az)):
       if az >= 370:
          az = az - 370
