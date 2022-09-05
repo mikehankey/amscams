@@ -11420,6 +11420,7 @@ def make_az_grid(cal_image, mj,json_conf,save_file=None):
 
 
    for az in range(int(start_az),int(end_az)):
+      print("AZ ON GRID", az)
       if az >= 370:
          az = az - 370
 
@@ -11439,7 +11440,6 @@ def make_az_grid(cal_image, mj,json_conf,save_file=None):
                   el_lines.append(el)
                points.append((az,el,new_cat_x,new_cat_y))
 
-
    pc = 0
    show_el = {}
    show_az = {}
@@ -11451,7 +11451,7 @@ def make_az_grid(cal_image, mj,json_conf,save_file=None):
             if SHOW == 1:
                cv2.imshow('grid', grid_img)
                cv2.waitKey(0)
-   for az in range (0,390):
+   for az in range (0,360):
       if az % 10 == 0:
          grid_img = draw_grid_line(points, grid_img, "az", az, cp['center_az'], cp['center_el'], 1)
          if SHOW == 1:
@@ -11461,6 +11461,8 @@ def make_az_grid(cal_image, mj,json_conf,save_file=None):
 
    points = []
    for az in range(int(start_az),int(end_az)):
+      if az < 0:
+         az += 360
       if az >= 360:
          az = az - 360
 
