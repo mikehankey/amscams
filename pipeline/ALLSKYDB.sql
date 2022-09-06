@@ -306,7 +306,7 @@ CREATE TABLE deleted_meteors (
                sd_vid TEXT,
                hd_vid TEXT,
                PRIMARY KEY("sd_vid")
-            )
+            );
 
 CREATE TABLE calibration_stars (
         "star_key"     TEXT,
@@ -339,4 +339,4 @@ CREATE TABLE calibration_stars (
         "geo_quality"     TEXT,
         "slope"     real,
 	PRIMARY KEY("star_key")
-)
+);
