@@ -7014,7 +7014,8 @@ def autocal(image_file, json_conf, show = 0, heal_only=0):
             #print(cmd)
             os.system(cmd)
             #cmd = "./Process.py refit " + cpf
-            cmd = "./recal.py apply_calib " + cpf
+            cpfn = cpf.split("/")[-1]
+            cmd = "./recal.py apply_calib " + cpfn
             print(cmd)
             os.system(cmd)
      
