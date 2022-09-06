@@ -4271,7 +4271,7 @@ def make_cal_summary(cam,json_conf):
    grid_image, blend_image = make_az_grid(img, mj, json_conf)
    if SHOW == 1:
       cv2.imshow('pepe', grid_image)
-      cv2.waitKey(0)
+      cv2.waitKey(30)
    grid_tn = cv2.resize(grid_image, (320,180))
    grid_file = "/mnt/ams2/cal/plots/" + station_id + "_" + cam + "_GRID.jpg"
    grid_tn_file = "/mnt/ams2/cal/plots/" + station_id + "_" + cam + "_GRID-tn.jpg"
@@ -4456,8 +4456,8 @@ def make_lens_model(cam, json_conf, merged_stars=None):
 
    print("saved /mnt/ams2/cal/plots/lens_model_" + cam + ".jpg")
    print("MAKE CAL PLOTS")
-   make_cal_plots(cam, json_conf)
    print("MAKE CAL SUMMARY")
+   make_cal_plots(cam, json_conf)
    make_cal_summary(cam, json_conf)
 
 def find_center(img):
@@ -10255,7 +10255,7 @@ def draw_star_grid(grid):
          cv2.imshow('pepe', star_grid_img)
          cv2.waitKey(30)
          print(new_x, new_y, six, siy)
-   cv2.waitKey(0)
+   cv2.waitKey(30)
 
 def minimize_poly_multi_star(merged_stars, json_conf,orig_ra_center=0,orig_dec_center=0,cam_id=None,master_file=None,mcp=None,show=0):
    if show == 1 :
@@ -10391,8 +10391,9 @@ def minimize_poly_multi_star(merged_stars, json_conf,orig_ra_center=0,orig_dec_c
 
    res,updated_merged_stars = reduce_fit_multi(x_poly, "x_poly",merged_stars,cal_params,fit_img,json_conf,cam_id,1,show)
    print("RES:", res)
-   if res < 1:
-      res = 1
+   if res < 2:
+      res = 2 
+
    if True:
       for star in updated_merged_stars:
          (cal_file , center_az, center_el, ra_center, dec_center, position_angle, pixscale, dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist,star_int) = star
@@ -10828,8 +10829,9 @@ def reduce_fit_multi(this_poly,field, merged_stars, cal_params, fit_img, json_co
    cv2.putText(this_fit_img, desc,  (5,1070), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 1)
    if SHOW == 1:
       #simg = cv2.resize(this_fit_img, (960,540))
-      cv2.imshow('pepe', this_fit_img) 
-      cv2.waitKey(10)
+      if tries % 50 == 0:
+         cv2.imshow('pepe', this_fit_img) 
+         cv2.waitKey(10)
 
    #print("Total Residual Error:",field, total_res )
    #print("Total Stars:", total_stars)
@@ -11449,14 +11451,14 @@ def make_az_grid(cal_image, mj,json_conf,save_file=None):
          if el not in show_el:
             grid_img = draw_grid_line(points, grid_img, "el", el, cp['center_az'], cp['center_el'], 1)
             if SHOW == 1:
-               cv2.imshow('grid', grid_img)
-               cv2.waitKey(0)
+               cv2.imshow('pepe', grid_img)
+               cv2.waitKey(30)
    for az in range (0,360):
       if az % 10 == 0:
          grid_img = draw_grid_line(points, grid_img, "az", az, cp['center_az'], cp['center_el'], 1)
          if SHOW == 1:
-            cv2.imshow('grid', grid_img)
-            cv2.waitKey(0)
+            cv2.imshow('pepe', grid_img)
+            cv2.waitKey(30)
 
 
    points = []

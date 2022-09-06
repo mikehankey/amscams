@@ -307,7 +307,7 @@ def refit_meteor(meteor_file, con, cur, json_conf, mcp = None, last_best_dict = 
       mj['cp'] = cp
 
    # Try to add more stars if we have less than 25
-   if len(cp['cat_image_stars']) < 20:
+   if len(cp['cat_image_stars']) < 80:
       #print("METEOR FILE:", meteor_file)
       star_objs, bad_star_objs = find_stars_with_catalog(meteor_file.replace(".mp4", ".json"), con, cur, json_conf,mcp, cp, median_frame) 
       #print("STAR OBJS:", len(star_objs))
@@ -898,6 +898,8 @@ def delete_cal_file(cal_fn, con, cur, json_conf):
       #print(sql, dvals)
 
 def start_calib(cal_fn, json_conf, calfiles_data, mcp=None):
+
+   #print("Start calib for : ", cal_fn)
    autocal_dir = "/mnt/ams2/cal/"
    station_id = json_conf['site']['ams_id']
    (f_datetime, cam_id, f_date_str,fy,fmin,fd, fh, fm, fs) = convert_filename_to_date_cam(cal_fn)
@@ -952,6 +954,9 @@ def start_calib(cal_fn, json_conf, calfiles_data, mcp=None):
    return(station_id, cal_dir, cal_json_file, cal_image_file, cal_params, cal_img, clean_cal_img, mask_file, mcp)
 
 def cal_status_report(cam_id, con, cur, json_conf): 
+
+   reconcile_calfiles(cam_id, con, cur, json_conf)
+
    station_id = json_conf['site']['ams_id']
 
 
@@ -1081,7 +1086,6 @@ def cal_status_report(cam_id, con, cur, json_conf):
    #print("WITH STAR DATA:", len(calfile_paired_star_stats.keys()))
    #print("IN FOLDER :", len(freecal_index.keys()) )
    
-   #batch_apply(cam_id, con,cur, json_conf, 30, True)
 
    print(tb)
    print(tb2)
@@ -1189,8 +1193,9 @@ def import_cal_file(cal_fn, cal_dir, mcp):
       return()
 
 
-def batch_review(station_id, cam_id, con, cur, json_conf, limit=50, work_type="last_done"):
+def batch_review(station_id, cam_id, con, cur, json_conf, limit=10, work_type="top"):
 
+   # load the mask
    mask_file = "/mnt/ams2/meteor_archive/{}/CAL/MASKS/{}_mask.png".format(station_id, cam_id)
    if os.path.exists(mask_file) is True:
       mask = cv2.imread(mask_file)
@@ -1199,15 +1204,15 @@ def batch_review(station_id, cam_id, con, cur, json_conf, limit=50, work_type="l
    else:
       mask = np.zeros((1080,1920),dtype=np.uint8)
 
+   # set some vars
    my_limit = limit
-   # styles/work type = most_recent , top_20, best, worst
    last_cal = None
    autocal_dir = "/mnt/ams2/cal/"
 
-   print("LOAD CAL FILES :", cam_id)
-
+   # load cal files from Database into an array
    calfiles_data = load_cal_files(cam_id, con, cur)
 
+   # load the multi cal params file
    mcp_file = autocal_dir + "multi_poly-" + station_id + "-" + cam_id + ".info"
    if os.path.exists(mcp_file) == 1:
       mcp = load_json_file(mcp_file)
@@ -1216,6 +1221,8 @@ def batch_review(station_id, cam_id, con, cur, json_conf, limit=50, work_type="l
    else:
       mcp = None
 
+
+   # Build dynamic query to determine res? can replace with function call?
    all_stars = []
    all_res = []
    sql = """
@@ -1261,23 +1268,24 @@ def batch_review(station_id, cam_id, con, cur, json_conf, limit=50, work_type="l
    cur.execute(sql, dvals)
    rows = cur.fetchall()
    cal_fns = []
+
    for row in rows:
-      cal_fn, t_stars, avg_res,score = row
+      cal_fn, timestmp, t_stars, avg_res = row
       all_stars.append(t_stars)
       all_res.append(avg_res)
 
    med_all_stars = np.median(all_stars)
    med_all_res = np.median(all_res)
+   
+   # big block above all just to get the med stars and med res for this cam!? rework. 
 
-   #for cal_fn in calfiles_data:
+   # fetch files for this review based on input params / search options
    sql = """
       SELECT cal_fn, count(*) as ss, avg(res_px) as arp,  (count(*) / avg(res_px)) as score
         FROM calfile_paired_stars
        WHERE cal_fn like ?
          AND res_px is not NULL
    """
-   #if work_type == "top":
-   #   sql += "AND ss > {}".format(med_all_res)
 
    sql += """
        GROUP bY cal_fn
@@ -1308,29 +1316,67 @@ def batch_review(station_id, cam_id, con, cur, json_conf, limit=50, work_type="l
    rows = cur.fetchall()
    cal_fns = []
    cc = 0
+   bad_cal_files = []
+   
+   probs = []
+
+   # make sure all files are valid
    for row in rows:
       more_stars = False
       cal_fn, total_stars, avg_res,score = row
+      root = cal_fn.split("-")[0]
+      cal_dir = "/mnt/ams2/cal/freecal/" + root 
+      if os.path.exists(cal_dir) is False:
+         probs.append(root)
+
+   # delete any prob files!
+   for prob in probs:
+      sql = "DELETE FROM calfile_paired_stars where cal_fn like '%" + prob + "%'" 
+      cur.execute(sql)
+      sql = "DELETE FROM calibration_files where cal_fn like '%" + prob + "%'" 
+      cur.execute(sql)
+   con.commit()
+
+   # for each cal_file selected
+   for row in rows:
+      more_stars = False
+      cal_fn, total_stars, avg_res,score = row
+
+      # skip if these things are true
       if total_stars < med_all_stars or total_stars < 20:
-         print("SKIP LOW STARS.")
          more_stars = True 
-         #continue
-      if cal_fn not in calfiles_data:
-         print("MISSING", cal_fn,  "from calfiles_data???")
          continue
-      if avg_res is None:
-         print("ERROR", cal_fn, avg_res)
+      if cal_fn not in calfiles_data:
+         bad_cal_files.append(cal_fn)
          exit()
          continue
-      #print("REVIEW", cal_fn, total_stars, avg_res)
+      if avg_res is None:
+         bad_cal_files.append(cal_fn)
+         exit()
+         continue
       extra_text = cal_fn + " ( " + str(cc) + " / " + str(len(rows)) + ")"
 
       # -- RECENTER -- #
       cal_image_file = cal_fn.replace("-calparams.json", ".png")
       cal_dir = cal_dir_from_file(cal_image_file)
       cal_json_file = get_cal_json_file(cal_dir)
+      if cal_json_file is None:
+         print("no cal_json file")
+         continue
       cal_json_fn = cal_json_file.split("/")[-1]
       oimg = cv2.imread(cal_dir + cal_image_file)
+      orig_img = oimg.copy()
+      orig_img = cv2.subtract(orig_img, mask)
+
+      # load mask
+      mask_file = "/mnt/ams2/meteor_archive/{}/CAL/MASKS/{}_mask.png".format(station_id, cam_id)
+      if os.path.exists(mask_file) is True:
+         mask = cv2.imread(mask_file)
+         mask = cv2.resize(mask, (1920,1080))
+      else:
+         mask = np.zeros((1080,1920),dtype=np.uint8)
+      oimg = cv2.subtract(oimg, mask)
+
       try:
          cal_params = load_json_file(cal_json_file)
          ores = cal_params['total_res_px']
@@ -1439,7 +1485,7 @@ def batch_review(station_id, cam_id, con, cur, json_conf, limit=50, work_type="l
       cal_params['cat_image_stars'] = new_stars
       print("NEW STARS:", len(new_stars))
 
-      new_cal_params, del_stars = delete_bad_stars (cal_fn, cal_params, con,cur,json_conf, mcp)
+      new_cal_params, del_stars = delete_bad_stars(cal_fn, cal_params, con,cur,json_conf, orig_img) 
 
       new_cal_params = minimize_fov(cal_fn, cal_params, cal_image_file,oimg,json_conf, False,mcp, extra_text)
 
@@ -1478,7 +1524,23 @@ def batch_review(station_id, cam_id, con, cur, json_conf, limit=50, work_type="l
          #print(cmd)
          os.system(cmd)
       #pair_star_points(cal_fn, oimg, cal_params, json_conf, con, cur, mcp)
-   return(cal_fns)
+
+   print("BAD CAL FILES:", bad_cal_files)
+
+   for fn in cal_fns:
+      root = fn.split("-")[0]
+      cal_dir = "/mnt/ams2/cal/freecal/" + root + "/"
+      if os.path.exists(cal_dir) is False:
+         print("BAD:", cal_dir)
+      else:
+         print("GOOD :", cal_dir)
+      if fn in calfiles_data:
+         print("GOOD:", fn)
+      else:
+         print("BAD:", fn)
+
+
+   return(cal_fns, calfiles_data)
 
 def pair_star_points(cal_fn, oimg, cal_params, json_conf, con, cur, mcp):
    show_img = oimg.copy()
@@ -2399,7 +2461,7 @@ def catalog_image(cal_fn, con, cur, json_conf,mcp=None, add_more=False,del_more=
       best_pxs = 9999
 
       if len(cal_params['cat_image_stars']) > 60 and cal_params['total_res_px'] > 10:
-         cal_params, del_stars = delete_bad_stars (cal_fn, cal_params, con,cur,json_conf)
+         cal_params, del_stars = delete_bad_stars(cal_fn, cal_params, con,cur,json_conf, cal_img)
    
       if cal_params['cat_image_stars'] == 0:
          print(cal_params)
@@ -2767,27 +2829,23 @@ def recalc_res(cal_fn, cal_params, json_conf):
    cal_params['total_res_deg'] = np.mean(all_deg)
    return(all_res_mean, inner_res_mean, middle_res_mean, outer_res_mean, cal_params)
 
-def delete_bad_stars (cal_fn, cal_params, con,cur,json_conf, factor =2):
+def delete_bad_stars (cal_fn, cal_params, con,cur,json_conf, oimg):
+
    new_stars = []
    del_stars = []
-
+   if cal_params['x_poly'][0] == 0:
+      return(cal_params, del_stars)
 
 
    all_res, inner_res, middle_res, outer_res,cal_params = recalc_res(cal_fn, cal_params, json_conf)
-   print(all_res, inner_res, middle_res, outer_res)
    mean_all_res = all_res
    if np.isnan(outer_res) :
       outer_res = 35
-   print("ALL RES:", all_res)
-   print("INNER RES:", inner_res)
-   print("MIDDLE RES:", middle_res)
-   print("OUTER RES:", outer_res)
 
    if sum(cal_params['x_poly'] ) == 0:
       first_time_cal = True
    else:
       first_time_cal = False 
-   print("FIRST TIME CAL?:", first_time_cal)
 
    if all_res > 10:
       factor = 2 
@@ -2797,31 +2855,62 @@ def delete_bad_stars (cal_fn, cal_params, con,cur,json_conf, factor =2):
    if first_time_cal is True:
       factor = 4 
 
+   tb = pt()
+   tb.field_names = ["Action", "Star", "Mag", "Intensity", "Center Dist", "Res Limit", "Res Pixels"]
+
+   res_table = {}
+   res_table[0] = []
+   res_table[500] = []
+   res_table[600] = []
+   res_table[800] = []
+   mres = {}
+   for star in cal_params['cat_image_stars']:
+      (dcname,mag,ra,dec,img_ra,img_dec,match_dist,up_cat_x,up_cat_y,img_az,img_el,up_cat_x,up_cat_y,six,siy,res_px,bp) = star
+      center_dist = calc_dist((960,540),(six,siy))
+      if center_dist < 500:
+         res_table[0].append(res_px)
+      if 500 <= center_dist < 600:
+         res_table[500].append(res_px)
+      if 600 <= center_dist < 800:
+         res_table[600].append(res_px)
+      if 800 <= center_dist < 1200:
+         res_table[800].append(res_px)
+
+   for key in res_table:
+      if len(res_table[key]) > 3:
+         mres[key] = np.median(res_table[key])
+      else:
+         mres[key] = 5 
 
    for star in cal_params['cat_image_stars']:
       (dcname,mag,ra,dec,img_ra,img_dec,match_dist,up_cat_x,up_cat_y,img_az,img_el,up_cat_x,up_cat_y,six,siy,res_px,bp) = star
       center_dist = calc_dist((960,540),(six,siy))
-      if center_dist < 400:
-         dist_limit =  inner_res ** factor 
-         if dist_limit > 6:
-            dist_limit = 6 
-      elif 400 <= center_dist < 800:
-         dist_limit =  middle_res ** factor
-         if dist_limit > 10:
-            dist_limit = 10
-      else:
-         dist_limit =  outer_res ** factor
-         if dist_limit > 20:
-            dist_limit = 20
+      # check mask area
+      cx = int(six)
+      cy = int(siy)
+      crop = oimg[cy-10:cy+10,cx-10:cx+10]
+      try:
+         if sum(crop[-1,0]) == 0:
+            print("THIS STAR IS TOO CLOSE TO THE MASK IGNORE!")
+            continue
+      except:
+         continue
 
-      if dist_limit < 1:
-         dist_limit = 2
+      if center_dist < 500:
+         dist_limit = mres[0] * 2
+      if 500 <= center_dist < 600:
+         dist_limit = mres[500] * 2
+      if 600 <= center_dist < 800:
+         dist_limit = mres[600] * 2
+      if 800 <= center_dist < 1200:
+         dist_limit = mres[800] * 2
 
-      if star[-2] < dist_limit :
-         print("KEEP", dist_limit, star[-2])
+
+      if res_px < dist_limit :
          new_stars.append(star)
+         act = "KEEP"
       else:
-         print("DELETE", dist_limit, star[-2])
+         act = "DELETE"
          del_stars.append(star)
          sql = """DELETE FROM calfile_paired_stars 
                    WHERE ra = ?
@@ -2830,6 +2919,9 @@ def delete_bad_stars (cal_fn, cal_params, con,cur,json_conf, factor =2):
          """
          dvals = [ra, dec, cal_fn]
          cur.execute(sql, dvals)
+      row = [act, dcname, mag, bp, int(center_dist), int(dist_limit), res_px]
+      tb.add_row(row)
+   print(tb)
    con.commit()
    cal_params['cat_image_stars'] = new_stars
    return(cal_params, del_stars)
@@ -3105,13 +3197,13 @@ def cal_dir_from_file(cal_file):
 
 def get_cal_json_file(cal_dir):
    if cal_dir is False:
-      return()
+      return(None)
    files = glob.glob(cal_dir + "*calparams.json")
    #print("(get_cal_json_file) CAL DIR", files)
    if len(files) == 1:
       return(files[0])
    else:
-      return(False)
+      return(None)
 
 def make_star_roi(x,y,size):
    x1 = int(x - (size/2))
@@ -3245,7 +3337,6 @@ def batch_apply(cam_id, con,cur, json_conf, last=None, do_bad=False):
             calfiles_data = load_cal_files(cam_id, con, cur)
          else:
             calfiles_data = load_cal_files(cam_id, con, cur, False, last)
-         #print(len(calfiles_data), "ok")
          mcp_file = autocal_dir + "multi_poly-" + station_id + "-" + cam_id + ".info"
          if os.path.exists(mcp_file) == 1:
             mcp = load_json_file(mcp_file)
@@ -3262,7 +3353,11 @@ def batch_apply(cam_id, con,cur, json_conf, last=None, do_bad=False):
          flux_table = {}
          for cf in calfiles_data: #sorted(calfiles_data, reverse=True):
             extra_text = cf + " " + str(rc) + " of " + str(len(calfiles_data))
-            last_cal_params, flux_table = apply_calib (cf, calfiles_data, json_conf, mcp, last_cal_params, extra_text, do_bad, flux_table)
+            print("CF", cf)
+            try:
+               last_cal_params, flux_table = apply_calib (cf, calfiles_data, json_conf, mcp, last_cal_params, extra_text, do_bad, flux_table)
+            except:
+               print("FAILED APPLY:", cf)
             for mag in flux_table:
                print(mag, flux_table[mag])
             rc += 1
@@ -3272,6 +3367,11 @@ def get_image_stars_with_catalog(obs_id, cal_params, show_img, flux_table=None):
    if flux_table is None:
       flux_table = {}
    clean_img = show_img.copy() 
+
+
+
+
+
    cal_fn = obs_id
    #star_obj = eval_star_crop(crop_img, cal_fn, mcx1, mcy1, mcx2, mcy2)
 
@@ -3478,12 +3578,12 @@ def get_image_stars_with_catalog(obs_id, cal_params, show_img, flux_table=None):
 
    #for cat_star in cat_image_stars:
    #   print("FINAL :", cat_star[-2])
-
    return(cat_image_stars, user_stars, flux_table)
 
 
 def apply_calib (cal_file, calfiles_data, json_conf, mcp, last_cal_params=None, extra_text= "", do_bad=False, flux_table=None):
       cal_dir = cal_dir_from_file(cal_file)
+      station_id = json_conf['site']['ams_id']
 
 
 
@@ -3517,6 +3617,18 @@ def apply_calib (cal_file, calfiles_data, json_conf, mcp, last_cal_params=None, 
       cal_image_file = cal_file.replace("-calparams.json", ".png")
       oimg = cv2.imread(cal_dir + cal_image_file)
 
+      print("SUBTRACKED FROM MASK")
+      mask_file = "/mnt/ams2/meteor_archive/{}/CAL/MASKS/{}_mask.png".format(station_id, cam_id)
+      if os.path.exists(mask_file) is True:
+         mask = cv2.imread(mask_file)
+         #mask = cv2.cvtColor(mask, cv2.COLOR_BGR2GRAY)
+         mask = cv2.resize(mask, (1920,1080))
+      else:
+         mask = np.zeros((1080,1920),dtype=np.uint8)
+      oimg = cv2.subtract(oimg, mask)
+
+
+
       # view the original calibration 
       cal_img, cal_params = view_calfile(cam_id, cal_file, con, cur, json_conf,calfiles_data,cal_params,mcp)
       if SHOW == 1:
@@ -3545,10 +3657,11 @@ def apply_calib (cal_file, calfiles_data, json_conf, mcp, last_cal_params=None, 
       rez = np.median([row[-2] for row in cal_params['cat_image_stars']])
       reject_stars = []
 
-      if rez < 1:
-         rez = 1
+      rez = 2 
       fact = 2
 
+
+      # THIS HERE NEEDS TO BE FIXED TO WORK ON AN AVG OF KNOWN VALUES NOT RANDOM GUESSES
       for row in cal_params['cat_image_stars']:
          dcname,mag,ra,dec,img_ra,img_dec,match_dist,org_x,org_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist,star_int = row 
          center_dist = calc_dist((960,540),(six,siy))
@@ -3575,11 +3688,14 @@ def apply_calib (cal_file, calfiles_data, json_conf, mcp, last_cal_params=None, 
          else:
             print("skip bad center dist, res, avg, fact, fact*rez :", row[-2], center_dist, rez, fact, rez * fact)
             reject_stars.append(row)
+
+      # save these to the cal
       for star in reject_stars:
          dcname,mag,ra,dec,img_ra,img_dec,match_dist,org_x,org_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist,star_int = star
 
          cv2.line(cal_img, (int(new_cat_x),int(new_cat_y)), (int(six),int(siy)), (0,0,255), 1)
          cv2.putText(cal_img, "X - " + str(cat_dist) + " " + row[0],  (int(six+4),int(siy)), cv2.FONT_HERSHEY_SIMPLEX, .4, (0,0,255), 1)
+      cal_params['reject_stars'] = reject_stars
 
       if SHOW == 1:
          cv2.imshow('pepe', cal_img)
@@ -4273,8 +4389,7 @@ def manual_tweek_calib(cal_fn, con, cur, json_conf,mcp, calfiles_data):
       if key == 100:
          cal_params['center_el'] += interval
 
-         print("CAM ID:", cam_id)
-         print("CAL FN :", cal_fn)
+         print("CAL FN :", cal_fn, len(cal_params['cat_image_stars']),cal_params['total_res_px'] )
          cal_img, cal_params = view_calfile(cam_id, cal_fn, con, cur, json_conf, calfiles_data, cal_params,mcp)
          show_message(cal_img, "EL + " + str(interval),900,500 )
       if key == 119:
@@ -4345,6 +4460,7 @@ def manual_tweek_calib(cal_fn, con, cur, json_conf,mcp, calfiles_data):
 
 
 def view_calfile(cam_id, cal_fn, con, cur, json_conf, calfiles_data= None, cp = None,mcp=None):
+   calfiles_data = load_cal_files(cam_id, con, cur)
    #print("start view calfiles ", cal_fn, len(calfiles_data))
    if calfiles_data is not None:
       # we are dealing with a cal-file not a meteor-file
@@ -4352,7 +4468,13 @@ def view_calfile(cam_id, cal_fn, con, cur, json_conf, calfiles_data= None, cp = 
          cal_data = calfiles_data[cal_fn]
       else:
          print("PROBLEM cal_fn is not in the cal data!?", cal_fn, calfiles_data.keys())
-         exit()
+         print("was it moved to the extra cal folder?")
+         # try to load it?
+         cal_data = load_cal_files(cam_id, con, cur, cal_fn)
+         #print("CAL DATA:", cal_data)
+
+         #print(len(calfiles_data.keys()), "calfiles data")
+         #exit()
          return(False, False)
    else:
       print("CAL files data is none!", calfiles_data)
@@ -4368,11 +4490,14 @@ def view_calfile(cam_id, cal_fn, con, cur, json_conf, calfiles_data= None, cp = 
    cal_dir = cal_dir_from_file(cal_image_file)
    cal_json_file = get_cal_json_file(cal_dir)
    cal_json_fn = cal_json_file.split("/")[-1]
+
    if os.path.exists(cal_dir + cal_img_fn):
       cal_img = cv2.imread(cal_dir + cal_img_fn)
 
    
    cal_params = update_center_radec(cal_fn,cal_params,json_conf)
+   print("CAL FN:", cal_fn, len(cal_params['cat_image_stars']), cal_params['total_res_px'])
+
    stars, cat_image_stars = get_paired_stars(cal_fn, cal_params, con, cur)
    cal_params['cat_image_stars'] = cat_image_stars
 
@@ -4864,10 +4989,10 @@ def get_image_stars(cal_image_file, con, cur, json_conf,force=False):
    cal_json_file = get_cal_json_file(cal_dir)
    cal_json_fn = cal_json_file.split("/")[-1]
 
-   print("CAL FN:", cal_fn)
-   print("CAL DIR:", cal_dir)
-   print("CAL JSON", cal_json_file)
-   print("CAL IMAGE", cal_dir + cal_image_file)
+   #print("CAL FN:", cal_fn)
+   #print("CAL DIR:", cal_dir)
+   #print("CAL JSON", cal_json_file)
+   #print("CAL IMAGE", cal_dir + cal_image_file)
 
    resp = check_calibration_file(cal_json_fn, con, cur)
    if resp is True and force is False:
@@ -5195,6 +5320,7 @@ def find_stars_with_catalog(cal_fn, con, cur, json_conf,mcp=None, cp=None, cal_i
    # for each star in the catalog check a crop around that location for an image star
    # if found add to user_stars and cat_image_stars
    # calc final res
+   tb = pt()
 
 
    (f_datetime, cam_id, f_date_str,fy,fmin,fd, fh, fm, fs) = convert_filename_to_date_cam(cal_fn)
@@ -5409,19 +5535,30 @@ def find_stars_with_catalog(cal_fn, con, cur, json_conf,mcp=None, cp=None, cal_i
    if final_res < 2:
       final_res = 2
 
-   if final_res > 9:
-      final_res = 9
-   if final_res < 1:
-      final_res = 1 
+   if final_res > 15:
+      final_res = 15 
+   if final_res < 2:
+      final_res = 2 
+
+   tb.field_names = ["Action", "Star", "Mag", "Intensity", "Res Limit", "Res Pixels", ]
+   #tb.add(act, name, mag, star_flux, final_res, res_pixels)
+
 
    for so in  star_objs:
-      if so["total_res_px"] <= final_res * 2:
+      name,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist,star_flux = so
+
+      if so["total_res_px"] <= final_res * 3:
          print("KEEP", so["total_res_px"], final_res)
          new_star_objs.append(so)
+         act = "KEEP"
       else:
          print("REJECT", so["total_res_px"], final_res)
+         act = "REJECT"
+      tb.add_row([act, name, mag, star_flux, final_res, res_pixels])
    star_objs = new_star_objs  
+   print(tb)
 
+   #input("YOYO")
    star_obj_report(star_objs)
    #print("DIST TABLE!")
    #for star in good_stars:
@@ -5431,14 +5568,13 @@ def find_stars_with_catalog(cal_fn, con, cur, json_conf,mcp=None, cp=None, cal_i
 
    if SHOW == 1:
       cv2.imshow('pepe', show_img)
-      cv2.waitKey(30)
+      cv2.waitKey(0)
 
 
 
    return(star_objs, bad_star_objs)
 
 def cal_params_report(cal_fn, cal_params,json_conf, show_img, waitVal=30, mcp=None):
-   from prettytable import PrettyTable as pt   
 
    cal_params_nlm = cal_params.copy()
    cal_params_nlm['x_poly'] = np.zeros(shape=(15,), dtype=np.float64)
@@ -5537,7 +5673,6 @@ def cal_params_report(cal_fn, cal_params,json_conf, show_img, waitVal=30, mcp=No
 
 def star_obj_report(star_objs):
    #pip install prettytable
-   from prettytable import PrettyTable as pt   
    tb = pt()
    tb.field_names = ["Star","Magnitude","Flux","Cen Dist", "Res Deg", "Res PX", "AI YN", "CRR"]
 
@@ -5883,14 +6018,18 @@ def get_default_cal_for_file(cam_id, obs_file, img, con, cur, json_conf):
    for row in rows:
       print("ROW:", row)
       date, az, el, pos, px, res = row 
-      dates.append(date)
-      azs.append(az)
-      els.append(el)
-      poss.append(pos)
-      pxs.append(px)
+      if az != None:
+         dates.append(date)
+         azs.append(az)
+         els.append(el)
+         poss.append(pos)
+         pxs.append(px)
       if res is not None:
          ress.append(res)
 
+   if len(azs) == 0:
+      return()
+   print(azs)
    med_az = np.median(azs)
    med_el = np.median(els)
    med_pos = np.median(poss)
@@ -6060,12 +6199,14 @@ def get_best_cal_files(cam_id, con, cur, json_conf, limit=500):
    return(best, best_dict)
 
 
-def characterize_best(cam_id, con, cur, json_conf,limit=500, cal_fns=None):
+def characterize_best(cam_id, con, cur, json_conf,limit=50, cal_fns=None):
    # choose best star pairs to use in the lens model
 
    my_limit = limit
-   limit = 500 
+   limit = 50 
    calfiles_data  = load_cal_files(cam_id, con,cur)
+   if cal_fns is None:
+      cal_fns = list(calfiles_data.keys())[0:limit]
 
    autocal_dir = "/mnt/ams2/cal/"
    all_stars_image_file = autocal_dir + "plots/" + json_conf['site']['ams_id'] + "_" + cam_id + "_ALL_STARS.jpg"
@@ -6128,12 +6269,17 @@ def characterize_best(cam_id, con, cur, json_conf,limit=500, cal_fns=None):
    bad = 0
 
    # determine res at different differences
-   for row in rows:
-      if row[2] is None:
-         continue
-      cal_fn = row[0]
+   # this is hot db way
+   #for row in rows:
+   #   if row[2] is None:
+   #      continue
+   #   cal_fn = row[0]
 
-      if False:
+   # this is the 'review way'
+   for cal_fn in cal_fns:
+      #print("CAL FN:", cal_fn)
+      # need this block for the review way!
+      if True:
          # OLD / SLOW / NOT NEEDED
          resp = start_calib(cal_fn, json_conf, calfiles_data, mcp)
 
@@ -6257,8 +6403,11 @@ def characterize_best(cam_id, con, cur, json_conf,limit=500, cal_fns=None):
          good += 1
       else:
          bad += 1
-
-      if .25 <= fact <= 2:
+      if mag > 4 and star_flux > 500:
+         print("MAG FAIL!", mag, star_flux)
+         fact += 10
+      print("FACT", fact , res_px, mag, star_flux)
+      if .25 <= fact <= 1.8:
          #cv2.line(base_image, (int(zp_cat_x),int(zp_cat_y)), (int(img_x),int(img_y)), (0,255,0), 2)
          (cal_fn,dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,img_x,img_y,res_px,star_flux) = updated_stars[ic]
 
@@ -6276,7 +6425,7 @@ def characterize_best(cam_id, con, cur, json_conf,limit=500, cal_fns=None):
 
    if SHOW == 1 :
       cv2.imshow('pepe', base_image)
-      cv2.waitKey(30)
+      cv2.waitKey(0)
    cv2.imwrite(all_stars_image_file, base_image)
 
 
@@ -6284,6 +6433,8 @@ def characterize_best(cam_id, con, cur, json_conf,limit=500, cal_fns=None):
    rez = [row[-2] for row in best_stars] 
    med_rez = np.median(rez) * 1.2
 
+   if med_rez < 2:
+      med_rez = 2
    # only keep the best stars
 
    for star in best_stars:
@@ -6298,7 +6449,17 @@ def characterize_best(cam_id, con, cur, json_conf,limit=500, cal_fns=None):
 
 
       match_dist = 9999
-      if res_px < med_rez * 2: 
+      center_dist = calc_dist((img_x, img_y),(1920/2,1080/2))   
+      factor = 2
+      if center_dist > 600:
+         factor = 3
+      if center_dist > 700:
+         factor = 4 
+      if center_dist > 800:
+         factor = 8
+      if center_dist > 900:
+         factor = 10 
+      if res_px < med_rez * factor: 
          merged_stars.append((cal_fn, center_az, center_el, ra_center, dec_center, position_angle, pixscale, name,mag,ra,dec,ra,dec,match_dist,new_x,new_y,center_az,center_el,new_cat_x,new_cat_y,img_x,img_y,res_px,star_flux))
 
    # select grid stars when we have more than 400
@@ -6332,15 +6493,18 @@ def characterize_best(cam_id, con, cur, json_conf,limit=500, cal_fns=None):
 
    if SHOW == 1 :
       cv2.imshow('pepe', base_image)
-      cv2.waitKey(30)
+      cv2.waitKey(0)
 
       cv2.imshow('pepe', base_image_good_stars)
-      cv2.waitKey(30)
+      cv2.waitKey(0)
 
 
    save_json_file("/mnt/ams2/cal/" + station_id + "_" + cam_id + "_MERGED_STARS.json", merged_stars)
    save_json_file("/mnt/ams2/cal/" + station_id + "_" + cam_id + "_MERGED_STARS.json", best_stars)
    print("SAVED STARS FOR MODEL! /mnt/ams2/cal/" + station_id + "_" + cam_id + "_MERGED_STARS.json", len(best_stars), "stars")
+   if len(best_stars) < 10:
+      print("LESS THAN 10 stars IN MODEL ABORT!")
+      exit()
 
 
 def plot_star_chart(base_image, cat_stars, zp_cat_stars):
@@ -6595,7 +6759,7 @@ def characterize_fov(cam_id, con, cur, json_conf):
 
    #(cal_file , center_az, center_el, ra_center, dec_center, position_angle, pixscale, dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist,star_int) = star
 
-   calfiles_data  = load_cal_files(cam_id, con,cur)
+   #calfiles_data  = load_cal_files(cam_id, con,cur)
    merged_stars = []
    for star in all_good_stars:
 
@@ -6622,7 +6786,57 @@ def characterize_fov(cam_id, con, cur, json_conf):
 
    #if mcp is not None:
    #   make_lens_model(cam_id, json_conf, merged_stars)
- 
+
+
+def reconcile_calfiles(cam_id, con, cur, json_conf):
+   all_files = {}
+   sql = """
+      SELECT cal_fn
+        FROM calibration_files 
+   """
+   cur.execute(sql )
+
+   rows = cur.fetchall()
+   for row in rows:
+      cal_fn = row[0]
+      all_files[cal_fn] = {}
+      print(cal_fn)
+
+
+   sql = """
+      SELECT cal_fn
+        FROM calfile_paired_stars 
+   """
+   cur.execute(sql )
+
+   rows = cur.fetchall()
+   for row in rows:
+
+      cal_fn = row[0]
+      all_files[cal_fn] = {}
+      print(cal_fn)
+
+
+   bad_cals = []
+   for cal_fn in all_files:
+      root = cal_fn.split("-")[0]
+      free_cal_dir = "/mnt/ams2/cal/freecal/"
+      extra_cal_dir = "/mnt/ams2/cal/extracal/"
+      cal_dir = free_cal_dir + root
+      if os.path.exists(cal_dir) is False:
+         print("bad calfile:", cal_fn)
+         bad_cals.append(cal_fn)
+      #else:
+         #print("good calfile:", cal_fn)
+
+   for bad_fn in bad_cals:
+      sql = "DELETE FROM calibration_files where cal_fn = ?"
+      cur.execute(sql, [bad_fn] )
+
+      sql = "DELETE FROM calfile_paired_stars where cal_fn = ?"
+      cur.execute(sql, [bad_fn] )
+   con.commit()
+
 def load_cal_files(cam_id, con, cur, single=False,last=None):
    sql = """
       SELECT station_id,
@@ -6671,8 +6885,8 @@ def load_cal_files(cam_id, con, cur, single=False,last=None):
    """
 
 
-   if last is not None:
-      sql += " LIMIT " + str(last)
+   #if last is not None:
+   #   sql += " LIMIT " + str(last)
 
    cur.execute(sql, uvals )
 
@@ -6686,17 +6900,22 @@ def load_cal_files(cam_id, con, cur, single=False,last=None):
          y_poly, x_poly_fwd, y_poly_fwd, res_px, res_deg, ai_weather, ai_weather_conf, cal_version, last_update) = row
 
       cal_dir = cal_dir_from_file(cal_fn)
-      if cal_dir is False:
-         print("FAILED load_cal_files ", cal_dir , cal_fn)
-         failed = True 
-      elif os.path.exists(cal_dir + cal_fn) is False: 
-         print("FAILED load_cal_files", cal_dir + cal_fn)
-         failed = True 
+      if False:
+         if cal_dir is False:
+            print("FAILED load_cal_files ", cal_dir , cal_fn)
+            failed = True 
+            continue
+         elif os.path.exists(cal_dir + cal_fn) is False: 
+            print("FAILED load_cal_files", cal_dir + cal_fn)
+            failed = True 
+            continue
+         else:
+            print("GOOD:", cal_dir + cal_fn)
 
-      if failed is True:
-         print("DELETE", cal_fn)
-         delete_cal_file(cal_fn, con, cur, json_conf)
-         continue
+         if failed is True:
+            print("DELETE", cal_fn)
+            delete_cal_file(cal_fn, con, cur, json_conf)
+            continue
 
       calfiles_data[cal_fn] = (station_id, camera_id, cal_fn, cal_ts, az, el, ra, dec, position_angle,\
          pixel_scale, zp_az, zp_el, zp_ra, zp_dec, zp_position_angle, zp_pixel_scale, x_poly, \
@@ -6776,31 +6995,30 @@ def best_stars(merged_stars, mcp, factor = 2, gsize=50):
 
    return(best)
 
-def lens_model(cam_id, con, cur, json_conf):
+def lens_model(cam_id, con, cur, json_conf, cal_fns= None):
    station_id = json_conf['site']['ams_id']
    limit = 1000
    #cal_fns = batch_review(station_id, cam_id, con, cur, json_conf, limit)
 
    avg_res = get_avg_res(cam_id, con, cur)
 
-   sql = """
-      SELECT cal_fn, res_px
-        FROM calibration_files 
-       WHERE cal_fn like ?
-         AND res_px < ?
-    ORDER BY res_px ASC 
-   """
+   if cal_fns is None:
+      sql = """
+         SELECT cal_fn, res_px
+           FROM calibration_files 
+          WHERE cal_fn like ?
+            AND res_px < ?
+       ORDER BY res_px ASC 
+      """
 
-   dvals = ["%" + cam_id + "%", avg_res]
-   cur.execute(sql, dvals)
-   rows = cur.fetchall()
-   cal_fns = []
-   for row in rows:
-      print("\r", row[0], row[1], end="")
-      cal_fns.append(row[0])
+      dvals = ["%" + cam_id + "%", avg_res]
+      cur.execute(sql, dvals)
+      rows = cur.fetchall()
+      cal_fns = []
+      for row in rows:
+         print("\r", row[0], row[1], end="")
+         cal_fns.append(row[0])
 
-   #print("Characterize FOV")
-   #characterize_best(cam_id, con, cur, json_conf, limit, cal_fns)
 
    mask_file = "/mnt/ams2/meteor_archive/{}/CAL/MASKS/{}_mask.png".format(station_id, cam_id)
 
@@ -6874,6 +7092,8 @@ def lens_model(cam_id, con, cur, json_conf):
    if med_rez < 2:
       med_rez = 2 
 
+   tb = pt()
+   tb.field_names = ["Action", "Star", "Mag", "Intensity", "Res Limit", "Res Pixels", ]
 
    for star in merged_stars:
       (cal_file , center_az, center_el, ra_center, dec_center, position_angle, pixscale, name,mag,ra,dec,ra,dec,match_dist,new_cat_x,new_cat_y,center_az,center_el,new_cat_x,new_cat_y,img_x,img_y,res_px,star_flux) = star
@@ -6887,10 +7107,13 @@ def lens_model(cam_id, con, cur, json_conf):
       new_cat_x,new_cat_y = get_xy_for_ra_dec(cal_params, ra, dec)
       res_px = calc_dist((img_x,img_y),(new_cat_x,new_cat_y))
       if res_px <= med_rez:
-         #print("KEEP", res_px, med_rez)
+         print("KEEP", res_px, med_rez)
          new_merged_stars.append((cal_file , center_az, center_el, ra_center, dec_center, position_angle, pixscale, name,mag,ra,dec,ra,dec,match_dist,new_cat_x,new_cat_y,center_az,center_el,new_cat_x,new_cat_y,img_x,img_y,res_px,star_flux))
-      #else:
+         act = "KEEP"
+      else:
          #print("SKIP", res_px, med_rez)
+         act = "REJECT"
+      tb.add_row([act, name, mag, star_flux, med_rez, res_px])
   
    if len(new_merged_stars) > 500:
       save_json_file("/mnt/ams2/cal/" + station_id + "_" + cam_id + "_MERGED_STARS.json", new_merged_stars)
@@ -6899,19 +7122,25 @@ def lens_model(cam_id, con, cur, json_conf):
    mean_rez = np.median(rez) 
    print("NEW STARS:", len(new_merged_stars))
    print("NEW REZ:", mean_rez)
-   lens_model_report(cam_id, con, cur, json_conf)
+   print(tb)
 
 
-def wizard(station_id, cam_id, con, cur, json_conf, limit=5):
+def wizard(station_id, cam_id, con, cur, json_conf, file_limit=5):
+
+   if SHOW == 1:
+      cv2.namedWindow("pepe")
+      cv2.resizeWindow("pepe", 1920, 1080)
+      cv2.moveWindow("pepe", 1400,100)
+
 
    os.system("clear")
    print("ALLSKY7 LENS MODEL CALIBRATION WIZARD")
-   
+   print("Limit:", file_limit)   
    # review / apply the current lens model 
    # and calibration on the best 10 files
 
-   if False:
-      cal_fns = batch_review(station_id, cam_id, con, cur, json_conf, limit)
+   if True:
+      cal_fns, calfiles_data = batch_review(station_id, cam_id, con, cur, json_conf, file_limit)
    else:
       avg_res = get_avg_res(cam_id, con, cur)
       cal_fns = []
@@ -6924,7 +7153,7 @@ def wizard(station_id, cam_id, con, cur, json_conf, limit=5):
            ORDER BY stars desc 
            limit ?
       """
-      dvals = ["%" + cam_id + "%", avg_res, limit]
+      dvals = ["%" + cam_id + "%", avg_res, file_limit]
       cur.execute(sql, dvals)
       rows = cur.fetchall()
       for row in rows:
@@ -6933,30 +7162,23 @@ def wizard(station_id, cam_id, con, cur, json_conf, limit=5):
 
          cal_fns.append(cal_fn)
 
-
+   print("Running lens wizard with : ", len(cal_fns))
    # characterize the current lens model 
    # and define best merge star values
+   print("CAL FNS :", cal_fns)
+   characterize_best(cam_id, con, cur, json_conf, file_limit, cal_fns)
 
-   characterize_best(cam_id, con, cur, json_conf, limit, cal_fns)
    # run lens model with current stars
-
-   lens_model(cam_id, con, cur, json_conf)
+   lens_model(cam_id, con, cur, json_conf, cal_fns)
    #exit()
 
+   file_limit = int(file_limit) * 2
+   print("FILE LIMIT:", file_limit)
+   cal_fns, calfiles_data = batch_review(station_id, cam_id, con, cur, json_conf, file_limit)
+   characterize_best(cam_id, con, cur, json_conf, file_limit, cal_fns)
    # run lens model a second time
-   lens_model(cam_id, con, cur, json_conf)
+   lens_model(cam_id, con, cur, json_conf, cal_fns)
 
-   # now remove the previous model
-   autocal_dir = "/mnt/ams2/cal/"
-   mcp_file = autocal_dir + "multi_poly-" + station_id + "-" + cam_id + ".info"
-   print("rm " + mcp_file)
-   os.system("rm " + mcp_file)
-
-   # now remake it with the stars left over from the last run
-   lens_model(cam_id, con, cur, json_conf)
-
-   # run lens model a second time
-   lens_model(cam_id, con, cur, json_conf)
 
    # now the lens model should be made within around to less than 1PX res. 
    # if it is less than 2px that is fine as each indiviual capture will
@@ -6967,13 +7189,16 @@ def wizard(station_id, cam_id, con, cur, json_conf, limit=5):
    lens_model_report(cam_id, con, cur, json_conf)
    merged_star_file = "/mnt/ams2/cal/" + station_id + "_" + cam_id + "_MERGED_STARS.json"
    merged_stars = load_json_file(merged_star_file)
-   #make_lens_model(cam_id, json_conf, merged_stars)
+   try:
+      make_lens_model(cam_id, json_conf, merged_stars)
+   except:
+      print("Make lens model failed?")
 
    #characterize_fov(cam_id, con, cur, json_conf)
 
 def lens_model_report(cam_id, con, cur, json_conf):
-   characterize_fov(cam_id, con, cur, json_conf)
-   characterize_best(cam_id, con, cur, json_conf)
+   #characterize_fov(cam_id, con, cur, json_conf)
+   #characterize_best(cam_id, con, cur, json_conf)
    import matplotlib.pyplot as plt
    station_id = json_conf['site']['ams_id']
    msfile = "/mnt/ams2/cal/" + station_id + "_" + cam_id + "_MERGED_STARS.json"
@@ -6983,7 +7208,10 @@ def lens_model_report(cam_id, con, cur, json_conf):
    #make_cal_summary(cam_id, json_conf)
 
    make_cal_plots(cam_id, json_conf)
-   make_lens_model(cam_id, json_conf, merged_stars)
+   try:
+      make_lens_model(cam_id, json_conf, merged_stars)
+   except:
+      print("Failed making some files.")
 
    #exit()
    #print("ENDED AFTER SUM")
@@ -7107,7 +7335,6 @@ def fix_cal(cal_fn, con, cur,json_conf):
 
 def find_best_calibration(cal_fn, orig_cal, list_of_cals, json_conf):
    # Not used...
-   # input = cal filename and data, and list of cal_params to try
    for row in list_of_cals:
       [az,el,pos,pxs] = row
       cp = dict(orig_cal)
@@ -7312,9 +7539,9 @@ if __name__ == "__main__":
    if cmd == "wiz" :
       cam_id = sys.argv[2]
       if len(sys.argv) > 3:
-         limit = sys.argv[3]
+         limit = int(sys.argv[3])
       else:
-         limit = 25
+         limit = 5
 
       if cam_id == "all":
          for cam_num in json_conf['cameras']:
