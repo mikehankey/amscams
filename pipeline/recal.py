@@ -3634,7 +3634,7 @@ def apply_calib (cal_file, calfiles_data, json_conf, mcp, last_cal_params=None, 
          cv2.imshow('pepe', cal_img)
          cv2.waitKey(30)
 
-      star_points, show_img = get_star_points(cal_file, oimg, cal_params, station_id, camera_id, json_conf)
+      star_points, show_img = get_star_points(cal_file, oimg, cal_params, station_id, cam_id, json_conf)
       cal_params['user_stars'] = star_points
       cal_params['star_points'] = star_points
       if SHOW == 1:
