@@ -1,5 +1,8 @@
 from Classes.AIDB import AllSkyDB
 import sys
+from lib.PipeUtil import load_json_file
+json_conf = load_json_file("../conf/as6.json")
+station_id = json_conf['site']['ams_id']
 
 try:
    from Classes.AllSkyUI import AllSkyUI
@@ -11,7 +14,7 @@ AIDB = AllSkyDB()
 if noUI is False:
    AIUI = AllSkyUI()
 
-con = AIDB.connect_database("AMS1")
+con = AIDB.connect_database(station_id)
 cur = con.cursor()
 
 if len(sys.argv) > 1:
