@@ -7507,6 +7507,8 @@ if __name__ == "__main__":
       print(mcp_file)
       if os.path.exists(mcp_file) == 1:
          mcp = load_json_file(mcp_file)
+      else:
+         mcp = None
 
       calfiles_data = load_cal_files(cam_id, con, cur)
       last_cal_params = apply_calib (cf, calfiles_data, json_conf, mcp, None, "")
