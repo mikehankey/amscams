@@ -1098,8 +1098,7 @@ def import_cal_file(cal_fn, cal_dir, mcp):
    # load json, insert into main table, insert stars into pairs table
    delete_cal_file(cal_fn, con, cur, json_conf)
    
-   #print("IMPORT:", cal_dir + cal_fn) 
-   
+   print("IMPORT:", cal_dir + cal_fn) 
    cal_img_file = cal_dir + cal_fn.replace("-calparams.json", ".png")
    if os.path.exists(cal_img_file) is True:
       cal_img = cv2.imread(cal_img_file)
