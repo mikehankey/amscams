@@ -16,6 +16,24 @@ if os.path.exists("/usr/bin/pip3") is False and os.path.exists("/usr/local/bin/p
 
 os.system("sudo python3 -m pip install --upgrade pip")
 
+
+if os.path.exists("/home/ams/amscams/install/get-pip36.py") is False:
+   print("GET PIP FOR PYTHON3.6")
+   cmd = "wget https://bootstrap.pypa.io/pip/3.6/get-pip.py -O /home/ams/amscams/install/get-pip36.py"
+   os.system(cmd)
+   cmd = "sudo python3.6 get-pip36.py"
+   os.system(cmd)
+
+   os.system("sudo python3.6 -m pip install --upgrade pip")
+else:
+   if "pip" not in installed:
+       cmd = "sudo python3.6 get-pip36.py"
+       print(cmd)
+       os.system(cmd)
+
+
+
+
 cmd = "sudo apt-get -y install p7zip-full"
 os.system(cmd)
 
