@@ -73,17 +73,26 @@ pre.bash {
             }
         </style>
 	<script>
+            // handle the nav
             url = window.location.href
             qs = window.location.search
             const urlParams = new URLSearchParams(qs);
             const start_day = urlParams.get('start_day')
+            const day = urlParams.get('day')
             if (start_day !== null)  {
                var el = start_day.split("_")
                y = el[0]	
                m = el[1]	
                d = el[2]	
 	       new_file = "/EVENTS/" + y + "/" + m + "/" + d + "/" + start_day + "_OBS_GOOD.html"
+
+	    if (day is null) {  
 	       window.location.replace(new_file)
+	    }
+            else {
+	       // things are local
+	       window.location.replace(new_file)
+	    }
             }
 
 
