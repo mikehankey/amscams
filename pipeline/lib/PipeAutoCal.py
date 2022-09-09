@@ -491,7 +491,6 @@ def gen_cal_hist(json_conf):
    #   return()
 
    for cam in sorted(json_conf['cameras']):
-      print(cam)
       cams_id = json_conf['cameras'][cam]['cams_id']
       all_files[cams_id] = {}
       all_files[cams_id]['cal_files'] = []
@@ -504,7 +503,6 @@ def gen_cal_hist(json_conf):
       cal_files = glob.glob("/mnt/ams2/cal/freecal/*" + cams_id + "*")
       corrupt = []
       for cf in sorted(cal_files):
-         print("CF:", cf)
          (f_datetime, this_cam, f_date_str,y,m,d, h, mm, s) = convert_filename_to_date_cam(cf)
          cfs = glob.glob(cf + "/*calparams.json")
          if len(cfs) == 0:
@@ -525,13 +523,15 @@ def gen_cal_hist(json_conf):
          desc = cf.split("/")[-1]
          desc = desc.split("-")[-1]
          print("\r", "loading cal hist file:" + desc, end="")
-         all_files[cams_id]['cal_files'].append(cf)
-         all_files[cams_id]['dates'].append(f_date_str)
-         all_files[cams_id]['azs'].append(cp['center_az'])
-         all_files[cams_id]['els'].append(cp['center_el'])
-         all_files[cams_id]['pos'].append(cp['position_angle'])
-         all_files[cams_id]['pxs'].append(cp['pixscale'])
-         all_files[cams_id]['res'].append(cp['total_res_px'])
+         if math.isnan(cp['center_az']) is False:
+
+            all_files[cams_id]['cal_files'].append(cf)
+            all_files[cams_id]['dates'].append(f_date_str)
+            all_files[cams_id]['azs'].append(cp['center_az'])
+            all_files[cams_id]['els'].append(cp['center_el'])
+            all_files[cams_id]['pos'].append(cp['position_angle'])
+            all_files[cams_id]['pxs'].append(cp['pixscale'])
+            all_files[cams_id]['res'].append(cp['total_res_px'])
    for cc in corrupt:
       cmd = "rm " + cc + "*"
       print("CORUPT:", cmd)
@@ -553,18 +553,20 @@ def gen_cal_hist(json_conf):
             by_day[cam][day]['pos'] = []
             by_day[cam][day]['pxs'] = []
             by_day[cam][day]['res'] = []
-         by_day[cam][day]['azs'].append(float(all_files[cam]['azs'][i]))
-         by_day[cam][day]['els'].append(float(all_files[cam]['els'][i]))
-         by_day[cam][day]['pos'].append(float(all_files[cam]['pos'][i]))
-         by_day[cam][day]['pxs'].append(float(all_files[cam]['pxs'][i]))
-         by_day[cam][day]['res'].append(float(all_files[cam]['res'][i]))
-    
+         if math.isnan(all_files[cam]['azs'][i]) is False:
+            by_day[cam][day]['azs'].append(float(all_files[cam]['azs'][i]))
+            by_day[cam][day]['els'].append(float(all_files[cam]['els'][i]))
+            by_day[cam][day]['pos'].append(float(all_files[cam]['pos'][i]))
+            by_day[cam][day]['pxs'].append(float(all_files[cam]['pxs'][i]))
+            by_day[cam][day]['res'].append(float(all_files[cam]['res'][i]))
+         else:
+            print("REJECT NA?", math.isnan(all_files[cam]['azs'][i])) 
 
    day_hist = [] 
    for cam in by_day:
       for day in by_day[cam]:
-         if len(by_day[cam][day]) > 3:
-            print("GOOD", cam, day, np.median(by_day[cam][day]['azs']), np.median(by_day[cam][day]['els']), np.median(by_day[cam][day]['pos']), np.median(by_day[cam][day]['pxs']), np.mean(by_day[cam][day]['res']))
+         if len(by_day[cam][day]) > 3 :
+            
             cdata = [ day, np.median(by_day[cam][day]['azs']), np.median(by_day[cam][day]['els']), np.median(by_day[cam][day]['pos']), np.median(by_day[cam][day]['pxs']),  np.mean(by_day[cam][day]['res'])]
             day_hist.append((cam, day, np.median(by_day[cam][day]['azs']), np.median(by_day[cam][day]['els']), np.median(by_day[cam][day]['pos']), np.median(by_day[cam][day]['pxs']),  np.mean(by_day[cam][day]['res'])))
          else:
@@ -1612,7 +1614,9 @@ def refit_meteor(meteor_file, json_conf,force=0):
    if "custom_lens" not in mj:
       if cfe(mcp_file) == 1:
          mcp = load_json_file(mcp_file)
-         if cp['x_poly'] == mcp['x_poly']:
+         print("MCP:", mcp)
+         print("CP:", cp)
+         if cp['x_poly'][0] == mcp['x_poly'][0]:
             already_fit = 1
          else:
             cp['x_poly'] = mcp['x_poly']
