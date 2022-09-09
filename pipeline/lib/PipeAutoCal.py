@@ -491,6 +491,7 @@ def gen_cal_hist(json_conf):
    #   return()
 
    for cam in sorted(json_conf['cameras']):
+      print(cam)
       cams_id = json_conf['cameras'][cam]['cams_id']
       all_files[cams_id] = {}
       all_files[cams_id]['cal_files'] = []
@@ -503,6 +504,7 @@ def gen_cal_hist(json_conf):
       cal_files = glob.glob("/mnt/ams2/cal/freecal/*" + cams_id + "*")
       corrupt = []
       for cf in sorted(cal_files):
+         print("CF:", cf)
          (f_datetime, this_cam, f_date_str,y,m,d, h, mm, s) = convert_filename_to_date_cam(cf)
          cfs = glob.glob(cf + "/*calparams.json")
          if len(cfs) == 0:
@@ -561,9 +563,12 @@ def gen_cal_hist(json_conf):
    day_hist = [] 
    for cam in by_day:
       for day in by_day[cam]:
-         print(cam, day, np.median(by_day[cam][day]['azs']), np.median(by_day[cam][day]['els']), np.median(by_day[cam][day]['pos']), np.median(by_day[cam][day]['pxs']), np.mean(by_day[cam][day]['res']))
-         cdata = [ day, np.median(by_day[cam][day]['azs']), np.median(by_day[cam][day]['els']), np.median(by_day[cam][day]['pos']), np.median(by_day[cam][day]['pxs']),  np.mean(by_day[cam][day]['res'])]
-         day_hist.append((cam, day, np.median(by_day[cam][day]['azs']), np.median(by_day[cam][day]['els']), np.median(by_day[cam][day]['pos']), np.median(by_day[cam][day]['pxs']),  np.mean(by_day[cam][day]['res'])))
+         if len(by_day[cam][day]) > 3:
+            print("GOOD", cam, day, np.median(by_day[cam][day]['azs']), np.median(by_day[cam][day]['els']), np.median(by_day[cam][day]['pos']), np.median(by_day[cam][day]['pxs']), np.mean(by_day[cam][day]['res']))
+            cdata = [ day, np.median(by_day[cam][day]['azs']), np.median(by_day[cam][day]['els']), np.median(by_day[cam][day]['pos']), np.median(by_day[cam][day]['pxs']),  np.mean(by_day[cam][day]['res'])]
+            day_hist.append((cam, day, np.median(by_day[cam][day]['azs']), np.median(by_day[cam][day]['els']), np.median(by_day[cam][day]['pos']), np.median(by_day[cam][day]['pxs']),  np.mean(by_day[cam][day]['res'])))
+         else:
+            print("BAD")
          find_cal_group(cam, cdata, cal_groups)
    for cam in cal_groups:
       for gid in cal_groups[cam]:
