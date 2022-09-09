@@ -865,8 +865,22 @@ def cal_index(json_conf):
          cj['center_el'] = el
          print("FIXING MISSING AZ/EL FROM CAL_PARMAS!")
          exit()
-      #else:
-      #   print("CENTER AZ IS :", cj['center_az'], cj['center_el'])
+      else:
+         fail = False
+         if math.isnan(cj['center_az']) is True :
+            fail = True
+         if "total_res_px" in cj:
+            if math.isnan(cj['total_res_px']) is True :
+               fail = True
+         if fail is True:
+            cal_fn = cp_file.split("/")[-1].split("-")[0] 
+            cmd = "mv /mnt/ams2/cal/freecal/" + cal_fn + " /mnt/ams2/cal/extracal/" 
+            print(cmd)
+            print("FAIL!")
+            exit()
+            #os.system(cmd)
+
+      # check for nan and delete file if it exists
 
       cal_files[cp_file]['cal_date'] = f_date_str
       cal_files[cp_file]['cam_id'] = cam_id 
