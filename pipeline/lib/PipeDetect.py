@@ -931,19 +931,19 @@ def reject_mask_detects(date, json_conf):
                # make sure the obj isn't bad / check segs and other filters
                print(mf)
                seg_test_result = seg_test(mj['confirmed_meteors'][0]['segs'])
-               if seg_test_result == 1:
-                  print("SEG TEST GOOD")
-                  continue
-               else:
-                  fn, dir = fn_dir(mf)
-                  root_file = fn.replace(".json", "")
-                  del_data[root_file] = 1
-                  print("seg test failed.", mf)
+               #if seg_test_result == 1:
+               #   print("SEG TEST GOOD")
+               #   continue
+               #else:
+               #   fn, dir = fn_dir(mf)
+               #   root_file = fn.replace(".json", "")
+               #   del_data[root_file] = 1
+               #   print("seg test failed.", mf)
             else:
                print("BAD NO CONFIRMED?", mf)
                fn, dir = fn_dir(mf)
                root_file = fn.replace(".json", "")
-               del_data[root_file] = 1
+               #del_data[root_file] = 1
 
          print("\n\n\n\n RUNNING:", mf)
          tfs += 1
