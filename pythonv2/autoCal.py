@@ -875,10 +875,8 @@ def cal_index(json_conf):
          if fail is True:
             cal_fn = cp_file.split("/")[-1].split("-")[0] 
             cmd = "mv /mnt/ams2/cal/freecal/" + cal_fn + " /mnt/ams2/cal/extracal/" 
-            print(cmd)
-            print("FAIL!")
-            exit()
-            #os.system(cmd)
+            print("\n", cmd)
+            os.system(cmd)
 
       # check for nan and delete file if it exists
 
