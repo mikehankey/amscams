@@ -2230,10 +2230,18 @@ def check_fix_plots(event_id):
             print("Good:", ev_fn, pl_id)
 
 
+def event_id_to_date(event_id):
+   year = event_id[0:4]
+   mon = event_id[4:6]
+   day = event_id[6:8]
+   date = year + "_" + mon + "_" + day
+   return(date)
 
 def event_report(dynamodb, event_id, solve_dir, event_final_dir, obs):
 
     #orb_link = event['solution']['orb']['link']
+    year = event_id[0:4]
+    day = event_id_to_date(event_id)
 
     template = ""
     solve_dir = solve_dir.replace("//", "/")
@@ -2511,7 +2519,9 @@ def event_report(dynamodb, event_id, solve_dir, event_final_dir, obs):
        if "prev" in jpg: 
           ftype = "PREV"
           #all_prev_html += """<img src=""" + jpg_fn + """?""" + str(time.time()) + ">\n"""
-          img_id = station_id + "_" + prev_file.replace(".jpg", "")
+          #img_id = station_id + "_" + prev_file.replace(".jpg", "")
+
+          img_id = station_id + "_" + jpg_fn.replace(".jpg", "")
           img_link = "https://archive.allsky.tv/" + station_id + "/METEORS/" + year + "/" + day + "/" + station_id + "_" + jpg_fn 
           trash_html += """
             <div id="{:s}" style="
@@ -2708,6 +2718,7 @@ def event_report(dynamodb, event_id, solve_dir, event_final_dir, obs):
 
 
 def WMPL_solve(event_id, obs,time_sync=1, force=0, dynamodb=None):
+    #time_sync = 0
     if dynamodb is None:
        dynamodb = boto3.resource('dynamodb')
 
@@ -2837,15 +2848,21 @@ def WMPL_solve(event_id, obs,time_sync=1, force=0, dynamodb=None):
                 times.append(i/25)
         
             # Set points for the first site
+            print("WMPL OBS:", event_id, station_id, lat, lon, alt, azs, els, times)  
             traj_solve.infillTrajectory(azs, els, times, np.radians(float(lat)), np.radians(float(lon)), alt, station_id=station_id)
             print("-----")
 
 
     resp = traj_solve.run()
-    print(dir(traj_solve))
     print("TIMING MINIMIZE SUCCESS?:", traj_solve.timing_minimization_successful)
+    print('t_ref_station', traj_solve.t_ref_station)
+    print('time_diffs', traj_solve.time_diffs)
+    print('t_diffs_final', traj_solve.time_diffs_final)
+    print('timing_res', traj_solve.timing_res)
+    print('timing_stddev', traj_solve.timing_stddev)
+
+
     print("SOLVE FILE:", solve_file)
-    
 
     #event_report(solve_dir, event_final_dir, obs)
     #make_event_json(event_id, solve_dir,[])

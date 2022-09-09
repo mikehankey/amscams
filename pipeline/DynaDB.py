@@ -513,10 +513,10 @@ def delete_event(dynamodb=None, event_day=None, event_id=None):
      }
    )
    rkey = "E:" + event_id
-   if "master" in admin_conf:
-      r.delete(rkey)
-   else:
-      print("no access to redis")
+   #if "master" in admin_conf:
+   #   r.delete(rkey)
+   #else:
+   #   print("no access to redis")
 
    print("AWS DYN RESP:", response)
 
@@ -769,8 +769,10 @@ def update_dyna_cache_for_day(dynamodb, date, stations, utype=None, cloud_copy=1
             obs_key = st + "_" + vid
             if obs_key in del_keys:
                print("THIS EVENT OBS HAS BEEN DELETED!", obs_key, event.keys())
-               deleted_events[event['event_id']] = 1
-               delete_event(dynamodb, event['event_id'], date)
+               if event['event_id'] not in deleted_events:
+                  delete_event(dynamodb, event['event_id'], date)
+
+                  deleted_events[event['event_id']] = 1
 
       for evid in deleted_events:
          print("DELETE THIS EVENT!", evid, ev_keys[evid].keys() )

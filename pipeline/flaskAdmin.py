@@ -11,7 +11,7 @@ from lib.PipeUtil import cfe, load_json_file, save_json_file
 from lib.PipePwdProtect import login_page, check_pwd_ajax
 from lib.PipeAutoCal import fn_dir
 from FlaskLib.meteor_detail_funcs import detail_page , pick_points, pick_points_day 
-from FlaskLib.config_funcs import config_vars , network_setup
+from FlaskLib.config_funcs import config_vars , network_setup 
 from FlaskLib.meteors_main import meteors_main , meteors_by_day, trash_page, non_meteors_main, confirm_non_meteors, confirm_all_trash 
 from FlaskLib.super_stacks import stacks_main, stacks_day_hours, stacks_hour
 from FlaskLib.min_detail import min_detail_main
@@ -21,7 +21,7 @@ from FlaskLib.man_reduce import meteor_man_reduce , save_man_reduce
 from FlaskLib.man_reduce_v2 import meteor_man_reduce_v2 , save_man_reduce_v2
 from FlaskLib.man_detect import man_detect , import_meteor
 from FlaskLib.meteors_main_redis import meteors_main_redis
-from FlaskLib.network import network_main , network_map, network_meteors
+from FlaskLib.network import network_main , network_map, network_meteors, network_events
 #from FlaskLib.Maps import make_map 
 from flask import redirect, url_for, abort
 import json
@@ -730,6 +730,13 @@ def lrn_dash(amsid):
    in_data['station_id'] = amsid
 
    out = Dash.controller(in_data)
+   return(out)
+
+
+@app.route('/NETWORK/EVENTS/<amsid>/<date>/', methods=['GET', 'POST'])
+@auth.login_required
+def net_events(amsid, date):
+   out = network_events(amsid, date, json_conf)
    return(out)
 
 

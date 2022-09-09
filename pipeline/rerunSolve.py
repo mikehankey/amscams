@@ -45,7 +45,7 @@ else:
 
 days = sorted(all_days)
 
-for day in sorted(days,reverse=True)[0:30]:
+for day in sorted(days,reverse=True)[0:8]:
    #cmd = "./updateEventDay.py " + day #+ ">ev_run_log.txt 2>&1 "
    y,m,d = day.split("_")
    cloud_evf = "/mnt/archive.allsky.tv/EVENTS/" + y + "/" + m + "/" + d + "/" + day + "_OBS_GOOD.html"
@@ -53,6 +53,8 @@ for day in sorted(days,reverse=True)[0:30]:
    if True: 
       if True:
          cmd =  "/usr/bin/python3 AllSkyNetwork.py do_all " + day
+         os.system(cmd)
+         cmd =  "/usr/bin/python3 AllSkyNetwork.py rerun_failed " + day
          os.system(cmd)
 
          #cmd =  "python3 AllSkyNetwork.py refresh_day " + day

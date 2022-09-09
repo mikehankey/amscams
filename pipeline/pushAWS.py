@@ -49,13 +49,48 @@ def push_station_data(api_key, station_id, json_conf):
    if "allsky_username" in json_conf['site']:
       data['username'] = json_conf['site']['allsky_username']
 
+   # add calib info
+   cal_dir = "/mnt/ams2/cal/"
+   mcp_files = os.listdir("/mnt/ams2/cal/")
+
+   all_mcps = {}
+   for mcp_file in mcp_files :
+      if "multi_poly" in mcp_file: 
+         mcp = load_json_file(cal_dir + mcp_file) 
+      else:
+         continue
+      mcp_file = mcp_file.replace(".info", "")
+      print(mcp_file)
+      fn, station, cam = mcp_file.split("-")
+      all_mcps[cam] = {}
+      all_mcps[cam]['az'] = str(mcp['center_az'])
+      all_mcps[cam]['el'] =  str(mcp['center_el'])
+      all_mcps[cam]['pos'] =  str(mcp['position_angle'])
+      all_mcps[cam]['px'] =  str(mcp['pixscale'])
+      all_mcps[cam]['res'] =  str(mcp['x_fun'])
+      #all_mcps[cam]['x_poly'] = mcp['x_poly']
+      #all_mcps[cam]['y_poly'] = mcp['y_poly']
+      #all_mcps[cam]['x_poly_fwd'] = mcp['x_poly_fwd']
+      #all_mcps[cam]['y_poly_fwd'] = mcp['y_poly_fwd']
+      print(station, cam, all_mcps[cam]) 
+
+   data['calib'] = all_mcps 
+   if "ml" in json_conf:
+      data['ml'] = json_conf['ml']
+
+
+
    data['cmd'] = "update_station_data"
    data = json.loads(json.dumps(data), parse_float=Decimal)
+   os.system("clear")
+
+   print(json.dumps(data))
    headers = {
       'content-type': 'application/json'
    }
    headers = {'Content-type': 'application/json'}
-   
+
+
    response = requests.post(API_URL, data=json.dumps(data) , headers=headers)
    print("response:", response.content.decode())
    print(data)

@@ -73,26 +73,17 @@ pre.bash {
             }
         </style>
 	<script>
-            // handle the nav
             url = window.location.href
             qs = window.location.search
             const urlParams = new URLSearchParams(qs);
             const start_day = urlParams.get('start_day')
-            const day = urlParams.get('day')
             if (start_day !== null)  {
                var el = start_day.split("_")
                y = el[0]	
                m = el[1]	
                d = el[2]	
 	       new_file = "/EVENTS/" + y + "/" + m + "/" + d + "/" + start_day + "_OBS_GOOD.html"
-
-	    if (day is null) {  
 	       window.location.replace(new_file)
-	    }
-            else {
-	       // things are local
-	       window.location.replace(new_file)
-	    }
             }
 
 
@@ -166,21 +157,23 @@ pre.bash {
 </div>
 <script src="https://archive.allsky.tv/APPS/src/js/functions/date_picker.js?1652465245"></script>
 <div style="width:80%; margin:0 auto; text-align: center; margin-top: 100px">
-	<h2>Credits, Allowable Use and Copywrite </h2>
-	We request papers or other academic use of data for this event to please credit :
-	AllSky7 Global Network, Mike Hankey, Core Team Members and Operators who observed the event  (dynamic text here)
+	<h2>Credits, Allowable Use and Copyright</h2>
+	Papers or other academic use of data for this event should credit :
+	AllSky7 Global Network, Mike Hankey, core team for applicable regions and operators whose observations are used. 
+	
 	<p>
+	<!--
         This text will indicate the sharing / confidentiality statement relating to the current event as: Private & Confidential, Public Preliminary & Unreviewed, Final and Published 
 	<p>
 	If the event is an active meteorite fall it will be locked to only MWG members, and some text about confidentiality will be placed here. 
 	<p>
 	Press/Media statement regarding use/replay of videos, media or event information. (FREE, License Required, etc). Link to press page. 
+	-->
 
 
 
 <p>
-A statement about data ownership, copyright etc will be here. 
-&copy; ALLSKY INC
+&copy; ALLSKY INC, ALLSKY.COM, ALLSKYCAMS.COM, ALLSKY7.NET 
 </p>
 
 </body>

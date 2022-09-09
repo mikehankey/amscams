@@ -18,6 +18,8 @@ if __name__ == "__main__":
 
    EV = Events()
 
+   input("1")
+
    if sys.argv[1] == "resolve":
       date = sys.argv[2]
       event_id = sys.argv[3]
@@ -50,6 +52,7 @@ if __name__ == "__main__":
 
    if len(sys.argv) > 2:
       if sys.argv[2] == "EOD":
+         input("DO EOD")
          EVR.EOD_report(sys.argv[1])
 
    #EVR.del_bad_obs_from_events(sys.argv[1])

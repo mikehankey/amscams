@@ -1,6 +1,6 @@
 from lib.PipeUtil import cfe, load_json_file, save_json_file, convert_filename_to_date_cam, get_trim_num, get_file_info, calc_dist
-#import pymap3d as pm
-#wgs84 = pm.Ellipsoid('wgs84');
+import pymap3d as pm
+wgs84 = pm.Ellipsoid('wgs84');
 #from numba import jit
 
 import pymap3d as pm
@@ -143,7 +143,7 @@ class EventRunner():
          else:
             self.all_obs = None
             print("NO OBS FILE DOWNLOAD FROM CLOUD!", self.all_obs_file)
-            cf = self.all_obs_file.replace("/ams2", "/archive.allsky.tv")
+            cf = self.all_obs_file.replace("/f", "/archive.allsky.tv")
             cf += ".gz"
 
             if cfe(cf) == 1:
@@ -156,7 +156,7 @@ class EventRunner():
             self.all_stations = load_json_file(self.all_stations_file)
          else:
             self.all_stations = None
-            cf = self.all_stations_file.replace("/ams2", "/archive.allsky.tv")
+            cf = self.all_stations_file.replace("/f", "/archive.allsky.tv")
             if cfe(cf) == 1:
                os.system("cp " + cf + " " + self.all_stations_file)
             self.all_stations = load_json_file(self.all_stations_file)
@@ -368,7 +368,7 @@ class EventRunner():
          custom_obs = None
       print("CUSTOM OBS:", custom_obs)
       if os.path.exists(self.coin_events_file) is False:
-         cl_file = self.coin_events_file.replace("ams2/", "archive.allsky.tv/")
+         cl_file = self.coin_events_file.replace("f/", "archive.allsky.tv/")
          if os.path.exists(cl_file) is True:
             os.system("cp " + cl_file + " " + self.coin_events_file)
             
@@ -1136,14 +1136,14 @@ class EventRunner():
          self.insert_new_event(ev)
 
       save_json_file(self.all_events_file, final_events)
-      cf = self.all_events_file.replace("ams2/", "archive.allsky.tv/")
+      cf = self.all_events_file.replace("f/", "archive.allsky.tv/")
       print("Saved:", self.all_events_file)
       cmd = "cp " + self.all_events_file + " " + cf
       print(cmd)
       os.system(cmd)
 
 
-      cf = self.plane_pairs_file.replace("ams2/", "archive.allsky.tv/")
+      cf = self.plane_pairs_file.replace("f/", "archive.allsky.tv/")
 
       save_json_file(self.plane_pairs_file, self.plane_pairs)
       self.kml_plane_pairs()
@@ -1276,6 +1276,7 @@ class EventRunner():
       for temp in cur_events:
          cur_ev[temp['event_id']] = {}
 
+      print("ALL", self.all_events_file)
       events = load_json_file(self.all_events_file)
       for temp in events:
          good_ev[temp['event_id']] = {}
@@ -1314,12 +1315,12 @@ class EventRunner():
          event_kml = self.event_dir + ev_id + "/" + ev_id + "-event.kml"
          event_index = self.event_dir + ev_id + "/" + "index.html"
 
-         c_pickle_file = pickle_file.replace("ams2", "archive.allsky.tv")
-         c_planes_file = planes_file.replace("ams2", "archive.allsky.tv")
-         c_good_obs_file = good_obs_file.replace("ams2", "archive.allsky.tv")
-         c_event_file = event_file.replace("ams2", "archive.allsky.tv")
-         c_event_kml = event_kml.replace("ams2", "archive.allsky.tv")
-         c_event_index = event_index.replace("ams2", "archive.allsky.tv")
+         c_pickle_file = pickle_file.replace("/f/", "/archive.allsky.tv/")
+         c_planes_file = planes_file.replace("/f/", "/archive.allsky.tv/")
+         c_good_obs_file = good_obs_file.replace("/f/", "/archive.allsky.tv/")
+         c_event_file = event_file.replace("/f/", "/archive.allsky.tv/")
+         c_event_kml = event_kml.replace("/f/", "/archive.allsky.tv/")
+         c_event_index = event_index.replace("/f/", "/archive.allsky.tv/")
 
          if ev_id not in self.event_dict:
             print(ev_id, "not in event_dict")
@@ -1389,12 +1390,12 @@ class EventRunner():
       cloud_files = {}
       local_files = {}
       for line in fp:
-         line = line.replace("archive.allsky.tv", "ams2")
+         line = line.replace("archive.allsky.tv/", "f/")
          cloud_files[line] = 1
       fp = open(l_log)
       cloud_files = {}
       for line in fp:
-         line = line.replace("archive.allsky.tv", "ams2")
+         line = line.replace("archive.allsky.tv/", "f/")
          local_files[line] = 1
 
       for lf in local_files:
@@ -1461,7 +1462,7 @@ class EventRunner():
       # check local files not on the cloud
       lc = 0
       for lfile in lf:
-         cfile = lfile.replace("/ams2", "/archive.allsky.tv")
+         cfile = lfile.replace("/f", "/archive.allsky.tv")
          if cfile not in cf:
             print(lc, "NEED TO PUSH:", lfile, cfile)
             lc+=1 
@@ -1870,7 +1871,7 @@ class EventRunner():
             print("BAD PP STATUS:", self.plane_pairs[combo_key]['status'])
       self.plane_kml_file = self.plane_pairs_file.replace(".json",".kml")
       kml.save(self.plane_kml_file)
-      clf = self.plane_kml_file.replace("ams2/", "archive.allsky.tv/")
+      clf = self.plane_kml_file.replace("f/", "archive.allsky.tv/")
       print(self.plane_kml_file)
 
       os.system("cp " + self.plane_kml_file + " " + clf)
@@ -2216,7 +2217,7 @@ class EventRunner():
         pnt = kml.newpoint(name=data['station_id'], coords=[(round(lon,1),round(lat,1))])
       print("SAVE:", self.all_stations_file)
       kml.save(self.all_stations_file)
-      self.cloud_stations_kml = self.all_stations_file.replace("/ams2/", "/archive.allsky.tv/")
+      self.cloud_stations_kml = self.all_stations_file.replace("/f/", "/archive.allsky.tv/")
       cmd = "cp " + self.all_stations_file + " " + self.cloud_stations_kml
       print(cmd)
       os.system(cmd)
@@ -2239,7 +2240,7 @@ class EventRunner():
       self.year, self.month, self.day = date.split("_")
       self.all_stations_file = self.DATA_DIR + "EVENTS/" + self.year + "/" + self.month + "/" + self.day + "/" + self.date + "_ALL_STATIONS.json"
       self.all_stations_kml = self.all_stations_file.replace(".json", ".kml")
-      self.cloud_stations_kml = self.all_stations_kml.replace("ams2", "archive.allsky.tv")
+      self.cloud_stations_kml = self.all_stations_kml.replace("f/", "archive.allsky.tv/")
       st_data = load_json_file(self.all_stations_file)
       for row in st_data:
          station_id = row[0]
@@ -3396,7 +3397,13 @@ class EventRunner():
 
       used = {} 
       for data in msd:
-         bin = self.find_bin(min(data['start_datetime']))
+         print(data['start_datetime'])
+         if type(data['start_datetime']) is list:
+            if len(data['start_datetime']) > 0:
+               bin = self.find_bin(min(data['start_datetime']))
+
+         else:
+            continue
          meteor_counts[bin]['count'] += 1
          for i in range(0, len(data['stations'])): 
             station = data['stations'][i]
@@ -3755,6 +3762,8 @@ class EventRunner():
       return(out)
 
    def find_bin(self, date_str):
+      if type(date_str) is list:
+         date_str = date_str[0]
       d,t = date_str.split(" ")
       h,m,s = t.split(":")
       mi = int(m)

@@ -30,7 +30,7 @@ import shutil
 import platform
 from lib.PipeUtil import load_json_file, save_json_file, get_trim_num, convert_filename_to_date_cam, starttime_from_file, dist_between_two_points, get_file_info, calc_dist, check_running
 from lib.intersecting_planes import intersecting_planes
-from DynaDB import search_events, insert_meteor_event, delete_event
+from DynaDB import search_events, insert_meteor_event, delete_event, get_obs
 from ransac_lib import ransac_outliers
 from sklearn.cluster import DBSCAN
 from sklearn import metrics
@@ -1748,22 +1748,24 @@ class AllSkyNetwork():
       return(wget_cmds)
 
    def review_event(self, event_id):
+      # the purpose of this function is to JUST get the MEDIA files for the event being reviewed.
+      # see review_event_step2 for the remaining 
+
+      # setup vars
       self.event_id = event_id
-      # Now we have at least sync'd all remote files locally
       self.sync_log = {}
       stack_imgs = []
 
+      # convert id to date
       event_day = self.event_id_to_date(event_id)
 
+      # MEDIA -- get media files from remote stations or wasabi
       local_event_dir = "/mnt/f/EVENTS/" + self.year + "/" + self.month + "/" + self.dom + "/" + self.event_id + "/" 
       wget_cmds = self.get_event_media(event_id)
-      print("WG", wget_cmds)
-      for cmd in wget_cmds:
-         print("CMD:", cmd)
       self.fast_cmds(wget_cmds)
 
-
-      # now load frames and make stacks
+         
+      # MEDIA -- now load frames and make stacks as needed
       for out_file in self.sd_clips:
          sfile = out_file.replace(".mp4", "-stacked.jpg")
 
@@ -1788,7 +1790,6 @@ class AllSkyNetwork():
                      red_data['meteor_frame_data'] = []
                   self.sd_clips[out_file]['mfd'] = red_data['meteor_frame_data']
 
-               print("FRAMES:", len(frames))
                simg = stack_frames(frames)
                cv2.imwrite(local_event_dir + sfile, simg)
                self.sd_clips[out_file]['stack_img'] = simg 
@@ -1808,6 +1809,8 @@ class AllSkyNetwork():
       #self.all_imgs = self.RF.frame_template("1920_4p", stack_imgs)
       #cv2.imshow('pepe', self.all_imgs) 
       #cv2.waitKey(0)
+
+      # the rest will be completed in review event step2?
 
       return() 
 
@@ -1832,41 +1835,77 @@ class AllSkyNetwork():
 
    def obs_images_panel(self, map_img, event_data, obs_data, obs_imgs,marked_imgs):
 
+      # decide thumb size based on number of images! 
+      if len(obs_imgs) <= 4:
+         tw = int(1920/2) 
+         th = int(1080/2)
+      elif 4 < len(obs_imgs) <= 12:
+         tw = 640 
+         th = 360 
+      elif 9 < len(obs_imgs) <= 30:
+         tw = 384
+         th = 216 
+
+      else:
+         tw = 320 
+         th = 180
+
       gimg = np.zeros((1080,1920,3),dtype=np.uint8)
+      gmimg = np.zeros((1080,1920,3),dtype=np.uint8)
       cc = 0
       rc = 0
       for obs_id in obs_imgs:
-         img = obs_imgs[obs_id]
-         x1 = cc * 320
-         x2 = x1 + 320
-         y1 = rc * 180
-         y2 = y1 + 180
+         img = obs_imgs[obs_id].copy()
+         marked_img = cv2.resize(obs_imgs[obs_id], (1920,1080))
+         rx1,ry1,rx2,ry2 = self.get_roi(obs_data[obs_id]['xs'], obs_data[obs_id]['ys'])
+         x1 = cc * tw 
+         x2 = x1 + tw 
+         y1 = rc * th 
+         y2 = y1 + th 
+
+         cv2.rectangle(marked_img, (int(rx1), int(ry1)), (int(rx2) , int(ry2) ), (255, 255, 255), 2)
+
          if x2 > 1920:
             rc += 1
-            y1 += 180
-            y2 += 180
+            y1 += th 
+            y2 += th 
             x1 = 0
-            x2 = 320
+            x2 = tw 
             cc = 1
          else: 
             cc += 1
          try:
-            thumb = cv2.resize(img, (320,180))
+            thumb = cv2.resize(img, (tw,th))
+            marked_thumb = cv2.resize(marked_img, (tw,th))
          except:
-            thumb = np.zeros((180,320,3),dtype=np.uint8)
-         print("THUMB SHAPE:", thumb.shape)
-         print("XYS:", x1,y1,x2,y2)
+            thumb = np.zeros((th,tw,3),dtype=np.uint8)
+            marked_thumb = np.zeros((th,tw,3),dtype=np.uint8)
+
          try:
             gimg[y1:y2,x1:x2] = thumb
+            gmimg[y1:y2,x1:x2] = thumb 
          except:
             print(x1,y1,x2,y2)
-         cv2.imshow('pepe', gimg)
-         cv2.waitKey(40)
 
+         cv2.imshow('pepe', gmimg)
+         cv2.waitKey(90)
+
+         try:
+            gimg[y1:y2,x1:x2] = thumb
+            gmimg[y1:y2,x1:x2] = marked_thumb
+         except:
+            print(x1,y1,x2,y2)
+         cv2.imshow('pepe', gmimg)
+         cv2.waitKey(90)
+
+
+
+      gallery_image = gimg
 
       simg = np.zeros((1080,1920,3),dtype=np.uint8)
       map_img = cv2.resize(map_img, (1280,720))
       # do layout based on number of images availbable
+
       if len(obs_imgs) == 2:
          map_img = cv2.resize(map_img, (960,540))
          i = 0
@@ -1880,8 +1919,6 @@ class AllSkyNetwork():
             rx1,ry1,rx2,ry2 = self.get_roi(obs_data[key]['xs'], obs_data[key]['ys'])
      
 
-            cv2.imshow('pepe', show_img)
-            cv2.waitKey(40)
 
 
 
@@ -2024,7 +2061,7 @@ class AllSkyNetwork():
 
       print("LEN OBS IMGS:", len(obs_imgs))
       simg = self.RF.watermark_image(simg, self.RF.logo_320, 1590, 10, .5, []) 
-      return(simg)
+      return(simg, gallery_image)
 
    def get_roi(self, xs, ys):
       w = (max(xs) - min(xs)) + 50
@@ -2202,18 +2239,22 @@ class AllSkyNetwork():
       # purpose here is to make the map file and multi-image review
       # if it is already done we can just return?
       # we should load it and return it though?
+      force = True 
 
       obs_data_file = self.local_evdir + self.event_id + "/" + self.event_id + "_OBS_DATA.json"
       event_data_file = self.local_evdir + self.event_id + "/" + self.event_id + "_EVENT_DATA.json"
       map_img_file = self.local_evdir + self.event_id + "/" + self.event_id + "_MAP_FOV.jpg"
       review_img_file = self.local_evdir + self.event_id + "/" + self.event_id + "_REVIEW.jpg"
 
-      os.system("rm " + map_img_file)
-      os.system("rm " + review_img_file)
+      # if the files exist already remove them
+      if os.path.exists(map_img_file) is True:
+         os.system("rm " + map_img_file)
+      if os.path.exists(review_img_file) is True:
+         os.system("rm " + review_img_file)
 
-      if os.path.exists(obs_data_file) is True and os.path.exists(event_data_file) is True and os.path.exists(review_img_file) is True:
-         print("FOUND", obs_data_file)
-         print("FOUND", event_data_file)
+
+      # everything is done already skip???
+      if force is False and os.path.exists(obs_data_file) is True and os.path.exists(event_data_file) is True and os.path.exists(review_img_file) is True:
          obs_data = load_json_file(obs_data_file)
          event_data = load_json_file(event_data_file)
          map_img = cv2.imread(map_img_file)
@@ -2224,17 +2265,14 @@ class AllSkyNetwork():
          print("REVIEW:", review_img_file)
          return(review_img, map_img, obs_imgs, marked_imgs, event_data, obs_data)
       else:
-         print("NOT FOUND", obs_data_file)
-         print("NOT FOUND", event_data_file)
          event_data, obs_data, map_img, obs_imgs = self.get_event_obs()
          obs_imgs, marked_imgs, roi_imgs, ai_imgs, obs_data = self.load_obs_images(obs_data) 
          save_json_file(event_data_file, event_data)
-         save_json_file(obs_data_file, obs_data, True)
-         cv2.imwrite(map_img_file, map_img, [cv2.IMWRITE_JPEG_QUALITY, 70])
          print("SAVING:", event_data_file)
+         save_json_file(obs_data_file, obs_data, True)
          print("SAVING:", obs_data_file)
+         cv2.imwrite(map_img_file, map_img, [cv2.IMWRITE_JPEG_QUALITY, 70])
          print("SAVING:", map_img_file)
-         #input("MADE OBS DATA AND EVENT DATA FOR FIRST TIME WAITING")
 
       if "2d_status" not in event_data:
          print("GET 2D status")
@@ -2244,12 +2282,12 @@ class AllSkyNetwork():
       #for key in obs_data:
       #   print("OBS DATA KEYS:", key, obs_data.keys())
 
-      simg = self.obs_images_panel(map_img, event_data, obs_data, obs_imgs, marked_imgs)
+      simg, gallery_image = self.obs_images_panel(map_img, event_data, obs_data, obs_imgs, marked_imgs)
 
 
       if "traj" in event_data:
          (sol_status, v_init, v_avg, start_ele, end_ele, a, e) = self.eval_sol(event_data)
-         event_data['event_statuis'] = sol_status
+         event_data['event_status'] = sol_status
 
       if event_data['2d_status'] == "FAILED":
          cv2.putText(simg, "INVALID 2D EVENT",  (20,20), cv2.FONT_HERSHEY_SIMPLEX, .8, (0,0,255), 2)
@@ -2265,8 +2303,6 @@ class AllSkyNetwork():
 
 
       print("DONE STEP2")
-      #cv2.imshow('pepe', simg)
-      #cv2.waitKey(0)
 
       return(simg, map_img, obs_imgs, marked_imgs, event_data, obs_data)
       # THIS IS OLD AND NO LONGER USED!
@@ -2369,9 +2405,9 @@ class AllSkyNetwork():
             rc = 0
          comp_img[y1:y2,x1:x2] = thumb
          show_img = self.RF.frame_template("1920_1p", [comp_img])
-         cv2.imshow("pepe", show_img)
-         cv2.waitKey(30)
-      cv2.waitKey(30)
+         #cv2.imshow("pepe", show_img)
+         #cv2.waitKey(30)
+      #cv2.waitKey(30)
       go = True
       oshow_img = show_img.copy()
 
@@ -3090,7 +3126,6 @@ class AllSkyNetwork():
 
       self.echo_event_data(event_data, obs_data)
 
-      #input("Waiting")
       if True:
          for st in st_pts:
             sp, ep = st_az_pts[st]
@@ -3481,10 +3516,16 @@ class AllSkyNetwork():
 
 
    def resolve_event(self, event_id):
+      # This should pull down the latest OBS data from the API
+      # so that it is current. Then do a FRESH resolve.
+      # remove obs/stations if needed.
+      # respect ignores etc. 
+
       date = self.event_id_to_date(event_id)
       self.set_dates(date)
       self.load_stations_file()
 
+      # select main event info from the local sqlite DB
       sql = """
             SELECT event_id, event_minute, revision, stations, obs_ids, event_start_time, event_start_times,
                    lats, lons, event_status, run_date, run_times
@@ -3497,8 +3538,7 @@ class AllSkyNetwork():
       vals = [event_id]
       self.cur.execute(sql, vals)
       rows = self.cur.fetchall()
-      for row in rows:
-         print("EVENT ROWS:", row[0])
+
       xx = 0
       for row in rows:
          
@@ -3511,9 +3551,11 @@ class AllSkyNetwork():
          lats = json.loads(lons)
          temp_obs = {}
          
-         #IGNORE:
-         #ignore = ['AMS99']
          ignore = []
+
+         # for each obs associated with this event
+         # load the MOST RECENT OBS DATA
+         # into the temp_obs array!
 
          for obs_id in obs_ids:
             ig = False
@@ -3523,7 +3565,6 @@ class AllSkyNetwork():
                   ig = True
             if ig is True:
                print("IGNORE:", ignore)
-               #input("IG IS TRUE? WAIT")
                continue
             st_id = obs_id.split("_")[0]
             vid = obs_id.replace(st_id + "_", "") + ".mp4"
@@ -3533,13 +3574,20 @@ class AllSkyNetwork():
 
             # here we should fetch the latest obs from AWS 
             # to make sure we pick up any edits?
-
-            if vid not in temp_obs[st_id]:
-               if dict_key in self.obs_dict:
+            print(st_id, dict_key)
+            sd_vid = dict_key.replace(st_id + "_", "")
+            #if vid not in temp_obs[st_id]:
+            if dict_key not in self.obs_dict:
+               self.obs_dict[dict_key] = {}
+            if True:
+               if True:
                   self.obs_dict[dict_key]['loc'] = [float(self.station_dict[st_id]['lat']), float(self.station_dict[st_id]['lon']), float(self.station_dict[st_id]['alt'])]
                   # HERE WE SHOULD GET NEW OBS DATA DIRECT FROM DYNA DB OR REFRESH THE OBS DICT?
-
-                  temp_obs = convert_dy_obs(self.obs_dict[dict_key], temp_obs)
+                  # CALL THE SEARCH OBS DYN FUNC FOR THIS! NOT HARD???
+                  dobs = get_obs(st_id, sd_vid)
+                  dobs['loc'] = self.obs_dict[dict_key]['loc']
+                  temp_obs = convert_dy_obs(dobs, temp_obs)
+                  #temp_obs = convert_dy_obs(self.obs_dict[dict_key], temp_obs)
                   #print("OBS DICT FOR:", dict_key, self.obs_dict[dict_key])
                   #print("TEMP OBS KEYS:", dict_key, temp_obs.keys())
                else:
@@ -3561,6 +3609,7 @@ class AllSkyNetwork():
          #if os.path.exists(good_obs_file) is False:
          save_json_file(good_obs_file, temp_obs, True)
          print("RESOLVING EVENT:", event_id)
+
          self.solve_event(event_id, temp_obs, 1, 1)
          xx += 1
 
@@ -3651,15 +3700,18 @@ class AllSkyNetwork():
             (sol_status, v_init, v_avg, start_ele, end_ele, a, e) = self.eval_sol(sol_data)
             self.event_sol_data[event_id]['sol_status'] = sol_status
             print(event_id, sol_status)
-            if "GOOD" in sol_status:
+            if a < 0 or e >= 1 or start_ele > 160000:
+               event_status = "SOLVED:BAD"
+
+            elif "GOOD" in sol_status:
                event_status = "SOLVED:GOOD"
             else:
                event_status = "SOLVED:BAD"
             sql = "UPDATE events set event_status = ? WHERE event_id = ?"
             vals = [event_status, event_id]
+            print(sql, vals)
             self.cur.execute(sql, vals)
             self.con.commit()
-
 
             if "BAD" in sol_status:
                self.event_sol_data[event_id]['event_status'] = "BAD"
@@ -4381,6 +4433,8 @@ class AllSkyNetwork():
       print("CURRENT STATUS FOR EVENT.", self.event_status)
       event_status = self.event_status
       solve_status = self.event_status
+      print("FORCE:", force)
+
       if (self.event_status == "SOLVED" or self.event_status == "FAILED") and force != 1:
          print("Already done this.")
          return() 
@@ -4391,6 +4445,13 @@ class AllSkyNetwork():
 
          new_run = True
          # debug only!
+         for obs in temp_obs:
+             print("TEMP OBS:", temp_obs)
+
+         # if we are resolving then it prob failed
+         # so lets set the time_sync to 0
+         # we may change this logic later!
+         time_sync = 0
          solve_status = WMPL_solve(event_id, temp_obs, time_sync, force)
          self.make_event_page(event_id)
 
@@ -6969,16 +7030,178 @@ status [date]   -    Show network status report for that day.
 
       print(tb)
 
+   def dt_header(self):
+      header = """
+      <!doctype html>
+      <html lang="en">
+        <head>
+
+                <style>
+                        @import url("https://cdn.jsdelivr.net/npm/bootstrap-icons@1.4.1/font/bootstrap-icons.css");
+                        @import url("https://cdn.datatables.net/1.10.25/css/jquery.dataTables.min.css");
+
+                </style>
+
+         <!-- Required meta tags -->
+         <meta charset="utf-8">
+         <meta name="viewport" content="width=device-width, initial-scale=1">
+         <title>AllSky.com </title>
+               <script src="https://cdn.plot.ly/plotly-2.2.0.min.js"></script>
+
+               <script src="https://kit.fontawesome.com/25faff154f.js" crossorigin="anonymous"></script>
+               <!-- Bootstrap CSS -->
+               <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-eOJMYsd53ii+scO/bJGFsiCZc+5NDVN2yr8+0RDqr0Ql0h+rP48ckxlpbzKgwra6" crossorigin="anonymous">
+               <link rel="alternate" type="application/rss+xml" title="RSS 2.0" href="https://www.datatables.net/rss.xml">
+               <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+               <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/js/bootstrap.bundle.min.js" integrity="sha384-JEW9xMcG8R+pH31jmWH6WWP0WintQrMb4s7ZOdauHnUtxwoG2vI5DkLtS3qm9Ekf" crossorigin="anonymous"></script>
+               <script type="text/javascript" language="javascript" src="https://cdn.datatables.net/1.10.24/js/jquery.dataTables.min.js"></script>
+
+               <script>
+                  all_classes = ['meteor', 'cloud', 'bolt', 'cloud-moon', 'cloud-rain',  'tree', 'planes', 'car-side', 'satellite', 'crow', 'bug','chess-board','question']
+                  labels = ['meteor', 'clouds', 'lightening', 'moon', 'rain', 'tree', 'planes', 'cars', 'satellite', 'BIRDS', 'fireflies','noise','notsure']
+               </script>
+         </head>
+      """
+      return(header)
+
+   def event_table(self, date):
+      self.set_dates(date)
+      event_file = self.local_evdir + self.year + "_" + self.month + "_" + self.day  + "_ALL_EVENTS.json"
+      event_table_file = self.local_evdir + self.year + "_" + self.month + "_" + self.day  + "_EVENT_TABLE.html"
+      if os.path.exists(event_file):
+         solved_ev = load_json_file(event_file)
+      else:
+         print("NO", event_file)
+         exit()
+
+      out = self.dt_header()
+      out += "<h3>Event Table for </h3>\n".format(date)
+      out += "<table id='event_list' class='display'><thead>\n"
+      out += "<tr> <th>Event ID</th> <th>Status</th><th>Stations</th> <th>Dur</th> <th>Vel</th> <th>End Alt</th> <th>Shower</th> <th>a</th> <th>e</th> <th>i</th> <th>peri</th> <th>q</th> <th>ls</th> <th>M</th> <th>P</th></tr></thead><tbody>\n"
+      bad_events = []
+      failed_events = []
+      pending_events = []
+      for ev in solved_ev:
+         v_init = 0
+         e_alt = 0
+         shower_code = ""
+         stations = list(set(ev['stations']))
+         ev_id = ev['event_id']
+         st_str = ""
+         event_status = ev['solve_status']
+         print("EVENT STATUS:", event_status)
+         if ev['solve_status'] == "FAILED":
+            failed_events.append(ev)   
+         #if "solution" not in ev:
+         #   print("NO SOL",ev['solve_status'])
+         for st in sorted(stations):
+            #st = st.replace("AMS", "")
+            if st_str != "":
+               st_str += ","
+            st_str += st
+         dur = 0
+         status = ev['solve_status'] 
+         if "solution" in ev:
+            sol = ev['solution']
+            traj = ev['solution']['traj']
+            orb = ev['solution']['orb']
+            shower = ev['solution']['shower']
+            v_init = str(int(traj['v_init']/1000))  + " km/s"
+            e_alt = str(int(traj['end_ele']/1000))  + " km"
+            shower_code = shower['shower_code']
+            #dur = sol['duration']
+            if orb['a'] is None or orb['a'] == "":
+               orb['a'] = 0
+               orb['e'] = 0
+               orb['i'] = 0
+               orb['peri'] = 0
+               orb['q'] = 0
+               orb['la_sun'] = 0
+               orb['mean_anomaly'] = 0
+               orb['T'] = 0
+               bad_events.append(ev)   
+         else:
+            orb = {}
+            orb['a'] = 0
+            orb['e'] = 0
+            orb['i'] = 0
+            orb['peri'] = 0
+            orb['q'] = 0
+            orb['la_sun'] = 0
+            orb['mean_anomaly'] = 0
+            orb['T'] = 0
+            bad_events.append(ev)   
+         ev_link =  """ <a href="javascript:make_event_preview('""" + ev_id + """')">"""
+         ev_row = "<tr> <td ><span id='" + ev_id + "'>" + ev_link + "{:s}</a></span></td><td>{:s}</td><td>{:s}</td> <td>{:s}</td> <td>{:s}</td> <td>{:s}</td> <td>{:s}</td> <td>{:0.2f}</td> <td>{:0.2f}</td> <td>{:0.2f}</td> <td>{:0.2f}</td> <td>{:0.2f}</td> <td>{:0.2f}</td> <td>{:0.2f}</td> <td>{:0.2f}</td></tr>\n".format(ev_id, event_status, st_str, str(dur), str(v_init), str(e_alt), str(shower_code),float(orb['a']),float(orb['e']),float(orb['i']),float(orb['peri']),float(orb['q']),float(orb['la_sun']),float(orb['mean_anomaly']),float(orb['T']))
+         out += ev_row
+      out += """</tbody></table>
+      <script>
+         $(document).ready( function () {
+            $('table.display').dataTable();
+         })
+      </script>
+
+      """
+
+      fp = open(event_table_file, "w")
+
+      fp.write(out)
+      fp.close()
+
+      return(out)
 
 
+   def reconcile_events_day(self, date):
+      # make sure local event pool (sql/filesystem) and aws are all in sync with each other. 
+      # delete events in AWS that are not existing here
+      # otherwise update AWS if it is missing or the vals don't match. 
+
+      # start with ev file for this day
+
+      self.set_dates(date)
 
 
+      ev_file = self.local_evdir  + date + "_ALL_EVENTS.json"
+      ev_data = load_json_file(ev_file)
 
+      # check aws first
+      aws_ids = {}
+      for data in ev_data:
+         aws_ids[data['event_id']] = data
+         sql = """
+            SELECT event_id, event_status, run_date 
+            FROM events
+           WHERE event_id = ?
+         """
+         self.cur.execute(sql, [data['event_id']])
+         rows = self.cur.fetchall()
+         if len(rows) is True:
+            print("AWS EVENT EXISTS LOCALLY", data['event_id']) 
+            if data['solve_status'] == rows[0][1]:
+               print("   Same status:", data['solve_status'], rows[0][1])
+            else:
+               print("   NOT Same status:", data['solve_status'], rows[0][1])
 
+         else:
+            print("AWS EVENT DOES NOT EXISTS LOCALLY", data['event_id']) 
+            print("DELETE AWS EVENT")
+            delete_event(self.dynamodb, date, data['event_id'])
 
-
-
-
+      sql = """
+            SELECT event_id, event_status, run_date 
+            FROM events
+      """
+      
+      self.sync_dyna_day(date)
+      #self.cur.execute(sql)
+      #rows = self.cur.fetchall()
+      #for row in rows:
+      #   event_id, event_status, run_date = row 
+      #   if event_id not in aws_ids:
+      #      print(event_id, "MISSING FROM AWS")
+      #      print("NEED TO INSERT AWS")
+      #   else:
+      #      print(event_id, "EXISTS INSIDE AWS")
 
 
 

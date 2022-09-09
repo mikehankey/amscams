@@ -1,3 +1,5 @@
+#!/usr/bin/python3
+
 from Classes.AllSkyNetwork import AllSkyNetwork
 import cv2
 import os
@@ -101,7 +103,7 @@ if cmd == "review_event":
    ASN.set_dates(event_day)
    ASN.review_event(sys.argv[2])
    (review_image, map_img, obs_imgs, marked_images, event_data, obs_data) = ASN.review_event_step2()
-   cv2.imshow('pwpw', review_image)
+   cv2.imshow('Event Review', review_image)
    cv2.waitKey(0)
 
 if cmd == "resolve_event":
@@ -362,4 +364,10 @@ if cmd == "station_events":
 if cmd == "alltime":
    # make station/event mapping for this day
    ASN.all_time_index()
+if cmd == "event_table":
+   # make station/event mapping for this day
+   ASN.event_table(sys.argv[2])
+if cmd == "reconcile_events_day":
+   # make station/event mapping for this day
+   ASN.reconcile_events_day(sys.argv[2])
 
