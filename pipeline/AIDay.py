@@ -144,9 +144,13 @@ else:
    AIDB.auto_reject_day(date )
    AIDB.purge()
 
+   os.system("/usr/bin/python3.6 AIDay.py non_meteors")
+
    print("Del Aws", date)
    os.system("/usr/bin/python3 Rec.py del_aws_day " + date)
    print("DONE AIDay FOR " + date)
+
+   os.system("/usr/bin/python3 Rec.py del_aws_day " + date)
    #print("Reducer", date)
    #AIDB.reducer(date)
    #AIDB.check_update_status(date)
