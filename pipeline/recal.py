@@ -5545,7 +5545,7 @@ def find_stars_with_catalog(cal_fn, con, cur, json_conf,mcp=None, cp=None, cal_i
 
    for so in  star_objs:
       print("STAR OBJ::", so)
-      name,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist,star_flux = so
+      #name,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist,star_flux = so
 
       if so["total_res_px"] <= final_res * 3:
          print("KEEP", so["total_res_px"], final_res)
