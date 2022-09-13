@@ -5544,6 +5544,7 @@ def find_stars_with_catalog(cal_fn, con, cur, json_conf,mcp=None, cp=None, cal_i
 
 
    for so in  star_objs:
+      print("STAR OBJ::", so)
       name,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist,star_flux = so
 
       if so["total_res_px"] <= final_res * 3:
@@ -7524,6 +7525,7 @@ if __name__ == "__main__":
          batch_apply(cam_id, con, cur, json_conf, None, True)
       else:
          batch_apply(cam_id, con, cur, json_conf)
+
    if cmd == "cat_view" :
       cal_fn = sys.argv[2]
       cat_view(cal_fn, con, cur, json_conf)
