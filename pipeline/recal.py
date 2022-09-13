@@ -1015,6 +1015,7 @@ def cal_status_report(cam_id, con, cur, json_conf):
    cal_files_count = 0
    for key in freecal_index:
       data = freecal_index[key]
+      print("DATA:", data)
       if data['cam_id'] == cam_id:
         cal_fn = key.split("/")[-1]
         if cal_fn not in calfiles_data:
