@@ -852,11 +852,12 @@ def reject_planes(date, json_conf):
                            print("MAYBE PLANE? ", mf, obj_data['ofns'], obj_data['report']['ang_vel'], gap_test_res, gap_test_info['gap_events'], gap_test_info['total_gaps'])
                            plane = 1
                            #print("INT? ", obj_data['oint'])
-                     if plane == 0:
+                     if plane == 0 or "hc" in mj or "user_mods" in mj:
                         new_conf.append(obj_data)
                      else:
                         if "hc" not in mj and "user_mods" not in mj:
                            mj['plane'] = 1
+                           del mj['plane']
                         elif "plane" in mj:
                            del mj['plane']
                   elif obj_data['report']['meteor'] == 1: 
