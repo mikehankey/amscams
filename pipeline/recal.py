@@ -5550,6 +5550,8 @@ def find_stars_with_catalog(cal_fn, con, cur, json_conf,mcp=None, cp=None, cal_i
          star_flux = so['star_flux']
       if "res_pixels" in so:
          res_pixels = so['res_pixels']
+      if "total_res_px"] in so:
+         res_pixels = so['total_res_px']
 
       if so["total_res_px"] <= final_res * 3:
          print("KEEP", so["total_res_px"], final_res)
