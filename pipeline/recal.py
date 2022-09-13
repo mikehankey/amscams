@@ -1016,7 +1016,7 @@ def cal_status_report(cam_id, con, cur, json_conf):
    for key in freecal_index:
       data = freecal_index[key]
       print("DATA:", data)
-      if "cam_id" not in data
+      if "cam_id" not in data:
          (f_datetime, m_cam_id, f_date_str,fy,fmin,fd, fh, fm, fs) = convert_filename_to_date_cam(key)
          data['cam_id'] = m_cam_id
       
