@@ -66,7 +66,10 @@ def insert_calib(cal_file, con, cur, json_conf):
    (f_datetime, cam_id, f_date_str,fy,fm,fd, fh, fmin, fs) = convert_filename_to_date_cam(cal_file)
    cal_timestamp = datetime.timestamp(f_datetime)
    nowts = datetime.timestamp(datetime.now())
-   cp = load_json_file(cal_file)
+   try:
+      cp = load_json_file(cal_file)
+   except:
+      return()
    if "ai_stars" not in cp:
       cp['ai_stars'] = ""
 
