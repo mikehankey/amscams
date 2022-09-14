@@ -113,7 +113,7 @@ def refit_meteor(meteor_file, con, cur, json_conf, mcp = None, last_best_dict = 
 
    default_cp = get_default_cal_for_file(cam_id, meteor_file, None, con, cur, json_conf)
    print(default_cp)
-   
+   input("WAITING.")   
    extra_text = "Refit " +  meteor_file
    if last_best_dict is None:
       last_best_dict = {}
