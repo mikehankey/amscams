@@ -360,7 +360,8 @@ if __name__ == "__main__":
    con.row_factory = sqlite3.Row
    cur = con.cursor()
 
-   export_failed_meteors(con, cur, json_conf)
+   export_fireball_meteors(con, cur, json_conf)
+   #export_failed_meteors(con, cur, json_conf)
    exit()
    #export_meteors(con, cur)
    export_non_meteors(con, cur)
