@@ -1118,8 +1118,10 @@ def import_cal_file(cal_fn, cal_dir, mcp):
    if os.path.exists(cal_dir + cal_fn) is True:
       insert_calib(cal_dir + cal_fn , con, cur, json_conf)
       con.commit()
-
-      cal_params = load_json_file(cal_dir + cal_fn)
+      try:
+         cal_params = load_json_file(cal_dir + cal_fn)
+      except:
+         return()
       cal_params_nlm = cal_params.copy()
       cal_params_nlm['x_poly'] = np.zeros(shape=(15,), dtype=np.float64)
       cal_params_nlm['y_poly'] = np.zeros(shape=(15,), dtype=np.float64)
