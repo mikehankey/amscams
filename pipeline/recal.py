@@ -3435,13 +3435,12 @@ def get_image_stars_with_catalog(obs_id, cal_params, show_img, flux_table=None):
                else:
                   perc_diff = 0
 
-               print("NAME, FM, MAG, FLUX, AVG FLUX:", fm, name, mag, flux, mflux, perc_diff)
+               #print("NAME, FM, MAG, FLUX, AVG FLUX:", fm, name, mag, flux, mflux, perc_diff)
                # skip dim stars with bright flux
                if perc_diff > 0:
                   if .5 <= perc_diff <= 1.50:
-                     print("GOOD MAG KEEP")
+                     foo = 1
                   else:
-                     print("BAD MAG SKIP")
                      continue
 
                
@@ -3623,7 +3622,6 @@ def apply_calib (cal_file, calfiles_data, json_conf, mcp, last_cal_params=None, 
       cal_image_file = cal_file.replace("-calparams.json", ".png")
       oimg = cv2.imread(cal_dir + cal_image_file)
 
-      print("SUBTRACKED FROM MASK")
       mask_file = "/mnt/ams2/meteor_archive/{}/CAL/MASKS/{}_mask.png".format(station_id, cam_id)
       if os.path.exists(mask_file) is True:
          mask = cv2.imread(mask_file)
@@ -3688,11 +3686,9 @@ def apply_calib (cal_file, calfiles_data, json_conf, mcp, last_cal_params=None, 
 
          else:
             fact = 3
-         #print(row)
          if row[-2] < rez * fact:
             temp.append(row)
          else:
-            print("skip bad center dist, res, avg, fact, fact*rez :", row[-2], center_dist, rez, fact, rez * fact)
             reject_stars.append(row)
 
       # save these to the cal
@@ -3710,13 +3706,9 @@ def apply_calib (cal_file, calfiles_data, json_conf, mcp, last_cal_params=None, 
       cal_params['total_res_px'] = rez 
       cal_params['total_res_deg'] = (rez * (cal_params['pixscale'] / 3600) )
 
-      #print("CAL RES DEG: ", cal_params['total_res_deg'])
-      #print("TOTAL STARS: ", len(cal_params['cat_image_stars']))
 
       save_json_file(cal_dir + cal_file, cal_params)
 
-      #print(cal_dir + cal_file)
-      # reload new data to db
       import_cal_file(cal_fn, cal_dir, mcp)
 
 
