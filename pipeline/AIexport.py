@@ -20,6 +20,47 @@ meteor_dir = "/mnt/ams2/meteors/"
 non_meteor_dir = "/mnt/ams2/non_meteors_confirmed/"
 
 
+
+def export_fireball_meteors(con, cur, json_conf):
+   station_id = json_conf['site']['ams_id']
+   exp_dir = export_dir + station_id + "_FIREBALL_METEORS/" 
+   cloud_exp_dir = exp_dir.replace("/mnt/ams2", "/mnt/archive.allsky.tv")
+
+   if os.path.exists(exp_dir) is False:
+      os.makedirs(exp_dir)
+
+   # first meteors where the YN has failed, the mc_class has failed but the human override exists
+   # these are probably our best failures! 
+   sql = """
+         SELECT root_fn, meteor_yn, fireball_yn, mc_class, mc_class_conf 
+           FROM meteors
+          WHERE (meteor_yn > 50
+            OR fireball_yn > 50)
+            AND mc_class like '%fireball%' 
+            AND human_confirmed = 1
+         """
+   cur.execute(sql)
+   rows = cur.fetchall()
+   dds = {}
+   rc = 0
+   for row in rows:
+      root_fn, meteor_yn, fireball_yn, mc_class, mc_class_conf = row
+      day = root_fn[0:10]
+      roi_file = "/mnt/ams2/METEOR_SCAN/" + day + "/" + station_id + "_" + root_fn + "-ROI.jpg"
+      roi_fn = roi_file.split("/")[-1]
+      exp_file = exp_dir + roi_fn
+      if os.path.exists(roi_file) is True:
+         if os.path.exists(exp_file) is False:
+            print("EXPORT", rc, roi_file, meteor_yn, fireball_yn, mc_class, mc_class_conf)
+            cmd = "cp " + roi_file + " " + exp_file
+            print(cmd)
+            os.system(cmd)
+         else:
+            print("DONE", rc, roi_file, meteor_yn, fireball_yn, mc_class, mc_class_conf)
+         rc += 1
+      else:
+         print("NO ROI!", roi_file)
+
 def export_failed_meteors(con, cur, json_conf):
    # pull meteor learning samples that failed the last set of models
    # so that they can be used in the next model generation
