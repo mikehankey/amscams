@@ -96,7 +96,6 @@ def refit_summary(log):
 def star_track(cam_id, con, cur, json_conf ):
    MM = MovieMaker()
    wild = "/mnt/ams2/HD/*" + cam_id + "*.mp4"
-   print(wild)
    hd_files = glob.glob(wild)
    for hdf in hd_files:
       print(hdf)
@@ -351,7 +350,6 @@ def refit_meteor(meteor_file, con, cur, json_conf, mcp = None, last_best_dict = 
          rez = 1
 
       for row in cp['cat_image_stars']:
-         #print(row)
          if row[-2] < rez * 2:
             temp.append(row)
          else:
@@ -413,8 +411,7 @@ def refit_meteor(meteor_file, con, cur, json_conf, mcp = None, last_best_dict = 
       if "meteor_frame_data" in red:
          red = update_mfd(meteor_file, red, cp)
          print("NEW RED")
-   for row in red['meteor_frame_data']:
-      print(row)
+
    if os.path.exists(red_file) is True:
       red['cal_params'] = mj['cp']
       print(red_file, red)
@@ -3359,13 +3356,12 @@ def batch_apply(cam_id, con,cur, json_conf, last=None, do_bad=False):
          flux_table = {}
          for cf in calfiles_data: #sorted(calfiles_data, reverse=True):
             extra_text = cf + " " + str(rc) + " of " + str(len(calfiles_data))
-            print("CF", cf)
             try:
                last_cal_params, flux_table = apply_calib (cf, calfiles_data, json_conf, mcp, last_cal_params, extra_text, do_bad, flux_table)
             except:
                print("FAILED APPLY:", cf)
-            for mag in flux_table:
-               print(mag, flux_table[mag])
+            #for mag in flux_table:
+            #   print(mag, flux_table[mag])
             rc += 1
 
 
@@ -3467,7 +3463,6 @@ def get_image_stars_with_catalog(obs_id, cal_params, show_img, flux_table=None):
                   y1 = 1080 - 32
                crop_img = clean_img[y1:y2,x1:x2]
                star_obj = eval_star_crop(crop_img, cal_fn, x1, y1, x2, y2)
-               #print(star_obj)
 
                new_x, new_y, img_ra,img_dec, img_az, img_el = XYtoRADec(new_cat_x,new_cat_y,obs_id,cal_params,json_conf)
                img_new_cat_x, img_new_cat_y = get_xy_for_ra_dec(cal_params, img_ra, img_dec)
@@ -3476,7 +3471,6 @@ def get_image_stars_with_catalog(obs_id, cal_params, show_img, flux_table=None):
                except:
                   match_dist = 9999
                #cat_image_stars.append((name_ascii,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,x,y,res_px,flux))
-               #print("PRINT STAR X,YS:", star_x, star_y, new_cat_x, new_cat_y)
                cv2.circle(show_img, (int(star_x),int(star_y)), 20, (255,0,0),2)
                star_obj['name'] = name
                star_obj['mag'] = mag
@@ -3495,28 +3489,16 @@ def get_image_stars_with_catalog(obs_id, cal_params, show_img, flux_table=None):
                star_obj['zp_cat_y'] = zp_cat_y 
                star_obj['star_pd'] = 999 
                star_obj['lens_model_version'] = 999 
-               #print("STAR OBJ:", name, star_obj['valid_star'])
                res_px = calc_dist((star_obj['star_x'],star_obj['star_y']), (new_cat_x,new_cat_y))
                # HERE WE CAN DO BETTER!? OR IS THIS WIDE AN DFILTER?
 
                if res_px < 40: 
-                  #print("ADDING CAT STAR:", name, res_px)
                   cat_image_stars.append((name,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,star_obj['star_x'],star_obj['star_y'],res_px,star_obj['star_flux']))
                   user_stars.append((star_obj['star_x'], star_obj['star_y'], star_obj['star_flux']))
-               #else:
-               #   print("SKIPPING CAT STAR:", name, res_px)
 
                #insert_paired_star(cal_fn, star_obj, con, cur, json_conf)
 
                ic += 1
-            #else:
-            #   print("No close star found.")
-               #try:
-               #   cur.execute(sql, ivals)
-               #except:
-               #   print("Must be done already")
-
-               #print("CLOSEST MATCH:", res, closest_star)
    #con.commit()
    if SHOW == 1:
       cv2.imshow('pepe', show_img)
@@ -3576,13 +3558,9 @@ def get_image_stars_with_catalog(obs_id, cal_params, show_img, flux_table=None):
 
          if row[-2] < rez * fact:
             temp.append(row)
-         #else:
-         #   print("skip bad res:", row[-2])
 
       cal_params['cat_image_stars'] = temp
 
-   #for cat_star in cat_image_stars:
-   #   print("FINAL :", cat_star[-2])
    return(cat_image_stars, user_stars, flux_table)
 
 
@@ -3728,15 +3706,12 @@ def apply_calib (cal_file, calfiles_data, json_conf, mcp, last_cal_params=None, 
          cal_params['x_poly_fwd'] = np.zeros(shape=(15,), dtype=np.float64)
          cal_params['y_poly_fwd'] = np.zeros(shape=(15,), dtype=np.float64)
 
-      #if cal_version < mcp['cal_version']:
-      #   print(cal_fn, "needs update!", cal_version, mcp['cal_version'])
 
       cat_stars, short_bright_stars, cat_image = get_catalog_stars(cal_params)
       if SHOW == 1:
          cv2.imshow('pepe', cat_image)
          cv2.waitKey(30)
     
-      #print("PXSCALE:", cal_params['pixscale'])
 
       cal_params['short_bright_stars'] = short_bright_stars
       cal_params['no_match_stars'] = [] 
@@ -3746,15 +3721,6 @@ def apply_calib (cal_file, calfiles_data, json_conf, mcp, last_cal_params=None, 
       cal_json_fn = cal_json_file.split("/")[-1]
       oimg = cv2.imread(cal_dir + cal_image_file)
       cal_params_json = load_json_file(cal_json_file)
-
-      #print("PXSCALE:", cal_params['pixscale'])
-
-      # this is the problem. what do we do?
-      # need to load new cal stars into db before this is called in some cases?? 
-      #stars,cat_stars = get_paired_stars(cal_fn, cal_params, con, cur)
-      #stars = []
-      #@MMM
-
 
       # Need to modes here?
       stars,cat_stars = get_paired_stars(cal_fn, cal_params, con, cur)
@@ -4765,7 +4731,6 @@ def update_calfile(cal_fn, con, cur, json_conf, mcp):
    svals = [cal_fn]
    cur.execute(sql, svals)
    rows = cur.fetchall()
-   #print(rows[0])
 
 
    # UPDATE THE CATALOG
@@ -4912,8 +4877,6 @@ def get_paired_stars(cal_fn, cal_params, con, cur):
        WHERE cal_fn = ?
    """
    svals = [cal_fn]
-   #print(sql)
-   #print(svals)
    cur.execute(sql, svals )
    up_cat_image_stars = []
    # PAIR STARS AREA HERE..
@@ -4926,8 +4889,6 @@ def get_paired_stars(cal_fn, cal_params, con, cur):
       cal_fn, name, mag, star_yn, ra, dec, star_flux, img_x, img_y, new_cat_x, new_cat_y, zp_cat_x, zp_cat_y, res_px, zp_res_px, slope, zp_slope = row
       key = str(ra) + "_" + str(dec)
       if key not in used:
-         #print("\r", "Pairing star:", str(name), "                 ", end="")
-         #print(cal_fn, name, mag, star_yn, ra, dec, star_flux, img_x, img_y, new_cat_x, new_cat_y, zp_cat_x, zp_cat_y, res_px, zp_res_px, slope, zp_slope)
 
          stars.append((cal_fn, name, mag, star_yn, ra, dec, star_flux, img_x, img_y, new_cat_x, new_cat_y, zp_cat_x, zp_cat_y, res_px, zp_res_px, slope, zp_slope))
          used[key] = 1
@@ -5307,7 +5268,6 @@ def check_calibration_file(cal_fn, con, cur):
    cur.execute(sql, uvals)
    #print(sql, cal_fn)
    rows = cur.fetchall()
-   #print(rows)
    if len(rows) > 0:
       return(True)
    else:
@@ -6122,10 +6082,7 @@ def get_default_cal_for_file_with_range(cam_id, obs_file, img, con, cur, json_co
    except:
       print("No range data! for camera.")
       return(None)
-   print("RANGE DATA")
 
-   for row in range_data:
-      print(row)
    ( rcam_id, rend_dt, rstart_dt, elp, az, el, pos, pxs, res) = range_data[0]
 
    if mcp is None:
@@ -6697,7 +6654,6 @@ def characterize_fov(cam_id, con, cur, json_conf):
    all_good_stars = []
 
    for row in rows:
-      #print(row)
       cal_fn, name, mag, ra, dec, star_flux, img_x, img_y, new_cat_x, new_cat_y, zp_cat_x, zp_cat_y, zp_res_px, zp_slope = row
       med_flux = med_flux_db[mag]
       if cal_fn not in best_dict:

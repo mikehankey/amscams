@@ -214,7 +214,6 @@ def ai_check_stars(image, img_fn, stars):
       y2 = int(siy + 16)
 
       if x1 <= 0 or x2 >= 1920 or y1 < 0 or y2 >= 1080:
-         print("SKIP!", x1,y1,x2,y2)
          continue
       star_img = image[y1:y2,x1:x2]
       temp_file = "/mnt/ams2/startemp.jpg"
@@ -230,7 +229,6 @@ def ai_check_stars(image, img_fn, stars):
             response = requests.get(url)
             content = response.content.decode()
             resp = json.loads(content)
-            print(resp)
             ai_stars[star_key] = resp['star_yn']
             if resp['star_yn'] > 50:
                star_file = repo_dir_yes + star_key + ".jpg"
@@ -468,8 +466,6 @@ def hd_night_cal(cam_num, json_conf, interval=30):
          (f_datetime, cam, f_date_str,fy,fm,fd, fh, fmin, fs) = convert_filename_to_date_cam(file)
 
          sun = day_or_night(f_date_str, json_conf)
-         print(sun)
-         print(file)
          fn, dir = fn_dir(file)
          year = fn[0:4] 
          cal_dir = "/mnt/ams2/meteor_archive/" + ams_id + "/CAL/AUTOCAL/" + year + "/" 
@@ -582,8 +578,6 @@ def gen_cal_hist(json_conf):
       all_files[cam]['groups'] = cal_groups[cam]
    save_json_file("/mnt/ams2/cal/cal_history.json", all_files)
    print("/mnt/ams2/cal/cal_history.json" )
-   for hist in day_hist:
-      print(hist)
    save_json_file("/mnt/ams2/cal/cal_day_hist.json", day_hist)
    print("/mnt/ams2/cal/cal_day_hist.json")
 
@@ -686,7 +680,6 @@ def get_calib_from_range(cam, t_day,json_conf):
       s_dt = datetime.strptime(s_day, "%Y_%m_%d")
       e_dt = datetime.strptime(e_day, "%Y_%m_%d")
       if e_dt <= t_dt <= s_dt:
-         print(s_dt, t_dt, e_dt)
          print("THIS IS THE WAY:", row) 
          return(row)
    s_dt = datetime.strptime(rdata[0][1], "%Y_%m_%d")
@@ -847,7 +840,6 @@ def met_cal(json_conf):
       med_file = hd_dir + "cal/" + hdfn.replace(".mp4", "-med.jpg")
       new_fn = convert_trim_file_to_min_file(hdfn)
       cal_fn = "/mnt/ams2/meteor_archive/" + json_conf['site']['ams_id'] + "/CAL/AUTOCAL/" + year + "/" + new_fn
-      print("CAL FN:", cal_fn)
       if True: #os.path.exists(med_file) is False:
          med_image = make_med_image_from_video(hdm)
          print(med_image.shape)
@@ -860,8 +852,8 @@ def met_cal(json_conf):
          print("SAVE:", cal_fn)
 
    print("HD METEORS", len(hd_meteors))
-   for hdm in hd_meteors[0:ttt]:
-      print(hdm)
+   #for hdm in hd_meteors[0:ttt]:
+   #   print(hdm)
 
 def convert_trim_file_to_min_file(trim_file):
    # add seconds in trim num to filename (for calib)
@@ -1024,7 +1016,7 @@ def cal_status(json_conf):
       print(cam, "Cal Files", len(good_files), "good", len(bad_files), "bad", len(very_bad_files), "very bad")
       print(cam, "MCP Files,Stars,Res::", total_files, total_stars, mcp_res)
       tb.add_row([cam, str(len(good_files)), str(len(bad_files)), str(len(very_bad_files)), str(total_files), str(total_stars), str(mcp_res)])
-
+   # print pretty table
    print(tb)
 #   out = """
 #      build wiz commands
@@ -1304,7 +1296,6 @@ def custom_fit_meteor(meteor_file,json_conf,show=SHOW):
       x,y,val = data
       cv2.circle(stars_image,(x,y), 4, (0,0,255), 1)
    for data in cp['user_stars']:
-      print("DATA:", data)
       x,y,val = data
       cv2.circle(stars_image,(int(x),int(y)), 5, (255,0,0), 1)
    stars_image_file = fit_img_file.replace("first.jpg", "stars.jpg")
@@ -1358,9 +1349,9 @@ def custom_fit_meteor(meteor_file,json_conf,show=SHOW):
       if cat_dist < mean_res ** 2:
          all_stars.append((cal_fn, cp['center_az'], cp['center_el'], cp['ra_center'], cp['dec_center'], cp['position_angle'], cp['pixscale'], dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist,star_int))
    c = 0
-   for star in all_stars:
-      print(c, star)
-      c += 1
+   #for star in all_stars:
+   #   print(c, star)
+   #   c += 1
    # do x-poly 
 
 
@@ -1708,8 +1699,6 @@ def refit_meteor(meteor_file, json_conf,force=0):
          cp = dict(test2_cp)
       else:
          print("Keep the current cal it is better than default.")
-         print(test_data1)
-         print(test_data2)
    else:
       print("No good def cal.") 
 
