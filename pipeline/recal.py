@@ -382,6 +382,7 @@ def refit_meteor(meteor_file, con, cur, json_conf, mcp = None, last_best_dict = 
       mj['cp']['cat_image_stars'] = []
 
    for star in mj['cp']['cat_image_stars']:
+      print("CAT IMG STAR:", star)
       (dcname,mag,ra,dec,img_ra,img_dec,match_dist,up_cat_x,up_cat_y,img_az,img_el,up_cat_x,up_cat_y,six,siy,res_px,bp) = star
       new_cat_x, new_cat_y = get_xy_for_ra_dec(mj['cp'], ra, dec)
       res_px = calc_dist((six,siy),(new_cat_x,new_cat_y))
@@ -398,6 +399,7 @@ def refit_meteor(meteor_file, con, cur, json_conf, mcp = None, last_best_dict = 
 
    new_cat_image_stars = []
    for star in mj['cp']['cat_image_stars']:
+      print("NEW CAT IMG STAR:", star)
       if star[-2] <= med_rez :
          print("KEEP", star[0], star[-2], med_rez)
          new_cat_image_stars.append(star)
@@ -411,7 +413,7 @@ def refit_meteor(meteor_file, con, cur, json_conf, mcp = None, last_best_dict = 
    if os.path.exists(red_file) is True:
       if "meteor_frame_data" in red:
          red = update_mfd(meteor_file, red, cp)
-         print("NEW RED")
+         print("UPDATED RED DATA")
 
    if os.path.exists(red_file) is True:
       red['cal_params'] = mj['cp']
