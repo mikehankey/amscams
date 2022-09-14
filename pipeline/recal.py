@@ -358,7 +358,7 @@ def refit_meteor(meteor_file, con, cur, json_conf, mcp = None, last_best_dict = 
 
       cp['cat_image_stars'] = temp
 
-   if len(mj['cp']['cat_image_stars']) < 5: 
+   if len(mj['cp']['cat_image_stars']) < 3: 
       print("NOT ENOUGH STARS TO CUSTOM FIT. USE DEFAULT CAL!")
       mj['cp'] = default_cp
       mj['cat_image_stars'] = []
