@@ -7481,11 +7481,18 @@ if __name__ == "__main__":
 
    if cmd == "batch_apply" :
       cam_id = sys.argv[2]
-      if len(sys.argv) > 3:
-         # do bad
-         batch_apply(cam_id, con, cur, json_conf, None, True)
+      if cam_id == "ALL" or cam_id == "all":
+         for cam_num in json_conf['cameras']:
+            cam_id = json_conf['cameras'][cam_num]['cams_id']
+            cmd = "python3 recal.py batch_apply {}".format(cam_id)
+            os.system(cmd)
+
       else:
-         batch_apply(cam_id, con, cur, json_conf)
+         if len(sys.argv) > 3:
+            # do bad
+            batch_apply(cam_id, con, cur, json_conf, None, True)
+         else:
+            batch_apply(cam_id, con, cur, json_conf)
 
    if cmd == "cat_view" :
       cal_fn = sys.argv[2]
