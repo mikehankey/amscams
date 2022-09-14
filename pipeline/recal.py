@@ -113,7 +113,6 @@ def refit_meteor(meteor_file, con, cur, json_conf, mcp = None, last_best_dict = 
 
    default_cp = get_default_cal_for_file(cam_id, meteor_file, None, con, cur, json_conf)
    print(default_cp)
-   input("WAITING.")   
    extra_text = "Refit " +  meteor_file
    if last_best_dict is None:
       last_best_dict = {}
@@ -223,6 +222,8 @@ def refit_meteor(meteor_file, con, cur, json_conf, mcp = None, last_best_dict = 
    else:
       stars = mj['star_points']
 
+   print("USER STARS:", len(mj['user_stars']))
+   input("DONE FINE STARS")
    # get a few cal files
    try:
       #print("RANGE DEFAULT CAL")
