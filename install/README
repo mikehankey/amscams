@@ -1,6 +1,26 @@
 ALLSKYCAMS ADMIN
 
-To access the web admin and check your captures, open google chrome and goto :
+Before you install, you must obtain an AMS ID and PIN Code from allsky.com. 
+
+If you do not already have it contact mike.hankey@gmail.com to request an AMS ID and pin code for your station.
+
+To install on a fresh ubuntu first 
+
+Then run:
+
+sudo ./AS7Setup.py
+
+After running the install. To access the web admin and check your captures, open google chrome and goto :
+
+Follow the menu items. 
+
+( NOTE: If you know how to setup your own network IPs and disk you can skip these steps. )
+
+The most important step is #4 config to setup the stations variables. Other steps can be done manually. 
+
+You can also update your station info latter in the web browser. So these values can be blank and filled in later from the web admin. 
+         
+To access the web admin in a browswer goto:
 
 http://localhost/
 
