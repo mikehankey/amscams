@@ -6723,7 +6723,7 @@ def characterize_fov(cam_id, con, cur, json_conf):
 
    #(cal_file , center_az, center_el, ra_center, dec_center, position_angle, pixscale, dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist,star_int) = star
 
-   #calfiles_data  = load_cal_files(cam_id, con,cur)
+   calfiles_data  = load_cal_files(cam_id, con,cur)
    merged_stars = []
    for star in all_good_stars:
 
@@ -7089,7 +7089,7 @@ def lens_model(cam_id, con, cur, json_conf, cal_fns= None):
    print(tb)
 
 
-def wizard(station_id, cam_id, con, cur, json_conf, file_limit=5):
+def wizard(station_id, cam_id, con, cur, json_conf, file_limit=15):
 
    if SHOW == 1:
       cv2.namedWindow("pepe")
@@ -7515,7 +7515,7 @@ if __name__ == "__main__":
       if len(sys.argv) > 3:
          limit = int(sys.argv[3])
       else:
-         limit = 5
+         limit = 15
 
       if cam_id == "all":
          for cam_num in json_conf['cameras']:
