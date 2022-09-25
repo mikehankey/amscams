@@ -2,6 +2,7 @@ from flask import Flask, request
 from FlaskLib.FlaskUtils import get_template
 from lib.PipeUtil import cfe, load_json_file, save_json_file
 from lib.PipeAutoCal import fn_dir
+from lib.PipeImage import quick_video_stack
 import math
 import time
 import cv2
@@ -537,7 +538,8 @@ def detail_page(amsid, date, meteor_file):
          print("SAVED HALF", METEOR_DIR + half_stack, simg.shape)
          print("HALF SOURCE " + METEOR_DIR + sd_stack)
       else:
-         print("NO SD ", sd_stack)
+         print("NO SD ", sd_stack, sd_trim)
+         quick_video_stack(sd_trim, count = 0, save=1)
  
    az_grid = ""
    if remote == 1:
