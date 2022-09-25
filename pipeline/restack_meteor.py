@@ -1,4 +1,4 @@
-from lib/PipeImage import quick_video_stack
+from lib.PipeImage import quick_video_stack
 import sys
 
 video_file = sys.argv[1]
