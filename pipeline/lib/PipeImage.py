@@ -48,7 +48,9 @@ def restack_meteor(video_file):
       hd_file = None
    #print("SD:", sd_file)
    #print("HD:", hd_file)
+   print("stacking")
    stack_frame, stack_file = quick_video_stack(sd_file)
+   print("done stacking")
    js['sd_stack'] = stack_file
    if hd_file is not None:
       stack_frame, stack_file = quick_video_stack(hd_file)

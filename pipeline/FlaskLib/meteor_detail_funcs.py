@@ -539,7 +539,7 @@ def detail_page(amsid, date, meteor_file):
          print("HALF SOURCE " + METEOR_DIR + sd_stack)
       else:
          print("NO SD ", sd_stack, sd_trim)
-         quick_video_stack(sd_trim, count = 0, save=1)
+         simg, sfile = quick_video_stack(sd_trim, count = 0, save=1)
  
    az_grid = ""
    if remote == 1:
