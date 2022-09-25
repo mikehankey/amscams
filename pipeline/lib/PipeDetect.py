@@ -2045,6 +2045,8 @@ def make_roi_video_mfd(video_file, json_conf):
       mj = load_json_file(mjf)
    if cfe(mjrf) == 1:
       mjr = load_json_file(mjrf)
+   else:
+      mjr = None
 
    if "user_mods" in mj:
       if "frames" in mj['user_mods']:
