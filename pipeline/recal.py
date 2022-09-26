@@ -223,7 +223,7 @@ def refit_meteor(meteor_file, con, cur, json_conf, mcp = None, last_best_dict = 
       stars = mj['star_points']
 
    print("USER STARS:", len(mj['user_stars']))
-   input("DONE FINE STARS")
+   #input("DONE FINE STARS")
    # get a few cal files
    try:
       #print("RANGE DEFAULT CAL")
