@@ -2045,6 +2045,9 @@ def make_roi_video_mfd(video_file, json_conf):
    print("MJF:", mjf)
    if cfe(mjf) == 1:
       mj = load_json_file(mjf)
+   else:
+      print("MISSING MJ!", mjf)
+      exit()
    if cfe(mjrf) == 1:
       mjr = load_json_file(mjrf)
    else:
