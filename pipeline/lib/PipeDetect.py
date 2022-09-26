@@ -2038,7 +2038,7 @@ def make_roi_video_mfd(video_file, json_conf):
       for cf in sorted(cache_frames):
          print(cf)
          cfi = cv2.imread(cf)
-         cfi = cfi.resize(cfi, (640,360))
+         cfi = cv2.resize(cfi, (640,360))
          hd_color_frames.append(cfi)
 
    updated_frame_data = []
