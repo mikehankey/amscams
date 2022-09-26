@@ -2485,7 +2485,7 @@ def fireball(video_file, json_conf, nomask=0):
    print("XS",best_meteor['oxs'])
    print("YS",best_meteor['oys'])
    print("INTS",best_meteor['oint'])
-   print("DIST:", best_meteor['fs_dist'])
+   #print("DIST:", best_meteor['fs_dist'])
       
 
 
