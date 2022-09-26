@@ -2036,6 +2036,7 @@ def make_roi_video_mfd(video_file, json_conf):
       hd_color_frames = []
       print("USING CACHE FRAMES!")
       for cf in sorted(cache_frames):
+         print(cf)
          cfi = cv2.imread(cf)
          hd_color_frames.append(cfi)
 
