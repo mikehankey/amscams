@@ -698,9 +698,12 @@ def detail_page(amsid, date, meteor_file):
             mjr['cal_params'] = mj['cp']
 
 
-         if np.isnan(mjr['cal_params']['total_res_px']) or mjr['cal_params']['total_res_px'] is None or len(mjr['cal_params']['cat_image_stars']) == 0:
-            mjr['cal_params']['total_res_px'] = 9999
-            mjr['cal_params']['total_res_deg'] = 9999
+         if "cal_params" in mjr:
+            if np.isnan(mjr['cal_params']['total_res_px']) or mjr['cal_params']['total_res_px'] is None or len(mjr['cal_params']['cat_image_stars']) == 0:
+               mjr['cal_params']['total_res_px'] = 9999
+               mjr['cal_params']['total_res_deg'] = 9999
+         else:
+            mjr['cal_params'] = None
 
 
       frame_table_rows = frames_table(mjr, base_name, CACHE_VDIR)
