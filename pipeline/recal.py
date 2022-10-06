@@ -112,7 +112,9 @@ def refit_meteor(meteor_file, con, cur, json_conf, mcp = None, last_best_dict = 
    (f_datetime, cam_id, f_date_str,fy,fmin,fd, fh, fm, fs) = convert_filename_to_date_cam(meteor_file)
 
    default_cp = get_default_cal_for_file(cam_id, meteor_file, None, con, cur, json_conf)
-   print(default_cp)
+
+
+
    extra_text = "Refit " +  meteor_file
    if last_best_dict is None:
       last_best_dict = {}
@@ -158,7 +160,7 @@ def refit_meteor(meteor_file, con, cur, json_conf, mcp = None, last_best_dict = 
          red = load_json_file(red_file)
       else:
          red = {}
-      print("LOADED:", red_file)
+
       if "total_res_px" not in mj['cp']:
          # There are no stars so there is no res??
          mj['cp']['total_res_px'] = 999
@@ -189,8 +191,10 @@ def refit_meteor(meteor_file, con, cur, json_conf, mcp = None, last_best_dict = 
 
    orig_res = mj['cp']['total_res_px']
 
-
+   best_cal = find_best_calibration(meteor_file, mj['cp'], json_conf)
    print("ORG RES:", orig_res)
+   print(best_cal)
+   input("BEST CAL?")
    if orig_res > 2:
       mj['cp'] = default_cp
 
@@ -726,7 +730,10 @@ def minimize_fov(cal_file, cal_params, image_file,img,json_conf,zero_poly=False,
 
 
    this_poly = np.zeros(shape=(4,), dtype=np.float64)
-   this_poly = [.0001,.0001,.0001,.0001]
+   if all_res < 2:
+      this_poly = [.0001,.0001,.0001,.0001]
+   else:
+      this_poly = [.01,.01,.01,.01]
 
 
    if zero_poly is True:
@@ -3748,7 +3755,7 @@ def apply_calib (cal_file, calfiles_data, json_conf, mcp, last_cal_params=None, 
       
       #for star in cal_params['cat_image_stars']:
       #   print(star)
-            
+      #cv2.waitKey(0)      
       #print("SAVED JSON BEFORE UPDATE CAT STARS", len(cal_params['cat_image_stars']), len(cat_stars) )
 
       update_calibration_file(cal_fn, cal_params, con,cur,json_conf,mcp)
@@ -7297,31 +7304,39 @@ def fix_cal(cal_fn, con, cur,json_conf):
    
 
 
-def find_best_calibration(cal_fn, orig_cal, list_of_cals, json_conf):
+def find_best_calibration(cal_fn, orig_cal, json_conf):
+   station_id = json_conf['site']['ams_id']
+   (f_datetime, cam_id, f_date_str,fy,fmin,fd, fh, fm, fs) = convert_filename_to_date_cam(cal_fn)
    # Not used...
+   cal_range_file = "/mnt/ams2/cal/" + "cal_day_hist.json"
+   list_of_cals = load_json_file(cal_range_file)
+
    for row in list_of_cals:
-      [az,el,pos,pxs] = row
+      [t_cam_id, cal_date, az,el,pos,pxs,ores] = row
+      if t_cam_id != cam_id:
+         continue
       cp = dict(orig_cal)
       cp['center_az'] = az
       cp['center_el'] = el
-      cp['center_pos'] = pos
-      cp['center_pxs'] = pxs
+      cp['position_angle'] = pos
+      cp['pixscale'] = pxs
       cp = update_center_radec(cal_fn,cp,json_conf)
       new_cat_image_stars = []
       for star in cp['cat_image_stars']:
          (dcname,mag,ra,dec,img_ra,img_dec,match_dist,up_cat_x,up_cat_y,img_az,img_el,up_cat_x,up_cat_y,six,siy,res_px,bp) = star
-         new_cat_x, new_cat_y = get_xy_for_ra_dec(mj['cp'], ra, dec)
+         print("   ", dcname, res_px)
+         new_cat_x, new_cat_y = get_xy_for_ra_dec(cp, ra, dec)
          res_px = calc_dist((six,siy),(new_cat_x,new_cat_y))
-         new_x, new_y, img_ra,img_dec, img_az, img_el = XYtoRADec(six,siy,meteor_file,mj['cp'],json_conf)
+         new_x, new_y, img_ra,img_dec, img_az, img_el = XYtoRADec(six,siy,meteor_file,cp,json_conf)
          match_dist = angularSeparation(ra,dec,img_ra,img_dec)
          real_res_px = res_px
          new_cat_image_stars.append((dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,real_res_px,bp))
-      mj['cp']['cat_image_stars'] = new_cat_image_stars
+      cp['cat_image_stars'] = new_cat_image_stars
 
-      rez = [row[-2] for row in mj['cp']['cat_image_stars'] ]
+      rez = [row[-2] for row in cp['cat_image_stars'] ]
       med_rez = np.median(rez) ** 2
-      print("MED REZ FOR THIS ROW IS:", med_rez)
-       
+      print("MED REZ FOR THIS ROW IS:", med_rez, cal_fn, cp['center_az'], cp['center_el'], cp['ra_center'], cp['dec_center'], cp['position_angle'], cp['pixscale'])
+   input("DONE FIND BEST CAL")       
 
 def prune(cam_id, con, cur, json_conf):
    #print("Prune calfiles for cam_id")
