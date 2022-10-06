@@ -7334,7 +7334,7 @@ def find_best_calibration(cal_fn, orig_cal, json_conf):
       cp['cat_image_stars'] = new_cat_image_stars
 
       rez = [row[-2] for row in cp['cat_image_stars'] ]
-      med_rez = np.median(rez) ** 2
+      med_rez = np.median(rez) #** 2
       print("MED REZ FOR THIS ROW IS:", med_rez, cal_fn, cp['center_az'], cp['center_el'], cp['ra_center'], cp['dec_center'], cp['position_angle'], cp['pixscale'])
    input("DONE FIND BEST CAL")       
 
