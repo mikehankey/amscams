@@ -194,9 +194,9 @@ def refit_meteor(meteor_file, con, cur, json_conf, mcp = None, last_best_dict = 
    best_cal = find_best_calibration(meteor_file, mj['cp'], json_conf)
    print("ORG RES:", orig_res)
    print("BEST CAL", best_cal)
-   input("BEST CAL?")
-   if orig_res > 2:
-      mj['cp'] = default_cp
+
+   if orig_res > best_cal['total_res_px']:
+      mj['cp'] = best_cal 
 
    if "hd_trim" in mj:
       if os.path.exists(mj['hd_trim']) is True:
