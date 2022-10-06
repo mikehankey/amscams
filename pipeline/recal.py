@@ -227,7 +227,6 @@ def refit_meteor(meteor_file, con, cur, json_conf, mcp = None, last_best_dict = 
       stars = mj['star_points']
 
    print("USER STARS:", len(mj['user_stars']))
-   #input("DONE FINE STARS")
    # get a few cal files
    try:
       #print("RANGE DEFAULT CAL")
@@ -5533,7 +5532,6 @@ def find_stars_with_catalog(cal_fn, con, cur, json_conf,mcp=None, cp=None, cal_i
    star_objs = new_star_objs  
    print(tb)
 
-   #input("YOYO")
    star_obj_report(star_objs)
    #print("DIST TABLE!")
    #for star in good_stars:
