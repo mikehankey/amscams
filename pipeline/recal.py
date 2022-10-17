@@ -196,10 +196,10 @@ def refit_meteor(meteor_file, con, cur, json_conf, mcp = None, last_best_dict = 
    print("BEST CAL", best_cal)
    if "total_res_px" not in best_cal:
       print("NO best cal found!")
-      best_cal['total_res_px'] = 9999
 
-   if orig_res > best_cal['total_res_px']:
-      mj['cp'] = best_cal 
+   if best_cal is not None:
+      if orig_res > best_cal['total_res_px']:
+         mj['cp'] = best_cal 
 
    if "hd_trim" in mj:
       if os.path.exists(mj['hd_trim']) is True:
