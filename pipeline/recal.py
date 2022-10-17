@@ -194,8 +194,6 @@ def refit_meteor(meteor_file, con, cur, json_conf, mcp = None, last_best_dict = 
    best_cal = find_best_calibration(meteor_file, mj['cp'], json_conf)
    print("ORG RES:", orig_res)
    print("BEST CAL", best_cal)
-   if "total_res_px" not in best_cal:
-      print("NO best cal found!")
 
    if best_cal is not None:
       if orig_res > best_cal['total_res_px']:
