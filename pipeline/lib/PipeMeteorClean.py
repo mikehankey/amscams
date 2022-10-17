@@ -591,9 +591,14 @@ def delete_from_base(base, json_conf):
             js = {}
 
          # make sure the json file has not already been deleted!
-         if "hc" in js or "user_mods" in js:
+
+         if "hc" in js :
             print("HUMAN CONFIRMED NO DELETE!")
             return()
+         if "user_mods" in js :
+            if len(js['user_mods'].keys()) > 0:
+               print("HUMAN CONFIRMED NO DELETE!")
+               return()
 
          if "final_vid" in js:
             wild = js['final_vid'].replace(".mp4", "*")
