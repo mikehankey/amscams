@@ -2,6 +2,7 @@ from flask import Flask, request
 from FlaskLib.FlaskUtils import get_template
 from lib.PipeUtil import cfe, load_json_file, save_json_file
 from lib.PipeAutoCal import fn_dir
+from lib.PipeImage import quick_video_stack
 import math
 import time
 import cv2
@@ -537,7 +538,8 @@ def detail_page(amsid, date, meteor_file):
          print("SAVED HALF", METEOR_DIR + half_stack, simg.shape)
          print("HALF SOURCE " + METEOR_DIR + sd_stack)
       else:
-         print("NO SD ", sd_stack)
+         print("NO SD ", sd_stack, sd_trim)
+         #simg, sfile = quick_video_stack(sd_trim, count = 0, save=1)
  
    az_grid = ""
    if remote == 1:
@@ -692,12 +694,16 @@ def detail_page(amsid, date, meteor_file):
             cal_params_js_var = "var cal_params = []"
 
       else:
-         mjr['cal_params'] = mj['cp']
+         if "cp" in mj:
+            mjr['cal_params'] = mj['cp']
 
 
-         if np.isnan(mjr['cal_params']['total_res_px']) or mjr['cal_params']['total_res_px'] is None or len(mjr['cal_params']['cat_image_stars']) == 0:
-            mjr['cal_params']['total_res_px'] = 9999
-            mjr['cal_params']['total_res_deg'] = 9999
+         if "cal_params" in mjr:
+            if np.isnan(mjr['cal_params']['total_res_px']) or mjr['cal_params']['total_res_px'] is None or len(mjr['cal_params']['cat_image_stars']) == 0:
+               mjr['cal_params']['total_res_px'] = 9999
+               mjr['cal_params']['total_res_deg'] = 9999
+         else:
+            mjr['cal_params'] = None
 
 
       frame_table_rows = frames_table(mjr, base_name, CACHE_VDIR)

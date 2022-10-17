@@ -1294,7 +1294,7 @@ def custom_fit_meteor(meteor_file,json_conf,show=SHOW):
 
    for data in orig_user_stars:
       x,y,val = data
-      cv2.circle(stars_image,(x,y), 4, (0,0,255), 1)
+      cv2.circle(stars_image,(int(x),int(y)), 4, (0,0,255), 1)
    for data in cp['user_stars']:
       x,y,val = data
       cv2.circle(stars_image,(int(x),int(y)), 5, (255,0,0), 1)
@@ -11428,8 +11428,8 @@ def make_az_grid(cal_image, mj,json_conf,save_file=None):
 
    for az in range(int(start_az),int(end_az)):
       print("AZ ON GRID", az)
-      if az >= 370:
-         az = az - 370
+      if az >= 361:
+         az = az - 361
 
       for el in range(int(start_el),int(end_el)+30):
          if az % 10 == 0 and el % 10 == 0:
@@ -11492,7 +11492,7 @@ def make_az_grid(cal_image, mj,json_conf,save_file=None):
       if el % 1 == 0:
          if el not in show_el:
             grid_img = draw_grid_line(points, grid_img, "el", el, cp['center_az'], cp['center_el'], 0)
-   for az in range (-30,390):
+   for az in range (-30,365):
       if az % 1 == 0:
          grid_img = draw_grid_line(points, grid_img, "az", az, cp['center_az'], cp['center_el'], 0)
 

@@ -1,10 +1,15 @@
 #!/usr/bin/python3
+
+import pkg_resources
+import sys
+import os
+# see what we have
+installed = {pkg.key for pkg in pkg_resources.working_set}
+
 import subprocess
 import time
-import requests
 import json
 from pathlib import Path
-import os
 try:
    from consolemenu import *
    from consolemenu.items import *
@@ -17,9 +22,19 @@ try:
    from tabulate import tabulate
 except:
    os.system("python3 -m pip install tabulate")
+try:
+   import requests
+except:
+   os.system("python3 -m pip install requests")
+try:
+   import netifaces 
+except:
+   os.system("python3 -m pip install netifaces")
+try:
+   import getpass 
+except:
+   os.system("python3 -m pip install getpass")
 
-import getpass
-import netifaces as ni
 
 class AS7Setup():
 

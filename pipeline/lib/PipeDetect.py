@@ -2036,15 +2036,22 @@ def make_roi_video_mfd(video_file, json_conf):
       hd_color_frames = []
       print("USING CACHE FRAMES!")
       for cf in sorted(cache_frames):
+         print(cf)
          cfi = cv2.imread(cf)
+         cfi = cv2.resize(cfi, (640,360))
          hd_color_frames.append(cfi)
 
    updated_frame_data = []
    print("MJF:", mjf)
    if cfe(mjf) == 1:
       mj = load_json_file(mjf)
+   else:
+      print("MISSING MJ!", mjf)
+      exit()
    if cfe(mjrf) == 1:
       mjr = load_json_file(mjrf)
+   else:
+      mjr = None
 
    if "user_mods" in mj:
       if "frames" in mj['user_mods']:
@@ -2478,7 +2485,7 @@ def fireball(video_file, json_conf, nomask=0):
    print("XS",best_meteor['oxs'])
    print("YS",best_meteor['oys'])
    print("INTS",best_meteor['oint'])
-   print("DIST:", best_meteor['fs_dist'])
+   #print("DIST:", best_meteor['fs_dist'])
       
 
 

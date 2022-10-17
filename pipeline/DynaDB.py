@@ -718,6 +718,8 @@ def update_dyna_cache_for_day(dynamodb, date, stations, utype=None, cloud_copy=1
       for data in cluster_stations:
          station_id = data[0]
          print("STA:", station_id)
+         #if station_id in unq_stations:
+         #   continue
          unq_stations[station_id] = 1
          stations.append(station_id)
          obs = search_obs(dynamodb, station_id, date, 1)
@@ -726,7 +728,7 @@ def update_dyna_cache_for_day(dynamodb, date, stations, utype=None, cloud_copy=1
          for data in obs:
             obs_key =  data['station_id'] + "_" +  data['sd_video_file']
             if obs_key in del_keys:
-               print("THIS OBS KEY IS DELETED!")
+               print("THIS OBS KEY IS DELETED!", obs_key)
             else:
                if "cat_image_stars" in data:
                   del data['cat_image_stars']
@@ -738,6 +740,8 @@ def update_dyna_cache_for_day(dynamodb, date, stations, utype=None, cloud_copy=1
                   del data['dfv']
                if "final_trim" in data:
                   del data['final_trim']
+               if station_id == 'AMS64':
+                  print("AMS64:", data['sd_video_file'])
                all_obs.append(data)
 
       #update_redis_obs(date, all_obs)
