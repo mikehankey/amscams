@@ -194,6 +194,9 @@ def refit_meteor(meteor_file, con, cur, json_conf, mcp = None, last_best_dict = 
    best_cal = find_best_calibration(meteor_file, mj['cp'], json_conf)
    print("ORG RES:", orig_res)
    print("BEST CAL", best_cal)
+   if "total_res_px" not in best_cal:
+      print("NO best cal found!")
+      best_cal['total_res_px'] = 9999
 
    if orig_res > best_cal['total_res_px']:
       mj['cp'] = best_cal 
@@ -2243,6 +2246,7 @@ def get_star_points(cal_fn, oimg, cp, station_id, cam_id, json_conf):
             if pxd > 15 and avg_val < 80:
                found = True 
                cv2.circle(show_img, (int(x1 + mx),int(y1 + my)), 5, (128,128,128),1)
+               # Should add flux here and not max_VAL!?
                star_points.append((x1+mx,y1+my,max_val))
             if c % 25 == 0:
                if SHOW == 1: 
@@ -3260,6 +3264,8 @@ def get_mcp(cam_id) :
       
    return(mcp)
 
+
+
 def get_avg_res(cam_id, con, cur):
 
    sql = """
@@ -3272,7 +3278,27 @@ def get_avg_res(cam_id, con, cur):
    dvals = ["%" + cam_id + "%"]
    cur.execute(sql, dvals)
    rows = cur.fetchall()
-   return(rows[0][0])
+   for row in rows:
+      avg_res = row[0]
+
+   sql2 = """
+      SELECT cal_fn, count(*) 
+        FROM calfile_paired_stars 
+       WHERE cal_fn like ?
+         AND res_px is not NULL
+    GROUP BY cal_fn
+   """
+
+   dvals = ["%" + cam_id + "%"]
+   print(sql2, dvals)
+   cur.execute(sql2, dvals)
+   rows = cur.fetchall()
+   tt = []
+   for row in rows:
+      print(row)
+      tt.append(row[1])
+   total_stars = int(np.mean(tt))
+   return(total_stars, avg_res)
 
 
 def batch_apply_bad(cam_id, con, cur, json_conf):
@@ -3416,7 +3442,7 @@ def get_image_stars_with_catalog(obs_id, cal_params, show_img, flux_table=None):
             dist_arr = []
             # sort by brightest points
             star_points = sorted(star_points, key=lambda x: x[2], reverse=True)
-            for ix,iy,ii in star_points[0:100]:
+            for ix,iy,ii in star_points[0:200]:
                this_dist = calc_dist((ix,iy),(new_cat_x,new_cat_y))
                if this_dist < 150:
                   dist_arr.append((this_dist, star, ii))
@@ -3586,6 +3612,7 @@ def apply_calib (cal_file, calfiles_data, json_conf, mcp, last_cal_params=None, 
          cal_params = cal_data_to_cal_params(cal_file, calfiles_data[cal_file],json_conf, mcp)
       else:
          import_cal_file(cal_file, cal_dir, mcp)
+         cal_fn = cal_file
          res_px = 999
 
       # use past default if there is no res or bad res
@@ -3636,6 +3663,15 @@ def apply_calib (cal_file, calfiles_data, json_conf, mcp, last_cal_params=None, 
       before =  len(cal_params['cat_image_stars'])
       cal_params['cat_image_stars'], cal_params['user_stars'], flux_table = get_image_stars_with_catalog(cal_file, cal_params, oimg, flux_table)
 
+      if len(cal_params['user_stars']) > 0:
+         cat_star_ratio = len(cal_params['user_stars']) / len(cal_params['star_points'])
+
+      print("CAT STAR RATIO:",  len(cal_params['star_points']), len(cal_params['user_stars']), cat_star_ratio)
+
+      cal_params['user_stars'] = sorted(cal_params['user_stars'], key=lambda x: x[2], reverse=True)
+
+      for row in cal_params['user_stars']:
+         print(row)
       if len(cal_params['cat_image_stars']) < 10:
          print("LOW STARS / BAD FILE MOVE")
          if os.path.exists("/mnt/ams2/cal/bad_cals/") is False:
@@ -5282,6 +5318,13 @@ def check_calibration_file(cal_fn, con, cur):
    else:
       return(False)
 
+def quality_check_all_cal_files(cam_id, con, cur):
+   total_stars, avg_res = get_avg_res(cam_id, con, cur)
+
+   cal_index = load_json_file("/mnt/ams2/cal/freecal_index.json")
+
+   print(total_stars, avg_res)
+
 
 def find_stars_with_catalog(cal_fn, con, cur, json_conf,mcp=None, cp=None, cal_img=None):
    # for each star in the catalog check a crop around that location for an image star
@@ -6145,7 +6188,7 @@ def get_cal_range(obs_file, img, con, cur, json_conf):
 
 
 def get_best_cal_files(cam_id, con, cur, json_conf, limit=500):
-   avg_res = get_avg_res(cam_id, con, cur)
+   avg_stars, avg_res = get_avg_res(cam_id, con, cur)
 
    sql = """
       SELECT cal_fn, count(*) AS ss, avg(res_px) as rs 
@@ -6969,7 +7012,7 @@ def lens_model(cam_id, con, cur, json_conf, cal_fns= None):
    limit = 1000
    #cal_fns = batch_review(station_id, cam_id, con, cur, json_conf, limit)
 
-   avg_res = get_avg_res(cam_id, con, cur)
+   avg_stars, avg_res = get_avg_res(cam_id, con, cur)
 
    if cal_fns is None:
       sql = """
@@ -7111,7 +7154,7 @@ def wizard(station_id, cam_id, con, cur, json_conf, file_limit=15):
    if True:
       cal_fns, calfiles_data = batch_review(station_id, cam_id, con, cur, json_conf, file_limit)
    else:
-      avg_res = get_avg_res(cam_id, con, cur)
+      avg_stars, avg_res = get_avg_res(cam_id, con, cur)
       cal_fns = []
       sql = """
              SELECT cal_fn, avg(res_px) as rp, count(*) stars
@@ -7645,6 +7688,9 @@ if __name__ == "__main__":
          report = refit_summary(refit_log)
          save_json_file(refit_sum_file, report)
 
+   if cmd == "quality_check" :
+      cam_id = sys.argv[2]
+      quality_check_all_cal_files(cam_id, con, cur) 
 
    if cmd == "refit_meteor_day" :
       date = sys.argv[2]
