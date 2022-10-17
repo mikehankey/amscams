@@ -591,7 +591,7 @@ def delete_from_base(base, json_conf):
             js = {}
 
          # make sure the json file has not already been deleted!
-         if "hc" in js or "user_mods" in json:
+         if "hc" in js or "user_mods" in js:
             print("HUMAN CONFIRMED NO DELETE!")
             return()
 
