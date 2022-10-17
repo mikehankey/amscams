@@ -2063,9 +2063,17 @@ def confirm_non_meteor_label(station_id, root_fn,label):
          hd_vid = mj['hd_trim'].split("/")[-1]
       else:
          hd_vid = ""
+      meteor_yn = -1
+      fireball_yn = -1
+      mc_class = ""
+      mc_class_conf = -1
 
    else:
       print("NO METEOR FN?", nmfile, nmcfile)
+      meteor_yn = -1
+      fireball_yn = -1
+      mc_class = ""
+      mc_class_conf = -1
 
    # if the record doesn't already exist we should insert it. 
    sql = "SELECT sd_vid from non_meteors_confirmed WHERE sd_vid like ?" 
