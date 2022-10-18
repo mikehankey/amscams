@@ -3387,7 +3387,7 @@ def batch_apply(cam_id, con,cur, json_conf, last=None, do_bad=False):
          last_cal_params = None
          rc = 0
          flux_table = {}
-         for cf in calfiles_data: #sorted(calfiles_data, reverse=True):
+         for cf in sorted(calfiles_data, reverse=True):
             extra_text = cf + " " + str(rc) + " of " + str(len(calfiles_data))
             try:
                last_cal_params, flux_table = apply_calib (cf, calfiles_data, json_conf, mcp, last_cal_params, extra_text, do_bad, flux_table)
