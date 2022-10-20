@@ -398,13 +398,13 @@ def refit_meteor(meteor_file, con, cur, json_conf, mcp = None, last_best_dict = 
 
    rez = [row[-2] for row in mj['cp']['cat_image_stars'] ]
    med_rez = np.median(rez) ** 2
-   if med_rez < 2:
-      med_rez = 2 
+   #if med_rez < 2:
+   #   med_rez = 2 
 
    new_cat_image_stars = []
    for star in mj['cp']['cat_image_stars']:
       print("NEW CAT IMG STAR:", star)
-      if star[-2] <= med_rez :
+      if star[-2] <= med_rez * 3:
          print("KEEP", star[0], star[-2], med_rez)
          new_cat_image_stars.append(star)
       else:
@@ -1379,7 +1379,6 @@ def batch_review(station_id, cam_id, con, cur, json_conf, limit=10, work_type="t
       cal_json_fn = cal_json_file.split("/")[-1]
       oimg = cv2.imread(cal_dir + cal_image_file)
       orig_img = oimg.copy()
-      orig_img = cv2.subtract(orig_img, mask)
 
       # load mask
       mask_file = "/mnt/ams2/meteor_archive/{}/CAL/MASKS/{}_mask.png".format(station_id, cam_id)
@@ -1387,8 +1386,9 @@ def batch_review(station_id, cam_id, con, cur, json_conf, limit=10, work_type="t
          mask = cv2.imread(mask_file)
          mask = cv2.resize(mask, (1920,1080))
       else:
-         mask = np.zeros((1080,1920),dtype=np.uint8)
+         mask = np.zeros((1080,1920,3),dtype=np.uint8)
       oimg = cv2.subtract(oimg, mask)
+      orig_img = cv2.subtract(orig_img, mask)
 
       try:
          cal_params = load_json_file(cal_json_file)
@@ -3727,7 +3727,7 @@ def apply_calib (cal_file, calfiles_data, json_conf, mcp, last_cal_params=None, 
       cal_params['total_res_px'] = rez 
       cal_params['total_res_deg'] = (rez * (cal_params['pixscale'] / 3600) )
 
-
+      print("SAVE", cal_file)
       save_json_file(cal_dir + cal_file, cal_params)
 
       import_cal_file(cal_fn, cal_dir, mcp)
@@ -3768,20 +3768,37 @@ def apply_calib (cal_file, calfiles_data, json_conf, mcp, last_cal_params=None, 
       # Need to modes here?
       stars,cat_stars = get_paired_stars(cal_fn, cal_params, con, cur)
 
+
       #print("PXSCALE:", cal_params['pixscale'])
 
-      #print("SAVED BEFORE UPDATE RECENTER", len(cal_params['cat_image_stars']))
-      #for star in cal_params['cat_image_stars']:
-      #   print(star)
+      print("SAVED BEFORE UPDATE RECENTER", len(cal_params['cat_image_stars']))
+      new_cat = []
+      rez = []
+      for star in cal_params['cat_image_stars']:
+         rez.append(star[-2])
+      new_rez = []
+      med_res = np.median(rez)
+      for star in cal_params['cat_image_stars']:
+         dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist,bp = star
+         if star[-2] <= med_res :
+            print("K", star[0], star[-2], med_res )
+            new_cat.append(star)
+            new_rez.append(star[-2])
+         else:
+            print("s", star[0], star[-2] )
+      med_res = np.median(new_rez)
+      cal_params['cat_image_stars'] = new_cat
       # BUG FOUND HERE!
-     
+      print("NEW CAT STARS:", len(cal_params['cat_image_stars']) )
       #cal_params= update_center_radec(cal_fn,cal_params,json_conf)
 
       #print("PXSCALE:", cal_params['pixscale'])
 
       show_calparams(cal_params)
-      cal_params, cat_stars = recenter_fov(cal_fn, cal_params, oimg.copy(), stars, json_conf, extra_text)
+      cal_params, cat_stars = recenter_fov(cal_fn, cal_params, oimg.copy(),  stars, json_conf, extra_text)
 
+
+      print("NEW CAT STARS AFTER RECETNER:", len(cal_params['cat_image_stars']) )
       #print("PXSCALE:", cal_params['pixscale'])
 
       #print(cal_params['total_res_px'])
@@ -3789,9 +3806,11 @@ def apply_calib (cal_file, calfiles_data, json_conf, mcp, last_cal_params=None, 
       #for star in cal_params['cat_image_stars']:
       #   print(star)
       #cv2.waitKey(0)      
-      #print("SAVED JSON BEFORE UPDATE CAT STARS", len(cal_params['cat_image_stars']), len(cat_stars) )
+
+      cal_params['total_res_px'] = med_res 
 
       update_calibration_file(cal_fn, cal_params, con,cur,json_conf,mcp)
+      print("NEW CAT STARS AFTER UPDATE1:", len(cal_params['cat_image_stars']) )
       save_json_file(cal_json_file, cal_params)
       #print(cal_dir + cal_fn)
       #print("SAVED JSON CAT STARS", len(cal_params['cat_image_stars']))
@@ -3799,8 +3818,13 @@ def apply_calib (cal_file, calfiles_data, json_conf, mcp, last_cal_params=None, 
  
 
       up_stars, cat_image_stars = update_paired_stars(cal_fn, cal_params, stars, con, cur, json_conf)
+      print("NEW CAT STARS AFTER UPDATE2:", len(cal_params['cat_image_stars']) )
       cal_params['cat_image_stars'] = cat_image_stars
-
+      print("\n\n")
+      print("RES1", cal_params['total_res_px'])
+      print("STARS1", len(cal_params['cat_image_stars']))
+      #print("RES2", cal_params['total_res_px'])
+      print("SAVED:", cal_json_file)
       save_json_file(cal_json_file, cal_params)
 
       #print("VIEW CAL 33:", cal_fn)
@@ -3808,10 +3832,10 @@ def apply_calib (cal_file, calfiles_data, json_conf, mcp, last_cal_params=None, 
 
       cal_img, cal_params = view_calfile(cam_id, cal_fn, con, cur, json_conf, calfiles_data, cal_params, mcp)
 
-      #print("--------------")
-      #print("AFTER VIEW CAL", cal_fn)
-      #print("--------------")
-      #show_calparams(cal_params)      
+      print("--------------")
+      print("AFTER VIEW CAL", cal_fn)
+      print("--------------")
+      show_calparams(cal_params)      
 
       #print(cal_dir + cal_fn)
 
@@ -3874,6 +3898,7 @@ def update_calfiles(cam_id, con,cur, json_conf):
 
 def recenter_fov(cal_fn, cal_params, cal_img, stars, json_conf, extra_text=""):
    (f_datetime, cam_id, f_date_str,fy,fmin,fd, fh, fm, fs) = convert_filename_to_date_cam(cal_fn)
+   print("CAT STARS", len(cal_params))
    # make sure we are using the latest MCP!
    autocal_dir = "/mnt/ams2/cal/"
    mcp_file = autocal_dir + "multi_poly-" + station_id + "-" + cam_id + ".info"
@@ -3900,8 +3925,7 @@ def recenter_fov(cal_fn, cal_params, cal_img, stars, json_conf, extra_text=""):
    elif 1 <= cal_params['total_res_px'] < 10:
       this_poly = [.0001,.0001,.0001,.0001]
    else:
-      this_poly = [.001,.001,.001,.001]
-  
+      this_poly = [.001,.001,.001,.001] 
 
    start_cp = dict(cal_params)
    start_res = cal_params['total_res_px']

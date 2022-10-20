@@ -5,7 +5,7 @@ from FlaskLib.Learning import learning_meteors_dataset, learning_meteors_tag, me
 #from FlaskLib.AI_API import ai_api
 from FlaskLib.motion_detects import motion_detects
 from FlaskLib.FlaskUtils import get_template
-from FlaskLib.api_funcs import update_meteor_points, show_cat_stars, delete_meteor, restore_meteor, delete_meteors, reduce_meteor, delete_frame, crop_video
+from FlaskLib.api_funcs import update_meteor_points, show_cat_stars, delete_meteor, restore_meteor, delete_meteors, reduce_meteor, delete_frame, crop_video, update_meteor_cal_params
 from FlaskLib.calib_funcs import calib_main, cal_file, show_masks, del_calfile, lens_model, edit_mask, edit_mask_points, calib_main_new
 from lib.PipeUtil import cfe, load_json_file, save_json_file
 from lib.PipePwdProtect import login_page, check_pwd_ajax
@@ -978,6 +978,20 @@ def cnt_motion(date):
 @app.route('/API/<cmd>', methods=['GET', 'POST'])
 @auth.login_required
 def main_api(cmd):
+
+   if cmd == 'swap_calib':
+      cal_file = request.args.get("cal_file")
+      meteor_file = request.args.get("meteor_file")
+      resp = update_meteor_cal_params(meteor_file, cal_file, json_conf)
+      if "GOOD" in resp['msg']:
+         station_id = json_conf['site']['ams_id'] 
+         date = meteor_file[0:10] 
+
+         rurl = "/meteor/{:s}/{:s}/{:s}/".format(station_id, date, meteor_file.replace(".json", ".mp4"))
+
+         return redirect(rurl, code=200)
+      return(resp)
+
    if cmd == 'crop_video':
       sd_video_file = request.args.get('video_file')
       x = request.args.get('x')

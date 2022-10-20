@@ -1,6 +1,6 @@
 from flask import Flask, request
 from FlaskLib.FlaskUtils import get_template
-from lib.PipeUtil import cfe, load_json_file, save_json_file
+from lib.PipeUtil import cfe, load_json_file, save_json_file, convert_filename_to_date_cam
 from lib.PipeAutoCal import fn_dir
 from lib.PipeImage import quick_video_stack
 import math
@@ -9,6 +9,62 @@ import cv2
 import os
 import numpy as np
 import glob
+
+def get_close_calib_files(mjf):
+   (meteor_datetime, cam, f_date_str,fy,fmon,fd, fh, fm, fs) = convert_filename_to_date_cam(mjf)
+   close_files = []
+   calindex_file = "/mnt/ams2/cal/freecal_index.json"
+   print("CLOSE FILES")
+   if os.path.exists(calindex_file) is True:
+      calindex = load_json_file(calindex_file)
+   else:
+      print("NO FILE:", calindex_file)
+
+   after_files = []
+   before_files = []
+   for cf in sorted(calindex):
+      cdata = calindex[cf]
+      if cdata['cam_id'] == cam:
+         (cal_datetime, cam, f_date_str,fy,fmon,fd, fh, fm, fs) = convert_filename_to_date_cam(cf)
+         cfs = cf.split("/")[-1].split("-")[0]
+         tdiff = meteor_datetime - cal_datetime
+         tdays = float(tdiff.total_seconds() / 60 / 60 / 24)
+         pack_data = [cfs, f_date_str, tdays, cdata['center_az'], cdata['center_el'], cdata['position_angle'], cdata['pixscale'], cdata['total_res_px']]
+         if tdays > 0:
+            before_files.append(pack_data)
+         else:
+            after_files.append(pack_data)
+
+   bfiles =  sorted(before_files, key=lambda x: x[2], reverse=False)[0:10]
+   afiles =  sorted(after_files, key=lambda x: x[2], reverse=False)[0:10]
+
+   print("BEFORE:", bfiles)
+   print("AFTER:",  afiles)
+   return(bfiles, afiles)
+
+
+def calib_files_table (mjf, mj, json_conf):
+   table = "<table border=0 cellpadding=2>"
+   table += "<tr><td>Date</td><td>Az</td><td>El</td><td>Pos</td><td>PXS</td><td>Res PX</td></tr>"
+   #if "close_calib_files" in mj:
+   #   before_files, after_files = mj['close_calib_files']
+   #else:
+   meteor_file = mjf.split("/")[-1]
+   before_files, after_files = get_close_calib_files(mjf)
+   for pack_data in after_files: 
+      cfs, f_date_str, tdays, center_az, center_el, position_angle, pixscale, total_res_px = pack_data
+      link = "/API/swap_calib?meteor_file={:s}&cal_file={:s}".format(meteor_file, cfs)
+      table += "<tr><td><a href={:s}>{:s}</a> ({:.2f})</td><td>{:.2f}</td><td>{:.1f}</td><td>{:.1f}</td><td>{:.1f}</td><td>{:.1f}</td></tr>".format(link, f_date_str.split(" ")[0], tdays, center_az, center_el, position_angle, pixscale, total_res_px)
+   for pack_data in before_files: 
+      cfs, f_date_str, tdays, center_az, center_el, position_angle, pixscale, total_res_px = pack_data
+      link = "/API/swap_calib?meteor_file={:s}&cal_file={:s}".format(meteor_file, cfs)
+      table += "<tr><td><a href={:s}>{:s}<a/> ({:.2f})</td><td>{:.2f}</td><td>{:.1f}</td><td>{:.1f}</td><td>{:.1f}</td><td>{:.1f}</td></tr>".format(link, f_date_str.split(" ")[0], tdays, center_az, center_el, position_angle, pixscale, total_res_px)
+
+
+   table += "</tr>"      
+   table += "</table>"      
+   print(table)
+   return(table)
 
 def pick_points_day(day, json_conf):
    print("PPD")
@@ -491,9 +547,13 @@ def detail_page(amsid, date, meteor_file):
    else:
       return("meteor json not found.")
 
+   if "close_cal_files" not in mj:
+      mj['close_cal_files'] = get_close_calib_files(mjf)
+      print("CLOSE FILES:", mj['close_cal_files'])
+   calfiles_table = calib_files_table (mjf, mj, json_conf)
+
    sd_trim = meteor_file
    if "hd_trim" in mj:
-      print(mj['hd_trim'])
       if mj['hd_trim'] is not None and mj['hd_trim'] != 0:
          hd_trim,hdir  = fn_dir(mj['hd_trim'])
          hd_stack = hd_trim.replace(".mp4", "-stacked.jpg")
@@ -521,7 +581,7 @@ def detail_page(amsid, date, meteor_file):
       #ms_html = make_ms_html_old(amsid, meteor_file, mj)
       ms_html = make_ms_html(amsid, meteor_file, mj)
    else:
-      print("NOOOOOO")
+      print("NO EVENT DATA")
       print(mj.keys())
       otherobs = ""
       ms_html = ""
@@ -535,8 +595,8 @@ def detail_page(amsid, date, meteor_file):
          simg  = cv2.resize(simg,(1920,1080))
          simg  = cv2.resize(simg,(960,540))
          cv2.imwrite(METEOR_DIR + half_stack,  simg)
-         print("SAVED HALF", METEOR_DIR + half_stack, simg.shape)
-         print("HALF SOURCE " + METEOR_DIR + sd_stack)
+         print("SAVED HALFSTACK", METEOR_DIR + half_stack, simg.shape)
+         print("HALF SOURCE FILE" + METEOR_DIR + sd_stack)
       else:
          print("NO SD ", sd_stack, sd_trim)
          #simg, sfile = quick_video_stack(sd_trim, count = 0, save=1)
@@ -630,7 +690,6 @@ def detail_page(amsid, date, meteor_file):
       if "cp" in mj:
          cp = mj['cp']
          if cp is not None:
-            print(cp)
             template = template.replace("{RA}", str(cp['ra_center'])[0:5])
             template = template.replace("{DEC}", str(cp['dec_center'])[0:5])
             template = template.replace("{AZ}", str(cp['center_az'])[0:5])
@@ -744,6 +803,9 @@ def detail_page(amsid, date, meteor_file):
    template = template.replace("{LIGHTCURVE_URL}", lc_html)
    ts = time.time()
    template = template.replace("{RAND}", str(ts))
+
+   template = template.replace("{CALIB_FILES_TABLE}", calfiles_table)
+   
    return(template)   
 
 

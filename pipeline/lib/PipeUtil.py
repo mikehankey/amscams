@@ -351,6 +351,7 @@ def cfe(file,dir = 0):
          return(0)
 
 def load_json_file(json_file):  
+   print("LOAD:", json_file)
    #try:
    if True:
       #print("Trying:", json_file)

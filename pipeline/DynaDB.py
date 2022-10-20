@@ -928,12 +928,24 @@ def search_events(dynamodb, date, stations, nocache=0):
          KeyConditionExpression='event_day= :date',
          ExpressionAttributeValues={
            ':date': date,
-         } 
+         } , 
+         Limit = 100
       )
       for item in response['Items']:
          if "obs" in item:
             del (item['obs'])
          all_events.append(item)
+      while 'LastEvaluatedKey' in response:
+         response = table.query(
+           KeyConditionExpression='event_day= :date',
+           ExpressionAttributeValues={
+            ':date': date,
+           } ,
+           Limit=100 ,
+           ExclusiveStartKey=response['LastEvaluatedKey']
+         )
+         for it in response['Items']:
+            all_events.append(it)
 
       #save_json_file(dc_file, response['Items'])
    print("ALL EVENTS:", len(all_events))

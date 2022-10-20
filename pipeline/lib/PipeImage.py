@@ -69,9 +69,11 @@ def quick_video_stack(video_file, count = 0, save=1):
       cmd = "/usr/bin/ffmpeg -i " + video_file + " " + temp_dir + "frames%03d.jpg > /dev/null 2>&1"
    else:
       cmd = "/usr/bin/ffmpeg -i " + video_file + " -vframes " + str(count) +  " " + temp_dir + "frames%03d.jpg > /dev/null 2>&1"
+   print(cmd)
    os.system(cmd)
    files = glob.glob(temp_dir + "*.jpg")
    for file in files:
+      print(file)
       frame = cv2.imread(file)
       frames.append(frame)
    stack_frame = stack_frames(frames, 1, None, "day")

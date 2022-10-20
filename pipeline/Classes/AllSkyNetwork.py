@@ -234,6 +234,13 @@ class AllSkyNetwork():
    def load_stations_file(self):
       url = "https://archive.allsky.tv/EVENTS/ALL_STATIONS.json"
       local_file = self.local_event_dir + "/ALL_STATIONS.json"
+      local_loc_file = self.local_event_dir + "station_locations.json"
+      print("LC:", local_loc_file)
+      if os.path.exists(local_loc_file) is True:
+         loc_info = load_json_file(local_loc_file)
+      else:
+         loc_info = None
+
       if os.path.exists(local_file) :
          sz, td = get_file_info(local_file)
          td = td / 60 /24 
@@ -271,6 +278,18 @@ class AllSkyNetwork():
          else:
             country = "" 
 
+         if loc_info is not None:
+            if sid in loc_info:
+               if 'country_code' in loc_info[sid]:
+                  lcountry = loc_info[sid]['country_code']
+               else:
+                  lcountry = None
+            if lcountry is not None:
+               if country != lcountry.upper():
+                  country = lcountry.upper()
+         else:
+            print("LOC NONE")
+         data['country'] = country
          if "operator_name" in data:
             operator_name = data['operator_name']
          else:
@@ -288,17 +307,17 @@ class AllSkyNetwork():
          else:
             photo_credit = None
 
+       
          if operator_name == "" or operator_name == " " :
             self.photo_credits[sid] = sid + " unknown"
-         elif operator_name != "" and city != "" and state != "" and "United States" in country or "US" in country:
+         elif operator_name != "" and city != "" and state != "" and ("United States" in country or "US" in country):
             self.photo_credits[sid] = operator_name + " " + city + "," + state + " " +  country
          elif operator_name != "":
             self.photo_credits[sid] = operator_name + " " + city + "," + country
          else:
             self.photo_credits[sid] = sid
-         #print(sc, self.photo_credits[sid])
+         print(sc, self.photo_credits[sid])
          sc += 1
-
    def day_prep(self, date):
       print("ok")
 
@@ -903,7 +922,7 @@ class AllSkyNetwork():
             t_datestamp, t_timestamp = self.date_str_to_datetime(this_time)
             time_diff = s_timestamp - t_timestamp
             #if the event start is within 3 seconds
-            if -3 <= time_diff <= 3:
+            if -6 <= time_diff <= 6:
                avg_lat = np.mean(min_events[eid]['lats'])
                avg_lon = np.mean(min_events[eid]['lons'])
                match_dist = dist_between_two_points(avg_lat, avg_lon, lat, lon)
@@ -1855,6 +1874,11 @@ class AllSkyNetwork():
       cc = 0
       rc = 0
       for obs_id in obs_imgs:
+         if obs_id not in obs_imgs:
+            continue
+         if obs_imgs[obs_id] is None:
+            obs_imgs[obs_id] = np.zeros((1080,1920,3),dtype=np.uint8)
+
          img = obs_imgs[obs_id].copy()
          marked_img = cv2.resize(obs_imgs[obs_id], (1920,1080))
          rx1,ry1,rx2,ry2 = self.get_roi(obs_data[obs_id]['xs'], obs_data[obs_id]['ys'])
@@ -3044,14 +3068,20 @@ class AllSkyNetwork():
             brng2 = obs_data[obs_id_2]['azs'][0]
 
             #start point
-            ipoint = geo_intersec_point(x1, y1, brng1, x2, y2, brng2)
+            try:
+               ipoint = geo_intersec_point(x1, y1, brng1, x2, y2, brng2)
+            except:
+               ipoint = [0,0]
 
 
 
             #end point
             brng1 = obs_data[obs_id_1]['azs'][-1]
             brng2 = obs_data[obs_id_2]['azs'][-1]
-            end_ipoint = geo_intersec_point(x1, y1, brng1, x2, y2, brng2)
+            try:
+               end_ipoint = geo_intersec_point(x1, y1, brng1, x2, y2, brng2)
+            except:
+               end_ipoint = [0,0]
 
 
             if ipoint[0] == True or end_ipoint[0] == True:
@@ -3061,11 +3091,17 @@ class AllSkyNetwork():
                # intersect passed
                end_failed = False
                start_failed = False
-               start_station_dist = dist_between_two_points(y1, x1, ipoint[1]['y3'], ipoint[1]['x3']) 
+               try:
+                  start_station_dist = dist_between_two_points(y1, x1, ipoint[1]['y3'], ipoint[1]['x3']) 
+               except:
+                  start_station_dist = 9999
                print("COMBO:", obs_id_1, obs_id_2)
                print("SSD:", start_station_dist)
 
-               end_station_dist = dist_between_two_points(y1, x1, end_ipoint[1]['y3'], ipoint[1]['x3']) 
+               try:
+                  end_station_dist = dist_between_two_points(y1, x1, end_ipoint[1]['y3'], ipoint[1]['x3']) 
+               except:
+                  end_station_dist = 9999
                print("ESD:", end_station_dist)
 
                # only add a point if its within < 800 km away
@@ -3480,7 +3516,6 @@ class AllSkyNetwork():
       self.set_dates(date)
       station_events = {}
       all_events = load_json_file(self.all_events_file)
-      print("YO", len(all_events), self.all_events_file)
       for evd in all_events:
          #print(evd['event_id'], evd['stations'], evd['files']) 
          event_id = evd['event_id']
@@ -3551,7 +3586,7 @@ class AllSkyNetwork():
          lats = json.loads(lons)
          temp_obs = {}
          
-         ignore = []
+         ignore = ['2022_09_24_21_28_00_000_011134-trim-0012']
 
          # for each obs associated with this event
          # load the MOST RECENT OBS DATA

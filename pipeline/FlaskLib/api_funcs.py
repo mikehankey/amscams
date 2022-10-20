@@ -12,6 +12,52 @@ import numpy as np
 #def vid_to_frames(vid, out_dir, suffix, ow, oh ):
    #/usr/bin/ffmpeg -i /mnt/ams2/meteors/2020_10_18/2020_10_18_10_28_12_000_010006-trim-0501.mp4 -vf 'scale=960:640' /mnt/ams2/CACHE/2020/10/2020_10_18_10_28_12_000_010006-trim-0501/2020_10_18_10_28_12_000_010006-trim-0501-half-%04d.jpg > /dev/null 2>&1
 
+def update_meteor_cal_params(meteor_file, cal_file, json_conf):
+   # This function / api call will swap the calparams in a meteor file 
+   # with the calparams in the provided file. 
+   # use it for the "Swap Calibration" buttons on the meteor detail page
+   # api call is : /API/update_meteor_cal_params?meteor_file=XXX&calib_file=YYY
+   mdir = "/mnt/ams2/meteors/" + meteor_file[0:10] + "/" 
+   cal_dir = "/mnt/ams2/cal/freecal/" + cal_file + "/"
+
+   mjf = mdir + meteor_file
+   mjrf = mdir + meteor_file.replace(".json", "-reduced.json")
+   cf = cal_dir + cal_file + "-stacked-calparams.json"
+
+
+   if os.path.exists(cf) is True:
+      cal_params= load_json_file(cf)
+   else:
+      resp = {}
+      resp['msg'] = "FAIL CF!" + cf
+      return(resp)
+
+   if os.path.exists(mjf) is True:
+      mj = load_json_file(mjf)
+   else:
+      resp = {}
+      resp['msg'] = "FAIL MJF!" + mjf
+      return(resp)
+   if os.path.exists(mjrf) is True:
+      mjr = load_json_file(mjrf)
+   else:
+      resp = {}
+      resp['msg'] = "FAIL MJRF!" + mjrf
+      return(resp)
+
+   # Don't forget to update the ra_dec_center
+   cp = update_center_radec(meteor_file,cal_params,json_conf)
+   mj['cp'] = cal_params
+   mjr['cal_params'] = cal_params
+ 
+   save_json_file(mjf, mj)
+   save_json_file(mjrf, mjr)
+   print("Meteor File updated with new calib!")
+   os.system("./recal.py refit_meteor " + meteor_file)
+   resp = {}
+   resp['msg'] = "ALL GOOD!"
+   return(resp)
+   # we need to update the az/el meteor frame data with new calparams
 
 def crop_video(in_file, x,y,w,h):
    json_conf = load_json_file("../conf/as6.json")

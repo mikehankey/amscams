@@ -973,7 +973,7 @@ def solve_event(event_id, force=1, time_sync=1):
     local_events_dir = "/mnt/f/EVENTS/" 
     if cfe(local_event_dir + event_id + "-event.json") == 1:
        print("Event already done")
-       return()
+       #return()
 
     inspect_file = local_event_dir +  event_id + "-INSPECT.json"
     if False:
@@ -1039,12 +1039,12 @@ def solve_event(event_id, force=1, time_sync=1):
     json_conf = load_json_file("../conf/as6.json")
     ams_id = json_conf['site']['ams_id']
     solve_dir = local_event_dir 
-    nsinfo = load_json_file("../conf/network_station_info.json")
+    #nsinfo = load_json_file("../conf/network_station_info.json")
 
     dynamodb = boto3.resource('dynamodb')
     #event = get_event(dynamodb, event_id, 0)
     event_data =  get_event_data(date, event_id)
-
+    print(event_data)
     event = event_data['event_data']
     eobs = event_data['obs_data']
     if event == None:
@@ -1060,12 +1060,13 @@ def solve_event(event_id, force=1, time_sync=1):
        #return()
 
     # Check if there are 3rd party network obs to import
-    extra_obs_dir = "/mnt/f/OTHEROBS/" + event_id + "/"
+    extra_obs_dir = local_event_dir + event_id + "/extra_obs/"
     if cfe(extra_obs_dir, 1) == 1:
        extra_obs = glob.glob(extra_obs_dir + "*")
     else:
        extra_obs = []
-
+    print("EXTRA", extra_obs)
+    exit()
     if event is not None:
        if "solution" in event and force != 1:
           if "solve_status" in event:
@@ -2810,7 +2811,9 @@ def WMPL_solve(event_id, obs,time_sync=1, force=0, dynamodb=None):
        etv = True
     else:
        etv = False
-    traj_solve = traj.Trajectory(jd_ref, output_dir=solve_dir, meastype=meastype, save_results=True, monte_carlo=False, show_plots=False, max_toffset=3,v_init_part=.5, estimate_timing_vel=etv, show_jacchia=True  )
+    etv = True
+    monte = False
+    traj_solve = traj.Trajectory(jd_ref, output_dir=solve_dir, meastype=meastype, save_results=True, monte_carlo=monte, show_plots=False, max_toffset=5,v_init_part=.5, estimate_timing_vel=etv, show_jacchia=True  )
    
     for station_id in obs:
         if len(obs[station_id].keys()) > 1:
