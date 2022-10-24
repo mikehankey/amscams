@@ -7805,7 +7805,14 @@ if __name__ == "__main__":
 
    if cmd == "perfect_cal" :
       cam_id = sys.argv[2]
-      perfect_cal(cam_id, con, cur, json_conf) 
+
+      if cam_id != "ALL" and cam_id != "all":
+         perfect_cal(cam_id, con, cur, json_conf)
+      else:
+         for cam_num in json_conf['cameras']:
+            cam_id = json_conf['cameras'][cam_num]['cams_id']
+            perfect_cal(cam_id, con, cur, json_conf)
+
 
    if cmd == "quality_check" :
       cam_id = sys.argv[2]
