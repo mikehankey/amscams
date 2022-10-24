@@ -40,7 +40,7 @@ from prettytable import PrettyTable as pt
 
 tries = 0
 
-running = check_running("recal.py refit_meteor_day")
+running = check_running("recal.py ")
 if running > 2:
    print("ALREADY RUNNING:", running)
    cmd = "echo " + str(running) + " >x"
