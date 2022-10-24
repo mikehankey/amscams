@@ -367,16 +367,25 @@ if cmd == "sense_all":
          print ("Success! Connected to " + CameraIP)
       except:
          print ("Failure. Could not connect to camera!")
+         exit()
 
 
       # make sure remote cloud is disabled 
       cloudEnabled = False
       sys_info = cam.set_info("NetWork.Nat", {"NatEnable" : cloudEnabled } )
 
+
+      #sense_up(cam, CameraIP)
+
       sun, az, alt  = day_or_night(datetime.now(), json_conf)
-      if int(alt) >= -10:
+      if int(alt) >= -10 and cam is not None:
          print("SUN:", sun, az, alt, "abort")
-         cam.close()
+         print(cam)
+         if cam is not None:
+            try:
+               cam.close()
+            except:
+               print("Cam already closed")
          continue
 
       print("Sense up ", CameraIP)
