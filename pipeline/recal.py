@@ -7803,7 +7803,7 @@ if __name__ == "__main__":
          report = refit_summary(refit_log)
          save_json_file(refit_sum_file, report)
 
-   if cmd == "perfect_cal" :
+   if cmd == "perfect_cal" or cmd == "perfect":
       cam_id = sys.argv[2]
 
       if cam_id != "ALL" and cam_id != "all":
