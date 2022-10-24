@@ -7663,7 +7663,7 @@ if __name__ == "__main__":
 
    if cmd == "batch_apply_bad" :
       cam_id = sys.argv[2]
-      if cam_id != "ALL" and cam_id != "all"
+      if cam_id != "ALL" and cam_id != "all":
          batch_apply_bad(cam_id, con, cur, json_conf)
       else:
          for cam_num in json_conf['cameras']:
