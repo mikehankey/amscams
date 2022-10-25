@@ -31,6 +31,7 @@ def import_meteor(data):
    return(out)
 
 def man_detect(min_file, data):
+   fps = 25
    json_conf = load_json_file("../conf/as6.json")
    amsid = json_conf['site']['ams_id']
    step = data['step']
@@ -49,7 +50,7 @@ def man_detect(min_file, data):
    if len(files) == 0 and step is None:
       print("MAKE FILES!")
       os.system("rm /mnt/ams2/TEMP/*.jpg")
-      cmd = "./FFF.py slow_stack " +min_file + " /mnt/ams2/TEMP/ 25 "
+      cmd = "./FFF.py slow_stack " +min_file + " /mnt/ams2/TEMP/ " + str(fps)
       print(cmd)
       os.system(cmd)
       files = glob.glob("/mnt/ams2/TEMP/*.jpg")
@@ -68,12 +69,12 @@ def man_detect(min_file, data):
     
       ff = int(ff)
       lf = int(lf)
-      ff = ff - 25
+      ff = ff - fps
       if ff <= 0:
          ff = 0
-      lf += 25
-      ts = ff / 25
-      te = lf / 25
+      lf += fps 
+      ts = ff / fps 
+      te = lf / fps 
    
       trim_num = "{:04d}".format(ff)
       trim_file = min_file.replace(".mp4", "-trim-" + trim_num + ".mp4")
