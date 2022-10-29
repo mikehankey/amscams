@@ -24,6 +24,8 @@ def get_close_calib_files(mjf):
    before_files = []
    for cf in sorted(calindex):
       cdata = calindex[cf]
+      if "cam_id" not in cdata:
+         continue
       if cdata['cam_id'] == cam:
          (cal_datetime, cam, f_date_str,fy,fmon,fd, fh, fm, fs) = convert_filename_to_date_cam(cf)
          cfs = cf.split("/")[-1].split("-")[0]
