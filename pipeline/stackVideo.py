@@ -65,19 +65,20 @@ def stack_video(video_file):
          for row in red_data['meteor_frame_data']:
             xs.append(row[2])
             ys.append(row[3])
-         min_x = int(min(xs) / hdm_x)
-         max_x = int(max(xs) / hdm_x)
-         min_y = int(min(ys) / hdm_y)
-         max_y = int(max(ys) / hdm_y)
+         if len(xs) > 0:
+            min_x = int(min(xs) / hdm_x)
+            max_x = int(max(xs) / hdm_x)
+            min_y = int(min(ys) / hdm_y)
+            max_y = int(max(ys) / hdm_y)
 
 
     
-      obj_img = thumb_img
-      cv2.rectangle(obj_img, (min_x,min_y), (max_x, max_y) , (255, 255, 255), 1)
+            obj_img = thumb_img
+            cv2.rectangle(obj_img, (min_x,min_y), (max_x, max_y) , (255, 255, 255), 1)
 
 
 
-      cv2.imwrite(obj_file, obj_img)
+            cv2.imwrite(obj_file, obj_img)
    print("Saved", image_file)
    print("Saved", thumb_file)
    print("Saved", obj_file)
