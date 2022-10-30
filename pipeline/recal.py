@@ -7578,7 +7578,7 @@ if __name__ == "__main__":
 
    py_running = check_running("python")
    print("Python processes running now:", py_running)
-   if py_running > 6:
+   if py_running > 10:
       print("Too many processes to run, try again later")
       exit()
    else:
