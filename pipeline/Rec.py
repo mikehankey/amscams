@@ -5,7 +5,13 @@ import os
 from lib.PipeUtil import load_json_file, save_json_file, cfe
 json_conf = load_json_file("../conf/as6.json")
 station_id = json_conf['site']['ams_id']
-api_key = json_conf['site']['api_key']
+if "api_key" in json_conf:
+   api_key = json_conf['api_key']
+elif "api_key" in json_conf['site']:
+   api_key = json_conf['site']['api_key']
+else:
+   print("NO API KEY IN JSON CONF!")
+   exit()
 
 if __name__ == "__main__":
    os.system("python3 Register.py")
