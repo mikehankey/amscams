@@ -2968,9 +2968,9 @@ def delete_bad_stars (cal_fn, cal_params, con,cur,json_conf, oimg):
          continue
 
       if center_dist < 500:
-         dist_limit = mres[0] * 2
+         dist_limit = mres[0] * 1 
       if 500 <= center_dist < 600:
-         dist_limit = mres[500] * 2
+         dist_limit = mres[500] * 1 
       if 600 <= center_dist < 800:
          dist_limit = mres[600] * 2
       if 800 <= center_dist < 1200:
