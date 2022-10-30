@@ -833,7 +833,10 @@ def reject_planes(date, json_conf):
    jsfiles = glob.glob(mdir + "*.json")
    for mf in sorted(jsfiles,reverse=True):
       if "reduced" not in mf and "stars" not in mf and "man" not in mf and "star" not in mf and "import" not in mf and "archive" not in mf:
-         mj = load_json_file(mf) 
+         try:
+            mj = load_json_file(mf) 
+         except:
+            continue
          if "confirmed" in mj:
             if len(mj['confirmed_meteors']) > 0:
                before_cm = len(mj['confirmed_meteors'])
