@@ -1562,8 +1562,25 @@ def do_dyna_day(dynamodb, day):
 
    print("meteor files / reduced files on", day, len(meteor_files), len(red_files))
 
-   # do cal status
-   os.system("./recal.py status all > /home/ams/recal.txt &")
+   # do recal jobs 
+   #os.system("./recal.py status all > /home/ams/recal.txt &")
+
+   recal_log_file = "../conf/recal_log.json"
+   if os.path.exists(recal_log_file) is False:
+      recal = {}
+      recal['history'] = {}
+      total_recal = True
+   else:
+      recal = load_json_file(recal_log_file)
+      total_recal = False
+   now = datetime.now()
+   run_time = now.strftime("%Y_%m_%d_%H_%M_%S")   
+   recal['history']['run_time'] = {}
+   if total_recal is True:
+      print("TOTAL RECAL")
+      input("OK")
+      os.system("./recal.py perfect_cal all ")
+
 
    if cfe("../conf/hsha.txt") == 0:
       os.system("./Process.py hsha")
@@ -1707,7 +1724,7 @@ def do_dyna_day(dynamodb, day):
       print(cmd)
       os.system(cmd)
 
-      cmd = "/usr/bin/python3.6 ./AIDay.py " + all + " 25 "
+      cmd = "/usr/bin/python3.6 ./AIDay.py all " + " 25 "
       print(cmd)
       os.system(cmd)
       
