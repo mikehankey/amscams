@@ -40,12 +40,18 @@ from prettytable import PrettyTable as pt
 
 tries = 0
 
-running = check_running("recal.py ")
-if running > 2:
-   print("ALREADY RUNNING:", running)
-   cmd = "echo " + str(running) + " >x"
-   os.system(cmd)
-   exit()
+def reset_bad_cals(cam_id, con, cur,json_conf):
+   # this will scan all of the cals and anything that has 8px res will be sent back to the 
+   # autocal dir for re-plate solving. 
+   # then move the folder/contents to the badcal dir and make sure it no longer exists
+   # inside the freecal dir. Keep a log of resets. If a file has already been reset more than 2x just delete it. 
+   freecal_index = load_json_file("/mnt/ams2/cal/freecal_index.json") 
+   for cal_file in freecal_index:
+      cal_data = freecal_index[cal_file]
+      print(cal_data)
+      exit()
+
+
 
 def perfect_cal(cam_id, con, cur, json_conf):
    # this function will perfect the calibration 
@@ -409,7 +415,7 @@ def refit_meteor(meteor_file, con, cur, json_conf, mcp = None, last_best_dict = 
          rez = 1
 
       for row in cp['cat_image_stars']:
-         if row[-2] < rez * 2:
+         if row[-2] < rez * 1.5:
             temp.append(row)
          else:
             print("skip bad res:", row[-2])
@@ -7569,6 +7575,23 @@ def prune(cam_id, con, cur, json_conf):
 
 
 if __name__ == "__main__":
+
+   py_running = check_running("python")
+   print("Python processes running now:", py_running)
+   if py_running > 6:
+      print("Too many processes to run, try again later")
+      exit()
+   else:
+      print("Ok to run!")
+
+   running = check_running("recal.py ")
+   if running > 2:
+      print("ALREADY RUNNING:", running)
+      cmd = "echo " + str(running) + " >x"
+      os.system(cmd)
+      exit()
+
+
    json_conf = load_json_file("../conf/as6.json")
    station_id = json_conf['site']['ams_id']
    db_file = station_id + "_CALIB.db" 
@@ -7813,6 +7836,8 @@ if __name__ == "__main__":
             cam_id = json_conf['cameras'][cam_num]['cams_id']
             perfect_cal(cam_id, con, cur, json_conf)
 
+   if cmd == "reset_bad_cals" :
+      print("YO")   
 
    if cmd == "quality_check" :
       cam_id = sys.argv[2]
