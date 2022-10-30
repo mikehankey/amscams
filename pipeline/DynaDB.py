@@ -1578,7 +1578,6 @@ def do_dyna_day(dynamodb, day):
    recal['history']['run_time'] = {}
    if total_recal is True:
       print("TOTAL RECAL")
-      input("OK")
       os.system("./recal.py perfect_cal all ")
 
 
