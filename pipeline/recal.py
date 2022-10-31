@@ -3407,7 +3407,15 @@ def batch_apply_bad(cam_id, con, cur, json_conf):
          cdir = cal_fn.split("-")[0]
          cal_dir = "/mnt/ams2/cal/freecal/" + cdir + "/"
          if os.path.exists(cal_dir):
-            last_cal_params = apply_calib (cal_fn, calfiles_data, json_conf, mcp )
+            last_cal_params,flux_table = apply_calib (cal_fn, calfiles_data, json_conf, mcp )
+            print(last_cal_params)
+            if last_cal_params['total_res_px'] > 5:
+               print(cal_fn)
+               cal_params = fix_cal(cal_fn, con, cur, json_conf)
+               print("AFTER FIXED RES:", cal_params['total_res_px'])
+               if cal_params['total_res_px'] < last_cal_params['total_res_px']:
+                  save_json_file(cal_dir + cal_fn, cal_params)
+
 
 
 
@@ -7477,7 +7485,7 @@ def fix_cal(cal_fn, con, cur,json_conf):
       if SHOW == 1:
          cv2.imshow('pepe', star_img)
          cv2.waitKey(30)
-
+   return(cp)
    
 
 
