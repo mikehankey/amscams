@@ -58,6 +58,8 @@ def perfect_cal(cam_id, con, cur, json_conf):
    # by running the wizard, apply functions, prune and purge functions
    # over and over until the optimal calib is reached
    print("Perfect cal")
+   log = {}
+   log['start_time'] = time.time()
 
    # prune if needed
    cal_status_report(cam_id, con, cur, json_conf)
@@ -72,7 +74,7 @@ def perfect_cal(cam_id, con, cur, json_conf):
    wizard(station_id, cam_id, con, cur, json_conf, 25)
 
    # run the batch_apply
-   batch_apply(cam_id, con, cur, json_conf, None, True)
+   batch_apply_bad(cam_id, con, cur, json_conf, None, True)
 
    # run the wizard again
    wizard(station_id, cam_id, con, cur, json_conf, 25)
@@ -1161,8 +1163,8 @@ def cal_status_report(cam_id, con, cur, json_conf):
    print(tb)
    print(tb2)
 
-   os.system("./Process.py move_exta_cals")
-   os.system("cd /home/ams/amscams/pythonv2/; ./autoCal.py cal_index")
+   #os.system("./Process.py move_exta_cals")
+   #os.system("cd /home/ams/amscams/pythonv2/; ./autoCal.py cal_index")
 
 def import_cal_file(cal_fn, cal_dir, mcp):
 
@@ -3716,9 +3718,9 @@ def apply_calib (cal_file, calfiles_data, json_conf, mcp, last_cal_params=None, 
 
       # view the original calibration 
       cal_img, cal_params = view_calfile(cam_id, cal_file, con, cur, json_conf,calfiles_data,cal_params,mcp)
-      if SHOW == 1:
-         cv2.imshow('pepe', cal_img)
-         cv2.waitKey(30)
+      #if SHOW == 1:
+      #   cv2.imshow('pepe', cal_img)
+      #   cv2.waitKey(30)
 
       star_points, show_img = get_star_points(cal_file, oimg, cal_params, station_id, cam_id, json_conf)
       cal_params['user_stars'] = star_points
@@ -7267,8 +7269,25 @@ def wizard(station_id, cam_id, con, cur, json_conf, file_limit=25):
    # review / apply the current lens model 
    # and calibration on the best 10 files
 
+   best_cal_fns = []
+   res_test = []
    if True:
       cal_fns, calfiles_data = batch_review(station_id, cam_id, con, cur, json_conf, file_limit)
+      for cal_fn in cal_fns:
+         print(calfiles_data[cal_fn][-6])
+         res_test.append(calfiles_data[cal_fn][-6])
+      mres = np.median(res_test)
+      for cal_fn in cal_fns:
+         res = calfiles_data[cal_fn][-6]
+         if res < mres * 1.5:
+            print("USE:", cal_fn, res)
+            best_cal_fns.append(cal_fn) 
+         else:
+            print("SKIP:", cal_fn, res)
+
+      cal_fns = best_cal_fns
+
+
    else:
       avg_stars, avg_res = get_avg_res(cam_id, con, cur)
       cal_fns = []
@@ -7578,7 +7597,7 @@ if __name__ == "__main__":
 
    py_running = check_running("python")
    print("Python processes running now:", py_running)
-   if py_running > 10:
+   if py_running > 15:
       print("Too many processes to run, try again later")
       exit()
    else:
@@ -7751,6 +7770,7 @@ if __name__ == "__main__":
       else:
          print("CAM:", cam_id)
          cal_status_report(cam_id, con, cur, json_conf)
+      os.system("cd /home/ams/amscams/pythonv2/; ./autoCal.py cal_index")
 
 
 
