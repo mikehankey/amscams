@@ -31,7 +31,7 @@ import scipy.optimize
 from PIL import ImageFont, ImageDraw, Image, ImageChops
 import lib.brightstardata as bsd
 from lib.PipeUtil import load_json_file, save_json_file,angularSeparation, calc_dist, convert_filename_to_date_cam , check_running 
-from lib.PipeAutoCal import distort_xy, insert_calib, minimize_poly_multi_star, view_calib, cat_star_report , update_center_radec, XYtoRADec, draw_star_image, make_lens_model, make_az_grid, make_cal_summary, quality_stars, make_cal_plots, find_stars_with_grid, optimize_matchs, eval_cal_res
+from lib.PipeAutoCal import distort_xy, insert_calib, minimize_poly_multi_star, view_calib, cat_star_report , update_center_radec, XYtoRADec, draw_star_image, make_lens_model, make_az_grid, make_cal_summary, quality_stars, make_cal_plots, find_stars_with_grid, optimize_matchs, eval_cal_res, radec_to_azel
 import sqlite3 
 from lib.DEFAULTS import *
 from lib.PipeVideo import load_frames_simple
@@ -947,7 +947,7 @@ def reduce_fov_pos(this_poly,az,el,pos,pixscale, x_poly, y_poly, x_poly_fwd, y_p
          star_img = draw_star_image(image, new_cat_image_stars,temp_cal_params, json_conf, extra_text) 
          cv2.imshow('pepe', star_img)
          cv2.waitKey(30)
-   print("\r", "STARS / RES:", len(new_cat_image_stars), mean_res, extra_text, end = "") #, extra_text, x_poly[0], y_poly[0], end="")
+   print("\r", "REDUCE STARS / RES:", len(new_cat_image_stars), mean_res, extra_text, end = "") #, extra_text, x_poly[0], y_poly[0], end="")
    return(mean_res)
 
 
@@ -1755,6 +1755,121 @@ def re_pair_stars(cal_fn, cp, json_conf, show_img, con, cur,mcp):
 
    return(cp)
 
+def wcs_to_cal_params(wcs_file,json_conf):
+   wcs_info_file = wcs_file.replace(".wcs", ".wcs_info")
+   cal_params_file = wcs_file.replace("-plate.wcs", "-calparams.json")
+   fp =open(wcs_info_file, "r")
+   cal_params_json = {}
+   for line in fp:
+      line = line.replace("\n", "")
+      field, value = line.split(" ")
+      if field == "imagew":
+         cal_params_json['imagew'] = value
+      if field == "imageh":
+         cal_params_json['imageh'] = value
+      if field == "pixscale":
+         cal_params_json['pixscale'] = value
+      if field == "orientation":
+         cal_params_json['position_angle'] = float(value) + 180
+      if field == "ra_center":
+         cal_params_json['ra_center'] = value
+      if field == "dec_center":
+         cal_params_json['dec_center'] = value
+      if field == "fieldw":
+         cal_params_json['fieldw'] = value
+      if field == "fieldh":
+         cal_params_json['fieldh'] = value
+      if field == "ramin":
+         cal_params_json['ramin'] = value
+      if field == "ramax":
+         cal_params_json['ramax'] = value
+      if field == "decmin":
+         cal_params_json['decmin'] = value
+      if field == "decmax":
+         cal_params_json['decmax'] = value
+
+   ra = cal_params_json['ra_center']
+   dec = cal_params_json['dec_center']
+   lat = json_conf['site']['device_lat']
+   lon = json_conf['site']['device_lng']
+   alt = json_conf['site']['device_alt']
+
+   (f_datetime, cam, f_date_str,y,m,d, h, mm, s) = convert_filename_to_date_cam(wcs_file)
+   new_date = y + "/" + m + "/" + d + " " + h + ":" + mm + ":" + s
+   az, el = radec_to_azel(ra,dec, new_date,json_conf)
+
+   cal_params_json['center_az'] = az
+   cal_params_json['center_el'] = el
+   #cal_params = default_cal_params(cal_params, json_conf)
+
+
+
+   #save_json_file(cal_params_file, cal_params_json)
+   return(cal_params_json)
+
+def solve_field(plate_file, json_conf, con, cur):
+   station_id = json_conf['site']['ams_id']
+   if os.path.exists("/usr/local/astrometry/bin/solve-field") is True:
+      AST_BIN = "/usr/local/astrometry/bin/"
+   elif os.path.exists("/usr/bin/solve-field") is True:
+      AST_BIN = "/usr/bin/"
+
+   plate_fn = plate_file.split("/")[-1]
+   plate_dir = plate_file.replace(plate_fn, "")
+   if os.path.exists(plate_dir + "tmp") is False:
+      os.makedirs(plate_dir + "tmp/")
+   new_plate_file = plate_dir + "tmp/" + plate_fn 
+   cmd = "cp " + plate_file + " " + new_plate_file
+   print(cmd)
+   os.system(cmd)
+   cal_params_file = plate_file.replace("-plate.jpg", "-stacked-calparams.json")
+
+   plate_file = new_plate_file
+   solved_file = plate_file.replace(".jpg", ".solved")
+   astrout = plate_file.replace(".jpg", ".astrometry_log")
+   wcs_file = plate_file.replace(".jpg", ".wcs")
+   wcs_info_file = plate_file.replace(".jpg", ".wcs_info")
+
+   cmd = AST_BIN + "solve-field " + new_plate_file + " --cpulimit=30 --verbose --overwrite --crpix-center -d 1-40 --scale-units dw --scale-low 60 --scale-high 120 "
+   #-S " + solved_file + " >" + astrout
+   #cmd = AST_BIN + "solve-field " + new_plate_file + " --verbose --overwrite >" + astrout
+   print(cmd)
+   os.system(cmd)
+   print(cmd)
+   if os.path.exists(wcs_file) is True:
+      cmd = AST_BIN + "wcsinfo " + wcs_file + " > " + wcs_info_file
+      os.system(cmd)
+      new_cal_params = wcs_to_cal_params(wcs_file,json_conf)
+      # save new cal params to file and then apply calib 
+      cal_params = load_json_file(cal_params_file)
+      cal_params['ra_center'] = new_cal_params['ra_center']
+      cal_params['dec_center'] = new_cal_params['dec_center']
+      cal_params['center_az'] = new_cal_params['center_az']
+      cal_params['center_el'] = new_cal_params['center_el']
+      cal_params['position_angle'] = new_cal_params['position_angle']
+      cal_params['pixscale'] = new_cal_params['pixscale']
+      save_json_file(cal_params_file, cal_params)
+      cal_fn = cal_params_file.split("/")[-1]
+
+      (f_datetime, cam_id, f_date_str,fy,fmin,fd, fh, fm, fs) = convert_filename_to_date_cam(cal_fn)
+      autocal_dir = "/mnt/ams2/cal/"
+      mcp_file = autocal_dir + "multi_poly-" + station_id + "-" + cam_id + ".info"
+      if os.path.exists(mcp_file) == 1:
+         mcp = load_json_file(mcp_file)
+      else:
+         mcp = None
+
+      calfiles_data = load_cal_files(cam_id, con, cur)
+      result = apply_calib (cal_fn, calfiles_data, json_conf, mcp, None, "", False, None)
+      return(True)
+
+
+   else:
+      print("Astrometry.net failed")
+      return(False)
+
+
+
 def make_plate(cal_fn, json_conf, con, cur):
 
    (f_datetime, cam_id, f_date_str,fy,fmin,fd, fh, fm, fs) = convert_filename_to_date_cam(cal_fn)
@@ -1772,8 +1887,15 @@ def make_plate(cal_fn, json_conf, con, cur):
    else:
       (station_id, cal_dir, cal_json_file, cal_img_file, cal_params, cal_img, clean_cal_img, mask_file,mcp) = resp
 
-   plate_file = cal_dir + "/" + cal_fn.replace("-stacked-calparams.json", "-plate.png")
+   plate_file = cal_dir + cal_fn.replace("-stacked-calparams.json", "-plate.jpg")
    gray_img = cv2.cvtColor(clean_cal_img, cv2.COLOR_BGR2GRAY)
+
+   stack_jpg_file = plate_file.replace("-plate.jpg", "-stacked.jpg")
+   if os.path.exists(stack_jpg_file) is True:
+      os.system("cp " + stack_jpg_file + " " + plate_file)
+      stack_jpg = cv2.imread(stack_jpg_file)
+      return(plate_file, stack_jpg)
+
 
    resp = get_star_points(cal_fn, clean_cal_img, cal_params, station_id, cam_id, json_conf)
 
@@ -1785,10 +1907,10 @@ def make_plate(cal_fn, json_conf, con, cur):
       
 
    for x,y,bp in star_points:
-      x1 = x - 2
-      y1 = y - 2
-      x2 = x + 2
-      y2 = y + 2
+      x1 = x - 5 
+      y1 = y - 5
+      x2 = x + 5
+      y2 = y + 5
       plate_img[y1:y2,x1:x2] = gray_img[y1:y2,x1:x2]
       if x1 <= 0 or x2 >= 1920 or y1 < 0 or y2 >= 1080:
          continue
@@ -1797,6 +1919,7 @@ def make_plate(cal_fn, json_conf, con, cur):
       cv2.waitKey(30)
    print(plate_file)
    cv2.imwrite(plate_file, plate_img)
+   return(plate_file, plate_img)
 
 def ui_frame():
    logo = cv2.imread("ALLSKY_LOGO.png")
@@ -2300,7 +2423,8 @@ def get_star_points(cal_fn, oimg, cp, station_id, cam_id, json_conf):
             avg_val = np.mean(crop)
             pxd = max_val - avg_val
             cv2.rectangle(show_img, (int(x1), int(y1)), (int(x2) , int(y2) ), (255, 255, 255), 1)
-            if pxd > 15 and avg_val < 80:
+            # MAIN FILTER STAR
+            if pxd > 25 and avg_val < 80:
                found = True 
                cv2.circle(show_img, (int(x1 + mx),int(y1 + my)), 5, (128,128,128),1)
                # Should add flux here and not max_VAL!?
@@ -3408,13 +3532,22 @@ def batch_apply_bad(cam_id, con, cur, json_conf):
          cal_dir = "/mnt/ams2/cal/freecal/" + cdir + "/"
          if os.path.exists(cal_dir):
             last_cal_params,flux_table = apply_calib (cal_fn, calfiles_data, json_conf, mcp )
-            print(last_cal_params)
             if last_cal_params['total_res_px'] > 5:
-               print(cal_fn)
+               print(cal_fn, " is FAILING. We will try to fix" )
                cal_params = fix_cal(cal_fn, con, cur, json_conf)
                print("AFTER FIXED RES:", cal_params['total_res_px'])
-               if cal_params['total_res_px'] < last_cal_params['total_res_px']:
+               if cal_params['total_res_px'] < last_cal_params['total_res_px'] and cal_params['total_res_px'] < 5:
                   save_json_file(cal_dir + cal_fn, cal_params)
+               else:
+                  # all else has failed resolve the file!
+                  plate_file, plate_img = make_plate(cal_fn, json_conf, con, cur)
+                  result = solve_field(plate_file, json_conf, con, cur)
+                  if result is True:
+                     print("Resolve worked!")
+                  else:
+                     print("Resolve failed! Just delete this calfile!!! It can't be saved.")
+
+      print(cal_fn, total_stars, res, score)
 
 
 
@@ -3682,6 +3815,7 @@ def apply_calib (cal_file, calfiles_data, json_conf, mcp, last_cal_params=None, 
             pixel_scale, zp_az, zp_el, zp_ra, zp_dec, zp_position_angle, zp_pixel_scale, x_poly, \
             y_poly, x_poly_fwd, y_poly_fwd, res_px, res_deg, ai_weather, ai_weather_conf, cal_version, last_update) = calfiles_data[cal_file]
          cal_params = cal_data_to_cal_params(cal_file, calfiles_data[cal_file],json_conf, mcp)
+         cam_id = camera_id
       else:
          import_cal_file(cal_file, cal_dir, mcp)
          cal_fn = cal_file
@@ -3794,7 +3928,16 @@ def apply_calib (cal_file, calfiles_data, json_conf, mcp, last_cal_params=None, 
          dcname,mag,ra,dec,img_ra,img_dec,match_dist,org_x,org_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist,star_int = star
          temp_rez.append(cat_dist)
       rez = np.median(temp_rez)
-
+      good_temp = []
+      for star in  temp:
+         dcname,mag,ra,dec,img_ra,img_dec,match_dist,org_x,org_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist,star_int = star
+         print("REZ", cat_dist, rez)
+         if cat_dist <= rez * 2.5:
+            print("KEEP", star)
+            good_temp.append(star) 
+         else:
+            print("SKIP", star)
+      temp = good_temp
       for star in reject_stars:
          dcname,mag,ra,dec,img_ra,img_dec,match_dist,org_x,org_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist,star_int = star
 
@@ -3914,6 +4057,8 @@ def apply_calib (cal_file, calfiles_data, json_conf, mcp, last_cal_params=None, 
       if temp_cal_params['total_res_px'] <= cal_params['total_res_px']:
          cal_params = temp_cal_params
          print("CAL PARAM OPTIMIZED")
+      else:
+         print("CAL PARAMS OPTIMIZER FAILED!")
 
       #print("PXSCALE:", cal_params['pixscale'])
 
@@ -3935,7 +4080,7 @@ def apply_calib (cal_file, calfiles_data, json_conf, mcp, last_cal_params=None, 
       #print("VIEW CAL 33:", cal_fn)
       #calfiles_data = load_cal_files(cam_id, con, cur)
 
-      cal_img, cal_params = view_calfile(cam_id, cal_fn, con, cur, json_conf, calfiles_data, cal_params, mcp)
+      #cal_img, cal_params = view_calfile(cam_id, cal_fn, con, cur, json_conf, calfiles_data, cal_params, mcp)
 
       show_calparams(cal_params)      
 
@@ -3944,6 +4089,7 @@ def apply_calib (cal_file, calfiles_data, json_conf, mcp, last_cal_params=None, 
       if SHOW == 1:
          cv2.imshow("pepe", cal_img)
          cv2.waitKey(30)
+      print("CAL RES:", cal_params['total_res_px'])
       return(cal_params, flux_table)
 
 def show_calparams(cal_params):
@@ -4079,6 +4225,8 @@ def recenter_fov(cal_fn, cal_params, cal_img, stars, json_conf, extra_text="", t
  
    cat_stars, short_bright_stars, cat_image = get_catalog_stars(nc)
    #nc['short_bright_stars'] = short_bright_stars
+   for star in cat_stars:
+      print(star[-2])
 
    end_res = nc['total_res_px']
    if end_res > start_res:
@@ -4092,6 +4240,7 @@ def recenter_fov(cal_fn, cal_params, cal_img, stars, json_conf, extra_text="", t
 
 
    nc['cat_image_stars'] = cat_image_stars
+   nc['total_res_px'] = end_res 
    #print("CAT IS:", len(up_stars), len(cat_image_stars))
    #for star in cat_image_stars:
    #   print(star)
@@ -5464,7 +5613,6 @@ def quality_check_all_cal_files(cam_id, con, cur, cal_index=None):
          print(cdata['total_stars'], cdata['total_res_px'], cfile)
          if cdata['total_res_px'] == 2:
             result = apply_calib (cfile, calfiles_data, json_conf, mcp, None, "", False, None)
-
          if cdata['total_res_px'] < avg_res:
             below_avg_res += 1 
          else:
@@ -7607,7 +7755,7 @@ if __name__ == "__main__":
    print("Python processes running now:", py_running)
    if py_running > 15:
       print("Too many processes to run, try again later")
-      exit()
+      #exit()
    else:
       print("Ok to run!")
 
@@ -7793,9 +7941,11 @@ if __name__ == "__main__":
             lens_model_report(cam_id, con, cur, json_conf)
       else:
          lens_model_report(cam_id, con, cur, json_conf)
+
    if cmd == "make_plate":
       cal_fn = sys.argv[2]
-      make_plate(cal_fn, json_conf, con, cur)
+      plate_file, plate_img = make_plate(cal_fn, json_conf, con, cur)
+      solve_field(plate_file, json_conf, con, cur)
    if cmd == "star_points":
       cam_id = sys.argv[2]
       if cam_id == "all":
