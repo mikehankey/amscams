@@ -6478,7 +6478,11 @@ def get_cal_range(obs_file, img, con, cur, json_conf):
    #show_img = img.copy()
 
    (cal_date, cam_id, f_date_str,fy,fmin,fd, fh, fm, fs) = convert_filename_to_date_cam(obs_file)
-   lens_model = load_json_file("/mnt/ams2/cal/multi_poly-" + json_conf['site']['ams_id'] + "-" + cam_id + ".info")
+   lens_model_file = "/mnt/ams2/cal/multi_poly-" + json_conf['site']['ams_id'] + "-" + cam_id + ".info"
+   if os.path.exists(lens_model_file) is True:
+      lens_model = load_json_file(lens_model_file)
+   else:
+       lens_model = {}
    cal_range = load_json_file("/mnt/ams2/cal/" + json_conf['site']['ams_id'] + "_cal_range.json")
  
    #print("OBS FILE:", obs_file)
@@ -7457,7 +7461,7 @@ def lens_model(cam_id, con, cur, json_conf, cal_fns= None):
    print(tb)
 
 
-def wizard(station_id, cam_id, con, cur, json_conf, file_limit=25):
+def wizard(station_id, cam_id, con, cur, json_conf, file_limit=5):
 
    if SHOW == 1:
       cv2.namedWindow("pepe")
