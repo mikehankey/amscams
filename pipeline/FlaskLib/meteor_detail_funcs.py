@@ -56,11 +56,11 @@ def calib_files_table (mjf, mj, json_conf):
    for pack_data in after_files: 
       cfs, f_date_str, tdays, center_az, center_el, position_angle, pixscale, total_res_px = pack_data
       link = "/API/swap_calib?meteor_file={:s}&cal_file={:s}".format(meteor_file, cfs)
-      table += "<tr><td><a href={:s}>{:s}</a> ({:.2f})</td><td>{:.2f}</td><td>{:.1f}</td><td>{:.1f}</td><td>{:.1f}</td><td>{:.1f}</td></tr>".format(link, f_date_str.split(" ")[0], tdays, center_az, center_el, position_angle, pixscale, total_res_px)
+      table += "<tr><td><a href={:s}>{:s}</a> ({:.2f})</td><td>{:.2f}</td><td>{:.1f}</td><td>{:.1f}</td><td>{:.1f}</td><td>{:.1f}</td></tr>".format(link, f_date_str.split(" ")[0], tdays, float(center_az), float(center_el), float(position_angle), float(pixscale), float(total_res_px))
    for pack_data in before_files: 
       cfs, f_date_str, tdays, center_az, center_el, position_angle, pixscale, total_res_px = pack_data
       link = "/API/swap_calib?meteor_file={:s}&cal_file={:s}".format(meteor_file, cfs)
-      table += "<tr><td><a href={:s}>{:s}<a/> ({:.2f})</td><td>{:.2f}</td><td>{:.1f}</td><td>{:.1f}</td><td>{:.1f}</td><td>{:.1f}</td></tr>".format(link, f_date_str.split(" ")[0], tdays, center_az, center_el, position_angle, pixscale, total_res_px)
+      table += "<tr><td><a href={:s}>{:s}<a/> ({:.2f})</td><td>{:.2f}</td><td>{:.1f}</td><td>{:.1f}</td><td>{:.1f}</td><td>{:.1f}</td></tr>".format(link, f_date_str.split(" ")[0], tdays, float(center_az), float(center_el), float(position_angle), float(pixscale), float(total_res_px))
 
 
    table += "</tr>"      
