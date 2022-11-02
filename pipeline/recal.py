@@ -40,6 +40,32 @@ from prettytable import PrettyTable as pt
 
 tries = 0
 
+def calc_res_from_stars(cal_fn, cal_params, json_conf):
+   up_stars = []
+   tres = []
+   for star in cal_params['cat_image_stars']:
+      name,mag,ra,dec,img_ra,img_dec,match_dist,org_x,org_y,img_az,img_el,new_cat_x,new_cat_y,img_x,img_y,cat_dist,star_int = star
+
+      n_new_cat_x,n_new_cat_y = get_xy_for_ra_dec(cal_params, ra, dec)
+
+      if new_cat_x is None:
+         continue
+      if n_new_cat_x is not None:
+         n_res_px = calc_dist((img_x,img_y), (n_new_cat_x,n_new_cat_y))
+      else:
+         n_res_px = 0
+      tres.append(n_res_px)
+
+      #print("OLD {} {}".format(new_cat_x, new_cat_y))
+      #print("NEW {} {}".format(n_new_cat_x, n_new_cat_y))
+      #print("___")
+
+      up_stars.append((name,mag,ra,dec,img_ra,img_dec,match_dist,org_x,org_y,img_az,img_el,new_cat_x,new_cat_y,img_x,img_y,cat_dist,star_int))
+      #up_stars.append((cal_fn, name, mag, star_yn, ra, dec, star_flux, img_x, img_y, new_cat_x, new_cat_y, zp_cat_x, zp_cat_y, res_px, zp_res_px, slope, zp_slope))
+      cal_params['total_res_px'] = np.median(tres)
+      cal_params['cat_image_stars'] = up_stars
+   return(cal_params)
+
 def reset_bad_cals(cam_id, con, cur,json_conf):
    # this will scan all of the cals and anything that has 8px res will be sent back to the 
    # autocal dir for re-plate solving. 
@@ -632,7 +658,6 @@ def draw_stars_on_image(img, cat_image_stars,cp=None,json_conf=None,extra_text=N
       else:
          dcname,mag,ra,dec,img_ra,img_dec,match_dist,org_x,org_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist,star_int = star
 
-
       match_dist = calc_dist((new_cat_x,new_cat_y), (six,siy))
       cat_dist = match_dist
       if cat_dist <= .5:
@@ -647,8 +672,6 @@ def draw_stars_on_image(img, cat_image_stars,cp=None,json_conf=None,extra_text=N
          color = "#FF0000"
       if cat_dist > 4:
          color = "#ff0000"
-
-
 
       dist = calc_dist((six,siy), (new_cat_x,new_cat_y))
      
@@ -1560,6 +1583,29 @@ def batch_review(station_id, cam_id, con, cur, json_conf, limit=10, work_type="t
       new_cal_params, del_stars = delete_bad_stars(cal_fn, cal_params, con,cur,json_conf, orig_img) 
 
       new_cal_params = minimize_fov(cal_fn, cal_params, cal_image_file,oimg,json_conf, False,mcp, extra_text)
+
+      new_cal_params = calc_res_from_stars(cal_fn, new_cal_params, json_conf)
+
+            # if the results from apply are still bad try to make better
+      last_cal_params = new_cal_params
+      #input("MINIMIZE DONE WITH RES :" + str( last_cal_params['total_res_px']))
+      if True:
+         if True:
+            if last_cal_params['total_res_px'] > 5:
+               print(cal_fn, " is FAILING. We will try to fix" )
+               cal_params = fix_cal(cal_fn, con, cur, json_conf)
+               cal_params = calc_res_from_stars(cal_fn, cal_params, json_conf)
+               print("AFTER FIXED RES:", cal_params['total_res_px'])
+               if cal_params['total_res_px'] < last_cal_params['total_res_px'] and cal_params['total_res_px'] < 5:
+                  save_json_file(cal_dir + cal_fn, cal_params)
+               else:
+                  # all else has failed resolve the file!
+                  plate_file, plate_img = make_plate(cal_fn, json_conf, con, cur)
+                  result = solve_field(plate_file, json_conf, con, cur)
+                  if result is True:
+                     print("Resolve worked!")
+                  else:
+                     print("Resolve failed! Just delete this calfile!!! It can't be saved.")
 
       #if mcp is not None:
       #   new_cal_params = minimize_fov(cal_fn, new_cal_params, cal_image_file,oimg,json_conf, mcp)
@@ -3532,6 +3578,7 @@ def batch_apply_bad(cam_id, con, cur, json_conf):
          cal_dir = "/mnt/ams2/cal/freecal/" + cdir + "/"
          if os.path.exists(cal_dir):
             last_cal_params,flux_table = apply_calib (cal_fn, calfiles_data, json_conf, mcp )
+            # if the results from apply are still bad try to make better
             if last_cal_params['total_res_px'] > 5:
                print(cal_fn, " is FAILING. We will try to fix" )
                cal_params = fix_cal(cal_fn, con, cur, json_conf)
@@ -4846,7 +4893,6 @@ def update_paired_stars(cal_fn, cal_params, stars, con, cur, json_conf):
       (cal_fn, name, mag, star_yn, ra, dec, star_flux, img_x, img_y, new_cat_x, new_cat_y, zp_cat_x, zp_cat_y, res_px, zp_res_px, slope, zp_slope) = star
 
       n_new_cat_x,n_new_cat_y = get_xy_for_ra_dec(cal_params, ra, dec)
-
 
       if new_cat_x is None:
          continue
@@ -7422,13 +7468,16 @@ def wizard(station_id, cam_id, con, cur, json_conf, file_limit=25):
    os.system("clear")
    print("ALLSKY7 LENS MODEL CALIBRATION WIZARD")
    print("Limit:", file_limit)   
+   #input("CALIBRATION WIZARD")
    # review / apply the current lens model 
    # and calibration on the best 10 files
 
    best_cal_fns = []
    res_test = []
    if True:
+      #input("BATCH REVIEW")
       cal_fns, calfiles_data = batch_review(station_id, cam_id, con, cur, json_conf, file_limit)
+      #input("END BATCH REVIEW")
       for cal_fn in cal_fns:
          print(calfiles_data[cal_fn][-6])
          res_test.append(calfiles_data[cal_fn][-6])
@@ -7471,10 +7520,11 @@ def wizard(station_id, cam_id, con, cur, json_conf, file_limit=25):
    # and define best merge star values
    print("CAL FNS :", cal_fns)
    characterize_best(cam_id, con, cur, json_conf, file_limit, cal_fns)
-
+   #input("CHAR1 DONE")
    # run lens model with current stars
    lens_model(cam_id, con, cur, json_conf, cal_fns)
    #exit()
+   #input("LENS1 DONE")
 
    file_limit = int(file_limit) * 2
    print("FILE LIMIT:", file_limit)
