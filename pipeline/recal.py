@@ -1677,6 +1677,25 @@ def batch_review(station_id, cam_id, con, cur, json_conf, limit=10, work_type="t
 
    return(cal_fns, calfiles_data)
 
+def revert_to_wcs(cal_fn):
+   cal_dir = "/mnt/ams2/cal/freecal/" + cal_fn.replace("-stacked-calparams.json", "") + "/"
+   cal_file = cal_dir + cal_fn
+   wcs_file = cal_dir + "tmp/" + cal_fn.replace("-stacked-calparams.json", "-plate.wcs")
+   wcs_info_file = cal_dir + "tmp/" + cal_fn.replace("-stacked-calparams.json", "-plate.wcs_info")
+   print(cal_file, wcs_info_file)
+   if os.path.exists(wcs_info_file):
+      new_cal_params = wcs_to_cal_params(wcs_file,json_conf)
+      cal_params = load_json_file(cal_file)
+      cal_params['ra_center'] = new_cal_params['ra_center']
+      cal_params['dec_center'] = new_cal_params['dec_center']
+      cal_params['center_az'] = new_cal_params['center_az']
+      cal_params['center_el'] = new_cal_params['center_el']
+      cal_params['position_angle'] = new_cal_params['position_angle']
+      cal_params['pixscale'] = new_cal_params['pixscale']
+      save_json_file(cal_file, cal_params)
+   else:
+      print("NO WCS FILE", cal_file, wcs_info_file)
+
 def pair_star_points(cal_fn, oimg, cal_params, json_conf, con, cur, mcp):
    show_img = oimg.copy()
    cat_stars, short_bright_stars, cat_image = get_catalog_stars(cal_params)
@@ -3869,6 +3888,9 @@ def get_image_stars_with_catalog(obs_id, cal_params, show_img, flux_table=None):
 
 
 def apply_calib (cal_file, calfiles_data, json_conf, mcp, last_cal_params=None, extra_text= "", do_bad=False, flux_table=None):
+      cal_fn = cal_file.split("/")[-1]
+      revert_to_wcs(cal_fn)
+
       cal_dir = cal_dir_from_file(cal_file)
       print("CAL DIR", cal_dir)
       if cal_dir is False:
