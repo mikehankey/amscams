@@ -1588,7 +1588,6 @@ def batch_review(station_id, cam_id, con, cur, json_conf, limit=10, work_type="t
 
             # if the results from apply are still bad try to make better
       last_cal_params = new_cal_params
-      #input("MINIMIZE DONE WITH RES :" + str( last_cal_params['total_res_px']))
       if True:
          if True:
             if last_cal_params['total_res_px'] > 5:
@@ -1600,12 +1599,30 @@ def batch_review(station_id, cam_id, con, cur, json_conf, limit=10, work_type="t
                   save_json_file(cal_dir + cal_fn, cal_params)
                else:
                   # all else has failed resolve the file!
-                  plate_file, plate_img = make_plate(cal_fn, json_conf, con, cur)
-                  result = solve_field(plate_file, json_conf, con, cur)
-                  if result is True:
-                     print("Resolve worked!")
+                  # if we already did it just update the calparams with astr info
+
+                  cal_file = cal_dir + "tmp/" + cal_fn
+                  wcs_info_file = cal_file.replace("-stacked-calparams.json", "-plate.wcs_info")
+                  print(cal_file, wcs_info_file)
+                  if os.path.exists(wcs_info_file):
+                     new_cal_params = wcs_to_cal_params(wcs_file,json_conf)
+                     cal_params = load_json_file(cal_params_file)
+                     cal_params['ra_center'] = new_cal_params['ra_center']
+                     cal_params['dec_center'] = new_cal_params['dec_center']
+                     cal_params['center_az'] = new_cal_params['center_az']
+                     cal_params['center_el'] = new_cal_params['center_el']
+                     cal_params['position_angle'] = new_cal_params['position_angle']
+                     cal_params['pixscale'] = new_cal_params['pixscale']
+                     save_json_file(cal_params_file, cal_params)
                   else:
-                     print("Resolve failed! Just delete this calfile!!! It can't be saved.")
+                     #input("WCS FILE NOT FOUND:" + wcs_info_file)
+                     plate_file, plate_img = make_plate(cal_fn, json_conf, con, cur)
+                     result = solve_field(plate_file, json_conf, con, cur)
+
+                     if result is True:
+                        print("Resolve worked!")
+                     else:
+                        print("Resolve failed! Just delete this calfile!!! It can't be saved.")
 
       #if mcp is not None:
       #   new_cal_params = minimize_fov(cal_fn, new_cal_params, cal_image_file,oimg,json_conf, mcp)
@@ -3537,7 +3554,10 @@ def batch_apply_bad(cam_id, con, cur, json_conf):
       if "cal_version" not in mcp:
          mcp['cal_version'] = 0
    else:
-      mcp = None
+      cp['x_poly'] = np.zeros(shape=(15,), dtype=np.float64)
+      cp['y_poly'] = np.zeros(shape=(15,), dtype=np.float64)
+      cp['x_poly_fwd'] = np.zeros(shape=(15,), dtype=np.float64)
+      cp['y_poly_fwd'] = np.zeros(shape=(15,), dtype=np.float64)
 
 
    # get avg res and avg stars
@@ -4816,6 +4836,9 @@ def view_calfile(cam_id, cal_fn, con, cur, json_conf, calfiles_data= None, cp = 
    cal_image_file = cal_fn.replace("-calparams.json", ".png")
    cal_dir = cal_dir_from_file(cal_image_file)
    cal_json_file = get_cal_json_file(cal_dir)
+
+   print("CAL JSON FILE IS : ", cal_json_file)
+
    cal_json_fn = cal_json_file.split("/")[-1]
 
    if os.path.exists(cal_dir + cal_img_fn):
@@ -7472,16 +7495,13 @@ def wizard(station_id, cam_id, con, cur, json_conf, file_limit=5):
    os.system("clear")
    print("ALLSKY7 LENS MODEL CALIBRATION WIZARD")
    print("Limit:", file_limit)   
-   #input("CALIBRATION WIZARD")
    # review / apply the current lens model 
    # and calibration on the best 10 files
 
    best_cal_fns = []
    res_test = []
    if True:
-      #input("BATCH REVIEW")
       cal_fns, calfiles_data = batch_review(station_id, cam_id, con, cur, json_conf, file_limit)
-      #input("END BATCH REVIEW")
       for cal_fn in cal_fns:
          print(calfiles_data[cal_fn][-6])
          res_test.append(calfiles_data[cal_fn][-6])
@@ -7524,11 +7544,9 @@ def wizard(station_id, cam_id, con, cur, json_conf, file_limit=5):
    # and define best merge star values
    print("CAL FNS :", cal_fns)
    characterize_best(cam_id, con, cur, json_conf, file_limit, cal_fns)
-   #input("CHAR1 DONE")
    # run lens model with current stars
    lens_model(cam_id, con, cur, json_conf, cal_fns)
    #exit()
-   #input("LENS1 DONE")
 
    file_limit = int(file_limit) * 2
    print("FILE LIMIT:", file_limit)
@@ -7680,7 +7698,7 @@ def fix_cal(cal_fn, con, cur,json_conf):
       rez = [row[-2] for row in cp['cat_image_stars'] ]
       med_rez = np.median(rez) ** 2
       extra_text = str(med_rez) + " pixel median residual distance"
-      print("MED REZ FOR THIS ROW IS:", med_rez)
+      print("MED REZ FOR FIX CAL FILE IS:", med_rez)
 
 
       star_img = draw_star_image(show_img, cp['cat_image_stars'],cp, json_conf, extra_text) 
