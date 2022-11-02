@@ -27,6 +27,8 @@ def check_install_wasabi_key(station_id):
    fp.close()
    os.system("chmod 600 /home/ams/amscams/conf/wasabi.txt")
    os.system("chown ams:ams /home/ams/amscams/conf/wasabi.txt")
+
+   os.system("sudo umount /mnt/archive.allsky.tv")
    os.system("cd /home/ams/amscams/pythonv2; ./wasabi.py mnt")
    if os.path.exists("/home/ams/amscams/conf/wasabi.txt"):
       cmd = "rm /mnt/archive.allsky.tv/" + station_id + "/cmd/wasabi.txt"
