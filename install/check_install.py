@@ -19,19 +19,22 @@ def check_install_wasabi_key(station_id):
    
    url = "https://archive.allsky.tv/" + station_id + "/cmd/wasabi.txt"
    wasabi = get_page(url)
+   local_key_file = "/home/ams/amscams/conf/wasabi.txt"
    if "Error" in wasabi:
+      print(url)
       print("No remote wasabi.")
       #return()
-   local_key_file = "/home/ams/amscams/conf/wasabi.txt"
-   if os.path.exists(local_key_file) is False :
-      fp = open("/home/ams/amscams/conf/wasabi.txt", "w")
-      fp.write(wasabi)
-      fp.close()
-      os.system("chmod 600 /home/ams/amscams/conf/wasabi.txt")
-      os.system("chown ams:ams /home/ams/amscams/conf/wasabi.txt")
+   else:
+
+      if os.path.exists(local_key_file) is False :
+         fp = open("/home/ams/amscams/conf/wasabi.txt", "w")
+         fp.write(wasabi)
+         fp.close()
+         os.system("chmod 600 /home/ams/amscams/conf/wasabi.txt")
+         os.system("chown ams:ams /home/ams/amscams/conf/wasabi.txt")
 
    os.system("sudo umount /mnt/archive.allsky.tv")
-   os.system("cd /home/ams/amscams/pythonv2; ./wasabi.py mnt")
+   os.system("cd /home/ams/amscams/pythonv2; runuser -u ams -- ./wasabi.py mnt")
    if os.path.exists("/home/ams/amscams/conf/wasabi.txt"):
       cmd = "rm /mnt/archive.allsky.tv/" + station_id + "/cmd/wasabi.txt"
       print(cmd)
