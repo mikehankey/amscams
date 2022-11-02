@@ -3554,10 +3554,11 @@ def batch_apply_bad(cam_id, con, cur, json_conf):
       if "cal_version" not in mcp:
          mcp['cal_version'] = 0
    else:
-      cp['x_poly'] = np.zeros(shape=(15,), dtype=np.float64)
-      cp['y_poly'] = np.zeros(shape=(15,), dtype=np.float64)
-      cp['x_poly_fwd'] = np.zeros(shape=(15,), dtype=np.float64)
-      cp['y_poly_fwd'] = np.zeros(shape=(15,), dtype=np.float64)
+      mcp = {}
+      mcp['x_poly'] = np.zeros(shape=(15,), dtype=np.float64)
+      mcp['y_poly'] = np.zeros(shape=(15,), dtype=np.float64)
+      mcp['x_poly_fwd'] = np.zeros(shape=(15,), dtype=np.float64)
+      mcp['y_poly_fwd'] = np.zeros(shape=(15,), dtype=np.float64)
 
 
    # get avg res and avg stars
