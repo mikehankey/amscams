@@ -22,12 +22,13 @@ def check_install_wasabi_key(station_id):
    if "Error" in wasabi:
       print("No remote wasabi.")
       #return()
-
-   fp = open("/home/ams/amscams/conf/wasabi.txt", "w")
-   fp.write(wasabi)
-   fp.close()
-   os.system("chmod 600 /home/ams/amscams/conf/wasabi.txt")
-   os.system("chown ams:ams /home/ams/amscams/conf/wasabi.txt")
+   local_key_file = "/home/ams/amscams/conf/wasabi.txt"
+   if os.path.exists(local_key_file) is False :
+      fp = open("/home/ams/amscams/conf/wasabi.txt", "w")
+      fp.write(wasabi)
+      fp.close()
+      os.system("chmod 600 /home/ams/amscams/conf/wasabi.txt")
+      os.system("chown ams:ams /home/ams/amscams/conf/wasabi.txt")
 
    os.system("sudo umount /mnt/archive.allsky.tv")
    os.system("cd /home/ams/amscams/pythonv2; ./wasabi.py mnt")
