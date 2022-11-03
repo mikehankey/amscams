@@ -193,10 +193,31 @@ def show_masks(amsid):
 def cal_file(amsid, calib_file):
    json_conf = load_json_file("../conf/as6.json")
    station_id = amsid
-   
+   cal_fn =  calib_file.split("/")[-1] 
    caldir = "/mnt/ams2/cal/freecal/" + calib_file + "/"
    caldir = caldir.replace("-stacked.png", "")
    caldir = caldir.replace(".png", "")
+   ast_dir = caldir + "tmp/"
+   astr_objs_fn =  calib_file.split("/")[-1].replace("-stacked.png", "-plate-objs.png")
+   astr_ngc_fn =  calib_file.split("/")[-1].replace("-stacked.png", "-plate-ngc.png")
+   astr_wcs_fn =  calib_file.split("/")[-1].replace("-stacked.png", "-plate.wcs_info")
+
+   cal_vdir = caldir.replace("/mnt/ams2", "")
+
+   print("ASTR", caldir + "tmp/" + astr_objs_fn)
+   if os.path.exists(caldir + "tmp/" + astr_objs_fn):
+      astr_html = "<h1>Astrometry Results</h1>"
+      astr_html += "<img src=" + cal_vdir + "tmp/" + astr_ngc_fn + "><br>"
+      astr_html += "<img src=" + cal_vdir + "tmp/" + astr_objs_fn + ">"
+      astr_html += "<pre>"
+      if os.path.exists(caldir + astr_wcs_fn) :
+         fp = open(caldir + astr_wcs_fn)
+         for line in fp:
+            astr_html += line
+         astr_html += "</pre>"
+
+   else:
+      astr_html = "No Astrometry files in " + caldir + "tmp/" + astr_objs_fn
 
    hd_datetime, cam_id, hd_date, hd_y, hd_m, hd_d, hd_h, hd_M, hd_s = convert_filename_to_date_cam(calib_file)
    mcp = get_mcp(station_id, cam_id)
@@ -293,6 +314,8 @@ def cal_file(amsid, calib_file):
    cd_template = cd_template.replace("{STACK_FILE}", st)
    cd_template = cd_template.replace("{AZ_GRID}", azs[0])
    cd_template = cd_template.replace("{USER_STARS}", "")
+
+   cd_template += astr_html
    print("AZS:", azs[0])
    print("CP:", cp.keys())
    print("POLY:", cp['x_poly'])
