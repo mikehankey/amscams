@@ -4205,7 +4205,7 @@ def make_cal_summary(cam,json_conf):
       mcp = {}
       star_db = {}
       return()
-   if os.path.exists(star_db):
+   if os.path.exists(star_file):
       star_db = load_json_file(star_file)
    else:
       star_db = {}
