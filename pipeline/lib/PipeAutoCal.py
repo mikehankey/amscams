@@ -4201,11 +4201,14 @@ def make_cal_summary(cam,json_conf):
    star_file = cal_dir + "star_db-" + STATION_ID + "-" + cam + ".info"
    if os.path.exists(mcp_file):
       mcp = load_json_file(mcp_file)
-      star_db = load_json_file(star_file)
    else:
       mcp = {}
       star_db = {}
       return()
+   if os.path.exists(star_db):
+      star_db = load_json_file(star_file)
+   else:
+      star_db = {}
    print(mcp.keys()) 
    if mcp is not None and "x_fun" in mcp:
       x_fun = mcp['x_fun']
@@ -6163,7 +6166,6 @@ def eval_cal_res(cp_file,json_conf,nc=None,oimg=None, mask_img=None,batch_mode=N
 
    med_rez = []
    for star in nc['cat_image_stars']:
-      #print("STAR:", star)
       dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist,star_int = star
       med_rez.append(cat_dist)
    med_res = np.median(med_rez)
@@ -6176,6 +6178,7 @@ def eval_cal_res(cp_file,json_conf,nc=None,oimg=None, mask_img=None,batch_mode=N
 
       new_cat_x, new_cat_y = distort_xy(0,0,ra,dec,float(cal_params['ra_center']), float(cal_params['dec_center']), cal_params['x_poly'], cal_params['y_poly'], float(cal_params['imagew']), float(cal_params['imageh']), float(cal_params['position_angle']),3600/float(cal_params['pixscale']))
       cat_dist = calc_dist((six,siy),(new_cat_x,new_cat_y))
+      #print("PXS, CAT DIST:", cal_params['pixscale'], cat_dist)
 
       rez.append(cat_dist)
       new_cat_stars.append((dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist,star_int))
@@ -6189,7 +6192,7 @@ def eval_cal_res(cp_file,json_conf,nc=None,oimg=None, mask_img=None,batch_mode=N
    nc['match_perc'] = 1
    nc['total_res_px'] = float(np.mean(rez))
 
-   print("FINAL RES:", nc['total_res_px'] )
+   #print("FINAL RES:", nc['total_res_px'] )
 
    return(nc, bad_stars, marked_img)
 
