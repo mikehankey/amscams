@@ -5837,7 +5837,6 @@ def view_calib(cp_file,json_conf,nc,oimg, show = 0):
       #dimg = cv2.resize(img, (1280,720))
       #cv2.imshow('pepe9', img)
       #cv2.waitKey(30)
-      print("MFN:", MOVIE_FN)
       if MOVIE_FN % 50 == 0:
          cal_fn = cp_file.split("/")[-1]
          if MOVIE == 1:
