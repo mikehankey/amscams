@@ -103,10 +103,10 @@ def perfect_cal(cam_id, con, cur, json_conf):
    batch_apply_bad(cam_id, con, cur, json_conf, None, True)
 
    # run the wizard again
-   wizard(station_id, cam_id, con, cur, json_conf, 25)
+   #wizard(station_id, cam_id, con, cur, json_conf, 25)
 
    # apply results to bad
-   batch_apply_bad(cam_id, con, cur, json_conf)
+   #batch_apply_bad(cam_id, con, cur, json_conf)
 
    cal_status_report(cam_id, con, cur, json_conf)
 
