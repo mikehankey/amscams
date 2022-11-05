@@ -3702,6 +3702,7 @@ def batch_apply_bad(cam_id, con, cur, json_conf):
             # if the results from apply are still bad try to make better
             if last_cal_params['total_res_px'] > 5:
                print(cal_fn, " is FAILING. We will try to fix" )
+               cal_params = last_cal_params
                #cal_params = fix_cal(cal_fn, con, cur, json_conf)
                print("AFTER FIXED RES:", last_cal_params['total_res_px'])
                if cal_params['total_res_px'] < last_cal_params['total_res_px'] and cal_params['total_res_px'] < 5:
