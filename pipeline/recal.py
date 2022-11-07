@@ -1983,6 +1983,7 @@ def solve_field(plate_file, json_conf, con, cur):
       os.system(cmd)
       new_cal_params = wcs_to_cal_params(wcs_file,json_conf)
       # save new cal params to file and then apply calib 
+      print(cal_params_file)
       cal_params = load_json_file(cal_params_file)
       cal_params['ra_center'] = new_cal_params['ra_center']
       cal_params['dec_center'] = new_cal_params['dec_center']
@@ -2019,6 +2020,8 @@ def solve_field(plate_file, json_conf, con, cur):
 def run_astr(cam_id, json_conf, con, cur):
    # check and run if needed astronomy on all calfiles matching the cam_id
    cal_index = load_json_file("/mnt/ams2/cal/freecal_index.json")
+   all_wcs_file = "/mnt/ams2/cal/wcs_index.json"
+   all_wcs = []
    for cal_file in cal_index:
       data = cal_index[cal_file]
       cal_fn = cal_file.split("/")[-1]
@@ -2037,7 +2040,13 @@ def run_astr(cam_id, json_conf, con, cur):
             plate_file, plate_img = make_plate(cal_fn, json_conf, con, cur)
             result = solve_field(plate_file, json_conf, con, cur)
             print("RESULT:", result)
- 
+   # assemble the WCS INFO across all files
+   wcs_info = load_json_file(wcs_info_file)
+   if os.path.exists(wcs_info_file):
+      wcs_cal_params = wcs_to_cal_params(wcs_file,json_conf)
+      all_wcs.append(wcs_cal_params)
+   save_json_file(all_wcs_file, all_wcs)
+   print(all_wcs_file )
    
 
 def make_plate(cal_fn, json_conf, con, cur):
