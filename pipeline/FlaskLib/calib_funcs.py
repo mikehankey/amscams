@@ -209,12 +209,14 @@ def cal_file(amsid, calib_file):
       astr_html = "<h1>Astrometry Results</h1>"
       astr_html += "<img src=" + cal_vdir + "tmp/" + astr_ngc_fn + "><br>"
       astr_html += "<img src=" + cal_vdir + "tmp/" + astr_objs_fn + ">"
-      astr_html += "<pre>"
-      if os.path.exists(caldir + astr_wcs_fn) :
-         fp = open(caldir + astr_wcs_fn)
+      astr_html += "<pre style='color: #ffffff'>"
+      if os.path.exists(caldir + "tmp/" + astr_wcs_fn) :
+         fp = open(caldir + "tmp/" + astr_wcs_fn)
          for line in fp:
             astr_html += line
          astr_html += "</pre>"
+      else:
+         astr_html += caldir + astr_wcs_fn
 
    else:
       astr_html = "No Astrometry files in " + caldir + "tmp/" + astr_objs_fn
