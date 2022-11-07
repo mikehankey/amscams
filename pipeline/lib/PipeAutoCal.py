@@ -4467,8 +4467,12 @@ def make_lens_model(cam, json_conf, merged_stars=None):
       line_dist = calc_dist((six,siy), (new_cat_x, new_cat_y))
    
    op_info = "ALLSKY7 LENS MODEL - " + json_conf['site']['ams_id'] + " " + cam_id + " " + json_conf['site']['operator_name'] 
-   res_px = round((mcp['x_fun'] + mcp['y_fun']) / 2,4)
-   res_deg = round((mcp['x_fun_fwd'] + mcp['y_fun_fwd']) / 2,4)
+   if mcp is not None:
+      res_px = round((mcp['x_fun'] + mcp['y_fun']) / 2,4)
+      res_deg = round((mcp['x_fun_fwd'] + mcp['y_fun_fwd']) / 2,4)
+   else:
+      res_px = 9999
+      res_deg = 9999
    res_info = "Stars: " + str(len(merged_stars)) + " Res PX: " + str(res_px) + " Res Deg: " + str(res_deg )
    cv2.putText(img, str(op_info),  (int(25),int(1070)), cv2.FONT_HERSHEY_SIMPLEX, .8, (255, 255, 255), 1)
    cv2.putText(img, str(res_info),  (int(1330),int(1070)), cv2.FONT_HERSHEY_SIMPLEX, .8, (255, 255, 255), 1)
