@@ -1899,7 +1899,7 @@ def wcs_to_cal_params(wcs_file,json_conf):
    fp =open(wcs_info_file, "r")
    cal_params_json = {}
    cal_root = wcs_file.split("/")[-1].replace("-plate.wcs", "")
-   cal_params_json = cal_root
+   cal_params_json['cal_root'] = cal_root
    for line in fp:
       line = line.replace("\n", "")
       field, value = line.split(" ")
