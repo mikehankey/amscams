@@ -4422,7 +4422,15 @@ def make_lens_model(cam, json_conf, merged_stars=None):
    else:
       star_db = {}
    
-   mcp = load_json_file(mcp_file)
+   #mcp = load_json_file(mcp_file)
+
+   if cfe(mcp_file) == 1:
+      mcp = load_json_file (mcp_file)
+   else:
+      mcp = None
+      first_time = 1
+
+
    star_db_file = cal_dir + "star_db-" + STATION_ID + "-" + cam + ".info"
    if merged_stars is None:
       merged_stars = load_json_file(star_db_file) 
