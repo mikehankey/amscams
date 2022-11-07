@@ -2045,7 +2045,7 @@ def run_astr(cam_id, json_conf, con, cur):
 
    #wcs_info = load_json_file(wcs_info_file)
       if os.path.exists(wcs_file):
-         wcs_cal_params = wcs_to_cal_params(wcs_info_file,json_conf)
+         wcs_cal_params = wcs_to_cal_params(wcs_file,json_conf)
          all_wcs.append(wcs_cal_params)
    save_json_file(all_wcs_file, all_wcs)
    print(all_wcs_file )
