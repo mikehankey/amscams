@@ -4410,6 +4410,18 @@ def make_lens_model(cam, json_conf, merged_stars=None):
    station_id = json_conf['site']['ams_id']
    cal_dir = "/mnt/ams2/cal/"
    mcp_file = cal_dir + "multi_poly-" + STATION_ID + "-" + cam + ".info"
+   star_file = cal_dir + "star_db-" + STATION_ID + "-" + cam + ".info"
+   if os.path.exists(mcp_file):
+      mcp = load_json_file(mcp_file)
+      star_db = {}
+   else:
+      mcp = {}
+      star_db = {}
+   if os.path.exists(star_file):
+      star_db = load_json_file(star_file)
+   else:
+      star_db = {}
+   
    mcp = load_json_file(mcp_file)
    star_db_file = cal_dir + "star_db-" + STATION_ID + "-" + cam + ".info"
    if merged_stars is None:
