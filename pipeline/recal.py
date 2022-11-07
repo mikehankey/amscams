@@ -2027,14 +2027,15 @@ def run_astr(cam_id, json_conf, con, cur):
       cal_fn = cal_file.split("/")[-1]
       cal_dir = cal_file.replace(cal_fn, "")
       wcs_info_file = cal_dir + "tmp/" + cal_fn.replace("-stacked-calparams.json", "-plate.wcs_info")
+      wcs_file = cal_dir + "tmp/" + cal_fn.replace("-stacked-calparams.json", "-plate.wcs")
       if os.path.exists(cal_dir) is False:
          print("No exists")
          continue
       if cam_id == data['cam_id']:
 
          print("Matched cam")
-         if os.path.exists(wcs_info_file) is True:
-            print("FOUND", wcs_info_file)
+         if os.path.exists(wcs_file) is True:
+            print("FOUND", wcs_file)
          else:
             print("NOT FOUND", wcs_info_file)
             plate_file, plate_img = make_plate(cal_fn, json_conf, con, cur)
@@ -2043,7 +2044,7 @@ def run_astr(cam_id, json_conf, con, cur):
    # assemble the WCS INFO across all files
 
    #wcs_info = load_json_file(wcs_info_file)
-      if os.path.exists(wcs_info_file):
+      if os.path.exists(wcs_file):
          wcs_cal_params = wcs_to_cal_params(wcs_info_file,json_conf)
          all_wcs.append(wcs_cal_params)
    save_json_file(all_wcs_file, all_wcs)
