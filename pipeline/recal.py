@@ -2041,7 +2041,8 @@ def run_astr(cam_id, json_conf, con, cur):
             result = solve_field(plate_file, json_conf, con, cur)
             print("RESULT:", result)
    # assemble the WCS INFO across all files
-   wcs_info = load_json_file(wcs_info_file)
+
+   #wcs_info = load_json_file(wcs_info_file)
    if os.path.exists(wcs_info_file):
       wcs_cal_params = wcs_to_cal_params(wcs_file,json_conf)
       all_wcs.append(wcs_cal_params)
