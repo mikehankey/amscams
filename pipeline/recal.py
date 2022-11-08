@@ -4213,7 +4213,7 @@ def apply_calib (cal_file, calfiles_data, json_conf, mcp, last_cal_params=None, 
 
       if cal_params['total_res_px'] > 6:
          # optimize pa
-         rval = 30 
+         rval = 5 
          percision = 1
          temp_cal_params = optimize_var("position_angle", cal_fn, cal_params,json_conf,rval, percision, cal_img)
          print("BEFORE POS", cal_params['position_angle'], cal_params['total_res_px'])
@@ -4232,7 +4232,7 @@ def apply_calib (cal_file, calfiles_data, json_conf, mcp, last_cal_params=None, 
             print("OPT POS NOT BETTER")
 
          # optimize pa
-         rval = 10
+         rval = 5 
          percision = 2
          temp_cal_params = optimize_var("position_angle", cal_fn, cal_params,json_conf,rval, percision, cal_img)
          print("BEFORE POS", cal_params['position_angle'], cal_params['total_res_px'])
@@ -4254,7 +4254,7 @@ def apply_calib (cal_file, calfiles_data, json_conf, mcp, last_cal_params=None, 
 
 
          # optimize el 
-         rval = 25 
+         rval = 5 
          percision = 10 
          temp_cal_params = optimize_var("center_el", cal_fn, cal_params,json_conf,rval, percision, cal_img)
          print("AFTER EL", temp_cal_params['center_el'], temp_cal_params['total_res_px'])
@@ -4440,8 +4440,8 @@ def apply_calib (cal_file, calfiles_data, json_conf, mcp, last_cal_params=None, 
 
 
       # optimize / tweek vars if res is too high
-      if cal_params['total_res_px'] > 2:
-         rval = 1
+      if cal_params['total_res_px'] > 3:
+         rval = 4 
          percision = 200
 
          ores = cal_params['total_res_px']
