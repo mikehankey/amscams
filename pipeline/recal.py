@@ -1384,7 +1384,6 @@ def batch_review(station_id, cam_id, con, cur, json_conf, limit=25, work_type="t
    cal_fns = []
 
    print("BATCH REVEIW", len(rows), "ROWS")
-
    for row in rows:
       cal_fn, timestmp, t_stars, avg_res = row
       all_stars.append(t_stars)
@@ -2020,6 +2019,43 @@ def solve_field(plate_file, json_conf, con, cur):
       os.system(cmd)
       return(False)
 
+def best_wcs(cal_fn, cal_params, oimg, con, cur, mcp):
+
+   all_wcs_file = "/mnt/ams2/cal/wcs_index.json"
+   if os.path.exists(all_wcs_file) is True:
+      all_wcs = load_json_file(all_wcs_file)
+      print(all_wcs)
+   else:
+      print("NO WCS")
+      return(cal_params)
+   best_cp = cal_params.copy()
+
+   for row in all_wcs:
+      new_cp = cal_params.copy()
+      #print(cam_id, row)
+      if row['cam_id'] == cam_id:
+         #print(row['center_az'], row['center_el'], row['position_angle'], row['pixscale'] )
+         new_cp['center_az'] = row['center_az']
+         new_cp['center_el`'] = row['center_el']
+         new_cp['position_angle'] = row['position_angle']
+         new_cp['pixscale'] = row['pixscale']
+         new_cp = update_center_radec(row['cal_root'],new_cp,json_conf)
+         print(new_cp['ra_center'], new_cp['dec_center'])
+         new_cp['cat_image_stars'] = pair_star_points(cal_fn, oimg, new_cp, json_conf, con, cur, mcp, True)
+         new_cp , bad_stars, marked_img = eval_cal_res(cal_fn, json_conf, new_cp.copy(), oimg,None,None,new_cp['cat_image_stars'])
+
+         oscore =  len(best_cp['cat_image_stars']) / best_cp['total_res_px']
+         score =  len(new_cp['cat_image_stars']) / new_cp['total_res_px']
+         #if score < oscore:
+
+         if new_cp['total_res_px'] <  best_cp['total_res_px'] : #or score < oscore:
+            best_cp = new_cp
+            print("WCS BEST ", row['cal_root'], score, "SCORE", len(new_cp['cat_image_stars']),  "STARS", new_cp['total_res_px'], "RES PX")
+         else:
+            print("WCS ", row['cal_root'], score, "SCORE", len(new_cp['cat_image_stars']),  "STARS", new_cp['total_res_px'], "RES PX", best_cp['total_res_px'])
+         #print(new_cp['total_res_px'])
+   return(best_cp)
+
 
 def run_astr(cam_id, json_conf, con, cur):
    # check and run if needed astronomy on all calfiles matching the cam_id
@@ -2052,6 +2088,10 @@ def run_astr(cam_id, json_conf, con, cur):
          wcs_cal_params = wcs_to_cal_params(wcs_file,json_conf)
          all_wcs.append(wcs_cal_params)
    save_json_file(all_wcs_file, all_wcs)
+
+   for row in all_wcs:
+      if row['cam_id'] == cam_id:
+         print(row['center_az'], row['center_el'], row['position_angle'], row['pixscale'] )
    print(all_wcs_file )
    
 
@@ -4122,6 +4162,20 @@ def apply_calib (cal_file, calfiles_data, json_conf, mcp, last_cal_params=None, 
       star_points, show_img = get_star_points(cal_file, oimg, cal_params, station_id, cam_id, json_conf)
       cal_params['user_stars'] = star_points
       cal_params['star_points'] = star_points
+
+
+      # try wcs 
+      temp_cp = best_wcs(cal_fn, cal_params, oimg, con, cur, mcp)
+      print("new/old", temp_cp['total_res_px'] , cal_params['total_res_px'])
+      if temp_cp['total_res_px'] < cal_params['total_res_px']:
+         cal_params = temp_cp
+      cal_params = temp_cp.copy()
+      cal_params['cat_image_stars'] = pair_star_points(cal_fn, oimg, cal_params, json_conf, con, cur, mcp, True)
+
+      temp_cp, bad_stars, marked_img = eval_cal_res(cal_fn, json_conf, cal_params.copy(), oimg,None,None,cal_params['cat_image_stars'])
+      print("AFTER WCS", len(temp_cp['cat_image_stars']), "STARS", temp_cp['total_res_px'], "RES PX")
+
+      #input("WCS BETTER?")
 
       if len(cal_params['user_stars']) > 0:
          cat_star_ratio = len(cal_params['cat_image_stars']) / len(cal_params['star_points'])
@@ -7073,6 +7127,7 @@ def characterize_best(cam_id, con, cur, json_conf,limit=50, cal_fns=None):
 
    # select the best stars based on the dist/res
    best_stars = []
+   not_best_stars = []
 
    ic = 0
    for star in updated_stars_zp:
@@ -7103,7 +7158,7 @@ def characterize_best(cam_id, con, cur, json_conf,limit=50, cal_fns=None):
          print("MAG FAIL!", mag, star_flux)
          fact += 10
       print("FACT", fact , res_px, mag, star_flux)
-      if .25 <= fact <= 1.8:
+      if .25 <= fact <= 1.8 :
          #cv2.line(base_image, (int(zp_cat_x),int(zp_cat_y)), (int(img_x),int(img_y)), (0,255,0), 2)
          (cal_fn,dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,img_x,img_y,res_px,star_flux) = updated_stars[ic]
 
@@ -7116,6 +7171,7 @@ def characterize_best(cam_id, con, cur, json_conf,limit=50, cal_fns=None):
       else:
          (cal_fn,dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,img_x,img_y,res_px,star_flux) = updated_stars[ic]
          cv2.line(base_image, (int(new_cat_x),int(new_cat_y)), (int(img_x),int(img_y)), (0,0,255), 2)
+         not_best_stars.append((cal_fn,dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,zp_cat_x,zp_cat_y,img_x,img_y,res_px,star_flux)) 
 
       ic += 1
 
@@ -7199,8 +7255,10 @@ def characterize_best(cam_id, con, cur, json_conf,limit=50, cal_fns=None):
    save_json_file("/mnt/ams2/cal/" + station_id + "_" + cam_id + "_MERGED_STARS.json", best_stars)
    print("SAVED STARS FOR MODEL! /mnt/ams2/cal/" + station_id + "_" + cam_id + "_MERGED_STARS.json", len(best_stars), "stars")
    if len(best_stars) < 10:
-      print("LESS THAN 10 stars IN MODEL ABORT!")
-      exit()
+      print("LESS THAN 10 stars IN MODEL ABORT!", len(not_best_stars))
+      best_stars = not_best_stars
+      return()
+      #exit()
 
 
 def plot_star_chart(base_image, cat_stars, zp_cat_stars):
