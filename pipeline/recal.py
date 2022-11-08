@@ -1013,7 +1013,10 @@ def start_calib(cal_fn, json_conf, calfiles_data, mcp=None):
    station_id = json_conf['site']['ams_id']
    (f_datetime, cam_id, f_date_str,fy,fmin,fd, fh, fm, fs) = convert_filename_to_date_cam(cal_fn)
 
-   cal_img, cal_params = view_calfile(cam_id, cal_fn, con, cur, json_conf, calfiles_data, None, mcp)
+   if cal_fn in calfiles_data:
+      cal_img, cal_params = view_calfile(cam_id, cal_fn, con, cur, json_conf, calfiles_data, None, mcp)
+   else:
+      print("CAL FN", cal_fn, "is no longer valid? Maybe you should re-run the recal.py status all")
    #print("OK")
    #exit()
 
@@ -5220,9 +5223,11 @@ def view_calfile(cam_id, cal_fn, con, cur, json_conf, calfiles_data= None, cp = 
    cal_image_file = cal_fn.replace("-calparams.json", ".png")
    cal_dir = cal_dir_from_file(cal_image_file)
    cal_json_file = get_cal_json_file(cal_dir)
-
+   if cal_json_file is None:
+      return (None,None)
    print("CAL JSON FILE IS : ", cal_json_file)
 
+   
    cal_json_fn = cal_json_file.split("/")[-1]
 
    if os.path.exists(cal_dir + cal_img_fn):
