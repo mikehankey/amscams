@@ -238,6 +238,9 @@ def refit_meteor(meteor_file, con, cur, json_conf, mcp = None, last_best_dict = 
       mcp_file = autocal_dir + "multi_poly-" + station_id + "-" + cam_id + ".info"
       if os.path.exists(mcp_file) == 1:
          mcp = load_json_file(mcp_file)
+         # reset mcp if it is bad
+         if mcp['x_fun'] > 5:
+            mcp = None
 
    day = meteor_file[0:10]
    mdir = "/mnt/ams2/meteors/" + day + "/" 
@@ -1049,6 +1052,11 @@ def start_calib(cal_fn, json_conf, calfiles_data, mcp=None):
       mcp_file = autocal_dir + "multi_poly-" + station_id + "-" + cam_id + ".info"
       if os.path.exists(mcp_file) == 1:
          mcp = load_json_file(mcp_file)
+         # reset mcp if it is bad
+         if mcp['x_fun'] > 5:
+            mcp = None
+
+
 
    if mcp is not None:
       cal_params['x_poly'] = mcp['x_poly']
@@ -1059,6 +1067,15 @@ def start_calib(cal_fn, json_conf, calfiles_data, mcp=None):
       if "cal_version" not in mcp:
          mcp['cal_version'] = 0
       mcp['cal_version'] += 1
+
+      # reset mcp if it is bad
+      if mcp['x_fun'] > 5:
+         mcp = None
+         cal_params['x_poly'] = np.zeros(shape=(15,), dtype=np.float64)
+         cal_params['y_poly'] = np.zeros(shape=(15,), dtype=np.float64)
+         cal_params['x_poly_fwd'] = np.zeros(shape=(15,), dtype=np.float64)
+         cal_params['y_poly_fwd'] = np.zeros(shape=(15,), dtype=np.float64)
+
    else:
       mcp = None
       cal_params['x_poly'] = np.zeros(shape=(15,), dtype=np.float64)
@@ -1798,6 +1815,19 @@ def pair_star_points(cal_fn, oimg, cal_params, json_conf, con, cur, mcp, save_im
 
    # loop over each star point in the image and find a pair
    up_cat_image_stars = []
+   if "star_points" not in cal_params:
+      cal_dir = "/mnt/ams2/cal/freecal/" + cal_fn.replace("-stacked-calparams.json", "") + "/tmp/" 
+      if os.path.exists(cal_dir + cal_fn.replace("-stacked-calparams.json", "-plate.jpg")):
+         cal_img = cv2.imread(cal_dir + cal_fn.replace("-stacked-calparams.json", "-plate.jpg"))
+      else:
+         cal_img = None
+      resp = get_star_points(cal_fn, cal_img, cal_params, station_id, cam_id, json_conf)
+      if resp is not None:
+         star_points, star_img = resp
+      else:
+         print("GET STAR POINTS RESP:", resp)
+         star_points = []
+      cal_params['star_points'] = star_points
    for img_x,img_y,star_flux in cal_params['star_points']:
       # this is not really flux here, but the brightest pixel!
       star_obj = {}
@@ -2005,7 +2035,7 @@ def solve_field(plate_file, json_conf, con, cur):
 
    cmd = AST_BIN + "solve-field " + new_plate_file + " --cpulimit=30 --verbose --overwrite --crpix-center -d 1-40 --scale-units dw --scale-low 60 --scale-high 120 "
    #-S " + solved_file + " >" + astrout
-   cmd = AST_BIN + "solve-field " + new_plate_file + " --cpulimit=30 --verbose --overwrite --scale-units dw --scale-low 60 --scale-high 120 | grep at >"  + astrout
+   cmd = AST_BIN + "solve-field " + new_plate_file + " --cpulimit=30 --verbose --overwrite --scale-units dw --scale-low 60 --scale-high 120 " #| grep at >"  + astrout
    print(cmd)
    os.system(cmd)
    print(cmd)
@@ -2158,7 +2188,6 @@ def make_plate(cal_fn, json_conf, con, cur):
       return(plate_file, stack_jpg)
    else:
       resp = get_star_points(cal_fn, clean_cal_img, cal_params, station_id, cam_id, json_conf)
-
       if resp is not None:
          star_points, star_img = resp
       else:
@@ -4115,12 +4144,12 @@ def apply_calib (cal_file, calfiles_data, json_conf, mcp, last_cal_params=None, 
             y_poly, x_poly_fwd, y_poly_fwd, res_px, res_deg, ai_weather, ai_weather_conf, cal_version, last_update) = calfiles_data[cal_file]
          cal_params = cal_data_to_cal_params(cal_file, calfiles_data[cal_file],json_conf, mcp)
          print("CAL PARAMS:", cal_params.keys())
-         if 155 <= pixel_scale <= 159:
-            print("pixel scale looks ok")
-         else:
-            pixel_scale = 157.2
-            cal_params['pixscale'] = pixel_scale 
-            print("fix pixel scale to 157.2")
+         #if 155 <= pixel_scale <= 159:
+         #   print("pixel scale looks ok")
+         #else:
+         ##   pixel_scale = 157.2
+         #   cal_params['pixscale'] = pixel_scale 
+         #   print("fix pixel scale to 157.2")
          for key in cal_params:
             print("CAL:", key, cal_params[key])
          cam_id = camera_id
@@ -4249,6 +4278,7 @@ def apply_calib (cal_file, calfiles_data, json_conf, mcp, last_cal_params=None, 
       temp_cp, bad_stars, marked_img = eval_cal_res(cal_fn, json_conf, cal_params.copy(), oimg,None,None,cal_params['cat_image_stars'])
       print("AFTER WCS", len(temp_cp['cat_image_stars']), "STARS", temp_cp['total_res_px'], "RES PX")
 
+      #input("WCS BETTER?")
 
       if len(cal_params['user_stars']) > 0:
          cat_star_ratio = len(cal_params['cat_image_stars']) / len(cal_params['star_points'])
@@ -8042,6 +8072,7 @@ def wizard(station_id, cam_id, con, cur, json_conf, file_limit=25):
    characterize_best(cam_id, con, cur, json_conf, file_limit, cal_fns)
    # run lens model a second time
    lens_model(cam_id, con, cur, json_conf, cal_fns)
+   input("WAIT")
 
    # now the lens model should be made within around to less than 1PX res. 
    # if it is less than 2px that is fine as each indiviual capture will
@@ -8412,6 +8443,9 @@ if __name__ == "__main__":
       print(mcp_file)
       if os.path.exists(mcp_file) == 1:
          mcp = load_json_file(mcp_file)
+         # reset mcp if it is bad
+         if mcp['x_fun'] > 5:
+            mcp = None
       else:
          mcp = None
 
