@@ -1832,7 +1832,7 @@ def pair_star_points(cal_fn, oimg, cal_params, json_conf, con, cur, mcp, save_im
       if resp is not None:
          star_points, star_img = resp
       else:
-         print("GET STAR POINTS RESP:", resp)
+         #print("GET STAR POINTS RESP:", resp)
          star_points = []
       cal_params['star_points'] = star_points
    for img_x,img_y,star_flux in cal_params['star_points']:
@@ -1845,7 +1845,7 @@ def pair_star_points(cal_fn, oimg, cal_params, json_conf, con, cur, mcp, save_im
 
 
       cv2.circle(show_img, (int(img_x), int(img_y)), 5, (128,128,128),1)
-      print("STAR POINT:", img_x, img_y, star_flux)
+      #print("STAR POINT:", img_x, img_y, star_flux)
       close_stars = find_close_stars(star_obj)
       if len(close_stars) >= 1:
          for star in close_stars[0:1]:
@@ -1865,21 +1865,21 @@ def pair_star_points(cal_fn, oimg, cal_params, json_conf, con, cur, mcp, save_im
                res_px = calc_dist((img_x,img_y),(new_cat_x,new_cat_y))
                match_dist = angularSeparation(ra,dec,img_ra,img_dec)
                if res_px < 20:
-                  print("     KEEP CLOSE STAR:", name, mag, new_cat_x, new_cat_y, img_x, img_y, star_flux, res_px)
+                  #print("     KEEP CLOSE STAR:", name, mag, new_cat_x, new_cat_y, img_x, img_y, star_flux, res_px)
                   color = [0,255,0]
                   up_cat_image_stars.append((name,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,img_x,img_y,res_px,star_flux) )
                else:
                   color = [0,0,255]
-                  print("     REJECT CLOSE STAR:", name, mag, new_cat_x, new_cat_y, img_x, img_y, star_flux, res_px)
+                  #print("     REJECT CLOSE STAR:", name, mag, new_cat_x, new_cat_y, img_x, img_y, star_flux, res_px)
                cv2.line(show_img, (int(zp_cat_x),int(zp_cat_y)), (int(img_x),int(img_y)), color, 1)
                cv2.putText(show_img, str(dist)[0:4],  (int(new_cat_x),int(new_cat_y)), cv2.FONT_HERSHEY_SIMPLEX, .4, (200,200,200), 1)
-            else:
-                  print("     NONE CLOSE STAR:", name, mag, new_cat_x, new_cat_y, img_x, img_y, star_flux)
+            #else:
+                  #print("     NONE CLOSE STAR:", name, mag, new_cat_x, new_cat_y, img_x, img_y, star_flux)
             #if SHOW == 1:
             #   cv2.imshow('pepe', show_img)
             #   cv2.waitKey(30)
-      else:
-         print("     NO CLOSE STARS FOUDN TO THIS POINT")
+      #else:
+      #   print("     NO CLOSE STARS FOUDN TO THIS POINT")
 
    cal_dir = "/mnt/ams2/cal/freecal/" + cal_fn.replace("-stacked-calparams.json", "/")
 
@@ -4715,7 +4715,7 @@ def apply_calib (cal_file, calfiles_data, json_conf, mcp, last_cal_params=None, 
       #if SHOW == 1:
       #   cv2.imshow("pepe", cal_img)
       #   cv2.waitKey(30)
-      print("STAR POINTS / CAT STARS / CAL RES:", len(cal_params['star_points']), len(cal_params['cat_image_stars']), cal_params['total_res_px'])
+      #print("STAR POINTS / CAT STARS / CAL RES:", len(cal_params['star_points']), len(cal_params['cat_image_stars']), cal_params['total_res_px'])
       if (cal_params['total_res_px'] > 5 or len(cal_params['cat_image_stars']) < 8) and cal_params['reapply'] > 5:
          #delete_cal_file(cal_fn, con, cur, json_conf)
          print("\n\n (*** DELETE BAD CAL FILE? ***)" + cal_fn)
