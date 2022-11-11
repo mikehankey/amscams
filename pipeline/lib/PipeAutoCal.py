@@ -5726,6 +5726,12 @@ def get_cal_files_old(meteor_file=None, cam=None):
    
 
 def solve_field(image_file, image_stars=[], json_conf={}):
+   if os.path.exists("/usr/local/astrometry/bin/solve-field") is True:
+      AST_BIN = "/usr/local/astrometry/bin/"
+   elif os.path.exists("/usr/bin/solve-field") is True:
+      AST_BIN = "/usr/bin/"
+
+
    print("Solve field", image_file)
    ifn = image_file.split("/")[-1]
    idir = image_file.replace(ifn, "")
