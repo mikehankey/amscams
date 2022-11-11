@@ -4347,7 +4347,6 @@ def apply_calib (cal_file, calfiles_data, json_conf, mcp, last_cal_params=None, 
 
       if len(cal_params['user_stars']) > 0:
          cat_star_ratio = len(cal_params['cat_image_stars']) / len(cal_params['star_points'])
-      print("STAR POINTS/CAT STARS", len(star_points), len(cal_params['cat_image_stars']), cat_star_ratio)
       #for star in cal_params['user_stars']:
          #print("STAR POINT", star)
       #for star in cal_params['cat_image_stars']:
@@ -4457,7 +4456,7 @@ def apply_calib (cal_file, calfiles_data, json_conf, mcp, last_cal_params=None, 
 
 
       if len(cal_params['cat_image_stars']) < 10:
-         print("LOW STARS / GET MORE")
+         #print("LOW STARS / GET MORE")
            
          if os.path.exists("/mnt/ams2/cal/bad_cals/") is False:
             os.makedirs("/mnt/ams2/cal/bad_cals/")
@@ -4466,9 +4465,9 @@ def apply_calib (cal_file, calfiles_data, json_conf, mcp, last_cal_params=None, 
          #os.system(cmd)
       else:
          print("CAT STARS", len(cal_params['cat_image_stars']))
-         for star in cal_params['cat_image_stars']:
-            dcname,mag,ra,dec,img_ra,img_dec,match_dist,org_x,org_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist,star_int = star
-            print(dcname, mag, star_int, cat_dist)
+         #for star in cal_params['cat_image_stars']:
+         #   dcname,mag,ra,dec,img_ra,img_dec,match_dist,org_x,org_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist,star_int = star
+            #print(dcname, mag, star_int, cat_dist)
 
       temp = []
       rez = np.median([row[-2] for row in cal_params['cat_image_stars']])
@@ -4512,7 +4511,6 @@ def apply_calib (cal_file, calfiles_data, json_conf, mcp, last_cal_params=None, 
       good_temp = []
       for star in  temp:
          dcname,mag,ra,dec,img_ra,img_dec,match_dist,org_x,org_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist,star_int = star
-         print("REZ", cat_dist, rez)
          if cat_dist <= rez * 2 and cat_dist < 10:
             print("KEEP", star)
             good_temp.append(star) 
@@ -5231,7 +5229,7 @@ def cat_view(cal_fn, con, cur, json_conf, mcp=None):
       cv2.waitKey(30)
    for star in cat_stars:
       (name,mag,ra,dec,new_cat_x,new_cat_y,zp_cat_x,zp_cat_y) = star
-      print(name,mag,new_cat_x,new_cat_y,zp_cat_x,zp_cat_y)
+      #print(name,mag,new_cat_x,new_cat_y,zp_cat_x,zp_cat_y)
 
    
 
