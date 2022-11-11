@@ -7051,9 +7051,10 @@ def autocal(image_file, json_conf, show = 0, heal_only=0):
             os.system(cmd)
             #cmd = "./Process.py refit " + cpf
             cpfn = cpf.split("/")[-1]
-            cmd = "./recal.py apply_calib " + cpfn
-            print(cmd)
-            os.system(cmd)
+
+            #cmd = "./recal.py apply_calib " + cpfn
+            #print(cmd)
+            #os.system(cmd)
      
             ifn, idir = fn_dir(image_file)
             wild = image_file.replace(".png", ".*")
@@ -7225,9 +7226,9 @@ def autocal(image_file, json_conf, show = 0, heal_only=0):
    #cmd = "./Process.py refit " + cal_params_file 
 
    cpfn = cal_params_file.split("/")[-1]
-   cmd = "./recal.py apply_calib " + cpfn 
-   print(cmd)
-   os.system(cmd)
+   #cmd = "./recal.py apply_calib " + cpfn 
+   #print(cmd)
+   #os.system(cmd)
    #os.system(cmd)
 
    cat_stars = get_catalog_stars(cal_params)
@@ -7273,11 +7274,13 @@ def autocal(image_file, json_conf, show = 0, heal_only=0):
 
    cmd = "mv " + tdir + saf + " " + sdir
    os.system(cmd)
-   #cmd = "./Process.py refit " + new_cal_file
-   cpfn = new_cal_file.split("/")[-1]
-   cmd = "./recal.py apply_calib " + cpfn 
-   print(cmd)
+
+   cmd = "./Process.py refit " + new_cal_file
    os.system(cmd)
+   cpfn = new_cal_file.split("/")[-1]
+   #cmd = "./recal.py apply_calib " + cpfn 
+   #print(cmd)
+   #os.system(cmd)
 
 
 def cat_star_report(cat_image_stars, multi=2.5):
