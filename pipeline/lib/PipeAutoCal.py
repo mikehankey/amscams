@@ -5730,6 +5730,9 @@ def solve_field(image_file, image_stars=[], json_conf={}):
       AST_BIN = "/usr/local/astrometry/bin/"
    elif os.path.exists("/usr/bin/solve-field") is True:
       AST_BIN = "/usr/bin/"
+   else:
+      print("Astrometry not installed!")
+      exit()
 
 
    print("Solve field", image_file)
