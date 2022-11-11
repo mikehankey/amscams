@@ -436,7 +436,6 @@ def refit_meteor(meteor_file, con, cur, json_conf, mcp = None, last_best_dict = 
          cnts = star_obj['cnts']
          cv2.circle(show_frame, (int(x),int(y)), 15, (0,0,255),1)
 
-         #print("BAD STAR:", star_obj['reject_reason'], star_obj['pxd'], star_obj['star_name'], star_obj['star_x'], star_obj['star_y'], cnts, star_obj['mag'], star_obj['star_flux'])
 
       for star_obj in star_objs:
          cat_image_stars.append((star_obj['star_name'],star_obj['mag'],star_obj['ra'],star_obj['dec'],star_obj['img_ra'],star_obj['img_dec'],star_obj['total_res_deg'],star_obj['proj_x'],star_obj['proj_y'],star_obj['img_az'],star_obj['img_el'],star_obj['cat_x'],star_obj['cat_y'],star_obj['star_x'],star_obj['star_y'],star_obj['total_res_px'],star_obj['star_flux']))
@@ -444,7 +443,6 @@ def refit_meteor(meteor_file, con, cur, json_conf, mcp = None, last_best_dict = 
          x = star_obj['star_x']
          y = star_obj['star_y']
          cnts = star_obj['cnts']
-         #print("GOOD STAR:", star_obj['pxd'], star_obj['star_name'], star_obj['star_x'], star_obj['star_y'], cnts, star_obj['mag'], star_obj['star_flux'])
          if SHOW == 1:
             cv2.circle(show_frame, (int(x),int(y)), 5, (0,255,0),1)
             cv2.imshow('pepe', show_frame)
@@ -496,7 +494,6 @@ def refit_meteor(meteor_file, con, cur, json_conf, mcp = None, last_best_dict = 
       mj['cp']['cat_image_stars'] = []
 
    for star in mj['cp']['cat_image_stars']:
-      print("CAT IMG STAR:", star)
       (dcname,mag,ra,dec,img_ra,img_dec,match_dist,up_cat_x,up_cat_y,img_az,img_el,up_cat_x,up_cat_y,six,siy,res_px,bp) = star
       new_cat_x, new_cat_y = get_xy_for_ra_dec(mj['cp'], ra, dec)
       res_px = calc_dist((six,siy),(new_cat_x,new_cat_y))
@@ -513,7 +510,6 @@ def refit_meteor(meteor_file, con, cur, json_conf, mcp = None, last_best_dict = 
 
    new_cat_image_stars = []
    for star in mj['cp']['cat_image_stars']:
-      print("NEW CAT IMG STAR:", star)
       if star[-2] <= med_rez * 3:
          new_cat_image_stars.append(star)
       else:
@@ -2861,12 +2857,10 @@ def get_star_points(cal_fn, oimg, cp, station_id, cam_id, json_conf):
       desc2 = str(int(star_obj['star_flux']))  #+ " / " + str(len(star_obj['cnts'])) + " / " + str(star_obj['radius'])
       cv2.putText(show_img, desc,  (star_obj['x1'],star_obj['y2']+10), cv2.FONT_HERSHEY_SIMPLEX, .4, (200,200,200), 1)
       cv2.putText(show_img, desc2,  (star_obj['x1'],star_obj['y1']-10), cv2.FONT_HERSHEY_SIMPLEX, .4, (200,200,200), 1)
-      #for key in star_obj:
-      #   print("   STAR: ", key, star_obj[key])
 
 
-   for row in new_star_points:
-      print("   STAR: ", row)
+   #for row in new_star_points:
+   #   print("   STAR: ", row)
 
    if SHOW == 1:
       cv2.imshow('pepe', show_img)
@@ -4819,7 +4813,6 @@ def recenter_fov(cal_fn, cal_params, cal_img, stars, json_conf, extra_text="", t
    #adj_az, adj_el, adj_pos, adj_px = res['x']
    this_poly = res['x']
 
-   #print("Last poly:", this_poly)
 
    if type(nc['x_poly']) is not list:
       nc['x_poly'] = nc['x_poly'].tolist()
@@ -4850,8 +4843,8 @@ def recenter_fov(cal_fn, cal_params, cal_img, stars, json_conf, extra_text="", t
  
    cat_stars, short_bright_stars, cat_image = get_catalog_stars(nc)
    #nc['short_bright_stars'] = short_bright_stars
-   for star in cat_stars:
-      print(star[-2])
+   #for star in cat_stars:
+   #   print(star[-2])
 
    end_res = nc['total_res_px']
    if end_res > start_res:
@@ -6072,7 +6065,6 @@ def get_image_stars(cal_image_file, con, cur, json_conf,force=False):
          img_x, img_y, cat_star_flux, star_yn, star_pd, star_found, lens_model_version, \
          slope, zp_slope, dist, zp_dist) = pstar
 
-         print("POSSIBLE STAR:", zp_cat_x, zp_cat_y)
         
          desc = str(int(mag))
          cv2.putText(show_img, desc,  (int(zp_cat_x+20),int(zp_cat_y)), cv2.FONT_HERSHEY_SIMPLEX, .5, (128,128,128), 2)
@@ -6119,7 +6111,6 @@ def get_image_stars(cal_image_file, con, cur, json_conf,force=False):
 
 
 
-      print("IMG STAR:", star_obj['x'], star_obj['y'])
    if SHOW == 1:
       cv2.waitKey(30)
    con.commit()
@@ -6484,7 +6475,6 @@ def find_stars_with_catalog(cal_fn, con, cur, json_conf,mcp=None, cp=None, cal_i
          name = "---"
       else:
          name = so['star_name']
-      #print("STAR:", name, so['mag'], so['star_flux'], so['center_dist'], round(so['total_res_deg'],2), round(so['total_res_px'],2), so['star_yn'] )
    final_res = np.mean(all_res) 
    if final_res < 2:
       final_res = 2
