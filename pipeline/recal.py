@@ -1009,6 +1009,12 @@ def delete_cal_file(cal_fn, con, cur, json_conf):
       cur.execute(sql, dvals)
       con.commit()
       #print(sql, dvals)
+   bad_cal_dir = "/mnt/ams2/cal/bad_cals/"
+   if os.path.exists(bad_cal_dir) is False:
+      os.makedirs(bad_cal_dir)
+   cmd = "mv " + cal_dir + " " + bad_cal_dir
+   print("PURGE CAL\n", (cmd))
+   #os.system(cmd)
 
 def start_calib(cal_fn, json_conf, calfiles_data, mcp=None):
 
@@ -1737,6 +1743,8 @@ def batch_review(station_id, cam_id, con, cur, json_conf, limit=25, work_type="t
 def revert_to_wcs(cal_fn,mcp=None):
    cal_dir = "/mnt/ams2/cal/freecal/" + cal_fn.replace("-stacked-calparams.json", "") + "/"
    cal_file = cal_dir + cal_fn
+   cal_img_file = cal_dir + "tmp/" + cal_fn.replace("-stacked-calparams.json", "-plate.jpg")
+   cal_img = cv2.imread(cal_img_file)
    wcs_file = cal_dir + "tmp/" + cal_fn.replace("-stacked-calparams.json", "-plate.wcs")
    wcs_info_file = cal_dir + "tmp/" + cal_fn.replace("-stacked-calparams.json", "-plate.wcs_info")
    print(cal_file, wcs_info_file)
@@ -1772,7 +1780,9 @@ def revert_to_wcs(cal_fn,mcp=None):
       cal_params['y_poly'] = np.zeros(shape=(15,), dtype=np.float64)
       cal_params['x_poly_fwd'] = np.zeros(shape=(15,), dtype=np.float64)
       cal_params['y_poly_fwd'] = np.zeros(shape=(15,), dtype=np.float64)
-
+   cal_params['cat_image_stars'] = pair_star_points(cal_fn, cal_img, cal_params.copy(), json_conf, con, cur, mcp, save_img = False)
+   stars,cat_stars = get_paired_stars(cal_fn, cal_params, con, cur)
+   temp_cal_params, cat_stars = recenter_fov(cal_fn, cal_params, cal_img.copy(),  stars, json_conf, "")
    save_json_file(cal_file, cal_params)
    return(cal_params)
 
@@ -2015,7 +2025,7 @@ def solve_field(plate_file, json_conf, con, cur):
    plate_fn = plate_file.split("/")[-1]
    cal_dir = plate_file.replace( plate_fn, "")
 
-   print("caldir:", cal_dir)
+   #print("caldir:", cal_dir)
 
    plate_fn = plate_file.split("/")[-1]
    plate_dir = plate_file.replace(plate_fn, "")
@@ -2035,7 +2045,8 @@ def solve_field(plate_file, json_conf, con, cur):
 
    cmd = AST_BIN + "solve-field " + new_plate_file + " --cpulimit=30 --verbose --overwrite --crpix-center -d 1-40 --scale-units dw --scale-low 60 --scale-high 120 "
    #-S " + solved_file + " >" + astrout
-   cmd = AST_BIN + "solve-field " + new_plate_file + " --cpulimit=30 --verbose --overwrite --scale-units dw --scale-low 60 --scale-high 120 " #| grep at >"  + astrout
+   #cmd = AST_BIN + "solve-field " + new_plate_file + " --cpulimit=30 --verbose --overwrite --scale-units dw --scale-low 60 --scale-high 120 " #| grep at >"  + astrout
+   cmd = AST_BIN + "solve-field " + new_plate_file + " --cpulimit=30 --verbose --overwrite  --scale-units arcsecperpix --scale-low 150 --scale-high 170" #| grep at >"  + astrout
    print(cmd)
    os.system(cmd)
    print(cmd)
@@ -2154,11 +2165,55 @@ def run_astr(cam_id, json_conf, con, cur):
          all_wcs.append(wcs_cal_params)
    save_json_file(all_wcs_file, all_wcs)
 
+   groups = {}
+
    for row in all_wcs:
+      groups = {}
       if row['cam_id'] == cam_id:
          print(row['center_az'], row['center_el'], row['position_angle'], row['pixscale'] )
+         groups = find_make_group(row, groups)
    print(all_wcs_file )
-   
+   for gid in groups:
+      print(gid, groups[gid])
+  
+def find_make_group(row, groups):
+   if len(groups) == 0: 
+      groups[0] = {}
+      groups[0]['az'] = []
+      groups[0]['el'] = []
+      groups[0]['pos'] = []
+      groups[0]['pxs'] = []
+      groups[0]['az'].append(row['center_az'])
+      groups[0]['el'].append(row['center_el'])
+      groups[0]['pos'].append(row['position_angle']) 
+      groups[0]['pxs'].append(row['pixscale'])
+      return(groups)
+   else:
+      for gid in groups:
+         mean_az = np.mean(groups[gid]['az'])
+         mean_el = np.mean(groups[gid]['el'])
+         mean_pos = np.mean(groups[gid]['pos'])
+         mean_pxs = np.mean(groups[gid]['pxs'])
+
+         az_diff = abs(row['center_az'] - mean_az)
+         el_diff = abs(row['center_el'] - mean_el)
+         pos_diff = abs(row['position_angle'] - mean_pos)
+         pxs_diff = abs(row['pixscale'] - mean_pxs)
+
+         if az_diff < 1 and el_diff < 1 and pos_diff > 1 and pxs_diff > 1:
+            groups[gid]['az'].append(row['center_az'])
+            groups[gid]['el'].append(row['center_el'])
+            groups[gid]['pos'].append(row['position_angle']) 
+            groups[gid]['pxs'].append(row['pixscale'])
+            return(groups)
+   # no group found and not first group so make new group
+   gid = max(groups.keys()) + 1
+   groups[gid]['az'].append(row['center_az'])
+   groups[gid]['el'].append(row['center_el'])
+   groups[gid]['pos'].append(row['position_angle']) 
+   groups[gid]['pxs'].append(row['pixscale'])
+   return(groups)
+
 
 def make_plate(cal_fn, json_conf, con, cur):
 
@@ -3814,7 +3869,7 @@ def batch_apply_bad(cam_id, con, cur, json_conf):
       mcp['x_poly_fwd'] = np.zeros(shape=(15,), dtype=np.float64)
       mcp['y_poly_fwd'] = np.zeros(shape=(15,), dtype=np.float64)
 
-
+   print("DEBUG1")
    # get avg res and avg stars
    cal_files = []
    sql = """
@@ -3826,26 +3881,34 @@ def batch_apply_bad(cam_id, con, cur, json_conf):
     ORDER BY score DESC
    """
 
+   print("DEBUG1.1")
    dvals = ["%" + cam_id + "%"]
+   print(sql, dvals)
    cur.execute(sql, dvals)
+   print("DEBUG1.1.1")
    rows = cur.fetchall()
    cal_fns = []
+   print("DEBUG1.2")
 
    calfile_paired_star_stats = {}
    stats_res = []
    stats_stars = []
    for row in rows:
+
       cal_fn, total_stars, avg_res , score = row
+      print(cal_fn)
       cal_files.append((cal_fn, total_stars, avg_res , score))
       calfile_paired_star_stats[cal_fn] = [cal_fn,total_stars,avg_res]
       stats_res.append(avg_res)
       stats_stars.append(total_stars)
 
+   print("DEBUG2")
    avg_res = np.mean(stats_res)
    avg_stars = np.mean(stats_stars)
 
    cal_files = sorted(cal_files, key=lambda x: x[2], reverse=True)
    for row in cal_files:
+      print(cal_fn)
       (cal_fn, total_stars, res , score) = row
       if res > avg_res:
          print("REDO:", cal_fn, total_stars, res)
@@ -3871,6 +3934,7 @@ def batch_apply_bad(cam_id, con, cur, json_conf):
                      print("Resolve failed! Just delete this calfile!!! It can't be saved.")
 
       print(cal_fn, total_stars, res, score)
+   print("DEBUG3")
 
 
 
@@ -4230,6 +4294,7 @@ def apply_calib (cal_file, calfiles_data, json_conf, mcp, last_cal_params=None, 
       # revert to WCS
       rev_cal_params = revert_to_wcs(cal_fn)
       if rev_cal_params is not None:
+         #input("Reverting")
          rev_cal_params['cat_image_stars'] = pair_star_points(cal_fn, oimg, rev_cal_params, json_conf, con, cur, mcp, True)
          rev_cal_params, bad_stars, marked_img = eval_cal_res(cal_fn, json_conf, rev_cal_params.copy(), oimg,None,None,rev_cal_params['cat_image_stars'])
          new_cp = rev_cal_params
@@ -4506,6 +4571,10 @@ def apply_calib (cal_file, calfiles_data, json_conf, mcp, last_cal_params=None, 
       cal_image_file = cal_fn.replace("-calparams.json", ".png")
       cal_dir = cal_dir_from_file(cal_image_file)
       cal_json_file = get_cal_json_file(cal_dir)
+      if cal_json_file is None:
+         return()
+
+
       cal_json_fn = cal_json_file.split("/")[-1]
       oimg = cv2.imread(cal_dir + cal_image_file)
       cal_img = oimg.copy()
@@ -4592,6 +4661,10 @@ def apply_calib (cal_file, calfiles_data, json_conf, mcp, last_cal_params=None, 
       up_stars, cat_image_stars = update_paired_stars(cal_fn, cal_params, stars, con, cur, json_conf)
       cal_params['cat_image_stars'] = cat_image_stars
       update_calibration_file(cal_fn, cal_params, con,cur,json_conf,mcp)
+      if "reapply" not in cal_params:
+         cal_params['reapply'] = 1
+      else:
+         cal_params['reapply'] += 1
       save_json_file(cal_json_file, cal_params)
 
       #print("VIEW CAL 33:", cal_fn)
@@ -4607,6 +4680,12 @@ def apply_calib (cal_file, calfiles_data, json_conf, mcp, last_cal_params=None, 
       #   cv2.imshow("pepe", cal_img)
       #   cv2.waitKey(30)
       print("STAR POINTS / CAT STARS / CAL RES:", len(cal_params['star_points']), len(cal_params['cat_image_stars']), cal_params['total_res_px'])
+      if (cal_params['total_res_px'] > 5 or len(cal_params['cat_image_stars']) < 8) and cal_params['reapply'] > 5:
+         #delete_cal_file(cal_fn, con, cur, json_conf)
+         input("DELETE BAD CAL FILE?", cal_fn)
+
+      # remove cal if res too high or stars too low and refit is too high
+
       return(cal_params, flux_table)
 
 def debug_image(cal_params, cal_img):
@@ -8308,8 +8387,8 @@ def prune(cam_id, con, cur, json_conf):
 
    mc = 0
    for month in sorted(month_dict, reverse=True):
-      if mc < 3:
-         print("Skip most recent months!")
+      if mc < 1:
+         print("Skip most recent month!")
          mc += 1
          continue
       over_files = len(month_dict[month]['files']) - 15
@@ -8525,7 +8604,13 @@ if __name__ == "__main__":
 
    if cmd == "prune" :
       cam_id = sys.argv[2]
-      prune(cam_id, con, cur, json_conf)
+
+      if cam_id == "all":
+         for cam_num in json_conf['cameras']:
+            cam_id = json_conf['cameras'][cam_num]['cams_id']
+            prune(cam_id, con, cur, json_conf)
+      else:
+         prune(cam_id, con, cur, json_conf)
    if cmd == "lens_model_report" :
       cam_id = sys.argv[2]
       if cam_id == "all":
@@ -8610,8 +8695,10 @@ if __name__ == "__main__":
             cam_id = json_conf['cameras'][cam_num]['cams_id']
             perfect_cal(cam_id, con, cur, json_conf)
 
-   if cmd == "reset_bad_cals" :
-      print("YO")   
+   if cmd == "revert" :
+      cal_fn = sys.argv[2]
+      revert_to_wcs(cal_fn)
+
 
    if cmd == "quality_check" :
       cam_id = sys.argv[2]
