@@ -4214,8 +4214,8 @@ def apply_calib (cal_file, calfiles_data, json_conf, mcp, last_cal_params=None, 
          ##   pixel_scale = 157.2
          #   cal_params['pixscale'] = pixel_scale 
          #   print("fix pixel scale to 157.2")
-         for key in cal_params:
-            print("CAL:", key, cal_params[key])
+         #for key in cal_params:
+         #   print("CAL:", key, cal_params[key])
          cam_id = camera_id
       else:
          import_cal_file(cal_file, cal_dir, mcp)
@@ -4348,8 +4348,8 @@ def apply_calib (cal_file, calfiles_data, json_conf, mcp, last_cal_params=None, 
       if len(cal_params['user_stars']) > 0:
          cat_star_ratio = len(cal_params['cat_image_stars']) / len(cal_params['star_points'])
       print("STAR POINTS/CAT STARS", len(star_points), len(cal_params['cat_image_stars']), cat_star_ratio)
-      for star in cal_params['user_stars']:
-         print("STAR POINT", star)
+      #for star in cal_params['user_stars']:
+         #print("STAR POINT", star)
       #for star in cal_params['cat_image_stars']:
       #   print(star)
 
