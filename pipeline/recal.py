@@ -4465,9 +4465,9 @@ def apply_calib (cal_file, calfiles_data, json_conf, mcp, last_cal_params=None, 
          print("BEFORE PA:", cal_params['position_angle'], len(cal_params['cat_image_stars']), cal_params['total_res_px'])
          print("AFTER PA:", temp_cal_params['position_angle'] , len(cal_params['cat_image_stars']), temp_cal_params['total_res_px'])
       # ADD MORE STARS ?
-      last_res = cal_params['total_res_px']
       if True:
          cal_params['cat_image_stars'] = pair_star_points(cal_fn, oimg, cal_params, json_conf, con, cur, mcp, True)
+         last_res = cal_params['total_res_px']
          temp_stars = []
          for star in cal_params['cat_image_stars']:
             dcname,mag,ra,dec,img_ra,img_dec,match_dist,org_x,org_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist,star_int = star
