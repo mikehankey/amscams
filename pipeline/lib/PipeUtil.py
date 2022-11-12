@@ -368,7 +368,7 @@ def save_json_file(json_file, json_data, compress=False):
          for key in json_data['cp']:
             if type(json_data['cp'][key]) == np.ndarray:
                json_data['cp'][key] = json_data['cp'][key].tolist()
-   if "calparams" in json_file:
+   if "calparams" in json_file or "multi" in json_file:
       for key in json_data:
          if type(json_data[key]) == np.ndarray:
             json_data[key] = json_data[key].tolist()
