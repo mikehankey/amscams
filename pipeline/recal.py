@@ -2230,7 +2230,7 @@ def make_plate(cal_fn, json_conf, con, cur):
    if resp is None:
       print(resp)
       print("start Calib failed!", cal_fn)
-      return(False)
+      return(None, None)
    else:
       (station_id, cal_dir, cal_json_file, cal_img_file, cal_params, cal_img, clean_cal_img, mask_file,mcp) = resp
 
@@ -3952,12 +3952,19 @@ def batch_apply_bad(cam_id, con, cur, json_conf, blimit=25):
                   save_json_file(cal_dir + cal_fn, cal_params)
                else:
                   # all else has failed resolve the file!
-                  plate_file, plate_img = make_plate(cal_fn, json_conf, con, cur)
-                  result = solve_field(plate_file, json_conf, con, cur)
-                  if result is True:
-                     print("Resolve worked!")
+                  resp = make_plate(cal_fn, json_conf, con, cur)
+                  print(resp)
+                  if resp is not None:
+                     plate_file, plate_img = resp
+                  
+                     result = solve_field(plate_file, json_conf, con, cur)
+                     if result is True:
+                        print("Resolve worked!")
+                     else:
+                        print("Resolve failed! Just delete this calfile!!! It can't be saved.")
                   else:
-                     print("Resolve failed! Just delete this calfile!!! It can't be saved.")
+                     print("MAKE PLATE FAILED!", plate_file)
+                     print("WE SHOULD DELETE THIS?")
 
       print(cal_fn, total_stars, res, score)
 
