@@ -299,6 +299,7 @@ def run_jobs(json_conf):
    cmds.append(('all', "(Update default cal)", "cd /home/ams/amscams/pipeline; ./Process.py cal_defaults"))
    #cmds.append(('day', "(Fixup any bad cal files)", "cd /home/ams/amscams/pipeline; ./Process.py refit_all all bad "))
    cmds.append(('all', "Run Calibs (if daytime)", "cd /home/ams/amscams/pipeline; ./Process.py ca"))
+   cmds.append(('all', "Batch Apply Bad", "cd /home/ams/amscams/pipeline; ./recal.py batch_apply_bad 10"))
    #cmds.append(('day', "Super Cal", "cd /home/ams/amscams/pipeline; ./Process.py super_cal"))
    #cmds.append(('all', "Run Master Stacks for Current Night", "cd /home/ams/amscams/pythonv2; ./batchJobs.py sna 1"))
 

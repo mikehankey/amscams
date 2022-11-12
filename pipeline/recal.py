@@ -3854,7 +3854,7 @@ def get_avg_res(cam_id, con, cur):
    return(total_stars, avg_res)
 
 
-def batch_apply_bad(cam_id, con, cur, json_conf):
+def batch_apply_bad(cam_id, con, cur, json_conf, blimit=25):
    
    calfiles_data = load_cal_files(cam_id, con, cur)
    mcp_file = "/mnt/ams2/cal/multi_poly-" + station_id + "-" + cam_id + ".info"
@@ -3925,7 +3925,14 @@ def batch_apply_bad(cam_id, con, cur, json_conf):
    print("GOOD FILES: ", len(good_cal_files))
    print(" BAD FILES: ", len(bad_cal_files))
    print("BEST FILES: ", len(best_cal_files))
-   for row in bad_cal_files:
+   mcp['best_files'] = best_cal_files
+   mcp['good_files'] = good_cal_files
+   mcp['bad_files'] = bad_cal_files
+
+   save_json_file(mcp_file, mcp)
+
+   blimit = int(blimit)
+   for row in bad_cal_files[0:blimit]:
       
       #print(cal_fn)
       (cal_fn, total_stars, res , score) = row
@@ -4725,13 +4732,11 @@ def apply_calib (cal_file, calfiles_data, json_conf, mcp, last_cal_params=None, 
             os.makedirs(bad_cal_dir)
          cmd = "mv " + cal_dir + " " + bad_cal_dir
          print("PURGE CAL\n", (cmd))
-         #os.system(cmd)
-
-
+         os.system(cmd)
          time.sleep(10)
 
       # remove cal if res too high or stars too low and refit is too high
-
+      print("REAPPLY:", cal_params['reapply'])
       return(cal_params, flux_table)
 
 def debug_image(cal_params, cal_img):
@@ -7973,10 +7978,12 @@ def best_stars(merged_stars, mcp, factor = 2, gsize=50):
 
    return(best)
 
-def lens_model(cam_id, con, cur, json_conf, cal_fns= None):
+def lens_model(cam_id, con, cur, json_conf, cal_fns= None, force=False):
    station_id = json_conf['site']['ams_id']
    limit = 1000
    #cal_fns = batch_review(station_id, cam_id, con, cur, json_conf, limit)
+
+   #save_json_file(cal_sum_file, cal_sum)
 
    avg_stars, avg_res = get_avg_res(cam_id, con, cur)
 
@@ -8019,6 +8026,27 @@ def lens_model(cam_id, con, cur, json_conf, cal_fns= None):
       mcp['cal_version'] += 1
    else:
       mcp = None
+
+   if mcp is not None:
+      mcp['last_model_x_fun'] = mcp['x_fun']
+      mcp['last_model_y_fun'] = mcp['y_fun']
+
+   if "total_stars_used" in mcp:
+      tsu = mcp['total_stars_used']
+   else:
+      tsu = 0
+
+   if "fun_diff_x" in mcp:
+      print("FUN DIFF X FROM LAST RUN WAS:", mcp['fun_diff_x'] )
+      print("FUN DIFF Y FROM LAST RUN WAS", mcp['fun_diff_y'] )
+      if mcp['fun_diff_x'] < .1 and mcp['x_fun'] < 1 and tsu > 300:
+         print("xfun is < 1 and the last run only improved by .1.")
+         if force is False:
+            print("New lens model run aborted because this lens model is already good enough.")
+            print("Set force true if you want to force a run")
+            exit()
+      #input("WAIT")
+
 
    #if "cal_version" not in cal_params:
    #   cal_params['cal_version'] = mcp['cal_version'] 
@@ -8065,10 +8093,49 @@ def lens_model(cam_id, con, cur, json_conf, cal_fns= None):
       print("LENS MODEL MAKE FAILED")
       return() 
 
+
+
    if "cal_version" not in cal_params and mcp is None:
       cal_params['cal_version'] = 1 
    else:
       cal_params['cal_version'] =  mcp['cal_version']
+
+   new_x_fun = cal_params['x_fun']
+   new_y_fun = cal_params['y_fun']
+
+   cal_params['lens_model_x_fun'] = new_x_fun
+   cal_params['lens_model_y_fun'] = new_y_fun
+
+   print("NEW XY FUN", cal_params['x_fun'], cal_params['y_fun'])
+
+   if mcp is not None:
+      print("LAST XY FUN", mcp['last_model_x_fun'] , mcp['last_model_y_fun'] )
+      print("WAIT CAL XFUN")
+      fun_diff_x = mcp['last_model_x_fun'] - cal_params['x_fun']
+      fun_diff_y = mcp['last_model_y_fun'] - cal_params['y_fun']
+   else:
+      fun_diff_x = 99
+      fun_diff_y = 99
+   cal_params['fun_diff_x'] = fun_diff_x 
+   cal_params['fun_diff_y'] = fun_diff_y 
+
+   if fun_diff_x > 0:
+      print("X FUN IMPROVED BY:", fun_diff_x)
+   else:
+      print("X FUN GOT WORSE BY:", fun_diff_x)
+
+   if fun_diff_y > 0:
+      print("Y FUN IMPROVED BY:", fun_diff_y)
+   else:
+      print("Y FUN GOT WORSE BY:", fun_diff_y)
+
+
+   now = datetime.datetime.now()
+   now_str = now.strftime("%Y_%m_%d %H:%M:%S")
+   time_stamp = time.time()
+   cal_params['lens_model_datetime'] = now_str
+   cal_params['lens_model_timestamp'] = time_stamp 
+   cal_params['total_stars_used'] = len(merged_stars)
 
    save_json_file(mcp_file, cal_params)
    print("SAVED:", mcp_file)
@@ -8114,6 +8181,18 @@ def lens_model(cam_id, con, cur, json_conf, cal_fns= None):
    print("NEW STARS:", len(new_merged_stars))
    print("NEW REZ:", mean_rez)
    print(tb)
+
+   # write data to the cal_summary file
+
+
+   #if os.path.exists(cal_sum_file) is True:
+   #   cal_sum = load_json_file(cal_sum_file)
+   #else: 
+   #   cal_sum = {}
+
+   #cal_sum['lens_model_datetime'] = now_str
+   #cal_sum['lens_model_timestamp'] = time_stamp 
+   #save_json_file(cal_sum_file, cal_sum)
 
 
 def wizard(station_id, cam_id, con, cur, json_conf, file_limit=25):
@@ -8532,12 +8611,17 @@ if __name__ == "__main__":
    if cmd == "lens_model" :
 
       cam_id = sys.argv[2]
+      if len(sys.argv) > 3:
+         force = True
+      else:
+         force = False 
+
       if cam_id == "all":
          for cam_num in json_conf['cameras']:
             cam_id = json_conf['cameras'][cam_num]['cams_id']
-            lens_model(cam_id, con, cur, json_conf)
+            lens_model(cam_id, con, cur, json_conf, None,force)
       else:
-         lens_model(cam_id, con, cur, json_conf)
+         lens_model(cam_id, con, cur, json_conf, None, force)
 
 
 
@@ -8568,12 +8652,17 @@ if __name__ == "__main__":
 
    if cmd == "batch_apply_bad" :
       cam_id = sys.argv[2]
+      if len(sys.argv) > 3:
+         blimit = sys.argv[3] 
+      else:
+         blimit = 25
+
       if cam_id != "ALL" and cam_id != "all":
-         batch_apply_bad(cam_id, con, cur, json_conf)
+         batch_apply_bad(cam_id, con, cur, json_conf, blimit)
       else:
          for cam_num in json_conf['cameras']:
             cam_id = json_conf['cameras'][cam_num]['cams_id']
-            batch_apply_bad(cam_id, con, cur, json_conf)
+            batch_apply_bad(cam_id, con, cur, json_conf, blimit)
 
 
    if cmd == "batch_apply" :

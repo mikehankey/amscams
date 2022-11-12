@@ -52,10 +52,12 @@ for day in sorted(days,reverse=True)[0:8]:
    #if day not in solve_hist and os.path.exists(cloud_evf) is False:
    if True: 
       if True:
-         cmd =  "/usr/bin/python3 AllSkyNetwork.py do_all " + day
+         cmd =  "/usr/bin/python3 AllSkyNetwork.py best_obs_day " + day
+         print(cmd)
          os.system(cmd)
-         cmd =  "/usr/bin/python3 AllSkyNetwork.py rerun_failed " + day
-         os.system(cmd)
+
+         #cmd =  "/usr/bin/python3 AllSkyNetwork.py rerun_failed " + day
+         #os.system(cmd)
 
          #cmd =  "python3 AllSkyNetwork.py refresh_day " + day
          #os.system(cmd)

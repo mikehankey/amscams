@@ -36,6 +36,11 @@ if cmd == "refresh_day":
    cmd = "python3 DynaDB.py udc " + event_day + " events"
    #print(cmd)
    os.system(cmd)
+   # make best obs
+   ASN.best_obs_day(sys.argv[2])
+   # make event table
+   ASN.event_table(sys.argv[2])
+
 
    ASN.rsync_data_only(event_day)
 
@@ -139,6 +144,14 @@ if cmd == "publish_day":
    event_day = sys.argv[2]
    ASN.help()
    ASN.publish_day(event_day)
+   cmd = "python3 EM.py aer " + event_day 
+   os.system(cmd)
+
+   ASN.best_obs_day(sys.argv[2])
+   # make event table
+   ASN.event_table(sys.argv[2])
+
+
 
 if cmd == "publish_event":
    event_day = sys.argv[2]
@@ -278,9 +291,23 @@ if cmd == "do_all":
    print(cmd)
    os.system(cmd)
 
+   ## make data table 
+   #cmd = "python3 solveWMPL.py vida_plots " + date 
+   #print(cmd)
+   #os.system(cmd)
+
+   # make best obs 
+   ASN.best_obs_day(sys.argv[2])
+
+   # make event table 
+   ASN.event_table(sys.argv[2])
+
+   # rsync minimum data set
    ASN.rsync_data_only(date)
 
-
+   # make the obs file for the day
+   cmd = "/usr/bin/python3 EVStations.py " + date
+   os.system(cmd)
 
 
 if cmd == "day_solve" or cmd == 'ds' or cmd == "solve_day":
@@ -371,3 +398,9 @@ if cmd == "reconcile_events_day":
    # make station/event mapping for this day
    ASN.reconcile_events_day(sys.argv[2])
 
+if cmd == "best_obs_day":
+   # make station/event mapping for this day
+   ASN.best_obs_day(sys.argv[2])
+if cmd == "rerun_month":
+   # make station/event mapping for this day
+   ASN.rerun_month(sys.argv[2])

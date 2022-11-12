@@ -421,12 +421,25 @@ class EventManager():
             if event['solution'] == 0:
                status = "OBS NOT LOADED"
                continue
+
+
             if "orb" in event['solution']:
                orb = event['solution']['orb']
                print("SOL:", event['solution'])
                orb['event_id'] = event['event_id']
                orb['vel_init'] = event['solution']['traj']['v_init']
                orb['event_datetime'] = min(event['start_datetime'])
+
+               if "shower" in event['solution']:
+                  shower = event['solution']['shower']['shower_code']
+                  all_showers.append(shower)
+                  orb['shower'] = event['solution']['shower']['shower_code']
+               else:
+                  shower = ""
+                  orb['shower'] = ""
+
+
+
                show_orb = self.make_show_orb(orb)
                if orb['T'] == 0 and orb['i'] == 0:
                   print("BAD ORB:", orb)
@@ -452,11 +465,6 @@ class EventManager():
                radiants = None
                all_radiants.append(radiants)
 
-            if "shower" in event['solution']:
-               shower = event['solution']['shower']['shower_code']
-               all_showers.append(shower)
-            else:
-               shower = ""
 
          e_year,e_month,e_day,e_hour,e_min,e_sec = self.parse_event_id(event['event_id'])
          local_ev_dir = self.DATA_DIR + "EVENTS/" + e_year + "/" + e_month + "/" + e_day + "/" + event['event_id'] + "/" 
@@ -499,15 +507,21 @@ class EventManager():
       if self.date is None:
          event_dir = self.DATA_DIR + "EVENTS/"
          ce_dir = "/mnt/archive.allsky.tv/EVENTS/"
+         self.event_dir = event_dir
+         self.ce_dir = ce_dir 
       else:
          event_dir = self.DATA_DIR + "EVENTS/" + y + "/" + m + "/" + d + "/"
          ce_dir = "/mnt/archive.allsky.tv/EVENTS/" + y + "/" + m + "/" + d + "/"
+         self.event_dir = event_dir
+         self.ce_dir = ce_dir 
 
+      self.save_orbits_by_shower(all_orbits)
       save_json_file(event_dir + "ALL_EVENTS_SUMMARY.json", events_summary)
       save_json_file(event_dir + "ALL_ORBITS.json", all_orbits)
       save_json_file(event_dir + "ALL_TRAJECTORIES.json", all_trajectories)
       save_json_file(event_dir + "ALL_SHOWERS.json", all_showers)
       save_json_file(event_dir + "ALL_RADIANTS.json", all_radiants)
+
 
       #input("SAVED " + event_dir + "ALL_RADIANTS.json")
 
@@ -528,6 +542,69 @@ class EventManager():
       print("Saved json files in " + event_dir)
       exit()
 
+   def save_orbits_by_shower(self, all_orbits):
+      by_shower = {}
+      for event_id in all_orbits:
+         print("XXX", event_id)
+
+         orb = all_orbits[event_id]
+         orb['name'] = event_id
+         orb['event_id'] = event_id
+         orb['jd_ref'] = orb['epoch'] 
+         if "vel_init" not in orb:
+            orb['vel_init'] = 0
+         if 'event_datetime' not in orb:
+            orb['event_datetime'] = orb['utc_date'][0]
+         show_orb = orb 
+         shower = show_orb['shower']
+
+         if shower == "" or shower == "...":
+
+            if float(orb['a']) <= 0:
+               shower = "SPORADIC-BAD"
+            elif 0 < float(orb['a']) < 5.2:
+               shower = "SPORADIC-INNER"
+            else:
+               shower = "SPORADIC-OUTER"
+
+         if shower not in by_shower:
+            by_shower[shower] = []
+
+         by_shower[shower].append(show_orb)
+         print("SAVE SHOWER ORBITS:", event_id, shower)
+         print("SHOWER:", orb['shower'])
+         print("ALL SHOWER KEYS", by_shower.keys())
+      #input("ORBITS BY SHOWER")
+      # write a json file for each shower 
+      # also write an html with the orbit viewer for each
+      orbs_by_shower_html = {}
+      for shower in by_shower:
+         
+         if shower not in orbs_by_shower_html:
+            orbs_by_shower_html[shower] = ""
+         event_vdir = self.event_dir.replace("/mnt/f/", "")
+
+         orb_file = "https://archive.allsky.tv/" + event_vdir + "ALL_ORBITS-{:s}.json".format(shower)
+         #orb_link = "https://orbit.allskycams.com/index_emb.php?file={:s}".format(orb_file)
+         orb_iframe = """<iframe width=100% height=450 src="https://orbit.allskycams.com/index_emb.php?file={:s}"></iframe>""".format(orb_file)
+         orbs_by_shower_html[shower] += "<h1>" + shower + "</h1>"
+         orbs_by_shower_html[shower] += orb_iframe
+         #print(shower, len(by_shower[shower]))
+         out_file = self.event_dir + "ALL_ORBITS-{:s}.json".format(shower)
+         save_json_file(out_file, by_shower[shower])
+         #print("Saved:", out_file)
+
+         cmd = "cp " + self.event_dir + "ALL_ORBITS-{:s}.json {:s}".format(shower, self.ce_dir) 
+         os.system(cmd)
+
+    
+      
+      for shower in orbs_by_shower_html:
+         fpout = open(self.event_dir + "ALL_ORBITS-frame-{:s}.html".format(shower), "w")
+         fpout.write(orbs_by_shower_html[shower])
+         print("SAVED:", self.event_dir + "ALL_ORBITS-frame-{:s}.html".format(shower), "w")
+         fpout.close()
+      input("SHOWER?")
    def make_period_files (self):
       if cfe(self.all_events_summary_file) == 1:
          self.all_events = load_json_file(self.all_events_summary_file)
@@ -541,8 +618,9 @@ class EventManager():
 
 
    def make_show_orb(self, orb):
-      print("ORB:", orb )
+      print("ORB:", orb.keys() )
       sorb = {}
+      print(orb.keys())
       #sorb['color'] = "red"
       sorb['name'] = str(orb['event_id'])
       sorb['epoch'] = str(orb['jd_ref'])
@@ -557,6 +635,8 @@ class EventManager():
       sorb['q'] = str(orb['q'])
       sorb['M'] = str(orb['mean_anomaly'])
       sorb['P'] = str(orb['T'])
+      if "shower" in orb:
+         sorb['shower'] = str(orb['shower'])
       return(sorb)
 
 

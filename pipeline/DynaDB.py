@@ -1573,12 +1573,13 @@ def do_dyna_day(dynamodb, day):
    else:
       recal = load_json_file(recal_log_file)
       total_recal = False
+
    now = datetime.now()
    run_time = now.strftime("%Y_%m_%d_%H_%M_%S")   
-   recal['history']['run_time'] = {}
-   if total_recal is True:
-      print("TOTAL RECAL")
-      os.system("./recal.py batch_apply_bad all ")
+   #recal['history']['run_time'] = {}
+   #if total_recal is True:
+   #   print("TOTAL RECAL")
+   #   os.system("./recal.py batch_apply_bad all ")
 
 
    if cfe("../conf/hsha.txt") == 0:

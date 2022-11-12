@@ -469,7 +469,7 @@ def sanity_check_points(azs,els, ras, decs):
 
    return(good_azs,good_els)
 
-def GC_az_el(azs, els, ras,decs):
+def GC_az_el(azs, els, ras=None,decs=None):
 
    import RMS.GreatCircle
    from RMS.Math import polarToCartesian, cartesianToPolar, angularSeparation
@@ -962,6 +962,32 @@ def get_event_data_old(date, event_id):
       print("SCANNING:", event_id, event['event_id'])
       if event_id == event['event_id']:
          return(event) 
+
+def custom_solve(event_id):
+    # event ID should point to an event dir with a good_obs file that is ready to go with obs!
+    # good obs file sould be dict of:
+    # station => file => then:
+    # ['loc', 'calib', 'times', 'fns', 'xs', 'ys', 'azs', 'els', 'ras', 'decs', 'ints', 'revision', 'gc_azs', 'gc_els'])       
+    year = event_id[0:4]
+    mon = event_id[4:6]
+    day = event_id[6:8]
+    date = year + "_" + mon + "_" + day
+    local_event_dir = "/mnt/f/EVENTS/" + year + "/" + mon + "/" + day + "/" + event_id + "/" 
+    cloud_event_dir = "/mnt/archive.allsky.tv/EVENTS/" + year + "/" + mon + "/" + day + "/" + event_id + "/" 
+    local_events_dir = "/mnt/f/EVENTS/" 
+    good_obs_file = local_event_dir + event_id + "_GOOD_OBS.json"
+    obs_data = []
+    if os.path.exists(local_event_dir + event_id + "_GOOD_OBS.json") is False:
+       print("Event file doesn't exist please make: " + local_event_dir + event_id + "_GOOD_OBS.json")
+       exit()
+       #return()
+    else:
+        good_obs = load_json_file(good_obs_file) 
+    for obs in good_obs:
+       for ofile in good_obs[obs]:
+          print(obs, ofile, good_obs[obs][ofile].keys())
+
+    WMPL_solve(event_id, good_obs, 0)
 
 def solve_event(event_id, force=1, time_sync=1):
     year = event_id[0:4]
@@ -2811,8 +2837,8 @@ def WMPL_solve(event_id, obs,time_sync=1, force=0, dynamodb=None):
        etv = True
     else:
        etv = False
-    etv = True
-    monte = False
+    etv = True 
+    monte = False 
     traj_solve = traj.Trajectory(jd_ref, output_dir=solve_dir, meastype=meastype, save_results=True, monte_carlo=monte, show_plots=False, max_toffset=5,v_init_part=.5, estimate_timing_vel=etv, show_jacchia=True  )
    
     for station_id in obs:
@@ -2828,6 +2854,13 @@ def WMPL_solve(event_id, obs,time_sync=1, force=0, dynamodb=None):
             except:
                continue
             lat,lon,alt = float(lat), float(lon), float(alt)
+            # ADD/CONVERT great circle GC GREAT CIRCLE
+            obs[station_id][file]['gc_azs'], obs[station_id][file]['gc_els'] = GC_az_el(obs[station_id][file]['azs'], obs[station_id][file]['els'],  None,None)
+            if "fps" in obs[station_id][file]:
+               fps = obs[station_id][file]['fps']
+            else:
+               fps = 25
+
             if "azs_gc" in obs[station_id][file]:
                azs = np.radians(obs[station_id][file]['azs_gc'])
                els = np.radians(obs[station_id][file]['els_gc'])
@@ -2848,7 +2881,7 @@ def WMPL_solve(event_id, obs,time_sync=1, force=0, dynamodb=None):
                 continue
             times = []
             for i in range(0,len(azs)):
-                times.append(i/25)
+                times.append(i/fps)
         
             # Set points for the first site
             print("WMPL OBS:", event_id, station_id, lat, lon, alt, azs, els, times)  
@@ -2859,7 +2892,7 @@ def WMPL_solve(event_id, obs,time_sync=1, force=0, dynamodb=None):
     resp = traj_solve.run()
     print("TIMING MINIMIZE SUCCESS?:", traj_solve.timing_minimization_successful)
     print('t_ref_station', traj_solve.t_ref_station)
-    print('time_diffs', traj_solve.time_diffs)
+    #print('time_diffs', traj_solve.time_diffs)
     print('t_diffs_final', traj_solve.time_diffs_final)
     print('timing_res', traj_solve.timing_res)
     print('timing_stddev', traj_solve.timing_stddev)
@@ -3039,3 +3072,6 @@ if __name__ == "__main__":
          events_report(meteor_file, sys.argv[2])
       else:
          events_report(meteor_file)
+   if cmd == "custom_solve" :
+      print("YO")
+      custom_solve(meteor_file)

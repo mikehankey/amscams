@@ -1,5 +1,6 @@
 import sqlite3
 from prettytable import PrettyTable as pt
+from calendar import monthrange
 import math
 import boto3
 from boto3.dynamodb.conditions import Key
@@ -95,6 +96,34 @@ class AllSkyNetwork():
       self.help()
 
 
+   def rerun_month (self, year_month):
+      year, month = year_month.split("_")
+      today = (datetime.datetime.now() - datetime.timedelta(days = 1)).strftime("%Y_%m_%d")
+      current_year, current_month, current_day = today.split("_")
+      year = int(year)
+      month = int(month)
+      all_days = []
+      if month == int(current_month):
+         end_days = int(current_day)
+      else:
+
+         end_days = int(monthrange(int(current_year), month)[1])
+      for day in range(1,end_days + 2) :
+         if month < 10:
+            smon = "0" + str(month)
+         else:
+            smon = str(month)
+         if day < 10:
+            sday = "0" + str(day)
+         else:
+            sday = str(day)
+         all_days.append((current_year + "_" +  smon + "_" + sday))
+      for day in sorted(all_days,reverse=False):
+         y,m,d = day.split("_")
+         rmcmd = "rm /mnt/f/EVENTS/" + y + "/" + m + "/" + d + "/" + "*OBS*"
+         print(rmcmd)
+         runcmd = "./AllSkyNetwork.py do_all " + day
+         print(runcmd)
    
 
    def quick_report(self, date):
@@ -235,7 +264,7 @@ class AllSkyNetwork():
       url = "https://archive.allsky.tv/EVENTS/ALL_STATIONS.json"
       local_file = self.local_event_dir + "/ALL_STATIONS.json"
       local_loc_file = self.local_event_dir + "station_locations.json"
-      print("LC:", local_loc_file)
+      #print("LC:", local_loc_file)
       if os.path.exists(local_loc_file) is True:
          loc_info = load_json_file(local_loc_file)
       else:
@@ -257,6 +286,7 @@ class AllSkyNetwork():
          except:
             print("FAILED " + url)
 
+      print(self.local_event_dir + "/ALL_STATIONS.json")
       self.stations = load_json_file(self.local_event_dir + "/ALL_STATIONS.json")
       self.station_dict = {}
       self.photo_credits = {}
@@ -316,8 +346,9 @@ class AllSkyNetwork():
             self.photo_credits[sid] = operator_name + " " + city + "," + country
          else:
             self.photo_credits[sid] = sid
-         print(sc, self.photo_credits[sid])
+         #print(sc, self.photo_credits[sid])
          sc += 1
+
    def day_prep(self, date):
       print("ok")
 
@@ -1509,6 +1540,195 @@ class AllSkyNetwork():
             print(cmd)
             os.system(cmd)
 
+   def get_valid_obs(self, station_id, day):
+      cloud_dir = "/mnt/archive.allsky.tv/" + station_id + "/METEORS/" + day[0:4] + "/" + day + "/"
+      obs_ids_file = cloud_dir + day + "_OBS_IDS.info"
+      if os.path.exists(obs_ids_file) is True:
+         data = load_json_file(obs_ids_file) 
+      else:
+         data = []
+      obs_ids = []
+      for row in data:
+         obs_ids.append(row[0])
+      print("VALID", station_id, day, len(obs_ids))
+      return(obs_ids)
+
+   def load_event_obs(self, event_day):
+      self.event_obs = {}
+      if os.path.exists(self.all_events_file) is True:
+         all_events_data = load_json_file(self.all_events_file)
+      else:
+         all_events_data = []
+      for ev in all_events_data:
+         for i in range(0, len(ev['stations'])):
+            st = ev['stations'][i]
+            fn = ev['files'][i].replace(".mp4", "")
+            obs_id = st + "_" + fn
+         self.event_obs[obs_id] = ev['event_id']
+   
+   def best_obs_day(self, event_day):
+
+      nav_header = self.make_page_header(event_day)
+
+      self.load_stations_file()
+      st_list = []
+      for sd in self.stations :
+         #sd = self.stations[st_id]
+         st_id = int(sd['station_id'].replace("AMS", ""))
+         op_status = sd['op_status']
+         st_key = "AMS" + str(st_id)
+         pc = self.photo_credits[st_key]
+         print(st_id, st_key, op_status, pc)
+         st_list.append((st_id, st_key, op_status, pc))
+
+      ignore_stations = ["AMS202"]
+      valid_obs = {}
+      html = ""
+      obs_by_int = []
+      self.set_dates(event_day)
+      self.quick_day_status(event_day)
+      valid_obs_file = self.local_evdir + event_day + "_VALID_OBS.json"
+
+      self.load_event_obs(event_day)
+      for evo in self.event_obs:
+         #print(evo, self.event_obs[evo])
+         sql = "UPDATE event_obs set event_id = '{:s}' WHERE obs_id = '{:s}' ".format(self.event_obs[evo], evo)
+         self.cur.execute(sql)
+    
+      self.con.commit()
+
+      if os.path.exists(valid_obs_file) is True:
+         valid_obs = load_json_file(valid_obs_file)
+      sql = """
+         SELECT event_id, obs_id, times, ints from event_obs order by event_id 
+      """
+      self.cur.execute(sql)
+      rows = self.cur.fetchall()
+      all_cmds = []
+
+      for row in rows:
+         event_id = row[0]
+         obs_id = row[1]
+         el = obs_id.split("_")
+         station_id = el[0]
+         if station_id in ignore_stations:
+            continue
+         if station_id not in valid_obs:
+            valid_obs[station_id] = self.get_valid_obs(station_id, event_day)
+
+         times = row[2]
+         ints = row[3]
+         jints = json.loads(ints)
+         jtimes = json.loads(times)
+         if len(jtimes) > 0:
+            edate = jtimes[0]
+            max_frames = len(jtimes)
+         else:
+            etime = " " 
+            max_frames = 0
+         if len(jints) > 0:
+            max_int = max(jints)
+         else:
+            max_int = 0
+         #print(event_id, obs_id, max_int)
+         obs_key = obs_id.replace(station_id + "_", "")
+         if obs_key in valid_obs[station_id]:
+         #   print("FOUND", obs_key)
+            obs_by_int.append((event_id, obs_id, max_int, edate, max_frames))
+         #else:
+         #   print("NOT FOUND", obs_key )
+
+      obs_by_int = sorted(obs_by_int, key=lambda x: (x[2]), reverse=True)
+      single_station_html = ""
+      obs_by_station_html = ""
+      obs_by_station = {}
+      mso = 0
+      sso = 0
+      html += "<div style='width: 100%'>"
+      single_station_html += "<div style='width: 100%'>"
+      for event_id, obs_id, ints, edate, max_frames in obs_by_int:
+         st_id = obs_id.split("_")[0]
+         if st_id not in obs_by_station:
+            obs_by_station[st_id] = ""
+
+         edate += "_" + event_id
+         img_ht = self.meteor_cell_html(obs_id, edate, "")
+
+         obs_by_station[st_id] += img_ht
+         if str(event_id) == "0":
+            single_station_html += img_ht
+            sso += 1
+         else:
+            html += img_ht
+            mso += 1
+
+
+      html += "</div>"
+      single_station_html += "</div>"
+      template = ""
+      tt = open("./FlaskTemplates/allsky-template-v2.html")
+      for line in tt:
+         template += line
+
+      template = template.replace("{TITLE}", "ALLSKY7 EVENTS " + self.day)
+      template = template.replace("AllSkyCams.com", "AllSky.com")
+      self.local_evdir = self.local_event_dir + self.year + "/" + self.month + "/" + self.day  + "/"
+      out_file_good = self.local_evdir + self.day + "_OBS_GOOD.html"
+      out_file_bad = self.local_evdir + self.day + "_OBS_BAD.html"
+      out_file_failed = self.local_evdir + self.day + "_OBS_FAIL.html"
+      out_file_pending = self.local_evdir + self.day + "_OBS_PENDING.html"
+
+      header = "<h4>{:s} Multi Station Observations Sorted By Intensity</h4>".format(str(mso))
+      ms_temp = template.replace("{MAIN_CONTENT}", nav_header + header + html)
+      fp = open( self.local_evdir + event_day + "_MULTI_STATION_INT.html", "w")
+      fp.write(ms_temp)
+      fp.close()
+
+      header = "<h4>{:s} Single Station Observations Sorted By Intensity</h4>".format(str(sso))
+      ss_temp = template.replace("{MAIN_CONTENT}", nav_header + header + single_station_html)
+      fp = open( self.local_evdir + event_day + "_SINGLE_STATION_INT.html", "w")
+      #fp.write("<h4>{:s} Single Station Observations Sorted By Intensity</h4>".format(str(sso)))
+      fp.write(ss_temp)
+      #fp.write(single_station_html)
+      fp.close()
+
+
+
+      fp = open( self.local_evdir + event_day + "_OBS_BY_STATION.html", "w")
+ 
+      main_content = "<h1>{:s} Observations For {:s} grouped by station and sorted by intensity</h1>".format(str(sso), event_day)
+      #fp.write("<h1>{:s} Observations For {:s} grouped by station and sorted by intensity</h1>".format(str(sso), event_day))
+
+      st_list = sorted(st_list, key=lambda x: (x[0]), reverse=False)
+
+      down_html = ""
+      no_obs_html = ""
+      for row in st_list:
+         st_i_id, st_id, op_status, pc = row
+         if op_status == "ACTIVE":
+            pc = self.photo_credits[st_id]
+            if st_id in obs_by_station:
+               main_content += "<div><h1>{:s} - {:s}</h1>\n".format(st_id, pc)
+               main_content += obs_by_station[st_id]
+               main_content += "</div>\n"
+            else:
+               no_obs_html += ("<div><h1>{:s} - {:s}</h1>\n".format(st_id, pc))
+               no_obs_html += ("No observations</div>") 
+            main_content += "<div style='clear:both'></div><br>"
+         else:
+            down_html += "<li>{:s}".format(st_id)
+      main_content += "<h1>No observations</h1><ul>" + no_obs_html + "</ul>"
+      main_content += "<h1>Stations Down</h1><ul>" + down_html + "</ul>"
+      template = template.replace("{MAIN_CONTENT}", nav_header + main_content)
+      fp.write(template)
+      fp.close()
+
+
+      save_json_file(self.local_evdir + event_day + "_OBS_BY_INT.json", obs_by_int)
+      save_json_file(self.local_evdir + event_day + "_VALID_OBS.json", valid_obs)
+      print( self.local_evdir + event_day + "_MULTI_STATION_INT.html", "w")
+      print( self.local_evdir + event_day + "_SINGLE_STATION_INT.html", "w")
+      print( self.local_evdir + event_day + "_OBS_BY_STATION.html", "w")
 
    def review_event_day(self, event_day):
       self.set_dates(event_day)
@@ -4769,8 +4989,216 @@ $(document).ready(function () {
       """
       return(date_selector)
 
-   def publish_day(self, date=None):
 
+   def make_page_header(self, date=None):
+
+      #day_nav = self.make_day_nav(selected_day=date)
+      img_err_handler = """
+      <script>
+             $('div').on("error", function() { // Detect if there is an image loading error
+                alert("YO")
+                $(this).attr('display',None);
+                //$(this).attr('src', 'default.jpg'); // Set a default image path that will replace image error icon
+             });
+      </script>
+     <img src="/XXX">
+     error image
+      """
+
+
+      day_nav = img_err_handler + """
+                <input id='select-opt' value="{}" type="text" data-display-format="YYYY/MM/DD" data-action="reload" data-url-param="start_day" data-send-format="YYYY_MM_DD" class="datepicker form-control">
+      """.format(date)
+      event_date = date
+      print("Publish Day", date)
+      self.load_stations_file()
+      self.set_dates(date)
+      self.date = date
+      self.help()
+
+      qc_report = self.local_evdir + date + "_QC.json"
+      if os.path.exists(qc_report):
+         qc_data = load_json_file(qc_report)
+      else:
+         qc_data = {}
+      all_obs = qc_data['valid_obs']
+
+      self.get_all_obs(date)
+
+      template = ""
+      tt = open("./FlaskTemplates/allsky-template-v2.html")
+      for line in tt:
+         template += line
+
+      template = template.replace("{TITLE}", "ALLSKY7 EVENTS " + event_date)
+      template = template.replace("AllSkyCams.com", "AllSky.com")
+      self.local_evdir = self.local_event_dir + self.year + "/" + self.month + "/" + self.day  + "/"
+      out_file_good = self.local_evdir + date + "_OBS_GOOD.html"
+      out_file_bad = self.local_evdir + date + "_OBS_BAD.html"
+      out_file_failed = self.local_evdir + date + "_OBS_FAIL.html"
+      out_file_pending = self.local_evdir + date + "_OBS_PENDING.html"
+
+      if os.path.exists(self.cloud_evdir) is False:
+         os.makedirs(self.cloud_evdir)
+
+
+      report_file = self.local_evdir + date + "_day_report.json"
+      #report_data = load_json_file(report_file)
+      #print(report_file)
+      #print(report_data.keys())
+
+      sql = """
+         SELECT event_id, event_status, stations, event_start_times, obs_ids
+           FROM events
+          WHERE event_id like ?
+      """
+      date = date.replace("_", "")
+      ivals = [date + "%"]
+      self.cur.execute(sql,ivals)
+      rows = self.cur.fetchall()
+
+      style = """
+      <style>
+       .center {
+          margin: auto;
+          width: 80%;
+          padding: 10px;
+          border: 2px solid #000000 ;
+       }
+      </style>
+      """
+
+      good_ev = 0
+      bad_ev = 0
+      fail_ev = 0
+      pending_ev = 0
+      for row in rows:
+         event_id, event_status, stations, start_times, obs_ids = row
+         print(event_status)
+         if "GOOD" in event_status or ("SOLVED" in event_status and "BAD" not in event_status):
+            good_ev += 1
+         elif "BAD" in event_status:
+            bad_ev += 1
+         elif "FAIL" in event_status:
+            fail_ev += 1
+         else:
+            pending_ev += 1
+
+      stats_nav = """
+           <script>
+             function goto_ev(t) {
+              url = window.location.href
+              let result = url.includes("GOOD")
+              if (result > 0) {
+                 // WE ARE ON THE GOOD PAGE
+                 if (t == "good") {
+                    // do nothing!
+                 }
+                 else {
+                    url = url.replace("GOOD", "BAD")
+                    window.location.replace(url)
+                 }
+              }
+              else {
+                 // WE ARE ON THE BAD PAGE
+                 if (t == "good") {
+                    url = url.replace("BAD", "GOOD")
+                    window.location.replace(url)
+                 }
+                 else {
+                    // do nothing!
+                 }
+              }
+             }
+           </script>
+      """
+
+      links = """
+      <h4>Multi Station Events</h4> 
+      <div style="width: 100%; ">
+      <a href={:s}_OBS_GOOD.html>Good """.format(event_date) + str(good_ev) + """</a> -
+      <a href={:s}_OBS_BAD.html>Bad """.format(event_date) + str(bad_ev) + """</a> -
+      <a href={:s}_OBS_FAIL.html>Fail """.format(event_date) + str(fail_ev) + """</a> -
+      <a href={:s}_OBS_PENDING.html>Pending """.format(event_date) + str(pending_ev) + """</a></div><br>
+      """
+  
+      stats_nav += links
+      self.center_lat = 45
+      self.center_lon = 0
+
+      print("links:", links)
+
+      self.kml_link = self.local_evdir.replace(self.data_dir, "/") + "ALL_TRAJECTORIES.kml"
+      self.orb_file = "https://archive.allsky.tv" + self.local_evdir.replace(self.data_dir, "/") + "ALL_ORBITS.json"
+      self.orb_link = "https://orbit.allskycams.com/index_emb.php?file={:s}".format(self.orb_file)
+
+      print(self.orb_link)
+
+      self.map_link = """https://archive.allsky.tv/APPS/dist/maps/index.html?mf={:s}&lat={:s}&lon={:s}&zoom=3""".format(self.kml_link, str(self.center_lat), str(self.center_lon))
+      self.gallery_link = event_date + "_OBS_GOOD.html"
+      self.data_table_link = event_date + "_EVENT_TABLE.html"
+      self.obs_by_station_link = event_date + "_OBS_BY_STATION.html"
+      self.int_multi_link = event_date + "_MULTI_STATION_INT.html"
+      self.int_single_link = event_date + "_SINGLE_STATION_INT.html"
+      short_date = event_date.replace("_", "")
+      stats_nav += """
+         <div style="width: 100%">
+             <i class="fa-solid fa-map-location-dot"></i>
+
+             <span class="fa-layers-text fa-inverse" data-fa-transform="shrink-8 down-3" style="font-weight:900"><a href={:s}>Trajectories</a></span>
+             <!--
+          <span class="fa-layers fa-fw fa-2xl" style="background:black; padding: 5px">
+          </span>-->
+
+             <i class="fa-solid fa-solar-system"></i>
+             <span class="fa-layers-text fa-inverse" data-fa-transform="shrink-8 down-3" style="font-weight:900"><a href={:s}>Orbits</a></span>
+             <!--
+          <span class="fa-layers fa-fw fa-2xl" style="background:black; padding: 5px">
+          </span>-->
+
+             <i class="fa-solid fa-star-shooting"></i>
+             <span class="fa-layers-text fa-inverse" data-fa-transform="shrink-8 down-3" style="font-weight:900"><a href=https://archive.allsky.tv/APPS/dist/radiants.html?d={:s}>Radiants</a></span>
+             <!--
+          <span class="fa-layers fa-fw fa-2xl" style="background:black; padding: 5px">
+          </span>-->
+
+             <i class="fa-solid fa-table-list"></i>
+             <span class="fa-layers-text fa-inverse" data-fa-transform="shrink-8 down-3" style="font-weight:900"><a href={:s}>Data Table</a></span>
+             <!--
+          <span class="fa-layers fa-fw fa-2xl" style="background:black; padding: 5px">
+          </span> -->
+
+             <i class="fa-solid fa-gallery-thumbnails"></i>
+             <span class="fa-layers-text fa-inverse" data-fa-transform="shrink-8 down-3" style="font-weight:900"><a href={:s}>Gallery</a></span>
+             <!--
+          <span class="fa-layers fa-fw fa-2xl" style="background:black; padding: 5px">
+          </span>-->
+         </div>
+      """.format(self.map_link, self.orb_link, short_date, self.data_table_link, self.gallery_link )
+
+      stats_nav += """
+          <div style="width: 100%">
+             <span class="fa-layers-text fa-inverse" data-fa-transform="shrink-8 down-3" style="font-weight:700"><a href={:s}>Observations By Station</a> | </span> 
+             <span class="fa-layers-text fa-inverse" data-fa-transform="shrink-8 down-3" style="font-weight:700"><a href={:s}>By Intensity (multi station)</a> | </span>
+             <span class="fa-layers-text fa-inverse" data-fa-transform="shrink-8 down-3" style="font-weight:700"><a href={:s}>By Intensity (single station)</a></span>
+          </div>
+             <!--
+          <span class="fa-layers fa-fw fa-2xl" style="background:black; padding: 5px; width:100%">
+          </span>-->
+      """.format(self.obs_by_station_link, self.int_multi_link, self.int_single_link)
+
+      good_html = ""
+
+      good_html += style
+      good_html += "<h3>Meteor Archive for " + date + " " + day_nav + "</h3>"
+      #good_html += "<p><h4>Solved Events (GOOD)</h4></p>"
+      good_html += "<p>" + stats_nav + "</p>"
+
+      return(good_html)
+
+
+   def publish_day(self, date=None):
+      shower_html = {}
       #day_nav = self.make_day_nav(selected_day=date)
 
       day_nav = """
@@ -4887,7 +5315,7 @@ $(document).ready(function () {
 
       links = """
       <a href={:s}_OBS_GOOD.html>Good """.format(event_date) + str(good_ev) + """</a> - 
-      <a href={:s}_OBS_BAD.html>Bad """.format(event_date) + str(bad_ev) + """</a> </p><p> 
+      <a href={:s}_OBS_BAD.html>Bad """.format(event_date) + str(bad_ev) + """</a> -
       <a href={:s}_OBS_FAIL.html>Fail """.format(event_date) + str(fail_ev) + """</a> - 
       <a href={:s}_OBS_PENDING.html>Pending """.format(event_date) + str(pending_ev) + """</a>"""
 
@@ -4905,7 +5333,12 @@ $(document).ready(function () {
 
       self.map_link = """https://archive.allsky.tv/APPS/dist/maps/index.html?mf={:s}&lat={:s}&lon={:s}&zoom=3""".format(self.kml_link, str(self.center_lat), str(self.center_lon))
       self.gallery_link = event_date + "_OBS_GOOD.html"
-      self.data_table_link = event_date + "_DATA_TABLE.html"
+      self.data_table_link = event_date + "_EVENT_TABLE.html"
+
+      self.obs_by_station_link = event_date + "_OBS_BY_STATION.html"
+      self.int_multi_link = event_date + "_MULTI_STATION_INT.html"
+      self.int_single_link = event_date + "_SINGLE_STATION_INT.html"
+
       short_date = event_date.replace("_", "")
       stats_nav += """
          </p>
@@ -4938,10 +5371,28 @@ $(document).ready(function () {
 
          </P>
       """.format(self.map_link, self.orb_link, short_date, self.data_table_link, self.gallery_link )
+
+      stats_nav += """
+          <div>
+          <h3>Observations</h3>
+          </div>
+          <span class="fa-layers fa-fw fa-2xl" style="background:black; padding: 5px; width:100%">
+             <span class="fa-layers-text fa-inverse" data-fa-transform="shrink-8 down-3" style="font-weight:700"><a href={:s}>By Station</a> | </span>
+             <span class="fa-layers-text fa-inverse" data-fa-transform="shrink-8 down-3" style="font-weight:700"><a href={:s}>By Intensity (multi station)</a> | </span>
+             <span class="fa-layers-text fa-inverse" data-fa-transform="shrink-8 down-3" style="font-weight:700"><a href={:s}>By Intensity (single station)</a></span>
+          </span>
+      """.format(self.obs_by_station_link, self.int_multi_link, self.int_single_link)
+
       good_html = ""
       bad_html = "" 
       fail_html = "" 
       pending_html = "" 
+      default_header = "" 
+
+
+      default_header += style
+      default_header += "<h3>Meteor Archive for " + date + " " + day_nav + "</h3>" 
+      default_header += "<p>" + stats_nav + "</p>"
 
       good_html += style
       good_html += "<h3>Meteor Archive for " + date + " " + day_nav + "</h3>" 
@@ -5017,13 +5468,22 @@ $(document).ready(function () {
                </center>
 
                """.format(int(ev_data['traj']['start_ele']/1000), int(ev_data['traj']['end_ele']/1000), int(ev_data['traj']['v_init']/1000), round(ev_data['orb']['a'],4), round(ev_data['orb']['e'],4), round(ev_data['orb']['i'],4), round(ev_data['orb']['q'],4), ev_data['shower']['shower_code'])
+
+               if ev_data['shower']['shower_code'] == "...":
+                  shower_code = "SPORADIC"
+               else:
+                  shower_code = ev_data['shower']['shower_code']
+               if shower_code not in shower_html:
+                  shower_html[shower_code] = ""
+
+
             else:
                ev_sum = "Bad solve."
 
 
-
          if "GOOD" in event_status or ("SOLVED" in event_status and "BAD" not in event_status):
-            good_html += "<div class='center'>"
+            temp_html = ""
+            temp_html += "<div class='center'>"
             plane_file = ev_dir + event_id + "_PLANES.json"
             if os.path.exists(plane_file) is False:
                plane_report = self.plane_test_event(obs_ids, event_id, event_status)
@@ -5033,9 +5493,9 @@ $(document).ready(function () {
             good_planes,total_planes = self.check_planes(plane_report['results'])
             plane_desc[event_id] = str(good_planes) + " / " + str(total_planes) + " PLANES"
 
-            good_html += "<h3>" + event_id + " - " + event_status + " " 
-            good_html += plane_desc[event_id] + "</h3>"
-            good_html += ev_sum
+            temp_html += "<h3>" + event_id + " - " + event_status + " " 
+            temp_html += plane_desc[event_id] + "</h3>"
+            temp_html += ev_sum
 
             for i in range(0,len(obs_ids)):
 
@@ -5049,11 +5509,13 @@ $(document).ready(function () {
                etime = start_times[i]
                #good_html += self.obs_id_to_img_html(obs_id)
 
-               good_html += self.meteor_cell_html(obs_id,etime)
+               temp_html += self.meteor_cell_html(obs_id,etime)
 
-               good_html += "\n"
-            good_html += "<div style='clear: both'></div>"
-            good_html += "</div>"
+               temp_html += "\n"
+            temp_html += "<div style='clear: both'></div>"
+            temp_html += "</div>"
+            good_html += temp_html
+            shower_html[shower_code] += temp_html
          elif "BAD" in event_status :
             bad_html += "<div>"
 
@@ -5158,7 +5620,32 @@ $(document).ready(function () {
             pending_html += "<div style='clear: both'></div>"
             pending_html += "</div>"
 
+      #
+      shower_links = "<p>"
+      for shower in shower_html:
+         if shower_links != "":
+            shower_links += " - "
+         shower_links += """
+           <a href={:s}.html>{:s}</a> 
+         """.format(shower, shower)
+      shower_links += "</p>"
 
+      print(shower_links)
+      for shower in shower_html:
+         print(shower, shower_html[shower])
+         iframe_file = self.local_evdir + "ALL_ORBITS-frame-{:s}.html".format(shower)
+         iframe = ""
+         if os.path.exists(iframe_file):
+            fp = open(iframe_file)
+            for line in fp:
+               iframe += line
+
+         out_file_shower = self.local_evdir + "{:s}.html".format(shower)
+         temp = template.replace("{MAIN_CONTENT}", default_header + shower_links + iframe + shower_html[shower])
+         fpo = open(out_file_shower, "w")
+         fpo.write(temp)
+         fpo.close()
+         print("SAVED:", out_file_shower)
 
 
       fpo = open(out_file_good, "w")
@@ -5256,7 +5743,9 @@ $(document).ready(function () {
       ff = obs_id.replace(st + "_", "")
       cloud_url = "https://archive.allsky.tv/" + st + "/METEORS/" + ff[0:4] + "/" + ff[0:10] + "/" + st + "_" + ff + "-prev.jpg"
       play_link = """ <a href="javascript:click_icon('play', '""" + obs_id.replace(".jpg", "") + """')"> """
-      html = play_link + "<img src=" + cloud_url + "></a>"
+      html = play_link + """
+         <img src="{:s}" onerror="this.display=None;"></a>
+      """.format(cloud_url)
       return(html)
 
    def make_event_obs_html(self,row):
@@ -5671,7 +6160,9 @@ status [date]   -    Show network status report for that day.
               height: 180px;
               margin: 25px; 
               opacity: {:s}; 
-              ">
+              "
+              onerror="this.display=None;"
+              >
               <div class="show_hider"> {:s} </div>
          </div>
          """.format(div_id, prev_img_url, opacity, disp_text)
@@ -7109,9 +7600,26 @@ status [date]   -    Show network status report for that day.
          print("NO", event_file)
          exit()
 
+      nav_header = self.make_page_header(date)
+
+      template = ""
+      tt = open("./FlaskTemplates/allsky-template-v2.html")
+      for line in tt:
+         template += line
+
+      template = template.replace("{TITLE}", "ALLSKY7 EVENTS " + self.day)
+      template = template.replace("AllSkyCams.com", "AllSky.com")
+      self.local_evdir = self.local_event_dir + self.year + "/" + self.month + "/" + self.day  + "/"
+      out_file_good = self.local_evdir + self.day + "_OBS_GOOD.html"
+      out_file_bad = self.local_evdir + self.day + "_OBS_BAD.html"
+      out_file_failed = self.local_evdir + self.day + "_OBS_FAIL.html"
+      out_file_pending = self.local_evdir + self.day + "_OBS_PENDING.html"
+
+
+
       out = self.dt_header()
-      out += "<h3>Event Table for </h3>\n".format(date)
-      out += "<table id='event_list' class='display'><thead>\n"
+      out += "<h3>Event Table for {:s}</h3>\n".format(date)
+      out += "<div style='background: white'><table id='event_list' class='display'><thead>\n"
       out += "<tr> <th>Event ID</th> <th>Status</th><th>Stations</th> <th>Dur</th> <th>Vel</th> <th>End Alt</th> <th>Shower</th> <th>a</th> <th>e</th> <th>i</th> <th>peri</th> <th>q</th> <th>ls</th> <th>M</th> <th>P</th></tr></thead><tbody>\n"
       bad_events = []
       failed_events = []
@@ -7132,7 +7640,7 @@ status [date]   -    Show network status report for that day.
          for st in sorted(stations):
             #st = st.replace("AMS", "")
             if st_str != "":
-               st_str += ","
+               st_str += ", "
             st_str += st
          dur = 0
          status = ev['solve_status'] 
@@ -7170,6 +7678,8 @@ status [date]   -    Show network status report for that day.
          ev_row = "<tr> <td ><span id='" + ev_id + "'>" + ev_link + "{:s}</a></span></td><td>{:s}</td><td>{:s}</td> <td>{:s}</td> <td>{:s}</td> <td>{:s}</td> <td>{:s}</td> <td>{:0.2f}</td> <td>{:0.2f}</td> <td>{:0.2f}</td> <td>{:0.2f}</td> <td>{:0.2f}</td> <td>{:0.2f}</td> <td>{:0.2f}</td> <td>{:0.2f}</td></tr>\n".format(ev_id, event_status, st_str, str(dur), str(v_init), str(e_alt), str(shower_code),float(orb['a']),float(orb['e']),float(orb['i']),float(orb['peri']),float(orb['q']),float(orb['la_sun']),float(orb['mean_anomaly']),float(orb['T']))
          out += ev_row
       out += """</tbody></table>
+      </div>
+      <br><br>
       <script>
          $(document).ready( function () {
             $('table.display').dataTable();
@@ -7178,9 +7688,13 @@ status [date]   -    Show network status report for that day.
 
       """
 
+      template = template.replace("{MAIN_CONTENT}", nav_header + out)
+
+
+
       fp = open(event_table_file, "w")
 
-      fp.write(out)
+      fp.write(template)
       fp.close()
 
       return(out)

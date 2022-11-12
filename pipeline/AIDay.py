@@ -150,7 +150,7 @@ else:
    os.system("/usr/bin/python3 Rec.py del_aws_day " + date)
    print("DONE AIDay FOR " + date)
 
-   os.system("/usr/bin/python3 Rec.py del_aws_day " + date)
+   #os.system("/usr/bin/python3 Rec.py del_aws_day " + date)
    #print("Reducer", date)
    #AIDB.reducer(date)
    #AIDB.check_update_status(date)

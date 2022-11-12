@@ -985,7 +985,7 @@ class ReviewNetwork():
          cloud_prev_file = self.cloud_dir + st_id + "/METEORS/" + self.year + "/" + self.date + "/" + st_id + "_" + sd_vid.replace(".mp4", "-prev.jpg")
          cloud_prev_fn = st_id + "_" + sd_vid.replace(".mp4", "-prev.jpg")
          fns = [row[1] for row in obs['meteor_frame_data']]
-
+         print("TEST1")
          if cloud_prev_fn not in cloud_files[st_id]:
             review_data[sd_vid] = ["NO_CLOUD_FILE",[0,0,0,0]]
             print("NO CLOUD FILE.")
@@ -1004,9 +1004,10 @@ class ReviewNetwork():
          else:
             continue
 
+         print("Get image file", cloud_prev_url)
          if os.path.exists(prev_file) is False:
             try:
-               res = requests.get(cloud_prev_url, stream=True)
+               res = requests.get(cloud_prev_url, stream=True, timeout=3)
             except:
                continue
             if res.status_code == 200:
