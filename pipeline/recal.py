@@ -2019,6 +2019,9 @@ def wcs_to_cal_params(wcs_file,json_conf):
    return(cal_params_json)
 
 def solve_field(plate_file, json_conf, con, cur):
+   if plate_file is None:
+      print("PLATE FILE IS NONE")
+      return(plate_file)
    station_id = json_conf['site']['ams_id']
    if os.path.exists("/usr/local/astrometry/bin/solve-field") is True:
       AST_BIN = "/usr/local/astrometry/bin/"
