@@ -3853,7 +3853,10 @@ def get_avg_res(cam_id, con, cur):
    for row in rows:
       #print(row)
       tt.append(row[1])
-   total_stars = int(np.mean(tt))
+   if len(tt) > 1:
+      total_stars = int(np.mean(tt))
+   else:
+      total_stars = 0
    return(total_stars, avg_res)
 
 
@@ -3931,6 +3934,7 @@ def batch_apply_bad(cam_id, con, cur, json_conf, blimit=25):
    mcp['best_files'] = best_cal_files
    mcp['good_files'] = good_cal_files
    mcp['bad_files'] = bad_cal_files
+
 
    save_json_file(mcp_file, mcp)
 
