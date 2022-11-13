@@ -4781,7 +4781,7 @@ def apply_calib (cal_file, calfiles_data, json_conf, mcp, last_cal_params=None, 
       temp_cal_params['cat_image_stars'] = pair_star_points(cal_fn, cal_img, cal_params.copy(), json_conf, con, cur, mcp, save_img = False)
       temp_cal_params , bad_stars, marked_img = eval_cal_res(cal_fn, json_conf, temp_cal_params.copy(), cal_img,None,None,temp_cal_params['cat_image_stars'])
 
-      temp_cal_params, cat_stars = recenter_fov(cal_fn, tmep_cal_params, oimg.copy(),  stars, json_conf, extra_text)
+      temp_cal_params, cat_stars = recenter_fov(cal_fn, temp_cal_params, oimg.copy(),  stars, json_conf, extra_text)
 
 
 
