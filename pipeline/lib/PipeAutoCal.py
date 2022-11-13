@@ -11480,7 +11480,7 @@ def make_az_grid(cal_image, mj,json_conf,save_file=None):
             rah = str(rah).replace(":", " ")
             dech = str(dech).replace(":", " ")
             ra,dec = HMS2deg(str(rah),str(dech))
-            new_cat_x, new_cat_y = distort_xy(0,0,ra,dec,cp['ra_center'], cp['dec_center'], cp['x_poly'], cp['y_poly'], float(cp['imagew']), float(cp['imageh']), cp['position_angle'],F_scale)
+            new_cat_x, new_cat_y = distort_xy(0,0,ra,dec,cp['ra_center'], cp['dec_center'], cp['x_poly'], cp['y_poly'], 1920, 1080, cp['position_angle'],F_scale)
             new_cat_x,new_cat_y = int(new_cat_x),int(new_cat_y)
             if new_cat_x > -200 and new_cat_x < 2420 and new_cat_y > -200 and new_cat_y < 1480:
                cv2.rectangle(grid_img, (new_cat_x-2, new_cat_y-2), (new_cat_x + 2, new_cat_y + 2), (128, 128, 128), 1)
