@@ -4977,6 +4977,8 @@ def recenter_fov(cal_fn, cal_params, cal_img, stars, json_conf, extra_text="", t
    show_calparams(cal_params)
    print(len(center_stars))
 
+   if len(center_stars) < 10:
+      center_stars = cal_params['cat_image_stars']
    res = scipy.optimize.minimize(reduce_fov_pos, this_poly, args=( np.float64(cal_params['center_az']),np.float64(cal_params['center_el']),np.float64(cal_params['position_angle']),np.float64(cal_params['pixscale']),cal_params['x_poly'], cal_params['y_poly'], cal_params['x_poly_fwd'], cal_params['y_poly_fwd'],cal_fn,cal_img,json_conf, center_stars, extra_text,0), method='Nelder-Mead')
 
    #adj_az, adj_el, adj_pos, adj_px = res['x']
