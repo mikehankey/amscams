@@ -1151,12 +1151,13 @@ def start_calib(cal_fn, json_conf, calfiles_data, mcp=None):
       mcp['cal_version'] += 1
 
       # reset mcp if it is bad
-      if mcp['x_fun'] > 5:
-         mcp = None
-         cal_params['x_poly'] = np.zeros(shape=(15,), dtype=np.float64)
-         cal_params['y_poly'] = np.zeros(shape=(15,), dtype=np.float64)
-         cal_params['x_poly_fwd'] = np.zeros(shape=(15,), dtype=np.float64)
-         cal_params['y_poly_fwd'] = np.zeros(shape=(15,), dtype=np.float64)
+      if "x_fun" in mcp:
+         if mcp['x_fun'] > 5:
+            mcp = None
+            cal_params['x_poly'] = np.zeros(shape=(15,), dtype=np.float64)
+            cal_params['y_poly'] = np.zeros(shape=(15,), dtype=np.float64)
+            cal_params['x_poly_fwd'] = np.zeros(shape=(15,), dtype=np.float64)
+            cal_params['y_poly_fwd'] = np.zeros(shape=(15,), dtype=np.float64)
 
    else:
       mcp = None
