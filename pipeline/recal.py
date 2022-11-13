@@ -34,7 +34,9 @@ import scipy.optimize
 from PIL import ImageFont, ImageDraw, Image, ImageChops
 import lib.brightstardata as bsd
 from lib.PipeUtil import load_json_file, save_json_file,angularSeparation, calc_dist, convert_filename_to_date_cam , check_running 
-from lib.PipeAutoCal import distort_xy, insert_calib, minimize_poly_multi_star, view_calib, cat_star_report , update_center_radec, XYtoRADec, draw_star_image, make_lens_model, make_az_grid, make_cal_summary, quality_stars, make_cal_plots, find_stars_with_grid, optimize_matchs, eval_cal_res, radec_to_azel, make_plate_image
+from lib.PipeAutoCal import distort_xy, insert_calib, minimize_poly_multi_star, view_calib, cat_star_report , update_center_radec, XYtoRADec, draw_star_image, make_lens_model, make_az_grid, make_cal_summary, quality_stars, make_cal_plots, find_stars_with_grid, optimize_matchs, eval_cal_res, radec_to_azel, make_plate_image, make_cal_plots, make_cal_summary
+
+
 import sqlite3 
 from lib.DEFAULTS import *
 from lib.PipeVideo import load_frames_simple
@@ -3977,6 +3979,9 @@ def batch_apply_bad(cam_id, con, cur, json_conf, blimit=25):
 
 
    characterize_best(cam_id, con, cur, json_conf, 50, best_cal_fns)
+   make_cal_plots(cam_id, json_conf)
+   make_cal_summary(cam_id, json_conf)
+   #os.system("./Process.py cal_sum_html")
 
 
 def batch_apply(cam_id, con,cur, json_conf, last=None, do_bad=False):
@@ -4694,7 +4699,19 @@ def apply_calib (cal_file, calfiles_data, json_conf, mcp, last_cal_params=None, 
 
       temp_cal_params, cat_stars = recenter_fov(cal_fn, cal_params, oimg.copy(),  stars, json_conf, extra_text)
 
+      if temp_cal_params['total_res_px'] > 1 and len(cal_params['cat_image_stars']) > 20:
+         new_stars = []
+         rez = [row[-2] for row in cal_params['cat_image_stars']] 
+         med_rez = np.median(rez) * 1.5
+         for row in temp_cal_params['cat_image_stars']:
+            if row[-2] <= med_rez:
+               new_stars.append(row)
 
+         temp_cal_params['cat_image_stars'] = new_stars
+         temp_cal_params, cat_stars = recenter_fov(cal_fn, temp_cal_params, oimg.copy(),  stars, json_conf, extra_text)
+         print("STARS:", len(new_stars))
+      # if res > 1 and stars > 20 remove some of the worst stars are refit
+      
      
       if temp_cal_params['total_res_px'] <= cal_params['total_res_px'] or True:
          cal_params = temp_cal_params
@@ -8678,6 +8695,7 @@ if __name__ == "__main__":
             cam_id = json_conf['cameras'][cam_num]['cams_id']
             batch_apply_bad(cam_id, con, cur, json_conf, blimit)
 
+      os.system("cd ../pythonv2; ./autoCal.py cal_index")
 
    if cmd == "batch_apply" :
       cam_id = sys.argv[2]
@@ -8837,6 +8855,12 @@ if __name__ == "__main__":
       cal_fn = sys.argv[2]
       revert_to_wcs(cal_fn)
 
+   if cmd == "cal_index" :
+         os.system("cd ../pythonv2; ./autoCal.py cal_index")
+   if cmd == "cal_plots" :
+      cam_id = sys.argv[2]
+      make_cal_plots(cam_id, json_conf)
+      make_cal_summary(cam_id, json_conf)
 
    if cmd == "quality_check" :
       cam_id = sys.argv[2]
