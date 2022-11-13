@@ -4778,8 +4778,12 @@ def apply_calib (cal_file, calfiles_data, json_conf, mcp, last_cal_params=None, 
                cal_params = cp
                #print("FRES:", cal_params['total_res_px'])
 
+      temp_cal_params['cat_image_stars'] = pair_star_points(cal_fn, cal_img, temp_cal_params.copy(), json_conf, con, cur, mcp, save_img = False)
+      temp_cal_params , bad_stars, marked_img = eval_cal_res(cal_fn, json_conf, temp_cal_params.copy(), cal_img,None,None,temp_cal_params['cat_image_stars'])
 
       temp_cal_params, cat_stars = recenter_fov(cal_fn, cal_params, oimg.copy(),  stars, json_conf, extra_text)
+
+
 
       if temp_cal_params['total_res_px'] > 1 and len(cal_params['cat_image_stars']) > 20:
          new_stars = []
@@ -4788,9 +4792,9 @@ def apply_calib (cal_file, calfiles_data, json_conf, mcp, last_cal_params=None, 
          for row in temp_cal_params['cat_image_stars']:
             if row[-2] <= med_rez:
                new_stars.append(row)
-
-         temp_cal_params['cat_image_stars'] = new_stars
-         temp_cal_params, cat_stars = recenter_fov(cal_fn, temp_cal_params, oimg.copy(),  stars, json_conf, extra_text)
+         if len(new_stars) > 10:
+            temp_cal_params['cat_image_stars'] = new_stars
+            temp_cal_params, cat_stars = recenter_fov(cal_fn, temp_cal_params, oimg.copy(),  stars, json_conf, extra_text)
          print("STARS:", len(new_stars))
       # if res > 1 and stars > 20 remove some of the worst stars are refit
       
@@ -4979,6 +4983,8 @@ def recenter_fov(cal_fn, cal_params, cal_img, stars, json_conf, extra_text="", t
 
    if len(center_stars) < 10:
       center_stars = cal_params['cat_image_stars']
+
+
    res = scipy.optimize.minimize(reduce_fov_pos, this_poly, args=( np.float64(cal_params['center_az']),np.float64(cal_params['center_el']),np.float64(cal_params['position_angle']),np.float64(cal_params['pixscale']),cal_params['x_poly'], cal_params['y_poly'], cal_params['x_poly_fwd'], cal_params['y_poly_fwd'],cal_fn,cal_img,json_conf, center_stars, extra_text,0), method='Nelder-Mead')
 
    #adj_az, adj_el, adj_pos, adj_px = res['x']
