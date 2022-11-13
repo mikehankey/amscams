@@ -5081,23 +5081,23 @@ def recenter_cal_file(cal_fn, con, cur, json_conf, mcp):
          cat_stars, short_bright_stars, cat_image = get_catalog_stars(nc)
          nc['short_bright_stars'] = short_bright_stars
 
-         print("BEFORE:")
-         print("CAZ", cal_params['center_az'])
-         print("CEL", cal_params['center_el'])
-         print("POS", cal_params['position_angle'])
-         print("PIX", cal_params['pixscale'])
-         print("RES", cal_params['total_res_px'])
+         #print("BEFORE:")
+         #print("CAZ", cal_params['center_az'])
+         #print("CEL", cal_params['center_el'])
+         #print("POS", cal_params['position_angle'])
+         #print("PIX", cal_params['pixscale'])
+         #print("RES", cal_params['total_res_px'])
 
-         print("AFTER:")
+         #print("AFTER:")
 
          nc['total_res_px'] = res_px
          nc['total_res_deg'] = res_deg
 
-         print("CAZ", nc['center_az'])
-         print("CEL", nc['center_el'])
-         print("POS", nc['position_angle'])
-         print("PIX", nc['pixscale'])
-         print("RES", nc['total_res_px'])
+         #print("CAZ", nc['center_az'])
+         #print("CEL", nc['center_el'])
+         #print("POS", nc['position_angle'])
+         #print("PIX", nc['pixscale'])
+         #print("RES", nc['total_res_px'])
          up_cat_image_stars = []
          for star in cal_params['cat_image_stars']:
             dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist,bp = star
