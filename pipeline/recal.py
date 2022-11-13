@@ -1068,10 +1068,10 @@ def reduce_fov_pos(this_poly,az,el,pos,pixscale, x_poly, y_poly, x_poly_fwd, y_p
          cv2.waitKey(30)
    print("\r", "REDUCE STARS / RES:", len(new_cat_image_stars), mean_res, extra_text, end = "") #, extra_text, x_poly[0], y_poly[0], end="")
 
-   print("AZ", temp_cal_params['center_az']) 
-   print("EL", temp_cal_params['center_el']) 
-   print("PA", temp_cal_params['position_angle']) 
-   print("PX", temp_cal_params['pixscale']) 
+   #print("AZ", temp_cal_params['center_az']) 
+   #print("EL", temp_cal_params['center_el']) 
+   #print("PA", temp_cal_params['position_angle']) 
+   #print("PX", temp_cal_params['pixscale']) 
    return(mean_res)
 
 
