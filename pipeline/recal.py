@@ -7300,11 +7300,13 @@ def characterize_best(cam_id, con, cur, json_conf,limit=50, cal_fns=None):
       # better way to do this
       if cal_fn in calfiles_data:
          cal_data = calfiles_data[cal_fn]
-         cal_params = cal_data_to_cal_params(cal_fn, cal_data,json_conf, mcp)
+         #cal_params = cal_data_to_cal_params(cal_fn, cal_data,json_conf, mcp)
+         cal_params = load_json_file(cal_dir + cal_fn)
 
 
       stars,cat_stars = get_paired_stars(cal_fn, cal_params, con, cur)
 
+      # no lens model cal
       cal_params_nlm = cal_params.copy()
       cal_params_nlm['x_poly'] = np.zeros(shape=(15,), dtype=np.float64)
       cal_params_nlm['y_poly'] = np.zeros(shape=(15,), dtype=np.float64)
@@ -7328,6 +7330,7 @@ def characterize_best(cam_id, con, cur, json_conf,limit=50, cal_fns=None):
 
          zp_center_dist = calc_dist((1920/2,1080/2),(zp_cat_x,zp_cat_y))
          print(dcname, mag, zp_center_dist, res_px)
+         # determine the zp / no lens model dist median avg for characterization
          if zp_center_dist < 200:
             res_0.append(zp_res_px)
          if 200 <= zp_center_dist < 400:
@@ -8062,10 +8065,10 @@ def lens_model(cam_id, con, cur, json_conf, cal_fns= None, force=False):
       mcp['last_model_x_fun'] = mcp['x_fun']
       mcp['last_model_y_fun'] = mcp['y_fun']
 
-   if "total_stars_used" in mcp:
-      tsu = mcp['total_stars_used']
-   else:
-      tsu = 0
+      if "total_stars_used" in mcp:
+         tsu = mcp['total_stars_used']
+      else:
+         tsu = 0
 
    if "fun_diff_x" in mcp:
       print("FUN DIFF X FROM LAST RUN WAS:", mcp['fun_diff_x'] )
@@ -8111,7 +8114,7 @@ def lens_model(cam_id, con, cur, json_conf, cal_fns= None, force=False):
       med_rez = 5
    nms = []
    for star in merged_stars:
-      if star[-2] < med_rez:
+      if star[-2] < med_rez * 2:
          print(med_rez, star[0], star[-2])
          nms.append(star)
       else:
