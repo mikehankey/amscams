@@ -8070,15 +8070,15 @@ def lens_model(cam_id, con, cur, json_conf, cal_fns= None, force=False):
       else:
          tsu = 0
 
-   if "fun_diff_x" in mcp:
-      print("FUN DIFF X FROM LAST RUN WAS:", mcp['fun_diff_x'] )
-      print("FUN DIFF Y FROM LAST RUN WAS", mcp['fun_diff_y'] )
-      if mcp['fun_diff_x'] < .1 and mcp['x_fun'] < 1 and tsu > 300:
-         print("xfun is < 1 and the last run only improved by .1.")
-         if force is False:
-            print("New lens model run aborted because this lens model is already good enough.")
-            print("Set force true if you want to force a run")
-            exit()
+      if "fun_diff_x" in mcp:
+         print("FUN DIFF X FROM LAST RUN WAS:", mcp['fun_diff_x'] )
+         print("FUN DIFF Y FROM LAST RUN WAS", mcp['fun_diff_y'] )
+         if mcp['fun_diff_x'] < .1 and mcp['x_fun'] < 1 and tsu > 300:
+            print("xfun is < 1 and the last run only improved by .1.")
+            if force is False:
+               print("New lens model run aborted because this lens model is already good enough.")
+               print("Set force true if you want to force a run")
+               exit()
       #input("WAIT")
 
 
