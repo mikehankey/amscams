@@ -8587,7 +8587,8 @@ def pair_stars(cal_params, cal_params_file, json_conf, cal_img=None, show = 0):
          sy1 = 0
       close_stars = find_close_stars((ix,iy), cat_stars, 100, cal_img)
       found = 0
-      #if len(close_stars) == 0:
+      if len(close_stars) == 0:
+         print("NO CLOSE STARS FOR ", ix,iy,bp)
       for name,mag,ra,dec,new_cat_x,new_cat_y,six,siy,cat_dist in close_stars:
          #dcname = str(name.decode("utf-8"))
          #dbname = dcname.encode("utf-8")
@@ -8639,7 +8640,7 @@ def pair_stars(cal_params, cal_params_file, json_conf, cal_img=None, show = 0):
                dd = "too far"
             #plt.plot(xs, ys)
             #plt.show()
-            print(dd, match_dist)
+            print("*** NO PAIR", dd, match_dist)
          else:
             my_close_stars.append((name,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist,bp))
             total_match_dist = total_match_dist + match_dist
@@ -8647,9 +8648,11 @@ def pair_stars(cal_params, cal_params_file, json_conf, cal_img=None, show = 0):
             total_matches = total_matches + 1
             used[used_key] = 1
             found = 1
+            print("PAIR FOUND", match_dist)
       if found == 0:
          if len(close_stars) >= 1:
             
+            print("*** NO MATCH STARS", dd, match_dist)
             no_match.append(close_stars[0])
       cc += 1
 
@@ -8685,9 +8688,11 @@ def pair_stars(cal_params, cal_params_file, json_conf, cal_img=None, show = 0):
       if cat_dist < total_res_px * 5:
          good_stars.append(star)
 
-   my_close_stars = good_stars
+   #my_close_stars = good_stars
+
    print("RES:", total_res_px)
-   print("MY CLOSE STARS:", my_close_stars )
+   print("STARS:", len(my_close_stars))
+   #print("MY CLOSE STARS:", my_close_stars )
    cal_params['cat_image_stars'] = my_close_stars
    if total_matches > 0:
       cal_params['total_res_deg'] = total_match_dist / total_matches
@@ -9070,10 +9075,10 @@ def find_close_stars(star_point, catalog_stars,dt=100, show_img = None):
          matches.append((dcname,mag,ra,dec,cat_x,cat_y,scx,scy,cat_star_dist))
       else:
          nomatches.append((dcname,mag,ra,dec,cat_x,cat_y,scx,scy,cat_star_dist))
-      
+      #print(star_point, valid)      
 
 
-   if len(matches) > 1:
+   if len(matches) >= 1:
       matches_sorted = sorted(matches, key=lambda x: x[8], reverse=False)
       # check angle back to center from cat star and then angle from cat star to img star and pick the one with the closest match for the star...
       #for match in matches_sorted:
