@@ -4819,7 +4819,6 @@ def make_cal_plots(in_cam_id, json_conf):
    print("DATES:", dates)
    print("DATES:", rez)
    print("total cal files:", len(rez))
-
    import matplotlib
    matplotlib.use('Agg')
    import matplotlib.pyplot as plt
@@ -4831,28 +4830,28 @@ def make_cal_plots(in_cam_id, json_conf):
       os.makedirs("/mnt/ams2/cal/plots/")
 
    fig, ax = plt.subplots(6)
-   fig.suptitle(title_prefix + " Most Recent Calibration Values ")
+   #fig.suptitle(title_prefix + " Most Recent Calibration Values ")
    fig.autofmt_xdate()
    fig.set_figheight(14)
    fig.tight_layout(pad=3)
    #fig.suptitle(cam_id + " Calibration Values Over Time", fontsize=14)#KMeans
 
-   r = -90
+   r = 180
 
-   ax[0].scatter(dates[r:], azs[r:],
+   ax[0].scatter(dates[:r], azs[:r],
           edgecolor="k" )
    ax[0].set_title(in_cam_id + " Center Azimuth ")
    ax[0].set_xticks(ax[0].get_xticks()[::50])
    ax[0].fmt_xdata = mdates.DateFormatter('%Y_%m_%d')
 
 
-   ax[1].scatter(dates[r:], els[r:],
+   ax[1].scatter(dates[:r], els[:r],
           edgecolor="k" )
    ax[1].set_title(in_cam_id + " Center Elevation ")
    ax[1].set_xticks(ax[1].get_xticks()[::50])
    ax[1].fmt_xdata = mdates.DateFormatter('%Y_%m_%d')
 
-   ax[2].scatter(dates[r:], pos[r:],
+   ax[2].scatter(dates[:r], pos[:r],
           edgecolor="k" )
    ax[2].set_title(in_cam_id + " Position Angle ")
    ax[2].set_xticks(ax[2].get_xticks()[::50])
@@ -4860,19 +4859,19 @@ def make_cal_plots(in_cam_id, json_conf):
 
    print(dates)
    print(pix)
-   ax[3].scatter(dates[r:], pix[r:],
+   ax[3].scatter(dates[:r], pix[:r],
           edgecolor="k" )
    ax[3].set_title(in_cam_id + " Pixel Scale ")
    ax[3].set_xticks(ax[3].get_xticks()[::50])
    ax[3].fmt_xdata = mdates.DateFormatter('%Y_%m_%d')
 
-   ax[4].scatter(dates[r:], rez[r:],
+   ax[4].scatter(dates[:r], rez[:r],
           edgecolor="k" )
    ax[4].set_title(in_cam_id + " Residual Error")
    ax[4].set_xticks(ax[4].get_xticks()[::50])
    ax[4].fmt_xdata = mdates.DateFormatter('%Y_%m_%d')
 
-   ax[5].scatter(dates[r:], strs[r:],
+   ax[5].scatter(dates[:r], strs[:r],
           edgecolor="k" )
    ax[5].set_title(in_cam_id + " Total Stars")
    ax[5].set_xticks(ax[5].get_xticks()[::50])
