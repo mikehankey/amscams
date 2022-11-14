@@ -8153,8 +8153,9 @@ def lens_model(cam_id, con, cur, json_conf, cal_fns= None, force=False):
       mcp = None
 
    if mcp is not None:
-      mcp['last_model_x_fun'] = mcp['x_fun']
-      mcp['last_model_y_fun'] = mcp['y_fun']
+      if "x_fun" in mcp:
+         mcp['last_model_x_fun'] = mcp['x_fun']
+         mcp['last_model_y_fun'] = mcp['y_fun']
 
       if "total_stars_used" in mcp:
          tsu = mcp['total_stars_used']
