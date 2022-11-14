@@ -8235,10 +8235,12 @@ def lens_model(cam_id, con, cur, json_conf, cal_fns= None, force=False):
    print("NEW XY FUN", cal_params['x_fun'], cal_params['y_fun'])
 
    if mcp is not None:
-      print("LAST XY FUN", mcp['last_model_x_fun'] , mcp['last_model_y_fun'] )
-      print("WAIT CAL XFUN")
-      fun_diff_x = mcp['last_model_x_fun'] - cal_params['x_fun']
-      fun_diff_y = mcp['last_model_y_fun'] - cal_params['y_fun']
+      #print("LAST XY FUN", mcp['last_model_x_fun'] , mcp['last_model_y_fun'] )
+      #print("WAIT CAL XFUN")
+      if "last_model_x_fun" in mcp:
+         fun_diff_x = mcp['last_model_x_fun'] - cal_params['x_fun']
+         fun_diff_y = mcp['last_model_y_fun'] - cal_params['y_fun']
+
    else:
       fun_diff_x = 99
       fun_diff_y = 99
