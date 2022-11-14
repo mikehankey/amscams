@@ -33,7 +33,7 @@ from photutils.aperture import aperture_photometry
 import scipy.optimize
 from PIL import ImageFont, ImageDraw, Image, ImageChops
 import lib.brightstardata as bsd
-from lib.PipeUtil import load_json_file, save_json_file,angularSeparation, calc_dist, convert_filename_to_date_cam , check_running 
+from lib.PipeUtil import load_json_file, save_json_file,angularSeparation, calc_dist, convert_filename_to_date_cam , check_running , get_file_info
 from lib.PipeAutoCal import distort_xy, insert_calib, minimize_poly_multi_star, view_calib, cat_star_report , update_center_radec, XYtoRADec, draw_star_image, make_lens_model, make_az_grid, make_cal_summary, quality_stars, make_cal_plots, find_stars_with_grid, optimize_matchs, eval_cal_res, radec_to_azel, make_plate_image, make_cal_plots, make_cal_summary
 
 
@@ -3946,8 +3946,14 @@ def get_avg_res(cam_id, con, cur):
 
 def batch_apply_bad(cam_id, con, cur, json_conf, blimit=25):
    
+   prune(cam_id, con, cur, json_conf)
+
+
    calfiles_data = load_cal_files(cam_id, con, cur)
    mcp_file = "/mnt/ams2/cal/multi_poly-" + station_id + "-" + cam_id + ".info"
+
+   tsize,tdiff = get_file_info(mcp_file )
+
    if os.path.exists(mcp_file) == 1:
       mcp = load_json_file(mcp_file)
       if "cal_version" not in mcp:
@@ -4061,9 +4067,15 @@ def batch_apply_bad(cam_id, con, cur, json_conf, blimit=25):
 
 
    characterize_best(cam_id, con, cur, json_conf, 50, best_cal_fns)
+   # run lens model 1x per 24 hours max
+   tdiff, tsize = get_file_info(mcp_file )
+
    make_cal_plots(cam_id, json_conf)
    make_cal_summary(cam_id, json_conf)
    #os.system("./Process.py cal_sum_html")
+   tdays = tdiff / 60 / 24 
+   if tdays > 24:
+      lens_model(cam_id, con, cur, json_conf, cal_fns)
 
 
 def batch_apply(cam_id, con,cur, json_conf, last=None, do_bad=False):
