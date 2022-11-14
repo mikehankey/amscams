@@ -4074,8 +4074,11 @@ def batch_apply_bad(cam_id, con, cur, json_conf, blimit=25):
    make_cal_summary(cam_id, json_conf)
    #os.system("./Process.py cal_sum_html")
    tdays = tdiff / 60 / 24 
-   if tdays > 24:
-      lens_model(cam_id, con, cur, json_conf, cal_fns)
+   
+   if tdays > 1:
+      print("We should make the lens model again!")
+      lens_model(cam_id, con, cur, json_conf, best_cal_fns)
+      #
 
 
 def batch_apply(cam_id, con,cur, json_conf, last=None, do_bad=False):
