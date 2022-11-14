@@ -541,7 +541,7 @@ def refit_meteor(meteor_file, con, cur, json_conf, mcp = None, last_best_dict = 
          rez = 1
 
       for row in cp['cat_image_stars']:
-         if row[-2] < rez * 2:
+         if row[-2] < rez * 3:
             temp.append(row)
          else:
             print("skip bad res:", row[-2])
@@ -592,8 +592,8 @@ def refit_meteor(meteor_file, con, cur, json_conf, mcp = None, last_best_dict = 
          new_cat_image_stars.append(star)
       else:
          print("REJECT", star[0], star[-2], med_rez)
-
-   mj['cp']['cat_image_stars'] = new_cat_image_stars
+   # was to strict so commented out
+   #mj['cp']['cat_image_stars'] = new_cat_image_stars
    # now apply the new cp to the existing points!
 
    
@@ -4348,6 +4348,7 @@ def apply_calib (cal_file, calfiles_data, json_conf, mcp, last_cal_params=None, 
          cam_id = camera_id
       else:
          import_cal_file(cal_file, cal_dir, mcp)
+         cal_params = load_json_file(cal_dir + cal_file)
          cal_fn = cal_file
          res_px = 999
 
