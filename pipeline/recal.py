@@ -8240,6 +8240,9 @@ def lens_model(cam_id, con, cur, json_conf, cal_fns= None, force=False):
       if "last_model_x_fun" in mcp:
          fun_diff_x = mcp['last_model_x_fun'] - cal_params['x_fun']
          fun_diff_y = mcp['last_model_y_fun'] - cal_params['y_fun']
+      else:
+         fun_diff_x = 99
+         fun_diff_y = 99
 
    else:
       fun_diff_x = 99
