@@ -4330,6 +4330,7 @@ def get_image_stars_with_catalog(obs_id, cal_params, show_img, flux_table=None):
 
 
 def apply_calib (cal_file, calfiles_data, json_conf, mcp, last_cal_params=None, extra_text= "", do_bad=False, flux_table=None):
+      (f_datetime, cam_id, f_date_str,fy,fmin,fd, fh, fm, fs) = convert_filename_to_date_cam(cal_file)
       #print("MCP", mcp)    
       cal_fn = cal_file.split("/")[-1]
       cal_dir = cal_dir_from_file(cal_file)
@@ -4971,6 +4972,7 @@ def recenter_fov(cal_fn, cal_params, cal_img, stars, json_conf, extra_text="", t
    elif 5 <= cal_params['total_res_px'] < 10:
       this_poly = [.001,.001,.001,.001] 
    else:
+      # greater than 10
       this_poly = [.005,.005,.005,.005] 
 
    if this_poly_in is not None:
