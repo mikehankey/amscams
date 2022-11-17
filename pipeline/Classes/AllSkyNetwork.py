@@ -2421,6 +2421,7 @@ class AllSkyNetwork():
 
             # image or image_file
             ai_resp = self.check_ai_img(ai_img, None)
+            print(ai_resp)
             if ai_resp['meteor_prev_yn'] > ai_resp['meteor_yn']:
                ai_resp['meteor_yn'] = ai_resp['meteor_prev_yn']
 
@@ -4992,6 +4993,17 @@ $(document).ready(function () {
 
    def make_page_header(self, date=None):
 
+      if os.path.exists(self.local_evdir + "shower_links_file.json"):
+         showers = load_json_file(self.local_evdir + "shower_links_file.json")
+      # shower links 1
+      shower_links = "<p>"
+      for shower in showers:
+         print(shower)
+         shower_links += """
+         <a href={:s}.html>{:s}</a> {:s} -
+         """.format(shower[0], shower[0], str(shower[1]))
+      shower_links += "</p>" 
+
       #day_nav = self.make_day_nav(selected_day=date)
       img_err_handler = """
       <script>
@@ -5001,8 +5013,6 @@ $(document).ready(function () {
                 //$(this).attr('src', 'default.jpg'); // Set a default image path that will replace image error icon
              });
       </script>
-     <img src="/XXX">
-     error image
       """
 
 
@@ -5187,6 +5197,8 @@ $(document).ready(function () {
           </span>-->
       """.format(self.obs_by_station_link, self.int_multi_link, self.int_single_link)
 
+      stats_nav += shower_links
+
       good_html = ""
 
       good_html += style
@@ -5228,6 +5240,7 @@ $(document).ready(function () {
       template = template.replace("{TITLE}", "ALLSKY7 EVENTS " + event_date)
       template = template.replace("AllSkyCams.com", "AllSky.com")
       self.local_evdir = self.local_event_dir + self.year + "/" + self.month + "/" + self.day  + "/"
+      default_header_file = self.local_evdir + date + "_HEADER.html"
       out_file_good = self.local_evdir + date + "_OBS_GOOD.html"
       out_file_bad = self.local_evdir + date + "_OBS_BAD.html"
       out_file_failed = self.local_evdir + date + "_OBS_FAIL.html"
@@ -5312,6 +5325,67 @@ $(document).ready(function () {
       #stats_nav += "<a href=javascript:goto_ev('fail')>Fail " + str(fail_ev) + "</a> - "
       #stats_nav += "<a href=javascript:goto_ev('pending')>" + "Pending " + str(pending_ev) + "</a>"
 
+      if os.path.exists(self.all_events_file) is True:
+         all_events_data = load_json_file(self.all_events_file)
+      else:
+         all_events_data = []
+
+      showers = {}
+      # shower links 1
+      for ev_data in all_events_data:
+         print(ev_data.keys())
+         if "solution" not in ev_data:
+            continue
+         if "orb" in ev_data:
+            orb = ev_data['orb']
+            if orb is None:
+               continue
+         if "solution" in ev_data:
+            sol = ev_data['solution']
+            if "SOLVED" not in ev_data['solve_status']:
+               print(ev_data['solve_status'])
+               continue
+
+
+         if "shower" in ev_data:
+            shower_code = ev_data['shower']['shower_code']
+         else:
+            shower_code = "..."
+
+         if "orb" in ev_data:
+            orb = ev_data['orb']
+            if orb is not None:
+               if orb['a'] is None:
+                  continue
+               if shower_code == "...":
+                  if float(orb['a']) <= 0:
+                     shower_code = "SPORADIC-BAD"
+                  elif 0 < float(orb['a']) < 5.2:
+                     shower_code = "SPORADIC-INNER"
+                  else:
+                     shower_code = "SPORADIC-OUTER"
+         if shower_code not in showers:
+            showers[shower_code] = 1
+         else:
+            showers[shower_code] += 1
+         print("EEE:", shower_code)
+
+      temp = []
+
+      for shower in showers:
+         print(shower)
+         temp.append((shower, showers[shower]))
+      showers = sorted(temp, key=lambda x: x[1], reverse=True)
+      save_json_file(self.local_evdir + "shower_links_file.json", showers)
+      # shower links 1 
+      shower_links = "<p>"
+      for shower in showers:
+         print(shower)
+         shower_links += """
+         <a href={:s}.html>{:s}</a> {:s} - 
+         """.format(shower[0], shower[0], str(shower[1]))
+      shower_links += "</p>"
+
 
       links = """
       <a href={:s}_OBS_GOOD.html>Good """.format(event_date) + str(good_ev) + """</a> - 
@@ -5383,6 +5457,8 @@ $(document).ready(function () {
           </span>
       """.format(self.obs_by_station_link, self.int_multi_link, self.int_single_link)
 
+      stats_nav += shower_links
+
       good_html = ""
       bad_html = "" 
       fail_html = "" 
@@ -5410,7 +5486,10 @@ $(document).ready(function () {
       pending_html += "<h3>Meteor Archive for " + date + " " + day_nav + "</h3>"
       pending_html += "<h4>Pending Events </h4>"
       pending_html += "<p>" + stats_nav + "</p>"
-
+ 
+      fpout = open(default_header_file, "w")
+      fpout.write(default_header)
+      fpout.close()
 
 
       stats = {}
@@ -5439,6 +5518,9 @@ $(document).ready(function () {
 
          else:
             ev_data = load_json_file(ev_file)
+            if "shower" not in ev_data:
+               ev_data["shower"] = {}
+               ev_data['shower']["shower_code"] = "..."
             if ev_data['orb']['a'] is not None:
                print("EVENT FILE FOUND:", ev_file)
                ev_sum = """
@@ -5469,12 +5551,14 @@ $(document).ready(function () {
 
                """.format(int(ev_data['traj']['start_ele']/1000), int(ev_data['traj']['end_ele']/1000), int(ev_data['traj']['v_init']/1000), round(ev_data['orb']['a'],4), round(ev_data['orb']['e'],4), round(ev_data['orb']['i'],4), round(ev_data['orb']['q'],4), ev_data['shower']['shower_code'])
 
-               if ev_data['shower']['shower_code'] == "...":
-                  shower_code = "SPORADIC"
-               else:
-                  shower_code = ev_data['shower']['shower_code']
-               if shower_code not in shower_html:
-                  shower_html[shower_code] = ""
+
+         
+                  
+
+               #if shower not in by_shower:
+               #   by_shower[shower] = []
+
+
 
 
             else:
@@ -5482,6 +5566,22 @@ $(document).ready(function () {
 
 
          if "GOOD" in event_status or ("SOLVED" in event_status and "BAD" not in event_status):
+            if True:
+               if ev_data['shower']['shower_code'] == "...":
+                  orb = ev_data['orb']
+                  if "a" in orb:
+                     if orb['a'] is not None:
+                        if float(orb['a']) <= 0:
+                           shower_code = "SPORADIC-BAD"
+                        elif 0 < float(orb['a']) < 5.2:
+                           shower_code = "SPORADIC-INNER"
+                        else:
+                           shower_code = "SPORADIC-OUTER"
+               else:
+                  shower_code = ev_data['shower']['shower_code']
+
+            if shower_code not in shower_html:
+               shower_html[shower_code] = ""
             temp_html = ""
             temp_html += "<div class='center'>"
             plane_file = ev_dir + event_id + "_PLANES.json"
@@ -5515,7 +5615,9 @@ $(document).ready(function () {
             temp_html += "<div style='clear: both'></div>"
             temp_html += "</div>"
             good_html += temp_html
+            print("ADD TEMP HTML SHOWER CODE:", shower_code)
             shower_html[shower_code] += temp_html
+
          elif "BAD" in event_status :
             bad_html += "<div>"
 
@@ -5621,16 +5723,7 @@ $(document).ready(function () {
             pending_html += "</div>"
 
       #
-      shower_links = "<p>"
-      for shower in shower_html:
-         if shower_links != "":
-            shower_links += " - "
-         shower_links += """
-           <a href={:s}.html>{:s}</a> 
-         """.format(shower, shower)
-      shower_links += "</p>"
 
-      print(shower_links)
       for shower in shower_html:
          print(shower, shower_html[shower])
          iframe_file = self.local_evdir + "ALL_ORBITS-frame-{:s}.html".format(shower)
@@ -5641,7 +5734,7 @@ $(document).ready(function () {
                iframe += line
 
          out_file_shower = self.local_evdir + "{:s}.html".format(shower)
-         temp = template.replace("{MAIN_CONTENT}", default_header + shower_links + iframe + shower_html[shower])
+         temp = template.replace("{MAIN_CONTENT}", default_header + iframe + shower_html[shower])
          fpo = open(out_file_shower, "w")
          fpo.write(temp)
          fpo.close()
@@ -5667,7 +5760,6 @@ $(document).ready(function () {
       fpo = open(out_file_pending, "w")
       fpo.write(temp)
       fpo.close()
-
 
 
 

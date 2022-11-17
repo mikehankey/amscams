@@ -2156,8 +2156,11 @@ def make_kml(kml_file, points, lines, folder_name):
    for point in points:
       lon,lat,alt,station = point
       if "3DP:" in station:
-         tstation, trash = station.split("_")
-         tstation = tstation.replace("3DP:", "")
+         if "_" in station:
+            tstation = station.split("_")[0]
+            tstation = tstation.replace("3DP:", "")
+         else:
+            tstation = station
          print("S/T STATION:", station, tstation)
          if tstation in used:
             color = used[tstation]
@@ -2840,6 +2843,7 @@ def WMPL_solve(event_id, obs,time_sync=1, force=0, dynamodb=None):
     etv = True 
     monte = False 
     traj_solve = traj.Trajectory(jd_ref, output_dir=solve_dir, meastype=meastype, save_results=True, monte_carlo=monte, show_plots=False, max_toffset=5,v_init_part=.5, estimate_timing_vel=etv, show_jacchia=True  )
+    earliest_time = None
    
     for station_id in obs:
         if len(obs[station_id].keys()) > 1:
@@ -2862,27 +2866,50 @@ def WMPL_solve(event_id, obs,time_sync=1, force=0, dynamodb=None):
                fps = 25
 
             if "azs_gc" in obs[station_id][file]:
-               azs = np.radians(obs[station_id][file]['azs_gc'])
-               els = np.radians(obs[station_id][file]['els_gc'])
+               #azs = np.radians(obs[station_id][file]['azs_gc'])
+               #els = np.radians(obs[station_id][file]['els_gc'])
+               azs = np.radians(obs[station_id][file]['azs'])
+               els = np.radians(obs[station_id][file]['els'])
             else:
                azs = np.radians(obs[station_id][file]['azs'])
                els = np.radians(obs[station_id][file]['els'])
-            times = obs[station_id][file]['times']
+            o_times = obs[station_id][file]['times']
 
             print("STATION:", station_id)
             print("FILE:", file)
-            print("TIMES:", times)
+            print("TIMES:", o_times)
             print("LAT:", lat)
             print("LON:", lon)
             print("ALT:", alt)
             print("AZ:", azs)
             print("ELS:", els)
+            o_times[0] = o_times[0].replace("-", "_")
+            o_times[0] = o_times[0].replace(":", "_")
+            o_times[0] = o_times[0].replace(" ", "_")
+            event_start_dt = datetime.datetime.strptime(o_times[0], "%Y_%m_%d_%H_%M_%S.%f")
+            if earliest_time is None:
+               earliest_time = event_start_dt
+            else:
+               if event_start_dt < earliest_time:
+                  earliest_time = event_start_dt
             if len(azs) == 0:
                 continue
             times = []
-            for i in range(0,len(azs)):
-                times.append(i/fps)
-        
+
+            for frame_time in o_times:
+                frame_time = frame_time.replace("-", "_")
+                frame_time = frame_time.replace(":", "_")
+                frame_time = frame_time.replace(" ", "_")
+                frame_dt = datetime.datetime.strptime(frame_time, "%Y_%m_%d_%H_%M_%S.%f")
+                time_diff = (frame_dt - event_start_dt).total_seconds()
+                times.append(time_diff)
+
+            #for i in range(0,len(azs)):
+            #    times.append(i/fps)
+      
+            print("o", station_id, o_times)
+            print("n", station_id, times)
+            #input("DID THE TIMES!")
             # Set points for the first site
             print("WMPL OBS:", event_id, station_id, lat, lon, alt, azs, els, times)  
             traj_solve.infillTrajectory(azs, els, times, np.radians(float(lat)), np.radians(float(lon)), alt, station_id=station_id)

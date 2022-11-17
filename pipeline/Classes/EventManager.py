@@ -604,7 +604,7 @@ class EventManager():
          fpout.write(orbs_by_shower_html[shower])
          print("SAVED:", self.event_dir + "ALL_ORBITS-frame-{:s}.html".format(shower), "w")
          fpout.close()
-      input("SHOWER?")
+      #input("SHOWER?")
    def make_period_files (self):
       if cfe(self.all_events_summary_file) == 1:
          self.all_events = load_json_file(self.all_events_summary_file)
