@@ -52,6 +52,7 @@ def join_min_files(amsid, min_file, next_file, seconds):
    next_hd_files = glob.glob(next_hd_wild)
    next_hd_files = remove_join_files(next_hd_files)
 
+   hd_outfile = None
    if len(hd_files) > 0 and len(next_hd_files) > 0:
       hd_clip1 = hd_files[0]
       hd_clip2 = next_hd_files[0] 
@@ -76,16 +77,16 @@ def join_min_files(amsid, min_file, next_file, seconds):
       print(cmd)
       os.system(cmd)
 
+   if hd_outfile is not None:
+      if os.path.exists(hd_min_dir + hd_outfile) is True:
+         out += "HD join looks like it worked.<br> "
+         cmd = "mv " + hd_clip1 + " " + hd_clip1.replace(".mp4", "-orig.mp4")
+         print(cmd)
+         os.system(cmd)
 
-   if os.path.exists(hd_min_dir + hd_outfile) is True:
-      out += "HD join looks like it worked.<br> "
-      cmd = "mv " + hd_clip1 + " " + hd_clip1.replace(".mp4", "-orig.mp4")
-      print(cmd)
-      os.system(cmd)
-
-      cmd = "cp " + hd_min_dir + hd_outfile + " " + hd_clip1 
-      print(cmd)
-      os.system(cmd)
+         cmd = "cp " + hd_min_dir + hd_outfile + " " + hd_clip1 
+         print(cmd)
+         os.system(cmd)
 
    orig_link = "/min_detail/" + amsid + "/" + day + "/" + min_file + "/"
    out += "<p><a href=" + orig_link + ">Return to the minute page to use the new joined clip that contains 2 minutes!</a></p>"
