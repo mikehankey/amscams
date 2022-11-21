@@ -162,7 +162,7 @@ def min_detail_main(amsid, day, min_file, label):
    vsd_vid = sd_vid.replace("/mnt/ams2", "")
    out += "<a href='/man_detect/" + min_file + ".mp4/'>Manual Meteor Detect</a><br>"
    out += "Media Files <ul>"
-   out += "<li><a href=" + vsd_vid + ">" + vsd_vid + "</a></li>"
+   #out += "<li><a href=" + vsd_vid + ">" + vsd_vid + "</a></li>"
 
 
    for sds in sd_min_files:
