@@ -78,7 +78,10 @@ def man_detect(min_file, data):
    
       trim_num = "{:04d}".format(ff)
       trim_file = min_file.replace(".mp4", "-trim-" + trim_num + ".mp4")
-      cmd = "./FFF.py splice_video " + min_file + " " + str(ts) + " " + str(te)  + " " + trim_file + " sec"
+      #cmd = "./FFF.py splice_video " + min_file + " " + str(ts) + " " + str(te)  + " " + trim_file + " sec"
+
+      # do the splice with frames instead?
+      cmd = "./FFF.py splice_video " + min_file + " " + str(ff) + " " + str(lf)  + " " + trim_file + " frame"
       print(cmd)
       out += cmd
       os.system(cmd) 

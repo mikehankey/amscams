@@ -14,7 +14,7 @@ from FlaskLib.meteor_detail_funcs import detail_page , pick_points, pick_points_
 from FlaskLib.config_funcs import config_vars , network_setup 
 from FlaskLib.meteors_main import meteors_main , meteors_by_day, trash_page, non_meteors_main, confirm_non_meteors, confirm_all_trash 
 from FlaskLib.super_stacks import stacks_main, stacks_day_hours, stacks_hour
-from FlaskLib.min_detail import min_detail_main
+from FlaskLib.min_detail import min_detail_main, join_min_files
 from FlaskLib.live import live_view
 from FlaskLib.TL import tl_menu 
 from FlaskLib.man_reduce import meteor_man_reduce , save_man_reduce
@@ -498,6 +498,16 @@ def calib(amsid):
 @auth.login_required
 def live(amsid):
    out = live_view(amsid)
+   return out
+
+
+
+@app.route('/join_min_files/<amsid>/<min_file>/', methods=['GET', 'POST'])
+@auth.login_required
+def join_mfiles(amsid, min_file):
+   next_file = request.args.get('next_file')
+   seconds = request.args.get('seconds')
+   out = join_min_files(amsid, min_file, next_file, seconds)
    return out
 
 @app.route('/min_detail/<amsid>/<date>/<min_file>/', methods=['GET', 'POST'])
