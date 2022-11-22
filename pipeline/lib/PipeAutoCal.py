@@ -6897,6 +6897,9 @@ def cal_all(json_conf):
             print("RAN:", file)
          else:
             print("DAY PIC DELETE:", avg_px, file)
+            print("rm " + file)
+            os.system("rm " + file)
+
          #exit()
 
 
