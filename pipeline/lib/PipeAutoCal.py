@@ -7008,11 +7008,16 @@ def autocal(image_file, json_conf, show = 0, heal_only=0):
       cp = make_cal_obj(az,el,pos,pxs,stars,stars,res)
       mcp_file = "/mnt/ams2/cal/" + "multi_poly-" + STATION_ID + "-" + cam + ".info"
       if cfe(mcp_file) == 1:
-         mcp = load_json_file(mcp_file)
-         cp['x_poly'] = mcp['x_poly']
-         cp['y_poly'] = mcp['y_poly']
-         cp['x_poly_fwd'] = mcp['x_poly_fwd']
-         cp['y_poly_fwd'] = mcp['y_poly_fwd']
+         try:
+            mcp = load_json_file(mcp_file)
+            cp['x_poly'] = mcp['x_poly']
+            cp['y_poly'] = mcp['y_poly']
+            cp['x_poly_fwd'] = mcp['x_poly_fwd']
+            cp['y_poly_fwd'] = mcp['y_poly_fwd']
+         except:
+            cmd = "rm " + mcp_file
+            os.system(cmd)
+
 
       tcp , bad_stars, marked_img = test_cal(image_file, json_conf, cp, img, data)
 
