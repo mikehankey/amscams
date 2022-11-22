@@ -8187,7 +8187,7 @@ def lens_model(cam_id, con, cur, json_conf, cal_fns= None, force=False):
             if force is False:
                print("New lens model run aborted because this lens model is already good enough.")
                print("Set force true if you want to force a run")
-               exit()
+               return()
       #input("WAIT")
 
 
