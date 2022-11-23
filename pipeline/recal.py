@@ -7624,7 +7624,7 @@ def characterize_best(cam_id, con, cur, json_conf,limit=50, cal_fns=None):
    tb.add_row(["1000+", np.median(res_1000)])
 
    print(tb)
-
+   input("WAIT")
    try:
       base_image = clean_cal_img.copy()
    except:
@@ -7725,15 +7725,15 @@ def characterize_best(cam_id, con, cur, json_conf,limit=50, cal_fns=None):
 
       match_dist = 9999
       center_dist = calc_dist((img_x, img_y),(1920/2,1080/2))   
-      factor = 1.5 
+      factor = 2 
       if center_dist > 600:
-         factor = 1.5
+         factor = 2 
       if center_dist > 700:
-         factor = 1.5
+         factor = 3 
       if center_dist > 800:
-         factor = 2
+         factor = 4 
       if center_dist > 900:
-         factor = 3
+         factor = 5 
       if res_px < med_rez * factor: 
          merged_stars.append((cal_fn, center_az, center_el, ra_center, dec_center, position_angle, pixscale, name,mag,ra,dec,ra,dec,match_dist,new_x,new_y,center_az,center_el,new_cat_x,new_cat_y,img_x,img_y,res_px,star_flux))
 
@@ -7821,6 +7821,7 @@ def plot_star_chart(base_image, cat_stars, zp_cat_stars):
    if SHOW == 1:
       cv2.imshow('pepe', base_image)
       cv2.waitKey(30)
+
 
 
 def characterize_fov(cam_id, con, cur, json_conf):
