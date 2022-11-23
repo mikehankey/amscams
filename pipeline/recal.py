@@ -8272,6 +8272,8 @@ def best_stars(merged_stars, mcp, factor = 2, gsize=50):
    return(best)
 
 def lens_model(cam_id, con, cur, json_conf, cal_fns= None, force=False):
+   lens_img = np.zeros((1080,1920,3),dtype=np.uint8)
+
    station_id = json_conf['site']['ams_id']
    limit = 1000
    #cal_fns = batch_review(station_id, cam_id, con, cur, json_conf, limit)
@@ -8370,10 +8372,17 @@ def lens_model(cam_id, con, cur, json_conf, cal_fns= None, force=False):
    if len(merged_stars) > 5:
       med_rez = np.median(rez) 
    else:
-      med_rez = 5
+      med_rez = 10 
    nms = []
    for star in merged_stars:
-      if star[-2] < med_rez * 2:
+      cal_file , center_az, center_el, ra_center, dec_center, position_angle, pixscale, name,mag,ra,dec,ra,dec,match_dist,orig_cat_x,orig_cat_y,center_az,center_el,new_cat_x,new_cat_y,img_x,img_y,res_px,star_flux = star
+      if SHOW == 1:
+         cv2.circle(lens_img, (int(img_x),int(img_y)), 15, (128,255,128),1)
+         color = (255,255,255)
+         cv2.line(lens_img, (int(orig_cat_x),int(orig_cat_y)), (int(img_x),int(img_y)), color, 1)
+         cv2.imshow('pepe', lens_img)
+         cv2.waitKey(30)
+      if star[-2] < med_rez * 3:
          print(med_rez, star[0], star[-2])
          nms.append(star)
       else:
