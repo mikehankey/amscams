@@ -8351,21 +8351,23 @@ def lens_model(cam_id, con, cur, json_conf, cal_fns= None, force=False):
    merged_stars = load_json_file("/mnt/ams2/cal/" + station_id + "_" + cam_id + "_MERGED_STARS.json")
    # 
    #if len(merged_stars) > 500:
+
    rez = [row[-2] for row in merged_stars]
    print("BEFORE BEST STARS RES:", len(merged_stars), np.median(rez))
-   if len(merged_stars) > 1200:
+   if False:
+      if len(merged_stars) > 1200:
+         merged_stars = best_stars(merged_stars, mcp, factor = 2, gsize=50)
+      print("AFTER BEST STARS RES:", len(merged_stars), np.median(rez))
+      if len(merged_stars) > 1200:
+         merged_stars = best_stars(merged_stars, mcp, factor = 2, gsize=50)
+      print("AFTER BEST STARS RES:", len(merged_stars), np.median(rez))
+      if len(merged_stars) > 1200:
+         merged_stars = best_stars(merged_stars, mcp, factor = 2, gsize=50)
+      print("AFTER BEST STARS RES:", len(merged_stars), np.median(rez))
       merged_stars = best_stars(merged_stars, mcp, factor = 2, gsize=50)
-   print("AFTER BEST STARS RES:", len(merged_stars), np.median(rez))
-   if len(merged_stars) > 1200:
-      merged_stars = best_stars(merged_stars, mcp, factor = 2, gsize=50)
-   print("AFTER BEST STARS RES:", len(merged_stars), np.median(rez))
-   if len(merged_stars) > 1200:
-      merged_stars = best_stars(merged_stars, mcp, factor = 2, gsize=50)
-   print("AFTER BEST STARS RES:", len(merged_stars), np.median(rez))
-   merged_stars = best_stars(merged_stars, mcp, factor = 2, gsize=50)
-   print("AFTER BEST STARS RES:", len(merged_stars), np.median(rez))
-   rez = [row[-2] for row in merged_stars]
-   print("AFTER BEST STARS RES:", len(merged_stars), np.median(rez))
+      print("AFTER BEST STARS RES:", len(merged_stars), np.median(rez))
+      rez = [row[-2] for row in merged_stars]
+      print("AFTER BEST STARS RES:", len(merged_stars), np.median(rez))
 
    print("MERGED STARS IS:", len(merged_stars))
 
@@ -8375,6 +8377,8 @@ def lens_model(cam_id, con, cur, json_conf, cal_fns= None, force=False):
    else:
       med_rez = 10 
    nms = []
+
+   # final quality check
    for star in merged_stars:
       cal_file , center_az, center_el, ra_center, dec_center, position_angle, pixscale, name,mag,ra,dec,ra,dec,match_dist,orig_cat_x,orig_cat_y,center_az,center_el,new_cat_x,new_cat_y,img_x,img_y,res_px,star_flux = star
       cv2.circle(lens_img, (int(img_x),int(img_y)), 15, (128,255,128),1)
@@ -8388,7 +8392,7 @@ def lens_model(cam_id, con, cur, json_conf, cal_fns= None, force=False):
          nms.append(star)
       else:
          print("SKIP", med_rez, star[0], star[-2])
-   merged_stars = nms
+   #merged_stars = nms
 
    cv2.imwrite(lens_img_file, lens_img)
    print("SAVED:", lens_img_file)
