@@ -3715,7 +3715,7 @@ def get_catalog_stars(cal_params):
 
       # calc ang_sep of star's ra/dec from fov center ra/dec
       ang_sep = angularSeparation(ra,dec,RA_center,dec_center)
-      print("ANG:", bname, mag, ang_sep)
+      #print("ANG:", bname, mag, ang_sep)
       #if ang_sep < fov_radius and float(mag) <= MAG_LIMIT:
       #if float(mag) <= MAG_LIMIT:
       if True:
@@ -4748,7 +4748,7 @@ def apply_calib (cal_file, calfiles_data, json_conf, mcp, last_cal_params=None, 
       cal_params_json = load_json_file(cal_json_file)
 
       # try to pair catalog stars with image star points
-      cat_star_match(cal_fn, cal_params, cal_img, cat_stars)
+      #cat_star_match(cal_fn, cal_params, cal_img, cat_stars)
 
       # Need to modes here?
       stars,cat_stars = get_paired_stars(cal_fn, cal_params, con, cur)
