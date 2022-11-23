@@ -4828,7 +4828,7 @@ def apply_calib (cal_file, calfiles_data, json_conf, mcp, last_cal_params=None, 
 
       temp_cal_params, cat_stars = recenter_fov(cal_fn, temp_cal_params, oimg.copy(),  stars, json_conf, extra_text)
 
-      if temp_cal_params['total_res_px'] > 1 and len(cal_params['cat_image_stars']) > 20:
+      if temp_cal_params['total_res_px'] > 2 and len(cal_params['cat_image_stars']) > 20:
          new_stars = []
          rez = [row[-2] for row in cal_params['cat_image_stars']] 
          # center dist
