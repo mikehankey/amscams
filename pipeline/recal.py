@@ -7669,8 +7669,10 @@ def characterize_best(cam_id, con, cur, json_conf,limit=50, cal_fns=None):
             limit = np.median(res_800)
          if 900 <= zp_center_dist < 1000:
             limit = np.median(res_900)
-         if zp_center_dist >= 1000:
+         if zp_center_dist >= 1000 and len(res_1000) > 3:
             limit = np.median(res_1000)
+         else:
+            limit = 50
 
       fact = abs(res_px / limit)
       if .7 <= fact <= 1.3:
