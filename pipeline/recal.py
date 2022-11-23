@@ -8376,10 +8376,10 @@ def lens_model(cam_id, con, cur, json_conf, cal_fns= None, force=False):
    nms = []
    for star in merged_stars:
       cal_file , center_az, center_el, ra_center, dec_center, position_angle, pixscale, name,mag,ra,dec,ra,dec,match_dist,orig_cat_x,orig_cat_y,center_az,center_el,new_cat_x,new_cat_y,img_x,img_y,res_px,star_flux = star
+      cv2.circle(lens_img, (int(img_x),int(img_y)), 15, (128,255,128),1)
+      color = (255,255,255)
+      cv2.line(lens_img, (int(orig_cat_x),int(orig_cat_y)), (int(img_x),int(img_y)), color, 1)
       if SHOW == 1:
-         cv2.circle(lens_img, (int(img_x),int(img_y)), 15, (128,255,128),1)
-         color = (255,255,255)
-         cv2.line(lens_img, (int(orig_cat_x),int(orig_cat_y)), (int(img_x),int(img_y)), color, 1)
          cv2.imshow('pepe', lens_img)
          cv2.waitKey(30)
       if star[-2] < med_rez * 3:
