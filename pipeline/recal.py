@@ -8273,9 +8273,9 @@ def best_stars(merged_stars, mcp, factor = 2, gsize=50):
 
 def lens_model(cam_id, con, cur, json_conf, cal_fns= None, force=False):
    lens_img = np.zeros((1080,1920,3),dtype=np.uint8)
-
    station_id = json_conf['site']['ams_id']
    limit = 1000
+   lens_img_file = "/mnt/ams2/cal/" + station_id + "_" + cam_id + "_LENS_IMG_STARS.jpg"
    #cal_fns = batch_review(station_id, cam_id, con, cur, json_conf, limit)
 
    #save_json_file(cal_sum_file, cal_sum)
@@ -8389,7 +8389,8 @@ def lens_model(cam_id, con, cur, json_conf, cal_fns= None, force=False):
          print("SKIP", med_rez, star[0], star[-2])
    merged_stars = nms
 
-
+   cv2.imwrite(lens_img_file, lens_img)
+   print("SAVED:", lens_img_file)
    status, cal_params,merged_stars = minimize_poly_multi_star(merged_stars, json_conf,0,0,cam_id,None,mcp,SHOW)
    if cal_params == 0:
       print("LENS MODEL MAKE FAILED")
