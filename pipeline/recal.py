@@ -33,7 +33,7 @@ from photutils.aperture import aperture_photometry
 import scipy.optimize
 from PIL import ImageFont, ImageDraw, Image, ImageChops
 import lib.brightstardata as bsd
-from lib.PipeUtil import load_json_file, save_json_file,angularSeparation, calc_dist, convert_filename_to_date_cam , check_running , get_file_info
+from lib.PipeUtil import load_json_file, save_json_file,angularSeparation, calc_dist, convert_filename_to_date_cam , check_running , get_file_info, collinear
 from lib.PipeAutoCal import distort_xy, insert_calib, minimize_poly_multi_star, view_calib, cat_star_report , update_center_radec, XYtoRADec, draw_star_image, make_lens_model, make_az_grid, make_cal_summary, quality_stars, make_cal_plots, find_stars_with_grid, optimize_matchs, eval_cal_res, radec_to_azel, make_plate_image, make_cal_plots, make_cal_summary
 
 
@@ -4624,9 +4624,7 @@ def apply_calib (cal_file, calfiles_data, json_conf, mcp, last_cal_params=None, 
          cmd = "mv " + cal_dir + " /mnt/ams2/cal/bad_cals/" 
          print(cmd)
          #os.system(cmd)
-      else:
-         print("CAT STARS", len(cal_params['cat_image_stars']))
-         #for star in cal_params['cat_image_stars']:
+      #else:
          #   dcname,mag,ra,dec,img_ra,img_dec,match_dist,org_x,org_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist,star_int = star
             #print(dcname, mag, star_int, cat_dist)
 
@@ -4911,6 +4909,7 @@ def apply_calib (cal_file, calfiles_data, json_conf, mcp, last_cal_params=None, 
 
 def cat_star_match(cal_fn, cal_params, cal_img, cat_stars):
    cat_image = cal_img.copy()
+   new_cat_image_stars = []
    #cv2.imshow('pepe', cal_img)
    #cv2.waitKey(30)
    gray_img = cv2.cvtColor(cal_img, cv2.COLOR_BGR2GRAY)
@@ -4919,8 +4918,10 @@ def cat_star_match(cal_fn, cal_params, cal_img, cat_stars):
    if True:
       for row in cat_stars:
          name,mag,ra,dec,new_cat_x,new_cat_y,zp_cat_x,zp_cat_y = row
+
          if mag <= 5.5:
             if new_cat_x < 300:
+               cv2.circle(cat_image, (int(zp_cat_x),int(zp_cat_y)), 3, (0,0,255),1)
                # left side
                if new_cat_y < 540:
                   # top left
@@ -4931,26 +4932,30 @@ def cat_star_match(cal_fn, cal_params, cal_img, cat_stars):
                else:
                   # bottom left
                   rx1 = zp_cat_x - 10
+                  ry1 = zp_cat_y - 60
                   rx2 = zp_cat_x + 60
-                  ry1 = zp_cat_y + 50
-                  ry2 = zp_cat_y - 60
+                  ry2 = zp_cat_y + 10
 
             elif new_cat_x > 1620:
+               cv2.circle(cat_image, (int(zp_cat_x),int(zp_cat_y)), 3, (0,0,255),1)
                # right side
                if new_cat_y < 540:
-                  # top left
+                  # top right 
+                  cv2.circle(cat_image, (int(zp_cat_x),int(zp_cat_y)), 5, (0,0,255),1)
                   rx1 = zp_cat_x - 60
                   ry1 = zp_cat_y - 10
                   rx2 = zp_cat_x + 10
                   ry2 = zp_cat_y + 60
                else:
-                  # bottom left
+                  # bottom right 
+                  cv2.circle(cat_image, (int(zp_cat_x),int(zp_cat_y)), 5, (0,0,255),1)
                   rx1 = zp_cat_x - 60
-                  ry1 = zp_cat_y + 10
+                  ry1 = zp_cat_y - 60
                   rx2 = zp_cat_x + 10
-                  ry2 = zp_cat_y - 60
+                  ry2 = zp_cat_y + 10
             # center
             else:
+               cv2.circle(cat_image, (int(zp_cat_x),int(zp_cat_y)), 3, (0,0,255),1)
                rx1 = zp_cat_x - 20
                rx2 = zp_cat_x + 20
                ry1 = zp_cat_y - 20
@@ -4973,9 +4978,12 @@ def cat_star_match(cal_fn, cal_params, cal_img, cat_stars):
             _, crop_thresh = cv2.threshold(crop_img, max_val * .95, 255, cv2.THRESH_BINARY)
             cnts = get_contours_in_image(crop_thresh)
             if len(cnts) == 1:
-               
+               radius = max(cnts[0][2],cnts[0][3] )
                imx = cnts[0][0] + (cnts[0][2]/2) + rx1
                imy = cnts[0][1] + (cnts[0][3]/2) + ry1
+               cx = cnts[0][0] + (cnts[0][2]/2)
+               cy = cnts[0][1] + (cnts[0][3]/2)
+               star_flux = do_photo(crop_img, (cx,cy), radius+1)
                res = calc_dist((imx,imy), (new_cat_x,new_cat_y))
                zp_res = calc_dist((imx,imy), (zp_cat_x,zp_cat_y))
             else:
@@ -4984,6 +4992,17 @@ def cat_star_match(cal_fn, cal_params, cal_img, cat_stars):
 
 
             if pxd > 20 and len(cnts) == 1:
+
+               new_cat_x, new_cat_y = get_xy_for_ra_dec(cal_params, ra, dec)
+               res_px = calc_dist((imx,imy),(new_cat_x,new_cat_y))
+               new_x, new_y, img_ra,img_dec, img_az, img_el = XYtoRADec(imx,imy,cal_fn,cal_params,json_conf)
+               match_dist = angularSeparation(ra,dec,img_ra,img_dec)
+               real_res_px = res_px
+
+
+               new_cat_image_stars.append((name,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,imx,imy,real_res_px,star_flux))
+
+
                # good 
                color = (0,255,0)
                act = "keep"
@@ -5003,6 +5022,7 @@ def cat_star_match(cal_fn, cal_params, cal_img, cat_stars):
             else:
                color = (128,128,128)
                act = "skip"
+            gray_img[int(ry1):int(ry2),int(rx1):int(rx2)] = 0
 
             center_dist = int(calc_dist((960,540),(new_cat_x,new_cat_y)))
             print("CATALOG STAR:", act, name, mag, pxd, len(cnts), center_dist, res, zp_res)
@@ -5011,17 +5031,18 @@ def cat_star_match(cal_fn, cal_params, cal_img, cat_stars):
 
             cv2.rectangle(cat_image, (int(rx1), int(ry1)), (int(rx2) , int(ry2) ), color, 2)
    
-            if SHOW == 1: 
-               cv2.imshow('pepe', cat_image)
+            #if SHOW == 1: 
+            #   cv2.imshow('pepe', cat_image)
+            #   cv2.imshow("pepe2", gray_img)
 
                #cv2.imshow('crop', crop_thresh)
-               cv2.waitKey(30)
+           #    cv2.waitKey(30)
 
 
    if SHOW == 1: 
        cv2.imshow('pepe', cat_image) 
        cv2.waitKey(30)
-
+   return(new_cat_image_stars)
 #   exit()
 
 def debug_image(cal_params, cal_img):
@@ -7467,6 +7488,76 @@ def get_best_cal_files(cam_id, con, cur, json_conf, limit=500):
       best_dict[x_cal_fn] = [x_cal_fn,total_stars,avg_res]
    return(best, best_dict)
 
+def fast_lens(cam_id, con, cur, json_conf,limit=50, cal_fns=None):
+   fast_img = np.zeros((1080,1920,3),dtype=np.uint8)
+   mcp_file = "/mnt/ams2/cal/multi_poly-" + json_conf['site']['ams_id'] + "-" + cam_id + ".info"
+   if os.path.exists(mcp_file) == 1:
+      mcp = load_json_file(mcp_file)
+      if "cal_version" not in mcp:
+         mcp['cal_version'] = 0
+      mcp['cal_version'] += 1
+   else:
+      mcp = None
+
+   calfiles_data = load_cal_files(cam_id, con, cur)
+   best, best_dict =  get_best_cal_files(cam_id, con, cur, json_conf, limit=500)
+   merged_stars = []
+   for bc in best[0:25]:
+      print(bc )
+      cal_fn = bc[0]
+      resp = start_calib(cal_fn, json_conf, calfiles_data, mcp)
+      if resp is not False and resp is not None:
+         (station_id, cal_dir, cal_json_file, cal_img_file, cal_params, cal_img, clean_cal_img, mask_file,mcp) = resp
+      else:
+         continue 
+      cat_stars, short_bright_stars, cat_image = get_catalog_stars(cal_params)
+
+      cat_image_stars = cat_star_match(cal_fn, cal_params, cal_img, cat_stars)
+      stars,xxx_cat_stars = get_paired_stars(cal_fn, cal_params, con, cur)
+      cal_params, xxx_cat_image_stars = recenter_fov(cal_fn, cal_params, cal_img.copy(),  stars, json_conf, "")
+      cat_image_stars = cat_star_match(cal_fn, cal_params, cal_img, cat_stars)
+
+
+      for star in cat_image_stars:
+         (dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,img_x,img_y,res_px,star_flux) = star
+         merged_stars.append((cal_fn, cal_params['center_az'], cal_params['center_el'], cal_params['ra_center'], cal_params['dec_center'], cal_params['position_angle'], cal_params['pixscale'], dcname,mag,ra,dec,ra,dec,match_dist,new_x,new_y,cal_params['center_az'],cal_params['center_el'],new_cat_x,new_cat_y,img_x,img_y,res_px,star_flux))
+
+   print("MERGED:", len(merged_stars))
+   rez = [row[-2] for row in merged_stars] 
+   med_rez_limit = np.median(rez) * 3
+   for star in merged_stars:
+      cal_fn, center_az, center_el, ra_center, dec_center, position_angle, pixscale, dcname,mag,ra,dec,ra,dec,match_dist,new_x,new_y,center_az,center_el,new_cat_x,new_cat_y,img_x,img_y,res_px,star_flux = star
+      res_px2 = calc_dist((new_x,new_y),(new_cat_x,new_cat_y))
+      col1,col2 = collinear(img_x,img_y,new_x,new_y,new_cat_x,new_cat_y)
+      if res_px2 < res_px:
+         res_px = res_px2
+
+      res_col = abs(col1 - col2)
+      desc = str(int(res_col))
+      print("COL", col1, col2, desc)
+      print("RES", med_rez_limit, res_px)
+      if res_px < med_rez_limit :
+         good = True
+         color = [0,255,0]
+      else:
+         good = False 
+         color = [128,128,255]
+      if res_col < 300 and good is True:
+         cv2.putText(fast_img, desc ,  (int(new_x),int(new_y)), cv2.FONT_HERSHEY_SIMPLEX, .6, color, 1)
+         cv2.line(fast_img, (int(new_x),int(new_y)), (int(img_x),int(img_y)), [255,255,255], 1)
+         cv2.line(fast_img, (int(new_cat_x),int(new_cat_y)), (int(img_x),int(img_y)), color, 1)
+         cv2.rectangle(fast_img, (int(new_cat_x-5), int(new_cat_y-5)), (int(new_cat_x+5) , int(new_cat_y+5) ), color, 1)
+         cv2.rectangle(fast_img, (int(new_x-5), int(new_y-5)), (int(new_x+5) , int(new_y+5) ), (128,128,128), 1)
+         cv2.circle(fast_img, (int(img_x),int(img_y)), 5, (255,255,255),1)
+      #if SHOW == 1:
+      #   cv2.imshow('pepe', fast_img)
+      #   cv2.waitKey(30)
+
+   save_json_file("/mnt/ams2/cal/" + station_id + "_" + cam_id + "_MERGED_STARS.json", merged_stars)
+   print("/mnt/ams2/cal/" + station_id + "_" + cam_id + "_MERGED_STARS.json" )
+   cv2.imshow('pepe', fast_img)
+   cv2.waitKey(0)
+
 
 def characterize_best(cam_id, con, cur, json_conf,limit=50, cal_fns=None):
    # choose best star pairs to use in the lens model
@@ -7550,9 +7641,7 @@ def characterize_best(cam_id, con, cur, json_conf,limit=50, cal_fns=None):
       if True:
          # OLD / SLOW / NOT NEEDED
          resp = start_calib(cal_fn, json_conf, calfiles_data, mcp)
-
          if resp is not False and resp is not None:
-
             (station_id, cal_dir, cal_json_file, cal_img_file, cal_params, cal_img, clean_cal_img, mask_file,mcp) = resp
          else:
             continue 
@@ -8354,22 +8443,22 @@ def lens_model(cam_id, con, cur, json_conf, cal_fns= None, force=False):
 
    rez = [row[-2] for row in merged_stars]
    print("BEFORE BEST STARS RES:", len(merged_stars), np.median(rez))
-   if False:
-      if len(merged_stars) > 1200:
-         merged_stars = best_stars(merged_stars, mcp, factor = 2, gsize=50)
-      print("AFTER BEST STARS RES:", len(merged_stars), np.median(rez))
-      if len(merged_stars) > 1200:
-         merged_stars = best_stars(merged_stars, mcp, factor = 2, gsize=50)
-      print("AFTER BEST STARS RES:", len(merged_stars), np.median(rez))
-      if len(merged_stars) > 1200:
-         merged_stars = best_stars(merged_stars, mcp, factor = 2, gsize=50)
-      print("AFTER BEST STARS RES:", len(merged_stars), np.median(rez))
-      merged_stars = best_stars(merged_stars, mcp, factor = 2, gsize=50)
-      print("AFTER BEST STARS RES:", len(merged_stars), np.median(rez))
-      rez = [row[-2] for row in merged_stars]
-      print("AFTER BEST STARS RES:", len(merged_stars), np.median(rez))
+   inner_rezs = []
+   outer_rezs = []
+   for star in merged_stars:
+      cal_file , center_az, center_el, ra_center, dec_center, position_angle, pixscale, name,mag,ra,dec,ra,dec,match_dist,orig_cat_x,orig_cat_y,center_az,center_el,new_cat_x,new_cat_y,img_x,img_y,res_px,star_flux = star
+      center_dist = calc_dist((img_x,img_y), (1920/2, 1080/2))
+      if center_dist > 600:
+         outer_rezs.append(res_px)
+      else:
+         inner_rezs.append(res_px)
+   inner_res = np.median(inner_rezs)
+   outer_res = np.median(outer_rezs)
 
-   print("MERGED STARS IS:", len(merged_stars))
+   # best stars only
+   #merged_stars = best_stars(merged_stars, mcp, factor = 2, gsize=50)
+   rez = [row[-2] for row in merged_stars]
+   
 
    rez = [row[-2] for row in merged_stars] 
    if len(merged_stars) > 5:
@@ -8378,22 +8467,43 @@ def lens_model(cam_id, con, cur, json_conf, cal_fns= None, force=False):
       med_rez = 10 
    nms = []
 
+   print( med_rez, inner_res, outer_res)
+   input("WA RES")
+   print("MERGED STARS IS:", len(merged_stars))
+
    # final quality check
+   xx = 0
    for star in merged_stars:
       cal_file , center_az, center_el, ra_center, dec_center, position_angle, pixscale, name,mag,ra,dec,ra,dec,match_dist,orig_cat_x,orig_cat_y,center_az,center_el,new_cat_x,new_cat_y,img_x,img_y,res_px,star_flux = star
+      center_dist = calc_dist((img_x,img_y), (1920/2, 1080/2))
+      if center_dist > 600:
+         factor = 3 
+         trez = outer_res
+      else:
+         factor = 2
+         trez = inner_res
+      # reject if the x-y in the mask 
+      mask_val = mask[int(img_y),int(img_x)]
+      if mask_val > 0: 
+         continue
+      print("MASK VAL", mask_val)
       cv2.circle(lens_img, (int(img_x),int(img_y)), 15, (128,255,128),1)
       color = (255,255,255)
       cv2.line(lens_img, (int(orig_cat_x),int(orig_cat_y)), (int(img_x),int(img_y)), color, 1)
-      if SHOW == 1:
-         cv2.imshow('pepe', lens_img)
-         cv2.waitKey(30)
-      if star[-2] < med_rez * 3:
+      if star[-2] < trez  :
          print(med_rez, star[0], star[-2])
          nms.append(star)
+         if SHOW == 1:
+            if xx % 10 == 0:
+               cv2.imshow('pepe', lens_img)
+               cv2.waitKey(30)
+         xx += 1
+
+
       else:
          print("SKIP", med_rez, star[0], star[-2])
-   #merged_stars = nms
-
+   merged_stars = nms
+   input("WAITING...")
    cv2.imwrite(lens_img_file, lens_img)
    print("SAVED:", lens_img_file)
    status, cal_params,merged_stars = minimize_poly_multi_star(merged_stars, json_conf,0,0,cam_id,None,mcp,SHOW)
@@ -8457,16 +8567,11 @@ def lens_model(cam_id, con, cur, json_conf, cal_fns= None, force=False):
    new_merged_stars = []
 
    rez = [row[-2] for row in merged_stars] 
-   if len(merged_stars) > 1000:
-      med_rez = np.median(rez) 
-   else:
-      med_rez = np.median(rez) * 2
-   if med_rez < 2:
-      med_rez = 2 
+   med_rez = np.median(rez) 
 
    tb = pt()
    tb.field_names = ["Action", "Star", "Mag", "Intensity", "Res Limit", "Res Pixels", ]
-
+   # med_rez 
    for star in merged_stars:
       (cal_file , center_az, center_el, ra_center, dec_center, position_angle, pixscale, name,mag,ra,dec,ra,dec,match_dist,new_cat_x,new_cat_y,center_az,center_el,new_cat_x,new_cat_y,img_x,img_y,res_px,star_flux) = star
       cal_params['center_az'] = center_az
@@ -8478,7 +8583,13 @@ def lens_model(cam_id, con, cur, json_conf, cal_fns= None, force=False):
       #nc = update_center_radec(cal_fn,cal_params,json_conf)
       new_cat_x,new_cat_y = get_xy_for_ra_dec(cal_params, ra, dec)
       res_px = calc_dist((img_x,img_y),(new_cat_x,new_cat_y))
-      if res_px <= med_rez:
+      center_dist = calc_dist((img_x,img_y), (1920/2, 1080/2))
+      if center_dist > 600:
+         factor = 4 
+      else:
+         factor = 3
+         
+      if res_px <= med_rez * factor:
          new_merged_stars.append((cal_file , center_az, center_el, ra_center, dec_center, position_angle, pixscale, name,mag,ra,dec,ra,dec,match_dist,new_cat_x,new_cat_y,center_az,center_el,new_cat_x,new_cat_y,img_x,img_y,res_px,star_flux))
          act = "KEEP"
       else:
@@ -8975,6 +9086,9 @@ if __name__ == "__main__":
       characterize_fov(cam_id, con, cur, json_conf)
       characterize_best(cam_id, con, cur, json_conf)
 
+   if cmd == "fast_lens":
+      cam_id = sys.argv[2]
+      fast_lens(cam_id, con, cur, json_conf,50, None)
    if cmd == "lens_model" :
 
       cam_id = sys.argv[2]
