@@ -7555,8 +7555,9 @@ def fast_lens(cam_id, con, cur, json_conf,limit=50, cal_fns=None):
 
    save_json_file("/mnt/ams2/cal/" + station_id + "_" + cam_id + "_MERGED_STARS.json", merged_stars)
    print("/mnt/ams2/cal/" + station_id + "_" + cam_id + "_MERGED_STARS.json" )
-   cv2.imshow('pepe', fast_img)
-   cv2.waitKey(0)
+   if SHOW == 1:
+      cv2.imshow('pepe', fast_img)
+      cv2.waitKey(0)
 
 
 def characterize_best(cam_id, con, cur, json_conf,limit=50, cal_fns=None):
