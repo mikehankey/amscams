@@ -8468,7 +8468,6 @@ def lens_model(cam_id, con, cur, json_conf, cal_fns= None, force=False):
    nms = []
 
    print( med_rez, inner_res, outer_res)
-   input("WA RES")
    print("MERGED STARS IS:", len(merged_stars))
 
    # final quality check
@@ -8503,7 +8502,6 @@ def lens_model(cam_id, con, cur, json_conf, cal_fns= None, force=False):
       else:
          print("SKIP", med_rez, star[0], star[-2])
    merged_stars = nms
-   input("WAITING...")
    cv2.imwrite(lens_img_file, lens_img)
    print("SAVED:", lens_img_file)
    status, cal_params,merged_stars = minimize_poly_multi_star(merged_stars, json_conf,0,0,cam_id,None,mcp,SHOW)
