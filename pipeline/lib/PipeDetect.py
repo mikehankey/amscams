@@ -2559,8 +2559,9 @@ def fireball(video_file, json_conf, nomask=0):
       # turned off to optimize time 8/2/2022
       # turned back on 8/6/2022
       #os.system("./Process.py refit_meteor " + jsf)
-      print("./recal.py refit_meteor " + jsf)
-      os.system("./recal.py refit_meteor " + jsf)
+      print("./recal.py refit_meteor " + jsfn)
+      jsfn = jsf.split("/")[-1]
+      os.system("./recal.py refit_meteor " + jsfn)
 
       os.system("./Process.py refine " + jsf)
 
