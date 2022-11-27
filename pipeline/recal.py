@@ -192,11 +192,91 @@ def perfect_cal(cam_id, con, cur, json_conf):
    cal_status_report(cam_id, con, cur, json_conf)
 
 
+
+def optimize_var_new(var_name, cal_fn, cp,json_conf,rval,percision, cal_img,mcp=None):
+   current_value = cp[var_name]
+   start_val = cp[var_name]
+
+   cp['cat_image_stars'] = pair_star_points(cal_fn, cal_img, cp.copy(), json_conf, con, cur, mcp, save_img = False)
+   cp['cat_image_stars'] = remove_bad_stars(cp['cat_image_stars'])
+   cp, bad_stars, marked_img = eval_cal_res(cal_fn, json_conf, cp.copy(), cal_img,None,None,cp['cat_image_stars'])
+
+   star_img = draw_star_image(cal_img.copy(), cp['cat_image_stars'],cp, json_conf, "") 
+   if SHOW == 1:
+      cv2.imshow('pepe', star_img)
+      cv2.waitKey(30)
+
+
+
+   start_res = cp['total_res_px']
+   best_res = start_res 
+   best_val = current_value 
+   best_score = len(cp['cat_image_stars']) / (best_res * .5)
+   print("START RES:", start_res)
+   print("START SCORE:", best_score)
+
+   if "x_poly" not in cp: 
+      print("NO XPOLY")
+      exit()
+      cp['x_poly'] = np.zeros(shape=(15,), dtype=np.float64)
+      cp['y_poly'] = np.zeros(shape=(15,), dtype=np.float64)
+      cp['x_poly_fwd'] = np.zeros(shape=(15,), dtype=np.float64)
+      cp['y_poly_fwd'] = np.zeros(shape=(15,), dtype=np.float64)
+   orig_cp = cp.copy()
+  
+   tcal = cp.copy()
+   go = 0 
+   inc = .01
+   count = 1
+   last_res = 0
+   while go < 10:
+      #val = tcal[var_name] + (inc)
+      val = best_val + (inc)
+      if var_name == "position_angle" and val > 360:
+         val = val - 360
+      tcal[var_name] = val
+      tcal = update_center_radec(cal_fn,tcal,json_conf)
+      #tcal['ra_center'] = float( tcal['ra_center'])
+      #tcal['dec_center'] = float( tcal['dec_center'])
+      tcal['cat_image_stars'] = pair_star_points(cal_fn, cal_img, tcal.copy(), json_conf, con, cur, mcp, save_img = False)
+      tcal['cat_image_stars'] = remove_bad_stars(tcal['cat_image_stars'])
+      tcal, bad_stars, marked_img = eval_cal_res(cal_fn, json_conf, tcal.copy(), cal_img,None,None,tcal['cat_image_stars'])
+      tres = tcal['total_res_px']
+      score = len(tcal['cat_image_stars']) / tres
+      #if tres < best_res:
+      if score > best_score:
+         print("BETTER SCORE START/THIS", go, count, inc, var_name, val, start_res, tres, score)
+         best_res = tres 
+         best_val = val
+         if go % 2 == 0:
+            inc = inc * 1.5  
+         go = go + 1
+      else:
+         print("WORSE SCORE START/THIS", go, count, inc, var_name, val, start_res, tres , score)
+         inc = inc * -1
+         #inc = inc * .5 
+         if go % 2 == 0:
+            inc = inc * 1.5 
+         go = go + 1
+         count = 0
+      count += 1
+      last_res = tres
+      star_img = draw_star_image(cal_img.copy(), tcal['cat_image_stars'],tcal, json_conf, "") 
+      if SHOW == 1:
+         cv2.imshow('pepe', star_img)
+         cv2.waitKey(30)
+
+   cp[var_name] = best_val
+
+   print("START", var_name, start_val, start_res)
+   print("BEST ", var_name, best_val, best_res)
+   return(cp)
+
 def optimize_var(var_name, cal_fn, cp,json_conf,rval,percision, cal_img,mcp=None):
    
    current_value = cp[var_name]
    start_res = cp['total_res_px']
-   best_val = 9999 
+   best_val = 9999
    if "x_poly" not in cp: 
       cp['x_poly'] = np.zeros(shape=(15,), dtype=np.float64)
       cp['y_poly'] = np.zeros(shape=(15,), dtype=np.float64)
@@ -221,6 +301,7 @@ def optimize_var(var_name, cal_fn, cp,json_conf,rval,percision, cal_img,mcp=None
       tcal['dec_center'] = float( tcal['dec_center'])
       tcal['cat_image_stars'] = pair_star_points(cal_fn, cal_img, tcal.copy(), json_conf, con, cur, mcp, save_img = False)
       temp_cp, bad_stars, marked_img = eval_cal_res(cal_fn, json_conf, tcal.copy(), cal_img,None,None,tcal['cat_image_stars'])
+      best_val = temp_cp['total_res_px'] 
       print("OPTIMIZE", var_name, val, temp_cp[var_name], len(temp_cp['cat_image_stars']), "STARS", temp_cp['total_res_px'], "RES PX")
 
       
@@ -4652,6 +4733,12 @@ def apply_calib (cal_file, calfiles_data, json_conf, mcp, last_cal_params=None, 
          cal_params['y_poly'] = np.zeros(shape=(15,), dtype=np.float64)
          cal_params['x_poly_fwd'] = np.zeros(shape=(15,), dtype=np.float64)
          cal_params['y_poly_fwd'] = np.zeros(shape=(15,), dtype=np.float64)
+
+
+      #cal_params = optimize_var_new("center_az", cal_fn, cal_params,json_conf,1, 1, cal_img)
+      #cal_params = optimize_var_new("center_el", cal_fn, cal_params,json_conf,1, 1, cal_img)
+      #cal_params = optimize_var_new("position_angle", cal_fn, cal_params,json_conf,1, 1, cal_img)
+      #cal_params = optimize_var_new("pixscale", cal_fn, cal_params,json_conf,1, 1, cal_img)
 
       if cal_params['total_res_px'] > 6:
          # optimize pa
@@ -9229,8 +9316,19 @@ if __name__ == "__main__":
       characterize_best(cam_id, con, cur, json_conf)
 
    if cmd == "fast_lens":
+      force = 1
       cam_id = sys.argv[2]
-      fast_lens(cam_id, con, cur, json_conf,50, None)
+
+      if cam_id == "all":
+         for cam_num in json_conf['cameras']:
+            cam_id = json_conf['cameras'][cam_num]['cams_id']
+            fast_lens(cam_id, con, cur, json_conf,50, None)
+            lens_model(cam_id, con, cur, json_conf, None,force)
+      else:
+         fast_lens(cam_id, con, cur, json_conf,50, None)
+         lens_model(cam_id, con, cur, json_conf, None,force)
+
+
    if cmd == "lens_model" :
 
       cam_id = sys.argv[2]
