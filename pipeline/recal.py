@@ -7613,7 +7613,7 @@ def get_best_cal_files(cam_id, con, cur, json_conf, limit=500):
       best_dict[x_cal_fn] = [x_cal_fn,total_stars,avg_res]
    return(best, best_dict)
 
-def fast_lens(cam_id, con, cur, json_conf,limit=50, cal_fns=None):
+def fast_lens(cam_id, con, cur, json_conf,limit=5, cal_fns=None):
    fast_img = np.zeros((1080,1920,3),dtype=np.uint8)
    station_id = json_conf['site']['ams_id']
    mcp_file = "/mnt/ams2/cal/multi_poly-" + json_conf['site']['ams_id'] + "-" + cam_id + ".info"
@@ -7628,7 +7628,9 @@ def fast_lens(cam_id, con, cur, json_conf,limit=50, cal_fns=None):
    calfiles_data = load_cal_files(cam_id, con, cur)
    best, best_dict =  get_best_cal_files(cam_id, con, cur, json_conf, limit=500)
    merged_stars = []
-   for bc in best[0:25]:
+   best_index = {}
+   best_cals = {}
+   for bc in best[0:limit]:
       print(bc )
       cal_fn = bc[0]
       resp = start_calib(cal_fn, json_conf, calfiles_data, mcp)
@@ -7642,7 +7644,21 @@ def fast_lens(cam_id, con, cur, json_conf,limit=50, cal_fns=None):
       stars,xxx_cat_stars = get_paired_stars(cal_fn, cal_params, con, cur)
       cal_params, xxx_cat_image_stars = recenter_fov(cal_fn, cal_params, cal_img.copy(),  stars, json_conf, "")
       cat_image_stars = cat_star_match(cal_fn, cal_params, cal_img, cat_stars)
+      rez = [row[-2] for row in merged_stars] 
+      best_index[cal_fn] = rez
+      cal_params['cat_image_stars'] = cat_image_stars 
+      best_cals[cal_fn] = cal_params 
 
+   rez = []
+   for cal_fn in best_index:
+      rez.append(best_index[cal_fn])
+   med_rez = np.median(rez)
+
+   for cal_fn in best_index:
+      if best_index[cal_fn]  > med_rez:
+         print("skip ", cal_fn, med_rez, best_index[cal_fn])
+      cat_image_stars = best_cals[cal_fn]['cat_image_stars']
+      cal_params = best_cals[cal_fn]
 
       for star in cat_image_stars:
          (dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,img_x,img_y,res_px,star_flux) = star
@@ -8583,7 +8599,7 @@ def lens_model(cam_id, con, cur, json_conf, cal_fns= None, force=False):
    outer_res = np.median(outer_rezs)
 
    # best stars only
-   #merged_stars = best_stars(merged_stars, mcp, factor = 2, gsize=50)
+   merged_stars = best_stars(merged_stars, mcp, factor = 2, gsize=50)
    rez = [row[-2] for row in merged_stars]
    
 
