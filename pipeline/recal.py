@@ -3573,9 +3573,9 @@ def catalog_image(cal_fn, con, cur, json_conf,mcp=None, add_more=False,del_more=
             continue
             #cv2.putText(cat_show_img, str(round(res_px,1)) + "px",  (int(new_cat_x + 5),int(new_cat_y)), cv2.FONT_HERSHEY_SIMPLEX, .4, (0,0,255), 1)
             cv2.rectangle(cat_show_img, (int(rx1), int(ry1)), (int(rx2) , int(ry2) ), (64,64, 128), 1)
-         if SHOW == 1:
-            cv2.imshow('pepe', cat_show_img)
-            cv2.waitKey(10)
+         #if SHOW == 1:
+         #   cv2.imshow('pepe', cat_show_img)
+         #   cv2.waitKey(10)
 
 
    update_calibration_file(cal_fn, cal_params, con,cur,json_conf,mcp)
@@ -5025,15 +5025,16 @@ def apply_calib (cal_file, calfiles_data, json_conf, mcp, last_cal_params=None, 
       #blend
       blend_star_cat = cv2.addWeighted(star_points_img, .5, cat_image, .5, .3)
       blend_star_cat_final = cv2.addWeighted(blend_star_cat, .5, star_img, .5, .3)
-      if SHOW == 1:
-         cv2.imshow('pepe', star_img)
-         cv2.waitKey(30)
 
-         cv2.imshow('pepe', blend_star_cat)
-         cv2.waitKey(30)
+      #if SHOW == 1:
+      #   cv2.imshow('pepe', star_img)
+      #   cv2.waitKey(30)
 
-         cv2.imshow('pepe', blend_star_cat_final)
-         cv2.waitKey(30)
+      #   cv2.imshow('pepe', blend_star_cat)
+      #   cv2.waitKey(30)
+
+      #   cv2.imshow('pepe', blend_star_cat_final)
+      #   cv2.waitKey(30)
 
       temp_cal_params, cat_stars = recenter_fov(cal_fn, temp_cal_params, oimg.copy(),  stars, json_conf, extra_text)
 
@@ -7735,6 +7736,7 @@ def fast_lens(cam_id, con, cur, json_conf,limit=5, cal_fns=None):
       best_index[cal_fn] = rez
       cal_params['cat_image_stars'] = cat_image_stars 
       best_cals[cal_fn] = cal_params 
+      update_calibration_file(cal_fn, cal_params, con,cur,json_conf,mcp)
 
    rez = []
    for cal_fn in best_index:
