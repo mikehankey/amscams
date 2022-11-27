@@ -8731,6 +8731,7 @@ def lens_model(cam_id, con, cur, json_conf, cal_fns= None, force=False):
    print("NEW REZ:", mean_rez)
    print(tb)
 
+   lens_model_report(cam_id, con, cur, json_conf)
    # write data to the cal_summary file
 
 
