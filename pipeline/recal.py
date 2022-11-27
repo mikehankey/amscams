@@ -7615,6 +7615,7 @@ def get_best_cal_files(cam_id, con, cur, json_conf, limit=500):
 
 def fast_lens(cam_id, con, cur, json_conf,limit=50, cal_fns=None):
    fast_img = np.zeros((1080,1920,3),dtype=np.uint8)
+   station_id = json_conf['site']['ams_id']
    mcp_file = "/mnt/ams2/cal/multi_poly-" + json_conf['site']['ams_id'] + "-" + cam_id + ".info"
    if os.path.exists(mcp_file) == 1:
       mcp = load_json_file(mcp_file)
