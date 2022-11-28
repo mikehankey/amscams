@@ -5119,7 +5119,11 @@ def apply_calib (cal_file, calfiles_data, json_conf, mcp, last_cal_params=None, 
          if os.path.exists(bad_cal_dir) is False:
             os.makedirs(bad_cal_dir)
          cmd = "mv " + cal_dir + " " + bad_cal_dir
+         cal_root = cal_dir.split("/")[-1]
+
          print("PURGE CAL\n", (cmd))
+         if os.path.exists(bad_cal_dir + cal_root) is True:
+            os.system("rm -rf " + bad_cal_dir + cal_root)
          os.system(cmd)
          time.sleep(10)
 
