@@ -4994,7 +4994,9 @@ def apply_calib (cal_file, calfiles_data, json_conf, mcp, last_cal_params=None, 
 
 
       # optimize / tweek vars if res is too high
-      if cal_params['total_res_px'] > 6:
+      #if cal_params['total_res_px'] > 6:
+      if False:
+      #if cal_params['total_res_px'] > 6:
          rval = 4 
          percision = 200
 
