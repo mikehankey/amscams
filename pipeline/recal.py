@@ -4575,7 +4575,7 @@ def apply_calib (cal_file, calfiles_data, json_conf, mcp, last_cal_params=None, 
             cmd = "mv " + cal_dir + " /mnt/ams2/cal/bad_cals/" 
             print(cmd)
             os.system(cmd)
-            return()
+            return(None,None)
          cam_id = camera_id
       else:
          import_cal_file(cal_file, cal_dir, mcp)
