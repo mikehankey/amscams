@@ -7879,7 +7879,17 @@ def characterize_best(cam_id, con, cur, json_conf,limit=50, cal_fns=None):
       if cal_fn in calfiles_data:
          cal_data = calfiles_data[cal_fn]
          #cal_params = cal_data_to_cal_params(cal_fn, cal_data,json_conf, mcp)
-         cal_params = load_json_file(cal_dir + cal_fn)
+         try:
+            cal_params = load_json_file(cal_dir + cal_fn)
+         except:
+            print("bad cal file!", cal_dir + cal_fn)
+            if os.path.exists("/mnt/ams2/cal/bad_cals/") is False:
+               os.makedirs("/mnt/ams2/cal/bad_cals/")
+            cmd = "mv " + cal_dir + " /mnt/ams2/cal/bad_cals/" 
+            print(cmd)
+            os.system(cmd)
+            # bad cal file!
+
 
 
       stars,cat_stars = get_paired_stars(cal_fn, cal_params, con, cur)
