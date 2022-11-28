@@ -4735,74 +4735,76 @@ def apply_calib (cal_file, calfiles_data, json_conf, mcp, last_cal_params=None, 
          cal_params['y_poly_fwd'] = np.zeros(shape=(15,), dtype=np.float64)
 
 
-      #cal_params = optimize_var_new("center_az", cal_fn, cal_params,json_conf,1, 1, cal_img)
-      #cal_params = optimize_var_new("center_el", cal_fn, cal_params,json_conf,1, 1, cal_img)
-      #cal_params = optimize_var_new("position_angle", cal_fn, cal_params,json_conf,1, 1, cal_img)
-      #cal_params = optimize_var_new("pixscale", cal_fn, cal_params,json_conf,1, 1, cal_img)
 
       if cal_params['total_res_px'] > 6:
+         cal_params = optimize_var_new("center_az", cal_fn, cal_params,json_conf,1, 1, cal_img)
+         cal_params = optimize_var_new("center_el", cal_fn, cal_params,json_conf,1, 1, cal_img)
+         cal_params = optimize_var_new("position_angle", cal_fn, cal_params,json_conf,1, 1, cal_img)
+         cal_params = optimize_var_new("pixscale", cal_fn, cal_params,json_conf,1, 1, cal_img)
          # optimize pa
-         rval = 5 
-         percision = 1
-         temp_cal_params = optimize_var("position_angle", cal_fn, cal_params,json_conf,rval, percision, cal_img)
-         print("BEFORE POS", cal_params['position_angle'], cal_params['total_res_px'])
-         print("AFTER POS", temp_cal_params['position_angle'], temp_cal_params['total_res_px'])
+         if False:
+            # old optimize way
+            rval = 5 
+            percision = 1
+            temp_cal_params = optimize_var("position_angle", cal_fn, cal_params,json_conf,rval, percision, cal_img)
+            print("BEFORE POS", cal_params['position_angle'], cal_params['total_res_px'])
+            print("AFTER POS", temp_cal_params['position_angle'], temp_cal_params['total_res_px'])
   
-         bscore = len(cal_params['cat_image_stars']) / cal_params['total_res_px']
-         ascore = len(temp_cal_params['cat_image_stars']) / temp_cal_params['total_res_px']
-         print("BEFORE STARS/RES", len(cal_params['cat_image_stars']) , cal_params['total_res_px'])
-         print("AFTER STARS/RES", len(temp_cal_params['cat_image_stars']) , temp_cal_params['total_res_px'])
+            bscore = len(cal_params['cat_image_stars']) / cal_params['total_res_px']
+            ascore = len(temp_cal_params['cat_image_stars']) / temp_cal_params['total_res_px']
+            print("BEFORE STARS/RES", len(cal_params['cat_image_stars']) , cal_params['total_res_px'])
+            print("AFTER STARS/RES", len(temp_cal_params['cat_image_stars']) , temp_cal_params['total_res_px'])
 
-         print("BEF/AFT SCORE:", bscore, ascore)
-         if bscore < ascore:
-            print("OPT POS SUCCESS!")
-            cal_params = temp_cal_params.copy()
-         else:
-            print("OPT POS NOT BETTER")
+            print("BEF/AFT SCORE:", bscore, ascore)
+            if bscore < ascore:
+               print("OPT POS SUCCESS!")
+               cal_params = temp_cal_params.copy()
+            else:
+               print("OPT POS NOT BETTER")
 
-         # optimize pa
-         rval = 5 
-         percision = 2
-         temp_cal_params = optimize_var("position_angle", cal_fn, cal_params,json_conf,rval, percision, cal_img)
-         print("BEFORE POS", cal_params['position_angle'], cal_params['total_res_px'])
-         print("AFTER POS", temp_cal_params['position_angle'], temp_cal_params['total_res_px'])
-         if temp_cal_params['total_res_px'] <= cal_params['total_res_px']:
-            print("OPT POS SUCCESS!")
-            cal_params = temp_cal_params.copy()
-         else:
-            print("OPT POS NOT BETTER")
+            # optimize pa
+            rval = 5 
+            percision = 2
+            temp_cal_params = optimize_var("position_angle", cal_fn, cal_params,json_conf,rval, percision, cal_img)
+            print("BEFORE POS", cal_params['position_angle'], cal_params['total_res_px'])
+            print("AFTER POS", temp_cal_params['position_angle'], temp_cal_params['total_res_px'])
+            if temp_cal_params['total_res_px'] <= cal_params['total_res_px']:
+               print("OPT POS SUCCESS!")
+               cal_params = temp_cal_params.copy()
+            else:
+               print("OPT POS NOT BETTER")
 
-         bscore = len(cal_params['cat_image_stars']) / cal_params['total_res_px']
-         ascore = len(temp_cal_params['cat_image_stars']) / temp_cal_params['total_res_px']
+            bscore = len(cal_params['cat_image_stars']) / cal_params['total_res_px']
+            ascore = len(temp_cal_params['cat_image_stars']) / temp_cal_params['total_res_px']
 
-         bscore = len(cal_params['cat_image_stars']) / cal_params['total_res_px']
-         ascore = len(temp_cal_params['cat_image_stars']) / temp_cal_params['total_res_px']
-         print("BEF/AFT SCORE:", bscore, ascore)
-         if bscore < ascore:
-            cal_params = temp_cal_params.copy()
-
-
-         # optimize el 
-         rval = 5 
-         percision = 10 
-         temp_cal_params = optimize_var("center_el", cal_fn, cal_params,json_conf,rval, percision, cal_img)
-         print("AFTER EL", temp_cal_params['center_el'], temp_cal_params['total_res_px'])
-
-         if temp_cal_params['total_res_px'] <= cal_params['total_res_px']:
-            print("OPT EL SUCCESS!")
-            cal_params = temp_cal_params
-         else:
-            print("OPT EL NOT BETTER")
+            bscore = len(cal_params['cat_image_stars']) / cal_params['total_res_px']
+            ascore = len(temp_cal_params['cat_image_stars']) / temp_cal_params['total_res_px']
+            print("BEF/AFT SCORE:", bscore, ascore)
+            if bscore < ascore:
+               cal_params = temp_cal_params.copy()
 
 
+            # optimize el 
+            rval = 5 
+            percision = 10 
+            temp_cal_params = optimize_var("center_el", cal_fn, cal_params,json_conf,rval, percision, cal_img)
+            print("AFTER EL", temp_cal_params['center_el'], temp_cal_params['total_res_px'])
 
-         if temp_cal_params['total_res_px'] <= cal_params['total_res_px']:
-            cal_params = temp_cal_params
+            if temp_cal_params['total_res_px'] <= cal_params['total_res_px']:
+               print("OPT EL SUCCESS!")
+               cal_params = temp_cal_params
+            else:
+               print("OPT EL NOT BETTER")
 
-         cal_params= update_center_radec(cal_fn,cal_params,json_conf )
 
-         print("BEFORE PA:", cal_params['position_angle'], len(cal_params['cat_image_stars']), cal_params['total_res_px'])
-         print("AFTER PA:", temp_cal_params['position_angle'] , len(cal_params['cat_image_stars']), temp_cal_params['total_res_px'])
+
+            if temp_cal_params['total_res_px'] <= cal_params['total_res_px']:
+               cal_params = temp_cal_params
+
+            cal_params= update_center_radec(cal_fn,cal_params,json_conf )
+
+            print("BEFORE PA:", cal_params['position_angle'], len(cal_params['cat_image_stars']), cal_params['total_res_px'])
+            print("AFTER PA:", temp_cal_params['position_angle'] , len(cal_params['cat_image_stars']), temp_cal_params['total_res_px'])
       # ADD MORE STARS ?
       if True:
          cal_params['cat_image_stars'] = pair_star_points(cal_fn, oimg, cal_params, json_conf, con, cur, mcp, True)
@@ -8758,7 +8760,6 @@ def lens_model(cam_id, con, cur, json_conf, cal_fns= None, force=False):
 
    if mcp is not None:
       #print("LAST XY FUN", mcp['last_model_x_fun'] , mcp['last_model_y_fun'] )
-      #print("WAIT CAL XFUN")
       if "last_model_x_fun" in mcp:
          fun_diff_x = mcp['last_model_x_fun'] - cal_params['x_fun']
          fun_diff_y = mcp['last_model_y_fun'] - cal_params['y_fun']
