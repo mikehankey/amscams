@@ -229,7 +229,7 @@ def optimize_var_new(var_name, cal_fn, cp,json_conf,rval,percision, cal_img,mcp=
    inc = .01
    count = 1
    last_res = 0
-   while go < 10:
+   while go < 5:
       #val = tcal[var_name] + (inc)
       val = best_val + (inc)
       if var_name == "position_angle" and val > 360:
@@ -4737,10 +4737,6 @@ def apply_calib (cal_file, calfiles_data, json_conf, mcp, last_cal_params=None, 
 
 
       if cal_params['total_res_px'] > 6:
-         cal_params = optimize_var_new("center_az", cal_fn, cal_params,json_conf,1, 1, cal_img)
-         cal_params = optimize_var_new("center_el", cal_fn, cal_params,json_conf,1, 1, cal_img)
-         cal_params = optimize_var_new("position_angle", cal_fn, cal_params,json_conf,1, 1, cal_img)
-         cal_params = optimize_var_new("pixscale", cal_fn, cal_params,json_conf,1, 1, cal_img)
          # optimize pa
          if False:
             # old optimize way
@@ -4836,7 +4832,7 @@ def apply_calib (cal_file, calfiles_data, json_conf, mcp, last_cal_params=None, 
             os.makedirs("/mnt/ams2/cal/bad_cals/")
          cmd = "mv " + cal_dir + " /mnt/ams2/cal/bad_cals/" 
          print(cmd)
-         #os.system(cmd)
+         os.system(cmd)
       #else:
          #   dcname,mag,ra,dec,img_ra,img_dec,match_dist,org_x,org_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist,star_int = star
             #print(dcname, mag, star_int, cat_dist)
