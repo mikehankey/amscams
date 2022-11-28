@@ -4566,8 +4566,16 @@ def apply_calib (cal_file, calfiles_data, json_conf, mcp, last_cal_params=None, 
          (station_id, camera_id, cal_fn, cal_ts, az, el, ra, dec, position_angle,\
             pixel_scale, zp_az, zp_el, zp_ra, zp_dec, zp_position_angle, zp_pixel_scale, x_poly, \
             y_poly, x_poly_fwd, y_poly_fwd, res_px, res_deg, ai_weather, ai_weather_conf, cal_version, last_update) = calfiles_data[cal_file]
-
-         cal_params = load_json_file(cal_dir + cal_file)
+         try:
+            cal_params = load_json_file(cal_dir + cal_file)
+         except:
+            print("Corrupted cal")
+            if os.path.exists("/mnt/ams2/cal/bad_cals/") is False:
+               os.makedirs("/mnt/ams2/cal/bad_cals/")
+            cmd = "mv " + cal_dir + " /mnt/ams2/cal/bad_cals/" 
+            print(cmd)
+            os.system(cmd)
+            return()
          cam_id = camera_id
       else:
          import_cal_file(cal_file, cal_dir, mcp)
