@@ -56,7 +56,11 @@ def push_station_data(api_key, station_id, json_conf):
    all_mcps = {}
    for mcp_file in mcp_files :
       if "multi_poly" in mcp_file: 
-         mcp = load_json_file(cal_dir + mcp_file) 
+         try:
+            mcp = load_json_file(cal_dir + mcp_file) 
+         except:
+            print("Failed to load:", mcp_file)
+            continue
       else:
          continue
       mcp_file = mcp_file.replace(".info", "")
