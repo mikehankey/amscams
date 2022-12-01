@@ -45,6 +45,40 @@ from prettytable import PrettyTable as pt
 
 tries = 0
 
+def get_close_calib_files(cal_file):
+   (meteor_datetime, cam, f_date_str,fy,fmon,fd, fh, fm, fs) = convert_filename_to_date_cam(cal_file)
+   close_files = []
+   calindex_file = "/mnt/ams2/cal/freecal_index.json"
+   print("CLOSE FILES")
+   if os.path.exists(calindex_file) is True:
+      calindex = load_json_file(calindex_file)
+   else:
+      print("NO FILE:", calindex_file)
+
+   after_files = []
+   before_files = []
+   for cf in sorted(calindex):
+      cdata = calindex[cf]
+      if "cam_id" not in cdata:
+         continue
+      if cdata['cam_id'] == cam:
+         (cal_datetime, cam, f_date_str,fy,fmon,fd, fh, fm, fs) = convert_filename_to_date_cam(cf)
+         cfs = cf.split("/")[-1].split("-")[0]
+         tdiff = meteor_datetime - cal_datetime
+         tdays = float(tdiff.total_seconds() / 60 / 60 / 24)
+         pack_data = [cfs, f_date_str, tdays, cdata['center_az'], cdata['center_el'], cdata['position_angle'], cdata['pixscale'], cdata['total_res_px']]
+         if tdays > 0:
+            before_files.append(pack_data)
+         else:
+            after_files.append(pack_data)
+
+   bfiles =  sorted(before_files, key=lambda x: x[2], reverse=False)[0:10]
+   afiles =  sorted(after_files, key=lambda x: x[2], reverse=False)[0:10]
+
+   print("BEFORE:", bfiles)
+   print("AFTER:",  afiles)
+   return(bfiles, afiles)
+
 def calc_res_from_stars(cal_fn, cal_params, json_conf):
    up_stars = []
    tres = []
@@ -4545,12 +4579,79 @@ def get_image_stars_with_catalog(obs_id, cal_params, show_img, flux_table=None):
 
    return(cat_image_stars, user_stars, flux_table)
 
+def test_cals (cal_fn, cal_params, json_conf, mcp, oimg, before_files, after_files, con, cur):
+   if True:
+      if mcp is not None:
+         cal_params['x_poly'] = mcp['x_poly']
+         cal_params['y_poly'] = mcp['y_poly']
+         cal_params['y_poly_fwd'] = mcp['y_poly_fwd']
+         cal_params['x_poly_fwd'] = mcp['x_poly_fwd']
+      else:
+         cal_params['x_poly'] = np.zeros(shape=(15,), dtype=np.float64)
+         cal_params['y_poly'] = np.zeros(shape=(15,), dtype=np.float64)
+         cal_params['x_poly_fwd'] = np.zeros(shape=(15,), dtype=np.float64)
+         cal_params['y_poly_fwd'] = np.zeros(shape=(15,), dtype=np.float64)
+   extra_text = cal_fn
+   cal_params['cat_image_stars'] = pair_star_points(cal_fn, oimg, cal_params, json_conf, con, cur, mcp, True)
+   cal_params['cat_image_stars'] = remove_bad_stars(cal_params['cat_image_stars'])
+   cal_params, bad_stars, marked_img = eval_cal_res(cal_fn, json_conf, cal_params.copy(), oimg,None,None,cal_params['cat_image_stars'])
+   star_img = draw_star_image(oimg.copy(), cal_params['cat_image_stars'],cal_params, json_conf, extra_text) 
+   if SHOW == 1:
+      cv2.imshow('pepe', star_img)
+      cv2.waitKey(30)
+   start_score = len(cal_params['cat_image_stars']) / cal_params['total_res_px']
+   best_score = start_score
+   best_cal = cal_params.copy() 
+   for cfd in before_files:
+      tcp = cal_params.copy()
+      cfs, f_date_str, tdays, center_az, center_el, position_angle, pixscale, total_res_px = cfd
+      tcp['center_az'] = center_az
+      tcp['center_el'] = center_el
+      tcp['position_angle'] = position_angle 
+      tcp['pixscale'] = pixscale
+      tcp = update_center_radec(cal_fn,tcp,json_conf )
+      tcp['cat_image_stars'] = pair_star_points(cal_fn, oimg, tcp, json_conf, con, cur, mcp, True)
+      tcp['cat_image_stars'] = remove_bad_stars(tcp['cat_image_stars'])
+      tcp, bad_stars, marked_img = eval_cal_res(cal_fn, json_conf, tcp.copy(), oimg,None,None,tcp['cat_image_stars'])
+
+
+      star_img = draw_star_image(oimg.copy(), tcp['cat_image_stars'],tcp, json_conf, extra_text) 
+      score = len(tcp['cat_image_stars']) / tcp['total_res_px']
+      print("TEST STARS/RES:", cal_fn, len(tcp['cat_image_stars']), tcp['total_res_px'], score)
+      if score > best_score:
+         best_cal = tcp.copy()
+      if SHOW == 1:
+         cv2.imshow('pepe', star_img)
+         cv2.waitKey(30)
+
+   if SHOW == 1:
+      star_img = draw_star_image(oimg.copy(), best_cal['cat_image_stars'],best_cal, json_conf, "***** BEST" + extra_text + " BEST *****") 
+      cv2.imshow('pepe', star_img)
+      cv2.waitKey(0)
+   return(best_cal)
 
 def apply_calib (cal_file, calfiles_data, json_conf, mcp, last_cal_params=None, extra_text= "", do_bad=False, flux_table=None):
       (f_datetime, cam_id, f_date_str,fy,fmin,fd, fh, fm, fs) = convert_filename_to_date_cam(cal_file)
       #print("MCP", mcp)    
       cal_fn = cal_file.split("/")[-1]
       cal_dir = cal_dir_from_file(cal_file)
+
+      cal_params = load_json_file(cal_dir + cal_file)
+
+      cal_image_file = cal_file.replace("-calparams.json", ".png")
+      if os.path.exists(cal_dir + cal_image_file) is True:
+         oimg = cv2.imread(cal_dir + cal_image_file)
+      else:
+         return(None,None)
+
+
+      before_files, after_files = get_close_calib_files(cal_file)
+      if cal_params['total_res_px'] > 3:
+         cal_params = test_cals (cal_fn, cal_params, json_conf, mcp, oimg, before_files, after_files, con, cur)
+
+      #print(before_files, after_files)
+      #cal_params= update_center_radec(cal_file,cal_params,json_conf )
+      #exit()
 
       #import_cal_file(cal_file, cal_dir, mcp)
 
@@ -4561,30 +4662,30 @@ def apply_calib (cal_file, calfiles_data, json_conf, mcp, last_cal_params=None, 
       station_id = json_conf['site']['ams_id']
 
 
-
-      if cal_file in calfiles_data:
-         (station_id, camera_id, cal_fn, cal_ts, az, el, ra, dec, position_angle,\
-            pixel_scale, zp_az, zp_el, zp_ra, zp_dec, zp_position_angle, zp_pixel_scale, x_poly, \
-            y_poly, x_poly_fwd, y_poly_fwd, res_px, res_deg, ai_weather, ai_weather_conf, cal_version, last_update) = calfiles_data[cal_file]
-         try:
+      if False:
+         if cal_file in calfiles_data:
+            (station_id, camera_id, cal_fn, cal_ts, az, el, ra, dec, position_angle,\
+               pixel_scale, zp_az, zp_el, zp_ra, zp_dec, zp_position_angle, zp_pixel_scale, x_poly, \
+               y_poly, x_poly_fwd, y_poly_fwd, res_px, res_deg, ai_weather, ai_weather_conf, cal_version, last_update) = calfiles_data[cal_file]
+            try:
+               cal_params = load_json_file(cal_dir + cal_file)
+            except:
+               print("Corrupted cal")
+               if os.path.exists("/mnt/ams2/cal/bad_cals/") is False:
+                  os.makedirs("/mnt/ams2/cal/bad_cals/")
+               cmd = "mv " + cal_dir + " /mnt/ams2/cal/bad_cals/" 
+               print(cmd)
+               os.system(cmd)
+               return(None,None)
+            cam_id = camera_id
+         else:
+            import_cal_file(cal_file, cal_dir, mcp)
             cal_params = load_json_file(cal_dir + cal_file)
-         except:
-            print("Corrupted cal")
-            if os.path.exists("/mnt/ams2/cal/bad_cals/") is False:
-               os.makedirs("/mnt/ams2/cal/bad_cals/")
-            cmd = "mv " + cal_dir + " /mnt/ams2/cal/bad_cals/" 
-            print(cmd)
-            os.system(cmd)
-            return(None,None)
-         cam_id = camera_id
-      else:
-         import_cal_file(cal_file, cal_dir, mcp)
-         cal_params = load_json_file(cal_dir + cal_file)
-         cal_fn = cal_file
-         res_px = 999
+            cal_fn = cal_file
+            res_px = 999
 
-      if res_px is None:
-         res_px = 999
+         if res_px is None:
+            res_px = 999
 
       #if res_px > 8: 
       if False: # > 8: 
@@ -4625,11 +4726,6 @@ def apply_calib (cal_file, calfiles_data, json_conf, mcp, last_cal_params=None, 
             return(cal_params, flux_tbale)
          cal_params= update_center_radec(cal_file,cal_params,json_conf )
 
-      cal_image_file = cal_file.replace("-calparams.json", ".png")
-      if os.path.exists(cal_dir + cal_image_file) is True:
-         oimg = cv2.imread(cal_dir + cal_image_file)
-      else:
-         return(None,None)
 
       mask_file = "/mnt/ams2/meteor_archive/{}/CAL/MASKS/{}_mask.png".format(station_id, cam_id)
       if os.path.exists(mask_file) is True:
@@ -4654,7 +4750,7 @@ def apply_calib (cal_file, calfiles_data, json_conf, mcp, last_cal_params=None, 
       cal_params['star_points'] = star_points
       print("RES:", cal_params['total_res_px']) 
       # revert to WCS
-      if cal_params['total_res_px'] > 4:
+      if cal_params['total_res_px'] > 8:
          rev_cal_params = revert_to_wcs(cal_fn)
       else:
          rev_cal_params = None
@@ -4689,6 +4785,7 @@ def apply_calib (cal_file, calfiles_data, json_conf, mcp, last_cal_params=None, 
       
       # try wcs 
       if cal_params['total_res_px'] > 10:
+         # NOT SURE THIS WORKS!?
          print("RUN BEST WCS")
          temp_cp = best_wcs(cal_fn, cal_params, oimg, con, cur, mcp)
          new_cp = temp_cp.copy()
@@ -9640,3 +9737,5 @@ if __name__ == "__main__":
       save_json_file(refit_log_file, refit_log)
       print(refit_log_file)
       os.system("./recal.py refit_summary " + date )
+
+
