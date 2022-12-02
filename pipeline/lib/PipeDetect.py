@@ -2559,6 +2559,7 @@ def fireball(video_file, json_conf, nomask=0):
       # turned off to optimize time 8/2/2022
       # turned back on 8/6/2022
       #os.system("./Process.py refit_meteor " + jsf)
+      jsfn = jsf.split("/")[-1]
       print("./recal.py refit_meteor " + jsfn)
       jsfn = jsf.split("/")[-1]
       os.system("./recal.py refit_meteor " + jsfn)
@@ -3400,7 +3401,7 @@ def fireball_phase1(hd_frames, hd_color_frames, subframes,sum_vals,max_vals,pos_
             #desc = str(obj)
             #cv2.putText(sframe, desc,  (10,70), cv2.FONT_HERSHEY_SIMPLEX, .4, (255, 255, 255), 1)
             cv2.imshow('pepe', sframe)
-            cv2.waitKey(0)
+            cv2.waitKey(30)
          i += 1
       frame_num = frame_num + 1
 
@@ -4511,7 +4512,6 @@ def get_leading_edge(dom_dir, x_dir, y_dir, cnt_img):
 
 
    #cv2.imshow('pep2', cnt_img)
-   #cv2.waitKey(0)
    print(dom_dir)
    print(x_dir)
    print(y_dir)
@@ -4554,7 +4554,7 @@ def perfect_points(meteor_file, json_conf):
          cv2.circle(show_frame,(hd_x,hd_y), 1, (255,0,255), 1)
 
          cv2.imshow('pepe', show_frame)
-         cv2.waitKey(0)
+         cv2.waitKey(30)
       else:
          cv2.imshow('pepe', show_frame)
          cv2.waitKey(30)
