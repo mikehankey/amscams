@@ -4990,6 +4990,7 @@ def test_cals (cal_fn, cal_params, json_conf, mcp, oimg, before_files, after_fil
    return(best_cal)
 
 def apply_calib (cal_file, calfiles_data, json_conf, mcp, last_cal_params=None, extra_text= "", do_bad=False, flux_table=None):
+      station_id = json_conf['site']['ams_id']
 
       now = datetime.datetime.now()
       cur_year = now.strftime("%Y")
@@ -5039,7 +5040,6 @@ def apply_calib (cal_file, calfiles_data, json_conf, mcp, last_cal_params=None, 
       if cal_dir is False:
          return(None,None)
       
-      station_id = json_conf['site']['ams_id']
 
 
       if False:
