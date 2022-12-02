@@ -1461,6 +1461,8 @@ def refit_meteor(meteor_file, json_conf,force=0):
       if "manual_cal" in mj:
          result = mj['manual_cal']
       else:
+         # BUG / NEED TO FIX! USER MEDIAN OF BEFORE / AFTER!!!
+
          result = get_calib_from_range(cam, day,json_conf)
          print("Got default calib.")
 
@@ -6223,7 +6225,7 @@ def eval_cal_res(cp_file,json_conf,nc=None,oimg=None, mask_img=None,batch_mode=N
    nc['match_perc'] = 1
    nc['total_res_px'] = float(np.mean(rez))
 
-   #print("FINAL RES:", nc['total_res_px'] )
+   print("EVAL CAL RES STARS/RES:", len(nc['cat_image_stars']), nc['total_res_px'] )
 
    return(nc, bad_stars, marked_img)
 
@@ -10010,6 +10012,9 @@ def draw_star_image(img, cat_image_stars,cp=None,json_conf=None,extra_text=None)
          ltext4 = "Pixel Scale:" 
          text4 =  str(cp['pixscale'])[0:7]
          draw.text((800, 20), str(extra_text), font = font, fill="white")
+
+         text5 =  str(cp['x_poly'][0])
+         draw.text((300, 1050), str(text5), font = font, fill="white")
 
 
          draw.text((20, 950), str(ltext0), font = font, fill="white")
