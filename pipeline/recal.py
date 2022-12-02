@@ -967,9 +967,9 @@ def refit_meteor(meteor_file, con, cur, json_conf, mcp = None, last_best_dict = 
          cv2.imshow('pepe', blend_img)
          cv2.waitKey(30)
 
-   if mjr is not None:
-      if "meteor_frame_data" in mjr:
-         mfd = perfect_meteor(json_file, sd_frames, mjr['meteor_frame_data'], meteor_roi)
+   #if mjr is not None:
+   #   if "meteor_frame_data" in mjr:
+   #      mfd = perfect_meteor(json_file, sd_frames, mjr['meteor_frame_data'], meteor_roi)
 
    save_json_file(json_file, mj)      
 
