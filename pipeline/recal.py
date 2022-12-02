@@ -4880,7 +4880,12 @@ def apply_calib (cal_file, calfiles_data, json_conf, mcp, last_cal_params=None, 
       cal_fn = cal_file.split("/")[-1]
       cal_dir = cal_dir_from_file(cal_file)
 
-      cal_params = load_json_file(cal_dir + cal_file)
+      try:
+         cal_params = load_json_file(cal_dir + cal_file)
+      except:
+         print("ERROR: Failed to load cal file!", cal_dir + cal_file)
+         time.sleep(5)
+         return()
 
       cal_image_file = cal_file.replace("-calparams.json", ".png")
       if os.path.exists(cal_dir + cal_image_file) is True:
