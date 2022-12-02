@@ -3,7 +3,8 @@
 * * * * * cd /home/ams/amscams/pythonv2/; ./watch-dog.py > /tmp/wd.txt
 */10 * * * * cd /home/ams/amscams/pythonv2/; ./NOAA.py
 */5 * * * * cd /home/ams/amscams/pythonv2/; ./scan_stack.py bs
-*/5 * * * * cd /home/ams/amscams/pythonv2; ./day_stack.py
+*/7 * * * * cd /home/ams/amscams/pythonv2; ./day_stack.py
+1 * * * * cd /home/ams/amscams/pythonv2; ./doDay.py cd
 32 */2 * * * cd /home/ams/amscams/pythonv2; ./IMX291.py sense_all all > /dev/null 2>&1
 
 ## JOB RUNNER CRON (Runs all other jobs)
