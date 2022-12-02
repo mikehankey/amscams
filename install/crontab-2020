@@ -8,7 +8,7 @@
 32 */2 * * * cd /home/ams/amscams/pythonv2; ./IMX291.py sense_all all > /dev/null 2>&1
 
 ## JOB RUNNER CRON (Runs all other jobs)
-5 * * * * cd /home/ams/amscams/pipeline; ./Process.py run_jobs
+5 */2 * * * cd /home/ams/amscams/pipeline; ./Process.py run_jobs
 
 ### OPTIONAL
 ###*/10 * * * * cd /home/ams/amscams/pipeline; ./Process.py bcm
