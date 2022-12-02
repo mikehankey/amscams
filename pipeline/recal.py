@@ -33,7 +33,7 @@ from photutils.aperture import aperture_photometry
 import scipy.optimize
 from PIL import ImageFont, ImageDraw, Image, ImageChops
 import lib.brightstardata as bsd
-from lib.PipeUtil import load_json_file, save_json_file,angularSeparation, calc_dist, convert_filename_to_date_cam , check_running , get_file_info, collinear, mfd_roi
+from lib.PipeUtil import load_json_file, save_json_file,angularSeparation, calc_dist, convert_filename_to_date_cam , check_running , get_file_info, collinear, mfd_roi, load_mask_imgs
 from lib.PipeAutoCal import distort_xy, insert_calib, minimize_poly_multi_star, view_calib, cat_star_report , update_center_radec, XYtoRADec, draw_star_image, make_lens_model, make_az_grid, make_cal_summary, quality_stars, make_cal_plots, find_stars_with_grid, optimize_matchs, eval_cal_res, radec_to_azel, make_plate_image, make_cal_plots, make_cal_summary
 
 
@@ -44,6 +44,8 @@ from Classes.MovieMaker import MovieMaker
 from prettytable import PrettyTable as pt
 
 tries = 0
+
+   
 
 def get_close_calib_files(cal_file):
    (meteor_datetime, cam, f_date_str,fy,fmon,fd, fh, fm, fs) = convert_filename_to_date_cam(cal_file)
@@ -114,11 +116,132 @@ def reset_bad_cals(cam_id, con, cur,json_conf):
    # autocal dir for re-plate solving. 
    # then move the folder/contents to the badcal dir and make sure it no longer exists
    # inside the freecal dir. Keep a log of resets. If a file has already been reset more than 2x just delete it. 
+
+   autocal_dir = "/mnt/ams2/cal/" 
+   station_id = json_conf['site']['ams_id']
+
+   mcp = None
+   if mcp is None:
+      mcp_file = autocal_dir + "multi_poly-" + station_id + "-" + cam_id + ".info"
+      if os.path.exists(mcp_file) == 1:
+         mcp = load_json_file(mcp_file)
+
    freecal_index = load_json_file("/mnt/ams2/cal/freecal_index.json") 
+   temp , temp_imgs = load_mask_imgs(json_conf)
+   mask_imgs = {}
+   for cam in temp:
+      if temp[cam].shape[0] == 1080:
+         mask_imgs[cam] = temp[cam]
+
+   stats = {}
+   cc = 0
+
+   # build the stats if they don't exist or have been updated in a while
+   go = False
+   if "cal_file_stats" not in mcp:
+      go = True
+   else:
+      stats = mcp['cal_file_stats']
+      if time.time() - mcp['cal_file_stats']['last_run'] > 86400 * 7:
+         go = True
+      else:
+         print((time.time() - mcp['cal_file_stats']['last_run']) / 60 , "minutes ago")
+         print("LAST RUN:", mcp['cal_file_stats']['last_run'] )
+         #exit()
+
+   go = True
+   if go is True:
+      stats = freecal_stats(cam_id, freecal_index, json_conf, stats, mask_imgs) 
+   else:
+      stats = mcp['cal_file_stats']
+
+   if True:
+      if mcp is not None:
+         mcp['cal_file_stats'] = stats
+         mcp['cal_file_stats']['last_run'] = time.time()
+         save_json_file(mcp_file, mcp)
+
+   for cam_id in stats: 
+      for key in stats[cam_id]: 
+         if "med" in key:
+            print(cam_id, stats[cam_id], key, stats[cam_id][key])
+
+
+def freecal_stats(cam_id, freecal_index, json_conf, stats, mask_imgs) :
    for cal_file in freecal_index:
       cal_data = freecal_index[cal_file]
-      print(cal_data)
-      exit()
+      t_cam_id = cal_data['cam_id']
+      if cam_id != t_cam_id:
+         continue
+
+
+      if os.path.exists(cal_data['base_dir']) is False:
+         continue
+
+      cal_img = cv2.imread(cal_data['cal_image_file'])
+      if cal_img is None:
+         cmd = "rm " + cal_data['base_dir']
+         print(cmd)
+         exit()
+      gray_cal_img = cv2.cvtColor(cal_img, cv2.COLOR_BGR2GRAY)
+
+      if cam_id not in stats:
+         stats[cam_id] = {}
+         stats[cam_id]['total_stars'] = []
+         stats[cam_id]['total_res_px'] = []
+         stats[cam_id]['stars_found'] = []
+      if cam_id in mask_imgs:
+         #print(cal_img.shape, mask_imgs[cam_id].shape)
+         gray_cal_img = cv2.subtract(gray_cal_img, mask_imgs[cam_id])
+      else:
+         print("NO MASK", cam_id)
+         exit()
+      cal_img = cv2.cvtColor(gray_cal_img, cv2.COLOR_GRAY2BGR)
+      cal_json_file = cal_data['cal_image_file'].replace(".png", "-calparams.json")
+      cal_params = load_json_file(cal_json_file)
+
+      if "star_points" not in cal_params :
+         star_points, show_img = get_star_points(cal_data['cal_image_file'], cal_img, cal_params, station_id, cam_id, json_conf)
+         cal_params['star_points'] = star_points
+         save_json_file(cal_json_file, cal_params)
+      else:
+         star_points = cal_params['star_points']
+
+     # for star in cal_params['cat_image_stars']:
+     #    dcname,mag,ra,dec,img_ra,img_dec,match_dist,org_x,org_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist,star_int = star
+     #    print(six, siy)
+         #cv2.circle(show_img, (int(six),int(siy)), 25, (0,0,250),2)
+
+      if cal_data['total_stars'] > 0 and len(star_points) > 0:
+         stars_found = round((cal_data['total_stars'] / len(star_points)) * 100, 2)
+      else:
+         stars_found = 0
+      cal_fn = cal_data['cal_image_file'].split("/")[-1]
+      cal_fn = cal_fn.replace("-stacked.png", "")
+      print(cal_fn, len(star_points), cal_data['total_stars'], str(stars_found) + "%" , round(cal_data['total_res_px'],3) )
+      freecal_index[cal_file]['star_points'] = len(star_points)
+      freecal_index[cal_file]['star_found'] = stars_found 
+
+      stats[cam_id]['total_stars'].append(cal_data['total_res_px'])
+      stats[cam_id]['stars_found'].append(stars_found)
+      stats[cam_id]['total_res_px'].append(cal_data['total_res_px'])
+      if cc > 100:
+         continue
+      cc += 1
+
+      #cv2.imshow('pepe', show_img)
+      #cv2.waitKey(0)
+   for cam_id in stats:
+      print(cam_id, 
+              np.median(stats[cam_id]['total_stars']),
+              np.median(stats[cam_id]['stars_found']),
+              np.median(stats[cam_id]['total_res_px']),
+          )
+      stats[cam_id]['med_stars'] = np.median(stats[cam_id]['total_stars'])
+      stats[cam_id]['med_stars_found'] = np.median(stats[cam_id]['stars_found'])
+      stats[cam_id]['med_res'] = np.median(stats[cam_id]['total_res_px'])
+   return(stats)
+
 
 def anchor_cal(cam_id, con, cur, json_conf):
    freecal_index = load_json_file("/mnt/ams2/cal/freecal_index.json") 
@@ -840,8 +963,9 @@ def refit_meteor(meteor_file, con, cur, json_conf, mcp = None, last_best_dict = 
          blend_img[y1:y2,x1:x2] = frame[y1:y2,x1:x2]
          cv2.rectangle(blend_img, (int(x1), int(y1)), (int(x2) , int(y2) ), color, 2)
 
-      cv2.imshow('pepe', blend_img)
-      cv2.waitKey(30)
+      if SHOW == 1:
+         cv2.imshow('pepe', blend_img)
+         cv2.waitKey(30)
 
    if mjr is not None:
       if "meteor_frame_data" in mjr:
@@ -1074,8 +1198,9 @@ def perfect_meteor(meteor_file, frames, mfd, meteor_roi):
          fns.append(fc)
 
       frame = cv2.resize(frame, (500,500))
-      cv2.imshow('crop', frame)
-      cv2.waitKey(30)
+      if SHOW == 1:
+         cv2.imshow('crop', frame)
+         cv2.waitKey(30)
       fc += 1 
 
    import matplotlib.pyplot as plt 
@@ -1528,8 +1653,9 @@ def reduce_fov_pos(this_poly,az,el,pos,pixscale, x_poly, y_poly, x_poly_fwd, y_p
    if SHOW == 1 or show == 1:
       if tries % 25 == 0:
          star_img = draw_star_image(image, new_cat_image_stars,temp_cal_params, json_conf, extra_text) 
-         cv2.imshow('pepe', star_img)
-         cv2.waitKey(30)
+         if SHOW == 1:
+            cv2.imshow('pepe', star_img)
+            cv2.waitKey(30)
    print("\r", "REDUCE STARS / RES:", len(new_cat_image_stars), mean_res, extra_text, end = "") #, extra_text, x_poly[0], y_poly[0], end="")
 
    #print("AZ", temp_cal_params['center_az']) 
@@ -3309,7 +3435,6 @@ def pair_points(cal_fn, star_points, star_pairs_file, star_pairs_image_file, cal
 def get_star_points(cal_fn, oimg, cp, station_id, cam_id, json_conf):
    SHOW = 0
    gsize = 50
-   print("OIMG:", oimg.shape)
    mask_file = "/mnt/ams2/meteor_archive/{}/CAL/MASKS/{}_mask.png".format(station_id, cam_id)
    if os.path.exists(mask_file) is True:
       mask = cv2.imread(mask_file)
@@ -3319,18 +3444,15 @@ def get_star_points(cal_fn, oimg, cp, station_id, cam_id, json_conf):
       mask = np.zeros((1080,1920),dtype=np.uint8)
 
    # fastest possible way to get STAR POINTS (Possible stars) from the image
-   print("OI:", oimg.shape)
    if len(oimg.shape) == 3:
       gray_orig = cv2.cvtColor(oimg, cv2.COLOR_BGR2GRAY)
       gray_img = cv2.cvtColor(oimg, cv2.COLOR_BGR2GRAY)
    else:
       gray_orig = oimg
       gray_img = oimg
-   print("GI:", gray_img.shape)
    if len(mask.shape) == 3:
       mask = cv2.cvtColor(mask, cv2.COLOR_BGR2GRAY)
       mask = cv2.resize(mask, (gray_img.shape[1], gray_img.shape[0]))
-   print("MS:", mask.shape)
    gray_img = cv2.subtract(gray_img, mask)
    gray_img = cv2.resize(gray_img,(1920,1080))
    star_points = []
@@ -3350,8 +3472,6 @@ def get_star_points(cal_fn, oimg, cp, station_id, cam_id, json_conf):
                y2 = 1080
             grid_key = str(x1) + "_" + str(y1) + "_" + str(x2) + "_" + str(y2)
             crop = gray_img[y1:y2,x1:x2]
-            print(y1,y2,x1,x2)
-            print(gray_img.shape, crop.shape)
             low_row = np.mean(crop[-1,:])
             if low_row == 0 or crop[-1,0] == 0 or crop[-1,-1] == 0:
                continue
@@ -3530,14 +3650,11 @@ def get_stars_from_image(oimg, cp):
             desc = str(int(star_flux)) + " " + str(int(star_yn))
             if SHOW == 1:
                if star_yn > 90:
-                  print("ST:", star_yn)
                   cv2.putText(show_img, desc,  (x1,y1), cv2.FONT_HERSHEY_SIMPLEX, .4, (128,128,128), 1)
                   cv2.rectangle(show_img, (int(x1), int(y1)), (int(x2) , int(y2) ), (255, 255, 255), 1)
                else:
-                  print("ST:", star_yn)
                   cv2.putText(show_img, desc,  (x1,y1), cv2.FONT_HERSHEY_SIMPLEX, .4, (0,0,0), 1)
                   cv2.rectangle(show_img, (int(x1), int(y1)), (int(x2) , int(y2) ), (0, 0, 0), 1)
-               print(star_obj)
                if SHOW == 1:
                   cv2.imshow("pepe", show_img)
                   cv2.waitKey(30)
@@ -3560,8 +3677,6 @@ def catalog_image(cal_fn, con, cur, json_conf,mcp=None, add_more=False,del_more=
 
    resp = start_calib(cal_fn, json_conf, calfiles_data, mcp)
    if resp is False:
-      print(resp)
-      print("start Calib failed!")
       return(False)
    else:
       (station_id, cal_dir, cal_json_file, cal_img_file, cal_params, cal_img, clean_cal_img, mask_file,mcp) = resp
@@ -9730,6 +9845,10 @@ if __name__ == "__main__":
       view_calfile(cal_file, con, cur, json_conf)
    if cmd == "man_tweek" :
       manual_tweek_calib(cal_file, con, cur, json_conf)
+   if cmd == "reset_bad_cals" :
+
+      cam_id = sys.argv[2]
+      reset_bad_cals(cam_id, con, cur, json_conf)
 
    if cmd == "apply_calib" :
       cf = sys.argv[2]
