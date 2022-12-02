@@ -4990,6 +4990,9 @@ def test_cals (cal_fn, cal_params, json_conf, mcp, oimg, before_files, after_fil
    return(best_cal)
 
 def apply_calib (cal_file, calfiles_data, json_conf, mcp, last_cal_params=None, extra_text= "", do_bad=False, flux_table=None):
+
+      now = datetime.datetime.now()
+      cur_year = now.strftime("%Y")
       (f_datetime, cam_id, f_date_str,fy,fmin,fd, fh, fm, fs) = convert_filename_to_date_cam(cal_file)
       #print("MCP", mcp)    
       cal_fn = cal_file.split("/")[-1]
@@ -5002,11 +5005,24 @@ def apply_calib (cal_file, calfiles_data, json_conf, mcp, last_cal_params=None, 
          time.sleep(5)
          return()
 
+      
+
+
       cal_image_file = cal_file.replace("-calparams.json", ".png")
       if os.path.exists(cal_dir + cal_image_file) is True:
          oimg = cv2.imread(cal_dir + cal_image_file)
       else:
          return(None,None)
+
+      # first check if the file is corrupt. If so reset 1 time, else move to bad.
+
+
+      if len(cal_params['cat_image_stars']) < 10 or cal_params['total_res_px'] > 10:
+         # reset this file! 
+         auto_dir = "/mnt/ams2/meteor_archive/" + station_id + "/CAL/AUTOCAL/" + cur_year + "/"
+         cmd = "cp " + cal_dir + cal_image_file + " " + auto_dir
+         print("CMD:", cmd)
+         time.sleep(10)
 
 
       before_files, after_files = get_close_calib_files(cal_file)
