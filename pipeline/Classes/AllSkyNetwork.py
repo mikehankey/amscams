@@ -361,23 +361,37 @@ class AllSkyNetwork():
       self.cloud_evdir = self.cloud_event_dir + self.year + "/" + self.month + "/" + self.day   + "/"
       self.s3_evdir = self.s3_event_dir + "/" + self.year + "/" + self.month + "/" + self.day   + "/"
       self.obs_dict_file = self.local_evdir + self.date + "_OBS_DICT.json"
+
+
       self.all_obs_file = self.local_evdir + self.date + "_ALL_OBS.json"
       self.sync_log_file = self.local_evdir + date + "_SYNC_LOG.json"
       self.min_events_file = self.local_evdir + date + "_MIN_EVENTS.json"
       self.all_events_file = self.local_evdir + date + "_ALL_EVENTS.json"
       self.station_events_file = self.local_evdir + date + "_STATION_EVENTS.info"
 
+      sz, age = get_file_info(self.all_obs_file)
+      days_old = age/60/24
+      print("OBS DICT AGE " + self.all_obs_file, days_old)
+      if days_old > 1:
+         if os.path.exists(self.all_obs_file):
+            os.system("rm " + self.all_obs_file)
+         if os.path.exists(self.obs_dict_file):
+            os.system("rm " + self.obs_dict_file)
+
+
       self.all_obs_gz_file = self.local_evdir + self.date + "_ALL_OBS.json.gz"
       self.cloud_all_obs_file = self.cloud_evdir + self.date + "_ALL_OBS.json"
       self.cloud_all_obs_gz_file = self.cloud_evdir + self.date + "_ALL_OBS.json.gz"
       self.obs_review_file = self.local_evdir + date + "_OBS_REVIEWS.json"
       self.all_stations_file = self.local_event_dir + "/" + self.year + "/" + self.month + "/" + self.day + "/" + self.date + "_ALL_STATIONS.json"
+      #self.all_stations_file = self.local_event_dir + "/" "ALL_STATIONS.json"
       self.all_stations = load_json_file(self.all_stations_file)
       self.station_loc = {}
       for row in self.all_stations:
          st_id , lat, lon, alt, city, network = row
-         self.station_loc[st_id] = [lat,lon,alt]
+         print(st_id , lat, lon, alt, city) 
 
+         self.station_loc[st_id] = [lat,lon,alt]
 
       # DB FILE!
       self.db_file = self.db_dir + "/ALLSKYNETWORK_" + date + ".db"
@@ -403,7 +417,6 @@ class AllSkyNetwork():
 
       if os.path.exists(self.cloud_all_obs_gz_file) is False and os.path.exists(self.all_obs_file) is False:
          print("Could not find:", self.cloud_all_obs_gz_file, "should we download it?")
-         #input("Enter to continue (will start UDC process)")
          os.system("./DynaDB.py udc " + date)
 
       elif os.path.exists(self.all_obs_gz_file) is False and os.path.exists(self.cloud_all_obs_gz_file) is True: 
@@ -1289,9 +1302,9 @@ class AllSkyNetwork():
               FROM events
              WHERE event_id like ?
                AND event_status like 'FAIL%'
-               AND run_times < 4 
           ORDER BY event_id desc
       """
+      print(sql)
       vals = [event_day + '%']
       self.cur.execute(sql, vals)
       rows = self.cur.fetchall()
@@ -1625,6 +1638,7 @@ class AllSkyNetwork():
             max_frames = len(jtimes)
          else:
             etime = " " 
+            edate = " " 
             max_frames = 0
          if len(jints) > 0:
             max_int = max(jints)
@@ -1893,7 +1907,10 @@ class AllSkyNetwork():
 
 
             if os.path.exists(cloud_files_file) is False:
-               cloud_files = os.listdir(cloud_meteor_dir) 
+               if os.path.exists(cloud_meteor_dir) is True:
+                  cloud_files = os.listdir(cloud_meteor_dir) 
+               else:
+                  cloud_files = []
                save_json_file(cloud_files_file, cloud_files)
             else:
                cloud_files = load_json_file(cloud_files_file)
@@ -2329,7 +2346,7 @@ class AllSkyNetwork():
       if y2 > 1080:
          y2 = 1080 
          y1 = 1080 - h
-      return(x1,y1,x2,y2)
+      return(int(x1),int(y1),int(x2),int(y2))
 
 
    def load_obs_images(self, obs_data):
@@ -2381,6 +2398,8 @@ class AllSkyNetwork():
             my = int(np.mean(obs_data[obs_id]['ys']))
 
 
+            print(ry1, ry2, rx1, rx2)
+            print(src_img.shape)
             roi_img = src_img[ry1:ry2,rx1:rx2] 
             cv2.imwrite(roi_file, roi_img)
 
@@ -2490,7 +2509,11 @@ class AllSkyNetwork():
       event_data_file = self.local_evdir + self.event_id + "/" + self.event_id + "_EVENT_DATA.json"
       map_img_file = self.local_evdir + self.event_id + "/" + self.event_id + "_MAP_FOV.jpg"
       review_img_file = self.local_evdir + self.event_id + "/" + self.event_id + "_REVIEW.jpg"
+      self.map_kml_file = self.local_evdir + self.event_id + "/" + self.event_id + "_OBS_MAP.kml"
+      self.planes_file = self.local_evdir + self.event_id + "/" + self.event_id + "_PLANES.json"
 
+      if os.path.exists(self.planes_file) is True:
+         self.planes = load_json_file(self.planes_file)
       # if the files exist already remove them
       if os.path.exists(map_img_file) is True:
          os.system("rm " + map_img_file)
@@ -3186,6 +3209,8 @@ class AllSkyNetwork():
       obs_imgs = {}
 
       # THIS IS A BUG!!! OBS NEED TO BE UPDATED SOMEWHERE / SOMEHOW WHAT DO WE DO NOW!
+      # OBS ARE BEING RELOADED SOMEWHERE ELSE, BUT THE DB IS NOT UPDATED RIGHT
+      # FIX THE BUG INSIDE THE SOLVE CALL
       print("EVENT DATA:", event_data.keys())
       for obs_id in event_data['obs_ids']:
          sql = """
@@ -3409,12 +3434,21 @@ class AllSkyNetwork():
          med_end_lon = np.mean([row[1] for row in obs_data[obs_id_1]['obs_end_points']])
          med_start_lat = np.mean([row[0] for row in obs_data[obs_id_1]['obs_start_points']])
          med_start_lon = np.mean([row[1] for row in obs_data[obs_id_1]['obs_start_points']])
-         lines.append((st_pts[st][0], st_pts[st][1], med_start_lat, med_start_lon, 'pink'))
-         lines.append((st_pts[st][0], st_pts[st][1], med_end_lat, med_end_lon, 'purple'))
+
+         #lines.append((st_pts[st][0], st_pts[st][1], med_start_lat, med_start_lon, 'pink'))
+         #lines.append((st_pts[st][0], st_pts[st][1], med_end_lat, med_end_lon, 'purple'))
 
 
       #lat1, lon1,lat2,lon2,cl
       #map_img = make_map(points, lines)
+      self.make_kml(self.map_kml_file, points, lines)
+      event_data['obs'] = obs_data
+      event_data['planes'] = self.planes['results']
+      #for key in self.planes:
+      #   print(key, self.planes[key])
+      #exit()
+      self.make_plane_kml(event_data, self.planes)
+
       try:
          map_img = make_map(points, lines)
       except:
@@ -3422,7 +3456,6 @@ class AllSkyNetwork():
          map_img = np.zeros((1080,1920,3),dtype=np.uint8)
          print("POINTS:", points)
          print("LINES:", lines)
-         input("MAP FAILED WHY!")
 
          map_img = make_map(points, lines)
 
@@ -3768,7 +3801,6 @@ class AllSkyNetwork():
          print(sd_vid, self.sd_clips[sd_vid].keys())
          if "custom_points" in self.sd_clips[sd_vid]:
             print(self.sd_clips[sd_vid]['custom_points'])
-      input("ENTER TO CONT")
 
 
    def resolve_event(self, event_id):
@@ -3780,6 +3812,7 @@ class AllSkyNetwork():
       date = self.event_id_to_date(event_id)
       self.set_dates(date)
       self.load_stations_file()
+      valid_obs = {}
 
       # select main event info from the local sqlite DB
       sql = """
@@ -3796,6 +3829,7 @@ class AllSkyNetwork():
       rows = self.cur.fetchall()
 
       xx = 0
+      invalid_obs = {}
       for row in rows:
          
          (event_id, event_minute, revision, stations, obs_ids, event_start_time, event_start_times,  \
@@ -3813,6 +3847,7 @@ class AllSkyNetwork():
          # load the MOST RECENT OBS DATA
          # into the temp_obs array!
 
+
          for obs_id in obs_ids:
             ig = False
             for item in ignore:
@@ -3823,6 +3858,18 @@ class AllSkyNetwork():
                print("IGNORE:", ignore)
                continue
             st_id = obs_id.split("_")[0]
+            obs_fn = obs_id.replace(st_id + "_", "")
+            if st_id not in valid_obs:
+               valid_obs[st_id] = self.get_valid_obs(st_id, date)
+            if obs_fn in valid_obs[st_id] :
+               print("VALID OBS")
+            else:
+               print("INVALID OBS")
+               invalid_obs[obs_id] = {}
+               continue
+
+
+
             vid = obs_id.replace(st_id + "_", "") + ".mp4"
             dict_key = obs_id + ".mp4"
             if st_id not in temp_obs:
@@ -3830,7 +3877,6 @@ class AllSkyNetwork():
 
             # here we should fetch the latest obs from AWS 
             # to make sure we pick up any edits?
-            print(st_id, dict_key)
             sd_vid = dict_key.replace(st_id + "_", "")
             #if vid not in temp_obs[st_id]:
             if dict_key not in self.obs_dict:
@@ -3841,8 +3887,17 @@ class AllSkyNetwork():
                   # HERE WE SHOULD GET NEW OBS DATA DIRECT FROM DYNA DB OR REFRESH THE OBS DICT?
                   # CALL THE SEARCH OBS DYN FUNC FOR THIS! NOT HARD???
                   dobs = get_obs(st_id, sd_vid)
+                  for key in dobs:
+                     print(key, dobs[key])
+                  self.update_event_obs(dobs)
+                  
+
                   dobs['loc'] = self.obs_dict[dict_key]['loc']
                   temp_obs = convert_dy_obs(dobs, temp_obs)
+                  # update sql with latest?
+
+                  print("GOT LATEST OBS!", st_id)
+                  print(temp_obs[st_id])
                   #temp_obs = convert_dy_obs(self.obs_dict[dict_key], temp_obs)
                   #print("OBS DICT FOR:", dict_key, self.obs_dict[dict_key])
                   #print("TEMP OBS KEYS:", dict_key, temp_obs.keys())
@@ -3872,6 +3927,26 @@ class AllSkyNetwork():
       cmd = "rsync -av --update " + self.local_evdir + "/" + event_id + "/* " + self.cloud_evdir + "/" + event_id + "/"
       print("SKIPPING (for now)", cmd)
       #os.system(cmd)
+   def update_event_obs(self, obs):
+      print(obs)
+      obs_id = obs['station_id'] + "_" + obs['sd_video_file'].replace(".mp4", "")
+      temp_ev_id = obs['sd_video_file'][0:16]
+      datetimes = [row[0] for row in obs['meteor_frame_data']]
+      fns = [row[1] for row in obs['meteor_frame_data']]
+      xs = [row[2] for row in obs['meteor_frame_data']]
+      ys = [row[3] for row in obs['meteor_frame_data']]
+      ints = [row[6] for row in obs['meteor_frame_data']]
+      azs = [row[9] for row in obs['meteor_frame_data']]
+      els = [row[10] for row in obs['meteor_frame_data']]
+      sql = """
+         UPDATE event_obs SET fns = ?, times = ?, xs = ?, ys = ?, azs = ? , els = ?, ints = ?
+                        WHERE obs_id = ?
+      """
+      ivals = [json.dumps(fns), json.dumps(datetimes), json.dumps(xs), json.dumps(ys), json.dumps(azs), json.dumps(els), json.dumps(ints), obs_id]
+      print(sql, ivals)
+      self.cur.execute(sql,ivals)
+      self.con.commit()
+      
 
    def make_event_page(self, event_id):
       event_day = self.event_id_to_date(event_id)
@@ -4479,7 +4554,6 @@ class AllSkyNetwork():
 
          except:
             print(sql_data[9])
-            input("Something is not right, status load from sql failed..." )
 
 
       self.s3_dir_exists = os.path.exists(self.s3_event_id_dir)
@@ -4691,7 +4765,8 @@ class AllSkyNetwork():
       solve_status = self.event_status
       print("FORCE:", force)
 
-      if (self.event_status == "SOLVED" or self.event_status == "FAILED") and force != 1:
+      #if (self.event_status == "SOLVED" or self.event_status == "FAILED") and force != 1:
+      if (self.event_status == "SOLVED" ) and force != 1:
          print("Already done this.")
          return() 
 
@@ -4707,9 +4782,9 @@ class AllSkyNetwork():
          # if we are resolving then it prob failed
          # so lets set the time_sync to 0
          # we may change this logic later!
-         time_sync = 0
-         solve_status = WMPL_solve(event_id, temp_obs, time_sync, force)
-         self.make_event_page(event_id)
+         time_sync = 1
+         #solve_status = WMPL_solve(event_id, temp_obs, time_sync, force)
+         #self.make_event_page(event_id)
 
          try:
             print("RUNNING WMPL...")
@@ -4726,8 +4801,7 @@ class AllSkyNetwork():
       print("WMPL SOLVE STATUS:", event_id, solve_status)
       if solve_status == "FAILED":
          time_sync=0
-         print("IT LOOKS LIKE THE TIME SYNC FAILED. WE WILL RESOLVE")
-         #input("OK???")
+         print("IT LOOKS LIKE THE TIME SYNC FAILED. ")
          #solve_status = WMPL_solve(event_id, temp_obs, time_sync, force)
          #print("TRIED A SECOND TIME WITHOUT TIME SYNC!", solve_status)
 
@@ -4807,6 +4881,7 @@ class AllSkyNetwork():
       # for each event this day
       # check planes for each unique combo of obs
 
+      self.set_dates(date)
       self.load_stations_file()
       qc_report = {}
       valid_obs = {}
@@ -4992,7 +5067,8 @@ $(document).ready(function () {
 
 
    def make_page_header(self, date=None):
-
+      self.set_dates(date)
+      self.local_evdir = self.local_event_dir + self.year + "/" + self.month + "/" + self.day  + "/"
       if os.path.exists(self.local_evdir + "shower_links_file.json"):
          showers = load_json_file(self.local_evdir + "shower_links_file.json")
       # shower links 1
@@ -5565,9 +5641,11 @@ $(document).ready(function () {
                ev_sum = "Bad solve."
 
 
-         if "GOOD" in event_status or ("SOLVED" in event_status and "BAD" not in event_status):
+         if "GOOD" in event_status or ("SOLVED" in event_status and "BAD" not in event_status and "FAIL" not in event_status):
             if True:
-               if ev_data['shower']['shower_code'] == "...":
+               if "shower" not in ev_data:
+                  print("No shower data in event")
+               elif ev_data['shower']['shower_code'] == "...":
                   orb = ev_data['orb']
                   if "a" in orb:
                      if orb['a'] is not None:
@@ -6264,75 +6342,71 @@ status [date]   -    Show network status report for that day.
       return(html)
 
 
+   def make_kml(self, kml_file, points, lines):
+      print(points)
+      print(lines)
+      kml = simplekml.Kml()
+      colors = self.get_kml_colors()
+      #fol_day = kml.newfolder(name=self.date + " AS7 EVENTS")
+      #fol_obs = fol_day.newfolder(name=self.date + " AS7 EVENTS")
+      color = "FFFFFFFF"
+      for point in points:
+         print(point)
+         lon = point[1]
+         lat = point[0]
+         text = point[2]
+         pnt = kml.newpoint(name=text, coords=[(lon,lat)])
+
+            #lines.append((st_pts[st][0], st_pts[st][1], st_az_pts[st][0][0] , st_az_pts[st][0][1], 'green'))
+      for line in lines :
+         lat1, lon1, lat2, lon2, color = line
+         kline = kml.newlinestring(name="" , description="", coords=[(lon1,lat1,100),(lon2,lat2,100)])
+         kline.altitudemode = simplekml.AltitudeMode.clamptoground
+         kline.linestyle.color = color 
+         kline.linestyle.colormode = "normal"
+         kline.linestyle.width = "3"
+      kml.save(kml_file)
+      #for line in lines:
+
    def make_plane_kml(self, event, planes):
       kml = simplekml.Kml()
       colors = self.get_kml_colors()
       fol_day = kml.newfolder(name=self.date + " AS7 EVENTS")
       fol_obs = fol_day.newfolder(name=self.date + " AS7 EVENTS")
       color = "FFFFFFFF"
-      for ob in event['obs']:
-         el = ob.split("_")
-         station_id = el[0]
-         if "meteor_frame_data" not in self.obs_dict[ob]:
-            print(ob, "MISSING MFD!")
-            continue
-         if len(self.obs_dict[ob]['meteor_frame_data']) == 0:
-            print("NO FRAME DATA", ob)
-            continue
-         start_az = self.obs_dict[ob]['meteor_frame_data'][0][-2]
-         start_el = self.obs_dict[ob]['meteor_frame_data'][0][-1]
-         end_az = self.obs_dict[ob]['meteor_frame_data'][-1][-2]
-         end_el = self.obs_dict[ob]['meteor_frame_data'][-1][-1]
-         print(ob, start_az, start_el, end_az, end_el)
-         lat,lon,alt = self.station_loc[station_id][:3]
-         pnt = kml.newpoint(name=station_id, coords=[(round(lon,1),round(lat,1))])
-         dist = 300
-         start_az_end_pt = self.find_point_from_az_dist(lat,lon,start_az,dist)
-         end_az_end_pt = self.find_point_from_az_dist(lat,lon,end_az,dist)
-
-         kline = fol_obs.newlinestring(name=ob + " START", description="", coords=[(lon,lat,alt),(start_az_end_pt[1],start_az_end_pt[0],alt)])
-         kline.altitudemode = simplekml.AltitudeMode.clamptoground
-         kline.linestyle.color = colors[0]
-         kline.linestyle.colormode = "normal"
-         kline.linestyle.width = "3"
-
-         kline2 = fol_obs.newlinestring(name=ob + " END", description="", coords=[(lon,lat,alt),(end_az_end_pt[1],end_az_end_pt[0],alt)])
-         kline2.altitudemode = simplekml.AltitudeMode.clamptoground
-         kline.linestyle.color = colors[2]
-         kline2.linestyle.colormode = "normal"
-         kline2.linestyle.width = "3"
-
-
 
       for combo_key in event['planes']:
          ev_id = 0
          o_combo_key = combo_key.replace("EP:", "")
          print("COMBO KEY IS:", combo_key)
-         ob1,ob2 = combo_key.split(":")
-         print(ev_id, combo_key, event['planes'][combo_key])
-         if event['planes'][combo_key][0] == "plane_solved":
+         ob1,ob2 = combo_key.split("__")
+         print("LINE:", event['planes'][combo_key])
+         if True:
             line1 = event['planes'][combo_key][1]
-            line2 = event['planes'][combo_key][2]
+            #line2 = event['planes'][combo_key][1]
             #color = event['planes'][combo_key]['color']
             color = "FFFFFFFF"
-            slat,slon,salt,elat,elon,ealt = line1
+            pt1, pt2 = line1
+            slat,slon,salt= pt1 
+            elat,elon,ealt = pt2
+            salt = salt * 1000
+            ealt = ealt * 1000
 
             line = fol_day.newlinestring(name=combo_key, description="", coords=[(slon,slat,salt),(elon,elat,ealt)])
             line.altitudemode = simplekml.AltitudeMode.relativetoground
             line.linestyle.color = color
             line.linestyle.colormode = "normal"
             line.linestyle.width = "3"
-            slat,slon,salt,elat,elon,ealt = line2
-            line = fol_day.newlinestring(name=combo_key, description="", coords=[(slon,slat,salt),(elon,elat,ealt)])
-            line.altitudemode = simplekml.AltitudeMode.relativetoground
-            line.linestyle.color = color
-            line.linestyle.colormode = "normal"
-            line.linestyle.width = "3"
-         else:
-            print("BAD PP STATUS:", event['planes'][combo_key][0])
-      self.plane_kml_file = self.event_dir + "/" + event['event_id'] + "/" + event['event_id'] + "-planes.kml"
-      if os.path.exists(self.event_dir + "/" + event['event_id']) is False:
-         os.makedirs(self.event_dir + "/" + event['event_id'])
+            print("PLANE:", (slon,slat,salt),(elon,elat,ealt))
+            #slat,slon,salt,elat,elon,ealt = line2
+            #line = fol_day.newlinestring(name=combo_key, description="", coords=[(slon,slat,salt),(elon,elat,ealt)])
+            #line.altitudemode = simplekml.AltitudeMode.relativetoground
+            #line.linestyle.color = color
+            #line.linestyle.colormode = "normal"
+            #line.linestyle.width = "3"
+      self.plane_kml_file = self.local_evdir + "/" + event['event_id'] + "/" + event['event_id'] + "-planes.kml"
+      #if os.path.exists(self.ev_dir + "/" + event['event_id']) is False:
+      #   os.makedirs(self.event_dir + "/" + event['event_id'])
       kml.save(self.plane_kml_file)
       print(self.plane_kml_file)
       print("SAVED:", self.plane_kml_file)
@@ -6645,7 +6719,6 @@ status [date]   -    Show network status report for that day.
             self.mp4_files.append(hdf)
          else:
             self.bad_mp4_files.append(hdf)
-      #input("Loaded frames")
 
       all_frame_data_file = event_dir + event_id + "_ALL_FRAME_DATA.json"
 
@@ -7003,12 +7076,10 @@ status [date]   -    Show network status report for that day.
       star_points = sorted(star_points, key=lambda x: (x[2]), reverse=True)
 
       # get best defalt cal params
-      input("GET CAL PARAMS")
       cal_params,json_conf = self.get_remote_cal_params(station_id, cam_id, input_file.replace(station_id + "_", ""), f_datetime,img, star_points)
 
       cal_params['cat_image_stars'], cal_params['user_stars'] = get_image_stars_with_catalog(input_file.replace(station_id + "_", ""), cal_params, img)
 
-      input("DONE GET CAL PARAMS")
 
       if cal_params['total_res_px'] >= 999:
          print("REMOTE CAL FAILED!", len(cal_params['user_stars']), len(cal_params['cat_image_stars']), cal_params['total_res_px'] )
@@ -7064,13 +7135,9 @@ status [date]   -    Show network status report for that day.
       
       ifile = input_file.replace(station_id + "_", "")
       new_cp = minimize_fov(ifile, cal_params, ifile,img.copy(),json_conf, False,cal_params, extra_text, show=1)
-      print(new_cp['center_az'], new_cp['center_el'], new_cp['total_res_px'])
-      input("MIN1 DONE")
-      exit()
       new_cp = minimize_fov(ifile, new_cp, ifile,img.copy(),json_conf, False,cal_params, extra_text, show=1)
-      print(new_cp['center_az'], new_cp['center_el'], new_cp['total_res_px'])
-      input("MIN2 DONE")
       cal_params = new_cp
+
       if True:
          show_img = stars_image.copy()
          for star in cal_params['cat_image_stars']:
@@ -7791,6 +7858,36 @@ status [date]   -    Show network status report for that day.
 
       return(out)
 
+   def reconcile_obs_day(self, date):
+      self.set_dates(date)
+      self.all_obs = load_json_file(self.all_obs_file)
+      invalid = 0
+      valid = 0
+
+      valid_obs = {}
+      for row in self.all_obs:
+         station_id = row['station_id']
+         obs_file = row['sd_video_file'].replace(".mp4", "")
+         year = obs_file[0:4]
+         obs_date = obs_file[0:10]
+         if station_id not in valid_obs:
+            valid_obs[station_id] = self.get_valid_obs(station_id, date)
+         cfile = "/mnt/archive.allsky.tv/" + station_id + "/METEORS/" + year + "/" + obs_date + "/" + station_id + "_" + obs_file + "-prev.jpg"
+         if obs_file in valid_obs[station_id]:
+            print("VALID", station_id, obs_file)
+            valid += 1
+         else:
+            el = obs_file.split("_")[0]
+            print("INVALID", station_id, obs_file)
+            invalid += 1
+            # delete aws obs here!
+            if os.path.exists(cfile):
+               img = cv2.imread(cfile)
+               simg = cv2.resize(img, (640,360))
+               cv2.imshow('pepe', simg)
+               cv2.waitKey(30)
+      print("VALID:", valid)          
+      print("INVALID:", invalid)          
 
    def reconcile_events_day(self, date):
       # make sure local event pool (sql/filesystem) and aws are all in sync with each other. 

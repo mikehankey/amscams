@@ -175,7 +175,8 @@ class MovieMaker():
          else:
             print("skip done:", image_file)
 
-   def make_snap(self, video_file):
+   def make_snap(self, video_file, IW=640,IH=360):
+
       video_fn = video_file.split("/")[-1]
       snap_dir = video_file.replace(video_fn, "")
       snap_fn = video_fn.replace(".mp4", "-snap.jpg")
@@ -186,7 +187,7 @@ class MovieMaker():
          while True:
             grabbed , color_frame = cap.read()
             if color_frame is not None:
-               color_frame = cv2.resize(color_frame, (640,360))
+               color_frame = cv2.resize(color_frame, (IW,IH))
                if color_frame is not None:
                   cv2.imwrite(snap_dir + snap_fn, color_frame, [int(cv2.IMWRITE_JPEG_QUALITY), 70])
                   print("saved" , snap_dir + snap_fn)
@@ -196,7 +197,7 @@ class MovieMaker():
                fail += 1
                if fail > 10:
                   exit ()
-
+      return(snap_dir + snap_fn, color_frame)
    def render_frame(self, img_file, options={}):
 
       #if (img_file) is not None:

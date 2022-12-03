@@ -370,6 +370,7 @@ if cmd == "sync_event":
 
 if cmd == "resolve_event_day":
    event_day = sys.argv[2]
+   ASN.plane_test_day(event_day)
    ASN.resolve_event_day(event_day)
 
 if cmd == "slideshow":
@@ -404,3 +405,6 @@ if cmd == "best_obs_day":
 if cmd == "rerun_month":
    # make station/event mapping for this day
    ASN.rerun_month(sys.argv[2])
+if cmd == "reconcile_obs":
+   # make station/event mapping for this day
+   ASN.reconcile_obs_day(sys.argv[2])

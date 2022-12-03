@@ -22,7 +22,7 @@ from lib.PipeAutoCal import gen_cal_hist,update_center_radec, get_catalog_stars,
 from lib.PipeUtil import load_json_file, save_json_file, cfe, check_running
 from lib.FFFuncs import best_crop_size, ffprobe
 
-
+import seaborn as sns
 
 class Plotter():
    def __init__(self, cmd=None, extra_args=[]):
@@ -45,11 +45,64 @@ class Plotter():
          self.extra_args = extra_args
          self.date_desc = ""
 
+   def make_shower_colors(self):
+      shower_color_file = "shower_colors.json"
+      if os.path.exists(shower_color_file) is True:
+         self.shower_colors = load_json_file(shower_color_file)
+         return()
+      sp = open("streamfulldata.csv")
+      self.shower_names = []
+      self.shower_colors = {}
+      for line in sp:
+         line = line.replace("\n", "")
+         data = line.split("|")
+         print(data)
+         self.shower_names.append(data[3].upper())
+      self.shower_names.append("...")
+
+      palette = sns.color_palette("pastel", len(self.shower_names))
+      cx = 0
+      for i in palette:
+         shower_name = self.shower_names[cx]
+         self.shower_colors[shower_name] = i
+         cx += 1
+
+      for shower_name in self.shower_colors:
+         print(shower_name, self.shower_colors[shower_name])
+      save_json_file(shower_color_file, self.shower_colors)
+
+      exit() 
    def plot_all_rad(self):
+      self.make_shower_colors()
       import matplotlib
       import matplotlib.ticker as plticker
       #matplotlib.use('TkAgg')
       from matplotlib import pyplot as plt
+      showers = {}
+      #shower_colors = {}
+      #shower_names = []
+      for rad in self.all_radiants:
+         sh = rad['IAU']
+         #if sh == "...":
+         #   sh = "SPO"
+
+
+         #if sh not in showers:
+         #   showers[sh] = 1
+         #   shower_names.append(sh)
+         #else:
+         #   showers[sh] += 1 
+
+      #palette = sns.color_palette("pastel", len(showers.keys()))
+      #cx = 0
+      #for i in palette:
+      #   shower_name = shower_names[cx]
+      #   shower_colors[shower_name] = i
+      #   cx += 1
+      #for shower_name in shower_colors:
+      #   print(shower_name, shower_colors[shower_name])
+
+
       fig = plt.figure(figsize=(12,9))
       ax = fig.add_subplot(111, projection="mollweide" )
       geo_ras = []
@@ -69,6 +122,7 @@ class Plotter():
          "ids": []
       }
       rads_by_day = {}
+      mp_colors = []
       for rad in self.all_radiants:
 
          if rad is None:
@@ -122,18 +176,28 @@ class Plotter():
 
             rads_by_day[day]['x'].append((hl_ra_n))
             rads_by_day[day]['y'].append(np.degrees(rad['ecliptic_helio']['B_h']) *-1)
-            rads_by_day[day]['c'].append("rgba(255,255,255,1)")
-            rads_by_day[day]['n'].append(rad['IAU'])
+
+            r, g, b = self.shower_colors[rad['IAU']]
+            rgb_val = (r , g, b)
+            mp_colors.append(rgb_val)
+            color_str = str(int(255*r)) + "," + str(int(255*g)) + "," + str(int(255*b)) + ",1"
+            rads_by_day[day]['c'].append("rgba(" + color_str + ")")
+            #rads_by_day[day]['c'].append("rgba(255,255,255,1)")
+
+            rads_by_day[day]['n'].append(rad['IAU'] + " " + rad['event_id'])
             rads_by_day[day]['p'].append("top center")
             rads_by_day[day]['ids'].append(rad['event_id'])
 
             print("RAD:", rad['IAU'], rad['ecliptic_helio']['L_h'], rad['ecliptic_helio']['B_h'], np.degrees(rad['ecliptic_helio']['L_h']), np.degrees(rad['ecliptic_helio']['B_h']), hl_ra_n)
 
 
-      ax.scatter(geo_ras, geo_decs, marker='.')
+      mp_colors = tuple(mp_colors)
+      print("MPCOLORS:", mp_colors)
+      ax.scatter(geo_ras, geo_decs, marker='.' , c=mp_colors)
       ax.set_xticklabels(['14h','16h','18h','20h','22h','0h','2h','4h','6h','8h','10h'])
       ax.grid(True)
-      plt.savefig(self.DATA_DIR  + "EVENTS/DAYS/" + self.day + "_PLOTS_ALL_RADIANTS.png" )
+      plt.savefig(self.DATA_DIR  + "EVENTS/DAYS/" + self.day.replace("_", "") + "_PLOTS_ALL_RADIANTS.png" )
+      print("SAVED:", self.DATA_DIR  + "EVENTS/DAYS/" + self.day.replace("_", "") + "_PLOTS_ALL_RADIANTS.png" )
       fig.clear()
       #save_json_file("/mnt/ams2/EVENTS/PLOTS_ALL_RADIANTS.json", plot_data)
       #cmd = "cp /mnt/ams2/EVENTS/PLOTS_ALL_RADIANTS.json /mnt/archive.allsky.tv/EVENTS/PLOTS_ALL_RADIANTS.json"

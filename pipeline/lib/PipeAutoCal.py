@@ -57,7 +57,7 @@ def load_caldb(json_conf):
       if os.path.isdir(cal_root + cdd):
          json_files = glob.glob(cal_root + cdd + "/*.json")
          if len(json_files) == 1:
-            print("LOADING:", json_files[0])
+            #print("LOADING:", json_files[0])
             insert_calib(json_files[0], con, cur, json_conf)
          else:
             print("MORE THAN ONE JSON!", json_files)

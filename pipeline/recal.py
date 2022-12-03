@@ -111,6 +111,99 @@ def calc_res_from_stars(cal_fn, cal_params, json_conf):
       cal_params['cat_image_stars'] = up_stars
    return(cal_params)
 
+def cal_health(con, cur, json_conf):
+
+
+   autocal_dir = "/mnt/ams2/cal/" 
+   station_id = json_conf['site']['ams_id']
+
+
+   cam_stats = {}
+   freecal_index = load_json_file("/mnt/ams2/cal/freecal_index.json") 
+   for cal_file in freecal_index:
+      d = freecal_index[cal_file]
+      if d['cam_id'] not in cam_stats:
+         cam_stats[d['cam_id']] = {}
+         cam_stats[d['cam_id']]['azs'] = []
+         cam_stats[d['cam_id']]['els'] = []
+         cam_stats[d['cam_id']]['pos'] = []
+         cam_stats[d['cam_id']]['pxs'] = []
+         cam_stats[d['cam_id']]['stars'] = []
+         cam_stats[d['cam_id']]['rezs'] = []
+         cam_stats[d['cam_id']]['bad_files'] = []
+         cam_stats[d['cam_id']]['avg_files'] = []
+         cam_stats[d['cam_id']]['good_files'] = []
+      cam_stats[d['cam_id']]['stars'].append(d['total_stars'])
+      cam_stats[d['cam_id']]['rezs'].append(d['total_res_px']) 
+
+
+
+   for cam_id in cam_stats:
+      #print(cam_stats[cam_id])
+      cam_stats[cam_id]['med_stars'] = np.median(cam_stats[cam_id]['stars'])
+      cam_stats[cam_id]['med_rez'] = np.median(cam_stats[cam_id]['rezs'])
+      #print(cam_id, cam_stats[cam_id]['med_stars'], cam_stats[cam_id]['med_rez'])
+
+   for f in freecal_index:
+      d = freecal_index[f]
+      cam_id = d['cam_id']
+      
+
+      if d['total_stars'] < cam_stats[cam_id]['med_stars'] * .8 or d['total_res_px'] < cam_stats[cam_id]['med_rez'] * .8:
+         cam_stats[cam_id]['bad_files'].append(f)
+      elif d['total_stars'] > cam_stats[cam_id]['med_stars'] * 1.2 and d['total_res_px'] > cam_stats[cam_id]['med_rez'] * 1.2:
+         cam_stats[cam_id]['good_files'].append(f)
+      else:
+         cam_stats[cam_id]['avg_files'].append(f)
+
+   tb = pt()
+   tb.field_names = ["Cam ID","Avg Stars", "Avg Res", "Good Files", "Avg Files","Bad Files", "LM Res", "LM Stars", "LM Date"]
+
+   for cam_id in sorted(cam_stats):
+      #print(cam_id, len(cam_stats[cam_id]['good_files']), "good", len(cam_stats[cam_id]['bad_files']), "bad")
+      lf = "/mnt/ams2/cal/multi_poly-{:s}-{:s}.info".format(station_id, cam_id)
+      if os.path.exists(lf) is True:
+         mp = load_json_file(lf)
+         fun = (mp['x_fun'] + mp['y_fun'] ) / 2
+         lm_stars = mp['total_stars_used']
+         lm_date = mp['lens_model_datetime']
+         print(mp.keys())
+
+      tb.add_row([cam_id, cam_stats[cam_id]['med_stars'], cam_stats[cam_id]['med_rez'], len(cam_stats[cam_id]['good_files']), len(cam_stats[cam_id]['avg_files']), len(cam_stats[cam_id]['bad_files']), fun, lm_stars, lm_date])
+   print(tb)
+   
+   input("WAIT")
+   for cam_id in sorted(cam_stats):
+      calfiles_data = load_cal_files(cam_id, con, cur)
+      mcp = None
+      if mcp is None:
+         mcp_file = autocal_dir + "multi_poly-" + station_id + "-" + cam_id + ".info"
+         if os.path.exists(mcp_file) == 1:
+            mcp = load_json_file(mcp_file)
+      for f in cam_stats[cam_id]['good_files']:
+         d = freecal_index[f]
+         oimg = cv2.imread(d['cal_image_file'])
+         if os.path.exists(f) is False:
+            print("NO FILE:", f)
+            continue
+         cp = load_json_file(f)
+         star_img = draw_star_image(oimg.copy(), cp['cat_image_stars'],cp, json_conf, "")
+         if SHOW == 1:
+            cv2.imshow('pepe', star_img)
+            cv2.waitKey(30)
+         cal_fn = f.split("/")[-1]
+         extra_text = cal_fn
+         #result = apply_calib (cal_fn, calfiles_data, json_conf, mcp, None, "", False, None)
+         stars,cat_stars = get_paired_stars(cal_fn, cp, con, cur)
+
+         cp['cat_image_stars'] = remove_bad_stars(cp['cat_image_stars'])
+         cal_params, cat_stars = recenter_fov(cal_fn, cp, oimg.copy(),  stars, json_conf, extra_text)
+         cal_params['cat_image_stars'] = cat_star_match(cal_fn, cal_params, oimg, cat_stars)
+         cal_params['cat_image_stars'] = remove_bad_stars(cp['cat_image_stars'])
+         cal_params, cat_stars = recenter_fov(cal_fn, cal_params, oimg.copy(),  stars, json_conf, extra_text)
+         save_json_file(f, cal_params)
+
+
 def reset_bad_cals(cam_id, con, cur,json_conf):
    # this will scan all of the cals and anything that has 8px res will be sent back to the 
    # autocal dir for re-plate solving. 
@@ -4649,6 +4742,8 @@ def batch_apply_bad(cam_id, con, cur, json_conf, blimit=25):
          cal_dir = "/mnt/ams2/cal/freecal/" + cdir + "/"
          if os.path.exists(cal_dir):
             last_cal_params,flux_table = apply_calib (cal_fn, calfiles_data, json_conf, mcp )
+            if last_cal_params is None:
+               continue
             # if the results from apply are still bad try to make better
             if last_cal_params['total_res_px'] > 5:
                print(cal_fn, " is FAILING. We will try to fix" )
@@ -4999,12 +5094,14 @@ def apply_calib (cal_file, calfiles_data, json_conf, mcp, last_cal_params=None, 
       cal_fn = cal_file.split("/")[-1]
       cal_dir = cal_dir_from_file(cal_file)
 
+
+
       try:
          cal_params = load_json_file(cal_dir + cal_file)
       except:
          print("ERROR: Failed to load cal file!", cal_dir + cal_file)
          time.sleep(5)
-         return()
+         return(None,None)
 
       
 
@@ -5021,10 +5118,19 @@ def apply_calib (cal_file, calfiles_data, json_conf, mcp, last_cal_params=None, 
       if len(cal_params['cat_image_stars']) < 10 or cal_params['total_res_px'] > 10:
          # reset this file! 
          auto_dir = "/mnt/ams2/meteor_archive/" + station_id + "/CAL/AUTOCAL/" + cur_year + "/"
-         cmd = "cp " + cal_dir + cal_image_file + " " + auto_dir
+         cmd = "cp " + cal_dir + cal_image_file + " " + auto_dir + cal_image_file.replace("-stacked.png", ".png")
          print("CMD:", cmd)
-         time.sleep(10)
+         os.system(cmd)
+         cmd = "rm -rf " + cal_dir 
+         print(cmd)
+         print("***")
+         time.sleep(1)
+         print("****")
+         time.sleep(1)
+         print("*****")
+         time.sleep(1)
 
+         return(None,None)
 
       before_files, after_files = get_close_calib_files(cal_file)
       if cal_params['total_res_px'] > 3:
@@ -5109,11 +5215,19 @@ def apply_calib (cal_file, calfiles_data, json_conf, mcp, last_cal_params=None, 
 
       mask_file = "/mnt/ams2/meteor_archive/{}/CAL/MASKS/{}_mask.png".format(station_id, cam_id)
       if os.path.exists(mask_file) is True:
-         mask = cv2.imread(mask_file)
+         if len(oimg.shape) == 3:
+            mask = cv2.imread(mask_file)
+         else:
+            mask = cv2.imread(mask_file, 0)
          #mask = cv2.cvtColor(mask, cv2.COLOR_BGR2GRAY)
          mask = cv2.resize(mask, (1920,1080))
       else:
-         mask = np.zeros((1080,1920),dtype=np.uint8)
+         if len(oimg.shape) == 3:
+            mask = np.zeros((1080,1920,3),dtype=np.uint8)
+         else:
+            mask = np.zeros((1080,1920),dtype=np.uint8)
+       
+      print(oimg.shape, mask.shape)
       oimg = cv2.subtract(oimg, mask)
 
       cal_img = cv2.subtract(oimg, mask)
@@ -5841,7 +5955,9 @@ def recenter_fov(cal_fn, cal_params, cal_img, stars, json_conf, extra_text="", t
 
 
    this_poly = np.zeros(shape=(4,), dtype=np.float64)
-   if cal_params['total_res_px'] < 1:
+   if 0 < cal_params['total_res_px'] < .75:
+      this_poly = [.000005,.000005,.000005,.000005]
+   elif .75 <= cal_params['total_res_px'] < 1:
       this_poly = [.00001,.00001,.00001,.00001]
    elif 1 <= cal_params['total_res_px'] < 5:
       this_poly = [.0001,.0001,.0001,.0001]
@@ -6475,6 +6591,8 @@ def view_calfile(cam_id, cal_fn, con, cur, json_conf, calfiles_data= None, cp = 
 
    if os.path.exists(cal_dir + cal_img_fn):
       cal_img = cv2.imread(cal_dir + cal_img_fn)
+   else:
+      return(None,None)
 
    
    cal_params = update_center_radec(cal_fn,cal_params,json_conf)
@@ -10072,6 +10190,10 @@ if __name__ == "__main__":
    if cmd == "plot_refit_meteor_day":
       meteor_day = sys.argv[2]
       plot_refit_meteor_day(meteor_day, con, cur, json_conf)
+
+   if cmd == "cal_health" :
+      cal_health(con, cur, json_conf)
+
    
    if cmd == "refit_meteor_day" :
       date = sys.argv[2]

@@ -184,6 +184,8 @@ def do_day(EV, date):
       cloud_files = os.listdir(cloud_dir)
    else:
       cloud_files = []
+
+
    for mso in EV.my_ms_obs:
       print("Multi Station Obs:", mso )
       MSO.load_obs(mso)

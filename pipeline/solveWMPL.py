@@ -427,7 +427,6 @@ def sanity_check_obs(obs):
          best_file = obs[station_id].keys()
          for key in obs[station_id].keys():
             best_file = key
-      print("BEST FILE:", station_id, best_file)
       best_obs[station_id] = {} 
       best_obs[station_id][best_file] = obs[station_id][best_file]
       print(best_obs[station_id][best_file]['gc_azs'])
@@ -572,6 +571,7 @@ def solve_status(day):
 def get_best_obs(obs):
    print("WHICH OBS IS BEST!")
    best_dist = 99999
+   best_len = 0 
    best_file = None
    best_res = None
    for file in obs:
@@ -580,24 +580,27 @@ def get_best_obs(obs):
 
       mid_x = np.mean(obs[file]['xs'])
       mid_y = np.mean(obs[file]['ys'])
+      obs_len = len(obs[file]['xs'])
       dist_to_center = calc_dist((mid_x,mid_y), (1920/2, 1080/2))
-
-      if dist_to_center < best_dist:
+ 
+      # choose file with best points!
+      if obs_len > best_len:
          best_file = file
-         best_dist = dist_to_center
+         best_len = obs_len 
 
-      if best_res is None:
+      if False:
+         if best_res is None:
+            if "calib" in obs[file]:
+               if len(obs[file]['calib']) > 4:
+                  if obs[file]['calib'][-1] is not None:
+                        best_res = obs[file]['calib'][-1]
+
          if "calib" in obs[file]:
             if len(obs[file]['calib']) > 4:
                if obs[file]['calib'][-1] is not None:
+                  if obs[file]['calib'][-1] < best_res:
+                     best_file = file
                      best_res = obs[file]['calib'][-1]
-
-      if "calib" in obs[file]:
-         if len(obs[file]['calib']) > 4:
-            if obs[file]['calib'][-1] is not None:
-               if obs[file]['calib'][-1] < best_res:
-                  best_file = file
-                  best_res = obs[file]['calib'][-1]
       print("FILE:", file)
       print("DIST TO CENTER:", dist_to_center)
       print("OBS KEYS:", obs[file]['calib'])
@@ -2745,7 +2748,59 @@ def event_report(dynamodb, event_id, solve_dir, event_final_dir, obs):
     #print("BUFFERED WRITE: rsync -auv " + event_final_dir + "* " + cloud_final_dir + "\n")
     #fp.close()
 
+def make_obs_table(obs):
+   obs_header = """
+      <table border=1>
+      <tr>
+         <th>Station</td>
+         <th>File</td>
+         <th>Time</td>
+         <th>AZ</td>
+         <th>EL AZ</td>
+         <th>GC AZ</td>
+         <th>GC EL AZ</td>
+         <th>Intensity</td>
+      </tr>
+   """
+   obs_html = ""
+   for station in obs:
+      obs_html += "<h1>" + station + "</h1>" + obs_header
+      if len(obs[station].keys()) > 1:
+         best = " * "
+         for obs_file in obs[station]:
+            best_file = obs_file
+      else:
+         best_file = get_best_obs(obs[station])
+         best = " - " 
 
+      for obs_file in obs[station]:
+         if best_file == obs_file:
+            print("BEST:", station, best_file, obs_file)
+            best = " * " 
+         else:
+            best = " - " 
+         for i in range(0,len(obs[station][obs_file]['azs'])): 
+            time = obs[station][obs_file]['times'][i]
+            az = obs[station][obs_file]['azs'][i]
+            el = obs[station][obs_file]['els'][i]
+            gc_az = obs[station][obs_file]['gc_azs'][i]
+            gc_el = obs[station][obs_file]['gc_els'][i]
+            flux = obs[station][obs_file]['ints'][i]
+            obs_html += """
+               <tr>
+                  <td>{:s}</td>
+                  <td>{:s}{:s}</td>
+                  <td>{:s}</td>
+                  <td>{:s}</td>
+                  <td>{:s}</td>
+                  <td>{:s}</td>
+                  <td>{:s}</td>
+                  <td>{:s}</td>
+               </tr>
+            """.format(station, best, obs_file, time, str(az)[0:6], str(el)[0:6], str(gc_az)[0:6], str(gc_el)[0:6], str(flux)[0:6])
+      obs_html += "</table>"
+      #obs_html += obs_header
+   return(obs_html)
 
 def WMPL_solve(event_id, obs,time_sync=1, force=0, dynamodb=None):
     #time_sync = 0
@@ -2754,10 +2809,6 @@ def WMPL_solve(event_id, obs,time_sync=1, force=0, dynamodb=None):
 
     json_conf = load_json_file("../conf/as6.json")
     ams_id  = json_conf['site']['ams_id']
-
-    for st in obs:
-       for vid in obs[st]:
-          print("WMPL:", st, vid)
 
 
     year = event_id[0:4]
@@ -2769,6 +2820,13 @@ def WMPL_solve(event_id, obs,time_sync=1, force=0, dynamodb=None):
     solve_dir = "/mnt/f/EVENTS/" + year + "/" + mon + "/" + day + "/" + event_id + "/"
     solve_file = solve_dir + event_id + "-event.json"
     fail_file = solve_dir + event_id + "-fail.json"
+    obs_file = solve_dir + event_id + "-obs.html"
+    obs_table_html = make_obs_table(obs)
+
+    fpout = open(obs_file, "w")
+    fpout.write(obs_table_html)
+    fpout.close()
+
     if cfe(solve_file) == 1 and force == 0:
        print("We already solved this event!")
     else:
@@ -2865,9 +2923,12 @@ def WMPL_solve(event_id, obs,time_sync=1, force=0, dynamodb=None):
             else:
                fps = 25
 
-            if "azs_gc" in obs[station_id][file]:
-               #azs = np.radians(obs[station_id][file]['azs_gc'])
-               #els = np.radians(obs[station_id][file]['els_gc'])
+            if "gc_azs" in obs[station_id][file]:
+               # to enable/disable GC (great circle) conversion comment/uncomment lines below
+               #print("USING GC AZS:", station_id, obs[station_id][file]['gc_azs'])
+               #azs = np.radians(obs[station_id][file]['gc_azs'])
+               #els = np.radians(obs[station_id][file]['gc_els'])
+               #print("USING GC AZS RADIANS:", station_id, azs)
                azs = np.radians(obs[station_id][file]['azs'])
                els = np.radians(obs[station_id][file]['els'])
             else:

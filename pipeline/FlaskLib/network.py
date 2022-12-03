@@ -83,8 +83,52 @@ def network_main(station_id, json_conf):
    template = template.replace("{MAIN_TABLE}", out)
    return(template)
 
+def get_template(template_file):
+   html = ""
+   fp = open(template_file)
+   for line in fp:
+      html += line
+   return(html)
+
 def network_map(station_id, json_conf):
-   return("MAP")
+  
+   all_stations_file = "/mnt/ams2/EVENTS/ALL_STATIONS.json"
+   asurl = "https://archive.allsky.tv/EVENTS/ALL_STATIONS.json"
+   size, tdiff = get_file_info(all_stations_file)
+   tdiff = (tdiff / 60 )/ 24
+   print("TDIFF IS :", tdiff)
+   if tdiff > 1:
+      cmd = "wget " + asurl + " -O " + all_stations_file
+      print(cmd)
+      os.system(cmd)
+
+   asdata = load_json_file(all_stations_file)
+   labels = []
+   lats = []
+   lons = []
+   colors = []
+   textpos = []
+   for data in asdata:
+      labels.append(data['station_id'])
+      lats.append(data['lat'])
+      lons.append(data['lon'])
+      colors.append("#000000")
+      textpos.append("top right")
+      print(data)
+
+   temp_file = "FlaskTemplates/map_plotly.html"
+   #labels = ["test"]
+   #lats = [40]
+   #lons = [-76]
+   #colors = ['#bebada']
+   #textpos = ['top right']
+   out = get_template(temp_file)
+   out = out.replace("{LABELS}", str(labels))
+   out = out.replace("{LATS}", str(lats))
+   out = out.replace("{LONS}", str(lons))
+   out = out.replace("{COLOR}", str(colors))
+   out = out.replace("{TEXTPOSITION}", str(textpos))
+   return(out)
 
 def network_meteors(station_id,json_conf,in_data):
    rand = str(time.time())[0:-5]
