@@ -9958,7 +9958,7 @@ if __name__ == "__main__":
       cam_id = sys.argv[2]
       limit = 5
       if len(sys.argv) > 3:
-         limit = sys.argv[3]
+         limit = int(sys.argv[3])
 
       if cam_id == "all":
          for cam_num in json_conf['cameras']:
