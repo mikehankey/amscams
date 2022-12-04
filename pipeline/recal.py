@@ -112,16 +112,23 @@ def calc_res_from_stars(cal_fn, cal_params, json_conf):
    return(cal_params)
 
 def cal_health(con, cur, json_conf):
-
-
    autocal_dir = "/mnt/ams2/cal/" 
    station_id = json_conf['site']['ams_id']
-
 
    cam_stats = {}
    freecal_index = load_json_file("/mnt/ams2/cal/freecal_index.json") 
    for cal_file in freecal_index:
       d = freecal_index[cal_file]
+      # check for bad vals
+      nanres = np.isnan(d['total_res_px'])
+      print(d['total_res_px'], nanres)
+      cal_fn = cal_file.split("/")[-1]
+      if nanres == True or type(d['total_res_px']) == str or d['total_res_px'] == "": 
+         print("BAD RES", d)
+         if os.path.exists(cal_file): 
+            delete_cal_file(cal_fn, con, cur, json_conf)
+         continue 
+
       if d['cam_id'] not in cam_stats:
          cam_stats[d['cam_id']] = {}
          cam_stats[d['cam_id']]['azs'] = []
@@ -135,8 +142,6 @@ def cal_health(con, cur, json_conf):
          cam_stats[d['cam_id']]['good_files'] = []
       cam_stats[d['cam_id']]['stars'].append(d['total_stars'])
       cam_stats[d['cam_id']]['rezs'].append(d['total_res_px']) 
-
-
 
    for cam_id in cam_stats:
       #print(cam_stats[cam_id])
@@ -165,14 +170,18 @@ def cal_health(con, cur, json_conf):
       if os.path.exists(lf) is True:
          mp = load_json_file(lf)
          fun = (mp['x_fun'] + mp['y_fun'] ) / 2
-         lm_stars = mp['total_stars_used']
-         lm_date = mp['lens_model_datetime']
+         if "total_stars_used" in mp:
+            lm_stars = mp['total_stars_used']
+            lm_date = mp['lens_model_datetime']
+         else:
+            lm_stars = "na"
+            lm_stars = "na"
          print(mp.keys())
 
       tb.add_row([cam_id, cam_stats[cam_id]['med_stars'], cam_stats[cam_id]['med_rez'], len(cam_stats[cam_id]['good_files']), len(cam_stats[cam_id]['avg_files']), len(cam_stats[cam_id]['bad_files']), fun, lm_stars, lm_date])
    print(tb)
-   
-   input("WAIT")
+   exit() 
+   # refit best files for each cam
    for cam_id in sorted(cam_stats):
       calfiles_data = load_cal_files(cam_id, con, cur)
       mcp = None
@@ -1008,11 +1017,8 @@ def refit_meteor(meteor_file, con, cur, json_conf, mcp = None, last_best_dict = 
    else:
       print("There are not enough stars to recenter! We should use the last_best_calib / default calib for this file!")
       print("***********************************")
-      time.sleep(1)
       print("******************************")
-      time.sleep(1)
       print("*************************")
-      time.sleep(1)
       print("********************")
       time.sleep(1)
 
@@ -1763,7 +1769,14 @@ def delete_cal_file(cal_fn, con, cur, json_conf):
    # this only deletes the cal file from the database!
    # you must also move the caldir to the bad location
    cal_dir = "/mnt/ams2/cal/freecal/" + cal_fn.replace("-stacked-calparams.json", "")
-   #if os.path.exists(cal_dir) is False:
+   base = cal_dir.split("/")[-1] 
+   bad_dir = "/mnt/ams2/cal/bad_cals/" + cal_fn.replace("-stacked-calparams.json", "")
+   if os.path.exists(bad_dir) is False:
+      os.makedirs(bad_dir)
+   if os.path.exists(bad_dir + base) is True:
+      os.system("rm -rf " + bad_dir + base)
+   os.system("mv  " + cal_dir + cal_fn + " " + bad_dir )
+   
    if True:
       sql = "DELETE FROM calibration_files where cal_fn = ?"
       dvals = [cal_fn]
@@ -5099,8 +5112,8 @@ def apply_calib (cal_file, calfiles_data, json_conf, mcp, last_cal_params=None, 
       try:
          cal_params = load_json_file(cal_dir + cal_file)
       except:
-         print("ERROR: Failed to load cal file!", cal_dir + cal_file)
-         time.sleep(5)
+         print("ERROR: Failed to load cal file!", cal_dir , cal_file)
+         #time.sleep(5)
          return(None,None)
 
       
@@ -5123,10 +5136,9 @@ def apply_calib (cal_file, calfiles_data, json_conf, mcp, last_cal_params=None, 
          os.system(cmd)
          cmd = "rm -rf " + cal_dir 
          print(cmd)
+         os.system(cmd)
          print("***")
-         time.sleep(1)
          print("****")
-         time.sleep(1)
          print("*****")
          time.sleep(1)
 
@@ -5716,7 +5728,7 @@ def apply_calib (cal_file, calfiles_data, json_conf, mcp, last_cal_params=None, 
          if os.path.exists(bad_cal_dir + cal_root) is True:
             os.system("rm -rf " + bad_cal_dir + cal_root)
          os.system(cmd)
-         time.sleep(10)
+         time.sleep(1)
 
       # remove cal if res too high or stars too low and refit is too high
       print("REAPPLY:", cal_params['reapply'])
