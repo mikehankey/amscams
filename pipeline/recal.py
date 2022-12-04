@@ -9956,14 +9956,17 @@ if __name__ == "__main__":
    if cmd == "fast_lens":
       force = 1
       cam_id = sys.argv[2]
+      limit = 5
+      if len(sys.argv) > 3:
+         limit = sys.argv[3]
 
       if cam_id == "all":
          for cam_num in json_conf['cameras']:
             cam_id = json_conf['cameras'][cam_num]['cams_id']
-            fast_lens(cam_id, con, cur, json_conf,50, None)
+            fast_lens(cam_id, con, cur, json_conf,limit, None)
             lens_model(cam_id, con, cur, json_conf, None,force)
       else:
-         fast_lens(cam_id, con, cur, json_conf,50, None)
+         fast_lens(cam_id, con, cur, json_conf,limit, None)
          lens_model(cam_id, con, cur, json_conf, None,force)
 
 
