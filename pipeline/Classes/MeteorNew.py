@@ -2419,8 +2419,8 @@ class Meteor():
                   if cfe(cfile) == 0:
                      print("cp " + ms_file + " " + cdir)
                      os.system("cp " + ms_file + " " + cdir)
-                  else:
-                     print("CLOUD FILE EXISTS ALREADY! " + cfile)
+                  #else:
+                  #   print("CLOUD FILE EXISTS ALREADY! " + cfile)
                   work_list[wfile]['media'][ext] = 1 
                   all_cloud_files[cfn] = 1
                else:

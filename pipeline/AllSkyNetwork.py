@@ -384,6 +384,13 @@ if cmd == "min_file_size":
 if cmd == "event_day_status":
    event_day = sys.argv[2]
    ASN.event_day_status(event_day)
+
+if cmd == "best_of":
+   # make station/event mapping for this day
+   event_day = sys.argv[2]
+   dur = sys.argv[3]
+   ASN.best_of(event_day, dur)
+
   
 if cmd == "station_events":
    # make station/event mapping for this day

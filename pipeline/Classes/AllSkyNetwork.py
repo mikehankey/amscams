@@ -29,7 +29,7 @@ import simplejson as json
 import os
 import shutil
 import platform
-from lib.PipeUtil import load_json_file, save_json_file, get_trim_num, convert_filename_to_date_cam, starttime_from_file, dist_between_two_points, get_file_info, calc_dist, check_running
+from lib.PipeUtil import load_json_file, save_json_file, get_trim_num, convert_filename_to_date_cam, starttime_from_file, dist_between_two_points, get_file_info, calc_dist, check_running, mfd_roi
 from lib.intersecting_planes import intersecting_planes
 from DynaDB import search_events, insert_meteor_event, delete_event, get_obs
 from ransac_lib import ransac_outliers
@@ -662,7 +662,7 @@ class AllSkyNetwork():
          print("No events matching this minute exist!", event_minute)
          # make a new event!
          sql = """
-            INSERT INTO events (event_id, event_minute, revision, 
+            INSERT OR REPLACE INTO events (event_id, event_minute, revision, 
                         stations, obs_ids, event_start_time, event_start_times,  
                         lats, lons, event_status, run_date, run_times)
                  VALUES (?,?,?,?,?,?,?,?,?,?,?,?)
@@ -699,6 +699,8 @@ class AllSkyNetwork():
                  json.dumps(lats), json.dumps(lons), event_status, run_date, run_times, event_id]
             self.update_event(ivals) 
 
+      #if "033434" in event_id :
+      #   input("PAUSED")
       print("DONE")
 
    def update_event(self, ivals):
@@ -727,7 +729,7 @@ class AllSkyNetwork():
    def OLD_avg_times(self, datetimes):
       times = []
 
-   def run_plane_jobs_OLDER(self, jobs):
+   def run_plane_jobs_OLDER(self, jobs,force=False):
       for dt in datetimes:
          timestamp = datetime.datetime.timestamp(dt)
          times.append(timestamp)
@@ -965,7 +967,7 @@ class AllSkyNetwork():
             s_datestamp, s_timestamp = self.date_str_to_datetime(stime)
             t_datestamp, t_timestamp = self.date_str_to_datetime(this_time)
             time_diff = s_timestamp - t_timestamp
-            #if the event start is within 3 seconds
+            #if the event start is within 6 seconds
             if -6 <= time_diff <= 6:
                avg_lat = np.mean(min_events[eid]['lats'])
                avg_lon = np.mean(min_events[eid]['lons'])
@@ -973,7 +975,7 @@ class AllSkyNetwork():
                #print("Time diff in range. Check Distance??", time_diff, match_dist)
                #if the dist between avg stations and this station is < 900 km
                match_time = 1
-               if match_dist < 900:
+               if match_dist < 600:
                   match_dist = 1
 
 
@@ -3447,6 +3449,7 @@ class AllSkyNetwork():
       #for key in self.planes:
       #   print(key, self.planes[key])
       #exit()
+      event_data['event_id'] = self.event_id
       self.make_plane_kml(event_data, self.planes)
 
       try:
@@ -3813,6 +3816,11 @@ class AllSkyNetwork():
       self.set_dates(date)
       self.load_stations_file()
       valid_obs = {}
+      event_file = self.local_evdir + event_id + "/" + event_id + "-event.json"
+      if os.path.exists(event_file) is True:
+         event = load_json_file(event_file)
+      else:
+         event = {}
 
       # select main event info from the local sqlite DB
       sql = """
@@ -3830,11 +3838,11 @@ class AllSkyNetwork():
 
       xx = 0
       invalid_obs = {}
+
       for row in rows:
-         
          (event_id, event_minute, revision, stations, obs_ids, event_start_time, event_start_times,  \
                  lats, lons, event_status, run_date, run_times) = row
-
+         print("ROW:", stations, obs_ids)
          stations = json.loads(stations)
          obs_ids = json.loads(obs_ids)
          event_start_times = json.loads(event_start_times)
@@ -3847,6 +3855,7 @@ class AllSkyNetwork():
          # load the MOST RECENT OBS DATA
          # into the temp_obs array!
 
+         print("OBS IDS:", obs_ids)
 
          for obs_id in obs_ids:
             ig = False
@@ -3888,7 +3897,8 @@ class AllSkyNetwork():
                   # CALL THE SEARCH OBS DYN FUNC FOR THIS! NOT HARD???
                   dobs = get_obs(st_id, sd_vid)
                   for key in dobs:
-                     print(key, dobs[key])
+                     print("DYNA OBS:", st_id, key, dobs[key])
+
                   self.update_event_obs(dobs)
                   
 
@@ -3924,9 +3934,21 @@ class AllSkyNetwork():
          self.solve_event(event_id, temp_obs, 1, 1)
          xx += 1
 
+      if True:
+         plane_file = ev_dir + event_id + "_PLANES.json"
+
+         plane_report = self.plane_test_event(obs_ids, event_id, event_status, False)
+         save_json_file(plane_file, plane_report, True)
+         print(plane_report['results'].keys())
+         event['planes'] = plane_report['results']
+         event['event_id'] = event_id
+         self.make_plane_kml(event, plane_report['results'])
+
       cmd = "rsync -av --update " + self.local_evdir + "/" + event_id + "/* " + self.cloud_evdir + "/" + event_id + "/"
       print("SKIPPING (for now)", cmd)
       #os.system(cmd)
+
+
    def update_event_obs(self, obs):
       print(obs)
       obs_id = obs['station_id'] + "_" + obs['sd_video_file'].replace(".mp4", "")
@@ -4300,7 +4322,7 @@ class AllSkyNetwork():
       for i in range(0,cores):
          thread[i].join()
 
-   def run_plane_jobs(self, jobs):
+   def run_plane_jobs(self, jobs, force=False):
       thread = {}
       if os.path.exists("cores.json") == 1:
          temp = load_json_file("cores.json")
@@ -4319,14 +4341,14 @@ class AllSkyNetwork():
             end = len(jobs)
          #print(i, start, end)
          # CHANGE THIS LINE FOR DIFFERENT JOB
-         thread[i] = Process(target=self.plane_worker, args=("thread" + str(i), jobs[start:end]))
+         thread[i] = Process(target=self.plane_worker, args=("thread" + str(i), jobs[start:end], force))
 
       for i in range(0,cores):
          thread[i].start()
       for i in range(0,cores):
          thread[i].join()
 
-   def plane_worker(self, thread_number, job_list):
+   def plane_worker(self, thread_number, job_list,force=False):
       for i in range(0,len(job_list)):
          event_id = job_list[i][0]
          key = job_list[i][1]
@@ -4335,6 +4357,8 @@ class AllSkyNetwork():
          ob2 = job_list[i][3]
          gd = ["GOOD", key, ob1, ob2]
          temp = self.r.get(ekey)
+         if force is True:
+            temp = None
          if temp is None:
             temp = self.plane_solve(gd)
             if len(temp) == 2:
@@ -4876,6 +4900,175 @@ class AllSkyNetwork():
 
       print("DONE", event_id)
 
+   def make_ai_img(self,prev_img,rx1,ry1,rx2,ry2):
+      src_img = cv2.resize(prev_img, (1920,1080))
+      #rx1 = 0
+      #ry1 = 0
+      if True:
+         if True:
+            gray_img = cv2.cvtColor(src_img, cv2.COLOR_BGR2GRAY)
+         
+            gray_roi = gray_img[ry1:ry2,rx1:rx2]
+            if gray_roi is not None:
+               print(rx1,ry1,rx2,ry2)
+               #cv2.imshow('gray roi', gray_roi)
+               #cv2.waitKey(0)
+
+            min_val, max_val, min_loc, (mx,my)= cv2.minMaxLoc(gray_roi)
+
+            # V2 ROI is 64/64
+            # V1 ROI is 224/224!
+
+            ax1 = rx1 + mx - 112
+            ax2 = rx1 + mx + 112
+            ay1 = ry1 + my - 112
+            ay2 = ry1 + my + 112
+
+            w = ax2 - ax1
+            h = ay2 - ay1
+            if ax1 < 0:
+               ax1 = 0
+               ax2 = w
+            if ay1 < 0:
+               ay1 = 0
+               ay2 = h
+            if ax2 > 1920:
+               ax2 = 1920
+               ax1 = 1920 - w
+            if ay2 > 1080:
+               ay2 = 1080
+               ay1 = 1080 - h
+
+            ay1 = int(ay1 / 6)
+            ay2 = int(ay2 / 6)
+            ax1 = int(ax1 / 6)
+            ax2 = int(ax2 / 6)
+            ai_img = prev_img[ay1:ay2,ax1:ax2]
+            return(ai_img)
+
+   def best_of(self, date, dur=30):
+      admin_deleted_file = "/mnt/f/EVENTS/DBS/admin_deleted.json"
+      net_ai_file = "/mnt/f/EVENTS/DBS/network_ai.json"
+      if os.path.exists(admin_deleted_file):
+         admin_del = load_json_file(admin_deleted_file)
+      else:
+         admin_del = {}
+      if os.path.exists(net_ai_file):
+         net_ai = load_json_file(net_ai_file)
+      else:
+         net_ai = {}
+      # merge network obs/event data for the last x days starting on date
+      print("BEST OF LAST " + str(dur) + " DAYS SINCE " + date)
+      date_dt = datetime.datetime.strptime(date, "%Y_%m_%d")
+      best_all = []
+      best_ev_all = []
+      for i in range(0,int(dur)):
+         minus = (date_dt - datetime.timedelta(days = i)).strftime("%Y_%m_%d")
+         y,m,d = minus.split("_") 
+         ev_dir = "/mnt/f/EVENTS/{:s}/{:s}/{:s}/".format(y,m,d)
+         aof = ev_dir + minus + "_ALL_OBS.json"
+         aef = ev_dir + minus + "_ALL_EVENTS.json"
+         if os.path.exists(aef) is True:
+            ev_data = load_json_file(aef)
+            best_ev_all.extend(ev_data)
+         if os.path.exists(aof) is True:
+            data = load_json_file(aof)
+            best_all.extend(data)
+         else:
+            print("MISSING:", aof)
+         print(minus, len(best_all), "Total Items")
+      final_data = sorted(best_all, key=lambda x: x['peak_int'], reverse=True)
+      i = 0
+      go = True
+
+      best = []
+      mc_best = []
+      for data in final_data: 
+         if "prev.jpg" in  data['sync_status']:
+            best.append(data)
+
+      img_cache_dir = "/mnt/f/AI/DATASETS/IMAGE_CACHE/"
+      learning_dir = "/mnt/f/AI/DATASETS/NETWORK_PREV/MULTI_CLASS_V2/"
+
+      ev_obs = {}
+      for ev in best_ev_all:
+         print(ev.keys())
+         for i in range(0,len(ev['stations'])):
+            obs_id = ev['stations'][i] + "_" + ev['files'][i]
+            ev_obs[obs_id] = ev['event_id']
+
+      print(len(ev_obs.keys()), "MULTI STATION OBS")
+
+      for data in best:
+         obs_key = data['station_id'] + "_" + data['sd_video_file'] 
+         if obs_key not in ev_obs:
+            print("SKIP NOT MS")
+            continue
+         else:
+            mc_best.append(data)
+
+      for data in mc_best:
+         obs_key = data['station_id'] + "_" + data['sd_video_file'] 
+         if obs_key not in ev_obs:
+            print("SKIP NOT MS")
+            continue
+         if obs_key in net_ai:
+             continue
+         if "prev.jpg" in  data['sync_status']:
+             thumb_dir = "/mnt/archive.allsky.tv/" + data['station_id'] + "/METEORS/" + data['sd_video_file'][0:4] + "/" + data['sd_video_file'][0:10] + "/"
+             thumb_file = thumb_dir + data['station_id'] + "_" + data['sd_video_file'].replace(".mp4", "-prev.jpg")
+
+             local_thumb_dir = img_cache_dir + data['station_id'] + "/METEORS/" + data['sd_video_file'][0:4] + "/" + data['sd_video_file'][0:10] + "/"
+             if os.path.exists(local_thumb_dir) is False:
+                os.makedirs(local_thumb_dir)
+             local_thumb_file = local_thumb_dir + data['station_id'] + "_" + data['sd_video_file'].replace(".mp4", "-prev.jpg")
+             if os.path.exists(local_thumb_file):
+                thumb_file = local_thumb_file
+
+             #if obs_key in admin_del:
+             #   i += 1
+             #   continue
+             prev_img = cv2.imread(thumb_file)
+             if prev_img is not None and os.path.exists(local_thumb_file) is False:
+                print("SAVED:", thumb_file)
+                cv2.imwrite(thumb_file, prev_img)
+
+             if prev_img is not None:
+                img = cv2.resize(prev_img,(1920,1080))
+                x1,y1,x2,y2 = mfd_roi(data['meteor_frame_data'] )
+
+                print("ROI", x1,y1,x2,y2)
+                ai_img = self.make_ai_img(prev_img, x1,y1,x2,y2)
+                ai_resp = self.check_ai_img(ai_img, None)
+                if obs_key not in ev_obs:
+                   ai_resp['meteor_yn'] = 99
+                   ai_resp['multi_class'] = "meteor" 
+                   ai_resp['multi_class_conf'] = 98
+                net_ai[obs_key] = ai_resp 
+                ai_text = str(int(ai_resp['meteor_yn'])) + "% Meteor " + str(int(ai_resp['fireball_yn'])) + "% fireball " + str(int(ai_resp['mc_class_conf'])) + "% " + ai_resp['mc_class']
+                ai_dir = learning_dir + ai_resp['mc_class'] + "/"
+                if os.path.exists(ai_dir) is False:
+                   os.makedirs(ai_dir)
+                ai_file = ai_dir + obs_key.replace(".mp4", "-ai.jpg")
+                if os.path.exists(ai_file) is False:
+                   print("SAVE:", ai_file)
+                   cv2.imwrite(ai_file, ai_img)
+
+                cv2.putText(img, str(ai_text),  (x1,y1-5), cv2.FONT_HERSHEY_SIMPLEX, .6, (255,255,255), 1)
+                cv2.rectangle(img, (int(x1), int(y1 )), (int(x2) , int(y2) ), (255, 255, 255), 2)
+                meteor_fn = thumb_file.split("/")[-1].replace("-prev.jpg", "")
+                cv2.putText(img, str(meteor_fn),  (300,20), cv2.FONT_HERSHEY_SIMPLEX, .6, (255,255,255), 1)
+
+                cv2.imshow('ai_pepe', ai_img)
+                cv2.imshow('pepe', img)
+                if "meteor" not in ai_resp['mc_class'] and  ai_resp['mc_class_conf'] > 80 or ((ai_resp['meteor_yn'] < 50 or ai_resp['meteor_prev_yn'] < 50) and ai_resp['fireball_yn'] < 50):
+                   ai_no_meteor = True
+                else: 
+                   ai_no_meteor = False 
+                key = cv2.waitKey(30)
+             i = i + 1
+         if i % 20 == 0:
+            save_json_file(net_ai_file, net_ai)
 
    def plane_test_day(self, date):
       # for each event this day
@@ -5043,6 +5236,8 @@ $(document).ready(function () {
             <select id="select-opt" class="selected_date" data-style="btn-primary">
       """
       for day in sorted(files, reverse=True):
+         if day[:2] != "20":
+            continue
          day = day.replace("ALLSKYNETWORK_", "")
          day = day.replace(".db", "") 
          if "journal" in day or "CALIBS" in day:
@@ -5872,7 +6067,7 @@ $(document).ready(function () {
 
       
 
-   def plane_test_event(self, obs_ids, event_id, event_status):
+   def plane_test_event(self, obs_ids, event_id, event_status, force=False):
 
       jobs = []
 
@@ -5893,7 +6088,7 @@ $(document).ready(function () {
                jobs.append(gd)
 
       print(event_id, event_status, "PLANE JOBS:", len(jobs))
-      self.run_plane_jobs(jobs)
+      self.run_plane_jobs(jobs, force)
 
       plane_report = {}
       rkeys = self.r.keys(event_id + "*")
@@ -6369,6 +6564,7 @@ status [date]   -    Show network status report for that day.
       #for line in lines:
 
    def make_plane_kml(self, event, planes):
+      event_id = event['event_id']
       kml = simplekml.Kml()
       colors = self.get_kml_colors()
       fol_day = kml.newfolder(name=self.date + " AS7 EVENTS")
@@ -6404,7 +6600,7 @@ status [date]   -    Show network status report for that day.
             #line.linestyle.color = color
             #line.linestyle.colormode = "normal"
             #line.linestyle.width = "3"
-      self.plane_kml_file = self.local_evdir + "/" + event['event_id'] + "/" + event['event_id'] + "-planes.kml"
+      self.plane_kml_file = self.local_evdir + "/" + event_id + "/" + event_id + "-planes.kml"
       #if os.path.exists(self.ev_dir + "/" + event['event_id']) is False:
       #   os.makedirs(self.event_dir + "/" + event['event_id'])
       kml.save(self.plane_kml_file)

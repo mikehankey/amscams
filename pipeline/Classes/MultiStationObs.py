@@ -70,11 +70,15 @@ class MultiStationObs():
          self.meteor_stack_image = cv2.imread(self.meteor_stack_file)
       else:
          self.meteor_stack_image = None
-         print("NO STACK?", self.meteor_stack_file)
          exit()
 
       if os.path.exists(self.meteor_file) is True:
-         self.meteor_json = load_json_file(self.meteor_file)
+         try:
+            self.meteor_json = load_json_file(self.meteor_file)
+         except:
+            self.meteor_json = None
+            print("Could not load:", self.meteor_file)
+            return()
       else:
          self.meteor_json = None
          print("Could not load:", self.meteor_file)
@@ -111,11 +115,9 @@ class MultiStationObs():
                   ys = [row[3] + int(row[5]/2) for row in self.meteor_reduced_json['meteor_frame_data']]
                   ax = int(np.mean(xs))
                   ay = int(np.mean(ys))
-                  print(self.meteor_stack_image.shape)
                   stacked_image_hd = cv2.resize(self.meteor_stack_image, (1920,1080))
                   x1,y1,x2,y2,roi_img = make_roi_image(ax,ay,1,1,224,stacked_image_hd,None, (1920,1080))
                   cv2.imwrite(self.final_media[mt]['local_file'], roi_img)
-                  print("WROTE:", self.final_media[mt]['local_file'] )
                else:
                   print("Meteor not reduced.")
       

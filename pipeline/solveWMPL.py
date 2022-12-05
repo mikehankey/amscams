@@ -2926,11 +2926,11 @@ def WMPL_solve(event_id, obs,time_sync=1, force=0, dynamodb=None):
             if "gc_azs" in obs[station_id][file]:
                # to enable/disable GC (great circle) conversion comment/uncomment lines below
                #print("USING GC AZS:", station_id, obs[station_id][file]['gc_azs'])
-               #azs = np.radians(obs[station_id][file]['gc_azs'])
-               #els = np.radians(obs[station_id][file]['gc_els'])
+               azs = np.radians(obs[station_id][file]['gc_azs'])
+               els = np.radians(obs[station_id][file]['gc_els'])
                #print("USING GC AZS RADIANS:", station_id, azs)
-               azs = np.radians(obs[station_id][file]['azs'])
-               els = np.radians(obs[station_id][file]['els'])
+               #azs = np.radians(obs[station_id][file]['azs'])
+               #els = np.radians(obs[station_id][file]['els'])
             else:
                azs = np.radians(obs[station_id][file]['azs'])
                els = np.radians(obs[station_id][file]['els'])

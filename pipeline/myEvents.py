@@ -7,7 +7,7 @@ from Classes.MultiStationObs import MultiStationObs
 from lib.PipeUtil import load_json_file, save_json_file
 #from Classes.AIDB import AllSkyDB 
 import sys
-
+import time
 
 
 def load_stations():
@@ -65,22 +65,28 @@ def all_days(year):
 def update_mj(root_fn, ev_data):
    date = root_fn[0:10]
    mjf = "/mnt/ams2/meteors/" + date + "/" + root_fn + ".json"
-   mj = load_json_file(mjf)
+   if os.path.exists(mjf) is True:
+      try:
+         mj = load_json_file(mjf)
+      except:
+         print("NO MJF:", mjf)
+         time.sleep(3)
+         return(None)
+   else:
+      print("NO MJF:", mjf)
+      time.sleep(3)
+      return(None)
    mj['multi_station_event'] = ev_data
    mj['event_id'] = ""
    mj['solve_status'] = ""
    
    save_json_file(mjf, mj)
-   print("Saved", mjf)
-   print("EV:", ev_data)
-   print(root_fn)
 
 def sync_meteor(EV, root_fn, cloud_files, mdir, cloud_dir):
    ms_dir = mdir.replace("/meteors/", "/METEOR_SCAN/")
    types = ["prev.jpg", "180p.mp4", "360p.jpg", "360p.mp4"] #, "1080p.jpg", "1080p.mp4"]
    missing = []
    cmds = []
-   #print("CLOUD FILES:", cloud_files)
    #for cf in cloud_files:
    #   print(cf)
    #input('xxx')
@@ -89,30 +95,26 @@ def sync_meteor(EV, root_fn, cloud_files, mdir, cloud_dir):
          for t in types:
             media_file = EV.station_id + "_" + root_fn + "-" + t 
             if media_file in cloud_files:
-               print("CLOUD FILE EXISTS:", cf)
+               foo = 1
             else:
 
                if os.path.exists(ms_dir + media_file) is True:
                   #print("LOCAL FILE FOUND!", ms_dir + media_file)
                   cmd = "cp " + ms_dir + media_file + " " + cloud_dir + media_file
-                  print(cmd)
                   cmds.append(cmd)
                   os.system(cmd)
                else:
-                  print("NEED TO MAKE!", ms_dir + media_file)
                   if "360p.jpg" in media_file :
 
                      stack_file = media_file.replace("-360p.jpg", "-stacked.jpg")
                      stack_file = stack_file.replace(EV.station_id + "_", "")
                      stack_file = stack_file.replace("METEOR_SCAN", "meteors")
                      if os.path.exists(mdir + stack_file):
-                        print("LOADING:", mdir + stack_file)
                         sd_stack_img = cv2.imread(mdir + stack_file)
                         sd_stack_img = cv2.resize(sd_stack_img, (640,360))
                         cv2.imwrite(ms_dir + media_file,sd_stack_img,[cv2.IMWRITE_JPEG_QUALITY, 80])
-                        print("saved", ms_dir + media_file)
-                     else:
-                        print("Failed to read stack:", mdir + stack_file)
+                     #else:
+                     #   print("Failed to read stack:", mdir + stack_file)
                      #except:
                      #   print("Could not save image.")
 
@@ -125,7 +127,7 @@ def sync_meteor(EV, root_fn, cloud_files, mdir, cloud_dir):
                      hd_trim = mj['hd_trim']
                      hd_stack_file = hd_trim.replace(".mp4", "-stacked.jpg")
                      hd_stack_img = cv2.imread(hd_stack_file)
-                     print('saved', ms_dir + media_file)
+                     #print('saved', ms_dir + media_file)
                      cv2.imwrite(ms_dir + media_file,hd_stack_img,[cv2.IMWRITE_JPEG_QUALITY, 80])
            
                missing.append(ms_dir + media_file)
@@ -135,7 +137,6 @@ def sync_meteor(EV, root_fn, cloud_files, mdir, cloud_dir):
 
 def valid_events(ev_data):
    valid_events = {}
-   print("VALID EV:", ev_data)
 
    if isinstance(ev_data['stations'], str) is True:
       ev_data['stations'] = json.loads(ev_data['stations'])
@@ -161,11 +162,14 @@ def do_station_events(EV,date):
       station_events_data = load_json_file(station_events_local_file)
    else:
       station_events_data = {}
-   if EV.station_id in station_events_data:
-      for obs_id in station_events_data[EV.station_id]:
-         print(EV.station_id, obs_id, station_events_data[EV.station_id][obs_id])
+
+   #if EV.station_id in station_events_data:
+   #   for obs_id in station_events_data[EV.station_id]:
+   #      print(EV.station_id, obs_id, station_events_data[EV.station_id][obs_id])
 
 def do_day(EV, date):
+   json_conf = load_json_file("../conf/as6.json")
+   station_id = json_conf['site']['ams_id']
    do_station_events(EV, date)
 
    EV.do_ms_day(date)
@@ -173,13 +177,14 @@ def do_day(EV, date):
    EV.year = ev_date.split("_")[0]
    EV.month = ev_date.split("_")[1]
    EV.day = ev_date.split("_")[2]
+   EV.event_dir = "/mnt/ams2/EVENTS/" + EV.year + "/" + EV.month + "/" + EV.day + "/" 
+   EV.all_events_file = EV.event_dir +  EV.year + "_" + EV.month + "_" + EV.day + "_ALL_EVENTS.json"
    ev_html = ""
    mdir = "/mnt/ams2/meteors/" + ev_date + "/"
    ms_vdir = "/METEOR_SCAN/" + ev_date + "/"
    cloud_dir = "/mnt/archive.allsky.tv/" + EV.station_id + "/METEORS/" + EV.year + "/" + EV.date + "/"
 
 
-   print("CLOUD DIR:", cloud_dir)
    if os.path.exists(cloud_dir) is True:
       cloud_files = os.listdir(cloud_dir)
    else:
@@ -187,7 +192,6 @@ def do_day(EV, date):
 
 
    for mso in EV.my_ms_obs:
-      print("Multi Station Obs:", mso )
       MSO.load_obs(mso)
       ev_html += "<img src=" + ms_vdir + EV.station_id + "_" + mso + "-ROI.jpg>\n"
       # for each MSO we should make sure ALL content is uploaded 
@@ -196,8 +200,8 @@ def do_day(EV, date):
       os.makedirs("/mnt/ams2/" + ms_vdir)
    fp = open("/mnt/ams2/" + ms_vdir + "events.html", "w")
    fp.write(ev_html)
-   print("saved /mnt/ams2/" + ms_vdir + "events.html")
    save_json_file("/mnt/ams2/meteors/" + ev_date + "/" + ev_date + "_MY_MS_OBS.info", EV.my_ms_obs)
+
    for mm in sorted(EV.min_cnt):
       valid_events(EV.min_cnt[mm])
       if isinstance(EV.min_cnt[mm]['times'], str) is True:
@@ -213,6 +217,15 @@ def do_day(EV, date):
                sync_meteor(EV, obs_file, cloud_files,mdir, cloud_dir)
                update_mj(obs_file, EV.min_cnt[mm])
 
+   # Handle official events
+
+   all_events = load_json_file(EV.all_events_file)
+   for row in all_events:
+      if station_id in row['stations']:
+         if len(set(row['stations'])) >= 2:
+            print("MSM:", row['event_id'], row['stations'], row['files'], row['solve_status'] )
+
+   print("DONE")
 EV = Events()
 #AIDB = AllSkyDB()
 load_stations()

@@ -127,7 +127,8 @@ def dyna_events_for_month(wild, json_conf):
 def dyna_events_for_day(date, json_conf):
    ams_id = json_conf['site']['ams_id']
    year,mon,day = date.split("_")
-   data_files = [ year + "_" + mon + "_" + day + "_ALL_EVENTS.json", year + "_" + mon + "_" + day + "_ALL_OBS.json", year + "_" + mon + "_" + day + "_ALL_STATIONS.json"]
+   #data_files = [ year + "_" + mon + "_" + day + "_ALL_EVENTS.json", year + "_" + mon + "_" + day + "_ALL_OBS.json", year + "_" + mon + "_" + day + "_ALL_STATIONS.json"]
+   data_files = [ year + "_" + mon + "_" + day + "_ALL_EVENTS.json"]
    local_event_dir = "/mnt/ams2/EVENTS/" + year + "/" + mon + "/" + day + "/" 
    cloud_event_dir = "/mnt/archive.allsky.tv/EVENTS/" + year + "/" + mon + "/" + day + "/" 
    if cfe(local_event_dir,1) == 0:
@@ -135,6 +136,7 @@ def dyna_events_for_day(date, json_conf):
    for data_file in data_files:
       #if True:
       if cfe(local_event_dir + data_file) == 0 or "ALL_EVENTS.json" in data_file:
+         # should only do this 1x per 12 hours max if that!
          cmd = "cp " + cloud_event_dir + data_file + " " + local_event_dir
          print(cmd)
          os.system(cmd)

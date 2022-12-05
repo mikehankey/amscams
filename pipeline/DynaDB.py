@@ -669,24 +669,29 @@ def update_dyna_cache_for_day(dynamodb, date, stations, utype=None, cloud_copy=1
    print("SAVED: /mnt/f/EVENTS/ALL_STATIONS.json")
    all_stations = jdata['all_vals']
 
+
    # load the deletes
-   all_deletes = []
-   del_keys = {}
-   for data in all_stations:
-      station_id = data['station_id']
-      deletes = get_station_deletes(dynamodb, station_id, date)
-      for del_item in deletes:
-         all_deletes.append(del_item)
-         obs_key = del_item['station_id'] + "_" + del_item['sd_video_file']
-         if "label" in del_item:
-            label = del_item['label']
-         else:
-            label = ""
-         del_keys[obs_key] = label
-   save_json_file(del_file, del_keys, True)
-   cloud_del_file = del_file.replace("/ams2/", "/archive.allsky.tv/")
-   os.system("cp " + del_file + " " + cloud_del_file)
-   print("SAVED:", del_file)
+   # skip for now
+   if False:
+      all_deletes = []
+      del_keys = {}
+      for data in all_stations:
+         station_id = data['station_id']
+         deletes = get_station_deletes(dynamodb, station_id, date)
+         for del_item in deletes:
+            all_deletes.append(del_item)
+            obs_key = del_item['station_id'] + "_" + del_item['sd_video_file']
+            if "label" in del_item:
+               label = del_item['label']
+            else:
+               label = ""
+            del_keys[obs_key] = label
+      save_json_file(del_file, del_keys, True)
+      cloud_del_file = del_file.replace("/ams2/", "/archive.allsky.tv/")
+      os.system("cp " + del_file + " " + cloud_del_file)
+      print("SAVED:", del_file)
+   else:
+      del_keys = {}
 
    # now purge any events that match these keys
 
@@ -706,6 +711,8 @@ def update_dyna_cache_for_day(dynamodb, date, stations, utype=None, cloud_copy=1
          cluster_stations.append(data)
    save_json_file(stations_file, clusters, True)
    cloud_stations_file = stations_file.replace("/mnt/ams2/", "/mnt/archive.allsky.tv/")
+
+
    os.system("cp " + stations_file + " " + cloud_stations_file)
 
    # get the obs for each station for this day

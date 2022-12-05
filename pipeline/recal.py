@@ -244,6 +244,7 @@ def cal_health(con, cur, json_conf):
 
 
 def cam_menu(cam_id, con,cur, json_conf, cam_status="", cam_stats=None):
+
    tb = pt()
    tb.field_names = ["#", "Action"]
    tb.add_row(["1", "Calibration Status"])

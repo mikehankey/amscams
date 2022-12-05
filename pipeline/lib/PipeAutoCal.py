@@ -10358,8 +10358,6 @@ def minimize_poly_multi_star(merged_stars, json_conf,orig_ra_center=0,orig_dec_c
 
    err_list = []
    for star in merged_stars:
-      #(cal_file,ra_center,dec_center,position_angle,pixscale,dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy, img_res,np_new_cat_x,np_new_cat_y) = star
-      print(star)
       (cal_file , center_az, center_el, ra_center, dec_center, position_angle, pixscale, dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist,star_int) = star
       img_res = cat_dist
 
@@ -10367,8 +10365,6 @@ def minimize_poly_multi_star(merged_stars, json_conf,orig_ra_center=0,orig_dec_c
       cv2.circle(img,(int(six),int(siy)), 10, (255), 1)
    std_dist = np.mean(err_list)
    cal_params = {}
-   print("MS LEN:", len(merged_stars))
-   print(merged_stars)
    if len(merged_stars) < 20:
       return(0,0,0)
 
@@ -10380,8 +10376,8 @@ def minimize_poly_multi_star(merged_stars, json_conf,orig_ra_center=0,orig_dec_c
    if SHOW == 1:
       cv2.namedWindow("pepe") 
    this_fit_img = fit_img.copy()
+
    for star in merged_stars:
-      #(cal_file,ra_center,dec_center,position_angle,pixscale,dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy, img_res,np_new_cat_x,np_new_cat_y) = star
       (cal_file , center_az, center_el, ra_center, dec_center, position_angle, pixscale, dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist,star_int) = star
       if img_res <= .5:
          color = [0,255,0]
