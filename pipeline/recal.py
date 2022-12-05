@@ -5989,7 +5989,7 @@ def cat_star_match(cal_fn, cal_params, cal_img, cat_stars):
             gray_img[int(ry1):int(ry2),int(rx1):int(rx2)] = 0
 
             center_dist = int(calc_dist((960,540),(new_cat_x,new_cat_y)))
-            print("CATALOG STAR:", act, name, mag, pxd, len(cnts), center_dist, res, zp_res)
+            #print("CATALOG STAR:", act, name, mag, pxd, len(cnts), center_dist, res, zp_res)
             if act == "keep":
                cv2.line(cat_image, (int(new_cat_x),int(new_cat_y)), (int(zp_cat_x),int(zp_cat_y)), (255,255,255), 2)
 
