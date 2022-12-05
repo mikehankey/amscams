@@ -1928,6 +1928,8 @@ def start_calib(cal_fn, json_conf, calfiles_data, mcp=None):
       mask = cv2.resize(mask, (1920,1080))
    else:
       mask = np.zeros((1080,1920),dtype=np.uint8)
+
+   print(clean_cal_img.shape, mask.shape)
    clean_cal_img = cv2.subtract(clean_cal_img, mask)
 
    if mcp is None:
