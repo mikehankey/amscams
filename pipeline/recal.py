@@ -1,23 +1,18 @@
 #!/usr/bin/python3
 
+ASOS = """
+   _____  .____    .____       _____________  __._____.___.
+  /  _  \ |    |   |    |     /   _____/    |/ _|\__  |   |
+ /  /_\  \|    |   |    |     \_____  \|      <   /   |   |
+/    |    \    |___|    |___  /        \    |  \  \____   |
+\____|__  /_______ \_______ \/_______  /____|__ \ / ______|
+        \/        \/       \/        \/        \/ \/
+  -- O  B  S  E  R  V  I  N  G   S  O  F  T  W  A  R  E --
+
+    © ALL SKY INC / MIKE HANKEY LLC - ALL RIGHTS RESERVED
+Use permitted under community license for registered users only
 """
 
-yo
-
-
-2022 - recalibration script -- fixes / updates calibration
-
-import features / functions
-   - get / validate image stars (no catalog)
-   - blind solve
-   - get catalog stars
-   - pair stars (image stars with catalog stars)
-   - create lens distorition model from one image
-   - create lens distorition model from multiple images
-   - apply lens correction model
-   - refit / refine fov pointing values (ra/dec/pos/pix)
-
-"""
 import datetime
 from PIL import ImageFont, ImageDraw, Image, ImageChops
 import imutils
@@ -26,7 +21,7 @@ import json
 import numpy as np
 import glob
 import cv2
-import os, sys
+import os, sys, select
 import requests
 from photutils import CircularAperture, CircularAnnulus
 from photutils.aperture import aperture_photometry
@@ -162,24 +157,59 @@ def cal_health(con, cur, json_conf):
          cam_stats[cam_id]['avg_files'].append(f)
 
    tb = pt()
-   tb.field_names = ["Cam ID","Avg Stars", "Avg Res", "Good Files", "Avg Files","Bad Files", "LM Res", "LM Stars", "LM Date"]
-
+   tb.field_names = ["#", "Cam ID","Avg Stars", "Avg Res", "Good Files", "Avg Files","Bad Files", "LM Res", "LM Stars", "LM Runs", "LM Date", "Min/Max Star Dist"]
+   cc = 0 
+   cam_nums = {}
    for cam_id in sorted(cam_stats):
       #print(cam_id, len(cam_stats[cam_id]['good_files']), "good", len(cam_stats[cam_id]['bad_files']), "bad")
       lf = "/mnt/ams2/cal/multi_poly-{:s}-{:s}.info".format(station_id, cam_id)
       if os.path.exists(lf) is True:
          mp = load_json_file(lf)
          fun = (mp['x_fun'] + mp['y_fun'] ) / 2
+         if "cal_version" in mp:
+            model_runs = mp['cal_version']
+         else:
+            model_runs = 0
          if "total_stars_used" in mp:
             lm_stars = mp['total_stars_used']
             lm_date = mp['lens_model_datetime']
          else:
             lm_stars = "na"
             lm_stars = "na"
-         print(mp.keys())
+      if 'min_max_dist_status' in mp:
+         min_max_dist_status = mp['min_max_dist_status'] 
+      else:
+         min_max_dist_status = "unknown"
+         #print(mp.keys())
+      cam_num = cc + 1
+      tb.add_row([cam_num, cam_id, cam_stats[cam_id]['med_stars'], round(cam_stats[cam_id]['med_rez'],3), len(cam_stats[cam_id]['good_files']), len(cam_stats[cam_id]['avg_files']), len(cam_stats[cam_id]['bad_files']), round(fun,3), lm_stars, model_runs, lm_date.split(" ")[0], min_max_dist_status])
+      cam_nums[cam_num] = cam_id
+      cc += 1
+   now = datetime.datetime.now().strftime("%Y_%m_%d")
 
-      tb.add_row([cam_id, cam_stats[cam_id]['med_stars'], cam_stats[cam_id]['med_rez'], len(cam_stats[cam_id]['good_files']), len(cam_stats[cam_id]['avg_files']), len(cam_stats[cam_id]['bad_files']), fun, lm_stars, lm_date])
+   # MAIN USER OUTPUT
+   os.system("clear")
+   print(ASOS)
+   print("CALIBRATION HEALTH FOR " + station_id + " RUN ON " + now  )
    print(tb)
+   cam_status = tb
+
+   print("To work on a specific camera enter the camera number and press [ENTER]")
+   print("You have 30 seconds to run a custom command before this prompt ends.")
+
+   i, o, e = select.select( [sys.stdin], [], [], 30 )
+   if (i) :
+      scam_num = int(sys.stdin.readline().strip())
+      selected_cam = cam_nums[scam_num]
+   else:
+      print("No custom command selected in time.")
+      print("Quitting calibration health menu")
+
+      exit()
+
+   print("SELECTED CAMERA:", selected_cam)
+   cam_menu(selected_cam, con, cur, json_conf,cam_status, cam_stats)
+
    exit() 
    # refit best files for each cam
    for cam_id in sorted(cam_stats):
@@ -212,6 +242,80 @@ def cal_health(con, cur, json_conf):
          cal_params, cat_stars = recenter_fov(cal_fn, cal_params, oimg.copy(),  stars, json_conf, extra_text)
          save_json_file(f, cal_params)
 
+
+def cam_menu(cam_id, con,cur, json_conf, cam_status="", cam_stats=None):
+   tb = pt()
+   tb.field_names = ["#", "Action"]
+   tb.add_row(["1", "Calibration Status"])
+   tb.add_row(["2", "Refit All Calfiles"])
+   tb.add_row(["3", "Refit Best Calfiles"])
+   tb.add_row(["4", "Refit Avg Calfiles"])
+   tb.add_row(["5", "Refit Bad Calfiles"])
+   tb.add_row(["6", "Remake Lens Model "])
+   tb.add_row(["7", "Prune Excess Files"])
+   tb.add_row(["8", "Reset Lens Model"])
+   tb.add_row(["9", "Rebuild Cal Index"])
+   tb.add_row(["10", "Main Menu"])
+   go = True
+
+   while go is True:
+      os.system("clear")
+      print(ASOS)
+      print(cam_status)
+      print("CALIBRATION MENU OPTIONS FOR CAMERA " + cam_id)
+      print(tb)
+
+
+      cmd = input("Select action # and press [ENTER]") 
+      if True:
+      #try:
+         if int(cmd) == 1:
+            print("Calibration status for camera:", cam_id)
+            cal_status_report(cam_id, con, cur, json_conf)
+         elif int(cmd) == 2:
+            batch_apply(cam_id, con, cur, json_conf)
+         elif int(cmd) == 3:
+            batch_apply(cam_id, con, cur, json_conf, None, False, cam_stats, "BEST")
+         elif int(cmd) == 4:
+            batch_apply(cam_id, con, cur, json_conf, None, False, cam_stats, "AVG")
+         elif int(cmd) == 5:
+            batch_apply(cam_id, con, cur, json_conf, None, False, cam_stats, "BAD")
+         elif int(cmd) == 6:
+            samples = int(input("Enter the number of calibration files you want to use?"))
+            fast_lens(cam_id, con, cur, json_conf, samples, None)
+            if len(cam_stats[cam_id]['good_files']) >= samples:
+               cal_fns = cam_stats[cam_id]['good_files'][0:samples]
+            elif len(cam_stats[cam_id]['good_files']) + len(cam_stats[cam_id]['avg_files']) >= samples :
+               cal_fns = cam_stats[cam_id]['good_files']
+               cal_fns.extend(cam_stats[cam_id]['avg_files'])
+               cal_fns = cal_fns[0:samples]        
+            else:
+               cal_fns = cam_stats[cam_id]['good_files']
+               cal_fns.extend(cam_stats[cam_id]['avg_files'])
+               cal_fns.extend(cam_stats[cam_id]['bad_files'])
+               cal_fns = cal_fns[0:samples]        
+            lens_model(cam_id, con, cur, json_conf, cal_fns, True)
+         elif int(cmd) == 7:
+            prune(cam_id, con, cur, json_conf)
+         elif int(cmd) == 8:
+            reset_lens_model(cam_id, con, cur, json_conf)
+         elif int(cmd) == 9:
+            os.system("cd ../pythonv2/; ./autoCal.py cal_index")
+         elif int(cmd) == 10:
+            cal_health(con, cur, json_conf)
+         else:
+            print("BAD INPUT!", cmd)
+            time.sleep(5)
+            cam_menu(cam_id, con,cur, json_conf, cam_status)
+      #except:
+      else:
+         print("TRY FAILED# ")
+         time.sleep(1)
+         cam_menu(cam_id, con,cur, json_conf, cam_status="")
+
+def reset_lens_model(cam_id, con, cur,json_conf):
+   print("RESET LENS MODEL FOR ", cam_id)
+   exit()
 
 def reset_bad_cals(cam_id, con, cur,json_conf):
    # this will scan all of the cals and anything that has 8px res will be sent back to the 
@@ -4799,8 +4903,9 @@ def batch_apply_bad(cam_id, con, cur, json_conf, blimit=25):
       #
 
 
-def batch_apply(cam_id, con,cur, json_conf, last=None, do_bad=False):
+def batch_apply(cam_id, con,cur, json_conf, last=None, do_bad=False, cam_stats=None, apply_type="ALL"):
    # apply the latest MCP Poly to each cal file and then recenter them
+   print("BATCH APPLY:", apply_type)
    autocal_dir = "/mnt/ams2/cal/"
    station_id = json_conf['site']['ams_id']
    if SHOW == 1:
@@ -4838,8 +4943,28 @@ def batch_apply(cam_id, con,cur, json_conf, last=None, do_bad=False):
          rc = 0
          flux_table = {}
          for cf in sorted(calfiles_data, reverse=True):
+            cal_dir = "/mnt/ams2/cal/freecal/" + cf.split("-")[0] + "/"
+            if os.path.exists(cal_dir + cf) is True:
+               cal_params = load_json_file(cal_dir + cf)
+            else:
+               print("NOT FOUND", cal_dir + cf)
+               continue
             extra_text = cf + " " + str(rc) + " of " + str(len(calfiles_data))
-            last_cal_params, flux_table = apply_calib (cf, calfiles_data, json_conf, mcp, last_cal_params, extra_text, do_bad, flux_table)
+            if cam_stats is not None:
+
+               if apply_type == "BEST":
+                  if cal_params['total_res_px'] < cam_stats[cam_id]['med_rez'] * .8 and len(cal_params['cat_image_stars']) > cam_stats[cam_id]['med_stars'] * 1.2:
+                     last_cal_params, flux_table = apply_calib (cf, calfiles_data, json_conf, mcp, last_cal_params, extra_text, do_bad, flux_table)
+               elif apply_type == "AVG":
+                  if cal_params['total_res_px'] < cam_stats[cam_id]['med_rez'] * 1.2 and len(cal_params['cat_image_stars']) > cam_stats[cam_id]['med_stars'] * .8:
+                     last_cal_params, flux_table = apply_calib (cf, calfiles_data, json_conf, mcp, last_cal_params, extra_text, do_bad, flux_table)
+               elif apply_type == "BAD":
+                  if cal_params['total_res_px'] > cam_stats[cam_id]['med_rez'] * 1.2 and len(cal_params['cat_image_stars']) < cam_stats[cam_id]['med_stars'] * .8:
+                     last_cal_params, flux_table = apply_calib (cf, calfiles_data, json_conf, mcp, last_cal_params, extra_text, do_bad, flux_table)
+               else:
+                  last_cal_params, flux_table = apply_calib (cf, calfiles_data, json_conf, mcp, last_cal_params, extra_text, do_bad, flux_table)
+            else:
+               last_cal_params, flux_table = apply_calib (cf, calfiles_data, json_conf, mcp, last_cal_params, extra_text, do_bad, flux_table)
             #try:
             #except:
             #   print("FAILED APPLY:", cf)
@@ -5113,7 +5238,7 @@ def apply_calib (cal_file, calfiles_data, json_conf, mcp, last_cal_params=None, 
          cal_params = load_json_file(cal_dir + cal_file)
       except:
          print("ERROR: Failed to load cal file!", cal_dir , cal_file)
-         #time.sleep(5)
+         time.sleep(5)
          return(None,None)
 
       
@@ -5123,6 +5248,8 @@ def apply_calib (cal_file, calfiles_data, json_conf, mcp, last_cal_params=None, 
       if os.path.exists(cal_dir + cal_image_file) is True:
          oimg = cv2.imread(cal_dir + cal_image_file)
       else:
+         print("ERROR: Failed to load cal image file!", cal_dir , cal_image_file)
+         time.sleep(5)
          return(None,None)
 
       # first check if the file is corrupt. If so reset 1 time, else move to bad.
@@ -5156,6 +5283,8 @@ def apply_calib (cal_file, calfiles_data, json_conf, mcp, last_cal_params=None, 
 
       print("CAL DIR", cal_dir)
       if cal_dir is False:
+         print("Cal dir doesn't exist:", cal_dir)
+         time.sleep(5)
          return(None,None)
       
 
@@ -5732,6 +5861,8 @@ def apply_calib (cal_file, calfiles_data, json_conf, mcp, last_cal_params=None, 
 
       # remove cal if res too high or stars too low and refit is too high
       print("REAPPLY:", cal_params['reapply'])
+
+
       return(cal_params, flux_table)
 
 def cat_star_match(cal_fn, cal_params, cal_img, cat_stars):
@@ -9314,9 +9445,13 @@ def lens_model(cam_id, con, cur, json_conf, cal_fns= None, force=False):
    print("BEFORE BEST STARS RES:", len(merged_stars), np.median(rez))
    inner_rezs = []
    outer_rezs = []
+   xs = []
+   ys = []
    for star in merged_stars:
       cal_file , center_az, center_el, ra_center, dec_center, position_angle, pixscale, name,mag,ra,dec,ra,dec,match_dist,orig_cat_x,orig_cat_y,center_az,center_el,new_cat_x,new_cat_y,img_x,img_y,res_px,star_flux = star
       center_dist = calc_dist((img_x,img_y), (1920/2, 1080/2))
+      xs.append(img_x)
+      ys.append(img_y)
       if center_dist > 600:
          outer_rezs.append(res_px)
       else:
@@ -9425,7 +9560,16 @@ def lens_model(cam_id, con, cur, json_conf, cal_fns= None, force=False):
    cal_params['lens_model_datetime'] = now_str
    cal_params['lens_model_timestamp'] = time_stamp 
    cal_params['total_stars_used'] = len(merged_stars)
+   cal_params['min_max_x_dist'] = max(xs) - min(xs)
+   cal_params['min_max_y_dist'] = max(ys) - min(ys)
 
+   if  cal_params['min_max_x_dist'] > 1500 and  cal_params['min_max_y_dist'] > 800:
+      cal_params['min_max_dist_status'] = "GOOD"
+   elif cal_params['min_max_x_dist'] > 1500 and cal_params['min_max_y_dist'] > 600:
+      cal_params['min_max_dist_status'] = "OK"
+   else:
+      cal_params['min_max_dist_status'] = "BAD"
+    
    save_json_file(mcp_file, cal_params)
    print("SAVED:", mcp_file)
 
