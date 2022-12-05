@@ -6192,7 +6192,7 @@ def recenter_fov(cal_fn, cal_params, cal_img, stars, json_conf, extra_text="", t
       nc['cat_image_stars'] = pair_star_points(cal_fn, cal_img, nc, json_conf, con, cur, mcp, True)
       cat_image_stars = nc['cat_image_stars']
 
-   print("CAT IMAGE:", cat_image_stars)
+   #print("CAT IMAGE:", cat_image_stars)
 
    if len(cat_image_stars) > 0:
       nc['cat_image_stars'] = cat_image_stars
