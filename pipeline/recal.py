@@ -8240,6 +8240,9 @@ def fast_lens(cam_id, con, cur, json_conf,limit=5, cal_fns=None):
       cat_image_stars = cat_star_match(cal_fn, cal_params, cal_img, cat_stars)
       stars,xxx_cat_stars = get_paired_stars(cal_fn, cal_params, con, cur)
       cal_params, xxx_cat_image_stars = recenter_fov(cal_fn, cal_params, cal_img.copy(),  stars, json_conf, "")
+      cal_params['cat_image_stars'] = remove_bad_stars(cal_params['cat_image_stars'])
+      cal_params, xxx_cat_image_stars = recenter_fov(cal_fn, cal_params, cal_img.copy(),  stars, json_conf, "")
+
       cat_image_stars = cat_star_match(cal_fn, cal_params, cal_img, cat_stars)
       rez = [row[-2] for row in merged_stars] 
       best_index[cal_fn] = rez
