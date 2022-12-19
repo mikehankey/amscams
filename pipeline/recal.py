@@ -5245,7 +5245,7 @@ def apply_calib (cal_file, calfiles_data, json_conf, mcp, last_cal_params=None, 
          # reset this file! 
          auto_dir = "/mnt/ams2/meteor_archive/" + station_id + "/CAL/AUTOCAL/" + cur_year + "/"
          # add code to track the # of times this has been done. Only allow it 1-2 times then perma delete the calib file
-
+         print("BAD CAL REMOVE:", len(cal_params['cat_image_stars']), cal_params['total_res_px'])
          cmd = "cp " + cal_dir + cal_image_file + " " + auto_dir + cal_image_file.replace("-stacked.png", ".png")
          print("\tCMD:", cmd)
          os.system(cmd)
