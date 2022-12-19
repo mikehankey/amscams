@@ -222,12 +222,16 @@ def cal_health(con, cur, json_conf):
          jobs.append(("refit_avg", row[1], 0))
          print("refit", row[1], row[3], "is > 1")
 
+      if row[7] > 1 or row[8] < 300:
+         print("fast_lens", row[1], row[6], "is > 1")
+         jobs.append(("fast_lens", row[1], 0))
+
 
 
    # get menu response from the user. If no response we should auto run the jobs?
    # this way a cron cal to cal_health will run the 'next' jobs without running too long
 
-   i, o, e = select.select( [sys.stdin], [], [], 5 )
+   i, o, e = select.select( [sys.stdin], [], [], 10 )
    if (i) :
       scam_num = int(sys.stdin.readline().strip())
       selected_cam = cam_nums[scam_num]
@@ -5703,7 +5707,7 @@ def cat_star_match(cal_fn, cal_params, cal_img, cat_stars):
 
             _, crop_thresh = cv2.threshold(crop_img, max_val * .95, 255, cv2.THRESH_BINARY)
             cnts = get_contours_in_image(crop_thresh)
-            if len(cnts) == 1:
+            if len(cnts) >= 1:
                radius = max(cnts[0][2],cnts[0][3] )
                imx = cnts[0][0] + (cnts[0][2]/2) + rx1
                imy = cnts[0][1] + (cnts[0][3]/2) + ry1
@@ -5717,7 +5721,7 @@ def cat_star_match(cal_fn, cal_params, cal_img, cat_stars):
                res = 999
 
 
-            if pxd > 20 and len(cnts) == 1:
+            if pxd > 20 and len(cnts) >= 1:
 
                new_cat_x, new_cat_y = get_xy_for_ra_dec(cal_params, ra, dec)
                res_px = calc_dist((imx,imy),(new_cat_x,new_cat_y))
@@ -8242,6 +8246,8 @@ def fast_lens(cam_id, con, cur, json_conf,limit=5, cal_fns=None):
       cal_params['cat_image_stars'] = cat_image_stars 
       best_cals[cal_fn] = cal_params 
       update_calibration_file(cal_fn, cal_params, con,cur,json_conf,mcp)
+      print("\tSAVE:", cal_json_file)
+      save_json_file(cal_json_file, cal_params)
 
    rez = []
    for cal_fn in best_index:
