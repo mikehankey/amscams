@@ -4811,15 +4811,12 @@ def batch_apply_bad(cam_id, con, cur, json_conf, blimit=25):
    for row in cal_files:
       (cal_fn, total_stars, res , score) = row
       if res > avg_res * 1.2 or total_stars < avg_stars * .8:
-         print("WORSTE RES:", x, cal_fn, avg_stars, avg_res, total_stars, res)
          bad_cal_files.append(row)
       else:
          if res < avg_res * .8 and total_stars > avg_stars * 1.2:
-            print("BEST RES:", x, cal_fn, avg_stars, avg_res, total_stars, res)
             best_cal_files.append(row)
             best_cal_fns.append(cal_fn)
          else:
-            print("GOOD RES:", x, cal_fn, avg_stars, avg_res, total_stars, res)
             good_cal_files.append(row)
             best_cal_fns.append(cal_fn)
       x+=1 
@@ -4874,7 +4871,6 @@ def batch_apply_bad(cam_id, con, cur, json_conf, blimit=25):
       print(cal_fn, total_stars, res, score)
 
 
-   characterize_best(cam_id, con, cur, json_conf, 50, best_cal_fns)
    # run lens model 1x per 24 hours max
    tdiff, tsize = get_file_info(mcp_file )
 
@@ -4885,8 +4881,11 @@ def batch_apply_bad(cam_id, con, cur, json_conf, blimit=25):
    
    if tdays > 1:
       print("We should make the lens model again!")
-      lens_model(cam_id, con, cur, json_conf, best_cal_fns)
+      limit = 10
+      fast_lens(cam_id, con, cur, json_conf,limit, None)
+      lens_model(cam_id, con, cur, json_conf )
       #
+   characterize_best(cam_id, con, cur, json_conf, 50 )
 
 
 def batch_apply(cam_id, con,cur, json_conf, last=None, do_bad=False, cam_stats=None, apply_type="ALL"):
