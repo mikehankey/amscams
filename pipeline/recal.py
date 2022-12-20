@@ -8242,11 +8242,12 @@ def fast_lens(cam_id, con, cur, json_conf,limit=5, cal_fns=None):
       cal_params, xxx_cat_image_stars = recenter_fov(cal_fn, cal_params, cal_img.copy(),  stars, json_conf, "")
       ocps = cal_params['cat_image_stars'] 
      
-      if cal_params['total_res_px'] >= 10:
+      if cal_params['total_res_px'] >= 6:
          cal_params['cat_image_stars'] = remove_bad_stars(cal_params['cat_image_stars'])
          if len(cal_params['cat_image_stars']) < 5:
             # revert
             cal_params['cat_image_stars'] = ocps
+         print("RECENTER AGAIN.", len(cal_params['cat_image_stars']), cal_params['total_res_px'] )
          cal_params, xxx_cat_image_stars = recenter_fov(cal_fn, cal_params, cal_img.copy(),  stars, json_conf, "")
 
       cat_image_stars = cat_star_match(cal_fn, cal_params, cal_img, cat_stars)
@@ -8255,7 +8256,7 @@ def fast_lens(cam_id, con, cur, json_conf,limit=5, cal_fns=None):
       cal_params['cat_image_stars'] = cat_image_stars 
       best_cals[cal_fn] = cal_params 
       update_calibration_file(cal_fn, cal_params, con,cur,json_conf,mcp)
-      print("\tSAVE:", cal_json_file)
+      #print("\tSAVE:", cal_json_file)
       save_json_file(cal_json_file, cal_params)
 
    rez = []
