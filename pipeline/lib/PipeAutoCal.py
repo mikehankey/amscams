@@ -10457,8 +10457,8 @@ def minimize_poly_multi_star(merged_stars, json_conf,orig_ra_center=0,orig_dec_c
    print("RES:", res)
    if res < 2:
       res = 2 
-   if res > 10:
-      res = 10
+   if res > 5:
+      res = 5 
 
    # last chance to remove stars!
    if True:
