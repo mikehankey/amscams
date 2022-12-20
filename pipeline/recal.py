@@ -8243,8 +8243,11 @@ def fast_lens(cam_id, con, cur, json_conf,limit=5, cal_fns=None):
          if len(cal_params['cat_image_stars']) < 5:
             # revert
             cal_params['cat_image_stars'] = ocps
-         print("RECENTER AGAIN.", len(cal_params['cat_image_stars']), cal_params['total_res_px'] )
-         cal_params, xxx_cat_image_stars = recenter_fov(cal_fn, cal_params, cal_img.copy(),  stars, json_conf, "")
+         if len(cal_params['cat_image_stars']) > 10:
+            print("RECENTER AGAIN.", len(cal_params['cat_image_stars']), cal_params['total_res_px'] )
+            cal_params, xxx_cat_image_stars = recenter_fov(cal_fn, cal_params, cal_img.copy(),  stars, json_conf, "")
+         else:
+            continue
 
       cat_image_stars = cat_star_match(cal_fn, cal_params, cal_img, cat_stars)
       rez = [row[-2] for row in merged_stars] 
