@@ -10445,14 +10445,8 @@ def minimize_poly_multi_star(merged_stars, json_conf,orig_ra_center=0,orig_dec_c
    time.sleep(5)
 
    # remove some stars if the res is too high...
-   if cal_params['total_res_px'] > 5:
-      from recal import remove_bad_stars
-      cal_params['cat_image_stars'] = remove_bad_stars(cal_params['cat_image_stars'])
 
 
-   time.sleep(5)
-
-   res,updated_merged_stars = reduce_fit_multi(x_poly, "x_poly",merged_stars,cal_params,fit_img,json_conf,cam_id,1,show)
 
    new_merged_stars = []
    # here we should remove the worste stars 
@@ -10500,7 +10494,7 @@ def minimize_poly_multi_star(merged_stars, json_conf,orig_ra_center=0,orig_dec_c
    med_res_val = med_res ** 2 
    if med_res_val < 1:
       med_res = 1
-   if False:
+   if True:
       for star in updated_merged_stars:
          (cal_file , center_az, center_el, ra_center, dec_center, position_angle, pixscale, dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist,star_int) = star
          cat_dist = abs(calc_dist((six,siy),(new_cat_x,new_cat_y)))
