@@ -243,7 +243,6 @@ def cal_health(con, cur, json_conf):
       for job in jobs:
          print("JOB", job)
       print("waiting for 3 seconds before starting autojobs... [cntl-x] to quit")
-      time.sleep(3)
       for job in jobs:
          cam_id = job[1]
          if job[0] == "refit_avg":
@@ -354,12 +353,10 @@ def cam_menu(cam_id, con,cur, json_conf, cam_status="", cam_stats=None):
             cal_health(con, cur, json_conf)
          else:
             print("BAD INPUT!", cmd)
-            time.sleep(5)
             cam_menu(cam_id, con,cur, json_conf, cam_status)
       #except:
       else:
          print("TRY FAILED# ")
-         time.sleep(1)
          cam_menu(cam_id, con,cur, json_conf, cam_status="")
 
 def reset_lens_model(cam_id, con, cur,json_conf):
@@ -1170,7 +1167,6 @@ def refit_meteor(meteor_file, con, cur, json_conf, mcp = None, last_best_dict = 
       print("******************************")
       print("*************************")
       print("********************")
-      time.sleep(1)
 
    show_frame = median_frame.copy()
    if SHOW == 1:
@@ -5232,7 +5228,6 @@ def apply_calib (cal_file, calfiles_data, json_conf, mcp, last_cal_params=None, 
          cal_params = load_json_file(cal_dir + cal_file)
       except:
          print("\tERROR: Failed to load cal file!", cal_dir , cal_file)
-         time.sleep(5)
          return(None,None)
 
       cal_image_file = cal_file.replace("-calparams.json", ".png")
@@ -5240,7 +5235,6 @@ def apply_calib (cal_file, calfiles_data, json_conf, mcp, last_cal_params=None, 
          oimg = cv2.imread(cal_dir + cal_image_file)
       else:
          print("\tERROR: Failed to load cal image file!", cal_dir , cal_image_file)
-         time.sleep(5)
          return(None,None)
 
       # first check if the file is corrupt. If so reset 1 time, else move to bad.
@@ -5260,7 +5254,6 @@ def apply_calib (cal_file, calfiles_data, json_conf, mcp, last_cal_params=None, 
          print("\t****")
          print("\t*****")
 
-         time.sleep(1)
 
          return(None,None)
 
@@ -5270,7 +5263,6 @@ def apply_calib (cal_file, calfiles_data, json_conf, mcp, last_cal_params=None, 
 
       if cal_dir is False:
          print("\tCal dir doesn't exist:", cal_dir)
-         time.sleep(5)
          return(None,None)
       
       if mcp is not None:
@@ -5626,7 +5618,6 @@ def apply_calib (cal_file, calfiles_data, json_conf, mcp, last_cal_params=None, 
          if os.path.exists(bad_cal_dir + cal_root) is True:
             os.system("rm -rf " + bad_cal_dir + cal_root)
          os.system(cmd)
-         time.sleep(1)
 
       # remove cal if res too high or stars too low and refit is too high
       print("\tREAPPLY:", cal_params['reapply'])
@@ -8223,7 +8214,6 @@ def fast_lens(cam_id, con, cur, json_conf,limit=5, cal_fns=None):
          if mcp["x_fun"] > 5:
             mcp = None
             print("Current lens model is bad and should be reset!")
-            time.sleep(5)
 
    else:
       mcp = None
