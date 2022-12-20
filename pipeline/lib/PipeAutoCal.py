@@ -10314,10 +10314,12 @@ def draw_star_grid(grid):
          (cal_file , center_az, center_el, ra_center, dec_center, position_angle, pixscale, dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist,star_int) = star
          cv2.rectangle(star_grid_img, (int(x1), int(y1)), (int(x2), int(y2)), (255,255,255), 2)
          cv2.line(star_grid_img, (int(six),int(siy)), (int(new_cat_x),int(new_cat_y)), (255,255,255), 2)
-         cv2.imshow('pepe', star_grid_img)
-         cv2.waitKey(30)
+         if SHOW == 1:
+            cv2.imshow('pepe', star_grid_img)
+            cv2.waitKey(30)
          print(new_x, new_y, six, siy)
-   cv2.waitKey(30)
+   if SHOW == 1:
+      cv2.waitKey(30)
 
 def minimize_poly_multi_star(merged_stars, json_conf,orig_ra_center=0,orig_dec_center=0,cam_id=None,master_file=None,mcp=None,show=0):
    if show == 1 :
