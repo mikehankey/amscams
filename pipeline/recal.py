@@ -9078,7 +9078,8 @@ def batch_calib(cam_id, con, cur, json_conf):
          if loaded is False:
             get_image_stars(cal_img_file, con, cur, json_conf)
          else:
-            print("Already loaded")
+            print("Already loaded. ") 
+
 
 
 def best_stars(merged_stars, mcp, factor = 2, gsize=50):
@@ -9795,7 +9796,14 @@ if __name__ == "__main__":
       print("ALREADY RUNNING:", running)
       cmd = "echo " + str(running) + " >x"
       os.system(cmd)
-      exit()
+      print("Press enter to re-start processes.") 
+      i, o, e = select.select( [sys.stdin], [], [], 10 )
+      if (i) :
+         cmd = "kill -9 $(ps aux | grep 'recal.py' | awk '{print $2}')"
+         print(cmd)
+         os.system(cmd)
+      else:
+         exit()
 
 
    json_conf = load_json_file("../conf/as6.json")
