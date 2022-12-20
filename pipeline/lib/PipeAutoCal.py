@@ -10456,6 +10456,7 @@ def minimize_poly_multi_star(merged_stars, json_conf,orig_ra_center=0,orig_dec_c
    if res < 2:
       res = 2 
 
+   # last chance to remove stars!
    if True:
       for star in updated_merged_stars:
          (cal_file , center_az, center_el, ra_center, dec_center, position_angle, pixscale, dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist,star_int) = star
@@ -10465,68 +10466,20 @@ def minimize_poly_multi_star(merged_stars, json_conf,orig_ra_center=0,orig_dec_c
             factor = 2
          else:
             factor = 4
-         if cat_dist < res * factor:
+         if cat_dist < (res * factor):
+            print("KEEP:", center_dist, res * factor, cat_dist)
             new_merged_stars.append(star) 
-            #print("GOOD RES CENTER:", center_dist, cat_dist, factor, res * factor)
-         #else:
-            #print("BAD RES CENTER:", center_dist, cat_dist, factor, res * factor)
+         else:
+            print("SKIP:", center_dist, res * factor, cat_dist)
       updated_merged_stars = new_merged_stars
    #exit()
 
    all_res = [row[-2] for row in updated_merged_stars]
    med_res = np.median(all_res)
-   # HERE WE MUST FIX... FOR FIRST RUNS.
-   #if mcp is not None:
-   #   if "calv3" not in mcp:
-   #      mcp['calv3'] = 1
-   #   if mcp is None:
-   #      med_res = 5
-   #   elif mcp['calv3'] < 3:
-   #      med_res = 4 
-   #   if mcp != None:
-   #      med_res = mcp['x_fun']
-   #else:
-   #   med_res = 4
+
    if False:
       updated_merged_stars = quality_stars(updated_merged_stars, mcp, 1)
 
-   # MORE - FINAL FILTER / FILTERING
-   med_res_val = med_res ** 2 
-   if med_res_val < 1:
-      med_res = 1
-   if True:
-      sc = 0
-      print("MERGED STARS:", len(updated_merged_stars), len(new_merged_stars))
-      time.sleep(5)
-      exit()
-      for star in updated_merged_stars:
-         (cal_file , center_az, center_el, ra_center, dec_center, position_angle, pixscale, dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist,star_int) = star
-         cat_dist = abs(calc_dist((six,siy),(new_cat_x,new_cat_y)))
-
-         print(sc, "STAR CENTER DIST/RES:", center_dist, cat_dist)
-         if center_dist > 800:
-            if med_res < 2:
-               med_res_val = 2 ** 2
-            else:
-               med_res_val = med_res ** 2
-
-         if cat_dist <= med_res_val:
-            print("KEEPING: ", cat_dist)
-            new_merged_stars.append(star)
-         else:
-            print("REMOVING: ", med_res, cat_dist)
-         sc += 1
-      merged_stars = new_merged_stars 
-
-   print("USING THESE STARS:", len(merged_stars))
-   #input("CONT")
-   merged_stars = updated_merged_stars
-   new_merged_stars = merged_stars 
-
-   #for star in merged_stars:
-   #   (cal_file , center_az, center_el, ra_center, dec_center, position_angle, pixscale, dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist,star_int) = star
-   #   cat_dist = abs(calc_dist((six,siy),(new_cat_x,new_cat_y)))
-   #   print(dcname, cat_dist)
 
    options = {}
          
