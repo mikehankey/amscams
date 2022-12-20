@@ -4872,18 +4872,24 @@ def batch_apply_bad(cam_id, con, cur, json_conf, blimit=25):
 
 
    # run lens model 1x per 24 hours max
-   tdiff, tsize = get_file_info(mcp_file )
 
    make_cal_plots(cam_id, json_conf)
    make_cal_summary(cam_id, json_conf)
    #os.system("./Process.py cal_sum_html")
+   tdiff, tsize = get_file_info(mcp_file )
    tdays = tdiff / 60 / 24 
-   
    if tdays > 1:
-      print("We should make the lens model again!")
-      limit = 10
-      fast_lens(cam_id, con, cur, json_conf,limit, None)
-      lens_model(cam_id, con, cur, json_conf )
+      # at most make the lens model 1x per day
+      # stop doing it if the mcp res is < 1 and total merged stars > 300
+      if "x_fun" not in mcp:
+         mcp['x_fun'] = 99
+      if "total_stars_used" not in mcp:
+         mcp['total_stars_used'] = 0
+      if mcp['x_fun'] > 1 and mcp['total_stars_used'] < 300:
+         print("We should make the lens model again!")
+         limit = 10
+         fast_lens(cam_id, con, cur, json_conf,limit, None)
+         lens_model(cam_id, con, cur, json_conf )
       #
    characterize_best(cam_id, con, cur, json_conf, 50 )
 
@@ -5626,6 +5632,7 @@ def apply_calib (cal_file, calfiles_data, json_conf, mcp, last_cal_params=None, 
       return(cal_params, flux_table)
 
 def cat_star_match(cal_fn, cal_params, cal_img, cat_stars):
+   print("cat_star_match:")
    cat_image = cal_img.copy()
    new_cat_image_stars = []
    #cv2.imshow('pepe', cal_img)
@@ -5634,8 +5641,6 @@ def cat_star_match(cal_fn, cal_params, cal_img, cat_stars):
       gray_img = cv2.cvtColor(cal_img, cv2.COLOR_BGR2GRAY)
    else:
       gray_img = cal_img
-   print("cal_fn", cal_fn)
-   print("LEN", len(cat_stars))
    if True:
       for row in cat_stars:
          name,mag,ra,dec,new_cat_x,new_cat_y,zp_cat_x,zp_cat_y = row
@@ -8214,7 +8219,7 @@ def fast_lens(cam_id, con, cur, json_conf,limit=5, cal_fns=None):
          if mcp["x_fun"] > 5:
             mcp = None
             print("Current lens model is bad and should be reset!")
-
+            exit()
    else:
       mcp = None
 
@@ -8224,7 +8229,6 @@ def fast_lens(cam_id, con, cur, json_conf,limit=5, cal_fns=None):
    best_index = {}
    best_cals = {}
    for bc in best[0:limit]:
-      print(bc )
       cal_fn = bc[0]
       resp = start_calib(cal_fn, json_conf, calfiles_data, mcp)
       if resp is not False and resp is not None:
@@ -8241,10 +8245,9 @@ def fast_lens(cam_id, con, cur, json_conf,limit=5, cal_fns=None):
       if cal_params['total_res_px'] >= 5:
          cal_params['cat_image_stars'] = remove_bad_stars(cal_params['cat_image_stars'])
          if len(cal_params['cat_image_stars']) < 5:
-            # revert
             cal_params['cat_image_stars'] = ocps
          if len(cal_params['cat_image_stars']) > 10:
-            print("RECENTER AGAIN.", len(cal_params['cat_image_stars']), cal_params['total_res_px'] )
+            print("\tRECENTER AGAIN.", len(cal_params['cat_image_stars']), cal_params['total_res_px'] )
             cal_params, xxx_cat_image_stars = recenter_fov(cal_fn, cal_params, cal_img.copy(),  stars, json_conf, "")
          else:
             continue
@@ -8266,6 +8269,7 @@ def fast_lens(cam_id, con, cur, json_conf,limit=5, cal_fns=None):
    for cal_fn in best_index:
       if best_index[cal_fn]  > med_rez:
          print("skip ", cal_fn, med_rez, best_index[cal_fn])
+         continue
       cat_image_stars = best_cals[cal_fn]['cat_image_stars']
       cal_params = best_cals[cal_fn]
 
@@ -8273,7 +8277,7 @@ def fast_lens(cam_id, con, cur, json_conf,limit=5, cal_fns=None):
          (dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,img_x,img_y,res_px,star_flux) = star
          merged_stars.append((cal_fn, cal_params['center_az'], cal_params['center_el'], cal_params['ra_center'], cal_params['dec_center'], cal_params['position_angle'], cal_params['pixscale'], dcname,mag,ra,dec,ra,dec,match_dist,new_x,new_y,cal_params['center_az'],cal_params['center_el'],new_cat_x,new_cat_y,img_x,img_y,res_px,star_flux))
 
-   print("MERGED:", len(merged_stars))
+   #print("MERGED:", len(merged_stars))
    rez = [row[-2] for row in merged_stars] 
    med_rez_limit = np.median(rez) * 3
    for star in merged_stars:
@@ -8285,8 +8289,8 @@ def fast_lens(cam_id, con, cur, json_conf,limit=5, cal_fns=None):
 
       res_col = abs(col1 - col2)
       desc = str(int(res_col))
-      print("COL", col1, col2, desc)
-      print("RES", med_rez_limit, res_px)
+      #print("COL", col1, col2, desc)
+      #print("RES", med_rez_limit, res_px)
       if res_px < med_rez_limit :
          good = True
          color = [0,255,0]
@@ -9030,18 +9034,18 @@ def load_cal_files(cam_id, con, cur, single=False,last=None):
       cal_dir = cal_dir_from_file(cal_fn)
       if False:
          if cal_dir is False:
-            print("FAILED load_cal_files ", cal_dir , cal_fn)
+            #print("FAILED load_cal_files ", cal_dir , cal_fn)
             failed = True 
             continue
          elif os.path.exists(cal_dir + cal_fn) is False: 
-            print("FAILED load_cal_files", cal_dir + cal_fn)
+            #print("FAILED load_cal_files", cal_dir + cal_fn)
             failed = True 
             continue
-         else:
-            print("GOOD:", cal_dir + cal_fn)
+         #else:
+         #   print("GOOD:", cal_dir + cal_fn)
 
          if failed is True:
-            print("DELETE", cal_fn)
+            #print("DELETE", cal_fn)
             delete_cal_file(cal_fn, con, cur, json_conf)
             continue
 
