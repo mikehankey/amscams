@@ -8219,6 +8219,12 @@ def fast_lens(cam_id, con, cur, json_conf,limit=5, cal_fns=None):
       if "cal_version" not in mcp:
          mcp['cal_version'] = 0
       mcp['cal_version'] += 1
+      if "x_fun" in mcp:
+         if mcp["x_fun"] > 5:
+            mcp = None
+            print("Current lens model is bad and should be reset!")
+            time.sleep(5)
+
    else:
       mcp = None
 
