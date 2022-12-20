@@ -5215,6 +5215,7 @@ def test_cals (cal_fn, cal_params, json_conf, mcp, oimg, before_files, after_fil
    return(best_cal)
 
 def apply_calib (cal_file, calfiles_data, json_conf, mcp, last_cal_params=None, extra_text= "", do_bad=False, flux_table=None):
+      os.system("clear")
       print("apply_calib:", cal_file)
       station_id = json_conf['site']['ams_id']
 
