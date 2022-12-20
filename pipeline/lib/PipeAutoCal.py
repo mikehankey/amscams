@@ -10220,12 +10220,10 @@ def fn_dir(file):
 def quality_stars(merged_stars, mcp = None, factor = 2, gsize=50):
    merged_stars = sorted(merged_stars, key=lambda x: x[-2], reverse=False)
    if mcp is None:
-      print("FIRST TIME CAL!") 
       gsize = 80 
       factor = 2
       max_dist = 35
    else:
-      print("MULTI-X CAL!", mcp['cal_version']) 
       if mcp['cal_version'] < 3:
          gsize= 100
          factor = 2 
@@ -10236,7 +10234,7 @@ def quality_stars(merged_stars, mcp = None, factor = 2, gsize=50):
          max_dist = 5 
   
    if mcp is not None:
-      print("CAL", mcp['cal_version'])
+      print("CAL VERSION", mcp['cal_version'])
    all_res = [row[-2] for row in merged_stars]
    res1 = []
    res2 = []
@@ -10290,8 +10288,8 @@ def quality_stars(merged_stars, mcp = None, factor = 2, gsize=50):
                  
                #if grid_key in grid:
                #   continue
-               if x1 <= six <= x2 and y1 <= siy <= y2 : #and cat_dist < res_limit:
-                  print("FOUND:", grid_key, cat_dist, med_res ) 
+               if x1 <= six <= x2 and y1 <= siy <= y2 and cat_dist < res_limit:
+                  #print("FOUND:", grid_key, cat_dist, med_res ) 
                   qual_stars.append(star) 
                   grid[grid_key].append(star)
                   #break 
