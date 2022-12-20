@@ -63,6 +63,7 @@ def load_caldb(json_conf):
             print("MORE THAN ONE JSON!", json_files)
 
 def insert_calib(cal_file, con, cur, json_conf):
+   print("insert_calib:")
    (f_datetime, cam_id, f_date_str,fy,fm,fd, fh, fmin, fs) = convert_filename_to_date_cam(cal_file)
    cal_timestamp = datetime.timestamp(f_datetime)
    nowts = datetime.timestamp(datetime.now())
@@ -6182,6 +6183,7 @@ def optimize_matchs(cp_file,json_conf,nc,oimg):
 
 
 def eval_cal_res(cp_file,json_conf,nc=None,oimg=None, mask_img=None,batch_mode=None,short_bright_stars=None):
+   print("eval_cal_res:", cp_file)
    dist_type = "radial"
    cal_params = nc
 
@@ -6225,7 +6227,7 @@ def eval_cal_res(cp_file,json_conf,nc=None,oimg=None, mask_img=None,batch_mode=N
    nc['match_perc'] = 1
    nc['total_res_px'] = float(np.mean(rez))
 
-   print("EVAL CAL RES STARS/RES:", len(nc['cat_image_stars']), nc['total_res_px'] )
+   print("\tEVAL CAL RES STARS/RES:", len(nc['cat_image_stars']), nc['total_res_px'] )
 
    return(nc, bad_stars, marked_img)
 
@@ -6721,7 +6723,7 @@ def review_cals(json_conf, cam=None):
             marked_img_file = cp_file.replace("-calparams.json", "-marked.jpg")
             #cv2.imwrite(marked_img_file, marked_img)
 
-            #cp = remove_bad_stars(cp, bad_stars)
+
             if len(cp['user_stars']) > 0:
                stars_matched = len(cp['cat_image_stars']) / len(cp['user_stars'])
             else:
@@ -10440,6 +10442,16 @@ def minimize_poly_multi_star(merged_stars, json_conf,orig_ra_center=0,orig_dec_c
    print("INITIAL RES FROM FIT: ", res, strict)
    print("STD/AVG DIST: ", std_dist, avg_dist)
    show = 0
+   time.sleep(5)
+
+   # remove some stars if the res is too high...
+   if cal_params['total_res_px'] > 5:
+      from recal import remove_bad_stars
+      cal_params['cat_image_stars'] = remove_bad_stars(cal_params['cat_image_stars'])
+
+
+   time.sleep(5)
+
    res,updated_merged_stars = reduce_fit_multi(x_poly, "x_poly",merged_stars,cal_params,fit_img,json_conf,cam_id,1,show)
 
    new_merged_stars = []

@@ -8248,7 +8248,7 @@ def fast_lens(cam_id, con, cur, json_conf,limit=5, cal_fns=None):
       cal_params, xxx_cat_image_stars = recenter_fov(cal_fn, cal_params, cal_img.copy(),  stars, json_conf, "")
       ocps = cal_params['cat_image_stars'] 
      
-      if cal_params['total_res_px'] >= 6:
+      if cal_params['total_res_px'] >= 5:
          cal_params['cat_image_stars'] = remove_bad_stars(cal_params['cat_image_stars'])
          if len(cal_params['cat_image_stars']) < 5:
             # revert
