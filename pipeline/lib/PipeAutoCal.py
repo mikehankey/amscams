@@ -10455,6 +10455,8 @@ def minimize_poly_multi_star(merged_stars, json_conf,orig_ra_center=0,orig_dec_c
    print("RES:", res)
    if res < 2:
       res = 2 
+   if res > 10:
+      res = 10
 
    # last chance to remove stars!
    if True:
@@ -10472,14 +10474,13 @@ def minimize_poly_multi_star(merged_stars, json_conf,orig_ra_center=0,orig_dec_c
          else:
             print("SKIP:", center_dist, res * factor, cat_dist)
       updated_merged_stars = new_merged_stars
-   #exit()
 
    all_res = [row[-2] for row in updated_merged_stars]
    med_res = np.median(all_res)
 
-   if False:
+   if True:
       updated_merged_stars = quality_stars(updated_merged_stars, mcp, 1)
-
+      new_merged_stars = updated_merged_stars
 
    options = {}
          
