@@ -3425,7 +3425,11 @@ def fireball_phase1(hd_frames, hd_color_frames, subframes,sum_vals,max_vals,pos_
 
    print(objects)
    for obj in objects:
-      print("POSSIBLE METEOR OBJ:", obj, objects[obj]['ofns'], objects[obj]['report']['bad_items'], objects[obj]['fs_dist'])
+     
+      if len(objects[obj]['report']['bad_items']) == 0:
+         print("METEOR OBJECTS:", obj, objects[obj]['ofns'], objects[obj]['report']['bad_items'], objects[obj]['fs_dist'])
+      else:
+         print("NON METEOR OBJECTS:", obj, objects[obj]['ofns'], objects[obj]['report']['bad_items'], objects[obj]['fs_dist'])
    #print("BEST:", best_meteor)
    #if best_meteor is None:
    if True:
