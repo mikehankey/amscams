@@ -18,7 +18,7 @@ from lib.PipeVideo import ffmpeg_splice, find_hd_file, load_frames_fast, find_cr
 from lib.PipeUtil import load_json_file, save_json_file, cfe, get_masks, convert_filename_to_date_cam, buffered_start_end, get_masks, compute_intensity , bound_cnt, day_or_night, get_file_info
 import json
 from lib.DEFAULTS import *
-from lib.PipeMeteorTests import big_cnt_test, calc_line_segments, calc_dist, unq_points, analyze_intensity, calc_obj_dist, meteor_direction, meteor_direction_test, check_pt_in_mask, filter_bad_objects, obj_cm, meteor_dir_test, ang_dist_vel, gap_test, best_fit_slope_and_intercept
+from lib.PipeMeteorTests import big_cnt_test, calc_line_segments, calc_dist, unq_points, analyze_intensity, calc_obj_dist, meteor_direction, meteor_direction_test, check_pt_in_mask, filter_bad_objects, obj_cm, meteor_dir_test, ang_dist_vel, gap_test, best_fit_slope_and_intercept, fs_dist_test
 from lib.PipeImage import stack_frames
 
 import numpy as np
@@ -3425,7 +3425,7 @@ def fireball_phase1(hd_frames, hd_color_frames, subframes,sum_vals,max_vals,pos_
 
    print(objects)
    for obj in objects:
-      print("MIKE OBJ:", obj, objects[obj]['ofns'], objects[obj]['report']['bad_items'], objects[obj]['fs_dist'])
+      print("POSSIBLE METEOR OBJ:", obj, objects[obj]['ofns'], objects[obj]['report']['bad_items'], objects[obj]['fs_dist'])
    #print("BEST:", best_meteor)
    #if best_meteor is None:
    if True:
@@ -5670,6 +5670,15 @@ def analyze_object(object, hd = 0, strict = 0):
          object['report']['meteor'] = 0
          object['report']['bad_items'].append("bad ang sep: " + str(ang_dist))
 
+      # dist from first start test shoudl be 100% but at least > 60% 
+      fs_result = fs_dist_test(object['fs_dist'])
+      object['report']['fs_dist_test'] = fs_result
+      if fs_result < .6:
+         object['report']['non_meteor'] = 1
+         object['report']['meteor'] = 0
+         object['report']['bad_items'].append("bad fs_dist %: " + str(fs_result))
+         
+
 
 
    if (object['report']['unq_perc'] < .1 or object['report']['min_max_dist'] <= 3) and len(object['oxs']) > 3:
@@ -5692,6 +5701,9 @@ def analyze_object(object, hd = 0, strict = 0):
       object['report']['dir_test_perc'] = meteor_dir_test(object['oxs'],object['oys'])
    else:
       object['report']['dir_test_perc'] = 1
+
+
+
 
    # NOT SURE THIS WORKS?!
    if object['report']['dir_test_perc'] < .80:

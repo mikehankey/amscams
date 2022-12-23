@@ -489,3 +489,20 @@ def angularSeparation(ra1, dec1, ra2, dec2):
     """
 
     return np.arccos(np.sin(dec1)*np.sin(dec2) + np.cos(dec1)*np.cos(dec2)*np.cos(ra2 - ra1))
+
+def fs_dist_test(data):
+   good = 0
+   bad = 0
+   # each entry should increase and equal amount from the prev
+   for i in range(0,len(data)):
+      if i > 0:
+         if data[i-1] < data[i]:
+            good += 1
+         else:
+            bad += 1
+   if len(data) > 0:
+      good_perc = good + 1 / len(data)
+   else:
+      good_perc = 0
+   print("FS DIST :", good, bad)
+   print("FS DIST % GOOD:", good_perc)
