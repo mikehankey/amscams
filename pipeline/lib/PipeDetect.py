@@ -3423,9 +3423,7 @@ def fireball_phase1(hd_frames, hd_color_frames, subframes,sum_vals,max_vals,pos_
    m = 0
    meteors = []
 
-   print(objects)
    for obj in objects:
-     
       if len(objects[obj]['report']['bad_items']) == 0:
          print("METEOR OBJECTS:", obj, objects[obj]['ofns'], objects[obj]['report']['bad_items'], objects[obj]['fs_dist'])
       else:
