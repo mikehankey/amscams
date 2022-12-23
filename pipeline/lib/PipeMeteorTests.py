@@ -501,9 +501,7 @@ def fs_dist_test(data):
          else:
             bad += 1
    if len(data) > 0:
-      good_perc = good + 1 / len(data)
+      good_perc = (good + 1) / len(data)
    else:
       good_perc = 0
-   print("FS DIST :", good, bad)
-   print("FS DIST % GOOD:", good_perc)
    return(good_perc)
