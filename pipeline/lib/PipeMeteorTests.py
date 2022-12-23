@@ -506,3 +506,4 @@ def fs_dist_test(data):
       good_perc = 0
    print("FS DIST :", good, bad)
    print("FS DIST % GOOD:", good_perc)
+   return(good_perc)
