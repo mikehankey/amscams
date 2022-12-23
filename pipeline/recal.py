@@ -1194,6 +1194,7 @@ def refit_meteor(meteor_file, con, cur, json_conf, mcp = None, last_best_dict = 
 
    for frame in frames:
       frame = cv2.resize(frame, (1920,1080))
+      star_img = cv2.resize(star_img, (1920,1080))
       blend_img = cv2.addWeighted(frame, .5, star_img, .5,0)
 
       if meteor_roi is not None:
