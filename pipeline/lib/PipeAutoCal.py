@@ -9934,6 +9934,7 @@ def reduce_fit(this_poly,field, cal_params, cal_params_file, fit_img, json_conf,
    return(avg_res)
 
 def draw_star_image(img, cat_image_stars,cp=None,json_conf=None,extra_text=None) :
+   img = cv2.resize(img, (1920,1080))
    photo_credit = ""
    station_id = ""
    name = ""
