@@ -3,6 +3,7 @@
    Pipeline Detection Routines - functions for detecting
 
 '''
+import time
 import math
 import scipy.optimize
 from lib.UIJavaScript import *
@@ -14,7 +15,7 @@ import os
 from lib.FFFuncs import ffprobe as ffprobe4, imgs_to_vid
 from lib.PipeAutoCal import fn_dir, get_cal_files, get_image_stars, get_catalog_stars, pair_stars, update_center_radec, cat_star_report, minimize_fov, XYtoRADec, poly_fit_check
 from lib.PipeVideo import ffmpeg_splice, find_hd_file, load_frames_fast, find_crop_size, ffprobe
-from lib.PipeUtil import load_json_file, save_json_file, cfe, get_masks, convert_filename_to_date_cam, buffered_start_end, get_masks, compute_intensity , bound_cnt, day_or_night
+from lib.PipeUtil import load_json_file, save_json_file, cfe, get_masks, convert_filename_to_date_cam, buffered_start_end, get_masks, compute_intensity , bound_cnt, day_or_night, get_file_info
 import json
 from lib.DEFAULTS import *
 from lib.PipeMeteorTests import big_cnt_test, calc_line_segments, calc_dist, unq_points, analyze_intensity, calc_obj_dist, meteor_direction, meteor_direction_test, check_pt_in_mask, filter_bad_objects, obj_cm, meteor_dir_test, ang_dist_vel, gap_test, best_fit_slope_and_intercept
@@ -554,17 +555,31 @@ def make_meteor_index_all(json_conf):
    files = glob.glob(mr_dir + "*")
    obs_ids = []
    obs_ids_file = "/mnt/ams2/meteors/" + station_id + "_OBS_IDS.json"
+
+   sz, td = get_file_info(obs_ids_file)
+   days_old = td / 60 / 24
+
+   if days_old < 1.3:
+
+      print("Abort. Main meteor index is only ", days_old, "days old")
+      #exit()
+   
+
    #if False:
-   if os.path.exists(obs_ids_file) is False:
+   #if os.path.exists(obs_ids_file) is False:
+   if True:
       for mdir in sorted(files):
          #print(mdir)
          day, dir = fn_dir(mdir)
          if cfe(mdir, 1) == 1:
             mi_file = mdir + "/" + day + "-" + amsid + ".meteors"
-            mi_file, mdata = make_meteor_index_day(day, json_conf)
-            print("MMIF:", mi_file)
+            if os.path.exists(mi_file) is False:
+               mi_file, mdata = make_meteor_index_day(day, json_conf)
+            else:
+               mdata = load_json_file(mi_file)
+            #print("MMIF:", mi_file)
             for data in mdata:
-               print("ADDING:", day, len(mdata))
+               print("\rADDING:", day, len(mdata), end="")
                all_meteors.append(data)
                mfn = data[0].split("/")[-1]
                obs_id = station_id + "_" + mfn
@@ -577,7 +592,7 @@ def make_meteor_index_all(json_conf):
       print("Saved:", obs_ids_file)
       os.system("gzip -f -k " + obs_ids_file)
       cloud_dir = "/mnt/archive.allsky.tv/" + station_id + "/METEORS/" 
-      cmd = "cp " + obs_ids_file + " " + cloud_dir
+      cmd = "rsync -auv " + obs_ids_file + ".gz " + cloud_dir
       print(cmd)
       os.system(cmd)
    else:
@@ -600,7 +615,7 @@ def make_meteor_index_all(json_conf):
       obfn = obs_ids_file.split("/")[-1]
       cloud_file = "/mnt/archive.allsky.tv/" + station_id + "/" + "/METEORS/"  + obfn
       if os.path.exists(cloud_file) is False:
-         cmd = "cp " + obs_ids_file + " " + cloud_file 
+         cmd = "rsync -auv " + obs_ids_file + " " + cloud_file 
          print(cmd)
 
 def fix_corrupt_meteor_json(json_file):
@@ -5603,12 +5618,23 @@ def analyze_object(object, hd = 0, strict = 0):
       if med_diff > med_seg * 3:
          bad_segs += 1
 
+   # test gaps
+   gap_test_res , gap_test_info = gap_test(object['ofns'])
+   object['report']['gap_test_res'] = gap_test_res
+   object['report']['gap_test_info'] = gap_test_info
+   if gap_test_res == 0:
+      object['report']['non_meteor'] = 1
+      object['report']['meteor'] = 0
+      object['report']['class'] = "non-meteor"
+      object['report']['bad_items'].append("Gap test failed.")
+   # could do more gap tests / frames / dur test
+   
    bad_seg_perc = bad_segs / len(object['oxs'])
    #if bad_seg_perc > .40:
    if False:
       object['report']['non_meteor'] = 1
       object['report']['meteor'] = 0
-      object['report']['class'] = "unknown"
+      object['report']['class'] = "non-meteor"
       object['report']['bad_seg_perc'] = bad_seg_perc
       object['report']['bad_items'].append("Bad seg perc too high. " + str(object['report']['bad_seg_perc']) )
 
@@ -5650,7 +5676,7 @@ def analyze_object(object, hd = 0, strict = 0):
       object['report']['class'] = "star"
    else:
       if "class" not in object['report']:
-         object['report']['class'] = "unknown"
+         object['report']['class'] = "non-meteor"
 
 
 
@@ -6117,7 +6143,7 @@ def find_object(objects, fn, cnt_x, cnt_y, cnt_w, cnt_h, intensity=0, hd=0, sd_m
                   this_seg_dist = calc_dist((last_x,last_y), (cnt_x, cnt_y))
                   abs_diff = abs(last_seg_dist - this_seg_dist)
                   #print("ABS DIFF:", abs_diff)
-                  if abs_diff > obj_dist_thresh:
+                  if abs_diff >= obj_dist_thresh + 2:
                      found = 0 
                      #found_obj = obj
                      #matched[obj] = 1
@@ -6186,6 +6212,8 @@ def find_object(objects, fn, cnt_x, cnt_y, cnt_w, cnt_h, intensity=0, hd=0, sd_m
       #      objects[found_obj]['oint'].append(intensity)
 
       #else:
+
+      # this is causing a bug! Need to merge or pick the best point or something
       if fn not in objects[found_obj]['ofns']:
          cx = cnt_x + int(cnt_w/2)
          cy = cnt_y + int(cnt_h/2)
@@ -6213,6 +6241,33 @@ def find_object(objects, fn, cnt_x, cnt_y, cnt_w, cnt_h, intensity=0, hd=0, sd_m
          objects[found_obj]['ows'].append(cnt_w)
          objects[found_obj]['ohs'].append(cnt_h)
          objects[found_obj]['oint'].append(intensity)
+      else:
+         cx = cnt_x + int(cnt_w/2)
+         cy = cnt_y + int(cnt_h/2)
+         #bug fix if the frame is already logged
+         # we need to update it or replace it
+         # find the index first
+         ix = 0
+         for ttt in objects[found_obj]['ofns']:
+            if ttt == fn :
+               fi = ix
+               break
+            ix += 1
+         # determine start length of the current value
+         if len(objects[found_obj]['oxs']) >= 1:
+            fx = objects[found_obj]['oxs'][0] + int(objects[found_obj]['ows'][0]/2)
+            fy = objects[found_obj]['oys'][0] + int(objects[found_obj]['ohs'][0]/2)
+            lx = objects[found_obj]['oxs'][fi] + int(objects[found_obj]['ows'][fi]/2)
+            ly = objects[found_obj]['oys'][fi] + int(objects[found_obj]['ohs'][fi]/2)
+            existing_dist = calc_dist((fx,fy),(lx,ly))
+            new_dist = calc_dist((fx,fy),(cx,cy))
+            if new_dist > existing_dist:
+               # update because new dist is longer than previous
+               objects[found_obj]['oxs'][fi] = cnt_x
+               objects[found_obj]['oys'][fi] = cnt_y
+               objects[found_obj]['ows'][fi] = cnt_w
+               objects[found_obj]['ohs'][fi] = cnt_h
+               objects[found_obj]['oint'][fi] = intensity
 
 
    return(found_obj, objects)

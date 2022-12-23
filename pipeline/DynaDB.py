@@ -493,11 +493,12 @@ def insert_station(dynamodb, station_id):
 
 
 def load_stations(dynamodb):
+   # This could be a bug! Don't use this anymore!
    files = glob.glob("/mnt/ams2/STATIONS/CONF/*_as6.json")
    for file in files:
       fn, dir = fn_dir(file)
       fn = fn.replace("_as6.json", "")
-      insert_station(dynamodb, fn)
+      #insert_station(dynamodb, fn)
 
 
 def delete_event(dynamodb=None, event_day=None, event_id=None):
@@ -1455,6 +1456,33 @@ def update_event_id(dynamodb, event_id,event_day ):
       },
       ReturnValues="UPDATED_NEW"
    )
+
+def update_dyna_table(dynamodb, table_name, keys, update_values):
+   # fields/keys must exist before this will work!
+   table = dynamodb.Table(table_name)
+   update_vals = {}
+   update_exp = "set " 
+   for k in update_values:
+      if update_exp != "set ":
+         update_exp += "," 
+      update_vals[":" + k] = update_values[k]
+      update_exp += k + "=:" + k
+   print(table_name)
+   print(keys)
+   print(update_exp)
+   print(update_vals)
+
+   response = table.update_item(
+      Key = keys,
+      UpdateExpression= update_exp,
+      ExpressionAttributeValues=update_vals,
+      ReturnValues="UPDATED_NEW")
+   print("R", response)         
+      
+ 
+          
+
+
    
 
 def update_event_sol(dynamodb, event_id, sol_data, obs_data, status):
@@ -1818,6 +1846,9 @@ def orbs_for_day(date,json_conf):
    print("saved.", orbs_file)
  
 if __name__ == "__main__":
+
+
+
    # check running if it is already running abort.
    running= check_running("DynaDB.py")
    print("RUNNING:", running)
@@ -1829,6 +1860,10 @@ if __name__ == "__main__":
    except:
       dynamodb = None
    json_conf = load_json_file("../conf/as6.json")
+
+
+
+
    cmd = sys.argv[1]
    if cmd == "sync_db_day" or cmd == "sdd":
       station_id = json_conf['site']['ams_id']

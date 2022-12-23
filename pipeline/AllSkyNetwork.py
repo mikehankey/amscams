@@ -22,13 +22,22 @@ if len(sys.argv) < 1:
    ASN.help()
    exit()
 
+if cmd == "past_days":
+   ASN.run_past_days()
+
 if cmd == "refresh_day":
    force = 0
+
    event_day = sys.argv[2]
    ASN.set_dates(event_day)
    ASN.day_solve(event_day,force)
    ASN.day_load_solves(event_day)
    ASN.publish_day(event_day)
+
+   cmd = "python3 ER.py " + event_day
+   print(cmd)
+   os.system(cmd)
+
    cmd = "python3 EM.py aer " + event_day 
    #print(cmd)
    os.system(cmd)
@@ -40,6 +49,14 @@ if cmd == "refresh_day":
    ASN.best_obs_day(sys.argv[2])
    # make event table
    ASN.event_table(sys.argv[2])
+
+   cmd = "python3 PLT.py plot_all_rad " + event_day
+   print(cmd)
+   os.system(cmd)
+
+   cmd = "/usr/bin/python3 solveWMPL.py vida_plots " + event_day 
+   print(cmd)
+   os.system(cmd)
 
 
    ASN.rsync_data_only(event_day)
@@ -81,7 +98,7 @@ if cmd == "rsync_data":
    ASN.set_dates(date)
    ASN.rsync_data_only(event_day)
 
-if cmd == "resolve_failed_day" or cmd == "rerun_failed":
+if cmd == "resolve_failed_day" or cmd == "rerun_failed" or cmd == "resolved_failed":
    print("RESOLVE FAILED DAY")
    ASN.help()
    ASN.set_dates(sys.argv[2])
@@ -132,8 +149,8 @@ if cmd == "resolve_event":
    obs_data_file = ASN.local_evdir + ASN.event_id + "/" + ASN.event_id + "_OBS_DATA.json"
 
    if review_image is not None:
-      cv2.imshow("pepe", review_image)
-      cv2.waitKey(30)
+      cv2.imshow("REVIEW IMAGE", review_image)
+      cv2.waitKey(0)
    else:
       print("REVIEW IMAGE IS NONE!", review_image)
     
@@ -152,6 +169,8 @@ if cmd == "publish_day":
    ASN.event_table(sys.argv[2])
 
 
+if cmd == "events_by_day":
+   ASN.events_by_day_graph()
 
 if cmd == "publish_event":
    event_day = sys.argv[2]
@@ -193,13 +212,15 @@ if cmd == "coin_events":
    event_day = sys.argv[2]
    ASN.help()
    ASN.set_dates(event_day)
-   force = 0
+   force = 1 
    ASN.day_coin_events(event_day,force)
 
 
 if cmd == "day_load_solve_results":
+   event_day = sys.argv[2]
    ASN.help()
-   ASN.day_load_solve_results(sys.argv[2])
+   ASN.set_dates(event_day)
+   ASN.day_load_solves(date)
 
 if cmd == "do_all":
    ASN.help()
@@ -287,7 +308,7 @@ if cmd == "do_all":
    print(cmd)
    os.system(cmd)
 
-   cmd = "python3 solveWMPL.py vida_plots " + date 
+   cmd = "/usr/bin/python3 solveWMPL.py vida_plots " + date 
    print(cmd)
    os.system(cmd)
 

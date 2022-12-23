@@ -35,8 +35,6 @@ class RenderFrames():
       lh = int(main_h + (margin_y / 1.8))
       ui = self.watermark_image(ui, self.logo_160, margin_x, lh, .6, text_data)
       cv2.rectangle(ui, (mx1,my1), (mx2,my2) , [200,200,200], 2)
-      #cv2.imshow('pepe', ui)
-      #cv2.waitKey(0)
       return(ui)
 
 
@@ -66,8 +64,9 @@ class RenderFrames():
             ui[y1:y2,x1:x2] = cv2.resize(images[i] , (width,height))
             col += 1
             cv2.rectangle(ui, (x1,y1), (x2,y2) , [255,255,255], 1)
-            cv2.imshow('pepe', ui)
-            cv2.waitKey(0)
+            #if SHOW == 1:
+               #cv2.imshow('pepe', ui)
+               #cv2.waitKey(30)
             if x2 >= 1920:
                col = 0
                row += 1
@@ -108,8 +107,6 @@ class RenderFrames():
          x2 = logo.shape[1]
          y1 = 1080 - logo.shape[0]
          y2 = 1080
-         #cv2.imshow('pepe', images[0])
-         #cv2.waitKey(0)
          if len(images) >= 1:
             #print("IMG SHAPE:", images[0].shape)
             ui[0:1080,0:1920] = cv2.resize(images[0] , (1920,1080))
@@ -125,8 +122,6 @@ class RenderFrames():
          x2 = logo.shape[1]
          y1 = 1080 - logo.shape[0]
          y2 = 1080
-         #cv2.imshow('pepe', images[0])
-         #cv2.waitKey(0)
          if len(images) >= 1:
             #print("IMG SHAPE:", images[0].shape)
             ui[0:1080,0:1920] = cv2.resize(images[0] , (1920,1080))
@@ -160,8 +155,8 @@ class RenderFrames():
          if frame is not None:
             fn = "{:03d}".format(fc)
             wt_frame = self.watermark_image(frame, self.logo_320, margin_x, lh, .6, text_data)
-            cv2.imshow('pepe', wt_frame)
-            cv2.waitKey(30)
+            #cv2.imshow('pepe', wt_frame)
+            #cv2.waitKey(30)
             cv2.imwrite("tmp_frames/" + fn + ".jpg", 255*wt_frame)
             fc += 1
 
@@ -179,7 +174,7 @@ class RenderFrames():
 
       ah = logo.shape[0]
       aw = logo.shape[1]
-      print("LOGO:", logo.shape)
+      #print("LOGO:", logo.shape)
       logo_image[y:y+ah, x:x+aw] = logo
       _, mask = cv2.threshold(logo_image, 22, 255, cv2.THRESH_BINARY)
       mask = mask.astype(float)/255
@@ -202,5 +197,6 @@ class RenderFrames():
       if len(text_data) > 0:
          for tx,ty,text_size,text_weight,text_color,text in text_data:
             cv2.putText(blend, text,  (tx,ty), cv2.FONT_HERSHEY_SIMPLEX, text_size, text_color, text_weight)
-
+         #blend cvtColor(inputMat, outputMat, CV_BGRA2BGR);
+         blend = cv2.cvtColor(blend, cv2.COLOR_BGRA2BGR)
       return(blend)

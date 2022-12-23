@@ -362,7 +362,7 @@ def load_json_file(json_file):
    return json_data 
 
 def save_json_file(json_file, json_data, compress=False):
-   print("SAVED:", json_file)
+   print("\tSAVED JSON FILE:", json_file)
    if "cp" in json_data:
       if json_data['cp'] is not None:
          for key in json_data['cp']:
@@ -680,3 +680,10 @@ def bound_cnt_new(x1,y1,x2,y2,img, margin=.5):
       nx1 = 0
    print("NX", nx1,ny1,nx2,ny2)
    return(nx1,ny1,nx2,ny2)
+
+def get_template(file):
+   fp = open(file, "r")
+   text = ""
+   for line in fp:
+      text += line
+   return(text)

@@ -563,6 +563,9 @@ def meteor_index(json_conf, day = None, extra_cmd = ""):
                archived = 1
                meteor_index[day][meteor]['archive_file'] = meteor_data['archive_file']
                azs, els,ints,event_start_time = get_az_el_from_arc(meteor_data['archive_file'])
+
+               azs, els,ints,event_start_time = get_az_el_from_reduced(meteor_data['archive_file'])
+
                meteor_index[day][meteor]['azs'] = azs
                meteor_index[day][meteor]['els'] = els
                meteor_index[day][meteor]['ints'] = ints 
@@ -689,6 +692,16 @@ def meteor_index(json_conf, day = None, extra_cmd = ""):
       jc = jc + 1
  
    exit()
+
+def get_az_el_from_reduced(meteor_file):
+   # make a better / more consolidated / compressed / complete
+   # index
+   red_file = meteor_file.replace(".json", "-reduced.json")
+   event_start_time = None
+   red_data = load_json_file(red_file)
+   azs = []
+   els = []
+   ints = []
 
 def get_az_el_from_arc(arc_file):
    event_start_time = None

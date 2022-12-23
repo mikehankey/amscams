@@ -429,8 +429,8 @@ def sanity_check_obs(obs):
             best_file = key
       best_obs[station_id] = {} 
       best_obs[station_id][best_file] = obs[station_id][best_file]
-      print(best_obs[station_id][best_file]['gc_azs'])
-      print(best_obs[station_id][best_file]['gc_els'])
+      #print(best_obs[station_id][best_file]['gc_azs'])
+      #print(best_obs[station_id][best_file]['gc_els'])
    return(best_obs)
 
 
@@ -578,9 +578,10 @@ def get_best_obs(obs):
       if best_file is None:
          best_file = file
 
+      # BUG BEST OBS
       mid_x = np.mean(obs[file]['xs'])
       mid_y = np.mean(obs[file]['ys'])
-      obs_len = len(obs[file]['xs'])
+      obs_len = len(obs[file]['azs'])
       dist_to_center = calc_dist((mid_x,mid_y), (1920/2, 1080/2))
  
       # choose file with best points!
@@ -1165,8 +1166,12 @@ def solve_event(event_id, force=1, time_sync=1):
     for obs in obs_data:
        print(obs)
     extra_obs_data = None
-    if False:
-       extra_obs = ["/home/ams/2021_07_04_DFN26.ecsv"]
+    if True:
+       extra_obs = [
+             "/mnt/f/EVENTS/2022/12/13/20221213_163728/EXTRA/2022-12-13T16_37_28_FRIPON_BEBR01.ecsv",
+             "/mnt/f/EVENTS/2022/12/13/20221213_163728/EXTRA/2022-12-13T16_37_28_FRIPON_NLSN01_Revised.ecsv",
+             "/mnt/f/EVENTS/2022/12/13/20221213_163728/EXTRA/2022-12-13T16_37_28_FRIPON_NLWN02.ecsv"
+       ]
        extra_obs_data = []
        if len(extra_obs) > 0:
           for efile in extra_obs:
@@ -2230,7 +2235,7 @@ def check_fix_plots(event_id):
       ev_files = glob.glob(event_dir + "*")
       print("EVENT FILES:", ev_files)
       for ev_file in ev_files:
-         if "index.html" in ev_file or "gz" in ev_file or "ALL" in ev_file:
+         if "index.html" in ev_file or "gz" in ev_file or "ALL" in ev_file or "AMS" in ev_file:
             continue
          ev_fn = ev_file.split("/")[-1]
          pl_id = ev_fn[0:15]
@@ -2247,7 +2252,7 @@ def check_fix_plots(event_id):
    if cfe(local_event_dir,1) == 1:
       ev_files = glob.glob(local_event_dir + "*")
       for ev_file in ev_files:
-         if "index.html" in ev_file or "gz" in ev_file or "ALL" in ev_file:
+         if "index.html" in ev_file or "gz" in ev_file or "ALL" in ev_file or "AMS" in ev_file:
             continue
          ev_fn = ev_file.split("/")[-1]
          pl_id = ev_fn[0:15]
@@ -2499,6 +2504,8 @@ def event_report(dynamodb, event_id, solve_dir, event_final_dir, obs):
     # move png to jpgs 
     for sf in solved_files:
        print("SOLVED FILE:", sf)
+       if "AMS" in sf:
+          continue
        fn, xxx = fn_dir(sf)
        fn = fn.replace(".png", ".jpg")
        new_file = event_final_dir + fn 
@@ -2783,8 +2790,12 @@ def make_obs_table(obs):
             time = obs[station][obs_file]['times'][i]
             az = obs[station][obs_file]['azs'][i]
             el = obs[station][obs_file]['els'][i]
-            gc_az = obs[station][obs_file]['gc_azs'][i]
-            gc_el = obs[station][obs_file]['gc_els'][i]
+            if i <= len(obs[station][obs_file]['gc_azs']) - 1:
+               gc_az = obs[station][obs_file]['gc_azs'][i]
+               gc_el = obs[station][obs_file]['gc_els'][i]
+            else:
+               gc_az = obs[station][obs_file]['azs'][i]
+               gc_el = obs[station][obs_file]['els'][i]
             flux = obs[station][obs_file]['ints'][i]
             obs_html += """
                <tr>
@@ -2929,8 +2940,10 @@ def WMPL_solve(event_id, obs,time_sync=1, force=0, dynamodb=None):
                azs = np.radians(obs[station_id][file]['gc_azs'])
                els = np.radians(obs[station_id][file]['gc_els'])
                #print("USING GC AZS RADIANS:", station_id, azs)
-               #azs = np.radians(obs[station_id][file]['azs'])
-               #els = np.radians(obs[station_id][file]['els'])
+
+               # comment / uncomment to use/not use GCs
+               azs = np.radians(obs[station_id][file]['azs'])
+               els = np.radians(obs[station_id][file]['els'])
             else:
                azs = np.radians(obs[station_id][file]['azs'])
                els = np.radians(obs[station_id][file]['els'])
