@@ -30,10 +30,14 @@ def gap_test(fns):
    rat = fn_dur / total_fns
    gap_test_info['rat'] = rat 
 
-   if (gap_events > 5 or total_gaps > 10) and rat > 3.1 and gap_events > 2:
-      return(0, gap_test_info)
-   else:
-      return(1, gap_test_info)
+   gap_test_result = 1
+   if (gap_events > 5 or total_gaps > 10) : 
+      gap_test_result = 0
+   # if duration frames to actual frames > 3x it is a bad event!
+   if rat > 3.1 :
+      gap_test_result = 0
+
+   return(gap_test_result, gap_test_info)
 
 def analyze_intensity(ints):
    pos_vals = []
