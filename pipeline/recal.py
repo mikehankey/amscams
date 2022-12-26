@@ -890,20 +890,83 @@ def star_track(cam_id, date, con, cur, json_conf ):
    save_json_file(st_file, stdata)
 
 def remove_bad_stars(cat_image_stars):
+   # 
    good = []
+   left_side = []
+   right_side = []
+   close = []
+   far = []
    rez = np.median([row[-2] for row in cat_image_stars])
+
+   # group each star to left or right and near or far from center
+   for star in cat_image_stars:
+      dcname,mag,ra,dec,img_ra,img_dec,match_dist,org_x,org_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist,star_int = star
+      center_dist = calc_dist((960,540),(six,siy))
+      if six < 1920 / 2:
+         left_side.append(cat_dist)
+      else:
+         right_side.append(cat_dist)
+      if center_dist < 600:
+         close.append(cat_dist)
+      else:
+         far.append(cat_dist)
+   if len(left_side) > 3:
+      left_res = np.median(left_side)
+   else:
+      left_res = 5
+   if len(right_side) > 3:
+      right_res = np.median(right_side)
+   else:
+      right_res = 5
+   if len(far) > 3:
+      far_res = np.median(far)
+   else:
+      far_res = 5
+   if len(close) > 3:
+      close_res = np.median(close)
+   else:
+      close_res = 5
+
+
    for star in cat_image_stars:
       dcname,mag,ra,dec,img_ra,img_dec,match_dist,org_x,org_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist,star_int = star
       center_dist = calc_dist((960,540),(six,siy))
       if center_dist < 600:
+         dist = "close"
+      else:
+         dist = "far"
+      if six < 1920/2:
+         side = "left"
+      else:
+         side = "right"
+      if side == "left":
+         res_limit = left_res
+      else:
+         res_limit = right_res
+      if dist == "close" and res_limit < close_res:
+         res_limit = close_res
+      if dist == "far" and res_limit < far_res:
+         res_limit = far_res
+      
+
+      if center_dist < 600:
          factor = 2 
       else:
-         factor = 3 
+         factor = 2
       if rez > 5:
          rez = 5
 
-      if cat_dist < rez * factor:
+      if cat_dist < (res_limit * factor):
+         print("GOOD:", dcname, mag, cat_dist)
          good.append(star)
+      else:
+         print("SKIP:", dcname, mag, cat_dist)
+
+   print("RES AROUND THE FOV")
+   print("left side:", left_res)
+   print("right side:", right_res)
+   print("close :", close_res)
+   print("far :", far_res)
    return(good)
 
 def plot_refit_meteor_day(meteor_day, con, cur, json_conf):
@@ -5236,6 +5299,7 @@ def apply_calib (cal_file, calfiles_data, json_conf, mcp, last_cal_params=None, 
       except:
          print("\tERROR: Failed to load cal file!", cal_dir , cal_file)
          return(None,None)
+      cal_params['cat_image_stars'] = remove_bad_stars(cal_params['cat_image_stars'])
 
       cal_image_file = cal_file.replace("-calparams.json", ".png")
       if os.path.exists(cal_dir + cal_image_file) is True:
