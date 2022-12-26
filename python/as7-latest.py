@@ -309,6 +309,7 @@ for cam in cameras:
 
    # 
    (sun_status, saz, sun_alt, sun_rise, sun_set, moon_az, moon_alt, moon_rise, moon_set) = ephem_info(json_conf['site']['device_lat'], json_conf['site']['device_lng'], datestr2)
+   print("SUN ", sun_status)
 
 
 
@@ -324,7 +325,7 @@ for cam in cameras:
    moon_perc = moon_perc.replace(")", "")
    moon_perc = str(int(float(moon_perc) * 100)) + "% full"
 
-   new_moon = moon + "Moon " + moon_perc
+   new_moon = moon + "Moon " #+ moon_perc
 
    if False:
       logo = cv2.imread("allsky_logo.png")
