@@ -628,7 +628,6 @@ class AllSkyNetwork():
       for ev in all_events_data:
          ev_id = ev['event_id']
          if ev_id not in mc_events:
-            print("DEL DYNAMO EVENT:", ev_id)
             delete_event(self.dynamodb, event_day, ev_id)
          else:
             dyna_ids[ev_id] = ev
@@ -657,6 +656,7 @@ class AllSkyNetwork():
 
 
    def day_coin_events(self,date,force=0):
+      # 1 thread per hour?
 
       self.get_min_obs_dict(date)
       self.plane_file = self.local_evdir + "/" + date + "_PLANE_PAIRS.json"
@@ -696,36 +696,42 @@ class AllSkyNetwork():
       ecp = 0
       ecf = 0
 
-      all_min_events = {}
-      for minute in ocounts:
-         #if minute != "2022_03_26_02_55":
-         #   continue
-         if ocounts[minute]['count'] > 1:
-            odata = self.get_station_obs_count(minute)
-            print("trying " + str(minute) + "...", len(odata), "stations this minute")
+      self.all_min_events = {}
+      nowt = time.time()
+      start = 0
+      end = len(ocounts.keys())
 
-            #min_obs = self.get_obs (minute)
-            min_obs = self.min_obs_dict[minute]
-            min_events = self.min_obs_to_events(min_obs)
-            all_min_events[minute] = min_events
-            print("MINUTE OBS:", minute, len(min_obs), len(min_events.keys()))
+      #for i in range(0,thread_total):
+      self.do_coin_work(ocounts, start,end)
+      #for minute in ocounts:
+      #   if ocounts[minute]['count'] > 1:
+      #      odata = self.get_station_obs_count(minute)
+      #      elp = time.time() - nowt   
+      #      print("\t1", elp)
+      #      #min_obs = self.get_obs (minute)
+      #      min_obs = self.min_obs_dict[minute]
+      #      min_events = self.min_obs_to_events(min_obs)
+      #      print("\t2", elp)
+      #      self.all_min_events[minute] = min_events
+      #      print("\tMINUTE OBS:", minute, len(min_obs), len(min_events.keys()))
        
-
+      #input("PART 1 done")
 
 
       save_json_file(self.plane_file, self.plane_pairs)
-      save_json_file(self.min_events_file, all_min_events)
+      save_json_file(self.min_events_file, self.all_min_events)
 
       c = 0
-      for minute in all_min_events:
+      for minute in self.all_min_events:
          print("MINUTE:", minute)
-         for event_id in all_min_events[minute]:
-            print("EVENT ID :",  event_id)
-            event = all_min_events[minute][event_id]
-            #ob1, ob2 = key.split("__")
+         for event_id in self.all_min_events[minute]:
+            event = self.all_min_events[minute][event_id]
+
             if len(list(set(event['stations']))) > 1:
-               print(c, "FINAL EVENTS:", event)
+               print("   ", c, "FINAL EVENTS:",  event['stations'], event['start_datetime'])
                self.insert_event(event)
+            else:
+               print("   ", c, "NO MULTI EVENTS:", event['stations'], event['start_datetime'])
             #score_data = self.score_obs(event['plane_pairs'])
             #for score, key in score_data[0:100]:
             #   ob1, ob2 = key.split("__")
@@ -735,7 +741,20 @@ class AllSkyNetwork():
             #   print("Skip single station events.")
             #print(c, "Good planes:", gd[2], gd[3],result[0])
             c += 1
-            
+
+   def do_coin_work(self, ocounts, start,end):
+      minutes = list(ocounts.keys())
+      for minute in minutes[start:end]:
+         nowt = time.time() 
+         if ocounts[minute]['count'] > 1:
+            odata = self.get_station_obs_count(minute)
+            elp = time.time() - nowt
+            #min_obs = self.get_obs (minute)
+            min_obs = self.min_obs_dict[minute]
+            min_events = self.min_obs_to_events(min_obs)
+            elp = time.time() - nowt
+            self.all_min_events[minute] = min_events
+         elp = time.time() - nowt
 
 
    def insert_event(self, event):
@@ -747,14 +766,14 @@ class AllSkyNetwork():
          event_id = event_id.split(".")[0]
       event['event_id'] = event_id
 
-      print("EVENT:", event)
+      #print("\tINSERT EVENT:", event)
       event_minute = event['stime'].replace("-", "_")[0:15]
       event_minute = event_minute.replace(":", "_")
       event_minute = event_minute.replace(" ", "_")
       event['event_day'] = event_minute[0:10] 
 
-      print("EVENT ID:", event_id)
-      print("EVENT MIN:", event_minute)
+      print("\t\tEVENT ID:", event_id)
+      print("\t\tEVENT MIN:", event_minute)
       sql = """
           SELECT event_id, event_minute, revision, stations, obs_ids, event_start_time, event_start_times,  
                  lats, lons, event_status, run_date, run_times
@@ -765,10 +784,9 @@ class AllSkyNetwork():
       svals = [event_id]
       self.cur.execute(sql, svals)
       rows = self.cur.fetchall()
-
       
       if True: #len(rows) == 0:
-         print("No events matching this minute exist!", event_minute)
+         print("\t\tNo events matching this minute exist!", event_minute)
          # make a new event!
          sql = """
             INSERT OR REPLACE INTO events (event_id, event_minute, revision, 
@@ -783,7 +801,7 @@ class AllSkyNetwork():
          ivals = [event_id, event_minute, revision, \
                         json.dumps(event['stations']), json.dumps(event['files']), event['stime'], json.dumps(event['start_datetime']),  \
                         json.dumps(event['lats']), json.dumps(event['lons']), "PENDING", run_date, run_times]
-         print("ADD NEW EVENT!", event_id, len(ivals))
+         print("\t\tADD NEW EVENT!", event_id, len(ivals))
          self.cur.execute(sql, ivals)
          self.con.commit()
 
@@ -808,9 +826,6 @@ class AllSkyNetwork():
                  json.dumps(lats), json.dumps(lons), event_status, run_date, run_times, event_id]
             self.update_event(ivals) 
 
-      #if "033434" in event_id :
-      #   input("PAUSED")
-      print("DONE")
 
    def update_event(self, ivals):
       c= 0
@@ -1041,7 +1056,7 @@ class AllSkyNetwork():
       return(dt_str)
 
  
-   def check_make_events(self, min_events, station_id, obs_file, stime,duration=3):
+   def check_make_events(self, min_events, station_id, obs_file, stime,duration=3,azs=[],els=[],ints=[]):
       # see if this one obs is part of an event or new
       if duration < 1:
          duration = 1
@@ -1052,6 +1067,11 @@ class AllSkyNetwork():
       lon = float(self.station_dict[station_id]['lon'])
       alt = float(self.station_dict[station_id]['alt'])
 
+      if len(azs) > 0:
+         az1 = azs[0]
+      else:
+         az1 = None
+
       if len(min_events.keys()) == 0:
          eid = 1
          # first event
@@ -1061,11 +1081,17 @@ class AllSkyNetwork():
          min_events[eid]['lons'] = []
          min_events[eid]['alts'] = []
          min_events[eid]['files'] = []
+         min_events[eid]['azs'] = []
+         min_events[eid]['els'] = []
+         min_events[eid]['ints'] = []
          min_events[eid]['start_datetime'] = []
          min_events[eid]['stations'].append(station_id)
          min_events[eid]['lats'].append(lat)
          min_events[eid]['lons'].append(lon)
          min_events[eid]['alts'].append(alt)
+         min_events[eid]['azs'].append(azs)
+         min_events[eid]['els'].append(els)
+         min_events[eid]['ints'].append(ints)
          min_events[eid]['files'].append(obs_file)
          min_events[eid]['start_datetime'].append(stime)
          min_events[eid]['stime'] = stime
@@ -1077,26 +1103,94 @@ class AllSkyNetwork():
             this_time = min_events[eid]['stime']
             s_datestamp, s_timestamp = self.date_str_to_datetime(stime)
             t_datestamp, t_timestamp = self.date_str_to_datetime(this_time)
-            time_diff = s_timestamp - t_timestamp
+            time_diff = abs(s_timestamp - t_timestamp)
             #if the event start is within 6 seconds
             sdur = duration * -2
             edur = duration * 2
-            #print("DUR:", sdur, edur)
-            #input("WA")
             if sdur <= time_diff <= edur:
                avg_lat = np.mean(min_events[eid]['lats'])
                avg_lon = np.mean(min_events[eid]['lons'])
                match_dist = dist_between_two_points(avg_lat, avg_lon, lat, lon)
-               #print("Time diff in range. Check Distance??", time_diff, match_dist)
-               #if the dist between avg stations and this station is < 900 km
+               match_dist2 = match_dist
                match_time = 1
                if match_dist < 600:
                   match_dist = 1
+                  # check if this obs az1 intersects with the other obs az1s
+                  intersect = True 
+                  for i in range(0, len(min_events[eid]['lats'])):
+                     
+                     st = min_events[eid]['stations'][i]
+                     lat2 = min_events[eid]['lats'][i]
+                     lon2 = min_events[eid]['lons'][i]
 
+                     if len(min_events[eid]['azs'][i]) > 0 and station_id != st:
+                        az2 = min_events[eid]['azs'][i][0]
+                        err_status, ipoint= geo_intersec_point(lat, lon, az1, lat2, lon2, az2)
+                        if err_status is True:
+                           # intersection failed
+                           ipoint = [0,0]
+                           idist = 0
+                           matches.append((eid, match_time, match_dist))
+                           # failed
+                        else:
+                           lat2 = ipoint['x3']
+                           lon2 = ipoint['y3']
+                           idist = dist_between_two_points(float(lat), float(lon), float(lat2), float(lon2))
+                           print("TIME DIFF:", time_diff)
+                           print("DIST DIFF:", match_dist2)
+                           print("2D INT:", lat,lon,az1, lat2,lon2,az2)
+                           print("2D IPOINT:", ipoint)
+                           print("2D IPOINT DIST:", idist)
+                           if idist < 600:
+                              intersect = True
+                           else:
+                              intersect = True
+                  if intersect is True:
+                     matches.append((eid, match_time, match_dist))
+
+                  
 
 
                   # before adding we should see if the points intersect!? or no?
-                  matches.append((eid, match_time, match_dist))
+            elif time_diff < 10:
+               avg_lat = np.mean(min_events[eid]['lats'])
+               avg_lon = np.mean(min_events[eid]['lons'])
+               match_dist = dist_between_two_points(avg_lat, avg_lon, lat, lon)
+               if match_dist < 600:
+                  print("Station Dist : ", match_dist)
+                  print("Times are: ", stime, this_time)
+                  print("Time diff is : ", time_diff)
+
+                  # check if this obs az1 intersects with the other obs az1s
+                  intersect = True
+                  for i in range(0, len(min_events[eid]['lats'])):
+                     
+                     st = min_events[eid]['stations'][i]
+                     lat2 = min_events[eid]['lats'][i]
+                     lon2 = min_events[eid]['lons'][i]
+
+                     if len(min_events[eid]['azs'][i]) > 0 and station_id != st:
+                        az2 = min_events[eid]['azs'][i][0]
+                        err_status, ipoint= geo_intersec_point(lat, lon, az1, lat2, lon2, az2)
+                        if err_status is True:
+                           # intersection failed
+                           ipoint = [0,0]
+                           idist = 0
+                           # failed
+                        else:
+                           lat2 = ipoint['x3']
+                           lon2 = ipoint['y3']
+                           idist = dist_between_two_points(float(lat), float(lon), float(lat2), float(lon2))
+                           print("TIME DIFF:", time_diff)
+                           print("DIST DIFF:", match_dist)
+                           print("2D INT:", lat,lon,az1, lat2,lon2,az2)
+                           print("2D IPOINT:", ipoint)
+                           print("2D IPOINT DIST:", idist)
+                           if idist < 600:
+                              intersect = True
+                  if intersect is True:
+                     matches.append((eid, match_time, match_dist))
+
       if len(matches) > 0:
          eid = matches[0][0]
          #if len(matches) == 1:
@@ -1107,25 +1201,33 @@ class AllSkyNetwork():
          min_events[eid]['lats'].append(lat)
          min_events[eid]['lons'].append(lon)
          min_events[eid]['alts'].append(alt)
+         min_events[eid]['azs'].append(azs)
+         min_events[eid]['els'].append(els)
+         min_events[eid]['ints'].append(ints)
          min_events[eid]['files'].append(obs_file)
          min_events[eid]['start_datetime'].append(stime)
          avg_time = self.average_times(min_events[eid]['start_datetime'])
          min_events[eid]['stime'] = avg_time
       else:
-         #print("we could not find a matching event. We should add a new one.")
+         # No match make new! 
          eid = max(min_events.keys()) + 1 
-         # first event
          min_events[eid] = {}
          min_events[eid]['stations'] = []
          min_events[eid]['lats'] = []
          min_events[eid]['lons'] = []
          min_events[eid]['alts'] = []
+         min_events[eid]['azs'] = []
+         min_events[eid]['els'] = []
+         min_events[eid]['ints'] = []
          min_events[eid]['files'] = []
          min_events[eid]['start_datetime'] = []
          min_events[eid]['stations'].append(station_id)
          min_events[eid]['lats'].append(lat)
          min_events[eid]['lons'].append(lon)
          min_events[eid]['alts'].append(alt)
+         min_events[eid]['azs'].append(azs)
+         min_events[eid]['els'].append(els)
+         min_events[eid]['ints'].append(ints)
          min_events[eid]['files'].append(obs_file)
          min_events[eid]['start_datetime'].append(stime)
          min_events[eid]['stime'] = stime
@@ -1152,6 +1254,14 @@ class AllSkyNetwork():
       min_events = {}
 
       for obs in min_obs:
+         #print(obs)
+         (station_id, event_id, event_minute, obs_id, fns, times, xs, ys, azs, els, ints, status, ignore) = obs 
+         if type(azs) == str:
+            azs = json.loads(azs) 
+            els = json.loads(els) 
+            ints = json.loads(ints) 
+
+
          times = json.loads(obs[5])
          duration=len(times) / 25
          if duration == 0:
@@ -1178,7 +1288,7 @@ class AllSkyNetwork():
          sec = tt.split(":")[-1]
          sec = float(sec)
          print(station_id, obs_file, point, stime, sec)
-         min_events = self.check_make_events(min_events, station_id, obs_file, stime, duration)
+         min_events = self.check_make_events(min_events, station_id, obs_file, stime, duration,azs,els,ints)
 
 
       #print("MIN EVENTS:")
@@ -3392,6 +3502,8 @@ class AllSkyNetwork():
 
       # here we should check how things intersect and mark obs that don't 
       # lat/lon & bearing of 2 stations
+      # this should be a function or class!
+
       ipoints = {}
       points = [] 
       lines = [] 
@@ -4053,7 +4165,6 @@ class AllSkyNetwork():
          good_obs_file = ev_dir + "/" + event_id + "_GOOD_OBS.json"
          #if os.path.exists(good_obs_file) is False:
          save_json_file(good_obs_file, temp_obs, True)
-         print("RESOLVING EVENT:", event_id)
          self.solve_event(event_id, temp_obs, 1, 1)
          xx += 1
 
@@ -7532,8 +7643,10 @@ $(document).ready(function () {
 
          if os.path.exists(ev_file) is False and os.path.exists(ev_fail_file) is True:
             ev_sum = "<h3>Solve failed for event {}</h3>".format(event_id)
+            ev_data = None
          elif os.path.exists(ev_file) is False and os.path.exists(ev_fail_file) is False: 
             ev_sum = "<h3>Solve for event {} has not been run.</h3>".format(event_id)
+            ev_data = None
 
          else:
             ev_data = load_json_file(ev_file)
@@ -7583,6 +7696,16 @@ $(document).ready(function () {
             else:
                ev_sum = "Bad solve."
 
+         if ev_data is not None:
+            if "shower" in ev_data:
+               if ev_data['shower']['shower_code'] == "...":
+                  shower_code = "SPORADIC"
+               else:
+                  shower_code = ev_data['shower']['shower_code']
+            else:
+               shower_code = "SPORADIC"
+         else:
+            shower_code = "SPORADIC"
 
          if "GOOD" in event_status or ("SOLVED" in event_status and "BAD" not in event_status and "FAIL" not in event_status):
             if True:
@@ -9928,8 +10051,6 @@ status [date]   -    Show network status report for that day.
       #      print("NEED TO INSERT AWS")
       #   else:
       #      print(event_id, "EXISTS INSIDE AWS")
-
-
 
 
 

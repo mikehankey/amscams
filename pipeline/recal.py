@@ -969,6 +969,87 @@ def remove_bad_stars(cat_image_stars):
    print("far :", far_res)
    return(good)
 
+def plot_cal_history(con, cur, json_conf):
+   import matplotlib.pyplot as plt 
+   from matplotlib.pyplot import figure 
+   print("get_close_calib_files:", cal_file)
+   calindex_file = "/mnt/ams2/cal/freecal_index.json"
+   cal_dir = "/mnt/ams2/cal/"
+   if os.path.exists(calindex_file) is True:
+      try:
+         calindex = load_json_file(calindex_file)
+      except:
+         print("FAILED TO LOAD:", calindex_file)
+   data = {}
+   for key in calindex:
+      row = calindex[key]
+      fn = key.split("/")[-1]
+      print("ROW", type(row), row )
+      
+      if row['cam_id'] not in data:
+         data[row['cam_id']] = {}
+         data[row['cam_id']]['fns'] = []
+         data[row['cam_id']]['dates'] = []
+         data[row['cam_id']]['azs'] = []
+         data[row['cam_id']]['els'] = []
+         data[row['cam_id']]['pos'] = []
+         data[row['cam_id']]['pxs'] = []
+         data[row['cam_id']]['stars'] = []
+         data[row['cam_id']]['res'] = []
+      data[row['cam_id']]['fns'].append(fn)
+      data[row['cam_id']]['dates'].append(row['cal_date'])
+      data[row['cam_id']]['azs'].append(row['center_az'])
+      data[row['cam_id']]['els'].append(row['center_el'])
+      data[row['cam_id']]['pos'].append(row['position_angle'])
+      data[row['cam_id']]['pxs'].append(row['pixscale'])
+      data[row['cam_id']]['stars'].append(row['total_stars'])
+      data[row['cam_id']]['res'].append(row['total_res_px'])
+
+
+   for cam_id in data:
+      print(cam_id, data[cam_id])
+      fig, (ax1, ax2, ax3) = plt.subplots(1,3)
+      fig.set_size_inches(12,4)
+      fig.tight_layout(pad=5.0)
+      ax1.scatter(data[cam_id]['azs'],data[cam_id]['els'])
+      ax1.set_xlabel("Azimuth")
+      ax1.set_ylabel("Elevation")
+      fig.suptitle("Meteor Calibrations for " + station_id + "-" + cam_id  , fontsize=16)
+
+      ax2.scatter(data[cam_id]['pos'],data[cam_id]['pxs'])
+      ax2.set_xlabel("Position Angle")
+      ax2.set_ylabel("Pixel Scale")
+
+      ax3.scatter(data[cam_id]['stars'],data[cam_id]['res'])
+      ax3.set_xlabel("Total Stars")
+      ax3.set_ylabel("Residual Error (PXs)")
+      plot_file = cal_dir + "plots/" + station_id + "_" + cam_id + "_CAL_PLOTS.png"
+      print("\tSAVED PLOT", plot_file)
+      fig.savefig(plot_file, dpi=72)
+      #plt.show()
+
+   all_imgs = []
+   for cam_id in sorted(data):
+      plot_file = cal_dir + "plots/" + station_id + "_" + cam_id + "_CAL_PLOTS.png"
+      if os.path.exists(plot_file) is True:
+         img = cv2.imread(plot_file)
+         ih,iw = img.shape[:2]
+         all_imgs.append(img)
+   mh = ih * len(all_imgs) + ih
+   c = 0
+   all_img = np.zeros((mh,iw,3),dtype=np.uint8)
+   for img in all_imgs:
+      img = cv2.resize(img,(iw,ih))
+      y1 = ih * c
+      y2 = y1 + ih
+      x1 = 0
+      x2 = x1 + iw
+      all_img[y1:y2,x1:x2] = img
+      c += 1
+   #cv2.imshow('pepe', all_img)
+   #cv2.waitKey(0)
+
+
 def plot_refit_meteor_day(meteor_day, con, cur, json_conf):
    print("plot_refit_meteor_day:", meteor_day)
    import matplotlib.pyplot as plt 
@@ -10077,6 +10158,7 @@ if __name__ == "__main__":
          print("CAM:", cam_id)
          cal_status_report(cam_id, con, cur, json_conf)
       os.system("cd /home/ams/amscams/pythonv2/; ./autoCal.py cal_index")
+      plot_cal_history(con, cur, json_conf)
 
 
 
@@ -10180,6 +10262,10 @@ if __name__ == "__main__":
 
    if cmd == "cal_index" :
          os.system("cd ../pythonv2; ./autoCal.py cal_index")
+
+   if cmd == "plot_cal_history" :
+      plot_cal_history(con, cur, json_conf)
+
    if cmd == "cal_plots" :
       cam_id = sys.argv[2]
       make_cal_plots(cam_id, json_conf)

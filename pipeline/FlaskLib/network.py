@@ -122,8 +122,16 @@ def network_map(station_id, json_conf):
    #lons = [-76]
    #colors = ['#bebada']
    #textpos = ['top right']
+   min_lat = float(json_conf['site']['device_lat']) - 4.5 
+   max_lat = float(json_conf['site']['device_lat']) + 4.6
+   min_lon = float(json_conf['site']['device_lng']) - 8
+   max_lon = float(json_conf['site']['device_lng']) + 8
    out = get_template(temp_file)
    out = out.replace("{LABELS}", str(labels))
+   out = out.replace("{MIN_LAT}", str(min_lat))
+   out = out.replace("{MIN_LON}", str(min_lon))
+   out = out.replace("{MAX_LAT}", str(max_lat))
+   out = out.replace("{MAX_LON}", str(max_lon))
    out = out.replace("{LATS}", str(lats))
    out = out.replace("{LONS}", str(lons))
    out = out.replace("{COLOR}", str(colors))

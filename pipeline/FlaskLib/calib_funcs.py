@@ -367,6 +367,7 @@ def calib_main(amsid,in_data):
 
    
    selector = "<select onChange='window.location.href=\"/calib/" + amsid + "/?cam_id_filter=\" + this.value '> name=cam_id_filter>"
+   selector += "<option >Select Camera</option>"
    for cam in json_conf['cameras']:
       cams_id = json_conf['cameras'][cam]['cams_id']
       if cam_id_filter == cams_id:
@@ -375,7 +376,18 @@ def calib_main(amsid,in_data):
          selector += "<option >" + cams_id + "</option>"
    selector += "</select>"
    #out =selector
-   out = cal_history(amsid, cam_id_filter, selector) 
+   out = ""
+   if cam_id_filter is None:
+      files = os.listdir("/mnt/ams2/cal/plots/")
+      if len(files) > 0:
+         out += "<h1>Calibration Plots</h1>"
+      for f in sorted(files):
+         if "CAL_PLOTS" in f:
+            el = f.split("_")
+            cam_id = el[1]
+            img = "<a href=/calib/" + amsid + "/?cam_id_filter=" + cam_id  + "><img src=/cal/plots/" + f + "></a>"
+            out += img
+   out = out + cal_history(amsid, cam_id_filter, selector) 
 
    
 
@@ -388,7 +400,7 @@ def cal_history(amsid, cam_id_filter=None, selector=None):
    #cam_id_filter = form.getvalue("cam_id")
    out = ""
    out += "<h1>Past Calibrations</h1>"
-   out += "<center> Limit calibrations to camera " + selector + "</center>"
+   out += "<center> " + selector + "</center>"
 
 
    freecal_index = "/mnt/ams2/cal/freecal_index.json"
@@ -398,7 +410,6 @@ def cal_history(amsid, cam_id_filter=None, selector=None):
       out += "No calibrations have been completed yet."
       return(out)
    if cam_id_filter is None:
-      out += "Select camera to continue."
       return(out)
 
    cia = []
