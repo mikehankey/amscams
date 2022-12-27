@@ -5692,12 +5692,13 @@ def analyze_object(object, hd = 0, strict = 0):
          object['report']['bad_items'].append("bad ang sep: " + str(ang_dist))
 
       # dist from first start test shoudl be 100% but at least > 60% 
-      fs_result = fs_dist_test(object['fs_dist'])
-      object['report']['fs_dist_test'] = fs_result
-      if fs_result < .6:
-         object['report']['non_meteor'] = 1
-         object['report']['meteor'] = 0
-         object['report']['bad_items'].append("bad fs_dist %: " + str(fs_result))
+      if "fs_dist" in object:
+         fs_result = fs_dist_test(object['fs_dist'])
+         object['report']['fs_dist_test'] = fs_result
+         if fs_result < .6:
+            object['report']['non_meteor'] = 1
+            object['report']['meteor'] = 0
+            object['report']['bad_items'].append("bad fs_dist %: " + str(fs_result))
          
 
 
