@@ -6435,8 +6435,9 @@ def get_cal_params(meteor_json_file):
    if len(after_files) > 0:
       for af in after_files:
          cpf, td = af
-         cp = load_json_file(cpf)
-         after_data.append((cpf, float(cp['center_az']), float(cp['center_el']), float(cp['position_angle']), float(cp['pixscale']), float(cp['total_res_px'])))
+         if os.path.exists(cpf) is True:
+            cp = load_json_file(cpf)
+            after_data.append((cpf, float(cp['center_az']), float(cp['center_el']), float(cp['position_angle']), float(cp['pixscale']), float(cp['total_res_px'])))
 
    if len(before_files) > 0:
       before_files = sorted(before_files, key=lambda x: (x[1]), reverse=False)[0:5]
@@ -6444,11 +6445,12 @@ def get_cal_params(meteor_json_file):
       for af in before_files:
          cpf, td = af
          print("LOADING CPF for BEFORE:",cpf)
-         cp = load_json_file(cpf)
-         if "total_res_px" in cp:
-            before_data.append((cpf, float(cp['center_az']), float(cp['center_el']), float(cp['position_angle']), float(cp['pixscale']), float(cp['total_res_px'])))
-         else:
-            print("NO RES?", cpf, cp['center_az'], cp['center_el'], cp['position_angle'], cp['pixscale'])
+         if os.path.exists(cpf) is True:
+            cp = load_json_file(cpf)
+            if "total_res_px" in cp:
+               before_data.append((cpf, float(cp['center_az']), float(cp['center_el']), float(cp['position_angle']), float(cp['pixscale']), float(cp['total_res_px'])))
+            else:
+               print("NO RES?", cpf, cp['center_az'], cp['center_el'], cp['position_angle'], cp['pixscale'])
  
    if len(before_data) > 0:
       azs = [row[1] for row in before_data] 
