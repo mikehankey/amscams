@@ -3224,7 +3224,8 @@ def fireball_phase1(hd_frames, hd_color_frames, subframes,sum_vals,max_vals,pos_
    if mask_img is None:
       print(mask_imgs)
       print("no mask")
-      exit()
+      mask_img = np.zeros((1080,1920),dtype=np.uint8)
+      #exit()
    objects = {}
    # load up the frames
    if len(hd_frames) == 0:
@@ -3259,12 +3260,29 @@ def fireball_phase1(hd_frames, hd_color_frames, subframes,sum_vals,max_vals,pos_
       cp = jdata['cp']
    else:
       cp = calib_image(video_file, hd_frames[0], json_conf)
+   if cp is None:
+      # CAM IS NOT CALIBRATED / cam is not calibrated
+      cp = {}
+      cp['center_az'] = 3 
+      cp['center_el'] = 25
+      cp['position_angle'] = 180 
+      cp['pixscale'] = 158 
+      cp['user_stars'] = []
+      cp['cat_image_stars'] = []
+      cp['total_res_px'] = 999
+      cp['total_res_deg'] = 999
+      cp = update_center_radec(video_file,cp,json_conf)
 
    if "user_mods" in jdata:
       print("USERMODS")
       print(cp)
       print(jdata['user_mods'])
-      user_mods = jdata['user_mods']
+      print(len(hd_frames))
+      if "user_mods" in jdata:
+         user_mods = jdata['user_mods']
+      else:
+         user_mods = {}
+      print("CP:", cp)
       cp['user_stars'] = get_image_stars(video_file, hd_frames[0].copy(), json_conf, 1)
       if "user_stars" in user_mods:
          for star in user_mods['user_stars']:
@@ -3305,8 +3323,8 @@ def fireball_phase1(hd_frames, hd_color_frames, subframes,sum_vals,max_vals,pos_
       fb_mask = cv2.resize(fb_mask, (hd_frames[0].shape[1], hd_frames[0].shape[0]))
    past_points = []
    if mask_img is None:
+      mask_img = np.zeros((1080,1920),dtype=np.uint8)
       print("NO MASK.")
-      exit()
    for frame in hd_frames:
       color_frame = hd_color_frames[frame_num]
       #if best_meteor is not None:
@@ -3317,7 +3335,8 @@ def fireball_phase1(hd_frames, hd_color_frames, subframes,sum_vals,max_vals,pos_
             mask_img = cv2.resize(mask_img, (frame.shape[1], frame.shape[0]))
          if len(frame.shape) == 3 and len(mask_img.shape) == 2:
             mask_img = cv2.cvtColor(mask_img, cv2.COLOR_GRAY2BGR)
-         
+         print("FRAME:", frame.shape) 
+         print("mask:", mask_img.shape) 
          frame = cv2.subtract(frame, mask_img)
          #cv2.imshow('pepe2', frame)
          #cv2.waitKey(0)

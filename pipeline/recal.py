@@ -821,6 +821,17 @@ def star_track(cam_id, date, con, cur, json_conf ):
 
       #if cal_params is None:
       cal_params = get_default_cal_for_file(cam_id, snap_file, None, con, cur, json_conf)
+      if cal_params is None:
+         cal_params = {}
+         cal_params['center_az'] = 1
+         cal_params['center_el'] = 25
+         cal_params['position_angle'] = 180
+         cal_params['pixscale'] = 156 
+         cal_params['user_stars'] = []
+         cal_params['cat_image_stars'] = []
+         cal_params['total_res_px'] = 999
+         cal_params['total_res_deg'] = 999
+
       if False: #last_az is not None:
          cal_params['center_az'] = last_az
          cal_params['center_el'] = last_el
@@ -8146,7 +8157,12 @@ def get_default_cal_for_file(cam_id, obs_file, img, con, cur, json_conf):
 
    if len(rows) == 0:
       print("this method will not work. need to revert back to the range file", obs_file)
-      default_cp = get_default_cal_for_file_with_range (cam_id, obs_file, None, con, cur, json_conf)
+      try:
+         default_cp = get_default_cal_for_file_with_range (cam_id, obs_file, None, con, cur, json_conf)
+      except:
+
+         print("DEFAULT CAL FAILED! -- there is no default cal for this camera!")
+
       return(default_cp)
    else:
       print("ROWS:", len(rows))
