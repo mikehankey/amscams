@@ -2234,7 +2234,7 @@ def make_roi_video(video_file,bm, frames, json_conf):
    try:
       mj = load_json_file(mjf)
    except:
-      continue
+      return 
    if cfe(mjrf) == 1:
       mjr = load_json_file(mjrf)
    else:
