@@ -14,7 +14,7 @@ def get_mfiles(day):
             mfiles.append("/mnt/ams2/meteors/" + day + "/" + ff.replace(".json", ".mp4") )
    return(mfiles)
 
-fix_days = ['2022_06_02', '2022_06_01', '2022_05_31', '2022_05_30', '2022_05_29', '2022_05_28']
+fix_days = ['2022_12_14']
 
 for day in fix_days:
    mfiles = get_mfiles(day)
