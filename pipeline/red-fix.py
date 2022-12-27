@@ -24,7 +24,7 @@ def get_mfiles(day):
 if len(sys.argv) > 1:
     fix_days = sys.argv[1:]
 else:
-    fix_days = ['2022_12_14']
+    fix_days = ['2022_12_12', '2022_12_13', '2022_12_14', '2022_12_15']
 
 for day in fix_days:
    mfiles = get_mfiles(day)
