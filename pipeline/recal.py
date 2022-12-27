@@ -947,14 +947,16 @@ def remove_bad_stars(cat_image_stars):
          res_limit = close_res
       if dist == "far" and res_limit < far_res:
          res_limit = far_res
-      
+
 
       if center_dist < 600:
          factor = 2 
       else:
-         factor = 2
-      if rez > 5:
-         rez = 5
+         factor = 3
+      if res_limit > 5:
+         res_limit = 5
+      if res_limit < 1:
+         res_limit = 1
 
       if cat_dist < (res_limit * factor):
          print("GOOD:", dcname, mag, cat_dist)
