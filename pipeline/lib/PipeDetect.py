@@ -2231,7 +2231,10 @@ def make_roi_video_mfd(video_file, json_conf):
 def make_roi_video(video_file,bm, frames, json_conf):
    mjf = video_file.replace(".mp4", ".json")
    mjrf = video_file.replace(".mp4", "-reduced.json")
-   mj = load_json_file(mjf)
+   try:
+      mj = load_json_file(mjf)
+   except:
+      continue
    if cfe(mjrf) == 1:
       mjr = load_json_file(mjrf)
    else:
@@ -2418,7 +2421,10 @@ def fireball(video_file, json_conf, nomask=0):
    best_meteor = None
    if cfe(jsf) == 1:
       print("LOADING:", jsf)
-      jdata = load_json_file(jsf)
+      try:
+         jdata = load_json_file(jsf)
+      except:
+         jdata = {}
       if "best_meteor" not in jdata:
          best_meteor = None
       else:
