@@ -178,7 +178,7 @@ def cal_health(con, cur, json_conf):
             lm_date = mp['lens_model_datetime']
          else:
             lm_stars = "na"
-            lm_stars = "na"
+            lm_date = "na na"
       if 'min_max_dist_status' in mp:
          min_max_dist_status = mp['min_max_dist_status'] 
       else:
