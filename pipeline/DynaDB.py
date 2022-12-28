@@ -1589,6 +1589,11 @@ def do_dyna_day(dynamodb, day):
    red_files = [] 
    temp = os.listdir(mdir)
 
+   if os.path.exists("rf.txt") is False:
+      cmd = "./red-fix.py > rf.txt"
+      print(cmd)
+      os.system(cmd)
+
    for mf in temp:
       if "json" in mf and "reduced" not in mf:
          meteor_files.append(mf)

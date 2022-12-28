@@ -195,7 +195,7 @@ def cal_health(con, cur, json_conf):
 
    # MAIN USER OUTPUT
    os.system("clear")
-   print(ASOS)
+   print("ASOS")
    print("CALIBRATION HEALTH FOR " + station_id + " RUN ON " + now  )
    print(tb)
    cam_status = tb
@@ -213,23 +213,33 @@ def cal_health(con, cur, json_conf):
    #   start with refit jobs
 
    sys_rez = [row[2] for row in info]
-   print(sys_rez)
+   print("System rez:", sys_rez)
    info = sorted(info, key=lambda x: (x[3]), reverse=False)
    for row in info:
       if row[3] > 1:
          # jobs = cam_id, job_id/func call/name, runtime or 0
          #jobs.append(("refit_best", row[1], 0))
-         jobs.append(("refit_avg", row[1], 0))
-         print("refit", row[1], row[3], "is > 1")
+         jobs.append(("refit_best", row[1], 8, row[3]))
+         jobs.append(("refit_avg", row[1], 8, row[3]))
+         jobs.append(("refit_bad", row[1], 8, row[3]))
+         print("\trefit job added", row[1], row[3], "is > 1")
 
       if row[7] > 1 or row[8] < 300:
-         print("fast_lens", row[1], row[6], "is > 1")
-         jobs.append(("fast_lens", row[1], 0))
+         print("\tfast_lens job added", row[1], "res", row[7], "is > 1", "or stars", row[8] , "< 300" )
+         jobs.append(("fast_lens", row[1], 9, row[7]))
 
 
 
    # get menu response from the user. If no response we should auto run the jobs?
    # this way a cron cal to cal_health will run the 'next' jobs without running too long
+
+   # priority jobs
+   jobs = sorted(jobs, key=lambda x: (x[2], x[3]), reverse=True)
+   pjobs = []
+   for job in jobs:
+      pjobs.append(job)
+      print("PJOBs", job)
+   #input("[ENTER] TO CONTINUE")
 
    i, o, e = select.select( [sys.stdin], [], [], 10 )
    if (i) :
@@ -238,26 +248,29 @@ def cal_health(con, cur, json_conf):
       print("SELECTED CAMERA:", selected_cam)
    else:
       print("No custom command selected in time.")
-      print("Quitting calibration health menu")
       print("Auto running jobs:")
       for job in jobs:
          print("JOB", job)
-      print("waiting for 3 seconds before starting autojobs... [cntl-x] to quit")
-      for job in jobs:
+      print("waiting for 3 seconds before starting autojobs... [cntl-x] to quit else auto jobs will run")
+      time.sleep(3)
+      for job in pjobs:
          cam_id = job[1]
+         if job[0] == "fast_lens":
+            limit = 20 
+            fast_lens(cam_id, con, cur, json_conf,limit, None)
+            lens_model(cam_id, con, cur, json_conf )
+
          if job[0] == "refit_avg":
-            batch_apply(cam_id, con, cur, json_conf, None, False, cam_stats, "AVG")
+            batch_apply(cam_id, con, cur, json_conf, None, False, cam_stats, "AVG", 10)
          if job[0] == "refit_best":
-            batch_apply(cam_id, con, cur, json_conf, None, False, cam_stats, "BEST")
+            batch_apply(cam_id, con, cur, json_conf, None, False, cam_stats, "BEST",10)
          if job[0] == "refit_bad":
-            batch_apply(cam_id, con, cur, json_conf, None, False, cam_stats, "BAD")
+            batch_apply(cam_id, con, cur, json_conf, None, False, cam_stats, "BAD",10)
 
 
-      exit()
 
    cam_menu(selected_cam, con, cur, json_conf,cam_status, cam_stats)
 
-   exit() 
    # refit best files for each cam
    for cam_id in sorted(cam_stats):
       calfiles_data = load_cal_files(cam_id, con, cur)
@@ -5052,7 +5065,7 @@ def batch_apply_bad(cam_id, con, cur, json_conf, blimit=25):
    characterize_best(cam_id, con, cur, json_conf, 50 )
 
 
-def batch_apply(cam_id, con,cur, json_conf, last=None, do_bad=False, cam_stats=None, apply_type="ALL"):
+def batch_apply(cam_id, con,cur, json_conf, last=None, do_bad=False, cam_stats=None, apply_type="ALL", limit=25):
    # apply the latest MCP Poly to each cal file and then recenter them
    print("BATCH APPLY:", apply_type)
    autocal_dir = "/mnt/ams2/cal/"
@@ -5092,7 +5105,7 @@ def batch_apply(cam_id, con,cur, json_conf, last=None, do_bad=False, cam_stats=N
          last_cal_params = None
          rc = 0
          flux_table = {}
-         for cf in sorted(calfiles_data, reverse=True):
+         for cf in sorted(calfiles_data, reverse=True)[0:limit]:
             cal_dir = "/mnt/ams2/cal/freecal/" + cf.split("-")[0] + "/"
 
             if cf in calfiles_data:

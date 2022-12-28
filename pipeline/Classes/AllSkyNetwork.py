@@ -1105,9 +1105,9 @@ class AllSkyNetwork():
             t_datestamp, t_timestamp = self.date_str_to_datetime(this_time)
             time_diff = abs(s_timestamp - t_timestamp)
             #if the event start is within 6 seconds
-            sdur = duration * -2
-            edur = duration * 2
-            if sdur <= time_diff <= edur:
+            #sdur = duration * -2
+            #edur = duration * 2
+            if time_diff <= 5:
                avg_lat = np.mean(min_events[eid]['lats'])
                avg_lon = np.mean(min_events[eid]['lons'])
                match_dist = dist_between_two_points(avg_lat, avg_lon, lat, lon)
@@ -4085,7 +4085,7 @@ class AllSkyNetwork():
          lats = json.loads(lons)
          temp_obs = {}
          
-         ignore = []
+         ignore = ["AMS99"]
 
          # for each obs associated with this event
          # load the MOST RECENT OBS DATA
