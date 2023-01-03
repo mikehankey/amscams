@@ -3635,9 +3635,9 @@ def refit_fov(cal_file, json_conf, mov_frame_num=0, zero_poly=False):
    cp_img_file = cal_file.replace("-calparams.json", ".png")
 
    print("CAL PARAMS AFTER")
-   for key in cal_params:
-      if "stars" not in key:
-         print(key, cal_params[key])
+   #for key in cal_params:
+   #   if "stars" not in key:
+   #      print(key, cal_params[key])
 
    #cmd = "./AzElGrid.py az_grid " + cp_img_file 
    #os.system(cmd)
@@ -3974,6 +3974,9 @@ def deep_cal_report(cam, json_conf):
          continue
 
       before_std_dist, before_avg_dist = calc_starlist_res(cp['cat_image_stars'])
+      #for key in cal_params:
+      #   if "poly" not in key and "stars" not in key:
+      #      print("\t", key, cal_params[key])
 
       if SHOW == 1:
          star_image = draw_star_image(cal_img, cp['cat_image_stars'], cp) 
@@ -5639,16 +5642,13 @@ def get_best_cal(meteor_file, cal_files, stars , cal_img, json_conf,mcp=None):
       return(0)
 
 def update_center_radec(archive_file,cal_params,json_conf,time_diff=0):
-   #print("IN FILE (FOR DATE):", archive_file)
+   #print("IN FILE (FOR DATE):", archive_file, time_diff)
    rah,dech = AzEltoRADec(cal_params['center_az'],cal_params['center_el'],archive_file,cal_params,json_conf,time_diff)
    rah = str(rah).replace(":", " ")
    dech = str(dech).replace(":", " ")
    ra_center,dec_center = HMS2deg(str(rah),str(dech))
-   #print("UPDATED RA/DEC:", ra_center, dec_center)
    cal_params['ra_center'] = float(ra_center)
    cal_params['dec_center'] = float(dec_center)
-   #for key in cal_params:
-   #   print("UPDATE RAC", key, cal_params[key])
    return(cal_params)
 
 def get_cal_files (meteor_file=None, cam=None):
@@ -5685,7 +5685,7 @@ def get_cal_files_old(meteor_file=None, cam=None):
    if cam is None:
       cal_dirs = glob.glob("/mnt/ams2/cal/freecal/*")
    else:
-      print("CAM:", cam)
+      #print("CAM:", cam)
       cal_dirs = glob.glob("/mnt/ams2/cal/freecal/*" + cam + "*")
    for cd in sorted(cal_dirs,reverse=True):
       if cfe(cd,1) != 1:
@@ -9130,6 +9130,8 @@ def AzEltoRADec(az,el,cal_file,cal_params,json_conf,time_diff=0):
    azr = np.radians(az)
    elr = np.radians(el)
    hd_datetime, hd_cam, hd_date, hd_y, hd_m, hd_d, hd_h, hd_M, hd_s = convert_filename_to_date_cam(cal_file)
+   #print("DATETIME:", hd_datetime)
+   #print("CALPARAMS", cal_params)
    if "trim" in cal_file:
       # add extra sec from trim num
       try:
@@ -9156,6 +9158,7 @@ def AzEltoRADec(az,el,cal_file,cal_params,json_conf,time_diff=0):
       device_alt = json_conf['site']['device_alt']
 
    #print("DEVICE LAT/LON", device_lat, device_lng, device_alt)
+   #print("CENTER AZ/EL ", cal_params['center_az'], cal_params['center_el'])
 
    obs = ephem.Observer()
 
@@ -9168,7 +9171,6 @@ def AzEltoRADec(az,el,cal_file,cal_params,json_conf,time_diff=0):
 
    ra,dec = obs.radec_of(azr,elr)
    
-   #print("HD DATETIME:", hd_datetime, az, el, ra, dec)
    return(ra,dec)
 
 
@@ -10324,7 +10326,7 @@ def minimize_poly_multi_star(merged_stars, json_conf,orig_ra_center=0,orig_dec_c
    if show == 1 :
       cv2.namedWindow("pepe")
       cv2.resizeWindow("pepe", 1920, 1080)
-   if len(merged_stars) < 10:
+   if len(merged_stars) < 5:
       print("not enough stars to multi fit!")
       return(0,0,0)
 
