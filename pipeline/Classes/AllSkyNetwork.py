@@ -9,7 +9,7 @@ import math
 import boto3
 from boto3.dynamodb.conditions import Key
 from RMS.Math import angularSeparation
-from lib.PipeAutoCal import XYtoRADec 
+from lib.PipeAutoCal import XYtoRADec , find_stars_with_grid
 from recal import get_catalog_stars, get_star_points, get_xy_for_ra_dec, minimize_fov, get_image_stars_with_catalog
 from lib.PipeAutoCal import update_center_radec
 from lib.Map import make_map,geo_intersec_point 
@@ -97,19 +97,22 @@ class AllSkyNetwork():
       self.help()
 
    def load_reconcile_stations(self):
-      geolocator = Nominatim(user_agent="geoapiExercises")
-      API_URL = "https://kyvegys798.execute-api.us-east-1.amazonaws.com/api/allskyapi?cmd=get_stations&api_key=" + self.json_conf['api_key'] + "&station_id=" + self.json_conf['site']['ams_id']
+      rec = False
+      if rec is True:
+         geolocator = Nominatim(user_agent="geoapiExercises")
+         API_URL = "https://kyvegys798.execute-api.us-east-1.amazonaws.com/api/allskyapi?cmd=get_stations&api_key=" + self.json_conf['api_key'] + "&station_id=" + self.json_conf['site']['ams_id']
 
-      response = requests.get(API_URL)
-      content = response.content.decode()
-      content = content.replace("\\", "")
-      if content[0] == "\"":
-         content = content[1:]
-         content = content[0:-1]
-      jdata = json.loads(content)
-      save_json_file("/mnt/f/EVENTS/ALL_STATIONS.json", jdata['all_vals'], True)
+         response = requests.get(API_URL)
+         content = response.content.decode()
+         content = content.replace("\\", "")
+         if content[0] == "\"":
+            content = content[1:]
+            content = content[0:-1]
+         jdata = json.loads(content)
+         save_json_file("/mnt/f/EVENTS/ALL_STATIONS.json", jdata['all_vals'], True)
 
-      print("start load_reconcile_stations:")
+         print("start load_reconcile_stations:")
+
       dyna_station_data = load_json_file("/mnt/f/EVENTS/ALL_STATIONS.json")
       self.dyna_stations = {}
       name = None
@@ -141,6 +144,14 @@ class AllSkyNetwork():
          os.system("wget -q https://allsky7.net/stations/stations.json -O stations.json")
       self.station_data = load_json_file("stations.json")
       self.rurls = {}
+      # load vpn hosts into rurls
+      fp = open("vpn.txt")
+      for line in fp:
+         line = line.replace("\n", "")
+         el = line.split(" ")
+         host,ip = el[0].split(",")
+         self.rurls["AMS" + host] = ip
+
       # update stations if the country code is not right
 
       for data in self.station_data['stations']:
@@ -152,7 +163,7 @@ class AllSkyNetwork():
          self.rurls[station] = url
 
          # make sure country is ok
-         if station in self.dyna_stations:
+         if station in self.dyna_stations and rec is True:
             if country != self.dyna_stations[station]['country']:
                print("CC:", station, country, self.dyna_stations[station]['country'])
                keys = {}
@@ -160,11 +171,14 @@ class AllSkyNetwork():
                update_vals = {}
                update_vals['country'] = country 
                update_dyna_table(self.dynamodb, "station", keys, update_vals)
+         elif station in self.dyna_stations :
+            print(station, "IN DYNA")
          else:
             print("NOT IN DYNA:", station)
+
       for station_id in self.dyna_stations:
          row = self.dyna_stations[station_id] 
-         if "location" not in self.dyna_stations:
+         if "location" not in self.dyna_stations and rec is True:
             Latitude = row['lat']
             Longitude = row['lon']
             station_id = row['station_id']
@@ -196,6 +210,13 @@ class AllSkyNetwork():
                         update_vals['country'] =  row['geoloc']['country_code'].upper()
                         update_dyna_table(self.dynamodb, "station", keys, update_vals)
 
+      self.station_loc = {}
+      for st_id in self.dyna_stations:
+         row = self.dyna_stations[st_id]
+         lat = row['lat'] 
+         lon = row['lon'] 
+         alt = row['alt']
+         self.station_loc[st_id] = [lat,lon,alt]
          
       print("end load_reconcile_stations:")
 
@@ -5156,7 +5177,6 @@ class AllSkyNetwork():
             if gray_roi is not None:
                print(rx1,ry1,rx2,ry2)
                #cv2.imshow('gray roi', gray_roi)
-               #cv2.waitKey(0)
 
             min_val, max_val, min_loc, (mx,my)= cv2.minMaxLoc(gray_roi)
 
@@ -5192,7 +5212,6 @@ class AllSkyNetwork():
             cv2.rectangle(src_img, (int(ax1), int(ay1 )), (int(ax2) , int(ay2) ), (255, 255, 255), 2)
             #cv2.imshow("SRC", src_img)
             #cv2.imshow("AI", ai_img)
-            #cv2.waitKey(0)
             return(ai_img)
 
    def trans_img(self, img1, img2, dur_frms=10):
@@ -8757,7 +8776,6 @@ status [date]   -    Show network status report for that day.
                         if int(fc) <= len(self.all_frames[obs_fn]):
                            fimg = self.all_frames[obs_fn][int(fc)]
                            #cv2.imshow('pepe', fimg)
-                          #cv2.waitKey(0)
                #else:
                #   print(obs_fn, "NOT FOUND IN ALL FRAMES", self.all_frames.keys())
             #else:
@@ -8765,7 +8783,7 @@ status [date]   -    Show network status report for that day.
             fimg_tn = cv2.resize(fimg,(tw,th))
             main_frame[y1:y2,x1:x2] = fimg_tn
          cv2.imshow('pepe', main_frame)
-         cv2.waitKey(0)
+         cv2.waitKey(30)
          mc += 1   
       #exit()
 
@@ -8958,10 +8976,6 @@ status [date]   -    Show network status report for that day.
       mask_image = cv2.resize(mask_image_bgr,(1920,1080))
       med_frame= cv2.resize(mask_image_bgr,(1920,1080))
 
-      #cv2.imshow('pepe', med_frame)
-      #cv2.waitKey(0)
-      #cv2.imshow('pepe', mask_image)
-      #cv2.waitKey(0)
       return(mask_image_bgr)
 
    def find_best_thresh(self, bw_sub):
@@ -9081,11 +9095,6 @@ status [date]   -    Show network status report for that day.
       for obj_id in obj_xs:
          channel_img = self.make_channel(obj_xs[obj_id],obj_ys[obj_id], 1920,1080, channel_img)
 
-         #plt.scatter(obj_xs[obj_id],obj_ys[obj_id]) 
-         #cv2.imshow('pepe', channel_img)
-         #cv2.waitKey(0)
-         #plt.gca().invert_yaxis()
-         #plt.show()
       channel_img = self.invert_image(channel_img)
       channel_img = cv2.cvtColor(channel_img,cv2.COLOR_GRAY2BGR)
 
@@ -9121,6 +9130,17 @@ status [date]   -    Show network status report for that day.
          objects[oid]['cnts'] = [[fn,mx,my,mw,mh]]
          return(oid, objects)
 
+   def setup_cal_db(self):
+      # connect to the main cal db
+      db_file = self.db_dir + "ALLSKYNETWORK_CALIBS.db"
+      print("DB FILE IS:", db_file)
+      if os.path.exists(db_file) is False:
+         print("DB FILE NOT FOUND.", db_file)
+         return ()
+      self.cal_con = sqlite3.connect(db_file)
+      self.cal_con.row_factory = sqlite3.Row
+      self.cal_cur = self.cal_con.cursor()
+
 
    def remote_cal_one(self, full_file):
 
@@ -9131,8 +9151,6 @@ status [date]   -    Show network status report for that day.
          med_file = full_file.replace(".mp4", "-med.jpg")
          med_frame = cv2.resize(med_frame, (1920,1080))
          cv2.imwrite(med_file, med_frame)
-         #cv2.imshow('pepe', med_frame)
-         #cv2.waitKey(0)
 
          full_file = med_file
 
@@ -9189,7 +9207,7 @@ status [date]   -    Show network status report for that day.
       if cal_params['total_res_px'] >= 999:
          print("REMOTE CAL FAILED!", len(cal_params['user_stars']), len(cal_params['cat_image_stars']), cal_params['total_res_px'] )
          cv2.imshow('pepe', img)
-         cv2.waitKey(0)
+         cv2.waitKey(30)
          exit()
 
       cal_params['user_stars'] = star_points
@@ -9202,7 +9220,7 @@ status [date]   -    Show network status report for that day.
             cv2.rectangle(show_img, (int(new_cat_x-10), int(new_cat_y-10)), (int(new_cat_x+10) , int(new_cat_y+10) ), (255, 255, 255), 1)
             print("STAR FROM CAT STARS", star)
             cv2.imshow('pepe', show_img)
-            cv2.waitKey(0)
+            cv2.waitKey(30)
 
       if cal_params is None:
          text1 = "NO CAL PARAMS FOUND!" 
@@ -9227,13 +9245,13 @@ status [date]   -    Show network status report for that day.
             cv2.circle(show_img, (int(star_x),int(star_y)), int(5), (0,255,0),2)
             cv2.rectangle(show_img, (int(new_cat_x-10), int(new_cat_y-10)), (int(new_cat_x+10) , int(new_cat_y+10) ), (255, 255, 255), 1)
             cv2.imshow('pepe', show_img)
-            cv2.waitKey(0)
+            cv2.waitKey(30)
 
       for row in star_points[0:50]:
          mx, my, inten = row
          cv2.circle(show_img, (int(mx),int(my)), int(5), (128,128,128),2)
          cv2.imshow('pepe', stars_image)
-         cv2.waitKey(0)
+         cv2.waitKey(30)
          print(row)
 
       extra_text = "Hello there..." 
@@ -9263,7 +9281,7 @@ status [date]   -    Show network status report for that day.
 
       cv2.putText(img, str(text1),  (int(20),int(20)), cv2.FONT_HERSHEY_SIMPLEX, .6, (255,255,255), 1)
       cv2.imshow('pepe', show_img)
-      cv2.waitKey(0)
+      cv2.waitKey(30)
 
 
    def insert_last_best_cal(self, cp ):
@@ -9281,10 +9299,71 @@ status [date]   -    Show network status report for that day.
       self.cal_con.commit()
 
 
+   def get_remote_cal(self, station_id, cam_id, filename):
+      # get the remote multi-poly file for this station if the local cached one is 
+      # too old. 
+      if station_id in self.rurls:
+         remote_url = self.rurls[station_id]
+      else:
+         remote_url = None
+
+      local_cal_dir = "/mnt/f/EVENTS/STATIONS/" + station_id + "/CAL/"
+      local_cal_file = local_cal_dir + "multi_poly-" + station_id + "-" + cam_id + ".info"
+      remote_cal_file = remote_url + "/cal/" + "multi_poly-" + station_id + "-" + cam_id + ".info"
+      local_conf_file = local_cal_dir + "as6.json"
+      local_range_file = local_cal_dir + station_id + "_cal_range.json"
+      if os.path.exists(local_range_file) is True:
+         cal_range = load_json_file(local_range_file)
+      else:
+         cal_range = []
+      if os.path.exists(local_cal_dir) is False:
+         os.makedirs(local_cal_dir)
+      if os.path.exists(local_conf_file) is True:
+         print(local_conf_file)
+         try:
+            remote_json_conf = load_json_file(local_conf_file)
+         except:
+            os.system("rm " + remote_json_conf)
+      else:
+         print("NO LOCAL CAL CONF FILE EXISTS FETCH IT!", local_conf_file)
+         exit()
+
+      if os.path.exists(local_cal_file) is True:
+         sz, td = get_file_info(local_cal_file)
+         if td / 60 / 24 > 1:
+            print("LOCAL CACHE FILE IS > 1 day old", td / 60 / 24, local_cal_file)
+            cmd = "wget " + remote_cal_file + " -O " + local_cal_file
+            print(cmd)
+            os.system(cmd)
+      else:
+         cmd = "wget " + remote_cal_file + " -O " + local_cal_file
+         print(cmd)
+         os.system(cmd)
+
+      if os.path.exists(local_cal_file) is True:
+         print(local_cal_file)
+         cp = load_json_file(local_cal_file)
+         print("BEFORE RA:", cp['ra_center'], cp['dec_center'])
+         print(filename)
+         cp = update_center_radec(filename, cp,remote_json_conf)
+         print("AFTER UP RA:", cp['ra_center'], cp['dec_center'])
+      else:
+         print("NO LOCAL CAL CACHE FILE EXISTS FETCH IT!", local_cal_file)
+         exit()
+
+      #for k in cp:
+      #   if "stars" not in k:
+      cp['cal_range'] = cal_range
+      return(cp, remote_json_conf)
 
    def get_remote_cal_params(self, station_id, cam_id, obs_id, cal_date, show_img, star_points = []):
-
+      print("GET REMOTE CAL1")
+      # not sure when / where this is loaded!
       # get the last best cal value if it exists
+
+      print("station:", station_id, cam_id, obs_id, cal_date)
+      print("star points:", star_points)
+      input("Wait1")
       sql = """
          SELECT station_id, camera_id, calib_fn, cal_datetime, cal_timestamp, az, el, ra, dec, position_angle, pixel_scale, user_stars, cat_image_stars, x_poly, y_poly,x_poly_fwd,y_poly_fwd,res_px,res_deg 
            FROM last_best_cal 
@@ -9304,6 +9383,18 @@ status [date]   -    Show network status report for that day.
       cloud_cal_dir = "/mnt/archive.allsky.tv/" + station_id + "/CAL/"
       local_cal_dir = "/mnt/f/EVENTS/STATIONS/" + station_id + "/CAL/"
       remote_json_conf_file = local_cal_dir + "as6.json"
+
+      # BUG
+      #sz, td = get_file_info(remote_json_conf)
+      #if td / 60 / 24 > 1:
+      #   print("JC IS OLD! GET NEW ONE!")
+      #   url = self.rurls[station_id]
+      #   print(url + "/)
+
+      print("RJC:", remote_json_conf_file)
+
+      input("Wait2")
+
       if os.path.isdir(local_cal_dir) is False:
          os.makedirs(local_cal_dir)
       if os.path.exists(remote_json_conf_file) is True:
@@ -9340,7 +9431,14 @@ status [date]   -    Show network status report for that day.
       #print("All files should be sync'd")
       cal_range_file = local_cal_dir + station_id + "_cal_range.json"
       remote_json_conf = load_json_file(remote_json_conf_file)
-      print(cal_range_file)
+
+
+
+      # remote json conf should come from the station_dict data not the old as6.json file!
+      remote_json_conf['site']['device_lat'] = self.station_dict[station_id]['lat']
+      remote_json_conf['site']['device_lng'] = self.station_dict[station_id]['lon']
+      remote_json_conf['site']['device_alt'] = self.station_dict[station_id]['alt']
+
       lens_file = local_cal_dir + station_id + "_" + cam_id + "_LENS_MODEL.json"
       if os.path.exists(lens_file) is True: 
          lens_model = load_json_file(lens_file)
@@ -9393,10 +9491,17 @@ status [date]   -    Show network status report for that day.
          cal_params = update_center_radec(temp,lens_model,remote_json_conf)
 
          cat_stars, short_bright_stars, cat_image = get_catalog_stars(cal_params)
+         #print("RURL", self.rurls[station_id])
+         #print("REMOTE:", remote_json_conf['site']['device_lat'], remote_json_conf['site']['device_lng'])
+         print(cal_params)
          used = {}
+         star_points = find_stars_with_grid(orig_img)
+         print("STAR:", star_points)
          if True:
             for ix,iy,ii in star_points[0:250]:
-               cv2.circle(show_img, (ix,iy), int(5), (0,255,0),1)
+               cv2.circle(show_img, (int(ix),int(iy)), int(5), (0,255,0),1)
+               cv2.imshow('pepe', show_img)
+               cv2.waitKey(30)
 
          all_res = []
          cat_image_stars = []
@@ -9437,14 +9542,14 @@ status [date]   -    Show network status report for that day.
          else:
             avg_res = 999
          print("RES:", avg_res)
-         if avg_res <= best_res :
+         if avg_res < best_res :
             print("*** BEST RES BEAT:", best_res, avg_res, cal_params['center_az'], cal_params['center_el'])
             best_res = avg_res
             best_calib = cal_params
             best_calib['cat_image_stars'] = cat_image_stars
             best_calib['total_res_px'] = avg_res 
          cv2.imshow('pepe', show_img)
-         cv2.waitKey(0)
+         cv2.waitKey(30)
 
 
 
@@ -9701,7 +9806,6 @@ status [date]   -    Show network status report for that day.
       #   channel_img = cv2.cvtColor(channel_img,cv2.COLOR_GRAY2BGR)
 
       #cv2.imshow("channel", channel_img)
-      #cv2.waitKey(0)
 
       return(channel_img)
 
