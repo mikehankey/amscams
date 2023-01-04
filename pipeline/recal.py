@@ -5407,8 +5407,8 @@ def apply_calib (cal_file, calfiles_data, json_conf, mcp, last_cal_params=None, 
       # first check if the file is corrupt. If so reset 1 time, else move to bad.
 
       if len(cal_params['cat_image_stars']) < 10 or cal_params['total_res_px'] > 10 :
-         if "refit_fov" in cal_params:
-            if cal_params['refit_fov'] >= 3:
+         if "reapply" in cal_params:
+            if cal_params['reapply'] >= 2:
                # reset this file! 
                auto_dir = "/mnt/ams2/meteor_archive/" + station_id + "/CAL/AUTOCAL/" + cur_year + "/"
                # add code to track the # of times this has been done. Only allow it 1-2 times then perma delete the calib file
