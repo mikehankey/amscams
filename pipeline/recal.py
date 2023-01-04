@@ -5406,23 +5406,25 @@ def apply_calib (cal_file, calfiles_data, json_conf, mcp, last_cal_params=None, 
 
       # first check if the file is corrupt. If so reset 1 time, else move to bad.
 
-      if len(cal_params['cat_image_stars']) < 10 or cal_params['total_res_px'] > 10:
-         # reset this file! 
-         auto_dir = "/mnt/ams2/meteor_archive/" + station_id + "/CAL/AUTOCAL/" + cur_year + "/"
-         # add code to track the # of times this has been done. Only allow it 1-2 times then perma delete the calib file
-         print("BAD CAL REMOVE:", len(cal_params['cat_image_stars']), cal_params['total_res_px'])
-         cmd = "cp " + cal_dir + cal_image_file + " " + auto_dir + cal_image_file.replace("-stacked.png", ".png")
-         print("\tCMD:", cmd)
-         os.system(cmd)
-         cmd = "rm -rf " + cal_dir 
-         print("\t", cmd)
-         os.system(cmd)
-         print("\t***")
-         print("\t****")
-         print("\t*****")
+      if len(cal_params['cat_image_stars']) < 10 or cal_params['total_res_px'] > 10 :
+         if "refit_fov" in cal_params:
+            if cal_params['refit_fov'] >= 3:
+               # reset this file! 
+               auto_dir = "/mnt/ams2/meteor_archive/" + station_id + "/CAL/AUTOCAL/" + cur_year + "/"
+               # add code to track the # of times this has been done. Only allow it 1-2 times then perma delete the calib file
+               print("BAD CAL REMOVE:", len(cal_params['cat_image_stars']), cal_params['total_res_px'])
+               cmd = "cp " + cal_dir + cal_image_file + " " + auto_dir + cal_image_file.replace("-stacked.png", ".png")
+               print("\tCMD:", cmd)
+               os.system(cmd)
+               cmd = "rm -rf " + cal_dir 
+               print("\t", cmd)
+               os.system(cmd)
+               print("\t***")
+               print("\t****")
+               print("\t*****")
 
 
-         return(None,None)
+               return(None,None)
 
       before_files, after_files = get_close_calib_files(cal_file)
       if cal_params['total_res_px'] > 3:
