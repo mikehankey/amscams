@@ -8708,6 +8708,8 @@ def characterize_best(cam_id, con, cur, json_conf,limit=50, cal_fns=None):
          good += 1
       else:
          bad += 1
+      if star_flux is None:
+         star_flux = 0
       if mag > 4 and star_flux > 500:
          print("MAG FAIL!", mag, star_flux)
          fact += 10
