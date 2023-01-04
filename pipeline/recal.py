@@ -2915,8 +2915,6 @@ def pair_star_points(cal_fn, oimg, cal_params, json_conf, con, cur, mcp, save_im
             #if SHOW == 1:
             #   cv2.imshow('pepe', show_img)
             #   cv2.waitKey(0)
-      #else:
-      #   print("     NO CLOSE STARS FOUDN TO THIS POINT")
 
    cal_dir = "/mnt/ams2/cal/freecal/" + cal_fn.replace("-stacked-calparams.json", "/")
 
@@ -2990,8 +2988,6 @@ def re_pair_stars(cal_fn, cp, json_conf, show_img, con, cur,mcp):
          new_cat_stars.append((dcname,mag,ra,dec,img_ra,img_dec,match_dist,up_cat_x,up_cat_y,img_az,img_el,up_cat_x,up_cat_y,six,siy,res_px,bp))
          new_star = (dcname,mag,ra,dec,img_ra,img_dec,match_dist,up_cat_x,up_cat_y,img_az,img_el,up_cat_x,up_cat_y,six,siy,res_px,bp)
          insert_paired_star_full(new_star, cal_fn, cp, mcp, json_conf)
-      else:
-         print("NO CLOSE STARS FOUND")
 
    cp['cat_image_stars'] = new_cat_stars
 
@@ -3771,7 +3767,6 @@ def pair_points(cal_fn, star_points, star_pairs_file, star_pairs_image_file, cal
              foo = 1
          #   print("CLOSE:", rows)
          else:
-         #   print("NO CLOSE STARS IN RA/DEC:", svals)
             desc = "X - No close stars" 
             cv2.putText(show_img, desc,  (int(x),int(y)), cv2.FONT_HERSHEY_SIMPLEX, .4, (0,0,255), 1)
          if SHOW == 1:
