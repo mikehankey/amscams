@@ -9006,7 +9006,10 @@ def characterize_fov(cam_id, con, cur, json_conf):
       if cal_fn not in best_dict:
          continue
 
-      flux_diff = star_flux / med_flux
+      if star_flux is not None and med_flux is not None:
+         flux_diff = star_flux / med_flux
+      else :
+         flux_diff = 0
 
       grid_key = get_grid_key(grid_data, img_x, img_y, zp_res_px, zp_slope)
       try:
