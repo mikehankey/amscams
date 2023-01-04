@@ -8601,8 +8601,8 @@ def pair_stars(cal_params, cal_params_file, json_conf, cal_img=None, show = 0):
          sy1 = 0
       close_stars = find_close_stars((ix,iy), cat_stars, 100, cal_img)
       found = 0
-      if len(close_stars) == 0:
-         print("NO CLOSE STARS FOR ", ix,iy,bp)
+      #if len(close_stars) == 0:
+      #   print("NO CLOSE STARS FOR ", ix,iy,bp)
       for name,mag,ra,dec,new_cat_x,new_cat_y,six,siy,cat_dist in close_stars:
          #dcname = str(name.decode("utf-8"))
          #dbname = dcname.encode("utf-8")
