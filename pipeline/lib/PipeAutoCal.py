@@ -7006,7 +7006,9 @@ def autocal(image_file, json_conf, show = 0, heal_only=0):
    day = fn[0:10]
    cal_hist = get_default_calib_hist(day, cam, json_conf)
    last_best_res = None 
-   for day_diff, hist in cal_hist[0:30]:
+   #for day_diff, hist in cal_hist[0:30]:
+   # check previous cals
+   if False:
       cam, date ,az, el, pos, pxs, res = hist
       data = [image_file, az, el, pos, pxs, len(stars), len(stars), 99,0]  
       cp = make_cal_obj(az,el,pos,pxs,stars,stars,res)
