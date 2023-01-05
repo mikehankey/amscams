@@ -2801,6 +2801,10 @@ def revert_to_wcs(cal_fn,mcp=None):
       cal_params['wcs']['pixscale'] = new_cal_params['pixscale']
    else:
       print("NO WCS FILE", cal_file, wcs_info_file)
+      plate_file, plate_img = make_plate(cal_fn, json_conf, con, cur)
+      result = solve_field(plate_file, json_conf, con, cur)
+      time.sleep(10)
+
       return(None)
 
    if mcp is not None:
