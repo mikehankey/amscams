@@ -5417,6 +5417,7 @@ def apply_calib (cal_file, calfiles_data, json_conf, mcp, last_cal_params=None, 
                print("\t***")
                print("\t****")
                print("\t*****")
+               print("Reapply already at ", cal_params['reapply'])
 
 
                return(None,None)
