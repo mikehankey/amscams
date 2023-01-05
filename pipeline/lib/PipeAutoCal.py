@@ -3024,11 +3024,11 @@ def get_stars_no_model(img, cp) :
          cv2.line(show_img, (int(scx),int(scy)), (int(new_cat_x),int(new_cat_y)), (128,128,128), 1)
          #cv2.imshow('FINAL', show_img)
          #cv2.waitKey(30)
-         print("MARK:", star)
-   print("These stars were not found")
-   print("--------------------------")
-   for row in not_found:
-      print(row)
+
+   #print("These stars were not found")
+   #print("--------------------------")
+   #for row in not_found:
+   #   print(row)
 
    print("These stars were found")
    print("----------------------")
