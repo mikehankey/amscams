@@ -1609,8 +1609,6 @@ def refit_meteor(meteor_file, json_conf,force=0):
    if "custom_lens" not in mj:
       if cfe(mcp_file) == 1:
          mcp = load_json_file(mcp_file)
-         print("MCP:", mcp)
-         print("CP:", cp)
          if cp['x_poly'][0] == mcp['x_poly'][0]:
             already_fit = 1
          else:
@@ -1749,7 +1747,6 @@ def refit_meteor(meteor_file, json_conf,force=0):
          cp = temp_cp
       cp, bad_stars,marked_img = eval_cal(meteor_file,json_conf,cp,image)
       #   cp = get_more_stars_with_catalog(meteor_file, cp, image, json_conf)
-      #print("CP:", cp)
    cp = update_center_radec(meteor_file,cp,json_conf)
    cp = pair_stars(cp, meteor_file, json_conf, image)
    # do batch mode
@@ -1896,7 +1893,6 @@ def refit_meteor(meteor_file, json_conf,force=0):
          return()
       red_data = load_json_file(red)
       if isinstance(cp['x_poly'], list) is not True:
-         #print("CP PPOLY", cp['x_poly'])
          cp['x_poly'] = cp['x_poly'].tolist()
          cp['y_poly'] = cp['y_poly'].tolist()
          cp['y_poly_fwd'] = cp['y_poly_fwd'].tolist()
@@ -2447,7 +2443,7 @@ def guess_cal(cal_file, json_conf, cal_params = None):
    if SHOW == 1: 
       cv2.imshow('pepe2', img)
       cv2.waitKey(30)
-   print("GUSS CAM:", this_cam)
+   print("GUESS CAM:", this_cam)
    az_guess, el_guess, pix_guess, pos_ang_guess = get_cam_best_guess(this_cam, json_conf)
    if "src.jpg" in cal_file:
       cp_file = cal_file.replace("-src.jpg", "-calparams.json")
@@ -2456,7 +2452,6 @@ def guess_cal(cal_file, json_conf, cal_params = None):
    #if cfe(cp_file) == 1:
       if az_guess == 0 and el_guess == 0:
          cp_file = cp_file.replace("-src", "") 
-         print("CP FILE:", cp_file)
          cp = load_json_file(cp_file)
          az_guess = cp['center_az']
          el_guess = cp['center_el']
@@ -3126,7 +3121,6 @@ def ai_refit_fov(cal_file, json_conf):
    if os.path.exists(cal_file) is True:
       cal_params = load_json_file(cal_file) 
 
-   print("CP", cal_params['x_poly'])
 
 
    mcp_dir = "/mnt/ams2/cal/" 
@@ -4265,13 +4259,13 @@ def make_cal_summary(cam,json_conf):
    mj['sd_trim'] = first_key 
    cp = update_center_radec(first_key,mj['cp'],json_conf,time_diff=0)
 
-   for key in cp : # mj['cp']:
-      print(key, mj['cp'][key])
+   #for key in cp : # mj['cp']:
+   #   print(key, mj['cp'][key])
 
    #mj['cp'] = update_center_radec(first_key,mj['cp'],json_conf)
 
-   for key in mj['cp']:
-      print("CP:", key, mj['cp'])
+   #for key in mj['cp']:
+   #   print("CP:", key, mj['cp'])
   # print("RAZ:", recent_azs)
    grid_image, blend_image = make_az_grid(img, mj, json_conf)
    if SHOW == 1:
