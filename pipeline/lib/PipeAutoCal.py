@@ -610,7 +610,6 @@ def make_default_cal(json_conf, cam ):
       if last_row is not None:
          lcam_id, lday, laz, lel, lpos, lpxs, lres = last_row
          cal_diff = calc_cal_diff(row, last_row)
-         print("DIFF FROM LAST:", cal_diff)
          if cal_diff > 1:
             cam_moved.append(row)
       if cam_id == cam:
@@ -735,7 +734,6 @@ def calc_cal_diff(row, last_row):
    eld = abs(el - lel)
    posd = abs(pos - lpos)
    cal_diff = (azd + eld + posd) / 3
-   print("CAL DIF:", azd, eld, posd, cal_diff)
    return(cal_diff)
 
 def get_default_calib_hist(this_day, cams_id, json_conf):
@@ -6865,7 +6863,6 @@ def find_meds(cal_data):
 
 
 def cal_all(json_conf):
-   print("CAL ALL")
    year = datetime.now().strftime("%Y")
    cal_dir = ARC_DIR + "CAL/AUTOCAL/" + year + "/"
    update_defaults(json_conf)
@@ -6878,7 +6875,6 @@ def cal_all(json_conf):
    if cfe(cal_dir + "solved", 1) == 0:
       os.makedirs(cal_dir + "solved")
    files = glob.glob(cal_dir + "*.png")
-   print("CAL DIR:", cal_dir)
    #print(cal_dir)
    for file in sorted(files):
       print("RUN AUTO CAL.", file)
