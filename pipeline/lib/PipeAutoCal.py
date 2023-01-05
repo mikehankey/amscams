@@ -1749,16 +1749,13 @@ def refit_meteor(meteor_file, json_conf,force=0):
          cp = temp_cp
       cp, bad_stars,marked_img = eval_cal(meteor_file,json_conf,cp,image)
       #   cp = get_more_stars_with_catalog(meteor_file, cp, image, json_conf)
-      print("CP:", cp)
+      #print("CP:", cp)
    cp = update_center_radec(meteor_file,cp,json_conf)
-   print(image.shape)
    cp = pair_stars(cp, meteor_file, json_conf, image)
-   print(image.shape)
    # do batch mode
    cp, bad_stars, marked_img = eval_cal_res(meteor_file, json_conf, cp, image,None,None,cp['cat_image_stars']) 
    #cp, bad_stars,marked_img = eval_cal_res(meteor_file,json_conf,cp,image)
 
-   print(image.shape)
    short_bright_stars = []
    if "cat_image_stars" in cp: 
       for star in cp['cat_image_stars']:
@@ -6181,7 +6178,7 @@ def optimize_matchs(cp_file,json_conf,nc,oimg):
 
 
 def eval_cal_res(cp_file,json_conf,nc=None,oimg=None, mask_img=None,batch_mode=None,short_bright_stars=None):
-   print("eval_cal_res:", cp_file)
+   #print("eval_cal_res:", cp_file)
    dist_type = "radial"
    cal_params = nc
 
@@ -6211,7 +6208,6 @@ def eval_cal_res(cp_file,json_conf,nc=None,oimg=None, mask_img=None,batch_mode=N
 
       new_cat_x, new_cat_y = distort_xy(0,0,ra,dec,float(cal_params['ra_center']), float(cal_params['dec_center']), cal_params['x_poly'], cal_params['y_poly'], float(cal_params['imagew']), float(cal_params['imageh']), float(cal_params['position_angle']),3600/float(cal_params['pixscale']))
       cat_dist = calc_dist((six,siy),(new_cat_x,new_cat_y))
-      #print("PXS, CAT DIST:", cal_params['pixscale'], cat_dist)
 
       rez.append(cat_dist)
       new_cat_stars.append((dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist,star_int))
@@ -6961,12 +6957,6 @@ def autocal(image_file, json_conf, show = 0, heal_only=0):
       img = cv2.subtract(gray_img, mask_img)
       img = cv2.cvtColor(img, cv2.COLOR_GRAY2BGR)
 
-   #if SHOW == 1:
-   #   cv2.imshow('pepe', mask_img)
-   #   cv2.waitKey(30)
-
-   # get stars / bright spots in image
-   #stars = scan_for_stars(img)
    stars = find_stars_with_grid(img)
    if True:
       for star in stars:
@@ -7786,8 +7776,8 @@ def find_stars_with_grid(img):
          px_diff = max_val - avg_px
          desc = " AVG PX" + str(avg_px) + " MAX VAL" + str(max_val) + "PX DIFF: " + str(px_diff)
          #print("MIN VAL, MAX VAL", min_val, max_val)
-         if px_diff > 25 and min_val != 0:
-            thresh_val = max_val * .9
+         if px_diff > 15 and min_val != 0:
+            thresh_val = max_val * .8
             _, thresh_img = cv2.threshold(show_gimg, thresh_val, 255, cv2.THRESH_BINARY)
             cnts = get_contours_in_crop(thresh_img)
             if len(cnts) == 0:
