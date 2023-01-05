@@ -6762,7 +6762,8 @@ def update_paired_stars(cal_fn, cal_params, stars, con, cur, json_conf):
 
 def get_image_stars(cal_image_file, con, cur, json_conf,force=False):
 
-   input("get image stars 1")
+   print("get image stars 1")
+   time.sleep(5)
    # 1
    # run this the first time the image is processed to extract stars and pairs?
 
@@ -7106,7 +7107,8 @@ def get_paired_stars(cal_fn, cal_params, con, cur):
 
 
 def get_image_stars(cal_image_file, con, cur, json_conf,force=False):
-   input("get image stars 2")
+   print("get image stars 2")
+   time.sleep(5)
    # 2
    # run this the first time the image is processed to extract stars and pairs?
 
