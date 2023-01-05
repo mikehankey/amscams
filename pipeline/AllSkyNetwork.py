@@ -98,7 +98,7 @@ if cmd == "rsync_data":
    ASN.set_dates(date)
    ASN.rsync_data_only(event_day)
 
-if cmd == "resolve_failed_day" or cmd == "rerun_failed" or cmd == "resolved_failed":
+if cmd == "resolve_failed_day" or cmd == "rerun_failed" or cmd == "resolve_failed":
    print("RESOLVE FAILED DAY")
    ASN.help()
    ASN.set_dates(sys.argv[2])

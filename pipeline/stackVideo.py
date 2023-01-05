@@ -11,7 +11,7 @@ from lib.PipeUtil import load_json_file
 
 
 def stack_stack( pic1, pic2):
-      stacked_image=ImageChops.lighter(pic1,pic2)
+      stacked_image=ImageChops.lighter(ipic1,ipic2)
       return(stacked_image)
 
 
