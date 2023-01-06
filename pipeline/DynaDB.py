@@ -163,7 +163,7 @@ def save_json_conf(dynamodb, json_conf):
    conf_mini['city'] = json_conf['site']['operator_city']
    conf_mini['state'] = json_conf['site']['operator_state']
    if "operator_country" not in json_conf['site']:
-      json_conf['site']['operator_country'] = "USA"
+      json_conf['site']['operator_country'] = ""
    conf_mini['country'] = json_conf['site']['operator_country']
    conf_mini['lat'] = float(json_conf['site']['device_lat'])
    conf_mini['lon'] = float(json_conf['site']['device_lng'])
@@ -311,18 +311,6 @@ def insert_meteor_event(dynamodb=None, event_id=None, event_data=None):
       print("THIS EVENT ALREADY EXISTS!", event_id)
       print("CURRENT DATA:", event_data)
       print("EXISTING DATA:", rval)
-      #event_id += "A"
-      #event_data['event_id'] = event_id
-      #rkey = "E:" + event_id
-      #rval = r.get(rkey)
-      #if rval is None:
-      #   print("NEW SIMULTANEOUS EVENT DETECTED.", event_id)
-      #else:
-      #   print("SIMULTANEOUS EVENT A ALREADY EXISTS.", event_id)
-
-
-
-
 
    if dynamodb is None:
       dynamodb = boto3.resource('dynamodb')

@@ -97,7 +97,7 @@ class AllSkyNetwork():
       self.help()
 
    def load_reconcile_stations(self):
-      rec = False
+      rec = True
       if rec is True:
          geolocator = Nominatim(user_agent="geoapiExercises")
          API_URL = "https://kyvegys798.execute-api.us-east-1.amazonaws.com/api/allskyapi?cmd=get_stations&api_key=" + self.json_conf['api_key'] + "&station_id=" + self.json_conf['site']['ams_id']

@@ -3092,7 +3092,7 @@ def update_arc_cat_stars(calib, json_file,json_conf):
 
             # The image x,y of the star (CIRCLE)
             new_star['i_pos'] = [ix,iy]
-            # The lens distorted catalog x,y position of the star  (PLUS SIGN)
+            # The lens distorted catalog x,y position of the star  (PLS SIGN)
             new_star['cat_dist_pos'] = [new_x,new_y]
             # The undistorted catalog x,y position of the star  (SQUARE)
             new_star['cat_und_pos'] = [cat_x,cat_y]
@@ -8586,13 +8586,6 @@ def sync_curves(curve1, curve2):
          low_err = serr
          best_sync = sd_start
 
-   print("BEST SD SYNC ADJUST IS :", best_sync)
-   print("PEAK SD SYNC ADJUST IS :", peak_hd - peak_sd)
-   print("SD EVENT LEN:", max_sd)
-   print("HD EVENT LEN:", max_hd)
-   print("SD PEAK FN:", peak_sd, psdf)
-   print("HD PEAK FN:", peak_hd, phdf)
-   print("SYNC ERR:", low_err)
    event_len =  max([max_sd,max_hd])
    peak_sync = peak_hd - peak_sd
    return(best_sync, peak_sync, event_len, low_err)
@@ -9040,8 +9033,8 @@ def debug2(video_file):
    print("HD EVENT LENGTH          :", hd_meteor['ofns'][-1] - hd_meteor['ofns'][0]) 
 
    print("HD INITIAL END BUFFER    :", len(hd_frames) - hd_meteor['ofns'][-1])
-   print("HD ADJUSTED START FRAME  :", hd_meteor['ofns'][0] ) 
-   print("HD ADJUSTED END FRAME    :", hd_meteor['ofns'][-1] ) 
+   print("HD ADJ START FRAME  :", hd_meteor['ofns'][0] ) 
+   print("HD ADJ END FRAME    :", hd_meteor['ofns'][-1] ) 
    print("")
    print("SD FILE INFO         ")
    print("SD INITIAL START FRAME   :", sd_meteor['ofns'][0]) 
@@ -9051,9 +9044,9 @@ def debug2(video_file):
    print("SD INITIAL END BUFFER    :", len(sd_frames) - sd_meteor['ofns'][-1])
 
    print("SD EVENT LENGTH          :", sd_meteor['ofns'][-1] - sd_meteor['ofns'][0]) 
-   print("SD ADJUSTED START FRAME  :", sd_meteor['ofns'][0] + best_sync) 
+   print("SD ADJ START FRAME  :", sd_meteor['ofns'][0] + best_sync) 
 
-   print("SD ADJUSTED END FRAME    :", sd_meteor['ofns'][-1] + best_sync) 
+   print("SD ADJ END FRAME    :", sd_meteor['ofns'][-1] + best_sync) 
    print("")
    print("IDEAL BUFFER             :", ideal_buffer)
    missing_hd_frames = 0
@@ -10243,7 +10236,6 @@ def make_preview_image(json_file):
       axs = []
       ays = []
       ad = load_json_file(jd['archive_file'])
-      print("USING ARC!")
       if ad != 0:
          if "frames" in ad:
             for fr in ad['frames']:
@@ -10749,7 +10741,7 @@ def detect_in_vals(vals_file, cam_size_info):
       return()
 
    if len(suspect_meteors) > 0:
-      print("SUSPECT METEOR FOUND!")
+      print("MAYBE METEOR FOUND!")
       detect_info = {}
       detect_info['events'] = events 
       detect_info['objects'] = objects 
@@ -11331,14 +11323,11 @@ def verify_meteor(meteor_json_file):
       return()
 
    if len(suspect_meteors) == 1:
-      print("SUSPECT METEORS!")
+      print("MAYBE METEORS!")
       print(suspect_meteors)
 
 
-   #print("SUS:", len(suspect_meteors))
-   #exit()
 
-   #if len(suspect_meteors) == 1:
    for i in range(0, len(suspect_meteors)):
       trim_file, start_fn,end_fn, cx1,cy1,cx2,cy2,mid_x,mid_y = get_vals_trim(video_file, suspect_meteors[i])
 

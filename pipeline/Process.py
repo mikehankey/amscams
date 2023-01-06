@@ -317,7 +317,7 @@ if __name__ == "__main__":
       fix_meteor_dir(sys.argv[2])
    if cmd == "minify":
       LIVE_METEOR_DIR = "/mnt/ams2/nice/min/"
-      text = "James Hannon, Otter Creek TWP USA"
+      text = ""
       meteor_data = {}
       meteor_data[sys.argv[2]] = {}
       meteor_data[sys.argv[2]]['sd_w'] = "640"

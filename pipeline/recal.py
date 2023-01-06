@@ -40,7 +40,189 @@ from prettytable import PrettyTable as pt
 
 tries = 0
 
-   
+
+def blind_solve(cal_file, con, cur, json_conf):
+
+   # determine if this is a remote file or local file
+   if "AMS" in cal_file:
+      st_id = cal_file.split("_")[0]
+      cal_fn = cal_file.replace(st_id + "_", "")
+      (meteor_datetime, cam, f_date_str,fy,fmon,fd, fh, fm, fs) = convert_filename_to_date_cam(cal_fn)
+      station_dir = "/mnt/f/EVENTS/STATIONS/" + st_id
+      local_cal_file = station_dir + cal_fn
+      cal_root = cal_fn.split("-")[0]
+      # is remote
+      # load station data
+      ASN.load_stations_file()
+      # create handles for the network calibration db
+      ASN.setup_cal_db()
+
+      default_cal_params, remote_json_conf = ASN.get_remote_cal(st_id, cam_id, cal_fn)
+      if st_id in self.rurls:
+         remote_url = self.rurls[st_id] + "/cal/freecal/" + cal_root + "/" + cal_fn
+         cmd = "wget " + remote_url + " -O " + local_cal_file
+         print(cmd)
+         os.system(cmd)
+
+         cmd = "wget " + remote_url + " -O " + local_cal_file.replace(".png", "-calparams.png")
+         print(cmd)
+         os.system(cmd)
+      else:
+         remote_url = None
+
+   print("OK")
+   exit()
+   # try to recover a failed cal file or new cal file
+
+   # blank images to track or make things
+   used_img = np.zeros((1080,1920),dtype=np.uint8)
+   cat_star_mask = np.zeros((1080,1920),dtype=np.uint8)
+   cat_star_mask[:,:] = 255
+
+   # set vars/paths/file names
+   cal_root = cal_file.split("-")[0]
+   cal_dir = "/mnt/ams2/cal/freecal/" + cal_root + "/"
+   (meteor_datetime, cam, f_date_str,fy,fmon,fd, fh, fm, fs) = convert_filename_to_date_cam(cal_file)
+   cal_json_file = cal_file.replace("-stacked.png", "-stacked-calparams.json")
+
+   # load cal params file if it exists
+   if os.path.exists(cal_dir + cal_json_file) :
+      cal_params = load_json_file(cal_dir + cal_json_file)
+   else:
+      cal_params = None
+
+   # load cal image file
+   oimg = cv2.imread(cal_dir + cal_file)
+   show_img = oimg.copy()
+   gray_img = cv2.cvtColor(oimg, cv2.COLOR_BGR2GRAY)
+
+   # find bright points (image stars) in the image
+   stars = find_stars_with_grid(oimg)
+   best_stars = []
+   for star in stars:
+      x,y,i = star
+      # get flux for star points
+      flux = do_photo(gray_img, (int(x),int(y)), 8)
+      if flux > 100:
+         best_stars.append((x,y,flux))
+
+   # these are the image stars sorted by brightest first
+   stars =  sorted(best_stars, key=lambda x: x[2], reverse=True)
+
+   # if it exists, try to use the existing calibration as a starting point
+   if cal_params is not None:
+      # get current catalog
+      cat_stars, short_bright_stars, cat_image = get_catalog_stars(cal_params, MAG_LIMIT=5)
+      found = 0
+      for row in cat_stars[:25]: 
+         (name,mag,ra,dec,new_cat_x,new_cat_y,zp_cat_x,zp_cat_y) = row
+         cv2.line(cat_star_mask, (int(zp_cat_x),int(zp_cat_y)), (int(new_cat_x),int(new_cat_y)), (0,0,0), 10)
+
+         rx1 = int(new_cat_x - 16)
+         rx2 = int(new_cat_x + 16)
+         ry1 = int(new_cat_y - 16)
+         ry2 = int(new_cat_y + 16)
+
+         if rx1 <= 0 or ry1 <= 0 or rx2 >= 1920 or ry2 >= 1080:
+            continue
+         star_crop = gray_img[ry1:ry2,rx1:rx2]
+         star_cat_info = [name,mag,ra,dec]
+         used_val = used_img[int(new_cat_y),int(new_cat_x)]
+         star_obj = eval_star_crop(star_crop, cal_file, rx1, ry1, rx2, ry2, star_cat_info)
+         if star_obj['valid_star'] is True and used_val == 0:
+            found += 1
+            cv2.circle(show_img, (int(new_cat_x),int(new_cat_y)), 10, (255,255,0),2)
+            used_img[ry1:ry2,rx1:rx2] = 255
+         else:
+            cv2.circle(show_img, (int(new_cat_x),int(new_cat_y)), 10, (0,0,255),2)
+
+   gray_x = cv2.cvtColor(oimg, cv2.COLOR_BGR2GRAY)
+   img_sub = cv2.subtract(gray_x,cat_star_mask)
+   cv2.imshow('star mask', img_sub)
+   cv2.imshow('pepe', show_img)
+   cv2.waitKey(0)
+   man_cal(oimg, cal_params)
+
+def man_cal(oimg, cal_params):
+   go = True
+   interval = 1
+
+   while go is True:
+      cat_star_mask = np.zeros((1080,1920),dtype=np.uint8)
+      cat_star_mask[:,:] = 255
+      used_img = np.zeros((1080,1920),dtype=np.uint8)
+      show_img = oimg.copy()
+      gray_img = cv2.cvtColor(oimg, cv2.COLOR_BGR2GRAY)
+      # get current catalog
+      cat_stars, short_bright_stars, cat_image = get_catalog_stars(cal_params, MAG_LIMIT=5)
+      found = 0
+      for row in cat_stars[:25]: 
+         (name,mag,ra,dec,new_cat_x,new_cat_y,zp_cat_x,zp_cat_y) = row
+         cv2.line(cat_star_mask, (int(zp_cat_x),int(zp_cat_y)), (int(new_cat_x),int(new_cat_y)), (0,0,0), 10)
+
+         rx1 = int(new_cat_x - 16)
+         rx2 = int(new_cat_x + 16)
+         ry1 = int(new_cat_y - 16)
+         ry2 = int(new_cat_y + 16)
+
+         if rx1 <= 0 or ry1 <= 0 or rx2 >= 1920 or ry2 >= 1080:
+            continue
+         star_crop = gray_img[ry1:ry2,rx1:rx2]
+         star_cat_info = [name,mag,ra,dec]
+         used_val = used_img[int(new_cat_y),int(new_cat_x)]
+         star_obj = eval_star_crop(star_crop, cal_file, rx1, ry1, rx2, ry2, star_cat_info)
+         if star_obj['valid_star'] is True and used_val == 0:
+            found += 1
+            cv2.circle(show_img, (int(new_cat_x),int(new_cat_y)), 10, (255,255,0),2)
+            used_img[ry1:ry2,rx1:rx2] = 255
+         else:
+            cv2.circle(show_img, (int(new_cat_x),int(new_cat_y)), 10, (0,0,255),2)
+
+      #gray_x = cv2.cvtColor(oimg, cv2.COLOR_BGR2GRAY)
+      #img_sub = cv2.subtract(gray_x,cat_star_mask)
+      print("FOUND: ", found, " / 25")
+
+      info = str(round(cal_params['center_az'],2)) + " / " + \
+         str(round(cal_params['center_el'],2)) + " / " + \
+         str(round(cal_params['position_angle'],2)) + " / " + \
+         str(round(cal_params['pixscale'],2)) + " / " + str(interval)
+      cv2.putText(show_img, str(info),  (int(50),int(50)), cv2.FONT_HERSHEY_SIMPLEX, .8, (200,200,200), 1)
+      cv2.imshow('pepe', show_img)
+      key = cv2.waitKey(0)
+      # azimuth a & f
+      if key == 97:
+         cal_params['center_az'] -= interval
+      if key == 102:
+         cal_params['center_az'] += interval
+      # elev s & d 
+      if key == 115:
+         cal_params['center_el'] -= interval
+      if key == 100:
+         cal_params['center_el'] += interval
+      # position angle k/l
+      if key == 107:
+         cal_params['position_angle'] -= interval
+      if key == 108:
+         cal_params['position_angle'] += interval
+      # pixscale j/; 
+      if key == 106:
+         cal_params['pixscale'] -= interval
+      if key == 59:
+         cal_params['pixscale'] += interval
+      # interval +/- 
+      if key == 61:
+         interval = interval * 10
+      if key == 45:
+         interval = interval / 10
+      if key == 109:
+          # minimize
+          #stars,cat_stars = get_paired_stars(cal_file, cal_params, con, cur)
+          cal_params, cat_stars = recenter_fov(cal_file, cal_params, oimg.copy(),  [], json_conf, "")
+      if key == 27:
+         exit()
+      cal_params = update_center_radec(cal_file,cal_params,json_conf)
+      print("INTERVAL:", interval)
+      print("KEY",key)
 
 def get_close_calib_files(cal_file):
    (meteor_datetime, cam, f_date_str,fy,fmon,fd, fh, fm, fs) = convert_filename_to_date_cam(cal_file)
@@ -1685,7 +1867,7 @@ def make_photo_credit(json_conf, cam_id=None):
          state = json_conf['site']['operator_state']
       if "operator_country" in json_conf['site']:
          country = json_conf['site']['operator_country']
-      if "US" in country or "United States" in country:
+      if "USA" in country or "United States" in country:
          country = "US"
          photo_credit = station_id + " - " + name + ", " + city + ", " + state + " " + country
       else:
@@ -4603,7 +4785,7 @@ def get_xy_for_ra_dec(cal_params, ra, dec):
 
    return(new_cat_x, new_cat_y)
 
-def get_catalog_stars(cal_params):
+def get_catalog_stars(cal_params, MAG_LIMIT=3):
    mybsd = bsd.brightstardata()
    bright_stars = mybsd.bright_stars
    #if "short_bright_stars" not in cal_params :
@@ -4614,7 +4796,6 @@ def get_catalog_stars(cal_params):
 
    cat_image = np.zeros((1080,1920,3),dtype=np.uint8)
 
-   MAG_LIMIT = 8
    img_w = 1920
    img_h = 1080
    # setup astrometry and lens model variables
@@ -4734,8 +4915,7 @@ def ai_check_star(img, img_file):
    return(resp['star_yn'])
 
 def do_photo(image, position, radius,r_in=10, r_out=12):
-   #print("SHAPE:", image.shape)
-   #print("POSITION,RADIUS", position, radius)
+
    if radius < 2:
       radius = 2
 
@@ -9970,6 +10150,7 @@ def prune(cam_id, con, cur, json_conf):
 
 if __name__ == "__main__":
 
+
    py_running = check_running("python")
    print("Python processes running now:", py_running)
    if py_running > 15:
@@ -10030,6 +10211,12 @@ if __name__ == "__main__":
    # }
    # do this 3-5x and it should be good?!
    # 
+
+   if sys.argv[1] == "blind" :
+      cal_file = sys.argv[2]
+      blind_solve(cal_file, con, cur, json_conf)
+
+
 
    if cmd == "anchor_cal" :
       cam_id = sys.argv[2]
