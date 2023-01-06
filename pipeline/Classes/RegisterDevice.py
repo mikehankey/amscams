@@ -57,6 +57,9 @@ class RegisterDevice():
       data['ip'] = "0.0.0.0"
       self.public_ip = data["ip"]
       json_conf = load_json_file("../conf/as6.json")
+      if "registration" in json_conf:
+         print("We are already registered and can quit this!")
+         exit()
 
       json_conf['mac_addr'] = self.mac_addr
       json_conf['api_key'] = self.mac_addr
@@ -94,9 +97,11 @@ class RegisterDevice():
       payload['cmd'] = "register_device" 
       headers = {'Content-type': 'application/json'}
 
+      # this will wipe / reset values on dyna end and should not be done except the 1st time
+      # use the updates otherwise, might still be a bug here. Last checked 1/6/2023
       response = requests.post(self.API_URL, data=json.dumps(payload), headers=headers)
       #, headers=headers)
-
+      print("SENT REGISTER DEVICE REQUEST TO AWS")
       print(json.dumps(payload))
       print("\n RESPONSE \n")
       print(response.text)
@@ -121,7 +126,7 @@ class RegisterDevice():
       if "operator_country" in json_conf:
          country = json_conf['site']['operator_country']
       else:
-         country = "US"
+         country = ""
       email = json_conf['site']['operator_email']
       lat = json_conf['site']['device_lat']
       lon = json_conf['site']['device_lng']
@@ -142,7 +147,8 @@ class RegisterDevice():
       station_data['operator_name']= operator_name
       station_data['city']= city
       station_data['state']= state
-      station_data['country']= country
+      if station_data['country'] != "":
+         station_data['country']= country
       station_data['email']= email
       station_data['lat'] = lat
       station_data['lon'] = lon

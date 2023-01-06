@@ -209,7 +209,7 @@ def update_live_view():
 
    img = cv2.imread(out_allout)
    if "country" not in json_conf['site']:
-      country = "USA"
+      country = ""
    else:
       country = json_conf['site']['country']
   
