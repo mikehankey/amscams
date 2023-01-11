@@ -5519,7 +5519,7 @@ def batch_apply(cam_id, con,cur, json_conf, last=None, do_bad=False, cam_stats=N
             else:
                last_cal_params, flux_table = apply_calib (cf, calfiles_data, json_conf, mcp, last_cal_params, extra_text, do_bad, flux_table)
             rc += 1
-
+   #input("DONE BATCH APPLY FOR" + apply_type)
 
 def get_image_stars_with_catalog(obs_id, cal_params, show_img, flux_table=None):
    if flux_table is None:
