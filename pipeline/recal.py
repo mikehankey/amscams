@@ -719,6 +719,7 @@ def cam_menu(cam_id, con,cur, json_conf, cam_status="", cam_stats=None):
       cmd = input("Select action # and press [ENTER]") 
       if True:
       #try:
+         print("CMD", cmd)
          if int(cmd) == 1:
             print("Calibration status for camera:", cam_id)
             cal_status_report(cam_id, con, cur, json_conf)
@@ -729,6 +730,7 @@ def cam_menu(cam_id, con,cur, json_conf, cam_status="", cam_stats=None):
          elif int(cmd) == 4:
             batch_apply(cam_id, con, cur, json_conf, None, False, cam_stats, "AVG")
          elif int(cmd) == 5:
+            print("APPLY BAD", cmd)
             batch_apply(cam_id, con, cur, json_conf, None, False, cam_stats, "BAD")
          elif int(cmd) == 6:
             samples = int(input("Enter the number of calibration files you want to use?"))
