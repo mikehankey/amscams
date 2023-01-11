@@ -12,8 +12,11 @@ ASOS = """
     © ALL SKY INC / MIKE HANKEY LLC - ALL RIGHTS RESERVED
 Use permitted under community license for registered users only
 """
-
-import PySimpleGUI as sg
+try:
+   import PySimpleGUI as sg
+except:
+   print("Missing lib:")
+   print("sudo python3 -m pip install PySimpleGUI")
 import datetime
 from PIL import ImageFont, ImageDraw, Image, ImageChops
 import imutils
