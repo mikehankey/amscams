@@ -1328,10 +1328,12 @@ def remove_bad_stars(cat_image_stars):
       right_res = np.median(right_side)
    else:
       right_res = 5
+
    if len(far) > 3:
       far_res = np.median(far)
    else:
-      far_res = 5
+      far_res = 25
+
    if len(close) > 3:
       close_res = np.median(close)
    else:
