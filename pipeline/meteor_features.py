@@ -376,12 +376,9 @@ if False:
    plt.title("K Means", fontsize=14)#KMeans
    plt.savefig("/mnt/ams2/test.png")
 
-# CLUSTER 2
 model = GaussianMixture(n_components=12)
 # fit model and predict clusters
 
-for x in X:
-   print(x)
 model.fit(X)
 yhat = model.fit_predict(X)
 # retrieve unique clusters
@@ -450,10 +447,6 @@ for cluster in clusters:
    html[cluster] = ""
    row_ix = where(yhat == cluster)
    # create scatter of these samples
-   print("CLUSTER:", cluster)
-   print("ROW IX:", row_ix)
-   print("X0:", X[row_ix, 0])   
-   print("X1:", X[row_ix, 1])   
    plt.scatter(X[row_ix, 0], X[row_ix, 1], marker='o')
    for mfn in all_files[row_ix]:
       html[cluster] += make_image(mfn)

@@ -10204,6 +10204,8 @@ def quality_stars(merged_stars, mcp = None, factor = 2, gsize=50):
       factor = 2
       max_dist = 35
    else:
+      if "cal_version" not in mcp:
+         mcp['cal_version'] = 1
       if mcp['cal_version'] < 3:
          gsize= 100
          factor = 2 
@@ -10417,7 +10419,6 @@ def minimize_poly_multi_star(merged_stars, json_conf,orig_ra_center=0,orig_dec_c
    #res,updated_merged_stars = reduce_fit_multi(x_poly, "x_poly",merged_stars,cal_params,fit_img,json_conf,cam_id,1,show)
 
 
-
    std_dist, avg_dist = calc_starlist_res(merged_stars)
    print("INITIAL RES FROM FIT: ", res, strict)
    print("STD/AVG DIST: ", std_dist, avg_dist)
@@ -10433,13 +10434,15 @@ def minimize_poly_multi_star(merged_stars, json_conf,orig_ra_center=0,orig_dec_c
 
    res,updated_merged_stars = reduce_fit_multi(x_poly, "x_poly",merged_stars,cal_params,fit_img,json_conf,cam_id,1,show)
    print("RES:", res)
+
+
    if res < 2:
       res = 2 
    if res > 5:
       res = 5 
 
    # last chance to remove stars!
-   if True:
+   if False:
       for star in updated_merged_stars:
          (cal_file , center_az, center_el, ra_center, dec_center, position_angle, pixscale, dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist,star_int) = star
          cat_dist = calc_dist((six, siy), (new_cat_x,new_cat_y))
@@ -10458,8 +10461,9 @@ def minimize_poly_multi_star(merged_stars, json_conf,orig_ra_center=0,orig_dec_c
    all_res = [row[-2] for row in updated_merged_stars]
    med_res = np.median(all_res)
 
+   # keep only quality stars here 
    if True:
-      updated_merged_stars = quality_stars(updated_merged_stars, mcp, 1)
+      #updated_merged_stars = quality_stars(updated_merged_stars, mcp, 1)
       new_merged_stars = updated_merged_stars
 
    options = {}

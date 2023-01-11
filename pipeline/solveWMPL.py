@@ -1157,7 +1157,6 @@ def solve_event(event_id, force=1, time_sync=1):
                 jsi = load_json_file(local_file)
                 dy_obs_data['loc'] = [jsi['site']['device_lat'], jsi['site']['device_lng'], jsi['site']['device_alt']]
           obs_data = convert_dy_obs(dy_obs_data, obs )
-          print("OBS DATA:", obs_data)
        else:
           print("DYNA OBS DATA IS NONE!")
 
@@ -1166,7 +1165,7 @@ def solve_event(event_id, force=1, time_sync=1):
     for obs in obs_data:
        print(obs)
     extra_obs_data = None
-    if True:
+    if False:
        extra_obs = [
              "/mnt/f/EVENTS/2022/12/13/20221213_163728/EXTRA/2022-12-13T16_37_28_FRIPON_BEBR01.ecsv",
              "/mnt/f/EVENTS/2022/12/13/20221213_163728/EXTRA/2022-12-13T16_37_28_FRIPON_NLSN01_Revised.ecsv",
@@ -1185,6 +1184,8 @@ def solve_event(event_id, force=1, time_sync=1):
     start_times = []
     for ob in obs_data:
        print(ob)
+
+    input("OBS_DATA FOR ABOVE LINE")
     for station_id in obs_data:
         print("OBS STATION_ID", obs)
         if len(obs_data[station_id].keys()) > 1:
@@ -1738,6 +1739,8 @@ def convert_dy_obs(dy_obs_data, obs):
       return(obs)
    station = dy_obs_data['station_id']
    fn = dy_obs_data['sd_video_file']
+   print("OBS:", obs)
+
    if station not in obs:
       obs[station] = {}
    if fn not in obs[station]:
@@ -2790,7 +2793,7 @@ def make_obs_table(obs):
             time = obs[station][obs_file]['times'][i]
             az = obs[station][obs_file]['azs'][i]
             el = obs[station][obs_file]['els'][i]
-            if i <= len(obs[station][obs_file]['gc_azs']) - 1:
+            if "gc_azs" in obs[station][obs_file] : #and i <= len(obs[station][obs_file]['gc_azs']) - 1:
                gc_az = obs[station][obs_file]['gc_azs'][i]
                gc_el = obs[station][obs_file]['gc_els'][i]
             else:
@@ -2846,22 +2849,42 @@ def WMPL_solve(event_id, obs,time_sync=1, force=0, dynamodb=None):
 
     # Reference julian date
     start_times = []
-    for station_id in obs:
-        file = None
-        if len(obs[station_id].keys()) > 1:
-           file = get_best_obs(obs[station_id])
-        else:
-           for bfile in obs[station_id]:
-               file = bfile
-        if file is None:
-           print("NO OBS FILE?!", station_id)
-           continue
-        print(station_id, obs[station_id][file])
-        if "times" in obs[station_id][file]:
-           if len(obs[station_id][file]['times']) > 0:
-              start_times.append(obs[station_id][file]['times'][0])   
-        if "times" not in obs[station_id][file] and "start_datetime" in obs[station_id][file]:
-           obs[station_id][file]['times'] = obs[station_id][file]['start_datetime']
+
+    # BEST OBS APPROACH
+    print("OBS BEFORE ARE:")
+    for st in obs:
+       for sfile in obs[st]:
+          print(st,sfile, obs[st][sfile].keys())
+    use_best_obs = True 
+    if use_best_obs is True:
+       # here for each station pick 1 obs 
+       for station_id in obs:
+          file = None
+          if len(obs[station_id].keys()) > 1:
+             # get "best" file out of them all could be merge_obs too!
+             file = get_best_obs(obs[station_id])
+          else:
+             # only one obs here
+             for bfile in obs[station_id]:
+                file = bfile
+          if file is None:
+             print("NO OBS FILE?!", station_id)
+             continue
+          print(station_id, obs[station_id][file])
+          if "times" in obs[station_id][file]:
+             if len(obs[station_id][file]['times']) > 0:
+                print("Adding to 'times'.")
+                start_times.append(obs[station_id][file]['times'][0])   
+          if "times" not in obs[station_id][file] and "start_datetime" in obs[station_id][file]:
+             print("Adding to 'times'.")
+             obs[station_id][file]['times'] = obs[station_id][file]['start_datetime']
+
+    print("OBS AFTER BEST ARE:")
+    for st in obs:
+       for sfile in obs[st]:
+          print(st,sfile, obs[st][sfile].keys())
+    print("waiting")
+    input("WAIT")
 
     if len(start_times) == 0:
        print("THERE ARE NO OBS FOR THIS EVENT!")
@@ -2913,15 +2936,18 @@ def WMPL_solve(event_id, obs,time_sync=1, force=0, dynamodb=None):
     monte = False 
     traj_solve = traj.Trajectory(jd_ref, output_dir=solve_dir, meastype=meastype, save_results=True, monte_carlo=monte, show_plots=False, max_toffset=5,v_init_part=.5, estimate_timing_vel=etv, show_jacchia=True  )
     earliest_time = None
-   
-    for station_id in obs:
-        if len(obs[station_id].keys()) > 1:
-            file = get_best_obs(obs[station_id])
-        else:
-            for bfile in obs[station_id]:
-                file = bfile
+  
+    # this is where we should use ALL obs or BEST obs or MERGE obs
+    for station_id in obs:             
+        for file in obs[station_id]:  # to revert change to if True
+            #if len(obs[station_id].keys()) > 1:
+            # file = get_best_obs(obs[station_id])
+            #else:
+            #    for bfile in obs[station_id]:
+                    #file = bfile
          
-        if True:
+        #if True:
+        # to revert to best obs uncomment above and change for file line to if  True 
             try:
                lat,lon,alt = obs[station_id][file]['loc']
             except:
@@ -2949,14 +2975,14 @@ def WMPL_solve(event_id, obs,time_sync=1, force=0, dynamodb=None):
                els = np.radians(obs[station_id][file]['els'])
             o_times = obs[station_id][file]['times']
 
-            print("STATION:", station_id)
-            print("FILE:", file)
-            print("TIMES:", o_times)
-            print("LAT:", lat)
-            print("LON:", lon)
-            print("ALT:", alt)
-            print("AZ:", azs)
-            print("ELS:", els)
+            print("   STATION:", station_id)
+            print("   FILE:", file)
+            print("   TIMES:", o_times)
+            print("   LAT:", lat)
+            print("   LON:", lon)
+            print("   ALT:", alt)
+            print("   AZ:", azs)
+            print("   ELS:", els)
             o_times[0] = o_times[0].replace("-", "_")
             o_times[0] = o_times[0].replace(":", "_")
             o_times[0] = o_times[0].replace(" ", "_")
@@ -2981,13 +3007,13 @@ def WMPL_solve(event_id, obs,time_sync=1, force=0, dynamodb=None):
             #for i in range(0,len(azs)):
             #    times.append(i/fps)
       
-            print("o", station_id, o_times)
-            print("n", station_id, times)
+            #print("o", station_id, o_times)
+            #print("n", station_id, times)
             #input("DID THE TIMES!")
             # Set points for the first site
-            print("WMPL OBS:", event_id, station_id, lat, lon, alt, azs, els, times)  
+            print("   SET WMPL OBS:", event_id, station_id, lat, lon, alt, azs, els, times)  
             traj_solve.infillTrajectory(azs, els, times, np.radians(float(lat)), np.radians(float(lon)), alt, station_id=station_id)
-            print("-----")
+            print(   "-----")
 
 
     resp = traj_solve.run()

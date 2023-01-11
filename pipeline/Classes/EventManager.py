@@ -285,7 +285,30 @@ class EventManager():
                else:
                   shower = ""
 
+            if status == "SOLVED":
+               status = "S"
+            elif status == "FAILED":
+               status = "F"
+            elif status == "PENDING":
+               status = "P"
+            else :
+               status = "P"
+            ev_h = data['event_id'].split("_")[-1]
+            ss = []
+            for s in data['stations']:
+               s = int(s.replace("AMS", ""))
+               ss.append(s)
+            sf = []
+            for f in data['files']:
+               f = f.replace(now + "_", "")
+               sf.append(f)
+            if shower == "...":
+               shower = ""
+            sd = data['start_datetime']
+            sd = min(str(sd))
+            sd = sd.split(" ")[-1]
             events_summary.append( (status, data['event_id'], min(data['start_datetime']), data['stations'], data['files'], shower, 1, 1))
+            #events_summary.append((status, ev_h, sd, ss, sf, shower))
          day_data = {}
          day_data['date'] = eday
          day_data['total_events'] = day_total
@@ -396,6 +419,8 @@ class EventManager():
       all_radiants = []
       all_showers = []
 
+      fdate = self.date.replace("-", "_")
+
       all_good = []
       for ev in all_events:
          if "event_id" in ev:
@@ -415,8 +440,9 @@ class EventManager():
             if i != 0:
                sts += ","
                fls += ","
-            sts += event['stations'][i]
-            fls += event['files'][i]
+            sts += event['stations'][i].replace("AMS", "")
+            temp = event['files'][i].replace(fdate + "_", "")
+            fls += temp.replace(".mp4", "")
          if "solution" in event:
             if event['solution'] == 0:
                status = "OBS NOT LOADED"
@@ -472,18 +498,6 @@ class EventManager():
          if "SUCCESS" or "SOLVE" in status:
             lvd_status = 1
             cvd_status = 1
-            #if cfe(local_ev_dir,1) == 1:
-            #   lvd_status = 1
-            #   cvd_status = 1
-            #else:
-            #   lvd_status = 0
-            #   cvd_status = 0
-
-            #if cfe(cloud_ev_dir,1) == 1:
-            #   cvd_status = 1
-            #else:
-            #   cvd_status = 0
-
          else:
             lvd_status = 0
             cvd_status = 0
@@ -501,7 +515,18 @@ class EventManager():
          #print(rpt)
          if c % 100 == 0:
             print("working", c)
-         events_summary.append( (status, event['event_id'], str(min_st), sts, fls, shower, lvd_status, cvd_status))
+         # shorter event summary!
+         if status == "SOLVED":
+            status = 1 
+         elif status == "PENDING":
+            status = 0
+         else:
+            status = 0
+         stime = str(min_st).split(" ")[-1]
+         if shower == "...":
+            shower = ""
+         peak_mag = 0
+         events_summary.append( (status, event['event_id'].split("_")[-1], stime, sts, fls, shower, dur, peak_mag))
          c += 1
 
       if self.date is None:
@@ -516,7 +541,9 @@ class EventManager():
          self.ce_dir = ce_dir 
 
       self.save_orbits_by_shower(all_orbits)
-      save_json_file(event_dir + "ALL_EVENTS_SUMMARY.json", events_summary)
+      save_json_file(event_dir + "ALL_EVENTS_SUMMARY.json", events_summary, True)
+      print("SAVED:", event_dir + "ALL_EVENTS_SUMMARY.json")
+
       save_json_file(event_dir + "ALL_ORBITS.json", all_orbits)
       save_json_file(event_dir + "ALL_TRAJECTORIES.json", all_trajectories)
       save_json_file(event_dir + "ALL_SHOWERS.json", all_showers)

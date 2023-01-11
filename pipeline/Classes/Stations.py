@@ -88,8 +88,10 @@ class Stations():
          self.station_loc[st_id] = [lat,lon,alt]
 
       # get vp hosts 
+
       self.vpn_hosts = {}
-      cmd = "grep 10.8.0 /mnt/archive.allsky.tv/AMS1/info.txt"
+      #cmd = "grep 10.8.0 /mnt/archive.allsky.tv/AMS1/info.txt"
+      cmd = "grep 10.8.0 vpn.txt" #/mnt/archive.allsky.tv/AMS1/info.txt"
       output = subprocess.check_output(cmd, shell=True).decode("utf-8")
       lines = output.split("\n")
 

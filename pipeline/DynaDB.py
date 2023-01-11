@@ -308,9 +308,9 @@ def insert_meteor_event(dynamodb=None, event_id=None, event_data=None):
    rval = r.get(rkey)
    if rval is not None:
       rval = json.loads(rval)
-      print("THIS EVENT ALREADY EXISTS!", event_id)
-      print("CURRENT DATA:", event_data)
-      print("EXISTING DATA:", rval)
+      #print("THIS EVENT ALREADY EXISTS!", event_id)
+      #print("CURRENT DATA:", event_data)
+      #print("EXISTING DATA:", rval)
 
    if dynamodb is None:
       dynamodb = boto3.resource('dynamodb')
