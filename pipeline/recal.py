@@ -1304,6 +1304,7 @@ def star_track(cam_id, date, con, cur, json_conf ):
 def remove_bad_stars(cat_image_stars):
    # 
    good = []
+   bad = []
    left_side = []
    right_side = []
    close = []
@@ -1366,7 +1367,7 @@ def remove_bad_stars(cat_image_stars):
       if center_dist < 600:
          factor = 2 
       else:
-         factor = 4
+         factor = 3 
 
       #if res_limit > 5:
       #   res_limit = 5
@@ -1375,14 +1376,17 @@ def remove_bad_stars(cat_image_stars):
 
       if cat_dist < (res_limit * factor):
          good.append(star)
+      else:
+         bad.append(star)
       #else:
       #   print("SKIP:", dcname, mag, cat_dist)
 
-   print("RES AROUND THE FOV")
-   print("   left side:", left_res)
-   print("   right side:", right_res)
-   print("   close :", close_res)
-   print("   far :", far_res)
+   print("   RES AROUND THE FOV")
+   print("    left side:", left_res)
+   print("    right side:", right_res)
+   print("    close :", close_res)
+   print("    far :", far_res)
+   print("   Good/Bad:", len(good)," / ", len(bad))
    return(good)
 
 def plot_cal_history(con, cur, json_conf):
