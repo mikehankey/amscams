@@ -4995,7 +4995,7 @@ def get_xy_for_ra_dec(cal_params, ra, dec):
 
    return(new_cat_x, new_cat_y)
 
-def get_catalog_stars(cal_params, MAG_LIMIT=3):
+def get_catalog_stars(cal_params, MAG_LIMIT=5):
    mybsd = bsd.brightstardata()
    bright_stars = mybsd.bright_stars
    #if "short_bright_stars" not in cal_params :
