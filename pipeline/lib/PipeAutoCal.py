@@ -10322,7 +10322,7 @@ def minimize_poly_multi_star(merged_stars, json_conf,orig_ra_center=0,orig_dec_c
 
    #merged_stars = clean_pairs(merged_stars,cam_id,5,first_run,show)
 
-   if False:
+   if len(merged_stars) > 250:
       merged_stars = quality_stars(merged_stars, mcp)
 
    #exit()
