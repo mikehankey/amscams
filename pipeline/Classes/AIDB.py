@@ -1064,12 +1064,12 @@ class AllSkyDB():
 
       rows = self.cur.fetchall()
       loaded_meteors = {}
-      print("Rows:", len(rows))
+      print("Rows already loaded:", len(rows))
+      rc = 0 
       for row in rows:
-         print("ROW:", row[0])
+         print("ROW:", rc, row[0])
          loaded_meteors[row[0]] = row[1]
-
-
+         rc += 1
 
       if selected_day is None:
          dirs = os.listdir(self.meteor_dir)
@@ -1089,14 +1089,18 @@ class AllSkyDB():
          mfiles = self.get_mfiles(mdir )
          self.mfiles.extend(mfiles)
       # Main file loop here. 1 iter per meteor 
+      mc = 0
       for mfile in sorted(self.mfiles, reverse=True):
-         if "STATION_EVENT" in mfile:
-            continue
+         mc += 1
+         print("Meteor file", mc, mfile)
+         #if "STATION_EVENT" in mfile:
+         #   continue
          # each iter is 1 meteor json file getting loaded into the SQL.
          # break out into a function?
          if mfile in loaded_meteors :
             if loaded_meteors[mfile] == 1:
                foo = 1
+               print("   Already loaded", mfile) 
                continue
          mdir = mfile[0:10]
          el = mfile.split("_")
@@ -1104,6 +1108,7 @@ class AllSkyDB():
          mjrf = self.meteor_dir + mdir + "/" + mfile.replace(".mp4", "-reduced.json")
          start_time = None
          if os.path.exists(mjf) is True:
+            mj = load_json_file(mjf)
             try:
                mj = load_json_file(mjf)
             except:
@@ -1180,8 +1185,14 @@ class AllSkyDB():
                if "cat_image_stars" not in cp:
                   cp['cat_image_stars'] = []
                   cp['user_stars'] = []
-               calib = [cp['ra_center'], cp['dec_center'], cp['center_az'], cp['center_el'], cp['position_angle'], cp['pixscale'], float(len(cp['cat_image_stars'])), float(cp['total_res_px'])]
-               mj['calib'] = calib
+               print(cp.keys())
+               if "total_res_px" not in cp:
+                  cp['total_res_px'] = 999
+               try:
+                  calib = [cp['ra_center'], cp['dec_center'], cp['center_az'], cp['center_el'], cp['position_angle'], cp['pixscale'], float(len(cp['cat_image_stars'])), float(cp['total_res_px'])]
+                  mj['calib'] = calib
+               except:
+                  print("mj calib issue")
 
          if "calib" in mj:
             calib = mj['calib']
@@ -1233,6 +1244,7 @@ class AllSkyDB():
          in_data['user_mods'] = json.dumps(user_mods)
          if mfile in loaded_meteors:
             del (in_data['human_confirmed'])
+            print("SKIP already loaded")
             continue
             #self.update_meteor(in_data)
             #print("UPDATE EXISTING")
@@ -1473,6 +1485,7 @@ class AllSkyDB():
       for row in rows:
          root_fn, hd_vid, meteor_yn_conf,fireball_yn_conf, mc_class, mc_class_conf, roi,ai_resp = row
          decision = "ACCEPT"
+         # AI has not run yet so just accept it
          if meteor_yn_conf is None or fireball_yn_conf is None or mc_class is None:
             decision = "ACCEPT"
             print("MISSING AI DATA FOR", root_fn, meteor_yn_conf, fireball_yn_conf, mc_class, mc_class_conf)
@@ -1484,7 +1497,12 @@ class AllSkyDB():
             if fireball_yn_conf is None or fireball_yn_conf == "":
                fireball_yn_conf = 50
             #continue
-         if (int(meteor_yn_conf) < 50 and int(fireball_yn_conf) < 50 and "meteor" not in mc_class) or (int(meteor_yn_conf) < 70 and "meteor" not in mc_class and int(mc_class_conf) >= 98):
+         # AI Reject conditions
+         if (int(meteor_yn_conf) < 51 and int(fireball_yn_conf) < 51 and "meteor" not in mc_class) or \
+               (int(meteor_yn_conf) < 70 and "meteor" not in mc_class and int(mc_class_conf) >= 98) or \
+               (int(meteor_yn_conf) <= 1 and int(fireball_yn_conf) <= 1) or \
+               (int(meteor_yn_conf) <= 5 and int(fireball_yn_conf) <= 51 and \
+                  "meteor" not in mc_class and int(mc_class_conf) >= 52):
             decision = "REJECT"
             print("AI REJECT CURRENT ROI", root_fn, hd_vid, meteor_yn_conf, fireball_yn_conf, mc_class, mc_class_conf )
             print("AI seeking alternative ROI...")
@@ -1517,39 +1535,51 @@ class AllSkyDB():
          else:
             print("AI ACCEPT", root_fn, hd_vid, meteor_yn_conf, fireball_yn_conf, mc_class, mc_class_conf )
             decision = "ACCEPT"
+         print("AI CHECK:", decision, root_fn, meteor_yn_conf, fireball_yn_conf, mc_class, mc_class_conf)
          ai_info.append((decision, root_fn, hd_vid, roi, meteor_yn_conf, fireball_yn_conf, mc_class, mc_class_conf ))
       rejects = []
       for aid in ai_info:
          print(aid)     
          if aid[0] == "REJECT":
+            print("AID:", aid)
             rejects.append(aid)
       if os.path.exists(self.mdir + date) is False:
          os.makedirs(self.mdir + date)
       save_json_file(self.mdir + date + "/" + self.station_id + "_" + date + "_AI_DATA.info", ai_info)
       print("saved:", self.mdir + date + "/" + self.station_id + "_" + date + "_AI_DATA.info")
       print("REJECTS:", len(rejects))
-      
       if len(rejects) > 0:
          if os.path.exists(non_meteor_dir) is False:
             os.makedirs(non_meteor_dir)
          for data in rejects:
+            print("REJECT data:", data)
+
             sd_root = data[1].replace(".mp4", "")
+            if ".json" in sd_root:
+               sd_root = sd_root.replace(".json", "")
+            if "/" in sd_root:
+               sd_root = sd_root.split("/")[-1]
+
             hd_root = data[2].replace(".mp4", "")
             # reject these files and move to non-meteor dir unless
             # it is a MSE event or human / manual confirm exists
             mjf = self.meteor_dir + date + "/" + sd_root + ".json"
+            print("MJF:", mjf)
             if os.path.exists(mjf):
-               print("MJF EXISTS", mjf)
+               print("REJECT METEOR MJF EXISTS", mjf)
                try:
                   mj = load_json_file(mjf)
                except:
                   print("BAD MJF:", mjf)
                   continue
-               if "multi_station_event" in mj or "human_confirmed" in mj or "hc" in mj or "manual" in mj or "human_points" in mj:
-                  print("Multi station or Human confirmed already")
+               #if "multi_station_event" in mj or "human_confirmed" in mj or "hc" in mj or "manual" in mj or "human_points" in mj:
+        
+               #   continue
+               if "human_confirmed" in mj or "hc" in mj or "manual" in mj or "human_points" in mj:
+                  print("   KEEP: Multi station or Human confirmed already")
                   continue
                else:
-                  print("REJECT:", self.mdir + sd_root, self.mdir + hd_root)
+                  print("   REJECT:", self.mdir + sd_root, self.mdir + hd_root)
                   cmd = "mv " + self.mdir + date + "/" + sd_root + "* " + non_meteor_dir + "/"
                   print(cmd)
                   os.system(cmd)
@@ -1562,7 +1592,7 @@ class AllSkyDB():
                root_fn = mjf.split("/")[-1].replace(".json", "")
                self.delete_sql_meteor(root_fn)
       else:
-         print("There no meteors worthy of rejection.")
+         print("There are no meteors worthy of rejection.")
       print("Finished auto_reject_day !")
 
    def mc_rejects(self):
@@ -2005,8 +2035,8 @@ class AllSkyDB():
                      final_conf = meteor_yes_no
                   resp['final_class'] = final_class
                   resp['final_conf'] = final_conf
-                  print("METEOR YN  :", meteor_yes_no)
-                  print("MULTI CLASS:", resp['mc_class'], resp['mc_class_conf'])
+                  print("   METEOR/FIREBALL YN:", meteor_yes_no)
+                  print("   MULTI CLASS:", resp['mc_class'], resp['mc_class_conf'])
                else:
                   print("AI FAILED!")
                   final_class = "" 
@@ -2030,7 +2060,6 @@ class AllSkyDB():
                   cv2.waitKey(30)
             else:
                print("NO ROI IMG EXISTS OR IMG IS NONE", roi_file, mfile)
-               #input("WAIT")
       save_json_file(ai_data_file, ai_data)
 
       print("saved:", ai_data_file)

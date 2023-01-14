@@ -25,7 +25,6 @@ if sys.argv[1] == "last":
    days = int(sys.argv[2])
    for d in range(0,days):
       run_day = (datetime.now() - dt.timedelta(days = d)).strftime("%Y_%m_%d")
-      print(run_day)
       cmd = "python3.6 AIDay.py " + run_day
       os.system(cmd)
 
@@ -34,7 +33,6 @@ if len(sys.argv) > 2:
    cmd = sys.argv[2]
    if cmd == "load_all":
       AIDB.load_all_meteors()
-      exit()
    if cmd == "nm_report":
       AIDB.non_meteor_report()
       exit()
@@ -53,14 +51,15 @@ if len(sys.argv) > 2:
       #AIDB.mc_rejects()
       #print("DONE MC REJECTS.")
       #exit()
+      os.system("./Process.py mmi_day " + date)
 
       #RN = ReviewNetwork(date)
       #AIDB.auto_reject_day(date )
       exit()
 
 
+
 AIDB.load_stations()
-#exit()
 
 if len(sys.argv) > 1:
    date = sys.argv[1]
@@ -110,12 +109,13 @@ if date == "ALL" or date == "all":
          
          date = md
          AIDB.load_all_meteors(date)
+         exit()
          AIDB.verify_media_day(date)
          AIDB.reconcile_db(date)
          os.system("/usr/bin/python3.6 myEvents.py " + date)
 
          #RN = ReviewNetwork(date)
-
+         exit()
          AIDB.auto_reject_day(date )
          print("DONE AIDay FOR " + date)
          os.system("/usr/bin/python3 Rec.py del_aws_day " + md)
@@ -131,7 +131,10 @@ else:
    #if os.path.exists(RN.learning_repo + date + "/UNSURE/") is False:
    #   os.makedirs(RN.learning_repo + date + "/UNSURE/")
    print("Load day", date)
+
+
    AIDB.load_all_meteors(date)
+
    print("Verify Media", date)
    AIDB.verify_media_day(date)
 
