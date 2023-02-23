@@ -25,9 +25,8 @@ wdir = wild.replace(fn, "")
 
 jpgs = glob.glob(wdir + "*stacked*.jpg")
 html = ""
-for j in jpgs:
+for j in sorted(jpgs):
     jfn = j.split("/")[-1]
-    print("JPG:", jfn)
     vfn = jfn.replace("-stacked.jpg", ".mp4")
     html += "<a href={:s}><img src={:s}></a><br>{:s}<br>".format(vfn, jfn, jfn)
 

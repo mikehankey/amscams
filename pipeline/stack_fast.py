@@ -39,15 +39,13 @@ def stack_only(sd_filename, mask_img):
 
       small_frame = cv2.resize(color_frame, (0,0),fx=.5, fy=.5)
       if fc > 1:
-
          frame_sub = cv2.subtract(small_frame, last_small_frame)
          max_px = int(np.max(frame_sub))
          max_pxs.append(max_px)
-         if max_px > 1:
+         #if max_px > 1:
             # stacked_image = cv2.addWeighted(stacked_image, .5, color_frame, .5, .5)
-
-            stacked_image=ImageChops.lighter(stacked_image,Image.fromarray(color_frame))
-            saved_frames[fc] = color_frame
+         stacked_image=ImageChops.lighter(stacked_image,Image.fromarray(color_frame))
+         #saved_frames[fc] = color_frame
       else:
          first_image = color_frame
          stacked_image = Image.fromarray(color_frame)
