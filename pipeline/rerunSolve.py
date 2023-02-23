@@ -9,7 +9,7 @@ import datetime as dt
 from lib.PipeUtil import load_json_file, save_json_file
 today = (datetime.now() - dt.timedelta(days = 1)).strftime("%Y_%m_%d")
 current_year, current_month, current_day = today.split("_")
-years = ['2022', '2021']
+years = ['2023', '2022', '2021']
 start_year = min(years)
 
 year_span = int(current_year) - int(start_year)
@@ -45,13 +45,24 @@ else:
 
 days = sorted(all_days)
 
-for day in sorted(days,reverse=True)[2:365]:
+for day in sorted(days,reverse=True) : # [2:365]:
    #cmd = "./updateEventDay.py " + day #+ ">ev_run_log.txt 2>&1 "
    y,m,d = day.split("_")
    cloud_evf = "/mnt/archive.allsky.tv/EVENTS/" + y + "/" + m + "/" + d + "/" + day + "_OBS_GOOD.html"
    #if day not in solve_hist and os.path.exists(cloud_evf) is False:
    if True: 
+
       if True:
+         #cmd =  "/usr/bin/python3 AllSkyNetwork.py filter_bad_detects " + day
+         cmd =  "/usr/bin/python3 AllSkyNetwork.py report " + day
+         print(cmd)
+         os.system(cmd)
+
+         cmd =  "/usr/bin/python3 DynaDB.py udc " + day + " events"
+         print(cmd)
+         os.system(cmd)
+
+      if False:
          cmd =  "/usr/bin/python3 AllSkyNetwork.py best_obs_day " + day
          print(cmd)
          os.system(cmd)

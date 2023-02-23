@@ -30,12 +30,12 @@ from solveWMPL import convert_dy_obs, WMPL_solve, make_event_json, event_report
 import numpy as np
 import datetime
 import simplejson as json
-import os
+import os, select, sys
 import shutil
 import platform
 from lib.PipeUtil import load_json_file, save_json_file, get_trim_num, convert_filename_to_date_cam, starttime_from_file, dist_between_two_points, get_file_info, calc_dist, check_running, mfd_roi
 from lib.intersecting_planes import intersecting_planes
-from DynaDB import search_events, insert_meteor_event, delete_event, get_obs, update_dyna_table
+from DynaDB import search_events, insert_meteor_event, delete_event, get_obs, update_dyna_table, delete_obs
 from ransac_lib import ransac_outliers
 from sklearn.cluster import DBSCAN
 from sklearn import metrics
@@ -56,6 +56,7 @@ class AllSkyNetwork():
       self.errors = []
       self.custom_points = {}
       self.deleted_points = {}
+      self.did_set_dates = None
       self.json_conf = load_json_file("../conf/as6.json")
 
       if os.path.exists("admin_conf.json") is True:
@@ -95,6 +96,147 @@ class AllSkyNetwork():
 
       self.load_reconcile_stations()
       self.help()
+
+   def filter_bad_detects(self, date):
+
+      nav_header = self.make_page_header(date)
+      template = ""
+      tt = open("./FlaskTemplates/allsky-template-v2.html")
+      for line in tt:
+         template += line
+
+      template = template.replace("{TITLE}", "ALLSKY7 ALL TIME EVENTS " )
+      template = template.replace("AllSkyCams.com", "AllSky.com")
+
+      stats_by_station = {}
+      stats_by_min = {}
+      stats_by_hour = {}
+      self.set_dates(date)
+      self.all_obs_file = self.local_evdir + self.date + "_ALL_OBS.json"
+      data = load_json_file(self.all_obs_file)
+      total = len(data)
+      prob_stations = {}
+      for row in data:
+         #print(row['station_id'], row['sd_video_file'][11:16], row.keys())
+         st = row['station_id']
+         vid = row['sd_video_file']
+         (f_datetime, cam_id, f_date_str,fy,fmin,fd, fh, fm, fs) = convert_filename_to_date_cam(vid)
+         st = st + "_" + cam_id
+         if st not in stats_by_station:
+            stats_by_station[st] = 0
+         else:
+            stats_by_station[st] += 1
+         if True:
+            if st not in stats_by_min:
+               stats_by_min[st] = {}
+            if st not in stats_by_hour:
+               stats_by_hour[st] = {}
+            hour = row['sd_video_file'][11:13]
+            minute = row['sd_video_file'][11:16]
+            if minute not in stats_by_min[st]:
+               stats_by_min[st][minute] = 1
+            else:
+               stats_by_min[st][minute] += 1
+            if hour not in stats_by_hour[st]:
+               stats_by_hour[st][hour] = 1
+            else:
+               stats_by_hour[st][hour] += 1
+
+
+      avg = int(total / len(stats_by_station.keys()  ))
+      print("Stats By Station")
+      for st in stats_by_station:
+         if stats_by_station[st] > avg * 3:
+            # detects too high
+            print("*", st, stats_by_station[st])
+            prob_stations[st] = {}
+            prob_stations[st]['warnings'] = []
+            prob_stations[st]['warnings'].append("Detects too high") 
+         else:
+            print(st, stats_by_station[st])
+
+
+      min_avg = []
+      hour_avg = []
+      for st in stats_by_min:
+         for minute in stats_by_min[st]:
+             min_avg.append(stats_by_min[st][minute])
+      for st in stats_by_hour:
+         for hour in stats_by_hour[st]:
+             hour_avg.append(stats_by_hour[st][hour])
+      # scan problem stations by minute
+
+      mavg = int(np.mean(min_avg))
+      havg = int(np.mean(hour_avg))
+
+      bad_minutes = {}
+      bad_hours = {}
+
+      print("Stats By Minute")
+      for st in stats_by_min:
+         if st not in bad_minutes:
+            bad_minutes[st] = {}
+         for minute in stats_by_min[st]:
+            if stats_by_min[st][minute] > mavg * 2:
+               print("EXCEEDS MIN AVG", st, minute, mavg, stats_by_min[st][minute])
+               bad_minutes[st][minute] = [mavg, stats_by_min[st][minute]]
+
+      print("Stats By Hour")
+      for st in stats_by_hour:
+         if st not in bad_hours:
+            bad_hours[st] = {}
+         for hour in stats_by_hour[st]:
+            if  stats_by_hour[st][hour] > havg * 2:
+               print("EXCEEDS HOUR AVG ", st, hour, havg, stats_by_hour[st][hour])
+               bad_hours[st] = [mavg, stats_by_hour[st][hour]]
+         
+
+      bad_detects = []
+      print("Bad Minutes")
+      for row in data:
+         minute = row['sd_video_file'][11:16]
+         hour = row['sd_video_file'][11:13]
+         station_id, cam_id = st.split("_")
+         obs_id = station_id + "_" + row['sd_video_file'].replace(".mp4", "")
+         st = row['station_id']
+         vid = row['sd_video_file']
+         (f_datetime, cam_id, f_date_str,fy,fmin,fd, fh, fm, fs) = convert_filename_to_date_cam(vid)
+         st = st + "_" + cam_id
+         if st in bad_minutes:
+            print("ST ROW", st, hour, minute)
+            if minute in bad_minutes[st]:
+               bad_detects.append(obs_id)
+         elif st in stats_by_hour:
+            if hour in bad_hours[st]:
+               bad_detects.append(obs_id)
+      bc = 0
+      bd_file = self.local_evdir  + date + "_BAD_DETECTS.html"
+      bd_js_file = self.local_evdir  + date + "_BAD_DETECTS.json"
+      html = ""
+      html += "<div style='width: 100%'>"
+      last_st = None
+      print("Bad Detects")
+      for row in sorted(bad_detects):
+         st_id = row.split("_")[0]
+         vid = row.replace(st_id + "_", "")
+         (f_datetime, cam_id, f_date_str,fy,fmin,fd, fh, fm, fs) = convert_filename_to_date_cam(vid)
+
+         print(bc, "BAD DETECT", row)
+
+         html += self.meteor_cell_html(row, f_date_str)
+         #html += self.obs_id_to_img_html(row)
+         bc += 1 
+
+      html += "</div>"
+      save_json_file(bd_js_file, bad_detects)
+
+      template = template.replace("{MAIN_CONTENT}", nav_header + html)
+
+      fpo = open(bd_file, "w" )
+      fpo.write(template)
+      fpo.close()
+      print(bd_file)
+      
 
    def load_reconcile_stations(self):
       rec = False 
@@ -266,7 +408,28 @@ class AllSkyNetwork():
    
 
    def quick_report(self, date):
+     
       stats = {}
+      if os.path.exists(self.local_evdir + date + "_BAD_DETECTS.json"):
+         self.bad_detects = load_json_file(self.local_evdir + date + "_BAD_DETECTS.json")
+      else:
+         self.bad_detects = {}
+      self.all_events_data = load_json_file(self.all_events_file)
+      self.all_obs = load_json_file(self.all_obs_file)
+
+      # get event ids from local db
+      db_events = {}
+      sql = """
+         SELECT event_id,stations from events order by event_id 
+      """
+      self.cur.execute(sql)
+      rows = self.cur.fetchall()
+      for row in rows:
+         event_id = row[0]
+         db_events[event_id] = {}
+
+
+      # obs by station
       for ob in self.obs_dict:
          st_id = self.obs_dict[ob]['station_id']
          if st_id not in stats:
@@ -275,14 +438,43 @@ class AllSkyNetwork():
             stats[st_id] += 1
       c = 1 
       temp = []
+
+      # obs by station
       for st in stats:
          sti = int(st.replace("AMS", ""))
          temp.append((sti,stats[st]))
+
       for row in sorted(temp, key=lambda x: x[0], reverse=False):
          ams_id = "AMS{0:03d}".format(row[0])
          print(c, ams_id, row[1])
          c += 1
 
+      self.event_dict = {}
+      for row in self.all_events_data:
+         ev_id = row['event_id']
+         self.event_dict[ev_id] = row
+
+      print("ALL OBS  :", len(self.all_obs))
+      print("OBS DICT :", len(self.obs_dict))
+      print("ALL EVTS :", len(self.all_events_data))
+      print("BAD DETECTS:", len(self.bad_detects))
+      files = os.listdir(self.local_evdir)
+      for f in files:
+         if os.path.isdir(self.local_evdir + f) :
+            if f in self.event_dict and f in db_events:
+               print("EVENT DIR EXISTS IN AWS DICT AND LOCAL DB", f)
+            elif f in self.event_dict and f not in db_events:
+               print("EVENT DIR EXISTS IN AWS DICT BUT NOT LOCAL DB", f)
+            elif f not in self.event_dict and f in db_events:
+               print("EVENT NOT IN AWS DICT BUT IS IN LOCAL DB", f)
+               # pending / resolve it?
+               cmd = "./AllSkyNetwork.py resolve_event " + f
+               print(cmd)
+               os.system(cmd)
+
+
+            else:
+               print("EVENT DIR NOT IN AWS DICT OR LOCAL DB (DELETE IT!)", self.local_evdir + f)
       
 
    def rsync_data_only(self, date):
@@ -493,6 +685,8 @@ class AllSkyNetwork():
 
    def set_dates(self, date, refresh=True):
       print("SET DATES FOR:", date)
+      if self.did_set_dates is True:
+         return()
       self.year, self.month, self.day = date.split("_")
       self.dom = self.day
       self.date = date
@@ -502,6 +696,7 @@ class AllSkyNetwork():
       self.obs_dict_file = self.local_evdir + self.date + "_OBS_DICT.json"
 
 
+      self.did_set_dates = True
       self.all_obs_file = self.local_evdir + self.date + "_ALL_OBS.json"
       self.sync_log_file = self.local_evdir + date + "_SYNC_LOG.json"
       self.min_events_file = self.local_evdir + date + "_MIN_EVENTS.json"
@@ -512,10 +707,16 @@ class AllSkyNetwork():
       days_old = age/60/24
       print("OBS DICT AGE " + self.all_obs_file, days_old)
       if days_old > 1 and refresh is True:
-         if os.path.exists(self.all_obs_file):
-            os.system("rm " + self.all_obs_file)
-         if os.path.exists(self.obs_dict_file):
-            os.system("rm " + self.obs_dict_file)
+         # input-select here
+         print("Press enter to redownload the obs data file for this day, else we will use the cached file")
+         i, o, e = select.select( [sys.stdin], [], [], 2 )
+         if (i) :
+            confirm = sys.stdin.readline().strip()
+
+            if os.path.exists(self.all_obs_file):
+               os.system("rm " + self.all_obs_file)
+            if os.path.exists(self.obs_dict_file):
+               os.system("rm " + self.obs_dict_file)
 
 
       self.all_obs_gz_file = self.local_evdir + self.date + "_ALL_OBS.json.gz"
@@ -556,8 +757,10 @@ class AllSkyNetwork():
       cloud_size, tdd = get_file_info(self.cloud_all_obs_file + ".gz") 
 
       if os.path.exists(self.cloud_all_obs_gz_file) is False and os.path.exists(self.all_obs_file) is False:
-         print("Could not find:", self.cloud_all_obs_gz_file, "should we download it?")
-         os.system("./DynaDB.py udc " + date)
+         print("Could not find:", self.all_obs_file, "or",  self.cloud_all_obs_gz_file)
+         cmd = "./DynaDB.py udc " + date
+         print(cmd)
+         os.system(cmd)
 
       elif os.path.exists(self.all_obs_gz_file) is False and os.path.exists(self.cloud_all_obs_gz_file) is True: 
          print("COPY FILE:", self.cloud_all_obs_gz_file, self.all_obs_gz_file)
@@ -579,9 +782,8 @@ class AllSkyNetwork():
          return()
          # this will only work for ADMINS with AWS Credentials
          #os.system("./DynaDB.py udc " + date)
-
-      #if os.path.exists(self.all_obs_file) is False: 
-      #   os.system("./DynaDB.py udc " + date)
+      if os.path.exists(self.all_obs_file) is False: 
+         os.system("./DynaDB.py udc " + date)
 
       if os.path.exists(self.obs_dict_file) is True: 
          try:
@@ -766,7 +968,6 @@ class AllSkyNetwork():
             if len(list(set(event['stations']))) > 1:
                print("   ", c, "FINAL EVENTS:",  event['stations'], event['start_datetime'], event['ipoints'])
                self.insert_event(event)
-               #input("WAIT")
             else:
                print("   ", c, "SINGLE STATION EVENT:", event['stations'], event['start_datetime'])
             #score_data = self.score_obs(event['plane_pairs'])
@@ -1857,7 +2058,12 @@ class AllSkyNetwork():
       cloud_dir = "/mnt/archive.allsky.tv/" + station_id + "/METEORS/" + day[0:4] + "/" + day + "/"
       obs_ids_file = cloud_dir + day + "_OBS_IDS.info"
       if os.path.exists(obs_ids_file) is True:
-         data = load_json_file(obs_ids_file) 
+         print(obs_ids_file)
+         try:
+            data = load_json_file(obs_ids_file) 
+         except:
+            print("BAD FILE", obs_ids_file)
+            data = []
       else:
          data = []
       obs_ids = []
@@ -3251,9 +3457,9 @@ class AllSkyNetwork():
 
                   show_frame = RF.frame_template("1920_1p", [frame])
 
-                  cv2.imshow('pepe_sub', sub)
+                  #cv2.imshow('pepe_sub', sub)
                   cv2.imshow('pepe', show_frame)
-                  key = cv2.waitKey(0)
+                  key = cv2.waitKey(500)
                   print("KEY", key)
             else:
                print("BAD OR MISSING VIDEO:", sd_vid)
@@ -4259,11 +4465,14 @@ class AllSkyNetwork():
 
 
    def update_event_obs(self, obs):
+      if "meteor_frame_data" not in obs:
+         return() 
       print("OBS:", obs)
       if "aws_status" in obs:
          if obs['aws_status'] is False:
             print("false aws status, maybe this is a deleted obs?")
             return()
+      print(obs.keys())
       obs_id = obs['station_id'] + "_" + obs['sd_video_file'].replace(".mp4", "")
       temp_ev_id = obs['sd_video_file'][0:16]
       datetimes = [row[0] for row in obs['meteor_frame_data']]
@@ -5839,6 +6048,310 @@ class AllSkyNetwork():
       for day in ev_by_day:
          print(day, ev_by_day[day])
 
+   def year_report(self, year):
+      year_dir = "/mnt/f/EVENTS/DBS/" + year + "/"
+
+      events_by_shower = {}
+      events_by_station = {}
+
+      if os.path.exists(year_dir) is False:
+         os.makedirs(year_dir)
+      all_events_file = "/mnt/f/EVENTS/DBS/" + year + "_ALL_EVENTS.json" 
+      event_dict_file = "/mnt/f/EVENTS/DBS/" + year + "_EVENT_DICT.json" 
+      all_radiants_file = "/mnt/f/EVENTS/DAYS/" + year + "_ALL_RADIANTS.json" 
+      shw_radiants_file = "/mnt/f/EVENTS/DAYS/" + year + "_SHW_RADIANTS.json" 
+      spo_radiants_file = "/mnt/f/EVENTS/DAYS/" + year + "_SPO_RADIANTS.json" 
+
+      all_bad_obs = load_json_file("/mnt/f/EVENTS/DBS/" + year + "_ALL_BAD_OBS.json" )
+      deleted_obs = load_json_file("/mnt/f/EVENTS/DBS/" + year + "_DEL_OBS.json" )
+      all_events = load_json_file(all_events_file)
+
+      if os.path.exists(event_dict_file) is True:
+         event_dict = load_json_file("/mnt/f/EVENTS/DBS/" + year + "_EVENT_DICT.json" )
+      else:
+         event_dict = {}
+
+      all_radiants = []
+      spo_radiants = []
+      shw_radiants = []
+
+
+
+      status_rpt = {}
+      pending = []
+      shc = 0
+      for event in all_events:
+         event_dict[event['event_id']] = event
+         status = event['solve_status']
+
+
+         if "INVALID PLANES" in status :
+            status = "FAILED"
+         if "UNSOLVED" in status :
+            status = "PENDING"
+         if "SUCCESS" in status :
+            status = "SOLVED"
+         if "WMPL FAIL" in status :
+            status = "FAILED"
+         if status not in status_rpt:
+            status_rpt[status] = 1
+         else:
+            status_rpt[status] += 1
+         if status == "PENDING":
+            pending.append(event['event_id'])
+         if status == "SOLVED":
+            if "shower" in event:
+               if event['shower']['shower_code'] != "...":
+                  shower = event['shower']['shower_code'] 
+                  print(shc, shower)
+                  shc += 1
+                  if shower not in events_by_shower:
+                     events_by_shower[shower] = 1
+                  else:
+                     events_by_shower[shower] += 1
+               else:
+                  shower = "SPORADIC"
+            else:
+               shower = "SPORADIC"
+            if "rad" in event:
+               event['rad']['event_id'] = event['event_id']
+               event['rad']['IAU'] = shower
+               all_radiants.append(event['rad'])
+               if shower != "SPORADIC":
+                  shw_radiants.append(event['rad'])
+               else:
+                  spo_radiants.append(event['rad'])
+
+      totals_by_shower = []
+      for sh in events_by_shower:
+         print(sh, events_by_shower[sh])
+         totals_by_shower.append((sh, events_by_shower[sh]))
+
+      totals_by_shower = sorted(totals_by_shower, key=lambda x: x[1], reverse=True)
+      for row in totals_by_shower:
+         print(row)
+
+      save_json_file(all_radiants_file, all_radiants, True)
+      save_json_file(spo_radiants_file, spo_radiants, True)
+      save_json_file(shw_radiants_file, shw_radiants, True)
+      print(all_radiants_file)
+      print(spo_radiants_file)
+      print(shw_radiants_file)
+      exit()
+
+      for st in status_rpt:
+         print(st, status_rpt[st])
+
+      # rerun events
+      for event_id in pending:
+         cmd = "./AllSkyNetwork.py resolve_event " + event_id
+         #print(cmd)
+         #os.system(cmd)
+         event_day = self.event_id_to_date(event_id)
+         y,m,d = event_day.split("_")
+         edir = "/mnt/f/EVENTS/" + y + "/" + m + "/" + d + "/" + event_id + "/" 
+         efile = edir + event_id + "-event.json"
+         ffile = edir + event_id + "-fail.json"
+         if os.path.exists(efile) is True:
+            status_rpt['SOLVED'] += 1
+            status_rpt['PENDING'] -= 1
+            event_dict[event_id]['solve_status'] = "SOLVED" 
+         elif os.path.exists(ffile) is True:
+            status_rpt['FAILED'] += 1
+            status_rpt['PENDING'] -= 1
+            event_dict[event_id]['solve_status'] = "FAILED" 
+         #else:
+         #   print("PENDING?", efile )
+      for st in status_rpt:
+         print(st, status_rpt[st])
+      new_all_events = []
+      for event_id in event_dict:
+         new_all_events.append(event_dict[event_id])
+
+      save_json_file(event_dict_file, event_dict, True)
+      save_json_file(all_events_file , new_all_events, True)
+      print(all_events_file)
+
+
+   def delete_bad_detects(self,bad_detects_file):
+      # too aggresive deleting real meteors on peak shower dates
+      # and some other times. Whitelist the persieds and geminds peaks +/- 1 days
+
+      exit()
+      bad_detects = load_json_file(bad_detects_file)
+      del_detects_file = bad_detects_file.replace("ALL_BAD", "DEL")
+      del_detects = load_json_file(del_detects_file)
+      print("YO", bad_detects_file)
+      for oid in bad_detects:
+         if oid not in del_detects:
+            del_detects[oid] = {}
+      for oid in del_detects:
+         st = oid.split("_")[0]
+         vid  = oid.replace(st + "_", "")
+         print(st, vid)
+         delete_obs(self.dynamodb, st, vid, 0, "NF")
+      print("YO2", len(bad_detects))
+
+      
+
+   def all_year_events(self, year):
+      # get all of the year's events into 1 table/data file
+      date = year + "_12_31"
+      date_dt = datetime.datetime.strptime(date, "%Y_%m_%d")
+      deleted_obs = {}
+      all_events = []
+      all_bad_obs = []
+
+      for i in range(0,365):
+         ndate = (date_dt - datetime.timedelta(days = i)).strftime("%Y_%m_%d")
+         y,m,d = ndate.split("_")
+         evdir = "/mnt/f/EVENTS/" + y + "/" + m + "/" + d + "/" 
+         obs_file = evdir + ndate + "_ALL_OBS.json"
+         obs_file_gz = obs_file + ".gz"
+         obs_dict_file = evdir + ndate + "_OBS_DICT.json"
+
+         bad_detects_file = evdir + ndate + "_BAD_DETECTS.json"
+
+         ev_file = evdir + ndate + "_ALL_EVENTS.json"
+         ev_file_gz = ev_file + ".gz"
+
+         # if date of obs_dict is older than obs then remake it.
+         osz, otd = get_file_info(obs_file)
+         osz, dtd = get_file_info(obs_dict_file)
+         if dtd > otd:
+            self.set_dates(date)
+         if os.path.exists(obs_file):
+            oby = True
+         else:
+            oby = False 
+            if os.path.exists(obs_file_gz):
+               oby = "gz"
+               os.system("gunzip " + obs_file_gz)
+
+
+         if os.path.exists(bad_detects_file):
+            obdy = True
+            bad_detects = load_json_file(bad_detects_file)
+         else:
+            bad_detects = {}
+            obdy = False 
+
+         if os.path.exists(obs_dict_file):
+            obdy = True
+         else:
+            obdy = False 
+
+         if os.path.exists(ev_file):
+            evy = True
+         else:
+            evy = False 
+            if os.path.exists(ev_file_gz):
+               evy = "gz"
+               os.system("gunzip " + ev_file_gz)
+
+         print(ndate, evdir, oby, obdy, evy)
+         if obdy is True:
+            obs_dict = load_json_file(obs_dict_file)
+
+         for oid in bad_detects:
+            print("BD:", oid)
+            oid = oid + ".mp4"
+            all_bad_obs.append(oid)
+            if oid in obs_dict:
+               del(obs_dict[oid])
+               print("BAD DETECT IN OBS DICT", oid)
+
+         if evy is True:
+            ev_data = load_json_file(ev_file)
+            for row in ev_data:
+               if "peak_int" in row:
+                  peak_status = True 
+                  if row['peak_int'] == 0:
+                     peak_status = False
+               else:
+                  peak_status = False
+               if "dur" in row:
+                  dur_status = True 
+                  if row['dur'] == 0:
+                     dur_status = False
+               else:
+                  dur_status = False
+               event_id = row['event_id']
+               if peak_status is False or dur_status is False:
+                  # Update peak status and dur_status for event
+                  pks = []
+                  durs = []
+                  new_row = row.copy()
+                  if "solution" in new_row:
+                     del(new_row['solution'])
+                  if "lats" in new_row:
+                     del(new_row['lats'])
+                  if "lons" in new_row:
+                     del(new_row['lons'])
+                  if "alts" in new_row:
+                     del(new_row['alts'])
+                  if "plot" in new_row:
+                     del(new_row['plot'])
+                  if "sol_dir" in new_row:
+                     del(new_row['sol_dir'])
+                  new_row['stations'] = []
+                  new_row['files'] = []
+                  new_row['start_datetime'] = []
+
+
+                  for i in range(0, len(row['stations'])):
+                     st = row['stations'][i]
+                     fl = row['files'][i]
+                     tm = row['start_datetime'][i] 
+                     if type(tm) == list:
+                        if len(tm) > 0:
+                           tm = tm[0]
+                        else:
+                           tm = ""
+                     oid = st + "_" + fl
+                     if oid in obs_dict:
+                        new_row['stations'].append(st)
+                        new_row['files'].append(fl)
+                        new_row['start_datetime'].append(tm)
+                        if "meteor_frame_data" in obs_dict[oid]:
+                           ints = [row[6] for row in obs_dict[oid]['meteor_frame_data']]
+                           if len(ints) > 0:
+                              max_int = max(ints)
+                              dur = len(ints) / 25
+                           else:
+                              max_int = 0
+                              dur = 0
+                           pks.append(max_int)
+                           durs.append(dur)
+                        else:
+                           print("   ", oid, "NO MFD")
+                     else:
+                        print("   DICT MISSING OBS DELETED ?", oid)
+                        # these obs ids no longer exist and should be removed from the event
+                        # this may in turn invalidate the event
+                        # so need to think about this...
+                        deleted_obs[oid] = {}
+                        deleted_obs[oid]['event_id'] = event_id
+                         
+                        #self.make_obs_dict(self)
+                        #obs_dict = self.obs_dict
+                  # 
+                  if len(pks) > 0:
+                     peak_int = max(pks)
+                  if len(durs) > 0:
+                     dur = round(np.median(durs),3)
+                  print("   ", event_id, peak_int, dur)
+                  new_row['peak_int'] = peak_int
+                  new_row['dur'] = dur
+                  all_events.append(new_row)
+
+      # save the all events file 
+      # save the deleted obs
+      # save the peak/duration info 
+      save_json_file("/mnt/f/EVENTS/DBS/" + year + "_ALL_BAD_OBS.json", all_bad_obs, True)
+      save_json_file("/mnt/f/EVENTS/DBS/" + year + "_DEL_OBS.json", deleted_obs, True)
+      save_json_file("/mnt/f/EVENTS/DBS/" + year + "_ALL_EVENTS.json", all_events, True)
+
    def best_of(self, date, dur=30):
 
       self.MM = MovieMaker()
@@ -5975,6 +6488,8 @@ class AllSkyNetwork():
          print("BEST:", len(best))
          for data in best:
             obs_key = data['station_id'] + "_" + data['sd_video_file'] 
+            if "peak_int" not in data:
+               data['peak_int'] = 0
 
             short_obs_id = self.convert_short_obs(tdate, obs_key)
 
@@ -5987,6 +6502,7 @@ class AllSkyNetwork():
          mc_best = sorted(mc_best, key=lambda x: x['peak_int'], reverse=True)
 
          save_json_file(mc_best_file, mc_best)
+         print("Saved new best file:", mc_best_file)
 
       print("MULT STATION BEST LIST IS BUILT!")
       print(dur, "DAYS LEADING UP TO", date)
@@ -7171,8 +7687,14 @@ $(document).ready(function () {
             <select id="select-opt" class="selected_date" data-style="btn-primary">
       """
       for day in sorted(files, reverse=True):
+         if "ALL" in day or "EVENT" in day or "SPO" in day or "SHW" in day or "DEL" in day:
+            continue
          if day[:2] != "20":
             continue
+         el = day.split("_")
+         if len(el) != 3:
+            continue
+
          day = day.replace("ALLSKYNETWORK_", "")
          day = day.replace(".db", "") 
          if "journal" in day or "CALIBS" in day:
@@ -7201,6 +7723,8 @@ $(document).ready(function () {
       self.local_evdir = self.local_event_dir + self.year + "/" + self.month + "/" + self.day  + "/"
       if os.path.exists(self.local_evdir + "shower_links_file.json"):
          showers = load_json_file(self.local_evdir + "shower_links_file.json")
+      else:
+         showers = []
       # shower links 1
       shower_links = "<p>"
       for shower in showers:
@@ -7237,7 +7761,11 @@ $(document).ready(function () {
          qc_data = load_json_file(qc_report)
       else:
          qc_data = {}
-      all_obs = qc_data['valid_obs']
+
+      if "valid_obs" in qc_data:
+         all_obs = qc_data['valid_obs']
+      else:
+         all_obs = []
 
       self.get_all_obs(date)
 
@@ -7782,8 +8310,9 @@ $(document).ready(function () {
                shower_code = "SPORADIC"
          else:
             shower_code = "SPORADIC"
-
-         if "GOOD" in event_status or ("SOLVED" in event_status and "BAD" not in event_status and "FAIL" not in event_status):
+         if event_status is None:
+            event_status = "PENDING"
+         if "GOOD" in event_status or ("SOLVED" in event_status and "BAD" not in event_status and "FAIL" not in event_status) and ev_data is not None:
             if True:
                if "shower" not in ev_data:
                   print("No shower data in event")
@@ -9421,7 +9950,6 @@ status [date]   -    Show network status report for that day.
 
       print("station:", station_id, cam_id, obs_id, cal_date)
       print("star points:", star_points)
-      input("Wait1")
       sql = """
          SELECT station_id, camera_id, calib_fn, cal_datetime, cal_timestamp, az, el, ra, dec, position_angle, pixel_scale, user_stars, cat_image_stars, x_poly, y_poly,x_poly_fwd,y_poly_fwd,res_px,res_deg 
            FROM last_best_cal 
@@ -9451,7 +9979,6 @@ status [date]   -    Show network status report for that day.
 
       print("RJC:", remote_json_conf_file)
 
-      input("Wait2")
 
       if os.path.isdir(local_cal_dir) is False:
          os.makedirs(local_cal_dir)

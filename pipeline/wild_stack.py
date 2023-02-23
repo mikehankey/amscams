@@ -28,7 +28,8 @@ html = ""
 for j in jpgs:
     jfn = j.split("/")[-1]
     print("JPG:", jfn)
-    html += "<img src={:s}><br>{:s}<br>".format(jfn, jfn)
+    vfn = jfn.replace("-stacked.jpg", ".mp4")
+    html += "<a href={:s}><img src={:s}></a><br>{:s}<br>".format(vfn, jfn, jfn)
 
 out = open(wdir + "stacked.html", "w")
 out.write(html)

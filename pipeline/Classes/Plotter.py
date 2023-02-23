@@ -27,23 +27,32 @@ import seaborn as sns
 class Plotter():
    def __init__(self, cmd=None, extra_args=[]):
       self.cmd = cmd
+      self.DATA_DIR = "/mnt/f/"
       print("ARGS:", cmd, extra_args)
-      if "_" in extra_args[0] :
+      if "ALL" not in extra_args[0] and "SPO" not in extra_args[0] and "SHW" not in extra_args[0] :
          print(extra_args)
          y,m,d = extra_args[0].split("_")
          self.day = y + "_" + m + "_" + d
          self.date_desc = m + "/" + d + "/" + y
-         self.DATA_DIR = "/mnt/f/"
          self.event_dir = self.DATA_DIR + "EVENTS/" + y + "/" + m + "/" + d + "/" 
-         self.all_radiants_file = self.event_dir + "ALL_RADIANTS.json"
-         self.all_radiants = load_json_file(self.all_radiants_file)
-
+         #self.all_radiants_png_file = self.event_dir + self.day.replace("_", "") + "_RADIANTS.png" 
+         self.all_radiants_png_file = self.DATA_DIR + "EVENTS/DAYS/" + self.day.replace("_", "") + "_PLOTS_ALL_RADIANTS.png" 
+         self.all_radiants_json_file = self.event_dir + "ALL_RADIANTS.json"
+         self.all_radiants = load_json_file(self.all_radiants_json_file)
+         self.alpha = .9
+         print(self.all_radiants_json_file)
       else:
+         self.day = extra_args[0]
          self.event_dir = self.DATA_DIR + "EVENTS/"
-         self.all_radiants_file = self.DATA_DIR + "EVENTS/ALL_RADIANTS.json"
-         self.all_radiants = load_json_file(self.all_radiants_file)
+         self.all_radiants_png_file = self.DATA_DIR + "EVENTS/DAYS/" + extra_args[0] + "_RADIANTS.png"
+         self.all_radiants_json_file = self.DATA_DIR + "EVENTS/DAYS/" + extra_args[0] + "_RADIANTS.json"
+         self.all_radiants = load_json_file(self.all_radiants_json_file)
          self.extra_args = extra_args
          self.date_desc = ""
+         if "SPO" in extra_args[0]: 
+            self.alpha = .025
+         else:
+            self.alpha = .75
 
    def make_shower_colors(self):
       shower_color_file = "shower_colors.json"
@@ -72,6 +81,7 @@ class Plotter():
       save_json_file(shower_color_file, self.shower_colors)
 
       exit() 
+
    def plot_all_rad(self):
       self.make_shower_colors()
       import matplotlib
@@ -81,8 +91,8 @@ class Plotter():
       showers = {}
       #shower_colors = {}
       #shower_names = []
-      for rad in self.all_radiants:
-         sh = rad['IAU']
+      #for rad in self.all_radiants:
+      #   sh = rad['IAU']
          #if sh == "...":
          #   sh = "SPO"
 
@@ -123,6 +133,9 @@ class Plotter():
       }
       rads_by_day = {}
       mp_colors = []
+      labels = []
+
+
       for rad in self.all_radiants:
 
          if rad is None:
@@ -133,6 +146,8 @@ class Plotter():
          event_id = rad['event_id']
          day = event_id[0:8]
          mon = event_id[0:6]
+         if "ALL" in self.day or "SHW" in self.day or "SPO" in self.day:
+            day = self.day 
 
          if day not in rads_by_day:
             rads_by_day[day] = {
@@ -161,6 +176,8 @@ class Plotter():
             #hl_ra = np.radians(np.degrees(rad['ecliptic_helio']['L_h'])-180)
             hl_ra = np.radians(np.degrees(rad['ecliptic_helio']['L_h']))
             #hl_ra = rad['ecliptic_helio']['L_h']
+            # reverse the Y?
+            #hl_ra_rev = hl_ra
             hl_ra_rev = -hl_ra
             hl_ras.append(hl_ra_rev)
             hl_decs.append(rad['ecliptic_helio']['B_h'])
@@ -177,10 +194,16 @@ class Plotter():
             rads_by_day[day]['x'].append((hl_ra_n))
             rads_by_day[day]['y'].append(np.degrees(rad['ecliptic_helio']['B_h']) *-1)
 
-            r, g, b = self.shower_colors[rad['IAU']]
+            if rad['IAU'] in self.shower_colors:
+               r, g, b = self.shower_colors[rad['IAU']]
+               alph = .7
+            else:
+               r, g, b, = .5,.5,.5
+               alph = .2
             rgb_val = (r , g, b)
             mp_colors.append(rgb_val)
-            color_str = str(int(255*r)) + "," + str(int(255*g)) + "," + str(int(255*b)) + ",1"
+            labels.append(rad['IAU'])
+            color_str = str(int(255*r)) + "," + str(int(255*g)) + "," + str(int(255*b)) + "," + str(alph)
             rads_by_day[day]['c'].append("rgba(" + color_str + ")")
             #rads_by_day[day]['c'].append("rgba(255,255,255,1)")
 
@@ -192,18 +215,28 @@ class Plotter():
 
 
       mp_colors = tuple(mp_colors)
-      print("MPCOLORS:", mp_colors)
-      ax.scatter(geo_ras, geo_decs, marker='.' , c=mp_colors)
+      ax.scatter(geo_ras, geo_decs, marker='.' , c=mp_colors, alpha=self.alpha )
       ax.set_xticklabels(['14h','16h','18h','20h','22h','0h','2h','4h','6h','8h','10h'])
       ax.grid(True)
-      plt.savefig(self.DATA_DIR  + "EVENTS/DAYS/" + self.day.replace("_", "") + "_PLOTS_ALL_RADIANTS.png" )
-      print("SAVED:", self.DATA_DIR  + "EVENTS/DAYS/" + self.day.replace("_", "") + "_PLOTS_ALL_RADIANTS.png" )
+      #plt.savefig(self.DATA_DIR  + "EVENTS/DAYS/" + self.day.replace("_", "") + "_PLOTS_ALL_RADIANTS.png" )
+      plt.savefig(self.all_radiants_png_file )
+
+      print("SAVED:", self.all_radiants_png_file)
+      print("SAVED:", self.all_radiants_json_file)
       fig.clear()
       #save_json_file("/mnt/ams2/EVENTS/PLOTS_ALL_RADIANTS.json", plot_data)
       #cmd = "cp /mnt/ams2/EVENTS/PLOTS_ALL_RADIANTS.json /mnt/archive.allsky.tv/EVENTS/PLOTS_ALL_RADIANTS.json"
       #os.system(cmd)
+
+      print("RADS BY DAY DAYS:", len(rads_by_day))
+      #if len(rads_by_day) > 1:
+      #   exit()
+
       for day in rads_by_day:
-         save_file = self.DATA_DIR + "EVENTS/DAYS/" + day + "_PLOTS_ALL_RADIANTS.json"
+         if "ALL" in self.day or "SHW" in self.day or "SPO" in self.day:
+            save_file = self.DATA_DIR + "EVENTS/DAYS/" + day + "_PLOTS_ALL_RADIANTS.json"
+         else:
+            save_file = self.DATA_DIR + "EVENTS/DAYS/" + day + "_PLOTS_ALL_RADIANTS.json"
          cloud_file = save_file.replace(self.DATA_DIR, "/mnt/archive.allsky.tv/")
          save_json_file(save_file, rads_by_day[day])
          save_file2 = save_file.replace(".json", ".png" )
@@ -213,6 +246,7 @@ class Plotter():
          os.system("cp " + save_file + " " + cloud_file)
          os.system("cp " + save_file2 + " " + cloud_file2)
 
+      print("DONE")
       #fig = plt.figure(figsize=(12,9))
       #ax = fig.add_subplot(111, projection="mollweide")
       #ax.scatter(ap_ras, ap_decs, marker='+', color='red')
@@ -232,7 +266,6 @@ class Plotter():
       #plt.suptitle(suptitle, y=.2)
       #plt.savefig("/mnt/ams2/test4.png")
       #$fig.clear()
-
 
 
    def controller(self):

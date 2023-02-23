@@ -25,6 +25,10 @@ if len(sys.argv) < 1:
 if cmd == "past_days":
    ASN.run_past_days()
 
+if cmd == "filter_bad_detects":
+   ASN.filter_bad_detects(sys.argv[2])
+
+
 if cmd == "refresh_day":
    force = 0
 
@@ -50,7 +54,7 @@ if cmd == "refresh_day":
    # make event table
    ASN.event_table(sys.argv[2])
 
-   cmd = "python3 PLT.py plot_all_rad " + event_day
+   cmd = "python3 PLT.py all_rad " + event_day
    print(cmd)
    os.system(cmd)
 
@@ -82,6 +86,10 @@ if cmd == "plane_test_day":
    ASN.help()
    ASN.set_dates(event_day)
    ASN.plane_test_day(event_day)
+
+if cmd == "delete_bad_detects":
+   ndate = sys.argv[2]
+   ASN.delete_bad_detects(ndate)
 
 if cmd == "report":
    print("CMD:", cmd)
@@ -126,7 +134,7 @@ if cmd == "review_event":
    ASN.review_event(sys.argv[2])
    (review_image, map_img, obs_imgs, marked_images, event_data, obs_data) = ASN.review_event_step2()
    cv2.imshow('Event Review', review_image)
-   cv2.waitKey(0)
+   cv2.waitKey(30)
 
 if cmd == "resolve_event":
    ASN.help()
@@ -143,14 +151,12 @@ if cmd == "resolve_event":
 
    ASN.echo_event_data(event_data, obs_data)
 
-         #cv2.imshow("pepe", map_img)
-         #cv2.waitKey(0)
    event_data_file = ASN.local_evdir + ASN.event_id + "/" + ASN.event_id + "_EVENT_DATA.json"
    obs_data_file = ASN.local_evdir + ASN.event_id + "/" + ASN.event_id + "_OBS_DATA.json"
 
    if review_image is not None:
       cv2.imshow("REVIEW IMAGE", review_image)
-      cv2.waitKey(0)
+      cv2.waitKey(30)
    else:
       print("REVIEW IMAGE IS NONE!", review_image)
     
@@ -388,6 +394,14 @@ if cmd == "event_page":
 if cmd == "sync_event":
    event_id = sys.argv[2]
    ASN.sync_event(event_id)
+
+if cmd == "all_year_events":
+   year = sys.argv[2]
+   ASN.all_year_events(year)
+if cmd == "year_report":
+   year = sys.argv[2]
+   ASN.year_report(year)
+
 
 if cmd == "resolve_event_day":
    event_day = sys.argv[2]

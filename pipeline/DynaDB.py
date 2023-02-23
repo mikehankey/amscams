@@ -509,7 +509,9 @@ def delete_event(dynamodb=None, event_day=None, event_id=None):
 
    print("AWS DYN RESP:", response)
 
-def delete_obs(dynamodb, station_id, sd_video_file):
+def delete_obs(dynamodb, station_id, sd_video_file, delete_committed=0, delete_reason=""):
+
+   # remove from meteor obs
    table = dynamodb.Table('meteor_obs')
    response = table.delete_item(
       Key= {
@@ -517,9 +519,27 @@ def delete_obs(dynamodb, station_id, sd_video_file):
          "sd_video_file": sd_video_file
      }
    )
-   r = redis.Redis("allsky-redis.d2eqrc.0001.use1.cache.amazonaws.com", port=6379, decode_responses=True)
-   rkey = "OI:" + station_id + ":" + sd_video_file
-   r.delete(rkey)
+   #try:
+   #   r = redis.Redis("allsky-redis.d2eqrc.0001.use1.cache.amazonaws.com", port=6379, decode_responses=True)
+   #   rkey = "OI:" + station_id + ":" + sd_video_file
+   #   r.delete(rkey)
+   #except:
+   #   print("no redis connection")
+
+   # keep log on meteor_delete table
+   obs_data = {
+      "station_id": station_id,
+      "sd_video_file": sd_video_file,
+      "delete_committed": delete_committed,
+      "delete_reason": delete_reason,
+   }
+   obs_data = json.loads(json.dumps(obs_data), parse_float=Decimal)
+   table = dynamodb.Table('meteor_delete')
+   try:
+      table.put_item(Item=obs_data)
+   except:
+      table.update_item(Item=obs_data)
+
 
 
 def event_report(dynamodb, r, date):
@@ -1844,8 +1864,8 @@ if __name__ == "__main__":
 
    # check running if it is already running abort.
    running= check_running("DynaDB.py")
-   print("RUNNING:", running)
    if running > 3:
+      print("MORE THAN ", running, "DynaDB.py processes already. We must abort")
       exit()
 
    try:

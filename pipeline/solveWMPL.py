@@ -1182,10 +1182,10 @@ def solve_event(event_id, force=1, time_sync=1):
 
     # get WMPL ID (lowest start time)
     start_times = []
-    for ob in obs_data:
-       print(ob)
+    #for ob in obs_data:
+    #   print(ob)
 
-    input("OBS_DATA FOR ABOVE LINE")
+    #input("OBS_DATA FOR ABOVE LINE")
     for station_id in obs_data:
         print("OBS STATION_ID", obs)
         if len(obs_data[station_id].keys()) > 1:
@@ -1556,7 +1556,6 @@ def make_event_html(event_json_file ):
    fp.write(plot_html)
    fp.write(rpt_out)
    fp.close() 
-   input("SAVED THE EVENT HTML!")
 
 def make_sum_html(event_id, event, solve_dir, obs):
 
@@ -1742,6 +1741,7 @@ def convert_dy_obs(dy_obs_data, obs):
    print("OBS:", obs)
 
    if station not in obs:
+      print("OBS:", obs)
       obs[station] = {}
    if fn not in obs[station]:
       obs[station][fn] = {}
@@ -2883,8 +2883,6 @@ def WMPL_solve(event_id, obs,time_sync=1, force=0, dynamodb=None):
     for st in obs:
        for sfile in obs[st]:
           print(st,sfile, obs[st][sfile].keys())
-    print("waiting")
-    input("WAIT")
 
     if len(start_times) == 0:
        print("THERE ARE NO OBS FOR THIS EVENT!")
@@ -3009,7 +3007,6 @@ def WMPL_solve(event_id, obs,time_sync=1, force=0, dynamodb=None):
       
             #print("o", station_id, o_times)
             #print("n", station_id, times)
-            #input("DID THE TIMES!")
             # Set points for the first site
             print("   SET WMPL OBS:", event_id, station_id, lat, lon, alt, azs, els, times)  
             traj_solve.infillTrajectory(azs, els, times, np.radians(float(lat)), np.radians(float(lon)), alt, station_id=station_id)
