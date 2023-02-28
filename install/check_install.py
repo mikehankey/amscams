@@ -91,7 +91,7 @@ os.system("df -h > df.txt")
 for i in range(0,30):
    res = os.system("ping -c1 google.com > /dev/null 2>&1")
    print("PING:", res)
-   if res == 0:
+   if res <= 1000:
       break
    time.sleep(1)
 
