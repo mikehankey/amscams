@@ -49,44 +49,83 @@ def remote_menu(con,cur):
    ST = Stations()
    ST.load_station_data()
    stations = []
+   cams = []
    local_stations_root = "/mnt/f/EVENTS/STATIONS/"
    cloud_root = "/mnt/archive.allsky.tv/"
    for key in ST.photo_credits:
       stations.append(key)
    options = {}
    data_values = []
-   data_headings = ["Cam", "Cal File", "Az", "El", "Pos", "Px", "Stars", "Res"]
+   data_headings = ["Date", "Az", "El", "Pos", "Px", "Stars", "Res"]
+   c_widths = [12, 6, 6, 6, 6, 6, 6]
 
    layout = [
          [sg.Text('ALLSKY7 NETWORK CALIBRATION MENU', size =(25, 1))],
          [sg.Text("Select Station: ",size=(15,1)),
-                sg.Combo(stations,key="station_id",default_value="AMS1",size=(10,1))],
-         [sg.Button('Select Station', key='_station_selected_')],
-         [sg.Table(values=data_values, headings=data_headings, max_col_width=50, num_rows=7,key='_filestable_')],
+                sg.Combo(stations,key="station_id",default_value="Station ID",size=(10,1))],
+         [sg.Text("Select Camera: ",size=(15,1)),
+                sg.Combo(cams,key="cam_id",default_value="Cam ID",size=(10,1))],
+         [sg.Button('Select / Update', key='_station_selected_')],
+         [sg.Table(values=data_values, headings=data_headings, col_widths=c_widths, auto_size_columns = False, num_rows=7,key='_filestable_')],
          [sg.Button('Select Cal File', key='_rows_selected_')]
          ]
 
-   window = sg.Window("ALLSKY7 NETWORK CALIBRATION", layout)
+   window = sg.Window("ALLSKY7 NETWORK CALIBRATION", layout, size=(1280,720))
+   refresh_hist = False
    if True:
       # Create an event loop
+      last_station = None
+      last_cam = None
       while True:
          event, values = window.read()
-         print(event, values)
          if event == "_rows_selected_":
             print(event, values)
          if event == "_station_selected_":
-            data_values.append([1,1,1,1,1,1,1])
-            data_values.append([2,1,1,1,1,1,1])
             selected_id = values['station_id']
-            cal_dir = local_stations_root + selected_id + "/CAL/"
-            cloud_cal_dir = cloud_root + selected_id + "/CAL/"
-            local_cal_dir = local_stations_root + selected_id + "/CAL/"
+            if selected_id != last_station:
+               last_station = selected_id
 
-            cloud_hist_file = cloud_cal_dir + "cal_history.json"
-            local_hist_file = local_cal_dir + "cal_history.json"
-            print(cloud_hist_file)
-            print(local_hist_file)
-            window['_filestable_'].update(data_values)
+               cal_dir = local_stations_root + selected_id + "/CAL/"
+               cloud_cal_dir = cloud_root + selected_id + "/CAL/"
+               local_cal_dir = local_stations_root + selected_id + "/CAL/"
+
+               cloud_hist_file = cloud_cal_dir + selected_id + "_" + "cal_history.json"
+               local_hist_file = local_cal_dir + selected_id + "_" + "cal_history.json"
+               # copy cloud hist file to local if needed
+               if os.path.exists(cloud_hist_file) is True and os.path.exists(local_hist_file) is False or refresh_hist is True:
+                  if os.path.exists(local_cal_dir) is False:
+                     os.makedirs(local_cal_dir)
+                  os.system("cp " + cloud_hist_file + " " + local_hist_file)
+               else:
+                  print("REMOTE COPY FAILED", cloud_hist_file, local_hist_file, refresh_hist)
+
+               # open hist file and list all cams for station in the table or select box?
+               cal_hist_data = load_json_file(local_hist_file)
+               for key in sorted(cal_hist_data.keys()):
+                  print(key)
+                  cams.append(key)
+
+
+               window['cam_id'].update(values = cams)
+               print(values)
+            selected_cam_id = values['cam_id']
+            print("STATION/CAM : ", selected_id, selected_cam_id)
+            if selected_cam_id in cal_hist_data and last_cam != selected_cam_id:
+               for n in range(0,len(cal_hist_data[selected_cam_id]['cal_files'])):
+                  i = len(cal_hist_data[selected_cam_id]['cal_files']) - n - 1
+                  cfn = cal_hist_data[selected_cam_id]['cal_files'][i].split("/")[-1]
+                  date = cal_hist_data[selected_cam_id]['dates'][i]
+                  az = round(cal_hist_data[selected_cam_id]['azs'][i],2)
+                  el = round(cal_hist_data[selected_cam_id]['els'][i],2)
+                  pos = round(cal_hist_data[selected_cam_id]['pos'][i],2)
+                  px = round(float(cal_hist_data[selected_cam_id]['pxs'][i]),2)
+                  res = round(cal_hist_data[selected_cam_id]['res'][i],2)
+                  data_headings = ["Date", "Az", "El", "Pos", "Px", "Stars", "Res"]
+                  data_values.append([date,az,el,pos,px,0,res])
+                   
+               window['_filestable_'].update(data_values )
+               #window['_filestable_'].AutoSizeColumns = True
+               last_cam = selected_cam_id
          # End program if user closes window or
          # presses the OK button
 
@@ -100,25 +139,37 @@ def remote_menu(con,cur):
 
 
 def remote_cal(cal_file, con, cur):
-
+   # cal file should be a png with the full path?
+   print("cal file", cal_file)
    # determine if this is a remote file or local file
    if "AMS" in cal_file:
-      cal_id = cal_file.replace(".png", "")
+      cal_fn = cal_file.split("/")[-1]
+      cal_id = cal_fn.replace(".png", "")
       cal_id = cal_id.replace("-stacked", "")
-      st_id = cal_file.split("_")[0]
-      cal_fn = cal_file.replace(st_id + "_", "")
+      st_id = cal_fn.split("_")[0]
+      cal_fn = cal_fn.replace(st_id + "_", "")
+      print("\n\nCAL FN:", st_id, cal_fn)
       (meteor_datetime, cam, f_date_str,fy,fmon,fd, fh, fm, fs) = convert_filename_to_date_cam(cal_fn)
       station_dir = "/mnt/f/EVENTS/STATIONS/" + st_id 
       freecal_dir = station_dir + "/CAL/FREECAL/"
       cal_dir = station_dir + "/CAL/FREECAL/"
       if os.path.exists(freecal_dir) is False:
          os.makedirs(freecal_dir)
-      cal_root = cal_fn.split("-")[0]
+      if "-" in cal_fn:
+         cal_root = cal_fn.split("-")[0]
+      else:
+         cal_root = cal_fn.split(".")[0]
      
       local_cal_file = freecal_dir + cal_root + ".png"
       local_json_file = freecal_dir + cal_root + ".json"
       ST = Stations()
       ST.load_station_data()
+
+      if os.path.exists(local_json_file) is False:
+         cmd = "cp " + cal_file + " " + local_json_file
+         print(cmd)
+         os.system(cmd)
+
       # is remote
       # load station data
       # create handles for the network calibration db
@@ -130,6 +181,7 @@ def remote_cal(cal_file, con, cur):
          if os.path.exists(local_cal_file) is False:
             cmd = "wget " + remote_png_url + " -O " + local_cal_file
             print(cmd)
+            input("ENTER TO GET " + remote_png_url)
             os.system(cmd)
 
          if os.path.exists(local_json_file) is False:
@@ -138,15 +190,19 @@ def remote_cal(cal_file, con, cur):
             os.system(cmd)
       else:
          remote_url = None
-      cal_params = load_json_file(local_json_file)
-      if "station_id" not in cal_params:
-         cal_params['station_id'] = station_id
+      print("open", local_json_file)
+      try:
+         cal_params = load_json_file(local_json_file)
+      except:
+         print("FAILED:", local_json_file)
+
+      #if "station_id" not in cal_params:
+      #   cal_params['station_id'] = station_id
       cal_file = local_cal_file
       if os.path.exists(cal_file) is False:
          print(cal_file, "missing")
          exit()
       oimg = cv2.imread(cal_file)
-      print(oimg.shape)
    else:
       # this must be a local cal file from a local AS7 Station
       cal_root = cal_file.split("-")[0]
@@ -165,10 +221,6 @@ def remote_cal(cal_file, con, cur):
       else:
          cal_params = None
 
-   print("CAL ID:", cal_id)
-   print("CAL FILE:", cal_file)
-   print("OIMG :", oimg.shape)
-   print(cal_params.keys())
 
 
    used_img = np.zeros((1080,1920),dtype=np.uint8)
@@ -226,7 +278,7 @@ def remote_cal(cal_file, con, cur):
          if rx1 <= 0 or ry1 <= 0 or rx2 >= 1920 or ry2 >= 1080:
             continue
          star_crop = gray_img[ry1:ry2,rx1:rx2]
-         star_cat_info = [name,mag,ra,dec]
+         star_cat_info = [name,mag,ra,dec,new_cat_x,new_cat_y]
          used_val = used_img[int(new_cat_y),int(new_cat_x)]
          star_obj = eval_star_crop(star_crop, cal_file, rx1, ry1, rx2, ry2, star_cat_info)
          #print(star_obj)
@@ -239,6 +291,8 @@ def remote_cal(cal_file, con, cur):
          else:
             cv2.circle(show_img, (int(new_cat_x),int(new_cat_y)), 10, (0,0,255),2)
 
+            cv2.putText(show_img, str(star_obj['reject_reason']),  (int(rx1),int(ry1)), cv2.FONT_HERSHEY_SIMPLEX, .8, (200,200,200), 1)
+
    gray_x = cv2.cvtColor(oimg, cv2.COLOR_BGR2GRAY)
    img_sub = cv2.subtract(gray_x,cat_star_mask)
    cv2.imshow('star mask', img_sub)
@@ -246,56 +300,102 @@ def remote_cal(cal_file, con, cur):
    cv2.waitKey(0)
    cal_params['cam_id'] = cam
    cal_params['station_id'] = st_id
-   print(cal_params.keys())
+   station_id = st_id
    cal_params = man_cal(local_json_file, oimg, station_id, cal_fn, cal_params)
+   return(cal_params)
 
 def man_cal(local_json_file, oimg, station_id, cal_fn, cal_params):
    orig_cal_params = cal_params.copy()
-   MAX_STARS = 200
+   MAX_STARS = 500
    go = True
    interval = 1
+   (meteor_datetime, cam_id, f_date_str,fy,fmon,fd, fh, fm, fs) = convert_filename_to_date_cam(local_json_file)
+
+   local_mask_img_dir = "/mnt/f/EVENTS/STATIONS/" + station_id + "/CAL/MASKS/" 
+   cloud_mask_img_dir = "/mnt/archive.allsky.tv/" + station_id + "/CAL/MASKS/" 
+   if os.path.exists(local_mask_img_dir) is False:
+      os.makedirs(local_mask_img_dir)
+   mask_img_file = local_mask_img_dir + cam_id + "_mask.png"  
+   if os.path.exists(mask_img_file) is False:
+      sys = ("cp " + cloud_mask_img_dir + "*" + " " + local_mask_img_dir)
+      os.system(sys)
+   mask_img = cv2.imread(mask_img_file)
+   mask_img = cv2.resize(mask_img, (oimg.shape[1], oimg.shape[0]))
+
 
    #rez = np.median([row[-2] for row in cat_image_stars])
 
    while go is True:
       cat_star_mask = np.zeros((1080,1920),dtype=np.uint8)
+      all_res = []
       cat_star_mask[:,:] = 255
       used_img = np.zeros((1080,1920),dtype=np.uint8)
+      oimg = cv2.subtract(oimg, mask_img)
       show_img = oimg.copy()
+      temp_img = oimg.copy()
       gray_img = cv2.cvtColor(oimg, cv2.COLOR_BGR2GRAY)
 
       # get catalog with current cal params
-      cat_stars, short_bright_stars, cat_image = get_catalog_stars(cal_params, MAG_LIMIT=5)
+      cat_stars, short_bright_stars, cat_image = get_catalog_stars(cal_params, MAG_LIMIT=6)
+
+      zp_cal_params = cal_params.copy()
+      zp_cal_params['x_poly'] = list(np.zeros(shape=(15,), dtype=np.float64))
+      zp_cal_params['y_poly'] = list(np.zeros(shape=(15,), dtype=np.float64))
+      zp_cal_params['x_poly_fwd'] = list(np.zeros(shape=(15,), dtype=np.float64))
+      zp_cal_params['y_poly_fwd'] = list(np.zeros(shape=(15,), dtype=np.float64))
+      zp_cat_stars, short_bright_stars, cat_image = get_catalog_stars(zp_cal_params, MAG_LIMIT=5)
+      #cal_params = zp_cal_params
       found = 0
       cat_image_stars = []
-      for row in cat_stars[:MAX_STARS]: 
+      # pick stars based on settings
+      for row in zp_cat_stars[:MAX_STARS]: 
          (name,mag,ra,dec,new_cat_x,new_cat_y,zp_cat_x,zp_cat_y) = row
+
+         if True:
+            if True:
+               if int(mag) <= 0:
+                  msize = 14
+               elif 0 < int(mag) <= 1:
+                  msize = 12
+               elif 1 < int(mag) <= 2:
+                  msize = 10
+               elif 3 < int(mag) <= 4:
+                  msize = 8
+               elif 4 < int(mag) <= 5:
+                  msize = 6
+               else:
+                  msize = 4
+
          cv2.line(cat_star_mask, (int(zp_cat_x),int(zp_cat_y)), (int(new_cat_x),int(new_cat_y)), (0,0,0), 10)
          center_dist = calc_dist((960,540),(new_cat_x,new_cat_y))
+         if gray_img[int(new_cat_y), int(new_cat_x)] == 0:
+            # star inside mask area
+            continue
          if center_dist > 600:
+            # outside
             rad = 32
             if new_cat_x > (1920 / 2):
                # right side
                rx1 = int(new_cat_x - (rad*2))
-               rx2 = int(new_cat_x + 0)
+               rx2 = int(new_cat_x + (rad/2))
                if new_cat_y < 1080 / 2:
-                  #bottom
-                  ry1 = int(new_cat_y - 0)
+                  #top
+                  ry1 = int(new_cat_y - (rad/2))
                   ry2 = int(new_cat_y + rad)
                else:
                   ry1 = int(new_cat_y - rad)
-                  ry2 = int(new_cat_y + 0)
+                  ry2 = int(new_cat_y + (rad/2))
             else:
                # left side
-               rx1 = int(new_cat_x - 0)
+               rx1 = int(new_cat_x - (rad/2))
                rx2 = int(new_cat_x + (rad * 2))
                if new_cat_y < 1080 / 2:
                   #bottom
-                  ry1 = int(new_cat_y - 0)
+                  ry1 = int(new_cat_y - (rad/2))
                   ry2 = int(new_cat_y + rad)
                else:
                   ry1 = int(new_cat_y - rad)
-                  ry2 = int(new_cat_y + 0)
+                  ry2 = int(new_cat_y + (rad/2))
 
          else:
             rad = 16
@@ -308,9 +408,24 @@ def man_cal(local_json_file, oimg, station_id, cal_fn, cal_params):
          if rx1 <= 0 or ry1 <= 0 or rx2 >= 1920 or ry2 >= 1080:
             continue
          star_crop = gray_img[ry1:ry2,rx1:rx2]
-         star_cat_info = [name,mag,ra,dec]
+         star_cat_info = [name,mag,ra,dec, new_cat_x,new_cat_y]
          used_val = used_img[int(new_cat_y),int(new_cat_x)]
          star_obj = eval_star_crop(star_crop, cal_fn, rx1, ry1, rx2, ry2, star_cat_info)
+         #print(star_obj)
+         #for key in star_obj:
+         #   print(key, star_obj[key])
+         if star_obj['valid_star'] is True and used_val == 0:
+            line_color = [128,128,128]
+         else:
+            line_color = [0,0,128]
+
+         cv2.circle(temp_img, (int(new_cat_x),int(new_cat_y)), 2, (255,255,0),1)
+         cv2.rectangle(temp_img, (int(rx1), int(ry1)), (int(rx2) , int(ry2) ), line_color, 1)
+         cv2.line(temp_img, (int(new_cat_x),int(new_cat_y)), (int(star_obj['star_x']),int(star_obj['star_y'])), line_color, 1)
+         cv2.putText(temp_img, str(star_obj['reject_reason']),  (int(rx1),int(ry1)), cv2.FONT_HERSHEY_SIMPLEX, .8, (200,200,200), 1)
+         #cv2.imshow('pepe', temp_img)
+         #cv2.imshow('crop', star_crop)
+         #cv2.waitKey(30)
          if star_obj['valid_star'] is True and used_val == 0:
             found += 1
             line_color = [255,255,255]
@@ -319,6 +434,8 @@ def man_cal(local_json_file, oimg, station_id, cal_fn, cal_params):
             new_cat_x, new_cat_y = get_xy_for_ra_dec(cal_params, ra, dec)
 
             res_px = calc_dist((star_obj['star_x'],star_obj['star_y']),(new_cat_x,new_cat_y))
+            all_res.append(res_px)
+            med_res = np.median(all_res)
             rjson_conf = {}
             rjson_conf['site'] = {}
             rjson_conf['site']['ams_id'] = station_id
@@ -330,13 +447,11 @@ def man_cal(local_json_file, oimg, station_id, cal_fn, cal_params):
             siy = star_obj['star_y']
             match_dist = angularSeparation(ra,dec,img_ra,img_dec)
             real_res_px = res_px
+            used_val2 = used_img[int(siy),int(six)]
 
 
-            cv2.circle(show_img, (int(new_cat_x),int(new_cat_y)), 10, (255,255,0),2)
-            cv2.line(show_img, (int(new_cat_x),int(new_cat_y)), (int(star_obj['star_x']),int(star_obj['star_y'])), line_color, 1)
 
 
-            used_img[ry1:ry2,rx1:rx2] = 255
             #{'cal_fn': '2023_01_03_20_32_03_000_011101-stacked.png', 'star_x': 945.5, 'star_y': 553.0, 'x1': 929, 'y1': 534, 'x2': 961, 'y2': 566, 'cnts': [(16, 18, 1, 2)], 'star_flux': 1671.91, 'pxd': 187, 'brightest_point': [16, 18], 'brightest_val': 231, 'bg_avg': 43, 'star_yn': -1, 'radius': 2, 'valid_star': True, 'reject_reason': '', 'thresh_val': 226.38, 'cx': 16.5, 'cy': 19.0, 'name': 'αUMi', 'mag': 2.0, 'ra': 37.9529, 'dec': 89.2642#}
             star_int = star_obj['star_flux']
             #img_ra = star_obj['ra']
@@ -344,15 +459,22 @@ def man_cal(local_json_file, oimg, station_id, cal_fn, cal_params):
             org_x = star_obj['dec']
 
             match_dist = angularSeparation(ra,dec,img_ra,img_dec)
-
-            cat_image_stars.append((name,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,real_res_px,star_obj['star_flux']))
+            print("USED VAL:", used_val, used_val2)
+            if used_val != 255 and used_val2 != 255 and res_px <= med_res * 2:
+               cat_image_stars.append((name,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,real_res_px,star_obj['star_flux']))
+               cv2.circle(show_img, (int(new_cat_x),int(new_cat_y)), msize, (255,255,0),2)
+               cv2.line(show_img, (int(new_cat_x),int(new_cat_y)), (int(star_obj['star_x']),int(star_obj['star_y'])), line_color, 1)
+            used_img[ry1:ry2,rx1:rx2] = 255
+            used_img[int(siy),int(six)] = 255
             #cat_image_stars.append((star_obj['name'],star_obj['mag'],ra,dec,img_ra,img_dec,match_dist,star_obj['star_x'],star_obj['star_y'],star_obj['img_az'],star_obj['img_el'],star_obj['cat_x'],star_obj['cat_y'],star_obj['star_x'],star_obj['star_y'],star_obj['total_res_px'],star_obj['star_flux']))
 
             #cat_image_stars.append(name,mag,ra,dec,img_ra,img_dec,match_dist,org_x,org_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist,star_int)
 
 
          else:
-            cv2.circle(show_img, (int(new_cat_x),int(new_cat_y)), 10, (0,0,255),2)
+            cv2.circle(show_img, (int(new_cat_x),int(new_cat_y)), msize, (0,0,255),2)
+         if mag <= 2:
+            cv2.putText(show_img, str(name),  (int(new_cat_x),int(new_cat_y)), cv2.FONT_HERSHEY_SIMPLEX, .8, (200,200,200), 1)
 
       cal_params['cat_image_stars'] = cat_image_stars
 
@@ -370,10 +492,26 @@ def man_cal(local_json_file, oimg, station_id, cal_fn, cal_params):
               str(interval) , str(int(found_perc)), str(round(rez,3)))
 
       cv2.putText(show_img, str(info),  (int(50),int(50)), cv2.FONT_HERSHEY_SIMPLEX, .8, (200,200,200), 1)
+      #cv2.waitKey(0)
+
       cv2.imshow('pepe', show_img)
       cv2.setMouseCallback('pepe', click_event, "testing123")
       key = cv2.waitKey(0)
+      print("KEY", key)
+
       # azimuth a & f
+      if key == 119:
+          # W - write 
+         save_json_file(local_json_file, cal_params)
+         print("SAVED:", local_json_file)
+      if key == 122:
+         # zero out poly
+         print("zero poly")
+         cal_params['x_poly'] = list(np.zeros(shape=(15,), dtype=np.float64))
+         cal_params['y_poly'] = list(np.zeros(shape=(15,), dtype=np.float64))
+         cal_params['x_poly_fwd'] = list(np.zeros(shape=(15,), dtype=np.float64))
+         cal_params['y_poly_fwd'] = list(np.zeros(shape=(15,), dtype=np.float64))
+
       if key == 97:
          cal_params['center_az'] -= interval
       if key == 102:
@@ -402,31 +540,46 @@ def man_cal(local_json_file, oimg, station_id, cal_fn, cal_params):
          #(W)rite changes
          save_json_file(local_json_file, cal_params)
       if key == 109:
-          # minimize
-          #stars,cat_stars = get_paired_stars(cal_file, cal_params, con, cur)
-          cal_params, cat_stars = recenter_fov(cal_fn, cal_params, oimg.copy(),  [], rjson_conf, "")
+
+          temp_cal_params = minimize_fov(cal_fn, cal_params, cal_fn,oimg.copy(),rjson_conf, False,cal_params, "", 1) 
+          temp_cal_params['cat_image_stars'] = remove_bad_stars(temp_cal_params['cat_image_stars'])
+          if temp_cal_params['total_res_px'] < cal_params['total_res_px']:
+             print("AFTER MIN BETTER")
+             cal_params = temp_cal_params
+             cal_params = update_center_radec(cal_fn,cal_params,rjson_conf)
+          else:
+             print("AFTER MIN WORSE")
       if key == 112:
          # lens model
          merged_stars = []
          for star in cal_params['cat_image_stars']:
             name,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,real_res_px,star_flux = star
             merged_stars.append((cal_fn, cal_params['center_az'], cal_params['center_el'], cal_params['ra_center'], cal_params['dec_center'], cal_params['position_angle'], cal_params['pixscale'], name,mag,ra,dec,ra,dec,match_dist,new_cat_x,new_cat_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,res_px,star_flux))
-         status, new_cal_params,merged_stars = minimize_poly_multi_star(merged_stars, rjson_conf,0,0,cal_params['cam_id'],None,cal_params,SHOW)
 
-         cal_params['x_poly'] = new_cal_params['x_poly']
-         cal_params['y_poly'] = new_cal_params['y_poly']
-         cal_params['x_poly_fwd'] = new_cal_params['x_poly_fwd']
-         cal_params['y_poly_fwd'] = new_cal_params['y_poly_fwd']
+         status, new_cal_params,merged_stars = minimize_poly_multi_star(merged_stars, rjson_conf,0,0,cal_params['cam_id'],None,cal_params,SHOW)
+         if new_cal_params != 0:
+            print("NEW CAL XP:", cal_params['x_poly'])
+            cal_params['x_poly'] = new_cal_params['x_poly']
+            cal_params['y_poly'] = new_cal_params['y_poly']
+            cal_params['x_poly_fwd'] = new_cal_params['x_poly_fwd']
+            cal_params['y_poly_fwd'] = new_cal_params['y_poly_fwd']
+         else:
+            print("POLY ATTEMPT FAILED!?")
+            input("WAIT")
       
       if key == 114:
          #(R)evert
          cal_params = orig_cal_params
-      cal_params = update_center_radec(cal_fn,cal_params,json_conf)
+      cal_params = update_center_radec(cal_fn,cal_params,rjson_conf)
+      print("CP:", cal_params.keys())
       print("KEY", key)
       if key == 27:
+         print("end man cal")
+         return(cal_params)
          go = False
-         exit()
    return(cal_params)
+
+
 
 def get_close_calib_files(cal_file):
    (meteor_datetime, cam, f_date_str,fy,fmon,fd, fh, fm, fs) = convert_filename_to_date_cam(cal_file)
@@ -625,7 +778,6 @@ def cal_health(con, cur, json_conf):
    for job in jobs:
       pjobs.append(job)
       print("PJOBs", job)
-   #input("[ENTER] TO CONTINUE")
 
    i, o, e = select.select( [sys.stdin], [], [], 10 )
    if (i) :
@@ -682,7 +834,7 @@ def cal_health(con, cur, json_conf):
          stars,cat_stars = get_paired_stars(cal_fn, cp, con, cur)
 
          cp['cat_image_stars'] = remove_bad_stars(cp['cat_image_stars'])
-         cal_params, cat_stars = recenter_fov(cal_fn, cp, oimg.copy(),  stars, json_conf, extra_text)
+         cal_params, cat_stars = recenter_fov(cal_fn, cp, oimg.copy(),  stars, json_conf, extra_text, con, cur)
          cal_params['cat_image_stars'] = cat_star_match(cal_fn, cal_params, oimg, cat_stars)
          cal_params['cat_image_stars'] = remove_bad_stars(cp['cat_image_stars'])
          cal_params, cat_stars = recenter_fov(cal_fn, cal_params, oimg.copy(),  stars, json_conf, extra_text)
@@ -1267,7 +1419,7 @@ def star_track(cam_id, date, con, cur, json_conf ):
       #star_points, show_img = get_star_points(snap_file, snap_img, cal_params, station_id, cam_id, json_conf)
       extra_text = snap_fn + " " + str(int(brightness))
       if len(cal_params['cat_image_stars']) > 5:
-         cal_params, cat_stars = recenter_fov(snap_file, cal_params, snap_img.copy(),  stars, json_conf, extra_text)
+         cal_params, cat_stars = recenter_fov(snap_file, cal_params, snap_img.copy(),  stars, json_conf, extra_text, con, cur)
          cal_params = update_center_radec(snap_file,cal_params,json_conf)
          cal_params['cat_image_stars'] = pair_star_points(snap_file, snap_img, cal_params, json_conf, con, cur, mcp, True)
 
@@ -1275,7 +1427,7 @@ def star_track(cam_id, date, con, cur, json_conf ):
       #cal_params['cat_image_stars'] = remove_bad_stars(cal_params['cat_image_stars'])
 
       if len(cal_params['cat_image_stars']) > 5:
-         cal_params, cat_stars = recenter_fov(snap_file, cal_params, snap_img.copy(),  stars, json_conf, extra_text)
+         cal_params, cat_stars = recenter_fov(snap_file, cal_params, snap_img.copy(),  stars, json_conf, extra_text, con, cur)
          cal_params['cat_image_stars'] = cat_star_match(snap_fn, cal_params, snap_img, cat_stars)
       #stars,cat_stars = get_paired_stars(snap_file, cal_params, con, cur)
       #print(cat_stars)
@@ -1365,9 +1517,9 @@ def remove_bad_stars(cat_image_stars):
 
 
       if center_dist < 600:
-         factor = 2 
+         factor = 2
       else:
-         factor = 3 
+         factor = 3
 
       #if res_limit > 5:
       #   res_limit = 5
@@ -1718,7 +1870,7 @@ def refit_meteor(meteor_file, con, cur, json_conf, mcp = None, last_best_dict = 
    print("MJCPCIS", mj['cp']['cat_image_stars'])
 
    if len(mj['cp']['cat_image_stars']) > 1:
-      mj['cp'], cat_stars = recenter_fov(meteor_file, mj['cp'].copy(), stack_img.copy(),  stars, json_conf, meteor_file )
+      mj['cp'], cat_stars = recenter_fov(meteor_file, mj['cp'].copy(), stack_img.copy(),  stars, json_conf, meteor_file , con, cur)
 
       stars,cat_stars = get_paired_stars(meteor_file, mj['cp'], con, cur)
       mj['cp']['cat_image_stars'] = pair_star_points(meteor_file, stack_img, mj['cp'], json_conf, con, cur, mcp, True)
@@ -2303,10 +2455,12 @@ def minimize_fov(cal_file, cal_params, image_file,img,json_conf,zero_poly=False,
 
 
    this_poly = np.zeros(shape=(4,), dtype=np.float64)
-   if all_res < 2:
+   if all_res < 10:
       this_poly = [.0001,.0001,.0001,.0001]
+   elif 10 <= all_res <= 20:
+      this_poly = [.001,.001,.001,.001]
    else:
-      this_poly = [.01,.01,.01,.01]
+      this_poly = [.005,.005,.005,.005]
 
 
    if zero_poly is True:
@@ -2349,9 +2503,17 @@ def minimize_fov(cal_file, cal_params, image_file,img,json_conf,zero_poly=False,
    orig_res = []
    orig_cat_image_stars = []
 
+   #
+   all_stars = cal_params['cat_image_stars']
+   best_stars = []
+   #XXX
    # CALC RES
    for star in cal_params['cat_image_stars']:
       (dcname,mag,ra,dec,img_ra,img_dec,match_dist,up_cat_x,up_cat_y,img_az,img_el,up_cat_x,up_cat_y,six,siy,res_px,bp) = star
+      center_dist = calc_dist((960,540),(six,siy))
+      #
+      if center_dist < 600:
+         best_stars.append(star)
       new_cat_x, new_cat_y = get_xy_for_ra_dec(cal_params, ra, dec)
       res_px = calc_dist((six,siy),(new_cat_x,new_cat_y))
 
@@ -2365,6 +2527,8 @@ def minimize_fov(cal_file, cal_params, image_file,img,json_conf,zero_poly=False,
 
    check_cal_params, check_report_txt, check_show_img = cal_params_report(image_file, cal_params, json_conf, img.copy(), 30, mcp)
 
+   if len(best_stars) > 5:
+      cal_params['cat_image_stars'] = best_stars
    ores = check_cal_params['total_res_px']
 
    res = scipy.optimize.minimize(reduce_fov_pos, this_poly, args=( az,el,pos,pixscale,x_poly, y_poly, x_poly_fwd, y_poly_fwd, image_file,img,json_conf, cal_params['cat_image_stars'],extra_text,0), method='Nelder-Mead')
@@ -2762,7 +2926,7 @@ def import_cal_file(cal_fn, cal_dir, mcp):
          if rx1 <= 0 or ry1 <= 0 or rx2 >= 1920 or ry2 >= 1080:
             continue
          star_crop = cal_img[ry1:ry2,rx1:rx2]
-         star_cat_info = [dcname,mag,ra,dec]
+         star_cat_info = [dcname,mag,ra,dec,new_cat_x,new_cat_y]
          star_obj = eval_star_crop(star_crop, cal_fn, rx1, ry1, rx2, ry2, star_cat_info)
 
          zp_x, zp_y, zp_img_ra,zp_img_dec, zp_img_az, zp_img_el = XYtoRADec(img_x,img_y,cal_fn,cal_params_nlm,json_conf)
@@ -3217,13 +3381,14 @@ def revert_to_wcs(cal_fn,mcp=None):
       cal_params['y_poly_fwd'] = np.zeros(shape=(15,), dtype=np.float64)
    cal_params['cat_image_stars'] = pair_star_points(cal_fn, cal_img, cal_params.copy(), json_conf, con, cur, mcp, save_img = False)
    stars,cat_stars = get_paired_stars(cal_fn, cal_params, con, cur)
-   temp_cal_params, cat_stars = recenter_fov(cal_fn, cal_params, cal_img.copy(),  stars, json_conf, "")
+   temp_cal_params, cat_stars = recenter_fov(cal_fn, cal_params, cal_img.copy(),  stars, json_conf, "", con, cur)
    if temp_cal_params['total_res_px'] < cal_params['total_res_px']:
       cal_params = temp_cal_params.copy()
    save_json_file(cal_file, cal_params)
    return(cal_params)
 
 def pair_star_points(cal_fn, oimg, cal_params, json_conf, con, cur, mcp, save_img=False):
+   used_img = np.zeros((1080,1920),dtype=np.uint8)
    (f_datetime, cam_id, f_date_str,y,m,d, h, mm, s) = convert_filename_to_date_cam(cal_fn)
    show_img = oimg.copy()
    sql = "DELETE FROM calfile_catalog_stars where cal_fn = '{:s}'".format(cal_fn)
@@ -3306,9 +3471,11 @@ def pair_star_points(cal_fn, oimg, cal_params, json_conf, con, cur, mcp, save_im
 
                res_px = calc_dist((img_x,img_y),(new_cat_x,new_cat_y))
                match_dist = angularSeparation(ra,dec,img_ra,img_dec)
-               if res_px < 40:
+               if res_px < 40 and used_img[img_y,img_x] != 200 :
                   color = [0,255,0]
                   up_cat_image_stars.append((name,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,img_x,img_y,res_px,star_flux) )
+                  used_img[img_y,img_x] = 200
+                  used_img[new_cat_x,new_cat_y] = 200
                else:
                   color = [0,0,255]
                cv2.line(show_img, (int(zp_cat_x),int(zp_cat_y)), (int(img_x),int(img_y)), color, 1)
@@ -5004,6 +5171,7 @@ def get_xy_for_ra_dec(cal_params, ra, dec):
 def get_catalog_stars(cal_params, MAG_LIMIT=5):
    mybsd = bsd.brightstardata()
    bright_stars = mybsd.bright_stars
+
    #if "short_bright_stars" not in cal_params :
    #   mybsd = bsd.brightstardata()
    #   bright_stars = mybsd.bright_stars
@@ -5448,6 +5616,23 @@ def batch_apply_bad(cam_id, con, cur, json_conf, blimit=25):
       #
    characterize_best(cam_id, con, cur, json_conf, 50 )
 
+def copy_best_cal_images(con, cur, json_conf):
+   # copy 5-10 best cal images to the cloud so we can use these for lens models
+   station_id = json_conf['site']['ams_id']
+   for cam_num in json_conf['cameras']:
+      cam_id = json_conf['cameras'][cam_num]['cams_id']
+      cams_list.append(cam_id)
+      best_local_dir = "/mnt/ams2/CAL/IMAGES/" + cam_id + "/"
+      best_cloud_dir = "/mnt/archive.allsky.tv/" + station_id + "/CAL/IMAGES/" + cam_id + "/"
+      if os.path.exists(best_local_dir) is False:
+         os.makedirs(best_local_dir)
+      if os.path.exists(best_cloud_dir) is False:
+         os.makedirs(best_cloud_dir)
+
+
+      calfiles_data = load_cal_files(cam_id, con, cur)
+      for row in calfiles_data[0:10]:
+         print(row)
 
 def batch_apply(cam_id, con,cur, json_conf, last=None, do_bad=False, cam_stats=None, apply_type="ALL", limit=25):
    # apply the latest MCP Poly to each cal file and then recenter them
@@ -5525,7 +5710,6 @@ def batch_apply(cam_id, con,cur, json_conf, last=None, do_bad=False, cam_stats=N
             else:
                last_cal_params, flux_table = apply_calib (cf, calfiles_data, json_conf, mcp, last_cal_params, extra_text, do_bad, flux_table)
             rc += 1
-   #input("DONE BATCH APPLY FOR" + apply_type)
 
 def get_image_stars_with_catalog(obs_id, cal_params, show_img, flux_table=None):
    if flux_table is None:
@@ -6121,7 +6305,7 @@ def apply_calib (cal_file, calfiles_data, json_conf, mcp, last_cal_params=None, 
       blend_star_cat = cv2.addWeighted(star_points_img, .5, cat_image, .5, .3)
       blend_star_cat_final = cv2.addWeighted(blend_star_cat, .5, star_img, .5, .3)
 
-      temp_cal_params, cat_stars = recenter_fov(cal_fn, temp_cal_params, oimg.copy(),  stars, json_conf, extra_text)
+      temp_cal_params, cat_stars = recenter_fov(cal_fn, temp_cal_params, oimg.copy(),  stars, json_conf, extra_text, con, cur)
 
       if temp_cal_params['total_res_px'] > 4 and len(cal_params['cat_image_stars']) > 20:
          new_stars = []
@@ -6142,7 +6326,7 @@ def apply_calib (cal_file, calfiles_data, json_conf, mcp, last_cal_params=None, 
                print("REJECT:", row)
          if len(new_stars) > 10:
             temp_cal_params['cat_image_stars'] = new_stars
-            temp_cal_params, cat_stars = recenter_fov(cal_fn, temp_cal_params, oimg.copy(),  stars, json_conf, extra_text)
+            temp_cal_params, cat_stars = recenter_fov(cal_fn, temp_cal_params, oimg.copy(),  stars, json_conf, extra_text, con,cur)
          print("\tSTARS:", len(new_stars))
       
      
@@ -6398,7 +6582,7 @@ def update_calfiles(cam_id, con,cur, json_conf):
          #exit()
 
 
-def recenter_fov(cal_fn, cal_params, cal_img, stars, json_conf, extra_text="", this_poly_in=None, meteor_stack_img=None):
+def recenter_fov(cal_fn, cal_params, cal_img, stars, json_conf, extra_text="", this_poly_in=None, meteor_stack_img=None, con=None, cur=None):
    if "station_id" in cal_params:
       station_id = cal_params['station_id']
    else:
@@ -6434,17 +6618,26 @@ def recenter_fov(cal_fn, cal_params, cal_img, stars, json_conf, extra_text="", t
 
 
    this_poly = np.zeros(shape=(4,), dtype=np.float64)
-   if 0 < cal_params['total_res_px'] < .75:
-      this_poly = [.000005,.000005,.000005,.000005]
-   elif .75 <= cal_params['total_res_px'] < 1:
-      this_poly = [.00001,.00001,.00001,.00001]
-   elif 1 <= cal_params['total_res_px'] < 5:
-      this_poly = [.0001,.0001,.0001,.0001]
-   elif 5 <= cal_params['total_res_px'] < 10:
-      this_poly = [.001,.001,.001,.001] 
-   else:
+   #if 0 < cal_params['total_res_px'] < .75:
+   #   this_poly = [.000005,.000005,.000005,.000005]
+   #elif .75 <= cal_params['total_res_px'] < 1:
+   #   this_poly = [.00001,.00001,.00001,.00001]
+   #elif 1 <= cal_params['total_res_px'] < 5:
+   #   this_poly = [.0001,.0001,.0001,.0001]
+   #elif 5 <= cal_params['total_res_px'] < 10:
+   #   this_poly = [.001,.001,.001,.001] 
+   #else:
       # greater than 10
-      this_poly = [.005,.005,.005,.005] 
+   #   this_poly = [.005,.005,.005,.005] 
+
+   all_res = cal_params['total_res_px']
+   if all_res < 10:
+      this_poly = [.0001,.0001,.0001,.0001]
+   elif 10 <= all_res <= 20:
+      this_poly = [.001,.001,.001,.001]
+   else:
+      this_poly = [.005,.005,.005,.005]
+
 
    if this_poly_in is not None:
       this_poly = this_poly_in
@@ -6470,7 +6663,8 @@ def recenter_fov(cal_fn, cal_params, cal_img, stars, json_conf, extra_text="", t
 
    if len(center_stars) < 10:
       center_stars = cal_params['cat_image_stars']
-
+   extra_text = ""
+   print("DEBUG:", this_poly, cal_params['center_az'], cal_params['center_el'],cal_params['position_angle'],cal_params['pixscale'],cal_params['x_poly'], cal_params['y_poly'], cal_params['x_poly_fwd'], cal_params['y_poly_fwd'],cal_fn, extra_text)
 
    res = scipy.optimize.minimize(reduce_fov_pos, this_poly, args=( np.float64(cal_params['center_az']),np.float64(cal_params['center_el']),np.float64(cal_params['position_angle']),np.float64(cal_params['pixscale']),cal_params['x_poly'], cal_params['y_poly'], cal_params['x_poly_fwd'], cal_params['y_poly_fwd'],cal_fn,cal_img,json_conf, center_stars, extra_text,0), method='Nelder-Mead')
 
@@ -6513,7 +6707,7 @@ def recenter_fov(cal_fn, cal_params, cal_img, stars, json_conf, extra_text="", t
 
    #cat_stars, short_bright_stars, cat_image = get_catalog_stars(nc)
 
-   if "ca_params" in cal_fn:
+   if "cal_params" in cal_fn:
       up_stars, cat_image_stars = update_paired_stars(cal_fn, nc, stars, con, cur, json_conf)
    else:
       nc['cat_image_stars'] = pair_star_points(cal_fn, cal_img, nc, json_conf, con, cur, mcp, False)
@@ -8240,6 +8434,7 @@ def cal_params_report(cal_fn, cal_params,json_conf, show_img, waitVal=30, mcp=No
       cv2.rectangle(show_img, (int(new_cat_x - 7), int(new_cat_y-7)), (int(new_cat_x+7) , int(new_cat_y+7) ), (255, 255, 255), 1)
 
       # zero poly catalog star point ( no lens model)
+
       cv2.rectangle(show_img, (int(zp_cat_x - 5), int(zp_cat_y-5)), (int(zp_cat_x+5) , int(zp_cat_y+5) ), (0, 0, 255), 1)
 
       tb.add_row([dcname, round(mag,2), int(bp), round(ra,2), round(dec,2), round(new_cat_x,2), round(new_cat_y,2), round(six,2), round(siy,2), round(cat_dist,2), round(match_dist,2)])
@@ -8331,7 +8526,7 @@ def eval_star_crop(crop_img, cal_fn, x1, y1,x2,y2, star_cat_info=None ):
    min_val, max_val, min_loc, (mx,my)= cv2.minMaxLoc(gray_img)
    pxd = max_val - avg_val
 
-   if pxd < 15:
+   if pxd < 5:
       reject_reason = "PXD TOO LOW: " +  str(pxd)
       valid_star = False
 
@@ -8354,7 +8549,7 @@ def eval_star_crop(crop_img, cal_fn, x1, y1,x2,y2, star_cat_info=None ):
 
    # lower sens if not found
    if len(cnts) == 0:
-      thresh_val = max_val * .7
+      thresh_val = max_val * .8
 
       _, crop_thresh = cv2.threshold(crop_img, thresh_val, 255, cv2.THRESH_BINARY)
       cnts = get_contours_in_image(crop_thresh)
@@ -8372,6 +8567,7 @@ def eval_star_crop(crop_img, cal_fn, x1, y1,x2,y2, star_cat_info=None ):
       else:
          radius = h 
       if w > 4 or h > 4:
+         reject_reason += "cnt w/h too big: " +  str(w) + " " + str(h)
          valid_star = False 
       star_flux = do_photo(gray_img, (cx,cy), radius)
       #try:
@@ -8394,7 +8590,7 @@ def eval_star_crop(crop_img, cal_fn, x1, y1,x2,y2, star_cat_info=None ):
    if pxd < 1 :
       valid_star = False 
       reject_reason += "LOW PXD "
-   if star_flux <=  30:
+   if star_flux <=  20:
       valid_star = False 
       reject_reason += "LOW FLUX " + str(star_flux)
 
@@ -8424,11 +8620,13 @@ def eval_star_crop(crop_img, cal_fn, x1, y1,x2,y2, star_cat_info=None ):
    star_obj['cx'] = cx 
    star_obj['cy'] = cy
    if star_cat_info is not None:
-      name, mag, ra,dec = star_cat_info
+      name, mag, ra,dec,new_cat_x,new_cat_y = star_cat_info
       star_obj['name'] = name
       star_obj['mag'] = mag 
       star_obj['ra'] = ra
       star_obj['dec'] = dec
+      star_obj['cat_x'] = new_cat_x
+      star_obj['cat_y'] = new_cat_y
 
    else:
       star_obj['x'] = star_obj['star_x']
@@ -10728,6 +10926,8 @@ if __name__ == "__main__":
 
    if cmd == "cal_health" :
       cal_health(con, cur, json_conf)
+   if cmd == "copy_best_cal_images" :
+      copy_best_cal_images(con, cur, json_conf)
 
    
    if cmd == "refit_meteor_day" :
