@@ -3381,7 +3381,7 @@ def revert_to_wcs(cal_fn,mcp=None):
       cal_params['y_poly_fwd'] = np.zeros(shape=(15,), dtype=np.float64)
    cal_params['cat_image_stars'] = pair_star_points(cal_fn, cal_img, cal_params.copy(), json_conf, con, cur, mcp, save_img = False)
    stars,cat_stars = get_paired_stars(cal_fn, cal_params, con, cur)
-   temp_cal_params, cat_stars = recenter_fov(cal_fn, cal_params, cal_img.copy(),  stars, json_conf, "", con, cur)
+   temp_cal_params, cat_stars = recenter_fov(cal_fn, cal_params, cal_img.copy(),  stars, json_conf, "", None, cal_img, con, cur)
    if temp_cal_params['total_res_px'] < cal_params['total_res_px']:
       cal_params = temp_cal_params.copy()
    save_json_file(cal_file, cal_params)
