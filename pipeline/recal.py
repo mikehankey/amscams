@@ -5683,7 +5683,10 @@ def batch_apply(cam_id, con,cur, json_conf, last=None, do_bad=False, cam_stats=N
                pixel_scale, zp_az, zp_el, zp_ra, zp_dec, zp_position_angle, zp_pixel_scale, x_poly, \
                y_poly, x_poly_fwd, y_poly_fwd, res_px, res_deg, ai_weather, ai_weather_conf, cal_version, last_update) = calfiles_data[cf]
                cal_timestamp = cal_ts
-               cal_params = load_json_file(cal_dir + cf)
+               try:
+                  cal_params = load_json_file(cal_dir + cf)
+               except:
+                  continue
                total_stars = len(cal_params['cat_image_stars']) 
 
             elif os.path.exists(cal_dir + cf) is True:
