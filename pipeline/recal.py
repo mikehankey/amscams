@@ -1557,7 +1557,7 @@ def plot_cal_history(con, cur, json_conf):
       row = calindex[key]
       fn = key.split("/")[-1]
       print("ROW", type(row), row )
-      if "cam_id" not row:
+      if "cam_id" not in row:
          continue
       if row['cam_id'] not in data:
          data[row['cam_id']] = {}
