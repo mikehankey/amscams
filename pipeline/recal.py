@@ -3474,8 +3474,9 @@ def pair_star_points(cal_fn, oimg, cal_params, json_conf, con, cur, mcp, save_im
                if res_px < 40 and used_img[img_y,img_x] != 200 :
                   color = [0,255,0]
                   up_cat_image_stars.append((name,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,img_x,img_y,res_px,star_flux) )
-                  used_img[img_y,img_x] = 200
-                  used_img[new_cat_x,new_cat_y] = 200
+                  used_img[int(img_y),int(img_x)] = 200
+                  if 0 <= new_cat_x < 1920 and 0 <= new_cat_y < 1080:
+                     used_img[int(new_cat_y),int(new_cat_x)] = 200
                else:
                   color = [0,0,255]
                cv2.line(show_img, (int(zp_cat_x),int(zp_cat_y)), (int(img_x),int(img_y)), color, 1)
@@ -6009,7 +6010,7 @@ def apply_calib (cal_file, calfiles_data, json_conf, mcp, last_cal_params=None, 
                return(None,None)
 
       before_files, after_files = get_close_calib_files(cal_file)
-      if cal_params['total_res_px'] > 3:
+      if cal_params['total_res_px'] > 10:
          cal_params = test_cals (cal_fn, cal_params, json_conf, mcp, oimg, before_files, after_files, con, cur)
 
       if cal_dir is False:
@@ -6305,7 +6306,7 @@ def apply_calib (cal_file, calfiles_data, json_conf, mcp, last_cal_params=None, 
       blend_star_cat = cv2.addWeighted(star_points_img, .5, cat_image, .5, .3)
       blend_star_cat_final = cv2.addWeighted(blend_star_cat, .5, star_img, .5, .3)
 
-      temp_cal_params, cat_stars = recenter_fov(cal_fn, temp_cal_params, oimg.copy(),  stars, json_conf, extra_text, con, cur)
+      temp_cal_params, cat_stars = recenter_fov(cal_fn, temp_cal_params, oimg.copy(),  stars, json_conf, extra_text, None, cal_img, con, cur)
 
       if temp_cal_params['total_res_px'] > 4 and len(cal_params['cat_image_stars']) > 20:
          new_stars = []
@@ -6326,7 +6327,8 @@ def apply_calib (cal_file, calfiles_data, json_conf, mcp, last_cal_params=None, 
                print("REJECT:", row)
          if len(new_stars) > 10:
             temp_cal_params['cat_image_stars'] = new_stars
-            temp_cal_params, cat_stars = recenter_fov(cal_fn, temp_cal_params, oimg.copy(),  stars, json_conf, extra_text, con,cur)
+            #temp_cal_params, cat_stars = recenter_fov(cal_fn, temp_cal_params, oimg.copy(),  stars, json_conf, None, oimg, extra_text, con,cur)
+            temp_cal_params = minimize_fov(cal_fn, temp_cal_params, cal_fn,oimg,json_conf, False,temp_cal_params, "")
          print("\tSTARS:", len(new_stars))
       
      
@@ -6664,7 +6666,7 @@ def recenter_fov(cal_fn, cal_params, cal_img, stars, json_conf, extra_text="", t
    if len(center_stars) < 10:
       center_stars = cal_params['cat_image_stars']
    extra_text = ""
-   print("DEBUG:", this_poly, cal_params['center_az'], cal_params['center_el'],cal_params['position_angle'],cal_params['pixscale'],cal_params['x_poly'], cal_params['y_poly'], cal_params['x_poly_fwd'], cal_params['y_poly_fwd'],cal_fn, extra_text)
+   #print("DEBUG:", this_poly, cal_params['center_az'], cal_params['center_el'],cal_params['position_angle'],cal_params['pixscale'],cal_params['x_poly'], cal_params['y_poly'], cal_params['x_poly_fwd'], cal_params['y_poly_fwd'],cal_fn, extra_text)
 
    res = scipy.optimize.minimize(reduce_fov_pos, this_poly, args=( np.float64(cal_params['center_az']),np.float64(cal_params['center_el']),np.float64(cal_params['position_angle']),np.float64(cal_params['pixscale']),cal_params['x_poly'], cal_params['y_poly'], cal_params['x_poly_fwd'], cal_params['y_poly_fwd'],cal_fn,cal_img,json_conf, center_stars, extra_text,0), method='Nelder-Mead')
 
@@ -6710,6 +6712,7 @@ def recenter_fov(cal_fn, cal_params, cal_img, stars, json_conf, extra_text="", t
    if "cal_params" in cal_fn:
       up_stars, cat_image_stars = update_paired_stars(cal_fn, nc, stars, con, cur, json_conf)
    else:
+      print("CUR:", cur)
       nc['cat_image_stars'] = pair_star_points(cal_fn, cal_img, nc, json_conf, con, cur, mcp, False)
       cat_image_stars = nc['cat_image_stars']
 
@@ -9029,7 +9032,7 @@ def fast_lens(cam_id, con, cur, json_conf,limit=5, cal_fns=None):
     
       cal_params['cat_image_stars'] = cat_image_stars
       cal_params['cat_image_stars'] = remove_bad_stars(cal_params['cat_image_stars'])
-      cal_params, xxx_cat_image_stars = recenter_fov(cal_fn, cal_params, cal_img.copy(),  stars, json_conf, "")
+      cal_params, xxx_cat_image_stars = recenter_fov(cal_fn, cal_params, cal_img.copy(),  stars, json_conf, "", None, cal_img, con, cur)
       ocps = cal_params['cat_image_stars'] 
      
       if cal_params['total_res_px'] >= 5:
@@ -9038,7 +9041,7 @@ def fast_lens(cam_id, con, cur, json_conf,limit=5, cal_fns=None):
             cal_params['cat_image_stars'] = ocps
          if len(cal_params['cat_image_stars']) > 10:
             print("\tRECENTER AGAIN.", len(cal_params['cat_image_stars']), cal_params['total_res_px'] )
-            cal_params, xxx_cat_image_stars = recenter_fov(cal_fn, cal_params, cal_img.copy(),  stars, json_conf, "")
+            cal_params, xxx_cat_image_stars = recenter_fov(cal_fn, cal_params, cal_img.copy(),  stars, json_conf, "", None, cal_img, con, cur)
          else:
             continue
 
