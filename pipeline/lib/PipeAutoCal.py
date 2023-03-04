@@ -10349,7 +10349,8 @@ def minimize_poly_multi_star(merged_stars, json_conf,orig_ra_center=0,orig_dec_c
       cv2.circle(img,(int(six),int(siy)), 10, (255), 1)
    std_dist = np.mean(err_list)
    cal_params = {}
-   if len(merged_stars) < 20:
+   if len(merged_stars) < 5:
+      print("NOT ENOUGH STARS FOR MULTI FIT!")
       return(0,0,0)
 
    fit_img = np.zeros((1080,1920),dtype=np.uint8)

@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en-US">
+    <head>
+        <title>AllSky.com</title>
+
+        <meta charset="utf-8">
+        <meta name="description" content="World wide fireball camera network">
+        <meta name="robots" content="index, follow, max-image-preview:large" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;900&display=swap" rel="stylesheet">
+	<!-- PAID VERSION-->
+        <script src="https://kit.fontawesome.com/f3f9f77a06.js" crossorigin="anonymous"></script>
+<!-- FREE VERSION
+	<link rel="stylesheet" href="https://archive.allsky.tv/plugins/fontawesome-free/css/all.min.css">
+-->
+        <style>
+            html,body {
+                margin: 0;
+                font-family: 'Poppins', sans-serif;;
+            }
+            #main {
+                position: relative;
+                color: #fff;
+                width: 100%;
+                min-height: 100vh;
+                z-index: 1;
+                background-image: url(https://www.allsky.com/bg3.jpg);
+                background-position: 50% 50%;
+                background-size: cover;
+                display: flex;
+                text-align: center;
+                align-items: center;
+                justify-content: center;
+                flex-flow: column;
+            }
+	    a {
+		color: #fff;
+                font-weight: 900;
+                font-size: 2rem;
+                line-height: 1;
+
+	    }
+            h2 {
+                font-weight: 900;
+                font-size: 2rem;
+                line-height: 1;
+            }
+            @media (min-width: 576px) { h2 { font-size: 4rem;} }
+            #logo {
+                width: 90vw;
+                max-width: 40rem;
+            }
+        </style>
+
+ <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-eOJMYsd53ii+scO/bJGFsiCZc+5NDVN2yr8+0RDqr0Ql0h+rP48ckxlpbzKgwra6" crossorigin="anonymous">
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/js/bootstrap.bundle.min.js" integrity="sha384-JEW9xMcG8R+pH31jmWH6WWP0WintQrMb4s7ZOdauHnUtxwoG2vI5DkLtS3qm9Ekf" crossorigin="anonymous"></script>
+
+
+<!--
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+-->
+	<script>
+            function play_video(div_id,video_url) {
+	       temp_html = $("#" + div_id).html()
+	       $("#" + div_id).css("width", "640px");
+	       $("#" + div_id).css("height", "360px");
+	       $("#" + div_id).css("background-size", "640px 360px");
+               sessionStorage.setItem(div_id, temp_html)
+               vid_html = "<div style='opacity: .99; width=640; height=320; border: 0px #ffffff solid;'><video id='player' width=640 height=360 controls autoplay loop><source src='"+ video_url + "'></video></div>"
+	       //close_html = `<div><a href="javascript:swap_html('` + div_id + `', '', '320px', '180px' )"><i title="Back to image" class="fas fa-image"></i></a>  <a href="javascript:swap_html('` + div_id + `', '', '320px', '180px' )"><i title="Confirm valid meteor" class="fas fa-meteor"></i></a> <a href="javascript:swap_html('` + div_id + `', '', '320px', '180px' )"><i title="Tag as non meteor" class="fas fa-ban"></i></a> <br></div>`
+	       close_html = `<div><a href="javascript:swap_html('` + div_id + `', '', '320px', '180px' )"><i title="Close" class="fas circle-xmark"></i>Close </i></a> <br></div>`
+               $("#" + div_id).html(vid_html + close_html)
+	       console.log(div_id)
+	       console.log("LAST HTML:" + sessionStorage.getItem(div_id))
+	       console.log("TEMP HTML:" + temp_html)
+	       console.log(vid_html)
+	    }
+            function swap_html(div_id, new_html, width, height) {
+	
+	       new_html = sessionStorage.getItem(div_id)
+	       console.log(div_id)
+               console.log( $("#" + div_id).html())
+	       console.log(new_html)
+	       $("#" + div_id).html(new_html)
+	       $("#" + div_id).css("width", width);
+	       $("#" + div_id).css("height", height);
+	       $("#" + div_id).css("background-size", width + " " + height);
+	       //$(div_id).css("background-image", "url(" + img_url");
+	       // reset the cap div
+	       cap_div_id = div_id + "_caption"
+	       $("#" + cap_div_id).html("")
+	    }
+	</script>
+    </head>
+    <body>
+        <div id="main">
+            <img src="https://www.allsky.com/logo.svg" alt="AllSky.com" id="logo"/>
+	{MAIN_CONTENT}
+        </div>
+<button type="button" class="btn btn-primary" data-toggle="modal" data-target=".bd-example-modal-xl">Extra large modal</button>
+
+<div class="modal fade bd-example-modal-xl" tabindex="-1" role="dialog" aria-labelledby="myExtraLargeModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-xl">
+    <div class="modal-content">
+      ...
+    </div>
+  </div>
+</div>
+    </body>
+</html> 
+

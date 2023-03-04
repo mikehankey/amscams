@@ -427,9 +427,6 @@ def scan_meteor_video(meteor_video_file,json_conf,mj = None, station_id = None):
    else:
       mj['using_trim_src'] = 0
 
-
-
-
    meteor_video_file = man_dir + mfn
    mj['meteor_video_file'] = meteor_video_file 
    mj['man_dir'] = man_dir

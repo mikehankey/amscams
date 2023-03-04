@@ -1,0 +1,116 @@
+<head>
+	<!-- Load plotly.js into the DOM -->
+<script src="https://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+
+	<script src='https://cdn.plot.ly/plotly-latest.min.js'></script>
+<style>
+body {
+  background-color: black;
+  color: white;
+  font: 1.3rem Inconsolata, monospace;
+}
+g.pointtext {
+display: none;
+}
+a {
+   color: hotpink;
+}
+
+</style>
+
+</head>
+
+<body>
+	<div id='myDiv' style="border: 1px #FFFFFF solid; width: 100%; height:600; "><!-- Plotly chart will be drawn inside this DIV --></div>
+	<div id='myNav' style="border: 0px #FFFFFF solid; width: 100%; text-align: center; "></div>
+
+	<div id='station_info' style="border: 0px #FFFFFF solid; width: 100%; text-align: center; ">Info</div>
+	<div id='station_weather' style="border: 0px #FFFFFF solid; width: 100%; text-align: center; ">Weather</div>
+	<div id='station_meteors' style="border: 0px #FFFFFF solid; width: 100%; text-align: center; ">Meteors</div>
+
+</body>
+
+	<script>
+var data = [{
+    type: 'scattergeo',
+    mode: 'markers+text',
+    text: 
+	    {LABELS}
+    ,
+    lon: 
+	    {LONS}
+    ,
+    lat: 
+	    {LATS}
+    ,
+    marker: {
+        size: 10,
+        color: 
+		{COLOR}
+        ,
+        line: {
+            width: 1
+        }
+    },
+    name: 'ALLSKY7 STATIONS',
+    textposition: 
+	    {TEXTPOSITION}
+    ,
+}];
+
+var layout = {
+    title: 'ALLSKY7 STATIONS',
+    font: {
+        family: 'Droid Serif, serif',
+        size: 16
+    },
+    titlefont: {
+        size: 16
+    },
+    geo: {
+        scope: 'world',
+        resolution: 50,
+        lonaxis: {
+		'range': [{MIN_LON}, {MAX_LON}]
+        },
+        lataxis: {
+		'range': [{MIN_LAT}, {MAX_LAT}]
+        },
+        showrivers: true,
+        rivercolor: '#fff',
+        showlakes: true,
+        lakecolor: '#fff',
+        showland: true,
+        landcolor: '#EAEAAE',
+        countrycolor: '#d3d3d3',
+        countrywidth: 1.5,
+        subunitcolor: '#d3d3d3'
+    }
+};
+
+Plotly.newPlot('myDiv', data, layout);
+var myPlot = document.getElementById('myDiv'),
+    N = 16,
+    x = d3.range(N),
+    y = d3.range(N).map( d3.random.normal() ),
+    data = [ { x:x, y:y, type:'scatter',
+            mode:'markers', marker:{size:16} } ],
+    layout = {
+        hovermode:'closest',
+        title:'Click on Points'
+     }
+
+
+myPlot.on('plotly_click', function(data){
+    var pts = '';
+    console.log(data);
+    for(var i=0; i < data.points.length; i++){
+        pts = 'x = '+data.points[i].lon +'\ny = '+
+            data.points[i].lat + '\n\n' + 
+            data.points[i].text + '\n\n';
+    }
+    var station_info_div = document.getElementById("station_info") 
+    station_info_div.innerHTML = pts
+});
+
+</script>

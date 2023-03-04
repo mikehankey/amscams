@@ -18,6 +18,7 @@ import ephem
 import json
 import glob
 import decimal
+
 dec = decimal.Decimal
 #try
 #import jwt

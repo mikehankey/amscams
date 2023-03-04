@@ -14,11 +14,12 @@ exp_times = []
 
 ST = Stations()
 ST.load_station_data()
-project_dir = "/mnt/f/meteorite_falls/2022_12_30_Korea_Rocket/"
+project_dir = "/mnt/f/meteorite_falls/2023-FR/"
 
 obs_folders = os.listdir(project_dir)
 good_obs_file = project_dir + "20221230_090705-GOOD_OBS.json"
 good_obs = {}
+
 for folder in obs_folders:
    print("FOLDER:", project_dir + folder)
    if os.path.isdir(project_dir + folder) and "AMS" in folder:

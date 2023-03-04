@@ -30,7 +30,7 @@ class Plotter():
       self.DATA_DIR = "/mnt/f/"
       print("ARGS:", cmd, extra_args)
       if "ALL" not in extra_args[0] and "SPO" not in extra_args[0] and "SHW" not in extra_args[0] :
-         print(extra_args)
+         print("Extra Args:", extra_args)
          y,m,d = extra_args[0].split("_")
          self.day = y + "_" + m + "_" + d
          self.date_desc = m + "/" + d + "/" + y
@@ -40,7 +40,7 @@ class Plotter():
          self.all_radiants_json_file = self.event_dir + "ALL_RADIANTS.json"
          self.all_radiants = load_json_file(self.all_radiants_json_file)
          self.alpha = .9
-         print(self.all_radiants_json_file)
+         print("FILE", self.all_radiants_json_file)
       else:
          self.day = extra_args[0]
          self.event_dir = self.DATA_DIR + "EVENTS/"
@@ -80,7 +80,6 @@ class Plotter():
          print(shower_name, self.shower_colors[shower_name])
       save_json_file(shower_color_file, self.shower_colors)
 
-      exit() 
 
    def plot_all_rad(self):
       self.make_shower_colors()

@@ -1006,7 +1006,8 @@ class AllSkyNetwork():
       event['event_id'] = event_id
 
       #print("\tINSERT EVENT:", event)
-      event_minute = event['stime'].replace("-", "_")[0:15]
+      # BUG FIX ? 15 for 10 minute 16 for 1 minute string!
+      event_minute = event['stime'].replace("-", "_")[0:16]
       event_minute = event_minute.replace(":", "_")
       event_minute = event_minute.replace(" ", "_")
       event['event_day'] = event_minute[0:10] 
@@ -1025,7 +1026,7 @@ class AllSkyNetwork():
       rows = self.cur.fetchall()
       
       if True: #len(rows) == 0:
-         print("\t\tNo events matching this minute exist!", event_minute)
+         print("\t\tNo events matching this event id exist!", event_id)
          # make a new event!
          sql = """
             INSERT OR REPLACE INTO events (event_id, event_minute, revision, 
@@ -1349,7 +1350,7 @@ class AllSkyNetwork():
             #if the event start is within 6 seconds
             #sdur = duration * -2
             #edur = duration * 2
-            if time_diff <= 5:
+            if time_diff <= 10:
                avg_lat = np.mean(min_events[eid]['lats'])
                avg_lon = np.mean(min_events[eid]['lons'])
                match_dist = dist_between_two_points(avg_lat, avg_lon, lat, lon)
@@ -1362,7 +1363,7 @@ class AllSkyNetwork():
 
                   matches.append((eid, match_time, match_dist,None))
 
-               elif match_dist < 600 :
+               elif match_dist < 700 :
                   match_dist = 1
                   print("STATIONS:", station_id, obs_file, min_events[eid]['stations'], min_events[eid]['files'])
                   #input("CLOSE MATCH FOUND CHECK INTERSECT")
@@ -1401,7 +1402,7 @@ class AllSkyNetwork():
                            else:
                               print("   *** BAD INTERSECT!", idist, ipoint)
                               intersect = False 
-                        if intersect is True:
+                        if intersect is True or intersect is False:
                            print("   ADD MATCH 2", eid)
                            ipoints.append(ipoint)
                            matches.append((eid, match_time, match_dist,ipoints))
@@ -1455,7 +1456,7 @@ class AllSkyNetwork():
                      ipoints.append(ipoint)
                   else:
                      ipoint = None
-                  if intersect is True:
+                  if intersect is True or intersect is False:
                      matches.append((eid, match_time, match_dist, ipoints))
 
       if len(matches) > 0:
@@ -1501,7 +1502,11 @@ class AllSkyNetwork():
          min_events[eid]['ipoints'].append(ipoints)
          min_events[eid]['start_datetime'].append(stime)
          min_events[eid]['stime'] = stime
+         if "25:14" in stime:
+            input("wait event check/make")
          return(min_events)
+      if "25:14" in stime:
+         input("wait event check/make")
 
       return(min_events)
 
@@ -3735,8 +3740,8 @@ class AllSkyNetwork():
             obs_data[obs_id]['ignore'] = ignore 
             obs_data[obs_id]['image_file'] =  self.local_evdir + self.event_id + "/" + obs_id + "-stacked.jpg"
 
-            obs_data[obs_id]['az_start_point'] = self.find_point_from_az_dist(lat,lon,float(json.loads(azs)[0]),400)
-            obs_data[obs_id]['az_end_point'] = self.find_point_from_az_dist(lat,lon,float(json.loads(azs)[-1]),400)
+            obs_data[obs_id]['az_start_point'] = self.find_point_from_az_dist(lat,lon,float(json.loads(azs)[0]),650)
+            obs_data[obs_id]['az_end_point'] = self.find_point_from_az_dist(lat,lon,float(json.loads(azs)[-1]),650)
             if station_id not in st_az_pts:
                st_az_pts[station_id] = []
             st_az_pts[station_id].append(obs_data[obs_id]['az_start_point'])
@@ -3906,7 +3911,7 @@ class AllSkyNetwork():
       print("YOYO2")
       self.echo_event_data(event_data, obs_data)
       print("YO2")
-
+      line_names = []
       if True:
          for st in st_pts:
             for sp, ep in st_az_pts[st]:
@@ -3921,6 +3926,8 @@ class AllSkyNetwork():
 
                lines.append((st_pts[st][0], st_pts[st][1], st_az_pts[st][0][0] , st_az_pts[st][0][1], 'green'))
                lines.append((st_pts[st][0], st_pts[st][1], st_az_pts[st][1][0] , st_az_pts[st][1][1], 'orange'))
+               line_names.append(st + " Start")
+               line_names.append(st + " End")
 
 
       for obs_id in obs_data:
@@ -3940,7 +3947,7 @@ class AllSkyNetwork():
 
       #lat1, lon1,lat2,lon2,cl
       #map_img = make_map(points, lines)
-      self.make_kml(self.map_kml_file, points, lines)
+      self.make_kml(self.map_kml_file, points, lines, line_names)
       event_data['obs'] = obs_data
       event_data['planes'] = self.planes['results']
       #for key in self.planes:
@@ -4361,8 +4368,10 @@ class AllSkyNetwork():
          event_start_times = json.loads(event_start_times)
          lats = json.loads(lons)
          temp_obs = {}
-         
-         ignore = ["AMS99"]
+         if "ignore" in event:
+            ignore = event['ignore']
+         else:
+            ignore = ["010884", "010077", "010762", "010367", "AMS53", "2023_02_28_02_27_00_000_010349-trim-0923", "2023_02_28_02_27_01_000_010321-trim-0938.mp4", "2023_02_28_23_25_01_000_010125-trim-0334", "2023_02_28_23_25_00_000_010763", "2023_02_28_23_25_01_000_010349-trim-0324"]
 
          # for each obs associated with this event
          # load the MOST RECENT OBS DATA
@@ -4376,6 +4385,7 @@ class AllSkyNetwork():
                   ig = True
             if ig is True:
                print("IGNORE:", ignore)
+               input("Continue...")
                continue
             st_id = obs_id.split("_")[0]
             obs_fn = obs_id.replace(st_id + "_", "")
@@ -9022,9 +9032,10 @@ status [date]   -    Show network status report for that day.
       return(html)
 
 
-   def make_kml(self, kml_file, points, lines):
-      print(points)
-      print(lines)
+   def make_kml(self, kml_file, points, lines, line_names = None):
+      print(len(points))
+      print(len(lines))
+      print(len(line_names))
       kml = simplekml.Kml()
       colors = self.get_kml_colors()
       #fol_day = kml.newfolder(name=self.date + " AS7 EVENTS")
@@ -9038,14 +9049,25 @@ status [date]   -    Show network status report for that day.
          pnt = kml.newpoint(name=text, coords=[(lon,lat)])
 
             #lines.append((st_pts[st][0], st_pts[st][1], st_az_pts[st][0][0] , st_az_pts[st][0][1], 'green'))
+      c = 0
+      print(line_names)
+      input("NAMES")
       for line in lines :
+         if line_names is not None :
+            name = line_names[c]
+         else:
+            name = ""
+         print("NAME", c, name)
          lat1, lon1, lat2, lon2, color = line
-         kline = kml.newlinestring(name="" , description="", coords=[(lon1,lat1,100),(lon2,lat2,100)])
+         kline = kml.newlinestring(name=name , description="", coords=[(lon1,lat1,100),(lon2,lat2,100)])
          kline.altitudemode = simplekml.AltitudeMode.clamptoground
          kline.linestyle.color = color 
          kline.linestyle.colormode = "normal"
          kline.linestyle.width = "3"
+         c += 1
       kml.save(kml_file)
+      print("SAVED", kml_file)
+      input("WAIT")
       #for line in lines:
 
    def make_plane_kml(self, event, planes):
@@ -9894,9 +9916,18 @@ status [date]   -    Show network status report for that day.
       else:
          remote_url = None
 
+      cloud_cal_dir = "/mnt/archive.allsky.tv/" + station_id + "/CAL/"
+      cloud_cal_url = "https://archive.allsky.tv/" + station_id + "/CAL/"
       local_cal_dir = "/mnt/f/EVENTS/STATIONS/" + station_id + "/CAL/"
       local_cal_file = local_cal_dir + "multi_poly-" + station_id + "-" + cam_id + ".info"
       remote_cal_file = remote_url + "/cal/" + "multi_poly-" + station_id + "-" + cam_id + ".info"
+
+      local_cal_file = local_cal_dir + station_id + "_" + cam_id + "_LENS_MODEL.json"
+      remote_cal_file = cloud_cal_url + station_id + "_" + cam_id + "_LENS_MODEL.json"
+
+      # check if the multi_poly exists if yes use it. else revert LENS
+
+
       local_conf_file = local_cal_dir + "as6.json"
       local_range_file = local_cal_dir + station_id + "_cal_range.json"
       if os.path.exists(local_range_file) is True:
@@ -9913,6 +9944,11 @@ status [date]   -    Show network status report for that day.
             os.system("rm " + remote_json_conf)
       else:
          print("NO LOCAL CAL CONF FILE EXISTS FETCH IT!", local_conf_file)
+         cmd = "cp -r " + cloud_cal_dir + " " + local_cal_dir
+         cmd = "rsync -auv --exclude *STAR_DB.json --exclude plots" + cloud_cal_dir + "* " + local_cal_dir
+         os.system(cmd)
+         print(cmd)
+
          exit()
 
       if os.path.exists(local_cal_file) is True:
@@ -9941,6 +9977,7 @@ status [date]   -    Show network status report for that day.
       #for k in cp:
       #   if "stars" not in k:
       cp['cal_range'] = cal_range
+      input("W")
       return(cp, remote_json_conf)
 
    def get_remote_cal_params(self, station_id, cam_id, obs_id, cal_date, show_img, star_points = []):
@@ -10085,7 +10122,7 @@ status [date]   -    Show network status report for that day.
          if True:
             for ix,iy,ii in star_points[0:250]:
                cv2.circle(show_img, (int(ix),int(iy)), int(5), (0,255,0),1)
-               cv2.imshow('pepe', show_img)
+               cv2.imshow('calib', show_img)
                cv2.waitKey(30)
 
          all_res = []
@@ -10133,13 +10170,14 @@ status [date]   -    Show network status report for that day.
             best_calib = cal_params
             best_calib['cat_image_stars'] = cat_image_stars
             best_calib['total_res_px'] = avg_res 
-         cv2.imshow('pepe', show_img)
-         cv2.waitKey(30)
+            cv2.imshow('calib', show_img)
+            cv2.waitKey(0)
 
-
+ 
 
       print("FINAL BEST CALIB:", best_calib['center_az'], best_calib['center_el'])
       print("FINAL BEST RES IS:", best_res)
+      input("WA")
       #print("REMOTE JSON CONF:", obs_id, best_calib, remote_json_conf)
       if best_calib is not None:
          best_calib = update_center_radec(obs_id,best_calib,remote_json_conf)

@@ -1,5 +1,6 @@
 #!/usr/bin/python3
-
+from geopy.geocoders import Nominatim
+geolocator = Nominatim(user_agent="geoapiExercises")
 from Classes.AllSkyNetwork import AllSkyNetwork
 import cv2
 import os

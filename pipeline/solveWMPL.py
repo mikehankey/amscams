@@ -1734,7 +1734,6 @@ def add_extra_obs(extra_obs, obs):
 def convert_dy_obs(dy_obs_data, obs):
    if "station_id" not in dy_obs_data:
       print("MISSING STATION ID!!!!")
-      return()
       return(obs)
    station = dy_obs_data['station_id']
    fn = dy_obs_data['sd_video_file']
@@ -2952,6 +2951,8 @@ def WMPL_solve(event_id, obs,time_sync=1, force=0, dynamodb=None):
                continue
             lat,lon,alt = float(lat), float(lon), float(alt)
             # ADD/CONVERT great circle GC GREAT CIRCLE
+            #CAM ID
+            (f_datetime, cam_id, f_date_str,fy,fmon,fd, fh, fm, fs) = convert_filename_to_date_cam(file)
             obs[station_id][file]['gc_azs'], obs[station_id][file]['gc_els'] = GC_az_el(obs[station_id][file]['azs'], obs[station_id][file]['els'],  None,None)
             if "fps" in obs[station_id][file]:
                fps = obs[station_id][file]['fps']
@@ -3009,7 +3010,7 @@ def WMPL_solve(event_id, obs,time_sync=1, force=0, dynamodb=None):
             #print("n", station_id, times)
             # Set points for the first site
             print("   SET WMPL OBS:", event_id, station_id, lat, lon, alt, azs, els, times)  
-            traj_solve.infillTrajectory(azs, els, times, np.radians(float(lat)), np.radians(float(lon)), alt, station_id=station_id)
+            traj_solve.infillTrajectory(azs, els, times, np.radians(float(lat)), np.radians(float(lon)), alt, station_id=station_id + "-" + cam_id)
             print(   "-----")
 
 
