@@ -257,9 +257,6 @@ def meteor_man_reduce(meteor_file, x,y,w,h, step, first_frame,last_frame,ScaleFa
    </script>
    """
 
-   print("REDIR SD CROP:", nx, ny)
-   print("STEPP:", step)
-
    if step is None:
       out += "<h2>Select the first and last frame containing the meteor.</h2>"
 
@@ -288,9 +285,11 @@ def meteor_man_reduce(meteor_file, x,y,w,h, step, first_frame,last_frame,ScaleFa
 
          cf = frame[ny:ny+nh, nx:nx+nw]
          crop_frames.append(cf)
-         cv2.imwrite(cf_file, cf)
-         cv2.rectangle(frame, (int(nx), int(ny)), (int(nx+nw) , int(ny+nh) ), (150, 150, 150), 1) 
-         cv2.imwrite(ff_file, frame)
+         if os.path.exists(cf_file) is False:
+            cv2.imwrite(cf_file, cf)
+         if os.path.exists(ff_file) is False:
+            cv2.rectangle(frame, (int(nx), int(ny)), (int(nx+nw) , int(ny+nh) ), (150, 150, 150), 1) 
+            cv2.imwrite(ff_file, frame)
       crop_files.append(cf_file)
       c += 1 
    c = 0
@@ -306,7 +305,7 @@ def meteor_man_reduce(meteor_file, x,y,w,h, step, first_frame,last_frame,ScaleFa
       frame = crop_files[first_frame] 
       img = cv2.imread(frame)
       h,w = img.shape[:2]
-      if h < 150 and w < 150:
+      if h < 250 and w < 250:
          ScaleFactor = 5
          h = int(h * ScaleFactor)
          w = int(w * ScaleFactor)

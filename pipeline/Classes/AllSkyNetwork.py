@@ -4338,10 +4338,18 @@ class AllSkyNetwork():
 
 
       event_file = self.local_evdir + event_id + "/" + event_id + "-event.json"
+      ignore_file = self.local_evdir + event_id + "/" + "ignore.json"
       if os.path.exists(event_file) is True:
          event = load_json_file(event_file)
       else:
          event = {}
+
+      if os.path.exists(ignore_file) is True:
+         ignore = load_json_file(ignore_file)
+      else:
+         ignore = []
+      print("IGNORE", ignore)
+      input("W")
 
       # select main event info from the local sqlite DB
       sql = """
@@ -4370,8 +4378,8 @@ class AllSkyNetwork():
          temp_obs = {}
          if "ignore" in event:
             ignore = event['ignore']
-         else:
-            ignore = ["010884", "010077", "010762", "010367", "AMS53", "2023_02_28_02_27_00_000_010349-trim-0923", "2023_02_28_02_27_01_000_010321-trim-0938.mp4", "2023_02_28_23_25_01_000_010125-trim-0334", "2023_02_28_23_25_00_000_010763", "2023_02_28_23_25_01_000_010349-trim-0324"]
+         #else:
+         #   ignore = ["010884", "010077", "010762", "010367", "AMS53", "2023_02_28_02_27_00_000_010349-trim-0923", "2023_02_28_02_27_01_000_010321-trim-0938.mp4", "2023_02_28_23_25_01_000_010125-trim-0334", "2023_02_28_23_25_00_000_010763", "2023_02_28_23_25_01_000_010349-trim-0324"]
 
          # for each obs associated with this event
          # load the MOST RECENT OBS DATA

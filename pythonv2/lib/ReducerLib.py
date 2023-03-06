@@ -796,44 +796,31 @@ def test_for_meteor(obj):
    meteor_score = 0
    if obj['is_straight'] is True:
       meteor_score = meteor_score + 2
-      print("PLUS 2 for STRAIGHT!", meteor_score)
    if obj['moving'] == 1:
       meteor_score = meteor_score + 2
-      print("PLUS 2 for MOVING!", meteor_score)
    if 1 < obj['dist_per_frame'] < 10:
       meteor_score = meteor_score + 1
-      print("PLUS 1 for good speed!", meteor_score)
 
    if obj['cm_hist_len_ratio'] < .5:
-      print("MINUS 1 for for bad cm/hist ratio!", meteor_score)
       meteor_score = meteor_score - 1
    else:
-      print("PLUS 1 for for good cm/hist ratio!", meteor_score)
       meteor_score = meteor_score + 1
    
 
    if obj['max_cm'] < 3:
       meteor_score = 0
-      print("ZERO FOR LOW CM!", meteor_score)
    if obj['moving'] == 0:
       meteor_score = 0
-      print("ZERO FOR NOT MOVING!", meteor_score)
    if obj['gap_events'] > 3:
-      print("ZERO FOR TO MANY GAP EVENTS!", meteor_score)
       meteor_score = 0
    if obj['dist'] < 5:
-      print("ZERO FOR SHORT DISTANCE!", meteor_score)
       meteor_score = 0
 
    if 1 < obj['dist_per_frame'] > 10:
-      print("ZERO FOR TOO FAST !", meteor_score)
       meteor_score = 0
  
 
 
-   for key in obj:
-      print("MTEST:", key, obj[key])
-   print("METEOR SCORE:", meteor_score)
 
    return(meteor_score)
 

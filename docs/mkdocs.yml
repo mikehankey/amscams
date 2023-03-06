@@ -1,0 +1,7 @@
+site_name: AllSky7 Documentation
+site_url: https://www.allsky.com/AllSky7/docs/index.html
+nav: 
+   - Home: index.md
+   - Operators Guide: operators.md
+   - Builders Guide: builders.md
+   - Agreements: agreements.md

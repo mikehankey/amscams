@@ -159,13 +159,6 @@ def reduce_rocket_clip(vid_fn, frames, med_frame, cal_params, remote_json_conf):
    while go == 1:
 
       _ , frame = cap.read()
-      frame = cv2.resize(frame,(1920,1080))
-      frames.append(frame.copy())
-
-      extra_sec = fc / 25
-      frame_time = start_clip_time + datetime.timedelta(0,extra_sec)
-      frame_time_str = frame_time.strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]
-
 
 
       if frame is None:
@@ -175,6 +168,15 @@ def reduce_rocket_clip(vid_fn, frames, med_frame, cal_params, remote_json_conf):
             go = 0
          continue
       frame_count += 1
+
+      frame = cv2.resize(frame,(1920,1080))
+      frames.append(frame.copy())
+
+      extra_sec = fc / 25
+      frame_time = start_clip_time + datetime.timedelta(0,extra_sec)
+      frame_time_str = frame_time.strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]
+
+
 
 
       if stack is None:
@@ -285,6 +287,11 @@ os.system("clear")
 
 # get filename to work on from args and then setup startup variables
 obs_file = sys.argv[1]
+obs_fn = obs_file.split("/")[-1]
+obs_dir = obs_file.replace(obs_fn, "")
+station_id = obs_fn.split("_")[0]
+
+
 json_file = obs_file.replace(".mp4", ".json")
 cal_image_file = obs_file.replace(".mp4", "-cal.jpg")
 frame_data_file = obs_file.replace(".mp4", "-frame_data.json")
@@ -294,9 +301,25 @@ if os.path.exists(frame_data_file) is True:
 else:
    obs_data = {}
 
-obs_fn = obs_file.split("/")[-1]
-obs_dir = obs_file.replace(obs_fn, "")
-station_id = obs_fn.split("_")[0]
+if "event_id" not in obs_data:
+   obs_data['event_id'] = input("Event id?")
+
+good_obs_file = obs_dir + obs_data['event_id'] + "_GOOD_OBS.json"
+if os.path.exists(good_obs_file) :
+   good_obs = load_json_file(good_obs_file)
+   input("Loaded good obs data")
+else:
+   print(good_obs_file)
+   input("no good obs data")
+print("St:", station_id)
+obs_file_name = obs_fn.replace(station_id + "_", "")
+print("OBS:", obs_file_name)
+good_obs_found = 0 
+if station_id in good_obs:
+   if obs_file_name in good_obs[station_id]:
+      good_obs_found = 1 
+print("OBS FOUND IN GOOD OBS:", good_obs_found)
+
 if True:
    db_file = station_id + "_CALIB.db"
    #con = sqlite3.connect(":memory:")
@@ -463,7 +486,7 @@ if "frame_data" in obs_data:
    redo = input("Do you want to reprocess the frame data?")
    #redo = "Y"
    if redo == "Y" or redo == "y":
-      reduce_data, stack, frames = reduce_rocket_clip(obs_file, frames, med_frame, cal_params, remote_json_conf)
+      reduce_data, stack, frames = reduce_rocket_clip(obs_file, first_frames, med_frame, cal_params, remote_json_conf)
       obs_data['frame_data'] = reduce_data['frame_data']
       obs_data['objects'] = reduce_data['objects']
       obs_data['stack_annotations'] = reduce_data['stack_annotations']
@@ -472,7 +495,7 @@ if "frame_data" in obs_data:
       frames = load_frames_simple(obs_file)
 else:
    print("DID NOT ALREADY DO IT")
-   reduce_data, stack, frames = reduce_rocket_clip(obs_file, frames, med_frame, cal_params, remote_json_conf)
+   reduce_data, stack, frames = reduce_rocket_clip(obs_file, first_frames, med_frame, cal_params, remote_json_conf)
    obs_data['frame_data'] = reduce_data['frame_data']
    obs_data['objects'] = reduce_data['objects']
    obs_data['stack_annotations'] = reduce_data['stack_annotations']
@@ -545,7 +568,7 @@ for fc in obs_data['frame_data']:
       (obj_id, frame_time_str,cx,cy,radius,img_ra,img_dec,img_az,img_el,star_flux) = cnt 
       #(fc, frame_time, obj_id, cx, cy, radius, star_flux, image_ra, img_dec, img_az, img_el) = row
       show_frame = frames[int(fc)].copy()
-      if obj_id in obs_data['primary_objects']:
+      if str(obj_id) in obs_data['primary_objects'] or int(obj_id) in obs_data['primary_objects']:
          print("FOUND", row)
          fns.append(fc)
          times.append(frame_time_str)
@@ -561,6 +584,24 @@ for fc in obs_data['frame_data']:
          cv2.putText(show_frame, str(desc),  (cx+14,cy-14), cv2.FONT_HERSHEY_SIMPLEX, .6, (255,255,255), 1)
          cv2.imshow('pepe', show_frame)
          cv2.waitKey(30)
+      else:
+         print("NOT FOUND", obj_id, obs_data['primary_objects'])
+if len(fns) == 0:
+   print("NO PRIMARY OBJECT EXISTS YET! ENTER IT NOW!")
+   primary_objects = input("Enter primary object ids (separate with commas if more than one)")
+   if "," in primary_objects:
+      el = split(",", primary_objects)
+      obs_data['primary_objects'] = []
+      for e in el:
+         obs_data['primary_objects'].append(e)
+   else:
+      obs_data['primary_objects'] = [primary_objects]
+      save_json_file(frame_data_file, obs_data)
+      print("Updated obs with primary object. Run again.")
+      exit()
+
+
+
 
 # now edit the MFD if needed.
 fc = int(min(fns))
@@ -623,4 +664,14 @@ print("""
 
 
 save_json_file(frame_data_file, obs_data)
-
+# save / update GOOD OBS FILE?
+if os.path.exists(good_obs_file) :
+   good_obs[station_id][obs_file_name]['fns'] = fns
+   good_obs[station_id][obs_file_name]['xs'] = xs
+   good_obs[station_id][obs_file_name]['ys'] = ys
+   good_obs[station_id][obs_file_name]['times'] = times
+   good_obs[station_id][obs_file_name]['azs'] = azs
+   good_obs[station_id][obs_file_name]['els'] = els 
+   good_obs[station_id][obs_file_name]['ints'] = ints
+   save_json_file(good_obs_file, good_obs)
+   print("Saved:", good_obs_file)
