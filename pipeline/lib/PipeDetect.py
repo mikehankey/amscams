@@ -2022,7 +2022,7 @@ def mfd_to_cropbox(mfd):
       crop_box = [0,0,0,0]
    return(crop_box)
 
-def make_roi_video_mfd(video_file, json_conf):
+def make_roi_video_mfd(video_file, json_conf, edits=None):
    roi_size = 25
    vid_fn, vid_dir = fn_dir(video_file)
    vid_base = vid_fn.replace(".mp4", "")
@@ -2040,32 +2040,29 @@ def make_roi_video_mfd(video_file, json_conf):
    if cfe(cache_dir_frames, 1) == 0:
       os.makedirs(cache_dir_frames)
 
-   cache_frames = glob.glob(cache_dir_frames + "*.jpg")
+   cache_frames = sorted(glob.glob(cache_dir_frames + "*.jpg"))
    if len(cache_frames) == 0:
-      print("LOADING FRAMES!")
       hd_frames,hd_color_frames,subframes,sum_vals,max_vals,pos_vals = load_frames_fast(video_file, json_conf, 0, 0, 1, 1,[])
       i = 0
       for ff in hd_color_frames:
          frm_file = cache_dir_frames + vid_base + "-{:04d}".format(int(i)) + ".jpg"
-         print(frm_file)
          cv2.imwrite(frm_file, ff)
          i += 1
    else:
       hd_color_frames = []
-      print("USING CACHE FRAMES!")
-      for cf in sorted(cache_frames):
-         print(cf)
-         cfi = cv2.imread(cf)
-         cfi = cv2.resize(cfi, (640,360))
-         hd_color_frames.append(cfi)
+      print("USING CACHE FRAMES!", len(cache_frames))
+      #for cf in sorted(cache_frames):
+      #   cfi = cv2.imread(cf)
+      #   cfi = cv2.resize(cfi, (640,360))
+      #   hd_color_frames.append(cfi)
 
    updated_frame_data = []
-   print("MJF:", mjf)
    if cfe(mjf) == 1:
       mj = load_json_file(mjf)
    else:
-      print("MISSING MJ!", mjf)
-      exit()
+      #exit()
+      return()
+
    if cfe(mjrf) == 1:
       mjr = load_json_file(mjrf)
    else:
@@ -2080,17 +2077,26 @@ def make_roi_video_mfd(video_file, json_conf):
       ufd = {}
       mj['user_mods'] = {}
    used = {}
-   vh,vw = hd_color_frames[0].shape[:2]
+   #vh,vw = hd_color_frames[0].shape[:2]
+   vh = 1080
+   vw = 1920 
    if mjr is None:
       mjr = {}
    if "meteor_frame_data" in mjr:
       mjr['meteor_frame_data'] = sorted(mjr['meteor_frame_data'], key=lambda x: (x[1]), reverse=False)
       for row in mjr['meteor_frame_data']:
          (dt, fn, x, y, w, h, oint, ra, dec, az, el) = row
+         
+         cf = cache_frames[fn]
          print("ROW:", row, len(hd_color_frames))
          if fn < len( hd_color_frames):
             frame = hd_color_frames[fn]
+         elif os.path.exists(cf):
+            print("Loading cached frame", cache_frames[fn])
+            frame = cv2.imread(cache_frames[fn])
+            frame = cv2.resize(frame, (1920,1080))
          else:
+            print("cached frame not found", cache_frames[fn])
             continue
          of = cv2.resize(frame, (1920,1080))
          sfn = str(fn)
@@ -2102,6 +2108,10 @@ def make_roi_video_mfd(video_file, json_conf):
                #cv2.circle(of,(x,y), 5, (0,255,255), 1)
                tx, ty, ra ,dec , az, el = XYtoRADec(x,y,video_file,mjr['cal_params'],json_conf)
                print("USING UPDATED POINT", fn, x,y)
+               #cv2.circle(frame,(x,y), 10, (255,255,255), 1)
+               #cv2.imshow('pepe', frame)
+               #cv2.waitKey(0)
+
          if fn not in used:
             use_roi_p = 0
             updated_frame_data.append((dt, int(fn), x, y, w, h, oint, ra, dec, az, el))
