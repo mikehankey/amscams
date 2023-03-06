@@ -2088,6 +2088,7 @@ def make_roi_video_mfd(video_file, json_conf, edits=None):
       mjr['meteor_frame_data'] = sorted(mjr['meteor_frame_data'], key=lambda x: (x[1]), reverse=False)
       for row in mjr['meteor_frame_data']:
          (dt, fn, x, y, w, h, oint, ra, dec, az, el) = row
+         frame = None
          
          cf = cache_frames[fn]
          if edits is not None:
@@ -2099,15 +2100,19 @@ def make_roi_video_mfd(video_file, json_conf, edits=None):
                print("FN NOT IN EDITS", fn, type(fn), edits)
          else:
             print("UPDATE ROW:", row, len(hd_color_frames))
+
          if edits is None and fn < len( hd_color_frames):
             frame = hd_color_frames[fn]
-         elif os.path.exists(cf) and (fn in edits or str(fn) in edits) :
+         elif edits is not None and os.path.exists(cf) and (fn in edits or str(fn) in edits) :
             print("Loading cached frame", cache_frames[fn])
             frame = cv2.imread(cache_frames[fn])
             frame = cv2.resize(frame, (1920,1080))
          else:
             print("no edits for frame or cached frame not found ", fn, cache_frames[fn])
             #continue
+         if frame is None:
+            frame = cv2.imread(cache_frames[fn])
+
          of = cv2.resize(frame, (1920,1080))
          sfn = str(fn)
          if sfn in ufd:
