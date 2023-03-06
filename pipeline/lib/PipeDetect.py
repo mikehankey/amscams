@@ -2107,7 +2107,7 @@ def make_roi_video_mfd(video_file, json_conf, edits=None):
             frame = cv2.resize(frame, (1920,1080))
          else:
             print("no edits for frame or cached frame not found ", fn, cache_frames[fn])
-            continue
+            #continue
          of = cv2.resize(frame, (1920,1080))
          sfn = str(fn)
          if sfn in ufd:
