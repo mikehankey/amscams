@@ -539,12 +539,14 @@ def update_meteor_points(sd_video_file,frames):
       user_mods = {}
    if "frames" not in user_mods:
       user_mods['frames'] = {}
+   edits = {}
    for row in frames:
  
       fn = row['fn']
       x = row['x']
       y = row['y']
       user_mods['frames'][fn] = [x,y]
+      edits[fn] = [x,y]
    mj['user_mods'] = user_mods
    save_json_file(json_file, mj)
    resp = {
@@ -553,7 +555,7 @@ def update_meteor_points(sd_video_file,frames):
    #cmd = "./Process.py roi_mfd /mnt/ams2/" + sd_video_file + " >/mnt/ams2/tmp/api.points 2>&1"
    #print("COMMAND:", cmd)
    #os.system(cmd)
-   make_roi_video_mfd("/mnt/ams2/" + sd_video_file, json_conf)
+   make_roi_video_mfd("/mnt/ams2/" + sd_video_file, json_conf, edits)
 
    #cmd = "./Learn.py add " + json_file + " >/mnt/ams2/tmp/api.points 2>&1 &"
    #print("COMMAND:", cmd)
@@ -574,7 +576,6 @@ def update_meteor_points(sd_video_file,frames):
    #cmd = "./DynamoDB.py update_obs " + vid_fn + " >/mnt/ams2/tmp/api.points 2>&1 &"
    #print("COMMAND:", cmd)
    #os.system(cmd)
-   print("RESPONSE XXX:", resp)
    return(resp)
    #for frame in frames:
 

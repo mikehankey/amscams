@@ -2088,15 +2088,23 @@ def make_roi_video_mfd(video_file, json_conf, edits=None):
          (dt, fn, x, y, w, h, oint, ra, dec, az, el) = row
          
          cf = cache_frames[fn]
-         print("ROW:", row, len(hd_color_frames))
-         if fn < len( hd_color_frames):
+         if edits is not None:
+            print("EDITS:", edits)
+            if fn in edits or str(fn) in edits:
+               print("IN EDITs:", fn)
+               print("UPDATE ROW:", row, len(hd_color_frames))
+            else:
+               print("FN NOT IN EDITS", fn, type(fn), edits)
+         else:
+            print("UPDATE ROW:", row, len(hd_color_frames))
+         if edits is None and fn < len( hd_color_frames):
             frame = hd_color_frames[fn]
-         elif os.path.exists(cf):
+         elif os.path.exists(cf) and (fn in edits or str(fn) in edits) :
             print("Loading cached frame", cache_frames[fn])
             frame = cv2.imread(cache_frames[fn])
             frame = cv2.resize(frame, (1920,1080))
          else:
-            print("cached frame not found", cache_frames[fn])
+            print("no edits for frame or cached frame not found ", fn, cache_frames[fn])
             continue
          of = cv2.resize(frame, (1920,1080))
          sfn = str(fn)
