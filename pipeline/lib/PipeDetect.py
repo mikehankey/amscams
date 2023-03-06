@@ -2076,6 +2076,8 @@ def make_roi_video_mfd(video_file, json_conf, edits=None):
    else:
       ufd = {}
       mj['user_mods'] = {}
+   if edits is not None:
+      ufd = edits
    used = {}
    #vh,vw = hd_color_frames[0].shape[:2]
    vh = 1080
@@ -2225,7 +2227,9 @@ def make_roi_video_mfd(video_file, json_conf, edits=None):
 
    save_json_file(mjf, mj)      
    vid_file = mjf.replace(".json", ".mp4")
-   os.system("./Process.py recal " + vid_file)
+
+   #os.system("./Process.py recal " + vid_file)
+   print("DISABLED: ./Process.py recal " + vid_file)
 
    print("CROP:", mjr['crop_box'])
 
