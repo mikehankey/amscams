@@ -278,7 +278,7 @@ def meteor_man_reduce(meteor_file, x,y,w,h, step, first_frame,last_frame,ScaleFa
    crop_files = []
    crop_frames = []
    print("HD FRAME:", len(hd_color_frames))
-   exit()
+
    for frame in hd_color_frames:
       #if type(frame)  == str:
       #   frame = cv2.imread(frame)
