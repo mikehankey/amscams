@@ -125,7 +125,6 @@ def save_man_reduce(data):
 
    sfile = sd_video_file.replace(".mp4", "-stacked.jpg")
    dimg = cv2.imread(sfile)
-   print("CROP:", crop_x, crop_y, crop_w, crop_h)
    cv2.rectangle(dimg, (int(crop_x), int(crop_y)), (int(crop_x+crop_w) , int(crop_y+crop_h) ), (150, 150, 150), 1) 
    cv2.imwrite("/mnt/ams2/debug.jpg", dimg)
    if mj is not None:
@@ -134,24 +133,17 @@ def save_man_reduce(data):
       mj['user_mods']['frames'] = {}
 
       for data in fd:
-         #print("ROW:", row)
-         #data = row.split(",")
          if len(data) != 3:
             continue
          fn,x,y = data
-         print(fn,x,y)
          fn = int(fn) 
          x = int(x) 
          y = int(y) 
          # scale incoming xy. 
          x = (x / ScaleFactor) + crop_x
          y = (y / ScaleFactor) + crop_y
-         print("CROP XY", crop_x, crop_y)
-         print("SCALE FACTOR:", ScaleFactor) 
-         print("SD XY:", x,y)
          x = int(x * hdm_x)
          y = int(y * hdm_y)
-         print("HD XY:", x,y)
          mj['user_mods']['frames'][fn] = [x,y]
 
       best_meteor = default_best_meteor(sd_video_file, mj['user_mods'], ow,oh)
@@ -168,7 +160,6 @@ def save_man_reduce(data):
  
       base_jsr['cal_params'] = cp 
 
-
       mj['best_meteor'] = best_meteor
       mj['cp'] = cp 
 
@@ -176,9 +167,7 @@ def save_man_reduce(data):
       mjrf = mjf.replace(".json", "-reduced.json")
       save_json_file(mjrf, base_jsr)
 
-
       cmd = "./Process.py roi_mfd " + sd_video_file + " >/mnt/ams2/tmp/api.points 2>&1"
-      print("COMMAND:", cmd)
       os.system(cmd)
    return("OK") 
 
@@ -195,13 +184,13 @@ def meteor_man_reduce(meteor_file, x,y,w,h, step, first_frame,last_frame,ScaleFa
    cache_dir = "/mnt/ams2/CACHE/" + year + "/" + prefix + "/crop_frames/"
    cache_dir_f = "/mnt/ams2/CACHE/" + year + "/" + prefix + "/sd_frames/"
 
-   cmd = "rm " + cache_dir + "*"
-   print(cmd)
-   os.system(cmd)
+   #cmd = "rm " + cache_dir + "*"
+   #print(cmd)
+   #os.system(cmd)
 
-   cmd = "rm " + cache_dir_f + "*"
-   print(cmd)
-   os.system(cmd)
+   #cmd = "rm " + cache_dir_f + "*"
+   #print(cmd)
+   #os.system(cmd)
 
 
    if True:
@@ -298,8 +287,10 @@ def meteor_man_reduce(meteor_file, x,y,w,h, step, first_frame,last_frame,ScaleFa
 
          cf = frame[ny:ny+nh, nx:nx+nw]
          crop_frames.append(cf)
-         if os.path.exists(cf_file) is False:
-            cv2.imwrite(cf_file, cf)
+         # write crop file all the time
+         #if os.path.exists(cf_file) is False:
+         cv2.imwrite(cf_file, cf)
+         # write full file if it doesn't already exist
          if os.path.exists(ff_file) is False:
             cv2.rectangle(frame, (int(nx), int(ny)), (int(nx+nw) , int(ny+nh) ), (150, 150, 150), 1) 
             cv2.imwrite(ff_file, frame)
