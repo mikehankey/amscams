@@ -120,8 +120,6 @@ def save_man_reduce(data):
       fd.append((fn,x,y))
    fd = sorted(fd, key=lambda x: x[0], reverse=False)
 
-   print("FD IS:", fd)
-   
 
    hd_frames,hd_color_frames,subframes,sum_vals,max_vals,pos_vals = load_frames_fast(sd_video_file, json_conf, 0, 0, 1, 1,[])
 
@@ -148,6 +146,8 @@ def save_man_reduce(data):
          # scale incoming xy. 
          x = (x / ScaleFactor) + crop_x
          y = (y / ScaleFactor) + crop_y
+         print("CROP XY", crop_x, crop_y)
+         print("SCALE FACTOR:", ScaleFactor) 
          print("SD XY:", x,y)
          x = int(x * hdm_x)
          y = int(y * hdm_y)
@@ -194,6 +194,15 @@ def meteor_man_reduce(meteor_file, x,y,w,h, step, first_frame,last_frame,ScaleFa
    vid_file = "/mnt/ams2/meteors/" + day + "/" + prefix + ".mp4"
    cache_dir = "/mnt/ams2/CACHE/" + year + "/" + prefix + "/crop_frames/"
    cache_dir_f = "/mnt/ams2/CACHE/" + year + "/" + prefix + "/sd_frames/"
+
+   cmd = "rm " + cache_dir + "*"
+   print(cmd)
+   os.system(cmd)
+
+   cmd = "rm " + cache_dir_f + "*"
+   print(cmd)
+   os.system(cmd)
+
 
    if True:
       hd_frames,hd_color_frames,subframes,sum_vals,max_vals,pos_vals = load_frames_fast(vid_file, json_conf, 0, 0, 1, 1,[])
@@ -263,12 +272,16 @@ def meteor_man_reduce(meteor_file, x,y,w,h, step, first_frame,last_frame,ScaleFa
    elif step == 2:
       print("STEPP2:", step)
       out += "<h2>Select leading edge of each meteor frame.</h2>"
-      hd_color_frames = glob.glob(cache_dir + "*.jpg")
+      hd_color_frames = sorted(glob.glob(cache_dir_f + "*.jpg"))
 
    c = 0
    crop_files = []
    crop_frames = []
+   print("HD FRAME:", len(hd_color_frames))
+   exit()
    for frame in hd_color_frames:
+      #if type(frame)  == str:
+      #   frame = cv2.imread(frame)
       num = "{:04d}".format(c) 
       cf_file = cache_dir + prefix + "_" + num + ".jpg"
       ff_file = cache_dir_f + prefix + "_" + num + ".jpg"
@@ -303,10 +316,11 @@ def meteor_man_reduce(meteor_file, x,y,w,h, step, first_frame,last_frame,ScaleFa
       # show 1 frame at a time capturing the x,y selected from the previous frame
       first_frame = int(first_frame)
       frame = crop_files[first_frame] 
+      print("FRAME:", frame)
       img = cv2.imread(frame)
       h,w = img.shape[:2]
       if h < 250 and w < 250:
-         ScaleFactor = 5
+         ScaleFactor = 1 
          h = int(h * ScaleFactor)
          w = int(w * ScaleFactor)
          multi = ScaleFactor

@@ -1871,7 +1871,7 @@ def refit_meteor(meteor_file, con, cur, json_conf, mcp = None, last_best_dict = 
    print("MJCPCIS", mj['cp']['cat_image_stars'])
 
    if len(mj['cp']['cat_image_stars']) > 1:
-      mj['cp'], cat_stars = recenter_fov(meteor_file, mj['cp'].copy(), stack_img.copy(),  stars, json_conf, meteor_file , con, cur)
+      mj['cp'], cat_stars = recenter_fov(meteor_file, mj['cp'].copy(), stack_img.copy(),  stars, json_conf, meteor_file , None, None, con, cur)
 
       stars,cat_stars = get_paired_stars(meteor_file, mj['cp'], con, cur)
       mj['cp']['cat_image_stars'] = pair_star_points(meteor_file, stack_img, mj['cp'], json_conf, con, cur, mcp, True)
