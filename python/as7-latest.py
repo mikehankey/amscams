@@ -173,29 +173,35 @@ def log_weather(datetime_str):
       os.makedirs(cloud_dir)
    outfile = "/mnt/ams2/latest/" + date_str + "/" + datetime_str + ".txt"
 
-   url = "wttr.in/" + str(lat) + "," + str(lng) + "?0T --output " + outfile
+   url = "https://wttr.in/" + str(lat) + "," + str(lng) + "?0T --output " + outfile
    print(url)
-   os.system("curl " + url)
-   fp = open(outfile)
-   lc = 0
-   status = ""
-   temp = ""
-   wind = ""
-   wind_speed = ""
-   for line in fp:
-      line = line.replace("\n", "")
-      if lc == 2:
-         status = line[16:]
-      if lc == 3:
-         temp = line[16:]
-      if lc == 4:
-         wind = line[16:]
-      if lc == 5:
-         wind_speed = line[16:]
-      lc += 1
-   #print(lc, line, wind, wind_speed)
+   os.system("curl --max-time 5.5 " + url)
+   if os.path.exists(outfile):
+      fp = open(outfile)
+      lc = 0
+      status = ""
+      temp = ""
+      wind = ""
+      wind_speed = ""
+      for line in fp:
+         line = line.replace("\n", "")
+         if lc == 2:
+            status = line[16:]
+         if lc == 3:
+            temp = line[16:]
+         if lc == 4:
+            wind = line[16:]
+         if lc == 5:
+            wind_speed = line[16:]
+         lc += 1
 
-   fp.close()
+      fp.close()
+   else:
+      status = ""
+      temp = ""
+      wind = ""
+      wind_speed = ""
+
    moon_phase = get_moon_phase()
    data = {}
    data['station_id'] = jsc['site']['ams_id']
