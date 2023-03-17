@@ -140,7 +140,7 @@ def run_jobs(json_conf):
    running = check_running("refit_meteor_year")
    print("Refit meteor year", running)
    if int(running) == 0:
-      cmd = "./recal.py refit_meteor_year " + year + " > refit_run_log.txt 2>&1 &"
+      cmd = "./recal.py refit_meteor_year " + year + " > /dev/null 2>&1 &"
       print(cmd)
       os.system(cmd)
    else:
