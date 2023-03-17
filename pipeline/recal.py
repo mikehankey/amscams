@@ -1687,10 +1687,8 @@ def refit_meteor_day(meteor_day, con, cur, json_conf):
    cc = 1
    for ff in files:
       if "json" not in ff:
-         print("S", ff)
          continue
       if "reduced" in ff:
-         print("S", ff)
          continue
       print("KEEP:", ff)
       mjf = "/mnt/ams2/meteors/" + meteor_day + ff
@@ -1710,7 +1708,8 @@ def refit_meteor_day(meteor_day, con, cur, json_conf):
             print(cc, "REFIT", mj.keys())
             refit_meteor(ff, con, cur, json_conf)
          else:
-            print(cc, "SKIP DONE", ff)
+            print(cc, "SKIP REFIT DONE", ff)
+         print("MFD", len(mfd)) 
       cc += 1
 
    print("Done day", meteor_day)
