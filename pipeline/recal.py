@@ -1755,6 +1755,9 @@ def refit_meteor(meteor_file, con, cur, json_conf, mcp = None, last_best_dict = 
 
    # MRH - Possible bug / this should be checked or convert to 'last_best'? 3/16/23 
    default_cp = get_default_cal_for_file(cam_id, meteor_file, None, con, cur, json_conf)
+   if default_cp is None:
+      # cant refit if there is no default cp!
+      return()
 
    extra_text = "Refit " +  meteor_file.split("-")[0]
    if last_best_dict is None:
