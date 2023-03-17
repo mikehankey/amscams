@@ -999,7 +999,7 @@ def main_api(cmd):
 
          rurl = "/meteor/{:s}/{:s}/{:s}/".format(station_id, date, meteor_file.replace(".json", ".mp4"))
 
-         return redirect(rurl, code=200)
+         return redirect(rurl, code=301)
       return(resp)
 
    if cmd == 'crop_video':

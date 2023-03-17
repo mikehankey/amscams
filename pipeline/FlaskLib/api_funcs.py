@@ -34,6 +34,10 @@ def update_meteor_cal_params(meteor_file, cal_file, json_conf):
 
    if os.path.exists(mjf) is True:
       mj = load_json_file(mjf)
+      ostars = []
+      if "cp" in mj:
+         if "user_stars" in mj['cp']:
+            ostars = mj['cp']['user_stars']
    else:
       resp = {}
       resp['msg'] = "FAIL MJF!" + mjf
@@ -47,13 +51,15 @@ def update_meteor_cal_params(meteor_file, cal_file, json_conf):
 
    # Don't forget to update the ra_dec_center
    cp = update_center_radec(meteor_file,cal_params,json_conf)
+   cp['user_stars'] =  ostars
    mj['cp'] = cal_params
    mjr['cal_params'] = cal_params
  
    save_json_file(mjf, mj)
    save_json_file(mjrf, mjr)
-   print("Meteor File updated with new calib!")
-   os.system("./recal.py refit_meteor " + meteor_file)
+   #print("Meteor File updated with new calib!")
+   if len(ostars) > 5:
+      os.system("./recal.py refit_meteor " + meteor_file)
    resp = {}
    resp['msg'] = "ALL GOOD!"
    return(resp)
@@ -496,6 +502,7 @@ def show_cat_stars (video_file, hd_stack_file, points):
       mjr['cal_params'] = cp
       save_json_file(mjf, mj)
       save_json_file(mjrf, mjr)
+      print("SHOW CAT SAVE", mjf, mjrf)
       resp['crop_box'] = mjr['crop_box']
    else:
       resp['crop_box'] = [0,0,0,0]
@@ -503,6 +510,7 @@ def show_cat_stars (video_file, hd_stack_file, points):
          cp['user_mods'] = {}
       cp['user_mods']['user_stars'] = cp['user_stars']
       save_json_file(cpf, cp)
+      print("SHOW CAT SAVE", cpf)
 
    resp['msg'] = "good"
    resp['status'] = 1

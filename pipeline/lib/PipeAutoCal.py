@@ -8687,8 +8687,8 @@ def pair_stars(cal_params, cal_params_file, json_conf, cal_img=None, show = 0):
 
    #my_close_stars = good_stars
 
-   print("RES:", total_res_px)
-   print("STARS:", len(my_close_stars))
+   print("PAIR STARS STARS:", len(my_close_stars))
+   print("PAIR STARS RES:", total_res_px)
    #print("MY CLOSE STARS:", my_close_stars )
    cal_params['cat_image_stars'] = my_close_stars
    if total_matches > 0:
@@ -8699,9 +8699,9 @@ def pair_stars(cal_params, cal_params_file, json_conf, cal_img=None, show = 0):
       cal_params['total_res_px'] = 9999
    cal_params['cal_params_file'] = cal_params_file
 
-   fit_on = 0
-   if fit_on == 1:
-      os.system("./fitPairs.py " + cal_params_file)
+   #fit_on = 0
+   #if fit_on == 1:
+   #   os.system("./fitPairs.py " + cal_params_file)
    #cal_params['cat_image_stars'], bad = qc_stars(cal_params['cat_image_stars'])
    cal_params['cat_image_stars'], res_px,res_deg = cat_star_report(cal_params['cat_image_stars'], 4)
    cal_params['total_res_px'] = res_px

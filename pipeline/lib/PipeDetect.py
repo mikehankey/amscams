@@ -3352,7 +3352,6 @@ def fireball_phase1(hd_frames, hd_color_frames, subframes,sum_vals,max_vals,pos_
    past_points = []
    if mask_img is None:
       mask_img = np.zeros((1080,1920),dtype=np.uint8)
-      print("NO MASK.")
    for frame in hd_frames:
       color_frame = hd_color_frames[frame_num]
       #if best_meteor is not None:
@@ -3363,8 +3362,6 @@ def fireball_phase1(hd_frames, hd_color_frames, subframes,sum_vals,max_vals,pos_
             mask_img = cv2.resize(mask_img, (frame.shape[1], frame.shape[0]))
          if len(frame.shape) == 3 and len(mask_img.shape) == 2:
             mask_img = cv2.cvtColor(mask_img, cv2.COLOR_GRAY2BGR)
-         print("FRAME:", frame.shape) 
-         print("mask:", mask_img.shape) 
          frame = cv2.subtract(frame, mask_img)
          #cv2.imshow('pepe2', frame)
          #cv2.waitKey(0)

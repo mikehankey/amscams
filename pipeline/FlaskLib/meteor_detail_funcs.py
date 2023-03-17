@@ -14,11 +14,8 @@ def get_close_calib_files(mjf):
    (meteor_datetime, cam, f_date_str,fy,fmon,fd, fh, fm, fs) = convert_filename_to_date_cam(mjf)
    close_files = []
    calindex_file = "/mnt/ams2/cal/freecal_index.json"
-   print("CLOSE FILES")
    if os.path.exists(calindex_file) is True:
       calindex = load_json_file(calindex_file)
-   else:
-      print("NO FILE:", calindex_file)
 
    after_files = []
    before_files = []
@@ -40,8 +37,6 @@ def get_close_calib_files(mjf):
    bfiles =  sorted(before_files, key=lambda x: x[2], reverse=False)[0:10]
    afiles =  sorted(after_files, key=lambda x: x[2], reverse=False)[0:10]
 
-   print("BEFORE:", bfiles)
-   print("AFTER:",  afiles)
    return(bfiles, afiles)
 
 
