@@ -1696,7 +1696,12 @@ def refit_meteor_day(meteor_day, con, cur, json_conf):
       mjf = "/mnt/ams2/meteors/" + meteor_day + ff
       if os.path.exists(mjf) :
          mjrf = mjf.replace(".json", "-reduced.json")
-         if os.path.exists(mjrf) is False:
+         if os.path.exists(mjrf) is True:
+            mjr = load_json_file(mjrf)
+            mfd = mjr['meteor_frame_data']
+         else:
+            mfd = []
+         if os.path.exists(mjrf) is False or len(mfd) == 0:
             cmd = "./Process.py fireball " + ff.replace(".json", ".mp4")
             print(cmd)
             os.system(cmd)
