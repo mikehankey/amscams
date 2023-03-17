@@ -1694,9 +1694,10 @@ def refit_meteor_day(meteor_day, con, cur, json_conf):
       mjf = "/mnt/ams2/meteors/" + meteor_day + "/" + ff
       if os.path.exists(mjf) :
          mjrf = mjf.replace(".json", "-reduced.json")
+         if os.path.exists(mjf) is True:
+            mj = load_json_file(mjf)
          if os.path.exists(mjrf) is True:
             mjr = load_json_file(mjrf)
-            mj = load_json_file(mjf)
             mfd = mjr['meteor_frame_data']
          else:
             mfd = []
