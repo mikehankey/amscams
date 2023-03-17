@@ -1691,7 +1691,7 @@ def refit_meteor_day(meteor_day, con, cur, json_conf):
       if "reduced" in ff:
          continue
       print("KEEP:", ff)
-      mjf = "/mnt/ams2/meteors/" + meteor_day + ff
+      mjf = "/mnt/ams2/meteors/" + meteor_day + "/" + ff
       if os.path.exists(mjf) :
          mjrf = mjf.replace(".json", "-reduced.json")
          if os.path.exists(mjrf) is True:
