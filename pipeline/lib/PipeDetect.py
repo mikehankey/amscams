@@ -2043,6 +2043,7 @@ def make_roi_video_mfd(video_file, json_conf, edits=None):
    cache_frames = sorted(glob.glob(cache_dir_frames + "*.jpg"))
    if len(cache_frames) == 0:
       hd_frames,hd_color_frames,subframes,sum_vals,max_vals,pos_vals = load_frames_fast(video_file, json_conf, 0, 0, 1, 1,[])
+      cache_frames = hd_frames
       i = 0
       for ff in hd_color_frames:
          frm_file = cache_dir_frames + vid_base + "-{:04d}".format(int(i)) + ".jpg"
@@ -2089,8 +2090,10 @@ def make_roi_video_mfd(video_file, json_conf, edits=None):
       for row in mjr['meteor_frame_data']:
          (dt, fn, x, y, w, h, oint, ra, dec, az, el) = row
          frame = None
-         
-         cf = cache_frames[fn]
+         if fn in cache_frames: 
+            cf = cache_frames[fn]
+         else:
+            cf = None
 
          if edits is None and fn < len( hd_color_frames):
             frame = hd_color_frames[fn]
