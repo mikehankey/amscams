@@ -1827,7 +1827,6 @@ def refit_meteor(meteor_file, con, cur, json_conf, mcp = None, last_best_dict = 
          hd_frames = sd_frames
       else:
          print("ERROR NO VIDEO FRAMES!", sd_vid)
-         exit()
          return()
    frames = hd_frames
    if "refit" in mj:
@@ -1891,8 +1890,11 @@ def refit_meteor(meteor_file, con, cur, json_conf, mcp = None, last_best_dict = 
             print("USING DEFAULT CP! RES HIGH", mj['cp']['total_res_px'])
          print("OK")
 
-
-   orig_res = mj['cp']['total_res_px']
+   try:
+      orig_res = mj['cp']['total_res_px']
+   except:
+      print("CP IS WACKED", meteor_file, mj['cp'])
+      return()
 
    best_cal = find_best_calibration(meteor_file, mj['cp'], json_conf)
    if best_cal is not None:
