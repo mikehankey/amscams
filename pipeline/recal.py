@@ -1770,7 +1770,7 @@ def refit_meteor(meteor_file, con, cur, json_conf, mcp = None, last_best_dict = 
          # reset mcp if it is bad
          if "x_fun" not in mcp :
             mcp = None
-         if mcp['x_fun'] > 5:
+         elif mcp['x_fun'] > 5:
             mcp = None
 
    # setup dirs and filenames 
