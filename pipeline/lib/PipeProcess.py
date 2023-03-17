@@ -132,6 +132,20 @@ def gitpull(json_conf):
 
 def run_jobs(json_conf):
 
+   today = datetime.now().strftime("%Y_%m_%d")
+   yest = (datetime.now() - dt.timedelta(days = 1)).strftime("%Y_%m_%d")
+   year,month, day = today.split("_")
+
+   # this will only run 1x for each file and then only on new files. 
+   running = check_running("refit_meteor_year")
+   print("Refit meteor year", running)
+   if int(running) == 0:
+      cmd = "./recal.py refit_meteor_year " + year + " > refit_run_log.txt 2>&1 &"
+      print(cmd)
+      os.system(cmd)
+   else:
+      print("Refit meteor year is running already in the background... ", running)
+
    os.system("killall flex-detect.py")
    rj_start = time.time()
    # make sure DynaDB is not already running. If it is kill it.
@@ -154,8 +168,6 @@ def run_jobs(json_conf):
 
 
 
-   today = datetime.now().strftime("%Y_%m_%d")
-   yest = (datetime.now() - dt.timedelta(days = 1)).strftime("%Y_%m_%d")
    three_day = (datetime.now() - dt.timedelta(days = 2)).strftime("%Y_%m_%d")
    four_day = (datetime.now() - dt.timedelta(days = 3)).strftime("%Y_%m_%d")
    five_day = (datetime.now() - dt.timedelta(days = 4)).strftime("%Y_%m_%d")
@@ -359,4 +371,5 @@ def run_jobs(json_conf):
    print("RJ ELP:", rj_elp)
    cmd = "echo 'elapsed run time: " + str(rj_elp) + " ' >> /home/ams/run_jobs.txt "
    os.system(cmd)
+
    
