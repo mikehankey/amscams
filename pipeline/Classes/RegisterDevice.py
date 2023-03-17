@@ -147,8 +147,11 @@ class RegisterDevice():
       station_data['operator_name']= operator_name
       station_data['city']= city
       station_data['state']= state
-      if station_data['country'] != "":
-         station_data['country']= country
+      if "operator_country" not in station_data:
+         station_data['operator_country']= "" 
+      
+      if station_data['operator_country'] != "":
+         station_data['operatory_country']= country
       station_data['email']= email
       station_data['lat'] = lat
       station_data['lon'] = lon
