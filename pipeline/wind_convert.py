@@ -1,12 +1,40 @@
 from flask import Flask, request, Response, make_response
+import math
 from sympy import Point3D, Line3D
 import json 
+import numpy as np
 import os
 import pymap3d as pm
 from trianglesolver import solve, degree
-from lib.PipeUtil import load_json_file, save_json_file
+from lib.PipeUtil import load_json_file, save_json_file, dist_between_two_points
 app = Flask(__name__, static_url_path='/static')
 
+def get_bearing(lat1, long1, lat2, long2):
+    dLon = (long2 - long1)
+    x = math.cos(math.radians(lat2)) * math.sin(math.radians(dLon))
+    y = math.cos(math.radians(lat1)) * math.sin(math.radians(lat2)) - math.sin(math.radians(lat1)) * math.cos(math.radians(lat2)) * math.cos(math.radians(dLon))
+    brng = np.arctan2(x,y)
+    brng = np.degrees(brng)
+
+    return brng
+
+
+def compute_zenith_angle_and_heading(slat,slon,salt,elat,elon,ealt):
+
+   side_a = (salt - ealt) / 1000
+   side_b = dist_between_two_points(slat,slon,elat,elon)
+   side_c = math.sqrt((side_a ** 2) + (side_b ** 2))
+
+   # sides / angles
+   a,b,c,A,B,C = solve(b=side_b, a=side_a, c=side_c)
+
+   azimuth_heading = get_bearing(slat, slon, elat, elon)
+   if azimuth_heading < 0:
+      azimuth_heading += 360
+
+   zenith_angle = A / degree
+
+   return(zenith_angle, azimuth_heading)
 
 def track_points(sp, ep):
    wgs84 = pm.Ellipsoid('wgs84');
@@ -100,6 +128,7 @@ def main_wind_convert():
       print("PROJ ID:", proj_id)
       proj_dir = "DFM/" + proj_id + "/" 
       proj_file = proj_dir + proj_id + ".json"
+      print("proj_file:", proj_file)
       if os.path.exists(proj_file):
          jd = load_json_file(proj_file)
          print("KEYS:", jd.keys())
@@ -158,10 +187,15 @@ def main_wind_convert():
    if jd['wind_speed_src_units'] == "ms10":
       ws_ms10 = "CHECKED"
 
-   if jd['press_units'] == "hpa100":
-      press_units_100 = "CHECKED"
-      press_units_1000 = ""
-   if jd['press_units'] == "hpa1000":
+   if "press_units" in jd: 
+      if jd['press_units'] == "hpa100":
+         press_units_100 = "CHECKED"
+         press_units_1000 = ""
+
+      if jd['press_units'] == "hpa1000":
+         press_units_100 = "CHECKED"
+         press_units_1000 = ""
+   else:
       press_units_100 = "CHECKED"
       press_units_1000 = ""
   
@@ -255,6 +289,10 @@ def post_data():
 
    print(slat,slon,salt)
    print(elat,elon,ealt)
+   za, bearing = compute_zenith_angle_and_heading(slat,slon,salt,elat,elon,ealt)
+   print("________________________")
+   print("ZA BEAR:", za, bearing)
+   print("________________________")
 
    #track_points((slon, slat,salt), (elon,elat,ealt))
      

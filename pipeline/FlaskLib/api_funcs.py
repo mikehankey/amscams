@@ -1,4 +1,4 @@
-from lib.PipeUtil import load_json_file, save_json_file, cfe, bound_cnt, convert_filename_to_date_cam
+from lib.PipeUtil import load_json_file, save_json_file, cfe, bound_cnt, convert_filename_to_date_cam, do_photo
 from lib.PipeAutoCal import get_image_stars, get_catalog_stars , pair_stars, eval_cnt, update_center_radec, fn_dir
 from lib.PipeDetect import fireball, apply_frame_deletes, find_object, analyze_object, make_base_meteor_json, fireball_fill_frame_data, calib_image, apply_calib, grid_intensity_center, make_roi_video_mfd
 from lib.PipeVideo import ffprobe, load_frames_fast
@@ -386,17 +386,6 @@ def show_cat_stars (video_file, hd_stack_file, points):
       else: 
          mjr = None
 
-      #if "nostars" in mj['cp'] or "nostars" in mj:
-      #   mj['cp']['user_stars'] = []
-      #   mj['cp']['cat_image_stars'] = []
-      #   resp = {}
-      #   resp['msg'] = "good - no stars in image"
-      #   resp['status'] = 1
-      #   resp['cp'] = mj['cp']
-      #   return(resp)
-
-
-   #if True: 
       if "cp" in mj:
          cp = mj['cp']
       elif "best_meteor" in mj:
@@ -494,8 +483,6 @@ def show_cat_stars (video_file, hd_stack_file, points):
 
    cp['user_stars'] = user_stars
    cp = pair_stars(cp, video_file, json_conf, hd_img)
-   print("USER STARS:", len(user_stars))
-   print("PAIRED STARS:", len(cp['cat_image_stars']))
    resp = {}
 
    if app_type == "meteor":
@@ -516,8 +503,6 @@ def show_cat_stars (video_file, hd_stack_file, points):
          cp['user_mods'] = {}
       cp['user_mods']['user_stars'] = cp['user_stars']
       save_json_file(cpf, cp)
-      print("SAVED CALPARAMS IN:", cpf)
-
 
    resp['msg'] = "good"
    resp['status'] = 1

@@ -10,16 +10,15 @@ def get_template(file):
 
 def network_nav(json_conf): 
    net_nav = """
-        <li class="nav-item"><a class="nav-link" href="/NETWORK/{AMSID}">NETWORK</a></li>
-            <!--
         <li class="nav-item dropdown">
             <a class="nav-link dropdown-toggle" href="/NETWORK/" id="network" data-toggle="dropdown">Network</a>
             <div class="dropdown-menu dropdown-menu-right">
               <a class="dropdown-item" href="/NETWORK/MAP/{AMSID}/">Network Map</a>
               <a class="dropdown-item" href="/NETWORK/METEORS/{AMSID}/">Meteor Events</a>
-              <a class="dropdown-item" href="/NETWORK/LIVE/{AMSID}/">Live View</a>
             </div>
         </li>
+            <!--
+        <li class="nav-item"><a class="nav-link" href="/NETWORK/{AMSID}">NETWORK</a></li>
             -->
    """
    return(net_nav)

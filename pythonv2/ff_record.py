@@ -32,8 +32,13 @@ def start_capture(cam_num):
    sd_url = json_conf['cameras'][cam_key]['sd_url']
    hd_url = json_conf['cameras'][cam_key]['hd_url']
    cams_id = json_conf['cameras'][cam_key]['cams_id']
+   if "status" in json_conf['cameras'][cam_key]:
+      status = json_conf['cameras'][cam_key]
+   else:
+      status = "ACTIVE"
+
    running = check_running(cam_num, "HD")
-   if running == 0:
+   if running == 0 and status == "ACTIVE":
       #cmd = "/usr/bin/ffmpeg -i 'rtsp://" + cam_ip + hd_url + "' -rtsp_transport tcp -c copy -map 0 -f segment -strftime 1 -segment_time 60 -segment_format mp4 \"" + video_dir + "/HD/" + "%Y_%m_%d_%H_%M_%S_000_" + cams_id + ".mp4\" 2>&1 > /dev/null & "
 
       cmd = "/usr/bin/ffmpeg -rtsp_transport tcp -i 'rtsp://" + cam_ip + hd_url + "' -c copy -map 0 -f segment -strftime 1 -segment_time 60 -segment_format mp4 '/mnt/ams2/HD/%Y_%m_%d_%H_%M_%S_000_010001.mp4' -vf scale=480x270 -f segment -strftime 1 -segment_time 60 -segment_format mp4 '/mnt/ams2/SD/%Y_%m_%d_%H_%M_%S_000_010001.mp4' 2>&1 > /dev/null & "

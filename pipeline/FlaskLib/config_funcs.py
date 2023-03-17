@@ -192,17 +192,108 @@ def config_vars(amsid, data=None):
          si[field] = ""
    cam_rows = ""
 
-
+   # camera details  
+   cam_details = "<div>"
 
    cam_rows += "<tr><td>Camera ID</td><td>RTSP URL</td></tr>"
+   status = ""
+   sd_res = "704,576"
+   hd_res = "1920,1080"
    for cam in jc['cameras']:
       cam_id = jc['cameras'][cam]['cams_id']
+      sd_url = jc['cameras'][cam]['sd_url']
+      hd_url = jc['cameras'][cam]['hd_url']
+      cam_ip = jc['cameras'][cam]['ip']
       camd = cam.replace("cam", "")
+      rtsp_url = "rtsp://" + cam_ip
+      if "lens_type" in jc['cameras'][cam]:
+         lens_type = jc['cameras'][cam]['lens_type']
+      else:
+         lens_type = "4mm"
+      if "best_guess" in jc['cameras'][cam]:
+         cdata = jc['cameras'][cam]['best_guess']
+         print("CAL DATA", cdata)
+         cal_az, cal_el, cal_pos, cal_px = cdata
+      else:
+         cal_az = ""
+         cal_el = ""
+         cal_pos = ""
+         cal_px = ""
+
       cam_rows += "<tr ><td >Camera " + camd + " - " + cam_id + "</td><td>rtsp://" + jc['cameras'][cam]['ip'] + jc['cameras'][cam]['sd_url'] + "</td></tr>"
       late_url = "/mnt/ams2/latest/" + cam_id + ".jpg"
       vlate_url = late_url.replace("/mnt/ams2", "")
-      #out += "<img width=640 height=360 src=" + vlate_url + ">"
 
+      if "status" in jc['cameras'][cam]['cams_id']:
+         status = jc['cameras'][cam]['status']
+      else:
+         jc['cameras'][cam]['status'] = "ACTIVE"
+         status = jc['cameras'][cam]['status']
+      #out += "<img width=640 height=360 src=" + vlate_url + ">"
+      cam_details += """
+         <table>
+            <tr>
+               <td>#</td>
+               <td>{:s}</td>
+            </tr>
+            <tr>
+               <td>ID</td>
+               <td>{:s}</td>
+            </tr>
+            <tr>
+               <td>IP Addr</td>
+               <td>{:s}</td>
+            </tr>
+            <tr>
+               <td>SD URL</td>
+               <td>{:s}</td>
+            </tr>
+            <tr>
+               <td>SD Resolution</td>
+               <td>{:s}</td>
+            </tr>
+            <tr>
+               <td>HD URL</td>
+               <td>{:s}</td>
+            </tr>
+            <tr>
+               <td>HD Resolution</td>
+               <td>{:s}</td>
+            </tr>
+            <tr>
+               <td>Status</td>
+               <td>{:s}</td>
+            </tr>
+            <tr>
+               <td>Lens Type</td>
+               <td>{:s}</td>
+            </tr>
+
+
+            <tr>
+               <td colspan=2>Calibration Defaults</td>
+            </tr>
+            <tr>
+               <td>Center Azimuth</td>
+               <td>{:s}</td>
+            </tr>
+            <tr>
+               <td>Center Elevation</td>
+               <td>{:s}</td>
+            </tr>
+            <tr>
+               <td>Position Angle</td>
+               <td>{:s}</td>
+            </tr>
+            <tr>
+               <td>Pixel Scale</td>
+               <td>{:s}</td>
+            </tr>
+         </table>
+         <hr>
+      """.format(cam, cam_id, cam_ip, rtsp_url + sd_url, sd_res, rtsp_url + hd_url, hd_res, status, lens_type, str(cal_az), str(cal_el), str(cal_pos), str(cal_px))
+
+   cam_details += "</div>"
    
    try:
       mac_info = get_mac_info()
@@ -226,12 +317,16 @@ def config_vars(amsid, data=None):
       else:
          net_html += "<td>link down</td></tr>"
 
- 
-   #for field in fields:
-   #   if field not in si:
-   #      si[field] = ""
+   # EXTRA OS AND HOST INFO
+   fp = open("/etc/os-release")
+   os_info = {}
+   for line in fp:
+      line = line.replace("\n", "")
+      k,v = line.split("=")
+      os_info[k] = v
 
    out = out.replace("{OBSV_NAME}", si['obs_name'])
+   out = out.replace("{PRETTY_NAME}", os_info['PRETTY_NAME'])
    out = out.replace("{NETWORK_INFO}", net_html)
    out = out.replace("{DISK_INFO}", drive_html)
    out = out.replace("{OPERATOR_NAME}", si['operator_name'])
@@ -243,6 +338,7 @@ def config_vars(amsid, data=None):
    out = out.replace("{DEVICE_LON}", si['device_lng'])
    out = out.replace("{DEVICE_ALT}", si['device_alt'])
    out = out.replace("{CAMERA_INFO}", cam_rows)
+   out = out.replace("{CAMERA_DETAILS}", cam_details)
    template = template.replace("{MAIN_TABLE}", out)
    return(template)
 
@@ -274,19 +370,31 @@ def get_mac_info():
    return(mac_info)
 
 def get_disk_info(jc):
-   hdd = psutil.disk_usage('/')
-   root_tot = int(hdd.total) / (2**30)
-   root_used = int(hdd.used) / (2**30)
-   root_free = int(hdd.free) / (2**30)
+   try:
+      hdd = psutil.disk_usage('/')
+      root_tot = int(hdd.total) / (2**30)
+      root_used = int(hdd.used) / (2**30)
+      root_free = int(hdd.free) / (2**30)
+   except:
+      print("Missing psutil!")
+      root_tot = 9999
+      root_used = 9999
+      root_free = 9999
 
    if "data_dir" in jc:
       data_dir = jc['data_dir']
    else:
       data_dir = "/mnt/ams2"
-   hdd = psutil.disk_usage(data_dir)
-   data_tot = int(hdd.total) / (2**30)
-   data_used = int(hdd.used) / (2**30)
-   data_free = int(hdd.free) / (2**30)
+   try:
+      hdd = psutil.disk_usage(data_dir)
+      data_tot = int(hdd.total) / (2**30)
+      data_used = int(hdd.used) / (2**30)
+      data_free = int(hdd.free) / (2**30)
+   except:
+      print("Missing psutil!")
+      data_tot = 9999
+      data_used = 9999
+      data_free = 9999
 
    drive_info = """
    <tr><td colspan=2>Root Drive /</td></tr>
@@ -308,10 +416,15 @@ def get_disk_info(jc):
    if "cloud_dir" in jc:
       print("CLOUD DIR:", jc['cloud_dir'])
       cloud_dir = jc['cloud_dir']
-      cdd = psutil.disk_usage(cloud_dir)
-      cl_tot = int(cdd.total) / (2**30)
-      cl_used = int(cdd.used) / (2**30)
-      cl_free = int(cdd.free) / (2**30)
+      try:
+         cdd = psutil.disk_usage(cloud_dir)
+         cl_tot = int(cdd.total) / (2**30)
+         cl_used = int(cdd.used) / (2**30)
+         cl_free = int(cdd.free) / (2**30)
+      except:
+         cl_tot = 9999
+         cl_used = 9999
+         cl_free = 9999
       if cl_tot == root_tot:
          drive_info +=  "<tr><td colspan=2>Cloud Drive Not Connected</td></tr>"
       else:

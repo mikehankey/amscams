@@ -119,7 +119,7 @@ def track_points(sp, ep,jd):
       for k in range (-1,2):
          zenith_val = k * 5
 
-         print("HEADING/ZEN VAL:", i,k, heading_val, str(int(jd['heading_azimuth']) + int(heading_val)), zenith_val, str(int(jd['zenith_angle']) + int(zenith_val)))
+         print("HEADING/ZEN VAL:", i,k, heading_val, str(float(jd['heading_azimuth']) + float(heading_val)), zenith_val, str(float(jd['zenith_angle']) + float(zenith_val)))
          go = True
          distance = 0
          while go is True:
@@ -167,7 +167,7 @@ def track_points(sp, ep,jd):
    if True:
       if True:
          for lat,lon,alt,heading_val,zenith_val in traj_points:
-            run_name = str(int(alt/1000)) + "_" + str(int(jd['heading_azimuth']) + int(heading_val)) + "_" + str(int(jd['zenith_angle']) + int(zenith_val))
+            run_name = str(float(alt/1000)) + "_" + str(float(jd['heading_azimuth']) + float(heading_val)) + "_" + str(float(jd['zenith_angle']) + float(zenith_val))
             tout = template.replace("{LAT}", str(lat))
             tout = tout.replace("{LON}", str(lon))
             tout = tout.replace("{ALT}", str(alt))

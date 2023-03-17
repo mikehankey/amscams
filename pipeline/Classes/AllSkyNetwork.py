@@ -1,4 +1,5 @@
 import sqlite3
+import subprocess
 import PySimpleGUI as sg
 from Classes.MovieMaker import MovieMaker
 from Classes.RenderFrames import RenderFrames
@@ -96,6 +97,135 @@ class AllSkyNetwork():
 
       self.load_reconcile_stations()
       self.help()
+
+   def station_report(self):
+      all_stations = load_json_file("host_response.json")
+      for station_id in all_stations:
+         d = all_stations[station_id]
+         if d['op_status'] == "ACTIVE":
+            print (station_id, d['op_status'], d['operator_name'], d['resp'] )
+
+
+   def station_list(self):
+     
+      all_stations = {}
+      eu_missing = {}
+      stations = load_json_file("/mnt/f/EVENTS/ALL_STATIONS.json")
+      nolo = load_json_file("hosts-nologin.json")
+      nologin = nolo['nologin']
+      eu_stations = load_json_file("stations.json")
+      print("ALL STATIONS (AWS DYNAMODB)")
+      for data in stations:
+         print("   ALL", data['station_id'], data['op_status'])
+         st = data['station_id']
+         all_stations[st] = data
+
+      print("EU STATIONS (allsky7.net/stations.json)")
+      for data in eu_stations['stations']:
+         st = data['name']
+         host = data['url'].replace("https://", "")
+         print("   EU", st, host)
+         if st not in all_stations:
+            print("EU STATION NOT IN ALL STATIONS:", st, host)
+            eu_missing[st] = data
+            all_stations[st] = {}
+            all_stations[st]['op_status'] = "NEW"
+            all_stations[st]['vpn_ip'] = ""
+         else:
+            all_stations[st]['hostname'] = host
+            if "vpn_ip" not in all_stations:
+               all_stations[st]['vpn_ip'] = ""
+
+      # load private network data 
+      info_file = "/mnt/archive.allsky.tv/AMS1/info.txt"
+      os.system("cp " + info_file + " ./info.txt")
+      fp = open("info.txt")
+      print("VPN STATIONS (private network)")
+      for line in fp:
+         line = line.replace("\n", "")
+         if "10.8.0" in line and "vip" not in line:
+            data = line.split(" ")[0]
+            sid,ip = data.split(",")
+            sid = "AMS" + str(sid)
+            if sid in all_stations:
+               all_stations[sid]['vpn_ip'] = ip
+               if "hostname" not in all_stations[sid]:
+                  all_stations[sid]['hostname'] = ""
+               print(sid, ip)
+            else:
+               print("VPN Host missing from all stations!", sid, ip)
+      fp.close()
+      print("\nSPECIAL STATIONS (IP overrides)")
+      fp = open("hosts.txt")
+      for line in fp:
+         line = line.replace("\n", "")
+         if True:
+            sid,ip = line.split(",")
+            if sid in all_stations:
+               all_stations[sid]['vpn_ip'] = ip
+               if "hostname" not in all_stations[sid]:
+                  all_stations[sid]['hostname'] = ""
+               print(sid, ip)
+            else:
+               print("Special Host missing from all stations!", sid, ip)
+
+      responses = {}
+      for station_id in all_stations:
+         if station_id in nologin:
+            print("SKIP NO LOGIN:", station_id)
+            continue
+         if station_id == "AMS1":
+            continue
+         d = all_stations[station_id]
+         if "vpn_ip" in d:
+            vpn = d['vpn_ip']
+         else:
+            vpn = ""
+         if "hostname" in d:
+            hostname = d['hostname']
+         else:
+            hostname = ""
+
+         print(station_id, d['op_status'], hostname, vpn) 
+
+         #rcmd = "wget https://archive.allsky.tv/AMS123/gitpull.py -O /home/ams/gitpull.py ; /usr/bin/python3 /home/ams/gitpull.py"
+         rcmd = "uptime"
+         if vpn != "" :
+            cmd = "ssh -o ConnectTimeout=10 " + vpn + " \"" + rcmd + "\""
+            print("   VPN", cmd)
+            if ":" not in vpn:
+               try:
+                  output = subprocess.check_output(cmd, shell=True).decode("utf-8")
+               except:
+                  output = "NOLOGIN"
+            else:
+               output = vpn.split(":")[-1]
+         elif hostname != "":
+            cmd = "ssh -o ConnectTimeout=10 " + hostname + " \"" + rcmd + "\""
+            print("   HOST", cmd)
+            try:
+               output = subprocess.check_output(cmd, shell=True).decode("utf-8")
+            except:
+               output = "NOLOGIN"
+         else:
+            print("   ", station_id, "OFFLINE")
+            output = None
+         if output is not None:
+            print("RESP:",  station_id, output)
+         if station_id not in responses:
+            responses[station_id] = {}
+
+         responses[station_id]['resp'] = output
+         responses[station_id]['last_run'] = time.time()
+         responses[station_id]['op_status'] = d['op_status']
+         if "operator_name" in d:
+            responses[station_id]['operator_name'] = d['operator_name']
+         else:
+            responses[station_id]['operator_name'] = "unknown"
+         responses[station_id]['hostname'] = hostname
+         responses[station_id]['vpn_ip'] = vpn
+      save_json_file("host_response.json", responses)
+      print("Saved host_response.json")
 
    def filter_bad_detects(self, date):
 
@@ -953,7 +1083,6 @@ class AllSkyNetwork():
       #      self.all_min_events[minute] = min_events
       #      print("\tMINUTE OBS:", minute, len(min_obs), len(min_events.keys()))
        
-      #input("PART 1 done")
 
 
       save_json_file(self.plane_file, self.plane_pairs)
@@ -1366,7 +1495,6 @@ class AllSkyNetwork():
                elif match_dist < 700 :
                   match_dist = 1
                   print("STATIONS:", station_id, obs_file, min_events[eid]['stations'], min_events[eid]['files'])
-                  #input("CLOSE MATCH FOUND CHECK INTERSECT")
                   # check if this obs az1 intersects with the other obs az1s
                   intersect = True 
                   for i in range(0, len(min_events[eid]['lats'])):
@@ -1502,11 +1630,7 @@ class AllSkyNetwork():
          min_events[eid]['ipoints'].append(ipoints)
          min_events[eid]['start_datetime'].append(stime)
          min_events[eid]['stime'] = stime
-         if "25:14" in stime:
-            input("wait event check/make")
          return(min_events)
-      if "25:14" in stime:
-         input("wait event check/make")
 
       return(min_events)
 
@@ -2853,22 +2977,26 @@ class AllSkyNetwork():
       found = False
       for obs_id in obs_data:
          skip = False
-         marked_file = obs_data[obs_id]['image_file'].replace(".jpg", "-marked.jpg")
-         roi_file = obs_data[obs_id]['image_file'].replace(".jpg", "-roi.jpg")
+         if "image_file" in obs_data[obs_id]:
+            marked_file = obs_data[obs_id]['image_file'].replace(".jpg", "-marked.jpg")
+            roi_file = obs_data[obs_id]['image_file'].replace(".jpg", "-roi.jpg")
+         else:
+            marked_file = None
+            roi_file = None
 
 
-         if os.path.exists(obs_data[obs_id]['image_file']) :
+         if marked_file is not None and os.path.exists(obs_data[obs_id]['image_file']) :
             obs_imgs[obs_id] = cv2.imread(obs_data[obs_id]['image_file'])
             found = True
             obs_data[obs_id]['media_res'] = "360p" 
-         elif os.path.exists(obs_data[obs_id]['image_file'].replace("-stacked.jpg","-prev.jpg")):
+         elif marked_file is not None and os.path.exists(obs_data[obs_id]['image_file'].replace("-stacked.jpg","-prev.jpg")):
             obs_imgs[obs_id] = cv2.imread(obs_data[obs_id]['image_file'].replace("-stacked.jpg","-prev.jpg"))
             found = True
             obs_data[obs_id]['media_res'] = "180p" 
 
 
 
-         if os.path.exists(marked_file) is True:
+         if marked_file is not None and os.path.exists(marked_file) is True:
             marked_imgs[obs_id] = cv2.imread(marked_file) 
             roi_imgs[obs_id] = cv2.imread(roi_file) 
             skip = True
@@ -2893,9 +3021,6 @@ class AllSkyNetwork():
             mx = int(np.mean(obs_data[obs_id]['xs']))
             my = int(np.mean(obs_data[obs_id]['ys']))
 
-
-            print(ry1, ry2, rx1, rx2)
-            print(src_img.shape)
             roi_img = src_img[ry1:ry2,rx1:rx2] 
             cv2.imwrite(roi_file, roi_img)
 
@@ -2936,7 +3061,7 @@ class AllSkyNetwork():
 
             # image or image_file
             ai_resp = self.check_ai_img(ai_img, None)
-            print(ai_resp)
+
             if ai_resp['meteor_prev_yn'] > ai_resp['meteor_yn']:
                ai_resp['meteor_yn'] = ai_resp['meteor_prev_yn']
 
@@ -2984,9 +3109,6 @@ class AllSkyNetwork():
             cv2.imwrite(marked_file, show_img, [cv2.IMWRITE_JPEG_QUALITY, 70])
 
 
-
-
-
       return(obs_imgs, marked_imgs, roi_imgs, ai_imgs, obs_data)
 
    def review_event_step2(self):
@@ -2999,6 +3121,8 @@ class AllSkyNetwork():
       # we should load it and return it though?
       force = True 
 
+
+
       obs_data_file = self.local_evdir + self.event_id + "/" + self.event_id + "_OBS_DATA.json"
       event_data_file = self.local_evdir + self.event_id + "/" + self.event_id + "_EVENT_DATA.json"
       map_img_file = self.local_evdir + self.event_id + "/" + self.event_id + "_MAP_FOV.jpg"
@@ -3007,8 +3131,12 @@ class AllSkyNetwork():
       self.map_kml_file = self.local_evdir + self.event_id + "/" + self.event_id + "_OBS_MAP.kml"
       self.planes_file = self.local_evdir + self.event_id + "/" + self.event_id + "_PLANES.json"
 
+   
+
       if os.path.exists(self.planes_file) is True:
          self.planes = load_json_file(self.planes_file)
+      else:
+         self.planes = None
       # if the files exist already remove them
       if os.path.exists(map_img_file) is True:
          os.system("rm " + map_img_file)
@@ -3668,6 +3796,24 @@ class AllSkyNetwork():
    #def play_video(self, sd_vid, frames, subs, RF, frame_data ,stack_img):
 
    def get_event_obs(self):
+      event_data = {}
+      obs_data = {}
+      extra_rows = {}
+      st_pts = {}
+      st_az_pts = {}
+      obs_imgs = {}
+
+      extra_obs_file = self.local_evdir + self.event_id + "/" + self.event_id + "_EXTRA_OBS.json"
+      if os.path.exists(extra_obs_file) is True:
+         extra_obs = load_json_file(extra_obs_file)
+      else:
+         extra_obs = {}
+      for st in extra_obs:
+         for vf in extra_obs[st]:
+            obs_id = st + "_" + vf
+            obs_data[obs_id] = extra_obs[st][vf]
+            extra_rows[obs_id] = extra_obs[st][vf]
+            print("ADD EXTRA OBS", obs_id)
       # get event info frirst
       sql = """
             SELECT event_id, event_minute, revision, event_start_time, event_start_times, stations, obs_ids, lats, lons, event_status, run_date, run_times
@@ -3679,8 +3825,6 @@ class AllSkyNetwork():
       rows = self.cur.fetchall()
       data = []
       #print(sql, svals)
-      event_data = {}
-      obs_data = {}
       for row in rows:
          (event_id, event_minute, revision, event_start_time, event_start_times, stations, obs_ids, lats, lons, event_status, run_date, run_times ) = row
          event_data['event_id'] = event_id
@@ -3696,15 +3840,56 @@ class AllSkyNetwork():
          event_data['run_date'] = run_date 
          event_data['run_times'] = run_times
 
+      for obs_id in extra_rows:
+         
+         st = obs_id.split("_")[0]
+         station_id = st
+         event_data['stations'].append(st)
+         event_data['obs_ids'].append(obs_id)
+         event_data['event_start_times'].append(extra_rows[obs_id]['times'][0])
+         if "lat" in extra_rows[obs_id]:
+            event_data['lats'].append(extra_rows[obs_id]['lat'])
+            event_data['lons'].append(extra_rows[obs_id]['lon'])
+         else:
+            lat,lon,alt =  extra_rows[obs_id]['loc']
+            extra_rows[obs_id]['lat'] = lat
+            extra_rows[obs_id]['lon'] = lon
+            event_data['lats'].append(lat)
+            event_data['lons'].append(lon)
+
+         obs_data[obs_id] = {}
+         obs_data[obs_id]['event_id'] = event_data['event_id']
+         obs_data[obs_id]['event_minute'] = event_data['event_minute']
+         obs_data[obs_id]['station_id'] = st
+         obs_data[obs_id]['obs_id'] = obs_id
+
+         lat = extra_rows[obs_id]['lat']
+         lon = extra_rows[obs_id]['lon']
+         obs_data[obs_id]['lat'] = extra_rows[obs_id]['lat']
+         obs_data[obs_id]['lon'] = extra_rows[obs_id]['lon']
+         st_pts[st] = [lat,lon,station_id.replace("AMS", "")]
+         #obs_data[obs_id]['fns'] = json.loads(fns)
+         obs_data[obs_id]['times'] = extra_rows[obs_id]['times']
+         #obs_data[obs_id]['xs'] = json.loads(xs)
+         #obs_data[obs_id]['ys'] = json.loads(ys)
+         obs_data[obs_id]['azs'] = extra_rows[obs_id]['azs']
+         obs_data[obs_id]['els'] = extra_rows[obs_id]['els']
+         obs_data[obs_id]['ints'] = extra_rows[obs_id]['ints'] 
+         obs_data[obs_id]['az_start_point'] = self.find_point_from_az_dist(lat,lon,float(extra_rows[obs_id]['azs'][0]),650)
+         obs_data[obs_id]['az_end_point'] = self.find_point_from_az_dist(lat,lon,float(extra_rows[obs_id]['azs'][-1]),650)
+         if station_id not in st_az_pts:
+            st_az_pts[station_id] = []
+         st_az_pts[station_id].append(obs_data[obs_id]['az_start_point'])
+         st_az_pts[station_id].append(obs_data[obs_id]['az_end_point'])
+         st_az_pts[obs_id] = [obs_data[obs_id]['az_start_point'], obs_data[obs_id]['az_end_point']]
+
+
+      print(event_data)
       lc = 0 
-      st_pts = {}
-      st_az_pts = {}
-      obs_imgs = {}
 
       # THIS IS A BUG!!! OBS NEED TO BE UPDATED SOMEWHERE / SOMEHOW WHAT DO WE DO NOW!
       # OBS ARE BEING RELOADED SOMEWHERE ELSE, BUT THE DB IS NOT UPDATED RIGHT
       # FIX THE BUG INSIDE THE SOLVE CALL
-      print("EVENT DATA:", event_data.keys())
       for obs_id in event_data['obs_ids']:
          sql = """
             SELECT event_id, event_minute, station_id, obs_id, fns, times, xs, ys, azs, els, ints, status, ignore 
@@ -3843,14 +4028,11 @@ class AllSkyNetwork():
                   start_station_dist = dist_between_two_points(y1, x1, ipoint[1]['y3'], ipoint[1]['x3']) 
                except:
                   start_station_dist = 9999
-               print("COMBO:", obs_id_1, obs_id_2)
-               print("SSD:", start_station_dist)
 
                try:
                   end_station_dist = dist_between_two_points(y1, x1, end_ipoint[1]['y3'], ipoint[1]['x3']) 
                except:
                   end_station_dist = 9999
-               print("ESD:", end_station_dist)
 
                # only add a point if its within < 800 km away
                if end_station_dist > 800 and start_station_dist > 800:
@@ -3858,11 +4040,9 @@ class AllSkyNetwork():
                   end_failed = True
 
                if start_failed is False and end_failed is False:
-                  print("ADD POINT:", obs_id_1, obs_id_2, ipoint[1]['x3'], ipoint[1]['y3'])
                   obs_data[obs_id_1]['obs_start_points'].append(( ipoint[1]['y3'], ipoint[1]['x3']))
                   obs_data[obs_id_2]['obs_start_points'].append(( ipoint[1]['y3'], ipoint[1]['x3']))
 
-                  print(end_ipoint)
                   obs_data[obs_id_1]['obs_end_points'].append(( end_ipoint[1]['y3'], end_ipoint[1]['x3']))
                   obs_data[obs_id_2]['obs_end_points'].append(( end_ipoint[1]['y3'], end_ipoint[1]['x3']))
                   #points.append((ipoint[1]['x3'], ipoint[1]['y3'], 'i'))
@@ -3947,14 +4127,20 @@ class AllSkyNetwork():
 
       #lat1, lon1,lat2,lon2,cl
       #map_img = make_map(points, lines)
-      self.make_kml(self.map_kml_file, points, lines, line_names)
+      if self.planes != None:
+         self.make_kml(self.map_kml_file, points, lines, line_names)
+         event_data['planes'] = self.planes['results']
+      else:
+         print("No planes file.")
+         event_data['planes'] = None
       event_data['obs'] = obs_data
-      event_data['planes'] = self.planes['results']
+
+ 
       #for key in self.planes:
       #   print(key, self.planes[key])
       #exit()
       event_data['event_id'] = self.event_id
-      self.make_plane_kml(event_data, self.planes)
+      #self.make_plane_kml(event_data, self.planes)
 
       try:
          map_img = make_map(points, lines)
@@ -3997,7 +4183,10 @@ class AllSkyNetwork():
                if key == "azs" or key == "els":
                   tb.add_row([key, str( round(obs_data[obs_id][key][0],2)) + " / " + str( round(obs_data[obs_id][key][-1],2 )) ])
                else:
-                  tb.add_row([key, str( obs_data[obs_id][key][0]) + " / " + str( obs_data[obs_id][key][-1] ) ])
+                  if obs_id in obs_data:
+                     print("OBS ID KEY", obs_id, key )
+                     if len(obs_data[obs_id][key]) > 0:
+                        tb.add_row([key, str( obs_data[obs_id][key][0]) + " / " + str( obs_data[obs_id][key][-1] ) ])
          report += str(tb)
          report += "\n"
       print(report)
@@ -4005,7 +4194,7 @@ class AllSkyNetwork():
       # MFD FOR EACH
       print ("METEOR FRAME DATA")
       for obs_id in obs_data:
-         print("OBS:", obs_id, len(obs_data[obs_id]['fns']), "frames")
+         print("OBS:", obs_id, len(obs_data[obs_id]), "frames")
          #for i in range(0, len(obs_data[obs_id]['fns'])):
          #   print("{} {} {} {} {} ".format(obs_id, obs_data[obs_id]['fns'][i], obs_data[obs_id]['times'][i], obs_data[obs_id]['azs'][i], obs_data[obs_id]['els'][i]))
 
@@ -4349,7 +4538,6 @@ class AllSkyNetwork():
       else:
          ignore = []
       print("IGNORE", ignore)
-      input("W")
 
       # select main event info from the local sqlite DB
       sql = """
@@ -4376,14 +4564,9 @@ class AllSkyNetwork():
          event_start_times = json.loads(event_start_times)
          lats = json.loads(lons)
          temp_obs = {}
+
          if "ignore" in event:
             ignore = event['ignore']
-         #else:
-         #   ignore = ["010884", "010077", "010762", "010367", "AMS53", "2023_02_28_02_27_00_000_010349-trim-0923", "2023_02_28_02_27_01_000_010321-trim-0938.mp4", "2023_02_28_23_25_01_000_010125-trim-0334", "2023_02_28_23_25_00_000_010763", "2023_02_28_23_25_01_000_010349-trim-0324"]
-
-         # for each obs associated with this event
-         # load the MOST RECENT OBS DATA
-         # into the temp_obs array!
 
          for obs_id in obs_ids:
             ig = False
@@ -4393,7 +4576,6 @@ class AllSkyNetwork():
                   ig = True
             if ig is True:
                print("IGNORE:", ignore)
-               input("Continue...")
                continue
             st_id = obs_id.split("_")[0]
             obs_fn = obs_id.replace(st_id + "_", "")
@@ -4448,6 +4630,7 @@ class AllSkyNetwork():
                   print(dict_key, "not in obsdict. try deleting the file.")
                   print( self.obs_dict_file)
 
+
          self.good_obs = temp_obs
          #for st in temp_obs:
          #   print("STATION:", st)
@@ -4457,6 +4640,18 @@ class AllSkyNetwork():
 
          # we could sync obs here? or inside solveWMPL
 
+         extra_obs_file = self.local_evdir + event_id + "/" + event_id + "_EXTRA_OBS.json"
+         if os.path.exists(extra_obs_file) is True:
+            extra_obs = load_json_file(extra_obs_file)
+         else:
+            extra_obs = {}
+         for st in extra_obs:
+            for vf in extra_obs[st]:
+               obs_id = st + "_" + vf
+               temp_obs[st] = extra_obs[st]
+               print("ADD EXTRA OBS", obs_id)
+
+
          ev_dir = self.local_evdir + "/" + event_id + "/"
          if os.path.exists(ev_dir) is False:
             os.makedirs(ev_dir)
@@ -4465,7 +4660,6 @@ class AllSkyNetwork():
          save_json_file(good_obs_file, temp_obs, True)
          self.solve_event(event_id, temp_obs, 1, 1)
          xx += 1
-
 
       if True:
          plane_file = ev_dir + "/" + event_id + "_PLANES.json"
@@ -5305,7 +5499,6 @@ class AllSkyNetwork():
 
    def solve_event(self,event_id, temp_obs, time_sync, force):
 
-
       # flag2 is force?
       #self.check_event_status(event_id)
       ev_dir = self.local_evdir + "/" + event_id
@@ -5327,9 +5520,7 @@ class AllSkyNetwork():
       print("CURRENT STATUS FOR EVENT.", self.event_status)
       event_status = self.event_status
       solve_status = self.event_status
-      print("FORCE:", force)
 
-      #if (self.event_status == "SOLVED" or self.event_status == "FAILED") and force != 1:
       if (self.event_status == "SOLVED" ) and force != 1:
          print("Already done this.")
          return() 
@@ -5346,17 +5537,24 @@ class AllSkyNetwork():
          # if we are resolving then it prob failed
          # so lets set the time_sync to 0
          # we may change this logic later!
-         time_sync = 1
+         #time_sync = 1
          #solve_status = WMPL_solve(event_id, temp_obs, time_sync, force)
          #self.make_event_page(event_id)
-
          try:
             print("RUNNING WMPL...")
             solve_status = WMPL_solve(event_id, temp_obs, time_sync, force)
+         except:
+            print("*** EXCEPTION: WMPL_solve FAILED TO RUN!")
+            solve_status = WMPL_solve(event_id, temp_obs, time_sync, force)
+            input("EVENT SOLVE FAILED!")
+         try:
             self.make_event_page(event_id)
          except:
-            print("WMPL FAILED TO RUN!")
+            print("*** EXCEPTION: Make event page FAILED TO RUN!")
             status = "FAILED"
+            input("EVENT FINISHED BUT GRAPHS FAILED!")
+            self.make_event_page(event_id)
+
       else:
          print("WMPL ALREADY RAN...")
          new_run = False
@@ -5404,12 +5602,10 @@ class AllSkyNetwork():
             event_data[key] = temp[key]
 
 
-         #print("GOOD OBS:", self.good_obs_json)
 
 
          good_obs_file = self.local_evdir + event_id + "/" + event_id + "_GOOD_OBS.json"
          self.good_obs_json = load_json_file(good_obs_file)
-         #print("GOOD OBS:", self.good_obs_json)
          temp = self.good_obs_to_event(event_day, event_id)
          for key in temp:
             event_data[key] = temp[key]
@@ -7627,11 +7823,9 @@ class AllSkyNetwork():
             st_stats[st]['GOOD'] = 0 
             st_stats[st]['BAD'] = 0 
          if ob in valid_obs:
-            print("GOOD OBS:", ob)
             st_stats[st]['GOOD'] += 1
             all_obs[ob] = 1
          else:
-            print(" BAD OBS:", ob)
             st_stats[st]['BAD'] += 1
             all_obs[ob] = 0
 
@@ -7640,7 +7834,6 @@ class AllSkyNetwork():
          good = st_stats[st]['GOOD']
          bad = st_stats[st]['BAD']
          total = good + bad
-         print(st, good, bad, round((good/total)*100,1))
 
       # save QC report
       qc_report['st_stats'] = st_stats
@@ -7652,7 +7845,6 @@ class AllSkyNetwork():
       # SAVE FAILED OBS REPORT 
       failed_obs_html = ""
       for obs_id in sorted(all_obs):
-         print("OBS:", obs_id, all_obs[obs_id])
          if all_obs[obs_id] == 0:
             failed_obs_html += self.meteor_cell_html(obs_id, None)
       fpo = open(self.local_evdir + orig_date + "_FAILED_OBS.html", "w")
@@ -8590,7 +8782,6 @@ $(document).ready(function () {
                gd = [event_id, key, ob1, ob2]
                jobs.append(gd)
 
-      print(event_id, event_status, "PLANE JOBS:", len(jobs))
       self.run_plane_jobs(jobs, force)
 
       plane_report = {}
@@ -9059,7 +9250,6 @@ status [date]   -    Show network status report for that day.
             #lines.append((st_pts[st][0], st_pts[st][1], st_az_pts[st][0][0] , st_az_pts[st][0][1], 'green'))
       c = 0
       print(line_names)
-      input("NAMES")
       for line in lines :
          if line_names is not None :
             name = line_names[c]
@@ -9075,7 +9265,6 @@ status [date]   -    Show network status report for that day.
          c += 1
       kml.save(kml_file)
       print("SAVED", kml_file)
-      input("WAIT")
       #for line in lines:
 
    def make_plane_kml(self, event, planes):
@@ -9985,7 +10174,6 @@ status [date]   -    Show network status report for that day.
       #for k in cp:
       #   if "stars" not in k:
       cp['cal_range'] = cal_range
-      input("W")
       return(cp, remote_json_conf)
 
    def get_remote_cal_params(self, station_id, cam_id, obs_id, cal_date, show_img, star_points = []):
@@ -10185,7 +10373,6 @@ status [date]   -    Show network status report for that day.
 
       print("FINAL BEST CALIB:", best_calib['center_az'], best_calib['center_el'])
       print("FINAL BEST RES IS:", best_res)
-      input("WA")
       #print("REMOTE JSON CONF:", obs_id, best_calib, remote_json_conf)
       if best_calib is not None:
          best_calib = update_center_radec(obs_id,best_calib,remote_json_conf)

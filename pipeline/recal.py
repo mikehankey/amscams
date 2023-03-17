@@ -34,6 +34,7 @@ from PIL import ImageFont, ImageDraw, Image, ImageChops
 import lib.brightstardata as bsd
 from lib.PipeUtil import load_json_file, save_json_file,angularSeparation, calc_dist, convert_filename_to_date_cam , check_running , get_file_info, collinear, mfd_roi, load_mask_imgs
 from lib.PipeAutoCal import distort_xy, insert_calib, minimize_poly_multi_star, view_calib, cat_star_report , update_center_radec, XYtoRADec, draw_star_image, make_lens_model, make_az_grid, make_cal_summary, quality_stars, make_cal_plots, find_stars_with_grid, optimize_matchs, eval_cal_res, radec_to_azel, make_plate_image, make_cal_plots, make_cal_summary
+from FlaskLib.api_funcs import show_cat_stars 
 
 
 import sqlite3 
@@ -1375,7 +1376,9 @@ def star_track(cam_id, date, con, cur, json_conf ):
 
       #if cal_params is None:
       cal_params = get_default_cal_for_file(cam_id, snap_file, None, con, cur, json_conf)
+
       if cal_params is None:
+         # the cal params don't exist yet!
          cal_params = {}
          cal_params['center_az'] = 1
          cal_params['center_el'] = 25
@@ -1681,6 +1684,7 @@ def plot_refit_meteor_day(meteor_day, con, cur, json_conf):
 def refit_meteor_day(meteor_day, con, cur, json_conf):
 
    files = os.listdir("/mnt/ams2/meteors/" + meteor_day + "/")
+   cc = 1
    for ff in files:
       if "json" not in ff:
          print("S", ff)
@@ -1690,10 +1694,33 @@ def refit_meteor_day(meteor_day, con, cur, json_conf):
          continue
       print("KEEP:", ff)
       refit_meteor(ff, con, cur, json_conf)
+      print(cc, "REFIT")
+      cc += 1
    print("Done day", meteor_day)
+   mdir = "/mnt/ams2/meteors/" + date + "/"
+   refit_log_file = mdir + "refit.log"
+   refit_sum_file = mdir + "refit_summary.log"
+   if os.path.exists(refit_log_file) is True:
+      refit_log = load_json_file(refit_log_file)
+      report = refit_summary(refit_log)
+      save_json_file(refit_sum_file, report)
 
 def refit_meteor(meteor_file, con, cur, json_conf, mcp = None, last_best_dict = None):
-   print("MF:", meteor_file)
+   '''
+       Refit meteor -- this function should optimize the calibration, selected stars, and perfect the meteors x,y points
+       When complete all frames should have the latest / greatest calib applied to them. 
+       In the cases where there are not enough stars (< 3) to safely confirm the calibration residuals, 
+       the default or last best calibration will be used as a fall back. 
+
+       So we should : 
+          1) Get the user stars
+          2) Get the current calib
+             Use default calib if not enough stars else
+          4) Recenter
+          5) Appy Calib to frames
+
+   '''
+   print("Refit Meteor File", meteor_file)
    if SHOW == 1:
       cv2.namedWindow("pepe")
       cv2.resizeWindow("pepe", 1920, 1080)
@@ -1708,10 +1735,8 @@ def refit_meteor(meteor_file, con, cur, json_conf, mcp = None, last_best_dict = 
    (f_datetime, cam_id, f_date_str,fy,fmin,fd, fh, fm, fs) = convert_filename_to_date_cam(meteor_file)
    station_id = json_conf['site']['ams_id']
 
+   # MRH - Possible bug / this should be checked or convert to 'last_best'? 3/16/23 
    default_cp = get_default_cal_for_file(cam_id, meteor_file, None, con, cur, json_conf)
-
-
-
 
    extra_text = "Refit " +  meteor_file
    if last_best_dict is None:
@@ -1739,8 +1764,6 @@ def refit_meteor(meteor_file, con, cur, json_conf, mcp = None, last_best_dict = 
    if os.path.exists(red_json_file):
       mjr = load_json_file(red_json_file)
       meteor_roi = mfd_roi(mjr['meteor_frame_data'])
-
-      print("ROI:", meteor_roi)
    else:
       meteor_roi = None
       mjr = None
@@ -1782,22 +1805,22 @@ def refit_meteor(meteor_file, con, cur, json_conf, mcp = None, last_best_dict = 
          hd_frames = sd_frames
       else:
          print("ERROR NO VIDEO FRAMES!", sd_vid)
+         exit()
          return()
    frames = hd_frames
 
-   print("VID", sd_vid)
-   print("HD", len(hd_frames))
-   print("SD", len(sd_frames))
+   red_file = json_file.replace(".json", "-reduced.json")
+   if os.path.exists(red_file):
+      red = load_json_file(red_file)
+   else:
+      red = {}
 
-   #print("FILE:", meteor_file)
-   #print("FRAMES:", len(frames))
+   # by here all frames SD and HD and json data should be loaded
 
+   # make the median frame for star astrometry and photemetry 
    median_frame = cv2.convertScaleAbs(np.median(np.array(hd_frames[0:10]), axis=0))
    median_frame = cv2.resize(median_frame, (1920,1080))
 
-
-
-   # no longer needed
    if os.path.exists(stack_file) is True:
       meteor_stack_img = cv2.imread(stack_file)
       meteor_stack_img = cv2.resize(meteor_stack_img,(1920, 1080))
@@ -1809,7 +1832,6 @@ def refit_meteor(meteor_file, con, cur, json_conf, mcp = None, last_best_dict = 
       x1,y1,x2,y2 = meteor_roi
       color = (255,255,255)
       cv2.rectangle(meteor_stack_img, (int(x1), int(y1)), (int(x2) , int(y2) ), color, 2)
-
 
    if True:
       # if the CP has not been assigned to the meteor give it the default cal
@@ -1823,22 +1845,15 @@ def refit_meteor(meteor_file, con, cur, json_conf, mcp = None, last_best_dict = 
       # get cals before/after this file
       before_files, after_files = get_close_calib_files(meteor_file)
       star_points, show_img = get_star_points(meteor_file, stack_img, mj['cp'], station_id, cam_id, json_conf)
-      print("STAR POINTS:", len(star_points))
       mj['cp']['user_stars'] = star_points
       mj['cp']['star_points'] = star_points
 
-      #
-      #blend_img = cv2.addWeighted(sta, .5, cat_image, .5,0)
-      if mj['cp']['total_res_px'] > 4:
+      # try to find a better cal if the res is high 
+      # but only if there are enough stars
+      if mj['cp']['total_res_px'] > 4 and len(star_points) > 3:
          mj['cp'] = test_cals (meteor_file, mj['cp'], json_conf, mcp, meteor_stack_img, before_files, after_files, con, cur)
 
-
-         
-      red_file = json_file.replace(".json", "-reduced.json")
-      if os.path.exists(red_file):
-         red = load_json_file(red_file)
-      else:
-         red = {}
+        
 
       if "total_res_px" not in mj['cp']:
          # There are no stars so there is no res??
@@ -1856,8 +1871,6 @@ def refit_meteor(meteor_file, con, cur, json_conf, mcp = None, last_best_dict = 
    orig_res = mj['cp']['total_res_px']
 
    best_cal = find_best_calibration(meteor_file, mj['cp'], json_conf)
-   print("METEOR FILE:", meteor_file)
-   print("ORG RES:", len(mj['cp']['cat_image_stars']), mj['cp']['total_res_px'])
    if best_cal is not None:
       print("BEST CAL", len(mj['cp']['cat_image_stars']),  best_cal['total_res_px'])
 
@@ -1868,7 +1881,18 @@ def refit_meteor(meteor_file, con, cur, json_conf, mcp = None, last_best_dict = 
 
    stars,cat_stars = get_paired_stars(meteor_file, mj['cp'], con, cur)
 
-   print("MJCPCIS", mj['cp']['cat_image_stars'])
+   show_frame = median_frame.copy()
+
+   if SHOW == 1:
+      # frame with no markings just stars 
+      cv2.imshow('pepe', show_frame)
+      cv2.waitKey(30)
+      for star in mj['cp']['user_stars']:
+         x,y,i = star
+         cv2.circle(show_frame, (int(x),int(y)), 15, (128,255,128),1)
+         cv2.imshow('pepe', show_frame)
+         cv2.waitKey(30)
+      # frame with white circles
 
    if len(mj['cp']['cat_image_stars']) > 1:
       mj['cp'], cat_stars = recenter_fov(meteor_file, mj['cp'].copy(), stack_img.copy(),  stars, json_conf, meteor_file , None, None, con, cur)
@@ -1885,22 +1909,15 @@ def refit_meteor(meteor_file, con, cur, json_conf, mcp = None, last_best_dict = 
       print("*************************")
       print("********************")
 
-   show_frame = median_frame.copy()
-   if SHOW == 1:
-      cv2.imshow('pepe', show_frame)
-      cv2.waitKey(30)
-      for star in mj['cp']['user_stars']:
-         x,y,i = star
-         cv2.circle(show_frame, (int(x),int(y)), 15, (128,255,128),1)
+
 
    #star_img = draw_star_image(median_frame.copy(), mj['cp']['cat_image_stars'],mj['cp'], json_conf, extra_text) 
    star_img = draw_star_image(meteor_stack_img.copy(), mj['cp']['cat_image_stars'],mj['cp'], json_conf, extra_text) 
-   print(fit_img_file)
    cv2.imwrite(fit_img_file, star_img, [int(cv2.IMWRITE_JPEG_QUALITY), 70])
 
-   if SHOW == 1 :
-      cv2.imshow('pepe', star_img)
-      cv2.waitKey(30)
+   #if SHOW == 1 :
+   #   cv2.imshow('pepe', star_img)
+   #   cv2.waitKey(30)
 
 
    # BY HERE ALL CALIB IS GOOD BUT WE SHOULD CONFIRM THE POINTS ARE PERFECT AND THE ROI ID IS CORRECT WITH AI.
@@ -1927,154 +1944,45 @@ def refit_meteor(meteor_file, con, cur, json_conf, mcp = None, last_best_dict = 
    #if mjr is not None:
    #   if "meteor_frame_data" in mjr:
    #      mfd = perfect_meteor(json_file, sd_frames, mjr['meteor_frame_data'], meteor_roi)
-
-   save_json_file(json_file, mj)      
-
-
-
-
-   return(mj['cp'])
-   # BELOW HERE IS OLD / NOT NEEDED ANYMORE?
-
-
-   if "cp" in mj:
-      cp = mj['cp']
-   else:
-      cp = None
-
-   if cp is None:
-      cp = get_default_cal_for_file(meteor_file, median_frame.copy(), con, cur, json_conf)
-      mj['cp'] = cp
-
-   # Try to add more stars if we have less than 10 
-   if len(cp['cat_image_stars']) < 5:
-      #print("METEOR FILE:", meteor_file)
-      star_objs, bad_star_objs = find_stars_with_catalog(meteor_file.replace(".mp4", ".json"), con, cur, json_conf,mcp, cp, median_frame) 
-
-      cat_image_stars = []
-      user_stars = []
-
-      for star_obj in bad_star_objs:
-         x = star_obj['star_x']
-         y = star_obj['star_y']
-         cnts = star_obj['cnts']
-         cv2.circle(show_frame, (int(x),int(y)), 15, (0,0,255),1)
-
-
-      for star_obj in star_objs:
-         cat_image_stars.append((star_obj['star_name'],star_obj['mag'],star_obj['ra'],star_obj['dec'],star_obj['img_ra'],star_obj['img_dec'],star_obj['total_res_deg'],star_obj['proj_x'],star_obj['proj_y'],star_obj['img_az'],star_obj['img_el'],star_obj['cat_x'],star_obj['cat_y'],star_obj['star_x'],star_obj['star_y'],star_obj['total_res_px'],star_obj['star_flux']))
-         user_stars.append((star_obj['star_x'], star_obj['star_y'], star_obj['star_flux']))
-         x = star_obj['star_x']
-         y = star_obj['star_y']
-         cnts = star_obj['cnts']
-         if SHOW == 1:
-            cv2.circle(show_frame, (int(x),int(y)), 5, (0,255,0),1)
-            cv2.imshow('pepe', show_frame)
-            cv2.waitKey(40)
-      mj['cp']['cat_image_stars'] = cat_image_stars     
-      mj['cp']['user_stars'] = user_stars 
-
-
-      if SHOW == 1:
-         cv2.imshow('pepe', show_frame)
-         cv2.waitKey(30)
-
-   # remove really bad cat stars
-   if True:
-      temp = []
-      rez = np.median([row[-2] for row in cp['cat_image_stars']])
-      if rez < 1:
-         rez = 1
-
-      for row in cp['cat_image_stars']:
-         if row[-2] < rez * 3:
-            temp.append(row)
-         else:
-            print("skip bad res:", row[-2])
-
-      cp['cat_image_stars'] = temp
-
-
-
-   if len(mj['cp']['cat_image_stars']) < 3: 
-      print("\tNOT ENOUGH STARS TO CUSTOM FIT. USE DEFAULT CAL!")
-      mj['cp'] = default_cp
-      mj['cat_image_stars'] = []
-
-      red['cal_params'] = default_cp
-      red['cal_params']['cat_image_stars'] = []
-
-      print("\tDEFAULT CP:", default_cp)
-
-      if "cp" in red:
-         del(red['cp'])
-      save_json_file(red_file, red)
-      print("\tSAVED RED:", red_file)
-   else:
-      temp_cp = minimize_fov(meteor_file, mj['cp'], meteor_file,median_frame.copy(),json_conf, False,mcp, "", SHOW)
-      if temp_cp['total_res_px'] <= mj['cp']['total_res_px']: 
-         mj['cp'] = temp_cp
-
-   new_cat_image_stars = []
-   if "cat_image_stars" not in mj['cp']:
-      mj['cp']['cat_image_stars'] = []
-
-   for star in mj['cp']['cat_image_stars']:
-      (dcname,mag,ra,dec,img_ra,img_dec,match_dist,up_cat_x,up_cat_y,img_az,img_el,up_cat_x,up_cat_y,six,siy,res_px,bp) = star
-      new_cat_x, new_cat_y = get_xy_for_ra_dec(mj['cp'], ra, dec)
-      res_px = calc_dist((six,siy),(new_cat_x,new_cat_y))
-      new_x, new_y, img_ra,img_dec, img_az, img_el = XYtoRADec(six,siy,meteor_file,mj['cp'],json_conf)
-      match_dist = angularSeparation(ra,dec,img_ra,img_dec)
-      real_res_px = res_px
-      new_cat_image_stars.append((dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,real_res_px,bp))
-   mj['cp']['cat_image_stars'] = new_cat_image_stars
-
-   rez = [row[-2] for row in mj['cp']['cat_image_stars'] ]
-   med_rez = np.median(rez) ** 2
-   #if med_rez < 2:
-   #   med_rez = 2 
-
-   new_cat_image_stars = []
-   for star in mj['cp']['cat_image_stars']:
-      if star[-2] <= med_rez * 3:
-         new_cat_image_stars.append(star)
-      else:
-         print("REJECT", star[0], star[-2], med_rez)
-   # was to strict so commented out
-   #mj['cp']['cat_image_stars'] = new_cat_image_stars
-   # now apply the new cp to the existing points!
-
-   
-   if os.path.exists(red_file) is True:
-      if "meteor_frame_data" in red:
-         red = update_mfd(meteor_file, red, cp)
+   if mjr is not None:
+      if "meteor_frame_data" in mjr:
+         mjr = update_mfd(meteor_file, mjr, mj['cp'])
          print("UPDATED RED DATA")
-
-   if os.path.exists(red_file) is True:
-      red['cal_params'] = mj['cp']
-      print(red_file, red)
-      save_json_file(red_file, red)      
-   if "cp" not in mj:
-      mj['cp'] = get_default_cal_for_file(cam_id, meteor_file, None, con, cur, json_conf)
-      red['cal_params'] = mj['cp']
-      save_json_file(red_file, red)      
+         mjr['cal_params'] = mj['cp']
+         save_json_file(red_json_file, mjr)
 
    save_json_file(json_file, mj)      
-   if False:
-      if orig_res > mj['cp']['total_res_px']:
-         print("\tSAVED/DONE", orig_res, mj['cp']['total_res_px'])
-         save_json_file(json_file, mj)      
-      else:
-         mj = load_json_file(json_file)      
-         mj['meteor_refit_max'] = True
-         mj['cp'] = default_cp 
-         save_json_file(json_file, mj)      
-         if "cp" in mj:
-            print("NO SAVE/DONE (orig is better)", orig_res, mj['cp']['total_res_px'])
-         else:
-            print("PROBLEM no mj/cp")
 
+   # run the star api to finalize
+   if "sd_video_file" in mj:
+      video_file = mj['sd_video_file'].split("/")[-1]
+   else:
+      video_file = None
+   if "hd_stack" in mj:
+      hd_stack_file = mj['hd_stack'].split("/")[-1]
+   else:
+      hd_stack_file = None
+   point_str = ""
+   if "cp" in mj:
+      if "user_stars" in mj['cp']:
+         for row in mj['cp']['user_stars']:
+            if len(row) == 3:
+               x,y,i = row
+            if len(row) == 2:
+               x,y = row
+            point_str += str(x) + "," + str(y) + "|"
+
+
+   # cp = get_default_cal_for_file(meteor_file, median_frame.copy(), con, cur, json_conf)
+
+   # update json / web api so page is up to date
+   show_cat_stars (video_file, hd_stack_file, point_str)
+   cmd = "./pushAWS.py push_obs " + meteor_file + " > /dev/null 2>&1 &"
+   print(cmd)
+   os.system(cmd)
    return(mj['cp'])
+
+
 
 def perfect_meteor(meteor_file, frames, mfd, meteor_roi):
    meteor_fn = meteor_file.split("/")[-1].replace(".json", "")
@@ -3217,7 +3125,7 @@ def batch_review(station_id, cam_id, con, cur, json_conf, limit=25, work_type="t
             cal_params['pixscale'] = last_cal['pixscale']
             cal_params = update_center_radec(cal_fn,cal_params,json_conf)
 
-      print("RES/MED RES:", cal_params['total_res_px'], med_all_res)
+      #print("RES/MED RES:", cal_params['total_res_px'], med_all_res)
 
       star_img = draw_star_image(oimg, cal_params['cat_image_stars'],cal_params, json_conf, extra_text) 
       if SHOW == 1:
@@ -6389,7 +6297,7 @@ def cat_star_match(cal_fn, cal_params, cal_img, cat_stars):
    print("CAT STAR MATCH")
    if SHOW == 1:
       cv2.imshow('pepe', cal_img)
-      cv2.waitKey(0)
+      cv2.waitKey(30)
    if len(cal_img.shape) == 3:
       gray_img = cv2.cvtColor(cal_img, cv2.COLOR_BGR2GRAY)
    else:
@@ -8790,8 +8698,8 @@ def get_default_cal_for_file(cam_id, obs_file, img, con, cur, json_conf):
       try:
          default_cp = get_default_cal_for_file_with_range (cam_id, obs_file, None, con, cur, json_conf)
       except:
-
          print("DEFAULT CAL FAILED! -- there is no default cal for this camera!")
+         return()
 
       return(default_cp)
    else:
@@ -10995,6 +10903,7 @@ if __name__ == "__main__":
          print("LAST BEST:", last_best.keys())
       save_json_file(refit_log_file, refit_log)
       print(refit_log_file)
-      os.system("./recal.py refit_summary " + date )
+      refit_summary(refit_log)
+      #os.system("./recal.py refit_summary " + date )
 
 

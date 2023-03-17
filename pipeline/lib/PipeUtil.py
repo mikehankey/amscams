@@ -23,6 +23,57 @@ dec = decimal.Decimal
 #try
 #import jwt
 
+
+def do_photo(image, position, radius,r_in=10, r_out=12):
+   from photutils import CircularAperture, CircularAnnulus
+   from photutils.aperture import aperture_photometry
+
+
+   if radius < 2:
+      radius = 2
+
+   if False:
+      # debug display
+      xx,yy = position
+      xx = int(xx * 10)
+      yy = int(yy * 10)
+
+      disp_img = cv2.resize(image, (320,320))
+      min_val, max_val, min_loc, (mx,my)= cv2.minMaxLoc(disp_img)
+      avg_val = np.mean(disp_img)
+      pxd = max_val - avg_val
+      thresh_val = int(avg_val + (max_val/2))
+      if thresh_val > max_val:
+         thresh_val = max_val * .8
+
+      _, thresh_image = cv2.threshold(disp_img, thresh_val, 255, cv2.THRESH_BINARY)
+
+   r_in = radius + 2
+   r_out = radius + 4
+
+   aperture_area = np.pi * radius**2
+   annulus_area = np.pi * (r_out**2 - r_in**2)
+
+   # pass in BW crop image centered around the star
+
+   aperture = CircularAperture(position,r=radius)
+   bkg_aperture = CircularAnnulus(position,r_in=r_in,r_out=r_out)
+
+
+
+   phot = aperture_photometry(image, aperture)
+   bkg = aperture_photometry(image, bkg_aperture)
+
+   bkg_mean = bkg['aperture_sum'][0] / annulus_area
+   bkg_sum = bkg_mean * aperture_area
+
+
+   flux_bkgsub = phot['aperture_sum'][0] - bkg_sum
+
+
+   return(flux_bkgsub)
+
+
 def encode_jwt(payload, json_conf=None,secret = None):
    if json_conf is None:
       json_conf = load_json_file("../conf/as6.json")
@@ -458,7 +509,11 @@ def angularSeparation(ra1,dec1, ra2,dec2):
    dec1 = math.radians(float(dec1))
    ra2 = math.radians(float(ra2))
    dec2 = math.radians(float(dec2))
-   return math.degrees(math.acos(math.sin(dec1)*math.sin(dec2) + math.cos(dec1)*math.cos(dec2)*math.cos(ra2 - ra1)))
+   try:
+      value = math.degrees(math.acos(math.sin(dec1)*math.sin(dec2) + math.cos(dec1)*math.cos(dec2)*math.cos(ra2 - ra1)))
+   except:
+      value = 9999
+   return(value) 
 
 
 def check_running(progname, sec_grep = None):

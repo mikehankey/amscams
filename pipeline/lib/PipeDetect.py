@@ -2091,15 +2091,6 @@ def make_roi_video_mfd(video_file, json_conf, edits=None):
          frame = None
          
          cf = cache_frames[fn]
-         if edits is not None:
-            print("EDITS:", edits)
-            if fn in edits or str(fn) in edits:
-               print("IN EDITs:", fn)
-               print("UPDATE ROW:", row, len(hd_color_frames))
-            else:
-               print("FN NOT IN EDITS", fn, type(fn), edits)
-         else:
-            print("UPDATE ROW:", row, len(hd_color_frames))
 
          if edits is None and fn < len( hd_color_frames):
             frame = hd_color_frames[fn]
@@ -2115,14 +2106,17 @@ def make_roi_video_mfd(video_file, json_conf, edits=None):
 
          of = cv2.resize(frame, (1920,1080))
          sfn = str(fn)
+         #if sfn in ufd:
+         # MRH 3/16/2023 Bug Fix
          if sfn in ufd:
             temp_x,temp_y = ufd[sfn]
             if temp_x > 0 and temp_y > 0:
                x = temp_x  
                y = temp_y  
-               #cv2.circle(of,(x,y), 5, (0,255,255), 1)
-               tx, ty, ra ,dec , az, el = XYtoRADec(x,y,video_file,mjr['cal_params'],json_conf)
                print("USING UPDATED POINT", fn, x,y)
+               #cv2.circle(of,(x,y), 5, (0,255,255), 1)
+         # get latest ra/dec/az/el for all frames all the time. Calib might have changed since last edit.
+         tx, ty, ra ,dec , az, el = XYtoRADec(x,y,video_file,mjr['cal_params'],json_conf)
                #cv2.circle(frame,(x,y), 10, (255,255,255), 1)
                #cv2.imshow('pepe', frame)
                #cv2.waitKey(0)
@@ -2606,6 +2600,7 @@ def fireball(video_file, json_conf, nomask=0):
       # REFIT METEOR / refit meteor
       # turned off to optimize time 8/2/2022
       # turned back on 8/6/2022
+
       #os.system("./Process.py refit_meteor " + jsf)
       jsfn = jsf.split("/")[-1]
       print("./recal.py refit_meteor " + jsfn)

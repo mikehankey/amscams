@@ -16,7 +16,7 @@ import scipy.optimize
 import math
 import cv2
 import numpy as np
-from lib.PipeUtil import bound_cnt, cnt_max_px, cfe, load_json_file, save_json_file, convert_filename_to_date_cam, angularSeparation, calc_dist, date_to_jd, get_masks , find_angle, collinear, get_trim_num, day_or_night, check_running, get_file_info
+from lib.PipeUtil import bound_cnt, cnt_max_px, cfe, load_json_file, save_json_file, convert_filename_to_date_cam, angularSeparation, calc_dist, date_to_jd, get_masks , find_angle, collinear, get_trim_num, day_or_night, check_running, get_file_info, do_photo
 from lib.PipeImage import mask_frame, quick_video_stack
 from lib.DEFAULTS import *
 import os
@@ -8625,6 +8625,14 @@ def pair_stars(cal_params, cal_params_file, json_conf, cal_img=None, show = 0):
          #cv2.circle(temp_img,(int(new_x),int(new_y)), 7, (128,128,255), 1)
          used_key = str(ra) + "-" + str(dec)
 
+         # get star flux
+         try:
+            flux = do_photo(cal_img, [six,siy], 5,10, 12)
+            print("FLUX:", name, flux)
+         except:
+            flux = 999
+            print("FLUX ERROR!")
+
          if match_dist >= 30 or used_key in used:
             bad = 1
             if used_key in used:
@@ -8634,7 +8642,7 @@ def pair_stars(cal_params, cal_params_file, json_conf, cal_img=None, show = 0):
             #plt.plot(xs, ys)
             #plt.show()
          else:
-            my_close_stars.append((name,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist,bp))
+            my_close_stars.append((name,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist,flux))
             total_match_dist = total_match_dist + match_dist
             total_cat_dist = total_cat_dist + cat_dist
             total_matches = total_matches + 1

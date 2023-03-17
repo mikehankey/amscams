@@ -1,9 +1,21 @@
-<div id="main_container" class="container-fluid d-flex h-100 mt-4 position-relative">
-
+<style>
+.padded {
+   padding: 3px;
+}
+</style>
+<div class="container">
+    <ul class="nav nav-tabs px-2" style="padding: 5px">
+      <!-- add data-toggle attribute to the anchors -->
+      <li class="active padded"><a data-toggle="tab" href="#site">Station Info</a></li>
+      <li class="padded"><a data-toggle="tab" href="#cameras">Cameras</a></li>
+      <li class="padded"><a data-toggle="tab" href="#system">System</a></li>
+    </ul>
+      <div class="tab-content">
+      <div id="site" class="tab-pane active">
 
 <form method=POST>
 <div style="margin: 20px">
-<h2>Site Info</h2>
+<h2>Station Info</h2>
 <table width=100%>
 <tr>
 	<td>AMS ID</td>
@@ -23,9 +35,6 @@
 	<td><input type=text name=obs_name value="{OBSV_NAME}"></td>
 </tr>
 
-
-
-
 <tr>
 	<td>State/Province</td>
 	<td><input type=text name=operator_state value="{OPERATOR_STATE}"></td>
@@ -39,11 +48,11 @@
 	<td><input type=text name=operator_country value="{OPERATOR_COUNTRY}"></td>
 </tr>
 <tr>
-	<td>Latitude</td>
+	<td>Latitude (Decimal only)</td>
 	<td><input type=text name=device_lat value="{DEVICE_LAT}"></td>
 </tr>
 <tr>
-	<td>Longitude</td>
+	<td>Longitude (Decimal only)</td>
 	<td><input type=text name=device_lng value="{DEVICE_LON}"></td>
 </tr>
 <tr>
@@ -52,19 +61,35 @@
 </tr>
 <tr><td colspan=2><input type="submit" value="Update"></td></tr>
 </table>
+</form>
 
 </div>
 
+
+      </div>
+      <div id="cameras" class="tab-pane fade">
+
 <div style="margin: 20px">
-<h2>Camera Info</h2>
+<h2>Cameras </h2>
+
+{CAMERA_DETAILS}
+
+
+</div>
+
+      </div>
+
+      <div id="system" class="tab-pane fade">
+	      <h2>System Info</h2>
+
+
+<div style="margin: 20px">
+<h2>ALLSKY7 HOST PC</h2>
 <table width=100%>
-{CAMERA_INFO}
+	<tr><td>
 </table>
 
-</div>
-
-<div style="margin: 20px">
-<h2>Network Info</h2>
+<h2>Network Adapters</h2>
 <table width=100%>
 {NETWORK_INFO}
 </table>
@@ -80,6 +105,9 @@
 
 </div>
 
-</form>
 
 
+      </div>
+    </div>
+<div id="main_container" class="container-fluid d-flex h-100 mt-4 position-relative">
+</div>

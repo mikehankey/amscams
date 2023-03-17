@@ -1185,7 +1185,6 @@ def solve_event(event_id, force=1, time_sync=1):
     #for ob in obs_data:
     #   print(ob)
 
-    #input("OBS_DATA FOR ABOVE LINE")
     for station_id in obs_data:
         print("OBS STATION_ID", obs)
         if len(obs_data[station_id].keys()) > 1:
@@ -2737,7 +2736,6 @@ def event_report(dynamodb, event_id, solve_dir, event_final_dir, obs):
     print("SAVED INDEX:", event_final_dir + "/index.html")
     print("REPORT IS :", report)
     print("SOLVED FILES:", solved_files)
-    #input("SAVED HTML!!!" + solve_dir + "/index.html")
     # delete PNGS
     pngs = glob.glob(event_final_dir + "*.png")
     for png in pngs:
@@ -2816,7 +2814,7 @@ def make_obs_table(obs):
    return(obs_html)
 
 def WMPL_solve(event_id, obs,time_sync=1, force=0, dynamodb=None):
-    #time_sync = 0
+    time_sync = 1
     if dynamodb is None:
        dynamodb = boto3.resource('dynamodb')
 
@@ -2929,9 +2927,8 @@ def WMPL_solve(event_id, obs,time_sync=1, force=0, dynamodb=None):
        etv = True
     else:
        etv = False
-    etv = True 
     monte = False 
-    traj_solve = traj.Trajectory(jd_ref, output_dir=solve_dir, meastype=meastype, save_results=True, monte_carlo=monte, show_plots=False, max_toffset=5,v_init_part=.5, estimate_timing_vel=etv, show_jacchia=True  )
+    traj_solve = traj.Trajectory(jd_ref, output_dir=solve_dir, meastype=meastype, save_results=True, monte_carlo=monte, show_plots=False, max_toffset=15,v_init_part=.5, estimate_timing_vel=etv, show_jacchia=True  )
     earliest_time = None
   
     # this is where we should use ALL obs or BEST obs or MERGE obs
@@ -2986,6 +2983,8 @@ def WMPL_solve(event_id, obs,time_sync=1, force=0, dynamodb=None):
             o_times[0] = o_times[0].replace(":", "_")
             o_times[0] = o_times[0].replace(" ", "_")
             event_start_dt = datetime.datetime.strptime(o_times[0], "%Y_%m_%d_%H_%M_%S.%f")
+            #this_event_start_dt = datetime.datetime.strptime(o_times[0], "%Y_%m_%d_%H_%M_%S.%f")
+            # MY TIME SYNC?
             if earliest_time is None:
                earliest_time = event_start_dt
             else:
@@ -2995,6 +2994,7 @@ def WMPL_solve(event_id, obs,time_sync=1, force=0, dynamodb=None):
                 continue
             times = []
 
+            # time sync bug possible?
             for frame_time in o_times:
                 frame_time = frame_time.replace("-", "_")
                 frame_time = frame_time.replace(":", "_")
@@ -3009,6 +3009,7 @@ def WMPL_solve(event_id, obs,time_sync=1, force=0, dynamodb=None):
             #print("o", station_id, o_times)
             #print("n", station_id, times)
             # Set points for the first site
+            print("   EVENT START DT:", event_start_dt)
             print("   SET WMPL OBS:", event_id, station_id, lat, lon, alt, azs, els, times)  
             traj_solve.infillTrajectory(azs, els, times, np.radians(float(lat)), np.radians(float(lon)), alt, station_id=station_id + "-" + cam_id)
             print(   "-----")

@@ -801,7 +801,7 @@ def detail_page(amsid, date, meteor_file):
    template = template.replace("{CAL_PARAMS}", cal_params_js_var)
    template = template.replace("{METEOR_FRAME_DATA}", mfd_js_var)
    template = template.replace("{FRAME_TABLE_ROWS}", frame_table_rows)
-   template = template.replace("{STAR_ROWS}", "")
+   template = template.replace("{STAR_ROWS}", "" )
    template = template.replace("{LIGHTCURVE_URL}", lc_html)
    ts = time.time()
    template = template.replace("{RAND}", str(ts))

@@ -2,6 +2,7 @@ from FlaskLib.FlaskUtils import make_default_template
 from lib.PipeUtil import get_file_info, fetch_url, load_json_file, save_json_file
 import os
 import time
+import datetime
 #con = sqlite3.connect(station_id + "_ALLSKY.db")
 #con.row_factory = sqlite3.Row
 #cur = con.cursor()
@@ -140,8 +141,12 @@ def network_map(station_id, json_conf):
 
 def network_meteors(station_id,json_conf,in_data):
    rand = str(time.time())[0:-5]
-   url = "https://archive.allsky.tv" + in_data['day']  + "?" + rand
-           
+   if in_data['day'] is None:
+      in_data['day'] = (datetime.datetime.now() - datetime.timedelta(days=1)).strftime("%Y_%m_%d")
+   y,m,d = in_data['day'].split("_")
+   
+   url = "https://archive.allsky.tv/EVENTS/" + y + "/" + m + "/" + d + "/" + in_data['day']  + "_ALL_EVENTS.json?" + rand
+   print("URL", url)        
    out = fetch_url(url)
 
    out = out.replace("F:/", "/NETWORK/METEORS/" + station_id + "?day=")

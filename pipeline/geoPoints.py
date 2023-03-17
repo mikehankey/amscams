@@ -84,10 +84,10 @@ for st in stations:
 
             url = "https://archive.allsky.tv/" + station_id + "/LATEST/" + zcam + ".jpg"
             response = requests.head(url)
+            if station_id == "AMS152":
+               print(respopnse)
             if response is not None and "Last-Modified" in response.headers:
-               print(response.headers)
                content = response.headers['Last-Modified']
-
                el = content.split(",")
                tdate = el[1]
                last_pic_update_dt = datetime.datetime.strptime(tdate, " %d %b %Y %H:%M:%S GMT")
@@ -133,3 +133,6 @@ fpout = open("/mnt/ams2/aws-map-out.html", "w")
 fpout.write(map_temp)
 fpout.close()
 save_json_file(stations_check_file, stations_check)
+cmd = "scp -i /home/ams/pem/ALLSKYTV-EAST.pem /mnt/ams2/aws-map-out.html ubuntu@52.2.45.103:/home/ubuntu/allsky.com/htdocs/map.html"
+print(cmd)
+os.system(cmd)

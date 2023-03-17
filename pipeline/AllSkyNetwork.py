@@ -23,6 +23,12 @@ if len(sys.argv) < 1:
    ASN.help()
    exit()
 
+
+if cmd == "stations":
+   ASN.station_list()   
+if cmd == "stations_report":
+   ASN.station_report()   
+
 if cmd == "past_days":
    ASN.run_past_days()
 
