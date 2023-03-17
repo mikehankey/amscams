@@ -1704,8 +1704,7 @@ def refit_meteor_day(meteor_day, con, cur, json_conf):
             cmd = "./Process.py fireball " + ff.replace(".json", ".mp4")
             print(cmd)
             os.system(cmd)
-         mj = load_json_file(mjf)
-         if "refit" not in mj: 
+         if "refit" not in mj and "fireball_fail" not in mj : 
             print(cc, "REFIT", mj.keys())
             refit_meteor(ff, con, cur, json_conf)
          else:
