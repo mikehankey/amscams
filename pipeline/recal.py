@@ -1700,7 +1700,7 @@ def refit_meteor_day(meteor_day, con, cur, json_conf):
             mfd = mjr['meteor_frame_data']
          else:
             mfd = []
-         if os.path.exists(mjrf) is False or len(mfd) == 0 and "fireball_fail" not in mj:
+         if (os.path.exists(mjrf) is False or len(mfd) == 0) and "fireball_fail" not in mj:
             cmd = "./Process.py fireball " + ff.replace(".json", ".mp4")
             print(cmd)
             os.system(cmd)
