@@ -1696,10 +1696,11 @@ def refit_meteor_day(meteor_day, con, cur, json_conf):
          mjrf = mjf.replace(".json", "-reduced.json")
          if os.path.exists(mjrf) is True:
             mjr = load_json_file(mjrf)
+            mj = load_json_file(mjr)
             mfd = mjr['meteor_frame_data']
          else:
             mfd = []
-         if os.path.exists(mjrf) is False or len(mfd) == 0:
+         if os.path.exists(mjrf) is False or len(mfd) == 0 and "fireball_fail" not in mj:
             cmd = "./Process.py fireball " + ff.replace(".json", ".mp4")
             print(cmd)
             os.system(cmd)
@@ -10528,7 +10529,7 @@ if __name__ == "__main__":
       print("Ok to run!")
 
    running = check_running("recal.py ")
-   if running > 2:
+   if running > 2 and sys.argv[1] != "refit_meteor":
       print("ALREADY RUNNING:", running)
       cmd = "echo " + str(running) + " >x"
       os.system(cmd)
@@ -10539,6 +10540,7 @@ if __name__ == "__main__":
          print(cmd)
          os.system(cmd)
       else:
+         print("AUTO KILLED")
          exit()
 
 

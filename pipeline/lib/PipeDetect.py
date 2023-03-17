@@ -2517,6 +2517,7 @@ def fireball(video_file, json_conf, nomask=0):
                   jdata['cp']['x_poly_fwd'] = jdata['cp']['x_poly_fwd'].tolist()
                   jdata['cp']['y_poly_fwd'] = jdata['cp']['y_poly_fwd'].tolist()
 
+      jdata['fireball_fail'] = True
       save_json_file(jsf, jdata)
       print("No meteor detected.", jsf)
       return()
