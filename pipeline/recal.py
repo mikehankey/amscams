@@ -1881,9 +1881,11 @@ def refit_meteor(meteor_file, con, cur, json_conf, mcp = None, last_best_dict = 
 
       if mj['cp']['total_res_px'] > 15:
          # res is too high, use the default
+         if default_cp is None:
+            return()
          mj['cp'] = default_cp #get_default_cal_for_file(cam_id, meteor_file, None, con, cur, json_conf)
-      
-         print("USING DEFAULT CP! RES HIGH", mj['cp']['total_res_px'])
+         if "total_res_px" in mj['cp']: 
+            print("USING DEFAULT CP! RES HIGH", mj['cp']['total_res_px'])
          print("OK")
 
 
