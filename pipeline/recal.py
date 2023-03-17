@@ -1768,6 +1768,8 @@ def refit_meteor(meteor_file, con, cur, json_conf, mcp = None, last_best_dict = 
       if os.path.exists(mcp_file) == 1:
          mcp = load_json_file(mcp_file)
          # reset mcp if it is bad
+         if "x_fun" not in mcp :
+            mcp = None
          if mcp['x_fun'] > 5:
             mcp = None
 
