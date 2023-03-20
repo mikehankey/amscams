@@ -1697,8 +1697,15 @@ def refit_meteor_day(meteor_day, con, cur, json_conf):
          if os.path.exists(mjf) is True:
             mj = load_json_file(mjf)
          if os.path.exists(mjrf) is True:
-            mjr = load_json_file(mjrf)
-            mfd = mjr['meteor_frame_data']
+            try:
+               mjr = load_json_file(mjrf)
+               mfd = mjr['meteor_frame_data']
+            except:
+               cmd = "rm " + mjrf
+               print(cmd)
+               os.system(cmd)
+             
+               mfd = []
          else:
             mfd = []
          if (os.path.exists(mjrf) is False or len(mfd) == 0) and "fireball_fail" not in mj:
