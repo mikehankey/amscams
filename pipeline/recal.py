@@ -1983,11 +1983,12 @@ def refit_meteor(meteor_file, con, cur, json_conf, mcp = None, last_best_dict = 
          mjr = update_mfd(meteor_file, mjr, mj['cp'])
          print("UPDATED RED DATA")
          cp = mj['cp']
-         if isinstance(cp['x_poly'], list) is not True:
-            cp['x_poly'] = x_poly.tolist()
-            cp['y_poly'] = x_poly.tolist()
-            cp['x_poly_fwd'] = x_poly.tolist()
-            cp['y_poly_fwd'] = x_poly.tolist()
+         if "x_poly" in cp:
+            if isinstance(cp['x_poly'], list) is not True:
+               cp['x_poly'] = x_poly.tolist()
+               cp['y_poly'] = x_poly.tolist()
+               cp['x_poly_fwd'] = x_poly.tolist()
+               cp['y_poly_fwd'] = x_poly.tolist()
          mjr['cal_params']  = cp
          save_json_file(red_json_file, mjr)
 
