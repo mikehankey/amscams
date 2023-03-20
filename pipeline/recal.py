@@ -1985,10 +1985,10 @@ def refit_meteor(meteor_file, con, cur, json_conf, mcp = None, last_best_dict = 
          cp = mj['cp']
          if "x_poly" in cp:
             if isinstance(cp['x_poly'], list) is not True:
-               cp['x_poly'] = x_poly.tolist()
-               cp['y_poly'] = x_poly.tolist()
-               cp['x_poly_fwd'] = x_poly.tolist()
-               cp['y_poly_fwd'] = x_poly.tolist()
+               cp['x_poly'] = cp['x_poly'].tolist()
+               cp['y_poly'] = cp['y_poly'].tolist()
+               cp['x_poly_fwd'] = cp['x_poly_fwd'].tolist()
+               cp['y_poly_fwd'] = cp['y_poly_fwd'].tolist()
          mjr['cal_params']  = cp
          save_json_file(red_json_file, mjr)
 
@@ -2498,9 +2498,9 @@ def minimize_fov(cal_file, cal_params, image_file,img,json_conf,zero_poly=False,
 
    if isinstance(cal_params['x_poly'], list) is not True:
       cal_params['x_poly'] = x_poly.tolist()
-      cal_params['y_poly'] = x_poly.tolist()
-      cal_params['x_poly_fwd'] = x_poly.tolist()
-      cal_params['y_poly_fwd'] = x_poly.tolist()
+      cal_params['y_poly'] = y_poly.tolist()
+      cal_params['x_poly_fwd'] = x_poly_fwd.tolist()
+      cal_params['y_poly_fwd'] = y_poly_fwd.tolist()
 
    adj_az, adj_el, adj_pos, adj_px = res['x']
 
@@ -6644,8 +6644,8 @@ def recenter_fov(cal_fn, cal_params, cal_img, stars, json_conf, extra_text="", t
    if type(nc['x_poly']) is not list:
       nc['x_poly'] = nc['x_poly'].tolist()
       nc['y_poly'] = nc['y_poly'].tolist()
-      nc['y_poly_fwd'] = nc['y_poly_fwd'].tolist()
       nc['x_poly_fwd'] = nc['x_poly_fwd'].tolist()
+      nc['y_poly_fwd'] = nc['y_poly_fwd'].tolist()
    az = np.float64(cal_params['center_az'])
    el = np.float64(cal_params['center_el'])
    pos = np.float64(cal_params['position_angle'])
@@ -7416,8 +7416,8 @@ def update_calibration_file(cal_fn, cal_params, con,cur,json_conf,mcp):
    if type(cal_params['x_poly']) is not list:
       cal_params['x_poly'] = cal_params['x_poly'].tolist()
       cal_params['y_poly'] = cal_params['y_poly'].tolist()
-      cal_params['y_poly_fwd'] = cal_params['y_poly_fwd'].tolist()
       cal_params['x_poly_fwd'] = cal_params['x_poly_fwd'].tolist()
+      cal_params['y_poly_fwd'] = cal_params['y_poly_fwd'].tolist()
 
    if mcp is None:
       cv = 1
