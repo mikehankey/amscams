@@ -136,15 +136,6 @@ def run_jobs(json_conf):
    yest = (datetime.now() - dt.timedelta(days = 1)).strftime("%Y_%m_%d")
    year,month, day = today.split("_")
 
-   # this will only run 1x for each file and then only on new files. 
-   running = check_running("refit_meteor_year")
-   print("Refit meteor year", running)
-   if int(running) == 0:
-      cmd = "./recal.py refit_meteor_year " + year + " > /dev/null 2>&1 &"
-      print(cmd)
-      os.system(cmd)
-   else:
-      print("Refit meteor year is running already in the background... ", running)
 
    os.system("killall flex-detect.py")
    rj_start = time.time()
@@ -368,6 +359,29 @@ def run_jobs(json_conf):
    cmd = "./log.py '" + msg + "'"
    #os.system(cmd)
    rj_elp = time.time() - rj_start
+
+
+   cmd = "./recal.py refit_meteor_day " + today
+   print(cmd)
+   os.system(cmd)
+
+   cmd = "./recal.py refit_meteor_day " + yest 
+   print(cmd)
+   os.system(cmd)
+
+
+
+   # this will only run 1x for each file and then only on new files. 
+   running = check_running("refit_meteor_year")
+   print("Refit meteor year", running)
+   if int(running) == 0:
+      cmd = "./recal.py refit_meteor_year " + year + " > /dev/null 2>&1 &"
+      print(cmd)
+      os.system(cmd)
+   else:
+      print("Refit meteor year is running already in the background... ", running)
+
+
    print("RJ ELP:", rj_elp)
    cmd = "echo 'elapsed run time: " + str(rj_elp) + " ' >> /home/ams/run_jobs.txt "
    os.system(cmd)

@@ -26,8 +26,8 @@ if len(sys.argv) < 1:
 
 if cmd == "stations":
    ASN.station_list()   
-if cmd == "stations_report":
-   ASN.station_report()   
+if cmd == "station_report":
+   ASN.station_report(sys.argv[2])   
 
 if cmd == "past_days":
    ASN.run_past_days()
@@ -317,13 +317,14 @@ if cmd == "do_all":
    print(cmd)
    os.system(cmd)
 
-   cmd = "python3 PLT.py plot_all_rad " + date 
+   cmd = "python3 PLT.py all_rad " + date 
    print(cmd)
    os.system(cmd)
 
    cmd = "/usr/bin/python3 solveWMPL.py vida_plots " + date 
    print(cmd)
    os.system(cmd)
+
 
    ## make data table 
    #cmd = "python3 solveWMPL.py vida_plots " + date 

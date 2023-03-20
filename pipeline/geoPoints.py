@@ -9,6 +9,9 @@ from lib.PipeUtil import load_json_file, save_json_file, get_template
 map_temp = get_template("aws-map-template.html")
 stations_file = "/mnt/f/EVENTS/ALL_STATIONS.json"
 stations_check_file = "/mnt/f/EVENTS/LAST_STATIONS_CHECK.json"
+latest_geojson_file = "/mnt/f/EVENTS/LATEST.geo"
+today = datetime.datetime.now().strftime("%Y_%m_%d")
+
 stations = load_json_file(stations_file)
 if os.path.exists(stations_check_file) is True:
    stations_check = load_json_file(stations_check_file)
@@ -19,6 +22,7 @@ all_points = []
 for st in stations:
    station_id = st['station_id']
    op_status = st['op_status']
+   latest_url = "/mnt/archive.allsky.tv/" + station_id + "/LATEST/" + today + "/"
    if op_status != 'ACTIVE':
       continue
 
@@ -78,6 +82,7 @@ for st in stations:
       else:
          zcam = "none" 
 
+      # get / check latest picture header
       if doit is True :
          try:
          #if True:
@@ -133,6 +138,8 @@ fpout = open("/mnt/ams2/aws-map-out.html", "w")
 fpout.write(map_temp)
 fpout.close()
 save_json_file(stations_check_file, stations_check)
+save_json_file(latest_geojson_file, jdata)
+
 cmd = "scp -i /home/ams/pem/ALLSKYTV-EAST.pem /mnt/ams2/aws-map-out.html ubuntu@52.2.45.103:/home/ubuntu/allsky.com/htdocs/map.html"
 print(cmd)
 os.system(cmd)

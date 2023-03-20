@@ -2384,6 +2384,8 @@ class EventRunner():
       c = 0
       #for key in oi_keys:
       for row in all_obs:
+         if "meteor_frame_data" not in row:
+            continue
          #key = key.replace("OI:", "")
          print(row)
          val = {}

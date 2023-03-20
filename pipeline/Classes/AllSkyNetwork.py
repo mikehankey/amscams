@@ -98,8 +98,15 @@ class AllSkyNetwork():
       self.load_reconcile_stations()
       self.help()
 
-   def station_report(self):
+   def station_report(self, date):
+      input("STATION REPORT")
       all_stations = load_json_file("host_response.json")
+      self.set_dates(date)
+      ae = load_json_file(self.all_events_file)
+      print(len(ae))
+      exit()
+      for row in ae:
+         print(row)
       for station_id in all_stations:
          d = all_stations[station_id]
          if d['op_status'] == "ACTIVE":
@@ -1889,6 +1896,8 @@ class AllSkyNetwork():
 
 
          temp_ev_id = obs['sd_video_file'][0:16]
+         if "meteor_frame_data" not in obs:
+            continue
          datetimes = [row[0] for row in obs['meteor_frame_data']]
          fns = [row[1] for row in obs['meteor_frame_data']]
          xs = [row[2] for row in obs['meteor_frame_data']]
