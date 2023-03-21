@@ -369,6 +369,10 @@ def run_jobs(json_conf):
    print(cmd)
    os.system(cmd)
 
+   cmd = "python3 indexLatest.py"
+   print(cmd)
+   os.system(cmd)
+
 
 
    # this will only run 1x for each file and then only on new files. 
