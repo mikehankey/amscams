@@ -17,6 +17,13 @@ def stacks_main(amsid, data) :
       return("Problem: main index file doesn't exist. ")
    stats_data = load_json_file(json_file)
 
+   del_cams = [] 
+   for cam in json_conf['cameras']:
+      print(cam, json_conf['cameras'][cam])
+      if "status" in json_conf['cameras'][cam]:
+         if json_conf['cameras'][cam]['status'] == "disabled":
+            del_cams.append(cam)
+
    if data['stack_type'] is not None:
       stack_type = data['stack_type']
       json_conf['stack_type'] = stack_type
@@ -103,6 +110,7 @@ def stacks_main(amsid, data) :
 
          for cam in json_conf['cameras']:
             cams_id = json_conf['cameras'][cam]['cams_id']
+            print(json_conf['cameras'][cam])
             if "status" in json_conf['cameras'][cam]:
                if json_conf['cameras'][cam]['status'] == "disabled":
                   continue
@@ -314,6 +322,14 @@ def stacks_hour(amsid, day, hour):
       stack_files.append(dsf)
    min_files = {}
    template = make_default_template(amsid, "super_stacks_main.html", json_conf)
+
+   del_cams = []
+   for cam in json_conf['cameras']:
+      print(cam, json_conf['cameras'][cam])
+      if "status" in json_conf['cameras'][cam]:
+         if json_conf['cameras'][cam]['status'] == "disabled":
+            del_cams.append(cam)
+
    for sf in sorted(stack_files, reverse=False):
       if "trim" in sf or "crop" in sf:
          continue
@@ -329,6 +345,8 @@ def stacks_hour(amsid, day, hour):
       if min not in min_files:
          min_files[min] = {}
          for cam_num in sorted(json_conf['cameras']):
+            if cam_num in del_cams:
+               continue
             cams_id = json_conf['cameras'][cam_num]['cams_id']
             min_files[min][cams_id] = ""
       min_files[min][cam] = vsimg 
