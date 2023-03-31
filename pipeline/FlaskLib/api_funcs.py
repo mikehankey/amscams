@@ -426,6 +426,7 @@ def show_cat_stars (video_file, hd_stack_file, points):
       print(cp['x_poly'])
       if "hd_stack" in mj:
          hd_img = cv2.imread(mj['hd_stack'], 0)
+         hd_img = cv2.resize(hd_img,(1920,1080))
          print("HD IMG:", mj['hd_stack'])
          print("HD IMG:", hd_img.shape)
       if "short_bright_stars" in cp:
@@ -446,6 +447,7 @@ def show_cat_stars (video_file, hd_stack_file, points):
       cpf = cps[0]
       cp = load_json_file(cpf)
       hd_img = cv2.imread(stack_file, 0)
+      hd_img = cv2.resize(hd_img,(1920,1080))
    
    if hd_img is None:
       hd_img = cv2.imread(stack_file, 0)
