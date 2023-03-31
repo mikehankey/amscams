@@ -790,7 +790,7 @@ def cal_health(con, cur, json_conf):
       selected_cam = cam_nums[scam_num]
       print("SELECTED CAMERA:", selected_cam)
    else:
-      selected_cam is None
+      selected_cam = None
       print("No custom command selected in time.")
       print("Auto running jobs:")
       for job in jobs:
