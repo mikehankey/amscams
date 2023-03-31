@@ -103,6 +103,9 @@ def stacks_main(amsid, data) :
 
          for cam in json_conf['cameras']:
             cams_id = json_conf['cameras'][cam]['cams_id']
+            if "status" in json_conf['cameras'][cam]:
+               if json_conf['cameras'][cam]['status'] = "disabled":
+                  continue
             night_stack_file = vdir + "/" + cams_id + "-night-stack.jpg"
             print("NIGHT STACK FILE!", night_stack_file)
             if cfe("/mnt/ams2/" + night_stack_file) == 0:
