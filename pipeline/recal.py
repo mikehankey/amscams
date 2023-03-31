@@ -655,7 +655,11 @@ def cal_health(con, cur, json_conf):
    for cal_file in freecal_index:
       d = freecal_index[cal_file]
       # check for bad vals
-      nanres = np.isnan(d['total_res_px'])
+      if "total_res_px" in d:
+         nanres = np.isnan(d['total_res_px'])
+      else:
+         print(cal_file, "missing res!")
+         exit()
       cal_fn = cal_file.split("/")[-1]
       if nanres == True or type(d['total_res_px']) == str or d['total_res_px'] == "": 
          print("BAD RES", d)
@@ -786,6 +790,7 @@ def cal_health(con, cur, json_conf):
       selected_cam = cam_nums[scam_num]
       print("SELECTED CAMERA:", selected_cam)
    else:
+      selected_cam is None
       print("No custom command selected in time.")
       print("Auto running jobs:")
       for job in jobs:
@@ -797,7 +802,8 @@ def cal_health(con, cur, json_conf):
          if job[0] == "fast_lens":
             limit = 20 
             fast_lens(cam_id, con, cur, json_conf,limit, None)
-            lens_model(cam_id, con, cur, json_conf )
+            # only do this if the result from fast lens is really bad
+            #lens_model(cam_id, con, cur, json_conf )
 
          if job[0] == "refit_avg":
             batch_apply(cam_id, con, cur, json_conf, None, False, cam_stats, "AVG", 10)
@@ -805,7 +811,8 @@ def cal_health(con, cur, json_conf):
             batch_apply(cam_id, con, cur, json_conf, None, False, cam_stats, "BEST",10)
          if job[0] == "refit_bad":
             batch_apply(cam_id, con, cur, json_conf, None, False, cam_stats, "BAD",10)
-
+      print("Done auto cal health jobs")
+      exit()
 
 
    cam_menu(selected_cam, con, cur, json_conf,cam_status, cam_stats)
@@ -1695,7 +1702,11 @@ def refit_meteor_day(meteor_day, con, cur, json_conf):
       if os.path.exists(mjf) :
          mjrf = mjf.replace(".json", "-reduced.json")
          if os.path.exists(mjf) is True:
-            mj = load_json_file(mjf)
+            try:
+               mj = load_json_file(mjf)
+            except:
+               print("Problem! with", mjf )
+               continue
          if os.path.exists(mjrf) is True:
             try:
                mjr = load_json_file(mjrf)
@@ -2022,6 +2033,18 @@ def refit_meteor(meteor_file, con, cur, json_conf, mcp = None, last_best_dict = 
    # cp = get_default_cal_for_file(meteor_file, median_frame.copy(), con, cur, json_conf)
 
    # update json / web api so page is up to date
+   if video_file is None:
+      print("VIDEO FILE IS NONE!", meteor_file)
+      video_file = meteor_file.replace(".json", ".mp4")
+      mdir = "/mnt/ams2/meteors/" + video_file[0:10] + "/"
+      mj['sd_video_file'] = mdir + video_file 
+      video_file = mdir + video_file 
+      mjf = video_file.replace(".mp4", ".json")
+      save_json_file(mjf, mj)
+      print(video_file)
+      input("WHAT NOW" )
+      #return(mj)
+
    print(video_file, mj.keys())
    show_cat_stars (video_file, hd_stack_file, point_str)
    
@@ -10714,8 +10737,9 @@ if __name__ == "__main__":
       if cam_id == "ALL" or cam_id == "all":
          for cam_num in json_conf['cameras']:
             cam_id = json_conf['cameras'][cam_num]['cams_id']
-            cmd = "python3 recal.py batch_apply {}".format(cam_id)
-            os.system(cmd)
+            #cmd = "python3 recal.py batch_apply {}".format(cam_id)
+            #os.system(cmd)
+            batch_apply(cam_id, con, cur, json_conf, None, True)
 
       else:
          if len(sys.argv) > 3:
