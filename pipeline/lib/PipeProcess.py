@@ -139,6 +139,7 @@ def run_jobs(json_conf):
 
    os.system("killall flex-detect.py")
    rj_start = time.time()
+
    # make sure DynaDB is not already running. If it is kill it.
    running = check_running("DynaDB.py")
    if running > 0:
@@ -146,7 +147,6 @@ def run_jobs(json_conf):
    running = check_running("rerun.py")
    if running > 0:
       os.system("kill -9 $(ps aux | grep 'DynaDB' | awk '{print $2}')")
-
 
    # log heartbeat with network
    msg = "info:run_jobs:Run jobs started"
@@ -157,14 +157,12 @@ def run_jobs(json_conf):
       print("Already running.")
       return()
 
-
-
    three_day = (datetime.now() - dt.timedelta(days = 2)).strftime("%Y_%m_%d")
    four_day = (datetime.now() - dt.timedelta(days = 3)).strftime("%Y_%m_%d")
    five_day = (datetime.now() - dt.timedelta(days = 4)).strftime("%Y_%m_%d")
    six_day = (datetime.now() - dt.timedelta(days = 5)).strftime("%Y_%m_%d")
    sun, az, alt = day_or_night(datetime.now(), json_conf, 1)
-   print(sun, az, alt)
+   print("Sun location:", sun, az, alt)
 
    # update from git hub(Change to work 1x per x hours)
    print("CHECK CODE UPDATES.")
@@ -184,6 +182,7 @@ def run_jobs(json_conf):
    if update_code == 1:
 
       gitpull(json_conf)
+      #os.system("./gitpull.py")
 
 
    # Sync cal files to the cloud as needed
@@ -303,7 +302,8 @@ def run_jobs(json_conf):
    #cmds.append(('day', "(Fixup any bad cal files)", "cd /home/ams/amscams/pipeline; ./Process.py refit_all all bad "))
    cmds.append(('all', "Run Calibs (if daytime)", "cd /home/ams/amscams/pipeline; ./Process.py ca"))
    cmds.append(('all', "Cal Status", "cd /home/ams/amscams/pipeline; ./recal.py status all "))
-   cmds.append(('all', "Batch Apply Bad", "cd /home/ams/amscams/pipeline; ./recal.py batch_apply_bad all 20"))
+
+   cmds.append(('all', "Batch Apply Bad", "cd /home/ams/amscams/pipeline; ./recal.py batch_apply_bad all 10"))
    #cmds.append(('day', "Super Cal", "cd /home/ams/amscams/pipeline; ./Process.py super_cal"))
    #cmds.append(('all', "Run Master Stacks for Current Night", "cd /home/ams/amscams/pythonv2; ./batchJobs.py sna 1"))
 
@@ -373,6 +373,14 @@ def run_jobs(json_conf):
    print(cmd)
    os.system(cmd)
 
+   running = check_running("cal_health")
+   print("Cal Health Running?", running)
+   if int(running) == 0:
+      cmd = "./recal.py cal_health all > /dev/null 2>&1 "
+      print(cmd)
+      os.system(cmd)
+   else:
+      print("Cal health is already running already in the background... ", running)
 
 
    # this will only run 1x for each file and then only on new files. 
@@ -384,6 +392,8 @@ def run_jobs(json_conf):
       os.system(cmd)
    else:
       print("Refit meteor year is running already in the background... ", running)
+
+
 
 
    print("RJ ELP:", rj_elp)

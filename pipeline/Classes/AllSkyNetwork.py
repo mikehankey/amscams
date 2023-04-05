@@ -34,7 +34,7 @@ import simplejson as json
 import os, select, sys
 import shutil
 import platform
-from lib.PipeUtil import load_json_file, save_json_file, get_trim_num, convert_filename_to_date_cam, starttime_from_file, dist_between_two_points, get_file_info, calc_dist, check_running, mfd_roi
+from lib.PipeUtil import load_json_file, save_json_file, get_trim_num, convert_filename_to_date_cam, starttime_from_file, dist_between_two_points, get_file_info, calc_dist, check_running, mfd_roi, bound_cnt, focus_area
 from lib.intersecting_planes import intersecting_planes
 from DynaDB import search_events, insert_meteor_event, delete_event, get_obs, update_dyna_table, delete_obs
 from ransac_lib import ransac_outliers
@@ -98,12 +98,55 @@ class AllSkyNetwork():
       self.load_reconcile_stations()
       self.help()
 
+   def make_event_preview_images(self, date):
+      # for each event, pic the best obs (longest or highest intensity)
+      # make an roi crop of the meteor from that obs
+      # save it in the event dir as event_id.jpg
+      # copy to archive.allsky.tv event dir
+      self.set_dates(date)
+      ae = load_json_file(self.all_events_file)
+      for row in ae:
+         eid = row['event_id']
+         obs = []
+         ev_dir = self.local_evdir + eid + "/"
+         cloud_ev_dir = self.cloud_evdir + eid + "/"
+         ev_file = ev_dir + eid + ".jpg"
+         cloud_ev_file = ev_dir + eid + ".jpg"
+         for i in range(0, len(row['stations'])):
+            obs_id = row['stations'][i] + "_" + row['files'][i].replace(".mp4", "")
+            dur = len(row['start_datetime'][i])
+            cloud_url, prev_file = self.obs_id_to_img_url(obs_id)
+
+            obs.append((obs_id, cloud_url, prev_file, dur))
+         obs = sorted(obs, key=lambda x: x[3], reverse=True)
+         prev_file = obs[0][2]
+         cloud_url = obs[0][1]
+
+         
+
+         if os.path.exists(ev_file) is False:
+            # first see if the ROI file already exists
+            
+            cmd = "wget " + cloud_url + " -O " + ev_file
+            print(cmd)
+            os.system(cmd)
+
+         print("TRYING:", ev_file)
+         try:
+            img = cv2.imread(ev_file)
+            cv2.imshow('pepe', img)
+            cv2.waitKey(0)
+         except:
+            print(eid, obs[0][2]) 
+            print("FAILED TO GET :" + ev_file)
+
    def station_report(self, date):
       input("STATION REPORT")
       all_stations = load_json_file("host_response.json")
       self.set_dates(date)
       ae = load_json_file(self.all_events_file)
       print(len(ae))
+      print("SSS")
       exit()
       for row in ae:
          print(row)
@@ -202,7 +245,8 @@ class AllSkyNetwork():
             print("   VPN", cmd)
             if ":" not in vpn:
                try:
-                  output = subprocess.check_output(cmd, shell=True).decode("utf-8")
+                  #output = subprocess.check_output(cmd, shell=True).decode("utf-8")
+                  print("DISABLED:", cmd)
                except:
                   output = "NOLOGIN"
             else:
@@ -211,7 +255,8 @@ class AllSkyNetwork():
             cmd = "ssh -o ConnectTimeout=10 " + hostname + " \"" + rcmd + "\""
             print("   HOST", cmd)
             try:
-               output = subprocess.check_output(cmd, shell=True).decode("utf-8")
+               #output = subprocess.check_output(cmd, shell=True).decode("utf-8")
+               print("DISABLED:", cmd)
             except:
                output = "NOLOGIN"
          else:
@@ -231,8 +276,69 @@ class AllSkyNetwork():
             responses[station_id]['operator_name'] = "unknown"
          responses[station_id]['hostname'] = hostname
          responses[station_id]['vpn_ip'] = vpn
-      save_json_file("host_response.json", responses)
+      save_json_file("hosts.json", responses)
       print("Saved host_response.json")
+
+   def admin_event_links(self, event_id):
+
+      import webbrowser
+
+      # list for event edit links
+      self.event_id = event_id
+      self.sync_log = {}
+      stack_imgs = []
+      hosts = load_json_file("hosts.json")
+
+      # convert id to date
+      event_day = self.event_id_to_date(event_id)
+      self.set_dates(event_day)
+      # MEDIA -- get media files from remote stations or wasabi
+      local_event_dir = "/mnt/f/EVENTS/" + self.year + "/" + self.month + "/" + self.dom + "/" + self.event_id + "/"
+      event_file = local_event_dir + event_id + "_OBS_DATA.json"
+      good_obs_file = local_event_dir + event_id + "_GOOD_OBS.json"
+
+      if os.path.exists(event_file) is True:
+         evd = load_json_file(event_file)
+      elif os.path.exists(good_obs_file) is True:
+         evd = []
+         good_obs = load_json_file(good_obs_file)
+         for st in good_obs:
+            for vf in good_obs[st]:
+               oid = st + "_" + vf.replace(".mp4", "")
+               evd.append(oid)
+
+      else:
+         print("NO OBS FILES FOUND!", event_file, good_obs_file)
+      c = 0
+      list_html = ""
+      for obs_id in sorted(evd):
+         station_id = obs_id.split("_")[0]
+         vid_file = obs_id.replace(station_id + "_", "")
+         if station_id in hosts:
+            host = hosts[station_id]['hostname'] 
+            vpn_ip = hosts[station_id]['vpn_ip'] 
+            print(station_id, host, vpn_ip, obs_id)
+            if host != "":
+               link = "https://" + host + "/meteor/" + station_id + "/" + vid_file[0:10] + "/" + vid_file + ".mp4/"
+            elif vpn_ip != "":
+               link = "https://" + vpn_ip + "/meteor/" + station_id + "/" + vid_file[0:10] + "/" + vid_file + ".mp4/"
+         else:
+            print(station_id, "NOT IN HOSTS")
+            link = station_id + " - No admin edit link"
+         print(link)
+         list_html += "<li>{:s}<a href={:s}>{:s}</a>\n".format(station_id, link, link)
+         if c == 0:
+            #webbrowser.open(link) # To open new window
+            print("OPEN NEW", link)
+         else:
+            #webbrowser.open_new_tab(link) # To open new window
+            print("TAB ", link)
+         c+= 1
+      fp = open("/mnt/f/temp.html", "w")
+      fp.write(list_html)
+      fp.close()
+      webbrowser.open("F:/temp.html") # To open new window
+      print(list_html)
 
    def filter_bad_detects(self, date):
 
@@ -458,7 +564,6 @@ class AllSkyNetwork():
 
 
       #print("EXIT EARLY")
-      #exit()
 
       for station_id in self.dyna_stations:
          row = self.dyna_stations[station_id] 
@@ -938,6 +1043,13 @@ class AllSkyNetwork():
          self.make_obs_dict()
          self.obs_dict = load_json_file(self.local_evdir + "/" + self.date + "_OBS_DICT.json")
       print("OBS DICT:", len(self.obs_dict))
+      
+      # load events for day
+      if os.path.exists(self.all_events_file) is True:
+         self.all_events = load_json_file(self.all_events_file)
+      else:
+         self.all_events = []
+
 
    def validate_events(self, date):
       event_day = date
@@ -1940,7 +2052,7 @@ class AllSkyNetwork():
                    lats, lons, event_status, run_date, run_times
               FROM events
              WHERE event_id like ?
-               AND event_status like 'FAIL%'
+               AND ( event_status like 'FAIL%' OR event_status like '%BAD%')
           ORDER BY event_id desc
       """
       print(sql)
@@ -2422,7 +2534,6 @@ class AllSkyNetwork():
 
       print("All media downloaded. Ready to review events.")
 
-      #exit()
       for row in rows:
          event_id = row[0]
          print("Get event media for :", event_id)
@@ -2450,9 +2561,10 @@ class AllSkyNetwork():
 
          if review_image is not None:
             cv2.imshow("pepe", review_image)
-            cv2.waitKey(90)
+            cv2.waitKey(30)
          else:
             print("REVIEW IMAGE IS NONE!", review_image)
+            input("ERROR")
          print("OK1")
 
    def get_event_media(self, event_id):
@@ -2548,7 +2660,7 @@ class AllSkyNetwork():
       wget_cmds = []
       if obs_data is not None:
          for station in obs_data:
-            print(station)
+            print("GET MEDIA FOR ", station)
             cloud_meteor_dir = "/mnt/archive.allsky.tv/" + station + "/METEORS/" + self.year + "/" + self.date + "/" 
             cloud_files_file = local_event_dir + station + "_CLOUDFILES.json"
             cloud_cal_dir = "/mnt/archive.allsky.tv/" + station + "/CAL/" 
@@ -2560,7 +2672,13 @@ class AllSkyNetwork():
                   cloud_files = []
                save_json_file(cloud_files_file, cloud_files)
             else:
-               cloud_files = load_json_file(cloud_files_file)
+               sz, td = get_file_info(cloud_files_file)
+               print("TD", td / 60, "hours old")
+               if td / 60 > 10:
+                  cloud_files = os.listdir(cloud_meteor_dir) 
+                  save_json_file(cloud_files_file, cloud_files)
+               else:    
+                  cloud_files = load_json_file(cloud_files_file)
 
             for ofile in obs_data[station]:
                skip_remote = 0
@@ -2587,7 +2705,7 @@ class AllSkyNetwork():
                if skip_remote == 0:
                   rjson = self.rurls[station] + "/meteors/" + self.date +  "/" + json_file 
                   rred= self.rurls[station] + "/meteors/" + self.date +  "/" + red_json_file 
-
+               cloud_dir = "/mnt/archive.allsky.tv/" + station + "/METEORS/" + self.date.split("_")[0] + "/" + self.date + "/" 
         
                # POOLING WGETS! 
 
@@ -2617,14 +2735,41 @@ class AllSkyNetwork():
                #   print("Already have the file?")
 
                # we only need the mp4 file -- everything else can be made
+               local_file_ok = False
+               if os.path.exists( local_event_dir + "/" + out_file) is True:
+                  sz, td =  get_file_info(local_event_dir + "/" + out_file)
+                  if sz > 0:
+                     local_file_ok = True
+                     print("LOCAL FILE OK")
+                  else:
+                     print("LOCAL FILE NOT OK", local_event_dir + "/" + out_file)
+                     os.system("rm " + local_event_dir + "/" + out_file)
 
-               if skip_remote == 0 and os.path.exists( local_event_dir + "/" + out_file) is False and os.path.exists( local_event_dir + "/" + out_file + ".failed") is False:
-                  cmd = "wget " + rmp4 + "  --timeout=1 --waitretry=0 --tries=1 --no-check-certificate -O " + local_event_dir + "/" + out_file
-                  #print(cmd)
-                  #os.system(cmd)
-                  wget_cmds.append(cmd)
-                  if os.path.exists( local_event_dir + "/" + out_file) is False:
-                     cmd = "touch " + local_event_dir + "/" + out_file + ".failed"
+               if local_file_ok is False and skip_remote == 0 and os.path.exists( local_event_dir + "/" + out_file) is False and os.path.exists( local_event_dir + "/" + out_file + ".failed") is False:
+
+                  # first try to get the file from the cloud dir!
+                  of1 = out_file.replace(".mp4", "-360p.mp4")
+                  of2 = out_file.replace(".mp4", "-180p.mp4")
+                  if of1 in cloud_files:
+                     print(of1, "found in cloudfiles!")
+                     cmd = "cp " + cloud_dir + of1 + " " + local_event_dir + "/" + out_file 
+                     print(cmd)
+                     os.system(cmd)
+                     #print("CLOUD FILES", out_file, cloud_files)
+                  elif of2 in cloud_files:
+                     print(of2, "found in cloudfiles!")
+                     cmd = "cp " + cloud_dir + of2 + " " + local_event_dir + "/" + out_file 
+                     print(cmd)
+                     os.system(cmd)
+                  else:
+
+                     cmd = "wget " + rmp4 + "  --timeout=1 --waitretry=0 --tries=1 --no-check-certificate -O " + local_event_dir + "/" + out_file
+                     #print(cmd)
+                     #os.system(cmd)
+                     wget_cmds.append(cmd)
+
+                  #if os.path.exists( local_event_dir + "/" + out_file) is False:
+                  #   cmd = "touch " + local_event_dir + "/" + out_file + ".failed"
                   #   os.system(cmd)
                else:
                   print("Already have the file?", local_event_dir + "/" + out_file)
@@ -2651,6 +2796,8 @@ class AllSkyNetwork():
       return(wget_cmds)
 
    def review_event(self, event_id):
+      cv2.namedWindow('pepe')
+      cv2.resizeWindow("pepe", 1920, 1080)
       # the purpose of this function is to JUST get the MEDIA files for the event being reviewed.
       # see review_event_step2 for the remaining 
 
@@ -2661,11 +2808,28 @@ class AllSkyNetwork():
 
       # convert id to date
       event_day = self.event_id_to_date(event_id)
-
+      self.set_dates(event_day)
       # MEDIA -- get media files from remote stations or wasabi
       local_event_dir = "/mnt/f/EVENTS/" + self.year + "/" + self.month + "/" + self.dom + "/" + self.event_id + "/" 
       wget_cmds = self.get_event_media(event_id)
       self.fast_cmds(wget_cmds)
+
+      ignore_file = local_event_dir + event_id + "_IGNORE.json"
+      if os.path.exists(ignore_file) is True:
+         ignore = load_json_file(ignore_file)
+      else:
+         ignore = []
+      self.ignore = ignore
+
+      dels = {}
+      for out_file in self.sd_clips:
+         print("OUTFILE", out_file)
+         for ig in ignore:
+            if ig in out_file:
+               dels[out_file] = 1
+      for x in dels :
+         del(self.sd_clips[x])
+         print("DELETE:", x)
 
          
       # MEDIA -- now load frames and make stacks as needed
@@ -2721,14 +2885,19 @@ class AllSkyNetwork():
       
 
       #self.update_all_obs_xys(event_id, self.sd_clips, local_event_dir)
-      exit()
+
 
    def get_media_urls(self, event_data, obs_data):
       print("DOWNLOAD MEDIA DAY")
 
 
    def obs_images_panel(self, map_img, event_data, obs_data, obs_imgs,marked_imgs):
+      print(len(obs_data))
+      print(len(obs_imgs))
+      print(len(marked_imgs))
 
+      # MRH LAST 3/30/23
+      # sort obs by longest and also remove dupes 
       # decide thumb size based on number of images! 
       if len(obs_imgs) <= 4:
          tw = int(1920/2) 
@@ -2748,7 +2917,29 @@ class AllSkyNetwork():
       gmimg = np.zeros((1080,1920,3),dtype=np.uint8)
       cc = 0
       rc = 0
+      dupes = {}
+      ranked_obs = []
       for obs_id in obs_imgs:
+         flen = len(obs_data[obs_id]['xs'])
+         ranked_obs.append((obs_id, flen))
+
+      ranked_obs = sorted(ranked_obs, key=lambda x: (x[1]), reverse=True)
+
+      for obs_id, flen in ranked_obs:
+         stid = obs_id.split("_")[0]
+         (f_datetime, cam_id, f_date_str,fy,fmin,fd, fh, fm, fs) = convert_filename_to_date_cam(obs_id.replace(stid + "_" , ""))
+         dkey = stid + "_" + cam_id 
+         if dkey in dupes:
+            print("DUPE!", dkey)
+            continue
+         else:
+            dupes[dkey] = 1
+
+
+         if obs_id + ".mp4" in self.obs_dict:
+            calib = self.obs_dict[obs_id + ".mp4"]['calib']
+            print("CALIB", calib)
+
          if obs_id not in obs_imgs:
             continue
          if obs_imgs[obs_id] is None:
@@ -2793,9 +2984,20 @@ class AllSkyNetwork():
          except:
             print(x1,y1,x2,y2)
          cv2.imshow('pepe', gmimg)
-         cv2.waitKey(90)
+         cv2.waitKey(60)
 
 
+
+      cv2.imshow('pepe', gmimg)
+      cv2.waitKey(0)
+
+      # remove dupes from obs imgs
+      print(type(obs_imgs))
+      for dk in dupes:
+         if dk in obs_imgs:
+            del obs_imgs[dk]
+
+      temp = []
 
       gallery_image = gimg
 
@@ -2893,7 +3095,7 @@ class AllSkyNetwork():
          y1 = 0
          y2 = 360
          i = 0
-         for key in obs_imgs:
+         for key,val in ranked_obs:
             obs_id = key
 
             rx1,ry1,rx2,ry2 = self.get_roi(obs_data[key]['xs'], obs_data[key]['ys'])
@@ -3120,6 +3322,187 @@ class AllSkyNetwork():
 
       return(obs_imgs, marked_imgs, roi_imgs, ai_imgs, obs_data)
 
+   def fetch_video(self, obs_id, output_dir):
+      # try to fetch available videos for an obs id and copy to local output dir 
+      # look in these spots in this order
+      # wasabi, then host (IP or VPN), then if all fail, make/log a "host request"
+      print("FETCH VIDEO")
+
+   def review_obs_frames(self, obs_data):
+
+      # review frame x,y positions to sanity check them (maybe fix)
+      for sd_vid in self.sd_clips:
+         if "frames" in self.sd_clips:
+            print("SD CLIP:", sd_vid, len(self.sd_clips[sd_vid]['frames']))
+         else:
+            print("SD CLIP:", sd_vid, 0, "FRAMES")
+
+     
+
+      for r in obs_data:
+         event_id, station_id, obs_id, fns, times, xs, ys, azs, els, ints, \
+            status, ignore, ai_confirmed, human_confirmed, ai_data, prev_uploaded,sd_vid_file = r
+         print("REVIEW OBS FRAMES:", sd_vid_file)
+
+         fd = {}
+         if len(fns) == 0:
+            print("ERROR: NO REDUCTION FOR OBS", obs_id, fns, xs, ys)
+         if sd_vid not in self.sd_clips:
+
+            self.sd_clips[sd_vid] = {}
+            print("SD CLIPS:", self.sd_clips.keys())
+            input("VID NOT IN SD CLIPS", sd_vid)
+         if "roi_frames" not in self.sd_clips[sd_vid]:
+            self.sd_clips[sd_vid]['roi_frames'] = []
+         if "tracking_frames" not in self.sd_clips[sd_vid]:
+            self.sd_clips[sd_vid]['tracking_frames'] = []
+
+         for i in range(0,len(fns)):
+            fn = int(fns[i])
+            fd[fn] = {}
+            print("XS", i, times[i], xs[i])
+            fd[fn]['time'] = times[i]
+            fd[fn]['x'] = xs[i]
+            fd[fn]['y'] = ys[i]
+            fd[fn]['azs'] = azs[i]
+            fd[fn]['els'] = els[i]
+            fd[fn]['ints'] = ints[i]
+            rx1,ry1,rx2,ry2 = self.get_roi(xs, ys)
+            fx1, fy1, fx2, fy2 = focus_area(rx1,ry1,rx2,ry2)
+            mid_x = int((rx1 + rx2) / 2)
+            mid_y = int((ry1 + ry2) / 2)
+            if mid_x > 1920 / 2:
+               hud_side = "left"
+               hx1 = 0
+               hx2 = 400
+               hy1 = 0
+               hy2 = 800
+            else:
+               hx1 = 1920 - 400
+               hx2 = 1920 
+               hy1 = 0
+               hy2 = 800
+               hud_side = "right"
+ 
+         if os.path.exists(sd_vid_file) :
+            frames = load_frames_simple(sd_vid_file)
+            fc = 0
+            for fr in frames:
+               ofr = cv2.resize(fr, (1920,1080))
+               fr = cv2.resize(fr, (1920,1080))
+               cv2.rectangle(fr, (int(rx1), int(ry1)), (int(rx2) , int(ry2) ), (255, 255, 255), 2)
+               cv2.rectangle(fr, (int(fx1), int(fy1)), (int(fx2) , int(fy2) ), (255, 255, 255), 2)
+               if fc in fd:
+                  show_fr = fr.copy()
+                  mx = int(float(fd[fc]['x']))
+                  my = int(float(fd[fc]['y']))
+
+                  hud_frame = np.zeros((800,400,3),dtype=np.uint8)
+
+                  bx1,by1,bx2,by2 = bound_cnt(mx, my,1920, 1080, 100) 
+                  tracking_frame = ofr[by1:by2,bx1:bx2] 
+                  roi_frame = ofr[ry1:ry2,rx1:rx2] 
+                  self.sd_clips[sd_vid]['roi_frames'].append(roi_frame)
+                  self.sd_clips[sd_vid]['tracking_frames'].append(tracking_frame)
+
+                  try:
+                     tracking_frame = cv2.resize(tracking_frame, (400,400))
+                     roi_frame = cv2.resize(roi_frame, (400,400))
+                     hud_frame[0:400,0:400] = roi_frame 
+                     hud_frame[400:800,0:400] = tracking_frame 
+                  except:
+                     print("Track failed")
+
+                  #cv2.imshow("roi", hud_frame)
+
+                  radius = 5
+                  cv2.circle(show_fr, (mx,my), int(radius), (128,128,128),1)
+                  show_fr = self.crosshair(show_fr, int(mx),int(my))
+                  show_fr[hy1:hy2,hx1:hx2] = hud_frame 
+                  cv2.putText(show_fr, obs_id,  (20,20), cv2.FONT_HERSHEY_SIMPLEX, .8, (255,255,255), 2)
+                  cv2.imshow('pepe', show_fr)
+                  cv2.waitKey(150)
+
+               else:
+                  cv2.putText(fr, obs_id,  (20,20), cv2.FONT_HERSHEY_SIMPLEX, .8, (255,255,255), 2)
+                  cv2.imshow('pepe', fr)
+                  cv2.waitKey(30)
+               fc += 1
+            cv2.waitKey(30)
+         
+         else:
+            print("NO VIDEO FILE!", sd_vid_file)
+            print("SHOULD LOG A REQUEST!? WAITING!")
+            time.sleep(5)
+
+      if False:
+         for sdv in self.sd_clips:
+            print(sdv)
+            if "roi_frames" in self.sd_clips[sdv]:
+            
+               for fr in self.sd_clips[sdv]['roi_frames']:
+                  fr = cv2.resize(fr, (1200,1200))
+                  cv2.imshow('pepe', fr)
+                  cv2.waitKey(150)
+
+   def event_timeline (self, event_day):
+      self.set_dates(event_day)
+      tdata = ""
+      count = 1
+      for ev in self.all_events:
+         if len(ev['start_datetime']) > 0:
+            if len(ev['start_datetime'][0]) > 0:
+               evtime = min(ev['start_datetime'][0])
+               if tdata != "":
+                  tdata += ",\n"
+               desc = "Item " + str(count)
+               tdata += "{id: " + "{:s}, content: '{:s}', start: '{:s}'".format(str(count), desc, evtime) + "}"
+               count += 1
+
+      out = """
+        <!doctype html>
+        <html>
+        <head>
+        <title>Timeline</title>
+        <script type="text/javascript" src="https://unpkg.com/vis-timeline@latest/standalone/umd/vis-timeline-graph2d.min.js"></script>
+        <link href="https://unpkg.com/vis-timeline@latest/styles/vis-timeline-graph2d.min.css" rel="stylesheet" type="text/css" />
+        <style type="text/css">
+            #visualization {
+            width: 600px;
+            height: 400px;
+            border: 1px solid lightgray;
+            }
+        </style>
+        </head>
+        <body>
+        <div id="visualization"></div>
+        <script type="text/javascript">
+        // DOM element where the Timeline will be attached
+        var container = document.getElementById('visualization');
+        
+        // Create a DataSet (allows two way data-binding)
+        var items = new vis.DataSet([ """ + tdata + """
+        ]);
+
+        // Configuration for the Timeline
+        var options = {};
+
+        // Create a Timeline
+        var timeline = new vis.Timeline(container, items, options);
+        </script>
+        </body>
+        </html>
+      """
+      fp = open("/mnt/ams2/timeline.html", "w")
+      fp.write(out)
+      fp.close()
+
+   def crosshair(self, img, x,y):
+      cv2.line(img, (int(x-50),int(y)), (int(x+50),int(y)), (255,255,255), 1)
+      cv2.line(img, (int(x),int(y-50)), (int(x),int(y+50)), (255,255,255), 1)
+      return(img)
+
+
    def review_event_step2(self):
       # drive this 100% from DB
       # get all current obs data
@@ -3130,7 +3513,16 @@ class AllSkyNetwork():
       # we should load it and return it though?
       force = True 
 
+      event_preview_dir = self.local_evdir + "/PREV/" 
+      cloud_event_preview_dir = self.cloud_evdir + "/PREV/"
+   
+      event_preview_file = event_preview_dir + self.event_id + ".jpg"
+      cloud_event_preview_file = cloud_event_preview_dir + self.event_id + ".jpg"
 
+      if os.path.exists(event_preview_dir) is False:
+         os.makedirs(event_preview_dir)
+      if os.path.exists(cloud_event_preview_dir) is False:
+         os.makedirs(cloud_event_preview_dir)
 
       obs_data_file = self.local_evdir + self.event_id + "/" + self.event_id + "_OBS_DATA.json"
       event_data_file = self.local_evdir + self.event_id + "/" + self.event_id + "_EVENT_DATA.json"
@@ -3140,7 +3532,6 @@ class AllSkyNetwork():
       self.map_kml_file = self.local_evdir + self.event_id + "/" + self.event_id + "_OBS_MAP.kml"
       self.planes_file = self.local_evdir + self.event_id + "/" + self.event_id + "_PLANES.json"
 
-   
 
       if os.path.exists(self.planes_file) is True:
          self.planes = load_json_file(self.planes_file)
@@ -3154,30 +3545,63 @@ class AllSkyNetwork():
 
 
       # everything is done already skip???
-      if force is False and os.path.exists(obs_data_file) is True and os.path.exists(event_data_file) is True and os.path.exists(review_img_file) is True:
-         obs_data = load_json_file(obs_data_file)
-         event_data = load_json_file(event_data_file)
-         map_img = cv2.imread(map_img_file)
-         review_img = cv2.imread(review_img_file)
+      #if force is False and os.path.exists(obs_data_file) is True and os.path.exists(event_data_file) is True and os.path.exists(review_img_file) is True:
+      #   obs_data = load_json_file(obs_data_file)
+      #   event_data = load_json_file(event_data_file)
+      #   map_img = cv2.imread(map_img_file)
+      #   review_img = cv2.imread(review_img_file)
          #event_data, obs_data, map_img,obs_imgs = self.get_event_obs()
          
-         obs_imgs, marked_imgs, roi_imgs, ai_imgs, obs_data = self.load_obs_images(obs_data) 
-         print("REVIEW:", review_img_file)
-         return(review_img, map_img, obs_imgs, marked_imgs, event_data, obs_data)
-      else:
+      #   obs_imgs, marked_imgs, roi_imgs, ai_imgs, obs_data = self.load_obs_images(obs_data) 
+      #   return(review_img, map_img, obs_imgs, marked_imgs, event_data, obs_data)
+      #else:
+      if True:
          event_data, obs_data, map_img, obs_imgs = self.get_event_obs()
          obs_imgs, marked_imgs, roi_imgs, ai_imgs, obs_data = self.load_obs_images(obs_data) 
+         temp = event_data_file.split("/")[-1]
+         edir = event_data_file.replace(temp, "")
+         if os.path.exists(edir) is False:
+            print("Make dir ", edir)
+            os.makedirs(edir)
          save_json_file(event_data_file, event_data)
-         print("SAVING:", event_data_file)
          save_json_file(obs_data_file, obs_data, True)
-         print("SAVING:", obs_data_file)
          cv2.imwrite(map_img_file, map_img, [cv2.IMWRITE_JPEG_QUALITY, 70])
-         print("SAVING:", map_img_file)
 
       if "2d_status" not in event_data:
-         print("GET 2D status")
          event_data = self.get_2d_status(event_data, obs_data)
 
+
+      ob_len = []
+      for obs_id in obs_data:
+         dur = len(obs_data[obs_id]['times'])
+         ob_len.append((obs_id,dur))
+      ob_len = sorted(ob_len, key=lambda x: x[1], reverse=True)
+      obs_id,dur = ob_len[0]
+      if obs_id in roi_imgs:
+         roi_img = roi_imgs[obs_id].copy()
+         if obs_id in obs_imgs:
+            stack_img = obs_imgs[obs_id].copy()
+            marked_img = marked_imgs[obs_id].copy()
+         else:
+            stack_img = np.zeros((1080,1920,3),dtype=np.uint8)
+            marked_img = np.zeros((1080,1920,3),dtype=np.uint8)
+         if obs_id + ".mp4" not in self.sd_clips:
+            self.sd_clips[obs_id + ".mp4"] = {}
+
+         self.sd_clips[obs_id + ".mp4"]['roi_img'] = roi_img
+         self.sd_clips[obs_id + ".mp4"]['stack_img'] = stack_img
+         self.sd_clips[obs_id + ".mp4"]['marked_img'] = marked_img 
+         #roi_img = cv2.resize(roi_imgs[obs_id], (200,200))
+
+         #cv2.imshow('roi', roi_img)
+         #cv2.waitKey(30)
+         cv2.imwrite(event_preview_file, roi_img)
+         if os.path.exists(cloud_event_preview_file):
+            print("copy to cloud", cloud_event_preview_file)
+            os.system("cp " + event_preview_file + " " + cloud_event_prevew_file)
+      else:
+         print("ROI FAILURE!", roi_imgs.keys())
+      #print("ROI IMGS", roi_imgs.keys())
 
       #for key in obs_data:
       #   print("OBS DATA KEYS:", key, obs_data.keys())
@@ -3201,51 +3625,69 @@ class AllSkyNetwork():
       cv2.imwrite(gallery_img_file, gallery_image, [int(cv2.IMWRITE_JPEG_QUALITY), 70])
       print("SAVING:", review_img_file)
 
+      self.ignored_obs = {}
+      if True:
+         sql = """SELECT event_id, station_id, obs_id, fns, times, xs, ys, azs, els, ints, 
+                       status, ignore, ai_confirmed, human_confirmed, ai_data, prev_uploaded 
+                  FROM event_obs
+                 WHERE event_id = ?
+              ORDER BY obs_id
+              """
+         vals = [self.event_id]
+         print(sql, vals)
+         self.cur.execute(sql, vals)
+         rows = self.cur.fetchall()
+         obs_db = []
+         stack_imgs = []
+         not_found = []
+         stack_imgs_dict = {}
 
-      print("DONE STEP2")
+
+         input("YOX") 
+         
+         for row in rows:
+            (event_id, station_id, obs_id, fns, times, xs, ys, azs, els, ints, \
+               status, ignore, ai_confirmed, human_confirmed, ai_data, prev_uploaded ) = row
+            for ig in self.ignore:
+               if ig in obs_id:
+                  self.ignored_obs[obs_id] = (event_id, station_id, obs_id, fns, times, xs, ys, azs, els, ints, \
+                     status, ignore, ai_confirmed, human_confirmed, ai_data, prev_uploaded ) 
+                  continue
+            times = json.loads(times)
+            fns = json.loads(fns)
+            xs = json.loads(xs)
+            ys = json.loads(ys)
+            azs = json.loads(azs)
+            els = json.loads(els)
+            ints = json.loads(ints)
+            sd_vid_file = self.ev_dir + obs_id + ".mp4"
+            stack_file = self.ev_dir + obs_id + "-stacked.jpg"
+            print("KEEP OBS!", obs_id, fns, xs, ys)
+            obs_db.append((event_id, station_id, obs_id, fns, times, xs, ys, azs, els, ints, \
+               status, ignore, ai_confirmed, human_confirmed, ai_data, prev_uploaded,sd_vid_file ))
+            if os.path.exists(sd_vid_file):
+               print("LOCAL SD VID FOUND!", sd_vid_file) 
+            else:
+               print("LOCAL SD VID NOT FOUND!", sd_vid_file) 
+            if os.path.exists(stack_file):
+               print("STACK FOUND!", stack_file) 
+               stack_img = cv2.imread(stack_file)
+               stack_img = cv2.resize(stack_img, (1920,1080))
+               stack_imgs.append((stack_file, stack_img))
+               stack_imgs_dict[obs_id] = stack_img
+            else:
+               print("STACK NOT FOUND!", stack_file) 
+               stack_img = np.zeros((1080,1920,3),dtype=np.uint8)
+               stack_imgs_dict[obs_id] = stack_img 
+               not_found.append((stack_file, stack_img))
+
+      # review_frames review frames
+      if True:
+         self.review_obs_frames(obs_db)
 
       return(simg, map_img, obs_imgs, marked_imgs, event_data, obs_data)
-      # THIS IS OLD AND NO LONGER USED!
 
-      sql = """SELECT event_id, station_id, obs_id, fns, times, xs, ys, azs, els, ints, 
-                    status, ignore, ai_confirmed, human_confirmed, ai_data, prev_uploaded 
-               FROM event_obs
-              WHERE event_id = ?
-           ORDER BY obs_id
-           """
-      vals = [self.event_id]
-      print(sql, vals)
-      self.cur.execute(sql, vals)
-      rows = self.cur.fetchall()
-      obs_db = []
-      stack_imgs = []
-      not_found = []
-      stack_imgs_dict = {}
-      for row in rows:
-         (event_id, station_id, obs_id, fns, times, xs, ys, azs, els, ints, \
-            status, ignore, ai_confirmed, human_confirmed, ai_data, prev_uploaded ) = row
-         obs_db.append((event_id, station_id, obs_id, fns, times, xs, ys, azs, els, ints, \
-            status, ignore, ai_confirmed, human_confirmed, ai_data, prev_uploaded ))
-         sd_vid_file = self.ev_dir + obs_id + ".mp4"
-         stack_file = self.ev_dir + obs_id + "-stacked.jpg"
-         print(obs_id, fns, xs, ys)
-         if os.path.exists(sd_vid_file):
-            print("FOUND!", sd_vid_file) 
-         else:
-            print("NOT FOUND!", sd_vid_file) 
-         if os.path.exists(stack_file):
-            print("FOUND!", stack_file) 
-            simg = cv2.imread(stack_file)
-            cv2.resize(simg, (1920,1080))
-            stack_imgs.append((stack_file, simg))
-            stack_imgs_dict[obs_id] = simg
-         else:
-            print("NOT FOUND!", stack_file) 
-            simg = np.zeros((1080,1920,3),dtype=np.uint8)
-            stack_imgs_dict[obs_id] = simg
-            not_found.append((stack_file, simg))
-
-
+      # nothing but old code after this!
       # decide default thumb size
       stack_count = len(stack_imgs)
       if len(stack_imgs) > 0:
@@ -3405,16 +3847,11 @@ class AllSkyNetwork():
       return(event_data)
 
    def make_event_summary_image(self, edited_files, good_files, ignored_files, missing_files):
-      print(edited_files)
-      print(good_files)
-      print(ignored_files)
-      print(missing_files)
       edited_imgs = []
       good_imgs = []
       ignore_imgs = []
       missing_imgs = []
       for sd_vid in edited_files:
-         print("EDITED:", sd_vid)
          stack_file = self.ev_dir + sd_vid.replace(".mp4", "-stacked.jpg")
          if os.path.exists(stack_file) is True:
             stack_img = cv2.imread(stack_file)
@@ -3424,7 +3861,6 @@ class AllSkyNetwork():
             print("EDITED missing stack", stack_file)
 
       for sd_vid in good_files:
-         print("GOOD:", sd_vid)
          stack_file = self.ev_dir + sd_vid.replace(".mp4", "-stacked.jpg")
          if os.path.exists(stack_file) is True:
             stack_img = cv2.imread(stack_file)
@@ -3432,8 +3868,8 @@ class AllSkyNetwork():
             print("GOOD FOUND", stack_file)
          else:
             print("GOOD missing", stack_file)
+
       for sd_vid in ignored_files:
-         print("IGNORE:", sd_vid)
          stack_file = self.ev_dir + sd_vid.replace(".mp4", "-stacked.jpg")
          if os.path.exists(stack_file) is True:
             stack_img = cv2.imread(stack_file)
@@ -3441,18 +3877,15 @@ class AllSkyNetwork():
             print("IGNORE FOUND", stack_file)
          else:
             print("IGNORE missing", stack_file)
+
       for sd_vid in missing_files:
          stack_file = self.ev_dir + sd_vid.replace(".mp4", "-stacked.jpg")
-         print("MISSING:", sd_vid)
          if os.path.exists(stack_file) is True:
             stack_img = cv2.imread(stack_file)
             missing_imgs.append(stack_img)
          else:
             print("missing", stack_file)
 
-      print(len(edited_imgs))
-      print(len(good_imgs))
-      print(len(ignore_imgs))
       for img in edited_imgs:
          img = cv2.resize(img, (640,360))
          cv2.rectangle(img, (int(1), int(1)), (int(639) , int(359) ), (0, 0, 255), 2)
@@ -3698,7 +4131,7 @@ class AllSkyNetwork():
          temp.append(bw_frame)
 
       med_frame = cv2.convertScaleAbs(np.median(np.array(temp), axis=0))
-
+      print("FRAMES:", len(frames))
       for frame in frames:
          frame = cv2.resize(frame, (640,360))
          frame_data[fc] = {}
@@ -3850,7 +4283,6 @@ class AllSkyNetwork():
          event_data['run_times'] = run_times
 
       for obs_id in extra_rows:
-         
          st = obs_id.split("_")[0]
          station_id = st
          event_data['stations'].append(st)
@@ -3892,13 +4324,14 @@ class AllSkyNetwork():
          st_az_pts[station_id].append(obs_data[obs_id]['az_end_point'])
          st_az_pts[obs_id] = [obs_data[obs_id]['az_start_point'], obs_data[obs_id]['az_end_point']]
 
-
+      print("IGNORE", self.ignore)
       print(event_data)
       lc = 0 
 
       # THIS IS A BUG!!! OBS NEED TO BE UPDATED SOMEWHERE / SOMEHOW WHAT DO WE DO NOW!
       # OBS ARE BEING RELOADED SOMEWHERE ELSE, BUT THE DB IS NOT UPDATED RIGHT
       # FIX THE BUG INSIDE THE SOLVE CALL
+      self.ignored_obs = {}
       for obs_id in event_data['obs_ids']:
          sql = """
             SELECT event_id, event_minute, station_id, obs_id, fns, times, xs, ys, azs, els, ints, status, ignore 
@@ -3909,10 +4342,23 @@ class AllSkyNetwork():
          self.cur.execute(sql, svals)
          rows = self.cur.fetchall()
          print(self.station_loc.keys())
+
+
+
          for row in rows:
             (event_id, event_minute, station_id, obs_id, fns, times, xs, ys, azs, els, ints, status, ignore ) = row
             print(station_id)
+
+
             print("STATION_LOC", station_id, self.station_loc[station_id][:3])
+            ignore = False
+            for ig in self.ignore:
+               if ig in obs_id:
+                  ignore = True
+            if ignore is True:
+               self.ignored_obs[obs_id] = (event_id, event_minute, station_id, obs_id, fns, times, xs, ys, azs, els, ints, status, ignore )
+            print(self.ignore, obs_id , ignore)
+
             lat,lon,alt = self.station_loc[station_id][:3]
             obs_data[obs_id] = {}
             obs_data[obs_id]['event_id'] = event_data['event_id']
@@ -3979,7 +4425,6 @@ class AllSkyNetwork():
       # here we should check how things intersect and mark obs that don't 
       # lat/lon & bearing of 2 stations
       # this should be a function or class!
-
       ipoints = {}
       points = [] 
       lines = [] 
@@ -4536,7 +4981,7 @@ class AllSkyNetwork():
 
 
       event_file = self.local_evdir + event_id + "/" + event_id + "-event.json"
-      ignore_file = self.local_evdir + event_id + "/" + "ignore.json"
+      ignore_file = self.local_evdir + event_id + "/" + event_id + "_IGNORE.json"
       if os.path.exists(event_file) is True:
          event = load_json_file(event_file)
       else:
@@ -4547,7 +4992,9 @@ class AllSkyNetwork():
       else:
          ignore = []
       print("IGNORE", ignore)
+      print("IGNORE FILE", ignore_file)
 
+      input("WAIT")
       # select main event info from the local sqlite DB
       sql = """
             SELECT event_id, event_minute, revision, stations, obs_ids, event_start_time, event_start_times,
@@ -4686,9 +5133,11 @@ class AllSkyNetwork():
 
 
    def update_event_obs(self, obs):
-      if "meteor_frame_data" not in obs:
-         return() 
       print("OBS:", obs)
+      print("UPDATE EVENT OBS")
+      if "meteor_frame_data" not in obs:
+         input("NO FRAME DATA")
+         return() 
       if "aws_status" in obs:
          if obs['aws_status'] is False:
             print("false aws status, maybe this is a deleted obs?")
@@ -4711,6 +5160,8 @@ class AllSkyNetwork():
       print(sql, ivals)
       self.cur.execute(sql,ivals)
       self.con.commit()
+      #print("OBS UPDATED", obs_id)
+      #input("CONT")
       
 
    def make_event_page(self, event_id):
@@ -4723,6 +5174,7 @@ class AllSkyNetwork():
       event_report(dynamodb, event_id, solve_dir, solve_dir, temp_obs)
 
    def day_load_solves(self, date):
+      # uses self.update_obs_ids(event_id,obs_ids)
 
       solve_jobs = []
       self.set_dates(date)
@@ -4815,6 +5267,8 @@ class AllSkyNetwork():
             #self.view_obs_ids(date, obs_ids)
             self.update_obs_ids(event_id,obs_ids)
             #print(event_status, sol_data.keys())
+         else:
+            self.update_obs_ids(event_id,obs_ids)
 
    def update_obs_ids(self, event_id, obs_ids):
       if isinstance(obs_ids, str) is True:
@@ -6360,7 +6814,6 @@ class AllSkyNetwork():
       print(all_radiants_file)
       print(spo_radiants_file)
       print(shw_radiants_file)
-      exit()
 
       for st in status_rpt:
          print(st, status_rpt[st])
@@ -6399,7 +6852,7 @@ class AllSkyNetwork():
    def delete_bad_detects(self,bad_detects_file):
       # too aggresive deleting real meteors on peak shower dates
       # and some other times. Whitelist the persieds and geminds peaks +/- 1 days
-
+      print("EARLY EXIT!")
       exit()
       bad_detects = load_json_file(bad_detects_file)
       del_detects_file = bad_detects_file.replace("ALL_BAD", "DEL")
@@ -6743,7 +7196,6 @@ class AllSkyNetwork():
 
       #self.best_ev_stats(mc_best)
       print("END OK", len(mc_best))
-      #exit()
 
       print("BIG LOOP")
       i = 0
@@ -8805,6 +9257,15 @@ $(document).ready(function () {
 
       return(plane_report)
 
+
+   def obs_id_to_img_url(self,obs_id):
+      el = obs_id.split("_")
+      st = el[0]
+      ff = obs_id.replace(st + "_", "")
+      cloud_url = "https://archive.allsky.tv/" + st + "/METEORS/" + ff[0:4] + "/" + ff[0:10] + "/" + st + "_" + ff + "-prev.jpg"
+      file_name = "/mnt/archive.allsky.tv/" + st + "/METEORS/" + ff[0:4] + "/" + ff[0:10] + "/" + st + "_" + ff + "-prev.jpg"
+      return(cloud_url, file_name)
+
    def obs_id_to_img_html(self,obs_id):
       el = obs_id.split("_")
       st = el[0]
@@ -8827,7 +9288,7 @@ $(document).ready(function () {
    def day_status(self, date=None):
       os.system("clear")
       self.load_stations_file()
-
+      print("EEEE")
       exit()
       self.set_dates(date)
       self.date = date
@@ -9600,7 +10061,6 @@ status [date]   -    Show network status report for that day.
          cv2.imshow('pepe', main_frame)
          cv2.waitKey(30)
          mc += 1   
-      #exit()
 
    def remote_reducer(self, event_id):
       # this will reduce all files for this event 
@@ -9641,7 +10101,6 @@ status [date]   -    Show network status report for that day.
       else:
          self.all_frame_data = {}
 
-      #exit()
 
       # loop over all files
       for hdf in self.mp4_files:
@@ -10236,7 +10695,6 @@ status [date]   -    Show network status report for that day.
          remote_json_conf = load_json_file(remote_json_conf_file)
          json_conf = remote_json_conf 
 
-         #exit()
       if os.path.exists(local_cal_dir) is False:
          os.makedirs(local_cal_dir)
       print("CLOUD:", cloud_cal_dir)
@@ -10287,7 +10745,6 @@ status [date]   -    Show network status report for that day.
             continue
          else:
             print(az, np.isnan(az))
-            #exit()
 
          rcam_id = row[0]
          rend_date = row[1]

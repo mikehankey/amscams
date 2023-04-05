@@ -84,7 +84,7 @@ def update_mj(root_fn, ev_data):
 
 def sync_meteor(EV, root_fn, cloud_files, mdir, cloud_dir):
    ms_dir = mdir.replace("/meteors/", "/METEOR_SCAN/")
-   types = ["prev.jpg", "180p.mp4", "360p.jpg", "360p.mp4"] #, "1080p.jpg", "1080p.mp4"]
+   types = ["prev.jpg", "180p.mp4", "360p.jpg", "360p.mp4", "1080p.jpg", "1080p.mp4"]
    missing = []
    cmds = []
    #for cf in cloud_files:
@@ -232,6 +232,6 @@ load_stations()
 MSO = MultiStationObs()
 ev_date = sys.argv[1]
 if ev_date == "all":
-   all_days("2022")
+   all_days("2023")
 else:
    do_day(EV, ev_date)

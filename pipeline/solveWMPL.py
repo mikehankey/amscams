@@ -1001,6 +1001,9 @@ def solve_event(event_id, force=1, time_sync=1):
     local_event_dir = "/mnt/f/EVENTS/" + year + "/" + mon + "/" + day + "/" + event_id + "/" 
     cloud_event_dir = "/mnt/archive.allsky.tv/EVENTS/" + year + "/" + mon + "/" + day + "/" + event_id + "/" 
     local_events_dir = "/mnt/f/EVENTS/" 
+    ignore_file = local_event_dir + event_id + "_IGNORE.json"
+
+
     if cfe(local_event_dir + event_id + "-event.json") == 1:
        print("Event already done")
        #return()
@@ -1095,8 +1098,8 @@ def solve_event(event_id, force=1, time_sync=1):
        extra_obs = glob.glob(extra_obs_dir + "*")
     else:
        extra_obs = []
-    print("EXTRA", extra_obs)
-    exit()
+    #print("EXTRA", extra_obs)
+    #exit()
     if event is not None:
        if "solution" in event and force != 1:
           if "solve_status" in event:
@@ -1109,9 +1112,10 @@ def solve_event(event_id, force=1, time_sync=1):
 
 
     obs = {}
-    #ignore_stations = ['AMS52', 'AMS56', 'AMS59', 'AMS73']
-    ignore_stations = []
-    #ignore_stations = ['AMS59', 'AMS61']
+    if os.path.exists(ignore_file) is True:
+       ig = load_json_file(ignore_file)
+       for t in ig:
+          ignore_obs[t] = 1 
     if event is None:
        print("EVENT IS NONE!")
        return()
@@ -1119,7 +1123,6 @@ def solve_event(event_id, force=1, time_sync=1):
     if len(event) == 0:
        return()
 
-    ignore_obs = {}
     bad_obs = []
     for i in range(0, len(event['stations'])):
        t_station = event['stations'][i]
@@ -1127,6 +1130,7 @@ def solve_event(event_id, force=1, time_sync=1):
        obs_key = t_station + "_" + t_file
        if obs_key in ignore_obs:
           print("IGNORE:", obs_key)
+          input("WAITING REMOVE THIS LINE!")
 
           continue
        dy_obs_data = eobs[t_station + ":" + t_file]

@@ -1834,7 +1834,11 @@ def refit_meteor(meteor_file, con, cur, json_conf, mcp = None, last_best_dict = 
          # corrupt mj remake!
          os.system("rm " + json_file)
          os.system("./Process.py fireball " + meteor_file) 
-      mj = check_for_nan(json_file, mj)
+      try:
+         mj = check_for_nan(json_file, mj)
+      except:
+         os.system("rm " + json_file)
+         os.system("./Process.py fireball " + meteor_file) 
 
       if "hd_trim" in mj:
          if os.path.exists(mj['hd_trim']) is True:

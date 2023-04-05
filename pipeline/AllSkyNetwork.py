@@ -22,7 +22,13 @@ today = datetime.now().strftime("%Y_%m_%d")
 if len(sys.argv) < 1:
    ASN.help()
    exit()
+if cmd == "admin_event_links":
+   event_id = sys.argv[2]
+   ASN.admin_event_links(event_id)
 
+if cmd == "event_preview_images":
+   date = sys.argv[2]
+   ASN.make_event_preview_images(date)   
 
 if cmd == "stations":
    ASN.station_list()   
@@ -140,8 +146,8 @@ if cmd == "review_event":
    ASN.set_dates(event_day)
    ASN.review_event(sys.argv[2])
    (review_image, map_img, obs_imgs, marked_images, event_data, obs_data) = ASN.review_event_step2()
-   cv2.imshow('Event Review', review_image)
-   cv2.waitKey(30)
+   cv2.imshow('pepe', review_image)
+   cv2.waitKey(0)
 
 if cmd == "resolve_event":
    ASN.help()
@@ -149,9 +155,14 @@ if cmd == "resolve_event":
    event_day = ASN.event_id_to_date(event_id)
    ASN.set_dates(event_day)
    ASN.sync_log = {}
+   
    wget_cmds = ASN.get_event_media(event_id)
    ASN.review_event(sys.argv[2])
    (review_image, map_img, obs_imgs, marked_images, event_data, obs_data) = ASN.review_event_step2()
+
+   #for ob in obs_data:
+   #   print(ob, obs_data[ob]['xs'])
+
 
    if "2d_status" not in event_data:
       event_data = ASN.get_2d_status(event_data, obs_data)
@@ -173,6 +184,7 @@ if cmd == "resolve_event":
 if cmd == "publish_day":
    event_day = sys.argv[2]
    ASN.help()
+   ASN.set_dates(event_day)
    ASN.publish_day(event_day)
    cmd = "python3 EM.py aer " + event_day 
    os.system(cmd)
@@ -208,8 +220,12 @@ if cmd == "validate_events":
    ASN.validate_events(event_day)
 
 
+if cmd == "timeline":
 
-if cmd == "load_day_sql":
+   event_day = sys.argv[2]
+   ASN.event_timeline(event_day)
+
+if cmd == "load_day_sql" or cmd == "reload":
    force = 0
    ASN.help()
    date = sys.argv[2]
@@ -229,11 +245,11 @@ if cmd == "coin_events":
    ASN.day_coin_events(event_day,force)
 
 
-if cmd == "day_load_solve_results":
+if cmd == "day_load_solve_results" or cmd == "load_solves":
    event_day = sys.argv[2]
    ASN.help()
    ASN.set_dates(event_day)
-   ASN.day_load_solves(date)
+   ASN.day_load_solves(event_day)
 
 if cmd == "do_all":
    ASN.help()

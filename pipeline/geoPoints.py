@@ -1,4 +1,5 @@
 from geojson import Point , LineString, Polygon, Feature, FeatureCollection, dumps
+import sys
 import datetime
 import json
 import requests
@@ -6,10 +7,57 @@ import os
 import time
 from lib.PipeUtil import load_json_file, save_json_file, get_template
 
+def load_events(date):
+   trajs = []
+   y,m,d = date.split("_")
+   ev_dir = "/mnt/f/EVENTS/" + y + "/" + m + "/" + d + "/" 
+   ev_file = ev_dir + date + "_ALL_EVENTS.json"
+   events = load_json_file(ev_file) 
+   for ev in events:
+      #print(ev)
+      obs = obs_preview(ev)
+      if "traj" in ev:
+         t = ev['traj']
+         trajs.append((ev['event_id'], t['start_lat'], t['start_lon'], t['start_ele'], t['end_lat'], t['end_lon'], t['end_ele'], t['v_avg'], obs))
+         print((ev['event_id'], t['start_lat'], t['start_lon'], t['start_ele'], t['end_lat'], t['end_lon'], t['end_ele']), obs)
+   return(trajs)       
+
+def obs_preview(ev):
+   obs = []
+   for i in range(0, len(ev['stations'])):
+      st = ev['stations'][i]
+      vid = ev['files'][i]
+      oid = st + "_" + vid
+      sds = len(ev['start_datetime'][i])
+      obs.append((oid, sds))
+   obs = sorted(obs, key=lambda x: (x[1]), reverse=True)
+   return(obs)   
+
+all_points = []
+
+date = sys.argv[1]
+y,m,d = date.split("_")
+ev_dir = "/mnt/f/EVENTS/" + y + "/" + m + "/" + d + "/" 
+latest_geojson_file = "/mnt/f/EVENTS/LATEST.geojson"
+geo_events_file = ev_dir + date + "_GEO_EVENTS.geojson"
+trajs = load_events(date)
+for row in trajs:
+   event_id, slat, slon, salt, elat,elon,ealt, vavg,obs = row
+   my_feature = Feature(geometry=Point((round(float(slon),1), round(float(slat),1))))
+   my_feature['properties']['marker_type'] = "meteor_event" 
+   my_feature['properties']['event_id'] = event_id
+   my_feature['properties']['traj'] = [round(slat,1),round(slon,1),round(salt,1),round(elat,1),round(elon,1),round(ealt,1)]
+   my_feature['properties']['vavg'] = round(vavg,1)
+   my_feature['properties']['obs'] = obs
+   all_points.append(my_feature)
+
+tdata = FeatureCollection(all_points)
+
+
 map_temp = get_template("aws-map-template.html")
 stations_file = "/mnt/f/EVENTS/ALL_STATIONS.json"
 stations_check_file = "/mnt/f/EVENTS/LAST_STATIONS_CHECK.json"
-latest_geojson_file = "/mnt/f/EVENTS/LATEST.geo"
+latest_geojson_file = "/mnt/f/EVENTS/LATEST.geojson"
 today = datetime.datetime.now().strftime("%Y_%m_%d")
 
 stations = load_json_file(stations_file)
@@ -18,7 +66,6 @@ if os.path.exists(stations_check_file) is True:
 else:
    stations_check = {}
 
-all_points = []
 for st in stations:
    station_id = st['station_id']
    op_status = st['op_status']
@@ -63,7 +110,7 @@ for st in stations:
    #try:
    if st['lon'] != "" and st['lat'] != "":
       #print(st['station_id'], st['lat'], st['lon'])
-      my_feature = Feature(geometry=Point((float(st['lon']), float(st['lat']))))
+      my_feature = Feature(geometry=Point((round(float(st['lon']),1), round(float(st['lat']),1))))
       cams = []
       if "cameras" not in st:
          st['cameras'] = []
@@ -114,6 +161,7 @@ for st in stations:
             my_feature['properties']['last_pic_elp_days'] = last_pic_elp_days
 
       my_feature['properties']['station_id'] = station_id  
+      my_feature['properties']['marker_type'] = "station" 
       my_feature['properties']['cams'] = cams 
       my_feature['properties']['message'] = station_id  
       my_feature['properties']['iconSize'] = [100,100] 
@@ -130,8 +178,8 @@ for st in stations:
    #   print("BAD/MISSING LAT/LON", st['station_id'], st['lat'], st['lon'])
    #input(st['station_id'] + " " +  st['op_status'])
 jdata = FeatureCollection(all_points)
-save_json_file ("/mnt/f/EVENTS/stations.geo", jdata)
-print("/mnt/f/EVENTS/stations.geo" )
+save_json_file ("/mnt/f/EVENTS/stations.geojson", jdata)
+print("/mnt/f/EVENTS/stations.geojson" )
 map_temp = map_temp.replace("{GEOJSON}", dumps(jdata))
 print(map_temp)
 fpout = open("/mnt/ams2/aws-map-out.html", "w")
@@ -139,7 +187,12 @@ fpout.write(map_temp)
 fpout.close()
 save_json_file(stations_check_file, stations_check)
 save_json_file(latest_geojson_file, jdata)
+save_json_file(geo_events_file, jdata)
+print("SAVED:")
+print(stations_check_file)
+print(latest_geojson_file)
+print(geo_events_file)
 
-cmd = "scp -i /home/ams/pem/ALLSKYTV-EAST.pem /mnt/ams2/aws-map-out.html ubuntu@52.2.45.103:/home/ubuntu/allsky.com/htdocs/map.html"
+cmd = "scp -i /home/ams/pem/ALLSKYTV-EAST.pem /mnt/ams2/geoViewer.html ubuntu@52.2.45.103:/home/ubuntu/allsky.com/htdocs/map.html"
 print(cmd)
 os.system(cmd)

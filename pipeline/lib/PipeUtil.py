@@ -291,6 +291,56 @@ def cnt_max_px(cnt_img):
 
    return(max_loc, min_val, max_val)
 
+def focus_area(rx1,ry1,rx2,ry2):
+   w = rx2 - rx1 
+   h = ry2 - ry1 
+   mx = int((rx1 + rx2 ) / 2)
+   my = int((ry1 + ry2 ) / 2)
+
+   fovs = [
+      [128,72],
+      [256,144],
+      [384,216],
+      [512,288],
+      [640,360],
+      [768,432],
+      [896,504],
+      [1024,576],
+      [1152,648],
+      [1280,720],
+      [1408,792],
+      [1536,864],
+      [1664,936],
+      [1792,1008],
+      [1920,1080]
+   ] 
+   fovs = sorted(fovs, key=lambda x: x[0], reverse=True)
+   bw = 1792
+   bh = 1008 
+   for tw,th in fovs:
+      if w < tw and h < th:
+         bw = tw
+         bh = th
+
+   ox1 = int(mx - (bw / 2))
+   ox2 = int(mx + (bw / 2))
+   oy1 = int(my - (bh / 2))
+   oy2 = int(my + (bh / 2))
+
+   if ox1 < 0:
+      ox1 = 0 
+      ox2 = 0 + bw
+   if oy1 < 0:
+      oy1 = 0 
+      oy2 = 0 + bh
+   if ox2 >= 1920:
+      ox1 = 1920 - bw 
+      ox2 = 1920
+   if oy2 >= 1080:
+      oy1 = 1080 - bh
+      oy2 = 1080
+
+   return(ox1,oy1,ox2,oy2)
 
 def bound_cnt(x,y,img_w,img_h,sz=10):
    if x - sz < 0:

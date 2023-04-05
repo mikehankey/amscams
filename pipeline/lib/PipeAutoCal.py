@@ -1286,10 +1286,19 @@ def custom_fit_meteor(meteor_file,json_conf,show=SHOW):
          print("FIRST FRAME SUBTRACTED MASKFILE!!!")
 
 
+   if "star_points" in cp: 
+      orig_user_stars = cp['star_points']
+      cp['user_stars'] = cp['star_points']
+   else:
+      orig_user_stars = get_image_stars(fit_img_file, fit_img, json_conf, 0)
 
-   orig_user_stars = get_image_stars(fit_img_file, fit_img, json_conf, 0)
    cp['user_stars'],cp = get_image_stars_with_catalog(fit_img_file, fit_img, cp, json_conf, None,  0)
    stars_image = fit_img.copy()
+
+   if "star_points" in cp: 
+      orig_user_stars = cp['star_points']
+      cp['user_stars'] = cp['star_points']
+
 
    for data in orig_user_stars:
       x,y,val = data
@@ -1407,7 +1416,7 @@ def custom_fit_meteor(meteor_file,json_conf,show=SHOW):
    mimg_file = mfile.replace(".json", "-fit.jpg")
    cv2.imwrite(mimg_file,marked_img)
 
-
+   return(mj['cp'])
 
 
 def refit_meteor(meteor_file, json_conf,force=0):

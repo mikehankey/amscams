@@ -803,7 +803,7 @@ def update_dyna_cache_for_day(dynamodb, date, stations, utype=None, cloud_copy=1
       cloud_event_file = event_file.replace("/mnt/f/", "/mnt/archive.allsky.tv/")
       os.system("cp " + event_file + " " + cloud_event_file)
       print("saved" + cloud_event_file)
-
+   os.system("./AllSkyNetwork.py reload " + date)
 def starttime_from_file( filename):
    (f_datetime, cam, f_date_str,fy,fmon,fd, fh, fm, fs) = convert_filename_to_date_cam(filename)
    trim_num = get_trim_num(filename)

@@ -70,12 +70,14 @@ class Weather():
       self.weather_conditions_model_file = "weather_condition_model.h5"
 
       self.model = Sequential()
-
-      self.model =load_model(self.weather_conditions_model_file)
-      self.model.compile(loss='categorical_crossentropy',
-         optimizer='rmsprop',
-         metrics=['accuracy'])
-      self.weather_check_config()
+      try:
+         self.model =load_model(self.weather_conditions_model_file)
+         self.model.compile(loss='categorical_crossentropy',
+            optimizer='rmsprop',
+            metrics=['accuracy'])
+         self.weather_check_config()
+      except:
+         print("AI FAILED TO LOAD MODEL")
 
    def help(self):
       print("""
@@ -142,6 +144,22 @@ station_info - report the current weather database
 What does this program do? -- it loads or creates weather data from APIs and functions and then makes sure all of the weather SNAPS are loaded into the db, run through the AI and reported to the network.
       """)
 
+   def index_latest(self): 
+      
+      latest_dir = "/mnt/ams2/latest/"
+      idx_file = latest_dir + self.station_id + "_LATEST_INDEX.json" 
+      if os.path.exists(idx_file) is True:
+         idx = load_json_file(idx_file)
+      else:
+         idx = {}
+      files = os.listdir(latest_dir)
+      for f in files:
+         if os.path.isdir(latest_dir + f) :
+            print("ls " + latest_dir + f)
+            exit()
+            if f not in idx:
+               idx[f] = os.listdir(latest_dir + f)
+         print(f, len(idx[f]))
    def weather_check_config(self):
       # check some basic setup/config things about this station so we can perform all weather tasks!
 
