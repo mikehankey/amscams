@@ -10499,16 +10499,18 @@ def lens_model_report(cam_id, con, cur, json_conf):
          continue
       if mag not in mag_db:
          mag_db[mag] = []
-      mag_db[mag].append(flx)
+      if flx is not None:
+         mag_db[mag].append(flx)
    
    for mag in sorted(mag_db):
-      med_flux = np.median(mag_db[mag])
-      mean_flux = np.mean(mag_db[mag])
-      med_flux_db[mag] = med_flux
-      num_samples = len(mag_db[mag])
-      #print(mag, num_samples, mean_flux, med_flux)
-      xs.append(mag)
-      ys.append(mean_flux)
+      if "mag" in mag_db:
+         med_flux = np.median(mag_db[mag])
+         mean_flux = np.mean(mag_db[mag])
+         med_flux_db[mag] = med_flux
+         num_samples = len(mag_db[mag])
+         #print(mag, num_samples, mean_flux, med_flux)
+         xs.append(mag)
+         ys.append(mean_flux)
 
    mj = {}
    mj['cp'] = mcp 
