@@ -5772,7 +5772,7 @@ def copy_best_cal_images(con, cur, json_conf):
       for row in calfiles_data[0:10]:
          print(row)
 
-def batch_apply(cam_id, con,cur, json_conf, last=None, do_bad=False, cam_stats=None, apply_type="ALL", limit=25):
+def batch_apply(cam_id, con,cur, json_conf, last=None, do_bad=False, cam_stats=None, apply_type="ALL", limit=100):
    # apply the latest MCP Poly to each cal file and then recenter them
    print("BATCH APPLY:", apply_type)
    autocal_dir = "/mnt/ams2/cal/"
@@ -5812,6 +5812,7 @@ def batch_apply(cam_id, con,cur, json_conf, last=None, do_bad=False, cam_stats=N
          last_cal_params = None
          rc = 0
          flux_table = {}
+         # sorted most recent to least recent
          for cf in sorted(calfiles_data, reverse=True)[0:limit]:
             cal_dir = "/mnt/ams2/cal/freecal/" + cf.split("-")[0] + "/"
 
@@ -6150,7 +6151,15 @@ def apply_calib (cal_file, calfiles_data, json_conf, mcp, last_cal_params=None, 
 
 
                return(None,None)
+   
+      best_cal = find_best_calibration(cal_file, cal_params, json_conf)
 
+      if best_cal['total_res_px'] < cal_params['total_res_px']:
+         cal_params = best_cal
+         cal_params = add_more_stars(cal_image_file, cal_params, oimg, oimg, json_conf)
+
+      #print("BEST:", best_cal['total_res_px'])
+      #exit()
       before_files, after_files = get_close_calib_files(cal_file)
       if cal_params['total_res_px'] > 10:
          cal_params = test_cals (cal_fn, cal_params, json_conf, mcp, oimg, before_files, after_files, con, cur)

@@ -638,6 +638,30 @@ def non_meteors(amsid ):
    
 
 # MAIN METEOR PAGE
+@app.route('/meteor/<amsid>/<start_day>/', methods=['GET', 'POST'])
+@auth.login_required
+def meteors_shortcut(amsid,start_day ):
+
+   req = {}
+   #start_day = request.args.get('start_day')
+   end_day = request.args.get('end_day')
+   meteor_per_page = request.args.get('meteor_per_page')
+   sort_by = request.args.get('sort_by')
+   filter = request.args.get('filter')
+   ai_list = request.args.get('ai_list')
+   p = request.args.get('p')
+
+   req['start_day'] = start_day
+   req['end_day'] = end_day
+   req['meteor_per_page'] = meteor_per_page
+   req['p'] = p
+   req['sort_by'] = sort_by 
+   req['filter'] = filter
+   req['ai_list'] = ai_list
+   out = meteors_main(amsid,req)
+   return out
+
+
 @app.route('/meteor/<amsid>/', methods=['GET', 'POST'])
 @auth.login_required
 def meteors(amsid ):

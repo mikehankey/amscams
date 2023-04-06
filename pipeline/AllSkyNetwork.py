@@ -47,6 +47,9 @@ if cmd == "refresh_day":
 
    event_day = sys.argv[2]
    ASN.set_dates(event_day)
+   cmd = "./DynaDB.py udc " + event_day
+   os.system(cmd)
+   ASN.day_load_sql(event_day, 1)
    ASN.day_solve(event_day,force)
    ASN.day_load_solves(event_day)
    ASN.publish_day(event_day)
