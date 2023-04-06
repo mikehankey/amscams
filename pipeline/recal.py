@@ -6128,6 +6128,15 @@ def apply_calib (cal_file, calfiles_data, json_conf, mcp, last_cal_params=None, 
          return(None,None)
       # add more stars
       cal_params = add_more_stars(cal_fn, cal_params, oimg, oimg, json_conf)
+      
+      # if 0 stars we have to abort
+      if "cat_image_stars" not in cal_params:
+         print("\tERROR: No stars found in cal image file!", cal_dir , cal_image_file)
+         return(None,None)
+      elif len(cal_params['cat_image_stars']) == 0:
+         print("\tERROR: No stars found in cal image file!", cal_dir , cal_image_file)
+         return(None,None)
+         
 
       # first check if the file is corrupt. If so reset 1 time, else move to bad.
 
