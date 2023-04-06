@@ -135,6 +135,17 @@ def run_jobs(json_conf):
    today = datetime.now().strftime("%Y_%m_%d")
    yest = (datetime.now() - dt.timedelta(days = 1)).strftime("%Y_%m_%d")
    year,month, day = today.split("_")
+ 
+   # check if the pause-jobs.json exists if so just wait to run this until it is gone, or older than 8 hours (max pause length). 
+   if os.path.exists("pause-jobs.json") is True:
+      sz, tl = get_file_info("pause-jobs.json")
+      if tl / 60 / 24 > .25:
+         print("pause file is too old delete it")
+         os.system("rm pause-jobs.json")
+      else:
+         print("Run jobs currently paused:", tl / 60 / 24)
+         return()
+   
 
 
    os.system("killall flex-detect.py")
