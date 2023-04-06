@@ -3544,7 +3544,6 @@ def pair_star_points(cal_fn, oimg, cal_params, json_conf, con, cur, mcp, save_im
       if resp is not None:
          star_points, star_img = resp
       else:
-         #print("GET STAR POINTS RESP:", resp)
          star_points = []
       cal_params['star_points'] = star_points
    for img_x,img_y,star_flux in cal_params['star_points']:
@@ -3557,7 +3556,6 @@ def pair_star_points(cal_fn, oimg, cal_params, json_conf, con, cur, mcp, save_im
 
 
       cv2.circle(show_img, (int(img_x), int(img_y)), 5, (128,128,128),1)
-      #print("STAR POINT:", img_x, img_y, star_flux)
       close_stars = find_close_stars(star_obj)
       if len(close_stars) >= 1:
          for star in close_stars[0:1]:
@@ -3576,7 +3574,6 @@ def pair_star_points(cal_fn, oimg, cal_params, json_conf, con, cur, mcp, save_im
 
                res_px = calc_dist((img_x,img_y),(new_cat_x,new_cat_y))
                match_dist = angularSeparation(ra,dec,img_ra,img_dec)
-               print("IMG XY", img_x, img_y, used_img.shape)
                if res_px < 40 and used_img[int(img_y),int(img_x)] != 200 :
                   color = [0,255,0]
                   up_cat_image_stars.append((name,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,img_x,img_y,res_px,star_flux) )
@@ -3639,15 +3636,13 @@ def re_pair_stars(cal_fn, cp, json_conf, show_img, con, cur,mcp):
          (name, name2, ra, dec, mag,new_cat_x,new_cat_y,zp_cat_x, zp_cat_y, rx1,ry1,rx2,ry2) = cat_star
          ra_key = str(ra) + "_" + str(dec)
          if ra_key in star_cat_dict:
-            #print("--- GOT RA SKIP", ra_key)
-            #cv2.circle(show_img, (int(x),int(y)), 15, (0,255,0),2)
             continue 
 
          new_cat_x, new_cat_y = get_xy_for_ra_dec(cp, ra, dec)
          res_px = calc_dist((x,y),(new_cat_x,new_cat_y))
          match_dist = angularSeparation(ra,dec,img_ra,img_dec)
          if match_dist < .5 or res_px <= 10:
-            print("--- NEW ---", name, match_dist, res_px)
+            #print("--- NEW ---", name, match_dist, res_px)
             matches.append((cat_star, match_dist))
             cv2.circle(show_img, (int(x),int(y)), 15, (255,255,0),2)
             cv2.line(show_img, (int(new_cat_x),int(new_cat_y)), (int(x),int(y)), (128,128,128), 1)
@@ -3660,15 +3655,15 @@ def re_pair_stars(cal_fn, cp, json_conf, show_img, con, cur,mcp):
             star_img_dict[img_key] = star
       matches = sorted(matches, key=lambda x: x[1], reverse=False)
       if len(matches) > 0:
-         print("CLOSESEST:", matches[0])
+         #print("CLOSESEST:", matches[0])
          new_cat_stars.append((dcname,mag,ra,dec,img_ra,img_dec,match_dist,up_cat_x,up_cat_y,img_az,img_el,up_cat_x,up_cat_y,six,siy,res_px,bp))
          new_star = (dcname,mag,ra,dec,img_ra,img_dec,match_dist,up_cat_x,up_cat_y,img_az,img_el,up_cat_x,up_cat_y,six,siy,res_px,bp)
          insert_paired_star_full(new_star, cal_fn, cp, mcp, json_conf)
 
    cp['cat_image_stars'] = new_cat_stars
 
-   print("REPAIR DONE")
-   print("NEW CAT IMG STARS!", len(cp['cat_image_stars']))
+   #print("REPAIR DONE")
+   #print("NEW CAT IMG STARS!", len(cp['cat_image_stars']))
 
    return(cp)
 
@@ -3740,7 +3735,6 @@ def solve_field(plate_file, json_conf, con, cur):
    plate_fn = plate_file.split("/")[-1]
    cal_dir = plate_file.replace( plate_fn, "")
 
-   #print("caldir:", cal_dir)
 
    plate_fn = plate_file.split("/")[-1]
    plate_dir = plate_file.replace(plate_fn, "")
@@ -8685,7 +8679,6 @@ def eval_star_crop(crop_img, cal_fn, x1, y1,x2,y2, star_cat_info=None ):
    star_flux = 0
    valid_star = True 
    if len(crop_img.shape) == 3:
-      print(crop_img.shape)
       gray_img  = cv2.cvtColor(crop_img, cv2.COLOR_BGR2GRAY)
       gray_orig = cv2.cvtColor(crop_img, cv2.COLOR_BGR2GRAY)
    else:
