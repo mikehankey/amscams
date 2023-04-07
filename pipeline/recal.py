@@ -1477,8 +1477,6 @@ def remove_bad_stars(cat_image_stars):
    for star in cat_image_stars:
       dcname,mag,ra,dec,img_ra,img_dec,match_dist,org_x,org_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist,star_int = star
       center_dist = calc_dist((960,540),(six,siy))
-      x_res = abs(six - new_cat_x)
-      y_res = abs(siy - new_cat_y)
 
       if six < 1920 / 2:
          left_side.append(cat_dist)
@@ -1511,6 +1509,8 @@ def remove_bad_stars(cat_image_stars):
    for star in cat_image_stars:
       dcname,mag,ra,dec,img_ra,img_dec,match_dist,org_x,org_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist,star_int = star
       center_dist = calc_dist((960,540),(six,siy))
+      x_res = abs(six - new_cat_x)
+      y_res = abs(siy - new_cat_y)
       if center_dist < 600:
          dist = "close"
       else:
