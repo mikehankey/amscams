@@ -1976,6 +1976,8 @@ def refit_meteor(meteor_file, con, cur, json_conf, mcp = None, last_best_dict = 
       print("******************************")
       print("*************************")
       print("********************")
+      mj['cp'] = best_cal
+
 
 
 
