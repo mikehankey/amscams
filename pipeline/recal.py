@@ -1542,6 +1542,17 @@ def remove_bad_stars(cat_image_stars):
          if y_res > x_res :
             bad.append(star)
             continue
+         # reject bad side matches
+         if side == "left":
+            if new_cat_x > six:
+               print("CAT X on wrong side of star for being on the left!", new_cat_x, six)
+               bad.append(star)
+               continue
+         else:
+            if new_cat_x < six:
+               print("CAT X on wrong side of star for being on the right!", new_cat_x, six)
+               bad.append(star)
+               continue
 
       if cat_dist < (res_limit * factor):
          good.append(star)
