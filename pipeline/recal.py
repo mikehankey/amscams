@@ -6877,18 +6877,21 @@ def recenter_fov(cal_fn, cal_params, cal_img, stars, json_conf, extra_text="", t
       nc = start_cp 
 
    #cat_stars, short_bright_stars, cat_image = get_catalog_stars(nc)
+   if False:
+      # not sure about this / causing a bug. 
+      if "cal_params" in cal_fn:
+         # for meteor files
+         up_stars, cat_image_stars = update_paired_stars(cal_fn, nc, stars, con, cur, json_conf)
+         print("\tCAT STARS RECENTER FOV 4:", len(nc['cat_image_stars']))
+      else:
+         # for non meteor files this is a bug / no need to do this. 
+         print("CUR:", cur)
+         nc['cat_image_stars'] = pair_star_points(cal_fn, cal_img, nc, json_conf, con, cur, mcp, False)
+         print("\tCAT STARS RECENTER FOV 5:", len(nc['cat_image_stars']))
+         cat_image_stars = nc['cat_image_stars']
 
-   if "cal_params" in cal_fn:
-      up_stars, cat_image_stars = update_paired_stars(cal_fn, nc, stars, con, cur, json_conf)
-      print("\tCAT STARS RECENTER FOV 4:", len(nc['cat_image_stars']))
-   else:
-      print("CUR:", cur)
-      nc['cat_image_stars'] = pair_star_points(cal_fn, cal_img, nc, json_conf, con, cur, mcp, False)
-      print("\tCAT STARS RECENTER FOV 5:", len(nc['cat_image_stars']))
-      cat_image_stars = nc['cat_image_stars']
-
-   if len(cat_image_stars) > 0:
-      nc['cat_image_stars'] = cat_image_stars
+      if len(cat_image_stars) > 0:
+         nc['cat_image_stars'] = cat_image_stars
    nc['total_res_px'] = end_res 
    print("\tCAT STARS RECENTER FOV 6:", len(nc['cat_image_stars']))
    return(nc, cat_stars)
