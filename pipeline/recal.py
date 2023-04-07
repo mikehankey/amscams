@@ -1477,6 +1477,9 @@ def remove_bad_stars(cat_image_stars):
    for star in cat_image_stars:
       dcname,mag,ra,dec,img_ra,img_dec,match_dist,org_x,org_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist,star_int = star
       center_dist = calc_dist((960,540),(six,siy))
+      x_res = abs(six - new_cat_x)
+      y_res = abs(siy - new_cat_y)
+
       if six < 1920 / 2:
          left_side.append(cat_dist)
       else:
@@ -1535,6 +1538,10 @@ def remove_bad_stars(cat_image_stars):
       #   res_limit = 5
       #if res_limit < 1:
       #   res_limit = 1
+      if center_dist > 600 and cat_dist > 5:
+         if y_res > x_res :
+            bad.append(star)
+            continue
 
       if cat_dist < (res_limit * factor):
          good.append(star)
@@ -9204,6 +9211,12 @@ def fast_lens(cam_id, con, cur, json_conf,limit=5, cal_fns=None):
       cal_params['cat_image_stars'] = cat_image_stars
       cal_params['cat_image_stars'] = remove_bad_stars(cal_params['cat_image_stars'])
       cal_params, xxx_cat_image_stars = recenter_fov(cal_fn, cal_params, cal_img.copy(),  stars, json_conf, "", None, cal_img, con, cur)
+
+      extra_text = "Fast lens : after re-center fov"
+      star_img = draw_star_image(cal_img, cal_params['cat_image_stars'],cal_params, json_conf, extra_text)
+      cv2.imwrite("/mnt/ams2/last.jpg", star_img)
+
+
       ocps = cal_params['cat_image_stars'] 
      
       if cal_params['total_res_px'] >= 5:
