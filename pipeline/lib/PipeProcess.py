@@ -129,6 +129,25 @@ def gitpull(json_conf):
       os.system("cd /home/ams/amscams/install; ./update-flask-assets.sh ")
    print("DONE GIT PULL.")
 
+def run_jobs_critical(json_conf):
+
+   today = datetime.now().strftime("%Y_%m_%d")
+   yest = (datetime.now() - dt.timedelta(days = 1)).strftime("%Y_%m_%d")
+   year,month, day = today.split("_")
+
+   cmds = []
+   cmds.append(('all', "Clean disk / Purge old files", "cd /home/ams/amscams/pythonv2; ./doDay.py cd"))
+   cmds.append(('all', "Dyna DB", "cd /home/ams/amscams/pipeline; ./DynaDB.py ddd " + today + ">/dev/null 2>&1"))
+   cmds.append(('all', "Run Batch Vals ", "cd /home/ams/amscams/pythonv2; ./flex-detect.py bv " + today))
+   cmds.append(('all', "Run Verify Meteor", "cd /home/ams/amscams/pythonv2; ./flex-detect.py vms " + today))
+   print("Run critical jobs only.")
+   for cmd in cmds :
+      st = time.time()
+      print("   ", cmd[1], cmd[2])
+      os.system(cmd[2] + " > /home/ams/run_jobs.txt 2>&1")
+      elp = time.time() - st
+      print("   RUN TIME:", elp)
+
 
 def run_jobs(json_conf):
 
@@ -144,6 +163,9 @@ def run_jobs(json_conf):
          os.system("rm pause-jobs.json")
       else:
          print("Run jobs currently paused:", tl / 60 / 24)
+         # just run the critical jobs!
+         run_jobs_critical(json_conf)
+
          return()
    
 
@@ -236,7 +258,7 @@ def run_jobs(json_conf):
          print("./DynaDB.py ddd " + yest + "")
          os.system("./DynaDB.py ddd " + yest + " > /home/ams/ddd.txt")
          print("./DynaDB.py ddd " + today + "")
-         os.system("./DynaDB.py ddd " + today + " >> /home/ams/ddd.txt")
+         os.system("./DynaDB.py ddd " + today + " > /home/ams/ddd.txt")
          os.system("touch /home/ams/loaded_last.txt")
 
    if "WMPL" in json_conf:
@@ -314,7 +336,7 @@ def run_jobs(json_conf):
    cmds.append(('all', "Run Calibs (if daytime)", "cd /home/ams/amscams/pipeline; ./Process.py ca"))
    cmds.append(('all', "Cal Status", "cd /home/ams/amscams/pipeline; ./recal.py status all "))
 
-   cmds.append(('all', "Batch Apply Bad", "cd /home/ams/amscams/pipeline; ./recal.py batch_apply_bad all 10"))
+   #cmds.append(('all', "Batch Apply Bad", "cd /home/ams/amscams/pipeline; ./recal.py batch_apply_bad all 10"))
    #cmds.append(('day', "Super Cal", "cd /home/ams/amscams/pipeline; ./Process.py super_cal"))
    #cmds.append(('all', "Run Master Stacks for Current Night", "cd /home/ams/amscams/pythonv2; ./batchJobs.py sna 1"))
 

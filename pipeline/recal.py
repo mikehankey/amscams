@@ -298,7 +298,7 @@ def remote_cal(cal_file, con, cur):
    img_sub = cv2.subtract(gray_x,cat_star_mask)
    cv2.imshow('star mask', img_sub)
    cv2.imshow('pepe', show_img)
-   cv2.waitKey(0)
+   cv2.waitKey(30)
    cal_params['cam_id'] = cam
    cal_params['station_id'] = st_id
    station_id = st_id
@@ -493,7 +493,6 @@ def man_cal(local_json_file, oimg, station_id, cal_fn, cal_params):
               str(interval) , str(int(found_perc)), str(round(rez,3)))
 
       cv2.putText(show_img, str(info),  (int(50),int(50)), cv2.FONT_HERSHEY_SIMPLEX, .8, (200,200,200), 1)
-      #cv2.waitKey(0)
 
       cv2.imshow('pepe', show_img)
       cv2.setMouseCallback('pepe', click_event, "testing123")
@@ -1055,7 +1054,6 @@ def freecal_stats(cam_id, freecal_index, json_conf, stats, mask_imgs) :
       cc += 1
 
       #cv2.imshow('pepe', show_img)
-      #cv2.waitKey(0)
    for cam_id in stats:
       print(cam_id, 
               np.median(stats[cam_id]['total_stars']),
@@ -1659,7 +1657,6 @@ def plot_cal_history(con, cur, json_conf):
       all_img[y1:y2,x1:x2] = img
       c += 1
    #cv2.imshow('pepe', all_img)
-   #cv2.waitKey(0)
 
 
 def plot_refit_meteor_day(meteor_day, con, cur, json_conf):
@@ -2040,7 +2037,6 @@ def refit_meteor(meteor_file, con, cur, json_conf, mcp = None, last_best_dict = 
    #star_img = draw_star_image(stack_img.copy(), cp['cat_image_stars'],cp, json_conf, extra_text) 
    #if SHOW == 1:
    #   cv2.imshow('pepe', star_img)
-   #   cv2.waitKey(0)
 
    #if SHOW == 1 :
    #   cv2.imshow('pepe', star_img)
@@ -3618,7 +3614,6 @@ def pair_star_points(cal_fn, oimg, cal_params, json_conf, con, cur, mcp, save_im
             #else:
             #if SHOW == 1:
             #   cv2.imshow('pepe', show_img)
-            #   cv2.waitKey(0)
 
    cal_dir = "/mnt/ams2/cal/freecal/" + cal_fn.replace("-stacked-calparams.json", "/")
 
@@ -6701,7 +6696,6 @@ def cat_star_match(cal_fn, cal_params, cal_img, cat_stars):
 
    #if SHOW == 1: 
    #    cv2.imshow('pepe', cat_image) 
-   #    cv2.waitKey(0)
    return(new_cat_image_stars)
 #   exit()
 
@@ -9330,7 +9324,7 @@ def fast_lens(cam_id, con, cur, json_conf,limit=5, cal_fns=None):
    #print("/mnt/ams2/cal/" + station_id + "_" + cam_id + "_MERGED_STARS.json" )
    if SHOW == 1:
       cv2.imshow('pepe', fast_img)
-      cv2.waitKey(0)
+      cv2.waitKey(30)
 
 
 def characterize_best(cam_id, con, cur, json_conf,limit=50, cal_fns=None):
@@ -10897,7 +10891,7 @@ if __name__ == "__main__":
    if cmd == "fast_lens":
       force = 1
       cam_id = sys.argv[2]
-      limit = 5
+      limit = 20 
       if len(sys.argv) > 3:
          limit = int(sys.argv[3])
 
@@ -11118,6 +11112,22 @@ if __name__ == "__main__":
          refit_log = load_json_file(refit_log_file)
          report = refit_summary(refit_log)
          save_json_file(refit_sum_file, report)
+
+   if cmd == "recal" :
+      cam_id = sys.argv[2]
+      force = 1
+      if cam_id != "ALL" and cam_id != "all":
+         limit = 25
+         fast_lens(cam_id, con, cur, json_conf,limit, None)
+         lens_model(cam_id, con, cur, json_conf, None,force)
+         batch_apply(cam_id, con, cur, json_conf, None, True)
+      else:
+         for cam_num in json_conf['cameras']:
+            limit = 25
+            cam_id = json_conf['cameras'][cam_num]['cams_id']
+            fast_lens(cam_id, con, cur, json_conf,limit, None)
+            lens_model(cam_id, con, cur, json_conf, None,force)
+            batch_apply(cam_id, con, cur, json_conf, None, True)
 
    if cmd == "perfect_cal" or cmd == "perfect":
       cam_id = sys.argv[2]
