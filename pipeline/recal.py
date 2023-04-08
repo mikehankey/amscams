@@ -11114,6 +11114,7 @@ if __name__ == "__main__":
          save_json_file(refit_sum_file, report)
 
    if cmd == "recal" :
+      os.system("touch pause-jobs.json")
       cam_id = sys.argv[2]
       force = 1
       if cam_id != "ALL" and cam_id != "all":
@@ -11128,6 +11129,7 @@ if __name__ == "__main__":
             fast_lens(cam_id, con, cur, json_conf,limit, None)
             lens_model(cam_id, con, cur, json_conf, None,force)
             batch_apply(cam_id, con, cur, json_conf, None, True)
+      os.system("rm pause-jobs.json")
 
    if cmd == "perfect_cal" or cmd == "perfect":
       cam_id = sys.argv[2]
