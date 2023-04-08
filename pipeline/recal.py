@@ -566,7 +566,6 @@ def man_cal(local_json_file, oimg, station_id, cal_fn, cal_params):
             cal_params['y_poly_fwd'] = new_cal_params['y_poly_fwd']
          else:
             print("POLY ATTEMPT FAILED!?")
-            input("WAIT")
       
       if key == 114:
          #(R)evert
@@ -756,8 +755,11 @@ def cal_health(con, cur, json_conf):
    #    - track job runs so we don't run too much / too often -- need to spread the runs out over all types of jobs/cams/files
    #   start with refit jobs
 
-   sys_rez = [row[2] for row in info]
-   print("System rez:", sys_rez)
+   # auto jobs, needs work. disabled on of 4/8/23
+
+   sys_rez = [row[3] for row in info]
+   #print("System rez:", sys_rez)
+   #info.append([cam_num, cam_id, cam_stats[cam_id]['med_stars'], round(cam_stats[cam_id]['med_rez'],3), len(cam_stats[cam_id]['good_files']), len(cam_stats[cam_id]['avg_files']), len(cam_stats[cam_id]['bad_files']), round(fun,3), lm_stars, model_runs, lm_date.split(" ")[0], min_max_dist_status])
    info = sorted(info, key=lambda x: (x[3]), reverse=False)
    for row in info:
       if row[3] > 1:
@@ -766,13 +768,12 @@ def cal_health(con, cur, json_conf):
          jobs.append(("refit_best", row[1], 8, row[3]))
          jobs.append(("refit_avg", row[1], 8, row[3]))
          jobs.append(("refit_bad", row[1], 8, row[3]))
-         print("\trefit job added", row[1], row[3], "is > 1")
-
-      if row[7] > 1 or row[8] < 300:
-         print("\tfast_lens job added", row[1], "res", row[7], "is > 1", "or stars", row[8] , "< 300" )
+         #print("\trefit job added", row[1], row[3], "is > 1")
+      # if the lens model res is > 1 or there are less than 200 stars used in the model, 
+      # redo the model
+      if row[7] > 1 or row[8] < 200:
+         #print("\tfast_lens job added", row[1], "res", row[7], "is > 1", "or stars", row[8] , "< 300" )
          jobs.append(("fast_lens", row[1], 9, row[7]))
-
-
 
    # get menu response from the user. If no response we should auto run the jobs?
    # this way a cron cal to cal_health will run the 'next' jobs without running too long
@@ -782,22 +783,33 @@ def cal_health(con, cur, json_conf):
    pjobs = []
    for job in jobs:
       pjobs.append(job)
-      print("PJOBs", job)
+      #print("PJOBs", job)
 
    i, o, e = select.select( [sys.stdin], [], [], 10 )
    if (i) :
       scam_num = int(sys.stdin.readline().strip())
       selected_cam = cam_nums[scam_num]
       print("SELECTED CAMERA:", selected_cam)
+      cam_menu(selected_cam, con, cur, json_conf,cam_status, cam_stats)
    else:
+      max_cams = len(cam_nums)
+      scam_num = input("Select cam number (1-" + str(max_cams) + ")")
+      selected_cam = cam_nums[int(scam_num)]
+      print("SELECTED CAMERA:", selected_cam)
+      cam_menu(selected_cam, con, cur, json_conf,cam_status, cam_stats)
+
+   # below here is auto jobs stuff disabled on 4/8/23 for rework
+  
+   if False:
       selected_cam = None
       print("No custom command selected in time.")
-      print("Auto running jobs:")
+      print("Auto running job list:")
       for job in jobs:
          print("JOB", job)
-      print("waiting for 3 seconds before starting autojobs... [cntl-x] to quit else auto jobs will run")
-      time.sleep(3)
-      for job in pjobs:
+      #print("waiting for 3 seconds before starting autojobs... [cntl-x] to quit else auto jobs will run")
+      #time.sleep(3)
+      if False:
+      #for job in pjobs:
          cam_id = job[1]
          if job[0] == "fast_lens":
             limit = 20 
@@ -806,16 +818,15 @@ def cal_health(con, cur, json_conf):
             #lens_model(cam_id, con, cur, json_conf )
 
          if job[0] == "refit_avg":
-            batch_apply(cam_id, con, cur, json_conf, None, False, cam_stats, "AVG", 10)
+            batch_apply(cam_id, con, cur, json_conf, None, False, cam_stats, "AVG", 50)
          if job[0] == "refit_best":
-            batch_apply(cam_id, con, cur, json_conf, None, False, cam_stats, "BEST",10)
+            batch_apply(cam_id, con, cur, json_conf, None, False, cam_stats, "BEST",50)
          if job[0] == "refit_bad":
-            batch_apply(cam_id, con, cur, json_conf, None, False, cam_stats, "BAD",10)
-      print("Done auto cal health jobs")
-      exit()
+            batch_apply(cam_id, con, cur, json_conf, None, False, cam_stats, "BAD",50)
+      #print("Done auto cal health jobs")
+   exit()
 
 
-   cam_menu(selected_cam, con, cur, json_conf,cam_status, cam_stats)
 
    # refit best files for each cam
    for cam_id in sorted(cam_stats):
@@ -9201,7 +9212,7 @@ def fast_lens(cam_id, con, cur, json_conf,limit=5, cal_fns=None):
          if mcp["x_fun"] > 5:
             mcp = None
             print("Current lens model is bad and should be reset!")
-            exit()
+            #exit()
    else:
       mcp = None
 
@@ -9262,28 +9273,46 @@ def fast_lens(cam_id, con, cur, json_conf,limit=5, cal_fns=None):
          continue
       cat_image_stars = best_cals[cal_fn]['cat_image_stars']
       cal_params = best_cals[cal_fn]
-
+      long_stars = []
       for star in cat_image_stars:
          (dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,img_x,img_y,res_px,star_flux) = star
+         center_dist = calc_dist((img_x,img_y),(1920/2,1080/2))
+         if center_dist > 600:
+            long_stars.append(star)
          merged_stars.append((cal_fn, cal_params['center_az'], cal_params['center_el'], cal_params['ra_center'], cal_params['dec_center'], cal_params['position_angle'], cal_params['pixscale'], dcname,mag,ra,dec,ra,dec,match_dist,new_x,new_y,cal_params['center_az'],cal_params['center_el'],new_cat_x,new_cat_y,img_x,img_y,res_px,star_flux))
 
    rez = [row[-2] for row in merged_stars] 
-   med_rez_limit = np.median(rez) * 3
+   long_rez = [row[-2] for row in long_stars] 
+   norm_med_rez_limit = np.median(rez) * 3
+   long_med_rez_limit = np.median(long_rez) * 2
    for star in merged_stars:
       cal_fn, center_az, center_el, ra_center, dec_center, position_angle, pixscale, dcname,mag,ra,dec,ra,dec,match_dist,new_x,new_y,center_az,center_el,new_cat_x,new_cat_y,img_x,img_y,res_px,star_flux = star
       res_px2 = calc_dist((new_x,new_y),(new_cat_x,new_cat_y))
       col1,col2 = collinear(img_x,img_y,new_x,new_y,new_cat_x,new_cat_y)
       if res_px2 < res_px:
          res_px = res_px2
+      
+      center_dist = calc_dist((img_x,img_y),(1920/2,1080/2))
+      if center_dist > 600:
+         med_rez_limit = norm_med_rez_limit
+      else:
+         med_rez_limit = long_med_rez_limit
+     
 
       res_col = abs(col1 - col2)
       desc = str(int(res_col))
       if res_px < med_rez_limit :
          good = True
+         print("KEEP", med_rez_limit, dcname, mag, star_flux, res_px)
          color = [0,255,0]
       else:
          good = False 
          color = [128,128,255]
+         print("REJECT", med_rez_limit, dcname, mag, star_flux, res_px)
+      # turn rejects off
+      good = True
+
+
       if res_col < 300 and good is True:
          cv2.putText(fast_img, desc ,  (int(new_x),int(new_y)), cv2.FONT_HERSHEY_SIMPLEX, .6, color, 1)
          cv2.line(fast_img, (int(new_x),int(new_y)), (int(img_x),int(img_y)), [255,255,255], 1)
@@ -9296,6 +9325,8 @@ def fast_lens(cam_id, con, cur, json_conf,limit=5, cal_fns=None):
       #   cv2.waitKey(30)
 
    save_json_file("/mnt/ams2/cal/" + station_id + "_" + cam_id + "_MERGED_STARS.json", merged_stars)
+   cv2.imwrite('/mnt/ams2/fast_img.jpg', fast_img)
+   print('saved /mnt/ams2/fast_img.jpg' )
    #print("/mnt/ams2/cal/" + station_id + "_" + cam_id + "_MERGED_STARS.json" )
    if SHOW == 1:
       cv2.imshow('pepe', fast_img)
