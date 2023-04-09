@@ -46,6 +46,73 @@ from prettytable import PrettyTable as pt
 
 tries = 0
 
+def rescue_cal(cam_id, con, cur, json_conf):
+   # reset and rescue a calibration -- for when things get corrupted or go wrong
+   # copy original calib images to the cal dir and restart the astrometry process
+   # only do this for 2 images per month max
+   cal_file_dict = {}
+   station_id = json_conf['site']['ams_id']
+   auto_cal_dir = "/mnt/ams2/meteor_archive/" + station_id + "/CAL/AUTOCAL/"
+   free_cal_dir = "/mnt/ams2/cal/freecal/"
+   dirs = []
+   print("AUTO", auto_cal_dir) 
+   contents = os.listdir(auto_cal_dir)
+   all_extra_cals = os.listdir("/mnt/ams2/cal/extracal/")
+   all_free_cals = os.listdir("/mnt/ams2/cal/freecal/")
+   extra_cals = []
+   free_cals = []
+   for x in all_extra_cals:
+      if cam_id in x:
+         year_mon = x[0:7]
+         if year_mon not in cal_file_dict:
+            cal_file_dict[year_mon] = {}
+            cal_file_dict[year_mon]['extra_cals'] = []
+            cal_file_dict[year_mon]['free_cals'] = []
+            cal_file_dict[year_mon]['src_cals'] = []
+         cal_file_dict[year_mon]['extra_cals'].append(x)
+
+   for x in all_free_cals:
+      if cam_id in x and os.path.isdir(free_cal_dir + x) is True:
+         free_cals.append(x)
+         year_mon = x[0:7]
+         if year_mon not in cal_file_dict:
+            cal_file_dict[year_mon] = {}
+            cal_file_dict[year_mon]['extra_cals'] = []
+            cal_file_dict[year_mon]['free_cals'] = []
+            cal_file_dict[year_mon]['src_cals'] = []
+         cal_file_dict[year_mon]['free_cals'].append(x)
+
+
+
+
+   for d in contents:
+      if "20" in d and os.path.isdir(auto_cal_dir + d) is True:
+         sdir = auto_cal_dir + d + "/solved" 
+         if os.path.isdir(sdir) is True:
+            dirs.append(d)
+            sfiles = os.listdir(sdir)
+            for x in sfiles:
+               if cam_id not in x:
+                  continue
+               if "png" not in x:
+                  continue
+               if cam_id in x and ".png" in x:
+                  year_mon = x[0:7]
+                  if year_mon not in cal_file_dict:
+                     cal_file_dict[year_mon] = {}
+                     cal_file_dict[year_mon]['extra_cals'] = []
+                     cal_file_dict[year_mon]['free_cals'] = []
+                     cal_file_dict[year_mon]['src_cals'] = []
+                  cal_file_dict[year_mon]['src_cals'].append(x)
+
+
+   tb = pt()
+   tb.field_names = ["Year/Month", "Free Cals","Src Cals", "Extra Cals"]
+
+   for year_mon in sorted(cal_file_dict,reverse=True):
+      tb.add_row([year_mon, len(cal_file_dict[year_mon]['free_cals']), len(cal_file_dict[year_mon]['src_cals']), len(cal_file_dict[year_mon]['extra_cals'])])
+   print(tb)
+
 def remote_menu(con,cur):
    ST = Stations()
    ST.load_station_data()
@@ -9276,7 +9343,11 @@ def fast_lens(cam_id, con, cur, json_conf,limit=5, cal_fns=None):
          merged_stars.append((cal_fn, cal_params['center_az'], cal_params['center_el'], cal_params['ra_center'], cal_params['dec_center'], cal_params['position_angle'], cal_params['pixscale'], dcname,mag,ra,dec,ra,dec,match_dist,new_x,new_y,cal_params['center_az'],cal_params['center_el'],new_cat_x,new_cat_y,img_x,img_y,res_px,star_flux))
 
    rez = [row[-2] for row in merged_stars] 
-   long_rez = [row[-2] for row in long_stars] 
+   if len(long_rez) > 1:
+      long_rez = [row[-2] for row in long_stars] 
+   else:
+      long_rez = 20
+
    norm_med_rez_limit = np.median(rez) * 3
    long_med_rez_limit = np.median(long_rez) * 2
    for star in merged_stars:
@@ -10863,6 +10934,9 @@ if __name__ == "__main__":
          cal_file = sys.argv[2]
          remote_cal(cal_file, con, cur)
 
+   if sys.argv[1] == "rescue" :
+      cam_id = sys.argv[2]
+      rescue_cal(cam_id, con, cur, json_conf)
 
 
    if cmd == "anchor_cal" :
