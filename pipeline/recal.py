@@ -6306,7 +6306,7 @@ def apply_calib (cal_file, calfiles_data, json_conf, mcp, last_cal_params=None, 
       # revert to WCS
       if cal_params['total_res_px'] > 8:
          rev_cal_params = revert_to_wcs(cal_fn)
-         input("REVERTING TO WCS PARAMS!")
+         #input("REVERTING TO WCS PARAMS!")
       else:
          rev_cal_params = None
 
