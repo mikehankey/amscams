@@ -11194,6 +11194,13 @@ if __name__ == "__main__":
          save_json_file(refit_sum_file, report)
 
    if cmd == "recal" :
+      # main recal routine 
+      recal_history_file = "/mnt/ams2/cal/recal.json" 
+      if os.path.exists(recal_history_file) is True:
+         recal_hist = load_json_file(recal_history_file)
+      else:
+         recal_hist = {}
+
       os.system("touch pause-jobs.json")
       cam_id = sys.argv[2]
       force = 1
@@ -11203,12 +11210,19 @@ if __name__ == "__main__":
          lens_model(cam_id, con, cur, json_conf, None,force)
          batch_apply(cam_id, con, cur, json_conf, None, True)
       else:
+         # for now only continue if the cam is not in the hist file yet
          for cam_num in json_conf['cameras']:
             limit = 25
             cam_id = json_conf['cameras'][cam_num]['cams_id']
+            if cam_id in recal_hist:
+               continue
+            else:
+               recal_hist[cam_id] = {}
+               recal_hist[cam_id]['last_run'] = time.time()
             fast_lens(cam_id, con, cur, json_conf,limit, None)
             lens_model(cam_id, con, cur, json_conf, None,force)
             batch_apply(cam_id, con, cur, json_conf, None, True)
+            save_json_file(recal_history_file, recal_hist)
       os.system("rm pause-jobs.json")
 
    if cmd == "perfect_cal" or cmd == "perfect":
