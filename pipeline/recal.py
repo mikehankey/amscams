@@ -3782,7 +3782,7 @@ def wcs_to_cal_params(wcs_file,json_conf):
          if float(value) < 0:
             cal_params_json['position_angle'] = float(value) + 180
          else:
-            cal_params_json['position_angle'] 
+            cal_params_json['position_angle']  = float(value)
       if field == "ra_center":
          cal_params_json['ra_center'] = value
       if field == "dec_center":
