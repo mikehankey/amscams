@@ -11221,6 +11221,7 @@ if __name__ == "__main__":
             if cam_id in recal_hist:
                continue
             else:
+               cal_status_report(cam_id, con, cur, json_conf)
                recal_hist[cam_id] = {}
                recal_hist[cam_id]['last_run'] = time.time()
             fast_lens(cam_id, con, cur, json_conf,limit, None)
