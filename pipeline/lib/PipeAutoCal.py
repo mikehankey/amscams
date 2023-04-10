@@ -3910,6 +3910,11 @@ def print_rigid(cp):
    print("POS:", cp['position_angle'])
    print("PX:", cp['pixscale'])
 
+def print_cal_params(cp):
+   for key in cp:
+      if type(cp[key]) is not list:
+         print(key, cp[key])
+
 def deep_cal_report(cam, json_conf):
    df = datetime.now().strftime("%Y_%m_%d_%H_%M_000_")
    year = datetime.now().strftime("%Y")
@@ -6943,7 +6948,7 @@ def autocal(image_file, json_conf, show = 0, heal_only=0):
    # load image file
    if cfe(image_file) == 0:
       return ()
-   #stars = get_image_stars(image_file, None, json_conf,0)
+
    print("IMAGE FILE:", image_file)
    try:
       img = cv2.imread(image_file)
@@ -6965,11 +6970,11 @@ def autocal(image_file, json_conf, show = 0, heal_only=0):
       for star in stars:
          (x,y,sint) = star
          cv2.circle(img,(int(x),int(y)), 10, (128,128,255), 1)
-      #cv2.imwrite(star_scan_file,img)
-      #print("SAVED:", star_scan_file)
+
    if SHOW == 1:
-      cv2.imshow("SCAN STARS DONE.", img)
+      cv2.imshow("pepe", img)
       cv2.waitKey(10)
+
    # check out dirs make if needed
    if True:
       cdir = "/mnt/ams2/meteor_archive/" + station_id + "/CAL/AUTO_CAL/"
@@ -6998,6 +7003,7 @@ def autocal(image_file, json_conf, show = 0, heal_only=0):
    #for day_diff, hist in cal_hist[0:30]:
    # check previous cals
    if False:
+      # no longer used / old code?
       cam, date ,az, el, pos, pxs, res = hist
       data = [image_file, az, el, pos, pxs, len(stars), len(stars), 99,0]  
       cp = make_cal_obj(az,el,pos,pxs,stars,stars,res)
@@ -7023,7 +7029,9 @@ def autocal(image_file, json_conf, show = 0, heal_only=0):
       if tcp['total_res_px'] < last_best_res:
 
          best_cp = dict(cp)
+
    if True:
+      # best cp is currently always None!
       if best_cp is not None:
          cp = best_cp
          if cp['total_res_px'] < 10 and len(cp['cat_image_stars']) >= 10:
@@ -7076,7 +7084,6 @@ def autocal(image_file, json_conf, show = 0, heal_only=0):
    print("IF we made it this far, it means we could not use a default calibration to solve the field. ")
    print("Let's try to blind solve it...")
 
-
    try:
       star_img = img.copy()
    except: 
@@ -7115,24 +7122,26 @@ def autocal(image_file, json_conf, show = 0, heal_only=0):
          (x,y,sint) = star
          #cv2.circle(star_img,(x,y), 10, (128,128,255), 1)
           
-      show_image(star_img, 'pepe11', 300)
+      show_image(star_img, 'pepe', 300)
 
    plt_img = cv2.imread(image_file)
    #cv2.imwrite("/mnt/ams2/test/plt_img.jpg", plt_img)
 
+   # zero out background and only show stars
    plate_image, star_points = make_plate_image(plt_img, stars )
-
-
 
    plate_file = image_file.replace(".png", ".jpg")
    cv2.imwrite(plate_file, plate_image)
+
    if SHOW == 1:
-      show_image(img, 'pepe12', 300)
-      show_image(plate_image, 'pepe13', 300)
+      show_image(img, 'pepe', 300)
+      show_image(plate_image, 'pepe', 300)
    status, cal_params,wcs_file = solve_field(plate_file, stars, json_conf)
-   if status == 1:
-      if float(cal_params['position_angle']) < 0:
-         cal_params['position_angle'] = float(cal_params['position_angle']) + 180
+
+   # this should be handled inside the solve_field function and use orientation_center?!
+   #if status == 1:
+   #   if float(cal_params['position_angle']) < 0:
+   #      cal_params['position_angle'] = float(cal_params['position_angle']) + 180
 
    if mcp is not None:
       cal_params['x_poly'] = mcp['x_poly']
@@ -7192,7 +7201,7 @@ def autocal(image_file, json_conf, show = 0, heal_only=0):
 
    if SHOW == 1:
       marked_img = make_fit_image(img, cal_params['cat_image_stars'])
-      show_image(marked_img, 'pepe14', 90)
+      show_image(marked_img, 'pepe', 90)
 
    this_poly = np.zeros(shape=(4,), dtype=np.float64)
    cal_params['orig_pixscale'] = cal_params['pixscale']
@@ -7277,9 +7286,19 @@ def autocal(image_file, json_conf, show = 0, heal_only=0):
    cmd = "mv " + tdir + saf + " " + sdir
    os.system(cmd)
 
-   cmd = "./Process.py refit " + new_cal_file
-   os.system(cmd)
+   print_cal_params(cal_params)
    cpfn = new_cal_file.split("/")[-1]
+   #input("APPLY CALIB")
+   cmd = "./recal.py apply_calib " + cpfn 
+   print(cmd)
+   os.system(cmd)
+
+   # do this twice, it works better the 2nd time!
+   cmd = "./recal.py apply_calib " + cpfn 
+   print(cmd)
+   os.system(cmd)
+
+   #input("AFTER APPLY CALIB")
    #cmd = "./recal.py apply_calib " + cpfn 
    #print(cmd)
    #os.system(cmd)
@@ -7332,6 +7351,10 @@ def make_fit_image(image, cat_image_stars) :
 
       new_x = int(new_x)
       new_y = int(new_y)
+      new_cat_x = int(new_cat_x)
+      new_cat_y = int(new_cat_y)
+      six = int(six)
+      siy = int(siy)
 
 
       # catalog star enhanced position
@@ -8376,8 +8399,11 @@ def save_cal_params(wcs_file,json_conf):
          cal_params_json['imageh'] = value
       if field == "pixscale":
          cal_params_json['pixscale'] = value
-      if field == "orientation":
-         cal_params_json['position_angle'] = float(value) + 180
+      if field == "orientation_center":
+         if float(value) < 0:
+            cal_params_json['position_angle'] = float(value) + 180
+         else:
+            cal_params_json['position_angle'] = float(value) #+ 180
       if field == "ra_center":
          cal_params_json['ra_center'] = value
       if field == "dec_center":
@@ -8408,8 +8434,6 @@ def save_cal_params(wcs_file,json_conf):
    cal_params_json['center_az'] = az
    cal_params_json['center_el'] = el
    #cal_params = default_cal_params(cal_params, json_conf)
-
- 
 
    save_json_file(cal_params_file, cal_params_json)
    return(cal_params_json)

@@ -1648,7 +1648,7 @@ def remove_bad_stars(cat_image_stars):
 def plot_cal_history(con, cur, json_conf):
    import matplotlib.pyplot as plt 
    from matplotlib.pyplot import figure 
-   print("get_close_calib_files:", cal_file)
+
    calindex_file = "/mnt/ams2/cal/freecal_index.json"
    cal_dir = "/mnt/ams2/cal/"
    if os.path.exists(calindex_file) is True:
@@ -3779,7 +3779,10 @@ def wcs_to_cal_params(wcs_file,json_conf):
       if field == "pixscale":
          cal_params_json['pixscale'] = value
       if field == "orientation":
-         cal_params_json['position_angle'] = float(value) + 180
+         if float(value) < 0:
+            cal_params_json['position_angle'] = float(value) + 180
+         else:
+            cal_params_json['position_angle'] 
       if field == "ra_center":
          cal_params_json['ra_center'] = value
       if field == "dec_center":
@@ -5859,7 +5862,7 @@ def copy_best_cal_images(con, cur, json_conf):
       for row in calfiles_data[0:10]:
          print(row)
 
-def batch_apply(cam_id, con,cur, json_conf, last=None, do_bad=False, cam_stats=None, apply_type="ALL", limit=100):
+def batch_apply(cam_id, con,cur, json_conf, last=None, do_bad=False, cam_stats=None, apply_type="ALL", limit=None):
    # apply the latest MCP Poly to each cal file and then recenter them
    print("BATCH APPLY:", apply_type)
    autocal_dir = "/mnt/ams2/cal/"
@@ -5900,6 +5903,8 @@ def batch_apply(cam_id, con,cur, json_conf, last=None, do_bad=False, cam_stats=N
          rc = 0
          flux_table = {}
          # sorted most recent to least recent
+         if limit is None:
+            limit = len(calfiles_data) 
          for cf in sorted(calfiles_data, reverse=True)[0:limit]:
             cal_dir = "/mnt/ams2/cal/freecal/" + cf.split("-")[0] + "/"
 
@@ -6298,10 +6303,10 @@ def apply_calib (cal_file, calfiles_data, json_conf, mcp, last_cal_params=None, 
       cal_params['user_stars'] = star_points
       cal_params['star_points'] = star_points
       print("\tRES:", cal_params['total_res_px']) 
-
       # revert to WCS
       if cal_params['total_res_px'] > 8:
          rev_cal_params = revert_to_wcs(cal_fn)
+         input("REVERTING TO WCS PARAMS!")
       else:
          rev_cal_params = None
 
@@ -9328,13 +9333,13 @@ def fast_lens(cam_id, con, cur, json_conf,limit=5, cal_fns=None):
       rez.append(best_index[cal_fn])
    med_rez = np.median(rez)
 
+   long_stars = []
    for cal_fn in best_index:
       if best_index[cal_fn]  > med_rez:
          #print("skip ", cal_fn, med_rez, best_index[cal_fn])
          continue
       cat_image_stars = best_cals[cal_fn]['cat_image_stars']
       cal_params = best_cals[cal_fn]
-      long_stars = []
       for star in cat_image_stars:
          (dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,img_x,img_y,res_px,star_flux) = star
          center_dist = calc_dist((img_x,img_y),(1920/2,1080/2))
@@ -9343,6 +9348,7 @@ def fast_lens(cam_id, con, cur, json_conf,limit=5, cal_fns=None):
          merged_stars.append((cal_fn, cal_params['center_az'], cal_params['center_el'], cal_params['ra_center'], cal_params['dec_center'], cal_params['position_angle'], cal_params['pixscale'], dcname,mag,ra,dec,ra,dec,match_dist,new_x,new_y,cal_params['center_az'],cal_params['center_el'],new_cat_x,new_cat_y,img_x,img_y,res_px,star_flux))
 
    rez = [row[-2] for row in merged_stars] 
+   long_rez = [row[-2] for row in long_stars] 
    if len(long_rez) > 1:
       long_rez = [row[-2] for row in long_stars] 
    else:
