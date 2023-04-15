@@ -141,7 +141,6 @@ class AllSkyNetwork():
             print("FAILED TO GET :" + ev_file)
 
    def station_report(self, date):
-      input("STATION REPORT")
       all_stations = load_json_file("host_response.json")
       self.set_dates(date)
       ae = load_json_file(self.all_events_file)
@@ -2564,7 +2563,6 @@ class AllSkyNetwork():
             cv2.waitKey(30)
          else:
             print("REVIEW IMAGE IS NONE!", review_image)
-            input("ERROR")
          print("OK1")
 
    def get_event_media(self, event_id):
@@ -3351,7 +3349,6 @@ class AllSkyNetwork():
 
             self.sd_clips[sd_vid] = {}
             print("SD CLIPS:", self.sd_clips.keys())
-            input("VID NOT IN SD CLIPS", sd_vid)
          if "roi_frames" not in self.sd_clips[sd_vid]:
             self.sd_clips[sd_vid]['roi_frames'] = []
          if "tracking_frames" not in self.sd_clips[sd_vid]:
@@ -3643,7 +3640,7 @@ class AllSkyNetwork():
          stack_imgs_dict = {}
 
 
-         input("YOX") 
+         #input("YOX") 
          
          for row in rows:
             (event_id, station_id, obs_id, fns, times, xs, ys, azs, els, ints, \
@@ -4380,6 +4377,10 @@ class AllSkyNetwork():
             obs_data[obs_id]['ignore'] = ignore 
             obs_data[obs_id]['image_file'] =  self.local_evdir + self.event_id + "/" + obs_id + "-stacked.jpg"
 
+            print("FIND START POINT", obs_id, obs_data[obs_id]['azs'][0])
+            print("FIND END POINT", obs_id, obs_data[obs_id]['azs'][-1])
+
+
             obs_data[obs_id]['az_start_point'] = self.find_point_from_az_dist(lat,lon,float(json.loads(azs)[0]),650)
             obs_data[obs_id]['az_end_point'] = self.find_point_from_az_dist(lat,lon,float(json.loads(azs)[-1]),650)
             if station_id not in st_az_pts:
@@ -4991,10 +4992,7 @@ class AllSkyNetwork():
          ignore = load_json_file(ignore_file)
       else:
          ignore = []
-      print("IGNORE", ignore)
-      print("IGNORE FILE", ignore_file)
 
-      input("WAIT")
       # select main event info from the local sqlite DB
       sql = """
             SELECT event_id, event_minute, revision, stations, obs_ids, event_start_time, event_start_times,
@@ -5038,26 +5036,12 @@ class AllSkyNetwork():
             if st_id not in valid_obs:
                valid_obs[st_id] = self.get_valid_obs(st_id, date)
 
-            #BUG VALID OBS?
-            #if obs_fn in valid_obs[st_id] :
-            #   print("VALID OBS")
-            #else:
-            #   print("INVALID OBS")
-            #   invalid_obs[obs_id] = {}
-            #   continue
-
-
-
             vid = obs_id.replace(st_id + "_", "") + ".mp4"
             dict_key = obs_id + ".mp4"
-            #if st_id not in temp_obs:
-
-            #   temp_obs[st_id] = {}
 
             # here we should fetch the latest obs from AWS 
             # to make sure we pick up any edits?
             sd_vid = dict_key.replace(st_id + "_", "")
-            #if vid not in temp_obs[st_id]:
             if dict_key not in self.obs_dict:
                self.obs_dict[dict_key] = {}
             if True:
@@ -5073,28 +5057,14 @@ class AllSkyNetwork():
                         print("BAD OBS SKIP!")
                         skip = True
                   if skip is False:
-                     #for key in dobs:
-                     #   print("DYNA OBS:", st_id, key, dobs[key])
-                     #print("Update event obs:", st_id, sd_vid)
                      self.update_event_obs(dobs)
-                  
-
                      dobs['loc'] = self.obs_dict[dict_key]['loc']
                      temp_obs = convert_dy_obs(dobs, temp_obs)
-
                else:
                   print(dict_key, "not in obsdict. try deleting the file.")
                   print( self.obs_dict_file)
 
-
          self.good_obs = temp_obs
-         #for st in temp_obs:
-         #   print("STATION:", st)
-         #   for vd in temp_obs[st]:
-         #      print("VID:", vd)
-         #      print(temp_obs[st][vd].keys())
-
-         # we could sync obs here? or inside solveWMPL
 
          extra_obs_file = self.local_evdir + event_id + "/" + event_id + "_EXTRA_OBS.json"
          if os.path.exists(extra_obs_file) is True:
@@ -5136,7 +5106,6 @@ class AllSkyNetwork():
       print("OBS:", obs)
       print("UPDATE EVENT OBS")
       if "meteor_frame_data" not in obs:
-         input("NO FRAME DATA")
          return() 
       if "aws_status" in obs:
          if obs['aws_status'] is False:
@@ -5962,8 +5931,6 @@ class AllSkyNetwork():
 
    def solve_event(self,event_id, temp_obs, time_sync, force):
 
-      # flag2 is force?
-      #self.check_event_status(event_id)
       ev_dir = self.local_evdir + "/" + event_id
       if os.path.exists(ev_dir) is False:
          os.makedirs(ev_dir)
@@ -6008,14 +5975,14 @@ class AllSkyNetwork():
             solve_status = WMPL_solve(event_id, temp_obs, time_sync, force)
          except:
             print("*** EXCEPTION: WMPL_solve FAILED TO RUN!")
-            solve_status = WMPL_solve(event_id, temp_obs, time_sync, force)
-            input("EVENT SOLVE FAILED!")
+            #solve_status = WMPL_solve(event_id, temp_obs, time_sync, force)
+            #input("EVENT SOLVE FAILED!")
          try:
             self.make_event_page(event_id)
          except:
             print("*** EXCEPTION: Make event page FAILED TO RUN!")
             status = "FAILED"
-            input("EVENT FINISHED BUT GRAPHS FAILED!")
+            #input("EVENT FINISHED BUT GRAPHS FAILED!")
             self.make_event_page(event_id)
 
       else:

@@ -1130,7 +1130,7 @@ def solve_event(event_id, force=1, time_sync=1):
        obs_key = t_station + "_" + t_file
        if obs_key in ignore_obs:
           print("IGNORE:", obs_key)
-          input("WAITING REMOVE THIS LINE!")
+          #input("WAITING REMOVE THIS LINE!")
 
           continue
        dy_obs_data = eobs[t_station + ":" + t_file]
@@ -2931,10 +2931,29 @@ def WMPL_solve(event_id, obs,time_sync=1, force=0, dynamodb=None):
        etv = True
     else:
        etv = False
+    #etv = False
+    # here we should auto adjust this based on if the timing previously failed?
+    # or figure out a better way to deal with the timing?
+
     monte = False 
-    traj_solve = traj.Trajectory(jd_ref, output_dir=solve_dir, meastype=meastype, save_results=True, monte_carlo=monte, show_plots=False, max_toffset=15,v_init_part=.5, estimate_timing_vel=etv, show_jacchia=True  )
+    #v_init_part = .25
+    traj_solve = traj.Trajectory(jd_ref, output_dir=solve_dir, meastype=meastype, save_results=True, monte_carlo=monte, show_plots=False, max_toffset=10, estimate_timing_vel=etv, show_jacchia=True  )
     earliest_time = None
-  
+
+ 
+    for station_id in obs:             
+        for file in obs[station_id]:  # to revert change to if True
+            o_times = obs[station_id][file]['times']
+            event_start_dt = datetime.datetime.strptime(o_times[0], "%Y-%m-%d %H:%M:%S.%f")
+            if earliest_time is None:
+                earliest_time = event_start_dt
+            else:
+                if event_start_dt < earliest_time:
+                    earliest_time = event_start_dt
+
+    print("EARLIEST TIME:", earliest_time)
+    #input("WAITING")
+
     # this is where we should use ALL obs or BEST obs or MERGE obs
     for station_id in obs:             
         for file in obs[station_id]:  # to revert change to if True
@@ -3004,7 +3023,15 @@ def WMPL_solve(event_id, obs,time_sync=1, force=0, dynamodb=None):
                 frame_time = frame_time.replace(":", "_")
                 frame_time = frame_time.replace(" ", "_")
                 frame_dt = datetime.datetime.strptime(frame_time, "%Y_%m_%d_%H_%M_%S.%f")
-                time_diff = (frame_dt - event_start_dt).total_seconds()
+
+                # toggle time sync bug fix maybe??
+                # value should be the time since the start of the event, NOT the start of the obs?
+                #time_diff = (frame_dt - event_start_dt).total_seconds()
+
+                time_diff = (frame_dt - earliest_time).total_seconds()
+                print("*** EARLIEST TIME:", earliest_time)
+                print("*** EVENT START TIME:", event_start_dt)
+                print("*** TIME DIFF:", time_diff)
                 times.append(time_diff)
 
             #for i in range(0,len(azs)):
@@ -3015,6 +3042,7 @@ def WMPL_solve(event_id, obs,time_sync=1, force=0, dynamodb=None):
             # Set points for the first site
             print("   EVENT START DT:", event_start_dt)
             print("   SET WMPL OBS:", event_id, station_id, lat, lon, alt, azs, els, times)  
+            print("   TIMES:", station_id, times)
             traj_solve.infillTrajectory(azs, els, times, np.radians(float(lat)), np.radians(float(lon)), alt, station_id=station_id + "-" + cam_id)
             print(   "-----")
 

@@ -67,7 +67,11 @@ if cmd == "imgs_to_vid":
    out_file = sys.argv[4]
    fps = sys.argv[5]
    crf = sys.argv[6]
-   print("IMGS TO VIDEO:", in_dir, out_file, wild, fps, crf)
+   if len(sys.argv) == 7:
+      ftype = sys.argv[7]
+   else:
+      ftype = "jpg"
+   print("IMGS TO VIDEO:", in_dir, out_file, wild, fps, crf, ftype)
    imgs_to_vid (in_dir, out_file, wild, fps, crf)
 if cmd == "splice_video":
    #./FFF.py splice_video in_file start end outfile type(blank for sec 'frame' for frame)

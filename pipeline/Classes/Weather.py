@@ -1,5 +1,5 @@
 import sqlite3
-from datetime import datetime as dt
+from datetime import datetime as dt, date, timedelta
 import requests
 import time
 from decimal import Decimal
@@ -19,6 +19,7 @@ from sklearn.linear_model import RANSACRegressor
 from sklearn.datasets import make_regression
 
 from PIL import ImageFont, ImageDraw, Image, ImageChops
+import PIL
 
 from Classes.DisplayFrame import DisplayFrame
 from Classes.Detector import Detector
@@ -55,6 +56,14 @@ class Weather():
       self.device_lat = json_conf['site']['device_lat']
       self.device_lng = json_conf['site']['device_lng']
       self.cams = []
+      self.sd_frame_width = 640
+      self.sd_frame_height = 360
+      self.hd_frame_width = 1920 
+      self.hd_frame_height = 1080 
+      self.max_cols = self.hd_frame_width / self.sd_frame_width
+      self.max_rows = self.hd_frame_height / self.sd_frame_height
+      print("Max cols/rows:", self.max_cols, self.max_rows)
+
       self.db_file = self.station_id + "_WEATHER.db" 
       if os.path.exists(self.db_file) is False:
          self.make_weather_db()
@@ -144,6 +153,82 @@ station_info - report the current weather database
 What does this program do? -- it loads or creates weather data from APIs and functions and then makes sure all of the weather SNAPS are loaded into the db, run through the AI and reported to the network.
       """)
 
+   def network_timelapse(self, station_id, cam_id, start_date, end_date):
+      self.cloud_dir = "/mnt/archive.allsky.tv/" + station_id + "/LATEST/"
+      y,m,d = start_date.split("_")
+      y,m,d = int(y),int(m), int(d)
+      start_dt = date(y,m,d)
+      y,m,d = end_date.split("_")
+      y,m,d = int(y),int(m), int(d)
+      end_dt = date(y,m,d)
+      delta = end_dt - start_dt # returns timedelta
+      all_data = {}
+      for i in range(delta.days + 1):
+         day = start_dt + timedelta(days=i)
+         day = str(day).replace("-", "_")
+         hist_file = self.cloud_dir + day + "/history.json" 
+         if os.path.exists(hist_file) is True:
+            hist_data = load_json_file(hist_file)
+            for interval in hist_data:
+               # main frame
+               im = PIL.Image.new(mode="RGB", size=(1920, 1080))
+               px = 0
+               py = 0
+               cc = 0
+               rc = 0
+               cams = len(hist_data[interval])
+              
+               for cam_id in sorted(hist_data[interval]):
+
+                  x1 = self.sd_frame_width * cc 
+                  x2 = x1 + self.sd_frame_width
+                  y1 = self.sd_frame_height * rc 
+                  y2 = x1 + self.sd_frame_height
+                  print("CAM:", cam_id, cc, rc, x1, x2, y1, y2)
+
+                  if cam_id not in all_data:
+                     all_data[cam_id] = {}
+                     all_data[cam_id]['files'] = []
+                  snap_file =  self.cloud_dir + day + "/" + hist_data[interval][cam_id]['snap_file']
+                  snap_url = snap_file.replace("/mnt/", "https://")
+                  all_data[cam_id]['files'].append(snap_file) 
+                  img = self.fetch_image(snap_url)
+                  img_pil = PIL.Image.fromarray(img)
+                  Image.Image.paste(im, img_pil, (x1,y1))
+                  #cv2.imshow('pepe', image)
+                  #cv2.waitKey(30)
+                  cc += 1
+                  if cc % self.max_cols == 0:
+                     rc += 1
+                     cc = 0
+               im_cv = np.array(im)
+               im_cv = im_cv[:, :, ::-1].copy()
+               cv2.imshow('pepe', im_cv) 
+               cv2.waitKey(30)
+         print(day, hist_file)
+
+      exit()
+      for cam_id in all_data:
+         for sf in sorted(all_data[cam_id]['files'], reverse=False):
+            if os.path.exists(sf) is True:
+               surl = sf.replace("/mnt/", "https://")
+               print(surl)
+
+               #resp = requests.get(surl, stream=True).raw
+               #image = np.asarray(bytearray(resp.read()), dtype="uint8")
+               #image = cv2.imdecode(image, cv2.IMREAD_COLOR)
+               image = self.fetch_image(surl)
+  
+
+               cv2.imshow('pepe', image)
+               cv2.waitKey(30)
+
+   def fetch_image(self, surl):
+      resp = requests.get(surl, stream=True).raw
+      image = np.asarray(bytearray(resp.read()), dtype="uint8")
+      image = cv2.imdecode(image, cv2.IMREAD_COLOR)
+      image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+      return(image)
    def index_latest(self): 
       
       latest_dir = "/mnt/ams2/latest/"

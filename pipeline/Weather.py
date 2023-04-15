@@ -53,8 +53,14 @@ if cmd == "load_metar":
    metar_records = WW.get_metar_records(start_time, end_time, lat, lon, .35)
    exit()
 
+if cmd == "network_time_lapse":
+   station_id = "AMS1"
+   cam_id = "010001"
+   start_date = "2023_03_01"
+   end_date = "2023_03_05"
+   WW.network_timelapse(station_id, cam_id, start_date, end_date )
 
-if cmd == "load_weather" or cmd == "":
+elif cmd == "load_weather" or cmd == "":
    os.system("/usr/bin/python3.6 Weather.py load_metar")
    WW.index_weather_snaps_all()
    WW.load_database()
