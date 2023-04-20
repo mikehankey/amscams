@@ -92,9 +92,9 @@ def check_sync_cal_ai_db(json_conf):
          
 def gitpull(json_conf):
    print("TEMP GIT CHECKOUT...")
-   os.system("cd /home/ams/amscams/install; git checkout astrometry-install.sh")
-   print("git pull > /home/ams/lastpull.txt")
-   os.system("git pull > /home/ams/lastpull.txt")
+   #os.system("cd /home/ams/amscams/install; git checkout astrometry-install.sh")
+   print("./gitpull.py > /home/ams/lastpull.txt")
+   os.system("./gitpull.py > /home/ams/lastpull.txt")
 
 
 
@@ -129,6 +129,33 @@ def gitpull(json_conf):
       os.system("cd /home/ams/amscams/install; ./update-flask-assets.sh ")
    print("DONE GIT PULL.")
 
+def check_do_recal(json_conf):
+
+   if "recal" not in json_conf:
+      print("This system needs to be recalibrated with the recal.py")
+      print("We will launch this in the background and update the json conf")
+      json_conf['recal'] = 0
+      save_json_file("../conf/as6.json", json_conf)
+      cmd = "./recal.py recal all"
+      print(cmd)
+      os.system(cmd)
+      json_conf['recal'] = 1
+      save_json_file("../conf/as6.json", json_conf)
+      exit()
+   if json_conf['recal'] == 0:
+      print("The recalibration started but has not finished. We will start it up again.")
+      cmd = "./recal.py recal all"
+      print(cmd)
+      os.system(cmd)
+      json_conf['recal'] = 1
+      save_json_file("../conf/as6.json", json_conf)
+      exit()
+   else:
+      print("Recalibration has run fine on this system", json_conf['recal'])
+
+   input("CHECK DO RECAL DONE")
+   exit()
+
 def run_jobs_critical(json_conf):
 
    today = datetime.now().strftime("%Y_%m_%d")
@@ -154,6 +181,8 @@ def run_jobs(json_conf):
    today = datetime.now().strftime("%Y_%m_%d")
    yest = (datetime.now() - dt.timedelta(days = 1)).strftime("%Y_%m_%d")
    year,month, day = today.split("_")
+
+   check_do_recal(json_conf)
  
    # check if the pause-jobs.json exists if so just wait to run this until it is gone, or older than 8 hours (max pause length). 
    if os.path.exists("pause-jobs.json") is True:

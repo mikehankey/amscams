@@ -67,7 +67,7 @@ if cmd == "imgs_to_vid":
    out_file = sys.argv[4]
    fps = sys.argv[5]
    crf = sys.argv[6]
-   if len(sys.argv) == 7:
+   if len(sys.argv) == 8:
       ftype = sys.argv[7]
    else:
       ftype = "jpg"

@@ -117,6 +117,7 @@ def man_detect(min_file, data):
       if hd_trim is not None:
          os.system("cp " + hd_trim + " " + mj['hd_trim'])
       mjf = mj['sd_video_file'].replace(".mp4", ".json")
+      mj['hc'] = 1
       save_json_file(mjf, mj)
       # make the stacks
       os.system("./Process.py restack_meteor " + mj['sd_video_file'])

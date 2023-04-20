@@ -59,6 +59,8 @@ class AllSkyNetwork():
       self.deleted_points = {}
       self.did_set_dates = None
       self.json_conf = load_json_file("../conf/as6.json")
+      self.win_x = 1920
+      self.win_y = 1080
 
       if os.path.exists("admin_conf.json") is True:
          self.admin_conf = load_json_file("admin_conf.json")
@@ -2539,19 +2541,11 @@ class AllSkyNetwork():
          wget_cmds = self.get_event_media(event_id)
          self.review_event(event_id)
 
-         print("XX1")
          (review_image, map_img, obs_imgs, marked_images, event_data, obs_data) = self.review_event_step2()
-         print("XX2")
          if "2d_status" not in event_data:
             event_data = self.get_2d_status(event_data, obs_data)
 
-         print("XX3")
-
-
-
-         print("YOYO1")
          self.echo_event_data(event_data, obs_data)  
-         print("YO1")
 
          event_data_file = self.local_evdir + self.event_id + "/" + self.event_id + "_EVENT_DATA.json"
          obs_data_file = self.local_evdir + self.event_id + "/" + self.event_id + "_OBS_DATA.json"
@@ -2563,7 +2557,6 @@ class AllSkyNetwork():
             cv2.waitKey(30)
          else:
             print("REVIEW IMAGE IS NONE!", review_image)
-         print("OK1")
 
    def get_event_media(self, event_id):
 
@@ -2589,8 +2582,6 @@ class AllSkyNetwork():
 
       #print("EDITS:", self.edits['sd_clips'].keys())
 
-      #cv2.namedWindow('pepe')
-      #cv2.resizeWindow("pepe", 1920, 1080)
       #cv2.moveWindow("pepe", 1400,100)
       #self.RF = RenderFrames()
 
@@ -2795,7 +2786,7 @@ class AllSkyNetwork():
 
    def review_event(self, event_id):
       cv2.namedWindow('pepe')
-      cv2.resizeWindow("pepe", 1920, 1080)
+      cv2.resizeWindow("pepe", self.win_x, self.win_y)
       # the purpose of this function is to JUST get the MEDIA files for the event being reviewed.
       # see review_event_step2 for the remaining 
 
@@ -2987,7 +2978,7 @@ class AllSkyNetwork():
 
 
       cv2.imshow('pepe', gmimg)
-      cv2.waitKey(0)
+      cv2.waitKey(60)
 
       # remove dupes from obs imgs
       print(type(obs_imgs))
@@ -3327,7 +3318,7 @@ class AllSkyNetwork():
       print("FETCH VIDEO")
 
    def review_obs_frames(self, obs_data):
-
+      print("OBS DATA", len(obs_data))
       # review frame x,y positions to sanity check them (maybe fix)
       for sd_vid in self.sd_clips:
          if "frames" in self.sd_clips:
@@ -3341,7 +3332,6 @@ class AllSkyNetwork():
          event_id, station_id, obs_id, fns, times, xs, ys, azs, els, ints, \
             status, ignore, ai_confirmed, human_confirmed, ai_data, prev_uploaded,sd_vid_file = r
          print("REVIEW OBS FRAMES:", sd_vid_file)
-
          fd = {}
          if len(fns) == 0:
             print("ERROR: NO REDUCTION FOR OBS", obs_id, fns, xs, ys)
@@ -3639,8 +3629,7 @@ class AllSkyNetwork():
          not_found = []
          stack_imgs_dict = {}
 
-
-         #input("YOX") 
+         print("ROWS", len(rows))
          
          for row in rows:
             (event_id, station_id, obs_id, fns, times, xs, ys, azs, els, ints, \
@@ -3649,6 +3638,7 @@ class AllSkyNetwork():
                if ig in obs_id:
                   self.ignored_obs[obs_id] = (event_id, station_id, obs_id, fns, times, xs, ys, azs, els, ints, \
                      status, ignore, ai_confirmed, human_confirmed, ai_data, prev_uploaded ) 
+                  print("SKIP IGNORE!", obs_id)
                   continue
             times = json.loads(times)
             fns = json.loads(fns)
@@ -3677,12 +3667,17 @@ class AllSkyNetwork():
                stack_img = np.zeros((1080,1920,3),dtype=np.uint8)
                stack_imgs_dict[obs_id] = stack_img 
                not_found.append((stack_file, stack_img))
-
-      # review_frames review frames
-      if True:
-         self.review_obs_frames(obs_db)
+         # review_frames review frames
+         if True:
+            print(obs_db)
+            self.review_obs_frames(obs_db)
+      cv2.imshow("pepe", simg)
+      cv2.waitKey(30)
 
       return(simg, map_img, obs_imgs, marked_imgs, event_data, obs_data)
+
+
+      # ENDED HERE OLD FUNCTION CODE BELOW
 
       # nothing but old code after this!
       # decide default thumb size
@@ -4970,6 +4965,8 @@ class AllSkyNetwork():
 
 
    def resolve_event(self, event_id):
+      cv2.namedWindow('pepe')
+      cv2.resizeWindow("pepe", self.win_x, self.win_y)
       # This should pull down the latest OBS data from the API
       # so that it is current. Then do a FRESH resolve.
       # remove obs/stations if needed.
@@ -6132,7 +6129,7 @@ class AllSkyNetwork():
             img1 = cv2.resize(img1, (1920,1080))
             img2 = cv2.resize(img2, (1920,1080))
             blend = cv2.addWeighted(img1, perc, img2, perc2, .3)
-            cv2.resizeWindow("pepe", 1920, 1080)
+            cv2.resizeWindow("pepe", 640, 360)
             cv2.imshow('pepe', blend)
             cv2.waitKey(30) 
          cv2.imshow('pepe', img1)
@@ -7034,7 +7031,7 @@ class AllSkyNetwork():
       options['play_video'] = True 
 
       cv2.namedWindow('pepe')
-      cv2.resizeWindow("pepe", 1920, 1080)
+      cv2.resizeWindow("pepe", self.win_x, self.win_y)
       last_met_img = None
       admin_deleted_file = "/mnt/f/EVENTS/DBS/admin_deleted.json"
       self.net_ai_file = "/mnt/f/EVENTS/DBS/network_ai.json"
@@ -10035,7 +10032,7 @@ status [date]   -    Show network status report for that day.
       # works with SD or HD files
       
       cv2.namedWindow('pepe')
-      cv2.resizeWindow("pepe", 1920, 1080)
+      cv2.resizeWindow("pepe", self.win_x, self.win_y)
 
       # setup vars and dates and get all files for this event
       date = self.event_id_to_date(event_id)

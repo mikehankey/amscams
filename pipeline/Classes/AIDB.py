@@ -1476,7 +1476,10 @@ class AllSkyDB():
  
 
    def auto_reject_day(self, date, RN=None ):
+      # check all meteors for a day and reject if they don't have the right AI results
+      # Skip this AI check on meteors that have been manually detected, reduced or edited. 
       non_meteor_dir = self.non_meteor_dir + date
+      # as of 4/2023, human values were not in the meteors table!
       sql = "SELECT root_fn, hd_vid, meteor_yn_conf,fireball_yn_conf,mc_class, mc_class_conf, roi,ai_resp from meteors where sd_vid like ?"
       ivals = [date + "%"]
       self.cur.execute(sql, ivals)
@@ -1497,46 +1500,59 @@ class AllSkyDB():
             if fireball_yn_conf is None or fireball_yn_conf == "":
                fireball_yn_conf = 50
             #continue
+
          # AI Reject conditions
          if (int(meteor_yn_conf) < 51 and int(fireball_yn_conf) < 51 and "meteor" not in mc_class) or \
                (int(meteor_yn_conf) < 70 and "meteor" not in mc_class and int(mc_class_conf) >= 98) or \
                (int(meteor_yn_conf) <= 1 and int(fireball_yn_conf) <= 1) or \
                (int(meteor_yn_conf) <= 5 and int(fireball_yn_conf) <= 51 and \
                   "meteor" not in mc_class and int(mc_class_conf) >= 52):
-            decision = "REJECT"
-            print("AI REJECT CURRENT ROI", root_fn, hd_vid, meteor_yn_conf, fireball_yn_conf, mc_class, mc_class_conf )
-            print("AI seeking alternative ROI...")
-            stack_file = "/mnt/ams2/meteors/" + root_fn[0:10] + "/" + root_fn + "-stacked.jpg"
-            img = cv2.imread(stack_file)
-            #img = RN.get_stack_img_from_root_fn(root_fn)
-            if RN is not None:
-               if img is not None:
-                  #objects = RN.detect_objects_in_stack(self.station_id, root_fn, img.copy())
-                  objects = []
 
+            mjf = "/mnt/ams2/meteors/" + root_fn[0:10] + "/" + root_fn + ".json"
+            if os.path.exists(mjf) is True:
+               mj = load_json_file(mjf)
+            else:
+               mj = {}
+        
+         
+            # Override if the "hc" human confirm does not exist and no manual edits exist
+            if "hc" in mj or "user_mods" in mj:
+               decision = "ACCEPT"
+
+            if decision == "REJECT":
+
+
+               print("AI REJECT CURRENT ROI", root_fn, hd_vid, meteor_yn_conf, fireball_yn_conf, mc_class, mc_class_conf )
+               print("AI seeking alternative ROI...")
+               stack_file = "/mnt/ams2/meteors/" + root_fn[0:10] + "/" + root_fn + "-stacked.jpg"
+               img = cv2.imread(stack_file)
+               #img = RN.get_stack_img_from_root_fn(root_fn)
+               if RN is not None:
+                  if img is not None:
+                     #objects = RN.detect_objects_in_stack(self.station_id, root_fn, img.copy())
+                     objects = []
+
+                  else:
+                     objects = []
                else:
                   objects = []
-            else:
-               objects = []
-            meteor_found = False
-            for oo in objects:
-               if oo[0] > 90:
-                  print("METEOR OBJ FOUND HERE:", oo)
-                  meteor_found = True 
-                  new_roi = oo[1]
-                  print("OBJECTS AI ACCEPT", root_fn, hd_vid, oo[0], oo[0], "meteor", oo[0], new_roi)
-                  roi = new_roi
+               meteor_found = False
+               for oo in objects:
+                  if oo[0] > 90:
+                     print("METEOR OBJ FOUND HERE:", oo)
+                     meteor_found = True 
+                     new_roi = oo[1]
+                     print("OBJECTS AI ACCEPT", root_fn, hd_vid, oo[0], oo[0], "meteor", oo[0], new_roi)
+                     roi = new_roi
                   #fireball_yn_conf = oo[0]
                   #meteor_yn_conf = oo[0]
                   #mc_class_conf = oo[0]
                   #mc_class = "meteor"
-                  print("Need to reduce new location!")
-                  decision = "ACCEPT"
-         else:
-            print("AI ACCEPT", root_fn, hd_vid, meteor_yn_conf, fireball_yn_conf, mc_class, mc_class_conf )
-            decision = "ACCEPT"
-         print("AI CHECK:", decision, root_fn, meteor_yn_conf, fireball_yn_conf, mc_class, mc_class_conf)
-         ai_info.append((decision, root_fn, hd_vid, roi, meteor_yn_conf, fireball_yn_conf, mc_class, mc_class_conf ))
+                     print("Need to reduce new location!")
+                     decision = "ACCEPT"
+            print("AI CHECK:", decision, root_fn, meteor_yn_conf, fireball_yn_conf, mc_class, mc_class_conf)
+            ai_info.append((decision, root_fn, hd_vid, roi, meteor_yn_conf, fireball_yn_conf, mc_class, mc_class_conf ))
+
       rejects = []
       for aid in ai_info:
          print(aid)     

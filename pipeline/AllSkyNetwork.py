@@ -176,8 +176,9 @@ if cmd == "resolve_event":
    obs_data_file = ASN.local_evdir + ASN.event_id + "/" + ASN.event_id + "_OBS_DATA.json"
 
    if review_image is not None:
-      cv2.imshow("REVIEW IMAGE", review_image)
-      cv2.waitKey(30)
+      print("YO")
+      #cv2.imshow("REVIEW IMAGE", review_image)
+      #cv2.waitKey(30)
    else:
       print("REVIEW IMAGE IS NONE!", review_image)
     
@@ -285,7 +286,8 @@ if cmd == "do_all":
       print(ss, obs_dict_old)
 
    # if this file is > 12 hours old re make it
-   if os.path.exists(obs_file) is False or obs_file_old > (60*12):
+   # or if date 
+   if os.path.exists(obs_file) is False or obs_file_old > (60*4):
       os.system("./DynaDB.py udc " + date)
 
    # if obs dict file is > 24 hours old re make it 

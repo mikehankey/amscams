@@ -155,6 +155,7 @@ jQuery(document).ready(function($) {
 	command = args[0]
 	var len_args = args.length
         terminal.echo('you type command "' + command + '"');
+	console.log(args)
 	if (command == "hello") {
            console.log(command, terminal)
            terminal.echo('hi back at you.');
@@ -168,8 +169,14 @@ jQuery(document).ready(function($) {
            //return self;
 	}
 	else if (command == "events") {
-	   alert("hi")
-           $.get( "https://archive.allsky.tv/EVENTS/2022/07/29/2022_07_29_OBS_GOOD.html", function( data ) {
+           var date = args[1]
+	   console.log(date)
+	   console.log(args)
+	   el = date.split("_")
+     
+	   url = "https://archive.allsky.tv/EVENTS/" + el[0] + "/" + el[1] + "/" + el[2] + "/" + el[0] + "_" + el[1] + "_" + el[2] + "_OBS_GOOD.html"
+	   console.log("URL", url)
+           $.get( url, function( data ) {
            $("#consoleModal").modal('show');
 	   $("#console-content").html(data)
            $('#tilda').hide();
@@ -185,6 +192,24 @@ jQuery(document).ready(function($) {
 
 </script>
 
-<div>...</div>
+
+
+<div class="d-flex flex-row justify-content-center align-items-center" >
+    <div class="p-2">
+        All Sky Observering Software
+    </div>
+</div>
+
+<div class="d-flex flex-row justify-content-center align-items-center" >
+    <div class="p-2">
+        {VERSION_INFO}
+    </div>
+</div>
+
+<div class="d-flex flex-row justify-content-center align-items-center" >
+    <div class="p-2">
+        {COPYWRITE}
+    </div>
+</div>
 
 </html>

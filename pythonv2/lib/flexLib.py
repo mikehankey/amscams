@@ -550,6 +550,10 @@ def stack_stack(pic1, pic2):
    stacked_image=ImageChops.lighter(pic1,pic2)
    return(stacked_image)
 
+def dark_stack_stack(pic1, pic2):
+   stacked_image=ImageChops.darker(pic1,pic2)
+   return(stacked_image)
+
 
 def stack_frames_fast(frames, skip = 1, resize=None, sun_status="night", sum_vals=[]):
    if sum_vals is None:

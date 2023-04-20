@@ -1,5 +1,5 @@
 from flask import Flask, request
-from FlaskLib.FlaskUtils import get_template
+from FlaskLib.FlaskUtils import get_template, get_version
 from lib.PipeUtil import cfe, load_json_file, save_json_file, convert_filename_to_date_cam
 from lib.PipeAutoCal import fn_dir
 from lib.PipeImage import quick_video_stack
@@ -9,6 +9,7 @@ import cv2
 import os
 import numpy as np
 import glob
+from datetime import datetime as dt
 
 def get_close_calib_files(mjf):
    (meteor_datetime, cam, f_date_str,fy,fmon,fd, fh, fm, fs) = convert_filename_to_date_cam(mjf)
@@ -528,6 +529,10 @@ def detail_page(amsid, date, meteor_file):
    year,mon,day = date.split("_")
    base_name = meteor_file.replace(".mp4", "")
    json_conf = load_json_file("../conf/as6.json")
+
+   version_info, copywrite_info = get_version(json_conf)
+
+
    obs_name = json_conf['site']['obs_name']
    CACHE_DIR = "/mnt/ams2/CACHE/" + year + "/" + mon + "/" + base_name + "/"
    CACHE_VDIR = CACHE_DIR.replace("/mnt/ams2", "")
@@ -599,9 +604,14 @@ def detail_page(amsid, date, meteor_file):
          #simg, sfile = quick_video_stack(sd_trim, count = 0, save=1)
  
    az_grid = ""
+
+   
+
    if remote == 1:
       header = get_template("FlaskTemplates/header-remote.html")
       footer = get_template("FlaskTemplates/footer-remote.html")
+      footer = footer.replace("{VERSION_INFO}", version_info)
+      footer = footer.replace("{COPYWRITE}", copywrite_info)
    else:
       header = get_template("FlaskTemplates/header.html")
       footer = get_template("FlaskTemplates/footer.html")

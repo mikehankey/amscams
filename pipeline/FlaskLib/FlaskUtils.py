@@ -1,4 +1,15 @@
 import time
+from datetime import datetime as dt
+
+def get_version(json_conf):
+   if "git_revision" in json_conf:
+       version_info = "v" + str(json_conf['git_revision'])
+   else:
+      version_info = "UNKNOWN ASOS VERSION PLEASE RUN GIT PULL AND THEN REBOOT SERVER"
+   if "git_last_update" in json_conf:
+      version_info += " Last updated on " + json_conf['git_last_update']
+   copywrite_info = "&copy; Copywrite Mike Hankey LLC "  + str(dt.now().strftime("%Y"))
+   return(version_info, copywrite_info)
 
 def get_template(file): 
    out = ""
@@ -25,9 +36,12 @@ def network_nav(json_conf):
 
 def make_default_template(amsid, main_template, json_conf):
    remote = 1
+   version_info, copywrite_info = get_version(json_conf)
    if remote == 1:
       header = get_template("FlaskTemplates/header-remote.html")
       footer = get_template("FlaskTemplates/footer-remote.html")
+      footer = footer.replace("{VERSION_INFO}", version_info)
+      footer = footer.replace("{COPYWRITE}", copywrite_info)
       print("YO")
    else:
       header = get_template("FlaskTemplates/header.html")

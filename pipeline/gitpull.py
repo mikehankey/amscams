@@ -2,6 +2,7 @@
 import os
 import datetime
 import subprocess
+from lib.PipeUtil import load_json_file, save_json_file
 now = datetime.datetime.now().strftime("%Y_%m_%d")
 git_save_dir = "/home/ams/git_save/" + now + "/"
 git_root = "/home/ams/amscams/"
@@ -49,3 +50,14 @@ else:
    fp.write(key)
    fp.close()
 
+cmd = "git rev-list --count HEAD"
+out = subprocess.check_output(cmd, shell=True).decode("utf-8")
+out = int(out.replace("\n", ""))
+print("REVISION NUMBER IS : ", out)
+print("Last Git Update: ", now)
+
+json_conf_file = "/home/ams/amscams/conf/as6.json"
+json_conf = load_json_file(json_conf_file)
+json_conf['git_revision'] = out
+json_conf['git_last_update'] = now 
+json_conf = save_json_file(json_conf_file, json_conf)

@@ -2077,24 +2077,28 @@ def refit_meteor(meteor_file, con, cur, json_conf, mcp = None, last_best_dict = 
    #star_img = draw_star_image(median_frame.copy(), mj['cp']['cat_image_stars'],mj['cp'], json_conf, extra_text) 
 
    # ADD MORE STARS
-   star_img = draw_star_image(meteor_stack_img.copy(), mj['cp']['cat_image_stars'],mj['cp'], json_conf, extra_text) 
-   mj['cp'] = add_more_stars(fit_img_file, mj['cp'], star_img, median_frame, json_conf)
+   if meteor_stack_img is not None and mj['cp'] is not None:
+      star_img = draw_star_image(meteor_stack_img.copy(), mj['cp']['cat_image_stars'],mj['cp'], json_conf, extra_text) 
+   if meteor_stack_img is not None and mj['cp'] is not None:
+      mj['cp'] = add_more_stars(fit_img_file, mj['cp'], median_frame, median_frame, json_conf)
 
 
 
-   print("CAT STARS AFTER ADD MORE", len(mj['cp']['cat_image_stars']))
-   star_img = draw_star_image(meteor_stack_img.copy(), mj['cp']['cat_image_stars'],mj['cp'], json_conf, extra_text) 
-   cv2.imwrite(fit_img_file, star_img, [int(cv2.IMWRITE_JPEG_QUALITY), 70])
+   if meteor_stack_img is not None and mj['cp'] is not None:
+      star_img = draw_star_image(meteor_stack_img.copy(), mj['cp']['cat_image_stars'],mj['cp'], json_conf, extra_text) 
+      cv2.imwrite(fit_img_file, star_img, [int(cv2.IMWRITE_JPEG_QUALITY), 70])
    if SHOW == 1:
-      cv2.imshow('pepe', star_img)
-      cv2.waitKey(30)
+      if meteor_stack_img is not None:
+         cv2.imshow('pepe', meteor_stack_img)
+         cv2.waitKey(30)
 
    #mj['cp'], cat_stars = recenter_fov(meteor_file, mj['cp'].copy(), median_frame.copy(),  stars, json_conf, meteor_file , None, None, con, cur)
-   star_img = draw_star_image(meteor_stack_img.copy(), mj['cp']['cat_image_stars'],mj['cp'], json_conf, extra_text) 
-   print("CAT STARS AFTER RECENTER", len(mj['cp']['cat_image_stars']))
+   if meteor_stack_img is not None:
+      star_img = draw_star_image(meteor_stack_img.copy(), mj['cp']['cat_image_stars'],mj['cp'], json_conf, extra_text) 
+      print("CAT STARS AFTER RECENTER", len(mj['cp']['cat_image_stars']))
 
-   cv2.imwrite(fit_img_file, star_img, [int(cv2.IMWRITE_JPEG_QUALITY), 70])
-   if SHOW == 1:
+      cv2.imwrite(fit_img_file, star_img, [int(cv2.IMWRITE_JPEG_QUALITY), 70])
+   if SHOW == 1 and meteor_stack_img is not None:
       cv2.imshow('pepe', star_img)
       cv2.waitKey(30)
 
@@ -9785,13 +9789,15 @@ def characterize_fov(cam_id, con, cur, json_conf):
       mcp['cal_version'] += 1
    else:
       mcp = None
-
+   print("YO1-1")
    photo_file = "/mnt/ams2/cal/plots/" + json_conf['site']['ams_id'] + "_" + cam_id + "_MAG_FLUX.png"
    best_cal_files, best_dict = get_best_cal_files(cam_id, con, cur, json_conf, 400)
    title = json_conf['site']['ams_id'] + " " + cam_id + " CALIBRATION FLUX MAGNITUDE PLOT"
 
    station_id = json_conf['site']['ams_id']
+   print("YO1-1")
    import matplotlib.pyplot as plt
+   print("YO1-1a")
    grid_img = np.zeros((1080,1920,3),dtype=np.uint8)
    # flux / mag
          #AND star_yn >= 99
@@ -9825,14 +9831,19 @@ def characterize_fov(cam_id, con, cur, json_conf):
       xs.append(mag)
       ys.append(mean_flux)
 
-   plt.plot(xs,ys)
-   plt.title(title)
-   plt.ylabel("Flux")
-   plt.xlabel("Magnitude")
-   plt.savefig(photo_file)
+   print("YO1-2")
+   try:
+      plt.plot(xs,ys)
+      plt.title(title)
+      plt.ylabel("Flux")
+      plt.xlabel("Magnitude")
+      plt.savefig(photo_file)
+   except: 
+      print("*** FAILED TO MAKE NEW PLOTS MAYBE A QT PYTHON PROBLEM WITH MATPLOTLIB")
    #plt.show()
    print("Saved", photo_file)
 
+   print("YO1-3")
    # determine the avg, min, max zp_dist and zp_slope for each grid in the image!
    grid_size = 100
    grid_data = {}
@@ -10009,7 +10020,7 @@ def characterize_fov(cam_id, con, cur, json_conf):
       match_dist = 9999
       merged_stars.append((cal_file , center_az, center_el, ra_center, dec_center, position_angle, pixscale, name,mag,ra,dec,ra,dec,match_dist,new_cat_x,new_cat_y,center_az,center_el,new_cat_x,new_cat_y,img_x,img_y,zp_res_px,star_flux)) 
    save_json_file("/mnt/ams2/cal/" + station_id + "_" + cam_id + "_MERGED_STARS.json", merged_stars)
-
+   print("YO3")
    if mcp is not None:
       make_cal_summary(cam_id, json_conf)
       make_cal_plots(cam_id, json_conf)
@@ -10577,17 +10588,23 @@ def wizard(station_id, cam_id, con, cur, json_conf, file_limit=25):
    #characterize_fov(cam_id, con, cur, json_conf)
 
 def lens_model_report(cam_id, con, cur, json_conf):
-   characterize_fov(cam_id, con, cur, json_conf)
+   print("YO1")
+   #characterize_fov(cam_id, con, cur, json_conf)
+   print("FAILED FOV CHAR")
+   print("YO2")
    characterize_best(cam_id, con, cur, json_conf)
+   print("YO3")
    import matplotlib.pyplot as plt
+   print("YO4")
    station_id = json_conf['site']['ams_id']
    msfile = "/mnt/ams2/cal/" + station_id + "_" + cam_id + "_MERGED_STARS.json"
    if os.path.exists(msfile) is True:
       merged_stars = load_json_file(msfile)
    #print("MS", len(merged_stars))
    #make_cal_summary(cam_id, json_conf)
-
+   print("X1")
    make_cal_plots(cam_id, json_conf)
+   print("X2")
    try:
       make_lens_model(cam_id, json_conf, merged_stars)
    except:
@@ -10975,7 +10992,7 @@ if __name__ == "__main__":
    if cmd == "fast_lens":
       force = 1
       cam_id = sys.argv[2]
-      limit = 20 
+      limit = 10 
       if len(sys.argv) > 3:
          limit = int(sys.argv[3])
 
