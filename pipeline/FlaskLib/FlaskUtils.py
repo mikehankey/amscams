@@ -5,7 +5,7 @@ def get_version(json_conf):
    if "git_revision" in json_conf:
        version_info = "v" + str(json_conf['git_revision'])
    else:
-      version_info = "UNKNOWN ASOS VERSION PLEASE RUN GIT PULL AND THEN REBOOT SERVER"
+      version_info = "UNKNOWN ASOS VERSION PLEASE RUN ./gitpull.py in the amscams/pipeline dir AND THEN REBOOT SERVER"
    if "git_last_update" in json_conf:
       version_info += " Last updated on " + json_conf['git_last_update']
    copywrite_info = "&copy; Copywrite Mike Hankey LLC "  + str(dt.now().strftime("%Y"))
