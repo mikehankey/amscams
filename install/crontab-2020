@@ -10,6 +10,10 @@
 ## JOB RUNNER CRON (Runs all other jobs)
 5 */2 * * * cd /home/ams/amscams/pipeline; ./Process.py run_jobs
 
+#GIT PULL -- KEEP THINGS UP TO DATE 2x per day
+22 0,12 * * * cd /home/ams/amscams/pipeline; ./gitpull.py
+
+
 ### OPTIONAL
 ###*/10 * * * * cd /home/ams/amscams/pipeline; ./Process.py bcm
 ###*/30 * * * * cd /home/ams/amscams/pipeline; ./Process.py mln

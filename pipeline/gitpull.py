@@ -35,7 +35,6 @@ if os.path.exists(key_file) is True:
    #out = subprocess.check_output(cmd, shell=True).decode("utf-8")
    try:
       out = subprocess.check_output(cmd, shell=True).decode("utf-8")
-      print("KEY EXISTS ALREADY")
    except:
       print(cmd, "GREP NOT FOUND")
       print("add to key file")
@@ -60,4 +59,5 @@ json_conf_file = "/home/ams/amscams/conf/as6.json"
 json_conf = load_json_file(json_conf_file)
 json_conf['git_revision'] = out
 json_conf['git_last_update'] = now 
-json_conf = save_json_file(json_conf_file, json_conf)
+save_json_file(json_conf_file, json_conf)
+os.system("cp /home/ams/lastpull.txt /mnt/archive.allsky.tv/" + json_conf['site']['ams_id'] + "/lastpull.txt")

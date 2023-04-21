@@ -157,7 +157,7 @@ class AllSkyNetwork():
             print (station_id, d['op_status'], d['operator_name'], d['resp'] )
 
 
-   def station_list(self):
+   def station_list(self, rcmd=None):
      
       all_stations = {}
       eu_missing = {}
@@ -240,33 +240,37 @@ class AllSkyNetwork():
          print(station_id, d['op_status'], hostname, vpn) 
 
          #rcmd = "wget https://archive.allsky.tv/AMS123/gitpull.py -O /home/ams/gitpull.py ; /usr/bin/python3 /home/ams/gitpull.py"
-         rcmd = "uptime"
-         if vpn != "" :
-            cmd = "ssh -o ConnectTimeout=10 " + vpn + " \"" + rcmd + "\""
-            print("   VPN", cmd)
-            if ":" not in vpn:
+         #rcmd = "uptime"
+         # RUN REMOTE COMMAND
+
+         if rcmd is not None:
+            if vpn != "" :
+               cmd = "ssh -o ConnectTimeout=10 " + vpn + " \"" + rcmd + "\""
+               print("   VPN", cmd)
+               if ":" not in vpn:
+                  try:
+                     output = subprocess.check_output(cmd, shell=True).decode("utf-8")
+                     print("CMD OUTPUT:", output)
+                  except:
+                     output = "NOLOGIN"
+               else:
+                  output = vpn.split(":")[-1]
+            elif hostname != "":
+               cmd = "ssh -o ConnectTimeout=10 " + hostname + " \"" + rcmd + "\""
+               print("   HOST", cmd)
                try:
-                  #output = subprocess.check_output(cmd, shell=True).decode("utf-8")
-                  print("DISABLED:", cmd)
+                  output = subprocess.check_output(cmd, shell=True).decode("utf-8")
+                  print("CMD OUTPUT:", output)
                except:
                   output = "NOLOGIN"
             else:
-               output = vpn.split(":")[-1]
-         elif hostname != "":
-            cmd = "ssh -o ConnectTimeout=10 " + hostname + " \"" + rcmd + "\""
-            print("   HOST", cmd)
-            try:
-               #output = subprocess.check_output(cmd, shell=True).decode("utf-8")
-               print("DISABLED:", cmd)
-            except:
-               output = "NOLOGIN"
-         else:
-            print("   ", station_id, "OFFLINE")
-            output = None
-         if output is not None:
-            print("RESP:",  station_id, output)
-         if station_id not in responses:
-            responses[station_id] = {}
+               print("   ", station_id, "OFFLINE")
+               output = None
+
+            if output is not None:
+               print("RESP:",  station_id, output)
+            if station_id not in responses:
+               responses[station_id] = {}
 
          responses[station_id]['resp'] = output
          responses[station_id]['last_run'] = time.time()

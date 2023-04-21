@@ -153,8 +153,6 @@ def check_do_recal(json_conf):
    else:
       print("Recalibration has run fine on this system", json_conf['recal'])
 
-   input("CHECK DO RECAL DONE")
-   exit()
 
 def run_jobs_critical(json_conf):
 

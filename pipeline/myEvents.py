@@ -219,7 +219,10 @@ def do_day(EV, date):
 
    # Handle official events
 
-   all_events = load_json_file(EV.all_events_file)
+   if os.path.exists(EV.all_events_file) is True:
+      all_events = load_json_file(EV.all_events_file)
+   else:
+      all_events = []
    for row in all_events:
       if station_id in row['stations']:
          if len(set(row['stations'])) >= 2:
