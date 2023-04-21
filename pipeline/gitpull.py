@@ -45,6 +45,8 @@ if os.path.exists(key_file) is True:
 
 else:
    print("make key file")
+   if os.path.exists("/home/ams/.ssh/") is False:
+      os.makedirs(("/home/ams/.ssh/")
    fp = open(key_file, "w")
    fp.write(key)
    fp.close()

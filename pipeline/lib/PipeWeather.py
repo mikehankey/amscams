@@ -172,6 +172,11 @@ def stack_index(json_conf):
    work_hist_file = night_stack_dir + "stack_hist.json"
    if cfe(work_hist_file) == 1:
       work_hist = load_json_file(work_hist_file)
+      try:
+         work_hist = load_json_file(work_hist_file)
+      except:
+         work_hist = {}
+
    else:
       work_hist = {}
    for day_dir in sorted(day_dirs, reverse=True):
