@@ -31,7 +31,7 @@ if cmd == "event_preview_images":
    ASN.make_event_preview_images(date)   
 
 if cmd == "stations":
-   rcmd = "cd /home/ams/amscams/; ./gitpull.py; uptime"
+   rcmd = "cd /home/ams/amscams/pipeline; ./gitpull.py; uptime"
    ASN.station_list(rcmd)   
 if cmd == "station_report":
    ASN.station_report(sys.argv[2])   
