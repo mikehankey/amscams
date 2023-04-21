@@ -1672,7 +1672,6 @@ def remove_bad_stars(cat_image_stars):
       dcname,mag,ra,dec,img_ra,img_dec,match_dist,org_x,org_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist,star_int = star
       print(dcname, mag, star_int, cat_dist)
 
-   input("WAITING")
    return(good)
 
 def plot_cal_history(con, cur, json_conf):
