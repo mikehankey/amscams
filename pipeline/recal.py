@@ -1539,6 +1539,25 @@ def star_track(cam_id, date, con, cur, json_conf ):
       lc += 1
    save_json_file(st_file, stdata)
 
+
+
+def remove_mask_stars(cat_image_stars, mask_img):
+   good = []
+   bad = []
+   if len(mask_img.shape) == 3:
+      mask_img = cv2.cvtColor(mask_img, cv2.COLOR_BGR2GRAY)
+   for star in cat_image_stars:
+      dcname,mag,ra,dec,img_ra,img_dec,match_dist,org_x,org_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist,star_int = star
+      y = int(siy)
+      x = int(six)
+ 
+      if mask_img[y,x] == 0:
+         bad.append(star)
+      else:
+         good.append(star)
+   return(good, bad)
+
+
 def remove_bad_stars(cat_image_stars):
    # 
    good = []
@@ -1630,6 +1649,11 @@ def remove_bad_stars(cat_image_stars):
                bad.append(star)
                continue
 
+      if mag >= 4 and star_int > 1400 or star_int < 50:
+         print("Bad mag/star int!", mag, star_int)
+         bad.append(star)
+         continue
+
       if cat_dist < (res_limit * factor):
          good.append(star)
       else:
@@ -1643,6 +1667,12 @@ def remove_bad_stars(cat_image_stars):
    print("    close :", close_res)
    print("    far :", far_res)
    print("   Good/Bad:", len(good)," / ", len(bad))
+   print("   GOOD STARS")
+   for star in good:
+      dcname,mag,ra,dec,img_ra,img_dec,match_dist,org_x,org_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist,star_int = star
+      print(dcname, mag, star_int, cat_dist)
+
+   input("WAITING")
    return(good)
 
 def plot_cal_history(con, cur, json_conf):
@@ -6206,6 +6236,9 @@ def apply_calib (cal_file, calfiles_data, json_conf, mcp, last_cal_params=None, 
       now = datetime.datetime.now()
       cur_year = now.strftime("%Y")
       (f_datetime, cam_id, f_date_str,fy,fmin,fd, fh, fm, fs) = convert_filename_to_date_cam(cal_file)
+
+
+
       cal_fn = cal_file.split("/")[-1]
       cal_dir = cal_dir_from_file(cal_file)
 
@@ -6222,7 +6255,28 @@ def apply_calib (cal_file, calfiles_data, json_conf, mcp, last_cal_params=None, 
       else:
          print("\tERROR: Failed to load cal image file!", cal_dir , cal_image_file)
          return(None,None)
+
+      # get mask
+      mask_file = "/mnt/ams2/meteor_archive/{}/CAL/MASKS/{}_mask.png".format(station_id, cam_id)
+      if os.path.exists(mask_file) is True:
+         if len(oimg.shape) == 3:
+            mask = cv2.imread(mask_file)
+         else:
+            mask = cv2.imread(mask_file, 0)
+         #mask = cv2.cvtColor(mask, cv2.COLOR_BGR2GRAY)
+         mask = cv2.resize(mask, (1920,1080))
+      else:
+         if len(oimg.shape) == 3:
+            mask = np.zeros((1080,1920,3),dtype=np.uint8)
+         else:
+            mask = np.zeros((1080,1920),dtype=np.uint8)
+
       # add more stars
+      oimg = cv2.subtract(oimg, mask)
+      cv2.imshow('mask', oimg)
+      cv2.waitKey(0)
+
+
       cal_params = add_more_stars(cal_fn, cal_params, oimg, oimg, json_conf)
       
       # if 0 stars we have to abort
@@ -9290,6 +9344,18 @@ def fast_lens(cam_id, con, cur, json_conf,limit=5, cal_fns=None):
    else:
       mcp = None
 
+   if True:
+      # get mask
+      mask_file = "/mnt/ams2/meteor_archive/{}/CAL/MASKS/{}_mask.png".format(station_id, cam_id)
+      if os.path.exists(mask_file) is True:
+         mask_img = cv2.imread(mask_file)
+         mask_img = cv2.resize(mask_img, (1920,1080))
+      else:
+         mask_img = np.zeros((1080,1920,3),dtype=np.uint8)
+
+      # add more stars
+
+
    calfiles_data = load_cal_files(cam_id, con, cur)
    best, best_dict =  get_best_cal_files(cam_id, con, cur, json_conf, limit=500)
    merged_stars = []
@@ -9300,6 +9366,7 @@ def fast_lens(cam_id, con, cur, json_conf,limit=5, cal_fns=None):
       resp = start_calib(cal_fn, json_conf, calfiles_data, mcp)
       if resp is not False and resp is not None:
          (station_id, cal_dir, cal_json_file, cal_img_file, cal_params, cal_img, clean_cal_img, mask_file,mcp) = resp
+         cal_img = cv2.subtract(cal_img, mask_img)
       else:
          continue 
       cat_stars, short_bright_stars, cat_image = get_catalog_stars(cal_params)
@@ -9308,13 +9375,20 @@ def fast_lens(cam_id, con, cur, json_conf,limit=5, cal_fns=None):
       stars,xxx_cat_stars = get_paired_stars(cal_fn, cal_params, con, cur)
     
       cal_params['cat_image_stars'] = cat_image_stars
+      print("CAT STARS 1:", len(cal_params['cat_image_stars']))
       cal_params['cat_image_stars'] = remove_bad_stars(cal_params['cat_image_stars'])
+      print("CAT STARS 2:", len(cal_params['cat_image_stars']))
+
+      cal_params['cat_image_stars'], bad_stars = remove_mask_stars(cal_params['cat_image_stars'], cal_img)
+      print("CAT STARS 3:", len(cal_params['cat_image_stars']))
+
+
       cal_params, xxx_cat_image_stars = recenter_fov(cal_fn, cal_params, cal_img.copy(),  stars, json_conf, "", None, cal_img, con, cur)
 
       extra_text = "Fast lens : after re-center fov"
       star_img = draw_star_image(cal_img, cal_params['cat_image_stars'],cal_params, json_conf, extra_text)
       cv2.imwrite("/mnt/ams2/last.jpg", star_img)
-
+ 
 
       ocps = cal_params['cat_image_stars'] 
      
