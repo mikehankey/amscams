@@ -6272,8 +6272,8 @@ def apply_calib (cal_file, calfiles_data, json_conf, mcp, last_cal_params=None, 
 
       # add more stars
       oimg = cv2.subtract(oimg, mask)
-      cv2.imshow('mask', oimg)
-      cv2.waitKey(0)
+      #cv2.imshow('mask', oimg)
+      #cv2.waitKey(0)
 
 
       cal_params = add_more_stars(cal_fn, cal_params, oimg, oimg, json_conf)
