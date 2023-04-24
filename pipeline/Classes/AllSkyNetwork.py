@@ -158,7 +158,8 @@ class AllSkyNetwork():
 
 
    def station_list(self, rcmd=None):
-     
+      print("RCMD is:", rcmd)
+      input("Wait...")
       all_stations = {}
       eu_missing = {}
       stations = load_json_file("/mnt/f/EVENTS/ALL_STATIONS.json")
@@ -249,6 +250,7 @@ class AllSkyNetwork():
                print("   VPN", cmd)
                if ":" not in vpn:
                   try:
+                     print("RUN:", cmd)
                      output = subprocess.check_output(cmd, shell=True).decode("utf-8")
                      print("CMD OUTPUT:", output)
                   except:
@@ -259,6 +261,7 @@ class AllSkyNetwork():
                cmd = "ssh -o ConnectTimeout=10 " + hostname + " \"" + rcmd + "\""
                print("   HOST", cmd)
                try:
+                  print("RUN:", cmd)
                   output = subprocess.check_output(cmd, shell=True).decode("utf-8")
                   print("CMD OUTPUT:", output)
                except:
@@ -9764,8 +9767,8 @@ status [date]   -    Show network status report for that day.
 
    def check_start_ai_server(self):
       # test the AI server if not running start it and sleep for 30 seconds
-
       url = "http://localhost:5000/"
+      print("Trying AI URL:", url)
       try:
          response = requests.get(url)
          content = response.content.decode()

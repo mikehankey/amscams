@@ -46,7 +46,7 @@ if os.path.exists(key_file) is True:
 else:
    print("make key file")
    if os.path.exists("/home/ams/.ssh/") is False:
-      os.makedirs(("/home/ams/.ssh/")
+      os.makedirs("/home/ams/.ssh/")
    fp = open(key_file, "w")
    fp.write(key)
    fp.close()
@@ -54,7 +54,7 @@ else:
 cmd = "git rev-list --count HEAD"
 out = subprocess.check_output(cmd, shell=True).decode("utf-8")
 out = int(out.replace("\n", ""))
-print("REVISION NUMBER IS : ", out)
+print("Revision Number: ", out)
 print("Last Git Update: ", now)
 
 json_conf_file = "/home/ams/amscams/conf/as6.json"
@@ -62,4 +62,15 @@ json_conf = load_json_file(json_conf_file)
 json_conf['git_revision'] = out
 json_conf['git_last_update'] = now 
 save_json_file(json_conf_file, json_conf)
-os.system("cp /home/ams/lastpull.txt /mnt/archive.allsky.tv/" + json_conf['site']['ams_id'] + "/lastpull.txt")
+
+git_info = {}
+git_info['git_revision'] = out
+git_info['git_last_update'] = now 
+save_json_file("git_info.json", git_info)
+
+
+if os.path.exists("/mnt/archive.allsky.tv/" + json_conf['site']['ams_id'] + "/lastpull.txt") is True:
+   os.system("rm /mnt/archive.allsky.tv/" + json_conf['site']['ams_id'] + "/lastpull.txt") 
+
+
+os.system("cp /home/ams/amscams/pipeline/git_info.json /mnt/archive.allsky.tv/" + json_conf['site']['ams_id'] + "/git_info.json")

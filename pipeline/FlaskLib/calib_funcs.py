@@ -97,6 +97,16 @@ def del_calfile(amsid, calfile):
    os.system(cmd)
    resp = {}
    resp['status'] = 1
+
+   key = "/mnt/ams2/cal/freecal/" + fn  + "/" + fn + "-stacked-calparams.json"
+   ind_file = "/mnt/ams2/cal/freecal_index.json"
+   idx = load_json_file(ind_file)
+   if key in idx:
+      del(idx[key])
+      save_json_file(ind_file, idx)
+      print("saved", ind_file)
+   
+
    return(resp)
 
 
@@ -465,6 +475,9 @@ def cal_history(amsid, cam_id_filter=None, selector=None):
          show_row = 0
 
       if show_row == 1:
+         cal_fn = cal_image_file.split("/")[-1]
+         cal_root = cal_fn.split("-")[0]
+         print("CAL ROOT:", cal_root)
          if cal_image_file is not None:
             cal_thumb = cal_image_file.replace(".png", "-tn.jpg")
             if cfe(cal_thumb) == 0:
@@ -477,8 +490,17 @@ def cal_history(amsid, cam_id_filter=None, selector=None):
             vcal = cal_thumb.replace("/mnt/ams2", "")
             cal_img_thumb = "<img src=" + vcal + " width=320 height=180>"
          else:
+
+           
             cal_img_thumb = ""
-         out += "<tr class='" + color + "'><td><div class='st'></div></td><td><a class='btn btn-primary' href='{:s}'>{:s}</a></td><td><b>{:s}</b></td><td>{:s}</td><td>{:s}/{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td></tr>".format( link, str(cf['cal_date']), \
+
+         delete_link = """
+            <a class="btn btn-danger " onclick="javascript:delete_calibration_main('{:s}')"><i class="fa-solid fa-trash-can"></i></a>
+            """.format(cal_root )
+
+         #out += "<tr class='" + color + "'><td><div class='st'></div></td><td><a class='btn btn-primary' href='{:s}'>{:s}</a></td><td>{:s}</td><td><b>{:s}</b></td><td>{:s}</td><td>{:s}/{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td></tr>".format( link, str(cf['cal_date']), delete_link, \
+
+         out += "<tr class='" + color + "'><td>{:s}</td><td><a class='btn btn-primary' href='{:s}'>{:s}</a></td><td><b>{:s}</b></td><td>{:s}</td><td>{:s}/{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td></tr>".format( delete_link, link, str(cf['cal_date']), \
             str(cf['cam_id']), str(cf['total_stars']), str(cf['center_az'])[0:5], str(cf['center_el'])[0:5], str(cf['position_angle'])[0:5], \
             str(cf['pixscale'])[0:5], str(cf['total_res_px'])[0:5], str(cf['total_res_deg'])[0:5],cal_img_thumb )
 

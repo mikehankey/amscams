@@ -32,6 +32,7 @@ if cmd == "event_preview_images":
 
 if cmd == "stations":
    rcmd = "cd /home/ams/amscams/pipeline; ./gitpull.py; uptime"
+   print("on each host try to run", rcmd)
    ASN.station_list(rcmd)   
 if cmd == "station_report":
    ASN.station_report(sys.argv[2])   

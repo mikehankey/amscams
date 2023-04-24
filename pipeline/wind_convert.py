@@ -363,8 +363,8 @@ def post_data():
          temp_k = round(temp_c + 273.15, 2)
 
          new_pressure = float(pressure) * 100
-         if relh > 1:
-            relh = relh / 100
+         if relh < 1:
+            relh = relh * 100
 
          if True:
             if reverse_direction is True: 
@@ -405,7 +405,7 @@ def post_data():
             relh= temp_c_10 - temp_dp_c_10
             relh = relh * 5
             relh = round(100 - relh , 2)
-            relh = relh / 100
+            #relh = relh / 100
 
             if relh < 0:
                relh = 0
@@ -431,7 +431,7 @@ def post_data():
             out += line + "<br>"
             #source += "<tr><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td></tr>".format(str(pressure), str(height), str(temp), str(dwpt), str(relh), str(mixr), str(wind_dir), str(wind_speed_knots))
             continue
-         relh = float(relh) / 100
+         relh = float(relh) #/ 100
          if relh < 0:
             relh = 0
          new_pressure = round(float(pressure) * 100,2)
