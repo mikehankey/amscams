@@ -382,6 +382,7 @@ def parse_meteor_file(filename):
 
 def get_med_frame(video_file, mj):
    med_file = video_file.replace(".mp4", "-med.jpg")
+   hd_video_file = None
    if mj is not None:
       if "hd_trim" in mj:
          hd_vid = mj['hd_trim']
@@ -487,7 +488,7 @@ def show_cat_stars (video_file, hd_stack_file, points):
          del (cp['short_bright_stars'])
    else:
       # APP TYPE IS CAL FILE NOT METEOR
-      hd_img = get_med_frame(video_file, None)
+      #hd_img = get_med_frame(video_file, None)
       cal_r = video_file.replace("-half-stack.png", "")
       cal_root = "/mnt/ams2" + cal_r 
       cps = glob.glob(cal_root + "*calparams.json")
