@@ -1,7 +1,7 @@
 from lib.PipeUtil import load_json_file, save_json_file, cfe, bound_cnt, convert_filename_to_date_cam, do_photo
 from lib.PipeAutoCal import get_image_stars, get_catalog_stars , pair_stars, eval_cnt, update_center_radec, fn_dir
 from lib.PipeDetect import fireball, apply_frame_deletes, find_object, analyze_object, make_base_meteor_json, fireball_fill_frame_data, calib_image, apply_calib, grid_intensity_center, make_roi_video_mfd
-from lib.PipeVideo import ffprobe, load_frames_fast
+from lib.PipeVideo import ffprobe, load_frames_fast, load_frames_simple
 
 import os
 import cv2
@@ -93,7 +93,6 @@ def crop_video(in_file, x,y,w,h):
       nf = sf.replace(".jpg", "-test.jpg")
       print("saved", nf)
       #cv2.imwrite(nf, img)
-      #cv2.imshow('pepe', img)
 
    out_file = in_file.replace(".mp4", "-crop.mp4")
    cmd = "./FFF.py crop_video " + in_file + " " + out_file + " " + str(nx) + "," + str(ny) + "," + str(nw) + "," + str(nh)
@@ -372,6 +371,51 @@ def delete_meteors(data):
    resp['msg'] = "deleted multi."
    return resp
 
+def parse_meteor_file(filename):
+   if "/" in filename:
+      fn = filename.split("/")[-1]
+   else:
+      fn = filename
+   date = fn[0:10]
+   path = "/mnt/ams2/meteors/" + date + "/" 
+   return(path, fn)
+
+def get_med_frame(video_file, mj):
+   med_file = video_file.replace(".mp4", "-med.jpg")
+   print("MJ:", mj.keys())
+   if "hd_trim" in mj:
+      hd_vid = mj['hd_trim']
+      if os.path.exists(hd_vid) is True:
+         hd_video_file = hd_vid
+         print("FOUND HD VID:", hd_vid)
+      else: 
+         hd_video_file = None 
+         print("NOT FOUND HD VID:", hd_vid)
+
+   if cfe(med_file) == 0:
+      if hd_video_file is not None:
+         print("LOAD HD FRAMES:", hd_video_file)
+         hd_frames = load_frames_simple(hd_video_file)
+      else:
+         print("LOAD SD FRAMES:", hd_video_file)
+         hd_frames = load_frames_simple(video_file)
+
+      print("VIDEO FILE:", video_file)
+
+      median_frame = cv2.convertScaleAbs(np.median(np.array(hd_frames), axis=0))
+      hd_img = cv2.resize(median_frame,(1920,1080))
+      hd_img = cv2.cvtColor(hd_img, cv2.COLOR_BGR2GRAY)
+
+      #median_frame = cv2.GaussianBlur(median_frame, (7, 7), 0)
+      print("WROTE MED FILE:", med_file)
+      cv2.imwrite(med_file, median_frame)
+   else:
+      median_frame = cv2.imread(med_file)
+      median_frame = cv2.cvtColor(median_frame, cv2.COLOR_BGR2GRAY)
+      hd_img = cv2.resize(median_frame,(1920,1080))
+
+   return(hd_img)
+
 def show_cat_stars (video_file, hd_stack_file, points):
    (f_datetime, cam, f_date_str,fy,fmin,fd, fh, fm, fs) = convert_filename_to_date_cam(video_file)
    json_conf = load_json_file("../conf/as6.json")
@@ -382,11 +426,19 @@ def show_cat_stars (video_file, hd_stack_file, points):
    else:
       app_type = "calib"
    hd_img = None
+   # use the median frame not the stack. 
+
+   vid_path, vid_fn = parse_meteor_file(video_file)
+
+
    if app_type == "meteor":
       mjf = "/mnt/ams2/" + video_file.replace(".mp4", ".json")
       stack_file = "/mnt/ams2/" + video_file.replace(".mp4", "-stacked.jpg")
       mjrf = "/mnt/ams2/" + video_file.replace(".mp4", "-reduced.json")
       mj = load_json_file(mjf)
+
+      hd_img = get_med_frame(vid_path + vid_fn, mj)
+
       if os.path.exists(mjrf) is True:
          mjr = load_json_file(mjrf)
       else: 
@@ -408,7 +460,9 @@ def show_cat_stars (video_file, hd_stack_file, points):
          resp['status'] = 0
          return(resp)
 
+
       cp = update_center_radec(video_file,cp,json_conf)
+      print("UPDATE CP:", video_file)
       print(cp['center_az'])
       print(cp['center_el'])
       print(cp['ra_center'])
@@ -423,8 +477,8 @@ def show_cat_stars (video_file, hd_stack_file, points):
          cp['y_poly'] = mcp['y_poly']
          cp['x_poly_fwd'] = mcp['x_poly_fwd']
          cp['y_poly_fwd'] = mcp['y_poly_fwd']
-      print(cp['x_poly'])
-      if "hd_stack" in mj:
+         print("LOADED MCP")
+      if hd_img is None and "hd_stack" in mj:
          hd_img = cv2.imread(mj['hd_stack'], 0)
          hd_img = cv2.resize(hd_img,(1920,1080))
          print("HD IMG:", mj['hd_stack'])
@@ -432,6 +486,8 @@ def show_cat_stars (video_file, hd_stack_file, points):
       if "short_bright_stars" in cp:
          del (cp['short_bright_stars'])
    else:
+      # APP TYPE IS CAL FILE NOT METEOR
+      hd_img = get_med_frame(video_file, None)
       cal_r = video_file.replace("-half-stack.png", "")
       cal_root = "/mnt/ams2" + cal_r 
       cps = glob.glob(cal_root + "*calparams.json")
@@ -446,8 +502,9 @@ def show_cat_stars (video_file, hd_stack_file, points):
       stack_file = sfs[0]
       cpf = cps[0]
       cp = load_json_file(cpf)
-      hd_img = cv2.imread(stack_file, 0)
-      hd_img = cv2.resize(hd_img,(1920,1080))
+      if hd_img is None:
+         hd_img = cv2.imread(stack_file, 0)
+         hd_img = cv2.resize(hd_img,(1920,1080))
    
    if hd_img is None:
       hd_img = cv2.imread(stack_file, 0)
@@ -472,6 +529,10 @@ def show_cat_stars (video_file, hd_stack_file, points):
       sy = int(float(sy)) * 2
      
       rx1,ry1,rx2,ry2 = bound_cnt(sx,sy,hd_img.shape[1],hd_img.shape[0], 10)
+      #show_img = hd_img.copy()
+      #cv2.rectangle(show_img, (int(rx1), int(ry1)), (int(rx2) , int(ry2) ), (255, 255, 255), 1)
+
+      print("HD IMG", hd_img.shape)
       cnt_img = hd_img[ry1:ry2, rx1:rx2]
       #cv2.imwrite("/mnt/ams2/test.jpg", cnt_img)
       min_val, max_val, min_loc, (mx,my)= cv2.minMaxLoc(cnt_img)
