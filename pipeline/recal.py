@@ -6396,7 +6396,7 @@ def apply_calib (cal_file, calfiles_data, json_conf, mcp, last_cal_params=None, 
          print("\tOSCORE/SCORE", oscore, score)
       
       # try wcs 
-      if cal_params['total_res_px'] > 10:
+      if cal_params['total_res_px'] > 16:
          # NOT SURE THIS WORKS!?
          print("RUN BEST WCS")
          temp_cp = best_wcs(cal_fn, cal_params, oimg, con, cur, mcp)
