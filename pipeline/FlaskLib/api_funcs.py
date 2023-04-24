@@ -533,7 +533,7 @@ def show_cat_stars (video_file, hd_stack_file, points):
       #show_img = hd_img.copy()
       #cv2.rectangle(show_img, (int(rx1), int(ry1)), (int(rx2) , int(ry2) ), (255, 255, 255), 1)
 
-      print("HD IMG", hd_img.shape)
+      #print("HD IMG", hd_img.shape)
       cnt_img = hd_img[ry1:ry2, rx1:rx2]
       #cv2.imwrite("/mnt/ams2/test.jpg", cnt_img)
       min_val, max_val, min_loc, (mx,my)= cv2.minMaxLoc(cnt_img)
@@ -548,10 +548,11 @@ def show_cat_stars (video_file, hd_stack_file, points):
       #nsy = ry1 + max_loc[1]
       nsx = rx1 + mx
       nsy = ry1 + my
-      #print("CLOSE IMAGE STAR LOCATION:", sx, sy, nsx, nsy, mx, my)
+      print("CLOSE IMAGE STAR LOCATION:", sx, sy, nsx, nsy, mx, my)
       user_stars.append((nsx,nsy,999))
 
    cp['user_stars'] = user_stars
+
    cp = pair_stars(cp, video_file, json_conf, hd_img)
    resp = {}
 
@@ -579,6 +580,7 @@ def show_cat_stars (video_file, hd_stack_file, points):
    resp['msg'] = "good"
    resp['status'] = 1
    resp['cp'] = cp
+   print("RESP:", resp)
    return(resp)
 
 
