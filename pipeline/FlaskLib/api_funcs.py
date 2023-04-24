@@ -382,15 +382,15 @@ def parse_meteor_file(filename):
 
 def get_med_frame(video_file, mj):
    med_file = video_file.replace(".mp4", "-med.jpg")
-   print("MJ:", mj.keys())
-   if "hd_trim" in mj:
-      hd_vid = mj['hd_trim']
-      if os.path.exists(hd_vid) is True:
-         hd_video_file = hd_vid
-         print("FOUND HD VID:", hd_vid)
-      else: 
-         hd_video_file = None 
-         print("NOT FOUND HD VID:", hd_vid)
+   if mj is not None:
+      if "hd_trim" in mj:
+         hd_vid = mj['hd_trim']
+         if os.path.exists(hd_vid) is True:
+            hd_video_file = hd_vid
+            print("FOUND HD VID:", hd_vid)
+         else: 
+            hd_video_file = None 
+            print("NOT FOUND HD VID:", hd_vid)
 
    if cfe(med_file) == 0:
       if hd_video_file is not None:
