@@ -11194,8 +11194,8 @@ def verify_meteors(day=None):
    json_conf = load_json_file("../conf/as6.json")
    if "ml" in json_conf:
       print("AI Verify Meteors")
-      cmd = "python3.6 ./flex-detect.py vms_ai " + day
-      os.system(cmd)
+      #cmd = "python3.6 ./flex-detect.py vms_ai " + day
+      #os.system(cmd)
       #verify_meteors_ai(day)
 
    if day == None:
