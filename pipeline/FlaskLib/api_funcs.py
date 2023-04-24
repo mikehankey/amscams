@@ -550,10 +550,12 @@ def show_cat_stars (video_file, hd_stack_file, points):
       nsy = ry1 + my
       print("CLOSE IMAGE STAR LOCATION:", sx, sy, nsx, nsy, mx, my)
       user_stars.append((nsx,nsy,999))
-
    cp['user_stars'] = user_stars
 
+   print("1", video_file )
+   # BUG HERE WITH CAL FILES
    cp = pair_stars(cp, video_file, json_conf, hd_img)
+   print("2")
    resp = {}
 
    if app_type == "meteor":

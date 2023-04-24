@@ -8585,6 +8585,7 @@ def pair_stars(cal_params, cal_params_file, json_conf, cal_img=None, show = 0):
    total_match_dist = 0
    total_cat_dist = 0
    total_matches = 0
+
    cat_stars = get_catalog_stars(cal_params)
 
 
@@ -8597,7 +8598,6 @@ def pair_stars(cal_params, cal_params_file, json_conf, cal_img=None, show = 0):
 
    degrees_per_pix = float(cal_params['pixscale'])*0.000277778
    px_per_degree = 1 / degrees_per_pix
-
    cc = 0
    for data in cal_params['user_stars']:
       if data is None:
@@ -8607,7 +8607,7 @@ def pair_stars(cal_params, cal_params_file, json_conf, cal_img=None, show = 0):
       else:
          ix,iy = data
          bp = 0
-
+    
       # INTENSITY OF IMAGE STAR
       sx1 = ix - 5 
       sx2 = ix + 5
@@ -8858,7 +8858,13 @@ def get_catalog_stars(cal_params, force=0):
          name, mag, ra, dec, cat_x, cat_y = data
       elif len(data) == 17:
          name,mag,ra,dec,img_ra,img_dec,match_dist,cat_x,cat_y,img_az,img_el,old_cat_x,old_cat_y,six,siy,cat_dist,star_int  = data 
+      elif len(data) == 13:
+         name, name, ra, dec, mag, new_cat_x, new_cat_y, zp_cat_x, zp_cat_y, rx1,ry1,rx2,ry2 = data
+         #['αUMa', 'αUMa', 165.9321, 61.7508, 1.7, 676.1563139941597, 133.8133842932162, 677.0102205735396, 135.58889367993254, 651, 108, 701, 158           ]
+         print(data)
+         #name,dcname,ra,dec,mag,x1,y1,x2,y2 img_ra,img_dec,match_dist,cat_x,cat_y,img_az,img_el,old_cat_x,old_cat_y,six,siy,cat_dist,star_int  = data 
       else:
+         print("SAD DIED!", len(data))
          exit()
       if mag > mag_limit:
          continue
