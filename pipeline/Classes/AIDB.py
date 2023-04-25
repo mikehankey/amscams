@@ -1295,7 +1295,7 @@ class AllSkyDB():
    
       values = []
       fields = []
-      sql = "INSERT INTO " + table_name + " ( "
+      sql = "INSERT OR REPLACE INTO " + table_name + " ( "
       vlist = ""
       flist = "" 
       for key in in_data:
