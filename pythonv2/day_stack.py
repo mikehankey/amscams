@@ -96,14 +96,27 @@ def day_stack(video_file, day, cam=None, last_blend=None):
    # would work better with pipe?
    cmd = """/usr/bin/ffmpeg -i """ + video_file + """ -vf "select=not(mod(n\,25))" -vsync vfr -q:v 2 > /dev/null 2>&1 """ + mia_out
    print(cmd)
-   os.system(cmd)
+   #os.system(cmd)
 
-   files = glob.glob("/home/ams/tmp-stack/*.jpg")
+   #files = glob.glob("/home/ams/tmp-stack/*.jpg")
+
+   cap = cv2.VideoCapture(video_file)
+   total_frames = cap.get(7)
+   images = []
+   print("TOTAL FRAMES", total_frames)
+   cap.set(1, 100)
+   ret, frame = cap.read()
+   images.append(frame)
+   #cv2.imshow('pepe', frame)
+   #cv2.waitKey(0)
 
    stacked_image = None
    dark_stacked_image = None
-   for file in sorted(files): 
-      frame_pil = Image.open(file)
+   print("IMGS", len(images))
+   #for file in sorted(files): 
+   for cv_image in sorted(images): 
+      #frame_pil = Image.open(file)
+      frame_pil = Image.fromarray(cv_image)
       frame_pil = frame_pil.resize(thumb_size)
       if stacked_image is None:
          stacked_image = stack_stack(frame_pil, frame_pil)
@@ -114,6 +127,8 @@ def day_stack(video_file, day, cam=None, last_blend=None):
          dark_stacked_image = dark_stack_stack(frame_pil, frame_pil)
       else:
          dark_stacked_image = dark_stack_stack(dark_stacked_image, frame_pil)
+   stacked_img = cv2.cvtColor(np.asarray(stacked_image), cv2.COLOR_RGB2BGR)
+   dark_stacked_img = cv2.cvtColor(np.asarray(dark_stacked_image), cv2.COLOR_RGB2BGR)
 
    return_img = cv2.cvtColor(np.asarray(stacked_image), cv2.COLOR_RGB2BGR)
    dark_return_img = cv2.cvtColor(np.asarray(dark_stacked_image), cv2.COLOR_RGB2BGR)
