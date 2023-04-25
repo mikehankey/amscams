@@ -84,18 +84,18 @@ def day_stack(video_file, day, cam=None, last_blend=None):
     
    #thumb_size = (306, 169)
    thumb_size = (640, 360)
-   cmd = "rm /home/ams/tmp-stack/foo*"
-   os.system(cmd)
+   #cmd = "rm /home/ams/tmp-stack/foo*"
+   #os.system(cmd)
    # stack 1 FPS
    #cmd = "/usr/bin/ffmpeg -i " + video_file + " -vf fps=1 /home/ams/tmp-stack/foo-%03d.jpg > /dev/null 2>&1"
    # stack just 1 frame 
-   mia_out = "/home/ams/tmp-stack/foo-%03d.jpg"
+   #mia_out = "/home/ams/tmp-stack/foo-%03d.jpg"
    #cmd = "/usr/bin/ffmpeg -ss 00:00:01.00 -i " + video_file + " -frames:v 250 " + mia_out
 
    # select 1 frame out of 5 modulus 5 and put to a jpg then stack those files
    # would work better with pipe?
-   cmd = """/usr/bin/ffmpeg -i """ + video_file + """ -vf "select=not(mod(n\,25))" -vsync vfr -q:v 2 > /dev/null 2>&1 """ + mia_out
-   print(cmd)
+   #cmd = """/usr/bin/ffmpeg -i """ + video_file + """ -vf "select=not(mod(n\,25))" -vsync vfr -q:v 2 > /dev/null 2>&1 """ + mia_out
+   #print(cmd)
    #os.system(cmd)
 
    #files = glob.glob("/home/ams/tmp-stack/*.jpg")
