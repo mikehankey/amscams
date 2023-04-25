@@ -17,7 +17,7 @@ from lib.UtilLib import calc_dist,find_angle, best_fit_slope_and_intercept, chec
 from lib.FileIO import load_json_file, save_json_file, cfe
 from lib.flexLib import load_frames_fast, stack_frames_fast, convert_filename_to_date_cam, day_or_night, stack_stack, dark_stack_stack
 from lib.VIDEO_VARS import PREVIEW_W, PREVIEW_H, SD_W, SD_H
-#SHOW = 1
+SHOW = 0
 
 def stack_day_all():
    running = check_running("day_stack.py")
