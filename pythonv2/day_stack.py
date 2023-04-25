@@ -74,6 +74,12 @@ def day_stack(video_file, day, cam=None, last_blend=None):
       #if SHOW == 1:
       #   cv2.imshow('pepe', img)
       #   cv2.waitKey(30)
+      day_dir = "/mnt/ams2/SD/proc2/daytime/" + day + "/"
+
+      cmd = "mv " + video_file + " " + day_dir
+      print(cmd)
+      os.system("mv " + video_file + " " + day_dir)
+
       print("SKIP DONE ALREADY", stack_file)
       return(np.array(img), time.time() - start_time)
    #else:
@@ -178,8 +184,8 @@ def day_stack(video_file, day, cam=None, last_blend=None):
 
 
 
-      #cmd = "mv " + video_file + " " + day_dir
-      #os.system("mv " + video_file + " " + day_dir)
+      cmd = "mv " + video_file + " " + day_dir
+      os.system("mv " + video_file + " " + day_dir)
    print("Elapsed:", time.time() - tt)
    return(np.array(blend_return_img), time.time() - start_time)
 

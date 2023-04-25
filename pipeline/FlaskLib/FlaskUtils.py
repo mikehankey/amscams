@@ -8,7 +8,7 @@ def get_version(json_conf):
       version_info = "UNKNOWN ASOS VERSION PLEASE RUN ./gitpull.py in the amscams/pipeline dir AND THEN REBOOT SERVER"
    if "git_last_update" in json_conf:
       version_info += " Last updated on " + json_conf['git_last_update']
-   copywrite_info = "&copy; Copywrite Mike Hankey LLC "  + str(dt.now().strftime("%Y"))
+   copywrite_info = "&copy; Copyright Mike Hankey LLC "  + str(dt.now().strftime("%Y"))
    return(version_info, copywrite_info)
 
 def get_template(file): 

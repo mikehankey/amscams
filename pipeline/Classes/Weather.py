@@ -100,7 +100,7 @@ class Weather():
 |__|__||_____||_____| \___||__|\_||____/ 
                                          
 AllSky.com/ALLSKY7 - ALLSKYOS STATION SOFTWARE 
-Copywrite Mike Hankey LLC 2016-2022 
+Copyright Mike Hankey LLC 2016-2022 
 Use permitted for licensed users only.
 Contact mike.hankey@gmail.com
 

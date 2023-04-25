@@ -10,7 +10,7 @@ allsky_console = """
 *- O B S E R V I N G - S O F T W A R E -*
 
 AllSky.com/ALLSKY7 - A.S.O.S.
-Copywrite Mike Hankey LLC 2016-2022
+Copyright Mike Hankey LLC 2016-2022
 Use permitted for licensed users only.
 Contact mike.hankey@gmail.com for questions.
 """
