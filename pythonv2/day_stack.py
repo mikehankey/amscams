@@ -40,6 +40,8 @@ def stack_day_all():
 
 
    for df in sorted(day_files):
+      if os.path.exists(df) is False:
+         continue
       st = os.stat(df)
       size = st.st_size
       if size < 1000:
@@ -100,23 +102,25 @@ def day_stack(video_file, day, cam=None, last_blend=None):
 
    #files = glob.glob("/home/ams/tmp-stack/*.jpg")
 
+   # get 1 image of every 10 frames
+   interval = 10
    cap = cv2.VideoCapture(video_file)
    total_frames = cap.get(7)
    images = []
-   print("TOTAL FRAMES", total_frames)
-   cap.set(1, 100)
-   ret, frame = cap.read()
-   images.append(frame)
-   #cv2.imshow('pepe', frame)
-   #cv2.waitKey(0)
-
    stacked_image = None
    dark_stacked_image = None
-   print("IMGS", len(images))
-   #for file in sorted(files): 
-   for cv_image in sorted(images): 
+   print("TOTAL FRAMES", total_frames)
+   count = 0
+   for i in range(0,int(total_frames/interval)):
+      fn = i * 10
+      cap.set(1, fn)
+      ret, frame = cap.read()
+      images.append(frame)
+      cv2.imshow('pepe', frame)
+      cv2.waitKey(30)
+
       #frame_pil = Image.open(file)
-      frame_pil = Image.fromarray(cv_image)
+      frame_pil = Image.fromarray(frame)
       frame_pil = frame_pil.resize(thumb_size)
       if stacked_image is None:
          stacked_image = stack_stack(frame_pil, frame_pil)
@@ -127,17 +131,24 @@ def day_stack(video_file, day, cam=None, last_blend=None):
          dark_stacked_image = dark_stack_stack(frame_pil, frame_pil)
       else:
          dark_stacked_image = dark_stack_stack(dark_stacked_image, frame_pil)
-   stacked_img = cv2.cvtColor(np.asarray(stacked_image), cv2.COLOR_RGB2BGR)
-   dark_stacked_img = cv2.cvtColor(np.asarray(dark_stacked_image), cv2.COLOR_RGB2BGR)
+      count = count + 1
+   #stacked_img = cv2.cvtColor(np.asarray(stacked_image), cv2.COLOR_RGB2BGR)
+   if count == 0:
+      return(None,  time.time() - start_time)
+   dark_stacked_img_cv = cv2.cvtColor(np.asarray(dark_stacked_image), cv2.COLOR_RGB2BGR)
+   stacked_img_cv = cv2.cvtColor(np.asarray(stacked_image), cv2.COLOR_RGB2BGR)
 
-   return_img = cv2.cvtColor(np.asarray(stacked_image), cv2.COLOR_RGB2BGR)
-   dark_return_img = cv2.cvtColor(np.asarray(dark_stacked_image), cv2.COLOR_RGB2BGR)
-   blend_return_img = cv2.addWeighted(return_img, .5, dark_return_img, .5,0)
+   #return_img = cv2.cvtColor(np.asarray(stacked_image), cv2.COLOR_RGB2BGR)
+   #dark_return_img = cv2.cvtColor(np.asarray(dark_stacked_image), cv2.COLOR_RGB2BGR)
+   print(stacked_img_cv.shape)
+   print(dark_stacked_img_cv.shape)
+   blend_return_img = cv2.addWeighted(stacked_img_cv, .5, dark_stacked_img_cv, .5,0)
+   #blend_return_img = cv2.cvtColor(np.asarray(blend_return_img), cv2.COLOR_RGB2BGR)
 
    if SHOW == 1:
-
-      cv2.imshow('pepe', np.array(blend_return_img))
-      cv2.waitKey(30)
+      foo = 1
+      #cv2.imshow('pepe', np.array(blend_return_img))
+      #cv2.waitKey(30)
    if stacked_image is None:
       #os.system("rm " + video_file )
       print("BAD VIDEO FILE! ", video_file)
