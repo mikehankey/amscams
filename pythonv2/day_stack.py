@@ -116,8 +116,9 @@ def day_stack(video_file, day, cam=None, last_blend=None):
       cap.set(1, fn)
       ret, frame = cap.read()
       images.append(frame)
-      cv2.imshow('pepe', frame)
-      cv2.waitKey(30)
+      if SHOW == 1:
+         cv2.imshow('pepe', frame)
+         cv2.waitKey(30)
 
       #frame_pil = Image.open(file)
       frame_pil = Image.fromarray(frame)
