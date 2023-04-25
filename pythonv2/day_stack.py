@@ -17,11 +17,11 @@ from lib.UtilLib import calc_dist,find_angle, best_fit_slope_and_intercept, chec
 from lib.FileIO import load_json_file, save_json_file, cfe
 from lib.flexLib import load_frames_fast, stack_frames_fast, convert_filename_to_date_cam, day_or_night, stack_stack, dark_stack_stack
 from lib.VIDEO_VARS import PREVIEW_W, PREVIEW_H, SD_W, SD_H
-SHOW = 1
+#SHOW = 1
 
 def stack_day_all():
    running = check_running("day_stack.py")
-   day_dir = "/mnt/ams2/SD/proc2/daytime/" + day + "/"
+   #day_dir = "/mnt/ams2/SD/proc2/daytime/" + day + "/"
    print("RUNNING:", running)
    if running > 2:
       print("already running")
@@ -39,7 +39,7 @@ def stack_day_all():
 
 
 
-   for df in day_files:
+   for df in sorted(day_files):
       st = os.stat(df)
       size = st.st_size
       if size < 1000:
@@ -48,12 +48,13 @@ def stack_day_all():
          continue
       day = df.split("/")[-1][0:10] 
       if day not in exists:
+         day_dir = "/mnt/ams2/SD/proc2/daytime/" + day + "/"
          if cfe(day_dir, 1) == 0:
             os.makedirs(day_dir)
             os.makedirs(day_dir + "images")
          exists[day] = 1
-      stack_file, elp = day_stack(df, day)
-      print(df, stack_file, elp)
+      stack_img, elp = day_stack(df, day)
+      print("DAY STACK:", df, elp)
 
 def day_stack(video_file, day, cam=None, last_blend=None):
    start_time = time.time()
@@ -71,10 +72,10 @@ def day_stack(video_file, day, cam=None, last_blend=None):
       if SHOW == 1:
          cv2.imshow('pepe', img)
          cv2.waitKey(30)
-      print("Done skip!")
+      print("SKIP DONE ALREADY", stack_file)
       return(np.array(img), time.time() - start_time)
-   else:
-      print(stack_file)
+   #else:
+   #   print(stack_file)
 
 
    tt = time.time()
@@ -90,6 +91,9 @@ def day_stack(video_file, day, cam=None, last_blend=None):
    # stack just 1 frame 
    mia_out = "/home/ams/tmp-stack/foo-%03d.jpg"
    #cmd = "/usr/bin/ffmpeg -ss 00:00:01.00 -i " + video_file + " -frames:v 250 " + mia_out
+
+   # select 1 frame out of 5 modulus 5 and put to a jpg then stack those files
+   # would work better with pipe?
    cmd = """/usr/bin/ffmpeg -i """ + video_file + """ -vf "select=not(mod(n\,5))" -vsync vfr -q:v 2 > /dev/null 2>&1 """ + mia_out
    print(cmd)
    os.system(cmd)
@@ -111,11 +115,11 @@ def day_stack(video_file, day, cam=None, last_blend=None):
       else:
          dark_stacked_image = dark_stack_stack(dark_stacked_image, frame_pil)
 
+   return_img = cv2.cvtColor(np.asarray(stacked_image), cv2.COLOR_RGB2BGR)
+   dark_return_img = cv2.cvtColor(np.asarray(dark_stacked_image), cv2.COLOR_RGB2BGR)
+   blend_return_img = cv2.addWeighted(return_img, .5, dark_return_img, .5,0)
 
    if SHOW == 1:
-      return_img = cv2.cvtColor(np.asarray(stacked_image), cv2.COLOR_RGB2BGR)
-      dark_return_img = cv2.cvtColor(np.asarray(dark_stacked_image), cv2.COLOR_RGB2BGR)
-      blend_return_img = cv2.addWeighted(return_img, .5, dark_return_img, .5,0)
 
       cv2.imshow('pepe', np.array(blend_return_img))
       cv2.waitKey(30)
@@ -130,28 +134,29 @@ def day_stack(video_file, day, cam=None, last_blend=None):
       cv2.imwrite(stack_file_thumb, blend_return_img_thumb)
       print("SAVED", stack_file)
       cmd = "mv " + video_file + " " + day_dir
-      #print(cmd)
       #os.system("mv " + video_file + " " + day_dir)
    print("Elapsed:", time.time() - tt)
    return(np.array(blend_return_img), time.time() - start_time)
 
-if len(sys.argv) == 0:
+if len(sys.argv) == 1:
    # do current work
    stack_day_all()
-elif sys.argv[1] == "sf":
-   # stack 1 file
-   (hd_datetime, cam, sd_date, sd_y, sd_m, sd_d, sd_h, sd_M, sd_s) = convert_filename_to_date_cam(sys.argv[2])
-   day, tm = sd_date.split(" ")
-   day = day.replace("-", "_")
-   day_stack(sys.argv[2], day)
-elif sys.argv[1] == "sd":
-   day = sys.argv[2]
-   cam = sys.argv[3]
-   print("stack 1 day", day)
-   day_dir = "/mnt/ams2/SD/proc2/daytime/" + day + "/"  
-   files = glob.glob(day_dir + "*" + cam + "*.mp4")
-   last_stack = None
-   for ff in sorted(files):
-      last_stack, elp = day_stack(ff, day, cam, last_stack)
-      print("LAST STACK ELP", ff, elp)
+elif len(sys.argv) > 1:
+   if sys.argv[1] == "sf":
+      # stack 1 file
+      (hd_datetime, cam, sd_date, sd_y, sd_m, sd_d, sd_h, sd_M, sd_s) = convert_filename_to_date_cam(sys.argv[2])
+      day, tm = sd_date.split(" ")
+      day = day.replace("-", "_")
+      day_stack(sys.argv[2], day)
+   elif sys.argv[1] == "sd":
+      day = sys.argv[2]
+      cam = sys.argv[3]
+      print("stack 1 day", day)
+      day_dir = "/mnt/ams2/SD/proc2/daytime/" + day + "/"  
+      files = glob.glob(day_dir + "*" + cam + "*.mp4")
+      print(day_dir, len(files) )
+      last_stack = None
+      for ff in sorted(files):
+         last_stack, elp = day_stack(ff, day, cam, last_stack)
+         print("LAST STACK ELP", ff, elp)
 
