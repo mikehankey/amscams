@@ -94,7 +94,7 @@ def day_stack(video_file, day, cam=None, last_blend=None):
 
    # select 1 frame out of 5 modulus 5 and put to a jpg then stack those files
    # would work better with pipe?
-   cmd = """/usr/bin/ffmpeg -i """ + video_file + """ -vf "select=not(mod(n\,5))" -vsync vfr -q:v 2 > /dev/null 2>&1 """ + mia_out
+   cmd = """/usr/bin/ffmpeg -i """ + video_file + """ -vf "select=not(mod(n\,25))" -vsync vfr -q:v 2 > /dev/null 2>&1 """ + mia_out
    print(cmd)
    os.system(cmd)
 
