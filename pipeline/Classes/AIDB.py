@@ -1516,8 +1516,12 @@ class AllSkyDB():
         
          
             # Override if the "hc" human confirm does not exist and no manual edits exist
-            if "hc" in mj or "user_mods" in mj:
+            if "hc" in mj :
                decision = "ACCEPT"
+            if "user_mods" in mj:
+                if "frames" in mj['user_mods']:
+                   if len(mj['user_mods']['frames']) > 0:
+                      decision = "ACCEPT"
 
             if decision == "REJECT":
 
