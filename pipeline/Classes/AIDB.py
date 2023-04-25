@@ -1055,10 +1055,10 @@ class AllSkyDB():
 
       if selected_day is not None:
          print("\rLoad meteors for day: " + selected_day, end= "")
-         sql = "SELECT sd_vid, reduced from meteors where sd_vid like ?" 
+         sql = "SELECT sd_vid, reduced from meteors where sd_vid like ? and roi is not null " 
          self.cur.execute(sql, [selected_day + "%"])
       else:
-         sql = "SELECT sd_vid,reduced from meteors " 
+         sql = "SELECT sd_vid,reduced from meteors and roi is not null ''" 
          self.cur.execute(sql)
 
 
