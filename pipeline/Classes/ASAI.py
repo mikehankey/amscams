@@ -155,7 +155,7 @@ class AllSkyAI():
 
       model = Sequential()
       #print("MF:", model_file)
-      model =load_model(model_file)
+      model =load_model(model_file, compile=False)
       model.compile(loss='categorical_crossentropy',
          optimizer='rmsprop',
          metrics=['accuracy'])
@@ -1062,7 +1062,7 @@ class AllSkyAI():
             os.system("cp /mnt/archive.allsky.tv/AMS1/ML/" + mf + ".h5 ./models/" + mf)
          if os.path.exists('models/' + mf + '.h5') is True:
             try:
-               self.models[mf] = load_model('models/' + mf + '.h5')
+               self.models[mf] = load_model('models/' + mf + '.h5', compile=False)
                self.models[mf].compile(loss='binary_crossentropy',
                   optimizer='rmsprop',
                   metrics=['accuracy'])
@@ -1079,7 +1079,7 @@ class AllSkyAI():
          #   os.system("cp /mnt/archive.allsky.tv/AMS1/ML/" + mf + ".h5 ./models/" + mf)
          #if True:
             try:
-               self.models[mf] =load_model("models/" + mf + ".h5")
+               self.models[mf] =load_model("models/" + mf + ".h5", compile=False)
                self.models[mf].compile(loss='categorical_crossentropy',
                   optimizer='rmsprop',
                   metrics=['accuracy'])
@@ -1126,7 +1126,7 @@ class AllSkyAI():
       if False:
          # these models we don't use anymore?
          if os.path.exists("models/fireball_or_plane_i64.h5") is True:
-            self.model_meteor_yn =load_model('models/meteor_yn_i64.h5')
+            self.model_meteor_yn =load_model('models/meteor_yn_i64.h5', compile=False)
             self.model_meteor_yn.compile(loss='binary_crossentropy',
               optimizer='rmsprop',
               metrics=['accuracy'])
@@ -1136,7 +1136,7 @@ class AllSkyAI():
             print("Not found: models/meteor_meteor_yn.h5") 
 
          if os.path.exists("models/meteor_prev_yn.h5") is True:
-            self.model_meteor_prev_yn =load_model('models/meteor_prev_yn.h5')
+            self.model_meteor_prev_yn =load_model('models/meteor_prev_yn.h5', compile=False)
             self.model_meteor_prev_yn.compile(loss='binary_crossentropy',
               optimizer='rmsprop',
               metrics=['accuracy'])
@@ -1146,7 +1146,7 @@ class AllSkyAI():
             print("Not found: models/meteor_prev_yn.h5") 
 
          if os.path.exists("models/meteor_or_star.h5") is True:
-            self.model_meteor_or_star =load_model('models/meteor_or_star.h5')
+            self.model_meteor_or_star =load_model('models/meteor_or_star.h5', compile=False)
             self.model_meteor_yn.compile(loss='binary_crossentropy',
               optimizer='rmsprop',
               metrics=['accuracy'])
@@ -1158,7 +1158,7 @@ class AllSkyAI():
 
 
          if os.path.exists("models/fireball_or_plane_i64.h5") is True:
-            self.model_meteor_fireball_yn =load_model('models/fireball_yn_i64.h5')
+            self.model_meteor_fireball_yn =load_model('models/fireball_yn_i64.h5', compile=False)
             self.model_meteor_fireball_yn.compile(loss='binary_crossentropy',
               optimizer='rmsprop',
               metrics=['accuracy'])
@@ -1168,7 +1168,7 @@ class AllSkyAI():
             print("Not found: models/meteor_or_fireball_yn.h5") 
 
          if os.path.exists("models/meteor_or_plane_i64.h5") is True:
-            self.model_meteor_or_plane =load_model('models/meteor_or_plane_i64.h5')
+            self.model_meteor_or_plane =load_model('models/meteor_or_plane_i64.h5', comile=False)
             self.model_meteor_or_plane.compile(loss='binary_crossentropy',
                  optimizer='rmsprop',
                  metrics=['accuracy'])
@@ -1178,7 +1178,7 @@ class AllSkyAI():
             print("loaded meteor_or_plane.h5")
 
          if os.path.exists("models/meteor_or_plane_i64.h5") is True:
-            self.model_fireball_or_plane =load_model('models/fireball_or_plane_i64.h5')
+            self.model_fireball_or_plane =load_model('models/fireball_or_plane_i64.h5', compile=False)
             self.model_fireball_or_plane.compile(loss='binary_crossentropy',
               optimizer='rmsprop',
               metrics=['accuracy'])
@@ -1189,7 +1189,7 @@ class AllSkyAI():
 
       mo_lib = "moving_objects_i64"   
       print("models/" + mo_lib + ".h5")
-      self.model_multi_class =load_model("models/" + mo_lib + ".h5")
+      self.model_multi_class =load_model("models/" + mo_lib + ".h5", compile=False)
       self.model_multi_class.compile(loss='categorical_crossentropy',
          optimizer='rmsprop',
          metrics=['accuracy'])
@@ -1197,7 +1197,7 @@ class AllSkyAI():
 
 
       if os.path.exists("models/weather_condition.h5") is True:
-         self.model_weather_condition =load_model("models/weather_condition.h5")
+         self.model_weather_condition =load_model("models/weather_condition.h5", compile=False)
          self.model_weather_condition.compile(loss='categorical_crossentropy',
             optimizer='rmsprop',
             metrics=['accuracy'])
