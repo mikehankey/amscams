@@ -71,9 +71,9 @@ def day_stack(video_file, day, cam=None, last_blend=None):
 
    if os.path.exists(stack_file) is True:
       img = cv2.imread(stack_file)
-      if SHOW == 1:
-         cv2.imshow('pepe', img)
-         cv2.waitKey(30)
+      #if SHOW == 1:
+      #   cv2.imshow('pepe', img)
+      #   cv2.waitKey(30)
       print("SKIP DONE ALREADY", stack_file)
       return(np.array(img), time.time() - start_time)
    #else:
@@ -103,7 +103,7 @@ def day_stack(video_file, day, cam=None, last_blend=None):
    #files = glob.glob("/home/ams/tmp-stack/*.jpg")
 
    # get 1 image of every 10 frames
-   interval = 10
+   interval = 25 
    cap = cv2.VideoCapture(video_file)
    total_frames = cap.get(7)
    images = []
@@ -115,14 +115,17 @@ def day_stack(video_file, day, cam=None, last_blend=None):
       fn = i * 10
       cap.set(1, fn)
       ret, frame = cap.read()
+      frame = cv2.resize(frame, thumb_size)
       images.append(frame)
-      if SHOW == 1:
-         cv2.imshow('pepe', frame)
-         cv2.waitKey(30)
+      if i == 0:
+         snap_img = frame
+      #if SHOW == 1:
+      #   cv2.imshow('pepe', frame)
+      #   cv2.waitKey(30)
 
       #frame_pil = Image.open(file)
       frame_pil = Image.fromarray(frame)
-      frame_pil = frame_pil.resize(thumb_size)
+      #frame_pil = frame_pil.resize(thumb_size)
       if stacked_image is None:
          stacked_image = stack_stack(frame_pil, frame_pil)
       else:
@@ -139,12 +142,9 @@ def day_stack(video_file, day, cam=None, last_blend=None):
    dark_stacked_img_cv = cv2.cvtColor(np.asarray(dark_stacked_image), cv2.COLOR_RGB2BGR)
    stacked_img_cv = cv2.cvtColor(np.asarray(stacked_image), cv2.COLOR_RGB2BGR)
 
-   #return_img = cv2.cvtColor(np.asarray(stacked_image), cv2.COLOR_RGB2BGR)
-   #dark_return_img = cv2.cvtColor(np.asarray(dark_stacked_image), cv2.COLOR_RGB2BGR)
-   print(stacked_img_cv.shape)
-   print(dark_stacked_img_cv.shape)
+
    blend_return_img = cv2.addWeighted(stacked_img_cv, .5, dark_stacked_img_cv, .5,0)
-   #blend_return_img = cv2.cvtColor(np.asarray(blend_return_img), cv2.COLOR_RGB2BGR)
+   blend_return_img = cv2.cvtColor(np.asarray(blend_return_img), cv2.COLOR_RGB2BGR)
 
    if SHOW == 1:
       foo = 1
@@ -156,11 +156,29 @@ def day_stack(video_file, day, cam=None, last_blend=None):
 
    else: 
       #stacked_image.save(stack_file)
-      cv2.imwrite(stack_file, blend_return_img)
+      stacked_img_cv = cv2.cvtColor(np.asarray(stacked_img_cv), cv2.COLOR_RGB2BGR)
+      cv2.imwrite(stack_file, stacked_img_cv)
+      cv2.imwrite(stack_file.replace("-stacked.jpg", "-snap.jpg"), snap_img)
+      cv2.imwrite(stack_file.replace(".jpg", "-blend.jpg"), blend_return_img)
+      dark_stacked_img_cv = cv2.cvtColor(np.asarray(dark_stacked_img_cv), cv2.COLOR_RGB2BGR)
+      cv2.imwrite(stack_file.replace(".jpg", "-dark.jpg"), dark_stacked_img_cv)
+
       blend_return_img_thumb = cv2.resize(blend_return_img, (320,180))
       cv2.imwrite(stack_file_thumb, blend_return_img_thumb)
       print("SAVED", stack_file)
-      cmd = "mv " + video_file + " " + day_dir
+      if SHOW == 1:
+         #cv2.imshow('pepe', snap_img)
+         #cv2.waitKey(90)
+         #cv2.imshow('pepe', stacked_img_cv)
+         #cv2.waitKey(90)
+         #cv2.imshow('pepe', dark_stacked_img_cv)
+         #cv2.waitKey(90)
+         cv2.imshow('pepe', blend_return_img)
+         cv2.waitKey(30)
+
+
+
+      #cmd = "mv " + video_file + " " + day_dir
       #os.system("mv " + video_file + " " + day_dir)
    print("Elapsed:", time.time() - tt)
    return(np.array(blend_return_img), time.time() - start_time)
