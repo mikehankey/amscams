@@ -1499,7 +1499,8 @@ class AllSkyDB():
                meteor_yn_conf = 50
             if fireball_yn_conf is None or fireball_yn_conf == "":
                fireball_yn_conf = 50
-            #continue
+            print("AI NOT RUN YET FOR THIS METEOR. It is not safe to reject!:", root_fn)
+            continue
 
          # AI Reject conditions
          if (int(meteor_yn_conf) < 51 and int(fireball_yn_conf) < 51 and "meteor" not in mc_class) or \
@@ -1515,6 +1516,7 @@ class AllSkyDB():
                mj = {}
         
          
+            decision = "REJECT"
             # Override if the "hc" human confirm does not exist and no manual edits exist
             if "hc" in mj :
                decision = "ACCEPT"
