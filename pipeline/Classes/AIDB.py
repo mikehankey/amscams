@@ -1553,7 +1553,7 @@ class AllSkyDB():
                   #mc_class_conf = oo[0]
                   #mc_class = "meteor"
                      print("Need to reduce new location!")
-                     decision = "ACCEPT"
+                     #decision = "ACCEPT"
             print("AI CHECK:", decision, root_fn, meteor_yn_conf, fireball_yn_conf, mc_class, mc_class_conf)
             ai_info.append((decision, root_fn, hd_vid, roi, meteor_yn_conf, fireball_yn_conf, mc_class, mc_class_conf ))
 
