@@ -7,6 +7,7 @@ from lib.PipeUtil import load_json_file, save_json_file
 from lib.PipeVideo import load_frames_fast 
 import numpy as np
 from Classes.Detector import Detector
+from lib.DEFAULTS import *
 DD = Detector()
 
 json_conf = load_json_file("../conf/as6.json")
