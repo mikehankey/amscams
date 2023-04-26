@@ -271,6 +271,14 @@ def ai_scan_meteor_file(meteor_file):
       print("WROTE:", roi_file)
       if meteor_yn is True:
          meteor_objs.append(oid)
+         print(ai_data)
+         mj['hd_roi'] = [hx1,hy1,hx2,hy2]
+         mj['meteor_yn'] = ai_data['meteor_yn']
+         mj['fireball_yn'] = ai_data['fireball_yn']
+         mj['mc_class'] = ai_data['mc_class']
+         mj['mc_class_conf'] = ai_data['mc_class_conf']
+         mj['decision'] = "APPROVED"
+         
 
    mj['ai_objects'] = ai_objects
    mj['meteor_objs'] = meteor_objs
@@ -278,14 +286,18 @@ def ai_scan_meteor_file(meteor_file):
    return(mj)
 
 day = sys.argv[1]
+mdir = "/mnt/ams2/meteors/" + day + "/"
 meteor_files = os.listdir("/mnt/ams2/meteors/" + day + "/")
+ai_info = []
 for mf in meteor_files:
+   root_fn = mf.replace(".mp4", "")
    if "json" not in mf:
       continue
    if "reduced" in mf:
       continue
    print("AI SCAN:", mf)
    mj = ai_scan_meteor_file(mf)
+   decision = "APPROVED"
    if len(mj['meteor_objs']) == 0:
       hc = False
       if "hc" in mj or "human_confirmed" in mj:
@@ -295,11 +307,24 @@ for mf in meteor_files:
             hc = True
       
       if hc is False: 
+         decision = "REJECT"
          ai_reject_meteor(mf, mj)
       else:
          print("HUMAN CONFIRMED OVERRIDE!") 
-   print("AI OBJECTS:", mj['ai_objects'])
+         decision = "APPROVED"
+   hd_vid = mj['hd_trim'].split("/")[-1]
+   if "meteor_yn" in mj:
+      meteor_yn_conf = mj['meteor_yn']
+      fireball_yn_conf = mj['fireball_yn']
+      mc_class = mj['mc_class']
+      mc_class_conf = mj['mc_class_conf']
+      roi = mj['hd_roi']
+      ai_info.append((decision, root_fn, hd_vid, roi, meteor_yn_conf, fireball_yn_conf, mc_class, mc_class_conf ))
+      print("AI OBJECTS:", mj['ai_objects'])
+   else:
+      print("Reject")
 
 
+save_json_file(mdir + "/" + json_conf['site']['ams_id'] + "_" + day + "_AI_DATA.info", ai_info)
 
 
