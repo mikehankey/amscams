@@ -1648,7 +1648,9 @@ def remove_bad_stars(cat_image_stars):
                print("CAT X on wrong side of star for being on the right!", new_cat_x, six)
                bad.append(star)
                continue
-
+      if star_int == None:
+         bad.append(star)
+         continue
       if mag >= 4 and star_int > 1400 or star_int < 50:
          print("Bad mag/star int!", mag, star_int)
          bad.append(star)
