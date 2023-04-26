@@ -154,8 +154,9 @@ def find_motion_objects(video_file):
          status, objects[oid]['report'] = Detector.analyze_object(objects[obj_id]) 
  
       thresh_img = cv2.resize(thresh_img,(1920,1080))
-      cv2.imshow('pepe', thresh_img)
-      cv2.waitKey(30)
+      if SHOW == 1:
+         cv2.imshow('pepe', thresh_img)
+         cv2.waitKey(30)
       fn += 1
 
    # remove objs that are less than 3 frames
@@ -227,10 +228,12 @@ def ai_scan_meteor_file(meteor_file):
          else:
             r = h
          cv2.rectangle(marked_stack, (cx-5, cy-5), (cx+5, cy+5), (128,128,128), 2)
+         if SHOW == 1:
+            cv2.imshow("pepe", marked_stack)
+            cv2.waitKey(30)
+      if SHOW == 1:
          cv2.imshow("pepe", marked_stack)
-         cv2.waitKey(30)
-      cv2.imshow("pepe", marked_stack)
-      cv2.waitKey(90)
+         cv2.waitKey(90)
 
       #hx1, hy1, hx2, hy2,hx,hy = sd_to_hd_roi(ax, ay, marked_stack.shape[1],marked_stack.shape[0])
       hx1, hy1, hx2, hy2,hx,hy = sd_to_hd_roi(ax, ay, stack_img.shape[1],stack_img.shape[0])
@@ -260,9 +263,9 @@ def ai_scan_meteor_file(meteor_file):
          cv2.putText(temp_stack, str(oid) + " " + report_class + " " + desc,  (hx1,hy1-15), cv2.FONT_HERSHEY_SIMPLEX, .4, color, 1)
       else:
          cv2.putText(temp_stack, str(oid) + " " + report_class + " " + desc,  (hx1,hy2+15), cv2.FONT_HERSHEY_SIMPLEX, .4, color, 1)
-
-      cv2.imshow("pepe", temp_stack)
-      cv2.waitKey(120)
+      if SHOW == 1:
+         cv2.imshow("pepe", temp_stack)
+         cv2.waitKey(120)
       save_json_file(mjf, mj)
       print("WROTE:", roi_file)
       if meteor_yn is True:
