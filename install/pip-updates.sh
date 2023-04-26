@@ -36,5 +36,5 @@ python3 -m pip install beautifulsoup4
 python3 -m pip install photutils
 python3 -m pip install prettytable
 python3 -m pip install requests
-python3 -m pip install imutils
 python3 -m pip install tqdm 
+python3 -m pip install imutils
