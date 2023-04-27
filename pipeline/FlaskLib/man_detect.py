@@ -52,10 +52,14 @@ def man_detect(min_file, data):
       os.system("rm /mnt/ams2/TEMP/*.jpg")
       min_fn = min_file.split("/")[-1]
       min_dir = min_file.replace(min_fn, "")
-      day_dir = min_dir + date 
+      day_dir = "/mnt/ams2/SD/proc2/daytime/" + date  + "/"
       if os.path.exists(min_file) is False:
+         print("NO MINFILE", min_file)
+         print("TRY ", day_dir + min_fn)
          if os.path.exists(day_dir + min_fn) is True:
             min_file = day_dir + min_fn
+            cmd = "cp " + day_dir + min_fn + " " + min_dir + min_fn
+            os.system(cmd)
 
 
       cmd = "./FFF.py slow_stack " +min_file + " /mnt/ams2/TEMP/ " + str(fps)
