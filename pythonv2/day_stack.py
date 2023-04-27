@@ -121,6 +121,8 @@ def day_stack(video_file, day, cam=None, last_blend=None):
       fn = i * 10
       cap.set(1, fn)
       ret, frame = cap.read()
+      if frame is None:
+         continue
       frame = cv2.resize(frame, thumb_size)
       images.append(frame)
       if i == 0:
