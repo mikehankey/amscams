@@ -52,7 +52,7 @@ def man_detect(min_file, data):
       os.system("rm /mnt/ams2/TEMP/*.jpg")
       min_fn = min_file.split("/")[-1]
       min_dir = min_file.replace(min_fn, "")
-      day_dir = min_dir + daytime
+      day_dir = min_dir + date 
       if os.path.exists(min_file) is False:
          if os.path.exists(day_dir + min_fn) is True:
             min_file = day_dir + min_fn
