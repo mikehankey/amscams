@@ -235,10 +235,11 @@ def make_obs_data(station_id, date, meteor_file,cloud_files=None):
             hd_vid = None
          ffp = {}
          sd_start = None
-         if cfe(hd_vid) == 1:
-            ffp['hd'] = ffprobe(hd_vid)
-         else:
-            hd_vid = None
+         if hd_vid is not None:
+            if cfe(hd_vid) == 1:
+               ffp['hd'] = ffprobe(hd_vid)
+            else:
+               hd_vid = None
          if sd_vid is not None:
             if cfe(sd_vid) == 1:
                ffp['sd'] = ffprobe(sd_vid)
