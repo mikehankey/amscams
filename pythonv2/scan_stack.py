@@ -311,6 +311,8 @@ def scan_and_stack_fast(file, sun_status = 0, vals = []):
    fb = 0
    mask_resized = 0
    small_thresh = None
+
+   # for each frame
    while True:
       grabbed , frame = cap.read()
       ignore_stack = False
@@ -325,7 +327,7 @@ def scan_and_stack_fast(file, sun_status = 0, vals = []):
          break
 
       if sun_status == 1:
-       
+         daytime = True 
          yo = 1
       else:
          try:
@@ -345,6 +347,7 @@ def scan_and_stack_fast(file, sun_status = 0, vals = []):
          mask_resized = 1
 
       if sun_status != 1:
+         # night time
          gray = cv2.cvtColor(small_frame, cv2.COLOR_BGR2GRAY)
          #gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
          if fc > 0:
@@ -372,7 +375,8 @@ def scan_and_stack_fast(file, sun_status = 0, vals = []):
          #   cv2.waitKey(30)
          if max_val < 10:
             sum_vals.append(0)
-            max_vals.append(0)
+            max_vals.append(max_val)
+            avg_max_vals.append(max_val)
             pos_vals.append((0,0))
          else:
             _, thresh_frame = cv2.threshold(sub, 15, 255, cv2.THRESH_BINARY)
@@ -418,7 +422,7 @@ def scan_and_stack_fast(file, sun_status = 0, vals = []):
             else:
                diff = 0
             if max_val > avg_max * 1.2 or fc <= 10:
-               #print("STAK THE FRAME", avg_max, max_val, diff, fc)
+               print("STAK THE FRAME", fc, avg_max, max_val, diff, fc)
                frame_pil = Image.fromarray(small_frame)
                sub_pil = Image.fromarray(sub)
                if stacked_image is None:
@@ -430,6 +434,8 @@ def scan_and_stack_fast(file, sun_status = 0, vals = []):
                      stacked_image = stack_stack(stacked_image, frame_pil)
                   stacked_sub = stack_stack(stacked_sub, sub_pil)
                stacked_sub_np = np.array(stacked_sub)
+            else:
+               print("NO STAK THE FRAME", fc, avg_max, max_val, diff, fc)
                #cv2.imshow('pepe', stacked_sub_np)
                #cv2.waitKey(30)
       last_gray = gray
