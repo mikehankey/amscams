@@ -302,6 +302,7 @@ def cal_file(amsid, calib_file):
    cd_template = get_template("FlaskTemplates/calfile_detail.html")
    hs = hs.replace("/mnt/ams2", "")
    st = hs.replace("/mnt/ams2", "")
+   st = st.replace("half-stack", "stacked")
    azs[0] = hs.replace("/mnt/ams", "")
    cal_time = calib_file[0:20]
    if "total_res_px" not in cp:
