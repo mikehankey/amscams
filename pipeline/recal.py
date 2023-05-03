@@ -2124,7 +2124,7 @@ def refit_meteor(meteor_file, con, cur, json_conf, mcp = None, last_best_dict = 
          cv2.waitKey(30)
 
    #mj['cp'], cat_stars = recenter_fov(meteor_file, mj['cp'].copy(), median_frame.copy(),  stars, json_conf, meteor_file , None, None, con, cur)
-   if meteor_stack_img is not None:
+   if meteor_stack_img is not None and mj['cp'] is not None:
       star_img = draw_star_image(meteor_stack_img.copy(), mj['cp']['cat_image_stars'],mj['cp'], json_conf, extra_text) 
       print("CAT STARS AFTER RECENTER", len(mj['cp']['cat_image_stars']))
 
@@ -11311,7 +11311,11 @@ if __name__ == "__main__":
             limit = 25
             cam_id = json_conf['cameras'][cam_num]['cams_id']
             if cam_id in recal_hist:
-               continue
+               elp =  (time.time() - recal_hist[cam_id]['last_run']) / 60 / 60 / 24
+               print("Did already", cam_id, elp , "days ago")
+               # do max of 1x per 5 days 
+               if elp < 5:
+                  continue
             else:
                cal_status_report(cam_id, con, cur, json_conf)
                recal_hist[cam_id] = {}
