@@ -207,7 +207,10 @@ class MovieMaker():
       day_dir = self.sd_dir + "daytime/" + day + "/"
       night_dir = self.sd_dir + "/" + day + "/"
 
-      day_files = os.listdir(day_dir)
+      if os.path.exists(day_dir):
+         day_files = os.listdir(day_dir)
+      else:
+         day_files = []
       for df in day_files:
          video_file = day_dir + df 
          image_file = day_dir + "images/" + df.replace(".mp4", "-snap.jpg")
@@ -217,7 +220,10 @@ class MovieMaker():
          else:
             print("skip done:", image_file)
 
-      night_files = os.listdir(night_dir)
+      if os.path.exists(night_files):
+         night_files = os.listdir(night_dir)
+      else:
+         night_files = []
       for df in night_files:
          video_file = night_dir + df 
          image_file = night_dir + "images/" + df.replace(".mp4", "-snap.jpg")
