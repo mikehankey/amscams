@@ -220,7 +220,7 @@ class MovieMaker():
          else:
             print("skip done:", image_file)
 
-      if os.path.exists(night_files):
+      if os.path.exists(night_dir):
          night_files = os.listdir(night_dir)
       else:
          night_files = []
