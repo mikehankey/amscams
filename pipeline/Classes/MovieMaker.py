@@ -225,6 +225,8 @@ class MovieMaker():
       else:
          night_files = []
       for df in night_files:
+         if "meteor" in df:
+            continue
          video_file = night_dir + df 
          image_file = night_dir + "images/" + df.replace(".mp4", "-snap.jpg")
          if os.path.exists(image_file) is False and "mp4" in video_file:
