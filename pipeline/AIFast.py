@@ -20,11 +20,11 @@ def ai_reject_meteor(meteor_file, mj):
 
    if "user_mods" in mj:
       if "frames" in mj['user_mods']:
-         print("   KEEP: Human edits detected.")
+         #print("   KEEP: Human edits detected.")
          return("KEEP") 
 
    if "human_confirmed" in mj or "hc" in mj or "manual" in mj or "human_points" in mj:
-      print("   KEEP: Multi station or Human confirmed already")
+      #print("   KEEP: Multi station or Human confirmed already")
       return("KEEP") 
    else:
       if os.path.exists(non_meteor_dir) is False:
@@ -33,7 +33,7 @@ def ai_reject_meteor(meteor_file, mj):
       files = glob.glob(mdir + sd_root + "*")
       for sf in files:
          cmd = "mv -f " + sf + " " + non_meteor_dir 
-         print(cmd)
+         #print(cmd)
          #os.system(cmd)
       if "hd_trim" in mj:
          hd_root = mj['hd_trim'].split("/")[-1].replace(".mp4", "")
@@ -86,12 +86,12 @@ def format_response(resp):
 def check_ai(roi_file):
 
    url = "http://localhost:5000/AI/METEOR_ROI/?file={}".format(roi_file)
-   print("URL:", url)
+   #print("URL:", url)
    try:
       response = requests.get(url)
       content = response.content.decode()
       content = json.loads(content)
-      print(content)
+      #print(content)
    except Exception as e:
       print("HTTP ERR:", e)
       content = {}
@@ -202,7 +202,11 @@ def ai_scan_meteor_file(meteor_file):
    ai_objects = find_motion_objects(video_file)
 
    if os.path.exists(mjf):
-      mj = load_json_file(mjf)
+      try:
+         mj = load_json_file(mjf)
+      except:
+         print("BAD:", mjf)
+         return()
    if os.path.exists(mjrf):
       mjr = load_json_file(mjrf)
    hdm_x = 1920 / marked_stack.shape[1]
@@ -289,7 +293,6 @@ def ai_scan_meteor_file(meteor_file):
          mj['mc_class_conf'] = ai_data['mc_class_conf']
          mj['decision'] = "APPROVED"
          
-
    mj['ai_objects'] = ai_objects
    mj['meteor_objs'] = meteor_objs
 
@@ -310,7 +313,6 @@ for mf in meteor_files:
    root_fn = mf.replace(".json", "")
    if root_fn in ai_idx:
       decision, root_fn, hd_vid, roi, meteor_yn_conf, fireball_yn_conf, mc_class, mc_class_conf = ai_idx[root_fn]
-      print(decision)
       ai_info.append((decision, root_fn, hd_vid, roi, meteor_yn_conf, fireball_yn_conf, mc_class, mc_class_conf ))
       if decision == "APPROVED" :
          print("SKIP ALREADY DID", root_fn)
@@ -319,10 +321,14 @@ for mf in meteor_files:
       continue
    if "reduced" in mf:
       continue
-   print("AI SCAN:", mf)
    mj = ai_scan_meteor_file(mf)
-   save_json_file(mdir + mf, mj)
+
+   if mj is not None:
+      save_json_file(mdir + mf, mj)
+   else:
+      continue
    decision = "APPROVED"
+   print("MJ", mj.keys())
    if len(mj['meteor_objs']) == 0:
       hc = False
       if "hc" in mj or "human_confirmed" in mj:
@@ -339,7 +345,6 @@ for mf in meteor_files:
             mj['meteor_yn'] = True
             mj['hc'] = 1
       else:
-         print("HUMAN CONFIRMED OVERRIDE!") 
          decision = "APPROVED"
    if "hd_trim" in mj:
       hd_vid = mj['hd_trim'].split("/")[-1]
@@ -364,7 +369,7 @@ for mf in meteor_files:
       else:
          roi = [0,0,0,0]
       ai_info.append((decision, root_fn, hd_vid, roi, meteor_yn_conf, fireball_yn_conf, mc_class, mc_class_conf ))
-      print("AI OBJECTS:", mj['ai_objects'])
+      #print("AI OBJECTS:", mj['ai_objects'])
    else:
       print("Reject", root_fn)
 
