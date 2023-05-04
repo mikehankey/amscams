@@ -1606,7 +1606,7 @@ class AllSkyNetwork():
             #if the event start is within 6 seconds
             #sdur = duration * -2
             #edur = duration * 2
-            if time_diff <= 10:
+            if time_diff <= 20:
                avg_lat = np.mean(min_events[eid]['lats'])
                avg_lon = np.mean(min_events[eid]['lons'])
                match_dist = dist_between_two_points(avg_lat, avg_lon, lat, lon)
@@ -3526,7 +3526,6 @@ class AllSkyNetwork():
       self.map_kml_file = self.local_evdir + self.event_id + "/" + self.event_id + "_OBS_MAP.kml"
       self.planes_file = self.local_evdir + self.event_id + "/" + self.event_id + "_PLANES.json"
 
-
       if os.path.exists(self.planes_file) is True:
          self.planes = load_json_file(self.planes_file)
       else:
@@ -3537,18 +3536,17 @@ class AllSkyNetwork():
       if os.path.exists(review_img_file) is True:
          os.system("rm " + review_img_file)
 
-
-      # everything is done already skip???
-      #if force is False and os.path.exists(obs_data_file) is True and os.path.exists(event_data_file) is True and os.path.exists(review_img_file) is True:
+      #   everything is done already skip???
+      #   if force is False and os.path.exists(obs_data_file) is True and os.path.exists(event_data_file) is True and os.path.exists(review_img_file) is True:
       #   obs_data = load_json_file(obs_data_file)
       #   event_data = load_json_file(event_data_file)
       #   map_img = cv2.imread(map_img_file)
       #   review_img = cv2.imread(review_img_file)
-         #event_data, obs_data, map_img,obs_imgs = self.get_event_obs()
-         
+      #   event_data, obs_data, map_img,obs_imgs = self.get_event_obs()
       #   obs_imgs, marked_imgs, roi_imgs, ai_imgs, obs_data = self.load_obs_images(obs_data) 
       #   return(review_img, map_img, obs_imgs, marked_imgs, event_data, obs_data)
       #else:
+
       if True:
          event_data, obs_data, map_img, obs_imgs = self.get_event_obs()
          obs_imgs, marked_imgs, roi_imgs, ai_imgs, obs_data = self.load_obs_images(obs_data) 
@@ -3563,7 +3561,6 @@ class AllSkyNetwork():
 
       if "2d_status" not in event_data:
          event_data = self.get_2d_status(event_data, obs_data)
-
 
       ob_len = []
       for obs_id in obs_data:
@@ -3676,8 +3673,10 @@ class AllSkyNetwork():
                not_found.append((stack_file, stack_img))
          # review_frames review frames
          if True:
-            print(obs_db)
+
+            print("OBS DB", obs_db)
             self.review_obs_frames(obs_db)
+            input("WAIT")
       cv2.imshow("pepe", simg)
       cv2.waitKey(30)
 
