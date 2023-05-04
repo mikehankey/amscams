@@ -8,3 +8,4 @@
 !./dist/**/*.png
 !./src/*
 ./pythonv2/lib/__pycache__/
+__pycache__
