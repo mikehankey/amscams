@@ -323,6 +323,7 @@ class AllSkyDB():
    
 
       print("RECONCILE DB.")
+      self.db_meteors = {}
 
       if True:
          meteor_roots = []
@@ -337,6 +338,8 @@ class AllSkyDB():
          found = 0
          not_found = 0
          for row in self.cur.fetchall():
+            root_fn, meteor_yn, meteor_yn_conf,roi, sync_status, hd_vid,reduced, ai_resp, mc_class = row
+            self.db_meteors[root_fn] = root_fn, meteor_yn, meteor_yn_conf,roi, sync_status, hd_vid,reduced, ai_resp, mc_class
             ai_r = row[7]
             mc_class = row[8]
             print(ai_r) 
@@ -345,7 +348,7 @@ class AllSkyDB():
                if "ai_version" in ai_r: 
                   if ai_r['ai_version'] >= self.AI_VERSION and mc_class is not None :
                      print("\rSkip at latest AI already.",end="")
-                     continue
+                     #continue
             roi = row[3]
             if roi != "":
                try:
@@ -1049,13 +1052,14 @@ class AllSkyDB():
      
 
    def load_all_meteors(self, selected_day = None):
+
       if self.models_loaded is False:
          self.ASAI.load_all_models()
          self.models_loaded = True
 
       if selected_day is not None:
          print("\rLoad meteors for day: " + selected_day, end= "")
-         sql = "SELECT sd_vid, reduced from meteors where sd_vid like ? and roi is not null " 
+         sql = "SELECT sd_vid, reduced from meteors where sd_vid like ? " #and roi is not null " 
          self.cur.execute(sql, [selected_day + "%"])
       else:
          sql = "SELECT sd_vid,reduced from meteors and roi is not null ''" 
@@ -1499,7 +1503,8 @@ class AllSkyDB():
                meteor_yn_conf = 50
             if fireball_yn_conf is None or fireball_yn_conf == "":
                fireball_yn_conf = 50
-            print("AI NOT RUN YET FOR THIS METEOR. It is not safe to reject!:", root_fn)
+            print("AI OR REDUCE NOT RUN YET FOR THIS METEOR. It is not safe to reject!:", root_fn)
+            input("WAIT")
             continue
 
          # AI Reject conditions
@@ -1672,6 +1677,8 @@ class AllSkyDB():
       # move confirmed non-meteors still in the meteor dir to the non-meteor dir
       # remove the meteors database record
       # insert non-meteor record in non_meteors table
+
+      # select non meteors and deleted files
       sql = """
                SELECT sd_vid, hd_vid, roi, meteor_yn, fireball_yn, mc_class, mc_class_conf, 
                       human_confirmed 

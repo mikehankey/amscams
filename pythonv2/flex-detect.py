@@ -11058,6 +11058,166 @@ def check_ai(roi_file):
       content = {}
    return(content)
 
+def get_min_key(sd_fn):
+   hd_fn = sd_fn.split("/")[-1].replace(".mp4", "")
+   if "-" in hd_fn:
+      hd_fn = hd_fn.split("-")[0]
+   el = hd_fn.split("_")
+   el[5] = "00"
+   min_key = "_".join(el)
+   return(min_key)
+
+def get_hd_files(sd_fn):
+   hd_dir = "/mnt/ams2/HD/"
+   root_fn = sd_fn.split("/")[-1].split("-")[0]
+   el = root_fn.split("_")
+
+   day_wild = el[0] + "_" + el[1] + "_" + el[2] + "*" + el[7] + "*"
+   temp = glob.glob(hd_dir + day_wild)
+   hd_files = {}
+   for t in temp:
+      if "trim" in t :
+         continue
+      hd_fn = t.split("/")[-1].replace(".mp4", "")
+      el = hd_fn.split("_")
+      el[5] = "00"
+      min_key = "_".join(el)
+      hd_files[min_key] = []
+      hd_files[min_key].append(hd_fn)
+   print(hd_files, hd_dir + day_wild)
+   return(hd_files)
+
+def make_snap(hd_fns, snap_file):
+   if len(hd_fns) > 0:
+      hd_file = "/mnt/ams2/HD/" + hd_fns[0] + ".mp4"
+   print("SNAP:", hd_file, snap_file)
+   if os.path.exists(snap_file):
+      return(cv2.imread(snap_file))
+   else:
+      if os.path.exists(hd_file):
+         cap = cv2.VideoCapture(hd_file)
+         while True:
+            grabbed , color_frame = cap.read()
+            if color_frame is not None:
+               cv2.imwrite(snap_file, color_frame)
+               print("WSNAP:", snap_file)
+               return(color_frame)
+   
+   return()
+
+def make_min_index(day):
+   # for each minute of the day
+   # for each camera
+   # log ALL the details
+   #   minute
+   #      sd_min_files - Encoded to save space as HHMMSS_CAM
+   #      hd_min_files - Encoded to save space as HHMMSS_CAM
+   #      imgs - all stack, blend or related processed images
+   #      detects - any detections occuring in the minute
+   #      meteors - any meteors in the minute (link to trim numbers start/stop)
+   #      weather_condition - 
+   #      weather_condition - 
+   #      events 
+
+   print()
+
+def rescan_detects(day=None):
+   data_dir = "/mnt/ams2/SD/proc2/" + day + "/data/"
+   img_dir = "/mnt/ams2/SD/proc2/" + day + "/images/"
+   files = os.listdir(data_dir)
+   json_conf = load_json_file("../conf/as6.json")
+
+   dims = {}
+   for cam_num in sorted(json_conf['cameras']):
+      cam_id = json_conf['cameras'][cam_num]['cams_id']
+      if "dim" in json_conf['cameras'][cam_num]: 
+         w,h = json_conf['cameras'][cam_num]['dim']
+      else:
+         w,h = 704,576
+         #ff probe
+
+      dims[cam_id] = [w,h]
+      hd_files = None
+      for ff in sorted(files):
+
+         if "detect" not in ff:
+            continue
+         el = ff.split("_")
+         t_cam_id = el[7].split("-")[0]
+         if t_cam_id != cam_id:
+            continue
+         df = data_dir + ff
+         sf = img_dir + ff.replace("-detect.json", "-stacked.jpg")
+         sf_tn = img_dir + ff.replace("-detect.json", "-stacked-tn.jpg")
+         snap_fn = img_dir + ff.replace("-detect.json", "-snap.jpg")
+
+         vid_w, vid_h = dims[cam_id] 
+         hdm_x = 1920 / int(vid_w)
+         hdm_y = 1080 / int(vid_h)
+
+         if os.path.exists(sf) is False and os.path.exists(sf_tn) is True:
+            sf = sf_tn
+         data = load_json_file(df)
+         if hd_files is None:
+            hd_files = get_hd_files(sf)
+
+         min_key = get_min_key(sf)
+         snap_img = None
+         if min_key in hd_files:
+            hd_file = hd_files[min_key]
+            print("MIN KEY:", min_key, hd_file, snap_fn)
+            if os.path.exists(snap_fn) is False:
+               snap_img = make_snap(hd_file, snap_fn)
+         else:
+            print("NO HD FILES FOR MIN KEY!", min_key)
+
+
+         if os.path.exists(sf) is True:
+            img = cv2.imread(sf)
+            img = cv2.resize(img, (vid_w,vid_h))
+
+         marked_stack = cv2.resize(img, (1920,1080))
+         if snap_img is not None:
+            marked_stack = cv2.addWeighted(marked_stack, .5, snap_img, .5, .3)
+
+         wait = 30
+         if "objects" in data:
+            if len(data['events']) > 0 or len(data['objects']) > 0:
+               for oid in data['objects'] :
+                  print(oid, data['objects'][oid])
+                  if data['objects'][oid]['report']['meteor_yn'] == "Y":
+                     meteor_yn = True
+                  else:
+                     meteor_yn = False
+                  x1 = min(data['objects'][oid]['oxs']) - max(data['objects'][oid]['ows'])
+                  y1 = min(data['objects'][oid]['oys']) - max(data['objects'][oid]['ohs'])
+                  x2 = max(data['objects'][oid]['oxs']) + max(data['objects'][oid]['ows'])
+                  y2 = max(data['objects'][oid]['oys']) + max(data['objects'][oid]['ohs'])
+               
+                  cx = int((x1 + x2) / 2)
+                  cy = int((y1 + y2) / 2)
+                  cw = x2 - x1
+                  ch = y2 - y1
+                  if ch > cw :
+                     cw = ch
+                  else:
+                     ch = cw
+                  cv2.rectangle(img, (x1-int(cw/2), y1-int(ch/2)), (x2+int(cw/2), y2+int(ch/2)), (255, 0, 0), 2)
+                  hx1, hy1, hx2, hy2,hx,hy = sd_to_hd_roi(cx, cy, img.shape[1],img.shape[0])
+                  cv2.circle(marked_stack,(hx,hy), 25, (0,255,0), 2)
+                  cv2.rectangle(marked_stack, (hx1, hy1), (hx2, hy2), (255, 0, 0), 2)
+                  desc = str(oid) + " " + data['objects'][oid]['report']['meteor_yn'] 
+                  cv2.putText(marked_stack, desc,  (hx1,hy1), cv2.FONT_HERSHEY_SIMPLEX, .4, (255, 255, 255), 1)
+
+                  if meteor_yn == True: 
+                     wait = 120
+
+         cv2.imshow('pepe', img)
+         cv2.imshow('pepe2', marked_stack)
+         cv2.waitKey(wait)
+
+   
+
 def verify_meteors_ai(day=None):
    from stack_fast import stack_only
 
@@ -11194,8 +11354,8 @@ def verify_meteors(day=None):
    json_conf = load_json_file("../conf/as6.json")
    if "ml" in json_conf:
       print("AI Verify Meteors")
-      #cmd = "python3.6 ./flex-detect.py vms_ai " + day
-      #os.system(cmd)
+      cmd = "python3.6 ./flex-detect.py vms_ai " + day
+      os.system(cmd)
       #verify_meteors_ai(day)
 
    if day == None:
@@ -12341,3 +12501,5 @@ if cmd == "man" :
    man_detect(sys.argv[2]) 
 if cmd == "vms_ai" :
    verify_meteors_ai(sys.argv[2]) 
+if cmd == "rescan" :
+   rescan_detects(sys.argv[2]) 

@@ -367,6 +367,8 @@ if cmd == "do_all":
    cmd = "/usr/bin/python3 EVStations.py " + date
    os.system(cmd)
 
+   print("Load Solves .")
+   ASN.day_load_solves(date)
 
 if cmd == "day_solve" or cmd == 'ds' or cmd == "solve_day":
    ASN.help()

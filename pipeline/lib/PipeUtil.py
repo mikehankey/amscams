@@ -23,6 +23,12 @@ dec = decimal.Decimal
 #try
 #import jwt
 
+def get_file_contents(file_name):
+   fp = open(file_name)
+   lines = ""
+   for line in fp:
+      lines += line
+   return(lines)
 
 def do_photo(image, position, radius,r_in=10, r_out=12):
    from photutils import CircularAperture, CircularAnnulus

@@ -11,7 +11,10 @@ from lib.PipeUtil import load_json_file
 
 
 def stack_stack( pic1, pic2):
-      stacked_image=ImageChops.lighter(ipic1,ipic2)
+      stacked_image=ImageChops.lighter(pic1,pic2)
+      #stacked_image2=ImageChops.darker(pic1,pic2)
+
+      #lblend = cv2.addWeighted(np.asarray(stacked_image), .5, np.asarray(stacked_image2), .5, .3)
       return(stacked_image)
 
 
@@ -40,7 +43,7 @@ def stack_video(video_file):
       if frame is None:
          break
       frame_pil = Image.fromarray(frame)
-
+      print(frame.shape)
       if stacked_image is None:
          stacked_image = stack_stack(frame_pil, frame_pil)
       else:

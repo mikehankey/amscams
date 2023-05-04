@@ -143,8 +143,12 @@ else:
 
    print("My Events", date)
    os.system("/usr/bin/python3.6 myEvents.py " + date)
-   print("Auto reject day")
-   AIDB.auto_reject_day(date )
+
+   print("Fast AI")
+   os.system("/usr/bin/python3.6 AIFast.py " + date)
+
+   #print("Auto reject day")
+   #AIDB.auto_reject_day(date )
    AIDB.purge()
 
    os.system("/usr/bin/python3.6 AIDay.py non_meteors")

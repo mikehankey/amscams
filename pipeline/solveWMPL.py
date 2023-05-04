@@ -2825,7 +2825,6 @@ def WMPL_solve(event_id, obs,time_sync=1, force=0, dynamodb=None):
     json_conf = load_json_file("../conf/as6.json")
     ams_id  = json_conf['site']['ams_id']
 
-
     year = event_id[0:4]
     mon = event_id[4:6]
     day = event_id[6:8]
@@ -2871,13 +2870,13 @@ def WMPL_solve(event_id, obs,time_sync=1, force=0, dynamodb=None):
           if file is None:
              print("NO OBS FILE?!", station_id)
              continue
-          print(station_id, obs[station_id][file])
+          #print(station_id, obs[station_id][file])
           if "times" in obs[station_id][file]:
              if len(obs[station_id][file]['times']) > 0:
                 print("Adding to 'times'.")
                 start_times.append(obs[station_id][file]['times'][0])   
           if "times" not in obs[station_id][file] and "start_datetime" in obs[station_id][file]:
-             print("Adding to 'times'.")
+          #   print("Adding to 'times'.")
              obs[station_id][file]['times'] = obs[station_id][file]['start_datetime']
 
     print("OBS AFTER BEST ARE:")
@@ -2931,13 +2930,13 @@ def WMPL_solve(event_id, obs,time_sync=1, force=0, dynamodb=None):
        etv = True
     else:
        etv = False
-    #etv = False
+    etv = True 
     # here we should auto adjust this based on if the timing previously failed?
     # or figure out a better way to deal with the timing?
 
     monte = False 
     #v_init_part = .25
-    traj_solve = traj.Trajectory(jd_ref, output_dir=solve_dir, meastype=meastype, save_results=True, monte_carlo=monte, show_plots=False, max_toffset=10, estimate_timing_vel=etv, show_jacchia=True  )
+    traj_solve = traj.Trajectory(jd_ref, output_dir=solve_dir, meastype=meastype, save_results=True, monte_carlo=monte, show_plots=False, max_toffset=5, v_init_part=.25, estimate_timing_vel=etv, show_jacchia=True  )
     earliest_time = None
 
  
@@ -3049,6 +3048,10 @@ def WMPL_solve(event_id, obs,time_sync=1, force=0, dynamodb=None):
 
     resp = traj_solve.run()
     print("TIMING MINIMIZE SUCCESS?:", traj_solve.timing_minimization_successful)
+    if traj_solve.timing_minimization_successful is False:
+       print("RUN WITHOUT THE TIME SYNC!")
+       traj_solve = traj.Trajectory(jd_ref, output_dir=solve_dir, meastype=meastype, save_results=True, monte_carlo=monte, show_plots=False, max_toffset=5, v_init_part=.5, estimate_timing_vel=False, show_jacchia=True  )
+       resp = traj_solve.run()
     print('t_ref_station', traj_solve.t_ref_station)
     #print('time_diffs', traj_solve.time_diffs)
     print('t_diffs_final', traj_solve.time_diffs_final)

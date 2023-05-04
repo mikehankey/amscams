@@ -61,8 +61,8 @@ class Detector():
       #obj['oxs']
       #obj['oys']
 
-      print("OFNS:", obj['ofns'])
-      print("UNIQUE POINTS:", report['unq_points'])
+      #print("OFNS:", obj['ofns'])
+      #print("UNIQUE POINTS:", report['unq_points'])
 
       if report['unq_points'] == 1:
          report['class'] = "star"
@@ -410,8 +410,8 @@ class Detector():
 
 
    def find_objects(fn,x,y,w,h,cx,cy,intensity,objects,dist_thresh=50,lx=None,ly=None):
-      print("DIST THRESH IS:", dist_thresh)
-      print("x,y,w,h,cx,cy,int", x,y,w,h,cx,cy,intensity)
+      #print("DIST THRESH IS:", dist_thresh)
+      #print("x,y,w,h,cx,cy,int", x,y,w,h,cx,cy,intensity)
       maybe_matches = []
       last_closest_dist = None
       #cx = int(x + (w/2))
@@ -449,7 +449,7 @@ class Detector():
             fn_diff = fn - objects[obj]['ofns'][-1]
 
                 #and fn not in objects[obj]['ofns'] :
-            print("DIST IS: ", dist)
+            #print("DIST IS: ", dist)
             if dist < dist_thresh and fn_diff < 10: 
                mkeys = {}
                for i in range(0, len(objects[obj]['ofns'])):
