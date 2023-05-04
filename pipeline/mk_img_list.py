@@ -1,5 +1,7 @@
 import os
 
+# make image list and slide show
+
 def get_file_contents(file_name):
    fp = open(file_name)
    lines = ""
