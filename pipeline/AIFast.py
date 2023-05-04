@@ -14,6 +14,7 @@ DD = Detector()
 json_conf = load_json_file("../conf/as6.json")
 
 def ai_reject_meteor(meteor_file, mj):
+   print("REJECT:", meteor_file)
    date = meteor_file[0:10]
    mdir = "/mnt/ams2/meteors/" 
    non_meteor_dir = "/mnt/ams2/non_meteors/" + date + "/"
@@ -331,7 +332,6 @@ for mf in meteor_files:
    else:
       continue
    decision = "APPROVED"
-   print("MJ", mj.keys())
    if len(mj['meteor_objs']) == 0:
       hc = False
       if "hc" in mj or "human_confirmed" in mj:
