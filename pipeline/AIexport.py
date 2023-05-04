@@ -333,11 +333,12 @@ def export_non_meteors(con,cur):
             img = cv2.resize(img, (1920,1080))
             print(roi)
             x1,y1,x2,y2 = roi
-            roi_img = img[y1:y2,x1:x2]
-            roi_img = cv2.resize(roi_img,(64,64))
-            cv2.imwrite(ai_file, roi_img)
-            cv2.imwrite(mc_ai_file, roi_img)
-            print("WROTE************")
+            if x1 != 0:
+               roi_img = img[y1:y2,x1:x2]
+               roi_img = cv2.resize(roi_img,(64,64))
+               cv2.imwrite(ai_file, roi_img)
+               cv2.imwrite(mc_ai_file, roi_img)
+               print("WROTE************")
          else:
             print("MIS:", stack_file)
       print(cc,root_fn, roi, meteor_yn, fireball_yn, multi_class, multi_class_conf, human_label)
@@ -362,7 +363,6 @@ if __name__ == "__main__":
 
    export_fireball_meteors(con, cur, json_conf)
    #export_failed_meteors(con, cur, json_conf)
-   exit()
    #export_meteors(con, cur)
    export_non_meteors(con, cur)
    export_scan_rois()
