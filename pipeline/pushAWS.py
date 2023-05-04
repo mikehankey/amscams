@@ -67,15 +67,34 @@ def push_station_data(api_key, station_id, json_conf):
       print(mcp_file)
       fn, station, cam = mcp_file.split("-")
       all_mcps[cam] = {}
-      all_mcps[cam]['az'] = str(mcp['center_az'])
-      all_mcps[cam]['el'] =  str(mcp['center_el'])
-      all_mcps[cam]['pos'] =  str(mcp['position_angle'])
-      all_mcps[cam]['px'] =  str(mcp['pixscale'])
-      all_mcps[cam]['res'] =  str(mcp['x_fun'])
-      #all_mcps[cam]['x_poly'] = mcp['x_poly']
-      #all_mcps[cam]['y_poly'] = mcp['y_poly']
-      #all_mcps[cam]['x_poly_fwd'] = mcp['x_poly_fwd']
-      #all_mcps[cam]['y_poly_fwd'] = mcp['y_poly_fwd']
+      print(mcp_file, mcp.keys())
+      if "center_az" in mcp:
+         all_mcps[cam]['az'] = str(mcp['center_az'])
+      if "center_el" in mcp:
+         all_mcps[cam]['el'] =  str(mcp['center_el'])
+      if "position_angle" in mcp:
+         all_mcps[cam]['pos'] =  str(mcp['position_angle'])
+      if "pixscale" in mcp:
+         all_mcps[cam]['px'] =  str(mcp['pixscale'])
+      if "total_stars_used" in mcp:
+         all_mcps[cam]['total_stars_used'] =  str(mcp['total_stars_used'])
+      if "res" in mcp:
+         all_mcps[cam]['res'] =  str(mcp['x_fun'])
+      if "x_poly" in mcp:
+         all_mcps[cam]['x_poly'] = str(mcp['x_poly'])
+      if "y_poly" in mcp:
+         all_mcps[cam]['y_poly'] = str(mcp['y_poly'])
+      if "x_poly_fwd" in mcp:
+         all_mcps[cam]['x_poly_fwd'] = str(mcp['x_poly_fwd'])
+      if "y_poly_fwd" in mcp:
+         all_mcps[cam]['y_poly_fwd'] = str(mcp['y_poly_fwd'])
+      if "min_max_x_dist" in mcp:
+         all_mcps[cam]['min_max_x_dist'] =  str(mcp['min_max_x_dist'])
+      if "min_max_y_dist" in mcp:
+         all_mcps[cam]['min_max_y_dist'] =  str(mcp['min_max_y_dist'])
+      if "lens_model_datetime" in mcp:
+         all_mcps[cam]['lens_model_datetime'] =  str(mcp['lens_model_datetime'])
+
       print(station, cam, all_mcps[cam]) 
 
    data['calib'] = all_mcps 
@@ -96,8 +115,11 @@ def push_station_data(api_key, station_id, json_conf):
 
 
    response = requests.post(API_URL, data=json.dumps(data) , headers=headers)
+
+   print("\n\n\n")
    print("response:", response.content.decode())
    print(data)
+   print("END \n\n\n")
 
 def get_meteor_media_sync_status(station_id, sd_vid):
    # determine the current sync status for this meteor.
