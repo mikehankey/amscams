@@ -271,7 +271,7 @@ def ai_scan_meteor_file(meteor_file):
          report_class = ai_objects[oid]['report']['class']
       else:
          report_class = "unknown"
-      print(desc, color)
+      #print(desc, color)
 
       cv2.rectangle(temp_stack, (hx1, hy1), (hx2, hy2), color, 2)
       if hy2 > 1080 / 2:
@@ -282,16 +282,19 @@ def ai_scan_meteor_file(meteor_file):
          cv2.imshow("pepe", temp_stack)
          cv2.waitKey(120)
       save_json_file(mjf, mj)
-      print("WROTE:", roi_file)
+      #print("WROTE:", roi_file)
       if meteor_yn is True:
          meteor_objs.append(oid)
-         print(ai_data)
+      #   print(ai_data)
          mj['hd_roi'] = [hx1,hy1,hx2,hy2]
          mj['meteor_yn'] = ai_data['meteor_yn']
          mj['fireball_yn'] = ai_data['fireball_yn']
          mj['mc_class'] = ai_data['mc_class']
          mj['mc_class_conf'] = ai_data['mc_class_conf']
          mj['decision'] = "APPROVED"
+         print("   METEOR YES:", oid, meteor_yn, ai_data)
+      else:
+         print("   METEOR NO:", oid, ai_data)
          
    mj['ai_objects'] = ai_objects
    mj['meteor_objs'] = meteor_objs
