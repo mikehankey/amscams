@@ -3,11 +3,12 @@
 """
 script to export learning dataset
 """
+from tqdm import tqdm
 import cv2
 import sqlite3
 import json
-from lib.PipeUtil import load_json_file, save_json_file, mfd_roi
-
+from lib.PipeUtil import load_json_file, save_json_file, mfd_roi, get_file_info
+from AIFast import ai_scan_meteor_file
 import os
 import glob
 import time
@@ -279,8 +280,87 @@ def export_meteors(con,cur):
    save_json_file(meteor_export_dir + "meteors.json", meteor_data, True)
    
 
+def reconcile_non_meteors_confirmed(con, cur, json_conf):
+   # make sure file system meteors and DB meteors are in sync
+   index_file = "/mnt/ams2/non_meteors_confirmed/non_meteors_confirmed.info"
+   if os.path.exists(index_file) is True:
+      sz, diff = get_file_info(index_file)
+   else: 
+      diff = 999999
+   if diff > 86400:
+      cmd = "find /mnt/ams2/non_meteors_confirmed/ | grep json | grep -v reduced > /mnt/ams2/non_meteors_confirmed/non_meteors_confirmed.info"
+      os.system(cmd)
+   else:
+      print("index was made < 24 hours ago")
+
+   fp = open(index_file)
+   location="/mnt/ams2/non_meteors_confirmed/"
+   mfiles = []
+   for line in fp:
+      line = line.replace("\n", "")
+      if "trim" in line:
+         mfiles.append(line)
+
+   #for line in fp:
+   c = 0
+   #with tqdm(total=len(mfiles)) as pbar:
+   export_root_dir = "/mnt/ams2/AI/DATASETS/EXPORT/AUTO_MC/"
+   for line in sorted(mfiles):
+      #line = line.replace("\n", "")
+      #line = mfiles[c]
+      print(line)
+      try:
+         mj = load_json_file(line)
+      except:
+         continue
+      if type(mj) == dict:
+         sf = line.replace(".json", "-stacked.jpg")
+         mfn = line.split("/")[-1]
+         if "ai_objects" not in mj:
+            mj = ai_scan_meteor_file(mfn, mj=None, location=location)
+         else:
+            print("AI SCAN ALREADY DONE")
+         #img = cv2.imread(sf)
+         #cv2.imshow('pepe', img)
+         #cv2.waitKey(0)
+      else:
+         print("REMOVE", line)
+         continue
+      c += 1
+      if mj is None:
+         continue
+      if "ai_objects" not in mj:
+         continue
+      for obj in mj['ai_objects']:
+         #print("OBJ:", mj['ai_objects'][obj])
+         mc_class = mj['ai_objects'][obj]['ai_data']['mc_class']
+         export_dir = export_root_dir  + mc_class + "/"
+         if os.path.exists(export_dir) is False:
+            os.makedirs(export_dir)
+         mc_class_conf = mj['ai_objects'] [obj]['ai_data']['mc_class_conf']
+         meteor_yn = mj['ai_objects'][obj]['ai_data']['meteor_yn']
+         fireball_yn = mj['ai_objects'][obj]['ai_data']['fireball_yn']
+         img = mj['ai_objects'][obj]['ai_data']['img']
+         img = img.replace('<img src=http://localhost', "")
+         img = img.replace("//","/")
+         img = img.replace(">", "")
+         img_fn = img.split("/")[-1]
+         print(mc_class, mc_class_conf, img_fn) 
+         if os.path.exists(export_dir + img_fn) is False:
+            cmd = "cp /mnt/ams2" + img + " " + export_dir
+            print(cmd)
+            os.system(cmd)
+         image = cv2.imread("/mnt/ams2" + img)
+         cv2.imshow('pepe', image)
+         cv2.waitKey(30)
+         #input("W")
+
 
 def export_non_meteors(con,cur):
+   # non meteor dir and multi-class dir contain same files! 
+   # just sorted differently for training.
+   # this doesn't really make sense
+
 
    # export all HUMAN CONFIRMED NON meteors ONLY 
    sql = """
@@ -350,6 +430,8 @@ def export_non_meteors(con,cur):
 
       cc += 1
       last_mc = human_label 
+   print("FOUT" ,non_meteor_export_dir + "non_meteors.html")
+   input("YO")
    fout = open(non_meteor_export_dir + "non_meteors.html", "w")
    fout.write(out)
    print(non_meteor_export_dir + "non_meteors.html")
@@ -361,6 +443,8 @@ if __name__ == "__main__":
    con.row_factory = sqlite3.Row
    cur = con.cursor()
 
+   reconcile_non_meteors_confirmed(con, cur, json_conf)
+   exit()
    export_fireball_meteors(con, cur, json_conf)
    #export_failed_meteors(con, cur, json_conf)
    #export_meteors(con, cur)

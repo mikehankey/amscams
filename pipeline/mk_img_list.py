@@ -1,5 +1,5 @@
 import os
-
+import cv2
 # make image list and slide show
 
 def get_file_contents(file_name):
@@ -11,26 +11,34 @@ def get_file_contents(file_name):
 
 
 # make image list and slide show
-idir = "/mnt/ams2/SNAPS/2023_05_02/"
+idir = "/mnt/ams2/AI/DATASETS/EXPORT/AMS1_FIREBALL_METEORS/"
 css = get_file_contents("slideshow.css")
 files = os.listdir(idir)
 im_list = ""
 slide = """
-<div class="slideshow-container">
+<div class="slideshow-container" style="border: 1px #000000 solid">
 """
 
 tot = len(files)
 c = 1
 for f in sorted(files):
+   if "jpg" not in f:
+      continue
    im_list += "<a href={:s}>{:s}</a><br>".format(f, f)
    num_text = str(c) + " / " + str(tot)
+   #print(idir + f)
+   img = cv2.imread(idir + f) 
+   h,w = img.shape[:2]
+   #w = 1920 
+   #h = 1080 
+
    slide += """
       <div class="mySlides fade">
          <div class="numbertext">{:s}</div>
-            <img src="{:s}" style="width: 1920px; height: 1080px;">
+            <img src="{:s}" style="width: {:s}px; height: {:s}px;">
          <div class="text">{:s}</div>
       </div>
-   """.format(num_text, f, f)
+   """.format(num_text, f, str(w), str(h), f)
    c += 1
 
 slide += """

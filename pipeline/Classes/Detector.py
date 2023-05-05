@@ -225,8 +225,13 @@ class Detector():
       report['dur_seconds'] = dur_seconds
       report['med_gaps'] = med_gaps 
       report['mean_fr_dist'] = np.mean(last_dists)
-      report['max_mean_int_factor'] = max(obj['oint']) / np.mean(obj['oint'])
-      report['min_max_int_factor'] = max(obj['oint']) / np.min(obj['oint'])
+      if len(obj['oint']) > 0 and sum(obj['oint']) != 0:
+         report['max_mean_int_factor'] = max(obj['oint']) / np.mean(obj['oint'])
+         report['min_max_int_factor'] = max(obj['oint']) / np.min(obj['oint'])
+      else:
+         report['max_mean_int_factor'] = 0 
+         report['min_max_int_factor'] = 0 
+
       report['max_px_dist'] = max(dists_from_start)
       if dur_seconds > 0:
          report['px_per_second'] = max(dists_from_start) / dur_seconds 

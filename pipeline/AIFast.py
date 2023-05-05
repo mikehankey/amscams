@@ -1,4 +1,5 @@
 import cv2
+import time
 import sys
 import requests
 import json
@@ -13,37 +14,78 @@ DD = Detector()
 
 json_conf = load_json_file("../conf/as6.json")
 
+def ai_scan_all_days():
+   if os.path.exists("ai_meteor_log.json") is True:
+      ai_meteor_log = load_json_file("ai_meteor_log.json")
+   else:
+      ai_meteor_log = {}
+   if "days" not in ai_meteor_log:
+      ai_meteor_log['days'] = {}
+
+   meteor_dir = "/mnt/ams2/meteors/"
+   temp = os.listdir("/mnt/ams2/meteors/")
+   mdays = []
+   for t in temp:
+      if t[0] == "2" :
+         mdays.append(t)
+   for day in sorted(mdays,reverse=True):
+      print("DO", day)
+      ai_scan_day(day)
+      ai_meteor_log['days'][day] = {}
+      save_json_file("ai_meteor_log.json", ai_meteor_log)
+      print("DID", day)
+      time.sleep(3)
+
 def ai_reject_meteor(meteor_file, mj):
-   print("REJECT:", meteor_file)
+   print("   REJECT:", meteor_file, mj.keys())
    date = meteor_file[0:10]
-   mdir = "/mnt/ams2/meteors/" 
+   mdir = "/mnt/ams2/meteors/"  
    non_meteor_dir = "/mnt/ams2/non_meteors/" + date + "/"
+   meteor_dir = "/mnt/ams2/meteors/" + date + "/"
 
    if "user_mods" in mj:
       if "frames" in mj['user_mods']:
-         #print("   KEEP: Human edits detected.")
+         print("   KEEP: Human edits detected.")
          return("KEEP") 
 
-   if "human_confirmed" in mj or "hc" in mj or "manual" in mj or "human_points" in mj:
-      #print("   KEEP: Multi station or Human confirmed already")
+   if "human_confirmed" in mj or "hc" in mj :
+      print("   KEEP: Multi station or Human confirmed already")
       return("KEEP") 
    else:
       if os.path.exists(non_meteor_dir) is False:
          os.makedirs(non_meteor_dir)
       sd_root = mj['sd_video_file'].split("/")[-1].replace(".mp4", "")
-      files = glob.glob(mdir + sd_root + "*")
+      files = glob.glob(mdir + date + "/" + sd_root + "*")
+      print("GLOB", mdir + date + "/" + sd_root + "*")
+      print("FILES", len(files))
+      if SHOW == 1:
+         doit = input("Reject files press 'x' for Non-meteor ?")
+         if doit == "X" or doit == "x":
+            print("REJECT")
+         else:
+            mj['hc'] = 1
+            save_json_file(meteor_dir + meteor_file, mj)
+            print("HUMAN CONFIRMED")
+            return("ACCEPTED")
+
+
+
       for sf in files:
          cmd = "mv -f " + sf + " " + non_meteor_dir 
-         #print(cmd)
-         #os.system(cmd)
+         print(cmd)
+         os.system(cmd)
       if "hd_trim" in mj:
          hd_root = mj['hd_trim'].split("/")[-1].replace(".mp4", "")
-         files = glob.glob(mdir + hd_root + "*")
+         if hd_root != "" :
+            files = glob.glob(mdir + date + "/" + hd_root + "*")
+         else:
+            files = ""
+         print("HD ROOT", meteor_file, hd_root)
+         print("HD GLOB", mdir + date + "/" + hd_root + "*")
          for hf in files:
-            print("   REJECT:", mdir + sd_root, mdir + hd_root)
             cmd = "mv -f " + hf + " " + non_meteor_dir 
             print(cmd)
-            #os.system(cmd)
+            os.system(cmd)
    return("REJECTED")
 
 def get_contours_in_image(frame ):
@@ -65,7 +107,7 @@ def get_contours_in_image(frame ):
 
 def format_response(resp):
    color = [0,255,0]
-   meteor_yn = round(max(resp['meteor_yn'], resp['meteor_prev_yn'] , resp['fireball_yn'] ),1)
+   meteor_yn = round(max(resp['meteor_yn'], resp['fireball_yn'] ),1)
    desc1 = str(meteor_yn) + "%" + " meteor"
    desc2 = str(round(resp['mc_class_conf'],1)) + "% " + resp['mc_class']
    if "meteor" not in resp['mc_class'] and resp['mc_class_conf'] > meteor_yn and meteor_yn < 50:
@@ -73,15 +115,19 @@ def format_response(resp):
       color = [0,0,255]
       desc = desc2 + " " + desc1
       meteor_yn = False
-   elif "meteor" not in resp['mc_class'] and resp['mc_class_conf'] > meteor_yn :
+      print("CASE1")
+   elif "meteor" not in resp['mc_class'] and resp['mc_class_conf'] > meteor_yn and meteor_yn < 50:
       color = [0,165,255]
       desc = desc2 + " " + desc1
       meteor_yn = False
+      print("CASE2")
 
    else:
       desc = desc1 + " " + desc2
       meteor_yn = True
-   print(desc)
+      print("CASE3")
+
+   print(meteor_yn, desc)
    return(desc, color, meteor_yn)
 
 def check_ai(roi_file):
@@ -181,7 +227,7 @@ def find_motion_objects(video_file):
 
    return(objects)
 
-def ai_scan_meteor_file(meteor_file):
+def ai_scan_meteor_file(meteor_file, mj=None, location=None):
    # 
    # pass in the meteor json file and this will run the AI on all of the objects
    # 
@@ -189,27 +235,46 @@ def ai_scan_meteor_file(meteor_file):
    # sd objects might have more than one type of resolutions for the history!
 
    # load json files and images
+   if location == None:
+      location = "/mnt/ams2/meteors/"
+
    date = meteor_file[0:10]
    mj = None
    mjr = None
-   mjf = "/mnt/ams2/meteors/" + date + "/" + meteor_file
-   mjrf = "/mnt/ams2/meteors/" + date + "/" + meteor_file.replace(".json", "-reduced.json")
-   stack_file = "/mnt/ams2/meteors/" + date + "/" + meteor_file.replace(".json", "-stacked.jpg")
-   video_file = "/mnt/ams2/meteors/" + date + "/" + meteor_file.replace(".json", ".mp4")
-   stack_img = cv2.imread(stack_file)
+   mjf = location + date + "/" + meteor_file
+   mjrf = location + date + "/" + meteor_file.replace(".json", "-reduced.json")
+   stack_file = location + date + "/" + meteor_file.replace(".json", "-stacked.jpg")
+   video_file = location + date + "/" + meteor_file.replace(".json", ".mp4")
+   if os.path.exists(stack_file) is True:
+      stack_img = cv2.imread(stack_file)
+   else:
+      stack_img = np.zeros((1080,1920,3),dtype=np.uint8)
    marked_stack = stack_img.copy()
    sdh, sdw = stack_img.shape[:2]
- 
-   ai_objects = find_motion_objects(video_file)
+   
+
 
    if os.path.exists(mjf):
       try:
-         mj = load_json_file(mjf)
+         if mj is None:
+            mj = load_json_file(mjf)
       except:
          print("BAD:", mjf)
-         return()
+         return(None)
+   if mj is None:
+      print("NO MJ!")
+      return(None)
+   #if mj is not None and "hc" in mj and "meteor_objs" in mj:
+   #   return(mj)
    if os.path.exists(mjrf):
       mjr = load_json_file(mjrf)
+
+   if "ai_objects" not in mj: 
+      ai_objects = find_motion_objects(video_file)
+   else:
+      ai_objects = mj['ai_objects']
+
+
    hdm_x = 1920 / marked_stack.shape[1]
    hdm_y = 1080 / marked_stack.shape[0]
 
@@ -282,7 +347,6 @@ def ai_scan_meteor_file(meteor_file):
       if SHOW == 1:
          cv2.imshow("pepe", temp_stack)
          cv2.waitKey(120)
-      save_json_file(mjf, mj)
       #print("WROTE:", roi_file)
       if meteor_yn is True:
          meteor_objs.append(oid)
@@ -299,84 +363,107 @@ def ai_scan_meteor_file(meteor_file):
          
    mj['ai_objects'] = ai_objects
    mj['meteor_objs'] = meteor_objs
-
+   save_json_file(mjf, mj)
    return(mj)
 
-day = sys.argv[1]
-mdir = "/mnt/ams2/meteors/" + day + "/"
-ai_file = mdir + "/" + json_conf['site']['ams_id'] + "_" + day + "_AI_DATA.info"
-ai_idx = {}
-if os.path.exists(ai_file) is True:
-   temp = load_json_file(ai_file)
-   for obj in temp:
-      root_fn = obj[1]
-      ai_idx[root_fn] = obj
-meteor_files = os.listdir("/mnt/ams2/meteors/" + day + "/")
-ai_info = []
-for mf in meteor_files:
-   root_fn = mf.replace(".json", "")
-   if root_fn in ai_idx:
-      decision, root_fn, hd_vid, roi, meteor_yn_conf, fireball_yn_conf, mc_class, mc_class_conf = ai_idx[root_fn]
-      ai_info.append((decision, root_fn, hd_vid, roi, meteor_yn_conf, fireball_yn_conf, mc_class, mc_class_conf ))
-      if decision == "APPROVED" :
-         print("SKIP ALREADY DID", root_fn)
-         continue
-   if "json" not in mf:
-      continue
-   if "reduced" in mf:
-      continue
-   mj = ai_scan_meteor_file(mf)
+def ai_scan_day(day):
+   mdir = "/mnt/ams2/meteors/" + day + "/"
+   ai_file = mdir + "/" + json_conf['site']['ams_id'] + "_" + day + "_AI_DATA.info"
+   ai_idx = {}
+   if os.path.exists(ai_file) is True:
+      temp = load_json_file(ai_file)
+      for obj in temp:
+         root_fn = obj[1]
+         ai_idx[root_fn] = obj
+   meteor_files = os.listdir("/mnt/ams2/meteors/" + day + "/")
+   ai_info = []
+   for mf in sorted(meteor_files):
+      root_fn = mf.replace(".json", "")
 
-   if mj is not None:
-      save_json_file(mdir + mf, mj)
-   else:
-      continue
-   decision = "APPROVED"
-   if len(mj['meteor_objs']) == 0:
-      hc = False
-      if "hc" in mj or "human_confirmed" in mj:
-         hc = True
-      if "user_mods" in mj :
-         if "frames" in "user_mods" :
+      if root_fn in ai_idx:
+         decision, root_fn, hd_vid, roi, meteor_yn_conf, fireball_yn_conf, mc_class, mc_class_conf = ai_idx[root_fn]
+         if type(meteor_yn_conf) == dict:
+            meteor_yn_conf = 99
+
+
+         ai_info.append((decision, root_fn, hd_vid, roi, meteor_yn_conf, fireball_yn_conf, mc_class, mc_class_conf ))
+         #if type(meteor_yn_conf) == dict:
+         #   mj = load_json_file(mdir + mf)
+         #   mj['meteor_yn_conf'] = 99
+         #   meteor_yn_conf = 99
+         #   save_json_file(mdir + mf, mj)
+         if decision == "APPROVED" and (meteor_yn_conf > 50 or fireball_yn_conf > 50) or "meteor" in mc_class:
+            print("SKIP ALREADY DID", root_fn)
+            continue
+      if "json" not in mf:
+         continue
+      if "reduced" in mf:
+         continue
+      mj = ai_scan_meteor_file(mf)
+   
+      if mj is not None:
+         save_json_file(mdir + mf, mj)
+      else:
+         continue
+      decision = "APPROVED"
+      print(mdir + mf)
+      print(mj) 
+      if len(mj['meteor_objs']) == 0:
+         hc = False
+         if "hc" in mj or "human_confirmed" in mj:
             hc = True
-      
-      if hc is False: 
+         if "user_mods" in mj :
+            if "frames" in "user_mods" :
+               hc = True
+         
+         if hc is False: 
+            decision = "REJECT"
+            res = ai_reject_meteor(mf, mj)
+            if res == "KEEP":
+               decision = "APPROVED"
+               mj['meteor_yn'] = True
+               mj['hc'] = 1
+         else:
+            decision = "APPROVED"
+      if "hd_trim" in mj:
+         hd_vid = mj['hd_trim'].split("/")[-1]
+      else:
+         hd_vid = None
+      if "meteor_yn" in mj : #or "hc" in mj :
+         meteor_yn_conf = mj['meteor_yn']
+          
+         if "fireball_yn" in mj:
+            fireball_yn_conf = mj['fireball_yn']
+         else:
+            fireball_yn_conf = 0
+         if "mc_class" in mj:
+            mc_class = mj['mc_class']
+         else:
+            mc_class = "unknown"
+         if "mc_class_conf" in mj:
+            mc_class_conf = mj['mc_class_conf']
+         else:
+            mc_class_conf = 0
+         if "hd_roi" in mj:
+            roi = mj['hd_roi']
+         else:
+            roi = [0,0,0,0]
+         ai_info.append((decision, root_fn, hd_vid, roi, meteor_yn_conf, fireball_yn_conf, mc_class, mc_class_conf ))
+         #print("AI OBJECTS:", mj['ai_objects'])
+      elif "hc" in mj :
+         ai_info.append(("APPROVED", root_fn, hd_vid, roi, 99, 99, "meteor", "99"))
+
+      else:
+         print("Reject", root_fn)
          decision = "REJECT"
          res = ai_reject_meteor(mf, mj)
-         if res == "KEEP":
-            decision = "APPROVED"
-            mj['meteor_yn'] = True
-            mj['hc'] = 1
-      else:
-         decision = "APPROVED"
-   if "hd_trim" in mj:
-      hd_vid = mj['hd_trim'].split("/")[-1]
+
+   
+   save_json_file(ai_file, ai_info)
+   
+if __name__ == "__main__":   
+   day = sys.argv[1]
+   if day == "ALL":
+      ai_scan_all_days()
    else:
-      hd_vid = None
-   if "meteor_yn" in mj:
-      meteor_yn_conf = mj['meteor_yn']
-      if "fireball_yn" in mj:
-         fireball_yn_conf = mj['fireball_yn']
-      else:
-         fireball_yn_conf = 0
-      if "mc_class" in mj:
-         mc_class = mj['mc_class']
-      else:
-         mc_class = "unknown"
-      if "mc_class_conf" in mj:
-         mc_class_conf = mj['mc_class_conf']
-      else:
-         mc_class_conf = "unknown"
-      if "hd_roi" in mj:
-         roi = mj['hd_roi']
-      else:
-         roi = [0,0,0,0]
-      ai_info.append((decision, root_fn, hd_vid, roi, meteor_yn_conf, fireball_yn_conf, mc_class, mc_class_conf ))
-      #print("AI OBJECTS:", mj['ai_objects'])
-   else:
-      print("Reject", root_fn)
-
-
-save_json_file(ai_file, ai_info)
-
-
+      ai_scan_day(day)
