@@ -12,7 +12,7 @@ from AIFast import ai_scan_meteor_file
 import os
 import glob
 import time
-
+from lib.DEFAULTS import *
 # GLOBAL VARS
 json_conf = load_json_file("../conf/as6.json")
 station_id = json_conf['site']['ams_id']
