@@ -360,9 +360,10 @@ def reconcile_non_meteors_confirmed(con, cur, json_conf):
             cmd = "cp /mnt/ams2" + img + " " + export_dir
             print(cmd)
             os.system(cmd)
-         image = cv2.imread("/mnt/ams2" + img)
-         cv2.imshow('pepe', image)
-         cv2.waitKey(30)
+         if SHOW == 1:
+            image = cv2.imread("/mnt/ams2" + img)
+            cv2.imshow('pepe', image)
+            cv2.waitKey(30)
          aio[line]['ai_objects'].append((img, mc_class, mc_class_conf))
          #input("W")
       save_json_file(ai_objects_file, aio)
