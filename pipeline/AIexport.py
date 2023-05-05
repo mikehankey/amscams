@@ -283,6 +283,11 @@ def export_meteors(con,cur):
 def reconcile_non_meteors_confirmed(con, cur, json_conf):
    # make sure file system meteors and DB meteors are in sync
    index_file = "/mnt/ams2/non_meteors_confirmed/non_meteors_confirmed.info"
+   ai_objects_file = "/mnt/ams2/non_meteors_confirmed/all_ai_objects.info"
+   if os.path.exists(ai_objects_file) is True:
+      aio = load_json_file(ai_objects_file) 
+   else:
+      aio = {}
    if os.path.exists(index_file) is True:
       sz, diff = get_file_info(index_file)
    else: 
@@ -308,7 +313,12 @@ def reconcile_non_meteors_confirmed(con, cur, json_conf):
    for line in sorted(mfiles):
       #line = line.replace("\n", "")
       #line = mfiles[c]
-      print(line)
+      if line in aio:
+         print("DONE ALREADY")
+         continue
+      else:
+         aio[line] = {}
+         aio[line]['ai_objects'] = []
       try:
          mj = load_json_file(line)
       except:
@@ -353,7 +363,9 @@ def reconcile_non_meteors_confirmed(con, cur, json_conf):
          image = cv2.imread("/mnt/ams2" + img)
          cv2.imshow('pepe', image)
          cv2.waitKey(30)
+         aio[line]['ai_objects'].append((img, mc_class, mc_class_conf))
          #input("W")
+      save_json_file(ai_objects_file, aio)
 
 
 def export_non_meteors(con,cur):
