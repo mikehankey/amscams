@@ -95,6 +95,10 @@ def auto_update():
       cmd = "cd /home/ams/amscams/pipeline; ./stop-uwsgi.sh > /tmp/ssgi.txt 2>&1"
       print(cmd)
       os.system(cmd)
+      time.sleep(2)
+      os.system(cmd)
+      time.sleep(2)
+      os.system(cmd)
    save_json_file(sys_log_file, sys_log)      
 
 def check_running():
