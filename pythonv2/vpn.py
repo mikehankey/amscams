@@ -28,6 +28,7 @@ def auto_update():
    print("AUTO UPDATE")
    sys_log_file = "/home/ams/amscams/install/system_log.json"
    update_needed = 0
+   restart_uwsgi = 0
    if os.path.exists(sys_log_file) is False:
       update_needed = 1
       sys_log = {}
@@ -60,7 +61,11 @@ def auto_update():
          print("get pip version failed")
    if "uwsgi" not in sys_log:
       sys_log['uwsgi'] = {}
-      update_needed = 1
+      restart_uwsgi = 1
+   else:
+      if "last_restart" not in sys_log['uwsgi']: 
+         sys_log['uwsgi']['last_restart'] = time.time()
+         restart_uwsgi = 1
 
    if "bin_pip_check" not in sys_log['pip']:
       # make sure pip exists in the /usr/bin/bin dir. 
@@ -85,8 +90,10 @@ def auto_update():
       cmd = "cd /home/ams/amscams/install; sudo ./update-cron.sh"
       print(cmd)
  
+   if restart_uwsgi == 1:
       # Stop flask (so new code will work)
-      cmd = "cd /home/ams/amscams/pipeline; ./stop-uwsgi.py > /tmp/ssgi.txt 2>&1"
+      cmd = "cd /home/ams/amscams/pipeline; ./stop-uwsgi.sh > /tmp/ssgi.txt 2>&1"
+      print(cmd)
       os.system(cmd)
    save_json_file(sys_log_file, sys_log)      
 
