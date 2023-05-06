@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-from lib.FileIO import load_json_file, cfe
+from lib.FileIO import load_json_file, save_json_file, cfe
 
 import socket
 import requests
@@ -25,8 +25,15 @@ def get_file_info(file):
       return(0,0)
 
 def auto_update():
+   sys_log_file = "/home/ams/amscams/install/system_log.json"
    update_needed = 0
-   if cfe("/home/ams/amscams/install/last_run.txt") == 0:
+   if os.path.exists(sys_log_file) is False:
+      update_needed = 1
+      sys_log = {}
+   else:
+      sys_log = load_json_file(sys_log_file)
+
+   if os.path.exists("/home/ams/amscams/install/last_run.txt") is False:
       update_needed = 1
    else:
       cmd = "diff /home/ams/amscams/install/last_run.txt /home/ams/amscams/install/pip-updates.sh |wc -l "
@@ -37,6 +44,19 @@ def auto_update():
             update_needed = 1
       except:
          print("Problem with update diff.")
+
+   if "bin_pip_check" not in sys_log:
+      # make sure pip exists in the /usr/bin/bin dir. 
+      # If it doesn't check if it is in /usr/local/bin 
+      # if found then sym link it
+      print("DID BIN PIP CHECK")
+      if os.path.exists("/usr/bin/pip") is False and os.path.exists("/usr/local/bin/pip") is True:
+         cmd = "ln -s /usr/local/bin/pip* /usr/bin/pip"
+         print(cmd)
+         os.system(cmd)
+         print("DID BIN PIP CHECK")
+
+
    if update_needed == 1:
       cmd = "cd /home/ams/amscams/install; sudo ./pip-updates.sh"
       print(cmd)
@@ -51,7 +71,7 @@ def auto_update():
       # Stop flask (so new code will work)
       cmd = "cd /home/ams/amscams/pipeline; ./stop-uwsgi.py > /tmp/ssgi.txt 2>&1"
       os.system(cmd)
-      
+   save_json_file(sys_log_file, sys_log)      
 
 def check_running():
    cmd = "/sbin/ifconfig -a | grep 10.8.0 | grep -v grep | wc -l"
