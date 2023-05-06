@@ -1,3 +1,4 @@
+#!/usr/bin/python3.6
 import cv2
 import time
 import sys
@@ -14,6 +15,27 @@ DD = Detector()
 
 json_conf = load_json_file("../conf/as6.json")
 
+def day_sum():
+   station_id = json_conf['site']['ams_id']
+   mif = "/mnt/ams2/meteors/" + json_conf['site']['ams_id'] + "_OBS_IDS.json"
+   print("MIF", mif)
+   obs_ids = load_json_file(mif)
+   day_stats = {}
+   day_data = []
+   for oid, ts in obs_ids:
+      el = oid.split("_")
+      day_key = el[1] + "_" + el[2] + "_" + el[3]
+      if day_key not in day_stats:
+         day_stats[day_key] = {}
+         day_stats[day_key]['meteors'] = 1
+      else:
+         day_stats[day_key]['meteors'] += 1
+   for day_key in sorted(day_stats.keys(), reverse=True):
+      ai_file = "/mnt/ams2/meteors/" + day_key + "/" + station_id + "_" + day_key + "_AI_DATA.info"
+      ai_run = os.path.exists(ai_file)
+      print(day_key, day_stats[day_key], "AI:", ai_run, ai_file)
+
+
 def ai_scan_all_days():
    if os.path.exists("ai_meteor_log.json") is True:
       ai_meteor_log = load_json_file("ai_meteor_log.json")
@@ -28,6 +50,7 @@ def ai_scan_all_days():
    for t in temp:
       if t[0] == "2" :
          mdays.append(t)
+   
    for day in sorted(mdays,reverse=True):
       print("DO", day)
       ai_scan_day(day)
@@ -468,5 +491,7 @@ if __name__ == "__main__":
    day = sys.argv[1]
    if day == "ALL":
       ai_scan_all_days()
+   elif day == "day_sum":
+      day_sum()
    else:
       ai_scan_day(day)

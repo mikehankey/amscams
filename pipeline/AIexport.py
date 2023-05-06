@@ -3,6 +3,7 @@
 """
 script to export learning dataset
 """
+import sys
 from tqdm import tqdm
 import cv2
 import sqlite3
@@ -144,6 +145,7 @@ def export_failed_meteors(con, cur, json_conf):
 
 
 def export_scan_rois():
+   ### this was never really fully implemented / is no longer relevent? 5/6/23 
    scan_dir = "/mnt/ams2/SD/proc2/"
    scan_export_dir = export_dir + "/scan_stack_rois/"
    all_ai_data_file = scan_export_dir + station_id + "_ALL_AI_DATA.json"
@@ -177,6 +179,35 @@ def export_scan_rois():
    save_json_file(all_ai_data_file, all_ai_data)
 
    export_html(scan_export_dir)
+
+def export_html_new(scan_export_dir, desc):
+   print("EXP HTML NEW:", scan_export_dir)
+   dirs = []
+   files = []
+   temp = os.listdir(scan_export_dir)
+   html = "<html><body><h1>export {:s}:{:s}</h1><p>{:s}</p>\n".format(station_id, scan_export_dir, desc)
+
+   for f in temp:
+      if os.path.isdir(scan_export_dir + f) is True:
+         dirs.append(f)
+      else:
+         files.append(f)
+   html += "<div>\n"
+   for d in dirs:
+      html += "<a href={:s}/index.html>{:s}</a><br>\n".format(d, d)
+      export_html_new(scan_export_dir + d + "/", d)
+   html += "</div>\n"
+   html += "<div>\n"
+   for f in files:
+       if "jpg" in f:
+          html += """<div style="float: left"><img width=200 height=200 src={:s}></a></div>""".format(f)
+   html += "<div>\n"
+   fp = open(scan_export_dir + "index.html", "w")
+   fp.write(html)
+   fp.close()
+   print("SAVE:", scan_export_dir + "index.html")
+   return(scan_export_dir + "index.html")
+   
 
 def export_html(scan_export_dir):
    #sexport_dir = "/mnt/ams2/datasets/scan_stack_rois/"
@@ -280,6 +311,29 @@ def export_meteors(con,cur):
    save_json_file(meteor_export_dir + "meteors.json", meteor_data, True)
    
 
+def export_report(con, cur, json_conf):
+   print("EXPORT REPORT")
+   exp_dir = "/mnt/ams2/AI/DATASETS/EXPORT/"
+   failed_meteor_dir = export_dir + json_conf['site']['ams_id'] + "_FAILED_METEORS/"
+   failed_meteor2_dir = export_dir + json_conf['site']['ams_id'] + "_FAILED_METEORS2/"
+   fireball_meteor_dir = export_dir + json_conf['site']['ams_id'] + "_FIREBALL_METEORS/"
+   meteors_dir = export_dir + "METEORS/"
+   auto_mc_dir = export_dir + "AUTO_MC/"
+   multi_class_dir = export_dir + "MULTI_CLASS/"
+   non_meteor_dir = export_dir + "NON_METEORS/"
+
+   export_html_new(failed_meteor_dir, "Human confirmed meteors (meteor failed AI human approved")
+   export_html_new(failed_meteor2_dir, "Meteor YN says meteor, but Multi-Class says non-meteor")
+   export_html_new(fireball_meteor_dir, "Multi-Class Fireballs")
+   export_html_new(auto_mc_dir, "AI Multi-Class Sorting")
+   export_html_new(meteors_dir, "Meteors")
+   export_html_new(auto_mc_dir, "AUTO Multi Class")
+   export_html_new(multi_class_dir, "Human Confirmed ")
+   print(failed_meteor_dir)
+   print(failed_meteor2_dir)
+   print(fireball_meteor_dir)
+   print(auto_mc_dir)
+
 def reconcile_non_meteors_confirmed(con, cur, json_conf):
    # make sure file system meteors and DB meteors are in sync
    index_file = "/mnt/ams2/non_meteors_confirmed/non_meteors_confirmed.info"
@@ -310,6 +364,8 @@ def reconcile_non_meteors_confirmed(con, cur, json_conf):
    c = 0
    #with tqdm(total=len(mfiles)) as pbar:
    export_root_dir = "/mnt/ams2/AI/DATASETS/EXPORT/AUTO_MC/"
+
+   # oldest to newest
    for line in sorted(mfiles):
       #line = line.replace("\n", "")
       #line = mfiles[c]
@@ -444,7 +500,6 @@ def export_non_meteors(con,cur):
       cc += 1
       last_mc = human_label 
    print("FOUT" ,non_meteor_export_dir + "non_meteors.html")
-   input("YO")
    fout = open(non_meteor_export_dir + "non_meteors.html", "w")
    fout.write(out)
    print(non_meteor_export_dir + "non_meteors.html")
@@ -456,10 +511,18 @@ if __name__ == "__main__":
    con.row_factory = sqlite3.Row
    cur = con.cursor()
 
-   reconcile_non_meteors_confirmed(con, cur, json_conf)
-   exit()
-   export_fireball_meteors(con, cur, json_conf)
-   #export_failed_meteors(con, cur, json_conf)
-   #export_meteors(con, cur)
-   export_non_meteors(con, cur)
-   export_scan_rois()
+   if len(sys.argv) == 1:
+      cmd = "default"
+   else: 
+      cmd = sys.argv[1]
+   if cmd == "default":
+      reconcile_non_meteors_confirmed(con, cur, json_conf)
+      export_fireball_meteors(con, cur, json_conf)
+      export_failed_meteors(con, cur, json_conf)
+      #export_meteors(con, cur)
+      export_non_meteors(con, cur)
+      #export_scan_rois()
+      export_report(con, cur, json_conf)
+   if cmd == "report":
+      export_report(con, cur, json_conf)
+
