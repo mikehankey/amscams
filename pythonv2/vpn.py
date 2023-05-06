@@ -51,7 +51,7 @@ def auto_update():
       # if found then sym link it
       print("DID BIN PIP CHECK")
       if os.path.exists("/usr/bin/pip") is False and os.path.exists("/usr/local/bin/pip") is True:
-         cmd = "ln -s /usr/local/bin/pip* /usr/bin/pip"
+         cmd = "ln -s /usr/local/bin/pip* /usr/bin/"
          print(cmd)
          os.system(cmd)
          print("DID BIN PIP CHECK")
