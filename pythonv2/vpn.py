@@ -25,6 +25,7 @@ def get_file_info(file):
       return(0,0)
 
 def auto_update():
+   print("AUTO UPDATE")
    sys_log_file = "/home/ams/amscams/install/system_log.json"
    update_needed = 0
    if os.path.exists(sys_log_file) is False:
@@ -45,16 +46,32 @@ def auto_update():
       except:
          print("Problem with update diff.")
 
-   if "bin_pip_check" not in sys_log:
+   # PIP
+   if "pip" not in sys_log:
+      sys_log['pip'] = {}
+      update_needed = 1
+   if "pip_version" not in sys_log['pip']:
+      cmd = "pip3 --version"
+      print("PIP VERSION", cmd)
+      try:
+         sys_log['pip']['pip_version'] = subprocess.check_output(cmd, shell=True).decode("utf-8")
+      except:
+         sys_log['pip']['pip_version'] = "CHECK FAILED!"
+         print("get pip version failed")
+   if "uwsgi" not in sys_log:
+      sys_log['uwsgi'] = {}
+      update_needed = 1
+
+   if "bin_pip_check" not in sys_log['pip']:
       # make sure pip exists in the /usr/bin/bin dir. 
       # If it doesn't check if it is in /usr/local/bin 
       # if found then sym link it
-      print("DID BIN PIP CHECK")
       if os.path.exists("/usr/bin/pip") is False and os.path.exists("/usr/local/bin/pip") is True:
          cmd = "ln -s /usr/local/bin/pip* /usr/bin/"
          print(cmd)
          os.system(cmd)
          print("DID BIN PIP CHECK")
+      sys_log['pip']['bin_pip_check'] = True
 
 
    if update_needed == 1:
@@ -105,6 +122,7 @@ else:
 if os.path.exists("vpn.run") is True:
    print("VPN SCRIPT RUNNING ALREADY!")
    ss, tt = get_file_info("vpn.run")
+   print("Script running for", tt, "seconds")
    if tt < 1200:
       # exit in case there is some other update going...
       exit()
