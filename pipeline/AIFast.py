@@ -107,7 +107,10 @@ def get_contours_in_image(frame ):
 
 def format_response(resp):
    color = [0,255,0]
-   meteor_yn = round(max(resp['meteor_yn'], resp['fireball_yn'] ),1)
+   if "meteor_yn" in resp:
+      meteor_yn = round(max(resp['meteor_yn'], resp['fireball_yn'] ),1)
+   else:
+      meteor_yn = 0
    desc1 = str(meteor_yn) + "%" + " meteor"
    desc2 = str(round(resp['mc_class_conf'],1)) + "% " + resp['mc_class']
    if "meteor" not in resp['mc_class'] and resp['mc_class_conf'] > meteor_yn and meteor_yn < 50:
