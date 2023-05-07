@@ -12,7 +12,7 @@
 
 #GIT PULL -- KEEP THINGS UP TO DATE 2x per day
 22 0,12 * * * cd /home/ams/amscams/pipeline; ./gitpull.py
-5,25,40,55 * * * * cd /home/ams/amscams/monitor; ./monitor.sh
+*/5 * * * * cd /home/ams/amscams/monitor; ./monitor.sh
 
 ### OPTIONAL
 ###*/10 * * * * cd /home/ams/amscams/pipeline; ./Process.py bcm
