@@ -1,8 +1,9 @@
-# updated 5/7/2023
+# updated on 5/7/2023
 /usr/bin/python3 pipper.py
 ./update-cron.sh
 
 
+#old version
 #sudo apt-get install --yes --allow-downgrades --allow-remove-essential --allow-change-held-packages sysstat
 #apt-get install --yes --allow-downgrades --allow-remove-essential --allow-change-held-packages python3-mpltoolkits.basemap
 #apt-get install --yes --allow-downgrades --allow-remove-essential --allow-change-held-packages libgeos-dev
