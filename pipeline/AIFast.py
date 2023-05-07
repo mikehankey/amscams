@@ -22,6 +22,7 @@ def day_sum():
    obs_ids = load_json_file(mif)
    day_stats = {}
    day_data = []
+   day_count = []
    for oid, ts in obs_ids:
       el = oid.split("_")
       day_key = el[1] + "_" + el[2] + "_" + el[3]
@@ -31,10 +32,15 @@ def day_sum():
       else:
          day_stats[day_key]['meteors'] += 1
    for day_key in sorted(day_stats.keys(), reverse=True):
+   #   ai_file = "/mnt/ams2/meteors/" + day_key + "/" + station_id + "_" + day_key + "_AI_DATA.info"
+   #   ai_run = os.path.exists(ai_file)
+   #   print(day_key, day_stats[day_key], "AI:", ai_run, ai_file)
+      day_count.append((day_key, day_stats[day_key]['meteors']))
+   day_count = sorted(day_count, key=lambda x: x[1])
+   for day_key, count in day_count:
       ai_file = "/mnt/ams2/meteors/" + day_key + "/" + station_id + "_" + day_key + "_AI_DATA.info"
       ai_run = os.path.exists(ai_file)
       print(day_key, day_stats[day_key], "AI:", ai_run, ai_file)
-
 
 def ai_scan_all_days():
    if os.path.exists("ai_meteor_log.json") is True:
