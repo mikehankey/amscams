@@ -9,7 +9,7 @@ fp = open("apt.conf")
 for line in fp:
    cmd = APT_EXE + line
    print(cmd)
-   #os.system(cmd)
+   os.system(cmd)
 
 
 fp = open("pip.conf")

@@ -22,6 +22,172 @@ TEST = """
       */
 """
 
+def move_ai_sample(new_label, sample_id):
+   print("MOVE SAMPLE")
+   resp = {}
+   resp['msg'] = "ok" 
+   return(resp)
+
+def export_samples(station_id, options, json_conf):
+   # /mnt/ams2/AI/DATASETS/EXPORT/MULTI_CLASS/ground/AMS1_ground_index.json
+   #header = html_page_header(station_id)
+   #js_code = js_learn_funcs(station_id)
+
+   datasets = ai_datasets()
+   if "ipp" in options:
+      print("IPP:", options['ipp'])
+      ipp = int(options['ipp'])
+   else:
+      ipp = 100
+   if "p" in options:
+      start = int(ipp) * int(options['p'])
+      end = start + int(ipp)
+      current_page = options['p']
+   else:
+      start = 0
+      end = ipp
+      current_page = 0
+   print("SE", start, end)
+   sample_vdir = "/AI/DATASETS/EXPORT/" 
+   template = make_default_template(station_id, "live.html", json_conf)
+   css = """
+   <style>
+      .show_hider {
+         opacity: 0;
+         color: #FFFFFF;
+         font-size: 10px;
+      }
+      .show_hider:hover {
+         opacity: 1;
+         color: #FFFFFF;
+         font-size: 10px;
+      }
+      .ai_sample {
+         float: left;
+      }
+   </style>
+
+   """
+   out = css + """
+   <h1>Image Classification Data Sets</h1><ul>\n
+   """
+   ai_export_dir = "/mnt/ams2/AI/DATASETS/EXPORT/"
+   if os.path.exists(ai_export_dir) is False:
+      return("The AI has not exported any data yet. " + ai_export_dir + " does not exist")
+   if "d" not in options:
+      export_files = os.listdir(ai_export_dir)
+      for sdir in export_files :
+         if sdir == "scan_stack_rois":
+            continue
+         ekey = sdir.replace(station_id + "_", "")
+         if ekey in datasets:
+            desc = datasets[ekey]['desc']
+         else:
+            desc = ""
+         if os.path.isdir(ai_export_dir + sdir):
+            out += "<li><a href=?d={:s}>{:s}</a> - {:s}</li>\n".format(sdir, sdir, desc)
+      pdir = None
+   else:
+      pdir = options['d']
+      export_files = os.listdir(ai_export_dir + options['d'])
+      samples = "<div class=container-lg>"
+      for sdir in export_files[start:end] :
+         if os.path.isdir(ai_export_dir + options['d'] + "/" + sdir):
+             url = pdir + "/" + sdir 
+             out += "<li><a href=?d={:s}>{:s}</a></li>\n".format(url , url )
+         else:
+            print("NO ", sdir)
+            if "jpg" in sdir :
+               surl = sample_vdir + pdir + "/" + sdir
+               samples += sample_thumb(surl)
+      #pages = page_links(len(export_files), start, end)
+      base_url = "/AI/MAIN/EXPORT/SAMPLES/{:s}/?d={:s}&ipp={:s}&p=".format(station_id, pdir , str(ipp))
+      pages_list, pages = make_page_links(base_url, current_page, len(export_files), ipp)
+
+      #print("pages:", pages)
+      #samples += pages 
+
+   #AMS1_FAILED_METEORS   AMS1_FIREBALL_METEORS  AUTO_MC  MULTI_CLASS  scan_stack_rois
+   #AMS1_FAILED_METEORS2  .gz     METEORS  NON_METEORS
+   out += "</ul>"
+   out += "<div>"
+   if pdir is not None:
+      pdir_desc = pdir.split("/")[-1]
+      sub_nav_header = "<h2>" + str(len(export_files)) + " " + pdir_desc +  " files </h2>"
+   else:
+      pdir_desc = ""
+      sub_nav_header = ""
+  
+   out += sub_nav_header 
+   if pdir is not None:
+      out += samples
+   out += "</div>"
+   out += "<div style='clear: both'></div>"
+   if pdir is not None:
+      out += pages
+   out += ui_javascript()
+   template = template.replace("{MAIN_TABLE}", out)
+   return(template)
+
+def ai_datasets():
+   # dict containing the exported datasets or primary dirs and what they mean
+   datasets = {
+      "METEORS": {
+         "desc": "All items in this folder should be verified and real meteors."
+      },
+      "AUTO_MC": {
+         "desc": "Mult-class items that have been automatically determined. Should be reviewed."
+      },
+      "FIREBALL_METEORS": {
+         "desc": "Only samples of real fireball meteors should be in this folder."
+      },
+      "FAILED_METEORS": {
+         "desc": "These items failed the meteor test but were later human approved as meteors. All items should be meteors."
+      },
+      "MULTI_CLASS": {
+         "desc": "These items should be multi-class items that have been human verified already, using the AI confirmation tool."
+      },
+      "FAILED_METEORS2": {
+         "desc": "These meteors passed the YN test but failed the multi-class meteor test. Lower confidence meteors but also good training samples."
+      }
+   }
+
+   return(datasets)
+
+def page_links(total, start, end):
+   ipp = end - start
+   print("INFO:", total, start, end, ipp)
+   pages = ""
+   total_pages = int(round(total / ipp, 0))
+   for i in range (0, total_pages):
+      pages += str(i) + " - "
+   return(pages)
+
+def make_sample_buttons(sample):
+   labels = ['aurora', 'bird', 'bug', 'car', 'cloud', 'ground', 'moon', 'meteor', 'meteor_fireball', 'non_meteor', 'plane', 'rain', 'satellite', 'snow', 'star', 'unsure', 'ufo']
+   icons = ['fa-solid fa-sun-dust', 'fas-5x fas fa-crow', 'fas fa-bug', 'fas fa-car', 'fas fa-cloud', 'fas fa-tree', 'fas fa-moon', 'fa-solid fa-star-shooting', 'fa-solid fa-meteor', 'fas fa-ban', 'fas fa-plane', 'fas fa-cloud-rain', 'fas fa-satellite', 'fas fa-snowflake', 'fas fa-star', 'fas fa-question-circle', 'fa-duotone fa-alien']
+
+   t_buttons = "<div>"
+   for i in range(0,len(labels)):
+      t_buttons += """
+         <a style="float: left; width:40px; height:40px" onclick="move_ai_sample('{:s}', '{:s}')" class="col btn btn-secondary btn-sm" title="{:s}" data-meteor="{:s}"><i class="{:s}"></i></a>
+      """.format(labels[i], sample, labels[i], sample, icons[i])
+   t_buttons += "</div>"
+   return(t_buttons)
+
+def sample_thumb(sample):
+   sample_id = sample.split("/")[-1].replace(".", "_")
+   t_buttons = make_sample_buttons(sample)
+   #buttons = "xxx"
+   img = """
+      <div id={:s} style="background-size: cover; width: 200px; height: 200px; background-image: url({:s})" class="ai_sample">
+      <div class="show_hider"> 
+      {:s}
+      </div>
+      </div>
+   """.format(sample_id, sample, t_buttons)
+   return(img)
+
 def timelapse_main(station_id, date,cam_num,json_conf):
 
    main_header = html_page_header(station_id)
@@ -144,7 +310,6 @@ def batch_update_labels(station_id, label_data):
          update_data[date] = {}
       update_data[date][fn] = new_class
    for date in update_data:
-      print("UPDATE FILES ON THIS DAY:", date)
       ai_data_file = "/mnt/ams2/meteors/" + date + "/" + station_id + "_" + date + "_AI_SCAN.info"
       ai_data = load_json_file(ai_data_file)
 
@@ -230,8 +395,8 @@ def html_page_header(station_id):
       <meta name="viewport" content="width=device-width, initial-scale=1">
       <title>AllSky.com </title>
                <script src="https://cdn.plot.ly/plotly-2.2.0.min.js"></script>
-
-      <script src="https://kit.fontawesome.com/25faff154f.js" crossorigin="anonymous"></script>
+      <script src="https://kit.fontawesome.com/f3f9f77a06.js" crossorigin="anonymous"></script>
+      <!--<script src="https://kit.fontawesome.com/25faff154f.js" crossorigin="anonymous"></script>-->
       <!-- Bootstrap CSS -->
       <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-eOJMYsd53ii+scO/bJGFsiCZc+5NDVN2yr8+0RDqr0Ql0h+rP48ckxlpbzKgwra6" crossorigin="anonymous">
       <link rel="alternate" type="application/rss+xml" title="RSS 2.0" href="https://www.datatables.net/rss.xml">
@@ -266,7 +431,8 @@ def learning_review_day(station_id, review_date):
       <title>AllSky.com </title>
                <script src="https://cdn.plot.ly/plotly-2.2.0.min.js"></script>
 
-      <script src="https://kit.fontawesome.com/25faff154f.js" crossorigin="anonymous"></script>
+      <!--<script src="https://kit.fontawesome.com/25faff154f.js" crossorigin="anonymous"></script>-->
+      <script src="https://kit.fontawesome.com/f3f9f77a06.js" crossorigin="anonymous"></script>
       <!-- Bootstrap CSS -->
       <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-eOJMYsd53ii+scO/bJGFsiCZc+5NDVN2yr8+0RDqr0Ql0h+rP48ckxlpbzKgwra6" crossorigin="anonymous">
       <link rel="alternate" type="application/rss+xml" title="RSS 2.0" href="https://www.datatables.net/rss.xml">
@@ -1113,7 +1279,6 @@ def meteor_ai_scan(in_data, json_conf):
          all_files.append((roi_file, tlabel, tscore))
 
 
-   print("ALLFILES:", len(all_files), label)
    out += str(len(all_files)) + " AI items classified as " + label
    out += "<div>"
    for row in sorted(all_files, key=lambda x: (x[2]), reverse=True)[si:ei]:
@@ -1476,12 +1641,13 @@ def learning_db_dataset(ams_id, in_data):
  
 def make_page_links(base_url, current_item, total_items, items_per_page):
    #pagination
+   print("LINKS: ", current_item, total_items, items_per_page)
    total_pages = math.ceil(total_items / items_per_page)
    links = []
-   html = "\n<nav aria-label='Pages'><ul class='pagination'>\n"
-   for c in range (0, total_pages + 1):
+   html = "\n<div class=container><nav aria-label='Pages'><ul class='pagination'>\n"
+   for c in range (0, total_pages ):
       show_c = str(c + 1)
-      if c == current_item:
+      if c == int(current_item):
          active = "active"
       else:
          active = ""
@@ -1489,8 +1655,10 @@ def make_page_links(base_url, current_item, total_items, items_per_page):
       links.append(link)
       #html += "<a href=" + base_url + str(c) + ">" + show_c + "</a> "
       html += link
+      if c > 2 and (c - 1) % 30 == 0:
+         html += "</ul><ul class='pagination'>"
    html += "</ul>"
-   html += "</nav>"
+   html += "</nav></div>"
    return(links, html)
 
 def meteor_image(count, station_id, root_fn, final_meteor_yn, ai_resp, human_confirmed, reduced, duration, ang_vel):
@@ -2655,6 +2823,32 @@ def ui_javascript():
                  },
               })
          }
+
+         function move_ai_sample(label, sample_id) {
+             api_url = "/move_ai_sample?label=" + label + "&sample_id=" + sample_id
+             var div_id = sample_id
+             method="GET"
+             $.ajax({
+                url: api_url,
+                type: method,
+                crossDomain: true,
+                contentType: "application/json",
+
+                success: function(response){
+                   var el = sample_id.split("/")
+                   var idx = el.length - 1
+                   var div_id = el[idx]
+                   div_id = div_id.replace(".", "_")
+                   $("#" + div_id).fadeOut(1000, function() { $("#" + div_id).remove(); });
+                    console.log(response)
+                 },
+                 error: function(response){
+                    console.log(response)
+                    alert("ERR with mv meteor")
+                 },
+              })
+         }
+
 
          function confirm_meteor(data) {
              api_url = "/confirm_meteor/" + data

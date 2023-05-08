@@ -170,10 +170,10 @@ def delete_more():
           print(cmd)
           os.system(cmd)
 
-       if os.path.exists(ydir + "solved") is True:
-          cmd = "rm " + ydir + "solved/*"
-          print(cmd)
-          os.system(cmd)
+       #if os.path.exists(ydir + "solved") is True:
+       #   cmd = "rm " + ydir + "solved/*"
+       #   print(cmd)
+       #   os.system(cmd)
 
    # remove remote sites from the meteor_archive
    arc_dir = "/mnt/ams2/meteor_archive/" #+ json_conf['site']['ams_id'] + "/"
@@ -202,6 +202,27 @@ def delete_more():
       os.system(cmd)
 
 
+def purge_excess_files(limit=10):
+   
+   # use this to delete duplicate or excessive files 
+   # we do not actually need, specifically the meteor_archive 
+   # duplicate of the meteor dir. This was a 'failed' attempt
+   # to replace the previous /meteor/ setup. It has been abandonden
+   # and these files are a waste of space and take up a lot of room
+   # there might be some other files like this inside this function
+   meteor_arc_meteor_dir = "/mnt/ams2/meteor_archive/" + json_conf['site']['ams_id'] + "/METEOR/"
+   years = os.listdir(meteor_arc_meteor_dir)
+   for year in years:
+      if os.path.isdir(meteor_arc_meteor_dir + year) is True:
+         months = os.listdir(meteor_arc_meteor_dir + year)
+         for month in months:
+            if os.path.isdir(meteor_arc_meteor_dir + year + "/" + month) is True:
+               days = os.listdir(meteor_arc_meteor_dir + year + "/" + month )
+               for day in days:
+                  if os.path.isdir(meteor_arc_meteor_dir + year + "/" + month + "/" + day) is True:
+                     cmd = "rm -rf " + meteor_arc_meteor_dir + year + "/" + month + "/" + day + "/" 
+                     print(cmd)
+                     os.system(cmd)
 
 
 def check_disk():
@@ -879,5 +900,8 @@ if cmd == "batch":
    batch(sys.argv[2])
 if cmd == "cd":
    check_disk()
+#if cmd == "purge":
+   #delete_more()
 if cmd == "purge":
-   delete_more()
+   purge_excess_files()
+   #delete_more()

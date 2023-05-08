@@ -1,7 +1,7 @@
 import base64
 import os
 from flask import Flask, request, Response, make_response
-from FlaskLib.Learning import learning_meteors_dataset, learning_meteors_tag, meteor_ai_scan, recrop_roi, recrop_roi_confirm, learn_main, learning_review_day, batch_update_labels, learning_db_dataset, timelapse_main, learning_weather, ai_review, ai_rejects, confirm_meteor, confirm_non_meteor, confirm_non_meteor_label , ai_main , ai_dict, ai_scan_review,ai_non_meteors 
+from FlaskLib.Learning import learning_meteors_dataset, learning_meteors_tag, meteor_ai_scan, recrop_roi, recrop_roi_confirm, learn_main, learning_review_day, batch_update_labels, learning_db_dataset, timelapse_main, learning_weather, ai_review, ai_rejects, confirm_meteor, confirm_non_meteor, confirm_non_meteor_label , ai_main , ai_dict, ai_scan_review,ai_non_meteors , export_samples, move_ai_sample
 #from FlaskLib.AI_API import ai_api
 from FlaskLib.motion_detects import motion_detects
 from FlaskLib.FlaskUtils import get_template
@@ -840,6 +840,36 @@ def aiss(amsid):
       options[key] = value
    out = ai_scan_review(amsid, options, json_conf)
    return(out)
+
+@app.route('/move_ai_sample/', methods=['GET', 'POST'])
+@auth.login_required
+def mv_sample():
+   options = {}
+   if request.method == "POST":
+      for key, value in request.form.items():
+         options[key] = value
+      options['method'] = "POST"
+   else:
+      for key, value in request.args.items():
+         options[key] = value
+   out = move_ai_sample(options, json_conf)
+   return(out)
+
+
+@app.route('/AI/MAIN/EXPORT/SAMPLES/<amsid>/', methods=['GET', 'POST'])
+@auth.login_required
+def exp_samples(amsid):
+   options = {}
+   if request.method == "POST":
+      for key, value in request.form.items():
+         options[key] = value
+      options['method'] = "POST"
+   else:
+      for key, value in request.args.items():
+         options[key] = value
+   out = export_samples(amsid, options, json_conf)
+   return(out)
+
 
 @app.route('/AI/MAIN/<amsid>/', methods=['GET', 'POST'])
 @auth.login_required

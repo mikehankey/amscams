@@ -205,6 +205,15 @@ def export_html_new(scan_export_dir, desc):
    fp = open(scan_export_dir + "index.html", "w")
    fp.write(html)
    fp.close()
+   index_data = {}
+   index_data['dirs'] = dirs
+   index_data['files'] = files
+   index_data['last_updated'] = time.time()
+   cdir = scan_export_dir.split("/")[-1]
+   if cdir == "":
+      cdir = scan_export_dir.split("/")[-2]
+      
+   save_json_file(scan_export_dir + station_id + "_" + cdir + "_index.json", index_data) 
    print("SAVE:", scan_export_dir + "index.html")
    return(scan_export_dir + "index.html")
    
