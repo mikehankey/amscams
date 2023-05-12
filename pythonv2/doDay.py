@@ -234,7 +234,7 @@ def check_disk():
    else:
       data_dir = "/mnt/ams2"
 
-   if os.path.exists("/mnt/ams2/AI/DATASETS/CAL/"):
+   if os.path.exists("/mnt/ams2/AI/DATASETS/CAL_STARS/"):
       os.system("rm -rf " + "/mnt/ams2/AI/DATASETS/CAL_STARS/")
    print(mounts)
    print(data_dir)
