@@ -237,9 +237,9 @@ def ai_check_stars(image, img_fn, stars):
             else:
                star_file = repo_dir_no + star_key + ".jpg"
                bad_stars.append(star)
-            cmd = "mv " + temp_file + " " + star_file
-            print(cmd)
-            os.system(cmd)
+            #cmd = "mv " + temp_file + " " + star_file
+            #print(cmd)
+            #os.system(cmd)
          except:
             print("AI FAIL!")
             # if AI is down or not installed just accept the star
