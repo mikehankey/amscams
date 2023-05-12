@@ -10930,6 +10930,7 @@ def prune(cam_id, con, cur, json_conf):
       month_dict[month]['files'].append([cal_file, data])
 
    mc = 0
+   bad_data = []
    for month in sorted(month_dict, reverse=True):
       if mc < 1:
          print("Skip most recent month!")
@@ -10943,17 +10944,23 @@ def prune(cam_id, con, cur, json_conf):
       if over_files <= 1:
          print("THIS MONTH IS GOOD", month)
          continue
-      just_data = sorted(just_data, key=lambda x: x['total_stars'] / x['total_res_px'], reverse=True)
+      try:
+         just_data = sorted(just_data, key=lambda x: x['total_stars'] / x['total_res_px'], reverse=True)
+      except:
+         print("PROBLEM")
 
       for data in just_data[0:over_files]:
          if os.path.isdir(data['base_dir']) is True:
             cmd = "mv " + data['base_dir'] + " " + extracal_dir
             print(cmd)
             os.system(cmd)
-            print(data['base_dir'], data['total_stars'], data['total_res_px'])
+            #print(data['base_dir'], data['total_stars'], data['total_res_px'])
             pruned += 1
          else:
-            print("DONE ALREADY!", data['base_dir'], data['total_stars'], data['total_res_px'])
+            if "total_stars" in data:
+               print("DONE ALREADY!", data['base_dir'], data['total_stars'], data['total_res_px'])
+            else:
+               bad_data.append(data)
 
       mc += 1
       
