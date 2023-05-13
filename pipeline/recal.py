@@ -2909,7 +2909,8 @@ def start_calib(cal_fn, json_conf, calfiles_data, mcp=None):
       cal_img, cal_params = view_calfile(cam_id, cal_fn, con, cur, json_conf, calfiles_data, None, mcp)
    else:
       print("CAL FN", cal_fn, "is no longer valid? Maybe you should re-run the recal.py status all")
-   #print("OK")
+      #print("OK")
+      cal_img = False
 
    if cal_img is False:
       print("FAILED")
@@ -11123,7 +11124,6 @@ if __name__ == "__main__":
       (f_datetime, cam_id, f_date_str,fy,fmin,fd, fh, fm, fs) = convert_filename_to_date_cam(cf)
       autocal_dir = "/mnt/ams2/cal/"
       mcp_file = autocal_dir + "multi_poly-" + station_id + "-" + cam_id + ".info"
-      print(mcp_file)
       if os.path.exists(mcp_file) == 1:
          mcp = load_json_file(mcp_file)
          # reset mcp if it is bad
@@ -11133,7 +11133,8 @@ if __name__ == "__main__":
          mcp = None
 
       calfiles_data = load_cal_files(cam_id, con, cur)
-      last_cal_params = apply_calib (cf, calfiles_data, json_conf, mcp, None, "")
+
+      last_cal_params = apply_calib(cf, calfiles_data, json_conf, mcp, None, "")
 
    if cmd == "batch_apply_bad" :
       cam_id = sys.argv[2]
