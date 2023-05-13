@@ -6314,9 +6314,10 @@ def apply_calib (cal_file, calfiles_data, json_conf, mcp, last_cal_params=None, 
    
       best_cal = find_best_calibration(cal_file, cal_params, json_conf)
 
-      if best_cal['total_res_px'] < cal_params['total_res_px']:
-         cal_params = best_cal
-         cal_params = add_more_stars(cal_image_file, cal_params, oimg, oimg, json_conf)
+      if best_cal is not None:
+         if best_cal['total_res_px'] < cal_params['total_res_px']:
+            cal_params = best_cal
+            cal_params = add_more_stars(cal_image_file, cal_params, oimg, oimg, json_conf)
 
       #print("BEST:", best_cal['total_res_px'])
       #exit()
