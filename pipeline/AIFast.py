@@ -483,6 +483,8 @@ def ai_scan_day(day):
          ai_info.append((decision, root_fn, hd_vid, roi, meteor_yn_conf, fireball_yn_conf, mc_class, mc_class_conf ))
          #print("AI OBJECTS:", mj['ai_objects'])
       elif "hc" in mj :
+         roi = [0,0,0,0]
+         
          ai_info.append(("APPROVED", root_fn, hd_vid, roi, 99, 99, "meteor", "99"))
 
       else:
