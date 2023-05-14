@@ -195,6 +195,7 @@ class AS7Setup():
          output = subprocess.check_output("lsblk | grep sd ", shell=True).decode("utf-8")
          #Filesystem                 Size  Used Avail Use% Mounted on
 
+         output += subprocess.check_output("lsblk | grep nvm ", shell=True).decode("utf-8")
          for line in output.split("\n"):
             print(line)
          drive = input("Enter the drive label (sdX) to format. Should be the large size drive!")
