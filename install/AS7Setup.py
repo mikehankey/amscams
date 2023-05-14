@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-
+import netifaces as ni
 import pkg_resources
 import sys
 import os
