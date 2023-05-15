@@ -656,7 +656,7 @@ def meteors_main (amsid, in_data) :
 #I ['ACCEPT', '2022_04_25_02_35_00_000_010001-trim-0092', '2022_04_25_02_35_00_000_010001-trim-92-HD-meteor.mp4', '[182, 195, 332, 345]', 96.77115678787231, 1.502394676208496, '', 0.0]
          ai_text = str(round(ai_dict[root_fn][4],1)) + "% Meteor "
          ai_text += str(round(ai_dict[root_fn][5],1)) + "% Fireball "
-         ai_text += str(round(ai_dict[root_fn][7],1)) + "% "
+         ai_text += str(round(float(ai_dict[root_fn][7]),1)) + "% "
          ai_text += str(ai_dict[root_fn][6]) 
       else:
          print("NOAI", root_fn )
