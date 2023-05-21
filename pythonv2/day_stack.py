@@ -38,8 +38,17 @@ def stack_day_all():
       os.makedirs("/home/ams/tmp-stack")
 
 
-
+   now = datetime.now()
    for df in sorted(day_files):
+      (hd_datetime, cam, sd_date, sd_y, sd_m, sd_d, sd_h, sd_M, sd_s) = convert_filename_to_date_cam(df)
+      elapsed = abs((now - hd_datetime).total_seconds())
+      days_old = elapsed / 60 / 60 / 24
+      if days_old > 5:
+         cmd = "rm " + df
+         print(cmd)
+         os.system(cmd)
+         continue
+
       if os.path.exists(df) is False:
          continue
       st = os.stat(df)
