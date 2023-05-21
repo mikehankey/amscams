@@ -43,7 +43,7 @@ def stack_day_all():
       (hd_datetime, cam, sd_date, sd_y, sd_m, sd_d, sd_h, sd_M, sd_s) = convert_filename_to_date_cam(df)
       elapsed = abs((now - hd_datetime).total_seconds())
       days_old = elapsed / 60 / 60 / 24
-      if days_old > 5:
+      if days_old > 3:
          cmd = "rm " + df
          print(cmd)
          os.system(cmd)
