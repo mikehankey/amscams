@@ -331,6 +331,11 @@ def run_jobs(json_conf):
             restart_scan = 1
 
          if restart_scan == 1:
+            cmd = "kill -9 $(ps aux | grep 'day_stack' | awk '{print $2}')"
+            print(cmd)
+            os.system(cmd)
+
+
             cmd = "kill -9 $(ps aux | grep 'scan_stack' | awk '{print $2}')"
             print(cmd)
             os.system(cmd)
