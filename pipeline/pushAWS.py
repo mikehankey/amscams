@@ -26,10 +26,19 @@ def push_station_data(api_key, station_id, json_conf):
    data['alt'] = json_conf['site']['device_alt']
 
    # cameras
-   data['cameras'] = {}
+   data['cameras'] = []
+   cam_ids_nums = {}
+   mcps = load_all_mcps()
+
    for cam_num in json_conf['cameras']:
       dd = int(cam_num.replace("cam", ""))
-      data['cameras'][dd] = json_conf['cameras'][cam_num]['cams_id']
+      cams_id = json_conf['cameras'][cam_num]['cams_id']
+      cam_obj = {}
+      cam_obj['cam_num'] = dd
+      cam_obj['cams_id'] = cams_id 
+      cam_obj['calib'] = mcps[cams_id]
+      data['cameras'].append(cam_obj)
+      #cam_ids_nums[data['cameras'][dd]['cam_id']] = cam_num
    if "operator_city" in json_conf['site']:
       data['city'] = json_conf['site']['operator_city']
    if "operator_country" in json_conf['site']:
@@ -50,54 +59,8 @@ def push_station_data(api_key, station_id, json_conf):
       data['username'] = json_conf['site']['allsky_username']
 
    # add calib info
-   cal_dir = "/mnt/ams2/cal/"
-   mcp_files = os.listdir("/mnt/ams2/cal/")
 
-   all_mcps = {}
-   for mcp_file in mcp_files :
-      if "multi_poly" in mcp_file: 
-         try:
-            mcp = load_json_file(cal_dir + mcp_file) 
-         except:
-            print("Failed to load:", mcp_file)
-            continue
-      else:
-         continue
-      mcp_file = mcp_file.replace(".info", "")
-      print(mcp_file)
-      fn, station, cam = mcp_file.split("-")
-      all_mcps[cam] = {}
-      print(mcp_file, mcp.keys())
-      if "center_az" in mcp:
-         all_mcps[cam]['az'] = str(mcp['center_az'])
-      if "center_el" in mcp:
-         all_mcps[cam]['el'] =  str(mcp['center_el'])
-      if "position_angle" in mcp:
-         all_mcps[cam]['pos'] =  str(mcp['position_angle'])
-      if "pixscale" in mcp:
-         all_mcps[cam]['px'] =  str(mcp['pixscale'])
-      if "total_stars_used" in mcp:
-         all_mcps[cam]['total_stars_used'] =  str(mcp['total_stars_used'])
-      if "res" in mcp:
-         all_mcps[cam]['res'] =  str(mcp['x_fun'])
-      if "x_poly" in mcp:
-         all_mcps[cam]['x_poly'] = str(mcp['x_poly'])
-      if "y_poly" in mcp:
-         all_mcps[cam]['y_poly'] = str(mcp['y_poly'])
-      if "x_poly_fwd" in mcp:
-         all_mcps[cam]['x_poly_fwd'] = str(mcp['x_poly_fwd'])
-      if "y_poly_fwd" in mcp:
-         all_mcps[cam]['y_poly_fwd'] = str(mcp['y_poly_fwd'])
-      if "min_max_x_dist" in mcp:
-         all_mcps[cam]['min_max_x_dist'] =  str(mcp['min_max_x_dist'])
-      if "min_max_y_dist" in mcp:
-         all_mcps[cam]['min_max_y_dist'] =  str(mcp['min_max_y_dist'])
-      if "lens_model_datetime" in mcp:
-         all_mcps[cam]['lens_model_datetime'] =  str(mcp['lens_model_datetime'])
-
-      print(station, cam, all_mcps[cam]) 
-
-   data['calib'] = all_mcps 
+   #data['calib'] = all_mcps 
    if "ml" in json_conf:
       data['ml'] = json_conf['ml']
 
@@ -120,6 +83,71 @@ def push_station_data(api_key, station_id, json_conf):
    print("response:", response.content.decode())
    print(data)
    print("END \n\n\n")
+
+def load_all_mcps():
+
+   cal_dir = "/mnt/ams2/cal/"
+   mcp_files = os.listdir("/mnt/ams2/cal/")
+
+   all_mcps = {}
+   for mcp_file in mcp_files :
+      if "multi_poly" in mcp_file: 
+         try:
+            mcp = load_json_file(cal_dir + mcp_file) 
+         except:
+            print("Failed to load:", mcp_file)
+            continue
+      else:
+         continue
+      mcp_file = mcp_file.replace(".info", "")
+      print(mcp_file)
+      fn, station, cam = mcp_file.split("-")
+      all_mcps[cam] = {}
+
+      #cam_num = cam_ids_nums[cam] 
+
+      print( mcp_file, mcp.keys())
+      if "center_az" in mcp:
+         all_mcps[cam]['az'] = str(mcp['center_az'])
+      if "center_el" in mcp:
+         all_mcps[cam]['el'] =  str(mcp['center_el'])
+      if "position_angle" in mcp:
+         all_mcps[cam]['pos'] =  str(mcp['position_angle'])
+      if "pixscale" in mcp:
+         all_mcps[cam]['px'] =  str(mcp['pixscale'])
+      if "total_stars_used" in mcp:
+         all_mcps[cam]['total_stars_used'] =  str(mcp['total_stars_used'])
+      if "x_fun" in mcp:
+         all_mcps[cam]['x_fun'] =  str(mcp['x_fun'])
+      if "y_fun" in mcp:
+         all_mcps[cam]['y_fun'] =  str(mcp['y_fun'])
+      if "x_fun_fwd" in mcp:
+         all_mcps[cam]['x_fun_fwd'] =  str(mcp['x_fun_fwd'])
+      if "y_fun" in mcp:
+         all_mcps[cam]['y_fun_fwd'] =  str(mcp['y_fun_fwd'])
+
+
+      if "x_poly" in mcp:
+         all_mcps[cam]['x_poly'] = str(mcp['x_poly'])
+      if "y_poly" in mcp:
+         all_mcps[cam]['y_poly'] = str(mcp['y_poly'])
+      if "x_poly_fwd" in mcp:
+         all_mcps[cam]['x_poly_fwd'] = str(mcp['x_poly_fwd'])
+      if "y_poly_fwd" in mcp:
+         all_mcps[cam]['y_poly_fwd'] = str(mcp['y_poly_fwd'])
+      if "min_max_x_dist" in mcp:
+         all_mcps[cam]['min_max_x_dist'] =  str(mcp['min_max_x_dist'])
+      if "min_max_y_dist" in mcp:
+         all_mcps[cam]['min_max_y_dist'] =  str(mcp['min_max_y_dist'])
+      if "lens_model_datetime" in mcp:
+         all_mcps[cam]['lens_model_datetime'] =  str(mcp['lens_model_datetime'])
+      if "best_files" in mcp:
+          all_mcps[cam]['best_files'] =  str(mcp['best_files'][-10:])
+      if "good_files" in mcp:
+          all_mcps[cam]['good_files'] =  str(mcp['good_files'][-10:])
+
+      print(station, cam, all_mcps[cam]) 
+   return(all_mcps)
 
 def get_meteor_media_sync_status(station_id, sd_vid):
    # determine the current sync status for this meteor.
