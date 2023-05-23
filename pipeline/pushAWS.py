@@ -24,7 +24,9 @@ def push_station_data(api_key, station_id, json_conf):
    data['lat'] = json_conf['site']['device_lat']
    data['lon'] = json_conf['site']['device_lng']
    data['alt'] = json_conf['site']['device_alt']
-
+   data['last_updated'] = datetime.timestamp(datetime.now())
+   json_conf['aws_last_updated'] = data['last_updated']
+   save_json_file("../conf/as6.json", json_conf)
    # cameras
    data['cameras'] = []
    cam_ids_nums = {}
@@ -35,7 +37,7 @@ def push_station_data(api_key, station_id, json_conf):
       cams_id = json_conf['cameras'][cam_num]['cams_id']
       cam_obj = {}
       cam_obj['cam_num'] = dd
-      cam_obj['cams_id'] = cams_id 
+      cam_obj['cam_id'] = cams_id 
       cam_obj['calib'] = mcps[cams_id]
       data['cameras'].append(cam_obj)
       #cam_ids_nums[data['cameras'][dd]['cam_id']] = cam_num

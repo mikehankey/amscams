@@ -181,6 +181,10 @@ def run_jobs(json_conf):
    year,month, day = today.split("_")
 
    check_do_recal(json_conf)
+
+   if "aws_last_updated" not in json_conf:
+      os.system("./pushAWS.py push_station_data")
+
  
    # check if the pause-jobs.json exists if so just wait to run this until it is gone, or older than 8 hours (max pause length). 
    if os.path.exists("pause-jobs.json") is True:
