@@ -666,6 +666,7 @@ def update_dyna_cache_for_day(dynamodb, date, stations, utype=None, cloud_copy=1
    #for st in sorted(all_stations):
    API_URL = "https://kyvegys798.execute-api.us-east-1.amazonaws.com/api/allskyapi?cmd=get_stations&api_key=" + json_conf['api_key'] + "&station_id=" + json_conf['site']['ams_id']
 
+   #print("API:", API_URL)
    response = requests.get(API_URL)
    content = response.content.decode()
    content = content.replace("\\", "")

@@ -1,7 +1,9 @@
 #!/usr/bin/python3
+
 from geopy.geocoders import Nominatim
 geolocator = Nominatim(user_agent="geoapiExercises")
 from Classes.AllSkyNetwork import AllSkyNetwork
+print("YO")
 import cv2
 import os
 import sys
@@ -11,7 +13,10 @@ from lib.PipeUtil import get_file_info
 
 cmd = sys.argv[1]
 
+print("Init AllSkyNetwork...")
 ASN = AllSkyNetwork()
+print("Init Complete...")
+
 now = datetime.now()
 yest = now - dt.timedelta(days=1)
 yest = yest.strftime("%Y_%m_%d")
@@ -162,28 +167,29 @@ if cmd == "resolve_event":
    ASN.sync_log = {}
    
    wget_cmds = ASN.get_event_media(event_id)
-   ASN.review_event(sys.argv[2])
-   (review_image, map_img, obs_imgs, marked_images, event_data, obs_data) = ASN.review_event_step2()
+   review = True 
+   if review is True: 
+      ASN.review_event(sys.argv[2])
+      (review_image, map_img, obs_imgs, marked_images, event_data, obs_data) = ASN.review_event_step2()
 
-   #for ob in obs_data:
-   #   print(ob, obs_data[ob]['xs'])
+      for ob in obs_data:
+         print(ob, obs_data[ob]['xs'])
 
 
-   if "2d_status" not in event_data:
-      event_data = ASN.get_2d_status(event_data, obs_data)
+      if "2d_status" not in event_data:
+         event_data = ASN.get_2d_status(event_data, obs_data)
 
-   ASN.echo_event_data(event_data, obs_data)
+      ASN.echo_event_data(event_data, obs_data)
+
+      if review_image is not None:
+         #print("YO")
+         cv2.imshow("REVIEW IMAGE", review_image)
+         cv2.waitKey(30)
+
 
    event_data_file = ASN.local_evdir + ASN.event_id + "/" + ASN.event_id + "_EVENT_DATA.json"
    obs_data_file = ASN.local_evdir + ASN.event_id + "/" + ASN.event_id + "_OBS_DATA.json"
 
-   if review_image is not None:
-      print("YO")
-      #cv2.imshow("REVIEW IMAGE", review_image)
-      #cv2.waitKey(30)
-   else:
-      print("REVIEW IMAGE IS NONE!", review_image)
-    
    ASN.resolve_event(sys.argv[2])
    exit()
 
@@ -483,3 +489,6 @@ if cmd == "rerun_month":
 if cmd == "reconcile_obs":
    # make station/event mapping for this day
    ASN.reconcile_obs_day(sys.argv[2])
+if cmd == "station_cal":
+   # make station/event mapping for this day
+   ASN.station_cal()

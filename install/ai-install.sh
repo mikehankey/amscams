@@ -10,7 +10,7 @@ mkdir /home/ams/amscams/pipeline/models
 cp /mnt/archive.allsky.tv/AMS1/ML/ASAI-v2.7z /home/ams/amscams/pipeline/models
 cp /mnt/archive.allsky.tv/AMS1/ML/star_yn.h5 /home/ams/amscams/pipeline/models
 
-cd /home/ams/amscams/pipeline/models; 7z e i64.7z
+cd /home/ams/amscams/pipeline/models; 7z e ASAI-v2.7z
 
 
 # Remove and remake the SQL ALLSKYDB

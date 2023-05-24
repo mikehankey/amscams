@@ -12,39 +12,65 @@ ASOS = """
     © ALL SKY INC / MIKE HANKEY LLC - ALL RIGHTS RESERVED
 Use permitted under community license for registered users only
 """
-try:
-   import PySimpleGUI as sg
-except:
-   print("Missing lib:")
-   print("sudo python3 -m pip install PySimpleGUI")
-import datetime
-from PIL import ImageFont, ImageDraw, Image, ImageChops
-import imutils
-import time
-import json
-import numpy as np
-import glob
-import cv2
-import os, sys, select
-import requests
-from photutils import CircularAperture, CircularAnnulus
-from photutils.aperture import aperture_photometry
-import scipy.optimize
-from PIL import ImageFont, ImageDraw, Image, ImageChops
-import lib.brightstardata as bsd
-from lib.PipeUtil import load_json_file, save_json_file,angularSeparation, calc_dist, convert_filename_to_date_cam , check_running , get_file_info, collinear, mfd_roi, load_mask_imgs
-from lib.PipeAutoCal import distort_xy, insert_calib, minimize_poly_multi_star, view_calib, cat_star_report , update_center_radec, XYtoRADec, draw_star_image, make_lens_model, make_az_grid, make_cal_summary, quality_stars, make_cal_plots, find_stars_with_grid, optimize_matchs, eval_cal_res, radec_to_azel, make_plate_image, make_cal_plots, make_cal_summary, custom_fit_meteor
-from FlaskLib.api_funcs import show_cat_stars 
 
 
-import sqlite3 
-from lib.DEFAULTS import *
-from lib.PipeVideo import load_frames_simple
-from Classes.MovieMaker import MovieMaker 
-from Classes.Stations import Stations 
-from prettytable import PrettyTable as pt
 
-tries = 0
+
+def make_intro(folder): 
+   global MOVIE_FRAME_NUMBER
+   global MOVIE_FRAMES_TEMP_FOLDER
+   frames = load_frames_simple("intro_video.mp4")
+   for fr in frames:
+      fr = cv2.resize(fr, (1920,1080))
+      if SHOW == 1:
+         cv2.imshow('pepe', fr)
+         cv2.waitKey(30)
+
+      if SAVE_MOVIE is True:
+         save_movie_frame(fr, MOVIE_FRAME_NUMBER, MOVIE_FRAMES_TEMP_FOLDER)
+         MOVIE_FRAME_NUMBER += 1
+
+
+
+def save_movie_frame(frame, frame_number, folder, repeat = None, fade_last=None):
+   global MOVIE_FRAME_NUMBER
+   global MOVIE_LAST_FRAME 
+   file_name = folder + '{0:06d}'.format(frame_number) + ".jpg"
+
+   #frame = RF.frame_template("1920_1p", [frame])
+
+   #frame = frame * 255
+   #print(type(frame), frame.shape, frame[0,0] )
+   #cv2.imshow('pepe', frame)
+   #cv2.waitKey(0)
+
+
+
+   if fade_last == None:
+      cv2.imwrite(file_name, frame  )
+   else:
+      # fade into the last frame over X frames
+      for i in range(0,fade_last):
+         perc = i / fade_last
+         rperc = 1 - perc
+         print("SH", MOVIE_LAST_FRAME.shape)
+         print("SH2", MOVIE_LAST_FRAME[0,0])
+         blend = cv2.addWeighted(MOVIE_LAST_FRAME, rperc, frame, perc, .3)
+         file_name = folder + '{0:06d}'.format(MOVIE_FRAME_NUMBER) + ".jpg"
+         cv2.imwrite(file_name, blend )
+         print("FADE", MOVIE_FRAME_NUMBER, rperc, perc)
+         if SHOW == 1:
+            cv2.imshow("pepe", blend)
+            cv2.waitKey(30)
+         MOVIE_FRAME_NUMBER += 1
+
+
+   if repeat is not None:
+      for i in range(0,repeat):
+         file_name = folder + '{0:06d}'.format(MOVIE_FRAME_NUMBER) + ".jpg"
+         cv2.imwrite(file_name, frame )
+         MOVIE_FRAME_NUMBER += 1
+   MOVIE_LAST_FRAME = frame
 
 def rescue_cal(cam_id, con, cur, json_conf):
    # reset and rescue a calibration -- for when things get corrupted or go wrong
@@ -1582,13 +1608,13 @@ def remove_bad_stars(cat_image_stars):
       else:
          far.append(cat_dist)
    if len(left_side) > 3:
-      left_res = np.median(left_side)
+      left_res = np.median(left_side) 
    else:
-      left_res = 5
+      left_res = 10 
    if len(right_side) > 3:
-      right_res = np.median(right_side)
+      right_res = np.median(right_side) 
    else:
-      right_res = 5
+      right_res = 10
 
    if len(far) > 3:
       far_res = np.median(far)
@@ -1627,13 +1653,13 @@ def remove_bad_stars(cat_image_stars):
       if center_dist < 600:
          factor = 2
       else:
-         factor = 3
+         factor = 5
 
       #if res_limit > 5:
       #   res_limit = 5
       #if res_limit < 1:
       #   res_limit = 1
-      if center_dist > 600 and cat_dist > 5:
+      if center_dist > 600 and cat_dist > 15:
          if y_res > x_res :
             bad.append(star)
             continue
@@ -1677,6 +1703,8 @@ def remove_bad_stars(cat_image_stars):
    return(good)
 
 def plot_cal_history(con, cur, json_conf):
+   import matplotlib
+   matplotlib.use('Agg')
    import matplotlib.pyplot as plt 
    from matplotlib.pyplot import figure 
 
@@ -1722,7 +1750,7 @@ def plot_cal_history(con, cur, json_conf):
       ax1.scatter(data[cam_id]['azs'],data[cam_id]['els'])
       ax1.set_xlabel("Azimuth")
       ax1.set_ylabel("Elevation")
-      fig.suptitle("Meteor Calibrations for " + station_id + "-" + cam_id  , fontsize=16)
+      fig.suptitle("Calibration History for " + station_id + "-" + cam_id  , fontsize=16)
 
       ax2.scatter(data[cam_id]['pos'],data[cam_id]['pxs'])
       ax2.set_xlabel("Position Angle")
@@ -1734,7 +1762,17 @@ def plot_cal_history(con, cur, json_conf):
       plot_file = cal_dir + "plots/" + station_id + "_" + cam_id + "_CAL_PLOTS.png"
       print("\tSAVED PLOT", plot_file)
       fig.savefig(plot_file, dpi=72)
+      # convert to jpg
+      plt_img = cv2.imread(plot_file)
+      plot_file_jpg = plot_file.replace(".png", ".jpg")
+      cv2.imwrite(plot_file_jpg , plt_img)
       #plt.show()
+      cloud_file = "/mnt/archive.allsky.tv/" + station_id + "/CAL/plots/" + station_id + "_" + cam_id + "_CAL_PLOTS.jpg"
+      cloud_png_file = "/mnt/archive.allsky.tv/" + station_id + "/CAL/plots/" + station_id + "_" + cam_id + "_CAL_PLOTS.png"
+      if os.path.exists(cloud_png_file):
+         os.system("rm " + cloud_png_file)
+      os.system("cp " + plot_file_jpg + " " + cloud_file)
+      #print("cp " + plot_file_jpg + " " + cloud_file)
 
    all_imgs = []
    for cam_id in sorted(data):
@@ -1812,7 +1850,100 @@ def plot_refit_meteor_day(meteor_day, con, cur, json_conf):
       fig.savefig(plot_file, dpi=72)
       plt.show()
 
+def timelapse_day_fast(meteor_day, con, cur, json_conf):
+   global MOVIE_FRAME_NUMBER
+   global MOVIE_FRAMES_TEMP_FOLDER 
+   wdir = "/mnt/ams2/latest/" + meteor_day + "/"
+   cams = []
+   files = os.listdir(wdir)
+   station_id = json_conf['site']['ams_id']
+   cam_files = {}
+
+   for cam_num in json_conf['cameras']:
+      cams_id = json_conf['cameras'][cam_num]['cams_id']
+      cam_files[cams_id] = []
+      cams.append(cams_id)
+
+      for f in sorted(files):
+         if cams_id in f:
+            print("LOADING:", f)
+            cam_files[cams_id].append(f)
+
+   #for cam_id in json_conf[
+
+   for cam in sorted(cams):
+      first_frame_file = wdir + cam_files[cam][0]
+      first_frame = cv2.resize(cv2.imread(first_frame_file), (1920,1080))
+      mcp_file = "/mnt/ams2/cal//multi_poly-{:s}-{:s}.info".format(station_id, cam)
+      mcp = load_json_file(mcp_file)
+      print(MOVIE_LAST_FRAME.shape)
+      print(first_frame.shape)
+      print(wdir + first_frame_file )
+      if MOVIE_LAST_FRAME is not None:
+         pref = "FF"
+         start_count = 0
+         extra = slide_left(MOVIE_LAST_FRAME, first_frame, pref, start_count)
+         try:
+            extra = slide_left(MOVIE_LAST_FRAME, first_frame, pref, start_count)
+            print(len(extra))
+         except:
+            extra = []
+            input("SLIDE FAIL")
+
+         # Last sequence / transition slide left frames
+         for eframe in extra:
+            eframe = RF.watermark_image(eframe, RF.logo_320, logo_x,logo_y, .33, make_int=True)
+            extra_text = meteor_day
+            eframe = draw_star_image(eframe.copy(), [],mcp, json_conf, extra_text) 
+
+            save_movie_frame(eframe, MOVIE_FRAME_NUMBER, MOVIE_FRAMES_TEMP_FOLDER)
+            MOVIE_FRAME_NUMBER += 1
+            if SHOW == 1:
+               cv2.imshow('pepe', eframe)
+               cv2.waitKey(30)
+
+
+      for f in sorted(files):
+         if cam in f:
+            img_file = wdir + f
+            eframe = cv2.imread(img_file)
+            eframe = cv2.resize(eframe,(1920,1080))
+            #eframe = RF.watermark_image(eframe, RF.logo_320, logo_x,logo_y, .33, make_int=True)
+
+            eframe = draw_star_image(eframe.copy(), [],mcp, json_conf, extra_text) 
+
+            save_movie_frame(eframe, MOVIE_FRAME_NUMBER, MOVIE_FRAMES_TEMP_FOLDER)
+            MOVIE_FRAME_NUMBER += 1 
+            if SHOW == 1:
+               cv2.imshow('pepe', eframe)
+               cv2.waitKey(30)
+
+
+
 def refit_meteor_day(meteor_day, con, cur, json_conf):
+
+   global MOVIE_FRAMES_TEMP_FOLDER
+   global SAVE_MOVIE
+   global MOVIE_FRAME_NUMBER
+
+   if SHOW == 1:
+      # set the windows
+      cv2.namedWindow("pepe")
+      cv2.resizeWindow("pepe", 1920, 1080)
+      cv2.moveWindow("pepe", 1400,100)
+
+
+   if os.path.exists(MOVIE_FRAMES_TEMP_FOLDER) is False:
+      os.makedirs(MOVIE_FRAMES_TEMP_FOLDER)
+   else:
+      os.system("rm " + MOVIE_FRAMES_TEMP_FOLDER + "*.jpg")
+   files = os.listdir(MOVIE_FRAMES_TEMP_FOLDER)
+   print(len(files), "in the temp dir")
+   input("WAIT")
+
+   make_intro(MOVIE_FRAMES_TEMP_FOLDER) 
+
+   timelapse_day_fast(meteor_day, con, cur, json_conf)
 
    files = os.listdir("/mnt/ams2/meteors/" + meteor_day + "/")
    cc = 1
@@ -1821,7 +1952,6 @@ def refit_meteor_day(meteor_day, con, cur, json_conf):
          continue
       if "reduced" in ff:
          continue
-      print("KEEP:", ff)
       mjf = "/mnt/ams2/meteors/" + meteor_day + "/" + ff
       if os.path.exists(mjf) :
          mjrf = mjf.replace(".json", "-reduced.json")
@@ -1866,8 +1996,17 @@ def refit_meteor_day(meteor_day, con, cur, json_conf):
       refit_log = load_json_file(refit_log_file)
       report = refit_summary(refit_log)
       save_json_file(refit_sum_file, report)
+   vid_dir = "/mnt/ams2/day_summary/"
+   if os.path.exists(vid_dir) is False:
+      os.makedirs(vid_dir)
+   cmd = "./FFF.py imgs_to_vid ~/REFIT_METEOR_FRAMES_TEMP/ 00 /mnt/ams2/day_summary/" + meteor_day + ".mp4 25 28"
+   os.system(cmd)
 
 def refit_meteor(meteor_file, con, cur, json_conf, mcp = None, last_best_dict = None):
+   global RF
+   global MOVIE_FRAME_NUMBER
+   global MOVIE_FRAMES_TEMP_FOLDER
+   global SAVE_MOVIE 
    '''
        Refit meteor -- this function should optimize the calibration, selected stars, and perfect the meteors x,y points
        When complete all frames should have the latest / greatest calib applied to them. 
@@ -1882,11 +2021,7 @@ def refit_meteor(meteor_file, con, cur, json_conf, mcp = None, last_best_dict = 
           5) Appy Calib to frames
 
    '''
-   print("Refit Meteor File", meteor_file)
-   if SHOW == 1:
-      cv2.namedWindow("pepe")
-      cv2.resizeWindow("pepe", 1920, 1080)
-      cv2.moveWindow("pepe", 1400,100)
+   print("Refit Meteor File", meteor_file, MOVIE_FRAME_NUMBER)
 
    # meteor_file should end with .json and have no path info
    if "/" in meteor_file:
@@ -1897,10 +2032,13 @@ def refit_meteor(meteor_file, con, cur, json_conf, mcp = None, last_best_dict = 
    (f_datetime, cam_id, f_date_str,fy,fmin,fd, fh, fm, fs) = convert_filename_to_date_cam(meteor_file)
    station_id = json_conf['site']['ams_id']
 
+   
+
    # MRH - Possible bug / this should be checked or convert to 'last_best'? 3/16/23 
    default_cp = get_default_cal_for_file(cam_id, meteor_file, None, con, cur, json_conf)
    if default_cp is None:
       # cant refit if there is no default cp!
+      input("THERE IS NO DEFAULT CP!", cam_id, meteor_file)
       return()
 
    extra_text = "Refit " +  meteor_file.split("-")[0]
@@ -1932,9 +2070,13 @@ def refit_meteor(meteor_file, con, cur, json_conf, mcp = None, last_best_dict = 
 
    # load reduced json.
    orig_res = 999
+   start_datetime = None
    if os.path.exists(red_json_file):
       mjr = load_json_file(red_json_file)
       meteor_roi = mfd_roi(mjr['meteor_frame_data'])
+      if "meteor_frame_data" in mjr:
+         print("MJR", mjr['meteor_frame_data'][0][0])
+         start_datetime = mjr['meteor_frame_data'][0][0]
    else:
       # if reduced file doesn't exist try to make it
       meteor_roi = None
@@ -1945,10 +2087,6 @@ def refit_meteor(meteor_file, con, cur, json_conf, mcp = None, last_best_dict = 
       if os.path.exists(red_json_file):
          mjr = load_json_file(red_json_file)
          meteor_roi = mfd_roi(mjr['meteor_frame_data'])
-
-
-
-
 
    # load meteor json file
    if os.path.exists(json_file):
@@ -1961,8 +2099,10 @@ def refit_meteor(meteor_file, con, cur, json_conf, mcp = None, last_best_dict = 
       try:
          mj = check_for_nan(json_file, mj)
       except:
+         # meteor file is corrupt or empty re-run the reduce process on it
          os.system("rm " + json_file)
          os.system("./Process.py fireball " + meteor_file) 
+         mj = load_json_file(json_file)
 
       if "hd_trim" in mj:
          if os.path.exists(mj['hd_trim']) is True:
@@ -1973,22 +2113,27 @@ def refit_meteor(meteor_file, con, cur, json_conf, mcp = None, last_best_dict = 
             hd_frames = sd_frames
          else:
             print("ERROR NO VIDEO FRAMES!", sd_vid)
+            input("ABORT")
             return()
       elif os.path.exists(sd_vid) is True:
          sd_frames = load_frames_simple(sd_vid)
          hd_frames = sd_frames
       else:
          print("ERROR NO VIDEO FRAMES!", sd_vid)
+         input("ABORT")
          return()
 
    # check mj against mcp
    if mcp is not None:
+      if "cp" not in mj:
+         mj['cp'] = mcp 
+         mj['cp'] = update_center_radec(meteor_file,mcp,json_conf)
       if mj['cp']['x_poly'][0] != mcp['x_poly'][0]:
-         print("UPDATE CP WITH MCP!")
          mj['cp']['x_poly'] = mcp['x_poly']
          mj['cp']['y_poly'] = mcp['y_poly']
          mj['cp']['x_poly_fwd'] = mcp['x_poly_fwd']
          mj['cp']['y_poly_fwd'] = mcp['y_poly_fwd']
+
 
    frames = hd_frames
    if "refit" in mj:
@@ -2002,11 +2147,53 @@ def refit_meteor(meteor_file, con, cur, json_conf, mcp = None, last_best_dict = 
    median_frame = cv2.convertScaleAbs(np.median(np.array(hd_frames[0:10]), axis=0))
    median_frame = cv2.resize(median_frame, (1920,1080))
 
+   # subtract mask from med frame
+   median_frame = subtract_mask(median_frame, station_id, cam_id)
+   extra_text = "Median Frame"
+   print("E:", extra_text, median_frame.shape, median_frame[0,0] )
+   median_frame   = draw_star_image(median_frame.copy(), [],mj['cp'], json_conf, extra_text) 
+   # load meteor image
    if os.path.exists(stack_file) is True:
       meteor_stack_img = cv2.imread(stack_file)
       meteor_stack_img = cv2.resize(meteor_stack_img,(1920, 1080))
    else:
-      stack_img = None
+      meteor_stack_img = None
+   if start_datetime is None:
+      start_datetime = f_date_str
+   extra_text = "Meteor Stack " + start_datetime 
+   meteor_stack_img = draw_star_image(meteor_stack_img.copy(), [],mj['cp'], json_conf, extra_text) 
+
+   #if SHOW == 1: 
+   #   cv2.imshow('pepe', median_frame)
+   #   cv2.waitKey(30)
+   logo_x = 1550 
+   logo_y = 950 
+   if MOVIE_LAST_FRAME is not None:
+      pref = "FF" 
+      start_count = 0
+      try:
+         extra = slide_left(MOVIE_LAST_FRAME, median_frame, pref, start_count)
+         print(len(extra))
+      except:
+         extra = []
+      
+      # Last sequence / transition slide left frames
+      for eframe in extra:
+         eframe = RF.watermark_image(eframe, RF.logo_320, logo_x,logo_y, .33, make_int=True)
+         save_movie_frame(eframe, MOVIE_FRAME_NUMBER, MOVIE_FRAMES_TEMP_FOLDER)
+         MOVIE_FRAME_NUMBER += 1 
+         if SHOW == 1:
+            cv2.imshow('pepe', eframe)
+            cv2.waitKey(30)
+
+
+
+   if SAVE_MOVIE is True:
+      print("MOVIE_FRAME_NUMBER:", MOVIE_FRAME_NUMBER)
+      MOVIE_FRAME_NUMBER += 1
+      meteor_stack_img = RF.watermark_image(meteor_stack_img, RF.logo_320, logo_x,logo_y, .33, make_int=True)
+      save_movie_frame(meteor_stack_img, MOVIE_FRAME_NUMBER, MOVIE_FRAMES_TEMP_FOLDER, 10)
+
 
    stack_img = median_frame
 
@@ -2022,6 +2209,7 @@ def refit_meteor(meteor_file, con, cur, json_conf, mcp = None, last_best_dict = 
          cp = default_cp #get_default_cal_for_file(cam_id, meteor_file, None, con, cur, json_conf)
          if cp is None:
             print("CAN'T REFIT!")
+            input("DEFAULT CP IS NONE")
             return(None) 
          mj['cp'] = cp
 
@@ -2033,6 +2221,8 @@ def refit_meteor(meteor_file, con, cur, json_conf, mcp = None, last_best_dict = 
 
       # try to find a better cal if the res is high 
       # but only if there are enough stars
+      if "total_res_px" not in mj['cp']:
+         mj['cp']['total_res_px'] = 999
       if mj['cp']['total_res_px'] > 4 and len(star_points) > 3:
          mj['cp'] = test_cals (meteor_file, mj['cp'], json_conf, mcp, meteor_stack_img, before_files, after_files, con, cur)
 
@@ -2046,6 +2236,7 @@ def refit_meteor(meteor_file, con, cur, json_conf, mcp = None, last_best_dict = 
       if mj['cp']['total_res_px'] > 15:
          # res is too high, use the default
          if default_cp is None:
+            input("DEFAULT CP IS NONE")
             return()
          mj['cp'] = default_cp #get_default_cal_for_file(cam_id, meteor_file, None, con, cur, json_conf)
          if "total_res_px" in mj['cp']: 
@@ -2056,6 +2247,7 @@ def refit_meteor(meteor_file, con, cur, json_conf, mcp = None, last_best_dict = 
       orig_res = mj['cp']['total_res_px']
    except:
       print("CP IS WACKED", meteor_file, mj['cp'])
+      input("CP IS BROKEN")
       return()
 
 
@@ -2072,8 +2264,24 @@ def refit_meteor(meteor_file, con, cur, json_conf, mcp = None, last_best_dict = 
 
    show_frame = median_frame.copy()
 
+
+   if SAVE_MOVIE is True:
+      print("MOVIE_FRAME_NUMBER:", MOVIE_FRAME_NUMBER)
+      MOVIE_FRAME_NUMBER += 1
+
+      show_frame = RF.watermark_image(show_frame, RF.logo_320, logo_x,logo_y, .33, make_int=True)
+      save_movie_frame(show_frame, MOVIE_FRAME_NUMBER, MOVIE_FRAMES_TEMP_FOLDER, 5)
+      for star in mj['cp']['user_stars']:
+         x,y,i = star
+         cv2.circle(show_frame, (int(x),int(y)), 15, (128,255,128),1)
+         save_movie_frame(show_frame, MOVIE_FRAME_NUMBER, MOVIE_FRAMES_TEMP_FOLDER)
+         MOVIE_FRAME_NUMBER += 1
+      save_movie_frame(show_frame, MOVIE_FRAME_NUMBER, MOVIE_FRAMES_TEMP_FOLDER, 5)
+
    if SHOW == 1:
       # frame with no markings just stars 
+      show_frame = median_frame.copy()
+      show_frame = RF.watermark_image(show_frame, RF.logo_320, logo_x,logo_y, .33, make_int=True)
       cv2.imshow('pepe', show_frame)
       cv2.waitKey(30)
       for star in mj['cp']['user_stars']:
@@ -2101,11 +2309,11 @@ def refit_meteor(meteor_file, con, cur, json_conf, mcp = None, last_best_dict = 
       print("*************************")
       print("********************")
       mj['cp'] = best_cal
-
-
-
-
-   #star_img = draw_star_image(median_frame.copy(), mj['cp']['cat_image_stars'],mj['cp'], json_conf, extra_text) 
+      save_json_file(json_file, mj)      
+      print("Using best cal")
+      #return(mj['cp'])
+      extra_text = "Not enough stars to refit"
+      star_img = draw_star_image(median_frame.copy(), [],mj['cp'], json_conf, extra_text) 
 
    # ADD MORE STARS
    if meteor_stack_img is not None and mj['cp'] is not None:
@@ -2118,6 +2326,12 @@ def refit_meteor(meteor_file, con, cur, json_conf, mcp = None, last_best_dict = 
    if meteor_stack_img is not None and mj['cp'] is not None:
       star_img = draw_star_image(meteor_stack_img.copy(), mj['cp']['cat_image_stars'],mj['cp'], json_conf, extra_text) 
       cv2.imwrite(fit_img_file, star_img, [int(cv2.IMWRITE_JPEG_QUALITY), 70])
+
+   if SAVE_MOVIE is True:
+      print("MOVIE_FRAME_NUMBER:", MOVIE_FRAME_NUMBER)
+      MOVIE_FRAME_NUMBER += 1
+      show_frame = RF.watermark_image(meteor_stack_img, RF.logo_320, logo_x,logo_y, .33, make_int=True)
+      save_movie_frame(meteor_stack_img, MOVIE_FRAME_NUMBER, MOVIE_FRAMES_TEMP_FOLDER, 15, 10)
    if SHOW == 1:
       if meteor_stack_img is not None:
          cv2.imshow('pepe', meteor_stack_img)
@@ -2129,6 +2343,13 @@ def refit_meteor(meteor_file, con, cur, json_conf, mcp = None, last_best_dict = 
       print("CAT STARS AFTER RECENTER", len(mj['cp']['cat_image_stars']))
 
       cv2.imwrite(fit_img_file, star_img, [int(cv2.IMWRITE_JPEG_QUALITY), 70])
+
+   if SAVE_MOVIE is True:
+      print("MOVIE_FRAME_NUMBER:", MOVIE_FRAME_NUMBER)
+      MOVIE_FRAME_NUMBER += 1
+      star_img = RF.watermark_image(star_img, RF.logo_320, logo_x,logo_y, .33, make_int=True)
+      save_movie_frame(star_img, MOVIE_FRAME_NUMBER, MOVIE_FRAMES_TEMP_FOLDER, 10)
+
    if SHOW == 1 and meteor_stack_img is not None:
       cv2.imshow('pepe', star_img)
       cv2.waitKey(30)
@@ -2147,14 +2368,37 @@ def refit_meteor(meteor_file, con, cur, json_conf, mcp = None, last_best_dict = 
 
    # BY HERE ALL CALIB IS GOOD BUT WE SHOULD CONFIRM THE POINTS ARE PERFECT AND THE ROI ID IS CORRECT WITH AI.
    if len(frames) > 0:
-      star_img = draw_star_image(frames[0].copy(), mj['cp']['cat_image_stars'],mj['cp'], json_conf, extra_text) 
+      print("mj", mj['cp'])
+      if mj['cp'] is not None:
+         star_img = draw_star_image(frames[0].copy(), mj['cp']['cat_image_stars'],mj['cp'], json_conf, extra_text) 
+      else:
+         star_img = None
+         star_img = frames[0]
    else:
       star_img = None
+      if len(frames) > 0:
+         star_img = frames[0]
+      else:
+         star_img = meteor_stack_img
+
+
+   # save the first frame of the movie?
+   star_img = cv2.resize(star_img, (1920,1080))
+   if SAVE_MOVIE is True:
+      if len(frames) > 0:
+         ff = cv2.resize(frames[0], (1920,1080))
+      else:
+         ff = star_img 
+      blend_img = cv2.addWeighted(ff, .5, star_img, .5,0)
+      print("MOVIE_FRAME_NUMBER:", MOVIE_FRAME_NUMBER)
+      MOVIE_FRAME_NUMBER += 1
+      blend_img = RF.watermark_image(blend_img, RF.logo_320, logo_x,logo_y, .33, make_int=True)
+      save_movie_frame(blend_img, MOVIE_FRAME_NUMBER, MOVIE_FRAMES_TEMP_FOLDER, 10)
 
    for frame in frames:
       frame = cv2.resize(frame, (1920,1080))
-      star_img = cv2.resize(star_img, (1920,1080))
       blend_img = cv2.addWeighted(frame, .5, star_img, .5,0)
+      blend_img = RF.watermark_image(blend_img, RF.logo_320, logo_x,logo_y, .33, make_int=True)
 
       if meteor_roi is not None:
          x1,y1,x2,y2 = meteor_roi
@@ -2162,10 +2406,21 @@ def refit_meteor(meteor_file, con, cur, json_conf, mcp = None, last_best_dict = 
          blend_img[y1:y2,x1:x2] = frame[y1:y2,x1:x2]
          cv2.rectangle(blend_img, (int(x1), int(y1)), (int(x2) , int(y2) ), color, 2)
 
+      if SAVE_MOVIE is True:
+         print("MOVIE_FRAME_NUMBER:", MOVIE_FRAME_NUMBER)
+         MOVIE_FRAME_NUMBER += 1
+         save_movie_frame(blend_img, MOVIE_FRAME_NUMBER, MOVIE_FRAMES_TEMP_FOLDER)
       if SHOW == 1:
          cv2.imshow('pepe', blend_img)
          cv2.waitKey(30)
 
+   blend_img = cv2.addWeighted(meteor_stack_img, .5, star_img, .5,0)
+   if SAVE_MOVIE is True:
+      blend_img = RF.watermark_image(blend_img, RF.logo_320, logo_x,logo_y, .33, make_int=True)
+      save_movie_frame(blend_img, MOVIE_FRAME_NUMBER, MOVIE_FRAMES_TEMP_FOLDER, 15, 10)
+   if SHOW == 1:
+      cv2.imshow('pepe', blend_img)
+      cv2.waitKey(30)
    #if mjr is not None:
    #   if "meteor_frame_data" in mjr:
    #      mfd = perfect_meteor(json_file, sd_frames, mjr['meteor_frame_data'], meteor_roi)
@@ -2174,6 +2429,10 @@ def refit_meteor(meteor_file, con, cur, json_conf, mcp = None, last_best_dict = 
          mjr = update_mfd(meteor_file, mjr, mj['cp'])
          print("UPDATED RED DATA")
          cp = mj['cp']
+         if cp is None:
+            cp = mcp
+            cp = update_center_radec(meteor_file,cp,json_conf)
+
          if "x_poly" in cp:
             if isinstance(cp['x_poly'], list) is not True:
                cp['x_poly'] = cp['x_poly'].tolist()
@@ -2201,13 +2460,14 @@ def refit_meteor(meteor_file, con, cur, json_conf, mcp = None, last_best_dict = 
       hd_stack_file = None
    point_str = ""
    if "cp" in mj:
-      if "user_stars" in mj['cp']:
-         for row in mj['cp']['user_stars']:
-            if len(row) == 3:
-               x,y,i = row
-            if len(row) == 2:
-               x,y = row
-            point_str += str(x) + "," + str(y) + "|"
+      if mj['cp'] is not None:
+         if "user_stars" in mj['cp']:
+            for row in mj['cp']['user_stars']:
+               if len(row) == 3:
+                  x,y,i = row
+               if len(row) == 2:
+                  x,y = row
+               point_str += str(x) + "," + str(y) + "|"
 
 
    # cp = get_default_cal_for_file(meteor_file, median_frame.copy(), con, cur, json_conf)
@@ -2222,7 +2482,6 @@ def refit_meteor(meteor_file, con, cur, json_conf, mcp = None, last_best_dict = 
       mjf = video_file.replace(".mp4", ".json")
       save_json_file(mjf, mj)
       print(video_file)
-      input("WHAT NOW" )
       #return(mj)
 
    print(video_file, mj.keys())
@@ -2239,8 +2498,29 @@ def refit_meteor(meteor_file, con, cur, json_conf, mcp = None, last_best_dict = 
 
    return(mj['cp'])
 
+def subtract_mask(cal_img, station_id, cam_id):
+
+   mask_file = "/mnt/ams2/meteor_archive/{}/CAL/MASKS/{}_mask.png".format(station_id, cam_id)
+   if os.path.exists(mask_file) is True:
+      mask = cv2.imread(mask_file)
+      mask = cv2.resize(mask, (1920,1080))
+   else:
+      size = len(clean_cal_img.shape)
+      mask = np.zeros((1080,1920,size),dtype=np.uint8)
+
+   #print(clean_cal_img.shape, mask.shape)
+   print(cal_img)
+   if len(cal_img.shape) == mask.shape:
+      clean_cal_img = cv2.subtract(cal_img, mask)
+   else:
+      clean_cal_img = cal_img
+   return(clean_cal_img)
 
 def add_more_stars(cal_file, cp, star_img, median_frame, json_conf) :
+   logo_x = 1550 
+   logo_y = 950 
+
+   global MOVIE_FRAME_NUMBER
    cat_stars, short_bright_stars, cat_image = get_catalog_stars(cp)
    med_frame_copy = median_frame.copy()
    star_objs = []
@@ -2267,9 +2547,11 @@ def add_more_stars(cal_file, cp, star_img, median_frame, json_conf) :
       #   cv2.rectangle(simg, (rx1,ry1), (rx2,ry2) , [255,175,212], 1)
       #   cv2.imshow("pepe", simg)
       #   cv2.waitKey(30)
+      res_px = cp['total_res_px']
+      if res_px < 3:
+         res_px = 3 
 
-
-      if star_obj['valid_star'] is True and star_obj['res_px'] < (cp['total_res_px'] * 5):
+      if star_obj['valid_star'] is True and star_obj['res_px'] < (res_px * 5):
          if "res_px" in star_obj:
             desc = str(round(star_obj['res_px'],2)) + " res px" 
          else:
@@ -2295,13 +2577,22 @@ def add_more_stars(cal_file, cp, star_img, median_frame, json_conf) :
 
          cat_image_stars.append((star_obj['name'],star_obj['mag'],star_obj['ra'],star_obj['dec'],img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,star_obj['cat_x'],star_obj['cat_y'],star_obj['star_x'],star_obj['star_y'],star_obj['res_px'],star_obj['star_flux']))
          star_points.append((star_obj['star_x'],star_obj['star_y'],star_obj['star_flux']))
-      #else:
-      #   if SHOW == 1:
-      #         cv2.rectangle(simg, (rx1,ry1), (rx2,ry2) , [0,0,255], 1)
-      #         cv2.imshow("pepe", simg)
-      #         cv2.waitKey(30)
+      else:
+         if SHOW == 1:
+               print("INVALID:", res_px * 5, star_obj['valid_star'], star_obj['res_px'] , "PX" , star_obj['reject_reason'])
+               cv2.rectangle(simg, (rx1,ry1), (rx2,ry2) , [0,0,255], 1)
+               #cv2.imshow("pepe", simg)
+               #cv2.waitKey(0)
 
    print("ADD MORE STARS:", len(cat_image_stars))
+
+   if SAVE_MOVIE is True:
+      print("MOVIE_FRAME_NUMBER:", MOVIE_FRAME_NUMBER)
+      MOVIE_FRAME_NUMBER += 1
+
+      all_img = RF.watermark_image(all_img, RF.logo_320, logo_x,logo_y, .33, make_int=True)
+      save_movie_frame(all_img, MOVIE_FRAME_NUMBER, MOVIE_FRAMES_TEMP_FOLDER, 10, 10)
+
    if SHOW == 1:
       cv2.imshow("pepe", all_img)
       cv2.waitKey(30)
@@ -6280,6 +6571,7 @@ def apply_calib (cal_file, calfiles_data, json_conf, mcp, last_cal_params=None, 
 
 
       cal_params = add_more_stars(cal_fn, cal_params, oimg, oimg, json_conf)
+
       
       # if 0 stars we have to abort
       if "cat_image_stars" not in cal_params:
@@ -6367,7 +6659,6 @@ def apply_calib (cal_file, calfiles_data, json_conf, mcp, last_cal_params=None, 
       # revert to WCS
       if cal_params['total_res_px'] > 8:
          rev_cal_params = revert_to_wcs(cal_fn)
-         #input("REVERTING TO WCS PARAMS!")
       else:
          rev_cal_params = None
 
@@ -9385,6 +9676,7 @@ def fast_lens(cam_id, con, cur, json_conf,limit=5, cal_fns=None):
       cal_params['cat_image_stars'], bad_stars = remove_mask_stars(cal_params['cat_image_stars'], cal_img)
       print("CAT STARS 3:", len(cal_params['cat_image_stars']))
 
+      cal_params = add_more_stars(cal_fn, cal_params, cal_img, cal_img, json_conf)
 
       cal_params, xxx_cat_image_stars = recenter_fov(cal_fn, cal_params, cal_img.copy(),  stars, json_conf, "", None, cal_img, con, cur)
 
@@ -10973,6 +11265,57 @@ def prune(cam_id, con, cur, json_conf):
 
 if __name__ == "__main__":
 
+   try:
+      import PySimpleGUI as sg
+   except:
+      print("Missing lib:")
+      print("sudo python3 -m pip install PySimpleGUI")
+   import datetime
+   from PIL import ImageFont, ImageDraw, Image, ImageChops
+   import imutils
+   import time
+   import json
+   import numpy as np
+   import glob
+   import cv2
+   import os, sys, select
+   import requests
+   from photutils import CircularAperture, CircularAnnulus
+   from photutils.aperture import aperture_photometry
+   import scipy.optimize
+   from PIL import ImageFont, ImageDraw, Image, ImageChops
+   import lib.brightstardata as bsd
+   from lib.PipeUtil import load_json_file, save_json_file,angularSeparation, calc_dist, convert_filename_to_date_cam , check_running , get_file_info, collinear, mfd_roi, load_mask_imgs
+   from lib.PipeAutoCal import distort_xy, insert_calib, minimize_poly_multi_star, view_calib, cat_star_report , update_center_radec, XYtoRADec, draw_star_image, make_lens_model, make_az_grid, make_cal_summary, quality_stars, make_cal_plots, find_stars_with_grid, optimize_matchs, eval_cal_res, radec_to_azel, make_plate_image, make_cal_plots, make_cal_summary, custom_fit_meteor
+   from FlaskLib.api_funcs import show_cat_stars 
+   from lib.PipeTrans import slide_left
+
+
+   import sqlite3 
+   from lib.DEFAULTS import *
+   from lib.PipeVideo import load_frames_simple
+   from Classes.MovieMaker import MovieMaker 
+   from Classes.Stations import Stations 
+   from Classes.RenderFrames import RenderFrames
+   from Classes.VideoEffects import VideoEffects
+   from prettytable import PrettyTable as pt
+
+
+
+   tries = 0
+   logo_x = 1550 
+   logo_y = 950 
+
+   RF = RenderFrames()
+   VE = VideoEffects()
+
+   MOVIE_LAST_FRAME = None 
+   MOVIE_FRAME_NUMBER = 0
+   MOVIE_FRAMES_TEMP_FOLDER = "/home/ams/REFIT_METEOR_FRAMES_TEMP/"
+   if sys.argv[1] == "refit_meteor_day" : 
+      SAVE_MOVIE = True
+   else:
+      SAVE_MOVIE = False 
 
    py_running = check_running("python")
    print("Python processes running now:", py_running)
@@ -11324,6 +11667,8 @@ if __name__ == "__main__":
                print("Did already", cam_id, elp , "days ago")
                # do max of 1x per 5 days 
                if elp < 5:
+                  print("Skip -- we recalled this cam within the last 5 days")
+                  time.sleep(5)
                   continue
             else:
                cal_status_report(cam_id, con, cur, json_conf)
@@ -11333,6 +11678,7 @@ if __name__ == "__main__":
             lens_model(cam_id, con, cur, json_conf, None,force)
             batch_apply(cam_id, con, cur, json_conf, None, True)
             save_json_file(recal_history_file, recal_hist)
+      save_json_file(recal_history_file, recal_hist)
       os.system("rm pause-jobs.json")
 
    if cmd == "perfect_cal" or cmd == "perfect":

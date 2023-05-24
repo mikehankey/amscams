@@ -2,6 +2,7 @@
 Autocal functions
 
 """
+import imutils
 import requests
 import simplejson as json
 import time
@@ -16,7 +17,8 @@ import scipy.optimize
 import math
 import cv2
 import numpy as np
-from lib.PipeUtil import bound_cnt, cnt_max_px, cfe, load_json_file, save_json_file, convert_filename_to_date_cam, angularSeparation, calc_dist, date_to_jd, get_masks , find_angle, collinear, get_trim_num, day_or_night, check_running, get_file_info, do_photo
+from lib.PipeUtil import bound_cnt, cnt_max_px, cfe, load_json_file, save_json_file, convert_filename_to_date_cam, angularSeparation, calc_dist, date_to_jd, get_masks , find_angle, collinear, get_trim_num, day_or_night, check_running, get_file_info, do_photo, watermark_image
+
 from lib.PipeImage import mask_frame, quick_video_stack
 from lib.DEFAULTS import *
 import os
@@ -27,6 +29,7 @@ from datetime import datetime
 import datetime as dt
 import glob
 from PIL import ImageFont, ImageDraw, Image, ImageChops
+
 
 if os.path.exists("/usr/local/astrometry/bin/solve-field") is True:
    AST_BIN = "/usr/local/astrometry/bin/"
@@ -9965,7 +9968,17 @@ def reduce_fit(this_poly,field, cal_params, cal_params_file, fit_img, json_conf,
    return(avg_res)
 
 def draw_star_image(img, cat_image_stars,cp=None,json_conf=None,extra_text=None) :
+   logo_x = 1550
+   logo_y = 950
+   logo_src = cv2.imread("ALLSKY7_LOGO_BLACK.png")
+   logo_320 = imutils.resize(logo_src, width=320)
    img = cv2.resize(img, (1920,1080))
+   try:
+      img = watermark_image(img, logo_320, logo_x,logo_y, .33, make_int=True)
+   except:
+      print("WATER MARK FAIL!")
+      print("IMG:", img.shape, img[0,0])
+
    photo_credit = ""
    station_id = ""
    name = ""
@@ -10047,8 +10060,8 @@ def draw_star_image(img, cat_image_stars,cp=None,json_conf=None,extra_text=None)
          text4 =  str(cp['pixscale'])[0:7]
          draw.text((800, 20), str(extra_text), font = font, fill="white")
 
-         text5 =  str(cp['x_poly'][0])
-         draw.text((300, 1050), str(text5), font = font, fill="white")
+         #text5 =  str(cp['x_poly'][0])
+         #draw.text((300, 1050), str(text5), font = font, fill="white")
 
 
          draw.text((20, 950), str(ltext0), font = font, fill="white")

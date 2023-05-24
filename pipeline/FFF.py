@@ -61,7 +61,7 @@ if cmd == "slow_stack":
    slow_stack_video(video_file, out_dir, stack_rate)
 if cmd == "imgs_to_vid":
    #./FFF.py imgs_to_vid IN_DIR WILD_STR OUT_FILE FPS CRF 
-   #./FFF.py ims_to_vid /images/ mystring /vids/out.mp4 25 28
+   #./FFF.py imgs_to_vid /images/ mystring /vids/out.mp4 25 28
    in_dir = sys.argv[2]
    wild = sys.argv[3]
    out_file = sys.argv[4]

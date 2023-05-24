@@ -82,9 +82,11 @@ def trans_test(clip1, clip2):
    slide_left(cf1[-2], cf2[0], file_pref1, last_i)
 
 def slide_left(pic1, pic2, pref, start_count):
-   trans_time = 15
+   trans_time = 10 
+   trans_frames = []
 
    print(pic1.shape, pic2.shape)
+   os.system("rm tmp_vids/*")
  
    ih, iw = pic1.shape[:2]
 
@@ -100,16 +102,18 @@ def slide_left(pic1, pic2, pref, start_count):
       cv2.line(new_img, (nx,0), (nx,720), (100,100,100), 1)
       #cv2.imshow('pepe', old_img) 
       #cv2.waitKey(0)
-      cv2.imshow('pepe', new_img) 
-      cv2.waitKey(50)
+      #cv2.imshow('pepe', new_img) 
+      #cv2.waitKey(50)
       of = pref + '{:03d}'.format(start_count + i) + ".jpg"
       cv2.imwrite("tmp_vids/" + of, new_img)
+      trans_frames.append(new_img)
    #i += 1
    #of = pref + '{:03d}'.format(i) + ".jpg"
    #cv2.imwrite("tmp_vids/" + of, pic2)
    #cv2.imshow('pepe', pic2) 
    #cv2.waitKey(180)
-   vid_from_imgs("tmp_vids/", "tmp_vids/out.mp4")
+   #vid_from_imgs("tmp_vids/", "tmp_vids/out.mp4")
+   return(trans_frames)
 
 def vid_from_imgs(TMP_DIR, outfile):
    cmd = """/usr/bin/ffmpeg -y -framerate 25 -pattern_type glob -i '""" + TMP_DIR + """*.jpg' \

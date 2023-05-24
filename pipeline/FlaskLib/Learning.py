@@ -173,6 +173,10 @@ def make_sample_buttons(sample):
          <a style="float: left; width:40px; height:40px" onclick="move_ai_sample('{:s}', '{:s}')" class="col btn btn-secondary btn-sm" title="{:s}" data-meteor="{:s}"><i class="{:s}"></i></a>
       """.format(labels[i], sample, labels[i], sample, icons[i])
    t_buttons += "</div>"
+   t_buttons += "<div>"
+   t_buttons += """<a style="float: left; width:40px; height:40px" onclick="show_sample_info('{:s}', '{:s}')" class="col btn btn-secondary btn-sm" title="{:s}" data-meteor="{:s}"><i class="{:s}"></i></a>""".format("info", sample, "info", sample, "fa-solid fa-circle-info")
+   t_buttons += "</div>"
+
    return(t_buttons)
 
 def sample_thumb(sample):
@@ -2822,6 +2826,10 @@ def ui_javascript():
                     //alert("ERR with confirm meteor")
                  },
               })
+         }
+
+         function show_sample_info(label, sample_id) {
+            alert(sample_id)
          }
 
          function move_ai_sample(label, sample_id) {

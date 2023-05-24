@@ -1,55 +1,62 @@
+import sys
 import sqlite3
 import subprocess
 import PySimpleGUI as sg
-from Classes.MovieMaker import MovieMaker
-from Classes.RenderFrames import RenderFrames
-
-from prettytable import PrettyTable as pt
-from calendar import monthrange
 import math
 import boto3
-from boto3.dynamodb.conditions import Key
-from RMS.Math import angularSeparation
-from lib.PipeAutoCal import XYtoRADec , find_stars_with_grid
-from recal import get_catalog_stars, get_star_points, get_xy_for_ra_dec, minimize_fov, get_image_stars_with_catalog
-from lib.PipeAutoCal import update_center_radec
-from lib.Map import make_map,geo_intersec_point 
-from lib.PipeEvent import get_trim_num
 import matplotlib
 import matplotlib.pyplot as plt
-from recal import do_photo
-from lib.PipeDetect import get_contours_in_image, find_object, analyze_object
-from lib.kmlcolors import *
-from lib.PipeImage import stack_frames
-from PIL import ImageFont, ImageDraw, Image, ImageChops
 import simplekml
 import time
 import requests
 import boto3
 import redis
-from solveWMPL import convert_dy_obs, WMPL_solve, make_event_json, event_report
 import numpy as np
 import datetime
 import simplejson as json
 import os, select, sys
 import shutil
 import platform
-from lib.PipeUtil import load_json_file, save_json_file, get_trim_num, convert_filename_to_date_cam, starttime_from_file, dist_between_two_points, get_file_info, calc_dist, check_running, mfd_roi, bound_cnt, focus_area
-from lib.intersecting_planes import intersecting_planes
-from DynaDB import search_events, insert_meteor_event, delete_event, get_obs, update_dyna_table, delete_obs
+
+#from Classes.MovieMaker import MovieMaker
+#from Classes.RenderFrames import RenderFrames
+#from lib.PipeAutoCal import XYtoRADec , find_stars_with_grid
+
+from prettytable import PrettyTable as pt
+from calendar import monthrange
+from boto3.dynamodb.conditions import Key
+from RMS.Math import angularSeparation
+from PIL import ImageFont, ImageDraw, Image, ImageChops
 from ransac_lib import ransac_outliers
 from sklearn.cluster import DBSCAN
 from sklearn import metrics
 from sklearn.datasets import make_blobs
 from sklearn.preprocessing import StandardScaler
 from multiprocessing import Process
+from geopy.geocoders import Nominatim
+
+
+
+
+from recal import get_catalog_stars, get_star_points, get_xy_for_ra_dec, minimize_fov, get_image_stars_with_catalog, do_photo
+from lib.PipeAutoCal import update_center_radec
+from lib.Map import make_map,geo_intersec_point 
+from lib.PipeEvent import get_trim_num
+from lib.PipeDetect import get_contours_in_image, find_object, analyze_object
+from lib.kmlcolors import *
+from lib.PipeImage import stack_frames
+from solveWMPL import convert_dy_obs, WMPL_solve, make_event_json, event_report
+from lib.PipeUtil import load_json_file, save_json_file, get_trim_num, convert_filename_to_date_cam, starttime_from_file, dist_between_two_points, get_file_info, calc_dist, check_running, mfd_roi, bound_cnt, focus_area
+from lib.intersecting_planes import intersecting_planes
+from DynaDB import search_events, insert_meteor_event, delete_event, get_obs, update_dyna_table, delete_obs
+
 import cv2
 from lib.PipeVideo import load_frames_simple
 from Classes.RenderFrames import RenderFrames 
-from geopy.geocoders import Nominatim
 
 class AllSkyNetwork():
    def __init__(self):
+      print("__init__ AllSkyNetwork")
       self.dbdir = "/mnt/f/EVENTS/DBS/"
       self.RF = RenderFrames()
       self.solving_node = "AWSB1"
@@ -156,6 +163,55 @@ class AllSkyNetwork():
          if d['op_status'] == "ACTIVE":
             print (station_id, d['op_status'], d['operator_name'], d['resp'] )
 
+   def station_cal(self):
+      #https://archive.allsky.tv/AMS1/CAL/plots/AMS1_010001_CAL_PLOTS.png
+      # for each station, for each cam check the cal_plot exist and add to html
+      timestamp = datetime.datetime.timestamp(datetime.datetime.now())
+      html = "<h1>Station Calibrations</h1>"
+      self.load_stations_file()
+      print("Building calibrations...")
+      for data in self.stations:
+         print(data['station_id'])
+         keys = list(data.keys())
+         if "operator_name" in data:
+            op_name = data['operator_name']
+         else:
+            op_name = "unknown"
+         if "op_status" in data:
+            op_status = data['op_status']
+         else:
+            op_status = "unknown"
+         if op_status != "ACTIVE":
+            continue
+         if "cameras" in data:
+            html += ("<h2>{:s}</h2>".format(data['station_id']))
+            for cam_data in data['cameras']:
+               if "cam_id" in cam_data:
+                  # format 1 - preferred 
+                  cams_id = cam_data['cam_id']
+                  print("\t", cams_id)
+               elif len(str(cam_data)) == 1:
+                  cams_id =  data['cameras'][cam_data]
+                  print("\t", cams_id)
+               #else:
+                  # format 2 - OLD / BAD 
+                  #print("\tNo camera id data")
+                  #print("DATA CAMERAS:", data['cameras'])
+               cal_uri = "/{:s}/CAL/plots/{:s}_{:s}_CAL_PLOTS.png".format(data['station_id'], data['station_id'], cams_id)
+               cal_url = "https://archive.allsky.tv" + cal_uri
+               cal_file = "/mnt/archive.allsky.tv" + cal_uri
+               if os.path.exists(cal_file) is True:
+                  print(data['station_id'], op_name, cal_file, cal_url)
+                  html += "<img src={:s}?{:s}><br>\n".format(cal_url, str(timestamp))
+               else:
+                  print(data['station_id'], cams_id, op_name, "NO CHART!")
+
+
+         #else:
+         #   print("\tNo cameras")
+      fp = open("/mnt/ams2/station_cal.html", "w")
+      fp.write(html)
+      fp.close()
 
    def station_list(self, rcmd=None):
       print("RCMD is:", rcmd)
@@ -296,6 +352,13 @@ class AllSkyNetwork():
       self.sync_log = {}
       stack_imgs = []
       hosts = load_json_file("hosts.json")
+      fp = open("extra_hosts.txt")
+      for line in fp:
+         line = line.replace("\n", "")
+         sid,surl = line.split(",")
+         hosts[sid] = {}
+         hosts[sid]['hostname'] = surl
+         hosts[sid]['vpn_ip'] = ""
 
       # convert id to date
       event_day = self.event_id_to_date(event_id)
@@ -327,7 +390,10 @@ class AllSkyNetwork():
             vpn_ip = hosts[station_id]['vpn_ip'] 
             print(station_id, host, vpn_ip, obs_id)
             if host != "":
-               link = "https://" + host + "/meteor/" + station_id + "/" + vid_file[0:10] + "/" + vid_file + ".mp4/"
+               if "http" not in host:
+                  link = "https://" + host + "/meteor/" + station_id + "/" + vid_file[0:10] + "/" + vid_file + ".mp4/"
+               else:
+                  link = host + "/meteor/" + station_id + "/" + vid_file[0:10] + "/" + vid_file + ".mp4/"
             elif vpn_ip != "":
                link = "https://" + vpn_ip + "/meteor/" + station_id + "/" + vid_file[0:10] + "/" + vid_file + ".mp4/"
          else:
@@ -3505,6 +3571,10 @@ class AllSkyNetwork():
       # purpose here is to make the map file and multi-image review
       # if it is already done we can just return?
       # we should load it and return it though?
+
+
+      self.load_stations_file()
+
       force = True 
 
       event_preview_dir = self.local_evdir + "/PREV/" 
@@ -3548,16 +3618,22 @@ class AllSkyNetwork():
       #else:
 
       if True:
-         event_data, obs_data, map_img, obs_imgs = self.get_event_obs()
-         obs_imgs, marked_imgs, roi_imgs, ai_imgs, obs_data = self.load_obs_images(obs_data) 
+         event_data, obs_data1, map_img, obs_imgs = self.get_event_obs()
+         for row in obs_data1:
+            print("o1", row)
+         obs_imgs, marked_imgs, roi_imgs, ai_imgs, obs_data = self.load_obs_images(obs_data1) 
+         for row in obs_data:
+            print("o2", row)
          temp = event_data_file.split("/")[-1]
          edir = event_data_file.replace(temp, "")
          if os.path.exists(edir) is False:
             print("Make dir ", edir)
             os.makedirs(edir)
+         input("STEP2a")
          save_json_file(event_data_file, event_data)
          save_json_file(obs_data_file, obs_data, True)
          cv2.imwrite(map_img_file, map_img, [cv2.IMWRITE_JPEG_QUALITY, 70])
+      input("STEP2b")
 
       if "2d_status" not in event_data:
          event_data = self.get_2d_status(event_data, obs_data)
@@ -4330,6 +4406,7 @@ class AllSkyNetwork():
       # OBS ARE BEING RELOADED SOMEWHERE ELSE, BUT THE DB IS NOT UPDATED RIGHT
       # FIX THE BUG INSIDE THE SOLVE CALL
       self.ignored_obs = {}
+      self.deleted_obs = {}
       for obs_id in event_data['obs_ids']:
          sql = """
             SELECT event_id, event_minute, station_id, obs_id, fns, times, xs, ys, azs, els, ints, status, ignore 
@@ -4357,6 +4434,47 @@ class AllSkyNetwork():
                self.ignored_obs[obs_id] = (event_id, event_minute, station_id, obs_id, fns, times, xs, ys, azs, els, ints, status, ignore )
             print(self.ignore, obs_id , ignore)
 
+            # CHECK / UPDATE FROM AWS FIRST?
+            sd_vid = obs_id.replace(station_id + "_", "") + ".mp4"
+            dobs = get_obs(station_id, sd_vid)
+            temp_obs = {}
+            dobs['loc'] = [float(self.station_dict[station_id]['lat']), float(self.station_dict[station_id]['lon']), float(self.station_dict[station_id]['alt'])]
+
+            if "aws_status" in dobs:
+               if dobs['aws_status'] is False:
+                  print("OBS WAS DELETED FROM AWS IGNORE IT!", dobs)
+                  print("We should also delete it from the event, from the sqlplus event_obs table, the obs dict and the ALL obs file!")
+                  print("That is a lot of places, so we will make a delete OBS and all references function later.")
+                  print("For now we will just ignore / skip it.")
+                  self.ignored_obs[obs_id] = (event_id, event_minute, station_id, obs_id, fns, times, xs, ys, azs, els, ints, status, ignore )
+                  self.deleted_obs[obs_id] = (event_id, event_minute, station_id, obs_id, fns, times, xs, ys, azs, els, ints, status, ignore )
+                  ignore = True
+                  continue
+               else:
+                  print("DOBS:", dobs.keys())
+                  temp = convert_dy_obs(dobs, temp_obs)
+                  print("TEMP:", temp)
+                  temp_obs = temp[station_id][sd_vid]
+                  print(temp_obs)
+
+
+
+                  xs = temp_obs['xs']
+                  ys = temp_obs['ys']
+                  fns = temp_obs['fns']
+                  times = temp_obs['times']
+                  azs = temp_obs['azs']
+                  els = temp_obs['els']
+                  ints = temp_obs['ints']
+
+                  print("UPDATE OBS WITH AWS DYNA-OBS VALUES")
+                  #status = dobs['status']
+                  #ignore= dobs['status']
+
+
+            input("Waiting")
+
+
             lat,lon,alt = self.station_loc[station_id][:3]
             obs_data[obs_id] = {}
             obs_data[obs_id]['event_id'] = event_data['event_id']
@@ -4367,13 +4485,35 @@ class AllSkyNetwork():
             obs_data[obs_id]['lon'] = lon
             st_pts[station_id] = [lat,lon,station_id.replace("AMS", "")]
 
-            obs_data[obs_id]['fns'] = json.loads(fns)
-            obs_data[obs_id]['times'] = json.loads(times)
-            obs_data[obs_id]['xs'] = json.loads(xs)
-            obs_data[obs_id]['ys'] = json.loads(ys)
-            obs_data[obs_id]['azs'] = json.loads(azs)
-            obs_data[obs_id]['els'] = json.loads(els)
-            obs_data[obs_id]['ints'] = json.loads(ints)
+            if type(fns) == str:
+               obs_data[obs_id]['fns'] = json.loads(fns)
+            else:
+               obs_data[obs_id]['fns'] = fns
+            if type(times) == str:
+               obs_data[obs_id]['times'] = json.loads(times)
+            else:
+               obs_data[obs_id]['times'] = times
+            if type(xs) == str:
+               obs_data[obs_id]['xs'] = json.loads(xs)
+            else:
+               obs_data[obs_id]['xs'] = xs
+            if type(ys) == str:
+               obs_data[obs_id]['ys'] = json.loads(ys)
+            else:
+               obs_data[obs_id]['ys'] = ys
+            if type(azs) == str:
+               obs_data[obs_id]['azs'] = json.loads(azs)
+            else:
+               obs_data[obs_id]['azs'] = azs
+            if type(els) == str:
+               obs_data[obs_id]['els'] = json.loads(els)
+            else:
+               obs_data[obs_id]['els'] = els
+            if type(ints) == str:
+               obs_data[obs_id]['ints'] = json.loads(ints)
+            else:
+               obs_data[obs_id]['ints'] = ints
+
             obs_data[obs_id]['status'] = status 
             obs_data[obs_id]['ignore'] = ignore 
             obs_data[obs_id]['image_file'] =  self.local_evdir + self.event_id + "/" + obs_id + "-stacked.jpg"
@@ -4382,8 +4522,8 @@ class AllSkyNetwork():
             print("FIND END POINT", obs_id, obs_data[obs_id]['azs'][-1])
 
 
-            obs_data[obs_id]['az_start_point'] = self.find_point_from_az_dist(lat,lon,float(json.loads(azs)[0]),650)
-            obs_data[obs_id]['az_end_point'] = self.find_point_from_az_dist(lat,lon,float(json.loads(azs)[-1]),650)
+            obs_data[obs_id]['az_start_point'] = self.find_point_from_az_dist(lat,lon,float(obs_data[obs_id]['azs'][0]),650)
+            obs_data[obs_id]['az_end_point'] = self.find_point_from_az_dist(lat,lon,float(obs_data[obs_id]['azs'][-1]),650)
             if station_id not in st_az_pts:
                st_az_pts[station_id] = []
             st_az_pts[station_id].append(obs_data[obs_id]['az_start_point'])
@@ -9114,7 +9254,10 @@ $(document).ready(function () {
                obs_id = obs_ids[i]
                etime = start_times[i]
 
-               obs_status = all_obs[obs_id]
+               if "obs_id" in all_obs:
+                  obs_status = all_obs[obs_id]
+               else:
+                  obs_status = "DELETED"
                pending_html += self.meteor_cell_html(obs_id, etime, obs_status)
                pending_html += "\n"
 

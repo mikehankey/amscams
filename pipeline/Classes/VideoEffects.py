@@ -2,6 +2,7 @@ from PIL import ImageFont, ImageDraw, Image, ImageChops
 import numpy as np
 import cv2
 from Classes.RenderFrames import RenderFrames
+from lib.DEFAULTS import * 
 
 class VideoEffects():
    def __init__(self):
@@ -47,7 +48,7 @@ class VideoEffects():
       if os.path.exists(self.outdir) is False:
          os.makedirs(self.outdir)
 
-   def type_text(self, phrases=["Well, hello there..."], base_frame = None, duration=1, font_face=None, font_size=20, font_color="white", pos_x=None, pos_y=None, x_space=20 , phrase_pause=20):
+   def type_text(self, phrases=["Well, hello there..."], base_frame = None, duration=1, font_face=None, font_size=20, font_color="white", pos_x=None, pos_y=None, x_space=10 , phrase_pause=10):
 
       if base_frame is None:
          base_frame = blank_image = np.zeros((1080,1920,3),dtype=np.uint8)
@@ -75,6 +76,7 @@ class VideoEffects():
       #if pos_x < base_frame.shape[1] / 4:
       #   pos_x = int(base_frame.shape[1] / 4)
 
+      frames = []
       for phrase in phrases:
          image = Image.fromarray(base_frame.copy())
          draw = ImageDraw.Draw(image)    
@@ -88,13 +90,16 @@ class VideoEffects():
                   print(pos_x, pos_y, len(phrase))
                   draw.text((pos_x, pos_y), str(desc), font = font, fill=font_color)
                show_img = cv2.cvtColor(np.asarray(image), cv2.COLOR_RGB2BGR)
-               cv2.imshow("pepe", show_img)
-               cv2.waitKey(30)
-               if pc == len(phrase) -2:
-                  for q in range(0,phrase_pause):
-                     cv2.imshow("pepe", show_img)
-                     cv2.waitKey(30)
+               #if SHOW == 1:
+               #   cv2.imshow("pepe", show_img)
+               #   cv2.waitKey(30)
+               if pc % 2 == 0:
+                  frames.append(show_img)
+               #if pc == len(phrase) -2:
+               #   for q in range(0,phrase_pause):
+               #      cv2.imshow("pepe", show_img)
+               #      cv2.waitKey(30)
             pc += 1
 
-
+      return(frames)
        

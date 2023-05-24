@@ -109,7 +109,10 @@ class RenderFrames():
          y2 = 1080
          if len(images) >= 1:
             #print("IMG SHAPE:", images[0].shape)
-            ui[0:1080,0:1920] = cv2.resize(images[0] , (1920,1080))
+            if len(images[0].shape) == 3:
+               ui[0:1080,0:1920] = cv2.resize(images[0] , (1920,1080))
+            else:
+               print("ERR:", ui.shape, images[0].shape)
          #ui[y1:y2,x1:x2] = logo
          ui = self.watermark_image(ui, logo, x1, y1, .5, text_data)
 
@@ -160,7 +163,7 @@ class RenderFrames():
             cv2.imwrite("tmp_frames/" + fn + ".jpg", 255*wt_frame)
             fc += 1
 
-   def watermark_image(self, background, logo, x=0,y=0, opacity=1,text_data=[]):
+   def watermark_image(self, background, logo, x=0,y=0, opacity=1,text_data=[], make_int=False):
 
       h,w = background.shape[:2]
       orig = background.copy() 
@@ -174,7 +177,6 @@ class RenderFrames():
 
       ah = logo.shape[0]
       aw = logo.shape[1]
-      #print("LOGO:", logo.shape)
       logo_image[y:y+ah, x:x+aw] = logo
       _, mask = cv2.threshold(logo_image, 22, 255, cv2.THRESH_BINARY)
       mask = mask.astype(float)/255
@@ -199,4 +201,9 @@ class RenderFrames():
             cv2.putText(blend, text,  (tx,ty), cv2.FONT_HERSHEY_SIMPLEX, text_size, text_color, text_weight)
          #blend cvtColor(inputMat, outputMat, CV_BGRA2BGR);
          blend = cv2.cvtColor(blend, cv2.COLOR_BGRA2BGR)
+      #blend = blend * 255
+      if make_int is True:
+         blend *= 255
+         blend = blend.astype(np.uint8)
+      #print("WATERMARK BLEND:", type(blend), blend.shape, blend[500,500])
       return(blend)

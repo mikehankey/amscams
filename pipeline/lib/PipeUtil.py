@@ -799,3 +799,49 @@ def get_template(file):
    for line in fp:
       text += line
    return(text)
+
+def watermark_image(background, logo, x=0,y=0, opacity=1,text_data=[], make_int=False):
+
+   h,w = background.shape[:2]
+   orig = background.copy()
+   orig = orig.astype(float)
+   canvas = np.zeros((h,w,3),dtype=np.uint8)
+   mask = np.zeros((h,w,3),dtype=np.uint8)
+   logo_image = np.zeros((h,w,3),dtype=np.uint8)
+
+   background = cv2.resize(background, (w,h))
+   background = background.astype(float)
+
+   ah = logo.shape[0]
+   aw = logo.shape[1]
+   #print("LOGO:", logo.shape)
+   logo_image[y:y+ah, x:x+aw] = logo
+   _, mask = cv2.threshold(logo_image, 22, 255, cv2.THRESH_BINARY)
+   mask = mask.astype(float)/255
+
+   foreground = logo_image
+   alpha = mask
+
+   foreground = foreground.astype(float)
+   foreground = cv2.multiply(alpha, foreground)
+
+   background = cv2.multiply(1.0 - alpha, background)
+   outImage = cv2.add(foreground, background)
+
+   if opacity < 1:
+      #blend = cv2.addWeighted(background/255, .5, outImage/255, 1-opacity, opacity)
+      blend = cv2.addWeighted(orig/255, 1-opacity, outImage/255, opacity, 0)
+   else:
+      blend = outImage/255
+
+   if len(text_data) > 0:
+      for tx,ty,text_size,text_weight,text_color,text in text_data:
+         cv2.putText(blend, text,  (tx,ty), cv2.FONT_HERSHEY_SIMPLEX, text_size, text_color, text_weight)
+      #blend cvtColor(inputMat, outputMat, CV_BGRA2BGR);
+      blend = cv2.cvtColor(blend, cv2.COLOR_BGRA2BGR)
+   #blend = blend * 255
+   if make_int is True:
+      blend *= 255
+      blend = blend.astype(np.uint8)
+   print("WATERMARK BLEND:", type(blend), blend.shape, blend[500,500])
+   return(blend)
