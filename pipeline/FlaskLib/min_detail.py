@@ -126,7 +126,7 @@ def min_detail_main(amsid, day, min_file, label):
    print("HD MIN WILD:", hd + hd_min_wild)
 
    next_minute = f_datetime + datetime.timedelta(minutes=1)
-   next_wild = min_dir + next_minute.strftime("%Y_%m_%d_%H_%M") + "*" + cam + "*.mp4"
+   next_wild = min_dir + next_minute.strftime("%Y_%m_%d_%H_%M") + "*" + cam + ".mp4"
    next_files = glob.glob(next_wild)
    print("NEXT WILD:", next_wild)
    print("NEXT FILES:", next_files)
