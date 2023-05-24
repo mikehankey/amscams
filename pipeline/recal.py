@@ -9,8 +9,9 @@ ASOS = """
         \/        \/       \/        \/        \/ \/
   -- O  B  S  E  R  V  I  N  G   S  O  F  T  W  A  R  E --
 
-    © ALL SKY INC / MIKE HANKEY LLC - ALL RIGHTS RESERVED
+ALL SKY INC IS A UNIT OF MIKE HANKEY LLC - ALL RIGHTS RESERVED
 Use permitted under community license for registered users only
+                     © 2018 - 2023
 """
 
 
