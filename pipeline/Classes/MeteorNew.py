@@ -1111,8 +1111,12 @@ class Meteor():
          self.mj = mj
          self.meteor_scan()
          mj['meteor_scan_meteors'] = self.meteor_scan_meteors
-         vid_w = mj['ffp']['sd'][0] 
-         vid_h = mj['ffp']['sd'][1] 
+         if "ffp" in mj:
+            vid_w = mj['ffp']['sd'][0] 
+            vid_h = mj['ffp']['sd'][1] 
+         else:
+            vid_w = 704
+            vid_h = 576
          red_file = meteor_file.replace(".json", "-reduced.json")
          print("RED", red_file) 
          if "best_meteor" in mj:
