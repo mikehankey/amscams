@@ -55,8 +55,9 @@ def stack_video(video_file):
       if fc % 50 == 0 and fc > 0:
          print(fc)
          dark_stacked_image_cv = np.asarray(dark_stacked_image)
-         cv2.imshow('pepe', dark_stacked_image_cv)
-         cv2.waitKey(30)
+         if SHOW == 1:
+            cv2.imshow('pepe', dark_stacked_image_cv)
+            cv2.waitKey(30)
       if stacked_image is None:
          stacked_image = stack_stack(frame_pil, frame_pil)
          if fc % 10 == 0:
