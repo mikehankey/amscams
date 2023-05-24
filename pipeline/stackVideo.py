@@ -6,7 +6,7 @@ import cv2
 import numpy as np
 from PIL import ImageFont, ImageDraw, Image, ImageChops
 from lib.PipeUtil import load_json_file
-
+from lib.DEFAULTS import *
 
 
 
@@ -16,6 +16,14 @@ def stack_stack( pic1, pic2):
 
       #lblend = cv2.addWeighted(np.asarray(stacked_image), .5, np.asarray(stacked_image2), .5, .3)
       return(stacked_image)
+
+def dark_stack_stack( pic1, pic2):
+      #stacked_image=ImageChops.lighter(pic1,pic2)
+      stacked_image=ImageChops.darker(pic1,pic2)
+
+      #lblend = cv2.addWeighted(np.asarray(stacked_image), .5, np.asarray(stacked_image2), .5, .3)
+      return(stacked_image)
+
 
 
 
@@ -37,20 +45,36 @@ def stack_video(video_file):
    cap = cv2.VideoCapture(video_file)
    stacked_image = None
    frame = True
+   fc = 0
    while frame is not None:
       # grab each frame in video file
       grabbed , frame = cap.read()
       if frame is None:
          break
       frame_pil = Image.fromarray(frame)
-      print(frame.shape)
+      if fc % 50 == 0 and fc > 0:
+         print(fc)
+         dark_stacked_image_cv = np.asarray(dark_stacked_image)
+         cv2.imshow('pepe', dark_stacked_image_cv)
+         cv2.waitKey(30)
       if stacked_image is None:
          stacked_image = stack_stack(frame_pil, frame_pil)
+         if fc % 10 == 0:
+            dark_stacked_image = dark_stack_stack(frame_pil, frame_pil)
       else:
          stacked_image = stack_stack(stacked_image, frame_pil)
+         if fc % 10 == 0:
+            dark_stacked_image = dark_stack_stack(dark_stacked_image, frame_pil)
+      fc += 1
+
    image_file = video_file.replace(".mp4", "-stacked.jpg")
+   dark_image_file = video_file.replace(".mp4", "-dark.jpg")
    stacked_image = np.asarray(stacked_image)
+   dark_stacked_image = np.asarray(dark_stacked_image)
    cv2.imwrite(image_file, stacked_image)
+   cv2.imwrite(dark_image_file, dark_stacked_image)
+
+   print("SAVED:", dark_image_file, image_file)
 
    # Lets re-save the thumns, half stack too!
    thumb_img = cv2.resize(stacked_image, (320, 180))
