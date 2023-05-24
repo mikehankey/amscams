@@ -197,7 +197,7 @@ class AllSkyNetwork():
                   # format 2 - OLD / BAD 
                   #print("\tNo camera id data")
                   #print("DATA CAMERAS:", data['cameras'])
-               cal_uri = "/{:s}/CAL/plots/{:s}_{:s}_CAL_PLOTS.png".format(data['station_id'], data['station_id'], cams_id)
+               cal_uri = "/{:s}/CAL/plots/{:s}_{:s}_CAL_PLOTS.jpg".format(data['station_id'], data['station_id'], cams_id)
                cal_url = "https://archive.allsky.tv" + cal_uri
                cal_file = "/mnt/archive.allsky.tv" + cal_uri
                if os.path.exists(cal_file) is True:

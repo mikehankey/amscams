@@ -1,3 +1,4 @@
+from prettytable import PrettyTable as pt
 import daemon
 import datetime as dt
 from datetime import datetime
@@ -6,6 +7,11 @@ import time
 from Classes.AIAgent import AIAgent
 
 from lib.PipeUtil import check_running, load_json_file, save_json_file
+
+import logging
+logging.basicConfig(filename='AIAgent.log')
+logger = logging.getLogger(__name__)
+logger.setLevel(level=logging.DEBUG)
 
 """
 
@@ -20,6 +26,7 @@ For now, slowly we will take over these batch jobs :
       3) Sync AWS Deletes past days
       4) Past weather
 
+      A "job" object looks like this in the run-jobs.json: 
       {
          "name": "hour_stacks_yesterday",
          "desc": "Make the hour stacks for yesterday.",
@@ -35,39 +42,110 @@ For now, slowly we will take over these batch jobs :
 """
 
 def job_report(run_job_data):
+    tb = pt()
+    tb.field_names = ["Job Name","Type","Exe", "Frequency", "Last Run"] #,"Last Run", "Run In " ]
+    now = datetime.now()
+    now_date_str =  now.strftime("%Y_%m_%d %H:%M:%S")
+
+    logger.debug("DEBUG: Running job report @ " + now_date_str)
+    #logger.warning("WARNING: Running job report.")
+    #logger.info("INFO: Running job report.")
+    #input("YO")
+
     job_intervals = run_job_data['job_intervals']
     job_types = run_job_data['job_types']
     job_list = run_job_data['job_list']
 
     report = {}
+    updated_job_list = []
     for jt in job_types:
        report[jt] = {}
     for row in job_list:
+
+       if "interval" in row:
+          interval = row['interval']
+       else:
+          interval = "HOUR"
+       if "frequency" in row:
+          frequency = row['frequency']
+       else:
+          frequency = 8
+
+
+
+
        if "job_type" in row:
           jt = row['job_type']
        else:
           jt = None
+       if "last_run" in row:
+          last_run = row['last_run']
+       else:
+          # never
+          last_run = "NEVER"
+          row['last_run'] = last_run
+
        jname = row['name']
+       exe = row['exe']
        if jt is not None:
           report[jt] = {}
           report[jt][jname] = {}
-       print(jt, jname)
+       print(jt, jname, exe)
+       tb.add_row([jname,jt,exe,str(frequency) + " " + interval, last_run])
+       updated_job_list.append(row)
+    print(tb)
+
+    run_job_data['job_list'] = updated_job_list
+    return(run_job_data)
     #print(report)   
 
 def ai_task_manager(AIA):
     # this program will loop over all of the "jobs" and things that must be managed
     # it will track the last time something was done and the status of completion 
     # and report back as needed or do things as needed 
+    json_conf = load_json_file("../conf/as6.json")
+    job_index = {}
+    station_job_index = {}
+    run_jobs_station_file = "run_jobs_" + json_conf['site']['ams_id'] +".json"
 
-    run_job_data = load_json_file("run_jobs.json")
-    job_intervals = run_job_data['job_intervals']
-    job_types = run_job_data['job_types']
-    job_list = run_job_data['job_list']
+    # load stock job data 
+    run_jobs_stock_data = load_json_file("run_jobs.json")
+    for row in run_jobs_stock_data['job_list']:
+       print("ROW", row)
+       name = row['name']
+       if name not in job_index:
+          job_index[name] = row
+   
+    # load station job data 
+    if os.path.exists(run_jobs_station_file) is True:
+       run_jobs_station_data = load_json_file(run_jobs_station_file)
+       run_jobs_station_data_updated = []
+       # remove invalid jobs
+       for row in run_jobs_station_data['job_list']:
+          name = row['name'] 
+          if name in job_index: 
+             run_jobs_station_data_updated.append(row)
+             station_job_index[name] = row
+          else:
+             # job no longer valid
+             print("Skip / remove: Job no longer valid", ROW)
+       # add missing jobs 
+       for row in run_jobs_stock_data['job_list']:
+          name = row['name'] 
+          if name in job_index and name not in station_job_index: 
+             run_jobs_station_data_updated.append(row)
+       run_jobs_station_data['job_list'] = run_jobs_station_data_updated
+             
+    else:
+       run_jobs_station_data = run_jobs_stock_data 
 
-    job_report(run_job_data)
+    job_intervals = run_jobs_station_data['job_intervals']
+    job_types = run_jobs_station_data['job_types']
+    job_list = run_jobs_station_data['job_list']
+
+    run_jobs_station_data = job_report(run_jobs_station_data)
     exit()
 
-    log = open("/home/ams/ai_agent.log", "w") 
     last_run = {}
     while True:
         # the loop will run 1x per sleep interval below.
@@ -108,12 +186,12 @@ def ai_task_manager(AIA):
                 cmd = cmd.replace("{today}", today)
                 cmd = cmd.replace("{yesterday}", yest)
                 print("RUN JOB:", elp_time, obj['name'], cmd)
-                log.write(time.ctime() + ":" + cmd + "\n")
+                logger.info(time.ctime() + ":" + cmd + "\n")
             else:
                time_left = int((job_time - elp_time) / 60)
                print("SKIP JOB", job_id, "Run in {} minutes".format(time_left))
 
-        log.write(time.ctime() + ":end of loop" + "\n")
+        logger.info(time.ctime() + ":end of loop" + "\n")
         time.sleep(60)
 
 def run(AIA):

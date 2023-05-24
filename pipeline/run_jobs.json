@@ -1,4 +1,5 @@
 {
+"last_updated": "2023_05_24",
 "job_types" : ["system", "recording", "stacking", "detection", "calibration", "indexing", "network", "qa", "events", "archiving"],
 "job_intervals" : ["always", "minute", "hour", "day", "month", "year"],
 "job_list" :  [
@@ -9,8 +10,8 @@
          "home_dir": "amscams/pythonv2/",
          "exe": "./scan_stack.py bs ",
          "job_type": "stacking",
-         "interval": "minute",
-         "frequency": 5,
+         "interval": "ALWAYS",
+         "frequency": 0,
          "priortiy": 1,
          "background": 1,
          "notes": "# should always be running, if it is not already"
@@ -167,6 +168,7 @@
          "name": "vms",
          "desc": "verify new meteor detects",
          "home_dir": "amscams/pythonv2/",
+         "job_type": "detection",
          "exe": "./flex-detect.py vms {today}",
          "interval": "hour",
          "frequency": 4,
@@ -277,6 +279,7 @@
          "desc": "stack file index",
          "home_dir": "amscams/pythonv2/",
          "exe": "./batchJobs.py fi ",
+         "job_type": "indexing",
          "interval": "hour",
          "frequency": 1,
          "priortiy": 8,

@@ -213,8 +213,8 @@ def run_jobs(json_conf):
       os.system("kill -9 $(ps aux | grep 'DynaDB' | awk '{print $2}')")
 
    # log heartbeat with network
-   msg = "info:run_jobs:Run jobs started"
-   cmd = "./log.py '" + msg + "'"
+   #msg = "info:run_jobs:Run jobs started"
+   #cmd = "./log.py '" + msg + "'"
    os.system(cmd)
    running = check_running("Process.py run_jobs")
    if running >= 3:
@@ -416,17 +416,17 @@ def run_jobs(json_conf):
          st = time.time()
          os.system(cmd[2] + " > /home/ams/run_jobs.txt 2>&1")
          elp = time.time() - st
-         print("ELP:", elp)
+         print("ELP:", round(elp,1), "Minutes")
       else:
          if cmd[0] == 'all':
             print(cmd[2])
             st = time.time()
             os.system(cmd[2]  + " > /home/ams/run_jobs.txt 2>&1")
             elp = time.time() - st
-            print("ELP:", elp)
+            print("ELP:", round(elp,1), "Minutes")
 
-   msg = "info:run_jobs:Run jobs ended"
-   cmd = "./log.py '" + msg + "'"
+   #msg = "info:run_jobs:Run jobs ended"
+   #cmd = "./log.py '" + msg + "'"
    #os.system(cmd)
    rj_elp = time.time() - rj_start
 
