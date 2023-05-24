@@ -1769,6 +1769,9 @@ def plot_cal_history(con, cur, json_conf):
       #plt.show()
       cloud_file = "/mnt/archive.allsky.tv/" + station_id + "/CAL/plots/" + station_id + "_" + cam_id + "_CAL_PLOTS.jpg"
       cloud_png_file = "/mnt/archive.allsky.tv/" + station_id + "/CAL/plots/" + station_id + "_" + cam_id + "_CAL_PLOTS.png"
+      cloud_plot_dir = "/mnt/archive.allsky.tv/" + station_id + "/CAL/plots/" 
+      if os.path.exists(cloud_plot_dir) is False:
+         os.makedirs(cloud_plot_dir)
       if os.path.exists(cloud_png_file):
          os.system("rm " + cloud_png_file)
       os.system("cp " + plot_file_jpg + " " + cloud_file)
