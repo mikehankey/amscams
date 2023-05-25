@@ -386,9 +386,10 @@ def make_obs_data(station_id, date, meteor_file,cloud_files=None):
          # grab peak int from the MFD if it exists
          if mjr is not None:
             if "meteor_frame_data" in mjr:
-               peak_int = max([row[-1] for row in mjr['meteor_frame_data']])
-
-
+               try:
+                  peak_int = max([row[-1] for row in mjr['meteor_frame_data']])
+               except:
+                  peak_int = 0
 
    if "revision" in mj:
       revision = mj['revision']
