@@ -276,7 +276,7 @@ def remote_cal(cal_file, con, cur):
          if os.path.exists(local_cal_file) is False:
             cmd = "wget " + remote_png_url + " -O " + local_cal_file
             print(cmd)
-            input("ENTER TO GET " + remote_png_url)
+            #input("ENTER TO GET " + remote_png_url)
             os.system(cmd)
 
          if os.path.exists(local_json_file) is False:
@@ -1894,7 +1894,7 @@ def timelapse_day_fast(meteor_day, con, cur, json_conf):
             print(len(extra))
          except:
             extra = []
-            input("SLIDE FAIL")
+            #input("SLIDE FAIL")
 
          # Last sequence / transition slide left frames
          for eframe in extra:
@@ -1945,7 +1945,6 @@ def refit_meteor_day(meteor_day, con, cur, json_conf):
       os.system("rm " + MOVIE_FRAMES_TEMP_FOLDER + "*.jpg")
    files = os.listdir(MOVIE_FRAMES_TEMP_FOLDER)
    print(len(files), "in the temp dir")
-   input("WAIT")
 
    make_intro(MOVIE_FRAMES_TEMP_FOLDER) 
 
@@ -2044,7 +2043,7 @@ def refit_meteor(meteor_file, con, cur, json_conf, mcp = None, last_best_dict = 
    default_cp = get_default_cal_for_file(cam_id, meteor_file, None, con, cur, json_conf)
    if default_cp is None:
       # cant refit if there is no default cp!
-      input("THERE IS NO DEFAULT CP!", cam_id, meteor_file)
+      #input("THERE IS NO DEFAULT CP!", cam_id, meteor_file)
       return()
 
    extra_text = "Refit " +  meteor_file.split("-")[0]
@@ -2119,14 +2118,14 @@ def refit_meteor(meteor_file, con, cur, json_conf, mcp = None, last_best_dict = 
             hd_frames = sd_frames
          else:
             print("ERROR NO VIDEO FRAMES!", sd_vid)
-            input("ABORT")
+            #input("ABORT")
             return()
       elif os.path.exists(sd_vid) is True:
          sd_frames = load_frames_simple(sd_vid)
          hd_frames = sd_frames
       else:
          print("ERROR NO VIDEO FRAMES!", sd_vid)
-         input("ABORT")
+         #input("ABORT")
          return()
 
    # check mj against mcp
@@ -2215,7 +2214,7 @@ def refit_meteor(meteor_file, con, cur, json_conf, mcp = None, last_best_dict = 
          cp = default_cp #get_default_cal_for_file(cam_id, meteor_file, None, con, cur, json_conf)
          if cp is None:
             print("CAN'T REFIT!")
-            input("DEFAULT CP IS NONE")
+            #input("DEFAULT CP IS NONE")
             return(None) 
          mj['cp'] = cp
 
@@ -2242,7 +2241,7 @@ def refit_meteor(meteor_file, con, cur, json_conf, mcp = None, last_best_dict = 
       if mj['cp']['total_res_px'] > 15:
          # res is too high, use the default
          if default_cp is None:
-            input("DEFAULT CP IS NONE")
+            #input("DEFAULT CP IS NONE")
             return()
          mj['cp'] = default_cp #get_default_cal_for_file(cam_id, meteor_file, None, con, cur, json_conf)
          if "total_res_px" in mj['cp']: 
@@ -2253,7 +2252,7 @@ def refit_meteor(meteor_file, con, cur, json_conf, mcp = None, last_best_dict = 
       orig_res = mj['cp']['total_res_px']
    except:
       print("CP IS WACKED", meteor_file, mj['cp'])
-      input("CP IS BROKEN")
+      #input("CP IS BROKEN")
       return()
 
 
