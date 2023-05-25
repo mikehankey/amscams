@@ -1767,6 +1767,8 @@ def plot_cal_history(con, cur, json_conf):
       plt_img = cv2.imread(plot_file)
       plot_file_jpg = plot_file.replace(".png", ".jpg")
       cv2.imwrite(plot_file_jpg , plt_img)
+      if os.path.exists(plot_file):
+         os.system("rm " + plot_file)
       #plt.show()
       cloud_file = "/mnt/archive.allsky.tv/" + station_id + "/CAL/plots/" + station_id + "_" + cam_id + "_CAL_PLOTS.jpg"
       cloud_png_file = "/mnt/archive.allsky.tv/" + station_id + "/CAL/plots/" + station_id + "_" + cam_id + "_CAL_PLOTS.png"
