@@ -215,7 +215,7 @@ def run_jobs(json_conf):
    # log heartbeat with network
    #msg = "info:run_jobs:Run jobs started"
    #cmd = "./log.py '" + msg + "'"
-   os.system(cmd)
+   #os.system(cmd)
    running = check_running("Process.py run_jobs")
    if running >= 3:
       print("Already running.")
