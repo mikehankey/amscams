@@ -2421,7 +2421,7 @@ def refit_meteor(meteor_file, con, cur, json_conf, mcp = None, last_best_dict = 
       else:
          star_img = meteor_stack_img
 
-
+   
    # save the first frame of the movie?
    star_img = cv2.resize(star_img, (1920,1080))
    if SAVE_MOVIE is True:
@@ -2434,33 +2434,33 @@ def refit_meteor(meteor_file, con, cur, json_conf, mcp = None, last_best_dict = 
       MOVIE_FRAME_NUMBER += 1
       blend_img = RF.watermark_image(blend_img, RF.logo_320, logo_x,logo_y, .33, make_int=True)
       save_movie_frame(blend_img, MOVIE_FRAME_NUMBER, MOVIE_FRAMES_TEMP_FOLDER, 10)
+   if SAVE_MOVIE is True:
+      for frame in frames:
+         frame = cv2.resize(frame, (1920,1080))
+         blend_img = cv2.addWeighted(frame, .5, star_img, .5,0)
+         blend_img = RF.watermark_image(blend_img, RF.logo_320, logo_x,logo_y, .33, make_int=True)
 
-   for frame in frames:
-      frame = cv2.resize(frame, (1920,1080))
-      blend_img = cv2.addWeighted(frame, .5, star_img, .5,0)
-      blend_img = RF.watermark_image(blend_img, RF.logo_320, logo_x,logo_y, .33, make_int=True)
+         if meteor_roi is not None:
+            x1,y1,x2,y2 = meteor_roi
+            color = (255,255,255)
+            blend_img[y1:y2,x1:x2] = frame[y1:y2,x1:x2]
+            cv2.rectangle(blend_img, (int(x1), int(y1)), (int(x2) , int(y2) ), color, 2)
 
-      if meteor_roi is not None:
-         x1,y1,x2,y2 = meteor_roi
-         color = (255,255,255)
-         blend_img[y1:y2,x1:x2] = frame[y1:y2,x1:x2]
-         cv2.rectangle(blend_img, (int(x1), int(y1)), (int(x2) , int(y2) ), color, 2)
+         if SAVE_MOVIE is True:
+            print("MOVIE_FRAME_NUMBER:", MOVIE_FRAME_NUMBER)
+            MOVIE_FRAME_NUMBER += 1
+            save_movie_frame(blend_img, MOVIE_FRAME_NUMBER, MOVIE_FRAMES_TEMP_FOLDER)
+         if SHOW == 1:
+            cv2.imshow('pepe', blend_img)
+            cv2.waitKey(30)
 
+      blend_img = cv2.addWeighted(meteor_stack_img, .5, star_img, .5,0)
       if SAVE_MOVIE is True:
-         print("MOVIE_FRAME_NUMBER:", MOVIE_FRAME_NUMBER)
-         MOVIE_FRAME_NUMBER += 1
-         save_movie_frame(blend_img, MOVIE_FRAME_NUMBER, MOVIE_FRAMES_TEMP_FOLDER)
+         blend_img = RF.watermark_image(blend_img, RF.logo_320, logo_x,logo_y, .33, make_int=True)
+         save_movie_frame(blend_img, MOVIE_FRAME_NUMBER, MOVIE_FRAMES_TEMP_FOLDER, 15, 10)
       if SHOW == 1:
          cv2.imshow('pepe', blend_img)
          cv2.waitKey(30)
-
-   blend_img = cv2.addWeighted(meteor_stack_img, .5, star_img, .5,0)
-   if SAVE_MOVIE is True:
-      blend_img = RF.watermark_image(blend_img, RF.logo_320, logo_x,logo_y, .33, make_int=True)
-      save_movie_frame(blend_img, MOVIE_FRAME_NUMBER, MOVIE_FRAMES_TEMP_FOLDER, 15, 10)
-   if SHOW == 1:
-      cv2.imshow('pepe', blend_img)
-      cv2.waitKey(30)
    #if mjr is not None:
    #   if "meteor_frame_data" in mjr:
    #      mfd = perfect_meteor(json_file, sd_frames, mjr['meteor_frame_data'], meteor_roi)
