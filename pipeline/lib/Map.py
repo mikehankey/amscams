@@ -97,7 +97,7 @@ def geo_intersec_point(x1, y1, brng1, x2, y2, brng2):
    # Return error flag as False and intersection points longitude and latitude
    return False, {"x3" : lon3, "y3" : lat3}
    
-def make_map(pts, lns):
+def make_map(pts, lns, center_latlon=None):
 
     print("POINTS:", pts)
     print("LINES:", lns)
@@ -124,8 +124,11 @@ def make_map(pts, lns):
 
     lon_diff = int(abs(max(plons)) - abs(min(plons)))
     lat_diff = int(abs(max(plats)) - abs(min(plats)))
-    center_lat = np.mean(plats)
-    center_lon = np.mean(plons)
+    if center_latlon is None:
+       center_lat = np.mean(plats)
+       center_lon = np.mean(plons)
+    else:
+       center_lat, center_lon = center_latlon
     llclon = round(center_lon - 7,2)
     urclon = round(center_lon + 7,2)
     llclat = round(center_lat - 4,2)

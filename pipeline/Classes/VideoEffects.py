@@ -38,8 +38,6 @@ class VideoEffects():
          cv2.imshow('pepe', self.allsky7_logo_black_global_network)
          cv2.waitKey(0)
 
-
-
    def intro_as7(self):
       print("HI")
 
@@ -48,6 +46,31 @@ class VideoEffects():
       if os.path.exists(self.outdir) is False:
          os.makedirs(self.outdir)
 
+   def show_text(self, phrases=["Well, hello there..."], base_frame = None, duration=1, font_face=None, font_size=20, font_color="white", pos_x=None, pos_y=None, x_space=10 , phrase_pause=10):
+      if base_frame is None:
+         base_frame = blank_image = np.zeros((1080,1920,3),dtype=np.uint8)
+      if len(base_frame.shape) > 3:
+         #convert the image from RGBA2RGB
+         base_frame = cv2.cvtColor(base_frame, cv2.COLOR_BGRA2BGR)
+      #base_frame = (base_frame * 255).astype(np.uint8)
+      #base_frame = base_frame.astype(np.uint8)
+      image = Image.fromarray(base_frame.copy())
+      draw = ImageDraw.Draw(image)    
+
+      if font_face is None:
+         font = ImageFont.truetype("/usr/share/fonts/truetype/DejaVuSans.ttf", font_size, encoding="unic" )
+      else:
+         font = ImageFont.truetype(font_face, font_size, encoding="unic" )
+
+      for phrase in phrases:
+
+         pos_x = int(int(base_frame.shape[1] / 2) - int(int(len(phrase) / 2) * (font_size/2)) )
+         draw.text((pos_x, pos_y), str(phrase), font = font, fill=font_color)
+         pos_y += 50
+      show_img = cv2.cvtColor(np.asarray(image), cv2.COLOR_RGB2BGR)
+      return(show_img)
+
+
    def type_text(self, phrases=["Well, hello there..."], base_frame = None, duration=1, font_face=None, font_size=20, font_color="white", pos_x=None, pos_y=None, x_space=10 , phrase_pause=10):
 
       if base_frame is None:
@@ -55,7 +78,7 @@ class VideoEffects():
       if len(base_frame.shape) > 3:
          #convert the image from RGBA2RGB
          base_frame = cv2.cvtColor(base_frame, cv2.COLOR_BGRA2BGR)
-      base_frame = (base_frame * 255).astype(np.uint8)
+      #base_frame = (base_frame * 255).astype(np.uint8)
       image = Image.fromarray(base_frame.copy())
       draw = ImageDraw.Draw(image)    
 

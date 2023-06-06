@@ -32,9 +32,9 @@ def push_log(msg):
    }
    #aws_post_data = json.loads(json.dumps(log_data), parse_float=Decimal)
    headers = {'Content-type': 'application/json'}
-   print(json.dumps(log_data))
+   print("REQ:", json.dumps(log_data))
    response = requests.post(API_URL, data=json.dumps(log_data) , headers=headers)
-   print(response.content.decode())
+   print("RESP:", response.content.decode())
 
 
 if __name__ == "__main__":

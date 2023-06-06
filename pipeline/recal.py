@@ -14,23 +14,58 @@ Use permitted under community license for registered users only
                      © 2018 - 2023
 """
 
+from lib.PipeVideo import load_frames_simple
 
+import datetime
+from PIL import ImageFont, ImageDraw, Image, ImageChops
+import imutils
+import time
+import json
+import numpy as np
+import glob
+import cv2
+import os, sys, select
+import requests
+from photutils import CircularAperture, CircularAnnulus
+from photutils.aperture import aperture_photometry
+import scipy.optimize
+from PIL import ImageFont, ImageDraw, Image, ImageChops
+import lib.brightstardata as bsd
+from lib.PipeUtil import load_json_file, save_json_file,angularSeparation, calc_dist, convert_filename_to_date_cam , check_running , get_file_info, collinear, mfd_roi, load_mask_imgs
+from lib.PipeAutoCal import distort_xy, insert_calib, minimize_poly_multi_star, view_calib, cat_star_report , update_center_radec, XYtoRADec, draw_star_image, make_lens_model, make_az_grid, make_cal_summary, quality_stars, make_cal_plots, find_stars_with_grid, optimize_matchs, eval_cal_res, radec_to_azel, make_plate_image, make_cal_plots, make_cal_summary, custom_fit_meteor
+from FlaskLib.api_funcs import show_cat_stars 
+from lib.PipeTrans import slide_left
+
+
+import sqlite3 
+from lib.DEFAULTS import *
+from Classes.MovieMaker import MovieMaker 
+from Classes.Stations import Stations 
+from Classes.RenderFrames import RenderFrames
+from Classes.VideoEffects import VideoEffects
+from prettytable import PrettyTable as pt
+SAVE_MOVIE = False 
+MOVIE_LAST_FRAME = None 
+MOVIE_FRAME_NUMBER = 0
+MOVIE_FRAMES_TEMP_FOLDER = "/home/ams/MOVIE_FRAMES_TEMP_FOLDER/"
 
 
 def make_intro(folder): 
    global MOVIE_FRAME_NUMBER
    global MOVIE_FRAMES_TEMP_FOLDER
+   intro_frames = []
    frames = load_frames_simple("intro_video.mp4")
    for fr in frames:
       fr = cv2.resize(fr, (1920,1080))
-      if SHOW == 1:
-         cv2.imshow('pepe', fr)
-         cv2.waitKey(30)
+      #if SHOW == 1:
+      #   cv2.imshow('pepe', fr)
+      #   cv2.waitKey(30)
 
       if SAVE_MOVIE is True:
          save_movie_frame(fr, MOVIE_FRAME_NUMBER, MOVIE_FRAMES_TEMP_FOLDER)
+         intro_frames.append(fr)
          MOVIE_FRAME_NUMBER += 1
-
+   return(intro_frames)
 
 
 def save_movie_frame(frame, frame_number, folder, repeat = None, fade_last=None):
@@ -11275,35 +11310,6 @@ if __name__ == "__main__":
    except:
       print("Missing lib:")
       print("sudo python3 -m pip install PySimpleGUI")
-   import datetime
-   from PIL import ImageFont, ImageDraw, Image, ImageChops
-   import imutils
-   import time
-   import json
-   import numpy as np
-   import glob
-   import cv2
-   import os, sys, select
-   import requests
-   from photutils import CircularAperture, CircularAnnulus
-   from photutils.aperture import aperture_photometry
-   import scipy.optimize
-   from PIL import ImageFont, ImageDraw, Image, ImageChops
-   import lib.brightstardata as bsd
-   from lib.PipeUtil import load_json_file, save_json_file,angularSeparation, calc_dist, convert_filename_to_date_cam , check_running , get_file_info, collinear, mfd_roi, load_mask_imgs
-   from lib.PipeAutoCal import distort_xy, insert_calib, minimize_poly_multi_star, view_calib, cat_star_report , update_center_radec, XYtoRADec, draw_star_image, make_lens_model, make_az_grid, make_cal_summary, quality_stars, make_cal_plots, find_stars_with_grid, optimize_matchs, eval_cal_res, radec_to_azel, make_plate_image, make_cal_plots, make_cal_summary, custom_fit_meteor
-   from FlaskLib.api_funcs import show_cat_stars 
-   from lib.PipeTrans import slide_left
-
-
-   import sqlite3 
-   from lib.DEFAULTS import *
-   from lib.PipeVideo import load_frames_simple
-   from Classes.MovieMaker import MovieMaker 
-   from Classes.Stations import Stations 
-   from Classes.RenderFrames import RenderFrames
-   from Classes.VideoEffects import VideoEffects
-   from prettytable import PrettyTable as pt
 
 
 
@@ -11314,8 +11320,6 @@ if __name__ == "__main__":
    RF = RenderFrames()
    VE = VideoEffects()
 
-   MOVIE_LAST_FRAME = None 
-   MOVIE_FRAME_NUMBER = 0
    MOVIE_FRAMES_TEMP_FOLDER = "/home/ams/REFIT_METEOR_FRAMES_TEMP/"
    if sys.argv[1] == "refit_meteor_day" : 
       SAVE_MOVIE = True

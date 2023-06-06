@@ -81,6 +81,21 @@ def trans_test(clip1, clip2):
 
    slide_left(cf1[-2], cf2[0], file_pref1, last_i)
 
+def fade(pic1, pic2, trans_time):
+   trans_frames = []
+   for i in range(0,trans_time):
+      perc = i / trans_time 
+      rperc = 1 - perc
+      blend = cv2.addWeighted(pic1, rperc, pic2, perc, .3)
+      trans_frames.append(blend)
+   return(trans_frames)
+
+def hold(img, dur=5, focus_xy=None):
+   trans_frames = []
+   for i in range(0,dur):
+      trans_frames.append(img)
+   return(trans_frames)
+
 def slide_left(pic1, pic2, pref, start_count):
    trans_time = 10 
    trans_frames = []

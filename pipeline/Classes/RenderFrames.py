@@ -33,9 +33,10 @@ class RenderFrames():
       my2 = my1 + main_h 
       ui = np.zeros((h,w,3),dtype=np.uint8)
       lh = int(main_h + (margin_y / 1.8))
-      ui = self.watermark_image(ui, self.logo_160, margin_x, lh, .6, text_data)
+      ui = self.watermark_image(ui, self.logo_160, margin_x, lh, .6, text_data, False)
       cv2.rectangle(ui, (mx1,my1), (mx2,my2) , [200,200,200], 2)
-      return(ui)
+      print("TV FRAME:", ui.shape, type(ui), ui[100,100])
+      return(ui, mx1,my1,mx2,my2)
 
 
    def frame_template(self, frame_type="1920_1p", images=[], text_data = []):
@@ -206,4 +207,6 @@ class RenderFrames():
          blend *= 255
          blend = blend.astype(np.uint8)
       #print("WATERMARK BLEND:", type(blend), blend.shape, blend[500,500])
-      return(blend)
+      #blend = blend.astype(np.uint8)
+      blend = blend * 255
+      return(blend.astype(np.uint8))

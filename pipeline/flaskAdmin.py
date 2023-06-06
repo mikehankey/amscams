@@ -22,6 +22,7 @@ from FlaskLib.man_reduce_v2 import meteor_man_reduce_v2 , save_man_reduce_v2
 from FlaskLib.man_detect import man_detect , import_meteor
 from FlaskLib.meteors_main_redis import meteors_main_redis
 from FlaskLib.network import network_main , network_map, network_meteors, network_events
+from FlaskLib.mobile import mobile_main, mobile_css, mobile_js, mobile_manifest, mobile_service_worker
 #from FlaskLib.Maps import make_map 
 from flask import redirect, url_for, abort
 import json
@@ -796,6 +797,78 @@ def net_met(amsid):
    return(out)
 
 
+@app.route('/MOBILE/<amsid>/css/style.css', methods=['GET', 'POST'])
+@auth.login_required
+def mob_css(amsid):
+   options = {}
+   if request.method == "POST":
+      for key, value in request.form.items():
+         options[key] = value
+      options['method'] = "POST"
+   else:
+      for key, value in request.args.items():
+         options[key] = value
+   out = mobile_css(amsid, options, json_conf)
+   return(out)
+
+
+@app.route('/MOBILE/<amsid>/serviceWorker.js', methods=['GET', 'POST'])
+@auth.login_required
+def mob_sw(amsid):
+   options = {}
+   if request.method == "POST":
+      for key, value in request.form.items():
+         options[key] = value
+      options['method'] = "POST"
+   else:
+      for key, value in request.args.items():
+         options[key] = value
+   out = mobile_service_worker(amsid, options, json_conf)
+   return(out)
+
+@app.route('/MOBILE/<amsid>/js/app.js', methods=['GET', 'POST'])
+@auth.login_required
+def mob_js(amsid):
+   options = {}
+   if request.method == "POST":
+      for key, value in request.form.items():
+         options[key] = value
+      options['method'] = "POST"
+   else:
+      for key, value in request.args.items():
+         options[key] = value
+   out = mobile_js(amsid, options, json_conf)
+   return(out)
+
+@app.route('/MOBILE/<amsid>/manifest.json', methods=['GET', 'POST'])
+@auth.login_required
+def mob_manifest(amsid):
+   options = {}
+   if request.method == "POST":
+      for key, value in request.form.items():
+         options[key] = value
+      options['method'] = "POST"
+   else:
+      for key, value in request.args.items():
+         options[key] = value
+   out = mobile_manifest(amsid, options, json_conf)
+   return(out)
+
+
+
+@app.route('/MOBILE/<amsid>/', methods=['GET', 'POST'])
+@auth.login_required
+def mob_main(amsid):
+   options = {}
+   if request.method == "POST":
+      for key, value in request.form.items():
+         options[key] = value
+      options['method'] = "POST"
+   else:
+      for key, value in request.args.items():
+         options[key] = value
+   out = mobile_main(amsid, options, json_conf)
+   return(out)
 
 @app.route('/LEARNING/<amsid>/', methods=['GET', 'POST'])
 @auth.login_required

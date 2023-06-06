@@ -1,6 +1,8 @@
 import sys
 import time
 from lib.PipeUtil import dist_between_two_points
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 from windrose import WindroseAxes
 import matplotlib.cm as cm
@@ -265,7 +267,7 @@ def plot_wind_data(alts, press, speeds, dirs, temps, relhs, plot_file):
    #plot_file = cal_dir + "plots/" + station_id + "_" + cam_id + "_CAL_PLOTS.png"
    fig.savefig(plot_file, dpi=72)
    print(plot_file)
-   plt.show()
+   #plt.show()
 
 def plot_wind_file(wind_file):
    fp = open(wind_file)

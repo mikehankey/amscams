@@ -52,7 +52,7 @@ def evdir_from_event_id(eid):
    M = eid[4:6] 
    D = eid[6:8] 
    print(Y,M,D)
-   evdir = "/mnt/ams2/EVENTS/" + Y + "/" + M + "/" + D + "/" + eid + "/"
+   evdir = "/mnt/f/EVENTS/" + Y + "/" + M + "/" + D + "/" + eid + "/"
    return(evdir)
 
 def meteor_cell_html(obs_id):
@@ -136,6 +136,10 @@ def obs_html(eid):
 
    if os.path.exists(good_obs_file) is True:
       good_obs = load_json_file(good_obs_file)
+   else:
+      print("NO GOOD OBS!", good_obs_file)
+      exit()
+
    for station_id in good_obs:
       for obs_file in good_obs[station_id]:
          if station_id not in obs_file:
@@ -176,7 +180,7 @@ if os.path.exists(report_file):
       report_txt += line
 
 pickle_file = ev_dir + event_id + "_trajectory.pickle"
-cloud_pickle_file = pickle_file.replace("ams2/", "archive.allsky.tv/")
+cloud_pickle_file = pickle_file.replace("f/", "archive.allsky.tv/")
 
 if cfe(pickle_file) == 0:
    if cfe(cloud_pickle_file) == 1:
@@ -222,7 +226,7 @@ year = event_id[0:4]
 month = event_id[4:6]
 day = event_id[6:8]
 cloud_dir = "/mnt/archive.allsky.tv/EVENTS/" + year + "/" + month + "/" + day + "/" + event_id + "/" 
-output_dir = "/mnt/ams2/EVENTS/" + year + "/" + month + "/" + day + "/" + event_id + "/" 
+output_dir = "/mnt/f/EVENTS/" + year + "/" + month + "/" + day + "/" + event_id + "/" 
 file_name = event_id
 
 #wmplPlots.savePlots(output_dir, file_name, show_plots=False, ret_figs=False)
@@ -343,10 +347,14 @@ for p in sorted(plt_files):
    if "orbit_top" in j:
       orb_top_img = jpg
       orb_top_file = j
+   else:
+      orb_top_img = None 
    if "orbit_side" in j:
       orbit_side_img = jpg
       orb_side_file = j
       #.replace(".jpg", "-custom.jpg")
+   else:
+      orbit_side_img = None 
    if "ground" in j:
       ground_track_img = jpg
       ground_track_file = j
@@ -357,30 +365,32 @@ for p in sorted(plt_files):
    os.system("rm " + p)
 
 # make nice orbit image
-oh,ow = orbit_side_img.shape[0:2]
-hh = int(oh / 2)
-y1 = hh - 200
-y2 = hh + 200
-cx = int(ow/2)
-x1 = cx - 600
-x2 = cx + 600
+if orbit_side_img is not None:
+   oh,ow = orbit_side_img.shape[0:2]
+   hh = int(oh / 2)
+   y1 = hh - 200
+   y2 = hh + 200
+   cx = int(ow/2)
+   x1 = cx - 600
+   x2 = cx + 600
 
-orb_side_img = orbit_side_img[y1:y2,x1:x2]
+   orb_side_img = orbit_side_img[y1:y2,x1:x2]
 #print(orb_side_img.shape)
 #cv2.imwrite(orb_side_file2, orb_side_img, [int(cv2.IMWRITE_JPEG_QUALITY), 70])
 
-cx = int(orb_top_img.shape[1]/2)
-cy = int(orb_top_img.shape[0]/2)
-y1 = cy - 600
-y2 = cy + 600
-x1 = cx - 600
-x2 = cx + 600
-otop_img = orb_top_img[y1:y2,x1:x2]
+if orbit_side_img is not None:
+   cx = int(orb_top_img.shape[1]/2)
+   cy = int(orb_top_img.shape[0]/2)
+   y1 = cy - 600
+   y2 = cy + 600
+   x1 = cx - 600
+   x2 = cx + 600
+   otop_img = orb_top_img[y1:y2,x1:x2]
 
-y2 = orb_side_img.shape[0]
-x2 = orb_side_img.shape[1]
-#otop_img[0:y2,0:x2] = orb_side_img
-cv2.imwrite(orb_top_file, otop_img, [int(cv2.IMWRITE_JPEG_QUALITY), 70])
+   y2 = orb_side_img.shape[0]
+   x2 = orb_side_img.shape[1]
+   #otop_img[0:y2,0:x2] = orb_side_img
+   cv2.imwrite(orb_top_file, otop_img, [int(cv2.IMWRITE_JPEG_QUALITY), 70])
 
 
 plot_html += """<a name="trajectory"></a><h2>Trajectory & Orbit</h2>"""

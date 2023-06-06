@@ -601,7 +601,7 @@ def load_frames_fast(trim_file, json_conf, limit=0, mask=0,crop=(),color=0,resiz
 
 #def find_hd_file():
 
-def load_frames_simple(trim_file,limit=50000 ):
+def load_frames_simple(trim_file,size=None, limit=50000 ):
    cap = cv2.VideoCapture(trim_file)
    frames = []
    go = 1
@@ -615,6 +615,9 @@ def load_frames_simple(trim_file,limit=50000 ):
          else:
             go = 0
       if frame is not None:
+         if size is not None:
+            if frame.shape[0] != size[1]:
+               frame = cv2.resize(frame, size)
          frames.append(frame)
       if frame_count > limit:
          go = 0

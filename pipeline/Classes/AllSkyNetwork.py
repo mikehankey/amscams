@@ -1,4 +1,5 @@
 import sys
+import glob
 import sqlite3
 import subprocess
 import PySimpleGUI as sg
@@ -37,11 +38,12 @@ from geopy.geocoders import Nominatim
 
 
 
-
-from recal import get_catalog_stars, get_star_points, get_xy_for_ra_dec, minimize_fov, get_image_stars_with_catalog, do_photo
+from lib.resolutions import all_resolutions, find_resolution
+from recal import get_catalog_stars, get_star_points, get_xy_for_ra_dec, minimize_fov, get_image_stars_with_catalog, do_photo, make_intro, save_movie_frame
 from lib.PipeAutoCal import update_center_radec
 from lib.Map import make_map,geo_intersec_point 
 from lib.PipeEvent import get_trim_num
+from lib.PipeTrans import fade , slide_left, hold
 from lib.PipeDetect import get_contours_in_image, find_object, analyze_object
 from lib.kmlcolors import *
 from lib.PipeImage import stack_frames
@@ -53,6 +55,7 @@ from DynaDB import search_events, insert_meteor_event, delete_event, get_obs, up
 import cv2
 from lib.PipeVideo import load_frames_simple
 from Classes.RenderFrames import RenderFrames 
+from Classes.VideoEffects import VideoEffects
 
 class AllSkyNetwork():
    def __init__(self):
@@ -215,7 +218,6 @@ class AllSkyNetwork():
 
    def station_list(self, rcmd=None):
       print("RCMD is:", rcmd)
-      input("Wait...")
       all_stations = {}
       eu_missing = {}
       stations = load_json_file("/mnt/f/EVENTS/ALL_STATIONS.json")
@@ -400,12 +402,12 @@ class AllSkyNetwork():
             print(station_id, "NOT IN HOSTS")
             link = station_id + " - No admin edit link"
          print(link)
-         list_html += "<li>{:s}<a href={:s}>{:s}</a>\n".format(station_id, link, link)
+         list_html += "<li>{:s} <a href={:s}>{:s}</a>\n".format(station_id, link, link)
          if c == 0:
             #webbrowser.open(link) # To open new window
             print("OPEN NEW", link)
          else:
-            #webbrowser.open_new_tab(link) # To open new window
+            webbrowser.open_new_tab(link) # To open new window
             print("TAB ", link)
          c+= 1
       fp = open("/mnt/f/temp.html", "w")
@@ -984,6 +986,8 @@ class AllSkyNetwork():
          else:
             photo_credit = None
 
+         #utf-8 UTF-8 name hacks
+         operator_name = operator_name.replace("Ju00f6rg", "Jorg")
        
          if operator_name == "" or operator_name == " " :
             self.photo_credits[sid] = sid + " unknown"
@@ -1206,6 +1210,8 @@ class AllSkyNetwork():
          if mc_id not in sql_ids:
             print("MC ID NOT IN LOCAL SQL:", mc_id)
             event = mc_events[mc_id]
+            self.insert_event(event)
+         else:
             self.insert_event(event)
 
       for sql_id in sql_ids:
@@ -1672,7 +1678,7 @@ class AllSkyNetwork():
             #if the event start is within 6 seconds
             #sdur = duration * -2
             #edur = duration * 2
-            if time_diff <= 20:
+            if time_diff <= 5:
                avg_lat = np.mean(min_events[eid]['lats'])
                avg_lon = np.mean(min_events[eid]['lons'])
                match_dist = dist_between_two_points(avg_lat, avg_lon, lat, lon)
@@ -2857,6 +2863,902 @@ class AllSkyNetwork():
 
       return(wget_cmds)
 
+   def event_data_movie(self, event_id, event_data, good_obs):
+      data_movie_frames = []
+      lines = []
+      cv2.namedWindow('pepe', cv2.WINDOW_NORMAL)
+      cv2.moveWindow("pepe", 1000, 50)
+      cv2.resizeWindow("pepe", 1920, 1080)
+      points = []
+      map_frames = []
+      map_folder = self.ev_dir + "MAP_FRAMES/"
+      #start_lat, start_lon, start_ele, end_lat, end_lon, end_ele, v_init, v_avg = event_data['traj']
+      traj = event_data['traj']
+
+      # DO MAPS 
+      if os.path.exists(map_folder) is False:
+         os.makedirs(map_folder)
+      lines.append((traj['start_lat'], traj['start_lon'], traj['end_lat'], traj['end_lon'], 'red'))
+      center_latlon = [traj['end_lat'], traj['end_lon']]
+      for station_id in good_obs:
+         slat,slon,alt = self.station_loc[station_id][:3]
+         points.append((slat,slon,station_id,"green","o"))
+         map_file = map_folder + station_id + ".jpg"
+         if os.path.exists(map_file):
+            map_img = cv2.imread(map_file)
+            map_img = cv2.resize(map_img, (1920,1080))
+         else:
+            map_img = make_map(points, lines, center_latlon)
+            map_img = cv2.resize(map_img, (1920,1080))
+            cv2.imwrite(map_file, map_img)
+         map_frames.append(map_img)
+         data_movie_frames.append(map_img)
+         holds = hold(map_img, 10)
+         for h in holds:
+            data_movie_frames.append(h)
+
+         map_img = cv2.resize(map_img, (1920,1080))
+         cv2.resizeWindow("pepe", 1920, 1080)
+         if self.PREVIEW is True:
+            cv2.imshow('pepe', map_img)
+            cv2.waitKey(30)
+         for vid in good_obs[station_id]:
+            obs_id = station_id + "_" + vid
+            map_file = map_folder + obs_id.replace(".mp4", ".jpg")
+            if obs_id in self.obs_dict:
+                obs_data = self.obs_dict[obs_id]
+                azs = [row[9] for row in obs_data['meteor_frame_data']]
+                els = [row[10] for row in obs_data['meteor_frame_data']]
+                ints = [row[6] for row in obs_data['meteor_frame_data']]
+                print("INTS", ints)
+                az_start_point = self.find_point_from_az_dist(slat,slon,float(azs[0]),350)
+                az_end_point = self.find_point_from_az_dist(slat,slon,float(azs[-1]),350)
+                lines.append((slat, slon, az_start_point[0] , az_start_point[1], 'green'))
+                lines.append((slat, slon, az_end_point[0] , az_end_point[1], 'orange'))
+            else:
+               print("ERR FINDING:", obs_id)
+            if os.path.exists(map_file):
+               map_img = cv2.imread(map_file)
+               map_img = cv2.resize(map_img, (1920,1080))
+               print("USING CACHE MAP:", map_file)
+            else:
+               print("NO CACHE MAP MAKE NEW:", map_file)
+               lines.append((traj['start_lat'], traj['start_lon'], traj['end_lat'], traj['end_lon'], 'red'))
+               map_img = make_map(points, lines, center_latlon)
+               map_img = cv2.resize(map_img, (1920,1080))
+               cv2.imwrite(map_file, map_img)
+               print("SAVED", map_file)
+            map_frames.append(map_img)
+            data_movie_frames.append(map_img)
+            holds = hold(map_img, 10)
+            for h in holds:
+               data_movie_frames.append(h)
+
+         #map_img = make_map(points, lines)
+         #map_img = cv2.resize(map_img, (1920,1080))
+            if self.PREVIEW is True:
+               cv2.imshow('pepe', map_img)
+               cv2.waitKey(30)
+
+      if False:
+         obs_jpgs = glob.glob(self.ev_dir + "AMS*.jpg")
+         for jpg in obs_jpgs:
+            if "roi" in jpg :
+               continue
+            if "1080p" not in jpg:
+               continue
+            img = cv2.imread(jpg)
+            img = cv2.resize(img, (1920,1080))
+            data_movie_frames.append(img)
+
+
+            if self.PREVIEW is True:
+               cv2.imshow('pepe', img)
+               cv2.waitKey(30)
+            holds = hold(img, 10)
+            for h in holds:
+               data_movie_frames.append(h)
+               if self.PREVIEW is True:
+                  cv2.imshow('pepe', h)
+                  cv2.waitKey(30)
+
+      # duplicate map frames
+      #for fr in map_frames:
+      #   data_movie_frames.append(fr)
+      #   holds = hold(fr, 10)
+      #   for h in holds:
+      #      data_movie_frames.append(h)
+      #   if self.PREVIEW is True:
+      #      cv2.imshow('pepe', fr)
+      #      cv2.waitKey(100)
+
+      # DO 3D TRAJECTORY
+      plot_dir = self.ev_dir + "PLOT_FRAMES/" 
+      files = glob.glob(plot_dir + "*3D*.jpg")
+      if len(files) > 0:
+         first_img = cv2.imread(files[0])
+         first_img = cv2.resize(first_img, (1920,1080))
+
+         # TRANS
+         extra = slide_left(map_img, first_img , "FF", 0)
+         for e in extra:
+            e = cv2.resize(e, (1920,1080))
+            if True:
+               data_movie_frames.append(e)
+               if self.PREVIEW is True:
+                  cv2.imshow('pepe', e)
+                  cv2.waitKey(30)
+      else:
+         black_frame = np.zeros((1080,1920,3),dtype=np.uint8)
+         img = black_frame
+
+      for f in files:
+         img = cv2.imread(f)
+         img = cv2.resize(img, (1920,1080))
+         data_movie_frames.append(img)
+
+         holds = hold(img, 5)
+         for h in holds:
+            data_movie_frames.append(h)
+
+         if self.PREVIEW is True:
+            cv2.imshow('pepe', img)
+            cv2.waitKey(100)
+
+      # light curve
+      lc_file = self.ev_dir + event_id + "_LIGHTCURVES.jpg"
+      lc_img = cv2.imread(lc_file)
+      lc_img = cv2.resize(lc_img, (1920,1080))
+
+      # TRANS
+      extra = slide_left(img, lc_img, "FF", 0)
+      for e in extra:
+         e = cv2.resize(e, (1920,1080))
+         if True:
+            data_movie_frames.append(e)
+            if self.PREVIEW is True:
+               cv2.imshow('pepe', e)
+               cv2.waitKey(30)
+ 
+      # hold light curve frame
+      holds = hold(lc_img, 25)
+      for h in holds:
+         data_movie_frames.append(h)
+
+      # REMAINING FILES
+      last_img = lc_img
+      event_jpgs = glob.glob(self.ev_dir + event_id + "*.jpg")
+      for jpg in event_jpgs:
+         if "REVIEW" in jpg:
+            review_img = cv2.imread(jpg)
+            review_img = cv2.resize(review_img, (1920,1080))
+            continue
+         if "GALLERY" in jpg:
+            gallery_img = cv2.imread(jpg)
+            gallery_img = cv2.resize(gallery_img, (1920,1080))
+            continue
+         if "LIGHTCURVE" in jpg:
+            continue
+         if "OBS_MAP" in jpg:
+            continue
+         if "MAP" in jpg:
+            continue
+
+         img = cv2.imread(jpg)
+         img = cv2.resize(img, (1920,1080))
+
+         # TRANS
+         extra = slide_left(last_img, img, "FF", 0)
+         for e in extra:
+            e = cv2.resize(e, (1920,1080))
+            if True:
+               data_movie_frames.append(e)
+               if self.PREVIEW is True:
+                  cv2.imshow('pepe', e)
+                  cv2.waitKey(30)
+
+         data_movie_frames.append(img)
+         holds = hold(img, 15)
+         for h in holds:
+            data_movie_frames.append(h)
+
+         if self.PREVIEW is True:
+            cv2.imshow('pepe', img)
+            cv2.waitKey(300)
+         last_img = img
+
+      # final run
+
+      final = fade(img, review_img, 40)
+      for ff in final:
+         data_movie_frames.append(ff)
+         if self.PREVIEW is True:
+            cv2.imshow('pepe', ff)
+            cv2.waitKey(30)
+
+      holds = hold(review_img, 25)
+      for h in holds:
+         data_movie_frames.append(h)
+         if self.PREVIEW is True:
+            cv2.imshow('pepe', h)
+            cv2.waitKey(300)
+      data_movie_frames.append(review_img)
+      if self.PREVIEW is True:
+         cv2.imshow('pepe', review_img)
+         cv2.waitKey(300)
+
+      final = fade(review_img, gallery_img, 40)
+      for ff in final:
+         data_movie_frames.append(ff)
+         if self.PREVIEW is True:
+            cv2.imshow('pepe', ff)
+            cv2.waitKey(30)
+
+      holds = hold(gallery_img, 35)
+      for h in holds:
+         data_movie_frames.append(h)
+         if self.PREVIEW is True:
+            cv2.imshow('pepe', h)
+            cv2.waitKey(300)
+
+      data_movie_frames.append(gallery_img)
+      if self.PREVIEW is True:
+         cv2.imshow('pepe', gallery_img)
+         cv2.waitKey(300)
+
+      # with allsky logo then END! 
+      #cv2.imshow('pepe', gallery_img)
+      #cv2.waitKey(0)
+
+      # fade into the logo then fade into black
+      black_frame = np.zeros((1080,1920,3),dtype=np.uint8)
+      cx = int((black_frame.shape[1] / 2) - ( self.RF.logo_1920.shape[1] / 2))
+      cy = int((black_frame.shape[0] / 2) - ( self.RF.logo_1920.shape[0] / 2))
+      black_logo = self.RF.watermark_image(black_frame,  self.RF.logo_1920, cx,cy, .9)
+
+      cx = int((gallery_img.shape[1] / 2) - ( self.RF.logo_1920.shape[1] / 2))
+      cy = int((gallery_img.shape[0] / 2) - ( self.RF.logo_1920.shape[0] / 2))
+      # 10% opact
+      image = self.RF.watermark_image(gallery_img,  self.RF.logo_1920, cx,cy, .1)
+      frames = fade(gallery_img, image, 10)
+      for frame in frames:
+         data_movie_frames.append(frame)
+         if self.PREVIEW is True:
+            cv2.imshow('pepe', frame)
+            cv2.waitKey(30)
+      # 25% opact
+      image = self.RF.watermark_image(frame,  self.RF.logo_1920, cx,cy, .25)
+      frames = fade(frame, image, 10)
+      for frame in frames:
+         data_movie_frames.append(frame)
+         if self.PREVIEW is True:
+            cv2.imshow('pepe', frame)
+            cv2.waitKey(30)
+      # 50% opact
+      image = self.RF.watermark_image(frame,  self.RF.logo_1920, cx,cy, .5)
+      frames = fade(frame, image, 10)
+      for frame in frames:
+         data_movie_frames.append(frame)
+         if self.PREVIEW is True:
+            cv2.imshow('pepe', frame)
+            cv2.waitKey(30)
+      # 75% opact
+      image = self.RF.watermark_image(frame,  self.RF.logo_1920, cx,cy, .75)
+      frames = fade(frame, image, 10)
+      for frame in frames:
+         data_movie_frames.append(frame)
+         if self.PREVIEW is True:
+            cv2.imshow('pepe', frame)
+            cv2.waitKey(30)
+
+      # fade to black logo 
+      image = self.RF.watermark_image(frame,  self.RF.logo_1920, cx,cy, .95)
+      frames = fade(image, black_logo, 20)
+      for frame in frames:
+         data_movie_frames.append(frame)
+         if self.PREVIEW is True:
+            cv2.imshow('pepe', frame)
+            cv2.waitKey(30)
+
+      data_movie_frames.append(black_logo)
+      if self.PREVIEW is True:
+         cv2.imshow('pepe', black_logo)
+         cv2.waitKey(30)
+      frames = hold(black_logo, 50)
+      for frame in frames:
+         data_movie_frames.append(frame)
+         if self.PREVIEW is True:
+            cv2.imshow('pepe', frame)
+            cv2.waitKey(30)
+
+      input("DONE RENDERING FRAMES... PLAY AND SAVE MOVIE? PRESS [ENTER]")
+      for frame in data_movie_frames:
+         if self.PREVIEW is True:
+            cv2.imshow('pepe', frame)
+            cv2.waitKey(30)
+      return(data_movie_frames)
+
+   def review_event_movie(self, event_id):
+      # get user input
+      self.PREVIEW = True 
+      self.MOVIE_FRAMES = []
+
+      self.load_stations_file()
+      event_d, event_t = event_id.split("_")
+      event_time = event_t[0:2] + ":" + event_t[2:4] + ":" + event_t[4:6]
+
+      cv2.namedWindow('pepe', cv2.WINDOW_NORMAL)
+      #cv2.resizeWindow("pepe", self.win_x, self.win_y)
+      cv2.resizeWindow("pepe", 1920, 1080)
+
+      event_day = self.event_id_to_date(event_id)
+      self.set_dates(event_day)
+      # MEDIA -- get media files from remote stations or wasabi
+      self.ev_dir = self.local_evdir + event_id + "/"
+      MOVIE_FRAMES_TEMP_FOLDER = self.ev_dir + "MOVIE_FRAMES/"
+      if os.path.exists(MOVIE_FRAMES_TEMP_FOLDER) is False:
+         os.makedirs(MOVIE_FRAMES_TEMP_FOLDER)
+
+      self.movie_conf_file = self.ev_dir + event_id + "_MOVIE_CONF.json" 
+      if os.path.exists(self.movie_conf_file):
+         print(self.movie_conf_file)
+         self.movie_conf = load_json_file(self.movie_conf_file)
+      else:
+         self.movie_conf = {}
+         self.movie_conf['location'] = input("Enter the location of the fireball")
+      if "hd_videos" not in self.movie_conf:
+         self.movie_conf['hd_videos'] = {}
+
+      save_json_file(self.movie_conf_file, self.movie_conf)
+
+      event_file = self.ev_dir + event_id + "-event.json"
+      good_obs_file = self.ev_dir + event_id + "_GOOD_OBS.json"
+      obs_data_file = self.ev_dir + event_id + "_OBS_DATA.json"
+      planes_file = self.ev_dir + event_id + "_PLANES.json"
+
+      ignore_file = self.ev_dir + event_id + "_IGNORE.json"
+      if os.path.exists(ignore_file) is True:
+         self.ignore = load_json_file(ignore_file)
+      else:
+         self.ignore = []
+
+      if os.path.exists(event_file) is True:
+         event_data = load_json_file(event_file)
+
+      if os.path.exists(good_obs_file) is True:
+         good_obs = load_json_file(good_obs_file)
+      if os.path.exists(obs_data_file) is True:
+         obs_data = load_json_file(obs_data_file)
+
+      for s in good_obs:
+         for o in good_obs[s]:
+            print("GO", s,o)
+      for o in obs_data:
+         print("OD", o)
+
+
+      #print("END EARLY")
+      #exit()
+ 
+      data_frames = self.event_data_movie(event_id, event_data, good_obs)
+ 
+
+      obs_vids = {}
+      station_count = {}
+      for station_id in good_obs:
+         for sfile in good_obs[station_id]:
+            obs_id = station_id  + "_" + sfile
+            local_sd_vid = self.ev_dir + obs_id
+            local_hd_vid = local_sd_vid.replace(".mp4", "-1080p.mp4")
+            if obs_id in self.obs_dict:
+               hd_video_file = self.obs_dict[obs_id]['hd_video_file']
+               remote_hd_vid = self.rurls[station_id] + "/meteors/" + event_day +  "/" + hd_video_file
+               if os.path.exists(local_sd_vid):
+                  print("   SD", local_sd_vid)
+               else:
+                  print("   NO LOCAL SD", local_sd_vid)
+
+               if os.path.exists(local_hd_vid):
+                  sz, elp = get_file_info(local_hd_vid)
+               else:
+                  sz = 0
+               
+               if os.path.exists(local_hd_vid) and sz > 0:
+                  print("   HD", local_hd_vid)
+               else:
+                  print("   NO LOCAL HD", local_hd_vid, sz)
+                  if "noord" in remote_hd_vid:
+                     remote_hd_vid = remote_hd_vid.replace("https", "http")
+                  cmd = "wget " + remote_hd_vid + " -O " + local_hd_vid
+                  print(cmd)
+                  os.system(cmd)
+               if os.path.exists(local_hd_vid) and sz > 0:
+                  obs_vids[obs_id] = local_hd_vid
+               else:
+                  obs_vids[obs_id] = local_sd_vid
+               if station_id in station_count:
+                  station_count[station_id] += 1
+               else:
+                  station_count[station_id] = 1
+      self.movie_conf['station_count'] = station_count
+      my_text = {}
+      my_text[0] = "A bright fireball occured on {:s} at {:s} over {:}.".format(event_day, event_time, self.movie_conf['location'])
+      my_text[1] = "The event was observed by {:s} cameras across {:s} stations.".format(str(len(obs_vids.keys())), str(len(station_count)))
+      my_text[2] = "Special thanks to the ALLSKY7 operators who recorded the event."
+
+      my_text[0] = "A bright fireball occured over {:s} on {:s} at {:}.".format(self.movie_conf['location'], event_day, event_time )
+      my_text[1] = "{:s} cameras across {:s} stations recored the event.".format(str(len(obs_vids.keys())), str(len(station_count)))
+      my_text[2] = "Special thanks to the ALLSKY7 operators. "
+
+
+
+      credits = []
+      for st in station_count:
+         photo_credit = self.photo_credits[st] 
+         credits.append(st + " " + photo_credit)
+         print (" ", st, photo_credit)
+
+      self.movie_conf['photo_credits'] = credits 
+      # ready to start the movie?
+      language = 'en'
+
+      fps = 25
+      RF = RenderFrames()
+      VE = VideoEffects()
+
+      base_frame,mx1,my1,mx2,my2 = RF.tv_frame()
+      cv2.imshow('pepe', base_frame)
+      cv2.waitKey(30)
+      #exit()
+
+      black_frame = np.zeros((1080,1920,3),dtype=np.uint8)
+      produced_by_text_frame = VE.show_text(["Produced by Mike Hankey..."], base_frame, 15, font_size=30, pos_y=480)
+      produced_by_text_frames = fade(black_frame, produced_by_text_frame, 40)
+      frame = produced_by_text_frame
+
+      y_space = 20
+      pos_y = int(1080 - (len(credits) * y_space))
+
+      intro = True  
+
+      if intro is True: 
+         credits_frame = VE.show_text(credits, base_frame, 3, font_size=30, pos_y=480)         
+
+      movie_frames_folder = self.ev_dir + "/movie_frames/"
+
+      if os.path.exists(movie_frames_folder) is False:
+         os.makedirs(movie_frames_folder)
+      if intro is True: 
+         iframes = make_intro(movie_frames_folder)
+         for fr in iframes:
+            self.MOVIE_FRAMES.append(fr)
+
+      text_frames_dir = self.ev_dir + "/audio_text/"
+      if os.path.exists(text_frames_dir) is False:
+         os.makedirs(text_frames_dir)
+    
+      if intro is True:
+
+         for frame in produced_by_text_frames:
+            self.MOVIE_FRAMES.append(frame)
+            if self.PREVIEW is True:
+               cv2.imshow('pepe', frame)
+               cv2.waitKey(30)
+
+         for i in range(0, 15):
+            self.MOVIE_FRAMES.append(produced_by_text_frame)
+
+         text_frames = VE.type_text([my_text[0]], base_frame, 5, font_size=30, pos_y=480)
+         for frame in text_frames:
+            self.MOVIE_FRAMES.append(frame)
+            if self.PREVIEW is True:
+               cv2.imshow('pepe', frame)
+               cv2.waitKey(30)
+         text_frames = VE.type_text([my_text[1]], base_frame, 5, font_size=30, pos_y=480)
+         for frame in text_frames:
+            self.MOVIE_FRAMES.append(frame)
+            if self.PREVIEW is True:
+               cv2.imshow('pepe', frame)
+               cv2.waitKey(30)
+         text_frames = VE.type_text([my_text[2]], base_frame, 5, font_size=30, pos_y=400)
+         for frame in text_frames:
+            self.MOVIE_FRAMES.append(frame)
+            if self.PREVIEW is True:
+               cv2.imshow('pepe', frame)
+               cv2.waitKey(30)
+
+      # INTRO IS ALMOST OVER 
+
+      if intro is True:
+         trans_frames = fade(frame, credits_frame, 50)
+         for cf in trans_frames:
+            self.MOVIE_FRAMES.append(cf)
+            if self.PREVIEW is True:
+               cv2.imshow('pepe', cf)
+               cv2.waitKey(30)
+            last_pic = cf
+     
+      for i in range(0, 25):
+         self.MOVIE_FRAMES.append(credits_frame)
+      # INTRO DONE
+      
+      # Build / load videos, stacks, ken burns
+      last_pic = cv2.resize(last_pic, (1920,1080))
+      all_media = self.load_process_media(obs_vids, event_id, last_pic)
+      all_media_save = all_media.copy()
+      for obv in all_media_save:
+         print("OBS ID:", obv)
+         del(all_media_save[obv]['ken_burns_frames'])
+         del(all_media_save[obv]['frames'])
+         del(all_media_save[obv]['stack_image'])
+      self.movie_conf['all_media'] = all_media_save
+      save_json_file(self.movie_conf_file, self.movie_conf)
+      print("ALL MEDIA", all_media.keys())
+
+      print("MOVIE IS READY TO PLAY....")
+      input("PRESS [ENTER] TO START")
+      #cmd = "./FFF.py imgs_to_vid /mnt/f/EVENTS/2023/05/27/20230527_010911/MOVIE_FRAMES/ 00 /mnt/f/EVENTS/2023/05/27/20230527_010911/MOVIE_FRAMES/20230527_010911_EVENT_MOVIE.mp4 25 28"
+      output_movie_file = self.ev_dir + event_id + "_EVENT_MOVIE.mp4" 
+      MOVIE_FRAME_NUMBER = 0
+
+      base_frame,mx1,my1,mx2,my2 = RF.tv_frame()
+      for dframe in self.MOVIE_FRAMES:
+         if len(dframe) == 2:
+            sframe, obs_id = dframe
+            last_frame = sframe
+         else:
+            sframe = dframe
+            obs_id = None
+            last_frame = sframe
+
+         #sframe = self.RF.watermark_image(frame, self.RF.logo_320, 1540, 25, .5, []) 
+         #sframe = RF.frame_template("1920_1p", [frame])
+        
+         cv2.putText(sframe, str(MOVIE_FRAME_NUMBER),  (10,10), cv2.FONT_HERSHEY_SIMPLEX, .4, (255,255,255), 1)
+         if MOVIE_FRAME_NUMBER > 675:
+            fw = mx2 - mx1
+            fh = my2 - my1
+            rframe = cv2.resize(sframe, (fw,fh))
+            sframe = base_frame.copy()
+            sframe[my1:my2,mx1:mx2] = rframe
+         print("Saving frame:", MOVIE_FRAME_NUMBER)
+         if obs_id is not None:
+            desc = obs_id.replace(".mp4", "")
+            station_id = obs_id.split("_")[0]
+            credits = station_id + " - " + self.photo_credits[station_id]
+            length = len(credits) * 17
+            #cv2.putText(sframe, str(credits),  (1920 - length,1040), cv2.FONT_HERSHEY_SIMPLEX, .8, (255,255,255), 2)
+            cv2.putText(sframe, str(credits),  (1920 - length,1040), cv2.FONT_HERSHEY_DUPLEX, .8, (255,255,255), 1)
+         
+         save_movie_frame(sframe, MOVIE_FRAME_NUMBER, MOVIE_FRAMES_TEMP_FOLDER)   
+         if self.PREVIEW is True:
+            cv2.imshow('pepe', sframe)
+            cv2.waitKey(30)
+         MOVIE_FRAME_NUMBER += 1
+
+      # now add the data frames parts
+      # trans into first data frame
+      map_frame = cv2.resize(data_frames[0], (1920,1080))
+      print(last_frame.shape)
+      print(map_frame.shape)
+      trans_frames = fade(last_frame, map_frame, 25)
+      for frame in trans_frames:
+         rframe = cv2.resize(frame, (fw,fh))
+         sframe = base_frame.copy()
+         sframe[my1:my2,mx1:mx2] = rframe
+         save_movie_frame(sframe, MOVIE_FRAME_NUMBER, MOVIE_FRAMES_TEMP_FOLDER)   
+         if self.PREVIEW is True:
+            cv2.imshow('pepe', sframe)
+            cv2.waitKey(30)
+         MOVIE_FRAME_NUMBER += 1
+      
+      # data frames
+      for frame in data_frames:
+         rframe = cv2.resize(frame, (fw,fh))
+         sframe = base_frame.copy()
+         sframe[my1:my2,mx1:mx2] = rframe
+         save_movie_frame(sframe, MOVIE_FRAME_NUMBER, MOVIE_FRAMES_TEMP_FOLDER)   
+         if self.PREVIEW is True:
+            cv2.imshow('pepe', sframe)
+            cv2.waitKey(30)
+         MOVIE_FRAME_NUMBER += 1
+
+      cmd = "./FFF.py imgs_to_vid {:s} 00 {:s} 25 28".format(movie_frames_folder, output_movie_file)
+      print(cmd)
+      os.system(cmd)
+
+
+   def load_process_media(self, obs_vids, event_id, last_pic=None):
+      
+      all_media = {}
+      for obv in sorted(obs_vids):
+         video_file = obs_vids[obv]
+         stack_file = obs_vids[obv].replace(".mp4", "-stacked.jpg")
+         all_media[obv] = {}
+         all_media[obv]['video_file'] = video_file
+         all_media[obv]['stack_file'] = stack_file
+         all_media[obv]['frames'] = load_frames_simple(video_file, (1920,1080))
+
+         if last_pic is not None:
+            print("last_pic", last_pic.shape)
+            print("frame", all_media[obv]['frames'][0].shape)
+            extra = slide_left(last_pic, all_media[obv]['frames'][0] , "FF", 0)
+            for e in extra:
+               self.MOVIE_FRAMES.append(e)
+               if self.PREVIEW is True:
+                  cv2.imshow('pepe', e)
+                  cv2.waitKey(30)
+
+         if os.path.exists(stack_file) is True:
+            all_media[obv]['stack_image'] = cv2.imread(stack_file)
+         else:
+            all_media[obv]['stack_image'] = stack_frames(all_media[obv]['frames'])
+         cv2.imwrite(stack_file, all_media[obv]['stack_image'])
+ 
+         roi = [300, 600,800,900]
+ 
+         #all_media[obv]['ken_burns_frames']  
+
+         cframes, kb_data, hd_fns, med_sync = self.ken_burns_effect(obv, all_media[obv]['frames'] )
+         all_media[obv]['ken_burns_frames']  = cframes
+         all_media[obv]['ken_burns_data']  = kb_data 
+         all_media[obv]['hd_fns']  = hd_fns 
+         all_media[obv]['med_sync']  = med_sync 
+
+
+         obs_id = obv
+         obs = self.obs_dict[obs_id]
+         all_media[obv]['obs_data']  = obs 
+         datetimes = [row[0] for row in obs['meteor_frame_data']]
+         fns = [row[1] for row in obs['meteor_frame_data']]
+         sd_fns = fns
+         xs = [row[2] for row in obs['meteor_frame_data']]
+         ys = [row[3] for row in obs['meteor_frame_data']]
+         ints = [row[6] for row in obs['meteor_frame_data']]
+         azs = [row[9] for row in obs['meteor_frame_data']]
+         els = [row[10] for row in obs['meteor_frame_data']]
+             
+         fc = 0
+         for frame in  all_media[obv]['ken_burns_frames']:
+            # only show the ending frames if there is 'action' within 10 frames 
+            if fc > min(hd_fns):
+               start = True
+            if fc <= max(hd_fns) + 10 and start is True:
+               self.MOVIE_FRAMES.append((frame, obv))
+               if self.PREVIEW is True:
+                  cv2.imshow('pepe',  frame)
+                  cv2.waitKey(30)
+            fc += 1
+         last_pic = all_media[obv]['ken_burns_frames'][-1]
+
+      # show ken burns videos stacks
+
+      # show stacks
+      for obv in all_media:
+
+         this_pic = all_media[obv]['stack_image'] 
+         if this_pic.shape[0] != 1080:
+            this_pic = cv2.resize(this_pic, (1920,1080))
+         if last_pic.shape[0] != 1080:
+            last_pic = cv2.resize(last_pic, (1920,1080))
+         trans_frames = fade(last_pic, this_pic, 25)
+         last_pic = this_pic
+         for cf in trans_frames:
+            self.MOVIE_FRAMES.append((cf, obv))
+            if self.PREVIEW is True:
+               cv2.imshow('pepe', cf)
+               cv2.waitKey(30)
+
+         # show stack for almost a second
+         for q in range(0,20):
+            self.MOVIE_FRAMES.append((this_pic, obv))
+            if self.PREVIEW is True:
+               cv2.imshow('pepe',  all_media[obv]['stack_image'])
+               cv2.waitKey(30)
+      return(all_media)
+
+   def ken_burns_effect(self, obs_id, frames ):
+      # for each frame, zoom into the area a little bit more. 
+      # that means we will crop the photo some
+      # then resize it to the full size. 
+      # to do this we should know the final max size and position and duration
+
+      mask_img = self.auto_mask(frames[0])
+
+
+      cframes = []
+      obs = self.obs_dict[obs_id]
+      datetimes = [row[0] for row in obs['meteor_frame_data']]
+      fns = [row[1] for row in obs['meteor_frame_data']]
+      sd_fns = fns
+      xs = [row[2] for row in obs['meteor_frame_data']]
+      ys = [row[3] for row in obs['meteor_frame_data']]
+      ints = [row[6] for row in obs['meteor_frame_data']]
+      azs = [row[9] for row in obs['meteor_frame_data']]
+      els = [row[10] for row in obs['meteor_frame_data']]
+
+      sync_done = False 
+      if "all_media" in self.movie_conf: 
+         if "hd_fns" in self.movie_conf['all_media'][obs_id]:
+            hd_fns = self.movie_conf['all_media'][obs_id]['hd_fns']
+            med_sync = self.movie_conf['all_media'][obs_id]['med_sync']
+            sync_done = True
+
+      if sync_done is False:
+         hd_fns, med_sync = self.sync_hd_frames(frames, fns, xs, ys)
+      
+      fns = hd_fns
+
+      dur = len(frames)
+      x1,y1,x2,y2 = min(xs), min(ys), max(xs), max(ys) 
+      cx = int((x1 + x2) / 2)
+      cy = int((y1 + y2) / 2)
+
+
+      if cx > x2:
+         cx = int((cx - (x2  / 4)))
+      else:
+         cx = int((cx + (x2  / 4)))
+      cy = int((cy + y2 ) / 2)
+
+      cx = xs[0]
+      cy = ys[0]
+      min_w = x2 - x1
+      min_h = y2 - y1
+      min_w = 320 
+      min_h = 180 
+      min_width, min_height = find_resolution(min_w,min_h,all_resolutions)
+
+      # build crop sizes array
+      start_size = [1920,1080]
+      fc = 0
+      last_frame = None
+      cx = None 
+      cy = None
+
+      # build frame lookup dict
+      flookup = {} 
+      kb_data = []
+      for i in range(0,len(fns)):
+         fn = fns[i]
+         x = xs[i]
+         y = ys[i]
+         flookup[fn] = [x,y]
+
+      for i in range(0,len(frames)):
+         
+         perc_step = 1 - (i/(len(frames)))
+         crop_width = 1920 - int((start_size[0] - (start_size[0] * perc_step)))
+         crop_height = 1080 - int((start_size[1] - (start_size[1] * perc_step)))
+         cw, ch = find_resolution(crop_width,crop_height,all_resolutions)
+         frame = frames[i].copy()
+         track_frame = cv2.subtract(frame, mask_img) 
+         #cv2.imshow('pepe', track_frame)
+         #cv2.waitKey(0)
+         #if last_frame is not None:
+         # real time tracking (not needed here?)
+         if False:
+            sub = cv2.subtract(track_frame, last_frame)
+            sub =  cv2.cvtColor(sub, cv2.COLOR_BGR2GRAY)
+
+            min_val, max_val, min_loc, (mx,my)= cv2.minMaxLoc(sub)
+            thresh_val = 80 
+            _, thresh_image = cv2.threshold(sub, thresh_val, 255, cv2.THRESH_BINARY)
+            cnts = get_contours_in_image(thresh_image)
+            if len(cnts) > 0:
+               cx = cnts[0][0] + cnts[0][2]
+               cy = cnts[0][1] + cnts[0][3]
+               for cnt in cnts:
+                  print("CNTs", cnts)
+            else:
+               print("NO CNTS")
+             
+
+
+
+         if i in flookup:
+            cx,cy = flookup[i] 
+            #cy = ys[fc]
+            #fc += 1
+
+         if cx is None:
+            cx = xs[0] 
+            cy = ys[0] 
+
+         # CX is tre track / focus point
+
+         show_frame = frames[i].copy()
+
+         #cv2.circle(show_frame, (cx,cy), int(5), (128,128,128),1)
+
+         if cw < crop_width or ch < crop_height:
+            cw = crop_width
+            ch = crop_height
+         if cw < min_width or ch < min_height:
+            cw = min_width
+            ch = min_height
+          
+         nx1 = int(cx - (cw / 2))
+         nx2 = int(cx + (cw / 2))
+         ny1 = int(cy - (ch / 2))
+         ny2 = int(cy + (ch / 2))
+
+
+         if nx1 <= 0:
+            nx1 = 0
+            nx2 = cw
+         if ny1 <= 0:
+            ny1 = 0
+            ny2 = ch
+
+         if nx2 >= 1920 :
+            nx2 = 1920
+            nx1 = 1920 - cw
+         if ny2 >= 1080:
+            ny2 = 1080 
+            ny1 = 1080 - ch
+         kb_data.append((i, nx1, ny1, nx2, ny2))
+         #cv2.rectangle(show_frame, (int(nx1), int(ny1)), (int(nx2) , int(ny2) ), (255, 255, 255), 2)
+         cropped_frame = show_frame[ny1:ny2,nx1:nx2]
+         cropped_frame = cv2.resize(cropped_frame, (1920,1080))
+         #cv2.imshow('pepe', cropped_frame)
+         #cv2.waitKey(30)
+         cframes.append(cropped_frame)
+         #print("CROP SIZE", i, crop_width, crop_height , cw, ch)
+         last_frame = track_frame
+      return(cframes, kb_data, hd_fns, med_sync)            
+
+   def sync_hd_frames(self, frames, fns, xs, ys):
+      sync_vals = []
+      hd_sd_sync = 0
+      for i in range(0,len(fns)):
+         fn = fns[i]
+         x = xs[i]
+         y = ys[i]
+         print(i, fn)
+         brightest_frame_val = 0 
+         brightest_frame_num = 0
+         for fc in range(0, len(frames)):
+            frame = frames[fc].copy()
+            frame =  cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+            val = frame[y,x]
+            if val > brightest_frame_val:
+               brightest_frame_val = val
+               brightest_frame_num = fc 
+               #print("  *", fc, val)
+            #else:
+               #print("   ", fc, val)
+         if brightest_frame_num != 0:
+            hd_sd_sync = fn - brightest_frame_num 
+            sync_vals.append(hd_sd_sync)
+         if len(sync_vals) > 50:
+            break
+         print("Brightest HD frame value {:s} found in HD frame {:s} maps to SD Frame {:s} SYNC=".format(str(brightest_frame_val), str(brightest_frame_num), str(fn)), str(hd_sd_sync))
+      med_sync = int(np.median(sync_vals))
+      print("MEDIAN SYNC VAL:", med_sync)
+      hd_fns = []
+      for fn in fns:
+         hd_fn = fn - med_sync
+         hd_fns.append(hd_fn)
+      print("HD FNS", hd_fns)
+      for i in range(0,len(fns)):
+         fn = fns[i]
+         hd_fn = hd_fns[i]
+         x = xs[i]
+         y = ys[i]
+
+         if hd_fn > 0 and hd_fn < len(frames):
+            hd_frame = frames[hd_fn].copy()
+            cv2.circle(hd_frame, (x,y), int(5), (128,128,128),1)
+            #cv2.imshow("pepe", hd_frame)
+            #cv2.waitKey(0)
+         else:
+            print("HD FRAME DOESN NOT EXIST!", hd_fn)
+      return(hd_fns, med_sync) 
+      #input("DONE SYNC")
+
+
+
    def review_event(self, event_id):
       cv2.namedWindow('pepe')
       cv2.resizeWindow("pepe", self.win_x, self.win_y)
@@ -2883,16 +3785,16 @@ class AllSkyNetwork():
          ignore = []
       self.ignore = ignore
 
-      dels = {}
+      self.dels = {}
       for out_file in self.sd_clips:
          print("OUTFILE", out_file)
          for ig in ignore:
             if ig in out_file:
-               dels[out_file] = 1
-      for x in dels :
+               self.dels[out_file] = 1
+               print("IGNORE", out_file)
+      for x in self.dels :
          del(self.sd_clips[x])
          print("DELETE:", x)
-
          
       # MEDIA -- now load frames and make stacks as needed
       for out_file in self.sd_clips:
@@ -3404,7 +4306,8 @@ class AllSkyNetwork():
       for r in obs_data:
          event_id, station_id, obs_id, fns, times, xs, ys, azs, els, ints, \
             status, ignore, ai_confirmed, human_confirmed, ai_data, prev_uploaded,sd_vid_file = r
-         print("REVIEW OBS FRAMES:", sd_vid_file)
+         sd_vid = sd_vid_file.split("/")[-1]
+         print("REVIEW OBS FRAMES SD VID FILE:", sd_vid_file)
          fd = {}
          if len(fns) == 0:
             print("ERROR: NO REDUCTION FOR OBS", obs_id, fns, xs, ys)
@@ -3629,11 +4532,14 @@ class AllSkyNetwork():
          if os.path.exists(edir) is False:
             print("Make dir ", edir)
             os.makedirs(edir)
-         input("STEP2a")
          save_json_file(event_data_file, event_data)
          save_json_file(obs_data_file, obs_data, True)
          cv2.imwrite(map_img_file, map_img, [cv2.IMWRITE_JPEG_QUALITY, 70])
-      input("STEP2b")
+
+      #for x in self.dels :
+      #   del(self.sd_clips[x])
+      print("OBS:", obs_data1.keys())
+     
 
       if "2d_status" not in event_data:
          event_data = self.get_2d_status(event_data, obs_data)
@@ -3688,7 +4594,8 @@ class AllSkyNetwork():
       else:
          cv2.putText(simg, event_data['event_status'],  (20,60), cv2.FONT_HERSHEY_SIMPLEX, .8, (0,255,0), 2)
 
-      cv2.imwrite(review_img_file, 255*simg, [int(cv2.IMWRITE_JPEG_QUALITY), 70])
+      #cv2.imwrite(review_img_file, 255*simg, [int(cv2.IMWRITE_JPEG_QUALITY), 70])
+      cv2.imwrite(review_img_file, simg, [int(cv2.IMWRITE_JPEG_QUALITY), 70])
       cv2.imwrite(gallery_img_file, gallery_image, [int(cv2.IMWRITE_JPEG_QUALITY), 70])
       print("SAVING:", review_img_file)
 
@@ -3714,12 +4621,18 @@ class AllSkyNetwork():
          for row in rows:
             (event_id, station_id, obs_id, fns, times, xs, ys, azs, els, ints, \
                status, ignore, ai_confirmed, human_confirmed, ai_data, prev_uploaded ) = row
+            ig = False
             for ig in self.ignore:
                if ig in obs_id:
                   self.ignored_obs[obs_id] = (event_id, station_id, obs_id, fns, times, xs, ys, azs, els, ints, \
                      status, ignore, ai_confirmed, human_confirmed, ai_data, prev_uploaded ) 
+                  ig = True
                   print("SKIP IGNORE!", obs_id)
+                  input("NOW WHAT")
                   continue
+            if ig is True:
+               print("WE IGNORE THIS", ig)
+               continue
             times = json.loads(times)
             fns = json.loads(fns)
             xs = json.loads(xs)
@@ -3747,12 +4660,14 @@ class AllSkyNetwork():
                stack_img = np.zeros((1080,1920,3),dtype=np.uint8)
                stack_imgs_dict[obs_id] = stack_img 
                not_found.append((stack_file, stack_img))
-         # review_frames review frames
-         if True:
+      # review_frames review frames
+      if True:
 
-            print("OBS DB", obs_db)
-            self.review_obs_frames(obs_db)
-            input("WAIT")
+         print("OBS DB", len(obs_db))
+         for row in obs_db:
+            print("OR", row[2])
+         input("REVEW OBS FRAMES FOR OBS_DB " )
+         self.review_obs_frames(obs_db)
       cv2.imshow("pepe", simg)
       cv2.waitKey(30)
 
@@ -3951,7 +4866,6 @@ class AllSkyNetwork():
             print("IGNORE FOUND", stack_file)
          else:
             print("IGNORE missing", stack_file)
-
       for sd_vid in missing_files:
          stack_file = self.ev_dir + sd_vid.replace(".mp4", "-stacked.jpg")
          if os.path.exists(stack_file) is True:
@@ -4340,7 +5254,6 @@ class AllSkyNetwork():
       self.cur.execute(sql, svals)
       rows = self.cur.fetchall()
       data = []
-      #print(sql, svals)
       for row in rows:
          (event_id, event_minute, revision, event_start_time, event_start_times, stations, obs_ids, lats, lons, event_status, run_date, run_times ) = row
          event_data['event_id'] = event_id
@@ -4398,9 +5311,21 @@ class AllSkyNetwork():
          st_az_pts[station_id].append(obs_data[obs_id]['az_end_point'])
          st_az_pts[obs_id] = [obs_data[obs_id]['az_start_point'], obs_data[obs_id]['az_end_point']]
 
-      print("IGNORE", self.ignore)
-      print(event_data)
       lc = 0 
+      deleted = []
+      good = []
+      for obs_id in event_data['obs_ids']:
+         
+         go = True
+         for ig in self.ignore:
+            if ig in obs_id:
+               print("SKIP IGNORE:", obs_id, ig)
+               deleted.append(obs_id)
+               go = False
+         if go is True:
+            good.append(obs_id)
+      event_data['obs_ids'] = good
+
 
       # THIS IS A BUG!!! OBS NEED TO BE UPDATED SOMEWHERE / SOMEHOW WHAT DO WE DO NOW!
       # OBS ARE BEING RELOADED SOMEWHERE ELSE, BUT THE DB IS NOT UPDATED RIGHT
@@ -4408,6 +5333,11 @@ class AllSkyNetwork():
       self.ignored_obs = {}
       self.deleted_obs = {}
       for obs_id in event_data['obs_ids']:
+         for ig in self.ignore:
+            if ig in obs_id:
+               print("SKIP IGNORE:", obs_id, ig)
+               continue
+
          sql = """
             SELECT event_id, event_minute, station_id, obs_id, fns, times, xs, ys, azs, els, ints, status, ignore 
               FROM event_obs
@@ -4416,7 +5346,6 @@ class AllSkyNetwork():
          svals = [obs_id]
          self.cur.execute(sql, svals)
          rows = self.cur.fetchall()
-         print(self.station_loc.keys())
 
 
 
@@ -4472,7 +5401,6 @@ class AllSkyNetwork():
                   #ignore= dobs['status']
 
 
-            input("Waiting")
 
 
             lat,lon,alt = self.station_loc[station_id][:3]
@@ -5244,6 +6172,123 @@ class AllSkyNetwork():
       print("SKIPPING (for now)", cmd)
       #os.system(cmd)
 
+   def update_all_obs_int(self, event_id):
+      print("YO")
+
+   def update_obs_intensity(self, event_id, obs_id, obs_data=None, frames=None):
+      self.event_id = event_id
+      print("YO", obs_id)
+      el = obs_id.split("_") 
+      station_id = el[0] 
+      date = el[1] + "_" + el[2] + "_" + el[3]
+      self.set_dates(date)
+      local_event_dir = "/mnt/f/EVENTS/" + self.year + "/" + self.month + "/" + self.dom + "/" + self.event_id + "/" 
+      self.ev_dir = local_event_dir 
+
+
+      if obs_data is None:
+         obs_data = self.obs_dict[obs_id]
+      sd_vid = self.ev_dir + station_id + "_" + obs_data['sd_video_file']
+
+      datetimes = [row[0] for row in obs_data['meteor_frame_data']]
+      fns = [row[1] for row in obs_data['meteor_frame_data']]
+      xs = [row[2] for row in obs_data['meteor_frame_data']]
+      ys = [row[3] for row in obs_data['meteor_frame_data']]
+      ws = [row[4] for row in obs_data['meteor_frame_data']]
+      hs = [row[5] for row in obs_data['meteor_frame_data']]
+      ints = [row[6] for row in obs_data['meteor_frame_data']]
+      azs = [row[9] for row in obs_data['meteor_frame_data']]
+      els = [row[10] for row in obs_data['meteor_frame_data']]
+      
+
+
+      frames = load_frames_simple(sd_vid)
+      last_frame = None
+      for i in range(0,len(fns)):
+         fn = fns[i]
+         frame = frames[fn]
+         frame = cv2.resize(frame, (1920,1080))
+         gray_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+
+         x = xs[i]
+         y = ys[i]
+         r = 10
+         r = self.find_size(frame,int(x),int(y))
+         meteor_int = do_photo(gray_frame, (x,y), r+1)
+         print("INT:", i, meteor_int)
+         cv2.circle(frame, (int(x),int(y)), int(r), (0,255,255),2)
+         cv2.imshow('pepe', frame)
+         cv2.waitKey(0)
+      print("SD VID:", sd_vid)
+      
+   def find_size(self,img,x,y):
+      start_val = np.mean(img[y,x])
+
+      fwhms = []
+      fwhm = None
+      for i in range(0,150):
+         nx = x + i
+         if nx >= 1920:
+            nx = 1919 
+            continue
+         val = np.mean(img[y,nx])
+         perc = val / start_val  
+         if fwhm is None and (perc < .50 or val < 80):
+            #print("*** X+", i, "VAL", nx,y,val, perc)
+            fwhm = i
+            fwhms.append(i)
+            continue
+
+      fwhm = None
+      for i in range(0,150):
+         nx = x - i
+         if nx <= 0:
+            nx = 0 
+            continue
+         val = np.mean(img[y,nx])
+         perc = val / start_val  
+         if fwhm is None and (perc < .50 or val < 80):
+            fwhm = i
+            fwhms.append(i)
+            #print("*** X-", i, "VAL", nx,y,val, perc)
+            break 
+
+      fwhm = None
+      for i in range(0,150):
+         ny = y + i
+         if ny >= 1080:
+            ny = 1079 
+            continue
+         val = np.mean(img[ny,x])
+         perc = val / start_val  
+         if fwhm is None and (perc < .50 or val < 80):
+            fwhm = i
+            fwhms.append(i)
+            #print("*** Y+", i, "VAL", x,ny,val, perc)
+            break 
+
+      fwhm = None
+      for i in range(0,150):
+         ny = y - i
+         if ny <= 0:
+            ny = 0  
+            continue
+         val = np.mean(img[ny,x])
+         perc = val / start_val  
+         if fwhm is None and (perc < .50 or val < 80):
+            fwhm = i
+            fwhms.append(i)
+            #print("*** Y-", i, "VAL", x,y,val, perc)
+            break 
+
+      if len(fwhms) > 0 :
+         mf = np.mean(fwhms)
+         if mf > 5:
+            return(np.mean(fwhms))
+         else:
+            return(5)
+      else:
+         return(10)
 
    def update_event_obs(self, obs):
       print("OBS:", obs)
@@ -5273,7 +6318,6 @@ class AllSkyNetwork():
       self.cur.execute(sql,ivals)
       self.con.commit()
       #print("OBS UPDATED", obs_id)
-      #input("CONT")
       
 
    def make_event_page(self, event_id):
@@ -6119,13 +7163,11 @@ class AllSkyNetwork():
          except:
             print("*** EXCEPTION: WMPL_solve FAILED TO RUN!")
             #solve_status = WMPL_solve(event_id, temp_obs, time_sync, force)
-            #input("EVENT SOLVE FAILED!")
          try:
             self.make_event_page(event_id)
          except:
             print("*** EXCEPTION: Make event page FAILED TO RUN!")
             status = "FAILED"
-            #input("EVENT FINISHED BUT GRAPHS FAILED!")
             self.make_event_page(event_id)
 
       else:
@@ -10946,7 +11988,7 @@ status [date]   -    Show network status report for that day.
             best_calib['cat_image_stars'] = cat_image_stars
             best_calib['total_res_px'] = avg_res 
             cv2.imshow('calib', show_img)
-            cv2.waitKey(0)
+            cv2.waitKey(30)
 
  
 

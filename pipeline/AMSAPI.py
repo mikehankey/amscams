@@ -252,7 +252,7 @@ class AMSAPI():
       else:
          self.obs[date] = []
 
-      print("Loaded events for day:", date, len(self.events[date]))
+      print("Loaded ALLSKY7 events for day:", date, len(self.events[date]))
 
    def find_obs(self, avg_date_utc, lat,lon):
       tdate = avg_date_utc.split(" ")[0].replace("-", "_")
@@ -264,6 +264,8 @@ class AMSAPI():
       print(len(self.obs[tdate]), "TOTAL OBS")
       self.obs.keys()
       for obs in self.obs[tdate]:
+         if "event_start_time" not in obs:
+            obs['event_start_time'] = ""
          if obs['event_start_time'] != "":
             obs_dt =  datetime.datetime.strptime(obs['event_start_time'], "%Y-%m-%d %H:%M:%S.%f")
          else:
@@ -289,8 +291,8 @@ class AMSAPI():
                 obs['dist_from_ams'] = dist_from_obs
                 found.append(obs)
       print("AS7 OBS NEAR ", avg_date_utc, lat, lon, len(found))
-      input("WAIT")
       return(found)
+
    def find_event(self, avg_date_utc, lat,lon):
       #check for AS7 events with a few minutes of the date passed in
       events = []
@@ -349,6 +351,12 @@ if __name__ == '__main__':
    # be considered "AMS EVENTS" -- this is code for big events.
    #
 
+   # final output of this should be a AMS_ALLSKY7_DATA.json -- which has the merged results? (part1)
+   # also need to do something for the MIN files / non-detected stuff. (part2)
+   # part 1 = associate detected meteors
+   # part 2 = associate minute files
+   # part 3 = save all media in cloud regardless if the meteor is present or not
+
    year = sys.argv[1]
    AA = AMSAPI()
    ASN = AllSkyNetwork()
@@ -375,19 +383,52 @@ if __name__ == '__main__':
       data['ams_events'] = temp
    else:
       data = {}
+      data['ams_events'] = {}
       ams_events = {}
 
+   print("Loaded", ams_as7_data_file)
+
+   print("AMS ONLY:", resp['result'].keys())
+   print("AMS-AS7 :", data['ams_events'].keys())
+
+   ams_ids = resp['result'].keys()
+   ams_as7_ids = data['ams_events'].keys()
+
+   # check which AMS events have already been processed 
+   not_done_ams_ids = [] 
+   done_ams_ids = [] 
+   for ams_id in ams_ids:
+      if ams_id in ams_as7_ids:
+         print("Done already.", ams_id)
+         done_ams_ids.append(ams_id)
+         not_done_ams_ids.append(ams_id)
+      else:
+         print("Not Done already.", ams_id)
+         not_done_ams_ids.append(ams_id)
+
    ams_as7_events = []
-   for ams_event_id in sorted(resp['result'], reverse=True):
+   #for ams_event_id in sorted(resp['result'], reverse=True):
+   ec = 1
+   total = len(not_done_ams_ids)
+   print("DONE:", done_ams_ids)
+   print("NOT DONE:", not_done_ams_ids)
+   for ams_event_id in sorted(not_done_ams_ids):
+      print("Doing", ams_event_id,  ec, "of", total)
+      ec += 1
       if ams_event_id not in ams_events:
          ams_events[ams_event_id] = resp['result'][ams_event_id]
          ams_events[ams_event_id]['ams_event_id'] = ams_event_id
          ams_events[ams_event_id]['allsky7'] = {}
          ams_events[ams_event_id]['allsky7']['stations'] = {}
-      if "geoloc" not in ams_events[ams_event_id] or ams_events[ams_event_id]['geoloc'] == None:
-         #print("geoloc not in ams_events data yet",  ams_events[ams_event_id].keys())
+      else:
+         print("SKIP AMS EVENT ALREADY DONE", ams_event_id)
+         #continue
+      if False: # "geoloc" not in ams_events[ams_event_id] or ams_events[ams_event_id]['geoloc'] == None:
+         print("geoloc not in ams_events data yet",  ams_events[ams_event_id].keys())
          try:
+         #if True:
             location = AA.geolocator.reverse(str(ams_events[ams_event_id]['start_lat'])+","+str(ams_events[ams_event_id]['start_long']))
+            time.sleep(1)
             if location is not None:
                print("DID GEOLOC FOR ", ams_event_id, location.raw['address'])
                
@@ -395,45 +436,56 @@ if __name__ == '__main__':
                ams_events[ams_event_id]['geoloc'] = location.raw['address']
 
                data['ams_events'] = ams_events
-               save_json_file(ams_as7_data_file, data)
+               #save_json_file(ams_as7_data_file, data)
 
                #save_json_file(ams_as7_data_file, ams_events)
          except:
             ams_events[ams_event_id]['country_code'] = "world" 
             ams_events[ams_event_id]['geoloc'] = None
+            input("GEOLOC FAIL")
       ams_events[ams_event_id]['avg_date_utc'] = resp['result'][ams_event_id]['avg_date_utc']
       ams_events[ams_event_id]['date'] = resp['result'][ams_event_id]['avg_date_utc'].split(" ")[0]
       event_date = ams_events[ams_event_id]['date']
+
       if event_date not in AA.events:
          AA.load_events_for_day(event_date)   
 
-      as7_event = AA.find_event(ams_events[ams_event_id]['avg_date_utc'], ams_events[ams_event_id]['end_lat'], ams_events[ams_event_id]['end_long'])
-      as7_obs = AA.find_obs(ams_events[ams_event_id]['avg_date_utc'], ams_events[ams_event_id]['end_lat'], ams_events[ams_event_id]['end_long'])
+      #if "allsky7_check_complete" not in ams_events[ams_event_id]:
+      if True:
+         as7_event = AA.find_event(ams_events[ams_event_id]['avg_date_utc'], ams_events[ams_event_id]['end_lat'], ams_events[ams_event_id]['end_long'])
+         as7_obs = AA.find_obs(ams_events[ams_event_id]['avg_date_utc'], ams_events[ams_event_id]['end_lat'], ams_events[ams_event_id]['end_long'])
  
-      ams_events[ams_event_id]['allsky7']['event_data'] = as7_event
-      ams_events[ams_event_id]['allsky7']['obs_data'] = as7_obs
-      if as7_event is not None:
-         print("AS7 EVENT:", as7_event['event_id'])
-         print("   STATIONS:", as7_event['stations'])
-         print("   FILES:", len(as7_event['files']))
-         print("   OBS:", len(as7_obs))
-      for st_id in AA.station_dict:
-         if AA.station_dict[st_id]['op_status'] == "ACTIVE":
-         #if True:
-            dist_from_station = dist_between_two_points(float(AA.station_dict[st_id]['lat']), float(AA.station_dict[st_id]['lon']), float(resp['result'][ams_event_id]['epicenter_lat']), float(resp['result'][ams_event_id]['epicenter_long']))
-            bearing = AA.get_bearing(float(AA.station_dict[st_id]['lat']), float(AA.station_dict[st_id]['lon']), float(resp['result'][ams_event_id]['epicenter_lat']), float(resp['result'][ams_event_id]['epicenter_long']))
-            if dist_from_station < 450:
-               ams_events[ams_event_id]['allsky7']['stations'][st_id] = {}
-               ams_events[ams_event_id]['allsky7']['stations'][st_id]['station_id'] = st_id
-               ams_events[ams_event_id]['allsky7']['stations'][st_id]['station_distance'] = float(round(dist_from_station,2) )
-               ams_events[ams_event_id]['allsky7']['stations'][st_id]['station_bearing'] = float(round(bearing,1) )
-               ams_events[ams_event_id]['allsky7']['stations'][st_id]['location'] = [AA.station_dict[st_id]['lat'], AA.station_dict[st_id]['lon'], AA.station_dict[st_id]['alt']]
+         ams_events[ams_event_id]['allsky7']['event_data'] = as7_event
+         ams_events[ams_event_id]['allsky7']['obs_data'] = as7_obs
+         ams_events[ams_event_id]['allsky7_check_complete'] = True
+
+         if as7_event is not None:
+            print("AS7 EVENT:", as7_event['event_id'])
+            print("   STATIONS:", as7_event['stations'])
+            print("   FILES:", len(as7_event['files']))
+            print("   OBS:", len(as7_obs))
+
+         for st_id in AA.station_dict:
+            if AA.station_dict[st_id]['op_status'] == "ACTIVE":
+            #if True:
+               dist_from_station = dist_between_two_points(float(AA.station_dict[st_id]['lat']), float(AA.station_dict[st_id]['lon']), float(resp['result'][ams_event_id]['epicenter_lat']), float(resp['result'][ams_event_id]['epicenter_long']))
+               bearing = AA.get_bearing(float(AA.station_dict[st_id]['lat']), float(AA.station_dict[st_id]['lon']), float(resp['result'][ams_event_id]['epicenter_lat']), float(resp['result'][ams_event_id]['epicenter_long']))
+               if dist_from_station < 450:
+                  ams_events[ams_event_id]['allsky7']['stations'][st_id] = {}
+                  ams_events[ams_event_id]['allsky7']['stations'][st_id]['station_id'] = st_id
+                  ams_events[ams_event_id]['allsky7']['stations'][st_id]['station_distance'] = float(round(dist_from_station,2) )
+                  ams_events[ams_event_id]['allsky7']['stations'][st_id]['station_bearing'] = float(round(bearing,1) )
+                  ams_events[ams_event_id]['allsky7']['stations'][st_id]['location'] = [AA.station_dict[st_id]['lat'], AA.station_dict[st_id]['lon'], AA.station_dict[st_id]['alt']]
 
 
       if len(ams_events[ams_event_id]['allsky7']['stations']) > 0 and as7_event is not None:
          ams_events[ams_event_id] = AA.populate_as7_data(ams_events[ams_event_id]) 
          map_fig = AA.ams_as7_event_map(ams_events[ams_event_id])
          ams_as7_events.append((ams_event_id, as7_event, as7_obs))
+      data['ams_events'] = ams_events
+      data['ams_as7_events'] = ams_as7_events
+      save_json_file(ams_as7_data_file, data)
+
    data['ams_events'] = ams_events
    data['ams_as7_events'] = ams_as7_events
    save_json_file(ams_as7_data_file, data)
