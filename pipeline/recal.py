@@ -1822,6 +1822,9 @@ def plot_cal_history(con, cur, json_conf):
          img = cv2.imread(plot_file)
          ih,iw = img.shape[:2]
          all_imgs.append(img)
+      else:
+         iw = 1920
+         ih = 1080 
    mh = ih * len(all_imgs) + ih
    c = 0
    all_img = np.zeros((mh,iw,3),dtype=np.uint8)
