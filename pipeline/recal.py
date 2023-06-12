@@ -773,7 +773,8 @@ def calc_res_from_stars(cal_fn, cal_params, json_conf):
       cal_params['cat_image_stars'] = up_stars
    return(cal_params)
 
-def cal_health(con, cur, json_conf):
+def cal_health(con, cur, json_conf, cam_num=None):
+   cam_num = cam_num.upper()
    autocal_dir = "/mnt/ams2/cal/" 
    station_id = json_conf['site']['ams_id']
 
@@ -911,7 +912,7 @@ def cal_health(con, cur, json_conf):
    pjobs = []
    for job in jobs:
       pjobs.append(job)
-      #print("PJOBs", job)
+      print("PJOBs", job)
 
    i, o, e = select.select( [sys.stdin], [], [], 10 )
    if (i) :
@@ -919,12 +920,14 @@ def cal_health(con, cur, json_conf):
       selected_cam = cam_nums[scam_num]
       print("SELECTED CAMERA:", selected_cam)
       cam_menu(selected_cam, con, cur, json_conf,cam_status, cam_stats)
-   else:
+   elif cam_num is None:
       max_cams = len(cam_nums)
       scam_num = input("Select cam number (1-" + str(max_cams) + ")")
       selected_cam = cam_nums[int(scam_num)]
       print("SELECTED CAMERA:", selected_cam)
       cam_menu(selected_cam, con, cur, json_conf,cam_status, cam_stats)
+   else:
+      print("ALL CAMERAS SELECTED.")
 
    # below here is auto jobs stuff disabled on 4/8/23 for rework
   
@@ -1053,7 +1056,7 @@ def cam_menu(cam_id, con,cur, json_conf, cam_status="", cam_stats=None):
          elif int(cmd) == 9:
             os.system("cd ../pythonv2/; ./autoCal.py cal_index")
          elif int(cmd) == 10:
-            cal_health(con, cur, json_conf)
+            cal_health(con, cur, json_conf )
          else:
             print("BAD INPUT!", cmd)
             cam_menu(cam_id, con,cur, json_conf, cam_status)
@@ -7041,7 +7044,8 @@ def cat_star_match(cal_fn, cal_params, cal_img, cat_stars):
    if True:
       for row in cat_stars:
          name,mag,ra,dec,new_cat_x,new_cat_y,zp_cat_x,zp_cat_y = row
-
+         cv2.imshow('pepe', cat_image)
+         cv2.waitKey(0)
          if mag <= 5.5:
             if new_cat_x < 300:
                cv2.circle(cat_image, (int(zp_cat_x),int(zp_cat_y)), 3, (0,0,255),1)
@@ -11727,7 +11731,7 @@ if __name__ == "__main__":
       plot_refit_meteor_day(meteor_day, con, cur, json_conf)
 
    if cmd == "cal_health" :
-      cal_health(con, cur, json_conf)
+      cal_health(con, cur, json_conf, sys.argv[2])
    if cmd == "copy_best_cal_images" :
       copy_best_cal_images(con, cur, json_conf)
 
