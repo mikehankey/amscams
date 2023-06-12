@@ -912,7 +912,7 @@ def cal_health(con, cur, json_conf, cam_num=None):
    pjobs = []
    for job in jobs:
       pjobs.append(job)
-      print("PJOBs", job)
+   #   print("PJOBs", job)
 
    i, o, e = select.select( [sys.stdin], [], [], 10 )
    if (i) :
