@@ -33,8 +33,9 @@ def compute_zenith_angle_and_heading(slat,slon,salt,elat,elon,ealt):
       azimuth_heading += 360
 
    zenith_angle = A / degree
+   za = 90 - zenith_angle
 
-   return(zenith_angle, azimuth_heading)
+   return(za, azimuth_heading)
 
 def track_points(sp, ep):
    wgs84 = pm.Ellipsoid('wgs84');
@@ -68,42 +69,42 @@ def save_json_file(json_file, json_data):
 def make_config(project_name,mass,rock_density,lat,lon,alt, terminal_speed, heading_azimuth, zenith_angle, exposure_time):
    dfm_config= """
 [met]
-name = {:s}
+name={:s}
 #mass kg
-mass0 = {:s}
+mass0={:s}
 #rock rock density, kgm-3
-#rdens0 = 3500.0
-rdens0 = {:s}
+#rdens0=3500.0
+rdens0={:s}
 #terminal lat, degrees
-lat0 = {:s}
+lat0={:s}
 #uncertainty in latitude, degrees
-dlat = 0.0008
+dlat=0.0008
 #terminal lon, degrees
-lon0 = {:s}
+lon0={:s}
 #uncertainty in longitude, degrees
-dlon = 0.0008
+dlon=0.0008
 #terminal height, m
-z0 = {:s}
+z0={:s}
 #uncertainty in terminal height, m
-dz = 100
+dz=100
 #terminal speed, ms-1
-vtot0 = {:s}
+vtot0={:s}
 #uncertainty in end speed, ms-1
-dvtot = 300
+dvtot=300
 #zenith angle of proj path, aka zenith distance
-zenangle = {:s}
+zenangle={:s}
 #uncertainty in zenith angle
-dzenith = 0.02
+dzenith=0.02
 #azimuth of trajectory at end point, degrees
-azimuth0 = {:s}
+azimuth0={:s}
 #uncertainty in azimuth direction, degrees
-dazimuth0 = 0.02
-exposure_time = {:s}
+dazimuth0=0.02
+exposure_time={:s}
 
 [gnd]
 #atmospheric profile data file
-atmosprofile = ./{:s}_wind.csv
-gndlvl = -15.0
+atmosprofile=./{:s}_wind.csv
+gndlvl=-15.0
 
 """.format(str(project_name),str(mass),str(rock_density),str(lat),str(lon),str(alt), str(terminal_speed), str(heading_azimuth), str(zenith_angle), str(exposure_time),str(project_name))
 
@@ -434,6 +435,8 @@ def post_data():
          relh = float(relh) #/ 100
          if relh < 0:
             relh = 0
+         if relh > 1.1:
+            relh = relh / 100
          new_pressure = round(float(pressure) * 100,2)
          #temp_c_10 = float(temp) * .1
          temp_c = round(float(temp),2)
@@ -458,8 +461,11 @@ def post_data():
          out += line 
          #print("PRE", pressure)
          # Height,   TempK,   Press,    RHum,    Wind,   WDir
-         source += "<tr><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td></tr>\n".format(str(pressure), str(height), str(temp), str(dwpt), str(relh), str(mixr), str(wind_dir), str(wind_speed_knots))
-         wind_model += "<tr><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td></tr>\n".format(str(height), str(temp_k), str(new_pressure), str(relh), str(wind_speed_ms), str(wind_dir_new))
+         wind_icon = "<img src=https://archive.allsky.tv/APPS/icons/arrow-up.png width={:s} height={:s} style='transform: rotate({:s}deg);'>".format(str(int(wind_speed_knots)), str(int(wind_speed_knots)), str(int(wind_dir-180)))
+         wind_icon_dfn = "<img src=https://archive.allsky.tv/APPS/icons/arrow-up.png width={:s} height={:s} style='transform: rotate({:s}deg);'>".format(str(int(wind_speed_ms*1.94)), str(int(wind_speed_ms*1.94)), str(int(wind_dir_new)))
+
+         source += "<tr style='height:50px'><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s} {:s}</td><td>{:s}</td></tr>\n".format(str(pressure), str(height), str(temp), str(dwpt), str(relh), str(mixr), str(wind_dir), str(wind_icon), str(wind_speed_knots))
+         wind_model += "<tr style='height: 50px'><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s} {:s}</td></tr>\n".format(str(height), str(temp_k), str(new_pressure), str(relh), str(wind_speed_ms), str(wind_dir_new), wind_icon_dfn)
          dfn_line = "{:s}, {:s}, {:s}, {:s}, {:s}, {:s}\n".format(str(height), str(temp_k), str(new_pressure), str(relh), str(wind_speed_ms), str(wind_dir_new) )
          dfn_data += dfn_line
          data_lines.append(dfn_line)

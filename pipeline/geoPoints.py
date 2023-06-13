@@ -171,7 +171,9 @@ for st in stations:
       my_feature['properties']['last_ping'] = last_ping
       my_feature['properties']['city'] = st['city'] 
       my_feature['properties']['state'] = st['state'] 
-      my_feature['properties']['country'] = st['country'] 
+      print(st)
+      if "country" in st:
+         my_feature['properties']['country'] = st['country'] 
       my_feature['properties']['zcam'] = zcam 
       all_points.append(my_feature)
    #except:

@@ -3007,6 +3007,11 @@ class AllSkyNetwork():
 
       # light curve
       lc_file = self.ev_dir + event_id + "_LIGHTCURVES.jpg"
+      if os.path.exists(lc_file) is False:
+         cmd = "cd plotly/ && python3 plot_maker.py {:s} -p event_light_curves  ".format(event_id)
+         print(cmd)
+         os.system(cmd)
+         time.sleep(1)
       lc_img = cv2.imread(lc_file)
       lc_img = cv2.resize(lc_img, (1920,1080))
 
@@ -3523,6 +3528,8 @@ class AllSkyNetwork():
             # only show the ending frames if there is 'action' within 10 frames 
             if fc > min(hd_fns):
                start = True
+            else:
+               start = False 
             if fc <= max(hd_fns) + 10 and start is True:
                self.MOVIE_FRAMES.append((frame, obv))
                if self.PREVIEW is True:

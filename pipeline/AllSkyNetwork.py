@@ -150,6 +150,13 @@ if cmd == "review_event_day":
    ASN.review_event_day(date)
 
 
+if cmd == "review_event_movie":
+   event_id = sys.argv[2]
+   event_day = ASN.event_id_to_date(event_id)
+   ASN.set_dates(event_day)
+   ASN.review_event_movie(sys.argv[2])
+
+
 if cmd == "review_event":
    event_id = sys.argv[2]
    event_day = ASN.event_id_to_date(event_id)
@@ -173,7 +180,7 @@ if cmd == "resolve_event":
       (review_image, map_img, obs_imgs, marked_images, event_data, obs_data) = ASN.review_event_step2()
 
       for ob in obs_data:
-         print(ob, obs_data[ob]['xs'])
+         print(ob)
 
 
       if "2d_status" not in event_data:
@@ -492,3 +499,9 @@ if cmd == "reconcile_obs":
 if cmd == "station_cal":
    # make station/event mapping for this day
    ASN.station_cal()
+if cmd == "update_obs_int":
+   # make station/event mapping for this day
+   if sys.argv[3] == "ALL" or sys.argv[3] == "all":
+      ASN.update_all_obs_int(sys.argv[2])
+   else:
+      ASN.update_obs_intensity(sys.argv[2], sys.argv[3])
