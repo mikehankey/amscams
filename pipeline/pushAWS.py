@@ -24,7 +24,7 @@ def push_station_data(api_key, station_id, json_conf):
    data['lat'] = json_conf['site']['device_lat']
    data['lon'] = json_conf['site']['device_lng']
    data['alt'] = json_conf['site']['device_alt']
-   data['last_updated'] = datetime.timestamp(datetime.now())
+   data['last_updated'] = str(datetime.timestamp(datetime.now()))
    json_conf['aws_last_updated'] = data['last_updated']
    save_json_file("../conf/as6.json", json_conf)
    # cameras
@@ -38,7 +38,7 @@ def push_station_data(api_key, station_id, json_conf):
       cam_obj = {}
       cam_obj['cam_num'] = dd
       cam_obj['cam_id'] = cams_id 
-      cam_obj['calib'] = mcps[cams_id]
+      cam_obj['calib'] = json.dumps(mcps[cams_id])
       data['cameras'].append(cam_obj)
       #cam_ids_nums[data['cameras'][dd]['cam_id']] = cam_num
    if "operator_city" in json_conf['site']:
@@ -63,14 +63,15 @@ def push_station_data(api_key, station_id, json_conf):
    # add calib info
 
    #data['calib'] = all_mcps 
-   if "ml" in json_conf:
-      data['ml'] = json_conf['ml']
+   #if "ml" in json_conf:
+   #   data['ml'] = json_conf['ml']
 
 
 
    data['cmd'] = "update_station_data"
    data = json.loads(json.dumps(data), parse_float=Decimal)
-   os.system("clear")
+   
+   #os.system("clear")
 
    print(json.dumps(data))
    headers = {
@@ -83,7 +84,7 @@ def push_station_data(api_key, station_id, json_conf):
 
    print("\n\n\n")
    print("response:", response.content.decode())
-   print(data)
+   print("DATA SENT IN ", json.dumps(data))
    print("END \n\n\n")
 
 def load_all_mcps():
