@@ -7048,8 +7048,9 @@ def cat_star_match(cal_fn, cal_params, cal_img, cat_stars):
    if True:
       for row in cat_stars:
          name,mag,ra,dec,new_cat_x,new_cat_y,zp_cat_x,zp_cat_y = row
-         cv2.imshow('pepe', cat_image)
-         cv2.waitKey(0)
+         if SHOW == 1:
+            cv2.imshow('pepe', cat_image)
+            cv2.waitKey(0)
          if mag <= 5.5:
             if new_cat_x < 300:
                cv2.circle(cat_image, (int(zp_cat_x),int(zp_cat_y)), 3, (0,0,255),1)
