@@ -425,9 +425,10 @@ def remote_cal(cal_file, con, cur):
 
    gray_x = cv2.cvtColor(oimg, cv2.COLOR_BGR2GRAY)
    img_sub = cv2.subtract(gray_x,cat_star_mask)
-   cv2.imshow('star mask', img_sub)
-   cv2.imshow('pepe', show_img)
-   cv2.waitKey(30)
+   if SHOW == 1:
+      cv2.imshow('star mask', img_sub)
+      cv2.imshow('pepe', show_img)
+      cv2.waitKey(30)
    cal_params['cam_id'] = cam
    cal_params['station_id'] = st_id
    station_id = st_id
@@ -623,9 +624,10 @@ def man_cal(local_json_file, oimg, station_id, cal_fn, cal_params):
 
       cv2.putText(show_img, str(info),  (int(50),int(50)), cv2.FONT_HERSHEY_SIMPLEX, .8, (200,200,200), 1)
 
-      cv2.imshow('pepe', show_img)
-      cv2.setMouseCallback('pepe', click_event, "testing123")
-      key = cv2.waitKey(0)
+      if SHOW == 1:
+         cv2.imshow('pepe', show_img)
+         cv2.setMouseCallback('pepe', click_event, "testing123")
+         key = cv2.waitKey(0)
       print("KEY", key)
 
       # azimuth a & f
@@ -1561,8 +1563,9 @@ def star_track(cam_id, date, con, cur, json_conf ):
 
       star_img = draw_star_image(snap_img.copy(), cal_params['cat_image_stars'],cal_params, json_conf, extra_text) 
       cv2.putText(star_img, str(brightness),  (int(50),int(50)), cv2.FONT_HERSHEY_SIMPLEX, .8, (200,200,200), 1)
-      cv2.imshow('pepe', star_img)
-      cv2.waitKey(30)
+      if SHOW == 1:
+         cv2.imshow('pepe', star_img)
+         cv2.waitKey(30)
 
 
       cal_params['cat_image_stars'] = remove_bad_stars(cal_params['cat_image_stars'])
@@ -1595,8 +1598,9 @@ def star_track(cam_id, date, con, cur, json_conf ):
       last_pxs= cal_params['pixscale']
       star_img = draw_star_image(snap_img.copy(), cal_params['cat_image_stars'],cal_params, json_conf, extra_text) 
       cv2.putText(star_img, str(brightness),  (int(50),int(50)), cv2.FONT_HERSHEY_SIMPLEX, .8, (200,200,200), 1)
-      cv2.imshow('pepe', snap_img)
-      cv2.waitKey(30)
+      if SHOW == 1:
+         cv2.imshow('pepe', snap_img)
+         cv2.waitKey(30)
 
       stdata[snap_fn] = [cal_params['ra_center'], cal_params['dec_center'], cal_params['center_az'], cal_params['center_az'], cal_params['position_angle'], cal_params['pixscale'], len(cal_params['cat_image_stars']), cal_params['total_res_px']]
       if lc % 20 == 0:
