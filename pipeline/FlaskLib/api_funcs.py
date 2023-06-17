@@ -36,8 +36,9 @@ def update_meteor_cal_params(meteor_file, cal_file, json_conf):
       mj = load_json_file(mjf)
       ostars = []
       if "cp" in mj:
-         if "user_stars" in mj['cp']:
-            ostars = mj['cp']['user_stars']
+         if mj['cp'] is not None:
+            if "user_stars" in mj['cp']:
+               ostars = mj['cp']['user_stars']
    else:
       resp = {}
       resp['msg'] = "FAIL MJF!" + mjf
