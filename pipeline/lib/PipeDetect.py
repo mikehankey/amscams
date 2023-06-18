@@ -2109,6 +2109,8 @@ def make_roi_video_mfd(video_file, json_conf, edits=None):
 
          of = cv2.resize(frame, (1920,1080))
          sfn = str(fn)
+         cx = int(x + (w/2))
+         cy = int(y + (h/2))
          oint = do_photo(of, [cx,cy], 5,10, 12)
          #if sfn in ufd:
          # MRH 3/16/2023 Bug Fix
