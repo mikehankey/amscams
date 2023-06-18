@@ -859,7 +859,7 @@ def find_size(img,x,y):
          continue
       val = np.mean(img[y,nx])
       perc = val / start_val
-      if fwhm is None and (perc < .50 or val < 80):
+      if fwhm is None and (perc < .60 or val < 80):
          #print("*** X+", i, "VAL", nx,y,val, perc)
          fwhm = i
          fwhms.append(i)
@@ -872,7 +872,7 @@ def find_size(img,x,y):
          continue
       val = np.mean(img[y,nx])
       perc = val / start_val
-      if fwhm is None and (perc < .50 or val < 80):
+      if fwhm is None and (perc < .60 or val < 80):
          fwhm = i
          fwhms.append(i)
          #print("*** X-", i, "VAL", nx,y,val, perc)
@@ -885,7 +885,7 @@ def find_size(img,x,y):
          continue
       val = np.mean(img[ny,x])
       perc = val / start_val
-      if fwhm is None and (perc < .50 or val < 80):
+      if fwhm is None and (perc < .60 or val < 80):
          fwhm = i
          fwhms.append(i)
          #print("*** Y+", i, "VAL", x,ny,val, perc)
@@ -898,7 +898,7 @@ def find_size(img,x,y):
          continue
       val = np.mean(img[ny,x])
       perc = val / start_val
-      if fwhm is None and (perc < .50 or val < 80):
+      if fwhm is None and (perc < .60 or val < 80):
          fwhm = i
          fwhms.append(i)
          #print("*** Y-", i, "VAL", x,y,val, perc)

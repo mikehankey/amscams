@@ -2109,20 +2109,20 @@ def make_roi_video_mfd(video_file, json_conf, edits=None):
 
          of = cv2.resize(frame, (1920,1080))
          sfn = str(fn)
-         cx = int(x + (w/2))
-         cy = int(y + (h/2))
          bw_of = cv2.cvtColor(of, cv2.COLOR_BGR2GRAY)
          if w > h:
             radius = w
          else:
             radius = h
-
+         
          if radius == 5:
-            radius = find_size(bw_of, cx, cy)
+            radius = int(find_size(bw_of, x, y))
+            if radius > 35:
+               radius = 35
             w = radius
             h = radius
 
-         oint = do_photo(bw_of, [cx,cy], radius,10, 12)
+         oint = do_photo(bw_of, [x,y], radius,10, 12)
          #if sfn in ufd:
          # MRH 3/16/2023 Bug Fix
          if sfn in ufd:
