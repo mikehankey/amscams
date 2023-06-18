@@ -845,3 +845,70 @@ def watermark_image(background, logo, x=0,y=0, opacity=1,text_data=[], make_int=
       blend = blend.astype(np.uint8)
    print("WATERMARK BLEND:", type(blend), blend.shape, blend[500,500])
    return(blend)
+
+
+def find_size(img,x,y):
+   start_val = np.mean(img[y,x])
+
+   fwhms = []
+   fwhm = None
+   for i in range(0,150):
+      nx = x + i
+      if nx >= 1920:
+         nx = 1919
+         continue
+      val = np.mean(img[y,nx])
+      perc = val / start_val
+      if fwhm is None and (perc < .50 or val < 80):
+         #print("*** X+", i, "VAL", nx,y,val, perc)
+         fwhm = i
+         fwhms.append(i)
+         continue
+   fwhm = None
+   for i in range(0,150):
+      nx = x - i
+      if nx <= 0:
+         nx = 0
+         continue
+      val = np.mean(img[y,nx])
+      perc = val / start_val
+      if fwhm is None and (perc < .50 or val < 80):
+         fwhm = i
+         fwhms.append(i)
+         #print("*** X-", i, "VAL", nx,y,val, perc)
+         break
+   fwhm = None
+   for i in range(0,150):
+      ny = y + i
+      if ny >= 1080:
+         ny = 1079
+         continue
+      val = np.mean(img[ny,x])
+      perc = val / start_val
+      if fwhm is None and (perc < .50 or val < 80):
+         fwhm = i
+         fwhms.append(i)
+         #print("*** Y+", i, "VAL", x,ny,val, perc)
+         break
+   fwhm = None
+   for i in range(0,150):
+      ny = y - i
+      if ny <= 0:
+         ny = 0
+         continue
+      val = np.mean(img[ny,x])
+      perc = val / start_val
+      if fwhm is None and (perc < .50 or val < 80):
+         fwhm = i
+         fwhms.append(i)
+         #print("*** Y-", i, "VAL", x,y,val, perc)
+         break
+
+   if len(fwhms) > 0 :
+      mf = np.mean(fwhms)
+      if mf > 5:
+         return(np.mean(fwhms))
+      else:
+         return(5)
+   else:
+      return(10)
