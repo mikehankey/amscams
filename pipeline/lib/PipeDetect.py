@@ -2111,7 +2111,8 @@ def make_roi_video_mfd(video_file, json_conf, edits=None):
          sfn = str(fn)
          cx = int(x + (w/2))
          cy = int(y + (h/2))
-         oint = do_photo(of, [cx,cy], 5,10, 12)
+         bw_of = cv2.cvtColor(of, cv2.COLOR_BGR2GRAY)
+         oint = do_photo(bw_of, [cx,cy], 5,10, 12)
          #if sfn in ufd:
          # MRH 3/16/2023 Bug Fix
          if sfn in ufd:
