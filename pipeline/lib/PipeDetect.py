@@ -2115,7 +2115,7 @@ def make_roi_video_mfd(video_file, json_conf, edits=None):
          else:
             radius = h
          
-         if radius == 5:
+         if True:
             radius = int(find_size(bw_of, x, y))
             if radius > 35:
                radius = 35
