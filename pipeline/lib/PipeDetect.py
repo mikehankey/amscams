@@ -2112,6 +2112,10 @@ def make_roi_video_mfd(video_file, json_conf, edits=None):
          cx = int(x + (w/2))
          cy = int(y + (h/2))
          bw_of = cv2.cvtColor(of, cv2.COLOR_BGR2GRAY)
+         if w > h:
+            radius = w
+         else:
+            radius = h
 
          if radius == 5:
             radius = find_size(bw_of, cx, cy)
