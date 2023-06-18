@@ -2113,7 +2113,10 @@ def make_roi_video_mfd(video_file, json_conf, edits=None):
          cy = int(y + (h/2))
          bw_of = cv2.cvtColor(of, cv2.COLOR_BGR2GRAY)
 
-         radius = find_size(bw_of, cx, cy)
+         if radius == 5:
+            radius = find_size(bw_of, cx, cy)
+            w = radius
+            h = radius
 
          oint = do_photo(bw_of, [cx,cy], radius,10, 12)
          #if sfn in ufd:
