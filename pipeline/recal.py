@@ -32,7 +32,7 @@ import scipy.optimize
 from PIL import ImageFont, ImageDraw, Image, ImageChops
 import lib.brightstardata as bsd
 from lib.PipeUtil import load_json_file, save_json_file,angularSeparation, calc_dist, convert_filename_to_date_cam , check_running , get_file_info, collinear, mfd_roi, load_mask_imgs
-from lib.PipeAutoCal import distort_xy, insert_calib, minimize_poly_multi_star, view_calib, cat_star_report , update_center_radec, XYtoRADec, draw_star_image, make_lens_model, make_az_grid, make_cal_summary, quality_stars, make_cal_plots, find_stars_with_grid, optimize_matchs, eval_cal_res, radec_to_azel, make_plate_image, make_cal_plots, make_cal_summary, custom_fit_meteor
+from lib.PipeAutoCal import distort_xy, insert_calib, minimize_poly_multi_star, view_calib, cat_star_report , update_center_radec, XYtoRADec, draw_star_image, make_lens_model, make_az_grid, make_cal_summary, quality_stars, make_cal_plots, find_stars_with_grid, optimize_matchs, eval_cal_res, radec_to_azel, make_plate_image, make_cal_plots, make_cal_summary, custom_fit_meteor, make_plate_image
 from FlaskLib.api_funcs import show_cat_stars 
 from lib.PipeTrans import slide_left
 
@@ -53,13 +53,14 @@ MOVIE_FRAMES_TEMP_FOLDER = "/home/ams/MOVIE_FRAMES_TEMP_FOLDER/"
 def make_intro(folder): 
    global MOVIE_FRAME_NUMBER
    global MOVIE_FRAMES_TEMP_FOLDER
+   SAVE_MOVIE = True
    intro_frames = []
    frames = load_frames_simple("intro_video.mp4")
    for fr in frames:
       fr = cv2.resize(fr, (1920,1080))
-      #if SHOW == 1:
-      #   cv2.imshow('pepe', fr)
-      #   cv2.waitKey(30)
+      if SHOW == 1:
+         cv2.imshow('pepe', fr)
+         cv2.waitKey(30)
 
       if SAVE_MOVIE is True:
          save_movie_frame(fr, MOVIE_FRAME_NUMBER, MOVIE_FRAMES_TEMP_FOLDER)
@@ -277,7 +278,9 @@ def remote_cal(cal_file, con, cur):
       cal_id = cal_fn.replace(".png", "")
       cal_id = cal_id.replace("-stacked", "")
       st_id = cal_fn.split("_")[0]
+      station_id = st_id
       cal_fn = cal_fn.replace(st_id + "_", "")
+      cal_params = None
       print("\n\nCAL FN:", st_id, cal_fn)
       (meteor_datetime, cam, f_date_str,fy,fmon,fd, fh, fm, fs) = convert_filename_to_date_cam(cal_fn)
       station_dir = "/mnt/f/EVENTS/STATIONS/" + st_id 
@@ -365,12 +368,39 @@ def remote_cal(cal_file, con, cur):
    # find bright points (image stars) in the image
    stars = find_stars_with_grid(oimg)
    best_stars = []
+
+   print("FOUND STARS:", len(stars))
+   temp_stars = []
    for star in stars:
       x,y,i = star
       # get flux for star points
       flux = do_photo(gray_img, (int(x),int(y)), 8)
-      if flux > 100:
-         best_stars.append((x,y,flux))
+
+
+      if 100 <= flux <= 5000:
+         temp_stars.append((x,y,flux))
+
+   for star in sorted(temp_stars, key=lambda x: (x[2]), reverse=True) :
+      x,y,i = star
+      rx1 = int(x - 10)
+      rx2 = int(x + 10)
+      ry1 = int(y - 10)
+      ry2 = int(y + 10)
+      star_cat_info = None
+      star_crop = gray_img[ry1:ry2,rx1:rx2]
+      star_obj = eval_star_crop(star_crop, cal_file, rx1, ry1, rx2, ry2, star_cat_info)
+      if star_obj['valid_star'] is True:
+         print(" VALID STAR:", star_obj)
+         cv2.circle(show_img, (int(x),int(y)), 10, (255,255,0),2)
+      else:
+         print(" BAD STAR:", star_obj)
+         cv2.circle(show_img, (int(x),int(y)), 10, (0,0,255),2)
+      #if SHOW == 1:
+      #   cv2.imshow('pepe', show_img)
+      #   cv2.waitKey(30)
+      best_stars.append((x,y,flux))
+   if SHOW == 1:
+      cv2.waitKey(30)
 
    # these are the image stars sorted by brightest first
    stars =  sorted(best_stars, key=lambda x: x[2], reverse=True)
@@ -426,17 +456,85 @@ def remote_cal(cal_file, con, cur):
    gray_x = cv2.cvtColor(oimg, cv2.COLOR_BGR2GRAY)
    img_sub = cv2.subtract(gray_x,cat_star_mask)
    if SHOW == 1:
-      cv2.imshow('star mask', img_sub)
+      cv2.imshow('pepe', img_sub)
+      cv2.waitKey(30)
       cv2.imshow('pepe', show_img)
       cv2.waitKey(30)
-   cal_params['cam_id'] = cam
-   cal_params['station_id'] = st_id
-   station_id = st_id
+
+   if cal_params is None:
+      cal_params = blind_solve(cal_file, oimg, best_stars)
+   else:
+      cal_params['cam_id'] = cam
+      cal_params['station_id'] = st_id
+      station_id = st_id
+
    cal_params = man_cal(local_json_file, oimg, station_id, cal_fn, cal_params)
    return(cal_params)
 
+def blind_solve(cal_file, cal_img, best_stars):
+   print("BLIND SOLVE:", cal_file)
+   temp_dir = "/home/ams/astrotemp/"
+   if os.path.exists(temp_dir) is False:
+      os.makedirs(temp_dir)
+   else:
+      os.system("rm " + temp_dir + "*")
+   plate_img, star_points = make_plate_image(cal_img, best_stars)
+   cal_fn = cal_file.split("/")[-1]
+   print(plate_img)
+   cv2.imshow("pepe", plate_img)
+   cv2.waitKey(30)
+
+   if os.path.exists("/usr/local/astrometry/bin/solve-field") is True:
+      AST_BIN = "/usr/local/astrometry/bin/"
+   elif os.path.exists("/usr/bin/solve-field") is True:
+      AST_BIN = "/usr/bin/"
+   
+   new_plate_file = temp_dir + cal_fn
+   cv2.imwrite(new_plate_file, plate_img)
+   print("saved plate file:", new_plate_file)
+
+   cmd = AST_BIN + "solve-field " + new_plate_file + " --cpulimit=30 --verbose --overwrite  --scale-units arcsecperpix --scale-low 150 --scale-high 170 > " + temp_dir + "stderr.txt 2>&1" 
+   print(cmd)
+   os.system(cmd)
+   cmd2 = "grep \" at \" " + temp_dir + "stderr.txt |grep -v onstellation > " + temp_dir + "stars.txt"
+   print(cmd2)
+   os.system(cmd2)
+
+   time.sleep(1)
+
+   fp = open(temp_dir + "stars.txt")
+   for line in fp:
+      
+      xxx = line.split(":")
+      print("XXX", xxx)
+      if len(xxx) != 1:
+         continue
+      data = xxx[0]
+      star, position = data.split(" at ")
+      if "," not in position:
+         continue
+      x,y = position.split(",")
+      x = x.replace("(","")
+      y = y.replace(")","")
+      x = x.replace(" ","")
+      y = y.replace(" ","")
+      print("NAME=",star, "POS=", x,y)
+      cv2.circle(cal_img, (int(float(x)),int(float(y))), 5, (255,255,255),1)
+      cv2.putText(cal_img, str(star),  (int(float(x)),int(float(y))), cv2.FONT_HERSHEY_SIMPLEX, .8, (200,200,200), 1)
+      cv2.imshow('pepe', cal_img)
+      cv2.waitKey(30)
+
+   print("DONE")
+   cv2.waitKey(0)
+
+
+   exit()
+
 def man_cal(local_json_file, oimg, station_id, cal_fn, cal_params):
-   orig_cal_params = cal_params.copy()
+   if cal_params is not None:
+      orig_cal_params = cal_params.copy()
+   else:
+      orig_cal_params = cal_params
    MAX_STARS = 500
    go = True
    interval = 1
@@ -9220,6 +9318,13 @@ def eval_star_crop(crop_img, cal_fn, x1, y1,x2,y2, star_cat_info=None ):
    #thresh_val = max_val * .8
 
    thresh_val = find_best_thresh(gray_img)
+   #if thresh_val < 80:
+   #   thresh_val = 80
+   print("AVG, THRESH:", avg_val, thresh_val)
+   if thresh_val < 50:
+      reject_reason += "thresh_val_too_low: " +  str(thresh_val)
+      valid_star = False 
+
    if thresh_val is None:
       thresh_val = 100
    _, crop_thresh = cv2.threshold(gray_img, thresh_val, 255, cv2.THRESH_BINARY)
@@ -9238,13 +9343,24 @@ def eval_star_crop(crop_img, cal_fn, x1, y1,x2,y2, star_cat_info=None ):
 
    if len(cnts) == 1:
       x,y,w,h = cnts[0]
+
+
       cx = x + (w/2)
       cy = y + (h/2)
       if w > h:
          radius = w 
       else:
          radius = h 
-      if w > 4 or h > 4:
+
+      # remove if not center
+      if x < 7 or x > 13:
+         reject_reason += "x not center: " +  str(x) + " " + str(y)
+         valid_star = False 
+      if y < 7 or y > 13:
+         reject_reason += "y not center: " +  str(x) + " " + str(y)
+         valid_star = False 
+
+      if w > 3 or h > 3:
          reject_reason += "cnt w/h too big: " +  str(w) + " " + str(h)
          valid_star = False 
       star_flux = do_photo(gray_img, (cx,cy), radius)
@@ -9252,8 +9368,6 @@ def eval_star_crop(crop_img, cal_fn, x1, y1,x2,y2, star_cat_info=None ):
       #except:
       #   star_flux = 0
    #else:
-   #cv2.imshow("CROP", gray_img)
-   #cv2.waitKey(30)
 
    if star_flux > 0 and valid_star is True:
       # if you want AI write the file and call this
@@ -9312,6 +9426,11 @@ def eval_star_crop(crop_img, cal_fn, x1, y1,x2,y2, star_cat_info=None ):
       star_obj['x'] = star_obj['star_x']
       star_obj['y'] = star_obj['star_y']
 
+   print(star_obj)
+   #if SHOW == 1:
+   #   cv2.imshow("CROP", crop_thresh)
+   #   cv2.waitKey(30)
+
    return ( star_obj)
 
 def find_best_thresh(gray_img):
@@ -9333,6 +9452,8 @@ def find_best_thresh(gray_img):
          if w != gray_img.shape[1] and h != gray_img.shape[0]:
             return(thresh_val)
 
+   thresh_val = max_val * .8
+   return(thresh_val)
 
 def find_close_stars(star_obj):
    cal_fn = star_obj['cal_fn']
