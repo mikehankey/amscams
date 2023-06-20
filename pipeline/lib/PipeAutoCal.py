@@ -8376,7 +8376,6 @@ def make_plate_image(image, file_stars):
 
    return(plate_image,star_points)
 
-
 def clean_star_bg(cnt_img, bg_avg):
    max_px = np.max(cnt_img)
    min_px = np.min(cnt_img)
