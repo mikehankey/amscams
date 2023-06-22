@@ -8408,7 +8408,7 @@ def save_cal_params(wcs_file,json_conf):
          cal_params_json['pixscale'] = value
       if field == "orientation_center":
          if float(value) < 0:
-            cal_params_json['position_angle'] = float(value) + 180
+            cal_params_json['position_angle'] = float(value) + 360
          else:
             cal_params_json['position_angle'] = float(value) #+ 180
       if field == "ra_center":
