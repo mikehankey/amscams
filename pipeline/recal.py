@@ -32,7 +32,8 @@ import scipy.optimize
 from PIL import ImageFont, ImageDraw, Image, ImageChops
 import lib.brightstardata as bsd
 from lib.PipeUtil import load_json_file, save_json_file,angularSeparation, calc_dist, convert_filename_to_date_cam , check_running , get_file_info, collinear, mfd_roi, load_mask_imgs
-from lib.PipeAutoCal import distort_xy, insert_calib, minimize_poly_multi_star, view_calib, cat_star_report , update_center_radec, XYtoRADec, draw_star_image, make_lens_model, make_az_grid, make_cal_summary, quality_stars, make_cal_plots, find_stars_with_grid, optimize_matchs, eval_cal_res, radec_to_azel, make_plate_image, make_cal_plots, make_cal_summary, custom_fit_meteor, make_plate_image
+from lib.PipeAutoCal import distort_xy, insert_calib, minimize_poly_multi_star, view_calib, cat_star_report , update_center_radec, XYtoRADec, draw_star_image, make_lens_model, make_az_grid, make_cal_summary, quality_stars, make_cal_plots, find_stars_with_grid, optimize_matchs, eval_cal_res, radec_to_azel, make_plate_image, make_cal_plots, make_cal_summary, custom_fit_meteor, make_plate_image, save_cal_params
+
 from FlaskLib.api_funcs import show_cat_stars 
 from lib.PipeTrans import slide_left
 
@@ -271,6 +272,10 @@ def remote_menu(con,cur):
 
 def remote_cal(cal_file, con, cur):
    # cal file should be a png with the full path?
+   from Classes.AllSkyNetwork import AllSkyNetwork
+   ASN = AllSkyNetwork()
+   ASN.load_stations_file()
+
    print("cal file", cal_file)
    # determine if this is a remote file or local file
    if "AMS" in cal_file:
@@ -283,6 +288,7 @@ def remote_cal(cal_file, con, cur):
       cal_params = None
       print("\n\nCAL FN:", st_id, cal_fn)
       (meteor_datetime, cam, f_date_str,fy,fmon,fd, fh, fm, fs) = convert_filename_to_date_cam(cal_fn)
+      cam_id = cam
       station_dir = "/mnt/f/EVENTS/STATIONS/" + st_id 
       freecal_dir = station_dir + "/CAL/FREECAL/"
       cal_dir = station_dir + "/CAL/FREECAL/"
@@ -307,7 +313,7 @@ def remote_cal(cal_file, con, cur):
       # load station data
       # create handles for the network calibration db
 
-      #default_cal_params, remote_json_conf = ASN.get_remote_cal(st_id, cam_id, cal_fn)
+      default_cal_params, remote_json_conf = ASN.get_remote_cal(st_id, cam_id, cal_fn)
       if st_id in ST.rurls:
          remote_png_url = ST.rurls[st_id] + "/cal/freecal/" + cal_root + "/" + cal_fn
          remote_json_url = ST.rurls[st_id] + "/cal/freecal/" + cal_root + "/" + cal_fn.replace(".png", "-calparams.json")
@@ -398,7 +404,7 @@ def remote_cal(cal_file, con, cur):
       #if SHOW == 1:
       #   cv2.imshow('pepe', show_img)
       #   cv2.waitKey(30)
-      best_stars.append((x,y,flux))
+      best_stars.append((x,y,i))
    if SHOW == 1:
       cv2.waitKey(30)
 
@@ -462,7 +468,7 @@ def remote_cal(cal_file, con, cur):
       cv2.waitKey(30)
 
    if cal_params is None:
-      cal_params = blind_solve(cal_file, oimg, best_stars)
+      cal_params = blind_solve(cal_file, oimg, best_stars, remote_json_conf)
    else:
       cal_params['cam_id'] = cam
       cal_params['station_id'] = st_id
@@ -471,7 +477,7 @@ def remote_cal(cal_file, con, cur):
    cal_params = man_cal(local_json_file, oimg, station_id, cal_fn, cal_params)
    return(cal_params)
 
-def blind_solve(cal_file, cal_img, best_stars):
+def blind_solve(cal_file, cal_img, best_stars, remote_json_conf):
    print("BLIND SOLVE:", cal_file)
    temp_dir = "/home/ams/astrotemp/"
    if os.path.exists(temp_dir) is False:
@@ -503,6 +509,7 @@ def blind_solve(cal_file, cal_img, best_stars):
    time.sleep(1)
 
    fp = open(temp_dir + "stars.txt")
+   show_img = cal_img.copy()
    for line in fp:
       
       xxx = line.split(":")
@@ -519,17 +526,187 @@ def blind_solve(cal_file, cal_img, best_stars):
       x = x.replace(" ","")
       y = y.replace(" ","")
       print("NAME=",star, "POS=", x,y)
-      cv2.circle(cal_img, (int(float(x)),int(float(y))), 5, (255,255,255),1)
-      cv2.putText(cal_img, str(star),  (int(float(x)),int(float(y))), cv2.FONT_HERSHEY_SIMPLEX, .8, (200,200,200), 1)
-      cv2.imshow('pepe', cal_img)
+      cv2.circle(show_img, (int(float(x)),int(float(y))), 5, (255,255,255),1)
+      cv2.putText(show_img, str(star),  (int(float(x)),int(float(y))), cv2.FONT_HERSHEY_SIMPLEX, .8, (200,200,200), 1)
+      cv2.imshow('pepe', show_img)
+      cv2.waitKey(30)
+   if "png" in new_plate_file:
+      wcs_file = new_plate_file.replace(".png", ".wcs")
+   else:
+      wcs_file = new_plate_file.replace(".jpg", ".wcs")
+   print("WCS", wcs_file)
+   wcs_info_file = wcs_file.replace(".wcs", "-wcsinfo.txt")
+
+   cmd = AST_BIN + "wcsinfo " + wcs_file + " > " + wcs_info_file
+   print(cmd)
+   os.system(cmd)
+
+   default_cal_params = save_cal_params(wcs_file,remote_json_conf)
+
+   #default_cal_params['ra_center'] = new_ra
+   #default_cal_params['dec_center'] = new_dec 
+   #default_cal_params['center_az'] = new_az
+   #default_cal_params['center_el'] = new_el
+
+   #default_cal_params['position_angle'] = new_pos
+   #default_cal_params['pixscale'] = new_px 
+
+   # pair cat stars with image stars
+   # try all positions first!
+   best_res = 9999
+   best_pos = 0 
+   most_stars = 0 
+
+   # check for the best position angle
+   for i in range(0,180):
+      star_index = {} 
+      rez = []
+
+      default_cal_params['position_angle'] = i * 2 
+      cat_stars, short_bright_stars, cat_image = get_catalog_stars(default_cal_params, MAG_LIMIT=4)
+      blend = cv2.addWeighted(cat_image, .5, cal_img, .5, .3)
+      for x,y,i in best_stars:
+         cv2.circle(blend, (int(x),int(y)), 5, (255,0,0),1)
+      for cs in cat_stars:
+         (name,mag,ra,dec,new_cat_x,new_cat_y,zp_cat_x,zp_cat_y) = cs 
+         skey = str(ra) + "_" + str(dec)
+
+         for x,y,i in best_stars:
+            dist = calc_dist((x,y),(new_cat_x,new_cat_y))
+            if dist < 30:
+               print("   BS:", name, mag, i, dist)
+               if skey not in star_index:
+                  cv2.circle(blend, (int(x),int(y)), 8, (0,0,255),1)
+                  star_index[skey] = dist
+               elif star_index[skey] <= dist:
+                  cv2.circle(blend, (int(x),int(y)), 8, (0,0,255),1)
+                  star_index[skey] = dist
+         for sk in star_index:
+            rez.append(star_index[sk])
+         tres = np.median(rez)
+         tstars = len(star_index.keys())
+         if tres < best_res and tstars > most_stars:
+            best_res = tres 
+            most_stars = tstars 
+            best_pos = default_cal_params['position_angle']
+
+      print("STARS/RES:", tstars, tres)
+      echo_calparams(cal_fn, default_cal_params)
+      cv2.imshow('pepe', blend)
       cv2.waitKey(30)
 
-   print("DONE")
+   mcp = None
+   con = None
+   cur = None
+   print(default_cal_params)
+   cv2.imshow('pepe', blend)
+   cv2.waitKey(30)
+   print("MOST STARS:", most_stars)
+   print("BEST RES:", best_res)
+   print("BEST POS:", best_pos)
+
+   default_cal_params['position_angle'] = best_pos
+   #   for row in zp_cat_stars[:MAX_STARS]: 
+   #      (name,mag,ra,dec,new_cat_x,new_cat_y,zp_cat_x,zp_cat_y) = row
+
+   #if True:
+   # check for the best pixscale 
+   start_px = float(default_cal_params['pixscale'])
+   for i in range(-10,10):
+      cat_star_index = {}
+      star_index = {} 
+      rez = []
+      mod = i / 2 
+      default_cal_params['pixscale'] = start_px + mod
+      print("MOD:", mod, default_cal_params['pixscale'])
+      cat_stars, short_bright_stars, cat_image = get_catalog_stars(default_cal_params, MAG_LIMIT=4)
+      blend = cv2.addWeighted(cat_image, .5, cal_img, .5, .3)
+      for cs in cat_stars:
+         (name,mag,ra,dec,new_cat_x,new_cat_y,zp_cat_x,zp_cat_y) = cs 
+         skey = str(ra) + "_" + str(dec)
+
+         for x,y,i in best_stars:
+            dist = calc_dist((x,y),(new_cat_x,new_cat_y))
+            if dist < 30:
+               if skey not in star_index:
+                  cv2.circle(blend, (int(x),int(y)), 8, (0,0,255),1)
+                  cv2.circle(blend, (int(new_cat_x),int(new_cat_y)), 8, (0,255,255),1)
+                  star_index[skey] = dist
+                  print("   BS:", name, mag, i, dist)
+                  cat_star_index[skey] =  [name,mag,ra,dec,new_cat_x,new_cat_y,zp_cat_x,zp_cat_y,x,y,i,dist]
+                  cv2.line(blend, (int(x),int(y)), (int(zp_cat_x),int(zp_cat_y)), (255,255,255), 1)
+               elif star_index[skey] <= dist:
+                  print("   BS:", name, mag, i, dist)
+                  cv2.circle(blend, (int(x),int(y)), 8, (0,0,255),1)
+                  cv2.line(blend, (int(x),int(y)), (int(zp_cat_x),int(zp_cat_y)), (255,255,255), 1)
+                  cv2.circle(blend, (int(new_cat_x),int(new_cat_y)), 8, (0,255,255),1)
+                  star_index[skey] = dist
+                  cat_star_index[skey] =  [name,mag,ra,dec,new_cat_x,new_cat_y,zp_cat_x,zp_cat_y,x,y,i,dist]
+         for sk in star_index:
+            rez.append(star_index[sk])
+         tres = np.median(rez)
+         tstars = len(star_index.keys())
+         if tres < best_res and tstars > most_stars:
+            best_res = tres 
+            most_stars = tstars 
+            best_pxs = default_cal_params['position_angle']
+                   
+         #cv2.imshow('pepe', blend)
+         #cv2.waitKey(30)
+
+   cat_image_stars = []
+   blend = cv2.addWeighted(cat_image, .5, cal_img, .5, .3)
+   for skey in cat_star_index:
+      name,mag,ra,dec,new_cat_x,new_cat_y,zp_cat_x,zp_cat_y,six,siy,star_int,cat_dist = cat_star_index[skey] 
+     
+      match_dist = None
+      img_ra = None
+      img_dec = None
+      img_el = None
+      img_az = None
+      cat_image_stars.append((name,mag,ra,dec,img_ra,img_dec,match_dist,zp_cat_x,zp_cat_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist,star_int)) 
+
+      cv2.line(blend, (int(six),int(siy)), (int(zp_cat_x),int(zp_cat_y)), (255,255,255), 1)
+      cv2.imshow('pepe', blend)
+      cv2.waitKey(30)
+
+   cv2.imshow('pepe', blend)
    cv2.waitKey(0)
+   default_cal_params['cat_image_stars'] = cat_image_stars
+
+   default_cal_params['x_poly'] = list(np.zeros(shape=(15,), dtype=np.float64))
+   default_cal_params['y_poly'] = list(np.zeros(shape=(15,), dtype=np.float64))
+   default_cal_params['x_poly_fwd'] = list(np.zeros(shape=(15,), dtype=np.float64))
+   default_cal_params['y_poly_fwd'] = list(np.zeros(shape=(15,), dtype=np.float64))
+
+   print("CAT IMG STARS:", len(cat_image_stars))
+   #temp_cal_params = minimize_fov(cal_fn, default_cal_params, cal_fn,cal_img.copy(),remote_json_conf, False,default_cal_params, "", 1)
+   extra_text = "Recenter"
+   default_cal_params['total_res_px'] = 99
+   temp_cal_params, cat_stars = recenter_fov(cal_fn, default_cal_params, cal_img.copy(),  default_cal_params['cat_image_stars'], remote_json_conf, extra_text, None, None)
+   extra_text = "FINAL RESULTS OF REMOTE BLIND SOLVE [NO LENS MODEL]"
+   star_img = draw_star_image(cal_img, temp_cal_params['cat_image_stars'],temp_cal_params, remote_json_conf, extra_text)   
+   
+
+   print("CAT IMG STARS:", len(temp_cal_params['cat_image_stars']))
+
+   cv2.imshow('pepe', star_img)
+   cv2.waitKey(0)
+
 
 
    exit()
 
+def echo_calparams(cf, cp):
+   print("*** CAL PARAMS ***")   
+   print(" FILE:", cf)
+   print(" AZ:", cp['center_az'])
+   print(" EL:", cp['center_el'])
+   print(" RA:", cp['ra_center'])
+   print(" DEC:", cp['dec_center'])
+   print(" POS:", cp['position_angle'])
+   print(" PXS:", cp['pixscale'])
+  
 def man_cal(local_json_file, oimg, station_id, cal_fn, cal_params):
    if cal_params is not None:
       orig_cal_params = cal_params.copy()
@@ -1085,6 +1262,7 @@ def cal_health(con, cur, json_conf, cam_num=None):
 
          cp['cat_image_stars'] = remove_bad_stars(cp['cat_image_stars'])
          cal_params, cat_stars = recenter_fov(cal_fn, cp, oimg.copy(),  stars, json_conf, extra_text, con, cur)
+
          cal_params['cat_image_stars'] = cat_star_match(cal_fn, cal_params, oimg, cat_stars)
          cal_params['cat_image_stars'] = remove_bad_stars(cp['cat_image_stars'])
          cal_params, cat_stars = recenter_fov(cal_fn, cal_params, oimg.copy(),  stars, json_conf, extra_text)
@@ -3227,6 +3405,34 @@ def minimize_fov(cal_file, cal_params, image_file,img,json_conf,zero_poly=False,
    cal_params['pixscale'] =  new_pixscale
    cal_params['total_res_px'] = res['fun']
    cal_params = update_center_radec(cal_file,cal_params,json_conf)
+
+   # update the stars with best / new results
+   new_cat_image_stars = []
+   for star in cal_params['cat_image_stars']:
+      (dcname,mag,ra,dec,img_ra,img_dec,match_dist,up_cat_x,up_cat_y,img_az,img_el,up_cat_x,up_cat_y,six,siy,res_px,bp) = star
+      center_dist = calc_dist((960,540),(six,siy))
+      #
+      #if center_dist < 600:
+      #   best_stars.append(star)
+      new_cat_x, new_cat_y = get_xy_for_ra_dec(cal_params, ra, dec)
+      res_px = calc_dist((six,siy),(new_cat_x,new_cat_y))
+
+      new_x, new_y, img_ra,img_dec, img_az, img_el = XYtoRADec(six,siy,cal_file,cal_params,json_conf)
+      match_dist = angularSeparation(ra,dec,img_ra,img_dec)
+
+      orig_res.append(res_px)
+      new_cat_image_stars.append((dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,res_px,bp)) 
+   old_res = np.mean(orig_res)
+   orig_info = [cal_params['center_az'], cal_params['center_el'], cal_params['ra_center'], cal_params['dec_center'], cal_params['position_angle'], cal_params['pixscale'], old_res ]
+
+   check_cal_params, check_report_txt, check_show_img = cal_params_report(image_file, cal_params, json_conf, img.copy(), 30, mcp)
+
+   #if len(best_stars) > 5:
+   cal_params['cat_image_stars'] = new_cat_image_stars
+   ores = check_cal_params['total_res_px']
+
+
+
    return(cal_params)
 
 
@@ -4253,9 +4459,9 @@ def wcs_to_cal_params(wcs_file,json_conf):
          cal_params_json['imageh'] = value
       if field == "pixscale":
          cal_params_json['pixscale'] = value
-      if field == "orientation":
+      if field == "orientation_center":
          if float(value) < 0:
-            cal_params_json['position_angle'] = float(value) + 180
+            cal_params_json['position_angle'] = float(value) + 360 
          else:
             cal_params_json['position_angle']  = float(value)
       if field == "ra_center":
@@ -5972,6 +6178,7 @@ def get_catalog_stars(cal_params, MAG_LIMIT=5):
             sbs.append((name, name, ra, dec, mag, new_cat_x, new_cat_y, zp_cat_x, zp_cat_y, int(rx1),int(ry1),int(rx2),int(ry2)))
             if True:
                cv2.rectangle(cat_image, (int(rx1), int(ry1)), (int(rx2) , int(ry2) ), (255, 255, 255), 2)
+               cv2.putText(cat_image, name, (int(rx1),int(ry1)), cv2.FONT_HERSHEY_SIMPLEX, .8, (200,200,200), 1)
                #if SHOW == 1:
                #   cv2.imshow('pepe', cat_image)
                #   cv2.waitKey(30)
@@ -7426,11 +7633,12 @@ def recenter_fov(cal_fn, cal_params, cal_img, stars, json_conf, extra_text="", t
    center_stars = cal_params['cat_image_stars']
 
    print("\tCAT STARS RECENTER FOV 2:", len(nc['cat_image_stars']))
-   if len(nc['cat_image_stars']) <= 5:
-      nc = add_more_stars(cal_fn, nc, cal_img, cal_img, json_conf)
+   if len(nc['cat_image_stars']) <= 10:
+      cal_params = add_more_stars(cal_fn, nc, cal_img, cal_img, json_conf)
 #ZZZ
 
-   res = scipy.optimize.minimize(reduce_fov_pos, this_poly, args=( np.float64(cal_params['center_az']),np.float64(cal_params['center_el']),np.float64(cal_params['position_angle']),np.float64(cal_params['pixscale']),cal_params['x_poly'], cal_params['y_poly'], cal_params['x_poly_fwd'], cal_params['y_poly_fwd'],cal_fn,cal_img,json_conf, center_stars, extra_text,0), method='Nelder-Mead')
+   res = scipy.optimize.minimize(reduce_fov_pos, this_poly, args=( np.float64(cal_params['center_az']),np.float64(cal_params['center_el']),np.float64(cal_params['position_angle']),np.float64(cal_params['pixscale']),cal_params['x_poly'], cal_params['y_poly'], cal_params['x_poly_fwd'], cal_params['y_poly_fwd'],cal_fn,cal_img,json_conf, cal_params['cat_image_stars'], extra_text,0), method='Nelder-Mead')
+   #res = scipy.optimize.minimize(reduce_fov_pos, this_poly, args=( np.float64(cal_params['center_az']),np.float64(cal_params['center_el']),np.float64(cal_params['position_angle']),np.float64(cal_params['pixscale']),cal_params['x_poly'], cal_params['y_poly'], cal_params['x_poly_fwd'], cal_params['y_poly_fwd'],cal_fn,cal_img,json_conf, center_stars, extra_text,0), method='Nelder-Mead')
 
    print("\tCAT STARS RECENTER FOV 3:", len(nc['cat_image_stars']))
    #adj_az, adj_el, adj_pos, adj_px = res['x']
@@ -11523,7 +11731,7 @@ if __name__ == "__main__":
    # 
 
 
-   if sys.argv[1] == "remote" :
+   if sys.argv[1] == "remote"  or sys.argv[1] == "remote_cal":
       if len(sys.argv) == 2:
          remote_menu(con, cur)
       else:
