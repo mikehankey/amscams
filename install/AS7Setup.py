@@ -193,11 +193,14 @@ class AS7Setup():
       confirm = input("Do you want to format data drive (all data will be lost!) Must type YES.")
       if confirm == "YES":
          output = subprocess.check_output("lsblk | grep sd ", shell=True).decode("utf-8")
+         for line in output.split("\n"):
+            print(line)
          #Filesystem                 Size  Used Avail Use% Mounted on
          try:
-            output += subprocess.check_output("lsblk | grep nvm ", shell=True).decode("utf-8")
-            for line in output.split("\n"):
+            output2 = subprocess.check_output("lsblk | grep nvm ", shell=True).decode("utf-8")
+            for line in output2.split("\n"):
                print(line)
+               output += line + "\n"
          except:
             nvm = False
          drive = input("Enter the drive label (sdX) to format. Should be the large size drive!")
