@@ -194,10 +194,12 @@ class AS7Setup():
       if confirm == "YES":
          output = subprocess.check_output("lsblk | grep sd ", shell=True).decode("utf-8")
          #Filesystem                 Size  Used Avail Use% Mounted on
-
-         output += subprocess.check_output("lsblk | grep nvm ", shell=True).decode("utf-8")
-         for line in output.split("\n"):
-            print(line)
+         try:
+            output += subprocess.check_output("lsblk | grep nvm ", shell=True).decode("utf-8")
+            for line in output.split("\n"):
+               print(line)
+         except:
+            nvm = False
          drive = input("Enter the drive label (sdX) to format. Should be the large size drive!")
          cmd = "sudo mkfs -t ext4 /dev/" + drive
          print(cmd)
