@@ -16,7 +16,7 @@ from Classes.AllSkyNetwork import AllSkyNetwork
 import plotly.express as px
 import plotly.graph_objects as go
 from geopy.geocoders import Nominatim
-
+import seaborn as sns
 
 class AMSAPI():
    def __init__(self):
@@ -88,7 +88,6 @@ class AMSAPI():
          ev_id, ams_date_utc, as7_date_utc, as7_station_count, as7_obs_count, as7_event_id = row
          tb.add_row([ev_id, ams_date_utc, as7_date_utc, as7_station_count, as7_obs_count, as7_event_id])
       print(tb)
-      input("Continue")
 
    def get_bearing(self, lat1, long1, lat2, long2):
       dLon = (long2 - long1)
@@ -178,11 +177,12 @@ class AMSAPI():
       #print("CLOUD WILD:", cloud_wild)
       #print("CLOUD FILES:", cloud_files)
       #if len(cloud_files) > 0:
-      #   input("found ")
       return(cloud_files)
       # check if there are meteors logged inside the DYNA DB
 
    def ams_as7_event_map(self, ams_event_data):
+      print("DISABLED!")
+      exit()
       data = {}
       data['lat'] =  []
       data['long'] =  []
@@ -203,7 +203,7 @@ class AMSAPI():
          else:
             color = "orange"
          data['colors'].append(color)
-      fig.add_trace(go.Scattergeo(lon = data['long'], lat=data['lat'], text = data['texts'], marker_color=data['colors'], mode='markers' ))
+      fig.add_trace(go.Scattergeo(name="ALLSKY7 STATIONS", lon = data['long'], lat=data['lat'], text = data['texts'], marker_color=data['colors'], mode='markers' ))
       scopes = ['africa', 'asia', 'europe', 'north america', 'south america', 'usa', 'world']
       if "country_code" not in ams_event_data:
          ams_event_data['country_code'] = 'world'
@@ -225,14 +225,15 @@ class AMSAPI():
         showsubunits=True, subunitcolor="Blue"
       )
       fig.update_layout(
-        title = 'AMS/IMO ' + str(ams_event_data['ams_event_id']) + " " + ams_event_data['avg_date_utc'] + " UTC",
+        mapbox_style='open-street-map',
+        title = 'AMS EVENT ID:' + str(ams_event_data['ams_event_id']) + " " + ams_event_data['avg_date_utc'] + " UTC",
         height=720, 
         width=1280, 
         margin={"r":50,"t":50,"l":50,"b":50}
       )
       # add ams track line
-      fig.add_trace(go.Scattergeo(lon = [ams_event_data['start_long'], ams_event_data['end_long']], lat=[ams_event_data['start_lat'],ams_event_data['end_lat']], text = ["WITNESS GROUND TRACK"], marker_color=['red'], mode='lines' ))
-      #fig.show()
+      fig.add_trace(go.Scattergeo(name="WITNESS GROUND TRACK", lon = [ams_event_data['start_long'], ams_event_data['end_long']], lat=[ams_event_data['start_lat'],ams_event_data['end_lat']], text = ["WITNESS GROUND TRACK"], marker_color=['red'], mode='lines' ))
+      fig.show()
       #fig.write_image("/mnt/ams2/fig1.jpg")
       return(fig)
 
@@ -272,7 +273,7 @@ class AMSAPI():
             fst = obs['sd_video_file'][0:19]
             obs_dt =  datetime.datetime.strptime(fst, "%Y_%m_%d_%H_%M_%S")
          tdiff = (tdate_dt - obs_dt).total_seconds() / 60
-         print("TD:", obs['station_id'], tdiff)
+         #print("TD:", obs['station_id'], tdiff)
          if abs(tdiff) < 10:
              station = obs['station_id']
              if station in ASN.station_dict:
@@ -344,6 +345,107 @@ class AMSAPI():
       return(ams_event_data)
 
 
+   def create_map(self, title,points, lines, center_lat, center_lon, zoom):
+       # Set up the map layout
+       palette = sns.color_palette("dark", len(points) + len(lines))
+       colors = []
+       for r,g,b in palette:
+          c = "rgb(" + str(r*255) + "," + str(g*255) + "," + str(b*255) + ")"
+          colors.append(c)
+
+
+       layout = go.Layout(
+           mapbox_style='open-street-map',
+           mapbox_center_lon=center_lon,
+           mapbox_center_lat=center_lat,
+           mapbox_zoom=zoom
+       )
+
+       # Create Scattermapbox traces for points and lines
+       data = []
+
+       # Add points as scatter markers
+       ic = 0
+           #trace = go.Scattermapbox(
+       for point in points:
+           trace = go.Scattergeo(
+               name = point['name'],
+               lat=[point['lat']],
+               lon=[point['lon']],
+               mode='markers',
+               marker=dict(
+                   size=20,
+                   symbol=point['symbol'],
+                   color=colors[ic],
+                   opacity=point['opacity'],
+
+               )
+           )
+           data.append(trace)
+           ic += 1
+
+       # Add lines as scatter lines
+               #text=line['name'],
+       for line in lines:
+           trace = go.Scattergeo(
+               name="AMS Witness Ground Track",
+               textposition='bottom right',
+               lat=line['lats'],
+               lon=line['lons'],
+               mode='lines+text',
+               line=dict(
+                   color='red',
+                   width=2
+               )
+           )
+           data.append(trace)
+
+       layout['title_text'] = title
+       layout['font_color'] = 'black'
+       #layout['mapbox_style'] ='open-street-map'
+       # Create the figure
+       print("LAYOUT:", layout)
+       fig = go.Figure(data=data, layout=layout)
+
+       scopes = ['africa', 'asia', 'europe', 'north america', 'south america', 'usa', 'world']
+       if "country_code" not in ams_event_data:
+          ams_event_data['country_code'] = 'world'
+
+       if ams_event_data['country_code'] == 'us':
+         geo_scope='usa'
+       elif ams_event_data['country_code'] == 'nz' or ams_event_data['country_code'] == 'au' or ams_event_data['country_code'] == 'kr':
+         geo_scope='world'
+       elif ams_event_data['country_code'] == 'world':
+         geo_scope='world'
+       else:
+         geo_scope='europe'
+ 
+       fig.update_geos(
+              fitbounds="locations", 
+        scope=geo_scope,
+        resolution=110,
+        showcountries=True,countrycolor="Black",
+        showsubunits=True, subunitcolor="Blue"
+       )
+
+       fig.update_geos(
+           scope=geo_scope,
+           showcountries=True,
+           showsubunits=True, subunitcolor="Blue"
+       ) 
+
+       fig.update_layout(
+        title = 'AMS EVENT ID:' + str(ams_event_data['ams_event_id']) + " " + ams_event_data['avg_date_utc'] + " UTC",
+        height=720, 
+        width=1280, 
+        margin={"r":50,"t":50,"l":50,"b":50}
+       )
+
+       fig.show()
+
+       return fig
+
+
 if __name__ == '__main__':
    # 
    # this script should batch check AMS events and AS7 obs and make sure the obs are detected, 
@@ -366,6 +468,7 @@ if __name__ == '__main__':
    ams_as7_data_file = AA.ams_as7_dir + year + "_AMS_AS7.json"
    temp = {}
 
+   # load this year's previous run's data file if it exists
    if os.path.exists(ams_as7_data_file) is True:
       data = load_json_file(ams_as7_data_file)
       AA.ams_as7_report(data)
@@ -407,11 +510,14 @@ if __name__ == '__main__':
          not_done_ams_ids.append(ams_id)
 
    ams_as7_events = []
+   ams_as7_nomatch_events = []
    #for ams_event_id in sorted(resp['result'], reverse=True):
    ec = 1
    total = len(not_done_ams_ids)
-   print("DONE:", done_ams_ids)
-   print("NOT DONE:", not_done_ams_ids)
+   print("DONE:", len(done_ams_ids))
+   print("NOT DONE:", len(not_done_ams_ids))
+
+   # only work on events that are not done yet
    for ams_event_id in sorted(not_done_ams_ids):
       print("Doing", ams_event_id,  ec, "of", total)
       ec += 1
@@ -423,6 +529,8 @@ if __name__ == '__main__':
       else:
          print("SKIP AMS EVENT ALREADY DONE", ams_event_id)
          #continue
+
+      # get some geoloc data about the event (requires service / api or else dies after a few tries)
       if False: # "geoloc" not in ams_events[ams_event_id] or ams_events[ams_event_id]['geoloc'] == None:
          print("geoloc not in ams_events data yet",  ams_events[ams_event_id].keys())
          try:
@@ -443,16 +551,20 @@ if __name__ == '__main__':
             ams_events[ams_event_id]['country_code'] = "world" 
             ams_events[ams_event_id]['geoloc'] = None
             input("GEOLOC FAIL")
+
       ams_events[ams_event_id]['avg_date_utc'] = resp['result'][ams_event_id]['avg_date_utc']
       ams_events[ams_event_id]['date'] = resp['result'][ams_event_id]['avg_date_utc'].split(" ")[0]
       event_date = ams_events[ams_event_id]['date']
 
+      # load all sky 7 events for this day if not already loaded
       if event_date not in AA.events:
          AA.load_events_for_day(event_date)   
 
       #if "allsky7_check_complete" not in ams_events[ams_event_id]:
       if True:
+         # find AS7 event
          as7_event = AA.find_event(ams_events[ams_event_id]['avg_date_utc'], ams_events[ams_event_id]['end_lat'], ams_events[ams_event_id]['end_long'])
+         # find AS7 obs 
          as7_obs = AA.find_obs(ams_events[ams_event_id]['avg_date_utc'], ams_events[ams_event_id]['end_lat'], ams_events[ams_event_id]['end_long'])
  
          ams_events[ams_event_id]['allsky7']['event_data'] = as7_event
@@ -465,23 +577,94 @@ if __name__ == '__main__':
             print("   FILES:", len(as7_event['files']))
             print("   OBS:", len(as7_obs))
 
+         # tag/append all stations on the map within 650 km of the event
          for st_id in AA.station_dict:
             if AA.station_dict[st_id]['op_status'] == "ACTIVE":
             #if True:
                dist_from_station = dist_between_two_points(float(AA.station_dict[st_id]['lat']), float(AA.station_dict[st_id]['lon']), float(resp['result'][ams_event_id]['epicenter_lat']), float(resp['result'][ams_event_id]['epicenter_long']))
                bearing = AA.get_bearing(float(AA.station_dict[st_id]['lat']), float(AA.station_dict[st_id]['lon']), float(resp['result'][ams_event_id]['epicenter_lat']), float(resp['result'][ams_event_id]['epicenter_long']))
-               if dist_from_station < 450:
+               if dist_from_station < 650:
                   ams_events[ams_event_id]['allsky7']['stations'][st_id] = {}
                   ams_events[ams_event_id]['allsky7']['stations'][st_id]['station_id'] = st_id
                   ams_events[ams_event_id]['allsky7']['stations'][st_id]['station_distance'] = float(round(dist_from_station,2) )
                   ams_events[ams_event_id]['allsky7']['stations'][st_id]['station_bearing'] = float(round(bearing,1) )
                   ams_events[ams_event_id]['allsky7']['stations'][st_id]['location'] = [AA.station_dict[st_id]['lat'], AA.station_dict[st_id]['lon'], AA.station_dict[st_id]['alt']]
 
+      points = []
+      lines = []
+      texts = []
 
+      used_st = {}
+      title = "AMS EVENT:" + str(ams_event_id) + " " + ams_events[ams_event_id]['avg_date_utc']
+      if as7_event is not None:
+         for event in as7_event:
+            print("E", event)
+
+      for obs in as7_obs:
+         oid = obs['station_id'] + "_" + obs['sd_video_file']
+         used_st[obs['station_id']] = {} 
+         print("OBS:", oid)
+         if "meteor_frame_data" in obs:
+            azs = [row[9] for row in obs['meteor_frame_data']]
+            els = [row[10] for row in obs['meteor_frame_data']]
+         else:
+            azs = []
+            els = []
+         used_st[obs['station_id']]['azs'] = azs
+         used_st[obs['station_id']]['els'] = els
+
+         print("AS7 OBS FOUND")
+
+
+
+      for st in ams_events[ams_event_id]['allsky7']['stations']:
+         lat, lon, alt = ams_events[ams_event_id]['allsky7']['stations'][st]['location']
+         point = {}
+         point['lat'] = lat
+         point['lon'] = lon 
+         point['name'] = st
+         point['text_position'] = "top right" 
+         if st in used_st:
+            point['symbol'] = 'square'
+            point['opacity'] = 1
+            #point['angle'] = used_st[st]['mean_az']
+         else:
+            point['symbol'] = "circle"
+            point['opacity'] = .2
+            #point['angle'] = 0
+         points.append(point)
+         texts.append(st)
+      line = {}
+      ams_event_data = ams_events[ams_event_id]
+      line['lats'] = [ams_event_data['start_lat'],ams_event_data['end_lat']]
+      line['lons'] = [ams_event_data['start_long'],ams_event_data['end_long']]
+      line['name'] = "AMS WITNESS GROUND TRACK"
+      lines.append(line)
+
+      clat = float(ams_event_data['end_lat'])
+      clon = float(ams_event_data['end_long'])
+      zoom = 4
+
+      
+
+      map_fig2 = AA.create_map(title, points, lines, clat, clon, zoom)
+
+      #exit()
       if len(ams_events[ams_event_id]['allsky7']['stations']) > 0 and as7_event is not None:
          ams_events[ams_event_id] = AA.populate_as7_data(ams_events[ams_event_id]) 
-         map_fig = AA.ams_as7_event_map(ams_events[ams_event_id])
+         #map_fig = AA.ams_as7_event_map(ams_events[ams_event_id])
+
+
+         #map_fig2 = AA.create_map(points, lines, clat,clon, zoom=4)
          ams_as7_events.append((ams_event_id, as7_event, as7_obs))
+      else:
+         ams_events[ams_event_id] = AA.populate_as7_data(ams_events[ams_event_id]) 
+         #map_fig2 = AA.create_map(points, lines, clat,clon, zoom=4)
+         #map_fig = AA.ams_as7_event_map(ams_events[ams_event_id])
+         ams_as7_nomatch_events.append((ams_event_id, as7_event, as7_obs))
+
+
+
       data['ams_events'] = ams_events
       data['ams_as7_events'] = ams_as7_events
       save_json_file(ams_as7_data_file, data)

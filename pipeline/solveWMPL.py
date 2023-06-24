@@ -2349,7 +2349,7 @@ def event_report(dynamodb, event_id, solve_dir, event_final_dir, obs):
        zobs_data = load_json_file(obs_data_file)
     else:
        zobs_data = []
-    if os.path.exists(obs_data_file) is True:
+    if os.path.exists(planes_data_file) is True:
        planes_data = load_json_file(planes_data_file)
     else:
        planes_data = {}

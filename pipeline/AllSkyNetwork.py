@@ -253,6 +253,9 @@ if cmd == "load_day_sql" or cmd == "reload":
    if date == "yest":
       date = yest 
    ASN.day_load_sql(date, force)
+   
+ 
+   #ASN.review_event_day(date)
    print("Done load")
 
 

@@ -2910,7 +2910,10 @@ class AllSkyNetwork():
                 azs = [row[9] for row in obs_data['meteor_frame_data']]
                 els = [row[10] for row in obs_data['meteor_frame_data']]
                 ints = [row[6] for row in obs_data['meteor_frame_data']]
+                print("OBS:", obs_id)
                 print("INTS", ints)
+                print("AZs", azs)
+                print("ELs", els)
                 az_start_point = self.find_point_from_az_dist(slat,slon,float(azs[0]),350)
                 az_end_point = self.find_point_from_az_dist(slat,slon,float(azs[-1]),350)
                 lines.append((slat, slon, az_start_point[0] , az_start_point[1], 'green'))
@@ -3185,7 +3188,7 @@ class AllSkyNetwork():
 
    def review_event_movie(self, event_id):
       # get user input
-      self.PREVIEW = True 
+      self.PREVIEW = False 
       self.MOVIE_FRAMES = []
 
       self.load_stations_file()
@@ -3244,17 +3247,29 @@ class AllSkyNetwork():
 
       #print("END EARLY")
       #exit()
- 
+      # make the graps and animations part of the movie 
       data_frames = self.event_data_movie(event_id, event_data, good_obs)
  
 
       obs_vids = {}
       station_count = {}
+      # compilation of all obs
       for station_id in good_obs:
          for sfile in good_obs[station_id]:
             obs_id = station_id  + "_" + sfile
+            date = sfile[0:10]
+            year= sfile[0:4]
+            print("OBS ID:", obs_id)
             local_sd_vid = self.ev_dir + obs_id
             local_hd_vid = local_sd_vid.replace(".mp4", "-1080p.mp4")
+            cloud_dir = "/mnt/archive.allsky.tv/" + station_id + "/METEORS/" + year + "/" + date + "/" 
+            cloud_hd_vid = cloud_dir + obs_id.replace(".mp4",  "-1080p.mp4")
+            print("CLOUD HD FILE", cloud_hd_vid)
+            if os.path.exists(cloud_hd_vid) is True and os.path.exists(local_hd_vid) is False:
+               cmd = "cp " + cloud_hd_vid + " " + local_hd_vid
+               print(cmd)
+               os.system(cmd)
+
             if obs_id in self.obs_dict:
                hd_video_file = self.obs_dict[obs_id]['hd_video_file']
                remote_hd_vid = self.rurls[station_id] + "/meteors/" + event_day +  "/" + hd_video_file
@@ -3266,7 +3281,7 @@ class AllSkyNetwork():
                if os.path.exists(local_hd_vid):
                   sz, elp = get_file_info(local_hd_vid)
                else:
-                  sz = 0
+                  sz = 0 
                
                if os.path.exists(local_hd_vid) and sz > 0:
                   print("   HD", local_hd_vid)
@@ -3325,9 +3340,20 @@ class AllSkyNetwork():
       pos_y = int(1080 - (len(credits) * y_space))
 
       intro = True  
+      font_size = 30
+      if len(credits) < 9:
+         pos_y = 480
+      else:
+         ddd = len(credits) - 9
+         extra = 100 * ddd
+         pos_y = 480 - 100
+         if pos_y < 50:
+            # need 2 columns!
+            pos_y = 50
+            font_size=20
 
       if intro is True: 
-         credits_frame = VE.show_text(credits, base_frame, 3, font_size=30, pos_y=480)         
+         credits_frame = VE.show_text(credits, base_frame, 3, font_size=font_size, pos_y=pos_y)         
 
       movie_frames_folder = self.ev_dir + "/movie_frames/"
 
@@ -3336,8 +3362,9 @@ class AllSkyNetwork():
       if intro is True: 
          iframes = make_intro(movie_frames_folder)
          for fr in iframes:
+         #   cv2.imshow('pepe', fr)
+         #   cv2.waitKey(0)
             self.MOVIE_FRAMES.append(fr)
-
       text_frames_dir = self.ev_dir + "/audio_text/"
       if os.path.exists(text_frames_dir) is False:
          os.makedirs(text_frames_dir)
@@ -3586,10 +3613,11 @@ class AllSkyNetwork():
 
       sync_done = False 
       if "all_media" in self.movie_conf: 
-         if "hd_fns" in self.movie_conf['all_media'][obs_id]:
-            hd_fns = self.movie_conf['all_media'][obs_id]['hd_fns']
-            med_sync = self.movie_conf['all_media'][obs_id]['med_sync']
-            sync_done = True
+         if obs_id in self.movie_conf['all_media']:
+            if "hd_fns" in self.movie_conf['all_media'][obs_id]:
+               hd_fns = self.movie_conf['all_media'][obs_id]['hd_fns']
+               med_sync = self.movie_conf['all_media'][obs_id]['med_sync']
+               sync_done = True
 
       if sync_done is False:
          hd_fns, med_sync = self.sync_hd_frames(frames, fns, xs, ys)
@@ -3626,11 +3654,15 @@ class AllSkyNetwork():
       # build frame lookup dict
       flookup = {} 
       kb_data = []
+      print(fns)
+      print(xs)
+      print(ys)
       for i in range(0,len(fns)):
          fn = fns[i]
-         x = xs[i]
-         y = ys[i]
-         flookup[fn] = [x,y]
+         if i < len(xs):
+            x = xs[i]
+            y = ys[i]
+            flookup[fn] = [x,y]
 
       for i in range(0,len(frames)):
          
@@ -3722,6 +3754,10 @@ class AllSkyNetwork():
          fn = fns[i]
          x = xs[i]
          y = ys[i]
+         if x >= 1920:
+            x = 1919
+         if y >= 1080:
+            y = 1079 
          print(i, fn)
          brightest_frame_val = 0 
          brightest_frame_num = 0
@@ -4634,8 +4670,6 @@ class AllSkyNetwork():
                   self.ignored_obs[obs_id] = (event_id, station_id, obs_id, fns, times, xs, ys, azs, els, ints, \
                      status, ignore, ai_confirmed, human_confirmed, ai_data, prev_uploaded ) 
                   ig = True
-                  print("SKIP IGNORE!", obs_id)
-                  input("NOW WHAT")
                   continue
             if ig is True:
                print("WE IGNORE THIS", ig)
@@ -4673,7 +4707,6 @@ class AllSkyNetwork():
          print("OBS DB", len(obs_db))
          for row in obs_db:
             print("OR", row[2])
-         input("REVEW OBS FRAMES FOR OBS_DB " )
          self.review_obs_frames(obs_db)
       cv2.imshow("pepe", simg)
       cv2.waitKey(30)

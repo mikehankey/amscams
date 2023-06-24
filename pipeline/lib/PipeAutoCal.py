@@ -1701,9 +1701,9 @@ def refit_meteor(meteor_file, json_conf,force=0):
    
 
 
-      test1_cp , bad_stars, marked_img = test_cal(meteor_file, json_conf, acp, image, test_data1)
+      test1_cp , bad_stars, marked_img = test_cal(meteor_file, json_conf, acp, image.copy(), test_data1)
 
-      test2_cp, bad_stars, marked_img = test_cal(meteor_file, json_conf, acp, image, test_data2)
+      test2_cp, bad_stars, marked_img = test_cal(meteor_file, json_conf, acp, image.copy(), test_data2)
 
       if test2_cp['total_res_px'] < test1_cp['total_res_px']:
          print("Update meteor cal with default it is better.")
@@ -2953,7 +2953,7 @@ def try_to_heal_cal(day, cam, img, image_file, cp, json_conf):
          cp['y_poly'] = mcp['y_poly']
          cp['x_poly_fwd'] = mcp['x_poly_fwd']
          cp['y_poly_fwd'] = mcp['y_poly_fwd']
-      tcp , bad_stars, marked_img = test_cal(image_file, json_conf, cp, img, data)
+      tcp , bad_stars, marked_img = test_cal(image_file, json_conf, cp, img.copy(), data)
       print("RES:", tcp['total_res_px'])
       if last_best_res is None:
          last_best_res = tcp['total_res_px']
@@ -5937,17 +5937,45 @@ def get_best_cal_new(cp_file, json_conf) :
    best_cp = {}
    best_cp['total_res_px'] = 9999
    for data in bfiles:
-      ncp, bad_stars, marked_img = test_cal(cp_file, json_conf, tcp, cal_img, data)
+      ncp, bad_stars, marked_img = test_cal(cp_file, json_conf, tcp, cal_img.copy(), data)
       if float(ncp['total_res_px']) < float(best_cp['total_res_px']):
          print("RESET BEST CAL!", ncp['total_res_px'])
          best_cp = dict(ncp)
    for data in afiles:
-      ncp, bad_stars, marked_img = test_cal(cp_file, json_conf, tcp, cal_img, data)
+      ncp, bad_stars, marked_img = test_cal(cp_file, json_conf, tcp, cal_img.copy(), data)
       if float(ncp['total_res_px']) < float(best_cp['total_res_px']):
          print("RESET BEST CAL!", ncp['total_res_px'])
          best_cp = dict(ncp)
    print("FINAL BEST CAL:", best_cp['total_res_px'])
    return(best_cp)
+
+def test_fix_pa(cp_file, cal_params, cp_img, json_conf):
+
+
+   test_data = [cp_file, cal_params['center_az'], cal_params['center_el'], cal_params['position_angle'], cal_params['pixscale'], len(cal_params['user_stars']),len(cal_params['cat_image_stars']), cal_params['total_res_px'], 0 ]
+   test_cp , bad_stars, marked_img = test_cal(cp_file, json_conf, cal_params, cp_img.copy(), test_data)
+   print("TEST FIX PA: ORG",  test_cp['position_angle'], len(test_cp['cat_image_stars']), test_cp['total_res_px'])
+
+
+   pos1 = cal_params['position_angle'] - 180
+   if pos1 < 0:
+      pos1 += 360
+
+   test_data1 = [cp_file, cal_params['center_az'], cal_params['center_el'], pos1, cal_params['pixscale'], len(cal_params['user_stars']),len(cal_params['cat_image_stars']), cal_params['total_res_px'], 0 ]
+   test1_cp , bad_stars, marked_img = test_cal(cp_file, json_conf, cal_params, cp_img.copy(), test_data1)
+   print("TEST FIX PA POS1",  test1_cp['position_angle'], len(test1_cp['cat_image_stars']), test1_cp['total_res_px'])
+
+   test_data2 = [cp_file, cal_params['center_az'], cal_params['center_el'], cal_params['position_angle'] + 180, cal_params['pixscale'], len(cal_params['user_stars']),len(cal_params['cat_image_stars']), cal_params['total_res_px'], 0 ]
+   test2_cp , bad_stars, marked_img = test_cal(cp_file, json_conf, cal_params, cp_img.copy(), test_data2)
+   print("TEST FIX PA POS2",  test2_cp['position_angle'], len(test2_cp['cat_image_stars']), test2_cp['total_res_px'])
+
+
+
+   input("TEST FIX PA")
+   
+
+   print("EXIT")
+   exit()
 
 def test_cal(cp_file,json_conf,cp, cal_img, cdata ):
    cfile, az, el, pos, px, num_ustars, num_cstars, res, tdiff = cdata
@@ -5959,7 +5987,7 @@ def test_cal(cp_file,json_conf,cp, cal_img, cdata ):
       del cp['short_bright_stars']
    cp = update_center_radec(cp_file,cp,json_conf)
    #cp, bad_stars, marked_img = eval_cal(cp_file,json_conf,cp,cal_img, None)
-   print(cp['cat_image_stars'])
+   #print(cp['cat_image_stars'])
    cp, bad_stars, marked_img = eval_cal_res(cp_file, json_conf, cp, cal_img,None,None,cp['cat_image_stars']) 
 
    tcp = dict(cp)
@@ -6224,6 +6252,16 @@ def eval_cal_res(cp_file,json_conf,nc=None,oimg=None, mask_img=None,batch_mode=N
 
       new_cat_x, new_cat_y = distort_xy(0,0,ra,dec,float(cal_params['ra_center']), float(cal_params['dec_center']), cal_params['x_poly'], cal_params['y_poly'], float(cal_params['imagew']), float(cal_params['imageh']), float(cal_params['position_angle']),3600/float(cal_params['pixscale']))
       cat_dist = calc_dist((six,siy),(new_cat_x,new_cat_y))
+      #print("EVAL CAL RES POSITION / CAT DIST", cal_params['position_angle'], cat_dist)
+      if oimg is not None:
+         #print("XYs:", int(six), int(siy), int(new_cat_x), int(new_cat_y))
+         if SHOW == 1:
+            cv2.circle(oimg,(int(six),int(siy)), 10, (128,128,128), 1)
+            cv2.circle(oimg,(int(new_cat_x),int(new_cat_y)), 20, (128,128,128), 1)
+            cv2.line(oimg, (int(six),int(siy)), (int(new_cat_x),int(new_cat_y)), (255), 2)
+            cv2.imshow('pepe', oimg)
+            cv2.waitKey(30)
+
 
       rez.append(cat_dist)
       new_cat_stars.append((dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist,star_int))
@@ -7028,7 +7066,7 @@ def autocal(image_file, json_conf, show = 0, heal_only=0):
             os.system(cmd)
 
 
-      tcp , bad_stars, marked_img = test_cal(image_file, json_conf, cp, img, data)
+      tcp , bad_stars, marked_img = test_cal(image_file, json_conf, cp, img.copy(), data)
 
       print("TEST CAL RES:", tcp['total_res_px'])
       if last_best_res is None:
@@ -7101,7 +7139,6 @@ def autocal(image_file, json_conf, show = 0, heal_only=0):
 
    #img = mask_frame(img, [], masks, 5)
 
-   print("STARS:", len(stars))
    year = datetime.now().strftime("%Y")
    autocal_dir = "/mnt/ams2/meteor_archive/" + STATION_ID + "/CAL/AUTOCAL/" + year + "/solved/"
    autocal_bad = "/mnt/ams2/meteor_archive/" + STATION_ID + "/CAL/AUTOCAL/" + year + "/bad/"
@@ -7146,6 +7183,9 @@ def autocal(image_file, json_conf, show = 0, heal_only=0):
       show_image(plate_image, 'pepe', 300)
    status, cal_params,wcs_file = solve_field(plate_file, stars, json_conf)
 
+   # we need to check the parity issue +/- 180... 
+   # 
+
    # this should be handled inside the solve_field function and use orientation_center?!
    #if status == 1:
    #   if float(cal_params['position_angle']) < 0:
@@ -7176,9 +7216,13 @@ def autocal(image_file, json_conf, show = 0, heal_only=0):
 
    cal_params_file = wcs_file.replace(".wcs", "-calparams.json")
 
+
+
    if status == 1:
       print("Plate solve passed. Time for lens modeling!") 
       save_json_file(cal_params_file, cal_params)
+      print("file:", cal_params_file)
+      input("WAIT")
 
       #if SHOW == 1:
       #   grid_file = wcs_file.replace(".wcs", "-grid.png")
@@ -7200,6 +7244,30 @@ def autocal(image_file, json_conf, show = 0, heal_only=0):
 
    cat_stars = get_catalog_stars(cal_params)
    cal_params = pair_stars(cal_params, cal_params_file, json_conf)
+
+   # this is the best place to check the parity / 180 PA issue!
+   
+   test_data1 = [image_file, cal_params['center_az'], cal_params['center_el'], cal_params['position_angle'], cal_params['pixscale'], len(cal_params['user_stars']),len(cal_params['cat_image_stars']), cal_params['total_res_px'], 0 ]
+   test1_cp , bad_stars, marked_img = test_cal(image_file, json_conf, cal_params, img.copy(), test_data1)
+   print("TEST1:", test1_cp['total_res_px'],  test1_cp['position_angle'])
+
+   test_data2 = [image_file, cal_params['center_az'], cal_params['center_el'], cal_params['position_angle'] - 180, cal_params['pixscale'], len(cal_params['user_stars']),len(cal_params['cat_image_stars']), cal_params['total_res_px'], 0 ]
+   test2_cp , bad_stars, marked_img = test_cal(image_file, json_conf, cal_params, img.copy(), test_data2)
+   print("TEST2:", test2_cp['total_res_px'], test2_cp['position_angle'])
+
+   cal_params = test_fix_pa(image_file, cal_params, img.copy(), json_conf)
+ 
+   if test2_cp['total_res_px'] < test1_cp['total_res_px']:
+      cal_params = test2_cp
+      print("USE test2 CP POS=", cal_params['position_angle'])
+   else:
+      cal_params = test1_cp
+      print("USE test1 CP POS=", cal_params['position_angle'])
+
+
+
+   input("CHECK PA ISSUE!")
+
    fn, dir = fn_dir(image_file)
    #guess_cal("temp/" + fn, json_conf, cal_params )
 
@@ -7426,7 +7494,6 @@ def debug_star_image(color_img, cat_stars, cal_file):
    perfect_stars = []
    perfect_user_stars = []
    tres = 0
-   #print("CAT STARS:", len(cat_stars))
    for cat_star in cat_stars:
       (name,mag,ra,dec,new_cat_x,new_cat_y) = cat_star
       orig_new_cat_x = new_cat_x
@@ -8170,7 +8237,6 @@ def get_image_stars(file=None,img=None,json_conf=None,show=0):
       x,y,z = star
       cv2.circle(img, (int(x),int(y)), 5, (128,128,128), 1)
    cv2.imwrite("/mnt/ams2/temp.jpg", img)
-   print("BEST STARS:", len(best_stars))
    return(best_stars)
 
 
@@ -8406,11 +8472,12 @@ def save_cal_params(wcs_file,json_conf):
          cal_params_json['imageh'] = value
       if field == "pixscale":
          cal_params_json['pixscale'] = value
+      # last update 6/23/2023 -- point of confusion! With past versions etc. 
+      # this is the proper way to do it? (We think!)
+      # it may not be compatible with old version?  
+
       if field == "orientation_center":
-         if float(value) < 0:
-            cal_params_json['position_angle'] = float(value) + 360
-         else:
-            cal_params_json['position_angle'] = float(value) #+ 180
+         cal_params_json['position_angle'] = 180 + float(value)  
       if field == "ra_center":
          cal_params_json['ra_center'] = value
       if field == "dec_center":
@@ -8729,6 +8796,7 @@ def pair_stars(cal_params, cal_params_file, json_conf, cal_img=None, show = 0):
 
    print("PAIR STARS STARS:", len(my_close_stars))
    print("PAIR STARS RES:", total_res_px)
+   print("PAIR STARS POS:", cal_params['position_angle'])
    #print("MY CLOSE STARS:", my_close_stars )
    cal_params['cat_image_stars'] = my_close_stars
    if total_matches > 0:

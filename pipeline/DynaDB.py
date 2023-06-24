@@ -666,13 +666,14 @@ def update_dyna_cache_for_day(dynamodb, date, stations, utype=None, cloud_copy=1
    #for st in sorted(all_stations):
    API_URL = "https://kyvegys798.execute-api.us-east-1.amazonaws.com/api/allskyapi?cmd=get_stations&api_key=" + json_conf['api_key'] + "&station_id=" + json_conf['site']['ams_id']
 
-   #print("API:", API_URL)
+   print("API:", API_URL)
    response = requests.get(API_URL)
    content = response.content.decode()
    content = content.replace("\\", "")
    if content[0] == "\"":
       content = content[1:]
-      content = content[0:-1]
+      #content = content[0:-1]
+   #print(content)
    jdata = json.loads(content)
    save_json_file("/mnt/f/EVENTS/ALL_STATIONS.json", jdata['all_vals'], True)
    os.system("cp /mnt/f/EVENTS/ALL_STATIONS.json /mnt/archive.allsky.tv/EVENTS/ALL_STATIONS.json")
@@ -805,6 +806,7 @@ def update_dyna_cache_for_day(dynamodb, date, stations, utype=None, cloud_copy=1
       os.system("cp " + event_file + " " + cloud_event_file)
       print("saved" + cloud_event_file)
    os.system("./AllSkyNetwork.py reload " + date)
+
 def starttime_from_file( filename):
    (f_datetime, cam, f_date_str,fy,fmon,fd, fh, fm, fs) = convert_filename_to_date_cam(filename)
    trim_num = get_trim_num(filename)

@@ -80,7 +80,6 @@ def save_movie_frame(frame, frame_number, folder, repeat = None, fade_last=None)
    #frame = frame * 255
    #print(type(frame), frame.shape, frame[0,0] )
    #cv2.imshow('pepe', frame)
-   #cv2.waitKey(0)
 
 
 
@@ -320,7 +319,6 @@ def remote_cal(cal_file, con, cur):
          if os.path.exists(local_cal_file) is False:
             cmd = "wget " + remote_png_url + " -O " + local_cal_file
             print(cmd)
-            #input("ENTER TO GET " + remote_png_url)
             os.system(cmd)
 
          if os.path.exists(local_json_file) is False:
@@ -665,13 +663,11 @@ def blind_solve(cal_file, cal_img, best_stars, remote_json_conf):
       img_el = None
       img_az = None
       cat_image_stars.append((name,mag,ra,dec,img_ra,img_dec,match_dist,zp_cat_x,zp_cat_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist,star_int)) 
+      if SHOW == 1:
+         cv2.line(blend, (int(six),int(siy)), (int(zp_cat_x),int(zp_cat_y)), (255,255,255), 1)
+         cv2.imshow('pepe', blend)
+         cv2.waitKey(30)
 
-      cv2.line(blend, (int(six),int(siy)), (int(zp_cat_x),int(zp_cat_y)), (255,255,255), 1)
-      cv2.imshow('pepe', blend)
-      cv2.waitKey(30)
-
-   cv2.imshow('pepe', blend)
-   cv2.waitKey(0)
    default_cal_params['cat_image_stars'] = cat_image_stars
 
    default_cal_params['x_poly'] = list(np.zeros(shape=(15,), dtype=np.float64))
@@ -689,13 +685,12 @@ def blind_solve(cal_file, cal_img, best_stars, remote_json_conf):
    
 
    print("CAT IMG STARS:", len(temp_cal_params['cat_image_stars']))
+   if SHOW == 1:
+      cv2.imshow('pepe', star_img)
+      cv2.waitKey(30)
 
-   cv2.imshow('pepe', star_img)
-   cv2.waitKey(0)
+   return(temp_cal_params)
 
-
-
-   exit()
 
 def echo_calparams(cf, cp):
    print("*** CAL PARAMS ***")   
@@ -2908,9 +2903,8 @@ def add_more_stars(cal_file, cp, star_img, median_frame, json_conf) :
                print("INVALID:", res_px * 5, star_obj['valid_star'], star_obj['res_px'] , "PX" , star_obj['reject_reason'])
                cv2.rectangle(simg, (rx1,ry1), (rx2,ry2) , [0,0,255], 1)
                #cv2.imshow("pepe", simg)
-               #cv2.waitKey(0)
+               #cv2.waitKey(30)
 
-   print("ADD MORE STARS:", len(cat_image_stars))
 
    if SAVE_MOVIE is True:
       print("MOVIE_FRAME_NUMBER:", MOVIE_FRAME_NUMBER)
@@ -2919,9 +2913,9 @@ def add_more_stars(cal_file, cp, star_img, median_frame, json_conf) :
       all_img = RF.watermark_image(all_img, RF.logo_320, logo_x,logo_y, .33, make_int=True)
       save_movie_frame(all_img, MOVIE_FRAME_NUMBER, MOVIE_FRAMES_TEMP_FOLDER, 10, 10)
 
-   if SHOW == 1:
-      cv2.imshow("pepe", all_img)
-      cv2.waitKey(30)
+   #if SHOW == 1:
+   #   cv2.imshow("pepe", all_img)
+   #   cv2.waitKey(30)
    cp['cat_image_stars'] = cat_image_stars
    cp['star_points'] = star_points
 
@@ -4716,6 +4710,7 @@ def make_plate(cal_fn, json_conf, con, cur):
       print("start Calib failed!", cal_fn)
       return(None, None)
    else:
+      print("RESP to start calib:", resp)
       (station_id, cal_dir, cal_json_file, cal_img_file, cal_params, cal_img, clean_cal_img, mask_file,mcp) = resp
 
    plate_file = cal_dir + cal_fn.replace("-stacked-calparams.json", "-plate.jpg")
@@ -6412,8 +6407,9 @@ def batch_apply_bad(cam_id, con, cur, json_conf, blimit=25):
        WHERE cal_fn like ?
          AND res_px is not NULL
        GROUP bY cal_fn
-    ORDER BY score DESC
+    ORDER BY res_px DESC
    """
+    #ORDER BY score DESC
 
    dvals = ["%" + cam_id + "%"]
    cur.execute(sql, dvals)
@@ -6922,19 +6918,32 @@ def apply_calib (cal_file, calfiles_data, json_conf, mcp, last_cal_params=None, 
       # add more stars
       oimg = cv2.subtract(oimg, mask)
       #cv2.imshow('mask', oimg)
-      #cv2.waitKey(0)
 
 
       cal_params = add_more_stars(cal_fn, cal_params, oimg, oimg, json_conf)
+      print("  AZ ", cal_params['center_az'])
+      print("  EL ", cal_params['center_el'])
+      print("  PA ", cal_params['position_angle'])
+      print("  PX ", cal_params['pixscale'])
+      print("STARS:" +  str(len(cal_params['cat_image_stars'])) )
+
 
       
       # if 0 stars we have to abort
       if "cat_image_stars" not in cal_params:
          print("\tERROR: No stars found in cal image file!", cal_dir , cal_image_file)
+
+
          return(None,None)
       elif len(cal_params['cat_image_stars']) == 0:
-         print("\tERROR: No stars found in cal image file!", cal_dir , cal_image_file)
-         return(None,None)
+         # last ditch effort adj 180 on pos?
+         pos = 180 - cal_params['position_angle']
+         print("TRY 180 - pos way!", pos)
+         cal_params['position_angle'] = pos
+         cal_params = add_more_stars(cal_fn, cal_params, oimg, oimg, json_conf)
+         if len(cal_params['cat_image_stars']) == 0:
+            print("\tERROR: No stars found in cal image file!", cal_dir , cal_image_file)
+            return(None,None)
          
 
       # first check if the file is corrupt. If so reset 1 time, else move to bad.
@@ -7355,7 +7364,7 @@ def cat_star_match(cal_fn, cal_params, cal_img, cat_stars):
          name,mag,ra,dec,new_cat_x,new_cat_y,zp_cat_x,zp_cat_y = row
          if SHOW == 1:
             cv2.imshow('pepe', cat_image)
-            cv2.waitKey(0)
+            cv2.waitKey(30)
          if mag <= 5.5:
             if new_cat_x < 300:
                cv2.circle(cat_image, (int(zp_cat_x),int(zp_cat_y)), 3, (0,0,255),1)
@@ -9528,7 +9537,6 @@ def eval_star_crop(crop_img, cal_fn, x1, y1,x2,y2, star_cat_info=None ):
    thresh_val = find_best_thresh(gray_img)
    #if thresh_val < 80:
    #   thresh_val = 80
-   print("AVG, THRESH:", avg_val, thresh_val)
    if thresh_val < 50:
       reject_reason += "thresh_val_too_low: " +  str(thresh_val)
       valid_star = False 
@@ -9560,13 +9568,13 @@ def eval_star_crop(crop_img, cal_fn, x1, y1,x2,y2, star_cat_info=None ):
       else:
          radius = h 
 
-      # remove if not center
-      if x < 7 or x > 13:
-         reject_reason += "x not center: " +  str(x) + " " + str(y)
-         valid_star = False 
-      if y < 7 or y > 13:
-         reject_reason += "y not center: " +  str(x) + " " + str(y)
-         valid_star = False 
+      # remove if not center # depends on crop size!!!
+      #if x < 7 or x > 13:
+      #   reject_reason += "x not center: " +  str(x) + " " + str(y)
+      #   valid_star = False 
+      #if y < 7 or y > 13:
+      #   reject_reason += "y not center: " +  str(x) + " " + str(y)
+      #   valid_star = False 
 
       if w > 3 or h > 3:
          reject_reason += "cnt w/h too big: " +  str(w) + " " + str(h)
@@ -9634,7 +9642,7 @@ def eval_star_crop(crop_img, cal_fn, x1, y1,x2,y2, star_cat_info=None ):
       star_obj['x'] = star_obj['star_x']
       star_obj['y'] = star_obj['star_y']
 
-   print(star_obj)
+   #print(star_obj)
    #if SHOW == 1:
    #   cv2.imshow("CROP", crop_thresh)
    #   cv2.waitKey(30)
