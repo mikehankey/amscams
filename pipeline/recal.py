@@ -1395,9 +1395,15 @@ def reset_bad_cals(cam_id, con, cur,json_conf):
          if "med" in key:
             print(cam_id, stats[cam_id], key, stats[cam_id][key])
 
+   # now what?
+
 
 def freecal_stats(cam_id, freecal_index, json_conf, stats, mask_imgs) :
+   cc = 0
+   station_id = json_conf['site']['ams_id']
    for cal_file in freecal_index:
+      print("CAL FILE:", cal_file)
+      cal_id = cal_file.split("/")[-1].split("-")[0]
       cal_data = freecal_index[cal_file]
       t_cam_id = cal_data['cam_id']
       if cam_id != t_cam_id:
@@ -1427,7 +1433,12 @@ def freecal_stats(cam_id, freecal_index, json_conf, stats, mask_imgs) :
          exit()
       cal_img = cv2.cvtColor(gray_cal_img, cv2.COLOR_GRAY2BGR)
       cal_json_file = cal_data['cal_image_file'].replace(".png", "-calparams.json")
-      cal_params = load_json_file(cal_json_file)
+      try:
+         cal_params = load_json_file(cal_json_file)
+      except:
+         print(cal_json_file, "FILE IS BAD")
+         reset_cal_file(station_id, cal_id)
+         exit()
 
       if "star_points" not in cal_params :
          star_points, show_img = get_star_points(cal_data['cal_image_file'], cal_img, cal_params, station_id, cam_id, json_conf)
@@ -1470,6 +1481,36 @@ def freecal_stats(cam_id, freecal_index, json_conf, stats, mask_imgs) :
       stats[cam_id]['med_res'] = np.median(stats[cam_id]['total_res_px'])
    return(stats)
 
+def reset_cal_file(station_id, cal_id):
+   # cal_id should be the freecal dir. all other files are dervived from it. 
+   today = datetime.date.today()
+   year = today.strftime("%Y")
+   reset = 1
+   cal_dir = "/mnt/ams2/cal/freecal/" + cal_id + "/"
+   bad_cal_dir = "/mnt/ams2/cal/bad_cals/" + cal_id + "/"
+   stack_file = cal_dir + cal_id + "-stacked.png"
+   
+   # copy the source png back to the cal-in dir and hope it gets processed correctly the 'next' time.
+   cal_in_dir = "/mnt/ams2/meteor_archive/" + station_id + "/CAL/AUTOCAL/" + year + "/" 
+   cmd1 = "cp " + stack_file + " " + cal_in_dir + cal_id + ".png"
+   print(cmd1)
+   if os.path.exists(bad_cal_dir) is False:
+      print("mkdirs " + bad_cal_dir)
+      os.makedirs(bad_cal_dir) 
+ 
+   # move the freecal dir to the badcals (as backup in case we later need to recover it)
+   cmd2 = "mv " + cal_dir + "* " + bad_cal_dir
+   print(cmd2)
+   os.system(cmd2)
+
+   # remove the free cal dir
+   cmd3 = "rm " + cal_dir 
+   print(cmd3)
+
+   os.system(cmd3)
+   input("CONT")
+
+   #
 
 def anchor_cal(cam_id, con, cur, json_conf):
    freecal_index = load_json_file("/mnt/ams2/cal/freecal_index.json") 
