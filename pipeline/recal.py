@@ -1,5 +1,4 @@
 #!/usr/bin/python3
-
 ASOS = """
    _____  .____    .____       _____________  __._____.___.
   /  _  \ |    |   |    |     /   _____/    |/ _|\__  |   |
@@ -15,6 +14,7 @@ Use permitted under community license for registered users only
 """
 
 from lib.PipeVideo import load_frames_simple
+import math
 
 import datetime
 from PIL import ImageFont, ImageDraw, Image, ImageChops
@@ -1341,7 +1341,7 @@ def cam_menu(cam_id, con,cur, json_conf, cam_status="", cam_stats=None):
 def reset_lens_model(cam_id, con, cur,json_conf):
    print("RESET LENS MODEL FOR ", cam_id)
 
-def reset_bad_cals(cam_id, con, cur,json_conf):
+def reset_bad_cals(this_cam_id, con, cur,json_conf):
    # this will scan all of the cals and anything that has 8px res will be sent back to the 
    # autocal dir for re-plate solving. 
    # then move the folder/contents to the badcal dir and make sure it no longer exists
@@ -1352,7 +1352,7 @@ def reset_bad_cals(cam_id, con, cur,json_conf):
 
    mcp = None
    if mcp is None:
-      mcp_file = autocal_dir + "multi_poly-" + station_id + "-" + cam_id + ".info"
+      mcp_file = autocal_dir + "multi_poly-" + station_id + "-" + this_cam_id + ".info"
       if os.path.exists(mcp_file) == 1:
          mcp = load_json_file(mcp_file)
 
@@ -1368,6 +1368,8 @@ def reset_bad_cals(cam_id, con, cur,json_conf):
 
    # build the stats if they don't exist or have been updated in a while
    go = False
+   if mcp is None :
+       mcp = {}
    if "cal_file_stats" not in mcp:
       go = True
    else:
@@ -1380,7 +1382,7 @@ def reset_bad_cals(cam_id, con, cur,json_conf):
 
    go = True
    if go is True:
-      stats = freecal_stats(cam_id, freecal_index, json_conf, stats, mask_imgs) 
+      stats = freecal_stats(this_cam_id, freecal_index, json_conf, stats, mask_imgs) 
    else:
       stats = mcp['cal_file_stats']
 
@@ -1391,11 +1393,26 @@ def reset_bad_cals(cam_id, con, cur,json_conf):
          save_json_file(mcp_file, mcp)
 
    for cam_id in stats: 
+      if type(stats[cam_id]) is not dict:
+         continue
+      print(cam_id, stats[cam_id])
+
       for key in stats[cam_id]: 
          if "med" in key:
             print(cam_id, stats[cam_id], key, stats[cam_id][key])
 
    # now what?
+   for cf in freecal_index:
+      total_res_px = freecal_index[cf]['total_res_px']
+      total_stars = freecal_index[cf]['total_stars']
+      cal_id = cf.split("/")[-1].split("-")[0]
+      cam_id = cal_id.split("_")[-1]
+      if cam_id == this_cam_id:
+         if total_res_px > 12 or total_stars < 5:
+            reset_cal_file(station_id, cal_id)
+            print("RESET", cam_id, cal_id, total_stars, total_res_px)
+         else:
+            print("GOOD", cam_id, cal_id, total_stars, total_res_px)
 
 
 def freecal_stats(cam_id, freecal_index, json_conf, stats, mask_imgs) :
@@ -1458,11 +1475,17 @@ def freecal_stats(cam_id, freecal_index, json_conf, stats, mask_imgs) :
          stars_found = 0
       cal_fn = cal_data['cal_image_file'].split("/")[-1]
       cal_fn = cal_fn.replace("-stacked.png", "")
+      if math.isnan(stars_found) is True :
+         stars_found = 0
+      if math.isnan(cal_data['total_res_px']) is True :
+         cal_data['total_res_px'] = 999
+
+
       print(cal_fn, len(star_points), cal_data['total_stars'], str(stars_found) + "%" , round(cal_data['total_res_px'],3) )
       freecal_index[cal_file]['star_points'] = len(star_points)
       freecal_index[cal_file]['star_found'] = stars_found 
 
-      stats[cam_id]['total_stars'].append(cal_data['total_res_px'])
+      stats[cam_id]['total_stars'].append(cal_data['total_stars'])
       stats[cam_id]['stars_found'].append(stars_found)
       stats[cam_id]['total_res_px'].append(cal_data['total_res_px'])
       if cc > 100:
@@ -1471,11 +1494,18 @@ def freecal_stats(cam_id, freecal_index, json_conf, stats, mask_imgs) :
 
       #cv2.imshow('pepe', show_img)
    for cam_id in stats:
-      print(cam_id, 
+      if type(stats[cam_id]) is not dict:
+         continue
+      print(cam_id, stats[cam_id])
+      print(cam_id, stats[cam_id]['total_stars'])
+      if len(stats[cam_id]['total_stars']) > 0:
+         print("c1", cam_id, 
               np.median(stats[cam_id]['total_stars']),
               np.median(stats[cam_id]['stars_found']),
               np.median(stats[cam_id]['total_res_px']),
           )
+      else:
+         print(cam_id, "missing stats")
       stats[cam_id]['med_stars'] = np.median(stats[cam_id]['total_stars'])
       stats[cam_id]['med_stars_found'] = np.median(stats[cam_id]['stars_found'])
       stats[cam_id]['med_res'] = np.median(stats[cam_id]['total_res_px'])
