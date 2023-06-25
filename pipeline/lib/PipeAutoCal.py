@@ -5983,15 +5983,15 @@ def test_fix_pa(cp_file, cal_params, cp_img, json_conf):
       #blend = cv2.addWeighted(cat_image, .5, cal_img, .5, .3)
       #for x,y,i in best_stars:
       #   cv2.circle(blend, (int(x),int(y)), 5, (255,0,0),1)
-      for cs in cat_stars:
+      for cs in cat_stars[0:50]:
          #(name,mag,ra,dec,new_cat_x,new_cat_y,zp_cat_x,zp_cat_y) = cs
          (name,mag,ra,dec,new_cat_x,new_cat_y) = cs
          skey = str(ra) + "_" + str(dec)
 
-         for x,y,i in cal_params['user_stars']:
+         for x,y,intensity in cal_params['user_stars']:
             dist = calc_dist((x,y),(new_cat_x,new_cat_y))
             if dist < 30:
-               print("   BS:", name, mag, i, dist)
+               print("   POS, BS:", i, name, mag, intensity, dist)
                if skey not in star_index:
                   #cv2.circle(blend, (int(x),int(y)), 8, (0,0,255),1)
                   star_index[skey] = dist
