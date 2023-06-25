@@ -5971,7 +5971,6 @@ def test_fix_pa(cp_file, cal_params, cp_img, json_conf):
 
 
 
-   input("TEST FIX PA")
    
 
    print("EXIT")
@@ -7222,7 +7221,6 @@ def autocal(image_file, json_conf, show = 0, heal_only=0):
       print("Plate solve passed. Time for lens modeling!") 
       save_json_file(cal_params_file, cal_params)
       print("file:", cal_params_file)
-      input("WAIT")
 
       #if SHOW == 1:
       #   grid_file = wcs_file.replace(".wcs", "-grid.png")
