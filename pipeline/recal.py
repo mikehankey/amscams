@@ -7304,7 +7304,8 @@ def apply_calib (cal_file, calfiles_data, json_conf, mcp, last_cal_params=None, 
       cal_dir = cal_dir_from_file(cal_image_file)
       cal_json_file = get_cal_json_file(cal_dir)
       if cal_json_file is None:
-         return()
+         return(cal_params, flux_table)
+         #return()
 
 
       cal_json_fn = cal_json_file.split("/")[-1]
