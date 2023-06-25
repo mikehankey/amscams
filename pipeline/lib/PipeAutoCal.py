@@ -5977,7 +5977,7 @@ def test_fix_pa(cp_file, cal_params, cp_img, json_conf):
       rez = []
 
       default_cal_params['position_angle'] = i * 2
-      cat_stars, short_bright_stars, cat_image = get_catalog_stars(default_cal_params)
+      cat_stars = get_catalog_stars(default_cal_params)
       blend = cv2.addWeighted(cat_image, .5, cal_img, .5, .3)
       for x,y,i in best_stars:
          cv2.circle(blend, (int(x),int(y)), 5, (255,0,0),1)
