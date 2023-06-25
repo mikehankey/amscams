@@ -5973,6 +5973,7 @@ def test_fix_pa(cp_file, cal_params, cp_img, json_conf):
    # check for the best position angle
    default_cal_params = cal_params.copy()
    best_res = 9999
+   most_stars = 0
    for i in range(0,180):
       star_index = {}
       rez = []
