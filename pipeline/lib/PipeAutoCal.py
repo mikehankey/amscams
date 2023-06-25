@@ -5970,11 +5970,45 @@ def test_fix_pa(cp_file, cal_params, cp_img, json_conf):
    print("TEST FIX PA POS2",  test2_cp['position_angle'], len(test2_cp['cat_image_stars']), test2_cp['total_res_px'])
 
 
+   # check for the best position angle
+   default_cal_params = cal_params.copy()
+   for i in range(0,180):
+      star_index = {}
+      rez = []
 
-   
+      default_cal_params['position_angle'] = i * 2
+      cat_stars, short_bright_stars, cat_image = get_catalog_stars(default_cal_params, MAG_LIMIT=4)
+      blend = cv2.addWeighted(cat_image, .5, cal_img, .5, .3)
+      for x,y,i in best_stars:
+         cv2.circle(blend, (int(x),int(y)), 5, (255,0,0),1)
+      for cs in cat_stars:
+         (name,mag,ra,dec,new_cat_x,new_cat_y,zp_cat_x,zp_cat_y) = cs
+         skey = str(ra) + "_" + str(dec)
 
-   print("EXIT")
-   exit()
+         for x,y,i in best_stars:
+            dist = calc_dist((x,y),(new_cat_x,new_cat_y))
+            if dist < 30:
+               print("   BS:", name, mag, i, dist)
+               if skey not in star_index:
+                  cv2.circle(blend, (int(x),int(y)), 8, (0,0,255),1)
+                  star_index[skey] = dist
+               elif star_index[skey] <= dist:
+                  cv2.circle(blend, (int(x),int(y)), 8, (0,0,255),1)
+                  star_index[skey] = dist
+         for sk in star_index:
+            rez.append(star_index[sk])
+         tres = np.median(rez)
+         tstars = len(star_index.keys())
+      if tres < best_res and tstars > most_stars:
+         best_res = tres
+         most_stars = tstars
+         best_pos = default_cal_params['position_angle']
+  
+   default_cal_params['position_angle'] = best_pos
+   return(default_cal_params)
+
+   #print("EXIT")
+   #exit()
 
 def test_cal(cp_file,json_conf,cp, cal_img, cdata ):
    cfile, az, el, pos, px, num_ustars, num_cstars, res, tdiff = cdata
@@ -7264,7 +7298,7 @@ def autocal(image_file, json_conf, show = 0, heal_only=0):
 
 
 
-   input("CHECK PA ISSUE!")
+   #input("CHECK PA ISSUE!")
 
    fn, dir = fn_dir(image_file)
    #guess_cal("temp/" + fn, json_conf, cal_params )
