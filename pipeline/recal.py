@@ -32,7 +32,7 @@ import scipy.optimize
 from PIL import ImageFont, ImageDraw, Image, ImageChops
 import lib.brightstardata as bsd
 from lib.PipeUtil import load_json_file, save_json_file,angularSeparation, calc_dist, convert_filename_to_date_cam , check_running , get_file_info, collinear, mfd_roi, load_mask_imgs
-from lib.PipeAutoCal import distort_xy, insert_calib, minimize_poly_multi_star, view_calib, cat_star_report , update_center_radec, XYtoRADec, draw_star_image, make_lens_model, make_az_grid, make_cal_summary, quality_stars, make_cal_plots, find_stars_with_grid, optimize_matchs, eval_cal_res, radec_to_azel, make_plate_image, make_cal_plots, make_cal_summary, custom_fit_meteor, make_plate_image, save_cal_params
+from lib.PipeAutoCal import distort_xy, insert_calib, minimize_poly_multi_star, view_calib, cat_star_report , update_center_radec, XYtoRADec, draw_star_image, make_lens_model, make_az_grid, make_cal_summary, quality_stars, make_cal_plots, find_stars_with_grid, optimize_matchs, eval_cal_res, radec_to_azel, make_plate_image, make_cal_plots, make_cal_summary, custom_fit_meteor, make_plate_image, save_cal_params, test_fix_pa
 
 from FlaskLib.api_funcs import show_cat_stars 
 from lib.PipeTrans import slide_left
@@ -7051,6 +7051,10 @@ def apply_calib (cal_file, calfiles_data, json_conf, mcp, last_cal_params=None, 
          if best_cal['total_res_px'] < cal_params['total_res_px']:
             cal_params = best_cal
             cal_params = add_more_stars(cal_image_file, cal_params, oimg, oimg, json_conf)
+
+      if cal_params['total_res_px'] > 10 or len(cal_params['cat_image_stars']) < 5:
+
+         cal_params = test_fix_pa(cal_image_file, cal_params, oimg.copy(), json_conf)
 
       #print("BEST:", best_cal['total_res_px'])
       #exit()
