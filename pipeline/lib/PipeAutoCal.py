@@ -5986,7 +5986,7 @@ def test_fix_pa(cp_file, cal_params, cp_img, json_conf):
          (name,mag,ra,dec,new_cat_x,new_cat_y) = cs
          skey = str(ra) + "_" + str(dec)
 
-         for x,y,i in best_stars:
+         for x,y,i in cal_params['user_stars']:
             dist = calc_dist((x,y),(new_cat_x,new_cat_y))
             if dist < 30:
                print("   BS:", name, mag, i, dist)
