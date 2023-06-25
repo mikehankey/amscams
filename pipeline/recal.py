@@ -2119,12 +2119,12 @@ def plot_cal_history(con, cur, json_conf):
          data[row['cam_id']]['res'] = []
       data[row['cam_id']]['fns'].append(fn)
       data[row['cam_id']]['dates'].append(row['cal_date'])
-      data[row['cam_id']]['azs'].append(row['center_az'])
-      data[row['cam_id']]['els'].append(row['center_el'])
-      data[row['cam_id']]['pos'].append(row['position_angle'])
-      data[row['cam_id']]['pxs'].append(row['pixscale'])
-      data[row['cam_id']]['stars'].append(row['total_stars'])
-      data[row['cam_id']]['res'].append(row['total_res_px'])
+      data[row['cam_id']]['azs'].append(float(row['center_az']))
+      data[row['cam_id']]['els'].append(float(row['center_el']))
+      data[row['cam_id']]['pos'].append(float(row['position_angle']))
+      data[row['cam_id']]['pxs'].append(float(row['pixscale']))
+      data[row['cam_id']]['stars'].append(float(row['total_stars']))
+      data[row['cam_id']]['res'].append(float(row['total_res_px']))
 
 
    for cam_id in data:
