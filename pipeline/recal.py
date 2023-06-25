@@ -1536,9 +1536,9 @@ def reset_cal_file(station_id, cal_id):
    # remove the free cal dir
    cmd3 = "rm " + cal_dir 
    print(cmd3)
+   os.system(cmd2)
 
    os.system(cmd3)
-   input("CONT")
 
    #
 
