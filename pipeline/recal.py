@@ -4784,7 +4784,10 @@ def make_plate(cal_fn, json_conf, con, cur):
       return(None, None)
    else:
       print("RESP to start calib:", resp)
-      (station_id, cal_dir, cal_json_file, cal_img_file, cal_params, cal_img, clean_cal_img, mask_file,mcp) = resp
+      try:
+         (station_id, cal_dir, cal_json_file, cal_img_file, cal_params, cal_img, clean_cal_img, mask_file,mcp) = resp
+      except:
+         return(None,None)
 
    plate_file = cal_dir + cal_fn.replace("-stacked-calparams.json", "-plate.jpg")
    gray_img = cv2.cvtColor(clean_cal_img, cv2.COLOR_BGR2GRAY)
