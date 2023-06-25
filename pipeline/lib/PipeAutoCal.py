@@ -5978,9 +5978,9 @@ def test_fix_pa(cp_file, cal_params, cp_img, json_conf):
 
       default_cal_params['position_angle'] = i * 2
       cat_stars = get_catalog_stars(default_cal_params)
-      blend = cv2.addWeighted(cat_image, .5, cal_img, .5, .3)
-      for x,y,i in best_stars:
-         cv2.circle(blend, (int(x),int(y)), 5, (255,0,0),1)
+      #blend = cv2.addWeighted(cat_image, .5, cal_img, .5, .3)
+      #for x,y,i in best_stars:
+      #   cv2.circle(blend, (int(x),int(y)), 5, (255,0,0),1)
       for cs in cat_stars:
          #(name,mag,ra,dec,new_cat_x,new_cat_y,zp_cat_x,zp_cat_y) = cs
          (name,mag,ra,dec,new_cat_x,new_cat_y) = cs
@@ -5991,10 +5991,10 @@ def test_fix_pa(cp_file, cal_params, cp_img, json_conf):
             if dist < 30:
                print("   BS:", name, mag, i, dist)
                if skey not in star_index:
-                  cv2.circle(blend, (int(x),int(y)), 8, (0,0,255),1)
+                  #cv2.circle(blend, (int(x),int(y)), 8, (0,0,255),1)
                   star_index[skey] = dist
                elif star_index[skey] <= dist:
-                  cv2.circle(blend, (int(x),int(y)), 8, (0,0,255),1)
+                  #cv2.circle(blend, (int(x),int(y)), 8, (0,0,255),1)
                   star_index[skey] = dist
          for sk in star_index:
             rez.append(star_index[sk])
