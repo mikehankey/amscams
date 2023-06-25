@@ -4281,6 +4281,8 @@ def batch_review(station_id, cam_id, con, cur, json_conf, limit=25, work_type="t
    return(cal_fns, calfiles_data)
 
 def revert_to_wcs(cal_fn,mcp=None):
+
+
    cal_dir = "/mnt/ams2/cal/freecal/" + cal_fn.replace("-stacked-calparams.json", "") + "/"
    cal_file = cal_dir + cal_fn
    cal_img_file = cal_dir + "tmp/" + cal_fn.replace("-stacked-calparams.json", "-plate.jpg")
@@ -7093,7 +7095,11 @@ def apply_calib (cal_file, calfiles_data, json_conf, mcp, last_cal_params=None, 
       print("\tRES:", cal_params['total_res_px']) 
       # revert to WCS
       if cal_params['total_res_px'] > 8:
-         rev_cal_params = revert_to_wcs(cal_fn)
+         cal_id = cal_file.split("/")[-1].split("-")[0]
+         reset_cal_file(station_id, cal_id)
+         #rev_cal_params = revert_to_wcs(cal_fn)
+         rev_cal_params = None
+
       else:
          rev_cal_params = None
 
