@@ -2497,7 +2497,6 @@ def fireball(video_file, json_conf, nomask=0):
    hdm_y_720 = 720 / fh
    print("BP1")
    best_meteor, hd_frames, hd_color_frames, median_frame, mask_img,cp = fireball_phase1(hd_frames, hd_color_frames, subframes,sum_vals,max_vals,pos_vals, video_file, json_conf, jsf, jdata, best_meteor, nomask)
-   #print("BEST:", best_meteor['ofns'])
    print("AP1")
    gap_test_res = None
    jdata['cp'] = cp
@@ -3486,6 +3485,10 @@ def fireball_phase1(hd_frames, hd_color_frames, subframes,sum_vals,max_vals,pos_
    meteors = []
 
    for obj in objects:
+      # remove frames at the end that are no good due to bad from start distances
+      objects[obj]['obj_id'] = obj
+      objects[obj] = remove_trailing_frames(objects[obj])
+
       if len(objects[obj]['report']['bad_items']) == 0:
          print("METEOR OBJECTS:", obj, objects[obj]['ofns'], objects[obj]['report']['bad_items'], objects[obj]['fs_dist'])
       else:
@@ -3509,6 +3512,73 @@ def fireball_phase1(hd_frames, hd_color_frames, subframes,sum_vals,max_vals,pos_
          for obj in objects:
             print(obj, len(objects[obj]['ofns']), objects[obj]['report']['bad_items'])
    return(best_meteor, hd_frames, hd_color_frames, median_frame,mask_img,cp )
+
+def remove_trailing_frames(ob):
+   # remove frames that should not exist in a meteor -- for example no moving frames at the end
+   # or frames at the end whose forward vector distance is negative -- caused by trails and blob-detect going back up the meteor
+
+   fs_dists = []
+   lx = None
+   ly = None
+   last_fs_dist = None
+   end_of_meteor = False
+   bd_count = 0
+
+   nfns = []
+   nxs = []
+   nys = []
+   nws = []
+   nhs = []
+   nis = []
+   nfs_dist = []
+
+   fx = int(ob['oxs'][0] + (ob['ows'][0] /2))
+   fy = int(ob['oys'][0] + (ob['ohs'][0] /2))
+   for i in range(0,len(ob['ofns'])):
+      fn = ob['ofns'][i] 
+      x = ob['oxs'][i] 
+      y = ob['oys'][i] 
+      w = ob['ows'][i] 
+      h = ob['ohs'][i] 
+      oint = ob['oint'][i] 
+      cx = int(x + (w/2))
+      cy = int(y + (h/2))
+      if lx is None:
+         lx = cx
+         ly = cy
+      last_dist = calc_dist((cx,cy), (lx,ly))
+      fs_dist = calc_dist((fx,fy), (cx,cy))
+      bad_dist = False
+      if last_fs_dist is not None:
+         if fs_dist <= last_fs_dist:
+            bad_dist = True 
+            bd_count += 1
+      if bd_count >= 3:
+         end_of_meteor = True
+         bad_dist = True
+       
+      print(bad_dist, i, fn, cx, cy, w, h, last_dist, fs_dist) 
+      lx = cx
+      ly = cy
+      last_fs_dist = fs_dist
+      if bad_dist is False:
+         nfns.append(fn)
+         nxs.append(x)
+         nys.append(y)
+         nws.append(w)
+         nhs.append(h)
+         nis.append(oint) 
+         nfs_dist.append(fs_dist) 
+
+   ob['ofns'] = nfns 
+   ob['oxs'] = nxs 
+   ob['oys'] = nys 
+   ob['ows'] = nws 
+   ob['ohs'] = nhs 
+   ob['oint'] = nis 
+   ob['fs_dist'] = nfs_dist 
+   ob = analyze_object(ob, 1,1)
+   return(ob)
 
 def fireball_phase2(video_file, json_conf, jsf, jdata, best_meteor, nomask,hd_frames, hd_color_frames, median_frame, mask_img):
    # PHASE 2
@@ -4313,7 +4383,10 @@ def refine_meteor_points(meteor, crop_frames, json_conf):
    ohs = meteor['ows']
    ows = meteor['ohs']
    print(meteor)
-   cx1,cy1,cx2,cy2,mx,my = meteor['cropbox_1080']
+   if "cropbox_1080" in meteor:
+      cx1,cy1,cx2,cy2,mx,my = meteor['cropbox_1080']
+   else:
+      cx1,cy1,cx2,cy2,mx,my =0,0,1919,1079,950,540
    inside_meteor = 0
    x_dist = []
    y_dist = []
@@ -5640,7 +5713,10 @@ def analyze_object(object, hd = 0, strict = 0):
    good_items = []
 
    #if "report" not in object:
-   obj_id = object['obj_id'] 
+   if "obj_id" in object:
+      obj_id = object['obj_id'] 
+   else:
+      obj_id = 0
    if True:
       object['report'] = {}
       object['report']['non_meteor'] = 0
