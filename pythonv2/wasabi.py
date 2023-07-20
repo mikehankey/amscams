@@ -200,6 +200,9 @@ def connect_wasabi():
       mounted = check_mount()
    except:
       print("Wasabi mount failed.")
+      os.system("umount /mnt/archive.allsky.tv")
+      mounted = 0
+
    print("MOUNTED:", mounted)
    if mounted == 1:
       print("Wasabi is already mounted.")
