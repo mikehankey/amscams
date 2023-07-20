@@ -196,7 +196,10 @@ def connect_wasabi():
    #chmod 600 ~/wasabi_ams1.txt
    #mkdir /mnt/archive.allsky.tv
    # Check if already mounted.
-   mounted = check_mount()
+   try:
+      mounted = check_mount()
+   except:
+      print("Wasabi mount failed.")
    print("MOUNTED:", mounted)
    if mounted == 1:
       print("Wasabi is already mounted.")
