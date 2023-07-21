@@ -5,21 +5,32 @@ import os
 from lib.FFFuncs import ffprobe
 import sys
 
-date = sys.argv[1]
-cam_id = sys.argv[2]
-time_of_day = sys.argv[3]
+try:
+   date = sys.argv[1]
+   cam_id = sys.argv[2]
+   time_of_day = sys.argv[3]
+   ftype = sys.argv[4]
+except:
+   print("Usage: ./ffprobe_hdscan.py YYYY_MM_DD CAM_ID HOUR TYPE (HD or SD)")
+   print("./ffprobe_hdscan.py 2023_07_20 010001 night HD")
+   exit()
 
 if time_of_day == "night":
    tod = ""
 else:
    tod = "daytime"
+if ftype == "SD" or ftype == "sd":
 
-wild = "/mnt/ams2/SD/proc2/{}/{}/*{}*.mp4".format(tod, date, cam_id)
+   wild = "/mnt/ams2/SD/proc2/{}/{}/*{}*.mp4".format(tod, date, cam_id)
+else:
+   wild = "/mnt/ams2/HD/{}*{}*.mp4".format(date, cam_id)
+
 print(wild)
 files = sorted(glob.glob(wild), reverse=True)
 c = 0
 data = {}
-for file in sorted(files[20:]):
+# show 20 files
+for file in sorted(files[:20]):
 
    if "trim" in file:
       continue
