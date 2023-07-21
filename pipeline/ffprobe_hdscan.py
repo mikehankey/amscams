@@ -30,7 +30,7 @@ files = sorted(glob.glob(wild), reverse=True)
 c = 0
 data = {}
 # show 20 files
-for file in sorted(files[:20]):
+for file in sorted(files[:60]):
 
    if "trim" in file:
       continue
@@ -54,3 +54,4 @@ for hour in data:
    total = len(data[hour]['good']) + len(data[hour]['bad'])
    print(hour, len(data[hour]['good']), len(data[hour]['bad']), total)
 
+print("Only showing the first 60 files. Refine by adding the _HOUR to your date string.")
