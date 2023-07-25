@@ -31,9 +31,9 @@ if __name__ == "__main__":
        date_data = args.min_string.split("_")
        date = date_data[0] + "_" + date_data[1] + "_" + date_data[2]
        if args.cam_id is not None:
-          hd_path = "/mnt/ams2/" + args.min_string + "*" + args.cam_id + "*"
+          hd_path = "/mnt/ams2/HD/" + args.min_string + "*" + args.cam_id + "*"
        else:
-          hd_path = "/mnt/ams2/" + args.min_string + "*" 
+          hd_path = "/mnt/ams2/HD/" + args.min_string + "*" 
        if args.daytime is not None:
           if args.cam_id is None:
              sd_path = "/mnt/ams2/SD/proc2/daytime/" + date + "/" + args.min_string + "*" 
