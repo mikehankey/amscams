@@ -39,10 +39,10 @@ if __name__ == "__main__":
              sd_path = "/mnt/ams2/SD/proc2/daytime/" + date + "/" + args.min_string + "*" 
           else:
              sd_path = "/mnt/ams2/SD/proc2/daytime/" + date + "/" + args.min_string + "*" + args.cam_id + "*"
-    cmd1 = "mkdir -p /mnt/archive.allsky.tv/" + station_id + "/" + date + "/HD/" 
-    cmd2 = "mkdir -p /mnt/archive.allsky.tv/" + station_id + "/" + date + "/SD/" 
-    cmd3 = "rsync -auv " + hd_path + " /mnt/archive.allsky.tv/" + station_id + "/" + date + "/HD/" 
-    cmd4 = "rsync -auv " + sd_path + " /mnt/archive.allsky.tv/" + station_id + "/" + date + "/SD/" 
+    cmd1 = "mkdir -p /mnt/archive.allsky.tv/" + station_id + "/MIN_FILES/" + date + "/HD/" 
+    cmd2 = "mkdir -p /mnt/archive.allsky.tv/" + station_id + "/MIN_FILES/" + date + "/SD/" 
+    cmd3 = "rsync -auv " + hd_path + " /mnt/archive.allsky.tv/" + station_id + "/MIN_FILES/" + date + "/HD/" 
+    cmd4 = "rsync -auv " + sd_path + " /mnt/archive.allsky.tv/" + station_id + "/MIN_FILES/" + date + "/SD/" 
     print(cmd1)
     print(cmd2)
     print(cmd3)
