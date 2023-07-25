@@ -52,7 +52,11 @@ if __name__ == "__main__":
        confirm = input("Do you want to run these commands?")
        if confirm == "y" or confirm == "Y" or confirm == "yes":
           print("running commands")
+          print(cmd1)
           os.system(cmd1)
+          print(cmd2)
           os.system(cmd2)
+          print(cmd3)
           os.system(cmd3)
+          print(cmd4)
           os.system(cmd4)
