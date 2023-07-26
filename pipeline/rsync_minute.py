@@ -19,7 +19,7 @@ if __name__ == "__main__":
     # Add arguments
     parser.add_argument("cmd", type=str, help="Command you want to run: minute!")
     parser.add_argument("min_string", type=str, help="Minute string you want to match on")
-    parser.add_argument("--cam_id", type=float, help="Optional Cam ID")
+    parser.add_argument("--cam_id", type=str, help="Optional Cam ID")
     parser.add_argument("--daytime", type=float, help="Set to 1 if the event occured in the daytime")
     parser.add_argument("--auto", type=float, help="Auto yes to all prompts (for crons)")
 
