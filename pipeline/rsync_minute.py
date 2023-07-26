@@ -8,8 +8,9 @@ Sync an entire minute to the cloud dir for this host.
 
 import os
 import argparse
+import glob
 from lib.PipeUtil import load_json_file, save_json_file
-
+from stackVideo import stack_video
 
 if __name__ == "__main__":
     # Create an ArgumentParser object
@@ -22,11 +23,12 @@ if __name__ == "__main__":
     parser.add_argument("--cam_id", type=str, help="Optional Cam ID")
     parser.add_argument("--daytime", type=float, help="Set to 1 if the event occured in the daytime")
     parser.add_argument("--auto", type=float, help="Auto yes to all prompts (for crons)")
+    parser.add_argument("--stack", type=int, help="Include full stacks of the images [0 or 1] default 1", default=1)
 
     # Parse the arguments
     args = parser.parse_args()
 
-    # Calculate the area
+    # deal with uploading minute files
     if args.cmd == "min":
        date_data = args.min_string.split("_")
        date = date_data[0] + "_" + date_data[1] + "_" + date_data[2]
@@ -34,11 +36,35 @@ if __name__ == "__main__":
           hd_path = "/mnt/ams2/HD/" + args.min_string + "*" + args.cam_id + "*"
        else:
           hd_path = "/mnt/ams2/HD/" + args.min_string + "*" 
+
        if args.daytime is not None:
           if args.cam_id is None:
              sd_path = "/mnt/ams2/SD/proc2/daytime/" + date + "/" + args.min_string + "*" 
           else:
              sd_path = "/mnt/ams2/SD/proc2/daytime/" + date + "/" + args.min_string + "*" + args.cam_id + "*"
+       else:
+          if args.cam_id is None:
+             sd_path = "/mnt/ams2/SD/proc2/" + date + "/" + args.min_string + "*" 
+          else:
+             sd_path = "/mnt/ams2/SD/proc2/" + date + "/" + args.min_string + "*" + args.cam_id + "*"
+
+       if args.stack == 1:
+          # stack sd files if not done already
+          vid_files = glob.glob(sd_path + "*.mp4")
+          for vid in vid_files:
+             sf = vid.replace(".mp4", "-stacked.jpg")
+             if os.path.exists(sf) is False:
+                result = stack_video(vid)
+                print("STACKED VIDEO:", result)
+          # stack hd files if not done already
+          vid_files = glob.glob(hd_path + "*.mp4")
+          for vid in vid_files:
+             sf = vid.replace(".mp4", "-stacked.jpg")
+             if os.path.exists(sf) is False:
+                result = stack_video(vid)
+                print("STACKED VIDEO:", result)
+
+
     cmd1 = "mkdir -p /mnt/archive.allsky.tv/" + station_id + "/MIN_FILES/" + date + "/HD/" 
     cmd2 = "mkdir -p /mnt/archive.allsky.tv/" + station_id + "/MIN_FILES/" + date + "/SD/" 
     cmd3 = "rsync -auv " + hd_path + " /mnt/archive.allsky.tv/" + station_id + "/MIN_FILES/" + date + "/HD/" 
