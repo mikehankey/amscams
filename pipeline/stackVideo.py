@@ -110,5 +110,7 @@ def stack_video(video_file):
    print("Saved", image_file)
    print("Saved", thumb_file)
    print("Saved", obj_file)
+   return(image_file, thumb_file, obj_file)
 
-stack_video(sys.argv[1])
+if __name__ == "__main__":
+   results = stack_video(sys.argv[1])
