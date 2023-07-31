@@ -2,7 +2,7 @@
 
 import glob
 import os
-from lib.FFFuncs import ffprobe
+from lib.FFFuncs import ffprobe2
 import sys
 
 try:
@@ -41,8 +41,15 @@ for file in sorted(files[:60]):
       data[hour]['good'] = []
       data[hour]['bad'] = []
 
-   resp = ffprobe(file)
-   fps = resp[3] / 60
+   resp = ffprobe2(file)
+   #h,m,s = resp[4].split(":")
+   #duration = m * 60 + s
+
+   #print(file, resp)
+   try:
+      fps = int(resp[3]) / int(resp[4])
+   except:
+      fps = 0
    if fps >= 20:
       data[hour]['good'].append(fn)
       print("GOOD", fps, fn, resp)

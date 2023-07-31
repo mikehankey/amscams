@@ -194,6 +194,63 @@ def lower_bitrate(in_file, crf):
    os.system(cmd)
    return()
 
+
+def ffprobe2(video_file):
+   default = [704,576]
+   try:
+   #if True:
+      cmd = "/usr/bin/ffprobe " + video_file + " > /tmp/ffprobe72.txt 2>&1"
+      output = subprocess.check_output(cmd, shell=True).decode("utf-8")
+   except:
+       print("Couldn't probe.")
+       print(cmd)
+       return(0,0,0,0)
+   #try:
+   #time.sleep(2)
+   output = None
+   if True:
+      fpp = open("/tmp/ffprobe72.txt", "r")
+      for line in fpp:
+         if "Duration" in line:
+            el = line.split(",")
+            dur = el[0]
+            dur = dur.replace("Duration: ", "")
+            el = dur.split(":")
+            tsec = el[2]
+            tmin = el[1]
+            tmin_sec = float(tmin) * 60
+            total_frames = (float(tsec)+tmin_sec) * 25
+         if "Stream" in line:
+            output = line
+      fpp.close()
+      if output is None:
+         print("FFPROBE PROBLEM:", video_file)
+         return(0,0,0,0)
+
+      el = output.split(",")
+
+      for ee in el:
+         if "x" in ee and "Stream" not in ee:
+            dim = ee
+            if "SAR" in el[2]:
+               ddel = el[2].split(" ")
+               for i in range(0, len(ddel)):
+                  if "x" in ddel[i]:
+                     el[2] = ddel[i]
+         if "kb/s" in ee :
+            bitrate = ee
+            bitrate  = bitrate.split(" ")[1]
+
+      try:
+         w, h = dim.split("x")
+      except:
+         w = 0
+         h = 0
+      hour,minute,second = dur.split(":")
+      duration = (int(minute) * 60) + int(float(second))
+   return(w,h, bitrate, int(total_frames), duration)
+
+
 def ffprobe(video_file):
    default = [704,576]
    try:
