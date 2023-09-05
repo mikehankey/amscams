@@ -2028,7 +2028,6 @@ def make_roi_video_mfd(video_file, json_conf, edits=None):
    vid_base = vid_fn.replace(".mp4", "")
    mjf = video_file.replace(".mp4", ".json")
    mjrf = video_file.replace(".mp4", "-reduced.json")
-
    date = vid_fn[0:10]
    year = vid_fn[0:4]
    mon = vid_fn[5:7]
@@ -2062,6 +2061,7 @@ def make_roi_video_mfd(video_file, json_conf, edits=None):
       mj = load_json_file(mjf)
    else:
       #exit()
+      print("MJF FAILED", mjf)
       return()
 
    if cfe(mjrf) == 1:
@@ -2084,7 +2084,9 @@ def make_roi_video_mfd(video_file, json_conf, edits=None):
    vh = 1080
    vw = 1920 
    if mjr is None:
+      print("MJR IS NONE!")
       mjr = {}
+
    if "meteor_frame_data" in mjr:
       mjr['meteor_frame_data'] = sorted(mjr['meteor_frame_data'], key=lambda x: (x[1]), reverse=False)
       for row in mjr['meteor_frame_data']:
@@ -2204,10 +2206,20 @@ def make_roi_video_mfd(video_file, json_conf, edits=None):
             #cv2.circle(of,(x,y), 10, (255,255,255), 1)
             #cv2.imshow('pepe', of)
             #cv2.waitKey(0)
+            # THRESH 
+            max_val = np.max(roi_img)
+            if max_val > 120:
+               thresh = np.max(roi_img) - 35
+               _, threshold = cv2.threshold(roi_img.copy(), thresh, 255, cv2.THRESH_BINARY)
+               roi_img = threshold
+            #if SHOW == 1:
+            #   cv2.imshow('pepe', threshold)
+            #   cv2.waitKey(30)
 
             ffn = "{:04d}".format(int(fn))
             outfile = prefix + ffn + ".jpg"
             cv2.imwrite(outfile, roi_img)
+            #cv2.imwrite(outfile, threshold)
             print("WROTE:", ffn, outfile, x,y)
          else:
             print("ALREADY USED:", fn)
