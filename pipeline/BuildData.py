@@ -17,6 +17,9 @@ def save_json_file(json_file, json_data):
     with open(json_file, 'w') as file:
         json.dump(json_data, file)
 
+json_conf = load_json_file("../conf/as6.json")
+station_id = json_conf['site']['ams_id']
+
 # non meteor objs
 training_csv_file = "meteor_yn_training.csv"
 train_files = {}
@@ -37,7 +40,7 @@ if True:
     for line in fp:
 
         line = line.replace("\n", "")
-        meteor_id = line.split("/")[-1].replace("-reduced.json", "")
+        meteor_id = station_id + "_" + line.split("/")[-1].replace("-reduced.json", "")
         if line not in train_files:
             train_files[line] = {}
             #meteor_id += 1
@@ -66,7 +69,7 @@ for date in sorted(mdirs, reverse=True):
             #    img = cv2.imread(img_file)
             #    cv2.imshow('pepe', img)
             #    cv2.waitKey(0)
-            meteor_id = line.split("/")[-1].replace("-reduced.json", "")
+            meteor_id = station_id + "_" + line.split("/")[-1].replace("-reduced.json", "")
             #line.split("/")[-1].replace("-reduced.json", "")
             if line not in train_files:
                 train_files[line] = {}
@@ -88,4 +91,4 @@ df = pd.DataFrame(csv_data, columns=['label', 'meteor_id', 'frame_number', 'x', 
 df.to_csv(training_csv_file, index=False)
 print("saved training file with", len(csv_data), "items")
 
-os.system("python3 GroupData.py")
+os.system("/usr/bin/python3 GroupData.py")
