@@ -187,7 +187,7 @@ def run_jobs(json_conf):
 
    # do learning
    station_id = json_conf['site']['ams_id'] 
-   if os.path.exists(station_id + ".meteor_yn_group_data.csv" is False:
+   if os.path.exists(station_id + ".meteor_yn_group_data.csv") is False:
       os.system("/usr/bin/python3 BuildData.py")
  
    # check if the pause-jobs.json exists if so just wait to run this until it is gone, or older than 8 hours (max pause length). 
