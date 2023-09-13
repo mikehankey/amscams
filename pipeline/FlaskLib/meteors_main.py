@@ -690,12 +690,12 @@ def meteors_main (amsid, in_data) :
       jsid = div_id.replace("_", "")
       vfn = fn.replace("-stacked-tn.jpg", ".mp4")
       meteor_detail_link = "/meteor/" + amsid + "/" + mdate + "/" + vfn + "/"
+      if msm == 1:
+         ht_class = "multi"
       if reduced == 1:
          ht_class = "reduced"
       else:
          ht_class = "norm"
-      if msm == 1:
-         ht_class = "multi"
       print("MSM:", msm)
       # Per meteor cell / div
       out += """
