@@ -39,7 +39,7 @@ elif os.path.exists("/usr/bin/solve-field") is True:
 tries = 0
 MOVIE = 0
 MOVIE_FN = 0
-MOVIE_DIR = "/mnt/f/cal/cal_movie/"
+MOVIE_DIR = "/mnt/ams2/cal/cal_movie/"
 if cfe(MOVIE_DIR, 1) == 0:
    os.makedirs(MOVIE_DIR)
 
