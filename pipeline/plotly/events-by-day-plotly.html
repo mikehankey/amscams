@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Events By Day</title>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+</head>
+<body>
+    <div id="plotlyDiv"></div>
+    <!-- Simple modal structure -->
+    <div id="myModal" style="display: none; position: fixed; z-index: 1; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.4);">
+        <div style="background-color: #fefefe; margin: 15% auto; padding: 20px; border: 1px solid #888; width: 30%;">
+            <span id="closeBtn" style="color: #aaa; float: right; font-size: 28px; font-weight: bold; cursor: pointer;">&times;</span>
+            <p id="modalContent">Some content for the modal..</p>
+        </div>
+    </div>
+<script>
+Plotly.newPlot('plotlyDiv', [{
+    x: {X_DATA},
+    y: {Y_DATA},
+    mode: 'markers',
+    type: 'scatter'
+}]);
+
+const plotDiv = document.getElementById('plotlyDiv');
+const modal = document.getElementById('myModal');
+const closeModalBtn = document.getElementById('closeBtn');
+const modalContent = document.getElementById('modalContent');
+
+// When a point is clicked
+plotDiv.on('plotly_click', data => {
+    let point = data.points[0];
+    modalContent.innerHTML = `You clicked on point (${point.x}, ${point.y})`;
+    modal.style.display = "block";
+});
+
+// When the close button is clicked
+closeModalBtn.onclick = function() {
+    modal.style.display = "none";
+}
+
+// When anywhere outside of the modal is clicked
+window.onclick = function(event) {
+    if (event.target == modal) {
+        modal.style.display = "none";
+    }
+}
+
+</script>
+</body>
+
+</html>

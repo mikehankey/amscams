@@ -12,5 +12,5 @@ print("UN:", len(unsolved))
 print("SLV:", len(solved))
 print("FLD:", len(failed))
 
-for ev in unsolved:
-   print(ev['id'])
+#for ev in unsolved:
+#   print(ev['id'])

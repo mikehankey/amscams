@@ -1921,7 +1921,10 @@ def calib_image(file, image=None,json_conf=None):
    # do cal for before
    if len(before_cp['user_stars']) > 0:
       cat_stars = get_catalog_stars(before_cp)
-      before_cp = pair_stars(before_cp, file, json_conf, image)
+      if before_cp['pixscale'] != 0:
+         before_cp = pair_stars(before_cp, file, json_conf, image)
+      else:
+         before_cp['cat_image_stars'] = []
       for star in before_cp['cat_image_stars']:
          dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist,bp = star
       temp_stars, before_res_px,before_res_deg = cat_star_report(before_cp['cat_image_stars'], 4)
@@ -2693,7 +2696,7 @@ def make_base_meteor_json(video_file, hd_video_file,best_meteor=None ,cp=None):
    mjr = {}
    (f_datetime, cam, f_date_str,fy,fmin,fd, fh, fm, fs) = convert_filename_to_date_cam(video_file)
    sd_fn, dir = fn_dir(video_file)
-   if hd_video_file is not None:
+   if hd_video_file is not None and hd_video_file != 0:
       hd_fn, dir = fn_dir(hd_video_file)
       hd_stack_fn = hd_fn.replace(".mp4", "-stacked.jpg")
    stack_fn = sd_fn.replace(".mp4", "-stacked.jpg")
@@ -2703,7 +2706,7 @@ def make_base_meteor_json(video_file, hd_video_file,best_meteor=None ,cp=None):
    mj["sd_video_file"] = mdir + sd_fn
    mj["sd_stack"] = mdir + stack_fn
    mj["sd_objects"] = []
-   if hd_video_file is not None:
+   if hd_video_file is not None and hd_video_file != 0:
       mj["hd_trim"] = mdir + hd_fn
       mj["hd_stack"] = mdir + hd_stack_fn
       mj["hd_video_file"] = mdir + hd_fn
@@ -4736,9 +4739,14 @@ def refine_meteor(meteor_file, json_conf):
       video_file = meteor_file.replace(".json", ".mp4")
       red_file = meteor_file.replace(".json", "-reduced.json")
 
-   mj = load_json_file(meteor_file)
+   try:
+      mj = load_json_file(meteor_file)
+   except:
+      print("corrupt json file:", meteor_file)
+      return(None)
 
    if cfe(red_file) == 1:
+
       mjr = load_json_file(red_file)
    else:
       print("NOT REDUCED ABORT!")
@@ -4748,6 +4756,8 @@ def refine_meteor(meteor_file, json_conf):
       return()
    mfd = mjr['meteor_frame_data']
    frames,color_frames,subframes,sum_vals,max_vals,pos_vals = load_frames_fast(mj['sd_video_file'], json_conf, 0, 0, [], 1,[])
+   if len(color_frames) == 0:
+      color_frames = frames
 
    # things we want to check
    """
@@ -4810,6 +4820,12 @@ def refine_meteor(meteor_file, json_conf):
       last_tr_dist = tr_dist 
 
       fn = int(fn)
+      print(len(color_frames), fn)
+
+      if fn >= len(color_frames):
+         print("There are no frames")
+         return(None)
+    
       cframe = color_frames[fn]
       bframe = cv2.resize(cframe, (1920,1080))
       rx1,ry1,rx2,ry2 = bound_cnt(hd_x,hd_y,1920,1080, 10)

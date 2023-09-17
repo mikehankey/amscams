@@ -262,6 +262,15 @@ def batch_ss(wildcard=None):
 
 def scan_and_stack_fast(file, sun_status = 0, vals = []):
    mask_imgs, sd_mask_imgs = load_mask_imgs(json_conf)
+
+   # temp
+   em = cv2.imread("/mnt/ams2/meteor_archive/AMS1/CAL/MASKS/010317_mask.png", 0)
+   print(mask_imgs.keys())
+   cv2.imshow('pepe', em)
+   cv2.waitKey(0)
+
+   mask_imgs["010317"] = em
+
    threshold = None
 
    (f_datetime, cam, f_date_str,fy,fm,fd, fh, fmin, fs) = convert_filename_to_date_cam(file)
@@ -349,9 +358,14 @@ def scan_and_stack_fast(file, sun_status = 0, vals = []):
       if sun_status != 1:
          # night time
          gray = cv2.cvtColor(small_frame, cv2.COLOR_BGR2GRAY)
+         em = cv2.resize(em, (gray.shape[1], gray.shape[0]))
+         test = cv2.subtract(gray, em)
+         cv2.imshow('pepe', test)
+         cv2.waitKey(30)
+         #gray = cv2.subtract(gray, last_gray)
          #gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
          if fc > 0:
-            sub = cv2.subtract(gray, last_gray)
+            #sub = cv2.subtract(gray, em)
             masked_frame = cv2.subtract(gray, small_mask)
             #masked_frame = cv2.subtract(gray, mask_img)
             if mask_img is not None:
@@ -439,6 +453,9 @@ def scan_and_stack_fast(file, sun_status = 0, vals = []):
                #cv2.imshow('pepe', stacked_sub_np)
                #cv2.waitKey(30)
       last_gray = gray
+      cv_stacked_image = np.asarray(stacked_image)
+      cv2.imshow('pepe', cv_stacked_image)
+      cv2.waitKey(30)
       #frames.append(frame)
       if fc == 1:
          # add to the mask on the 1st frame.
@@ -467,7 +484,8 @@ def scan_and_stack_fast(file, sun_status = 0, vals = []):
    print("JSON FILE:", json_file)
    elapsed_time = time.time() - start_time
    print(stack_file)
-   os.system("mv " + file + " " + proc_dir)
+   print("DISABLED TEMPORARILY! mv " + file + " " + proc_dir)
+   #os.system("mv " + file + " " + proc_dir)
    
 
    print("mv " + file + " " + proc_dir)

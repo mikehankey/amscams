@@ -39,7 +39,7 @@ elif os.path.exists("/usr/bin/solve-field") is True:
 tries = 0
 MOVIE = 0
 MOVIE_FN = 0
-MOVIE_DIR = "/mnt/ams2/cal/cal_movie/"
+MOVIE_DIR = "/mnt/f/cal/cal_movie/"
 if cfe(MOVIE_DIR, 1) == 0:
    os.makedirs(MOVIE_DIR)
 
@@ -204,7 +204,6 @@ def ai_check_stars(image, img_fn, stars):
 
    import requests
    ai_stars = {}
-   print("AI CHECK STARS", len(stars))
    good_stars = []
    bad_stars = []
 
@@ -234,12 +233,19 @@ def ai_check_stars(image, img_fn, stars):
             content = response.content.decode()
             resp = json.loads(content)
             ai_stars[star_key] = resp['star_yn']
+            print("RESP:", resp)
             if resp['star_yn'] > 50:
+               print("Yes", resp['star_yn'])
                star_file = repo_dir_yes + star_key + ".jpg"
                good_stars.append(star)
             else:
+               print("No", resp['star_yn'])
                star_file = repo_dir_no + star_key + ".jpg"
                bad_stars.append(star)
+
+            #if SHOW == 1:
+            #    cv2.imshow('pepe', star_img)
+            #    cv2.waitKey(0)
             #cmd = "mv " + temp_file + " " + star_file
             #print(cmd)
             #os.system(cmd)
@@ -3371,8 +3377,8 @@ def refit_fov(cal_file, json_conf, mov_frame_num=0, zero_poly=False):
 
    if "ai_stars" not in cal_params:
       img_fn = image_file.split("/")[-1]
-      cal_params['user_stars'], bad_stars,ai_stars = ai_check_stars(orig_img, img_fn, cal_params['user_stars'])
-      cal_params['ai_stars'] = ai_stars
+      #cal_params['user_stars'], bad_stars,ai_stars = ai_check_stars(orig_img, img_fn, cal_params['user_stars'])
+      #cal_params['ai_stars'] = ai_stars
       if len(cal_params['user_stars']) <= 7:
          print("NOT ENOUGH USER STARS!", len(cal_params['user_stars']))
          return
@@ -8930,6 +8936,12 @@ def get_catalog_stars(cal_params, force=0):
    cal_params['imageh'] = 1080
    RA_center = float(cal_params['ra_center']) 
    dec_center = float(cal_params['dec_center']) 
+   print(cal_params)
+   if cal_params['pixscale'] == 0:
+      # problem with cal_params!?
+      print("Problem with calparams. All Values are 0. We must return 0 stars.")
+      print("Most likely there is no calibration for this date.")
+      return([])
    F_scale = 3600/float(cal_params['pixscale'])
    if "x_poly" in cal_params:
       x_poly = cal_params['x_poly']
@@ -10352,6 +10364,7 @@ def AzEltoRADec_old(az,el,cal_file,cal_params,json_conf):
    return(ra,dec)
 
 def fn_dir(file):
+   print("FILE:", file)
    fn = file.split("/")[-1]
    dir = file.replace(fn, "")
    dir = dir.replace("//", "/")
@@ -10430,9 +10443,9 @@ def quality_stars(merged_stars, mcp = None, factor = 2, gsize=50):
                center_dist = calc_dist((six,siy), (1920/2, 1080/2))
 
                if center_dist > 800:
-                  res_limit = med_res2 
+                  res_limit = med_res2 * 2
                else:
-                  res_limit = med_res1 
+                  res_limit = med_res1 * 2
 
                  
                #if grid_key in grid:
@@ -10447,7 +10460,7 @@ def quality_stars(merged_stars, mcp = None, factor = 2, gsize=50):
    print("med res1:", med_res1)
    print("med res2:", med_res2)
    print("Merged Stars:", len(merged_stars))
-   print("Qual Stars:", len(qual_stars))
+   print("Qual Stars XXX:", len(qual_stars))
    for gkey in grid:
       print(gkey, len(grid[gkey]))
    star_grid_image = draw_star_grid(grid)
@@ -10631,7 +10644,6 @@ def minimize_poly_multi_star(merged_stars, json_conf,orig_ra_center=0,orig_dec_c
 
    # keep only quality stars here 
    if True:
-      #updated_merged_stars = quality_stars(updated_merged_stars, mcp, 1)
       new_merged_stars = updated_merged_stars
 
    options = {}

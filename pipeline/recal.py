@@ -32,7 +32,7 @@ import scipy.optimize
 from PIL import ImageFont, ImageDraw, Image, ImageChops
 import lib.brightstardata as bsd
 from lib.PipeUtil import load_json_file, save_json_file,angularSeparation, calc_dist, convert_filename_to_date_cam , check_running , get_file_info, collinear, mfd_roi, load_mask_imgs
-from lib.PipeAutoCal import distort_xy, insert_calib, minimize_poly_multi_star, view_calib, cat_star_report , update_center_radec, XYtoRADec, draw_star_image, make_lens_model, make_az_grid, make_cal_summary, quality_stars, make_cal_plots, find_stars_with_grid, optimize_matchs, eval_cal_res, radec_to_azel, make_plate_image, make_cal_plots, make_cal_summary, custom_fit_meteor, make_plate_image, save_cal_params, test_fix_pa
+from lib.PipeAutoCal import distort_xy, insert_calib, minimize_poly_multi_star, view_calib, cat_star_report , update_center_radec, XYtoRADec, draw_star_image, make_lens_model, make_az_grid, make_cal_summary, make_cal_plots, find_stars_with_grid, optimize_matchs, eval_cal_res, radec_to_azel, make_plate_image, make_cal_plots, make_cal_summary, custom_fit_meteor, make_plate_image, save_cal_params, test_fix_pa
 
 from FlaskLib.api_funcs import show_cat_stars 
 from lib.PipeTrans import slide_left
@@ -2071,8 +2071,6 @@ def remove_bad_stars(cat_image_stars):
          good.append(star)
       else:
          bad.append(star)
-      #else:
-      #   print("SKIP:", dcname, mag, cat_dist)
 
    print("   RES AROUND THE FOV")
    print("    left side:", left_res)
@@ -2505,7 +2503,7 @@ def refit_meteor(meteor_file, con, cur, json_conf, mcp = None, last_best_dict = 
             hd_frames = sd_frames
          else:
             print("ERROR NO VIDEO FRAMES!", sd_vid)
-            #input("ABORT")
+            input("ABORT")
             return()
       elif os.path.exists(sd_vid) is True:
          sd_frames = load_frames_simple(sd_vid)
@@ -2525,7 +2523,6 @@ def refit_meteor(meteor_file, con, cur, json_conf, mcp = None, last_best_dict = 
          mj['cp']['y_poly'] = mcp['y_poly']
          mj['cp']['x_poly_fwd'] = mcp['x_poly_fwd']
          mj['cp']['y_poly_fwd'] = mcp['y_poly_fwd']
-
 
    frames = hd_frames
    if "refit" in mj:
@@ -6254,8 +6251,6 @@ def get_catalog_stars(cal_params, MAG_LIMIT=5):
                #   cv2.imshow('pepe', cat_image)
                #   cv2.waitKey(30)
             #print("KEEP:", bname.decode(), mag, ang_sep)
-      #else:
-         #print("SKIP:", bname.decode(), ang_sep)
    if len(catalog_stars) == 0:
       print("NO CATALOG STARS!?")
 
@@ -7249,10 +7244,7 @@ def apply_calib (cal_file, calfiles_data, json_conf, mcp, last_cal_params=None, 
          # FIX EDGE STARS HERE?
          
          if cat_dist <= rez * 2.5 and cat_dist < 15:
-         #   print("KEEP", star)
             good_temp.append(star) 
-         #else:
-         #   print("SKIP", star)
       if len(good_temp) > 5:
          temp = good_temp
       for star in reject_stars:
@@ -10203,7 +10195,7 @@ def fast_lens(cam_id, con, cur, json_conf,limit=5, cal_fns=None):
    if len(long_rez) > 1:
       long_rez = [row[-2] for row in long_stars] 
    else:
-      long_rez = 20
+      long_rez = 50
 
    norm_med_rez_limit = np.median(rez) * 3
    long_med_rez_limit = np.median(long_rez) * 2
@@ -10233,7 +10225,7 @@ def fast_lens(cam_id, con, cur, json_conf,limit=5, cal_fns=None):
          print("REJECT", med_rez_limit, dcname, mag, star_flux, res_px)
       # turn rejects off
       good = True
-
+ 
 
       if res_col < 300 and good is True:
          cv2.putText(fast_img, desc ,  (int(new_x),int(new_y)), cv2.FONT_HERSHEY_SIMPLEX, .6, color, 1)
@@ -11055,12 +11047,12 @@ def best_stars(merged_stars, mcp, factor = 2, gsize=50):
    res_limit = med_rez ** 2
    if res_limit < 3:
       res_limit = 3
-
+   
 
    for star in best_stars:
       (cal_file , center_az, center_el, ra_center, dec_center, position_angle, pixscale, name,mag,ra,dec,ra,dec,match_dist,new_cat_x,new_cat_y,center_az,center_el,new_cat_x,new_cat_y,img_x,img_y,res_px,star_flux) = star
 
-      if res_px >  res_limit:
+      if res_px >  res_limit * 2:
          print("SKIP:", res_px, res_limit)
          foo = 1
       else:
@@ -11168,23 +11160,24 @@ def lens_model(cam_id, con, cur, json_conf, cal_fns= None, force=False):
          outer_rezs.append(res_px)
       else:
          inner_rezs.append(res_px)
-   inner_res = np.median(inner_rezs)
-   outer_res = np.median(outer_rezs)
+   inner_res = np.median(inner_rezs) * 2
+   outer_res = np.median(outer_rezs) * 2
 
    # best stars only
-   merged_stars = best_stars(merged_stars, mcp, factor = 2, gsize=50)
+   #merged_stars = best_stars(merged_stars, mcp, factor = 2, gsize=50)
    rez = [row[-2] for row in merged_stars]
    
 
    rez = [row[-2] for row in merged_stars] 
    if len(merged_stars) > 5:
-      med_rez = np.median(rez) 
+      med_rez = np.median(rez) * 2
    else:
       med_rez = 10 
    nms = []
 
-   print( med_rez, inner_res, outer_res)
+   print("MED REZ IS (med, inner, outer):",  med_rez, inner_res, outer_res)
    print("MERGED STARS IS:", len(merged_stars))
+   input("WAIT")
 
    # final quality check
    xx = 0
@@ -11193,32 +11186,31 @@ def lens_model(cam_id, con, cur, json_conf, cal_fns= None, force=False):
       center_dist = calc_dist((img_x,img_y), (1920/2, 1080/2))
       if center_dist > 600:
          factor = 3 
-         trez = outer_res
+         trez = outer_res * factor
       else:
          factor = 2
-         trez = inner_res
+         trez = inner_res * factor
       # reject if the x-y in the mask 
       mask_val = mask[int(img_y),int(img_x)]
       if mask_val > 0: 
          continue
-      print("MASK VAL", mask_val)
       cv2.circle(lens_img, (int(img_x),int(img_y)), 15, (128,255,128),1)
       color = (255,255,255)
       cv2.line(lens_img, (int(orig_cat_x),int(orig_cat_y)), (int(img_x),int(img_y)), color, 1)
       if star[-2] < trez  :
-         print(med_rez, star[0], star[-2])
          nms.append(star)
          if SHOW == 1:
             if xx % 10 == 0:
                cv2.imshow('pepe', lens_img)
-               cv2.waitKey(30)
+               cv2.waitKey(0)
          xx += 1
 
 
       else:
-         print("SKIP", med_rez, star[0], star[-2])
-   merged_stars = nms
+         print("SKIP 1", med_rez, star[0], star[-2])
+   #merged_stars = nms
    cv2.imwrite(lens_img_file, lens_img)
+   input("WAIT")
    print("\tSAVED lens_img_file:", lens_img_file)
    status, cal_params,merged_stars = minimize_poly_multi_star(merged_stars, json_conf,0,0,cam_id,None,mcp,SHOW)
    if cal_params == 0:
@@ -11315,7 +11307,6 @@ def lens_model(cam_id, con, cur, json_conf, cal_fns= None, force=False):
          new_merged_stars.append((cal_file , center_az, center_el, ra_center, dec_center, position_angle, pixscale, name,mag,ra,dec,ra,dec,match_dist,new_cat_x,new_cat_y,center_az,center_el,new_cat_x,new_cat_y,img_x,img_y,res_px,star_flux))
          act = "KEEP"
       else:
-         #print("SKIP", res_px, med_rez)
          act = "REJECT"
       tb.add_row([act, name, mag, star_flux, med_rez, res_px])
   
@@ -11327,6 +11318,7 @@ def lens_model(cam_id, con, cur, json_conf, cal_fns= None, force=False):
    print("NEW STARS:", len(new_merged_stars))
    print("NEW REZ:", mean_rez)
    print(tb)
+   input("WAIT")
 
    lens_model_report(cam_id, con, cur, json_conf)
    # write data to the cal_summary file
@@ -11371,7 +11363,7 @@ def wizard(station_id, cam_id, con, cur, json_conf, file_limit=25):
             print("USE:", cal_fn, res)
             best_cal_fns.append(cal_fn) 
          else:
-            print("SKIP:", cal_fn, res)
+            print("SKIP2:", cal_fn, res)
 
       cal_fns = best_cal_fns
 

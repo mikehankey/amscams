@@ -100,6 +100,22 @@ class AMSAPI():
 
       return brng
 
+   def get_reports_for_event(self, year, event_id):
+      go = True 
+      cache_file = self.ams_as7_dir + "/ams_event" + year + "-" + event_id + "_reports.json"
+      if go is True:
+         url = "http://www.amsmeteors.org/members/api/open_api/get_reports_for_event"
+         data = {'api_key' : self.ams_api_key, 'year' : year, 'format' : 'json', 'min_reports':  5}
+         r = requests.get(url, params=data)
+         my_data = r.json()
+         save_json_file(cache_file, my_data )
+      else:
+          
+         my_data = load_json_file(cache_file)
+         print(cache_file)
+         print("Using cache file: " + cache_file)
+      return(my_data)
+
    def get_ams_events(self, year, min_reports):
       cache_file = "ams_" + year + ".json"
       go = False
@@ -158,6 +174,9 @@ class AMSAPI():
 
 
       return(start_lat, start_long, end_lat, end_long, impact_lat, impact_long, event_datetime)
+
+   #def get_ams_reports(self, year, event_id):
+
 
    def get_station_obs(self, station_id, ams_event_data):
       #print("AMS DATA", ams_event_data)

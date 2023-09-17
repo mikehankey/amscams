@@ -13,6 +13,8 @@ def load_events(date):
    ev_dir = "/mnt/f/EVENTS/" + y + "/" + m + "/" + d + "/" 
    ev_file = ev_dir + date + "_ALL_EVENTS.json"
    events = load_json_file(ev_file) 
+   # disable events for now
+   events = []
    for ev in events:
       #print(ev)
       obs = obs_preview(ev)
@@ -41,6 +43,10 @@ ev_dir = "/mnt/f/EVENTS/" + y + "/" + m + "/" + d + "/"
 latest_geojson_file = "/mnt/f/EVENTS/LATEST.geojson"
 geo_events_file = ev_dir + date + "_GEO_EVENTS.geojson"
 trajs = load_events(date)
+
+# mute events for now
+trajs = []
+
 for row in trajs:
    event_id, slat, slon, salt, elat,elon,ealt, vavg,obs = row
    my_feature = Feature(geometry=Point((round(float(slon),1), round(float(slat),1))))
@@ -59,6 +65,10 @@ stations_file = "/mnt/f/EVENTS/ALL_STATIONS.json"
 stations_check_file = "/mnt/f/EVENTS/LAST_STATIONS_CHECK.json"
 latest_geojson_file = "/mnt/f/EVENTS/LATEST.geojson"
 today = datetime.datetime.now().strftime("%Y_%m_%d")
+
+yest = datetime.datetime.now().strftime("%Y%m%d")
+map_temp = map_temp.replace("{YESTERDAY}", yest)
+
 
 stations = load_json_file(stations_file)
 if os.path.exists(stations_check_file) is True:
@@ -196,5 +206,6 @@ print(latest_geojson_file)
 print(geo_events_file)
 
 cmd = "scp -i /home/ams/pem/ALLSKYTV-EAST.pem /mnt/ams2/geoViewer.html ubuntu@52.2.45.103:/home/ubuntu/allsky.com/htdocs/map.html"
+cmd = "scp -i /home/ams/pem/ALLSKYTV-EAST.pem /mnt/ams2/aws-map-out.html ubuntu@52.2.45.103:/home/ubuntu/allsky.com/htdocs/aws-map-out.html"
 print(cmd)
 os.system(cmd)

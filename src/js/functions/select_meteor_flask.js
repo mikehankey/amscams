@@ -16,6 +16,7 @@ function select_multiple_meteors_ajax() {
     cmd_data.frames = JSON.stringify(meteor_select_updates);
 
     loading({text:"Updating the " + meteor_select_updates.length  + " frames", overlay:true});
+    console.log(cmd_data)
 
 
     $.ajax({ 
@@ -42,9 +43,6 @@ function select_multiple_meteors_ajax() {
                 // Reset Selection
                 meteor_select_updates = [];
                 location.reload();
- 
-          
-                  
             } else {
                 loading_done();
 
@@ -56,14 +54,11 @@ function select_multiple_meteors_ajax() {
                     centerVertical: true 
                 });
             }
-
-            
         }, 
-        error:function() {
+        error:function(xhr, status, error) {
             loading_done();
-
             bootbox.alert({
-                message: "AJAX FAILED! The process returned an error",
+                message: "AJAX FAILED! The process returned an error " + error,
                 className: 'rubberBand animated error',
                 centerVertical: true 
             });

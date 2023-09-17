@@ -174,7 +174,9 @@ if cmd == "resolve_event":
    ASN.sync_log = {}
    
    wget_cmds = ASN.get_event_media(event_id)
-   review = True 
+   review = False 
+   if len(sys.argv) > 3:
+      review = True
    if review is True: 
       ASN.review_event(sys.argv[2])
       (review_image, map_img, obs_imgs, marked_images, event_data, obs_data) = ASN.review_event_step2()
@@ -205,7 +207,7 @@ if cmd == "publish_day":
    ASN.help()
    ASN.set_dates(event_day)
    ASN.publish_day(event_day)
-   cmd = "python3 EM.py aer " + event_day 
+   cmd = "/usr/bin/python3 EM.py aer " + event_day 
    os.system(cmd)
 
    ASN.best_obs_day(sys.argv[2])
@@ -342,21 +344,21 @@ if cmd == "do_all":
    print("Update Meteor Days.")
    ASN.update_meteor_days()
 
-   cmd = "python3 DynaDB.py udc " + date  + " events"
+   cmd = "/usr/bin/python3 DynaDB.py udc " + date  + " events"
    print(cmd)
    os.system(cmd)
 
 
-   cmd = "python3 ER.py " + date
+   cmd = "/usr/bin/python3 ER.py " + date
    print(cmd)
    os.system(cmd)
    
    # all_events_report aer
-   cmd = "python3 EM.py aer " + date
+   cmd = "/usr/bin/python3 EM.py aer " + date
    print(cmd)
    os.system(cmd)
 
-   cmd = "python3 PLT.py all_rad " + date 
+   cmd = "/usr/bin/python3 PLT.py all_rad " + date 
    print(cmd)
    os.system(cmd)
 
@@ -385,6 +387,10 @@ if cmd == "do_all":
 
    print("Load Solves .")
    ASN.day_load_solves(date)
+
+   print("Update Final Stats!")
+   ASN.all_year_events(year)
+
 
 if cmd == "day_solve" or cmd == 'ds' or cmd == "solve_day":
    ASN.help()

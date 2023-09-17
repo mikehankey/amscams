@@ -2174,6 +2174,9 @@ class EventRunner():
             total_total += count
             row += "\t" + str(count) 
          row += "\t" + str(day_total)
+         y,m,d = day.split("_")
+         link = "<a href=https://archive.allsky.tv/EVENTS/{:s}/{:s}/{:s}/{:s}_OBS_GOOD.html>".format(y,m,d,day)
+         print("DAY LINK IS", link)
          html_row = "<tr><td>" + row.replace("\t", "</td><td>") + "</td></tr>"
          print(html_row)
          html += html_row

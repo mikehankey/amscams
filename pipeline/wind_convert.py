@@ -261,6 +261,7 @@ def post_data():
    elat = float(request.form.get("elat"))
    elon = float(request.form.get("elon"))
    ealt = float(request.form.get("ealt"))
+   press_units = request.form.get("press_units")
    terminal_speed = request.form.get("terminal_speed")
    zenith_angle = request.form.get("zenith_angle")
    exposure_time = request.form.get("exposure_time")
@@ -288,8 +289,9 @@ def post_data():
    if os.path.exists(proj_dir) is False:
       os.makedirs(proj_dir)
 
-   print(slat,slon,salt)
-   print(elat,elon,ealt)
+   #print(slat,slon,salt)
+   #print(elat,elon,ealt)
+
    za, bearing = compute_zenith_angle_and_heading(slat,slon,salt,elat,elon,ealt)
    print("________________________")
    print("ZA BEAR:", za, bearing)
@@ -328,7 +330,6 @@ def post_data():
 
    data_lines = []
    for line in lines:
-      print("LINE:",line) 
       if len(line) == 0:
          continue
       if line[0] == "#":
@@ -353,9 +354,16 @@ def post_data():
       if format_type == "EU1":
          
          data = line.split(",")
-         print(data)
+         print("DATA:", data)
          height = float(data[0])
          pressure = float(data[1]) 
+
+         if press_units == "hpa1000":
+            new_pressure = float(data[1]) * 1000
+         else:
+            new_pressure = float(data[1])  * 100
+         print("PRESS UNITS", press_units, pressure)
+
          temp_c = float(data[2]) 
          relh = float(data[3]) 
          wind_dir = float(data[4])
@@ -363,7 +371,6 @@ def post_data():
          wind_speed_ms = wind_speed
          temp_k = round(temp_c + 273.15, 2)
 
-         new_pressure = float(pressure) * 100
          if relh < 1:
             relh = relh * 100
 
@@ -437,7 +444,14 @@ def post_data():
             relh = 0
          if relh > 1.1:
             relh = relh / 100
-         new_pressure = round(float(pressure) * 100,2)
+
+         if press_units == "hpa1000":
+            new_pressure = round(float(pressure) * 1000,2)
+         elif press_units == "hpa100":
+            new_pressure = round(float(pressure) * 100,2)
+         else:
+            new_pressure = round(float(pressure) * 1,2)
+
          #temp_c_10 = float(temp) * .1
          temp_c = round(float(temp),2)
          temp_dwpt_c_10 = float(dwpt) * .1

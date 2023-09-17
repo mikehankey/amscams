@@ -51,8 +51,16 @@ def geo_intersec_point(x1, y1, brng1, x2, y2, brng2):
    ang_dist_1_2 = 2 * asin(sqrt(haversine))
    
    # Calculate the initial and final bearings between point 1 and point 2
-   initial_bearing = acos((sin(lat2) - sin(lat1) * cos(ang_dist_1_2)) / (sin(ang_dist_1_2) * cos(lat1)))
-   final_bearing = acos((sin(lat1) - sin(lat2) * cos(ang_dist_1_2)) / (sin(ang_dist_1_2) * cos(lat2)))
+   try:
+      initial_bearing = acos((sin(lat2) - sin(lat1) * cos(ang_dist_1_2)) / (sin(ang_dist_1_2) * cos(lat1)))
+   except:
+      initial_bearing = 0
+
+   try:
+      final_bearing = acos((sin(lat1) - sin(lat2) * cos(ang_dist_1_2)) / (sin(ang_dist_1_2) * cos(lat2)))
+   except:
+      final_bearing = 0
+
    
    # Adjust initial and final bearings
    if sin(x2 - x1) > 0:
@@ -157,9 +165,6 @@ def make_map(pts, lns, center_latlon=None):
     #plt.figure(figsize=(5,5))
     lons, lats = m(plons, plats)
     #plt.tight_layout()
-    for i in range(0, len(plats)):
-       m.plot(lons[i], lats[i], marker=pmarkers[i], color=pcolors[i], zorder=5)
-       plt.text(lons[i], lats[i], plabs[i], size=7, color="#fcfcfc")
 
     for data in lns:
        llats = []
@@ -172,6 +177,11 @@ def make_map(pts, lns, center_latlon=None):
        llons.append(lon2)
        lon, lat= m(llons, llats)
        m.plot(lon,lat, 'k', color=cl)
+
+    for i in range(0, len(plats)):
+       m.plot(lons[i], lats[i], marker=pmarkers[i], color=pcolors[i], zorder=5)
+       plt.text(lons[i], lats[i], plabs[i], size=7, color="#fcfcfc")
+
 
     #plt.show()
     buf = io.BytesIO()

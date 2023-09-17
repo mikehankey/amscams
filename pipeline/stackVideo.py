@@ -55,9 +55,6 @@ def stack_video(video_file):
       if fc % 50 == 0 and fc > 0:
          print(fc)
          dark_stacked_image_cv = np.asarray(dark_stacked_image)
-         if SHOW == 1:
-            cv2.imshow('pepe', dark_stacked_image_cv)
-            cv2.waitKey(30)
       if stacked_image is None:
          stacked_image = stack_stack(frame_pil, frame_pil)
          if fc % 10 == 0:
@@ -75,6 +72,9 @@ def stack_video(video_file):
    cv2.imwrite(image_file, stacked_image)
    cv2.imwrite(dark_image_file, dark_stacked_image)
 
+   #if SHOW == 1:
+   #   cv2.imshow('pepe', stacked_image)
+   #   cv2.waitKey(3)
    print("SAVED:", dark_image_file, image_file)
 
    # Lets re-save the thumns, half stack too!

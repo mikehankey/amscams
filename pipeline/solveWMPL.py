@@ -2985,9 +2985,9 @@ def WMPL_solve(event_id, obs,time_sync=1, force=0, dynamodb=None):
                els = np.radians(obs[station_id][file]['gc_els'])
                #print("USING GC AZS RADIANS:", station_id, azs)
 
-               # comment / uncomment to use/not use GCs
-               azs = np.radians(obs[station_id][file]['azs'])
-               els = np.radians(obs[station_id][file]['els'])
+               # comment / uncomment to use/not use GCs GCFIT GCfit GC Fit GCFit
+               #azs = np.radians(obs[station_id][file]['azs'])
+               #els = np.radians(obs[station_id][file]['els'])
             else:
                azs = np.radians(obs[station_id][file]['azs'])
                els = np.radians(obs[station_id][file]['els'])

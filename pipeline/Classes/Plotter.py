@@ -171,6 +171,8 @@ class Plotter():
             ap_ra = np.radians(np.degrees(rad['apparent_ECI']['ra'])-180)
             ap_ras.append(ap_ra)
             ap_decs.append(rad['apparent_ECI']['dec']) 
+
+         # STRANGE BUG NEEDS TO BE FIXED BY GPT
          if "ecliptic_helio" in rad:
             #hl_ra = np.radians(np.degrees(rad['ecliptic_helio']['L_h'])-180)
             hl_ra = np.radians(np.degrees(rad['ecliptic_helio']['L_h']))

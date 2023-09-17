@@ -48,7 +48,7 @@ from lib.PipeDetect import get_contours_in_image, find_object, analyze_object
 from lib.kmlcolors import *
 from lib.PipeImage import stack_frames
 from solveWMPL import convert_dy_obs, WMPL_solve, make_event_json, event_report
-from lib.PipeUtil import load_json_file, save_json_file, get_trim_num, convert_filename_to_date_cam, starttime_from_file, dist_between_two_points, get_file_info, calc_dist, check_running, mfd_roi, bound_cnt, focus_area
+from lib.PipeUtil import load_json_file, save_json_file, get_trim_num, convert_filename_to_date_cam, starttime_from_file, dist_between_two_points, get_file_info, calc_dist, check_running, mfd_roi, bound_cnt, focus_area, get_template
 from lib.intersecting_planes import intersecting_planes
 from DynaDB import search_events, insert_meteor_event, delete_event, get_obs, update_dyna_table, delete_obs
 
@@ -1678,7 +1678,7 @@ class AllSkyNetwork():
             #if the event start is within 6 seconds
             #sdur = duration * -2
             #edur = duration * 2
-            if time_diff <= 5:
+            if time_diff <= 10:
                avg_lat = np.mean(min_events[eid]['lats'])
                avg_lon = np.mean(min_events[eid]['lons'])
                match_dist = dist_between_two_points(avg_lat, avg_lon, lat, lon)
@@ -1705,6 +1705,13 @@ class AllSkyNetwork():
                      if len(min_events[eid]['azs'][i]) > 0 and station_id != st:
                         az2 = min_events[eid]['azs'][i][0]
                         err_status, ipoint= geo_intersec_point(lat, lon, az1, lat2, lon2, az2)
+                        try:
+                           err_status, ipoint= geo_intersec_point(lat, lon, az1, lat2, lon2, az2)
+                        except Exception as e :
+                           print("ERROR GETTING AN IPOINT!", lat, lon, az1, lat2, lon2, az2)
+                           print("ER:", str(e))
+                           err_status = True
+                           input("Waiting...")
                         print("   IPOINT:", ipoint)
                         if err_status is True:
                            # intersection failed
@@ -2910,10 +2917,8 @@ class AllSkyNetwork():
                 azs = [row[9] for row in obs_data['meteor_frame_data']]
                 els = [row[10] for row in obs_data['meteor_frame_data']]
                 ints = [row[6] for row in obs_data['meteor_frame_data']]
-                print("OBS:", obs_id)
-                print("INTS", ints)
-                print("AZs", azs)
-                print("ELs", els)
+                if len(azs) < 2:
+                   continue
                 az_start_point = self.find_point_from_az_dist(slat,slon,float(azs[0]),350)
                 az_end_point = self.find_point_from_az_dist(slat,slon,float(azs[-1]),350)
                 lines.append((slat, slon, az_start_point[0] , az_start_point[1], 'green'))
@@ -2923,14 +2928,11 @@ class AllSkyNetwork():
             if os.path.exists(map_file):
                map_img = cv2.imread(map_file)
                map_img = cv2.resize(map_img, (1920,1080))
-               print("USING CACHE MAP:", map_file)
             else:
-               print("NO CACHE MAP MAKE NEW:", map_file)
                lines.append((traj['start_lat'], traj['start_lon'], traj['end_lat'], traj['end_lon'], 'red'))
                map_img = make_map(points, lines, center_latlon)
                map_img = cv2.resize(map_img, (1920,1080))
                cv2.imwrite(map_file, map_img)
-               print("SAVED", map_file)
             map_frames.append(map_img)
             data_movie_frames.append(map_img)
             holds = hold(map_img, 10)
@@ -3016,7 +3018,11 @@ class AllSkyNetwork():
          os.system(cmd)
          time.sleep(1)
       lc_img = cv2.imread(lc_file)
-      lc_img = cv2.resize(lc_img, (1920,1080))
+      if lc_img is not None:
+         lc_img = cv2.resize(lc_img, (1920,1080))
+      else:
+         print("NO IMAGE:", lc_file)
+         np.zeros((1080,1920,3),dtype=np.uint8)
 
       # TRANS
       extra = slide_left(img, lc_img, "FF", 0)
@@ -3238,11 +3244,11 @@ class AllSkyNetwork():
       if os.path.exists(obs_data_file) is True:
          obs_data = load_json_file(obs_data_file)
 
-      for s in good_obs:
-         for o in good_obs[s]:
-            print("GO", s,o)
-      for o in obs_data:
-         print("OD", o)
+      #for s in good_obs:
+      #   for o in good_obs[s]:
+      #      print("GO", s,o)
+      #for o in obs_data:
+      #   print("OD", o)
 
 
       #print("END EARLY")
@@ -3418,9 +3424,11 @@ class AllSkyNetwork():
       last_pic = cv2.resize(last_pic, (1920,1080))
       all_media = self.load_process_media(obs_vids, event_id, last_pic)
       all_media_save = all_media.copy()
+      input("DONE LOADING ALL MEDIA")
       for obv in all_media_save:
          print("OBS ID:", obv)
-         del(all_media_save[obv]['ken_burns_frames'])
+         if "ken_burns_frames" in all_media_save[obv]:
+            del(all_media_save[obv]['ken_burns_frames'])
          del(all_media_save[obv]['frames'])
          del(all_media_save[obv]['stack_image'])
       self.movie_conf['all_media'] = all_media_save
@@ -3531,7 +3539,12 @@ class AllSkyNetwork():
  
          #all_media[obv]['ken_burns_frames']  
 
-         cframes, kb_data, hd_fns, med_sync = self.ken_burns_effect(obv, all_media[obv]['frames'] )
+         try:
+            cframes, kb_data, hd_fns, med_sync = self.ken_burns_effect(obv, all_media[obv]['frames'] )
+         except:
+            continue
+
+         print("MOVIE FRAMES (frames, kb_data, hd_fns):", obv, len(cframes), len(kb_data), len(hd_fns) )
          all_media[obv]['ken_burns_frames']  = cframes
          all_media[obv]['ken_burns_data']  = kb_data 
          all_media[obv]['hd_fns']  = hd_fns 
@@ -3551,9 +3564,12 @@ class AllSkyNetwork():
          els = [row[10] for row in obs['meteor_frame_data']]
              
          fc = 0
+
+         #MAIN MOVIE HERE
+         print("OBS MOVIE:", obv)
          for frame in  all_media[obv]['ken_burns_frames']:
             # only show the ending frames if there is 'action' within 10 frames 
-            if fc > min(hd_fns):
+            if fc > min(hd_fns) - 15 or fc > 10:
                start = True
             else:
                start = False 
@@ -3611,6 +3627,8 @@ class AllSkyNetwork():
       azs = [row[9] for row in obs['meteor_frame_data']]
       els = [row[10] for row in obs['meteor_frame_data']]
 
+
+
       sync_done = False 
       if "all_media" in self.movie_conf: 
          if obs_id in self.movie_conf['all_media']:
@@ -3620,12 +3638,22 @@ class AllSkyNetwork():
                sync_done = True
 
       if sync_done is False:
-         hd_fns, med_sync = self.sync_hd_frames(frames, fns, xs, ys)
+         try:
+            hd_fns, med_sync = self.sync_hd_frames(frames, fns, xs, ys)
+         except:
+            med_sync = 0
+            hd_fns = sd_fns
       
       fns = hd_fns
 
       dur = len(frames)
-      x1,y1,x2,y2 = min(xs), min(ys), max(xs), max(ys) 
+      try:
+         x1,y1,x2,y2 = min(xs), min(ys), max(xs), max(ys) 
+      except:
+         x1 = 0
+         x2 = 1920
+         y1 = 0
+         y2 = 1080 
       cx = int((x1 + x2) / 2)
       cy = int((y1 + y2) / 2)
 
@@ -3665,8 +3693,8 @@ class AllSkyNetwork():
             flookup[fn] = [x,y]
 
       for i in range(0,len(frames)):
-         
-         perc_step = 1 - (i/(len(frames)))
+         # how fast to zoom 
+         perc_step = 1 - ((i/(len(frames))) / 2)
          crop_width = 1920 - int((start_size[0] - (start_size[0] * perc_step)))
          crop_height = 1080 - int((start_size[1] - (start_size[1] * perc_step)))
          cw, ch = find_resolution(crop_width,crop_height,all_resolutions)
@@ -3798,7 +3826,6 @@ class AllSkyNetwork():
          else:
             print("HD FRAME DOESN NOT EXIST!", hd_fn)
       return(hd_fns, med_sync) 
-      #input("DONE SYNC")
 
 
 
@@ -3893,9 +3920,6 @@ class AllSkyNetwork():
 
       #self.update_all_obs_xys(event_id, self.sd_clips, local_event_dir)
 
-
-   def get_media_urls(self, event_data, obs_data):
-      print("DOWNLOAD MEDIA DAY")
 
 
    def obs_images_panel(self, map_img, event_data, obs_data, obs_imgs,marked_imgs):
@@ -4280,9 +4304,13 @@ class AllSkyNetwork():
             # image or image_file
             ai_resp = self.check_ai_img(ai_img, None)
 
-            if ai_resp['meteor_prev_yn'] > ai_resp['meteor_yn']:
-               ai_resp['meteor_yn'] = ai_resp['meteor_prev_yn']
 
+            if "meteor_prev_yn" in ai_resp:
+               if ai_resp['meteor_prev_yn'] > ai_resp['meteor_yn']:
+                  ai_resp['meteor_yn'] = ai_resp['meteor_prev_yn']
+            else:
+               print("NO MYN AI_RESP:", ai_resp)
+               exit()
             class_data =  [
                 ['Meteor', ai_resp['meteor_yn']], 
                 ['Fireball', ai_resp['fireball_yn']], 
@@ -4438,7 +4466,6 @@ class AllSkyNetwork():
          
          else:
             print("NO VIDEO FILE!", sd_vid_file)
-            print("SHOULD LOG A REQUEST!? WAITING!")
             time.sleep(5)
 
       if False:
@@ -7931,9 +7958,18 @@ class AllSkyNetwork():
       shw_radiants_file = "/mnt/f/EVENTS/DAYS/" + year + "_SHW_RADIANTS.json" 
       spo_radiants_file = "/mnt/f/EVENTS/DAYS/" + year + "_SPO_RADIANTS.json" 
 
-      all_bad_obs = load_json_file("/mnt/f/EVENTS/DBS/" + year + "_ALL_BAD_OBS.json" )
-      deleted_obs = load_json_file("/mnt/f/EVENTS/DBS/" + year + "_DEL_OBS.json" )
-      all_events = load_json_file(all_events_file)
+      if os.path.exists("/mnt/f/EVENTS/DBS/" + year + "_ALL_BAD_OBS.json") :
+         all_bad_obs = load_json_file("/mnt/f/EVENTS/DBS/" + year + "_ALL_BAD_OBS.json" )
+      else:
+         all_bad_obs = []
+      if os.path.exists("/mnt/f/EVENTS/DBS/" + year + "_DEL_OBS.json" ):
+         deleted_obs = load_json_file("/mnt/f/EVENTS/DBS/" + year + "_DEL_OBS.json" )
+      else:
+         deleted_obs = []
+      if os.path.exists(all_events_file) is True:
+         all_events = load_json_file(all_events_file)
+      else:
+         all_events = {}
 
       if os.path.exists(event_dict_file) is True:
          event_dict = load_json_file("/mnt/f/EVENTS/DBS/" + year + "_EVENT_DICT.json" )
@@ -7951,6 +7987,8 @@ class AllSkyNetwork():
       shc = 0
       for event in all_events:
          event_dict[event['event_id']] = event
+         if "solve_status" not in event:
+            event['solve_status'] = "PENDING"
          status = event['solve_status']
 
 
@@ -8120,6 +8158,9 @@ class AllSkyNetwork():
          print(ndate, evdir, oby, obdy, evy)
          if obdy is True:
             obs_dict = load_json_file(obs_dict_file)
+         else:
+            print("NO OBS DICT!")
+            obs_dict = {}
 
          for oid in bad_detects:
             print("BD:", oid)
@@ -8166,6 +8207,8 @@ class AllSkyNetwork():
                   new_row['files'] = []
                   new_row['start_datetime'] = []
 
+                  if "stations" not in row:
+                     row['stations'] = []
 
                   for i in range(0, len(row['stations'])):
                      st = row['stations'][i]
@@ -8206,9 +8249,13 @@ class AllSkyNetwork():
                   # 
                   if len(pks) > 0:
                      peak_int = max(pks)
+                  else:
+                     peak_int = 0
                   if len(durs) > 0:
                      dur = round(np.median(durs),3)
-                  print("   ", event_id, peak_int, dur)
+                  else:
+                     dur = 0
+                  #print("   ", event_id, peak_int, dur)
                   new_row['peak_int'] = peak_int
                   new_row['dur'] = dur
                   all_events.append(new_row)
