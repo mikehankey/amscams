@@ -50,6 +50,24 @@ MOVIE_LAST_FRAME = None
 MOVIE_FRAME_NUMBER = 0
 MOVIE_FRAMES_TEMP_FOLDER = "/home/ams/MOVIE_FRAMES_TEMP_FOLDER/"
 
+def fix_lens_nans():
+    files = glob.glob("/mnt/ams2/cal/*poly*")
+    poly_checks = ['x_poly', 'y_poly', 'x_poly_fwd', 'y_poly_fwd']
+    for f in files:
+        el = f.split("/")[-1].split("-")
+        cam_id = el[-1].split(".")[0]
+        need_to_save = False
+        cp = load_json_file(f)
+        for p in poly_checks:
+            for c in range(0,len(cp['x_poly'])):
+                if math.isnan(cp[p][c]) is True:
+                    print(" FIXNAN",cam_id, p, cp[p][c])
+                    cp[p][c] = 0
+                    need_to_save = True
+                else:
+                    print(" GOOD", cam_id, p, cp[p][c])
+        if need_to_save is True:
+            save_json_file(f, cp)
 
 def make_intro(folder): 
    global MOVIE_FRAME_NUMBER
@@ -11814,7 +11832,9 @@ if __name__ == "__main__":
    # }
    # do this 3-5x and it should be good?!
    # 
-
+   print("CMD:", cmd)
+   if cmd == "fix_lens_nans":
+      fix_lens_nans()
 
    if sys.argv[1] == "remote"  or sys.argv[1] == "remote_cal":
       if len(sys.argv) == 2:
