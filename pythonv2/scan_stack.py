@@ -297,6 +297,12 @@ def scan_and_stack_fast(file, sun_status = 0, vals = []):
    stack_file = proc_img_dir + fn.replace(".mp4", "-stacked-tn.jpg")
    json_file = proc_data_dir + fn.replace(".mp4", "-vals.json")
 
+   proc_file = prod_dir + fn
+   if os.path.exists(proc_file) is True:
+      print("This file is already processed we can move it!")
+      cmd = "mv " + file + " " + proc_dir
+      print(cmd)
+      os.system(cmd)
 
 
 
