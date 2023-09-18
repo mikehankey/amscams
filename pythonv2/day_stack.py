@@ -32,6 +32,12 @@ def stack_day_all():
       print("FIX PNGS.")
       os.system("./fix-day-pngs.py")
 
+   night_files = glob.glob("/mnt/ams2/SD/*.mp4")
+   if len(night_files) > 100:
+      print("We have a lot of night files. Wait until they are done before doing the day stack!")
+      return()
+
+
    exists = {}
    day_files = glob.glob("/mnt/ams2/SD/proc2/daytime/*.mp4")
    if cfe("/home/ams/tmp-stack/", 1) == 0:
