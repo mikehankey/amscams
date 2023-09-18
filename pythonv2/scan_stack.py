@@ -264,12 +264,12 @@ def scan_and_stack_fast(file, sun_status = 0, vals = []):
    mask_imgs, sd_mask_imgs = load_mask_imgs(json_conf)
 
    # temp
-   em = cv2.imread("/mnt/ams2/meteor_archive/AMS1/CAL/MASKS/010317_mask.png", 0)
-   print(mask_imgs.keys())
+   #em = cv2.imread("/mnt/ams2/meteor_archive/AMS1/CAL/MASKS/010317_mask.png", 0)
+   #print(mask_imgs.keys())
    #cv2.imshow('pepe', em)
    #cv2.waitKey(0)
 
-   mask_imgs["010317"] = em
+   #mask_imgs["010317"] = em
 
    threshold = None
 
