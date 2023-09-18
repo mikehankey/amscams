@@ -487,8 +487,8 @@ def scan_and_stack_fast(file, sun_status = 0, vals = []):
    print("JSON FILE:", json_file)
    elapsed_time = time.time() - start_time
    print(stack_file)
-   print("DISABLED TEMPORARILY! mv " + file + " " + proc_dir)
-   #os.system("mv " + file + " " + proc_dir)
+   #print("DISABLED TEMPORARILY! mv " + file + " " + proc_dir)
+   os.system("mv " + file + " " + proc_dir)
    
 
    print("mv " + file + " " + proc_dir)
