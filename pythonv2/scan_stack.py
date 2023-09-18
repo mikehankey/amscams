@@ -358,8 +358,11 @@ def scan_and_stack_fast(file, sun_status = 0, vals = []):
       if sun_status != 1:
          # night time
          gray = cv2.cvtColor(small_frame, cv2.COLOR_BGR2GRAY)
-         em = cv2.resize(em, (gray.shape[1], gray.shape[0]))
-         test = cv2.subtract(gray, em)
+         try:
+            em = cv2.resize(em, (gray.shape[1], gray.shape[0]))
+            test = cv2.subtract(gray, em)
+         except:
+            print("problem")
          #cv2.imshow('pepe', test)
          #cv2.waitKey(30)
          #gray = cv2.subtract(gray, last_gray)
