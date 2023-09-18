@@ -298,6 +298,7 @@ def scan_and_stack_fast(file, sun_status = 0, vals = []):
    json_file = proc_data_dir + fn.replace(".mp4", "-vals.json")
 
    proc_file = proc_dir + fn
+
    if os.path.exists(proc_file) is True:
       print("This file is already processed we can move it!")
       cmd = "mv " + file + " " + proc_dir
