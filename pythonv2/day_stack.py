@@ -73,7 +73,7 @@ def stack_day_all():
       stack_img, elp = day_stack(df, day)
       print("DAY STACK:", df, elp)
 
-def day_stack(video_file, day, cam=None, last_blend=None):
+def day_stack(video_file, day, cam=None, last_blend=None, interval=25):
    start_time = time.time()
    day_dir = "/mnt/ams2/SD/proc2/daytime/" + day + "/"
 
@@ -225,6 +225,12 @@ elif len(sys.argv) > 1:
       print(day_dir, len(files) )
       last_stack = None
       for ff in sorted(files):
-         last_stack, elp = day_stack(ff, day, cam, last_stack)
+         if len(files) > 1000:
+            interval = 25
+         elif len(files) < 100:
+            interval = 5
+         else:
+            interval = 10
+         last_stack, elp = day_stack(ff, day, cam, last_stack, interval)
          print("LAST STACK ELP", ff, elp)
 
