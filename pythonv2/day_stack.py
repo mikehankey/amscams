@@ -133,7 +133,7 @@ def day_stack(video_file, day, cam=None, last_blend=None):
    print("TOTAL FRAMES", total_frames)
    count = 0
    for i in range(0,int(total_frames/interval)):
-      fn = i * 10
+      fn = i * interval
       cap.set(1, fn)
       ret, frame = cap.read()
       if frame is None:
