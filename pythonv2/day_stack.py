@@ -124,7 +124,7 @@ def day_stack(video_file, day, cam=None, last_blend=None):
    #files = glob.glob("/home/ams/tmp-stack/*.jpg")
 
    # get 1 image of every 10 frames
-   interval = 25 
+   interval = 10 
    cap = cv2.VideoCapture(video_file)
    total_frames = cap.get(7)
    images = []
