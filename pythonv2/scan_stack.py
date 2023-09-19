@@ -347,6 +347,7 @@ def scan_and_stack_fast(file, sun_status = 0, vals = []):
          yo = 1
       else:
          try:
+            #small_frame = cv2.resize(frame, (0,0),fx=.5, fy=.5)
             small_frame = cv2.resize(frame, (0,0),fx=.5, fy=.5)
          except:
             print("Bad video file:", file)
@@ -369,28 +370,37 @@ def scan_and_stack_fast(file, sun_status = 0, vals = []):
          #   em = cv2.resize(em, (gray.shape[1], gray.shape[0]))
          #   test = cv2.subtract(gray, em)
          #except:
-         #   print("problem")
+         #  print("problem")
          #cv2.imshow('pepe', test)
          #cv2.waitKey(30)
          #gray = cv2.subtract(gray, last_gray)
          #gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-         if fc > 0:
-            #sub = cv2.subtract(gray, em)
+         if fc == 0:
+            last_gray = gray
+         if fc >= 0:
+            sub = cv2.subtract(gray, last_gray)
             masked_frame = cv2.subtract(gray, small_mask)
             #masked_frame = cv2.subtract(gray, mask_img)
             if mask_img is not None:
                sub = cv2.subtract(sub, small_mask)
+               #cv2.imshow('pepe', sub)
+               #cv2.waitKey(0)
             if small_thresh is not None:
                sub = cv2.subtract(sub, small_thresh)
+               #cv2.imshow('pepe', sub)
+               #cv2.waitKey(0)
                #debug only
                #ksmall_thresh_c = cv2.cvtColor(small_thresh, cv2.COLOR_GRAY2BGR)
                #small_frame = cv2.subtract(small_frame, small_thresh_c)
                #sub = cv2.subtract(sub, mask_img)
-         else:
-            sub = cv2.subtract(gray, gray)
-         if stacked_sub_np is not None:
-            sub = cv2.subtract(sub, stacked_sub_np)
+         #else:
+         #   sub = cv2.subtract(gray, gray)
+         #if stacked_sub_np is not None:
+         #   sub = cv2.subtract(sub, stacked_sub_np)
 
+         #cv2.imshow('gray', gray)
+         #cv2.imshow('pepe', sub)
+         #cv2.waitKey(30)
          min_val, max_val, min_loc, (mx,my)= cv2.minMaxLoc(sub)
          #cv2.imshow('sub', small_frame)
          #cv2.waitKey(30)
@@ -409,10 +419,8 @@ def scan_and_stack_fast(file, sun_status = 0, vals = []):
             #print("SUM VAL:", sum_val)
             if sum_val > 5000:
                fb += 1
-               print("FIREBALL:", fc, sum_val)
             if sum_val > 100000 and sense_up is True:
                fb += 1
-               print("SENSE UP??:", fc, sum_val)
                ignore_stack = True
 
             mx = mx * 2
@@ -423,7 +431,6 @@ def scan_and_stack_fast(file, sun_status = 0, vals = []):
                avg_max_vals.append(max_val)
             pos_vals.append((mx,my))
       #gray_frames.append(gray)
-
       if int(sun_status) == 1:
          if fc % 25 == 1:
             print("DAY:", sun_status , fc)
@@ -458,8 +465,8 @@ def scan_and_stack_fast(file, sun_status = 0, vals = []):
                      stacked_image = stack_stack(stacked_image, frame_pil)
                   stacked_sub = stack_stack(stacked_sub, sub_pil)
                stacked_sub_np = np.array(stacked_sub)
-            else:
-               print("NO STAK THE FRAME", fc, avg_max, max_val, diff, fc)
+            #else:
+            #   print("NO STAK THE FRAME", fc, avg_max, max_val, diff, fc)
                #cv2.imshow('pepe', stacked_sub_np)
                #cv2.waitKey(30)
       last_gray = gray
