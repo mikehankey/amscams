@@ -70,7 +70,7 @@ def stack_day_all(interval):
             os.makedirs(day_dir)
             os.makedirs(day_dir + "images")
          exists[day] = 1
-      stack_img, elp = day_stack(df, day, interval)
+      stack_img, elp = day_stack(df, day, interval=interval)
       print("DAY STACK:", df, elp)
 
 def day_stack(video_file, day, cam=None, last_blend=None, interval=25):
@@ -226,7 +226,8 @@ if len(sys.argv) == 1:
             interval = 5
          else:
             interval = 10
-   stack_day_all(interval)
+      print("FILES/INTERVAL:", len(files), interval)
+      stack_day_all(interval)
 elif len(sys.argv) > 1:
    if sys.argv[1] == "sf":
       # stack 1 file
