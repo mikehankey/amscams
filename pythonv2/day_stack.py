@@ -130,7 +130,7 @@ def day_stack(video_file, day, cam=None, last_blend=None, interval=25):
    images = []
    stacked_image = None
    dark_stacked_image = None
-   print("TOTAL FRAMES", total_frames)
+   print("TOTAL FRAMES/ interval", total_frames, interval)
    count = 0
    for i in range(0,int(total_frames/interval)):
       fn = i * interval
@@ -226,7 +226,7 @@ elif len(sys.argv) > 1:
       last_stack = None
       for ff in sorted(files):
          if len(files) > 1000:
-            interval = 300 
+            interval = 800 
          elif 100 <= len(files) <= 1000:
             interval = 25
          elif len(files) < 100:
