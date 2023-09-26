@@ -213,9 +213,8 @@ def day_stack(video_file, day, cam=None, last_blend=None, interval=25):
 if len(sys.argv) == 1:
    # do current work
    if True:
-      print("stack 1 day", day)
-      day_dir = "/mnt/ams2/SD/proc2/daytime/" + day + "/"  
-      files = glob.glob(day_dir + "*" + cam + "*.mp4")
+      day_dir = "/mnt/ams2/SD/proc2/daytime/" 
+      files = glob.glob(day_dir + "*.mp4")
       print(day_dir, len(files) )
       last_stack = None
       for ff in sorted(files):
