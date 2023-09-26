@@ -219,7 +219,7 @@ if len(sys.argv) == 1:
       last_stack = None
       for ff in sorted(files):
          if len(files) > 1000:
-            interval = 800 
+            interval = 50 
          elif 100 <= len(files) <= 1000:
             interval = 25
          elif len(files) < 100:
