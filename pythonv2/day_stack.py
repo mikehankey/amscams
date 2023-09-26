@@ -226,7 +226,7 @@ elif len(sys.argv) > 1:
       last_stack = None
       for ff in sorted(files):
          if len(files) > 1000:
-            interval = 50
+            interval = 300 
          elif 100 <= len(files) <= 1000:
             interval = 25
          elif len(files) < 100:
