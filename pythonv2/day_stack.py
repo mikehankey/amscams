@@ -19,7 +19,7 @@ from lib.flexLib import load_frames_fast, stack_frames_fast, convert_filename_to
 from lib.VIDEO_VARS import PREVIEW_W, PREVIEW_H, SD_W, SD_H
 SHOW = 0
 
-def stack_day_all():
+def stack_day_all(interval):
    running = check_running("day_stack.py")
    #day_dir = "/mnt/ams2/SD/proc2/daytime/" + day + "/"
    print("RUNNING:", running)
@@ -70,7 +70,7 @@ def stack_day_all():
             os.makedirs(day_dir)
             os.makedirs(day_dir + "images")
          exists[day] = 1
-      stack_img, elp = day_stack(df, day)
+      stack_img, elp = day_stack(df, day, interval)
       print("DAY STACK:", df, elp)
 
 def day_stack(video_file, day, cam=None, last_blend=None, interval=25):
@@ -206,9 +206,28 @@ def day_stack(video_file, day, cam=None, last_blend=None, interval=25):
    print("Elapsed:", time.time() - tt)
    return(np.array(blend_return_img), time.time() - start_time)
 
+
+
+
+
 if len(sys.argv) == 1:
    # do current work
-   stack_day_all()
+   if True:
+      print("stack 1 day", day)
+      day_dir = "/mnt/ams2/SD/proc2/daytime/" + day + "/"  
+      files = glob.glob(day_dir + "*" + cam + "*.mp4")
+      print(day_dir, len(files) )
+      last_stack = None
+      for ff in sorted(files):
+         if len(files) > 1000:
+            interval = 800 
+         elif 100 <= len(files) <= 1000:
+            interval = 25
+         elif len(files) < 100:
+            interval = 5
+         else:
+            interval = 10
+   stack_day_all(interval)
 elif len(sys.argv) > 1:
    if sys.argv[1] == "sf":
       # stack 1 file
