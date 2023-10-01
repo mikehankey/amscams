@@ -11195,7 +11195,6 @@ def lens_model(cam_id, con, cur, json_conf, cal_fns= None, force=False):
 
    print("MED REZ IS (med, inner, outer):",  med_rez, inner_res, outer_res)
    print("MERGED STARS IS:", len(merged_stars))
-   input("WAIT")
 
    # final quality check
    xx = 0
@@ -11228,7 +11227,6 @@ def lens_model(cam_id, con, cur, json_conf, cal_fns= None, force=False):
          print("SKIP 1", med_rez, star[0], star[-2])
    #merged_stars = nms
    cv2.imwrite(lens_img_file, lens_img)
-   input("WAIT")
    print("\tSAVED lens_img_file:", lens_img_file)
    status, cal_params,merged_stars = minimize_poly_multi_star(merged_stars, json_conf,0,0,cam_id,None,mcp,SHOW)
    if cal_params == 0:
@@ -11336,7 +11334,6 @@ def lens_model(cam_id, con, cur, json_conf, cal_fns= None, force=False):
    print("NEW STARS:", len(new_merged_stars))
    print("NEW REZ:", mean_rez)
    print(tb)
-   input("WAIT")
 
    lens_model_report(cam_id, con, cur, json_conf)
    # write data to the cal_summary file
