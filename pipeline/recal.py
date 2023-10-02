@@ -50,6 +50,148 @@ MOVIE_LAST_FRAME = None
 MOVIE_FRAME_NUMBER = 0
 MOVIE_FRAMES_TEMP_FOLDER = "/home/ams/MOVIE_FRAMES_TEMP_FOLDER/"
 
+def retry_astrometry(cam_id, limit=25):
+    source_dir = "/mnt/ams2/cal/extracal"
+    # scan source dir for subdirs, then each of those for stacked pngs. Copy those to the
+    # autocal dir
+    calib_in_dir = "/mnt/ams2/meteor_archive/" + station_id + "/CAL/AUTOCAL/" 
+    files = sorted(os.listdir(source_dir), reverse=True)
+    l = 0
+    #    _, thresh_block = cv2.threshold(block, threshold_value, 255, cv2.THRESH_BINARY)
+    show = False
+    for f in files:
+        subdir = source_dir + "/" + f
+        if os.path.isdir(subdir) is True:
+            subfiles = os.listdir(subdir)
+            for ff in subfiles:
+                if "stacked.png" in ff and cam_id in ff:
+                    used_img = np.zeros((1080,1920),dtype=np.uint8)
+                    el = ff.split("_")
+                    year = el[0]
+                    cp_cmd = "cp " + subdir + "/" + ff + " " + calib_in_dir + year + "/"
+                    print(cp_cmd)
+
+                    image_path = subdir + "/" + ff
+                    thresh_image, image, sub,inv = rowwise_adaptive_threshold(image_path, in_image=None, block_ratio=0.01, threshold_factor=1.50)
+        
+                    show_img = image.copy()
+
+                    thresh_val = 40
+                    _, sub_thresh = cv2.threshold(sub, thresh_val, 255, cv2.THRESH_BINARY)
+                    contours, _ = cv2.findContours(sub_thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
+                    img_stars = []
+
+
+                    cnts = []
+                    # largest first
+                    cnts = sorted(cnts, key=lambda x: (x[2] + x[3]), reverse=True) 
+                    for contour in contours:
+                        xx, yy, ww, hh= cv2.boundingRect(contour)
+                        cnts.append((xx,yy,ww,hh))
+
+                    for cnt in cnts:
+                        xx, yy, ww, hh= cnt
+                        cx = xx + ww / 2
+                        cy = yy + hh / 2
+                        if ww > hh:
+                            radius = ww + 1
+                        else:
+                            radius = hh + 1
+                        intensity = np.sum(sub[yy:yy+hh,xx:xx+ww])
+                        img_stars.append((cx,cy,radius,intensity))
+                        uv = used_img[int(cy),int(cx)]
+                        if uv == 0 and intensity > 100 : 
+                            #print("KEEP STAR:", uv, cx,cy,radius,intensity)
+                            cv2.circle(show_img, (int(cx),int(cy)), 10, (255,255,0),2)
+                        #else:
+                            #print("SKIP STAR:", uv, cx,cy,radius,intensity)
+                        y1 = yy - 10 
+                        y2 = yy + 10 + hh
+                        x1 = xx - 10
+                        x2 = xx + 10 + ww
+                        used_img[y1:y2,x1:x2] = 255
+                    if show == True:
+                        cv2.imshow('Image', show_img)
+                        cv2.waitKey(100)
+                        cv2.imshow('Sub Thresh', sub_thresh)
+                        cv2.waitKey(100)
+                        cv2.imshow('Thresh', thresh_image)
+                        cv2.waitKey(100)
+                        # cv2.imshow('pepe4', inv)
+                        cv2.waitKey(0)
+                    l = l + 1 
+                    if l >= limit:
+                        print("End limit")
+                        exit()
+
+
+def rowwise_adaptive_threshold(image_path, in_image=None, block_ratio=0.1, threshold_factor=1.15):
+    """
+    Applies row-wise adaptive thresholding based on the average brightness of each block.
+
+    Args:
+    - image_path (str): Path to the input image or image.
+    - block_ratio (float): Ratio of image height for each block.
+    - threshold_factor (float): Factor to multiply with average brightness to get threshold.
+
+    Returns:
+    - numpy.ndarray: Thresholded image.
+    - numpy.ndarray: Original image.
+    """
+    # Read the image
+    if type(image_path) == str and in_image is None:
+        image = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
+    elif in_image is not None:
+        image = in_image
+    else:
+        # if the image path is actually an image we can use that too
+        image = image_path
+
+    show_img = image.copy()
+    bad_areas = []
+    blurred = cv2.GaussianBlur(image, (3, 3), 0)
+    original_image = image.copy()
+    height, width = image.shape
+
+    # Calculate block height
+    block_height = int(height * block_ratio)
+    # Initialize an empty image for the final thresholded result
+    thresholded_image = np.zeros_like(blurred)
+
+    # Loop through the image block by block
+    for i in range(0, height, block_height):
+        # Extract the block
+        block = image[i:i+block_height, :]
+        # Calculate the average brightness of the block
+        avg_brightness = np.mean(block)
+        # Compute the threshold for the block
+        threshold_value = avg_brightness * threshold_factor
+        # Apply the threshold to the block
+        #cv2.imshow('block', block)
+        #cv2.waitKey(30)
+        _, thresh_block = cv2.threshold(block, threshold_value, 255, cv2.THRESH_BINARY)
+        # Remove large contours from the thresh since these won't be stars!
+        dilated_image = cv2.dilate(thresh_block, None, iterations=2)
+        contours, _ = cv2.findContours(dilated_image, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
+        #cv2.imshow('thresh', thresh_block)
+        #cv2.waitKey(0)
+        for contour in contours:
+            xx, yy, ww, hh= cv2.boundingRect(contour)
+            # black out areas taht are too big
+            if 25 < ww < 300 or 25 < hh< 300 or yy <= 0 or xx <= 0 or yy>=1075 or xx >= 1915:
+                thresh_block[yy:yy+hh,xx:xx+ww] = 0
+
+
+        # Assign the thresholded block to the final image
+        thresholded_image[i:i+block_height, :] = thresh_block
+
+    inverted_image = 255 - thresholded_image
+    # the function should end here and a new function for finding stars should be made
+    sub = cv2.subtract(image,inverted_image)
+    
+
+    return(thresholded_image, image,sub,inverted_image)
+
 def fix_lens_nans():
     files = glob.glob("/mnt/ams2/cal/*poly*")
     poly_checks = ['x_poly', 'y_poly', 'x_poly_fwd', 'y_poly_fwd']
@@ -12170,6 +12312,9 @@ if __name__ == "__main__":
       cal_health(con, cur, json_conf, sys.argv[2])
    if cmd == "copy_best_cal_images" :
       copy_best_cal_images(con, cur, json_conf)
+   if cmd == "retry_astrometry" :
+      cam_id = sys.argv[2]
+      retry_astrometry( cam_id)
 
    
    if cmd == "refit_meteor_day" :
