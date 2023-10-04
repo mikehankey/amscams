@@ -635,7 +635,7 @@ def update_meteor_points(sd_video_file,frames):
          del resp['calib']['y_poly_fwd']
       if "x_poly_fwd" in resp['calib']:
          del resp['calib']['x_poly_fwd']
-   if "cp" in mj:
+   if "cp" in mj and mj['cp'] is not None:
       if "total_res_deg" in mj['cp'] :
          del(mj['cp']['total_res_deg'])
       resp['calib'] = mj['cp']
