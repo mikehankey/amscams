@@ -2987,10 +2987,10 @@ def refit_meteor(meteor_file, con, cur, json_conf, mcp = None, last_best_dict = 
             cp = update_center_radec(meteor_file,cp,json_conf)
 
          if "x_poly" in cp:
-            cp['x_poly'] = mcp['x_poly'].tolist()
-            cp['y_poly'] = mcp['y_poly'].tolist()
-            cp['x_poly_fwd'] = mcp['x_poly_fwd'].tolist()
-            cp['y_poly_fwd'] = mcp['y_poly_fwd'].tolist()
+            cp['x_poly'] = mcp['x_poly']
+            cp['y_poly'] = mcp['y_poly']
+            cp['x_poly_fwd'] = mcp['x_poly_fwd']
+            cp['y_poly_fwd'] = mcp['y_poly_fwd']
             if isinstance(cp['x_poly'], list) is not True:
                cp['x_poly'] = cp['x_poly'].tolist()
                cp['y_poly'] = cp['y_poly'].tolist()
