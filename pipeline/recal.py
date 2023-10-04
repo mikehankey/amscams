@@ -2973,6 +2973,10 @@ def refit_meteor(meteor_file, con, cur, json_conf, mcp = None, last_best_dict = 
    #if mjr is not None:
    #   if "meteor_frame_data" in mjr:
    #      mfd = perfect_meteor(json_file, sd_frames, mjr['meteor_frame_data'], meteor_roi)
+
+   # bug we should update the poly fields all the time.? Else how will meteors get the newest lens model?
+   # but what about custom fits? 
+
    if mjr is not None:
       if "meteor_frame_data" in mjr:
          mjr = update_mfd(meteor_file, mjr, mj['cp'])
@@ -2983,6 +2987,10 @@ def refit_meteor(meteor_file, con, cur, json_conf, mcp = None, last_best_dict = 
             cp = update_center_radec(meteor_file,cp,json_conf)
 
          if "x_poly" in cp:
+            cp['x_poly'] = mcp['x_poly'].tolist()
+            cp['y_poly'] = mcp['y_poly'].tolist()
+            cp['x_poly_fwd'] = mcp['x_poly_fwd'].tolist()
+            cp['y_poly_fwd'] = mcp['y_poly_fwd'].tolist()
             if isinstance(cp['x_poly'], list) is not True:
                cp['x_poly'] = cp['x_poly'].tolist()
                cp['y_poly'] = cp['y_poly'].tolist()
