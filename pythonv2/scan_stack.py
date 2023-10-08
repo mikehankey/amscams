@@ -433,8 +433,8 @@ def scan_and_stack_fast(file, sun_status = 0, vals = []):
       #gray_frames.append(gray)
       if int(sun_status) == 1:
          if fc % 25 == 1:
-            print("DAY:", sun_status , fc)
-            print("Stacking frame", fc)
+            #print("DAY:", sun_status , fc)
+            #print("Stacking frame", fc)
             small_frame = cv2.resize(frame, (0,0),fx=.5, fy=.5)
             frame_pil = Image.fromarray(small_frame)
             if stacked_image is None:
@@ -453,7 +453,7 @@ def scan_and_stack_fast(file, sun_status = 0, vals = []):
             else:
                diff = 0
             if max_val > avg_max * 1.2 or fc <= 10:
-               print("STAK THE FRAME", fc, avg_max, max_val, diff, fc)
+               #print("STAK THE FRAME", fc, avg_max, max_val, diff, fc)
                frame_pil = Image.fromarray(small_frame)
                sub_pil = Image.fromarray(sub)
                if stacked_image is None:
