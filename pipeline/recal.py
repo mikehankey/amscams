@@ -2684,7 +2684,8 @@ def refit_meteor(meteor_file, con, cur, json_conf, mcp = None, last_best_dict = 
          mj['cp']['x_poly_fwd'] = mcp['x_poly_fwd']
          mj['cp']['y_poly_fwd'] = mcp['y_poly_fwd']
 
-   frames = hd_frames
+   if len(hd_frames) > 0:
+      frames = hd_frames
    if "refit" in mj:
       # refit is already done, just return 
       print("DONE REFIT ALREADY!")
