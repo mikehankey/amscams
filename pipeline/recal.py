@@ -2671,6 +2671,8 @@ def refit_meteor(meteor_file, con, cur, json_conf, mcp = None, last_best_dict = 
          sd_frames = load_frames_simple(sd_vid)
          hd_frames = sd_frames
       else:
+         sd_frames = load_frames_simple(sd_vid)
+         hd_frames = sd_frames
          print("ERROR NO VIDEO FRAMES!", sd_vid)
          #input("ABORT")
          return()
