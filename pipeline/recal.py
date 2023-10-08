@@ -2639,6 +2639,7 @@ def refit_meteor(meteor_file, con, cur, json_conf, mcp = None, last_best_dict = 
          meteor_roi = mfd_roi(mjr['meteor_frame_data'])
 
    # load meteor json file
+   hd_frames = []
    if os.path.exists(json_file):
       try:
          mj = load_json_file(json_file)
