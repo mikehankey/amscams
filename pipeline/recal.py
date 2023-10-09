@@ -3272,8 +3272,6 @@ def update_mfd(meteor_file, mjr, cp):
    if "user_mods" in mj:
       if "frames" in mj['user_mods']:
          man = mj['user_mods']['frames']
-   print("MAN:", man)
-   input("MAN")
    updated_frame_data = []
    for row in mjr['meteor_frame_data']:
       (dt, fn, x, y, w, h, oint, ra, dec, az, el) = row
