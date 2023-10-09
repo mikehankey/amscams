@@ -3264,9 +3264,26 @@ def perfect_meteor(meteor_file, frames, mfd, meteor_roi):
 def update_mfd(meteor_file, mjr, cp):
 
    mjr['meteor_frame_data'] = sorted(mjr['meteor_frame_data'], key=lambda x: (x[1]), reverse=False)
+   # make sure we are using the manual points if defined. 
+   mday = meteor_file[0:10]
+   mdir = "/mnt/ams2/meteors/" + mday + "/"
+   mj = load_json_file(mdir + meteor_file)
+   man = None
+   if "user_mods" in mj:
+      if "frames" in mj['user_mods']:
+         man = mj['user_mods']['frames']
+   print("MAN:", man)
+   input("MAN")
    updated_frame_data = []
    for row in mjr['meteor_frame_data']:
       (dt, fn, x, y, w, h, oint, ra, dec, az, el) = row
+      if man is not None:
+         if str(fn) in man:
+            print("USING MAN DATA FOR FRAME:", fn, man[str(fn)])
+            x,y = man[str(fn)]
+         elif fn in man:
+            print("USING MAN DATA FOR FRAME:", fn, man[fn])
+            x,y = man[str(fn)]
       tx, ty, ra ,dec , az, el = XYtoRADec(x,y,meteor_file,mjr['cal_params'],json_conf)
       updated_frame_data.append((dt, int(fn), x, y, w, h, oint, ra, dec, az, el))
    mjr['meteor_frame_data'] = updated_frame_data

@@ -2,11 +2,11 @@ function update_meteor_points(mfd) {
    rad = 5
    // Create Colors
    var rainbow = new Rainbow();
-   rainbow.setNumberRange(0, 255);
+   rainbow.setNumberRange(0, 500);
    var all_colors = [];
    var total = mfd.length;
-   var step = parseInt(255/total);
-   for (var i = 0; i <= 255; i = i + step) {
+   var step = parseInt(500/total);
+   for (var i = 0; i <= 500; i = i + step) {
        all_colors.push('#'+rainbow.colourAt(i));
    }
 
