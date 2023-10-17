@@ -201,6 +201,26 @@ def crop_video(in_file, x,y,w,h):
 
    return(resp)
 
+def add_frame(meteor_file, fn):
+   resp = {}
+   date = meteor_file[0:10]
+   meteor_dir = "/mnt/ams2/meteors/" + date + "/"
+   if "json" in meteor_file:
+      meteor_vid = meteor_file.replace(".json", ".mp4")
+      jsf = meteor_dir + meteor_file
+   else:
+      jf = meteor_file.replace(".mp4", ".json")
+      jsf = meteor_dir + jf 
+      meteor_vid = meteor_file
+   mj = load_json_file(jsf)
+   jsrf = jsf.replace(".json", "-reduced.json")
+   mjr = load_json_file(jsrf)
+
+   # need to insert the frame into the meteor frame data, using the previous next 
+   # or before/after x,y default values 
+   return(resp)
+    
+
 def delete_frame(meteor_file, fn):
    resp = {}
    date = meteor_file[0:10]

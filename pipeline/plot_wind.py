@@ -1,4 +1,5 @@
 import sys
+import json, csv
 import time
 from lib.PipeUtil import dist_between_two_points
 import matplotlib
@@ -27,6 +28,7 @@ def plot_file(wind_file):
 
 def parse_sounding (proj_file, proj_data):
    plot_file = proj_file.replace(".json", "_WEATHER.png")
+   mean_wind_file = proj_file.replace(".json", "-mean-wind.csv")
    print("WIND DATA:", proj_data['wind_data'].keys())
    wd = proj_data['wind_data']
    nc = 0
@@ -136,6 +138,7 @@ def parse_sounding (proj_file, proj_data):
    temps = []
    relhs = []
 
+   dfn_data = []
    for row in final_data:
       alts.append(row[0])
       press.append(row[1])
@@ -143,8 +146,20 @@ def parse_sounding (proj_file, proj_data):
       relhs.append(row[4])
       dirs.append(row[5])
       speeds.append(row[6])
-      print(row)
-   
+      dfn_data.append((row[0], row[2]+273.15, row[1]*100,row[4],row[6],row[5]))
+      print((row[0], row[2]+273.15, row[1]*100,row[4],row[6],row[5]))
+  
+
+
+   fieldnames=['#Height','TempK','Press','RHum','Wind', 'Wdir']
+   #Height,TempK,Press,RHum,Wind,WDir
+   with open(mean_wind_file, 'w', newline='') as f:
+      writer = csv.writer(f)
+      writer.writerow(fieldnames)
+      writer.writerows(dfn_data)
+
+   print(mean_wind_file)
+   input("wait")
    plot_wind_data(alts, press, speeds, dirs, temps, relhs, plot_file)
    print("DONE")
 
@@ -226,7 +241,7 @@ def get_sounding(project_id):
             else:
                wind_data[sid]['fail'] += 1
             print("FAIL", sid, wind_data[sid]['link']) 
-      input("Continue?")
+      #input("Continue?")
 
    proj_data['wind_data'] = wind_data
    save_json_file(proj_file, proj_data)

@@ -3,7 +3,6 @@
 from geopy.geocoders import Nominatim
 geolocator = Nominatim(user_agent="geoapiExercises")
 from Classes.AllSkyNetwork import AllSkyNetwork
-print("YO")
 import cv2
 import os
 import sys
@@ -13,16 +12,12 @@ from lib.PipeUtil import get_file_info
 
 cmd = sys.argv[1]
 
-print("Init AllSkyNetwork...")
 ASN = AllSkyNetwork()
-print("Init Complete...")
 
 now = datetime.now()
 yest = now - dt.timedelta(days=1)
 yest = yest.strftime("%Y_%m_%d")
 today = datetime.now().strftime("%Y_%m_%d")
-
-#print("USING:",  sys.executable)
 
 if len(sys.argv) < 1:
    ASN.help()
@@ -37,7 +32,6 @@ if cmd == "event_preview_images":
 
 if cmd == "stations":
    rcmd = "cd /home/ams/amscams/pipeline; ./gitpull.py; uptime"
-   print("on each host try to run", rcmd)
    ASN.station_list(rcmd)   
 if cmd == "station_report":
    ASN.station_report(sys.argv[2])   
@@ -260,6 +254,10 @@ if cmd == "load_day_sql" or cmd == "reload":
    #ASN.review_event_day(date)
    print("Done load")
 
+if cmd == "review_coin_events":
+   event_day = sys.argv[2]
+   ASN.set_dates(event_day)
+   ASN.review_coin_events(event_day, fix_bad=True)
 
 if cmd == "coin_events":
    event_day = sys.argv[2]
@@ -456,7 +454,6 @@ if cmd == "all_year_events":
 if cmd == "year_report":
    year = sys.argv[2]
    ASN.year_report(year)
-
 
 if cmd == "resolve_event_day":
    event_day = sys.argv[2]

@@ -77,8 +77,7 @@ class AIWeather():
          root_file = row[0]
          self.cur_index[root_file] = {}
 
-   def load_file(self, file):
-      print("YO")
+   #def load_file(self, file):
       # check the sun info (day/night, az,el)    
       # check the moon info (day/night, az,el)    
       # check the weather forecast (day/night, az,el)    

@@ -36,11 +36,12 @@ def stack_video(video_file):
       print("Video file not found!", video_file)
       exit()
 
-   red_file = video_file.replace(".mp4", "-reduced.json")
-   if os.path.exists(red_file) is True:
-      red_data = load_json_file(red_file)
-   else:
-      red_data = None
+   #red_file = video_file.replace(".mp4", "-reduced.json")
+   #if os.path.exists(red_file) is True:
+   #   red_data = load_json_file(red_file)
+   #else:
+   #   red_data = None
+   red_data = None
 
    cap = cv2.VideoCapture(video_file)
    stacked_image = None
@@ -49,8 +50,11 @@ def stack_video(video_file):
    while frame is not None:
       # grab each frame in video file
       grabbed , frame = cap.read()
+
       if frame is None:
          break
+      cv2.imshow("pepe", frame)
+      cv2.waitKey(0)
       frame_pil = Image.fromarray(frame)
       if fc % 50 == 0 and fc > 0:
          print(fc)
@@ -67,8 +71,12 @@ def stack_video(video_file):
 
    image_file = video_file.replace(".mp4", "-stacked.jpg")
    dark_image_file = video_file.replace(".mp4", "-dark.jpg")
+   if "MOV" in video_file:
+      image_file = video_file.replace(".MOV", "-stacked.jpg")
+      dark_image_file = video_file.replace(".MOV", "-dark.jpg")
    stacked_image = np.asarray(stacked_image)
    dark_stacked_image = np.asarray(dark_stacked_image)
+   print(image_file, dark_image_file)
    cv2.imwrite(image_file, stacked_image)
    cv2.imwrite(dark_image_file, dark_stacked_image)
 

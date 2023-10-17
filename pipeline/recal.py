@@ -6309,12 +6309,6 @@ def get_catalog_stars(cal_params, MAG_LIMIT=5):
    mybsd = bsd.brightstardata()
    bright_stars = mybsd.bright_stars
 
-   #if "short_bright_stars" not in cal_params :
-   #   mybsd = bsd.brightstardata()
-   #   bright_stars = mybsd.bright_stars
-   #else:
-   #   bright_stars = cal_params['short_bright_stars']
-
    cat_image = np.zeros((1080,1920,3),dtype=np.uint8)
 
    img_w = 1920
@@ -6375,8 +6369,6 @@ def get_catalog_stars(cal_params, MAG_LIMIT=5):
       #if ang_sep < fov_radius and float(mag) <= MAG_LIMIT:
       #if float(mag) <= MAG_LIMIT:
       if True:
-
-
          # get the star position with no distortion
          zp_cat_x, zp_cat_y = distort_xy(0,0,ra,dec,RA_center, dec_center, zp_x_poly, zp_y_poly, x_res, y_res, pos_angle_ref,F_scale)
          new_cat_x, new_cat_y = distort_xy(0,0,ra,dec,RA_center, dec_center, x_poly, y_poly, x_res, y_res, pos_angle_ref,F_scale)

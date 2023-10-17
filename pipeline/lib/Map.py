@@ -106,9 +106,7 @@ def geo_intersec_point(x1, y1, brng1, x2, y2, brng2):
    return False, {"x3" : lon3, "y3" : lat3}
    
 def make_map(pts, lns, center_latlon=None):
-
-    print("POINTS:", pts)
-    print("LINES:", lns)
+    print("     make_map()")
 
     plats = []
     plons = []

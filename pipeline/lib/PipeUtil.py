@@ -66,7 +66,6 @@ def do_photo(image, position, radius,r_in=10, r_out=12):
    bkg_aperture = CircularAnnulus(position,r_in=r_in,r_out=r_out)
 
 
-
    phot = aperture_photometry(image, aperture)
    bkg = aperture_photometry(image, bkg_aperture)
 
@@ -459,14 +458,8 @@ def cfe(file,dir = 0):
          return(0)
 
 def load_json_file(json_file):  
-#   print("LOAD:", json_file)
-   #try:
-   if True:
-      #print("Trying:", json_file)
-      with open(json_file, 'r' ) as infile:
-         json_data = json.load(infile)
-   #except:
-   #   json_data = False
+   with open(json_file, 'r' ) as infile:
+      json_data = json.load(infile)
    return json_data 
 
 def save_json_file(json_file, json_data, compress=False):

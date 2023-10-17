@@ -164,6 +164,9 @@ def run_jobs_critical(json_conf):
    cmds.append(('all', "Clean disk / Purge old files", "cd /home/ams/amscams/pythonv2; ./doDay.py cd"))
    cmds.append(('all', "Run Batch Vals ", "cd /home/ams/amscams/pythonv2; ./flex-detect.py bv " + today))
    cmds.append(('all', "Run Verify Meteor", "cd /home/ams/amscams/pythonv2; ./flex-detect.py vms " + today))
+   # make sure all files from yest and today are reduced and sync'd
+   cmds.append(('all', "Red Fixer", "cd /home/ams/amscams/pipeline; ./red-fix.py " + yest + ">/dev/null 2>&1"))
+   cmds.append(('all', "Red Fixer", "cd /home/ams/amscams/pipeline; ./red-fix.py " + today + ">/dev/null 2>&1"))
    cmds.append(('all', "Dyna DB", "cd /home/ams/amscams/pipeline; ./DynaDB.py ddd " + today + ">/dev/null 2>&1"))
    print("Run critical jobs only.")
    for cmd in cmds :

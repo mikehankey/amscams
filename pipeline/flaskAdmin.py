@@ -5,7 +5,7 @@ from FlaskLib.Learning import learning_meteors_dataset, learning_meteors_tag, me
 #from FlaskLib.AI_API import ai_api
 from FlaskLib.motion_detects import motion_detects
 from FlaskLib.FlaskUtils import get_template
-from FlaskLib.api_funcs import update_meteor_points, show_cat_stars, delete_meteor, restore_meteor, delete_meteors, reduce_meteor, delete_frame, crop_video, update_meteor_cal_params
+from FlaskLib.api_funcs import update_meteor_points, show_cat_stars, delete_meteor, restore_meteor, delete_meteors, reduce_meteor, delete_frame, crop_video, update_meteor_cal_params, add_frame
 from FlaskLib.calib_funcs import calib_main, cal_file, show_masks, del_calfile, lens_model, edit_mask, edit_mask_points, calib_main_new
 from lib.PipeUtil import cfe, load_json_file, save_json_file
 from lib.PipePwdProtect import login_page, check_pwd_ajax
@@ -261,6 +261,13 @@ def chk_login():
    out = check_pwd_ajax(user, passwd)
    return out
 
+
+@app.route('/api/add_frame/<meteor_file>/', methods=['GET', 'POST'])
+@auth.login_required
+def add_frame(meteor_file):
+   fn = request.args.get('fn')
+   out = add_frame(meteor_file,fn)
+   return out
 
 @app.route('/api/delete_frame/<meteor_file>/', methods=['GET', 'POST'])
 @auth.login_required

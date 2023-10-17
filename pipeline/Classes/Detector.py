@@ -44,8 +44,6 @@ class Detector():
          report['meteor_score'] += 1
          report['good_items'].append("object is moving.")
 
-         
-
       # reject any object with 0 frames
       if len(obj['ofns']) == 0:
          report['status'] = "reject"
@@ -321,36 +319,6 @@ class Detector():
 
       report['plane_score'] = plane_score
 
-
-      # if this is not already ID'd as a plane, check to see it's ransac outlier %
-      #try:
-      #   XS,YS,BXS,BYS = self.ransac_outliers(obj['ccxs'],obj['ccys'])
-      #except:
-      #   XS = obj['ccxs']
-      #   YS = obj['ccys']
-      #   BXS = []
-      #   BYS = []
-         
-      #if len(XS) > 0:
-      #   ransac_perc = len(BXS) / len(XS)
-      #else:
-      #   ransac_perc = 0
-      #if len(BXS) == 0:
-      #   ransac_perc = 1
-      #report['ransac'] = ransac_perc
-      #report['ransac_xs'] = []
-      #report['ransac_ys'] = []
-      #for X in XS:
-      #   report['ransac_xs'].append(int(X))
-      #for Y in YS:
-      #   report['ransac_ys'].append(int(Y))
-
-
-      # CLOUD DETECTOR 
-      # how can we detect a cloud what meterics?
-      # bp > .4 -- 
-      # max_int > 30,000
-      # px_vel < 3
       if report['big_perc'] >= .7:
          report['meteor_score'] = -10
       if report['big_perc'] >= .4:

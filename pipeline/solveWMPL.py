@@ -28,7 +28,7 @@ import matplotlib.ticker as plticker
 from matplotlib import pyplot as plt
 
 from wmpl.Utils.ShowerAssociation import associateShower
-
+from termcolor import colored
 
 import boto3
 from boto3.dynamodb.conditions import Key
@@ -602,12 +602,8 @@ def get_best_obs(obs):
                   if obs[file]['calib'][-1] < best_res:
                      best_file = file
                      best_res = obs[file]['calib'][-1]
-      print("FILE:", file)
-      print("DIST TO CENTER:", dist_to_center)
-      print("OBS KEYS:", obs[file]['calib'])
 
 
-   print("BEST:", best_file)
    return(best_file)
 
 def solve_month(wild):
@@ -794,7 +790,6 @@ def solve_day(day, cores=16):
 
 
 def parse_extra_obs(extra):
-   print("EXTRA OBS FILE:", extra)
    fp = open(extra)
    on = 0
    dc = 0
@@ -1039,7 +1034,6 @@ def solve_event(event_id, force=1, time_sync=1):
     else:
        print("NO CLOUD STATIONS FILE?", cloud_stations_file)
    
-    print("LOCAL STATIONS FILE:", local_stations_file)
 
     all_stations_ar = load_json_file(local_stations_file)
     all_stations = {}
@@ -1130,7 +1124,6 @@ def solve_event(event_id, force=1, time_sync=1):
        obs_key = t_station + "_" + t_file
        if obs_key in ignore_obs:
           print("IGNORE:", obs_key)
-          #input("WAITING REMOVE THIS LINE!")
 
           continue
        dy_obs_data = eobs[t_station + ":" + t_file]
@@ -1736,14 +1729,12 @@ def add_extra_obs(extra_obs, obs):
 
 def convert_dy_obs(dy_obs_data, obs):
    if "station_id" not in dy_obs_data:
-      print("MISSING STATION ID!!!!")
+      print("ERROR: convert_dy_obs MISSING STATION ID!!!!")
       return(obs)
    station = dy_obs_data['station_id']
    fn = dy_obs_data['sd_video_file']
-   print("OBS:", obs)
 
    if station not in obs:
-      print("OBS:", obs)
       obs[station] = {}
    if fn not in obs[station]:
       obs[station][fn] = {}
@@ -1785,9 +1776,6 @@ def convert_dy_obs(dy_obs_data, obs):
    else:
       print("DELETE OBS FROM STATION NO FRAME DATA!!!!", station)
       del obs[station]
-      
-
-
 
    return(obs)
 
@@ -1821,21 +1809,12 @@ def make_event_json(event_id, solve_dir,ignore_obs):
       if "simple.json" in js:
          sol_file = js
 
-   #print("SOL FILE:", sol_file)
-   #print("KML FILE:", kml_file)
-
-   #simple_solve = load_json_file(sol_file)
    
-   print("MAKE EVENT JSON OBS FILE:", obs_file)
    if os.path.exists(obs_file):
       as_obs = load_json_file(obs_file)
    else:
       as_obs = {}
 
-   #event_file = sol_file.replace("-simple.json", "-event.json")
-
-   #print("OBS:", as_obs) 
-   #print("SIMPLE:", simple_solve) 
 
    points = []
    lines = []
@@ -1899,18 +1878,8 @@ def make_event_json(event_id, solve_dir,ignore_obs):
       fail_file = solve_dir + event_id + "-fail.json"
       fail = {}
       fail['failed'] = 1 
-      print("WMPL FAIL FILE:", fail_file)
       save_json_file(fail_file, fail)
 
-      #cloud_dir = solve_dir.replace("/ams2/", "/archive.allsky.tv/")
-      #cmd = "rsync -auv " + solve_dir + "* " + cloud_dir 
-      #os.system(cmd)
-
-      #cloud_dir = solve_dir.replace("/ams2", "/archive.allsky.tv")
-      #fp = open(solve_dir + "rsync.jobs", "a")
-      #fp.write ("rsync -auv " + solve_dir + "* " + cloud_dir + "\n")
-      #print("BUFFERED WRITE: rsync -auv " + solve_dir + "* " + cloud_dir + "\n")
-      #fp.close()
 
       return(0)
 
@@ -2119,7 +2088,6 @@ def make_event_json(event_id, solve_dir,ignore_obs):
    solution['event_id'] = event_id
    #solution['obs'] = as_obs
    save_json_file(event_file, solution)
-   print("SAVED EVENT FILE:", event_file)
    return(solution,as_obs)
 
 def make_kml(kml_file, points, lines, folder_name):
@@ -2232,27 +2200,20 @@ def check_fix_plots(event_id):
    day = event_id[6:8]
    event_dir = "/mnt/archive.allsky.tv/EVENTS/" + year + "/" + month + "/" + day + "/" + event_id + "/"
    local_event_dir = "/mnt/f/EVENTS/" + year + "/" + month + "/" + day + "/" + event_id + "/"
-   print("EVENT ID:", event_id)
-   print("EVDIR:", event_dir)
-   print("LOCAL:", local_event_dir)
+   print("CHECK FIX PLOTS EVENT ID:", event_id)
 
    if cfe(event_dir,1) == 1:
       ev_files = glob.glob(event_dir + "*")
-      print("EVENT FILES:", ev_files)
       for ev_file in ev_files:
          if "index.html" in ev_file or "gz" in ev_file or "ALL" in ev_file or "AMS" in ev_file:
             continue
          ev_fn = ev_file.split("/")[-1]
          pl_id = ev_fn[0:15]
          if pl_id != event_id:
-            print("PROB:", ev_fn, pl_id)
             new_file = ev_file.replace(pl_id, event_id)
             if ev_file != new_file:
                cmd = "mv " + ev_file + " " + new_file
-               print("MOVE2", cmd)
                os.system(cmd)
-         else:
-            print("Good:", ev_fn, pl_id)
 
    if cfe(local_event_dir,1) == 1:
       ev_files = glob.glob(local_event_dir + "*")
@@ -2266,11 +2227,9 @@ def check_fix_plots(event_id):
             new_file = ev_file.replace(pl_id, event_id)
             if ev_file != new_file:
                cmd = "mv " + ev_file + " " + new_file
-               print("MOVE3")
-               print(cmd)
                os.system(cmd)
-         else:
-            print("Good:", ev_fn, pl_id)
+         #else:
+         #   print("Good:", ev_fn, pl_id)
 
 
 def event_id_to_date(event_id):
@@ -2487,7 +2446,6 @@ def event_report(dynamodb, event_id, solve_dir, event_final_dir, obs):
 
     jpgs = []
     for sf in solved_files:
-       print("SOLVED FILE:", sf)
        if final_event_id not in sf:
           print("EVENT ID MISMATCH:", sf, final_event_id)
        if "png" in sf:
@@ -2496,19 +2454,15 @@ def event_report(dynamodb, event_id, solve_dir, event_final_dir, obs):
           cmd = "convert " + sf + " -resize 600x600 -quality 60 " + jpg_f
           #if cfe(jpg_f) == 0:
           if True:
-             print(cmd)
              os.system(cmd)
-          else:
-             print(jpg_f, " already made.")
+          #else:
+          #   print(jpg_f, " already made.")
     check_fix_plots(final_event_id)
     solved_files = glob.glob(solve_dir + "/*")
-    print("SOLVED FILES:", solved_files)
-    print("MOVE THE WMPL FILES TO THE FINAL EVENT DIR!")
     final_jpgs = []
 
     # move png to jpgs 
     for sf in solved_files:
-       print("SOLVED FILE:", sf)
        if "AMS" in sf:
           continue
        fn, xxx = fn_dir(sf)
@@ -2518,11 +2472,9 @@ def event_report(dynamodb, event_id, solve_dir, event_final_dir, obs):
        cmd = "mv " + sf + " " + event_final_dir
 
        if sf != event_final_dir + fn and "png" not in fn:
-          print("MOVE11:", cmd)
           os.system(cmd)
        if "jpg" in fn:
           final_jpgs.append(new_file)
-       print(cmd)
 
     used = {}
     prev_files = []
@@ -2818,6 +2770,8 @@ def make_obs_table(obs):
    return(obs_html)
 
 def WMPL_solve(event_id, obs,time_sync=1, force=0, dynamodb=None):
+
+    print(colored("Starting WMPL_solve for {:s}".format(event_id), "green"))
     time_sync = 1
     if dynamodb is None:
        dynamodb = boto3.resource('dynamodb')
@@ -2891,7 +2845,6 @@ def WMPL_solve(event_id, obs,time_sync=1, force=0, dynamodb=None):
        fail = {}
        fail['failed'] = 1 
        fail['no_obs_data'] = 1 
-       print("FAIL FILE:", fail_file)
        save_json_file(fail_file, fail)
 
        return() 
@@ -2951,26 +2904,16 @@ def WMPL_solve(event_id, obs,time_sync=1, force=0, dynamodb=None):
                     earliest_time = event_start_dt
 
     print("EARLIEST TIME:", earliest_time)
-    #input("WAITING")
 
     # this is where we should use ALL obs or BEST obs or MERGE obs
+    wmpl_run_data = []
     for station_id in obs:             
         for file in obs[station_id]:  # to revert change to if True
-            #if len(obs[station_id].keys()) > 1:
-            # file = get_best_obs(obs[station_id])
-            #else:
-            #    for bfile in obs[station_id]:
-                    #file = bfile
-         
-        #if True:
-        # to revert to best obs uncomment above and change for file line to if  True 
             try:
                lat,lon,alt = obs[station_id][file]['loc']
             except:
                continue
             lat,lon,alt = float(lat), float(lon), float(alt)
-            # ADD/CONVERT great circle GC GREAT CIRCLE
-            #CAM ID
             (f_datetime, cam_id, f_date_str,fy,fmon,fd, fh, fm, fs) = convert_filename_to_date_cam(file)
             obs[station_id][file]['gc_azs'], obs[station_id][file]['gc_els'] = GC_az_el(obs[station_id][file]['azs'], obs[station_id][file]['els'],  None,None)
             if "fps" in obs[station_id][file]:
@@ -2979,11 +2922,8 @@ def WMPL_solve(event_id, obs,time_sync=1, force=0, dynamodb=None):
                fps = 25
 
             if "gc_azs" in obs[station_id][file]:
-               # to enable/disable GC (great circle) conversion comment/uncomment lines below
-               #print("USING GC AZS:", station_id, obs[station_id][file]['gc_azs'])
                azs = np.radians(obs[station_id][file]['gc_azs'])
                els = np.radians(obs[station_id][file]['gc_els'])
-               #print("USING GC AZS RADIANS:", station_id, azs)
 
                # comment / uncomment to use/not use GCs GCFIT GCfit GC Fit GCFit
                #azs = np.radians(obs[station_id][file]['azs'])
@@ -2993,14 +2933,6 @@ def WMPL_solve(event_id, obs,time_sync=1, force=0, dynamodb=None):
                els = np.radians(obs[station_id][file]['els'])
             o_times = obs[station_id][file]['times']
 
-            print("   STATION:", station_id)
-            print("   FILE:", file)
-            print("   TIMES:", o_times)
-            print("   LAT:", lat)
-            print("   LON:", lon)
-            print("   ALT:", alt)
-            print("   AZ:", azs)
-            print("   ELS:", els)
             o_times[0] = o_times[0].replace("-", "_")
             o_times[0] = o_times[0].replace(":", "_")
             o_times[0] = o_times[0].replace(" ", "_")
@@ -3023,63 +2955,46 @@ def WMPL_solve(event_id, obs,time_sync=1, force=0, dynamodb=None):
                 frame_time = frame_time.replace(" ", "_")
                 frame_dt = datetime.datetime.strptime(frame_time, "%Y_%m_%d_%H_%M_%S.%f")
 
-                # toggle time sync bug fix maybe??
-                # value should be the time since the start of the event, NOT the start of the obs?
-                #time_diff = (frame_dt - event_start_dt).total_seconds()
-
                 time_diff = (frame_dt - earliest_time).total_seconds()
-                print("*** EARLIEST TIME:", earliest_time)
-                print("*** EVENT START TIME:", event_start_dt)
-                print("*** TIME DIFF:", time_diff)
                 times.append(time_diff)
-
-            #for i in range(0,len(azs)):
-            #    times.append(i/fps)
-      
-            #print("o", station_id, o_times)
-            #print("n", station_id, times)
-            # Set points for the first site
-            print("   EVENT START DT:", event_start_dt)
-            print("   SET WMPL OBS:", event_id, station_id, lat, lon, alt, azs, els, times)  
-            print("   TIMES:", station_id, times)
-            traj_solve.infillTrajectory(azs, els, times, np.radians(float(lat)), np.radians(float(lon)), alt, station_id=station_id + "-" + cam_id)
+            np_times = np.array(times)
+            print("TIMES:", np_times)
+            #input("WAIT")
+            traj_solve.infillTrajectory(azs, els, np_times, np.radians(float(lat)), np.radians(float(lon)), alt, station_id=station_id + "-" + cam_id)
+            wmpl_run_data.append((azs, els, np_times, lat, lon, alt, station_id, cam_id))
             print(   "-----")
 
 
     resp = traj_solve.run()
-    print("TIMING MINIMIZE SUCCESS?:", traj_solve.timing_minimization_successful)
     if traj_solve.timing_minimization_successful is False:
-       print("RUN WITHOUT THE TIME SYNC!")
-       traj_solve = traj.Trajectory(jd_ref, output_dir=solve_dir, meastype=meastype, save_results=True, monte_carlo=monte, show_plots=False, max_toffset=5, v_init_part=.5, estimate_timing_vel=False, show_jacchia=True  )
-       resp = traj_solve.run()
+        print(colored("WMPL TIME SYNC FAILED! Rerun with no time sync.","red"))
+        # rerun with no time sync
+        traj_solve = traj.Trajectory(jd_ref, output_dir=solve_dir, meastype=meastype, save_results=True, monte_carlo=False, show_plots=False, max_toffset=5, v_init_part=.25, estimate_timing_vel=False, show_jacchia=True  )
+        for (azs, els, last_np_times, lat, lon, alt, station_id, cam_id) in wmpl_run_data:
+            traj_solve.infillTrajectory(azs, els, last_np_times, np.radians(float(lat)), np.radians(float(lon)), alt, station_id=station_id + "-" + cam_id)
+        resp = traj_solve.run()
+
+
+
     print('t_ref_station', traj_solve.t_ref_station)
     #print('time_diffs', traj_solve.time_diffs)
     print('t_diffs_final', traj_solve.time_diffs_final)
     print('timing_res', traj_solve.timing_res)
     print('timing_stddev', traj_solve.timing_stddev)
 
-
-    print("SOLVE FILE:", solve_file)
-
-    #event_report(solve_dir, event_final_dir, obs)
-    #make_event_json(event_id, solve_dir,[])
-
-    #mj['wmpl'] = e_dir
-    #save_json_file(meteor_file, mj)
-    #print("Saved:", meteor_file) 
-
-    #solved_files = glob.glob(solve_dir + "*")
     solve_files = os.listdir(solve_dir)
-    if len(solve_files) == 0 or traj_solve.timing_minimization_successful is False:
-       print("FAILED TO SOLVE. No files in solve dir:", solve_dir )
-       cmd = "cd ../pythonv2; ./solve.py vida_failed_plots " + event_id
-       print(cmd)
-       #os.system(cmd)
+    print(" SOLVED FILES:", len(solve_files))
+    print(" TRAJ MIN:", traj_solve.timing_minimization_successful)
+    if traj_solve.timing_minimization_successful is False:
+       print(colored(" WMPL FAILED TO SOLVE: Timing Minimization Failed. " + solve_dir, "red") )
+       for x in wmpl_run_data:
+          print("   ", x)
+       exit()
+
        fail_file = solve_dir + event_id + "-fail.json"
        fail = {}
        fail['failed'] = 1 
        fail['timing_minimize'] = traj_solve.timing_minimization_successful
-       #print("FAIL FILE:", fail_file)
        solve_status = "FAILED"
        save_json_file(fail_file, fail)
        for station_id in obs:
@@ -3089,19 +3004,9 @@ def WMPL_solve(event_id, obs,time_sync=1, force=0, dynamodb=None):
              for bfile in obs[station_id]:
                 file = bfile
     else:
-       print(solve_dir )
-       #for sf in solved_files:
-       #   print(sf)
        make_event_json(event_id, solve_dir,[])
-       print("MADE EVENT JONS")
        solve_status = "SOLVED"
 
-       #event_report(dynamodb, event_id, solve_dir, event_final_dir, obs)
-       print("MADE EVENT REPORT")
-
-       print("DONE SOLVE")
-
-    print("DONE SOLVE", solve_status)
     return(solve_status)
 
 # 1

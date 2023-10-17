@@ -727,8 +727,6 @@ def update_dyna_cache_for_day(dynamodb, date, stations, utype=None, cloud_copy=1
    os.system("cp " + stations_file + " " + cloud_stations_file)
 
    # get the obs for each station for this day
-   #print("DOOBS:", do_obs)
-   #print("cluset:", len(cluster_stations))
    if do_obs == 1:
       #os.system("rm " + obs_file ) 
       all_obs = []
@@ -1127,7 +1125,6 @@ def search_obs(dynamodb, station_id, date, no_cache=0):
             all_items.append(it)
 
       #save_json_file(dc_file, response['Items'])
-      print("SEARCH OBS:", station_id, date, len(all_items))
       return(all_items)
 
 
@@ -1211,7 +1208,6 @@ def get_obs(station_id, sd_video_file):
       else:
          data = json.loads(content)
          data['aws_status'] = True
-         print("FETCH GOOD")
       return(data)
 
 def get_obs_old2(dynamodb, station_id, sd_video_file):
@@ -1372,7 +1368,6 @@ def sync_db_day(dynamodb, station_id, day):
          if local_meteors[lkey]['revision'] == db_meteors[lkey]['revision']:
             print(lkey, "GOOD: The remote and local revisions are the same." )
 
-   print("SEARCH OBS:", station_id, day)
    items = search_obs(dynamodb, station_id, day, 1)
    for item in items:
       print("IN DB:", station_id, item['sd_video_file'], item['revision'])
