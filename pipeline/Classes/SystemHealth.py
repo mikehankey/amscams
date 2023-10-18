@@ -61,10 +61,47 @@ class SystemHealth():
       #self.check_quotas()
       system_health_report['data_dirs'] = {}
       for dd in self.data_dirs:
-         print("DD:", dd, self.data_dirs[dd])
+         print("Data Dir:", dd, self.data_dirs[dd])
          system_health_report['data_dirs'][dd] = self.data_dirs[dd]
-      self.pending_SD_files = glob.glob("/mnt/ams2/SD/*")
-      system_health_report['pending_files'] = len(self.pending_SD_files)
+      # pending files
+      command = "find /mnt/ams2/SD/ -type f -maxdepth 1 -name '*.mp4' | wc -l"
+      print("SD FILES:", command)
+      process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+      stdout, stderr = process.communicate()
+
+      if process.returncode == 0:
+         self.pending_SD_files = int(stdout.strip())
+         print(f"File count: {self.pending_SD_files}")
+      else:
+         print(f"Error: {stderr}")
+         self.pending_SD_files = 0
+
+      # pending day files
+      command = "find /mnt/ams2/SD/proc2/daytime/ -type f -maxdepth 1 -name '*.mp4' | wc -l"
+      print("DAY FILES:", command)
+      process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+      stdout, stderr = process.communicate()
+
+      if process.returncode == 0:
+         self.pending_SD_day_files = int(stdout.strip())
+         print(f"File count: {self.pending_SD_day_files}")
+      else:
+         print(f"Error: {stderr}")
+         self.pending_SD_day_files = 0
+
+      if self.pending_SD_day_files >= 10000:
+         print("We have major backlog and should delete some files!")
+         cmd = """find /mnt/ams2/SD/proc2/daytime/ -type f -maxdepth 1 -name "*.mp4" -print0 | xargs -0 rm -f"""
+         print(cmd)
+         #os.system(cmd)
+
+
+        #find . -type f -name "*" |wc -l
+        #find . -type f -name "2023_09*" -print0 | xargs -0 rm -f
+
+
+      system_health_report['pending_files'] = self.pending_SD_files
+      system_health_report['pending_day_files'] = self.pending_SD_day_files
       print("Get latest file from cloud.")
       latest_files = glob.glob("/mnt/archive.allsky.tv/" + self.station_id + "/LATEST/*.jpg")
       if len(latest_files) > 0:
