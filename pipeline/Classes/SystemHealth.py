@@ -93,7 +93,7 @@ class SystemHealth():
          print("We have major backlog and should delete some files!")
          cmd = """find /mnt/ams2/SD/proc2/daytime/ -type f -maxdepth 1 -name "*.mp4" -print0 | xargs -0 rm -f"""
          print(cmd)
-         #os.system(cmd)
+         os.system(cmd)
 
 
         #find . -type f -name "*" |wc -l

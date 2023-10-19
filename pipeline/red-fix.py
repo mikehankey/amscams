@@ -19,6 +19,16 @@ def get_mfiles(day):
                mfiles.append("/mnt/ams2/meteors/" + day + "/" + ff.replace(".json", ".mp4") )
             else:
                print("DONE ALREADY!", rfile)
+               # make sure the red file MFD exists!
+               good = False
+               rdata = load_json_file(rfile)
+               if "meteor_frame_data" in rdata:
+                  if len(rdata['meteor_frame_data']) >= 3:
+                     good = True
+               if good is False:
+                  print("Empty MFD!")
+                  mfiles.append("/mnt/ams2/meteors/" + day + "/" + ff.replace(".json", ".mp4") )
+                  
    return(mfiles)
 
 if len(sys.argv) > 1:
