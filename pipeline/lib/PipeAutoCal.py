@@ -6984,7 +6984,9 @@ def cal_all(json_conf):
             cv2.imwrite(file, img)
          avg_px = np.mean(img)
          print("PIC AVG:", avg_px)
-         if avg_px < 100:
+         # NEED TO DO THIS BASED ON THE DATE OR IS THAT HANDLED IN THE ACQUIRE IMX CALL ALREADY?
+
+         if avg_px < 150:
             autocal(file, json_conf, 1)
             print("RAN:", file)
          else:
