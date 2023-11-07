@@ -4061,7 +4061,10 @@ def import_cal_file(cal_fn, cal_dir, mcp):
          star_cat_info = [dcname,mag,ra,dec,new_cat_x,new_cat_y]
          star_obj = eval_star_crop(star_crop, cal_fn, rx1, ry1, rx2, ry2, star_cat_info)
 
-         zp_x, zp_y, zp_img_ra,zp_img_dec, zp_img_az, zp_img_el = XYtoRADec(img_x,img_y,cal_fn,cal_params_nlm,json_conf)
+         try:
+            zp_x, zp_y, zp_img_ra,zp_img_dec, zp_img_az, zp_img_el = XYtoRADec(img_x,img_y,cal_fn,cal_params_nlm,json_conf)
+         except:
+            continue
          zp_cat_x, zp_cat_y = get_xy_for_ra_dec(cal_params_nlm, ra, dec)
 
          zp_res_px = calc_dist((img_x,img_y), (zp_cat_x,zp_cat_y))
