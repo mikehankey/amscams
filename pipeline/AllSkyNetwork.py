@@ -22,7 +22,7 @@ today = datetime.now().strftime("%Y_%m_%d")
 if len(sys.argv) < 1:
    ASN.help()
    exit()
-if cmd == "admin_event_links":
+if cmd == "admin_event_links" or cmd == "edit_event":
    event_id = sys.argv[2]
    ASN.admin_event_links(event_id)
 

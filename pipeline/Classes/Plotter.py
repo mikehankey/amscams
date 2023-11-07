@@ -84,8 +84,8 @@ class Plotter():
    def plot_all_rad(self):
       self.make_shower_colors()
       import matplotlib
+      matplotlib.use('TkAgg')
       import matplotlib.ticker as plticker
-      #matplotlib.use('TkAgg')
       from matplotlib import pyplot as plt
       showers = {}
       #shower_colors = {}
@@ -220,6 +220,7 @@ class Plotter():
       ax.set_xticklabels(['14h','16h','18h','20h','22h','0h','2h','4h','6h','8h','10h'])
       ax.grid(True)
       #plt.savefig(self.DATA_DIR  + "EVENTS/DAYS/" + self.day.replace("_", "") + "_PLOTS_ALL_RADIANTS.png" )
+      plt.title("Radiants on " + self.day)
       plt.savefig(self.all_radiants_png_file )
 
       print("SAVED:", self.all_radiants_png_file)

@@ -205,7 +205,8 @@ print(stations_check_file)
 print(latest_geojson_file)
 print(geo_events_file)
 
-cmd = "scp -i /home/ams/pem/ALLSKYTV-EAST.pem /mnt/ams2/geoViewer.html ubuntu@52.2.45.103:/home/ubuntu/allsky.com/htdocs/map.html"
-cmd = "scp -i /home/ams/pem/ALLSKYTV-EAST.pem /mnt/ams2/aws-map-out.html ubuntu@52.2.45.103:/home/ubuntu/allsky.com/htdocs/aws-map-out.html"
+#cmd = "scp -i /home/ams/pem/ALLSKYTV-EAST.pem /mnt/ams2/geoViewer.html ubuntu@52.2.45.103:/home/ubuntu/allsky.com/htdocs/map.html"
+#cmd = "scp -i /home/ams/pem/ALLSKYTV-EAST.pem /mnt/ams2/aws-map-out.html ubuntu@52.2.45.103:/home/ubuntu/allsky.com/htdocs/aws-map-out.html"
+cmd = "scp -i /home/ams/pem/ALLSKYTV-EAST.pem /mnt/ams2/aws-map-out.html ubuntu@44.205.164.165:/DATA_EFS/sites/allsky.com/htdocs/aws-map-out.html"
 print(cmd)
 os.system(cmd)

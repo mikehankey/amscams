@@ -2924,10 +2924,10 @@ def WMPL_solve(event_id, obs,time_sync=1, force=0, dynamodb=None):
             if "gc_azs" in obs[station_id][file]:
                azs = np.radians(obs[station_id][file]['gc_azs'])
                els = np.radians(obs[station_id][file]['gc_els'])
-
+               #input("USING GC!")
                # comment / uncomment to use/not use GCs GCFIT GCfit GC Fit GCFit
-               #azs = np.radians(obs[station_id][file]['azs'])
-               #els = np.radians(obs[station_id][file]['els'])
+               azs = np.radians(obs[station_id][file]['azs'])
+               els = np.radians(obs[station_id][file]['els'])
             else:
                azs = np.radians(obs[station_id][file]['azs'])
                els = np.radians(obs[station_id][file]['els'])

@@ -17,8 +17,8 @@ if __name__ == "__main__":
       
    PLT = Plotter(cmd=sys.argv[1], extra_args=extra_args)
    PLT.controller()
-   #PLT.plot_all_rad()
-   exit()
+   PLT.plot_all_rad()
+   #exit()
    if False:
       cat_stars = PLT.get_catalog_stars()
       blank_image = np.zeros((1080,1920,3),dtype=np.uint8)
