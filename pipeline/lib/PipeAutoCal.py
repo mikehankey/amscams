@@ -10626,7 +10626,7 @@ def minimize_poly_multi_star(merged_stars, json_conf,orig_ra_center=0,orig_dec_c
       res = 5 
 
    # last chance to remove stars!
-   if False:
+   if True:
       for star in updated_merged_stars:
          (cal_file , center_az, center_el, ra_center, dec_center, position_angle, pixscale, dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist,star_int) = star
          cat_dist = calc_dist((six, siy), (new_cat_x,new_cat_y))
