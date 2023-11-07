@@ -136,8 +136,8 @@ def insert_calib(cal_file, con, cur, json_conf):
    if "cal_version" not in cp:
       cp['cal_version'] = 1
 
-
-   ivals = [  station_id, 
+   try:
+      ivals = [  station_id, 
               cam_id, 
               cal_fn, 
               cal_timestamp, 
@@ -163,9 +163,10 @@ def insert_calib(cal_file, con, cur, json_conf):
               "",
               cp['cal_version'],
               nowts]
-   if True:
       cur.execute(sql, ivals)
       con.commit()
+   except:
+      print("FAILED TO INSERT!", cal_fn)
 
 def load_frames_simple(trim_file, limit=0):
    cap = cv2.VideoCapture(trim_file)
