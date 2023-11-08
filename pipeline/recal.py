@@ -3805,6 +3805,8 @@ def start_calib(cal_fn, json_conf, calfiles_data, mcp=None):
    cal_json_fn = cal_json_file.split("/")[-1]
    if os.path.exists(cal_dir + cal_img_fn):
       clean_cal_img = cv2.imread(cal_dir + cal_img_fn)
+   else:
+      clean_cal_img = None
 
    mask_file = "/mnt/ams2/meteor_archive/{}/CAL/MASKS/{}_mask.png".format(station_id, cam_id)
    if os.path.exists(mask_file) is True:
@@ -3814,7 +3816,8 @@ def start_calib(cal_fn, json_conf, calfiles_data, mcp=None):
       size = len(clean_cal_img.shape)
       mask = np.zeros((1080,1920,size),dtype=np.uint8)
 
-   clean_cal_img = cv2.subtract(clean_cal_img, mask)
+   if clean_cal_img is not None:
+      clean_cal_img = cv2.subtract(clean_cal_img, mask)
 
    if mcp is None:
       mcp_file = autocal_dir + "multi_poly-" + station_id + "-" + cam_id + ".info"
