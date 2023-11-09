@@ -1196,6 +1196,9 @@ def calc_res_from_stars(cal_fn, cal_params, json_conf):
    return(cal_params)
 
 def cal_health(con, cur, json_conf, cam_num=None):
+
+   fix_lens_nans()
+
    cam_num = cam_num.upper()
    autocal_dir = "/mnt/ams2/cal/" 
    station_id = json_conf['site']['ams_id']
@@ -1289,13 +1292,37 @@ def cal_health(con, cur, json_conf, cam_num=None):
 
    # MAIN USER OUTPUT
    os.system("clear")
-   print("ASOS")
+   print("AllSky Observing Software")
    print("CALIBRATION HEALTH FOR " + station_id + " RUN ON " + now  )
    print(tb)
    cam_status = tb
+   # write cam_status to txt file
+   cam_status_txt = "/mnt/ams2/cal/" + station_id + "_cal_status.txt"
+   fp = open(cam_status_txt, "w")
+   fp.write("CALIBRATION HEALTH FOR " + station_id + " Last updated " + now  + "\n")
+   fp.write(str(cam_status) + "\n")
 
-   print("To work on a specific camera enter the camera number and press [ENTER]")
-   print("You have 5 seconds to run a custom command before this prompt ends.")
+   freecal_files = sorted(os.listdir("/mnt/ams2/cal/freecal"), reverse=True)
+   for f in freecal_files:
+      if "json" in f and ".jpg" in f:
+         print("BAD", f)
+         os.system("rm /mnt/ams2/cal/freecal/" + f)
+   fp.write("Last 10 Calibration Files\n")
+
+   for f in freecal_files[0:10]:
+      print(f)
+      fp.write("\t" + str(f) + "\n")
+
+   fp.close()
+
+   print("saved", cam_status_txt)
+
+   # The code after here is kind of like auto code, 
+   # but really we want to save the cal health info and that is it. 
+
+   return()
+   #print("To work on a specific camera enter the camera number and press [ENTER]")
+   #print("You have 5 seconds to run a custom command before this prompt ends.")
 
    # | Cam ID | Avg Stars | Avg Res | Good Files | Avg Files | Bad Files | LM Res | LM Stars | LM Runs |  LM Date   | Min/Max Star Dist
    # decide/prioritize refits -- We can stop when:
@@ -4604,19 +4631,6 @@ def pair_star_points(cal_fn, oimg, cal_params, json_conf, con, cur, mcp, save_im
 
    cal_dir = "/mnt/ams2/cal/freecal/" + cal_fn.replace("-stacked-calparams.json", "/")
 
-   #cal_params['cat_image_stars'] = up_cat_image_stars
-   # don't do this! save the cal params file with latest cat_image_stars and then re-import it
-   #if "x_poly" in cal_params:
-   #   del(cal_params['x_poly'])
-   #   del(cal_params['x_poly_fwd'])
-   #   del(cal_params['y_poly'])
-   #   del(cal_params['y_poly_fwd'])
-   #save_json_file(cal_dir + cal_fn, cal_params)
-   if save_img is True:
-      if "calparams" in cal_fn:
-         cv2.imwrite(cal_dir + cal_fn.replace("-calparams.json", "-pair.jpg"), show_img)
-      else:
-         cv2.imwrite(cal_dir + cal_fn.replace(".json", "-pair.jpg"), show_img)
    return(up_cat_image_stars)
       
 
