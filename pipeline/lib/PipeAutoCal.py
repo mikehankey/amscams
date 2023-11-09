@@ -497,8 +497,8 @@ def gen_cal_hist(json_conf):
    all_files = {}
 
    sz, td = get_file_info("/mnt/ams2/cal/cal_day_hist.json")
-   #if td < 86400:
-   #   return()
+   if td < 86400:
+      return()
 
    for cam in sorted(json_conf['cameras']):
       cams_id = json_conf['cameras'][cam]['cams_id']
@@ -5784,7 +5784,8 @@ def solve_field(image_file, image_stars=[], json_conf={}):
       cv2.imwrite(plate_file, plate_image)
       image_file = plate_file
    if len(image_stars) < 10:
-      print("not enough stars", len(image_stars) )
+      print("not enough stars", len(image_stars) , image_file)
+      time.sleep(2)
       return(0, {}, "")
 
    cmd = "mv " + image_file + " " + idir
@@ -5796,9 +5797,9 @@ def solve_field(image_file, image_stars=[], json_conf={}):
    cmd = AST_BIN + "solve-field " + plate_file + " --cpulimit=30 --verbose --overwrite --crpix-center -d 1-40 --scale-units dw --scale-low 60 --scale-high 120 -S " + solved_file + " >" + astrout
    print(cmd)
    astr = cmd
-   print(cmd)
-   if cfe(solved_file) == 0:
-      os.system(cmd)
+   time.sleep(1)
+   #if cfe(solved_file) == 0:
+   os.system(cmd)
 
    if cfe(solved_file) == 1:
       # get WCS info
@@ -6264,7 +6265,7 @@ def optimize_matchs(cp_file,json_conf,nc,oimg):
    return(nc)
 
 
-def eval_cal_res(cp_file,json_conf,nc=None,oimg=None, mask_img=None,batch_mode=None,short_bright_stars=None):
+def eval_cal_res(cp_file,json_conf,nc=None,oimg=None, mask_img=None,batch_mode=None,short_bright_stars=None, show=False):
    #print("eval_cal_res:", cp_file)
    dist_type = "radial"
    cal_params = nc
@@ -6286,7 +6287,7 @@ def eval_cal_res(cp_file,json_conf,nc=None,oimg=None, mask_img=None,batch_mode=N
       dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist,star_int = star
       med_rez.append(cat_dist)
    med_res = np.median(med_rez)
-
+   ignore = False
    for star in nc['cat_image_stars']:
       dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist,star_int = star
       new_x, new_y, img_ra,img_dec, img_az, img_el = XYtoRADec(six,siy,cp_file,nc,json_conf)
@@ -6295,7 +6296,7 @@ def eval_cal_res(cp_file,json_conf,nc=None,oimg=None, mask_img=None,batch_mode=N
       new_cat_x, new_cat_y = distort_xy(0,0,ra,dec,float(cal_params['ra_center']), float(cal_params['dec_center']), cal_params['x_poly'], cal_params['y_poly'], float(cal_params['imagew']), float(cal_params['imageh']), float(cal_params['position_angle']),3600/float(cal_params['pixscale']))
       cat_dist = calc_dist((six,siy),(new_cat_x,new_cat_y))
       #print("EVAL CAL RES POSITION / CAT DIST", cal_params['position_angle'], cat_dist)
-      if oimg is not None:
+      if oimg is not None and show is True:
          if True:
             cv2.circle(oimg,(int(six),int(siy)), 10, (128,128,128), 1)
             cv2.circle(oimg,(int(new_cat_x),int(new_cat_y)), 20, (128,128,128), 1)
@@ -6973,13 +6974,10 @@ def cal_all(json_conf):
    if cfe(cal_dir + "solved", 1) == 0:
       os.makedirs(cal_dir + "solved")
    files = glob.glob(cal_dir + "*.png")
-   #print(cal_dir)
+   print(cal_dir)
+   print(files)
    for file in sorted(files):
       print("RUN AUTO CAL.", file)
- ##     last_cal['x_poly'] = cp['x_poly'].tolist()
- #     last_cal['y_poly'] = cp['y_poly'].tolist()
- #     last_cal['y_poly_fwd'] = cp['y_poly_fwd'].tolist()
- #     last_cal['x_poly_fwd'] = cp['x_poly_fwd'].tolist()
 
       if cfe(file) == 1:
          img = cv2.imread(file)
@@ -7062,13 +7060,13 @@ def autocal(image_file, json_conf, show = 0, heal_only=0):
       img = cv2.cvtColor(img, cv2.COLOR_GRAY2BGR)
 
    stars = find_stars_with_grid(img)
-   if True:
+   if SHOW == 1:
+      show_img = img.copy()
       for star in stars:
          (x,y,sint) = star
-         cv2.circle(img,(int(x),int(y)), 10, (128,128,255), 1)
+         cv2.circle(show_img,(int(x),int(y)), 10, (128,128,255), 1)
 
-   if SHOW == 1:
-      cv2.imshow("pepe", img)
+      cv2.imshow("pepe", show_img)
       cv2.waitKey(10)
 
    # check out dirs make if needed
@@ -7096,36 +7094,6 @@ def autocal(image_file, json_conf, show = 0, heal_only=0):
    day = fn[0:10]
    cal_hist = get_default_calib_hist(day, cam, json_conf)
    last_best_res = None 
-   #for day_diff, hist in cal_hist[0:30]:
-   # check previous cals
-   if False:
-      # no longer used / old code?
-      cam, date ,az, el, pos, pxs, res = hist
-      data = [image_file, az, el, pos, pxs, len(stars), len(stars), 99,0]  
-      cp = make_cal_obj(az,el,pos,pxs,stars,stars,res)
-      mcp_file = "/mnt/ams2/cal/" + "multi_poly-" + STATION_ID + "-" + cam + ".info"
-      if cfe(mcp_file) == 1:
-         try:
-            mcp = load_json_file(mcp_file)
-            cp['x_poly'] = mcp['x_poly']
-            cp['y_poly'] = mcp['y_poly']
-            cp['x_poly_fwd'] = mcp['x_poly_fwd']
-            cp['y_poly_fwd'] = mcp['y_poly_fwd']
-         except:
-            cmd = "rm " + mcp_file
-            os.system(cmd)
-
-
-      tcp , bad_stars, marked_img = test_cal(image_file, json_conf, cp, img.copy(), data)
-
-      print("TEST CAL RES:", tcp['total_res_px'])
-      if last_best_res is None:
-         last_best_res = tcp['total_res_px']
-         best_cp = dict(cp)
-      if tcp['total_res_px'] < last_best_res:
-
-         best_cp = dict(cp)
-
    if True:
       # best cp is currently always None!
       if best_cp is not None:
@@ -7178,7 +7146,7 @@ def autocal(image_file, json_conf, show = 0, heal_only=0):
 
    print("IF we made it this far, it means we could not use a default calibration to solve the field. ")
    print("Let's try to blind solve it...")
-
+   time.sleep(2)
    try:
       star_img = img.copy()
    except: 
@@ -7296,14 +7264,19 @@ def autocal(image_file, json_conf, show = 0, heal_only=0):
    # this is the best place to check the parity / 180 PA issue!
    
    test_data1 = [image_file, cal_params['center_az'], cal_params['center_el'], cal_params['position_angle'], cal_params['pixscale'], len(cal_params['user_stars']),len(cal_params['cat_image_stars']), cal_params['total_res_px'], 0 ]
-   test1_cp , bad_stars, marked_img = test_cal(image_file, json_conf, cal_params, img.copy(), test_data1)
+   test1_cp , bad_stars, marked_img = test_cal(image_file, json_conf, cal_params.copy(), img.copy(), test_data1)
+   print("TESTDATA 1:", test_data1)
    print("TEST1:", test1_cp['total_res_px'],  test1_cp['position_angle'])
 
    test_data2 = [image_file, cal_params['center_az'], cal_params['center_el'], cal_params['position_angle'] - 180, cal_params['pixscale'], len(cal_params['user_stars']),len(cal_params['cat_image_stars']), cal_params['total_res_px'], 0 ]
-   test2_cp , bad_stars, marked_img = test_cal(image_file, json_conf, cal_params, img.copy(), test_data2)
-   print("TEST2:", test2_cp['total_res_px'], test2_cp['position_angle'])
+   test2_cp , bad_stars, marked_img = test_cal(image_file, json_conf, cal_params.copy(), img.copy(), test_data2)
+   print("TESTDATA 2:", test_data2)
+   print("TEST2:", test2_cp['total_res_px'],  test2_cp['position_angle'])
 
-   cal_params = test_fix_pa(image_file, cal_params, img.copy(), json_conf)
+   #test_data3 = [image_file, cal_params['center_az'], cal_params['center_el'], cal_params['position_angle'] , cal_params['pixscale'], len(cal_params['user_stars']),len(cal_params['cat_image_stars']), cal_params['total_res_px'], 0 ]
+   #test3_cp , bad_stars3, marked_img3 = test_cal(image_file, json_conf, cal_params.copy(), img.copy(), test_data3)
+
+
  
    if test2_cp['total_res_px'] < test1_cp['total_res_px']:
       cal_params = test2_cp
@@ -7311,7 +7284,6 @@ def autocal(image_file, json_conf, show = 0, heal_only=0):
    else:
       cal_params = test1_cp
       print("USE test1 CP POS=", cal_params['position_angle'])
-
 
 
 
@@ -11730,3 +11702,67 @@ def draw_grid_line(points, img, type, key, center_az, center_el, show_text = 1):
             last_y = y
             pc = pc + 1
    return(img )
+
+def rowwise_adaptive_threshold(image_path, in_image=None, block_ratio=0.1, threshold_factor=1.15):
+        """
+        Applies row-wise adaptive thresholding based on the average brightness of each block.
+
+        Args:
+        - image_path (str): Path to the input image or image.
+        - block_ratio (float): Ratio of image height for each block.
+        - threshold_factor (float): Factor to multiply with average brightness to get threshold.
+
+        Returns:
+        - numpy.ndarray: Thresholded image.
+        - numpy.ndarray: Original image.
+        """
+        # Read the image
+        if type(image_path) == str and in_image is None:
+            image = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
+        elif in_image is not None:
+            image = in_image 
+        else:
+            # if the image path is actually an image we can use that too
+            image = image_path
+
+        show_img = image.copy()
+        bad_areas = []
+
+        blurred = cv2.GaussianBlur(image, (3, 3), 0)
+        original_image = image.copy()
+        height, width = image.shape
+
+        # Calculate block height
+        block_height = int(height * block_ratio)
+
+        # Initialize an empty image for the final thresholded result
+        thresholded_image = np.zeros_like(blurred)
+
+        # Loop through the image block by block
+        for i in range(0, height, block_height):
+            # Extract the block
+            block = image[i:i+block_height, :]
+
+            # Calculate the average brightness of the block
+            avg_brightness = np.mean(block)
+
+            # Compute the threshold for the block
+            threshold_value = avg_brightness * threshold_factor
+
+            # Apply the threshold to the block
+            _, thresh_block = cv2.threshold(block, threshold_value, 255, cv2.THRESH_BINARY)
+
+            # Remove large contours from the thresh since these won't be stars!
+            dilated_image = cv2.dilate(thresh_block, None, iterations=4)
+            contours, _ = cv2.findContours(dilated_image, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
+            for contour in contours:
+                xx, yy, ww, hh= cv2.boundingRect(contour)
+                if 15 < ww < 300 or 15 < hh< 300 or yy <= 0 or xx <= 0 or yy>=1075 or xx >= 1915:
+                    thresh_block[yy:yy+hh,xx:xx+ww] = 0
+
+            # Assign the thresholded block to the final image
+            thresholded_image[i:i+block_height, :] = thresh_block
+
+        # the function should end here and a new function for finding stars should be made
+
+        return(thresholded_image, image)

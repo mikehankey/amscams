@@ -7157,11 +7157,14 @@ def apply_calib (cal_file, calfiles_data, json_conf, mcp, last_cal_params=None, 
 
 
       cal_params = add_more_stars(cal_fn, cal_params, oimg, oimg, json_conf)
-      print("   AZ  :", round(cal_params['center_az']),2)
-      print("   EL  :", round(cal_params['center_el']),2)
-      print("   PA  :", round(cal_params['position_angle']),2)
-      print("   PX  :", round(cal_params['pixscale']),2)
-      print("   STARS:" +  str(len(cal_params['cat_image_stars'])) )
+      try:
+         print("   AZ  :", round(int(cal_params['center_az'])),2)
+         print("   EL  :", round(cal_params['center_el']),2)
+         print("   PA  :", round(cal_params['position_angle']),2)
+         print("   PX  :", round(cal_params['pixscale']),2)
+         print("   STARS:" +  str(len(cal_params['cat_image_stars'])) )
+      except:
+         print("   STRINGS IN CAL PARAMS!")
 
 
       # if 0 stars we have to abort
