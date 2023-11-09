@@ -7475,6 +7475,8 @@ def apply_calib (cal_file, calfiles_data, json_conf, mcp, last_cal_params=None, 
 
       cal_json_fn = cal_json_file.split("/")[-1]
       oimg = cv2.imread(cal_dir + cal_image_file)
+      if oimg is None:
+         return(cal_params, flux_table)
       cal_img = oimg.copy()
       cal_params_json = load_json_file(cal_json_file)
 
