@@ -6287,7 +6287,6 @@ def eval_cal_res(cp_file,json_conf,nc=None,oimg=None, mask_img=None,batch_mode=N
       med_rez.append(cat_dist)
    med_res = np.median(med_rez)
 
-
    for star in nc['cat_image_stars']:
       dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist,star_int = star
       new_x, new_y, img_ra,img_dec, img_az, img_el = XYtoRADec(six,siy,cp_file,nc,json_conf)
@@ -6297,17 +6296,23 @@ def eval_cal_res(cp_file,json_conf,nc=None,oimg=None, mask_img=None,batch_mode=N
       cat_dist = calc_dist((six,siy),(new_cat_x,new_cat_y))
       #print("EVAL CAL RES POSITION / CAT DIST", cal_params['position_angle'], cat_dist)
       if oimg is not None:
-         #print("XYs:", int(six), int(siy), int(new_cat_x), int(new_cat_y))
-         if SHOW == 1:
+         if True:
             cv2.circle(oimg,(int(six),int(siy)), 10, (128,128,128), 1)
             cv2.circle(oimg,(int(new_cat_x),int(new_cat_y)), 20, (128,128,128), 1)
-            cv2.line(oimg, (int(six),int(siy)), (int(new_cat_x),int(new_cat_y)), (255), 2)
-            cv2.imshow('pepe', oimg)
-            cv2.waitKey(30)
+            # remove really bad stars
+            if cat_dist > med_res * 3:
+               cv2.line(oimg, (int(six),int(siy)), (int(new_cat_x),int(new_cat_y)), (0,0,255), 2)
+               ignore = True
+            else:
+               cv2.line(oimg, (int(six),int(siy)), (int(new_cat_x),int(new_cat_y)), (255,0,0), 2)
+               ignore = False 
+            if SHOW == 1:
+               cv2.imshow('pepe', oimg)
+               cv2.waitKey(30)
 
-
-      rez.append(cat_dist)
-      new_cat_stars.append((dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist,star_int))
+      if ignore is False:
+         rez.append(cat_dist)
+         new_cat_stars.append((dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist,star_int))
 
    
 
@@ -7167,7 +7172,6 @@ def autocal(image_file, json_conf, show = 0, heal_only=0):
             print("We imported this file without having to plate solve.", cp['total_res_px'])
             if SHOW == 1:
                star_image = draw_star_image(img, cp['cat_image_stars'], cp) 
-               #cv2.imshow("INPUT IMG", img)
                cv2.imshow('STAR IMAGE', star_image)
                cv2.waitKey(30)
             return()
@@ -7310,7 +7314,6 @@ def autocal(image_file, json_conf, show = 0, heal_only=0):
 
 
 
-   #input("CHECK PA ISSUE!")
 
    fn, dir = fn_dir(image_file)
    #guess_cal("temp/" + fn, json_conf, cal_params )
@@ -7408,7 +7411,6 @@ def autocal(image_file, json_conf, show = 0, heal_only=0):
 
    print_cal_params(cal_params)
    cpfn = new_cal_file.split("/")[-1]
-   #input("APPLY CALIB")
    cmd = "./recal.py apply_calib " + cpfn 
    print(cmd)
    os.system(cmd)
@@ -7418,7 +7420,6 @@ def autocal(image_file, json_conf, show = 0, heal_only=0):
    print(cmd)
    os.system(cmd)
 
-   #input("AFTER APPLY CALIB")
    #cmd = "./recal.py apply_calib " + cpfn 
    #print(cmd)
    #os.system(cmd)
