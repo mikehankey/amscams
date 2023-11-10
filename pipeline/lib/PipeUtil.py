@@ -463,7 +463,7 @@ def load_json_file(json_file):
    return json_data 
 
 def save_json_file(json_file, json_data, compress=False):
-   print("\tSAVED JSON FILE:", json_file)
+   #print("\tSAVED JSON FILE:", json_file)
    if "cp" in json_data:
       if json_data['cp'] is not None:
          for key in json_data['cp']:
@@ -836,7 +836,7 @@ def watermark_image(background, logo, x=0,y=0, opacity=1,text_data=[], make_int=
    if make_int is True:
       blend *= 255
       blend = blend.astype(np.uint8)
-   print("WATERMARK BLEND:", type(blend), blend.shape, blend[500,500])
+   #print("WATERMARK BLEND:", type(blend), blend.shape, blend[500,500])
    return(blend)
 
 
