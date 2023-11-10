@@ -153,7 +153,6 @@ def check_do_recal(json_conf):
    else:
       print("Recalibration has run fine on this system", json_conf['recal'])
 
-
 def run_jobs_critical(json_conf):
 
    today = datetime.now().strftime("%Y_%m_%d")

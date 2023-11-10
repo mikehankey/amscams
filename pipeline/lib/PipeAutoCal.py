@@ -66,7 +66,6 @@ def load_caldb(json_conf):
             print("MORE THAN ONE JSON!", json_files)
 
 def insert_calib(cal_file, con, cur, json_conf):
-   print("insert_calib:")
    (f_datetime, cam_id, f_date_str,fy,fm,fd, fh, fmin, fs) = convert_filename_to_date_cam(cal_file)
    cal_timestamp = datetime.timestamp(f_datetime)
    nowts = datetime.timestamp(datetime.now())
@@ -1858,8 +1857,6 @@ def refit_meteor(meteor_file, json_conf,force=0):
          if human_stars is not None:
             res_good = 1
 
-         #print("CENTER STARS:", six, siy)
-         #print("CENTER CAT STARS:", row)
          # CENTER STARS
          #if 0 <= six < 1920 and 0 <= siy <= 1080 and res_good == 1:
          if True:
@@ -4046,14 +4043,6 @@ def deep_cal_report(cam, json_conf):
             fov_done = 1
       else:
          print("File FOV has not been fitted yet.")
-      if fov_done == 0:
-         print(cal)
-         print("BEFORE CP:", cp['center_az'], cp['center_el'], cp['position_angle'], cp['pixscale'], cal_img.shape)
- 
-         #cp = minimize_fov(cal, cp, cal,cal_img,json_conf )
-         #save_json_file(cal, cp)
-         print("AFTER CP:", cp['center_az'], cp['center_el'], cp['position_angle'], cp['pixscale'])
-         print("SAVED CAL FILE:", cal)
 
       if SHOW == 1:
          star_image = draw_star_image(cal_img, cp['cat_image_stars'], cp) 
@@ -6295,7 +6284,6 @@ def eval_cal_res(cp_file,json_conf,nc=None,oimg=None, mask_img=None,batch_mode=N
 
       new_cat_x, new_cat_y = distort_xy(0,0,ra,dec,float(cal_params['ra_center']), float(cal_params['dec_center']), cal_params['x_poly'], cal_params['y_poly'], float(cal_params['imagew']), float(cal_params['imageh']), float(cal_params['position_angle']),3600/float(cal_params['pixscale']))
       cat_dist = calc_dist((six,siy),(new_cat_x,new_cat_y))
-      #print("EVAL CAL RES POSITION / CAT DIST", cal_params['position_angle'], cat_dist)
       if oimg is not None and show is True:
          if True:
             cv2.circle(oimg,(int(six),int(siy)), 10, (128,128,128), 1)
@@ -6324,7 +6312,7 @@ def eval_cal_res(cp_file,json_conf,nc=None,oimg=None, mask_img=None,batch_mode=N
    nc['match_perc'] = 1
    nc['total_res_px'] = float(np.mean(rez))
 
-   print("\tEVAL CAL RES STARS/RES:", len(nc['cat_image_stars']), nc['total_res_px'] )
+   print("STARS/RES:", len(nc['cat_image_stars']), nc['total_res_px'] )
 
    return(nc, bad_stars, marked_img)
 

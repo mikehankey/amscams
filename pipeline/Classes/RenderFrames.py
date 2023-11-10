@@ -206,7 +206,6 @@ class RenderFrames():
       if make_int is True:
          blend *= 255
          blend = blend.astype(np.uint8)
-      #print("WATERMARK BLEND:", type(blend), blend.shape, blend[500,500])
       #blend = blend.astype(np.uint8)
       blend = blend * 255
       return(blend.astype(np.uint8))
