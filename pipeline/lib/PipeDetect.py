@@ -2212,7 +2212,7 @@ def make_roi_video_mfd(video_file, json_conf, edits=None):
             # THRESH 
             max_val = np.max(roi_img)
             if max_val > 120:
-               thresh = np.max(roi_img) - 35
+               thresh = np.max(roi_img) * .85 
                _, threshold = cv2.threshold(roi_img.copy(), thresh, 255, cv2.THRESH_BINARY)
                roi_img = threshold
             #if SHOW == 1:
