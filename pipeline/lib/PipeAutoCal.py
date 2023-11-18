@@ -1960,7 +1960,6 @@ def refit_meteor(meteor_file, json_conf,force=0):
       #   print("GOOD match: ", dcname, cat_dist)
       #else:
       #   print("BAD match: ", dcname, cat_dist)
-      #print("RES:", cp['total_res_px'])
 
    marked_img = view_calib(meteor_file,json_conf,mj['cp'],image)
    mimg_file = meteor_file.replace(".json", "-fit.jpg")
@@ -2958,7 +2957,7 @@ def try_to_heal_cal(day, cam, img, image_file, cp, json_conf):
          cp['x_poly_fwd'] = mcp['x_poly_fwd']
          cp['y_poly_fwd'] = mcp['y_poly_fwd']
       tcp , bad_stars, marked_img = test_cal(image_file, json_conf, cp, img.copy(), data)
-      print("RES:", tcp['total_res_px'])
+      print("HEAL CAL RES:", tcp['total_res_px'])
       if last_best_res is None:
          last_best_res = tcp['total_res_px']
          best_cp = dict(cp)
@@ -3865,7 +3864,7 @@ def minimize_fov(cal_file, cal_params, image_file,img,json_conf ,zero_poly=True)
 
    cp = pair_stars(cal_params, image_file, json_conf, gray_img)
    trash_stars, res_px,res_deg = cat_star_report(cp['cat_image_stars'], 4)
-   print("RES:", res_px, res_deg)
+   print("MINIMIZE FOV RES:", res_px, res_deg)
 
    if math.isnan(res_px) is True:
       print("TOTAL RES IS NAN:", res_px )
@@ -6289,7 +6288,7 @@ def eval_cal_res(cp_file,json_conf,nc=None,oimg=None, mask_img=None,batch_mode=N
             cv2.circle(oimg,(int(six),int(siy)), 10, (128,128,128), 1)
             cv2.circle(oimg,(int(new_cat_x),int(new_cat_y)), 20, (128,128,128), 1)
             # remove really bad stars
-            if cat_dist > med_res * 3:
+            if cat_dist > med_res * 2.5:
                cv2.line(oimg, (int(six),int(siy)), (int(new_cat_x),int(new_cat_y)), (0,0,255), 2)
                ignore = True
             else:
@@ -6312,7 +6311,7 @@ def eval_cal_res(cp_file,json_conf,nc=None,oimg=None, mask_img=None,batch_mode=N
    nc['match_perc'] = 1
    nc['total_res_px'] = float(np.mean(rez))
 
-   print("STARS/RES:", len(nc['cat_image_stars']), nc['total_res_px'] )
+   #print("STARS/RES:", len(nc['cat_image_stars']), nc['total_res_px'] )
 
    return(nc, bad_stars, marked_img)
 
@@ -10578,7 +10577,7 @@ def minimize_poly_multi_star(merged_stars, json_conf,orig_ra_center=0,orig_dec_c
    # here we should remove the worste stars 
 
    res,updated_merged_stars = reduce_fit_multi(x_poly, "x_poly",merged_stars,cal_params,fit_img,json_conf,cam_id,1,show)
-   print("RES:", res)
+   print("AFTER REDUCE FIT MULTI RES:", res)
 
 
    if res < 2:

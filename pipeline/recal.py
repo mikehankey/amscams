@@ -736,10 +736,10 @@ def blind_solve(cal_file, cal_img, best_stars, remote_json_conf):
             most_stars = tstars 
             best_pos = default_cal_params['position_angle']
 
-      print("STARS/RES:", tstars, tres)
-      echo_calparams(cal_fn, default_cal_params)
-      cv2.imshow('pepe', blend)
-      cv2.waitKey(30)
+      #echo_calparams(cal_fn, default_cal_params)
+      if SHOW == 1:
+         cv2.imshow('pepe', blend)
+         cv2.waitKey(30)
 
    mcp = None
    con = None
@@ -2257,7 +2257,7 @@ def remove_bad_stars(cat_image_stars):
    #print("   RES RIGHT     :", right_res)
    #print("   RES CENTER    :", close_res)
    #print("   RES EDGES     :", far_res)
-   print("   RES AVG       :", avg_res)
+   #print("   RES AVG       :", avg_res)
    #print("   GOOD/BAD STARS:", len(good)," / ", len(bad))
    return(good)
 
@@ -5168,7 +5168,6 @@ def star_points_report(cam_id, json_conf, con, cur):
 
          # all_res, inner_res, middle_res, outer_res = recalc_res(cp)
          all_res, inner_res, middle_res, outer_res,cp = recalc_res(cal_fn, cp , json_conf)
-         #print("RES:", all_res)
 
          cal_img_720 = cv2.resize(cal_img, (1280,720))
          stars_image = draw_stars_on_image(cal_img_720, cat_image_stars,cp,json_conf,extra_text=None,img_w=1280,img_h=720) 
@@ -7340,7 +7339,6 @@ def apply_calib (cal_file, calfiles_data, json_conf, mcp, last_cal_params=None, 
 
       cal_params['cat_image_stars'] = pair_star_points(cal_fn, oimg, cal_params, json_conf, con, cur, mcp, False)
       temp_cp, bad_stars, marked_img = eval_cal_res(cal_fn, json_conf, cal_params.copy(), oimg,None,None,cal_params['cat_image_stars'])
-      print("\t", len(temp_cp['cat_image_stars']), "STARS, ", temp_cp['total_res_px'], "RES PX")
 
       if len(cal_params['user_stars']) > 0:
          cat_star_ratio = len(cal_params['cat_image_stars']) / len(cal_params['star_points'])
@@ -7470,7 +7468,6 @@ def apply_calib (cal_file, calfiles_data, json_conf, mcp, last_cal_params=None, 
 
 
       cat_stars, short_bright_stars, cat_image = get_catalog_stars(cal_params)
-      #print("\t TOTAL CAT STARS", len(cat_stars))
 
       # show catalog image
       if SHOW == 1:
@@ -7560,9 +7557,8 @@ def apply_calib (cal_file, calfiles_data, json_conf, mcp, last_cal_params=None, 
      
       if temp_cal_params['total_res_px'] <= cal_params['total_res_px'] or True:
          cal_params = temp_cal_params
-         print("\tCAL PARAM OPTIMIZED")
-      else:
-         print("\tCAL PARAMS OPTIMIZER FAILED!")
+      #else:
+      #   print("\tCAL PARAMS OPTIMIZER FAILED!")
 
       up_stars, cat_image_stars = update_paired_stars(cal_fn, cal_params, stars, con, cur, json_conf)
       cal_params['cat_image_stars'] = cat_image_stars
@@ -7599,7 +7595,7 @@ def apply_calib (cal_file, calfiles_data, json_conf, mcp, last_cal_params=None, 
          os.system(cmd)
 
       # remove cal if res too high or stars too low and refit is too high
-      print("\tREAPPLY:", cal_params['reapply'])
+      print("FINAL APPLY RES", len(cal_params['cat_image_stars']), "STARS, ", cal_params['total_res_px'], "RES PX")
 
 
       return(cal_params, flux_table)
@@ -7813,7 +7809,6 @@ def update_calfiles(cam_id, con,cur, json_conf):
 
 def recenter_fov(cal_fn, cal_params, cal_img, stars, json_conf, extra_text="", this_poly_in=None, meteor_stack_img=None, con=None, cur=None):
    nc = cal_params
-   #print("\tCAT STARS RECENTER FOV 1:", len(nc['cat_image_stars']))
    if "station_id" in cal_params:
       station_id = cal_params['station_id']
    else:
@@ -7897,7 +7892,6 @@ def recenter_fov(cal_fn, cal_params, cal_img, stars, json_conf, extra_text="", t
    #print("DEBUG:", this_poly, cal_params['center_az'], cal_params['center_el'],cal_params['position_angle'],cal_params['pixscale'],cal_params['x_poly'], cal_params['y_poly'], cal_params['x_poly_fwd'], cal_params['y_poly_fwd'],cal_fn, extra_text)
    center_stars = cal_params['cat_image_stars']
 
-   #print("\tCAT STARS RECENTER FOV 2:", len(nc['cat_image_stars']))
    if len(nc['cat_image_stars']) <= 10:
       cal_params = add_more_stars(cal_fn, nc, cal_img, cal_img, json_conf)
 #ZZZ
@@ -7905,7 +7899,6 @@ def recenter_fov(cal_fn, cal_params, cal_img, stars, json_conf, extra_text="", t
    res = scipy.optimize.minimize(reduce_fov_pos, this_poly, args=( np.float64(cal_params['center_az']),np.float64(cal_params['center_el']),np.float64(cal_params['position_angle']),np.float64(cal_params['pixscale']),cal_params['x_poly'], cal_params['y_poly'], cal_params['x_poly_fwd'], cal_params['y_poly_fwd'],cal_fn,cal_img,json_conf, cal_params['cat_image_stars'], extra_text,0), method='Nelder-Mead')
    #res = scipy.optimize.minimize(reduce_fov_pos, this_poly, args=( np.float64(cal_params['center_az']),np.float64(cal_params['center_el']),np.float64(cal_params['position_angle']),np.float64(cal_params['pixscale']),cal_params['x_poly'], cal_params['y_poly'], cal_params['x_poly_fwd'], cal_params['y_poly_fwd'],cal_fn,cal_img,json_conf, center_stars, extra_text,0), method='Nelder-Mead')
 
-   #print("\tCAT STARS RECENTER FOV 3:", len(nc['cat_image_stars']))
    #adj_az, adj_el, adj_pos, adj_px = res['x']
    this_poly = res['x']
 
@@ -7949,18 +7942,15 @@ def recenter_fov(cal_fn, cal_params, cal_img, stars, json_conf, extra_text="", t
       if "cal_params" in cal_fn:
          # for meteor files
          up_stars, cat_image_stars = update_paired_stars(cal_fn, nc, stars, con, cur, json_conf)
-         print("\tCAT STARS RECENTER FOV 4:", len(nc['cat_image_stars']))
       else:
          # for non meteor files this is a bug / no need to do this. 
          print("CUR:", cur)
          nc['cat_image_stars'] = pair_star_points(cal_fn, cal_img, nc, json_conf, con, cur, mcp, False)
-         print("\tCAT STARS RECENTER FOV 5:", len(nc['cat_image_stars']))
          cat_image_stars = nc['cat_image_stars']
 
       if len(cat_image_stars) > 0:
          nc['cat_image_stars'] = cat_image_stars
    nc['total_res_px'] = end_res 
-   print("\tCAT STARS RECENTER FOV 6:", len(nc['cat_image_stars']))
    return(nc, cat_stars)
 
 
@@ -8043,8 +8033,6 @@ def recenter_cal_file(cal_fn, con, cur, json_conf, mcp):
          nc['total_res_px'] = total_res_px
          nc['total_res_deg'] = total_res_deg
 
-         #print("OLD RES:", cal_params['total_res_px'] )
-         #print("NEW RES:", nc['total_res_px'] )
          # only save if new is better than old
          if cal_params['total_res_px'] > total_res_px:
             cal_params = nc
