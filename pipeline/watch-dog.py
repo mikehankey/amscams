@@ -289,7 +289,7 @@ def check_streams(json_conf, wd):
 
          cur_time = int(time.time())
          wd['cams'][key]['last5_hd_files'] = res
-         wd['cams'][key]['no_hd_stream_for'] = cur_time - wd['cams'][cam]['last_hd_stream_time']
+         #wd['cams'][key]['no_hd_stream_for'] = cur_time - wd['cams'][cam]['last_hd_stream_time']
       else:
          cur_time = int(time.time())
          wd['cams'][key]['no_hd_stream_for'] = 0
