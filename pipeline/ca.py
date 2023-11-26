@@ -58,7 +58,7 @@ cam.set_time()
 #change pass for admin
 #User "test2" with pssword "123123"
 
-#cam.changePasswd(args.ass,cam.sofia_hash(current_password),"admin")
+cam.changePasswd(args.ass,cam.sofia_hash(current_password),"admin")
 print("ass", args.ass)
 
 # Disconnect
