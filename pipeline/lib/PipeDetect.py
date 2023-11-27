@@ -3,6 +3,7 @@
    Pipeline Detection Routines - functions for detecting
 
 '''
+from scipy.stats import linregress
 import time
 import math
 import scipy.optimize
@@ -25,6 +26,57 @@ import numpy as np
 import cv2
 
 json_conf = load_json_file(AMS_HOME + "/conf/as6.json")
+
+
+def score_obj(obj):
+   print(obj)
+   cxs, cys = [],[]
+   for i in range(0,len(obj['oxs'])):
+      x = obj['oxs'][i]
+      y = obj['oys'][i]
+      w = obj['ows'][i]
+      h = obj['ohs'][i]
+      cx = x + w/2
+      cy = y + h/2
+      cxs.append(cx)
+      cys.append(cy)
+   fxs,fys = fit_and_distribute(cxs,cys)
+   xres = []
+   yres = []
+   for i in range(0,len(fxs)):
+      fx = fxs[i]
+      fy = fys[i]
+      cx = cxs[i]
+      cy = cys[i]
+      xr = abs(fx - cx)
+      yr = abs(fy - cy)
+      xres.append(xr)
+      yres.append(yr)
+    
+   res = (np.median(xres) + np.median(yres)) / 2
+   return(res)
+
+
+def fit_and_distribute(xs, ys, num_points=None):
+   # Perform linear regression to fit a line
+   slope, intercept, _, _, _ = linregress(xs, ys)
+
+   # If num_points is not provided, use the same number as the input
+   if num_points is None:
+      num_points = len(xs)
+    
+   # Generate equally spaced x-values based on the original range
+   new_xs = np.linspace(min(xs), max(xs), num_points)
+
+   # Generate y-values based on the fitted line
+   new_ys = slope * new_xs + intercept
+
+   # Check if the original x-values are in descending order
+   if xs[-1] < xs[0]:
+      new_xs = new_xs[::-1]
+      new_ys = new_ys[::-1]
+
+   return new_xs, new_ys
 
 def perfect_points_all(day, json_conf):
    mdir = "/mnt/ams2/meteors/" + day + "/"
@@ -2512,7 +2564,7 @@ def fireball(video_file, json_conf, nomask=0):
    hdm_y_720 = 720 / fh
    print("BP1")
    best_meteor, hd_frames, hd_color_frames, median_frame, mask_img,cp = fireball_phase1(hd_frames, hd_color_frames, subframes,sum_vals,max_vals,pos_vals, video_file, json_conf, jsf, jdata, best_meteor, nomask)
-   print("AP1")
+   print("BEST METEOR", best_meteor)
    gap_test_res = None
    jdata['cp'] = cp
    if best_meteor is not None:
@@ -3510,16 +3562,40 @@ def fireball_phase1(hd_frames, hd_color_frames, subframes,sum_vals,max_vals,pos_
          print("NON METEOR OBJECTS:", obj, objects[obj]['ofns'], objects[obj]['report']['bad_items'], objects[obj]['fs_dist'])
    #print("BEST:", best_meteor)
    #if best_meteor is None:
+   print("\n\n")
+
+   best_objs = []
+   best_score = 99999
    if True:
       max_int = 0
       best = None
       for obj in objects:
          objects[obj] = analyze_object(objects[obj], 1,1)
+         #print("OBJECT", objects[obj]['report'])
          if len(objects[obj]['report']['bad_items']) == 0:
-            if max(objects[obj]['oint']) > max_int:
-               best = obj
-               max_int = max(objects[obj]['oint'])
-      obj = best
+            # picks best from brightest -- should be better value to use!
+            best_objs.append( obj)
+
+      if len(best_objs) > 1:
+         for obj in best_objs:
+           if "fit_score" in objects[obj]['report']:
+              res = objects[obj]['report']['fit_score']
+           else:
+              # will only happen for non meteors
+              #res = score_obj(objects[obj])
+              res = 9999
+           print("O",obj, "RES", res, objects[obj] )
+           if res < best_score :
+              best_res_obj = obj
+              best_score = res
+
+         print("BESAT OBJ", best_res_obj)
+         obj = best_res_obj
+         best = obj
+         #input("BEST PICKER")
+      else:
+      	obj = best[0]
+
       if best is not None:
          best_meteor = objects[best]
       else:
@@ -5900,6 +5976,10 @@ def analyze_object(object, hd = 0, strict = 0):
    if object['report']['non_meteor'] == 0 :
       object['report']['meteor'] = 1
       object['report']['class'] = "meteor"
+      print("OBJ", object)
+      fit_score = score_obj(object)
+      print("FIT:", fit_score)
+      object['report']['fit_score'] = fit_score
 
    #print("FB:", obj_id, fb)
    #if fb > 5:
