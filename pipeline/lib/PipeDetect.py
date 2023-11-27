@@ -3593,7 +3593,7 @@ def fireball_phase1(hd_frames, hd_color_frames, subframes,sum_vals,max_vals,pos_
          obj = best_res_obj
          best = obj
          #input("BEST PICKER")
-      else:
+      elif best is not None:
         if len(best) > 0:
       	   obj = best[0]
         else:
