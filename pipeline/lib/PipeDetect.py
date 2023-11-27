@@ -3594,7 +3594,10 @@ def fireball_phase1(hd_frames, hd_color_frames, subframes,sum_vals,max_vals,pos_
          best = obj
          #input("BEST PICKER")
       else:
-      	obj = best[0]
+        if len(best) > 0:
+      	   obj = best[0]
+        else:
+           best = None   
 
       if best is not None:
          best_meteor = objects[best]
