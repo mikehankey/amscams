@@ -7278,7 +7278,8 @@ def apply_calib (cal_file, calfiles_data, json_conf, mcp, last_cal_params=None, 
       star_points_img = show_img.copy()
       cal_params['user_stars'] = star_points
       cal_params['star_points'] = star_points
-      print("\tRES:", cal_params['total_res_px']) 
+      print("START IMG STARS/CAT STARS/RES:", len(star_points), len(cal_params['cat_image_stars']), cal_params['total_res_px']) 
+
       # revert to WCS
       if cal_params['total_res_px'] > 8:
          cal_id = cal_file.split("/")[-1].split("-")[0]
