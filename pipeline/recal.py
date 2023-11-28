@@ -2587,7 +2587,7 @@ def refit_meteor(meteor_file, con, cur, json_conf, mcp = None, last_best_dict = 
 
    '''
    print("Refit Meteor File", meteor_file, MOVIE_FRAME_NUMBER)
-
+   frames = []
    # meteor_file should end with .json and have no path info
    if "/" in meteor_file:
       meteor_file = meteor_file.split("/")[-1]

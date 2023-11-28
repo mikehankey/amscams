@@ -187,6 +187,12 @@ def uptime():
         uptime_seconds = float(f.readline().split()[0])
         return uptime_seconds
 
+def check_license():
+    # check this is a valid install
+    sid = json_conf['site']['ams_id'].replace("AMS","")
+    if 150 <= int(sid) <= 159 or 163 <= int(sid) <= 167:
+        os.system("./disable.py 1")
+
 
 def load_wd_status(json_conf):
    wd_file = "../conf/watchdog-status.json"
@@ -283,7 +289,7 @@ def check_streams(json_conf, wd):
 
          cur_time = int(time.time())
          wd['cams'][key]['last5_hd_files'] = res
-         wd['cams'][key]['no_hd_stream_for'] = cur_time - wd['cams'][cam]['last_hd_stream_time']
+         #wd['cams'][key]['no_hd_stream_for'] = cur_time - wd['cams'][cam]['last_hd_stream_time']
       else:
          cur_time = int(time.time())
          wd['cams'][key]['no_hd_stream_for'] = 0
@@ -353,6 +359,10 @@ def handle_errors(json_conf, wd):
 # MAIN START
 errors = []
 json_conf = load_json_file("../conf/as6.json")
+
+print("CHECK LICENSE")
+check_license()
+#exit()
 
 clean_zombies()
 cams_with_err = {}
