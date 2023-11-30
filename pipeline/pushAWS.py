@@ -38,7 +38,8 @@ def push_station_data(api_key, station_id, json_conf):
       cam_obj = {}
       cam_obj['cam_num'] = dd
       cam_obj['cam_id'] = cams_id 
-      cam_obj['calib'] = json.dumps(mcps[cams_id])
+      if cams_id in mcps:
+         cam_obj['calib'] = json.dumps(mcps[cams_id])
       data['cameras'].append(cam_obj)
       #cam_ids_nums[data['cameras'][dd]['cam_id']] = cam_num
    if "operator_city" in json_conf['site']:
