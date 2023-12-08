@@ -3696,6 +3696,7 @@ class Meteor():
 
 
    def mj_to_redis(self, root_file):
+      event_id = None
       day = root_file[0:10]
       mf = "/mnt/ams2/meteors/" + day + "/" + root_file + ".json" 
       print(mf)
@@ -3730,9 +3731,12 @@ class Meteor():
       if "multi_station_event" in mj:
          if "event_id" in mj['multi_station_event']:
             event_id = mj['multi_station_event']['event_id']
+         else:
+            event_id = None
          if "solve_status" in mj['multi_station_event']:
             solve_status = mj['multi_station_event']['solve_status']
-         red_val['ev'] = event_id + ":" + solve_status
+         if event_id is not None:
+            red_val['ev'] = event_id + ":" + solve_status
 
       if "human_points" in mj:
          red_val['hp'] = 1
