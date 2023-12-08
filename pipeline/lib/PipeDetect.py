@@ -3577,6 +3577,7 @@ def fireball_phase1(hd_frames, hd_color_frames, subframes,sum_vals,max_vals,pos_
          #print("OBJECT", objects[obj]['report'])
          if len(objects[obj]['report']['bad_items']) == 0:
             # picks best from brightest -- should be better value to use!
+            best = obj
             best_objs.append( obj)
 
       if len(best_objs) > 1:
@@ -3597,7 +3598,7 @@ def fireball_phase1(hd_frames, hd_color_frames, subframes,sum_vals,max_vals,pos_
          best = obj
          #input("BEST PICKER")
       elif best is not None:
-        if len(best) > 0:
+        if len(best_objs) > 0:
       	   obj = best[0]
         else:
            best = None   
