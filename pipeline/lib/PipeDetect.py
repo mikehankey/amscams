@@ -40,7 +40,10 @@ def score_obj(obj):
       cy = y + h/2
       cxs.append(cx)
       cys.append(cy)
-   fxs,fys = fit_and_distribute(cxs,cys)
+   try:
+      fxs,fys = fit_and_distribute(cxs,cys)
+   except:
+      fxw,fys = [],[]
    xres = []
    yres = []
    for i in range(0,len(fxs)):
