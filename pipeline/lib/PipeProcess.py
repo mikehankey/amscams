@@ -165,6 +165,7 @@ def run_jobs_critical(json_conf):
    cmds.append(('all', "Run Verify Meteor", "cd /home/ams/amscams/pythonv2; ./flex-detect.py vms " + today))
    cmds.append(('all', "Run Batch Vals ", "cd /home/ams/amscams/pythonv2; ./flex-detect.py bv " + yest))
    cmds.append(('all', "Run Verify Meteor", "cd /home/ams/amscams/pythonv2; ./flex-detect.py vms " + yest))
+
    # make sure all files from yest and today are reduced and sync'd
    cmds.append(('all', "Red Fixer", "cd /home/ams/amscams/pipeline; ./red-fix.py " + yest + ">/dev/null 2>&1"))
    cmds.append(('all', "Red Fixer", "cd /home/ams/amscams/pipeline; ./red-fix.py " + today + ">/dev/null 2>&1"))
@@ -293,13 +294,13 @@ def run_jobs(json_conf):
             run_load = 1 
 
 
-      if run_load == 1:
+      #if run_load == 1:
 
-         print("./DynaDB.py ddd " + yest + "")
-         os.system("./DynaDB.py ddd " + yest + " > /home/ams/ddd.txt")
-         print("./DynaDB.py ddd " + today + "")
-         os.system("./DynaDB.py ddd " + today + " > /home/ams/ddd.txt")
-         os.system("touch /home/ams/loaded_last.txt")
+      #   print("./DynaDB.py ddd " + yest + "")
+      #   os.system("./DynaDB.py ddd " + yest + " > /home/ams/ddd.txt")
+      #   print("./DynaDB.py ddd " + today + "")
+      #   os.system("./DynaDB.py ddd " + today + " > /home/ams/ddd.txt")
+      #   os.system("touch /home/ams/loaded_last.txt")
 
    if "WMPL" in json_conf:
       print("WMPL EXIST.")
@@ -399,7 +400,11 @@ def run_jobs(json_conf):
    cmds.append(('all', "Run Verify Meteor", "cd /home/ams/amscams/pythonv2; ./flex-detect.py vms " + three_day))
    cmds.append(('all', "Run Verify Meteor", "cd /home/ams/amscams/pythonv2; ./flex-detect.py vms " + four_day))
    cmds.append(('all', "Run Verify Meteor", "cd /home/ams/amscams/pythonv2; ./flex-detect.py vms " + five_day))
-   
+
+   cmds.append(('all', "Red Fixer", "cd /home/ams/amscams/pipeline; ./red-fix.py " + yest + ">/dev/null 2>&1"))
+   cmds.append(('all', "Red Fixer", "cd /home/ams/amscams/pipeline; ./red-fix.py " + today + ">/dev/null 2>&1"))
+   cmds.append(('all', "Dyna DB", "cd /home/ams/amscams/pipeline; ./DynaDB.py ddd " + today + ">/dev/null 2>&1"))
+   cmds.append(('all', "Dyna DB", "cd /home/ams/amscams/pipeline; ./DynaDB.py ddd " + yest + ">/dev/null 2>&1"))
    #cmds.append(('day', "Run Reject Filters", "cd /home/ams/amscams/pipeline; ./Process.py reject_masks " + today))
    #cmds.append(('day', "Run Reject Filters", "cd /home/ams/amscams/pipeline; ./Process.py reject_masks " + yest))
    # run it 2x to get rid of hotspots
