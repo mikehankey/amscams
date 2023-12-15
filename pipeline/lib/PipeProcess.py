@@ -405,8 +405,8 @@ def run_jobs(json_conf):
    cmds.append(('all', "Red Fixer", "cd /home/ams/amscams/pipeline; ./red-fix.py " + today + ">/dev/null 2>&1"))
    cmds.append(('all', "Dyna DB", "cd /home/ams/amscams/pipeline; ./DynaDB.py ddd " + today + ">/dev/null 2>&1"))
    cmds.append(('all', "Dyna DB", "cd /home/ams/amscams/pipeline; ./DynaDB.py ddd " + yest + ">/dev/null 2>&1"))
-   cmds.append(('all', "Meteor Night Stacks", "cd /home/ams/amscams/pipeline; ./Process.py mns" + today + ">/dev/null 2>&1"))
-   cmds.append(('all', "Meteor Night Stacks", "cd /home/ams/amscams/pipeline; ./Process.py mns" + yest + ">/dev/null 2>&1"))
+   cmds.append(('all', "Meteor Night Stacks", "cd /home/ams/amscams/pipeline; ./Process.py mns " + today + ">/dev/null 2>&1"))
+   cmds.append(('all', "Meteor Night Stacks", "cd /home/ams/amscams/pipeline; ./Process.py mns " + yest + ">/dev/null 2>&1"))
    #cmds.append(('day', "Run Reject Filters", "cd /home/ams/amscams/pipeline; ./Process.py reject_masks " + today))
    #cmds.append(('day', "Run Reject Filters", "cd /home/ams/amscams/pipeline; ./Process.py reject_masks " + yest))
    # run it 2x to get rid of hotspots
