@@ -1278,6 +1278,7 @@ def cal_health(con, cur, json_conf, cam_num=None):
             lm_date = "na na"
       else:
          mp = {}
+         fun = 9999
       if 'min_max_dist_status' in mp:
          min_max_dist_status = mp['min_max_dist_status'] 
       else:
