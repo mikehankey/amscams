@@ -3899,6 +3899,9 @@ def cal_status_report(cam_id, con, cur, json_conf):
 
    station_id = json_conf['site']['ams_id']
 
+   if os.path.exists("/mnt/ams2/cal/plots") is False:
+      os.makedirs("/mnt/ams2/cal/plots")
+
 
    autocal_dir = "/mnt/ams2/cal/"
    # get all call files for this cam
