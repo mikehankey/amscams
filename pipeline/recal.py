@@ -1212,7 +1212,7 @@ def cal_health(con, cur, json_conf, cam_num=None):
          nanres = np.isnan(d['total_res_px'])
       else:
          print(cal_file, "missing res!")
-         exit()
+         d['total_res_px'] = 999
       cal_fn = cal_file.split("/")[-1]
       if nanres == True or type(d['total_res_px']) == str or d['total_res_px'] == "": 
          print("BAD RES", d)
