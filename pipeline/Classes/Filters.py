@@ -40,6 +40,8 @@ class Filters():
          print("WH", whour)
          if whour not in self.weather_hours:
             self.weather_hours[whour] = weather
+      if os.path.exists(wd) is False:
+         os.makedirs(wd)
       save_json_file(wd + day + ".weather", self.weather_hours)
    
    
