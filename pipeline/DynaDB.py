@@ -1192,8 +1192,8 @@ def get_obs(station_id, sd_video_file):
    admin_station_id = json_conf['site']['ams_id']
    api_key = json_conf['api_key']
    if True:
-      url = API_URL + "?cmd=get_obs&station_id=" + station_id + "&sd_video_file=" + sd_video_file 
-     # + "&station_id=" + station_id + "&api_key=" + api_key
+      url = API_URL + "?cmd=get_obs&station_id=" + station_id + "&sd_video_file=" + sd_video_file  + "&api_key=" + api_key
+
       print("GET OBS URL:", url) 
       response = requests.get(url)
       content = response.content.decode()
@@ -1670,14 +1670,15 @@ def do_dyna_day(dynamodb, day):
 
    # reject meteors not matching strict rules
    if len(meteor_files) > 200:
-      if today != day:
-         if "strict" not in dyn_log[day]:
-            dyn_log[day]['strict'] = 1
+      #if today != day:
+      #   if "strict" not in dyn_log[day]:
+      #      dyn_log[day]['strict'] = 1
 
       if "strict" not in dyn_log[day] or today == day:
-         cmd = "python3 ./meteors_strict.py " + day
+         cmd = "python3 ./meteor-strict.py " + day
          print(cmd)
          os.system(cmd)
+         dyn_log[day]['strict'] = 1
    else:
       print("Already did strict rules for this day.", day)
    save_json_file("dyn.log", dyn_log)
