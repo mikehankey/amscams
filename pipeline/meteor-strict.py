@@ -51,7 +51,7 @@ for met in meteors:
       print("No MJ?", mdir + met + ".json")
       continue 
    oc = 1 
-   if "sd_objects" not in sd:
+   if "sd_objects" not in mj:
       mj['sd_objects'] = []
    for obj in mj['sd_objects']:
       last_y = 0
