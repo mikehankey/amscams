@@ -11223,6 +11223,9 @@ def verify_meteors_ai(day=None):
 
    # check / load ai_data file
    proc_dir = "/mnt/ams2/SD/proc2/" + day + "/"
+   ai_data_dir = proc_dir + "data"
+   if os.path.exists(ai_data_dir) is False:
+      os.makedirs(ai_data_dir)
    ai_data_file = proc_dir + "data/AI_DATA.json" 
    if os.path.exists(ai_data_file) is True:
       ai_data = load_json_file(ai_data_file)
@@ -11333,6 +11336,7 @@ def verify_meteors_ai(day=None):
    fp = open(img_dir + "rois.html", "w")
    fp.write(good_ai)
    fp.write(bad_ai)
+
    save_json_file(ai_data_file, ai_data)
 
    bad_dir = proc_dir + "ai_bad/"
