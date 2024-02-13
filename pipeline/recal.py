@@ -12,6 +12,10 @@ ALL SKY INC IS A UNIT OF MIKE HANKEY LLC - ALL RIGHTS RESERVED
 Use permitted under community license for registered users only
                      © 2018 - 2023
 """
+import matplotlib
+matplotlib.use('Agg')
+import matplotlib.pyplot as plt 
+from matplotlib.pyplot import figure 
 
 from lib.PipeVideo import load_frames_simple
 import math
@@ -49,6 +53,97 @@ SAVE_MOVIE = False
 MOVIE_LAST_FRAME = None 
 MOVIE_FRAME_NUMBER = 0
 MOVIE_FRAMES_TEMP_FOLDER = "/home/ams/MOVIE_FRAMES_TEMP_FOLDER/"
+
+
+def find_constant_column(filepath):
+    # Load the image in grayscale to simplify the process
+    image = cv2.imread(filepath, cv2.IMREAD_GRAYSCALE)
+
+    # Get image dimensions
+    height, width = image.shape
+
+    # Define the search area for the column based on your criteria (100-200 pixels from the bottom)
+    start_y = height - 200  # Start of the search area
+    end_y = height  # Bottom of the image
+
+    # Adjust start_y to ensure it is not less than 0
+    start_y = max(0, start_y)
+
+    # Iterate through each column
+    for x in range(width):
+        column = image[start_y:end_y, x]  # Extract the column
+
+        # Check if all pixels in the column have the same value
+        if np.all(column == column[0]):
+            return True, x  # Column found, return True and the x position of the column
+
+    # No constant column found
+    return False, None
+
+def rm_corrupt_cal():
+    ccheck_file = "/mnt/ams2/cal/ccheck.json"
+    base_dir = "/mnt/ams2/cal/freecal/"
+    extra_dir = "/mnt/ams2/cal/extracal/"
+    bad_dir = "/mnt/ams2/cal/bad_cals/"
+    if os.path.exists(ccheck_file) is True:
+        column_checks = load_json_file(ccheck_file)
+    else:
+        column_checks = {}
+
+    files = os.listdir(base_dir)
+    for cdir in files:
+        err = 0
+        tdir = base_dir + cdir
+        edir = extra_dir + cdir
+        bdir = bad_dir + cdir
+        cal_file = tdir + "/" + cdir + "-stacked-calparams.json"
+        stack_file = tdir + "/" + cdir + "-stacked.png"
+        if cdir not in column_checks:
+            check,loc = find_constant_column(stack_file)
+            print("CHECK:", check)
+            if check is True:
+                print(f"Column found {stack_file}")
+                if os.path.exists(bdir) is False:
+                    os.makedirs(bdir)
+                cmd = f"mv {tdir}/* {bdir}/"
+                print(cmd)
+                os.system(cmd)
+                cmd = f"rmdir {tdir}"
+                print(cmd)
+                os.system(cmd)
+
+        if os.path.exists(cal_file):
+            print("FOUND:", cal_file)
+        else:
+            print("MISSING:", cal_file)
+            err = 1
+        if os.path.exists(stack_file):
+            print("FOUND:", stack_file)
+        else:
+            print("MISSING:", stack_file)
+            err = 1
+        if err == 1:
+            e_cal_file = edir + "/" + cdir + "-stacked-calparams.json"
+            e_stack_file = edir + "/" + cdir + "-stacked.png"
+            if os.path.exists(e_stack_file) is True and os.path.exists(stack_file) is False:
+                cmd = f"mv {edir}/* {tdir}/"
+                print(cmd)
+                os.system(cmd)
+                cmd = f"rmdir {edir}"
+                print(cmd)
+                os.system(cmd)
+            elif os.path.exists(e_stack_file) is False and os.path.exists(stack_file) is False:
+                if os.path.exists(bdir) is False:
+                    os.makedirs(bdir)
+                cmd = f"mv {tdir}/* {bdir}/"
+                print(cmd)
+                os.system(cmd)
+                cmd = f"rmdir {tdir}"
+                print(cmd)
+                os.system(cmd)
+
+        save_json_file(ccheck_file, column_checks)
+
 
 def retry_astrometry(cam_id, limit=25):
     source_dir = "/mnt/ams2/cal/extracal"
@@ -2269,10 +2364,6 @@ def remove_bad_stars(cat_image_stars):
    return(good)
 
 def plot_cal_history(con, cur, json_conf):
-   import matplotlib
-   matplotlib.use('Agg')
-   import matplotlib.pyplot as plt 
-   from matplotlib.pyplot import figure 
 
    calindex_file = "/mnt/ams2/cal/freecal_index.json"
    cal_dir = "/mnt/ams2/cal/"
@@ -2371,8 +2462,6 @@ def plot_cal_history(con, cur, json_conf):
 
 def plot_refit_meteor_day(meteor_day, con, cur, json_conf):
    print("plot_refit_meteor_day:", meteor_day)
-   import matplotlib.pyplot as plt 
-   from matplotlib.pyplot import figure 
    meteor_dir = "/mnt/ams2/meteors/" + meteor_day + "/" 
    refit_log_file = "/mnt/ams2/meteors/" + meteor_day + "/refit.log"
    if os.path.exists(refit_log_file):
@@ -3264,7 +3353,6 @@ def perfect_meteor(meteor_file, frames, mfd, meteor_roi):
          cv2.waitKey(30)
       fc += 1 
 
-   import matplotlib.pyplot as plt 
    fig, (ax1, ax2) = plt.subplots(1,2)
    fig.set_size_inches(12,4)
    fig.tight_layout(pad=5.0)
@@ -10835,7 +10923,6 @@ def characterize_fov(cam_id, con, cur, json_conf):
 
    station_id = json_conf['site']['ams_id']
    print("YO1-1")
-   import matplotlib.pyplot as plt
    print("YO1-1a")
    grid_img = np.zeros((1080,1920,3),dtype=np.uint8)
    # flux / mag
@@ -10887,6 +10974,7 @@ def characterize_fov(cam_id, con, cur, json_conf):
    grid_size = 100
    grid_data = {}
    for y in range(0,1080) :
+      print("YO1-3", y)
       if y == 0 or y % 100 == 0:
          for x in range(0,1920):
             if x == 0 or x % 100 == 0:
@@ -10968,6 +11056,7 @@ def characterize_fov(cam_id, con, cur, json_conf):
    cur.execute(sql, ["%" + cam_id + "%"])
    rows = cur.fetchall()
    all_good_stars = []
+   print("YO1-4")
 
    for row in rows:
       cal_fn, name, mag, ra, dec, star_flux, img_x, img_y, new_cat_x, new_cat_y, zp_cat_x, zp_cat_y, zp_res_px, zp_slope = row
@@ -11026,6 +11115,7 @@ def characterize_fov(cam_id, con, cur, json_conf):
       uvals = [cal_fn, img_x, img_y]
       cur.execute(sql, uvals )
       
+   print("YO1-5 grid")
    if SHOW == 1:
       cv2.imshow("pepe", grid_img)
       cv2.waitKey(90)
@@ -11620,7 +11710,6 @@ def wizard(station_id, cam_id, con, cur, json_conf, file_limit=25):
 def lens_model_report(cam_id, con, cur, json_conf):
    #characterize_fov(cam_id, con, cur, json_conf)
    characterize_best(cam_id, con, cur, json_conf)
-   import matplotlib.pyplot as plt
 
    station_id = json_conf['site']['ams_id']
    msfile = "/mnt/ams2/cal/" + station_id + "_" + cam_id + "_MERGED_STARS.json"
