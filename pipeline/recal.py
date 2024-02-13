@@ -50,6 +50,23 @@ MOVIE_LAST_FRAME = None
 MOVIE_FRAME_NUMBER = 0
 MOVIE_FRAMES_TEMP_FOLDER = "/home/ams/MOVIE_FRAMES_TEMP_FOLDER/"
 
+def rm_corrupt_cal():
+    base_dir = "/mnt/ams2/cal/freecal/"
+    files = os.listdir(base_dir)
+    for cdir in files:
+        tdir = base_dir + cdir
+        cal_file = tdir + "/" + cdir + "-stacked-calparams.json"
+        stack_file = tdir + "/" + cdir + "-stacked.png"
+        if os.path.exists(cal_file):
+            print("FOUND:", cal_file)
+        else:
+            print("MISSING:", cal_file)
+        if os.path.exists(stack_file):
+            print("FOUND:", stack_file)
+        else:
+            print("MISSING:", stack_file)
+        
+
 def retry_astrometry(cam_id, limit=25):
     source_dir = "/mnt/ams2/cal/extracal"
     # scan source dir for subdirs, then each of those for stacked pngs. Copy those to the
@@ -11935,6 +11952,10 @@ if __name__ == "__main__":
    VE = VideoEffects()
 
    MOVIE_FRAMES_TEMP_FOLDER = "/home/ams/REFIT_METEOR_FRAMES_TEMP/"
+
+   if sys.argv[1] == "rm_corrupt_cal" : 
+      rm_corrupt_cal()
+
    if sys.argv[1] == "refit_meteor_day" : 
       SAVE_MOVIE = True
    else:
