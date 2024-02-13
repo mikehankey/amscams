@@ -54,7 +54,6 @@ MOVIE_LAST_FRAME = None
 MOVIE_FRAME_NUMBER = 0
 MOVIE_FRAMES_TEMP_FOLDER = "/home/ams/MOVIE_FRAMES_TEMP_FOLDER/"
 
-
 def find_constant_column(filepath):
     # Load the image in grayscale to simplify the process
     image = cv2.imread(filepath, cv2.IMREAD_GRAYSCALE)
@@ -143,7 +142,6 @@ def rm_corrupt_cal():
                 os.system(cmd)
 
         save_json_file(ccheck_file, column_checks)
-
 
 def retry_astrometry(cam_id, limit=25):
     source_dir = "/mnt/ams2/cal/extracal"
@@ -12024,6 +12022,10 @@ if __name__ == "__main__":
    VE = VideoEffects()
 
    MOVIE_FRAMES_TEMP_FOLDER = "/home/ams/REFIT_METEOR_FRAMES_TEMP/"
+
+   if sys.argv[1] == "rm_corrupt_cal" : 
+      rm_corrupt_cal()
+
    if sys.argv[1] == "refit_meteor_day" : 
       SAVE_MOVIE = True
    else:
