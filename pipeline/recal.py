@@ -2537,16 +2537,16 @@ def timelapse_day_fast(meteor_day, con, cur, json_conf):
       first_frame = cv2.resize(cv2.imread(first_frame_file), (1920,1080))
       mcp_file = "/mnt/ams2/cal//multi_poly-{:s}-{:s}.info".format(station_id, cam)
       mcp = load_json_file(mcp_file)
-      print(MOVIE_LAST_FRAME.shape)
-      print(first_frame.shape)
-      print(wdir + first_frame_file )
+      #print(MOVIE_LAST_FRAME.shape)
+      #print(first_frame.shape)
+      #print(wdir + first_frame_file )
       if MOVIE_LAST_FRAME is not None:
          pref = "FF"
          start_count = 0
          extra = slide_left(MOVIE_LAST_FRAME, first_frame, pref, start_count)
          try:
             extra = slide_left(MOVIE_LAST_FRAME, first_frame, pref, start_count)
-            print(len(extra))
+            #print(len(extra))
          except:
             extra = []
 
