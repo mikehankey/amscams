@@ -25,7 +25,10 @@ def join_min_files(amsid, min_file, next_file, seconds):
       os.makedirs("tmp_vids")
  
    day = min_file[0:10] 
-   day_dir = "/mnt/ams2/SD/proc2/" + day + "/" 
+   if "daytime" in min_file:
+       day_dir = "/mnt/ams2/SD/proc2/daytime/" + day + "/" 
+   else:
+       day_dir = "/mnt/ams2/SD/proc2/" + day + "/" 
    clip1 = day_dir + min_file + ".mp4"
    clip2 = day_dir + next_file 
    outfile = min_file + "__" + next_file 
