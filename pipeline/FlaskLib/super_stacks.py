@@ -321,6 +321,8 @@ def stacks_hour(amsid, day, hour):
    print(glob_dir)
    print(day_glob_dir)
    for dsf in day_stack_files:
+      if "orig" in dsf:
+         continue
       stack_files.append(dsf)
    min_files = {}
    template = make_default_template(amsid, "super_stacks_main.html", json_conf)
@@ -333,6 +335,8 @@ def stacks_hour(amsid, day, hour):
             del_cams.append(cam)
 
    for sf in sorted(stack_files, reverse=False):
+      if "orig" in sf:
+         continue
       if "trim" in sf or "crop" in sf:
          continue
       fn, dir = fn_dir(sf)
