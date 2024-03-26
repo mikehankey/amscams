@@ -53,20 +53,26 @@ def stack_video(video_file):
 
       if frame is None:
          break
-      cv2.imshow("pepe", frame)
-      cv2.waitKey(0)
       frame_pil = Image.fromarray(frame)
       if fc % 50 == 0 and fc > 0:
          print(fc)
          dark_stacked_image_cv = np.asarray(dark_stacked_image)
       if stacked_image is None:
+          
          stacked_image = stack_stack(frame_pil, frame_pil)
+         show_img = np.array(stacked_image)
+
          if fc % 10 == 0:
             dark_stacked_image = dark_stack_stack(frame_pil, frame_pil)
       else:
          stacked_image = stack_stack(stacked_image, frame_pil)
+         show_img = np.array(stacked_image)
          if fc % 10 == 0:
             dark_stacked_image = dark_stack_stack(dark_stacked_image, frame_pil)
+      filename = f"tmp_out/frame{fc:04d}.jpg"
+      cv2.imwrite(filename, show_img)
+      #cv2.imshow("pepe", show_img)
+      #cv2.waitKey(0)
       fc += 1
 
    image_file = video_file.replace(".mp4", "-stacked.jpg")
