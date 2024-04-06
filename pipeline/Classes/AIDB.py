@@ -974,7 +974,10 @@ class AllSkyDB():
                         roi_img = roi_imgs[i]
                         roi_val = roi_vals[i]
                         print("Try YN")
-                        resp = self.ASAI.meteor_yn(root_file, None,roi_img,roi_val)
+                        try:
+                           resp = self.ASAI.meteor_yn(root_file, None,roi_img,roi_val)
+                        except:
+                           resp = None
                         print("END YN")
                         if resp is not None:
                            self.insert_ml_sample(resp)
