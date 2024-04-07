@@ -1115,7 +1115,7 @@ class AllSkyDB():
          mjrf = self.meteor_dir + mdir + "/" + mfile.replace(".mp4", "-reduced.json")
          start_time = None
          if os.path.exists(mjf) is True:
-            mj = load_json_file(mjf)
+            #mj = load_json_file(mjf)
             try:
                mj = load_json_file(mjf)
             except:
