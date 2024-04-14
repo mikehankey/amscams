@@ -125,6 +125,9 @@ gndlvl=-15.0
 def main_wind_convert():
    
    proj_id = request.args.get("id")
+   wind_file = request.args.get("wind_file")
+   if wind_file is None: 
+      wind_file = ""
    if proj_id is not None:
       print("PROJ ID:", proj_id)
       proj_dir = "DFM/" + proj_id + "/" 
@@ -141,7 +144,6 @@ def main_wind_convert():
          jd[field] = ""
 
    out = """
-   <a href=https://rucsoundings.noaa.gov/>Sounding Data</a><br>
    <form method=post action=post_data>
       <h2>Enter Meteor Properties</h2>
        Project Name <input type=text name="project_name" value="{:s}"> <br>
@@ -229,9 +231,25 @@ def main_wind_convert():
        </ul>
    """ .format(press_units_100, press_units_1000)
 
+   wind_files_opt = ""
+   out += """
+      <h2>Select existing wind file or enter new sounding data below</h2>
+      Existing Windfiles <select name='existing_windfile'>
+        {:s}
+      </select><br>
+   """.format(wind_files_opt)
+      
+   out += """
+      New Wind File Name <input type=text name="wind_file" value="{:s}"> <br>
+        <a href=https://weather.uwyo.edu/upperair/sounding.html target=_blank>Download Sounding Data Here</a><br>
+   """.format(wind_file)
+
+   #out += """
+   #   Wind File Source Link <input type=text name="wind_file_source_link" value="{:s}"> <br>
+   #""".format(wind_file_source_link)
+
 
    out += """
-      <h2>Enter sounding data below</h2>
       <textarea rows=20 cols=120 name="sounding_data" >
       {:s}
       </textarea>
@@ -249,6 +267,8 @@ def post_data():
    dfn_dir = "/home/ams/DFN_darkflight/DFN_darkflight/"
    # get values for base config
    config_data = {}
+   new_wind_file = request.form.get("wind_file")
+   existing_wind_file = request.form.get("existing_wind_file")
    format_type = request.form.get("format")
    wind_speed_src_units = request.form.get("wind_speed_src_units")
    reverse_wind_dir = request.form.get("reverse_wind_dir")
@@ -322,7 +342,8 @@ def post_data():
    wind_model += "<tr><td>Height (m)</td><td>Temp (K)</td><td>Press (p)</td><td>RHum</td><td>Wind Speed (m/s)</td><td>WDir</td></tr>"
 
    #dfn_data = "#HEIGHT,TEMPK,PRESSURE,RHUM,WIND_SPD,WIND_DIR\n"
-   dfn_data = "#Height, TempK, Press, RHum, Wind, WDir\n"
+   #Height,TempK,Press,RHum,Wind,WDir
+   dfn_data = "# Height,TempK,Press,RHum,Wind,WDir\n"
    if reverse_wind_dir == 1 or reverse_wind_dir == "1":
       reverse_direction = True
    else:
@@ -412,7 +433,8 @@ def post_data():
 
             relh= temp_c_10 - temp_dp_c_10
             relh = relh * 5
-            relh = round(100 - relh , 2)
+            #relh = round(100 - relh , 2)
+            relh = round(relh, 2)
             #relh = relh / 100
 
             if relh < 0:
@@ -442,8 +464,8 @@ def post_data():
          relh = float(relh) #/ 100
          if relh < 0:
             relh = 0
-         if relh > 1.1:
-            relh = relh / 100
+         #if relh > 1.1:
+         #   relh = relh / 100
 
          if press_units == "hpa1000":
             new_pressure = round(float(pressure) * 1000,2)
@@ -463,7 +485,10 @@ def post_data():
 
          temp_k = round(temp_c + 273.15, 2)
          wind_speed_ms = round(float(wind_speed_knots) * .51444 ,2)
-         # must be squared! kn/s = 0.514444444 m/s2.
+         # must be squared? kn/s = 0.514444444 m/s2.
+         #wind_speed_ms = float(wind_speed_knots)
+
+         # this below is wrong
          #wind_speed_ms = wind_speed_ms ** 2
          if reverse_direction == True:
             wind_dir_new = wind_dir - 180
@@ -476,12 +501,12 @@ def post_data():
          #print("PRE", pressure)
          # Height,   TempK,   Press,    RHum,    Wind,   WDir
          wind_icon = "<img src=https://archive.allsky.tv/APPS/icons/arrow-up.png width={:s} height={:s} style='transform: rotate({:s}deg);'>".format(str(int(wind_speed_knots)), str(int(wind_speed_knots)), str(int(wind_dir-180)))
-         wind_icon_dfn = "<img src=https://archive.allsky.tv/APPS/icons/arrow-up.png width={:s} height={:s} style='transform: rotate({:s}deg);'>".format(str(int(wind_speed_ms*1.94)), str(int(wind_speed_ms*1.94)), str(int(wind_dir_new)))
+         wind_icon_dfn = "<img src=https://archive.allsky.tv/APPS/icons/arrow-up.png width={:s} height={:s} style='transform: rotate({:s}deg);'>".format(str(int(wind_speed_ms*1.94)), str(int(wind_speed_ms*1.94)), str(int(wind_dir_new-180)))
 
          source += "<tr style='height:50px'><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s} {:s}</td><td>{:s}</td></tr>\n".format(str(pressure), str(height), str(temp), str(dwpt), str(relh), str(mixr), str(wind_dir), str(wind_icon), str(wind_speed_knots))
          wind_model += "<tr style='height: 50px'><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s} {:s}</td></tr>\n".format(str(height), str(temp_k), str(new_pressure), str(relh), str(wind_speed_ms), str(wind_dir_new), wind_icon_dfn)
          dfn_line = "{:s}, {:s}, {:s}, {:s}, {:s}, {:s}\n".format(str(height), str(temp_k), str(new_pressure), str(relh), str(wind_speed_ms), str(wind_dir_new) )
-         dfn_data += dfn_line
+         #dfn_data += dfn_line
          data_lines.append(dfn_line)
    source += "</table>"
    wind_model += "</table>"
@@ -502,7 +527,7 @@ def post_data():
    c = 0
    print("DATA LINES:", len(data_lines))
    if len(data_lines) > 100:
-      dfn_data = ""
+      #dfn_data = ""
       skip = int(len(data_lines) / 100)
       print("SKIP:", skip)
       for line in data_lines:
@@ -519,7 +544,7 @@ def post_data():
 
    # save base config and wind files
    fp = open(proj_dir + "/" + project_name + ".cfg", "w")
-   fp_wind = open(proj_dir + "/" + project_name + "_wind.csv", "w")
+   fp_wind = open(proj_dir + "/" + project_name + "_wind_" + wind_file + ".csv", "w")
    fp.write(dfn_config)
    fp_wind.write(dfn_data)
 

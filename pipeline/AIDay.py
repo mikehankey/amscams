@@ -112,7 +112,7 @@ if date == "ALL" or date == "all":
          exit()
          AIDB.verify_media_day(date)
          AIDB.reconcile_db(date)
-         os.system("/usr/bin/python3.6 myEvents.py " + date)
+         os.system("/usr/bin/python3 myEvents.py " + date)
 
          #RN = ReviewNetwork(date)
          exit()
@@ -142,10 +142,10 @@ else:
    AIDB.reconcile_db(date)
 
    print("My Events", date)
-   os.system("/usr/bin/python3.6 myEvents.py " + date)
+   os.system("/usr/bin/python3 myEvents.py " + date)
 
    print("Fast AI")
-   os.system("/usr/bin/python3.6 AIFast.py " + date)
+   os.system("/usr/bin/python3 AIFast.py " + date)
 
    #print("Auto reject day")
    #AIDB.auto_reject_day(date )

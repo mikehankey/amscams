@@ -1173,6 +1173,9 @@ class AllSkyDB():
          else:
             user_mods = ""
          ang_vel = 0
+
+         # do a better job here, get the az, el from mfd and calculate the 'real way'!
+         # if not reduced then we can't do it. 
          if "best_meteor" in mj:
             if "report" in mj['best_meteor']:
                if "ang_vel" in mj['best_meteor']['report']:
@@ -1189,7 +1192,6 @@ class AllSkyDB():
                if "cat_image_stars" not in cp:
                   cp['cat_image_stars'] = []
                   cp['user_stars'] = []
-               print(cp.keys())
                if "total_res_px" not in cp:
                   cp['total_res_px'] = 999
                try:
@@ -1213,6 +1215,8 @@ class AllSkyDB():
          hd_roi = ""
          if "hd_roi" in mj:
             hd_roi = mj['hd_roi']
+
+         # get duration, ang_vel, peak_intensity and peak mag from the meteor_frame_data
          if mjr is not None:
             if "meteor_frame_data" in mjr:
                x1,y1,x2,y2 = mfd_roi(mfd)
@@ -1248,6 +1252,9 @@ class AllSkyDB():
          in_data['user_mods'] = json.dumps(user_mods)
          if mfile in loaded_meteors:
             del (in_data['human_confirmed'])
+            # only skip the load if the record is 100% complete.
+            # if data is still missing we should update
+            # e.g. mag, peak_int, event_id, sync data should be checked and verified
             print("SKIP already loaded")
             continue
             #self.update_meteor(in_data)
@@ -1504,7 +1511,6 @@ class AllSkyDB():
             if fireball_yn_conf is None or fireball_yn_conf == "":
                fireball_yn_conf = 50
             print("AI OR REDUCE NOT RUN YET FOR THIS METEOR. It is not safe to reject!:", root_fn)
-            input("WAIT")
             continue
 
          # AI Reject conditions
