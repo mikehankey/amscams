@@ -974,7 +974,10 @@ class AllSkyDB():
                         roi_img = roi_imgs[i]
                         roi_val = roi_vals[i]
                         print("Try YN")
-                        resp = self.ASAI.meteor_yn(root_file, None,roi_img,roi_val)
+                        try:
+                           resp = self.ASAI.meteor_yn(root_file, None,roi_img,roi_val)
+                        except:
+                           resp = None
                         print("END YN")
                         if resp is not None:
                            self.insert_ml_sample(resp)
@@ -1112,7 +1115,7 @@ class AllSkyDB():
          mjrf = self.meteor_dir + mdir + "/" + mfile.replace(".mp4", "-reduced.json")
          start_time = None
          if os.path.exists(mjf) is True:
-            mj = load_json_file(mjf)
+            #mj = load_json_file(mjf)
             try:
                mj = load_json_file(mjf)
             except:
