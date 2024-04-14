@@ -99,7 +99,6 @@ if date == "ALL" or date == "all":
          #   os.makedirs(RN.learning_repo + md + "/UNSURE/")
          ai_file = meteor_dir + md + "/" + AIDB.station_id + "_" + md + "_AI_DATA.info"
          print("AIFILE:", ai_file)
-         #exit()
          if os.path.exists(ai_file) and date != today and date != yest :
             print("AI DONE FOR THIS DAY ALREADY!")
             continue 
@@ -109,13 +108,11 @@ if date == "ALL" or date == "all":
          
          date = md
          AIDB.load_all_meteors(date)
-         exit()
          AIDB.verify_media_day(date)
          AIDB.reconcile_db(date)
          os.system("/usr/bin/python3 myEvents.py " + date)
 
          #RN = ReviewNetwork(date)
-         exit()
          AIDB.auto_reject_day(date )
          print("DONE AIDay FOR " + date)
          os.system("/usr/bin/python3 Rec.py del_aws_day " + md)
