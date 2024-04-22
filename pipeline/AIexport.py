@@ -192,6 +192,10 @@ def export_html_new(scan_export_dir, desc):
    print("EXP HTML NEW:", scan_export_dir)
    dirs = []
    files = []
+   if os.path.exists(scan_export_dir) is False:
+      print("NO DIR:", scan_export_dir)
+      return("MISSING:" + scan_export_dir)
+   
    temp = os.listdir(scan_export_dir)
    html = "<html><body><h1>export {:s}:{:s}</h1><p>{:s}</p>\n".format(station_id, scan_export_dir, desc)
 
