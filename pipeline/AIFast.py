@@ -299,7 +299,11 @@ def ai_scan_meteor_file(meteor_file, mj=None, location=None):
    #if mj is not None and "hc" in mj and "meteor_objs" in mj:
    #   return(mj)
    if os.path.exists(mjrf):
-      mjr = load_json_file(mjrf)
+      try:
+         mjr = load_json_file(mjrf)
+      except:
+         print("BAD MJR", mjrf)
+         #os.remove(mjrf)
 
    if "ai_objects" not in mj: 
       ai_objects = find_motion_objects(video_file)
