@@ -2,6 +2,14 @@
 
 """
 script to export learning dataset
+we export
+   - non meteors confirmed by humans
+   - AMSX_FAILED_METEORS = AI failed to detect meteor, but human did -- BEST FOR RE-TRAIN
+   - AMSX_FAILED_METEORS2 = meteor yn = Y but multi-class = non-meteor -- BEST FOR RE-TRAIN
+   - AMSX_FIREBALL_METEORS = Multi-class = Fireball
+   - AUTO_MC = output grouped by class
+   - MULTI_CLASS = Human confirmed multi-class
+   
 """
 import sys
 from tqdm import tqdm
