@@ -3697,7 +3697,8 @@ def ai_non_meteors(station_id, options, json_conf):
 
          if station_id + "_" + root_fn in ai_data:
             resp = ai_data[station_id + "_" + root_fn]
-            tlabel = resp['mc_class']
+            if resp is not None:
+                tlabel = resp['mc_class']
             if tlabel not in summary:
                summary[tlabel] = 1
             else:
