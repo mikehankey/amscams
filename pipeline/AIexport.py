@@ -35,7 +35,7 @@ def zip_upload(station_id):
    cmd = f"cd /mnt/ams2/AI/DATASETS/EXPORT/; zip -r {station_id}_AI_EXPORT.zip *"
    print(cmd)
    os.system(cmd)
-   cmd = f"cp /mnt/ams2/AI/DATASETS/EXPORT/{station_id}_AI_EXPORT.zip /mnt/archive.allsky.tv/{station_id}/DATASETS/"
+   cmd = f"cp /mnt/ams2/AI/DATASETS/EXPORT/{station_id}_AI_EXPORT.zip /mnt/archive.allsky.tv/{station_id}/"
    print(cmd)
    os.system(cmd)
 
