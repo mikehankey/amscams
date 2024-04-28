@@ -34,10 +34,10 @@ def zip_upload(station_id):
    print("ZIP UPLOAD")
    cmd = f"cd /mnt/ams2/AI/DATASETS/EXPORT/; zip -r {station_id}_AI_EXPORT.zip *"
    print(cmd)
-   #os.system(cmd)
+   os.system(cmd)
    cmd = f"cp /mnt/ams2/AI/DATASETS/EXPORT/{station_id}_AI_EXPORT.zip /mnt/archive.allsky.tv/{station_id}/DATASETS/"
    print(cmd)
-   #os.system(cmd)
+   os.system(cmd)
 
 def export_fireball_meteors(con, cur, json_conf):
    station_id = json_conf['site']['ams_id']
@@ -266,8 +266,7 @@ def export_ai_image(root_fn):
        roi = mfd_roi(mjr['meteor_frame_data'])
        return(roi)
     else:
-       
-       print("NO FILE:", mjrf)
+       #print("NO FILE:", mjrf)
        return(None)
 
 def export_meteors(con,cur, station_id, export_dict):
@@ -275,7 +274,7 @@ def export_meteors(con,cur, station_id, export_dict):
    sql = "select root_fn,meteor_yn_conf, fireball_yn_conf, mc_class, mc_class_conf, roi from meteors where human_confirmed = 1 order by meteor_yn_conf desc"
    cur.execute(sql)
    rows = cur.fetchall()
-   print(len(rows), "TOTAL METEORS")
+   print(len(rows), "TOTAL HUMAN CONFIRMED METEORS")
    dds = {}
    rc = 0
    
@@ -289,8 +288,10 @@ def export_meteors(con,cur, station_id, export_dict):
    rc = 0
    out = ""
    meteor_data = {}
-   for row in rows:
+   for row in tqdm(rows, desc="Exporting Meteors", unit="row"):
       root_fn = row[0]
+      if root_fn in export_dict:
+         continue
       
       meteor_yn = row[1]
       fireball_yn = row[2]
@@ -308,8 +309,6 @@ def export_meteors(con,cur, station_id, export_dict):
       ai_file = meteor_export_dir + station_id + "_" + root_fn + "-AI.jpg"
       stack_file = meteor_dir + root_fn[0:10] + "/" + root_fn + "-stacked.jpg"
       #print(ai_file, stack_file, roi)
-      if root_fn in export_dict:
-         continue
       
       
       #if os.path.exists(stack_file) is False:
@@ -318,6 +317,8 @@ def export_meteors(con,cur, station_id, export_dict):
 
       if os.path.exists(ai_file):
          ai_img = cv2.imread(ai_file)
+         if ai_img is None:
+            continue
          if ai_img.shape[0] == 224:
             continue
          
@@ -496,7 +497,7 @@ def export_non_meteors(con,cur,station_id, export_dict):
    out = ""
    cc= 0
    last_mc = "" 
-   for row in rows:
+   for row in tqdm(rows, desc="Exporting Human Confirmed Non-Meteors", unit="row"):
 
       sd_vid, roi, meteor_yn, fireball_yn, multi_class, multi_class_conf, human_label = row
       root_fn = sd_vid.replace(".mp4", "")
@@ -517,8 +518,8 @@ def export_non_meteors(con,cur,station_id, export_dict):
       if os.path.exists(mjrf):
          mjr = load_json_file(mjrf)
          roi = mfd_roi(mjr['meteor_frame_data'])
-      else:
-         print("NO RED:", mjrf)
+      #else:
+      #   print("NO RED:", mjrf)
 
       stack_file = non_meteor_dir + sd_vid[0:10] + "/" + root_fn + "-stacked.jpg"
       non_meteor_data[root_fn] = [roi, meteor_yn, fireball_yn, multi_class, multi_class_conf, human_label]
