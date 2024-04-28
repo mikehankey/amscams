@@ -2191,6 +2191,7 @@ def confirm_non_meteor_label(station_id, root_fn,label):
    nmfile = "/mnt/ams2/non_meteors/" + date + "/" + root_fn.replace(".mp4", ".json")
    nmcfile = "/mnt/ams2/non_meteors_confirmed/" + date + "/" + root_fn.replace(".mp4", ".json")
    roi = [0,0,0,0]
+   sd_vid = ""
    if os.path.exists(nmfile) is True:
       mj = load_json_file(nmfile) 
       sd_vid = mj['sd_video_file'].split("/")[-1]
@@ -2236,6 +2237,7 @@ def confirm_non_meteor_label(station_id, root_fn,label):
          fireball_yn = -1
          mc_class = ""
          mc_class_conf = -1
+         sd_vid = ""
       if "sd_video_file" in mj:
          sd_vid = mj['sd_video_file'].split("/")[-1]
       else:
@@ -2251,6 +2253,7 @@ def confirm_non_meteor_label(station_id, root_fn,label):
 
    else:
       print("NO METEOR FN?", nmfile, nmcfile)
+      sd_vid = ""
       meteor_yn = -1
       fireball_yn = -1
       mc_class = ""
