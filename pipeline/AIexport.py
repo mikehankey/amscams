@@ -26,10 +26,18 @@ from lib.DEFAULTS import *
 json_conf = load_json_file("../conf/as6.json")
 station_id = json_conf['site']['ams_id']
 export_dir = "/mnt/ams2/AI/DATASETS/EXPORT/"
+export_dict_file = export_dir + f"{station_id}_AI_EXPORT_DICT.json"
 meteor_dir = "/mnt/ams2/meteors/"
 non_meteor_dir = "/mnt/ams2/non_meteors_confirmed/"
 
-
+def zip_upload(station_id):
+   print("ZIP UPLOAD")
+   cmd = f"cd /mnt/ams2/AI/DATASETS/EXPORT/; zip -r {station_id}_AI_EXPORT.zip *"
+   print(cmd)
+   #os.system(cmd)
+   cmd = f"cp /mnt/ams2/AI/DATASETS/EXPORT/{station_id}_AI_EXPORT.zip /mnt/archive.allsky.tv/{station_id}/DATASETS/"
+   print(cmd)
+   #os.system(cmd)
 
 def export_fireball_meteors(con, cur, json_conf):
    station_id = json_conf['site']['ams_id']
@@ -262,15 +270,17 @@ def export_ai_image(root_fn):
        print("NO FILE:", mjrf)
        return(None)
 
-def export_meteors(con,cur):
+def export_meteors(con,cur, station_id, export_dict):
    # export all HUMAN CONFIRMED meteors ONLY 
    sql = "select root_fn,meteor_yn_conf, fireball_yn_conf, mc_class, mc_class_conf, roi from meteors where human_confirmed = 1 order by meteor_yn_conf desc"
    cur.execute(sql)
    rows = cur.fetchall()
-   print(len(rows), "ROWS")
+   print(len(rows), "TOTAL METEORS")
    dds = {}
    rc = 0
-   meteor_export_dir = export_dir + "METEORS/"
+   
+   
+   meteor_export_dir = export_dir + "/" + station_id + "_METEORS/"
    if os.path.exists(meteor_export_dir) is False:
       os.makedirs(meteor_export_dir)
 
@@ -281,6 +291,7 @@ def export_meteors(con,cur):
    meteor_data = {}
    for row in rows:
       root_fn = row[0]
+      
       meteor_yn = row[1]
       fireball_yn = row[2]
       mc_class = row[3]
@@ -296,23 +307,36 @@ def export_meteors(con,cur):
       rc += 1
       ai_file = meteor_export_dir + station_id + "_" + root_fn + "-AI.jpg"
       stack_file = meteor_dir + root_fn[0:10] + "/" + root_fn + "-stacked.jpg"
-      print(ai_file, stack_file, roi)
-      if os.path.exists(stack_file) is False:
-         print("MISSING:", stack_file)
+      #print(ai_file, stack_file, roi)
+      if root_fn in export_dict:
+         continue
+      
+      
+      #if os.path.exists(stack_file) is False:
+      #   print("MISSING:", stack_file)
          #return()
 
-      if roi is not None and os.path.exists(ai_file) is False and os.path.exists(stack_file) is True :
+      if os.path.exists(ai_file):
+         ai_img = cv2.imread(ai_file)
+         if ai_img.shape[0] == 224:
+            continue
+         
+      if roi is not None and os.path.exists(stack_file) is True :
          x1,y1,x2,y2 = roi
          img = cv2.imread(stack_file)
          img = cv2.resize(img, (1920,1080))
          roi_img = img[y1:y2,x1:x2]
-         roi_img = cv2.resize(roi_img, (64,64))
+         #roi_img = cv2.resize(roi_img, (64,64))
          cv2.imwrite(ai_file, roi_img)
+         #cv2.imshow('pepe', roi_img)
+         #cv2.waitKey(30)
 
-      elif os.path.exists(stack_file) is False:
-         print("No stack file:", stack_file)
-      else:
-         print("Skip done.", ai_file)
+      #elif os.path.exists(stack_file) is False:
+      #   print("No stack file:", stack_file)
+      #else:
+      #   print("Skip done.", ai_file)
+
+      #input("WAIT")
 
       if os.path.exists(ai_file) is True:
          ff = ai_file.split("/")[-1]
@@ -324,13 +348,14 @@ def export_meteors(con,cur):
          ilink = "<a href=/meteor/{}/{}/{}/>".format(station_id, date, mp4)
          out += ilink 
          out += "<img alt='{}' src={}></a>".format(str(meteor_yn), iurl)
+         export_dict[root_fn] = [iurl, roi, meteor_yn, fireball_yn, mc_class, mc_class_conf,"meteor"]
 
 
    fout = open(meteor_export_dir + "meteors.html", "w")
    fout.write(out)
    print(meteor_export_dir + "meteors.html")
    save_json_file(meteor_export_dir + "meteors.json", meteor_data, True)
-   
+   return(export_dict) 
 
 def export_report(con, cur, json_conf):
    print("EXPORT REPORT")
@@ -446,7 +471,7 @@ def reconcile_non_meteors_confirmed(con, cur, json_conf):
       save_json_file(ai_objects_file, aio)
 
 
-def export_non_meteors(con,cur):
+def export_non_meteors(con,cur,station_id, export_dict):
    # non meteor dir and multi-class dir contain same files! 
    # just sorted differently for training.
    # this doesn't really make sense
@@ -464,8 +489,8 @@ def export_non_meteors(con,cur):
    rows = cur.fetchall()
    non_meteor_data = {}
 
-   mc_meteor_export_dir = export_dir + "MULTI_CLASS/"
-   non_meteor_export_dir = export_dir + "NON_METEORS/"
+   mc_meteor_export_dir = export_dir + "/" + station_id + "_MULTI_CLASS/"
+   non_meteor_export_dir = export_dir + "/" + station_id + "_NON_METEORS/"
    if os.path.exists(non_meteor_export_dir) is False:
       os.makedirs(non_meteor_export_dir)
    out = ""
@@ -479,11 +504,14 @@ def export_non_meteors(con,cur):
          roi = json.loads(roi)
       else:
          continue
+      if root_fn in export_dict:
+         continue
+      
       if last_mc != human_label:
          out += "<h1>" + human_label + "</h1><br>"
       mc_dir = mc_meteor_export_dir + human_label + "/"
-      if os.path.exists(mc_dir) is False:
-         os.makedirs(mc_dir)
+      #if os.path.exists(mc_dir) is False:
+      #   os.makedirs(mc_dir)
 
       mjrf = non_meteor_dir + root_fn[0:10] + "/" + root_fn + "-reduced.json" 
       if os.path.exists(mjrf):
@@ -496,27 +524,31 @@ def export_non_meteors(con,cur):
       non_meteor_data[root_fn] = [roi, meteor_yn, fireball_yn, multi_class, multi_class_conf, human_label]
       ai_file = non_meteor_export_dir + station_id + "_"  + root_fn + "-AI.jpg"
       mc_ai_file = mc_dir + station_id + "_"  + root_fn + "-AI.jpg"
-
-      if os.path.exists(ai_file) is False or os.path.exists(mc_ai_file) is False:
-         if os.path.exists(stack_file) is True:
+      if os.path.exists(ai_file) is True:
+         ai_img = cv2.imread(ai_file)
+         if ai_img.shape[0] == 224:
+            continue
+         
+      if os.path.exists(stack_file) is True:
+         if True:
             img = cv2.imread(stack_file)
             img = cv2.resize(img, (1920,1080))
-            print(roi)
             x1,y1,x2,y2 = roi
             if x1 != 0:
                roi_img = img[y1:y2,x1:x2]
-               roi_img = cv2.resize(roi_img,(64,64))
+               #roi_img = cv2.resize(roi_img,(64,64))
                cv2.imwrite(ai_file, roi_img)
-               cv2.imwrite(mc_ai_file, roi_img)
-               print("WROTE************")
-         else:
-            print("MIS:", stack_file)
-      print(cc,root_fn, roi, meteor_yn, fireball_yn, multi_class, multi_class_conf, human_label)
+               #cv2.imwrite(mc_ai_file, roi_img)
+               #print("WROTE************")
+         #else:
+         #   print("MIS:", stack_file)
+      #print(cc,root_fn, roi, meteor_yn, fireball_yn, multi_class, multi_class_conf, human_label)
 
       if os.path.exists(ai_file) is True:
          iurl = ai_file.replace("/mnt/ams2", "")
          mp4 = iurl.replace("-AI.jpg", ".mp4")
          out += "<img alt='{}' src={}></a>".format(str(meteor_yn), iurl)
+         export_dict[root_fn] = [iurl, roi, meteor_yn, fireball_yn, multi_class, multi_class_conf, human_label] 
 
       cc += 1
       last_mc = human_label 
@@ -525,9 +557,10 @@ def export_non_meteors(con,cur):
    fout.write(out)
    print(non_meteor_export_dir + "non_meteors.html")
    save_json_file(non_meteor_export_dir + "non_meteors.json", non_meteor_data, True)
-
+   return(export_dict)
 if __name__ == "__main__":
    json_conf = load_json_file("../conf/as6.json")
+   station_id = json_conf['site']['ams_id']
    con = sqlite3.connect(json_conf['site']['ams_id']+ "_ALLSKY.db")
    con.row_factory = sqlite3.Row
    cur = con.cursor()
@@ -537,13 +570,22 @@ if __name__ == "__main__":
    else: 
       cmd = sys.argv[1]
    if cmd == "default":
-      reconcile_non_meteors_confirmed(con, cur, json_conf)
-      export_fireball_meteors(con, cur, json_conf)
-      export_failed_meteors(con, cur, json_conf)
-      #export_meteors(con, cur)
-      export_non_meteors(con, cur)
+      if os.path.exists(export_dict_file) is True:
+         export_dict = load_json_file(export_dict_file)
+      else:
+         export_dict = {}
+      #reconcile_non_meteors_confirmed(con, cur, json_conf)
+      #export_fireball_meteors(con, cur, json_conf)
+      #export_failed_meteors(con, cur, json_conf)
+      export_dict = export_meteors(con, cur, station_id, export_dict)
+      export_dict = export_non_meteors(con, cur, station_id, export_dict)
       #export_scan_rois()
       export_report(con, cur, json_conf)
+      save_json_file(export_dict_file, export_dict)
+      print("saved", export_dict_file)
+      zip_upload(station_id)
    if cmd == "report":
       export_report(con, cur, json_conf)
+   if cmd == "zip_upload":
+      zip_upload(station_id)
 
