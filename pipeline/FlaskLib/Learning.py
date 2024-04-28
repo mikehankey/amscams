@@ -2404,7 +2404,10 @@ def confirm_meteor(station_id, root_fn):
 
    elif os.path.exists(nmcfile):
       # TAG AND MOVE BACK
-      mj = load_json_file(nmcfile)
+      try:
+        mj = load_json_file(nmcfile)
+      except:
+        mj = {}
       mj['hc'] = 1
       save_json_file(mfile, mj)
       # RELOAD SQL / DELETE NMC
