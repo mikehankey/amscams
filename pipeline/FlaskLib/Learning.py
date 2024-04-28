@@ -2244,8 +2244,11 @@ def confirm_non_meteor_label(station_id, root_fn,label):
       else:
          sd_vid = "" 
       if "hd_trim" in mj:
-         if "/" in mj['hd_trim']:
-            hd_vid = mj['hd_trim'].split("/")[-1]
+         if mj['hd_trim'] is not None:
+            if "/" in mj['hd_trim']:
+                hd_vid = mj['hd_trim'].split("/")[-1]
+            else:
+                hd_vid = ""
          else:
             hd_vid = ""
       else:
