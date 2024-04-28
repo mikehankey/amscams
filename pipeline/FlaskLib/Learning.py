@@ -2228,9 +2228,18 @@ def confirm_non_meteor_label(station_id, root_fn,label):
 
 
    elif os.path.exists(nmcfile) is True:
-      mj = load_json_file(nmcfile) 
-      print(mj.keys())
-      sd_vid = mj['sd_video_file'].split("/")[-1]
+      try:
+         mj = load_json_file(nmcfile) 
+      except:
+         mj = {}
+         meteor_yn = -1
+         fireball_yn = -1
+         mc_class = ""
+         mc_class_conf = -1
+      if "sd_video_file" in mj:
+         sd_vid = mj['sd_video_file'].split("/")[-1]
+      else:
+         sd_vid = "" 
       if "hd_trim" in mj:
          hd_vid = mj['hd_trim'].split("/")[-1]
       else:
