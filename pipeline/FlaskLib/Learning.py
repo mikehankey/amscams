@@ -2192,6 +2192,7 @@ def confirm_non_meteor_label(station_id, root_fn,label):
    nmcfile = "/mnt/ams2/non_meteors_confirmed/" + date + "/" + root_fn.replace(".mp4", ".json")
    roi = [0,0,0,0]
    sd_vid = ""
+   hd_vid = ""
    if os.path.exists(nmfile) is True:
       mj = load_json_file(nmfile) 
       sd_vid = mj['sd_video_file'].split("/")[-1]
