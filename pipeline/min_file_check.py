@@ -28,5 +28,16 @@ for file in files:
     min_key = f"{year}_{month}_{day}_{hour}_{min}"
     if min_key in minute_dict:
         minute_dict[min_key].append([cam_num, sec])
+missing = 0
+good = 0
 for key in sorted(minute_dict):
-    print(key, len(minute_dict[key]))
+    if len(minute_dict[key]) == 0:
+        print(key, "MISSING")
+        missing += 1
+    else:
+        print(key, len(minute_dict[key]))
+        good += 1
+print("Missing minutes:", missing)
+print("Good minutes:", good)
+perc = good / (good + missing) * 100
+print("Percent good:", perc)
