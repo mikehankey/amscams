@@ -11,7 +11,7 @@ check_dir = "/mnt/ams2/HD/"
 # these will be the keys for the minute dict which we will populate as we go
 minute_dict = {}
 current_time = datetime.datetime.now()
-for i in range(0, 1440):
+for i in range(0, 2880):
     minute = current_time - datetime.timedelta(minutes=i)
     min_key = minute.strftime('%Y_%m_%d_%H_%M')
     minute_dict[min_key] = []
