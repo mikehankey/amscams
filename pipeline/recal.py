@@ -1316,7 +1316,8 @@ def cal_health(con, cur, json_conf, cam_num=None):
          if os.path.exists(cal_file): 
             delete_cal_file(cal_fn, con, cur, json_conf)
          continue 
-
+      if "cam_id" not in d:
+         continue
       if d['cam_id'] not in cam_stats:
          cam_stats[d['cam_id']] = {}
          cam_stats[d['cam_id']]['azs'] = []
