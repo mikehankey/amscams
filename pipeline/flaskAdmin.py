@@ -5,7 +5,7 @@ from FlaskLib.Learning import learning_meteors_dataset, learning_meteors_tag, me
 #from FlaskLib.AI_API import ai_api
 from FlaskLib.motion_detects import motion_detects
 from FlaskLib.FlaskUtils import get_template
-from FlaskLib.api_funcs import update_meteor_points, show_cat_stars, delete_meteor, restore_meteor, delete_meteors, reduce_meteor, delete_frame, crop_video, update_meteor_cal_params, add_frame
+from FlaskLib.api_funcs import update_meteor_points, show_cat_stars, delete_meteor, restore_meteor, delete_meteors, reduce_meteor, delete_frame, crop_video, update_meteor_cal_params, add_frame, add_meteor_frames, list_min_files
 from FlaskLib.calib_funcs import calib_main, cal_file, show_masks, del_calfile, lens_model, edit_mask, edit_mask_points, calib_main_new
 from lib.PipeUtil import cfe, load_json_file, save_json_file
 from lib.PipePwdProtect import login_page, check_pwd_ajax
@@ -37,8 +37,6 @@ auth = HTTPBasicAuth()
 # Main controller for AllSkyCams UI application.
 
 json_conf = load_json_file("../conf/as6.json")
-
-
 
 if "dynamodb" in json_conf:
    dynDB = 1
@@ -1122,6 +1120,18 @@ def cnt_motion(date):
 @app.route('/API/<cmd>', methods=['GET', 'POST'])
 @auth.login_required
 def main_api(cmd):
+   if cmd == 'list_min_files':
+      min_wild = request.args.get("min_wild")
+      cam_id = request.args.get("cam_id")
+      resp = list_min_files(min_wild, cam_id)
+      return(resp)
+
+   if cmd == 'add_frames':
+      meteor_file = request.args.get("meteor_file")
+      frame_count = request.args.get("frame_count")
+      frame_location = request.args.get("frame_location")
+      resp = add_meteor_frames(meteor_file, frame_count, frame_location, json_conf)
+      return(resp)
 
    if cmd == 'swap_calib':
       cal_file = request.args.get("cal_file")
