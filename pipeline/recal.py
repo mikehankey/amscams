@@ -287,6 +287,10 @@ def fix_lens_nans():
     for f in files:
         el = f.split("/")[-1].split("-")
         cam_id = el[-1].split(".")[0]
+        if cam_id == "10":
+            cmd = f"rm /mnt/ams2/cal/{f}"
+            print(cmd)
+            continue
         need_to_save = False
         cp = load_json_file(f)
         for p in poly_checks:
