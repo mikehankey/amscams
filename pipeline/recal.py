@@ -1337,9 +1337,12 @@ def cal_health(con, cur, json_conf, cam_num=None):
       cam_stats[cam_id]['med_stars'] = np.median(cam_stats[cam_id]['stars'])
       cam_stats[cam_id]['med_rez'] = np.median(cam_stats[cam_id]['rezs'])
       #print(cam_id, cam_stats[cam_id]['med_stars'], cam_stats[cam_id]['med_rez'])
-
+   bad_cals = []
    for f in freecal_index:
       d = freecal_index[f]
+      if "cam_id" not in d:
+          continue
+          bad_cals.append(f)
       cam_id = d['cam_id']
       
 
