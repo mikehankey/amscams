@@ -45,6 +45,11 @@ api_key = json_conf['api_key']
 if "local_mode" in admin_conf:
    r = redis.Redis(admin_conf['redis_host'], port=6379, decode_responses=True)
 
+def calculate_magnitude(intensity, reference_intensity=5000):
+    if intensity <=0: 
+        intensity = 1
+    print(intensity, reference_intensity)
+    return -2.5 * math.log10(intensity / reference_intensity)
 
 def get_aws_events(day):
    day = day.replace("_", "")
@@ -2554,7 +2559,7 @@ def event_report(dynamodb, event_id, solve_dir, event_final_dir, obs):
        elif jpg_fn not in used:
           ftype = "GRAPH"
        if ftype == "GRAPH":
-           plot_html += """<div style="float:left; padding: 5px; text-align: center;"><img width="320" height=250 src=""" + jpg_fn + """?" + str(time.time()) + "></div>\n"""
+           plot_html += """<div style="float:left; padding: 5px; text-align: center;"><img onclick="openModal(this)" width="320" height=250 src=""" + jpg_fn + """?" + str(time.time()) + "></div>\n"""
        used[jpg_fn] = 1
 
     plot_html += """</div><div style="clear:both; margin: 25px">&nbsp;</div>"""
@@ -2889,7 +2894,7 @@ def WMPL_solve(event_id, obs,time_sync=1, force=0, dynamodb=None):
 
     monte = False 
     #v_init_part = .25
-    traj_solve = traj.Trajectory(jd_ref, output_dir=solve_dir, meastype=meastype, save_results=True, monte_carlo=monte, show_plots=False, max_toffset=5, v_init_part=.25, estimate_timing_vel=etv, show_jacchia=True  )
+    traj_solve = traj.Trajectory(jd_ref, output_dir=solve_dir, meastype=meastype, save_results=True, monte_carlo=monte, show_plots=False, max_toffset=5, v_init_part=.05, estimate_timing_vel=etv, show_jacchia=True  )
     earliest_time = None
 
  
@@ -2931,6 +2936,12 @@ def WMPL_solve(event_id, obs,time_sync=1, force=0, dynamodb=None):
             else:
                azs = np.radians(obs[station_id][file]['azs'])
                els = np.radians(obs[station_id][file]['els'])
+            oints= obs[station_id][file]['ints']
+            #mags = oints
+            mags = []
+            for oi in oints:
+                mag = calculate_magnitude(oi)
+                mags.append(mag)
             o_times = obs[station_id][file]['times']
 
             o_times[0] = o_times[0].replace("-", "_")
@@ -2959,11 +2970,9 @@ def WMPL_solve(event_id, obs,time_sync=1, force=0, dynamodb=None):
                 times.append(time_diff)
             np_times = np.array(times)
             print("TIMES:", np_times)
-            #input("WAIT")
-            traj_solve.infillTrajectory(azs, els, np_times, np.radians(float(lat)), np.radians(float(lon)), alt, station_id=station_id + "-" + cam_id)
+            traj_solve.infillTrajectory(azs, els, np_times, np.radians(float(lat)), np.radians(float(lon)), alt, station_id=station_id + "-" + cam_id, magnitudes=mags)
             wmpl_run_data.append((azs, els, np_times, lat, lon, alt, station_id, cam_id))
             print(   "-----")
-
 
     resp = traj_solve.run()
     if traj_solve.timing_minimization_successful is False:
