@@ -12,6 +12,56 @@ import numpy as np
 #def vid_to_frames(vid, out_dir, suffix, ow, oh ):
    #/usr/bin/ffmpeg -i /mnt/ams2/meteors/2020_10_18/2020_10_18_10_28_12_000_010006-trim-0501.mp4 -vf 'scale=960:640' /mnt/ams2/CACHE/2020/10/2020_10_18_10_28_12_000_010006-trim-0501/2020_10_18_10_28_12_000_010006-trim-0501-half-%04d.jpg > /dev/null 2>&1
 
+# Min file functions
+# Functions 
+# list_min_files - datetime_wildcard, cam_id
+# lists available SD, HD min files in various dirs including
+# /mnt/ams2/HD, /mnt/ams2/SD/proc2/daytime/YYYY_MM_DD/ and /mnt/ams2/SD/proc2/daytime/YYYY_MM_DD
+# the list functions will m datetime wildcard in YYYY_MM_DD_HH_MM format where only HH_MM can change. 
+# if cam_id is provided it will filter to that id 
+# The response will be a list of matching minute_files from the host
+# clip_min_file - minute_file, start_frame, end_frame, start_second, end_second
+# stack_min_file - minute_file -- stack an entire min file
+# stack_min_clip - stacks min clip
+# import_meteor_from_min_file_clip - (hd_clip, sd_clip)
+# with these functions, if the host is online, we should be able to pull all files needed for network
+# detects, or fast BOLIDE responses
+
+def list_min_files(min_wild, cam_id = None):
+   el = min_wild.split("_")
+   print(el)
+   if len(el) == 4:
+      y,m,d,h = el
+   elif len(el) == 5:
+      y,m,d,h,mm = el
+   else:
+      return("invalid min wild")
+   paths = [
+      "/mnt/ams2/HD/" ,
+      f"/mnt/ams2/SD/proc2/{y}_{m}_{d}/" ,
+      f"/mnt/ams2/SD/proc2/daytime/{y}_{m}_{d}/" ,
+   ]
+   all_video_files = []
+   all_image_files = []
+   for path in paths:
+      if cam_id is not None:
+         p = path + min_wild + "*" + cam_id + "*.mp4" 
+         ip = path + "images/" + min_wild + "*" + cam_id + "*.jpg" 
+      else:
+         p = path + min_wild + "*.mp4" 
+         ip = path + "images/" + min_wild + "*.jpg" 
+      print("Path",p)
+      print("Image Path",ip)
+      files = glob.glob(p)
+      img_files = glob.glob(p)
+      all_video_files.extend(files)
+      all_image_video_files.extend(img_files)
+   resp = "" 
+   for file in all_video_files:
+      resp += file + "\n" 
+   for file in all_image_files:
+      resp += file + "\n" 
+   return(resp)
 def update_meteor_cal_params(meteor_file, cal_file, json_conf):
    # This function / api call will swap the calparams in a meteor file 
    # with the calparams in the provided file. 
@@ -199,6 +249,74 @@ def crop_video(in_file, x,y,w,h):
    os.system(cmd)
 
 
+   return(resp)
+
+def add_meteor_frames(meteor_file, frame_count, frame_location,json_conf):
+   resp = {}
+   date = meteor_file[0:10]
+   meteor_dir = "/mnt/ams2/meteors/" + date + "/"
+   if "json" in meteor_file:
+      meteor_vid = meteor_file.replace(".json", ".mp4")
+      jsf = meteor_dir + meteor_file
+   else:
+      jf = meteor_file.replace(".mp4", ".json")
+      jsf = meteor_dir + jf 
+      meteor_vid = meteor_file
+   mj = load_json_file(jsf)
+   jsrf = jsf.replace(".json", "-reduced.json")
+   if os.path.exists(jsrf) is False:
+      resp['status'] = 0
+      resp['msg'] = "no reduced file found."
+      return(resp)
+   mjr = load_json_file(jsrf)
+
+   # get all xs from meteor_frame_data
+   # get all of 1 column of meteor frame S
+   mfd = mjr['meteor_frame_data']
+   dates = [row[0] for row in mfd]
+   fns = [row[1] for row in mfd]
+   xs = [row[2] for row in mfd]
+   ys = [row[3] for row in mfd]
+   ws = [row[4] for row in mfd]
+   hs = [row[5] for row in mfd]
+   oints  = [row[6] for row in mfd]
+   ras = [row[7] for row in mfd]
+   decs = [row[8] for row in mfd]
+   azs = [row[9] for row in mfd]
+   els = [row[10] for row in mfd]
+   print("ADD METEOR FRAMES:", frame_count, frame_location) 
+   for i in range(0,len(xs)):
+      if i > 0:
+         xd = xs[i] - xs[i-1]
+         yd = ys[i] - ys[i-1]
+   if frame_location == "end":
+      print("XXX")
+      new_mfd = []
+      for row in mfd:
+         new_mfd.append(row)
+      for i in range(1,int(frame_count)+1):
+         new_x = xs[-1] + xd 
+         new_y = ys[-1] + yd 
+         new_w = ws[-1] 
+         new_h = hs[-1] 
+         new_ra = ras[-1] 
+         new_dec = decs[-1] 
+         new_az = azs[-1] 
+         new_el = els[-1] 
+         mfd.append([])
+         new_fn = fns[-1] + i
+         new_date = dates[-1] 
+         new_oint = oints[-1] 
+         new_row = [new_date, new_fn, new_x, new_y, new_w, new_h, new_oint, new_ra, new_dec, new_az, new_el]
+         new_mfd.append(new_row)
+
+   print("MFD", new_mfd)
+   mjr['meteor_frame_data'] = new_mfd
+   # need to insert the frame into the meteor frame data, using the previous next 
+   # or before/after x,y default values 
+   resp['status'] = 1
+   resp['msg'] = "added frames"
+   save_json_file(jsrf, mjr)
    return(resp)
 
 def add_frame(meteor_file, fn):
@@ -422,14 +540,12 @@ def get_med_frame(video_file, mj):
          print("LOAD SD FRAMES:", hd_video_file)
          hd_frames = load_frames_simple(video_file)
 
-      print("VIDEO FILE:", video_file)
 
       median_frame = cv2.convertScaleAbs(np.median(np.array(hd_frames), axis=0))
       hd_img = cv2.resize(median_frame,(1920,1080))
       hd_img = cv2.cvtColor(hd_img, cv2.COLOR_BGR2GRAY)
 
       #median_frame = cv2.GaussianBlur(median_frame, (7, 7), 0)
-      print("WROTE MED FILE:", med_file)
       cv2.imwrite(med_file, median_frame)
    else:
       median_frame = cv2.imread(med_file)
