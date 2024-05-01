@@ -1,4 +1,5 @@
 import base64
+import logging
 import os
 from flask import Flask, request, Response, make_response
 from FlaskLib.Learning import learning_meteors_dataset, learning_meteors_tag, meteor_ai_scan, recrop_roi, recrop_roi_confirm, learn_main, learning_review_day, batch_update_labels, learning_db_dataset, timelapse_main, learning_weather, ai_review, ai_rejects, confirm_meteor, confirm_non_meteor, confirm_non_meteor_label , ai_main , ai_dict, ai_scan_review,ai_non_meteors , export_samples, move_ai_sample
@@ -31,7 +32,7 @@ from flask_httpauth import HTTPBasicAuth
 
 app = Flask(__name__, static_url_path='/static')
 auth = HTTPBasicAuth()
-
+logging.basicConfig(filename='/tmp/app.log', level=logging.ERROR)
 #, ssl_context=('cert.pem', 'key.pem'))
 
 # Main controller for AllSkyCams UI application.
@@ -1182,7 +1183,11 @@ def main_api(cmd):
 
 
       run = 1
-      out = update_meteor_points(sd_video_file, frames)
+      try:
+         out = update_meteor_points(sd_video_file, frames)
+      except Exception as e:
+         app.logger.exception(f"An error occurred: {str(e)}")
+         return "An internal server error occurred", 500 
    if cmd == 'show_cat_stars':
       run = 1
       video_file = request.args.get('video_file')
