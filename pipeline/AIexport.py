@@ -282,7 +282,7 @@ def export_auto_non_meteors(con,cur,station_id, export_dict):
    try:
       result = subprocess.check_output(cmd, shell=True).decode("utf-8")
       files = result.split("\n")
-   else:
+   except:
       files = []
    for file in tqdm(files, desc="Exporting Auto Non-Meteors", unit="file"):
       if os.path.exists(edir + file) is False:
