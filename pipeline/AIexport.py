@@ -56,9 +56,9 @@ def export_fireball_meteors(con, cur, json_conf):
    sql = """
          SELECT root_fn, meteor_yn, fireball_yn, mc_class, mc_class_conf 
            FROM meteors
-          WHERE (meteor_yn > 50
-            OR fireball_yn > 50)
+          WHERE ( fireball_yn > 50)
             AND mc_class like '%fireball%' 
+            AND mc_class_conf > 50
             order by fireball_yn desc
          """
    cur.execute(sql)
