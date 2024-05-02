@@ -279,8 +279,11 @@ def export_auto_non_meteors(con,cur,station_id, export_dict):
       os.makedirs(edir)
    nmdir = "/mnt/ams2/non_meteors/"
    cmd = "find /mnt/ams2/non_meteors/ |grep ROI |grep jpg"
-   result = subprocess.check_output(cmd, shell=True).decode("utf-8")
-   files = result.split("\n")
+   try:
+      result = subprocess.check_output(cmd, shell=True).decode("utf-8")
+      files = result.split("\n")
+   else:
+      files = []
    for file in tqdm(files, desc="Exporting Auto Non-Meteors", unit="file"):
       if os.path.exists(edir + file) is False:
          cmd = "cp " + file + " " + edir
