@@ -52,13 +52,14 @@ def export_fireball_meteors(con, cur, json_conf):
 
    # first meteors where the YN has failed, the mc_class has failed but the human override exists
    # these are probably our best failures! 
+            #AND human_confirmed = 1
    sql = """
          SELECT root_fn, meteor_yn, fireball_yn, mc_class, mc_class_conf 
            FROM meteors
           WHERE (meteor_yn > 50
             OR fireball_yn > 50)
             AND mc_class like '%fireball%' 
-            AND human_confirmed = 1
+            order by fireball_yn desc
          """
    cur.execute(sql)
    rows = cur.fetchall()
@@ -274,7 +275,7 @@ def export_ai_image(root_fn):
 
 
 def export_auto_non_meteors(con,cur,station_id, export_dict):
-   edir = "/mnt/ams2/AI/DATASETS/EXPORT/AUTO_NON_METEORS/"
+   edir = "/mnt/ams2/AI/DATASexceptETS/EXPORT/AUTO_NON_METEORS/"
    if os.path.exists(edir) is False:
       os.makedirs(edir)
    nmdir = "/mnt/ams2/non_meteors/"
