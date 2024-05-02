@@ -2559,7 +2559,7 @@ def event_report(dynamodb, event_id, solve_dir, event_final_dir, obs):
        elif jpg_fn not in used:
           ftype = "GRAPH"
        if ftype == "GRAPH":
-           plot_html += """<div style="float:left; padding: 5px; text-align: center;"><img width="320" height=250 src=""" + jpg_fn + """?" + str(time.time()) + "></div>\n"""
+           plot_html += """<div style="float:left; padding: 5px; text-align: center;"><img onclick="openModal(this)" width="320" height=250 src=""" + jpg_fn + """?" + str(time.time()) + "></div>\n"""
        used[jpg_fn] = 1
 
     plot_html += """</div><div style="clear:both; margin: 25px">&nbsp;</div>"""
@@ -2894,7 +2894,7 @@ def WMPL_solve(event_id, obs,time_sync=1, force=0, dynamodb=None):
 
     monte = False 
     #v_init_part = .25
-    traj_solve = traj.Trajectory(jd_ref, output_dir=solve_dir, meastype=meastype, save_results=True, monte_carlo=monte, show_plots=False, max_toffset=5, v_init_part=.25, estimate_timing_vel=etv, show_jacchia=True  )
+    traj_solve = traj.Trajectory(jd_ref, output_dir=solve_dir, meastype=meastype, save_results=True, monte_carlo=monte, show_plots=False, max_toffset=5, v_init_part=.05, estimate_timing_vel=etv, show_jacchia=True  )
     earliest_time = None
 
  
