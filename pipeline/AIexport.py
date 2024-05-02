@@ -1,4 +1,5 @@
 #!/usr/bin/python3.6
+import subprocess
 
 """
 script to export learning dataset
@@ -29,6 +30,8 @@ export_dir = "/mnt/ams2/AI/DATASETS/EXPORT/"
 export_dict_file = export_dir + f"{station_id}_AI_EXPORT_DICT.json"
 meteor_dir = "/mnt/ams2/meteors/"
 non_meteor_dir = "/mnt/ams2/non_meteors_confirmed/"
+
+
 
 def zip_upload(station_id):
    print("ZIP UPLOAD")
@@ -269,6 +272,21 @@ def export_ai_image(root_fn):
        #print("NO FILE:", mjrf)
        return(None)
 
+
+def export_auto_non_meteors(con,cur,station_id, export_dict):
+   edir = "/mnt/ams2/AI/DATASETS/EXPORT/AUTO_NON_METEORS/"
+   if os.path.exists(edir) is False:
+      os.makedirs(edir)
+   nmdir = "/mnt/ams2/non_meteors/"
+   cmd = "find /mnt/ams2/non_meteors/ |grep ROI |grep jpg"
+   result = subprocess.check_output(cmd, shell=True).decode("utf-8")
+   files = result.split("\n")
+   for file in tqdm(files, desc="Exporting Auto Non-Meteors", unit="file"):
+      if os.path.exists(edir + file) is False:
+         cmd = "cp " + file + " " + edir
+         os.system(cmd)
+   return(export_dict)
+
 def export_meteors(con,cur, station_id, export_dict):
    # export all HUMAN CONFIRMED meteors ONLY 
    sql = "select root_fn,meteor_yn_conf, fireball_yn_conf, mc_class, mc_class_conf, roi from meteors where human_confirmed = 1 order by meteor_yn_conf desc"
@@ -292,6 +310,10 @@ def export_meteors(con,cur, station_id, export_dict):
       root_fn = row[0]
       if root_fn in export_dict:
          continue
+      ai_file = meteor_export_dir + station_id + "_" + root_fn + "-AI.jpg"
+      stack_file = meteor_dir + root_fn[0:10] + "/" + root_fn + "-stacked.jpg"
+      if os.path.exists(ai_file) is True:
+         continue
       
       meteor_yn = row[1]
       fireball_yn = row[2]
@@ -306,8 +328,6 @@ def export_meteors(con,cur, station_id, export_dict):
       #if rc > 5:
       #   exit()
       rc += 1
-      ai_file = meteor_export_dir + station_id + "_" + root_fn + "-AI.jpg"
-      stack_file = meteor_dir + root_fn[0:10] + "/" + root_fn + "-stacked.jpg"
       #print(ai_file, stack_file, roi)
       
       
@@ -479,11 +499,11 @@ def export_non_meteors(con,cur,station_id, export_dict):
 
 
    # export all HUMAN CONFIRMED NON meteors ONLY 
+           #WHERE human_label is not NULL
+           #  AND human_label != ""
    sql = """
           SELECT sd_vid, roi, meteor_yn, fireball_yn, multi_class, multi_class_conf, human_label 
             FROM non_meteors_confirmed 
-           WHERE human_label is not NULL
-             AND human_label != ""
         ORDER BY human_label 
          """ 
    cur.execute(sql)
@@ -509,6 +529,8 @@ def export_non_meteors(con,cur,station_id, export_dict):
          continue
       
       if last_mc != human_label:
+         if human_label is None:
+            human_label = "None"
          out += "<h1>" + human_label + "</h1><br>"
       mc_dir = mc_meteor_export_dir + human_label + "/"
       #if os.path.exists(mc_dir) is False:
@@ -565,6 +587,10 @@ if __name__ == "__main__":
    con = sqlite3.connect(json_conf['site']['ams_id']+ "_ALLSKY.db")
    con.row_factory = sqlite3.Row
    cur = con.cursor()
+   
+   # clean old / extra dirs
+   if os.path.exists("/mnt/ams2/AI/DATASETS/scan_stack_rois/") is True:
+      os.system("rm -rf /mnt/ams2/AI/DATASETS/scan_stack_rois/*")
 
    if len(sys.argv) == 1:
       cmd = "default"
@@ -576,8 +602,9 @@ if __name__ == "__main__":
       else:
          export_dict = {}
       #reconcile_non_meteors_confirmed(con, cur, json_conf)
-      #export_fireball_meteors(con, cur, json_conf)
+      export_fireball_meteors(con, cur, json_conf)
       #export_failed_meteors(con, cur, json_conf)
+      export_dict = export_auto_non_meteors(con,cur,station_id, export_dict)
       export_dict = export_meteors(con, cur, station_id, export_dict)
       export_dict = export_non_meteors(con, cur, station_id, export_dict)
       #export_scan_rois()
