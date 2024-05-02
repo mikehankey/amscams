@@ -10,7 +10,7 @@ matplotlib.use('agg')
 import glob
 from lib.PipeAutoCal import fn_dir
 from DynaDB import get_event, get_obs, search_events, update_event, update_event_sol, insert_meteor_event, delete_event
-from lib.PipeUtil import load_json_file, save_json_file, cfe, calc_dist, convert_filename_to_date_cam, check_running, get_trim_num, get_file_info
+from lib.PipeUtil import load_json_file, save_json_file, cfe, calc_dist, convert_filename_to_date_cam, check_running, get_trim_num, get_file_info, fit_and_distribute
 import sys
 import numpy as np
 import datetime
@@ -45,6 +45,11 @@ api_key = json_conf['api_key']
 if "local_mode" in admin_conf:
    r = redis.Redis(admin_conf['redis_host'], port=6379, decode_responses=True)
 
+def calculate_magnitude(intensity, reference_intensity=5000):
+    if intensity <=0: 
+        intensity = 1
+    print(intensity, reference_intensity)
+    return -2.5 * math.log10(intensity / reference_intensity)
 
 def get_aws_events(day):
    day = day.replace("_", "")
@@ -2921,16 +2926,28 @@ def WMPL_solve(event_id, obs,time_sync=1, force=0, dynamodb=None):
             else:
                fps = 25
 
+            if True:
+                try:
+                    azs, els = fit_and_distribute(azs,els)
+                except:
+                    print("Fit and distribute az/el failed.")
+
             if "gc_azs" in obs[station_id][file]:
                azs = np.radians(obs[station_id][file]['gc_azs'])
                els = np.radians(obs[station_id][file]['gc_els'])
                #input("USING GC!")
                # comment / uncomment to use/not use GCs GCFIT GCfit GC Fit GCFit
-               azs = np.radians(obs[station_id][file]['azs'])
-               els = np.radians(obs[station_id][file]['els'])
+               #azs = np.radians(obs[station_id][file]['azs'])
+               #els = np.radians(obs[station_id][file]['els'])
             else:
                azs = np.radians(obs[station_id][file]['azs'])
                els = np.radians(obs[station_id][file]['els'])
+            oints= obs[station_id][file]['ints']
+            #mags = oints
+            mags = []
+            for oi in oints:
+                mag = calculate_magnitude(oi)
+                mags.append(mag)
             o_times = obs[station_id][file]['times']
 
             o_times[0] = o_times[0].replace("-", "_")
@@ -2959,11 +2976,9 @@ def WMPL_solve(event_id, obs,time_sync=1, force=0, dynamodb=None):
                 times.append(time_diff)
             np_times = np.array(times)
             print("TIMES:", np_times)
-            #input("WAIT")
-            traj_solve.infillTrajectory(azs, els, np_times, np.radians(float(lat)), np.radians(float(lon)), alt, station_id=station_id + "-" + cam_id)
+            traj_solve.infillTrajectory(azs, els, np_times, np.radians(float(lat)), np.radians(float(lon)), alt, station_id=station_id + "-" + cam_id, magnitudes=mags)
             wmpl_run_data.append((azs, els, np_times, lat, lon, alt, station_id, cam_id))
             print(   "-----")
-
 
     resp = traj_solve.run()
     if traj_solve.timing_minimization_successful is False:
