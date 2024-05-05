@@ -592,7 +592,11 @@ def gen_cal_hist(json_conf):
    print("/mnt/ams2/cal/cal_day_hist.json")
 
 def make_default_cal(json_conf, cam ):
-   cdh = load_json_file("/mnt/ams2/cal/cal_day_hist.json")
+   cal_hist_file = "/mnt/ams2/cal/cal_day_hist.json"
+   if os.path.exists(cal_hist_file) is True:
+      cdh = load_json_file(cal_hist_file)
+   else:
+      cdh = {}
    rezs = []
    calibs = []
    for row in cdh:
@@ -2462,7 +2466,6 @@ def guess_cal(cal_file, json_conf, cal_params = None):
    az_guess, el_guess, pix_guess, pos_ang_guess = get_cam_best_guess(this_cam, json_conf)
    if "src.jpg" in cal_file:
       cp_file = cal_file.replace("-src.jpg", "-calparams.json")
-   print("CP FILE:", cp_file)
    if cal_params is not None:
    #if cfe(cp_file) == 1:
       if az_guess == 0 and el_guess == 0:
@@ -4175,11 +4178,11 @@ def make_cal_summary(cam,json_conf):
 
    for key in cal_index:
       obj = cal_index[key]
-      print("OBJ:", obj)
+      #print("OBJ:", obj)
       if "cam_id" not in obj and "cal_image_file" not in obj:
          continue
       if "cam_id" not in obj:
-         print(obj.keys())
+         #print(obj.keys())
          (f_datetime, cam_id, f_date_str,y,m,d, h, mm, s) = convert_filename_to_date_cam(obj['cal_image_file'])
          obj['cam_id'] = cam_id
 
@@ -4261,8 +4264,8 @@ def make_cal_summary(cam,json_conf):
    img = np.zeros((1080,1920,3),dtype=np.uint8) 
    mj = {}
    mj['cp'] = mcp
-   for key in mj['cp']:
-      print("MJ CP:", key, mcp[key])
+   #for key in mj['cp']:
+   #   print("MJ CP:", key, mcp[key])
 
    mj['cp']['center_az'] = np.median(recent_azs)
    mj['cp']['center_el'] = np.median(recent_els)
@@ -4343,7 +4346,6 @@ def sync_best_cal_files(json_conf):
 
    cloud_cal_dir = "/mnt/archive.allsky.tv/" + json_conf['site']['ams_id'] + "/CAL/IMAGES/" 
    for cf in ucal_files:
-      print("BEST CAL FILE:", cf)
 
       cal_root = cf.split("-")[0]
       cal_dir = "/mnt/ams2/cal/freecal/" + cal_root + "/"
@@ -4807,7 +4809,7 @@ def make_cal_plots(in_cam_id, json_conf):
       el = temp[key]['center_el']
       pixscale = temp[key]['pixscale']
       position_angle = temp[key]['position_angle']
-      print("CAL:", cam_id, cal_date, stars, res_px)
+      #print("CAL:", cam_id, cal_date, stars, res_px)
       if res_px > 0:
          score = stars / res_px
       else:
@@ -5751,7 +5753,6 @@ def solve_field(image_file, image_stars=[], json_conf={}):
       os.makedirs(idir)
 
    plate_file = idir + ifn
-   print("NEW PLATE FILE:", plate_file)
    wcs_file = plate_file.replace(".jpg", ".wcs")
    grid_file = plate_file.replace(".jpg", "-grid.png")
    wcs_info_file = plate_file.replace(".jpg", "-wcsinfo.txt")
@@ -5759,7 +5760,6 @@ def solve_field(image_file, image_stars=[], json_conf={}):
    astrout = plate_file.replace(".jpg", "-astrout.txt")
    star_data_file = plate_file.replace(".jpg", "-stars.txt")
 
-   print("SOLVED FILE:", solved_file)
    if len(image_stars) < 10:
       oimg = cv2.imread(image_file)
       if oimg.shape[0] != 1080:
@@ -6762,7 +6762,6 @@ def review_cals(json_conf, cam=None):
    for file in files:
       if "grid" not in file and "tn" not in file and "stars" not in file and "blend" not in file:
          (f_datetime, cam, f_date_str,y,m,d, h, mm, s) = convert_filename_to_date_cam(file)
-         print("FILE:", file)
 
 
 
@@ -6801,7 +6800,6 @@ def review_cals(json_conf, cam=None):
 
             cal_img = cv2.subtract(cal_img, mask_img)
          if cfe(cp_file) == 1:
-            print("EVAL FILE:", file, cal_img.shape)
             cp, bad_stars, marked_img = eval_cal(cp_file,json_conf,cp,cal_img, mask_img)
 
             marked_img_file = cp_file.replace("-calparams.json", "-marked.jpg")
@@ -7030,7 +7028,6 @@ def autocal(image_file, json_conf, show = 0, heal_only=0):
    if cfe(image_file) == 0:
       return ()
 
-   print("IMAGE FILE:", image_file)
    try:
       img = cv2.imread(image_file)
       if img.shape[0] != 1080:
@@ -7137,7 +7134,6 @@ def autocal(image_file, json_conf, show = 0, heal_only=0):
    try:
       star_img = img.copy()
    except: 
-      print("BAD INPUT FILE:", image_file)
       os.system("rm " + image_file) 
       return()
 
@@ -10327,7 +10323,6 @@ def AzEltoRADec_old(az,el,cal_file,cal_params,json_conf):
    return(ra,dec)
 
 def fn_dir(file):
-   print("FILE:", file)
    fn = file.split("/")[-1]
    dir = file.replace(fn, "")
    dir = dir.replace("//", "/")
@@ -10553,11 +10548,11 @@ def minimize_poly_multi_star(merged_stars, json_conf,orig_ra_center=0,orig_dec_c
    cal_params['y_poly'] = y_poly
    cal_params['x_poly_fwd'] = x_poly_fwd
    cal_params['y_poly_fwd'] = y_poly_fwd
-   print("CAL PARAMS:", cal_params)
+   #print("CAL PARAMS:", cal_params)
    print("MERGED STARS:", len(merged_stars))
    print("XP:", x_poly)
    print("XP:", type(x_poly))
-   print("yP:", type(y_poly))
+   print("YP:", type(y_poly))
    print("STARS:", len(merged_stars))
    res = reduce_fit_multi(x_poly,field, merged_stars, cal_params, fit_img, json_conf, cam_id,0,1)
    #res,updated_merged_stars = reduce_fit_multi(x_poly, "x_poly",merged_stars,cal_params,fit_img,json_conf,cam_id,1,show)
@@ -10596,10 +10591,10 @@ def minimize_poly_multi_star(merged_stars, json_conf,orig_ra_center=0,orig_dec_c
          else:
             factor = 4
          if cat_dist < (res * factor):
-            print("KEEP:", center_dist, res * factor, cat_dist)
+            #print("KEEP:", center_dist, res * factor, cat_dist)
             new_merged_stars.append(star) 
-         else:
-            print("SKIP:", center_dist, res * factor, cat_dist)
+         #else:
+         #   print("SKIP:", center_dist, res * factor, cat_dist)
       updated_merged_stars = new_merged_stars
 
    all_res = [row[-2] for row in updated_merged_stars]
@@ -11570,7 +11565,7 @@ def make_az_grid(cal_image, mj,json_conf,save_file=None):
 
 
    for az in range(int(start_az),int(end_az)):
-      print("AZ ON GRID", az)
+      #print("AZ ON GRID", az)
       if az >= 361:
          az = az - 361
 
