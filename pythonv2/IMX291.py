@@ -115,6 +115,8 @@ def sense_up(cam, cam_ip):
 
    outdir = "/mnt/ams2/meteor_archive/" + json_conf['site']['ams_id'] + "/CAL/AUTOCAL/" + year + "/" 
    outfile = outdir + dom + "_" + hms + "_000_" + cams_id + ".png"
+   if os.path.exists(outdir) is False:
+      os.makedirs(outdir)
 
    # signle frame
    if "cal_median" in cal_options:
