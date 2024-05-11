@@ -913,7 +913,7 @@ def make_tl_html():
       vid_fn, vdir = fn_dir(vid)
       vid_desc = vid_fn[0:10]
       audit_fn = vid_fn.replace("_row_tl.mp4", "-audit.html")
-      html += "<li>" + vid_desc + " - <a href=" + vid_fn + ">" + " Row Timelapse</a>" + " - <a href=" + audit_fn + ">Audit</a></li>"
+      html += "<li>" + vid_desc + " - <a href=" + vid_fn + ">" + " Row Timelapse</a>" + " <!-- <a href=" + audit_fn + ">Audit</a>--></li>"
    html += "</ul>"
    oo = open(TL_VIDEO_DIR + "index.html", "w")
    oo.write(html)
@@ -929,6 +929,7 @@ def make_tl_html():
    cl_url = TL_CLOUD_FILE.replace("/mnt/", "https://")
    print(f"Audit file and time lapse saved on cloud here: {cl_url}")
    print(rsync_cmd)
+   os.system(rsync_cmd)
 
 def make_multi_cam_frame(frame, TID):
    mc_img = np.zeros((1080,1920,3),dtype=np.uint8)
