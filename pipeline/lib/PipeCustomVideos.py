@@ -461,12 +461,16 @@ def assemble_custom_old(TL_CONF, json_conf):
    print("wrote list: list.txt")
 
 
-def hd_snaps(hd_dir, json_conf):
+def hd_snaps(hd_dir, date_wild, cam_wild, json_conf):
+   # dump frames to the hd_snaps dir
+   print("HD DIR:", hd_dir)
    snap_dir = hd_dir + "/snaps/"
    if cfe(snap_dir, 1) == 0:
       os.makedirs(snap_dir)
-   hd_files = glob.glob(hd_dir + "*.mp4")
-   for file in hd_files:
+   glob_dir = f"{hd_dir}{date_wild}*{cam_wild}*.mp4"
+   print(glob_dir)
+   hd_files = glob.glob(glob_dir)
+   for file in sorted(hd_files):
       fn, dir = fn_dir(file)
       outfile = snap_dir + fn
       outfile = outfile.replace(".mp4", ".jpg")

@@ -1,6 +1,6 @@
 from flask import Flask, request
 from FlaskLib.FlaskUtils import get_template, get_version
-from lib.PipeUtil import cfe, load_json_file, save_json_file, convert_filename_to_date_cam
+from lib.PipeUtil import cfe, load_json_file, save_json_file, convert_filename_to_date_cam, calculate_magnitude
 from lib.PipeAutoCal import fn_dir
 from lib.PipeImage import quick_video_stack
 import math
@@ -740,6 +740,7 @@ def detail_page(amsid, date, meteor_file):
    print("CACHE:", CACHE_VDIR) 
 
    cal_params_js_var = "var cal_params = []"
+   mjr = None
    if cfe(mjrf) == 1:
       mjr = load_json_file(mjrf)
       print("LOADING REDUCE FILE:", mjrf)
@@ -794,7 +795,13 @@ def detail_page(amsid, date, meteor_file):
       crop_box_js_var = ""
       frame_table_rows = ""
 
-   lc_html = light_curve_url(METEOR_DIR + sd_trim , mj)
+   if mjr is not None:
+      try:
+         lc_html = light_curve_url(METEOR_DIR + sd_trim , mjr)
+      except:
+         lc_html = "#"
+   else:
+      lc_html = "#"
   
    fn, vdir = fn_dir(meteor_file)
    div_id = fn.replace(".mp4", "")
@@ -828,7 +835,12 @@ def frames_table(mjr, base_name, CACHE_VDIR):
          mjr['meteor_frame_data'] = []
       for mfd in mjr['meteor_frame_data']:
          dt, fn, x, y, w, h, oint, ra, dec, az, el = mfd
-         print("MFD:", dt)
+         try:
+            mag = calculate_magnitude(oint)
+         except:
+            mag = oint
+         oint = mag
+         print("MFD:", mag, dt)
          if " " in dt:
             date, dtime = dt.split(" ")
          else:
@@ -850,7 +862,7 @@ def frames_table(mjr, base_name, CACHE_VDIR):
          frames_table += """<td>{:d}</td><td>{:s} </td>""".format(int(fn), str(dtime))
          frames_table += "<td> {:0.2f} / {:0.2f}</td>".format(ra, dec)
          frames_table += "<td>{:s} / {:s}</td>".format(str(az)[0:5],str(el)[0:5])
-         frames_table += """<td>{:s} / {:s}</td><td>{:s} / {:s}</td><td>{:s}</td>""".format(str(x), str(y), str(w), str(h), str(int(oint)))
+         frames_table += """<td>{:s} / {:s}</td><td>{:s} / {:s}</td><td>{:s}</td>""".format(str(x), str(y), str(w), str(h), str(round(oint,1)))
          frames_table += """<td><a class="btn btn-danger btn-sm delete_frame"><i class="icon-delete"></i></a></td>"""
          frames_table += """<td class="position-relative"><a class="btn btn-success btn-sm select_meteor"><i class="icon-target"></i></a></td>"""
          frames_table += "<td></td><td></td><td></td></tr>\n"
@@ -866,28 +878,33 @@ def frames_table(mjr, base_name, CACHE_VDIR):
 
    return(frames_table)   
 
-def light_curve_url(sd_video_file, mj):
-   light_curve_file = sd_video_file.replace('.mp4','-lightcurve.jpg')
-   if(cfe(light_curve_file) == 1):
-      lc_url = '<a class="d-block nop text-center img-link-n" href="'+light_curve_file+'"><img  src="'+light_curve_file+'" class="mt-2 img-fluid"></a>'
-   else:
-      if "best_meteor" in mj:
-         lc_url = graph_light_curve(mj)
-      else:
-         lc_url = ""
+def light_curve_url(sd_video_file, mjr):
+   lc_url = graph_light_curve(mjr)
+   
+   #light_curve_file = sd_video_file.replace('.mp4','-lightcurve.jpg')
+   #if(cfe(light_curve_file) == 1):
+   ##   lc_url = '<a class="d-block nop text-center img-link-n" href="'+light_curve_file+'"><img  src="'+light_curve_file+'" class="mt-2 img-fluid"></a>'
+   #else:
+   #   if "best_meteor" in mj:
+   ##      lc_url = graph_light_curve(mjr)
+   #   else:
+   #      lc_url = ""
          #lc_url = "<div class='alert error mt-4'><iframe scolling=no src=" + light_curve_url  + " width=100% height=640></iframe></div>"
    return(lc_url)
 
-def graph_light_curve(mj):
+def graph_light_curve(mjr):
    x1_vals = ""
    y1_vals = ""
-   for i in range(0, len(mj['best_meteor']['ofns'])):
+   for i in range(0, len(mjr['meteor_frame_data'])):
+      datetime, frame, x, y, w, h, oint, ra, dec, az, el = mjr['meteor_frame_data'][i]
+      omag = calculate_magnitude(oint)
       if x1_vals != "":
          x1_vals += ","
          y1_vals += ","
-      x1_vals += str(mj['best_meteor']['ofns'][i])
-      y1_vals += str(mj['best_meteor']['oint'][i])
+      x1_vals += str(i)
+      y1_vals += str(omag)
    gurl = "/dist/plot.html?"
-   gurl += "title=Meteor_Light_Curve&xat=Intensity&yat=Frame&x1_vals=" + x1_vals + "&y1_vals=" + y1_vals
+   gurl += "y1_reverse=true&title=Meteor_Light_Curve&xat=Intensity&yat=Frame&x1_vals=" + x1_vals + "&y1_vals=" + y1_vals
+   print("GURL:", gurl)
    return(gurl)
 

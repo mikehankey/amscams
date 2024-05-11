@@ -18,10 +18,13 @@ import ephem
 import json
 import glob
 import decimal
+from scipy.stats import linregress
 
 dec = decimal.Decimal
 #try
 #import jwt
+def calculate_magnitude(intensity, reference_intensity=5000):
+    return -2.5 * math.log10(intensity / reference_intensity)
 
 def get_file_contents(file_name):
    fp = open(file_name)
@@ -241,6 +244,27 @@ def ephem_info(device_lat, device_lng, capture_date):
 
    return(sun_status, sun_az, sun_alt, sun_rise, sun_set, moon_az, moon_alt, moon_rise, moon_set)
 
+def fit_and_distribute(xs, ys, num_points=None):
+   # Perform linear regression to fit a line
+   slope, intercept, _, _, _ = linregress(xs, ys)
+
+   # If num_points is not provided, use the same number as the input
+   if num_points is None:
+      num_points = len(xs)
+    
+   # Generate equally spaced x-values based on the original range
+   new_xs = np.linspace(min(xs), max(xs), num_points)
+
+   # Generate y-values based on the fitted line
+   new_ys = slope * new_xs + intercept
+
+   # Check if the original x-values are in descending order
+   if xs[-1] < xs[0]:
+      new_xs = new_xs[::-1]
+      new_ys = new_ys[::-1]
+
+   return new_xs, new_ys
+
 def get_file_info(file):
    # tdiff in minutes!
    cur_time = int(time.time())
@@ -458,12 +482,15 @@ def cfe(file,dir = 0):
          return(0)
 
 def load_json_file(json_file):  
-   with open(json_file, 'r' ) as infile:
-      json_data = json.load(infile)
+   try:
+      with open(json_file, 'r' ) as infile:
+         json_data = json.load(infile)
+   except:
+      print("Failed to open:", json_file)
+      exit()
    return json_data 
 
 def save_json_file(json_file, json_data, compress=False):
-   #print("\tSAVED JSON FILE:", json_file)
    if "cp" in json_data:
       if json_data['cp'] is not None:
          for key in json_data['cp']:

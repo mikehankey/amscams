@@ -16,7 +16,6 @@ def filename_to_date(filename):
       y,m,d,h,mm,s,ms,cam = ddd
    else:
       return("0000-00-00 00:00:00.0")
-      print("BAD FILE:", ddd, len(ddd))
    start_time = y + "-" + m + "-" + d + " " + h + ":" + m + ":" + s + ".0"
    return(start_time)
 
@@ -46,9 +45,7 @@ def get_meteors_in_range(station_id, start_date, end_date,del_data,filters=None)
          nored = 1
       if "hotspot" in filters:
          hotspot_filter = 1
-         print("HOTSPOT FILTER ON!")
       if "cam" in filters:
-         print("CAM FILTER:", filters)
          xx,cam_id = filters.split(":")
          cam_filter = cam_id
 
@@ -63,8 +60,8 @@ def get_meteors_in_range(station_id, start_date, end_date,del_data,filters=None)
    # load AI and event files between the date range:
    delta = end_dt - start_dt 
    days = [start_dt + timedelta(days=i) for i in range(delta.days + 1)]
-   for day in days:
-      print("DAY:", day)
+   #for day in days:
+   #   print("DAY:", day)
 
    if start_date == end_date:
       ai_dict = {}
@@ -89,14 +86,11 @@ def get_meteors_in_range(station_id, start_date, end_date,del_data,filters=None)
          mi = []
  
       if hotspot_filter == 0 and nored == 0 and cam_filter == 0 and multi_filter == 0:
-         print("NO FILTERS ON")
          return(mi, ai_dict)
       elif hotspot_filter == 1:
          filtered_index = []
-         print("HOTSPOT FILTERS ON")
          for dd in mi:
             meteor_file, reduced, start_time, dur, ang_vel, ang_dist, hotspot, msm = dd 
-            print("HOTSPOT", hotspot)
             if hotspot >= 4:
                filtered_index.append(dd)
       elif cam_filter != 0:
@@ -121,11 +115,9 @@ def get_meteors_in_range(station_id, start_date, end_date,del_data,filters=None)
    # check to see how many days in the range
    # if it is > 7 and use the month full index file (and have to del with bad sync.)
    # else use the main index file
-   print(start_date, end_date)
    start_date = start_date.replace("-", "_")
    end_date = end_date.replace("-", "_")
    diff = end_dt - start_dt
-   print("DIFF:", diff)
    days_in_range = int(diff.total_seconds() / 86300) 
    if days_in_range == 0:
       days_in_range = 1
@@ -142,7 +134,6 @@ def get_meteors_in_range(station_id, start_date, end_date,del_data,filters=None)
          ai_file = "/mnt/ams2/meteors/" + this_day + "/" + station_id + "_" + this_day + "_AI_DATA.info"
          events_file = "/mnt/ams2/meteors/" + this_day + "/" + station_id + "_" + this_day + "_EVENTS.info"
          ms_obs_file = "/mnt/ams2/meteors/" + this_day + "/" + this_day + "_MY_MS_OBS.info" 
-         print("LOADING AI:", ai_file)
          if os.path.exists(ai_file) is True:
             temp = load_json_file(ai_file)
             for row in temp:
@@ -151,34 +142,26 @@ def get_meteors_in_range(station_id, start_date, end_date,del_data,filters=None)
             temp = load_json_file(ms_obs_file)
             for row in temp:
                mso_dict[row] = {}
-         print("This day:", this_day, mif)
          if cfe(mif) == 1:
             mit = load_json_file(mif)
-            print("ADDING METEORS FOR DAY:", mif)
             for dd in mit:
                meteor_file, reduced, start_time, dur, ang_vel, ang_dist, hotspot, msm = dd 
                root_fn = meteor_file.split("/")[-1].replace(".json", "")
-               print(root_fn)
-               print(mso_dict)
                if nored == 1:
                #   meteor_file, reduced, start_time, dur, ang_vel, ang_dist, hotspot, msm = dd 
                   rf = meteor_file.replace(".json", "-reduced.json")
                   if cfe(rf) == 1:
                      reduced = 1
                   if reduced == 1:
-                     print("NORED")
                      continue
                if hotspot_filter == 1:
                #   meteor_file, reduced, start_time, dur, ang_vel, ang_dist, hotspot, msm = dd 
-                  print("HOSPOT VALUE", hotspot)
                   if hotspot <= 5:
                      continue
                if root_fn in mso_dict:
                   msm = 1
                   dd = [meteor_file, reduced, start_time, dur, ang_vel, ang_dist, hotspot, msm] 
                mi.append(dd)
-         else:
-            print("NO MIF:", mif)
    
 
 
@@ -188,7 +171,6 @@ def day_count(md, amsid, day,mc,rc,del_data):
    for js in jsons:
       fn,dir = fn_dir(js)
       root = fn.replace(".json", "")
-      print("ROOT:", root)
       if root not in del_data:
          if "reduced" in js:
             rc += 1 
@@ -196,8 +178,6 @@ def day_count(md, amsid, day,mc,rc,del_data):
             mc.append(js) 
          else:
             rc.append(js) 
-      else:
-         print("DEL FOUND:", js)
    return(mc,rc)
 
 def meteors_by_day(amsid, in_data):
@@ -486,7 +466,6 @@ def non_meteors_main_old (amsid, in_data) :
    return(out)
 
 def meteors_main (amsid, in_data) :
-   print("meteors_main")
    json_conf = load_json_file("../conf/as6.json")
    delete_log = "/mnt/ams2/SD/proc2/json/" + amsid + ".del"
    if cfe(delete_log) == 1:
@@ -524,7 +503,6 @@ def meteors_main (amsid, in_data) :
 
 
       
-   print("done get_meteors_in_range", len(tmeteors))
 
    if in_data['p'] is None:
       page = 1
@@ -561,7 +539,7 @@ def meteors_main (amsid, in_data) :
    for meteor in these_meteors:
       if len(meteor) == 8:
          meteor_file, reduced, start_time, dur, ang_vel, ang_dist, hotspot,msm = meteor 
-         print("METEOR:", msm)
+         #print("METEOR:", msm)
          if msm == 1:
             msc += 1
       if len(meteor) == 10:
@@ -621,12 +599,12 @@ def meteors_main (amsid, in_data) :
          meteor_file, reduced, start_time, dur, ang_vel, ang_dist, hotspot,msm = meteor 
       elif len(meteor) == 10:
          meteor_file, reduced, start_time, dur, ang_vel, ang_dist, hotspot,msm,mlabel,hlabel = meteor 
-         print("BEF", meteor_file)
+         #print("BEF", meteor_file)
          if "ams2" not in meteor_file:
             station_id = meteor_file.split("/")[0]
             meteor_file = meteor_file.replace(station_id + "_", "")
             meteor_file = "/mnt/ams2/meteors/" + meteor_file[0:10] + "/" + meteor_file
-         print("AFT", meteor_file)
+         #print("AFT", meteor_file)
       red_file = meteor_file.replace(".json", "-reduced.json")
       if cfe(red_file) == 1:
          reduced = 1
@@ -637,7 +615,7 @@ def meteors_main (amsid, in_data) :
       fn,dir = fn_dir(meteor_file)
       dfn = fn.replace(".json", "") 
       if dfn in del_data:
-         print("ALREADY DELETED:", dfn)
+         #print("ALREADY DELETED:", dfn)
 
          continue
       el = fn.split("_")
@@ -652,14 +630,14 @@ def meteors_main (amsid, in_data) :
       root_fn = root_fn.replace("-stacked-tn.jpg", "")
       root_fn = root_fn.replace(".json", "")
       if root_fn in ai_dict:
-         print("AI", ai_dict[root_fn])
+         #print("AI", ai_dict[root_fn])
 #I ['ACCEPT', '2022_04_25_02_35_00_000_010001-trim-0092', '2022_04_25_02_35_00_000_010001-trim-92-HD-meteor.mp4', '[182, 195, 332, 345]', 96.77115678787231, 1.502394676208496, '', 0.0]
          ai_text = str(round(ai_dict[root_fn][4],1)) + "% Meteor "
          ai_text += str(round(ai_dict[root_fn][5],1)) + "% Fireball "
          ai_text += str(round(float(ai_dict[root_fn][7]),1)) + "% "
          ai_text += str(ai_dict[root_fn][6]) 
       else:
-         print("NOAI", root_fn )
+         #print("NOAI", root_fn )
          ai_text = ""
  
       if ai_text != "": 
@@ -697,7 +675,7 @@ def meteors_main (amsid, in_data) :
       if msm == 1 and reduced == 1:
          ht_class = "multi"
 
-      print("MSM:", msm)
+      #print("MSM:", msm)
       # Per meteor cell / div
       out += """
          <div id='""" + jsid + """' class='preview select-to """ + ht_class + """'>

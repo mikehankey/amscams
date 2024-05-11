@@ -242,7 +242,8 @@ if __name__ == "__main__":
       else:
          audit_min(sys.argv[2], json_conf)
    if cmd == 'tlc':
-      make_tl_for_cam(sys.argv[2], sys.argv[3], json_conf)
+       # date_wild, cam, speed
+      make_tl_for_cam(sys.argv[2], sys.argv[3], sys.argv[4], json_conf)
    if cmd == 'tla':
       timelapse_all(sys.argv[2], json_conf)
    if cmd == 'vfi':
@@ -547,7 +548,13 @@ if __name__ == "__main__":
       cam_num = sys.argv[3]
       meteors_last_night_for_cam(date, cam_num, json_conf)
    if cmd == "hd_snaps":
-      hd_snaps(sys.argv[2], json_conf)
+      # arg 1 is dir 
+      # arg 2 is date wild
+      # arg 3 is cam wild
+      hd_dir = sys.argv[2]
+      date_wild = sys.argv[3]
+      cam_wild = sys.argv[4]
+      hd_snaps(hd_dir, date_wild, cam_wild, json_conf)
    if cmd == "custom":
       assemble_custom(sys.argv[2], json_conf)
    if cmd == "sid":

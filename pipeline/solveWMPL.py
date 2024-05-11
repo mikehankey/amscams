@@ -2935,7 +2935,6 @@ def WMPL_solve(event_id, obs,time_sync=1, force=0, dynamodb=None):
             if "gc_azs" in obs[station_id][file]:
                azs = np.radians(obs[station_id][file]['gc_azs'])
                els = np.radians(obs[station_id][file]['gc_els'])
-               #input("USING GC!")
                # comment / uncomment to use/not use GCs GCFIT GCfit GC Fit GCFit
                #azs = np.radians(obs[station_id][file]['azs'])
                #els = np.radians(obs[station_id][file]['els'])
@@ -3154,5 +3153,4 @@ if __name__ == "__main__":
       else:
          events_report(meteor_file)
    if cmd == "custom_solve" :
-      print("YO")
       custom_solve(meteor_file)

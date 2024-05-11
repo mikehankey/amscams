@@ -122,7 +122,7 @@ class Plotter():
       hl_decs = []
 
       plot_data = {
-         "t": "Sun Centered geocentric ecliptic coordinates <br> " + self.date_desc ,
+         "t": "Heliocentric (Sun Centered) Meteor Radiants<br> " + self.date_desc ,
          "x": [],
          "y": [],
          "c": [],
@@ -150,7 +150,7 @@ class Plotter():
 
          if day not in rads_by_day:
             rads_by_day[day] = {
-               "t": "Sun Centered geocentric ecliptic coordinates <br> " + self.date_desc ,
+               "t": "Heliocentric (Sun Centered) Meteor Radiants <br> " + self.date_desc ,
                "x": [],
                "y": [],
                "c": [],
@@ -168,32 +168,60 @@ class Plotter():
          geo_ras.append(ra)
          geo_decs.append(rad['geocentric']['dec_g']) 
          if "apparent_ECI" in rad:
+ 
+            rad_ra = np.degrees(rad['apparent_ECI']['ra'])
+            rad_dec = np.degrees(rad['apparent_ECI']['dec'])
             ap_ra = np.radians(np.degrees(rad['apparent_ECI']['ra'])-180)
             ap_ras.append(ap_ra)
             ap_decs.append(rad['apparent_ECI']['dec']) 
+         else:
+            rad_ra = 0
+            rad_dec = 0
 
-         # STRANGE BUG NEEDS TO BE FIXED BY GPT
+
+         # GPT Notes 
+         # L (ecliptic longitude) corresponds to the horizontal axis. It's similar to the longitude on Earth, and on a Mollweide projection, it runs left to right.  (x)
+         # The central meridian (0 degrees) is usually in the middle of the map.
+         # B (ecliptic latitude) corresponds to the vertical axis. It's similar to latitude on Earth, and on the Mollweide projection, it extends from top (north) to bottom (south). (y)
+         # The Mollweide projection typically requires that the longitude values be adjusted. Since Mollweide projections often center on 0 degrees (the prime meridian), you might need to shift your longitude values. This shift involves subtracting 180 degrees from your longitude values, so the range becomes [ − 180 , 180 ] [−180,180] degrees instead of [ 0 , 360 ] [0,360] degrees.
+
          if "ecliptic_helio" in rad:
+
+            L_h = rad['ecliptic_helio']['L_h']
+            B_h = rad['ecliptic_helio']['B_h']
+            L_h_degrees = np.degrees(L_h)
+            B_h_degrees = np.degrees(B_h)
+            L_h_degrees_adjusted = L_h_degrees - 180
+
+
             #hl_ra = np.radians(np.degrees(rad['ecliptic_helio']['L_h'])-180)
             hl_ra = np.radians(np.degrees(rad['ecliptic_helio']['L_h']))
             #hl_ra = rad['ecliptic_helio']['L_h']
             # reverse the Y?
             #hl_ra_rev = hl_ra
             hl_ra_rev = -hl_ra
-            hl_ras.append(hl_ra_rev)
-            hl_decs.append(rad['ecliptic_helio']['B_h'])
 
-            hl_ra_n = np.degrees(rad['ecliptic_helio']['L_h']) 
+            # Lambdas 
+            #hl_ras.append(hl_ra_rev)
+            hl_ras.append(L_h_degrees_adjusted)
+            # Betas
+            #hl_decs.append(rad['ecliptic_helio']['B_h'])
+            hl_decs.append(B_h_degrees)
+
+            #hl_ra_n = np.degrees(rad['ecliptic_helio']['L_h']) 
 
             # Not sure if this is needed? Some strange things happen 
             # When converting radians to degrees that don't match the RMS
             # SEEMS to only happen to radiants < 180?
             #if hl_ra_n < 180:
-            hl_ra_n = 360 - hl_ra_n
+            #hl_ra_n = 360 - hl_ra_n
 
 
-            rads_by_day[day]['x'].append((hl_ra_n))
-            rads_by_day[day]['y'].append(np.degrees(rad['ecliptic_helio']['B_h']) *-1)
+            #rads_by_day[day]['x'].append((hl_ra_n))
+            #rads_by_day[day]['y'].append(np.degrees(rad['ecliptic_helio']['B_h']) *-1)
+
+            rads_by_day[day]['x'].append(L_h_degrees_adjusted)
+            rads_by_day[day]['y'].append(B_h_degrees)
 
             if rad['IAU'] in self.shower_colors:
                r, g, b = self.shower_colors[rad['IAU']]
@@ -212,7 +240,10 @@ class Plotter():
             rads_by_day[day]['p'].append("top center")
             rads_by_day[day]['ids'].append(rad['event_id'])
 
-            print("RAD:", rad['IAU'], rad['ecliptic_helio']['L_h'], rad['ecliptic_helio']['B_h'], np.degrees(rad['ecliptic_helio']['L_h']), np.degrees(rad['ecliptic_helio']['B_h']), hl_ra_n)
+            #print("RAD:", rad['IAU'], rad['ecliptic_helio']['L_h'], rad['ecliptic_helio']['B_h'], np.degrees(rad['ecliptic_helio']['L_h']), np.degrees(rad['ecliptic_helio']['B_h']))
+            print("RAD:", rad['IAU'], L_h_degrees, B_h_degrees, rad_ra, rad_dec)
+
+            #rad['ecliptic_helio']['L_h'], rad['ecliptic_helio']['B_h'], np.degrees(rad['ecliptic_helio']['L_h']), np.degrees(rad['ecliptic_helio']['B_h']))
 
 
       mp_colors = tuple(mp_colors)

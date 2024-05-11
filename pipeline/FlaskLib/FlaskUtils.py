@@ -28,8 +28,8 @@ def network_nav(json_conf):
               <a class="dropdown-item" href="/NETWORK/METEORS/{AMSID}/">Meteor Events</a>
             </div>
         </li>
-            <!--
         <li class="nav-item"><a class="nav-link" href="/NETWORK/{AMSID}">NETWORK</a></li>
+            <!--
             -->
    """
    return(net_nav)

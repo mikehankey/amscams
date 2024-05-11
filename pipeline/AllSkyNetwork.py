@@ -22,6 +22,12 @@ today = datetime.now().strftime("%Y_%m_%d")
 if len(sys.argv) < 1:
    ASN.help()
    exit()
+
+if cmd == "ignore":
+   event_id = sys.argv[2]
+   ignore_string = sys.argv[3]
+   ASN.ignore_add_item(event_id, ignore_string)
+
 if cmd == "admin_event_links" or cmd == "edit_event":
    event_id = sys.argv[2]
    ASN.admin_event_links(event_id)
@@ -208,6 +214,9 @@ if cmd == "publish_day":
    # make event table
    ASN.event_table(sys.argv[2])
 
+if cmd == "goto" or cmd == "goto_event":
+   event_id = sys.argv[2]
+   ASN.goto_event(event_id)
 
 if cmd == "events_by_day":
    ASN.events_by_day_graph()
@@ -272,6 +281,7 @@ if cmd == "day_load_solve_results" or cmd == "load_solves":
    ASN.help()
    ASN.set_dates(event_day)
    ASN.day_load_solves(event_day)
+   print("Loaded solves")
 
 if cmd == "do_all":
    ASN.help()
@@ -453,7 +463,12 @@ if cmd == "all_year_events":
    ASN.all_year_events(year)
 if cmd == "year_report":
    year = sys.argv[2]
+   print("Start year report for", year)
    ASN.year_report(year)
+   print("Done year report for", year)
+if cmd == "publish_year":
+   year = sys.argv[2]
+   ASN.publish_year(year)
 
 if cmd == "resolve_event_day":
    event_day = sys.argv[2]

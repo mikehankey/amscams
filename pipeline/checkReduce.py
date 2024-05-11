@@ -9,7 +9,17 @@ import datetime as dt
 from lib.PipeUtil import load_json_file, save_json_file
 today = (datetime.now() - dt.timedelta(days = 1)).strftime("%Y_%m_%d")
 current_year, current_month, current_day = today.split("_")
-years = ['2022', '2021']
+years = []
+meteor_root_dir = "/mnt/ams2/meteors"
+meteor_days = os.listdir(meteor_root_dir)
+year_dict = {}
+for day in meteor_days:
+    el = day.split("_")
+    if "20" == day[:2] and len(el) == 3:
+       y,m,d = day.split("_")
+       year_dict[y] = {}
+for y in year_dict :
+   years.append(y)   
 start_year = min(years)
 
 year_span = int(current_year) - int(start_year)
@@ -43,13 +53,13 @@ if os.path.exists("solve-hist.json"):
 else:
    solve_hist = {}
 
-days = sorted(all_days)[-60:]
+days = sorted(all_days)
 
 checker = {}
 redos = []
 good = []
 for day in sorted(days,reverse=True):
-   mdir = "/mnt/ams2/meteors/" + day + "/"
+   mdir = meteor_root_dir + day + "/"
    if os.path.isdir(mdir) is False:
       continue
    files = os.listdir(mdir)
@@ -60,24 +70,26 @@ for day in sorted(days,reverse=True):
       if "reduced" in ff:
          root_fn = ff.replace("-reduced.json", "")
          reduced = 1
-         checker[root_fn] = 1
+         #checker[root_fn] = 1
       else:
          root_fn = ff.replace(".json", "")
-         if root_fn not in checker:
+         if root_fn not in checker and root_fn not in solve_hist:
             checker[root_fn] = 0
 
-
-for check in checker:
-   print(check, checker[check])
-   if checker[check] == 0:
+# check the last 60 days
+for check in sorted(checker,reverse=True)[0:60]:
+   print("CHECK:", check, checker[check])
+   if checker[check] == 0 :
       cmd = "./Process.py fireball " + check + ".mp4"
       redos.append(cmd)
       print(cmd)
       os.system(cmd)
+      solve_hist[check] = 1
    else: 
       good.append(check)
 
 
 print(len(redos), "need are missing reduce in last", len(days), "days") 
 print(len(good), "are reduced in last", len(days), "days") 
+save_json_file("solve-hist.json", solve_hist)
 

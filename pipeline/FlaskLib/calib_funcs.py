@@ -1,4 +1,4 @@
-from lib.PipeUtil import load_json_file, save_json_file, cfe, bound_cnt, convert_filename_to_date_cam
+from lib.PipeUtil import load_json_file, save_json_file, cfe, bound_cnt, convert_filename_to_date_cam, calculate_magnitude
 from lib.PipeAutoCal import get_image_stars, get_catalog_stars , pair_stars, eval_cnt, update_center_radec, fn_dir
 from lib.PipeDetect import fireball, apply_frame_deletes
 import os
@@ -291,7 +291,13 @@ def cal_file(amsid, calib_file):
    for star in cp['cat_image_stars']:
       print(star)
       dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist,bp = star
-      star_rows += "<tr><td>{:s}</td><td>{:s} </td><td> {:s} / {:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td></tr>".format(str(dcname), str(mag), str(ra)[0:5], str(dec)[0:5], str(match_dist)[0:5], str(cat_dist)[0:5], str(bp))
+      try:
+         img_mag = calculate_magnitude(bp)
+      except:
+         img_mag = bp
+     
+      print("STAR ROWS", img_mag)
+      star_rows += "<tr><td>{:s}</td><td>{:s} </td><td> {:s} / {:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td></tr>".format(str(dcname), str(mag), str(ra)[0:5], str(dec)[0:5], str(match_dist)[0:5], str(cat_dist)[0:5], str(round(img_mag,1)))
 
 
 

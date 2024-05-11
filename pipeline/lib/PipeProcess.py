@@ -211,7 +211,7 @@ def run_jobs(json_conf):
    
 
 
-   os.system("killall flex-detect.py")
+   os.system("killall flex-detect.py > /dev/null 2>&1")
    rj_start = time.time()
 
    # make sure DynaDB is not already running. If it is kill it.
@@ -428,18 +428,18 @@ def run_jobs(json_conf):
 
    for cmd in cmds :
       if sun == "day":
-         print(cmd[2])
+         print(cmd[2] + "\n")
          st = time.time()
          os.system(cmd[2] + " > /home/ams/run_jobs.txt 2>&1")
-         elp = time.time() - st
-         print("ELP:", round(elp,1), "Minutes")
+         elp = (time.time() - st) / 60
+         print("ELP:", round(elp,1), "Minutes\n")
       else:
          if cmd[0] == 'all':
-            print(cmd[2])
+            print(cmd[2] + "\n")
             st = time.time()
             os.system(cmd[2]  + " > /home/ams/run_jobs.txt 2>&1")
             elp = time.time() - st
-            print("ELP:", round(elp,1), "Minutes")
+            print("ELP:", round(elp,1), "Minutes\n")
 
    #msg = "info:run_jobs:Run jobs ended"
    #cmd = "./log.py '" + msg + "'"

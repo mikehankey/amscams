@@ -1049,8 +1049,6 @@ def aurora_report(date, json_conf):
       aurora_stack_vid(file, json_conf)
 
 def detect_aurora(img_file=None):
-   print("DA:", img_file)
-#   img_file = "aurora.jpg"
    max_rg = 0
    max_bg = 0
    best_quad = ""
@@ -1059,7 +1057,6 @@ def detect_aurora(img_file=None):
    try:
       w,h = img.shape[:2]
    except:
-      print("Bad image.", img_file)
       return(0)
    #cv2.imshow('pepe', img)
    #cv2.waitKey(0)
@@ -1075,7 +1072,6 @@ def detect_aurora(img_file=None):
    else:
       rg = 0
       bg = 0
-   print("RG ALL:", rg, bg)
    # check 4 quads of image
    x1 = 0
    x2 = int(img.shape[1] / 2)
@@ -1088,7 +1084,6 @@ def detect_aurora(img_file=None):
    else:
       rg = 0
       bg = 0
-   print("RG TL:", rg, bg)
    if rg > max_rg and bg > max_bg:
       max_rg = rg
       max_bg = bg
@@ -1105,7 +1100,6 @@ def detect_aurora(img_file=None):
    else:
       rg = 0
       bg = 0
-   print("RG TR:", rg, bg)
    if rg > max_rg and bg > max_bg:
       max_rg = rg
       max_bg = bg
@@ -1122,7 +1116,6 @@ def detect_aurora(img_file=None):
    else:
       rg = 0
       bg = 0
-   print("RG BR:", rg, bg)
    if rg > max_rg and bg > max_bg:
       max_rg = rg
       max_bg = bg
@@ -1140,7 +1133,6 @@ def detect_aurora(img_file=None):
    else:
       rg = 0
       bg = 0
-   print("RG BL:", rg, bg)
    if rg > max_rg and bg > max_bg:
       max_rg = rg
       max_bg = bg
@@ -1166,15 +1158,12 @@ def detect_aurora(img_file=None):
       if max_area > 100:
          cv2.drawContours(img, [approx], -1, (0, 0, 255), 3)
          aprox.append(approx.tolist())
-         print(dom_color, rg, bg)
          if dom_color == 'g' and (max_rg > 1.2 or max_bg > 1.2):
             detected = 1
-            print("DETECTED!")
          try:
             perimeter = float(perimeter)
          except:
             perimeter = 0
-         print("PERM/AREA:", perimeter, max_area) 
 
    if detected == 1 or (max_bg > 1.1 and max_rg > 1.1):
       try:
@@ -1188,7 +1177,6 @@ def detect_aurora(img_file=None):
       detected = 1
       #cv2.imshow('pepe', img)
       #cv2.waitKey(30)
-      print("PERM:", perimeter)
       aur = {
          "detected": detected,
          "approx": aprox,
@@ -1200,13 +1188,11 @@ def detect_aurora(img_file=None):
          "best_quad": best_quad,
          "hist_data": hist_data
       }
-      print("AU DETECTED.", max_rg, max_bg, perimeter, max_area)
    else:
       aur = {
          "detected": 0,
          "hist_data": hist_data
       }
-      print("AU NOT DETECTED.", detected, max_rg, max_bg, best_quad)
    return(aur, hist_img,img)
 
 
@@ -1232,7 +1218,6 @@ def solar_info(date, json_conf):
       f_date_str = date + ' {:02d}:{:02d}:00'.format(i,0) 
       sun_status, sun_az, sun_el = day_or_night(f_date_str, json_conf,1)
       solar_hours[i] = [sun_status, sun_az, sun_el]
-      print(f_date_str, sun_status, sun_az, sun_el)
    return(solar_hours)
 
 def multi_audit_tl(date, json_conf, outsize, outdir, frate, snaps_per_second):
@@ -1245,7 +1230,6 @@ def multi_cam_audit_tl(date, json_conf, outsize, outdir, frate, snaps_per_second
    snaps_per_second = int(snaps_per_second)
    frate = int(frate)
    dx_frames = int(frate / snaps_per_second)
-   print(layout)
    afile = TL_DIR + "VIDS/" + date + "-audit.json"
    ad = load_json_file(afile)
    cache_dir = outdir + "CACHE/" + date + "/"
@@ -1263,7 +1247,6 @@ def multi_cam_audit_tl(date, json_conf, outsize, outdir, frate, snaps_per_second
          if cfe(coutfile) == 0:
             for lcam in layout:
                id = "cam" + str(lcam['position'])
-               print(ad[hour][min])
                x1 = lcam['x1']
                y1 = lcam['y1']
                x2 = lcam['x2']
@@ -1284,7 +1267,6 @@ def multi_cam_audit_tl(date, json_conf, outsize, outdir, frate, snaps_per_second
                      snap = cv2.resize(snap,(dw,dh))
                   except:
                      snap = np.zeros((dh,dw,3),dtype=np.uint8)
-                  print(hour, min, snap_file)
                else:
                   snap = np.zeros((dh,dw,3),dtype=np.uint8)
                comp[y1:y2,x1:x2] = snap
@@ -1369,13 +1351,12 @@ def audit_tl(date, json_conf, tcam=None,outsize=None, outdir=None, frate=None, s
       for min in ad[hour]:
          hk =  '{:02d}'.format(int(hour))
          mk =  '{:02d}'.format(int(min))
-         #print(cam , ad[hour][min][tcam])
          #for cam in ad[hour][min]:
          row_file = ROW_DIR + date + "/" + str(hk) + "-" + str(mk) + "-row.png" 
-         if cfe(row_file) == 0:
-            print("NO ROW:", row_file)
+         #if cfe(row_file) == 0:
+         #   print("NO ROW:", row_file)
             #exit()
-         print(hour, min, tcam , ad[hour][min][tcam]['snap_file'])
+         #print(hour, min, tcam , ad[hour][min][tcam]['snap_file'])
          dur = .04 * dx_frames
          if len(ad[hour][min][tcam]['snap_file']) > 0:
             list += "file '" + ad[hour][min][tcam]['snap_file'][0] + "'\n"

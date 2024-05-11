@@ -329,8 +329,6 @@ def export_meteors(con,cur, station_id, export_dict):
       meteor_data[root_fn] = [roi, meteor_yn, fireball_yn, mc_class, mc_class_conf] 
       if isinstance(roi,str):  
          roi = json.loads(roi)
-      #if rc > 5:
-      #   exit()
       rc += 1
       #print(ai_file, stack_file, roi)
       

@@ -5,7 +5,7 @@ import os
 from datetime import datetime
 from calendar import monthrange
 import datetime as dt
-start_year = '2021'
+start_year = '2024'
 today = (datetime.now() - dt.timedelta(days = 1)).strftime("%Y_%m_%d")
 current_year, current_month, current_day = today.split("_")
 
@@ -49,10 +49,14 @@ if years == 0:
             sday = str(day)
          all_days.append((current_year + "_" +  smon + "_" + sday))
 
-for day in sorted(all_days,reverse=True)[0:30]:
+for day in sorted(all_days,reverse=True)[1:35]:
    print(day)
 
    cmd = "python3 DynaDB.py ddd " + day
+   #print(cmd)
+   #os.system(cmd)
+
+   cmd = "./AllSkyNetwork.py do_all " + day
    print(cmd)
    os.system(cmd)
 

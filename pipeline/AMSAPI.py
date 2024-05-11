@@ -102,10 +102,12 @@ class AMSAPI():
 
    def get_reports_for_event(self, year, event_id):
       go = True 
-      cache_file = self.ams_as7_dir + "/ams_event" + year + "-" + event_id + "_reports.json"
+      cache_file = self.ams_as7_dir + "/ams_event" + str(year) + "-" + str(event_id) + "_reports.json"
       if go is True:
          url = "http://www.amsmeteors.org/members/api/open_api/get_reports_for_event"
-         data = {'api_key' : self.ams_api_key, 'year' : year, 'format' : 'json', 'min_reports':  5}
+         data = {'api_key' : self.ams_api_key, 'year' : year, 'format' : 'json', 'event_id':  event_id}
+         full_url = requests.Request('GET', url, params=data).prepare().url
+         print("TRY", full_url)
          r = requests.get(url, params=data)
          my_data = r.json()
          save_json_file(cache_file, my_data )
@@ -386,6 +388,7 @@ class AMSAPI():
        # Add points as scatter markers
        ic = 0
            #trace = go.Scattermapbox(
+                   #color=colors[ic],
        for point in points:
            trace = go.Scattergeo(
                name = point['name'],
@@ -394,9 +397,10 @@ class AMSAPI():
                mode='markers',
                marker=dict(
                    size=20,
+                   color=point['color'],
                    symbol=point['symbol'],
-                   color=colors[ic],
                    opacity=point['opacity'],
+                   angle=point['angle'],
 
                )
            )
@@ -423,14 +427,14 @@ class AMSAPI():
        layout['font_color'] = 'black'
        #layout['mapbox_style'] ='open-street-map'
        # Create the figure
-       print("LAYOUT:", layout)
+       #print("LAYOUT:", layout)
        fig = go.Figure(data=data, layout=layout)
 
        scopes = ['africa', 'asia', 'europe', 'north america', 'south america', 'usa', 'world']
        if "country_code" not in ams_event_data:
           ams_event_data['country_code'] = 'world'
 
-       if ams_event_data['country_code'] == 'us':
+       if ams_event_data['country_code'].lower() == 'us' :
          geo_scope='usa'
        elif ams_event_data['country_code'] == 'nz' or ams_event_data['country_code'] == 'au' or ams_event_data['country_code'] == 'kr':
          geo_scope='world'
@@ -438,7 +442,7 @@ class AMSAPI():
          geo_scope='world'
        else:
          geo_scope='europe'
- 
+       print("AMS EVENT COUNTRY", ams_event_data['country_code']) 
        fig.update_geos(
               fitbounds="locations", 
         scope=geo_scope,
@@ -446,21 +450,32 @@ class AMSAPI():
         showcountries=True,countrycolor="Black",
         showsubunits=True, subunitcolor="Blue"
        )
-
        fig.update_geos(
            scope=geo_scope,
            showcountries=True,
            showsubunits=True, subunitcolor="Blue"
        ) 
-
        fig.update_layout(
         title = 'AMS EVENT ID:' + str(ams_event_data['ams_event_id']) + " " + ams_event_data['avg_date_utc'] + " UTC",
         height=720, 
         width=1280, 
         margin={"r":50,"t":50,"l":50,"b":50}
        )
-
-       fig.show()
+       filepath = f"/mnt/f/EVENTS/AMS_AS7/{year}/"
+       if os.path.exists(filepath) is False:
+           os.makedirs(filepath)
+       filename = f"{filepath}/{ams_event_data['ams_event_id']}.html"
+       fig.write_html(filename)
+       imgfile = filename.replace(".html", ".png")
+       print(imgfile)
+       fig.write_image(imgfile)
+       print(filename, geo_scope, str(ams_event_data['ams_event_id']))
+       print(points)
+       for p in points:
+          print(p['lat'], p['lon'], p['color'])
+       print(line)
+       #input("WROTE MAP")
+       #fig.show()
 
        return fig
 
@@ -549,6 +564,8 @@ if __name__ == '__main__':
          print("SKIP AMS EVENT ALREADY DONE", ams_event_id)
          #continue
 
+
+      print("AMS DATA", ams_events[ams_event_id].keys())
       # get some geoloc data about the event (requires service / api or else dies after a few tries)
       if False: # "geoloc" not in ams_events[ams_event_id] or ams_events[ams_event_id]['geoloc'] == None:
          print("geoloc not in ams_events data yet",  ams_events[ams_event_id].keys())
@@ -619,6 +636,7 @@ if __name__ == '__main__':
          for event in as7_event:
             print("E", event)
 
+      # add allsky7 obs to the map
       for obs in as7_obs:
          oid = obs['station_id'] + "_" + obs['sd_video_file']
          used_st[obs['station_id']] = {} 
@@ -635,28 +653,31 @@ if __name__ == '__main__':
          print("AS7 OBS FOUND")
 
 
-
+      # add allsky7 stations to the map
       for st in ams_events[ams_event_id]['allsky7']['stations']:
          lat, lon, alt = ams_events[ams_event_id]['allsky7']['stations'][st]['location']
          point = {}
-         point['lat'] = lat
-         point['lon'] = lon 
+         point['lat'] = float(lat)
+         point['lon'] = float(lon)
          point['name'] = st
+         point['angle'] = 0
          point['text_position'] = "top right" 
          if st in used_st:
-            point['symbol'] = 'square'
+            point['symbol'] = 'star'
             point['opacity'] = 1
+            point['color'] = "RED" 
             #point['angle'] = used_st[st]['mean_az']
          else:
-            point['symbol'] = "circle"
+            point['symbol'] = "star"
+            point['color'] = "gray" 
             point['opacity'] = .2
             #point['angle'] = 0
          points.append(point)
          texts.append(st)
       line = {}
       ams_event_data = ams_events[ams_event_id]
-      line['lats'] = [ams_event_data['start_lat'],ams_event_data['end_lat']]
-      line['lons'] = [ams_event_data['start_long'],ams_event_data['end_long']]
+      line['lats'] = [float(ams_event_data['start_lat']),float(ams_event_data['end_lat'])]
+      line['lons'] = [float(ams_event_data['start_long']),float(ams_event_data['end_long'])]
       line['name'] = "AMS WITNESS GROUND TRACK"
       lines.append(line)
 
@@ -664,7 +685,31 @@ if __name__ == '__main__':
       clon = float(ams_event_data['end_long'])
       zoom = 4
 
-      
+      # add observer points
+      reports = AA.get_reports_for_event(year, ams_event_id)
+      #print(reports['result'].keys())
+      report_dict = {}
+      if "result" not in reports:
+         reports['result'] = {}
+      for report_id in reports['result']:
+         rdata = reports['result'][report_id]
+         report_dict[report_id] = rdata
+         print(rdata['moving_direction'], report_id, rdata['report_id'], rdata.keys())
+         if "LeftTo" in rdata['moving_direction']:
+            color = "GREEN"
+         else:
+            color = "RED"
+         point = {}
+         
+         point['lat'] = float(rdata['latitude'])
+         point['lon'] = float(rdata['longitude'])
+         point['name'] = rdata['first_name'] + rdata['last_name']
+         point['angle'] = (float(rdata['initial_azimuth']) + float(rdata['final_azimuth'])) / 2
+         point['text_position'] = "top right" 
+         point['symbol'] = 'arrow'
+         point['opacity'] = 1
+         point['color'] = color
+         points.append(point)
 
       map_fig2 = AA.create_map(title, points, lines, clat, clon, zoom)
 

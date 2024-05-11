@@ -20,6 +20,11 @@ import shutil
 import platform
 from termcolor import colored
 import s3fs
+import numpy as np
+from math import sin, cos, atan2, sqrt, radians, degrees
+from lib.PipeUtil import fit_and_distribute
+# Constants
+EARTH_RADIUS_KM = 6371.0
 
 #from Classes.MovieMaker import MovieMaker
 #from Classes.RenderFrames import RenderFrames
@@ -74,6 +79,8 @@ class AllSkyNetwork():
       self.json_conf = load_json_file("../conf/as6.json")
       self.win_x = 1920
       self.win_y = 1080
+      self.ignore = []
+      self.planes = None
 
       if os.path.exists("admin_conf.json") is True:
          self.admin_conf = load_json_file("admin_conf.json")
@@ -370,6 +377,24 @@ class AllSkyNetwork():
       save_json_file("hosts.json", responses)
       print("Saved host_response.json")
 
+   def ignore_add_item(self, event_id, ignore_string):
+      # convert id to date
+      event_day = self.event_id_to_date(event_id)
+      self.event_id = event_id
+      self.set_dates(event_day)
+
+      # MEDIA -- get media files from remote stations or wasabi
+      local_event_dir = "/mnt/f/EVENTS/" + self.year + "/" + self.month + "/" + self.dom + "/" + self.event_id + "/"
+      ignore_file = local_event_dir + event_id + "_IGNORE.json"
+      if os.path.exists(ignore_file):
+         ig = load_json_file(ignore_file)
+      else:
+         ig = []
+      ig.append(ignore_string)
+      save_json_file(ignore_file, ig)
+      print(ignore_file)
+
+
    def admin_event_links(self, event_id):
 
       import webbrowser
@@ -426,12 +451,13 @@ class AllSkyNetwork():
                link = "http://" + vpn_ip + "/meteor/" + station_id + "/" + vid_file[0:10] + "/" + vid_file + ".mp4/"
          else:
             print(station_id, "NOT IN HOSTS")
-            link = station_id + " - No admin edit link"
+            link = station_id + " - No active host : /meteor/" + station_id + "/" + vid_file[0:10] + "/" + vid_file + ".mp4/" 
          print("LINK:", link)
          list_html += "<li>{:s} <a href={:s}>{:s}</a>\n".format(station_id, link, link)
          if c == 0:
             #webbrowser.open(link) # To open new window
             print("OPEN NEW", link)
+            webbrowser.open_new_tab(link) # To open new window
          else:
             webbrowser.open_new_tab(link) # To open new window
             print("TAB ", link)
@@ -1230,8 +1256,126 @@ class AllSkyNetwork():
       # check the event dirs on cloud system. remove those not in the mc_events dict 
 
    def review_coin_events(self,date,fix_bad=False): 
+      # load minute events file and all events file
+      # both of these should be in sync as should the local
+      # sqlite db and the remote dynamo db! 
+      # so literally 4 places for events, but dyna and allevents are the same, so 3 places: min_events, all_events, local db 
+      # this function should make sure all of these things are in sync
+      # the process starts with the MIN_EVENTS so that is the end-all-be-all
+      # if it is not in the min events it is not a valid event and should be deleted
+      # start1 = (45.0, -93.0)  # Latitude, Longitude
+      # intersection = line_intersection(start1, heading1, start2, heading2)
+
       self.min_events_file = self.local_evdir + "/" + date + "_MIN_EVENTS.json"
-      print(self.min_events_file)
+      self.all_events_file = self.local_evdir + "/" + date + "_ALL_EVENTS.json"
+      min_events = load_json_file(self.min_events_file)
+      events = load_json_file(self.all_events_file)
+      ev_dirs = {} 
+      event_dict = {}
+      min_dict = {}
+      db_events = {}
+
+      delete_events = {}
+
+      # load dict for min events
+      for minute in min_events:
+         for eid in min_events[minute].keys():
+            if "event_id" in min_events[minute][eid]:
+               print(min_events[minute][eid]['event_id'], min_events[minute][eid]['start_datetime'])
+               min_dict[min_events[minute][eid]['event_id']] = min_events[minute][eid]
+
+      x = 0
+      # load dict for all events (local copy of what is in dynamo)
+      for event in events:
+         event_id = event['event_id']
+         event_dict[event_id] = event
+         if event_id not in min_dict:
+            x += 1
+            print("DB EVENT NOT IN MIN DICT", x, event_id)
+            delete_events[event_id] = True
+
+      # load dict for all events dirs (local copy of what is in dynamo)
+      ev_files = os.listdir(self.local_evdir)
+      x = 0
+      for ev in ev_files:
+         if os.path.isdir(self.local_evdir + ev) is True and ev[0:2] == "20":
+            ev_dirs[ev] = True
+            if ev not in min_dict:
+               x += 1
+               print("EVENT DIR EVENT NOT IN MIN DICT", x, ev)
+               delete_events[event_id] = True
+
+      # load db events:
+
+      sql = """
+         SELECT event_id,event_status,run_date,run_times from events order by event_id 
+      """
+      self.cur.execute(sql)
+      rows = self.cur.fetchall()
+      for row in rows:
+         event_id,event_status,run_date,run_times = row
+         db_events[event_id] = {}
+         db_events[event_id]['event_status'] = event_status
+         db_events[event_id]['run_date'] = run_date
+         db_events[event_id]['run_times'] = run_times
+         if event_id not in min_dict:
+            delete_events[event_id] = True
+
+      print("TOTAL EVENT DIRS:", len(ev_dirs.keys()))
+      print("TOTAL ALL EVENTS:", len(event_dict.keys()))
+      print("TOTAL MIN EVENTS:", len(min_dict.keys()))
+      print("NEED TO DELETE EVENTS:", len(delete_events.keys()))
+      for event_id in delete_events:
+         print("DELETE EVENT:", event_id)
+         self.purge_event(event_id)
+      x = 0
+      ee = 0
+      iv = 0
+      for event_id in min_dict.keys():
+         if event_id in event_dict:
+            ind = True
+            status = event_dict[event_id]['solve_status']
+         else:
+            ind = False 
+            status = "Pending"
+         if event_id in ev_dirs:
+            indr = True
+         else:
+            indr = False 
+         if indr is False or ind is False:
+            print("Purge",event_id)
+            self.purge_event(event_id)
+
+         a = None
+         e = None
+         if event_id in event_dict:
+            if "solution" in event_dict[event_id]:
+               if "orb" in event_dict[event_id]['solution']:
+                  a = event_dict[event_id]['solution']['orb']['a']
+                  e = event_dict[event_id]['solution']['orb']['e']
+            if a is None:
+               print("Event is invalid: Incongruent observations -- There must be two or more intersecting observations.", event_id)
+               ed = event_dict[event_id]
+               md = min_dict[event_id]
+               print(iv, ed['event_id'], md['start_datetime'], ed['stations'], ed['solve_status']) 
+               #print(ee, event_id, status, a, event_dict[event_id].keys()) 
+               iv += 1
+               #os.system("./AllSkyNetwork.py resolve_event " + event_id + " x")
+            elif a < -1 or e > 1:
+               print("Event needs review: anomolous orbit -- The observations need review and cleanup to fix points or correct calibration.", event_id)
+               ed = event_dict[event_id]
+               md = min_dict[event_id]
+               #print(ee, ed['event_id'], md['start_datetime'], ed['stations'], ed['solve_status']) 
+               #print(ee, event_id, status, a, event_dict[event_id].keys()) 
+               ee += 1
+            else:
+               print(x, "Event is valid:", event_id) 
+               x += 1 
+
+               #print(x, ed['event_id'], md['start_datetime'], ed['stations'], ed['solve_status']) 
+      print("valid ", x)
+      print("invalid ", iv)
+      print("errors", ee)
 
    def day_coin_events(self,date,force=0):
 
@@ -1335,10 +1479,11 @@ class AllSkyNetwork():
             clean_min_obs = []
             for mo in min_obs:
                 found_ban = False
-                if mo[0] in self.banned:
-                    print(colored("BANNED FROM MIN OBS: " + mo[0]), "red")
-                    found_ban = True
-                else:
+                for b in self.banned:
+                    if b in mo[0] :
+                        print(colored("BANNED FROM MIN OBS: " + mo[0]), "red")
+                        found_ban = True
+                if found_ban is False:
                     clean_min_obs.append(mo)
                 #if found_ban is True:
             min_events = self.min_obs_to_events(clean_min_obs)
@@ -1675,17 +1820,18 @@ class AllSkyNetwork():
       Check if the new observation's time is within the acceptable range of the event time.
       """
       # Your logic for dynamic time window goes here. For now, I'll assume a 10 second window as in the original code.
-      if duration < 3:
-         duration = 3 
+      if duration < 1:
+         duration = 1 
       s_datestamp, s_timestamp = self.date_str_to_datetime(stime)
       t_datestamp, t_timestamp = self.date_str_to_datetime(event_time)
       time_diff = abs(s_timestamp - t_timestamp)
-      if time_diff < 10:
-         print(colored("\tTIME DIFF,DUR:" + str( time_diff) + " " +str( duration), "green"))
+      if time_diff < duration * 2:
+         print(colored("\tTIME DIFF < DUR:" + str(time_diff) + " < " +str( duration * 2), "green"))
       else:
-         print(colored("\tTIME DIFF,DUR:" + str( time_diff) + " " +str( duration), "red"))
-      return time_diff <= duration * 2
-   
+         print(colored("\tTIME DIFF !< DUR:" + str(time_diff) + " !< " +str( duration * 2), "red"))
+         print(s_timestamp, t_timestamp)
+      return time_diff <= duration * 2 
+
    def check_distance_match(self, avg_lat, avg_lon, lat1, lon1, elevation):
       """
       Compute and check if the distance is within the acceptable range based on elevation.
@@ -1693,7 +1839,7 @@ class AllSkyNetwork():
       # Your logic for dynamic distance based on elevation goes here. For now, I'll assume a 700 km limit.
       match_dist = dist_between_two_points(avg_lat, avg_lon, lat1, lon1)
       print("\tMATCH DIST:", match_dist)
-      return match_dist < 700
+      return match_dist < 600
    
    def check_azimuth_intersection(self, event, station_id, lat1, lon1, az1):
       """
@@ -1717,16 +1863,19 @@ class AllSkyNetwork():
       return (intersects / len(event['azs'])) >= 0.5
    
    # Now we can refactor the main function to make it cleaner and more modular.
+
    def check_make_events_new(self, min_events, station_id, obs_file, stime, duration, azs, els, ints):
       """
       Check if the new observation matches with any of the existing events.
          if it does add it to the event array
          else make a new event
       """
-      print("\n\tSTART CHECK MAKE EVENTS FOR", obs_file)
+      print("\n*** START CHECK MAKE EVENTS FOR", obs_file)
       lat = float(self.station_dict[station_id]['lat'])
       lon = float(self.station_dict[station_id]['lon'])
       alt = float(self.station_dict[station_id]['alt'])
+      #if station_id == 'AMS100' or station_id == 'AMS101':
+      #   input("Wait")
 
       min_events_keys = min_events.keys()
       if len(min_events_keys) == 0:
@@ -1734,7 +1883,6 @@ class AllSkyNetwork():
           eid = 1
           print("\t\tINITIALIZE FIRST EVENT")
           min_events = self.initialize_event(eid, station_id, lat, lon, alt, azs, els, ints, obs_file, stime)
-          #print(min_events)
           return(min_events)
       else:
           matches = []
@@ -1748,21 +1896,23 @@ class AllSkyNetwork():
    
               # Check time match
               if not self.check_time_match(stime, event_time, duration):
-                  print("\t\tEVENT TIME CHECK FAILED TO MATCH")
+                  print("\t\tEVENT TIME CHECK FAILED TO MATCH (stime,event_time,dur)", station_id, obs_file, stime, event_time, duration)
                   continue
    
               # Check distance match
               if not self.check_distance_match(avg_lat, avg_lon, lat, lon, event_els[0]):
-                  print("\t\tEVENT DISTANCE FAILED TO MATCH")
+                  print("\t\tEVENT DISTANCE FAILED TO MATCH", station_id, obs_file)
                   continue
    
               # Check azimuth intersection
               if not self.check_azimuth_intersection(event, station_id, lat, lon, azs[0]):
-                  print("\t\tEVENT AZ INT FAILED TO MATCH")
+                  print(colored("\t\tEVENT AZ INT FAILED TO MATCH","red"))
                   print("\t\tIgnoring AZ intersects for now ")
                   #continue
-   
+              else:
+                  print("\t\tEVENT AZ INT PASSED")
               # If all checks pass, this observation matches with the existing event.
+              
               matches.append(eid)
    
           # Your logic for updating min_events based on matches goes here.
@@ -1778,7 +1928,24 @@ class AllSkyNetwork():
              return(min_events)
           else:
              # add this obs to the event
-               print("\t\tADD TO EVENT")
+               print("\t\tADD TO EVENTS", matches)
+               # if there is more than 1 match,we have to figure out which one is the better/best one. 
+               # should it be closest in time or distance or both? 
+               # or do we consider the az intersects
+               if len(matches) > 1:
+                  best_eid = None
+                  close = 99999
+                  for eid in matches : 
+                     avg_lat = np.mean(min_events[eid]['lats'])
+                     avg_lon = np.mean(min_events[eid]['lons'])
+                     match_dist = dist_between_two_points(avg_lat, avg_lon, lat, lon)
+                     if match_dist < close:
+                        best_eid = eid
+                        close = match_dist 
+
+                     print("MMM", best_eid, eid, match_dist, min_events[eid])
+                     matches = [best_eid]
+               
                for eid in matches[0:1]:
                   min_events[eid]['stations'].append(station_id)
                   min_events[eid]['lats'].append(lat)
@@ -1795,7 +1962,6 @@ class AllSkyNetwork():
 
                return(min_events) 
           print("\tEND CHECK MAKE EVENTS")
-
           return min_events
 
    # Note: The helper functions like dist_between_two_points() and azimuths_intersect() are assumed to be defined elsewhere.
@@ -2048,6 +2214,8 @@ class AllSkyNetwork():
       # This is where we group obs into events! 
       # IT should be close in time and distance
       # and the lines should intersect 
+      missing_red = {}
+
       for row in min_obs:
          if len(row) >= 5:
             times = json.loads(row[5])
@@ -2064,7 +2232,7 @@ class AllSkyNetwork():
       #   SELECT station_id, event_id, event_minute, obs_id, fns, times, xs, ys, azs, els, ints, status, ignore 
 
       min_events = {}
-
+      max_dur = 0
       for obs in min_obs:
          #print(obs)
          (station_id, event_id, event_minute, obs_id, fns, times, xs, ys, azs, els, ints, status, ignore) = obs 
@@ -2078,6 +2246,8 @@ class AllSkyNetwork():
          duration=len(times) / 25
          if duration == 0:
             duration = 1
+         if duration > max_dur:
+            max_dur = duration
 
          if len(times) > 0:
             stime = times[0]
@@ -2087,6 +2257,11 @@ class AllSkyNetwork():
          station_id = obs[0]
          if stime is None:
             #print("NO REDUCTION!", station_id, obs[3])
+            obs_id = station_id + "_" + obs_file
+            if obs_id not in missing_red:
+                missing_red[obs_id] = 1
+            else:
+                missing_red[obs_id] += 1
             continue
          try:
             lat = float(self.station_dict[station_id]['lat'])
@@ -2101,7 +2276,7 @@ class AllSkyNetwork():
          sec = float(sec)
          #min_events = self.check_make_events(min_events, station_id, obs_file, stime, duration,azs,els,ints)
          # min events should be a number dict
-         min_events = self.check_make_events_new(min_events, station_id, obs_file, stime, duration,azs,els,ints)
+         min_events = self.check_make_events_new(min_events, station_id, obs_file, stime, max_dur,azs,els,ints)
 
       print("MINUTE EVENTS:", len(min_events))
       for eid in min_events:
@@ -2989,9 +3164,9 @@ class AllSkyNetwork():
    def event_data_movie(self, event_id, event_data, good_obs):
       data_movie_frames = []
       lines = []
-      cv2.namedWindow('pepe', cv2.WINDOW_NORMAL)
-      cv2.moveWindow("pepe", 1000, 50)
-      cv2.resizeWindow("pepe", 1920, 1080)
+      #cv2.namedWindow('pepe', cv2.WINDOW_NORMAL)
+      #cv2.moveWindow("pepe", 1000, 50)
+      #cv2.resizeWindow("pepe", 1920, 1080)
       points = []
       map_frames = []
       map_folder = self.ev_dir + "MAP_FRAMES/"
@@ -3023,6 +3198,7 @@ class AllSkyNetwork():
 
          map_img = cv2.resize(map_img, (1920,1080))
          cv2.resizeWindow("pepe", 1920, 1080)
+         self.PREVIEW = True 
          if self.PREVIEW is True:
             cv2.imshow('pepe', map_img)
             cv2.waitKey(30)
@@ -3132,7 +3308,7 @@ class AllSkyNetwork():
       # light curve
       lc_file = self.ev_dir + event_id + "_LIGHTCURVES.jpg"
       if os.path.exists(lc_file) is False:
-         cmd = "cd plotly/ && python3 plot_maker.py {:s} -p event_light_curves  ".format(event_id)
+         cmd = "cd plotly/ && /usr/bin/python3 plot_maker.py {:s} -p event_light_curves  ".format(event_id)
          print(cmd)
          os.system(cmd)
          time.sleep(1)
@@ -3141,8 +3317,7 @@ class AllSkyNetwork():
          lc_img = cv2.resize(lc_img, (1920,1080))
       else:
          print("NO IMAGE:", lc_file)
-         np.zeros((1080,1920,3),dtype=np.uint8)
-
+         lc_img = np.zeros((1080,1920,3),dtype=np.uint8)
       # TRANS
       extra = slide_left(img, lc_img, "FF", 0)
       for e in extra:
@@ -3304,7 +3479,6 @@ class AllSkyNetwork():
             cv2.imshow('pepe', frame)
             cv2.waitKey(30)
 
-      input("DONE RENDERING FRAMES... PLAY AND SAVE MOVIE? PRESS [ENTER]")
       for frame in data_movie_frames:
          if self.PREVIEW is True:
             cv2.imshow('pepe', frame)
@@ -3317,17 +3491,21 @@ class AllSkyNetwork():
       for line in lines:
          print ("LINE:", line)
 
+   def preview_frames(self, frames, wait=30):
+      for frame in frames:
+         cv2.imshow('pepe', frame)
+         cv2.waitKey(wait)
+
    def review_event_movie(self, event_id):
       # get user input
-      self.PREVIEW = False 
+      self.PREVIEW = True 
       self.MOVIE_FRAMES = []
-
+      last_pic = np.zeros((1080,1920,3),dtype=np.uint8)
       self.load_stations_file()
       event_d, event_t = event_id.split("_")
       event_time = event_t[0:2] + ":" + event_t[2:4] + ":" + event_t[4:6]
 
       cv2.namedWindow('pepe', cv2.WINDOW_NORMAL)
-      #cv2.resizeWindow("pepe", self.win_x, self.win_y)
       cv2.resizeWindow("pepe", 1920, 1080)
 
       event_day = self.event_id_to_date(event_id)
@@ -3360,7 +3538,7 @@ class AllSkyNetwork():
          self.ignore = load_json_file(ignore_file)
       else:
          self.ignore = []
-
+      print("IG:", self.ignore)
       if os.path.exists(event_file) is True:
          event_data = load_json_file(event_file)
 
@@ -3380,7 +3558,11 @@ class AllSkyNetwork():
       #exit()
       # make the graps and animations part of the movie 
       data_frames = self.event_data_movie(event_id, event_data, good_obs)
- 
+      key = input("Data movie made. Press Y to review or enter to continue") 
+      if key == "y" or key == "Y":
+         for fr in data_frames:
+            cv2.imshow('pepe', fr)
+            cv2.waitKey(30)
 
       obs_vids = {}
       station_count = {}
@@ -3401,6 +3583,8 @@ class AllSkyNetwork():
 
             if obs_id in self.obs_dict:
                hd_video_file = self.obs_dict[obs_id]['hd_video_file']
+               if hd_video_file is None:
+                   hd_video_file = "missing"
                remote_hd_vid = self.rurls[station_id] + "/meteors/" + event_day +  "/" + hd_video_file
                if os.path.exists(local_sd_vid):
                   print("   SD", local_sd_vid)
@@ -3439,8 +3623,6 @@ class AllSkyNetwork():
       my_text[1] = "{:s} cameras across {:s} stations recored the event.".format(str(len(obs_vids.keys())), str(len(station_count)))
       my_text[2] = "Special thanks to the ALLSKY7 operators. "
 
-
-
       credits = []
       for st in station_count:
          photo_credit = self.photo_credits[st] 
@@ -3458,12 +3640,13 @@ class AllSkyNetwork():
       base_frame,mx1,my1,mx2,my2 = RF.tv_frame()
       cv2.imshow('pepe', base_frame)
       cv2.waitKey(30)
-      #exit()
 
+      # produced by 
       black_frame = np.zeros((1080,1920,3),dtype=np.uint8)
       produced_by_text_frame = VE.show_text(["Produced by Mike Hankey..."], base_frame, 15, font_size=30, pos_y=480)
       produced_by_text_frames = fade(black_frame, produced_by_text_frame, 40)
       frame = produced_by_text_frame
+      #self.preview_frames(produced_by_text_frames, 45)
 
       y_space = 20
       pos_y = int(1080 - (len(credits) * y_space))
@@ -3483,6 +3666,7 @@ class AllSkyNetwork():
 
       if intro is True: 
          credits_frame = VE.show_text(credits, base_frame, 3, font_size=font_size, pos_y=pos_y)         
+         #self.preview_frames(credits_frame, 45)
 
       movie_frames_folder = self.ev_dir + "/movie_frames/"
 
@@ -3497,7 +3681,6 @@ class AllSkyNetwork():
       text_frames_dir = self.ev_dir + "/audio_text/"
       if os.path.exists(text_frames_dir) is False:
          os.makedirs(text_frames_dir)
-    
       if intro is True:
 
          for frame in produced_by_text_frames:
@@ -3547,12 +3730,18 @@ class AllSkyNetwork():
       last_pic = cv2.resize(last_pic, (1920,1080))
       all_media = self.load_process_media(obs_vids, event_id, last_pic)
       all_media_save = all_media.copy()
-      input("DONE LOADING ALL MEDIA")
+      #dict_keys(['video_file', 'stack_file', 'frames', 'stack_image', 
+      # 'ken_burns_frames', 'ken_burns_data', 'hd_fns', 'med_sync', 'obs_data'])
       for obv in all_media_save:
+         print("OBV", all_media_save[obv].keys())
+         print("OBV", all_media_save[obv]['stack_file'])
          if "ken_burns_frames" in all_media_save[obv]:
             del(all_media_save[obv]['ken_burns_frames'])
          del(all_media_save[obv]['frames'])
-         del(all_media_save[obv]['stack_image'])
+         if "stack_image" in all_media_save[obv]:
+            del(all_media_save[obv]['stack_image'])
+         else:
+            print(obv, "error missing stack media")
       self.movie_conf['all_media'] = all_media_save
       save_json_file(self.movie_conf_file, self.movie_conf)
       print("ALL MEDIA", all_media.keys())
@@ -3629,6 +3818,7 @@ class AllSkyNetwork():
       print(cmd)
       os.system(cmd)
 
+   
 
    def load_process_media(self, obs_vids, event_id, last_pic=None):
       
@@ -3643,6 +3833,8 @@ class AllSkyNetwork():
 
          if last_pic is not None:
             print("last_pic", last_pic.shape)
+            if len(all_media[obv]['frames']) == 0:
+                continue
             print("frame", all_media[obv]['frames'][0].shape)
             extra = slide_left(last_pic, all_media[obv]['frames'][0] , "FF", 0)
             for e in extra:
@@ -3661,6 +3853,7 @@ class AllSkyNetwork():
  
          #all_media[obv]['ken_burns_frames']  
 
+         cframes, kb_data, hd_fns, med_sync = self.ken_burns_effect(obv, all_media[obv]['frames'] )
          try:
             cframes, kb_data, hd_fns, med_sync = self.ken_burns_effect(obv, all_media[obv]['frames'] )
          except:
@@ -3686,9 +3879,10 @@ class AllSkyNetwork():
          els = [row[10] for row in obs['meteor_frame_data']]
              
          fc = 0
-
+         # remove movie banned from obv?
          #MAIN MOVIE HERE
-         for frame in  all_media[obv]['ken_burns_frames']:
+         #for frame in  all_media[obv]['ken_burns_frames']:
+         for frame in  all_media[obv]['frames']:
             # only show the ending frames if there is 'action' within 10 frames 
             if fc > min(hd_fns) - 15 or fc > 10:
                start = True
@@ -3706,8 +3900,10 @@ class AllSkyNetwork():
 
       # show stacks
       for obv in all_media:
-
-         this_pic = all_media[obv]['stack_image'] 
+         if "stack_img" in all_media[obv]:
+            this_pic = all_media[obv]['stack_image'] 
+         else: 
+            this_pic = np.zeros((1080,1920,3),dtype=np.uint8)
          if this_pic.shape[0] != 1080:
             this_pic = cv2.resize(this_pic, (1920,1080))
          if last_pic.shape[0] != 1080:
@@ -3747,8 +3943,14 @@ class AllSkyNetwork():
       ints = [row[6] for row in obs['meteor_frame_data']]
       azs = [row[9] for row in obs['meteor_frame_data']]
       els = [row[10] for row in obs['meteor_frame_data']]
-
-
+      print("OBS", obs_id)
+      print("XS:", xs)
+      print("YS:", ys)
+      # refit points?
+      if True:
+        fxs, fys = fit_and_distribute(xs, ys)
+        xs = fxs
+        ys = fys
 
       sync_done = False 
       if "all_media" in self.movie_conf: 
@@ -4723,6 +4925,7 @@ class AllSkyNetwork():
          #cv2.imshow('roi', roi_img)
          #cv2.waitKey(30)
          cv2.imwrite(event_preview_file, roi_img)
+         print("WROTE", event_preview_file)
          if os.path.exists(cloud_event_preview_file):
             os.system("cp " + event_preview_file + " " + cloud_event_prevew_file)
       else:
@@ -5296,6 +5499,8 @@ class AllSkyNetwork():
       lc = 0 
       deleted = []
       good = []
+
+      print("EVENT_DATA: ", event_data.keys())
       for obs_id in event_data['obs_ids']:
          
          go = True
@@ -6012,7 +6217,6 @@ class AllSkyNetwork():
       # or plane tests
       # 
 
-
       event_file = self.local_evdir + event_id + "/" + event_id + "-event.json"
       ignore_file = self.local_evdir + event_id + "/" + event_id + "_IGNORE.json"
       if os.path.exists(event_file) is True:
@@ -6031,6 +6235,7 @@ class AllSkyNetwork():
          print("BANNED:", b)
          ignore.append(b)
       # select main event info from the local sqlite DB
+      print("IG", ignore)
       sql = """
             SELECT event_id, event_minute, revision, stations, obs_ids, event_start_time, event_start_times,
                    lats, lons, event_status, run_date, run_times
@@ -6056,8 +6261,8 @@ class AllSkyNetwork():
          lats = json.loads(lons)
          temp_obs = {}
 
-         if "ignore" in event:
-            ignore = event['ignore']
+         #if "ignore" in event:
+         #   ignore = event['ignore']
 
          for obs_id in obs_ids:
 
@@ -6067,7 +6272,12 @@ class AllSkyNetwork():
             for item in ignore:
                if item in obs_id:
                   ig = True
+                  print("IGNORE", item)
+                  input("WAIT")
+                  continue
+            # skip the ignored obs
             if ig is True:
+               print("SKIP:", obs_id)
                continue
             st_id = obs_id.split("_")[0]
             obs_fn = obs_id.replace(st_id + "_", "")
@@ -7819,9 +8029,124 @@ class AllSkyNetwork():
       for day in ev_by_day:
          print(day, ev_by_day[day])
 
+   def event_obs_ids(self, ev):
+       # return obs ids for event
+       obs_ids = []
+       if "obs_ids" in ev:
+          return(ev['obs_ids'])
+       else:
+          for i in range(0,len(ev['stations'])):
+             s = ev['stations'][i]
+             f = ev['files'][i]
+             o = s + "_" + f.replace(".mp4", "")
+             obs_ids.append(o)
+       return(obs_ids)
+
+   def check_event_quality(self, a, e, s_alt, e_alt, vel):
+      if a < 0 or e >= 1 or s_alt > 160000:
+         event_status = "BAD"
+      else :
+         event_status = "GOOD"
+      return(event_status)
+
+   def publish_year(self, year):
+      self.load_stations_file()
+
+      import webbrowser
+      event_dict_file = "/mnt/f/EVENTS/DBS/" + year + "_EVENT_DICT.json" 
+
+      events = load_json_file(event_dict_file)
+      events_qual = {}
+      failed_obs = {}
+      good_obs = {}
+      bad_obs = {}
+
+      events_qual['GOOD'] = 0 
+      events_qual['BAD'] = 0 
+      events_qual['FAILED'] = 0 
+      c = 0
+      intensity = []
+      for event_id in events:
+         ev = events[event_id]
+         #print("PEAK:", ev['peak_int'])
+         intensity.append((event_id, ev['peak_int']))
+         if "orb" in ev:
+            a = ev['orb']['a']
+            e = ev['orb']['e']
+            s_alt = ev['traj']['start_ele']
+            e_alt = ev['traj']['end_ele']
+            vel = ev['traj']['v_init']
+            if a is None:
+                quality = "FAILED"
+            else: 
+                quality = self.check_event_quality(events[event_id]['orb']['a'], events[event_id]['orb']['e'], s_alt, e_alt, vel)
+                events_qual[quality] += 1
+         else:
+            events_qual['FAILED'] += 1
+         obs_ids = self.event_obs_ids(ev)
+         for oi in obs_ids:
+            if quality == "GOOD":
+               good_obs[oi] = {}
+            elif quality == "BAD":
+               bad_obs[oi] = {}
+            elif quality == "FAILED":
+               failed_obs[oi] = {}
+
+         c += 1
+
+      print(f"Total Events for {year}: {c}") 
+      print("Events by quality:") 
+      for ee in events_qual:
+         print(ee, events_qual[ee])
+      print("Observations:") 
+      print("GOOD OBS", len(good_obs))
+      print("BAD OBS", len(bad_obs))
+      print("FAILED OBS", len(failed_obs))
+      print("TOTAL OBS", len(good_obs) + len(bad_obs) + len(failed_obs))   
+
+      print("Brightest events")
+      intensity = sorted(intensity, key=lambda x: x[1], reverse=True)
+      admin_event_review = {}
+      for row in intensity[0:100]:
+         print(row[0], row[1])
+         self.event_day = self.event_id_to_date(row[0])
+         self.event_id = row[0]
+         self.set_date_db(self.event_day)
+         path, win_path = self.goto_event(row[0])
+         gallery_img_file = path + row[0] + "_GALLERY.jpg"
+
+         if os.path.exists(gallery_img_file) is False:
+            gallery_img = self.make_event_gallery()
+         #webbrowser.open(win_path + "index.html") # To open new window
+
+         #gallery_img_file = self.local_evdir + self.event_id + "/" + self.event_id + "_GALLERY.jpg"
+
+   def make_event_gallery(self):
+      event_data, obs_data1, map_img, obs_imgs = self.get_event_obs()
+
+   def set_date_db(self, date):
+             # DB FILE!
+      self.db_file = self.db_dir + "/ALLSKYNETWORK_" + date + ".db"
+      if os.path.exists(self.db_file) is False:
+         os.system("cat ALLSKYNETWORK.sql | sqlite3 " + self.db_file)
+      if os.path.exists(self.db_file) is False:
+         print("DB FILE NOT FOUND.", self.db_file)
+         return ()
+      self.con = sqlite3.connect(self.db_file)
+      self.con.row_factory = sqlite3.Row
+      self.cur = self.con.cursor()
+
+   def goto_event(self, event_id):
+      import webbrowser
+      self.event_day = self.event_id_to_date(event_id)
+      y,m,d = self.event_day.split("_")
+      self.set_dates(self.event_day)
+      path = f"/mnt/f/EVENTS/{y}/{m}/{d}/{event_id}/"
+      win_path = f"F:/EVENTS/{y}/{m}/{d}/{event_id}/"
+      return(path, win_path)
+
    def year_report(self, year):
       year_dir = "/mnt/f/EVENTS/DBS/" + year + "/"
-
       events_by_shower = {}
       events_by_station = {}
 
@@ -7885,7 +8210,6 @@ class AllSkyNetwork():
             if "shower" in event:
                if event['shower']['shower_code'] != "...":
                   shower = event['shower']['shower_code'] 
-                  print(shc, shower)
                   shc += 1
                   if shower not in events_by_shower:
                      events_by_shower[shower] = 1
@@ -7905,13 +8229,14 @@ class AllSkyNetwork():
                   spo_radiants.append(event['rad'])
 
       totals_by_shower = []
+
+      print(f"{year} TOTAL EVENTS: {len(all_events)}")
       for sh in events_by_shower:
-         print(sh, events_by_shower[sh])
          totals_by_shower.append((sh, events_by_shower[sh]))
 
       totals_by_shower = sorted(totals_by_shower, key=lambda x: x[1], reverse=True)
       for row in totals_by_shower:
-         print(row)
+         print(row[0], row[1])
 
       save_json_file(all_radiants_file, all_radiants, True)
       save_json_file(spo_radiants_file, spo_radiants, True)
@@ -7952,6 +8277,29 @@ class AllSkyNetwork():
       save_json_file(event_dict_file, event_dict, True)
       save_json_file(all_events_file , new_all_events, True)
       print(all_events_file)
+      print(event_dict_file)
+
+   def purge_event(self,event_id):
+      event_day = self.event_id_to_date(event_id)
+      y,m,d = event_day.split("_")
+      date = y + "_" + m + "_" + d
+      edir = "/mnt/f/EVENTS/" + y + "/" + m + "/" + d + "/" + event_id + "/"
+      if os.path.exists(edir) is True:
+         cmd = "rm -rf " + edir
+         print(cmd)
+         os.system(cmd)
+      # delete from dynamo
+
+      # delete from local sql
+      sql = "DELETE FROM EVENTS WHERE event_id = ?"
+      print(sql)
+      self.cur.execute(sql, [event_id])
+      self.con.commit()
+
+      # delete from dynamo db
+      delete_event(self.dynamodb, date, event_id)
+
+
 
 
    def delete_bad_detects(self,bad_detects_file):
@@ -10037,7 +10385,7 @@ $(document).ready(function () {
             if "shower" not in ev_data:
                ev_data["shower"] = {}
                ev_data['shower']["shower_code"] = "..."
-            if ev_data['orb']['a'] is not None:
+            if ev_data['orb']['a'] is not None and math.isnan(ev_data['traj']['start_lat']) is False:
                print("EVENT FILE FOUND:", ev_file)
                ev_sum = """
                <center>
@@ -12539,6 +12887,76 @@ status [date]   -    Show network status report for that day.
 
 
 
-
-
-
+   def to_cartesian(lat, lon):
+       """Convert lat/lon to Cartesian coordinates."""
+       lat, lon = radians(lat), radians(lon)
+       x = EARTH_RADIUS_KM * cos(lat) * cos(lon)
+       y = EARTH_RADIUS_KM * cos(lat) * sin(lon)
+       z = EARTH_RADIUS_KM * sin(lat)
+       return np.array([x, y, z])
+   
+   def heading_vector(lat, lon, heading, distance=500):
+       """Calculate the end point of the heading vector in Cartesian coordinates."""
+       # Convert the starting point to Cartesian coordinates
+       start_cartesian = to_cartesian(lat, lon)
+   
+       # Calculate the end point in lat/lon
+       lat_rad = radians(lat)
+       lon_rad = radians(lon)
+       heading_rad = radians(heading)
+   
+       end_lat = asin(sin(lat_rad) * cos(distance / EARTH_RADIUS_KM) +
+                      cos(lat_rad) * sin(distance / EARTH_RADIUS_KM) * cos(heading_rad))
+       end_lon = lon_rad + atan2(sin(heading_rad) * sin(distance / EARTH_RADIUS_KM) * cos(lat_rad),
+                                 cos(distance / EARTH_RADIUS_KM) - sin(lat_rad) * sin(end_lat))
+   
+       # Convert the end point to Cartesian coordinates
+       end_cartesian = to_cartesian(degrees(end_lat), degrees(end_lon))
+   
+       # Return the heading vector (difference between end and start points)
+       return end_cartesian - start_cartesian
+   
+   def line_intersection(start1, heading1, start2, heading2):
+       """Find the intersection of two lines given by start points and headings."""
+       # Convert the start points and headings to Cartesian coordinates
+       start1_cartesian = to_cartesian(*start1)
+       heading1_vector = heading_vector(*start1, heading1)
+       
+       start2_cartesian = to_cartesian(*start2)
+       heading2_vector = heading_vector(*start2, heading2)
+   
+       # Line intersection calculation in 3D
+       cross_product = np.cross(heading1_vector, heading2_vector)
+       if np.allclose(cross_product, 0):
+           return None  # Parallel or identical lines
+   
+       # Solving the system of linear equations to find the intersection point
+       matrix = np.vstack([heading1_vector, -heading2_vector]).T
+       try:
+           t, s = np.linalg.solve(matrix, start2_cartesian - start1_cartesian)
+       except np.linalg.LinAlgError:
+           return None  # No solution, lines do not intersect
+   
+       intersection_point_cartesian = start1_cartesian + t * heading1_vector
+   
+       # Convert back to lat/lon
+       x, y, z = intersection_point_cartesian
+       lat = degrees(atan2(z, sqrt(x**2 + y**2)))
+       lon = degrees(atan2(y, x))
+   
+       return lat, lon
+   
+   # Example usage
+   #start1 = (45.0, -93.0)  # Latitude, Longitude
+   #heading1 = 90           # East
+   
+   #start2 = (46.0, -94.0)  # Latitude, Longitude
+   #heading2 = 180          # South
+   
+   #intersection = line_intersection(start1, heading1, start2, heading2)
+   #print(intersection)
+   
+   
+   
+   
+   

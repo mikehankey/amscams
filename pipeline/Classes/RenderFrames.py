@@ -158,9 +158,11 @@ class RenderFrames():
 
          if frame is not None:
             fn = "{:03d}".format(fc)
+            print("FRAME", frame.shape)
+            print("LOGO", self.logo_320.shape)
             wt_frame = self.watermark_image(frame, self.logo_320, margin_x, lh, .6, text_data)
-            #cv2.imshow('pepe', wt_frame)
-            #cv2.waitKey(30)
+            cv2.imshow('pepe', wt_frame)
+            cv2.waitKey(30)
             cv2.imwrite("tmp_frames/" + fn + ".jpg", 255*wt_frame)
             fc += 1
 
@@ -200,12 +202,13 @@ class RenderFrames():
       if len(text_data) > 0:
          for tx,ty,text_size,text_weight,text_color,text in text_data:
             cv2.putText(blend, text,  (tx,ty), cv2.FONT_HERSHEY_SIMPLEX, text_size, text_color, text_weight)
-         #blend cvtColor(inputMat, outputMat, CV_BGRA2BGR);
+
+         blend = cv2.convertScaleAbs(blend)
          blend = cv2.cvtColor(blend, cv2.COLOR_BGRA2BGR)
-      #blend = blend * 255
-      if make_int is True:
-         blend *= 255
-         blend = blend.astype(np.uint8)
+
+      #if make_int is True:
+      blend *= 255 
       #blend = blend.astype(np.uint8)
-      blend = blend * 255
+      #blend = blend.astype(np.uint8)
+      #blend = blend * 255
       return(blend.astype(np.uint8))

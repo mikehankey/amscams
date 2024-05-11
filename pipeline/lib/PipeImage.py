@@ -61,25 +61,28 @@ def restack_meteor(video_file):
 
 def quick_video_stack(video_file, count = 0, save=1):
    frames = []
+   #fps = int(count)/1499
+   #fps = int(60 / count)
+   fps_text = f"fps=.1"
    img_file = video_file.replace(".mp4","-stacked.jpg")
    temp_dir = "/mnt/ams2/tmp/st/"
    if cfe(temp_dir, 1) == 0:
       os.makedirs(temp_dir)
    if count == 0:
-      cmd = "/usr/bin/ffmpeg -i " + video_file + " " + temp_dir + "frames%03d.jpg > /dev/null 2>&1"
+      cmd = f"/usr/bin/ffmpeg -i {video_file} {temp_dir} frames%03d.jpg > /dev/null 2>&1"
    else:
-      cmd = "/usr/bin/ffmpeg -i " + video_file + " -vframes " + str(count) +  " " + temp_dir + "frames%03d.jpg > /dev/null 2>&1"
+      cmd = f"/usr/bin/ffmpeg -i {video_file} -vf {fps_text} -vframes {count} {temp_dir}frames%03d.jpg > /dev/null 2>&1"
    print(cmd)
    os.system(cmd)
    files = glob.glob(temp_dir + "*.jpg")
    for file in files:
-      print(file)
+      print("stacked", file)
       frame = cv2.imread(file)
       frames.append(frame)
    stack_frame = stack_frames(frames, 1, None, "day")
    os.system("rm " + temp_dir + "*")
-   if save == 1:
-      print("SAVED NEW STACK:", img_file)
+   if save == 1 and stack_frame is not None:
+      #print("SAVED NEW STACK:", img_file)
       cv2.imwrite(img_file, stack_frame)
       stack_frame_tn = cv2.resize(stack_frame, (320,180))
       img_file_half = img_file.replace("-stacked.jpg", "-half-stack.jpg")
@@ -101,8 +104,8 @@ def stack_frames(frames, skip = 1, resize=None, sun_status="day"):
 
    stacked_image = None
    fc = 0
-   print("FRAMES:", len(frames))
-   print("SUN:", sun_status)
+   #print("FRAMES:", len(frames))
+   #print("SUN:", sun_status)
    for frame in frames:
       if frame is None:
          continue

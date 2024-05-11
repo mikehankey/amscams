@@ -2,7 +2,9 @@ import glob
 import argparse
 import os
 import sys
-from lib.PipeUtil import load_json_file
+from lib.PipeUtil import load_json_file, save_json_file, get_file_info
+import requests
+import json
 
 class MeteorReducer:
     # This class should handle QA & reductions for Meteor Observation
@@ -10,12 +12,15 @@ class MeteorReducer:
     #   -- validating / importing
     #   -- re-reducing
     #   -- calibrating
+    #   -- event reflection / fixing
+    #   -- AWS Sync
     #
     def __init__(self, obs_id=None, obs_day=None):
         # basic data fields
         self.obs_id = obs_id 
         self.obs_day = obs_day
         self.json_conf = load_json_file("../conf/as6.json")
+        self.API_URL = "https://kyvegys798.execute-api.us-east-1.amazonaws.com/api/allskyapi"
         self.station_id = self.json_conf['site']['ams_id']
         self.mdir = "/mnt/ams2/meteors"
         self.archive_dir = "/mnt/archive.allsky.tv/" + self.station_id
@@ -68,6 +73,58 @@ class MeteorReducer:
                 rfiles.append(f)
         return(mfiles, rfiles)
 
+    def get_aws_meteors(self, obs_day):
+
+        url = self.API_URL + "?cmd=get_obs_for_day&station_id=" + self.station_id + "&day=" + obs_day + "&api_key=" + self.json_conf['api_key']
+        aws_file = "/mnt/ams2/meteors/" + obs_day + "/" + self.station_id + "_" + obs_day + "_AWS_METEORS.info"
+        if os.path.exists(aws_file) is True:
+            (size, mtime) = get_file_info(aws_file)
+        else:
+            mtime == 0
+        if mtime == 0 or mtime / 24 > 1:
+            response = requests.get(url)
+            content = response.content.decode()
+            content = content.replace("\\", "")
+            if "nothing" not in content:
+                jdata = json.loads(content)
+            else:
+                jdata = {}
+                jdata['all_vals'] = []
+                jdata['total_records'] = 0
+            if jdata is not None:
+                if "all_vals" in jdata:
+                    save_json_file(aws_file, jdata['all_vals'], True)
+                    print("Saved", aws_file)
+                    data = jdata['all_vals']
+                else:
+                    data = []
+        else:
+            data = load_json_file(aws_file)
+            print("loaded", aws_file)
+
+        for row in data:
+            mfile = self.mmf(row['sd_video_file'])
+            rfile = mfile.replace(".json", "-reduced.json")
+            if os.path.exists(mfile) is False:
+                print("missing:", mfile)
+            elif os.path.exists(rfile) is False:
+                print("missing:", rfile)
+
+            print(row['sd_video_file'], row['event_id'],mfile)
+
+    def mmf(self, meteor_id):
+        # make meteor file from meteor id
+        if ".mp4" in meteor_id:
+            meteor_id = meteor_id.replace(".mp4", "")
+        if ".json" in meteor_id:
+            meteor_id = meteor_id.replace(".json", "")
+        if "AMS" in meteor_id:
+            station_id = meteor_id.split("_")[0]
+            meteor_id = meteor_id.replace(station_id + "_", "")
+        date = meteor_id[0:10]
+        mfile = self.mdir + "/" + date + "/" + meteor_id + ".json"
+        return(mfile)
+
     def get_meteor_days(self ):
         mdayx = os.listdir(self.mdir)
         mdays = []
@@ -84,7 +141,7 @@ if __name__ == "__main__":
     # Define the command-line arguments
 
     # Additional arguments can be added similarly
-    parser.add_argument("--cmd", choices=["reduce_meteor", "reduce_day", "reduce_check_all"], help="Command you want to run.")
+    parser.add_argument("--cmd", choices=["reduce_meteor", "reduce_day", "reduce_check_all", "get_aws_meteors"], help="Command you want to run.")
     parser.add_argument("--date", type=str, help="Day to run for batch")
     parser.add_argument("--meteor", type=str, help="Meteor MP4 or JSON file")
     parser.add_argument("--force", type=bool, help="If a meteor has already been reduced, this must be True to re-run")
@@ -94,6 +151,10 @@ if __name__ == "__main__":
     #print(args.cmd)
     #print(args.date)
     #print(args.meteor)
+    if args.cmd == "get_aws_meteors":
+        MR = MeteorReducer()
+        MR.get_aws_meteors(args.date)
+
     if args.cmd == "reduce_check_all":
         MR = MeteorReducer()
         mdays = MR.get_meteor_days()

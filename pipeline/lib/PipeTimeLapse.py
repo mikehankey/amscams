@@ -446,19 +446,27 @@ def layout_template(date, json_conf):
    return(layout)
 
 def audit_min(date, json_conf):
+   # audit min files
+   # build index and make sure all files exist
+   # make quick preview of all minutes as 1 row
+
+   os.system("clear")
    mm = 0
+   print("\rLoading camera info.", end="")
    cam_id_info, cam_num_info = load_cam_info(json_conf)
    # check the files that could be missig and why
-   if os.path.exists(TL_VIDEO_DIR + date) is False:
-      os.makedirs(TL_VIDEO_DIR + date)
+   if os.path.exists(TL_VIDEO_DIR  ) is False:
+      os.makedirs(TL_VIDEO_DIR  )
    data_file = TL_VIDEO_DIR + date + "-audit.json"
+
+   print(f"\rLoading data file {data_file}." + " " * 50, end="")
    if cfe(TL_IMAGE_DIR + date, 1) == 0 :
       os.makedirs(TL_IMAGE_DIR + date)
    if cfe(data_file) == 0:
       data = {}
       new = 1
    else: 
-      print(data_file)
+      print(f"\rLoading {data_file} please wait..." + " " * 50, end="")
       data = load_json_file(data_file)
       new = 0
    #minutes = load_json_file(data_file)
@@ -470,20 +478,20 @@ def audit_min(date, json_conf):
       limit_h = 23
       limit_m = 59
 
-   print("Loading files.")
    hd_files = glob.glob("/mnt/ams2/HD/" + date + "*.mp4")
    sd_files = glob.glob("/mnt/ams2/SD/proc2/" + date + "/*.mp4")
    sd_day_files = glob.glob("/mnt/ams2/SD/proc2/daytime/" + date + "/*.mp4")
    sd_queue_files = glob.glob("/mnt/ams2/SD/" + date + "*.mp4")
+   print("\rLoading daytime queue files." + " " * 50, end="")
    sd_day_queue_files = glob.glob("/mnt/ams2/SD/proc2/daytime/" + date + "*.mp4")
    # will need to fix later.
-   print("Loading snap files.")
+   print("\rLoading snap files.", end="" )
    snap_files= glob.glob("/mnt/ams2/SNAPS/" + date + "*.png")
-   print("Loading Meteor files.")
+   print("\rLoading meteor files." + " " * 50, end="" )
+
    mfiles = glob.glob("/mnt/ams2/meteors/" + date + "/*.json")
    detect_files = glob.glob("/mnt/ams2/SD/proc2/" + date + "/hd_save/*.mp4")
    meteor_files = []
-   print("Loading meteor files.")
    for mf in mfiles:
       if "reduced" not in mf and "stars" not in mf and "man" not in mf:
          meteor_files.append(mf)
@@ -500,7 +508,7 @@ def audit_min(date, json_conf):
 
    if True:
       for h in range(0,24):
-         print("Hour:", h)
+         print(f"\rHour: {h}" + " " * 50, end='', flush=True)
          hs = str(h)
          if hs not in data :
             data[hs] = {}
@@ -518,7 +526,7 @@ def audit_min(date, json_conf):
                   f_date_str = f_date_str.replace("_", "/")
                   if cam not in data[hs][ms]:
                      sun_status, sun_az, sun_el = day_or_night(f_date_str, json_conf,1)
-                     print(hs, ms, cam, sun_status, sun_az, sun_el)
+                     print(f"\r{hs} {ms} {cam} {sun_status} {sun_az} {sun_el}", end='', flush=True)
                      data[hs][ms][cam] = {}
                      data[hs][ms][cam]['cam_num'] = cam
                      data[hs][ms][cam]['id'] = cam_num_info[cam]
@@ -535,7 +543,8 @@ def audit_min(date, json_conf):
                      data[hs][ms][cam]['color_int'] = []
                   else:
                      sun_status, sun_az, sun_el = day_or_night(f_date_str, json_conf,1)
-                     print("E:", hs, ms, cam, sun_status, sun_az, sun_el)
+                     #print("E:", hs, ms, cam, sun_status, sun_az, sun_el)
+                     print(f"\r{hs} {ms} {cam} {sun_status} {sun_az} {sun_el}", end='', flush=True)
                      data[hs][ms][cam]['sd_file'] = []
                      data[hs][ms][cam]['hd_file'] = []
                      data[hs][ms][cam]['snap_file'] = []
@@ -544,7 +553,8 @@ def audit_min(date, json_conf):
                      data[hs][ms][cam]['detects'] = []
                      data[hs][ms][cam]['weather'] = []
                      data[hs][ms][cam]['sun'] = [sun_status, sun_az, sun_el]
-   print("Looping HD Files")
+
+   print("\rLooping HD Files" + " " * 50, end='', flush=True)
    for file in sorted(hd_files):
       (sd_datetime, sd_cam, sd_date, sd_y, sd_m, sd_d, sd_h, sd_M, sd_s) = convert_filename_to_date_cam(file)
       if "trim" not in file:
@@ -552,10 +562,9 @@ def audit_min(date, json_conf):
          cam_num = cam_id_info[sd_cam]
          sd_h = str(int(sd_h))
          sd_M = str(int(sd_M))
-         #print(file, cam_num, sd_h, sd_M, data[sd_h][sd_M])
          data[sd_h][sd_M][cam_num]['hd_file'].append(file)
 
-   print("Looping SD Files")
+   print("\rLooping SD Night Files" + " " * 60, end='', flush=True)
    for file in sorted(sd_files):
       fn, dir = fn_dir(file)
       (sd_datetime, sd_cam, sd_date, sd_y, sd_m, sd_d, sd_h, sd_M, sd_s) = convert_filename_to_date_cam(file)
@@ -565,23 +574,30 @@ def audit_min(date, json_conf):
          sd_M = str(int(sd_M))
          data[sd_h][sd_M][cam_num]['sd_file'].append(file)
          stack_file = dir + "images/" + fn
-         stack_file = stack_file.replace(".mp4", "-stacked-tn.png")
-         if cfe(stack_file) == 0:
-            stack_file = stack_file.replace(".png", ".jpg")
-            if cfe(stack_file) == 0:
-               print("MISSING:", stack_file)
-               exit()
-        
-         #print("STACK:", stack_file)
-         if cfe(stack_file) == 1:
-            data[sd_h][sd_M][cam_num]['stack_file'].append(stack_file)
-         #else:
-         #   print("STACK NOT FOUND!:", stack_file)
+         stack_file = stack_file.replace(".mp4", "-stacked-tn.jpg")
+         #if cfe(stack_file) == 0:
+         #   stack_file = stack_file.replace(".png", ".jpg")
+         #   if cfe(stack_file) == 0:
+         #      print(f"\rMISSING: {stack_file}" + " " * 50, end="")
+         show_file = stack_file.split("-")[0].split("/")[-1]
+         if stack_file not in data[sd_h][sd_M][cam_num]['stack_file']:
+            if os.path.exists(stack_file) is True:
+               print(f"\rNight : {stack_file}" + " " * 50, end="")
+               data[sd_h][sd_M][cam_num]['stack_file'].append(stack_file)
+         else:
+            print(f"\rDone : {show_file}" + " " * 50, end="")
+            
 
 
-   print("Looping SD DAY Files")
+   print("\rLooping SD DAY Files     " + " " * 60 , end='')
+   current_date = datetime.now()
    for file in sorted(sd_day_files):
       (sd_datetime, sd_cam, sd_date, sd_y, sd_m, sd_d, sd_h, sd_M, sd_s) = convert_filename_to_date_cam(file)
+      if sd_datetime > current_date :
+         #print("Time in future skip!")
+         #print(current_date, sd_datetime, type(current_date), type(sd_datetime))
+         #input()
+         continue
       fn, dir = fn_dir(file)
       if "trim" not in file:
          cam_num = cam_id_info[sd_cam]
@@ -589,13 +605,17 @@ def audit_min(date, json_conf):
          sd_M = str(int(sd_M))
          stack_file = dir + "images/" + fn
          stack_file = stack_file.replace(".mp4", "-stacked-tn.png")
-         #print("DAY STACK:", stack_file)
-         if cfe(stack_file) == 1:
-            data[sd_h][sd_M][cam_num]['stack_file'].append(stack_file)
-         #else:
-         #   print("DAY STACK NOT FOUND!:", stack_file)
+         show_file = stack_file.split("-")[0].split("/")[-1]
+         if stack_file not in data[sd_h][sd_M][cam_num]['stack_file']:
+            if os.path.exists(stack_file) == 1:
+                print(f"\rDay : {stack_file}" + " " * 50, end="")
+                data[sd_h][sd_M][cam_num]['stack_file'].append(stack_file)
+            else:
+                print(f"\rMissing : {stack_file}" + " " * 50, end="")
+         else:
+            print(f"\rDay Done : {stack_file}" + " " * 50, end="")
          data[sd_h][sd_M][cam_num]['sd_file'].append(file)
-   print("Looping SD DAY QUEUE Files")
+   print("\rLooping SD DAY QUEUE Files" + " " * 50, end="")
    for file in sorted(sd_day_queue_files):
       (sd_datetime, sd_cam, sd_date, sd_y, sd_m, sd_d, sd_h, sd_M, sd_s) = convert_filename_to_date_cam(file)
       if "trim" not in file:
@@ -632,39 +652,41 @@ def audit_min(date, json_conf):
          sd_M = str(int(sd_M))
          data[sd_h][sd_M][cam_num]['detects'].append(file)
 
+   save_json_file(data_file, data)
    # update the intensity per minute and make the row pic
    TL_PIC_DIR = TL_IMAGE_DIR + date + "/"
    for hour in range(0,24):
        for minute in range(0,60):
          if hour > limit_h:
-            #print("HOUR HAS PAST!", hour )
             continue
          if hour == limit_h:
             if minute >= limit_m:
-               #print("MIN HAS PAST!", hour, minute)
                continue
          key = '{:02d}-{:02d}'.format(int(hour),int(minute))
          hs = str(hour)
          ms = str(minute)
 
          row_file = TL_PIC_DIR + key + "-row.png"
-         print("ROW:", row_file)
+         show_file = row_file.split("-")[0].split("/")[-1]
+         print(f"\rROW: {show_file}" + " " * 60, end="")
          redo = 0
-         if cfe(row_file) == 1:
-            fs = os.stat(row_file)
-            fsize = fs.st_size
-            if fsize < 4000:
-               redo = 1
-               os.system("rm " + row_file)
+         #if cfe(row_file) == 1:
+         #   fs = os.stat(row_file)
+         #   fsize = fs.st_size
+         #   if fsize < 4000:
+         #      redo = 1
+         #      os.system("rm " + row_file)
 
 
-         if cfe(row_file) == 0 or redo == 1:
-            print("MAKE ROW!", data[hs][ms])
+         if os.path.exists(row_file) == 0 or redo == 1:
             min_file = None
             row_pic = make_row_pic(data[hs][ms], min_file, LOCATION + " " + date + " " + key.replace("-", ":") + " UTC", json_conf, cam_num_info)
             cv2.imwrite(row_file, row_pic)
 
-         for cam in data[hs][ms]:
+         # try to detect aurora
+         # maybe we can disable this.
+         #for cam in data[hs][ms]:
+         if False:
             stack_files = data[hs][ms][cam]['stack_file']
             sum_int = 0
             avg_int = 0
@@ -676,28 +698,21 @@ def audit_min(date, json_conf):
             #if (cfe(stack_file) == 1 and data[hs][ms][cam]['sum_int'] == 0) or "aurora" not in data[hs][ms][cam]:
             if stack_file is not None:
                timg = cv2.imread(stack_file)
-               print("STACK:", hs, ms, stack_file)
-               print("SUN:", hs, ms, cam, data[hs][ms][cam]['sun'] )
+               #print(f"\rSUN: {hs}, {ms}, {cam}, {data[hs][ms][cam]['sun']}", end="" )
                if float(data[hs][ms][cam]['sun'][2]) <= -10 :
                   resp = detect_aurora(stack_file)
-                  print("RUN DETECT!", hs, ms, cam, stack_file)
+                  #print(f"\rRUN AURORA DETECT! {hs}, {ms}, {cam}, {stack_file}", end="")
                   if resp != 0:
                      au,hist_img,marked_img = resp
                   else:
                      au = {'detected': 0}
 
                   if au['detected'] == 1:
-                     print("AU:", au)
-                     print("AUSTACK:", stack_file)
                      au_file = stack_file.replace("-stacked-tn.png", "-au-tn.jpg")
                      #html += "<img src=" + au_file + "><br>"
-                     print("AU FILE:", au_file)
                      if cfe(au_file) == 0:
                         cv2.imwrite(au_file, marked_img)
-                        print("AU:", au_file)
-                     else:
-                        print("AU FILE EXISTS.", au_file)
-                     #exit()
+                        #print(f"\rAUROA: {au_file}", end="")
 
                else:
                    au = { "detected": 0}
@@ -716,11 +731,10 @@ def audit_min(date, json_conf):
                   data[hs][ms][cam]['sum_int'] = 0 
                   data[hs][ms][cam]['avg_int'] = 0 
                   data[hs][ms][cam]['color_int'] = [0, 0, 0]
-               #print("INTS:", stack_file, sum_int, avg_int)
-            #else:
-            #   print("DID INTS.", hour, minute,  data[hour][minute][cam]['sum_int'],  data[hour][minute][cam]['avg_int'])
-
+      
    save_json_file(data_file, data)
+
+   print("Saved data file.", data_file)
    html = """
    <script>
    function show_hide(div_id) {
@@ -791,6 +805,8 @@ def audit_min(date, json_conf):
                   #html += "<img src=" + data[hour][min][cam]['stack_file'][0] + ">"
                   url = jpg.replace("-stacked-tn.jpg", ".mp4")
                   url = url.replace("images/", "")
+                  jpg = jpg.replace("/mnt/ams2", "")
+                  url = url .replace("/mnt/ams2", "")
                   html += "<a href=" + url + "><img src=" + jpg + "></a><br>" + str(data[hs][ms][cam]['color_int'])
                else:
                   if len(data[hs][ms][cam]['hd_file']) == 0:
@@ -890,7 +906,7 @@ def make_tl_html():
    html = "<h1>Time Lapse and Audits for " + STATION_ID + "</h1>"      
    html += "<p>Last updated:" + datetime.now().strftime("%Y_%m_%d") + "</p><ul>"
    vids = glob.glob(TL_VIDEO_DIR + "*.mp4")
-   rsync_cmd = f"rysnc -auv {TL_VIDEO_DIR} {TL_CLOUD_DIR}"
+   rsync_cmd = f"rsync -auv {TL_VIDEO_DIR}/*.mp4 {TL_CLOUD_DIR}"
 
    for vid in sorted(vids,reverse=True):
       
@@ -1068,8 +1084,6 @@ def tn_tl6(date,json_conf):
          fsize = fs.st_size
          if fsize < 4000:
             redo = 1
-        
-            print("REDO DOW", row_file)
             exit()
       if row_file in row_files or redo == 1:
       #if True:
@@ -1086,7 +1100,6 @@ def tn_tl6(date,json_conf):
          #os.system(cmd)
          new += 1
 
-         print("MAKE ROW:", key)
    if new > 0:
       iwild = TL_PIC_DIR + "*-row.png"
       tl_out = TL_VIDEO_DIR + date + "_row_tl.mp4"
@@ -1121,9 +1134,6 @@ def make_row_pic(data, min_file, text, json_conf, cam_num_info):
       if file != "":
          img = cv2.imread(file)
       else:
-         print("MISSING DATA:", min_file, cams_id)
-         print ("Try a backup field?")
-         print("BAD NO DATA FOR MIN/CAM:", min_file, cam)
          img = np.zeros((default_h,default_w,3),dtype=np.uint8)
       img = cv2.resize(img, (default_w, default_h))
       imgs.append(img)
@@ -1151,43 +1161,45 @@ def timelapse_all(date, json_conf):
       cams_id = json_conf['cameras'][cam]['cams_id']
       make_tl_for_cam(date, cams_id, json_conf)
 
-def make_tl_for_cam(date,cam, json_conf):
-   print("TL:", cam, date)
+def make_tl_for_cam(date,cam, speed, json_conf):
+   station_id = json_conf['site']['ams_id']
    hd_dir = "/mnt/ams2/HD/"
+   snap_dir = hd_dir + "snaps/"
+   if os.path.exists(snap_dir) is False:
+      os.makedirs(snap_dir)
    files = glob.glob(hd_dir + date + "*" + cam + "*.mp4")
-   print("WILD:", hd_dir + date + "*" + cam + "*.mp4")
    tl_dir = TL_DIR + date + "/"
-   print("FILES:", len(files))
    if cfe(tl_dir, 1) == 0:
       os.makedirs(tl_dir)
    for file in sorted(files):
       if "trim" not in file:
          fn = file.split("/")[-1]
-         out_file = tl_dir + fn
-         out_file = out_file.replace(".mp4", ".jpg")
-         print("trying ", file)
-         try:
-            image, image_file = quick_video_stack(file, 1)
-         except:
-            continue
+         out_file = tl_dir + fn.replace(".mp4", ".jpg")
+         #out_file = hd_dir + "snaps/" + fn.replace(".mp4", ".jpg")
+         if os.path.exists(out_file) is False:
+            image, image_file = quick_video_stack(file, speed)
+         #try:
+         #except:
+         #   continue
      
          #rot_image = rotate_bound(image, 72)
          #img_sm = cv2.resize(rot_image, (640, 360))
          #cv2.imshow('pepe', img_sm)
          #cv2.waitKey(0)
 
-         if cfe(out_file) == 0:
-           print(fn, file, out_file )
-           try:
-              cv2.imwrite(out_file, image)
-           except:
-              print("FAILED TO WRITE OUT: ", out_file)
+            try:
+                cv2.imwrite(out_file, image)
+            except:
+                print("FAILED TO WRITE OUT: ", out_file)
+
          #cv2.imshow('pepe', show_frame)
          #cv2.waitKey(30)
-   video_from_images(date, cam, json_conf)
+   pics_dir = f"/mnt/ams2/meteor_archive/{station_id}/TIME_LAPSE/{date}/"
+   video_from_images(pics_dir, date, cam, json_conf)
 
-def video_from_images(date, wild, json_conf ):
-   TL_DIR = "/mnt/ams2/meteor_archive/" + STATION_ID + "/TL/VIDS/"
+def video_from_images(pics_dir, date, wild, json_conf ):
+   #TL_DIR = "/mnt/ams2/meteor_archive/" + STATION_ID + "/TL/VIDS/" + date + "/"
+   TL_DIR = pics_dir
    tl_out = TL_DIR + "tl_" + date + "_" + wild + ".mp4"
 
    iwild = TL_DIR + "*" + wild + "*.jpg"
@@ -1200,6 +1212,7 @@ def video_from_images(date, wild, json_conf ):
 
 def six_cam_video(date, json_conf):
    ### make 6 camera tl video for date
+   station_id = json_conf['site']['ams_id']
 
    lc = 1
    mc_layout = {}
@@ -1253,7 +1266,8 @@ def six_cam_video(date, json_conf):
          make_six_image_comp(min_key, final_frames[min_key], 5)
       else:
          print("skip.", min_key)
-   video_from_images(date, "comp", json_conf)
+   pics_dir = "/mnt/ams2/meteor_archive/{station_id}/TL/PICS/"
+   video_from_images(pics_dir, date, "comp", json_conf)
        
 
 def make_six_image_comp(min_key, data,featured=0):  
