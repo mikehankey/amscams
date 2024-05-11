@@ -1306,6 +1306,11 @@ def multi_cam_audit_tl(date, json_conf, outsize, outdir, frate, snaps_per_second
    print(outfile)
 
 def audit_tl(date, json_conf, tcam=None,outsize=None, outdir=None, frate=None, snaps_per_second=None):
+   station_id = json_conf['site']['ams_id']
+   tl_dir = f"/mnt/ams2/meteor_archive/{station_id}/TL/VIDS/"
+   if os.path.exists(tl_dir) is False:
+      os.makedirs(tl_dir)
+      
    mc = input("Select Command: 1) Make 1 video for 1 cam 2) Make Multi-cam-video 3) Join 2 days together")
    if outsize is None: 
       tcam = input("Enter CAMS ID (1-7) or A for multi-cam video: ")
