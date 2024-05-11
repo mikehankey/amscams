@@ -883,9 +883,15 @@ def multi_cam_tl(date):
 
 def make_tl_html():
    print("MAKE HTML")
+   TL_CLOUD_DIR = "/mnt/archive.allsky.tv/" + STATION_ID + "/TL/VIDS/"
+   if os.path.exists(TL_CLOUD_DIR) is False:
+      os.makedirs(TL_CLOUD_DIR) 
+ 
    html = "<h1>Time Lapse and Audits for " + STATION_ID + "</h1>"      
    html += "<p>Last updated:" + datetime.now().strftime("%Y_%m_%d") + "</p><ul>"
    vids = glob.glob(TL_VIDEO_DIR + "*.mp4")
+   rsync_cmd = f"rysnc -auv {TL_VIDEO_DIR} {TL_CLOUD_DIR}"
+
    for vid in sorted(vids,reverse=True):
       
       vid_fn, vdir = fn_dir(vid)
@@ -897,8 +903,6 @@ def make_tl_html():
    oo.write(html)
    oo.close()
    print("saved:", TL_VIDEO_DIR + "index.html")
-   if os.path.exists("/mnt/archive.allsky.tv/" + STATION_ID + "/TL/VIDS/") is False:
-      os.makedirs("/mnt/archive.allsky.tv/" + STATION_ID + "/TL/VIDS/") 
    try:
       TL_CLOUD_FILE = "/mnt/archive.allsky.tv/" + STATION_ID + "/TL/VIDS/index.html"
       oo = open(TL_CLOUD_FILE, "w")
@@ -908,6 +912,7 @@ def make_tl_html():
       print("Cloud drive not connected.")
    cl_url = TL_CLOUD_FILE.replace("/mnt/", "https://")
    print(f"Audit file and time lapse saved on cloud here: {cl_url}")
+   print(rsync_cmd)
 
 def make_multi_cam_frame(frame, TID):
    mc_img = np.zeros((1080,1920,3),dtype=np.uint8)
