@@ -604,7 +604,7 @@ def audit_min(date, json_conf):
          sd_h = str(int(sd_h))
          sd_M = str(int(sd_M))
          stack_file = dir + "images/" + fn
-         stack_file = stack_file.replace(".mp4", "-stacked-tn.png")
+         stack_file = stack_file.replace(".mp4", "-stacked-tn.jpg")
          show_file = stack_file.split("-")[0].split("/")[-1]
          if stack_file not in data[sd_h][sd_M][cam_num]['stack_file']:
             if os.path.exists(stack_file) == 1:
