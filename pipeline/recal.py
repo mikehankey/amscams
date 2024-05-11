@@ -2610,7 +2610,7 @@ def refit_meteor_day(meteor_day, con, cur, json_conf):
 
    make_intro(MOVIE_FRAMES_TEMP_FOLDER) 
 
-   timelapse_day_fast(meteor_day, con, cur, json_conf)
+   #timelapse_day_fast(meteor_day, con, cur, json_conf)
 
    files = os.listdir("/mnt/ams2/meteors/" + meteor_day + "/")
    cc = 1
