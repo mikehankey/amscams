@@ -897,6 +897,8 @@ def make_tl_html():
    oo.write(html)
    oo.close()
    print("saved:", TL_VIDEO_DIR + "index.html")
+   if os.path.exists("/mnt/archive.allsky.tv/" + STATION_ID + "/TL/VIDS/") is False:
+      os.makedirs("/mnt/archive.allsky.tv/" + STATION_ID + "/TL/VIDS/") 
    try:
       TL_CLOUD_FILE = "/mnt/archive.allsky.tv/" + STATION_ID + "/TL/VIDS/index.html"
       oo = open(TL_CLOUD_FILE, "w")
