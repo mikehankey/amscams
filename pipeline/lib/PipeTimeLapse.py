@@ -907,7 +907,7 @@ def make_tl_html():
    except:
       print("Cloud drive not connected.")
    cl_url = TL_CLOUD_FILE.replace("/mnt/", "https://")
-   print(f"Audit file and time lapse saved on cloud here: {cl_url})
+   print(f"Audit file and time lapse saved on cloud here: {cl_url}")
 
 def make_multi_cam_frame(frame, TID):
    mc_img = np.zeros((1080,1920,3),dtype=np.uint8)
