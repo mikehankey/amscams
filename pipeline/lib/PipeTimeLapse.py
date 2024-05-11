@@ -449,6 +449,8 @@ def audit_min(date, json_conf):
    mm = 0
    cam_id_info, cam_num_info = load_cam_info(json_conf)
    # check the files that could be missig and why
+   if os.path.exists(TL_VIDEO_DIR + date) is False:
+      os.makedirs(TL_VIDEO_DIR + date)
    data_file = TL_VIDEO_DIR + date + "-audit.json"
    if cfe(TL_IMAGE_DIR + date, 1) == 0 :
       os.makedirs(TL_IMAGE_DIR + date)
