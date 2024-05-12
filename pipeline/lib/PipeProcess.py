@@ -231,6 +231,12 @@ def run_jobs(json_conf):
       print("Already running.")
       return()
 
+   # audit yesterday and today
+   cmd = f"./Process.py audit.py {today}"
+   os.system(cmd)
+   cmd = f"./Process.py audit.py {yest}"
+   os.system(cmd)
+
    three_day = (datetime.now() - dt.timedelta(days = 2)).strftime("%Y_%m_%d")
    four_day = (datetime.now() - dt.timedelta(days = 3)).strftime("%Y_%m_%d")
    five_day = (datetime.now() - dt.timedelta(days = 4)).strftime("%Y_%m_%d")
