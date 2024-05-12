@@ -232,6 +232,11 @@ def run_jobs(json_conf):
       return()
 
    # audit yesterday and today
+
+   cmd = f"/usr/bin/python3 special_day {today}"
+   print(cmd)
+   os.system(cmd)
+
    cmd = f"./Process.py audit.py {today}"
    #os.system(cmd)
    cmd = f"./Process.py audit.py {yest}"
