@@ -19,17 +19,22 @@ import json
 import logging
 
 
-# Configure global logger
-logger = logging.getLogger('global_logger')
-logger.setLevel(logging.INFO)  # This ensures INFO and higher messages are handled
+try:
+   # Configure global logger
+   logger = logging.getLogger('global_logger')
+   logger.setLevel(logging.INFO)  # This ensures INFO and higher messages are handled
 
-# Create file handler with appropriate level
-file_handler = logging.FileHandler('/mnt/ams2/temp/app.log')
-file_handler.setLevel(logging.INFO)  # Ensures this handler captures INFO level messages
-file_handler.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
+   # Create file handler with appropriate level
+   if os.path.exists("/mnt/ams2/temp") is False:
+      os.makedirs("/mnt/ams2/temp")
+   file_handler = logging.FileHandler('/mnt/ams2/temp/app.log')
+   file_handler.setLevel(logging.INFO)  # Ensures this handler captures INFO level messages
+   file_handler.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
 
-# Add the file handler to the logger
-logger.addHandler(file_handler)
+   # Add the file handler to the logger
+   logger.addHandler(file_handler)
+except:
+   print("logging problem")
 
 
 
