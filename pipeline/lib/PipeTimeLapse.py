@@ -1244,10 +1244,19 @@ def make_tl_for_cam(date,cam, speed, json_conf):
    station_id = json_conf['site']['ams_id']
    hd_dir = "/mnt/ams2/HD/"
    snap_dir = hd_dir + "snaps/"
+   cmd = f"./Process.py hd_snaps /mnt/ams2/HD/ {date} {cam}"
+   print(cmd)
+   os.system(cmd)
+
+   print("OK")
+   
    if os.path.exists(snap_dir) is False:
       os.makedirs(snap_dir)
    files = glob.glob(hd_dir + date + "*" + cam + "*.mp4")
    tl_dir = TL_DIR + date + "/"
+
+   print("FILES:", files)
+
    if cfe(tl_dir, 1) == 0:
       os.makedirs(tl_dir)
    for file in sorted(files):

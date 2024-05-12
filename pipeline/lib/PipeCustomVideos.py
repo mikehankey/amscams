@@ -474,9 +474,10 @@ def hd_snaps(hd_dir, date_wild, cam_wild, json_conf):
       fn, dir = fn_dir(file)
       outfile = snap_dir + fn
       outfile = outfile.replace(".mp4", ".jpg")
-      cmd = """ /usr/bin/ffmpeg -i """ + file + """ -vf select="between(n\,""" + str(0) + """\,""" + str(1) + """),setpts=PTS-STARTPTS" -y -update 1 """ + outfile + " >/dev/null 2>&1"
-      print(cmd)
-      os.system(cmd)
+      if os.path.exists(outfile) is False:
+         cmd = """ /usr/bin/ffmpeg -i """ + file + """ -frames:v 1 """ + outfile + ">/dev/null 2>&1"
+         print(cmd)
+         os.system(cmd)
 
 
 def time_lapse_frames(date, cams_id, json_conf, sunset, sunrise):
