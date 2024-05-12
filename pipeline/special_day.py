@@ -17,7 +17,7 @@ def backup_aurora(opt):
     if os.path.exists(opt['backup_dir']) is False:
         print(f"your backup dir does not exists or you don't have permissions to write in it. {opt['backup_dir']}")
         print(f"Add or update the mount point/drive at {opt['backup_dir']} in your system.")
-        exit()
+        return(False) 
     out_dir = opt['backup_dir'] + opt['backup_folder'] + "/"
     if os.path.exists(out_dir) is False:
         try:
@@ -25,7 +25,7 @@ def backup_aurora(opt):
         except:
             print(f"your backup dir does not exists or you don't have permissions to write in it. {out_dir}")
             print(f"Add or update the mount point/drive at {opt['backup_dir']} in your system.")
-            exit()
+            return(False) 
     start_dt = datetime.datetime.strptime(opt['start_date'], "%Y-%m-%d %H:%M:%S")
     end_dt = datetime.datetime.strptime(opt['end_date'], "%Y-%m-%d %H:%M:%S")
    
@@ -65,7 +65,7 @@ def backup_aurora(opt):
     print(f"Free Space: {free_space} GB")
     if free_space < needed_size * 2:
         print("Not enough space to backup the files.")
-        exit()
+        return(False) 
     else:
         print("We have enough space to backup the requested files.")
         
@@ -85,7 +85,11 @@ opt = {}
 opt['start_date'] = "2024-05-10 20:00:00"
 opt['end_date'] = "2024-05-11 20:00:00"
 opt['backup_dir'] = "/mnt/backup/"
-opt['backup_folder'] = "2024_05_11"
+opt['backup_folder'] = "2024_05_10_AURORA_BACKUP"
 
-backup_aurora(opt)
+result = backup_aurora(opt)
+if result is False:
+    # backup failed try alternative directory
+    opt['backup_dir'] = "/mnt/ams2/temp/"
+    result = backup_aurora(opt)
         
