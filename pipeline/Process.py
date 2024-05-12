@@ -26,7 +26,7 @@ from lib.PipeSync import sync_day , sync_index_day, sync_meteor_preview, sync_me
 from lib.PipeAutoCal import autocal , make_lens_model, solve_field, cal_all, draw_star_image, freecal_copy, apply_calib_old, index_failed, deep_calib_init, deep_calib, deep_cal_report, blind_solve_meteors, guess_cal, flatten_image, project_many, project_snaps, review_cals, star_db_mag, cal_report, review_all_cals, reverse_map, cal_index, sync_back_admin_cals, min_fov, fn_dir, refit_fov, refit_best, refit_all, super_cal, check_all, custom_fit_meteor, refit_meteor, refit_meteors, reapply_meteor_cal, cal_manager, heal_cal, heal_all, resolve_failed, cal_status, get_default_calib_hist, get_calib_from_range, run_cal_defaults, project_image, move_extra_cals, sync_cal_files, cal_sum_html, load_caldb, sync_cloud_cal_files, update_cal_index
 from lib.PipeReport import autocal_report, detect_report 
 from lib.PipeLIVE import meteor_min_files, broadcast_live_meteors, broadcast_minutes, meteors_last_night, mln_final, pip_video, mln_sync, super_stacks, meteor_index, fix_missing_images, fflist, resize_video, minify_file, make_preview_meteor, make_preview_meteors, sync_preview_meteors
-from lib.PipeTimeLapse import make_tl_for_cam, video_from_images, six_cam_video, timelapse_all, tn_tl6, sync_tl_vids, multi_cam_tl, audit_min, purge_tl , plot_min_int, aurora_fast
+from lib.PipeTimeLapse import make_tl_for_cam, video_from_images, six_cam_video, timelapse_all, tn_tl6, sync_tl_vids, multi_cam_tl, audit_min, purge_tl , plot_min_int, aurora_fast, timelapse_diskspace
 from lib.PipeMeteorDelete import delete_all_meteor_files
 from lib.PipeEvent import events_for_day, get_network_info, solve_day, dyna_events_for_day, dyna_events_for_month, delete_events_day 
 from lib.PipeSolve import simple_solve
@@ -241,6 +241,9 @@ if __name__ == "__main__":
          audit_min(yesterday, json_conf)
       else:
          audit_min(sys.argv[2], json_conf)
+   if cmd == 'timelapse_diskspace':
+      timelapse_diskspace(json_conf['site']['ams_id'])
+       # date_wild, cam, speed
    if cmd == 'tlc':
        # date_wild, cam, speed
       make_tl_for_cam(sys.argv[2], sys.argv[3], sys.argv[4], json_conf)
