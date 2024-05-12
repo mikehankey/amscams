@@ -23,6 +23,9 @@ from scipy.stats import linregress
 dec = decimal.Decimal
 #try
 #import jwt
+
+
+
 def calculate_magnitude(intensity, reference_intensity=5000):
     return -2.5 * math.log10(intensity / reference_intensity)
 
