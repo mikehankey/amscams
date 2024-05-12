@@ -14,6 +14,10 @@ json_conf = load_json_file("../conf/as6.json")
 
 def backup_aurora(opt):
     # convert strings to datetime
+    if os.path.exists(opt['backup_dir']) is False:
+        print(f"your backup dir does not exists or you don't have permissions to write in it. {opt['backup_dir']}")
+        print(f"Add or update the mount point/drive at {opt['backup_dir']} in your system.")
+        exit()
     out_dir = opt['backup_dir'] + opt['backup_folder'] + "/"
     if os.path.exists(out_dir) is False:
         try:
@@ -80,7 +84,7 @@ def backup_aurora(opt):
 opt = {}
 opt['start_date'] = "2024-05-10 20:00:00"
 opt['end_date'] = "2024-05-11 20:00:00"
-opt['backup_dir'] = "/mnt/f/backup/"
+opt['backup_dir'] = "/mnt/backup/"
 opt['backup_folder'] = "2024_05_11"
 
 backup_aurora(opt)
