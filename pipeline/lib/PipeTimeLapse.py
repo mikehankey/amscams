@@ -14,6 +14,84 @@ from lib.PipeUtil import cfe, save_json_file, convert_filename_to_date_cam, load
 from lib.PipeAutoCal import fn_dir, get_cal_files
 from lib.DEFAULTS import *
 import numpy as np
+import subprocess 
+import json
+import logging
+
+
+# Configure global logger
+logger = logging.getLogger('global_logger')
+logger.setLevel(logging.INFO)  # This ensures INFO and higher messages are handled
+
+# Create file handler with appropriate level
+file_handler = logging.FileHandler('/mnt/ams2/temp/app.log')
+file_handler.setLevel(logging.INFO)  # Ensures this handler captures INFO level messages
+file_handler.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
+
+# Add the file handler to the logger
+logger.addHandler(file_handler)
+
+
+
+
+def timelapse_diskspace(station_id):
+   logger.info("Checking disk space for station: " + station_id)
+   # figure out the values of disk space used by the timelapse programs
+   # purge oldest files to make sure we don't go over maximum
+   arc_dir = f"/mnt/ams2/meteor_archive/{station_id}/"
+
+   # rules - delete jpgs that are >= 2 days old
+   # keep - mp4 files unless total disk used is > 1 GB then delete
+   folders_to_check = [arc_dir + "TL/PICS/", arc_dir + "TL/VIDS/", arc_dir + "TIME_LAPSE/"]
+   
+   for f in folders_to_check:
+      # check disk usage of this folder
+      res = subprocess.run(["du", "-sh", f], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+      # Check the exit status
+      if res.returncode == 0:
+         #print(res.stdout)
+         files = glob.glob(f + "*") 
+         for f in files:
+            delete = False 
+            # how old is this file
+            file_time = os.path.getmtime(f)
+            time_diff = datetime.now() - datetime.fromtimestamp(file_time)
+           
+            if os.path.isdir(f) :
+               print(f"{f} is a dir", time_diff.days)
+               subfiles = glob.glob(f + "/*")
+               for sf in subfiles:
+                  sub_time_diff = datetime.now() - datetime.fromtimestamp(os.path.getmtime(f))
+                  if "jpg" in sf and sub_time_diff.days > 2:
+                     delete = True
+                  if "mp4" in sf and sub_time_diff.days > 30:
+                     delete = True
+                  if delete is True:
+                     print("DEL", sf)
+                     os.remove(sf)
+               # delete folder if it is older than 30 days
+               if time_diff.days > 30:
+                  cmd = f"rm -rf {f}"
+                  print(f"DEL FOLDER: {cmd}")
+                  
+            else:
+               # delete any videos older than 90 days
+               # delete any jpgs older than 2 days
+               # delete any files that say "audit" older than 2 days
+               if "mp4" in f and time_diff.days > 90:
+                  delete = True
+               elif "jpg" in f and time_diff.days > 2:
+                  delete = True
+               elif "audit" in f and time_diff.days > 2:
+                  delete = True
+               if delete is True:
+                  print(f"Deleting {f}")
+                  os.remove(f)
+      else:
+         print("Command failed!")
+         print(res.stderr)
+      
+
 
 def aurora_fast(date, focus_cam = None, json_conf = None):
    snap_dir = "/mnt/ams2/SNAPS/" + date + "/360p/" 
