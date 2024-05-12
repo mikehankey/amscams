@@ -233,7 +233,7 @@ def run_jobs(json_conf):
 
    # audit yesterday and today
 
-   cmd = f"/usr/bin/python3 special_day {today}"
+   cmd = f"/usr/bin/python3 special_day.py {today}"
    print(cmd)
    os.system(cmd)
 
