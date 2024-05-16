@@ -1246,49 +1246,122 @@ def timelapse_all(date, json_conf):
       make_tl_for_cam(date, cams_id, json_conf)
 
 def make_tl_for_cam(date,cam, speed, json_conf):
+   try:
+      from tqdm import tqdm
+   except:
+      print("Missing tqdm. Run this command.")
+      print("sudo /usr/bin/python3 -m pip install tqdm")
+      print("Then try again.")
+      exit()
+
+   station_id = json_conf['site']['ams_id']
+   cam_id = cam
+   data = {}
    station_id = json_conf['site']['ams_id']
    hd_dir = "/mnt/ams2/HD/"
-   snap_dir = hd_dir + "snaps/"
-   cmd = f"./Process.py hd_snaps /mnt/ams2/HD/ {date} {cam}"
-   print(cmd)
-   os.system(cmd)
+   snap_dir = f"/mnt/ams2/snaps/{date}/"
+   #/mnt/ams2/meteor_archive/AMS1/TL/VIDS/
+   tl_dir = f"/mnt/ams2/meteor_archive/{station_id}/TL/VIDS/"
 
-   print("OK")
-   
    if os.path.exists(snap_dir) is False:
       os.makedirs(snap_dir)
-   files = glob.glob(hd_dir + date + "*" + cam + "*.mp4")
-   tl_dir = TL_DIR + date + "/"
 
-   print("FILES:", files)
+   hd_dir = "/mnt/ams2/HD/"
+   sd_day_dir = f"/mnt/ams2/SD/proc2/daytime/{date}/"
+   sd_night_dir = f"/mnt/ams2/SD/proc2/{date}/"
 
-   if cfe(tl_dir, 1) == 0:
-      os.makedirs(tl_dir)
-   for file in sorted(files):
-      if "trim" not in file:
-         fn = file.split("/")[-1]
-         out_file = tl_dir + fn.replace(".mp4", ".jpg")
-         #out_file = hd_dir + "snaps/" + fn.replace(".mp4", ".jpg")
-         if os.path.exists(out_file) is False:
-            image, image_file = quick_video_stack(file, speed)
-         #try:
-         #except:
-         #   continue
-     
-         #rot_image = rotate_bound(image, 72)
-         #img_sm = cv2.resize(rot_image, (640, 360))
-         #cv2.imshow('pepe', img_sm)
-         #cv2.waitKey(0)
+   hd_files = glob.glob(hd_dir + date + "*" + cam + "*.mp4")
+   sd_day_files = glob.glob(sd_day_dir + date + "*" + cam + "*.mp4")
+   sd_night_files = glob.glob(sd_night_dir + date + "*" + cam + "*.mp4")
 
-            try:
-                cv2.imwrite(out_file, image)
-            except:
-                print("FAILED TO WRITE OUT: ", out_file)
+   os.system("clear")
+   print(len(hd_files), "HD FILES")
+   print(len(sd_day_files), "SD DAY FILES")
+   print(len(sd_night_files), "SD NIGHT FILES")
 
-         #cv2.imshow('pepe', show_frame)
-         #cv2.waitKey(30)
-   pics_dir = f"/mnt/ams2/meteor_archive/{station_id}/TIME_LAPSE/{date}/"
-   video_from_images(pics_dir, date, cam, json_conf)
+   for h in range(0,24):
+       hs = f"{h:02}"
+       data[hs] = {}
+       for m in range(0,60):
+          ms = f"{m:02}"
+          data[hs][ms] = {}   
+          data[hs][ms]['hd'] =[]  
+          data[hs][ms]['sd'] =[]  
+
+   os.system("clear")
+   if date == '2024_05_11' or date == '2024_05_10':
+      print("AURORA DAY")
+      if os.path.exists("/mnt/backup/2024_05_10_AURORA_BACKUP"):
+         efiles = glob.glob("/mnt/backup/2024_05_10_AURORA_BACKUP/*.jpg")
+         hd_files.extend(efiles)  
+      elif os.path.exists("/mnt/ams2/temp/2024_05_10_AURORA_BACKUP"):
+         efiles = glob.glob("/mnt/ams2/temp/2024_05_10_AURORA_BACKUP/*")
+         hd_files.extend(efiles)  
+   print(len(hd_files), "HD FILES")
+   print(len(sd_day_files), "SD DAY FILES")
+   print(len(sd_night_files), "SD NIGHT FILES")
+   for f in hd_files:
+      fn = f.split("/")[-1]
+      if cam not in fn:
+         continue
+      (y,m,d,h,mm,s,ms,cam) = parse_filename(fn)
+      data[h][mm]['hd'].append(f)
+   for f in sd_day_files:
+      fn = f.split("/")[-1]
+      if cam not in fn:
+         continue
+      (y,m,d,h,mm,s,ms,cam) = parse_filename(fn)
+      data[h][mm]['sd'].append(f)
+   for f in sd_night_files:
+      fn = f.split("/")[-1]
+      if cam not in fn:
+         continue
+      (y,m,d,h,mm,s,ms,cam) = parse_filename(fn)
+      data[h][mm]['sd'].append(f)
+
+   print("Extracting images from mp4 files. Please be patient this will take a while.")
+   print(f"Saving frame images to {snap_dir}")
+
+   cmds = []
+   for h in data:  
+      for m in data[h]:
+         if len(data[h][m]['hd']) > 0:
+            video_file = data[h][m]['hd'][0]
+         elif len(data[h][m]['sd']) > 0:
+            video_file = data[h][m]['sd'][0]
+         else:
+            video_file = None
+
+         if video_file is not None:
+            image_file = snap_dir + video_file.split("/")[-1].replace(".mp4", "")
+            if not os.path.exists(image_file + "_1.jpg"):
+               cmd = f"""ffmpeg -i '{video_file}' -vf "select='eq(n\\,0)+eq(n\\,375)+eq(n\\,750)+eq(n\\,1125)',scale=1280:720" -vsync vfr '{image_file}_%d.jpg' > /dev/null 2>&1"""
+               cmds.append(cmd)
+               #print(f"Extracting images from {video_file}")
+               #os.system(cmd)
+
+   for cmd in tqdm(cmds, desc='extracting images', unit='cmd'):
+      os.system(cmd)
+
+   # Now turn stills into movie
+   cmd = f"""ffmpeg -framerate 25 -pattern_type glob -i "{snap_dir}" -c:v libx264 -pix_fmt yuv420p -preset slow -crf 18 -r 25 {tl_dir}{station_id}_{date}_{cam_id}.mp4"""
+   print(cmd)
+
+
+def parse_filename(fn):
+
+      parts = fn.split("_")
+      if len(parts) <= 7:
+         return(False) 
+      y = parts[0]
+      m = parts[1]
+      d = parts[2]
+      h = parts[3]
+      mm = parts[4]
+      s = parts[5]
+      ms = parts[6]
+      cam = parts[7].split("-")[-1].split(".")[0]
+      return(y,m,d,h,mm,s,ms,cam)
 
 def video_from_images(pics_dir, date, wild, json_conf ):
    #TL_DIR = "/mnt/ams2/meteor_archive/" + STATION_ID + "/TL/VIDS/" + date + "/"

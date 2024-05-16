@@ -56,3 +56,7 @@ if os.path.exists(astro_old_dir) or len(data_files) == 0:
     os.system(cmd)
     cmd = "mv /usr/local/astrometry /usr/share/astrometry.old"
     os.system(cmd)
+
+# save cal health to a file inside the cal_dir 
+cal_health['astrometry.net'] = 1
+json.dump(cal_health, open(cal_health_file, "w"))
