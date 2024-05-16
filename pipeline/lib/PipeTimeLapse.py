@@ -1260,6 +1260,8 @@ def make_tl_for_cam(date,cam, speed, json_conf):
    station_id = json_conf['site']['ams_id']
    hd_dir = "/mnt/ams2/HD/"
    snap_dir = f"/mnt/ams2/snaps/{date}/"
+   if os.path.exists(snap_dir) is False:
+      os.makedirs(snap_dir)
    #/mnt/ams2/meteor_archive/AMS1/TL/VIDS/
    tl_dir = f"/mnt/ams2/meteor_archive/{station_id}/TL/VIDS/"
 
@@ -1344,7 +1346,7 @@ def make_tl_for_cam(date,cam, speed, json_conf):
       os.system(cmd)
 
    # Now turn stills into movie
-   cmd = f"""ffmpeg -framerate 25 -pattern_type glob -i "{snap_dir}" -c:v libx264 -pix_fmt yuv420p -preset slow -crf 18 -r 25 {tl_dir}{station_id}_{date}_{cam_id}.mp4"""
+   cmd = f"""ffmpeg -framerate 25 -pattern_type glob -i "{snap_dir}{date}*{cam_id}*" -c:v libx264 -pix_fmt yuv420p -preset slow -crf 18 -r 25 {tl_dir}{station_id}_{date}_{cam_id}.mp4"""
    print(cmd)
 
 
