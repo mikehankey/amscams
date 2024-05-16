@@ -1337,8 +1337,18 @@ def make_tl_for_cam(date,cam, speed, json_conf):
          if video_file is not None:
             image_file = snap_dir + video_file.split("/")[-1].replace(".mp4", "")
             if not os.path.exists(image_file + "_1.jpg"):
-               cmd = f"""ffmpeg -i '{video_file}' -vf "select='eq(n\\,0)+eq(n\\,375)+eq(n\\,750)+eq(n\\,1125)',scale=1280:720" -vsync vfr '{image_file}_%d.jpg' > /dev/null 2>&1"""
-               cmds.append(cmd)
+               if speed == "4":
+                  cmd = f"""ffmpeg -i '{video_file}' -vf "select='eq(n\\,0)+eq(n\\,375)+eq(n\\,750)+eq(n\\,1125)',scale=1280:720" -vsync vfr '{image_file}_%d.jpg' > /dev/null 2>&1"""
+                  cmds.append(cmd)
+               if speed == "3":
+                  cmd = f"""ffmpeg -i '{video_file}' -vf "select='eq(n\\,0)+eq(n\\,500)+eq(n\\,1000)',scale=1280:720" -vsync vfr '{image_file}_%d.jpg' > /dev/null 2>&1"""
+                  cmds.append(cmd)
+               if speed == "2":
+                  cmd = f"""ffmpeg -i '{video_file}' -vf "select='eq(n\\,0)+eq(n\\,750)',scale=1280:720" -vsync vfr '{image_file}_%d.jpg' > /dev/null 2>&1"""
+                  cmds.append(cmd)
+               if speed == "1":
+                  cmd = f"""ffmpeg -i '{video_file}' -vf "select='eq(n\\,0)',scale=1280:720" -vsync vfr '{image_file}_%d.jpg' > /dev/null 2>&1"""
+                  cmds.append(cmd)
                #print(f"Extracting images from {video_file}")
                #os.system(cmd)
 
