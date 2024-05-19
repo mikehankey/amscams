@@ -69,7 +69,7 @@ def quick_video_stack(video_file, count = 0, save=1):
    if cfe(temp_dir, 1) == 0:
       os.makedirs(temp_dir)
    if count == 0:
-      cmd = f"/usr/bin/ffmpeg -i {video_file} {temp_dir} frames%03d.jpg > /dev/null 2>&1"
+      cmd = f"/usr/bin/ffmpeg -i {video_file} {temp_dir}frames%03d.jpg > /dev/null 2>&1"
    else:
       cmd = f"/usr/bin/ffmpeg -i {video_file} -vf {fps_text} -vframes {count} {temp_dir}frames%03d.jpg > /dev/null 2>&1"
    print(cmd)
