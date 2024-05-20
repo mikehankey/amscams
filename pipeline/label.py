@@ -42,7 +42,7 @@ for f in files:
         continue
 
     cmd = f"""ffmpeg -i {ifile} -i ALLSKY7_LOGO_TRANS_640.png -filter_complex "[1:v]scale=w=320:h=140[wm];[0:v][wm]overlay=25:920,drawtext=fontfile={font}:fontsize=24:fontcolor=white:box=1:boxcolor=black@0.5:boxborderw=5:x=(w-text_w)/2:y=1040:text='{photo_credit} - {date_string}'" {ofile} > /dev/null 2>&1""" 
-    cmd = f"""ffmpeg -i {ifile} -i ALLSKY7_LOGO_TRANS_640.png -filter_complex "[1:v]scale=w=320:h=140[wm];[0:v][wm]overlay=25:920,drawtext=fontfile={font}:fontsize=24:fontcolor=white:box=1:boxcolor=black@0.5:boxborderw=5:x=25:y=1060:text='{photo_credit} '" {ofile} > /dev/null 2>&1""" 
+    #cmd = f"""ffmpeg -i {ifile} -i ALLSKY7_LOGO_TRANS_640.png -filter_complex "[1:v]scale=w=320:h=140[wm];[0:v][wm]overlay=25:920,drawtext=fontfile={font}:fontsize=24:fontcolor=white:box=1:boxcolor=black@0.5:boxborderw=5:x=25:y=1060:text='{photo_credit} '" {ofile} > /dev/null 2>&1""" 
     
     print(cmd)
     print("Please wait...")
