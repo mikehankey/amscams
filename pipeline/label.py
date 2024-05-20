@@ -37,7 +37,7 @@ files = glob.glob(wild_card_string)
 for f in files:
     fn = f.split("/")[-1]
     ifile = f"{meteor_dir}/{fn}"
-    ofile = f"{outdir}station_id_{fn}"
+    ofile = f"{outdir}{station_id}_{fn}"
     if "HD" not in fn:
         continue
 
