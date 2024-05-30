@@ -89,14 +89,17 @@ def sense_up(cam, cam_ip):
       #cam.set_info("Camera.Param", cam_info)
       ##print("Slow shutter on.")
    elif cal_options['sense_up'] is True:
-      cam_info[0]['EsShutter'] = '0x00000002'
+      # disabled 5/30
+      #cam_info[0]['EsShutter'] = '0x00000002'
       print("Slow shutter on.")
 
    if "bw" in cal_options:
 
       print("BW FLAG")
       if cal_options['bw'] is True:
-         cam_info[0]['DayNightColor'] = '0x00000002'
+         # disabled 5/30
+
+         #cam_info[0]['DayNightColor'] = '0x00000002'
          #cam.set_info("Camera.Param", cam_info)
          print("SET BW FLAG")
          #time.sleep(3)
@@ -104,10 +107,11 @@ def sense_up(cam, cam_ip):
          print("BW FLAG False")
    else:
       print("NO BW FLAG")
-         
-   cam.set_info("Camera.Param", cam_info)
+
+   # disabled 5/30
+   #cam.set_info("Camera.Param", cam_info)
    print("Slow shutter on.")
-   time.sleep(7)
+   #time.sleep(7)
 
 
    print("Getting pictures...")
