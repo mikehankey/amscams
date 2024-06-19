@@ -10644,6 +10644,7 @@ def characterize_best(cam_id, con, cur, json_conf,limit=50, cal_fns=None):
             cmd = "mv " + cal_dir + " /mnt/ams2/cal/bad_cals/" 
             #print(cmd)
             os.system(cmd)
+            continue
             # bad cal file!
 
 
