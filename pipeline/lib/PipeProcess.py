@@ -449,7 +449,7 @@ def run_jobs(json_conf):
             print(cmd[2] + "\n")
             st = time.time()
             os.system(cmd[2]  + " > /home/ams/run_jobs.txt 2>&1")
-            elp = time.time() - st
+            elp = (time.time() - st) / 60
             print("ELP:", round(elp,1), "Minutes\n")
 
    #msg = "info:run_jobs:Run jobs ended"
