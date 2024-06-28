@@ -8,7 +8,7 @@ import os
 import glob
 import numpy as np
 from PIL import ImageFont, ImageDraw, Image, ImageChops
-import cython
+#import cython
 
 def stack_only(sd_filename, mask_img=None):
    if mask_img is None:
