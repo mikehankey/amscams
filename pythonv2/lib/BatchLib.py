@@ -674,6 +674,7 @@ def make_file_index(json_conf ):
 
       
       print(day)
+   os.makedirs(data_dir, exists_ok=True)
    json_file = data_dir + "main-index.json"
    save_json_file(json_file, stats)
    print(json_file)
