@@ -63,7 +63,8 @@ def start_capture(cam_num):
    cams_id = json_conf['cameras'][cam_key]['cams_id']
    running = check_running(cam_num, "HD")
    if running == 0:
-      cmd = "/usr/bin/ffmpeg -rtsp_transport tcp -r 25 -i 'rtsp://" + cam_ip + hd_url + "' -c copy -map 0 -f segment -reset_timestamps 1 -segment_time 60 -segment_format mp4 -segment_atclocktime 1 -strftime 1 \"" + video_dir + "/HD/" + "%Y_%m_%d_%H_%M_%S_000_" + cams_id + ".mp4\" 2>&1 > /dev/null & "
+      #cmd = "/usr/bin/ffmpeg -rtsp_transport tcp -r 25 -i 'rtsp://" + cam_ip + hd_url + "' -c copy -map 0 -f segment -reset_timestamps 1 -segment_time 60 -segment_format mp4 -segment_atclocktime 1 -strftime 1 \"" + video_dir + "/HD/" + "%Y_%m_%d_%H_%M_%S_000_" + cams_id + ".mp4\" 2>&1 > /dev/null & "
+      cmd = "usr/bin/ffmpeg -rtsp_transport tcp -r 25 -i 'rtsp://192.168.76.71/user=admin&password=&channel=1&stream=0.sdp' -c copy -map 0 flags +global_header -c:a aac -b:a 128k -strict -2 -f segment -reset_timestamps 1 -segment_time 60 -segment_format mp4 -segment_atclocktime 1 -strftime 1 "/mnt/ams2/HD/%Y_%m_%d_%H_%M_%S_000_010049.mp4"
       print(cmd)
       os.system(cmd)
       #time.sleep(2)
