@@ -78,7 +78,7 @@ def start_capture(cam_num):
 
       # old command changed on 7/22/24 to support IMX307 
       #cmd = "/usr/bin/ffmpeg -rtsp_transport tcp -r 25 -i 'rtsp://" + cam_ip + sd_url + "' -c copy -map 0 -f segment -reset_timestamps 1 -segment_time 60 -segment_format mp4 -segment_atclocktime 1 -strftime 1 \"" + video_dir + "/SD/" + "%Y_%m_%d_%H_%M_%S_000_" + cams_id + ".mp4\" 2>&1 > /dev/null & "
-      cmd = "/usr/bin/ffmpeg -rtsp_transport tcp -r 25 -i 'rtsp://" + cam_ip + sd_url + "' -c copy -map 0 flags +global_header -c:a aac -b:a 128k -strict -2 -f segment -reset_timestamps 1 -segment_time 60 -segment_format mp4 -segment_atclocktime 1 -strftime 1 \"" + video_dir + "/SD/" + "%Y_%m_%d_%H_%M_%S_000_" + cams_id + ".mp4\" 2>&1 > /dev/null & "
+      cmd = "/usr/bin/ffmpeg -rtsp_transport tcp -r 25 -i 'rtsp://" + cam_ip + sd_url + "' -c copy -map 0 -flags +global_header -c:a aac -b:a 128k -strict -2 -f segment -reset_timestamps 1 -segment_time 60 -segment_format mp4 -segment_atclocktime 1 -strftime 1 \"" + video_dir + "/SD/" + "%Y_%m_%d_%H_%M_%S_000_" + cams_id + ".mp4\" 2>&1 > /dev/null & "
       print(cmd)
       os.system(cmd)
       #time.sleep(2)
