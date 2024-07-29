@@ -68,8 +68,11 @@ def ffprobe(video_file):
          if "kb/s" in ee :
             bitrate = ee
             bitrate  = bitrate.split(" ")[1]
-
-      w, h = dim.split("x")
+      try:
+         w, h = dim.split("x")
+      except:
+         w = 704
+         h = 576
    return(w,h, bitrate, int(total_frames))
 
 def day_or_night(capture_date, json_conf):
