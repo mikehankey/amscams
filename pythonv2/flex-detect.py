@@ -3880,7 +3880,16 @@ def ffprobe(video_file):
 
       el = output.split(",")
       dim = el[3].replace(" ", "")
-      w, h = dim.split("x") 
+      if len(dim) == 2:
+         w, h = dim.split("x") 
+      else:
+         # open the video file and get size from 1st frame
+         cap = cv2.VideoCapture(video_file)
+         if cap.isOpened():
+            ret, frame = cap.read()
+            h, w = frame.shape[:2]
+         else:
+            w,h = 704,576 
    return(w,h)
 
 def check_running_proc():
