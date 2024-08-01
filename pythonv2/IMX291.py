@@ -107,7 +107,7 @@ def sense_up(cam, cam_ip):
    # disabled 5/30
    #cam.set_info("Camera.Param", cam_info)
    print("Slow shutter on.")
-   #time.sleep(7)
+   time.sleep(5)
 
 
    print("Getting pictures...")
