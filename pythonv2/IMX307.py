@@ -220,31 +220,33 @@ def encode(cam, cam_ip):
    cam.close()
 
 def review_settings(cam, cam_ip):
-   #m = ["fVideo", "Simplify", "Camera", "Network", "AVEnc"]
-   m = ["Camera"]
+   m = ["fVideo", "Simplify", "Camera", "Network", "AVEnc"]
+   #m = ["fVideo"]
    for k in m:
       d = cam.get_info(k)
       print(k, json.dumps(d, indent=4))
-
 
 def test(cam, cam_ip):
    sun, az, alt  = day_or_night(datetime.now(), json_conf)
    print(sun, az,alt)
    #https://github.com/NeiroNx/python-dvr
-   review_settings(cam, cam_ip)
+   #review_settings(cam, cam_ip)
 
-   all = cam.get_info("fVideo")
-   # 'GUISet', 'OSDInfo', 'OsdLogo', 'Volume', 'VolumeIn
-   #print(all.keys())
-   print(json.dumps(all['GUISet'], indent=4))
-   all['GUISet']['ChannelTitleEnable'] = False 
-   all['GUISet']['TimeTitleEnable'] = False 
-   cam.set_info("fVideo", all)
+   #all = cam.get_info("fVideo")
+   #$print(json.dumps(all['GUISet'], indent=4))
 
    enc_info = cam.get_info("Simplify.Encode")
    cam_info2 = cam.get_info("Camera.ParamEx")
    cam_info1 = cam.get_info("Camera.Param")
    net_info = cam.get_info("NetWork.NetCommon")
+   avenc = cam.get_info("AVEnc")
+   osd = cam.get_info("fVideo.OSDInfo")
+   print ("AVENC:\n", json.dumps(avenc,indent=4))
+   print ("OSD:\n", json.dumps(osd,indent=4))
+   avenc["VideoWidget"][0]["TimeTitleAttribute"]["EncodeBlend"] = False 
+   avenc["VideoWidget"][0]["ChannelTitleAttribute"]["EncodeBlend"] = False 
+   avenc["VideoWidget"][0]["ChannelTitle"]["Name"] = "" 
+
 
    # disable cloud
    cloudEnabled = False
@@ -281,8 +283,9 @@ def test(cam, cam_ip):
 
    cam.set_info("Camera.Param", cam_info1)
    cam.set_info("Camera.ParamEx", cam_info2)
-   print("SLOW SHUTTER:", cam_info1[0]['EsShutter'])
-   #cam.set_info("Camera.Param", cam_info)
+   cam.set_info("AVEnc", avenc)
+
+
    cam.close()
 
 def camera_settings():
