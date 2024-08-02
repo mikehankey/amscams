@@ -58,6 +58,15 @@ show = 0
 
 ARCHIVE_DIR = "/mnt/ams2/meteor_archive/"
 
+def rerun_day(day):
+   data_dir = f"/mnt/ams2/SD/proc2/{day}/data"
+   files = glob.glob(data_dir + "/*vals*.json")
+   print(data_dir)
+   cam_size_info = get_cam_sizes(day)
+   for f in files:
+      print(f)
+      detect_in_vals(f, cam_size_info)
+
 def man_detect(trim_file):
    objects, frames = detect_meteor_in_clip(trim_file)
    stacked_sd_frame = stack_frames_fast_old(frames)
@@ -12521,3 +12530,5 @@ if cmd == "vms_ai" :
    verify_meteors_ai(sys.argv[2]) 
 if cmd == "rescan" :
    rescan_detects(sys.argv[2]) 
+if cmd == "rerun_day" :
+   rerun_day(sys.argv[2])
