@@ -232,7 +232,6 @@ def test(cam, cam_ip):
    print(sun, az,alt)
    #https://github.com/NeiroNx/python-dvr
    review_settings(cam, cam_ip)
-   input("C")
 
    all = cam.get_info("fVideo")
    # 'GUISet', 'OSDInfo', 'OsdLogo', 'Volume', 'VolumeIn
