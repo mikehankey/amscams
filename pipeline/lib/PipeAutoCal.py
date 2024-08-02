@@ -494,6 +494,10 @@ def hd_night_cal(cam_num, json_conf, interval=30):
 
 def gen_cal_hist(json_conf):
    all_files = {}
+   hist_file = "/mnt/ams2/cal/cal_day_hist.json"
+   if os.path.exists(hist_file) is False:
+      data = []
+      save_json_file(hist_file, data)
 
    sz, td = get_file_info("/mnt/ams2/cal/cal_day_hist.json")
    if td < 86400:
