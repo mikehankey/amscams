@@ -6643,7 +6643,7 @@ def quick_scan(video_file, old_meteor = 0):
    stacked_frame = stack_frames_fast(frames)
    cv2.imwrite(stack_file, stacked_frame) 
    elapsed_time = time.time() - start_time
-   print("Stacked frames.", elapsed_time)
+   #print("Stacked frames.", elapsed_time)
    
    # check time after frame load
    elapsed_time = time.time() - start_time
@@ -10386,7 +10386,7 @@ def ffmpeg_trim_crop(video_file,start,end,x,y,w,h, notrim=0):
       crop_out_file = video_file.replace(".mp4", "-trim-" + str(start).zfill(4) + "-crop.mp4")
       #cmd = "/usr/bin/ffmpeg -i " + video_file + " -ss 00:00:" + str(start_sec) + " -t 00:00:" + str(dur) + " -c copy " + trim_out_file 
       
-      cmd = "/usr/bin/ffmpeg -i " + video_file + " -vf select='between(n\," + str(start) + "\," + str(end) + ")' -vsync 0 " + trim_out_file + " > /dev/null 2>&1"
+      cmd = "/usr/bin/ffmpeg -i " + video_file + " -y -strict -2 -vf select='between(n\," + str(start) + "\," + str(end) + ")' -vsync 0 " + trim_out_file + " > /dev/null 2>&1"
       print(cmd)
       if cfe(trim_out_file) == 0:
          os.system(cmd)
@@ -10396,10 +10396,12 @@ def ffmpeg_trim_crop(video_file,start,end,x,y,w,h, notrim=0):
 
    crop = "crop=" + str(w) + ":" + str(h) + ":" + str(x) + ":" + str(y)
    
-   cmd = "/usr/bin/ffmpeg -i " + trim_out_file + " -filter:v \"" + crop + "\" " + crop_out_file + " > /dev/null 2>&1"
+   cmd = "/usr/bin/ffmpeg -i " + trim_out_file + " -y -strict -2 -filter:v \"" + crop + "\" " + crop_out_file + " > /dev/null 2>&1"
    print(cmd)
    if cfe(crop_out_file) == 0:
       os.system(cmd)
+   print(trim_out_file)
+   print(crop_out_file)
    return(trim_out_file, crop_out_file)
 
 def find_hd(sd_file):
@@ -11442,6 +11444,7 @@ def verify_meteor(meteor_json_file):
 
    cam_size_info = load_cam_sizes()
    w,h = cam_size_info[cam]
+   print("CAM SIZE INFO", cam_size_info)
    if w == 0:
       #os.system("mv " + meteor_json_file + " " + detect_file)
       print("BAD TRIM FILE!", video_file)
@@ -11483,7 +11486,6 @@ def verify_meteor(meteor_json_file):
             print("Failed 2nd classification. Not a real meteor.")
             meteor_report(maybe)
            # return()
-         #cont = input("continue")
    suspect_meteors = good_met
    print(len(good_met), " suspect meteors")
    print(good_met)
@@ -11852,15 +11854,18 @@ def save_final_meteor(meteor_file):
 
    mj['old_sd_trim'] = old_json_dir + sdf
    mj['old_hd_trim'] = old_json_dir + hdf
-
+   print("LOad", trim_file)
    sd_frames,sd_color_frames,sd_subframes,sum_vals,max_vals,pos_vals = load_frames_fast(trim_file, json_conf, 0, 0, [], 1,[])
    hd_frames,hd_color_frames,hd_subframes,hd_sum_vals,hd_max_vals,hd_pos_vals = load_frames_fast(hd_trim, json_conf, 0, 0, [], 1,[])
    if len(hd_frames) == 0:
       print("NO HD FRAMES!", hd_trim)
       hd_frames = sd_frames 
       hd_color_frames = sd_color_frames 
+   print("SD FRAMES", len(sd_color_frames))
+   print("HD FRAMES", len(hd_color_frames))
    stacked_img = stack_frames_fast(sd_color_frames, 1, None, "night", None)
    hd_stacked_img = stack_frames_fast(hd_color_frames, 1, None, "night", None)
+   #print("Stack", stacked_img)
 
 
    cv2.imwrite(stack_file, stacked_img)
