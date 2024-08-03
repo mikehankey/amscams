@@ -1,0 +1,10 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=ALLSKY7 Setup
+Comment=
+Exec=/usr/bin/python3 /home/ams/amscams/install/AS7Setup.py 
+Icon=/usr/share/pixmaps/faces/sky.jpg
+Terminal=true
+StartupNotify=true
+

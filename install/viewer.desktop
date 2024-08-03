@@ -1,0 +1,10 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=LIVE CAM VIEWER
+Comment=
+Exec=/usr/bin/python3 /home/ams/amscams/install/ViewCameras.py
+Icon=/usr/share/pixmaps/faces/sky.jpg
+Terminal=true
+StartupNotify=false
+
