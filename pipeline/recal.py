@@ -2666,8 +2666,8 @@ def refit_meteor_day(meteor_day, con, cur, json_conf):
    vid_dir = "/mnt/ams2/day_summary/"
    if os.path.exists(vid_dir) is False:
       os.makedirs(vid_dir)
-   cmd = "./FFF.py imgs_to_vid ~/REFIT_METEOR_FRAMES_TEMP/ 00 /mnt/ams2/day_summary/" + meteor_day + ".mp4 25 28"
-   os.system(cmd)
+   #cmd = "./FFF.py imgs_to_vid ~/REFIT_METEOR_FRAMES_TEMP/ 00 /mnt/ams2/day_summary/" + meteor_day + ".mp4 25 28"
+   #os.system(cmd)
 
 def refit_meteor(meteor_file, con, cur, json_conf, mcp = None, last_best_dict = None):
    global RF
