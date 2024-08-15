@@ -307,7 +307,7 @@ def fix_lens_nans():
 def make_intro(folder): 
    global MOVIE_FRAME_NUMBER
    global MOVIE_FRAMES_TEMP_FOLDER
-   SAVE_MOVIE = True
+   SAVE_MOVIE = False
    intro_frames = []
    frames = load_frames_simple("intro_video.mp4")
    for fr in frames:
