@@ -182,5 +182,6 @@ if int(vpn_connect) == 0 and int(running) >= 1:
    os.system(cmd)
    #cmd ="ip link delete tun0"
    #os.system(cmd)
-
+if os.path.exists("diskcheck.txt") is False:
+   os.system("python3 root-disk.py")
 
