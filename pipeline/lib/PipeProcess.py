@@ -7,6 +7,16 @@ import datetime as dt
 import os
 import subprocess
 
+def sync_masks(json_conf):
+
+   cloud_mask_dir = "/mnt/archive.allsky.tv/" + station_id + "/CAL/MASKS/"
+   local_mask_dir = "/mnt/ams2/meteor_archive/" + station_id + "/CAL/MASKS/"
+   if os.path.exists(cloud_mask_dir) is False:
+      os.makedirs(cloud_mask_dir)
+        
+   cmd = "rsync -auv " + local_mask_dir + "*mask* " + cloud_mask_dir
+   print(cmd)
+   os.system(cmd)
 
 
 def check_sync_cal_ai_db(json_conf):
@@ -19,6 +29,9 @@ def check_sync_cal_ai_db(json_conf):
    print("Check sync Cal")
    do_sync = 0
    station_id = json_conf['site']['ams_id']
+   cloud_cal_dir = "/mnt/archive.allsky.tv/" + station_id + "/CAL/"
+   cloud_mask_dir = "/mnt/archive.allsky.tv/" + station_id + "/CAL/MASKS/"
+   local_mask_dir = "/mnt/ams2/meteor_archive/" + station_id + "/CAL/MASKS/"
    if "sync_cal" not in json_conf:
       print("No sync cal in json conf", json_conf.keys())
       do_sync = 1
@@ -29,8 +42,6 @@ def check_sync_cal_ai_db(json_conf):
    if do_sync == 1:      
       if True:
          print("Sync mask files.")
-         cloud_mask_dir = "/mnt/archive.allsky.tv/" + station_id + "/CAL/MASKS/"
-         local_mask_dir = "/mnt/ams2/meteor_archive/" + station_id + "/CAL/MASKS/"
          if os.path.exists(cloud_mask_dir) is False:
             os.makedirs(cloud_mask_dir)
         
@@ -43,6 +54,13 @@ def check_sync_cal_ai_db(json_conf):
          save_json_file("../conf/as6.json", json_conf)      
    else:
       print("Mask files are already sync'd")
+   # rysnc the mask folder and the as6.json to be safe
+   cmd = f"rsync -auv {local_mask_dir} {cloud_mask_dir}"
+   os.system(cmd)
+
+   # need to check for corrupt file first!
+   #cmd = f"rsync -auv ../conf/as6.json {cloud_cal_dir}"
+   #os.system(cmd)
 
    # CHECK IF AI IS INSTALLED ALREADY
    if "ml" not in json_conf:
@@ -95,7 +113,6 @@ def gitpull(json_conf):
    #os.system("cd /home/ams/amscams/install; git checkout astrometry-install.sh")
    print("./gitpull.py > /home/ams/lastpull.txt")
    os.system("./gitpull.py > /home/ams/lastpull.txt")
-
 
 
    print("update flask.")
