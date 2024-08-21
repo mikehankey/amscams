@@ -1,4 +1,9 @@
 #!/bin/bash
+
+# to install / run this copy and past this command:
+# wget https://archive.allsky.tv/APPS/INSTALL/apt-ubuntu-24.sh -O apt-ubuntu-24.sh ; chmod +x apt-ubuntu-24.sh; sudo ./apt-ubuntu-24.sh
+
+
 echo "Starting installation of packages..."
 wget https://archive.allsky.tv/APPS/INSTALL/apt-ubuntu-24.conf -O apt-ubuntu-24.conf
 while IFS= read -r package
