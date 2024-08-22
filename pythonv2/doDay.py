@@ -233,6 +233,8 @@ def check_disk():
       data_dir = json_conf['data_dir']
    else:
       data_dir = "/mnt/ams2"
+   if os.path.exists("/mnt/ams2/REFIT_METEOR_FRAMES_TEMP/"):
+      os.system("rm -rf " + "/mnt/ams2/REFIT_METEOR_FRAMES_TEMP")
 
    if os.path.exists("/mnt/ams2/AI/DATASETS/CAL_STARS/"):
       os.system("rm -rf " + "/mnt/ams2/AI/DATASETS/CAL_STARS/")
