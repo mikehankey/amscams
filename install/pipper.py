@@ -2,6 +2,9 @@ import pkg_resources
 import sys
 import os
 # see what we have
+
+region = os.getenv("region")
+
 installed = {pkg.key for pkg in pkg_resources.working_set}
 
 APT_EXE = "apt-get install --yes --allow-downgrades --allow-remove-essential --allow-change-held-packages "
@@ -23,5 +26,7 @@ for line in fp:
       print("OK : ", line)
    else:
       cmd = PYTHON_EXE + " -m pip install " + line
+      if region == 'cn':
+         line += " -i https://pypi.mirrors.ustc.edu.cn/simple/"
       print(cmd)
       os.system(cmd)
