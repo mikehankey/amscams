@@ -387,6 +387,7 @@ def run_jobs(json_conf):
 
 
    cmds = []
+   cmds.append(('all', "HD Minfiles", "cd /home/ams/amscams/pipeline; ./min_files.py " + today + "" ))
    cmds.append(('all', "Hourly Stacks HTML For Today", "cd /home/ams/amscams/pipeline; ./Process.py hsh " + today + "" ))
    cmds.append(('all', "Hourly Stacks HTML For Yesterday", "cd /home/ams/amscams/pipeline; ./Process.py hsh " + yest + ""))
    cmds.append(('all', "Monitor", "cd /home/ams/amscams/pipeline; ./monitor.py "))
