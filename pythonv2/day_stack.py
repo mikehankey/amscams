@@ -72,10 +72,10 @@ def stack_day_all(interval):
             os.makedirs(day_dir)
             os.makedirs(day_dir + "images")
          exists[day] = 1
-      stack_img, elp = day_stack(df, day, interval=interval)
+      stack_img, elp = day_stack(df, day, interval=interval, running_behind)
       print("DAY STACK:", df, elp)
 
-def day_stack(video_file, day, cam=None, last_blend=None, interval=25):
+def day_stack(video_file, day, cam=None, last_blend=None, interval=25, running_behind=False):
    start_time = time.time()
    day_dir = "/mnt/ams2/SD/proc2/daytime/" + day + "/"
 
