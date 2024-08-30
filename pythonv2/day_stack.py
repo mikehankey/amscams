@@ -28,14 +28,16 @@ def stack_day_all(interval):
       exit()
 
 
-   if cfe("fixed-day-pngs.txt") == 0:
-      print("FIX PNGS.")
-      os.system("./fix-day-pngs.py")
+   #if cfe("fixed-day-pngs.txt") == 0:
+   #   print("FIX PNGS.")
+   #   os.system("./fix-day-pngs.py")
 
    night_files = glob.glob("/mnt/ams2/SD/*.mp4")
-   if len(night_files) > 100:
+   running_behind = False
+   if len(night_files) > 2000:
       print("We have a lot of night files. Wait until they are done before doing the day stack!")
-      return()
+      running_behind = True
+      #return()
 
 
    exists = {}
@@ -90,13 +92,13 @@ def day_stack(video_file, day, cam=None, last_blend=None, interval=25):
       #   cv2.imshow('pepe', img)
       #   cv2.waitKey(30)
       day_dir = "/mnt/ams2/SD/proc2/daytime/" + day + "/"
-
-      cmd = "mv " + video_file + " " + day_dir
-      print(cmd)
-      os.system("mv " + video_file + " " + day_dir)
-
-      print("SKIP DONE ALREADY", stack_file)
-      return(np.array(img), time.time() - start_time)
+      if interval == 25:
+         cmd = "mv " + video_file + " " + day_dir
+         print(cmd)
+         os.system("mv " + video_file + " " + day_dir)
+      
+         print("SKIP DONE ALREADY", stack_file)
+         return(np.array(img), time.time() - start_time)
    #else:
    #   print(stack_file)
 
@@ -136,10 +138,12 @@ def day_stack(video_file, day, cam=None, last_blend=None, interval=25):
       fn = i * interval
       cap.set(1, fn)
       ret, frame = cap.read()
+      if running_behind is True and fn > 1:
+          break
       if frame is None:
          continue
       frame = cv2.resize(frame, thumb_size)
-      images.append(frame)
+      #images.append(frame)
       if i == 0:
          snap_img = frame
       #if SHOW == 1:
@@ -204,10 +208,8 @@ def day_stack(video_file, day, cam=None, last_blend=None, interval=25):
       cmd = "mv " + video_file + " " + day_dir
       os.system("mv " + video_file + " " + day_dir)
    print("Elapsed:", time.time() - tt)
-   return(np.array(blend_return_img), time.time() - start_time)
-
-
-
+   #return(np.array(blend_return_img), time.time() - start_time)
+   return(dark_stacked_img_cv, time.time() - start_time)
 
 
 if len(sys.argv) == 1:
@@ -217,6 +219,7 @@ if len(sys.argv) == 1:
       files = glob.glob(day_dir + "*.mp4")
       print(day_dir, len(files) )
       last_stack = None
+      interval = 5
       for ff in sorted(files):
          if len(files) > 1000:
             interval = 100 
@@ -254,4 +257,21 @@ elif len(sys.argv) > 1:
             interval = 10
          last_stack, elp = day_stack(ff, day, cam, last_stack, interval)
          print("LAST STACK ELP", ff, elp)
+   elif sys.argv[1] == "min":
+      wild = sys.argv[2]
+      y,m,d,h,mn = wild.split("_")
+      day = y + "_" + m + "_" + d
+      day_dir = "/mnt/ams2/SD/proc2/daytime/" + day + "/"  
+      last_stack = None
+      files = glob.glob(day_dir + wild + "*.mp4")
+      for file in files:
+         fn = file.split("/")[-1]
+         parts = fn.split("_")
+         cam = parts[-1].replace(".mp4", "")
+         interval = 1
+         print(file, day, cam)
+         last_stack, elp = day_stack(file, day, cam, last_stack, interval)
+         cv2.imshow('pepe', last_stack)
+         cv2.waitKey(0)
 
+      
