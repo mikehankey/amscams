@@ -72,7 +72,7 @@ def stack_day_all(interval):
             os.makedirs(day_dir)
             os.makedirs(day_dir + "images")
          exists[day] = 1
-      stack_img, elp = day_stack(df, day, interval=interval, running_behind)
+      stack_img, elp = day_stack(df, day, interval=interval, running_behind=running_behind)
       print("DAY STACK:", df, elp)
 
 def day_stack(video_file, day, cam=None, last_blend=None, interval=25, running_behind=False):
