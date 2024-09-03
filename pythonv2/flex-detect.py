@@ -58,6 +58,30 @@ show = 0
 
 ARCHIVE_DIR = "/mnt/ams2/meteor_archive/"
 
+def get_codec(video_file):
+    # Run ffprobe to find the video codec
+    command = [
+        'ffprobe', '-v', 'error', '-select_streams', 'v:0',
+        '-show_entries', 'stream=codec_name', '-of', 'default=noprint_wrappers=1:nokey=1',
+        video_file
+    ]
+    try:
+        codec = subprocess.check_output(command).decode('utf-8').strip()
+        return codec
+    except subprocess.CalledProcessError as e:
+        print(f"Failed to determine codec: {e}")
+        return None
+
+def build_ffmpeg_command(video_file, start_time, duration, trim_out_file):
+    codec = get_codec(video_file)
+    if codec not in ['hevc', 'h264']:
+        print(f"Unsupported codec: {codec}")
+        return None
+
+    # Build ffmpeg command using copy codec to avoid re-encoding
+    cmd = f"/usr/bin/ffmpeg -y -i {video_file} -ss {start_time} -t {duration} -c copy {trim_out_file}"
+    return cmd
+
 def rerun_day(day):
    data_dir = f"/mnt/ams2/SD/proc2/{day}/data"
    files = glob.glob(data_dir + "/*vals*.json")
@@ -1223,7 +1247,6 @@ def detect_meteor_in_clip(trim_clip, frames = None, fn = 0, crop_x = 0, crop_y =
       frame = np.float32(frame)
       blur_frame = cv2.GaussianBlur(frame, (7, 7), 0)
       alpha = .5
-
 
       image_diff = cv2.absdiff(image_acc.astype(frame.dtype), blur_frame,)
       hello = cv2.accumulateWeighted(blur_frame, image_acc, alpha)
@@ -3266,9 +3289,9 @@ def confirm_meteor_OLD(meteor_json_file):
 
    print("TRIM CLIPS!", trim_clips)
    print("TRIM METEORS!", len(meteor_objects))
-
    for mo in meteor_objects:
       print(mo)
+   input("YO")
    motion_meteors = []
    no_motion_meteors = []
    tc = 0
@@ -10394,11 +10417,18 @@ def ffmpeg_trim_crop(video_file,start,end,x,y,w,h, notrim=0):
       trim_out_file = video_file.replace(".mp4", "-trim-" + str(start).zfill(4) + ".mp4")
       crop_out_file = video_file.replace(".mp4", "-trim-" + str(start).zfill(4) + "-crop.mp4")
       #cmd = "/usr/bin/ffmpeg -i " + video_file + " -ss 00:00:" + str(start_sec) + " -t 00:00:" + str(dur) + " -c copy " + trim_out_file 
-      
-      cmd = "/usr/bin/ffmpeg -i " + video_file + " -y -strict -2 -vf select='between(n\," + str(start) + "\," + str(end) + ")' -vsync 0 " + trim_out_file + " > /dev/null 2>&1"
+      # BUG HERE with 307 cams? 
+      #cmd = "/usr/bin/ffmpeg -i " + video_file + " -y -strict -2 -vf select='between(n\," + str(start) + "\," + str(end) + ")' -vsync 0 " + trim_out_file + " > /dev/null 2>&1"
+      # 9/3/24
+      #cmd = "/usr/bin/ffmpeg -i " + video_file + " -y -strict -2 -vf select='between(n\," + str(start) + "\," + str(end) + ")' -vsync 0 " + trim_out_file + " > /dev/null 2>&1"
+      #cmd = "/usr/bin/ffmpeg -i " + video_file + " -vf 'select=between(n\\," + str(start) + "\\," + str(end) + "),setpts=N/FRAME_RATE/TB' -vsync vfr -y " + trim_out_file + " > /dev/null 2>&1"
+      # TRIM SD CLIP
+
+      cmd = build_ffmpeg_command(video_file, "00:" + str(start_sec), "00:" + str(dur), trim_out_file)
       print(cmd)
-      if cfe(trim_out_file) == 0:
-         os.system(cmd)
+      os.system(cmd)
+      #if cfe(trim_out_file) == 0:
+      #   os.system(cmd)
    else:
       trim_out_file = video_file 
       crop_out_file = video_file.replace(".mp4", "-crop.mp4")
@@ -11466,12 +11496,22 @@ def verify_meteor(meteor_json_file):
       print("No mj :", meteor_json_file)
       return()
 
-   suspect_meteors = only_meteors(mj['objects'])
+   if "objects" in mj:
+      suspect_meteors = only_meteors(mj['objects'])
+   elif "hd_motion_objects" in mj:
+      suspect_meteors = only_meteors(mj['hd_motion_objects'])
+
+   else:
+      suspect_meteors = []
+
 
 
    good_met = []
    if len(suspect_meteors) > 0:
       for maybe in suspect_meteors:
+         print("MAYBE:", maybe)
+         if "video_file" not in maybe:
+            maybe['video_file'] = video_file
          if maybe['report']['classify']['meteor_yn'] == 'Y':
             #meteor_report(maybe)
             masked_points = []
@@ -11498,7 +11538,6 @@ def verify_meteor(meteor_json_file):
    suspect_meteors = good_met
    print(len(good_met), " suspect meteors")
    print(good_met)
-   #cont = input("continue")
 
    if len(suspect_meteors) == 0:
       print("No real meteors found here.")
@@ -11533,10 +11572,9 @@ def verify_meteor(meteor_json_file):
       trim_crop_file = trim_file.replace(".mp4", "-crop.mp4")
       sd_motion_objects,sd_meteor_frames = detect_meteor_in_clip(trim_crop_file, None, 0,cx1,cx2,0)
       #MIKE
-      print(sd_motion_objects)
+      print("SD OBJECTS", sd_motion_objects)
       sd_meteors = only_meteors(sd_motion_objects)
-      print(sd_meteors)
-
+      print("SD METEORS", sd_meteors)
       #exit()
 
       if sd_meteors is None:
@@ -11565,6 +11603,7 @@ def verify_meteor(meteor_json_file):
 
       trim_crop_file = trim_file.replace(".mp4", "-crop.mp4")
 
+      print("SD ", sd_meteors)
 
       if sd_meteors is not None: 
          if hd_x2 - hd_x1 < 700:
@@ -11575,6 +11614,8 @@ def verify_meteor(meteor_json_file):
             hd_meteors = []
          if hd_meteors is None: 
             hd_meteors =[]
+         print("SD", sd_meteors)
+         print("HD", hd_meteors)
 
          if len(sd_meteors) == 1 or len(hd_meteors) == 1:
             meteor = {}
