@@ -226,7 +226,7 @@ def review_settings(cam, cam_ip):
       d = cam.get_info(k)
       print(k, json.dumps(d, indent=4))
 
-def test(cam, cam_ip):
+def test(cam, cam_ip, brightness_val=None):
    sun, az, alt  = day_or_night(datetime.now(), json_conf)
    print(sun, az,alt)
    #https://github.com/NeiroNx/python-dvr
@@ -261,8 +261,9 @@ def test(cam, cam_ip):
    print ("CAM PARAMS2:\n", json.dumps(cam_info2,indent=4))
    print ("NETWORK:\n", json.dumps(net_info, indent=4))
    print ("SYS:\n", json.dumps(sys_info,indent=4))
- 
-   brightness_val = 1
+   if brightness_val is None: 
+      brightness_val = 1
+
    # set slow shutter off
    cam_info1[0]['EsShutter'] = '0x00000000'
    cam_info2[0]['EsShutter'] = '0x00000000'
@@ -300,10 +301,15 @@ def camera_settings():
    cam.close()
 
 def auto_settings(cam, cam_ip):
+   print(cam, cam_ip)
    # check the day or night sun elevation 
    # check settings for default overrides
    # if it is daytime make sure DWDR = 1 , color = 1  
    # if it is nighttime make sure DWDR = 0 , color = 0  (optional)
+   if cam.login():
+      print ("Success! Connected to " + CameraIP)
+   else:
+      print ("Failure. Could not connect to camera!")
 
    sun, az, alt  = day_or_night(datetime.now(), json_conf)
    if int(alt) < -10:
@@ -313,7 +319,17 @@ def auto_settings(cam, cam_ip):
       set_nighttime_settings(cam)
       # it is daytime
    print("done", cam)
+   cam.close()
 
+def set_daytime_settings(cam):
+    print("set day")
+
+def set_nighttime_settings(cam):
+    print("set night")
+    cam_info = cam.get_info("Camera.ParamEx")
+    print ("1", json.dumps(cam_info, indent=4))
+    cam_info2 = cam.get_info("Camera.Param")
+    print ("2", json.dumps(cam_info2, indent=4))
 
 def encoding_settings():
    sleep(2)
@@ -446,7 +462,7 @@ if cmd == "test":
       print ("Success! Connected to " + CameraIP)
    else:
       print ("Failure. Could not connect to camera!")
-   test(cam, CameraIP)
+   test(cam, CameraIP, sys.argv[3])
 
 if cmd == "sense_up":
    cam = DVRIPCam(CameraIP,CameraUserName,CameraPassword)
