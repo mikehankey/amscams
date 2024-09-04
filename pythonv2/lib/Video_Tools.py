@@ -729,7 +729,7 @@ def add_info_to_frame(frame, cam_text, extra_text, text_position, extra_text_pos
             -i ' + frame + '    \
             -i ' + watermark  
 
-    if(logo_pos is not 'X'):
+    if(logo_pos != 'X'):
         cmd += ' -i ' +  logo
         with_extra_logo= True
     else:
