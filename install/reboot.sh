@@ -13,5 +13,8 @@ runuser -l  ams -c 'cd /home/ams/amscams/pythonv2/; ./doDay.py cd'
 
 cd /home/ams/amscams/install; ./check_install.py
 
+sudo systemctl start cron
+sudo systemctl enable cron
+
 
 #@
