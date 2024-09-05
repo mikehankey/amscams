@@ -162,7 +162,7 @@ def sense_up(cam, cam_ip):
    #cam_info[0]['BroadTrends']['AutoGain'] = 0
    #cam.set_info("Camera.ParamEx", cam_info)
 
-   cam_info[0]['LowLuxMode'] = 0 
+   #cam_info[0]['LowLuxMode'] = 0 
 
    if "bw" in cal_options:
       if cal_options['bw'] is True:
@@ -226,7 +226,59 @@ def review_settings(cam, cam_ip):
       d = cam.get_info(k)
       print(k, json.dumps(d, indent=4))
 
-def test(cam, cam_ip, brightness_val=None):
+def auto_gain(cam, cam_ip):
+   # get frame from camera
+   frame_samples = 30
+   rtsp_url, cam_id = get_cam_url(cam_ip)
+   print(rtsp_url)
+   cap = cv2.VideoCapture(rtsp_url)
+   # loop over 10 frames and get the average pixel value
+   avg = 0
+   tavg = 0
+   acnts = []
+   last_frame = None
+   for i in range(frame_samples):
+      ret, frame = cap.read()
+      if last_frame is not None:
+         sub = cv2.subtract(frame, last_frame)
+         avg = np.mean(sub)
+         max_val = np.max(sub)
+         tval = max_val * .8
+         if tval < 20:
+            tval = 20
+         thresh = cv2.threshold(sub, tval, 255, cv2.THRESH_BINARY)[1]
+         thresh = cv2.cvtColor(thresh, cv2.COLOR_BGR2GRAY)
+         # get contours
+         res = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+         if len(res) == 3:
+            cnts = res[1]
+         else:
+            cnts = res[0]
+         acnts.append(len(cnts))
+         
+         tavg = tavg + avg
+         print("AVG/Max/Cnts SUB VAL:", avg, max_val, len(cnts))
+         cv2.imshow('frame', thresh)
+         cv2.waitKey(30)
+      else:
+         cv2.imshow('frame', frame)
+         cv2.waitKey(30)
+      last_frame = frame
+   avg = tavg / frame_samples
+   avg_cnts = sum(acnts) / frame_samples
+   min_cnts = min(acnts)
+   max_cnts = max(acnts)
+   print("AVG:", avg, avg_cnts, min_cnts, max_cnts)
+   # ideally we should have 0 avg_cnts, a min_cnts of 0 and max_cnts < 5
+   # if this is the case our recommendation is to increase the gain 0 
+   # else we need to decrease the gain 8 is a good base line
+   if avg_cnts <= 1:
+      return(0)
+   else:
+      return(-1)
+
+
+def test(cam, cam_ip, auto_gain_on=1, auto_gain_limit=8, dwdr_on=1, dwdr_limit=10 ):
    sun, az, alt  = day_or_night(datetime.now(), json_conf)
    print(sun, az,alt)
    #https://github.com/NeiroNx/python-dvr
@@ -241,8 +293,12 @@ def test(cam, cam_ip, brightness_val=None):
    net_info = cam.get_info("NetWork.NetCommon")
    avenc = cam.get_info("AVEnc")
    osd = cam.get_info("fVideo.OSDInfo")
+
+
    print ("AVENC:\n", json.dumps(avenc,indent=4))
    print ("OSD:\n", json.dumps(osd,indent=4))
+   print ("CAM_INFO1:\n", json.dumps(cam_info1,indent=4))
+   print ("CAM_INFO2:\n", json.dumps(cam_info2,indent=4))
    avenc["VideoWidget"][0]["TimeTitleAttribute"]["EncodeBlend"] = False 
    avenc["VideoWidget"][0]["ChannelTitleAttribute"]["EncodeBlend"] = False 
    avenc["VideoWidget"][0]["ChannelTitle"]["Name"] = "" 
@@ -258,25 +314,28 @@ def test(cam, cam_ip, brightness_val=None):
    #cam.set_info("Camera.Param", cam_info)
    print ("ENCODING:\n", json.dumps(enc_info, indent=4))
    print ("CAM PARAMS1:\n", json.dumps(cam_info1,indent=4))
+   # AutoGain should be ON
+   cam_info1[0]['GainParam']['AutoGain'] = auto_gain_on
+   cam_info1[0]['GainParam']['Gain'] = auto_gain_limit 
+   # AutoGain IS cam_info['']['AutoGain']
+   # AutoGain UpperLimit is the max gain value
    print ("CAM PARAMS2:\n", json.dumps(cam_info2,indent=4))
+   # DWDR IS cam_info2['BroadTrends']['AutoGain']
+   cam_info2[0]['BroadTrends']['AutoGain'] = dwdr_on
+   cam_info2[0]['BroadTrends']['Gain'] = dwdr_limit
+   
+   # DWDR UpperLimit is the max gain value
    print ("NETWORK:\n", json.dumps(net_info, indent=4))
    print ("SYS:\n", json.dumps(sys_info,indent=4))
-   if brightness_val is None: 
-      brightness_val = 1
-
    # set slow shutter off
    cam_info1[0]['EsShutter'] = '0x00000000'
    cam_info2[0]['EsShutter'] = '0x00000000'
 
-   cam_info2[0]["BroadTrends"]["Gain"] = brightness_val 
    cam_info2[0]["AutomaticAdjustment"] = 3 
    cam_info1[0]['DayNightColor'] = '0x00000001'
    cam_info2[0]['DayNightColor'] = '0x00000001'
-   cam_info2[0]["BroadTrends"]["AutoGain"] = 1
    cam_info1[0]["ExposureParam"]["LeastTime"] = "0x00000001"
 
-   cam_info1[0]["GainParam"]["AutoGain"] = 1
-   cam_info1[0]["GainParam"]["Gain"] = 1
    cam_info1[0]["AeSensitivity"] = 3
    cam_info1[0]["PreventOverExpo"] = 1
    cam_info1[0]["LowLuxMode"] = 1
@@ -486,6 +545,15 @@ if cmd == "reboot":
    print("REBOOTING CAM", CameraIP)
    cam.reboot()
   
+if cmd == "auto_gain":
+   cam = DVRIPCam(CameraIP,CameraUserName,CameraPassword)
+   if cam.login():
+      print ("Success! Connected to " + CameraIP)
+   else:
+      print ("Failure. Could not connect to camera!")
+   auto_gain(cam, CameraIP)
+   cam.close()
+   
  
 if cmd == "encode":
    cam = DVRIPCam(CameraIP,CameraUserName,CameraPassword)
