@@ -315,14 +315,14 @@ def test(cam, cam_ip, auto_gain_on=1, auto_gain_limit=8, dwdr_on=1, dwdr_limit=1
    print ("ENCODING:\n", json.dumps(enc_info, indent=4))
    print ("CAM PARAMS1:\n", json.dumps(cam_info1,indent=4))
    # AutoGain should be ON
-   cam_info1[0]['GainParam']['AutoGain'] = auto_gain_on
-   cam_info1[0]['GainParam']['Gain'] = auto_gain_limit 
+   cam_info1[0]['GainParam']['AutoGain'] = int(auto_gain_on)
+   cam_info1[0]['GainParam']['Gain'] = int(auto_gain_limit)
    # AutoGain IS cam_info['']['AutoGain']
    # AutoGain UpperLimit is the max gain value
    print ("CAM PARAMS2:\n", json.dumps(cam_info2,indent=4))
    # DWDR IS cam_info2['BroadTrends']['AutoGain']
-   cam_info2[0]['BroadTrends']['AutoGain'] = dwdr_on
-   cam_info2[0]['BroadTrends']['Gain'] = dwdr_limit
+   cam_info2[0]['BroadTrends']['AutoGain'] = int(dwdr_on)
+   cam_info2[0]['BroadTrends']['Gain'] = int(dwdr_limit)
    
    # DWDR UpperLimit is the max gain value
    print ("NETWORK:\n", json.dumps(net_info, indent=4))
@@ -562,3 +562,4 @@ if cmd == "encode":
    else:
       print ("Failure. Could not connect to camera!")
    encode(cam, CameraIP)
+
