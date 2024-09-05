@@ -521,7 +521,7 @@ if cmd == "test":
       print ("Success! Connected to " + CameraIP)
    else:
       print ("Failure. Could not connect to camera!")
-   test(cam, CameraIP, sys.argv[3])
+   test(cam, CameraIP)
 
 if cmd == "sense_up":
    cam = DVRIPCam(CameraIP,CameraUserName,CameraPassword)
