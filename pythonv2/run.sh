@@ -6,4 +6,3 @@
 ./IMX307.py test 192.168.76.76 8
 ./IMX307.py test 192.168.76.77 8
 cd ../python; ./as7-latest.py ; cd ../pythonv2;
-
