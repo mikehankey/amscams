@@ -1219,8 +1219,12 @@ def make_row_pic(data, min_file, text, json_conf, cam_num_info):
          img = cv2.imread(file)
       else:
          img = np.zeros((default_h,default_w,3),dtype=np.uint8)
-      img = cv2.resize(img, (default_w, default_h))
-      imgs.append(img)
+      try:
+        img = cv2.resize(img, (default_w, default_h))
+        imgs.append(img)
+      except:
+        img = np.zeros((h,rw,3),dtype=np.uint8)
+        imgs.append(img)
    h,w = imgs[0].shape[:2]
    rw = w * len(data.keys())
    blank_image = np.zeros((h,rw,3),dtype=np.uint8)
@@ -1349,6 +1353,7 @@ def make_tl_for_cam(date,cam, speed, json_conf):
                if speed == "1":
                   cmd = f"""ffmpeg -i '{video_file}' -vf "select='eq(n\\,0)',scale=1280:720" -vsync vfr '{image_file}_%d.jpg' > /dev/null 2>&1"""
                   cmds.append(cmd)
+               print(cmd)
                #print(f"Extracting images from {video_file}")
                #os.system(cmd)
 
@@ -1356,7 +1361,7 @@ def make_tl_for_cam(date,cam, speed, json_conf):
       os.system(cmd)
 
    # Now turn stills into movie
-   cmd = f"""ffmpeg -framerate 25 -pattern_type glob -i "{snap_dir}{date}*{cam_id}*" -c:v libx264 -pix_fmt yuv420p -preset slow -crf 18 -r 25 {tl_dir}{station_id}_{date}_{cam_id}.mp4"""
+   cmd = f"""ffmpeg -framerate 25 -pattern_type glob -i "{snap_dir}{date}*{cam_id}*.jpg" -c:v libx264 -pix_fmt yuv420p -preset slow -crf 18 -r 25 {tl_dir}{station_id}_{date}_{cam_id}.mp4"""
    print(cmd)
 
 
