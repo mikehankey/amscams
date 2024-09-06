@@ -1,5 +1,21 @@
 {HEADER}
+<style>
+/* styles.css */
+.hidden {
+    display: none;
+}
+
+#loading {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+</style>
 <body>
+<div id="loading" class="hidden">
+    <img src="/spinner.gif" alt="Loading...">
+</div>
 
 {NAV}
 
@@ -7,6 +23,11 @@
 
 {MAIN_TABLE}
 
-
 </body>
 {FOOTER}
+
+<script>
+document.getElementById('loadLink').addEventListener('click', function() {
+    document.getElementById('loading').classList.remove('hidden');
+});
+</script>
