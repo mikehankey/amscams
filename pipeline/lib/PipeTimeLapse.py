@@ -1223,7 +1223,7 @@ def make_row_pic(data, min_file, text, json_conf, cam_num_info):
         img = cv2.resize(img, (default_w, default_h))
         imgs.append(img)
       except:
-        img = np.zeros((h,rw,3),dtype=np.uint8)
+        img = np.zeros((default_h,default_w,3),dtype=np.uint8)
         imgs.append(img)
    h,w = imgs[0].shape[:2]
    rw = w * len(data.keys())
