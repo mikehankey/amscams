@@ -238,9 +238,9 @@ def check_disk():
 
    if os.path.exists("/mnt/ams2/AI/DATASETS/CAL_STARS/"):
       os.system("rm -rf " + "/mnt/ams2/AI/DATASETS/CAL_STARS/")
-   print(mounts)
-   print(data_dir)
-   print(mounts[data_dir])
+   #print(mounts)
+   #print(data_dir)
+   #print(mounts[data_dir])
    del_needed = 0
    if "/mnt/archive.allsky.tv" not in mounts:
       print("Wasabi is not mounted! Mounting now.")
