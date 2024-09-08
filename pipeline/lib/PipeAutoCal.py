@@ -410,8 +410,9 @@ def run_cal_defaults(json_conf):
          default_hist[cams_id] = make_default_cal(json_conf, cams_id)
 
       for cams_id in default_hist:
-         for row in default_hist[cams_id]['range_data']:
-            rdf.append(row)
+         if cams_id in default_hist:
+            for row in default_hist[cams_id]['range_data']:
+               rdf.append(row)
       save_json_file("/mnt/ams2/cal/" + amsid + "_cal_range.json", rdf)
       print("SAVED: /mnt/ams2/cal/" + amsid + "_cal_range.json", rdf)
 
