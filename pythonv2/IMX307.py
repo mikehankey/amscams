@@ -206,8 +206,8 @@ def day_night_settings(cam, cam_ip, type):
 
 def encode(cam, cam_ip):
    enc_info = cam.get_info("Simplify.Encode")
-   print(type(enc_info))
-   print(enc_info)
+   #print(type(enc_info))
+   print("BEFORE", json.dumps(enc_info, indent=4))
    print("SD QUALITY:", enc_info[0]['ExtraFormat']['Video']['Quality'])
    print("HD QUALITY:", enc_info[0]['MainFormat']['Video']['Quality'])
    print("RESOLUTION :", enc_info[0]['MainFormat']['Video']['Resolution'])
@@ -216,7 +216,7 @@ def encode(cam, cam_ip):
    enc_info[0]['MainFormat']['Video']['BitRate'] = 3072
    enc_info[0]['MainFormat']['Video']['Resolution'] = "1080P"
    cam.set_info("Simplify.Encode", enc_info)
-   print("SET:", enc_info)
+   print("AFTER:", json.dumps(enc_info, indent=4))
    cam.close()
 
 def review_settings(cam, cam_ip):
