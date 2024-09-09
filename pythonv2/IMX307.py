@@ -211,10 +211,11 @@ def encode(cam, cam_ip):
    print("SD QUALITY:", enc_info[0]['ExtraFormat']['Video']['Quality'])
    print("HD QUALITY:", enc_info[0]['MainFormat']['Video']['Quality'])
    print("RESOLUTION :", enc_info[0]['MainFormat']['Video']['Resolution'])
-   enc_info[0]['ExtraFormat']['Video']['Quality'] = 3
-   enc_info[0]['MainFormat']['Video']['Quality'] = 3
+   enc_info[0]['ExtraFormat']['Video']['Quality'] = 2
+   enc_info[0]['MainFormat']['Video']['Quality'] = 2
    enc_info[0]['MainFormat']['Video']['BitRate'] = 3072
    enc_info[0]['MainFormat']['Video']['Resolution'] = "1080P"
+   enc_info[0]['ExtraFormat']['Video']['Resolution'] = "D1"
    cam.set_info("Simplify.Encode", enc_info)
    print("AFTER:", json.dumps(enc_info, indent=4))
    cam.close()
