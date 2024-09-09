@@ -295,6 +295,16 @@ def test(cam, cam_ip, auto_gain_on=1, auto_gain_limit=8, dwdr_on=1, dwdr_limit=1
    avenc = cam.get_info("AVEnc")
    osd = cam.get_info("fVideo.OSDInfo")
 
+   settings_data = {}
+   settings_data["Simplify.Encode"] = enc_info
+   settings_data["Camera.ParamEx"] = cam_info2 
+   settings_data["Camera.Param"] = cam_info1
+   settings_data["NetWork.NetCommon"] = net_info
+   settings_data["AVEnc"] = avenc 
+   settings_data["fVideo.OSDInfo"] = osd 
+   ip = cam_ip.split(".")
+   sfile = f"../conf/settings_{ip[3]}.json"
+   save_json_file(sfile, settings_data)
 
    print ("AVENC:\n", json.dumps(avenc,indent=4))
    print ("OSD:\n", json.dumps(osd,indent=4))
@@ -348,6 +358,7 @@ def test(cam, cam_ip, auto_gain_on=1, auto_gain_limit=8, dwdr_on=1, dwdr_limit=1
 
 
    cam.close()
+   print("saved", sfile)
 
 def camera_settings():
    sleep(2)
