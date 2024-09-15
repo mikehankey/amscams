@@ -49,6 +49,13 @@ def ffmpeg_cat(file1, file2, outfile=None):
       
 
 def ffprobe(video_file):
+   cap = cv2.VideoCapture(video_file)
+   w = int(cap.get(3))
+   h = int(cap.get(4))
+   total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+   return(w,h, total_frames)
+
+def ffprobe_old(video_file):
    default = [704,576]
    print("FFP:")
    #try:
