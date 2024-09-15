@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-ASOS = """
+ASOS = r"""
    _____  .____    .____       _____________  __._____.___.
   /  _  \ |    |   |    |     /   _____/    |/ _|\__  |   |
  /  /_\  \|    |   |    |     \_____  \|      <   /   |   |
@@ -12195,7 +12195,9 @@ if __name__ == "__main__":
       if os.path.exists(mcp_file) == 1:
          mcp = load_json_file(mcp_file)
          # reset mcp if it is bad
-         if mcp['x_fun'] > 5:
+         if "x_fun" not in mcp:
+            mcp = None
+         elif mcp['x_fun'] > 5:
             mcp = None
       else:
          mcp = None
