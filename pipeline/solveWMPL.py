@@ -990,7 +990,18 @@ def custom_solve(event_id):
     for obs in good_obs:
        for ofile in good_obs[obs]:
           print(obs, ofile, good_obs[obs][ofile].keys())
-
+    deletes = []
+    for station in good_obs:
+        for fn in good_obs[station]:
+            if len(good_obs[station][fn]['times']) == 0:
+                deletes.append([station,fn])
+    for station, fn in deletes:
+        del good_obs[station][fn]
+    for station, fn in deletes:
+        if len(good_obs[station].keys()) == 0:
+            del good_obs[station]
+    print(json.dumps(good_obs, indent=4))
+    input("READY?")
     WMPL_solve(event_id, good_obs, 0)
 
 def solve_event(event_id, force=1, time_sync=1):
@@ -1835,7 +1846,12 @@ def make_event_json(event_id, solve_dir,ignore_obs):
             status = ""
          if station_id not in station_data:
             print(station_id)
+            if len(as_obs[station_id][file]['times']) == 0:
+                continue
             obs_data = as_obs[station_id][file]
+            print("OBS DATA LOC:", obs_data['loc'])
+            if len(obs_data['loc']) == 2:
+               obs_data['loc'].append(100)
             lat, lon, alt = obs_data['loc']
             station_data[station_id] = obs_data['loc']
             points.append((lon,lat,alt,status + station_id))
@@ -2777,7 +2793,7 @@ def make_obs_table(obs):
 def WMPL_solve(event_id, obs,time_sync=1, force=0, dynamodb=None):
 
     print(colored("Starting WMPL_solve for {:s}".format(event_id), "green"))
-    time_sync = 1
+    time_sync =  1 
     if dynamodb is None:
        dynamodb = boto3.resource('dynamodb')
 
@@ -2901,6 +2917,8 @@ def WMPL_solve(event_id, obs,time_sync=1, force=0, dynamodb=None):
     for station_id in obs:             
         for file in obs[station_id]:  # to revert change to if True
             o_times = obs[station_id][file]['times']
+            if len(o_times) == 0:
+               continue
             event_start_dt = datetime.datetime.strptime(o_times[0], "%Y-%m-%d %H:%M:%S.%f")
             if earliest_time is None:
                 earliest_time = event_start_dt
@@ -2914,6 +2932,8 @@ def WMPL_solve(event_id, obs,time_sync=1, force=0, dynamodb=None):
     wmpl_run_data = []
     for station_id in obs:             
         for file in obs[station_id]:  # to revert change to if True
+            if len(obs[station_id][file]['loc']) == 2:
+                obs[station_id][file]['loc'].append(100)
             try:
                lat,lon,alt = obs[station_id][file]['loc']
             except:
@@ -2936,8 +2956,8 @@ def WMPL_solve(event_id, obs,time_sync=1, force=0, dynamodb=None):
                azs = np.radians(obs[station_id][file]['gc_azs'])
                els = np.radians(obs[station_id][file]['gc_els'])
                # comment / uncomment to use/not use GCs GCFIT GCfit GC Fit GCFit
-               #azs = np.radians(obs[station_id][file]['azs'])
-               #els = np.radians(obs[station_id][file]['els'])
+               azs = np.radians(obs[station_id][file]['azs'])
+               els = np.radians(obs[station_id][file]['els'])
             else:
                azs = np.radians(obs[station_id][file]['azs'])
                els = np.radians(obs[station_id][file]['els'])

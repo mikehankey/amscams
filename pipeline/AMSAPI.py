@@ -399,8 +399,7 @@ class AMSAPI():
                    size=20,
                    color=point['color'],
                    symbol=point['symbol'],
-                   opacity=point['opacity'],
-                   angle=point['angle'],
+                   opacity=point['opacity']
 
                )
            )

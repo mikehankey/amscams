@@ -5,7 +5,7 @@ import numpy as np
 import sys
 import time
 from PIL import ImageFont, ImageDraw, Image, ImageChops
-from lib.PipeProcess import run_jobs 
+from lib.PipeProcess import run_jobs , sync_masks
 from datetime import datetime
 import datetime as dt
 
@@ -425,6 +425,8 @@ if __name__ == "__main__":
       aurora_report(sys.argv[2] ,json_conf)
    if cmd == "run_jobs":
       run_jobs(json_conf)
+   if cmd == "sync_masks":
+      sync_masks(json_conf)
    if cmd == "asv":
       aurora_stack_vid(sys.argv[2],json_conf)
    if cmd == "tl_list":

@@ -29,7 +29,6 @@ json_conf = load_json_file(AMS_HOME + "/conf/as6.json")
 
 
 def score_obj(obj):
-   print(obj)
    cxs, cys = [],[]
    for i in range(0,len(obj['oxs'])):
       x = obj['oxs'][i]
@@ -2742,7 +2741,7 @@ def fireball(video_file, json_conf, nomask=0):
 
 def make_base_meteor_json(video_file, hd_video_file,best_meteor=None ,cp=None):
    vw,vh,frames = ffprobe(video_file)
-   print("FFP", vw,vh,frames, video_file)
+   print(f"Make Base Meteor Json for {video_file} {vw}x{vh} {frames} frames")
 
    hdm_x_sd = 1920 / int(vw)
    hdm_y_sd = 1080 / int(vh)
@@ -5877,7 +5876,7 @@ def analyze_object(object, hd = 0, strict = 0):
       object['report']['non_meteor'] = 1
       object['report']['meteor'] = 0
       object['report']['class'] = "non-meteor"
-      object['report']['bad_items'].append("Gap test failed.")
+      object['report']['bad_items'].append("Gap test failed." + str(gap_test_info))
    # could do more gap tests / frames / dur test
    
    bad_seg_perc = bad_segs / len(object['oxs'])
@@ -5943,7 +5942,7 @@ def analyze_object(object, hd = 0, strict = 0):
 
 
    object['report']['big_perc'] = big_cnt_test(object, hd)
-   if object['report']['big_perc'] > .5:
+   if object['report']['big_perc'] > .8:
       object['report']['non_meteor'] = 1
       object['report']['meteor'] = 0
       object['report']['bad_items'].append("Big Perc % too high. " + str(object['report']['big_perc']))
@@ -5983,12 +5982,9 @@ def analyze_object(object, hd = 0, strict = 0):
    if object['report']['non_meteor'] == 0 :
       object['report']['meteor'] = 1
       object['report']['class'] = "meteor"
-      print("OBJ", object)
       fit_score = score_obj(object)
-      print("FIT:", fit_score)
       object['report']['fit_score'] = fit_score
 
-   #print("FB:", obj_id, fb)
    #if fb > 5:
    #   object['report']['meteor'] = 1
       #object['report']['class'] = "fireball meteor"
@@ -6325,7 +6321,7 @@ def min_cnt_dist(x,y,w,h,tx,ty,tw,th):
    ds.append(dist)
    return(min(ds))
 
-def find_object(objects, fn, cnt_x, cnt_y, cnt_w, cnt_h, intensity=0, hd=0, sd_multi=1, cnt_img=None , obj_tdist = None):
+def find_object(objects, fn, cnt_x, cnt_y, cnt_w, cnt_h, intensity=0, hd=0, sd_multi=1, cnt_img=None , obj_tdist = None, datetime_str=None):
    #print("FIND OBJ:", fn, cnt_x, cnt_y, cnt_w, cnt_h)
    matched = {}
    if hd == 1:
@@ -6455,6 +6451,7 @@ def find_object(objects, fn, cnt_x, cnt_y, cnt_w, cnt_h, intensity=0, hd=0, sd_m
       objects[obj_id]['oint'] = []
       objects[obj_id]['fs_dist'] = []
       objects[obj_id]['segs'] = []
+      objects[obj_id]['datetimes'] = []
       objects[obj_id]['ofns'].append(fn)
       objects[obj_id]['oxs'].append(cnt_x)
       objects[obj_id]['oys'].append(cnt_y)
@@ -6463,6 +6460,7 @@ def find_object(objects, fn, cnt_x, cnt_y, cnt_w, cnt_h, intensity=0, hd=0, sd_m
       objects[obj_id]['oint'].append(intensity)
       objects[obj_id]['fs_dist'].append(0)
       objects[obj_id]['segs'].append(0)
+      objects[obj_id]['datetimes'].append(datetime_str)
       found_obj = obj_id
    if found == 1:
       #if objects[found_obj]['report']['obj_class'] == "meteor":
@@ -6498,9 +6496,11 @@ def find_object(objects, fn, cnt_x, cnt_y, cnt_w, cnt_h, intensity=0, hd=0, sd_m
                
             objects[found_obj]['fs_dist'].append(fs_dist)
             objects[found_obj]['segs'].append(this_seg)
+            objects[found_obj]['datetimes'].append(datetime_str)
          else:
             objects[found_obj]['fs_dist'].append(0)
             objects[found_obj]['segs'].append(0)
+            objects[found_obj]['datetimes'].append(datetime_str)
 
 
          objects[found_obj]['ofns'].append(fn)

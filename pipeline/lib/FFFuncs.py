@@ -82,7 +82,8 @@ def splice_video(in_file, start, end, outfile=None, type="frame"):
       start_sec = int(start) / 25
       end_sec = int(end) / 25
       dur = end_sec - start_sec
-      cmd = """ /usr/bin/ffmpeg -i """ + in_file + """ -vf select="between(n\,""" + str(start) + """\,""" + str(end) + """),setpts=PTS-STARTPTS" -y -update 1 -y """ + outfile + " >/dev/null 2>&1"
+      #cmd = """ /usr/bin/ffmpeg -i """ + in_file + """ -vf select="between(n\,""" + str(start) + """\,""" + str(end) + """),setpts=PTS-STARTPTS" -y -update 1 -y """ + outfile + " >/dev/null 2>&1"
+      cmd = f"""/usr/bin/ffmpeg -i {in_file} -vf "select='between(n\,{start}\,{end})',setpts=PTS-STARTPTS" -c:v libx264 -max_muxing_queue_size 1024 -y {outfile} >/dev/null 2>&1"""
       os.system(cmd)
       print(cmd)
       return()
@@ -152,13 +153,14 @@ def slow_stack_range(date, start_hour, end_hour, cams_id, speed=10):
 
 
 def slow_stack_video(video_file, OUT_DIR, stack_lim=10):
-   
+   print(f"Slow stack video {video_file} {OUT_DIR}")
    sd_frames = load_frames_simple(video_file)
    fc = 0
    stack_lim = int(stack_lim)
    vid_fn = video_file.split("/")[-1]
    stack_fn = vid_fn.replace(".mp4", ".jpg")
    short_frames = []
+   print("FRAMES", len(sd_frames))
    for frame in sd_frames:
       short_frames.append(frame)
       if fc % stack_lim == 0 and fc > 0 and len(short_frames) > 0:
@@ -168,6 +170,7 @@ def slow_stack_video(video_file, OUT_DIR, stack_lim=10):
          tfn = stack_fn.replace(".jpg", "-" + str(num) + ".jpg")
          outfile = OUT_DIR + tfn
          cv2.imwrite(outfile, stack_image)
+         print("Write", stack_image.shape, outfile)
       fc += 1
 
 

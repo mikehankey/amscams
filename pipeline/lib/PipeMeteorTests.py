@@ -6,7 +6,7 @@ def gap_test(fns):
    gap_events = 0
    total_fns = len(fns)
    fn_dur = fns[-1] - fns[0]
-   for i in range(0, len(fns)):
+   for i in range(0, len(fns))[0:30]:
       fn = fns[i]
       if i > 0 and last_fn is not None:
          gap = fn - last_fn - 1

@@ -11,6 +11,24 @@ from lib.PipeUtil import day_or_night , load_json_file
 
 json_conf = load_json_file("../conf/as6.json")
 
+def backup_bolide(opt):
+    station_id = json_conf['site']['ams_id']
+    start_date = opt['start_date']
+    end_date = opt['end_date']
+    backup_dir = opt['/mnt/ams2/temp/']
+    backup_folder = opt['2024_05_18_BOLIDE']
+    stations = opt['stations']
+    if os.path.exists(opt['backup_dir']) is False:
+        print(f"your backup dir does not exists or you don't have permissions to write in it. {opt['backup_dir']}")
+        print(f"Add or update the mount point/drive at {opt['backup_dir']} in your system.")
+        return(False) 
+    out_dir = opt['backup_dir'] + opt['backup_folder'] + "/"
+    if os.path.exists(out_dir) is False:
+        try:
+            os.makedirs(out_dir)
+        except:
+            print(f"your backup dir does not exists or you don't have permissions to write in it. {out_dir}")
+            print(f"Add or update the mount point/drive at {opt['backup_dir']} in your system.")
 
 def backup_aurora(opt):
     # convert strings to datetime
@@ -79,17 +97,19 @@ def backup_aurora(opt):
             else:
                 print(f"\r ALREADY DID {fn}", end="")
     
-   
-   
-opt = {}
-opt['start_date'] = "2024-05-10 20:00:00"
-opt['end_date'] = "2024-05-11 20:00:00"
-opt['backup_dir'] = "/mnt/backup/"
-opt['backup_folder'] = "2024_05_10_AURORA_BACKUP"
 
-result = backup_aurora(opt)
-if result is False:
+
+
+# aurora   
+#opt = {}
+#opt['start_date'] = "2024-05-10 20:00:00"
+#opt['end_date'] = "2024-05-11 20:00:00"
+#opt['backup_dir'] = "/mnt/backup/"
+#opt['backup_folder'] = "2024_05_10_AURORA_BACKUP"
+
+#result = backup_aurora(opt)
+#if result is False:
     # backup failed try alternative directory
-    opt['backup_dir'] = "/mnt/ams2/temp/"
-    result = backup_aurora(opt)
+#    opt['backup_dir'] = "/mnt/ams2/temp/"
+#    result = backup_aurora(opt)
         

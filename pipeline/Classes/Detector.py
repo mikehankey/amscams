@@ -390,6 +390,7 @@ class Detector():
       #cx = int(x + (w/2))
       #cy = int(y + (h/2))
       if len(objects.keys()) == 0:
+         print("THERE ARE NO OBJECTS YET!")
          objects[1] = {}
          objects[1]['obj_id'] = 1
          objects[1]['ofns'] = []
@@ -422,8 +423,7 @@ class Detector():
             fn_diff = fn - objects[obj]['ofns'][-1]
 
                 #and fn not in objects[obj]['ofns'] :
-            #print("DIST IS: ", dist)
-            if dist < dist_thresh and fn_diff < 10: 
+            if dist < dist_thresh : #and fn_diff < 10: 
                mkeys = {}
                for i in range(0, len(objects[obj]['ofns'])):
                   key = str(objects[obj]['ccxs'][i]) + "." + str(objects[obj]['ccys'][i])
@@ -444,7 +444,9 @@ class Detector():
                last_closest_dist = dist
          if len(maybe_matches) == 0:
             no_match = 1
+            print("NO MATCH")
          elif len(maybe_matches) == 1:
+            print("Matched 1")
             obj = maybe_matches[0][0]
             if "class" not in objects[obj] and len(objects[obj]['ofns']) > 5:
                # try to class the obj. if there is minimal distance it is a star
@@ -463,7 +465,8 @@ class Detector():
                objects[1]['olys'].append(ly)
             return(obj, objects)
          else:
-            # Make new object
+            print("Matched more than 1")
+            
             maybe_matches = sorted(maybe_matches, key=lambda x: (x[1]), reverse=False)
             obj = maybe_matches[0][0]
             objects[obj]['ofns'].append(fn)
@@ -483,6 +486,8 @@ class Detector():
       # if there are no maybes make a new one
       if len(maybe_matches) == 0:
          nid = max(objects.keys()) + 1
+         print("DID NOT MATCH")
+         print("NEW ID IS:", nid)
          objects[nid] = {}
          objects[nid]['obj_id'] = nid
          objects[nid]['ofns'] = []
@@ -506,4 +511,4 @@ class Detector():
          if lx is not None:
             objects[1]['olxs'].append(lx)
             objects[1]['olys'].append(ly)
-         return(1, objects)
+         return(nid, objects)

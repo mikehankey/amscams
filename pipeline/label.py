@@ -27,6 +27,8 @@ if "US" in op_country:
 else:
     photo_credit = f"{station_id} - {op_name} - {op_city}, {op_country}"
 
+
+
 meteor_dir = f"/mnt/ams2/meteors/{date}/"
 wild_card_string  = f"{meteor_dir}*{date}_{hour}_{minute}*.mp4" 
 outdir = "/mnt/ams2/label/"

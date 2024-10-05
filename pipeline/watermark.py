@@ -1,15 +1,16 @@
 
 from PIL import ImageFont, ImageDraw, Image, ImageChops
-
+import sys
+img_file = sys.argv[1]
 watermark = Image.open("ALLSKY_LOGO.png")
-img = Image.open("/mnt/ams2/latest/AMS1_010004.jpg")
+img = Image.open(img_file)
 pw, ph = img.size
 
 basewidth,baseheight = img.size
 wpercent = (basewidth / float(watermark.size[0]))
 hsize = int((float(img.size[1]) * float(wpercent)))
 
-watermark = watermark.resize((basewidth, hsize), Image.ANTIALIAS)
+watermark = watermark.resize((basewidth, hsize), Image.Resampling.LANCZOS)
 watermark.show()
 
 

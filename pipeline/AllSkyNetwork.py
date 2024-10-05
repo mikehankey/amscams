@@ -69,6 +69,10 @@ if cmd == "refresh_day":
    #print(cmd)
    os.system(cmd)
 
+   cmd = "python3 EM.py aei " + event_day 
+   #print(cmd)
+   os.system(cmd)
+
    cmd = "python3 DynaDB.py udc " + event_day + " events"
    #print(cmd)
    os.system(cmd)
@@ -166,6 +170,28 @@ if cmd == "review_event":
    cv2.imshow('pepe', review_image)
    cv2.waitKey(0)
 
+if cmd == "multi_frame_event":
+   ASN.help()
+   event_id = sys.argv[2]
+   event_day = ASN.event_id_to_date(event_id)
+   ASN.set_dates(event_day)
+   ASN.multi_frame_event(event_day, sys.argv[2])
+
+if cmd == "refine_event":
+   ASN.help()
+   event_id = sys.argv[2]
+   event_day = ASN.event_id_to_date(event_id)
+   ASN.set_dates(event_day)
+   ASN.refine_event(event_day, sys.argv[2])
+
+if cmd == "event_calibs":
+   ASN.help()
+   event_id = sys.argv[2]
+   event_day = ASN.event_id_to_date(event_id)
+   ASN.set_dates(event_day)
+   ASN.event_calibs(event_day, sys.argv[2])
+    
+
 if cmd == "resolve_event":
    ASN.help()
    event_id = sys.argv[2]
@@ -178,7 +204,9 @@ if cmd == "resolve_event":
    if len(sys.argv) > 3:
       review = True
    if review is True: 
+      print("Step 1")
       ASN.review_event(sys.argv[2])
+      print("Step 2")
       (review_image, map_img, obs_imgs, marked_images, event_data, obs_data) = ASN.review_event_step2()
 
       for ob in obs_data:

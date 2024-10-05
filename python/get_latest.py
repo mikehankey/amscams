@@ -34,10 +34,11 @@ def get_latest_pic(cam_num):
    outfile = sd_video_dir + "../latest/" + str(cams_id) + ".jpg"
 
    print("rtsp://" + cam_ip + hd_url)
-   cap = cv2.VideoCapture("rtsp://" + cam_ip + hd_url)
+   cap = cv2.VideoCapture("rtsp://" + cam_ip + sd_url)
    cv2.setUseOptimized(True)
    _ , frame = cap.read()
    print(outfile)
+   print(frame.shape)
    cv2.imwrite(outfile, frame)  
 
    outfile = sd_video_dir + "../latest/" + str(cams_id) + "-mask.jpg"

@@ -84,7 +84,7 @@ class Plotter():
    def plot_all_rad(self):
       self.make_shower_colors()
       import matplotlib
-      matplotlib.use('TkAgg')
+      matplotlib.use('Agg')
       import matplotlib.ticker as plticker
       from matplotlib import pyplot as plt
       showers = {}

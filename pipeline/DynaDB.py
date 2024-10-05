@@ -448,6 +448,18 @@ def update_station(dynamodb, station_id,json_conf):
         r.set(rkey, rval)
         print("SET:", rkey, rval)
 
+def get_station(dynamodb, station_id, json_conf):
+    table = dynamodb.Table('station')
+    try:
+        response = table.get_item(Key={'station_id': station_id})
+    except ClientError as e:
+        print(e.response['Error']['Message'])
+    if True:
+        station_data = json.loads(json.dumps(response['Item']), parse_float=Decimal)
+    for key in station_data:
+        print(key, station_data[key])
+
+
 def insert_station(dynamodb, station_id):
 
    conf_file = "/mnt/ams2/STATIONS/CONF/" + station_id + "_as6.json"
@@ -1960,6 +1972,11 @@ if __name__ == "__main__":
    if cmd == "update_station":
       # station_id and then date please
       update_station(dynamodb, sys.argv[2], json_conf)
+
+   if cmd == "get_station":
+      # station_id and then date please
+      get_station(dynamodb, sys.argv[2], json_conf)
+
    if cmd == "insert_station":
       # station_id and then date please
       insert_station(dynamodb, sys.argv[2] )

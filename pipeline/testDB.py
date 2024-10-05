@@ -21,8 +21,8 @@ if len(sys.argv) > 1:
    cmd = sys.argv[1]
    if cmd == "load":
       selected_day = sys.argv[2]
-
-print("HELLO", cmd, noUI)
+else:
+    cmd = "run"
 
 if cmd == "load":
    # This will load up the DB with the lastest files

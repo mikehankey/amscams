@@ -167,14 +167,22 @@ def make_map(pts, lns, center_latlon=None):
     for data in lns:
        llats = []
        llons = []
-       lat1, lon1,lat2,lon2,cl= data
-       lon1,lat1,lon2,lat2 = float(lon1),float(lat1),float(lon2),float(lat2)
+       if len(data) == 5:
+          lat1, lon1,lat2,lon2,cl= data
+       elif len(data) == 6:
+          lat1, lon1,alt1,lat2,lon2,alt2 = data
+       elif len(data) == 7:
+          lat1, lon1,alt1,lat2,lon2,alt2,cl= data
+       else:
+          print("BAD LINE DATA:", data)
+          continue
+       lon1,lat1,lon2,lat2= float(lon1),float(lat1),float(lon2),float(lat2)
        llats.append(lat1)
        llats.append(lat2)
        llons.append(lon1)
        llons.append(lon2)
        lon, lat= m(llons, llats)
-       m.plot(lon,lat, 'k', color=cl)
+       m.plot(lon,lat, 'k', color=cl, alpha=.15)
 
     for i in range(0, len(plats)):
        m.plot(lons[i], lats[i], marker=pmarkers[i], color=pcolors[i], zorder=5)

@@ -61,11 +61,14 @@ def man_detect(min_file, data):
             cmd = "cp " + day_dir + min_fn + " " + min_dir + min_fn
             os.system(cmd)
 
-
-      cmd = "./FFF.py slow_stack " +min_file + " /mnt/ams2/TEMP/ " + str(fps)
+      # we should fix this so it makes a new dir for each observation and does not re-do the work if it already exists
+      cmd = "./FFF.py slow_stack " +min_file + " /mnt/ams2/TEMP/ " + str(fps) #+ " >/dev/null 2>&1"
       print(cmd)
       os.system(cmd)
       files = glob.glob("/mnt/ams2/TEMP/*.jpg")
+      print("Temp files:", len(files))
+   else:
+      print("No frame files were made!")
    if step is None:
       for file in sorted(files):
          tn = file.replace(".jpg", "-tn.jpg")
@@ -78,7 +81,7 @@ def man_detect(min_file, data):
          out += "<a href=javascript:select_frame('" + str(fr) + "')>"
          out += "<img src=" + vfile + ">" 
    elif step == "2":
-    
+      print("Go step 2") 
       ff = int(ff)
       lf = int(lf)
       ff = ff - fps
@@ -114,7 +117,7 @@ def man_detect(min_file, data):
       if len(hd_files) == 1:
          hd_file = hd_files[0]
          hd_trim = hd_file.replace(".mp4", "-HD-meteor-trim-" + trim_num + ".mp4")
-         cmd = "./FFF.py splice_video " + hd_file + " " + str(ts) + " " + str(te)  + " " + hd_trim + " sec"
+         cmd = "./FFF.py splice_video " + hd_file + " " + str(ts) + " " + str(te)  + " " + hd_trim + " sec > /dev/null 2>&1"
          print(cmd)
          os.system(cmd)
          vhdtrim_file = hd_trim.replace("/mnt/ams2", "")

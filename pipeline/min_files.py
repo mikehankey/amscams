@@ -1,3 +1,5 @@
+#!/usr/bin/python3 
+
 # make an index of all hd minfiles
 import os
 import json
