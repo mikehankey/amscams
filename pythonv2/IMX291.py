@@ -127,7 +127,7 @@ def sense_up(cam, cam_ip):
          os.system("rm " + cal_temp + "*.jpg") 
 
       temp_file = cal_temp + "temp%d.jpg"
-      cmd = "/usr/bin/ffmpeg -hide_banner -y -i '" + cam_url + "' -vframes 10 " +temp_file + " >/dev/null 2>&1"
+      cmd = "/usr/bin/ffmpeg -hide_banner -rtsp_transport tcp -y -stimeout 5000000 -i '" + cam_url + "' -vframes 10 " +temp_file + " >/dev/null 2>&1"
       print(cmd)
       os.system(cmd)
 
@@ -270,6 +270,8 @@ def auto_settings(cam, cam_ip):
       set_nighttime_settings(cam)
       # it is daytime
 
+def set_nighttime_settings(cam):
+    print("Set night")
 
 def encoding_settings():
    sleep(2)
