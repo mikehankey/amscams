@@ -1282,7 +1282,6 @@ def make_tl_for_cam(date,cam, speed, json_conf):
 
    #os.system("clear")
    print("HD DIR:", hd_dir + date + "*" + cam + "*.mp4")
-   input("W")
    print(len(hd_files), "HD FILES")
    print(len(sd_day_files), "SD DAY FILES")
    print(len(sd_night_files), "SD NIGHT FILES")
