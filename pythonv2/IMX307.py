@@ -127,7 +127,7 @@ def sense_up(cam, cam_ip):
          os.system("rm " + cal_temp + "*.jpg") 
 
       temp_file = cal_temp + "temp%d.jpg"
-      cmd = "/usr/bin/ffmpeg -hide_banner -y -i '" + cam_url + "' -vframes 10 " +temp_file + " >/dev/null 2>&1"
+      cmd = "/usr/bin/ffmpeg -hide_banner -rtsp_transport tcp -y -stimeout 5000000 -i '" + cam_url + "' -vframes 10 " +temp_file + " >/dev/null 2>&1"
       print(cmd)
       os.system(cmd)
 
@@ -147,7 +147,7 @@ def sense_up(cam, cam_ip):
       if cfe(outdir, 1) == 0:
          os.makedirs(outdir)
 
-      cmd = "/usr/bin/ffmpeg -hide_banner -y -i '" + cam_url + "' -vframes 1 " +outfile + " >/dev/null 2>&1"
+      cmd = "/usr/bin/ffmpeg -hide_banner -rtsp_transport tcp -y -stimeout 5000000 -i '" + cam_url + "' -vframes 1 " +outfile + " >/dev/null 2>&1"
       print(cmd)
       os.system(cmd)
 
