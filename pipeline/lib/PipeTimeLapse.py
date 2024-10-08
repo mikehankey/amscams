@@ -1280,7 +1280,9 @@ def make_tl_for_cam(date,cam, speed, json_conf):
    sd_day_files = glob.glob(sd_day_dir + date + "*" + cam + "*.mp4")
    sd_night_files = glob.glob(sd_night_dir + date + "*" + cam + "*.mp4")
 
-   os.system("clear")
+   #os.system("clear")
+   print("HD DIR:", hd_dir + date + "*" + cam + "*.mp4")
+   input("W")
    print(len(hd_files), "HD FILES")
    print(len(sd_day_files), "SD DAY FILES")
    print(len(sd_night_files), "SD NIGHT FILES")
@@ -1363,6 +1365,7 @@ def make_tl_for_cam(date,cam, speed, json_conf):
    # Now turn stills into movie
    cmd = f"""ffmpeg -framerate 25 -pattern_type glob -i "{snap_dir}{date}*{cam_id}*.jpg" -c:v libx264 -pix_fmt yuv420p -preset slow -crf 18 -r 25 {tl_dir}{station_id}_{date}_{cam_id}.mp4"""
    print(cmd)
+   os.system(cmd)
 
 
 def parse_filename(fn):
