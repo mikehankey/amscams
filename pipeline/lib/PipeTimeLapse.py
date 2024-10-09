@@ -557,6 +557,7 @@ def audit_min(date, json_conf):
    if today == date :
       limit_h = int(datetime.now().strftime("%H"))
       limit_m = int(datetime.now().strftime("%M"))
+      # here we should remove any black files that may not have been stacked on the last run?
    else :
       limit_h = 23
       limit_m = 59
@@ -752,7 +753,7 @@ def audit_min(date, json_conf):
          row_file = TL_PIC_DIR + key + "-row.png"
          show_file = row_file.split("-")[0].split("/")[-1]
          print(f"\rROW: {show_file}" + " " * 60, end="")
-         redo = 0
+         redo = 1 
          #if cfe(row_file) == 1:
          #   fs = os.stat(row_file)
          #   fsize = fs.st_size
