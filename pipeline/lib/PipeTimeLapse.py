@@ -1355,11 +1355,11 @@ def make_tl_for_cam(date,cam, speed, json_conf):
                if speed == "1":
                   cmd = f"""ffmpeg -i '{video_file}' -vf "select='eq(n\\,0)',scale=1280:720" -vsync vfr '{image_file}_%d.jpg' > /dev/null 2>&1"""
                   cmds.append(cmd)
-               print(cmd)
                #print(f"Extracting images from {video_file}")
                #os.system(cmd)
 
    for cmd in tqdm(cmds, desc='extracting images', unit='cmd'):
+      print(cmd)
       os.system(cmd)
 
    # Now turn stills into movie
