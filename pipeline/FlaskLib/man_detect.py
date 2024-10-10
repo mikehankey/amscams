@@ -115,8 +115,27 @@ def man_detect(min_file, data):
          else:
             hd_files.append(hdf)
       if len(hd_files) == 1:
+         # the trim second start and end needs to take into account the file time difference between SD and HD files. 
+         print("TRIM HD")
+         sd_datetime = f_datetime
          hd_file = hd_files[0]
-         hd_trim = hd_file.replace(".mp4", "-HD-meteor-trim-" + trim_num + ".mp4")
+         (hd_datetime, cam, f_date_str,fy,fmon,fd, fh, fm, fs) = convert_filename_to_date_cam(hd_file)   
+         time_diff = (hd_datetime - sd_datetime).total_seconds()
+         print("SD TIME:", sd_datetime)
+         print("HD TIME:", hd_datetime)
+         print("HD - SD time diff = ", time_diff)
+         # this time difference should be addeded to the start and end times for splitting hd files. 
+         # ts and te are currently the trim numbers of the SD file, so we need to figure out what HD trim numbers should be 
+         fps = 25
+         hd_trim_diff = time_diff * fps
+         # add/sub the trim diff to the ts and te
+         ts -= time_diff 
+         te -= time_diff 
+         print("TIME DIFF", time_diff)
+         hd_trim_num = int(trim_num) - (time_diff*25)
+         print("HD TRIM NUM:", hd_trim_num)
+
+         hd_trim = hd_file.replace(".mp4", "-HD-meteor-trim-" + str(hd_trim_num) + ".mp4")
          cmd = "./FFF.py splice_video " + hd_file + " " + str(ts) + " " + str(te)  + " " + hd_trim + " sec > /dev/null 2>&1"
          print(cmd)
          os.system(cmd)
