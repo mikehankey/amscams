@@ -75,18 +75,18 @@ def snap_video(in_file):
       os.system(cmd)
 
 
-def splice_video(in_file, start, end, outfile=None, type="frame"):
+def splice_video(in_file, start, end, outfile=None, que_type="frame"):
+   print("Splice:", in_file, start, end, que_type)
    # type = frame or sec 
    # convert start and end frame #s to seconds
-   if type == "frame":
+   if que_type == "frame":
       start_sec = int(start) / 25
       end_sec = int(end) / 25
       dur = end_sec - start_sec
       #cmd = """ /usr/bin/ffmpeg -i """ + in_file + """ -vf select="between(n\,""" + str(start) + """\,""" + str(end) + """),setpts=PTS-STARTPTS" -y -update 1 -y """ + outfile + " >/dev/null 2>&1"
-      #cmd = f"""/usr/bin/ffmpeg -i {in_file} -vf "select='between(n\,{start}\,{end})',setpts=PTS-STARTPTS" -c:v libx264 -max_muxing_queue_size 1024 -y {outfile} >/dev/null 2>&1"""
-      cmd = f"""/usr/bin/ffmpeg -ss {start} -i {in_file} -to {end} -c:v libx264 -max_muxing_queue_size 1024 -y {outfile} >/dev/null 2>&1"""
+      cmd = f"""/usr/bin/ffmpeg -i {in_file} -vf "select='between(n\,{start}\,{end})',setpts=PTS-STARTPTS" -c:v libx264 -max_muxing_queue_size 1024 -y {outfile} >/dev/null 2>&1"""
 
-      os.system(cmd)
+      #os.system(cmd)
       print(cmd)
       return()
    else:
@@ -96,7 +96,9 @@ def splice_video(in_file, start, end, outfile=None, type="frame"):
    if outfile is None:
       outfile = in_file.replace(".mp4", "-trim-" + str(start) + ".mp4")
 
-   cmd = "/usr/bin/ffmpeg -y -i  " + in_file + " -ss 00:00:" + str(start_sec) + " -t 00:00:" + str(dur) + " -c copy " + outfile
+   #cmd = "/usr/bin/ffmpeg -y -i  " + in_file + " -ss 00:00:" + str(start_sec) + " -t 00:00:" + str(dur) + " -c copy " + outfile
+   cmd = f"""/usr/bin/ffmpeg -ss {start} -i {in_file} -to {end} -c:v libx264 -max_muxing_queue_size 1024 -y {outfile} >/dev/null 2>&1"""
+
    print(cmd)
    os.system(cmd)
    return(outfile)
