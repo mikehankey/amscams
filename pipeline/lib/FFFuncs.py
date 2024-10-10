@@ -83,7 +83,9 @@ def splice_video(in_file, start, end, outfile=None, type="frame"):
       end_sec = int(end) / 25
       dur = end_sec - start_sec
       #cmd = """ /usr/bin/ffmpeg -i """ + in_file + """ -vf select="between(n\,""" + str(start) + """\,""" + str(end) + """),setpts=PTS-STARTPTS" -y -update 1 -y """ + outfile + " >/dev/null 2>&1"
-      cmd = f"""/usr/bin/ffmpeg -i {in_file} -vf "select='between(n\,{start}\,{end})',setpts=PTS-STARTPTS" -c:v libx264 -max_muxing_queue_size 1024 -y {outfile} >/dev/null 2>&1"""
+      #cmd = f"""/usr/bin/ffmpeg -i {in_file} -vf "select='between(n\,{start}\,{end})',setpts=PTS-STARTPTS" -c:v libx264 -max_muxing_queue_size 1024 -y {outfile} >/dev/null 2>&1"""
+      cmd = f"""/usr/bin/ffmpeg -ss {start} -i {in_file} -to {end} -c:v libx264 -max_muxing_queue_size 1024 -y {outfile} >/dev/null 2>&1"""
+
       os.system(cmd)
       print(cmd)
       return()
@@ -141,13 +143,23 @@ def imgs_to_vid (in_dir, out_file, wild="", fps=25, crf=20, img_type= "jpg"):
 
 
 def slow_stack_range(date, start_hour, end_hour, cams_id, speed=10):
+   # for SD 
    files = glob.glob("/mnt/ams2/SD/proc2/" + date + "/*" + cams_id + "*.mp4")
-   for file in files:
+   # for HD comment out
+   files = glob.glob("/mnt/ams2/HD/*" + date + "*" + cams_id + "*.mp4")
+   for file in sorted(files):
       if "trim" in file:
          continue
       (f_datetime, cam, f_date_str,fy,fm,fd, fh, fmin, fs) = convert_filename_to_date_cam(file)
       #/mnt/ams2/CUSTOM_VIDEOS/out.mp4
-      if start_hour <= int(fh) <= end_hour and cam == cams_id and "crop" not in file:
+      # skip files not in the first 20 minutes # custom remove later
+      print("MINUTE:", fm)
+      if 0 <= int(fm) <= 20:
+          print("GOOD")
+      else:
+          print("SKIP")
+          continue
+      if start_hour <= int(fh) < end_hour and cam == cams_id and "trim" not in file:
          cmd = "./FFF.py slow_stack " + file +  " ./CACHE2/ " + str(speed)
          os.system(cmd)
 
